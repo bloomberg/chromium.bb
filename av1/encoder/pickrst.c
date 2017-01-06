@@ -654,11 +654,17 @@ static void compute_stats(uint8_t *dgd, uint8_t *src, int h_start, int h_end,
         M[k] += Y[k] * X;
         H[k * WIENER_WIN2 + k] += Y[k] * Y[k];
         for (l = k + 1; l < WIENER_WIN2; ++l) {
-          double value = Y[k] * Y[l];
-          H[k * WIENER_WIN2 + l] += value;
-          H[l * WIENER_WIN2 + k] += value;
+          // H is a symmetric matrix, so we only need to fill out the upper
+          // triangle here. We can copy it down to the lower triangle outside
+          // the (i, j) loops.
+          H[k * WIENER_WIN2 + l] += Y[k] * Y[l];
         }
       }
+    }
+  }
+  for (k = 0; k < WIENER_WIN2; ++k) {
+    for (l = k + 1; l < WIENER_WIN2; ++l) {
+      H[l * WIENER_WIN2 + k] = H[k * WIENER_WIN2 + l];
     }
   }
 }
@@ -702,11 +708,17 @@ static void compute_stats_highbd(uint8_t *dgd8, uint8_t *src8, int h_start,
         M[k] += Y[k] * X;
         H[k * WIENER_WIN2 + k] += Y[k] * Y[k];
         for (l = k + 1; l < WIENER_WIN2; ++l) {
-          double value = Y[k] * Y[l];
-          H[k * WIENER_WIN2 + l] += value;
-          H[l * WIENER_WIN2 + k] += value;
+          // H is a symmetric matrix, so we only need to fill out the upper
+          // triangle here. We can copy it down to the lower triangle outside
+          // the (i, j) loops.
+          H[k * WIENER_WIN2 + l] += Y[k] * Y[l];
         }
       }
+    }
+  }
+  for (k = 0; k < WIENER_WIN2; ++k) {
+    for (l = k + 1; l < WIENER_WIN2; ++l) {
+      H[l * WIENER_WIN2 + k] = H[k * WIENER_WIN2 + l];
     }
   }
 }
@@ -939,7 +951,6 @@ static double search_wiener_uv(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   const int dgd_stride = dgd->uv_stride;
   double score;
   int tile_idx, tile_width, tile_height, nhtiles, nvtiles;
-  int h_start, h_end, v_start, v_end;
   const int ntiles = av1_get_rest_ntiles(cm->width, cm->height, &tile_width,
                                          &tile_height, &nhtiles, &nvtiles);
 
@@ -963,30 +974,39 @@ static double search_wiener_uv(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   cost_norestore = RDCOST_DBL(x->rdmult, x->rddiv, (bits >> 4), err);
 
   rsi[plane].frame_restoration_type = RESTORE_WIENER;
-  h_start = v_start = WIENER_HALFWIN;
-  h_end = width - WIENER_HALFWIN;
-  v_end = height - WIENER_HALFWIN;
-  if (plane == AOM_PLANE_U) {
+
 #if CONFIG_AOM_HIGHBITDEPTH
-    if (cm->use_highbitdepth)
-      compute_stats_highbd(dgd->u_buffer, src->u_buffer, h_start, h_end,
-                           v_start, v_end, dgd_stride, src_stride, M, H);
-    else
-#endif  // CONFIG_AOM_HIGHBITDEPTH
-      compute_stats(dgd->u_buffer, src->u_buffer, h_start, h_end, v_start,
-                    v_end, dgd_stride, src_stride, M, H);
-  } else if (plane == AOM_PLANE_V) {
-#if CONFIG_AOM_HIGHBITDEPTH
-    if (cm->use_highbitdepth)
-      compute_stats_highbd(dgd->v_buffer, src->v_buffer, h_start, h_end,
-                           v_start, v_end, dgd_stride, src_stride, M, H);
-    else
-#endif  // CONFIG_AOM_HIGHBITDEPTH
-      compute_stats(dgd->v_buffer, src->v_buffer, h_start, h_end, v_start,
-                    v_end, dgd_stride, src_stride, M, H);
+  if (cm->use_highbitdepth) {
+    if (plane == AOM_PLANE_U) {
+      extend_frame_highbd(CONVERT_TO_SHORTPTR(dgd->u_buffer), width, height,
+                          dgd_stride);
+      compute_stats_highbd(dgd->u_buffer, src->u_buffer, 0, width, 0, height,
+                           dgd_stride, src_stride, M, H);
+    } else if (plane == AOM_PLANE_V) {
+      extend_frame_highbd(CONVERT_TO_SHORTPTR(dgd->v_buffer), width, height,
+                          dgd_stride);
+      compute_stats_highbd(dgd->v_buffer, src->v_buffer, 0, width, 0, height,
+                           dgd_stride, src_stride, M, H);
+    } else {
+      assert(0);
+    }
   } else {
-    assert(0);
+#endif
+    if (plane == AOM_PLANE_U) {
+      extend_frame(dgd->u_buffer, width, height, dgd_stride);
+      compute_stats(dgd->u_buffer, src->u_buffer, 0, width, 0, height,
+                    dgd_stride, src_stride, M, H);
+    } else if (plane == AOM_PLANE_V) {
+      extend_frame(dgd->v_buffer, width, height, dgd_stride);
+      compute_stats(dgd->v_buffer, src->v_buffer, 0, width, 0, height,
+                    dgd_stride, src_stride, M, H);
+    } else {
+      assert(0);
+    }
+#if CONFIG_AOM_HIGHBITDEPTH
   }
+#endif
+
   if (!wiener_decompose_sep_sym(M, H, vfilterd, hfilterd)) {
     info->frame_restoration_type = RESTORE_NONE;
     aom_yv12_copy_y(&cpi->last_frame_uf, cm->frame_to_show);
@@ -1080,6 +1100,15 @@ static double search_wiener(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   for (tile_idx = 0; tile_idx < ntiles; ++tile_idx)
     rsi->wiener_info[tile_idx].level = 0;
 
+// Construct a (WIENER_HALFWIN)-pixel border around the frame
+#if CONFIG_AOM_HIGHBITDEPTH
+  if (cm->use_highbitdepth)
+    extend_frame_highbd(CONVERT_TO_SHORTPTR(dgd->y_buffer), width, height,
+                        dgd_stride);
+  else
+#endif
+    extend_frame(dgd->y_buffer, width, height, dgd_stride);
+
   // Compute best Wiener filters for each tile
   for (tile_idx = 0; tile_idx < ntiles; ++tile_idx) {
     av1_get_rest_tile_limits(tile_idx, 0, 0, nhtiles, nvtiles, tile_width,
@@ -1093,9 +1122,8 @@ static double search_wiener(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
     best_tile_cost[tile_idx] = DBL_MAX;
 
     av1_get_rest_tile_limits(tile_idx, 0, 0, nhtiles, nvtiles, tile_width,
-                             tile_height, width, height, WIENER_HALFWIN,
-                             WIENER_HALFWIN, &h_start, &h_end, &v_start,
-                             &v_end);
+                             tile_height, width, height, 0, 0, &h_start, &h_end,
+                             &v_start, &v_end);
 #if CONFIG_AOM_HIGHBITDEPTH
     if (cm->use_highbitdepth)
       compute_stats_highbd(dgd->y_buffer, src->y_buffer, h_start, h_end,

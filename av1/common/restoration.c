@@ -105,7 +105,7 @@ static void loop_restoration_init(RestorationInternal *rst, int kf, int width,
                           &rst->nhtiles, &rst->nvtiles);
 }
 
-static void extend_frame(uint8_t *data, int width, int height, int stride) {
+void extend_frame(uint8_t *data, int width, int height, int stride) {
   uint8_t *data_p;
   int i;
   for (i = 0; i < height; ++i) {
@@ -842,8 +842,7 @@ static void loop_switchable_filter(uint8_t *data, int width, int height,
 }
 
 #if CONFIG_AOM_HIGHBITDEPTH
-static void extend_frame_highbd(uint16_t *data, int width, int height,
-                                int stride) {
+void extend_frame_highbd(uint16_t *data, int width, int height, int stride) {
   uint16_t *data_p;
   int i, j;
   for (i = 0; i < height; ++i) {
