@@ -865,10 +865,17 @@ void GtkUi::LoadGtkValues() {
       ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused);
   active_selection_fg_color_ = native_theme_->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldSelectionColor);
+#if GTK_MAJOR_VERSION == 2
   inactive_selection_bg_color_ = native_theme_->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldReadOnlyBackground);
   inactive_selection_fg_color_ = native_theme_->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldReadOnlyColor);
+#else
+  inactive_selection_bg_color_ =
+      GetBgColor("GtkEntry#entry:backdrop #selection:selected");
+  inactive_selection_fg_color_ =
+      GetFgColor("GtkEntry#entry:backdrop #selection:selected");
+#endif
 
   colors_[ThemeProperties::COLOR_TAB_THROBBER_SPINNING] =
       native_theme_->GetSystemColor(
