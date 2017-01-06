@@ -45,7 +45,7 @@ SpeechRecognitionEvent* SpeechRecognitionEvent::createNoMatch(
     SpeechRecognitionResult* result) {
   if (result) {
     HeapVector<Member<SpeechRecognitionResult>> results;
-    results.append(result);
+    results.push_back(result);
     return new SpeechRecognitionEvent(
         EventTypeNames::nomatch, 0,
         SpeechRecognitionResultList::create(results));

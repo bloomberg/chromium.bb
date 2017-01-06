@@ -206,7 +206,7 @@ class CacheStorage::KeysCallbacks final
       return;
     Vector<String> wtfKeys;
     for (size_t i = 0; i < keys.size(); ++i)
-      wtfKeys.append(keys[i]);
+      wtfKeys.push_back(keys[i]);
     m_resolver->resolve(wtfKeys);
     m_resolver.clear();
   }

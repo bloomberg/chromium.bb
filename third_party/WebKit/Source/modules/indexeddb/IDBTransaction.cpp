@@ -239,7 +239,7 @@ void IDBTransaction::objectStoreDeleted(const int64_t objectStoreId,
         m_database->metadata().objectStores.get(objectStoreId);
     DCHECK(metadata.get());
     DCHECK_EQ(metadata->name, name);
-    m_deletedObjectStores.append(std::move(metadata));
+    m_deletedObjectStores.push_back(std::move(metadata));
   } else {
     IDBObjectStore* objectStore = it->value;
     m_objectStoreMap.remove(name);
@@ -306,7 +306,7 @@ void IDBTransaction::indexDeleted(IDBIndex* index) {
     return;
   }
 
-  m_deletedIndexes.append(index);
+  m_deletedIndexes.push_back(index);
 }
 
 void IDBTransaction::setActive(bool active) {
@@ -468,8 +468,8 @@ DispatchEventResult IDBTransaction::dispatchEventInternal(Event* event) {
   m_state = Finished;
 
   HeapVector<Member<EventTarget>> targets;
-  targets.append(this);
-  targets.append(db());
+  targets.push_back(this);
+  targets.push_back(db());
 
   // FIXME: When we allow custom event dispatching, this will probably need to
   // change.

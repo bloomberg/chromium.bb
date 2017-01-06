@@ -79,7 +79,7 @@ class CacheWithResponsesCallbacks
     ScriptState::Scope scope(m_resolver->getScriptState());
     HeapVector<Member<Response>> responses;
     for (size_t i = 0; i < webResponses.size(); ++i)
-      responses.append(
+      responses.push_back(
           Response::create(m_resolver->getScriptState(), webResponses[i]));
     m_resolver->resolve(responses);
     m_resolver.clear();
@@ -145,7 +145,7 @@ class CacheWithRequestsCallbacks
     ScriptState::Scope scope(m_resolver->getScriptState());
     HeapVector<Member<Request>> requests;
     for (size_t i = 0; i < webRequests.size(); ++i)
-      requests.append(
+      requests.push_back(
           Request::create(m_resolver->getScriptState(), webRequests[i]));
     m_resolver->resolve(requests);
     m_resolver.clear();
@@ -424,9 +424,9 @@ ScriptPromise Cache::add(ScriptState* scriptState,
   ASSERT(!request.isNull());
   HeapVector<Member<Request>> requests;
   if (request.isRequest()) {
-    requests.append(request.getAsRequest());
+    requests.push_back(request.getAsRequest());
   } else {
-    requests.append(
+    requests.push_back(
         Request::create(scriptState, request.getAsUSVString(), exceptionState));
     if (exceptionState.hadException())
       return ScriptPromise();
@@ -441,10 +441,10 @@ ScriptPromise Cache::addAll(ScriptState* scriptState,
   HeapVector<Member<Request>> requests;
   for (RequestInfo request : rawRequests) {
     if (request.isRequest()) {
-      requests.append(request.getAsRequest());
+      requests.push_back(request.getAsRequest());
     } else {
-      requests.append(Request::create(scriptState, request.getAsUSVString(),
-                                      exceptionState));
+      requests.push_back(Request::create(scriptState, request.getAsUSVString(),
+                                         exceptionState));
       if (exceptionState.hadException())
         return ScriptPromise();
     }

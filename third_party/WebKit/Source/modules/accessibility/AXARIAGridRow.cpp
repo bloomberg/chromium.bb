@@ -55,7 +55,7 @@ bool AXARIAGridRow::isARIATreeGridRow() const {
 void AXARIAGridRow::headerObjectsForRow(AXObjectVector& headers) {
   for (const auto& cell : children()) {
     if (cell->roleValue() == RowHeaderRole)
-      headers.append(cell);
+      headers.push_back(cell);
   }
 }
 

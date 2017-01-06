@@ -186,7 +186,7 @@ void validateAndConvertDisplayItems(const HeapVector<PaymentItem>& input,
     validateShippingOptionOrPaymentItem(item, exceptionState);
     if (exceptionState.hadException())
       return;
-    output.append(payments::mojom::blink::PaymentItem::From(item));
+    output.push_back(payments::mojom::blink::PaymentItem::From(item));
   }
 }
 
@@ -218,7 +218,8 @@ void validateAndConvertShippingOptions(
     if (exceptionState.hadException())
       return;
 
-    output.append(payments::mojom::blink::PaymentShippingOption::From(option));
+    output.push_back(
+        payments::mojom::blink::PaymentShippingOption::From(option));
   }
 }
 
@@ -268,7 +269,7 @@ void maybeSetAndroidPayMethodData(const ScriptValue& input,
     for (const String& allowedCardNetwork : androidPay.allowedCardNetworks()) {
       for (size_t i = 0; i < arraysize(kAndroidPayNetwork); ++i) {
         if (allowedCardNetwork == kAndroidPayNetwork[i].name) {
-          output->allowed_card_networks.append(kAndroidPayNetwork[i].code);
+          output->allowed_card_networks.push_back(kAndroidPayNetwork[i].code);
           break;
         }
       }
@@ -299,7 +300,7 @@ void maybeSetAndroidPayMethodData(const ScriptValue& input,
       for (const String& key : keys) {
         if (!DictionaryHelper::get(tokenization.parameters(), key, value))
           continue;
-        output->parameters.append(
+        output->parameters.push_back(
             payments::mojom::blink::AndroidPayTokenizationParameter::New());
         output->parameters.back()->key = key;
         output->parameters.back()->value = value;
@@ -341,7 +342,7 @@ void validateAndConvertPaymentDetailsModifiers(
   }
 
   for (const PaymentDetailsModifier& modifier : input) {
-    output.append(payments::mojom::blink::PaymentDetailsModifier::New());
+    output.push_back(payments::mojom::blink::PaymentDetailsModifier::New());
     if (modifier.hasTotal()) {
       validateAndConvertTotal(modifier.total(), output.back()->total,
                               exceptionState);
@@ -453,7 +454,7 @@ void validateAndConvertPaymentMethodData(
       return;
     }
 
-    output.append(payments::mojom::blink::PaymentMethodData::New());
+    output.push_back(payments::mojom::blink::PaymentMethodData::New());
     output.back()->supported_methods = paymentMethodData.supportedMethods();
 
     if (paymentMethodData.hasData() && !paymentMethodData.data().isEmpty()) {

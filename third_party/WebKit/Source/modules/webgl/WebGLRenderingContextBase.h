@@ -885,7 +885,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   void registerExtension(Member<T>& extensionPtr,
                          ExtensionFlags flags = ApprovedExtension,
                          const char* const* prefixes = nullptr) {
-    m_extensions.append(TraceWrapperMember<ExtensionTracker>(
+    m_extensions.push_back(TraceWrapperMember<ExtensionTracker>(
         this, TypedExtensionTracker<T>::create(extensionPtr, flags, prefixes)));
   }
 

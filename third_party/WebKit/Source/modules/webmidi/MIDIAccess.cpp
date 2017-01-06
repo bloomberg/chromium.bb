@@ -72,11 +72,11 @@ MIDIAccess::MIDIAccess(
   for (size_t i = 0; i < ports.size(); ++i) {
     const MIDIAccessInitializer::PortDescriptor& port = ports[i];
     if (port.type == MIDIPort::TypeInput) {
-      m_inputs.append(MIDIInput::create(this, port.id, port.manufacturer,
-                                        port.name, port.version,
-                                        ToDeviceState(port.state)));
+      m_inputs.push_back(MIDIInput::create(this, port.id, port.manufacturer,
+                                           port.name, port.version,
+                                           ToDeviceState(port.state)));
     } else {
-      m_outputs.append(MIDIOutput::create(
+      m_outputs.push_back(MIDIOutput::create(
           this, m_outputs.size(), port.id, port.manufacturer, port.name,
           port.version, ToDeviceState(port.state)));
     }
@@ -109,7 +109,7 @@ MIDIInputMap* MIDIAccess::inputs() const {
   for (size_t i = 0; i < m_inputs.size(); ++i) {
     MIDIInput* input = m_inputs[i];
     if (input->getState() != PortState::DISCONNECTED) {
-      inputs.append(input);
+      inputs.push_back(input);
       ids.add(input->id());
     }
   }
@@ -126,7 +126,7 @@ MIDIOutputMap* MIDIAccess::outputs() const {
   for (size_t i = 0; i < m_outputs.size(); ++i) {
     MIDIOutput* output = m_outputs[i];
     if (output->getState() != PortState::DISCONNECTED) {
-      outputs.append(output);
+      outputs.push_back(output);
       ids.add(output->id());
     }
   }
@@ -145,7 +145,7 @@ void MIDIAccess::didAddInputPort(const String& id,
   DCHECK(isMainThread());
   MIDIInput* port = MIDIInput::create(this, id, manufacturer, name, version,
                                       ToDeviceState(state));
-  m_inputs.append(port);
+  m_inputs.push_back(port);
   dispatchEvent(MIDIConnectionEvent::create(port));
 }
 
@@ -158,7 +158,7 @@ void MIDIAccess::didAddOutputPort(const String& id,
   unsigned portIndex = m_outputs.size();
   MIDIOutput* port = MIDIOutput::create(this, portIndex, id, manufacturer, name,
                                         version, ToDeviceState(state));
-  m_outputs.append(port);
+  m_outputs.push_back(port);
   dispatchEvent(MIDIConnectionEvent::create(port));
 }
 

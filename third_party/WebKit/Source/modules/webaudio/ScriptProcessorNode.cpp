@@ -103,8 +103,8 @@ void ScriptProcessorHandler::initialize() {
                                                        bufferSize(), sampleRate)
                                  : 0;
 
-    m_inputBuffers.append(inputBuffer);
-    m_outputBuffers.append(outputBuffer);
+    m_inputBuffers.push_back(inputBuffer);
+    m_outputBuffers.push_back(outputBuffer);
   }
 
   AudioHandler::initialize();

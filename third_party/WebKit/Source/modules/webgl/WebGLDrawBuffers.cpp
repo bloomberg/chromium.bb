@@ -145,7 +145,7 @@ bool WebGLDrawBuffers::satisfiesWebGLRequirements(
     GLuint color;
 
     gl->GenTextures(1, &color);
-    colors.append(color);
+    colors.push_back(color);
     gl->BindTexture(GL_TEXTURE_2D, color);
     gl->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA,
                    GL_UNSIGNED_BYTE, buffer);

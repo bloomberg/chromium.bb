@@ -24,7 +24,7 @@ MediaMetadata::MediaMetadata(ExecutionContext* context,
   m_artist = metadata.artist();
   m_album = metadata.album();
   for (const auto& image : metadata.artwork())
-    m_artwork.append(MediaImage::create(context, image));
+    m_artwork.push_back(MediaImage::create(context, image));
 }
 
 String MediaMetadata::title() const {

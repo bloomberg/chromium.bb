@@ -135,9 +135,9 @@ TEST(PaymentResponseTest, JSONSerializerTest) {
   input->shipping_address->country = "US";
   input->shipping_address->language_code = "en";
   input->shipping_address->script_code = "Latn";
-  input->shipping_address->address_line.append("340 Main St");
-  input->shipping_address->address_line.append("BIN1");
-  input->shipping_address->address_line.append("First floor");
+  input->shipping_address->address_line.push_back("340 Main St");
+  input->shipping_address->address_line.push_back("BIN1");
+  input->shipping_address->address_line.push_back("First floor");
 
   PaymentResponse output(std::move(input), new MockPaymentCompleter);
   ScriptValue jsonObject = output.toJSONForBinding(scope.getScriptState());

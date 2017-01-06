@@ -686,7 +686,7 @@ void AXObjectCacheImpl::postNotification(AXObject* object,
   if (!object)
     return;
 
-  m_notificationsToPost.append(std::make_pair(object, notification));
+  m_notificationsToPost.push_back(std::make_pair(object, notification));
   if (!m_notificationPostTimer.isActive())
     m_notificationPostTimer.startOneShot(0, BLINK_FROM_HERE);
 }
@@ -778,8 +778,8 @@ void AXObjectCacheImpl::updateAriaOwns(
     if (foundCycle)
       continue;
 
-    newChildAXIDs.append(child->axObjectID());
-    ownedChildren.append(child);
+    newChildAXIDs.push_back(child->axObjectID());
+    ownedChildren.push_back(child);
   }
 
   // Compare this to the current list of owned children, and exit early if there

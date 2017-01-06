@@ -165,7 +165,7 @@ template <>
 struct TypeConverter<NFCMessagePtr, WTF::String> {
   static NFCMessagePtr Convert(const WTF::String& string) {
     NFCMessagePtr message = NFCMessage::New();
-    message->data.append(NFCRecord::From(string));
+    message->data.push_back(NFCRecord::From(string));
     return message;
   }
 };
@@ -269,7 +269,7 @@ template <>
 struct TypeConverter<NFCMessagePtr, blink::DOMArrayBuffer*> {
   static NFCMessagePtr Convert(blink::DOMArrayBuffer* buffer) {
     NFCMessagePtr message = NFCMessage::New();
-    message->data.append(NFCRecord::From(buffer));
+    message->data.push_back(NFCRecord::From(buffer));
     return message;
   }
 };
@@ -553,7 +553,7 @@ NFCMessage toNFCMessage(
   nfcMessage.setURL(message->url);
   blink::HeapVector<NFCRecord> records;
   for (size_t i = 0; i < message->data.size(); ++i)
-    records.append(toNFCRecord(scriptState, message->data[i]));
+    records.push_back(toNFCRecord(scriptState, message->data[i]));
   nfcMessage.setData(records);
   return nfcMessage;
 }

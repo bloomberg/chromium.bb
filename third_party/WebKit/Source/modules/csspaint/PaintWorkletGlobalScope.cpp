@@ -96,9 +96,9 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
     for (const auto& property : properties) {
       CSSPropertyID propertyID = cssPropertyID(property);
       if (propertyID == CSSPropertyVariable) {
-        customInvalidationProperties.append(property);
+        customInvalidationProperties.push_back(property);
       } else if (propertyID != CSSPropertyInvalid) {
-        nativeInvalidationProperties.append(propertyID);
+        nativeInvalidationProperties.push_back(propertyID);
       }
     }
   }

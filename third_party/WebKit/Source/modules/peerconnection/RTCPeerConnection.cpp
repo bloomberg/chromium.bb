@@ -279,14 +279,14 @@ WebRTCConfiguration parseConfiguration(ExecutionContext* context,
         UseCounter::count(context, UseCounter::RTCIceServerURLs);
         const StringOrStringSequence& urls = iceServer.urls();
         if (urls.isString()) {
-          urlStrings.append(urls.getAsString());
+          urlStrings.push_back(urls.getAsString());
         } else {
           DCHECK(urls.isStringSequence());
           urlStrings = urls.getAsStringSequence();
         }
       } else if (iceServer.hasURL()) {
         UseCounter::count(context, UseCounter::RTCIceServerURL);
-        urlStrings.append(iceServer.url());
+        urlStrings.push_back(iceServer.url());
       } else {
         exceptionState.throwTypeError("Malformed RTCIceServer");
         return WebRTCConfiguration();
@@ -317,7 +317,7 @@ WebRTCConfiguration parseConfiguration(ExecutionContext* context,
                                            "required when the URL scheme is "
                                            "\"turn\" or \"turns\".");
         }
-        iceServers.append(WebRTCIceServer{url, username, credential});
+        iceServers.push_back(WebRTCIceServer{url, username, credential});
       }
     }
     webConfiguration.iceServers = iceServers;
@@ -1076,7 +1076,7 @@ void RTCPeerConnection::addStream(ExecutionContext* context,
     return;
   }
 
-  m_localStreams.append(stream);
+  m_localStreams.push_back(stream);
 
   bool valid = m_peerHandler->addStream(stream->descriptor(), constraints);
   if (!valid)
@@ -1287,7 +1287,7 @@ void RTCPeerConnection::didAddRemoteStream(const WebMediaStream& remoteStream) {
 
   MediaStream* stream =
       MediaStream::create(getExecutionContext(), remoteStream);
-  m_remoteStreams.append(stream);
+  m_remoteStreams.push_back(stream);
 
   scheduleDispatchEvent(
       MediaStreamEvent::create(EventTypeNames::addstream, stream));
@@ -1421,7 +1421,8 @@ void RTCPeerConnection::scheduleDispatchEvent(Event* event) {
 void RTCPeerConnection::scheduleDispatchEvent(
     Event* event,
     std::unique_ptr<BoolFunction> setupFunction) {
-  m_scheduledEvents.append(new EventWrapper(event, std::move(setupFunction)));
+  m_scheduledEvents.push_back(
+      new EventWrapper(event, std::move(setupFunction)));
 
   m_dispatchScheduledEventRunner->runAsync();
 }

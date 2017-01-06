@@ -122,7 +122,7 @@ void SyncManager::getRegistrationsCallback(
     case mojom::blink::BackgroundSyncError::NONE: {
       Vector<String> tags;
       for (const auto& r : registrations) {
-        tags.append(r->tag);
+        tags.push_back(r->tag);
       }
       resolver->resolve(tags);
       break;

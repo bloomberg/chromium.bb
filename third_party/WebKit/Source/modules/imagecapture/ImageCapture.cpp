@@ -180,7 +180,7 @@ ScriptPromise ImageCapture::setOptions(ScriptState* scriptState,
       auto mojoPoint = media::mojom::blink::Point2D::New();
       mojoPoint->x = point.x();
       mojoPoint->y = point.y();
-      settings->points_of_interest.append(std::move(mojoPoint));
+      settings->points_of_interest.push_back(std::move(mojoPoint));
     }
   }
   settings->has_color_temperature = photoSettings.hasColorTemperature();

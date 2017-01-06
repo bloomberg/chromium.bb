@@ -133,7 +133,7 @@ void BluetoothRemoteGATTServer::GetPrimaryServicesCallback(
     gattServices.reserveInitialCapacity(services->size());
 
     for (const auto& service : services.value()) {
-      gattServices.append(m_device->getOrCreateRemoteGATTService(
+      gattServices.push_back(m_device->getOrCreateRemoteGATTService(
           service->instance_id, service->uuid, true /* isPrimary */,
           device()->id()));
     }

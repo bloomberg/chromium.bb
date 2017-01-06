@@ -109,11 +109,11 @@ void SpeechRecognition::didReceiveResults(
   size_t resultIndex = m_finalResults.size();
 
   for (size_t i = 0; i < newFinalResults.size(); ++i)
-    m_finalResults.append(newFinalResults[i]);
+    m_finalResults.push_back(newFinalResults[i]);
 
   HeapVector<Member<SpeechRecognitionResult>> results = m_finalResults;
   for (size_t i = 0; i < currentInterimResults.size(); ++i)
-    results.append(currentInterimResults[i]);
+    results.push_back(currentInterimResults[i]);
 
   dispatchEvent(SpeechRecognitionEvent::createResult(resultIndex, results));
 }

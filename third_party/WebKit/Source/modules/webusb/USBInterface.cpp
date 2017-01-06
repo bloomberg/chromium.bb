@@ -59,7 +59,7 @@ USBAlternateInterface* USBInterface::alternate() const {
 HeapVector<Member<USBAlternateInterface>> USBInterface::alternates() const {
   HeapVector<Member<USBAlternateInterface>> alternates;
   for (size_t i = 0; i < info().alternates.size(); ++i)
-    alternates.append(USBAlternateInterface::create(this, i));
+    alternates.push_back(USBAlternateInterface::create(this, i));
   return alternates;
 }
 

@@ -215,8 +215,8 @@ TEST_F(CanvasRenderingContext2DAPITest, LineDashStateSave) {
   createContext(NonOpaque);
 
   Vector<double> simpleDash;
-  simpleDash.append(4);
-  simpleDash.append(2);
+  simpleDash.push_back(4);
+  simpleDash.push_back(2);
 
   context2d()->setLineDash(simpleDash);
   EXPECT_EQ(simpleDash, context2d()->getLineDash());

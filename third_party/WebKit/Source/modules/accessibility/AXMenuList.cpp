@@ -92,7 +92,7 @@ void AXMenuList::addChildren() {
     return;
   }
 
-  m_children.append(list);
+  m_children.push_back(list);
 
   list->addChildren();
 }

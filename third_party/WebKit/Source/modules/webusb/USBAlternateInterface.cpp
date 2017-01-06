@@ -46,7 +46,7 @@ const device::usb::blink::AlternateInterfaceInfo& USBAlternateInterface::info()
 HeapVector<Member<USBEndpoint>> USBAlternateInterface::endpoints() const {
   HeapVector<Member<USBEndpoint>> endpoints;
   for (size_t i = 0; i < info().endpoints.size(); ++i)
-    endpoints.append(USBEndpoint::create(this, i));
+    endpoints.push_back(USBEndpoint::create(this, i));
   return endpoints;
 }
 

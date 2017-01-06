@@ -139,7 +139,7 @@ void ScreenOrientationControllerImpl::notifyOrientationChanged() {
   for (Frame* child = frame()->tree().firstChild(); child;
        child = child->tree().nextSibling()) {
     if (child->isLocalFrame())
-      childFrames.append(toLocalFrame(child));
+      childFrames.push_back(toLocalFrame(child));
   }
 
   // Notify current orientation object.

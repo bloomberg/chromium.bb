@@ -299,7 +299,7 @@ void PeriodicWave::createBandLimitedTables(const float* realData,
     std::unique_ptr<AudioFloatArray> table =
         WTF::makeUnique<AudioFloatArray>(waveSize);
     adjustV8ExternalMemory(waveSize * sizeof(float));
-    m_bandLimitedTables.append(std::move(table));
+    m_bandLimitedTables.push_back(std::move(table));
 
     // Apply an inverse FFT to generate the time-domain table data.
     float* data = m_bandLimitedTables[rangeIndex]->data();

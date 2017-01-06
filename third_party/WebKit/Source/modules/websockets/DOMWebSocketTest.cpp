@@ -189,7 +189,7 @@ TEST(DOMWebSocketTest, invalidSubprotocols) {
   V8TestingScope scope;
   DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
   Vector<String> subprotocols;
-  subprotocols.append("@subprotocol-|'\"x\x01\x02\x03x");
+  subprotocols.push_back("@subprotocol-|'\"x\x01\x02\x03x");
 
   webSocketScope.socket().connect("ws://example.com/", subprotocols,
                                   scope.getExceptionState());
@@ -246,8 +246,8 @@ TEST(DOMWebSocketTest, channelConnectSuccess) {
   V8TestingScope scope;
   DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
   Vector<String> subprotocols;
-  subprotocols.append("aa");
-  subprotocols.append("bb");
+  subprotocols.push_back("aa");
+  subprotocols.push_back("bb");
 
   {
     InSequence s;
@@ -271,8 +271,8 @@ TEST(DOMWebSocketTest, channelConnectFail) {
   V8TestingScope scope;
   DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
   Vector<String> subprotocols;
-  subprotocols.append("aa");
-  subprotocols.append("bb");
+  subprotocols.push_back("aa");
+  subprotocols.push_back("bb");
 
   {
     InSequence s;
@@ -325,8 +325,8 @@ TEST(DOMWebSocketTest, connectSuccess) {
   V8TestingScope scope;
   DOMWebSocketTestScope webSocketScope(scope.getExecutionContext());
   Vector<String> subprotocols;
-  subprotocols.append("aa");
-  subprotocols.append("bb");
+  subprotocols.push_back("aa");
+  subprotocols.push_back("bb");
   {
     InSequence s;
     EXPECT_CALL(webSocketScope.channel(),

@@ -149,7 +149,7 @@ ScriptPromise AudioContext::resumeContext(ScriptState* scriptState) {
   // pulling on the graph again.
   {
     AutoLocker locker(this);
-    m_resumeResolvers.append(resolver);
+    m_resumeResolvers.push_back(resolver);
   }
 
   return promise;

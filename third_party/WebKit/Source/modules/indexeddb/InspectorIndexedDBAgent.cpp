@@ -434,7 +434,7 @@ static IDBKey* idbKeyFromInspectorObject(protocol::IndexedDB::Key* key) {
     IDBKey::KeyArray keyArray;
     auto array = key->getArray(nullptr);
     for (size_t i = 0; array && i < array->length(); ++i)
-      keyArray.append(idbKeyFromInspectorObject(array->get(i)));
+      keyArray.push_back(idbKeyFromInspectorObject(array->get(i)));
     idbKey = IDBKey::createArray(keyArray);
   } else {
     return nullptr;

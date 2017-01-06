@@ -89,7 +89,7 @@ void IDBObserver::unobserve(IDBDatabase* database,
   Vector<int32_t> observerIdsToRemove;
   for (const auto& it : m_observerIds) {
     if (it.value == database)
-      observerIdsToRemove.append(it.key);
+      observerIdsToRemove.push_back(it.key);
   }
   m_observerIds.removeAll(observerIdsToRemove);
 

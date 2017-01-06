@@ -70,7 +70,7 @@ class MODULES_EXPORT IDBKey : public GarbageCollectedFinalized<IDBKey> {
         }
       }
       if (!skip) {
-        result.append(array[i]);
+        result.push_back(array[i]);
       }
     }
     IDBKey* idbKey = new IDBKey(result);

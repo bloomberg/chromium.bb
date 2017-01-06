@@ -91,7 +91,7 @@ String DOMFilePath::removeExtraParentReferences(const String& path) {
         canonicalized.pop_back();
       continue;
     }
-    canonicalized.append(components[i]);
+    canonicalized.push_back(components[i]);
   }
   if (canonicalized.isEmpty())
     return DOMFilePath::root;

@@ -186,19 +186,19 @@ PaymentRequestMockFunctionScope::~PaymentRequestMockFunctionScope() {
 
 v8::Local<v8::Function> PaymentRequestMockFunctionScope::expectCall(
     String* captor) {
-  m_mockFunctions.append(new MockFunction(m_scriptState, captor));
+  m_mockFunctions.push_back(new MockFunction(m_scriptState, captor));
   EXPECT_CALL(*m_mockFunctions.back(), call(testing::_));
   return m_mockFunctions.back()->bind();
 }
 
 v8::Local<v8::Function> PaymentRequestMockFunctionScope::expectCall() {
-  m_mockFunctions.append(new MockFunction(m_scriptState));
+  m_mockFunctions.push_back(new MockFunction(m_scriptState));
   EXPECT_CALL(*m_mockFunctions.back(), call(testing::_));
   return m_mockFunctions.back()->bind();
 }
 
 v8::Local<v8::Function> PaymentRequestMockFunctionScope::expectNoCall() {
-  m_mockFunctions.append(new MockFunction(m_scriptState));
+  m_mockFunctions.push_back(new MockFunction(m_scriptState));
   EXPECT_CALL(*m_mockFunctions.back(), call(testing::_)).Times(0);
   return m_mockFunctions.back()->bind();
 }

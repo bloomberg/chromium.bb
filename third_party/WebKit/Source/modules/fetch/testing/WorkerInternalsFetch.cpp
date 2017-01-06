@@ -17,7 +17,7 @@ Vector<String> WorkerInternalsFetch::getInternalResponseURLList(
   Vector<String> urlList;
   urlList.reserveCapacity(response->internalURLList().size());
   for (const auto& url : response->internalURLList())
-    urlList.append(url);
+    urlList.push_back(url);
   return urlList;
 }
 

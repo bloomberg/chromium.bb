@@ -387,7 +387,7 @@ IDBTransaction* IDBDatabase::transaction(
           NotFoundError, "One of the specified object stores was not found.");
       return nullptr;
     }
-    objectStoreIds.append(objectStoreId);
+    objectStoreIds.push_back(objectStoreId);
   }
 
   WebIDBTransactionMode mode = IDBTransaction::stringToMode(modeString);
@@ -476,7 +476,7 @@ void IDBDatabase::enqueueEvent(Event* event) {
   EventQueue* eventQueue = getExecutionContext()->getEventQueue();
   event->setTarget(this);
   eventQueue->enqueueEvent(event);
-  m_enqueuedEvents.append(event);
+  m_enqueuedEvents.push_back(event);
 }
 
 DispatchEventResult IDBDatabase::dispatchEventInternal(Event* event) {

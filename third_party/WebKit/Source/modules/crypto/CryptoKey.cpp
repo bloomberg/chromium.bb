@@ -158,7 +158,7 @@ Vector<String> CryptoKey::usages() const {
   for (size_t i = 0; i < WTF_ARRAY_LENGTH(keyUsageMappings); ++i) {
     WebCryptoKeyUsage usage = keyUsageMappings[i].value;
     if (m_key.usages() & usage)
-      result.append(keyUsageToString(usage));
+      result.push_back(keyUsageToString(usage));
   }
   return result;
 }

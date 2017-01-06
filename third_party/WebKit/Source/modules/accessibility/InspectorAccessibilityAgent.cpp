@@ -469,7 +469,7 @@ std::unique_ptr<AXNode> InspectorAccessibilityAgent::buildObjectForIgnoredNode(
       populateDOMNodeAncestors(*domNode, *(ignoredNodeObject.get()), nodes,
                                cache);
     }
-    ignoredReasons.append(IgnoredReason(AXNotRendered));
+    ignoredReasons.push_back(IgnoredReason(AXNotRendered));
   }
 
   if (domNode)

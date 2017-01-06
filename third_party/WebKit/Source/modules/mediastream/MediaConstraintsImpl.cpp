@@ -164,7 +164,7 @@ static bool parseMandatoryConstraintsDictionary(
     return false;
 
   for (const auto& iter : mandatoryConstraintsHashMap)
-    mandatory.append(NameValueStringConstraint(iter.key, iter.value));
+    mandatory.push_back(NameValueStringConstraint(iter.key, iter.value));
   return true;
 }
 
@@ -183,7 +183,7 @@ static bool parseOptionalConstraintsVectorElement(
   bool ok = DictionaryHelper::get(constraint, key, value);
   if (!ok)
     return false;
-  optionalConstraintsVector.append(NameValueStringConstraint(key, value));
+  optionalConstraintsVector.push_back(NameValueStringConstraint(key, value));
   return true;
 }
 
@@ -469,7 +469,7 @@ static WebMediaConstraints createFromNamedConstraints(
     parseOldStyleNames(context, elementAsList, false, advancedElement,
                        ignoredErrorState);
     if (!advancedElement.isEmpty())
-      advancedVector.append(advancedElement);
+      advancedVector.push_back(advancedElement);
   }
   constraints.initialize(basic, advancedVector);
   return constraints;
@@ -684,7 +684,7 @@ WebMediaConstraints convertConstraintsToWeb(
       WebMediaTrackConstraintSet advancedElement;
       copyConstraintSet(element, NakedValueDisposition::kTreatAsExact,
                         advancedElement);
-      advancedBuffer.append(advancedElement);
+      advancedBuffer.push_back(advancedElement);
     }
   }
   constraints.initialize(constraintBuffer, advancedBuffer);
@@ -813,7 +813,7 @@ StringOrStringSequence convertStringSequence(
   if (input.size() > 1) {
     Vector<String> buffer;
     for (const auto& scanner : input)
-      buffer.append(scanner);
+      buffer.push_back(scanner);
     theStrings.setStringSequence(buffer);
   } else if (input.size() > 0) {
     theStrings.setString(input[0]);
@@ -831,7 +831,7 @@ StringOrStringSequenceOrConstrainDOMStringParameters convertString(
     if (inputBuffer.size() > 1) {
       Vector<String> buffer;
       for (const auto& scanner : inputBuffer)
-        buffer.append(scanner);
+        buffer.push_back(scanner);
       outputUnion.setStringSequence(buffer);
     } else if (inputBuffer.size() > 0) {
       outputUnion.setString(inputBuffer[0]);
@@ -910,7 +910,7 @@ void convertConstraints(const WebMediaConstraints& input,
   for (const auto& it : input.advanced()) {
     MediaTrackConstraintSet element;
     convertConstraintSet(it, NakedValueDisposition::kTreatAsExact, element);
-    advancedVector.append(element);
+    advancedVector.push_back(element);
   }
   if (!advancedVector.isEmpty())
     output.setAdvanced(advancedVector);

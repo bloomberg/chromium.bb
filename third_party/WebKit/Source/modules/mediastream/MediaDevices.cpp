@@ -197,7 +197,7 @@ void MediaDevices::resume() {
 }
 
 void MediaDevices::scheduleDispatchEvent(Event* event) {
-  m_scheduledEvents.append(event);
+  m_scheduledEvents.push_back(event);
   m_dispatchScheduledEventRunner->runAsync();
 }
 

@@ -66,7 +66,7 @@ VibrationController::sanitizeVibrationPattern(
   VibrationPattern sanitized;
 
   if (pattern.isUnsignedLong())
-    sanitized.append(pattern.getAsUnsignedLong());
+    sanitized.push_back(pattern.getAsUnsignedLong());
   else if (pattern.isUnsignedLongSequence())
     sanitized = pattern.getAsUnsignedLongSequence();
 

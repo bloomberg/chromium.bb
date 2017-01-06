@@ -40,13 +40,13 @@ PaymentDetailsModifier toPaymentDetailsModifier(
   PaymentDetailsModifier modifier;
   Vector<String> supportedMethods;
   for (const auto& webMethod : webModifier.supportedMethods) {
-    supportedMethods.append(webMethod);
+    supportedMethods.push_back(webMethod);
   }
   modifier.setSupportedMethods(supportedMethods);
   modifier.setTotal(toPaymentItem(webModifier.total));
   HeapVector<PaymentItem> additionalDisplayItems;
   for (const auto& webItem : webModifier.additionalDisplayItems) {
-    additionalDisplayItems.append(toPaymentItem(webItem));
+    additionalDisplayItems.push_back(toPaymentItem(webItem));
   }
   modifier.setAdditionalDisplayItems(additionalDisplayItems);
   return modifier;
@@ -73,7 +73,7 @@ PaymentMethodData toPaymentMethodData(
   PaymentMethodData methodData;
   Vector<String> supportedMethods;
   for (const auto& method : webMethodData.supportedMethods) {
-    supportedMethods.append(method);
+    supportedMethods.push_back(method);
   }
   methodData.setSupportedMethods(supportedMethods);
   methodData.setData(
@@ -91,13 +91,13 @@ PaymentAppRequestData PaymentAppRequestDataConversion::toPaymentAppRequestData(
   data.setOrigin(webData.origin);
   HeapVector<PaymentMethodData> methodData;
   for (const auto& md : webData.methodData) {
-    methodData.append(toPaymentMethodData(scriptState, md));
+    methodData.push_back(toPaymentMethodData(scriptState, md));
   }
   data.setMethodData(methodData);
   data.setTotal(toPaymentItem(webData.total));
   HeapVector<PaymentDetailsModifier> modifiers;
   for (const auto& modifier : webData.modifiers) {
-    modifiers.append(toPaymentDetailsModifier(scriptState, modifier));
+    modifiers.push_back(toPaymentDetailsModifier(scriptState, modifier));
   }
   data.setOptionId(webData.optionId);
   return data;

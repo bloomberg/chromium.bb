@@ -89,7 +89,7 @@ void WebIDBCallbacksImpl::onSuccess(const WebVector<WebString>& webStringList) {
 
   Vector<String> stringList;
   for (size_t i = 0; i < webStringList.size(); ++i)
-    stringList.append(webStringList[i]);
+    stringList.push_back(webStringList[i]);
   InspectorInstrumentation::AsyncTask asyncTask(
       m_request->getExecutionContext(), this);
   m_request->onSuccess(stringList);

@@ -903,7 +903,7 @@ void USBDevice::asyncIsochronousTransferIn(
       resolver->reject(error);
       return;
     }
-    packets.append(USBIsochronousInTransferPacket::create(
+    packets.push_back(USBIsochronousInTransferPacket::create(
         convertTransferStatus(packet->status),
         buffer ? DOMDataView::create(buffer, byteOffset,
                                      packet->transferred_length)
@@ -927,7 +927,7 @@ void USBDevice::asyncIsochronousTransferOut(
       resolver->reject(error);
       return;
     }
-    packets.append(USBIsochronousOutTransferPacket::create(
+    packets.push_back(USBIsochronousOutTransferPacket::create(
         convertTransferStatus(packet->status), packet->transferred_length));
   }
   resolver->resolve(USBIsochronousOutTransferResult::create(packets));

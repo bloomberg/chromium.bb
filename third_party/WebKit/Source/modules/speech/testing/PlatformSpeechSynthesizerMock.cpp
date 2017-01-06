@@ -77,13 +77,13 @@ void PlatformSpeechSynthesizerMock::speakNext() {
 
 void PlatformSpeechSynthesizerMock::initializeVoiceList() {
   m_voiceList.clear();
-  m_voiceList.append(PlatformSpeechSynthesisVoice::create(
+  m_voiceList.push_back(PlatformSpeechSynthesisVoice::create(
       String("mock.voice.bruce"), String("bruce"), String("en-US"), true,
       true));
-  m_voiceList.append(PlatformSpeechSynthesisVoice::create(
+  m_voiceList.push_back(PlatformSpeechSynthesisVoice::create(
       String("mock.voice.clark"), String("clark"), String("en-US"), true,
       false));
-  m_voiceList.append(PlatformSpeechSynthesisVoice::create(
+  m_voiceList.push_back(PlatformSpeechSynthesisVoice::create(
       String("mock.voice.logan"), String("logan"), String("fr-CA"), true,
       true));
 }

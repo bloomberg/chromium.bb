@@ -50,7 +50,7 @@ const device::usb::blink::ConfigurationInfo& USBConfiguration::info() const {
 HeapVector<Member<USBInterface>> USBConfiguration::interfaces() const {
   HeapVector<Member<USBInterface>> interfaces;
   for (size_t i = 0; i < info().interfaces.size(); ++i)
-    interfaces.append(USBInterface::create(this, i));
+    interfaces.push_back(USBInterface::create(this, i));
   return interfaces;
 }
 

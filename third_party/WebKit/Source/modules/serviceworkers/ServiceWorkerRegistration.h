@@ -116,7 +116,7 @@ class ServiceWorkerRegistrationArray {
       WebType webServiceWorkerRegistrations) {
     HeapVector<Member<ServiceWorkerRegistration>> registrations;
     for (auto& registration : *webServiceWorkerRegistrations) {
-      registrations.append(
+      registrations.push_back(
           ServiceWorkerRegistration::take(resolver, std::move(registration)));
     }
     return registrations;

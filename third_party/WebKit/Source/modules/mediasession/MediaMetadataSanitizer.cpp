@@ -74,7 +74,7 @@ blink::mojom::blink::MediaImagePtr sanitizeMediaImageAndConvertToMojo(
   mojoImage->type = image->type().left(kMaxImageTypeLength);
   for (const auto& webSize :
        WebIconSizesParser::parseIconSizes(image->sizes())) {
-    mojoImage->sizes.append(webSize);
+    mojoImage->sizes.push_back(webSize);
     if (mojoImage->sizes.size() == kMaxNumberOfImageSizes) {
       context->addConsoleMessage(ConsoleMessage::create(
           JSMessageSource, WarningMessageLevel,
@@ -105,7 +105,7 @@ MediaMetadataSanitizer::sanitizeAndConvertToMojo(const MediaMetadata* metadata,
     blink::mojom::blink::MediaImagePtr mojoImage =
         sanitizeMediaImageAndConvertToMojo(image.get(), context);
     if (!mojoImage.is_null())
-      mojoMetadata->artwork.append(std::move(mojoImage));
+      mojoMetadata->artwork.push_back(std::move(mojoImage));
     if (mojoMetadata->artwork.size() == kMaxNumberOfMediaImages) {
       context->addConsoleMessage(ConsoleMessage::create(
           JSMessageSource, WarningMessageLevel,

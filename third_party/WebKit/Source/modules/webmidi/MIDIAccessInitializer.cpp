@@ -57,8 +57,8 @@ void MIDIAccessInitializer::didAddInputPort(const String& id,
                                             const String& version,
                                             PortState state) {
   DCHECK(m_accessor);
-  m_portDescriptors.append(PortDescriptor(id, manufacturer, name,
-                                          MIDIPort::TypeInput, version, state));
+  m_portDescriptors.push_back(PortDescriptor(
+      id, manufacturer, name, MIDIPort::TypeInput, version, state));
 }
 
 void MIDIAccessInitializer::didAddOutputPort(const String& id,
@@ -67,7 +67,7 @@ void MIDIAccessInitializer::didAddOutputPort(const String& id,
                                              const String& version,
                                              PortState state) {
   DCHECK(m_accessor);
-  m_portDescriptors.append(PortDescriptor(
+  m_portDescriptors.push_back(PortDescriptor(
       id, manufacturer, name, MIDIPort::TypeOutput, version, state));
 }
 

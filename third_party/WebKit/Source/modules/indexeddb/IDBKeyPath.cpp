@@ -144,7 +144,7 @@ IDBKeyPath::IDBKeyPath(const WebIDBKeyPath& keyPath) {
     case WebIDBKeyPathTypeArray:
       m_type = ArrayType;
       for (size_t i = 0, size = keyPath.array().size(); i < size; ++i)
-        m_array.append(keyPath.array()[i]);
+        m_array.push_back(keyPath.array()[i]);
       return;
   }
   ASSERT_NOT_REACHED();

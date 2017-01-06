@@ -177,7 +177,7 @@ ScriptPromise CredentialsContainer::get(
     for (const auto& string : providerStrings) {
       KURL url = KURL(KURL(), string);
       if (url.isValid())
-        providers.append(url);
+        providers.push_back(url);
     }
   }
 

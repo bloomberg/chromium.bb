@@ -61,12 +61,12 @@ bool AXARIAGrid::addTableRowChild(AXObject* child,
     columnCount = rowCellCount;
 
   row->setRowIndex((int)m_rows.size());
-  m_rows.append(row);
+  m_rows.push_back(row);
 
   // Try adding the row if it's not ignoring accessibility,
   // otherwise add its children (the cells) as the grid's children.
   if (!row->accessibilityIsIgnored())
-    m_children.append(row);
+    m_children.push_back(row);
   else
     m_children.appendVector(row->children());
 
@@ -90,7 +90,7 @@ void AXARIAGrid::addChildren() {
   HeapVector<Member<AXObject>> children;
   for (AXObject* child = rawFirstChild(); child;
        child = child->rawNextSibling())
-    children.append(child);
+    children.push_back(child);
   computeAriaOwnsChildren(children);
 
   AXObjectCacheImpl& axCache = axObjectCache();
@@ -118,14 +118,14 @@ void AXARIAGrid::addChildren() {
     AXTableColumn* column = toAXTableColumn(axCache.getOrCreate(ColumnRole));
     column->setColumnIndex((int)i);
     column->setParent(this);
-    m_columns.append(column);
+    m_columns.push_back(column);
     if (!column->accessibilityIsIgnored())
-      m_children.append(column);
+      m_children.push_back(column);
   }
 
   AXObject* headerContainerObject = headerContainer();
   if (headerContainerObject && !headerContainerObject->accessibilityIsIgnored())
-    m_children.append(headerContainerObject);
+    m_children.push_back(headerContainerObject);
 }
 
 }  // namespace blink

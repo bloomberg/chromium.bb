@@ -51,8 +51,8 @@ class SQLResultSetRowList final
   const Vector<String>& columnNames() const { return m_columns; }
   const Vector<SQLValue>& values() const { return m_result; }
 
-  void addColumn(const String& name) { m_columns.append(name); }
-  void addResult(const SQLValue& result) { m_result.append(result); }
+  void addColumn(const String& name) { m_columns.push_back(name); }
+  void addResult(const SQLValue& result) { m_result.push_back(result); }
 
   unsigned length() const;
   ScriptValue item(ScriptState*, unsigned index, ExceptionState&);

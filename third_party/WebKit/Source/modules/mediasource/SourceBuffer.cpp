@@ -772,11 +772,11 @@ bool SourceBuffer::initializationSegmentReceived(
   for (const MediaTrackInfo& trackInfo : newTracks) {
     const TrackBase* track = nullptr;
     if (trackInfo.trackType == WebMediaPlayer::AudioTrack) {
-      newAudioTracks.append(trackInfo);
+      newAudioTracks.push_back(trackInfo);
       if (m_firstInitializationSegmentReceived)
         track = findExistingTrackById(audioTracks(), trackInfo.id);
     } else if (trackInfo.trackType == WebMediaPlayer::VideoTrack) {
-      newVideoTracks.append(trackInfo);
+      newVideoTracks.push_back(trackInfo);
       if (m_firstInitializationSegmentReceived)
         track = findExistingTrackById(videoTracks(), trackInfo.id);
     } else {

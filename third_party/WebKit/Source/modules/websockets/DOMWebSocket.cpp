@@ -268,7 +268,7 @@ DOMWebSocket* DOMWebSocket::create(ExecutionContext* context,
     webSocket->connect(url, protocolsVector, exceptionState);
   } else if (protocols.isString()) {
     Vector<String> protocolsVector;
-    protocolsVector.append(protocols.getAsString());
+    protocolsVector.push_back(protocols.getAsString());
     webSocket->connect(url, protocolsVector, exceptionState);
   } else {
     DCHECK(protocols.isStringSequence());

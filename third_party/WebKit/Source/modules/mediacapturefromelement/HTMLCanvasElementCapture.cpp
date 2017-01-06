@@ -79,7 +79,7 @@ MediaStream* HTMLCanvasElementCapture::captureStream(
   canvasTrack->requestFrame();
 
   MediaStreamTrackVector tracks;
-  tracks.append(canvasTrack);
+  tracks.push_back(canvasTrack);
   return MediaStream::create(element.getExecutionContext(), tracks);
 }
 

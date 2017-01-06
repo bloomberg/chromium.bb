@@ -128,7 +128,7 @@ WebNotificationData createWebNotificationData(
     if (action.hasIcon() && !action.icon().isEmpty())
       webAction.icon = completeURL(executionContext, action.icon());
 
-    actions.append(webAction);
+    actions.push_back(webAction);
   }
 
   webData.actions = actions;

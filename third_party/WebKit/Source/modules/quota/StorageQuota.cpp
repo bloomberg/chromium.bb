@@ -73,7 +73,7 @@ StorageQuota::StorageQuota() {}
 Vector<String> StorageQuota::supportedTypes() const {
   Vector<String> types;
   for (size_t i = 0; i < WTF_ARRAY_LENGTH(storageTypeMappings); ++i)
-    types.append(storageTypeMappings[i].name);
+    types.push_back(storageTypeMappings[i].name);
   return types;
 }
 

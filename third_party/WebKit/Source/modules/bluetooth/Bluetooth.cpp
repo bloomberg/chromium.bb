@@ -62,7 +62,7 @@ static void canonicalizeFilter(
           BluetoothUUID::getService(service, exceptionState);
       if (exceptionState.hadException())
         return;
-      canonicalizedFilter->services->append(validatedService);
+      canonicalizedFilter->services->push_back(validatedService);
     }
   }
 
@@ -128,7 +128,7 @@ static void convertRequestDeviceOptions(
       if (exceptionState.hadException())
         return;
 
-      result->filters.value().append(std::move(canonicalizedFilter));
+      result->filters.value().push_back(std::move(canonicalizedFilter));
     }
   }
 
@@ -139,7 +139,7 @@ static void convertRequestDeviceOptions(
           BluetoothUUID::getService(optionalService, exceptionState);
       if (exceptionState.hadException())
         return;
-      result->optional_services.append(validatedOptionalService);
+      result->optional_services.push_back(validatedOptionalService);
     }
   }
 }

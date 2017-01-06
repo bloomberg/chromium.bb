@@ -294,7 +294,7 @@ class StubWebServiceWorkerProvider {
       m_owner.m_registerCallCount++;
       m_owner.m_registerScope = pattern;
       m_owner.m_registerScriptURL = scriptURL;
-      m_registrationCallbacksToDelete.append(std::move(callbacks));
+      m_registrationCallbacksToDelete.push_back(std::move(callbacks));
     }
 
     void getRegistration(
@@ -303,7 +303,7 @@ class StubWebServiceWorkerProvider {
         override {
       m_owner.m_getRegistrationCallCount++;
       m_owner.m_getRegistrationURL = documentURL;
-      m_getRegistrationCallbacksToDelete.append(std::move(callbacks));
+      m_getRegistrationCallbacksToDelete.push_back(std::move(callbacks));
     }
 
     bool validateScopeAndScriptURL(const WebURL& scope,

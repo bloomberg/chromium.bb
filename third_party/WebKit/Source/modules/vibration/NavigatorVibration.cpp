@@ -57,7 +57,7 @@ const char* NavigatorVibration::supplementName() {
 // static
 bool NavigatorVibration::vibrate(Navigator& navigator, unsigned time) {
   VibrationPattern pattern;
-  pattern.append(time);
+  pattern.push_back(time);
   return NavigatorVibration::vibrate(navigator, pattern);
 }
 

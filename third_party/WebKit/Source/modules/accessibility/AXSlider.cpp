@@ -97,7 +97,7 @@ void AXSlider::addChildren() {
   if (thumb->accessibilityIsIgnored())
     cache.remove(thumb->axObjectID());
   else
-    m_children.append(thumb);
+    m_children.push_back(thumb);
 }
 
 AXObject* AXSlider::elementAccessibilityHitTest(const IntPoint& point) const {

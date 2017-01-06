@@ -131,7 +131,7 @@ ScriptPromise USB::requestDevice(ScriptState* scriptState,
     if (options.hasFilters()) {
       filters.reserveCapacity(options.filters().size());
       for (const auto& filter : options.filters())
-        filters.append(convertDeviceFilter(filter));
+        filters.push_back(convertDeviceFilter(filter));
     }
     m_chooserServiceRequests.add(resolver);
     m_chooserService->GetPermission(
@@ -179,7 +179,7 @@ void USB::onGetDevices(ScriptPromiseResolver* resolver,
 
   HeapVector<Member<USBDevice>> devices;
   for (auto& deviceInfo : deviceInfos)
-    devices.append(getOrCreateDevice(std::move(deviceInfo)));
+    devices.push_back(getOrCreateDevice(std::move(deviceInfo)));
   resolver->resolve(devices);
   m_deviceManagerRequests.remove(resolver);
 }

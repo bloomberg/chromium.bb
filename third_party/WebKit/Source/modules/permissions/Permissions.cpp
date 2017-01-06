@@ -222,7 +222,7 @@ ScriptPromise Permissions::requestAll(
     }
     if (internalIndex == kNotFound) {
       internalIndex = internalPermissions.size();
-      internalPermissions.append(std::move(descriptor));
+      internalPermissions.push_back(std::move(descriptor));
     }
     callerIndexToInternalIndex[i] = internalIndex;
   }
@@ -242,7 +242,7 @@ ScriptPromise Permissions::requestAll(
   Vector<PermissionDescriptorPtr> internalPermissionsCopy;
   internalPermissionsCopy.reserveCapacity(internalPermissions.size());
   for (const auto& descriptor : internalPermissions)
-    internalPermissionsCopy.append(descriptor->Clone());
+    internalPermissionsCopy.push_back(descriptor->Clone());
 
   service->RequestPermissions(
       std::move(internalPermissions),
@@ -300,7 +300,7 @@ void Permissions::batchTaskComplete(
   HeapVector<Member<PermissionStatus>> result;
   result.reserveInitialCapacity(callerIndexToInternalIndex.size());
   for (int internalIndex : callerIndexToInternalIndex) {
-    result.append(PermissionStatus::createAndListen(
+    result.push_back(PermissionStatus::createAndListen(
         resolver->getExecutionContext(), results[internalIndex],
         descriptors[internalIndex]->Clone()));
   }

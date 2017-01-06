@@ -41,7 +41,7 @@ class NotificationArray {
     HeapVector<Member<Notification>> notifications;
     for (const WebPersistentNotificationInfo& notificationInfo :
          notificationInfos)
-      notifications.append(Notification::create(
+      notifications.push_back(Notification::create(
           resolver->getExecutionContext(), notificationInfo.notificationId,
           notificationInfo.data, true /* showing */));
 

@@ -363,9 +363,9 @@ void Geolocation::extractNotifiersWithCachedPosition(
   for (GeoNotifier* notifier : notifiers) {
     if (notifier->useCachedPosition()) {
       if (cached)
-        cached->append(notifier);
+        cached->push_back(notifier);
     } else
-      nonCached.append(notifier);
+      nonCached.push_back(notifier);
   }
   notifiers.swap(nonCached);
 }

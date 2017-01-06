@@ -1304,7 +1304,7 @@ void WebGLRenderingContextBase::setupFlags() {
 
 void WebGLRenderingContextBase::addCompressedTextureFormat(GLenum format) {
   if (!m_compressedTextureFormats.contains(format))
-    m_compressedTextureFormats.append(format);
+    m_compressedTextureFormats.push_back(format);
 }
 
 void WebGLRenderingContextBase::removeAllCompressedTextureFormats() {
@@ -2693,7 +2693,7 @@ WebGLRenderingContextBase::getAttachedShaders(WebGLProgram* program) {
   for (unsigned i = 0; i < sizeof(shaderType) / sizeof(GLenum); ++i) {
     WebGLShader* shader = program->getAttachedShader(shaderType[i]);
     if (shader)
-      shaderObjects.append(shader);
+      shaderObjects.push_back(shader);
   }
   return shaderObjects;
 }
@@ -3392,7 +3392,7 @@ Nullable<Vector<String>> WebGLRenderingContextBase::getSupportedExtensions() {
       const char* const* prefixes = tracker->prefixes();
       for (; *prefixes; ++prefixes) {
         String prefixedName = String(*prefixes) + tracker->extensionName();
-        result.append(prefixedName);
+        result.push_back(prefixedName);
       }
     }
   }

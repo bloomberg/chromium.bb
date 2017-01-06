@@ -24,7 +24,7 @@ void ClipList::clipPath(const SkPath& path,
   else
     Op(m_currentClipPath, path, SkPathOp::kIntersect_SkPathOp,
        &m_currentClipPath);
-  m_clipList.append(newClip);
+  m_clipList.push_back(newClip);
 }
 
 void ClipList::playback(SkCanvas* canvas) const {

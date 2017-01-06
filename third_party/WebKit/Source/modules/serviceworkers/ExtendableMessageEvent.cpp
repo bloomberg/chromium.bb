@@ -125,7 +125,7 @@ ExtendableMessageEvent::ExtendableMessageEvent(
     m_ports->reserveInitialCapacity(ports.size());
     for (const auto& port : ports) {
       CHECK(ThreadState::current()->isOnThreadHeap(port.get()));
-      m_ports->append(port);
+      m_ports->push_back(port);
     }
   }
 }

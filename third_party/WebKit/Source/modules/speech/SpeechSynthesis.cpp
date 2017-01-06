@@ -62,7 +62,7 @@ const HeapVector<Member<SpeechSynthesisVoice>>& SpeechSynthesis::getVoices() {
       m_platformSpeechSynthesizer->voiceList();
   size_t voiceCount = platformVoices.size();
   for (size_t k = 0; k < voiceCount; k++)
-    m_voiceList.append(SpeechSynthesisVoice::create(platformVoices[k]));
+    m_voiceList.push_back(SpeechSynthesisVoice::create(platformVoices[k]));
 
   return m_voiceList;
 }

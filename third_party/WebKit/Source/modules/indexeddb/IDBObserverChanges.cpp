@@ -51,7 +51,8 @@ void IDBObserverChanges::extractChanges(
     m_records
         .add(observations[idx].objectStoreId,
              HeapVector<Member<IDBObservation>>())
-        .storedValue->value.append(IDBObservation::create(observations[idx]));
+        .storedValue->value.push_back(
+            IDBObservation::create(observations[idx]));
 }
 
 DEFINE_TRACE(IDBObserverChanges) {

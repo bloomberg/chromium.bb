@@ -503,7 +503,8 @@ AXObjectInclusion AXObject::defaultObjectInclusion(
   if (isPresentationalChild()) {
     if (ignoredReasons) {
       AXObject* ancestor = ancestorForWhichThisIsAPresentationalChild();
-      ignoredReasons->append(IgnoredReason(AXAncestorDisallowsChild, ancestor));
+      ignoredReasons->push_back(
+          IgnoredReason(AXAncestorDisallowsChild, ancestor));
     }
     return IgnoreObject;
   }
@@ -525,13 +526,13 @@ bool AXObject::computeIsInertOrAriaHidden(
         if (dialog) {
           AXObject* dialogObject = axObjectCache().getOrCreate(dialog);
           if (dialogObject)
-            ignoredReasons->append(
+            ignoredReasons->push_back(
                 IgnoredReason(AXActiveModalDialog, dialogObject));
           else
-            ignoredReasons->append(IgnoredReason(AXInert));
+            ignoredReasons->push_back(IgnoredReason(AXInert));
         } else {
           // TODO(aboxhall): handle inert attribute if it eventuates
-          ignoredReasons->append(IgnoredReason(AXInert));
+          ignoredReasons->push_back(IgnoredReason(AXInert));
         }
       }
       return true;
@@ -549,9 +550,9 @@ bool AXObject::computeIsInertOrAriaHidden(
   if (hiddenRoot) {
     if (ignoredReasons) {
       if (hiddenRoot == this)
-        ignoredReasons->append(IgnoredReason(AXAriaHidden));
+        ignoredReasons->push_back(IgnoredReason(AXAriaHidden));
       else
-        ignoredReasons->append(IgnoredReason(AXAriaHiddenRoot, hiddenRoot));
+        ignoredReasons->push_back(IgnoredReason(AXAriaHiddenRoot, hiddenRoot));
     }
     return true;
   }
@@ -676,7 +677,7 @@ String AXObject::name(AXNameFrom& nameFrom,
   if (nameObjects) {
     nameObjects->clear();
     for (size_t i = 0; i < relatedObjects.size(); i++)
-      nameObjects->append(relatedObjects[i]->object);
+      nameObjects->push_back(relatedObjects[i]->object);
   }
 
   return text;
@@ -754,7 +755,7 @@ String AXObject::ariaTextAlternative(bool recursive,
             : aria_labelledbyAttr;
     nameFrom = AXNameFromRelatedElement;
     if (nameSources) {
-      nameSources->append(NameSource(*foundTextAlternative, attr));
+      nameSources->push_back(NameSource(*foundTextAlternative, attr));
       nameSources->back().type = nameFrom;
     }
 
@@ -789,7 +790,7 @@ String AXObject::ariaTextAlternative(bool recursive,
   // If you change this logic, update AXNodeObject::nameFromLabelElement, too.
   nameFrom = AXNameFromAttribute;
   if (nameSources) {
-    nameSources->append(NameSource(*foundTextAlternative, aria_labelAttr));
+    nameSources->push_back(NameSource(*foundTextAlternative, aria_labelAttr));
     nameSources->back().type = nameFrom;
   }
   const AtomicString& ariaLabel = getAttribute(aria_labelAttr);
@@ -825,7 +826,7 @@ String AXObject::textFromElements(bool inAriaLabelledbyTraversal,
 
       String result = recursiveTextAlternative(
           *axElement, inAriaLabelledbyTraversal, visited);
-      localRelatedObjects.append(
+      localRelatedObjects.push_back(
           new NameSourceRelatedObject(axElement, result));
       if (!result.isEmpty()) {
         if (!accumulatedText.isEmpty())
@@ -865,7 +866,7 @@ void AXObject::elementsFromAttribute(HeapVector<Member<Element>>& elements,
   TreeScope& scope = getNode()->treeScope();
   for (const auto& id : ids) {
     if (Element* idElement = scope.getElementById(AtomicString(id)))
-      elements.append(idElement);
+      elements.push_back(idElement);
   }
 }
 
@@ -1512,7 +1513,7 @@ void AXObject::scrollToGlobalPoint(const IntPoint& globalPoint) const {
     if (parentObject->getScrollableAreaIfScrollable())
       objects.prepend(parentObject);
   }
-  objects.append(this);
+  objects.push_back(this);
 
   // Start with the outermost scrollable (the main window) and try to scroll the
   // next innermost object to the given point.

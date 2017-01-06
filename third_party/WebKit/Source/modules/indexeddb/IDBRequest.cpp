@@ -431,14 +431,14 @@ DispatchEventResult IDBRequest::dispatchEventInternal(Event* event) {
   dequeueEvent(event);
 
   HeapVector<Member<EventTarget>> targets;
-  targets.append(this);
+  targets.push_back(this);
   if (m_transaction && !m_preventPropagation) {
-    targets.append(m_transaction);
+    targets.push_back(m_transaction);
     // If there ever are events that are associated with a database but
     // that do not have a transaction, then this will not work and we need
     // this object to actually hold a reference to the database (to ensure
     // it stays alive).
-    targets.append(m_transaction->db());
+    targets.push_back(m_transaction->db());
   }
 
   // Cursor properties should not be updated until the success event is being
@@ -546,7 +546,7 @@ void IDBRequest::enqueueEvent(Event* event) {
   // in which case these must be cancelled. If the events not dispatched for
   // other reasons they must be removed from this list via dequeueEvent().
   if (eventQueue->enqueueEvent(event))
-    m_enqueuedEvents.append(event);
+    m_enqueuedEvents.push_back(event);
 }
 
 void IDBRequest::dequeueEvent(Event* event) {

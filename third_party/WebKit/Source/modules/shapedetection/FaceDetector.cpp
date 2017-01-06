@@ -64,7 +64,7 @@ void FaceDetector::onDetectFaces(
 
   HeapVector<Member<DetectedFace>> detectedFaces;
   for (const auto& boundingBox : faceDetectionResult->bounding_boxes) {
-    detectedFaces.append(DetectedFace::create(
+    detectedFaces.push_back(DetectedFace::create(
         DOMRect::create(boundingBox->x, boundingBox->y, boundingBox->width,
                         boundingBox->height)));
   }

@@ -46,10 +46,10 @@ class Client : public GarbageCollectedFinalized<Client>,
   void onMessageEvent(const AtomicString& event,
                       const String& data,
                       const AtomicString& id) override {
-    m_events.append(EventOrReconnectionTimeSetting(event, data, id));
+    m_events.push_back(EventOrReconnectionTimeSetting(event, data, id));
   }
   void onReconnectionTimeSet(unsigned long long reconnectionTime) override {
-    m_events.append(EventOrReconnectionTimeSetting(reconnectionTime));
+    m_events.push_back(EventOrReconnectionTimeSetting(reconnectionTime));
   }
 
  private:
@@ -70,10 +70,10 @@ class StoppingClient : public GarbageCollectedFinalized<StoppingClient>,
                       const String& data,
                       const AtomicString& id) override {
     m_parser->stop();
-    m_events.append(EventOrReconnectionTimeSetting(event, data, id));
+    m_events.push_back(EventOrReconnectionTimeSetting(event, data, id));
   }
   void onReconnectionTimeSet(unsigned long long reconnectionTime) override {
-    m_events.append(EventOrReconnectionTimeSetting(reconnectionTime));
+    m_events.push_back(EventOrReconnectionTimeSetting(reconnectionTime));
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {

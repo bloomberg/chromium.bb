@@ -28,7 +28,7 @@ IDBValue::IDBValue(PassRefPtr<SharedBuffer> data,
       m_keyPath(keyPath) {
   for (size_t i = 0; i < webBlobInfo.size(); ++i) {
     const WebBlobInfo& info = (*m_blobInfo)[i] = webBlobInfo[i];
-    m_blobData->append(
+    m_blobData->push_back(
         BlobDataHandle::create(info.uuid(), info.type(), info.size()));
   }
 }
@@ -44,7 +44,7 @@ IDBValue::IDBValue(const IDBValue* value,
       m_keyPath(keyPath) {
   for (size_t i = 0; i < value->m_blobInfo->size(); ++i) {
     const WebBlobInfo& info = (*m_blobInfo)[i] = value->m_blobInfo->at(i);
-    m_blobData->append(
+    m_blobData->push_back(
         BlobDataHandle::create(info.uuid(), info.type(), info.size()));
   }
 }
@@ -69,7 +69,7 @@ Vector<String> IDBValue::getUUIDs() const {
   Vector<String> uuids;
   uuids.reserveCapacity(m_blobInfo->size());
   for (const auto& info : *m_blobInfo)
-    uuids.append(info.uuid());
+    uuids.push_back(info.uuid());
   return uuids;
 }
 

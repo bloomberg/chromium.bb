@@ -242,7 +242,7 @@ void SensorProxy::onAddConfigurationCompleted(
     std::unique_ptr<Function<void(bool)>> callback,
     bool result) {
   if (result) {
-    m_frequenciesUsed.append(frequency);
+    m_frequenciesUsed.push_back(frequency);
     std::sort(m_frequenciesUsed.begin(), m_frequenciesUsed.end());
     if (isActive())
       m_readingUpdater->start();

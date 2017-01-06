@@ -44,7 +44,7 @@ struct TypeConverter<PaymentAppManifestPtr, blink::PaymentAppManifest> {
     output->icon = input.hasIcon() ? input.icon() : WTF::String();
     if (input.hasOptions()) {
       for (size_t i = 0; i < input.options().size(); ++i) {
-        output->options.append(PaymentAppOption::From(input.options()[i]));
+        output->options.push_back(PaymentAppOption::From(input.options()[i]));
       }
     }
     return output;
@@ -59,7 +59,7 @@ struct TypeConverter<blink::PaymentAppManifest, PaymentAppManifestPtr> {
     output.setIcon(input->icon);
     blink::HeapVector<blink::PaymentAppOption> options;
     for (const auto& option : input->options) {
-      options.append(mojo::ConvertTo<blink::PaymentAppOption>(option));
+      options.push_back(mojo::ConvertTo<blink::PaymentAppOption>(option));
     }
     output.setOptions(options);
     return output;
@@ -75,7 +75,7 @@ struct TypeConverter<blink::PaymentAppOption, PaymentAppOptionPtr> {
     output.setId(input->id);
     Vector<WTF::String> enabledMethods;
     for (const auto& method : input->enabled_methods) {
-      enabledMethods.append(method);
+      enabledMethods.push_back(method);
     }
     output.setEnabledMethods(enabledMethods);
     return output;

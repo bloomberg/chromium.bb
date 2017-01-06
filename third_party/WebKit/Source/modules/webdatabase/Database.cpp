@@ -908,7 +908,7 @@ Vector<String> Database::performGetTableNames() {
   while ((result = statement.step()) == SQLResultRow) {
     String name = statement.getColumnText(0);
     if (name != databaseInfoTableName())
-      tableNames.append(name);
+      tableNames.push_back(name);
   }
 
   enableAuthorizer();

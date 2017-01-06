@@ -303,7 +303,7 @@ FetchManager::Loader::Loader(ExecutionContext* executionContext,
       m_didFinishLoading(false),
       m_isIsolatedWorld(isIsolatedWorld),
       m_executionContext(executionContext) {
-  m_urlList.append(request->url());
+  m_urlList.push_back(request->url());
 }
 
 FetchManager::Loader::~Loader() {
@@ -320,7 +320,7 @@ DEFINE_TRACE(FetchManager::Loader) {
 }
 
 void FetchManager::Loader::didReceiveRedirectTo(const KURL& url) {
-  m_urlList.append(url);
+  m_urlList.push_back(url);
 }
 
 void FetchManager::Loader::didReceiveResponse(

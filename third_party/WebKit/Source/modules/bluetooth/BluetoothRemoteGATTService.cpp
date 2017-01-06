@@ -84,10 +84,11 @@ void BluetoothRemoteGATTService::GetCharacteristicsCallback(
     HeapVector<Member<BluetoothRemoteGATTCharacteristic>> gattCharacteristics;
     gattCharacteristics.reserveInitialCapacity(characteristics->size());
     for (const auto& characteristic : characteristics.value()) {
-      gattCharacteristics.append(device()->getOrCreateRemoteGATTCharacteristic(
-          resolver->getExecutionContext(), characteristic->instance_id,
-          serviceInstanceId, characteristic->uuid, characteristic->properties,
-          this));
+      gattCharacteristics.push_back(
+          device()->getOrCreateRemoteGATTCharacteristic(
+              resolver->getExecutionContext(), characteristic->instance_id,
+              serviceInstanceId, characteristic->uuid,
+              characteristic->properties, this));
     }
     resolver->resolve(gattCharacteristics);
   } else {

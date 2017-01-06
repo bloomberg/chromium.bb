@@ -44,7 +44,7 @@ SourceBufferList::SourceBufferList(ExecutionContext* context,
 SourceBufferList::~SourceBufferList() {}
 
 void SourceBufferList::add(SourceBuffer* buffer) {
-  m_list.append(buffer);
+  m_list.push_back(buffer);
   scheduleEvent(EventTypeNames::addsourcebuffer);
 }
 

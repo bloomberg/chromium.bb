@@ -138,7 +138,7 @@ void AXTableRow::headerObjectsForRow(AXObjectVector& headers) {
       continue;
 
     if (toAXTableCell(cell.get())->scanToDecideHeaderRole() == RowHeaderRole)
-      headers.append(cell);
+      headers.push_back(cell);
   }
 }
 

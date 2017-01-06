@@ -353,7 +353,7 @@ bool RTCDataChannel::hasPendingActivity() const {
 }
 
 void RTCDataChannel::scheduleDispatchEvent(Event* event) {
-  m_scheduledEvents.append(event);
+  m_scheduledEvents.push_back(event);
 
   if (!m_scheduledEventTimer.isActive())
     m_scheduledEventTimer.startOneShot(0, BLINK_FROM_HERE);

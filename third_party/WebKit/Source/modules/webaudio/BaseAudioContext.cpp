@@ -630,7 +630,7 @@ void BaseAudioContext::notifyStateChange() {
 void BaseAudioContext::notifySourceNodeFinishedProcessing(
     AudioHandler* handler) {
   DCHECK(isAudioThread());
-  m_finishedSourceHandlers.append(handler);
+  m_finishedSourceHandlers.push_back(handler);
 }
 
 void BaseAudioContext::removeFinishedSourceNodes() {
@@ -675,7 +675,7 @@ void BaseAudioContext::notifySourceNodeStartedProcessing(AudioNode* node) {
   DCHECK(isMainThread());
   AutoLocker locker(this);
 
-  m_activeSourceNodes.append(node);
+  m_activeSourceNodes.push_back(node);
   node->handler().makeConnection();
 }
 

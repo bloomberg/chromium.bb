@@ -326,14 +326,14 @@ static void generateIndexKeysForValue(v8::Isolate* isolate,
     if (!indexKey->isValid())
       return;
 
-    indexKeys->append(indexKey);
+    indexKeys->push_back(indexKey);
   } else {
     DCHECK(indexMetadata.multiEntry);
     DCHECK_EQ(indexKey->getType(), IDBKey::ArrayType);
     indexKey = IDBKey::createMultiEntryArray(indexKey->array());
 
     for (size_t i = 0; i < indexKey->array().size(); ++i)
-      indexKeys->append(indexKey->array()[i]);
+      indexKeys->push_back(indexKey->array()[i]);
   }
 }
 
@@ -502,8 +502,8 @@ IDBRequest* IDBObjectStore::put(ScriptState* scriptState,
           deserializeScriptValue(scriptState, serializedValue.get(), &blobInfo);
     IndexKeys keys;
     generateIndexKeysForValue(scriptState->isolate(), *it.value, clone, &keys);
-    indexIds.append(it.key);
-    indexKeys.append(keys);
+    indexIds.push_back(it.key);
+    indexKeys.push_back(keys);
   }
 
   IDBRequest* request =
@@ -665,7 +665,7 @@ class IndexPopulator final : public EventListener {
       cursor = cursorAny->idbCursorWithValue();
 
     Vector<int64_t> indexIds;
-    indexIds.append(indexMetadata().id);
+    indexIds.push_back(indexMetadata().id);
     if (cursor && !cursor->isDeleted()) {
       cursor->continueFunction(nullptr, nullptr, ASSERT_NO_EXCEPTION);
 
@@ -677,7 +677,7 @@ class IndexPopulator final : public EventListener {
                                 value, &indexKeys);
 
       HeapVector<IndexKeys> indexKeysList;
-      indexKeysList.append(indexKeys);
+      indexKeysList.push_back(indexKeys);
 
       m_database->backend()->setIndexKeys(m_transactionId, m_objectStoreId,
                                           primaryKey, indexIds, indexKeysList);

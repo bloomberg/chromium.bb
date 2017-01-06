@@ -385,7 +385,7 @@ class GetCacheForDeleteEntry
     deleteOperation.operationType = WebServiceWorkerCache::OperationTypeDelete;
     deleteOperation.request.setURL(KURL(ParsedURLString, m_requestSpec));
     Vector<BatchOperation> operations;
-    operations.append(deleteOperation);
+    operations.push_back(deleteOperation);
     cache.release()->dispatchBatch(std::move(deleteRequest),
                                    WebVector<BatchOperation>(operations));
   }

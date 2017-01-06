@@ -59,9 +59,9 @@ void BarcodeDetector::onDetectBarcodes(
       Point2D point;
       point.setX(corner_point->x);
       point.setY(corner_point->y);
-      cornerPoints.append(point);
+      cornerPoints.push_back(point);
     }
-    detectedBarcodes.append(DetectedBarcode::create(
+    detectedBarcodes.push_back(DetectedBarcode::create(
         barcode->raw_value,
         DOMRect::create(barcode->bounding_box->x, barcode->bounding_box->y,
                         barcode->bounding_box->width,

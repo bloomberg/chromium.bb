@@ -39,8 +39,8 @@ RTCLegacyStatsReport* RTCStatsResponse::namedItem(const AtomicString& name) {
 }
 
 void RTCStatsResponse::addStats(const WebRTCLegacyStats& stats) {
-  m_result.append(RTCLegacyStatsReport::create(stats.id(), stats.type(),
-                                               stats.timestamp()));
+  m_result.push_back(RTCLegacyStatsReport::create(stats.id(), stats.type(),
+                                                  stats.timestamp()));
   m_idmap.add(stats.id(), m_result.size() - 1);
   RTCLegacyStatsReport* report = m_result[m_result.size() - 1].get();
 

@@ -217,7 +217,7 @@ void setNotSupportedError(const String& message, AlgorithmError* error) {
 // tell what went wrong from a failure alone.
 class ErrorContext {
  public:
-  void add(const char* message) { m_messages.append(message); }
+  void add(const char* message) { m_messages.push_back(message); }
 
   void removeLast() { m_messages.pop_back(); }
 

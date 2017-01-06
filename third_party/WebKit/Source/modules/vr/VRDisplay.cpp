@@ -580,7 +580,7 @@ HeapVector<VRLayer> VRDisplay::getLayers() {
   HeapVector<VRLayer> layers;
 
   if (m_isPresenting) {
-    layers.append(m_layer);
+    layers.push_back(m_layer);
   }
 
   return layers;

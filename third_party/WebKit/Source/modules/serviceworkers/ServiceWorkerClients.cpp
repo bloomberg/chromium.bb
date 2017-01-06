@@ -36,9 +36,9 @@ class ClientArray {
     for (size_t i = 0; i < webClients.clients.size(); ++i) {
       const WebServiceWorkerClientInfo& client = webClients.clients[i];
       if (client.clientType == WebServiceWorkerClientTypeWindow)
-        clients.append(ServiceWorkerWindowClient::create(client));
+        clients.push_back(ServiceWorkerWindowClient::create(client));
       else
-        clients.append(ServiceWorkerClient::create(client));
+        clients.push_back(ServiceWorkerClient::create(client));
     }
     return clients;
   }

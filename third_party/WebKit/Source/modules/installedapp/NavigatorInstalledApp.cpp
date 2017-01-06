@@ -60,7 +60,7 @@ class RelatedAppArray {
       const WebVector<WebRelatedApplication>& webInfo) {
     HeapVector<Member<RelatedApplication>> applications;
     for (const auto& webApplication : webInfo)
-      applications.append(RelatedApplication::create(
+      applications.push_back(RelatedApplication::create(
           webApplication.platform, webApplication.url, webApplication.id));
     return applications;
   }

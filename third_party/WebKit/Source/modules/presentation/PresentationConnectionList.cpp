@@ -36,7 +36,7 @@ void PresentationConnectionList::addedEventListener(
 
 void PresentationConnectionList::addConnection(
     PresentationConnection* connection) {
-  m_connections.append(connection);
+  m_connections.push_back(connection);
 }
 
 void PresentationConnectionList::dispatchConnectionAvailableEvent(

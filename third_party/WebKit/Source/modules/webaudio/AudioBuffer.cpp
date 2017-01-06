@@ -177,7 +177,7 @@ AudioBuffer::AudioBuffer(unsigned numberOfChannels,
       return;
 
     channelDataArray->setNeuterable(false);
-    m_channels.append(channelDataArray);
+    m_channels.push_back(channelDataArray);
   }
 }
 
@@ -197,7 +197,7 @@ AudioBuffer::AudioBuffer(AudioBus* bus)
     const float* src = bus->channel(i)->data();
     float* dst = channelDataArray->data();
     memmove(dst, src, m_length * sizeof(*dst));
-    m_channels.append(channelDataArray);
+    m_channels.push_back(channelDataArray);
   }
 }
 

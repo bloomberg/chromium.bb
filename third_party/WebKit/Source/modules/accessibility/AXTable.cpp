@@ -386,7 +386,7 @@ void AXTable::addChildren() {
           toHTMLTableElement(tableNode)->caption()) {
     AXObject* captionObject = axCache.getOrCreate(caption);
     if (captionObject && !captionObject->accessibilityIsIgnored())
-      m_children.append(captionObject);
+      m_children.push_back(captionObject);
   }
 
   // Go through all the available sections to pull out the rows and add them as
@@ -416,9 +416,9 @@ void AXTable::addChildren() {
         continue;
 
       row->setRowIndex(static_cast<int>(m_rows.size()));
-      m_rows.append(row);
+      m_rows.push_back(row);
       if (!row->accessibilityIsIgnored())
-        m_children.append(row);
+        m_children.push_back(row);
       appendedRows.add(row);
     }
 
@@ -431,14 +431,14 @@ void AXTable::addChildren() {
     AXTableColumn* column = toAXTableColumn(axCache.getOrCreate(ColumnRole));
     column->setColumnIndex((int)i);
     column->setParent(this);
-    m_columns.append(column);
+    m_columns.push_back(column);
     if (!column->accessibilityIsIgnored())
-      m_children.append(column);
+      m_children.push_back(column);
   }
 
   AXObject* headerContainerObject = headerContainer();
   if (headerContainerObject && !headerContainerObject->accessibilityIsIgnored())
-    m_children.append(headerContainerObject);
+    m_children.push_back(headerContainerObject);
 }
 
 AXObject* AXTable::headerContainer() {

@@ -38,7 +38,7 @@ std::unique_ptr<WebServiceWorkerResponse> createTestWebServiceWorkerResponse() {
                  {"foo", "bar"},
                  {0, 0}};
   Vector<WebURL> urlList;
-  urlList.append(url);
+  urlList.push_back(url);
   std::unique_ptr<WebServiceWorkerResponse> webResponse =
       WTF::makeUnique<WebServiceWorkerResponse>();
   webResponse->setURLList(urlList);
@@ -58,7 +58,7 @@ TEST(ServiceWorkerResponseTest, FromFetchResponseData) {
 
   FetchResponseData* fetchResponseData = FetchResponseData::create();
   Vector<KURL> urlList;
-  urlList.append(url);
+  urlList.push_back(url);
   fetchResponseData->setURLList(urlList);
   Response* response = Response::create(&page->document(), fetchResponseData);
   ASSERT(response);
@@ -228,7 +228,7 @@ TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneDefault) {
   FetchResponseData* fetchResponseData =
       FetchResponseData::createWithBuffer(buffer);
   Vector<KURL> urlList;
-  urlList.append(KURL(ParsedURLString, "http://www.response.com"));
+  urlList.push_back(KURL(ParsedURLString, "http://www.response.com"));
   fetchResponseData->setURLList(urlList);
   Response* response =
       Response::create(scope.getExecutionContext(), fetchResponseData);
@@ -242,7 +242,7 @@ TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneBasic) {
   FetchResponseData* fetchResponseData =
       FetchResponseData::createWithBuffer(buffer);
   Vector<KURL> urlList;
-  urlList.append(KURL(ParsedURLString, "http://www.response.com"));
+  urlList.push_back(KURL(ParsedURLString, "http://www.response.com"));
   fetchResponseData->setURLList(urlList);
   fetchResponseData = fetchResponseData->createBasicFilteredResponse();
   Response* response =
@@ -257,7 +257,7 @@ TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneCORS) {
   FetchResponseData* fetchResponseData =
       FetchResponseData::createWithBuffer(buffer);
   Vector<KURL> urlList;
-  urlList.append(KURL(ParsedURLString, "http://www.response.com"));
+  urlList.push_back(KURL(ParsedURLString, "http://www.response.com"));
   fetchResponseData->setURLList(urlList);
   fetchResponseData = fetchResponseData->createCORSFilteredResponse();
   Response* response =
@@ -272,7 +272,7 @@ TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneOpaque) {
   FetchResponseData* fetchResponseData =
       FetchResponseData::createWithBuffer(buffer);
   Vector<KURL> urlList;
-  urlList.append(KURL(ParsedURLString, "http://www.response.com"));
+  urlList.push_back(KURL(ParsedURLString, "http://www.response.com"));
   fetchResponseData->setURLList(urlList);
   fetchResponseData = fetchResponseData->createOpaqueFilteredResponse();
   Response* response =
@@ -289,7 +289,7 @@ TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneError) {
   FetchResponseData* fetchResponseData =
       FetchResponseData::createWithBuffer(buffer);
   Vector<KURL> urlList;
-  urlList.append(KURL(ParsedURLString, "http://www.response.com"));
+  urlList.push_back(KURL(ParsedURLString, "http://www.response.com"));
   fetchResponseData->setURLList(urlList);
   Response* response =
       Response::create(scope.getExecutionContext(), fetchResponseData);

@@ -33,7 +33,7 @@ namespace blink {
 
 BaseRenderingContext2D::BaseRenderingContext2D()
     : m_clipAntialiasing(NotAntiAliased) {
-  m_stateStack.append(CanvasRenderingContext2DState::create());
+  m_stateStack.push_back(CanvasRenderingContext2DState::create());
 }
 
 BaseRenderingContext2D::~BaseRenderingContext2D() {}
@@ -50,7 +50,7 @@ void BaseRenderingContext2D::realizeSaves() {
     // Reduce the current state's unrealized count by one now,
     // to reflect the fact we are saving one state.
     m_stateStack.back()->restore();
-    m_stateStack.append(CanvasRenderingContext2DState::create(
+    m_stateStack.push_back(CanvasRenderingContext2DState::create(
         state(), CanvasRenderingContext2DState::DontCopyClipList));
     // Set the new state's unrealized count to 0, because it has no outstanding
     // saves.

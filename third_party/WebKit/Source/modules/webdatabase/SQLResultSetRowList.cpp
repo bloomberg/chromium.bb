@@ -59,7 +59,8 @@ ScriptValue SQLResultSetRowList::item(ScriptState* scriptState,
 
   Vector<std::pair<String, SQLValue>> dataArray;
   for (unsigned i = 0; i < numColumns; ++i)
-    dataArray.append(std::make_pair(m_columns[i], m_result[valuesIndex + i]));
+    dataArray.push_back(
+        std::make_pair(m_columns[i], m_result[valuesIndex + i]));
 
   return ScriptValue::from(scriptState, dataArray);
 }

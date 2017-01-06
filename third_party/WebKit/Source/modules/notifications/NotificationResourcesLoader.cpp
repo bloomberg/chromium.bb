@@ -87,7 +87,7 @@ void NotificationResourcesLoader::loadImage(
   }
 
   NotificationImageLoader* imageLoader = new NotificationImageLoader(type);
-  m_imageLoaders.append(imageLoader);
+  m_imageLoaders.push_back(imageLoader);
   imageLoader->start(executionContext, url, std::move(imageCallback));
 }
 

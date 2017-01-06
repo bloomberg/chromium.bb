@@ -73,7 +73,7 @@ bool DeferredTaskHandler::isGraphOwner() {
 
 void DeferredTaskHandler::addDeferredBreakConnection(AudioHandler& node) {
   DCHECK(isAudioThread());
-  m_deferredBreakConnectionList.append(&node);
+  m_deferredBreakConnectionList.push_back(&node);
 }
 
 void DeferredTaskHandler::breakConnections() {
@@ -252,7 +252,7 @@ void DeferredTaskHandler::addRenderingOrphanHandler(
     PassRefPtr<AudioHandler> handler) {
   DCHECK(handler);
   DCHECK(!m_renderingOrphanHandlers.contains(handler));
-  m_renderingOrphanHandlers.append(handler);
+  m_renderingOrphanHandlers.push_back(handler);
 }
 
 void DeferredTaskHandler::requestToDeleteHandlersOnMainThread() {

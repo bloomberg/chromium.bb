@@ -219,12 +219,13 @@ EntriesCallbacks::EntriesCallbacks(EntriesCallback* successCallback,
 void EntriesCallbacks::didReadDirectoryEntry(const String& name,
                                              bool isDirectory) {
   if (isDirectory)
-    m_entries.append(
+    m_entries.push_back(
         DirectoryEntry::create(m_directoryReader->filesystem(),
                                DOMFilePath::append(m_basePath, name)));
   else
-    m_entries.append(FileEntry::create(m_directoryReader->filesystem(),
-                                       DOMFilePath::append(m_basePath, name)));
+    m_entries.push_back(
+        FileEntry::create(m_directoryReader->filesystem(),
+                          DOMFilePath::append(m_basePath, name)));
 }
 
 void EntriesCallbacks::didReadDirectoryEntries(bool hasMore) {

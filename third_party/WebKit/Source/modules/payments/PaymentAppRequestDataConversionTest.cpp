@@ -35,7 +35,7 @@ static WebPaymentAppRequestData createWebPaymentAppRequestDataForTest() {
   WebPaymentAppRequestData webData;
   webData.origin = WebString::fromUTF8("https://example.com");
   Vector<WebPaymentMethodData> methodData;
-  methodData.append(createWebPaymentMethodDataForTest());
+  methodData.push_back(createWebPaymentMethodDataForTest());
   webData.methodData = WebVector<WebPaymentMethodData>(methodData);
   webData.total = createWebPaymentItemForTest();
   webData.optionId = WebString::fromUTF8("payment-app-id");

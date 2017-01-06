@@ -174,12 +174,12 @@ void AudioHandler::setNodeType(NodeType type) {
 }
 
 void AudioHandler::addInput() {
-  m_inputs.append(AudioNodeInput::create(*this));
+  m_inputs.push_back(AudioNodeInput::create(*this));
 }
 
 void AudioHandler::addOutput(unsigned numberOfChannels) {
   DCHECK(isMainThread());
-  m_outputs.append(AudioNodeOutput::create(this, numberOfChannels));
+  m_outputs.push_back(AudioNodeOutput::create(this, numberOfChannels));
   node()->didAddOutput(numberOfOutputs());
 }
 
@@ -943,9 +943,9 @@ ExecutionContext* AudioNode::getExecutionContext() const {
 }
 
 void AudioNode::didAddOutput(unsigned numberOfOutputs) {
-  m_connectedNodes.append(nullptr);
+  m_connectedNodes.push_back(nullptr);
   DCHECK_EQ(numberOfOutputs, m_connectedNodes.size());
-  m_connectedParams.append(nullptr);
+  m_connectedParams.push_back(nullptr);
   DCHECK_EQ(numberOfOutputs, m_connectedParams.size());
 }
 

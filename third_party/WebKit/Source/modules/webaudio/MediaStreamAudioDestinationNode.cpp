@@ -55,7 +55,7 @@ MediaStreamAudioDestinationHandler::MediaStreamAudioDestinationHandler(
       "MediaStreamAudioDestinationNode", false,
       MediaStreamSource::ReadyStateLive, true);
   MediaStreamSourceVector audioSources;
-  audioSources.append(m_source.get());
+  audioSources.push_back(m_source.get());
   MediaStreamSourceVector videoSources;
   m_stream = MediaStream::create(
       node.context()->getExecutionContext(),

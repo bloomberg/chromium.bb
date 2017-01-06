@@ -98,7 +98,7 @@ void EventSourceParser::parseLine() {
   }
   if (fieldName == "data") {
     m_data.append(m_line.data() + fieldValueStart, fieldValueSize);
-    m_data.append('\n');
+    m_data.push_back('\n');
     return;
   }
   if (fieldName == "id") {
