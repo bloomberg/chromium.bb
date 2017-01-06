@@ -144,4 +144,92 @@ TEST_F(PaintLayerClipperTest, LocalClipRectFixedUnderTransform) {
             fixed->clipper().localClipRect(transformed));
 }
 
+TEST_F(PaintLayerClipperTest, ClearClipRectsRecursive) {
+  setBodyInnerHTML(
+      "<style>"
+      "div { "
+      "  width: 5px; height: 5px; background: blue;"
+      "  position: relative;"
+      "}"
+      "</style>"
+      "<div id='parent'>"
+      "  <div id='child'>"
+      "    <div id='grandchild'></div>"
+      "  </div>"
+      "</div>");
+
+  PaintLayer* parent =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("parent"))->layer();
+  PaintLayer* child =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("child"))->layer();
+
+  EXPECT_TRUE(parent->clipRectsCache());
+  EXPECT_TRUE(child->clipRectsCache());
+
+  parent->clipper().clearClipRectsIncludingDescendants();
+
+  EXPECT_FALSE(parent->clipRectsCache());
+  EXPECT_FALSE(child->clipRectsCache());
+}
+
+TEST_F(PaintLayerClipperTest, ClearClipRectsRecursiveChild) {
+  setBodyInnerHTML(
+      "<style>"
+      "div { "
+      "  width: 5px; height: 5px; background: blue;"
+      "  position: relative;"
+      "}"
+      "</style>"
+      "<div id='parent'>"
+      "  <div id='child'>"
+      "    <div id='grandchild'></div>"
+      "  </div>"
+      "</div>");
+
+  PaintLayer* parent =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("parent"))->layer();
+  PaintLayer* child =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("child"))->layer();
+
+  EXPECT_TRUE(parent->clipRectsCache());
+  EXPECT_TRUE(child->clipRectsCache());
+
+  child->clipper().clearClipRectsIncludingDescendants();
+
+  EXPECT_TRUE(parent->clipRectsCache());
+  EXPECT_FALSE(child->clipRectsCache());
+}
+
+TEST_F(PaintLayerClipperTest, ClearClipRectsRecursiveOneType) {
+  setBodyInnerHTML(
+      "<style>"
+      "div { "
+      "  width: 5px; height: 5px; background: blue;"
+      "  position: relative;"
+      "}"
+      "</style>"
+      "<div id='parent'>"
+      "  <div id='child'>"
+      "    <div id='grandchild'></div>"
+      "  </div>"
+      "</div>");
+
+  PaintLayer* parent =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("parent"))->layer();
+  PaintLayer* child =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("child"))->layer();
+
+  EXPECT_TRUE(parent->clipRectsCache());
+  EXPECT_TRUE(child->clipRectsCache());
+  EXPECT_TRUE(parent->clipRectsCache()->get(AbsoluteClipRects).root);
+  EXPECT_TRUE(child->clipRectsCache()->get(AbsoluteClipRects).root);
+
+  parent->clipper().clearClipRectsIncludingDescendants(AbsoluteClipRects);
+
+  EXPECT_TRUE(parent->clipRectsCache());
+  EXPECT_TRUE(child->clipRectsCache());
+  EXPECT_FALSE(parent->clipRectsCache()->get(AbsoluteClipRects).root);
+  EXPECT_FALSE(parent->clipRectsCache()->get(AbsoluteClipRects).root);
+}
+
 }  // namespace blink

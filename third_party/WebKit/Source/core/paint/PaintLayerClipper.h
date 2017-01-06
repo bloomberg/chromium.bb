@@ -200,6 +200,7 @@ class CORE_EXPORT PaintLayerClipper {
                                const LayoutSize& subpixelAccumulation) const;
 
  private:
+  void clearCache(ClipRectsCacheSlot);
   ClipRects& getClipRects(const ClipRectsContext&) const;
 
   void calculateClipRects(const ClipRectsContext&, ClipRects&) const;

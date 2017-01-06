@@ -177,28 +177,32 @@ ClipRects& PaintLayerClipper::getClipRects(
   return storeClipRectsInCache(context, parentClipRects, *clipRects);
 }
 
-void PaintLayerClipper::clearClipRectsIncludingDescendants() {
+void PaintLayerClipper::clearCache(ClipRectsCacheSlot cacheSlot) {
+  if (cacheSlot == NumberOfClipRectsCacheSlots)
+    m_layer.clearClipRectsCache();
+  else if (ClipRectsCache* cache = m_layer.clipRectsCache())
+    cache->clear(cacheSlot);
+
   if (m_geometryMapper)
     m_geometryMapper.reset(new GeometryMapper);
-  m_layer.clearClipRectsCache();
+}
 
-  for (PaintLayer* layer = m_layer.firstChild(); layer;
-       layer = layer->nextSibling()) {
-    layer->clipper().clearClipRectsIncludingDescendants();
-  }
+void PaintLayerClipper::clearClipRectsIncludingDescendants() {
+  clearClipRectsIncludingDescendants(NumberOfClipRectsCacheSlots);
 }
 
 void PaintLayerClipper::clearClipRectsIncludingDescendants(
     ClipRectsCacheSlot cacheSlot) {
-  if (m_geometryMapper)
-    m_geometryMapper.reset(new GeometryMapper);
+  std::stack<const PaintLayer*> layers;
+  layers.push(&m_layer);
 
-  if (ClipRectsCache* cache = m_layer.clipRectsCache())
-    cache->clear(cacheSlot);
-
-  for (PaintLayer* layer = m_layer.firstChild(); layer;
-       layer = layer->nextSibling()) {
-    layer->clipper().clearClipRectsIncludingDescendants(cacheSlot);
+  while (!layers.empty()) {
+    const PaintLayer* currentLayer = layers.top();
+    layers.pop();
+    currentLayer->clipper().clearCache(cacheSlot);
+    for (const PaintLayer* layer = currentLayer->firstChild(); layer;
+         layer = layer->nextSibling())
+      layers.push(layer);
   }
 }
 
