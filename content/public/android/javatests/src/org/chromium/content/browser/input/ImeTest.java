@@ -22,7 +22,6 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentViewCore;
@@ -1118,7 +1117,6 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
-    @DisabledTest(message = "crbug.com/661572")
     public void testPastePopupShowAndHide() throws Throwable {
         commitText("hello", 1);
         waitAndVerifyUpdateSelection(0, 5, 5, -1, -1);
@@ -1135,7 +1133,8 @@ public class ImeTest extends ContentShellTestBase {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return mSelectionPopupController.isPastePopupShowing();
+                return mSelectionPopupController.isPastePopupShowing()
+                       && mSelectionPopupController.isInsertion();
             }
         });
 
