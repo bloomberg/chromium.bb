@@ -5,41 +5,52 @@
 #ifndef CONTENT_BROWSER_MEDIA_CAPTURE_CURSOR_RENDERER_MAC_H_
 #define CONTENT_BROWSER_MEDIA_CAPTURE_CURSOR_RENDERER_MAC_H_
 
-#include "base/mac/scoped_cftyperef.h"
-#include "base/macros.h"
-#include "base/memory/weak_ptr.h"
+#import <AppKit/AppKit.h>
+
+#include "base/mac/scoped_nsobject.h"
 #include "content/browser/media/capture/cursor_renderer.h"
-#include "content/common/content_export.h"
-#include "media/base/video_frame.h"
+#import "ui/base/cocoa/tracking_area.h"
+
+@interface CursorRendererMouseTracker : NSObject {
+ @private
+  ui::ScopedCrTrackingArea trackingArea_;
+
+  // The view on which mouse movement is detected.
+  base::scoped_nsobject<NSView> capturedView_;
+
+  // Runs on any mouse interaction from user.
+  base::Closure mouseInteractionObserver_;
+}
+
+- (instancetype)initWithView:(NSView*)nsView;
+
+// Register an observer for mouse interaction.
+- (void)registerMouseInteractionObserver:(const base::Closure&)observer;
+
+@end
 
 namespace content {
 
-// Tracks state for making decisions on cursor display on a captured video
-// frame.
 class CONTENT_EXPORT CursorRendererMac : public CursorRenderer {
  public:
-  explicit CursorRendererMac(NSView* view);
+  explicit CursorRendererMac(gfx::NativeView view);
   ~CursorRendererMac() final;
 
   // CursorRender implementation.
-  void Clear() final;
-  bool SnapshotCursorState(const gfx::Rect& region_in_frame) final;
-  void RenderOnVideoFrame(
-      const scoped_refptr<media::VideoFrame>& target) const final;
-  base::WeakPtr<CursorRenderer> GetWeakPtr() final;
+  bool IsCapturedViewActive() final;
+  gfx::Size GetCapturedViewSize() final;
+  gfx::Point GetCursorPositionInView() final;
+  gfx::NativeCursor GetLastKnownCursor() final;
+  SkBitmap GetLastKnownCursorImage(gfx::Point* hot_point) final;
 
  private:
+  // Called for mouse activity events.
+  void OnMouseEvent();
+
   NSView* const view_;
-  base::ScopedCFTypeRef<CFDataRef> last_cursor_data_;
-  int last_cursor_width_;
-  int last_cursor_height_;
-  gfx::Point cursor_position_in_frame_;
 
-  base::TimeTicks last_mouse_movement_timestamp_;
-  float last_mouse_location_x_;
-  float last_mouse_location_y_;
+  base::scoped_nsobject<CursorRendererMouseTracker> mouse_tracker_;
 
-  base::WeakPtrFactory<CursorRendererMac> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(CursorRendererMac);
 };
 

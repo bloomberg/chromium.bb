@@ -68,8 +68,7 @@ class CursorRendererAuraTest : public AuraTestBase {
 
   bool CursorDisplayed() { return cursor_renderer_->cursor_displayed_; }
 
-  void RenderCursorOnVideoFrame(
-      const scoped_refptr<media::VideoFrame>& target) {
+  void RenderCursorOnVideoFrame(media::VideoFrame* target) {
     cursor_renderer_->RenderOnVideoFrame(target);
   }
 
@@ -222,7 +221,7 @@ TEST_F(CursorRendererAuraTest, CursorRenderedOnFrame) {
   EXPECT_TRUE(CursorDisplayed());
 
   EXPECT_FALSE(NonZeroPixelsInRegion(frame, gfx::Rect(50, 50, 70, 70)));
-  RenderCursorOnVideoFrame(frame);
+  RenderCursorOnVideoFrame(frame.get());
   EXPECT_TRUE(NonZeroPixelsInRegion(frame, gfx::Rect(50, 50, 70, 70)));
 }
 

@@ -283,7 +283,7 @@ void FrameSubscriber::DidCaptureFrame(
       CursorRenderer* cursor_renderer =
           frame_subscriber_->cursor_renderer_.get();
       if (cursor_renderer->SnapshotCursorState(region_in_frame))
-        cursor_renderer->RenderOnVideoFrame(frame);
+        cursor_renderer->RenderOnVideoFrame(frame.get());
       frame->metadata()->SetBoolean(
           media::VideoFrameMetadata::INTERACTIVE_CONTENT,
           frame_subscriber_->IsUserInteractingWithContent());
