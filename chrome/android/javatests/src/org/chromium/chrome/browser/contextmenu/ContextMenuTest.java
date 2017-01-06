@@ -253,8 +253,8 @@ public class ContextMenuTest extends DownloadTestBase {
         ContextMenuUtils.selectContextMenuItem(this, tab, "testEmail",
                 R.id.contextmenu_copy_email_address);
 
-        assertEquals("Copied email address is not correct", "someone@example.com",
-                getClipboardText());
+        assertEquals("Copied email address is not correct",
+                "someone1@example.com,someone2@example.com", getClipboardText());
     }
 
     @LargeTest

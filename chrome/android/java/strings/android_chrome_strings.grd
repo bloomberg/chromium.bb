@@ -1440,7 +1440,13 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Open in incognito tab
       </message>
       <message name="IDS_CONTEXTMENU_COPY_EMAIL_ADDRESS" desc="Context sensitive menu item for copying email address. [CHAR-LIMIT=30]">
-        Copy email address
+        Copy
+      </message>
+      <message name="IDS_CONTEXTMENU_SEND_MESSAGE" desc="Context sensitive menu item for sending an email message. [CHAR-LIMIT=30]">
+        Send message
+      </message>
+      <message name="IDS_CONTEXTMENU_ADD_TO_CONTACTS" desc="Context sensitive menu item for adding an email address to contacts. [CHAR-LIMIT=30]">
+        Add to contacts
       </message>
       <message name="IDS_CONTEXTMENU_COPY_LINK_ADDRESS" desc="Context sensitive menu item for copying the selected link URL / address. [CHAR-LIMIT=30]">
         Copy link address

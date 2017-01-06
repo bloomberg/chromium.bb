@@ -50,6 +50,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
     // Items that are included in all context menus.
     private static final int[] BASE_WHITELIST = {
             R.id.contextmenu_copy_link_address,
+            R.id.contextmenu_send_message,
+            R.id.contextmenu_add_to_contacts,
             R.id.contextmenu_copy_email_address,
             R.id.contextmenu_copy_link_text,
             R.id.contextmenu_save_link_as,
@@ -103,7 +105,9 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         static final int ACTION_SAVE_VIDEO = 14;
         static final int ACTION_SHARE_IMAGE = 19;
         static final int ACTION_OPEN_IN_OTHER_WINDOW = 20;
-        static final int NUM_ACTIONS = 21;
+        static final int ACTION_SEND_EMAIL = 23;
+        static final int ACTION_ADD_TO_CONTACTS = 24;
+        static final int NUM_ACTIONS = 25;
 
         // Note: these values must match the ContextMenuSaveLinkType enum in histograms.xml.
         // Only add new values at the end, right before NUM_TYPES. We depend on these specific
@@ -212,9 +216,18 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         }
 
         if (MailTo.isMailTo(params.getLinkUrl())) {
+            menu.findItem(R.id.contextmenu_copy_link_text).setVisible(false);
             menu.findItem(R.id.contextmenu_copy_link_address).setVisible(false);
+            menu.setGroupVisible(R.id.contextmenu_group_email, true);
+            if (!mDelegate.supportsSendEmailMessage()) {
+                menu.findItem(R.id.contextmenu_send_message).setVisible(false);
+            }
+            if (TextUtils.isEmpty(MailTo.parse(params.getLinkUrl()).getTo())
+                    || !mDelegate.supportsAddToContacts()) {
+                menu.findItem(R.id.contextmenu_add_to_contacts).setVisible(false);
+            }
         } else {
-            menu.findItem(R.id.contextmenu_copy_email_address).setVisible(false);
+            menu.setGroupVisible(R.id.contextmenu_group_email, false);
         }
 
         menu.findItem(R.id.contextmenu_save_link_as).setVisible(
@@ -341,6 +354,12 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_COPY_LINK_ADDRESS);
             mDelegate.onSaveToClipboard(params.getUnfilteredLinkUrl(),
                     ContextMenuItemDelegate.CLIPBOARD_TYPE_LINK_URL);
+        } else if (itemId == R.id.contextmenu_send_message) {
+            ContextMenuUma.record(params, ContextMenuUma.ACTION_SEND_EMAIL);
+            mDelegate.onSendEmailMessage(params.getLinkUrl());
+        } else if (itemId == R.id.contextmenu_add_to_contacts) {
+            ContextMenuUma.record(params, ContextMenuUma.ACTION_ADD_TO_CONTACTS);
+            mDelegate.onAddToContacts(params.getLinkUrl());
         } else if (itemId == R.id.contextmenu_copy_email_address) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_COPY_EMAIL_ADDRESS);
             mDelegate.onSaveToClipboard(MailTo.parse(params.getLinkUrl()).getTo(),

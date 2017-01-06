@@ -15,8 +15,6 @@
             android:title="@string/contextmenu_open_in_incognito_tab"/>
         <item android:id="@+id/contextmenu_copy_link_address"
             android:title="@string/contextmenu_copy_link_address"/>
-        <item android:id="@+id/contextmenu_copy_email_address"
-            android:title="@string/contextmenu_copy_email_address"/>
         <item android:id="@+id/contextmenu_copy_link_text"
             android:title="@string/contextmenu_copy_link_text"/>
         <item android:id="@+id/contextmenu_save_link_as"
@@ -36,6 +34,14 @@
         <item android:id="@+id/contextmenu_search_by_image" />
         <item android:id="@+id/contextmenu_share_image"
             android:title="@string/contextmenu_share_image"/>
+    </group>
+    <group android:id="@+id/contextmenu_group_email">
+        <item android:id="@+id/contextmenu_send_message"
+            android:title="@string/contextmenu_send_message"/>
+        <item android:id="@+id/contextmenu_add_to_contacts"
+            android:title="@string/contextmenu_add_to_contacts"/>
+        <item android:id="@+id/contextmenu_copy_email_address"
+            android:title="@string/contextmenu_copy_email_address"/>
     </group>
     <group android:id="@+id/contextmenu_group_video">
         <item android:id="@+id/contextmenu_save_video"

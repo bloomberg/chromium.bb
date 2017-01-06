@@ -97,6 +97,30 @@ public interface ContextMenuItemDelegate {
      */
     void onSaveToClipboard(String text, int clipboardType);
 
+    /**
+     * Returns whether or not an activity is available to handle intent to send an email.
+     * @return true if an activity is available to handle intent to send an email.
+     */
+    public boolean supportsSendEmailMessage();
+
+    /**
+     * Called when the {@code url} should be parsed to send an email.
+     * @param url The URL to be parsed to send an email.
+     */
+    void onSendEmailMessage(String url);
+
+    /**
+     * Returns whether or not an activity is available to handle intent to add contacts.
+     * @return true if an activity is available to handle intent to add contacts.
+     */
+    public boolean supportsAddToContacts();
+
+    /**
+     * Called when the {@code url} should be parsed to add to contacts.
+     * @param url The URL to be parsed to add to contacts.
+     */
+    void onAddToContacts(String url);
+
    /**
     * @return page url.
     */

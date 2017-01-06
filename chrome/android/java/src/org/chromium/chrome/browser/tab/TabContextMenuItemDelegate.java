@@ -6,7 +6,9 @@ package org.chromium.chrome.browser.tab;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.MailTo;
 import android.net.Uri;
+import android.provider.ContactsContract;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.IntentHandler;
@@ -17,6 +19,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
+import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
@@ -72,6 +75,38 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     @Override
     public void onSaveToClipboard(String text, int clipboardType) {
         mClipboard.setText(text);
+    }
+
+    @Override
+    public boolean supportsSendEmailMessage() {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse("mailto:test@example.com"));
+        return mTab.getWindowAndroid().canResolveActivity(intent);
+    }
+
+    @Override
+    public void onSendEmailMessage(String url) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setData(Uri.parse(url));
+        IntentUtils.safeStartActivity(mTab.getActivity(), intent);
+    }
+
+    @Override
+    public boolean supportsAddToContacts() {
+        Intent intent = new Intent(Intent.ACTION_INSERT);
+        intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
+        return mTab.getWindowAndroid().canResolveActivity(intent);
+    }
+
+    @Override
+    public void onAddToContacts(String url) {
+        Intent intent = new Intent(Intent.ACTION_INSERT);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
+        intent.putExtra(
+                ContactsContract.Intents.Insert.EMAIL, MailTo.parse(url).getTo().split(",")[0]);
+        IntentUtils.safeStartActivity(mTab.getActivity(), intent);
     }
 
     @Override
@@ -183,4 +218,5 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
         }
         return false;
     }
+
 }
