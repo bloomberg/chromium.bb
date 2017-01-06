@@ -25,39 +25,25 @@ class CSSValueInterpolationType : public CSSInterpolationType {
     return nullptr;
   }
 
-  InterpolationValue maybeConvertSingle(const PropertySpecificKeyframe&,
-                                        const InterpolationEnvironment&,
-                                        const InterpolationValue& underlying,
-                                        ConversionCheckers&) const final;
-
   InterpolationValue maybeConvertStandardPropertyUnderlyingValue(
       const StyleResolverState&) const final {
     return nullptr;
   }
 
-  // As we override CSSInterpolationType::maybeConvertSingle, these are never
-  // called.
   InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying,
                                          ConversionCheckers&) const final {
-    NOTREACHED();
+    // This type will never interpolate or composite with the underlying value.
+    // Returning nullptr here means no value will be applied and the value in
+    // ComputedStyle will remain unchanged.
     return nullptr;
   }
   InterpolationValue maybeConvertInitial(const StyleResolverState&,
-                                         ConversionCheckers&) const final {
-    NOTREACHED();
-    return nullptr;
-  }
+                                         ConversionCheckers&) const final;
   InterpolationValue maybeConvertInherit(const StyleResolverState&,
-                                         ConversionCheckers&) const final {
-    NOTREACHED();
-    return nullptr;
-  }
+                                         ConversionCheckers&) const final;
   InterpolationValue maybeConvertValue(const CSSValue& value,
                                        const StyleResolverState&,
-                                       ConversionCheckers&) const final {
-    NOTREACHED();
-    return nullptr;
-  }
+                                       ConversionCheckers&) const final;
 
   void composite(UnderlyingValueOwner& underlyingValueOwner,
                  double underlyingFraction,
