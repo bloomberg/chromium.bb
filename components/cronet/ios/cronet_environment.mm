@@ -42,6 +42,7 @@
 #include "net/log/write_to_file_net_log_observer.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/ssl/channel_id_service.h"
 #include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -304,6 +305,11 @@ void CronetEnvironment::InitializeOnNetworkThread() {
           net::HostResolver::CreateDefaultResolver(nullptr)));
 
   context_builder.set_host_resolver(std::move(mapped_host_resolver));
+
+  std::unique_ptr<net::CookieStore> cookie_store(
+      net::CookieStoreIOS::CreateCookieStore(
+          [NSHTTPCookieStorage sharedHTTPCookieStorage]));
+  context_builder.SetCookieAndChannelIdStores(std::move(cookie_store), nullptr);
 
   std::unordered_set<std::string> quic_host_whitelist;
   std::unique_ptr<net::HttpServerProperties> http_server_properties(
