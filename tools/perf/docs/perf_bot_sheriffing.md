@@ -306,6 +306,20 @@ are for disabled tests. These should be pinged weekly, and work towards fixing
 should be ongoing when the sheriff is not working on a Pri-1 issue. Here is the
 [list of Pri-2 bugs that have not been pinged in a week](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=label:Performance-Sheriff-BotHealth%20label:Pri-2%20modified-before:today-7&sort=modified).
 
+## Shift Hand-off
+
+At the end of your shift you should send out a message to the next sheriff It
+should detail any ongoing issues you are trying to resolve. This can contain new
+bugs you have filed and bisects you are waiting to finish. If there has been any
+significant updates on older issues that the next sheriff should know about they
+should also be included. This will greatly decrease the amount of time needed
+for the next sheriff to come up to speed.
+
+There is also a weekly debrief that you should see on your calendar titled
+**Weekly Speed Sheriff Retrospective**. For this meeting you should prepare
+any highlights or lowlights from your sheriffing shift as well as any other
+feedback you may have that could improve future sheriffing shifts.
+
 <!-- Unresolved issues:
 1. Do perf sheriffs watch the bisect waterfall?
 2. Do perf sheriffs watch the internal clank waterfall?
