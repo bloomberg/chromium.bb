@@ -17,8 +17,11 @@
 
 // static
 const int AutocompleteClassifier::kDefaultOmniboxProviders =
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-    // Custom search engines cannot be used on mobile..
+#if defined(OS_ANDROID) || defined(OS_IOS)
+    // The Physical Web currently is only implemented on mobile devices.
+    AutocompleteProvider::TYPE_PHYSICAL_WEB |
+#else
+    // Custom search engines cannot be used on mobile.
     AutocompleteProvider::TYPE_KEYWORD |
 #endif
 #if !defined(OS_IOS)
@@ -29,8 +32,6 @@ const int AutocompleteClassifier::kDefaultOmniboxProviders =
 #else
     // "URL from clipboard" can only be used on iOS.
     AutocompleteProvider::TYPE_CLIPBOARD_URL |
-    // Physical Web omnibox results are only implemented on iOS.
-    AutocompleteProvider::TYPE_PHYSICAL_WEB |
 #endif
     AutocompleteProvider::TYPE_BOOKMARK |
     AutocompleteProvider::TYPE_HISTORY_QUICK |

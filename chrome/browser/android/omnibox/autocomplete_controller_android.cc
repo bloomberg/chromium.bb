@@ -185,7 +185,9 @@ void AutocompleteControllerAndroid::OnOmniboxFocused(
 
   // If omnibox text is empty, set it to the current URL for the purposes of
   // populating the verbatim match.
-  if (omnibox_text.empty())
+  if (omnibox_text.empty() &&
+      !current_url.SchemeIs(content::kChromeUIScheme) &&
+      !current_url.SchemeIs(chrome::kChromeUINativeScheme))
     omnibox_text = url;
 
   input_ = AutocompleteInput(
