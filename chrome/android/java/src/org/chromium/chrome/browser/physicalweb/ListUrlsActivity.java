@@ -121,7 +121,7 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
         mPwsClient = new PwsClientImpl(this);
         int referer = getIntent().getIntExtra(REFERER_KEY, 0);
         if (savedInstanceState == null) {  // Ensure this is a newly-created activity.
-            PhysicalWebUma.onActivityReferral(this, referer);
+            PhysicalWebUma.onActivityReferral(referer);
         }
         mIsInitialDisplayRecorded = false;
         mIsRefreshing = false;
@@ -211,9 +211,9 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
             public void onPwsResults(Collection<PwsResult> pwsResults) {
                 long duration = SystemClock.elapsedRealtime() - timestamp;
                 if (isUserInitiated) {
-                    PhysicalWebUma.onRefreshPwsResolution(ListUrlsActivity.this, duration);
+                    PhysicalWebUma.onRefreshPwsResolution(duration);
                 } else {
-                    PhysicalWebUma.onForegroundPwsResolution(ListUrlsActivity.this, duration);
+                    PhysicalWebUma.onForegroundPwsResolution(duration);
                 }
 
                 // filter out duplicate groups.
@@ -241,7 +241,7 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
      */
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-        PhysicalWebUma.onUrlSelected(this);
+        PhysicalWebUma.onUrlSelected();
         UrlInfo nearestUrlInfo = null;
         PwsResult nearestPwsResult = mAdapter.getItem(position);
         String groupId = nearestPwsResult.groupId;
@@ -326,9 +326,9 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
         // Record refresh-related UMA.
         if (!mIsInitialDisplayRecorded) {
             mIsInitialDisplayRecorded = true;
-            PhysicalWebUma.onUrlsDisplayed(this, mAdapter.getCount());
+            PhysicalWebUma.onUrlsDisplayed(mAdapter.getCount());
         } else if (mIsRefreshUserInitiated) {
-            PhysicalWebUma.onUrlsRefreshed(this, mAdapter.getCount());
+            PhysicalWebUma.onUrlsRefreshed(mAdapter.getCount());
         }
 
         mIsRefreshing = false;

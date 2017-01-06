@@ -62,11 +62,11 @@ public class PhysicalWebPreferenceFragment extends PreferenceFragment {
             case REQUEST_ID:
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    PhysicalWebUma.onPrefsLocationGranted(getActivity());
+                    PhysicalWebUma.onPrefsLocationGranted();
                     Log.d(TAG, "Location permission granted");
                     PhysicalWeb.startPhysicalWeb();
                 } else {
-                    PhysicalWebUma.onPrefsLocationDenied(getActivity());
+                    PhysicalWebUma.onPrefsLocationDenied();
                     Log.d(TAG, "Location permission denied");
                 }
                 break;
@@ -86,10 +86,10 @@ public class PhysicalWebPreferenceFragment extends PreferenceFragment {
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 boolean enabled = (boolean) newValue;
                 if (enabled) {
-                    PhysicalWebUma.onPrefsFeatureEnabled(getActivity());
+                    PhysicalWebUma.onPrefsFeatureEnabled();
                     ensureLocationPermission();
                 } else {
-                    PhysicalWebUma.onPrefsFeatureDisabled(getActivity());
+                    PhysicalWebUma.onPrefsFeatureDisabled();
                 }
                 PrivacyPreferencesManager.getInstance().setPhysicalWebEnabled(enabled);
                 return true;

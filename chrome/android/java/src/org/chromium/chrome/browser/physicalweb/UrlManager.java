@@ -503,8 +503,7 @@ class UrlManager {
             @Override
             public void onPwsResults(final Collection<PwsResult> pwsResults) {
                 long duration = SystemClock.elapsedRealtime() - timestamp;
-                PhysicalWebUma.onBackgroundPwsResolution(
-                        ContextUtils.getApplicationContext(), duration);
+                PhysicalWebUma.onBackgroundPwsResolution(duration);
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
@@ -556,13 +555,11 @@ class UrlManager {
                 // high priority notification
                 createOptInNotification(true);
                 PhysicalWeb.recordOptInNotification();
-                PhysicalWebUma.onOptInHighPriorityNotificationShown(
-                        ContextUtils.getApplicationContext());
+                PhysicalWebUma.onOptInHighPriorityNotificationShown();
             } else {
                 // min priority notification
                 createOptInNotification(false);
-                PhysicalWebUma.onOptInMinPriorityNotificationShown(
-                        ContextUtils.getApplicationContext());
+                PhysicalWebUma.onOptInMinPriorityNotificationShown();
             }
         } else if (PhysicalWeb.isPhysicalWebPreferenceEnabled()) {
             createNotification();
