@@ -207,6 +207,7 @@ public class PaymentRequestImpl
 
     private final Handler mHandler = new Handler();
     private final ChromeActivity mContext;
+    private final WebContents mWebContents;
     private final String mMerchantName;
     private final String mOrigin;
     private final AddressEditor mAddressEditor;
@@ -251,7 +252,6 @@ public class PaymentRequestImpl
     private SectionInformation mShippingAddressesSection;
     private SectionInformation mContactSection;
     private List<PaymentApp> mApps;
-    private boolean mAllAppsCreated;
     private List<PaymentApp> mPendingApps;
     private List<PaymentInstrument> mPendingInstruments;
     private List<PaymentInstrument> mPendingAutofillInstruments;
@@ -280,8 +280,8 @@ public class PaymentRequestImpl
     /**
      * Builds the PaymentRequest service implementation.
      *
-     * @param context         The context where PaymentRequest has been invoked.
-     * @param webContents     The web contents that have invoked the PaymentRequest API.
+     * @param context     The context where PaymentRequest has been invoked.
+     * @param webContents The web contents that have invoked the PaymentRequest API.
      */
     public PaymentRequestImpl(Activity context, WebContents webContents) {
         assert context != null;
@@ -289,6 +289,7 @@ public class PaymentRequestImpl
 
         assert context instanceof ChromeActivity;
         mContext = (ChromeActivity) context;
+        mWebContents = webContents;
 
         mMerchantName = webContents.getTitle();
         // The feature is available only in secure context, so it's OK to not show HTTPS.
@@ -313,7 +314,6 @@ public class PaymentRequestImpl
                 });
 
         mApps = new ArrayList<>();
-        PaymentAppFactory.getInstance().create(mContext, webContents, this);
 
         mAddressEditor = new AddressEditor();
         mCardEditor = new CardEditor(webContents, mAddressEditor, sObserverForTest);
@@ -349,7 +349,8 @@ public class PaymentRequestImpl
 
         if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return;
 
-        getMatchingPaymentInstruments();
+        PaymentAppFactory.getInstance().create(
+                mContext, mWebContents, Collections.unmodifiableSet(mMethodData.keySet()), this);
 
         boolean requestShipping = options != null && options.requestShipping;
         boolean requestPayerName = options != null && options.requestPayerName;
@@ -573,13 +574,10 @@ public class PaymentRequestImpl
 
     @Override
     public void onAllPaymentAppsCreated() {
-        mAllAppsCreated = true;
-        getMatchingPaymentInstruments();
-    }
+        if (mClient == null) return;
 
-    /** Queries the installed payment apps for their instruments that merchant supports. */
-    private void getMatchingPaymentInstruments() {
-        if (!mAllAppsCreated || mClient == null || mPendingApps != null) return;
+        assert mPendingApps == null;
+
         mPendingApps = new ArrayList<>(mApps);
         mPendingInstruments = new ArrayList<>();
         mPendingAutofillInstruments = new ArrayList<>();

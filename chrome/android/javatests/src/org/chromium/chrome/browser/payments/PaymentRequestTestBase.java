@@ -856,7 +856,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         final TestPay app = new TestPay(methodName, instrumentPresence, responseSpeed);
         PaymentAppFactory.getInstance().addAdditionalFactory(new PaymentAppFactoryAddition() {
             @Override
-            public void create(Context context, WebContents webContents,
+            public void create(Context context, WebContents webContents, Set<String> methodNames,
                     final PaymentAppFactory.PaymentAppCreatedCallback callback) {
                 if (creationSpeed == IMMEDIATE_CREATION) {
                     callback.onPaymentAppCreated(app);

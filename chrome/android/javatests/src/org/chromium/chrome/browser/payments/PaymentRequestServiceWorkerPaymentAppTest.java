@@ -11,6 +11,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.Arrays;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -42,6 +43,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest extends PaymentRequestTes
                 new PaymentAppFactory.PaymentAppFactoryAddition() {
                     @Override
                     public void create(Context context, WebContents webContents,
+                            Set<String> methodNames,
                             PaymentAppFactory.PaymentAppCreatedCallback callback) {
                         ServiceWorkerPaymentAppBridge.Manifest testManifest =
                                 new ServiceWorkerPaymentAppBridge.Manifest();

@@ -15394,6 +15394,12 @@ read aloud to screenreader users to announce that a completion is available.">
       <message name="IDS_FLAGS_ENABLE_ANDROID_PAY_INTEGRATION_V2_DESCRIPTION" desc="Description for the flag to enable the second version of Android Pay integration" translateable="false">
         Enable integration with Android Pay using the second version of the API
       </message>
+      <message name="IDS_FLAGS_ANDROID_PAYMENT_APPS_NAME" desc="Name of the flag to enable third party Android payment apps" translateable="false">
+        Android payment apps
+      </message>
+      <message name="IDS_FLAGS_ANDROID_PAYMENT_APPS_DESCRIPTION" desc="Description for the flag to enable third party Android payment apps" translateable="false">
+        Enable third party Android apps to integrate as payment apps
+      </message>
     </if>
 
     <message name="IDS_FLAGS_FEATURE_POLICY_NAME" desc="Name for the flag to enable feature policy.">

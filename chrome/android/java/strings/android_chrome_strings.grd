@@ -2762,6 +2762,9 @@ You can control the Physical Web in Chrome Settings.
       <message name="IDS_PAYMENTS_UNSUPPORTED_PICKUP_ADDRESS" desc="Text implying that a user needs to choose a different pickup address, because the currently selected address is not supported. This address can be used, for example, for laundry pickup.">
         Unsupported pickup address. Select a different address.
       </message>
+      <message name="IDS_PAYMENTS_ANDROID_APP_ERROR" desc="Error message that is shown when an Android payment application fails to start.">
+        Unable to launch payment app.
+      </message>
 
       <!-- Migration strings -->
       <message name="IDS_TAB_SWITCHER_CALLOUT_HEADER" desc="Header for the Tab Switcher callout.">

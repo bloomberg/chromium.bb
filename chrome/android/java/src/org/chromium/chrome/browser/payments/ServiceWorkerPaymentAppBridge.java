@@ -56,7 +56,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     }
 
     @Override
-    public void create(Context context, WebContents webContents,
+    public void create(Context context, WebContents webContents, Set<String> methodNames,
             PaymentAppFactory.PaymentAppCreatedCallback callback) {
         nativeGetAllAppManifests(webContents, callback);
     }
