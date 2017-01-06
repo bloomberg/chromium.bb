@@ -146,7 +146,7 @@ static void loop_wiener_filter_tile(uint8_t *data, int tile_idx, int width,
   DECLARE_ALIGNED(16, InterpKernel, hkernel);
   DECLARE_ALIGNED(16, InterpKernel, vkernel);
 
-  if (rst->rsi->wiener_info[tile_idx].level == 0) {
+  if (rst->rsi->restoration_type[tile_idx] == RESTORE_NONE) {
     loop_copy_tile(data, tile_idx, 0, 0, width, height, stride, rst, dst,
                    dst_stride);
     return;
@@ -632,7 +632,7 @@ static void loop_sgrproj_filter_tile(uint8_t *data, int tile_idx, int width,
   int h_start, h_end, v_start, v_end;
   uint8_t *data_p, *dst_p;
 
-  if (rst->rsi->sgrproj_info[tile_idx].level == 0) {
+  if (rst->rsi->restoration_type[tile_idx] == RESTORE_NONE) {
     loop_copy_tile(data, tile_idx, 0, 0, width, height, stride, rst, dst,
                    dst_stride);
     return;
@@ -791,7 +791,7 @@ static void loop_domaintxfmrf_filter_tile(uint8_t *data, int tile_idx,
   int h_start, h_end, v_start, v_end;
   int32_t *tmpbuf = (int32_t *)rst->tmpbuf;
 
-  if (rst->rsi->domaintxfmrf_info[tile_idx].level == 0) {
+  if (rst->rsi->restoration_type[tile_idx] == RESTORE_NONE) {
     loop_copy_tile(data, tile_idx, 0, 0, width, height, stride, rst, dst,
                    dst_stride);
     return;
@@ -886,7 +886,7 @@ static void loop_wiener_filter_tile_highbd(uint16_t *data, int tile_idx,
   DECLARE_ALIGNED(16, InterpKernel, hkernel);
   DECLARE_ALIGNED(16, InterpKernel, vkernel);
 
-  if (rst->rsi->wiener_info[tile_idx].level == 0) {
+  if (rst->rsi->restoration_type[tile_idx] == RESTORE_NONE) {
     loop_copy_tile_highbd(data, tile_idx, 0, 0, width, height, stride, rst, dst,
                           dst_stride);
     return;
@@ -979,7 +979,7 @@ static void loop_sgrproj_filter_tile_highbd(uint16_t *data, int tile_idx,
   int h_start, h_end, v_start, v_end;
   uint16_t *data_p, *dst_p;
 
-  if (rst->rsi->sgrproj_info[tile_idx].level == 0) {
+  if (rst->rsi->restoration_type[tile_idx] == RESTORE_NONE) {
     loop_copy_tile_highbd(data, tile_idx, 0, 0, width, height, stride, rst, dst,
                           dst_stride);
     return;
@@ -1109,7 +1109,7 @@ static void loop_domaintxfmrf_filter_tile_highbd(
   int h_start, h_end, v_start, v_end;
   int32_t *tmpbuf = (int32_t *)rst->tmpbuf;
 
-  if (rst->rsi->domaintxfmrf_info[tile_idx].level == 0) {
+  if (rst->rsi->restoration_type[tile_idx] == RESTORE_NONE) {
     loop_copy_tile_highbd(data, tile_idx, 0, 0, width, height, stride, rst, dst,
                           dst_stride);
     return;

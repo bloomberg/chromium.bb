@@ -3088,6 +3088,9 @@ static void encode_restoration(AV1_COMMON *cm, aom_writer *wb) {
   int i, p;
   const int ntiles =
       av1_get_rest_ntiles(cm->width, cm->height, NULL, NULL, NULL, NULL);
+  const int ntiles_uv = av1_get_rest_ntiles(cm->width >> cm->subsampling_x,
+                                            cm->height >> cm->subsampling_y,
+                                            NULL, NULL, NULL, NULL);
   RestorationInfo *rsi = &cm->rst_info[0];
   if (rsi->frame_restoration_type != RESTORE_NONE) {
     if (rsi->frame_restoration_type == RESTORE_SWITCHABLE) {
@@ -3106,24 +3109,25 @@ static void encode_restoration(AV1_COMMON *cm, aom_writer *wb) {
       }
     } else if (rsi->frame_restoration_type == RESTORE_WIENER) {
       for (i = 0; i < ntiles; ++i) {
-        aom_write(wb, rsi->wiener_info[i].level != 0, RESTORE_NONE_WIENER_PROB);
-        if (rsi->wiener_info[i].level) {
+        aom_write(wb, rsi->restoration_type[i] != RESTORE_NONE,
+                  RESTORE_NONE_WIENER_PROB);
+        if (rsi->restoration_type[i] != RESTORE_NONE) {
           write_wiener_filter(&rsi->wiener_info[i], wb);
         }
       }
     } else if (rsi->frame_restoration_type == RESTORE_SGRPROJ) {
       for (i = 0; i < ntiles; ++i) {
-        aom_write(wb, rsi->sgrproj_info[i].level != 0,
+        aom_write(wb, rsi->restoration_type[i] != RESTORE_NONE,
                   RESTORE_NONE_SGRPROJ_PROB);
-        if (rsi->sgrproj_info[i].level) {
+        if (rsi->restoration_type[i] != RESTORE_NONE) {
           write_sgrproj_filter(&rsi->sgrproj_info[i], wb);
         }
       }
     } else if (rsi->frame_restoration_type == RESTORE_DOMAINTXFMRF) {
       for (i = 0; i < ntiles; ++i) {
-        aom_write(wb, rsi->domaintxfmrf_info[i].level != 0,
+        aom_write(wb, rsi->restoration_type[i] != RESTORE_NONE,
                   RESTORE_NONE_DOMAINTXFMRF_PROB);
-        if (rsi->domaintxfmrf_info[i].level) {
+        if (rsi->restoration_type[i] != RESTORE_NONE) {
           write_domaintxfmrf_filter(&rsi->domaintxfmrf_info[i], wb);
         }
       }
@@ -3132,7 +3136,14 @@ static void encode_restoration(AV1_COMMON *cm, aom_writer *wb) {
   for (p = 1; p < MAX_MB_PLANE; ++p) {
     rsi = &cm->rst_info[p];
     if (rsi->frame_restoration_type == RESTORE_WIENER) {
-      write_wiener_filter(&rsi->wiener_info[0], wb);
+      for (i = 0; i < ntiles_uv; ++i) {
+        if (ntiles_uv > 1)
+          aom_write(wb, rsi->restoration_type[i] != RESTORE_NONE,
+                    RESTORE_NONE_WIENER_PROB);
+        if (rsi->restoration_type[i] != RESTORE_NONE) {
+          write_wiener_filter(&rsi->wiener_info[i], wb);
+        }
+      }
     } else if (rsi->frame_restoration_type != RESTORE_NONE) {
       assert(0);
     }

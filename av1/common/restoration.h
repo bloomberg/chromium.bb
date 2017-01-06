@@ -114,10 +114,7 @@ extern "C" {
 // Max of SGRPROJ_EXTBUF_SIZE, DOMAINTXFMRF_EXTBUF_SIZE, WIENER_EXTBUF_SIZE
 #define RESTORATION_EXTBUF_SIZE (DOMAINTXFMRF_EXTBUF_SIZE)
 
-typedef struct {
-  int level;
-  int vfilter[WIENER_WIN], hfilter[WIENER_WIN];
-} WienerInfo;
+typedef struct { int vfilter[WIENER_WIN], hfilter[WIENER_WIN]; } WienerInfo;
 
 typedef struct {
   int r1;
@@ -127,15 +124,11 @@ typedef struct {
 } sgr_params_type;
 
 typedef struct {
-  int level;
   int ep;
   int xqd[2];
 } SgrprojInfo;
 
-typedef struct {
-  int level;
-  int sigma_r;
-} DomaintxfmrfInfo;
+typedef struct { int sigma_r; } DomaintxfmrfInfo;
 
 typedef struct {
   RestorationType frame_restoration_type;
