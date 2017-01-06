@@ -394,6 +394,13 @@ class PixelSurface {
   cairo_t* cairo_;
 };
 
+void RenderBackground(cairo_t* cr, GtkStyleContext* context) {
+  if (!context)
+    return;
+  RenderBackground(cr, gtk_style_context_get_parent(context));
+  gtk_render_background(context, cr, 0, 0, 1, 1);
+}
+
 SkColor GetBgColor(const char* css_selector) {
   // Backgrounds are more general than solid colors (eg. gradients),
   // but chromium requires us to boil this down to one color.  We
@@ -404,7 +411,7 @@ SkColor GetBgColor(const char* css_selector) {
   auto context = GetStyleContextFromCss(css_selector);
   RemoveBorders(context);
   PixelSurface surface;
-  gtk_render_background(context, surface.cairo(), 0, 0, 1, 1);
+  RenderBackground(surface.cairo(), context);
   return surface.GetPixelValue();
 }
 
@@ -426,6 +433,7 @@ SkColor GetBorderColor(const char* css_selector) {
 
   AddBorders(context);
   PixelSurface surface;
+  RenderBackground(surface.cairo(), context);
   gtk_render_frame(context, surface.cairo(), 0, 0, 1, 1);
   return surface.GetPixelValue();
 }
