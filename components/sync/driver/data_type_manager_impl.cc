@@ -19,6 +19,7 @@
 #include "components/sync/driver/data_type_encryption_handler.h"
 #include "components/sync/driver/data_type_manager_observer.h"
 #include "components/sync/driver/data_type_status_table.h"
+#include "components/sync/driver/sync_client.h"
 #include "components/sync/engine/data_type_debug_info_listener.h"
 
 namespace syncer {
@@ -44,13 +45,15 @@ DataTypeManagerImpl::AssociationTypesInfo::AssociationTypesInfo(
 DataTypeManagerImpl::AssociationTypesInfo::~AssociationTypesInfo() {}
 
 DataTypeManagerImpl::DataTypeManagerImpl(
+    SyncClient* sync_client,
     ModelTypeSet initial_types,
     const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
     const DataTypeController::TypeMap* controllers,
     const DataTypeEncryptionHandler* encryption_handler,
     ModelTypeConfigurer* configurer,
     DataTypeManagerObserver* observer)
-    : configurer_(configurer),
+    : sync_client_(sync_client),
+      configurer_(configurer),
       controllers_(controllers),
       state_(DataTypeManager::STOPPED),
       needs_reconfigure_(false),
@@ -78,17 +81,19 @@ void DataTypeManagerImpl::Configure(ModelTypeSet desired_types,
 
   desired_types.PutAll(CoreTypes());
 
-  // Only allow control types and types that have controllers.
-  ModelTypeSet filtered_desired_types;
-  for (ModelTypeSet::Iterator type = desired_types.First(); type.Good();
-       type.Inc()) {
-    DataTypeController::TypeMap::const_iterator iter =
-        controllers_->find(type.Get());
-    if (IsControlType(type.Get()) || iter != controllers_->end()) {
-      filtered_desired_types.Put(type.Get());
-    }
+  ModelTypeSet allowed_types = ControlTypes();
+  // Add types with controllers.
+  for (const auto& kv : *controllers_) {
+    allowed_types.Put(kv.first);
   }
-  ConfigureImpl(filtered_desired_types, reason);
+
+  // Remove types we cannot sync.
+  if (!sync_client_->HasPasswordStore())
+    allowed_types.Remove(PASSWORDS);
+  if (!sync_client_->GetHistoryService())
+    allowed_types.Remove(TYPED_URLS);
+
+  ConfigureImpl(Intersection(desired_types, allowed_types), reason);
 }
 
 void DataTypeManagerImpl::ReenableType(ModelType type) {

@@ -14,6 +14,7 @@
 #include "components/sync/driver/data_type_manager_observer.h"
 #include "components/sync/driver/data_type_status_table.h"
 #include "components/sync/driver/fake_data_type_controller.h"
+#include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/engine/activation_context.h"
 #include "components/sync/engine/configure_reason.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,6 +60,11 @@ DataTypeStatusTable BuildStatusTable(ModelTypeSet crypto_errors,
   status_table.UpdateFailedDataTypes(error_map);
   return status_table;
 }
+
+class TestSyncClient : public FakeSyncClient {
+ public:
+  bool HasPasswordStore() override { return true; }
+};
 
 // Fake ModelTypeConfigurer implementation that simply stores away the
 // callback passed into ConfigureDataTypes.
@@ -216,20 +222,7 @@ ModelTypeSet FakeDataTypeEncryptionHandler::GetEncryptedDataTypes() const {
 
 class TestDataTypeManager : public DataTypeManagerImpl {
  public:
-  TestDataTypeManager(
-      ModelTypeSet initial_types,
-      const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
-      ModelTypeConfigurer* configurer,
-      const DataTypeController::TypeMap* controllers,
-      const DataTypeEncryptionHandler* encryption_handler,
-      DataTypeManagerObserver* observer)
-      : DataTypeManagerImpl(initial_types,
-                            debug_info_listener,
-                            controllers,
-                            encryption_handler,
-                            configurer,
-                            observer),
-        custom_priority_types_(ControlTypes()) {}
+  using DataTypeManagerImpl::DataTypeManagerImpl;
 
   void set_priority_types(const ModelTypeSet& priority_types) {
     custom_priority_types_ = priority_types;
@@ -250,7 +243,7 @@ class TestDataTypeManager : public DataTypeManagerImpl {
     return custom_priority_types_;
   }
 
-  ModelTypeSet custom_priority_types_;
+  ModelTypeSet custom_priority_types_ = ControlTypes();
   DataTypeManager::ConfigureResult configure_result_;
 };
 
@@ -265,8 +258,8 @@ class SyncDataTypeManagerImplTest : public testing::Test {
  protected:
   void SetUp() override {
     dtm_ = base::MakeUnique<TestDataTypeManager>(
-        ModelTypeSet(), WeakHandle<DataTypeDebugInfoListener>(), &configurer_,
-        &controllers_, &encryption_handler_, &observer_);
+        &sync_client_, ModelTypeSet(), WeakHandle<DataTypeDebugInfoListener>(),
+        &controllers_, &encryption_handler_, &configurer_, &observer_);
   }
 
   void SetConfigureStartExpectation() { observer_.ExpectStart(); }
@@ -333,6 +326,7 @@ class SyncDataTypeManagerImplTest : public testing::Test {
 
   base::MessageLoopForUI ui_loop_;
   DataTypeController::TypeMap controllers_;
+  TestSyncClient sync_client_;
   FakeModelTypeConfigurer configurer_;
   FakeDataTypeManagerObserver observer_;
   std::unique_ptr<TestDataTypeManager> dtm_;

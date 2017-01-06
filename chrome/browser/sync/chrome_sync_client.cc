@@ -250,6 +250,10 @@ history::HistoryService* ChromeSyncClient::GetHistoryService() {
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
 }
 
+bool ChromeSyncClient::HasPasswordStore() {
+  return password_store_ != nullptr;
+}
+
 autofill::PersonalDataManager* ChromeSyncClient::GetPersonalDataManager() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return autofill::PersonalDataManagerFactory::GetForProfile(profile_);

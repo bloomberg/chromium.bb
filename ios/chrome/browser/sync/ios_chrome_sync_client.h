@@ -42,6 +42,7 @@ class IOSChromeSyncClient : public syncer::SyncClient {
   bookmarks::BookmarkModel* GetBookmarkModel() override;
   favicon::FaviconService* GetFaviconService() override;
   history::HistoryService* GetHistoryService() override;
+  bool HasPasswordStore() override;
   base::Closure GetPasswordStateChangedCallback() override;
   syncer::SyncApiComponentFactory::RegisterDataTypesMethod
   GetRegisterPlatformTypesCallback() override;

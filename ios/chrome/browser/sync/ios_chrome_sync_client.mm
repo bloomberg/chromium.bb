@@ -202,6 +202,11 @@ history::HistoryService* IOSChromeSyncClient::GetHistoryService() {
       browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
 }
 
+bool IOSChromeSyncClient::HasPasswordStore() {
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  return password_store_ != nullptr;
+}
+
 autofill::PersonalDataManager* IOSChromeSyncClient::GetPersonalDataManager() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return autofill::PersonalDataManagerFactory::GetForBrowserState(

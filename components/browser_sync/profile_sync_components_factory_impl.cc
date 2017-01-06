@@ -304,9 +304,9 @@ DataTypeManager* ProfileSyncComponentsFactoryImpl::CreateDataTypeManager(
     const syncer::DataTypeEncryptionHandler* encryption_handler,
     syncer::ModelTypeConfigurer* configurer,
     DataTypeManagerObserver* observer) {
-  return new DataTypeManagerImpl(initial_types, debug_info_listener,
-                                 controllers, encryption_handler, configurer,
-                                 observer);
+  return new DataTypeManagerImpl(sync_client_, initial_types,
+                                 debug_info_listener, controllers,
+                                 encryption_handler, configurer, observer);
 }
 
 syncer::SyncEngine* ProfileSyncComponentsFactoryImpl::CreateSyncEngine(

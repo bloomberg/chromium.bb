@@ -60,6 +60,10 @@ history::HistoryService* FakeSyncClient::GetHistoryService() {
   return nullptr;
 }
 
+bool FakeSyncClient::HasPasswordStore() {
+  return false;
+}
+
 base::Closure FakeSyncClient::GetPasswordStateChangedCallback() {
   return base::Bind(&base::DoNothing);
 }

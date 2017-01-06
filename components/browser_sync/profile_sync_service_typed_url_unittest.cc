@@ -60,8 +60,9 @@ const char kDummySavingBrowserHistoryDisabled[] = "dummyPref";
 // Visits with this timestamp are treated as expired.
 static const int EXPIRED_VISIT = -1;
 
-ACTION(ReturnNewDataTypeManager) {
-  return new syncer::DataTypeManagerImpl(arg0, arg1, arg2, arg3, arg4, arg5);
+ACTION_P(ReturnNewDataTypeManager, sync_client) {
+  return new syncer::DataTypeManagerImpl(sync_client, arg0, arg1, arg2, arg3,
+                                         arg4, arg5);
 }
 
 class HistoryBackendMock : public HistoryBackend {
@@ -247,10 +248,10 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
       SigninManagerBase* signin =
           profile_sync_service_bundle()->signin_manager();
       signin->SetAuthenticatedAccountInfo("gaia_id", "test");
-      CreateSyncService(std::move(sync_client_), callback);
       EXPECT_CALL(*profile_sync_service_bundle()->component_factory(),
                   CreateDataTypeManager(_, _, _, _, _, _))
-          .WillOnce(ReturnNewDataTypeManager());
+          .WillOnce(ReturnNewDataTypeManager(sync_client_.get()));
+      CreateSyncService(std::move(sync_client_), callback);
 
       profile_sync_service_bundle()->auth_service()->UpdateCredentials(
           account_id, "oauth2_login_token");
