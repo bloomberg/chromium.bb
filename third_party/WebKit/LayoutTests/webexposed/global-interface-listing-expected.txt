@@ -3933,21 +3933,10 @@ interface MediaRecorder : EventTarget
 interface MediaSession : EventTarget
     attribute @@toStringTag
     getter metadata
-    getter onnexttrack
-    getter onpause
-    getter onplay
-    getter onprevioustrack
-    getter onseekbackward
-    getter onseekforward
     getter playbackState
     method constructor
+    method setActionHandler
     setter metadata
-    setter onnexttrack
-    setter onpause
-    setter onplay
-    setter onprevioustrack
-    setter onseekbackward
-    setter onseekforward
     setter playbackState
 interface MediaSettingsRange
     attribute @@toStringTag

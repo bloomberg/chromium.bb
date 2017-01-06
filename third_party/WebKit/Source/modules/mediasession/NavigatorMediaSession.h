@@ -12,6 +12,7 @@
 namespace blink {
 
 class Navigator;
+class ScriptState;
 
 // Provides MediaSession as a supplement of Navigator as an attribute.
 class NavigatorMediaSession final

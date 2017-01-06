@@ -20,20 +20,26 @@ var expectations = [
 
 var nextExpectation = 0;
 
-function checkExpectation(t, event) {
+function checkExpectation(t, action) {
   var expectedEvent = expectations[nextExpectation];
-  assert_equals(expectedEvent, event.type);
+  assert_equals(expectedEvent, action);
   if (++nextExpectation >= expectations.length)
     t.done();
 }
 
 function runTests(t) {
-  window.navigator.mediaSession.onplay = t.step_func(checkExpectation.bind(null, t));
-  window.navigator.mediaSession.onpause = t.step_func(checkExpectation.bind(null, t));
-  window.navigator.mediaSession.onprevioustrack = t.step_func(checkExpectation.bind(null, t));
-  window.navigator.mediaSession.onnexttrack = t.step_func(checkExpectation.bind(null, t));
-  window.navigator.mediaSession.onseekforward = t.step_func(checkExpectation.bind(null, t));
-  window.navigator.mediaSession.onseekbackward = t.step_func(checkExpectation.bind(null, t));
+  window.navigator.mediaSession.setActionHandler(
+      "play", t.step_func(checkExpectation.bind(null, t, "play")));
+  window.navigator.mediaSession.setActionHandler(
+      "pause", t.step_func(checkExpectation.bind(null, t, "pause")));
+  window.navigator.mediaSession.setActionHandler(
+      "previoustrack", t.step_func(checkExpectation.bind(null, t, "previoustrack")));
+  window.navigator.mediaSession.setActionHandler(
+      "nexttrack", t.step_func(checkExpectation.bind(null, t, "nexttrack")));
+  window.navigator.mediaSession.setActionHandler(
+      "seekbackward", t.step_func(checkExpectation.bind(null, t, "seekbackward")));
+  window.navigator.mediaSession.setActionHandler(
+      "seekforward", t.step_func(checkExpectation.bind(null, t, "seekforward")));
 
   mock.getClient().didReceiveAction(MediaSessionAction.PLAY);
   mock.getClient().didReceiveAction(MediaSessionAction.PAUSE);

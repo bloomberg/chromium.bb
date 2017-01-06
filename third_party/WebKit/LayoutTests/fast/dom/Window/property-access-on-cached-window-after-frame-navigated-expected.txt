@@ -50,12 +50,6 @@ PASS oldChildWindow.navigator.language is newChildWindow.navigator.language
 PASS oldChildWindow.navigator.maxTouchPoints is newChildWindow.navigator.maxTouchPoints
 PASS oldChildWindow.navigator.mediaDevices.ondevicechange is newChildWindow.navigator.mediaDevices.ondevicechange
 PASS oldChildWindow.navigator.mediaSession.metadata is newChildWindow.navigator.mediaSession.metadata
-PASS oldChildWindow.navigator.mediaSession.onnexttrack is newChildWindow.navigator.mediaSession.onnexttrack
-PASS oldChildWindow.navigator.mediaSession.onpause is newChildWindow.navigator.mediaSession.onpause
-PASS oldChildWindow.navigator.mediaSession.onplay is newChildWindow.navigator.mediaSession.onplay
-PASS oldChildWindow.navigator.mediaSession.onprevioustrack is newChildWindow.navigator.mediaSession.onprevioustrack
-PASS oldChildWindow.navigator.mediaSession.onseekbackward is newChildWindow.navigator.mediaSession.onseekbackward
-PASS oldChildWindow.navigator.mediaSession.onseekforward is newChildWindow.navigator.mediaSession.onseekforward
 PASS oldChildWindow.navigator.mediaSession.playbackState is newChildWindow.navigator.mediaSession.playbackState
 PASS oldChildWindow.navigator.onLine is newChildWindow.navigator.onLine
 PASS oldChildWindow.navigator.platform is newChildWindow.navigator.platform

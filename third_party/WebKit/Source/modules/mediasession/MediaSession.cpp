@@ -4,12 +4,11 @@
 
 #include "modules/mediasession/MediaSession.h"
 
+#include "bindings/modules/v8/MediaSessionActionHandler.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/events/Event.h"
 #include "core/frame/LocalFrame.h"
-#include "modules/EventTargetModules.h"
 #include "modules/mediasession/MediaMetadata.h"
 #include "modules/mediasession/MediaMetadataSanitizer.h"
 #include "platform/UserGestureIndicator.h"
@@ -23,39 +22,49 @@ namespace {
 
 using ::blink::mojom::blink::MediaSessionAction;
 
-const AtomicString& mojomActionToEventName(MediaSessionAction action) {
+const AtomicString& mojomActionToActionName(MediaSessionAction action) {
+  DEFINE_STATIC_LOCAL(const AtomicString, playActionName, ("play"));
+  DEFINE_STATIC_LOCAL(const AtomicString, pauseActionName, ("pause"));
+  DEFINE_STATIC_LOCAL(const AtomicString, previousTrackActionName,
+                      ("previoustrack"));
+  DEFINE_STATIC_LOCAL(const AtomicString, nextTrackActionName, ("nexttrack"));
+  DEFINE_STATIC_LOCAL(const AtomicString, seekBackwardActionName,
+                      ("seekbackward"));
+  DEFINE_STATIC_LOCAL(const AtomicString, seekForwardActionName,
+                      ("seekforward"));
+
   switch (action) {
     case MediaSessionAction::PLAY:
-      return EventTypeNames::play;
+      return playActionName;
     case MediaSessionAction::PAUSE:
-      return EventTypeNames::pause;
+      return pauseActionName;
     case MediaSessionAction::PREVIOUS_TRACK:
-      return EventTypeNames::previoustrack;
+      return previousTrackActionName;
     case MediaSessionAction::NEXT_TRACK:
-      return EventTypeNames::nexttrack;
+      return nextTrackActionName;
     case MediaSessionAction::SEEK_BACKWARD:
-      return EventTypeNames::seekbackward;
+      return seekBackwardActionName;
     case MediaSessionAction::SEEK_FORWARD:
-      return EventTypeNames::seekforward;
+      return seekForwardActionName;
     default:
       NOTREACHED();
   }
   return WTF::emptyAtom;
 }
 
-WTF::Optional<MediaSessionAction> eventNameToMojomAction(
-    const AtomicString& eventName) {
-  if (EventTypeNames::play == eventName)
+WTF::Optional<MediaSessionAction> actionNameToMojomAction(
+    const String& actionName) {
+  if ("play" == actionName)
     return MediaSessionAction::PLAY;
-  if (EventTypeNames::pause == eventName)
+  if ("pause" == actionName)
     return MediaSessionAction::PAUSE;
-  if (EventTypeNames::previoustrack == eventName)
+  if ("previoustrack" == actionName)
     return MediaSessionAction::PREVIOUS_TRACK;
-  if (EventTypeNames::nexttrack == eventName)
+  if ("nexttrack" == actionName)
     return MediaSessionAction::NEXT_TRACK;
-  if (EventTypeNames::seekbackward == eventName)
+  if ("seekbackward" == actionName)
     return MediaSessionAction::SEEK_BACKWARD;
-  if (EventTypeNames::seekforward == eventName)
+  if ("seekforward" == actionName)
     return MediaSessionAction::SEEK_FORWARD;
 
   NOTREACHED();
@@ -140,12 +149,43 @@ void MediaSession::onMetadataChanged() {
       m_metadata, getExecutionContext()));
 }
 
-const WTF::AtomicString& MediaSession::interfaceName() const {
-  return EventTargetNames::MediaSession;
+void MediaSession::setActionHandler(const String& action,
+                                    MediaSessionActionHandler* handler) {
+  if (handler) {
+    auto addResult = m_actionHandlers.set(
+        action, TraceWrapperMember<MediaSessionActionHandler>(this, handler));
+
+    if (!addResult.isNewEntry)
+      return;
+
+    notifyActionChange(action, ActionChangeType::ActionEnabled);
+  } else {
+    if (m_actionHandlers.find(action) == m_actionHandlers.end())
+      return;
+
+    m_actionHandlers.remove(action);
+
+    notifyActionChange(action, ActionChangeType::ActionDisabled);
+  }
 }
 
-ExecutionContext* MediaSession::getExecutionContext() const {
-  return ContextClient::getExecutionContext();
+void MediaSession::notifyActionChange(const String& action,
+                                      ActionChangeType type) {
+  mojom::blink::MediaSessionService* service = getService();
+  if (!service)
+    return;
+
+  auto mojomAction = actionNameToMojomAction(action);
+  DCHECK(mojomAction.has_value());
+
+  switch (type) {
+    case ActionChangeType::ActionEnabled:
+      service->EnableAction(mojomAction.value());
+      break;
+    case ActionChangeType::ActionDisabled:
+      service->DisableAction(mojomAction.value());
+      break;
+  }
 }
 
 mojom::blink::MediaSessionService* MediaSession::getService() {
@@ -171,43 +211,36 @@ mojom::blink::MediaSessionService* MediaSession::getService() {
   return m_service.get();
 }
 
-bool MediaSession::addEventListenerInternal(
-    const AtomicString& eventType,
-    EventListener* listener,
-    const AddEventListenerOptionsResolved& options) {
-  if (mojom::blink::MediaSessionService* service = getService()) {
-    auto mojomAction = eventNameToMojomAction(eventType);
-    DCHECK(mojomAction.has_value());
-    service->EnableAction(mojomAction.value());
-  }
-  return EventTarget::addEventListenerInternal(eventType, listener, options);
-}
-
-bool MediaSession::removeEventListenerInternal(
-    const AtomicString& eventType,
-    const EventListener* listener,
-    const EventListenerOptions& options) {
-  if (mojom::blink::MediaSessionService* service = getService()) {
-    auto mojomAction = eventNameToMojomAction(eventType);
-    DCHECK(mojomAction.has_value());
-    service->DisableAction(mojomAction.value());
-  }
-  return EventTarget::removeEventListenerInternal(eventType, listener, options);
-}
-
 void MediaSession::DidReceiveAction(
     blink::mojom::blink::MediaSessionAction action) {
   DCHECK(getExecutionContext()->isDocument());
   Document* document = toDocument(getExecutionContext());
   UserGestureIndicator gestureIndicator(
       DocumentUserGestureToken::create(document));
-  dispatchEvent(Event::create(mojomActionToEventName(action)));
+
+  auto iter = m_actionHandlers.find(mojomActionToActionName(action));
+  if (iter == m_actionHandlers.end())
+    return;
+
+  iter->value->call(this);
+}
+
+void MediaSession::setV8ReferencesForHandlers(
+    v8::Isolate* isolate,
+    const v8::Persistent<v8::Object>& wrapper) {
+  for (auto handler : m_actionHandlers.values())
+    handler->setWrapperReference(isolate, wrapper);
 }
 
 DEFINE_TRACE(MediaSession) {
   visitor->trace(m_metadata);
-  EventTargetWithInlineData::trace(visitor);
+  visitor->trace(m_actionHandlers);
   ContextClient::trace(visitor);
+}
+
+DEFINE_TRACE_WRAPPERS(MediaSession) {
+  for (auto handler : m_actionHandlers.values())
+    visitor->traceWrappers(handler);
 }
 
 }  // namespace blink

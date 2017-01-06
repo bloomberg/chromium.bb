@@ -12,17 +12,24 @@ enum MediaSessionPlaybackState {
 
 // https://wicg.github.io/mediasession/#the-mediasession-interface
 
+enum MediaSessionAction {
+  "play",
+  "pause",
+  "previoustrack",
+  "nexttrack",
+  "seekbackward",
+  "seekforward"
+};
+
+callback MediaSessionActionHandler = void ();
+
 [
+    Custom=VisitDOMWrapper,
     RuntimeEnabled=MediaSession,
 ] interface MediaSession : EventTarget {
     attribute MediaMetadata? metadata;
-
     attribute MediaSessionPlaybackState playbackState;
 
-    attribute EventHandler onplay;
-    attribute EventHandler onpause;
-    attribute EventHandler onprevioustrack;
-    attribute EventHandler onnexttrack;
-    attribute EventHandler onseekforward;
-    attribute EventHandler onseekbackward;
+    void setActionHandler(MediaSessionAction action,
+                          MediaSessionActionHandler? handler);
 };

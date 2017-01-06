@@ -4,7 +4,7 @@
 
 #include "modules/mediasession/NavigatorMediaSession.h"
 
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "modules/mediasession/MediaSession.h"
 #include "platform/Supplementable.h"
 
