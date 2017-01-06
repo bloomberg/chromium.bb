@@ -49,7 +49,6 @@ namespace blink {
 class CompiledScript;
 class DOMWrapperWorld;
 class Element;
-class HTMLDocument;
 class KURL;
 class ScriptSourceCode;
 class SecurityOrigin;
@@ -135,9 +134,6 @@ class CORE_EXPORT ScriptController final
 
   void clearWindowProxy();
   void updateDocument();
-
-  void namedItemAdded(HTMLDocument*, const AtomicString&);
-  void namedItemRemoved(HTMLDocument*, const AtomicString&);
 
   void updateSecurityOrigin(SecurityOrigin*);
 

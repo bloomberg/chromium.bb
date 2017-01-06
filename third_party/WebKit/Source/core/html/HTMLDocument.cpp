@@ -54,6 +54,7 @@
 #include "core/html/HTMLDocument.h"
 
 #include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/WindowProxy.h"
 #include "core/HTMLNames.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLBodyElement.h"
@@ -152,8 +153,11 @@ void HTMLDocument::addItemToMap(HashCountedSet<AtomicString>& map,
   if (name.isEmpty())
     return;
   map.add(name);
-  if (LocalFrame* f = frame())
-    f->script().namedItemAdded(this, name);
+  if (LocalFrame* f = frame()) {
+    f->script()
+        .windowProxy(DOMWrapperWorld::mainWorld())
+        ->namedItemAdded(this, name);
+  }
 }
 
 void HTMLDocument::removeItemFromMap(HashCountedSet<AtomicString>& map,
@@ -161,8 +165,11 @@ void HTMLDocument::removeItemFromMap(HashCountedSet<AtomicString>& map,
   if (name.isEmpty())
     return;
   map.remove(name);
-  if (LocalFrame* f = frame())
-    f->script().namedItemRemoved(this, name);
+  if (LocalFrame* f = frame()) {
+    f->script()
+        .windowProxy(DOMWrapperWorld::mainWorld())
+        ->namedItemRemoved(this, name);
+  }
 }
 
 void HTMLDocument::addNamedItem(const AtomicString& name) {

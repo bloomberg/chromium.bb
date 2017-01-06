@@ -518,7 +518,7 @@ static void getter(v8::Local<v8::Name> property,
 void WindowProxy::namedItemAdded(HTMLDocument* document,
                                  const AtomicString& name) {
   DCHECK(m_world->isMainWorld());
-
+  DCHECK(m_scriptState);
   if (!isContextInitialized())
     return;
 
@@ -535,10 +535,9 @@ void WindowProxy::namedItemAdded(HTMLDocument* document,
 void WindowProxy::namedItemRemoved(HTMLDocument* document,
                                    const AtomicString& name) {
   DCHECK(m_world->isMainWorld());
-
+  DCHECK(m_scriptState);
   if (!isContextInitialized())
     return;
-
   if (document->hasNamedItem(name) || document->hasExtraNamedItem(name))
     return;
 
