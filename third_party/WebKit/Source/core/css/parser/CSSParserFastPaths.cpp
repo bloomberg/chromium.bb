@@ -23,6 +23,10 @@ namespace blink {
 static inline bool isSimpleLengthPropertyID(CSSPropertyID propertyId,
                                             bool& acceptsNegativeNumbers) {
   switch (propertyId) {
+    case CSSPropertyBlockSize:
+    case CSSPropertyInlineSize:
+    case CSSPropertyMinBlockSize:
+    case CSSPropertyMinInlineSize:
     case CSSPropertyFontSize:
     case CSSPropertyGridColumnGap:
     case CSSPropertyGridRowGap:

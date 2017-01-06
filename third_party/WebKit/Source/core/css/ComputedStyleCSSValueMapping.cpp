@@ -3341,6 +3341,12 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
 
     // Directional properties are resolved by resolveDirectionAwareProperty()
     // before the switch.
+    case CSSPropertyBlockSize:
+    case CSSPropertyInlineSize:
+    case CSSPropertyMaxBlockSize:
+    case CSSPropertyMaxInlineSize:
+    case CSSPropertyMinBlockSize:
+    case CSSPropertyMinInlineSize:
     case CSSPropertyWebkitBorderEnd:
     case CSSPropertyWebkitBorderEndColor:
     case CSSPropertyWebkitBorderEndStyle:

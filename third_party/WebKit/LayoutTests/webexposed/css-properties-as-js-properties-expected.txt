@@ -31,6 +31,7 @@ backgroundRepeatX
 backgroundRepeatY
 backgroundSize
 baselineShift
+blockSize
 border
 borderBottom
 borderBottomColor
@@ -158,6 +159,7 @@ height
 hyphens
 imageOrientation
 imageRendering
+inlineSize
 isolation
 item
 justifyContent
@@ -184,10 +186,14 @@ markerStart
 mask
 maskSourceType
 maskType
+maxBlockSize
 maxHeight
+maxInlineSize
 maxWidth
 maxZoom
+minBlockSize
 minHeight
+minInlineSize
 minWidth
 minZoom
 mixBlendMode

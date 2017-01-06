@@ -30,6 +30,7 @@ backgroundRepeatX
 backgroundRepeatY
 backgroundSize
 baselineShift
+blockSize
 border
 borderBottom
 borderBottomColor
@@ -153,6 +154,7 @@ gridTemplateRows
 height
 hyphens
 imageRendering
+inlineSize
 isolation
 item
 justifyContent
@@ -178,10 +180,14 @@ markerMid
 markerStart
 mask
 maskType
+maxBlockSize
 maxHeight
+maxInlineSize
 maxWidth
 maxZoom
+minBlockSize
 minHeight
+minInlineSize
 minWidth
 minZoom
 mixBlendMode

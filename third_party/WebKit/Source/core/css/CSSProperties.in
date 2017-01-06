@@ -475,6 +475,14 @@ word-spacing interpolable, inherited, initial=initialLetterWordSpacing, converte
 word-wrap inherited, name_for_methods=OverflowWrap
 z-index interpolable, type_name=int, custom_all
 
+// CSS logical props
+inline-size direction_aware
+block-size direction_aware
+min-inline-size direction_aware
+min-block-size direction_aware
+max-inline-size direction_aware
+max-block-size direction_aware
+
 // Non-standard direction aware properties
 
 -webkit-border-end-color direction_aware

@@ -46,7 +46,7 @@ int totalPagesMeasuredCSSSampleId() {
 }
 
 // Make sure update_use_counter_css.py was run which updates histograms.xml.
-constexpr int kMaximumCSSSampleId = 549;
+constexpr int kMaximumCSSSampleId = 555;
 
 }  // namespace
 
@@ -1067,6 +1067,18 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(
       return 548;
     case CSSPropertyFontVariationSettings:
       return 549;
+    case CSSPropertyInlineSize:
+      return 550;
+    case CSSPropertyBlockSize:
+      return 551;
+    case CSSPropertyMinInlineSize:
+      return 552;
+    case CSSPropertyMinBlockSize:
+      return 553;
+    case CSSPropertyMaxInlineSize:
+      return 554;
+    case CSSPropertyMaxBlockSize:
+      return 555;
     // 1. Add new features above this line (don't change the assigned numbers of
     // the existing items).
     // 2. Update kMaximumCSSSampleId with the new maximum value.

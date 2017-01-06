@@ -226,29 +226,35 @@ CSSPropertyID CSSProperty::resolveDirectionAwareProperty(
     case CSSPropertyWebkitBorderAfterWidth:
       return resolveToPhysicalProperty(direction, writingMode, AfterSide,
                                        borderWidthShorthand());
+    case CSSPropertyInlineSize:
     case CSSPropertyWebkitLogicalWidth: {
       const CSSPropertyID properties[2] = {CSSPropertyWidth, CSSPropertyHeight};
       return resolveToPhysicalProperty(writingMode, LogicalWidth, properties);
     }
+    case CSSPropertyBlockSize:
     case CSSPropertyWebkitLogicalHeight: {
       const CSSPropertyID properties[2] = {CSSPropertyWidth, CSSPropertyHeight};
       return resolveToPhysicalProperty(writingMode, LogicalHeight, properties);
     }
+    case CSSPropertyMinInlineSize:
     case CSSPropertyWebkitMinLogicalWidth: {
       const CSSPropertyID properties[2] = {CSSPropertyMinWidth,
                                            CSSPropertyMinHeight};
       return resolveToPhysicalProperty(writingMode, LogicalWidth, properties);
     }
+    case CSSPropertyMinBlockSize:
     case CSSPropertyWebkitMinLogicalHeight: {
       const CSSPropertyID properties[2] = {CSSPropertyMinWidth,
                                            CSSPropertyMinHeight};
       return resolveToPhysicalProperty(writingMode, LogicalHeight, properties);
     }
+    case CSSPropertyMaxInlineSize:
     case CSSPropertyWebkitMaxLogicalWidth: {
       const CSSPropertyID properties[2] = {CSSPropertyMaxWidth,
                                            CSSPropertyMaxHeight};
       return resolveToPhysicalProperty(writingMode, LogicalWidth, properties);
     }
+    case CSSPropertyMaxBlockSize:
     case CSSPropertyWebkitMaxLogicalHeight: {
       const CSSPropertyID properties[2] = {CSSPropertyMaxWidth,
                                            CSSPropertyMaxHeight};
