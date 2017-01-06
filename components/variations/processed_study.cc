@@ -21,11 +21,6 @@ bool ValidateStudyAndComputeTotalProbability(
     base::FieldTrial::Probability* total_probability,
     bool* all_assignments_to_one_group,
     std::string* single_feature_name) {
-  // At the moment, a missing default_experiment_name makes the study invalid.
-  if (study.default_experiment_name().empty()) {
-    DVLOG(1) << study.name() << " has no default experiment defined.";
-    return false;
-  }
   if (study.filter().has_min_version() &&
       !base::Version::IsValidWildcardString(study.filter().min_version())) {
     DVLOG(1) << study.name() << " has invalid min version: "
@@ -92,9 +87,11 @@ bool ValidateStudyAndComputeTotalProbability(
       found_default_group = true;
   }
 
-  if (!found_default_group) {
-    DVLOG(1) << study.name() << " is missing default experiment in its "
-             << "experiment list";
+  // Specifying a default experiment is optional, so finding it in the
+  // experiment list is only required when it is specified.
+  if (!study.default_experiment_name().empty() && !found_default_group) {
+    DVLOG(1) << study.name() << " is missing default experiment ("
+             << study.default_experiment_name() << ") in its experiment list";
     // The default group was not found in the list of groups. This study is not
     // valid.
     return false;
@@ -112,6 +109,10 @@ bool ValidateStudyAndComputeTotalProbability(
 
 
 }  // namespace
+
+// static
+const char ProcessedStudy::kGenericDefaultExperimentName[] =
+    "VariationsDefaultExperiment";
 
 ProcessedStudy::ProcessedStudy()
     : study_(NULL),
@@ -148,6 +149,13 @@ int ProcessedStudy::GetExperimentIndexByName(const std::string& name) const {
   }
 
   return -1;
+}
+
+const char* ProcessedStudy::GetDefaultExperimentName() const {
+  if (study_->default_experiment_name().empty())
+    return kGenericDefaultExperimentName;
+
+  return study_->default_experiment_name().c_str();
 }
 
 // static

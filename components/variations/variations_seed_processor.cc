@@ -274,7 +274,7 @@ void VariationsSeedProcessor::CreateTrialFromStudy(
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrialWithRandomizationSeed(
           study.name(), processed_study.total_probability(),
-          study.default_experiment_name(),
+          processed_study.GetDefaultExperimentName(),
           base::FieldTrialList::kNoExpirationYear, 1, 1, randomization_type,
           randomization_seed, NULL,
           ShouldStudyUseLowEntropy(study) ? low_entropy_provider : NULL));

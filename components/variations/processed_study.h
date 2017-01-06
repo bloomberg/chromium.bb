@@ -18,6 +18,10 @@ class Study;
 // such as whether the study is expired and its total probability.
 class ProcessedStudy {
  public:
+  // The default group used when a study doesn't specify one. This is needed
+  // because the field trial api requires a default group name.
+  static const char kGenericDefaultExperimentName[];
+
   ProcessedStudy();
   ~ProcessedStudy();
 
@@ -42,6 +46,10 @@ class ProcessedStudy {
   // Gets the index of the experiment with the given |name|. Returns -1 if no
   // experiment is found.
   int GetExperimentIndexByName(const std::string& name) const;
+
+  // Gets the default experiment name for the study, or a generic one if none is
+  // specified.
+  const char* GetDefaultExperimentName() const;
 
   static bool ValidateAndAppendStudy(
       const Study* study,

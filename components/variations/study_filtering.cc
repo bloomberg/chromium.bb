@@ -143,6 +143,16 @@ bool CheckStudyStartDate(const Study_Filter& filter,
   return true;
 }
 
+bool CheckStudyEndDate(const Study_Filter& filter,
+                       const base::Time& date_time) {
+  if (filter.has_end_date()) {
+    const base::Time end_date = ConvertStudyDateToBaseTime(filter.end_date());
+    return end_date >= date_time;
+  }
+
+  return true;
+}
+
 bool CheckStudyVersion(const Study_Filter& filter,
                        const base::Version& version) {
   if (filter.has_min_version()) {
@@ -222,6 +232,11 @@ bool ShouldAddStudy(
     if (!CheckStudyStartDate(study.filter(), reference_date)) {
       DVLOG(1) << "Filtered out study " << study.name() <<
                   " due to start date.";
+      return false;
+    }
+
+    if (!CheckStudyEndDate(study.filter(), reference_date)) {
+      DVLOG(1) << "Filtered out study " << study.name() << " due to end date.";
       return false;
     }
 

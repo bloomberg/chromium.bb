@@ -378,8 +378,9 @@ TEST_F(VariationsSeedProcessorTest, ValidateStudy) {
   study.mutable_filter()->set_max_version("2.3.4");
   EXPECT_TRUE(processed_study.Init(&study, false));
 
+  // A blank default study is allowed.
   study.clear_default_experiment_name();
-  EXPECT_FALSE(processed_study.Init(&study, false));
+  EXPECT_TRUE(processed_study.Init(&study, false));
 
   study.set_default_experiment_name("xyz");
   EXPECT_FALSE(processed_study.Init(&study, false));
@@ -839,10 +840,27 @@ TEST_F(VariationsSeedProcessorTest, FeaturesInExpiredStudies) {
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitWithFeatureList(std::move(feature_list));
 
-    // Tthe feature should not be enabled, because the study is expired.
+    // The feature should not be enabled, because the study is expired.
     EXPECT_EQ(test_case.expected_feature_enabled,
               base::FeatureList::IsEnabled(test_case.feature));
   }
+}
+
+TEST_F(VariationsSeedProcessorTest, NoDefaultExperiment) {
+  base::FieldTrialList field_trial_list(nullptr);
+
+  Study study;
+  study.set_name("Study1");
+
+  AddExperiment("A", 1, &study);
+
+  EXPECT_TRUE(CreateTrialFromStudy(study));
+
+  base::FieldTrial* trial = base::FieldTrialList::Find("Study1");
+  trial->Disable();
+
+  EXPECT_EQ(ProcessedStudy::kGenericDefaultExperimentName,
+            base::FieldTrialList::FindFullName("Study1"));
 }
 
 TEST_F(VariationsSeedProcessorTest, LowEntropyStudyTest) {
