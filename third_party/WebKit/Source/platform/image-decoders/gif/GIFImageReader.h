@@ -198,7 +198,7 @@ struct GIFFrameContext {
   ~GIFFrameContext() {}
 
   void addLzwBlock(size_t position, size_t size) {
-    m_lzwBlocks.append(GIFLZWBlock(position, size));
+    m_lzwBlocks.push_back(GIFLZWBlock(position, size));
   }
 
   bool decode(blink::FastSharedBufferReader*,

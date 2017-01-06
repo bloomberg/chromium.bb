@@ -63,12 +63,13 @@ PassRefPtr<TransformOperation> InterpolatedTransformOperation::blend(
     return this;
 
   TransformOperations thisOperations;
-  thisOperations.operations().append(this);
+  thisOperations.operations().push_back(this);
   TransformOperations fromOperations;
   if (blendToIdentity)
-    fromOperations.operations().append(IdentityTransformOperation::create());
+    fromOperations.operations().push_back(IdentityTransformOperation::create());
   else
-    fromOperations.operations().append(const_cast<TransformOperation*>(from));
+    fromOperations.operations().push_back(
+        const_cast<TransformOperation*>(from));
   return InterpolatedTransformOperation::create(thisOperations, fromOperations,
                                                 progress);
 }

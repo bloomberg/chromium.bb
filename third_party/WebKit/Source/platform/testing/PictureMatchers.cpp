@@ -46,7 +46,7 @@ class DrawsRectangleCanvas : public SkCanvas {
     SkPaint paintWithAlpha(paint);
     paintWithAlpha.setAlpha(static_cast<U8CPU>(m_alpha * paintAlpha / 255));
     quadWithColor.color = Color(paintWithAlpha.getColor());
-    m_quads.append(quadWithColor);
+    m_quads.push_back(quadWithColor);
     SkCanvas::onDrawRect(clippedRect, paint);
   }
 

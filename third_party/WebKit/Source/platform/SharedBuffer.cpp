@@ -107,7 +107,7 @@ void SharedBuffer::appendInternal(const char* data, size_t length) {
   char* segment;
   if (!positionInSegment) {
     segment = allocateSegment();
-    m_segments.append(segment);
+    m_segments.push_back(segment);
   } else
     segment = m_segments.back() + positionInSegment;
 
@@ -122,7 +122,7 @@ void SharedBuffer::appendInternal(const char* data, size_t length) {
     length -= bytesToCopy;
     data += bytesToCopy;
     segment = allocateSegment();
-    m_segments.append(segment);
+    m_segments.push_back(segment);
     bytesToCopy = std::min(length, static_cast<size_t>(kSegmentSize));
   }
 }

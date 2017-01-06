@@ -112,18 +112,18 @@ void LocaleICU::initializeLocaleData() {
     return;
 
   Vector<String, DecimalSymbolsSize> symbols;
-  symbols.append(decimalSymbol(UNUM_ZERO_DIGIT_SYMBOL));
-  symbols.append(decimalSymbol(UNUM_ONE_DIGIT_SYMBOL));
-  symbols.append(decimalSymbol(UNUM_TWO_DIGIT_SYMBOL));
-  symbols.append(decimalSymbol(UNUM_THREE_DIGIT_SYMBOL));
-  symbols.append(decimalSymbol(UNUM_FOUR_DIGIT_SYMBOL));
-  symbols.append(decimalSymbol(UNUM_FIVE_DIGIT_SYMBOL));
-  symbols.append(decimalSymbol(UNUM_SIX_DIGIT_SYMBOL));
-  symbols.append(decimalSymbol(UNUM_SEVEN_DIGIT_SYMBOL));
-  symbols.append(decimalSymbol(UNUM_EIGHT_DIGIT_SYMBOL));
-  symbols.append(decimalSymbol(UNUM_NINE_DIGIT_SYMBOL));
-  symbols.append(decimalSymbol(UNUM_DECIMAL_SEPARATOR_SYMBOL));
-  symbols.append(decimalSymbol(UNUM_GROUPING_SEPARATOR_SYMBOL));
+  symbols.push_back(decimalSymbol(UNUM_ZERO_DIGIT_SYMBOL));
+  symbols.push_back(decimalSymbol(UNUM_ONE_DIGIT_SYMBOL));
+  symbols.push_back(decimalSymbol(UNUM_TWO_DIGIT_SYMBOL));
+  symbols.push_back(decimalSymbol(UNUM_THREE_DIGIT_SYMBOL));
+  symbols.push_back(decimalSymbol(UNUM_FOUR_DIGIT_SYMBOL));
+  symbols.push_back(decimalSymbol(UNUM_FIVE_DIGIT_SYMBOL));
+  symbols.push_back(decimalSymbol(UNUM_SIX_DIGIT_SYMBOL));
+  symbols.push_back(decimalSymbol(UNUM_SEVEN_DIGIT_SYMBOL));
+  symbols.push_back(decimalSymbol(UNUM_EIGHT_DIGIT_SYMBOL));
+  symbols.push_back(decimalSymbol(UNUM_NINE_DIGIT_SYMBOL));
+  symbols.push_back(decimalSymbol(UNUM_DECIMAL_SEPARATOR_SYMBOL));
+  symbols.push_back(decimalSymbol(UNUM_GROUPING_SEPARATOR_SYMBOL));
   ASSERT(symbols.size() == DecimalSymbolsSize);
   setLocaleData(symbols, decimalTextAttribute(UNUM_POSITIVE_PREFIX),
                 decimalTextAttribute(UNUM_POSITIVE_SUFFIX),
@@ -217,7 +217,7 @@ std::unique_ptr<Vector<String>> LocaleICU::createLabelVector(
     }
     if (U_FAILURE(status))
       return std::unique_ptr<Vector<String>>();
-    labels->append(String::adopt(buffer));
+    labels->push_back(String::adopt(buffer));
   }
   return labels;
 }
@@ -225,13 +225,13 @@ std::unique_ptr<Vector<String>> LocaleICU::createLabelVector(
 static std::unique_ptr<Vector<String>> createFallbackWeekDayShortLabels() {
   std::unique_ptr<Vector<String>> labels = WTF::makeUnique<Vector<String>>();
   labels->reserveCapacity(7);
-  labels->append("Sun");
-  labels->append("Mon");
-  labels->append("Tue");
-  labels->append("Wed");
-  labels->append("Thu");
-  labels->append("Fri");
-  labels->append("Sat");
+  labels->push_back("Sun");
+  labels->push_back("Mon");
+  labels->push_back("Tue");
+  labels->push_back("Wed");
+  labels->push_back("Thu");
+  labels->push_back("Fri");
+  labels->push_back("Sat");
   return labels;
 }
 
@@ -258,7 +258,7 @@ static std::unique_ptr<Vector<String>> createFallbackMonthLabels() {
   std::unique_ptr<Vector<String>> labels = WTF::makeUnique<Vector<String>>();
   labels->reserveCapacity(WTF_ARRAY_LENGTH(WTF::monthFullName));
   for (unsigned i = 0; i < WTF_ARRAY_LENGTH(WTF::monthFullName); ++i)
-    labels->append(WTF::monthFullName[i]);
+    labels->push_back(WTF::monthFullName[i]);
   return labels;
 }
 
@@ -294,8 +294,8 @@ bool LocaleICU::isRTL() {
 static std::unique_ptr<Vector<String>> createFallbackAMPMLabels() {
   std::unique_ptr<Vector<String>> labels = WTF::makeUnique<Vector<String>>();
   labels->reserveCapacity(2);
-  labels->append("AM");
-  labels->append("PM");
+  labels->push_back("AM");
+  labels->push_back("PM");
   return labels;
 }
 
@@ -414,7 +414,7 @@ const Vector<String>& LocaleICU::shortMonthLabels() {
   }
   m_shortMonthLabels.reserveCapacity(WTF_ARRAY_LENGTH(WTF::monthName));
   for (unsigned i = 0; i < WTF_ARRAY_LENGTH(WTF::monthName); ++i)
-    m_shortMonthLabels.append(WTF::monthName[i]);
+    m_shortMonthLabels.push_back(WTF::monthName[i]);
   return m_shortMonthLabels;
 }
 

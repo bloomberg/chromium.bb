@@ -140,7 +140,7 @@ Vector<CharacterRange> CachingWordShaper::individualCharacterRanges(
   // crbug.com/613915 and crbug.com/615661) so add empty ranges to ensure all
   // characters have an associated range.
   while (ranges.size() < static_cast<unsigned>(run.length()))
-    ranges.append(CharacterRange(0, 0));
+    ranges.push_back(CharacterRange(0, 0));
   return ranges;
 }
 

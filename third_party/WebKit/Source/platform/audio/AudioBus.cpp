@@ -63,7 +63,7 @@ AudioBus::AudioBus(unsigned numberOfChannels, size_t length, bool allocate)
     std::unique_ptr<AudioChannel> channel =
         allocate ? WTF::wrapUnique(new AudioChannel(length))
                  : WTF::wrapUnique(new AudioChannel(0, length));
-    m_channels.append(std::move(channel));
+    m_channels.push_back(std::move(channel));
   }
 
   m_layout = LayoutCanonical;  // for now this is the only layout we define

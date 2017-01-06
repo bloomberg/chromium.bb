@@ -66,7 +66,7 @@ WebVector<WebSize> WebIconSizesParser::parseIconSizes(
     // See if the current size is "any".
     if (sizesString.findIgnoringCase("any", i) == i &&
         (i + 3 == length || isWhitespace(sizesString[i + 3]))) {
-      iconSizes.append(WebSize(0, 0));
+      iconSizes.push_back(WebSize(0, 0));
       i = i + 3;
       continue;
     }
@@ -98,7 +98,7 @@ WebVector<WebSize> WebIconSizesParser::parseIconSizes(
     unsigned heightEnd = i;
 
     // Append the parsed size to iconSizes.
-    iconSizes.append(
+    iconSizes.push_back(
         WebSize(partialStringToInt(sizesString, widthStart, widthEnd),
                 partialStringToInt(sizesString, heightStart, heightEnd)));
   }

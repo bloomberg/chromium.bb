@@ -39,11 +39,11 @@ TEST(AnimationTranslationUtilTest, transformsWork) {
   TransformOperations ops;
   CompositorTransformOperations outOps;
 
-  ops.operations().append(TranslateTransformOperation::create(
+  ops.operations().push_back(TranslateTransformOperation::create(
       Length(2, Fixed), Length(0, Fixed), TransformOperation::TranslateX));
-  ops.operations().append(RotateTransformOperation::create(
+  ops.operations().push_back(RotateTransformOperation::create(
       0.1, 0.2, 0.3, 200000.4, TransformOperation::Rotate3D));
-  ops.operations().append(ScaleTransformOperation::create(
+  ops.operations().push_back(ScaleTransformOperation::create(
       50.2, 100, -4, TransformOperation::Scale3D));
   toCompositorTransformOperations(ops, &outOps);
 

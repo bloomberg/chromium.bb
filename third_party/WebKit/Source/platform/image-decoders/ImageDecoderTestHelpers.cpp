@@ -50,7 +50,7 @@ void createDecodingBaseline(DecoderCreator createDecoder,
   size_t frameCount = decoder->frameCount();
   for (size_t i = 0; i < frameCount; ++i) {
     ImageFrame* frame = decoder->frameBufferAtIndex(i);
-    baselineHashes->append(hashBitmap(frame->bitmap()));
+    baselineHashes->push_back(hashBitmap(frame->bitmap()));
   }
 }
 
@@ -264,10 +264,10 @@ static void testProgressiveDecoding(DecoderCreator createDecoder,
     decoder->setData(data.get(), i == fullLength);
     ImageFrame* frame = decoder->frameBufferAtIndex(0);
     if (!frame) {
-      truncatedHashes.append(0);
+      truncatedHashes.push_back(0);
       continue;
     }
-    truncatedHashes.append(hashBitmap(frame->bitmap()));
+    truncatedHashes.push_back(hashBitmap(frame->bitmap()));
   }
 
   // Compute hashes when the file is progressively decoded.
@@ -277,10 +277,10 @@ static void testProgressiveDecoding(DecoderCreator createDecoder,
     decoder->setData(data.get(), i == fullLength);
     ImageFrame* frame = decoder->frameBufferAtIndex(0);
     if (!frame) {
-      progressiveHashes.append(0);
+      progressiveHashes.push_back(0);
       continue;
     }
-    progressiveHashes.append(hashBitmap(frame->bitmap()));
+    progressiveHashes.push_back(hashBitmap(frame->bitmap()));
   }
 
   for (size_t i = 0; i < truncatedHashes.size(); ++i)

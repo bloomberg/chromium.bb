@@ -80,7 +80,7 @@ LinkHeaderSet::LinkHeaderSet(const String& header) {
   std::string headerString(reinterpret_cast<const char*>(header.characters8()),
                            header.length());
   for (const auto& value : link_header_util::SplitLinkHeader(headerString))
-    m_headerSet.append(LinkHeader(value.first, value.second));
+    m_headerSet.push_back(LinkHeader(value.first, value.second));
 }
 
 }  // namespace blink

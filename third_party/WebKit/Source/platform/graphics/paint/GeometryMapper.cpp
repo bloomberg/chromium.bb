@@ -186,7 +186,7 @@ FloatRect GeometryMapper::localToAncestorClipRect(
       found = true;
       break;
     }
-    intermediateNodes.append(clipNode);
+    intermediateNodes.push_back(clipNode);
 
     if (clipNode == ancestorState.clip())
       break;
@@ -242,7 +242,7 @@ const TransformationMatrix& GeometryMapper::localToAncestorMatrix(
       break;
     }
 
-    intermediateNodes.append(transformNode);
+    intermediateNodes.push_back(transformNode);
 
     if (transformNode == ancestorState.transform())
       break;

@@ -75,7 +75,7 @@ FontPlatformData FontCustomPlatformData::fontPlatformData(
       SkFontMgr::FontParameters::Axis axis = {
           atomicStringToFourByteTag(variationSettings->at(i).tag()),
           SkFloatToScalar(variationSettings->at(i).value())};
-      axes.append(axis);
+      axes.push_back(axis);
     }
 
     sk_sp<SkTypeface> skVariationFont(fm->createFromStream(

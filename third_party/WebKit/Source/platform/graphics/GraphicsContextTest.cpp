@@ -118,8 +118,8 @@ TEST(GraphicsContextTest, UnboundedDrawsAreClipped) {
 
   // Make skia unable to compute fast bounds for our paths.
   DashArray dashArray;
-  dashArray.append(1);
-  dashArray.append(0);
+  dashArray.push_back(1);
+  dashArray.push_back(0);
   context.setLineDash(dashArray, 0);
 
   // Make the device opaque in 10,10 40x40.

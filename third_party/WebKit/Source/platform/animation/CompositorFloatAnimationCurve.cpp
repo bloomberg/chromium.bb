@@ -31,7 +31,7 @@ CompositorFloatAnimationCurve::Keyframes
 CompositorFloatAnimationCurve::keyframesForTesting() const {
   Keyframes keyframes;
   for (const auto& ccKeyframe : m_curve->keyframes_for_testing()) {
-    keyframes.append(
+    keyframes.push_back(
         WTF::wrapUnique(new CompositorFloatKeyframe(ccKeyframe->Clone())));
   }
   return keyframes;

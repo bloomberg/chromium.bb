@@ -272,7 +272,7 @@ Vector<size_t> ImageDecoder::findFramesToDecode(size_t index) const {
 
   Vector<size_t> framesToDecode;
   do {
-    framesToDecode.append(index);
+    framesToDecode.push_back(index);
     index = m_frameBufferCache[index].requiredPreviousFrameIndex();
   } while (index != kNotFound &&
            m_frameBufferCache[index].getStatus() != ImageFrame::FrameComplete);

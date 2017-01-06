@@ -190,7 +190,7 @@ void PaintController::processNewItem(DisplayItem& displayItem) {
     }
 
     if (displayItem.getType() == DisplayItem::kSubsequence) {
-      m_currentSubsequenceClients.append(&displayItem.client());
+      m_currentSubsequenceClients.push_back(&displayItem.client());
     } else if (displayItem.getType() == DisplayItem::kEndSubsequence) {
       CHECK(m_currentSubsequenceClients.back() == &displayItem.client());
       m_currentSubsequenceClients.pop_back();
@@ -316,7 +316,7 @@ void PaintController::addItemToIndexIfNeeded(
                 .add(&displayItem.client(), Vector<size_t>())
                 .storedValue->value
           : it->value;
-  indices.append(index);
+  indices.push_back(index);
 }
 
 size_t PaintController::findCachedItem(const DisplayItem::Id& id) {
@@ -523,7 +523,7 @@ void PaintController::commitNewDisplayItems(
       if (item.client().isJustCreated())
         item.client().clearIsJustCreated();
       if (item.skippedCache())
-        skippedCacheClients.append(&item.client());
+        skippedCacheClients.push_back(&item.client());
     }
   }
 
@@ -634,7 +634,7 @@ void PaintController::generateChunkRasterInvalidationRects(
                     .add(&oldChunk.id->client, Vector<size_t>())
                     .storedValue->value
               : it->value;
-      indices.append(m_nextChunkToMatch);
+      indices.push_back(m_nextChunkToMatch);
     }
     ++m_nextChunkToMatch;
   }
@@ -658,7 +658,7 @@ void PaintController::generateChunkRasterInvalidationRects(
 void PaintController::addRasterInvalidationInfo(const DisplayItemClient* client,
                                                 PaintChunk& chunk,
                                                 const FloatRect& rect) {
-  chunk.rasterInvalidationRects.append(rect);
+  chunk.rasterInvalidationRects.push_back(rect);
   if (!m_paintChunksRasterInvalidationTrackingMap)
     return;
   RasterInvalidationInfo info;
@@ -670,7 +670,7 @@ void PaintController::addRasterInvalidationInfo(const DisplayItemClient* client,
   }
   RasterInvalidationTracking& tracking =
       m_paintChunksRasterInvalidationTrackingMap->add(&chunk);
-  tracking.trackedRasterInvalidations.append(info);
+  tracking.trackedRasterInvalidations.push_back(info);
 }
 
 void PaintController::generateChunkRasterInvalidationRectsComparingOldChunk(

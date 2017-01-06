@@ -1465,7 +1465,7 @@ void ThreadState::addInterruptor(
   SafePointScope scope(BlinkGC::HeapPointersOnStack);
   {
     MutexLocker locker(m_heap->threadAttachMutex());
-    m_interruptors.append(std::move(interruptor));
+    m_interruptors.push_back(std::move(interruptor));
   }
 }
 

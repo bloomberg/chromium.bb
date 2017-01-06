@@ -39,8 +39,8 @@ PluginData::PluginData(SecurityOrigin* mainFrameOrigin)
   for (unsigned i = 0; i < m_plugins.size(); ++i) {
     const PluginInfo& plugin = m_plugins[i];
     for (unsigned j = 0; j < plugin.mimes.size(); ++j) {
-      m_mimes.append(plugin.mimes[j]);
-      m_mimePluginIndices.append(i);
+      m_mimes.push_back(plugin.mimes[j]);
+      m_mimePluginIndices.push_back(i);
     }
   }
 }

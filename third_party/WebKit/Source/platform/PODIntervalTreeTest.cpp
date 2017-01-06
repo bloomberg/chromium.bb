@@ -225,7 +225,7 @@ void InsertionAndDeletionTest(int32_t seed, int treeSize) {
     DLOG(ERROR) << "*** Adding element "
                 << ValueToString<PODInterval<int>>::string(interval);
 #endif
-    addedElements.append(interval);
+    addedElements.push_back(interval);
   }
   // Churn the tree's contents.
   // First remove half of the elements in random order.
@@ -239,7 +239,7 @@ void InsertionAndDeletionTest(int32_t seed, int treeSize) {
     ASSERT_TRUE(tree.contains(addedElements[index])) << "Test failed for seed "
                                                      << seed;
     tree.remove(addedElements[index]);
-    removedElements.append(addedElements[index]);
+    removedElements.push_back(addedElements[index]);
     addedElements.remove(index);
     ASSERT_TRUE(tree.checkInvariants()) << "Test failed for seed " << seed;
   }
@@ -260,7 +260,7 @@ void InsertionAndDeletionTest(int32_t seed, int treeSize) {
                          removedElements[index]);
 #endif
       tree.add(removedElements[index]);
-      addedElements.append(removedElements[index]);
+      addedElements.push_back(removedElements[index]);
       removedElements.remove(index);
     } else {
       int index = nextRandom(addedElements.size());
@@ -273,7 +273,7 @@ void InsertionAndDeletionTest(int32_t seed, int treeSize) {
           << "Test failed for seed " << seed;
       ASSERT_TRUE(tree.remove(addedElements[index])) << "Test failed for seed "
                                                      << seed;
-      removedElements.append(addedElements[index]);
+      removedElements.push_back(addedElements[index]);
       addedElements.remove(index);
     }
     ASSERT_TRUE(tree.checkInvariants()) << "Test failed for seed " << seed;

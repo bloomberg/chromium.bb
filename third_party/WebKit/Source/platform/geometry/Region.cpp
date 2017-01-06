@@ -54,7 +54,7 @@ Vector<IntRect> Region::rects() const {
       int x = *segment;
       int width = *(segment + 1) - x;
 
-      rects.append(IntRect(x, y, width, height));
+      rects.push_back(IntRect(x, y, width, height));
     }
   }
 
@@ -239,7 +239,7 @@ Region::Shape::Shape(size_t segmentsCapacity, size_t spansCapacity) {
 }
 
 void Region::Shape::appendSpan(int y) {
-  m_spans.append(Span(y, m_segments.size()));
+  m_spans.push_back(Span(y, m_segments.size()));
 }
 
 bool Region::Shape::canCoalesce(SegmentIterator begin, SegmentIterator end) {
@@ -280,7 +280,7 @@ void Region::Shape::appendSpans(const Shape& shape,
 }
 
 void Region::Shape::appendSegment(int x) {
-  m_segments.append(x);
+  m_segments.push_back(x);
 }
 
 Region::Shape::SpanIterator Region::Shape::spansBegin() const {
@@ -469,7 +469,7 @@ Region::Shape Region::Shape::shapeOperation(const Shape& shape1,
       }
 
       if (flag == Operation::opCode || oldFlag == Operation::opCode)
-        segments.append(x);
+        segments.push_back(x);
 
       oldFlag = flag;
     }

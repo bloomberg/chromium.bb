@@ -124,7 +124,7 @@ TEST(FontDescriptionTest, TestHashCollision) {
         source.setStyle(styles[k]);
         unsigned hash = source.styleHashWithoutFamilyList();
         ASSERT_FALSE(hashes.contains(hash));
-        hashes.append(hash);
+        hashes.push_back(hash);
       }
     }
   }

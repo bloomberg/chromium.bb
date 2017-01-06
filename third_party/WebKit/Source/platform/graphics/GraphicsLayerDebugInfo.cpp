@@ -99,7 +99,7 @@ void GraphicsLayerDebugInfo::appendAnnotatedInvalidateRect(
     const FloatRect& rect,
     PaintInvalidationReason invalidationReason) {
   AnnotatedInvalidationRect annotatedRect = {rect, invalidationReason};
-  m_invalidations.append(annotatedRect);
+  m_invalidations.push_back(annotatedRect);
 }
 
 void GraphicsLayerDebugInfo::clearAnnotatedInvalidateRects() {

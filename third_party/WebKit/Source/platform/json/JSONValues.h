@@ -226,7 +226,7 @@ class PLATFORM_EXPORT JSONObject : public JSONValue {
   void set(const String& key, std::unique_ptr<T>& value) {
     DCHECK(value);
     if (m_data.set(key, std::move(value)).isNewEntry)
-      m_order.append(key);
+      m_order.push_back(key);
   }
 
   using Dictionary = HashMap<String, std::unique_ptr<JSONValue>>;

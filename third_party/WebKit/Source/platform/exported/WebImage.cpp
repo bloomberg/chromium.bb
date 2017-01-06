@@ -106,7 +106,7 @@ WebVector<WebImage> WebImage::framesFromData(const WebData& data) {
 
     SkBitmap bitmap = frame->bitmap();
     if (!bitmap.isNull() && frame->getStatus() == ImageFrame::FrameComplete)
-      frames.append(WebImage(bitmap));
+      frames.push_back(WebImage(bitmap));
   }
 
   return frames;

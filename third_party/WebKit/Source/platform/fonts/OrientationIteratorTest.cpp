@@ -30,7 +30,7 @@ class OrientationIteratorTest : public testing::Test {
     Vector<ExpectedRun> expect;
     for (auto& run : runs) {
       text.append(String::fromUTF8(run.text.c_str()));
-      expect.append(ExpectedRun(text.length(), run.code));
+      expect.push_back(ExpectedRun(text.length(), run.code));
     }
     OrientationIterator orientationIterator(text.characters16(), text.length(),
                                             FontOrientation::VerticalMixed);

@@ -45,7 +45,7 @@ class TrackedAllocator final : public PODArena::FastMallocAllocator {
 
   void* allocate(size_t size) override {
     void* result = PODArena::FastMallocAllocator::allocate(size);
-    m_allocatedRegions.append(result);
+    m_allocatedRegions.push_back(result);
     return result;
   }
 

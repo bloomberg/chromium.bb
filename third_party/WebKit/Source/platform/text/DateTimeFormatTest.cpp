@@ -78,26 +78,26 @@ class DateTimeFormatTest : public ::testing::Test {
 
     explicit Tokens(const Vector<Token> tokens) : m_tokens(tokens) {}
 
-    explicit Tokens(const String& string) { m_tokens.append(Token(string)); }
+    explicit Tokens(const String& string) { m_tokens.push_back(Token(string)); }
 
-    explicit Tokens(Token token1) { m_tokens.append(token1); }
+    explicit Tokens(Token token1) { m_tokens.push_back(token1); }
 
     Tokens(Token token1, Token token2) {
-      m_tokens.append(token1);
-      m_tokens.append(token2);
+      m_tokens.push_back(token1);
+      m_tokens.push_back(token2);
     }
 
     Tokens(Token token1, Token token2, Token token3) {
-      m_tokens.append(token1);
-      m_tokens.append(token2);
-      m_tokens.append(token3);
+      m_tokens.push_back(token1);
+      m_tokens.push_back(token2);
+      m_tokens.push_back(token3);
     }
 
     Tokens(Token token1, Token token2, Token token3, Token token4) {
-      m_tokens.append(token1);
-      m_tokens.append(token2);
-      m_tokens.append(token3);
-      m_tokens.append(token4);
+      m_tokens.push_back(token1);
+      m_tokens.push_back(token2);
+      m_tokens.push_back(token3);
+      m_tokens.push_back(token4);
     }
 
     Tokens(Token token1,
@@ -105,11 +105,11 @@ class DateTimeFormatTest : public ::testing::Test {
            Token token3,
            Token token4,
            Token token5) {
-      m_tokens.append(token1);
-      m_tokens.append(token2);
-      m_tokens.append(token3);
-      m_tokens.append(token4);
-      m_tokens.append(token5);
+      m_tokens.push_back(token1);
+      m_tokens.push_back(token2);
+      m_tokens.push_back(token3);
+      m_tokens.push_back(token4);
+      m_tokens.push_back(token5);
     }
 
     Tokens(Token token1,
@@ -118,12 +118,12 @@ class DateTimeFormatTest : public ::testing::Test {
            Token token4,
            Token token5,
            Token token6) {
-      m_tokens.append(token1);
-      m_tokens.append(token2);
-      m_tokens.append(token3);
-      m_tokens.append(token4);
-      m_tokens.append(token5);
-      m_tokens.append(token6);
+      m_tokens.push_back(token1);
+      m_tokens.push_back(token2);
+      m_tokens.push_back(token3);
+      m_tokens.push_back(token4);
+      m_tokens.push_back(token5);
+      m_tokens.push_back(token6);
     }
 
     bool operator==(const Tokens& other) const {
@@ -179,11 +179,11 @@ class DateTimeFormatTest : public ::testing::Test {
 
    private:
     void visitField(FieldType fieldType, int count) override {
-      m_tokens.append(Token(fieldType, count));
+      m_tokens.push_back(Token(fieldType, count));
     }
 
     void visitLiteral(const String& string) override {
-      m_tokens.append(Token(string));
+      m_tokens.push_back(Token(string));
     }
 
     Vector<Token> m_tokens;

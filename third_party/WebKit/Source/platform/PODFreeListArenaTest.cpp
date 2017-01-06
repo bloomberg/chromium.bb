@@ -135,7 +135,7 @@ TEST_F(PODFreeListArenaTest, AddsFreedObjectsToFreedList) {
   RefPtr<PODFreeListArena<TestClass1>> arena =
       PODFreeListArena<TestClass1>::create();
   for (int i = 0; i < 100; i++) {
-    objects.append(arena->allocateObject());
+    objects.push_back(arena->allocateObject());
   }
   for (auto* object : objects) {
     arena->freeObject(object);

@@ -29,7 +29,7 @@ class SymbolsIteratorTest : public testing::Test {
     Vector<ExpectedRun> expect;
     for (auto& run : runs) {
       text.append(String::fromUTF8(run.text.c_str()));
-      expect.append(ExpectedRun(text.length(), run.fontFallbackPriority));
+      expect.push_back(ExpectedRun(text.length(), run.fontFallbackPriority));
     }
     SymbolsIterator symbolsIterator(text.characters16(), text.length());
     VerifyRuns(&symbolsIterator, expect);

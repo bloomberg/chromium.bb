@@ -281,7 +281,7 @@ void WebURLResponse::setSecurityDetails(
     const WebSecurityDetails& webSecurityDetails) {
   ResourceResponse::SignedCertificateTimestampList sctList;
   for (const auto& iter : webSecurityDetails.sctList) {
-    sctList.append(
+    sctList.push_back(
         static_cast<ResourceResponse::SignedCertificateTimestamp>(iter));
   }
   Vector<String> sanList;
@@ -290,7 +290,7 @@ void WebURLResponse::setSecurityDetails(
   Vector<AtomicString> certificate;
   for (const auto& iter : webSecurityDetails.certificate) {
     AtomicString cert = iter;
-    certificate.append(cert);
+    certificate.push_back(cert);
   }
   m_resourceResponse->setSecurityDetails(
       webSecurityDetails.protocol, webSecurityDetails.keyExchange,

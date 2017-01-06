@@ -22,7 +22,7 @@ TEST(UnicodeRangeSet, Empty) {
 
 TEST(UnicodeRangeSet, SingleCharacter) {
   Vector<UnicodeRange> ranges;
-  ranges.append(UnicodeRange('b', 'b'));
+  ranges.push_back(UnicodeRange('b', 'b'));
   RefPtr<UnicodeRangeSet> set = adoptRef(new UnicodeRangeSet(ranges));
   EXPECT_FALSE(set->isEntireRange());
   EXPECT_FALSE(set->intersectsWith(String()));
@@ -38,8 +38,8 @@ TEST(UnicodeRangeSet, SingleCharacter) {
 
 TEST(UnicodeRangeSet, TwoRanges) {
   Vector<UnicodeRange> ranges;
-  ranges.append(UnicodeRange('6', '7'));
-  ranges.append(UnicodeRange('2', '4'));
+  ranges.push_back(UnicodeRange('6', '7'));
+  ranges.push_back(UnicodeRange('2', '4'));
   RefPtr<UnicodeRangeSet> set = adoptRef(new UnicodeRangeSet(ranges));
   EXPECT_FALSE(set->isEntireRange());
   EXPECT_FALSE(set->intersectsWith(String()));
@@ -60,10 +60,10 @@ TEST(UnicodeRangeSet, TwoRanges) {
 
 TEST(UnicodeRangeSet, Overlap) {
   Vector<UnicodeRange> ranges;
-  ranges.append(UnicodeRange('0', '2'));
-  ranges.append(UnicodeRange('1', '1'));
-  ranges.append(UnicodeRange('3', '5'));
-  ranges.append(UnicodeRange('4', '6'));
+  ranges.push_back(UnicodeRange('0', '2'));
+  ranges.push_back(UnicodeRange('1', '1'));
+  ranges.push_back(UnicodeRange('3', '5'));
+  ranges.push_back(UnicodeRange('4', '6'));
   RefPtr<UnicodeRangeSet> set = adoptRef(new UnicodeRangeSet(ranges));
   ASSERT_EQ(1u, set->size());
   EXPECT_EQ('0', set->rangeAt(0).from());
@@ -72,7 +72,7 @@ TEST(UnicodeRangeSet, Overlap) {
 
 TEST(UnicodeRangeSet, Non8Bit) {
   Vector<UnicodeRange> ranges;
-  ranges.append(UnicodeRange(0x3042, 0x3042));
+  ranges.push_back(UnicodeRange(0x3042, 0x3042));
   RefPtr<UnicodeRangeSet> set = adoptRef(new UnicodeRangeSet(ranges));
   ASSERT_EQ(1u, set->size());
   EXPECT_EQ(0x3042, set->rangeAt(0).from());

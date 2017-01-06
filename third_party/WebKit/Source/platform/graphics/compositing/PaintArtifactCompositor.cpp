@@ -83,7 +83,7 @@ class PaintArtifactCompositor::ContentLayerClientImpl
   void SetPaintableRegion(gfx::Rect region) { m_paintableRegion = region; }
 
   void addPaintChunkDebugData(std::unique_ptr<JSONArray> json) {
-    m_paintChunkDebugData.append(std::move(json));
+    m_paintChunkDebugData.push_back(std::move(json));
   }
   void clearPaintChunkDebugData() { m_paintChunkDebugData.clear(); }
 
@@ -129,7 +129,7 @@ class PaintArtifactCompositor::ContentLayerClientImpl
     RasterInvalidationTracking& tracking =
         ccLayersRasterInvalidationTrackingMap().add(m_ccPictureLayer.get());
 
-    tracking.trackedRasterInvalidations.append(*rasterInvalidationInfo);
+    tracking.trackedRasterInvalidations.push_back(*rasterInvalidationInfo);
 
     if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
       // TODO(crbug.com/496260): Some antialiasing effects overflow the paint
@@ -578,7 +578,7 @@ PaintArtifactCompositor::compositedLayerForPendingLayer(
     }
   }
 
-  newContentLayerClients.append(std::move(contentLayerClient));
+  newContentLayerClients.push_back(std::move(contentLayerClient));
   return ccPictureLayer;
 }
 
@@ -750,7 +750,7 @@ void PropertyTreeManager::setupRootEffectNode() {
   m_propertyTrees.effect_id_to_index_map[effectNode.owning_layer_id] =
       effectNode.id;
 
-  m_effectStack.append(
+  m_effectStack.push_back(
       BlinkEffectAndCcIdPair{EffectPaintPropertyNode::root(), effectNode.id});
   m_rootLayer->SetEffectTreeIndex(effectNode.id);
 }
@@ -1030,7 +1030,7 @@ void PropertyTreeManager::buildEffectNodesRecursively(
   effectNode.blend_mode = nextEffect->blendMode();
   m_propertyTrees.effect_id_to_index_map[effectNode.owning_layer_id] =
       effectNode.id;
-  m_effectStack.append(BlinkEffectAndCcIdPair{nextEffect, effectNode.id});
+  m_effectStack.push_back(BlinkEffectAndCcIdPair{nextEffect, effectNode.id});
 
   dummyLayer->set_property_tree_sequence_number(kPropertyTreeSequenceNumber);
   dummyLayer->SetTransformTreeIndex(kSecondaryRootNodeId);
@@ -1102,14 +1102,14 @@ PaintArtifactCompositor::PendingLayer::PendingLayer(
       knownToBeOpaque(firstPaintChunk.knownToBeOpaque),
       backfaceHidden(firstPaintChunk.properties.backfaceHidden),
       propertyTreeState(firstPaintChunk.properties.propertyTreeState) {
-  paintChunks.append(&firstPaintChunk);
+  paintChunks.push_back(&firstPaintChunk);
 }
 
 void PaintArtifactCompositor::PendingLayer::add(
     const PaintChunk& paintChunk,
     GeometryMapper* geometryMapper) {
   DCHECK(paintChunk.properties.backfaceHidden == backfaceHidden);
-  paintChunks.append(&paintChunk);
+  paintChunks.push_back(&paintChunk);
   FloatRect mappedBounds = paintChunk.bounds;
   if (geometryMapper) {
     bool success = false;
@@ -1149,7 +1149,7 @@ void PaintArtifactCompositor::collectPendingLayers(
       }
     }
     if (createNew)
-      pendingLayers.append(PendingLayer(paintChunk));
+      pendingLayers.push_back(PendingLayer(paintChunk));
   }
 }
 
@@ -1220,7 +1220,7 @@ void PaintArtifactCompositor::update(
     layer->SetShouldCheckBackfaceVisibility(pendingLayer.backfaceHidden);
 
     if (m_extraDataForTestingEnabled)
-      m_extraDataForTesting->contentLayers.append(layer);
+      m_extraDataForTesting->contentLayers.push_back(layer);
   }
   m_contentLayerClients.clear();
   m_contentLayerClients.swap(newContentLayerClients);

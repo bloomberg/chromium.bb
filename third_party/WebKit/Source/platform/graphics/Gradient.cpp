@@ -81,7 +81,7 @@ void Gradient::addColorStop(const Gradient::ColorStop& stop) {
     m_stopsSorted = m_stopsSorted && compareStops(m_stops.back(), stop);
   }
 
-  m_stops.append(stop);
+  m_stops.push_back(stop);
   m_cachedShader.reset();
 }
 

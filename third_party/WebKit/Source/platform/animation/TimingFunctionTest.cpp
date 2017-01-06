@@ -127,11 +127,11 @@ TEST_F(TimingFunctionTest, BaseOperatorEq) {
       StepsTimingFunction::create(5, StepsTimingFunction::StepPosition::START);
 
   Vector<std::pair<std::string, RefPtr<TimingFunction>>> v;
-  v.append(std::make_pair("linearTiming", linearTiming));
-  v.append(std::make_pair("cubicTiming1", cubicTiming1));
-  v.append(std::make_pair("cubicTiming2", cubicTiming2));
-  v.append(std::make_pair("stepsTiming1", stepsTiming1));
-  v.append(std::make_pair("stepsTiming2", stepsTiming2));
+  v.push_back(std::make_pair("linearTiming", linearTiming));
+  v.push_back(std::make_pair("cubicTiming1", cubicTiming1));
+  v.push_back(std::make_pair("cubicTiming2", cubicTiming2));
+  v.push_back(std::make_pair("stepsTiming1", stepsTiming1));
+  v.push_back(std::make_pair("stepsTiming2", stepsTiming2));
   notEqualHelperLoop(v);
 }
 
@@ -176,10 +176,10 @@ TEST_F(TimingFunctionTest, CubicOperatorEq) {
   EXPECT_EQ(*cubicCustomTiming1, *cubicCustomTiming2);
 
   Vector<std::pair<std::string, RefPtr<TimingFunction>>> v;
-  v.append(std::make_pair("cubicEaseInTiming1", cubicEaseInTiming1));
-  v.append(std::make_pair("cubicEaseOutTiming1", cubicEaseOutTiming1));
-  v.append(std::make_pair("cubicEaseInOutTiming1", cubicEaseInOutTiming1));
-  v.append(std::make_pair("cubicCustomTiming1", cubicCustomTiming1));
+  v.push_back(std::make_pair("cubicEaseInTiming1", cubicEaseInTiming1));
+  v.push_back(std::make_pair("cubicEaseOutTiming1", cubicEaseOutTiming1));
+  v.push_back(std::make_pair("cubicEaseInOutTiming1", cubicEaseInOutTiming1));
+  v.push_back(std::make_pair("cubicCustomTiming1", cubicCustomTiming1));
   notEqualHelperLoop(v);
 }
 
@@ -230,12 +230,12 @@ TEST_F(TimingFunctionTest, StepsOperatorEq) {
       *stepsTimingCustom4);
 
   Vector<std::pair<std::string, RefPtr<TimingFunction>>> v;
-  v.append(std::make_pair("stepsTimingStart1", stepsTimingStart1));
-  v.append(std::make_pair("stepsTimingEnd1", stepsTimingEnd1));
-  v.append(std::make_pair("stepsTimingCustom1", stepsTimingCustom1));
-  v.append(std::make_pair("stepsTimingCustom2", stepsTimingCustom2));
-  v.append(std::make_pair("stepsTimingCustom3", stepsTimingCustom3));
-  v.append(std::make_pair("stepsTimingCustom4", stepsTimingCustom4));
+  v.push_back(std::make_pair("stepsTimingStart1", stepsTimingStart1));
+  v.push_back(std::make_pair("stepsTimingEnd1", stepsTimingEnd1));
+  v.push_back(std::make_pair("stepsTimingCustom1", stepsTimingCustom1));
+  v.push_back(std::make_pair("stepsTimingCustom2", stepsTimingCustom2));
+  v.push_back(std::make_pair("stepsTimingCustom3", stepsTimingCustom3));
+  v.push_back(std::make_pair("stepsTimingCustom4", stepsTimingCustom4));
   notEqualHelperLoop(v);
 }
 

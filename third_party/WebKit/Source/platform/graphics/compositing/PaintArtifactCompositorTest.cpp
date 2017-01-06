@@ -479,7 +479,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedClips) {
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, DeeplyNestedClips) {
   Vector<RefPtr<ClipPaintPropertyNode>> clips;
   for (unsigned i = 1; i <= 10; i++) {
-    clips.append(ClipPaintPropertyNode::create(
+    clips.push_back(ClipPaintPropertyNode::create(
         clips.isEmpty() ? ClipPaintPropertyNode::root() : clips.back(),
         TransformPaintPropertyNode::root(),
         FloatRoundedRect(5 * i, 0, 100, 200 - 10 * i)));

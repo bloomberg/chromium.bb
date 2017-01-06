@@ -18,7 +18,7 @@ Vector<size_t, 8> Hyphenation::hyphenLocations(const StringView& text) const {
 
   while ((hyphenLocation = lastHyphenLocation(text, hyphenLocation)) >=
          minimumPrefixLength)
-    hyphenLocations.append(hyphenLocation);
+    hyphenLocations.push_back(hyphenLocation);
 
   return hyphenLocations;
 }

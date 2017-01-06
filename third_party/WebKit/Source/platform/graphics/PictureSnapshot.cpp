@@ -96,7 +96,7 @@ PassRefPtr<PictureSnapshot> PictureSnapshot::load(
     FloatRect cullRect(picture->cullRect());
     cullRect.moveBy(tileStream->layerOffset);
     unionRect.unite(cullRect);
-    pictures.append(std::move(picture));
+    pictures.push_back(std::move(picture));
   }
   if (tiles.size() == 1)
     return adoptRef(new PictureSnapshot(std::move(pictures[0])));
@@ -178,7 +178,7 @@ std::unique_ptr<PictureSnapshot::Timings> PictureSnapshot::profile(
   double now = WTF::monotonicallyIncreasingTime();
   double stopTime = now + minDuration;
   for (unsigned step = 0; step < minRepeatCount || now < stopTime; ++step) {
-    timings->append(Vector<double>());
+    timings->push_back(Vector<double>());
     Vector<double>* currentTimings = &timings->back();
     if (timings->size() > 1)
       currentTimings->reserveCapacity(timings->begin()->size());

@@ -100,7 +100,7 @@ MultiChannelResampler::MultiChannelResampler(double scaleFactor,
   // Create each channel's resampler.
   for (unsigned channelIndex = 0; channelIndex < numberOfChannels;
        ++channelIndex)
-    m_kernels.append(WTF::makeUnique<SincResampler>(scaleFactor));
+    m_kernels.push_back(WTF::makeUnique<SincResampler>(scaleFactor));
 }
 
 void MultiChannelResampler::process(AudioSourceProvider* provider,

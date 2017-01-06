@@ -47,7 +47,7 @@ struct FallbackListCompositeKey {
         m_auxiliaryBitmapFields(0) {}
 
   void add(FontCacheKey key) {
-    m_fontCacheKeys.append(key);
+    m_fontCacheKeys.push_back(key);
     // Djb2 with the first bit reserved for deleted.
     m_hash = (((m_hash << 5) + m_hash) + key.hash()) << 1;
   }

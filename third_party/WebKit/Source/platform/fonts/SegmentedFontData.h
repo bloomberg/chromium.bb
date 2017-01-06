@@ -41,7 +41,7 @@ class PLATFORM_EXPORT SegmentedFontData : public FontData {
   }
 
   void appendFace(const PassRefPtr<FontDataForRangeSet> fontDataForRangeSet) {
-    m_faces.append(fontDataForRangeSet);
+    m_faces.push_back(fontDataForRangeSet);
   }
   unsigned numFaces() const { return m_faces.size(); }
   PassRefPtr<FontDataForRangeSet> faceAt(unsigned i) const {

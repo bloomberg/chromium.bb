@@ -439,7 +439,7 @@ void DrawingBuffer::mailboxReleasedSoftware(
     return;  // Just delete the bitmap.
 
   RecycledBitmap recycled = {std::move(bitmap), m_size};
-  m_recycledBitmaps.append(std::move(recycled));
+  m_recycledBitmaps.push_back(std::move(recycled));
 }
 
 PassRefPtr<StaticBitmapImage> DrawingBuffer::transferToStaticBitmapImage() {

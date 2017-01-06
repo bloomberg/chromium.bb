@@ -170,7 +170,7 @@ void InsertionAndDeletionTest(const int32_t seed, const int treeSize) {
     int value = nextRandom(maximumValue);
     tree.add(value);
     ASSERT_TRUE(tree.checkInvariants()) << "Test failed for seed " << seed;
-    values.append(value);
+    values.push_back(value);
   }
   // Churn the tree's contents.
   for (int i = 0; i < treeSize; i++) {

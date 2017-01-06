@@ -337,11 +337,11 @@ static inline void purgePlatformFontDataCache() {
     for (const auto& platformData : sizedFonts.value) {
       if (platformData.value &&
           !gFontDataCache->contains(platformData.value.get()))
-        sizesToRemove.append(platformData.key);
+        sizesToRemove.push_back(platformData.key);
     }
     sizedFonts.value.removeAll(sizesToRemove);
     if (sizedFonts.value.isEmpty())
-      keysToRemove.append(sizedFonts.key);
+      keysToRemove.push_back(sizedFonts.key);
   }
   gFontPlatformDataCache->removeAll(keysToRemove);
 }
@@ -368,7 +368,7 @@ static inline void purgeFontVerticalDataCache() {
              fontVerticalDataCache.begin();
          verticalData != verticalDataEnd; ++verticalData) {
       if (!verticalData->value || !verticalData->value->inFontCache())
-        keysToRemove.append(verticalData->key);
+        keysToRemove.push_back(verticalData->key);
     }
     fontVerticalDataCache.removeAll(keysToRemove);
   }
@@ -449,7 +449,7 @@ void FontCache::invalidate() {
   for (HeapHashSet<WeakMember<FontCacheClient>>::iterator it =
            fontCacheClients().begin();
        it != end; ++it)
-    clients.append(*it);
+    clients.push_back(*it);
 
   ASSERT(numClients == clients.size());
   for (size_t i = 0; i < numClients; ++i)

@@ -35,7 +35,7 @@ namespace blink {
 
 // Helper functions
 static inline void append(Vector<char>& buffer, char string) {
-  buffer.append(string);
+  buffer.push_back(string);
 }
 
 static inline void append(Vector<char>& buffer, const char* string) {
@@ -124,14 +124,14 @@ Vector<char> FormDataEncoder::generateUniqueBoundaryString() {
 
   for (unsigned i = 0; i < 4; ++i) {
     uint32_t randomness = cryptographicallyRandomNumber();
-    randomBytes.append(alphaNumericEncodingMap[(randomness >> 24) & 0x3F]);
-    randomBytes.append(alphaNumericEncodingMap[(randomness >> 16) & 0x3F]);
-    randomBytes.append(alphaNumericEncodingMap[(randomness >> 8) & 0x3F]);
-    randomBytes.append(alphaNumericEncodingMap[randomness & 0x3F]);
+    randomBytes.push_back(alphaNumericEncodingMap[(randomness >> 24) & 0x3F]);
+    randomBytes.push_back(alphaNumericEncodingMap[(randomness >> 16) & 0x3F]);
+    randomBytes.push_back(alphaNumericEncodingMap[(randomness >> 8) & 0x3F]);
+    randomBytes.push_back(alphaNumericEncodingMap[randomness & 0x3F]);
   }
 
   boundary.appendVector(randomBytes);
-  boundary.append(
+  boundary.push_back(
       0);  // Add a 0 at the end so we can use this as a C-style string.
   return boundary;
 }

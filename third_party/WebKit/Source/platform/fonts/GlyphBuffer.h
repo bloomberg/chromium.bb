@@ -96,19 +96,19 @@ class GlyphBuffer {
     // cannot mix x-only/xy offsets
     ASSERT(!hasVerticalOffsets());
 
-    m_fontData.append(font);
-    m_glyphs.append(glyph);
-    m_offsets.append(x);
+    m_fontData.push_back(font);
+    m_glyphs.push_back(glyph);
+    m_offsets.push_back(x);
   }
 
   void add(Glyph glyph, const SimpleFontData* font, const FloatPoint& offset) {
     // cannot mix x-only/xy offsets
     ASSERT(isEmpty() || hasVerticalOffsets());
 
-    m_fontData.append(font);
-    m_glyphs.append(glyph);
-    m_offsets.append(offset.x());
-    m_offsets.append(offset.y());
+    m_fontData.push_back(font);
+    m_glyphs.push_back(glyph);
+    m_offsets.push_back(offset.x());
+    m_offsets.push_back(offset.y());
   }
 
   void reverseForSimpleRTL(float afterOffset, float totalWidth) {
@@ -157,7 +157,7 @@ class GlyphBuffer {
   void addIsSkipInkException(bool value) {
     DCHECK(hasSkipInkExceptions());
     DCHECK_EQ(m_skipInkExceptions->size(), m_offsets.size() - 1);
-    m_skipInkExceptions->append(value);
+    m_skipInkExceptions->push_back(value);
   }
 
  protected:

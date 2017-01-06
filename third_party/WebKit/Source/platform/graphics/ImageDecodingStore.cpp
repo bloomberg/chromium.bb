@@ -252,7 +252,7 @@ void ImageDecodingStore::removeFromCacheInternal(
     identifierMap->remove(iter);
 
   // Remove entry from cache map.
-  deletionList->append(cacheMap->take(cacheEntry->cacheKey()));
+  deletionList->push_back(cacheMap->take(cacheEntry->cacheKey()));
 
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink.image_decoding"),
                  "ImageDecodingStoreHeapMemoryUsageBytes",

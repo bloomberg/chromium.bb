@@ -45,7 +45,7 @@ CanvasInterceptor<ProfilingCanvas>::~CanvasInterceptor() {
   double delta = WTF::monotonicallyIncreasingTime() - m_startTime;
   if (auto timings = canvas()->m_timings) {
     ASSERT(timings->size() == canvas()->callCount());
-    timings->append(delta);
+    timings->push_back(delta);
   }
 }
 

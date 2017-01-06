@@ -434,7 +434,7 @@ void BidiResolver<Iterator, Run, IsolatedRun>::embed(
   ASSERT(dir == PopDirectionalFormat || dir == LeftToRightEmbedding ||
          dir == LeftToRightOverride || dir == RightToLeftEmbedding ||
          dir == RightToLeftOverride);
-  m_currentExplicitEmbeddingSequence.append(BidiEmbedding(dir, source));
+  m_currentExplicitEmbeddingSequence.push_back(BidiEmbedding(dir, source));
 }
 
 template <class Iterator, class Run, class IsolatedRun>

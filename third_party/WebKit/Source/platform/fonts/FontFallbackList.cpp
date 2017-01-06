@@ -233,7 +233,7 @@ const FontData* FontFallbackList::fontDataAt(
   ASSERT(FontCache::fontCache()->generation() == m_generation);
   RefPtr<FontData> result = getFontData(fontDescription, m_familyIndex);
   if (result) {
-    m_fontList.append(result);
+    m_fontList.push_back(result);
     if (result->isLoadingFallback())
       m_hasLoadingFallback = true;
   }

@@ -65,7 +65,7 @@ TestPaintArtifact& TestPaintArtifact::chunk(
   PaintChunk chunk;
   chunk.beginIndex = m_displayItemList.size();
   chunk.properties = properties;
-  m_paintChunks.append(chunk);
+  m_paintChunks.push_back(chunk);
   return *this;
 }
 
@@ -75,7 +75,7 @@ TestPaintArtifact& TestPaintArtifact::rectDrawing(const FloatRect& bounds,
       WTF::makeUnique<DummyRectClient>(bounds, color);
   m_displayItemList.allocateAndConstruct<DrawingDisplayItem>(
       *client, DisplayItem::kDrawingFirst, client->makePicture());
-  m_dummyClients.append(std::move(client));
+  m_dummyClients.push_back(std::move(client));
   return *this;
 }
 
@@ -89,7 +89,7 @@ TestPaintArtifact& TestPaintArtifact::foreignLayer(
   m_displayItemList.allocateAndConstruct<ForeignLayerDisplayItem>(
       *client, DisplayItem::kForeignLayerFirst, std::move(layer), location,
       size);
-  m_dummyClients.append(std::move(client));
+  m_dummyClients.push_back(std::move(client));
   return *this;
 }
 

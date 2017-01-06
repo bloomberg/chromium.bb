@@ -34,12 +34,12 @@ class TimerTest : public testing::Test {
   }
 
   void countingTask(TimerBase*) {
-    m_runTimes.append(monotonicallyIncreasingTime());
+    m_runTimes.push_back(monotonicallyIncreasingTime());
   }
 
   void recordNextFireTimeTask(TimerBase* timer) {
-    m_nextFireTimes.append(monotonicallyIncreasingTime() +
-                           timer->nextFireInterval());
+    m_nextFireTimes.push_back(monotonicallyIncreasingTime() +
+                              timer->nextFireInterval());
   }
 
   void runUntilDeadline(double deadline) {

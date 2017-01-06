@@ -41,7 +41,7 @@ class FontSettings {
   WTF_MAKE_NONCOPYABLE(FontSettings);
 
  public:
-  void append(const T& feature) { m_list.append(feature); }
+  void append(const T& feature) { m_list.push_back(feature); }
   size_t size() const { return m_list.size(); }
   const T& operator[](int index) const { return m_list[index]; }
   const T& at(size_t index) const { return m_list.at(index); }

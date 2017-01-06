@@ -33,7 +33,7 @@ namespace blink {
 
 TransformOperations::TransformOperations(bool makeIdentity) {
   if (makeIdentity)
-    m_operations.append(IdentityTransformOperation::create());
+    m_operations.push_back(IdentityTransformOperation::create());
 }
 
 bool TransformOperations::operator==(const TransformOperations& o) const {
@@ -82,16 +82,16 @@ TransformOperations TransformOperations::blendByMatchingOperations(
                     : (fromOperation ? fromOperation->blend(0, progress, true)
                                      : nullptr);
     if (blendedOperation)
-      result.operations().append(blendedOperation);
+      result.operations().push_back(blendedOperation);
     else {
       RefPtr<TransformOperation> identityOperation =
           IdentityTransformOperation::create();
       if (progress > 0.5)
-        result.operations().append(toOperation ? toOperation
-                                               : identityOperation);
+        result.operations().push_back(toOperation ? toOperation
+                                                  : identityOperation);
       else
-        result.operations().append(fromOperation ? fromOperation
-                                                 : identityOperation);
+        result.operations().push_back(fromOperation ? fromOperation
+                                                    : identityOperation);
     }
   }
 
@@ -127,7 +127,8 @@ TransformOperations TransformOperations::blend(const TransformOperations& from,
     return blendByMatchingOperations(from, progress);
 
   TransformOperations result;
-  result.operations().append(blendByUsingMatrixInterpolation(from, progress));
+  result.operations().push_back(
+      blendByUsingMatrixInterpolation(from, progress));
   return result;
 }
 
@@ -431,7 +432,7 @@ TransformOperations TransformOperations::add(
 TransformOperations TransformOperations::zoom(double factor) const {
   TransformOperations result;
   for (auto& transformOperation : m_operations)
-    result.m_operations.append(transformOperation->zoom(factor));
+    result.m_operations.push_back(transformOperation->zoom(factor));
   return result;
 }
 

@@ -36,7 +36,7 @@ SourceAlpha* SourceAlpha::create(FilterEffect* sourceEffect) {
 SourceAlpha::SourceAlpha(FilterEffect* sourceEffect)
     : FilterEffect(sourceEffect->getFilter()) {
   setOperatingColorSpace(sourceEffect->operatingColorSpace());
-  inputEffects().append(sourceEffect);
+  inputEffects().push_back(sourceEffect);
 }
 
 sk_sp<SkImageFilter> SourceAlpha::createImageFilter() {

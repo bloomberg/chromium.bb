@@ -109,7 +109,7 @@ PassRefPtr<EncodedFormData> EncodedFormData::deepCopy() const {
 
 void EncodedFormData::appendData(const void* data, size_t size) {
   if (m_elements.isEmpty() || m_elements.back().m_type != FormDataElement::data)
-    m_elements.append(FormDataElement());
+    m_elements.push_back(FormDataElement());
   FormDataElement& e = m_elements.back();
   size_t oldSize = e.m_data.size();
   e.m_data.grow(oldSize + size);
@@ -117,25 +117,25 @@ void EncodedFormData::appendData(const void* data, size_t size) {
 }
 
 void EncodedFormData::appendFile(const String& filename) {
-  m_elements.append(FormDataElement(filename, 0, BlobDataItem::toEndOfFile,
-                                    invalidFileTime()));
+  m_elements.push_back(FormDataElement(filename, 0, BlobDataItem::toEndOfFile,
+                                       invalidFileTime()));
 }
 
 void EncodedFormData::appendFileRange(const String& filename,
                                       long long start,
                                       long long length,
                                       double expectedModificationTime) {
-  m_elements.append(
+  m_elements.push_back(
       FormDataElement(filename, start, length, expectedModificationTime));
 }
 
 void EncodedFormData::appendBlob(const String& uuid,
                                  PassRefPtr<BlobDataHandle> optionalHandle) {
-  m_elements.append(FormDataElement(uuid, std::move(optionalHandle)));
+  m_elements.push_back(FormDataElement(uuid, std::move(optionalHandle)));
 }
 
 void EncodedFormData::appendFileSystemURL(const KURL& url) {
-  m_elements.append(
+  m_elements.push_back(
       FormDataElement(url, 0, BlobDataItem::toEndOfFile, invalidFileTime()));
 }
 
@@ -144,7 +144,7 @@ void EncodedFormData::appendFileSystemURLRange(
     long long start,
     long long length,
     double expectedModificationTime) {
-  m_elements.append(
+  m_elements.push_back(
       FormDataElement(url, start, length, expectedModificationTime));
 }
 

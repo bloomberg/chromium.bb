@@ -76,8 +76,8 @@ class LocaleICUTest : public ::testing::Test {
  protected:
   Labels labelsFromTwoElements(const String& element1, const String& element2) {
     Vector<String> labels = Vector<String>();
-    labels.append(element1);
-    labels.append(element2);
+    labels.push_back(element1);
+    labels.push_back(element2);
     return Labels(labels);
   }
 

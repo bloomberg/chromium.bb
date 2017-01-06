@@ -415,9 +415,9 @@ void ShapeResultBuffer::addRunInfoRanges(const ShapeResult::RunInfo& runInfo,
 
     // To match getCharacterRange we flip ranges to ensure start <= end.
     if (end < start)
-      ranges.append(CharacterRange(end, start));
+      ranges.push_back(CharacterRange(end, start));
     else
-      ranges.append(CharacterRange(start, end));
+      ranges.push_back(CharacterRange(start, end));
   }
 }
 

@@ -325,7 +325,7 @@ std::unique_ptr<JSONObject> objectForSkShader(const SkShader& shader) {
 String stringForSkColor(const SkColor& color) {
   // #AARRGGBB.
   Vector<LChar, 9> result;
-  result.append('#');
+  result.push_back('#');
   appendUnsignedAsHex(color, result);
   return String(result.data(), result.size());
 }

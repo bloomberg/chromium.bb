@@ -34,7 +34,7 @@ DisplayItem& DisplayItemList::appendByMoving(DisplayItem& item) {
 }
 
 void DisplayItemList::appendVisualRect(const IntRect& visualRect) {
-  m_visualRects.append(visualRect);
+  m_visualRects.push_back(visualRect);
 }
 
 DisplayItemList::Range<DisplayItemList::iterator>

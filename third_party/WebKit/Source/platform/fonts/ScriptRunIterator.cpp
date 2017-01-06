@@ -59,7 +59,7 @@ void ICUScriptData::getScripts(UChar32 ch, Vector<UScriptCode>& dst) const {
     // to somewhere else in the list.
     auto it = std::find(dst.begin() + 1, dst.end(), primaryScript);
     if (it == dst.end()) {
-      dst.append(primaryScript);
+      dst.push_back(primaryScript);
     }
     std::swap(*dst.begin(), *it);
     return;
@@ -89,7 +89,7 @@ void ICUScriptData::getScripts(UChar32 ch, Vector<UScriptCode>& dst) const {
   // Otherwise, use Unicode block as a tie breaker. Comparing
   // ScriptCodes as integers is not meaningful because 'old' scripts are
   // just sorted in alphabetic order.
-  dst.append(dst.at(0));
+  dst.push_back(dst.at(0));
   dst.at(0) = primaryScript;
   for (size_t i = 2; i < dst.size(); ++i) {
     if (dst.at(1) == USCRIPT_LATIN || dst.at(i) < dst.at(1)) {
@@ -132,7 +132,7 @@ ScriptRunIterator::ScriptRunIterator(const UChar* text,
     // Priming the m_currentSet with USCRIPT_COMMON here so that the first
     // resolution between m_currentSet and m_nextSet in mergeSets() leads to
     // chosing the script of the first consumed character.
-    m_currentSet.append(USCRIPT_COMMON);
+    m_currentSet.push_back(USCRIPT_COMMON);
     U16_NEXT(m_text, m_aheadPos, m_length, m_aheadCharacter);
     m_scriptData->getScripts(m_aheadCharacter, m_aheadSet);
   }
@@ -194,7 +194,7 @@ void ScriptRunIterator::closeBracket(UChar32 ch) {
         // Have a match, use open paren's resolved script.
         UScriptCode script = it->script;
         m_nextSet.clear();
-        m_nextSet.append(script);
+        m_nextSet.push_back(script);
 
         // And pop stack to this point.
         int numPopped = std::distance(m_brackets.rbegin(), it);

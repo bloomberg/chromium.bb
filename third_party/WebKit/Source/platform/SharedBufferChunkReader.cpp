@@ -83,7 +83,7 @@ bool SharedBufferChunkReader::nextChunk(Vector<char>& chunk,
           chunk.append(m_separator.data(), m_separatorIndex);
           m_separatorIndex = 0;
         }
-        chunk.append(currentCharacter);
+        chunk.push_back(currentCharacter);
         continue;
       }
       m_separatorIndex++;

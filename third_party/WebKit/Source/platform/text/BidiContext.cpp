@@ -105,7 +105,7 @@ BidiContext::copyStackRemovingUnicodeEmbeddingContexts() {
   Vector<BidiContext*, 64> contexts;
   for (BidiContext* iter = this; iter; iter = iter->parent()) {
     if (iter->source() != FromUnicode)
-      contexts.append(iter);
+      contexts.push_back(iter);
   }
   ASSERT(contexts.size());
 

@@ -13,7 +13,7 @@ namespace blink {
 TEST(WebVectorTest, Iterators) {
   Vector<int> input;
   for (int i = 0; i < 5; ++i)
-    input.append(i);
+    input.push_back(i);
 
   WebVector<int> webVector(input);
   const WebVector<int>& constWebVector = webVector;
@@ -24,7 +24,7 @@ TEST(WebVectorTest, Iterators) {
   // Use begin()/end() iterators directly.
   for (WebVector<int>::iterator it = webVector.begin(); it != webVector.end();
        ++it)
-    output.append(*it);
+    output.push_back(*it);
   ASSERT_EQ(input.size(), output.size());
   for (size_t i = 0; i < input.size(); ++i)
     EXPECT_EQ(input[i], output[i]);
@@ -33,7 +33,7 @@ TEST(WebVectorTest, Iterators) {
   output.clear();
   for (WebVector<int>::const_iterator it = constWebVector.begin();
        it != constWebVector.end(); ++it)
-    output.append(*it);
+    output.push_back(*it);
   ASSERT_EQ(input.size(), output.size());
   for (size_t i = 0; i < input.size(); ++i)
     EXPECT_EQ(input[i], output[i]);
@@ -41,7 +41,7 @@ TEST(WebVectorTest, Iterators) {
   // Use range-based for loop.
   output.clear();
   for (int x : webVector)
-    output.append(x);
+    output.push_back(x);
   ASSERT_EQ(input.size(), output.size());
   for (size_t i = 0; i < input.size(); ++i)
     EXPECT_EQ(input[i], output[i]);
@@ -88,7 +88,7 @@ TEST(WebVectorTest, CreateFromPointer) {
 TEST(WebVectorTest, CreateFromWtfVector) {
   Vector<int> input;
   for (int i = 0; i < 5; ++i)
-    input.append(i);
+    input.push_back(i);
 
   WebVector<int> vector(input);
   ASSERT_EQ(input.size(), vector.size());

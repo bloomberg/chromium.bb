@@ -126,11 +126,11 @@ void WebMediaStream::initialize(
   MediaStreamComponentVector audio, video;
   for (size_t i = 0; i < audioTracks.size(); ++i) {
     MediaStreamComponent* component = audioTracks[i];
-    audio.append(component);
+    audio.push_back(component);
   }
   for (size_t i = 0; i < videoTracks.size(); ++i) {
     MediaStreamComponent* component = videoTracks[i];
-    video.append(component);
+    video.push_back(component);
   }
   m_private = MediaStreamDescriptor::create(label, audio, video);
 }

@@ -77,7 +77,7 @@ GraphicsContext::GraphicsContext(PaintController& paintController,
 
   // FIXME: Do some tests to determine how many states are typically used, and
   // allocate several here.
-  m_paintStateStack.append(GraphicsContextState::create());
+  m_paintStateStack.push_back(GraphicsContextState::create());
   m_paintState = m_paintStateStack.back().get();
 
   if (contextDisabled()) {

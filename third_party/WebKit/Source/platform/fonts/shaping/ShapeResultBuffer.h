@@ -26,7 +26,7 @@ class ShapeResultBuffer {
 
   void appendResult(PassRefPtr<const ShapeResult> result) {
     m_hasVerticalOffsets |= result->hasVerticalOffsets();
-    m_results.append(result);
+    m_results.push_back(result);
   }
 
   bool hasVerticalOffsets() const { return m_hasVerticalOffsets; }

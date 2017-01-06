@@ -67,8 +67,8 @@ bool PaintChunker::incrementDisplayItemIndex(const DisplayItem& item) {
   if (m_chunks.isEmpty()) {
     PaintChunk newChunk(0, 1, newChunkId ? &*newChunkId : nullptr,
                         m_currentProperties);
-    m_chunks.append(newChunk);
-    m_chunkBehavior.append(behavior);
+    m_chunks.push_back(newChunk);
+    m_chunkBehavior.push_back(behavior);
     return true;
   }
 
@@ -83,8 +83,8 @@ bool PaintChunker::incrementDisplayItemIndex(const DisplayItem& item) {
 
   PaintChunk newChunk(lastChunk.endIndex, lastChunk.endIndex + 1,
                       newChunkId ? &*newChunkId : nullptr, m_currentProperties);
-  m_chunks.append(newChunk);
-  m_chunkBehavior.append(behavior);
+  m_chunks.push_back(newChunk);
+  m_chunkBehavior.push_back(behavior);
   return true;
 }
 

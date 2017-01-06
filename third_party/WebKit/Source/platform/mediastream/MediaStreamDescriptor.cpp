@@ -60,11 +60,11 @@ void MediaStreamDescriptor::addComponent(MediaStreamComponent* component) {
   switch (component->source()->type()) {
     case MediaStreamSource::TypeAudio:
       if (m_audioComponents.find(component) == kNotFound)
-        m_audioComponents.append(component);
+        m_audioComponents.push_back(component);
       break;
     case MediaStreamSource::TypeVideo:
       if (m_videoComponents.find(component) == kNotFound)
-        m_videoComponents.append(component);
+        m_videoComponents.push_back(component);
       break;
   }
 }
@@ -106,10 +106,10 @@ MediaStreamDescriptor::MediaStreamDescriptor(
     : m_client(nullptr), m_id(id), m_active(true) {
   ASSERT(m_id.length());
   for (size_t i = 0; i < audioSources.size(); i++)
-    m_audioComponents.append(MediaStreamComponent::create(audioSources[i]));
+    m_audioComponents.push_back(MediaStreamComponent::create(audioSources[i]));
 
   for (size_t i = 0; i < videoSources.size(); i++)
-    m_videoComponents.append(MediaStreamComponent::create(videoSources[i]));
+    m_videoComponents.push_back(MediaStreamComponent::create(videoSources[i]));
 }
 
 MediaStreamDescriptor::MediaStreamDescriptor(
@@ -121,11 +121,11 @@ MediaStreamDescriptor::MediaStreamDescriptor(
   for (MediaStreamComponentVector::const_iterator iter =
            audioComponents.begin();
        iter != audioComponents.end(); ++iter)
-    m_audioComponents.append((*iter));
+    m_audioComponents.push_back((*iter));
   for (MediaStreamComponentVector::const_iterator iter =
            videoComponents.begin();
        iter != videoComponents.end(); ++iter)
-    m_videoComponents.append((*iter));
+    m_videoComponents.push_back((*iter));
 }
 
 DEFINE_TRACE(MediaStreamDescriptor) {

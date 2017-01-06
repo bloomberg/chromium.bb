@@ -49,7 +49,7 @@ class ImageFilterBuilderTest : public Test {
     FilterEffect* blurEffect =
         FEGaussianBlur::create(referenceFilter, 3.0f, 3.0f);
     blurEffect->setOperatingColorSpace(ColorSpaceLinearRGB);
-    blurEffect->inputEffects().append(sourceEffect);
+    blurEffect->inputEffects().push_back(sourceEffect);
 
     // Add a blend effect (with inputs : blur, source)
     FilterEffect* blendEffect =
@@ -57,16 +57,16 @@ class ImageFilterBuilderTest : public Test {
     blendEffect->setOperatingColorSpace(ColorSpaceDeviceRGB);
     FilterEffectVector& blendInputs = blendEffect->inputEffects();
     blendInputs.reserveCapacity(2);
-    blendInputs.append(sourceEffect);
-    blendInputs.append(blurEffect);
+    blendInputs.push_back(sourceEffect);
+    blendInputs.push_back(blurEffect);
 
     // Add a merge effect (with inputs : blur, blend)
     FilterEffect* mergeEffect = FEMerge::create(referenceFilter);
     mergeEffect->setOperatingColorSpace(ColorSpaceLinearRGB);
     FilterEffectVector& mergeInputs = mergeEffect->inputEffects();
     mergeInputs.reserveCapacity(2);
-    mergeInputs.append(blurEffect);
-    mergeInputs.append(blendEffect);
+    mergeInputs.push_back(blurEffect);
+    mergeInputs.push_back(blendEffect);
     referenceFilter->setLastEffect(mergeEffect);
 
     // Get SkImageFilter resulting tree

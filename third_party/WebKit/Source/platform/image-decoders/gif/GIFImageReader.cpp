@@ -834,7 +834,7 @@ void GIFImageReader::setRemainingBytes(size_t remainingBytes) {
 
 void GIFImageReader::addFrameIfNecessary() {
   if (m_frames.isEmpty() || m_frames.back()->isComplete())
-    m_frames.append(WTF::wrapUnique(new GIFFrameContext(m_frames.size())));
+    m_frames.push_back(WTF::wrapUnique(new GIFFrameContext(m_frames.size())));
 }
 
 // FIXME: Move this method to close to doLZW().

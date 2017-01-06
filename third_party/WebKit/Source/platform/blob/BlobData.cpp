@@ -82,7 +82,7 @@ std::unique_ptr<BlobData> BlobData::createForFileWithUnknownSize(
     const String& path) {
   std::unique_ptr<BlobData> data = WTF::wrapUnique(
       new BlobData(FileCompositionStatus::SINGLE_UNKNOWN_SIZE_FILE));
-  data->m_items.append(BlobDataItem(path));
+  data->m_items.push_back(BlobDataItem(path));
   return data;
 }
 
@@ -104,7 +104,7 @@ void BlobData::appendData(PassRefPtr<RawData> data,
                           long long length) {
   CHECK_EQ(m_fileComposition, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
       << "Blobs with a unknown-size file cannot have other items.";
-  m_items.append(BlobDataItem(std::move(data), offset, length));
+  m_items.push_back(BlobDataItem(std::move(data), offset, length));
 }
 
 void BlobData::appendFile(const String& path,
@@ -113,7 +113,8 @@ void BlobData::appendFile(const String& path,
                           double expectedModificationTime) {
   CHECK_EQ(m_fileComposition, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
       << "Blobs with a unknown-size file cannot have other items.";
-  m_items.append(BlobDataItem(path, offset, length, expectedModificationTime));
+  m_items.push_back(
+      BlobDataItem(path, offset, length, expectedModificationTime));
 }
 
 void BlobData::appendBlob(PassRefPtr<BlobDataHandle> dataHandle,
@@ -121,7 +122,7 @@ void BlobData::appendBlob(PassRefPtr<BlobDataHandle> dataHandle,
                           long long length) {
   CHECK_EQ(m_fileComposition, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
       << "Blobs with a unknown-size file cannot have other items.";
-  m_items.append(BlobDataItem(std::move(dataHandle), offset, length));
+  m_items.push_back(BlobDataItem(std::move(dataHandle), offset, length));
 }
 
 void BlobData::appendFileSystemURL(const KURL& url,
@@ -130,7 +131,8 @@ void BlobData::appendFileSystemURL(const KURL& url,
                                    double expectedModificationTime) {
   CHECK_EQ(m_fileComposition, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
       << "Blobs with a unknown-size file cannot have other items.";
-  m_items.append(BlobDataItem(url, offset, length, expectedModificationTime));
+  m_items.push_back(
+      BlobDataItem(url, offset, length, expectedModificationTime));
 }
 
 void BlobData::appendText(const String& text,
@@ -154,7 +156,7 @@ void BlobData::appendText(const String& text,
   }
 
   if (data)
-    m_items.append(BlobDataItem(data.release()));
+    m_items.push_back(BlobDataItem(data.release()));
 }
 
 void BlobData::appendBytes(const void* bytes, size_t length) {
@@ -168,7 +170,7 @@ void BlobData::appendBytes(const void* bytes, size_t length) {
   RefPtr<RawData> data = RawData::create();
   Vector<char>* buffer = data->mutableData();
   buffer->append(static_cast<const char*>(bytes), length);
-  m_items.append(BlobDataItem(data.release()));
+  m_items.push_back(BlobDataItem(data.release()));
 }
 
 long long BlobData::length() const {

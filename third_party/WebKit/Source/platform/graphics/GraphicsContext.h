@@ -413,7 +413,7 @@ class PLATFORM_EXPORT GraphicsContext {
       m_paintState->decrementSaveCount();
       ++m_paintStateIndex;
       if (m_paintStateStack.size() == m_paintStateIndex) {
-        m_paintStateStack.append(
+        m_paintStateStack.push_back(
             GraphicsContextState::createAndCopy(*m_paintState));
         m_paintState = m_paintStateStack[m_paintStateIndex].get();
       } else {

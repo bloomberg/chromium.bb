@@ -125,7 +125,7 @@ void* ContiguousContainerBase::allocate(size_t objectSize,
   }
 
   void* element = bufferForAlloc->allocate(objectSize);
-  m_elements.append(element);
+  m_elements.push_back(element);
   return element;
 }
 
@@ -172,7 +172,7 @@ ContiguousContainerBase::allocateNewBufferForNextAllocation(
   std::unique_ptr<Buffer> newBuffer =
       WTF::makeUnique<Buffer>(bufferSize, typeName);
   Buffer* bufferToReturn = newBuffer.get();
-  m_buffers.append(std::move(newBuffer));
+  m_buffers.push_back(std::move(newBuffer));
   m_endIndex = m_buffers.size() - 1;
   return bufferToReturn;
 }

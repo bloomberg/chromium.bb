@@ -179,7 +179,7 @@ PassRefPtr<FontDataForRangeSet> FontFallbackIterator::next(
       customFontData->beginLoadIfNeeded();
     if (!fontData->isLoading())
       return uniqueOrNext(currentSegmentedFace, hintList);
-    m_trackedLoadingRangeSets.append(currentSegmentedFace);
+    m_trackedLoadingRangeSets.push_back(currentSegmentedFace);
   }
 
   return next(hintList);

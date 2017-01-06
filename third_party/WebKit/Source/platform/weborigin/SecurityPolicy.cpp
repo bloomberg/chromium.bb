@@ -255,10 +255,10 @@ void SecurityPolicy::addOriginAccessWhitelistEntry(
     result.storedValue->value = WTF::wrapUnique(new OriginAccessWhiteList);
 
   OriginAccessWhiteList* list = result.storedValue->value.get();
-  list->append(OriginAccessEntry(destinationProtocol, destinationDomain,
-                                 allowDestinationSubdomains
-                                     ? OriginAccessEntry::AllowSubdomains
-                                     : OriginAccessEntry::DisallowSubdomains));
+  list->push_back(OriginAccessEntry(
+      destinationProtocol, destinationDomain,
+      allowDestinationSubdomains ? OriginAccessEntry::AllowSubdomains
+                                 : OriginAccessEntry::DisallowSubdomains));
 }
 
 void SecurityPolicy::removeOriginAccessWhitelistEntry(

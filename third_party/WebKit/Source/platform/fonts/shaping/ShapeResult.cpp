@@ -168,7 +168,7 @@ ShapeResult::ShapeResult(const ShapeResult& other)
       m_hasVerticalOffsets(other.m_hasVerticalOffsets) {
   m_runs.reserveCapacity(other.m_runs.size());
   for (const auto& run : other.m_runs)
-    m_runs.append(WTF::wrapUnique(new ShapeResult::RunInfo(*run)));
+    m_runs.push_back(WTF::wrapUnique(new ShapeResult::RunInfo(*run)));
 }
 
 ShapeResult::~ShapeResult() {}
@@ -371,7 +371,7 @@ void ShapeResult::insertRun(std::unique_ptr<ShapeResult::RunInfo> runToInsert,
   }
   // If we didn't find an existing slot to place it, append.
   if (run)
-    m_runs.append(std::move(run));
+    m_runs.push_back(std::move(run));
 }
 
 PassRefPtr<ShapeResult> ShapeResult::createForTabulationCharacters(
@@ -403,7 +403,7 @@ PassRefPtr<ShapeResult> ShapeResult::createForTabulationCharacters(
   DCHECK_EQ(result->m_numGlyphs, count);  // no overflow
   result->m_hasVerticalOffsets =
       fontData->platformData().isVerticalAnyUpright();
-  result->m_runs.append(std::move(run));
+  result->m_runs.push_back(std::move(run));
   return result.release();
 }
 

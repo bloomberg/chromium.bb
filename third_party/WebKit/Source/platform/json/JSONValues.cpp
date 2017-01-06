@@ -453,34 +453,34 @@ std::unique_ptr<JSONValue> JSONArray::clone() const {
 JSONArray::JSONArray() : JSONValue(TypeArray) {}
 
 void JSONArray::pushBoolean(bool value) {
-  m_data.append(JSONBasicValue::create(value));
+  m_data.push_back(JSONBasicValue::create(value));
 }
 
 void JSONArray::pushInteger(int value) {
-  m_data.append(JSONBasicValue::create(value));
+  m_data.push_back(JSONBasicValue::create(value));
 }
 
 void JSONArray::pushDouble(double value) {
-  m_data.append(JSONBasicValue::create(value));
+  m_data.push_back(JSONBasicValue::create(value));
 }
 
 void JSONArray::pushString(const String& value) {
-  m_data.append(JSONString::create(value));
+  m_data.push_back(JSONString::create(value));
 }
 
 void JSONArray::pushValue(std::unique_ptr<JSONValue> value) {
   DCHECK(value);
-  m_data.append(std::move(value));
+  m_data.push_back(std::move(value));
 }
 
 void JSONArray::pushObject(std::unique_ptr<JSONObject> value) {
   DCHECK(value);
-  m_data.append(std::move(value));
+  m_data.push_back(std::move(value));
 }
 
 void JSONArray::pushArray(std::unique_ptr<JSONArray> value) {
   DCHECK(value);
-  m_data.append(std::move(value));
+  m_data.push_back(std::move(value));
 }
 
 JSONValue* JSONArray::at(size_t index) {

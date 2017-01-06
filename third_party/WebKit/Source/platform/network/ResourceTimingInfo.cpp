@@ -20,7 +20,7 @@ std::unique_ptr<ResourceTimingInfo> ResourceTimingInfo::adopt(
   info->m_initialURL = data->m_initialURL.copy();
   info->m_finalResponse = ResourceResponse(data->m_finalResponse.get());
   for (auto& responseData : data->m_redirectChain)
-    info->m_redirectChain.append(ResourceResponse(responseData.get()));
+    info->m_redirectChain.push_back(ResourceResponse(responseData.get()));
   info->m_transferSize = data->m_transferSize;
   return info;
 }
@@ -37,7 +37,7 @@ ResourceTimingInfo::copyData() const {
   data->m_initialURL = m_initialURL.copy();
   data->m_finalResponse = m_finalResponse.copyData();
   for (const auto& response : m_redirectChain)
-    data->m_redirectChain.append(response.copyData());
+    data->m_redirectChain.push_back(response.copyData());
   data->m_transferSize = m_transferSize;
   data->m_isMainResource = m_isMainResource;
   return data;
@@ -45,7 +45,7 @@ ResourceTimingInfo::copyData() const {
 
 void ResourceTimingInfo::addRedirect(const ResourceResponse& redirectResponse,
                                      bool crossOrigin) {
-  m_redirectChain.append(redirectResponse);
+  m_redirectChain.push_back(redirectResponse);
   if (m_hasCrossOriginRedirect)
     return;
   if (crossOrigin) {

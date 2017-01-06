@@ -211,7 +211,7 @@ void GraphicsLayer::addChildInternal(GraphicsLayer* childLayer) {
     childLayer->removeFromParent();
 
   childLayer->setParent(this);
-  m_children.append(childLayer);
+  m_children.push_back(childLayer);
 
   // Don't call updateChildList here, this function is used in cases where it
   // should not be called until all children are processed.
@@ -239,7 +239,7 @@ void GraphicsLayer::addChildBelow(GraphicsLayer* childLayer,
   childLayer->setParent(this);
 
   if (!found)
-    m_children.append(childLayer);
+    m_children.push_back(childLayer);
 
   updateChildList();
 }
@@ -553,7 +553,7 @@ void GraphicsLayer::trackRasterInvalidation(const DisplayItemClient& client,
     info.clientDebugName = client.debugName();
     info.rect = rect;
     info.reason = reason;
-    tracking.trackedRasterInvalidations.append(info);
+    tracking.trackedRasterInvalidations.push_back(info);
   }
 
   if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
@@ -1156,7 +1156,7 @@ void GraphicsLayer::setPaintingPhase(GraphicsLayerPaintingPhase phase) {
 
 void GraphicsLayer::addLinkHighlight(LinkHighlight* linkHighlight) {
   DCHECK(linkHighlight && !m_linkHighlights.contains(linkHighlight));
-  m_linkHighlights.append(linkHighlight);
+  m_linkHighlights.push_back(linkHighlight);
   linkHighlight->layer()->setLayerClient(this);
   updateChildList();
 }
@@ -1319,7 +1319,7 @@ void GraphicsLayer::checkPaintUnderInvalidations(const SkPicture& newPicture) {
         if (mismatchingPixels < maxMismatchesToReport) {
           UnderPaintInvalidation underPaintInvalidation = {layerX, layerY,
                                                            oldPixel, newPixel};
-          tracking->underPaintInvalidations.append(underPaintInvalidation);
+          tracking->underPaintInvalidations.push_back(underPaintInvalidation);
           LOG(ERROR) << debugName()
                      << " Uninvalidated old/new pixels mismatch at " << layerX
                      << "," << layerY << " old:" << std::hex << oldPixel

@@ -308,7 +308,7 @@ bool HarfBuzzShaper::collectFallbackHintChars(
     UTF16TextIterator iterator(m_normalizedBuffer + it->m_startIndex,
                                it->m_numCharacters);
     while (iterator.consume(hintChar)) {
-      hint.append(hintChar);
+      hint.push_back(hintChar);
       numCharsAdded++;
       iterator.advance();
     }
@@ -354,7 +354,7 @@ void setFontFeatures(const Font* font, FeaturesVector* features) {
       // kern/vkrn are enabled by default
       break;
     case FontDescription::NoneKerning:
-      features->append(description.isVerticalAnyUpright() ? noVkrn : noKern);
+      features->push_back(description.isVerticalAnyUpright() ? noVkrn : noKern);
       break;
     case FontDescription::AutoKerning:
       break;
@@ -364,8 +364,8 @@ void setFontFeatures(const Font* font, FeaturesVector* features) {
   static hb_feature_t noLiga = createFeature(HB_TAG('l', 'i', 'g', 'a'));
   switch (description.commonLigaturesState()) {
     case FontDescription::DisabledLigaturesState:
-      features->append(noLiga);
-      features->append(noClig);
+      features->push_back(noLiga);
+      features->push_back(noClig);
       break;
     case FontDescription::EnabledLigaturesState:
       // liga and clig are on by default
@@ -379,7 +379,7 @@ void setFontFeatures(const Font* font, FeaturesVector* features) {
       // dlig is off by default
       break;
     case FontDescription::EnabledLigaturesState:
-      features->append(dlig);
+      features->push_back(dlig);
       break;
     case FontDescription::NormalLigaturesState:
       break;
@@ -390,7 +390,7 @@ void setFontFeatures(const Font* font, FeaturesVector* features) {
       // hlig is off by default
       break;
     case FontDescription::EnabledLigaturesState:
-      features->append(hlig);
+      features->push_back(hlig);
       break;
     case FontDescription::NormalLigaturesState:
       break;
@@ -398,7 +398,7 @@ void setFontFeatures(const Font* font, FeaturesVector* features) {
   static hb_feature_t noCalt = createFeature(HB_TAG('c', 'a', 'l', 't'));
   switch (description.contextualLigaturesState()) {
     case FontDescription::DisabledLigaturesState:
-      features->append(noCalt);
+      features->push_back(noCalt);
       break;
     case FontDescription::EnabledLigaturesState:
       // calt is on by default
@@ -412,13 +412,13 @@ void setFontFeatures(const Font* font, FeaturesVector* features) {
   static hb_feature_t qwid = createFeature(HB_TAG('q', 'w', 'i', 'd'), 1);
   switch (description.widthVariant()) {
     case HalfWidth:
-      features->append(hwid);
+      features->push_back(hwid);
       break;
     case ThirdWidth:
-      features->append(twid);
+      features->push_back(twid);
       break;
     case QuarterWidth:
-      features->append(qwid);
+      features->push_back(qwid);
       break;
     case RegularWidth:
       break;
@@ -428,40 +428,40 @@ void setFontFeatures(const Font* font, FeaturesVector* features) {
   static hb_feature_t lnum = createFeature(HB_TAG('l', 'n', 'u', 'm'), 1);
   if (description.variantNumeric().numericFigureValue() ==
       FontVariantNumeric::LiningNums)
-    features->append(lnum);
+    features->push_back(lnum);
 
   static hb_feature_t onum = createFeature(HB_TAG('o', 'n', 'u', 'm'), 1);
   if (description.variantNumeric().numericFigureValue() ==
       FontVariantNumeric::OldstyleNums)
-    features->append(onum);
+    features->push_back(onum);
 
   static hb_feature_t pnum = createFeature(HB_TAG('p', 'n', 'u', 'm'), 1);
   if (description.variantNumeric().numericSpacingValue() ==
       FontVariantNumeric::ProportionalNums)
-    features->append(pnum);
+    features->push_back(pnum);
   static hb_feature_t tnum = createFeature(HB_TAG('t', 'n', 'u', 'm'), 1);
   if (description.variantNumeric().numericSpacingValue() ==
       FontVariantNumeric::TabularNums)
-    features->append(tnum);
+    features->push_back(tnum);
 
   static hb_feature_t afrc = createFeature(HB_TAG('a', 'f', 'r', 'c'), 1);
   if (description.variantNumeric().numericFractionValue() ==
       FontVariantNumeric::StackedFractions)
-    features->append(afrc);
+    features->push_back(afrc);
   static hb_feature_t frac = createFeature(HB_TAG('f', 'r', 'a', 'c'), 1);
   if (description.variantNumeric().numericFractionValue() ==
       FontVariantNumeric::DiagonalFractions)
-    features->append(frac);
+    features->push_back(frac);
 
   static hb_feature_t ordn = createFeature(HB_TAG('o', 'r', 'd', 'n'), 1);
   if (description.variantNumeric().ordinalValue() ==
       FontVariantNumeric::OrdinalOn)
-    features->append(ordn);
+    features->push_back(ordn);
 
   static hb_feature_t zero = createFeature(HB_TAG('z', 'e', 'r', 'o'), 1);
   if (description.variantNumeric().slashedZeroValue() ==
       FontVariantNumeric::SlashedZeroOn)
-    features->append(zero);
+    features->push_back(zero);
 
   FontFeatureSettings* settings = description.featureSettings();
   if (!settings)
@@ -477,7 +477,7 @@ void setFontFeatures(const Font* font, FeaturesVector* features) {
     feature.value = settings->at(i).value();
     feature.start = 0;
     feature.end = static_cast<unsigned>(-1);
-    features->append(feature);
+    features->push_back(feature);
   }
 }
 

@@ -57,7 +57,7 @@ void overrideUserPreferredLanguages(const Vector<AtomicString>& override) {
   canonicalized.resize(0);
   canonicalized.reserveCapacity(override.size());
   for (const auto& lang : override)
-    canonicalized.append(canonicalizeLanguageIdentifier(lang));
+    canonicalized.push_back(canonicalizeLanguageIdentifier(lang));
 }
 
 AtomicString defaultLanguage() {
@@ -74,7 +74,7 @@ Vector<AtomicString> userPreferredLanguages() {
 
   Vector<AtomicString> languages;
   languages.reserveInitialCapacity(1);
-  languages.append(platformLanguage());
+  languages.push_back(platformLanguage());
   return languages;
 }
 

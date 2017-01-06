@@ -260,7 +260,7 @@ TEST(HeapCompactTest, CompactVectorPartHashMap) {
       IntWrapper* val = IntWrapper::create(j);
       map.add(val, 10 - j);
     }
-    intMapVector->append(map);
+    intMapVector->push_back(map);
   }
 
   EXPECT_EQ(10u, intMapVector->size());
@@ -291,7 +291,7 @@ TEST(HeapCompactTest, CompactHashPartVector) {
   for (size_t i = 0; i < 10; ++i) {
     IntVector vector;
     for (size_t j = 0; j < 10; ++j) {
-      vector.append(IntWrapper::create(j));
+      vector.push_back(IntWrapper::create(j));
     }
     intVectorMap->add(1 + i, vector);
   }

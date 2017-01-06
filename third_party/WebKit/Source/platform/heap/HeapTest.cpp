@@ -489,7 +489,7 @@ class ThreadedTesterBase {
   static void test(ThreadedTesterBase* tester) {
     Vector<std::unique_ptr<WebThread>, numberOfThreads> m_threads;
     for (int i = 0; i < numberOfThreads; i++) {
-      m_threads.append(WTF::wrapUnique(
+      m_threads.push_back(WTF::wrapUnique(
           Platform::current()->createThread("blink gc testing thread")));
       m_threads.back()->getWebTaskRunner()->postTask(
           BLINK_FROM_HERE,
@@ -557,7 +557,7 @@ class ThreadedHeapTester : public ThreadedTesterBase {
 
   void addGlobalPersistent() {
     MutexLocker lock(m_mutex);
-    m_crossPersistents.append(createGlobalPersistent(0x2a2a2a2a));
+    m_crossPersistents.push_back(createGlobalPersistent(0x2a2a2a2a));
   }
 
   void runThread() override {
@@ -2351,14 +2351,14 @@ TEST(HeapTest, HeapVectorWithInlineCapacity) {
   IntWrapper* six = IntWrapper::create(6);
   {
     HeapVector<Member<IntWrapper>, 2> vector;
-    vector.append(one);
-    vector.append(two);
+    vector.push_back(one);
+    vector.push_back(two);
     conservativelyCollectGarbage();
     EXPECT_TRUE(vector.contains(one));
     EXPECT_TRUE(vector.contains(two));
 
-    vector.append(three);
-    vector.append(four);
+    vector.push_back(three);
+    vector.push_back(four);
     conservativelyCollectGarbage();
     EXPECT_TRUE(vector.contains(one));
     EXPECT_TRUE(vector.contains(two));
@@ -2376,8 +2376,8 @@ TEST(HeapTest, HeapVectorWithInlineCapacity) {
     HeapVector<Member<IntWrapper>, 2> vector1;
     HeapVector<Member<IntWrapper>, 2> vector2;
 
-    vector1.append(one);
-    vector2.append(two);
+    vector1.push_back(one);
+    vector2.push_back(two);
     vector1.swap(vector2);
     conservativelyCollectGarbage();
     EXPECT_TRUE(vector1.contains(two));
@@ -2387,12 +2387,12 @@ TEST(HeapTest, HeapVectorWithInlineCapacity) {
     HeapVector<Member<IntWrapper>, 2> vector1;
     HeapVector<Member<IntWrapper>, 2> vector2;
 
-    vector1.append(one);
-    vector1.append(two);
-    vector2.append(three);
-    vector2.append(four);
-    vector2.append(five);
-    vector2.append(six);
+    vector1.push_back(one);
+    vector1.push_back(two);
+    vector2.push_back(three);
+    vector2.push_back(four);
+    vector2.push_back(five);
+    vector2.push_back(six);
     vector1.swap(vector2);
     conservativelyCollectGarbage();
     EXPECT_TRUE(vector1.contains(three));
@@ -2556,24 +2556,24 @@ TEST(HeapTest, HeapCollectionTypes) {
       set->add(oneB);
       set3->add(oneB);
       set3->add(oneB);
-      vector->append(oneB);
+      vector->push_back(oneB);
       deque->append(oneB);
-      vector2->append(threeB);
-      vector2->append(fourB);
+      vector2->push_back(threeB);
+      vector2->push_back(fourB);
       deque2->append(threeE);
       deque2->append(fourE);
-      vectorWU->append(PairWrappedUnwrapped(&*oneC, 42));
+      vectorWU->push_back(PairWrappedUnwrapped(&*oneC, 42));
       dequeWU->append(PairWrappedUnwrapped(&*oneE, 42));
-      vectorWU2->append(PairWrappedUnwrapped(&*threeC, 43));
-      vectorWU2->append(PairWrappedUnwrapped(&*fourC, 44));
-      vectorWU2->append(PairWrappedUnwrapped(&*fiveC, 45));
+      vectorWU2->push_back(PairWrappedUnwrapped(&*threeC, 43));
+      vectorWU2->push_back(PairWrappedUnwrapped(&*fourC, 44));
+      vectorWU2->push_back(PairWrappedUnwrapped(&*fiveC, 45));
       dequeWU2->append(PairWrappedUnwrapped(&*threeE, 43));
       dequeWU2->append(PairWrappedUnwrapped(&*fourE, 44));
       dequeWU2->append(PairWrappedUnwrapped(&*fiveE, 45));
-      vectorUW->append(PairUnwrappedWrapped(1, &*oneD));
-      vectorUW2->append(PairUnwrappedWrapped(103, &*threeD));
-      vectorUW2->append(PairUnwrappedWrapped(104, &*fourD));
-      vectorUW2->append(PairUnwrappedWrapped(105, &*fiveD));
+      vectorUW->push_back(PairUnwrappedWrapped(1, &*oneD));
+      vectorUW2->push_back(PairUnwrappedWrapped(103, &*threeD));
+      vectorUW2->push_back(PairUnwrappedWrapped(104, &*fourD));
+      vectorUW2->push_back(PairUnwrappedWrapped(105, &*fiveD));
       dequeUW->append(PairUnwrappedWrapped(1, &*oneF));
       dequeUW2->append(PairUnwrappedWrapped(103, &*threeF));
       dequeUW2->append(PairUnwrappedWrapped(104, &*fourF));
@@ -2776,14 +2776,14 @@ TEST(HeapTest, PersistentVector) {
   Persistent<IntWrapper> six(IntWrapper::create(6));
   {
     PersistentVector vector;
-    vector.append(one);
-    vector.append(two);
+    vector.push_back(one);
+    vector.push_back(two);
     conservativelyCollectGarbage();
     EXPECT_TRUE(vector.contains(one));
     EXPECT_TRUE(vector.contains(two));
 
-    vector.append(three);
-    vector.append(four);
+    vector.push_back(three);
+    vector.push_back(four);
     conservativelyCollectGarbage();
     EXPECT_TRUE(vector.contains(one));
     EXPECT_TRUE(vector.contains(two));
@@ -2801,8 +2801,8 @@ TEST(HeapTest, PersistentVector) {
     PersistentVector vector1;
     PersistentVector vector2;
 
-    vector1.append(one);
-    vector2.append(two);
+    vector1.push_back(one);
+    vector2.push_back(two);
     vector1.swap(vector2);
     conservativelyCollectGarbage();
     EXPECT_TRUE(vector1.contains(two));
@@ -2812,12 +2812,12 @@ TEST(HeapTest, PersistentVector) {
     PersistentVector vector1;
     PersistentVector vector2;
 
-    vector1.append(one);
-    vector1.append(two);
-    vector2.append(three);
-    vector2.append(four);
-    vector2.append(five);
-    vector2.append(six);
+    vector1.push_back(one);
+    vector1.push_back(two);
+    vector2.push_back(three);
+    vector2.push_back(four);
+    vector2.push_back(five);
+    vector2.push_back(six);
     vector1.swap(vector2);
     conservativelyCollectGarbage();
     EXPECT_TRUE(vector1.contains(three));
@@ -2842,14 +2842,14 @@ TEST(HeapTest, CrossThreadPersistentVector) {
   CrossThreadPersistent<IntWrapper> six(IntWrapper::create(6));
   {
     CrossThreadPersistentVector vector;
-    vector.append(one);
-    vector.append(two);
+    vector.push_back(one);
+    vector.push_back(two);
     conservativelyCollectGarbage();
     EXPECT_TRUE(vector.contains(one));
     EXPECT_TRUE(vector.contains(two));
 
-    vector.append(three);
-    vector.append(four);
+    vector.push_back(three);
+    vector.push_back(four);
     conservativelyCollectGarbage();
     EXPECT_TRUE(vector.contains(one));
     EXPECT_TRUE(vector.contains(two));
@@ -2867,8 +2867,8 @@ TEST(HeapTest, CrossThreadPersistentVector) {
     CrossThreadPersistentVector vector1;
     CrossThreadPersistentVector vector2;
 
-    vector1.append(one);
-    vector2.append(two);
+    vector1.push_back(one);
+    vector2.push_back(two);
     vector1.swap(vector2);
     conservativelyCollectGarbage();
     EXPECT_TRUE(vector1.contains(two));
@@ -2878,12 +2878,12 @@ TEST(HeapTest, CrossThreadPersistentVector) {
     CrossThreadPersistentVector vector1;
     CrossThreadPersistentVector vector2;
 
-    vector1.append(one);
-    vector1.append(two);
-    vector2.append(three);
-    vector2.append(four);
-    vector2.append(five);
-    vector2.append(six);
+    vector1.push_back(one);
+    vector1.push_back(two);
+    vector2.push_back(three);
+    vector2.push_back(four);
+    vector2.push_back(five);
+    vector2.push_back(six);
     vector1.swap(vector2);
     conservativelyCollectGarbage();
     EXPECT_TRUE(vector1.contains(three));
@@ -3004,7 +3004,7 @@ class NonTrivialObject final {
   NonTrivialObject() {}
   explicit NonTrivialObject(int num) {
     m_deque.append(IntWrapper::create(num));
-    m_vector.append(IntWrapper::create(num));
+    m_vector.push_back(IntWrapper::create(num));
   }
   DEFINE_INLINE_TRACE() {
     visitor->trace(m_deque);
@@ -3070,8 +3070,8 @@ TEST(HeapTest, HeapWeakCollectionSimple) {
 
   Persistent<IntWrapper> two = IntWrapper::create(2);
 
-  keepNumbersAlive.append(IntWrapper::create(103));
-  keepNumbersAlive.append(IntWrapper::create(10));
+  keepNumbersAlive.push_back(IntWrapper::create(103));
+  keepNumbersAlive.push_back(IntWrapper::create(10));
 
   {
     weakStrong->add(IntWrapper::create(1), two);
@@ -3121,9 +3121,9 @@ void orderedSetHelper(bool strong) {
 
   const Set& constSet = *set1.get();
 
-  keepNumbersAlive.append(IntWrapper::create(2));
-  keepNumbersAlive.append(IntWrapper::create(103));
-  keepNumbersAlive.append(IntWrapper::create(10));
+  keepNumbersAlive.push_back(IntWrapper::create(2));
+  keepNumbersAlive.push_back(IntWrapper::create(103));
+  keepNumbersAlive.push_back(IntWrapper::create(10));
 
   set1->add(IntWrapper::create(0));
   set1->add(keepNumbersAlive[0]);
@@ -3517,8 +3517,8 @@ TEST(HeapTest, HeapWeakCollectionTypes) {
       for (int i = 0; i < 128; i += 2) {
         IntWrapper* wrapped = IntWrapper::create(i);
         IntWrapper* wrapped2 = IntWrapper::create(i + 1);
-        keepNumbersAlive.append(wrapped);
-        keepNumbersAlive.append(wrapped2);
+        keepNumbersAlive.push_back(wrapped);
+        keepNumbersAlive.push_back(wrapped2);
         weakStrong->add(wrapped, wrapped2);
         strongWeak->add(wrapped2, wrapped);
         weakWeak->add(wrapped, wrapped2);
@@ -3635,7 +3635,7 @@ TEST(HeapTest, HeapWeakCollectionTypes) {
         if (addAfterwards) {
           for (int i = 1000; i < 1100; i++) {
             IntWrapper* wrapped = IntWrapper::create(i);
-            keepNumbersAlive.append(wrapped);
+            keepNumbersAlive.push_back(wrapped);
             weakStrong->add(wrapped, wrapped);
             strongWeak->add(wrapped, wrapped);
             weakWeak->add(wrapped, wrapped);
@@ -3698,7 +3698,7 @@ TEST(HeapTest, HeapHashCountedSetToVector) {
 
   Vector<int> intVector;
   for (const auto& i : vector)
-    intVector.append(i->value());
+    intVector.push_back(i->value());
   std::sort(intVector.begin(), intVector.end());
   ASSERT_EQ(3u, intVector.size());
   EXPECT_EQ(1, intVector[0]);
@@ -3928,8 +3928,8 @@ TEST(HeapTest, CheckAndMarkPointer) {
   for (int i = 0; i < 10; i++) {
     SimpleObject* object = SimpleObject::create();
     Address objectAddress = reinterpret_cast<Address>(object);
-    objectAddresses.append(objectAddress);
-    endAddresses.append(objectAddress + sizeof(SimpleObject) - 1);
+    objectAddresses.push_back(objectAddress);
+    endAddresses.push_back(objectAddress + sizeof(SimpleObject) - 1);
   }
   LargeHeapObject* largeObject = LargeHeapObject::create();
   largeObjectAddress = reinterpret_cast<Address>(largeObject);
@@ -4026,8 +4026,8 @@ TEST(HeapTest, PersistentHeapCollectionTypes) {
     Persistent<IntWrapper> ten(IntWrapper::create(10));
     IntWrapper* eleven(IntWrapper::create(11));
 
-    pVec.append(one);
-    pVec.append(two);
+    pVec.push_back(one);
+    pVec.push_back(two);
 
     pDeque.append(seven);
     pDeque.append(two);
@@ -4035,8 +4035,8 @@ TEST(HeapTest, PersistentHeapCollectionTypes) {
     Vec* vec = new Vec();
     vec->swap(pVec);
 
-    pVec.append(two);
-    pVec.append(three);
+    pVec.push_back(two);
+    pVec.push_back(three);
 
     pSet.add(four);
     pListSet.add(eight);
@@ -4106,7 +4106,7 @@ TEST(HeapTest, CollectionNesting) {
   HeapHashMap<void*, IntDeque>::iterator it2 = map2->find(key);
   EXPECT_EQ(0u, map2->get(key).size());
 
-  it->value.append(IntWrapper::create(42));
+  it->value.push_back(IntWrapper::create(42));
   EXPECT_EQ(1u, map->get(key).size());
 
   it2->value.append(IntWrapper::create(42));
@@ -4179,7 +4179,7 @@ TEST(HeapTest, CollectionNesting3) {
   HeapVector<IntVector>* vector = new HeapVector<IntVector>();
   HeapDeque<IntDeque>* deque = new HeapDeque<IntDeque>();
 
-  vector->append(IntVector());
+  vector->push_back(IntVector());
   deque->append(IntDeque());
 
   HeapVector<IntVector>::iterator it = vector->begin();
@@ -4187,7 +4187,7 @@ TEST(HeapTest, CollectionNesting3) {
   EXPECT_EQ(0u, it->size());
   EXPECT_EQ(0u, it2->size());
 
-  it->append(IntWrapper::create(42));
+  it->push_back(IntWrapper::create(42));
   it2->append(IntWrapper::create(42));
   EXPECT_EQ(1u, it->size());
   EXPECT_EQ(1u, it2->size());
@@ -4207,17 +4207,17 @@ TEST(HeapTest, EmbeddedInVector) {
     PersistentHeapVector<VectorObject, 2> inlineVector;
     PersistentHeapVector<VectorObject> outlineVector;
     VectorObject i1, i2;
-    inlineVector.append(i1);
-    inlineVector.append(i2);
+    inlineVector.push_back(i1);
+    inlineVector.push_back(i2);
 
     VectorObject o1, o2;
-    outlineVector.append(o1);
-    outlineVector.append(o2);
+    outlineVector.push_back(o1);
+    outlineVector.push_back(o2);
 
     PersistentHeapVector<VectorObjectInheritedTrace> vectorInheritedTrace;
     VectorObjectInheritedTrace it1, it2;
-    vectorInheritedTrace.append(it1);
-    vectorInheritedTrace.append(it2);
+    vectorInheritedTrace.push_back(it1);
+    vectorInheritedTrace.push_back(it2);
 
     preciselyCollectGarbage();
     EXPECT_EQ(0, SimpleFinalizedObject::s_destructorCalls);
@@ -4290,12 +4290,12 @@ class InlinedVectorObjectWrapper final
  public:
   InlinedVectorObjectWrapper() {
     InlinedVectorObject i1, i2;
-    m_vector1.append(i1);
-    m_vector1.append(i2);
-    m_vector2.append(i1);
-    m_vector2.append(i2);  // This allocates an out-of-line buffer.
-    m_vector3.append(i1);
-    m_vector3.append(i2);
+    m_vector1.push_back(i1);
+    m_vector1.push_back(i2);
+    m_vector2.push_back(i1);
+    m_vector2.push_back(i2);  // This allocates an out-of-line buffer.
+    m_vector3.push_back(i1);
+    m_vector3.push_back(i2);
   }
 
   DEFINE_INLINE_TRACE() {
@@ -4315,12 +4315,12 @@ class InlinedVectorObjectWithVtableWrapper final
  public:
   InlinedVectorObjectWithVtableWrapper() {
     InlinedVectorObjectWithVtable i1, i2;
-    m_vector1.append(i1);
-    m_vector1.append(i2);
-    m_vector2.append(i1);
-    m_vector2.append(i2);  // This allocates an out-of-line buffer.
-    m_vector3.append(i1);
-    m_vector3.append(i2);
+    m_vector1.push_back(i1);
+    m_vector1.push_back(i2);
+    m_vector2.push_back(i1);
+    m_vector2.push_back(i2);  // This allocates an out-of-line buffer.
+    m_vector3.push_back(i1);
+    m_vector3.push_back(i2);
   }
 
   DEFINE_INLINE_TRACE() {
@@ -4341,8 +4341,8 @@ TEST(HeapTest, VectorDestructors) {
   {
     HeapVector<InlinedVectorObject> vector;
     InlinedVectorObject i1, i2;
-    vector.append(i1);
-    vector.append(i2);
+    vector.push_back(i1);
+    vector.push_back(i2);
   }
   preciselyCollectGarbage();
   // This is not EXPECT_EQ but EXPECT_LE because a HeapVectorBacking calls
@@ -4355,8 +4355,8 @@ TEST(HeapTest, VectorDestructors) {
   {
     HeapVector<InlinedVectorObject, 1> vector;
     InlinedVectorObject i1, i2;
-    vector.append(i1);
-    vector.append(i2);  // This allocates an out-of-line buffer.
+    vector.push_back(i1);
+    vector.push_back(i2);  // This allocates an out-of-line buffer.
   }
   preciselyCollectGarbage();
   EXPECT_LE(4, InlinedVectorObject::s_destructorCalls);
@@ -4365,8 +4365,8 @@ TEST(HeapTest, VectorDestructors) {
   {
     HeapVector<InlinedVectorObject, 2> vector;
     InlinedVectorObject i1, i2;
-    vector.append(i1);
-    vector.append(i2);
+    vector.push_back(i1);
+    vector.push_back(i2);
   }
   preciselyCollectGarbage();
   EXPECT_LE(4, InlinedVectorObject::s_destructorCalls);
@@ -4391,8 +4391,8 @@ TEST(HeapTest, VectorDestructorsWithVtable) {
   {
     HeapVector<InlinedVectorObjectWithVtable> vector;
     InlinedVectorObjectWithVtable i1, i2;
-    vector.append(i1);
-    vector.append(i2);
+    vector.push_back(i1);
+    vector.push_back(i2);
   }
   preciselyCollectGarbage();
   EXPECT_EQ(4, InlinedVectorObjectWithVtable::s_destructorCalls);
@@ -4401,8 +4401,8 @@ TEST(HeapTest, VectorDestructorsWithVtable) {
   {
     HeapVector<InlinedVectorObjectWithVtable, 1> vector;
     InlinedVectorObjectWithVtable i1, i2;
-    vector.append(i1);
-    vector.append(i2);  // This allocates an out-of-line buffer.
+    vector.push_back(i1);
+    vector.push_back(i2);  // This allocates an out-of-line buffer.
   }
   preciselyCollectGarbage();
   EXPECT_EQ(5, InlinedVectorObjectWithVtable::s_destructorCalls);
@@ -4411,8 +4411,8 @@ TEST(HeapTest, VectorDestructorsWithVtable) {
   {
     HeapVector<InlinedVectorObjectWithVtable, 2> vector;
     InlinedVectorObjectWithVtable i1, i2;
-    vector.append(i1);
-    vector.append(i2);
+    vector.push_back(i1);
+    vector.push_back(i2);
   }
   preciselyCollectGarbage();
   EXPECT_EQ(4, InlinedVectorObjectWithVtable::s_destructorCalls);
@@ -5239,7 +5239,7 @@ TEST(HeapTest, EphemeronsInEphemerons) {
           new HeapVector<Member<IntWrapper>>();
       for (int i = 0; i < 10000; i++) {
         IntWrapper* value = IntWrapper::create(i);
-        keepAlive->append(value);
+        keepAlive->push_back(value);
         OuterMap::AddResult newEntry = outer->add(value, InnerMap());
         newEntry.storedValue->value.add(deep, home);
         newEntry.storedValue->value.add(composite, home);
@@ -5902,7 +5902,7 @@ TEST(HeapTest, TraceIfNeeded) {
   {
     TraceIfNeededTester<HeapVector<Member<SimpleObject>>>* m_vec =
         TraceIfNeededTester<HeapVector<Member<SimpleObject>>>::create();
-    m_vec->obj().append(SimpleObject::create());
+    m_vec->obj().push_back(SimpleObject::create());
     visitor.reset();
     m_vec->trace(&visitor);
     EXPECT_EQ(2u, visitor.count());
@@ -6308,8 +6308,8 @@ TEST(HeapTest, HeapVectorPartObjects) {
   HeapVector<PartObjectWithRef> vector2;
 
   for (int i = 0; i < 10; ++i) {
-    vector1.append(PartObjectWithRef(i));
-    vector2.append(PartObjectWithRef(i));
+    vector1.push_back(PartObjectWithRef(i));
+    vector2.push_back(PartObjectWithRef(i));
   }
 
   vector1.reserveCapacity(150);
@@ -6321,9 +6321,9 @@ TEST(HeapTest, HeapVectorPartObjects) {
   EXPECT_EQ(10u, vector2.size());
 
   for (int i = 0; i < 4; ++i) {
-    vector1.append(PartObjectWithRef(10 + i));
-    vector2.append(PartObjectWithRef(10 + i));
-    vector2.append(PartObjectWithRef(10 + i));
+    vector1.push_back(PartObjectWithRef(10 + i));
+    vector2.push_back(PartObjectWithRef(10 + i));
+    vector2.push_back(PartObjectWithRef(10 + i));
   }
 
   // Shrinking heap vector backing stores always succeeds,
@@ -6580,7 +6580,7 @@ TEST(HeapTest, TestPersistentHeapVectorWithUnusedSlots) {
   vector1.checkUnused();
   vector2.checkUnused();
 
-  vector2.append(VectorObject());
+  vector2.push_back(VectorObject());
   vector2.checkUnused();
 
   EXPECT_EQ(0u, vector1.size());
@@ -6608,8 +6608,8 @@ TEST(HeapTest, TestStaticLocals) {
   EXPECT_EQ(0u, persistentHeapVectorIntWrapper.size());
   EXPECT_EQ(0u, heapVectorIntWrapper.size());
 
-  persistentHeapVectorIntWrapper.append(&intWrapper);
-  heapVectorIntWrapper.append(&intWrapper);
+  persistentHeapVectorIntWrapper.push_back(&intWrapper);
+  heapVectorIntWrapper.push_back(&intWrapper);
   EXPECT_EQ(1u, persistentHeapVectorIntWrapper.size());
   EXPECT_EQ(1u, heapVectorIntWrapper.size());
 

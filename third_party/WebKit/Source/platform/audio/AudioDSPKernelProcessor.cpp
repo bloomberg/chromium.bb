@@ -48,7 +48,7 @@ void AudioDSPKernelProcessor::initialize() {
 
   // Create processing kernels, one per channel.
   for (unsigned i = 0; i < numberOfChannels(); ++i)
-    m_kernels.append(createKernel());
+    m_kernels.push_back(createKernel());
 
   m_initialized = true;
   m_hasJustReset = true;

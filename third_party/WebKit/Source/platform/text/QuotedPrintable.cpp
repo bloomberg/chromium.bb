@@ -103,19 +103,19 @@ void quotedPrintableEncode(const char* input,
 
     // Insert a soft line break if necessary.
     if (currentLineLength + lengthOfEncodedCharacter > maximumLineLength) {
-      out.append('=');
+      out.push_back('=');
       out.append(crlfLineEnding, strlen(crlfLineEnding));
       currentLineLength = 0;
     }
 
     // Finally, insert the actual character(s).
     if (requiresEncoding) {
-      out.append('=');
-      out.append(upperNibbleToASCIIHexDigit(currentCharacter));
-      out.append(lowerNibbleToASCIIHexDigit(currentCharacter));
+      out.push_back('=');
+      out.push_back(upperNibbleToASCIIHexDigit(currentCharacter));
+      out.push_back(lowerNibbleToASCIIHexDigit(currentCharacter));
       currentLineLength += 3;
     } else {
-      out.append(currentCharacter);
+      out.push_back(currentCharacter);
       currentLineLength++;
     }
   }
@@ -135,13 +135,13 @@ void quotedPrintableDecode(const char* data,
   for (size_t i = 0; i < dataLength; ++i) {
     char currentCharacter = data[i];
     if (currentCharacter != '=') {
-      out.append(currentCharacter);
+      out.push_back(currentCharacter);
       continue;
     }
     // We are dealing with a '=xx' sequence.
     if (dataLength - i < 3) {
       // Unfinished = sequence, append as is.
-      out.append(currentCharacter);
+      out.push_back(currentCharacter);
       continue;
     }
     char upperCharacter = data[++i];
@@ -152,12 +152,12 @@ void quotedPrintableDecode(const char* data,
     if (!isASCIIHexDigit(upperCharacter) || !isASCIIHexDigit(lowerCharacter)) {
       // Invalid sequence, = followed by non hex digits, just insert the
       // characters as is.
-      out.append('=');
-      out.append(upperCharacter);
-      out.append(lowerCharacter);
+      out.push_back('=');
+      out.push_back(upperCharacter);
+      out.push_back(lowerCharacter);
       continue;
     }
-    out.append(
+    out.push_back(
         static_cast<char>(toASCIIHexValue(upperCharacter, lowerCharacter)));
   }
 }

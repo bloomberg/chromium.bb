@@ -226,7 +226,7 @@ bool MHTMLParser::parseArchiveWithHeader(
         parseNextPart(*header, String(), String(), endOfArchiveReached);
     if (!resource)
       return false;
-    resources.append(resource);
+    resources.push_back(resource);
     return true;
   }
 
@@ -258,7 +258,7 @@ bool MHTMLParser::parseArchiveWithHeader(
       DVLOG(1) << "Failed to parse MHTML part.";
       return false;
     }
-    resources.append(resource);
+    resources.push_back(resource);
   }
   return true;
 }

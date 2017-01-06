@@ -149,7 +149,7 @@ bool FontDataCache::purgeLeastRecentlyUsed(int count) {
     m_cache.remove(&(fontData->platformData()));
     // We should not delete SimpleFontData here because deletion can modify
     // m_inactiveFontData. See http://trac.webkit.org/changeset/44011
-    fontDataToDelete.append(fontData);
+    fontDataToDelete.push_back(fontData);
   }
 
   if (it == end) {

@@ -95,7 +95,7 @@ WebVector<WebString> WebServiceWorkerResponse::getHeaderKeys() const {
   for (HTTPHeaderMap::const_iterator it = m_private->headers.begin(),
                                      end = m_private->headers.end();
        it != end; ++it)
-    keys.append(it->key);
+    keys.push_back(it->key);
 
   return keys;
 }

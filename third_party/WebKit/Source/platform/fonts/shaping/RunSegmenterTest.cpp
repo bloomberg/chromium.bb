@@ -49,9 +49,9 @@ class RunSegmenterTest : public testing::Test {
     for (auto& run : runs) {
       unsigned lengthBefore = text.length();
       text.append(String::fromUTF8(run.text.c_str()));
-      expect.append(SegmenterExpectedRun(lengthBefore, text.length(),
-                                         run.script, run.renderOrientation,
-                                         run.fontFallbackPriority));
+      expect.push_back(SegmenterExpectedRun(lengthBefore, text.length(),
+                                            run.script, run.renderOrientation,
+                                            run.fontFallbackPriority));
     }
     RunSegmenter runSegmenter(text.characters16(), text.length(), orientation);
     VerifyRuns(&runSegmenter, expect);

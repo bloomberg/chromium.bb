@@ -56,7 +56,7 @@ class PODIntervalSearchAdapter {
   const T& highValue() const { return m_highValue; }
   void collectIfNeeded(const IntervalType& data) const {
     if (data.overlaps(m_lowValue, m_highValue))
-      m_result.append(data);
+      m_result.push_back(data);
   }
 
  private:

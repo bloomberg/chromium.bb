@@ -44,17 +44,17 @@ class MockScriptData : public ScriptData {
     dst.clear();
     switch (code & kCodeSpecialMask) {
       case kCodeSpecialCommon:
-        dst.append(USCRIPT_COMMON);
+        dst.push_back(USCRIPT_COMMON);
         break;
       case kCodeSpecialInherited:
-        dst.append(USCRIPT_INHERITED);
+        dst.push_back(USCRIPT_INHERITED);
         break;
       default:
         break;
     }
     int listBits = kTable[code & kCodeListIndexMask];
     if (dst.isEmpty() && listBits == 0) {
-      dst.append(USCRIPT_UNKNOWN);
+      dst.push_back(USCRIPT_UNKNOWN);
       return;
     }
     while (listBits) {
@@ -62,13 +62,13 @@ class MockScriptData : public ScriptData {
         case 0:
           break;
         case kLatin:
-          dst.append(USCRIPT_LATIN);
+          dst.push_back(USCRIPT_LATIN);
           break;
         case kHan:
-          dst.append(USCRIPT_HAN);
+          dst.push_back(USCRIPT_HAN);
           break;
         case kGreek:
-          dst.append(USCRIPT_GREEK);
+          dst.push_back(USCRIPT_GREEK);
           break;
       }
       listBits >>= kListShift;
@@ -292,7 +292,7 @@ class ScriptRunIteratorTest : public testing::Test {
     Vector<ExpectedRun> expect;
     for (auto& run : runs) {
       text.append(String::fromUTF8(run.text.c_str()));
-      expect.append(ExpectedRun(text.length(), run.code));
+      expect.push_back(ExpectedRun(text.length(), run.code));
     }
     ScriptRunIterator scriptRunIterator(text.characters16(), text.length());
     VerifyRuns(&scriptRunIterator, expect);
@@ -305,7 +305,7 @@ class ScriptRunIteratorTest : public testing::Test {
     Vector<ExpectedRun> expect;
     for (const TestRun& run : runs) {
       text.append(MockScriptData::ToTestString(run.text));
-      expect.append(ExpectedRun(text.length(), run.code));
+      expect.push_back(ExpectedRun(text.length(), run.code));
     }
 
     ScriptRunIterator scriptRunIterator(text.characters16(), text.length(),

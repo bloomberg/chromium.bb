@@ -40,7 +40,7 @@ Vector<Interface> isolatedCopy(const Vector<Interface>& src) {
   Vector<Interface> result;
   result.reserveCapacity(src.size());
   for (const auto& timestamp : src) {
-    result.append(timestamp.isolatedCopy());
+    result.push_back(timestamp.isolatedCopy());
   }
   return result;
 }
@@ -170,7 +170,7 @@ ResourceResponse::ResourceResponse(CrossThreadResourceResponseData* data)
   m_securityDetails.validFrom = data->m_securityDetails.validFrom;
   m_securityDetails.validTo = data->m_securityDetails.validTo;
   for (auto& cert : data->m_certificate)
-    m_securityDetails.certificate.append(AtomicString(cert));
+    m_securityDetails.certificate.push_back(AtomicString(cert));
   m_securityDetails.sctList = data->m_securityDetails.sctList;
   m_httpVersion = data->m_httpVersion;
   m_appCacheID = data->m_appCacheID;
@@ -235,7 +235,7 @@ std::unique_ptr<CrossThreadResourceResponseData> ResourceResponse::copyData()
   data->m_securityDetails.validFrom = m_securityDetails.validFrom;
   data->m_securityDetails.validTo = m_securityDetails.validTo;
   for (auto& cert : m_securityDetails.certificate)
-    data->m_certificate.append(cert.getString().isolatedCopy());
+    data->m_certificate.push_back(cert.getString().isolatedCopy());
   data->m_securityDetails.sctList = isolatedCopy(m_securityDetails.sctList);
   data->m_httpVersion = m_httpVersion;
   data->m_appCacheID = m_appCacheID;
@@ -636,7 +636,7 @@ void ResourceResponse::setDownloadedFilePath(const String& downloadedFilePath) {
 
 void ResourceResponse::appendRedirectResponse(
     const ResourceResponse& response) {
-  m_redirectResponses.append(response);
+  m_redirectResponses.push_back(response);
 }
 
 bool ResourceResponse::compare(const ResourceResponse& a,

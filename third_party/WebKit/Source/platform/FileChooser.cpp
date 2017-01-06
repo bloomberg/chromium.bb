@@ -63,7 +63,7 @@ void FileChooser::chooseFiles(const Vector<FileChooserFileInfo>& files) {
   // FIXME: This is inelegant. We should not be looking at settings here.
   Vector<String> paths;
   for (unsigned i = 0; i < files.size(); ++i)
-    paths.append(files[i].path);
+    paths.push_back(files[i].path);
   if (m_settings.selectedFiles == paths)
     return;
 

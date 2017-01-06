@@ -79,7 +79,7 @@ void FeaturePolicy::Whitelist::addAll() {
 }
 
 void FeaturePolicy::Whitelist::add(RefPtr<SecurityOrigin> origin) {
-  m_origins.append(std::move(origin));
+  m_origins.push_back(std::move(origin));
 }
 
 bool FeaturePolicy::Whitelist::contains(const SecurityOrigin& origin) const {
@@ -160,7 +160,7 @@ WebParsedFeaturePolicy FeaturePolicy::parseFeaturePolicy(
   std::unique_ptr<JSONArray> policyItems = parseJSONHeader(policy, 50);
   if (!policyItems) {
     if (messages)
-      messages->append("Unable to parse header");
+      messages->push_back("Unable to parse header");
     return whitelists;
   }
 
@@ -168,7 +168,7 @@ WebParsedFeaturePolicy FeaturePolicy::parseFeaturePolicy(
     JSONObject* item = JSONObject::cast(policyItems->at(i));
     if (!item) {
       if (messages)
-        messages->append("Policy is not an object");
+        messages->push_back("Policy is not an object");
       continue;  // Array element is not an object; skip
     }
 
@@ -178,7 +178,7 @@ WebParsedFeaturePolicy FeaturePolicy::parseFeaturePolicy(
       JSONArray* targets = JSONArray::cast(entry.second);
       if (!targets) {
         if (messages)
-          messages->append("Whitelist is not an array of strings.");
+          messages->push_back("Whitelist is not an array of strings.");
         continue;
       }
 
@@ -190,22 +190,22 @@ WebParsedFeaturePolicy FeaturePolicy::parseFeaturePolicy(
         if (targets->at(j)->asString(&targetString)) {
           if (equalIgnoringCase(targetString, "self")) {
             if (!origin->isUnique())
-              origins.append(origin);
+              origins.push_back(origin);
           } else if (targetString == "*") {
             whitelist.matchesAllOrigins = true;
           } else {
             WebSecurityOrigin targetOrigin =
                 WebSecurityOrigin::createFromString(targetString);
             if (!targetOrigin.isNull() && !targetOrigin.isUnique())
-              origins.append(targetOrigin);
+              origins.push_back(targetOrigin);
           }
         } else {
           if (messages)
-            messages->append("Whitelist is not an array of strings.");
+            messages->push_back("Whitelist is not an array of strings.");
         }
       }
       whitelist.origins = origins;
-      whitelists.append(whitelist);
+      whitelists.push_back(whitelist);
     }
   }
   return whitelists;
