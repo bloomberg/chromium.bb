@@ -206,12 +206,14 @@ if (!is_ios) {
 
     deps = [
       ":ipc",
+      ":test_interfaces",
       ":test_support",
       "//base",
       "//base:i18n",
       "//base/test:test_support",
       "//mojo/edk/system",
       "//mojo/edk/test:test_support",
+      "//mojo/edk/test:test_support_impl",
       "//testing/gtest",
     ]
   }
@@ -219,8 +221,6 @@ if (!is_ios) {
   static_library("test_support") {
     testonly = true
     sources = [
-      "ipc_perftest_support.cc",
-      "ipc_perftest_support.h",
       "ipc_security_test_util.cc",
       "ipc_security_test_util.h",
       "ipc_test_base.cc",

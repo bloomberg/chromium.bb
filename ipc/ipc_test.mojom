@@ -28,3 +28,8 @@ interface PingReceiver {
 interface IndirectTestDriver {
   GetPingReceiver(associated PingReceiver& request);
 };
+
+interface Reflector {
+  Ping(string value) => (string value);
+  Quit();
+};
