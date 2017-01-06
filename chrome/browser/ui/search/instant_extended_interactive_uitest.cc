@@ -307,7 +307,13 @@ class InstantPolicyTest : public ExtensionBrowserTest, public InstantTestBase {
   DISALLOW_COPY_AND_ASSIGN(InstantPolicyTest);
 };
 
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, SearchDoesntReuseInstantTab) {
+// Flaky on Windows in the CQ: https://crbug.com/678975
+#if defined(OS_WIN)
+#define MAYBE_SearchDoesntReuseInstantTab DISABLED_SearchDoesntReuseInstantTab
+#else
+#define MAYBE_SearchDoesntReuseInstantTab SearchDoesntReuseInstantTab
+#endif
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MAYBE_SearchDoesntReuseInstantTab) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmnibox();
 
