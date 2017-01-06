@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = "google-protobuf"
-  s.version     = "3.0.0.alpha.6.0.0"
+  s.version     = "3.1.0"
   s.licenses    = ["BSD"]
   s.summary     = "Protocol Buffers"
   s.description = "Protocol Buffers are Google's data interchange format."
@@ -10,16 +10,17 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
   s.files       = Dir.glob('lib/**/*.rb')
   if RUBY_PLATFORM == "java"
+    s.platform  = "java"
     s.files     += ["lib/google/protobuf_java.jar"]
   else
     s.files     += Dir.glob('ext/**/*')
     s.extensions= ["ext/google/protobuf_c/extconf.rb"]
-    s.add_development_dependency "rake-compiler-dock"
+    s.add_development_dependency "rake-compiler-dock", "~> 0.5.1"
   end
   s.test_files  = ["tests/basic.rb",
                   "tests/stress.rb",
                   "tests/generated_code_test.rb"]
-  s.add_development_dependency "rake-compiler"
-  s.add_development_dependency "test-unit"
-  s.add_development_dependency "rubygems-tasks"
+  s.add_development_dependency "rake-compiler", "~> 0.9.5"
+  s.add_development_dependency "test-unit", "~> 3.0.9"
+  s.add_development_dependency "rubygems-tasks", "~> 0.2.4"
 end

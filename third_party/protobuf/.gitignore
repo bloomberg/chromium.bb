@@ -60,10 +60,13 @@ python/build/
 python/google/protobuf/compiler/
 python/google/protobuf/util/
 
+src/js_embed
 src/protoc
 src/unittest_proto_middleman
 
 # Generated test scaffolding
+src/no_warning_test.cc
+src/no-warning-test
 src/protobuf*-test
 src/test_plugin
 src/testzip.*
@@ -77,7 +80,8 @@ src/**/*.log
 src/**/*.trs
 
 # JavaBuild output.
-java/target
+java/core/target
+java/util/target
 javanano/target
 
 # Windows native output.
@@ -88,15 +92,13 @@ build_msvc
 # packages themselves.
 /csharp/src/packages/*/
 
-# Directories created by opening the Objective C Xcode projects.
-objectivec/ProtocolBuffers_OSX.xcodeproj/project.xcworkspace/xcuserdata/
-objectivec/ProtocolBuffers_OSX.xcodeproj/project.xcworkspace/xcshareddata/ProtocolBuffers_OSX.xccheckout
-objectivec/ProtocolBuffers_OSX.xcodeproj/xcuserdata/
-objectivec/ProtocolBuffers_iOS.xcodeproj/project.xcworkspace/xcuserdata/
-objectivec/ProtocolBuffers_iOS.xcodeproj/project.xcworkspace/xcshareddata/ProtocolBuffers_iOS.xccheckout
-objectivec/ProtocolBuffers_iOS.xcodeproj/xcuserdata/
 # OS X's Finder creates these for state about opened windows/etc.
 **/.DS_Store
+
+# Cocoapods artifacts
+# Podfile.lock and the workspace file are tracked, to ease deleting them. That's
+# needed to trigger "pod install" to rerun the preinstall commands.
+Pods/
 
 # Comformance test output
 conformance/.libs/
@@ -110,8 +112,35 @@ conformance/conformance.pb.cc
 conformance/conformance.pb.h
 conformance/Conformance.pbobjc.h
 conformance/Conformance.pbobjc.m
-conformance/conformance.rb
+conformance/conformance_pb.rb
+conformance/failing_tests.txt
 conformance/google/
 conformance/javac_middleman
 conformance/lite/
+conformance/nonexistent_tests.txt
 conformance/protoc_middleman
+conformance/succeeding_tests.txt
+
+# php test output
+composer.lock
+php/tests/generated/
+php/ext/google/protobuf/.libs/
+php/ext/google/protobuf/Makefile.fragments
+php/ext/google/protobuf/Makefile.global
+php/ext/google/protobuf/Makefile.objects
+php/ext/google/protobuf/acinclude.m4
+php/ext/google/protobuf/build/
+php/ext/google/protobuf/config.h
+php/ext/google/protobuf/config.nice
+php/ext/google/protobuf/configure.in
+php/ext/google/protobuf/mkinstalldirs
+php/ext/google/protobuf/run-tests.php
+vendor/
+
+# JavaScript artifacts
+js/commonjs_out/
+js/deps.js
+js/google-protobuf.js
+js/google/
+js/node_modules/
+js/testproto_libs.js
