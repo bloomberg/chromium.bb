@@ -889,6 +889,7 @@ void ChromeUserManagerImpl::ArcKioskAppLoggedIn(user_manager::User* user) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(chromeos::switches::kEnableArc);
   command_line->AppendSwitch(::switches::kForceAndroidAppMode);
+  command_line->AppendSwitch(::switches::kSilentLaunch);
 
   // Disable window animation since kiosk app runs in a single full screen
   // window and window animation causes start-up janks.
