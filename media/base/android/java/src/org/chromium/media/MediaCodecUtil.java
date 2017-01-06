@@ -281,7 +281,7 @@ class MediaCodecUtil {
                 // We copy blacklisting patterns from software_renderin_list_json.cc
                 // although they are broader than the bugs they refer to.
 
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
                     // Samsung Galaxy Note 2, http://crbug.com/308721.
                     if (Build.MODEL.startsWith("GT-")) return false;
 
@@ -290,12 +290,21 @@ class MediaCodecUtil {
 
                     // Samsung Galaxy Tab, http://crbug.com/408353.
                     if (Build.MODEL.startsWith("SM-T")) return false;
+
+                    // http://crbug.com/600454
+                    if (Build.MODEL.startsWith("SM-G")) return false;
                 }
             }
 
             // MediaTek decoders do not work properly on vp8. See http://crbug.com/446974 and
             // http://crbug.com/597836.
             if (Build.HARDWARE.startsWith("mt")) return false;
+
+            // http://crbug.com/600454
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT
+                    && Build.MODEL.startsWith("Lenovo A6000")) {
+                return false;
+            }
         } else if (mime.equals("video/x-vnd.on2.vp9")) {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) return false;
 
