@@ -143,7 +143,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
               ['win7', 'intel', 'no_passthrough'])
 
     # Win / Intel failures
-    self.Flaky('conformance/uniforms/gl-uniform-arrays.html',
+    self.Skip('conformance/uniforms/gl-uniform-arrays.html',
         ['win', 'debug', 'intel'], bug=678382)
 
     # Win / AMD flakiness seen on new tryservers.
