@@ -307,8 +307,8 @@ class InstantPolicyTest : public ExtensionBrowserTest, public InstantTestBase {
   DISALLOW_COPY_AND_ASSIGN(InstantPolicyTest);
 };
 
-// Flaky on Windows in the CQ: https://crbug.com/678975
-#if defined(OS_WIN)
+// Flaky on Windows in the CQ and Linux memory bot: https://crbug.com/678975
+#if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_SearchDoesntReuseInstantTab DISABLED_SearchDoesntReuseInstantTab
 #else
 #define MAYBE_SearchDoesntReuseInstantTab SearchDoesntReuseInstantTab
