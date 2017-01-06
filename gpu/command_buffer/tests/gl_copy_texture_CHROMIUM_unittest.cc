@@ -29,6 +29,20 @@ const CopyType kCopyTypes[] = {
     TexSubImage,
 };
 
+struct FormatType {
+  GLenum internal_format;
+  GLenum format;
+  GLenum type;
+};
+
+static const char* kSimpleVertexShaderES2 =
+    "attribute vec2 a_position;\n"
+    "varying vec2 v_texCoord;\n"
+    "void main() {\n"
+    "  gl_Position = vec4(a_position.x, a_position.y, 0.0, 1.0);\n"
+    "  v_texCoord = (a_position + vec2(1.0, 1.0)) * 0.5;\n"
+    "}\n";
+
 static const char* kSimpleVertexShaderES3 =
     "#version 300 es\n"
     "in vec2 a_position;\n"
@@ -38,11 +52,22 @@ static const char* kSimpleVertexShaderES3 =
     "  v_texCoord = (a_position + vec2(1.0, 1.0)) * 0.5;\n"
     "}\n";
 
-std::string GetFragmentShaderSource(GLenum format) {
+std::string GetFragmentShaderSource(GLenum format, bool is_es3) {
   std::string source;
-  source += std::string(
-      "#version 300 es\n"
-      "precision mediump float;\n");
+  if (is_es3) {
+    source +=
+        "#version 300 es\n"
+        "#define VARYING in\n"
+        "#define FRAGCOLOR frag_color\n"
+        "#define TextureLookup texture\n";
+  } else {
+    source +=
+        "#define VARYING varying\n"
+        "#define FRAGCOLOR gl_FragColor\n"
+        "#define TextureLookup texture2D\n";
+  }
+  source += "precision mediump float;\n";
+
   if (gles2::GLES2Util::IsSignedIntegerFormat(format)) {
     source += std::string("#define SamplerType isampler2D\n");
     source += std::string("#define TextureType ivec4\n");
@@ -57,13 +82,15 @@ std::string GetFragmentShaderSource(GLenum format) {
     source += std::string("#define ScaleValue 1.0\n");
   }
 
+  if (is_es3)
+    source += "out vec4 frag_color;\n";
+
   source += std::string(
       "uniform mediump SamplerType u_texture;\n"
-      "in vec2 v_texCoord;\n"
-      "out vec4 fragData;\n"
+      "VARYING vec2 v_texCoord;\n"
       "void main() {\n"
-      "  TextureType color = texture(u_texture, v_texCoord);\n"
-      "  fragData = vec4(color) / ScaleValue;\n"
+      "  TextureType color = TextureLookup(u_texture, v_texCoord);\n"
+      "  FRAGCOLOR = vec4(color) / ScaleValue;\n"
       "}\n");
   return source;
 }
@@ -190,7 +217,6 @@ class GLCopyTextureCHROMIUMTest
     : public testing::Test,
       public ::testing::WithParamInterface<CopyType> {
  protected:
-
   void CreateAndBindDestinationTextureAndFBO(GLenum target) {
     glGenTextures(2, textures_);
     glBindTexture(target, textures_[1]);
@@ -209,7 +235,12 @@ class GLCopyTextureCHROMIUMTest
   }
 
   void SetUp() override {
-    gl_.Initialize(GLManager::Options());
+    GLManager::Options options;
+    options.size = gfx::Size(64, 64);
+    gl_.Initialize(options);
+
+    width_ = 8;
+    height_ = 8;
   }
 
   void TearDown() override { gl_.Destroy(); }
@@ -223,6 +254,25 @@ class GLCopyTextureCHROMIUMTest
       glTexImage2D(target, 0, GL_RGBA, width, height, 0, GL_RGBA,
                    GL_UNSIGNED_BYTE, nullptr);
     }
+  }
+
+  GLuint CreateDrawingTexture(GLenum target, GLsizei width, GLsizei height) {
+    GLuint texture = 0;
+    glGenTextures(1, &texture);
+    glBindTexture(target, texture);
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    CreateBackingForTexture(GL_TEXTURE_2D, width, height);
+    return texture;
+  }
+
+  GLuint CreateDrawingFBO(GLenum target, GLuint texture) {
+    GLuint framebuffer = 0;
+    glGenFramebuffers(1, &framebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target,
+                           texture, 0);
+    return framebuffer;
   }
 
   GLenum ExtractFormatFrom(GLenum internalformat) {
@@ -239,8 +289,96 @@ class GLCopyTextureCHROMIUMTest
     }
   }
 
+  void RunCopyTexture(GLenum target,
+                      CopyType copy_type,
+                      FormatType src_format_type,
+                      GLint source_level,
+                      FormatType dest_format_type,
+                      GLint dest_level,
+                      bool is_es3) {
+    const int src_channel_count = gles2::GLES2Util::ElementsPerGroup(
+        src_format_type.format, src_format_type.type);
+    uint8_t color[4] = {1u, 63u, 127u, 255u};
+    std::unique_ptr<uint8_t[]> pixels(new uint8_t[width_ * height_ * 4]);
+    for (int i = 0; i < width_ * height_ * src_channel_count;
+         i += src_channel_count)
+      for (int j = 0; j < src_channel_count; ++j)
+        pixels[i + j] = color[j];
+    uint8_t expected_color[4];
+    uint8_t mask[4];
+    getExpectedColor(src_format_type.internal_format,
+                     dest_format_type.internal_format, color, expected_color,
+                     mask);
+
+    glGenTextures(2, textures_);
+    glBindTexture(target, textures_[0]);
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(target, source_level, src_format_type.internal_format, width_,
+                 height_, 0, src_format_type.format, src_format_type.type,
+                 pixels.get());
+    EXPECT_TRUE(glGetError() == GL_NO_ERROR);
+    glBindTexture(target, textures_[1]);
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    EXPECT_TRUE(glGetError() == GL_NO_ERROR);
+
+    // TODO(qiankun.miao@intel.com): Upgrade glCopyTextureCHROMIUM and
+    // glCopySubTextureCHROMIUM to support copying from level > 0 of source
+    // texture to level > 0 of dest texture.
+    if (copy_type == TexImage) {
+      glCopyTextureCHROMIUM(textures_[0], textures_[1],
+                            dest_format_type.internal_format,
+                            dest_format_type.type, false, false, false);
+    } else {
+      glBindTexture(target, textures_[1]);
+      glTexImage2D(target, dest_level, dest_format_type.internal_format, width_,
+                   height_, 0, dest_format_type.format, dest_format_type.type,
+                   nullptr);
+
+      glCopySubTextureCHROMIUM(textures_[0], textures_[1], 0, 0, 0, 0, width_,
+                               height_, false, false, false);
+    }
+    EXPECT_TRUE(glGetError() == GL_NO_ERROR);
+
+    // Draw destination texture to a fbo with a texture attachment in RGBA
+    // format.
+    GLuint texture = CreateDrawingTexture(target, width_, height_);
+    GLuint framebuffer = CreateDrawingFBO(target, texture);
+    EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
+              glCheckFramebufferStatus(GL_FRAMEBUFFER));
+    glViewport(0, 0, width_, height_);
+
+    glBindTexture(target, textures_[1]);
+    std::string fragment_shader_source =
+        GetFragmentShaderSource(dest_format_type.internal_format, is_es3);
+    // TODO(qiankun.miao@intel.com): Support drawing from level > 0 of a
+    // texture.
+    GLTestHelper::DrawTextureQuad(
+        is_es3 ? kSimpleVertexShaderES3 : kSimpleVertexShaderES2,
+        fragment_shader_source.c_str(), "a_position", "u_texture");
+    EXPECT_TRUE(GL_NO_ERROR == glGetError());
+
+    uint8_t tolerance = dest_format_type.internal_format == GL_RGBA4 ? 20 : 7;
+    EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, width_, height_, tolerance,
+                                          expected_color, mask))
+        << " src_internal_format: "
+        << gles2::GLES2Util::GetStringEnum(src_format_type.internal_format)
+        << " source_level: " << source_level
+        << " dest_internal_format: "
+        << gles2::GLES2Util::GetStringEnum(dest_format_type.internal_format)
+        << " dest_level: " << dest_level;
+
+    glDeleteTextures(1, &texture);
+    glDeleteFramebuffers(1, &framebuffer);
+    glDeleteTextures(2, textures_);
+  }
+
   GLManager gl_;
   GLuint textures_[2];
+  GLsizei width_;
+  GLsizei height_;
   GLuint framebuffer_id_;
 };
 
@@ -251,6 +389,9 @@ class GLCopyTextureCHROMIUMES3Test : public GLCopyTextureCHROMIUMTest {
     options.context_type = gles2::CONTEXT_TYPE_OPENGLES3;
     options.size = gfx::Size(64, 64);
     gl_.Initialize(options);
+
+    width_ = 8;
+    height_ = 8;
   }
 
   // If a driver isn't capable of supporting ES3 context, creating
@@ -345,12 +486,6 @@ TEST_P(GLCopyTextureCHROMIUMES3Test, FormatCombinations) {
     return;
   CopyType copy_type = GetParam();
 
-  struct FormatType {
-    GLenum internal_format;
-    GLenum format;
-    GLenum type;
-  };
-
   FormatType src_format_types[] = {
       {GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE},
       {GL_LUMINANCE_ALPHA, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE},
@@ -427,86 +562,8 @@ TEST_P(GLCopyTextureCHROMIUMES3Test, FormatCombinations) {
       if (dest_format_type.internal_format == GL_RGB5_A1 && ShouldSkipRGB5_A1())
         continue;
 
-      const GLsizei kWidth = 8, kHeight = 8;
-      const int src_channel_count = gles2::GLES2Util::ElementsPerGroup(
-          src_format_type.format, src_format_type.type);
-      uint8_t color[4] = {1, 63, 127, 255};
-      uint8_t pixels[8 * 8 * 4];
-      for (int i = 0; i < kWidth * kHeight * src_channel_count;
-           i += src_channel_count)
-        for (int j = 0; j < src_channel_count; ++j)
-          pixels[i + j] = color[j];
-      uint8_t expected_color[4];
-      uint8_t mask[4];
-      getExpectedColor(src_format_type.internal_format,
-                       dest_format_type.internal_format, color, expected_color,
-                       mask);
-
-      CreateAndBindDestinationTextureAndFBO(GL_TEXTURE_2D);
-      glBindTexture(GL_TEXTURE_2D, textures_[0]);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-      glTexImage2D(GL_TEXTURE_2D, 0, src_format_type.internal_format, kWidth,
-                   kHeight, 0, src_format_type.format, src_format_type.type,
-                   pixels);
-
-      EXPECT_TRUE(glGetError() == GL_NO_ERROR);
-      if (copy_type == TexImage) {
-        glCopyTextureCHROMIUM(textures_[0], textures_[1],
-                              dest_format_type.internal_format,
-                              dest_format_type.type, false, false, false);
-      } else {
-        glBindTexture(GL_TEXTURE_2D, textures_[1]);
-        glTexImage2D(GL_TEXTURE_2D, 0, dest_format_type.internal_format, kWidth,
-                     kHeight, 0, dest_format_type.format, dest_format_type.type,
-                     nullptr);
-
-        glCopySubTextureCHROMIUM(textures_[0], textures_[1], 0, 0, 0, 0, kWidth,
-                                 kHeight, false, false, false);
-      }
-      EXPECT_TRUE(glGetError() == GL_NO_ERROR)
-          << " src_internal_format: "
-          << gles2::GLES2Util::GetStringEnum(src_format_type.internal_format)
-          << " dest_internal_format: "
-          << gles2::GLES2Util::GetStringEnum(dest_format_type.internal_format);
-
-      // Draw destination texture to a fbo with attachment in RGBA format.
-      glBindFramebuffer(GL_FRAMEBUFFER, 0);
-      GLuint framebuffer = 0;
-      glGenFramebuffers(1, &framebuffer);
-      glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-      GLuint texture = 0;
-      glGenTextures(1, &texture);
-      glBindTexture(GL_TEXTURE_2D, texture);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-      CreateBackingForTexture(GL_TEXTURE_2D, kWidth, kHeight);
-      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                             GL_TEXTURE_2D, texture, 0);
-      EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
-                glCheckFramebufferStatus(GL_FRAMEBUFFER));
-      glViewport(0, 0, kWidth, kHeight);
-
-      glBindTexture(GL_TEXTURE_2D, textures_[1]);
-      std::string fragment_shader_source =
-          GetFragmentShaderSource(dest_format_type.internal_format);
-      GLTestHelper::DrawTextureQuad(kSimpleVertexShaderES3,
-                                    fragment_shader_source.c_str(),
-                                    "a_position", "u_texture");
-
-      uint8_t tolerance = dest_format_type.internal_format == GL_RGBA4 ? 20 : 7;
-      EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kWidth, kHeight, tolerance,
-                                            expected_color, mask))
-          << " src_internal_format: "
-          << gles2::GLES2Util::GetStringEnum(src_format_type.internal_format)
-          << " dest_internal_format: "
-          << gles2::GLES2Util::GetStringEnum(dest_format_type.internal_format);
-      EXPECT_TRUE(GL_NO_ERROR == glGetError());
-
-      glDeleteTextures(1, &texture);
-      glDeleteFramebuffers(1, &framebuffer);
-      glDeleteTextures(2, textures_);
-      glDeleteFramebuffers(1, &framebuffer_id_);
+      RunCopyTexture(GL_TEXTURE_2D, copy_type, src_format_type, 0,
+                     dest_format_type, 0, true);
     }
   }
 }
@@ -658,6 +715,51 @@ TEST_F(GLCopyTextureCHROMIUMTest, InternalFormatTypeCombinationNotSupported) {
   }
   glDeleteTextures(2, textures_);
   glDeleteFramebuffers(1, &framebuffer_id_);
+}
+
+TEST_P(GLCopyTextureCHROMIUMTest, CopyTextureLevel) {
+  CopyType copy_type = GetParam();
+
+  // Copy from RGB source texture to dest texture.
+  FormatType src_format_type = {GL_RGB, GL_RGB, GL_UNSIGNED_BYTE};
+  FormatType dest_format_types[] = {
+      {GL_RGB, GL_RGB, GL_UNSIGNED_BYTE},
+      {GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE},
+  };
+  // Source level must be 0 in ES2 context.
+  GLint source_level = 0;
+
+  // TODO(qiankun.miao@intel.com): Support level > 0.
+  for (GLint dest_level = 0; dest_level < 1; dest_level++) {
+    for (auto dest_format_type : dest_format_types) {
+      RunCopyTexture(GL_TEXTURE_2D, copy_type, src_format_type, source_level,
+                     dest_format_type, dest_level, false);
+    }
+  }
+}
+
+TEST_P(GLCopyTextureCHROMIUMES3Test, CopyTextureLevel) {
+  if (ShouldSkipTest())
+    return;
+  CopyType copy_type = GetParam();
+
+  // Copy from RGBA source texture to dest texture.
+  FormatType src_format_type = {GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE};
+  FormatType dest_format_types[] = {
+      {GL_RGB8UI, GL_RGB_INTEGER, GL_UNSIGNED_BYTE},
+      {GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE},
+      {GL_RGBA8UI, GL_RGBA_INTEGER, GL_UNSIGNED_BYTE},
+  };
+
+  // TODO(qiankun.miao@intel.com): Support level > 0.
+  for (GLint source_level = 0; source_level < 1; source_level++) {
+    for (GLint dest_level = 0; dest_level < 1; dest_level++) {
+      for (auto dest_format_type : dest_format_types) {
+        RunCopyTexture(GL_TEXTURE_2D, copy_type, src_format_type, source_level,
+                       dest_format_type, dest_level, true);
+      }
+    }
+  }
 }
 
 // Test to ensure that the destination texture is redefined if the properties
