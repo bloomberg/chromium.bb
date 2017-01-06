@@ -95,7 +95,7 @@ NGFragmentationType NGConstraintSpace::BlockFragmentationType() const {
   return static_cast<NGFragmentationType>(block_direction_fragmentation_type_);
 }
 
-void NGConstraintSpace::Subtract(const NGFragment*) {
+void NGConstraintSpace::Subtract(const NGBoxFragment*) {
   // TODO(layout-ng): Implement.
 }
 

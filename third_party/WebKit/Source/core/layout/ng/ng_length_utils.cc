@@ -6,8 +6,8 @@
 
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
-#include "core/layout/ng/ng_fragment_base.h"
 #include "core/style/ComputedStyle.h"
+#include "core/layout/ng/ng_fragment.h"
 #include "platform/LayoutUnit.h"
 #include "platform/Length.h"
 #include "wtf/Optional.h"
@@ -390,7 +390,7 @@ NGBoxStrut ComputePadding(const NGConstraintSpace& constraint_space,
 
 void ApplyAutoMargins(const NGConstraintSpace& constraint_space,
                       const ComputedStyle& style,
-                      const NGFragmentBase& fragment,
+                      const NGFragment& fragment,
                       NGBoxStrut* margins) {
   DCHECK(margins) << "Margins cannot be NULL here";
   const LayoutUnit used_space = fragment.InlineSize() + margins->InlineSum();

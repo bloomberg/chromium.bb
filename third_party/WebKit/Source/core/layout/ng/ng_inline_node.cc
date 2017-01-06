@@ -7,15 +7,15 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
 #include "core/layout/ng/ng_bidi_paragraph.h"
-#include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_layout_inline_items_builder.h"
 #include "core/layout/ng/ng_text_layout_algorithm.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
-#include "core/layout/ng/ng_physical_fragment.h"
 #include "core/layout/ng/ng_physical_text_fragment.h"
 #include "core/layout/ng/ng_text_fragment.h"
 #include "core/style/ComputedStyle.h"
+#include "core/layout/ng/ng_box_fragment.h"
+#include "core/layout/ng/ng_physical_box_fragment.h"
 #include "platform/fonts/shaping/CachingWordShaper.h"
 #include "platform/fonts/shaping/CachingWordShapeIterator.h"
 #include "wtf/text/CharacterNames.h"
@@ -214,7 +214,7 @@ void NGInlineNode::ShapeText() {
 }
 
 bool NGInlineNode::Layout(NGConstraintSpace* constraint_space,
-                          NGFragmentBase** out) {
+                          NGFragment** out) {
   ASSERT_NOT_REACHED();
   *out = nullptr;
   return true;

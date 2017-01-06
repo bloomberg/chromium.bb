@@ -7,14 +7,14 @@
 #include "core/layout/ng/ng_break_token.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
-#include "core/layout/ng/ng_fragment_base.h"
 #include "core/layout/ng/ng_fragment_builder.h"
-#include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_layout_opportunity_iterator.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_out_of_flow_layout_part.h"
 #include "core/layout/ng/ng_units.h"
 #include "core/style/ComputedStyle.h"
+#include "core/layout/ng/ng_box_fragment.h"
+#include "core/layout/ng/ng_fragment.h"
 #include "platform/LengthFunctions.h"
 #include "wtf/Optional.h"
 
@@ -68,7 +68,7 @@ LayoutUnit ComputeCollapsedMarginBlockStart(
 
 // Creates an exclusion from the fragment that will be placed in the provided
 // layout opportunity.
-NGExclusion CreateExclusion(const NGFragmentBase& fragment,
+NGExclusion CreateExclusion(const NGFragment& fragment,
                             const NGLayoutOpportunity& opportunity,
                             LayoutUnit float_offset,
                             NGBoxStrut margins,
@@ -101,7 +101,7 @@ NGExclusion CreateExclusion(const NGFragmentBase& fragment,
 // @return Layout opportunity for the fragment.
 const NGLayoutOpportunity FindLayoutOpportunityForFragment(
     NGConstraintSpace* space,
-    const NGFragmentBase& fragment,
+    const NGFragment& fragment,
     const NGBoxStrut& margins) {
   NGLayoutOpportunityIterator* opportunity_iter = space->LayoutOpportunities();
   NGLayoutOpportunity opportunity;
@@ -239,8 +239,8 @@ NGBlockLayoutAlgorithm::ComputeMinAndMaxContentSizes(
 }
 
 NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
-    NGPhysicalFragmentBase* child_fragment,
-    NGPhysicalFragmentBase** fragment_out,
+    NGPhysicalFragment* child_fragment,
+    NGPhysicalFragment** fragment_out,
     NGLayoutAlgorithm** algorithm_out) {
   switch (layout_state_) {
     case kStateInit: {
@@ -282,7 +282,7 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
 
       content_size_ = border_and_padding_.block_start;
 
-      builder_ = new NGFragmentBuilder(NGPhysicalFragmentBase::kFragmentBox);
+      builder_ = new NGFragmentBuilder(NGPhysicalFragment::kFragmentBox);
       builder_->SetDirection(constraint_space_->Direction());
       builder_->SetWritingMode(constraint_space_->WritingMode());
       builder_->SetInlineSize(inline_size).SetBlockSize(block_size);
@@ -330,12 +330,12 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
       DCHECK(child_fragment);
 
       // TODO(layout_ng): Seems like a giant hack to call this here.
-      current_child_->UpdateLayoutBox(toNGPhysicalFragment(child_fragment),
+      current_child_->UpdateLayoutBox(toNGPhysicalBoxFragment(child_fragment),
                                       space_for_current_child_);
 
-      FinishCurrentChildLayout(new NGFragment(
+      FinishCurrentChildLayout(new NGBoxFragment(
           ConstraintSpace().WritingMode(), ConstraintSpace().Direction(),
-          toNGPhysicalFragment(child_fragment)));
+          toNGPhysicalBoxFragment(child_fragment)));
       current_child_ = current_child_->NextSibling();
       layout_state_ = kStatePrepareForChildLayout;
       return kNotFinished;
@@ -347,7 +347,7 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
     case kStateFinalize: {
       builder_->SetInlineOverflow(max_inline_size_)
           .SetBlockOverflow(content_size_);
-      *fragment_out = builder_->ToFragment();
+      *fragment_out = builder_->ToBoxFragment();
       layout_state_ = kStateInit;
       return kNewFragment;
     }
@@ -357,8 +357,7 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
   return kNewFragment;
 }
 
-void NGBlockLayoutAlgorithm::FinishCurrentChildLayout(
-    NGFragmentBase* fragment) {
+void NGBlockLayoutAlgorithm::FinishCurrentChildLayout(NGFragment* fragment) {
   NGBoxStrut child_margins = ComputeMargins(
       *space_for_current_child_, CurrentChildStyle(),
       constraint_space_->WritingMode(), constraint_space_->Direction());
@@ -392,7 +391,7 @@ bool NGBlockLayoutAlgorithm::LayoutOutOfFlowChild() {
       return false;
     }
   }
-  NGFragmentBase* fragment;
+  NGFragment* fragment;
   NGLogicalOffset offset;
   if (out_of_flow_layout_->Layout(&fragment, &offset) == kNewFragment) {
     // TODO(atotic) Need to adjust size of overflow rect per spec.
@@ -404,7 +403,7 @@ bool NGBlockLayoutAlgorithm::LayoutOutOfFlowChild() {
 
 NGBoxStrut NGBlockLayoutAlgorithm::CollapseMargins(
     const NGBoxStrut& margins,
-    const NGFragment& fragment) {
+    const NGBoxFragment& fragment) {
   bool is_zero_height_box = !fragment.BlockSize() && margins.IsEmpty() &&
                             fragment.MarginStrut().IsEmpty();
   // Create the current child's margin strut from its children's margin strut or
@@ -469,10 +468,10 @@ NGBoxStrut NGBlockLayoutAlgorithm::CollapseMargins(
 }
 
 NGLogicalOffset NGBlockLayoutAlgorithm::PositionFragment(
-    const NGFragmentBase& fragment,
+    const NGFragment& fragment,
     const NGBoxStrut& child_margins) {
   const NGBoxStrut collapsed_margins =
-      CollapseMargins(child_margins, toNGFragment(fragment));
+      CollapseMargins(child_margins, toNGBoxFragment(fragment));
 
   AdjustToClearance(ConstraintSpace(), CurrentChildStyle(), &content_size_);
 
@@ -488,7 +487,7 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PositionFragment(
 }
 
 NGLogicalOffset NGBlockLayoutAlgorithm::PositionFloatFragment(
-    const NGFragmentBase& fragment,
+    const NGFragment& fragment,
     const NGBoxStrut& margins) {
   // TODO(glebl@chromium.org): Support the top edge alignment rule.
   // Find a layout opportunity that will fit our float.

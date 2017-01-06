@@ -7,7 +7,7 @@
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_builder.h"
-#include "core/layout/ng/ng_physical_fragment.h"
+#include "core/layout/ng/ng_physical_box_fragment.h"
 #include "core/layout/ng/ng_physical_text_fragment.h"
 #include "core/layout/ng/ng_text_fragment.h"
 #include "core/layout/ng/ng_text_layout_algorithm.h"
@@ -68,10 +68,10 @@ class NGInlineNodeTest : public ::testing::Test {
         new NGTextLayoutAlgorithm(node, constraint_space);
     algorithm->LayoutInline(&line_builder);
 
-    NGFragmentBuilder fragment_builder(NGPhysicalFragmentBase::kFragmentBox);
+    NGFragmentBuilder fragment_builder(NGPhysicalFragment::kFragmentBox);
     line_builder.CreateFragments(&fragment_builder);
-    NGPhysicalFragment* fragment = fragment_builder.ToFragment();
-    for (const NGPhysicalFragmentBase* child : fragment->Children()) {
+    NGPhysicalBoxFragment* fragment = fragment_builder.ToBoxFragment();
+    for (const NGPhysicalFragment* child : fragment->Children()) {
       fragments_out->append(toNGPhysicalTextFragment(child));
     }
   }

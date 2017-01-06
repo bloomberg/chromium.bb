@@ -5,20 +5,20 @@
 #ifndef NGFragmentBuilder_h
 #define NGFragmentBuilder_h
 
-#include "core/layout/ng/ng_physical_fragment_base.h"
 #include "core/layout/ng/ng_units.h"
+#include "core/layout/ng/ng_physical_fragment.h"
 
 namespace blink {
 
-class NGFragmentBase;
+class NGFragment;
 class NGInlineNode;
-class NGPhysicalFragment;
+class NGPhysicalBoxFragment;
 class NGPhysicalTextFragment;
 
 class CORE_EXPORT NGFragmentBuilder final
     : public GarbageCollectedFinalized<NGFragmentBuilder> {
  public:
-  NGFragmentBuilder(NGPhysicalFragmentBase::NGFragmentType);
+  NGFragmentBuilder(NGPhysicalFragment::NGFragmentType);
 
   using WeakBoxList = HeapLinkedHashSet<WeakMember<NGBlockNode>>;
 
@@ -32,7 +32,7 @@ class CORE_EXPORT NGFragmentBuilder final
   NGFragmentBuilder& SetInlineOverflow(LayoutUnit);
   NGFragmentBuilder& SetBlockOverflow(LayoutUnit);
 
-  NGFragmentBuilder& AddChild(NGFragmentBase*, const NGLogicalOffset&);
+  NGFragmentBuilder& AddChild(NGFragment*, const NGLogicalOffset&);
 
   // Builder has non-trivial out-of-flow descendant methods.
   // These methods are building blocks for implementation of
@@ -89,7 +89,7 @@ class CORE_EXPORT NGFragmentBuilder final
   // do not provide a setter here.
 
   // Creates the fragment. Can only be called once.
-  NGPhysicalFragment* ToFragment();
+  NGPhysicalBoxFragment* ToBoxFragment();
   NGPhysicalTextFragment* ToTextFragment(NGInlineNode*,
                                          unsigned start_index,
                                          unsigned end_index);
@@ -115,7 +115,7 @@ class CORE_EXPORT NGFragmentBuilder final
     NGStaticPosition descendant_position;
   };
 
-  NGPhysicalFragmentBase::NGFragmentType type_;
+  NGPhysicalFragment::NGFragmentType type_;
   NGWritingMode writing_mode_;
   TextDirection direction_;
 
@@ -124,7 +124,7 @@ class CORE_EXPORT NGFragmentBuilder final
 
   NGMarginStrut margin_strut_;
 
-  HeapVector<Member<NGPhysicalFragmentBase>> children_;
+  HeapVector<Member<NGPhysicalFragment>> children_;
   Vector<NGLogicalOffset> offsets_;
 
   WeakBoxList out_of_flow_descendant_candidates_;

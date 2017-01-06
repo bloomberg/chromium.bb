@@ -18,7 +18,7 @@ namespace blink {
 
 class ComputedStyle;
 class NGBlockNode;
-class NGFragmentBase;
+class NGFragment;
 class NGConstraintSpace;
 
 // Helper class for positioning of out-of-flow blocks.
@@ -33,7 +33,7 @@ class CORE_EXPORT NGOutOfFlowLayoutPart
   // If false, this fragment should be passed up the tree for layout by
   // an ancestor.
   bool StartLayout(NGBlockNode*, const NGStaticPosition&);
-  NGLayoutStatus Layout(NGFragmentBase**, NGLogicalOffset*);
+  NGLayoutStatus Layout(NGFragment**, NGLogicalOffset*);
 
   DECLARE_TRACE();
 
@@ -61,7 +61,7 @@ class CORE_EXPORT NGOutOfFlowLayoutPart
   Member<NGConstraintSpace> parent_space_;
   Member<NGBlockNode> node_;
   Member<NGConstraintSpace> node_space_;
-  Member<NGFragmentBase> node_fragment_;
+  Member<NGFragment> node_fragment_;
   NGAbsolutePhysicalPosition node_position_;
   Optional<LayoutUnit> inline_estimate_;
   Optional<LayoutUnit> block_estimate_;

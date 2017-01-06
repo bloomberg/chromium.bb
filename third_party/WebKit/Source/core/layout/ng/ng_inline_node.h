@@ -21,7 +21,7 @@ class ComputedStyle;
 class LayoutObject;
 class LayoutUnit;
 class NGConstraintSpace;
-class NGFragmentBase;
+class NGFragment;
 class NGLayoutAlgorithm;
 class NGLayoutInlineItem;
 class NGLayoutInlineItemRange;
@@ -34,7 +34,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   NGInlineNode(LayoutObject* start_inline, ComputedStyle* block_style);
   ~NGInlineNode() override;
 
-  bool Layout(NGConstraintSpace*, NGFragmentBase**) override;
+  bool Layout(NGConstraintSpace*, NGFragment**) override;
   bool LayoutInline(NGConstraintSpace*, NGLineBuilder*);
   NGInlineNode* NextSibling() override;
 

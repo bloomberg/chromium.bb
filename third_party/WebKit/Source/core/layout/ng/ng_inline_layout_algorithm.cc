@@ -11,8 +11,8 @@
 #include "core/layout/ng/ng_inline_node.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_line_builder.h"
-#include "core/layout/ng/ng_physical_fragment.h"
 #include "core/style/ComputedStyle.h"
+#include "core/layout/ng/ng_physical_box_fragment.h"
 
 namespace blink {
 
@@ -30,14 +30,14 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
 }
 
 NGLayoutStatus NGInlineLayoutAlgorithm::Layout(
-    NGPhysicalFragmentBase*,
-    NGPhysicalFragmentBase** fragment_out,
+    NGPhysicalFragment*,
+    NGPhysicalFragment** fragment_out,
     NGLayoutAlgorithm**) {
   // TODO(kojii): Implement sizing and child constraint spaces. Share common
   // logic with NGBlockLayoutAlgorithm using composition.
   switch (state_) {
     case kStateInit: {
-      builder_ = new NGFragmentBuilder(NGPhysicalFragmentBase::kFragmentBox);
+      builder_ = new NGFragmentBuilder(NGPhysicalFragment::kFragmentBox);
       builder_->SetWritingMode(constraint_space_->WritingMode());
       builder_->SetDirection(constraint_space_->Direction());
       current_child_ = first_child_;
@@ -68,7 +68,7 @@ NGLayoutStatus NGInlineLayoutAlgorithm::Layout(
     }
     case kStateFinalize:
       line_builder_->CreateFragments(builder_);
-      *fragment_out = builder_->ToFragment();
+      *fragment_out = builder_->ToBoxFragment();
       state_ = kStateInit;
       return kNewFragment;
   };

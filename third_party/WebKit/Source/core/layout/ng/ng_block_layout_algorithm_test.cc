@@ -7,12 +7,12 @@
 #include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
-#include "core/layout/ng/ng_physical_fragment_base.h"
-#include "core/layout/ng/ng_physical_fragment.h"
 #include "core/layout/ng/ng_layout_coordinator.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_units.h"
 #include "core/style/ComputedStyle.h"
+#include "core/layout/ng/ng_physical_box_fragment.h"
+#include "core/layout/ng/ng_physical_fragment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -35,20 +35,20 @@ class NGBlockLayoutAlgorithmTest : public ::testing::Test {
  protected:
   void SetUp() override { style_ = ComputedStyle::create(); }
 
-  NGPhysicalFragment* RunBlockLayoutAlgorithm(NGConstraintSpace* space,
-                                              NGBlockNode* first_child) {
+  NGPhysicalBoxFragment* RunBlockLayoutAlgorithm(NGConstraintSpace* space,
+                                                 NGBlockNode* first_child) {
     NGBlockNode parent(style_.get());
     parent.SetFirstChild(first_child);
 
     NGLayoutCoordinator coordinator(&parent, space);
-    NGPhysicalFragmentBase* fragment;
+    NGPhysicalFragment* fragment;
     coordinator.Tick(&fragment);
     EXPECT_EQ(kBlockLayoutAlgorithm,
               coordinator.GetAlgorithmStackForTesting()[0]->algorithmType());
     while (!coordinator.Tick(&fragment))
       ;
 
-    return toNGPhysicalFragment(fragment);
+    return toNGPhysicalBoxFragment(fragment);
   }
 
   MinAndMaxContentSizes RunComputeMinAndMax(NGBlockNode* first_child) {
@@ -80,7 +80,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, FixedSize) {
   auto* space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::Ltr,
       NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
-  NGPhysicalFragmentBase* frag = RunBlockLayoutAlgorithm(space, nullptr);
+  NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, nullptr);
 
   EXPECT_EQ(LayoutUnit(30), frag->Width());
   EXPECT_EQ(LayoutUnit(40), frag->Height());
@@ -110,14 +110,14 @@ TEST_F(NGBlockLayoutAlgorithmTest, LayoutBlockChildren) {
   auto* space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::Ltr,
       NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
-  NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, first_child);
+  NGPhysicalBoxFragment* frag = RunBlockLayoutAlgorithm(space, first_child);
 
   EXPECT_EQ(LayoutUnit(kWidth), frag->Width());
   EXPECT_EQ(LayoutUnit(kHeight1 + kHeight2 + kMarginTop), frag->Height());
-  EXPECT_EQ(NGPhysicalFragmentBase::kFragmentBox, frag->Type());
+  EXPECT_EQ(NGPhysicalFragment::kFragmentBox, frag->Type());
   ASSERT_EQ(frag->Children().size(), 2UL);
 
-  const NGPhysicalFragmentBase* child = frag->Children()[0];
+  const NGPhysicalFragment* child = frag->Children()[0];
   EXPECT_EQ(kHeight1, child->Height());
   EXPECT_EQ(0, child->TopOffset());
 
@@ -156,11 +156,11 @@ TEST_F(NGBlockLayoutAlgorithmTest, LayoutBlockChildrenWithWritingMode) {
   auto* space =
       ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::Ltr,
                                NGLogicalSize(LayoutUnit(500), LayoutUnit(500)));
-  NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
+  NGPhysicalBoxFragment* frag = RunBlockLayoutAlgorithm(space, div1);
 
-  const NGPhysicalFragmentBase* child = frag->Children()[0];
+  const NGPhysicalFragment* child = frag->Children()[0];
   // DIV2
-  child = static_cast<const NGPhysicalFragment*>(child)->Children()[0];
+  child = static_cast<const NGPhysicalBoxFragment*>(child)->Children()[0];
 
   EXPECT_EQ(kHeight, child->Height());
   EXPECT_EQ(0, child->TopOffset());
@@ -205,12 +205,12 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase1) {
           .SetTextDirection(TextDirection::Ltr)
           .SetIsNewFormattingContext(true)
           .ToConstraintSpace();
-  NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
+  NGPhysicalBoxFragment* frag = RunBlockLayoutAlgorithm(space, div1);
 
   EXPECT_TRUE(frag->MarginStrut().IsEmpty());
   ASSERT_EQ(frag->Children().size(), 1UL);
-  const NGPhysicalFragment* div2_fragment =
-      static_cast<const NGPhysicalFragment*>(frag->Children()[0].get());
+  const NGPhysicalBoxFragment* div2_fragment =
+      static_cast<const NGPhysicalBoxFragment*>(frag->Children()[0].get());
   EXPECT_EQ(NGMarginStrut({LayoutUnit(kDiv2MarginTop)}),
             div2_fragment->MarginStrut());
   EXPECT_EQ(kDiv1MarginTop, div2_fragment->TopOffset());
@@ -279,12 +279,12 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase2) {
   auto* space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::Ltr,
       NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
-  NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
+  NGPhysicalBoxFragment* frag = RunBlockLayoutAlgorithm(space, div1);
 
   ASSERT_EQ(frag->Children().size(), 3UL);
 
   // DIV1
-  const NGPhysicalFragmentBase* child = frag->Children()[0];
+  const NGPhysicalFragment* child = frag->Children()[0];
   EXPECT_EQ(kHeight, child->Height());
   EXPECT_EQ(0, child->TopOffset());
 
@@ -328,7 +328,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase3) {
   auto* space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::Ltr,
       NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
-  NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
+  NGPhysicalBoxFragment* frag = RunBlockLayoutAlgorithm(space, div1);
 
   // Verify that margins are collapsed.
   EXPECT_EQ(NGMarginStrut({LayoutUnit(0), LayoutUnit(kDiv2MarginBottom)}),
@@ -377,7 +377,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase4) {
   auto* space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::Ltr,
       NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
-  NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
+  NGPhysicalBoxFragment* frag = RunBlockLayoutAlgorithm(space, div1);
 
   // Verify that margins do NOT collapse.
   frag = RunBlockLayoutAlgorithm(space, div1);
@@ -386,7 +386,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase4) {
   ASSERT_EQ(frag->Children().size(), 1UL);
 
   EXPECT_EQ(NGMarginStrut({LayoutUnit(kDiv2Margin), LayoutUnit(kDiv2Margin)}),
-            static_cast<const NGPhysicalFragment*>(frag->Children()[0].get())
+            static_cast<const NGPhysicalBoxFragment*>(frag->Children()[0].get())
                 ->MarginStrut());
 
   // Reset padding and verify that margins DO collapse.
@@ -433,10 +433,10 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase5) {
   auto* space =
       ConstructConstraintSpace(kVerticalLeftRight, TextDirection::Ltr,
                                NGLogicalSize(LayoutUnit(500), LayoutUnit(500)));
-  NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, vertical_div);
+  NGPhysicalBoxFragment* frag = RunBlockLayoutAlgorithm(space, vertical_div);
 
   ASSERT_EQ(frag->Children().size(), 2UL);
-  const NGPhysicalFragmentBase* child = frag->Children()[1];
+  const NGPhysicalFragment* child = frag->Children()[1];
   // Horizontal div
   EXPECT_EQ(0, child->TopOffset());
   EXPECT_EQ(kVerticalDivWidth + kHorizontalDivMarginLeft, child->LeftOffset());
@@ -491,15 +491,15 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase6) {
   auto* space =
       ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::Ltr,
                                NGLogicalSize(LayoutUnit(500), LayoutUnit(500)));
-  NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
+  NGPhysicalBoxFragment* frag = RunBlockLayoutAlgorithm(space, div1);
 
   ASSERT_EQ(frag->Children().size(), 2UL);
 
-  const NGPhysicalFragmentBase* child1 = frag->Children()[0];
+  const NGPhysicalFragment* child1 = frag->Children()[0];
   EXPECT_EQ(0, child1->TopOffset());
   EXPECT_EQ(kHeight, child1->Height());
 
-  const NGPhysicalFragmentBase* child2 = frag->Children()[1];
+  const NGPhysicalFragment* child2 = frag->Children()[1];
   EXPECT_EQ(kHeight + std::max(kMarginBottom, kMarginTop), child2->TopOffset());
 }
 
@@ -554,23 +554,23 @@ TEST_F(NGBlockLayoutAlgorithmTest, BorderAndPadding) {
   auto* space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::Ltr,
       NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
-  NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
+  NGPhysicalBoxFragment* frag = RunBlockLayoutAlgorithm(space, div1);
 
   ASSERT_EQ(frag->Children().size(), 1UL);
 
   // div1
-  const NGPhysicalFragmentBase* child = frag->Children()[0];
+  const NGPhysicalFragment* child = frag->Children()[0];
   EXPECT_EQ(kBorderLeft + kPaddingLeft + kWidth + kPaddingRight + kBorderRight,
             child->Width());
   EXPECT_EQ(kBorderTop + kPaddingTop + kHeight + kPaddingBottom + kBorderBottom,
             child->Height());
 
-  ASSERT_TRUE(child->Type() == NGPhysicalFragmentBase::kFragmentBox);
-  ASSERT_EQ(static_cast<const NGPhysicalFragment*>(child)->Children().size(),
+  ASSERT_TRUE(child->Type() == NGPhysicalFragment::kFragmentBox);
+  ASSERT_EQ(static_cast<const NGPhysicalBoxFragment*>(child)->Children().size(),
             1UL);
 
   // div2
-  child = static_cast<const NGPhysicalFragment*>(child)->Children()[0];
+  child = static_cast<const NGPhysicalBoxFragment*>(child)->Children()[0];
   EXPECT_EQ(kBorderTop + kPaddingTop, child->TopOffset());
   EXPECT_EQ(kBorderLeft + kPaddingLeft, child->LeftOffset());
 }
@@ -588,13 +588,13 @@ TEST_F(NGBlockLayoutAlgorithmTest, PercentageResolutionSize) {
   auto* space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::Ltr,
       NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
-  NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, first_child);
+  NGPhysicalBoxFragment* frag = RunBlockLayoutAlgorithm(space, first_child);
 
   EXPECT_EQ(LayoutUnit(kWidth + kPaddingLeft), frag->Width());
-  EXPECT_EQ(NGPhysicalFragmentBase::kFragmentBox, frag->Type());
+  EXPECT_EQ(NGPhysicalFragment::kFragmentBox, frag->Type());
   ASSERT_EQ(frag->Children().size(), 1UL);
 
-  const NGPhysicalFragmentBase* child = frag->Children()[0];
+  const NGPhysicalFragment* child = frag->Children()[0];
   EXPECT_EQ(LayoutUnit(12), child->Width());
 }
 
@@ -616,14 +616,14 @@ TEST_F(NGBlockLayoutAlgorithmTest, AutoMargin) {
   auto* space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::Ltr,
       NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
-  NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, first_child);
+  NGPhysicalBoxFragment* frag = RunBlockLayoutAlgorithm(space, first_child);
 
   EXPECT_EQ(LayoutUnit(kWidth + kPaddingLeft), frag->Width());
-  EXPECT_EQ(NGPhysicalFragmentBase::kFragmentBox, frag->Type());
+  EXPECT_EQ(NGPhysicalFragment::kFragmentBox, frag->Type());
   EXPECT_EQ(LayoutUnit(kWidth + kPaddingLeft), frag->WidthOverflow());
   ASSERT_EQ(1UL, frag->Children().size());
 
-  const NGPhysicalFragmentBase* child = frag->Children()[0];
+  const NGPhysicalFragment* child = frag->Children()[0];
   EXPECT_EQ(LayoutUnit(kChildWidth), child->Width());
   EXPECT_EQ(LayoutUnit(kPaddingLeft + 10), child->LeftOffset());
   EXPECT_EQ(LayoutUnit(0), child->TopOffset());
@@ -697,26 +697,26 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatFragments) {
   auto* space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::Ltr,
       NGLogicalSize(LayoutUnit(kParentSize), LayoutUnit(kParentSize)));
-  NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
+  NGPhysicalBoxFragment* frag = RunBlockLayoutAlgorithm(space, div1);
   ASSERT_EQ(frag->Children().size(), 4UL);
 
   // DIV1
-  const NGPhysicalFragmentBase* child1 = frag->Children()[0];
+  const NGPhysicalFragment* child1 = frag->Children()[0];
   EXPECT_EQ(kDiv1TopMargin, child1->TopOffset());
   EXPECT_EQ(kParentLeftPadding, child1->LeftOffset());
 
   // DIV2
-  const NGPhysicalFragmentBase* child2 = frag->Children()[1];
+  const NGPhysicalFragment* child2 = frag->Children()[1];
   EXPECT_EQ(0, child2->TopOffset());
   EXPECT_EQ(kParentLeftPadding, child2->LeftOffset());
 
   // DIV3
-  const NGPhysicalFragmentBase* child3 = frag->Children()[2];
+  const NGPhysicalFragment* child3 = frag->Children()[2];
   EXPECT_EQ(kDiv2Size, child3->TopOffset());
   EXPECT_EQ(kParentLeftPadding + kParentSize - kDiv3Size, child3->LeftOffset());
 
   // DIV4
-  const NGPhysicalFragmentBase* child4 = frag->Children()[3];
+  const NGPhysicalFragment* child4 = frag->Children()[3];
   EXPECT_EQ(kDiv2Size + kDiv3Size, child4->TopOffset());
   EXPECT_EQ(kParentLeftPadding + kDiv4LeftMargin, child4->LeftOffset());
 }
@@ -774,8 +774,8 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFragmentsWithClear) {
   auto* space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::Ltr,
       NGLogicalSize(LayoutUnit(kParentSize), LayoutUnit(kParentSize)));
-  NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
-  const NGPhysicalFragmentBase* child3 = frag->Children()[2];
+  NGPhysicalBoxFragment* frag = RunBlockLayoutAlgorithm(space, div1);
+  const NGPhysicalFragment* child3 = frag->Children()[2];
   EXPECT_EQ(kDiv1Size, child3->TopOffset());
 
   // clear: right;
@@ -842,7 +842,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, ShrinkToFit) {
   auto* space = ConstructConstraintSpace(
       kHorizontalTopBottom, TextDirection::Ltr,
       NGLogicalSize(LayoutUnit(100), NGSizeIndefinite), true);
-  NGPhysicalFragmentBase* frag = RunBlockLayoutAlgorithm(space, first_child);
+  NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, first_child);
 
   EXPECT_EQ(LayoutUnit(30), frag->Width());
 }

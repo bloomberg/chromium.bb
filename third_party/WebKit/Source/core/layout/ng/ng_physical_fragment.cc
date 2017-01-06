@@ -4,27 +4,45 @@
 
 #include "core/layout/ng/ng_physical_fragment.h"
 
+#include "core/layout/ng/ng_break_token.h"
+#include "core/layout/ng/ng_physical_text_fragment.h"
+#include "core/layout/ng/ng_physical_box_fragment.h"
+
 namespace blink {
 
 NGPhysicalFragment::NGPhysicalFragment(
     NGPhysicalSize size,
     NGPhysicalSize overflow,
-    HeapVector<Member<const NGPhysicalFragmentBase>>& children,
+    NGFragmentType type,
     HeapLinkedHashSet<WeakMember<NGBlockNode>>& out_of_flow_descendants,
-    Vector<NGStaticPosition>& out_of_flow_positions,
-    NGMarginStrut margin_strut)
-    : NGPhysicalFragmentBase(size,
-                             overflow,
-                             kFragmentBox,
-                             out_of_flow_descendants,
-                             out_of_flow_positions),
-      margin_strut_(margin_strut) {
-  children_.swap(children);
+    Vector<NGStaticPosition> out_of_flow_positions,
+    NGBreakToken* break_token)
+    : size_(size),
+      overflow_(overflow),
+      break_token_(break_token),
+      type_(type),
+      has_been_placed_(false) {
+  out_of_flow_descendants_.swap(out_of_flow_descendants);
+  out_of_flow_positions_.swap(out_of_flow_positions);
+}
+
+DEFINE_TRACE(NGPhysicalFragment) {
+  if (Type() == kFragmentText)
+    static_cast<NGPhysicalTextFragment*>(this)->traceAfterDispatch(visitor);
+  else
+    static_cast<NGPhysicalBoxFragment*>(this)->traceAfterDispatch(visitor);
+}
+
+void NGPhysicalFragment::finalizeGarbageCollectedObject() {
+  if (Type() == kFragmentText)
+    static_cast<NGPhysicalTextFragment*>(this)->~NGPhysicalTextFragment();
+  else
+    static_cast<NGPhysicalBoxFragment*>(this)->~NGPhysicalBoxFragment();
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(NGPhysicalFragment) {
-  visitor->trace(children_);
-  NGPhysicalFragmentBase::traceAfterDispatch(visitor);
+  visitor->trace(out_of_flow_descendants_);
+  visitor->trace(break_token_);
 }
 
 }  // namespace blink

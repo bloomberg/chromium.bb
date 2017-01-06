@@ -11,12 +11,12 @@
 #include "core/layout/ng/ng_block_layout_algorithm.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_constraint_space.h"
-#include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_inline_node.h"
 #include "core/layout/ng/ng_layout_coordinator.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_writing_mode.h"
+#include "core/layout/ng/ng_box_fragment.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
@@ -40,14 +40,14 @@ NGBlockNode::NGBlockNode(ComputedStyle* style)
 NGBlockNode::~NGBlockNode() {}
 
 bool NGBlockNode::Layout(NGConstraintSpace* constraint_space,
-                         NGFragmentBase** out) {
+                         NGFragment** out) {
   DCHECK(!minmax_algorithm_)
       << "Can't interleave Layout and ComputeMinAndMaxContentSizes";
   // We can either use the new layout code to do the layout and then copy the
   // resulting size to the LayoutObject, or use the old layout code and
   // synthesize a fragment.
   if (CanUseNewLayout()) {
-    NGPhysicalFragmentBase* fragment;
+    NGPhysicalFragment* fragment;
 
     // Store a coordinator so Layout can preserve its existing semantic
     // of returning false until completed.
@@ -57,21 +57,21 @@ bool NGBlockNode::Layout(NGConstraintSpace* constraint_space,
     if (!layout_coordinator_->Tick(&fragment))
       return false;
 
-    fragment_ = toNGPhysicalFragment(fragment);
+    fragment_ = toNGPhysicalBoxFragment(fragment);
 
     UpdateLayoutBox(fragment_, constraint_space);
   } else {
     DCHECK(layout_box_);
     fragment_ = RunOldLayout(*constraint_space);
   }
-  *out = new NGFragment(FromPlatformWritingMode(Style()->getWritingMode()),
-                        Style()->direction(), fragment_.get());
+  *out = new NGBoxFragment(FromPlatformWritingMode(Style()->getWritingMode()),
+                           Style()->direction(), fragment_.get());
   // Reset coordinator for future use
   layout_coordinator_ = nullptr;
   return true;
 }
 
-void NGBlockNode::UpdateLayoutBox(NGPhysicalFragment* fragment,
+void NGBlockNode::UpdateLayoutBox(NGPhysicalBoxFragment* fragment,
                                   const NGConstraintSpace* constraint_space) {
   fragment_ = fragment;
   if (layout_box_) {
@@ -127,12 +127,12 @@ bool NGBlockNode::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
       new NGLayoutCoordinator(this, constraint_space);
 
   // Have to synthesize this value.
-  NGPhysicalFragmentBase* physical_fragment;
+  NGPhysicalFragment* physical_fragment;
   while (!minmax_coordinator->Tick(&physical_fragment))
     continue;
-  NGFragment* fragment = new NGFragment(
+  NGBoxFragment* fragment = new NGBoxFragment(
       FromPlatformWritingMode(Style()->getWritingMode()), Style()->direction(),
-      toNGPhysicalFragment(physical_fragment));
+      toNGPhysicalBoxFragment(physical_fragment));
 
   sizes->min_content = fragment->InlineOverflow();
 
@@ -149,9 +149,9 @@ bool NGBlockNode::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
   while (!minmax_coordinator->Tick(&physical_fragment))
     continue;
 
-  fragment = new NGFragment(FromPlatformWritingMode(Style()->getWritingMode()),
-                            Style()->direction(),
-                            toNGPhysicalFragment(physical_fragment));
+  fragment = new NGBoxFragment(
+      FromPlatformWritingMode(Style()->getWritingMode()), Style()->direction(),
+      toNGPhysicalBoxFragment(physical_fragment));
   sizes->max_content = fragment->InlineOverflow();
   minmax_algorithm_ = nullptr;
   return true;
@@ -298,7 +298,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   }
 }
 
-NGPhysicalFragment* NGBlockNode::RunOldLayout(
+NGPhysicalBoxFragment* NGBlockNode::RunOldLayout(
     const NGConstraintSpace& constraint_space) {
   NGLogicalSize available_size = constraint_space.PercentageResolutionSize();
   layout_box_->setOverrideContainingBlockContentLogicalWidth(
@@ -325,7 +325,7 @@ NGPhysicalFragment* NGBlockNode::RunOldLayout(
   LayoutRect overflow = layout_box_->layoutOverflowRect();
   // TODO(layout-ng): This does not handle writing modes correctly (for
   // overflow)
-  NGFragmentBuilder builder(NGPhysicalFragmentBase::kFragmentBox);
+  NGFragmentBuilder builder(NGPhysicalFragment::kFragmentBox);
   builder.SetInlineSize(layout_box_->logicalWidth())
       .SetBlockSize(layout_box_->logicalHeight())
       .SetDirection(layout_box_->styleRef().direction())
@@ -333,7 +333,7 @@ NGPhysicalFragment* NGBlockNode::RunOldLayout(
           FromPlatformWritingMode(layout_box_->styleRef().getWritingMode()))
       .SetInlineOverflow(overflow.width())
       .SetBlockOverflow(overflow.height());
-  return builder.ToFragment();
+  return builder.ToBoxFragment();
 }
 
 void NGBlockNode::UseOldOutOfFlowPositioning() {

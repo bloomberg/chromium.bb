@@ -37,8 +37,8 @@ class CORE_EXPORT NGInlineLayoutAlgorithm : public NGLayoutAlgorithm {
                           NGConstraintSpace* space,
                           NGBreakToken* break_token = nullptr);
 
-  NGLayoutStatus Layout(NGPhysicalFragmentBase*,
-                        NGPhysicalFragmentBase**,
+  NGLayoutStatus Layout(NGPhysicalFragment*,
+                        NGPhysicalFragment**,
                         NGLayoutAlgorithm**) override;
 
   DECLARE_VIRTUAL_TRACE();

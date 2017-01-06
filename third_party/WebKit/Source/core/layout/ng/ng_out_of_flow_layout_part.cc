@@ -7,9 +7,9 @@
 #include "core/layout/ng/ng_absolute_utils.h"
 #include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
-#include "core/layout/ng/ng_fragment_base.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/style/ComputedStyle.h"
+#include "core/layout/ng/ng_fragment.h"
 
 namespace blink {
 
@@ -60,7 +60,7 @@ bool NGOutOfFlowLayoutPart::StartLayout(
   return false;
 }
 
-NGLayoutStatus NGOutOfFlowLayoutPart::Layout(NGFragmentBase** fragment,
+NGLayoutStatus NGOutOfFlowLayoutPart::Layout(NGFragment** fragment,
                                              NGLogicalOffset* offset) {
   DCHECK(node_);
   switch (state_) {
@@ -152,7 +152,7 @@ bool NGOutOfFlowLayoutPart::ComputeNodeFragment() {
     builder.SetIsNewFormattingContext(true);
     node_space_ = builder.ToConstraintSpace();
   }
-  NGFragmentBase* fragment;
+  NGFragment* fragment;
   if (node_->Layout(node_space_, &fragment)) {
     node_fragment_ = fragment;
     return true;

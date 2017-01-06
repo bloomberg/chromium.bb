@@ -6,11 +6,11 @@
 
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
-#include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_fragment_builder.h"
-#include "core/layout/ng/ng_physical_fragment.h"
 #include "core/layout/ng/ng_units.h"
 #include "core/style/ComputedStyle.h"
+#include "core/layout/ng/ng_box_fragment.h"
+#include "core/layout/ng/ng_physical_box_fragment.h"
 #include "platform/CalculationValue.h"
 #include "platform/LayoutUnit.h"
 #include "platform/Length.h"
@@ -393,11 +393,11 @@ TEST_F(NGLengthUtilsTest, testAutoMargins) {
   style_->setMarginRight(Length(Auto));
   style_->setMarginLeft(Length(Auto));
 
-  NGFragmentBuilder builder(NGPhysicalFragmentBase::kFragmentBox);
+  NGFragmentBuilder builder(NGPhysicalFragment::kFragmentBox);
   builder.SetInlineSize(LayoutUnit(150));
-  NGPhysicalFragment* physical_fragment = builder.ToFragment();
-  NGFragment* fragment = new NGFragment(kHorizontalTopBottom,
-                                        TextDirection::Ltr, physical_fragment);
+  NGPhysicalBoxFragment* physical_fragment = builder.ToBoxFragment();
+  NGBoxFragment* fragment = new NGBoxFragment(
+      kHorizontalTopBottom, TextDirection::Ltr, physical_fragment);
 
   NGConstraintSpace* constraint_space(ConstructConstraintSpace(200, 300));
 

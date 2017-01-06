@@ -6,17 +6,17 @@
 #define NGTextFragment_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/ng_fragment_base.h"
 #include "core/layout/ng/ng_physical_text_fragment.h"
+#include "core/layout/ng/ng_fragment.h"
 
 namespace blink {
 
-class CORE_EXPORT NGTextFragment final : public NGFragmentBase {
+class CORE_EXPORT NGTextFragment final : public NGFragment {
  public:
   NGTextFragment(NGWritingMode writing_mode,
                  TextDirection direction,
                  NGPhysicalTextFragment* physical_text_fragment)
-      : NGFragmentBase(writing_mode, direction, physical_text_fragment) {}
+      : NGFragment(writing_mode, direction, physical_text_fragment) {}
 };
 
 }  // namespace blink

@@ -15,7 +15,7 @@ namespace blink {
 struct MinAndMaxContentSizes;
 class NGBlockNode;
 class NGConstraintSpace;
-class NGPhysicalFragmentBase;
+class NGPhysicalFragment;
 
 enum NGLayoutStatus { kNotFinished, kChildAlgorithmRequired, kNewFragment };
 
@@ -45,8 +45,8 @@ class CORE_EXPORT NGLayoutAlgorithm
   // be set with the NGBlockNode that needs to be layed out next.
   // If it returns NewFragment, the NGPhysicalFragmentBase out parameter
   // will contain the new fragment.
-  virtual NGLayoutStatus Layout(NGPhysicalFragmentBase*,
-                                NGPhysicalFragmentBase**,
+  virtual NGLayoutStatus Layout(NGPhysicalFragment*,
+                                NGPhysicalFragment**,
                                 NGLayoutAlgorithm**) = 0;
 
   enum MinAndMaxState { kSuccess, kPending, kNotImplemented };

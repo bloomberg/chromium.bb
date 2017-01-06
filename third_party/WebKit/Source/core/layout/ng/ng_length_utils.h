@@ -18,7 +18,7 @@ class Length;
 struct MinAndMaxContentSizes;
 class NGConstraintSpace;
 struct NGBoxStrut;
-class NGFragmentBase;
+class NGFragment;
 
 enum class LengthResolveType {
   kMinSize,
@@ -118,7 +118,7 @@ CORE_EXPORT NGBoxStrut ComputePadding(const NGConstraintSpace&,
 // the given NGBoxStrut accordingly.
 CORE_EXPORT void ApplyAutoMargins(const NGConstraintSpace&,
                                   const ComputedStyle&,
-                                  const NGFragmentBase&,
+                                  const NGFragment&,
                                   NGBoxStrut* margins);
 
 }  // namespace blink

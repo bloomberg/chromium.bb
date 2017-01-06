@@ -4,8 +4,8 @@
 
 #include "core/layout/ng/ng_block_node.h"
 
-#include "core/layout/ng/ng_fragment.h"
 #include "core/style/ComputedStyle.h"
+#include "core/layout/ng/ng_box_fragment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

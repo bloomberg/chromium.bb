@@ -4,7 +4,7 @@
 
 #include "core/layout/ng/ng_legacy_block_layout_algorithm.h"
 
-#include "core/layout/ng/ng_physical_fragment.h"
+#include "core/layout/ng/ng_physical_box_fragment.h"
 
 namespace blink {
 
@@ -16,8 +16,8 @@ NGLegacyBlockLayoutAlgorithm::NGLegacyBlockLayoutAlgorithm(
       constraint_space_(constraint_space) {}
 
 NGLayoutStatus NGLegacyBlockLayoutAlgorithm::Layout(
-    NGPhysicalFragmentBase*,
-    NGPhysicalFragmentBase** fragment_out,
+    NGPhysicalFragment*,
+    NGPhysicalFragment** fragment_out,
     NGLayoutAlgorithm**) {
   *fragment_out = block_->RunOldLayout(*constraint_space_);
   return kNewFragment;

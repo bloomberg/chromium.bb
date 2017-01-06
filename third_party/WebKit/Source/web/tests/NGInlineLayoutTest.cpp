@@ -51,7 +51,7 @@ TEST_F(NGInlineLayoutTest, BlockWithSingleTextNode) {
   NGInlineLayoutAlgorithm* layoutAlgorithm = new NGInlineLayoutAlgorithm(
       blockFlow->style(), inlineBox, constraintSpace);
 
-  NGPhysicalFragmentBase* fragment;
+  NGPhysicalFragment* fragment;
   while (layoutAlgorithm->Layout(nullptr, &fragment, nullptr) != kNewFragment) {
     // Repeat until layout completes.
   }
@@ -80,7 +80,7 @@ TEST_F(NGInlineLayoutTest, BlockWithTextAndAtomicInline) {
   NGInlineLayoutAlgorithm* layoutAlgorithm = new NGInlineLayoutAlgorithm(
       blockFlow->style(), inlineBox, constraintSpace);
 
-  NGPhysicalFragmentBase* fragment;
+  NGPhysicalFragment* fragment;
   while (layoutAlgorithm->Layout(nullptr, &fragment, nullptr) != kNewFragment) {
     // Repeat until layout completes.
   }

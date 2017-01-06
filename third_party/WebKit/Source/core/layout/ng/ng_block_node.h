@@ -15,10 +15,10 @@ class ComputedStyle;
 class LayoutBox;
 class LayoutObject;
 class NGConstraintSpace;
-class NGFragmentBase;
+class NGFragment;
 class NGLayoutAlgorithm;
 class NGLayoutCoordinator;
-class NGPhysicalFragment;
+class NGPhysicalBoxFragment;
 struct MinAndMaxContentSizes;
 
 // Represents a node to be laid out.
@@ -33,7 +33,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   ~NGBlockNode() override;
 
-  bool Layout(NGConstraintSpace*, NGFragmentBase**) override;
+  bool Layout(NGConstraintSpace*, NGFragment**) override;
   NGBlockNode* NextSibling() override;
 
   // Computes the value of min-content and max-content for this box.
@@ -59,13 +59,13 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   // Runs layout on layout_box_ and creates a fragment for the resulting
   // geometry.
-  NGPhysicalFragment* RunOldLayout(const NGConstraintSpace&);
+  NGPhysicalBoxFragment* RunOldLayout(const NGConstraintSpace&);
 
   // Called if this is an out-of-flow block which needs to be
   // positioned with legacy layout.
   void UseOldOutOfFlowPositioning();
 
-  void UpdateLayoutBox(NGPhysicalFragment* fragment,
+  void UpdateLayoutBox(NGPhysicalBoxFragment* fragment,
                        const NGConstraintSpace* constraint_space);
 
  private:
@@ -89,7 +89,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   Member<NGLayoutInputNode> first_child_;
   Member<NGLayoutCoordinator> layout_coordinator_;
   Member<NGLayoutAlgorithm> minmax_algorithm_;
-  Member<NGPhysicalFragment> fragment_;
+  Member<NGPhysicalBoxFragment> fragment_;
 };
 
 DEFINE_TYPE_CASTS(NGBlockNode,

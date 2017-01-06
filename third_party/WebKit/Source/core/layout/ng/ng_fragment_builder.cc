@@ -5,14 +5,13 @@
 #include "core/layout/ng/ng_fragment_builder.h"
 
 #include "core/layout/ng/ng_block_node.h"
-#include "core/layout/ng/ng_fragment_base.h"
-#include "core/layout/ng/ng_physical_fragment.h"
 #include "core/layout/ng/ng_physical_text_fragment.h"
+#include "core/layout/ng/ng_fragment.h"
+#include "core/layout/ng/ng_physical_box_fragment.h"
 
 namespace blink {
 
-NGFragmentBuilder::NGFragmentBuilder(
-    NGPhysicalFragmentBase::NGFragmentType type)
+NGFragmentBuilder::NGFragmentBuilder(NGPhysicalFragment::NGFragmentType type)
     : type_(type),
       writing_mode_(kHorizontalTopBottom),
       direction_(TextDirection::Ltr) {}
@@ -49,14 +48,14 @@ NGFragmentBuilder& NGFragmentBuilder::SetBlockOverflow(LayoutUnit size) {
 }
 
 NGFragmentBuilder& NGFragmentBuilder::AddChild(
-    NGFragmentBase* child,
+    NGFragment* child,
     const NGLogicalOffset& child_offset) {
-  DCHECK_EQ(type_, NGPhysicalFragmentBase::kFragmentBox)
+  DCHECK_EQ(type_, NGPhysicalFragment::kFragmentBox)
       << "Only box fragments can have children";
   children_.append(child->PhysicalFragment());
   offsets_.append(child_offset);
   // Collect child's out of flow descendants.
-  const NGPhysicalFragmentBase* physical_fragment = child->PhysicalFragment();
+  const NGPhysicalFragment* physical_fragment = child->PhysicalFragment();
   const Vector<NGStaticPosition>& oof_positions =
       physical_fragment->OutOfFlowPositions();
   size_t oof_index = 0;
@@ -132,22 +131,22 @@ NGFragmentBuilder& NGFragmentBuilder::SetMarginStrutBlockEnd(
   return *this;
 }
 
-NGPhysicalFragment* NGFragmentBuilder::ToFragment() {
+NGPhysicalBoxFragment* NGFragmentBuilder::ToBoxFragment() {
   // TODO(layout-ng): Support text fragments
-  DCHECK_EQ(type_, NGPhysicalFragmentBase::kFragmentBox);
+  DCHECK_EQ(type_, NGPhysicalFragment::kFragmentBox);
   DCHECK_EQ(offsets_.size(), children_.size());
 
   NGPhysicalSize physical_size = size_.ConvertToPhysical(writing_mode_);
-  HeapVector<Member<const NGPhysicalFragmentBase>> children;
+  HeapVector<Member<const NGPhysicalFragment>> children;
   children.reserveCapacity(children_.size());
 
   for (size_t i = 0; i < children_.size(); ++i) {
-    NGPhysicalFragmentBase* child = children_[i].get();
+    NGPhysicalFragment* child = children_[i].get();
     child->SetOffset(offsets_[i].ConvertToPhysical(
         writing_mode_, direction_, physical_size, child->Size()));
     children.append(child);
   }
-  return new NGPhysicalFragment(
+  return new NGPhysicalBoxFragment(
       physical_size, overflow_.ConvertToPhysical(writing_mode_), children,
       out_of_flow_descendants_, out_of_flow_positions_, margin_strut_);
 }
@@ -155,7 +154,7 @@ NGPhysicalFragment* NGFragmentBuilder::ToFragment() {
 NGPhysicalTextFragment* NGFragmentBuilder::ToTextFragment(NGInlineNode* node,
                                                           unsigned start_index,
                                                           unsigned end_index) {
-  DCHECK_EQ(type_, NGPhysicalFragmentBase::kFragmentText);
+  DCHECK_EQ(type_, NGPhysicalFragment::kFragmentText);
   DCHECK(children_.isEmpty());
   DCHECK(offsets_.isEmpty());
   return new NGPhysicalTextFragment(

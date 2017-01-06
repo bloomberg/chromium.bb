@@ -13,7 +13,7 @@
 namespace blink {
 
 class NGConstraintSpace;
-class NGFragmentBase;
+class NGFragment;
 class NGFragmentBuilder;
 class NGInlineNode;
 
@@ -45,7 +45,7 @@ class CORE_EXPORT NGLineBuilder final
 
   Member<NGInlineNode> inline_box_;
   Member<const NGConstraintSpace> constraint_space_;
-  HeapVector<Member<NGFragmentBase>, 32> fragments_;
+  HeapVector<Member<NGFragment>, 32> fragments_;
   Vector<NGLogicalOffset, 32> offsets_;
   Vector<LineItemChunk, 32> line_item_chunks_;
   LayoutUnit content_size_;

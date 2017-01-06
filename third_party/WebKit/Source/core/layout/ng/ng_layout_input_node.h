@@ -11,7 +11,7 @@
 namespace blink {
 
 class NGConstraintSpace;
-class NGFragmentBase;
+class NGFragment;
 class NGLayoutAlgorithm;
 
 // Represents the input to a layout algorithm for a given node. The layout
@@ -27,7 +27,7 @@ class CORE_EXPORT NGLayoutInputNode
   // Returns true when done; when this function returns false, it has to be
   // called again. The out parameter will only be set when this function
   // returns true. The same constraint space has to be passed each time.
-  virtual bool Layout(NGConstraintSpace*, NGFragmentBase**) = 0;
+  virtual bool Layout(NGConstraintSpace*, NGFragment**) = 0;
 
   // Returns the next sibling.
   virtual NGLayoutInputNode* NextSibling() = 0;

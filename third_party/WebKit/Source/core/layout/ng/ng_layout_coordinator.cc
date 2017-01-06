@@ -5,7 +5,7 @@
 #include "core/layout/ng/ng_layout_coordinator.h"
 
 #include "core/layout/ng/ng_layout_input_node.h"
-#include "core/layout/ng/ng_physical_fragment_base.h"
+#include "core/layout/ng/ng_physical_fragment.h"
 
 namespace blink {
 
@@ -15,14 +15,14 @@ NGLayoutCoordinator::NGLayoutCoordinator(NGLayoutInputNode* input_node,
       NGLayoutInputNode::AlgorithmForInputNode(input_node, constraint_space));
 }
 
-bool NGLayoutCoordinator::Tick(NGPhysicalFragmentBase** out_fragment) {
+bool NGLayoutCoordinator::Tick(NGPhysicalFragment** out_fragment) {
   NGLayoutAlgorithm* child_algorithm;
 
   // Tick should never be called without a layout algorithm on the stack.
   DCHECK(layout_algorithms_.size());
 
-  NGPhysicalFragmentBase* fragment;
-  NGPhysicalFragmentBase* in_fragment = fragment_;
+  NGPhysicalFragment* fragment;
+  NGPhysicalFragment* in_fragment = fragment_;
   fragment_ = nullptr;
 
   switch (layout_algorithms_.back()->Layout(in_fragment, &fragment,

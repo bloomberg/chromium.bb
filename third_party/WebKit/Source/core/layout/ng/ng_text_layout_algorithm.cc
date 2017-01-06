@@ -6,12 +6,12 @@
 
 #include "core/layout/ng/ng_break_token.h"
 #include "core/layout/ng/ng_constraint_space.h"
-#include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_line_builder.h"
 #include "core/layout/ng/ng_text_fragment.h"
 #include "core/layout/ng/ng_inline_node.h"
 #include "core/style/ComputedStyle.h"
+#include "core/layout/ng/ng_box_fragment.h"
 
 namespace blink {
 
@@ -26,10 +26,9 @@ NGTextLayoutAlgorithm::NGTextLayoutAlgorithm(
   DCHECK(inline_box_);
 }
 
-NGLayoutStatus NGTextLayoutAlgorithm::Layout(
-    NGPhysicalFragmentBase*,
-    NGPhysicalFragmentBase** fragment_out,
-    NGLayoutAlgorithm**) {
+NGLayoutStatus NGTextLayoutAlgorithm::Layout(NGPhysicalFragment*,
+                                             NGPhysicalFragment** fragment_out,
+                                             NGLayoutAlgorithm**) {
   ASSERT_NOT_REACHED();
   *fragment_out = nullptr;
   return kNewFragment;

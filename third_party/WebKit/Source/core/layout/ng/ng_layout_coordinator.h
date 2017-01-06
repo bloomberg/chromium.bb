@@ -20,7 +20,7 @@ class CORE_EXPORT NGLayoutCoordinator final
  public:
   NGLayoutCoordinator(NGLayoutInputNode*, NGConstraintSpace*);
 
-  bool Tick(NGPhysicalFragmentBase**);
+  bool Tick(NGPhysicalFragment**);
 
   DECLARE_TRACE()
 
@@ -31,7 +31,7 @@ class CORE_EXPORT NGLayoutCoordinator final
 
  private:
   HeapVector<Member<NGLayoutAlgorithm>> layout_algorithms_;
-  Member<NGPhysicalFragmentBase> fragment_;
+  Member<NGPhysicalFragment> fragment_;
 };
 }
 

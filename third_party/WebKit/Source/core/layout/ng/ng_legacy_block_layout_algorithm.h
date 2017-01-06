@@ -19,8 +19,8 @@ class CORE_EXPORT NGLegacyBlockLayoutAlgorithm : public NGLayoutAlgorithm {
  public:
   NGLegacyBlockLayoutAlgorithm(NGBlockNode*, const NGConstraintSpace*);
 
-  NGLayoutStatus Layout(NGPhysicalFragmentBase*,
-                        NGPhysicalFragmentBase**,
+  NGLayoutStatus Layout(NGPhysicalFragment*,
+                        NGPhysicalFragment**,
                         NGLayoutAlgorithm**) override;
 
   DECLARE_VIRTUAL_TRACE();

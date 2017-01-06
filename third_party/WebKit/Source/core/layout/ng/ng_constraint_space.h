@@ -14,7 +14,7 @@
 namespace blink {
 
 class LayoutBox;
-class NGFragment;
+class NGBoxFragment;
 class NGLayoutOpportunityIterator;
 
 // TODO(glebl@): unused, delete.
@@ -107,7 +107,7 @@ class CORE_EXPORT NGConstraintSpace final
   // Modifies constraint space to account for a placed fragment. Depending on
   // the shape of the fragment this will either modify the inline or block
   // size, or add an exclusion.
-  void Subtract(const NGFragment*);
+  void Subtract(const NGBoxFragment*);
 
   NGLayoutOpportunityIterator* LayoutOpportunities(
       unsigned clear = kNGClearNone,
