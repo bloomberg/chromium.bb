@@ -147,6 +147,9 @@ FileSystemProviderInternalFunction::FulfillRequest(
 }
 
 bool FileSystemProviderInternalFunction::PreRunValidation(std::string* error) {
+  if (!UIThreadExtensionFunction::PreRunValidation(error))
+    return false;
+
   std::string file_system_id;
 
   EXTENSION_FUNCTION_PRERUN_VALIDATE(args_->GetString(0, &file_system_id));
