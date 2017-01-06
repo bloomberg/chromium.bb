@@ -155,6 +155,22 @@ Here are the common components you should also use:
 
  If you still need help, ask the speed infra chat, or escalate to sullivan@.
 
+### Android Cross-Device Failures
+
+Sometimes when looking at failing android tests you will notice that there are
+tests on multiple devices failing. Sometimes (but not always) this means that
+there is a problem on the host machine. One way this problem can occur is if
+a test is using the wrong version of adb in one of its commands. This causes
+the adb server on the host to reset which can cause failures to anything
+trying to communicate with a device via adb during that time. A good tool
+for diagnosing this is the **Test Trace** step on the android runs. This is a
+trace of which tests are running. If you have all the tests across all the
+testing shards failing, it may be an issue on the host not with the tests.
+This will no longer be used when the android bots move to swarming, since
+each device will be sandboxed from the others and not run from a single
+point.
+
+
 ### Clobbering
 
 Sometimes when a compile step is failing, you may be asked to clobber
