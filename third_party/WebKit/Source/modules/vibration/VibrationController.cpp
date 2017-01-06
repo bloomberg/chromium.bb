@@ -22,7 +22,6 @@
 #include "bindings/modules/v8/UnsignedLongOrUnsignedLongSequence.h"
 #include "core/dom/Document.h"
 #include "core/frame/Navigator.h"
-#include "core/frame/UseCounter.h"
 #include "core/page/Page.h"
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/InterfaceProvider.h"

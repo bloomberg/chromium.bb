@@ -1395,6 +1395,12 @@ class CORE_EXPORT UseCounter {
     V8StereoPannerNode_Constructor = 1722,
     V8WaveShaperNode_Constructor = 1723,
     V8Headers_GetAll_Method = 1724,
+    NavigatorVibrateEngagementNone = 1725,
+    NavigatorVibrateEngagementMinimal = 1726,
+    NavigatorVibrateEngagementLow = 1727,
+    NavigatorVibrateEngagementMedium = 1728,
+    NavigatorVibrateEngagementHigh = 1729,
+    NavigatorVibrateEngagementMax = 1730,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

@@ -29,6 +29,7 @@
 #include "modules/vibration/VibrationController.h"
 #include "platform/Histogram.h"
 #include "platform/UserGestureIndicator.h"
+#include "public/platform/site_engagement.mojom-blink.h"
 
 namespace blink {
 
@@ -124,6 +125,27 @@ void NavigatorVibration::collectHistogramMetrics(const LocalFrame& frame) {
   DEFINE_STATIC_LOCAL(EnumerationHistogram, NavigatorVibrateHistogram,
                       ("Vibration.Context", NavigatorVibrationType::EnumMax));
   NavigatorVibrateHistogram.count(type);
+
+  switch (frame.document()->getEngagementLevel()) {
+    case mojom::blink::EngagementLevel::NONE:
+      UseCounter::count(&frame, UseCounter::NavigatorVibrateEngagementNone);
+      break;
+    case mojom::blink::EngagementLevel::MINIMAL:
+      UseCounter::count(&frame, UseCounter::NavigatorVibrateEngagementMinimal);
+      break;
+    case mojom::blink::EngagementLevel::LOW:
+      UseCounter::count(&frame, UseCounter::NavigatorVibrateEngagementLow);
+      break;
+    case mojom::blink::EngagementLevel::MEDIUM:
+      UseCounter::count(&frame, UseCounter::NavigatorVibrateEngagementMedium);
+      break;
+    case mojom::blink::EngagementLevel::HIGH:
+      UseCounter::count(&frame, UseCounter::NavigatorVibrateEngagementHigh);
+      break;
+    case mojom::blink::EngagementLevel::MAX:
+      UseCounter::count(&frame, UseCounter::NavigatorVibrateEngagementMax);
+      break;
+  }
 }
 
 VibrationController* NavigatorVibration::controller(const LocalFrame& frame) {
