@@ -196,7 +196,7 @@ bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
 
 void ShellContentBrowserClient::RegisterInProcessServices(
     StaticServiceMap* services) {
-#if (ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+#if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
   {
     content::ServiceInfo info;
     info.factory = base::Bind(&media::CreateMediaServiceForTesting);
