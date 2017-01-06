@@ -2986,6 +2986,7 @@ void FrameView::performScrollAnchoringAdjustments() {
 
 void FrameView::updatePaintProperties() {
   TRACE_EVENT0("blink", "FrameView::updatePaintProperties");
+  SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.PrePaint.UpdateTime");
 
   if (!m_paintController)
     m_paintController = PaintController::create();
