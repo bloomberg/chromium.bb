@@ -171,7 +171,7 @@ class VideoTrackRecorder::Encoder : public base::RefCountedThreadSafe<Encoder> {
   }
 
   virtual void EncodeOnEncodingTaskRunner(
-      const scoped_refptr<VideoFrame>& frame,
+      scoped_refptr<VideoFrame> frame,
       base::TimeTicks capture_timestamp) = 0;
   virtual void ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) = 0;
 
@@ -343,13 +343,13 @@ typedef std::unique_ptr<vpx_codec_ctx_t, VpxCodecDeleter> ScopedVpxCodecCtxPtr;
 
 static void OnFrameEncodeCompleted(
     const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_cb,
-    const scoped_refptr<VideoFrame>& frame,
+    const media::WebmMuxer::VideoParameters& params,
     std::unique_ptr<std::string> data,
     base::TimeTicks capture_timestamp,
     bool keyframe) {
   DVLOG(1) << (keyframe ? "" : "non ") << "keyframe "<< data->length() << "B, "
            << capture_timestamp << " ms";
-  on_encoded_video_cb.Run(frame, std::move(data), capture_timestamp, keyframe);
+  on_encoded_video_cb.Run(params, std::move(data), capture_timestamp, keyframe);
 }
 
 static int GetNumberOfThreadsForEncoding() {
@@ -383,14 +383,16 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
 
  private:
   using VideoFrameAndTimestamp =
-      std::pair<scoped_refptr<VideoFrame>, base::TimeTicks>;
+      std::pair<scoped_refptr<media::VideoFrame>, base::TimeTicks>;
+  using VideoParamsAndTimestamp =
+      std::pair<media::WebmMuxer::VideoParameters, base::TimeTicks>;
 
   void UseOutputBitstreamBufferId(int32_t bitstream_buffer_id);
   void FrameFinished(std::unique_ptr<base::SharedMemory> shm);
 
   // VideoTrackRecorder::Encoder implementation.
   ~VEAEncoder() override;
-  void EncodeOnEncodingTaskRunner(const scoped_refptr<VideoFrame>& frame,
+  void EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
                                   base::TimeTicks capture_timestamp) override;
   void ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) override;
 
@@ -420,7 +422,7 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
   gfx::Size vea_requested_input_size_;
 
   // Frames and corresponding timestamps in encode as FIFO.
-  std::queue<VideoFrameAndTimestamp> frames_in_encode_;
+  std::queue<VideoParamsAndTimestamp> frames_in_encode_;
 };
 
 // Class encapsulating all libvpx interactions for VP8/VP9 encoding.
@@ -437,7 +439,7 @@ class VpxEncoder final : public VideoTrackRecorder::Encoder {
  private:
   // VideoTrackRecorder::Encoder implementation.
   ~VpxEncoder() override;
-  void EncodeOnEncodingTaskRunner(const scoped_refptr<VideoFrame>& frame,
+  void EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
                                   base::TimeTicks capture_timestamp) override;
   void ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) override;
 
@@ -489,7 +491,7 @@ class H264Encoder final : public VideoTrackRecorder::Encoder {
  private:
   // VideoTrackRecorder::Encoder implementation.
   ~H264Encoder() override;
-  void EncodeOnEncodingTaskRunner(const scoped_refptr<VideoFrame>& frame,
+  void EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
                               base::TimeTicks capture_timestamp) override;
   void ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) override;
 
@@ -602,7 +604,7 @@ void VEAEncoder::FrameFinished(std::unique_ptr<base::SharedMemory> shm) {
 }
 
 void VEAEncoder::EncodeOnEncodingTaskRunner(
-    const scoped_refptr<VideoFrame>& frame,
+   scoped_refptr<VideoFrame> frame,
     base::TimeTicks capture_timestamp) {
   DVLOG(3) << __func__;
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
@@ -686,7 +688,8 @@ void VEAEncoder::EncodeOnEncodingTaskRunner(
                      video_frame->stride(media::VideoFrame::kVPlane),
                      input_size_.width(), input_size_.height());
   }
-  frames_in_encode_.push(std::make_pair(video_frame, capture_timestamp));
+  frames_in_encode_.push(std::make_pair(
+      media::WebmMuxer::VideoParameters(frame), capture_timestamp));
 
   encoding_task_runner_->PostTask(
       FROM_HERE,
@@ -735,7 +738,7 @@ VpxEncoder::~VpxEncoder() {
 }
 
 void VpxEncoder::EncodeOnEncodingTaskRunner(
-    const scoped_refptr<VideoFrame>& frame,
+    scoped_refptr<VideoFrame> frame,
     base::TimeTicks capture_timestamp) {
   TRACE_EVENT0("video", "VpxEncoder::EncodeOnEncodingTaskRunner");
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
@@ -775,6 +778,9 @@ void VpxEncoder::EncodeOnEncodingTaskRunner(
                                << vpx_codec_error(encoder_.get()) << " -"
                                << vpx_codec_error_detail(encoder_.get());
 
+  const media::WebmMuxer::VideoParameters video_params(frame);
+  frame = nullptr;
+
   std::unique_ptr<std::string> data(new std::string);
   bool keyframe = false;
   vpx_codec_iter_t iter = NULL;
@@ -789,7 +795,7 @@ void VpxEncoder::EncodeOnEncodingTaskRunner(
   origin_task_runner_->PostTask(FROM_HERE,
       base::Bind(OnFrameEncodeCompleted,
                  on_encoded_video_callback_,
-                 frame,
+                 video_params,
                  base::Passed(&data),
                  capture_timestamp,
                  keyframe));
@@ -939,7 +945,7 @@ H264Encoder::~H264Encoder() {
 }
 
 void H264Encoder::EncodeOnEncodingTaskRunner(
-    const scoped_refptr<VideoFrame>& frame,
+    scoped_refptr<VideoFrame> frame,
     base::TimeTicks capture_timestamp) {
   TRACE_EVENT0("video", "H264Encoder::EncodeOnEncodingTaskRunner");
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
@@ -968,6 +974,8 @@ void H264Encoder::EncodeOnEncodingTaskRunner(
     NOTREACHED() << "OpenH264 encoding failed";
     return;
   }
+  const media::WebmMuxer::VideoParameters video_params(frame);
+  frame = nullptr;
 
   std::unique_ptr<std::string> data(new std::string);
   const uint8_t kNALStartCode[4] = {0, 0, 0, 1};
@@ -991,9 +999,9 @@ void H264Encoder::EncodeOnEncodingTaskRunner(
 
   const bool is_key_frame = info.eFrameType == videoFrameTypeIDR;
   origin_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(OnFrameEncodeCompleted, on_encoded_video_callback_, frame,
-                 base::Passed(&data), capture_timestamp, is_key_frame));
+      FROM_HERE, base::Bind(OnFrameEncodeCompleted, on_encoded_video_callback_,
+                            video_params, base::Passed(&data),
+                            capture_timestamp, is_key_frame));
 }
 
 void H264Encoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) {

@@ -94,15 +94,15 @@ class VideoTrackRecorderTest
   }
 
   MOCK_METHOD4(DoOnEncodedVideo,
-               void(const scoped_refptr<VideoFrame>& frame,
+               void(const media::WebmMuxer::VideoParameters& params,
                     std::string encoded_data,
                     base::TimeTicks timestamp,
                     bool keyframe));
-  void OnEncodedVideo(const scoped_refptr<VideoFrame>& video_frame,
+  void OnEncodedVideo(const media::WebmMuxer::VideoParameters& params,
                       std::unique_ptr<std::string> encoded_data,
                       base::TimeTicks timestamp,
                       bool is_key_frame) {
-    DoOnEncodedVideo(video_frame, *encoded_data, timestamp, is_key_frame);
+    DoOnEncodedVideo(params, *encoded_data, timestamp, is_key_frame);
   }
 
   void Encode(const scoped_refptr<VideoFrame>& frame,
@@ -148,7 +148,7 @@ TEST_P(VideoTrackRecorderTest, VideoEncoding) {
   InSequence s;
   const base::TimeTicks timeticks_now = base::TimeTicks::Now();
   base::StringPiece first_frame_encoded_data;
-  EXPECT_CALL(*this, DoOnEncodedVideo(video_frame, _, timeticks_now, true))
+  EXPECT_CALL(*this, DoOnEncodedVideo(_, _, timeticks_now, true))
       .Times(1)
       .WillOnce(SaveArg<1>(&first_frame_encoded_data));
   Encode(video_frame, timeticks_now);
@@ -156,7 +156,7 @@ TEST_P(VideoTrackRecorderTest, VideoEncoding) {
   // Send another Video Frame.
   const base::TimeTicks timeticks_later = base::TimeTicks::Now();
   base::StringPiece second_frame_encoded_data;
-  EXPECT_CALL(*this, DoOnEncodedVideo(video_frame, _, timeticks_later, false))
+  EXPECT_CALL(*this, DoOnEncodedVideo(_, _, timeticks_later, false))
       .Times(1)
       .WillOnce(SaveArg<1>(&second_frame_encoded_data));
   Encode(video_frame, timeticks_later);
@@ -171,7 +171,7 @@ TEST_P(VideoTrackRecorderTest, VideoEncoding) {
   base::Closure quit_closure = run_loop.QuitClosure();
 
   base::StringPiece third_frame_encoded_data;
-  EXPECT_CALL(*this, DoOnEncodedVideo(video_frame2, _, _, true))
+  EXPECT_CALL(*this, DoOnEncodedVideo(_, _, _, true))
       .Times(1)
       .WillOnce(DoAll(SaveArg<1>(&third_frame_encoded_data),
                 RunClosure(quit_closure)));

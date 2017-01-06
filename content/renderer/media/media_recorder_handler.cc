@@ -257,14 +257,14 @@ void MediaRecorderHandler::resume() {
 }
 
 void MediaRecorderHandler::OnEncodedVideo(
-    const scoped_refptr<media::VideoFrame>& video_frame,
+    const media::WebmMuxer::VideoParameters& params,
     std::unique_ptr<std::string> encoded_data,
     TimeTicks timestamp,
     bool is_key_frame) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   if (!webm_muxer_)
     return;
-  webm_muxer_->OnEncodedVideo(video_frame, std::move(encoded_data), timestamp,
+  webm_muxer_->OnEncodedVideo(params, std::move(encoded_data), timestamp,
                               is_key_frame);
 }
 

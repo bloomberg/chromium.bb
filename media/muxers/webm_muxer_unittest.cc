@@ -109,7 +109,7 @@ TEST_P(WebmMuxerTest, OnEncodedVideoTwoFrames) {
       .Times(AtLeast(1))
       .WillRepeatedly(
           WithArgs<0>(Invoke(this, &WebmMuxerTest::SaveEncodedDataLen)));
-  webm_muxer_.OnEncodedVideo(video_frame,
+  webm_muxer_.OnEncodedVideo(WebmMuxer::VideoParameters(video_frame),
                              base::WrapUnique(new std::string(encoded_data)),
                              base::TimeTicks::Now(), false /* keyframe */);
 
@@ -199,13 +199,13 @@ TEST_P(WebmMuxerTest, VideoIsStoredWhileWaitingForAudio) {
   const scoped_refptr<VideoFrame> video_frame =
       VideoFrame::CreateBlackFrame(frame_size);
   const std::string encoded_video("thisisanencodedvideopacket");
-  webm_muxer_.OnEncodedVideo(video_frame,
+  webm_muxer_.OnEncodedVideo(WebmMuxer::VideoParameters(video_frame),
                              base::WrapUnique(new std::string(encoded_video)),
                              base::TimeTicks::Now(), true /* keyframe */);
   // A few encoded non key frames.
   const int kNumNonKeyFrames = 2;
   for (int i = 0; i < kNumNonKeyFrames; ++i) {
-    webm_muxer_.OnEncodedVideo(video_frame,
+    webm_muxer_.OnEncodedVideo(WebmMuxer::VideoParameters(video_frame),
                                base::WrapUnique(new std::string(encoded_video)),
                                base::TimeTicks::Now(), false /* keyframe */);
   }

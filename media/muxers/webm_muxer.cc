@@ -12,7 +12,6 @@
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"
 #include "media/filters/opus_constants.h"
-#include "ui/gfx/geometry/size.h"
 
 namespace media {
 
@@ -57,14 +56,12 @@ void WriteOpusHeader(const media::AudioParameters& params, uint8_t* header) {
   }
 }
 
-static double GetFrameRate(const scoped_refptr<VideoFrame>& video_frame) {
+static double GetFrameRate(const WebmMuxer::VideoParameters& params) {
   const double kZeroFrameRate = 0.0;
   const double kDefaultFrameRate = 30.0;
 
-  double frame_rate = kDefaultFrameRate;
-  if (!video_frame->metadata()->GetDouble(VideoFrameMetadata::FRAME_RATE,
-                                          &frame_rate) ||
-      frame_rate <= kZeroFrameRate ||
+  double frame_rate = params.frame_rate;
+  if (frame_rate <= kZeroFrameRate ||
       frame_rate > media::limits::kMaxFramesPerSecond) {
     frame_rate = kDefaultFrameRate;
   }
@@ -88,6 +85,16 @@ static const char* MkvCodeIcForMediaVideoCodecId(VideoCodec video_codec) {
 }
 
 }  // anonymous namespace
+
+WebmMuxer::VideoParameters::VideoParameters(
+    scoped_refptr<media::VideoFrame> frame) {
+  visible_rect_size = frame->visible_rect().size();
+  frame_rate = 0.0;
+  ignore_result(frame->metadata()->GetDouble(VideoFrameMetadata::FRAME_RATE,
+                                             &frame_rate));
+}
+
+WebmMuxer::VideoParameters::~VideoParameters() {}
 
 WebmMuxer::WebmMuxer(VideoCodec codec,
                      bool has_video,
@@ -124,7 +131,7 @@ WebmMuxer::~WebmMuxer() {
   segment_.Finalize();
 }
 
-void WebmMuxer::OnEncodedVideo(const scoped_refptr<VideoFrame>& video_frame,
+void WebmMuxer::OnEncodedVideo(const VideoParameters& params,
                                std::unique_ptr<std::string> encoded_data,
                                base::TimeTicks timestamp,
                                bool is_key_frame) {
@@ -134,8 +141,7 @@ void WebmMuxer::OnEncodedVideo(const scoped_refptr<VideoFrame>& video_frame,
   if (!video_track_index_) {
     // |track_index_|, cannot be zero (!), initialize WebmMuxer in that case.
     // http://www.matroska.org/technical/specs/index.html#Tracks
-    AddVideoTrack(video_frame->visible_rect().size(),
-                  GetFrameRate(video_frame));
+    AddVideoTrack(params.visible_rect_size, GetFrameRate(params));
     if (first_frame_timestamp_video_.is_null())
       first_frame_timestamp_video_ = timestamp;
   }

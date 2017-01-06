@@ -65,7 +65,7 @@ class CONTENT_EXPORT MediaRecorderHandler final
  private:
   friend class MediaRecorderHandlerTest;
 
-  void OnEncodedVideo(const scoped_refptr<media::VideoFrame>& video_frame,
+  void OnEncodedVideo(const media::WebmMuxer::VideoParameters& params,
                       std::unique_ptr<std::string> encoded_data,
                       base::TimeTicks timestamp,
                       bool is_key_frame);

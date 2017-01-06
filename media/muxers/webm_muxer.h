@@ -20,6 +20,7 @@
 #include "media/base/media_export.h"
 #include "media/base/video_codecs.h"
 #include "third_party/libwebm/source/mkvmuxer.hpp"
+#include "ui/gfx/geometry/size.h"
 
 namespace gfx {
 class Size;
@@ -47,6 +48,15 @@ class MEDIA_EXPORT WebmMuxer : public NON_EXPORTED_BASE(mkvmuxer::IMkvWriter) {
   // either any file header or a SingleBlock.
   using WriteDataCB = base::Callback<void(base::StringPiece)>;
 
+  // Container for the parameters that muxer uses that is extracted from
+  // media::VideoFrame.
+  struct MEDIA_EXPORT VideoParameters {
+    VideoParameters(scoped_refptr<media::VideoFrame> frame);
+    ~VideoParameters();
+    gfx::Size visible_rect_size;
+    double frame_rate;
+  };
+
   // |codec| can be VP8 or VP9 and should coincide with whatever is sent in
   // OnEncodedVideo().
   WebmMuxer(VideoCodec codec,
@@ -57,7 +67,7 @@ class MEDIA_EXPORT WebmMuxer : public NON_EXPORTED_BASE(mkvmuxer::IMkvWriter) {
 
   // Functions to add video and audio frames with |encoded_data.data()|
   // to WebM Segment.
-  void OnEncodedVideo(const scoped_refptr<VideoFrame>& video_frame,
+  void OnEncodedVideo(const VideoParameters& params,
                       std::unique_ptr<std::string> encoded_data,
                       base::TimeTicks timestamp,
                       bool is_key_frame);
