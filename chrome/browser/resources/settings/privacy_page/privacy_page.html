@@ -161,7 +161,12 @@
             <div>$i18n{manageCertificates}</div>
             <div class="secondary">$i18n{manageCertificatesDescription}</div>
           </div>
-          <button class="subpage-arrow" is="paper-icon-button-light"></button>
+<if expr="use_nss_certs">
+          <button is="paper-icon-button-light" class="subpage-arrow"></button>
+</if>
+<if expr="not use_nss_certs">
+          <button is="paper-icon-button-light" class="icon-external"></button>
+</if>
         </div>
 </if>
         <div id="site-settings-subpage-trigger"
