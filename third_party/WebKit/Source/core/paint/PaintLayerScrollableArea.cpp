@@ -1736,6 +1736,11 @@ bool PaintLayerScrollableArea::computeNeedsCompositedScrolling(
         CompositorMutableProperty::kScrollLeft)))
     return true;
 
+  if (layer->size().isEmpty())
+    return false;
+
+  bool needsCompositedScrolling = true;
+
   // TODO(flackr): Allow integer transforms as long as all of the ancestor
   // transforms are also integer.
   bool backgroundSupportsLCDText =
@@ -1762,17 +1767,25 @@ bool PaintLayerScrollableArea::computeNeedsCompositedScrolling(
       addStyleRelatedMainThreadScrollingReasons(
           MainThreadScrollingReason::kBackgroundNotOpaqueInRect);
     }
-    return false;
+    needsCompositedScrolling = false;
   }
 
   // TODO(schenney) Tests fail if we do not also exclude
   // layer->layoutObject()->style()->hasBorderDecoration() (missing background
   // behind dashed borders). Resolve this case, or not, and update this check
   // with the results.
-  return !(layer->size().isEmpty() || layer->hasDescendantWithClipPath() ||
-           layer->hasAncestorWithClipPath() ||
-           layer->layoutObject()->style()->hasBorderRadius() ||
-           layer->layoutObject()->hasClip());
+  if (layer->layoutObject()->style()->hasBorderRadius()) {
+    addStyleRelatedMainThreadScrollingReasons(
+        MainThreadScrollingReason::kHasBorderRadius);
+    needsCompositedScrolling = false;
+  }
+  if (layer->layoutObject()->hasClip() || layer->hasDescendantWithClipPath() ||
+      layer->hasAncestorWithClipPath()) {
+    addStyleRelatedMainThreadScrollingReasons(
+        MainThreadScrollingReason::kHasClipRelatedProperty);
+    needsCompositedScrolling = false;
+  }
+  return needsCompositedScrolling;
 }
 
 void PaintLayerScrollableArea::addStyleRelatedMainThreadScrollingReasons(

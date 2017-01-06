@@ -1034,6 +1034,11 @@ TEST_F(ScrollingCoordinatorTest,
 
 class StyleRelatedMainThreadScrollingReasonTest
     : public ScrollingCoordinatorTest {
+  static const uint32_t m_LCDTextRelatedReasons =
+      MainThreadScrollingReason::kHasOpacity |
+      MainThreadScrollingReason::kHasTransform |
+      MainThreadScrollingReason::kBackgroundNotOpaqueInRect;
+
  protected:
   StyleRelatedMainThreadScrollingReasonTest() {
     registerMockedHttpURLLoad("two_scrollable_area.html");
@@ -1078,10 +1083,12 @@ class StyleRelatedMainThreadScrollingReasonTest
 
     ASSERT_TRUE(frameView->mainThreadScrollingReasons() & reason);
 
-    webViewImpl()->settings()->setPreferCompositingToLCDTextEnabled(true);
-    forceFullCompositingUpdate();
-
-    ASSERT_FALSE(frameView->mainThreadScrollingReasons());
+    if ((reason & m_LCDTextRelatedReasons) &&
+        !(reason & ~m_LCDTextRelatedReasons)) {
+      webViewImpl()->settings()->setPreferCompositingToLCDTextEnabled(true);
+      forceFullCompositingUpdate();
+      ASSERT_FALSE(frameView->mainThreadScrollingReasons());
+    }
   }
 };
 
@@ -1096,6 +1103,55 @@ TEST_F(StyleRelatedMainThreadScrollingReasonTest, TransformTest) {
 TEST_F(StyleRelatedMainThreadScrollingReasonTest, BackgroundNotOpaqueTest) {
   testStyle("background-not-opaque",
             MainThreadScrollingReason::kBackgroundNotOpaqueInRect);
+}
+
+TEST_F(StyleRelatedMainThreadScrollingReasonTest, BorderRadiusTest) {
+  testStyle("border-radius", MainThreadScrollingReason::kHasBorderRadius);
+}
+
+TEST_F(StyleRelatedMainThreadScrollingReasonTest, ClipTest) {
+  testStyle("clip", MainThreadScrollingReason::kHasClipRelatedProperty);
+}
+
+TEST_F(StyleRelatedMainThreadScrollingReasonTest, ClipPathTest) {
+  uint32_t reason = MainThreadScrollingReason::kHasClipRelatedProperty;
+  webViewImpl()->settings()->setPreferCompositingToLCDTextEnabled(false);
+  Document* document = frame()->document();
+  // Test ancestor with ClipPath
+  Element* element = document->body();
+  DCHECK(element);
+  element->setAttribute(HTMLNames::styleAttr,
+                        "clip-path:circle(115px at 20px 20px);");
+  forceFullCompositingUpdate();
+
+  FrameView* frameView = frame()->view();
+  ASSERT_TRUE(frameView);
+  ASSERT_TRUE(frameView->mainThreadScrollingReasons() & reason);
+
+  // Remove clip path from ancestor.
+  element->removeAttribute(HTMLNames::styleAttr);
+  forceFullCompositingUpdate();
+
+  ASSERT_FALSE(frameView->mainThreadScrollingReasons() & reason);
+
+  // Test descendant with ClipPath
+  element = document->getElementById("content1");
+  DCHECK(element);
+  element->setAttribute(HTMLNames::styleAttr,
+                        "clip-path:circle(115px at 20px 20px);");
+  forceFullCompositingUpdate();
+  ASSERT_TRUE(frameView->mainThreadScrollingReasons() & reason);
+
+  // Remove clip path from descendant.
+  element->removeAttribute(HTMLNames::styleAttr);
+  forceFullCompositingUpdate();
+  ASSERT_FALSE(frameView->mainThreadScrollingReasons() & reason);
+}
+
+TEST_F(StyleRelatedMainThreadScrollingReasonTest, LCDTextEnabledTest) {
+  testStyle("transparent border-radius",
+            MainThreadScrollingReason::kHasOpacity |
+                MainThreadScrollingReason::kHasBorderRadius);
 }
 
 }  // namespace blink

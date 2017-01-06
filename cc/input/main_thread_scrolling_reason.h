@@ -31,9 +31,13 @@ struct MainThreadScrollingReason {
     // animation running on the main thread or on the compositor thread.
     kHandlingScrollFromMainThread = 1 << 13,
     kCustomScrollbarScrolling = 1 << 15,
+
+    // Style Related scrolling on main reasons
     kHasOpacity = 1 << 16,
     kHasTransform = 1 << 17,
     kBackgroundNotOpaqueInRect = 1 << 18,
+    kHasBorderRadius = 1 << 19,
+    kHasClipRelatedProperty = 1 << 20,
 
     // Transient scrolling reasons. These are computed for each scroll begin.
     kNonFastScrollableRegion = 1 << 5,
@@ -44,8 +48,12 @@ struct MainThreadScrollingReason {
     kNonInvertibleTransform = 1 << 11,
     kPageBasedScrolling = 1 << 12,
 
-    // The number of flags in this struct (excluding itself).
-    kMainThreadScrollingReasonCount = 20,
+    // TODO(yigu): the following variable is confusing. It's not the count of
+    // values, but the maximum shift + 2 because the loop in
+    // InputHandlerProxy::RecordMainThreadScrollingReasons is "wrong".
+    // It should be the max number of flags in this struct (excluding itself).
+    // Will fix it in a followup patch.
+    kMainThreadScrollingReasonCount = 22,
   };
 
   // Returns true if the given MainThreadScrollingReason can be set by the main
@@ -56,7 +64,7 @@ struct MainThreadScrollingReason {
         kHasNonLayerViewportConstrainedObjects | kThreadedScrollingDisabled |
         kScrollbarScrolling | kPageOverlay | kHandlingScrollFromMainThread |
         kCustomScrollbarScrolling | kHasOpacity | kHasTransform |
-        kBackgroundNotOpaqueInRect;
+        kBackgroundNotOpaqueInRect | kHasBorderRadius | kHasClipRelatedProperty;
     return (reasons & reasons_set_by_main_thread) == reasons;
   }
 
@@ -107,6 +115,10 @@ struct MainThreadScrollingReason {
       tracedValue->AppendString("Has transform");
     if (reasons & MainThreadScrollingReason::kBackgroundNotOpaqueInRect)
       tracedValue->AppendString("Background is not opaque in rect");
+    if (reasons & MainThreadScrollingReason::kHasBorderRadius)
+      tracedValue->AppendString("Has border radius");
+    if (reasons & MainThreadScrollingReason::kHasClipRelatedProperty)
+      tracedValue->AppendString("Has clip related property");
 
     // Transient scrolling reasons.
     if (reasons & MainThreadScrollingReason::kNonFastScrollableRegion)
