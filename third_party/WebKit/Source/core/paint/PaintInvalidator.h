@@ -82,17 +82,14 @@ struct PaintInvalidatorContext {
   // LayoutObject::adjustVisualRectForCompositedScrolling().
   LayoutPoint oldLocation;
   LayoutPoint newLocation;
-
-  // Stores the old and new offsets to paint this object, relative to the
-  // containing transform node. They are for SPv2 only.
-  LayoutPoint oldPaintOffset;
-  LayoutPoint newPaintOffset;
 };
 
 class PaintInvalidator {
  public:
   void invalidatePaintIfNeeded(FrameView&, PaintInvalidatorContext&);
-  void invalidatePaintIfNeeded(const LayoutObject&, PaintInvalidatorContext&);
+  void invalidatePaintIfNeeded(const LayoutObject&,
+                               const LayoutPoint& oldPaintOffset,
+                               PaintInvalidatorContext&);
 
   // Process objects needing paint invalidation on the next frame.
   // See the definition of PaintInvalidationDelayedFull for more details.

@@ -1824,11 +1824,11 @@ Bug(none) transforms/transformed-document-element.html [ Failure ]
 Bug(none) transforms/transformed-focused-text-input.html [ Failure ]
 Bug(none) transforms/transforms-with-opacity.html [ Failure ]
 
-crbug.com/644358 compositing/gestures/gesture-tapHighlight-2-iframe-scrolled-outer-late-composite.html [ Crash ]
+crbug.com/644358 compositing/gestures/gesture-tapHighlight-2-iframe-scrolled-outer-late-composite.html [ Failure ]
 crbug.com/644358 compositing/iframes/connect-compositing-iframe-delayed.html [ Failure ]
 crbug.com/644358 compositing/iframes/connect-compositing-iframe.html [ Failure ]
 crbug.com/644358 compositing/iframes/enter-compositing-iframe.html [ Failure ]
-crbug.com/644358 compositing/squashing/squashed-layer-loses-graphicslayer.html [ Crash ]
+crbug.com/644358 compositing/squashing/squashed-layer-loses-graphicslayer.html [ Failure ]
 
 crbug.com/644358 compositing/overflow/overflow-positioning.html [ Failure ]
 crbug.com/644358 compositing/sibling-positioning.html [ Failure ]

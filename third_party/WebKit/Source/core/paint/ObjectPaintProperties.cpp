@@ -6,25 +6,23 @@
 
 namespace blink {
 
-ObjectPaintProperties::PropertyTreeStateWithOffset
-ObjectPaintProperties::contentsProperties() const {
-  ObjectPaintProperties::PropertyTreeStateWithOffset propertiesWithOffset =
-      *localBorderBoxProperties();
+PropertyTreeState ObjectPaintProperties::contentsProperties() const {
+  PropertyTreeState properties = *localBorderBoxProperties();
 
   if (scrollTranslation())
-    propertiesWithOffset.propertyTreeState.setTransform(scrollTranslation());
+    properties.setTransform(scrollTranslation());
 
   if (scroll())
-    propertiesWithOffset.propertyTreeState.setScroll(scroll());
+    properties.setScroll(scroll());
 
   if (overflowClip())
-    propertiesWithOffset.propertyTreeState.setClip(overflowClip());
+    properties.setClip(overflowClip());
   else if (cssClip())
-    propertiesWithOffset.propertyTreeState.setClip(cssClip());
+    properties.setClip(cssClip());
 
   // TODO(chrishtr): cssClipFixedPosition needs to be handled somehow.
 
-  return propertiesWithOffset;
+  return properties;
 }
 
 }  // namespace blink

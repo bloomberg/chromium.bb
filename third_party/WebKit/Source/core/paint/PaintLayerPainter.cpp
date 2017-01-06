@@ -267,9 +267,8 @@ PaintResult PaintLayerPainter::paintLayerContents(
            objectPaintProperties->localBorderBoxProperties());
     PaintChunkProperties properties(
         context.getPaintController().currentPaintChunkProperties());
-    auto& localBorderBoxProperties =
+    properties.propertyTreeState =
         *objectPaintProperties->localBorderBoxProperties();
-    properties.propertyTreeState = localBorderBoxProperties.propertyTreeState;
     properties.backfaceHidden =
         m_paintLayer.layoutObject()->hasHiddenBackface();
     scopedPaintChunkProperties.emplace(context.getPaintController(),
@@ -504,9 +503,8 @@ PaintResult PaintLayerPainter::paintLayerContents(
              objectPaintProperties->localBorderBoxProperties());
       PaintChunkProperties properties(
           context.getPaintController().currentPaintChunkProperties());
-      auto& localBorderBoxProperties =
+      properties.propertyTreeState =
           *objectPaintProperties->localBorderBoxProperties();
-      properties.propertyTreeState = localBorderBoxProperties.propertyTreeState;
       properties.backfaceHidden =
           m_paintLayer.layoutObject()->hasHiddenBackface();
       contentScopedPaintChunkProperties.emplace(context.getPaintController(),
@@ -966,8 +964,7 @@ void PaintLayerPainter::paintFragmentWithPhase(
         m_paintLayer.layoutObject()->paintProperties();
     DCHECK(objectPaintProperties &&
            objectPaintProperties->localBorderBoxProperties());
-    paintOffset +=
-        toSize(objectPaintProperties->localBorderBoxProperties()->paintOffset);
+    paintOffset += m_paintLayer.layoutObject()->paintOffset();
     newCullRect.move(paintingInfo.scrollOffsetAccumulation);
   } else {
     paintOffset += toSize(fragment.layerBounds.location());

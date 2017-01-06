@@ -110,7 +110,8 @@ class FindObjectPropertiesNeedingUpdateScope {
       PaintPropertyTreeBuilderContext& context)
       : m_object(object),
         m_neededPaintPropertyUpdate(object.needsPaintPropertyUpdate()),
-        m_neededForcedSubtreeUpdate(context.forceSubtreeUpdate) {
+        m_neededForcedSubtreeUpdate(context.forceSubtreeUpdate),
+        m_originalPaintOffset(object.paintOffset()) {
     // No need to check if an update was already needed.
     if (m_neededPaintPropertyUpdate || m_neededForcedSubtreeUpdate)
       return;
@@ -134,6 +135,8 @@ class FindObjectPropertiesNeedingUpdateScope {
     //    LayoutObject::setNeedsPaintPropertyUpdate().
     // 2) The PrePaintTreeWalk should have had a forced subtree update (see:
     //    PaintPropertyTreeBuilderContext::forceSubtreeUpdate).
+    DCHECK_OBJECT_PROPERTY_EQ(m_object, &m_originalPaintOffset,
+                              &m_object.paintOffset());
     const auto* objectProperties = m_object.paintProperties();
     if (m_originalProperties && objectProperties) {
       DCHECK_OBJECT_PROPERTY_EQ(m_object,
@@ -172,20 +175,14 @@ class FindObjectPropertiesNeedingUpdateScope {
       const auto* objectBorderBox =
           objectProperties->localBorderBoxProperties();
       if (originalBorderBox && objectBorderBox) {
-        DCHECK_OBJECT_PROPERTY_EQ(m_object, &originalBorderBox->paintOffset,
-                                  &objectBorderBox->paintOffset);
-        DCHECK_OBJECT_PROPERTY_EQ(
-            m_object, originalBorderBox->propertyTreeState.transform(),
-            objectBorderBox->propertyTreeState.transform());
-        DCHECK_OBJECT_PROPERTY_EQ(m_object,
-                                  originalBorderBox->propertyTreeState.clip(),
-                                  objectBorderBox->propertyTreeState.clip());
-        DCHECK_OBJECT_PROPERTY_EQ(m_object,
-                                  originalBorderBox->propertyTreeState.effect(),
-                                  objectBorderBox->propertyTreeState.effect());
-        DCHECK_OBJECT_PROPERTY_EQ(m_object,
-                                  originalBorderBox->propertyTreeState.scroll(),
-                                  objectBorderBox->propertyTreeState.scroll());
+        DCHECK_OBJECT_PROPERTY_EQ(m_object, originalBorderBox->transform(),
+                                  objectBorderBox->transform());
+        DCHECK_OBJECT_PROPERTY_EQ(m_object, originalBorderBox->clip(),
+                                  objectBorderBox->clip());
+        DCHECK_OBJECT_PROPERTY_EQ(m_object, originalBorderBox->effect(),
+                                  objectBorderBox->effect());
+        DCHECK_OBJECT_PROPERTY_EQ(m_object, originalBorderBox->scroll(),
+                                  objectBorderBox->scroll());
       } else {
         DCHECK_EQ(!!originalBorderBox, !!objectBorderBox)
             << " Object: " << m_object.debugName();
@@ -202,6 +199,7 @@ class FindObjectPropertiesNeedingUpdateScope {
   const LayoutObject& m_object;
   bool m_neededPaintPropertyUpdate;
   bool m_neededForcedSubtreeUpdate;
+  LayoutPoint m_originalPaintOffset;
   std::unique_ptr<const ObjectPaintProperties> m_originalProperties;
 };
 

@@ -340,19 +340,19 @@ bool PaintLayer::sticksToViewport() const {
                                      ->view()
                                      ->paintProperties()
                                      ->localBorderBoxProperties()
-                                     ->propertyTreeState.scroll();
+                                     ->scroll();
     } else {
       ancestorTargetScrollNode = layoutObject()
                                      ->view()
                                      ->paintProperties()
                                      ->contentsProperties()
-                                     .propertyTreeState.scroll();
+                                     .scroll();
     }
 
     return layoutObject()
                ->paintProperties()
                ->localBorderBoxProperties()
-               ->propertyTreeState.scroll() == ancestorTargetScrollNode;
+               ->scroll() == ancestorTargetScrollNode;
   }
 
   return (layoutObject()->style()->position() == FixedPosition &&

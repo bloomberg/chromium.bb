@@ -707,10 +707,10 @@ void ObjectPainter::doCheckPaintOffset(const PaintInfo& paintInfo,
   LayoutPoint adjustedPaintOffset = paintOffset;
   if (m_layoutObject.isBox())
     adjustedPaintOffset += toLayoutBox(m_layoutObject).location();
-  DCHECK(m_layoutObject.previousPaintOffset() == adjustedPaintOffset)
+  DCHECK(m_layoutObject.paintOffset() == adjustedPaintOffset)
       << " Paint offset mismatch: " << m_layoutObject.debugName()
       << " from PaintPropertyTreeBuilder: "
-      << m_layoutObject.previousPaintOffset().toString()
+      << m_layoutObject.paintOffset().toString()
       << " from painter: " << adjustedPaintOffset.toString();
 }
 #endif

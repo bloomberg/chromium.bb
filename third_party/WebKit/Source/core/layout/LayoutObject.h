@@ -1581,9 +1581,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Called when the previous visual rect(s) is no longer valid.
   virtual void clearPreviousVisualRects();
 
-  const LayoutPoint& previousPaintOffset() const {
-    return m_previousPaintOffset;
-  }
+  const LayoutPoint& paintOffset() const { return m_paintOffset; }
 
   PaintInvalidationReason fullPaintInvalidationReason() const {
     return m_bitfields.fullPaintInvalidationReason();
@@ -1682,12 +1680,16 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       m_layoutObject.ensureIsReadyForPaintInvalidation();
     }
 
+    // The following setters store the current values as calculated during the
+    // pre-paint tree walk. TODO(wangxianzhu): Add check of lifecycle states.
     void setPreviousVisualRect(const LayoutRect& r) {
       m_layoutObject.setPreviousVisualRect(r);
     }
-    void setPreviousPaintOffset(const LayoutPoint& p) {
+    void setPaintOffset(const LayoutPoint& p) {
       DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
-      m_layoutObject.m_previousPaintOffset = p;
+      DCHECK_EQ(m_layoutObject.document().lifecycle().state(),
+                DocumentLifecycle::InPrePaint);
+      m_layoutObject.m_paintOffset = p;
     }
     void setHasPreviousLocationInBacking(bool b) {
       m_layoutObject.m_bitfields.setHasPreviousLocationInBacking(b);
@@ -1701,6 +1703,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     void setPreviousBackgroundObscured(bool b) {
       m_layoutObject.setPreviousBackgroundObscured(b);
     }
+
     void clearPreviousVisualRects() {
       m_layoutObject.clearPreviousVisualRects();
     }
@@ -2451,7 +2454,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // offset that will be used to paint the object on SPv2. It's used to detect
   // paint offset change for paint invalidation on SPv2, and partial paint
   // property tree update for SlimmingPaintInvalidation on SPv1 and SPv2.
-  LayoutPoint m_previousPaintOffset;
+  LayoutPoint m_paintOffset;
 
   // For SPv2 only. The ObjectPaintProperties structure holds references to the
   // property tree nodes that are created by the layout object for painting.

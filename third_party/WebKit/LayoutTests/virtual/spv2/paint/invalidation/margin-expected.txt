@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='target'",
           "rect": [20, 20, 100, 100],
-          "reason": "bounds change"
+          "reason": "location change"
         },
         {
           "object": "",
@@ -22,7 +22,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='target'",
-      "reason": "bounds change"
+      "reason": "location change"
     }
   ]
 }

@@ -74,7 +74,7 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(
     // For SVG, the input rect is in local SVG coordinates in which paint
     // offset doesn't apply.
     if (!object.isSVGChild())
-      rect.moveBy(FloatPoint(context.treeBuilderContext.current.paintOffset));
+      rect.moveBy(FloatPoint(object.paintOffset()));
     // Use enclosingIntRect to ensure the final visual rect will cover the
     // rect in source coordinates no matter if the painting will use pixel
     // snapping.
@@ -92,7 +92,7 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(
     // For non-root SVG, the input rect is in local SVG coordinates in which
     // paint offset doesn't apply.
     if (!object.isSVGChild()) {
-      rect.moveBy(FloatPoint(context.treeBuilderContext.current.paintOffset));
+      rect.moveBy(FloatPoint(object.paintOffset()));
       // Use enclosingIntRect to ensure the final visual rect will cover the
       // rect in source coordinates no matter if the painting will use pixel
       // snapping.
@@ -111,12 +111,11 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(
 
     bool success = false;
     result = LayoutRect(geometryMapper.mapToVisualRectInDestinationSpace(
-        rect, currentTreeState, containerContentsProperties.propertyTreeState,
-        success));
+        rect, currentTreeState, containerContentsProperties, success));
     DCHECK(success);
 
     // Convert the result to the container's contents space.
-    result.moveBy(-containerContentsProperties.paintOffset);
+    result.moveBy(-context.paintInvalidationContainer->paintOffset());
   }
 
   object.adjustVisualRectForRasterEffects(result);
@@ -165,7 +164,7 @@ LayoutPoint PaintInvalidator::computeLocationInBacking(
 
   FloatPoint point;
   if (object != context.paintInvalidationContainer) {
-    point.moveBy(FloatPoint(context.treeBuilderContext.current.paintOffset));
+    point.moveBy(FloatPoint(object.paintOffset()));
 
     PropertyTreeState currentTreeState(
         context.treeBuilderContext.current.transform,
@@ -179,14 +178,14 @@ LayoutPoint PaintInvalidator::computeLocationInBacking(
 
     bool success = false;
     point = m_geometryMapper
-                .mapRectToDestinationSpace(
-                    FloatRect(point, FloatSize()), currentTreeState,
-                    containerContentsProperties.propertyTreeState, success)
+                .mapRectToDestinationSpace(FloatRect(point, FloatSize()),
+                                           currentTreeState,
+                                           containerContentsProperties, success)
                 .location();
     DCHECK(success);
 
     // Convert the result to the container's contents space.
-    point.moveBy(-containerContentsProperties.paintOffset);
+    point.moveBy(-context.paintInvalidationContainer->paintOffset());
   }
 
   PaintLayer::mapPointInPaintInvalidationContainerToBacking(
@@ -347,8 +346,6 @@ void PaintInvalidator::updateContext(const LayoutObject& object,
   context.oldLocation = objectPaintInvalidator.previousLocationInBacking();
   context.newVisualRect = computeVisualRectInBacking(object, context);
   context.newLocation = computeLocationInBacking(object, context);
-  context.oldPaintOffset = object.previousPaintOffset();
-  context.newPaintOffset = context.treeBuilderContext.current.paintOffset;
 
   IntSize adjustment = object.scrollAdjustmentForPaintInvalidation(
       *context.paintInvalidationContainer);
@@ -357,7 +354,6 @@ void PaintInvalidator::updateContext(const LayoutObject& object,
 
   object.getMutableForPainting().setPreviousVisualRect(context.newVisualRect);
   objectPaintInvalidator.setPreviousLocationInBacking(context.newLocation);
-  object.getMutableForPainting().setPreviousPaintOffset(context.newPaintOffset);
 }
 
 void PaintInvalidator::invalidatePaintIfNeeded(
@@ -382,8 +378,17 @@ void PaintInvalidator::invalidatePaintIfNeeded(
 
 void PaintInvalidator::invalidatePaintIfNeeded(
     const LayoutObject& object,
+    const LayoutPoint& oldPaintOffset,
     PaintInvalidatorContext& context) {
   object.getMutableForPainting().ensureIsReadyForPaintInvalidation();
+
+  DCHECK(context.treeBuilderContext.current.paintOffset ==
+         object.paintOffset());
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
+      object.paintOffset() != oldPaintOffset) {
+    object.getMutableForPainting().setShouldDoFullPaintInvalidation(
+        PaintInvalidationLocationChange);
+  }
 
   if (!context.forcedSubtreeInvalidationFlags &&
       !object
@@ -429,9 +434,7 @@ void PaintInvalidator::invalidatePaintIfNeeded(
       break;
   }
 
-  if (context.oldLocation != context.newLocation ||
-      (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
-       context.oldPaintOffset != context.newPaintOffset)) {
+  if (context.oldLocation != context.newLocation) {
     context.forcedSubtreeInvalidationFlags |=
         PaintInvalidatorContext::ForcedSubtreeInvalidationChecking;
   }

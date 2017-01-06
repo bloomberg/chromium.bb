@@ -577,8 +577,8 @@ void PaintPropertyTreeBuilder::updateLocalBorderBoxContext(
   } else {
     auto& properties = object.getMutableForPainting().ensurePaintProperties();
     properties.updateLocalBorderBoxProperties(
-        context.current.paintOffset, context.current.transform,
-        context.current.clip, context.currentEffect, context.current.scroll);
+        context.current.transform, context.current.clip, context.currentEffect,
+        context.current.scroll);
   }
 }
 
@@ -883,14 +883,14 @@ static void overrideContainingBlockContextFromRealContainingBlock(
       containingBlock.paintProperties()->localBorderBoxProperties();
   DCHECK(properties);
 
-  context.transform = properties->propertyTreeState.transform();
-  context.paintOffset = properties->paintOffset;
+  context.transform = properties->transform();
+  context.paintOffset = containingBlock.paintOffset();
   context.shouldFlattenInheritedTransform =
       context.transform && context.transform->flattensInheritedTransform();
   context.renderingContextId =
       context.transform ? context.transform->renderingContextId() : 0;
-  context.clip = properties->propertyTreeState.clip();
-  context.scroll = properties->propertyTreeState.scroll();
+  context.clip = properties->clip();
+  context.scroll = properties->scroll();
 }
 
 void PaintPropertyTreeBuilder::updateContextForBoxPosition(
@@ -980,37 +980,39 @@ void PaintPropertyTreeBuilder::updateContextForBoxPosition(
 
   // Many paint properties depend on paint offset so we force an update of
   // the entire subtree on paint offset changes.
-  if (object.previousPaintOffset() != context.current.paintOffset)
+  if (object.paintOffset() != context.current.paintOffset)
     context.forceSubtreeUpdate = true;
 }
 
 void PaintPropertyTreeBuilder::updatePropertiesForSelf(
     const LayoutObject& object,
     PaintPropertyTreeBuilderContext& context) {
-  if (!object.isBoxModelObject() && !object.isSVG())
-    return;
-
 #if DCHECK_IS_ON()
   FindObjectPropertiesNeedingUpdateScope checkNeedsUpdateScope(object, context);
 #endif
 
-  updatePaintOffsetTranslation(object, context);
-  updateTransform(object, context);
-  updateEffect(object, context);
-  updateCssClip(object, context);
-  updateLocalBorderBoxContext(object, context);
-  updateScrollbarPaintOffset(object, context);
+  if (object.isBoxModelObject() || object.isSVG()) {
+    updatePaintOffsetTranslation(object, context);
+    updateTransform(object, context);
+    updateEffect(object, context);
+    updateCssClip(object, context);
+    updateLocalBorderBoxContext(object, context);
+    updateScrollbarPaintOffset(object, context);
+  }
+
+  if (object.needsPaintPropertyUpdate() || context.forceSubtreeUpdate)
+    object.getMutableForPainting().setPaintOffset(context.current.paintOffset);
 }
 
 void PaintPropertyTreeBuilder::updatePropertiesForChildren(
     const LayoutObject& object,
     PaintPropertyTreeBuilderContext& context) {
-  if (!object.isBoxModelObject() && !object.isSVG())
-    return;
-
 #if DCHECK_IS_ON()
   FindObjectPropertiesNeedingUpdateScope checkNeedsUpdateScope(object, context);
 #endif
+
+  if (!object.isBoxModelObject() && !object.isSVG())
+    return;
 
   updateOverflowClip(object, context);
   updatePerspective(object, context);

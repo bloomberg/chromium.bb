@@ -28,9 +28,9 @@ namespace blink {
 //
 // There are two groups of information stored on ObjectPaintProperties:
 // 1. The set of property nodes created locally and owned by this LayoutObject.
-// 2. The set of property nodes (inherited, or created locally) and paint offset
-//    that can be used to paint the border box of this LayoutObject (see:
-//    localBorderBoxProperties).
+// 2. The set of property nodes (inherited, or created locally) that can be used
+//    along with LayoutObject::paintOffset to paint the border box of this
+//    LayoutObject (see: localBorderBoxProperties).
 //
 // [update & clear implementation note] This class has update[property](...) and
 // clear[property]() helper functions for efficiently creating and updating
@@ -116,17 +116,6 @@ class CORE_EXPORT ObjectPaintProperties {
     return m_overflowClip.get();
   }
 
-  // The complete set of property tree nodes (inherited, or created locally) and
-  // paint offset that can be used to paint. |paintOffset| is relative to the
-  // propertyTreeState's transform space.
-  // See: localBorderBoxProperties and contentsProperties.
-  struct PropertyTreeStateWithOffset {
-    PropertyTreeStateWithOffset(LayoutPoint offset, PropertyTreeState treeState)
-        : paintOffset(offset), propertyTreeState(treeState) {}
-    LayoutPoint paintOffset;
-    PropertyTreeState propertyTreeState;
-  };
-
   // This is a complete set of property nodes and paint offset that should be
   // used as a starting point to paint this layout object. This is cached
   // because some properties inherit from the containing block chain instead of
@@ -136,7 +125,7 @@ class CORE_EXPORT ObjectPaintProperties {
   // would be an effect node with opacity of 0.3 which was created by the div
   // itself. Note that propertyTreeState.transform() would not be null but would
   // instead point to the transform space setup by div's ancestors.
-  const PropertyTreeStateWithOffset* localBorderBoxProperties() const {
+  const PropertyTreeState* localBorderBoxProperties() const {
     return m_localBorderBoxProperties.get();
   }
 
@@ -145,24 +134,21 @@ class CORE_EXPORT ObjectPaintProperties {
   // localBorderBoxProperties but includes properties (e.g., overflow clip,
   // scroll translation) that apply to contents. This is suitable for paint
   // invalidation.
-  ObjectPaintProperties::PropertyTreeStateWithOffset contentsProperties() const;
+  PropertyTreeState contentsProperties() const;
 
   void updateLocalBorderBoxProperties(
-      LayoutPoint& paintOffset,
       const TransformPaintPropertyNode* transform,
       const ClipPaintPropertyNode* clip,
       const EffectPaintPropertyNode* effect,
       const ScrollPaintPropertyNode* scroll) {
     if (m_localBorderBoxProperties) {
-      m_localBorderBoxProperties->paintOffset = paintOffset;
-      m_localBorderBoxProperties->propertyTreeState.setTransform(transform);
-      m_localBorderBoxProperties->propertyTreeState.setClip(clip);
-      m_localBorderBoxProperties->propertyTreeState.setEffect(effect);
-      m_localBorderBoxProperties->propertyTreeState.setScroll(scroll);
+      m_localBorderBoxProperties->setTransform(transform);
+      m_localBorderBoxProperties->setClip(clip);
+      m_localBorderBoxProperties->setEffect(effect);
+      m_localBorderBoxProperties->setScroll(scroll);
     } else {
-      m_localBorderBoxProperties = WTF::wrapUnique(
-          new ObjectPaintProperties::PropertyTreeStateWithOffset(
-              paintOffset, PropertyTreeState(transform, clip, effect, scroll)));
+      m_localBorderBoxProperties = WTF::wrapUnique(new PropertyTreeState(
+          PropertyTreeState(transform, clip, effect, scroll)));
     }
   }
   void clearLocalBorderBoxProperties() { m_localBorderBoxProperties = nullptr; }
@@ -276,12 +262,8 @@ class CORE_EXPORT ObjectPaintProperties {
     if (m_scroll)
       cloned->m_scroll = m_scroll->clone();
     if (m_localBorderBoxProperties) {
-      auto& state = m_localBorderBoxProperties->propertyTreeState;
       cloned->m_localBorderBoxProperties =
-          WTF::wrapUnique(new PropertyTreeStateWithOffset(
-              m_localBorderBoxProperties->paintOffset,
-              PropertyTreeState(state.transform(), state.clip(), state.effect(),
-                                state.scroll())));
+          WTF::wrapUnique(new PropertyTreeState(*m_localBorderBoxProperties));
     }
     return cloned;
   }
@@ -329,7 +311,7 @@ class CORE_EXPORT ObjectPaintProperties {
   RefPtr<TransformPaintPropertyNode> m_scrollbarPaintOffset;
   RefPtr<ScrollPaintPropertyNode> m_scroll;
 
-  std::unique_ptr<PropertyTreeStateWithOffset> m_localBorderBoxProperties;
+  std::unique_ptr<PropertyTreeState> m_localBorderBoxProperties;
 };
 
 }  // namespace blink
