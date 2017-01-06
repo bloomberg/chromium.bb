@@ -190,7 +190,7 @@ Polymer({
           .forEach(function(row) {
             this.focusGrid_.addRow(row);
           }.bind(this));
-      this.focusGrid_.ensureRowActive();
+      this.focusGrid_.ensureRowActive(1);
     });
   },
 

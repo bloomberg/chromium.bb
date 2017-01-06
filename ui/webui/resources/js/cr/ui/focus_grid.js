@@ -146,8 +146,11 @@ cr.define('cr.ui', function() {
     /**
      * Makes sure that at least one row is active. Should be called once, after
      * adding all rows to FocusGrid.
+     * @param {number=} preferredRow The row to select if no other row is
+     *     active. Selects the first item if this is beyond the range of the
+     *     grid.
      */
-    ensureRowActive: function() {
+    ensureRowActive: function(preferredRow) {
       if (this.rows.length == 0)
         return;
 
@@ -156,7 +159,7 @@ cr.define('cr.ui', function() {
           return;
       }
 
-      this.rows[0].makeActive(true);
+      (this.rows[preferredRow || 0] || this.rows[0]).makeActive(true);
     },
   };
 
