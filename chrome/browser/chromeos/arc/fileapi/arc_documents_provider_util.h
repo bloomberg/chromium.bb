@@ -11,6 +11,8 @@
 
 #include "base/files/file_path.h"
 
+class GURL;
+
 namespace storage {
 class FileSystemURL;
 }  // namespace storage
@@ -33,6 +35,10 @@ bool ParseDocumentsProviderUrl(const storage::FileSystemURL& url,
                                std::string* authority,
                                std::string* root_document_id,
                                base::FilePath* path);
+
+// C++ implementation of DocumentsContract.buildDocumentUri() in Android.
+GURL BuildDocumentUrl(const std::string& authority,
+                      const std::string& document_id);
 
 }  // namespace arc
 

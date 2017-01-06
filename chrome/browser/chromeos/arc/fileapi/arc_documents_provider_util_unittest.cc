@@ -134,6 +134,11 @@ TEST(ArcDocumentsProviderUtilTest, ParseDocumentsProviderUrlUtf8) {
   EXPECT_EQ(FILE_PATH_LITERAL("home/みけねこ.jpg"), path.value());
 }
 
+TEST(ArcDocumentsProviderUtilTest, BuildDocumentUrl) {
+  EXPECT_EQ("content://Cat%20Provider/document/C%2B%2B",
+            BuildDocumentUrl("Cat Provider", "C++").spec());
+}
+
 }  // namespace
 
 }  // namespace arc

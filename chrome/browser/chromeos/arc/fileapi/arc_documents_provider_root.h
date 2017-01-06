@@ -17,6 +17,8 @@
 #include "components/arc/common/file_system.mojom.h"
 #include "storage/browser/fileapi/async_file_util.h"
 
+class GURL;
+
 namespace arc {
 
 // Represents a file system root in Android Documents Provider.
@@ -28,6 +30,8 @@ class ArcDocumentsProviderRoot {
  public:
   using GetFileInfoCallback = storage::AsyncFileUtil::GetFileInfoCallback;
   using ReadDirectoryCallback = storage::AsyncFileUtil::ReadDirectoryCallback;
+  using ResolveToContentUrlCallback =
+      base::Callback<void(const GURL& content_url)>;
 
   ArcDocumentsProviderRoot(const std::string& authority,
                            const std::string& root_document_id);
@@ -41,6 +45,13 @@ class ArcDocumentsProviderRoot {
   // AsyncFileUtil.ReadDirectory().
   void ReadDirectory(const base::FilePath& path,
                      const ReadDirectoryCallback& callback);
+
+  // Resolves a file path into a content:// URL pointing to the file
+  // on DocumentsProvider. Returns URL that can be passed to
+  // ArcContentFileSystemFileSystemReader to read the content.
+  // On errors, an invalid GURL is returned.
+  void ResolveToContentUrl(const base::FilePath& path,
+                           const ResolveToContentUrlCallback& callback);
 
  private:
   // Thin representation of a document in documents provider.
@@ -70,6 +81,10 @@ class ArcDocumentsProviderRoot {
       const ReadDirectoryCallback& callback,
       base::File::Error error,
       NameToThinDocumentMap mapping);
+
+  void ResolveToContentUrlWithDocumentId(
+      const ResolveToContentUrlCallback& callback,
+      const std::string& document_id);
 
   // Resolves |path| to a document ID. Failures are indicated by an empty
   // document ID.

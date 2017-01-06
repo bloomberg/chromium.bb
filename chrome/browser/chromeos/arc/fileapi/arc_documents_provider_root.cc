@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_instance_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/mime_util.h"
+#include "url/gurl.h"
 
 using content::BrowserThread;
 using EntryList = storage::AsyncFileUtil::EntryList;
@@ -98,6 +99,16 @@ void ArcDocumentsProviderRoot::ReadDirectory(
                        weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
+void ArcDocumentsProviderRoot::ResolveToContentUrl(
+    const base::FilePath& path,
+    const ResolveToContentUrlCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  ResolveToDocumentId(
+      path,
+      base::Bind(&ArcDocumentsProviderRoot::ResolveToContentUrlWithDocumentId,
+                 weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
 void ArcDocumentsProviderRoot::GetFileInfoWithDocumentId(
     const GetFileInfoCallback& callback,
     const std::string& document_id) {
@@ -160,6 +171,17 @@ void ArcDocumentsProviderRoot::ReadDirectoryWithNameToThinDocumentMap(
                                             : storage::DirectoryEntry::FILE);
   }
   callback.Run(base::File::FILE_OK, entry_list, false /* has_more */);
+}
+
+void ArcDocumentsProviderRoot::ResolveToContentUrlWithDocumentId(
+    const ResolveToContentUrlCallback& callback,
+    const std::string& document_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (document_id.empty()) {
+    callback.Run(GURL());
+    return;
+  }
+  callback.Run(BuildDocumentUrl(authority_, document_id));
 }
 
 void ArcDocumentsProviderRoot::ResolveToDocumentId(

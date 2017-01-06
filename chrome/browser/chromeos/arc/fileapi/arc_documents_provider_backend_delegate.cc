@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_file_stream_reader.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/fileapi/file_stream_reader.h"
 #include "storage/browser/fileapi/file_stream_writer.h"
@@ -37,8 +39,9 @@ ArcDocumentsProviderBackendDelegate::CreateFileStreamReader(
     const base::Time& expected_modification_time,
     storage::FileSystemContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  NOTIMPLEMENTED();  // TODO(crbug.com/671511): Implement this function.
-  return nullptr;
+
+  return base::MakeUnique<ArcDocumentsProviderFileStreamReader>(url, offset,
+                                                                &roots_);
 }
 
 std::unique_ptr<storage::FileStreamWriter>
@@ -62,7 +65,7 @@ void ArcDocumentsProviderBackendDelegate::GetRedirectURLForContents(
     const storage::FileSystemURL& url,
     const storage::URLCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  NOTIMPLEMENTED();  // TODO(crbug.com/671511): Implement this function.
+  NOTREACHED();  // Never called by chromeos::FileSystemBackend.
   callback.Run(GURL());
 }
 

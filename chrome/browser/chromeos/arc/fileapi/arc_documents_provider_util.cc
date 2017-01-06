@@ -7,7 +7,10 @@
 #include <vector>
 
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
+#include "net/base/escape.h"
 #include "storage/browser/fileapi/file_system_url.h"
+#include "url/gurl.h"
 
 namespace arc {
 
@@ -50,6 +53,14 @@ bool ParseDocumentsProviderUrl(const storage::FileSystemURL& url,
     DCHECK(success);
   }
   return true;
+}
+
+GURL BuildDocumentUrl(const std::string& authority,
+                      const std::string& document_id) {
+  return GURL(base::StringPrintf(
+      "content://%s/document/%s",
+      net::EscapeQueryParamValue(authority, false /* use_plus */).c_str(),
+      net::EscapeQueryParamValue(document_id, false /* use_plus */).c_str()));
 }
 
 }  // namespace arc

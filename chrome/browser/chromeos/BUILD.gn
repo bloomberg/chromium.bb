@@ -249,6 +249,8 @@ source_set("chromeos") {
     "arc/fileapi/arc_documents_provider_async_file_util.h",
     "arc/fileapi/arc_documents_provider_backend_delegate.cc",
     "arc/fileapi/arc_documents_provider_backend_delegate.h",
+    "arc/fileapi/arc_documents_provider_file_stream_reader.cc",
+    "arc/fileapi/arc_documents_provider_file_stream_reader.h",
     "arc/fileapi/arc_documents_provider_root.cc",
     "arc/fileapi/arc_documents_provider_root.h",
     "arc/fileapi/arc_documents_provider_root_map.cc",

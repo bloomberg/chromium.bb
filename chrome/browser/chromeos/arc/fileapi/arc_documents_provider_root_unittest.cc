@@ -19,6 +19,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "storage/common/fileapi/directory_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using storage::DirectoryEntry;
 using EntryList = storage::AsyncFileUtil::EntryList;
@@ -303,6 +304,62 @@ TEST_F(ArcDocumentsProviderRootTest, ReadDirectoryDups) {
             EXPECT_EQ(FILE_PATH_LITERAL("dup.mp4"), file_list[3].name);
             EXPECT_FALSE(file_list[3].is_directory);
             EXPECT_FALSE(has_more);
+            run_loop->Quit();
+          },
+          &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(ArcDocumentsProviderRootTest, ResolveToContentUrl) {
+  base::RunLoop run_loop;
+  root_->ResolveToContentUrl(
+      base::FilePath(FILE_PATH_LITERAL("dir/photo.jpg")),
+      base::Bind(
+          [](base::RunLoop* run_loop, const GURL& url) {
+            EXPECT_EQ(GURL("content://org.chromium.test/document/photo-id"),
+                      url);
+            run_loop->Quit();
+          },
+          &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(ArcDocumentsProviderRootTest, ResolveToContentUrlRoot) {
+  base::RunLoop run_loop;
+  root_->ResolveToContentUrl(
+      base::FilePath(FILE_PATH_LITERAL("")),
+      base::Bind(
+          [](base::RunLoop* run_loop, const GURL& url) {
+            EXPECT_EQ(GURL("content://org.chromium.test/document/root-id"),
+                      url);
+            run_loop->Quit();
+          },
+          &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(ArcDocumentsProviderRootTest, ResolveToContentUrlNoSuchFile) {
+  base::RunLoop run_loop;
+  root_->ResolveToContentUrl(base::FilePath(FILE_PATH_LITERAL("missing")),
+                             base::Bind(
+                                 [](base::RunLoop* run_loop, const GURL& url) {
+                                   EXPECT_EQ(GURL(), url);
+                                   run_loop->Quit();
+                                 },
+                                 &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(ArcDocumentsProviderRootTest, ResolveToContentUrlDups) {
+  base::RunLoop run_loop;
+  // "dup 2.mp4" should map to the 3rd instance of "dup.mp4" regardless of the
+  // order returned from FileSystemInstance.
+  root_->ResolveToContentUrl(
+      base::FilePath(FILE_PATH_LITERAL("dups/dup (2).mp4")),
+      base::Bind(
+          [](base::RunLoop* run_loop, const GURL& url) {
+            EXPECT_EQ(GURL("content://org.chromium.test/document/dup3-id"),
+                      url);
             run_loop->Quit();
           },
           &run_loop));
