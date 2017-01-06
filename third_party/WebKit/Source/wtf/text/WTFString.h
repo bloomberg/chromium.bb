@@ -303,7 +303,8 @@ class WTF_EXPORT String {
   // Return the string with case folded for case insensitive comparison.
   String foldCase() const;
 
-  PRINTF_FORMAT(1, 2) static String format(const char*, ...);
+  // Takes a printf format and args and prints into a String.
+  PRINTF_FORMAT(1, 2) static String format(const char* format, ...);
 
   // Returns an uninitialized string. The characters needs to be written
   // into the buffer returned in data before the returned string is used.

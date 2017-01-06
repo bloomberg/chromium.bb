@@ -22,6 +22,7 @@
 
 #include "wtf/text/WTFString.h"
 
+#include "base/strings/string_util.h"
 #include "wtf/ASCIICType.h"
 #include "wtf/DataLog.h"
 #include "wtf/HexNumber.h"
@@ -316,39 +317,39 @@ String String::foldCase() const {
 
 String String::format(const char* format, ...) {
   va_list args;
-  va_start(args, format);
 
-// Do the format once to get the length.
-#if COMPILER(MSVC)
-  int result = _vscprintf(format, args);
-#else
-  char ch;
-  int result = vsnprintf(&ch, 1, format, args);
-// We need to call va_end() and then va_start() again here, as the
-// contents of args is undefined after the call to vsnprintf
-// according to http://man.cx/snprintf(3)
-//
-// Not calling va_end/va_start here happens to work on lots of
-// systems, but fails e.g. on 64bit Linux.
-#endif
+  // TODO(esprehn): base uses 1024, maybe we should use a bigger size too.
+  static const unsigned kDefaultSize = 256;
+  Vector<char, kDefaultSize> buffer(kDefaultSize);
+
+  va_start(args, format);
+  int length = base::vsnprintf(buffer.data(), buffer.size(), format, args);
   va_end(args);
 
-  if (result == 0)
-    return String("");
-  if (result < 0)
+  // TODO(esprehn): This can only happen if there's an encoding error, what's
+  // the locale set to inside blink? Can this happen? We should probably CHECK
+  // instead.
+  if (length < 0)
     return String();
 
-  Vector<char, 256> buffer;
-  unsigned len = result;
-  buffer.grow(len + 1);
+  if (static_cast<unsigned>(length) >= buffer.size()) {
+    // vsnprintf doesn't include the NUL terminator in the length so we need to
+    // add space for it when growing.
+    buffer.grow(length + 1);
 
-  va_start(args, format);
-  // Now do the formatting again, guaranteed to fit.
-  vsnprintf(buffer.data(), buffer.size(), format, args);
+    // We need to call va_end() and then va_start() each time we use args, as
+    // the contents of args is undefined after the call to vsnprintf according
+    // to http://man.cx/snprintf(3)
+    //
+    // Not calling va_end/va_start here happens to work on lots of systems, but
+    // fails e.g. on 64bit Linux.
+    va_start(args, format);
+    length = base::vsnprintf(buffer.data(), buffer.size(), format, args);
+    va_end(args);
+  }
 
-  va_end(args);
-
-  return StringImpl::create(reinterpret_cast<const LChar*>(buffer.data()), len);
+  CHECK_LT(static_cast<unsigned>(length), buffer.size());
+  return String(reinterpret_cast<const LChar*>(buffer.data()), length);
 }
 
 template <typename IntegerType>
