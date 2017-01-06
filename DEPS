@@ -356,13 +356,13 @@ deps_os = {
       Var('chromium_git') + '/external/github.com/swisspol/GCDWebServer.git' + '@' + '3d5fd0b8281a7224c057deb2d17709b5bea64836',
 
     'src/ios/third_party/material_components_ios/src':
-      Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '4e5a18715bedf3ada7fd35ba9d2d41082fbf7437',
+      Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '079c1c9a8b040f924de2919393b65c38239890f0',
 
     'src/ios/third_party/material_font_disk_loader_ios/src':
       Var('chromium_git') + '/external/github.com/material-foundation/material-font-disk-loader-ios.git' + '@' + '20c8fe37329cb18826f90159ce4ee445079e2e46',
 
     'src/ios/third_party/material_roboto_font_loader_ios/src':
-      Var('chromium_git') + '/external/github.com/material-foundation/material-roboto-font-loader-ios.git' + '@' + '2e83b0fdbbd9b12782aa886695dd29b077bad430',
+      Var('chromium_git') + '/external/github.com/material-foundation/material-roboto-font-loader-ios.git' + '@' + 'e9b86479540ee3a200ade154f907fac889865c72',
 
     'src/ios/third_party/material_sprited_animation_view_ios/src':
       Var('chromium_git') + '/external/github.com/material-foundation/material-sprited-animation-view-ios.git' + '@' + 'e240cdcd4538f0763ca5bd8c5afc2991eb482f1a',

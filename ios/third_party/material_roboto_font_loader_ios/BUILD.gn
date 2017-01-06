@@ -2,19 +2,32 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# TODO(crbug.com/673904): Version v1.1.1 of material_components_ios uses a
+# CocoaPods path to access MaterialTypography.h which breaks Chromium build.
+# This variable protects the workaround so that it is clear what needs to be
+# updated once upstream code has been fixed.
+use_material_typography_workaround = true
+
 config("material_roboto_font_loader_ios_config") {
   include_dirs = [ "src/src" ]
   visibility = [ ":material_roboto_font_loader_ios" ]
+
+  if (use_material_typography_workaround) {
+    include_dirs += [ "local_src" ]
+  }
 }
 
 source_set("material_roboto_font_loader_ios") {
   sources = [
+    "src/src/MDCTypographyAdditions/MDFRobotoFontLoader+MDCTypographyAdditions.h",
+    "src/src/MDCTypographyAdditions/MDFRobotoFontLoader+MDCTypographyAdditions.m",
     "src/src/MDFRobotoFontLoader.h",
     "src/src/MDFRobotoFontLoader.m",
     "src/src/MaterialRobotoFontLoader.h",
   ]
   deps = [
     ":material_roboto_font_loader_bundle",
+    "//ios/third_party/material_components_ios",
     "//ios/third_party/material_font_disk_loader_ios",
   ]
   public_configs = [ ":material_roboto_font_loader_ios_config" ]
