@@ -36,5 +36,8 @@ gfx::ImageSkia GetWindowIcon(content::DesktopMediaID id) {
   std::unique_ptr<SkBitmap> icon_bitmap(
       IconUtil::CreateSkBitmapFromHICON(icon_handle));
 
+  if (!icon_bitmap)
+    return gfx::ImageSkia();
+
   return gfx::ImageSkia::CreateFrom1xBitmap(*icon_bitmap);
 }
