@@ -115,6 +115,17 @@
       Open download in new tab with data url
     </a><br>
 
+    <a id="new_tab_download_with_server_redirect" href="#" rel="noreferrer" target=_blank>
+      Open navigation in a new tab and immediately redirect to a download by server.
+    </a><br>
+
+    <script>
+      var request = location.origin + "/server-redirect?" + location.origin +
+                    "/safe_browsing/download_protection/signed.exe"
+      document.getElementById("new_tab_download_with_server_redirect")
+              .setAttribute('href', request);
+    </script>
+
     <a id="html5_file_api" href="" onclick="downloadViaFileApi()">
       Download via HTML5 file system API
     </a><br>
