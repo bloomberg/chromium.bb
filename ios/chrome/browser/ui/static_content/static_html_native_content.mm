@@ -68,6 +68,11 @@
                            URL:URL];
 }
 
+- (void)dealloc {
+  [[self scrollView] setDelegate:nil];
+  [super dealloc];
+}
+
 - (void)loadURL:(const GURL&)URL
              referrer:(const web::Referrer&)referrer
            transition:(ui::PageTransition)transition
@@ -85,6 +90,7 @@
 - (void)setOverscrollActionsController:
     (OverscrollActionsController*)controller {
   _overscrollActionsController.reset([controller retain]);
+  [[self scrollView] setDelegate:controller];
 }
 
 #pragma mark -

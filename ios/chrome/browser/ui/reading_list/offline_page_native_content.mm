@@ -92,6 +92,7 @@
 - (void)restoreOnlineURL {
   web::NavigationItem* item =
       _webState->GetNavigationManager()->GetLastCommittedItem();
+  DCHECK(item && item->GetVirtualURL() == [self virtualURL]);
   item->SetURL([self virtualURL]);
   item->SetVirtualURL([self virtualURL]);
 }

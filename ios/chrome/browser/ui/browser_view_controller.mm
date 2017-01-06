@@ -2750,7 +2750,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     OverscrollActionsController* controller =
         [[[OverscrollActionsController alloc]
             initWithScrollView:[nativeContent scrollView]] autorelease];
-    [[nativeContent scrollView] setDelegate:controller];
     [controller setDelegate:self];
     OverscrollStyle style = _isOffTheRecord
                                 ? OverscrollStyle::REGULAR_PAGE_INCOGNITO
