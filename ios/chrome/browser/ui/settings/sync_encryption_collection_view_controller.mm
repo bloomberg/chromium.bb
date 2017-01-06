@@ -6,6 +6,7 @@
 
 #import "base/ios/weak_nsobject.h"
 #import "base/mac/scoped_nsobject.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/google/core/browser/google_util.h"
@@ -15,6 +16,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
@@ -42,8 +44,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@interface SyncEncryptionCollectionViewController () {
+@interface SyncEncryptionCollectionViewController ()<SyncObserverModelBridge> {
   ios::ChromeBrowserState* _browserState;
+  std::unique_ptr<SyncObserverBridge> _syncObserver;
+  BOOL _isUsingSecondaryPassphrase;
 }
 // Returns an account item.
 - (CollectionViewItem*)accountItem;
@@ -63,6 +67,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   if (self) {
     self.title = l10n_util::GetNSString(IDS_IOS_SYNC_ENCRYPTION_TITLE);
     _browserState = browserState;
+    browser_sync::ProfileSyncService* syncService =
+        IOSChromeProfileSyncServiceFactory::GetForBrowserState(_browserState);
+    _isUsingSecondaryPassphrase = syncService->IsEngineInitialized() &&
+                                  syncService->IsUsingSecondaryPassphrase();
+    _syncObserver = base::MakeUnique<SyncObserverBridge>(self, syncService);
     [self loadModel];
   }
   return self;
@@ -80,9 +89,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:[self passphraseItem]
       toSectionWithIdentifier:SectionIdentifierEncryption];
 
-  browser_sync::ProfileSyncService* service =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(_browserState);
-  if (service->IsEngineInitialized() && service->IsUsingSecondaryPassphrase()) {
+  if (_isUsingSecondaryPassphrase) {
     [model addSectionWithIdentifier:SectionIdentifierFooter];
     [model addItem:[self footerItem]
         toSectionWithIdentifier:SectionIdentifierFooter];
@@ -93,35 +100,20 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (CollectionViewItem*)accountItem {
   DCHECK(browser_sync::ProfileSyncService::IsSyncAllowedByFlag());
-  BOOL checkedAndEnabled = YES;
-  browser_sync::ProfileSyncService* service =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(_browserState);
-  if (service->IsEngineInitialized() && service->IsUsingSecondaryPassphrase()) {
-    checkedAndEnabled = NO;
-  }
   NSString* text = l10n_util::GetNSString(IDS_SYNC_BASIC_ENCRYPTION_DATA);
   return [self itemWithType:ItemTypeAccount
                        text:text
-                    checked:checkedAndEnabled
-                    enabled:checkedAndEnabled];
+                    checked:!_isUsingSecondaryPassphrase
+                    enabled:!_isUsingSecondaryPassphrase];
 }
 
 - (CollectionViewItem*)passphraseItem {
   DCHECK(browser_sync::ProfileSyncService::IsSyncAllowedByFlag());
-  BOOL checked = NO;
-  BOOL enabled = NO;
-  browser_sync::ProfileSyncService* service =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(_browserState);
-  if (service->IsEngineInitialized() && service->IsUsingSecondaryPassphrase()) {
-    checked = YES;
-  } else {
-    enabled = YES;
-  }
   NSString* text = l10n_util::GetNSString(IDS_SYNC_FULL_ENCRYPTION_DATA);
   return [self itemWithType:ItemTypePassphrase
                        text:text
-                    checked:checked
-                    enabled:enabled];
+                    checked:_isUsingSecondaryPassphrase
+                    enabled:!_isUsingSecondaryPassphrase];
 }
 
 - (CollectionViewItem*)footerItem {
@@ -210,6 +202,19 @@ typedef NS_ENUM(NSInteger, ItemType) {
     case ItemTypeFooter:
     default:
       break;
+  }
+}
+
+#pragma mark SyncObserverModelBridge
+
+- (void)onSyncStateChanged {
+  browser_sync::ProfileSyncService* service =
+      IOSChromeProfileSyncServiceFactory::GetForBrowserState(_browserState);
+  BOOL isNowUsingSecondaryPassphrase =
+      service->IsEngineInitialized() && service->IsUsingSecondaryPassphrase();
+  if (_isUsingSecondaryPassphrase != isNowUsingSecondaryPassphrase) {
+    _isUsingSecondaryPassphrase = isNowUsingSecondaryPassphrase;
+    [self reloadData];
   }
 }
 
