@@ -96,12 +96,12 @@ Polymer({
   },
 
   /** @private */
-  isStateTextVisible_() {
+  isStateTextVisible_: function() {
     return !!this.networkState && (!this.isListItem || this.isConnected_());
   },
 
   /** @private */
-  isStateTextConnected_() {
+  isStateTextConnected_: function() {
     return this.isListItem && this.isConnected_();
   },
 

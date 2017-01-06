@@ -221,7 +221,7 @@ list:not([disabled]) > .network-group[selected] {
 }
 
 .network-icon {
-  -webkit-margin-end: 8px;
+  -webkit-margin-end: 10px;
   background-position: left top;
   background-size: 25px;
   height: 25px;

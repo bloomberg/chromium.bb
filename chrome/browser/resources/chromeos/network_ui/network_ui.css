@@ -15,11 +15,6 @@ paper-button[raised].colored {
   padding: 0 4px;
 }
 
-#header cr-network-icon {
-  height: 40px;
-  width: 40px;
-}
-
 cr-network-select {
   padding: 5px;
   width: 500px;
@@ -61,11 +56,12 @@ cr-network-select {
   white-space: pre-wrap;
 }
 
-.state-table cr-network-icon {
-  height: 25px;
-  width: 25px;
+.state-table-icon-cell {
+  height: 32px;
+  width: 32px;
 }
 
 #advanced-options {
   margin-top: 10px;
+  text-align: center;
 }

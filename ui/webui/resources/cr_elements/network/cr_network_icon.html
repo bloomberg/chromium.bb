@@ -1,96 +1,53 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
+<link rel="import" href="chrome://resources/cr_elements/network/network_icons.html">
 
 <dom-module id="cr-network-icon">
   <template>
     <style>
-      /* Note: we use display: block here to avoid positioning issues related to
-         the use of overflow: hidden. */
       :host {
-        display: block;
-        height: 50px;
         overflow: hidden;
+        padding: 2px;
         position: relative;
-        width: 50px;
+      }
+
+      /* Included for options UI. TODO(stevenjb): Remove. */
+      [hidden] {
+        display: none !important;
       }
 
       #icon {
-        height: 100%;
-        position: absolute;
-        width: 100%;
+        height: 20px;
+        width: 20px;
       }
-
-      #icon.multi-level {
-        height: 500%;
-      }
-
-      #icon.level0 {
-        top: 0px;
-      }
-
-      #icon.level1 {
-        top: -100%;
-      }
-
-      #icon.level2 {
-        top: -200%;
-      }
-
-      #icon.level3 {
-        top: -300%;
-      }
-
-      #icon.level4 {
-        top: -400%;
-      }
-
-      /* Connecting animation */
-
-      #icon.connecting {
-        -webkit-animation: levels 1s infinite;
-        -webkit-animation-timing-function: steps(4, start);
-      }
-
-      @-webkit-keyframes levels {
-        from {
-          top: 0%;
-        }
-        to {
-          top: -400%;
-        }
-      }
-
-      /* Badges. */
-      /* Note: These use left/right because we do not reverse the badges for
-       * RTL. */
 
       /* Upper-left corner */
       #technology {
-        height: 40%;
-        left: 0px;
+        height: 20px;
+        left: 0;
         position: absolute;
-        top: 0px;
+        top: 1px;
+        width: 20px;
       }
 
       /* Lower-right corner */
-      #roaming,
       #secure {
-        height: 40%;
-        left: 60%;
+        height: 20px;
+        left: 16px;
         position: absolute;
-        top: 60%;
-        width: 40%;
+        top: 16px;
+        width: 20px;
       }
     </style>
-    <img id="icon" src$="[[toImageSrc_(iconType_)]]" alt="">
-    <img id="technology" alt="" src$="[[toBadgeImageSrc_(technology_)]]"
-        hidden$="[[!technology_]]">
-    <img id="roaming" alt=""
-        src="chrome://resources/cr_elements/network/badge_roaming.png"
-        hidden$="[[!roaming_]]">
-    <img id="secure" alt=""
-        src="chrome://resources/cr_elements/network/badge_secure.png"
-        hidden$="[[!secure_]]">
+    <iron-icon id="icon" icon="[[getIcon_(networkState, isListItem)]]">
+    </iron-icon>
+    <iron-icon id="technology" hidden ="[[!showTechnology_(networkState)]]"
+        icon="[[getTechnology_(networkState)]]">
+    </iron-icon>
+    <iron-icon id="secure" hidden ="[[!showSecure_(networkState)]]"
+        icon="network:badge-secure">
+    </iron-icon>
   </template>
   <script src="cr_network_icon.js"></script>
 </dom-module>

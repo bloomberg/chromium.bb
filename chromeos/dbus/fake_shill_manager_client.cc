@@ -833,6 +833,9 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
     services->SetServiceProperty(kCellularServicePath,
                                  shill::kNetworkTechnologyProperty,
                                  technology_value);
+    base::FundamentalValue strength_value(50);
+    services->SetServiceProperty(
+        kCellularServicePath, shill::kSignalStrengthProperty, strength_value);
 
     if (activated) {
       services->SetServiceProperty(

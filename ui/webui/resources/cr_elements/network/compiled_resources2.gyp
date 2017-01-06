@@ -6,6 +6,7 @@
     {
       'target_name': 'cr_network_icon',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         'cr_onc_types',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],

@@ -72,6 +72,10 @@
     <structure name="IDR_CR_ELEMENTS_CR_ONC_TYPES_JS"
                file="../../webui/resources/cr_elements/network/cr_onc_types.js"
                type="chrome_html" />
+    <structure name="IDR_CR_ELEMENTS_NETWORK_ICONS_HTML"
+               file="../../webui/resources/cr_elements/network/network_icons.html"
+               type="chrome_html"
+               preprocess="true" />
   </if>
   <structure name="IDR_CR_ELEMENTS_CR_POLICY_INDICATOR_CSS"
              file="../../webui/resources/cr_elements/policy/cr_policy_indicator.css"

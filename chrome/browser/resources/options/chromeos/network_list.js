@@ -243,7 +243,10 @@ cr.define('options.network', function() {
     set iconType(type) {
       if (isNetworkType(type)) {
         var networkIcon = this.getNetworkIcon();
-        networkIcon.networkType = type;
+        networkIcon.networkState = {
+          GUID: '',
+          Type: /** @type {CrOnc.Type} */ (type),
+        };
       } else {
         // Special cases. e.g. 'add-connection'. Background images are
         // defined in browser_options.css.

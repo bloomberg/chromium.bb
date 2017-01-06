@@ -23,21 +23,16 @@
         flex-direction: row;
       }
 
-      #divIcon {
-        display: flex;
-        flex-direction: column;
-        flex: 0 0 auto;
-        justify-content: center;
-        width: 32px;
-      }
-
       #divOuter {
+        -webkit-margin-after: 4px;
+        -webkit-margin-before: 4px;
+        -webkit-margin-end: 12px;
+        -webkit-margin-start: 4px;
         align-items: center;
         border-style: none;
         display: flex;
         flex-direction: row;
         height: 32px;
-        margin: 4px 12px;
       }
 
       #divOuter[first-custom-item] {
@@ -71,10 +66,14 @@
         color: var(--google-green-500);
       }
 
-      cr-network-icon,
       iron-icon {
         height: 24px;
         width: 24px;
+      }
+
+      cr-network-icon,
+      iron-icon {
+        -webkit-padding-end: 8px;
       }
 
       cr-policy-network-indicator {
@@ -83,16 +82,14 @@
     </style>
     <div id="divOuter" actionable$="[[isListItem]]"
         first-custom-item$="[[item.isFirstCustomItem]]">
-      <div id="divIcon">
-        <template is="dom-if" if="[[networkState]]">
-          <cr-network-icon is-list-item="[[isListItem]]"
-              network-state="[[networkState]]">
-          </cr-network-icon>
-        </template>
-        <template is="dom-if" if="[[item.polymerIcon]]">
-          <iron-icon icon="[[item.polymerIcon]]"></iron-icon>
-        </template>
-      </div>
+      <template is="dom-if" if="[[networkState]]">
+        <cr-network-icon is-list-item="[[isListItem]]"
+            network-state="[[networkState]]">
+        </cr-network-icon>
+      </template>
+      <template is="dom-if" if="[[item.polymerIcon]]">
+        <iron-icon icon="[[item.polymerIcon]]"></iron-icon>
+      </template>
       <div id="divText" class="layout horizontal flex">
         <div id="itemName" connected$="[[isConnected_(networkState)]]">
           [[getItemName_(item, isListItem)]]
