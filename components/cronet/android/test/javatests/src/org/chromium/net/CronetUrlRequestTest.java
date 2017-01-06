@@ -2036,10 +2036,11 @@ public class CronetUrlRequestTest extends CronetTestBase {
             }
 
             @Override
-            public void onFailed(
-                    UrlRequest request, UrlResponseInfo info, UrlRequestException error) {
-                assertEquals(netError, error.getCronetInternalErrorCode());
-                failedExpectation.set(error.getCronetInternalErrorCode() != netError);
+            public void onFailed(UrlRequest request, UrlResponseInfo info, CronetException error) {
+                assertTrue(error instanceof NetworkException);
+                assertEquals(netError, ((NetworkException) error).getCronetInternalErrorCode());
+                failedExpectation.set(
+                        ((NetworkException) error).getCronetInternalErrorCode() != netError);
                 done.open();
             }
 

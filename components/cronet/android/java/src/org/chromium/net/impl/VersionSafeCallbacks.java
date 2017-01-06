@@ -13,7 +13,6 @@ import org.chromium.net.RequestFinishedInfo;
 import org.chromium.net.UploadDataProvider;
 import org.chromium.net.UploadDataSink;
 import org.chromium.net.UrlRequest;
-import org.chromium.net.UrlRequestException;
 import org.chromium.net.UrlResponseInfo;
 
 import java.io.IOException;
@@ -71,11 +70,6 @@ public class VersionSafeCallbacks {
         @Override
         public void onCanceled(UrlRequest request, UrlResponseInfo info) {
             mWrappedCallback.onCanceled(request, info);
-        }
-
-        @Override
-        public void onFailed(UrlRequest request, UrlResponseInfo info, UrlRequestException error) {
-            mWrappedCallback.onFailed(request, info, error);
         }
     }
 

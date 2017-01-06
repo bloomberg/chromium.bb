@@ -214,11 +214,8 @@ public abstract class UrlRequest {
          *         received.
          * @param error information about error.
          */
-        public void onFailed(UrlRequest request, UrlResponseInfo info, CronetException error) {
-            // TODO(mef): Remove fallback to legacy api and make this method abstract
-            // after complete transition to CronetException.
-            onFailed(request, info, new UrlRequestException(error));
-        }
+        public abstract void onFailed(
+                UrlRequest request, UrlResponseInfo info, CronetException error);
 
         /**
          * Invoked if request was canceled via {@link UrlRequest#cancel}. Once
@@ -230,16 +227,6 @@ public abstract class UrlRequest {
          *         received.
          */
         public void onCanceled(UrlRequest request, UrlResponseInfo info) {}
-
-        /**
-         * @deprecated Use {@code onFailed} instead.
-         * {@hide This method will be removed after complete transition to CronetException}.
-         */
-        @Deprecated
-        // TODO(mef): Remove this after complete transition to CronetException.
-        public void onFailed(UrlRequest request, UrlResponseInfo info, UrlRequestException error) {
-            assert false;
-        }
     }
 
     /**

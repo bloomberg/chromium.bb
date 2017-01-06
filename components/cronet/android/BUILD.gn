@@ -288,7 +288,6 @@ android_library("cronet_api_java") {
     "api/src/org/chromium/net/UploadDataProviders.java",
     "api/src/org/chromium/net/UploadDataSink.java",
     "api/src/org/chromium/net/UrlRequest.java",
-    "api/src/org/chromium/net/UrlRequestException.java",
     "api/src/org/chromium/net/UrlResponseInfo.java",
   ]
 

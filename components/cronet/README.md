@@ -58,7 +58,7 @@ events during the lifetime of a request. For example:
 
         @Override
         public void onFailed(UrlRequest request,
-                UrlResponseInfo responseInfo, UrlRequestException error) {
+                UrlResponseInfo responseInfo, CronetException error) {
              // Request has failed. responseInfo might be null.
              Log.e("MyCallback", "Request failed. " + error.getMessage());
              // Maybe handle error here. Typical errors include hostname

@@ -231,9 +231,8 @@ public abstract class org.chromium.net.UrlRequest$Callback {
   public abstract void onResponseStarted(org.chromium.net.UrlRequest, org.chromium.net.UrlResponseInfo) throws java.lang.Exception;
   public abstract void onReadCompleted(org.chromium.net.UrlRequest, org.chromium.net.UrlResponseInfo, java.nio.ByteBuffer) throws java.lang.Exception;
   public abstract void onSucceeded(org.chromium.net.UrlRequest, org.chromium.net.UrlResponseInfo);
-  public void onFailed(org.chromium.net.UrlRequest, org.chromium.net.UrlResponseInfo, org.chromium.net.CronetException);
+  public abstract void onFailed(org.chromium.net.UrlRequest, org.chromium.net.UrlResponseInfo, org.chromium.net.CronetException);
   public void onCanceled(org.chromium.net.UrlRequest, org.chromium.net.UrlResponseInfo);
-  public void onFailed(org.chromium.net.UrlRequest, org.chromium.net.UrlResponseInfo, org.chromium.net.UrlRequestException);
 }
 public class org.chromium.net.UrlRequest$Status {
   public static final int INVALID;
@@ -265,24 +264,6 @@ public abstract class org.chromium.net.UrlRequest {
   public abstract void cancel();
   public abstract boolean isDone();
   public abstract void getStatus(org.chromium.net.UrlRequest$StatusListener);
-}
-public class org.chromium.net.UrlRequestException extends java.io.IOException {
-  public static final int ERROR_LISTENER_EXCEPTION_THROWN;
-  public static final int ERROR_HOSTNAME_NOT_RESOLVED;
-  public static final int ERROR_INTERNET_DISCONNECTED;
-  public static final int ERROR_NETWORK_CHANGED;
-  public static final int ERROR_TIMED_OUT;
-  public static final int ERROR_CONNECTION_CLOSED;
-  public static final int ERROR_CONNECTION_TIMED_OUT;
-  public static final int ERROR_CONNECTION_REFUSED;
-  public static final int ERROR_CONNECTION_RESET;
-  public static final int ERROR_ADDRESS_UNREACHABLE;
-  public static final int ERROR_QUIC_PROTOCOL_FAILED;
-  public static final int ERROR_OTHER;
-  public org.chromium.net.UrlRequestException(org.chromium.net.CronetException);
-  public int getErrorCode();
-  public int getCronetInternalErrorCode();
-  public boolean immediatelyRetryable();
 }
 public abstract class org.chromium.net.UrlResponseInfo$HeaderBlock {
   public org.chromium.net.UrlResponseInfo$HeaderBlock();
