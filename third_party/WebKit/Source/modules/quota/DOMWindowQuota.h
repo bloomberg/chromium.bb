@@ -31,7 +31,6 @@
 #ifndef DOMWindowQuota_h
 #define DOMWindowQuota_h
 
-#include "core/dom/ContextLifecycleObserver.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 
@@ -42,8 +41,7 @@ class DOMWindow;
 class LocalDOMWindow;
 
 class DOMWindowQuota final : public GarbageCollected<DOMWindowQuota>,
-                             public Supplement<LocalDOMWindow>,
-                             public ContextClient {
+                             public Supplement<LocalDOMWindow> {
   USING_GARBAGE_COLLECTED_MIXIN(DOMWindowQuota);
 
  public:
