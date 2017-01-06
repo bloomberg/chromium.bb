@@ -335,8 +335,8 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
     } else {
       surface_ = ImageTransportSurface::CreateNativeSurface(
           gpu_thread_weak_ptr_factory_.GetWeakPtr(), params.window,
-          gl::GLSurface::SURFACE_DEFAULT);
-      if (!surface_ || !surface_->Initialize(gl::GLSurface::SURFACE_DEFAULT)) {
+          gl::GLSurfaceFormat());
+      if (!surface_ || !surface_->Initialize(gl::GLSurfaceFormat())) {
         surface_ = nullptr;
         DLOG(ERROR) << "Failed to create surface.";
         return false;

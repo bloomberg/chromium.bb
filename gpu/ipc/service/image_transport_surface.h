@@ -35,7 +35,7 @@ class ImageTransportSurface {
   static scoped_refptr<gl::GLSurface> CreateNativeSurface(
       base::WeakPtr<ImageTransportSurfaceDelegate> stub,
       SurfaceHandle surface_handle,
-      gl::GLSurface::Format format);
+      gl::GLSurfaceFormat format);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImageTransportSurface);

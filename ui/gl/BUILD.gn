@@ -106,6 +106,8 @@ component("gl") {
     "gl_stub_autogen_gl.h",
     "gl_surface.cc",
     "gl_surface.h",
+    "gl_surface_format.cc",
+    "gl_surface_format.h",
     "gl_surface_osmesa.cc",
     "gl_surface_osmesa.h",
     "gl_surface_overlay.cc",
@@ -364,6 +366,7 @@ test("gl_unittests") {
     "gl_api_unittest.cc",
     "gl_image_ref_counted_memory_unittest.cc",
     "gl_image_shared_memory_unittest.cc",
+    "gl_surface_format_unittest.cc",
     "gl_version_info_unittest.cc",
     "gpu_timing_unittest.cc",
   ]

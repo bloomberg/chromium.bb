@@ -22,7 +22,7 @@ class GL_EXPORT GLSurfaceOSMesaWin : public GLSurfaceOSMesa {
   explicit GLSurfaceOSMesaWin(gfx::AcceleratedWidget window);
 
   // Implement subset of GLSurface.
-  bool Initialize(GLSurface::Format format) override;
+  bool Initialize(GLSurfaceFormat format) override;
   void Destroy() override;
   bool IsOffscreen() override;
   gfx::SwapResult SwapBuffers() override;

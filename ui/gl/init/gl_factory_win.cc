@@ -93,16 +93,20 @@ scoped_refptr<GLSurface> CreateViewGLSurface(gfx::AcceleratedWidget window) {
   }
 }
 
-scoped_refptr<GLSurface> CreateOffscreenGLSurface(const gfx::Size& size) {
+scoped_refptr<GLSurface> CreateOffscreenGLSurfaceWithFormat(
+    const gfx::Size& size, GLSurfaceFormat format) {
   TRACE_EVENT0("gpu", "gl::init::CreateOffscreenGLSurface");
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL:
-      return InitializeGLSurface(
-          new GLSurfaceOSMesa(GLSurface::SURFACE_OSMESA_RGBA, size));
+      format.SetDefaultPixelLayout(GLSurfaceFormat::PIXEL_LAYOUT_RGBA);
+      return InitializeGLSurfaceWithFormat(
+          new GLSurfaceOSMesa(format, size), format);
     case kGLImplementationEGLGLES2:
-      return InitializeGLSurface(new PbufferGLSurfaceEGL(size));
+      return InitializeGLSurfaceWithFormat(
+          new PbufferGLSurfaceEGL(size), format);
     case kGLImplementationDesktopGL:
-      return InitializeGLSurface(new PbufferGLSurfaceWGL(size));
+      return InitializeGLSurfaceWithFormat(
+          new PbufferGLSurfaceWGL(size), format);
     case kGLImplementationMockGL:
       return new GLSurfaceStub;
     default:

@@ -21,7 +21,9 @@ class DRTSurfaceOSMesa : public gl::GLSurfaceOSMesa {
  public:
   // Size doesn't matter, the surface is resized to the right size later.
   DRTSurfaceOSMesa()
-      : GLSurfaceOSMesa(gl::GLSurface::SURFACE_OSMESA_RGBA, gfx::Size(1, 1)) {}
+      : GLSurfaceOSMesa(
+          gl::GLSurfaceFormat(gl::GLSurfaceFormat::PIXEL_LAYOUT_RGBA),
+          gfx::Size(1, 1)) {}
 
   // Implement a subset of GLSurface.
   gfx::SwapResult SwapBuffers() override;
@@ -43,7 +45,7 @@ bool g_allow_os_mesa = false;
 scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
     base::WeakPtr<ImageTransportSurfaceDelegate> delegate,
     SurfaceHandle surface_handle,
-    gl::GLSurface::Format format) {
+    gl::GLSurfaceFormat format) {
   DCHECK_NE(surface_handle, kNullSurfaceHandle);
 
   switch (gl::GetGLImplementation()) {

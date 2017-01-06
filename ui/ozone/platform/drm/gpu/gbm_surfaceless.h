@@ -36,7 +36,7 @@ class GbmSurfaceless : public gl::SurfacelessEGL {
   void QueueOverlayPlane(const OverlayPlane& plane);
 
   // gl::GLSurface:
-  bool Initialize(GLSurface::Format format) override;
+  bool Initialize(gl::GLSurfaceFormat format) override;
   gfx::SwapResult SwapBuffers() override;
   bool ScheduleOverlayPlane(int z_order,
                             gfx::OverlayTransform transform,

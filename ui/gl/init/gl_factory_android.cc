@@ -131,21 +131,24 @@ scoped_refptr<GLSurface> CreateViewGLSurface(gfx::AcceleratedWidget window) {
   }
 }
 
-scoped_refptr<GLSurface> CreateOffscreenGLSurface(const gfx::Size& size) {
+scoped_refptr<GLSurface> CreateOffscreenGLSurfaceWithFormat(
+    const gfx::Size& size, GLSurfaceFormat format) {
   TRACE_EVENT0("gpu", "gl::init::CreateOffscreenGLSurface");
   CHECK_NE(kGLImplementationNone, GetGLImplementation());
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL: {
-      return InitializeGLSurface(
-          new GLSurfaceOSMesa(GLSurface::SURFACE_OSMESA_BGRA, size));
+      format.SetDefaultPixelLayout(GLSurfaceFormat::PIXEL_LAYOUT_BGRA);
+      return InitializeGLSurfaceWithFormat(
+          new GLSurfaceOSMesa(format, size), format);
     }
     case kGLImplementationEGLGLES2: {
-      scoped_refptr<GLSurface> surface;
       if (GLSurfaceEGL::IsEGLSurfacelessContextSupported() &&
           (size.width() == 0 && size.height() == 0)) {
-        return InitializeGLSurface(new SurfacelessEGL(size));
+        return InitializeGLSurfaceWithFormat(
+            new SurfacelessEGL(size), format);
       } else {
-        return InitializeGLSurface(new PbufferGLSurfaceEGL(size));
+        return InitializeGLSurfaceWithFormat(
+            new PbufferGLSurfaceEGL(size), format);
       }
     }
     case kGLImplementationMockGL:

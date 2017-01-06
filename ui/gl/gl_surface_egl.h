@@ -75,7 +75,7 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
   // Implement GLSurface.
   EGLDisplay GetDisplay() override;
   EGLConfig GetConfig() override;
-  GLSurface::Format GetFormat() override;
+  GLSurfaceFormat GetFormat() override;
 
   static bool InitializeOneOff(EGLNativeDisplayType native_display);
   static void ShutdownOneOff();
@@ -98,7 +98,7 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
   ~GLSurfaceEGL() override;
 
   EGLConfig config_ = nullptr;
-  GLSurface::Format format_ = GLSurface::SURFACE_DEFAULT;
+  GLSurfaceFormat format_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceEGL);
@@ -112,7 +112,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
 
   // Implement GLSurface.
   using GLSurfaceEGL::Initialize;
-  bool Initialize(GLSurface::Format format) override;
+  bool Initialize(GLSurfaceFormat format) override;
   void Destroy() override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
@@ -191,8 +191,7 @@ class GL_EXPORT PbufferGLSurfaceEGL : public GLSurfaceEGL {
   explicit PbufferGLSurfaceEGL(const gfx::Size& size);
 
   // Implement GLSurface.
-  bool Initialize() override;
-  bool Initialize(GLSurface::Format format) override;
+  bool Initialize(GLSurfaceFormat format) override;
   void Destroy() override;
   bool IsOffscreen() override;
   gfx::SwapResult SwapBuffers() override;
@@ -221,8 +220,7 @@ class GL_EXPORT SurfacelessEGL : public GLSurfaceEGL {
   explicit SurfacelessEGL(const gfx::Size& size);
 
   // Implement GLSurface.
-  bool Initialize() override;
-  bool Initialize(GLSurface::Format format) override;
+  bool Initialize(GLSurfaceFormat format) override;
   void Destroy() override;
   bool IsOffscreen() override;
   bool IsSurfaceless() const override;

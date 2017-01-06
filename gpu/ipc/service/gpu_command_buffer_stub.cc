@@ -587,7 +587,7 @@ bool GpuCommandBufferStub::Initialize(
   // only a single context. See crbug.com/510243 for details.
   use_virtualized_gl_context_ |= channel_->mailbox_manager()->UsesSync();
 
-  gl::GLSurface::Format surface_format = gl::GLSurface::SURFACE_DEFAULT;
+  gl::GLSurfaceFormat surface_format = gl::GLSurfaceFormat();
   bool offscreen = (surface_handle_ == kNullSurfaceHandle);
   gl::GLSurface* default_surface = manager->GetDefaultOffscreenSurface();
   if (!default_surface) {
@@ -599,10 +599,12 @@ bool GpuCommandBufferStub::Initialize(
       init_params.attribs.green_size <= 6 &&
       init_params.attribs.blue_size <= 5 &&
       init_params.attribs.alpha_size == 0)
-    surface_format = gl::GLSurface::SURFACE_RGB565;
+    surface_format.SetRGB565();
+  // TODO(klausw): explicitly copy rgba sizes?
+
   // We can only use virtualized contexts for onscreen command buffers if their
   // config is compatible with the offscreen ones - otherwise MakeCurrent fails.
-  if (surface_format != default_surface->GetFormat() && !offscreen)
+  if (!surface_format.IsCompatible(default_surface->GetFormat()) && !offscreen)
     use_virtualized_gl_context_ = false;
 #endif
 

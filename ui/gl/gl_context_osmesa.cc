@@ -32,11 +32,11 @@ bool GLContextOSMesa::Initialize(GLSurface* compatible_surface,
       share_group() ? share_group()->GetHandle() : nullptr);
 
   GLuint format = 0;
-  switch (compatible_surface->GetFormat()) {
-    case GLSurface::SURFACE_OSMESA_BGRA:
+  switch (compatible_surface->GetFormat().GetPixelLayout()) {
+    case GLSurfaceFormat::PIXEL_LAYOUT_BGRA:
       format = OSMESA_BGRA;
       break;
-    case GLSurface::SURFACE_OSMESA_RGBA:
+    case GLSurfaceFormat::PIXEL_LAYOUT_RGBA:
       format = OSMESA_RGBA;
       break;
     default:

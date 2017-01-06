@@ -23,7 +23,7 @@ PassThroughImageTransportSurface::PassThroughImageTransportSurface(
       weak_ptr_factory_(this) {}
 
 bool PassThroughImageTransportSurface::Initialize(
-    gl::GLSurface::Format format) {
+    gl::GLSurfaceFormat format) {
   // The surface is assumed to have already been initialized.
   delegate_->SetLatencyInfoCallback(
       base::Bind(&PassThroughImageTransportSurface::SetLatencyInfo,

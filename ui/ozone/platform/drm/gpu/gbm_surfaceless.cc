@@ -48,7 +48,7 @@ void GbmSurfaceless::QueueOverlayPlane(const OverlayPlane& plane) {
   planes_.push_back(plane);
 }
 
-bool GbmSurfaceless::Initialize(gl::GLSurface::Format format) {
+bool GbmSurfaceless::Initialize(gl::GLSurfaceFormat format) {
   if (!SurfacelessEGL::Initialize(format))
     return false;
   vsync_provider_ = base::MakeUnique<DrmVSyncProvider>(window_.get());

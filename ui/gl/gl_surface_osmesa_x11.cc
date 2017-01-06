@@ -16,7 +16,9 @@
 namespace gl {
 
 GLSurfaceOSMesaX11::GLSurfaceOSMesaX11(gfx::AcceleratedWidget window)
-    : GLSurfaceOSMesa(SURFACE_OSMESA_BGRA, gfx::Size(1, 1)),
+    : GLSurfaceOSMesa(
+          GLSurfaceFormat(GLSurfaceFormat::PIXEL_LAYOUT_BGRA),
+          gfx::Size(1, 1)),
       xdisplay_(gfx::GetXDisplay()),
       window_graphics_context_(0),
       window_(window),
@@ -41,7 +43,7 @@ bool GLSurfaceOSMesaX11::InitializeOneOff() {
   return true;
 }
 
-bool GLSurfaceOSMesaX11::Initialize(GLSurface::Format format) {
+bool GLSurfaceOSMesaX11::Initialize(GLSurfaceFormat format) {
   if (!GLSurfaceOSMesa::Initialize(format))
     return false;
 

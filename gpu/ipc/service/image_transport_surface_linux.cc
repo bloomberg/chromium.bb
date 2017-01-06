@@ -13,7 +13,7 @@ namespace gpu {
 scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
     base::WeakPtr<ImageTransportSurfaceDelegate> delegate,
     SurfaceHandle surface_handle,
-    gl::GLSurface::Format format) {
+    gl::GLSurfaceFormat format) {
   DCHECK_NE(surface_handle, kNullSurfaceHandle);
   scoped_refptr<gl::GLSurface> surface;
 #if defined(USE_OZONE)

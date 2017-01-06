@@ -89,5 +89,9 @@ void ShutdownGL() {
   UnloadGLNativeLibraries();
 }
 
+scoped_refptr<GLSurface> CreateOffscreenGLSurface(const gfx::Size& size) {
+  return CreateOffscreenGLSurfaceWithFormat(size, GLSurfaceFormat());
+}
+
 }  // namespace init
 }  // namespace gl

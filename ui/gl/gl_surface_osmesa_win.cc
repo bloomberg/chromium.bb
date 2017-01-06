@@ -26,7 +26,8 @@
 namespace gl {
 
 GLSurfaceOSMesaWin::GLSurfaceOSMesaWin(gfx::AcceleratedWidget window)
-    : GLSurfaceOSMesa(SURFACE_OSMESA_RGBA, gfx::Size(1, 1)),
+    : GLSurfaceOSMesa(GLSurfaceFormat(GLSurfaceFormat::PIXEL_LAYOUT_RGBA),
+                      gfx::Size(1, 1)),
       window_(window),
       device_context_(NULL) {
   DCHECK(window);
@@ -36,7 +37,7 @@ GLSurfaceOSMesaWin::~GLSurfaceOSMesaWin() {
   Destroy();
 }
 
-bool GLSurfaceOSMesaWin::Initialize(GLSurface::Format format) {
+bool GLSurfaceOSMesaWin::Initialize(GLSurfaceFormat format) {
   if (!GLSurfaceOSMesa::Initialize(format))
     return false;
 

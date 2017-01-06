@@ -39,7 +39,7 @@ class ImageTransportSurfaceOverlayMac : public gl::GLSurface,
       base::WeakPtr<ImageTransportSurfaceDelegate> delegate);
 
   // GLSurface implementation
-  bool Initialize(gl::GLSurface::Format format) override;
+  bool Initialize(gl::GLSurfaceFormat format) override;
   void Destroy() override;
   bool Resize(const gfx::Size& size,
               float scale_factor,

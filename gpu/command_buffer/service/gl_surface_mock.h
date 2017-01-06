@@ -16,7 +16,7 @@ class GLSurfaceMock : public gl::GLSurface {
  public:
   GLSurfaceMock();
 
-  MOCK_METHOD1(Initialize, bool(gl::GLSurface::Format format));
+  MOCK_METHOD1(Initialize, bool(gl::GLSurfaceFormat format));
   MOCK_METHOD0(Destroy, void());
   MOCK_METHOD3(Resize,
                bool(const gfx::Size& size, float scale_factor, bool alpha));
@@ -34,7 +34,7 @@ class GLSurfaceMock : public gl::GLSurface {
   MOCK_METHOD0(GetShareHandle, void*());
   MOCK_METHOD0(GetDisplay, void*());
   MOCK_METHOD0(GetConfig, void*());
-  MOCK_METHOD0(GetFormat, GLSurface::Format());
+  MOCK_METHOD0(GetFormat, gl::GLSurfaceFormat());
 
  protected:
   virtual ~GLSurfaceMock();

@@ -15,7 +15,7 @@
 
 namespace gl {
 
-GLSurfaceOSMesa::GLSurfaceOSMesa(GLSurface::Format format,
+GLSurfaceOSMesa::GLSurfaceOSMesa(GLSurfaceFormat format,
                                  const gfx::Size& size)
     : size_(size),
       format_(format) {
@@ -25,7 +25,7 @@ GLSurfaceOSMesa::GLSurfaceOSMesa(GLSurface::Format format,
     size_.SetSize(1, 1);
 }
 
-bool GLSurfaceOSMesa::Initialize(GLSurface::Format format) {
+bool GLSurfaceOSMesa::Initialize(GLSurfaceFormat format) {
   return Resize(size_, 1.f, true);
 }
 
@@ -95,7 +95,7 @@ void* GLSurfaceOSMesa::GetHandle() {
   return buffer_.get();
 }
 
-GLSurface::Format GLSurfaceOSMesa::GetFormat() {
+GLSurfaceFormat GLSurfaceOSMesa::GetFormat() {
   return format_;
 }
 
@@ -110,7 +110,9 @@ gfx::SwapResult GLSurfaceOSMesaHeadless::SwapBuffers() {
 }
 
 GLSurfaceOSMesaHeadless::GLSurfaceOSMesaHeadless()
-    : GLSurfaceOSMesa(SURFACE_OSMESA_BGRA, gfx::Size(1, 1)) {
+    : GLSurfaceOSMesa(
+          GLSurfaceFormat(GLSurfaceFormat::PIXEL_LAYOUT_BGRA),
+          gfx::Size(1, 1)) {
 }
 
 GLSurfaceOSMesaHeadless::~GLSurfaceOSMesaHeadless() { Destroy(); }

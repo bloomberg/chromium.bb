@@ -48,7 +48,8 @@ scoped_refptr<GLSurface> CreateDefaultOffscreenGLSurface(
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL:
       return InitializeGLSurface(
-          new GLSurfaceOSMesa(GLSurface::SURFACE_OSMESA_BGRA, size));
+          new GLSurfaceOSMesa(
+              GLSurfaceFormat(GLSurfaceFormat::PIXEL_LAYOUT_BGRA), size));
     case kGLImplementationMockGL:
       return InitializeGLSurface(new GLSurfaceStub);
     default:
@@ -131,8 +132,14 @@ scoped_refptr<GLSurface> CreateSurfacelessViewGLSurface(
       GetGLImplementation(), window);
 }
 
-scoped_refptr<GLSurface> CreateOffscreenGLSurface(const gfx::Size& size) {
+scoped_refptr<GLSurface> CreateOffscreenGLSurfaceWithFormat(
+    const gfx::Size& size, GLSurfaceFormat format) {
   TRACE_EVENT0("gpu", "gl::init::CreateOffscreenGLSurface");
+
+  if (!format.IsDefault()) {
+    NOTREACHED() << "FATAL: Ozone only supports default-format surfaces.";
+    return nullptr;
+  }
 
   if (HasGLOzone())
     return GetGLOzone()->CreateOffscreenGLSurface(size);

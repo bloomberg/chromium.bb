@@ -18,7 +18,11 @@ TEST_F(GLDynamicConfigTest, SwitchConfigurationInNonVirtualizedContextMode) {
   GLManager::SetEnableVirtualContext(false);
 
   GLManager::Options options;
-  options.surface_format = gl::GLSurface::SURFACE_RGB565;
+  // TODO(klausw,jinsukkim): This modification is untested,
+  // GLManager::Options does not currently have a surface_format
+  // field.
+  options.surface_format = gl::GLSurfaceFormat();
+  options.surface_format.SetRGB565();
   GLManager gl_rgb_565;
   gl_rgb_565.Initialize(options);
 

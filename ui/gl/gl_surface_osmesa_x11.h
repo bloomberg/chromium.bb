@@ -24,7 +24,7 @@ class GL_EXPORT GLSurfaceOSMesaX11 : public GLSurfaceOSMesa {
   static bool InitializeOneOff();
 
   // Implement a subset of GLSurface.
-  bool Initialize(GLSurface::Format format) override;
+  bool Initialize(GLSurfaceFormat format) override;
   void Destroy() override;
   bool Resize(const gfx::Size& new_size,
               float scale_factor,

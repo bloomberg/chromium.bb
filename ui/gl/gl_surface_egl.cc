@@ -239,7 +239,7 @@ bool ValidateEglConfig(EGLDisplay display,
   return true;
 }
 
-EGLConfig ChooseConfig(GLSurface::Format format) {
+EGLConfig ChooseConfig(GLSurfaceFormat format) {
   // Choose an EGL configuration.
   // On X this is only used for PBuffer surfaces.
   std::vector<EGLint> renderable_types;
@@ -249,8 +249,9 @@ EGLConfig ChooseConfig(GLSurface::Format format) {
   }
   renderable_types.push_back(EGL_OPENGL_ES2_BIT);
 
-  EGLint buffer_size = 32;
+  EGLint buffer_size = format.GetBufferSize();
   EGLint alpha_size = 8;
+  bool want_rgb565 = buffer_size == 16;
 
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
   // If we're using ANGLE_NULL, we may not have a display, in which case we
@@ -262,9 +263,9 @@ EGLConfig ChooseConfig(GLSurface::Format format) {
   }
 #endif
 
-  EGLint surface_type = (format == GLSurface::SURFACE_SURFACELESS)
+  EGLint surface_type = (format.IsSurfaceless()
                             ? EGL_DONT_CARE
-                            : EGL_WINDOW_BIT | EGL_PBUFFER_BIT;
+                            : EGL_WINDOW_BIT | EGL_PBUFFER_BIT);
 
   for (auto renderable_type : renderable_types) {
     EGLint config_attribs_8888[] = {EGL_BUFFER_SIZE,
@@ -298,7 +299,7 @@ EGLConfig ChooseConfig(GLSurface::Format format) {
                                    EGL_NONE};
 
     EGLint* choose_attributes = config_attribs_8888;
-    if (format == GLSurface::SURFACE_RGB565) {
+    if (want_rgb565) {
       choose_attributes = config_attribs_565;
     }
 
@@ -313,7 +314,7 @@ EGLConfig ChooseConfig(GLSurface::Format format) {
     }
 
     std::unique_ptr<EGLConfig[]> matching_configs(new EGLConfig[num_configs]);
-    if (format == GLSurface::SURFACE_RGB565) {
+    if (want_rgb565) {
       config_size = num_configs;
       config_data = matching_configs.get();
     }
@@ -325,7 +326,7 @@ EGLConfig ChooseConfig(GLSurface::Format format) {
       return config;
     }
 
-    if (format == GLSurface::SURFACE_RGB565) {
+    if (want_rgb565) {
       // Because of the EGL config sort order, we have to iterate
       // through all of them (it'll put higher sum(R,G,B) bits
       // first with the above attribs).
@@ -461,7 +462,7 @@ bool EGLSyncControlVSyncProvider::GetMscRate(int32_t* numerator,
 
 GLSurfaceEGL::GLSurfaceEGL() {}
 
-GLSurface::Format GLSurfaceEGL::GetFormat() {
+GLSurfaceFormat GLSurfaceEGL::GetFormat() {
   return format_;
 }
 
@@ -709,7 +710,7 @@ NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(EGLNativeWindowType window)
 #endif
 }
 
-bool NativeViewGLSurfaceEGL::Initialize(GLSurface::Format format) {
+bool NativeViewGLSurfaceEGL::Initialize(GLSurfaceFormat format) {
   format_ = format;
   return Initialize(nullptr);
 }
@@ -1064,21 +1065,18 @@ PbufferGLSurfaceEGL::PbufferGLSurfaceEGL(const gfx::Size& size)
     size_.SetSize(1, 1);
 }
 
-bool PbufferGLSurfaceEGL::Initialize() {
-  GLSurface::Format format = SURFACE_DEFAULT;
+bool PbufferGLSurfaceEGL::Initialize(GLSurfaceFormat format) {
+  EGLSurface old_surface = surface_;
+
 #if defined(OS_ANDROID)
   // This is to allow context virtualization which requires on- and offscreen
   // to use a compatible config. We expect the client to request RGB565
   // onscreen surface also for this to work (with the exception of
   // fullscreen video).
   if (base::SysInfo::IsLowEndDevice())
-    format = SURFACE_RGB565;
+    format.SetRGB565();
 #endif
-  return Initialize(format);
-}
 
-bool PbufferGLSurfaceEGL::Initialize(GLSurface::Format format) {
-  EGLSurface old_surface = surface_;
   format_ = format;
 
   EGLDisplay display = GetDisplay();
@@ -1201,14 +1199,12 @@ PbufferGLSurfaceEGL::~PbufferGLSurfaceEGL() {
 
 SurfacelessEGL::SurfacelessEGL(const gfx::Size& size)
     : size_(size) {
-  format_ = GLSurface::SURFACE_SURFACELESS;
+  format_ = GLSurfaceFormat();
+  format_.SetIsSurfaceless();
 }
 
-bool SurfacelessEGL::Initialize() {
-  return Initialize(SURFACE_SURFACELESS);
-}
-
-bool SurfacelessEGL::Initialize(GLSurface::Format format) {
+bool SurfacelessEGL::Initialize(GLSurfaceFormat format) {
+  format.SetIsSurfaceless();
   format_ = format;
   return true;
 }

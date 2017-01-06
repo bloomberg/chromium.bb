@@ -21,10 +21,10 @@ namespace gl {
 // surfaces can be resized and resizing preserves the contents.
 class GL_EXPORT GLSurfaceOSMesa : public GLSurface {
  public:
-  GLSurfaceOSMesa(GLSurface::Format format, const gfx::Size& size);
+  GLSurfaceOSMesa(GLSurfaceFormat format, const gfx::Size& size);
 
   // Implement GLSurface.
-  bool Initialize(GLSurface::Format format) override;
+  bool Initialize(GLSurfaceFormat format) override;
   void Destroy() override;
   bool Resize(const gfx::Size& new_size,
               float scale_factor,
@@ -33,14 +33,14 @@ class GL_EXPORT GLSurfaceOSMesa : public GLSurface {
   gfx::SwapResult SwapBuffers() override;
   gfx::Size GetSize() override;
   void* GetHandle() override;
-  GLSurface::Format GetFormat() override;
+  GLSurfaceFormat GetFormat() override;
 
  protected:
   ~GLSurfaceOSMesa() override;
 
  private:
   gfx::Size size_;
-  GLSurface::Format format_;
+  GLSurfaceFormat format_;
   std::unique_ptr<int32_t[]> buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceOSMesa);

@@ -11,6 +11,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_surface_format.h"
 #include "ui/gl/gpu_preference.h"
 #include "ui/gl/init/gl_init_export.h"
 
@@ -69,6 +70,9 @@ GL_INIT_EXPORT scoped_refptr<GLSurface> CreateSurfacelessViewGLSurface(
 // Creates a GL surface used for offscreen rendering.
 GL_INIT_EXPORT scoped_refptr<GLSurface> CreateOffscreenGLSurface(
     const gfx::Size& size);
+
+GL_INIT_EXPORT scoped_refptr<GLSurface> CreateOffscreenGLSurfaceWithFormat(
+    const gfx::Size& size, GLSurfaceFormat format);
 
 }  // namespace init
 }  // namespace gl

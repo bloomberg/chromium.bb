@@ -91,7 +91,7 @@ ImageTransportSurfaceOverlayMac::~ImageTransportSurfaceOverlayMac() {
   Destroy();
 }
 
-bool ImageTransportSurfaceOverlayMac::Initialize(gl::GLSurface::Format format) {
+bool ImageTransportSurfaceOverlayMac::Initialize(gl::GLSurfaceFormat format) {
   delegate_->SetLatencyInfoCallback(
       base::Bind(&ImageTransportSurfaceOverlayMac::SetLatencyInfo,
                  base::Unretained(this)));

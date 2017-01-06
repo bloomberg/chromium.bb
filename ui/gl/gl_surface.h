@@ -20,6 +20,7 @@
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_surface_format.h"
 
 namespace gfx {
 class VSyncProvider;
@@ -39,22 +40,17 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
  public:
   GLSurface();
 
-  // Minimum bit depth of surface.
-  enum Format {
-    SURFACE_ARGB8888,
-    SURFACE_RGB565,
-    SURFACE_OSMESA_BGRA,
-    SURFACE_OSMESA_RGBA,
-    SURFACE_SURFACELESS,
-    SURFACE_DEFAULT = SURFACE_ARGB8888
-  };
+  // Non-virtual initialization, this always calls Initialize with a
+  // default GLSurfaceFormat. Subclasses should override the format-
+  // specific Initialize method below and interpret the default format
+  // as appropriate.
+  bool Initialize();
 
   // (Re)create the surface. TODO(apatrick): This is an ugly hack to allow the
   // EGL surface associated to be recreated without destroying the associated
   // context. The implementation of this function for other GLSurface derived
   // classes is in a pending changelist.
-  virtual bool Initialize();
-  virtual bool Initialize(GLSurface::Format format);
+  virtual bool Initialize(GLSurfaceFormat format);
 
   // Destroys the surface.
   virtual void Destroy() = 0;
@@ -164,7 +160,7 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   virtual unsigned long GetCompatibilityKey();
 
   // Get the GL pixel format of the surface, if available.
-  virtual GLSurface::Format GetFormat();
+  virtual GLSurfaceFormat GetFormat();
 
   // Get access to a helper providing time of recent refresh and period
   // of screen refresh. If unavailable, returns NULL.
@@ -234,7 +230,7 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
  public:
   explicit GLSurfaceAdapter(GLSurface* surface);
 
-  bool Initialize(GLSurface::Format format) override;
+  bool Initialize(GLSurfaceFormat format) override;
   void Destroy() override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
@@ -271,7 +267,7 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   void* GetDisplay() override;
   void* GetConfig() override;
   unsigned long GetCompatibilityKey() override;
-  GLSurface::Format GetFormat() override;
+  GLSurfaceFormat GetFormat() override;
   gfx::VSyncProvider* GetVSyncProvider() override;
   bool ScheduleOverlayPlane(int z_order,
                             gfx::OverlayTransform transform,
@@ -298,6 +294,9 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
 // initialization fails.
 GL_EXPORT scoped_refptr<GLSurface> InitializeGLSurface(
     scoped_refptr<GLSurface> surface);
+
+GL_EXPORT scoped_refptr<GLSurface> InitializeGLSurfaceWithFormat(
+    scoped_refptr<GLSurface> surface, GLSurfaceFormat format);
 
 }  // namespace gl
 
