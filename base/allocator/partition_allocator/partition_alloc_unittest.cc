@@ -611,6 +611,12 @@ TEST(PartitionAllocTest, GenericAlloc) {
 // Test the generic allocation functions can handle some specific sizes of
 // interest.
 TEST(PartitionAllocTest, GenericAllocSizes) {
+  // TODO(crbug.com/678782): Where necessary and possible, disable the
+  // platform's OOM-killing behavior. OOM-killing makes this test flaky on
+  // low-memory devices.
+  if (!IsLargeMemoryDevice())
+    return;
+
   TestSetup();
 
   void* ptr = partitionAllocGeneric(genericAllocator.root(), 0, typeName);
@@ -708,6 +714,12 @@ TEST(PartitionAllocTest, GenericAllocSizes) {
 
 // Test that we can fetch the real allocated size after an allocation.
 TEST(PartitionAllocTest, GenericAllocGetSize) {
+  // TODO(crbug.com/678782): Where necessary and possible, disable the
+  // platform's OOM-killing behavior. OOM-killing makes this test flaky on
+  // low-memory devices.
+  if (!IsLargeMemoryDevice())
+    return;
+
   TestSetup();
 
   void* ptr;
@@ -1266,6 +1278,12 @@ TEST(PartitionAllocTest, LostFreePagesBug) {
 #if !defined(ARCH_CPU_64_BITS) || defined(OS_POSIX)
 
 static void DoReturnNullTest(size_t allocSize) {
+  // TODO(crbug.com/678782): Where necessary and possible, disable the
+  // platform's OOM-killing behavior. OOM-killing makes this test flaky on
+  // low-memory devices.
+  if (!IsLargeMemoryDevice())
+    return;
+
   TestSetup();
 
   EXPECT_TRUE(SetAddressSpaceLimit());
