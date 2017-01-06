@@ -31,7 +31,6 @@
 #ifndef NavigatorStorageQuota_h
 #define NavigatorStorageQuota_h
 
-#include "core/dom/ContextLifecycleObserver.h"
 #include "core/frame/Navigator.h"
 #include "modules/quota/DeprecatedStorageQuota.h"
 #include "platform/Supplementable.h"
@@ -39,15 +38,13 @@
 
 namespace blink {
 
-class LocalFrame;
 class Navigator;
 class StorageManager;
 class StorageQuota;
 
 class NavigatorStorageQuota final
     : public GarbageCollected<NavigatorStorageQuota>,
-      public Supplement<Navigator>,
-      public ContextClient {
+      public Supplement<Navigator> {
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorStorageQuota);
 
  public:
@@ -65,7 +62,7 @@ class NavigatorStorageQuota final
   DECLARE_TRACE();
 
  private:
-  explicit NavigatorStorageQuota(LocalFrame*);
+  explicit NavigatorStorageQuota(Navigator&);
   static const char* supplementName();
 
   mutable Member<StorageQuota> m_storageQuota;
