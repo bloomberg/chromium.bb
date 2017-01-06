@@ -8,7 +8,6 @@
 #import <Foundation/Foundation.h>
 
 @class CRWWebController;
-class GURL;
 
 // DEPRECATED, do not conform to this protocol and do not add any methods to it.
 // Use web::WebStateDelegate instead.
@@ -16,47 +15,6 @@ class GURL;
 @protocol CRWWebUserInterfaceDelegate<NSObject>
 
  @optional
-// The JavaScript panel selectors below are only called by the web controller
-// for builds with WKWebView enabled.
-
-// Displays a JavaScript alert with an OK button, showing the provided message.
-// |completionHandler| is called after the OK button on the alert is tapped.
-// If this selector isn't implemented, the completion handler provided by the
-// web view will be called without any UI displayed. If this method is
-// implemented, but |completionHandler| is not called then
-// NSInternalInconsistencyException will be thrown.
-- (void)webController:(CRWWebController*)webController
-    runJavaScriptAlertPanelWithMessage:(NSString*)message
-                            requestURL:(const GURL&)requestURL
-                     completionHandler:(void (^)(void))completionHandler;
-
-// Displays a JavaScript confirm alert with an OK and Cancel button, showing the
-// provided message.  |completionHandler| is called after a button is pressed,
-// with |isConfirmed| indicating whether OK was pressed.  If this selector isn't
-// implemented, the completion handler provided by the web view will be called
-// with |isConfirmed| = NO. If this method is implemented, but
-// |completionHandler| is not called then NSInternalInconsistencyException will
-// be thrown.
-- (void)webController:(CRWWebController*)webController
-    runJavaScriptConfirmPanelWithMessage:(NSString*)message
-                              requestURL:(const GURL&)requestURL
-                       completionHandler:
-        (void (^)(BOOL isConfirmed))completionHandler;
-
-// Displays a JavaScript input alert with an OK and Cancel button, showing the
-// provided message and default text.  |completionHandler| is called after a
-// button is pressed.  If the OK button is pressed, |input| contains the user
-// text.  If the cancel but is pressed, |input| will be nil.  If this selector
-// isn't implemented, the completion handler provided by the web view will be
-// called with |input| = nil. If this method is implemented, but
-// |completionHandler| is not called then NSInternalInconsistencyException will
-// be thrown.
-- (void)webController:(CRWWebController*)webController
-    runJavaScriptTextInputPanelWithPrompt:(NSString*)message
-                              defaultText:(NSString*)defaultText
-                               requestURL:(const GURL&)requestURL
-                        completionHandler:
-                            (void (^)(NSString* input))completionHandler;
 
 // Displays an HTTP authentication dialog.  |completionHandler| should be called
 // with non-nil |username| and |password| if embedder wants to proceed with

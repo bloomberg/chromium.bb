@@ -3872,6 +3872,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                           message:(NSString*)message
                       defaultText:(NSString*)defaultText
                        completion:(void (^)(BOOL, NSString*))completionHandler {
+  DCHECK(completionHandler);
+  if (self.shouldSuppressDialogs) {
+    [self didSuppressDialog];
+    completionHandler(NO, nil);
+    return;
+  }
+
   self.webStateImpl->RunJavaScriptDialog(
       net::GURLWithNSURL(frame.request.URL), type, message, defaultText,
       base::BindBlock(^(bool success, NSString* input) {
@@ -4947,30 +4954,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     runJavaScriptAlertPanelWithMessage:(NSString*)message
                       initiatedByFrame:(WKFrameInfo*)frame
                      completionHandler:(void (^)())completionHandler {
-  if (self.shouldSuppressDialogs) {
-    [self didSuppressDialog];
-    completionHandler();
-    return;
-  }
-
-  SEL alertSelector = @selector(webController:
-           runJavaScriptAlertPanelWithMessage:
-                                   requestURL:
-                            completionHandler:);
-  if ([self.UIDelegate respondsToSelector:alertSelector]) {
-    [self.UIDelegate webController:self
-        runJavaScriptAlertPanelWithMessage:message
-                                requestURL:net::GURLWithNSURL(frame.request.URL)
-                         completionHandler:completionHandler];
-  } else {
-    [self runJavaScriptDialogOfType:web::JAVASCRIPT_DIALOG_TYPE_ALERT
-                   initiatedByFrame:frame
-                            message:message
-                        defaultText:nil
-                         completion:^(BOOL, NSString*) {
-                           completionHandler();
-                         }];
-  }
+  [self runJavaScriptDialogOfType:web::JAVASCRIPT_DIALOG_TYPE_ALERT
+                 initiatedByFrame:frame
+                          message:message
+                      defaultText:nil
+                       completion:^(BOOL, NSString*) {
+                         completionHandler();
+                       }];
 }
 
 - (void)webView:(WKWebView*)webView
@@ -4978,33 +4968,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                         initiatedByFrame:(WKFrameInfo*)frame
                        completionHandler:
                            (void (^)(BOOL result))completionHandler {
-  if (self.shouldSuppressDialogs) {
-    [self didSuppressDialog];
-    completionHandler(NO);
-    return;
-  }
-
-  SEL confirmationSelector = @selector(webController:
-                runJavaScriptConfirmPanelWithMessage:
-                                          requestURL:
-                                   completionHandler:);
-  if ([self.UIDelegate respondsToSelector:confirmationSelector]) {
-    [self.UIDelegate webController:self
-        runJavaScriptConfirmPanelWithMessage:message
-                                  requestURL:net::GURLWithNSURL(
-                                                 frame.request.URL)
-                           completionHandler:completionHandler];
-  } else {
-    [self runJavaScriptDialogOfType:web::JAVASCRIPT_DIALOG_TYPE_CONFIRM
-                   initiatedByFrame:frame
-                            message:message
-                        defaultText:nil
-                         completion:^(BOOL success, NSString*) {
-                           if (completionHandler) {
-                             completionHandler(success);
-                           }
-                         }];
-  }
+  [self runJavaScriptDialogOfType:web::JAVASCRIPT_DIALOG_TYPE_CONFIRM
+                 initiatedByFrame:frame
+                          message:message
+                      defaultText:nil
+                       completion:^(BOOL success, NSString*) {
+                         if (completionHandler) {
+                           completionHandler(success);
+                         }
+                       }];
 }
 
 - (void)webView:(WKWebView*)webView
@@ -5021,35 +4993,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     return;
   }
 
-  if (self.shouldSuppressDialogs) {
-    [self didSuppressDialog];
-    completionHandler(nil);
-    return;
-  }
-
-  SEL textInputSelector = @selector(webController:
-            runJavaScriptTextInputPanelWithPrompt:
-                                      defaultText:
-                                       requestURL:
-                                completionHandler:);
-  if ([self.UIDelegate respondsToSelector:textInputSelector]) {
-    GURL requestURL = net::GURLWithNSURL(frame.request.URL);
-    [self.UIDelegate webController:self
-        runJavaScriptTextInputPanelWithPrompt:prompt
-                                  defaultText:defaultText
-                                   requestURL:requestURL
-                            completionHandler:completionHandler];
-  } else {
-    [self runJavaScriptDialogOfType:web::JAVASCRIPT_DIALOG_TYPE_PROMPT
-                   initiatedByFrame:frame
-                            message:prompt
-                        defaultText:defaultText
-                         completion:^(BOOL, NSString* input) {
-                           if (completionHandler) {
-                             completionHandler(input);
-                           }
-                         }];
-  }
+  [self runJavaScriptDialogOfType:web::JAVASCRIPT_DIALOG_TYPE_PROMPT
+                 initiatedByFrame:frame
+                          message:prompt
+                      defaultText:defaultText
+                       completion:^(BOOL, NSString* input) {
+                         if (completionHandler) {
+                           completionHandler(input);
+                         }
+                       }];
 }
 
 #pragma mark -
