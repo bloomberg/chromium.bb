@@ -26,8 +26,10 @@ class MODULES_EXPORT ServiceWorkerContainerClient final
   WTF_MAKE_NONCOPYABLE(ServiceWorkerContainerClient);
 
  public:
-  static ServiceWorkerContainerClient* create(
-      std::unique_ptr<WebServiceWorkerProvider>);
+  ServiceWorkerContainerClient(Document&,
+                               std::unique_ptr<WebServiceWorkerProvider>);
+  ServiceWorkerContainerClient(WorkerClients&,
+                               std::unique_ptr<WebServiceWorkerProvider>);
   virtual ~ServiceWorkerContainerClient();
 
   WebServiceWorkerProvider* provider() { return m_provider.get(); }
@@ -40,10 +42,7 @@ class MODULES_EXPORT ServiceWorkerContainerClient final
     Supplement<WorkerClients>::trace(visitor);
   }
 
- protected:
-  explicit ServiceWorkerContainerClient(
-      std::unique_ptr<WebServiceWorkerProvider>);
-
+ private:
   std::unique_ptr<WebServiceWorkerProvider> m_provider;
 };
 

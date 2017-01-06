@@ -14,14 +14,15 @@
 
 namespace blink {
 
-ServiceWorkerContainerClient* ServiceWorkerContainerClient::create(
-    std::unique_ptr<WebServiceWorkerProvider> provider) {
-  return new ServiceWorkerContainerClient(std::move(provider));
-}
+ServiceWorkerContainerClient::ServiceWorkerContainerClient(
+    Document& document,
+    std::unique_ptr<WebServiceWorkerProvider> provider)
+    : Supplement<Document>(document), m_provider(std::move(provider)) {}
 
 ServiceWorkerContainerClient::ServiceWorkerContainerClient(
+    WorkerClients& clients,
     std::unique_ptr<WebServiceWorkerProvider> provider)
-    : m_provider(std::move(provider)) {}
+    : Supplement<WorkerClients>(clients), m_provider(std::move(provider)) {}
 
 ServiceWorkerContainerClient::~ServiceWorkerContainerClient() {}
 
@@ -34,10 +35,13 @@ ServiceWorkerContainerClient* ServiceWorkerContainerClient::from(
   if (!context)
     return nullptr;
   if (context->isWorkerGlobalScope()) {
-    WorkerClients* clients = toWorkerGlobalScope(context)->clients();
-    ASSERT(clients);
-    return static_cast<ServiceWorkerContainerClient*>(
-        Supplement<WorkerClients>::from(clients, supplementName()));
+    WorkerClients* workerClients = toWorkerGlobalScope(context)->clients();
+    DCHECK(workerClients);
+    ServiceWorkerContainerClient* client =
+        static_cast<ServiceWorkerContainerClient*>(
+            Supplement<WorkerClients>::from(workerClients, supplementName()));
+    DCHECK(client);
+    return client;
   }
   Document* document = toDocument(context);
   if (!document->frame())
@@ -48,6 +52,7 @@ ServiceWorkerContainerClient* ServiceWorkerContainerClient::from(
           Supplement<Document>::from(document, supplementName()));
   if (!client) {
     client = new ServiceWorkerContainerClient(
+        *document,
         document->frame()->loader().client()->createServiceWorkerProvider());
     Supplement<Document>::provideTo(*document, supplementName(), client);
   }
@@ -59,7 +64,7 @@ void provideServiceWorkerContainerClientToWorker(
     std::unique_ptr<WebServiceWorkerProvider> provider) {
   clients->provideSupplement(
       ServiceWorkerContainerClient::supplementName(),
-      ServiceWorkerContainerClient::create(std::move(provider)));
+      new ServiceWorkerContainerClient(*clients, std::move(provider)));
 }
 
 }  // namespace blink

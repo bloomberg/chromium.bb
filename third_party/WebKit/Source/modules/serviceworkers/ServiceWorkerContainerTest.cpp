@@ -162,7 +162,8 @@ class ServiceWorkerContainerTest : public ::testing::Test {
   void provide(std::unique_ptr<WebServiceWorkerProvider> provider) {
     Supplement<Document>::provideTo(
         m_page->document(), ServiceWorkerContainerClient::supplementName(),
-        ServiceWorkerContainerClient::create(std::move(provider)));
+        new ServiceWorkerContainerClient(m_page->document(),
+                                         std::move(provider)));
   }
 
   void setPageURL(const String& url) {
