@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<style></style>
+<div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <span></span>
+</div>
+<script>
+    test(() => {
+        assert_true(!!window.internals, "Test requires window.internals.");
+        document.body.offsetTop;
+        document.styleSheets[0].insertRule("span{background:green}", 0);
+        assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 1, "Check that only the span is affected.");
+    }, "Inserting a style rule with a type selector should only invalidate elements with that type.");
+</script>
