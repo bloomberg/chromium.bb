@@ -40,6 +40,7 @@ class ArcManualAuthCodeFetcher : public ArcAuthCodeFetcher,
 
   // ArcSupportHost::Observer:
   void OnAuthSucceeded(const std::string& auth_code) override;
+  void OnAuthFailed() override;
   void OnRetryClicked() override;
 
   ArcAuthContext* const context_;

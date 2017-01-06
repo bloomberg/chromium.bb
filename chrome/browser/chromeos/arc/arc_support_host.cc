@@ -69,6 +69,8 @@ constexpr char kEventOnWindowClosed[] = "onWindowClosed";
 // extension.
 // The auth token is passed via "code" field.
 constexpr char kEventOnAuthSucceeded[] = "onAuthSucceeded";
+// "onAuthFailed" is fired when LSO authorization has failed in extension.
+constexpr char kEventOnAuthFailed[] = "onAuthFailed";
 constexpr char kCode[] = "code";
 
 // "onAgree" is fired when a user clicks "Agree" button.
@@ -524,6 +526,9 @@ void ArcSupportHost::OnMessage(const base::DictionaryValue& message) {
     } else {
       NOTREACHED();
     }
+  } else if (event == kEventOnAuthFailed) {
+    for (auto& observer : observer_list_)
+      observer.OnAuthFailed();
   } else if (event == kEventOnAgreed) {
     bool is_metrics_enabled;
     bool is_backup_restore_enabled;

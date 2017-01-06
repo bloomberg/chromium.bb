@@ -59,6 +59,9 @@ class ArcSupportHost : public arc::ArcSupportMessageHost::Observer,
     // Called when LSO auth token fetch is successfully completed.
     virtual void OnAuthSucceeded(const std::string& auth_code) {}
 
+    // Called when LSO auth token fetch has failed.
+    virtual void OnAuthFailed() {}
+
     // Called when "RETRY" button on the error page is clicked.
     virtual void OnRetryClicked() {}
 

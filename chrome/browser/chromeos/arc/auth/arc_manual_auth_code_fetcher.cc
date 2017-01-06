@@ -8,6 +8,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/arc/arc_auth_context.h"
+#include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 
 namespace arc {
 
@@ -40,6 +41,7 @@ void ArcManualAuthCodeFetcher::OnContextPrepared(
     net::URLRequestContextGetter* request_context_getter) {
   DCHECK(!pending_callback_.is_null());
   if (!request_context_getter) {
+    UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
     support_host_->ShowError(ArcSupportHost::Error::SIGN_IN_NETWORK_ERROR,
                              false);
     return;
@@ -51,6 +53,12 @@ void ArcManualAuthCodeFetcher::OnContextPrepared(
 void ArcManualAuthCodeFetcher::OnAuthSucceeded(const std::string& auth_code) {
   DCHECK(!pending_callback_.is_null());
   base::ResetAndReturn(&pending_callback_).Run(auth_code);
+}
+
+void ArcManualAuthCodeFetcher::OnAuthFailed() {
+  // Don't report via callback. Extension is already showing more detailed
+  // information. Update only UMA here.
+  UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
 }
 
 void ArcManualAuthCodeFetcher::OnRetryClicked() {

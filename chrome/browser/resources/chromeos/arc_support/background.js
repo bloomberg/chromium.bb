@@ -675,7 +675,8 @@ chrome.app.runtime.onLaunched.addListener(function() {
           var authCode = results[0].substring(authCodePrefix.length);
           sendNativeMessage('onAuthSucceeded', {code: authCode});
         } else {
-          showErrorMessage(
+          sendNativeMessage('onAuthFailed');
+          showErrorPage(
               appWindow.contentWindow.loadTimeData.getString(
                   'authorizationFailed'));
         }
