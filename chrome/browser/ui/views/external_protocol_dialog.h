@@ -13,6 +13,10 @@
 
 class ProtocolDialogDelegate;
 
+namespace test {
+class ExternalProtocolDialogTestApi;
+}
+
 namespace views {
 class MessageBoxView;
 }
@@ -40,6 +44,8 @@ class ExternalProtocolDialog : public views::DialogDelegate {
   ui::ModalType GetModalType() const override;
 
  private:
+  friend class test::ExternalProtocolDialogTestApi;
+
   const std::unique_ptr<const ProtocolDialogDelegate> delegate_;
 
   // The message box view whose commands we handle.
