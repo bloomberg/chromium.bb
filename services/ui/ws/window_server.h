@@ -223,6 +223,7 @@ class WindowServer : public ServerWindowDelegate,
   bool in_drag_loop() const { return !!current_drag_loop_; }
 
   void OnDisplayReady(Display* display, bool is_first);
+  void OnDisplayDestroyed(Display* display);
   void OnNoMoreDisplays();
   WindowManagerState* GetWindowManagerStateForUser(const UserId& user_id);
 

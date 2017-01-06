@@ -44,6 +44,7 @@ class PlatformDisplayDefault : public PlatformDisplay,
   gfx::Rect GetBounds() const override;
   bool UpdateViewportMetrics(const display::ViewportMetrics& metrics) override;
   const display::ViewportMetrics& GetViewportMetrics() const override;
+  gfx::AcceleratedWidget GetAcceleratedWidget() const override;
   FrameGenerator* GetFrameGenerator() override;
 
  private:
@@ -82,6 +83,7 @@ class PlatformDisplayDefault : public PlatformDisplay,
 
   display::ViewportMetrics metrics_;
   std::unique_ptr<ui::PlatformWindow> platform_window_;
+  gfx::AcceleratedWidget widget_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformDisplayDefault);
 };

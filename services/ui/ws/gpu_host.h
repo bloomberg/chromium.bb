@@ -34,11 +34,16 @@ class GpuHost : public mojom::GpuHost {
 
   void Add(mojom::GpuRequest request);
 
+  void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget);
+  void OnAcceleratedWidgetDestroyed(gfx::AcceleratedWidget widget);
+
   // Requests a cc::mojom::DisplayCompositor interface from mus-gpu.
   void CreateDisplayCompositor(cc::mojom::DisplayCompositorRequest request,
                                cc::mojom::DisplayCompositorClientPtr client);
 
  private:
+  void OnBadMessageFromGpu();
+
   // mojom::GpuHost:
   void DidInitialize(const gpu::GPUInfo& gpu_info) override;
   void DidCreateOffscreenContext(const GURL& url) override;
@@ -47,6 +52,8 @@ class GpuHost : public mojom::GpuHost {
   void DidLoseContext(bool offscreen,
                       gpu::error::ContextLostReason reason,
                       const GURL& active_url) override;
+  void SetChildSurface(gpu::SurfaceHandle parent,
+                       gpu::SurfaceHandle child) override;
   void StoreShaderToDisk(int32_t client_id,
                          const std::string& key,
                          const std::string& shader) override;

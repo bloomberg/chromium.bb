@@ -63,6 +63,9 @@ class TestPlatformDisplay : public PlatformDisplay {
   const display::ViewportMetrics& GetViewportMetrics() const override {
     return display_metrics_;
   }
+  gfx::AcceleratedWidget GetAcceleratedWidget() const override {
+    return gfx::kNullAcceleratedWidget;
+  }
   FrameGenerator* GetFrameGenerator() override { return nullptr; }
 
  private:

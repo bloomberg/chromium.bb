@@ -5,6 +5,7 @@
 module ui.mojom;
 
 import "gpu/ipc/common/gpu_info.mojom";
+import "gpu/ipc/common/surface_handle.mojom";
 import "services/ui/gpu/interfaces/context_lost_reason.mojom";
 import "url/mojo/url.mojom";
 
@@ -18,5 +19,7 @@ interface GpuHost {
                  ContextLostReason reason,
                  url.mojom.Url active_url);
 
+  SetChildSurface(gpu.mojom.SurfaceHandle parent,
+                  gpu.mojom.SurfaceHandle child);
   StoreShaderToDisk(int32 client_id, string key, string shader);
 };

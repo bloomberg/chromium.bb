@@ -13,6 +13,7 @@
 #include "base/strings/string16.h"
 #include "services/ui/display/viewport_metrics.h"
 #include "services/ui/public/interfaces/cursor.mojom.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
 class Rect;
@@ -62,6 +63,10 @@ class PlatformDisplay {
       const display::ViewportMetrics& metrics) = 0;
 
   virtual const display::ViewportMetrics& GetViewportMetrics() const = 0;
+
+  // Returns the AcceleratedWidget associated with the Display. It can return
+  // kNullAcceleratedWidget if the accelerated widget is not available yet.
+  virtual gfx::AcceleratedWidget GetAcceleratedWidget() const = 0;
 
   virtual FrameGenerator* GetFrameGenerator() = 0;
 

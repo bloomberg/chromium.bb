@@ -509,6 +509,13 @@ WindowTree* WindowServer::GetCurrentDragLoopInitiator() {
 void WindowServer::OnDisplayReady(Display* display, bool is_first) {
   if (is_first)
     delegate_->OnFirstDisplayReady();
+  gpu_host_->OnAcceleratedWidgetAvailable(
+      display->platform_display()->GetAcceleratedWidget());
+}
+
+void WindowServer::OnDisplayDestroyed(Display* display) {
+  gpu_host_->OnAcceleratedWidgetDestroyed(
+      display->platform_display()->GetAcceleratedWidget());
 }
 
 void WindowServer::OnNoMoreDisplays() {

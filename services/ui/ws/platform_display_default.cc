@@ -36,7 +36,8 @@ PlatformDisplayDefault::PlatformDisplayDefault(
       image_cursors_(new ImageCursors),
 #endif
       frame_generator_(new FrameGenerator(this, init_params.root_window)),
-      metrics_(init_params.metrics) {
+      metrics_(init_params.metrics),
+      widget_(gfx::kNullAcceleratedWidget) {
   frame_generator_->set_device_scale_factor(
       init_params.metrics.device_scale_factor);
 }
@@ -157,6 +158,10 @@ const display::ViewportMetrics& PlatformDisplayDefault::GetViewportMetrics()
   return metrics_;
 }
 
+gfx::AcceleratedWidget PlatformDisplayDefault::GetAcceleratedWidget() const {
+  return widget_;
+}
+
 void PlatformDisplayDefault::UpdateEventRootLocation(ui::LocatedEvent* event) {
   gfx::Point location = event->location();
   location.Offset(metrics_.bounds.x(), metrics_.bounds.y());
@@ -238,6 +243,8 @@ void PlatformDisplayDefault::OnAcceleratedWidgetAvailable(
   // This will get called after Init() is called, either synchronously as part
   // of the Init() callstack or async after Init() has returned, depending on
   // the platform.
+  DCHECK_EQ(gfx::kNullAcceleratedWidget, widget_);
+  widget_ = widget;
   delegate_->OnAcceleratedWidgetAvailable();
   frame_generator_->OnAcceleratedWidgetAvailable(widget);
 }

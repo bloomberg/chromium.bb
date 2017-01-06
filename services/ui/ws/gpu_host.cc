@@ -19,6 +19,10 @@
 #include "services/ui/ws/gpu_host_delegate.h"
 #include "ui/gfx/buffer_format_util.h"
 
+#if defined(OS_WIN)
+#include "ui/gfx/win/rendering_window_manager.h"
+#endif
+
 namespace ui {
 namespace ws {
 
@@ -99,10 +103,10 @@ GpuHost::GpuHost(GpuHostDelegate* delegate)
       next_client_id_(kInternalGpuChannelClientId + 1),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       gpu_host_binding_(this) {
-  gpu_main_impl_ = base::MakeUnique<GpuMain>(MakeRequest(&gpu_main_));
-  gpu_main_impl_->OnStart();
   // TODO(sad): Once GPU process is split, this would look like:
   //   connector->ConnectToInterface("gpu", &gpu_main_);
+  gpu_main_impl_ = base::MakeUnique<GpuMain>(MakeRequest(&gpu_main_));
+  gpu_main_impl_->OnStart();
   gpu_main_->CreateGpuService(MakeRequest(&gpu_service_),
                               gpu_host_binding_.CreateInterfacePtrAndBind());
   gpu_memory_buffer_manager_ = base::MakeUnique<ServerGpuMemoryBufferManager>(
@@ -119,10 +123,28 @@ void GpuHost::Add(mojom::GpuRequest request) {
       std::move(request));
 }
 
+void GpuHost::OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) {
+#if defined(OS_WIN)
+  gfx::RenderingWindowManager::GetInstance()->RegisterParent(widget);
+#endif
+}
+
+void GpuHost::OnAcceleratedWidgetDestroyed(gfx::AcceleratedWidget widget) {
+#if defined(OS_WIN)
+  gfx::RenderingWindowManager::GetInstance()->UnregisterParent(widget);
+#endif
+}
+
 void GpuHost::CreateDisplayCompositor(
     cc::mojom::DisplayCompositorRequest request,
     cc::mojom::DisplayCompositorClientPtr client) {
   gpu_main_->CreateDisplayCompositor(std::move(request), std::move(client));
+}
+
+void GpuHost::OnBadMessageFromGpu() {
+  // TODO(sad): Received some unexpected message from the gpu process. We
+  // should kill the process and restart it.
+  NOTIMPLEMENTED();
 }
 
 void GpuHost::DidInitialize(const gpu::GPUInfo& gpu_info) {
@@ -139,6 +161,28 @@ void GpuHost::DidDestroyChannel(int32_t client_id) {}
 void GpuHost::DidLoseContext(bool offscreen,
                              gpu::error::ContextLostReason reason,
                              const GURL& active_url) {}
+
+void GpuHost::SetChildSurface(gpu::SurfaceHandle parent,
+                              gpu::SurfaceHandle child) {
+#if defined(OS_WIN)
+  // Verify that |parent| was created by the window server.
+  DWORD process_id = 0;
+  DWORD thread_id = GetWindowThreadProcessId(parent, &process_id);
+  if (!thread_id || process_id != ::GetCurrentProcessId()) {
+    OnBadMessageFromGpu();
+    return;
+  }
+
+  // TODO(sad): Also verify that |child| was created by the mus-gpu process.
+
+  if (!gfx::RenderingWindowManager::GetInstance()->RegisterChild(parent,
+                                                                 child)) {
+    OnBadMessageFromGpu();
+  }
+#else
+  NOTREACHED();
+#endif
+}
 
 void GpuHost::StoreShaderToDisk(int32_t client_id,
                                 const std::string& key,

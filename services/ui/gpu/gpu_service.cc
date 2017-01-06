@@ -144,7 +144,7 @@ void GpuService::StoreShaderToDisk(int client_id,
 void GpuService::SendAcceleratedSurfaceCreatedChildWindow(
     gpu::SurfaceHandle parent_window,
     gpu::SurfaceHandle child_window) {
-  ::SetParent(child_window, parent_window);
+  gpu_host_->SetChildSurface(parent_window, child_window);
 }
 #endif
 

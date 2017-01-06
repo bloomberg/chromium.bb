@@ -63,6 +63,7 @@ void DisplayManager::DestroyDisplay(Display* display) {
 
     DCHECK(displays_.count(display));
     displays_.erase(display);
+    window_server_->OnDisplayDestroyed(display);
   }
   delete display;
 
