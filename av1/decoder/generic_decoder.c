@@ -23,6 +23,8 @@
 #include "av1/common/odintrin.h"
 #include "pvq_decoder.h"
 
+#define ACCT_STR __func__
+
 /** Decodes a value from 0 to N-1 (with N up to 16) based on a cdf and adapts
  * the cdf accordingly.
  *
@@ -44,7 +46,7 @@ int aom_decode_cdf_adapt_q15_(aom_reader *r, uint16_t *cdf, int n,
       cdf[i] = cdf[i]*32768/ft;
     }
   }
-  val = aom_read_symbol(r, cdf, n, acc_str);
+  val = aom_read_symbol(r, cdf, n, ACCT_STR);
   aom_cdf_adapt_q15(val, cdf, n, count, rate);
   return val;
 }
@@ -108,8 +110,8 @@ int generic_decode_(aom_reader *r, generic_encoder *model, int max,
   id = OD_MINI(GENERIC_TABLES - 1, lg_q1);
   cdf = model->cdf[id];
   ms = (max + (1 << shift >> 1)) >> shift;
-  if (max == -1) xs = aom_read_symbol_unscaled(r, cdf, 16, acc_str);
-  else xs = aom_read_symbol_unscaled(r, cdf, OD_MINI(ms + 1, 16), acc_str);
+  if (max == -1) xs = aom_read_symbol_unscaled(r, cdf, 16, ACCT_STR);
+  else xs = aom_read_symbol_unscaled(r, cdf, OD_MINI(ms + 1, 16), ACCT_STR);
   if (xs == 15) {
     int e;
     unsigned decay;
@@ -121,7 +123,7 @@ int generic_decode_(aom_reader *r, generic_encoder *model, int max,
     e = ((2**ex_q16 >> 8) + (1 << shift >> 1)) >> shift;
     decay = OD_MAXI(2, OD_MINI(254, 256*e/(e + 256)));
 #if CONFIG_DAALA_EC
-    xs += laplace_decode_special(&r->ec, decay, (max == -1) ? -1 : ms - 15, acc_str);
+    xs += laplace_decode_special(&r->ec, decay, (max == -1) ? -1 : ms - 15, ACCT_STR);
 #else
 # error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
 #endif
@@ -132,7 +134,7 @@ int generic_decode_(aom_reader *r, generic_encoder *model, int max,
        for xs=0 */
     special = xs == 0;
     if (shift - special > 0) {
-      lsb = aom_read_literal(r, shift - special, acc_str);
+      lsb = aom_read_literal(r, shift - special, ACCT_STR);
     }
     lsb -= !special << (shift - 1);
   }
