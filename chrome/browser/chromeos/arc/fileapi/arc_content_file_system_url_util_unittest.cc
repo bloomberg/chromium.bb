@@ -68,7 +68,7 @@ TEST(ArcContentFileSystemUrlUtilTest, FileSystemUrlToArcUrl) {
   GURL arc_url("content://org.chromium.foo/bar/baz");
 
   base::FilePath path =
-      base::FilePath(kMountPointPath)
+      base::FilePath(kContentFileSystemMountPointPath)
           .Append(base::FilePath::FromUTF8Unsafe(EscapeArcUrl(arc_url)));
   storage::FileSystemURL file_system_url =
       storage::FileSystemURL::CreateForTest(GURL(),  // origin

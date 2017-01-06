@@ -11,9 +11,9 @@
 
 namespace arc {
 
-const char kMountPointName[] = "arc-content";
+const char kContentFileSystemMountPointName[] = "arc-content";
 
-const base::FilePath::CharType kMountPointPath[] =
+const base::FilePath::CharType kContentFileSystemMountPointPath[] =
     FILE_PATH_LITERAL("/special/arc-content");
 
 std::string EscapeArcUrl(const GURL& arc_url) {
@@ -30,7 +30,7 @@ GURL UnescapeArcUrl(const std::string& escaped_arc_url) {
 GURL ArcUrlToExternalFileUrl(const GURL& arc_url) {
   // Return "externalfile:arc-content/<|arc_url| escaped>".
   base::FilePath virtual_path =
-      base::FilePath::FromUTF8Unsafe(kMountPointName)
+      base::FilePath::FromUTF8Unsafe(kContentFileSystemMountPointName)
           .Append(base::FilePath::FromUTF8Unsafe(EscapeArcUrl(arc_url)));
   return chromeos::VirtualPathToExternalFileURL(virtual_path);
 }
@@ -39,7 +39,7 @@ GURL ExternalFileUrlToArcUrl(const GURL& external_file_url) {
   base::FilePath virtual_path =
       chromeos::ExternalFileURLToVirtualPath(external_file_url);
   base::FilePath path_after_root;
-  if (!base::FilePath::FromUTF8Unsafe(kMountPointName)
+  if (!base::FilePath::FromUTF8Unsafe(kContentFileSystemMountPointName)
            .AppendRelativePath(virtual_path, &path_after_root)) {
     return GURL();
   }
@@ -48,7 +48,7 @@ GURL ExternalFileUrlToArcUrl(const GURL& external_file_url) {
 
 GURL FileSystemUrlToArcUrl(const storage::FileSystemURL& url) {
   base::FilePath path_after_mount_point;
-  if (!base::FilePath(kMountPointPath)
+  if (!base::FilePath(kContentFileSystemMountPointPath)
            .AppendRelativePath(url.path(), &path_after_mount_point)) {
     return GURL();
   }

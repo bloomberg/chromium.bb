@@ -15,10 +15,10 @@ class FileSystemURL;
 namespace arc {
 
 // The name of the ARC content file system mount point.
-extern const char kMountPointName[];
+extern const char kContentFileSystemMountPointName[];
 
 // The path of the ARC content file system mount point.
-extern const base::FilePath::CharType kMountPointPath[];
+extern const base::FilePath::CharType kContentFileSystemMountPointPath[];
 
 // Escapes the given ARC URL.
 std::string EscapeArcUrl(const GURL& arc_url);

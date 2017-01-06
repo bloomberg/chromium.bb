@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/downloads_watcher/arc_downloads_watcher_service.h"
 #include "chrome/browser/chromeos/arc/enterprise/arc_enterprise_reporting_service.h"
-#include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_service.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_file_system_service.h"
 #include "chrome/browser/chromeos/arc/intent_helper/arc_settings_service.h"
 #include "chrome/browser/chromeos/arc/notification/arc_boot_error_notification.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
@@ -99,7 +99,7 @@ void ArcServiceLauncher::Initialize() {
   arc_service_manager_->AddService(
       base::MakeUnique<ArcClipboardBridge>(arc_bridge_service));
   arc_service_manager_->AddService(
-      base::MakeUnique<ArcContentFileSystemService>(arc_bridge_service));
+      base::MakeUnique<ArcFileSystemService>(arc_bridge_service));
   arc_service_manager_->AddService(base::MakeUnique<ArcCrashCollectorBridge>(
       arc_bridge_service, arc_service_manager_->blocking_task_runner()));
   arc_service_manager_->AddService(
