@@ -46,7 +46,7 @@ namespace blink {
 static const char kSupplementName[] = "CSSSelectorWatch";
 
 CSSSelectorWatch::CSSSelectorWatch(Document& document)
-    : m_document(document),
+    : Supplement<Document>(document),
       m_callbackSelectorChangeTimer(
           TaskRunnerHelper::get(TaskType::UnspecedTimer, &document),
           this,
@@ -76,13 +76,13 @@ void CSSSelectorWatch::callbackSelectorChangeTimerFired(TimerBase*) {
     m_callbackSelectorChangeTimer.startOneShot(0, BLINK_FROM_HERE);
     return;
   }
-  if (document().frame()) {
+  if (host()->frame()) {
     Vector<String> addedSelectors;
     Vector<String> removedSelectors;
     copyToVector(m_addedSelectors, addedSelectors);
     copyToVector(m_removedSelectors, removedSelectors);
-    document().frame()->loader().client()->selectorMatchChanged(
-        addedSelectors, removedSelectors);
+    host()->frame()->loader().client()->selectorMatchChanged(addedSelectors,
+                                                             removedSelectors);
   }
   m_addedSelectors.clear();
   m_removedSelectors.clear();
@@ -164,12 +164,11 @@ void CSSSelectorWatch::watchCSSSelectors(const Vector<String>& selectors) {
     m_watchedCallbackSelectors.push_back(
         StyleRule::create(std::move(selectorList), callbackPropertySet));
   }
-  document().styleEngine().watchedSelectorsChanged();
+  host()->styleEngine().watchedSelectorsChanged();
 }
 
 DEFINE_TRACE(CSSSelectorWatch) {
   visitor->trace(m_watchedCallbackSelectors);
-  visitor->trace(m_document);
   Supplement<Document>::trace(visitor);
 }
 

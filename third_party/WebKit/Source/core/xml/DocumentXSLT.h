@@ -29,7 +29,7 @@ class DocumentXSLT final : public GarbageCollected<DocumentXSLT>,
     m_transformSourceDocument = document;
   }
 
-  static DocumentXSLT& from(Supplementable<Document>&);
+  static DocumentXSLT& from(Document&);
   static const char* supplementName();
 
   // The following static methods don't use any instance of DocumentXSLT.
@@ -46,7 +46,7 @@ class DocumentXSLT final : public GarbageCollected<DocumentXSLT>,
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  DocumentXSLT();
+  explicit DocumentXSLT(Document&);
 
   Member<Document> m_transformSourceDocument;
 };

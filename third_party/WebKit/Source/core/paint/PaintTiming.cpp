@@ -72,9 +72,8 @@ void PaintTiming::markFirstMeaningfulPaintCandidate() {
   if (m_firstMeaningfulPaintCandidate)
     return;
   m_firstMeaningfulPaintCandidate = monotonicallyIncreasingTime();
-  if (m_document->frame() && m_document->frame()->view() &&
-      !m_document->frame()->view()->parent()) {
-    m_document->frame()->frameScheduler()->onFirstMeaningfulPaint();
+  if (frame() && frame()->view() && !frame()->view()->parent()) {
+    frame()->frameScheduler()->onFirstMeaningfulPaint();
   }
 }
 
@@ -100,22 +99,21 @@ void PaintTiming::notifyPaint(bool isFirstPaint,
 }
 
 DEFINE_TRACE(PaintTiming) {
-  visitor->trace(m_document);
   visitor->trace(m_fmpDetector);
   Supplement<Document>::trace(visitor);
 }
 
 PaintTiming::PaintTiming(Document& document)
-    : m_document(document),
+    : Supplement<Document>(document),
       m_fmpDetector(new FirstMeaningfulPaintDetector(this)) {}
 
 LocalFrame* PaintTiming::frame() const {
-  return m_document ? m_document->frame() : nullptr;
+  return host()->frame();
 }
 
 void PaintTiming::notifyPaintTimingChanged() {
-  if (m_document && m_document->loader())
-    m_document->loader()->didChangePerformanceTiming();
+  if (host()->loader())
+    host()->loader()->didChangePerformanceTiming();
 }
 
 void PaintTiming::setFirstPaint(double stamp) {

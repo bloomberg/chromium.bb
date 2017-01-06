@@ -113,7 +113,8 @@ DEFINE_TRACE(LoadFontPromiseResolver) {
 }
 
 FontFaceSet::FontFaceSet(Document& document)
-    : SuspendableObject(&document),
+    : Supplement<Document>(document),
+      SuspendableObject(&document),
       m_shouldFireLoadingEvent(false),
       m_isLoading(false),
       m_ready(

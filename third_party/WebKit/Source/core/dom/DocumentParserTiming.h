@@ -108,8 +108,6 @@ class DocumentParserTiming final
   double m_parserBlockedOnScriptExecutionDuration = 0.0;
   double m_parserBlockedOnScriptExecutionFromDocumentWriteDuration = 0.0;
   bool m_parserDetached = false;
-
-  Member<Document> m_document;
 };
 
 }  // namespace blink

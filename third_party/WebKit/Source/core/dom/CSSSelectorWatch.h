@@ -66,9 +66,6 @@ class CORE_EXPORT CSSSelectorWatch final
  private:
   explicit CSSSelectorWatch(Document&);
   void callbackSelectorChangeTimerFired(TimerBase*);
-  Document& document() const { return *m_document; }
-
-  Member<Document> m_document;
 
   HeapVector<Member<StyleRule>> m_watchedCallbackSelectors;
 

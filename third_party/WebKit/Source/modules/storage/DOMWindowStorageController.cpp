@@ -12,12 +12,11 @@
 namespace blink {
 
 DOMWindowStorageController::DOMWindowStorageController(Document& document)
-    : m_document(document) {
+    : Supplement<Document>(document) {
   document.domWindow()->registerEventListenerObserver(this);
 }
 
 DEFINE_TRACE(DOMWindowStorageController) {
-  visitor->trace(m_document);
   Supplement<Document>::trace(visitor);
 }
 

@@ -84,7 +84,8 @@ class DOMContentLoadedListener final
   Member<ProcessingInstruction> m_processingInstruction;
 };
 
-DocumentXSLT::DocumentXSLT() : m_transformSourceDocument(nullptr) {}
+DocumentXSLT::DocumentXSLT(Document& document)
+    : Supplement<Document>(document), m_transformSourceDocument(nullptr) {}
 
 void DocumentXSLT::applyXSLTransform(Document& document,
                                      ProcessingInstruction* pi) {
@@ -179,11 +180,11 @@ bool DocumentXSLT::hasTransformSourceDocument(Document& document) {
       Supplement<Document>::from(document, supplementName()));
 }
 
-DocumentXSLT& DocumentXSLT::from(Supplementable<Document>& document) {
+DocumentXSLT& DocumentXSLT::from(Document& document) {
   DocumentXSLT* supplement = static_cast<DocumentXSLT*>(
       Supplement<Document>::from(document, supplementName()));
   if (!supplement) {
-    supplement = new DocumentXSLT;
+    supplement = new DocumentXSLT(document);
     Supplement<Document>::provideTo(document, supplementName(), supplement);
   }
   return *supplement;

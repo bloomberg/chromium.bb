@@ -31,21 +31,21 @@
 
 namespace blink {
 
-DocumentXPathEvaluator::DocumentXPathEvaluator() {}
+DocumentXPathEvaluator::DocumentXPathEvaluator(Document& document)
+    : Supplement<Document>(document) {}
 
-DocumentXPathEvaluator& DocumentXPathEvaluator::from(
-    Supplementable<Document>& document) {
+DocumentXPathEvaluator& DocumentXPathEvaluator::from(Document& document) {
   DocumentXPathEvaluator* cache = static_cast<DocumentXPathEvaluator*>(
       Supplement<Document>::from(document, supplementName()));
   if (!cache) {
-    cache = new DocumentXPathEvaluator;
+    cache = new DocumentXPathEvaluator(document);
     Supplement<Document>::provideTo(document, supplementName(), cache);
   }
   return *cache;
 }
 
 XPathExpression* DocumentXPathEvaluator::createExpression(
-    Supplementable<Document>& document,
+    Document& document,
     const String& expression,
     XPathNSResolver* resolver,
     ExceptionState& exceptionState) {
@@ -56,23 +56,21 @@ XPathExpression* DocumentXPathEvaluator::createExpression(
                                                       exceptionState);
 }
 
-XPathNSResolver* DocumentXPathEvaluator::createNSResolver(
-    Supplementable<Document>& document,
-    Node* nodeResolver) {
+XPathNSResolver* DocumentXPathEvaluator::createNSResolver(Document& document,
+                                                          Node* nodeResolver) {
   DocumentXPathEvaluator& suplement = from(document);
   if (!suplement.m_xpathEvaluator)
     suplement.m_xpathEvaluator = XPathEvaluator::create();
   return suplement.m_xpathEvaluator->createNSResolver(nodeResolver);
 }
 
-XPathResult* DocumentXPathEvaluator::evaluate(
-    Supplementable<Document>& document,
-    const String& expression,
-    Node* contextNode,
-    XPathNSResolver* resolver,
-    unsigned short type,
-    const ScriptValue&,
-    ExceptionState& exceptionState) {
+XPathResult* DocumentXPathEvaluator::evaluate(Document& document,
+                                              const String& expression,
+                                              Node* contextNode,
+                                              XPathNSResolver* resolver,
+                                              unsigned short type,
+                                              const ScriptValue&,
+                                              ExceptionState& exceptionState) {
   DocumentXPathEvaluator& suplement = from(document);
   if (!suplement.m_xpathEvaluator)
     suplement.m_xpathEvaluator = XPathEvaluator::create();

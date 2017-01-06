@@ -78,7 +78,6 @@ class CORE_EXPORT PaintTiming final
     return m_firstMeaningfulPaintCandidate;
   }
 
-  Document* document() { return m_document.get(); }
   FirstMeaningfulPaintDetector& firstMeaningfulPaintDetector() {
     return *m_fmpDetector;
   }
@@ -109,7 +108,6 @@ class CORE_EXPORT PaintTiming final
   double m_firstMeaningfulPaint = 0.0;
   double m_firstMeaningfulPaintCandidate = 0.0;
 
-  Member<Document> m_document;
   Member<FirstMeaningfulPaintDetector> m_fmpDetector;
 };
 

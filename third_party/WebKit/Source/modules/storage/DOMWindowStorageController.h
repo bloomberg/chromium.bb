@@ -32,13 +32,8 @@ class MODULES_EXPORT DOMWindowStorageController final
   void didRemoveEventListener(LocalDOMWindow*, const AtomicString&) override {}
   void didRemoveAllEventListeners(LocalDOMWindow*) override {}
 
- protected:
-  explicit DOMWindowStorageController(Document&);
-
  private:
-  Document& document() const { return *m_document; }
-
-  Member<Document> m_document;
+  explicit DOMWindowStorageController(Document&);
 };
 
 }  // namespace blink

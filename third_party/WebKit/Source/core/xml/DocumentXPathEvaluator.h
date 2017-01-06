@@ -42,15 +42,14 @@ class DocumentXPathEvaluator final
   USING_GARBAGE_COLLECTED_MIXIN(DocumentXPathEvaluator);
 
  public:
-  static DocumentXPathEvaluator& from(Supplementable<Document>&);
+  static DocumentXPathEvaluator& from(Document&);
 
-  static XPathExpression* createExpression(Supplementable<Document>&,
+  static XPathExpression* createExpression(Document&,
                                            const String& expression,
                                            XPathNSResolver*,
                                            ExceptionState&);
-  static XPathNSResolver* createNSResolver(Supplementable<Document>&,
-                                           Node* nodeResolver);
-  static XPathResult* evaluate(Supplementable<Document>&,
+  static XPathNSResolver* createNSResolver(Document&, Node* nodeResolver);
+  static XPathResult* evaluate(Document&,
                                const String& expression,
                                Node* contextNode,
                                XPathNSResolver*,
@@ -61,7 +60,7 @@ class DocumentXPathEvaluator final
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  DocumentXPathEvaluator();
+  explicit DocumentXPathEvaluator(Document&);
 
   static const char* supplementName() { return "DocumentXPathEvaluator"; }
 

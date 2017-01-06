@@ -40,7 +40,6 @@ class CSSTiming : public GarbageCollectedFinalized<CSSTiming>,
   double m_parseTimeBeforeFCP = 0;
   double m_updateTimeBeforeFCP = 0;
 
-  Member<Document> m_document;
   Member<PaintTiming> m_paintTiming;
 };
 

@@ -155,7 +155,7 @@ class FontFaceSet final : public EventTargetWithInlineData,
     bool m_recorded;
   };
 
-  FontFaceSet(Document&);
+  explicit FontFaceSet(Document&);
 
   bool inActiveDocumentContext() const;
   void addToLoadingFonts(FontFace*);

@@ -383,7 +383,9 @@ Element* Fullscreen::fullscreenElementForBindingFrom(TreeScope& scope) {
 }
 
 Fullscreen::Fullscreen(Document& document)
-    : ContextLifecycleObserver(&document), m_fullScreenLayoutObject(nullptr) {
+    : Supplement<Document>(document),
+      ContextLifecycleObserver(&document),
+      m_fullScreenLayoutObject(nullptr) {
   document.setHasFullscreenSupplement();
 }
 
