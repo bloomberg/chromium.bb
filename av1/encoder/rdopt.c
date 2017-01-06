@@ -5060,7 +5060,7 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   }
 }
 
-static int64_t rd_pick_best_sub8x8_mode(
+static int64_t rd_pick_inter_best_sub8x8_mode(
     const AV1_COMP *const cpi, MACROBLOCK *x, int_mv *best_ref_mv,
     int_mv *second_best_ref_mv, int64_t best_rd, int *returntotrate,
     int *returnyrate, int64_t *returndistortion, int *skippable, int64_t *psse,
@@ -10878,7 +10878,7 @@ void av1_rd_pick_inter_mode_sub8x8(const struct AV1_COMP *cpi,
 #else
             mbmi->interp_filter = switchable_filter_index;
 #endif
-            tmp_rd = rd_pick_best_sub8x8_mode(
+            tmp_rd = rd_pick_inter_best_sub8x8_mode(
                 cpi, x, &mbmi_ext->ref_mvs[ref_frame][0], second_ref, best_yrd,
                 &rate, &rate_y, &distortion, &skippable, &total_sse,
                 (int)this_rd_thresh, seg_mvs,
@@ -10957,7 +10957,7 @@ void av1_rd_pick_inter_mode_sub8x8(const struct AV1_COMP *cpi,
       if (!pred_exists) {
         // Handles the special case when a filter that is not in the
         // switchable list (bilinear) is indicated at the frame level
-        tmp_rd = rd_pick_best_sub8x8_mode(
+        tmp_rd = rd_pick_inter_best_sub8x8_mode(
             cpi, x, &x->mbmi_ext->ref_mvs[ref_frame][0], second_ref, best_yrd,
             &rate, &rate_y, &distortion, &skippable, &total_sse,
             (int)this_rd_thresh, seg_mvs,
