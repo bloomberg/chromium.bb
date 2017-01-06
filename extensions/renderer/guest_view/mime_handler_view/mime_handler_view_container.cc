@@ -175,7 +175,7 @@ bool MimeHandlerViewContainer::OnMessage(const IPC::Message& message) {
   return handled;
 }
 
-void MimeHandlerViewContainer::DidFinishLoading() {
+void MimeHandlerViewContainer::PluginDidFinishLoading() {
   DCHECK(!is_embedded_);
   CreateMimeHandlerViewGuest();
 }
@@ -184,8 +184,8 @@ void MimeHandlerViewContainer::OnRenderFrameDestroyed() {
   g_mime_handler_view_container_map.Get().erase(render_frame());
 }
 
-void MimeHandlerViewContainer::DidReceiveData(const char* data,
-                                              int data_length) {
+void MimeHandlerViewContainer::PluginDidReceiveData(const char* data,
+                                                    int data_length) {
   view_id_ += std::string(data, data_length);
 }
 

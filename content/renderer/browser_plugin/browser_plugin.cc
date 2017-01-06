@@ -513,12 +513,12 @@ void BrowserPlugin::didReceiveResponse(
 
 void BrowserPlugin::didReceiveData(const char* data, int data_length) {
   if (delegate_)
-    delegate_->DidReceiveData(data, data_length);
+    delegate_->PluginDidReceiveData(data, data_length);
 }
 
 void BrowserPlugin::didFinishLoading() {
   if (delegate_)
-    delegate_->DidFinishLoading();
+    delegate_->PluginDidFinishLoading();
 }
 
 void BrowserPlugin::didFailLoading(const blink::WebURLError& error) {

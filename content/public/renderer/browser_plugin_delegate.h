@@ -30,10 +30,10 @@ class CONTENT_EXPORT BrowserPluginDelegate {
   virtual void Ready() {}
 
   // Called when plugin document has finished loading.
-  virtual void DidFinishLoading() {}
+  virtual void PluginDidFinishLoading() {}
 
   // Called when plugin document receives data.
-  virtual void DidReceiveData(const char* data, int data_length) {}
+  virtual void PluginDidReceiveData(const char* data, int data_length) {}
 
   // Sets the instance ID that idenfies the plugin within current render
   // process.
