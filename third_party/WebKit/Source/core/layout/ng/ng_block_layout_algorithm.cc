@@ -201,7 +201,7 @@ NGBlockLayoutAlgorithm::ComputeMinAndMaxContentSizes(
           LayoutUnit();
       // Size-contained elements don't consider their contents for intrinsic
       // sizing.
-      if (style_->containsSize())
+      if (Style().containsSize())
         return kSuccess;
       current_minmax_child_ = first_child_;
       compute_minmax_state_ = kStateChildLayout;
@@ -316,7 +316,8 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
       builder_->SetBlockSize(block_size);
 
       // Out of flow setup.
-      out_of_flow_layout_ = new NGOutOfFlowLayoutPart(style_, builder_->Size());
+      out_of_flow_layout_ =
+          new NGOutOfFlowLayoutPart(&Style(), builder_->Size());
       builder_->GetAndClearOutOfFlowDescendantCandidates(
           &out_of_flow_candidates_, &out_of_flow_candidate_positions_);
       out_of_flow_candidate_positions_index_ = 0;
