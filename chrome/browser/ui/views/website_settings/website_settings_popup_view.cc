@@ -173,6 +173,9 @@ class InternalPageInfoPopupView : public views::BubbleDialogDelegateView {
  private:
   friend class WebsiteSettingsPopupView;
 
+  // Used around icon and inside bubble border.
+  static constexpr int kSpacing = 12;
+
   DISALLOW_COPY_AND_ASSIGN(InternalPageInfoPopupView);
 };
 
@@ -354,7 +357,6 @@ InternalPageInfoPopupView::InternalPageInfoPopupView(
   set_anchor_view_insets(gfx::Insets(
       GetLayoutConstant(LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET), 0));
 
-  const int kSpacing = 16;
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal, kSpacing,
                                         kSpacing, kSpacing));
   set_margins(gfx::Insets());
@@ -379,9 +381,9 @@ views::NonClientFrameView* InternalPageInfoPopupView::CreateNonClientFrameView(
     views::Widget* widget) {
   views::BubbleFrameView* frame = static_cast<views::BubbleFrameView*>(
       BubbleDialogDelegateView::CreateNonClientFrameView(widget));
-  // 16px padding + half of icon width comes out to 24px.
+  // Padding around icon + half of icon width.
   frame->bubble_border()->set_arrow_offset(
-      24 + frame->bubble_border()->GetBorderThickness());
+      kSpacing + 8 + frame->bubble_border()->GetBorderThickness());
   return frame;
 }
 
