@@ -124,7 +124,7 @@ class CORE_EXPORT ResourceLoader final
 
   std::unique_ptr<WebURLLoader> m_loader;
   Member<ResourceFetcher> m_fetcher;
-  const Member<Resource> m_resource;
+  Member<Resource> m_resource;
   bool m_isCacheAwareLoadingActivated;
 };
 
