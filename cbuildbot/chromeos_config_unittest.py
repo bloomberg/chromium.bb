@@ -465,6 +465,40 @@ class CBuildBotTest(ChromeosConfigTestBase):
                          config.build_type)
         found_types.add(config.build_type)
 
+  def testActivePfqsHavePaladins(self):
+    """Make sure that every active PFQ has an associated Paladin.
+
+    This checks that every configured active PFQ on the external or internal
+    main waterfall has an associated active Paladin config.
+    """
+    # Get a list of all active Paladins.
+    active_paladin_boards = set()
+    for config in self.site_config.itervalues():
+      if config.active_waterfall and config_lib.IsCQType(config.build_type):
+        active_paladin_boards.update(config.boards)
+
+    # Scan for active PFQs.
+    check_waterfalls = set((constants.WATERFALL_INTERNAL,
+                            constants.WATERFALL_EXTERNAL))
+    failures = set()
+    for config in self.site_config.itervalues():
+      if not (config.active_waterfall in check_waterfalls and
+              config.build_type == constants.CHROME_PFQ_TYPE):
+        continue
+
+      for board in config.boards:
+        if board not in active_paladin_boards:
+          failures.add(config.name)
+
+    # TODO(dgarrett): Once crbug.com/679022 is resolved, remove this exception.
+    failures.remove('veyron_jerry-chromium-pfq')
+
+    self.assertSetEqual(
+        failures,
+        set(),
+        "Some active PFQ configs don't have active Paladins: %s" % (
+            ', '.join(sorted(failures)),))
+
   def testGetSlavesOnTrybot(self):
     """Make sure every master has a sane list of slaves"""
     mock_options = mock.Mock()
