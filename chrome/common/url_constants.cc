@@ -229,6 +229,7 @@ const char kChromeUINTPTilesInternalsHost[] = "ntp-tiles-internals";
 const char kChromeUIOmniboxHost[] = "omnibox";
 const char kChromeUIPasswordManagerInternalsHost[] =
     "password-manager-internals";
+const char kChromeUIPhysicalWebHost[] = "physical-web";
 const char kChromeUIPluginsHost[] = "plugins";
 const char kChromeUIComponentsHost[] = "components";
 const char kChromeUIPolicyHost[] = "policy";

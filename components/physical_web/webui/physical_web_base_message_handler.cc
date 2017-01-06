@@ -40,7 +40,7 @@ void PhysicalWebBaseMessageHandler::HandleRequestNearbyURLs(
   for (size_t i = 0; i < metadata->GetSize(); i++) {
     base::DictionaryValue* metadata_item = nullptr;
     metadata->GetDictionary(i, &metadata_item);
-    metadata_item->SetInteger(physical_web_ui::kIndex, i);
+    metadata_item->SetInteger(physical_web_ui::kIndex, static_cast<int>(i));
   }
 
   results.Set(physical_web_ui::kMetadata, metadata.release());

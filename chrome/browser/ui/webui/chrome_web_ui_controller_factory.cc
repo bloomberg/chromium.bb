@@ -44,6 +44,7 @@
 #include "chrome/browser/ui/webui/omnibox/omnibox_ui.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/browser/ui/webui/password_manager_internals/password_manager_internals_ui.h"
+#include "chrome/browser/ui/webui/physical_web/physical_web_ui.h"
 #include "chrome/browser/ui/webui/plugins/plugins_ui.h"
 #include "chrome/browser/ui/webui/policy_material_design_ui.h"
 #include "chrome/browser/ui/webui/policy_ui.h"
@@ -359,6 +360,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<OmniboxUI>;
   if (url.host_piece() == chrome::kChromeUIPasswordManagerInternalsHost)
     return &NewWebUI<PasswordManagerInternalsUI>;
+  if (url.host_piece() == chrome::kChromeUIPhysicalWebHost)
+    return &NewWebUI<PhysicalWebUI>;
   if (url.host_piece() == chrome::kChromeUIPredictorsHost)
     return &NewWebUI<PredictorsUI>;
   if (url.host_piece() == chrome::kChromeUIProfilerHost)
