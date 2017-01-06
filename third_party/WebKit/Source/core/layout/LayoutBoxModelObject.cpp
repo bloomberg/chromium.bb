@@ -401,9 +401,11 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff,
         if (layer()) {
           DisableCompositingQueryAsserts disabler;
           if (const PaintLayer* ancestorOverflowLayer =
-                  layer()->ancestorOverflowLayer())
-            ancestorOverflowLayer->getScrollableArea()
-                ->invalidateStickyConstraintsFor(layer());
+                  layer()->ancestorOverflowLayer()) {
+            if (PaintLayerScrollableArea* scrollableArea =
+                    ancestorOverflowLayer->getScrollableArea())
+              scrollableArea->invalidateStickyConstraintsFor(layer());
+          }
         }
 
         // TODO(pdr): When slimming paint v2 is enabled, we will need to
