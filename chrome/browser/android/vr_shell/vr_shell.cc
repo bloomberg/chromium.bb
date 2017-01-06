@@ -376,7 +376,7 @@ void VrShell::DoUiAction(const UiAction action) {
   switch (action) {
     case HISTORY_BACK:
       if (main_contents_->IsFullscreen()) {
-        main_contents_->ExitFullscreen(true /* will_cause_resize */);
+        main_contents_->ExitFullscreen(false);
       } else if (controller.CanGoBack()) {
         controller.GoBack();
       }
