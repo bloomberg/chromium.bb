@@ -46,11 +46,14 @@ class SK_API PlatformDevice {
  public:
   virtual ~PlatformDevice();
 
+// Only implemented in bitmap_platform_device_win.
+#if defined(WIN32)
   // The DC that corresponds to the bitmap, used for GDI operations drawing
   // into the bitmap. This is possibly heavyweight, so it should be existant
   // only during one pass of rendering.
   virtual NativeDrawingContext BeginPlatformPaint(const SkMatrix& transform,
                                                   const SkIRect& clip_bounds) = 0;
+#endif
 };
 
 }  // namespace skia

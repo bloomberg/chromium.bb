@@ -21,15 +21,21 @@ namespace skia {
 // shared memory between the renderer and the main process at least. In this
 // case we'll probably create the buffer from a precreated region of memory.
 // -----------------------------------------------------------------------------
-class BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
+class BitmapPlatformDevice final : public SkBitmapDevice,
+                                   public PlatformDevice {
  public:
   // Construct a BitmapPlatformDevice. |is_opaque| should be set if the caller
-  // knows the bitmap will be completely opaque and allows some optimizations.
-  // The bitmap is not initialized.
+  // knows the bitmap will be completely opaque and allows some optimizations
+  // (the bitmap is not initialized to 0 when is_opaque == true).
   static BitmapPlatformDevice* Create(int width, int height, bool is_opaque);
 
-  // This doesn't take ownership of |data|. If |data| is null, the bitmap
-  // is not initialized to 0.
+  // This doesn't take ownership of |data|. If |data| is null and |is_opaque|
+  // is false, the bitmap is initialized to 0.
+  //
+  // Note: historicaly, BitmapPlatformDevice impls have had diverging
+  // initialization behavior for null |data| (Cairo used to initialize, while
+  // the others did not).  For now we stick to the more conservative Cairo
+  // behavior.
   static BitmapPlatformDevice* Create(int width, int height, bool is_opaque,
                                       uint8_t* data);
 
@@ -44,9 +50,6 @@ class BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
   SkBaseDevice* onCreateDevice(const CreateInfo&, const SkPaint*) override;
 
  private:
-  NativeDrawingContext BeginPlatformPaint(const SkMatrix& transform,
-                                          const SkIRect& clip_bounds) override;
-
   DISALLOW_COPY_AND_ASSIGN(BitmapPlatformDevice);
 };
 

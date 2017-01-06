@@ -17,7 +17,6 @@
 #include "base/win/scoped_select_object.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
-#include "skia/ext/bitmap_platform_device.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkCanvas.h"

@@ -9,15 +9,7 @@ namespace skia {
 
 BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
                                                    bool is_opaque) {
-  SkBitmap bitmap;
-  if (bitmap.tryAllocN32Pixels(width, height, is_opaque)) {
-    // Follow the logic in SkCanvas::createDevice(), initialize the bitmap if it
-    // is not opaque.
-    if (!is_opaque)
-      bitmap.eraseARGB(0, 0, 0, 0);
-    return new BitmapPlatformDevice(bitmap);
-  }
-  return NULL;
+  return Create(width, height, is_opaque, nullptr);
 }
 
 BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
@@ -26,10 +18,17 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
   SkBitmap bitmap;
   bitmap.setInfo(SkImageInfo::MakeN32(width, height,
       is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType));
-  if (data)
+
+  if (data) {
     bitmap.setPixels(data);
-  else if (!bitmap.tryAllocPixels())
-    return NULL;
+  } else {
+      if (!bitmap.tryAllocPixels())
+        return nullptr;
+      // Follow the logic in SkCanvas::createDevice(), initialize the bitmap if
+      // it is not opaque.
+      if (!is_opaque)
+        bitmap.eraseARGB(0, 0, 0, 0);
+  }
 
   return new BitmapPlatformDevice(bitmap);
 }
@@ -47,15 +46,6 @@ SkBaseDevice* BitmapPlatformDevice::onCreateDevice(const CreateInfo& info,
   SkASSERT(info.fInfo.colorType() == kN32_SkColorType);
   return BitmapPlatformDevice::Create(info.fInfo.width(), info.fInfo.height(),
                                       info.fInfo.isOpaque());
-}
-
-NativeDrawingContext BitmapPlatformDevice::BeginPlatformPaint(
-    const SkMatrix& transform,
-    const SkIRect& clip_bounds) {
-  // TODO(zhenghao): What should we return? The ptr to the address of the
-  // pixels? Maybe this won't be called at all.
-  SkPixmap pixmap;
-  return accessPixels(&pixmap) ? pixmap.writable_addr() : nullptr;
 }
 
 // PlatformCanvas impl
