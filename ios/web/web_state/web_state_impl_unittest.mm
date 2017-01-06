@@ -603,15 +603,17 @@ TEST_F(WebStateTest, ScriptExecution) {
 
   // Execute script with callback.
   __block std::unique_ptr<base::Value> execution_result;
+  __block bool execution_complete = false;
   web_state_->ExecuteJavaScript(base::UTF8ToUTF16("window.foo"),
                                 base::BindBlock(^(const base::Value* value) {
-                                  ASSERT_TRUE(value);
                                   execution_result = value->CreateDeepCopy();
+                                  execution_complete = true;
                                 }));
-  base::test::ios::WaitUntilCondition(^bool() {
-    return execution_result.get();
+  base::test::ios::WaitUntilCondition(^{
+    return execution_complete;
   });
 
+  ASSERT_TRUE(execution_result);
   std::string string_result;
   execution_result->GetAsString(&string_result);
   EXPECT_EQ("bar", string_result);
