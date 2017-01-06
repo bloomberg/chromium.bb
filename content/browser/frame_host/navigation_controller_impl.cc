@@ -1240,9 +1240,11 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
   if (entry->update_virtual_url_with_url())
     UpdateVirtualURLToURL(entry, params.url);
 
-  // The site instance will normally be the same except during session restore,
-  // when no site instance will be assigned.
+  // The site instance will normally be the same except
+  // 1) session restore, when no site instance will be assigned or
+  // 2) redirect, when the site instance is reset.
   DCHECK(entry->site_instance() == nullptr ||
+         !entry->GetRedirectChain().empty() ||
          entry->site_instance() == rfh->GetSiteInstance());
 
   // Update the existing FrameNavigationEntry to ensure all of its members

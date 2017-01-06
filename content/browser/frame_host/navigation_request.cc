@@ -403,6 +403,10 @@ void NavigationRequest::TransferNavigationHandleOwnership(
 void NavigationRequest::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     const scoped_refptr<ResourceResponse>& response) {
+  // If a redirect occurs, the original site instance we thought is the
+  // destination could change.
+  dest_site_instance_ = nullptr;
+
   // If the navigation is no longer a POST, the POST data should be reset.
   if (redirect_info.new_method != "POST")
     common_params_.post_data = nullptr;
