@@ -517,6 +517,7 @@ void BattOrAgent::PerformAction(Action action) {
       return;
 
     case Action::SEND_GIT_HASH_REQUEST:
+      connection_->Flush();
       SendControlMessage(
           BATTOR_CONTROL_MESSAGE_TYPE_GET_FIRMWARE_GIT_HASH, 0, 0);
       return;
