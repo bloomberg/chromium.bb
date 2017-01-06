@@ -7,9 +7,11 @@
 
 #include <stddef.h>
 
+#include <map>
 #include <memory>
 #include <vector>
 
+#include "base/files/memory_mapped_file.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/file_descriptor_info.h"
 
@@ -21,12 +23,15 @@ class FileDescriptorInfoImpl : public FileDescriptorInfo {
 
   ~FileDescriptorInfoImpl() override;
   void Share(int id, base::PlatformFile fd) override;
+  void ShareWithRegion(int id, base::PlatformFile fd,
+      const base::MemoryMappedFile::Region& region) override;
   void Transfer(int id, base::ScopedFD fd) override;
   const base::FileHandleMappingVector& GetMapping() const override;
   base::FileHandleMappingVector GetMappingWithIDAdjustment(
       int delta) const override;
   base::PlatformFile GetFDAt(size_t i) const override;
   int GetIDAt(size_t i) const override;
+  const base::MemoryMappedFile::Region& GetRegionAt(size_t i) const override;
   size_t GetMappingSize() const override;
   bool OwnsFD(base::PlatformFile file) const override;
   base::ScopedFD ReleaseFD(base::PlatformFile file) override;
@@ -34,9 +39,13 @@ class FileDescriptorInfoImpl : public FileDescriptorInfo {
  private:
   FileDescriptorInfoImpl();
 
-  void AddToMapping(int id, base::PlatformFile fd);
+  void AddToMapping(int id, base::PlatformFile fd,
+      const base::MemoryMappedFile::Region& region);
   bool HasID(int id) const;
   base::FileHandleMappingVector mapping_;
+  // Maps the ID of a FD to the region to use for that FD, the whole file if not
+  // in the map.
+  std::map<int, base::MemoryMappedFile::Region> ids_to_regions_;
   std::vector<base::ScopedFD> owned_descriptors_;
 };
 }

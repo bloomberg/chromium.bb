@@ -174,23 +174,15 @@ void LaunchOnLauncherThread(
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-  std::map<int, base::MemoryMappedFile::Region> regions;
   GetContentClient()->browser()->GetAdditionalMappedFilesForChildProcess(
-      *cmd_line, child_process_id, files_to_register.get()
-#if defined(OS_ANDROID)
-      , &regions
-#endif
-      );
+      *cmd_line, child_process_id, files_to_register.get());
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   bool snapshot_loaded = false;
-#if defined(OS_ANDROID)
   base::MemoryMappedFile::Region region;
-  auto maybe_register = [&region, &regions, &files_to_register](int key,
-                                                                int fd) {
-    if (fd != -1) {
-      files_to_register->Share(key, fd);
-      regions.insert(std::make_pair(key, region));
-    }
+#if defined(OS_ANDROID)
+  auto maybe_register = [&region, &files_to_register](int key, int fd) {
+    if (fd != -1)
+      files_to_register->ShareWithRegion(key, fd, region);
   };
   maybe_register(
       kV8NativesDataDescriptor,
@@ -205,21 +197,19 @@ void LaunchOnLauncherThread(
   snapshot_loaded = true;
 #else
   base::PlatformFile natives_pf =
-      gin::V8Initializer::GetOpenNativesFileForChildProcesses(
-          &regions[kV8NativesDataDescriptor]);
+      gin::V8Initializer::GetOpenNativesFileForChildProcesses(&region);
   DCHECK_GE(natives_pf, 0);
-  files_to_register->Share(kV8NativesDataDescriptor, natives_pf);
+  files_to_register->ShareWithRegion(
+      kV8NativesDataDescriptor, natives_pf, region);
 
-  base::MemoryMappedFile::Region snapshot_region;
   base::PlatformFile snapshot_pf =
-      gin::V8Initializer::GetOpenSnapshotFileForChildProcesses(
-          &snapshot_region);
+      gin::V8Initializer::GetOpenSnapshotFileForChildProcesses(&region);
   // Failure to load the V8 snapshot is not necessarily an error. V8 can start
   // up (slower) without the snapshot.
   if (snapshot_pf != -1) {
     snapshot_loaded = true;
-    files_to_register->Share(kV8SnapshotDataDescriptor, snapshot_pf);
-    regions.insert(std::make_pair(kV8SnapshotDataDescriptor, snapshot_region));
+    files_to_register->ShareWithRegion(
+        kV8SnapshotDataDescriptor, snapshot_pf, region);
   }
 #endif
 
@@ -234,9 +224,10 @@ void LaunchOnLauncherThread(
 
 #if defined(OS_ANDROID)
 #if ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
-  files_to_register->Share(
-      kAndroidICUDataDescriptor,
-      base::i18n::GetIcuDataFileHandle(&regions[kAndroidICUDataDescriptor]));
+  base::MemoryMappedFile::Region icu_region;
+  base::PlatformFile icu_pf = base::i18n::GetIcuDataFileHandle(&icu_region);
+  files_to_register->ShareWithRegion(
+      kAndroidICUDataDescriptor, icu_pf, icu_region);
 #endif  // ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
 
   // Android WebView runs in single process, ensure that we never get here
@@ -244,7 +235,7 @@ void LaunchOnLauncherThread(
   CHECK(!cmd_line->HasSwitch(switches::kSingleProcess));
 
   StartChildProcess(
-      cmd_line->argv(), child_process_id, std::move(files_to_register), regions,
+      cmd_line->argv(), child_process_id, std::move(files_to_register),
       base::Bind(&OnChildProcessStartedAndroid, callback, client_thread_id,
                  begin_launch_time, base::Passed(&mojo_fd)));
 

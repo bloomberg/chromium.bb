@@ -474,18 +474,16 @@ content::TracingDelegate* AwContentBrowserClient::GetTracingDelegate() {
 void AwContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,
       int child_process_id,
-      content::FileDescriptorInfo* mappings,
-      std::map<int, base::MemoryMappedFile::Region>* regions) {
-  int fd = ui::GetMainAndroidPackFd(
-      &(*regions)[kAndroidWebViewMainPakDescriptor]);
-  mappings->Share(kAndroidWebViewMainPakDescriptor, fd);
+      content::FileDescriptorInfo* mappings) {
+  base::MemoryMappedFile::Region region;
+  int fd = ui::GetMainAndroidPackFd(&region);
+  mappings->ShareWithRegion(kAndroidWebViewMainPakDescriptor, fd, region);
 
-  fd = ui::GetCommonResourcesPackFd(
-      &(*regions)[kAndroidWebView100PercentPakDescriptor]);
-  mappings->Share(kAndroidWebView100PercentPakDescriptor, fd);
+  fd = ui::GetCommonResourcesPackFd(&region);
+  mappings->ShareWithRegion(kAndroidWebView100PercentPakDescriptor, fd, region);
 
-  fd = ui::GetLocalePackFd(&(*regions)[kAndroidWebViewLocalePakDescriptor]);
-  mappings->Share(kAndroidWebViewLocalePakDescriptor, fd);
+  fd = ui::GetLocalePackFd(&region);
+  mappings->ShareWithRegion(kAndroidWebViewLocalePakDescriptor, fd, region);
 
   base::ScopedFD crash_signal_file =
       breakpad::CrashMicroDumpManager::GetInstance()->CreateCrashInfoChannel(

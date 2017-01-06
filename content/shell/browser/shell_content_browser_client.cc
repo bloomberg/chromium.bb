@@ -330,18 +330,16 @@ void ShellContentBrowserClient::OpenURL(
                                       gfx::Size())->web_contents());
 }
 
-#if defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     const base::CommandLine& command_line,
     int child_process_id,
-    content::FileDescriptorInfo* mappings,
-    std::map<int, base::MemoryMappedFile::Region>* regions) {
-  mappings->Share(
+    content::FileDescriptorInfo* mappings) {
+#if defined(OS_ANDROID)
+  mappings->ShareWithRegion(
       kShellPakDescriptor,
-      base::GlobalDescriptors::GetInstance()->Get(kShellPakDescriptor));
-  regions->insert(std::make_pair(
-      kShellPakDescriptor,
-      base::GlobalDescriptors::GetInstance()->GetRegion(kShellPakDescriptor)));
+      base::GlobalDescriptors::GetInstance()->Get(kShellPakDescriptor),
+      base::GlobalDescriptors::GetInstance()->GetRegion(kShellPakDescriptor));
 
   if (breakpad::IsCrashReporterEnabled()) {
     base::File f(breakpad::CrashDumpManager::GetInstance()->CreateMinidumpFile(
@@ -354,18 +352,15 @@ void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
                          base::ScopedFD(f.TakePlatformFile()));
     }
   }
-}
-#elif defined(OS_POSIX) && !defined(OS_MACOSX)
-void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
-    const base::CommandLine& command_line,
-    int child_process_id,
-    content::FileDescriptorInfo* mappings) {
+
+#else
   int crash_signal_fd = GetCrashSignalFD(command_line);
   if (crash_signal_fd >= 0) {
     mappings->Share(kCrashDumpSignal, crash_signal_fd);
   }
-}
 #endif  // defined(OS_ANDROID)
+}
+#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 
 #if defined(OS_WIN)
 bool ShellContentBrowserClient::PreSpawnRenderer(

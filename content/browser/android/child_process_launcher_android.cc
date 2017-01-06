@@ -113,7 +113,6 @@ void StartChildProcess(
     const base::CommandLine::StringVector& argv,
     int child_process_id,
     std::unique_ptr<content::FileDescriptorInfo> files_to_register,
-    const std::map<int, base::MemoryMappedFile::Region>& regions,
     const StartChildProcessCallback& callback) {
   JNIEnv* env = AttachCurrentThread();
   DCHECK(env);
@@ -135,13 +134,10 @@ void StartChildProcess(
     PCHECK(0 <= fd);
     int id = files_to_register->GetIDAt(i);
     bool auto_close = files_to_register->OwnsFD(fd);
-    int64_t offset = 0L;
-    int64_t size = 0L;
-    auto found_region_iter = regions.find(id);
-    if (found_region_iter != regions.end()) {
-      offset = found_region_iter->second.offset;
-      size = found_region_iter->second.size;
-    }
+    const base::MemoryMappedFile::Region& region =
+        files_to_register->GetRegionAt(i);
+    int64_t offset = region.offset;
+    int64_t size = region.size;
     ScopedJavaLocalRef<jobject> j_file_info =
         Java_ChildProcessLauncher_makeFdInfo(env, id, fd, auto_close, offset,
                                              size);

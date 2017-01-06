@@ -29,7 +29,6 @@ void StartChildProcess(
     const base::CommandLine::StringVector& argv,
     int child_process_id,
     const std::unique_ptr<FileDescriptorInfo> files_to_register,
-    const std::map<int, base::MemoryMappedFile::Region>& regions,
     const StartChildProcessCallback& callback);
 
 // Stops a child process based on the handle returned form

@@ -163,6 +163,22 @@ CastContentBrowserClient::media_pipeline_backend_manager() {
   DCHECK(cast_browser_main_parts_);
   return cast_browser_main_parts_->media_pipeline_backend_manager();
 }
+
+::media::ScopedAudioManagerPtr CastContentBrowserClient::CreateAudioManager(
+    ::media::AudioLogFactory* audio_log_factory) {
+  return ::media::ScopedAudioManagerPtr(new media::CastAudioManager(
+      GetMediaTaskRunner(), GetMediaTaskRunner(), audio_log_factory,
+      media_pipeline_backend_manager()));
+}
+
+std::unique_ptr<::media::CdmFactory>
+CastContentBrowserClient::CreateCdmFactory() {
+#if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+  return base::MakeUnique<media::CastCdmFactory>(GetMediaTaskRunner(),
+                                                 media_resource_tracker());
+#endif  // defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+  return nullptr;
+}
 #endif  // !defined(OS_ANDROID)
 
 media::MediaCapsImpl* CastContentBrowserClient::media_caps() {
@@ -443,19 +459,15 @@ CastContentBrowserClient::GetServiceManifestOverlay(
   return base::JSONReader::Read(manifest_contents);
 }
 
-#if defined(OS_ANDROID)
-
 void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     const base::CommandLine& command_line,
     int child_process_id,
-    content::FileDescriptorInfo* mappings,
-    std::map<int, base::MemoryMappedFile::Region>* regions) {
-  mappings->Share(
+    content::FileDescriptorInfo* mappings) {
+#if defined(OS_ANDROID)
+  mappings->ShareWithRegion(
       kAndroidPakDescriptor,
-      base::GlobalDescriptors::GetInstance()->Get(kAndroidPakDescriptor));
-  regions->insert(std::make_pair(
-      kAndroidPakDescriptor, base::GlobalDescriptors::GetInstance()->GetRegion(
-                                 kAndroidPakDescriptor)));
+      base::GlobalDescriptors::GetInstance()->Get(kAndroidPakDescriptor),
+      base::GlobalDescriptors::GetInstance()->GetRegion(kAndroidPakDescriptor));
 
   if (breakpad::IsCrashReporterEnabled()) {
     base::File minidump_file(
@@ -469,36 +481,13 @@ void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
                          base::ScopedFD(minidump_file.TakePlatformFile()));
     }
   }
-}
-
 #else
-::media::ScopedAudioManagerPtr CastContentBrowserClient::CreateAudioManager(
-    ::media::AudioLogFactory* audio_log_factory) {
-  return ::media::ScopedAudioManagerPtr(new media::CastAudioManager(
-      GetMediaTaskRunner(), GetMediaTaskRunner(), audio_log_factory,
-      media_pipeline_backend_manager()));
-}
-
-std::unique_ptr<::media::CdmFactory>
-CastContentBrowserClient::CreateCdmFactory() {
-#if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-  return base::MakeUnique<media::CastCdmFactory>(GetMediaTaskRunner(),
-                                                 media_resource_tracker());
-#endif  // defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-  return nullptr;
-}
-
-void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
-    const base::CommandLine& command_line,
-    int child_process_id,
-    content::FileDescriptorInfo* mappings) {
-  int crash_signal_fd = GetCrashSignalFD(command_line);
+    int crash_signal_fd = GetCrashSignalFD(command_line);
   if (crash_signal_fd >= 0) {
     mappings->Share(kCrashDumpSignal, crash_signal_fd);
   }
-}
-
 #endif  // defined(OS_ANDROID)
+}
 
 void CastContentBrowserClient::GetAdditionalWebUISchemes(
     std::vector<std::string>* additional_schemes) {

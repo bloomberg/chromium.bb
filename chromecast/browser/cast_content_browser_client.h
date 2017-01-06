@@ -91,6 +91,10 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   media::MediaResourceTracker* media_resource_tracker();
 
   media::MediaPipelineBackendManager* media_pipeline_backend_manager();
+
+  ::media::ScopedAudioManagerPtr CreateAudioManager(
+      ::media::AudioLogFactory* audio_log_factory) override;
+  std::unique_ptr<::media::CdmFactory> CreateCdmFactory() override;
 #endif
   media::MediaCapsImpl* media_caps();
 
@@ -153,21 +157,10 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   void RegisterInProcessServices(StaticServiceMap* services) override;
   std::unique_ptr<base::Value> GetServiceManifestOverlay(
       base::StringPiece service_name) override;
-#if defined(OS_ANDROID)
-  void GetAdditionalMappedFilesForChildProcess(
-      const base::CommandLine& command_line,
-      int child_process_id,
-      content::FileDescriptorInfo* mappings,
-      std::map<int, base::MemoryMappedFile::Region>* regions) override;
-#else
-  ::media::ScopedAudioManagerPtr CreateAudioManager(
-      ::media::AudioLogFactory* audio_log_factory) override;
-  std::unique_ptr<::media::CdmFactory> CreateCdmFactory() override;
   void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,
       int child_process_id,
       content::FileDescriptorInfo* mappings) override;
-#endif  // defined(OS_ANDROID)
   void GetAdditionalWebUISchemes(
       std::vector<std::string>* additional_schemes) override;
   content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;

@@ -109,10 +109,9 @@ class TestContentBrowserClient : public ContentBrowserClient {
   void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,
       int child_process_id,
-      FileDescriptorInfo* mappings,
-      std::map<int, base::MemoryMappedFile::Region>* regions) override {
+      FileDescriptorInfo* mappings) override {
     ShellContentBrowserClient::Get()->GetAdditionalMappedFilesForChildProcess(
-        command_line, child_process_id, mappings, regions);
+        command_line, child_process_id, mappings);
   }
 #endif  // defined(OS_ANDROID)
 };

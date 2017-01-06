@@ -22,11 +22,16 @@ FileDescriptorInfoImpl::~FileDescriptorInfoImpl() {
 }
 
 void FileDescriptorInfoImpl::Share(int id, base::PlatformFile fd) {
-  AddToMapping(id, fd);
+  ShareWithRegion(id, fd, base::MemoryMappedFile::Region::kWholeFile);
+}
+
+void FileDescriptorInfoImpl::ShareWithRegion(int id, base::PlatformFile fd,
+    const base::MemoryMappedFile::Region& region) {
+  AddToMapping(id, fd, region);
 }
 
 void FileDescriptorInfoImpl::Transfer(int id, base::ScopedFD fd) {
-  AddToMapping(id, fd.get());
+  AddToMapping(id, fd.get(), base::MemoryMappedFile::Region::kWholeFile);
   owned_descriptors_.push_back(std::move(fd));
 }
 
@@ -36,6 +41,13 @@ base::PlatformFile FileDescriptorInfoImpl::GetFDAt(size_t i) const {
 
 int FileDescriptorInfoImpl::GetIDAt(size_t i) const {
   return mapping_[i].second;
+}
+
+const base::MemoryMappedFile::Region& FileDescriptorInfoImpl::GetRegionAt(
+    size_t i) const {
+  auto iter = ids_to_regions_.find(GetIDAt(i));
+  return (iter != ids_to_regions_.end()) ?
+      iter->second : base::MemoryMappedFile::Region::kWholeFile;
 }
 
 size_t FileDescriptorInfoImpl::GetMappingSize() const {
@@ -68,9 +80,12 @@ base::ScopedFD FileDescriptorInfoImpl::ReleaseFD(base::PlatformFile file) {
   return fd;
 }
 
-void FileDescriptorInfoImpl::AddToMapping(int id, base::PlatformFile fd) {
+void FileDescriptorInfoImpl::AddToMapping(int id, base::PlatformFile fd,
+    const base::MemoryMappedFile::Region& region) {
   DCHECK(!HasID(id));
   mapping_.push_back(std::make_pair(fd, id));
+  if (region != base::MemoryMappedFile::Region::kWholeFile)
+    ids_to_regions_[id] = region;
 }
 
 const base::FileHandleMappingVector& FileDescriptorInfoImpl::GetMapping()

@@ -120,8 +120,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,
       int child_process_id,
-      content::FileDescriptorInfo* mappings,
-      std::map<int, base::MemoryMappedFile::Region>* regions) override;
+      content::FileDescriptorInfo* mappings) override;
   void OverrideWebkitPrefs(content::RenderViewHost* rvh,
                            content::WebPreferences* web_prefs) override;
   ScopedVector<content::NavigationThrottle> CreateThrottlesForNavigation(
