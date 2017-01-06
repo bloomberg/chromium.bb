@@ -2659,6 +2659,9 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     branch = GetTargetRef(remote, remote_branch, options.target_branch,
                           pending_prefix_check=False)
 
+    # This may be None; default fallback value is determined in logic below.
+    title = options.title
+
     if options.squash:
       self._GerritCommitMsgHookCheck(offer_removal=not options.force)
       if self.GetIssue():
@@ -2668,6 +2671,10 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           DieWithError(
               'failed to fetch description from current Gerrit change %d\n'
               '%s' % (self.GetIssue(), self.GetIssueURL()))
+        if not title:
+          default_title = RunGit(['show', '-s', '--format=%s', 'HEAD']).strip()
+          title = ask_for_data(
+              'Title for patchset [%s]: ' % default_title) or default_title
         change_id = self._GetChangeDetail()['change_id']
         while True:
           footer_change_ids = git_footers.get_footer_change_id(message)
@@ -2703,11 +2710,19 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         # footer.
         assert [change_id] == git_footers.get_footer_change_id(message)
         change_desc = ChangeDescription(message)
-      else:
-        change_desc = ChangeDescription(
-            options.message or CreateDescriptionFromLog(args))
+      else:  # if not self.GetIssue()
+        if options.message:
+          message = options.message
+        else:
+          message = CreateDescriptionFromLog(args)
+          if options.title:
+            message = options.title + '\n\n' + message
+        change_desc = ChangeDescription(message)
         if not options.force:
           change_desc.prompt(bug=options.bug)
+        # On first upload, patchset title is always this string, while
+        # --title flag gets converted to first line of message.
+        title = 'Initial upload'
         if not change_desc.description:
           DieWithError("Description is empty. Aborting...")
         message = change_desc.description
@@ -2785,14 +2800,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       print('Adding self-LGTM (Code-Review +1) because of TBRs')
       refspec_opts.append('l=Code-Review+1')
 
-    title = options.title
-    if not title:
-      if self.GetIssue():
-        # We already have an issue, so we should ask for a title for new patch.
-        default = RunGit(['show', '-s', '--format=%s', 'HEAD']).strip()
-        title = ask_for_data('Title for patchset [%s]: ' % default) or default
-      else:
-        title = 'Initial upload'
     if title:
       if not re.match(r'^[\w ]+$', title):
         title = re.sub(r'[^\w ]', '', title)

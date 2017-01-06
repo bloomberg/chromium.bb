@@ -1262,6 +1262,15 @@ class TestGitCl(TestCase):
           ((['git', 'log', '--pretty=format:%s\n\n%b',
                    'fake_ancestor_sha..HEAD'],),
                   description)]
+      if squash:
+        title = 'Initial_upload'
+    else:
+      if not title:
+        calls += [
+            ((['git', 'show', '-s', '--format=%s', 'HEAD'],), ''),
+            (('Title for patchset []: ',), 'User input'),
+        ]
+        title = 'User_input'
     if not git_footers.get_footer_change_id(description) and not squash:
       calls += [
           # DownloadGerritHook(False)
@@ -1307,16 +1316,6 @@ class TestGitCl(TestCase):
             expected_upstream_ref + '..' + ref_to_push],), ''),
         ]
 
-
-    if not title:
-      if issue:
-        calls += [
-            ((['git', 'show', '-s', '--format=%s', 'HEAD'],), ''),
-            (('Title for patchset []: ',), 'User input'),
-        ]
-        title = 'User_input'
-      else:
-        title = 'Initial_upload'
     if title:
       if ref_suffix:
         ref_suffix += ',m=' + title
