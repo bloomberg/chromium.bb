@@ -460,6 +460,8 @@ void WindowProxy::setSecurityToken(SecurityOrigin* origin) {
 
 void WindowProxy::updateDocument() {
   DCHECK(m_world->isMainWorld());
+  // For an uninitialized main window proxy, there's nothing we need
+  // to update. The update is done when the window proxy gets initialized later.
   if (!isContextInitialized())
     return;
 

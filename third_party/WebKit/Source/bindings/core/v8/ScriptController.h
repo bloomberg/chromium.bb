@@ -78,7 +78,8 @@ class CORE_EXPORT ScriptController final
 
   DECLARE_TRACE();
 
-  bool initializeMainWorld();
+  // This returns an initialized window proxy. (If the window proxy is not
+  // yet initialized, it's implicitly initialized at the first access.)
   WindowProxy* windowProxy(DOMWrapperWorld&);
 
   // Evaluate JavaScript in the main world.

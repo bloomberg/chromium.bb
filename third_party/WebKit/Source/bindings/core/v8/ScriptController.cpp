@@ -209,12 +209,6 @@ void ScriptController::executeScriptInMainWorld(
                        InspectorUpdateCountersEvent::data());
 }
 
-bool ScriptController::initializeMainWorld() {
-  if (m_windowProxyManager->mainWorldProxy()->isContextInitialized())
-    return false;
-  return windowProxy(DOMWrapperWorld::mainWorld())->isContextInitialized();
-}
-
 WindowProxy* ScriptController::windowProxy(DOMWrapperWorld& world) {
   WindowProxy* windowProxy = m_windowProxyManager->windowProxy(world);
   if (!windowProxy->isContextInitialized()) {
@@ -303,13 +297,7 @@ void ScriptController::clearWindowProxy() {
 }
 
 void ScriptController::updateDocument() {
-  // For an uninitialized main window windowProxy, do not incur the cost of
-  // context initialization.
-  if (!m_windowProxyManager->mainWorldProxy()->isGlobalInitialized())
-    return;
-
-  if (!initializeMainWorld())
-    windowProxy(DOMWrapperWorld::mainWorld())->updateDocument();
+  m_windowProxyManager->mainWorldProxy()->updateDocument();
 }
 
 bool ScriptController::canExecuteScripts(

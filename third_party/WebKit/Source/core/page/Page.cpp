@@ -437,7 +437,8 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType) {
         if (localFrame->loader()
                 .stateMachine()
                 ->committedFirstRealDocumentLoad()) {
-          localFrame->script().initializeMainWorld();
+          // Forcibly instantiate WindowProxy.
+          localFrame->script().windowProxy(DOMWrapperWorld::mainWorld());
         }
       }
     } break;

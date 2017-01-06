@@ -1753,8 +1753,10 @@ void FrameLoader::dispatchDidClearDocumentOfWindowObject() {
     return;
 
   Settings* settings = m_frame->settings();
-  if (settings && settings->getForceMainWorldInitialization())
-    m_frame->script().initializeMainWorld();
+  if (settings && settings->getForceMainWorldInitialization()) {
+    // Forcibly instantiate WindowProxy.
+    m_frame->script().windowProxy(DOMWrapperWorld::mainWorld());
+  }
   InspectorInstrumentation::didClearDocumentOfWindowObject(m_frame);
 
   if (m_dispatchingDidClearWindowObjectInMainWorld)

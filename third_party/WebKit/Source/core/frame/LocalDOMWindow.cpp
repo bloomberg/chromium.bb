@@ -28,6 +28,7 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/SourceLocation.h"
+#include "bindings/core/v8/WindowProxy.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSRuleList.h"
 #include "core/css/DOMWindowCSS.h"
