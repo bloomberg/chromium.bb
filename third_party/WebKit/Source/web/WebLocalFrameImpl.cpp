@@ -203,7 +203,6 @@
 #include "public/web/WebHistoryItem.h"
 #include "public/web/WebIconURL.h"
 #include "public/web/WebInputElement.h"
-#include "public/web/WebInputMethodController.h"
 #include "public/web/WebKit.h"
 #include "public/web/WebNode.h"
 #include "public/web/WebPerformance.h"

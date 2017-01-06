@@ -152,8 +152,6 @@ class WEB_EXPORT WebViewImpl final
   void mouseCaptureLost() override;
   void setFocus(bool enable) override;
   WebRange compositionRange() override;
-  WebTextInputInfo textInputInfo() override;
-  WebTextInputType textInputType() override;
   WebColor backgroundColor() const override;
   WebPagePopup* pagePopup() const override;
   bool selectionBounds(WebRect& anchor, WebRect& focus) const override;
@@ -500,9 +498,10 @@ class WEB_EXPORT WebViewImpl final
 
   ChromeClientImpl& chromeClient() const { return *m_chromeClientImpl.get(); }
 
-  // Returns the currently active WebInputMethodController which the one
-  // corresponding to the focused frame. It will return nullptr if there are
-  // none or |m_imeAcceptEvents| is false.
+  // Returns the currently active WebInputMethodController which is the one
+  // corresponding to the focused frame. It will return nullptr if there is no
+  // focused frame, or if the there is one but it belongs to a different local
+  // root.
   WebInputMethodControllerImpl* getActiveWebInputMethodController() const;
 
  private:
@@ -659,6 +658,8 @@ class WEB_EXPORT WebViewImpl final
   // this behavior by setting this flag if the keyDown was handled.
   bool m_suppressNextKeypressEvent;
 
+  // TODO(ekaramad): Can we remove this and make sure IME events are not called
+  // when there is no page focus?
   // Represents whether or not this object should process incoming IME events.
   bool m_imeAcceptEvents;
 

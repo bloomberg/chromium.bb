@@ -130,6 +130,14 @@ bool WebInputMethodControllerImpl::commitText(const WebString& text,
   return inputMethodController().commitText(text, relativeCaretPosition);
 }
 
+WebTextInputInfo WebInputMethodControllerImpl::textInputInfo() {
+  return frame()->inputMethodController().textInputInfo();
+}
+
+WebTextInputType WebInputMethodControllerImpl::textInputType() {
+  return frame()->inputMethodController().textInputType();
+}
+
 LocalFrame* WebInputMethodControllerImpl::frame() const {
   return m_webLocalFrame->frame();
 }

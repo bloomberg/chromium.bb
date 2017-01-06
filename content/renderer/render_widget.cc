@@ -661,6 +661,10 @@ void RenderWidget::SendOrCrash(IPC::Message* message) {
   CHECK(closing_ || result) << "Failed to send message";
 }
 
+bool RenderWidget::ShouldHandleImeEvents() const {
+  return GetWebWidget()->isWebFrameWidget() && has_focus_;
+}
+
 void RenderWidget::SetWindowRectSynchronously(
     const gfx::Rect& new_window_rect) {
   ResizeParams params;
@@ -1034,8 +1038,8 @@ void RenderWidget::UpdateTextInputState(ShowIme show_ime,
     return;  // Not considered as a text input field in WebKit/Chromium.
 
   blink::WebTextInputInfo new_info;
-  if (GetWebWidget())
-    new_info = GetWebWidget()->textInputInfo();
+  if (auto* controller = GetInputMethodController())
+    new_info = controller->textInputInfo();
   const ui::TextInputMode new_mode =
       ConvertWebTextInputMode(new_info.inputMode);
 
@@ -1505,6 +1509,9 @@ void RenderWidget::OnImeSetComposition(
     const std::vector<WebCompositionUnderline>& underlines,
     const gfx::Range& replacement_range,
     int selection_start, int selection_end) {
+  if (!ShouldHandleImeEvents())
+    return;
+
 #if BUILDFLAG(ENABLE_PLUGINS)
   if (focused_pepper_plugin_) {
     focused_pepper_plugin_->render_frame()->OnImeSetComposition(
@@ -1536,6 +1543,9 @@ void RenderWidget::OnImeSetComposition(
 void RenderWidget::OnImeCommitText(const base::string16& text,
                                    const gfx::Range& replacement_range,
                                    int relative_cursor_pos) {
+  if (!ShouldHandleImeEvents())
+    return;
+
 #if BUILDFLAG(ENABLE_PLUGINS)
   if (focused_pepper_plugin_) {
     focused_pepper_plugin_->render_frame()->OnImeCommitText(
@@ -1559,6 +1569,9 @@ void RenderWidget::OnImeCommitText(const base::string16& text,
 }
 
 void RenderWidget::OnImeFinishComposingText(bool keep_selection) {
+  if (!ShouldHandleImeEvents())
+    return;
+
 #if BUILDFLAG(ENABLE_PLUGINS)
   if (focused_pepper_plugin_) {
     focused_pepper_plugin_->render_frame()->OnImeFinishComposingText(
@@ -1730,8 +1743,8 @@ ui::TextInputType RenderWidget::GetTextInputType() {
   if (focused_pepper_plugin_)
     return focused_pepper_plugin_->text_input_type();
 #endif
-  if (GetWebWidget())
-    return ConvertWebTextInputType(GetWebWidget()->textInputType());
+  if (auto* controller = GetInputMethodController())
+    return ConvertWebTextInputType(controller->textInputType());
   return ui::TEXT_INPUT_TYPE_NONE;
 }
 
@@ -2112,7 +2125,8 @@ void RenderWidget::didHandleGestureEvent(
     UpdateTextInputState(ShowIme::IF_NEEDED, ChangeSource::FROM_NON_IME);
   } else if (event.type == WebInputEvent::GestureLongPress) {
     DCHECK(GetWebWidget());
-    if (GetWebWidget()->textInputInfo().value.isEmpty())
+    blink::WebInputMethodController* controller = GetInputMethodController();
+    if (!controller || controller->textInputInfo().value.isEmpty())
       UpdateTextInputState(ShowIme::HIDE_IME, ChangeSource::FROM_NON_IME);
     else
       UpdateTextInputState(ShowIme::IF_NEEDED, ChangeSource::FROM_NON_IME);
@@ -2125,7 +2139,9 @@ void RenderWidget::didHandleGestureEvent(
 
   // TODO(estade): hit test the event against focused node to make sure
   // the tap actually hit the focused node.
-  blink::WebTextInputType text_input_type = GetWebWidget()->textInputType();
+  blink::WebInputMethodController* controller = GetInputMethodController();
+  blink::WebTextInputType text_input_type =
+      controller ? controller->textInputType() : blink::WebTextInputTypeNone;
 
   Send(new ViewHostMsg_FocusedNodeTouched(
       routing_id_, text_input_type != blink::WebTextInputTypeNone));

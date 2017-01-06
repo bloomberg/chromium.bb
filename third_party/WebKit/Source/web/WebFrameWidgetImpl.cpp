@@ -403,8 +403,7 @@ void WebFrameWidgetImpl::setBaseBackgroundColor(WebColor color) {
 
 WebInputMethodControllerImpl*
 WebFrameWidgetImpl::getActiveWebInputMethodController() const {
-  return WebInputMethodControllerImpl::fromFrame(
-      focusedLocalFrameAvailableForIme());
+  return WebInputMethodControllerImpl::fromFrame(focusedLocalFrameInWidget());
 }
 
 void WebFrameWidgetImpl::scheduleAnimation() {
@@ -465,6 +464,7 @@ void WebFrameWidgetImpl::setFocus(bool enable) {
         }
       }
     }
+    m_imeAcceptEvents = true;
   } else {
     LocalFrame* focusedFrame = focusedLocalFrameInWidget();
     if (focusedFrame) {
@@ -514,20 +514,6 @@ WebRange WebFrameWidgetImpl::compositionRange() {
   editable->document().updateStyleAndLayoutIgnorePendingStylesheets();
 
   return PlainTextRange::create(*editable, range);
-}
-
-WebTextInputInfo WebFrameWidgetImpl::textInputInfo() {
-  LocalFrame* focused = focusedLocalFrameInWidget();
-  if (!focused)
-    return WebTextInputInfo();
-  return focused->inputMethodController().textInputInfo();
-}
-
-WebTextInputType WebFrameWidgetImpl::textInputType() {
-  LocalFrame* focused = focusedLocalFrameInWidget();
-  if (!focused)
-    return WebTextInputTypeNone;
-  return focused->inputMethodController().textInputType();
 }
 
 WebColor WebFrameWidgetImpl::backgroundColor() const {

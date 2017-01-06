@@ -26,6 +26,7 @@ class WebDevToolsAgentClient;
 class WebDoubleSize;
 class WebFrameClient;
 class WebFrameWidget;
+class WebInputMethodController;
 class WebRange;
 class WebScriptExecutionCallback;
 enum class WebCachePolicy;
@@ -458,6 +459,9 @@ class WebLocalFrame : public WebFrame {
   virtual base::SingleThreadTaskRunner* timerTaskRunner() = 0;
   virtual base::SingleThreadTaskRunner* loadingTaskRunner() = 0;
   virtual base::SingleThreadTaskRunner* unthrottledTaskRunner() = 0;
+
+  // Returns the WebInputMethodController associated with this local frame.
+  virtual WebInputMethodController* inputMethodController() const = 0;
 
  protected:
   explicit WebLocalFrame(WebTreeScopeType scope) : WebFrame(scope) {}

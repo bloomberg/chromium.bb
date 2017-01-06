@@ -100,8 +100,6 @@ class WebFrameWidgetImpl final
   void mouseCaptureLost() override;
   void setFocus(bool enable) override;
   WebRange compositionRange() override;
-  WebTextInputInfo textInputInfo() override;
-  WebTextInputType textInputType() override;
   WebColor backgroundColor() const override;
   bool selectionBounds(WebRect& anchor, WebRect& focus) const override;
   bool selectionTextDirection(WebTextDirection& start,
@@ -226,6 +224,8 @@ class WebFrameWidgetImpl final
   // Whether the WebFrameWidget is rendering transparently.
   bool m_isTransparent;
 
+  // TODO(ekaramad): Can we remove this and make sure IME events are not called
+  // when there is no page focus?
   // Represents whether or not this object should process incoming IME events.
   bool m_imeAcceptEvents;
 

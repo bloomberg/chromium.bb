@@ -83,8 +83,8 @@ class WebFrameWidget : public WebWidget {
 
   // Current instance of the active WebInputMethodController, that is, the
   // WebInputMethodController corresponding to (and owned by) the focused
-  // WebLocalFrameImpl. It might return nullptr when there are no focused
-  // frames or possibly when the WebFrameWidget does not accept IME events.
+  // WebLocalFrameImpl. It will return nullptr when there are no focused
+  // frames inside this WebFrameWidget.
   virtual WebInputMethodController* getActiveWebInputMethodController()
       const = 0;
 

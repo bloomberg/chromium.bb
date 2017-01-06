@@ -803,6 +803,11 @@ class CONTENT_EXPORT RenderWidget
   // instead fail right away.
   void SendOrCrash(IPC::Message* msg);
 
+  // Determines whether or not RenderWidget should process IME events from the
+  // browser. It always returns true unless there is no WebFrameWidget to
+  // handle the event, or there is no page focus.
+  bool ShouldHandleImeEvents() const;
+
   // Indicates whether this widget has focus.
   bool has_focus_;
 
