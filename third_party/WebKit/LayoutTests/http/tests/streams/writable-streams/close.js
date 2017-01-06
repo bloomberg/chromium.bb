@@ -32,9 +32,8 @@ promise_test(t => {
 
   const writer = ws.getWriter();
 
-  writer.close();
-
   return Promise.all([
+    writer.close(),
     delay(10).then(() => controller.error(passedError)),
     promise_rejects(t, passedError, writer.closed,
                     'closed promise should be rejected with the passed error'),
@@ -52,8 +51,7 @@ promise_test(t => {
 
   const writer = ws.getWriter();
 
-  return promise_rejects(t, passedError, writer.close(), 'close promise should be rejected with the passed error')
-      .then(() => promise_rejects(t, passedError, writer.closed, 'closed should stay rejected'));
+  return writer.close().then(() => promise_rejects(t, passedError, writer.closed, 'closed should stay rejected'));
 }, 'when sink calls error synchronously while closing, the stream should become errored');
 
 promise_test(() => {
@@ -139,5 +137,37 @@ promise_test(t => {
   });
   return promise_rejects(t, rejection, ws.getWriter().close(), 'close() should return a rejection');
 }, 'returning a thenable from close() should work');
+
+promise_test(t => {
+  const ws = new WritableStream();
+  const writer = ws.getWriter();
+  return writer.ready.then(() => {
+    const closePromise = writer.close();
+    const closedPromise = writer.closed;
+    writer.releaseLock();
+    return Promise.all([
+      closePromise,
+      promise_rejects(t, new TypeError(), closedPromise, '.closed promise should be rejected')
+    ]);
+  });
+}, 'releaseLock() should not change the result of sync close()');
+
+promise_test(t => {
+  const ws = new WritableStream({
+    close() {
+      return flushAsyncEvents();
+    }
+  });
+  const writer = ws.getWriter();
+  return writer.ready.then(() => {
+    const closePromise = writer.close();
+    const closedPromise = writer.closed;
+    writer.releaseLock();
+    return Promise.all([
+      closePromise,
+      promise_rejects(t, new TypeError(), closedPromise, '.closed promise should be rejected')
+    ]);
+  });
+}, 'releaseLock() should not change the result of async close()');
 
 done();
