@@ -48,14 +48,17 @@ class CORE_EXPORT PagePopupSupplement final
   USING_GARBAGE_COLLECTED_MIXIN(PagePopupSupplement);
 
  public:
-  static PagePopupController* pagePopupController(LocalFrame&);
+  static PagePopupSupplement& from(LocalFrame&);
   static void install(LocalFrame&, PagePopup&, PagePopupClient*);
   static void uninstall(LocalFrame&);
+
+  PagePopupController* pagePopupController() const;
   DECLARE_TRACE();
 
  private:
-  PagePopupSupplement(PagePopup&, PagePopupClient*);
+  PagePopupSupplement(LocalFrame&, PagePopup&, PagePopupClient*);
   static const char* supplementName();
+  void dispose();
 
   Member<PagePopupController> m_controller;
 };

@@ -34,22 +34,31 @@
 
 namespace blink {
 
-PagePopupSupplement::PagePopupSupplement(PagePopup& popup,
+PagePopupSupplement::PagePopupSupplement(LocalFrame& frame,
+                                         PagePopup& popup,
                                          PagePopupClient* popupClient)
-    : m_controller(PagePopupController::create(popup, popupClient)) {
-  ASSERT(popupClient);
+    : Supplement<LocalFrame>(frame),
+      m_controller(PagePopupController::create(popup, popupClient)) {
+  DCHECK(popupClient);
 }
 
 const char* PagePopupSupplement::supplementName() {
   return "PagePopupSupplement";
 }
 
-PagePopupController* PagePopupSupplement::pagePopupController(
-    LocalFrame& frame) {
-  PagePopupSupplement* supplement =
-      static_cast<PagePopupSupplement*>(from(&frame, supplementName()));
-  ASSERT(supplement);
-  return supplement->m_controller.get();
+PagePopupSupplement& PagePopupSupplement::from(LocalFrame& frame) {
+  PagePopupSupplement* supplement = static_cast<PagePopupSupplement*>(
+      Supplement<LocalFrame>::from(&frame, supplementName()));
+  DCHECK(supplement);
+  return *supplement;
+}
+
+PagePopupController* PagePopupSupplement::pagePopupController() const {
+  return m_controller;
+}
+
+void PagePopupSupplement::dispose() {
+  m_controller->clearPagePopupClient();
 }
 
 void PagePopupSupplement::install(LocalFrame& frame,
@@ -57,11 +66,11 @@ void PagePopupSupplement::install(LocalFrame& frame,
                                   PagePopupClient* popupClient) {
   ASSERT(popupClient);
   provideTo(frame, supplementName(),
-            new PagePopupSupplement(popup, popupClient));
+            new PagePopupSupplement(frame, popup, popupClient));
 }
 
 void PagePopupSupplement::uninstall(LocalFrame& frame) {
-  pagePopupController(frame)->clearPagePopupClient();
+  PagePopupSupplement::from(frame).dispose();
   frame.removeSupplement(supplementName());
 }
 
