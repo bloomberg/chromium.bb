@@ -1759,6 +1759,9 @@ void RenderWidgetHostImpl::OnClose() {
 void RenderWidgetHostImpl::OnSetTooltipText(
     const base::string16& tooltip_text,
     WebTextDirection text_direction_hint) {
+  if (!GetView())
+    return;
+
   // First, add directionality marks around tooltip text if necessary.
   // A naive solution would be to simply always wrap the text. However, on
   // windows, Unicode directional embedding characters can't be displayed on
@@ -1784,8 +1787,7 @@ void RenderWidgetHostImpl::OnSetTooltipText(
       base::i18n::WrapStringWithRTLFormatting(&wrapped_tooltip_text);
     }
   }
-  if (GetView())
-    view_->SetTooltipText(wrapped_tooltip_text);
+  view_->SetTooltipText(wrapped_tooltip_text);
 }
 
 void RenderWidgetHostImpl::OnUpdateScreenRectsAck() {
