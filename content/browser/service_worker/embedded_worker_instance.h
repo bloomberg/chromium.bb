@@ -114,9 +114,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
 
   // Stops the worker. It is invalid to call this when the worker is
   // not in STARTING or RUNNING status.
-  // This returns false if stopping a worker fails immediately, e.g. when
-  // IPC couldn't be sent to the worker.
-  ServiceWorkerStatusCode Stop();
+  // This returns false when StopWorker IPC couldn't be sent to the worker.
+  bool Stop();
 
   // Stops the worker if the worker is not being debugged (i.e. devtools is
   // not attached). This method is called by a stop-worker timer to kill

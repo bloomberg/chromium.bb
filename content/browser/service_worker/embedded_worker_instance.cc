@@ -128,6 +128,26 @@ void CallDetach(EmbeddedWorkerInstance* instance) {
   instance->Detach();
 }
 
+bool HasSentStartWorker(EmbeddedWorkerInstance::StartingPhase phase) {
+  switch (phase) {
+    case EmbeddedWorkerInstance::NOT_STARTING:
+    case EmbeddedWorkerInstance::ALLOCATING_PROCESS:
+    case EmbeddedWorkerInstance::REGISTERING_TO_DEVTOOLS:
+      return false;
+    case EmbeddedWorkerInstance::SENT_START_WORKER:
+    case EmbeddedWorkerInstance::SCRIPT_DOWNLOADING:
+    case EmbeddedWorkerInstance::SCRIPT_READ_STARTED:
+    case EmbeddedWorkerInstance::SCRIPT_READ_FINISHED:
+    case EmbeddedWorkerInstance::SCRIPT_LOADED:
+    case EmbeddedWorkerInstance::SCRIPT_EVALUATED:
+    case EmbeddedWorkerInstance::THREAD_STARTED:
+      return true;
+    case EmbeddedWorkerInstance::STARTING_PHASE_MAX_VALUE:
+      NOTREACHED();
+  }
+  return false;
+}
+
 }  // namespace
 
 // Lives on IO thread, proxies notifications to DevToolsManager that lives on
@@ -492,7 +512,7 @@ void EmbeddedWorkerInstance::Start(
   inflight_start_task_->Start(std::move(params), callback);
 }
 
-ServiceWorkerStatusCode EmbeddedWorkerInstance::Stop() {
+bool EmbeddedWorkerInstance::Stop() {
   DCHECK(status_ == EmbeddedWorkerStatus::STARTING ||
          status_ == EmbeddedWorkerStatus::RUNNING)
       << static_cast<int>(status_);
@@ -500,28 +520,36 @@ ServiceWorkerStatusCode EmbeddedWorkerInstance::Stop() {
   // Abort an inflight start task.
   inflight_start_task_.reset();
 
-  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_IPC_FAILED;
   if (ServiceWorkerUtils::IsMojoForServiceWorkerEnabled()) {
-    status = SERVICE_WORKER_OK;
+    if (status_ == EmbeddedWorkerStatus::STARTING &&
+        !HasSentStartWorker(starting_phase())) {
+      // Don't send the StopWorker message when the StartWorker message hasn't
+      // been sent.
+      // TODO(shimazu): Invoke OnStopping/OnStopped after the legacy IPC path is
+      // removed.
+      OnDetached();
+      return false;
+    }
     client_->StopWorker(base::Bind(&EmbeddedWorkerRegistry::OnWorkerStopped,
                                    base::Unretained(registry_.get()),
                                    process_id(), embedded_worker_id()));
   } else {
-    status = registry_->StopWorker(process_id(), embedded_worker_id_);
-  }
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.SendStopWorker.Status", status,
-                            SERVICE_WORKER_ERROR_MAX_VALUE);
-  // StopWorker could fail if we were starting up and don't have a process yet,
-  // or we can no longer communicate with the process. So just detach.
-  if (status != SERVICE_WORKER_OK) {
-    OnDetached();
-    return status;
+    ServiceWorkerStatusCode status =
+        registry_->StopWorker(process_id(), embedded_worker_id_);
+    UMA_HISTOGRAM_ENUMERATION("ServiceWorker.SendStopWorker.Status", status,
+                              SERVICE_WORKER_ERROR_MAX_VALUE);
+    // StopWorker could fail if we were starting up and don't have a process
+    // yet, or we can no longer communicate with the process. So just detach.
+    if (status != SERVICE_WORKER_OK) {
+      OnDetached();
+      return false;
+    }
   }
 
   status_ = EmbeddedWorkerStatus::STOPPING;
   for (auto& observer : listener_list_)
     observer.OnStopping();
-  return status;
+  return true;
 }
 
 void EmbeddedWorkerInstance::StopIfIdle() {
@@ -867,6 +895,7 @@ void EmbeddedWorkerInstance::ReleaseProcess() {
   devtools_proxy_.reset();
   process_handle_.reset();
   status_ = EmbeddedWorkerStatus::STOPPED;
+  starting_phase_ = NOT_STARTING;
   thread_id_ = kInvalidEmbeddedWorkerThreadId;
 }
 

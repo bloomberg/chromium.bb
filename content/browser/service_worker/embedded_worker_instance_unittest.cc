@@ -221,7 +221,7 @@ TEST_P(EmbeddedWorkerInstanceTestP, StartAndStop) {
   EXPECT_EQ(helper_->mock_render_process_id(), worker->process_id());
 
   // Stop the worker.
-  EXPECT_EQ(SERVICE_WORKER_OK, worker->Stop());
+  EXPECT_TRUE(worker->Stop());
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPING, worker->status());
   base::RunLoop().RunUntilIdle();
 
@@ -283,7 +283,7 @@ TEST_P(EmbeddedWorkerInstanceTestP, ForceNewProcess) {
     // The worker should be using the default render process.
     EXPECT_EQ(helper_->mock_render_process_id(), worker->process_id());
 
-    EXPECT_EQ(SERVICE_WORKER_OK, worker->Stop());
+    EXPECT_TRUE(worker->Stop());
     base::RunLoop().RunUntilIdle();
   }
 
@@ -309,7 +309,7 @@ TEST_P(EmbeddedWorkerInstanceTestP, ForceNewProcess) {
     EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, worker->status());
     // The worker should be using the new render process.
     EXPECT_EQ(helper_->new_render_process_id(), worker->process_id());
-    EXPECT_EQ(SERVICE_WORKER_OK, worker->Stop());
+    EXPECT_TRUE(worker->Stop());
     base::RunLoop().RunUntilIdle();
   }
 }
@@ -354,7 +354,7 @@ TEST_P(EmbeddedWorkerInstanceTestP, StopWhenDevToolsAttached) {
 
   // Calling Stop() actually stops the worker regardless of whether devtools
   // is attached or not.
-  EXPECT_EQ(SERVICE_WORKER_OK, worker->Stop());
+  EXPECT_TRUE(worker->Stop());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
 }
@@ -520,13 +520,7 @@ TEST_P(EmbeddedWorkerInstanceTestP, StopDuringProcessAllocation) {
   // "PROCESS_ALLOCATED" event should not be recorded.
   ASSERT_EQ(1u, events_.size());
   EXPECT_EQ(DETACHED, events_[0].type);
-  if (is_mojo_enabled()) {
-    // STOPPING should be recorded here because EmbeddedWorkerInstance must be
-    // detached while executing RunUntilIdle.
-    EXPECT_EQ(EmbeddedWorkerStatus::STOPPING, events_[0].status);
-  } else {
-    EXPECT_EQ(EmbeddedWorkerStatus::STARTING, events_[0].status);
-  }
+  EXPECT_EQ(EmbeddedWorkerStatus::STARTING, events_[0].status);
   events_.clear();
 
   // Restart the worker.

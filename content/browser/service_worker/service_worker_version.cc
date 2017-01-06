@@ -494,19 +494,27 @@ void ServiceWorkerVersion::StopWorker(const StatusCallback& callback) {
                        TRACE_EVENT_SCOPE_THREAD, "Script", script_url_.spec(),
                        "Status", VersionStatusToString(status_));
 
-  if (running_status() == EmbeddedWorkerStatus::STOPPED) {
-    RunSoon(base::Bind(callback, SERVICE_WORKER_OK));
-    return;
-  }
-
-  if (stop_callbacks_.empty()) {
-    ServiceWorkerStatusCode status = embedded_worker_->Stop();
-    if (status != SERVICE_WORKER_OK) {
-      RunSoon(base::Bind(callback, status));
+  switch (running_status()) {
+    case EmbeddedWorkerStatus::STARTING:
+    case EmbeddedWorkerStatus::RUNNING:
+      // Stop() returns false when it's called before StartWorker message hasn't
+      // been sent to the renderer process even though EmbeddedWorkerInstance is
+      // stopped properly.
+      // TODO(shimazu): Remove this check after Stop() hides the IPC behavior.
+      // See also a TODO on EmbeddedWorkerInstance::Stop.
+      if (!embedded_worker_->Stop()) {
+        RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_IPC_FAILED));
+        return;
+      }
+      stop_callbacks_.push_back(callback);
       return;
-    }
+    case EmbeddedWorkerStatus::STOPPING:
+      stop_callbacks_.push_back(callback);
+      return;
+    case EmbeddedWorkerStatus::STOPPED:
+      RunSoon(base::Bind(callback, SERVICE_WORKER_OK));
+      return;
   }
-  stop_callbacks_.push_back(callback);
 }
 
 void ServiceWorkerVersion::ScheduleUpdate() {

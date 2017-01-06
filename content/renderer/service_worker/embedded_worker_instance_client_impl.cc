@@ -49,6 +49,7 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
     mojom::ServiceWorkerEventDispatcherRequest dispatcher_request) {
   DCHECK(ChildThreadImpl::current());
   DCHECK(!wrapper_);
+  DCHECK(!embedded_worker_id_);
   TRACE_EVENT0("ServiceWorker",
                "EmbeddedWorkerInstanceClientImpl::StartWorker");
   embedded_worker_id_ = params.embedded_worker_id;
@@ -67,13 +68,14 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
 
 void EmbeddedWorkerInstanceClientImpl::StopWorker(
     const StopWorkerCallback& callback) {
+  // StopWorker must be called after StartWorker is called.
   DCHECK(ChildThreadImpl::current());
+  DCHECK(wrapper_);
   DCHECK(embedded_worker_id_);
-  // StopWorker is possible to be called twice or before StartWorker().
-  if (stop_callback_ || !wrapper_)
-    return;
+  DCHECK(!stop_callback_);
+
   TRACE_EVENT0("ServiceWorker", "EmbeddedWorkerInstanceClientImpl::StopWorker");
-  stop_callback_ = std::move(callback);
+  stop_callback_ = callback;
   dispatcher_->RecordStopWorkerTimer(embedded_worker_id_.value());
   wrapper_->worker()->terminateWorkerContext();
 }
