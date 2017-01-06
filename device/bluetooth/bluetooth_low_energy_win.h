@@ -9,10 +9,10 @@
 #include <stdint.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/optional.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_low_energy_defs_win.h"
@@ -134,7 +134,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyWrapper {
   // Note: This function returns an error if Bluetooth Low Energy is not
   // supported on this Windows platform.
   virtual bool EnumerateKnownBluetoothLowEnergyDevices(
-      ScopedVector<BluetoothLowEnergyDeviceInfo>* devices,
+      std::vector<std::unique_ptr<BluetoothLowEnergyDeviceInfo>>* devices,
       std::string* error);
 
   // Enumerates the list of known Bluetooth LE GATT service devices on this
@@ -145,7 +145,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyWrapper {
   // Note: This function returns an error if Bluetooth Low Energy is not
   // supported on this Windows platform.
   virtual bool EnumerateKnownBluetoothLowEnergyGattServiceDevices(
-      ScopedVector<BluetoothLowEnergyDeviceInfo>* devices,
+      std::vector<std::unique_ptr<BluetoothLowEnergyDeviceInfo>>* devices,
       std::string* error);
 
   // Enumerates the list of known (i.e. cached) GATT services for a given
@@ -156,7 +156,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyWrapper {
   // supported on this Windows platform.
   virtual bool EnumerateKnownBluetoothLowEnergyServices(
       const base::FilePath& device_path,
-      ScopedVector<BluetoothLowEnergyServiceInfo>* services,
+      std::vector<std::unique_ptr<BluetoothLowEnergyServiceInfo>>* services,
       std::string* error);
 
   // Reads characteristics of |service| with service device path |service_path|.

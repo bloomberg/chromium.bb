@@ -9,8 +9,8 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
-#include "base/memory/scoped_vector.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "device/bluetooth/bluetooth_common.h"
@@ -136,7 +136,7 @@ class MockBluetoothDevice : public BluetoothDevice {
   // Used by tests to save callbacks that will be run in the future.
   std::queue<base::Closure> pending_callbacks_;
 
-  ScopedVector<MockBluetoothGattService> mock_services_;
+  std::vector<std::unique_ptr<MockBluetoothGattService>> mock_services_;
 };
 
 }  // namespace device

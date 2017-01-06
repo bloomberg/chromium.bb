@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
@@ -114,7 +115,7 @@ class TestBluetoothAdapter : public BluetoothAdapter {
 
   void TestErrorCallback() {}
 
-  ScopedVector<BluetoothDiscoverySession> discovery_sessions_;
+  std::vector<std::unique_ptr<BluetoothDiscoverySession>> discovery_sessions_;
 
   void TestOnStartDiscoverySession(
       std::unique_ptr<device::BluetoothDiscoverySession> discovery_session) {

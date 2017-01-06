@@ -372,7 +372,7 @@ bool CollectBluetoothLowEnergyDeviceStatus(
 
 bool CollectBluetoothLowEnergyDeviceServices(
     const base::FilePath& device_path,
-    ScopedVector<BluetoothLowEnergyServiceInfo>* services,
+    std::vector<std::unique_ptr<BluetoothLowEnergyServiceInfo>>* services,
     std::string* error) {
   base::File file(device_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!file.IsValid()) {
@@ -408,11 +408,10 @@ bool CollectBluetoothLowEnergyDeviceServices(
 
   for (USHORT i = 0; i < actual_length; ++i) {
     BTH_LE_GATT_SERVICE& gatt_service(gatt_services.get()[i]);
-    BluetoothLowEnergyServiceInfo* service_info =
-        new BluetoothLowEnergyServiceInfo();
+    auto service_info = base::MakeUnique<BluetoothLowEnergyServiceInfo>();
     service_info->uuid = gatt_service.ServiceUuid;
     service_info->attribute_handle = gatt_service.AttributeHandle;
-    services->push_back(service_info);
+    services->push_back(std::move(service_info));
   }
 
   return true;
@@ -542,7 +541,7 @@ HRESULT OpenBluetoothLowEnergyDevices(GUID device_interface_guid,
 // Gatt service devices.
 bool EnumerateKnownBLEOrBLEGattServiceDevices(
     GUID guid,
-    ScopedVector<BluetoothLowEnergyDeviceInfo>* devices,
+    std::vector<std::unique_ptr<BluetoothLowEnergyDeviceInfo>>* devices,
     std::string* error) {
   ScopedDeviceInfoSetHandle info_set_handle;
   HRESULT hr = OpenBluetoothLowEnergyDevices(guid, &info_set_handle);
@@ -678,7 +677,7 @@ bool BluetoothLowEnergyWrapper::IsBluetoothLowEnergySupported() {
 }
 
 bool BluetoothLowEnergyWrapper::EnumerateKnownBluetoothLowEnergyDevices(
-    ScopedVector<BluetoothLowEnergyDeviceInfo>* devices,
+    std::vector<std::unique_ptr<BluetoothLowEnergyDeviceInfo>>* devices,
     std::string* error) {
   if (!IsBluetoothLowEnergySupported()) {
     *error = kPlatformNotSupported;
@@ -691,7 +690,7 @@ bool BluetoothLowEnergyWrapper::EnumerateKnownBluetoothLowEnergyDevices(
 
 bool BluetoothLowEnergyWrapper::
     EnumerateKnownBluetoothLowEnergyGattServiceDevices(
-        ScopedVector<BluetoothLowEnergyDeviceInfo>* devices,
+        std::vector<std::unique_ptr<BluetoothLowEnergyDeviceInfo>>* devices,
         std::string* error) {
   if (!IsBluetoothLowEnergySupported()) {
     *error = kPlatformNotSupported;
@@ -704,7 +703,7 @@ bool BluetoothLowEnergyWrapper::
 
 bool BluetoothLowEnergyWrapper::EnumerateKnownBluetoothLowEnergyServices(
     const base::FilePath& device_path,
-    ScopedVector<BluetoothLowEnergyServiceInfo>* services,
+    std::vector<std::unique_ptr<BluetoothLowEnergyServiceInfo>>* services,
     std::string* error) {
   if (!IsBluetoothLowEnergySupported()) {
     *error = kPlatformNotSupported;

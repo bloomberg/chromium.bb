@@ -9,9 +9,9 @@
 
 #include <memory>
 #include <set>
+#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_uuid.h"
@@ -26,7 +26,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDiscoveryFilter {
 
   // These getters return true when given field is set in filter, and copy this
   // value to |out_*| parameter. If value is not set, returns false.
-  // Thes setters assign given value to proper filter field.
+  // These setters assign given value to proper filter field.
   bool GetRSSI(int16_t* out_rssi) const;
   void SetRSSI(int16_t rssi);
   bool GetPathloss(uint16_t* out_pathloss) const;
@@ -62,7 +62,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDiscoveryFilter {
   std::unique_ptr<int16_t> rssi_;
   std::unique_ptr<uint16_t> pathloss_;
   BluetoothTransport transport_;
-  ScopedVector<device::BluetoothUUID> uuids_;
+  std::vector<std::unique_ptr<device::BluetoothUUID>> uuids_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDiscoveryFilter);
 };

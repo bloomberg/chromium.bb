@@ -110,7 +110,7 @@ void BluetoothTestBase::DiscoverySessionCallback(
     Call expected,
     std::unique_ptr<BluetoothDiscoverySession> discovery_session) {
   ++callback_count_;
-  discovery_sessions_.push_back(discovery_session.release());
+  discovery_sessions_.push_back(std::move(discovery_session));
 
   if (expected == Call::EXPECTED)
     ++actual_success_callback_calls_;
@@ -122,7 +122,7 @@ void BluetoothTestBase::GattConnectionCallback(
     Call expected,
     std::unique_ptr<BluetoothGattConnection> connection) {
   ++callback_count_;
-  gatt_connections_.push_back(connection.release());
+  gatt_connections_.push_back(std::move(connection));
 
   if (expected == Call::EXPECTED)
     ++actual_success_callback_calls_;
@@ -133,7 +133,7 @@ void BluetoothTestBase::GattConnectionCallback(
 void BluetoothTestBase::NotifyCallback(
     Call expected,
     std::unique_ptr<BluetoothGattNotifySession> notify_session) {
-  notify_sessions_.push_back(notify_session.release());
+  notify_sessions_.push_back(std::move(notify_session));
 
   ++callback_count_;
   if (expected == Call::EXPECTED)
@@ -147,7 +147,7 @@ void BluetoothTestBase::NotifyCheckForPrecedingCalls(
     std::unique_ptr<BluetoothGattNotifySession> notify_session) {
   EXPECT_EQ(num_of_preceding_calls, callback_count_);
 
-  notify_sessions_.push_back(notify_session.release());
+  notify_sessions_.push_back(std::move(notify_session));
 
   ++callback_count_;
   ++actual_success_callback_calls_;

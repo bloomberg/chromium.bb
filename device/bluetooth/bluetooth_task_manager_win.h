@@ -14,7 +14,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/win/scoped_handle.h"
@@ -65,6 +64,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
     // service must use service device path instead of resident device device
     // path.
     base::FilePath path;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ServiceRecordState);
   };
 
   struct DEVICE_BLUETOOTH_EXPORT DeviceState {
@@ -79,11 +81,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
     bool visible;
     bool connected;
     bool authenticated;
-    ScopedVector<ServiceRecordState> service_record_states;
+    std::vector<std::unique_ptr<ServiceRecordState>> service_record_states;
     // Properties specific to Bluetooth Classic devices.
     uint32_t bluetooth_class;
     // Properties specific to Bluetooth LE devices.
     base::FilePath path;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(DeviceState);
   };
 
   class DEVICE_BLUETOOTH_EXPORT Observer {
@@ -100,7 +105,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
      // the associated state can change over time. For example, during a
      // discovery session, the "friendly" name may initially be "unknown" before
      // the actual name is retrieved in subsequent poll events.
-     virtual void DevicesPolled(const ScopedVector<DeviceState>& devices) {}
+     virtual void DevicesPolled(
+         const std::vector<std::unique_ptr<DeviceState>>& devices) {}
   };
 
   explicit BluetoothTaskManagerWin(
@@ -206,7 +212,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
   void OnAdapterStateChanged(const AdapterState* state);
   void OnDiscoveryStarted(bool success);
   void OnDiscoveryStopped();
-  void OnDevicesPolled(const ScopedVector<DeviceState>* devices);
+  void OnDevicesPolled(std::vector<std::unique_ptr<DeviceState>> devices);
 
   // Called on BluetoothTaskRunner.
   void StartPolling();
@@ -238,19 +244,21 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
   // exposed by those devices.
   bool SearchDevices(int timeout_multiplier,
                      bool search_cached_devices_only,
-                     ScopedVector<DeviceState>* device_list);
+                     std::vector<std::unique_ptr<DeviceState>>* device_list);
 
   // Sends a device search API call to the adapter to look for Bluetooth Classic
   // devices.
-  bool SearchClassicDevices(int timeout_multiplier,
-                            bool search_cached_devices_only,
-                            ScopedVector<DeviceState>* device_list);
+  bool SearchClassicDevices(
+      int timeout_multiplier,
+      bool search_cached_devices_only,
+      std::vector<std::unique_ptr<DeviceState>>* device_list);
 
   // Enumerate Bluetooth Low Energy devices.
-  bool SearchLowEnergyDevices(ScopedVector<DeviceState>* device_list);
+  bool SearchLowEnergyDevices(
+      std::vector<std::unique_ptr<DeviceState>>* device_list);
 
   // Discover services for the devices in |device_list|.
-  bool DiscoverServices(ScopedVector<DeviceState>* device_list,
+  bool DiscoverServices(std::vector<std::unique_ptr<DeviceState>>* device_list,
                         bool search_cached_services_only);
 
   // Discover Bluetooth Classic services for the given |device_address|.
@@ -258,7 +266,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
       const std::string& device_address,
       const GUID& protocol_uuid,
       bool search_cached_services_only,
-      ScopedVector<ServiceRecordState>* service_record_states);
+      std::vector<std::unique_ptr<ServiceRecordState>>* service_record_states);
 
   // Discover Bluetooth Classic services for the given |device_address|.
   // Returns a Win32 error code.
@@ -266,18 +274,18 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
       const std::string& device_address,
       const GUID& protocol_uuid,
       bool search_cached_services_only,
-      ScopedVector<ServiceRecordState>* service_record_states);
+      std::vector<std::unique_ptr<ServiceRecordState>>* service_record_states);
 
   // Discover Bluetooth Low Energy services for the given |device_path|.
   bool DiscoverLowEnergyDeviceServices(
       const base::FilePath& device_path,
-      ScopedVector<ServiceRecordState>* service_record_states);
+      std::vector<std::unique_ptr<ServiceRecordState>>* service_record_states);
 
   // Search for device paths of the GATT services in |*service_record_states|
   // from |device_address|.
   bool SearchForGattServiceDevicePaths(
       const std::string device_address,
-      ScopedVector<ServiceRecordState>* service_record_states);
+      std::vector<std::unique_ptr<ServiceRecordState>>* service_record_states);
 
   // GATT service related functions.
   void GetGattIncludedCharacteristics(

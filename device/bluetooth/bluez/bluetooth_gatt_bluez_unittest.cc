@@ -7,8 +7,8 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
-#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "dbus/object_path.h"
@@ -259,7 +259,7 @@ class BluetoothGattBlueZTest : public testing::Test {
   void NotifySessionCallback(
       std::unique_ptr<BluetoothGattNotifySession> session) {
     ++success_callback_count_;
-    update_sessions_.push_back(session.release());
+    update_sessions_.push_back(std::move(session));
     QuitMessageLoop();
   }
 
@@ -295,7 +295,7 @@ class BluetoothGattBlueZTest : public testing::Test {
   bluez::FakeBluetoothGattDescriptorClient*
       fake_bluetooth_gatt_descriptor_client_;
   std::unique_ptr<device::BluetoothGattConnection> gatt_conn_;
-  ScopedVector<BluetoothGattNotifySession> update_sessions_;
+  std::vector<std::unique_ptr<BluetoothGattNotifySession>> update_sessions_;
   scoped_refptr<BluetoothAdapter> adapter_;
 
   int success_callback_count_;
@@ -1434,7 +1434,7 @@ TEST_F(BluetoothGattBlueZTest, NotifySessions) {
 
   // Stop one of the sessions. The session should become inactive but the
   // characteristic should still be notifying.
-  BluetoothGattNotifySession* session = update_sessions_[0];
+  BluetoothGattNotifySession* session = update_sessions_[0].get();
   EXPECT_TRUE(session->IsActive());
   session->Stop(base::Bind(&BluetoothGattBlueZTest::SuccessCallback,
                            base::Unretained(this)));

@@ -5,8 +5,9 @@
 #include "device/bluetooth/bluetooth_discovery_filter.h"
 
 #include <algorithm>
-#include <memory>
 
+#include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "device/bluetooth/bluetooth_common.h"
 
 namespace device {
@@ -64,18 +65,18 @@ void BluetoothDiscoveryFilter::GetUUIDs(
     std::set<device::BluetoothUUID>& out_uuids) const {
   out_uuids.clear();
 
-  for (auto* uuid : uuids_)
+  for (const auto& uuid : uuids_)
     out_uuids.insert(*uuid);
 }
 
 void BluetoothDiscoveryFilter::AddUUID(const device::BluetoothUUID& uuid) {
   DCHECK(uuid.IsValid());
-  for (auto* uuid_it : uuids_) {
+  for (const auto& uuid_it : uuids_) {
     if (*uuid_it == uuid)
       return;
   }
 
-  uuids_.push_back(new device::BluetoothUUID(uuid));
+  uuids_.push_back(base::MakeUnique<device::BluetoothUUID>(uuid));
 }
 
 void BluetoothDiscoveryFilter::CopyFrom(
@@ -83,7 +84,7 @@ void BluetoothDiscoveryFilter::CopyFrom(
   transport_ = filter.transport_;
 
   if (filter.uuids_.size()) {
-    for (auto* uuid : filter.uuids_)
+    for (const auto& uuid : filter.uuids_)
       AddUUID(*uuid);
   } else
     uuids_.clear();

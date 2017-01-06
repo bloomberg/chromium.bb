@@ -7,9 +7,9 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
-#include "base/memory/scoped_vector.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -147,7 +147,7 @@ class MockBluetoothAdapter : public BluetoothAdapter {
   MOCK_METHOD1(RemovePairingDelegateInternal,
                void(BluetoothDevice::PairingDelegate* pairing_delegate));
 
-  ScopedVector<MockBluetoothDevice> mock_devices_;
+  std::vector<std::unique_ptr<MockBluetoothDevice>> mock_devices_;
 };
 
 }  // namespace device

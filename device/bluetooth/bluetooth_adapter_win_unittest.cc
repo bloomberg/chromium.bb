@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_simple_task_runner.h"
@@ -434,19 +437,17 @@ TEST_F(BluetoothAdapterWinTest, StopDiscoveryBeforeDiscoveryStartedAndFailed) {
 }
 
 TEST_F(BluetoothAdapterWinTest, DevicesPolled) {
-  BluetoothTaskManagerWin::DeviceState* android_phone_state =
-      new BluetoothTaskManagerWin::DeviceState();
+  std::vector<std::unique_ptr<BluetoothTaskManagerWin::DeviceState>> devices;
+  devices.push_back(base::MakeUnique<BluetoothTaskManagerWin::DeviceState>());
+  devices.push_back(base::MakeUnique<BluetoothTaskManagerWin::DeviceState>());
+  devices.push_back(base::MakeUnique<BluetoothTaskManagerWin::DeviceState>());
+
+  BluetoothTaskManagerWin::DeviceState* android_phone_state = devices[0].get();
+  BluetoothTaskManagerWin::DeviceState* laptop_state = devices[1].get();
+  BluetoothTaskManagerWin::DeviceState* iphone_state = devices[2].get();
   MakeDeviceState("phone", "A1:B2:C3:D4:E5:E0", android_phone_state);
-  BluetoothTaskManagerWin::DeviceState* laptop_state =
-      new BluetoothTaskManagerWin::DeviceState();
   MakeDeviceState("laptop", "A1:B2:C3:D4:E5:E1", laptop_state);
-  BluetoothTaskManagerWin::DeviceState* iphone_state =
-      new BluetoothTaskManagerWin::DeviceState();
   MakeDeviceState("phone", "A1:B2:C3:D4:E5:E2", iphone_state);
-  ScopedVector<BluetoothTaskManagerWin::DeviceState> devices;
-  devices.push_back(android_phone_state);
-  devices.push_back(laptop_state);
-  devices.push_back(iphone_state);
 
   // Add 3 devices
   observer_.Reset();
@@ -480,11 +481,12 @@ TEST_F(BluetoothAdapterWinTest, DevicesPolled) {
   EXPECT_EQ(0, observer_.device_changed_count());
 
   // Add a service
+  laptop_state->service_record_states.push_back(
+      base::MakeUnique<BluetoothTaskManagerWin::ServiceRecordState>());
   BluetoothTaskManagerWin::ServiceRecordState* audio_state =
-      new BluetoothTaskManagerWin::ServiceRecordState();
+      laptop_state->service_record_states.back().get();
   audio_state->name = kTestAudioSdpName;
   base::HexStringToBytes(kTestAudioSdpBytes, &audio_state->sdp_bytes);
-  laptop_state->service_record_states.push_back(audio_state);
   observer_.Reset();
   adapter_win_->DevicesPolled(devices);
   EXPECT_EQ(0, observer_.device_added_count());

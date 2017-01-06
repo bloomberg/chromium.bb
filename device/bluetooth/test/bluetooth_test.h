@@ -474,11 +474,11 @@ class BluetoothTestBase : public testing::Test {
   base::MessageLoop message_loop_;
 
   scoped_refptr<BluetoothAdapter> adapter_;
-  ScopedVector<BluetoothDiscoverySession> discovery_sessions_;
-  ScopedVector<BluetoothGattConnection> gatt_connections_;
+  std::vector<std::unique_ptr<BluetoothDiscoverySession>> discovery_sessions_;
+  std::vector<std::unique_ptr<BluetoothGattConnection>> gatt_connections_;
   enum BluetoothDevice::ConnectErrorCode last_connect_error_code_ =
       BluetoothDevice::ERROR_UNKNOWN;
-  ScopedVector<BluetoothGattNotifySession> notify_sessions_;
+  std::vector<std::unique_ptr<BluetoothGattNotifySession>> notify_sessions_;
   std::vector<uint8_t> last_read_value_;
   std::vector<uint8_t> last_write_value_;
   BluetoothRemoteGattService::GattErrorCode last_gatt_error_code_;

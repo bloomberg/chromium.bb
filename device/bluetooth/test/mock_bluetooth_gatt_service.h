@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/test/mock_bluetooth_gatt_characteristic.h"
@@ -64,7 +63,8 @@ class MockBluetoothGattService : public BluetoothRemoteGattService {
       const std::string& identifier) const;
 
  private:
-  ScopedVector<MockBluetoothGattCharacteristic> mock_characteristics_;
+  std::vector<std::unique_ptr<MockBluetoothGattCharacteristic>>
+      mock_characteristics_;
 
   DISALLOW_COPY_AND_ASSIGN(MockBluetoothGattService);
 };

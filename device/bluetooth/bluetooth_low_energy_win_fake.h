@@ -104,14 +104,14 @@ class BluetoothLowEnergyWrapperFake : public BluetoothLowEnergyWrapper {
 
   bool IsBluetoothLowEnergySupported() override;
   bool EnumerateKnownBluetoothLowEnergyDevices(
-      ScopedVector<BluetoothLowEnergyDeviceInfo>* devices,
+      std::vector<std::unique_ptr<BluetoothLowEnergyDeviceInfo>>* devices,
       std::string* error) override;
   bool EnumerateKnownBluetoothLowEnergyGattServiceDevices(
-      ScopedVector<BluetoothLowEnergyDeviceInfo>* devices,
+      std::vector<std::unique_ptr<BluetoothLowEnergyDeviceInfo>>* devices,
       std::string* error) override;
   bool EnumerateKnownBluetoothLowEnergyServices(
       const base::FilePath& device_path,
-      ScopedVector<BluetoothLowEnergyServiceInfo>* services,
+      std::vector<std::unique_ptr<BluetoothLowEnergyServiceInfo>>* services,
       std::string* error) override;
   HRESULT ReadCharacteristicsOfAService(
       base::FilePath& service_path,

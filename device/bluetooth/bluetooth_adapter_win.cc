@@ -228,7 +228,8 @@ void BluetoothAdapterWin::AdapterStateChanged(
 }
 
 void BluetoothAdapterWin::DevicesPolled(
-    const ScopedVector<BluetoothTaskManagerWin::DeviceState>& devices) {
+    const std::vector<std::unique_ptr<BluetoothTaskManagerWin::DeviceState>>&
+        devices) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // We are receiving a new list of all devices known to the system. Merge this
@@ -241,8 +242,8 @@ void BluetoothAdapterWin::DevicesPolled(
     known_devices.insert(device.first);
 
   DeviceAddressSet new_devices;
-  for (auto iter = devices.begin(); iter != devices.end(); ++iter)
-    new_devices.insert((*iter)->address);
+  for (const auto& device_state : devices)
+    new_devices.insert(device_state->address);
 
   // Process device removal first.
   DeviceAddressSet removed_devices =
@@ -260,8 +261,7 @@ void BluetoothAdapterWin::DevicesPolled(
       base::STLSetDifference<DeviceAddressSet>(new_devices, known_devices);
   DeviceAddressSet changed_devices =
       base::STLSetIntersection<DeviceAddressSet>(known_devices, new_devices);
-  for (auto iter = devices.begin(); iter != devices.end(); ++iter) {
-    BluetoothTaskManagerWin::DeviceState* device_state = (*iter);
+  for (const auto& device_state : devices) {
     if (added_devices.find(device_state->address) != added_devices.end()) {
       BluetoothDeviceWin* device_win =
           new BluetoothDeviceWin(this, *device_state, ui_task_runner_,

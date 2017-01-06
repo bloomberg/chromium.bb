@@ -45,22 +45,19 @@ void MockBluetoothGattService::AddMockCharacteristic(
 std::vector<BluetoothRemoteGattCharacteristic*>
 MockBluetoothGattService::GetMockCharacteristics() const {
   std::vector<BluetoothRemoteGattCharacteristic*> characteristics;
-  for (BluetoothRemoteGattCharacteristic* characteristic :
-       mock_characteristics_) {
-    characteristics.push_back(characteristic);
-  }
+  for (const auto& characteristic : mock_characteristics_)
+    characteristics.push_back(characteristic.get());
+
   return characteristics;
 }
 
 BluetoothRemoteGattCharacteristic*
 MockBluetoothGattService::GetMockCharacteristic(
     const std::string& identifier) const {
-  for (BluetoothRemoteGattCharacteristic* characteristic :
-       mock_characteristics_) {
-    if (characteristic->GetIdentifier() == identifier) {
-      return characteristic;
-    }
-  }
+  for (const auto& characteristic : mock_characteristics_)
+    if (characteristic->GetIdentifier() == identifier)
+      return characteristic.get();
+
   return nullptr;
 }
 

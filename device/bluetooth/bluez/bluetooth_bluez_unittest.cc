@@ -7,9 +7,9 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind_helpers.h"
-#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -214,10 +214,7 @@ class BluetoothBlueZTest : public testing::Test {
   }
 
   void TearDown() override {
-    for (ScopedVector<BluetoothDiscoverySession>::iterator iter =
-             discovery_sessions_.begin();
-         iter != discovery_sessions_.end(); ++iter) {
-      BluetoothDiscoverySession* session = *iter;
+    for (const auto& session : discovery_sessions_) {
       if (!session->IsActive())
         continue;
       callback_count_ = 0;
@@ -245,7 +242,7 @@ class BluetoothBlueZTest : public testing::Test {
   void DiscoverySessionCallback(
       std::unique_ptr<BluetoothDiscoverySession> discovery_session) {
     ++callback_count_;
-    discovery_sessions_.push_back(discovery_session.release());
+    discovery_sessions_.push_back(std::move(discovery_session));
     QuitMessageLoop();
   }
 
@@ -358,7 +355,7 @@ class BluetoothBlueZTest : public testing::Test {
   int error_callback_count_;
   enum BluetoothDevice::ConnectErrorCode last_connect_error_;
   std::string last_client_error_;
-  ScopedVector<BluetoothDiscoverySession> discovery_sessions_;
+  std::vector<std::unique_ptr<BluetoothDiscoverySession>> discovery_sessions_;
   BluetoothAdapterProfileBlueZ* adapter_profile_;
 
  private:

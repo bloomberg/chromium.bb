@@ -42,7 +42,7 @@ bool BluetoothLowEnergyWrapperFake::IsBluetoothLowEnergySupported() {
 }
 
 bool BluetoothLowEnergyWrapperFake::EnumerateKnownBluetoothLowEnergyDevices(
-    ScopedVector<BluetoothLowEnergyDeviceInfo>* devices,
+    std::vector<std::unique_ptr<BluetoothLowEnergyDeviceInfo>>* devices,
     std::string* error) {
   if (!IsBluetoothLowEnergySupported()) {
     *error = kPlatformNotSupported;
@@ -52,17 +52,16 @@ bool BluetoothLowEnergyWrapperFake::EnumerateKnownBluetoothLowEnergyDevices(
   for (auto& device : simulated_devices_) {
     if (device.second->marked_as_deleted)
       continue;
-    BluetoothLowEnergyDeviceInfo* device_info =
-        new BluetoothLowEnergyDeviceInfo();
+    auto device_info = base::MakeUnique<BluetoothLowEnergyDeviceInfo>();
     *device_info = *(device.second->device_info);
-    devices->push_back(device_info);
+    devices->push_back(std::move(device_info));
   }
   return true;
 }
 
 bool BluetoothLowEnergyWrapperFake::
     EnumerateKnownBluetoothLowEnergyGattServiceDevices(
-        ScopedVector<BluetoothLowEnergyDeviceInfo>* devices,
+        std::vector<std::unique_ptr<BluetoothLowEnergyDeviceInfo>>* devices,
         std::string* error) {
   if (!IsBluetoothLowEnergySupported()) {
     *error = kPlatformNotSupported;
@@ -71,14 +70,13 @@ bool BluetoothLowEnergyWrapperFake::
 
   for (auto& device : simulated_devices_) {
     for (auto& service : device.second->primary_services) {
-      BluetoothLowEnergyDeviceInfo* device_info =
-          new BluetoothLowEnergyDeviceInfo();
+      auto device_info = base::MakeUnique<BluetoothLowEnergyDeviceInfo>();
       *device_info = *(device.second->device_info);
       base::string16 path = GenerateGattServiceDevicePath(
           device.second->device_info->path.value(),
           service.second->service_info->AttributeHandle);
       device_info->path = base::FilePath(path);
-      devices->push_back(device_info);
+      devices->push_back(std::move(device_info));
     }
   }
   return true;
@@ -86,7 +84,7 @@ bool BluetoothLowEnergyWrapperFake::
 
 bool BluetoothLowEnergyWrapperFake::EnumerateKnownBluetoothLowEnergyServices(
     const base::FilePath& device_path,
-    ScopedVector<BluetoothLowEnergyServiceInfo>* services,
+    std::vector<std::unique_ptr<BluetoothLowEnergyServiceInfo>>* services,
     std::string* error) {
   if (!IsBluetoothLowEnergySupported()) {
     *error = kPlatformNotSupported;
@@ -107,23 +105,21 @@ bool BluetoothLowEnergyWrapperFake::EnumerateKnownBluetoothLowEnergyServices(
   if (service_attribute_handles.empty()) {
     // Return all primary services for BLE device.
     for (auto& primary_service : it_d->second->primary_services) {
-      BluetoothLowEnergyServiceInfo* service_info =
-          new BluetoothLowEnergyServiceInfo();
+      auto service_info = base::MakeUnique<BluetoothLowEnergyServiceInfo>();
       service_info->uuid = primary_service.second->service_info->ServiceUuid;
       service_info->attribute_handle =
           primary_service.second->service_info->AttributeHandle;
-      services->push_back(service_info);
+      services->push_back(std::move(service_info));
     }
   } else {
     // Return corresponding GATT service for BLE GATT service device.
     GattService* target_service =
         GetSimulatedGattService(it_d->second.get(), service_attribute_handles);
-    BluetoothLowEnergyServiceInfo* service_info =
-        new BluetoothLowEnergyServiceInfo();
+    auto service_info = base::MakeUnique<BluetoothLowEnergyServiceInfo>();
     service_info->uuid = target_service->service_info->ServiceUuid;
     service_info->attribute_handle =
         target_service->service_info->AttributeHandle;
-    services->push_back(service_info);
+    services->push_back(std::move(service_info));
   }
 
   return true;
