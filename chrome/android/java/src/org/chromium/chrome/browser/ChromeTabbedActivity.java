@@ -775,6 +775,12 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         public void processUrlViewIntent(String url, String referer, String headers,
                 TabOpenType tabOpenType, String externalAppId, int tabIdToBringToFront,
                 boolean hasUserGesture, Intent intent) {
+            if (isFromChrome(intent, externalAppId)) {
+                RecordUserAction.record("MobileTabbedModeViewIntentFromChrome");
+            } else {
+                RecordUserAction.record("MobileTabbedModeViewIntentFromApp");
+            }
+
             TabModel tabModel = getCurrentTabModel();
             boolean fromLauncherShortcut = IntentUtils.safeGetBooleanExtra(
                     intent, IntentHandler.EXTRA_INVOKED_FROM_SHORTCUT, false);
@@ -795,7 +801,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                     } else {
                         launchIntent(url, referer, headers, externalAppId, true, intent);
                     }
-                    RecordUserAction.record("MobileReceivedExternalIntent");
+                    logMobileReceivedExternalIntent(externalAppId, intent);
                     int shortcutSource = intent.getIntExtra(
                             ShortcutHelper.EXTRA_SOURCE, ShortcutSource.UNKNOWN);
                     LaunchMetrics.recordHomeScreenLaunchIntoTab(url, shortcutSource);
@@ -818,7 +824,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                     } else {
                         TabModelUtils.setIndex(tabModel, tabIndex);
                     }
-                    RecordUserAction.record("MobileReceivedExternalIntent");
+                    logMobileReceivedExternalIntent(externalAppId, intent);
                     break;
                 case CLOBBER_CURRENT_TAB:
                     // The browser triggered the intent. This happens when clicking links which
@@ -905,7 +911,29 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             Tab newTab =
                     launchIntent(url, referer, headers, externalAppId, forceNewTab, intent);
             newTab.setIsAllowedToReturnToExternalApp(isAllowedToReturnToExternalApp);
+            logMobileReceivedExternalIntent(externalAppId, intent);
+        }
+
+        // TODO(tedchoc): Remove once we have verified that MobileTabbedModeViewIntentFromChrome
+        //                and MobileTabbedModeViewIntentFromApp are suitable/more correct
+        //                replacments for these.
+        private void logMobileReceivedExternalIntent(String externalAppId, Intent intent) {
             RecordUserAction.record("MobileReceivedExternalIntent");
+            if (isFromChrome(intent, externalAppId)) {
+                RecordUserAction.record("MobileReceivedExternalIntent.Chrome");
+            } else {
+                RecordUserAction.record("MobileReceivedExternalIntent.App");
+            }
+        }
+
+        private boolean isFromChrome(Intent intent, String externalAppId) {
+            // To determine if the processed intent is from Chrome, check for any of the following:
+            // 1.) The authentication token that will be added to trusted intents.
+            // 2.) The app ID matches Chrome.  This value can be spoofed by other applications, but
+            //     in cases where we were not able to add the authentication token this is our only
+            //     indication the intent was from Chrome.
+            return IntentHandler.wasIntentSenderChrome(intent)
+                    || TextUtils.equals(externalAppId, getPackageName());
         }
     }
 

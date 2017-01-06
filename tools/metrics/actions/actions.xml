@@ -10042,8 +10042,33 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileReceivedExternalIntent">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>mariakhomenko@chromium.org</owner>
+  <owner>tedchoc@chromium.org</owner>
+  <description>
+    A VIEW intent was received by the tabbed mode activity.  This will combine
+    intents sent by external application as well as Chrome itself.  This does
+    not cover all intent types handled by Chrome.  Use
+    MobileTabbedModeViewIntentFromApp and MobileTabbedModeViewIntentFromChrome
+    for a complete picture.
+  </description>
+</action>
+
+<action name="MobileReceivedExternalIntent.App">
+  <owner>mariakhomenko@chromium.org</owner>
+  <owner>tedchoc@chromium.org</owner>
+  <description>
+    A VIEW intent was received by the tabbed mode activity from an external
+    application.
+  </description>
+</action>
+
+<action name="MobileReceivedExternalIntent.Chrome">
+  <owner>mariakhomenko@chromium.org</owner>
+  <owner>tedchoc@chromium.org</owner>
+  <description>
+    A VIEW intent was received by the tabbed mode activity from Chrome.  This is
+    only recorded for intent types that are also allowed from external apps.
+  </description>
 </action>
 
 <action name="MobileRendererCrashed">
@@ -10137,6 +10162,23 @@ should be able to be added at any place in this file.
 <action name="MobileTabSwitched">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="MobileTabbedModeViewIntentFromApp">
+  <owner>mariakhomenko@chromium.org</owner>
+  <owner>tedchoc@chromium.org</owner>
+  <description>
+    A VIEW intent was received by the tabbed mode activity from an external
+    application.
+  </description>
+</action>
+
+<action name="MobileTabbedModeViewIntentFromChrome">
+  <owner>mariakhomenko@chromium.org</owner>
+  <owner>tedchoc@chromium.org</owner>
+  <description>
+    A VIEW intent was received by the tabbed mode activity from Chrome.
+  </description>
 </action>
 
 <action name="MobileToolbarBack">
