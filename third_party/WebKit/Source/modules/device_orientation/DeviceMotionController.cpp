@@ -18,7 +18,8 @@
 namespace blink {
 
 DeviceMotionController::DeviceMotionController(Document& document)
-    : DeviceSingleWindowEventController(document) {}
+    : DeviceSingleWindowEventController(document),
+      Supplement<Document>(document) {}
 
 DeviceMotionController::~DeviceMotionController() {}
 

@@ -19,7 +19,8 @@
 namespace blink {
 
 DeviceOrientationController::DeviceOrientationController(Document& document)
-    : DeviceSingleWindowEventController(document) {}
+    : DeviceSingleWindowEventController(document),
+      Supplement<Document>(document) {}
 
 DeviceOrientationController::~DeviceOrientationController() {}
 

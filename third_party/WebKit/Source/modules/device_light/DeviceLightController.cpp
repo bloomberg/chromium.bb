@@ -13,7 +13,8 @@
 namespace blink {
 
 DeviceLightController::DeviceLightController(Document& document)
-    : DeviceSingleWindowEventController(document) {}
+    : DeviceSingleWindowEventController(document),
+      Supplement<Document>(document) {}
 
 DeviceLightController::~DeviceLightController() {}
 
