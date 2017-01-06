@@ -348,6 +348,11 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // MockRenderProcessHost usage in tests.
   virtual mojom::Renderer* GetRendererInterface() = 0;
 
+  // Whether this process is locked out from ever being reused for sites other
+  // than the ones it currently has.
+  virtual void SetIsNeverSuitableForReuse() = 0;
+  virtual bool MayReuseHost() = 0;
+
   // Returns the current number of active views in this process.  Excludes
   // any RenderViewHosts that are swapped out.
   size_t GetActiveViewCount();

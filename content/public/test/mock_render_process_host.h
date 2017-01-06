@@ -111,6 +111,8 @@ class MockRenderProcessHost : public RenderProcessHost {
   void PurgeAndSuspend() override;
   void Resume() override;
   mojom::Renderer* GetRendererInterface() override;
+  void SetIsNeverSuitableForReuse() override;
+  bool MayReuseHost() override;
 
   // IPC::Sender via RenderProcessHost.
   bool Send(IPC::Message* msg) override;

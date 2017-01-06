@@ -144,6 +144,11 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // Used to restrict a process' origin access rights.
   void LockToOrigin();
 
+  // This gets the render process to use for default subframe site instances.
+  RenderProcessHost* GetDefaultSubframeProcessHost(
+      BrowserContext* browser_context,
+      bool is_for_guests_only);
+
   void set_is_default_subframe_site_instance() {
     is_default_subframe_site_instance_ = true;
   }

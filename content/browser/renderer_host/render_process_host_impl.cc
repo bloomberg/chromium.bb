@@ -1454,6 +1454,17 @@ mojom::Renderer* RenderProcessHostImpl::GetRendererInterface() {
   return renderer_interface_.get();
 }
 
+void RenderProcessHostImpl::SetIsNeverSuitableForReuse() {
+  is_never_suitable_for_reuse_ = true;
+}
+
+bool RenderProcessHostImpl::MayReuseHost() {
+  if (is_never_suitable_for_reuse_)
+    return false;
+
+  return GetContentClient()->browser()->MayReuseHost(this);
+}
+
 mojom::RouteProvider* RenderProcessHostImpl::GetRemoteRouteProvider() {
   return remote_route_provider_.get();
 }
@@ -2516,7 +2527,7 @@ RenderProcessHost* RenderProcessHost::GetExistingProcessHost(
 
   iterator iter(AllHostsIterator());
   while (!iter.IsAtEnd()) {
-    if (GetContentClient()->browser()->MayReuseHost(iter.GetCurrentValue()) &&
+    if (iter.GetCurrentValue()->MayReuseHost() &&
         RenderProcessHostImpl::IsSuitableHost(iter.GetCurrentValue(),
                                               browser_context, site_url)) {
       suitable_renderers.push_back(iter.GetCurrentValue());
@@ -2572,7 +2583,7 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSite(
   std::string site =
       SiteInstance::GetSiteForURL(browser_context, url).possibly_invalid_spec();
   RenderProcessHost* host = map->FindProcess(site);
-  if (host && (!GetContentClient()->browser()->MayReuseHost(host) ||
+  if (host && (!host->MayReuseHost() ||
                !IsSuitableHost(host, browser_context, url))) {
     // The registered process does not have an appropriate set of bindings for
     // the url.  Remove it from the map so we can register a better one.

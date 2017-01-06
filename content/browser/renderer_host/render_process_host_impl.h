@@ -174,6 +174,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void PurgeAndSuspend() override;
   void Resume() override;
   mojom::Renderer* GetRendererInterface() override;
+  void SetIsNeverSuitableForReuse() override;
+  bool MayReuseHost() override;
 
   mojom::RouteProvider* GetRemoteRouteProvider();
 
@@ -436,6 +438,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Set in ForceReleaseWorkerRefCounts. When true, worker ref counts must no
   // longer be modified.
   bool is_worker_ref_count_disabled_;
+
+  // Whether this host is never suitable for reuse as determined in the
+  // MayReuseHost() function.
+  bool is_never_suitable_for_reuse_ = false;
 
   // The registered IPC listener objects. When this list is empty, we should
   // delete ourselves.

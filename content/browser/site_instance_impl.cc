@@ -82,6 +82,81 @@ bool SiteInstanceImpl::HasProcess() const {
   return false;
 }
 
+namespace {
+
+const void* const kDefaultSubframeProcessHostHolderKey =
+    &kDefaultSubframeProcessHostHolderKey;
+
+class DefaultSubframeProcessHostHolder : public base::SupportsUserData::Data,
+                                         public RenderProcessHostObserver {
+ public:
+  explicit DefaultSubframeProcessHostHolder(BrowserContext* browser_context)
+      : browser_context_(browser_context) {}
+  ~DefaultSubframeProcessHostHolder() override {}
+
+  // Gets the correct render process to use for this SiteInstance.
+  RenderProcessHost* GetProcessHost(SiteInstance* site_instance,
+                                    bool is_for_guests_only) {
+    StoragePartition* default_partition =
+        BrowserContext::GetDefaultStoragePartition(browser_context_);
+    StoragePartition* partition =
+        BrowserContext::GetStoragePartition(browser_context_, site_instance);
+
+    // Is this the default storage partition? If it isn't, then just give it its
+    // own non-shared process.
+    if (partition != default_partition || is_for_guests_only) {
+      RenderProcessHostImpl* host = new RenderProcessHostImpl(
+          browser_context_, static_cast<StoragePartitionImpl*>(partition),
+          is_for_guests_only);
+      host->SetIsNeverSuitableForReuse();
+      return host;
+    }
+
+    if (host_) {
+      // If we already have a shared host for the default storage partition, use
+      // it.
+      return host_;
+    }
+
+    host_ = new RenderProcessHostImpl(
+        browser_context_, static_cast<StoragePartitionImpl*>(partition),
+        false /* for guests only */);
+    host_->SetIsNeverSuitableForReuse();
+    host_->AddObserver(this);
+
+    return host_;
+  }
+
+  void RenderProcessHostDestroyed(RenderProcessHost* host) override {
+    DCHECK_EQ(host_, host);
+    host_->RemoveObserver(this);
+    host_ = nullptr;
+  }
+
+ private:
+  BrowserContext* browser_context_;
+
+  // The default subframe render process used for the default storage partition
+  // of this BrowserContext.
+  RenderProcessHostImpl* host_ = nullptr;
+};
+
+}  // namespace
+
+RenderProcessHost* SiteInstanceImpl::GetDefaultSubframeProcessHost(
+    BrowserContext* browser_context,
+    bool is_for_guests_only) {
+  DefaultSubframeProcessHostHolder* holder =
+      static_cast<DefaultSubframeProcessHostHolder*>(
+          browser_context->GetUserData(&kDefaultSubframeProcessHostHolderKey));
+  if (!holder) {
+    holder = new DefaultSubframeProcessHostHolder(browser_context);
+    browser_context->SetUserData(kDefaultSubframeProcessHostHolderKey, holder);
+  }
+
+  return holder->GetProcessHost(this, is_for_guests_only);
+}
+
 RenderProcessHost* SiteInstanceImpl::GetProcess() {
   // TODO(erikkay) It would be nice to ensure that the renderer type had been
   // properly set before we get here.  The default tab creation case winds up
@@ -93,6 +168,7 @@ RenderProcessHost* SiteInstanceImpl::GetProcess() {
   // Create a new process if ours went away or was reused.
   if (!process_) {
     BrowserContext* browser_context = browsing_instance_->browser_context();
+    bool is_for_guests_only = site_.SchemeIs(kGuestScheme);
 
     // If we should use process-per-site mode (either in general or for the
     // given site), then look for an existing RenderProcessHost for the site.
@@ -101,6 +177,12 @@ RenderProcessHost* SiteInstanceImpl::GetProcess() {
     if (use_process_per_site) {
       process_ = RenderProcessHostImpl::GetProcessHostForSite(browser_context,
                                                               site_);
+    }
+
+    if (!process_ && IsDefaultSubframeSiteInstance() &&
+        SiteIsolationPolicy::IsTopDocumentIsolationEnabled()) {
+      process_ =
+          GetDefaultSubframeProcessHost(browser_context, is_for_guests_only);
     }
 
     // If not (or if none found), see if we should reuse an existing process.
@@ -119,9 +201,8 @@ RenderProcessHost* SiteInstanceImpl::GetProcess() {
         StoragePartitionImpl* partition =
             static_cast<StoragePartitionImpl*>(
                 BrowserContext::GetStoragePartition(browser_context, this));
-        process_ = new RenderProcessHostImpl(browser_context,
-                                             partition,
-                                             site_.SchemeIs(kGuestScheme));
+        process_ = new RenderProcessHostImpl(browser_context, partition,
+                                             is_for_guests_only);
       }
     }
     CHECK(process_);

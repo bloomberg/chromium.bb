@@ -315,6 +315,14 @@ mojom::Renderer* MockRenderProcessHost::GetRendererInterface() {
   return renderer_interface_->get();
 }
 
+void MockRenderProcessHost::SetIsNeverSuitableForReuse() {
+  NOTREACHED();
+}
+
+bool MockRenderProcessHost::MayReuseHost() {
+  return true;
+}
+
 void MockRenderProcessHost::FilterURL(bool empty_allowed, GURL* url) {
   RenderProcessHostImpl::FilterURL(this, empty_allowed, url);
 }
