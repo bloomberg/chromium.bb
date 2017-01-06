@@ -159,12 +159,10 @@ class MockCallbacks : public IndexedDBCallbacks {
   void OnError(const IndexedDBDatabaseError& error) override {
     error_called_ = true;
   }
-  bool IsValid() const override { return valid_; }
 
   bool blocked_called() const { return blocked_called_; }
   bool success_called() const { return success_called_; }
   bool error_called() const { return error_called_; }
-  void set_valid(bool valid) { valid_ = valid; }
 
  private:
   ~MockCallbacks() override {}
@@ -172,7 +170,6 @@ class MockCallbacks : public IndexedDBCallbacks {
   bool blocked_called_ = false;
   bool success_called_ = false;
   bool error_called_ = false;
-  bool valid_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(MockCallbacks);
 };
@@ -229,108 +226,6 @@ TEST_F(IndexedDBDatabaseTest, PendingDelete) {
   EXPECT_FALSE(db->backing_store());
   EXPECT_TRUE(backing_store->HasOneRef());  // local
   EXPECT_TRUE(request2->success_called());
-}
-
-TEST_F(IndexedDBDatabaseTest, ConnectionRequestsNoLongerValid) {
-  scoped_refptr<IndexedDBFakeBackingStore> backing_store =
-      new IndexedDBFakeBackingStore();
-
-  const int64_t transaction_id1 = 1;
-  scoped_refptr<MockIndexedDBFactory> factory = new MockIndexedDBFactory();
-  scoped_refptr<IndexedDBDatabase> db;
-  leveldb::Status s;
-  std::tie(db, s) =
-      IndexedDBDatabase::Create(ASCIIToUTF16("db"), backing_store.get(),
-                                factory.get(), IndexedDBDatabase::Identifier());
-
-  // Make a connection request. This will be processed immediately.
-  scoped_refptr<MockIndexedDBCallbacks> request1(new MockIndexedDBCallbacks());
-  {
-    std::unique_ptr<IndexedDBPendingConnection> connection(
-        base::MakeUnique<IndexedDBPendingConnection>(
-            request1, make_scoped_refptr(new MockIndexedDBDatabaseCallbacks()),
-            kFakeChildProcessId, transaction_id1,
-            IndexedDBDatabaseMetadata::DEFAULT_VERSION));
-    db->OpenConnection(std::move(connection));
-  }
-
-  EXPECT_EQ(db->ConnectionCount(), 1UL);
-  EXPECT_EQ(db->ActiveOpenDeleteCount(), 0UL);
-  EXPECT_EQ(db->PendingOpenDeleteCount(), 0UL);
-
-  // Make a delete request. This will be blocked by the open.
-  scoped_refptr<MockCallbacks> request2(new MockCallbacks());
-  db->DeleteDatabase(request2);
-
-  EXPECT_EQ(db->ConnectionCount(), 1UL);
-  EXPECT_EQ(db->ActiveOpenDeleteCount(), 1UL);
-  EXPECT_EQ(db->PendingOpenDeleteCount(), 0UL);
-
-  db->VersionChangeIgnored();
-
-  EXPECT_TRUE(request2->blocked_called());
-
-  // Make another delete request. This will be waiting in the queue.
-  scoped_refptr<MockCallbacks> request3(new MockCallbacks());
-  db->DeleteDatabase(request3);
-  EXPECT_FALSE(request3->HasOneRef());  // local, db
-
-  EXPECT_EQ(db->ConnectionCount(), 1UL);
-  EXPECT_EQ(db->ActiveOpenDeleteCount(), 1UL);
-  EXPECT_EQ(db->PendingOpenDeleteCount(), 1UL);
-
-  // Make another connection request. This will also be waiting in the queue.
-  scoped_refptr<MockCallbacks> request4(new MockCallbacks());
-  {
-    std::unique_ptr<IndexedDBPendingConnection> connection(
-        base::MakeUnique<IndexedDBPendingConnection>(
-            request4, make_scoped_refptr(new MockIndexedDBDatabaseCallbacks()),
-            kFakeChildProcessId, transaction_id1,
-            IndexedDBDatabaseMetadata::DEFAULT_VERSION));
-    db->OpenConnection(std::move(connection));
-  }
-
-  EXPECT_EQ(db->ConnectionCount(), 1UL);
-  EXPECT_EQ(db->ActiveOpenDeleteCount(), 1UL);
-  EXPECT_EQ(db->PendingOpenDeleteCount(), 2UL);
-
-  // Finally yet another delete request, also waiting in the queue.
-  scoped_refptr<MockCallbacks> request5(new MockCallbacks());
-  db->DeleteDatabase(request2);
-
-  EXPECT_EQ(db->ConnectionCount(), 1UL);
-  EXPECT_EQ(db->ActiveOpenDeleteCount(), 1UL);
-  EXPECT_EQ(db->PendingOpenDeleteCount(), 3UL);
-
-  // Simulate renderer going away.
-  request3->set_valid(false);
-  request4->set_valid(false);
-
-  // Close the blocking connection. First delete request should succeed.
-  EXPECT_FALSE(request2->success_called());
-  db->Close(request1->connection(), true /* forced */);
-  EXPECT_TRUE(request2->success_called());
-
-  // Delete requests that have lost dispatcher should still be processed so
-  // that e.g. a delete followed by a window close is not ignored.
-  EXPECT_FALSE(request3->blocked_called());
-  EXPECT_TRUE(request3->success_called());
-  EXPECT_FALSE(request3->error_called());
-  EXPECT_TRUE(request3->HasOneRef());  // local
-
-  // Open requests that have lost dispatcher should not be processed.
-  EXPECT_FALSE(request4->blocked_called());
-  EXPECT_FALSE(request4->success_called());
-  EXPECT_FALSE(request4->error_called());
-  EXPECT_TRUE(request4->HasOneRef());  // local
-
-  // Final delete request should also run.
-  EXPECT_TRUE(request2->success_called());
-
-  // And everything else should be complete.
-  EXPECT_EQ(db->ConnectionCount(), 0UL);
-  EXPECT_EQ(db->ActiveOpenDeleteCount(), 0UL);
-  EXPECT_EQ(db->PendingOpenDeleteCount(), 0UL);
 }
 
 leveldb::Status DummyOperation(IndexedDBTransaction* transaction) {

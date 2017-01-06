@@ -26,6 +26,7 @@
 #include "content/browser/webrtc/webrtc_eventlog_host.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_export.h"
+#include "content/common/indexed_db/indexed_db.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/service_manager_connection.h"
@@ -56,6 +57,7 @@ class AudioInputRendererHost;
 class AudioRendererHost;
 class ChildConnection;
 class GpuClient;
+class IndexedDBDispatcherHost;
 class InProcessChildThreadParams;
 class MessagePortMessageFilter;
 class NotificationMessageFilter;
@@ -572,6 +574,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // The memory allocator, if any, in which the renderer will write its metrics.
   std::unique_ptr<base::SharedPersistentMemoryAllocator> metrics_allocator_;
+
+  scoped_refptr<IndexedDBDispatcherHost> indexed_db_factory_;
 
   bool channel_connected_;
   bool sent_render_process_ready_;

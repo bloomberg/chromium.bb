@@ -4,35 +4,22 @@
 
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 
-#include <stddef.h>
-
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/process/process.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/browser/bad_message.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
-#include "content/browser/indexed_db/indexed_db_value.h"
-#include "content/browser/renderer_host/render_message_filter.h"
-#include "content/common/indexed_db/indexed_db_messages.h"
-#include "content/common/indexed_db/indexed_db_metadata.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/user_metrics.h"
-#include "content/public/common/content_switches.h"
-#include "content/public/common/result_codes.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/database/database_util.h"
-#include "storage/common/database/database_identifier.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseException.h"
 #include "url/origin.h"
 
 namespace content {
@@ -52,52 +39,18 @@ IndexedDBDispatcherHost::IndexedDBDispatcherHost(
     net::URLRequestContextGetter* request_context_getter,
     IndexedDBContextImpl* indexed_db_context,
     ChromeBlobStorageContext* blob_storage_context)
-    : BrowserMessageFilter(IndexedDBMsgStart),
-      BrowserAssociatedInterface(this, this),
-      request_context_getter_(request_context_getter),
+    : request_context_getter_(request_context_getter),
       indexed_db_context_(indexed_db_context),
       blob_storage_context_(blob_storage_context),
       ipc_process_id_(ipc_process_id) {
   DCHECK(indexed_db_context_.get());
 }
 
-IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {
-  // TODO(alecflett): uncomment these when we find the source of these leaks.
-  // DCHECK(transaction_size_map_.empty());
-  // DCHECK(transaction_origin_map_.empty());
-}
+IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {}
 
-void IndexedDBDispatcherHost::OnChannelClosing() {
-  bool success = indexed_db_context_->TaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&IndexedDBDispatcherHost::ResetDispatcherHosts, this));
-
-  if (!success)
-    ResetDispatcherHosts();
-}
-
-void IndexedDBDispatcherHost::OnDestruct() const {
-  // The last reference to the dispatcher may be a posted task, which would
-  // be destructed on the IndexedDB thread. Without this override, that would
-  // take the dispatcher with it. Since the dispatcher may be keeping the
-  // IndexedDBContext alive, it might be destructed to on its own thread,
-  // which is not supported. Ensure destruction runs on the IO thread instead.
-  BrowserThread::DeleteOnIOThread::Destruct(this);
-}
-
-void IndexedDBDispatcherHost::ResetDispatcherHosts() {
-  // It is important that the various *_dispatcher_host_ members are reset
-  // on the IndexedDB thread, since there might be incoming messages on that
-  // thread, and we must not reset the dispatcher hosts until after those
-  // messages are processed.
-  DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
-
-  // Prevent any pending connections from being processed.
-  is_open_ = false;
-}
-
-bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message) {
-  return false;
+void IndexedDBDispatcherHost::AddBinding(
+    ::indexed_db::mojom::FactoryAssociatedRequest request) {
+  bindings_.AddBinding(this, std::move(request));
 }
 
 std::string IndexedDBDispatcherHost::HoldBlobData(
@@ -140,11 +93,6 @@ void IndexedDBDispatcherHost::DropBlobData(const std::string& uuid) {
     blob_data_handle_map_.erase(iter);
   else
     --iter->second.second;
-}
-
-bool IndexedDBDispatcherHost::IsOpen() const {
-  DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
-  return is_open_;
 }
 
 void IndexedDBDispatcherHost::GetDatabaseNames(

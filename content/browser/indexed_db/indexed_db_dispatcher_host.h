@@ -17,8 +17,8 @@
 #include "base/memory/ref_counted.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/common/indexed_db/indexed_db.mojom.h"
-#include "content/public/browser/browser_associated_interface.h"
-#include "content/public/browser/browser_message_filter.h"
+#include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/blob/blob_data_handle.h"
 
@@ -34,8 +34,8 @@ class IndexedDBDatabaseCallbacks;
 
 // Handles all IndexedDB related messages from a particular renderer process.
 class IndexedDBDispatcherHost
-    : public BrowserMessageFilter,
-      public BrowserAssociatedInterface<::indexed_db::mojom::Factory>,
+    : public base::RefCountedThreadSafe<IndexedDBDispatcherHost,
+                                        BrowserThread::DeleteOnIOThread>,
       public ::indexed_db::mojom::Factory {
  public:
   // Only call the constructor from the UI thread.
@@ -44,10 +44,7 @@ class IndexedDBDispatcherHost
                           IndexedDBContextImpl* indexed_db_context,
                           ChromeBlobStorageContext* blob_storage_context);
 
-  // BrowserMessageFilter implementation.
-  void OnChannelClosing() override;
-  void OnDestruct() const override;
-  bool OnMessageReceived(const IPC::Message& message) override;
+  void AddBinding(::indexed_db::mojom::FactoryAssociatedRequest request);
 
   // A shortcut for accessing our context.
   IndexedDBContextImpl* context() const { return indexed_db_context_.get(); }
@@ -58,10 +55,6 @@ class IndexedDBDispatcherHost
 
   std::string HoldBlobData(const IndexedDBBlobInfo& blob_info);
   void DropBlobData(const std::string& uuid);
-
-  // True if the channel is closing/closed and outstanding requests
-  // can be abandoned. Only access on IndexedDB thread.
-  bool IsOpen() const;
 
  private:
   // Friends to enable OnDestruct() delegation.
@@ -112,11 +105,10 @@ class IndexedDBDispatcherHost
            std::pair<std::unique_ptr<storage::BlobDataHandle>, int>>
       blob_data_handle_map_;
 
-  // Only access on IndexedDB thread.
-  bool is_open_ = true;
-
   // Used to set file permissions for blob storage.
-  int ipc_process_id_;
+  const int ipc_process_id_;
+
+  mojo::AssociatedBindingSet<::indexed_db::mojom::Factory> bindings_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBDispatcherHost);
 };

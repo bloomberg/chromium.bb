@@ -684,6 +684,11 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       webrtc_eventlog_host_(id_),
 #endif
       permission_service_context_(new PermissionServiceContext(this)),
+      indexed_db_factory_(new IndexedDBDispatcherHost(
+          id_,
+          storage_partition_impl_->GetURLRequestContext(),
+          storage_partition_impl_->GetIndexedDBContext(),
+          ChromeBlobStorageContext::GetFor(browser_context_))),
       channel_connected_(false),
       sent_render_process_ready_(false),
 #if defined(OS_ANDROID)
@@ -1083,10 +1088,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(new ClipboardMessageFilter(blob_storage_context));
   AddFilter(new DOMStorageMessageFilter(
       storage_partition_impl_->GetDOMStorageContext()));
-  AddFilter(new IndexedDBDispatcherHost(
-      GetID(), storage_partition_impl_->GetURLRequestContext(),
-      storage_partition_impl_->GetIndexedDBContext(),
-      blob_storage_context.get()));
 
 #if BUILDFLAG(ENABLE_WEBRTC)
   peer_connection_tracker_host_ = new PeerConnectionTrackerHost(
@@ -1194,6 +1195,9 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   channel_->AddAssociatedInterface(
       base::Bind(&RenderProcessHostImpl::OnRouteProviderRequest,
                  base::Unretained(this)));
+
+  channel_->AddAssociatedInterfaceForIOThread(
+      base::Bind(&IndexedDBDispatcherHost::AddBinding, indexed_db_factory_));
 
 #if defined(OS_ANDROID)
   AddUIThreadInterface(registry.get(),

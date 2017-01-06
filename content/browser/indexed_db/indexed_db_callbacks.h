@@ -24,7 +24,6 @@
 #include "url/origin.h"
 
 namespace content {
-class IndexedDBBlobInfo;
 class IndexedDBConnection;
 class IndexedDBCursor;
 class IndexedDBDatabase;
@@ -93,19 +92,12 @@ class CONTENT_EXPORT IndexedDBCallbacks
   // IndexedDBCursor::Continue / Advance (when complete)
   virtual void OnSuccess();
 
-  // Checks to see if the associated dispatcher host is still connected. If
-  // not this request can be dropped.
-  virtual bool IsValid() const;
-
   void SetConnectionOpenStartTime(const base::TimeTicks& start_time);
 
  protected:
   virtual ~IndexedDBCallbacks();
 
  private:
-  void RegisterBlobsAndSend(const std::vector<IndexedDBBlobInfo>& blob_info,
-                            const base::Closure& callback);
-
   friend class base::RefCounted<IndexedDBCallbacks>;
 
   class IOThreadHelper;

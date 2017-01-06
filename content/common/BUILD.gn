@@ -142,7 +142,6 @@ source_set("common") {
     "indexed_db/indexed_db_key_path.h",
     "indexed_db/indexed_db_key_range.cc",
     "indexed_db/indexed_db_key_range.h",
-    "indexed_db/indexed_db_messages.h",
     "indexed_db/indexed_db_metadata.cc",
     "indexed_db/indexed_db_metadata.h",
     "indexed_db/indexed_db_struct_traits.cc",

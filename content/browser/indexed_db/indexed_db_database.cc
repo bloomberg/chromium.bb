@@ -114,11 +114,6 @@ class IndexedDBDatabase::OpenRequest
       : ConnectionRequest(db), pending_(std::move(pending_connection)) {}
 
   void Perform() override {
-    if (!pending_->callbacks->IsValid()) {
-      db_->RequestComplete(this);
-      return;
-    }
-
     if (db_->metadata_.id == kInvalidId) {
       // The database was deleted then immediately re-opened; OpenInternal()
       // recreates it in the backing store.

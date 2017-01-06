@@ -35,8 +35,4 @@ void MockIndexedDBCallbacks::OnSuccess(
   connection_ = std::move(connection);
 }
 
-bool MockIndexedDBCallbacks::IsValid() const {
-  return true;
-}
-
 }  // namespace content

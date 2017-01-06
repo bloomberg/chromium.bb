@@ -26,7 +26,6 @@ class MockIndexedDBCallbacks : public IndexedDBCallbacks {
   void OnSuccess(const IndexedDBKey& key) override;
   void OnSuccess(std::unique_ptr<IndexedDBConnection> connection,
                  const IndexedDBDatabaseMetadata& metadata) override;
-  bool IsValid() const override;
   IndexedDBConnection* connection() { return connection_.get(); }
 
  protected:
