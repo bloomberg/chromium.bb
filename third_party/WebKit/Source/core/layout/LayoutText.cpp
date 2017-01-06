@@ -1084,7 +1084,8 @@ void LayoutText::computePreferredLogicalWidths(
   bool keepAll =
       styleToUse.wordBreak() == KeepAllWordBreak && styleToUse.autoWrap();
 
-  Hyphenation* hyphenation = styleToUse.getHyphenation();
+  Hyphenation* hyphenation =
+      styleToUse.autoWrap() ? styleToUse.getHyphenation() : nullptr;
   bool disableSoftHyphen = styleToUse.getHyphens() == HyphensNone;
   float maxWordWidth = 0;
   if (!hyphenation)

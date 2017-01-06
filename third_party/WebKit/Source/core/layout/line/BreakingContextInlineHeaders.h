@@ -958,7 +958,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements,
   // See: fast/css3-text/css3-word-break/word-break-all-wrap-with-floats.html
   float widthMeasurementAtLastBreakOpportunity = 0;
 
-  Hyphenation* hyphenation = style.getHyphenation();
+  Hyphenation* hyphenation = m_autoWrap ? style.getHyphenation() : nullptr;
   bool disableSoftHyphen = style.getHyphens() == HyphensNone;
   float hyphenWidth = 0;
   bool isLineEmpty = m_lineInfo.isEmpty();
