@@ -95,6 +95,12 @@ class APIBinding {
   // The names of all events associated with this API.
   std::vector<std::string> event_names_;
 
+  // The pair for enum entry is <original, js-ified>. JS enum entries use
+  // SCREAMING_STYLE (whereas our API enums are just inconsistent).
+  using EnumEntry = std::pair<std::string, std::string>;
+  // A map of <name, values> for the enums on this API.
+  std::map<std::string, std::vector<EnumEntry>> enums_;
+
   // The callback to use when an API is invoked with valid arguments.
   APIMethodCallback method_callback_;
 

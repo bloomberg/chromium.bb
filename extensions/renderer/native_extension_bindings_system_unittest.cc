@@ -148,9 +148,14 @@ TEST_F(NativeExtensionBindingsSystemUnittest, Basic) {
   ASSERT_FALSE(idle.IsEmpty());
   ASSERT_TRUE(idle->IsObject());
 
-  v8::Local<v8::Value> idle_query_state = GetPropertyFromObject(
-      v8::Local<v8::Object>::Cast(idle), context, "queryState");
+  v8::Local<v8::Object> idle_object = v8::Local<v8::Object>::Cast(idle);
+  v8::Local<v8::Value> idle_query_state =
+      GetPropertyFromObject(idle_object, context, "queryState");
   ASSERT_FALSE(idle_query_state.IsEmpty());
+
+  EXPECT_EQ(ReplaceSingleQuotes(
+                "{'ACTIVE':'active','IDLE':'idle','LOCKED':'locked'}"),
+            GetStringPropertyFromObject(idle_object, context, "IdleState"));
 
   {
     // Try calling the function with an invalid invocation - an error should be

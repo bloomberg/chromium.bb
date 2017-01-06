@@ -17,15 +17,17 @@ if (!chrome || !chrome.test)
 chrome.test.runTests([
   function idleApi() {
     chrome.test.assertTrue(!!chrome.idle);
+    chrome.test.assertTrue(!!chrome.idle.IdleState);
+    chrome.test.assertTrue(!!chrome.idle.IdleState.IDLE);
+    chrome.test.assertTrue(!!chrome.idle.IdleState.ACTIVE);
     chrome.test.assertTrue(!!chrome.idle.queryState);
     chrome.idle.queryState(1000, function(state) {
       // Depending on the machine, this could come back as either idle or
       // active. However, all we're curious about is the bindings themselves
       // (not the API implementation), so as long as it's a possible response,
       // it's a success for our purposes.
-      // TODO(devlin): Update this to use chrome.idle.IdleState.[ACTIVE|IDLE]
-      // when we have enums in native bindings.
-      chrome.test.assertTrue(state == 'idle' || state == 'active', state);
+      chrome.test.assertTrue(state == chrome.idle.IdleState.IDLE ||
+                             state == chrome.idle.IdleState.ACTIVE);
       chrome.test.succeed();
     });
   },

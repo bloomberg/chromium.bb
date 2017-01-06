@@ -60,6 +60,7 @@ class ArgumentSpec {
   const std::string& name() const { return name_; }
   bool optional() const { return optional_; }
   ArgumentType type() const { return type_; }
+  const std::set<std::string>& enum_values() const { return enum_values_; }
 
  private:
   // Initializes this object according to |type_string| and |dict|.

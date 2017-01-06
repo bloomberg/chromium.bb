@@ -279,6 +279,45 @@ TEST_F(APIBindingUnittest, Test) {
   ExpectFailure(binding_object, "obj.optionalCallback(0)", kError);
 }
 
+// Test that enum values are properly exposed on the binding object.
+TEST_F(APIBindingUnittest, EnumValues) {
+  const char kTypes[] =
+      "[{"
+      "  'id': 'first',"
+      "  'type': 'string',"
+      "  'enum': ['alpha', 'camelCase', 'Hyphen-ated',"
+      "           'SCREAMING', 'nums123', '42nums']"
+      "}, {"
+      "  'id': 'last',"
+      "  'type': 'string',"
+      "  'enum': [{'name': 'omega'}]"
+      "}]";
+
+  std::unique_ptr<base::ListValue> types = ListValueFromString(kTypes);
+  ASSERT_TRUE(types);
+  ArgumentSpec::RefMap refs;
+  APIBinding binding(
+      "test", nullptr, types.get(), nullptr,
+      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
+      base::MakeUnique<APIBindingHooks>(binding::RunJSFunctionSync()), &refs);
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+
+  APIEventHandler event_handler(
+      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  v8::Local<v8::Object> binding_object = binding.CreateInstance(
+      context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
+
+  const char kExpected[] =
+      "{'ALPHA':'alpha','CAMEL_CASE':'camelCase','HYPHEN_ATED':'Hyphen-ated',"
+      "'NUMS123':'nums123','SCREAMING':'SCREAMING','_42NUMS':'42nums'}";
+  EXPECT_EQ(ReplaceSingleQuotes(kExpected),
+            GetStringPropertyFromObject(binding_object, context, "first"));
+  EXPECT_EQ(ReplaceSingleQuotes("{'OMEGA':'omega'}"),
+            GetStringPropertyFromObject(binding_object, context, "last"));
+}
+
 TEST_F(APIBindingUnittest, TypeRefsTest) {
   const char kTypes[] =
       "[{"
@@ -338,6 +377,7 @@ TEST_F(APIBindingUnittest, TypeRefsTest) {
                 kError);
   ExpectPass(binding_object, "obj.takesRefEnum('alpha')", "['alpha']");
   ExpectPass(binding_object, "obj.takesRefEnum('beta')", "['beta']");
+  ExpectPass(binding_object, "obj.takesRefEnum(obj.refEnum.BETA)", "['beta']");
   ExpectFailure(binding_object, "obj.takesRefEnum('gamma')", kError);
 }
 

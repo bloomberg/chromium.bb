@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "extensions/common/extension_api.h"
@@ -22,6 +23,31 @@
 namespace extensions {
 
 namespace {
+
+// Returns the name of the enum value for use in JavaScript; JS enum entries use
+// SCREAMING_STYLE.
+std::string GetJSEnumEntryName(const std::string& original) {
+  std::string result;
+  DCHECK(!original.empty());
+  // If the original starts with a digit, prefix it with an underscore.
+  if (base::IsAsciiDigit(original[0]))
+    result.push_back('_');
+  // Given 'myEnum-Foo':
+  for (size_t i = 0; i < original.size(); ++i) {
+    // Add an underscore between camelcased items:
+    // 'myEnum-Foo' -> 'mY_Enum-Foo'
+    if (i > 0 && base::IsAsciiLower(original[i - 1]) &&
+        base::IsAsciiUpper(original[i])) {
+      result.push_back('_');
+      result.push_back(original[i]);
+    } else if (original[i] == '-') {  // 'mY_Enum-Foo' -> 'mY_Enum_Foo'
+      result.push_back('_');
+    } else {  // 'mY_Enum_Foo' -> 'MY_ENUM_FOO'
+      result.push_back(base::ToUpperASCII(original[i]));
+    }
+  }
+  return result;
+}
 
 const char kExtensionAPIPerContextKey[] = "extension_api_binding";
 
@@ -88,6 +114,7 @@ APIBinding::APIBinding(const std::string& api_name,
       signatures_[name] = base::MakeUnique<APISignature>(*params);
     }
   }
+
   if (type_definitions) {
     for (const auto& type : *type_definitions) {
       const base::DictionaryValue* type_dict = nullptr;
@@ -97,9 +124,25 @@ APIBinding::APIBinding(const std::string& api_name,
       DCHECK(type_refs->find(id) == type_refs->end());
       // TODO(devlin): refs are sometimes preceeded by the API namespace; we
       // might need to take that into account.
-      (*type_refs)[id] = base::MakeUnique<ArgumentSpec>(*type_dict);
+      auto argument_spec = base::MakeUnique<ArgumentSpec>(*type_dict);
+      const std::set<std::string>& enum_values = argument_spec->enum_values();
+      if (!enum_values.empty()) {
+        // Type names may be prefixed by the api name. If so, remove the prefix.
+        base::Optional<std::string> stripped_id;
+        if (base::StartsWith(id, api_name_, base::CompareCase::SENSITIVE))
+          stripped_id = id.substr(api_name_.size() + 1);  // +1 for trailing '.'
+        std::vector<EnumEntry>& entries =
+            enums_[stripped_id ? *stripped_id : id];
+        entries.reserve(enum_values.size());
+        for (const auto& enum_value : enum_values) {
+          entries.push_back(
+              std::make_pair(enum_value, GetJSEnumEntryName(enum_value)));
+        }
+      }
+      (*type_refs)[id] = std::move(argument_spec);
     }
   }
+
   if (event_definitions) {
     event_names_.reserve(event_definitions->GetSize());
     for (const auto& event : *event_definitions) {
@@ -134,6 +177,7 @@ v8::Local<v8::Object> APIBinding::CreateInstance(
     per_context_data->SetUserData(kExtensionAPIPerContextKey,
                                   api_data.release());
   }
+
   for (const auto& sig : signatures_) {
     std::string full_method_name =
         base::StringPrintf("%s.%s", api_name_.c_str(), sig.first.c_str());
@@ -165,6 +209,22 @@ v8::Local<v8::Object> APIBinding::CreateInstance(
     DCHECK(!event.IsEmpty());
     v8::Maybe<bool> success = object->CreateDataProperty(
         context, gin::StringToSymbol(isolate, event_name), event);
+    DCHECK(success.IsJust());
+    DCHECK(success.FromJust());
+  }
+
+  for (const auto& entry : enums_) {
+    // TODO(devlin): Store these on an ObjectTemplate.
+    v8::Local<v8::Object> enum_object = v8::Object::New(isolate);
+    for (const auto& enum_entry : entry.second) {
+      v8::Maybe<bool> success = enum_object->CreateDataProperty(
+          context, gin::StringToSymbol(isolate, enum_entry.second),
+          gin::StringToSymbol(isolate, enum_entry.first));
+      DCHECK(success.IsJust());
+      DCHECK(success.FromJust());
+    }
+    v8::Maybe<bool> success = object->CreateDataProperty(
+        context, gin::StringToSymbol(isolate, entry.first), enum_object);
     DCHECK(success.IsJust());
     DCHECK(success.FromJust());
   }
