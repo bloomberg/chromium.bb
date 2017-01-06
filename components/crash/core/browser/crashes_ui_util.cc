@@ -22,7 +22,9 @@ const CrashesUILocalizedString kCrashesUILocalizedStrings[] = {
     {"crashCountFormat", IDS_CRASH_CRASH_COUNT_BANNER_FORMAT},
     {"crashHeaderFormat", IDS_CRASH_CRASH_HEADER_FORMAT},
     {"crashHeaderFormatLocalOnly", IDS_CRASH_CRASH_HEADER_FORMAT_LOCAL_ONLY},
-    {"crashTimeFormat", IDS_CRASH_CRASH_TIME_FORMAT},
+    {"crashUploadTimeFormat", IDS_CRASH_UPLOAD_TIME_FORMAT},
+    {"crashCaptureAndUploadTimeFormat",
+     IDS_CRASH_CAPTURE_AND_UPLOAD_TIME_FORMAT},
     {"crashNotUploaded", IDS_CRASH_CRASH_NOT_UPLOADED},
     {"crashUserRequested", IDS_CRASH_CRASH_USER_REQUESTED},
     {"crashPending", IDS_CRASH_CRASH_PENDING},
@@ -69,10 +71,11 @@ void UploadListToValue(UploadList* upload_list, base::ListValue* out_value) {
     std::unique_ptr<base::DictionaryValue> crash(new base::DictionaryValue());
     crash->SetString("id", info.upload_id);
     if (info.state == UploadList::UploadInfo::State::Uploaded) {
-      crash->SetString("time",
+      crash->SetString("upload_time",
                        base::TimeFormatFriendlyDateAndTime(info.upload_time));
-    } else {
-      crash->SetString("time",
+    }
+    if (!info.capture_time.is_null()) {
+      crash->SetString("capture_time",
                        base::TimeFormatFriendlyDateAndTime(info.capture_time));
     }
     crash->SetString("local_id", info.local_id);
