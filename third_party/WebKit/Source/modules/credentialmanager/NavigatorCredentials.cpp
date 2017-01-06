@@ -13,7 +13,7 @@
 namespace blink {
 
 NavigatorCredentials::NavigatorCredentials(Navigator& navigator)
-    : ContextClient(navigator.frame()) {}
+    : Supplement<Navigator>(navigator) {}
 
 NavigatorCredentials& NavigatorCredentials::from(Navigator& navigator) {
   NavigatorCredentials* supplement = static_cast<NavigatorCredentials*>(
@@ -34,7 +34,7 @@ CredentialsContainer* NavigatorCredentials::credentials(Navigator& navigator) {
 }
 
 CredentialsContainer* NavigatorCredentials::credentials() {
-  if (!m_credentialsContainer && frame())
+  if (!m_credentialsContainer)
     m_credentialsContainer = CredentialsContainer::create();
   return m_credentialsContainer.get();
 }
@@ -42,7 +42,6 @@ CredentialsContainer* NavigatorCredentials::credentials() {
 DEFINE_TRACE(NavigatorCredentials) {
   visitor->trace(m_credentialsContainer);
   Supplement<Navigator>::trace(visitor);
-  ContextClient::trace(visitor);
 }
 
 }  // namespace blink
