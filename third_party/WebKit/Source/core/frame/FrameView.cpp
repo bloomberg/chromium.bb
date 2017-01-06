@@ -2940,16 +2940,15 @@ void FrameView::updateLifecyclePhasesInternal(
       }
     }
 
-    if (targetState >= DocumentLifecycle::PrePaintClean) {
-      updatePaintProperties();
-    }
+    if (targetState >= DocumentLifecycle::PrePaintClean)
+      prePaint();
 
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
       DocumentAnimations::updateAnimations(layoutView()->document());
 
     if (targetState == DocumentLifecycle::PaintClean) {
       if (!m_frame->document()->printing())
-        synchronizedPaint();
+        paintTree();
 
       if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         pushPaintArtifactToCompositor();
@@ -2984,8 +2983,8 @@ void FrameView::performScrollAnchoringAdjustments() {
   m_anchoringAdjustmentQueue.clear();
 }
 
-void FrameView::updatePaintProperties() {
-  TRACE_EVENT0("blink", "FrameView::updatePaintProperties");
+void FrameView::prePaint() {
+  TRACE_EVENT0("blink", "FrameView::prePaint");
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.PrePaint.UpdateTime");
 
   if (!m_paintController)
@@ -3003,8 +3002,8 @@ void FrameView::updatePaintProperties() {
   });
 }
 
-void FrameView::synchronizedPaint() {
-  TRACE_EVENT0("blink", "FrameView::synchronizedPaint");
+void FrameView::paintTree() {
+  TRACE_EVENT0("blink", "FrameView::paintTree");
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.Paint.UpdateTime");
 
   ASSERT(frame() == page()->mainFrame() ||
@@ -3026,11 +3025,10 @@ void FrameView::synchronizedPaint() {
     // A null graphics layer can occur for painting of SVG images that are not
     // parented into the main frame tree, or when the FrameView is the main
     // frame view of a page overlay. The page overlay is in the layer tree of
-    // the host page and will be painted during synchronized painting of the
-    // host page.
+    // the host page and will be painted during painting of the host page.
     if (GraphicsLayer* rootGraphicsLayer =
             view.compositor()->rootGraphicsLayer()) {
-      synchronizedPaintRecursively(rootGraphicsLayer);
+      paintGraphicsLayerRecursively(rootGraphicsLayer);
     }
 
     // TODO(sataya.m):Main frame doesn't create RootFrameViewport in some
@@ -3038,15 +3036,15 @@ void FrameView::synchronizedPaint() {
     if (m_viewportScrollableArea) {
       if (GraphicsLayer* layerForHorizontalScrollbar =
               m_viewportScrollableArea->layerForHorizontalScrollbar()) {
-        synchronizedPaintRecursively(layerForHorizontalScrollbar);
+        paintGraphicsLayerRecursively(layerForHorizontalScrollbar);
       }
       if (GraphicsLayer* layerForVerticalScrollbar =
               m_viewportScrollableArea->layerForVerticalScrollbar()) {
-        synchronizedPaintRecursively(layerForVerticalScrollbar);
+        paintGraphicsLayerRecursively(layerForVerticalScrollbar);
       }
       if (GraphicsLayer* layerForScrollCorner =
               m_viewportScrollableArea->layerForScrollCorner()) {
-        synchronizedPaintRecursively(layerForScrollCorner);
+        paintGraphicsLayerRecursively(layerForScrollCorner);
       }
     }
   }
@@ -3059,20 +3057,20 @@ void FrameView::synchronizedPaint() {
   });
 }
 
-void FrameView::synchronizedPaintRecursively(GraphicsLayer* graphicsLayer) {
+void FrameView::paintGraphicsLayerRecursively(GraphicsLayer* graphicsLayer) {
   if (graphicsLayer->drawsContent())
     graphicsLayer->paint(nullptr);
 
   if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     if (GraphicsLayer* maskLayer = graphicsLayer->maskLayer())
-      synchronizedPaintRecursively(maskLayer);
+      paintGraphicsLayerRecursively(maskLayer);
     if (GraphicsLayer* contentsClippingMaskLayer =
             graphicsLayer->contentsClippingMaskLayer())
-      synchronizedPaintRecursively(contentsClippingMaskLayer);
+      paintGraphicsLayerRecursively(contentsClippingMaskLayer);
   }
 
   for (auto& child : graphicsLayer->children())
-    synchronizedPaintRecursively(child);
+    paintGraphicsLayerRecursively(child);
 }
 
 void FrameView::pushPaintArtifactToCompositor() {

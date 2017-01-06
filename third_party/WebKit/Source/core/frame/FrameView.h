@@ -870,9 +870,9 @@ class CORE_EXPORT FrameView final
   void invalidateTreeIfNeededRecursive();
   void scrollContentsIfNeededRecursive();
   void updateStyleAndLayoutIfNeededRecursive();
-  void updatePaintProperties();
-  void synchronizedPaint();
-  void synchronizedPaintRecursively(GraphicsLayer*);
+  void prePaint();
+  void paintTree();
+  void paintGraphicsLayerRecursively(GraphicsLayer*);
 
   void updateStyleAndLayoutIfNeededRecursiveInternal();
   void invalidateTreeIfNeededRecursiveInternal();

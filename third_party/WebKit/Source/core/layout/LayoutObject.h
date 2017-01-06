@@ -392,10 +392,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Sets the parent of this object but doesn't add it as a child of the parent.
   void setDangerousOneWayParent(LayoutObject*);
 
-  // For SPv2 only. The ObjectPaintProperties structure holds references to the
-  // property tree nodes that are created by the layout object for painting.
-  // The property nodes are only updated during InUpdatePaintProperties phase
-  // of the document lifecycle and shall remain immutable during other phases.
+  // For SlimmingPaintInvalidation/SPv2 only.
+  // The ObjectPaintProperties structure holds references to the property tree
+  // nodes that are created by the layout object for painting. The property
+  // nodes are only updated during InPrePaint phase of the document lifecycle
+  // and shall remain immutable during other phases.
   const ObjectPaintProperties* paintProperties() const;
 
  private:

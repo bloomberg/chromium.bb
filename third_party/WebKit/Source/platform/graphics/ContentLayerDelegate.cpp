@@ -81,8 +81,8 @@ void ContentLayerDelegate::paintContents(
 
   // Anything other than PaintDefaultBehavior is for testing. In non-testing
   // scenarios, it is an error to call GraphicsLayer::paint. Actual painting
-  // occurs in FrameView::synchronizedPaint; this method merely copies the
-  // painted output to the WebDisplayItemList.
+  // occurs in FrameView::paintTree(); this method merely copies the painted
+  // output to the WebDisplayItemList.
   if (paintingControl != PaintDefaultBehavior)
     m_graphicsLayer->paint(nullptr, disabledMode);
 
