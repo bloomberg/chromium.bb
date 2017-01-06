@@ -11,7 +11,6 @@
 #include "content/browser/shared_worker/shared_worker_instance.h"
 #include "content/browser/shared_worker/shared_worker_message_filter.h"
 #include "content/browser/shared_worker/shared_worker_service_impl.h"
-#include "content/browser/shared_worker/worker_document_set.h"
 #include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -55,14 +54,14 @@ SharedWorkerHost::SharedWorkerHost(SharedWorkerInstance* instance,
                                    int worker_route_id)
     : instance_(instance),
       worker_document_set_(new WorkerDocumentSet()),
-      container_render_filter_(filter),
+      worker_render_filter_(filter),
       worker_process_id_(filter->render_process_id()),
       worker_route_id_(worker_route_id),
-      termination_message_sent_(false),
-      closed_(false),
       creation_time_(base::TimeTicks::Now()),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(instance_);
+  DCHECK(worker_render_filter_);
 }
 
 SharedWorkerHost::~SharedWorkerHost() {
@@ -73,14 +72,6 @@ SharedWorkerHost::~SharedWorkerHost() {
     NotifyWorkerDestroyed(worker_process_id_, worker_route_id_);
   SharedWorkerServiceImpl::GetInstance()->NotifyWorkerDestroyed(
       worker_process_id_, worker_route_id_);
-}
-
-bool SharedWorkerHost::Send(IPC::Message* message) {
-  if (!container_render_filter_) {
-    delete message;
-    return false;
-  }
-  return container_render_filter_->Send(message);
 }
 
 void SharedWorkerHost::Start(bool pause_on_start) {
@@ -110,8 +101,6 @@ bool SharedWorkerHost::FilterConnectionMessage(
 }
 
 void SharedWorkerHost::FilterShutdown(SharedWorkerMessageFilter* filter) {
-  if (!instance_)
-    return;
   RemoveFilters(filter);
   worker_document_set_->RemoveAll(filter);
   if (worker_document_set_->IsEmpty()) {
@@ -122,8 +111,6 @@ void SharedWorkerHost::FilterShutdown(SharedWorkerMessageFilter* filter) {
 
 void SharedWorkerHost::DocumentDetached(SharedWorkerMessageFilter* filter,
                                         unsigned long long document_id) {
-  if (!instance_)
-    return;
   // Walk all instances and remove the document from their document set.
   worker_document_set_->Remove(filter, document_id);
   if (worker_document_set_->IsEmpty()) {
@@ -134,8 +121,6 @@ void SharedWorkerHost::DocumentDetached(SharedWorkerMessageFilter* filter,
 
 void SharedWorkerHost::RenderFrameDetached(int render_process_id,
                                            int render_frame_id) {
-  if (!instance_)
-    return;
   // Walk all instances and remove all the documents in the frame from their
   // document set.
   worker_document_set_->RemoveRenderFrame(render_process_id, render_frame_id);
@@ -146,21 +131,12 @@ void SharedWorkerHost::RenderFrameDetached(int render_process_id,
 }
 
 void SharedWorkerHost::WorkerContextClosed() {
-  if (!instance_)
-    return;
   // Set the closed flag - this will stop any further messages from
   // being sent to the worker (messages can still be sent from the worker,
   // for exception reporting, etc).
   closed_ = true;
   if (!termination_message_sent_)
     NotifyWorkerDestroyed(worker_process_id_, worker_route_id_);
-}
-
-void SharedWorkerHost::WorkerContextDestroyed() {
-  if (!instance_)
-    return;
-  instance_.reset();
-  worker_document_set_ = nullptr;
 }
 
 void SharedWorkerHost::WorkerReadyForInspection() {
@@ -175,15 +151,11 @@ void SharedWorkerHost::WorkerScriptLoaded() {
 void SharedWorkerHost::WorkerScriptLoadFailed() {
   UMA_HISTOGRAM_TIMES("SharedWorker.TimeToScriptLoadFailed",
                       base::TimeTicks::Now() - creation_time_);
-  if (!instance_)
-    return;
   for (const FilterInfo& info : filters_)
     info.filter()->Send(new ViewMsg_WorkerScriptLoadFailed(info.route_id()));
 }
 
 void SharedWorkerHost::WorkerConnected(int message_port_id) {
-  if (!instance_)
-    return;
   for (const FilterInfo& info : filters_) {
     if (info.message_port_id() != message_port_id)
       continue;
@@ -195,8 +167,6 @@ void SharedWorkerHost::WorkerConnected(int message_port_id) {
 void SharedWorkerHost::AllowFileSystem(
     const GURL& url,
     std::unique_ptr<IPC::Message> reply_msg) {
-  if (!instance_)
-    return;
   GetContentClient()->browser()->AllowWorkerFileSystem(
       url,
       instance_->resource_context(),
@@ -218,8 +188,6 @@ void SharedWorkerHost::AllowFileSystemResponse(
 void SharedWorkerHost::AllowIndexedDB(const GURL& url,
                                       const base::string16& name,
                                       bool* result) {
-  if (!instance_)
-    return;
   *result = GetContentClient()->browser()->AllowWorkerIndexedDB(
       url, name, instance_->resource_context(), GetRenderFrameIDsForWorker());
 }
@@ -234,8 +202,6 @@ void SharedWorkerHost::TerminateWorker() {
 std::vector<std::pair<int, int> >
 SharedWorkerHost::GetRenderFrameIDsForWorker() {
   std::vector<std::pair<int, int> > result;
-  if (!instance_)
-    return result;
   const WorkerDocumentSet::DocumentInfoSet& documents =
       worker_document_set_->documents();
   for (const WorkerDocumentSet::DocumentInfo& doc : documents) {
@@ -246,7 +212,7 @@ SharedWorkerHost::GetRenderFrameIDsForWorker() {
 }
 
 bool SharedWorkerHost::IsAvailable() const {
-  return instance_ && !termination_message_sent_ && !closed_;
+  return !termination_message_sent_ && !closed_;
 }
 
 void SharedWorkerHost::AddFilter(SharedWorkerMessageFilter* filter,
@@ -269,9 +235,8 @@ void SharedWorkerHost::RemoveFilters(SharedWorkerMessageFilter* filter) {
 
 bool SharedWorkerHost::HasFilter(SharedWorkerMessageFilter* filter,
                                  int route_id) const {
-  for (FilterList::const_iterator i = filters_.begin(); i != filters_.end();
-       ++i) {
-    if (i->filter() == filter && i->route_id() == route_id)
+  for (const FilterInfo& info : filters_) {
+    if (info.filter() == filter && info.route_id() == route_id)
       return true;
   }
   return false;
@@ -282,12 +247,12 @@ void SharedWorkerHost::Connect(int route_id,
                                SharedWorkerMessageFilter* incoming_filter) {
   DCHECK(IsAvailable());
   DCHECK(HasFilter(incoming_filter, route_id));
-  DCHECK(container_render_filter_);
+  DCHECK(worker_render_filter_);
 
-  int new_routing_id = container_render_filter_->GetNextRoutingID();
+  int new_routing_id = worker_render_filter_->GetNextRoutingID();
   MessagePortService::GetInstance()->UpdateMessagePort(
       sent_message_port_id,
-      container_render_filter_->message_port_message_filter(), new_routing_id);
+      worker_render_filter_->message_port_message_filter(), new_routing_id);
   SetMessagePortID(incoming_filter, route_id, sent_message_port_id);
   Send(new WorkerMsg_Connect(worker_route_id_, sent_message_port_id,
                              new_routing_id));
@@ -300,12 +265,16 @@ void SharedWorkerHost::Connect(int route_id,
 void SharedWorkerHost::SetMessagePortID(SharedWorkerMessageFilter* filter,
                                         int route_id,
                                         int message_port_id) {
-  for (FilterList::iterator i = filters_.begin(); i != filters_.end(); ++i) {
-    if (i->filter() == filter && i->route_id() == route_id) {
-      i->set_message_port_id(message_port_id);
+  for (FilterInfo& info : filters_) {
+    if (info.filter() == filter && info.route_id() == route_id) {
+      info.set_message_port_id(message_port_id);
       return;
     }
   }
+}
+
+bool SharedWorkerHost::Send(IPC::Message* message) {
+  return worker_render_filter_->Send(message);
 }
 
 }  // namespace content

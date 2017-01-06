@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "content/browser/shared_worker/shared_worker_message_filter.h"
 #include "content/browser/shared_worker/worker_document_set.h"
 
 class GURL;
@@ -24,20 +23,20 @@ class Message;
 }
 
 namespace content {
+
 class SharedWorkerMessageFilter;
 class SharedWorkerInstance;
 
 // The SharedWorkerHost is the interface that represents the browser side of
-// the browser <-> worker communication channel.
+// the browser <-> worker communication channel. This is owned by
+// SharedWorkerServiceImpl and destructed when a worker context or worker's
+// message filter is closed.
 class SharedWorkerHost {
  public:
   SharedWorkerHost(SharedWorkerInstance* instance,
                    SharedWorkerMessageFilter* filter,
                    int worker_route_id);
   ~SharedWorkerHost();
-
-  // Sends |message| to the SharedWorker.
-  bool Send(IPC::Message* message);
 
   // Starts the SharedWorker in the renderer process which is associated with
   // |filter_|.
@@ -84,8 +83,8 @@ class SharedWorkerHost {
   WorkerDocumentSet* worker_document_set() const {
     return worker_document_set_.get();
   }
-  SharedWorkerMessageFilter* container_render_filter() const {
-    return container_render_filter_;
+  SharedWorkerMessageFilter* worker_render_filter() const {
+    return worker_render_filter_;
   }
   int process_id() const { return worker_process_id_; }
   int worker_route_id() const { return worker_route_id_; }
@@ -124,14 +123,22 @@ class SharedWorkerHost {
   void AllowFileSystemResponse(std::unique_ptr<IPC::Message> reply_msg,
                                bool allowed);
 
+  // Sends |message| to the SharedWorker.
+  bool Send(IPC::Message* message);
+
   std::unique_ptr<SharedWorkerInstance> instance_;
   scoped_refptr<WorkerDocumentSet> worker_document_set_;
   FilterList filters_;
-  SharedWorkerMessageFilter* container_render_filter_;
+
+  // A message filter for a renderer process that hosts a worker. This is always
+  // valid because this host is destructed immediately after the filter is
+  // closed (see SharedWorkerServiceImpl::OnSharedWorkerMessageFilterClosing).
+  SharedWorkerMessageFilter* worker_render_filter_;
+
   const int worker_process_id_;
   const int worker_route_id_;
-  bool termination_message_sent_;
-  bool closed_;
+  bool termination_message_sent_ = false;
+  bool closed_ = false;
   const base::TimeTicks creation_time_;
 
   base::WeakPtrFactory<SharedWorkerHost> weak_factory_;

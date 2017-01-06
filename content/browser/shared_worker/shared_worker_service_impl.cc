@@ -278,7 +278,7 @@ std::vector<WorkerService::WorkerInfo> SharedWorkerServiceImpl::GetWorkers() {
       info.name = instance->name();
       info.route_id = host->worker_route_id();
       info.process_id = host->process_id();
-      info.handle = host->container_render_filter()->PeerHandle();
+      info.handle = host->worker_render_filter()->PeerHandle();
       results.push_back(info);
     }
   }
@@ -362,11 +362,7 @@ void SharedWorkerServiceImpl::WorkerContextDestroyed(
     SharedWorkerMessageFilter* filter) {
   ScopedWorkerDependencyChecker checker(this);
   ProcessRouteIdPair key(filter->render_process_id(), worker_route_id);
-  if (!base::ContainsKey(worker_hosts_, key))
-    return;
-  std::unique_ptr<SharedWorkerHost> host(worker_hosts_[key].release());
   worker_hosts_.erase(key);
-  host->WorkerContextDestroyed();
 }
 
 void SharedWorkerServiceImpl::WorkerReadyForInspection(
