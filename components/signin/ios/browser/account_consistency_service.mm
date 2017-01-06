@@ -4,7 +4,7 @@
 
 #include "components/signin/ios/browser/account_consistency_service.h"
 
-#include <WebKit/WebKit.h>
+#import <WebKit/WebKit.h>
 
 #import "base/ios/weak_nsobject.h"
 #include "base/logging.h"

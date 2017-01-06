@@ -6,7 +6,7 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <DiskArbitration/DiskArbitration.h>
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
 #include <IOKit/IOKitLib.h>
 #include <IOKit/storage/IOStorageDeviceCharacteristics.h>
 #include <stdlib.h>

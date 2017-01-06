@@ -4,7 +4,7 @@
 
 #include "components/policy/core/common/policy_loader_ios.h"
 
-#include <UIKit/UIKit.h>
+#import <UIKit/UIKit.h>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"

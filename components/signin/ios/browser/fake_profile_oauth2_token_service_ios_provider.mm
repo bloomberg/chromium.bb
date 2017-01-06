@@ -4,7 +4,7 @@
 
 #include "components/signin/ios/browser/fake_profile_oauth2_token_service_ios_provider.h"
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"

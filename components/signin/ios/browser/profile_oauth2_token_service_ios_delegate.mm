@@ -4,7 +4,7 @@
 
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
 
 #include <memory>
 #include <set>
