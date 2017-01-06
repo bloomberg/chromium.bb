@@ -9,14 +9,12 @@
       height: 100px;
       border: 1px solid  black;
     }
-    
     .box {
       position: absolute;
       width: 100px;
       height: 100px;
       background-color: green;
     }
-    
     .indicator {
       left: 150px;
       top: 0;
@@ -25,30 +23,33 @@
     #container.moved .software {
       left: 300px;
     }
-
     #container.moved .hardware {
       transform: translateX(300px);
     }
-
     .hardware {
       transform-style: preserve-3d;
-      -webkit-transition: transform 300ms linear;
+      transition: transform 300ms linear;
       transform: translateX(0);
     }
-
    </style>
-   <script src="../animations/resources/animation-test-helpers.js"></script>
    <script type="text/javascript">
+    'use strict';
+    function waitForCompositor() {
+      var container = document.getElementById('container');
+      return container.animate({opacity: [1, 1]}, 1).ready;
+    }
 
     function testEnded()
     {
       var testDiv = document.getElementById('tester');
-      testDiv.style.webkitTransitionProperty = 'none';
-      testDiv.style.webkitTransitionDuration = '0';
+      testDiv.style.transitionProperty = 'none';
+      testDiv.style.transitionDuration = '0';
 
-      testDiv.style.webkitTransform = 'translateX(150px)';
-      if (window.testRunner)
-        testRunner.notifyDone();
+      testDiv.style.transform = 'translateX(150px)';
+      waitForCompositor().then(() => {
+        if (window.testRunner)
+          testRunner.notifyDone();
+      });
     }
     
     function startTest()
@@ -56,7 +57,8 @@
       if (window.testRunner)
         testRunner.waitUntilDone();
 
-      document.getElementById('tester').addEventListener('webkitTransitionEnd', testEnded, false);
+      document.body.offsetHeight; // Force style recalc
+      document.getElementById('tester').addEventListener('transitionend', testEnded, false);
       document.getElementById('container').className = 'moved';
     }
     
