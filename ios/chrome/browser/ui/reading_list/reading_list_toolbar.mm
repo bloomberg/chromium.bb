@@ -250,38 +250,32 @@ typedef NS_ENUM(NSInteger, ButtonPositioning) { Leading, Centered, Trailing };
   [[button titleLabel]
       setFont:[[MDCTypography fontLoader] regularFontOfSize:14]];
 
-  NSTextAlignment textAlignement;
   UIControlContentHorizontalAlignment horizontalAlignement;
 
   switch (position) {
     case Leading:
       if (UseRTLLayout()) {
         horizontalAlignement = UIControlContentHorizontalAlignmentRight;
-        textAlignement = NSTextAlignmentRight;
       } else {
         horizontalAlignement = UIControlContentHorizontalAlignmentLeft;
-        textAlignement = NSTextAlignmentLeft;
       }
       break;
 
     case Centered:
       horizontalAlignement = UIControlContentHorizontalAlignmentCenter;
-      textAlignement = NSTextAlignmentCenter;
       break;
 
     case Trailing:
       if (UseRTLLayout()) {
         horizontalAlignement = UIControlContentHorizontalAlignmentLeft;
-        textAlignement = NSTextAlignmentLeft;
       } else {
         horizontalAlignement = UIControlContentHorizontalAlignmentRight;
-        textAlignement = NSTextAlignmentRight;
       }
       break;
   }
 
   button.contentHorizontalAlignment = horizontalAlignement;
-  button.titleLabel.textAlignment = textAlignement;
+  button.titleLabel.textAlignment = NSTextAlignmentCenter;
 
   return button;
 }
