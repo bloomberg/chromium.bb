@@ -165,7 +165,7 @@ const CSSValue* consumeSingleType(const CSSSyntaxComponent& syntax,
     case CSSSyntaxType::Time:
       return consumeTime(range, ValueRange::ValueRangeAll);
     case CSSSyntaxType::Resolution:
-      return nullptr;  // TODO(timloh): Implement this.
+      return consumeResolution(range);
     case CSSSyntaxType::TransformFunction:
       return nullptr;  // TODO(timloh): Implement this.
     case CSSSyntaxType::CustomIdent:

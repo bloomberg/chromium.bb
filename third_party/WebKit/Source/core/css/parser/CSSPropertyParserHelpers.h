@@ -52,6 +52,7 @@ CSSPrimitiveValue* consumeLengthOrPercent(
     UnitlessQuirk = UnitlessQuirk::Forbid);
 CSSPrimitiveValue* consumeAngle(CSSParserTokenRange&);
 CSSPrimitiveValue* consumeTime(CSSParserTokenRange&, ValueRange);
+CSSPrimitiveValue* consumeResolution(CSSParserTokenRange&);
 
 CSSIdentifierValue* consumeIdent(CSSParserTokenRange&);
 CSSIdentifierValue* consumeIdentRange(CSSParserTokenRange&,

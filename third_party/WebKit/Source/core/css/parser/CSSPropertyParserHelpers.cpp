@@ -313,6 +313,21 @@ CSSPrimitiveValue* consumeTime(CSSParserTokenRange& range,
   return nullptr;
 }
 
+CSSPrimitiveValue* consumeResolution(CSSParserTokenRange& range) {
+  const CSSParserToken& token = range.peek();
+  // Unlike the other types, calc() does not work with <resolution>.
+  if (token.type() != DimensionToken)
+    return nullptr;
+  CSSPrimitiveValue::UnitType unit = token.unitType();
+  if (unit == CSSPrimitiveValue::UnitType::DotsPerPixel ||
+      unit == CSSPrimitiveValue::UnitType::DotsPerInch ||
+      unit == CSSPrimitiveValue::UnitType::DotsPerCentimeter) {
+    return CSSPrimitiveValue::create(
+        range.consumeIncludingWhitespace().numericValue(), unit);
+  }
+  return nullptr;
+}
+
 CSSIdentifierValue* consumeIdent(CSSParserTokenRange& range) {
   if (range.peek().type() != IdentToken)
     return nullptr;

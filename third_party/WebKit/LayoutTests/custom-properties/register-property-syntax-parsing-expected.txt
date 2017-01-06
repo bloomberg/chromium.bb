@@ -34,8 +34,9 @@ PASS syntax:'<angle>', initialValue:'20.5rad' is valid
 PASS syntax:'<angle>', initialValue:'calc(50grad + 3.14159rad)' is valid 
 PASS syntax:'<time>', initialValue:'2s' is valid 
 PASS syntax:'<time>', initialValue:'calc(2s - 9ms)' is valid 
-FAIL syntax:'<resolution>', initialValue:'10dpi' is valid Failed to execute 'registerProperty' on 'CSS': The initial value provided does not parse for the given syntax.
-FAIL syntax:'<resolution>', initialValue:'-5.3dpcm' is valid Failed to execute 'registerProperty' on 'CSS': The initial value provided does not parse for the given syntax.
+PASS syntax:'<resolution>', initialValue:'10dpi' is valid 
+PASS syntax:'<resolution>', initialValue:'3dPpX' is valid 
+PASS syntax:'<resolution>', initialValue:'-5.3dpcm' is valid 
 FAIL syntax:'<transform-function>', initialValue:'scale(2)' is valid Failed to execute 'registerProperty' on 'CSS': The initial value provided does not parse for the given syntax.
 FAIL syntax:'<transform-function>+', initialValue:'translateX(2px) rotate(20deg)' is valid Failed to execute 'registerProperty' on 'CSS': The initial value provided does not parse for the given syntax.
 PASS syntax:'<color>', initialValue:'rgb(12, 34, 56)' is valid 
