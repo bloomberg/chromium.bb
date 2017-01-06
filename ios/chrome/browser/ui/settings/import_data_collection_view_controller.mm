@@ -67,7 +67,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _isSignedIn = isSignedIn;
     _shouldClearData = isSignedIn ? SHOULD_CLEAR_DATA_CLEAR_DATA
                                   : SHOULD_CLEAR_DATA_MERGE_DATA;
-    self.title = l10n_util::GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_TITLE);
     [self setShouldHideDoneButton:YES];
     self.navigationItem.rightBarButtonItem = [[[UIBarButtonItem alloc]
         initWithTitle:l10n_util::GetNSString(
@@ -92,11 +91,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   [model addSectionWithIdentifier:SectionIdentifierOptions];
   _importDataItem.reset([[self importDataItem] retain]);
-  [model addItem:_importDataItem
-      toSectionWithIdentifier:SectionIdentifierOptions];
   _keepDataSeparateItem.reset([[self keepDataSeparateItem] retain]);
-  [model addItem:_keepDataSeparateItem
-      toSectionWithIdentifier:SectionIdentifierOptions];
+  if (_isSignedIn) {
+    [model addItem:_keepDataSeparateItem
+        toSectionWithIdentifier:SectionIdentifierOptions];
+    [model addItem:_importDataItem
+        toSectionWithIdentifier:SectionIdentifierOptions];
+  } else {
+    [model addItem:_importDataItem
+        toSectionWithIdentifier:SectionIdentifierOptions];
+    [model addItem:_keepDataSeparateItem
+        toSectionWithIdentifier:SectionIdentifierOptions];
+  }
 }
 
 #pragma mark Items

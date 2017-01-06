@@ -75,17 +75,17 @@ TEST_F(ImportDataCollectionViewControllerTest, TestModelSignedIn) {
       item.text);
   EXPECT_EQ(2, NumberOfItemsInSection(1));
   CheckTextCellTitleAndSubtitle(
-      l10n_util::GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_IMPORT_TITLE),
-      l10n_util::GetNSStringF(IDS_IOS_OPTIONS_IMPORT_DATA_IMPORT_SUBTITLE,
-                              base::SysNSStringToUTF16(@"toEmail@gmail.com")),
-      1, 0);
-  CheckAccessoryType(MDCCollectionViewCellAccessoryNone, 1, 0);
-  CheckTextCellTitleAndSubtitle(
       l10n_util::GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_KEEP_TITLE),
       l10n_util::GetNSStringF(IDS_IOS_OPTIONS_IMPORT_DATA_KEEP_SUBTITLE_SWITCH,
                               base::SysNSStringToUTF16(@"fromEmail@gmail.com")),
+      1, 0);
+  CheckAccessoryType(MDCCollectionViewCellAccessoryCheckmark, 1, 0);
+  CheckTextCellTitleAndSubtitle(
+      l10n_util::GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_IMPORT_TITLE),
+      l10n_util::GetNSStringF(IDS_IOS_OPTIONS_IMPORT_DATA_IMPORT_SUBTITLE,
+                              base::SysNSStringToUTF16(@"toEmail@gmail.com")),
       1, 1);
-  CheckAccessoryType(MDCCollectionViewCellAccessoryCheckmark, 1, 1);
+  CheckAccessoryType(MDCCollectionViewCellAccessoryNone, 1, 1);
 }
 
 TEST_F(ImportDataCollectionViewControllerTest, TestModelSignedOut) {
