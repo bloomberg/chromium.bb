@@ -477,8 +477,10 @@ bool DefaultState::ProcessWorkspaceEvents(WindowState* window_state,
       gfx::Rect work_area_in_parent =
           GetDisplayWorkAreaBoundsInParent(window_state->window());
       gfx::Rect bounds = window_state->window()->GetTargetBounds();
-      wm::AdjustBoundsToEnsureMinimumWindowVisibility(work_area_in_parent,
-                                                      &bounds);
+      if (!window_state->window()->GetTransientParent()) {
+        wm::AdjustBoundsToEnsureMinimumWindowVisibility(work_area_in_parent,
+                                                        &bounds);
+      }
       window_state->AdjustSnappedBounds(&bounds);
       if (window_state->window()->GetTargetBounds() != bounds)
         window_state->SetBoundsDirectAnimated(bounds);

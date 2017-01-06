@@ -576,6 +576,29 @@ TEST_F(WorkspaceLayoutManagerTest,
   EXPECT_EQ(expected_bounds.ToString(), window->GetBounds().ToString());
 }
 
+// Do not adjust window bounds to ensure minimum visibility for transient
+// windows (crbug.com/624806).
+TEST_F(WorkspaceLayoutManagerTest,
+       DoNotAdjustTransientWindowBoundsToEnsureMinimumVisibility) {
+  UpdateDisplay("300x400");
+  WindowOwner window_owner(WmShell::Get()->NewWindow(ui::wm::WINDOW_TYPE_NORMAL,
+                                                     ui::LAYER_TEXTURED));
+  WmWindow* window = window_owner.window();
+  window->SetBounds(gfx::Rect(10, 0, 100, 200));
+  ParentWindowInPrimaryRootWindow(window);
+  window->Show();
+
+  std::unique_ptr<WindowOwner> window2_owner(
+      CreateTestWindow(gfx::Rect(10, 0, 40, 20)));
+  WmWindow* window2 = window2_owner->window();
+  AddTransientChild(window, window2);
+  window2->Show();
+
+  gfx::Rect expected_bounds = window2->GetBounds();
+  WmShell::Get()->SetDisplayWorkAreaInsets(window, gfx::Insets(50, 0, 0, 0));
+  EXPECT_EQ(expected_bounds.ToString(), window2->GetBounds().ToString());
+}
+
 // Following "Solo" tests were originally written for BaseLayoutManager.
 using WorkspaceLayoutManagerSoloTest = AshTest;
 
