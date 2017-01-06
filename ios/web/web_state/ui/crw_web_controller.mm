@@ -5127,6 +5127,19 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       [self registerLoadRequest:webViewURL];
     }
   }
+
+  if (![self currentSessionEntry]) {
+    // In this state CRWWebController will crash in |didCommitNavigation:|
+    // (crbug.com/676458). It's unclear if web controller could get into this
+    // state but it's one of the guesses for crbug.com/676458 root cause. Report
+    // UMA historgam if that happens.
+    // TODO(crbug.com/677552): Remove this historgam.
+    UMA_HISTOGRAM_BOOLEAN(
+        "WebController."
+        "StartProvisionalNavigationExitedWithEmptyNavigationManager",
+        true);
+  }
+
   // Ensure the URL is registered and loadPhase is as expected.
   DCHECK(_lastRegisteredRequestURL == webViewURL);
   DCHECK(self.loadPhase == web::LOAD_REQUESTED);
