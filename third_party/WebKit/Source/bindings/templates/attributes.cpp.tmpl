@@ -229,7 +229,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
 {##############################################################################}
 {% macro attribute_cache_property_callback(attribute) %}
-static v8::Local<v8::Private> {{attribute.name}}CachedAccessorCallback(v8::Isolate* isolate)
+v8::Local<v8::Private> {{attribute.name}}CachedAccessorCallback(v8::Isolate* isolate)
 {
     return V8PrivateProperty::get{{attribute.cached_accessor_name}}(isolate).getPrivate();
 }
