@@ -1092,7 +1092,7 @@ component("base") {
   ]
 
   # Needed for <atomic> if using newer C++ library than sysroot
-  if (!use_sysroot && (is_android || is_linux)) {
+  if (!use_sysroot && (is_android || (is_linux && !is_chromecast))) {
     libs = [ "atomic" ]
   }
 
