@@ -275,17 +275,13 @@ void CanvasAsyncBlobCreator::scheduleAsyncBlobCreation(const double& quality) {
       NOTREACHED();
     }
 
-    // TODO: Enforce OffscreenCanvas.convertToBlob to finish within deadline.
-    // See crbug.com/657102.
-    if (m_functionType == HTMLCanvasToBlobCallback) {
-      // We post the below task to check if the above idle task isn't late.
-      // There's no risk of concurrency as both tasks are on main thread.
-      this->postDelayedTaskToMainThread(
-          BLINK_FROM_HERE,
-          WTF::bind(&CanvasAsyncBlobCreator::idleTaskStartTimeoutEvent,
-                    wrapPersistent(this), quality),
-          IdleTaskStartTimeoutDelay);
-    }
+    // We post the below task to check if the above idle task isn't late.
+    // There's no risk of concurrency as both tasks are on the same thread.
+    this->postDelayedTaskToCurrentThread(
+        BLINK_FROM_HERE,
+        WTF::bind(&CanvasAsyncBlobCreator::idleTaskStartTimeoutEvent,
+                  wrapPersistent(this), quality),
+        IdleTaskStartTimeoutDelay);
   }
 }
 
@@ -412,7 +408,7 @@ void CanvasAsyncBlobCreator::idleEncodeRowsJpeg(double deadlineSeconds) {
   }
 }
 
-void CanvasAsyncBlobCreator::encodeRowsPngOnMainThread() {
+void CanvasAsyncBlobCreator::forceEncodeRowsPngOnCurrentThread() {
   DCHECK(m_idleTaskStatus == IdleTaskSwitchedToImmediateTask);
 
   // Continue encoding from the last completed row
@@ -423,20 +419,39 @@ void CanvasAsyncBlobCreator::encodeRowsPngOnMainThread() {
     inputPixels += m_pixelRowStride;
   }
   PNGImageEncoder::finalizePng(m_pngEncoderState.get());
-  this->createBlobAndReturnResult();
+
+  if (isMainThread()) {
+    this->createBlobAndReturnResult();
+  } else {
+    TaskRunnerHelper::get(TaskType::CanvasBlobSerialization, m_document)
+        ->postTask(
+            BLINK_FROM_HERE,
+            crossThreadBind(&CanvasAsyncBlobCreator::createBlobAndReturnResult,
+                            wrapCrossThreadPersistent(this)));
+  }
 
   this->signalAlternativeCodePathFinishedForTesting();
 }
 
-void CanvasAsyncBlobCreator::encodeRowsJpegOnMainThread() {
+void CanvasAsyncBlobCreator::forceEncodeRowsJpegOnCurrentThread() {
   DCHECK(m_idleTaskStatus == IdleTaskSwitchedToImmediateTask);
 
   // Continue encoding from the last completed row
+  void (CanvasAsyncBlobCreator::*functionToBeCalled)(void);
   if (JPEGImageEncoder::encodeWithPreInitializedState(
           std::move(m_jpegEncoderState), m_data->data(), m_numRowsCompleted)) {
-    this->createBlobAndReturnResult();
+    functionToBeCalled = &CanvasAsyncBlobCreator::createBlobAndReturnResult;
   } else {
-    this->createNullAndReturnResult();
+    functionToBeCalled = &CanvasAsyncBlobCreator::createNullAndReturnResult;
+  }
+
+  if (isMainThread()) {
+    (this->*functionToBeCalled)();
+  } else {
+    TaskRunnerHelper::get(TaskType::CanvasBlobSerialization, m_document)
+        ->postTask(BLINK_FROM_HERE,
+                   crossThreadBind(functionToBeCalled,
+                                   wrapCrossThreadPersistent(this)));
   }
 
   this->signalAlternativeCodePathFinishedForTesting();
@@ -523,7 +538,7 @@ bool CanvasAsyncBlobCreator::initializeJpegStruct(double quality) {
 void CanvasAsyncBlobCreator::idleTaskStartTimeoutEvent(double quality) {
   if (m_idleTaskStatus == IdleTaskStarted) {
     // Even if the task started quickly, we still want to ensure completion
-    this->postDelayedTaskToMainThread(
+    this->postDelayedTaskToCurrentThread(
         BLINK_FROM_HERE,
         WTF::bind(&CanvasAsyncBlobCreator::idleTaskCompleteTimeoutEvent,
                   wrapPersistent(this)),
@@ -540,8 +555,9 @@ void CanvasAsyncBlobCreator::idleTaskStartTimeoutEvent(double quality) {
         TaskRunnerHelper::get(TaskType::CanvasBlobSerialization, m_document)
             ->postTask(
                 BLINK_FROM_HERE,
-                WTF::bind(&CanvasAsyncBlobCreator::encodeRowsPngOnMainThread,
-                          wrapPersistent(this)));
+                WTF::bind(
+                    &CanvasAsyncBlobCreator::forceEncodeRowsPngOnCurrentThread,
+                    wrapPersistent(this)));
       } else {
         // Failing in initialization of png struct
         this->signalAlternativeCodePathFinishedForTesting();
@@ -552,8 +568,9 @@ void CanvasAsyncBlobCreator::idleTaskStartTimeoutEvent(double quality) {
         TaskRunnerHelper::get(TaskType::CanvasBlobSerialization, m_document)
             ->postTask(
                 BLINK_FROM_HERE,
-                WTF::bind(&CanvasAsyncBlobCreator::encodeRowsJpegOnMainThread,
-                          wrapPersistent(this)));
+                WTF::bind(
+                    &CanvasAsyncBlobCreator::forceEncodeRowsJpegOnCurrentThread,
+                    wrapPersistent(this)));
       } else {
         // Failing in initialization of jpeg struct
         this->signalAlternativeCodePathFinishedForTesting();
@@ -578,15 +595,17 @@ void CanvasAsyncBlobCreator::idleTaskCompleteTimeoutEvent() {
       TaskRunnerHelper::get(TaskType::CanvasBlobSerialization, m_document)
           ->postTask(
               BLINK_FROM_HERE,
-              WTF::bind(&CanvasAsyncBlobCreator::encodeRowsPngOnMainThread,
-                        wrapPersistent(this)));
+              WTF::bind(
+                  &CanvasAsyncBlobCreator::forceEncodeRowsPngOnCurrentThread,
+                  wrapPersistent(this)));
     } else {
       DCHECK(m_mimeType == MimeTypeJpeg);
       TaskRunnerHelper::get(TaskType::CanvasBlobSerialization, m_document)
           ->postTask(
               BLINK_FROM_HERE,
-              WTF::bind(&CanvasAsyncBlobCreator::encodeRowsJpegOnMainThread,
-                        wrapPersistent(this)));
+              WTF::bind(
+                  &CanvasAsyncBlobCreator::forceEncodeRowsJpegOnCurrentThread,
+                  wrapPersistent(this)));
     }
   } else {
     DCHECK(m_idleTaskStatus == IdleTaskFailed ||
@@ -595,11 +614,10 @@ void CanvasAsyncBlobCreator::idleTaskCompleteTimeoutEvent() {
   }
 }
 
-void CanvasAsyncBlobCreator::postDelayedTaskToMainThread(
+void CanvasAsyncBlobCreator::postDelayedTaskToCurrentThread(
     const WebTraceLocation& location,
     std::unique_ptr<WTF::Closure> task,
     double delayMs) {
-  DCHECK(isMainThread());
   TaskRunnerHelper::get(TaskType::CanvasBlobSerialization, m_document)
       ->postDelayedTask(location, std::move(task), delayMs);
 }
