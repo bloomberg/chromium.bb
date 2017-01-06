@@ -18,6 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "build/build_config.h"
@@ -152,6 +153,10 @@ void SpinThreads() {
   content::RunAllPendingInMessageLoop();
   content::RunAllPendingInMessageLoop(content::BrowserThread::DB);
   content::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
+
+  // This prevents HistoryBackend from accessing its databases after the
+  // directory that contains them has been deleted.
+  base::TaskScheduler::GetInstance()->FlushForTesting();
 }
 
 // Sends an HttpResponse for requests for "/" that result in sending an HPKP
