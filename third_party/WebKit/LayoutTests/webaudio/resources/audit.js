@@ -541,6 +541,47 @@ window.Audit = (function () {
     }
 
     /**
+     * Check if |actual| array is not filled with a constant |expected| value.
+     *
+     * @example
+     *   should([1, 0, 1]).notBeConstantValueOf(1);
+     *   should([0, 0, 0]).notBeConstantValueOf(0);
+     *
+     * @result
+     *   "PASS   [1,0,1] is not constantly 1 (contains 1 different value)."
+     *   "FAIL X [0,0,0] should have contain at least one value different
+     *     from 0."
+     */
+    notBeConstantValueOf () {
+      this._processArguments(arguments);
+      this._printActualForFailure = false;
+
+      let passed = true;
+      let passDetail;
+      let failDetail;
+      let differences = {};
+
+      for (let index in this._actual) {
+        if (this._actual[index] !== this._expected)
+          differences[index] = this._actual[index];
+      }
+
+      let numberOfDifferences = Object.keys(differences).length;
+      passed = numberOfDifferences > 0;
+
+      if (passed) {
+        let valueString = numberOfDifferences > 1 ? 'values' : 'value';
+        passDetail = '${actual} is not constantly ${expected} (contains ' +
+            numberOfDifferences + ' different ' + valueString + ').';
+      } else {
+        failDetail = '${actual} should have contain at least one value ' +
+            'different from ${expected}.';
+      }
+
+      return this._assert(passed, passDetail, failDetail);
+    }
+
+    /**
      * Check if |actual| array is identical to |expected| array element-wise.
      *
      * @example

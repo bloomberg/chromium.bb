@@ -26,6 +26,7 @@ FAIL X Expected 5 for all values but found 7 unexpected values:
 	[2]	11
 	[3]	18
 	...and 3 more errors. assert_true: expected true got false
+FAIL X [0,0,0] should have contain at least one value different from 0. assert_true: expected true got false
 FAIL X [1,8,11,18,6,5,5,5,123,49] expected to be equal to the array [1,8,10,18,6,5,6,5,123,48] but differs in 3 places:
 	Index	Actual			Expected
 	[2]	1.1000000000000000e+1	1.0000000000000000e+1
@@ -60,7 +61,7 @@ FAIL X [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.9] does not equal [0.7,0.6,0.5,0.4,0.3,0.2
 	[5]	5.9999999999999998e-1	2.0000000000000001e-1	3.9999999999999997e-1	1.9999999999999998e+0	2.0000000000000004e-2
 	Max AbsError of 5.9999999999999998e-1 at index of 0.
 	Max RelError of 5.9999999999999991e+0 at index of 6. assert_true: expected true got false
-FAIL < [numerical-failures] 9 out of 9 assertions were failed. assert_true: expected true got false
+FAIL < [numerical-failures] 10 out of 10 assertions were failed. assert_true: expected true got false
 FAIL # AUDIT TASK RUNNER FINISHED: 2 out of 2 tasks were failed. assert_true: expected true got false
 Harness: the test ran to completion.
 

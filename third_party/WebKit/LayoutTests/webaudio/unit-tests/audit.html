@@ -46,6 +46,8 @@
 
       should(2.3).beCloseTo(2, { threshold: 0.3 });
       should([1, 1, 1]).beConstantValueOf(1);
+      should([1, 0, 1]).notBeConstantValueOf(1);
+      should([1, 0, 0, 1]).notBeConstantValueOf(1);
       should([1, 1, 1]).beEqualToArray([1, 1, 1]);
       should([1, 1, 1, 1, 2, 2, 3, 3, 3])
         .containValues([1, 2, 3], 'one, two, three');

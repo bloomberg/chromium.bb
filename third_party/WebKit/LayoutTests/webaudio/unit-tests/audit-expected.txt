@@ -4,10 +4,12 @@ PASS # AUDIT TASK RUNNER STARTED.
 PASS > [numerical] Numerical assertion unit test. 
 PASS   2.3 is 2 within an error of 0.3. 
 PASS   [1,1,1] contains only the constant 1. 
+PASS   [1,0,1] is not constantly 1 (contains 1 different value). 
+PASS   [1,0,0,1] is not constantly 1 (contains 2 different values). 
 PASS   [1,1,1] is identical to the array [1,1,1]. 
 PASS   [1,1,1,1,2,2,3,3,3] contains all the expected values in the correct order: one, two, three. 
 PASS   [0.5,0.5,0.55,0.5,0.45,0.5] has no glitch above the threshold of 0.06. 
-PASS < [numerical] All assertions passed. (total 5 assertions) 
+PASS < [numerical] All assertions passed. (total 7 assertions) 
 PASS > [basic] Simple unit tests for basic assertions. 
 PASS   OfflineAudioContext does exist. 
 PASS   Setting foo1 to 0 did not throw an exception. 
