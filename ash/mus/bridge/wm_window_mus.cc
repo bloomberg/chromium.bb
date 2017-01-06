@@ -75,15 +75,15 @@ WmShell* WmWindowMus::GetShell() const {
 }
 
 void WmWindowMus::CloseWidget() {
-  views::Widget* widget = views::Widget::GetWidgetForNativeView(aura_window());
-  DCHECK(widget);
-  // Allow the client to service the close request for remote widgets.
+  // NOTE: in the FOR_CLIENT case there is not necessarily a widget associated
+  // with the window. Mash only creates widgets for top level windows if mash
+  // renders the non-client frame.
   if (aura_window()->GetProperty(kWidgetCreationTypeKey) ==
       WidgetCreationType::FOR_CLIENT) {
     WmShellMus::Get()->window_manager()->window_manager_client()->RequestClose(
         aura_window());
   } else {
-    widget->Close();
+    WmWindowAura::CloseWidget();
   }
 }
 
