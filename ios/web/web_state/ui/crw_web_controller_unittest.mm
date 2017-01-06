@@ -20,6 +20,7 @@
 #import "ios/web/public/test/fakes/test_native_content.h"
 #import "ios/web/public/test/fakes/test_native_content_provider.h"
 #import "ios/web/public/test/fakes/test_web_client.h"
+#import "ios/web/public/test/fakes/test_web_state_delegate.h"
 #import "ios/web/public/test/fakes/test_web_view_content_view.h"
 #import "ios/web/public/web_state/crw_web_controller_observer.h"
 #import "ios/web/public/web_state/ui/crw_content_view.h"
@@ -73,63 +74,6 @@ using web::NavigationManagerImpl;
 // Stub implementation for CRWWebUserInterfaceDelegate protocol.
 @interface CRWWebUserInterfaceDelegateStub
     : OCMockComplexTypeHelper<CRWWebUserInterfaceDelegate>
-@end
-
-@implementation CRWWebUserInterfaceDelegateStub
-
-- (void)webController:(CRWWebController*)webController
-    runJavaScriptAlertPanelWithMessage:(NSString*)message
-                            requestURL:(const GURL&)requestURL
-                     completionHandler:(void (^)(void))completionHandler {
-  void (^stubBlock)(CRWWebController*, NSString*, const GURL&, id) =
-      [self blockForSelector:_cmd];
-  stubBlock(webController, message, requestURL, completionHandler);
-}
-
-- (void)webController:(CRWWebController*)webController
-    runJavaScriptConfirmPanelWithMessage:(NSString*)message
-                              requestURL:(const GURL&)requestURL
-                       completionHandler:(void (^)(BOOL))completionHandler {
-  void (^stubBlock)(CRWWebController*, NSString*, const GURL&, id) =
-      [self blockForSelector:_cmd];
-  stubBlock(webController, message, requestURL, completionHandler);
-}
-
-- (void)webController:(CRWWebController*)webController
-    runJavaScriptTextInputPanelWithPrompt:(NSString*)message
-                              defaultText:(NSString*)defaultText
-                               requestURL:(const GURL&)requestURL
-                        completionHandler:
-                            (void (^)(NSString* input))completionHandler {
-  void (^stubBlock)(CRWWebController*, NSString*, NSString*, const GURL&, id) =
-      [self blockForSelector:_cmd];
-  stubBlock(webController, message, defaultText, requestURL, completionHandler);
-}
-
-- (BOOL)respondsToSelector:(SEL)selector {
-  // OCMockComplexTypeHelper DCHECKs when respondsToSelector: is called for
-  // expected selector.
-  if (selector == @selector(webController:
-                      runJavaScriptAlertPanelWithMessage:
-                                              requestURL:
-                                       completionHandler:)) {
-    return YES;
-  }
-  if (selector == @selector(webController:
-                      runJavaScriptConfirmPanelWithMessage:
-                                                requestURL:
-                                         completionHandler:)) {
-    return YES;
-  }
-  if (selector == @selector(webController:
-                      runJavaScriptTextInputPanelWithPrompt:
-                                                defaultText:
-                                                 requestURL:
-                                          completionHandler:)) {
-    return YES;
-  }
-  return [super respondsToSelector:selector];
-}
 @end
 
 @implementation MockInteractionLoader {
@@ -458,39 +402,37 @@ TEST_F(CRWWebControllerTest, SslCertError) {
 class CRWWebControllerPageDialogOpenPolicyTest
     : public web::WebTestWithWebController {
  protected:
+  CRWWebControllerPageDialogOpenPolicyTest()
+      : page_url_("https://chromium.test/") {}
   void SetUp() override {
     web::WebTestWithWebController::SetUp();
-    LoadHtml(@"<html><body></body></html>");
+    LoadHtml(@"<html><body></body></html>", page_url_);
     web_delegate_mock_.reset(
         [[OCMockObject mockForProtocol:@protocol(CRWWebDelegate)] retain]);
     [web_controller() setDelegate:web_delegate_mock_];
-    id ui_delegate_oc_mock =
-        [OCMockObject mockForProtocol:@protocol(CRWWebUserInterfaceDelegate)];
-    ui_delegate_mock_.reset([[CRWWebUserInterfaceDelegateStub alloc]
-        initWithRepresentedObject:ui_delegate_oc_mock]);
-    [web_controller() setUIDelegate:ui_delegate_mock_];
-    // Web Controller cancels all dialogs on |close|.
-    [[ui_delegate_mock_ stub] cancelDialogsForWebController:web_controller()];
+    web_state()->SetDelegate(&test_web_delegate_);
   }
   void TearDown() override {
     WaitForBackgroundTasks();
     EXPECT_OCMOCK_VERIFY(web_delegate_mock_);
-    EXPECT_OCMOCK_VERIFY(ui_delegate_mock_);
     [web_controller() setDelegate:nil];
-    [web_controller() setUIDelegate:nil];
+    web_state()->SetDelegate(nullptr);
 
     web::WebTestWithWebController::TearDown();
   }
-  // Returns CRWWebDelegate mock object.
   id web_delegate_mock() { return web_delegate_mock_; };
-  // Returns CRWWebUserInterfaceDelegate mock object.
-  id ui_delegate_mock() { return ui_delegate_mock_; };
+  web::TestJavaScriptDialogPresenter* js_dialog_presenter() {
+    return test_web_delegate_.GetTestJavaScriptDialogPresenter();
+  }
+  const std::vector<web::TestJavaScriptDialog>& requested_dialogs() {
+    return js_dialog_presenter()->requested_dialogs();
+  }
+  const GURL& page_url() { return page_url_; }
 
  private:
-  // Mocks CRWWebDelegate object.
+  web::TestWebStateDelegate test_web_delegate_;
   base::scoped_nsprotocol<id> web_delegate_mock_;
-  // Mocks CRWWebUserInterfaceDelegate object.
-  base::scoped_nsprotocol<id> ui_delegate_mock_;
+  GURL page_url_;
 };
 
 // Tests that window.alert dialog is suppressed for DIALOG_POLICY_SUPPRESS.
@@ -503,109 +445,98 @@ TEST_F(CRWWebControllerPageDialogOpenPolicyTest, SuppressAlert) {
 
 // Tests that window.alert dialog is shown for DIALOG_POLICY_ALLOW.
 TEST_F(CRWWebControllerPageDialogOpenPolicyTest, AllowAlert) {
-  SEL selector = @selector(webController:
-      runJavaScriptAlertPanelWithMessage:
-                              requestURL:
-                       completionHandler:);
-  [ui_delegate_mock() onSelector:selector
-            callBlockExpectation:^(CRWWebController* controller,
-                                   NSString* message, const GURL& url,
-                                   ProceduralBlock completion_handler) {
-              EXPECT_NSEQ(web_controller(), controller);
-              EXPECT_NSEQ(@"test", message);
-              web::URLVerificationTrustLevel unused;
-              EXPECT_EQ([controller currentURLWithTrustLevel:&unused], url);
-              completion_handler();
-            }];
+  ASSERT_TRUE(requested_dialogs().empty());
 
   [web_controller() setShouldSuppressDialogs:NO];
   ExecuteJavaScript(@"alert('test')");
+
+  ASSERT_EQ(1U, requested_dialogs().size());
+  web::TestJavaScriptDialog dialog = requested_dialogs()[0];
+  EXPECT_EQ(web_state(), dialog.web_state);
+  EXPECT_EQ(page_url(), dialog.origin_url);
+  EXPECT_EQ(web::JAVASCRIPT_DIALOG_TYPE_ALERT, dialog.java_script_dialog_type);
+  EXPECT_NSEQ(@"test", dialog.message_text);
+  EXPECT_FALSE(dialog.default_prompt_text);
 };
 
 // Tests that window.confirm dialog is suppressed for DIALOG_POLICY_SUPPRESS.
 TEST_F(CRWWebControllerPageDialogOpenPolicyTest, SuppressConfirm) {
+  ASSERT_TRUE(requested_dialogs().empty());
+
   [[web_delegate_mock() expect]
       webControllerDidSuppressDialog:web_controller()];
   [web_controller() setShouldSuppressDialogs:YES];
   EXPECT_NSEQ(@NO, ExecuteJavaScript(@"confirm('test')"));
+
+  ASSERT_TRUE(requested_dialogs().empty());
 };
 
 // Tests that window.confirm dialog is shown for DIALOG_POLICY_ALLOW and
 // it's result is true.
 TEST_F(CRWWebControllerPageDialogOpenPolicyTest, AllowConfirmWithTrue) {
-  SEL selector = @selector(webController:
-      runJavaScriptConfirmPanelWithMessage:
-                                requestURL:
-                         completionHandler:);
-  [ui_delegate_mock()
-                onSelector:selector
-      callBlockExpectation:^(CRWWebController* controller, NSString* message,
-                             const GURL& url, id completion_handler) {
-        EXPECT_NSEQ(web_controller(), controller);
-        EXPECT_NSEQ(@"test", message);
-        web::URLVerificationTrustLevel unused;
-        EXPECT_EQ([controller currentURLWithTrustLevel:&unused], url);
-        void (^callable_block)(BOOL) = completion_handler;
-        callable_block(YES);
-      }];
+  ASSERT_TRUE(requested_dialogs().empty());
+
+  js_dialog_presenter()->set_callback_success_argument(true);
 
   [web_controller() setShouldSuppressDialogs:NO];
   EXPECT_NSEQ(@YES, ExecuteJavaScript(@"confirm('test')"));
+
+  ASSERT_EQ(1U, requested_dialogs().size());
+  web::TestJavaScriptDialog dialog = requested_dialogs()[0];
+  EXPECT_EQ(web_state(), dialog.web_state);
+  EXPECT_EQ(page_url(), dialog.origin_url);
+  EXPECT_EQ(web::JAVASCRIPT_DIALOG_TYPE_CONFIRM,
+            dialog.java_script_dialog_type);
+  EXPECT_NSEQ(@"test", dialog.message_text);
+  EXPECT_FALSE(dialog.default_prompt_text);
 }
 
 // Tests that window.confirm dialog is shown for DIALOG_POLICY_ALLOW and
 // it's result is false.
 TEST_F(CRWWebControllerPageDialogOpenPolicyTest, AllowConfirmWithFalse) {
-  SEL selector = @selector(webController:
-      runJavaScriptConfirmPanelWithMessage:
-                                requestURL:
-                         completionHandler:);
-  [ui_delegate_mock()
-                onSelector:selector
-      callBlockExpectation:^(CRWWebController* controller, NSString* message,
-                             const GURL& url, id completion_handler) {
-        EXPECT_NSEQ(web_controller(), controller);
-        EXPECT_NSEQ(@"test", message);
-        web::URLVerificationTrustLevel unused;
-        EXPECT_EQ([controller currentURLWithTrustLevel:&unused], url);
-        void (^callable_block)(BOOL) = completion_handler;
-        callable_block(NO);
-      }];
+  ASSERT_TRUE(requested_dialogs().empty());
 
   [web_controller() setShouldSuppressDialogs:NO];
   EXPECT_NSEQ(@NO, ExecuteJavaScript(@"confirm('test')"));
+
+  ASSERT_EQ(1U, requested_dialogs().size());
+  web::TestJavaScriptDialog dialog = requested_dialogs()[0];
+  EXPECT_EQ(web_state(), dialog.web_state);
+  EXPECT_EQ(page_url(), dialog.origin_url);
+  EXPECT_EQ(web::JAVASCRIPT_DIALOG_TYPE_CONFIRM,
+            dialog.java_script_dialog_type);
+  EXPECT_NSEQ(@"test", dialog.message_text);
+  EXPECT_FALSE(dialog.default_prompt_text);
 }
 
 // Tests that window.prompt dialog is suppressed for DIALOG_POLICY_SUPPRESS.
 TEST_F(CRWWebControllerPageDialogOpenPolicyTest, SuppressPrompt) {
+  ASSERT_TRUE(requested_dialogs().empty());
+
   [[web_delegate_mock() expect]
       webControllerDidSuppressDialog:web_controller()];
   [web_controller() setShouldSuppressDialogs:YES];
   EXPECT_EQ([NSNull null], ExecuteJavaScript(@"prompt('Yes?', 'No')"));
+
+  ASSERT_TRUE(requested_dialogs().empty());
 }
 
 // Tests that window.prompt dialog is shown for DIALOG_POLICY_ALLOW.
 TEST_F(CRWWebControllerPageDialogOpenPolicyTest, AllowPrompt) {
-  SEL selector = @selector(webController:
-      runJavaScriptTextInputPanelWithPrompt:
-                                defaultText:
-                                 requestURL:
-                          completionHandler:);
-  [ui_delegate_mock() onSelector:selector
-            callBlockExpectation:^(CRWWebController* controller,
-                                   NSString* message, NSString* default_text,
-                                   const GURL& url, id completion_handler) {
-              EXPECT_NSEQ(web_controller(), controller);
-              EXPECT_NSEQ(@"Yes?", message);
-              EXPECT_NSEQ(@"No", default_text);
-              web::URLVerificationTrustLevel unused;
-              EXPECT_EQ([controller currentURLWithTrustLevel:&unused], url);
-              void (^callable_block)(NSString*) = completion_handler;
-              callable_block(@"Maybe");
-            }];
+  ASSERT_TRUE(requested_dialogs().empty());
+
+  js_dialog_presenter()->set_callback_user_input_argument(@"Maybe");
 
   [web_controller() setShouldSuppressDialogs:NO];
   EXPECT_NSEQ(@"Maybe", ExecuteJavaScript(@"prompt('Yes?', 'No')"));
+
+  ASSERT_EQ(1U, requested_dialogs().size());
+  web::TestJavaScriptDialog dialog = requested_dialogs()[0];
+  EXPECT_EQ(web_state(), dialog.web_state);
+  EXPECT_EQ(page_url(), dialog.origin_url);
+  EXPECT_EQ(web::JAVASCRIPT_DIALOG_TYPE_PROMPT, dialog.java_script_dialog_type);
+  EXPECT_NSEQ(@"Yes?", dialog.message_text);
+  EXPECT_NSEQ(@"No", dialog.default_prompt_text);
 }
 
 // Tests that geolocation dialog is suppressed for DIALOG_POLICY_SUPPRESS.
