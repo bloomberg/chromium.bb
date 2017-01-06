@@ -27,7 +27,15 @@ class PermissionServiceContext::PermissionSubscription {
         &PermissionSubscription::OnConnectionError, base::Unretained(this)));
   }
 
-  ~PermissionSubscription() = default;
+  ~PermissionSubscription() {
+    DCHECK_NE(id_, 0);
+    BrowserContext* browser_context = context_->GetBrowserContext();
+    DCHECK(browser_context);
+    if (browser_context->GetPermissionManager()) {
+      browser_context->GetPermissionManager()
+          ->UnsubscribePermissionStatusChange(id_);
+    }
+  }
 
   void OnConnectionError() {
     DCHECK_NE(id_, 0);
@@ -105,13 +113,6 @@ void PermissionServiceContext::ServiceHadConnectionError(
 }
 
 void PermissionServiceContext::ObserverHadConnectionError(int subscription_id) {
-  BrowserContext* browser_context = GetBrowserContext();
-  DCHECK(browser_context);
-  if (browser_context->GetPermissionManager()) {
-    browser_context->GetPermissionManager()->UnsubscribePermissionStatusChange(
-        subscription_id);
-  }
-
   auto it = subscriptions_.find(subscription_id);
   DCHECK(it != subscriptions_.end());
   subscriptions_.erase(it);
@@ -139,13 +140,15 @@ void PermissionServiceContext::DidNavigateAnyFrame(
 }
 
 void PermissionServiceContext::CancelPendingOperations(
-    RenderFrameHost* render_frame_host) const {
+    RenderFrameHost* render_frame_host) {
   DCHECK(render_frame_host_);
   if (render_frame_host != render_frame_host_)
     return;
 
   for (const auto& service : services_)
     service->CancelPendingOperations();
+
+  subscriptions_.clear();
 }
 
 BrowserContext* PermissionServiceContext::GetBrowserContext() const {

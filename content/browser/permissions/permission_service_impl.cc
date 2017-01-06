@@ -257,11 +257,6 @@ void PermissionServiceImpl::AddPermissionObserver(
     last_known_status = current_status;
   }
 
-  BrowserContext* browser_context = context_->GetBrowserContext();
-  DCHECK(browser_context);
-  if (!browser_context->GetPermissionManager())
-    return;
-
   context_->CreateSubscription(PermissionDescriptorToPermissionType(permission),
                                origin, std::move(observer));
 }
