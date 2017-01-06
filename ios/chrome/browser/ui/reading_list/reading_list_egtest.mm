@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -176,6 +177,15 @@ size_t ModelReadSize(ReadingListModel* model) {
   ReadingListModel* model = GetReadingListModel();
   for (const GURL& url : model->Keys())
     model->RemoveEntryByURL(url);
+}
+
+// Tests that the Reading List view is accessible.
+- (void)testAccessibility {
+  AddEntriesAndEnterEdit();
+  // In edit mode.
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  TapButtonWithID(IDS_IOS_READING_LIST_CANCEL_BUTTON);
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
 }
 
 // Tests that sharing a web page to the Reading List results in a snackbar
