@@ -103,6 +103,11 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor
   // PaintSingleFrame() is not also called while stopped.)
   base::TimeDelta GetCurrentFrameTimestamp() const;
 
+  // Called when the media player is brought to the foreground.
+  // Used to record the time it takes to process the first frame after that.
+  // Must be called on the compositor thread.
+  void SetForegroundTime(base::TimeTicks when);
+
   void set_tick_clock_for_testing(std::unique_ptr<base::TickClock> tick_clock) {
     tick_clock_ = std::move(tick_clock);
   }
@@ -157,6 +162,7 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor
   bool new_background_frame_;
   base::TimeDelta last_interval_;
   base::TimeTicks last_background_render_;
+  base::TimeTicks foreground_time_;
 
   // These values are set on the compositor thread, but also read on the media
   // thread when the VFC is stopped.

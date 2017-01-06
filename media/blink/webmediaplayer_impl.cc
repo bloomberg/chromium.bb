@@ -1354,6 +1354,11 @@ void WebMediaPlayerImpl::OnShown() {
   if (watch_time_reporter_)
     watch_time_reporter_->OnShown();
 
+  compositor_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&VideoFrameCompositor::SetForegroundTime,
+                 base::Unretained(compositor_), base::TimeTicks::Now()));
+
   if (IsBackgroundVideoTrackOptimizationEnabled() &&
       client_->hasSelectedVideoTrack()) {
     WebMediaPlayer::TrackId trackId = client_->getSelectedVideoTrackId();

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/auto_open_close_event.h"
 #include "base/trace_event/trace_event.h"
@@ -188,6 +189,11 @@ base::TimeDelta VideoFrameCompositor::GetCurrentFrameTimestamp() const {
   return current_frame_->timestamp();
 }
 
+void VideoFrameCompositor::SetForegroundTime(base::TimeTicks when) {
+  DCHECK(compositor_task_runner_->BelongsToCurrentThread());
+  foreground_time_ = when;
+}
+
 bool VideoFrameCompositor::ProcessNewFrame(
     const scoped_refptr<VideoFrame>& frame,
     bool repaint_duplicate_frame) {
@@ -203,6 +209,15 @@ bool VideoFrameCompositor::ProcessNewFrame(
   rendered_last_frame_ = false;
 
   current_frame_ = frame;
+
+  if (!foreground_time_.is_null()) {
+    base::TimeDelta time_to_first_frame =
+        base::TimeTicks::Now() - foreground_time_;
+    UMA_HISTOGRAM_TIMES("Media.Video.TimeFromForegroundToFirstFrame",
+                        time_to_first_frame);
+    foreground_time_ = base::TimeTicks();
+  }
+
   return true;
 }
 
