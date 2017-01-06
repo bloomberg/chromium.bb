@@ -187,13 +187,13 @@ class CORE_EXPORT DummyExceptionStateForTesting final : public ExceptionState {
       clearException();
     }
   }
-
   void throwDOMException(ExceptionCode, const String& message) override;
   void throwTypeError(const String& message) override;
   void throwSecurityError(const String& sanitizedMessage,
                           const String& unsanitizedMessage) override;
   void throwRangeError(const String& message) override;
   void rethrowV8Exception(v8::Local<v8::Value>) override;
+  ExceptionState& returnThis() { return *this; }
 };
 
 }  // namespace blink

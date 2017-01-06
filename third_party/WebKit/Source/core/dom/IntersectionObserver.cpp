@@ -210,7 +210,7 @@ IntersectionObserver::IntersectionObserver(
 void IntersectionObserver::clearWeakMembers(Visitor* visitor) {
   if (ThreadHeap::isHeapObjectAlive(root()))
     return;
-  IgnorableExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   disconnect(exceptionState);
   m_root = nullptr;
 }

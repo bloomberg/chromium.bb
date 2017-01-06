@@ -38,27 +38,7 @@
 
 namespace blink {
 
-class IgnorableExceptionState final : public ExceptionState {
-  WTF_MAKE_NONCOPYABLE(IgnorableExceptionState);
-
- public:
-  IgnorableExceptionState()
-      : ExceptionState(nullptr,
-                       ExceptionState::UnknownContext,
-                       nullptr,
-                       nullptr) {}
-
-  ExceptionState& returnThis() { return *this; }
-
-  void throwDOMException(ExceptionCode, const String& message) override {}
-  void throwRangeError(const String& message) override{};
-  void throwSecurityError(const String& sanitizedMessage,
-                          const String& unsanitizedMessage) override {}
-  void throwTypeError(const String& message) override {}
-  void rethrowV8Exception(v8::Local<v8::Value>) override{};
-};
-
-#define IGNORE_EXCEPTION (::blink::IgnorableExceptionState().returnThis())
+#define IGNORE_EXCEPTION (::blink::DummyExceptionStateForTesting().returnThis())
 
 #if ENABLE(ASSERT)
 
@@ -88,7 +68,8 @@ class CORE_EXPORT NoExceptionStateAssertionChecker final
 
 #else
 
-#define ASSERT_NO_EXCEPTION (::blink::IgnorableExceptionState().returnThis())
+#define ASSERT_NO_EXCEPTION \
+  (::blink::DummyExceptionStateForTesting().returnThis())
 
 #endif
 
