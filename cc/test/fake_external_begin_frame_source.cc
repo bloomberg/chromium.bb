@@ -41,8 +41,16 @@ void FakeExternalBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
   bool observers_was_empty = observers_.empty();
   observers_.insert(obs);
   obs->OnBeginFrameSourcePausedChanged(paused_);
-  if (observers_was_empty && tick_automatically_)
+  if (observers_was_empty && tick_automatically_) {
     PostTestOnBeginFrame();
+  } else if (current_args_.IsValid()) {
+    const BeginFrameArgs& last_args = obs->LastUsedBeginFrameArgs();
+    if (!last_args.IsValid() ||
+        last_args.frame_time < current_args_.frame_time) {
+      current_args_.type = BeginFrameArgs::MISSED;
+      obs->OnBeginFrame(current_args_);
+    }
+  }
   if (client_)
     client_->OnAddObserver(obs);
 }
@@ -65,12 +73,12 @@ bool FakeExternalBeginFrameSource::IsThrottled() const {
 void FakeExternalBeginFrameSource::TestOnBeginFrame(
     const BeginFrameArgs& args) {
   DCHECK(CalledOnValidThread());
-  BeginFrameArgs modified_args = args;
-  modified_args.source_id = source_id();
-  modified_args.sequence_number = next_begin_frame_number_++;
+  current_args_ = args;
+  current_args_.source_id = source_id();
+  current_args_.sequence_number = next_begin_frame_number_++;
   std::set<BeginFrameObserver*> observers(observers_);
   for (auto* obs : observers)
-    obs->OnBeginFrame(modified_args);
+    obs->OnBeginFrame(current_args_);
   if (tick_automatically_)
     PostTestOnBeginFrame();
 }

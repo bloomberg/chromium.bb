@@ -100,8 +100,8 @@ void BackToBackBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
 }
 
 void BackToBackBeginFrameSource::DidFinishFrame(BeginFrameObserver* obs,
-                                                size_t remaining_frames) {
-  if (remaining_frames == 0 && observers_.find(obs) != observers_.end()) {
+                                                const BeginFrameAck& ack) {
+  if (ack.remaining_frames == 0 && observers_.find(obs) != observers_.end()) {
     pending_begin_frame_observers_.insert(obs);
     time_source_->SetActive(true);
   }

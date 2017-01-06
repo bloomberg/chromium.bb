@@ -55,12 +55,13 @@ class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverBase {
  protected:
   base::TimeTicks DesiredBeginFrameDeadlineTime();
   virtual void ScheduleBeginFrameDeadline();
-  void AttemptDrawAndSwap();
+  bool AttemptDrawAndSwap();
   void OnBeginFrameDeadline();
-  void DrawAndSwap();
+  bool DrawAndSwap();
   void StartObservingBeginFrames();
   void StopObservingBeginFrames();
   bool ShouldDraw();
+  void DidFinishFrame(bool did_draw);
 
   DisplaySchedulerClient* client_;
   BeginFrameSource* begin_frame_source_;

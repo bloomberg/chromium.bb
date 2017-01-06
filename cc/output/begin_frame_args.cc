@@ -108,4 +108,24 @@ base::TimeDelta BeginFrameArgs::DefaultInterval() {
   return base::TimeDelta::FromMicroseconds(16666);
 }
 
+BeginFrameAck::BeginFrameAck()
+    : sequence_number(BeginFrameArgs::kInvalidFrameNumber),
+      latest_confirmed_sequence_number(BeginFrameArgs::kInvalidFrameNumber),
+      source_id(0),
+      remaining_frames(0),
+      has_damage(false) {}
+
+BeginFrameAck::BeginFrameAck(uint32_t source_id,
+                             uint64_t sequence_number,
+                             uint64_t latest_confirmed_sequence_number,
+                             uint32_t remaining_frames,
+                             bool has_damage)
+    : sequence_number(sequence_number),
+      latest_confirmed_sequence_number(latest_confirmed_sequence_number),
+      source_id(source_id),
+      remaining_frames(remaining_frames),
+      has_damage(has_damage) {
+  DCHECK_LT(BeginFrameArgs::kInvalidFrameNumber, sequence_number);
+}
+
 }  // namespace cc

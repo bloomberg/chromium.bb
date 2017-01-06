@@ -39,7 +39,7 @@ class WindowAndroid::WindowBeginFrameSource : public cc::BeginFrameSource {
   void AddObserver(cc::BeginFrameObserver* obs) override;
   void RemoveObserver(cc::BeginFrameObserver* obs) override;
   void DidFinishFrame(cc::BeginFrameObserver* obs,
-                      size_t remaining_frames) override {}
+                      const cc::BeginFrameAck& ack) override {}
   bool IsThrottled() const override { return true; }
 
   void OnVSync(base::TimeTicks frame_time, base::TimeDelta vsync_period);

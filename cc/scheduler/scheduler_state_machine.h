@@ -269,6 +269,8 @@ class CC_EXPORT SchedulerStateMachine {
   void SetVideoNeedsBeginFrames(bool video_needs_begin_frames);
   bool video_needs_begin_frames() const { return video_needs_begin_frames_; }
 
+  bool did_submit_in_last_frame() const { return did_submit_in_last_frame_; }
+
  protected:
   bool BeginFrameRequiredForAction() const;
   bool BeginFrameNeededForVideo() const;

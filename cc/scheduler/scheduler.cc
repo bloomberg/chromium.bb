@@ -322,7 +322,10 @@ void Scheduler::BeginImplFrameWithDeadline(const BeginFrameArgs& args) {
   // Discard missed begin frames if they are too late.
   if (adjusted_args.type == BeginFrameArgs::MISSED &&
       now > adjusted_args.deadline) {
-    begin_frame_source_->DidFinishFrame(this, 0);
+    // TODO(eseckler): Determine and set correct |ack.latest_confirmed_frame|.
+    BeginFrameAck ack(adjusted_args.source_id, adjusted_args.sequence_number,
+                      adjusted_args.sequence_number, 0, false);
+    begin_frame_source_->DidFinishFrame(this, ack);
     return;
   }
 
@@ -332,7 +335,10 @@ void Scheduler::BeginImplFrameWithDeadline(const BeginFrameArgs& args) {
     OnBeginImplFrameDeadline();
     // We may not need begin frames any longer.
     if (!observing_begin_frame_source_) {
-      begin_frame_source_->DidFinishFrame(this, 0);
+      // TODO(eseckler): Determine and set correct |ack.latest_confirmed_frame|.
+      BeginFrameAck ack(adjusted_args.source_id, adjusted_args.sequence_number,
+                        adjusted_args.sequence_number, 0, false);
+      begin_frame_source_->DidFinishFrame(this, ack);
       return;
     }
   }
@@ -391,8 +397,12 @@ void Scheduler::BeginImplFrameWithDeadline(const BeginFrameArgs& args) {
                                       can_activate_before_deadline)) {
     TRACE_EVENT_INSTANT0("cc", "SkipBeginImplFrameToReduceLatency",
                          TRACE_EVENT_SCOPE_THREAD);
-    if (begin_frame_source_)
-      begin_frame_source_->DidFinishFrame(this, 0);
+    if (begin_frame_source_) {
+      // TODO(eseckler): Determine and set correct |ack.latest_confirmed_frame|.
+      BeginFrameAck ack(adjusted_args.source_id, adjusted_args.sequence_number,
+                        adjusted_args.sequence_number, 0, false);
+      begin_frame_source_->DidFinishFrame(this, ack);
+    }
     return;
   }
 
@@ -420,8 +430,14 @@ void Scheduler::FinishImplFrame() {
   ProcessScheduledActions();
 
   client_->DidFinishImplFrame();
-  if (begin_frame_source_)
-    begin_frame_source_->DidFinishFrame(this, 0);
+  if (begin_frame_source_) {
+    // TODO(eseckler): Determine and set correct |ack.latest_confirmed_frame|.
+    BeginFrameAck ack(begin_main_frame_args_.source_id,
+                      begin_main_frame_args_.sequence_number,
+                      begin_main_frame_args_.sequence_number, 0,
+                      state_machine_.did_submit_in_last_frame());
+    begin_frame_source_->DidFinishFrame(this, ack);
+  }
   begin_impl_frame_tracker_.Finish();
 }
 

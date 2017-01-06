@@ -73,9 +73,9 @@ void DisplayScheduler::SetRootSurfaceResourcesLocked(bool locked) {
 void DisplayScheduler::ForceImmediateSwapIfPossible() {
   TRACE_EVENT0("cc", "DisplayScheduler::ForceImmediateSwapIfPossible");
   bool in_begin = inside_begin_frame_deadline_interval_;
-  AttemptDrawAndSwap();
+  bool did_draw = AttemptDrawAndSwap();
   if (in_begin)
-    begin_frame_source_->DidFinishFrame(this, 0);
+    DidFinishFrame(did_draw);
 }
 
 void DisplayScheduler::DisplayResized() {
@@ -128,14 +128,14 @@ void DisplayScheduler::OutputSurfaceLost() {
   ScheduleBeginFrameDeadline();
 }
 
-void DisplayScheduler::DrawAndSwap() {
+bool DisplayScheduler::DrawAndSwap() {
   TRACE_EVENT0("cc", "DisplayScheduler::DrawAndSwap");
   DCHECK_LT(pending_swaps_, max_pending_swaps_);
   DCHECK(!output_surface_lost_);
 
   bool success = client_->DrawAndSwap();
   if (!success)
-    return;
+    return false;
 
   child_surface_ids_to_expect_damage_from_ =
       base::STLSetIntersection<std::vector<SurfaceId>>(
@@ -150,6 +150,7 @@ void DisplayScheduler::DrawAndSwap() {
 
   expect_damage_from_root_surface_ = root_surface_damaged_;
   root_surface_damaged_ = false;
+  return true;
 }
 
 bool DisplayScheduler::OnBeginFrameDerivedImpl(const BeginFrameArgs& args) {
@@ -332,14 +333,14 @@ void DisplayScheduler::ScheduleBeginFrameDeadline() {
                "desired_deadline", desired_deadline);
 }
 
-void DisplayScheduler::AttemptDrawAndSwap() {
+bool DisplayScheduler::AttemptDrawAndSwap() {
   inside_begin_frame_deadline_interval_ = false;
   begin_frame_deadline_task_.Cancel();
   begin_frame_deadline_task_time_ = base::TimeTicks();
 
   if (ShouldDraw()) {
     if (pending_swaps_ < max_pending_swaps_ && !root_surface_resources_locked_)
-      DrawAndSwap();
+      return DrawAndSwap();
   } else {
     // We are going idle, so reset expectations.
     child_surface_ids_to_expect_damage_from_.clear();
@@ -350,13 +351,23 @@ void DisplayScheduler::AttemptDrawAndSwap() {
 
     StopObservingBeginFrames();
   }
+  return false;
 }
 
 void DisplayScheduler::OnBeginFrameDeadline() {
   TRACE_EVENT0("cc", "DisplayScheduler::OnBeginFrameDeadline");
+  DCHECK(inside_begin_frame_deadline_interval_);
 
-  AttemptDrawAndSwap();
-  begin_frame_source_->DidFinishFrame(this, 0);
+  bool did_draw = AttemptDrawAndSwap();
+  DidFinishFrame(did_draw);
+}
+
+void DisplayScheduler::DidFinishFrame(bool did_draw) {
+  // TODO(eseckler): Determine and set correct |ack.latest_confirmed_frame|.
+  BeginFrameAck ack(current_begin_frame_args_.source_id,
+                    current_begin_frame_args_.sequence_number,
+                    current_begin_frame_args_.sequence_number, 0, did_draw);
+  begin_frame_source_->DidFinishFrame(this, ack);
 }
 
 void DisplayScheduler::DidSwapBuffers() {
