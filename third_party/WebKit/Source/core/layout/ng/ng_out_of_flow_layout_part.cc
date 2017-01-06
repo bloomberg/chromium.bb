@@ -8,6 +8,7 @@
 #include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_length_utils.h"
+#include "core/layout/ng/ng_physical_fragment.h"
 #include "core/style/ComputedStyle.h"
 #include "core/layout/ng/ng_fragment.h"
 
@@ -34,6 +35,7 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
   NGConstraintSpaceBuilder space_builder(
       FromPlatformWritingMode(container_style->getWritingMode()));
   space_builder.SetAvailableSize(space_size);
+  space_builder.SetPercentageResolutionSize(space_size);
   space_builder.SetIsNewFormattingContext(true);
   space_builder.SetTextDirection(container_style->direction());
   parent_space_ = space_builder.ToConstraintSpace();
@@ -107,8 +109,7 @@ bool NGOutOfFlowLayoutPart::ComputeInlineSizeEstimate() {
   if (AbsoluteNeedsChildInlineSize(*node_->Style())) {
     MinAndMaxContentSizes size;
     if (node_->ComputeMinAndMaxContentSizes(&size)) {
-      inline_estimate_ =
-          size.ShrinkToFit(parent_space_->AvailableSize().inline_size);
+      inline_estimate_ = size;
       return true;
     }
     return false;
@@ -145,7 +146,7 @@ bool NGOutOfFlowLayoutPart::ComputeNodeFragment() {
     if (block_estimate_)
       available_size.block_size = *block_estimate_;
     builder.SetAvailableSize(available_size);
-    builder.SetPercentageResolutionSize(available_size);
+    builder.SetPercentageResolutionSize(parent_space_->AvailableSize());
     if (block_estimate_)
       builder.SetIsFixedSizeBlock(true);
     builder.SetIsFixedSizeInline(true);

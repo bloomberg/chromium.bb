@@ -63,7 +63,7 @@ class CORE_EXPORT NGOutOfFlowLayoutPart
   Member<NGConstraintSpace> node_space_;
   Member<NGFragment> node_fragment_;
   NGAbsolutePhysicalPosition node_position_;
-  Optional<LayoutUnit> inline_estimate_;
+  Optional<MinAndMaxContentSizes> inline_estimate_;
   Optional<LayoutUnit> block_estimate_;
 };
 

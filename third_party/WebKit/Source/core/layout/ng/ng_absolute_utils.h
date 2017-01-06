@@ -50,7 +50,7 @@ ComputePartialAbsoluteWithChildInlineSize(
     const NGConstraintSpace& space,
     const ComputedStyle& style,
     const NGStaticPosition&,
-    const Optional<LayoutUnit>& child_inline_size);
+    const Optional<MinAndMaxContentSizes>& child_minmax);
 
 // Compute rest of NGPhysicalRect that depends on child's block_size.
 CORE_EXPORT void ComputeFullAbsoluteWithChildBlockSize(

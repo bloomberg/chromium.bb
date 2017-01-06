@@ -111,7 +111,8 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
   LayoutUnit width =
       container_size_.inline_size - left - margin_left - right - margin_right;
 
-  Optional<LayoutUnit> estimated_inline;
+  Optional<MinAndMaxContentSizes> estimated_inline;
+  MinAndMaxContentSizes minmax_60{LayoutUnit(60), LayoutUnit(60)};
 
   style_->setBorderLeftWidth(border_left.toInt());
   style_->setBorderRightWidth(border_right.toInt());
@@ -135,26 +136,26 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
   // All auto => width is estimated_inline, left is 0.
   SetHorizontalStyle(NGAuto, NGAuto, NGAuto, NGAuto, NGAuto);
   EXPECT_EQ(AbsoluteNeedsChildInlineSize(*style_), true);
-  estimated_inline = LayoutUnit(60);
+  estimated_inline = minmax_60;
   p = ComputePartialAbsoluteWithChildInlineSize(
       *ltr_space_, *style_, static_position, estimated_inline);
-  EXPECT_EQ(*estimated_inline, p.size.width);
+  EXPECT_EQ(minmax_60.min_content, p.size.width);
   EXPECT_EQ(LayoutUnit(0), p.inset.left);
 
   // All auto => width is estimated_inline, static_position is right
   SetHorizontalStyle(NGAuto, NGAuto, NGAuto, NGAuto, NGAuto);
   EXPECT_EQ(AbsoluteNeedsChildInlineSize(*style_), true);
-  estimated_inline = LayoutUnit(60);
+  estimated_inline = minmax_60;
   p = ComputePartialAbsoluteWithChildInlineSize(
       *ltr_space_, *style_, static_right_position, estimated_inline);
-  EXPECT_EQ(*estimated_inline, p.size.width);
+  EXPECT_EQ(minmax_60.min_content, p.size.width);
   EXPECT_EQ(LayoutUnit(0), p.inset.right);
 
   // All auto + RTL.
   p = ComputePartialAbsoluteWithChildInlineSize(
       *rtl_space_, *style_, static_position, estimated_inline);
-  EXPECT_EQ(*estimated_inline, p.size.width);
-  EXPECT_EQ(container_size_.inline_size - *estimated_inline, p.inset.right);
+  EXPECT_EQ(minmax_60.min_content, p.size.width);
+  EXPECT_EQ(container_size_.inline_size - minmax_60.min_content, p.inset.right);
 
   // left, right, and left are known, compute margins.
   SetHorizontalStyle(left, NGAuto, width, NGAuto, right);
@@ -204,10 +205,10 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
   // Rule 1 left and width are auto.
   SetHorizontalStyle(NGAuto, margin_left, NGAuto, margin_right, right);
   EXPECT_EQ(AbsoluteNeedsChildInlineSize(*style_), true);
-  estimated_inline = LayoutUnit(60);
+  estimated_inline = minmax_60;
   p = ComputePartialAbsoluteWithChildInlineSize(
       *ltr_space_, *style_, static_position, estimated_inline);
-  EXPECT_EQ(*estimated_inline, p.size.width);
+  EXPECT_EQ(minmax_60.min_content, p.size.width);
 
   // Rule 2 left and right are auto LTR.
   SetHorizontalStyle(NGAuto, margin_left, width, margin_right, NGAuto);
@@ -230,13 +231,13 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
   // Rule 3 width and right are auto.
   SetHorizontalStyle(left, margin_left, NGAuto, margin_right, NGAuto);
   EXPECT_EQ(AbsoluteNeedsChildInlineSize(*style_), true);
-  estimated_inline = LayoutUnit(60);
+  estimated_inline = minmax_60;
   p = ComputePartialAbsoluteWithChildInlineSize(
       *ltr_space_, *style_, static_position, estimated_inline);
   EXPECT_EQ(
-      container_size_.inline_size - *estimated_inline - left - margin_left,
+      container_size_.inline_size - minmax_60.min_content - left - margin_left,
       p.inset.right);
-  EXPECT_EQ(*estimated_inline, p.size.width);
+  EXPECT_EQ(minmax_60.min_content, p.size.width);
 
   // Rule 4: left is auto.
   SetHorizontalStyle(NGAuto, margin_left, width, margin_right, right);
