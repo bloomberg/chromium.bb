@@ -334,6 +334,13 @@ bool DesktopMediaPickerDialogView::Accept() {
       if (browser && browser->window())
         browser->window()->Activate();
     }
+  } else if (source.type == DesktopMediaID::TYPE_WINDOW) {
+#if defined(USE_AURA)
+    aura::Window* window = DesktopMediaID::GetAuraWindowById(source);
+    Browser* browser = chrome::FindBrowserWithWindow(window);
+    if (browser && browser->window())
+      browser->window()->Activate();
+#endif
   }
 
   if (parent_)
