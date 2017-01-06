@@ -6044,11 +6044,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_GPU_RASTERIZATION_MSAA_SAMPLE_COUNT_SIXTEEN" desc="">
         16
       </message>
-      <message name="IDS_FLAGS_ENABLE_SLIMMING_PAINT_INVALIDATION_NAME" desc="Title for about:flags option to enable slimming paint invalidation.">
+      <message name="IDS_FLAGS_SLIMMING_PAINT_INVALIDATION_NAME" desc="Title for about:flags option for slimming paint invalidation.">
         Slimming paint invalidation.
       </message>
-      <message name="IDS_FLAGS_ENABLE_SLIMMING_PAINT_INVALIDATION_DESCRIPTION" desc="Description of about:flags option for enabling slimming paint invalidation.">
-        Enable a new paint invalidation system.
+      <message name="IDS_FLAGS_SLIMMING_PAINT_INVALIDATION_DESCRIPTION" desc="Description of about:flags option for slimming paint invalidation.">
+        Whether to enable a new paint invalidation system.
       </message>
       <message name="IDS_FLAGS_EXPERIMENTAL_SECURITY_FEATURES_NAME" desc="Name for the flag to enable experimental security features.">
         Potentially annoying security features

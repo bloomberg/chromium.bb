@@ -283,6 +283,11 @@ const char kDisableSetuidSandbox[]          = "disable-setuid-sandbox";
 // Disable shared workers.
 const char kDisableSharedWorkers[]          = "disable-shared-workers";
 
+// Disable paint invalidation based on slimming paint.
+// See kEnableSlimmingPaintInvalidation.
+const char kDisableSlimmingPaintInvalidation[] =
+    "disable-slimming-paint-invalidation";
+
 // Disable smooth scrolling for testing.
 const char kDisableSmoothScrolling[]        = "disable-smooth-scrolling";
 
@@ -464,8 +469,8 @@ const char kEnableSkiaBenchmarking[]        = "enable-skia-benchmarking";
 // Enables slimming paint phase 2: http://www.chromium.org/blink/slimming-paint
 const char kEnableSlimmingPaintV2[]         = "enable-slimming-paint-v2";
 
-// Enables paint invalidation based on slimming paint but without the full
-// slimming paint v2 compositing code. See: https://goo.gl/eQczQW
+// Enables paint invalidation based on slimming paint but without
+// the full slimming paint v2 compositing code. See: https://goo.gl/eQczQW
 const char kEnableSlimmingPaintInvalidation[] =
     "enable-slimming-paint-invalidation";
 
