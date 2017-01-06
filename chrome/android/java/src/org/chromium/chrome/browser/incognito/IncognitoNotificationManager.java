@@ -11,6 +11,7 @@ import android.support.v4.app.NotificationCompat;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.notifications.NotificationConstants;
 
 /**
  * Manages the notification indicating that there are incognito tabs opened in Document mode.
@@ -37,7 +38,8 @@ public class IncognitoNotificationManager {
                 .setVisibility(Notification.VISIBILITY_SECRET)
                 .setSmallIcon(R.drawable.incognito_statusbar)
                 .setShowWhen(false)
-                .setLocalOnly(true);
+                .setLocalOnly(true)
+                .setGroup(NotificationConstants.GROUP_INCOGNITO);
         NotificationManager nm =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         nm.notify(INCOGNITO_TABS_OPEN_TAG, INCOGNITO_TABS_OPEN_ID, builder.build());

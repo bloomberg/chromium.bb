@@ -37,6 +37,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.blink.mojom.MediaSessionAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.content_public.common.MediaMetadata;
 
 import java.util.ArrayList;
@@ -270,7 +271,6 @@ public class MediaNotificationManager {
      */
     public static final class PlaybackListenerService extends ListenerService {
         private static final int NOTIFICATION_ID = R.id.media_playback_notification;
-        private static final String NOTIFICATION_GROUP_NAME = "MediaPlayback";
 
         @Override
         public void onCreate() {
@@ -310,7 +310,6 @@ public class MediaNotificationManager {
      */
     public static final class PresentationListenerService extends ListenerService {
         private static final int NOTIFICATION_ID = R.id.presentation_notification;
-        private static final String NOTIFICATION_GROUP_NAME = "MediaPresentation";
 
         @Override
         @Nullable
@@ -324,7 +323,6 @@ public class MediaNotificationManager {
      */
     public static final class CastListenerService extends ListenerService {
         private static final int NOTIFICATION_ID = R.id.remote_notification;
-        private static final String NOTIFICATION_GROUP_NAME = "MediaRemote";
 
         @Override
         @Nullable
@@ -399,11 +397,11 @@ public class MediaNotificationManager {
     // Returns the notification group name used to prevent automatic grouping.
     private String getNotificationGroupName() {
         if (mMediaNotificationInfo.id == PlaybackListenerService.NOTIFICATION_ID) {
-            return PlaybackListenerService.NOTIFICATION_GROUP_NAME;
+            return NotificationConstants.GROUP_MEDIA_PLAYBACK;
         } else if (mMediaNotificationInfo.id == PresentationListenerService.NOTIFICATION_ID) {
-            return PresentationListenerService.NOTIFICATION_GROUP_NAME;
+            return NotificationConstants.GROUP_MEDIA_PRESENTATION;
         } else if (mMediaNotificationInfo.id == CastListenerService.NOTIFICATION_ID) {
-            return CastListenerService.NOTIFICATION_GROUP_NAME;
+            return NotificationConstants.GROUP_MEDIA_REMOTE;
         }
 
         assert false;

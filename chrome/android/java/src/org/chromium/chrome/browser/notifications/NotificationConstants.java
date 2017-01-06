@@ -59,4 +59,11 @@ public class NotificationConstants {
      * Key for retrieving the results of user input from notification text action intents.
      */
     static final String KEY_TEXT_REPLY = "key_text_reply";
+
+    // Notification groups for features that show notifications to the user.
+    public static final String GROUP_DOWNLOADS = "Downloads";
+    public static final String GROUP_INCOGNITO = "Incognito";
+    public static final String GROUP_MEDIA_PLAYBACK = "MediaPlayback";
+    public static final String GROUP_MEDIA_PRESENTATION = "MediaPresentation";
+    public static final String GROUP_MEDIA_REMOTE = "MediaRemote";
 }

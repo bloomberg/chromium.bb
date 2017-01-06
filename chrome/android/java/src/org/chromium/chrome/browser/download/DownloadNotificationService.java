@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
+import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.util.IntentUtils;
 
@@ -45,6 +46,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Service responsible for creating and updating download notifications even after
@@ -73,21 +75,25 @@ public class DownloadNotificationService extends Service {
 
     public static final int INVALID_DOWNLOAD_PERCENTAGE = -1;
     @VisibleForTesting
-    static final String PENDING_DOWNLOAD_NOTIFICATIONS = "PendingDownloadNotifications";
     static final String NOTIFICATION_NAMESPACE = "DownloadNotificationService";
     private static final String TAG = "DownloadNotification";
-    private static final String NEXT_DOWNLOAD_NOTIFICATION_ID = "NextDownloadNotificationId";
-    // Notification Id starting value, to avoid conflicts from IDs used in prior versions.
+
+    /** Notification Id starting value, to avoid conflicts from IDs used in prior versions. */
     private static final int STARTING_NOTIFICATION_ID = 1000000;
-    private static final String AUTO_RESUMPTION_ATTEMPT_LEFT = "ResumptionAttemptLeft";
     private static final int MAX_RESUMPTION_ATTEMPT_LEFT = 5;
-    @VisibleForTesting static final int SECONDS_PER_MINUTE = 60;
-    @VisibleForTesting static final int SECONDS_PER_HOUR = 60 * 60;
-    @VisibleForTesting static final int SECONDS_PER_DAY = 24 * 60 * 60;
+    @VisibleForTesting static final long SECONDS_PER_MINUTE = TimeUnit.MINUTES.toSeconds(1);
+    @VisibleForTesting static final long SECONDS_PER_HOUR = TimeUnit.HOURS.toSeconds(1);
+    @VisibleForTesting static final long SECONDS_PER_DAY = TimeUnit.DAYS.toSeconds(1);
+
+    private static final String KEY_AUTO_RESUMPTION_ATTEMPT_LEFT = "ResumptionAttemptLeft";
+    private static final String KEY_NEXT_DOWNLOAD_NOTIFICATION_ID = "NextDownloadNotificationId";
+    static final String KEY_PENDING_DOWNLOAD_NOTIFICATIONS = "PendingDownloadNotifications";
+
     private final IBinder mBinder = new LocalBinder();
     private final List<DownloadSharedPreferenceEntry> mDownloadSharedPreferenceEntries =
             new ArrayList<DownloadSharedPreferenceEntry>();
     private final List<String> mDownloadsInProgress = new ArrayList<String>();
+
     private NotificationManager mNotificationManager;
     private SharedPreferences mSharedPrefs;
     private Context mContext;
@@ -141,7 +147,7 @@ public class DownloadNotificationService extends Service {
             onBrowserKilled();
         }
         mNextNotificationId = mSharedPrefs.getInt(
-                NEXT_DOWNLOAD_NOTIFICATION_ID, STARTING_NOTIFICATION_ID);
+                KEY_NEXT_DOWNLOAD_NOTIFICATION_ID, STARTING_NOTIFICATION_ID);
 
     }
 
@@ -207,7 +213,7 @@ public class DownloadNotificationService extends Service {
      */
     private void updateResumptionAttemptLeft() {
         SharedPreferences.Editor editor = mSharedPrefs.edit();
-        editor.putInt(AUTO_RESUMPTION_ATTEMPT_LEFT, mNumAutoResumptionAttemptLeft);
+        editor.putInt(KEY_AUTO_RESUMPTION_ATTEMPT_LEFT, mNumAutoResumptionAttemptLeft);
         editor.apply();
     }
 
@@ -217,7 +223,7 @@ public class DownloadNotificationService extends Service {
     static void clearResumptionAttemptLeft() {
         SharedPreferences SharedPrefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = SharedPrefs.edit();
-        editor.remove(AUTO_RESUMPTION_ATTEMPT_LEFT);
+        editor.remove(KEY_AUTO_RESUMPTION_ATTEMPT_LEFT);
         editor.apply();
     }
 
@@ -546,7 +552,8 @@ public class DownloadNotificationService extends Service {
                 .setSmallIcon(iconId)
                 .setLocalOnly(true)
                 .setAutoCancel(true)
-                .setContentText(contentText);
+                .setContentText(contentText)
+                .setGroup(NotificationConstants.GROUP_DOWNLOADS);
         return builder;
     }
 
@@ -746,7 +753,7 @@ public class DownloadNotificationService extends Service {
      */
     @VisibleForTesting
     void updateNotification(int id, Notification notification) {
-        mNotificationManager.notify(NOTIFICATION_NAMESPACE, id, notification);
+        mNotificationManager.notify(id, notification);
     }
 
     /**
@@ -835,11 +842,11 @@ public class DownloadNotificationService extends Service {
      * left from the shared preference.
      */
     void parseDownloadSharedPrefs() {
-        mNumAutoResumptionAttemptLeft = mSharedPrefs.getInt(AUTO_RESUMPTION_ATTEMPT_LEFT,
+        mNumAutoResumptionAttemptLeft = mSharedPrefs.getInt(KEY_AUTO_RESUMPTION_ATTEMPT_LEFT,
                 MAX_RESUMPTION_ATTEMPT_LEFT);
-        if (!mSharedPrefs.contains(PENDING_DOWNLOAD_NOTIFICATIONS)) return;
+        if (!mSharedPrefs.contains(KEY_PENDING_DOWNLOAD_NOTIFICATIONS)) return;
         Set<String> entries = DownloadManagerService.getStoredDownloadInfo(
-                mSharedPrefs, PENDING_DOWNLOAD_NOTIFICATIONS);
+                mSharedPrefs, KEY_PENDING_DOWNLOAD_NOTIFICATIONS);
         for (String entryString : entries) {
             DownloadSharedPreferenceEntry entry =
                     DownloadSharedPreferenceEntry.parseFromString(entryString);
@@ -873,7 +880,7 @@ public class DownloadNotificationService extends Service {
             entries.add(mDownloadSharedPreferenceEntries.get(i).getSharedPreferenceString());
         }
         DownloadManagerService.storeDownloadInfo(
-                mSharedPrefs, PENDING_DOWNLOAD_NOTIFICATIONS, entries);
+                mSharedPrefs, KEY_PENDING_DOWNLOAD_NOTIFICATIONS, entries);
     }
 
     /**
@@ -887,7 +894,7 @@ public class DownloadNotificationService extends Service {
         mNextNotificationId = mNextNotificationId == Integer.MAX_VALUE
                 ? STARTING_NOTIFICATION_ID : mNextNotificationId + 1;
         SharedPreferences.Editor editor = mSharedPrefs.edit();
-        editor.putInt(NEXT_DOWNLOAD_NOTIFICATION_ID, mNextNotificationId);
+        editor.putInt(KEY_NEXT_DOWNLOAD_NOTIFICATION_ID, mNextNotificationId);
         editor.apply();
         return notificationId;
     }
@@ -910,15 +917,15 @@ public class DownloadNotificationService extends Service {
         int minutes = 0;
         if (secondsLong >= SECONDS_PER_DAY) {
             days = (int) (secondsLong / SECONDS_PER_DAY);
-            secondsLong -= (long) days * SECONDS_PER_DAY;
+            secondsLong -= days * SECONDS_PER_DAY;
         }
         if (secondsLong >= SECONDS_PER_HOUR) {
             hours = (int) (secondsLong / SECONDS_PER_HOUR);
-            secondsLong -= (long) hours * SECONDS_PER_HOUR;
+            secondsLong -= hours * SECONDS_PER_HOUR;
         }
         if (secondsLong >= SECONDS_PER_MINUTE) {
             minutes = (int) (secondsLong / SECONDS_PER_MINUTE);
-            secondsLong -= (long) minutes * SECONDS_PER_MINUTE;
+            secondsLong -= minutes * SECONDS_PER_MINUTE;
         }
         int seconds = (int) secondsLong;
 
