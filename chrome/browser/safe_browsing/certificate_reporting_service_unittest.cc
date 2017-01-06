@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
@@ -19,10 +20,14 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/certificate_reporting/error_report.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "net/base/network_delegate_impl.h"
+#include "crypto/rsa_private_key.h"
+#include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
+#include "net/ssl/ssl_info.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/test/url_request/url_request_mock_data_job.h"
 #include "net/url_request/url_request_filter.h"
@@ -30,6 +35,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using certificate_reporting_test_utils::CertificateReportingServiceTestHelper;
+using certificate_reporting_test_utils::CertificateReportingServiceObserver;
 using certificate_reporting_test_utils::ReportExpectation;
 
 namespace {
@@ -40,32 +46,41 @@ const size_t kMaxReportCountInQueue = 3;
 
 const char* kFailedReportHistogram = "SSL.CertificateErrorReportFailure";
 
+// NSS requires that serial numbers be unique even for the same issuer;
+// as all fake certificates will contain the same issuer name, it's
+// necessary to ensure the serial number is unique, as otherwise
+// NSS will fail to parse.
+base::StaticAtomicSequenceNumber g_serial_number;
+
+scoped_refptr<net::X509Certificate> CreateFakeCert() {
+  std::unique_ptr<crypto::RSAPrivateKey> unused_key;
+  std::string cert_der;
+  if (!net::x509_util::CreateKeyAndSelfSignedCert(
+          "CN=Error", static_cast<uint32_t>(g_serial_number.GetNext()),
+          base::Time::Now() - base::TimeDelta::FromMinutes(5),
+          base::Time::Now() + base::TimeDelta::FromMinutes(5), &unused_key,
+          &cert_der)) {
+    return nullptr;
+  }
+  return net::X509Certificate::CreateFromBytes(cert_der.data(),
+                                               cert_der.size());
+}
+
+std::string MakeReport(const std::string& hostname) {
+  net::SSLInfo ssl_info;
+  ssl_info.cert = ssl_info.unverified_cert = CreateFakeCert();
+
+  certificate_reporting::ErrorReport report(hostname, ssl_info);
+  std::string serialized_report;
+  EXPECT_TRUE(report.Serialize(&serialized_report));
+  return serialized_report;
+}
+
 void ClearURLHandlers() {
   net::URLRequestFilter::GetInstance()->ClearHandlers();
 }
 
-// A network delegate used to observe URL request destructions. The tests check
-// that no outstanding URL request is present during tear down.
-class TestNetworkDelegate : public net::NetworkDelegateImpl {
- public:
-  TestNetworkDelegate(
-      const base::Callback<void()>& url_request_destroyed_callback)
-      : url_request_destroyed_callback_(url_request_destroyed_callback) {}
-
-  ~TestNetworkDelegate() override {}
-
-  // net::NetworkDelegate method:
-  void OnURLRequestDestroyed(net::URLRequest* request) override {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     url_request_destroyed_callback_);
-  }
-
- private:
-  base::Callback<void()> url_request_destroyed_callback_;
-};
-
-// Base class for histogram testing. The failed report histogram is checked once
+// Class for histogram testing. The failed report histogram is checked once
 // after teardown to ensure all in flight requests have completed.
 class ReportHistogramTestHelper {
  public:
@@ -122,8 +137,7 @@ TEST(CertificateReportingServiceReportListTest, BoundedReportList) {
   // Adding a report older than the oldest report in the list (report2) is
   // a no-op.
   list.Add(CertificateReportingService::Report(
-      0, base::Time::Now() - base::TimeDelta::FromMinutes(
-                                 10) /* 5 minutes older than report2 */,
+      0, base::Time::Now() - base::TimeDelta::FromMinutes(10),
       std::string("report0_ten_minutes_old")));
   EXPECT_EQ(2u, list.items().size());
   EXPECT_EQ("report3_zero_minutes_old", list.items()[0].serialized_report);
@@ -325,6 +339,7 @@ class CertificateReportingServiceTest : public ::testing::Test {
   ~CertificateReportingServiceTest() override {}
 
   void SetUp() override {
+    service_observer_.Clear();
     test_helper_.SetUpInterceptor();
     WaitForIOThread();
 
@@ -343,19 +358,15 @@ class CertificateReportingServiceTest : public ::testing::Test {
         sb_service_.get(), url_request_context_getter(), &profile_,
         test_helper_.server_public_key(),
         test_helper_.server_public_key_version(), kMaxReportCountInQueue,
-        base::TimeDelta::FromHours(24), clock_.get()));
-    // Wait for service reset.
-    WaitForIOThread();
+        base::TimeDelta::FromHours(24), clock_.get(),
+        base::Bind(&CertificateReportingServiceObserver::OnServiceReset,
+                   base::Unretained(&service_observer_))));
+    service_observer_.WaitForReset();
   }
 
   void TearDown() override {
     WaitForIOThread();
-    EXPECT_TRUE(test_helper_.interceptor()->successful_reports().empty());
-    EXPECT_TRUE(test_helper_.interceptor()->failed_reports().empty());
-    EXPECT_TRUE(test_helper_.interceptor()->delayed_reports().empty());
-    EXPECT_EQ(0u, service()
-                      ->GetReporterForTesting()
-                      ->inflight_report_count_for_testing());
+    test_helper()->ExpectNoRequests(service());
 
     service_->Shutdown();
     WaitForIOThread();
@@ -373,17 +384,6 @@ class CertificateReportingServiceTest : public ::testing::Test {
   }
 
  protected:
-  void WaitForRequestsDestroyed(const ReportExpectation& expectation) {
-    wait_helper_.Wait(expectation.num_reports());
-    EXPECT_EQ(expectation.successful_reports,
-              test_helper_.interceptor()->successful_reports());
-    EXPECT_EQ(expectation.failed_reports,
-              test_helper_.interceptor()->failed_reports());
-    EXPECT_EQ(expectation.delayed_reports,
-              test_helper_.interceptor()->delayed_reports());
-    test_helper_.interceptor()->ClearObservedReports();
-  }
-
   net::URLRequestContextGetter* url_request_context_getter() {
     return url_request_context_getter_.get();
   }
@@ -398,8 +398,9 @@ class CertificateReportingServiceTest : public ::testing::Test {
 
   // Sets service enabled state and waits for a reset event.
   void SetServiceEnabledAndWait(bool enabled) {
+    service_observer_.Clear();
     service()->SetEnabled(enabled);
-    WaitForIOThread();
+    service_observer_.WaitForReset();
   }
 
   void AdvanceClock(base::TimeDelta delta) {
@@ -424,33 +425,18 @@ class CertificateReportingServiceTest : public ::testing::Test {
 
  private:
   void SetUpURLRequestContextOnIOThread() {
-    network_delegate_.reset(new TestNetworkDelegate(
-        base::Bind(&CertificateReportingServiceTest::OnURLRequestDestroyed,
-                   base::Unretained(this))));
-
     std::unique_ptr<net::TestURLRequestContext> url_request_context(
-        new net::TestURLRequestContext(true));
-    url_request_context->set_network_delegate(network_delegate_.get());
-    url_request_context->Init();
+        new net::TestURLRequestContext(false));
     url_request_context_getter_ = new net::TestURLRequestContextGetter(
         io_task_runner_, std::move(url_request_context));
   }
 
   void TearDownOnIOThread() {
     url_request_context_getter_ = nullptr;
-    network_delegate_.reset(nullptr);
-  }
-
-  void OnURLRequestDestroyed() {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    wait_helper_.OnEvent();
   }
 
   // Must be initialized before url_request_context_getter_
   content::TestBrowserThreadBundle thread_bundle_;
-
-  std::unique_ptr<TestNetworkDelegate> network_delegate_;
-  certificate_reporting_test_utils::ReportWaitHelper wait_helper_;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
@@ -464,6 +450,7 @@ class CertificateReportingServiceTest : public ::testing::Test {
 
   CertificateReportingServiceTestHelper test_helper_;
   ReportHistogramTestHelper histogram_test_helper_;
+  CertificateReportingServiceObserver service_observer_;
 };
 
 TEST_F(CertificateReportingServiceTest, Send) {
@@ -474,29 +461,29 @@ TEST_F(CertificateReportingServiceTest, Send) {
       certificate_reporting_test_utils::ReportSendingResult::REPORTS_FAIL);
 
   // Send two reports. Both should fail and get queued.
-  service()->Send("report0");
-  WaitForRequestsDestroyed(ReportExpectation::Failed({"report0"}));
+  service()->Send(MakeReport("report0"));
+  service()->Send(MakeReport("report1"));
+  test_helper()->WaitForRequestsDestroyed(
+      ReportExpectation::Failed({"report0", "report1"}));
 
-  service()->Send("report1");
-  WaitForRequestsDestroyed(ReportExpectation::Failed({"report1"}));
-
-  // Send pending reports. Previously queued reports should be observed. They
-  // will also be queued again.
+  // Send pending reports. Previously queued reports should be queued again.
   service()->SendPending();
-  WaitForRequestsDestroyed(ReportExpectation::Failed({"report0", "report1"}));
+  test_helper()->WaitForRequestsDestroyed(
+      ReportExpectation::Failed({"report0", "report1"}));
 
   // Let all reports succeed.
   test_helper()->SetFailureMode(certificate_reporting_test_utils::
                                     ReportSendingResult::REPORTS_SUCCESSFUL);
 
   // Send a third report. This should not be queued.
-  service()->Send("report2");
-  WaitForRequestsDestroyed(ReportExpectation::Successful({"report2"}));
+  service()->Send(MakeReport("report2"));
+  test_helper()->WaitForRequestsDestroyed(
+      ReportExpectation::Successful({"report2"}));
 
   // Send pending reports. Previously failed and queued two reports should be
   // observed.
   service()->SendPending();
-  WaitForRequestsDestroyed(
+  test_helper()->WaitForRequestsDestroyed(
       ReportExpectation::Successful({"report0", "report1"}));
 }
 
@@ -512,13 +499,14 @@ TEST_F(CertificateReportingServiceTest, Disabled_ShouldNotSend) {
 
   // Send a report. Report attempt should be cancelled and no sent reports
   // should be observed.
-  service()->Send("report0");
+  service()->Send(MakeReport("report0"));
 
   // Enable the service and send a report again. It should be sent successfully.
   SetServiceEnabledAndWait(true);
 
-  service()->Send("report1");
-  WaitForRequestsDestroyed(ReportExpectation::Successful({"report1"}));
+  service()->Send(MakeReport("report1"));
+  test_helper()->WaitForRequestsDestroyed(
+      ReportExpectation::Successful({"report1"}));
 }
 
 TEST_F(CertificateReportingServiceTest, Disabled_ShouldClearPendingReports) {
@@ -528,8 +516,9 @@ TEST_F(CertificateReportingServiceTest, Disabled_ShouldClearPendingReports) {
   test_helper()->SetFailureMode(
       certificate_reporting_test_utils::ReportSendingResult::REPORTS_FAIL);
 
-  service()->Send("report0");
-  WaitForRequestsDestroyed(ReportExpectation::Failed({"report0"}));
+  service()->Send(MakeReport("report0"));
+  test_helper()->WaitForRequestsDestroyed(
+      ReportExpectation::Failed({"report0"}));
 
   // Disable the service.
   SetServiceEnabledAndWait(false);
@@ -553,15 +542,12 @@ TEST_F(CertificateReportingServiceTest, DontSendOldReports) {
   test_helper()->SetFailureMode(
       certificate_reporting_test_utils::ReportSendingResult::REPORTS_FAIL);
 
-  // Send a report.
-  service()->Send("report0");
-  WaitForRequestsDestroyed(ReportExpectation::Failed({"report0"}));
-
-  // Advance the clock a bit and trigger another report.
+  // Send a report, then advance the clock and send another report.
+  service()->Send(MakeReport("report0"));
   AdvanceClock(base::TimeDelta::FromHours(5));
-
-  service()->Send("report1");
-  WaitForRequestsDestroyed(ReportExpectation::Failed({"report1"}));
+  service()->Send(MakeReport("report1"));
+  test_helper()->WaitForRequestsDestroyed(
+      ReportExpectation::Failed({"report0", "report1"}));
 
   // Advance the clock to 20 hours, putting it 25 hours ahead of the reference
   // time. This makes the report0 older than max age (24 hours). The report1 is
@@ -570,18 +556,21 @@ TEST_F(CertificateReportingServiceTest, DontSendOldReports) {
   // Send pending reports. report0 should be discarded since it's too old.
   // report1 should be queued again.
   service()->SendPending();
-  WaitForRequestsDestroyed(ReportExpectation::Failed({"report1"}));
+  test_helper()->WaitForRequestsDestroyed(
+      ReportExpectation::Failed({"report1"}));
 
   // Send a third report.
-  service()->Send("report2");
-  WaitForRequestsDestroyed(ReportExpectation::Failed({"report2"}));
+  service()->Send(MakeReport("report2"));
+  test_helper()->WaitForRequestsDestroyed(
+      ReportExpectation::Failed({"report2"}));
 
   // Advance the clock 5 hours. The report1 will now be 25 hours old.
   AdvanceClock(base::TimeDelta::FromHours(5));
   // Send pending reports. report1 should be discarded since it's too old.
   // report2 should be queued again.
   service()->SendPending();
-  WaitForRequestsDestroyed(ReportExpectation::Failed({"report2"}));
+  test_helper()->WaitForRequestsDestroyed(
+      ReportExpectation::Failed({"report2"}));
 
   // Advance the clock 20 hours again so that report2 is 25 hours old and is
   // older than max age (24 hours)
@@ -599,31 +588,29 @@ TEST_F(CertificateReportingServiceTest, DiscardOldReports) {
   test_helper()->SetFailureMode(
       certificate_reporting_test_utils::ReportSendingResult::REPORTS_FAIL);
 
-  // Send a failed report.
-  service()->Send("report0");
-  WaitForRequestsDestroyed(ReportExpectation::Failed({"report0"}));
-
   // Send three more reports within five hours of each other. After this:
   // report0 is 0 hours after reference time (15 hours old).
   // report1 is 5 hours after reference time (10 hours old).
   // report2 is 10 hours after reference time (5 hours old).
   // report3 is 15 hours after reference time (0 hours old).
-  AdvanceClock(base::TimeDelta::FromHours(5));
-  service()->Send("report1");
+  service()->Send(MakeReport("report0"));
 
   AdvanceClock(base::TimeDelta::FromHours(5));
-  service()->Send("report2");
+  service()->Send(MakeReport("report1"));
 
   AdvanceClock(base::TimeDelta::FromHours(5));
-  service()->Send("report3");
-  WaitForRequestsDestroyed(
-      ReportExpectation::Failed({"report1", "report2", "report3"}));
+  service()->Send(MakeReport("report2"));
+
+  AdvanceClock(base::TimeDelta::FromHours(5));
+  service()->Send(MakeReport("report3"));
+  test_helper()->WaitForRequestsDestroyed(
+      ReportExpectation::Failed({"report0", "report1", "report2", "report3"}));
 
   // Send pending reports. Four reports were generated above, but the service
   // only queues three reports, so the very first one should be dropped since
   // it's the oldest.
   service()->SendPending();
-  WaitForRequestsDestroyed(
+  test_helper()->WaitForRequestsDestroyed(
       ReportExpectation::Failed({"report1", "report2", "report3"}));
 
   // Let all reports succeed.
@@ -639,7 +626,7 @@ TEST_F(CertificateReportingServiceTest, DiscardOldReports) {
   // Send pending reports. Only report2 and report3 should be sent, report1
   // should be ignored because it's too old.
   service()->SendPending();
-  WaitForRequestsDestroyed(
+  test_helper()->WaitForRequestsDestroyed(
       ReportExpectation::Successful({"report2", "report3"}));
 
   // Do a final send. No reports should be sent.
@@ -655,12 +642,13 @@ TEST_F(CertificateReportingServiceTest, Delayed_Resumed) {
       certificate_reporting_test_utils::ReportSendingResult::REPORTS_DELAY);
   // Send a report. The report upload hangs, so no error or success callbacks
   // should be called.
-  service()->Send("report0");
+  service()->Send(MakeReport("report0"));
 
   // Resume the report upload and run the callbacks. The report should be
   // successfully sent.
-  test_helper()->ResumeDelayedRequest(base::Bind(&base::DoNothing));
-  WaitForRequestsDestroyed(ReportExpectation::Delayed({"report0"}));
+  test_helper()->ResumeDelayedRequest();
+  test_helper()->WaitForRequestsDestroyed(
+      ReportExpectation::Delayed({"report0"}));
 }
 
 // Delayed reports should cleaned when the service is reset.
@@ -672,7 +660,7 @@ TEST_F(CertificateReportingServiceTest, Delayed_Reset) {
       certificate_reporting_test_utils::ReportSendingResult::REPORTS_DELAY);
   // Send a report. The report is triggered but hangs, so no error or success
   // callbacks should be called.
-  service()->Send("report0");
+  service()->Send(MakeReport("report0"));
 
   // Disable the service. This should reset the reporting service and
   // clear all pending reports.
@@ -680,8 +668,8 @@ TEST_F(CertificateReportingServiceTest, Delayed_Reset) {
 
   // Resume delayed report. No report should be observed since the service
   // should have reset and all pending reports should be cleared. If any report
-  // is observed, the next WaitForRequestsDestroyed() will fail.
-  test_helper()->ResumeDelayedRequest(base::Bind(&base::DoNothing));
+  // is observed, the next test_helper()->WaitForRequestsDestroyed() will fail.
+  test_helper()->ResumeDelayedRequest();
 
   // Enable the service.
   SetServiceEnabledAndWait(true);
@@ -689,9 +677,10 @@ TEST_F(CertificateReportingServiceTest, Delayed_Reset) {
   // Send a report. The report is triggered but hangs, so no error or success
   // callbacks should be called. The report id is again 0 since the pending
   // report queue has been cleared above.
-  service()->Send("report1");
+  service()->Send(MakeReport("report1"));
 
   // Resume delayed report. Two reports are successfully sent.
-  test_helper()->ResumeDelayedRequest(base::Bind(&base::DoNothing));
-  WaitForRequestsDestroyed(ReportExpectation::Delayed({"report0", "report1"}));
+  test_helper()->ResumeDelayedRequest();
+  test_helper()->WaitForRequestsDestroyed(
+      ReportExpectation::Delayed({"report0", "report1"}));
 }

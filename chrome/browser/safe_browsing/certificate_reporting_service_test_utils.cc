@@ -6,13 +6,12 @@
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/certificate_reporting/encrypted_cert_logger.pb.h"
+#include "components/certificate_reporting/error_report.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/curve25519.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
-#include "net/test/url_request/url_request_failed_job.h"
-#include "net/test/url_request/url_request_mock_data_job.h"
 #include "net/url_request/url_request_filter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -55,16 +54,129 @@ std::string GetReportContents(net::URLRequest* request,
   return decrypted_report;
 }
 
+// Checks that the serialized reports in |observed_reports| have the same
+// hostnames as |expected_hostnames|.
+void CompareHostnames(const std::set<std::string>& expected_hostnames,
+                      const std::set<std::string>& observed_reports,
+                      const std::string& comparison_type) {
+  std::set<std::string> observed_hostnames;
+  for (const std::string& serialized_report : observed_reports) {
+    certificate_reporting::ErrorReport report;
+    ASSERT_TRUE(report.InitializeFromString(serialized_report));
+    observed_hostnames.insert(report.hostname());
+  }
+  EXPECT_EQ(expected_hostnames, observed_hostnames)
+      << "Comparison failed for " << comparison_type << " reports.";
+}
+
+void WaitReports(
+    certificate_reporting_test_utils::RequestObserver* observer,
+    const certificate_reporting_test_utils::ReportExpectation& expectation) {
+  observer->Wait(expectation.num_reports());
+  CompareHostnames(expectation.successful_reports,
+                   observer->successful_reports(), "successful");
+  CompareHostnames(expectation.failed_reports, observer->failed_reports(),
+                   "failed");
+  CompareHostnames(expectation.delayed_reports, observer->delayed_reports(),
+                   "delayed");
+  observer->ClearObservedReports();
+}
+
 }  // namespace
 
 namespace certificate_reporting_test_utils {
 
-DelayableCertReportURLRequestJob::DelayableCertReportURLRequestJob(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate)
-    : net::URLRequestJob(request, network_delegate), weak_factory_(this) {}
+RequestObserver::RequestObserver()
+    : num_events_to_wait_for_(0u), num_received_events_(0u) {}
+RequestObserver::~RequestObserver() {}
 
-DelayableCertReportURLRequestJob::~DelayableCertReportURLRequestJob() {}
+void RequestObserver::Wait(unsigned int num_events_to_wait_for) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(!run_loop_);
+  ASSERT_LE(num_received_events_, num_events_to_wait_for)
+      << "Observed unexpected report";
+
+  if (num_received_events_ < num_events_to_wait_for) {
+    num_events_to_wait_for_ = num_events_to_wait_for;
+    run_loop_.reset(new base::RunLoop());
+    run_loop_->Run();
+    run_loop_.reset(nullptr);
+    EXPECT_EQ(0u, num_received_events_);
+    EXPECT_EQ(0u, num_events_to_wait_for_);
+  } else if (num_received_events_ == num_events_to_wait_for) {
+    num_received_events_ = 0u;
+    num_events_to_wait_for_ = 0u;
+  }
+}
+
+void RequestObserver::OnRequest(const std::string& serialized_report,
+                                ReportSendingResult report_type) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  switch (report_type) {
+    case REPORTS_SUCCESSFUL:
+      successful_reports_.insert(serialized_report);
+      break;
+    case REPORTS_FAIL:
+      failed_reports_.insert(serialized_report);
+      break;
+    case REPORTS_DELAY:
+      delayed_reports_.insert(serialized_report);
+      break;
+  }
+
+  num_received_events_++;
+  if (!run_loop_) {
+    return;
+  }
+  ASSERT_LE(num_received_events_, num_events_to_wait_for_)
+      << "Observed unexpected report";
+
+  if (num_received_events_ == num_events_to_wait_for_) {
+    num_events_to_wait_for_ = 0u;
+    num_received_events_ = 0u;
+    run_loop_->Quit();
+  }
+}
+
+const std::set<std::string>& RequestObserver::successful_reports() const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return successful_reports_;
+}
+
+const std::set<std::string>& RequestObserver::failed_reports() const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return failed_reports_;
+}
+
+const std::set<std::string>& RequestObserver::delayed_reports() const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return delayed_reports_;
+}
+
+void RequestObserver::ClearObservedReports() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  successful_reports_.clear();
+  failed_reports_.clear();
+  delayed_reports_.clear();
+}
+
+DelayableCertReportURLRequestJob::DelayableCertReportURLRequestJob(
+    bool delayed,
+    bool should_fail,
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate,
+    const base::Callback<void()>& destruction_callback)
+    : net::URLRequestJob(request, network_delegate),
+      delayed_(delayed),
+      should_fail_(should_fail),
+      started_(false),
+      destruction_callback_(destruction_callback),
+      weak_factory_(this) {}
+
+DelayableCertReportURLRequestJob::~DelayableCertReportURLRequestJob() {
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                   destruction_callback_);
+}
 
 base::WeakPtr<DelayableCertReportURLRequestJob>
 DelayableCertReportURLRequestJob::GetWeakPtr() {
@@ -98,12 +210,15 @@ void DelayableCertReportURLRequestJob::GetResponseInfo(
 
 void DelayableCertReportURLRequestJob::Resume() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  DCHECK(delayed_);
   if (!started_) {
-    // If Start() hasn't been called yet, then unset |delayed_| so
-    // that when Start() is called, the request will begin
-    // immediately.
+    // If Start() hasn't been called yet, then unset |delayed_| so that when
+    // Start() is called, the request will begin immediately.
     delayed_ = false;
+    return;
+  }
+  if (should_fail_) {
+    NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                           net::ERR_SSL_PROTOCOL_ERROR));
     return;
   }
   // Start reading asynchronously as would a normal network request.
@@ -136,18 +251,29 @@ net::URLRequestJob* CertReportJobInterceptor::MaybeInterceptRequest(
                  expected_report_result_));
 
   if (expected_report_result_ == REPORTS_FAIL) {
-    return new net::URLRequestFailedJob(request, network_delegate,
-                                        net::ERR_SSL_PROTOCOL_ERROR);
+    return new DelayableCertReportURLRequestJob(
+        false, true, request, network_delegate,
+        base::Bind(&CertReportJobInterceptor::RequestDestructed,
+                   base::Unretained(this), uploaded_report,
+                   expected_report_result_));
+
   } else if (expected_report_result_ == REPORTS_DELAY) {
     DCHECK(!delayed_request_) << "Supports only one delayed request at a time";
     DelayableCertReportURLRequestJob* job =
-        new DelayableCertReportURLRequestJob(request, network_delegate);
+        new DelayableCertReportURLRequestJob(
+            true, false, request, network_delegate,
+            base::Bind(&CertReportJobInterceptor::RequestDestructed,
+                       base::Unretained(this), uploaded_report,
+                       expected_report_result_));
     delayed_request_ = job->GetWeakPtr();
     return job;
   }
   // Successful url request job.
-  return new net::URLRequestMockDataJob(request, network_delegate, "some data",
-                                        1, false);
+  return new DelayableCertReportURLRequestJob(
+      false, false, request, network_delegate,
+      base::Bind(&CertReportJobInterceptor::RequestDestructed,
+                 base::Unretained(this), uploaded_report,
+                 expected_report_result_));
 }
 
 void CertReportJobInterceptor::SetFailureMode(
@@ -159,41 +285,22 @@ void CertReportJobInterceptor::SetFailureMode(
                  weak_factory_.GetWeakPtr(), expected_report_result));
 }
 
-void CertReportJobInterceptor::Resume(const base::Callback<void()>& callback) {
+void CertReportJobInterceptor::Resume() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::BrowserThread::PostTaskAndReply(
+  content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&CertReportJobInterceptor::ResumeOnIOThread,
-                 base::Unretained(this)),
-      callback);
+                 base::Unretained(this)));
 }
 
-const std::set<std::string>& CertReportJobInterceptor::successful_reports()
-    const {
+RequestObserver* CertReportJobInterceptor::request_created_observer() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return successful_reports_;
+  return &request_created_observer_;
 }
 
-const std::set<std::string>& CertReportJobInterceptor::failed_reports() const {
+RequestObserver* CertReportJobInterceptor::request_destroyed_observer() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return failed_reports_;
-}
-
-const std::set<std::string>& CertReportJobInterceptor::delayed_reports() const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return delayed_reports_;
-}
-
-void CertReportJobInterceptor::ClearObservedReports() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  successful_reports_.clear();
-  failed_reports_.clear();
-  delayed_reports_.clear();
-}
-
-void CertReportJobInterceptor::WaitForReports(int num_reports) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  wait_helper_.Wait(num_reports);
+  return &request_destroyed_observer_;
 }
 
 void CertReportJobInterceptor::SetFailureModeOnIOThread(
@@ -211,20 +318,15 @@ void CertReportJobInterceptor::ResumeOnIOThread() {
 
 void CertReportJobInterceptor::RequestCreated(
     const std::string& uploaded_report,
-    ReportSendingResult expected_report_result) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  switch (expected_report_result) {
-    case REPORTS_SUCCESSFUL:
-      successful_reports_.insert(uploaded_report);
-      break;
-    case REPORTS_FAIL:
-      failed_reports_.insert(uploaded_report);
-      break;
-    case REPORTS_DELAY:
-      delayed_reports_.insert(uploaded_report);
-      break;
-  }
-  wait_helper_.OnEvent();
+    ReportSendingResult expected_report_result) const {
+  request_created_observer_.OnRequest(uploaded_report, expected_report_result);
+}
+
+void CertReportJobInterceptor::RequestDestructed(
+    const std::string& uploaded_report,
+    ReportSendingResult expected_report_result) const {
+  request_destroyed_observer_.OnRequest(uploaded_report,
+                                        expected_report_result);
 }
 
 ReportExpectation::ReportExpectation() {}
@@ -262,6 +364,29 @@ int ReportExpectation::num_reports() const {
          delayed_reports.size();
 }
 
+CertificateReportingServiceObserver::CertificateReportingServiceObserver() {}
+
+CertificateReportingServiceObserver::~CertificateReportingServiceObserver() {}
+
+void CertificateReportingServiceObserver::Clear() {
+  did_reset_ = false;
+}
+
+void CertificateReportingServiceObserver::WaitForReset() {
+  DCHECK(!run_loop_);
+  if (did_reset_)
+    return;
+  run_loop_.reset(new base::RunLoop());
+  run_loop_->Run();
+  run_loop_.reset();
+}
+
+void CertificateReportingServiceObserver::OnServiceReset() {
+  did_reset_ = true;
+  if (run_loop_)
+    run_loop_->Quit();
+}
+
 CertificateReportingServiceTestHelper::CertificateReportingServiceTestHelper() {
   memset(server_private_key_, 1, sizeof(server_private_key_));
   crypto::curve25519::ScalarBaseMult(server_private_key_, server_public_key_);
@@ -281,17 +406,15 @@ void CertificateReportingServiceTestHelper::SetUpInterceptor() {
                      url_request_interceptor_))));
 }
 
-// Changes the behavior of report uploads to fail or succeed.
 void CertificateReportingServiceTestHelper::SetFailureMode(
     ReportSendingResult expected_report_result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   url_request_interceptor_->SetFailureMode(expected_report_result);
 }
 
-void CertificateReportingServiceTestHelper::ResumeDelayedRequest(
-    const base::Callback<void()>& callback) {
+void CertificateReportingServiceTestHelper::ResumeDelayedRequest() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  url_request_interceptor_->Resume(callback);
+  url_request_interceptor_->Resume();
 }
 
 uint8_t* CertificateReportingServiceTestHelper::server_public_key() {
@@ -303,41 +426,34 @@ uint32_t CertificateReportingServiceTestHelper::server_public_key_version()
   return kServerPublicKeyTestVersion;
 }
 
-ReportWaitHelper::ReportWaitHelper()
-    : num_events_to_wait_for_(0), num_received_events_(0) {}
-ReportWaitHelper::~ReportWaitHelper() {}
-
-void ReportWaitHelper::Wait(int num_events_to_wait_for) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(!run_loop_);
-  ASSERT_LE(num_received_events_, num_events_to_wait_for)
-      << "Observed unexpected report";
-
-  if (num_received_events_ < num_events_to_wait_for) {
-    num_events_to_wait_for_ = num_events_to_wait_for;
-    run_loop_.reset(new base::RunLoop());
-    run_loop_->Run();
-    run_loop_.reset(nullptr);
-    EXPECT_EQ(0, num_received_events_);
-    EXPECT_EQ(0, num_events_to_wait_for_);
-  } else if (num_received_events_ == num_events_to_wait_for) {
-    num_received_events_ = 0;
-    num_events_to_wait_for_ = 0;
-  }
+void CertificateReportingServiceTestHelper::WaitForRequestsCreated(
+    const ReportExpectation& expectation) {
+  WaitReports(interceptor()->request_created_observer(), expectation);
 }
 
-void ReportWaitHelper::OnEvent() {
+void CertificateReportingServiceTestHelper::WaitForRequestsDestroyed(
+    const ReportExpectation& expectation) {
+  WaitReports(interceptor()->request_destroyed_observer(), expectation);
+}
+
+void CertificateReportingServiceTestHelper::ExpectNoRequests(
+    CertificateReportingService* service) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  num_received_events_++;
-  if (!run_loop_) {
-    return;
-  }
-  ASSERT_LE(num_received_events_, num_events_to_wait_for_)
-      << "Observed unexpected report";
-  if (num_received_events_ == num_events_to_wait_for_) {
-    num_events_to_wait_for_ = 0;
-    num_received_events_ = 0;
-    run_loop_->Quit();
+  // Check that all requests have been destroyed.
+  EXPECT_TRUE(interceptor()
+                  ->request_destroyed_observer()
+                  ->successful_reports()
+                  .empty());
+  EXPECT_TRUE(
+      interceptor()->request_destroyed_observer()->failed_reports().empty());
+  EXPECT_TRUE(
+      interceptor()->request_destroyed_observer()->delayed_reports().empty());
+
+  if (service->GetReporterForTesting()) {
+    // Reporter can be null if reporting is disabled.
+    EXPECT_EQ(
+        0u,
+        service->GetReporterForTesting()->inflight_report_count_for_testing());
   }
 }
 

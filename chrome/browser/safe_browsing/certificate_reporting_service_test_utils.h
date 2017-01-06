@@ -28,7 +28,7 @@ namespace certificate_reporting_test_utils {
 // Example:
 // The following expects report0 and report1 to be successfully sent and their
 // URL requests to be deleted:
-// WaitForRequestDeletions(
+// WaitForRequestsDestroyed(
 //     ReportExpectation::Successful("report0, report1"));
 struct ReportExpectation {
   ReportExpectation();
@@ -47,23 +47,6 @@ struct ReportExpectation {
   std::set<std::string> delayed_reports;
 };
 
-// Helper class to wait for a number of events (e.g. request destroyed, report
-// observed).
-class ReportWaitHelper {
- public:
-  ReportWaitHelper();
-  ~ReportWaitHelper();
-  // Waits for |num_events_to_wait_for|.
-  void Wait(int num_events_to_wait_for);
-  // Must be called when an event is observed.
-  void OnEvent();
-
- private:
-  int num_events_to_wait_for_;
-  int num_received_events_;
-  std::unique_ptr<base::RunLoop> run_loop_;
-};
-
 // Failure mode of the report sending attempts.
 enum ReportSendingResult {
   // Report send attempts should be successful.
@@ -74,14 +57,51 @@ enum ReportSendingResult {
   REPORTS_DELAY,
 };
 
+// Helper class to wait for a number of events (e.g. request destroyed, report
+// observed).
+class RequestObserver {
+ public:
+  RequestObserver();
+  ~RequestObserver();
+
+  // Waits for |num_request| requests to be created or destroyed, depending on
+  // whichever one this class observes.
+  void Wait(unsigned int num_events_to_wait_for);
+
+  // Called when a request created or destroyed, depending on whichever one this
+  // class observes.
+  void OnRequest(const std::string& serialized_report,
+                 ReportSendingResult report_type);
+
+  // These must be called on the UI thread.
+  const std::set<std::string>& successful_reports() const;
+  const std::set<std::string>& failed_reports() const;
+  const std::set<std::string>& delayed_reports() const;
+  void ClearObservedReports();
+
+ private:
+  unsigned int num_events_to_wait_for_;
+  unsigned int num_received_events_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+
+  std::set<std::string> successful_reports_;
+  std::set<std::string> failed_reports_;
+  std::set<std::string> delayed_reports_;
+};
+
 // A URLRequestJob that can be delayed until Resume() is called. Returns an
 // empty response. If Resume() is called before a request is made, then the
-// request will not be delayed.
+// request will not be delayed. If not delayed, it can return a failed or a
+// successful URL request job.
 class DelayableCertReportURLRequestJob : public net::URLRequestJob,
                                          public base::NonThreadSafe {
  public:
-  DelayableCertReportURLRequestJob(net::URLRequest* request,
-                                   net::NetworkDelegate* network_delegate);
+  DelayableCertReportURLRequestJob(
+      bool delayed,
+      bool should_fail,
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate,
+      const base::Callback<void()>& destruction_callback);
   ~DelayableCertReportURLRequestJob() override;
 
   base::WeakPtr<DelayableCertReportURLRequestJob> GetWeakPtr();
@@ -98,8 +118,10 @@ class DelayableCertReportURLRequestJob : public net::URLRequestJob,
   void Resume();
 
  private:
-  bool delayed_ = true;
-  bool started_ = false;
+  bool delayed_;
+  bool should_fail_;
+  bool started_;
+  base::Callback<void()> destruction_callback_;
   base::WeakPtrFactory<DelayableCertReportURLRequestJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DelayableCertReportURLRequestJob);
@@ -122,35 +144,30 @@ class CertReportJobInterceptor : public net::URLRequestInterceptor {
   void SetFailureMode(ReportSendingResult expected_report_result);
   // Resumes any hanging URL request and runs callback when the request
   // is resumed (i.e. response starts). Must be called on the UI thread.
-  void Resume(const base::Closure& callback);
+  void Resume();
 
-  // These must be called on the UI thread.
-  const std::set<std::string>& successful_reports() const;
-  const std::set<std::string>& failed_reports() const;
-  const std::set<std::string>& delayed_reports() const;
-  void ClearObservedReports();
-
-  // Waits for requests for |num_reports| reports to be created. Only used in
-  // browser tests. Unit tests wait for requests to be destroyed instead.
-  // Must be called on the UI thread.
-  void WaitForReports(int num_reports);
+  RequestObserver* request_created_observer() const;
+  RequestObserver* request_destroyed_observer() const;
 
  private:
   void SetFailureModeOnIOThread(ReportSendingResult expected_report_result);
   void ResumeOnIOThread();
   void RequestCreated(const std::string& uploaded_report,
-                      ReportSendingResult expected_report_result);
+                      ReportSendingResult expected_report_result) const;
+  void RequestDestructed(const std::string& uploaded_report,
+                         ReportSendingResult expected_report_result) const;
 
-  std::set<std::string> successful_reports_;
-  std::set<std::string> failed_reports_;
-  std::set<std::string> delayed_reports_;
+  mutable std::set<std::string> successful_reports_;
+  mutable std::set<std::string> failed_reports_;
+  mutable std::set<std::string> delayed_reports_;
 
   ReportSendingResult expected_report_result_;
 
   // Private key to decrypt certificate reports.
   const uint8_t* server_private_key_;
 
-  ReportWaitHelper wait_helper_;
+  mutable RequestObserver request_created_observer_;
+  mutable RequestObserver request_destroyed_observer_;
 
   mutable base::WeakPtr<DelayableCertReportURLRequestJob> delayed_request_ =
       nullptr;
@@ -159,20 +176,24 @@ class CertReportJobInterceptor : public net::URLRequestInterceptor {
   DISALLOW_COPY_AND_ASSIGN(CertReportJobInterceptor);
 };
 
-// A network delegate used to observe URL request destructions. The tests check
-// that no outstanding URL request is present during tear down.
-class CertificateReportingServiceTestNetworkDelegate
-    : public net::NetworkDelegateImpl {
+// Class to wait for the CertificateReportingService to reset.
+class CertificateReportingServiceObserver {
  public:
-  CertificateReportingServiceTestNetworkDelegate(
-      const base::Callback<void()>& url_request_destroyed_callback);
-  ~CertificateReportingServiceTestNetworkDelegate() override;
+  CertificateReportingServiceObserver();
+  ~CertificateReportingServiceObserver();
 
-  // net::NetworkDelegate method:
-  void OnURLRequestDestroyed(net::URLRequest* request) override;
+  // Clears the state of the observer. Must be called before waiting each time.
+  void Clear();
+
+  // Waits for the service to reset.
+  void WaitForReset();
+
+  // Must be called when the service is reset.
+  void OnServiceReset();
 
  private:
-  base::Callback<void()> url_request_destroyed_callback_;
+  bool did_reset_ = false;
+  std::unique_ptr<base::RunLoop> run_loop_;
 };
 
 // Base class for CertificateReportingService tests. Sets up an interceptor to
@@ -189,14 +210,20 @@ class CertificateReportingServiceTestHelper {
 
   // Resumes delayed report request. Failure mode should be REPORTS_DELAY when
   // calling this method.
-  void ResumeDelayedRequest(const base::Callback<void()>& callback);
+  void ResumeDelayedRequest();
+
+  void WaitForRequestsCreated(const ReportExpectation& expectation);
+  void WaitForRequestsDestroyed(const ReportExpectation& expectation);
+
+  // Checks that all requests are destroyed and that there are no in-flight
+  // reports in |service|.
+  void ExpectNoRequests(CertificateReportingService* service);
 
   uint8_t* server_public_key();
   uint32_t server_public_key_version() const;
 
-  CertReportJobInterceptor* interceptor() { return url_request_interceptor_; }
-
  private:
+  CertReportJobInterceptor* interceptor() { return url_request_interceptor_; }
   void SetUpInterceptorOnIOThread();
 
   CertReportJobInterceptor* url_request_interceptor_;

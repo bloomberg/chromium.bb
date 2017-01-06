@@ -30,6 +30,8 @@ class CertificateReportingServiceFactory
   void SetClockForTesting(std::unique_ptr<base::Clock> clock);
   void SetQueuedReportTTLForTesting(base::TimeDelta queued_report_ttl);
   void SetMaxQueuedReportCountForTesting(size_t max_report_count);
+  void SetServiceResetCallbackForTesting(
+      const base::Callback<void()>& service_reset_callback);
 
  private:
   friend struct base::DefaultSingletonTraits<
@@ -51,6 +53,7 @@ class CertificateReportingServiceFactory
   std::unique_ptr<base::Clock> clock_;
   base::TimeDelta queued_report_ttl_;
   size_t max_queued_report_count_;
+  base::Callback<void()> service_reset_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateReportingServiceFactory);
 };

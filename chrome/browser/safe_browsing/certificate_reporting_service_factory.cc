@@ -60,6 +60,11 @@ void CertificateReportingServiceFactory::SetMaxQueuedReportCountForTesting(
   max_queued_report_count_ = max_queued_report_count;
 }
 
+void CertificateReportingServiceFactory::SetServiceResetCallbackForTesting(
+    const base::Callback<void()>& service_reset_callback) {
+  service_reset_callback_ = service_reset_callback;
+}
+
 CertificateReportingServiceFactory::CertificateReportingServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "cert_reporting::Factory",
@@ -68,7 +73,8 @@ CertificateReportingServiceFactory::CertificateReportingServiceFactory()
       server_public_key_version_(0),
       clock_(new base::DefaultClock()),
       queued_report_ttl_(base::TimeDelta::FromSeconds(kMaxReportAgeInSeconds)),
-      max_queued_report_count_(kMaxReportCountInQueue) {}
+      max_queued_report_count_(kMaxReportCountInQueue),
+      service_reset_callback_(base::Bind(&base::DoNothing)) {}
 
 CertificateReportingServiceFactory::~CertificateReportingServiceFactory() {}
 
@@ -80,7 +86,7 @@ KeyedService* CertificateReportingServiceFactory::BuildServiceInstanceFor(
       safe_browsing_service, safe_browsing_service->url_request_context(),
       static_cast<Profile*>(profile), server_public_key_,
       server_public_key_version_, max_queued_report_count_, queued_report_ttl_,
-      clock_.get());
+      clock_.get(), service_reset_callback_);
 }
 
 content::BrowserContext*

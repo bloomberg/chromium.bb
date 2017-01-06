@@ -167,12 +167,14 @@ CertificateReportingService::CertificateReportingService(
     uint32_t server_public_key_version,
     size_t max_queued_report_count,
     base::TimeDelta max_report_age,
-    base::Clock* clock)
+    base::Clock* clock,
+    const base::Callback<void()>& reset_callback)
     : pref_service_(*profile->GetPrefs()),
       url_request_context_(nullptr),
       max_queued_report_count_(max_queued_report_count),
       max_report_age_(max_report_age),
       clock_(clock),
+      reset_callback_(reset_callback),
       server_public_key_(server_public_key),
       server_public_key_version_(server_public_key_version) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -188,12 +190,13 @@ CertificateReportingService::CertificateReportingService(
           base::Bind(&CertificateReportingService::OnPreferenceChanged,
                      base::Unretained(this)));
 
-  content::BrowserThread::PostTask(
+  content::BrowserThread::PostTaskAndReply(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&CertificateReportingService::InitializeOnIOThread,
                  base::Unretained(this), true, url_request_context_getter,
                  max_queued_report_count_, max_report_age_, clock_,
-                 server_public_key_, server_public_key_version_));
+                 server_public_key_, server_public_key_version_),
+      reset_callback_);
 }
 
 CertificateReportingService::~CertificateReportingService() {
@@ -253,12 +256,13 @@ void CertificateReportingService::SetEnabled(bool enabled) {
   if (!url_request_context_)
     return;
 
-  content::BrowserThread::PostTask(
+  content::BrowserThread::PostTaskAndReply(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&CertificateReportingService::ResetOnIOThread,
                  base::Unretained(this), enabled, url_request_context_,
                  max_queued_report_count_, max_report_age_, clock_,
-                 server_public_key_, server_public_key_version_));
+                 server_public_key_, server_public_key_version_),
+      reset_callback_);
 }
 
 CertificateReportingService::Reporter*

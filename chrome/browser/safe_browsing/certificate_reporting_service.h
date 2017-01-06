@@ -152,7 +152,8 @@ class CertificateReportingService : public KeyedService {
       uint32_t server_public_key_version,
       size_t max_queued_report_count,
       base::TimeDelta max_report_age,
-      base::Clock* clock);
+      base::Clock* clock,
+      const base::Callback<void()>& reset_callback);
 
   ~CertificateReportingService() override;
 
@@ -225,6 +226,9 @@ class CertificateReportingService : public KeyedService {
   const base::TimeDelta max_report_age_;
 
   base::Clock* const clock_;
+
+  // Called when the service is reset. Used for testing.
+  base::Callback<void()> reset_callback_;
 
   // Encryption parameters.
   uint8_t* server_public_key_;
