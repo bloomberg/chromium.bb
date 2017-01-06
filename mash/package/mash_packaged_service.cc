@@ -24,9 +24,9 @@
 #include "services/ui/service.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/autoclick/mus/autoclick_application.h"
-#include "ash/mus/window_manager_application.h"
-#include "ash/touch_hud/mus/touch_hud_application.h"
+#include "ash/autoclick/mus/autoclick_application.h"  // nogncheck
+#include "ash/mus/window_manager_application.h"  // nogncheck
+#include "ash/touch_hud/mus/touch_hud_application.h"  // nogncheck
 #endif
 
 #if defined(OS_LINUX)
