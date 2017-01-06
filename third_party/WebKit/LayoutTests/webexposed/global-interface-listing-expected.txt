@@ -4567,9 +4567,7 @@ interface PerformanceEntry
     method toJSON
 interface PerformanceLongTaskTiming : PerformanceEntry
     attribute @@toStringTag
-    getter culpritFrameId
-    getter culpritFrameName
-    getter culpritFrameSrc
+    getter attribution
     method constructor
 interface PerformanceMark : PerformanceEntry
     attribute @@toStringTag
@@ -6455,6 +6453,12 @@ interface SyncManager
     method constructor
     method getTags
     method register
+interface TaskAttributionTiming : PerformanceEntry
+    attribute @@toStringTag
+    getter frameId
+    getter frameName
+    getter frameSrc
+    method constructor
 interface Text : CharacterData
     attribute @@toStringTag
     getter assignedSlot

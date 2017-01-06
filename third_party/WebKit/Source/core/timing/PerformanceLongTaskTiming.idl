@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://github.com/spanicker/longtasks
+// https://github.com/wicg/longtasks
 [
     OriginTrialEnabled=LongTaskObserver,
 ] interface PerformanceLongTaskTiming : PerformanceEntry {
-    readonly attribute DOMString culpritFrameSrc;
-    readonly attribute DOMString culpritFrameId;
-    readonly attribute DOMString culpritFrameName;
+    readonly attribute sequence<TaskAttributionTiming> attribution;
 };

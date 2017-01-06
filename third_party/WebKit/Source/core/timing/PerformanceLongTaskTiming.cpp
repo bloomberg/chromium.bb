@@ -5,6 +5,7 @@
 #include "core/timing/PerformanceLongTaskTiming.h"
 
 #include "core/frame/DOMWindow.h"
+#include "core/timing/TaskAttributionTiming.h"
 
 namespace blink {
 
@@ -17,6 +18,17 @@ double clampToMillisecond(double timeInMillis) {
 
 }  // namespace
 
+// static
+PerformanceLongTaskTiming* PerformanceLongTaskTiming::create(double startTime,
+                                                             double endTime,
+                                                             String name,
+                                                             String frameSrc,
+                                                             String frameId,
+                                                             String frameName) {
+  return new PerformanceLongTaskTiming(startTime, endTime, name, frameSrc,
+                                       frameId, frameName);
+}
+
 PerformanceLongTaskTiming::PerformanceLongTaskTiming(double startTime,
                                                      double endTime,
                                                      String name,
@@ -26,26 +38,21 @@ PerformanceLongTaskTiming::PerformanceLongTaskTiming(double startTime,
     : PerformanceEntry(name,
                        "longtask",
                        clampToMillisecond(startTime),
-                       clampToMillisecond(endTime)),
-      m_culpritFrameSrc(culpritFrameSrc),
-      m_culpritFrameId(culpritFrameId),
-      m_culpritFrameName(culpritFrameName) {}
+                       clampToMillisecond(endTime)) {
+  // Only one possible name ("frame") currently.
+  TaskAttributionTiming* attributionEntry = TaskAttributionTiming::create(
+      "frame", culpritFrameSrc, culpritFrameId, culpritFrameName);
+  m_attribution.append(*attributionEntry);
+}
 
 PerformanceLongTaskTiming::~PerformanceLongTaskTiming() {}
 
-String PerformanceLongTaskTiming::culpritFrameSrc() const {
-  return m_culpritFrameSrc;
-}
-
-String PerformanceLongTaskTiming::culpritFrameId() const {
-  return m_culpritFrameId;
-}
-
-String PerformanceLongTaskTiming::culpritFrameName() const {
-  return m_culpritFrameName;
+TaskAttributionVector PerformanceLongTaskTiming::attribution() const {
+  return m_attribution;
 }
 
 DEFINE_TRACE(PerformanceLongTaskTiming) {
+  visitor->trace(m_attribution);
   PerformanceEntry::trace(visitor);
 }
 

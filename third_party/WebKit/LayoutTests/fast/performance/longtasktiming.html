@@ -7,17 +7,27 @@ async_test(function (t) {
     var observer = new PerformanceObserver(
         t.step_func(function (entryList) {
             var entries = entryList.getEntries();
-            /* TODO(panicker): Update after fixing http://crbug.com/651461 */
-            for (var i = 0; i < entries.length; i++) {
-                assert_equals(entries[i].entryType, "longtask",
-                    "entryType expected to be: longtask");
-                assert_equals(entries[i].name, "same-origin-self",
-                    "name expected to be: same-origin-self");
-                assert_greater_than(entries[i].duration, 50,
-                    "duration expected to be greater than 50ms threshold");
-                assert_equals(entries[i].startTime, Math.floor(entries[i].startTime),
-                    "startTime expected to have 1 miilisecond granularity");
-            }
+            assert_equals(entries.length, 1,
+                "Exactly one entry is expected.");
+            var longtask = entries[0];
+            assert_equals(longtask.entryType, "longtask",
+                "entryType expected to be: longtask");
+            assert_equals(longtask.name, "same-origin-self",
+                "name expected to be: same-origin-self");
+            assert_greater_than(longtask.duration, 50,
+                "duration expected to be greater than 50ms threshold");
+            assert_equals(longtask.startTime, Math.floor(longtask.startTime),
+                "startTime expected to have 1 miillisecond granularity");
+
+            // Assert the TaskAttributionTiming entry in attribution.
+            assert_equals(longtask.attribution.length, 1,
+                "Exactly one attribution entry is expected");
+            var attribution = longtask.attribution[0];
+            assert_equals(attribution.entryType, "taskattribution");
+            assert_equals(attribution.name, "frame");
+            assert_equals(attribution.duration, 0);
+            assert_equals(attribution.startTime, 0);
+
             observer.disconnect();
             t.done();
         })

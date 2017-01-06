@@ -79,6 +79,8 @@ PerformanceEntry::EntryType PerformanceEntry::toEntryTypeEnum(
     return Resource;
   if (entryType == "navigation")
     return Navigation;
+  if (entryType == "taskattribution")
+    return TaskAttribution;
   return Invalid;
 }
 

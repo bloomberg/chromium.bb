@@ -12,6 +12,9 @@
 
 namespace blink {
 
+class TaskAttributionTiming;
+using TaskAttributionVector = HeapVector<Member<TaskAttributionTiming>>;
+
 class PerformanceLongTaskTiming final : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -19,17 +22,11 @@ class PerformanceLongTaskTiming final : public PerformanceEntry {
   static PerformanceLongTaskTiming* create(double startTime,
                                            double endTime,
                                            String name,
-                                           String culpritFrameSrc,
-                                           String culpritFrameId,
-                                           String culpritFrameName) {
-    return new PerformanceLongTaskTiming(startTime, endTime, name,
-                                         culpritFrameSrc, culpritFrameId,
-                                         culpritFrameName);
-  }
+                                           String frameSrc,
+                                           String frameId,
+                                           String frameName);
 
-  String culpritFrameSrc() const;
-  String culpritFrameId() const;
-  String culpritFrameName() const;
+  TaskAttributionVector attribution() const;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -37,14 +34,12 @@ class PerformanceLongTaskTiming final : public PerformanceEntry {
   PerformanceLongTaskTiming(double startTime,
                             double endTime,
                             String name,
-                            String culpritFrameSrc,
-                            String culpritFrameId,
-                            String culpritFrameName);
+                            String frameSrc,
+                            String frameId,
+                            String frameName);
   ~PerformanceLongTaskTiming() override;
 
-  String m_culpritFrameSrc;
-  String m_culpritFrameId;
-  String m_culpritFrameName;
+  TaskAttributionVector m_attribution;
 };
 
 }  // namespace blink

@@ -63,6 +63,7 @@ class CORE_EXPORT PerformanceEntry
     Render = 1 << 4,
     Resource = 1 << 5,
     LongTask = 1 << 6,
+    TaskAttribution = 1 << 7,
   };
 
   String name() const;

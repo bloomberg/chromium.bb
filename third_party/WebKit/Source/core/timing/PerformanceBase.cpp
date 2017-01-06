@@ -133,12 +133,6 @@ PerformanceEntryVector PerformanceBase::getEntriesByType(
       PerformanceEntry::toEntryTypeEnum(entryType);
 
   switch (type) {
-    case PerformanceEntry::Invalid:
-      return entries;
-    case PerformanceEntry::LongTask:
-      // Unsupported for LongTask. Per the spec, Long task entries can only be
-      // accessed via Performance Observer. No separate buffer is maintained.
-      return entries;
     case PerformanceEntry::Resource:
       for (const auto& resource : m_resourceTimingBuffer)
         entries.append(resource);
@@ -162,6 +156,15 @@ PerformanceEntryVector PerformanceBase::getEntriesByType(
     case PerformanceEntry::Measure:
       if (m_userTiming)
         entries.appendVector(m_userTiming->getMeasures());
+      break;
+    // Unsupported for LongTask, TaskAttribution.
+    // Per the spec, these entries can only be accessed via
+    // Performance Observer. No separate buffer is maintained.
+    case PerformanceEntry::LongTask:
+      break;
+    case PerformanceEntry::TaskAttribution:
+      break;
+    case PerformanceEntry::Invalid:
       break;
   }
 
@@ -428,15 +431,15 @@ bool PerformanceBase::isFrameTimingBufferFull() {
 void PerformanceBase::addLongTaskTiming(double startTime,
                                         double endTime,
                                         const String& name,
-                                        const String& culpritFrameSrc,
-                                        const String& culpritFrameId,
-                                        const String& culpritFrameName) {
+                                        const String& frameSrc,
+                                        const String& frameId,
+                                        const String& frameName) {
   if (!hasObserverFor(PerformanceEntry::LongTask))
     return;
   PerformanceEntry* entry = PerformanceLongTaskTiming::create(
       monotonicTimeToDOMHighResTimeStamp(startTime),
-      monotonicTimeToDOMHighResTimeStamp(endTime), name, culpritFrameSrc,
-      culpritFrameId, culpritFrameName);
+      monotonicTimeToDOMHighResTimeStamp(endTime), name, frameSrc, frameId,
+      frameName);
   notifyObserversOfEntry(*entry);
 }
 
