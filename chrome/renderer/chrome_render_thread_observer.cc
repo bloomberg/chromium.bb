@@ -295,8 +295,10 @@ bool ChromeRenderThreadObserver::OnControlMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderThreadObserver, message)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetFieldTrialGroup, OnSetFieldTrialGroup)
+    // TODO(nigeltao): delete this handler when all senders of
+    // ChromeViewMsg_SetContentSettingRules have been converted to Mojo.
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetContentSettingRules,
-                        OnSetContentSettingRules)
+                        SetContentSettingRules)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -324,15 +326,15 @@ void ChromeRenderThreadObserver::SetInitialConfiguration(
   is_incognito_process_ = is_incognito_process;
 }
 
+void ChromeRenderThreadObserver::SetContentSettingRules(
+    const RendererContentSettingRules& rules) {
+  content_setting_rules_ = rules;
+}
+
 void ChromeRenderThreadObserver::OnRendererInterfaceRequest(
     chrome::mojom::RendererConfigurationAssociatedRequest request) {
   DCHECK(!renderer_configuration_binding_.is_bound());
   renderer_configuration_binding_.Bind(std::move(request));
-}
-
-void ChromeRenderThreadObserver::OnSetContentSettingRules(
-    const RendererContentSettingRules& rules) {
-  content_setting_rules_ = rules;
 }
 
 void ChromeRenderThreadObserver::OnSetFieldTrialGroup(

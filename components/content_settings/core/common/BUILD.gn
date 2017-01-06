@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/tools/bindings/mojom.gni")
+
 static_library("common") {
   sources = [
     "content_settings.cc",
@@ -19,6 +21,7 @@ static_library("common") {
 
   deps = [
     "//base",
+    "//mojo/public/cpp/bindings:struct_traits",
     "//net",
     "//url",
   ]
@@ -37,5 +40,11 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
     "//url",
+  ]
+}
+
+mojom("mojo_bindings") {
+  sources = [
+    "content_settings.mojom",
   ]
 }

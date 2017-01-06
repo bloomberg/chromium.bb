@@ -15,6 +15,7 @@ class PickleSizer;
 
 class ContentSettingsPattern;
 
+// TODO(nigeltao): delete this class, once content settings is Mojofied.
 class ContentSettingsPatternSerializer {
  public:
   // Gets the serialized pattern's size.

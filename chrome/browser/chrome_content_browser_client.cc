@@ -1105,9 +1105,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
     GetRendererContentSettingRules(
         HostContentSettingsMapFactory::GetForProfile(profile), &rules);
   }
-  // TODO(nigeltao): eliminate this legacy IPC. Instead, add an extra arg to
-  // the rc_interface->SetInitialConfiguration call.
-  host->Send(new ChromeViewMsg_SetContentSettingRules(rules));
+  rc_interface->SetContentSettingRules(rules);
 }
 
 GURL ChromeContentBrowserClient::GetEffectiveURL(

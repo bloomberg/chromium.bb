@@ -10,11 +10,16 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
+#include "mojo/public/cpp/bindings/struct_traits.h"
 
 class GURL;
 
 namespace content_settings {
 class PatternParser;
+
+namespace mojom {
+class ContentSettingsPatternDataView;
+}
 }
 
 // A pattern used in content setting rules. See |IsValid| for a description of
@@ -217,6 +222,9 @@ class ContentSettingsPattern {
  private:
   friend class content_settings::PatternParser;
   friend class ContentSettingsPatternSerializer;
+  friend struct mojo::StructTraits<
+      content_settings::mojom::ContentSettingsPatternDataView,
+      ContentSettingsPattern>;
   FRIEND_TEST_ALL_PREFIXES(ContentSettingsPatternParserTest, SerializePatterns);
 
   class Builder;

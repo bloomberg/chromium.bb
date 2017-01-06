@@ -62,11 +62,12 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
 
   // chrome::mojom::RendererConfiguration:
   void SetInitialConfiguration(bool is_incognito_process) override;
+  void SetContentSettingRules(
+      const RendererContentSettingRules& rules) override;
 
   void OnRendererInterfaceRequest(
       chrome::mojom::RendererConfigurationAssociatedRequest request);
 
-  void OnSetContentSettingRules(const RendererContentSettingRules& rules);
   void OnSetFieldTrialGroup(const std::string& trial_name,
                             const std::string& group_name);
 

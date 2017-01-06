@@ -685,6 +685,7 @@ mojom("mojo_bindings") {
   ]
 
   public_deps = [
+    "//components/content_settings/core/common:mojo_bindings",
     "//url/mojo:url_mojom_gurl",
   ]
 }

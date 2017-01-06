@@ -4,12 +4,15 @@
 
 module chrome.mojom;
 
+import "components/content_settings/core/common/content_settings.mojom";
+
 // Configures the renderer.
 interface RendererConfiguration {
   // Configures the renderer, queued to send when the render process will
   // launch.
-  //
-  // TODO(nigeltao): port the ChromeViewMsg_SetContentSettingRules legacy IPC
-  // message to be an additional arg here.
   SetInitialConfiguration(bool is_incognito_process);
+
+  // Set the content setting rules stored by the renderer.
+  SetContentSettingRules(
+      content_settings.mojom.RendererContentSettingRules rules);
 };

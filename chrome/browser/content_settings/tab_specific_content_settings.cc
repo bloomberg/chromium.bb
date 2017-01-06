@@ -760,6 +760,7 @@ void TabSpecificContentSettings::OnContentSettingChanged(
     }
     RendererContentSettingRules rules;
     GetRendererContentSettingRules(map, &rules);
+    // TODO(nigeltao): use Mojo instead of legacy IPC.
     Send(new ChromeViewMsg_SetContentSettingRules(rules));
   }
 }
