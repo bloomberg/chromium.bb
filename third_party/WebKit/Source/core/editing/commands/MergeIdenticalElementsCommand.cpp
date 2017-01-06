@@ -51,11 +51,12 @@ void MergeIdenticalElementsCommand::doApply(EditingState*) {
   NodeVector children;
   getChildNodes(*m_element1, children);
 
-  for (auto& child : children)
+  for (auto& child : children) {
     m_element2->insertBefore(child.release(), m_atChild.get(),
-                             IGNORE_EXCEPTION);
+                             IGNORE_EXCEPTION_FOR_TESTING);
+  }
 
-  m_element1->remove(IGNORE_EXCEPTION);
+  m_element1->remove(IGNORE_EXCEPTION_FOR_TESTING);
 }
 
 void MergeIdenticalElementsCommand::doUnapply() {

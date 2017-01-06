@@ -229,7 +229,7 @@ void HTMLSelectElement::add(
 
 void HTMLSelectElement::remove(int optionIndex) {
   if (HTMLOptionElement* option = item(optionIndex))
-    option->remove(IGNORE_EXCEPTION);
+    option->remove(IGNORE_EXCEPTION_FOR_TESTING);
 }
 
 String HTMLSelectElement::value() const {

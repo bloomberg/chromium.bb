@@ -51,7 +51,8 @@ void SplitTextNodeCommand::doApply(EditingState*) {
   if (!parent || !hasEditableStyle(*parent))
     return;
 
-  String prefixText = m_text2->substringData(0, m_offset, IGNORE_EXCEPTION);
+  String prefixText =
+      m_text2->substringData(0, m_offset, IGNORE_EXCEPTION_FOR_TESTING);
   if (prefixText.isEmpty())
     return;
 

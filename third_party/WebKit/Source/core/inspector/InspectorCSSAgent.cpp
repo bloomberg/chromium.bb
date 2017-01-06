@@ -1971,7 +1971,7 @@ InspectorCSSAgent::buildArrayForMatchedRuleList(CSSRuleList* ruleList,
             selector, elementPseudoId);  // Modifies |selector|.
       else
         matched = element->matches(firstTagHistorySelector->selectorText(),
-                                   IGNORE_EXCEPTION);
+                                   IGNORE_EXCEPTION_FOR_TESTING);
       if (matched)
         matchingSelectors->addItem(index);
       ++index;

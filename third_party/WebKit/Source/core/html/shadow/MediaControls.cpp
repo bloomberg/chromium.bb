@@ -464,7 +464,7 @@ void MediaControls::updateCurrentTimeDisplay() {
   // Allow the theme to format the time.
   m_currentTimeDisplay->setInnerText(
       LayoutTheme::theme().formatMediaControlsCurrentTime(now, duration),
-      IGNORE_EXCEPTION);
+      IGNORE_EXCEPTION_FOR_TESTING);
   m_currentTimeDisplay->setCurrentValue(now);
 }
 

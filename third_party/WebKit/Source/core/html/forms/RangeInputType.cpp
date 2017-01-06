@@ -226,7 +226,7 @@ void RangeInputType::handleKeydownEvent(KeyboardEvent* event) {
   if (newValue != current) {
     EventQueueScope scope;
     TextFieldEventBehavior eventBehavior = DispatchInputAndChangeEvent;
-    setValueAsDecimal(newValue, eventBehavior, IGNORE_EXCEPTION);
+    setValueAsDecimal(newValue, eventBehavior, IGNORE_EXCEPTION_FOR_TESTING);
 
     if (AXObjectCache* cache = element().document().existingAXObjectCache())
       cache->handleValueChanged(&element());

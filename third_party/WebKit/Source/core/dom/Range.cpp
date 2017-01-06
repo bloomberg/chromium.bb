@@ -232,13 +232,15 @@ void Range::collapse(bool toStart) {
 bool Range::isNodeFullyContained(Node& node) const {
   ContainerNode* parentNode = node.parentNode();
   int nodeIndex = node.nodeIndex();
-  return isPointInRange(parentNode, nodeIndex,
-                        IGNORE_EXCEPTION)  // starts in the middle of this
-                                           // range, or on the boundary points.
-         && isPointInRange(parentNode, nodeIndex + 1,
-                           IGNORE_EXCEPTION);  // ends in the middle of this
-                                               // range, or on the boundary
-                                               // points.
+  return isPointInRange(
+             parentNode, nodeIndex,
+             IGNORE_EXCEPTION_FOR_TESTING)  // starts in the middle of this
+                                            // range, or on the boundary points.
+         && isPointInRange(
+                parentNode, nodeIndex + 1,
+                IGNORE_EXCEPTION_FOR_TESTING);  // ends in the middle of this
+                                                // range, or on the boundary
+                                                // points.
 }
 
 bool Range::hasSameRoot(const Node& node) const {

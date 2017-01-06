@@ -99,7 +99,8 @@ TEST_F(EphemeralRangeTest, rangeTraversalLimited) {
 
   // Get a limited range from <body> to <b> nodes.
   Range* untilB = getBodyRange();
-  untilB->setEnd(document().getElementById("one"), 0, IGNORE_EXCEPTION);
+  untilB->setEnd(document().getElementById("one"), 0,
+                 IGNORE_EXCEPTION_FOR_TESTING);
   EXPECT_EQ("[BODY][P id=\"host\"][B id=\"one\"]", traverseRange<>(untilB));
 
   EXPECT_EQ(traverseRange<>(untilB), traverseRange(EphemeralRange(untilB)));
@@ -111,8 +112,10 @@ TEST_F(EphemeralRangeTest, rangeTraversalLimited) {
 
   // Get a limited range from <b> to <span> nodes.
   Range* fromBToSpan = getBodyRange();
-  fromBToSpan->setStart(document().getElementById("one"), 0, IGNORE_EXCEPTION);
-  fromBToSpan->setEnd(document().getElementById("two"), 0, IGNORE_EXCEPTION);
+  fromBToSpan->setStart(document().getElementById("one"), 0,
+                        IGNORE_EXCEPTION_FOR_TESTING);
+  fromBToSpan->setEnd(document().getElementById("two"), 0,
+                      IGNORE_EXCEPTION_FOR_TESTING);
 
   EXPECT_EQ("[B id=\"one\"][INPUT][SPAN id=\"two\"]",
             traverseRange<>(fromBToSpan));

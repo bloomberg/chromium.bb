@@ -121,12 +121,12 @@ HTMLTableSectionElement* HTMLTableElement::createTHead() {
     return existingHead;
   HTMLTableSectionElement* head =
       HTMLTableSectionElement::create(theadTag, document());
-  setTHead(head, IGNORE_EXCEPTION);
+  setTHead(head, IGNORE_EXCEPTION_FOR_TESTING);
   return head;
 }
 
 void HTMLTableElement::deleteTHead() {
-  removeChild(tHead(), IGNORE_EXCEPTION);
+  removeChild(tHead(), IGNORE_EXCEPTION_FOR_TESTING);
 }
 
 HTMLTableSectionElement* HTMLTableElement::createTFoot() {
@@ -134,12 +134,12 @@ HTMLTableSectionElement* HTMLTableElement::createTFoot() {
     return existingFoot;
   HTMLTableSectionElement* foot =
       HTMLTableSectionElement::create(tfootTag, document());
-  setTFoot(foot, IGNORE_EXCEPTION);
+  setTFoot(foot, IGNORE_EXCEPTION_FOR_TESTING);
   return foot;
 }
 
 void HTMLTableElement::deleteTFoot() {
-  removeChild(tFoot(), IGNORE_EXCEPTION);
+  removeChild(tFoot(), IGNORE_EXCEPTION_FOR_TESTING);
 }
 
 HTMLTableSectionElement* HTMLTableElement::createTBody() {
@@ -156,12 +156,12 @@ HTMLTableCaptionElement* HTMLTableElement::createCaption() {
     return existingCaption;
   HTMLTableCaptionElement* caption =
       HTMLTableCaptionElement::create(document());
-  setCaption(caption, IGNORE_EXCEPTION);
+  setCaption(caption, IGNORE_EXCEPTION_FOR_TESTING);
   return caption;
 }
 
 void HTMLTableElement::deleteCaption() {
-  removeChild(caption(), IGNORE_EXCEPTION);
+  removeChild(caption(), IGNORE_EXCEPTION_FOR_TESTING);
 }
 
 HTMLTableSectionElement* HTMLTableElement::lastBody() const {

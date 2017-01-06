@@ -410,10 +410,11 @@ bool InsertListCommand::doApplyForSingleParagraph(
       // inside listNode because moveParagraphWithClones could have removed
       // them.
       if (rangeStartIsInList && newList)
-        currentSelection.setStart(newList, 0, IGNORE_EXCEPTION);
-      if (rangeEndIsInList && newList)
+        currentSelection.setStart(newList, 0, IGNORE_EXCEPTION_FOR_TESTING);
+      if (rangeEndIsInList && newList) {
         currentSelection.setEnd(newList, Position::lastOffsetInNode(newList),
-                                IGNORE_EXCEPTION);
+                                IGNORE_EXCEPTION_FOR_TESTING);
+      }
 
       setEndingSelection(SelectionInDOMTree::Builder()
                              .collapse(Position::firstPositionInNode(newList))

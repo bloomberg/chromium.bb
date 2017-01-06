@@ -210,9 +210,10 @@ static void updateMarkerRenderedRect(const Node& node,
   DummyExceptionStateForTesting exceptionState;
   range->setStart(&const_cast<Node&>(node), marker.startOffset(),
                   exceptionState);
-  if (!exceptionState.hadException())
+  if (!exceptionState.hadException()) {
     range->setEnd(&const_cast<Node&>(node), marker.endOffset(),
-                  IGNORE_EXCEPTION);
+                  IGNORE_EXCEPTION_FOR_TESTING);
+  }
   if (!exceptionState.hadException()) {
     // TODO(yosin): Once we have a |EphemeralRange| version of |boundingBox()|,
     // we should use it instead of |Range| version.

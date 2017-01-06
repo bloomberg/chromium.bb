@@ -407,7 +407,7 @@ IDBTransaction* IDBDatabase::transaction(
 
 void IDBDatabase::forceClose() {
   for (const auto& it : m_transactions)
-    it.value->abort(IGNORE_EXCEPTION);
+    it.value->abort(IGNORE_EXCEPTION_FOR_TESTING);
   this->close();
   enqueueEvent(Event::create(EventTypeNames::close));
 }

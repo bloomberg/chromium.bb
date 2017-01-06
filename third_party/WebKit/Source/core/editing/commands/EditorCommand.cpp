@@ -764,7 +764,7 @@ static bool executeFormatBlock(LocalFrame& frame,
 
   AtomicString localName, prefix;
   if (!Document::parseQualifiedName(AtomicString(tagName), prefix, localName,
-                                    IGNORE_EXCEPTION))
+                                    IGNORE_EXCEPTION_FOR_TESTING))
     return false;
   QualifiedName qualifiedTagName(prefix, localName, xhtmlNamespaceURI);
 

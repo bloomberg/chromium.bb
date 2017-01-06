@@ -46,8 +46,9 @@ void DOMWindowStorageController::didAddEventListener(
     // to receive notifications about storage events that might be triggered in
     // other processes. Rather than subscribe to these notifications explicitly,
     // we subscribe to them implicitly to simplify the work done by the system.
-    DOMWindowStorage::from(*window).localStorage(IGNORE_EXCEPTION);
-    DOMWindowStorage::from(*window).sessionStorage(IGNORE_EXCEPTION);
+    DOMWindowStorage::from(*window).localStorage(IGNORE_EXCEPTION_FOR_TESTING);
+    DOMWindowStorage::from(*window).sessionStorage(
+        IGNORE_EXCEPTION_FOR_TESTING);
   }
 }
 

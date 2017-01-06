@@ -473,7 +473,7 @@ void HTMLTextAreaElement::setDefaultValue(const String& defaultValue) {
       textNodes.push_back(n);
   }
   for (const auto& text : textNodes)
-    removeChild(text.get(), IGNORE_EXCEPTION);
+    removeChild(text.get(), IGNORE_EXCEPTION_FOR_TESTING);
 
   // Normalize line endings.
   String value = defaultValue;
@@ -481,7 +481,7 @@ void HTMLTextAreaElement::setDefaultValue(const String& defaultValue) {
   value.replace('\r', '\n');
 
   insertBefore(document().createTextNode(value), firstChild(),
-               IGNORE_EXCEPTION);
+               IGNORE_EXCEPTION_FOR_TESTING);
 
   if (!m_isDirty)
     setNonDirtyValue(value);

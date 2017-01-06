@@ -355,7 +355,7 @@ class DOMEditor::SetNodeValueAction final : public InspectorHistory::Action {
 
   bool perform(ExceptionState&) override {
     m_oldValue = m_node->nodeValue();
-    return redo(IGNORE_EXCEPTION);
+    return redo(IGNORE_EXCEPTION_FOR_TESTING);
   }
 
   bool undo(ExceptionState&) override {

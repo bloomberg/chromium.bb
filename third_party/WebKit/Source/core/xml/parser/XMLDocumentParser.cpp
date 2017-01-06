@@ -1078,7 +1078,7 @@ void XMLDocumentParser::endElementNs() {
   if (!scriptingContentIsAllowed(getParserContentPolicy()) &&
       n->isElementNode() && toScriptLoaderIfPossible(toElement(n))) {
     popCurrentNode();
-    n->remove(IGNORE_EXCEPTION);
+    n->remove(IGNORE_EXCEPTION_FOR_TESTING);
     return;
   }
 

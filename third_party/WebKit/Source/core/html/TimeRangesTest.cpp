@@ -39,9 +39,10 @@ namespace blink {
 static std::string ToString(const TimeRanges& ranges) {
   std::stringstream ss;
   ss << "{";
-  for (unsigned i = 0; i < ranges.length(); ++i)
-    ss << " [" << ranges.start(i, IGNORE_EXCEPTION) << ","
-       << ranges.end(i, IGNORE_EXCEPTION) << ")";
+  for (unsigned i = 0; i < ranges.length(); ++i) {
+    ss << " [" << ranges.start(i, IGNORE_EXCEPTION_FOR_TESTING) << ","
+       << ranges.end(i, IGNORE_EXCEPTION_FOR_TESTING) << ")";
+  }
   ss << " }";
 
   return ss.str();
@@ -78,9 +79,10 @@ TEST(TimeRangesTest, AddOrder) {
   ASSERT_RANGE(expected, rangeA);
 
   // Add the values in rangeA to rangeB in reverse order.
-  for (int i = rangeA->length() - 1; i >= 0; --i)
-    rangeB->add(rangeA->start(i, IGNORE_EXCEPTION),
-                rangeA->end(i, IGNORE_EXCEPTION));
+  for (int i = rangeA->length() - 1; i >= 0; --i) {
+    rangeB->add(rangeA->start(i, IGNORE_EXCEPTION_FOR_TESTING),
+                rangeA->end(i, IGNORE_EXCEPTION_FOR_TESTING));
+  }
 
   ASSERT_RANGE(expected, rangeB);
 }

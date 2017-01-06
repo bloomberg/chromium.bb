@@ -56,7 +56,7 @@ void RemoveNodeCommand::doApply(EditingState* editingState) {
   m_parent = parent;
   m_refChild = m_node->nextSibling();
 
-  m_node->remove(IGNORE_EXCEPTION);
+  m_node->remove(IGNORE_EXCEPTION_FOR_TESTING);
   // Node::remove dispatch synchronous events such as IFRAME unload events,
   // and event handlers may break the document. We check the document state
   // here in order to prevent further processing in bad situation.
@@ -70,7 +70,7 @@ void RemoveNodeCommand::doUnapply() {
   if (!parent || !hasEditableStyle(*parent))
     return;
 
-  parent->insertBefore(m_node.get(), refChild, IGNORE_EXCEPTION);
+  parent->insertBefore(m_node.get(), refChild, IGNORE_EXCEPTION_FOR_TESTING);
 }
 
 DEFINE_TRACE(RemoveNodeCommand) {

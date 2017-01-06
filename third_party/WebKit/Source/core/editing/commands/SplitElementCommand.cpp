@@ -85,14 +85,14 @@ void SplitElementCommand::doUnapply() {
   Node* refChild = m_element2->firstChild();
 
   for (const auto& child : children)
-    m_element2->insertBefore(child, refChild, IGNORE_EXCEPTION);
+    m_element2->insertBefore(child, refChild, IGNORE_EXCEPTION_FOR_TESTING);
 
   // Recover the id attribute of the original element.
   const AtomicString& id = m_element1->getAttribute(HTMLNames::idAttr);
   if (!id.isNull())
     m_element2->setAttribute(HTMLNames::idAttr, id);
 
-  m_element1->remove(IGNORE_EXCEPTION);
+  m_element1->remove(IGNORE_EXCEPTION_FOR_TESTING);
 }
 
 void SplitElementCommand::doReapply() {

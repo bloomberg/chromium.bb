@@ -486,7 +486,7 @@ DispatchEventResult IDBRequest::dispatchEventInternal(Event* event) {
         dispatchResult == DispatchEventResult::NotCanceled &&
         !m_requestAborted) {
       m_transaction->setError(m_error);
-      m_transaction->abort(IGNORE_EXCEPTION);
+      m_transaction->abort(IGNORE_EXCEPTION_FOR_TESTING);
     }
 
     // If this was the last request in the transaction's list, it may commit
@@ -510,7 +510,7 @@ void IDBRequest::uncaughtExceptionInEventHandler() {
   if (m_transaction && !m_requestAborted) {
     m_transaction->setError(DOMException::create(
         AbortError, "Uncaught exception in event handler."));
-    m_transaction->abort(IGNORE_EXCEPTION);
+    m_transaction->abort(IGNORE_EXCEPTION_FOR_TESTING);
   }
 }
 

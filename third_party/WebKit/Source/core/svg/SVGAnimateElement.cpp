@@ -80,7 +80,7 @@ QualifiedName constructQualifiedName(const SVGElement& svgElement,
   AtomicString prefix;
   AtomicString localName;
   if (!Document::parseQualifiedName(attributeName, prefix, localName,
-                                    IGNORE_EXCEPTION))
+                                    IGNORE_EXCEPTION_FOR_TESTING))
     return anyQName();
 
   const AtomicString& namespaceURI = svgElement.lookupNamespaceURI(prefix);

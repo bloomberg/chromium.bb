@@ -845,19 +845,19 @@ void InputType::stepUpFromLayoutObject(int n) {
       current = stepRange.minimum() - nextDiff;
     if (current > stepRange.maximum() - nextDiff)
       current = stepRange.maximum() - nextDiff;
-    setValueAsDecimal(current, DispatchNoEvent, IGNORE_EXCEPTION);
+    setValueAsDecimal(current, DispatchNoEvent, IGNORE_EXCEPTION_FOR_TESTING);
   }
   if ((sign > 0 && current < stepRange.minimum()) ||
       (sign < 0 && current > stepRange.maximum())) {
     setValueAsDecimal(sign > 0 ? stepRange.minimum() : stepRange.maximum(),
-                      DispatchChangeEvent, IGNORE_EXCEPTION);
+                      DispatchChangeEvent, IGNORE_EXCEPTION_FOR_TESTING);
     return;
   }
   if ((sign > 0 && current >= stepRange.maximum()) ||
       (sign < 0 && current <= stepRange.minimum()))
     return;
   applyStep(current, n, AnyIsDefaultStep, DispatchChangeEvent,
-            IGNORE_EXCEPTION);
+            IGNORE_EXCEPTION_FOR_TESTING);
 }
 
 void InputType::countUsageIfVisible(UseCounter::Feature feature) const {

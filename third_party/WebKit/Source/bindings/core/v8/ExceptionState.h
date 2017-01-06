@@ -175,7 +175,7 @@ class CORE_EXPORT NonThrowableExceptionState final : public ExceptionState {
 // Syntax sugar for NonThrowableExceptionState.
 // This can be used as a default value of an ExceptionState parameter like this:
 //
-//   Node* removeChild(Node* child, ExceptionState& = ASSERT_NO_EXCEPTION)
+//     Node* removeChild(Node*, ExceptionState& = ASSERT_NO_EXCEPTION);
 #if ENABLE(ASSERT)
 #define ASSERT_NO_EXCEPTION \
   (::blink::NonThrowableExceptionState(__FILE__, __LINE__).returnThis())
@@ -213,8 +213,9 @@ class CORE_EXPORT DummyExceptionStateForTesting final : public ExceptionState {
 // Syntax sugar for DummyExceptionStateForTesting.
 // This can be used as a default value of an ExceptionState parameter like this:
 //
-//   Node* removeChild(Node* child, ExceptionState& = IGNORE_EXCEPTION)
-#define IGNORE_EXCEPTION (::blink::DummyExceptionStateForTesting().returnThis())
+//     Node* removeChild(Node*, ExceptionState& = IGNORE_EXCEPTION_FOR_TESTING);
+#define IGNORE_EXCEPTION_FOR_TESTING \
+  (::blink::DummyExceptionStateForTesting().returnThis())
 
 }  // namespace blink
 

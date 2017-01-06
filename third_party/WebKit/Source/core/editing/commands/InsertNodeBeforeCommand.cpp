@@ -58,7 +58,8 @@ void InsertNodeBeforeCommand::doApply(EditingState*) {
     return;
   DCHECK(hasEditableStyle(*parent)) << parent;
 
-  parent->insertBefore(m_insertChild.get(), m_refChild.get(), IGNORE_EXCEPTION);
+  parent->insertBefore(m_insertChild.get(), m_refChild.get(),
+                       IGNORE_EXCEPTION_FOR_TESTING);
 }
 
 void InsertNodeBeforeCommand::doUnapply() {
@@ -66,7 +67,7 @@ void InsertNodeBeforeCommand::doUnapply() {
   if (!hasEditableStyle(*m_insertChild))
     return;
 
-  m_insertChild->remove(IGNORE_EXCEPTION);
+  m_insertChild->remove(IGNORE_EXCEPTION_FOR_TESTING);
 }
 
 DEFINE_TRACE(InsertNodeBeforeCommand) {

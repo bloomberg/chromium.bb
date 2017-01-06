@@ -1373,12 +1373,15 @@ Response InspectorNetworkAgent::replayXHR(const String& requestId) {
   executionContext->removeURLFromMemoryCache(xhrReplayData->url());
 
   xhr->open(xhrReplayData->method(), xhrReplayData->url(),
-            xhrReplayData->async(), IGNORE_EXCEPTION);
+            xhrReplayData->async(), IGNORE_EXCEPTION_FOR_TESTING);
   if (xhrReplayData->includeCredentials())
-    xhr->setWithCredentials(true, IGNORE_EXCEPTION);
-  for (const auto& header : xhrReplayData->headers())
-    xhr->setRequestHeader(header.key, header.value, IGNORE_EXCEPTION);
-  xhr->sendForInspectorXHRReplay(xhrReplayData->formData(), IGNORE_EXCEPTION);
+    xhr->setWithCredentials(true, IGNORE_EXCEPTION_FOR_TESTING);
+  for (const auto& header : xhrReplayData->headers()) {
+    xhr->setRequestHeader(header.key, header.value,
+                          IGNORE_EXCEPTION_FOR_TESTING);
+  }
+  xhr->sendForInspectorXHRReplay(xhrReplayData->formData(),
+                                 IGNORE_EXCEPTION_FOR_TESTING);
 
   m_replayXHRs.add(xhr);
   return Response::OK();

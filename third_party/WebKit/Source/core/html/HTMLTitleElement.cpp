@@ -83,8 +83,10 @@ void HTMLTitleElement::setText(const String& value) {
     removeChildren(OmitSubtreeModifiedEvent);
   }
 
-  if (!value.isEmpty())
-    appendChild(document().createTextNode(value.impl()), IGNORE_EXCEPTION);
+  if (!value.isEmpty()) {
+    appendChild(document().createTextNode(value.impl()),
+                IGNORE_EXCEPTION_FOR_TESTING);
+  }
 }
 
 }  // namespace blink

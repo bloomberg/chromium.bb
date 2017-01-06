@@ -44,14 +44,14 @@ void AppendNodeCommand::doApply(EditingState*) {
   if (!hasEditableStyle(*m_parent) && m_parent->inActiveDocument())
     return;
 
-  m_parent->appendChild(m_node.get(), IGNORE_EXCEPTION);
+  m_parent->appendChild(m_node.get(), IGNORE_EXCEPTION_FOR_TESTING);
 }
 
 void AppendNodeCommand::doUnapply() {
   if (!hasEditableStyle(*m_parent))
     return;
 
-  m_node->remove(IGNORE_EXCEPTION);
+  m_node->remove(IGNORE_EXCEPTION_FOR_TESTING);
 }
 
 DEFINE_TRACE(AppendNodeCommand) {

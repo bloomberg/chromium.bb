@@ -79,7 +79,7 @@ TEST(RTCDataChannelTest, BufferedAmount) {
 
   handler->changeState(WebRTCDataChannelHandlerClient::ReadyStateOpen);
   String message(std::string(100, 'A').c_str());
-  channel->send(message, IGNORE_EXCEPTION);
+  channel->send(message, IGNORE_EXCEPTION_FOR_TESTING);
   EXPECT_EQ(100U, channel->bufferedAmount());
 }
 
@@ -90,7 +90,7 @@ TEST(RTCDataChannelTest, BufferedAmountLow) {
   // Add and drain 100 bytes
   handler->changeState(WebRTCDataChannelHandlerClient::ReadyStateOpen);
   String message(std::string(100, 'A').c_str());
-  channel->send(message, IGNORE_EXCEPTION);
+  channel->send(message, IGNORE_EXCEPTION_FOR_TESTING);
   EXPECT_EQ(100U, channel->bufferedAmount());
   EXPECT_EQ(1U, channel->m_scheduledEvents.size());
 
@@ -102,7 +102,7 @@ TEST(RTCDataChannelTest, BufferedAmountLow) {
       std::string(channel->m_scheduledEvents.back()->type().utf8().data()));
 
   // Add and drain 1 byte
-  channel->send("A", IGNORE_EXCEPTION);
+  channel->send("A", IGNORE_EXCEPTION_FOR_TESTING);
   EXPECT_EQ(1U, channel->bufferedAmount());
   EXPECT_EQ(2U, channel->m_scheduledEvents.size());
 
@@ -115,10 +115,10 @@ TEST(RTCDataChannelTest, BufferedAmountLow) {
 
   // Set the threshold to 99 bytes, add 101, and drain 1 byte at a time.
   channel->setBufferedAmountLowThreshold(99U);
-  channel->send(message, IGNORE_EXCEPTION);
+  channel->send(message, IGNORE_EXCEPTION_FOR_TESTING);
   EXPECT_EQ(100U, channel->bufferedAmount());
 
-  channel->send("A", IGNORE_EXCEPTION);
+  channel->send("A", IGNORE_EXCEPTION_FOR_TESTING);
   EXPECT_EQ(101U, channel->bufferedAmount());
 
   handler->drainBuffer(1);

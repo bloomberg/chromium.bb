@@ -58,7 +58,7 @@ Node* Text::mergeNextSiblingNodesIfPossible() {
   if (!length()) {
     // Care must be taken to get the next node before removing the current node.
     Node* nextNode = NodeTraversal::nextPostOrder(*this);
-    remove(IGNORE_EXCEPTION);
+    remove(IGNORE_EXCEPTION_FOR_TESTING);
     return nextNode;
   }
 
@@ -71,7 +71,7 @@ Node* Text::mergeNextSiblingNodesIfPossible() {
 
     // Remove empty text nodes.
     if (!nextText->length()) {
-      nextText->remove(IGNORE_EXCEPTION);
+      nextText->remove(IGNORE_EXCEPTION_FOR_TESTING);
       continue;
     }
 
@@ -94,7 +94,7 @@ Node* Text::mergeNextSiblingNodesIfPossible() {
 
     document().incDOMTreeVersion();
     didModifyData(oldTextData, CharacterData::UpdateFromNonParser);
-    nextText->remove(IGNORE_EXCEPTION);
+    nextText->remove(IGNORE_EXCEPTION_FOR_TESTING);
   }
 
   return NodeTraversal::nextPostOrder(*this);
@@ -202,7 +202,7 @@ Text* Text::replaceWholeText(const String& newText) {
        n && n != this && n->isTextNode() && n->parentNode() == parent;) {
     Node* nodeToRemove = n;
     n = nodeToRemove->nextSibling();
-    parent->removeChild(nodeToRemove, IGNORE_EXCEPTION);
+    parent->removeChild(nodeToRemove, IGNORE_EXCEPTION_FOR_TESTING);
   }
 
   if (this != endText) {
@@ -211,13 +211,13 @@ Text* Text::replaceWholeText(const String& newText) {
                                   n->parentNode() == parent;) {
       Node* nodeToRemove = n;
       n = nodeToRemove->nextSibling();
-      parent->removeChild(nodeToRemove, IGNORE_EXCEPTION);
+      parent->removeChild(nodeToRemove, IGNORE_EXCEPTION_FOR_TESTING);
     }
   }
 
   if (newText.isEmpty()) {
     if (parent && parentNode() == parent)
-      parent->removeChild(this, IGNORE_EXCEPTION);
+      parent->removeChild(this, IGNORE_EXCEPTION_FOR_TESTING);
     return nullptr;
   }
 

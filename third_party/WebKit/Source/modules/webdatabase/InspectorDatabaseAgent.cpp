@@ -177,7 +177,7 @@ class TransactionCallback final : public SQLTransactionCallback {
     SQLStatementErrorCallback* errorCallback =
         StatementErrorCallback::create(m_requestCallback);
     transaction->executeSQL(m_sqlStatement, sqlValues, callback, errorCallback,
-                            IGNORE_EXCEPTION);
+                            IGNORE_EXCEPTION_FOR_TESTING);
     return true;
   }
 

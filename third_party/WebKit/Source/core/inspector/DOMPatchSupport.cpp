@@ -94,7 +94,7 @@ void DOMPatchSupport::patchDocument(const String& markup) {
   Digest* newInfo =
       createDigest(newDocument->documentElement(), &m_unusedNodesMap);
 
-  if (!innerPatchNode(oldInfo, newInfo, IGNORE_EXCEPTION)) {
+  if (!innerPatchNode(oldInfo, newInfo, IGNORE_EXCEPTION_FOR_TESTING)) {
     // Fall back to rewrite.
     document().write(markup);
     document().close();

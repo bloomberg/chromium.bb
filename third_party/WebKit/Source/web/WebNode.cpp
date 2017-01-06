@@ -170,7 +170,7 @@ WebElement WebNode::querySelector(const WebString& selector) const {
   if (!m_private->isContainerNode())
     return WebElement();
   return toContainerNode(m_private.get())
-      ->querySelector(selector, IGNORE_EXCEPTION);
+      ->querySelector(selector, IGNORE_EXCEPTION_FOR_TESTING);
 }
 
 bool WebNode::focused() const {

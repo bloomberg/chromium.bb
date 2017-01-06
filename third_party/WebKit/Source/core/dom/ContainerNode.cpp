@@ -347,7 +347,8 @@ bool ContainerNode::checkParserAcceptChild(const Node& newChild) const {
     return true;
   // TODO(esprehn): Are there other conditions where the parser can create
   // invalid trees?
-  return toDocument(*this).canAcceptChild(newChild, nullptr, IGNORE_EXCEPTION);
+  return toDocument(*this).canAcceptChild(newChild, nullptr,
+                                          IGNORE_EXCEPTION_FOR_TESTING);
 }
 
 void ContainerNode::parserInsertBefore(Node* newChild, Node& nextChild) {

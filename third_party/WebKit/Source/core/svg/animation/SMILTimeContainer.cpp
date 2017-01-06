@@ -514,12 +514,12 @@ SMILTime SMILTimeContainer::updateAnimations(double elapsed, bool seekToTime) {
     if (timedElement->isConnected() && timedElement->isSVGDiscardElement()) {
       SVGElement* targetElement = timedElement->targetElement();
       if (targetElement && targetElement->isConnected()) {
-        targetElement->remove(IGNORE_EXCEPTION);
+        targetElement->remove(IGNORE_EXCEPTION_FOR_TESTING);
         DCHECK(!targetElement->isConnected());
       }
 
       if (timedElement->isConnected()) {
-        timedElement->remove(IGNORE_EXCEPTION);
+        timedElement->remove(IGNORE_EXCEPTION_FOR_TESTING);
         DCHECK(!timedElement->isConnected());
       }
     }

@@ -130,7 +130,7 @@ void HttpEquiv::processHttpEquivSetCookie(Document& document,
   }
 
   // Exception (for sandboxed documents) ignored.
-  document.setCookie(content, IGNORE_EXCEPTION);
+  document.setCookie(content, IGNORE_EXCEPTION_FOR_TESTING);
 }
 
 }  // namespace blink

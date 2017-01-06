@@ -96,7 +96,8 @@ void WebElement::setAttribute(const WebString& attrName,
   // mutate the DOM in any way.
   V0CustomElementProcessingStack::CallbackDeliveryScope
       deliverCustomElementCallbacks;
-  unwrap<Element>()->setAttribute(attrName, attrValue, IGNORE_EXCEPTION);
+  unwrap<Element>()->setAttribute(attrName, attrValue,
+                                  IGNORE_EXCEPTION_FOR_TESTING);
 }
 
 unsigned WebElement::attributeCount() const {

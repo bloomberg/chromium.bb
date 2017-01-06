@@ -62,7 +62,7 @@ void InsertIntoTextNodeCommand::doApply(EditingState*) {
                                                       m_text.length() - 1);
   }
 
-  m_node->insertData(m_offset, m_text, IGNORE_EXCEPTION);
+  m_node->insertData(m_offset, m_text, IGNORE_EXCEPTION_FOR_TESTING);
   document().updateStyleAndLayout();
 }
 
@@ -70,7 +70,7 @@ void InsertIntoTextNodeCommand::doUnapply() {
   if (!hasEditableStyle(*m_node))
     return;
 
-  m_node->deleteData(m_offset, m_text.length(), IGNORE_EXCEPTION);
+  m_node->deleteData(m_offset, m_text.length(), IGNORE_EXCEPTION_FOR_TESTING);
   document().updateStyleAndLayout();
 }
 

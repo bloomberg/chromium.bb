@@ -1795,10 +1795,10 @@ AXObject::AXRange AXLayoutObject::selectionUnderObject() const {
       // Selection is contained in node.
       ||
       !(parentNode &&
-        selectionRange->comparePoint(parentNode, nodeIndex, IGNORE_EXCEPTION) <
-            0 &&
+        selectionRange->comparePoint(parentNode, nodeIndex,
+                                     IGNORE_EXCEPTION_FOR_TESTING) < 0 &&
         selectionRange->comparePoint(parentNode, nodeIndex + 1,
-                                     IGNORE_EXCEPTION) > 0)) {
+                                     IGNORE_EXCEPTION_FOR_TESTING) > 0)) {
     return AXRange();
   }
 
@@ -1858,8 +1858,8 @@ int AXLayoutObject::indexForVisiblePosition(
     return 0;
 
   Range* range = Range::create(*getDocument());
-  range->setStart(getNode(), 0, IGNORE_EXCEPTION);
-  range->setEnd(indexPosition, IGNORE_EXCEPTION);
+  range->setStart(getNode(), 0, IGNORE_EXCEPTION_FOR_TESTING);
+  range->setEnd(indexPosition, IGNORE_EXCEPTION_FOR_TESTING);
 
   return TextIterator::rangeLength(range->startPosition(),
                                    range->endPosition());
