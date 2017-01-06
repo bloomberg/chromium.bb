@@ -75,8 +75,6 @@ class WindowProxy final : public GarbageCollectedFinalized<WindowProxy> {
   bool isContextInitialized() {
     return m_scriptState && !!m_scriptState->perContextData();
   }
-  bool isGlobalInitialized() { return !m_globalProxy.isEmpty(); }
-
   void initializeIfNeeded();
 
   void clearForNavigation();
