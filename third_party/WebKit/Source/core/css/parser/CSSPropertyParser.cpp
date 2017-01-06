@@ -3709,11 +3709,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return consumeInteger(m_range, 0);
     case CSSPropertyOrder:
       return consumeInteger(m_range);
-    case CSSPropertyTextUnderlinePosition:
-      // auto | [ under || [ left | right ] ], but we only support auto | under
-      // for now
-      ASSERT(RuntimeEnabledFeatures::css3TextDecorationsEnabled());
-      return consumeIdent<CSSValueAuto, CSSValueUnder>(m_range);
     case CSSPropertyVerticalAlign:
       return consumeVerticalAlign(m_range, m_context.mode());
     case CSSPropertyShapeOutside:

@@ -384,7 +384,7 @@ text-overflow type_name=TextOverflow
 text-shadow interpolable, inherited, converter=convertShadowList
 text-size-adjust inherited, converter=convertTextSizeAdjust, type_name=TextSizeAdjust
 text-transform inherited, keyword_only, keywords=[capitalize|uppercase|lowercase|none], initial_keyword=none
-text-underline-position runtime_flag=CSS3TextDecorations, inherited, type_name=TextUnderlinePosition
+text-underline-position runtime_flag=CSS3TextDecorations, inherited, type_name=TextUnderlinePosition, api_class
 top typedom_types=[Length], keywords=[auto], supports_percentage, interpolable, initial=initialOffset, converter=convertLengthOrAuto
 touch-action converter=convertFlags<TouchAction>, type_name=TouchAction
 transform typedom_types=[Transform], keywords=[none], interpolable, converter=convertTransformOperations
