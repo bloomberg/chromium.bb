@@ -163,9 +163,23 @@ static bool canAccessAncestor(const SecurityOrigin& activeSecurityOrigin,
 
 bool Frame::canNavigate(const Frame& targetFrame) {
   String errorReason;
-  bool isAllowedNavigation =
+  const bool isAllowedNavigation =
       canNavigateWithoutFramebusting(targetFrame, errorReason);
+  const bool sandboxed = securityContext()->getSandboxFlags() != SandboxNone;
+  const bool hasUserGesture =
+      isLocalFrame() ? toLocalFrame(this)->document()->hasReceivedUserGesture()
+                     : false;
 
+  // Top navigation in sandbox with or w/o 'allow-top-navigation'.
+  if (targetFrame != this && sandboxed && targetFrame == tree().top()) {
+    UseCounter::count(&targetFrame, UseCounter::TopNavInSandbox);
+    if (!hasUserGesture) {
+      UseCounter::count(&targetFrame,
+                        UseCounter::TopNavInSandboxWithoutGesture);
+    }
+  }
+
+  // Top navigation w/o sandbox or in sandbox with 'allow-top-navigation'.
   if (targetFrame != this &&
       !securityContext()->isSandboxed(SandboxTopNavigation) &&
       targetFrame == tree().top()) {
@@ -175,12 +189,17 @@ bool Frame::canNavigate(const Frame& targetFrame) {
     const unsigned allowedBit = 0x2;
     unsigned framebustParams = 0;
     UseCounter::count(&targetFrame, UseCounter::TopNavigationFromSubFrame);
-    bool hasUserGesture =
-        isLocalFrame()
-            ? toLocalFrame(this)->document()->hasReceivedUserGesture()
-            : false;
+
     if (hasUserGesture)
       framebustParams |= userGestureBit;
+    if (sandboxed) {  // Sandboxed with 'allow-top-navigation'.
+      UseCounter::count(&targetFrame, UseCounter::TopNavInSandboxWithPerm);
+      if (!hasUserGesture) {
+        UseCounter::count(&targetFrame,
+                          UseCounter::TopNavInSandboxWithPermButNoGesture);
+      }
+    }
+
     if (isAllowedNavigation)
       framebustParams |= allowedBit;
     framebustHistogram.count(framebustParams);

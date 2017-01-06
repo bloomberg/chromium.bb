@@ -1419,6 +1419,10 @@ class CORE_EXPORT UseCounter {
     PromptEngagementMedium = 1746,
     PromptEngagementHigh = 1747,
     PromptEngagementMax = 1748,
+    TopNavInSandbox = 1749,
+    TopNavInSandboxWithoutGesture = 1750,
+    TopNavInSandboxWithPerm = 1751,
+    TopNavInSandboxWithPermButNoGesture = 1752,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
