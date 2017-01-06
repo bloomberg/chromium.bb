@@ -135,6 +135,16 @@ void RunFunctionOnGlobalAndIgnoreResult(v8::Local<v8::Function> function,
   RunFunction(function, context, context->Global(), argc, argv);
 }
 
+v8::Global<v8::Value> RunFunctionOnGlobalAndReturnHandle(
+    v8::Local<v8::Function> function,
+    v8::Local<v8::Context> context,
+    int argc,
+    v8::Local<v8::Value> argv[]) {
+  return v8::Global<v8::Value>(
+      context->GetIsolate(),
+      RunFunction(function, context, context->Global(), argc, argv));
+}
+
 void RunFunctionAndExpectError(v8::Local<v8::Function> function,
                                v8::Local<v8::Context> context,
                                v8::Local<v8::Value> receiver,

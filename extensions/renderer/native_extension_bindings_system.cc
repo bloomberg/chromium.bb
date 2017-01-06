@@ -82,6 +82,33 @@ void CallJsFunction(v8::Local<v8::Function> function,
   script_context->SafeCallFunction(function, argc, argv);
 }
 
+v8::Global<v8::Value> CallJsFunctionSync(v8::Local<v8::Function> function,
+                                         v8::Local<v8::Context> context,
+                                         int argc,
+                                         v8::Local<v8::Value> argv[]) {
+  bool did_complete = false;
+  v8::Global<v8::Value> result;
+  auto callback = base::Bind([](
+      v8::Isolate* isolate,
+      bool* did_complete_out,
+      v8::Global<v8::Value>* result_out,
+      const std::vector<v8::Local<v8::Value>>& results) {
+    *did_complete_out = true;
+    // The locals are released after the callback is executed, so we need to
+    // grab a persistent handle.
+    if (!results.empty() && !results[0].IsEmpty())
+      result_out->Reset(isolate, results[0]);
+  }, base::Unretained(context->GetIsolate()),
+     base::Unretained(&did_complete), base::Unretained(&result));
+
+  ScriptContext* script_context =
+      ScriptContextSet::GetContextByV8Context(context);
+  CHECK(script_context);
+  script_context->SafeCallFunction(function, argc, argv, callback);
+  CHECK(did_complete) << "expected script to execute synchronously";
+  return result;
+}
+
 // Returns the API schema indicated by |api_name|.
 const base::DictionaryValue& GetAPISchema(const std::string& api_name) {
   const base::DictionaryValue* schema =
@@ -103,6 +130,7 @@ NativeExtensionBindingsSystem::NativeExtensionBindingsSystem(
     const SendIPCMethod& send_ipc)
     : send_ipc_(send_ipc),
       api_system_(base::Bind(&CallJsFunction),
+                  base::Bind(&CallJsFunctionSync),
                   base::Bind(&GetAPISchema),
                   base::Bind(&NativeExtensionBindingsSystem::SendRequest,
                              base::Unretained(this))),

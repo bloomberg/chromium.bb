@@ -17,10 +17,6 @@ class Value;
 class ListValue;
 }
 
-namespace gin {
-class Arguments;
-}
-
 namespace extensions {
 
 // A representation of the expected signature for an API method, along with the
@@ -35,7 +31,8 @@ class APISignature {
   // from the list of arguments passed in because it will include null-filled
   // optional arguments.
   // Returns true if the arguments were successfully parsed and converted.
-  bool ParseArgumentsToV8(gin::Arguments* arguments,
+  bool ParseArgumentsToV8(v8::Local<v8::Context> context,
+                          const std::vector<v8::Local<v8::Value>>& arguments,
                           const ArgumentSpec::RefMap& type_refs,
                           std::vector<v8::Local<v8::Value>>* args_out,
                           std::string* error) const;
@@ -44,7 +41,8 @@ class APISignature {
   // Returns true if the arguments were successfully parsed and converted, and
   // populates |args_out| and |callback_out| with the JSON arguments and
   // callback values, respectively. On failure, returns false populates |error|.
-  bool ParseArgumentsToJSON(gin::Arguments* arguments,
+  bool ParseArgumentsToJSON(v8::Local<v8::Context> context,
+                            const std::vector<v8::Local<v8::Value>>& arguments,
                             const ArgumentSpec::RefMap& type_refs,
                             std::unique_ptr<base::ListValue>* args_out,
                             v8::Local<v8::Function>* callback_out,

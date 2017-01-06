@@ -4,6 +4,8 @@
 
 #include "extensions/renderer/api_signature.h"
 
+#include <algorithm>
+
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "gin/arguments.h"
@@ -17,11 +19,12 @@ namespace {
 // should *only* be used directly on the stack!
 class ArgumentParser {
  public:
-  ArgumentParser(const std::vector<std::unique_ptr<ArgumentSpec>>& signature,
-                 gin::Arguments* arguments,
+  ArgumentParser(v8::Local<v8::Context> context,
+                 const std::vector<std::unique_ptr<ArgumentSpec>>& signature,
+                 const std::vector<v8::Local<v8::Value>>& arguments,
                  const ArgumentSpec::RefMap& type_refs,
                  std::string* error)
-    : context_(arguments->isolate()->GetCurrentContext()),
+    : context_(context),
       signature_(signature),
       arguments_(arguments),
       type_refs_(type_refs),
@@ -34,6 +37,15 @@ class ArgumentParser {
   v8::Isolate* GetIsolate() { return context_->GetIsolate(); }
 
  private:
+  v8::Local<v8::Value> next_argument() {
+    return current_index_ < arguments_.size() ?
+        arguments_[current_index_] : v8::Local<v8::Value>();
+  }
+
+  void ConsumeArgument() {
+    current_index_ = std::min(arguments_.size(), current_index_ + 1);
+  }
+
   // Attempts to match the next argument to the given |spec|.
   // If the next argument does not match and |spec| is optional, uses a null
   // value.
@@ -55,21 +67,23 @@ class ArgumentParser {
 
   v8::Local<v8::Context> context_;
   const std::vector<std::unique_ptr<ArgumentSpec>>& signature_;
-  gin::Arguments* arguments_;
+  const std::vector<v8::Local<v8::Value>>& arguments_;
   const ArgumentSpec::RefMap& type_refs_;
   std::string* error_;
+  size_t current_index_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ArgumentParser);
 };
 
 class V8ArgumentParser : public ArgumentParser {
  public:
-  V8ArgumentParser(const std::vector<std::unique_ptr<ArgumentSpec>>& signature,
-                   gin::Arguments* arguments,
+  V8ArgumentParser(v8::Local<v8::Context> context,
+                   const std::vector<std::unique_ptr<ArgumentSpec>>& signature,
+                   const std::vector<v8::Local<v8::Value>>& arguments,
                    const ArgumentSpec::RefMap& type_refs,
                    std::string* error,
                    std::vector<v8::Local<v8::Value>>* values)
-      : ArgumentParser(signature, arguments, type_refs, error),
+      : ArgumentParser(context, signature, arguments, type_refs, error),
         values_(values) {}
 
  private:
@@ -90,12 +104,13 @@ class V8ArgumentParser : public ArgumentParser {
 class BaseValueArgumentParser : public ArgumentParser {
  public:
   BaseValueArgumentParser(
+      v8::Local<v8::Context> context,
       const std::vector<std::unique_ptr<ArgumentSpec>>& signature,
-      gin::Arguments* arguments,
+      const std::vector<v8::Local<v8::Value>>& arguments,
       const ArgumentSpec::RefMap& type_refs,
       std::string* error,
       base::ListValue* list_value)
-      : ArgumentParser(signature, arguments, type_refs, error),
+      : ArgumentParser(context, signature, arguments, type_refs, error),
         list_value_(list_value) {}
 
   v8::Local<v8::Function> callback() { return callback_; }
@@ -142,14 +157,14 @@ bool ArgumentParser::ParseArguments() {
   if (signature_has_callback && !ParseCallback(*signature_.back()))
     return false;
 
-  if (!arguments_->PeekNext().IsEmpty())
+  if (current_index_ != arguments_.size())
     return false;  // Extra arguments aren't allowed.
 
   return true;
 }
 
 bool ArgumentParser::ParseArgument(const ArgumentSpec& spec) {
-  v8::Local<v8::Value> value = arguments_->PeekNext();
+  v8::Local<v8::Value> value = next_argument();
   if (value.IsEmpty() || value->IsNull() || value->IsUndefined()) {
     if (!spec.optional()) {
       *error_ = "Missing required argument: " + spec.name();
@@ -157,7 +172,7 @@ bool ArgumentParser::ParseArgument(const ArgumentSpec& spec) {
     }
     // This is safe to call even if |arguments| is at the end (which can happen
     // if n optional arguments are omitted at the end of the signature).
-    arguments_->Skip();
+    ConsumeArgument();
 
     AddNull();
     return true;
@@ -173,19 +188,19 @@ bool ArgumentParser::ParseArgument(const ArgumentSpec& spec) {
     return true;
   }
 
-  arguments_->Skip();
+  ConsumeArgument();
   AddParsedArgument(value);
   return true;
 }
 
 bool ArgumentParser::ParseCallback(const ArgumentSpec& spec) {
-  v8::Local<v8::Value> value = arguments_->PeekNext();
+  v8::Local<v8::Value> value = next_argument();
   if (value.IsEmpty() || value->IsNull() || value->IsUndefined()) {
     if (!spec.optional()) {
       *error_ = "Missing required argument: " + spec.name();
       return false;
     }
-    arguments_->Skip();
+    ConsumeArgument();
     return true;
   }
 
@@ -194,7 +209,7 @@ bool ArgumentParser::ParseCallback(const ArgumentSpec& spec) {
     return false;
   }
 
-  arguments_->Skip();
+  ConsumeArgument();
   SetCallback(value.As<v8::Function>());
   return true;
 }
@@ -212,13 +227,16 @@ APISignature::APISignature(const base::ListValue& specification) {
 
 APISignature::~APISignature() {}
 
-bool APISignature::ParseArgumentsToV8(gin::Arguments* arguments,
-                                      const ArgumentSpec::RefMap& type_refs,
-                                      std::vector<v8::Local<v8::Value>>* v8_out,
-                                      std::string* error) const {
+bool APISignature::ParseArgumentsToV8(
+    v8::Local<v8::Context> context,
+    const std::vector<v8::Local<v8::Value>>& arguments,
+    const ArgumentSpec::RefMap& type_refs,
+    std::vector<v8::Local<v8::Value>>* v8_out,
+    std::string* error) const {
   DCHECK(v8_out);
   std::vector<v8::Local<v8::Value>> v8_values;
-  V8ArgumentParser parser(signature_, arguments, type_refs, error, &v8_values);
+  V8ArgumentParser parser(
+      context, signature_, arguments, type_refs, error, &v8_values);
   if (!parser.ParseArguments())
     return false;
   *v8_out = std::move(v8_values);
@@ -226,7 +244,8 @@ bool APISignature::ParseArgumentsToV8(gin::Arguments* arguments,
 }
 
 bool APISignature::ParseArgumentsToJSON(
-    gin::Arguments* arguments,
+    v8::Local<v8::Context> context,
+    const std::vector<v8::Local<v8::Value>>& arguments,
     const ArgumentSpec::RefMap& type_refs,
     std::unique_ptr<base::ListValue>* json_out,
     v8::Local<v8::Function>* callback_out,
@@ -235,7 +254,7 @@ bool APISignature::ParseArgumentsToJSON(
   DCHECK(callback_out);
   std::unique_ptr<base::ListValue> json = base::MakeUnique<base::ListValue>();
   BaseValueArgumentParser parser(
-      signature_, arguments, type_refs, error, json.get());
+      context, signature_, arguments, type_refs, error, json.get());
   if (!parser.ParseArguments())
     return false;
   *json_out = std::move(json);

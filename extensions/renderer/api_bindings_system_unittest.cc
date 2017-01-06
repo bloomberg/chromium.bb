@@ -98,6 +98,7 @@ class APIBindingsSystemTestBase : public APIBindingTest {
     APIBindingTest::SetUp();
     bindings_system_ = base::MakeUnique<APIBindingsSystem>(
         base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+        base::Bind(&RunFunctionOnGlobalAndReturnHandle),
         base::Bind(&APIBindingsSystemTestBase::GetAPISchema,
                    base::Unretained(this)),
         base::Bind(&APIBindingsSystemTestBase::OnAPIRequest,
@@ -294,25 +295,26 @@ TEST_F(APIBindingsSystemTest, TestCustomHooks) {
   v8::Local<v8::Context> context = ContextLocal();
 
   bool did_call = false;
-  auto hook = [](bool* did_call, const APISignature* signature,
-                 gin::Arguments* arguments,
+  auto hook = [](bool* did_call,
+                 const APISignature* signature, v8::Local<v8::Context> context,
+                 std::vector<v8::Local<v8::Value>>* arguments,
                  const ArgumentSpec::RefMap& type_refs) {
     *did_call = true;
-    std::string argument;
-    EXPECT_EQ(2, arguments->Length());
-    EXPECT_TRUE(arguments->GetNext(&argument));
-    EXPECT_EQ("foo", argument);
-    v8::Local<v8::Function> function;
-    EXPECT_TRUE(arguments->GetNext(&function));
-    // The above EXPECT_TRUE should really be an ASSERT, but that messes with
-    // the return type.
-    if (function.IsEmpty())
+    if (arguments->size() != 2) {  // ASSERT* messes with the return type.
+      EXPECT_EQ(2u, arguments->size());
       return APIBindingHooks::RequestResult::HANDLED;
+    }
+    std::string argument;
+    EXPECT_EQ("foo", gin::V8ToString(arguments->at(0)));
+    if (!arguments->at(1)->IsFunction()) {
+      EXPECT_TRUE(arguments->at(1)->IsFunction());
+      return APIBindingHooks::RequestResult::HANDLED;
+    }
     v8::Local<v8::String> response =
-        gin::StringToV8(arguments->isolate(), "bar");
+        gin::StringToV8(context->GetIsolate(), "bar");
     v8::Local<v8::Value> response_args[] = {response};
-    RunFunctionOnGlobal(function, arguments->isolate()->GetCurrentContext(),
-                        1, response_args);
+    RunFunctionOnGlobal(arguments->at(1).As<v8::Function>(),
+                        context, 1, response_args);
     return APIBindingHooks::RequestResult::HANDLED;
   };
 

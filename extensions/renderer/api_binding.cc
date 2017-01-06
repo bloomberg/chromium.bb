@@ -190,36 +190,56 @@ void APIBinding::HandleCall(const std::string& name,
   // GetCurrentContext() should always be correct.
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
-  APIBindingHooks::RequestResult hooks_result =
-      APIBindingHooks::RequestResult::NOT_HANDLED;
-  hooks_result = binding_hooks_->HandleRequest(api_name_, name, context,
-                                               signature, arguments,
-                                               *type_refs_);
+  std::vector<v8::Local<v8::Value>> argument_list;
+  if (arguments->Length() > 0) {
+    // Just copying handles should never fail.
+    CHECK(arguments->GetRemaining(&argument_list));
+  }
 
-  switch (hooks_result) {
-    case APIBindingHooks::RequestResult::INVALID_INVOCATION:
-      arguments->ThrowTypeError("Invalid invocation");
-      return;
-    case APIBindingHooks::RequestResult::HANDLED:
-      return;  // Our work here is done.
-    case APIBindingHooks::RequestResult::NOT_HANDLED:
-      break;  // Handle in the default manner.
+  bool invalid_invocation = false;
+  {
+    v8::TryCatch try_catch(isolate);
+    APIBindingHooks::RequestResult hooks_result =
+        APIBindingHooks::RequestResult::NOT_HANDLED;
+    hooks_result = binding_hooks_->HandleRequest(api_name_, name, context,
+                                                 signature, &argument_list,
+                                                 *type_refs_);
+
+    switch (hooks_result) {
+      case APIBindingHooks::RequestResult::INVALID_INVOCATION:
+        invalid_invocation = true;
+        // Throw a type error below so that it's not caught by our try-catch.
+        break;
+      case APIBindingHooks::RequestResult::THROWN:
+        DCHECK(try_catch.HasCaught());
+        try_catch.ReThrow();
+        return;
+      case APIBindingHooks::RequestResult::HANDLED:
+        return;  // Our work here is done.
+      case APIBindingHooks::RequestResult::NOT_HANDLED:
+        break;  // Handle in the default manner.
+    }
+  }
+
+  if (invalid_invocation) {
+    arguments->ThrowTypeError("Invalid invocation");
+    return;
   }
 
   std::unique_ptr<base::ListValue> converted_arguments;
   v8::Local<v8::Function> callback;
-  bool conversion_success = false;
   {
     v8::TryCatch try_catch(isolate);
-    conversion_success = signature->ParseArgumentsToJSON(
-        arguments, *type_refs_, &converted_arguments, &callback, &error);
+    invalid_invocation = !signature->ParseArgumentsToJSON(
+        context, argument_list, *type_refs_,
+        &converted_arguments, &callback, &error);
     if (try_catch.HasCaught()) {
       DCHECK(!converted_arguments);
       try_catch.ReThrow();
       return;
     }
   }
-  if (!conversion_success) {
+  if (invalid_invocation) {
     arguments->ThrowTypeError("Invalid invocation");
     return;
   }

@@ -285,6 +285,11 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestBridgingToJSCustomBindings) {
       "    this.timeArg = time;\n"
       "    callback('active');\n"
       "  });\n"
+      "  api.apiFunctions.setUpdateArgumentsPreValidate(\n"
+      "      'setDetectionInterval', (interval) => {\n"
+      "    this.intervalArg = interval;\n"
+      "    return [50];\n"
+      "  });\n"
       "  this.hookedExtensionId = extensionId;\n"
       "  this.hookedContextType = contextType;\n"
       "  api.compiledApi.hookedApiProperty = 'someProperty';\n"
@@ -341,6 +346,30 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestBridgingToJSCustomBindings) {
   // ...and second, that the callback was called with the proper result.
   EXPECT_EQ("\"active\"",
             GetStringPropertyFromObject(global, context, "responseState"));
+
+  // Test the updateArgumentsPreValidate hook.
+  {
+    // Call the function correctly.
+    const char kCallIdleSetInterval[] =
+        "(function() {\n"
+        "  chrome.idle.setDetectionInterval(20);\n"
+        "});";
+
+    v8::Local<v8::Function> call_idle_set_interval =
+        FunctionFromString(context, kCallIdleSetInterval);
+    RunFunctionOnGlobal(call_idle_set_interval, context, 0, nullptr);
+  }
+
+  // Since we don't have a custom request handler, the hook should have only
+  // updated the arguments. The request then should have gone to the browser
+  // normally.
+  EXPECT_EQ("20", GetStringPropertyFromObject(global, context, "intervalArg"));
+  EXPECT_EQ(extension->id(), last_params().extension_id);
+  EXPECT_EQ("idle.setDetectionInterval", last_params().name);
+  EXPECT_EQ(extension->url(), last_params().source_url);
+  EXPECT_FALSE(last_params().has_callback);
+  EXPECT_TRUE(
+      last_params().arguments.Equals(ListValueFromString("[50]").get()));
 }
 
 }  // namespace extensions

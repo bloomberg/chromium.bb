@@ -194,7 +194,7 @@ TEST_F(APIBindingUnittest, TestEmptyAPI) {
   APIBinding binding(
       "empty", nullptr, nullptr, nullptr,
       base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      base::MakeUnique<APIBindingHooks>(binding::RunJSFunction()), &refs);
+      base::MakeUnique<APIBindingHooks>(binding::RunJSFunctionSync()), &refs);
   EXPECT_TRUE(refs.empty());
 
   v8::HandleScope handle_scope(isolate());
@@ -216,7 +216,7 @@ TEST_F(APIBindingUnittest, Test) {
   APIBinding binding(
       "test", functions.get(), nullptr, nullptr,
       base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      base::MakeUnique<APIBindingHooks>(binding::RunJSFunction()), &refs);
+      base::MakeUnique<APIBindingHooks>(binding::RunJSFunctionSync()), &refs);
   EXPECT_TRUE(refs.empty());
 
   v8::HandleScope handle_scope(isolate());
@@ -317,7 +317,7 @@ TEST_F(APIBindingUnittest, TypeRefsTest) {
   APIBinding binding(
       "test", functions.get(), types.get(), nullptr,
       base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      base::MakeUnique<APIBindingHooks>(binding::RunJSFunction()), &refs);
+      base::MakeUnique<APIBindingHooks>(binding::RunJSFunctionSync()), &refs);
   EXPECT_EQ(2u, refs.size());
   EXPECT_TRUE(base::ContainsKey(refs, "refObj"));
   EXPECT_TRUE(base::ContainsKey(refs, "refEnum"));
@@ -363,7 +363,7 @@ TEST_F(APIBindingUnittest, RestrictedAPIs) {
   APIBinding binding(
       "test", functions.get(), nullptr, nullptr,
       base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      base::MakeUnique<APIBindingHooks>(binding::RunJSFunction()), &refs);
+      base::MakeUnique<APIBindingHooks>(binding::RunJSFunctionSync()), &refs);
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
@@ -406,7 +406,7 @@ TEST_F(APIBindingUnittest, TestEventCreation) {
   APIBinding binding(
       "test", functions.get(), nullptr, events.get(),
       base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      base::MakeUnique<APIBindingHooks>(binding::RunJSFunction()), &refs);
+      base::MakeUnique<APIBindingHooks>(binding::RunJSFunctionSync()), &refs);
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
@@ -442,7 +442,7 @@ TEST_F(APIBindingUnittest, TestDisposedContext) {
   APIBinding binding(
       "test", functions.get(), nullptr, nullptr,
       base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      base::MakeUnique<APIBindingHooks>(binding::RunJSFunction()), &refs);
+      base::MakeUnique<APIBindingHooks>(binding::RunJSFunctionSync()), &refs);
   EXPECT_TRUE(refs.empty());
 
   v8::HandleScope handle_scope(isolate());
@@ -471,16 +471,18 @@ TEST_F(APIBindingUnittest, TestCustomHooks) {
 
   // Register a hook for the test.oneString method.
   auto hooks = base::MakeUnique<APIBindingHooks>(
-      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+      base::Bind(&RunFunctionOnGlobalAndReturnHandle));
   bool did_call = false;
   auto hook = [](bool* did_call, const APISignature* signature,
-                 gin::Arguments* arguments,
+                 v8::Local<v8::Context> context,
+                 std::vector<v8::Local<v8::Value>>* arguments,
                  const ArgumentSpec::RefMap& ref_map) {
     *did_call = true;
-    EXPECT_EQ(1, arguments->Length());
-    std::string argument;
-    EXPECT_TRUE(arguments->GetNext(&argument));
-    EXPECT_EQ("foo", argument);
+    if (arguments->size() != 1u) {
+      EXPECT_EQ(1u, arguments->size());
+      return APIBindingHooks::RequestResult::HANDLED;
+    }
+    EXPECT_EQ("foo", gin::V8ToString(arguments->at(0)));
     return APIBindingHooks::RequestResult::HANDLED;
   };
   hooks->RegisterHandleRequest("test.oneString", base::Bind(hook, &did_call));
@@ -514,7 +516,7 @@ TEST_F(APIBindingUnittest, TestCustomHooks) {
 TEST_F(APIBindingUnittest, TestJSCustomHook) {
   // Register a hook for the test.oneString method.
   auto hooks = base::MakeUnique<APIBindingHooks>(
-      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+      base::Bind(&RunFunctionOnGlobalAndReturnHandle));
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
@@ -567,6 +569,123 @@ TEST_F(APIBindingUnittest, TestJSCustomHook) {
                                      "requestArguments");
   ASSERT_TRUE(response_args);
   EXPECT_EQ("[\"foo\"]", ValueToString(*response_args));
+
+  // Other methods, like stringAndInt(), should behave normally.
+  ExpectPass(binding_object, "obj.stringAndInt('foo', 42);", "['foo',42]");
+}
+
+// Tests the updateArgumentsPreValidate hook.
+TEST_F(APIBindingUnittest, TestUpdateArgumentsPreValidate) {
+  // Register a hook for the test.oneString method.
+  auto hooks = base::MakeUnique<APIBindingHooks>(
+      base::Bind(&RunFunctionOnGlobalAndReturnHandle));
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+  const char kRegisterHook[] =
+      "(function(hooks) {\n"
+      "  hooks.setUpdateArgumentsPreValidate('oneString', function() {\n"
+      "    this.requestArguments = Array.from(arguments);\n"
+      "    if (this.requestArguments[0] === true)\n"
+      "      return ['hooked']\n"
+      "    return this.requestArguments\n"
+      "  });\n"
+      "})";
+  v8::Local<v8::String> source_string =
+      gin::StringToV8(isolate(), kRegisterHook);
+  v8::Local<v8::String> source_name =
+      gin::StringToV8(isolate(), "custom_hook");
+  hooks->RegisterJsSource(
+      v8::Global<v8::String>(isolate(), source_string),
+      v8::Global<v8::String>(isolate(), source_name));
+
+  std::unique_ptr<base::ListValue> functions = ListValueFromString(kFunctions);
+  ASSERT_TRUE(functions);
+  ArgumentSpec::RefMap refs;
+
+  APIBinding binding(
+      "test", functions.get(), nullptr, nullptr,
+      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
+      std::move(hooks), &refs);
+  EXPECT_TRUE(refs.empty());
+
+  APIEventHandler event_handler(
+      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  v8::Local<v8::Object> binding_object = binding.CreateInstance(
+      context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
+
+  // Call the method with a hook. Since the hook updates arguments before
+  // validation, we should be able to pass in invalid arguments and still
+  // have the hook called.
+  ExpectFailure(binding_object, "obj.oneString(false);", kError);
+  EXPECT_EQ("[false]", GetStringPropertyFromObject(
+                           context->Global(), context, "requestArguments"));
+
+  ExpectPass(binding_object, "obj.oneString(true);", "['hooked']");
+  EXPECT_EQ("[true]", GetStringPropertyFromObject(
+                          context->Global(), context, "requestArguments"));
+
+  // Other methods, like stringAndInt(), should behave normally.
+  ExpectPass(binding_object, "obj.stringAndInt('foo', 42);", "['foo',42]");
+}
+
+// Tests the updateArgumentsPreValidate hook.
+TEST_F(APIBindingUnittest, TestThrowInUpdateArgumentsPreValidate) {
+  auto run_js_and_allow_error = [](v8::Local<v8::Function> function,
+                                   v8::Local<v8::Context> context,
+                                   int argc,
+                                   v8::Local<v8::Value> argv[]) {
+    v8::MaybeLocal<v8::Value> maybe_result =
+        function->Call(context, context->Global(), argc, argv);
+    v8::Global<v8::Value> result;
+    v8::Local<v8::Value> local;
+    if (maybe_result.ToLocal(&local))
+      result.Reset(context->GetIsolate(), local);
+    return result;
+  };
+
+  // Register a hook for the test.oneString method.
+  auto hooks = base::MakeUnique<APIBindingHooks>(
+      base::Bind(run_js_and_allow_error));
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+  const char kRegisterHook[] =
+      "(function(hooks) {\n"
+      "  hooks.setUpdateArgumentsPreValidate('oneString', function() {\n"
+      "    throw new Error('Custom Hook Error');\n"
+      "  });\n"
+      "})";
+  v8::Local<v8::String> source_string =
+      gin::StringToV8(isolate(), kRegisterHook);
+  v8::Local<v8::String> source_name =
+      gin::StringToV8(isolate(), "custom_hook");
+  hooks->RegisterJsSource(
+      v8::Global<v8::String>(isolate(), source_string),
+      v8::Global<v8::String>(isolate(), source_name));
+
+  std::unique_ptr<base::ListValue> functions = ListValueFromString(kFunctions);
+  ASSERT_TRUE(functions);
+  ArgumentSpec::RefMap refs;
+
+  APIBinding binding(
+      "test", functions.get(), nullptr, nullptr,
+      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
+      std::move(hooks), &refs);
+  EXPECT_TRUE(refs.empty());
+
+  APIEventHandler event_handler(
+      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  v8::Local<v8::Object> binding_object = binding.CreateInstance(
+      context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
+
+  v8::Local<v8::Function> function =
+      FunctionFromString(context,
+                         "(function(obj) { return obj.oneString('ping'); })");
+  v8::Local<v8::Value> args[] = {binding_object};
+  RunFunctionAndExpectError(function, context, v8::Undefined(isolate()),
+                            arraysize(args), args,
+                            "Uncaught Error: Custom Hook Error");
 
   // Other methods, like stringAndInt(), should behave normally.
   ExpectPass(binding_object, "obj.stringAndInt('foo', 42);", "['foo',42]");

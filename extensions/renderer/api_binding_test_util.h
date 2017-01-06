@@ -78,6 +78,13 @@ void RunFunctionOnGlobalAndIgnoreResult(v8::Local<v8::Function> function,
                                         int argc,
                                         v8::Local<v8::Value> argv[]);
 
+// Like RunFunctionOnGlobal(), but returns a persistent handle for the result.
+v8::Global<v8::Value> RunFunctionOnGlobalAndReturnHandle(
+    v8::Local<v8::Function> function,
+    v8::Local<v8::Context> context,
+    int argc,
+    v8::Local<v8::Value> argv[]);
+
 // Calls the given |function| with the specified |receiver| and arguments, but
 // EXPECTs the function to throw the |expected_error|.
 void RunFunctionAndExpectError(v8::Local<v8::Function> function,
