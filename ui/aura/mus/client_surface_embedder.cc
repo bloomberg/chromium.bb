@@ -5,7 +5,6 @@
 #include "ui/aura/mus/client_surface_embedder.h"
 
 #include "cc/surfaces/surface_reference_factory.h"
-#include "ui/aura/mus/surface_id_handler.h"
 #include "ui/aura/window.h"
 
 namespace aura {

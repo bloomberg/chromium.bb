@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "services/ui/common/transient_window_utils.h"
 #include "services/ui/public/cpp/property_type_converters.h"
-#include "services/ui/public/cpp/surface_id_handler.h"
 #include "services/ui/public/cpp/window_compositor_frame_sink.h"
 #include "services/ui/public/cpp/window_observer.h"
 #include "services/ui/public/cpp/window_private.h"
@@ -597,7 +596,6 @@ Window::Window(WindowTreeClient* client, Id id)
       // Matches aura, see aura::Window for details.
       observers_(base::ObserverList<WindowObserver>::NOTIFY_EXISTING_ONLY),
       input_event_handler_(nullptr),
-      surface_id_handler_(nullptr),
       visible_(false),
       opacity_(1.0f),
       display_id_(display::kInvalidDisplayId),
@@ -817,10 +815,6 @@ void Window::LocalSetSurfaceInfo(const cc::SurfaceInfo& surface_info) {
         existing_surface_id != new_surface_id) {
       // TODO(kylechar): Start return reference here?
     }
-  }
-  if (parent_ && parent_->surface_id_handler_) {
-    parent_->surface_id_handler_->OnChildWindowSurfaceChanged(this,
-                                                              surface_info);
   }
   surface_info_ = surface_info;
 }

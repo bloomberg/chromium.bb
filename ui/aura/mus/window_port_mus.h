@@ -28,7 +28,6 @@ namespace aura {
 
 class ClientSurfaceEmbedder;
 class PropertyConverter;
-class SurfaceIdHandler;
 class Window;
 class WindowPortMusTestApi;
 class WindowTreeClient;
@@ -72,10 +71,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
       ui::mojom::CompositorFrameSinkType type,
       std::unique_ptr<WindowCompositorFrameSinkBinding>
           compositor_frame_sink_binding);
-
-  void set_surface_id_handler(SurfaceIdHandler* surface_id_handler) {
-    surface_id_handler_ = surface_id_handler;
-  }
 
  private:
   friend class WindowPortMusTestApi;
@@ -250,7 +245,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   ServerChangeIdType next_server_change_id_ = 0;
   ServerChanges server_changes_;
 
-  SurfaceIdHandler* surface_id_handler_ = nullptr;
   cc::SurfaceInfo surface_info_;
 
   ui::mojom::Cursor predefined_cursor_ = ui::mojom::Cursor::CURSOR_NULL;

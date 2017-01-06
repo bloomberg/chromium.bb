@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/array.h"
-#include "services/ui/public/cpp/surface_id_handler.h"
 #include "services/ui/public/cpp/window.h"
 
 namespace ui {

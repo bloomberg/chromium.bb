@@ -9,7 +9,6 @@
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/mus/client_surface_embedder.h"
 #include "ui/aura/mus/property_converter.h"
-#include "ui/aura/mus/surface_id_handler.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
 #include "ui/aura/window.h"
@@ -254,12 +253,6 @@ void WindowPortMus::SetSurfaceInfoFromServer(
         existing_surface_id != new_surface_id) {
       // TODO(kylechar): Start return reference here?
     }
-  }
-  WindowPortMus* parent = Get(window_->parent());
-  // TODO(mfomitchev): This is unused. We probably don't need this.
-  if (parent && parent->surface_id_handler_) {
-    parent->surface_id_handler_->OnChildWindowSurfaceChanged(window_,
-                                                             surface_info);
   }
 
   // The fact that SetSurfaceIdFromServer was called means that this window

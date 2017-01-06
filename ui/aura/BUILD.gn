@@ -94,7 +94,6 @@ component("aura") {
     "mus/property_converter.h",
     "mus/property_utils.cc",
     "mus/property_utils.h",
-    "mus/surface_id_handler.h",
     "mus/text_input_client_impl.cc",
     "mus/text_input_client_impl.h",
     "mus/window_compositor_frame_sink.cc",
