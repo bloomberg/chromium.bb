@@ -1,6 +1,6 @@
 <html>
 <head>
-<style> 
+<style>
   div {
     width:200px;
     height:100px;
@@ -10,7 +10,13 @@
   }
 </style>
 </head>
-<body>
+<body onload="finished()">
 <div>3D CSS</div>
+<script>
+function finished() {
+  domAutomationController.setAutomationId(0);
+  domAutomationController.send("FINISHED");
+}
+</script>
 </body>
 </html>

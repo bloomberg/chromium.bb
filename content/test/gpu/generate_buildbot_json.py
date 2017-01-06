@@ -1115,14 +1115,6 @@ NON_SWARMED_GTESTS = {
 }
 
 TELEMETRY_TESTS = {
-  'gpu_process_launch_tests': {
-      'target_name': 'gpu_process',
-      'tester_configs': [
-        {
-          'allow_on_android': True,
-        }
-      ],
-  },
   'hardware_accelerated_feature': {
     'tester_configs': [
       {
@@ -1172,6 +1164,14 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         'allow_on_android': True,
       },
     ]
+  },
+  'gpu_process_launch_tests': {
+      'target_name': 'gpu_process',
+      'tester_configs': [
+        {
+          'allow_on_android': True,
+        }
+      ],
   },
   'pixel_test': {
     'target_name': 'pixel',

@@ -10,9 +10,14 @@ initializeWebGL = function(canvas) {
   // Try to grab the standard context.
   gl_context = canvas.getContext("webgl") ||
                canvas.getContext("experimental-webgl");
-  // If we don't have a GL context, give up now
+  // If we don't have a GL context, give up now.
   if (!gl_context) {
-    alert("Unable to initialize WebGL. Your browser may not support it.");
+    err = "Unable to initialize WebGL. Your browser may not support it.";
+    if (domAutomationController) {
+      console.log(err);
+    } else {
+      alert(err);
+    }
   }
 }
 
@@ -30,4 +35,7 @@ startWebGLContext = function() {
     gl_context.clear(gl_context.COLOR_BUFFER_BIT |
                      gl_context.DEPTH_BUFFER_BIT);
   }
+
+  domAutomationController.setAutomationId(0);
+  domAutomationController.send("FINISHED");
 }

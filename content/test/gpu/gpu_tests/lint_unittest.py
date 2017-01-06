@@ -38,11 +38,5 @@ def LintCheckPassed(directory):
 
 
 class LintTest(unittest.TestCase):
-
   def testPassingPylintCheckForGpuTestsDir(self):
     self.assertTrue(LintCheckPassed(os.path.abspath(os.path.dirname(__file__))))
-
-  def testPassingPylintCheckForPageSetsDir(self):
-    self.assertTrue(LintCheckPassed(
-      os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'page_sets'
-                  )))
