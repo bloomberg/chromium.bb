@@ -8,6 +8,8 @@
 #include "base/ios/ios_util.h"
 #include "base/ios/weak_nsobject.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/history/clear_browsing_bar.h"
 #import "ios/chrome/browser/ui/history/history_collection_view_controller.h"
@@ -307,6 +309,8 @@ CGFloat kShadowOpacity = 0.2f;
 
 - (void)openPrivacySettings {
   [self exitSearchMode];
+  base::RecordAction(
+      base::UserMetricsAction("HistoryPage_InitClearBrowsingData"));
   ShowClearBrowsingData();
 }
 
@@ -332,6 +336,7 @@ CGFloat kShadowOpacity = 0.2f;
 
 - (void)deleteSelectedItems {
   [_historyCollectionController deleteSelectedItemsFromHistory];
+  base::RecordAction(base::UserMetricsAction("HistoryPage_RemoveSelected"));
   [self exitEditingMode];
 }
 - (void)enterSearchMode {
@@ -345,6 +350,7 @@ CGFloat kShadowOpacity = 0.2f;
   [self.view addSubview:searchBarView];
   _historyCollectionController.get().searching = YES;
   [_searchViewController didMoveToParentViewController:self];
+  base::RecordAction(base::UserMetricsAction("HistoryPage_Search"));
 
   // Constraints to make search bar cover header.
   [searchBarView setTranslatesAutoresizingMaskIntoConstraints:NO];

@@ -12,6 +12,8 @@
 #include "base/mac/foundation_util.h"
 #import "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/browsing_data/core/history_notice_utils.h"
@@ -481,6 +483,12 @@ const CGFloat kSeparatorInset = 10;
     HistoryEntryItem* item = base::mac::ObjCCastStrict<HistoryEntryItem>(
         [self.collectionViewModel itemAtIndexPath:indexPath]);
     [self openURL:item.URL];
+    if (self.isSearching) {
+      base::RecordAction(
+          base::UserMetricsAction("HistoryPage_SearchResultClick"));
+    } else {
+      base::RecordAction(base::UserMetricsAction("HistoryPage_EntryLinkClick"));
+    }
   }
 }
 
