@@ -395,7 +395,9 @@ void BufferFeeder::OnPushBufferComplete(BufferStatus status) {
   EXPECT_TRUE(expecting_buffer_complete_)
       << "OnPushBufferComplete() called unexpectedly";
   expecting_buffer_complete_ = false;
-  ASSERT_NE(status, MediaPipelineBackend::kBufferFailed);
+  if (!feed_continuous_pcm_ || !feeding_completed_) {
+    ASSERT_NE(status, MediaPipelineBackend::kBufferFailed);
+  }
   EXPECT_FALSE(eos_) << "Got OnPushBufferComplete() after OnEndOfStream()";
 
   if (test_config_after_next_push_) {

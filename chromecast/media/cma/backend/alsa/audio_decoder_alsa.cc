@@ -218,12 +218,14 @@ bool AudioDecoderAlsa::SetConfig(const AudioConfig& config) {
     return false;
   }
 
-  if (!rate_shifter_ ||
-      config.samples_per_second != config_.samples_per_second) {
+  bool changed_sample_rate =
+      (config.samples_per_second != config_.samples_per_second);
+
+  if (!rate_shifter_ || changed_sample_rate) {
     CreateRateShifter(config.samples_per_second);
   }
 
-  if (mixer_input_ && config.samples_per_second != config_.samples_per_second) {
+  if (mixer_input_ && changed_sample_rate) {
     // Destroy the old input first to ensure that the mixer output sample rate
     // is updated.
     mixer_input_.reset();
@@ -237,7 +239,7 @@ bool AudioDecoderAlsa::SetConfig(const AudioConfig& config) {
   decoder_.reset();
   CreateDecoder();
 
-  if (pending_buffer_complete_ && !rate_shifter_->IsQueueFull()) {
+  if (pending_buffer_complete_ && changed_sample_rate) {
     pending_buffer_complete_ = false;
     delegate_->OnPushBufferComplete(MediaPipelineBackendAlsa::kBufferSuccess);
   }
@@ -338,6 +340,7 @@ void AudioDecoderAlsa::OnBufferDecoded(
   delta.decoded_bytes = input_bytes;
   UpdateStatistics(delta);
 
+  pending_buffer_complete_ = true;
   if (decoded->end_of_stream()) {
     got_eos_ = true;
   } else {
@@ -350,7 +353,6 @@ void AudioDecoderAlsa::OnBufferDecoded(
     if (rate_info->rate == 1.0 && rate_shifter_->frames_buffered() == 0 &&
         pending_output_frames_ == kNoPendingOutput) {
       DCHECK_EQ(rate_info->output_frames, rate_info->input_frames);
-      pending_buffer_complete_ = true;
       pending_output_frames_ = input_frames;
       if (got_eos_) {
         DCHECK(!pushed_eos_);
@@ -374,20 +376,34 @@ void AudioDecoderAlsa::OnBufferDecoded(
 
   PushRateShifted();
   DCHECK(!rate_shifter_info_.empty());
-  // Can't check got_eos_ here, since it may have already been reset by a call
-  // to Stop().
-  if (decoded->end_of_stream() || (!rate_shifter_->IsQueueFull() &&
-                                   rate_shifter_info_.front().rate != 1.0)) {
+  CheckBufferComplete();
+}
+
+void AudioDecoderAlsa::CheckBufferComplete() {
+  if (!pending_buffer_complete_) {
+    return;
+  }
+
+  bool rate_shifter_queue_full = rate_shifter_->IsQueueFull();
+  DCHECK(!rate_shifter_info_.empty());
+  if (rate_shifter_info_.front().rate == 1.0) {
+    // If the current rate is 1.0, drain any data in the rate shifter before
+    // calling PushBufferComplete, so that the next PushBuffer call can skip the
+    // rate shifter entirely.
+    rate_shifter_queue_full = (rate_shifter_->frames_buffered() > 0 ||
+                               pending_output_frames_ != kNoPendingOutput);
+  }
+
+  if (pushed_eos_ || !rate_shifter_queue_full) {
+    pending_buffer_complete_ = false;
     delegate_->OnPushBufferComplete(MediaPipelineBackendAlsa::kBufferSuccess);
-  } else {
-    pending_buffer_complete_ = true;
   }
 }
 
 void AudioDecoderAlsa::PushRateShifted() {
   DCHECK(mixer_input_);
 
-  if (pending_output_frames_ != kNoPendingOutput) {
+  if (pushed_eos_ || pending_output_frames_ != kNoPendingOutput) {
     return;
   }
 
@@ -492,29 +508,18 @@ void AudioDecoderAlsa::OnWritePcmCompletion(BufferStatus status,
   pending_output_frames_ = kNoPendingOutput;
   last_mixer_delay_ = delay;
 
-  if (pushed_eos_) {
-    if (pending_buffer_complete_) {
-      pending_buffer_complete_ = false;
-      delegate_->OnPushBufferComplete(MediaPipelineBackendAlsa::kBufferSuccess);
-    }
-    delegate_->OnEndOfStream();
-  } else {
-    task_runner_->PostTask(FROM_HERE, base::Bind(&AudioDecoderAlsa::PushMorePcm,
-                                                 weak_factory_.GetWeakPtr()));
-  }
+  task_runner_->PostTask(FROM_HERE, base::Bind(&AudioDecoderAlsa::PushMorePcm,
+                                               weak_factory_.GetWeakPtr()));
 }
 
 void AudioDecoderAlsa::PushMorePcm() {
   PushRateShifted();
 
   DCHECK(!rate_shifter_info_.empty());
-  if (pending_buffer_complete_) {
-    double rate = rate_shifter_info_.front().rate;
-    if ((rate == 1.0 && pending_output_frames_ == kNoPendingOutput) ||
-        (rate != 1.0 && !rate_shifter_->IsQueueFull())) {
-      pending_buffer_complete_ = false;
-      delegate_->OnPushBufferComplete(MediaPipelineBackendAlsa::kBufferSuccess);
-    }
+  CheckBufferComplete();
+
+  if (pushed_eos_) {
+    delegate_->OnEndOfStream();
   }
 }
 

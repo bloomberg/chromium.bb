@@ -77,6 +77,7 @@ class AudioDecoderAlsa : public MediaPipelineBackend::AudioDecoder,
   void OnBufferDecoded(uint64_t input_bytes,
                        CastAudioDecoder::Status status,
                        const scoped_refptr<DecoderBufferBase>& decoded);
+  void CheckBufferComplete();
   void PushRateShifted();
   void PushMorePcm();
   void RunEos();
