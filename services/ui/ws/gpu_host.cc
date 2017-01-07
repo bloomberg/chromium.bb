@@ -104,7 +104,7 @@ GpuHost::GpuHost(GpuHostDelegate* delegate)
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       gpu_host_binding_(this) {
   // TODO(sad): Once GPU process is split, this would look like:
-  //   connector->ConnectToInterface("gpu", &gpu_main_);
+  //   connector->BindInterface("gpu", &gpu_main_);
   gpu_main_impl_ = base::MakeUnique<GpuMain>(MakeRequest(&gpu_main_));
   gpu_main_impl_->OnStart();
   gpu_main_->CreateGpuService(MakeRequest(&gpu_service_),

@@ -159,7 +159,7 @@ class LifecycleTest : public test::ServiceTest {
 
   test::mojom::LifecycleControlPtr ConnectTo(const std::string& name) {
     test::mojom::LifecycleControlPtr lifecycle;
-    connector()->ConnectToInterface(name, &lifecycle);
+    connector()->BindInterface(name, &lifecycle);
     PingPong(lifecycle.get());
     return lifecycle;
   }
@@ -195,8 +195,8 @@ class LifecycleTest : public test::ServiceTest {
  private:
   std::unique_ptr<InstanceState> TrackInstances() {
     mojom::ServiceManagerPtr service_manager;
-    connector()->ConnectToInterface(service_manager::mojom::kServiceName,
-                                    &service_manager);
+    connector()->BindInterface(service_manager::mojom::kServiceName,
+                               &service_manager);
     mojom::ServiceManagerListenerPtr listener;
     base::RunLoop loop;
     InstanceState* state = new InstanceState(MakeRequest(&listener), &loop);

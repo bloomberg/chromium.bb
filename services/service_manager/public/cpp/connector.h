@@ -43,7 +43,7 @@ class Connector {
   // Creates an instance of a service for |identity| in a process started by the
   // client (or someone else). Must be called before Connect() may be called to
   // |identity|.
-  virtual void Start(
+  virtual void StartService(
       const Identity& identity,
       mojom::ServicePtr service,
       mojom::PIDReceiverRequest pid_receiver_request) = 0;
@@ -56,20 +56,22 @@ class Connector {
   virtual std::unique_ptr<Connection> Connect(const std::string& name) = 0;
   virtual std::unique_ptr<Connection> Connect(const Identity& target) = 0;
 
-  // Connect to |target| & request to bind |Interface|. Does not retain a
-  // connection to |target|.
+  // Connect to |target| & request to bind |Interface|.
   template <typename Interface>
-  void ConnectToInterface(const Identity& target,
-                          mojo::InterfacePtr<Interface>* ptr) {
-    std::unique_ptr<Connection> connection = Connect(target);
-    if (connection)
-      connection->GetInterface(ptr);
+  void BindInterface(const Identity& target,
+                     mojo::InterfacePtr<Interface>* ptr) {
+    mojo::MessagePipe pipe;
+    ptr->Bind(mojo::InterfacePtrInfo<Interface>(std::move(pipe.handle0), 0u));
+    BindInterface(target, Interface::Name_, std::move(pipe.handle1));
   }
   template <typename Interface>
-  void ConnectToInterface(const std::string& name,
-                          mojo::InterfacePtr<Interface>* ptr) {
-    return ConnectToInterface(Identity(name, mojom::kInheritUserID), ptr);
+  void BindInterface(const std::string& name,
+                     mojo::InterfacePtr<Interface>* ptr) {
+    return BindInterface(Identity(name, mojom::kInheritUserID), ptr);
   }
+  virtual void BindInterface(const Identity& target,
+                             const std::string& interface_name,
+                             mojo::ScopedMessagePipeHandle interface_pipe) = 0;
 
   // Creates a new instance of this class which may be passed to another thread.
   // The returned object may be passed multiple times until Connect() is called,
@@ -77,7 +79,7 @@ class Connector {
   virtual std::unique_ptr<Connector> Clone() = 0;
 
   // Binds a Connector request to the other end of this Connector.
-  virtual void BindRequest(mojom::ConnectorRequest request) = 0;
+  virtual void BindConnectorRequest(mojom::ConnectorRequest request) = 0;
 };
 
 }  // namespace service_manager

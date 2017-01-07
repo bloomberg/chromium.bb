@@ -26,11 +26,11 @@ TEST_F(ShutdownTest, ConnectRace) {
   // working as intended.
 
   mojom::ShutdownTestClientControllerPtr control;
-  connector()->ConnectToInterface("shutdown_client", &control);
+  connector()->BindInterface("shutdown_client", &control);
 
   // Connect to shutdown_service and immediately request that it shut down.
   mojom::ShutdownTestServicePtr service;
-  connector()->ConnectToInterface("shutdown_service", &service);
+  connector()->BindInterface("shutdown_service", &service);
   service->ShutDown();
 
   // Tell shutdown_client to connect to an interface on shutdown_service and

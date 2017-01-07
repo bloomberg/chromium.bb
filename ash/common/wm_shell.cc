@@ -275,8 +275,8 @@ WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
   // Can be null in tests.
   if (!delegate_->GetShellConnector())
     return;
-  delegate_->GetShellConnector()->ConnectToInterface(prefs::mojom::kServiceName,
-                                                     &pref_manager_ptr);
+  delegate_->GetShellConnector()->BindInterface(prefs::mojom::kServiceName,
+                                                &pref_manager_ptr);
   pref_store_ = new preferences::PrefObserverStore(std::move(pref_manager_ptr));
 }
 

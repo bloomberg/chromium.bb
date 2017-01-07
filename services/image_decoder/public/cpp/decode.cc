@@ -37,7 +37,7 @@ void Decode(service_manager::Connector* connector,
             uint64_t max_size_in_bytes,
             const mojom::ImageDecoder::DecodeImageCallback& callback) {
   mojom::ImageDecoderPtr decoder;
-  connector->ConnectToInterface(mojom::kServiceName, &decoder);
+  connector->BindInterface(mojom::kServiceName, &decoder);
   decoder.set_connection_error_handler(
       base::Bind(&OnConnectionError, callback));
   mojom::ImageDecoder* raw_decoder = decoder.get();

@@ -189,7 +189,7 @@ void Webtest::Launch(uint32_t what, mojom::LaunchMode how) {
   }
 
   navigation::mojom::ViewFactoryPtr view_factory;
-  context()->connector()->ConnectToInterface("navigation", &view_factory);
+  context()->connector()->BindInterface("navigation", &view_factory);
   navigation::mojom::ViewPtr view;
   navigation::mojom::ViewClientPtr view_client;
   navigation::mojom::ViewClientRequest view_client_request(&view_client);

@@ -46,7 +46,7 @@ ash::mojom::VpnListPtr ConnectToVpnList() {
   ash::mojom::VpnListPtr vpn_list;
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
-      ->ConnectToInterface(ash_util::GetAshServiceName(), &vpn_list);
+      ->BindInterface(ash_util::GetAshServiceName(), &vpn_list);
   return vpn_list;
 }
 

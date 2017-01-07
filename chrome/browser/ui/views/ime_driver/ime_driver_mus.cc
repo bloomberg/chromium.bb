@@ -34,7 +34,7 @@ void IMEDriver::Register() {
   ui::mojom::IMERegistrarPtr ime_registrar;
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
-      ->ConnectToInterface(ui::mojom::kServiceName, &ime_registrar);
+      ->BindInterface(ui::mojom::kServiceName, &ime_registrar);
   ime_registrar->RegisterDriver(std::move(ime_driver_ptr));
 }
 

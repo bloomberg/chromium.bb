@@ -24,15 +24,18 @@ class ConnectorImpl : public Connector {
   void OnConnectionError();
 
   // Connector:
-  void Start(const Identity& identity,
-             mojom::ServicePtr service,
-             mojom::PIDReceiverRequest pid_receiver_request) override;
+  void StartService(const Identity& identity,
+                    mojom::ServicePtr service,
+                    mojom::PIDReceiverRequest pid_receiver_request) override;
   std::unique_ptr<Connection> Connect(const std::string& name) override;
   std::unique_ptr<Connection> Connect(const Identity& target) override;
+  void BindInterface(const Identity& target,
+                     const std::string& interface_name,
+                     mojo::ScopedMessagePipeHandle interface_pipe) override;
   std::unique_ptr<Connector> Clone() override;
-  void BindRequest(mojom::ConnectorRequest request) override;
+  void BindConnectorRequest(mojom::ConnectorRequest request) override;
 
-  bool BindIfNecessary();
+  bool BindConnectorIfNecessary();
 
   mojom::ConnectorPtrInfo unbound_state_;
   mojom::ConnectorPtr connector_;

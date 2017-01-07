@@ -57,7 +57,7 @@ class IMEAppTest : public service_manager::test::ServiceTest {
     ServiceTest::SetUp();
     // test_ime_driver will register itself as the current IMEDriver.
     connector()->Connect("test_ime_driver");
-    connector()->ConnectToInterface(ui::mojom::kServiceName, &ime_server_);
+    connector()->BindInterface(ui::mojom::kServiceName, &ime_server_);
   }
 
   bool ProcessKeyEvent(ui::mojom::InputMethodPtr* input_method,

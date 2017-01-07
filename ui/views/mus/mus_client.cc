@@ -82,7 +82,7 @@ MusClient::MusClient(service_manager::Connector* connector,
     wm_state_ = base::MakeUnique<wm::WMState>();
 
   discardable_memory::mojom::DiscardableSharedMemoryManagerPtr manager_ptr;
-  connector->ConnectToInterface(ui::mojom::kServiceName, &manager_ptr);
+  connector->BindInterface(ui::mojom::kServiceName, &manager_ptr);
 
   discardable_shared_memory_manager_ = base::MakeUnique<
       discardable_memory::ClientDiscardableSharedMemoryManager>(

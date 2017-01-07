@@ -42,8 +42,8 @@ VolumeController::VolumeController() : binding_(this) {
   service_manager::Connector* connector =
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
   ash::mojom::AcceleratorControllerPtr accelerator_controller_ptr;
-  connector->ConnectToInterface(ash_util::GetAshServiceName(),
-                                &accelerator_controller_ptr);
+  connector->BindInterface(ash_util::GetAshServiceName(),
+                           &accelerator_controller_ptr);
 
   // Register this object as the volume controller.
   accelerator_controller_ptr->SetVolumeController(

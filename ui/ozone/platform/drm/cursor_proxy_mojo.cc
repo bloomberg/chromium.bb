@@ -11,12 +11,12 @@ namespace ui {
 
 CursorProxyMojo::CursorProxyMojo(service_manager::Connector* connector)
     : connector_(connector->Clone()) {
-  connector->ConnectToInterface(ui::mojom::kServiceName, &main_cursor_ptr_);
+  connector->BindInterface(ui::mojom::kServiceName, &main_cursor_ptr_);
 }
 
 void CursorProxyMojo::InitializeOnEvdev() {
   evdev_ref_ = base::PlatformThread::CurrentRef();
-  connector_->ConnectToInterface(ui::mojom::kServiceName, &evdev_cursor_ptr_);
+  connector_->BindInterface(ui::mojom::kServiceName, &evdev_cursor_ptr_);
 }
 
 CursorProxyMojo::~CursorProxyMojo() {}

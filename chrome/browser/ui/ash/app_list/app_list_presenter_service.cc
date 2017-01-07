@@ -16,8 +16,8 @@ AppListPresenterService::AppListPresenterService() : binding_(this) {
   if (connection && connection->GetConnector()) {
     // Connect to the app list interface in the ash service.
     app_list::mojom::AppListPtr app_list_ptr;
-    connection->GetConnector()->ConnectToInterface(
-        ash_util::GetAshServiceName(), &app_list_ptr);
+    connection->GetConnector()->BindInterface(ash_util::GetAshServiceName(),
+                                              &app_list_ptr);
     // Register this object as the app list presenter.
     app_list_ptr->SetAppListPresenter(binding_.CreateInterfacePtrAndBind());
     // Pass the interface pointer to the presenter to report visibility changes.

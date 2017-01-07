@@ -74,7 +74,7 @@ class NavigationTest : public service_manager::test::ServiceTest,
 // See crbug.com/619523
 TEST_F(NavigationTest, DISABLED_Navigate) {
   mojom::ViewFactoryPtr view_factory;
-  connector()->ConnectToInterface("navigation", &view_factory);
+  connector()->BindInterface("navigation", &view_factory);
 
   mojom::ViewPtr view;
   view_factory->CreateView(GetViewClient(), MakeRequest(&view));

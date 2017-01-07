@@ -47,7 +47,7 @@ ScreenMus::~ScreenMus() {
 }
 
 void ScreenMus::Init(service_manager::Connector* connector) {
-  connector->ConnectToInterface(ui::mojom::kServiceName, &display_manager_);
+  connector->BindInterface(ui::mojom::kServiceName, &display_manager_);
 
   display_manager_->AddObserver(
       display_manager_observer_binding_.CreateInterfacePtrAndBind());

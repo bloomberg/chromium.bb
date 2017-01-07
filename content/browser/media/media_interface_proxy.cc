@@ -126,7 +126,7 @@ void MediaInterfaceProxy::ConnectToService() {
   media::mojom::MediaServicePtr media_service;
   service_manager::Connector* connector =
       ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->ConnectToInterface("media", &media_service);
+  connector->BindInterface("media", &media_service);
   media_service->CreateInterfaceFactory(MakeRequest(&interface_factory_ptr_),
                                         std::move(interfaces));
   interface_factory_ptr_.set_connection_error_handler(base::Bind(

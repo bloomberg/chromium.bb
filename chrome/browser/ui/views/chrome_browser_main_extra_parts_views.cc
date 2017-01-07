@@ -110,8 +110,7 @@ void ChromeBrowserMainExtraPartsViews::ServiceManagerConnectionStarted(
 
     input_device_client_.reset(new ui::InputDeviceClient());
     ui::mojom::InputDeviceServerPtr server;
-    connection->GetConnector()->ConnectToInterface(ui::mojom::kServiceName,
-                                                   &server);
+    connection->GetConnector()->BindInterface(ui::mojom::kServiceName, &server);
     input_device_client_->Connect(std::move(server));
 
     // WMState is owned as a member, so don't have MusClient create it.

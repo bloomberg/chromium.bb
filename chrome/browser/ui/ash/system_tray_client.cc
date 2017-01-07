@@ -87,7 +87,7 @@ ash::mojom::UpdateSeverity GetUpdateSeverity(UpgradeDetector* detector) {
 SystemTrayClient::SystemTrayClient() : binding_(this) {
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
-      ->ConnectToInterface(ash_util::GetAshServiceName(), &system_tray_);
+      ->BindInterface(ash_util::GetAshServiceName(), &system_tray_);
   // Register this object as the client interface implementation.
   system_tray_->SetClient(binding_.CreateInterfacePtrAndBind());
 

@@ -15,7 +15,7 @@ namespace font_service {
 
 FontLoader::FontLoader(service_manager::Connector* connector) {
   mojom::FontServicePtr font_service;
-  connector->ConnectToInterface("font_service", &font_service);
+  connector->BindInterface("font_service", &font_service);
   thread_ = new internal::FontServiceThread(std::move(font_service));
 }
 

@@ -35,7 +35,7 @@ InputMethodMus::~InputMethodMus() {}
 
 void InputMethodMus::Init(service_manager::Connector* connector) {
   if (connector)
-    connector->ConnectToInterface(ui::mojom::kServiceName, &ime_server_);
+    connector->BindInterface(ui::mojom::kServiceName, &ime_server_);
 }
 
 void InputMethodMus::DispatchKeyEvent(

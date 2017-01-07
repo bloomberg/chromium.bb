@@ -133,8 +133,7 @@ MediaClient::MediaClient() : binding_(this), weak_ptr_factory_(this) {
 
   service_manager::Connector* connector =
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->ConnectToInterface(ash_util::GetAshServiceName(),
-                                &media_controller_);
+  connector->BindInterface(ash_util::GetAshServiceName(), &media_controller_);
 
   // Register this object as the client interface implementation.
   ash::mojom::MediaClientAssociatedPtrInfo ptr_info;

@@ -60,7 +60,7 @@ TEST(BackgroundServiceManagerTest, MAYBE_Basic) {
       base::MakeUnique<ServiceImpl>(),
       background_service_manager.CreateServiceRequest(kTestName));
   mojom::TestServicePtr test_service;
-  service_context.connector()->ConnectToInterface(kAppName, &test_service);
+  service_context.connector()->BindInterface(kAppName, &test_service);
   base::RunLoop run_loop;
   bool got_result = false;
   test_service->Test(

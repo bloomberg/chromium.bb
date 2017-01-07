@@ -105,8 +105,8 @@ class ServiceManagerTest : public test::ServiceTest,
 
   void AddListenerAndWaitForApplications() {
     mojom::ServiceManagerPtr service_manager;
-    connector()->ConnectToInterface(service_manager::mojom::kServiceName,
-                                    &service_manager);
+    connector()->BindInterface(service_manager::mojom::kServiceName,
+                               &service_manager);
 
     service_manager->AddListener(binding_.CreateInterfacePtrAndBind());
 
@@ -184,7 +184,8 @@ class ServiceManagerTest : public test::ServiceTest,
 
     service_manager::Identity target("service_manager_unittest_target",
                                      service_manager::mojom::kInheritUserID);
-    connector()->Start(target, std::move(client), MakeRequest(&receiver));
+    connector()->StartService(target, std::move(client),
+                              MakeRequest(&receiver));
     std::unique_ptr<service_manager::Connection> connection =
         connector()->Connect(target);
     connection->AddConnectionCompletedClosure(

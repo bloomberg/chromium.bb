@@ -72,8 +72,8 @@ void LocaleChangeGuard::ConnectToLocaleNotificationController() {
   if (!connector)
     return;
 
-  connector->ConnectToInterface(ash_util::GetAshServiceName(),
-                                &notification_controller_);
+  connector->BindInterface(ash_util::GetAshServiceName(),
+                           &notification_controller_);
 }
 
 void LocaleChangeGuard::RevertLocaleChange() {

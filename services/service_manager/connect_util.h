@@ -14,7 +14,7 @@ namespace service_manager {
 
 class ServiceManager;
 
-mojo::ScopedMessagePipeHandle ConnectToInterfaceByName(
+mojo::ScopedMessagePipeHandle BindInterface(
     ServiceManager* service_manager,
     const Identity& source,
     const Identity& target,
@@ -23,22 +23,21 @@ mojo::ScopedMessagePipeHandle ConnectToInterfaceByName(
 // Must only be used by Service Manager internals and test code as it does not
 // forward capability filters. Runs |name| with a permissive capability filter.
 template <typename Interface>
-inline void ConnectToInterface(ServiceManager* service_manager,
+inline void BindInterface(ServiceManager* service_manager,
                                const Identity& source,
                                const Identity& target,
                                mojo::InterfacePtr<Interface>* ptr) {
   mojo::ScopedMessagePipeHandle service_handle =
-      ConnectToInterfaceByName(service_manager, source, target,
-                               Interface::Name_);
+      BindInterface(service_manager, source, target, Interface::Name_);
   ptr->Bind(mojo::InterfacePtrInfo<Interface>(std::move(service_handle), 0u));
 }
 
 template <typename Interface>
-inline void ConnectToInterface(ServiceManager* service_manager,
+inline void BindInterface(ServiceManager* service_manager,
                                const Identity& source,
                                const std::string& name,
                                mojo::InterfacePtr<Interface>* ptr) {
-  mojo::ScopedMessagePipeHandle service_handle = ConnectToInterfaceByName(
+  mojo::ScopedMessagePipeHandle service_handle = BindInterface(
       service_manager, source, Identity(name, mojom::kInheritUserID),
       Interface::Name_);
   ptr->Bind(mojo::InterfacePtrInfo<Interface>(std::move(service_handle), 0u));

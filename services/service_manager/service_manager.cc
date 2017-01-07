@@ -228,7 +228,7 @@ class ServiceManager::Instance
   };
 
   // mojom::Connector implementation:
-  void Start(
+  void StartService(
       const Identity& target,
       mojo::ScopedMessagePipeHandle service_handle,
       mojom::PIDReceiverRequest pid_receiver_request) override {
@@ -249,6 +249,25 @@ class ServiceManager::Instance
                const ConnectCallback& callback) override {
     ConnectImpl(target, std::move(remote_interfaces), mojom::ServicePtr(),
                 mojom::PIDReceiverRequest(), callback);
+  }
+
+  void BindInterface(const service_manager::Identity& target,
+                     const std::string& interface_name,
+                     mojo::ScopedMessagePipeHandle interface_pipe,
+                     const BindInterfaceCallback& callback) override {
+    mojom::InterfaceProviderPtr remote_interfaces;
+    ConnectImpl(
+        target,
+        MakeRequest(&remote_interfaces),
+        mojom::ServicePtr(),
+        mojom::PIDReceiverRequest(),
+        base::Bind(
+            &service_manager::ServiceManager::Instance::BindCallbackWrapper,
+            weak_factory_.GetWeakPtr(),
+            callback));
+    remote_interfaces->GetInterface(interface_name, std::move(interface_pipe));
+    // TODO(beng): Rather than just forwarding thru to InterfaceProvider, do
+    //             manifest policy intersection here.
   }
 
   void ConnectImpl(const service_manager::Identity& in_target,
@@ -452,6 +471,11 @@ class ServiceManager::Instance
 
   void EmptyConnectCallback(mojom::ConnectResult result,
                             const std::string& user_id) {}
+  void BindCallbackWrapper(const BindInterfaceCallback& wrapped,
+                           mojom::ConnectResult result,
+                           const std::string& user_id) {
+    wrapped.Run(result, user_id);
+  }
 
   service_manager::ServiceManager* const service_manager_;
 
@@ -636,7 +660,7 @@ mojom::Resolver* ServiceManager::GetResolver(const Identity& identity) {
     return iter->second.get();
 
   mojom::ResolverPtr resolver_ptr;
-  ConnectToInterface(this, identity, CreateCatalogIdentity(), &resolver_ptr);
+  BindInterface(this, identity, CreateCatalogIdentity(), &resolver_ptr);
   mojom::Resolver* resolver = resolver_ptr.get();
   identity_to_resolver_[identity] = std::move(resolver_ptr);
   return resolver;
@@ -814,8 +838,7 @@ mojom::ServiceFactory* ServiceManager::GetServiceFactory(
   Identity source_identity(service_manager::mojom::kServiceName,
                            mojom::kInheritUserID);
   mojom::ServiceFactoryPtr factory;
-  ConnectToInterface(this, source_identity, service_factory_identity,
-                     &factory);
+  BindInterface(this, source_identity, service_factory_identity, &factory);
   mojom::ServiceFactory* factory_interface = factory.get();
   factory.set_connection_error_handler(
       base::Bind(&service_manager::ServiceManager::OnServiceFactoryLost,

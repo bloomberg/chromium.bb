@@ -17,10 +17,9 @@ AccessibilityDelegateMus::~AccessibilityDelegateMus() {}
 
 ui::mojom::AccessibilityManager*
 AccessibilityDelegateMus::GetAccessibilityManager() {
-  if (!accessibility_manager_ptr_.is_bound()) {
-    connector_->ConnectToInterface(ui::mojom::kServiceName,
-                                   &accessibility_manager_ptr_);
-  }
+  if (!accessibility_manager_ptr_.is_bound())
+    connector_->BindInterface(ui::mojom::kServiceName,
+                              &accessibility_manager_ptr_);
   return accessibility_manager_ptr_.get();
 }
 

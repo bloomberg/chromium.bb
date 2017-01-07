@@ -47,7 +47,7 @@ ClipboardMus::ClipboardMus() {}
 ClipboardMus::~ClipboardMus() {}
 
 void ClipboardMus::Init(service_manager::Connector* connector) {
-  connector->ConnectToInterface(ui::mojom::kServiceName, &clipboard_);
+  connector->BindInterface(ui::mojom::kServiceName, &clipboard_);
 }
 
 // TODO(erg): This isn't optimal. It would be better to move the entire

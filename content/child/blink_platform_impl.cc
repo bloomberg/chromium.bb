@@ -794,7 +794,7 @@ void BlinkPlatformImpl::bindServiceConnector(
   ChildThreadImpl::current()
       ->GetServiceManagerConnection()
       ->GetConnector()
-      ->BindRequest(std::move(chromium_request));
+      ->BindConnectorRequest(std::move(chromium_request));
 }
 
 size_t BlinkPlatformImpl::actualMemoryUsageMB() {

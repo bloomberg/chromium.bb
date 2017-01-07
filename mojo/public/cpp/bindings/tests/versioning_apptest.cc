@@ -24,8 +24,7 @@ class VersioningApplicationTest : public ApplicationTestBase {
   void SetUp() override {
     ApplicationTestBase::SetUp();
 
-    connector()->ConnectToInterface("versioning_test_service",
-                                    &database_);
+    connector()->BindInterface("versioning_test_service", &database_);
   }
 
   HumanResourceDatabasePtr database_;

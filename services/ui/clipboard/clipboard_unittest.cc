@@ -36,7 +36,7 @@ class ClipboardAppTest : public service_manager::test::ServiceTest {
   void SetUp() override {
     ServiceTest::SetUp();
 
-    connector()->ConnectToInterface(ui::mojom::kServiceName, &clipboard_);
+    connector()->BindInterface(ui::mojom::kServiceName, &clipboard_);
     ASSERT_TRUE(clipboard_);
   }
 

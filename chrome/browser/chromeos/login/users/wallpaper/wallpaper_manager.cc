@@ -204,8 +204,8 @@ void SetWallpaper(const gfx::ImageSkia& image,
       return;
 
     ash::mojom::WallpaperControllerPtr wallpaper_controller;
-    connector->ConnectToInterface(ash_util::GetAshServiceName(),
-                                  &wallpaper_controller);
+    connector->BindInterface(ash_util::GetAshServiceName(),
+                             &wallpaper_controller);
     // TODO(crbug.com/655875): Optimize ash wallpaper transport; avoid sending
     // large bitmaps over Mojo; use shared memory like BitmapUploader, etc.
     wallpaper_controller->SetWallpaper(*image.bitmap(), layout);
@@ -887,8 +887,8 @@ WallpaperManager::WallpaperManager()
   if (connection && connection->GetConnector()) {
     // Connect to the wallpaper controller interface in the ash service.
     ash::mojom::WallpaperControllerPtr wallpaper_controller_ptr;
-    connection->GetConnector()->ConnectToInterface(
-        ash_util::GetAshServiceName(), &wallpaper_controller_ptr);
+    connection->GetConnector()->BindInterface(ash_util::GetAshServiceName(),
+                                              &wallpaper_controller_ptr);
     // Register this object as the wallpaper picker.
     wallpaper_controller_ptr->SetWallpaperPicker(
         binding_.CreateInterfacePtrAndBind());

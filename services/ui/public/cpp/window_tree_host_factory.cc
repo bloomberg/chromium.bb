@@ -31,7 +31,7 @@ std::unique_ptr<WindowTreeClient> CreateWindowTreeHost(
     mojom::WindowTreeHostPtr* host,
     WindowManagerDelegate* window_manager_delegate) {
   mojom::WindowTreeHostFactoryPtr factory;
-  connector->ConnectToInterface(ui::mojom::kServiceName, &factory);
+  connector->BindInterface(ui::mojom::kServiceName, &factory);
   return CreateWindowTreeHost(factory.get(), delegate, host,
                               window_manager_delegate);
 }

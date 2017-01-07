@@ -48,7 +48,7 @@ void BindToBrowserConnector(service_manager::mojom::ConnectorRequest request) {
   }
 
   content::ServiceManagerConnection::GetForProcess()->GetConnector()
-      ->BindRequest(std::move(request));
+      ->BindConnectorRequest(std::move(request));
 }
 
 void RunDecodeCallbackOnTaskRunner(

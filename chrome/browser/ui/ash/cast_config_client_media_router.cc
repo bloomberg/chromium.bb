@@ -150,7 +150,7 @@ CastConfigClientMediaRouter::CastConfigClientMediaRouter() : binding_(this) {
   // client.
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
-      ->ConnectToInterface(ash_util::GetAshServiceName(), &cast_config_);
+      ->BindInterface(ash_util::GetAshServiceName(), &cast_config_);
 
   // Register this object as the client interface implementation.
   ash::mojom::CastConfigClientAssociatedPtrInfo ptr_info;

@@ -17,7 +17,7 @@ IMEServerImpl::~IMEServerImpl() {}
 void IMEServerImpl::Init(service_manager::Connector* connector,
                          bool is_test_config) {
   connector_ = connector;
-  connector_->ConnectToInterface(catalog::mojom::kServiceName, &catalog_);
+  connector_->BindInterface(catalog::mojom::kServiceName, &catalog_);
   // TODO(moshayedi): crbug.com/664264. The catalog service should provide
   // different set of entries for test and non-test. Once that is implemented,
   // we won't need this check here.

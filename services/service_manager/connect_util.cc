@@ -12,7 +12,7 @@
 
 namespace service_manager {
 
-mojo::ScopedMessagePipeHandle ConnectToInterfaceByName(
+mojo::ScopedMessagePipeHandle BindInterface(
     ServiceManager* service_manager,
     const Identity& source,
     const Identity& target,

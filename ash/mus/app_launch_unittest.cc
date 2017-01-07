@@ -37,7 +37,7 @@ TEST_F(AppLaunchTest, TestQuickLaunch) {
   connector()->Connect(mash::quick_launch::mojom::kServiceName);
 
   ui::mojom::WindowServerTestPtr test_interface;
-  connector()->ConnectToInterface(ui::mojom::kServiceName, &test_interface);
+  connector()->BindInterface(ui::mojom::kServiceName, &test_interface);
 
   base::RunLoop run_loop;
   bool success = false;

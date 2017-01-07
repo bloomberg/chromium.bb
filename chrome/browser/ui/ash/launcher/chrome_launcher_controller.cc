@@ -60,8 +60,7 @@ bool ChromeLauncherController::ConnectToShelfController() {
   if (!connector)
     return false;
 
-  connector->ConnectToInterface(ash_util::GetAshServiceName(),
-                                &shelf_controller_);
+  connector->BindInterface(ash_util::GetAshServiceName(), &shelf_controller_);
   return true;
 }
 

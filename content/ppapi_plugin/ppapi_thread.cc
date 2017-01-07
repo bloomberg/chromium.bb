@@ -144,7 +144,7 @@ PpapiThread::PpapiThread(const base::CommandLine& command_line, bool is_broker)
     discardable_memory::mojom::DiscardableSharedMemoryManagerPtr manager_ptr;
     if (IsRunningInMash()) {
 #if defined(USE_AURA)
-      GetServiceManagerConnection()->GetConnector()->ConnectToInterface(
+      GetServiceManagerConnection()->GetConnector()->BindInterface(
           ui::mojom::kServiceName, &manager_ptr);
 #else
       NOTREACHED();

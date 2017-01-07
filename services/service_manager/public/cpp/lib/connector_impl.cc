@@ -10,6 +10,10 @@
 
 namespace service_manager {
 
+namespace {
+void EmptyBindCallback(mojom::ConnectResult, const std::string&) {}
+}
+
 ConnectorImpl::ConnectorImpl(mojom::ConnectorPtrInfo unbound_state)
     : unbound_state_(std::move(unbound_state)) {
   thread_checker_.DetachFromThread();
@@ -28,17 +32,17 @@ void ConnectorImpl::OnConnectionError() {
   connector_.reset();
 }
 
-void ConnectorImpl::Start(
+void ConnectorImpl::StartService(
     const Identity& identity,
     mojom::ServicePtr service,
     mojom::PIDReceiverRequest pid_receiver_request) {
-  if (!BindIfNecessary())
+  if (!BindConnectorIfNecessary())
     return;
 
   DCHECK(service.is_bound() && pid_receiver_request.is_pending());
-  connector_->Start(identity,
-                    service.PassInterface().PassHandle(),
-                    std::move(pid_receiver_request));
+  connector_->StartService(identity,
+                           service.PassInterface().PassHandle(),
+                           std::move(pid_receiver_request));
 }
 
 std::unique_ptr<Connection> ConnectorImpl::Connect(const std::string& name) {
@@ -46,7 +50,7 @@ std::unique_ptr<Connection> ConnectorImpl::Connect(const std::string& name) {
 }
 
 std::unique_ptr<Connection> ConnectorImpl::Connect(const Identity& target) {
-  if (!BindIfNecessary())
+  if (!BindConnectorIfNecessary())
     return nullptr;
 
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -65,8 +69,19 @@ std::unique_ptr<Connection> ConnectorImpl::Connect(const Identity& target) {
   return std::move(connection);
 }
 
+void ConnectorImpl::BindInterface(
+    const Identity& target,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  if (!BindConnectorIfNecessary())
+    return;
+
+  connector_->BindInterface(target, interface_name, std::move(interface_pipe),
+                            base::Bind(&EmptyBindCallback));
+}
+
 std::unique_ptr<Connector> ConnectorImpl::Clone() {
-  if (!BindIfNecessary())
+  if (!BindConnectorIfNecessary())
     return nullptr;
 
   mojom::ConnectorPtr connector;
@@ -75,13 +90,13 @@ std::unique_ptr<Connector> ConnectorImpl::Clone() {
   return base::MakeUnique<ConnectorImpl>(connector.PassInterface());
 }
 
-void ConnectorImpl::BindRequest(mojom::ConnectorRequest request) {
-  if (!BindIfNecessary())
+void ConnectorImpl::BindConnectorRequest(mojom::ConnectorRequest request) {
+  if (!BindConnectorIfNecessary())
     return;
   connector_->Clone(std::move(request));
 }
 
-bool ConnectorImpl::BindIfNecessary() {
+bool ConnectorImpl::BindConnectorIfNecessary() {
   // Bind this object to the current thread the first time it is used to
   // connect.
   if (!connector_.is_bound()) {

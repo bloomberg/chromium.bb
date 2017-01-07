@@ -190,8 +190,7 @@ void QuickLaunch::Launch(uint32_t what, mojom::LaunchMode how) {
     return;
   }
   catalog::mojom::CatalogPtr catalog;
-  context()->connector()->ConnectToInterface(catalog::mojom::kServiceName,
-                                             &catalog);
+  context()->connector()->BindInterface(catalog::mojom::kServiceName, &catalog);
 
   views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
       new QuickLaunchUI(this, context()->connector(), std::move(catalog)),

@@ -440,7 +440,7 @@ void BrowserContext::Initialize(
 
     service_manager::mojom::PIDReceiverPtr pid_receiver;
     service_manager::Identity identity(mojom::kBrowserServiceName, new_id);
-    service_manager_connection->GetConnector()->Start(
+    service_manager_connection->GetConnector()->StartService(
         identity, std::move(service), mojo::MakeRequest(&pid_receiver));
     pid_receiver->SetPID(base::GetCurrentProcId());
 

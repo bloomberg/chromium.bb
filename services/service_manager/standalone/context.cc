@@ -201,22 +201,22 @@ void Context::Init(std::unique_ptr<InitParams> init_params) {
     Identity source_identity = CreateServiceManagerIdentity();
     Identity tracing_identity(tracing::mojom::kServiceName, mojom::kRootUserID);
     tracing::mojom::FactoryPtr factory;
-    ConnectToInterface(service_manager(), source_identity, tracing_identity,
-                       &factory);
+    BindInterface(service_manager(), source_identity, tracing_identity,
+                  &factory);
     provider_.InitializeWithFactory(&factory);
 
     if (command_line.HasSwitch(tracing::kTraceStartup)) {
       tracing::mojom::CollectorPtr coordinator;
-      ConnectToInterface(service_manager(), source_identity, tracing_identity,
-                         &coordinator);
+      BindInterface(service_manager(), source_identity, tracing_identity,
+                    &coordinator);
       tracer_.StartCollectingFromTracingService(std::move(coordinator));
     }
 
     // Record the service manager startup metrics used for performance testing.
     if (enable_stats_collection_bindings) {
       tracing::mojom::StartupPerformanceDataCollectorPtr collector;
-      ConnectToInterface(service_manager(), source_identity, tracing_identity,
-                         &collector);
+      BindInterface(service_manager(), source_identity, tracing_identity,
+                    &collector);
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
       // CurrentProcessInfo::CreationTime is only defined on some platforms.
       const base::Time creation_time = base::CurrentProcessInfo::CreationTime();

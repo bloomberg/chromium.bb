@@ -47,8 +47,8 @@ void RestoreTabUsingProfile(Profile* profile) {
 ChromeNewWindowClient::ChromeNewWindowClient() : binding_(this) {
   service_manager::Connector* connector =
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->ConnectToInterface(ash_util::GetAshServiceName(),
-                                &new_window_controller_);
+  connector->BindInterface(ash_util::GetAshServiceName(),
+                           &new_window_controller_);
 
   // Register this object as the client interface implementation.
   ash::mojom::NewWindowClientAssociatedPtrInfo ptr_info;

@@ -30,7 +30,7 @@ Gpu::Gpu(service_manager::Connector* connector,
   DCHECK(connector_ || interface_provider_);
   mojom::GpuPtr gpu_ptr;
   if (connector_)
-    connector_->ConnectToInterface(ui::mojom::kServiceName, &gpu_ptr);
+    connector_->BindInterface(ui::mojom::kServiceName, &gpu_ptr);
   else
     interface_provider_->GetInterface(&gpu_ptr);
   gpu_memory_buffer_manager_ =
@@ -101,7 +101,7 @@ void Gpu::EstablishGpuChannel(
     return;
 
   if (connector_)
-    connector_->ConnectToInterface(ui::mojom::kServiceName, &gpu_);
+    connector_->BindInterface(ui::mojom::kServiceName, &gpu_);
   else
     interface_provider_->GetInterface(&gpu_);
   gpu_->EstablishGpuChannel(
@@ -117,7 +117,7 @@ scoped_refptr<gpu::GpuChannelHost> Gpu::EstablishGpuChannelSync() {
   mojo::ScopedMessagePipeHandle channel_handle;
   gpu::GPUInfo gpu_info;
   if (connector_)
-    connector_->ConnectToInterface(ui::mojom::kServiceName, &gpu_);
+    connector_->BindInterface(ui::mojom::kServiceName, &gpu_);
   else
     interface_provider_->GetInterface(&gpu_);
 

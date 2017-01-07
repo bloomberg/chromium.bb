@@ -874,8 +874,8 @@ void Browser::RemoveWindow(views::Widget* window) {
 
 std::unique_ptr<navigation::View> Browser::CreateView() {
   navigation::mojom::ViewFactoryPtr factory;
-  context()->connector()->ConnectToInterface(
-      content::mojom::kBrowserServiceName, &factory);
+  context()->connector()->BindInterface(content::mojom::kBrowserServiceName,
+                                        &factory);
   return base::MakeUnique<navigation::View>(std::move(factory));
 }
 

@@ -27,7 +27,7 @@ std::unique_ptr<PrefService> CreatePrefService(
     service_manager::Connector* connector,
     PrefRegistry* pref_registry) {
   filesystem::mojom::FileSystemPtr filesystem;
-  connector->ConnectToInterface("filesystem", &filesystem);
+  connector->BindInterface("filesystem", &filesystem);
 
   scoped_refptr<FilesystemJsonPrefStore> user_prefs =
       new FilesystemJsonPrefStore("preferences.json", std::move(filesystem),

@@ -43,7 +43,7 @@ TEST_F(MusDemoTest, CheckMusDemoDraws) {
   connector()->Connect("mus_demo");
 
   ::ui::mojom::WindowServerTestPtr test_interface;
-  connector()->ConnectToInterface(ui::mojom::kServiceName, &test_interface);
+  connector()->BindInterface(ui::mojom::kServiceName, &test_interface);
 
   base::RunLoop run_loop;
   bool success = false;

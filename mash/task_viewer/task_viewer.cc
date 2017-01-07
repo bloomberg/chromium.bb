@@ -314,16 +314,15 @@ void TaskViewer::Launch(uint32_t what, mojom::LaunchMode how) {
   }
 
   service_manager::mojom::ServiceManagerPtr service_manager;
-  context()->connector()->ConnectToInterface(
-      service_manager::mojom::kServiceName, &service_manager);
+  context()->connector()->BindInterface(service_manager::mojom::kServiceName,
+                                        &service_manager);
 
   service_manager::mojom::ServiceManagerListenerPtr listener;
   service_manager::mojom::ServiceManagerListenerRequest request(&listener);
   service_manager->AddListener(std::move(listener));
 
   catalog::mojom::CatalogPtr catalog;
-  context()->connector()->ConnectToInterface(catalog::mojom::kServiceName,
-                                             &catalog);
+  context()->connector()->BindInterface(catalog::mojom::kServiceName, &catalog);
 
   TaskViewerContents* task_viewer = new TaskViewerContents(
       this, std::move(request), std::move(catalog));

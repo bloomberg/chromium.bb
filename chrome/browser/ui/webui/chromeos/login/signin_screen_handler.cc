@@ -297,8 +297,7 @@ SigninScreenHandler::SigninScreenHandler(
 
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
-      ->ConnectToInterface(ash_util::GetAshServiceName(),
-                           &touch_view_manager_ptr_);
+      ->BindInterface(ash_util::GetAshServiceName(), &touch_view_manager_ptr_);
   touch_view_manager_ptr_->AddObserver(
       touch_view_binding_.CreateInterfacePtrAndBind());
 }

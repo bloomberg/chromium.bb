@@ -25,7 +25,7 @@ void ShutdownPolicyForwarder::OnShutdownPolicyChanged(bool reboot_on_shutdown) {
   ash::mojom::ShutdownControllerPtr shutdown_controller;
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
-      ->ConnectToInterface(ash_util::GetAshServiceName(), &shutdown_controller);
+      ->BindInterface(ash_util::GetAshServiceName(), &shutdown_controller);
 
   // Forward the setting to ash.
   shutdown_controller->SetRebootOnShutdown(reboot_on_shutdown);

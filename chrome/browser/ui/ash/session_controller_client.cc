@@ -246,7 +246,7 @@ void SessionControllerClient::OnSessionStateChanged() {
 void SessionControllerClient::ConnectToSessionControllerAndSetClient() {
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
-      ->ConnectToInterface(ash_util::GetAshServiceName(), &session_controller_);
+      ->BindInterface(ash_util::GetAshServiceName(), &session_controller_);
 
   // Set as |session_controller_|'s client.
   session_controller_->SetClient(binding_.CreateInterfacePtrAndBind());

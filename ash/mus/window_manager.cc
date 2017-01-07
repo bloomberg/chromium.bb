@@ -108,10 +108,8 @@ void WindowManager::Init(
   aura::Env::GetInstance()->AddObserver(this);
 
   // |connector_| will be null in some tests.
-  if (connector_) {
-    connector_->ConnectToInterface(ui::mojom::kServiceName,
-                                   &display_controller_);
-  }
+  if (connector_)
+    connector_->BindInterface(ui::mojom::kServiceName, &display_controller_);
 
   screen_ = base::MakeUnique<ScreenMus>();
   display::Screen::SetScreenInstance(screen_.get());

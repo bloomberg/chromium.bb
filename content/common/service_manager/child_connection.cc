@@ -95,9 +95,9 @@ class ChildConnection::IOThreadContext
         &pid_receiver_);
 
     if (connector) {
-      connector->Start(child_identity,
-                       std::move(service),
-                       std::move(pid_receiver_request));
+      connector->StartService(child_identity,
+                              std::move(service),
+                              std::move(pid_receiver_request));
       connection_ = connector->Connect(child_identity);
     }
   }

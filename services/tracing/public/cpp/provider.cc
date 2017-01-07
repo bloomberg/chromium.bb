@@ -76,7 +76,7 @@ void Provider::Initialize(service_manager::Connector* connector,
     g_tracing_singleton_created = true;
   }
   mojom::FactoryPtr factory;
-  connector->ConnectToInterface(tracing::mojom::kServiceName, &factory);
+  connector->BindInterface(tracing::mojom::kServiceName, &factory);
   InitializeWithFactoryInternal(&factory);
   // This will only set the name for the first app in a loaded mojo file. It's
   // up to something like CoreServices to name its own child threads.

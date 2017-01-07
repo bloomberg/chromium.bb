@@ -633,7 +633,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
         service_manager::Connector* connector =
             content::ServiceManagerConnection::GetForProcess()->GetConnector();
         mash::mojom::LaunchablePtr launchable;
-        connector->ConnectToInterface("touch_hud", &launchable);
+        connector->BindInterface("touch_hud", &launchable);
         launchable->Launch(mash::mojom::kWindow,
                            mash::mojom::LaunchMode::DEFAULT);
       } else {

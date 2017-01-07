@@ -646,7 +646,7 @@ void AccessibilityManager::UpdateAutoclickFromPref() {
     service_manager::Connector* connector =
         content::ServiceManagerConnection::GetForProcess()->GetConnector();
     mash::mojom::LaunchablePtr launchable;
-    connector->ConnectToInterface("accessibility_autoclick", &launchable);
+    connector->BindInterface("accessibility_autoclick", &launchable);
     launchable->Launch(mash::mojom::kWindow, mash::mojom::LaunchMode::DEFAULT);
     return;
   }
@@ -683,8 +683,7 @@ void AccessibilityManager::UpdateAutoclickDelayFromPref() {
     service_manager::Connector* connector =
         content::ServiceManagerConnection::GetForProcess()->GetConnector();
     ash::autoclick::mojom::AutoclickControllerPtr autoclick_controller;
-    connector->ConnectToInterface("accessibility_autoclick",
-                                  &autoclick_controller);
+    connector->BindInterface("accessibility_autoclick", &autoclick_controller);
     autoclick_controller->SetAutoclickDelay(
         autoclick_delay_ms_.InMilliseconds());
     return;

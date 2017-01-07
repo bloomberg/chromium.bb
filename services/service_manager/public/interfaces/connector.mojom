@@ -88,9 +88,9 @@ interface Connector {
   //   the process it created (the pid isn't supplied directly here as the
   //   process may not have been launched by the time Connect() is called.)
   //
-  Start(Identity name,
-        handle<message_pipe> service,
-        PIDReceiver& pid_receiver_request);
+  StartService(Identity name,
+               handle<message_pipe> service,
+               PIDReceiver& pid_receiver_request);
 
   // Requests a connection with another service. The service originating the
   // request is referred to as the "source" and the one receiving the "target".
@@ -127,6 +127,15 @@ interface Connector {
   //    this callback.
   //
   Connect(Identity target, InterfaceProvider&? remote_interfaces) =>
+      (ConnectResult result, string user_id);
+
+  // Variant of Connect() above. Will (gradually) replace it. Think of this like
+  // a combination of Connect() and InterfaceProvider::GetInteface() - requests
+  // a connection to a service and binds an interface in one step.
+  // TODO(beng): Update this comment once the implementation is complete.
+  BindInterface(Identity target,
+                string interface_name,
+                handle<message_pipe> interface_pipe) =>
       (ConnectResult result, string user_id);
 
   // Clones this Connector so it can be passed to another thread.
