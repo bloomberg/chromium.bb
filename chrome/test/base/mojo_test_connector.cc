@@ -74,15 +74,8 @@ class BackgroundTestState {
     // will spawn a new instance.
     params->set_target(service_manager::Identity(
         kTestName, service_manager::mojom::kRootUserID));
-
-    service_manager::mojom::ClientProcessConnectionPtr
-        client_process_connection =
-            service_manager::mojom::ClientProcessConnection::New();
-    client_process_connection->service =
-        service.PassInterface().PassHandle();
-    client_process_connection->pid_receiver_request =
-        mojo::MakeRequest(&pid_receiver_).PassMessagePipe();
-    params->set_client_process_connection(std::move(client_process_connection));
+    params->set_client_process_info(std::move(service),
+                                    MakeRequest(&pid_receiver_));
     service_manager->Connect(std::move(params));
   }
 

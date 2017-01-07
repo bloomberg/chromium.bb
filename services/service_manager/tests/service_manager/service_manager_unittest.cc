@@ -184,11 +184,9 @@ class ServiceManagerTest : public test::ServiceTest,
 
     service_manager::Identity target("service_manager_unittest_target",
                                      service_manager::mojom::kInheritUserID);
-    service_manager::Connector::ConnectParams params(target);
-    params.set_client_process_connection(std::move(client),
-                                         MakeRequest(&receiver));
+    connector()->Start(target, std::move(client), MakeRequest(&receiver));
     std::unique_ptr<service_manager::Connection> connection =
-        connector()->Connect(&params);
+        connector()->Connect(target);
     connection->AddConnectionCompletedClosure(
         base::Bind(&ServiceManagerTest::OnConnectionCompleted,
                    base::Unretained(this)));

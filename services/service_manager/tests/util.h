@@ -25,7 +25,7 @@ namespace test {
 // manager.
 std::unique_ptr<Connection> LaunchAndConnectToProcess(
     const std::string& target_exe_name,
-    const Identity target,
+    const Identity& target,
     service_manager::Connector* connector,
     base::Process* process);
 

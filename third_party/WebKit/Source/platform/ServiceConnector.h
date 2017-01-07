@@ -39,7 +39,7 @@ class ServiceConnector {
 
     service_manager::mojom::blink::InterfaceProviderPtr remoteInterfaces;
     m_connector->Connect(std::move(remoteIdentity),
-                         MakeRequest(&remoteInterfaces), nullptr,
+                         MakeRequest(&remoteInterfaces),
                          base::Bind(&ServiceConnector::onConnectionCompleted));
 
     remoteInterfaces->GetInterface(Interface::Name_, request.PassMessagePipe());

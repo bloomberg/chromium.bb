@@ -13,6 +13,7 @@
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
+#include "services/service_manager/public/interfaces/service.mojom.h"
 
 namespace service_manager {
 
@@ -35,12 +36,20 @@ class ConnectParams {
     return std::move(remote_interfaces_);
   }
 
-  void set_client_process_connection(
-      mojom::ClientProcessConnectionPtr client_process_connection) {
-    client_process_connection_ = std::move(client_process_connection);
+  void set_client_process_info(
+      mojom::ServicePtr service,
+      mojom::PIDReceiverRequest pid_receiver_request) {
+    service_ = std::move(service);
+    pid_receiver_request_ = std::move(pid_receiver_request);
   }
-  mojom::ClientProcessConnectionPtr TakeClientProcessConnection() {
-    return std::move(client_process_connection_);
+  bool HasClientProcessInfo() const {
+    return service_.is_bound() && pid_receiver_request_.is_pending();
+  }
+  mojom::ServicePtr TakeService() {
+    return std::move(service_);
+  }
+  mojom::PIDReceiverRequest TakePIDReceiverRequest() {
+    return std::move(pid_receiver_request_);
   }
 
   void set_connect_callback(const mojom::Connector::ConnectCallback& value) {
@@ -58,7 +67,8 @@ class ConnectParams {
   Identity target_;
 
   mojom::InterfaceProviderRequest remote_interfaces_;
-  mojom::ClientProcessConnectionPtr client_process_connection_;
+  mojom::ServicePtr service_;
+  mojom::PIDReceiverRequest pid_receiver_request_;
   mojom::Connector::ConnectCallback connect_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectParams);

@@ -79,8 +79,8 @@ class ConnectTest : public test::ServiceTest,
   ~ConnectTest() override {}
 
  protected:
-  std::unique_ptr<Connection> ConnectTo(Connector::ConnectParams* params) {
-    std::unique_ptr<Connection> connection = connector()->Connect(params);
+  std::unique_ptr<Connection> ConnectTo(const Identity& target) {
+    std::unique_ptr<Connection> connection = connector()->Connect(target);
     base::RunLoop loop;
     connection->AddConnectionCompletedClosure(base::Bind(&QuitLoop, &loop));
     loop.Run();
@@ -175,10 +175,9 @@ TEST_F(ConnectTest, Connect) {
 }
 
 TEST_F(ConnectTest, Instances) {
-  Connector::ConnectParams params_a(
-      Identity(kTestAppName, mojom::kInheritUserID, "A"));
-  std::unique_ptr<Connection> connection_a1 = ConnectTo(&params_a);
-  std::unique_ptr<Connection> connection_a2 = ConnectTo(&params_a);
+  Identity identity_a(kTestAppName, mojom::kInheritUserID, "A");
+  std::unique_ptr<Connection> connection_a1 = ConnectTo(identity_a);
+  std::unique_ptr<Connection> connection_a2 = ConnectTo(identity_a);
   std::string instance_a1, instance_a2;
   test::mojom::ConnectTestServicePtr service_a1;
   {
@@ -196,9 +195,8 @@ TEST_F(ConnectTest, Instances) {
   }
   EXPECT_EQ(instance_a1, instance_a2);
 
-  Connector::ConnectParams params_b(
-      Identity(kTestAppName, mojom::kInheritUserID, "B"));
-  std::unique_ptr<Connection> connection_b = ConnectTo(&params_b);
+  Identity identity_b(kTestAppName, mojom::kInheritUserID, "B");
+  std::unique_ptr<Connection> connection_b = ConnectTo(identity_b);
   std::string instance_b;
   test::mojom::ConnectTestServicePtr service_b;
   {
@@ -368,9 +366,8 @@ TEST_F(ConnectTest, AllUsersSingleton) {
   // own
   // synthetic user id for all-user singleton instances).
   const std::string singleton_userid = base::GenerateGUID();
-  Connector::ConnectParams params(
-      Identity(kTestSingletonAppName, singleton_userid));
-  std::unique_ptr<Connection> connection = connector()->Connect(&params);
+  Identity singleton_id(kTestSingletonAppName, singleton_userid);
+  std::unique_ptr<Connection> connection = connector()->Connect(singleton_id);
   {
     base::RunLoop loop;
     connection->AddConnectionCompletedClosure(base::Bind(&QuitLoop, &loop));

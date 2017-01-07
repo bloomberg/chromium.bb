@@ -116,9 +116,8 @@ class ProvidedService
   void ConnectToClassAppAsDifferentUser(
       const service_manager::Identity& target,
       const ConnectToClassAppAsDifferentUserCallback& callback) override {
-    Connector::ConnectParams params(target);
     std::unique_ptr<Connection> connection =
-        context()->connector()->Connect(&params);
+        context()->connector()->Connect(target);
     {
       base::RunLoop loop;
       connection->AddConnectionCompletedClosure(loop.QuitClosure());

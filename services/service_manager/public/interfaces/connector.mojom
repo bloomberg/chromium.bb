@@ -67,26 +67,31 @@ interface PIDReceiver {
   SetPID(uint32 pid);
 };
 
-// Typically, the service manager will start a process for a service the first
-// time it receives a connection request for it. This struct allows a client to
-// start the process itself and provide the service manager the pipes it needs
-// to communicate with it. When an instance of this struct is supplied to
-// Connect(), the client owns the lifetime of the child process, not the service
-// manager. The service manager binds the |service| pipe, and when it closes
-// destroys the associated  instance but the process stays alive.
-struct ClientProcessConnection {
-  // Provides the service manager the ability to bind a Service from the client
-  // process to the instance it creates.
-  handle<message_pipe> service;
-
-  // Allows the client process launcher to tell the service manager the PID of
-  // the process it created (the pid isn't supplied directly here as the process
-  // may not have been launched by the time Connect() is called.)
-  handle<message_pipe> pid_receiver_request;
-};
-
 // Encapsulates establishing connections with other Services.
 interface Connector {
+  // Typically, the service manager will start a process for a service the first
+  // time it receives a connection request for it. This struct allows a client
+  // to start the process itself and provide the service manager the pipes it
+  // needs to communicate with it. When this function is called, the client owns
+  // the lifetime of the child process it started, not the service manager. The
+  // service manager binds the |service| pipe, and when it closes destroys the
+  // associated  instance but the process stays alive.
+  //
+  // Parameters:
+  //
+  //  service
+  //    A pipe to an implementation of Service that the service manager can use
+  //    to communicate with the service.
+  //
+  //  pid_receiver_request
+  //   Allows the client process launcher to tell the service manager the PID of
+  //   the process it created (the pid isn't supplied directly here as the
+  //   process may not have been launched by the time Connect() is called.)
+  //
+  Start(Identity name,
+        handle<message_pipe> service,
+        PIDReceiver& pid_receiver_request);
+
   // Requests a connection with another service. The service originating the
   // request is referred to as the "source" and the one receiving the "target".
   //
@@ -110,10 +115,6 @@ interface Connector {
   //    are filtered by the security policy described by the source and target
   //    service manifests.
   //
-  //  client_process_connection
-  //    When non-null, supplies control pipes the service manager can use to
-  //    bind a process created by the client, instead of creating one itself.
-  //
   // Response parameters:
   //
   //  result
@@ -125,9 +126,7 @@ interface Connector {
   //    resolved by the service manager into a valid user id returned through
   //    this callback.
   //
-  Connect(Identity target,
-          InterfaceProvider&? remote_interfaces,
-          ClientProcessConnection? client_process_connection) =>
+  Connect(Identity target, InterfaceProvider&? remote_interfaces) =>
       (ConnectResult result, string user_id);
 
   // Clones this Connector so it can be passed to another thread.

@@ -36,7 +36,7 @@ void QuitLoop(base::RunLoop* loop) {
 
 std::unique_ptr<Connection> LaunchAndConnectToProcess(
     const std::string& target_exe_name,
-    const Identity target,
+    const Identity& target,
     service_manager::Connector* connector,
     base::Process* process) {
   base::FilePath target_path;
@@ -74,11 +74,9 @@ std::unique_ptr<Connection> LaunchAndConnectToProcess(
       std::move(pipe), 0u));
   service_manager::mojom::PIDReceiverPtr receiver;
 
-  service_manager::Connector::ConnectParams params(target);
-  params.set_client_process_connection(std::move(client),
-                                       MakeRequest(&receiver));
+  connector->Start(target, std::move(client), MakeRequest(&receiver));
   std::unique_ptr<service_manager::Connection> connection =
-      connector->Connect(&params);
+      connector->Connect(target);
   {
     base::RunLoop loop;
     connection->AddConnectionCompletedClosure(base::Bind(&QuitLoop, &loop));

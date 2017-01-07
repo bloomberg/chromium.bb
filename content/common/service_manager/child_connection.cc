@@ -94,13 +94,12 @@ class ChildConnection::IOThreadContext
     service_manager::mojom::PIDReceiverRequest pid_receiver_request(
         &pid_receiver_);
 
-    service_manager::Connector::ConnectParams params(child_identity);
-    params.set_client_process_connection(std::move(service),
-                                         std::move(pid_receiver_request));
-
-    // In some unit testing scenarios a null connector is passed.
-    if (connector)
-      connection_ = connector->Connect(&params);
+    if (connector) {
+      connector->Start(child_identity,
+                       std::move(service),
+                       std::move(pid_receiver_request));
+      connection_ = connector->Connect(child_identity);
+    }
   }
 
   void ShutDownOnIOThread() {

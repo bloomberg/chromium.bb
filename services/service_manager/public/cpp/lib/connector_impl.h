@@ -24,8 +24,11 @@ class ConnectorImpl : public Connector {
   void OnConnectionError();
 
   // Connector:
+  void Start(const Identity& identity,
+             mojom::ServicePtr service,
+             mojom::PIDReceiverRequest pid_receiver_request) override;
   std::unique_ptr<Connection> Connect(const std::string& name) override;
-  std::unique_ptr<Connection> Connect(ConnectParams* params) override;
+  std::unique_ptr<Connection> Connect(const Identity& target) override;
   std::unique_ptr<Connector> Clone() override;
   void BindRequest(mojom::ConnectorRequest request) override;
 
