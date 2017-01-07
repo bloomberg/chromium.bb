@@ -525,21 +525,33 @@ bool Framebuffer::ValidateAndAdjustDrawBuffers(
   if ((mask & fragment_output_type_mask) != (mask & draw_buffer_type_mask_))
     return false;
 
-  if (mask != adjusted_draw_buffer_bound_mask_) {
-    // This won't be reached in every draw/clear call - only when framebuffer
-    // or program has changed.
-    for (uint32_t ii = 0; ii < manager_->max_draw_buffers_; ++ii) {
-      adjusted_draw_buffers_[ii] = draw_buffers_[ii];
-      uint32_t shift_bits = ii * 2;
-      uint32_t buffer_mask = 0x3 << shift_bits;
-      if ((buffer_mask & mask) == 0u) {
-        adjusted_draw_buffers_[ii] = GL_NONE;
-      }
-    }
-    adjusted_draw_buffer_bound_mask_ = mask;
-    glDrawBuffersARB(manager_->max_draw_buffers_, adjusted_draw_buffers_.get());
-  }
+  AdjustDrawBuffersImpl(mask);
   return true;
+}
+
+void Framebuffer::AdjustDrawBuffers() {
+  AdjustDrawBuffersImpl(draw_buffer_bound_mask_);
+}
+
+void Framebuffer::AdjustDrawBuffersImpl(uint32_t desired_mask) {
+  if (desired_mask == adjusted_draw_buffer_bound_mask_) {
+    return;
+  }
+  // This won't be reached in every clear call - only when framebuffer has
+  // changed.
+  for (uint32_t ii = 0; ii < manager_->max_draw_buffers_; ++ii) {
+    adjusted_draw_buffers_[ii] = draw_buffers_[ii];
+    if (adjusted_draw_buffers_[ii] == GL_NONE) {
+      continue;
+    }
+    uint32_t shift_bits = ii * 2;
+    uint32_t buffer_mask = 0x3 << shift_bits;
+    if ((buffer_mask & desired_mask) == 0u) {
+      adjusted_draw_buffers_[ii] = GL_NONE;
+    }
+  }
+  adjusted_draw_buffer_bound_mask_ = desired_mask;
+  glDrawBuffersARB(manager_->max_draw_buffers_, adjusted_draw_buffers_.get());
 }
 
 bool Framebuffer::ContainsActiveIntegerAttachments() const {

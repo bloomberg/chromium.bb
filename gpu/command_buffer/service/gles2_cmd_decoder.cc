@@ -1337,6 +1337,10 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // NONE through DrawBuffers, to be on the safe side. Return true.
   bool ValidateAndAdjustDrawBuffers(const char* function_name);
 
+  // Filter out the draw buffers that have no images attached but are not NONE
+  // through DrawBuffers, to be on the safe side.
+  void AdjustDrawBuffers();
+
   // Checks if all active uniform blocks in the current program are backed by
   // a buffer of sufficient size.
   // If not, generates an INVALID_OPERATION to avoid undefined behavior in
@@ -7287,6 +7291,7 @@ error::Error GLES2DecoderImpl::DoClear(GLbitfield mask) {
         return error::kNoError;
       }
     }
+    AdjustDrawBuffers();
     glClear(mask);
   }
   return error::kNoError;
@@ -8844,6 +8849,16 @@ bool GLES2DecoderImpl::ValidateAndAdjustDrawBuffers(const char* func_name) {
       return false;
   }
   return true;
+}
+
+void GLES2DecoderImpl::AdjustDrawBuffers() {
+  if (!SupportsDrawBuffers()) {
+    return;
+  }
+  Framebuffer* framebuffer = framebuffer_state_.bound_draw_framebuffer.get();
+  if (framebuffer) {
+    framebuffer->AdjustDrawBuffers();
+  }
 }
 
 bool GLES2DecoderImpl::ValidateUniformBlockBackings(const char* func_name) {
