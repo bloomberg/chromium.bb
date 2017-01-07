@@ -13,11 +13,15 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/callback_list.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "chrome/browser/safe_browsing/services_delegate.h"
-#include "components/safe_browsing/base_safe_browsing_service.h"
+#include "components/safe_browsing_db/util.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -59,7 +63,9 @@ struct V4ProtocolConfig;
 // the heavylifting of safebrowsing service. Both of these managers stay
 // alive until SafeBrowsingService is destroyed, however, they are disabled
 // permanently when Shutdown method is called.
-class SafeBrowsingService : public BaseSafeBrowsingService,
+class SafeBrowsingService : public base::RefCountedThreadSafe<
+                                SafeBrowsingService,
+                                content::BrowserThread::DeleteOnUIThread>,
                             public content::NotificationObserver {
  public:
   // Makes the passed |factory| the factory used to instanciate
@@ -76,10 +82,10 @@ class SafeBrowsingService : public BaseSafeBrowsingService,
   static SafeBrowsingService* CreateSafeBrowsingService();
 
   // Called on the UI thread to initialize the service.
-  void Initialize() override;
+  void Initialize();
 
   // Called on the main thread to let us know that the io_thread is going away.
-  void ShutDown() override;
+  void ShutDown();
 
   // Called on UI thread to decide if the download file's sha256 hash
   // should be calculated for safebrowsing.
@@ -93,6 +99,12 @@ class SafeBrowsingService : public BaseSafeBrowsingService,
 
   // Returns the client_name field for both V3 and V4 protocol manager configs.
   std::string GetProtocolConfigClientName() const;
+
+  // Get current enabled status. Must be called on IO thread.
+  bool enabled() const {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    return enabled_;
+  }
 
   // Whether the service is enabled by the current set of profiles.
   bool enabled_by_prefs() const {
@@ -110,14 +122,13 @@ class SafeBrowsingService : public BaseSafeBrowsingService,
     return services_delegate_->GetDownloadService();
   }
 
-  scoped_refptr<net::URLRequestContextGetter> url_request_context() override;
+  scoped_refptr<net::URLRequestContextGetter> url_request_context();
 
   const scoped_refptr<SafeBrowsingUIManager>& ui_manager() const;
 
   // This returns either the v3 or the v4 database manager, depending on
   // the experiment settings.
-  const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager()
-      const override;
+  const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager() const;
 
   scoped_refptr<SafeBrowsingNavigationObserverManager>
   navigation_observer_manager();
@@ -175,7 +186,7 @@ class SafeBrowsingService : public BaseSafeBrowsingService,
 
   ~SafeBrowsingService() override;
 
-  SafeBrowsingDatabaseManager* CreateDatabaseManager() override;
+  virtual SafeBrowsingDatabaseManager* CreateDatabaseManager();
 
   virtual SafeBrowsingUIManager* CreateUIManager();
 
@@ -190,6 +201,8 @@ class SafeBrowsingService : public BaseSafeBrowsingService,
 
  private:
   friend class SafeBrowsingServiceFactoryImpl;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
   friend class base::DeleteHelper<SafeBrowsingService>;
   friend class SafeBrowsingServerTest;
   friend class SafeBrowsingServiceTest;
@@ -255,6 +268,10 @@ class SafeBrowsingService : public BaseSafeBrowsingService,
 
   // Provides phishing and malware statistics. Accessed on IO thread.
   std::unique_ptr<SafeBrowsingPingManager> ping_manager_;
+
+  // Whether the service is running. 'enabled_' is used by SafeBrowsingService
+  // on the IO thread during normal operations.
+  bool enabled_;
 
   // Whether SafeBrowsing is enabled by the current set of profiles.
   // Accessed on UI thread.

@@ -4,20 +4,13 @@
 
 source_set("safe_browsing") {
   sources = [
-    "base_safe_browsing_service.cc",
-    "base_safe_browsing_service.h",
     "base_ui_manager.cc",
     "base_ui_manager.h",
   ]
 
   deps = [
     "//base:base",
-    "//components/safe_browsing/common:common",
-    "//components/safe_browsing_db:database_manager",
-    "//components/safe_browsing_db:remote_database_manager",
-    "//components/safe_browsing_db:safe_browsing_prefs",
     "//components/security_interstitials/content:security_interstitial_page",
     "//content/public/browser:browser",
-    "//net:net",
   ]
 }

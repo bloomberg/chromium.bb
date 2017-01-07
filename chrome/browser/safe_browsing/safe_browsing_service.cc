@@ -286,6 +286,7 @@ SafeBrowsingService* SafeBrowsingService::CreateSafeBrowsingService() {
 
 SafeBrowsingService::SafeBrowsingService()
     : services_delegate_(ServicesDelegate::Create(this)),
+      enabled_(false),
       enabled_by_prefs_(false),
       enabled_v4_only_(safe_browsing::V4FeatureList::IsV4OnlyEnabled()) {}
 
@@ -392,8 +393,6 @@ SafeBrowsingService::url_request_context() {
   return url_request_context_getter_;
 }
 
-// TODO(ntfschr): componentize this once BaseSafeBrowsingUIManager contains a
-// SafeBrowsingService
 const scoped_refptr<SafeBrowsingUIManager>&
 SafeBrowsingService::ui_manager() const {
   return ui_manager_;
@@ -464,8 +463,6 @@ void SafeBrowsingService::OnResourceRequest(const net::URLRequest* request) {
 #endif
 }
 
-// TODO(ntfschr): componentize this once BaseSafeBrowsingUIManager contains a
-// SafeBrowsingService
 SafeBrowsingUIManager* SafeBrowsingService::CreateUIManager() {
   return new SafeBrowsingUIManager(this);
 }
