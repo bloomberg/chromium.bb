@@ -77,7 +77,7 @@ static AtomicString createAccessControlRequestHeadersHeader(
   StringBuilder headerBuffer;
   for (const String& header : filteredHeaders) {
     if (!headerBuffer.isEmpty())
-      headerBuffer.append(", ");
+      headerBuffer.append(",");
     headerBuffer.append(header);
   }
 

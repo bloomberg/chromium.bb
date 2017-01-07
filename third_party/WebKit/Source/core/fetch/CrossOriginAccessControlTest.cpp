@@ -34,7 +34,7 @@ TEST_F(CreateAccessControlPreflightRequestTest, LexicographicalOrder) {
   ResourceRequest preflight =
       createAccessControlPreflightRequest(request, m_securityOrigin.get());
 
-  EXPECT_EQ("apple, content-type, kiwifruit, orange, strawberry",
+  EXPECT_EQ("apple,content-type,kiwifruit,orange,strawberry",
             preflight.httpHeaderField("Access-Control-Request-Headers"));
 }
 
