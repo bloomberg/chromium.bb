@@ -65,7 +65,7 @@ BluetoothInternalsTest.prototype = {
           ]);
 
           this.binding = new bindings.Binding(adapter.AdapterFactory, this);
-          this.adapter = new TestAdapter();
+          this.adapter = new TestAdapterProxy();
           this.adapterBinding_ = new bindings.Binding(adapter.Adapter,
                                                       this.adapter);
         };
@@ -80,22 +80,6 @@ BluetoothInternalsTest.prototype = {
               adapter: this.adapterBinding_.createInterfacePtrAndBind(),
             });
           }
-        };
-
-        /**
-          * A test adapter for the chrome://bluetooth-internals page.
-          * Must be used to create message pipe handle from test code.
-          *
-          * @constructor
-          */
-        var TestAdapter = function() {
-          this.proxy = new TestAdapterProxy();
-        };
-
-        TestAdapter.prototype = {
-          getInfo: function() { return this.proxy.getInfo(); },
-          getDevices: function() { return this.proxy.getDevices(); },
-          setClient: function(client) { return this.proxy.setClient(client); }
         };
 
         /**
@@ -146,11 +130,11 @@ BluetoothInternalsTest.prototype = {
               this.adapterFactory = new TestAdapterFactoryProxy();
               this.adapterFactory.binding.bind(handle);
 
-              this.adapterFactory.adapter.proxy.setTestDevices([
+              this.adapterFactory.adapter.setTestDevices([
                 this.fakeDeviceInfo1(),
                 this.fakeDeviceInfo2(),
               ]);
-              this.adapterFactory.adapter.proxy.setTestAdapter(
+              this.adapterFactory.adapter.setTestAdapter(
                   this.fakeAdapterInfo());
 
               this.setupResolver.resolve();
@@ -239,9 +223,9 @@ TEST_F('BluetoothInternalsTest', 'Startup_BluetoothInternals', function() {
       return setupPromise.then(function() {
         return Promise.all([
           adapterFactory.whenCalled('getAdapter'),
-          adapterFactory.adapter.proxy.whenCalled('getInfo'),
-          adapterFactory.adapter.proxy.whenCalled('getDevices'),
-          adapterFactory.adapter.proxy.whenCalled('setClient'),
+          adapterFactory.adapter.whenCalled('getInfo'),
+          adapterFactory.adapter.whenCalled('getDevices'),
+          adapterFactory.adapter.whenCalled('setClient'),
         ]);
       });
     });
