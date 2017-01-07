@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/logging.h"
@@ -80,6 +81,7 @@
 #include "components/startup_metric_utils/common/startup_metric.mojom.h"
 #include "components/subresource_filter/content/renderer/ruleset_dealer.h"
 #include "components/subresource_filter/content/renderer/subresource_filter_agent.h"
+#include "components/task_scheduler_util/renderer/initialization.h"
 #include "components/version_info/version_info.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
@@ -1473,4 +1475,16 @@ GURL ChromeContentRendererClient::OverrideFlashEmbedWithHTML(const GURL& url) {
 
   RecordYouTubeRewriteUMA(result);
   return corrected_url.ReplaceComponents(r);
+}
+
+void ChromeContentRendererClient::GetTaskSchedulerInitializationParams(
+    std::vector<base::SchedulerWorkerPoolParams>* params_vector,
+    base::TaskScheduler::WorkerPoolIndexForTraitsCallback*
+        index_to_traits_callback) {
+  DCHECK(params_vector);
+  DCHECK(index_to_traits_callback);
+  // If this call fails, content will fall back to the default params.
+  *params_vector = task_scheduler_util::GetRendererWorkerPoolParams();
+  *index_to_traits_callback =
+      base::Bind(&task_scheduler_util::RendererWorkerPoolIndexForTraits);
 }

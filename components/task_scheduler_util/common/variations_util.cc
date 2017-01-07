@@ -4,12 +4,15 @@
 
 #include "components/task_scheduler_util/common/variations_util.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/task_scheduler/initialization_util.h"
 #include "base/time/time.h"
+#include "components/variations/variations_associated_data.h"
 
 namespace task_scheduler_util {
 
@@ -20,6 +23,17 @@ struct SchedulerCustomizableWorkerPoolParams {
   int max_threads = 0;
   base::TimeDelta detach_period;
 };
+
+#if !defined(OS_IOS)
+constexpr char kTaskSchedulerVariationParamsSwitch[] =
+    "task-scheduler-variation-params";
+
+constexpr char kSeparator[] = "|";
+
+bool ContainsSeparator(const std::string& str) {
+  return str.find(kSeparator) != std::string::npos;
+}
+#endif  // !defined(OS_IOS)
 
 // Converts |pool_descriptor| to a SchedulerWorkerPoolVariableParams. Returns a
 // default SchedulerWorkerPoolVariableParams on failure.
@@ -104,5 +118,58 @@ std::vector<base::SchedulerWorkerPoolParams> GetWorkerPoolParams(
   }
   return worker_pool_params_vector;
 }
+
+#if !defined(OS_IOS)
+void AddVariationParamsToCommandLine(base::StringPiece key_prefix,
+                                     base::CommandLine* command_line) {
+  DCHECK(command_line);
+
+  std::map<std::string, std::string> variation_params;
+  if (!variations::GetVariationParams("BrowserScheduler", &variation_params))
+    return;
+
+  std::vector<std::string> parts;
+  for (const auto& key_value : variation_params) {
+    if (base::StartsWith(key_value.first, key_prefix,
+                         base::CompareCase::SENSITIVE)) {
+      if (ContainsSeparator(key_value.first) ||
+          ContainsSeparator(key_value.second)) {
+        DLOG(ERROR)
+            << "Unexpected Character in Task Scheduler Variation Params: "
+            << key_value.first << " [" << key_value.second << "]";
+        return;
+      }
+      parts.push_back(key_value.first);
+      parts.push_back(key_value.second);
+    }
+  }
+
+  if (!parts.empty()) {
+    command_line->AppendSwitchASCII(kTaskSchedulerVariationParamsSwitch,
+                                    base::JoinString(parts, kSeparator));
+  }
+}
+
+std::map<std::string, std::string> GetVariationParamsFromCommandLine(
+    const base::CommandLine& command_line) {
+  const auto serialized_variation_params =
+      command_line.GetSwitchValueASCII(kTaskSchedulerVariationParamsSwitch);
+  const auto parts =
+      base::SplitStringPiece(serialized_variation_params, kSeparator,
+                             base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  std::map<std::string, std::string> variation_params;
+  for (auto it = parts.begin(); it != parts.end(); ++it) {
+    base::StringPiece key = *it;
+    ++it;
+    if (it == parts.end()) {
+      NOTREACHED();
+      return std::map<std::string, std::string>();
+    }
+    base::StringPiece value = *it;
+    variation_params[key.as_string()] = value.as_string();
+  }
+  return variation_params;
+}
+#endif  // !defined(OS_IOS)
 
 }  // namespace task_scheduler_util

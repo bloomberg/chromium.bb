@@ -150,6 +150,7 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "components/startup_metric_utils/browser/startup_metric_host_impl.h"
+#include "components/task_scheduler_util/common/variations_util.h"
 #include "components/task_scheduler_util/initialization/browser_util.h"
 #include "components/task_scheduler_util/variations/browser_variations_util.h"
 #include "components/translate/core/common/translate_switches.h"
@@ -1818,6 +1819,11 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
   StackSamplingConfiguration::Get()->AppendCommandLineSwitchForChildProcess(
       process_type,
       command_line);
+
+  if (process_type == switches::kRendererProcess) {
+    task_scheduler_util::AddVariationParamsToCommandLine("Renderer",
+                                                         command_line);
+  }
 }
 
 std::string ChromeContentBrowserClient::GetApplicationLocale() {
