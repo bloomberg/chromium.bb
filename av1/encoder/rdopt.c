@@ -6468,8 +6468,9 @@ static void do_masked_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
 
 static void do_masked_motion_search_indexed(
     const AV1_COMP *const cpi, MACROBLOCK *x,
-    INTERINTER_COMPOUND_DATA *comp_data, BLOCK_SIZE bsize, int mi_row,
-    int mi_col, int_mv *tmp_mv, int *rate_mv, int mv_idx[2], int which) {
+    const INTERINTER_COMPOUND_DATA *const comp_data, BLOCK_SIZE bsize,
+    int mi_row, int mi_col, int_mv *tmp_mv, int *rate_mv, int mv_idx[2],
+    int which) {
   // NOTE: which values: 0 - 0 only, 1 - 1 only, 2 - both
   MACROBLOCKD *xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
@@ -6477,15 +6478,22 @@ static void do_masked_motion_search_indexed(
   const uint8_t *mask;
   const int mask_stride = block_size_wide[bsize];
 
-  mask = av1_get_compound_type_mask(comp_data, sb_type, 0);
+  mask = av1_get_compound_type_mask(comp_data, sb_type);
 
   if (which == 0 || which == 2)
     do_masked_motion_search(cpi, x, mask, mask_stride, bsize, mi_row, mi_col,
                             &tmp_mv[0], &rate_mv[0], 0, mv_idx[0]);
 
   if (which == 1 || which == 2) {
-    // get the negative mask
-    mask = av1_get_compound_type_mask(comp_data, sb_type, 1);
+// get the negative mask
+#if CONFIG_COMPOUND_SEGMENT
+    uint8_t inv_mask_buf[2 * MAX_SB_SQUARE];
+    const int h = block_size_high[bsize];
+    mask = av1_get_compound_type_mask_inverse(
+        comp_data, inv_mask_buf, h, mask_stride, mask_stride, sb_type);
+#else
+    mask = av1_get_compound_type_mask_inverse(comp_data, sb_type);
+#endif
     do_masked_motion_search(cpi, x, mask, mask_stride, bsize, mi_row, mi_col,
                             &tmp_mv[1], &rate_mv[1], 1, mv_idx[1]);
   }
@@ -6846,7 +6854,10 @@ static int64_t pick_interinter_seg_mask(const AV1_COMP *const cpi,
   int rate;
   uint64_t sse;
   int64_t dist;
-  int rd0, rd1;
+  int rd0;
+  SEG_MASK_TYPE cur_mask_type;
+  int64_t best_rd = INT64_MAX;
+  SEG_MASK_TYPE best_mask_type = 0;
 #if CONFIG_AOM_HIGHBITDEPTH
   const int hbd = xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH;
   const int bd_round = hbd ? (xd->bd - 8) * 2 : 0;
@@ -6874,26 +6885,31 @@ static int64_t pick_interinter_seg_mask(const AV1_COMP *const cpi,
     aom_subtract_block(bh, bw, d10, bw, p1, bw, p0, bw);
   }
 
-  // build mask and inverse
-  build_compound_seg_mask(comp_data, p0, bw, p1, bw, bsize, bh, bw);
+  // try each mask type and its inverse
+  for (cur_mask_type = 0; cur_mask_type < SEG_MASK_TYPES; cur_mask_type++) {
+    // build mask and inverse
+    build_compound_seg_mask(comp_data->seg_mask, cur_mask_type, p0, bw, p1, bw,
+                            bsize, bh, bw);
 
-  // compute rd for mask0
-  sse = av1_wedge_sse_from_residuals(r1, d10, comp_data->seg_mask[0], N);
-  sse = ROUND_POWER_OF_TWO(sse, bd_round);
+    // compute rd for mask
+    sse = av1_wedge_sse_from_residuals(r1, d10, comp_data->seg_mask, N);
+    sse = ROUND_POWER_OF_TWO(sse, bd_round);
 
-  model_rd_from_sse(cpi, xd, bsize, 0, sse, &rate, &dist);
-  rd0 = RDCOST(x->rdmult, x->rddiv, rate, dist);
+    model_rd_from_sse(cpi, xd, bsize, 0, sse, &rate, &dist);
+    rd0 = RDCOST(x->rdmult, x->rddiv, rate, dist);
 
-  // compute rd for mask1
-  sse = av1_wedge_sse_from_residuals(r1, d10, comp_data->seg_mask[1], N);
-  sse = ROUND_POWER_OF_TWO(sse, bd_round);
+    if (rd0 < best_rd) {
+      best_mask_type = cur_mask_type;
+      best_rd = rd0;
+    }
+  }
 
-  model_rd_from_sse(cpi, xd, bsize, 0, sse, &rate, &dist);
-  rd1 = RDCOST(x->rdmult, x->rddiv, rate, dist);
+  // make final mask
+  comp_data->mask_type = best_mask_type;
+  build_compound_seg_mask(comp_data->seg_mask, comp_data->mask_type, p0, bw, p1,
+                          bw, bsize, bh, bw);
 
-  // pick the better of the two
-  mbmi->interinter_compound_data.which = rd1 < rd0;
-  return mbmi->interinter_compound_data.which ? rd1 : rd0;
+  return best_rd;
 }
 #endif  // CONFIG_COMPOUND_SEGMENT
 

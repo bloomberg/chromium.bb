@@ -41,6 +41,18 @@ extern "C" {
 #if CONFIG_EXT_INTER
 // Should we try rectangular interintra predictions?
 #define USE_RECT_INTERINTRA 1
+#if CONFIG_COMPOUND_SEGMENT
+#define MAX_SEG_MASK_BITS 3
+
+// SEG_MASK_TYPES should not surpass 1 << MAX_SEG_MASK_BITS
+typedef enum {
+  UNIFORM_45 = 0,
+  UNIFORM_45_INV,
+  UNIFORM_55,
+  UNIFORM_55_INV,
+  SEG_MASK_TYPES,
+} SEG_MASK_TYPE;
+#endif  // CONFIG_COMPOUND_SEGMENT
 #endif
 
 typedef enum {
@@ -256,8 +268,8 @@ typedef struct {
   int wedge_index;
   int wedge_sign;
 #if CONFIG_COMPOUND_SEGMENT
-  int which;
-  DECLARE_ALIGNED(16, uint8_t, seg_mask[2][2 * MAX_SB_SQUARE]);
+  SEG_MASK_TYPE mask_type;
+  DECLARE_ALIGNED(16, uint8_t, seg_mask[2 * MAX_SB_SQUARE]);
 #endif  // CONFIG_COMPOUND_SEGMENT
 } INTERINTER_COMPOUND_DATA;
 #endif  // CONFIG_EXT_INTER

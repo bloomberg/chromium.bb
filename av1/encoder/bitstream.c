@@ -1626,7 +1626,8 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
       }
 #if CONFIG_COMPOUND_SEGMENT
       else if (mbmi->interinter_compound_data.type == COMPOUND_SEG) {
-        aom_write_bit(w, mbmi->interinter_compound_data.which);
+        aom_write_literal(w, mbmi->interinter_compound_data.mask_type,
+                          MAX_SEG_MASK_BITS);
       }
 #endif  // CONFIG_COMPOUND_SEGMENT
     }
