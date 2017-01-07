@@ -42,11 +42,11 @@ const Length& LengthBox::logicalRight(WritingMode writingMode) const {
 
 const Length& LengthBox::before(WritingMode writingMode) const {
   switch (writingMode) {
-    case WritingMode::HorizontalTb:
+    case WritingMode::kHorizontalTb:
       return m_top;
-    case WritingMode::VerticalLr:
+    case WritingMode::kVerticalLr:
       return m_left;
-    case WritingMode::VerticalRl:
+    case WritingMode::kVerticalRl:
       return m_right;
   }
   ASSERT_NOT_REACHED();
@@ -55,11 +55,11 @@ const Length& LengthBox::before(WritingMode writingMode) const {
 
 const Length& LengthBox::after(WritingMode writingMode) const {
   switch (writingMode) {
-    case WritingMode::HorizontalTb:
+    case WritingMode::kHorizontalTb:
       return m_bottom;
-    case WritingMode::VerticalLr:
+    case WritingMode::kVerticalLr:
       return m_right;
-    case WritingMode::VerticalRl:
+    case WritingMode::kVerticalRl:
       return m_left;
   }
   ASSERT_NOT_REACHED();

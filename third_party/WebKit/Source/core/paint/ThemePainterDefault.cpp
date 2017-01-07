@@ -304,7 +304,7 @@ void ThemePainterDefault::setupMenuListArrow(
         2 * extraPadding;
     // |arrowX| is the middle position for mock theme engine.
     extraParams.menuList.arrowX =
-        (box.styleRef().direction() == TextDirection::Rtl)
+        (box.styleRef().direction() == TextDirection::kRtl)
             ? rect.x() + extraPadding + (arrowSize / 2)
             : right - (arrowSize / 2) - extraPadding;
     extraParams.menuList.arrowSize = arrowSize;
@@ -314,7 +314,7 @@ void ThemePainterDefault::setupMenuListArrow(
     // Put the 6px arrow at the center of paddingForArrow area.
     // |arrowX| is the left position for Aura theme engine.
     extraParams.menuList.arrowX =
-        (box.styleRef().direction() == TextDirection::Rtl)
+        (box.styleRef().direction() == TextDirection::kRtl)
             ? left + (arrowBoxWidth - arrowSize) / 2
             : right - (arrowBoxWidth + arrowSize) / 2;
     extraParams.menuList.arrowSize = arrowSize;

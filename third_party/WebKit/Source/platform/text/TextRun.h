@@ -69,7 +69,7 @@ class PLATFORM_EXPORT TextRun final {
           float expansion = 0,
           ExpansionBehavior expansionBehavior = AllowTrailingExpansion |
                                                 ForbidLeadingExpansion,
-          TextDirection direction = TextDirection::Ltr,
+          TextDirection direction = TextDirection::kLtr,
           bool directionalOverride = false)
       : m_charactersLength(len),
         m_len(len),
@@ -94,7 +94,7 @@ class PLATFORM_EXPORT TextRun final {
           float expansion = 0,
           ExpansionBehavior expansionBehavior = AllowTrailingExpansion |
                                                 ForbidLeadingExpansion,
-          TextDirection direction = TextDirection::Ltr,
+          TextDirection direction = TextDirection::kLtr,
           bool directionalOverride = false)
       : m_charactersLength(len),
         m_len(len),
@@ -118,7 +118,7 @@ class PLATFORM_EXPORT TextRun final {
           float expansion = 0,
           ExpansionBehavior expansionBehavior = AllowTrailingExpansion |
                                                 ForbidLeadingExpansion,
-          TextDirection direction = TextDirection::Ltr,
+          TextDirection direction = TextDirection::kLtr,
           bool directionalOverride = false)
       : m_charactersLength(string.length()),
         m_len(string.length()),
@@ -249,8 +249,8 @@ class PLATFORM_EXPORT TextRun final {
   TextDirection direction() const {
     return static_cast<TextDirection>(m_direction);
   }
-  bool rtl() const { return direction() == TextDirection::Rtl; }
-  bool ltr() const { return direction() == TextDirection::Ltr; }
+  bool rtl() const { return direction() == TextDirection::kRtl; }
+  bool ltr() const { return direction() == TextDirection::kLtr; }
   bool directionalOverride() const { return m_directionalOverride; }
   bool spacingDisabled() const { return m_disableSpacing; }
 

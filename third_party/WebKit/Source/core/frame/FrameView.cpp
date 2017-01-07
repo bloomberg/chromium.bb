@@ -1986,10 +1986,10 @@ bool FrameView::computeCompositedSelection(LocalFrame& frame,
   }
   selection.start.isTextDirectionRTL |=
       primaryDirectionOf(*visibleSelection.start().anchorNode()) ==
-      TextDirection::Rtl;
+      TextDirection::kRtl;
   selection.end.isTextDirectionRTL |=
       primaryDirectionOf(*visibleSelection.end().anchorNode()) ==
-      TextDirection::Rtl;
+      TextDirection::kRtl;
 
   return true;
 }

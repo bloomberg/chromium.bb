@@ -72,7 +72,7 @@ void SVGContainerPainter::paint(const PaintInfo& paintInfo) {
     return;
 
   if (m_layoutSVGContainer.style()->outlineWidth() &&
-      m_layoutSVGContainer.style()->visibility() == EVisibility::Visible) {
+      m_layoutSVGContainer.style()->visibility() == EVisibility::kVisible) {
     PaintInfo outlinePaintInfo(paintInfoBeforeFiltering);
     outlinePaintInfo.phase = PaintPhaseSelfOutlineOnly;
     ObjectPainter(m_layoutSVGContainer)

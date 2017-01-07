@@ -204,7 +204,7 @@ void LayoutText::styleDidChange(StyleDifference diff,
 
   const ComputedStyle& newStyle = styleRef();
   ETextTransform oldTransform =
-      oldStyle ? oldStyle->textTransform() : ETextTransform::None;
+      oldStyle ? oldStyle->textTransform() : ETextTransform::kNone;
   ETextSecurity oldSecurity = oldStyle ? oldStyle->textSecurity() : TSNONE;
   if (oldTransform != newStyle.textTransform() ||
       oldSecurity != newStyle.textSecurity())
@@ -774,20 +774,20 @@ LayoutRect LayoutText::localCaretRect(InlineBox* inlineBox,
 
   bool rightAligned = false;
   switch (cbStyle.textAlign()) {
-    case ETextAlign::Right:
-    case ETextAlign::WebkitRight:
+    case ETextAlign::kRight:
+    case ETextAlign::kWebkitRight:
       rightAligned = true;
       break;
-    case ETextAlign::Left:
-    case ETextAlign::WebkitLeft:
-    case ETextAlign::Center:
-    case ETextAlign::WebkitCenter:
+    case ETextAlign::kLeft:
+    case ETextAlign::kWebkitLeft:
+    case ETextAlign::kCenter:
+    case ETextAlign::kWebkitCenter:
       break;
-    case ETextAlign::Justify:
-    case ETextAlign::Start:
+    case ETextAlign::kJustify:
+    case ETextAlign::kStart:
       rightAligned = !cbStyle.isLeftToRightDirection();
       break;
-    case ETextAlign::End:
+    case ETextAlign::kEnd:
       rightAligned = cbStyle.isLeftToRightDirection();
       break;
   }
@@ -1094,7 +1094,7 @@ void LayoutText::computePreferredLogicalWidths(
   BidiResolver<TextRunIterator, BidiCharacterRun> bidiResolver;
   BidiCharacterRun* run;
   TextDirection textDirection = styleToUse.direction();
-  if ((is8Bit() && textDirection == TextDirection::Ltr) ||
+  if ((is8Bit() && textDirection == TextDirection::kLtr) ||
       isOverride(styleToUse.unicodeBidi())) {
     run = 0;
   } else {
@@ -1356,7 +1356,7 @@ void LayoutText::computePreferredLogicalWidths(
   if (!styleToUse.autoWrap())
     m_minWidth = m_maxWidth;
 
-  if (styleToUse.whiteSpace() == EWhiteSpace::Pre) {
+  if (styleToUse.whiteSpace() == EWhiteSpace::kPre) {
     if (firstLine)
       m_firstLineMinWidth = m_maxWidth;
     m_lastLineLineMinWidth = currMaxWidth;
@@ -1598,15 +1598,15 @@ void applyTextTransform(const ComputedStyle* style,
     return;
 
   switch (style->textTransform()) {
-    case ETextTransform::None:
+    case ETextTransform::kNone:
       break;
-    case ETextTransform::Capitalize:
+    case ETextTransform::kCapitalize:
       makeCapitalized(&text, previousCharacter);
       break;
-    case ETextTransform::Uppercase:
+    case ETextTransform::kUppercase:
       text = text.upper(style->locale());
       break;
-    case ETextTransform::Lowercase:
+    case ETextTransform::kLowercase:
       text = text.lower(style->locale());
       break;
   }
@@ -1865,7 +1865,7 @@ LayoutRect LayoutText::visualOverflowRect() const {
 }
 
 LayoutRect LayoutText::localVisualRect() const {
-  if (style()->visibility() != EVisibility::Visible)
+  if (style()->visibility() != EVisibility::kVisible)
     return LayoutRect();
 
   return unionRect(visualOverflowRect(), localSelectionRect());

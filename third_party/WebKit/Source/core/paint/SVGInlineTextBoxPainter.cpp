@@ -84,7 +84,7 @@ void SVGInlineTextBoxPainter::paint(const PaintInfo& paintInfo,
   DCHECK(m_svgInlineTextBox.truncation() == cNoTruncation);
 
   if (m_svgInlineTextBox.getLineLayoutItem().style()->visibility() !=
-          EVisibility::Visible ||
+          EVisibility::kVisible ||
       !m_svgInlineTextBox.len())
     return;
 
@@ -214,7 +214,7 @@ void SVGInlineTextBoxPainter::paintTextFragments(
 void SVGInlineTextBoxPainter::paintSelectionBackground(
     const PaintInfo& paintInfo) {
   if (m_svgInlineTextBox.getLineLayoutItem().style()->visibility() !=
-      EVisibility::Visible)
+      EVisibility::kVisible)
     return;
 
   DCHECK(!paintInfo.isPrinting());
@@ -317,7 +317,7 @@ void SVGInlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo,
       findLayoutObjectDefininingTextDecoration(m_svgInlineTextBox.parent());
   const ComputedStyle& decorationStyle = decorationLayoutObject->styleRef();
 
-  if (decorationStyle.visibility() != EVisibility::Visible)
+  if (decorationStyle.visibility() != EVisibility::kVisible)
     return;
 
   float scalingFactor = 1;

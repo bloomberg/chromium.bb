@@ -1296,7 +1296,7 @@ PositionWithAffinity LayoutBlock::positionForPointIfOutsideAtomicInlineLevel(
 
 static inline bool isChildHitTestCandidate(LayoutBox* box) {
   return box->size().height() &&
-         box->style()->visibility() == EVisibility::Visible &&
+         box->style()->visibility() == EVisibility::kVisible &&
          !box->isFloatingOrOutOfFlowPositioned() && !box->isLayoutFlowThread();
 }
 
@@ -1473,7 +1473,7 @@ void LayoutBlock::computeBlockPreferredLogicalWidths(
     LayoutUnit& minLogicalWidth,
     LayoutUnit& maxLogicalWidth) const {
   const ComputedStyle& styleToUse = styleRef();
-  bool nowrap = styleToUse.whiteSpace() == EWhiteSpace::Nowrap;
+  bool nowrap = styleToUse.whiteSpace() == EWhiteSpace::kNowrap;
 
   LayoutObject* child = firstChild();
   LayoutBlock* containingBlock = this->containingBlock();
@@ -1556,7 +1556,7 @@ void LayoutBlock::computeBlockPreferredLogicalWidths(
     }
 
     if (child->isFloating()) {
-      if (childStyle->floating() == EFloat::Left)
+      if (childStyle->floating() == EFloat::kLeft)
         floatLeftWidth += w;
       else
         floatRightWidth += w;

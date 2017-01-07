@@ -239,14 +239,14 @@ bool Element::layoutObjectIsFocusable() const {
     DCHECK(canvas);
     return canvas->layoutObject() &&
            canvas->layoutObject()->style()->visibility() ==
-               EVisibility::Visible;
+               EVisibility::kVisible;
   }
 
   // FIXME: Even if we are not visible, we might have a child that is visible.
   // Hyatt wants to fix that some day with a "has visible content" flag or the
   // like.
   return layoutObject() &&
-         layoutObject()->style()->visibility() == EVisibility::Visible;
+         layoutObject()->style()->visibility() == EVisibility::kVisible;
 }
 
 Node* Element::cloneNode(bool deep) {

@@ -202,7 +202,7 @@ bool LayoutSVGContainer::nodeAtFloatPoint(HitTestResult& result,
 
   // pointer-events: bounding-box makes it possible for containers to be direct
   // targets.
-  if (style()->pointerEvents() == EPointerEvents::BoundingBox) {
+  if (style()->pointerEvents() == EPointerEvents::kBoundingBox) {
     // Check for a valid bounding box because it will be invalid for empty
     // containers.
     if (isObjectBoundingBoxValid() &&

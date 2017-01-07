@@ -379,7 +379,7 @@ LayoutRect LayoutSVGRoot::localVisualRect() const {
   // LayoutSVGRootTest.VisualRectMappingWithViewportClipWithoutBorder).
 
   // Return early for any cases where we don't actually paint.
-  if (style()->visibility() != EVisibility::Visible &&
+  if (style()->visibility() != EVisibility::kVisible &&
       !enclosingLayer()->hasVisibleContent())
     return LayoutRect();
 

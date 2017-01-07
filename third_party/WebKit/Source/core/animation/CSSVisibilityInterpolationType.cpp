@@ -30,8 +30,8 @@ class CSSVisibilityNonInterpolableValue : public NonInterpolableValue {
       return m_start;
     if (fraction >= 1)
       return m_end;
-    if (m_start == EVisibility::Visible || m_end == EVisibility::Visible)
-      return EVisibility::Visible;
+    if (m_start == EVisibility::kVisible || m_end == EVisibility::kVisible)
+      return EVisibility::kVisible;
     return fraction < 0.5 ? m_start : m_end;
   }
 
@@ -118,7 +118,7 @@ InterpolationValue CSSVisibilityInterpolationType::maybeConvertNeutral(
 InterpolationValue CSSVisibilityInterpolationType::maybeConvertInitial(
     const StyleResolverState&,
     ConversionCheckers&) const {
-  return createVisibilityValue(EVisibility::Visible);
+  return createVisibilityValue(EVisibility::kVisible);
 }
 
 InterpolationValue CSSVisibilityInterpolationType::maybeConvertInherit(

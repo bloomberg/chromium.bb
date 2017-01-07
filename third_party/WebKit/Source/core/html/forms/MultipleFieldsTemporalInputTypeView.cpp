@@ -624,7 +624,7 @@ void MultipleFieldsTemporalInputTypeView::updateClearButtonVisibility() {
 }
 
 TextDirection MultipleFieldsTemporalInputTypeView::computedTextDirection() {
-  return element().locale().isRTL() ? TextDirection::Rtl : TextDirection::Ltr;
+  return element().locale().isRTL() ? TextDirection::kRtl : TextDirection::kLtr;
 }
 
 AXObject* MultipleFieldsTemporalInputTypeView::popupRootAXObject() {

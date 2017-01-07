@@ -10,11 +10,11 @@ namespace blink {
 
 NGWritingMode FromPlatformWritingMode(WritingMode mode) {
   switch (mode) {
-    case WritingMode::HorizontalTb:
+    case WritingMode::kHorizontalTb:
       return kHorizontalTopBottom;
-    case WritingMode::VerticalRl:
+    case WritingMode::kVerticalRl:
       return kVerticalRightLeft;
-    case WritingMode::VerticalLr:
+    case WritingMode::kVerticalLr:
       return kVerticalLeftRight;
     default:
       NOTREACHED();

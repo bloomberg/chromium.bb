@@ -41,7 +41,7 @@ class BoxShapeTest : public ::testing::Test {
 
   std::unique_ptr<Shape> createBoxShape(const FloatRoundedRect& bounds,
                                         float shapeMargin) {
-    return Shape::createLayoutBoxShape(bounds, WritingMode::HorizontalTb,
+    return Shape::createLayoutBoxShape(bounds, WritingMode::kHorizontalTb,
                                        shapeMargin);
   }
 };

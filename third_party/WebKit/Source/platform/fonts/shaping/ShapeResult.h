@@ -68,7 +68,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   unsigned numCharacters() const { return m_numCharacters; }
   void fallbackFonts(HashSet<const SimpleFontData*>*) const;
   bool rtl() const {
-    return static_cast<TextDirection>(m_direction) == TextDirection::Rtl;
+    return static_cast<TextDirection>(m_direction) == TextDirection::kRtl;
   }
   bool hasVerticalOffsets() const { return m_hasVerticalOffsets; }
 

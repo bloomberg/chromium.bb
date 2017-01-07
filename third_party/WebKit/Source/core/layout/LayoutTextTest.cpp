@@ -30,20 +30,20 @@ const char* kTacoText = "Los Compadres Taco Truck";
 
 TEST_F(LayoutTextTest, WidthZeroFromZeroLength) {
   setBasicBody(kTacoText);
-  ASSERT_EQ(0, getBasicText()->width(0u, 0u, LayoutUnit(), TextDirection::Ltr,
+  ASSERT_EQ(0, getBasicText()->width(0u, 0u, LayoutUnit(), TextDirection::kLtr,
                                      false));
 }
 
 TEST_F(LayoutTextTest, WidthMaxFromZeroLength) {
   setBasicBody(kTacoText);
   ASSERT_EQ(0, getBasicText()->width(std::numeric_limits<unsigned>::max(), 0u,
-                                     LayoutUnit(), TextDirection::Ltr, false));
+                                     LayoutUnit(), TextDirection::kLtr, false));
 }
 
 TEST_F(LayoutTextTest, WidthZeroFromMaxLength) {
   setBasicBody(kTacoText);
   float width = getBasicText()->width(0u, std::numeric_limits<unsigned>::max(),
-                                      LayoutUnit(), TextDirection::Ltr, false);
+                                      LayoutUnit(), TextDirection::kLtr, false);
   // Width may vary by platform and we just want to make sure it's something
   // roughly reasonable.
   ASSERT_GE(width, 100.f);
@@ -54,7 +54,7 @@ TEST_F(LayoutTextTest, WidthMaxFromMaxLength) {
   setBasicBody(kTacoText);
   ASSERT_EQ(0, getBasicText()->width(std::numeric_limits<unsigned>::max(),
                                      std::numeric_limits<unsigned>::max(),
-                                     LayoutUnit(), TextDirection::Ltr, false));
+                                     LayoutUnit(), TextDirection::kLtr, false));
 }
 
 TEST_F(LayoutTextTest, WidthWithHugeLengthAvoidsOverflow) {
@@ -73,14 +73,14 @@ TEST_F(LayoutTextTest, WidthWithHugeLengthAvoidsOverflow) {
   // Width may vary by platform and we just want to make sure it's something
   // roughly reasonable.
   const float width = getBasicText()->width(
-      23u, 4294967282u, LayoutUnit(2.59375), TextDirection::Rtl, false);
+      23u, 4294967282u, LayoutUnit(2.59375), TextDirection::kRtl, false);
   ASSERT_GE(width, 100.f);
   ASSERT_LE(width, 300.f);
 }
 
 TEST_F(LayoutTextTest, WidthFromBeyondLength) {
   setBasicBody("x");
-  ASSERT_EQ(0u, getBasicText()->width(1u, 1u, LayoutUnit(), TextDirection::Ltr,
+  ASSERT_EQ(0u, getBasicText()->width(1u, 1u, LayoutUnit(), TextDirection::kLtr,
                                       false));
 }
 
@@ -89,7 +89,7 @@ TEST_F(LayoutTextTest, WidthLengthBeyondLength) {
   // Width may vary by platform and we just want to make sure it's something
   // roughly reasonable.
   const float width =
-      getBasicText()->width(0u, 2u, LayoutUnit(), TextDirection::Ltr, false);
+      getBasicText()->width(0u, 2u, LayoutUnit(), TextDirection::kLtr, false);
   ASSERT_GE(width, 4.f);
   ASSERT_LE(width, 20.f);
 }

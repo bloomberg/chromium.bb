@@ -74,13 +74,13 @@ const char* fontStyleToString(FontStyle style) {
 
 const char* textTransformToString(ETextTransform transform) {
   switch (transform) {
-    case ETextTransform::Capitalize:
+    case ETextTransform::kCapitalize:
       return "capitalize";
-    case ETextTransform::Uppercase:
+    case ETextTransform::kUppercase:
       return "uppercase";
-    case ETextTransform::Lowercase:
+    case ETextTransform::kLowercase:
       return "lowercase";
-    case ETextTransform::None:
+    case ETextTransform::kNone:
       return "none";
   }
   NOTREACHED();
@@ -315,7 +315,7 @@ void PopupMenuImpl::addElementStyle(ItemIterationContext& context,
   // TODO(tkent): We generate unnecessary "style: {\n},\n" even if no
   // additional style.
   PagePopupClient::addString("style: {\n", data);
-  if (style->visibility() == EVisibility::Hidden)
+  if (style->visibility() == EVisibility::kHidden)
     addProperty("visibility", String("hidden"), data);
   if (style->display() == EDisplay::None)
     addProperty("display", String("none"), data);
@@ -323,7 +323,8 @@ void PopupMenuImpl::addElementStyle(ItemIterationContext& context,
   if (baseStyle.direction() != style->direction()) {
     addProperty(
         "direction",
-        String(style->direction() == TextDirection::Rtl ? "rtl" : "ltr"), data);
+        String(style->direction() == TextDirection::kRtl ? "rtl" : "ltr"),
+        data);
   }
   if (isOverride(style->unicodeBidi()))
     addProperty("unicodeBidi", String("bidi-override"), data);

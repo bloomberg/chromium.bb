@@ -269,7 +269,7 @@ IntSize LayoutFlexibleBox::originAdjustmentForScrollbars() const {
   WritingMode writingMode = style()->getWritingMode();
 
   if (flexDirection == FlowRow) {
-    if (textDirection == TextDirection::Rtl) {
+    if (textDirection == TextDirection::kRtl) {
       if (blink::isHorizontalWritingMode(writingMode))
         size.expand(adjustmentWidth, 0);
       else
@@ -278,7 +278,7 @@ IntSize LayoutFlexibleBox::originAdjustmentForScrollbars() const {
     if (isFlippedBlocksWritingMode(writingMode))
       size.expand(adjustmentWidth, 0);
   } else if (flexDirection == FlowRowReverse) {
-    if (textDirection == TextDirection::Ltr) {
+    if (textDirection == TextDirection::kLtr) {
       if (blink::isHorizontalWritingMode(writingMode))
         size.expand(adjustmentWidth, 0);
       else
@@ -611,23 +611,23 @@ LayoutFlexibleBox::getTransformedWritingMode() const {
   WritingMode mode = style()->getWritingMode();
   if (!isColumnFlow()) {
     static_assert(
-        static_cast<TransformedWritingMode>(WritingMode::HorizontalTb) ==
+        static_cast<TransformedWritingMode>(WritingMode::kHorizontalTb) ==
                 TransformedWritingMode::TopToBottomWritingMode &&
-            static_cast<TransformedWritingMode>(WritingMode::VerticalLr) ==
+            static_cast<TransformedWritingMode>(WritingMode::kVerticalLr) ==
                 TransformedWritingMode::LeftToRightWritingMode &&
-            static_cast<TransformedWritingMode>(WritingMode::VerticalRl) ==
+            static_cast<TransformedWritingMode>(WritingMode::kVerticalRl) ==
                 TransformedWritingMode::RightToLeftWritingMode,
         "WritingMode and TransformedWritingMode must match values.");
     return static_cast<TransformedWritingMode>(mode);
   }
 
   switch (mode) {
-    case WritingMode::HorizontalTb:
+    case WritingMode::kHorizontalTb:
       return style()->isLeftToRightDirection()
                  ? TransformedWritingMode::LeftToRightWritingMode
                  : TransformedWritingMode::RightToLeftWritingMode;
-    case WritingMode::VerticalLr:
-    case WritingMode::VerticalRl:
+    case WritingMode::kVerticalLr:
+    case WritingMode::kVerticalRl:
       return style()->isLeftToRightDirection()
                  ? TransformedWritingMode::TopToBottomWritingMode
                  : TransformedWritingMode::BottomToTopWritingMode;

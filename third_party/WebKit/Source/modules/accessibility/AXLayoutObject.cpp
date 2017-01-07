@@ -487,7 +487,7 @@ AXObjectInclusion AXLayoutObject::defaultObjectInclusion(
     return IgnoreObject;
   }
 
-  if (m_layoutObject->style()->visibility() != EVisibility::Visible) {
+  if (m_layoutObject->style()->visibility() != EVisibility::kVisible) {
     // aria-hidden is meant to override visibility as the determinant in AX
     // hierarchy inclusion.
     if (equalIgnoringCase(getAttribute(aria_hiddenAttr), "false"))
@@ -989,16 +989,16 @@ AccessibilityTextDirection AXLayoutObject::textDirection() const {
 
   if (style->isHorizontalWritingMode()) {
     switch (style->direction()) {
-      case TextDirection::Ltr:
+      case TextDirection::kLtr:
         return AccessibilityTextDirectionLTR;
-      case TextDirection::Rtl:
+      case TextDirection::kRtl:
         return AccessibilityTextDirectionRTL;
     }
   } else {
     switch (style->direction()) {
-      case TextDirection::Ltr:
+      case TextDirection::kLtr:
         return AccessibilityTextDirectionTTB;
-      case TextDirection::Rtl:
+      case TextDirection::kRtl:
         return AccessibilityTextDirectionBTT;
     }
   }

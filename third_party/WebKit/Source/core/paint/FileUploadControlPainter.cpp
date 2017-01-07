@@ -18,7 +18,7 @@ const int buttonShadowHeight = 2;
 
 void FileUploadControlPainter::paintObject(const PaintInfo& paintInfo,
                                            const LayoutPoint& paintOffset) {
-  if (m_layoutFileUploadControl.style()->visibility() != EVisibility::Visible)
+  if (m_layoutFileUploadControl.style()->visibility() != EVisibility::kVisible)
     return;
 
   // Push a clip.

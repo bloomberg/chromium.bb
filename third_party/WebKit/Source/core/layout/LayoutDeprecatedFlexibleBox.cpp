@@ -43,9 +43,9 @@ class FlexBoxIterator {
       : m_box(parent), m_largestOrdinal(1) {
     if (m_box->style()->boxOrient() == HORIZONTAL &&
         !m_box->style()->isLeftToRightDirection())
-      m_forward = m_box->style()->boxDirection() != EBoxDirection::Normal;
+      m_forward = m_box->style()->boxDirection() != EBoxDirection::kNormal;
     else
-      m_forward = m_box->style()->boxDirection() == EBoxDirection::Normal;
+      m_forward = m_box->style()->boxDirection() == EBoxDirection::kNormal;
     if (!m_forward) {
       // No choice, since we're going backwards, we have to find out the highest
       // ordinal up front.
@@ -139,7 +139,7 @@ static int getHeightForLineCount(const LayoutBlockFlow* blockFlow,
                                  int lineCount,
                                  bool includeBottom,
                                  int& count) {
-  if (blockFlow->style()->visibility() != EVisibility::Visible)
+  if (blockFlow->style()->visibility() != EVisibility::kVisible)
     return -1;
   if (blockFlow->childrenInline()) {
     for (RootInlineBox* box = blockFlow->firstRootBox(); box;
@@ -181,7 +181,7 @@ static int getHeightForLineCount(const LayoutBlockFlow* blockFlow,
 static RootInlineBox* lineAtIndex(const LayoutBlockFlow* blockFlow, int i) {
   ASSERT(i >= 0);
 
-  if (blockFlow->style()->visibility() != EVisibility::Visible)
+  if (blockFlow->style()->visibility() != EVisibility::kVisible)
     return nullptr;
 
   if (blockFlow->childrenInline()) {
@@ -209,7 +209,7 @@ static RootInlineBox* lineAtIndex(const LayoutBlockFlow* blockFlow, int i) {
 static int lineCount(const LayoutBlockFlow* blockFlow,
                      const RootInlineBox* stopRootInlineBox = nullptr,
                      bool* found = nullptr) {
-  if (blockFlow->style()->visibility() != EVisibility::Visible)
+  if (blockFlow->style()->visibility() != EVisibility::kVisible)
     return 0;
   int count = 0;
   if (blockFlow->childrenInline()) {
@@ -243,7 +243,7 @@ static int lineCount(const LayoutBlockFlow* blockFlow,
 }
 
 static void clearTruncation(LayoutBlockFlow* blockFlow) {
-  if (blockFlow->style()->visibility() != EVisibility::Visible)
+  if (blockFlow->style()->visibility() != EVisibility::kVisible)
     return;
   if (blockFlow->childrenInline() && blockFlow->hasMarkupTruncation()) {
     blockFlow->setHasMarkupTruncation(false);
@@ -297,7 +297,7 @@ static LayoutUnit marginWidthForChild(LayoutBox* child) {
 static bool childDoesNotAffectWidthOrFlexing(LayoutObject* child) {
   // Positioned children and collapsed children don't affect the min/max width.
   return child->isOutOfFlowPositioned() ||
-         child->style()->visibility() == EVisibility::Collapse;
+         child->style()->visibility() == EVisibility::kCollapse;
 }
 
 static LayoutUnit contentWidthForChild(LayoutBox* child) {
@@ -548,7 +548,7 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren) {
         continue;
       }
 
-      if (child->style()->visibility() == EVisibility::Collapse) {
+      if (child->style()->visibility() == EVisibility::kCollapse) {
         // visibility: collapsed children do not participate in our positioning.
         // But we need to lay them down.
         child->layoutIfNeeded();
@@ -672,7 +672,7 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren) {
           for (LayoutBox* child = iterator.first();
                child && spaceAvailableThisPass && totalFlex;
                child = iterator.next()) {
-            if (child->style()->visibility() == EVisibility::Collapse)
+            if (child->style()->visibility() == EVisibility::kCollapse)
               continue;
 
             if (allowedChildFlex(child, expanding, i)) {
@@ -834,7 +834,7 @@ void LayoutDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren) {
                                  child->style()->height().isPercentOrCalc()))))
         layoutScope.setChildNeedsLayout(child);
 
-      if (child->style()->visibility() == EVisibility::Collapse) {
+      if (child->style()->visibility() == EVisibility::kCollapse) {
         // visibility: collapsed children do not participate in our positioning.
         // But we need to lay them down.
         child->layoutIfNeeded();
@@ -1137,7 +1137,7 @@ void LayoutDeprecatedFlexibleBox::applyLineClamp(FlexBoxIterator& iterator,
     child->forceChildLayout();
 
     // FIXME: For now don't support RTL.
-    if (style()->direction() != TextDirection::Ltr)
+    if (style()->direction() != TextDirection::kLtr)
       continue;
 
     // Get the last line

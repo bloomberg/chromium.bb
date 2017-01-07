@@ -145,7 +145,7 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   int vBorderSpacing() const { return m_vSpacing; }
 
   bool collapseBorders() const {
-    return style()->borderCollapse() == EBorderCollapse::Collapse;
+    return style()->borderCollapse() == EBorderCollapse::kCollapse;
   }
 
   int borderStart() const override { return m_borderStart; }

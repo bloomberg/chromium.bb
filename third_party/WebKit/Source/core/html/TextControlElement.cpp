@@ -890,7 +890,7 @@ String TextControlElement::directionForFormData() const {
       bool isAuto;
       TextDirection textDirection =
           element->directionalityIfhasDirAutoAttribute(isAuto);
-      return textDirection == TextDirection::Rtl ? "rtl" : "ltr";
+      return textDirection == TextDirection::kRtl ? "rtl" : "ltr";
     }
   }
 

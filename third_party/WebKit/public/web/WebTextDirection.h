@@ -48,9 +48,9 @@ enum WebTextDirection {
 #if BLINK_IMPLEMENTATION
 inline WebTextDirection toWebTextDirection(TextDirection direction) {
   switch (direction) {
-    case TextDirection::Ltr:
+    case TextDirection::kLtr:
       return WebTextDirectionLeftToRight;
-    case TextDirection::Rtl:
+    case TextDirection::kRtl:
       return WebTextDirectionRightToLeft;
   }
   ASSERT_NOT_REACHED();

@@ -45,7 +45,7 @@ static SkPath::FillType fillRuleFromStyle(const PaintInfo& paintInfo,
 
 void SVGShapePainter::paint(const PaintInfo& paintInfo) {
   if (paintInfo.phase != PaintPhaseForeground ||
-      m_layoutSVGShape.style()->visibility() != EVisibility::Visible ||
+      m_layoutSVGShape.style()->visibility() != EVisibility::kVisible ||
       m_layoutSVGShape.isShapeEmpty())
     return;
 

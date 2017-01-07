@@ -3267,7 +3267,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
                                             bool includeLogicalRightEdge) const;
 
   // Float utility functions.
-  bool isFloating() const { return floating() != EFloat::None; }
+  bool isFloating() const { return floating() != EFloat::kNone; }
 
   // Mix-blend-mode utility functions.
   bool hasBlendMode() const { return blendMode() != WebBlendModeNormal; }
@@ -3279,7 +3279,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // Direction utility functions.
   bool isLeftToRightDirection() const {
-    return direction() == TextDirection::Ltr;
+    return direction() == TextDirection::kLtr;
   }
 
   // Perspective utility functions.
@@ -3423,8 +3423,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // Visibility utility functions.
   bool visibleToHitTesting() const {
-    return visibility() == EVisibility::Visible &&
-           pointerEvents() != EPointerEvents::None;
+    return visibility() == EVisibility::kVisible &&
+           pointerEvents() != EPointerEvents::kNone;
   }
 
   // Animation utility functions.
@@ -3568,21 +3568,21 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // Whitespace utility functions.
   static bool autoWrap(EWhiteSpace ws) {
     // Nowrap and pre don't automatically wrap.
-    return ws != EWhiteSpace::Nowrap && ws != EWhiteSpace::Pre;
+    return ws != EWhiteSpace::kNowrap && ws != EWhiteSpace::kPre;
   }
 
   bool autoWrap() const { return autoWrap(whiteSpace()); }
 
   static bool preserveNewline(EWhiteSpace ws) {
     // Normal and nowrap do not preserve newlines.
-    return ws != EWhiteSpace::Normal && ws != EWhiteSpace::Nowrap;
+    return ws != EWhiteSpace::kNormal && ws != EWhiteSpace::kNowrap;
   }
 
   bool preserveNewline() const { return preserveNewline(whiteSpace()); }
 
   static bool collapseWhiteSpace(EWhiteSpace ws) {
     // Pre and prewrap do not collapse whitespace.
-    return ws != EWhiteSpace::Pre && ws != EWhiteSpace::PreWrap;
+    return ws != EWhiteSpace::kPre && ws != EWhiteSpace::kPreWrap;
   }
 
   bool collapseWhiteSpace() const { return collapseWhiteSpace(whiteSpace()); }
@@ -3598,15 +3598,15 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return false;
   }
   bool breakOnlyAfterWhiteSpace() const {
-    return whiteSpace() == EWhiteSpace::PreWrap ||
+    return whiteSpace() == EWhiteSpace::kPreWrap ||
            getLineBreak() == LineBreakAfterWhiteSpace;
   }
 
   bool breakWords() const {
     return (wordBreak() == BreakWordBreak ||
             overflowWrap() == BreakOverflowWrap) &&
-           whiteSpace() != EWhiteSpace::Pre &&
-           whiteSpace() != EWhiteSpace::Nowrap;
+           whiteSpace() != EWhiteSpace::kPre &&
+           whiteSpace() != EWhiteSpace::kNowrap;
   }
 
   // Text direction utility functions.

@@ -102,10 +102,12 @@ void LayoutMenuList::adjustInnerStyle() {
   Length paddingEnd = Length(LayoutTheme::theme().popupInternalPaddingEnd(
                                  frameView()->getHostWindow(), styleRef()),
                              Fixed);
-  innerStyle.setPaddingLeft(
-      styleRef().direction() == TextDirection::Ltr ? paddingStart : paddingEnd);
-  innerStyle.setPaddingRight(
-      styleRef().direction() == TextDirection::Ltr ? paddingEnd : paddingStart);
+  innerStyle.setPaddingLeft(styleRef().direction() == TextDirection::kLtr
+                                ? paddingStart
+                                : paddingEnd);
+  innerStyle.setPaddingRight(styleRef().direction() == TextDirection::kLtr
+                                 ? paddingEnd
+                                 : paddingStart);
   innerStyle.setPaddingTop(
       Length(LayoutTheme::theme().popupInternalPaddingTop(styleRef()), Fixed));
   innerStyle.setPaddingBottom(Length(
@@ -117,8 +119,8 @@ void LayoutMenuList::adjustInnerStyle() {
       m_innerBlock->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
           LayoutInvalidationReason::StyleChange);
     innerStyle.setTextAlign(style()->isLeftToRightDirection()
-                                ? ETextAlign::Left
-                                : ETextAlign::Right);
+                                ? ETextAlign::kLeft
+                                : ETextAlign::kRight);
     innerStyle.setDirection(m_optionStyle->direction());
     innerStyle.setUnicodeBidi(m_optionStyle->unicodeBidi());
   }

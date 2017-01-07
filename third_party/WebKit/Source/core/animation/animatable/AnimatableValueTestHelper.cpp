@@ -147,14 +147,14 @@ void PrintTo(const AnimatableUnknown& animUnknown, ::std::ostream* os) {
 void PrintTo(const AnimatableVisibility& animVisibility, ::std::ostream* os) {
   *os << "AnimatableVisibility(";
   switch (animVisibility.visibility()) {
-    case EVisibility::Visible:
-      *os << "EVisibility::Visible";
+    case EVisibility::kVisible:
+      *os << "EVisibility::kVisible";
       break;
-    case EVisibility::Hidden:
-      *os << "EVisibility::Hidden";
+    case EVisibility::kHidden:
+      *os << "EVisibility::kHidden";
       break;
-    case EVisibility::Collapse:
-      *os << "EVisibility::Collapse";
+    case EVisibility::kCollapse:
+      *os << "EVisibility::kCollapse";
       break;
     default:
       *os << "Unknown Visibility - update switch in "

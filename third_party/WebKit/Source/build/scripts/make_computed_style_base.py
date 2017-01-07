@@ -83,7 +83,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
             if property['keyword_only'] and property['field_storage_type'] is None:
                 enum_name = property['type_name']
                 # From the Blink style guide: Enum members should use InterCaps with an initial capital letter. [names-enum-members]
-                enum_values = [camel_case(k) for k in property['keywords']]
+                enum_values = [('k' + camel_case(k)) for k in property['keywords']]
                 self._computed_enums[enum_name] = enum_values
 
         # A list of all the fields to be generated.
@@ -114,7 +114,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
                 assert property['initial_keyword'] is not None, \
                     ('MakeComputedStyleBase requires an initial keyword for keyword_only values, none specified '
                      'for property ' + property['name'])
-                default_value = type_name + '::' + camel_case(property['initial_keyword'])
+                default_value = type_name + '::k' + camel_case(property['initial_keyword'])
 
                 # If the property is independent, add the single-bit sized isInherited flag
                 # to the list of Fields as well.

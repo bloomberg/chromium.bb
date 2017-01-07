@@ -115,11 +115,11 @@ AbstractInlineTextBox::Direction AbstractInlineTextBox::getDirection() const {
     return LeftToRight;
 
   if (m_lineLayoutItem.style()->isHorizontalWritingMode()) {
-    return (m_inlineTextBox->direction() == TextDirection::Rtl ? RightToLeft
-                                                               : LeftToRight);
+    return (m_inlineTextBox->direction() == TextDirection::kRtl ? RightToLeft
+                                                                : LeftToRight);
   }
-  return (m_inlineTextBox->direction() == TextDirection::Rtl ? BottomToTop
-                                                             : TopToBottom);
+  return (m_inlineTextBox->direction() == TextDirection::kRtl ? BottomToTop
+                                                              : TopToBottom);
 }
 
 void AbstractInlineTextBox::characterWidths(Vector<float>& widths) const {

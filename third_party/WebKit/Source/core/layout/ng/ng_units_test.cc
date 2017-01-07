@@ -17,52 +17,52 @@ TEST(NGUnitsTest, ConvertLogicalOffsetToPhysicalOffset) {
   NGPhysicalOffset offset;
 
   offset = logical_offset.ConvertToPhysical(
-      kHorizontalTopBottom, TextDirection::Ltr, outer_size, inner_size);
+      kHorizontalTopBottom, TextDirection::kLtr, outer_size, inner_size);
   EXPECT_EQ(LayoutUnit(20), offset.left);
   EXPECT_EQ(LayoutUnit(30), offset.top);
 
   offset = logical_offset.ConvertToPhysical(
-      kHorizontalTopBottom, TextDirection::Rtl, outer_size, inner_size);
+      kHorizontalTopBottom, TextDirection::kRtl, outer_size, inner_size);
   EXPECT_EQ(LayoutUnit(275), offset.left);
   EXPECT_EQ(LayoutUnit(30), offset.top);
 
   offset = logical_offset.ConvertToPhysical(
-      kVerticalRightLeft, TextDirection::Ltr, outer_size, inner_size);
+      kVerticalRightLeft, TextDirection::kLtr, outer_size, inner_size);
   EXPECT_EQ(LayoutUnit(265), offset.left);
   EXPECT_EQ(LayoutUnit(20), offset.top);
 
   offset = logical_offset.ConvertToPhysical(
-      kVerticalRightLeft, TextDirection::Rtl, outer_size, inner_size);
+      kVerticalRightLeft, TextDirection::kRtl, outer_size, inner_size);
   EXPECT_EQ(LayoutUnit(265), offset.left);
   EXPECT_EQ(LayoutUnit(315), offset.top);
 
   offset = logical_offset.ConvertToPhysical(
-      kSidewaysRightLeft, TextDirection::Ltr, outer_size, inner_size);
+      kSidewaysRightLeft, TextDirection::kLtr, outer_size, inner_size);
   EXPECT_EQ(LayoutUnit(265), offset.left);
   EXPECT_EQ(LayoutUnit(20), offset.top);
 
   offset = logical_offset.ConvertToPhysical(
-      kSidewaysRightLeft, TextDirection::Rtl, outer_size, inner_size);
+      kSidewaysRightLeft, TextDirection::kRtl, outer_size, inner_size);
   EXPECT_EQ(LayoutUnit(265), offset.left);
   EXPECT_EQ(LayoutUnit(315), offset.top);
 
   offset = logical_offset.ConvertToPhysical(
-      kVerticalLeftRight, TextDirection::Ltr, outer_size, inner_size);
+      kVerticalLeftRight, TextDirection::kLtr, outer_size, inner_size);
   EXPECT_EQ(LayoutUnit(30), offset.left);
   EXPECT_EQ(LayoutUnit(20), offset.top);
 
   offset = logical_offset.ConvertToPhysical(
-      kVerticalLeftRight, TextDirection::Rtl, outer_size, inner_size);
+      kVerticalLeftRight, TextDirection::kRtl, outer_size, inner_size);
   EXPECT_EQ(LayoutUnit(30), offset.left);
   EXPECT_EQ(LayoutUnit(315), offset.top);
 
   offset = logical_offset.ConvertToPhysical(
-      kSidewaysLeftRight, TextDirection::Ltr, outer_size, inner_size);
+      kSidewaysLeftRight, TextDirection::kLtr, outer_size, inner_size);
   EXPECT_EQ(LayoutUnit(30), offset.left);
   EXPECT_EQ(LayoutUnit(315), offset.top);
 
   offset = logical_offset.ConvertToPhysical(
-      kSidewaysLeftRight, TextDirection::Rtl, outer_size, inner_size);
+      kSidewaysLeftRight, TextDirection::kRtl, outer_size, inner_size);
   EXPECT_EQ(LayoutUnit(30), offset.left);
   EXPECT_EQ(LayoutUnit(20), offset.top);
 }
@@ -74,27 +74,28 @@ TEST(NGUnitsTest, ConvertPhysicalStrutToLogical) {
   NGPhysicalBoxStrut physical{left, right, top, bottom};
 
   NGBoxStrut logical =
-      physical.ConvertToLogical(kHorizontalTopBottom, TextDirection::Ltr);
+      physical.ConvertToLogical(kHorizontalTopBottom, TextDirection::kLtr);
   EXPECT_EQ(left, logical.inline_start);
   EXPECT_EQ(top, logical.block_start);
 
-  logical = physical.ConvertToLogical(kHorizontalTopBottom, TextDirection::Rtl);
+  logical =
+      physical.ConvertToLogical(kHorizontalTopBottom, TextDirection::kRtl);
   EXPECT_EQ(right, logical.inline_start);
   EXPECT_EQ(top, logical.block_start);
 
-  logical = physical.ConvertToLogical(kVerticalLeftRight, TextDirection::Ltr);
+  logical = physical.ConvertToLogical(kVerticalLeftRight, TextDirection::kLtr);
   EXPECT_EQ(top, logical.inline_start);
   EXPECT_EQ(left, logical.block_start);
 
-  logical = physical.ConvertToLogical(kVerticalLeftRight, TextDirection::Rtl);
+  logical = physical.ConvertToLogical(kVerticalLeftRight, TextDirection::kRtl);
   EXPECT_EQ(bottom, logical.inline_start);
   EXPECT_EQ(left, logical.block_start);
 
-  logical = physical.ConvertToLogical(kVerticalRightLeft, TextDirection::Ltr);
+  logical = physical.ConvertToLogical(kVerticalRightLeft, TextDirection::kLtr);
   EXPECT_EQ(top, logical.inline_start);
   EXPECT_EQ(right, logical.block_start);
 
-  logical = physical.ConvertToLogical(kVerticalRightLeft, TextDirection::Rtl);
+  logical = physical.ConvertToLogical(kVerticalRightLeft, TextDirection::kRtl);
   EXPECT_EQ(bottom, logical.inline_start);
   EXPECT_EQ(right, logical.block_start);
 }

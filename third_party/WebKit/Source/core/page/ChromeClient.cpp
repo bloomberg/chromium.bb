@@ -182,7 +182,7 @@ void ChromeClient::setToolTip(LocalFrame& frame, const HitTestResult& result) {
         // implementations don't use text direction information for
         // ChromeClient::setToolTip. We'll work on tooltip text
         // direction during bidi cleanup in form inputs.
-        toolTipDirection = TextDirection::Ltr;
+        toolTipDirection = TextDirection::kLtr;
       }
     }
   }
@@ -198,7 +198,7 @@ void ChromeClient::setToolTip(LocalFrame& frame, const HitTestResult& result) {
 void ChromeClient::clearToolTip(LocalFrame& frame) {
   // Do not check m_lastToolTip* and do not update them intentionally.
   // We don't want to show tooltips with same content after clearToolTip().
-  setToolTip(frame, String(), TextDirection::Ltr);
+  setToolTip(frame, String(), TextDirection::kLtr);
 }
 
 bool ChromeClient::print(LocalFrame* frame) {

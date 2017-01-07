@@ -28,16 +28,16 @@ class NGAbsoluteUtilsTest : public ::testing::Test {
     NGConstraintSpaceBuilder builder(kHorizontalTopBottom);
     builder.SetAvailableSize(container_size_);
     ltr_space_ = builder.SetWritingMode(kHorizontalTopBottom)
-                     .SetTextDirection(TextDirection::Ltr)
+                     .SetTextDirection(TextDirection::kLtr)
                      .ToConstraintSpace();
     rtl_space_ = builder.SetWritingMode(kHorizontalTopBottom)
-                     .SetTextDirection(TextDirection::Rtl)
+                     .SetTextDirection(TextDirection::kRtl)
                      .ToConstraintSpace();
     vertical_lr_space_ = builder.SetWritingMode(kVerticalLeftRight)
-                             .SetTextDirection(TextDirection::Ltr)
+                             .SetTextDirection(TextDirection::kLtr)
                              .ToConstraintSpace();
     vertical_rl_space_ = builder.SetWritingMode(kVerticalLeftRight)
-                             .SetTextDirection(TextDirection::Ltr)
+                             .SetTextDirection(TextDirection::kLtr)
                              .ToConstraintSpace();
   }
 

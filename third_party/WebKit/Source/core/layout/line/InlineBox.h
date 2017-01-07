@@ -301,10 +301,10 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
     m_bitfields.setBidiEmbeddingLevel(level);
   }
   TextDirection direction() const {
-    return bidiLevel() % 2 ? TextDirection::Rtl : TextDirection::Ltr;
+    return bidiLevel() % 2 ? TextDirection::kRtl : TextDirection::kLtr;
   }
   bool isLeftToRightDirection() const {
-    return direction() == TextDirection::Ltr;
+    return direction() == TextDirection::kLtr;
   }
   int caretLeftmostOffset() const {
     return isLeftToRightDirection() ? caretMinOffset() : caretMaxOffset();

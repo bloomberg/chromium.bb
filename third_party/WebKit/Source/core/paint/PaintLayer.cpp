@@ -698,14 +698,14 @@ void PaintLayer::updateDescendantDependentFlags() {
   }
 
   bool previouslyHasVisibleContent = m_hasVisibleContent;
-  if (layoutObject()->style()->visibility() == EVisibility::Visible) {
+  if (layoutObject()->style()->visibility() == EVisibility::kVisible) {
     m_hasVisibleContent = true;
   } else {
     // layer may be hidden but still have some visible content, check for this
     m_hasVisibleContent = false;
     LayoutObject* r = layoutObject()->slowFirstChild();
     while (r) {
-      if (r->style()->visibility() == EVisibility::Visible &&
+      if (r->style()->visibility() == EVisibility::kVisible &&
           (!r->hasLayer() || !r->enclosingLayer()->isSelfPaintingLayer())) {
         m_hasVisibleContent = true;
         break;
@@ -1275,7 +1275,7 @@ PaintLayer* PaintLayer::removeChild(PaintLayer* oldChild) {
     oldChild->stackingNode()->dirtyStackingContextZOrderLists();
   }
 
-  if (layoutObject()->style()->visibility() != EVisibility::Visible)
+  if (layoutObject()->style()->visibility() != EVisibility::kVisible)
     dirtyVisibleContentStatus();
 
   oldChild->setPreviousSibling(0);
@@ -2709,7 +2709,7 @@ bool PaintLayer::backgroundIsKnownToBeOpaqueInRect(
   // We can't use hasVisibleContent(), because that will be true if our
   // layoutObject is hidden, but some child is visible and that child doesn't
   // cover the entire rect.
-  if (layoutObject()->style()->visibility() != EVisibility::Visible)
+  if (layoutObject()->style()->visibility() != EVisibility::kVisible)
     return false;
 
   if (paintsWithFilters() &&

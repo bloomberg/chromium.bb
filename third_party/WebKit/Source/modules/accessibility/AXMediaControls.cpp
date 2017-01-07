@@ -221,7 +221,7 @@ String AccessibilityMediaControl::description(
 bool AccessibilityMediaControl::computeAccessibilityIsIgnored(
     IgnoredReasons* ignoredReasons) const {
   if (!m_layoutObject || !m_layoutObject->style() ||
-      m_layoutObject->style()->visibility() != EVisibility::Visible ||
+      m_layoutObject->style()->visibility() != EVisibility::kVisible ||
       controlType() == MediaTimelineContainer)
     return true;
 
@@ -367,7 +367,7 @@ AXObject* AccessibilityMediaTimeDisplay::create(
 bool AccessibilityMediaTimeDisplay::computeAccessibilityIsIgnored(
     IgnoredReasons* ignoredReasons) const {
   if (!m_layoutObject || !m_layoutObject->style() ||
-      m_layoutObject->style()->visibility() != EVisibility::Visible)
+      m_layoutObject->style()->visibility() != EVisibility::kVisible)
     return true;
 
   if (!m_layoutObject->style()->width().value())

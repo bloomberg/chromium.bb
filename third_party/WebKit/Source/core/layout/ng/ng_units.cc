@@ -62,14 +62,14 @@ NGPhysicalOffset NGLogicalOffset::ConvertToPhysical(
     NGPhysicalSize inner_size) const {
   switch (mode) {
     case kHorizontalTopBottom:
-      if (direction == TextDirection::Ltr)
+      if (direction == TextDirection::kLtr)
         return NGPhysicalOffset(inline_offset, block_offset);
       else
         return NGPhysicalOffset(
             outer_size.width - inline_offset - inner_size.width, block_offset);
     case kVerticalRightLeft:
     case kSidewaysRightLeft:
-      if (direction == TextDirection::Ltr)
+      if (direction == TextDirection::kLtr)
         return NGPhysicalOffset(
             outer_size.width - block_offset - inner_size.width, inline_offset);
       else
@@ -77,14 +77,14 @@ NGPhysicalOffset NGLogicalOffset::ConvertToPhysical(
             outer_size.width - block_offset - inner_size.width,
             outer_size.height - inline_offset - inner_size.height);
     case kVerticalLeftRight:
-      if (direction == TextDirection::Ltr)
+      if (direction == TextDirection::kLtr)
         return NGPhysicalOffset(block_offset, inline_offset);
       else
         return NGPhysicalOffset(
             block_offset,
             outer_size.height - inline_offset - inner_size.height);
     case kSidewaysLeftRight:
-      if (direction == TextDirection::Ltr)
+      if (direction == TextDirection::kLtr)
         return NGPhysicalOffset(
             block_offset,
             outer_size.height - inline_offset - inner_size.height);
@@ -187,7 +187,7 @@ NGBoxStrut NGPhysicalBoxStrut::ConvertToLogical(NGWritingMode writing_mode,
       strut = {bottom, top, left, right};
       break;
   }
-  if (direction == TextDirection::Rtl)
+  if (direction == TextDirection::kRtl)
     std::swap(strut.inline_start, strut.inline_end);
   return strut;
 }
@@ -282,20 +282,20 @@ NGStaticPosition NGStaticPosition::Create(NGWritingMode writing_mode,
   position.offset = offset;
   switch (writing_mode) {
     case kHorizontalTopBottom:
-      position.type = (direction == TextDirection::Ltr) ? kTopLeft : kTopRight;
+      position.type = (direction == TextDirection::kLtr) ? kTopLeft : kTopRight;
       break;
     case kVerticalRightLeft:
     case kSidewaysRightLeft:
       position.type =
-          (direction == TextDirection::Ltr) ? kTopRight : kBottomRight;
+          (direction == TextDirection::kLtr) ? kTopRight : kBottomRight;
       break;
     case kVerticalLeftRight:
       position.type =
-          (direction == TextDirection::Ltr) ? kTopLeft : kBottomLeft;
+          (direction == TextDirection::kLtr) ? kTopLeft : kBottomLeft;
       break;
     case kSidewaysLeftRight:
       position.type =
-          (direction == TextDirection::Ltr) ? kBottomLeft : kTopLeft;
+          (direction == TextDirection::kLtr) ? kBottomLeft : kTopLeft;
       break;
   }
   return position;

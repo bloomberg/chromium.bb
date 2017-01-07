@@ -180,7 +180,7 @@ bool Font::drawBidiText(SkCanvas* canvas,
     TextRun subrun =
         run.subRun(bidiRun->start(), bidiRun->stop() - bidiRun->start());
     bool isRTL = bidiRun->level() % 2;
-    subrun.setDirection(isRTL ? TextDirection::Rtl : TextDirection::Ltr);
+    subrun.setDirection(isRTL ? TextDirection::kRtl : TextDirection::kLtr);
     subrun.setDirectionalOverride(bidiRun->dirOverride(false));
 
     TextRunPaintInfo subrunInfo(subrun);

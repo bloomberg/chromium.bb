@@ -23,8 +23,8 @@ bool NGBidiParagraph::SetParagraph(const String& text,
       ubidi_, text.characters16(), text.length(),
       block_style->unicodeBidi() == Plaintext
           ? UBIDI_DEFAULT_LTR
-          : (block_style->direction() == TextDirection::Rtl ? UBIDI_RTL
-                                                            : UBIDI_LTR),
+          : (block_style->direction() == TextDirection::kRtl ? UBIDI_RTL
+                                                             : UBIDI_LTR),
       nullptr, &error);
   if (U_FAILURE(error)) {
     NOTREACHED();

@@ -1482,7 +1482,7 @@ static CSSValue* valueForContentData(const ComputedStyle& style) {
           CSSCustomIdentValue::create(counter->identifier());
       CSSStringValue* separator = CSSStringValue::create(counter->separator());
       CSSValueID listStyleIdent = CSSValueNone;
-      if (counter->listStyle() != EListStyleType::None) {
+      if (counter->listStyle() != EListStyleType::kNone) {
         // TODO(sashab): Change this to use a converter instead of
         // CSSPrimitiveValueMappings.
         listStyleIdent =
@@ -2114,7 +2114,7 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
       return list;
     }
     case CSSPropertyBorderCollapse:
-      if (style.borderCollapse() == EBorderCollapse::Collapse)
+      if (style.borderCollapse() == EBorderCollapse::kCollapse)
         return CSSIdentifierValue::create(CSSValueCollapse);
       return CSSIdentifierValue::create(CSSValueSeparate);
     case CSSPropertyBorderSpacing: {

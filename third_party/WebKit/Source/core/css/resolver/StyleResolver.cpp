@@ -480,7 +480,7 @@ void StyleResolver::matchAllRules(StyleResolverState& state,
               ->directionalityIfhasDirAutoAttribute(isAuto);
       if (isAuto) {
         state.setHasDirAutoAttribute(true);
-        collector.addElementStyleProperties(textDirection == TextDirection::Ltr
+        collector.addElementStyleProperties(textDirection == TextDirection::kLtr
                                                 ? leftToRightDeclaration()
                                                 : rightToLeftDeclaration());
       }

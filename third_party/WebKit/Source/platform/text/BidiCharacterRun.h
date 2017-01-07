@@ -74,7 +74,7 @@ struct BidiCharacterRun {
     return m_override || visuallyOrdered;
   }
   TextDirection direction() const {
-    return reversed(false) ? TextDirection::Rtl : TextDirection::Ltr;
+    return reversed(false) ? TextDirection::kRtl : TextDirection::kLtr;
   }
 
   BidiCharacterRun* next() const { return m_next; }

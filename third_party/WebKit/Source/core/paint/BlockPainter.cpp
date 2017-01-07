@@ -78,7 +78,7 @@ void BlockPainter::paintOverflowControlsIfNeeded(
     const PaintInfo& paintInfo,
     const LayoutPoint& paintOffset) {
   if (m_layoutBlock.hasOverflowClip() &&
-      m_layoutBlock.style()->visibility() == EVisibility::Visible &&
+      m_layoutBlock.style()->visibility() == EVisibility::kVisible &&
       shouldPaintSelfBlockBackground(paintInfo.phase) &&
       !paintInfo.paintRootBackgroundOnly()) {
     Optional<ClipRecorder> clipRecorder;
@@ -170,7 +170,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo,
   const PaintPhase paintPhase = paintInfo.phase;
 
   if (shouldPaintSelfBlockBackground(paintPhase)) {
-    if (m_layoutBlock.style()->visibility() == EVisibility::Visible &&
+    if (m_layoutBlock.style()->visibility() == EVisibility::kVisible &&
         m_layoutBlock.hasBoxDecorationBackground())
       m_layoutBlock.paintBoxDecorationBackground(paintInfo, paintOffset);
     // We're done. We don't bother painting any children.
@@ -182,13 +182,13 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo,
     return;
 
   if (paintPhase == PaintPhaseMask &&
-      m_layoutBlock.style()->visibility() == EVisibility::Visible) {
+      m_layoutBlock.style()->visibility() == EVisibility::kVisible) {
     m_layoutBlock.paintMask(paintInfo, paintOffset);
     return;
   }
 
   if (paintPhase == PaintPhaseClippingMask &&
-      m_layoutBlock.style()->visibility() == EVisibility::Visible) {
+      m_layoutBlock.style()->visibility() == EVisibility::kVisible) {
     BoxPainter(m_layoutBlock).paintClippingMask(paintInfo, paintOffset);
     return;
   }

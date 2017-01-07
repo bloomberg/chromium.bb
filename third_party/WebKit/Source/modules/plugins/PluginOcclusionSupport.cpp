@@ -120,7 +120,7 @@ static bool intersectsRect(const LayoutObject* renderer, const IntRect& rect) {
   return renderer->absoluteBoundingBoxRectIgnoringTransforms().intersects(
              rect) &&
          (!renderer->style() ||
-          renderer->style()->visibility() == EVisibility::Visible);
+          renderer->style()->visibility() == EVisibility::kVisible);
 }
 
 static void addToOcclusions(const LayoutBox* renderer,

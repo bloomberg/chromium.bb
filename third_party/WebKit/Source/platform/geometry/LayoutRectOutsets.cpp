@@ -68,11 +68,11 @@ LayoutRectOutsets LayoutRectOutsets::logicalOutsetsWithFlippedLines(
 
 LayoutUnit LayoutRectOutsets::before(WritingMode writingMode) const {
   switch (writingMode) {
-    case WritingMode::HorizontalTb:
+    case WritingMode::kHorizontalTb:
       return m_top;
-    case WritingMode::VerticalLr:
+    case WritingMode::kVerticalLr:
       return m_left;
-    case WritingMode::VerticalRl:
+    case WritingMode::kVerticalRl:
       return m_right;
   }
   ASSERT_NOT_REACHED();
@@ -81,11 +81,11 @@ LayoutUnit LayoutRectOutsets::before(WritingMode writingMode) const {
 
 LayoutUnit LayoutRectOutsets::after(WritingMode writingMode) const {
   switch (writingMode) {
-    case WritingMode::HorizontalTb:
+    case WritingMode::kHorizontalTb:
       return m_bottom;
-    case WritingMode::VerticalLr:
+    case WritingMode::kVerticalLr:
       return m_right;
-    case WritingMode::VerticalRl:
+    case WritingMode::kVerticalRl:
       return m_left;
   }
   ASSERT_NOT_REACHED();
@@ -116,13 +116,13 @@ LayoutUnit LayoutRectOutsets::under(WritingMode writingMode) const {
 
 void LayoutRectOutsets::setBefore(WritingMode writingMode, LayoutUnit value) {
   switch (writingMode) {
-    case WritingMode::HorizontalTb:
+    case WritingMode::kHorizontalTb:
       m_top = value;
       break;
-    case WritingMode::VerticalLr:
+    case WritingMode::kVerticalLr:
       m_left = value;
       break;
-    case WritingMode::VerticalRl:
+    case WritingMode::kVerticalRl:
       m_right = value;
       break;
     default:
@@ -133,13 +133,13 @@ void LayoutRectOutsets::setBefore(WritingMode writingMode, LayoutUnit value) {
 
 void LayoutRectOutsets::setAfter(WritingMode writingMode, LayoutUnit value) {
   switch (writingMode) {
-    case WritingMode::HorizontalTb:
+    case WritingMode::kHorizontalTb:
       m_bottom = value;
       break;
-    case WritingMode::VerticalLr:
+    case WritingMode::kVerticalLr:
       m_right = value;
       break;
-    case WritingMode::VerticalRl:
+    case WritingMode::kVerticalRl:
       m_left = value;
       break;
     default:

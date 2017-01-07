@@ -69,10 +69,10 @@ LayoutObject* LayoutFieldset::layoutSpecialExcludedChild(bool relayoutChildren,
     LayoutUnit logicalLeft;
     if (style()->isLeftToRightDirection()) {
       switch (legend->style()->textAlign()) {
-        case ETextAlign::Center:
+        case ETextAlign::kCenter:
           logicalLeft = (logicalWidth() - logicalWidthForChild(*legend)) / 2;
           break;
-        case ETextAlign::Right:
+        case ETextAlign::kRight:
           logicalLeft = logicalWidth() - borderEnd() - paddingEnd() -
                         logicalWidthForChild(*legend);
           break;
@@ -83,10 +83,10 @@ LayoutObject* LayoutFieldset::layoutSpecialExcludedChild(bool relayoutChildren,
       }
     } else {
       switch (legend->style()->textAlign()) {
-        case ETextAlign::Left:
+        case ETextAlign::kLeft:
           logicalLeft = borderStart() + paddingStart();
           break;
-        case ETextAlign::Center: {
+        case ETextAlign::kCenter: {
           // Make sure that the extra pixel goes to the end side in RTL (since
           // it went to the end side in LTR).
           LayoutUnit centeredWidth =

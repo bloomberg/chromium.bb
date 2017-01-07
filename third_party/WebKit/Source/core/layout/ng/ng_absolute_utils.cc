@@ -85,7 +85,7 @@ void ComputeAbsoluteHorizontal(
       margin_right = LayoutUnit();
     DCHECK(child_minmax.has_value());
     width = child_minmax->ShrinkToFit(container_size.width);
-    if (space.Direction() == TextDirection::Ltr) {
+    if (space.Direction() == TextDirection::kLtr) {
       left = static_position.LeftPosition(container_size.width, *width,
                                           *margin_left, *margin_right);
     } else {
@@ -103,7 +103,7 @@ void ComputeAbsoluteHorizontal(
         margin_right = margin_space / 2;
       } else {
         // Margins are negative.
-        if (space.Direction() == TextDirection::Ltr) {
+        if (space.Direction() == TextDirection::kLtr) {
           margin_left = LayoutUnit();
           margin_right = margin_space;
         } else {
@@ -119,7 +119,7 @@ void ComputeAbsoluteHorizontal(
       // Are values overconstrained?
       if (*margin_left + *margin_right != margin_space) {
         // Relax the end.
-        if (space.Direction() == TextDirection::Ltr)
+        if (space.Direction() == TextDirection::kLtr)
           right = *right - *margin_left + *margin_right - margin_space;
         else
           left = *left - *margin_left + *margin_right - margin_space;
@@ -142,7 +142,7 @@ void ComputeAbsoluteHorizontal(
   } else if (!left && !right) {
     // Rule 2.
     DCHECK(width.has_value());
-    if (space.Direction() == TextDirection::Ltr)
+    if (space.Direction() == TextDirection::kLtr)
       left = static_position.LeftPosition(container_size.width, *width,
                                           *margin_left, *margin_right);
     else

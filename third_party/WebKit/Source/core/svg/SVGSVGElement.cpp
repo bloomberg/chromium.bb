@@ -321,7 +321,7 @@ bool SVGSVGElement::checkIntersectionOrEnclosure(
   LayoutObject* layoutObject = element.layoutObject();
   ASSERT(!layoutObject || layoutObject->style());
   if (!layoutObject ||
-      layoutObject->style()->pointerEvents() == EPointerEvents::None)
+      layoutObject->style()->pointerEvents() == EPointerEvents::kNone)
     return false;
 
   if (!isIntersectionOrEnclosureTarget(layoutObject))

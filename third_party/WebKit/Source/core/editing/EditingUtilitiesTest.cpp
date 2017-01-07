@@ -21,8 +21,8 @@ TEST_F(EditingUtilitiesTest, directionOfEnclosingBlock) {
   setShadowContent(shadowContent, "host");
   Node* one = document().getElementById("one");
 
-  EXPECT_EQ(TextDirection::Ltr, directionOfEnclosingBlock(Position(one, 0)));
-  EXPECT_EQ(TextDirection::Rtl,
+  EXPECT_EQ(TextDirection::kLtr, directionOfEnclosingBlock(Position(one, 0)));
+  EXPECT_EQ(TextDirection::kRtl,
             directionOfEnclosingBlock(PositionInFlatTree(one, 0)));
 }
 

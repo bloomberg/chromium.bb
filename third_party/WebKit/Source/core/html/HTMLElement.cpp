@@ -810,7 +810,7 @@ TextDirection HTMLElement::directionalityIfhasDirAutoAttribute(
     bool& isAuto) const {
   isAuto = hasDirectionAuto();
   if (!isAuto)
-    return TextDirection::Ltr;
+    return TextDirection::kLtr;
   return directionality();
 }
 
@@ -864,7 +864,7 @@ TextDirection HTMLElement::directionality(
   }
   if (strongDirectionalityTextNode)
     *strongDirectionalityTextNode = 0;
-  return TextDirection::Ltr;
+  return TextDirection::kLtr;
 }
 
 bool HTMLElement::selfOrAncestorHasDirAutoAttribute() const {

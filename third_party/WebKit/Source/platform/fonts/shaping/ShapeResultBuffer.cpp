@@ -106,12 +106,12 @@ float ShapeResultBuffer::fillGlyphBufferForRun(GlyphBuffer* glyphBuffer,
     const HarfBuzzRunGlyphData& glyphData = run->m_glyphData[i];
     uint16_t currentCharacterIndex =
         run->m_startIndex + glyphData.characterIndex + runOffset;
-    if ((direction == TextDirection::Rtl && currentCharacterIndex >= to) ||
-        (direction == TextDirection::Ltr && currentCharacterIndex < from)) {
+    if ((direction == TextDirection::kRtl && currentCharacterIndex >= to) ||
+        (direction == TextDirection::kLtr && currentCharacterIndex < from)) {
       advanceSoFar += glyphData.advance;
-    } else if ((direction == TextDirection::Rtl &&
+    } else if ((direction == TextDirection::kRtl &&
                 currentCharacterIndex >= from) ||
-               (direction == TextDirection::Ltr &&
+               (direction == TextDirection::kLtr &&
                 currentCharacterIndex < to)) {
       addGlyphToBuffer(glyphBuffer, advanceSoFar, run->m_direction,
                        run->m_fontData.get(), glyphData, textRun,
@@ -150,7 +150,7 @@ float ShapeResultBuffer::fillGlyphBufferForTextEmphasisRun(
   // linearly split the sum of corresponding glyph advances by the number of
   // grapheme clusters in order to find positions for emphasis mark drawing.
   uint16_t clusterStart = static_cast<uint16_t>(
-      direction == TextDirection::Rtl
+      direction == TextDirection::kRtl
           ? run->m_startIndex + run->m_numCharacters + runOffset
           : run->glyphToCharacterIndex(0) + runOffset);
 
@@ -165,10 +165,10 @@ float ShapeResultBuffer::fillGlyphBufferForTextEmphasisRun(
         isRunEnd || (run->glyphToCharacterIndex(i + 1) + runOffset !=
                      currentCharacterIndex);
 
-    if ((direction == TextDirection::Rtl && currentCharacterIndex >= to) ||
-        (direction != TextDirection::Rtl && currentCharacterIndex < from)) {
+    if ((direction == TextDirection::kRtl && currentCharacterIndex >= to) ||
+        (direction != TextDirection::kRtl && currentCharacterIndex < from)) {
       advanceSoFar += glyphData.advance;
-      direction == TextDirection::Rtl ? --clusterStart : ++clusterStart;
+      direction == TextDirection::kRtl ? --clusterStart : ++clusterStart;
       continue;
     }
 
@@ -183,7 +183,7 @@ float ShapeResultBuffer::fillGlyphBufferForTextEmphasisRun(
       advanceSoFar += glyphAdvanceX;
     } else if (isClusterEnd) {
       uint16_t clusterEnd;
-      if (direction == TextDirection::Rtl)
+      if (direction == TextDirection::kRtl)
         clusterEnd = currentCharacterIndex;
       else
         clusterEnd = static_cast<uint16_t>(
@@ -267,7 +267,7 @@ float ShapeResultBuffer::fillGlyphBuffer(GlyphBuffer* glyphBuffer,
       unsigned resolvedIndex = m_results.size() - 1 - j;
       const RefPtr<const ShapeResult>& wordResult = m_results[resolvedIndex];
       for (unsigned i = 0; i < wordResult->m_runs.size(); i++) {
-        advance += fillGlyphBufferForRun<TextDirection::Rtl>(
+        advance += fillGlyphBufferForRun<TextDirection::kRtl>(
             glyphBuffer, wordResult->m_runs[i].get(), textRun, advance, from,
             to, wordOffset - wordResult->numCharacters());
       }
@@ -278,7 +278,7 @@ float ShapeResultBuffer::fillGlyphBuffer(GlyphBuffer* glyphBuffer,
     for (unsigned j = 0; j < m_results.size(); j++) {
       const RefPtr<const ShapeResult>& wordResult = m_results[j];
       for (unsigned i = 0; i < wordResult->m_runs.size(); i++) {
-        advance += fillGlyphBufferForRun<TextDirection::Ltr>(
+        advance += fillGlyphBufferForRun<TextDirection::kLtr>(
             glyphBuffer, wordResult->m_runs[i].get(), textRun, advance, from,
             to, wordOffset);
       }
@@ -324,7 +324,7 @@ CharacterRange ShapeResultBuffer::getCharacterRange(TextDirection direction,
   bool foundFromX = false;
   bool foundToX = false;
 
-  if (direction == TextDirection::Rtl)
+  if (direction == TextDirection::kRtl)
     currentX = totalWidth;
 
   // The absoluteFrom and absoluteTo arguments represent the start/end offset
@@ -336,7 +336,7 @@ CharacterRange ShapeResultBuffer::getCharacterRange(TextDirection direction,
   unsigned totalNumCharacters = 0;
   for (unsigned j = 0; j < m_results.size(); j++) {
     const RefPtr<const ShapeResult> result = m_results[j];
-    if (direction == TextDirection::Rtl) {
+    if (direction == TextDirection::kRtl) {
       // Convert logical offsets to visual offsets, because results are in
       // logical order while runs are in visual order.
       if (!foundFromX && from >= 0 &&
@@ -350,7 +350,7 @@ CharacterRange ShapeResultBuffer::getCharacterRange(TextDirection direction,
     for (unsigned i = 0; i < result->m_runs.size(); i++) {
       if (!result->m_runs[i])
         continue;
-      DCHECK_EQ(direction == TextDirection::Rtl, result->m_runs[i]->rtl());
+      DCHECK_EQ(direction == TextDirection::kRtl, result->m_runs[i]->rtl());
       int numCharacters = result->m_runs[i]->m_numCharacters;
       if (!foundFromX && from >= 0 && from < numCharacters) {
         fromX =
@@ -373,24 +373,24 @@ CharacterRange ShapeResultBuffer::getCharacterRange(TextDirection direction,
         break;
       currentX += result->m_runs[i]->m_width;
     }
-    if (direction == TextDirection::Rtl)
+    if (direction == TextDirection::kRtl)
       currentX -= result->width();
     totalNumCharacters += result->numCharacters();
   }
 
   // The position in question might be just after the text.
   if (!foundFromX && absoluteFrom == totalNumCharacters) {
-    fromX = direction == TextDirection::Rtl ? 0 : totalWidth;
+    fromX = direction == TextDirection::kRtl ? 0 : totalWidth;
     foundFromX = true;
   }
   if (!foundToX && absoluteTo == totalNumCharacters) {
-    toX = direction == TextDirection::Rtl ? 0 : totalWidth;
+    toX = direction == TextDirection::kRtl ? 0 : totalWidth;
     foundToX = true;
   }
   if (!foundFromX)
     fromX = 0;
   if (!foundToX)
-    toX = direction == TextDirection::Rtl ? 0 : totalWidth;
+    toX = direction == TextDirection::kRtl ? 0 : totalWidth;
 
   // None of our runs is part of the selection, possibly invalid arguments.
   if (!foundToX && !foundFromX)
@@ -425,18 +425,18 @@ Vector<CharacterRange> ShapeResultBuffer::individualCharacterRanges(
     TextDirection direction,
     float totalWidth) const {
   Vector<CharacterRange> ranges;
-  float currentX = direction == TextDirection::Rtl ? totalWidth : 0;
+  float currentX = direction == TextDirection::kRtl ? totalWidth : 0;
   for (const RefPtr<const ShapeResult> result : m_results) {
-    if (direction == TextDirection::Rtl)
+    if (direction == TextDirection::kRtl)
       currentX -= result->width();
     unsigned runCount = result->m_runs.size();
     for (unsigned index = 0; index < runCount; index++) {
       unsigned runIndex =
-          direction == TextDirection::Rtl ? runCount - 1 - index : index;
+          direction == TextDirection::kRtl ? runCount - 1 - index : index;
       addRunInfoRanges(*result->m_runs[runIndex], currentX, ranges);
       currentX += result->m_runs[runIndex]->m_width;
     }
-    if (direction == TextDirection::Rtl)
+    if (direction == TextDirection::kRtl)
       currentX -= result->width();
   }
   return ranges;

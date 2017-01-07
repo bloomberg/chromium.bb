@@ -836,7 +836,7 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(
 
     // In the collapsing border model, 'hidden' suppresses other borders, while
     // 'none' does not, so these style differences can be width differences.
-    if ((borderCollapse() == EBorderCollapse::Collapse) &&
+    if ((borderCollapse() == EBorderCollapse::kCollapse) &&
         ((borderTopStyle() == BorderStyleHidden &&
           other.borderTopStyle() == BorderStyleNone) ||
          (borderTopStyle() == BorderStyleNone &&
@@ -860,8 +860,8 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(
       return true;
   }
 
-  if ((visibility() == EVisibility::Collapse) !=
-      (other.visibility() == EVisibility::Collapse))
+  if ((visibility() == EVisibility::kCollapse) !=
+      (other.visibility() == EVisibility::kCollapse))
     return true;
 
   if (hasPseudoStyle(PseudoIdScrollbar) !=
@@ -2169,11 +2169,11 @@ Color ComputedStyle::visitedDependentColor(int colorProperty) const {
 
 const BorderValue& ComputedStyle::borderBefore() const {
   switch (getWritingMode()) {
-    case WritingMode::HorizontalTb:
+    case WritingMode::kHorizontalTb:
       return borderTop();
-    case WritingMode::VerticalLr:
+    case WritingMode::kVerticalLr:
       return borderLeft();
-    case WritingMode::VerticalRl:
+    case WritingMode::kVerticalRl:
       return borderRight();
   }
   ASSERT_NOT_REACHED();
@@ -2182,11 +2182,11 @@ const BorderValue& ComputedStyle::borderBefore() const {
 
 const BorderValue& ComputedStyle::borderAfter() const {
   switch (getWritingMode()) {
-    case WritingMode::HorizontalTb:
+    case WritingMode::kHorizontalTb:
       return borderBottom();
-    case WritingMode::VerticalLr:
+    case WritingMode::kVerticalLr:
       return borderRight();
-    case WritingMode::VerticalRl:
+    case WritingMode::kVerticalRl:
       return borderLeft();
   }
   ASSERT_NOT_REACHED();
@@ -2207,11 +2207,11 @@ const BorderValue& ComputedStyle::borderEnd() const {
 
 int ComputedStyle::borderBeforeWidth() const {
   switch (getWritingMode()) {
-    case WritingMode::HorizontalTb:
+    case WritingMode::kHorizontalTb:
       return borderTopWidth();
-    case WritingMode::VerticalLr:
+    case WritingMode::kVerticalLr:
       return borderLeftWidth();
-    case WritingMode::VerticalRl:
+    case WritingMode::kVerticalRl:
       return borderRightWidth();
   }
   ASSERT_NOT_REACHED();
@@ -2220,11 +2220,11 @@ int ComputedStyle::borderBeforeWidth() const {
 
 int ComputedStyle::borderAfterWidth() const {
   switch (getWritingMode()) {
-    case WritingMode::HorizontalTb:
+    case WritingMode::kHorizontalTb:
       return borderBottomWidth();
-    case WritingMode::VerticalLr:
+    case WritingMode::kVerticalLr:
       return borderRightWidth();
-    case WritingMode::VerticalRl:
+    case WritingMode::kVerticalRl:
       return borderLeftWidth();
   }
   ASSERT_NOT_REACHED();

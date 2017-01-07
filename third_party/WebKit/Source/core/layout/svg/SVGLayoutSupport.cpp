@@ -61,7 +61,7 @@ FloatRect SVGLayoutSupport::localVisualRect(const LayoutObject& object) {
   DCHECK(!object.isSVGRoot());
 
   // Return early for any cases where we don't actually paint
-  if (object.styleRef().visibility() != EVisibility::Visible &&
+  if (object.styleRef().visibility() != EVisibility::kVisible &&
       !object.enclosingLayer()->hasVisibleContent())
     return FloatRect();
 

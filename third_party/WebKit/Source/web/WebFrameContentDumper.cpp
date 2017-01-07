@@ -72,7 +72,7 @@ static void frameContentAsPlainText(size_t maxChars,
         (contentLayoutItem.location().y() + contentLayoutItem.size().height() <=
          0) ||
         (!ownerLayoutItem.isNull() && ownerLayoutItem.style() &&
-         ownerLayoutItem.style()->visibility() != EVisibility::Visible)) {
+         ownerLayoutItem.style()->visibility() != EVisibility::kVisible)) {
       continue;
     }
 

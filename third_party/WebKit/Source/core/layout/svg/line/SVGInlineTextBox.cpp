@@ -290,7 +290,7 @@ bool SVGInlineTextBox::nodeAtPoint(HitTestResult& result,
                                  result.hitTestRequest(),
                                  getLineLayoutItem().style()->pointerEvents());
   bool isVisible =
-      getLineLayoutItem().style()->visibility() == EVisibility::Visible;
+      getLineLayoutItem().style()->visibility() == EVisibility::kVisible;
   if (isVisible || !hitRules.requireVisible) {
     if (hitRules.canHitBoundingBox ||
         (hitRules.canHitStroke &&

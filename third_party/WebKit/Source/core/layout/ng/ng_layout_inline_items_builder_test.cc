@@ -57,33 +57,33 @@ class NGLayoutInlineItemsBuilderTest : public ::testing::Test {
 TEST_F(NGLayoutInlineItemsBuilderTest, CollapseSpaces) {
   String input("text text  text   text");
   String collapsed("text text text text");
-  TestWhitespaceValue(collapsed, input, EWhiteSpace::Normal);
-  TestWhitespaceValue(collapsed, input, EWhiteSpace::Nowrap);
-  TestWhitespaceValue(collapsed, input, EWhiteSpace::WebkitNowrap);
-  TestWhitespaceValue(collapsed, input, EWhiteSpace::PreLine);
-  TestWhitespaceValue(input, input, EWhiteSpace::Pre);
-  TestWhitespaceValue(input, input, EWhiteSpace::PreWrap);
+  TestWhitespaceValue(collapsed, input, EWhiteSpace::kNormal);
+  TestWhitespaceValue(collapsed, input, EWhiteSpace::kNowrap);
+  TestWhitespaceValue(collapsed, input, EWhiteSpace::kWebkitNowrap);
+  TestWhitespaceValue(collapsed, input, EWhiteSpace::kPreLine);
+  TestWhitespaceValue(input, input, EWhiteSpace::kPre);
+  TestWhitespaceValue(input, input, EWhiteSpace::kPreWrap);
 }
 
 TEST_F(NGLayoutInlineItemsBuilderTest, CollapseTabs) {
   String input("text\ttext\t text \t text");
   String collapsed("text text text text");
-  TestWhitespaceValue(collapsed, input, EWhiteSpace::Normal);
-  TestWhitespaceValue(collapsed, input, EWhiteSpace::Nowrap);
-  TestWhitespaceValue(collapsed, input, EWhiteSpace::WebkitNowrap);
-  TestWhitespaceValue(collapsed, input, EWhiteSpace::PreLine);
-  TestWhitespaceValue(input, input, EWhiteSpace::Pre);
-  TestWhitespaceValue(input, input, EWhiteSpace::PreWrap);
+  TestWhitespaceValue(collapsed, input, EWhiteSpace::kNormal);
+  TestWhitespaceValue(collapsed, input, EWhiteSpace::kNowrap);
+  TestWhitespaceValue(collapsed, input, EWhiteSpace::kWebkitNowrap);
+  TestWhitespaceValue(collapsed, input, EWhiteSpace::kPreLine);
+  TestWhitespaceValue(input, input, EWhiteSpace::kPre);
+  TestWhitespaceValue(input, input, EWhiteSpace::kPreWrap);
 }
 
 TEST_F(NGLayoutInlineItemsBuilderTest, CollapseNewLines) {
   String input("text\ntext \n text");
   String collapsed("text text text");
-  TestWhitespaceValue(collapsed, input, EWhiteSpace::Normal);
-  TestWhitespaceValue(collapsed, input, EWhiteSpace::Nowrap);
-  TestWhitespaceValue("text\ntext\ntext", input, EWhiteSpace::PreLine);
-  TestWhitespaceValue(input, input, EWhiteSpace::Pre);
-  TestWhitespaceValue(input, input, EWhiteSpace::PreWrap);
+  TestWhitespaceValue(collapsed, input, EWhiteSpace::kNormal);
+  TestWhitespaceValue(collapsed, input, EWhiteSpace::kNowrap);
+  TestWhitespaceValue("text\ntext\ntext", input, EWhiteSpace::kPreLine);
+  TestWhitespaceValue(input, input, EWhiteSpace::kPre);
+  TestWhitespaceValue(input, input, EWhiteSpace::kPreWrap);
 }
 
 TEST_F(NGLayoutInlineItemsBuilderTest, CollapseAcrossElements) {
@@ -96,7 +96,7 @@ TEST_F(NGLayoutInlineItemsBuilderTest, CollapseLeadingSpaces) {
 }
 
 TEST_F(NGLayoutInlineItemsBuilderTest, CollapseBeforeAndAfterNewline) {
-  SetWhiteSpace(EWhiteSpace::PreLine);
+  SetWhiteSpace(EWhiteSpace::kPreLine);
   EXPECT_EQ("text\ntext", TestAppend("text  \n  text"))
       << "Spaces before and after newline are removed.";
 }
@@ -104,7 +104,7 @@ TEST_F(NGLayoutInlineItemsBuilderTest, CollapseBeforeAndAfterNewline) {
 TEST_F(NGLayoutInlineItemsBuilderTest,
        CollapsibleSpaceAfterNonCollapsibleSpaceAcrossElements) {
   NGLayoutInlineItemsBuilder builder(&items_);
-  RefPtr<ComputedStyle> pre_wrap(CreateWhitespaceStyle(EWhiteSpace::PreWrap));
+  RefPtr<ComputedStyle> pre_wrap(CreateWhitespaceStyle(EWhiteSpace::kPreWrap));
   builder.Append("text ", pre_wrap.get());
   builder.Append(" text", style_.get());
   EXPECT_EQ("text  text", builder.ToString())
@@ -187,7 +187,7 @@ TEST_F(NGLayoutInlineItemsBuilderTest, BidiBlockOverride) {
   NGLayoutInlineItemsBuilder builder(&items);
   RefPtr<ComputedStyle> block_style(ComputedStyle::create());
   block_style->setUnicodeBidi(Override);
-  block_style->setDirection(TextDirection::Rtl);
+  block_style->setDirection(TextDirection::kRtl);
   builder.EnterBlock(block_style.get());
   builder.Append("Hello", style_.get());
   builder.ExitBlock();
@@ -216,7 +216,7 @@ TEST_F(NGLayoutInlineItemsBuilderTest, BidiIsolate) {
   std::unique_ptr<LayoutInline> isolateRTL(
       createLayoutInline([](ComputedStyle* style) {
         style->setUnicodeBidi(Isolate);
-        style->setDirection(TextDirection::Rtl);
+        style->setDirection(TextDirection::kRtl);
       }));
   builder.EnterInline(isolateRTL.get());
   builder.Append(u"\u05E2\u05D1\u05E8\u05D9\u05EA", style_.get());
@@ -240,7 +240,7 @@ TEST_F(NGLayoutInlineItemsBuilderTest, BidiIsolateOverride) {
   std::unique_ptr<LayoutInline> isolateOverrideRTL(
       createLayoutInline([](ComputedStyle* style) {
         style->setUnicodeBidi(IsolateOverride);
-        style->setDirection(TextDirection::Rtl);
+        style->setDirection(TextDirection::kRtl);
       }));
   builder.EnterInline(isolateOverrideRTL.get());
   builder.Append(u"\u05E2\u05D1\u05E8\u05D9\u05EA", style_.get());

@@ -553,7 +553,7 @@ void InputType::warnIfValueIsInvalidAndElementIsVisible(
     const String& value) const {
   // Don't warn if the value is set in Modernizr.
   const ComputedStyle* style = element().computedStyle();
-  if (style && style->visibility() != EVisibility::Hidden)
+  if (style && style->visibility() != EVisibility::kHidden)
     warnIfValueIsInvalid(value);
 }
 
@@ -862,7 +862,7 @@ void InputType::stepUpFromLayoutObject(int n) {
 
 void InputType::countUsageIfVisible(UseCounter::Feature feature) const {
   if (const ComputedStyle* style = element().computedStyle()) {
-    if (style->visibility() != EVisibility::Hidden)
+    if (style->visibility() != EVisibility::kHidden)
       UseCounter::count(element().document(), feature);
   }
 }

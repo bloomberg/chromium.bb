@@ -546,7 +546,7 @@ static TextDirection determineDirectionality(const String& value,
                                              bool& hasStrongDirectionality) {
   TextRun run(value);
   BidiResolver<VTTTextRunIterator, BidiCharacterRun> bidiResolver;
-  bidiResolver.setStatus(BidiStatus(TextDirection::Ltr, false));
+  bidiResolver.setStatus(BidiStatus(TextDirection::kLtr, false));
   bidiResolver.setPositionIgnoringNestedIsolates(VTTTextRunIterator(&run, 0));
   return bidiResolver.determineDirectionality(&hasStrongDirectionality);
 }
@@ -558,7 +558,7 @@ static CSSValueID determineTextDirection(DocumentFragment* vttRoot) {
   // concatenation of the values of each WebVTT Text Object in nodes, in a
   // pre-order, depth-first traversal, excluding WebVTT Ruby Text Objects and
   // their descendants.
-  TextDirection textDirection = TextDirection::Ltr;
+  TextDirection textDirection = TextDirection::kLtr;
   Node* node = NodeTraversal::next(*vttRoot);
   while (node) {
     DCHECK(node->isDescendantOf(vttRoot));

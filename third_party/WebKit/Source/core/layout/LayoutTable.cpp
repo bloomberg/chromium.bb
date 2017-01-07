@@ -589,7 +589,7 @@ void LayoutTable::layout() {
     // Lay out top captions.
     // FIXME: Collapse caption margin.
     for (unsigned i = 0; i < m_captions.size(); i++) {
-      if (m_captions[i]->style()->captionSide() == ECaptionSide::Bottom)
+      if (m_captions[i]->style()->captionSide() == ECaptionSide::kBottom)
         continue;
       layoutCaption(*m_captions[i], layouter);
     }
@@ -713,7 +713,7 @@ void LayoutTable::layout() {
 
     // Lay out bottom captions.
     for (unsigned i = 0; i < m_captions.size(); i++) {
-      if (m_captions[i]->style()->captionSide() != ECaptionSide::Bottom)
+      if (m_captions[i]->style()->captionSide() != ECaptionSide::kBottom)
         continue;
       layoutCaption(*m_captions[i], layouter);
     }
@@ -825,7 +825,7 @@ void LayoutTable::subtractCaptionRect(LayoutRect& rect) const {
                                       m_captions[i]->marginBefore() +
                                       m_captions[i]->marginAfter();
     bool captionIsBefore =
-        (m_captions[i]->style()->captionSide() != ECaptionSide::Bottom) ^
+        (m_captions[i]->style()->captionSide() != ECaptionSide::kBottom) ^
         style()->isFlippedBlocksWritingMode();
     if (style()->isHorizontalWritingMode()) {
       rect.setHeight(rect.height() - captionLogicalHeight);

@@ -31,7 +31,7 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo,
 
   LayoutRect borderRect(adjustedPaintOffset, m_layoutReplaced.size());
 
-  if (m_layoutReplaced.style()->visibility() == EVisibility::Visible &&
+  if (m_layoutReplaced.style()->visibility() == EVisibility::kVisible &&
       m_layoutReplaced.hasBoxDecorationBackground() &&
       (paintInfo.phase == PaintPhaseForeground ||
        paintInfo.phase == PaintPhaseSelection))
@@ -137,7 +137,7 @@ bool ReplacedPainter::shouldPaint(
   // But if it's an SVG root, there can be children, so we'll check visibility
   // later.
   if (!m_layoutReplaced.isSVGRoot() &&
-      m_layoutReplaced.style()->visibility() != EVisibility::Visible)
+      m_layoutReplaced.style()->visibility() != EVisibility::kVisible)
     return false;
 
   LayoutRect paintRect(m_layoutReplaced.visualOverflowRect());

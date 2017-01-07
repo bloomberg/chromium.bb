@@ -190,7 +190,7 @@ void RangeInputType::handleKeydownEvent(KeyboardEvent* event) {
   const Decimal bigStep =
       std::max((stepRange.maximum() - stepRange.minimum()) / 10, step);
 
-  TextDirection dir = TextDirection::Ltr;
+  TextDirection dir = TextDirection::kLtr;
   bool isVertical = false;
   if (element().layoutObject()) {
     dir = computedTextDirection();
@@ -204,11 +204,11 @@ void RangeInputType::handleKeydownEvent(KeyboardEvent* event) {
   } else if (key == "ArrowDown") {
     newValue = current - step;
   } else if (key == "ArrowLeft") {
-    newValue = (isVertical || dir == TextDirection::Rtl) ? current + step
-                                                         : current - step;
+    newValue = (isVertical || dir == TextDirection::kRtl) ? current + step
+                                                          : current - step;
   } else if (key == "ArrowRight") {
-    newValue = (isVertical || dir == TextDirection::Rtl) ? current - step
-                                                         : current + step;
+    newValue = (isVertical || dir == TextDirection::kRtl) ? current - step
+                                                          : current + step;
   } else if (key == "PageUp") {
     newValue = current + bigStep;
   } else if (key == "PageDown") {

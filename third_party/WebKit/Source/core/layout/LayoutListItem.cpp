@@ -52,7 +52,7 @@ void LayoutListItem::styleDidChange(StyleDifference diff,
   LayoutBlockFlow::styleDidChange(diff, oldStyle);
 
   StyleImage* currentImage = style()->listStyleImage();
-  if (style()->listStyleType() != EListStyleType::None ||
+  if (style()->listStyleType() != EListStyleType::kNone ||
       (currentImage && !currentImage->errorOccurred())) {
     if (!m_marker)
       m_marker = LayoutListMarker::createAnonymous(this);

@@ -288,7 +288,7 @@ bool LayoutSVGText::nodeAtFloatPoint(HitTestResult& result,
   PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_TEXT_HITTESTING,
                                  result.hitTestRequest(),
                                  style()->pointerEvents());
-  bool isVisible = (style()->visibility() == EVisibility::Visible);
+  bool isVisible = (style()->visibility() == EVisibility::kVisible);
   if (isVisible || !hitRules.requireVisible) {
     if ((hitRules.canHitBoundingBox && !objectBoundingBox().isEmpty()) ||
         (hitRules.canHitStroke &&

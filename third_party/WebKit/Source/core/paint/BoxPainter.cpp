@@ -798,7 +798,7 @@ void BoxPainter::paintFillLayer(const LayoutBoxModelObject& obj,
 
 void BoxPainter::paintMask(const PaintInfo& paintInfo,
                            const LayoutPoint& paintOffset) {
-  if (m_layoutBox.style()->visibility() != EVisibility::Visible ||
+  if (m_layoutBox.style()->visibility() != EVisibility::kVisible ||
       paintInfo.phase != PaintPhaseMask)
     return;
 
@@ -857,7 +857,7 @@ void BoxPainter::paintClippingMask(const PaintInfo& paintInfo,
                                    const LayoutPoint& paintOffset) {
   DCHECK(paintInfo.phase == PaintPhaseClippingMask);
 
-  if (m_layoutBox.style()->visibility() != EVisibility::Visible)
+  if (m_layoutBox.style()->visibility() != EVisibility::kVisible)
     return;
 
   if (!m_layoutBox.layer() ||
@@ -1084,7 +1084,7 @@ bool BoxPainter::shouldForceWhiteBackgroundForPrintEconomy(
     const ComputedStyle& style,
     const Document& document) {
   return document.printing() &&
-         style.printColorAdjust() == EPrintColorAdjust::Economy &&
+         style.printColorAdjust() == EPrintColorAdjust::kEconomy &&
          (!document.settings() ||
           !document.settings()->getShouldPrintBackgrounds());
 }

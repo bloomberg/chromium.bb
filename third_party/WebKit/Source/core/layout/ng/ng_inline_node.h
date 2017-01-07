@@ -100,7 +100,7 @@ class NGLayoutInlineItem {
   unsigned StartOffset() const { return start_offset_; }
   unsigned EndOffset() const { return end_offset_; }
   TextDirection Direction() const {
-    return bidi_level_ & 1 ? TextDirection::Rtl : TextDirection::Ltr;
+    return bidi_level_ & 1 ? TextDirection::kRtl : TextDirection::kLtr;
   }
   UBiDiLevel BidiLevel() const { return bidi_level_; }
   UScriptCode Script() const { return script_; }

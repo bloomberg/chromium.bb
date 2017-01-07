@@ -631,7 +631,7 @@ void LayoutBlockFlow::determineLogicalLeftPositionForChild(LayoutBox& child) {
     // edge or any positive margin push it out.
     // If the child is being centred then the margin calculated to do that has
     // factored in any offset required to avoid floats, so use it if necessary.
-    if (style()->textAlign() == ETextAlign::WebkitCenter ||
+    if (style()->textAlign() == ETextAlign::kWebkitCenter ||
         child.style()->marginStartUsing(style()).isAuto())
       newPosition =
           std::max(newPosition, positionToAvoidFloats + childMarginStart);
@@ -3471,7 +3471,7 @@ LayoutPoint LayoutBlockFlow::computeLogicalLocationForFloat(
 
   bool insideFlowThread = flowThreadContainingBlock();
 
-  if (childBox->style()->floating() == EFloat::Left) {
+  if (childBox->style()->floating() == EFloat::kLeft) {
     LayoutUnit heightRemainingLeft = LayoutUnit(1);
     LayoutUnit heightRemainingRight = LayoutUnit(1);
     floatLogicalLeft = logicalLeftOffsetForPositioningFloat(

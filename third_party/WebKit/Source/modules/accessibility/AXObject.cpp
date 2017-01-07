@@ -709,7 +709,7 @@ bool AXObject::isHiddenForTextAlternativeCalculation() const {
     return false;
 
   if (getLayoutObject())
-    return getLayoutObject()->style()->visibility() != EVisibility::Visible;
+    return getLayoutObject()->style()->visibility() != EVisibility::kVisible;
 
   // This is an obscure corner case: if a node has no LayoutObject, that means
   // it's not rendered, but we still may be exploring it as part of a text
@@ -722,7 +722,7 @@ bool AXObject::isHiddenForTextAlternativeCalculation() const {
     RefPtr<ComputedStyle> style =
         doc->ensureStyleResolver().styleForElement(toElement(getNode()));
     return style->display() == EDisplay::None ||
-           style->visibility() != EVisibility::Visible;
+           style->visibility() != EVisibility::kVisible;
   }
 
   return false;

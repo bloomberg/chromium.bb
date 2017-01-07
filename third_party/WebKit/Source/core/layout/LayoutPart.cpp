@@ -242,7 +242,7 @@ void LayoutPart::styleDidChange(StyleDifference diff,
   if (widget && widget->isFrameView())
     toFrameView(widget)->recalculateCustomScrollbarStyle();
 
-  if (style()->visibility() != EVisibility::Visible) {
+  if (style()->visibility() != EVisibility::kVisible) {
     widget->hide();
   } else {
     widget->show();
@@ -296,7 +296,7 @@ void LayoutPart::updateOnWidgetChange() {
   if (!needsLayout())
     updateWidgetGeometryInternal();
 
-  if (style()->visibility() != EVisibility::Visible) {
+  if (style()->visibility() != EVisibility::kVisible) {
     widget->hide();
   } else {
     widget->show();

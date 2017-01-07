@@ -99,7 +99,7 @@ class ExpansionOpportunities {
         RELEASE_ASSERT(opportunitiesInRun <= m_totalOpportunities);
 
         // Don't justify for white-space: pre.
-        if (r->m_lineLayoutItem.style()->whiteSpace() != EWhiteSpace::Pre) {
+        if (r->m_lineLayoutItem.style()->whiteSpace() != EWhiteSpace::kPre) {
           InlineTextBox* textBox = toInlineTextBox(r->m_box);
           RELEASE_ASSERT(m_totalOpportunities);
           int expansion = ((availableLogicalWidth - totalLogicalWidth) *
@@ -363,20 +363,20 @@ ETextAlign LayoutBlockFlow::textAlignmentForLine(bool endsWithSoftBreak) const {
   TextAlignLast alignmentLast = style()->getTextAlignLast();
   switch (alignmentLast) {
     case TextAlignLastStart:
-      return ETextAlign::Start;
+      return ETextAlign::kStart;
     case TextAlignLastEnd:
-      return ETextAlign::End;
+      return ETextAlign::kEnd;
     case TextAlignLastLeft:
-      return ETextAlign::Left;
+      return ETextAlign::kLeft;
     case TextAlignLastRight:
-      return ETextAlign::Right;
+      return ETextAlign::kRight;
     case TextAlignLastCenter:
-      return ETextAlign::Center;
+      return ETextAlign::kCenter;
     case TextAlignLastJustify:
-      return ETextAlign::Justify;
+      return ETextAlign::kJustify;
     case TextAlignLastAuto:
-      if (alignment == ETextAlign::Justify)
-        return ETextAlign::Start;
+      if (alignment == ETextAlign::kJustify)
+        return ETextAlign::kStart;
       return alignment;
   }
 
@@ -670,25 +670,25 @@ void LayoutBlockFlow::updateLogicalWidthForAlignment(
   // position the objects horizontally. The total width of the line can be
   // increased if we end up justifying text.
   switch (textAlign) {
-    case ETextAlign::Left:
-    case ETextAlign::WebkitLeft:
+    case ETextAlign::kLeft:
+    case ETextAlign::kWebkitLeft:
       updateLogicalWidthForLeftAlignedBlock(
           style()->isLeftToRightDirection(), trailingSpaceRun, logicalLeft,
           totalLogicalWidth, availableLogicalWidth);
       break;
-    case ETextAlign::Right:
-    case ETextAlign::WebkitRight:
+    case ETextAlign::kRight:
+    case ETextAlign::kWebkitRight:
       updateLogicalWidthForRightAlignedBlock(
           style()->isLeftToRightDirection(), trailingSpaceRun, logicalLeft,
           totalLogicalWidth, availableLogicalWidth);
       break;
-    case ETextAlign::Center:
-    case ETextAlign::WebkitCenter:
+    case ETextAlign::kCenter:
+    case ETextAlign::kWebkitCenter:
       updateLogicalWidthForCenterAlignedBlock(
           style()->isLeftToRightDirection(), trailingSpaceRun, logicalLeft,
           totalLogicalWidth, availableLogicalWidth);
       break;
-    case ETextAlign::Justify:
+    case ETextAlign::kJustify:
       adjustInlineDirectionLineBounds(expansionOpportunityCount, logicalLeft,
                                       availableLogicalWidth);
       if (expansionOpportunityCount) {
@@ -699,8 +699,8 @@ void LayoutBlockFlow::updateLogicalWidthForAlignment(
         break;
       }
     // Fall through
-    case ETextAlign::Start:
-      if (direction == TextDirection::Ltr)
+    case ETextAlign::kStart:
+      if (direction == TextDirection::kLtr)
         updateLogicalWidthForLeftAlignedBlock(
             style()->isLeftToRightDirection(), trailingSpaceRun, logicalLeft,
             totalLogicalWidth, availableLogicalWidth);
@@ -709,8 +709,8 @@ void LayoutBlockFlow::updateLogicalWidthForAlignment(
             style()->isLeftToRightDirection(), trailingSpaceRun, logicalLeft,
             totalLogicalWidth, availableLogicalWidth);
       break;
-    case ETextAlign::End:
-      if (direction == TextDirection::Ltr)
+    case ETextAlign::kEnd:
+      if (direction == TextDirection::kLtr)
         updateLogicalWidthForRightAlignedBlock(
             style()->isLeftToRightDirection(), trailingSpaceRun, logicalLeft,
             totalLogicalWidth, availableLogicalWidth);
@@ -820,7 +820,7 @@ BidiRun* LayoutBlockFlow::computeInlineDirectionPositionsForSegment(
     }
     if (r->m_lineLayoutItem.isText()) {
       LineLayoutText rt(r->m_lineLayoutItem);
-      if (textAlign == ETextAlign::Justify && r != trailingSpaceRun &&
+      if (textAlign == ETextAlign::kJustify && r != trailingSpaceRun &&
           textJustify != TextJustifyNone) {
         if (!isAfterExpansion)
           toInlineTextBox(r->m_box)->setCanHaveLeadingExpansion(true);
@@ -1140,7 +1140,7 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
     } else {
       VisualDirectionOverride override =
           (styleToUse.rtlOrdering() == EOrder::Visual
-               ? (styleToUse.direction() == TextDirection::Ltr
+               ? (styleToUse.direction() == TextDirection::kLtr
                       ? VisualLeftToRightOverride
                       : VisualRightToLeftOverride)
                : NoVisualOverride);
@@ -1672,9 +1672,9 @@ void LayoutBlockFlow::computeInlinePreferredLogicalWidths(
           const ComputedStyle& childStyle = child->styleRef();
           clearPreviousFloat =
               (prevFloat &&
-               ((prevFloat->styleRef().floating() == EFloat::Left &&
+               ((prevFloat->styleRef().floating() == EFloat::kLeft &&
                  (childStyle.clear() & ClearLeft)) ||
-                (prevFloat->styleRef().floating() == EFloat::Right &&
+                (prevFloat->styleRef().floating() == EFloat::kRight &&
                  (childStyle.clear() & ClearRight))));
           prevFloat = child;
         } else {
@@ -2357,7 +2357,7 @@ void LayoutBlockFlow::checkLinesForTextOverflow() {
   const Font& firstLineFont = firstLineStyle()->font();
   // FIXME: We should probably not hard-code the direction here.
   // https://crbug.com/333004
-  TextDirection ellipsisDirection = TextDirection::Ltr;
+  TextDirection ellipsisDirection = TextDirection::kLtr;
   float firstLineEllipsisWidth = 0;
   float ellipsisWidth = 0;
 
@@ -2470,15 +2470,15 @@ LayoutUnit LayoutBlockFlow::startAlignedOffsetForLine(
 
   bool applyIndentText;
   switch (textAlign) {  // FIXME: Handle TAEND here
-    case ETextAlign::Left:
-    case ETextAlign::WebkitLeft:
+    case ETextAlign::kLeft:
+    case ETextAlign::kWebkitLeft:
       applyIndentText = style()->isLeftToRightDirection();
       break;
-    case ETextAlign::Right:
-    case ETextAlign::WebkitRight:
+    case ETextAlign::kRight:
+    case ETextAlign::kWebkitRight:
       applyIndentText = !style()->isLeftToRightDirection();
       break;
-    case ETextAlign::Start:
+    case ETextAlign::kStart:
       applyIndentText = true;
       break;
     default:

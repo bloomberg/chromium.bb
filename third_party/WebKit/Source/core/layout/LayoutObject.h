@@ -1476,9 +1476,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
 
   bool visibleToHitTestRequest(const HitTestRequest& request) const {
-    return style()->visibility() == EVisibility::Visible &&
+    return style()->visibility() == EVisibility::kVisible &&
            (request.ignorePointerEventsNone() ||
-            style()->pointerEvents() != EPointerEvents::None) &&
+            style()->pointerEvents() != EPointerEvents::kNone) &&
            !isInert();
   }
 

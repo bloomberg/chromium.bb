@@ -198,7 +198,7 @@ void NGLayoutInlineItemsBuilder::AppendBidiControl(const ComputedStyle* style,
                                                    UChar ltr,
                                                    UChar rtl) {
   AppendAsOpaqueToSpaceCollapsing(
-      style->direction() == TextDirection::Rtl ? rtl : ltr);
+      style->direction() == TextDirection::kRtl ? rtl : ltr);
 }
 
 void NGLayoutInlineItemsBuilder::EnterBlock(const ComputedStyle* style) {

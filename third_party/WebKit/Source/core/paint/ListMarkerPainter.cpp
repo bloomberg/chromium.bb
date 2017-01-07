@@ -25,13 +25,13 @@ static inline void paintSymbol(GraphicsContext& context,
   context.setStrokeStyle(SolidStroke);
   context.setStrokeThickness(1.0f);
   switch (listStyle) {
-    case EListStyleType::Disc:
+    case EListStyleType::kDisc:
       context.fillEllipse(marker);
       break;
-    case EListStyleType::Circle:
+    case EListStyleType::kCircle:
       context.strokeEllipse(marker);
       break;
-    case EListStyleType::Square:
+    case EListStyleType::kSquare:
       context.fillRect(marker);
       break;
     default:
@@ -45,7 +45,7 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo,
   if (paintInfo.phase != PaintPhaseForeground)
     return;
 
-  if (m_layoutListMarker.style()->visibility() != EVisibility::Visible)
+  if (m_layoutListMarker.style()->visibility() != EVisibility::kVisible)
     return;
 
   if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(

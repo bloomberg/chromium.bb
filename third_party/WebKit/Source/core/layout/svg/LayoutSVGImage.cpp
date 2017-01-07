@@ -165,7 +165,7 @@ bool LayoutSVGImage::nodeAtFloatPoint(HitTestResult& result,
   PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_IMAGE_HITTESTING,
                                  result.hitTestRequest(),
                                  style()->pointerEvents());
-  bool isVisible = (style()->visibility() == EVisibility::Visible);
+  bool isVisible = (style()->visibility() == EVisibility::kVisible);
   if (isVisible || !hitRules.requireVisible) {
     FloatPoint localPoint;
     if (!SVGLayoutSupport::transformToUserSpaceAndCheckClipping(

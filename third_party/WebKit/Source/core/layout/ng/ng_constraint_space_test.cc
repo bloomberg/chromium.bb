@@ -35,7 +35,7 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesNoExclusions) {
   size.inline_size = LayoutUnit(600);
   size.block_size = LayoutUnit(400);
   auto* space =
-      ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::Ltr, size);
+      ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::kLtr, size);
   auto* iterator = space->LayoutOpportunities();
   EXPECT_EQ("0,0 600x400", OpportunityToString(iterator->Next()));
   EXPECT_EQ("(empty)", OpportunityToString(iterator->Next()));
@@ -47,7 +47,7 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTopRightExclusion) {
   size.block_size = LayoutUnit(400);
   // Create a space with a 100x100 exclusion in the top right corner.
   auto* space =
-      ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::Ltr, size);
+      ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::kLtr, size);
   NGExclusion exclusion;
   exclusion.rect.size = {/* inline_size */ LayoutUnit(100),
                          /* block_size */ LayoutUnit(100)};
@@ -69,7 +69,7 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTopLeftExclusion) {
   size.block_size = LayoutUnit(400);
   // Create a space with a 100x100 exclusion in the top left corner.
   auto* space =
-      ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::Ltr, size);
+      ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::kLtr, size);
   NGExclusion exclusion;
   exclusion.rect.size = {/* inline_size */ LayoutUnit(100),
                          /* block_size */ LayoutUnit(100)};
@@ -113,7 +113,7 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTwoInMiddle) {
   size.inline_size = LayoutUnit(600);
   size.block_size = LayoutUnit(400);
   auto* space =
-      ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::Ltr, size);
+      ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::kLtr, size);
   // Add exclusions
   NGExclusion exclusion1;
   exclusion1.rect.size = {/* inline_size */ LayoutUnit(100),
@@ -161,7 +161,7 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesTwoInMiddleWithOriginAndLeader) {
   size.inline_size = LayoutUnit(600);
   size.block_size = LayoutUnit(400);
   auto* space =
-      ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::Ltr, size);
+      ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::kLtr, size);
   // Add exclusions
   NGExclusion exclusion1;
   exclusion1.rect.size = {/* inline_size */ LayoutUnit(100),
@@ -210,7 +210,7 @@ TEST(NGConstraintSpaceTest, LayoutOpportunitiesWithOutOfBoundsExclusions) {
   size.inline_size = LayoutUnit(600);
   size.block_size = LayoutUnit(100);
   auto* space =
-      ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::Ltr, size);
+      ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::kLtr, size);
   NGExclusion exclusion;
   exclusion.rect.size = {/* inline_size */ LayoutUnit(100),
                          /* block_size */ LayoutUnit(100)};

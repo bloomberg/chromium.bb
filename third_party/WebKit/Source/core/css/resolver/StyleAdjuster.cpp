@@ -138,12 +138,12 @@ void StyleAdjuster::adjustStyleForEditing(ComputedStyle& style) {
   if (style.userModify() != READ_WRITE_PLAINTEXT_ONLY)
     return;
   // Collapsing whitespace is harmful in plain-text editing.
-  if (style.whiteSpace() == EWhiteSpace::Normal)
-    style.setWhiteSpace(EWhiteSpace::PreWrap);
-  else if (style.whiteSpace() == EWhiteSpace::Nowrap)
-    style.setWhiteSpace(EWhiteSpace::Pre);
-  else if (style.whiteSpace() == EWhiteSpace::PreLine)
-    style.setWhiteSpace(EWhiteSpace::PreWrap);
+  if (style.whiteSpace() == EWhiteSpace::kNormal)
+    style.setWhiteSpace(EWhiteSpace::kPreWrap);
+  else if (style.whiteSpace() == EWhiteSpace::kNowrap)
+    style.setWhiteSpace(EWhiteSpace::kPre);
+  else if (style.whiteSpace() == EWhiteSpace::kPreLine)
+    style.setWhiteSpace(EWhiteSpace::kPreWrap);
 }
 
 static void adjustStyleForFirstLetter(ComputedStyle& style) {
@@ -196,14 +196,14 @@ static void adjustStyleForHTMLElement(ComputedStyle& style,
     return;
 
   if (isHTMLTableCellElement(element)) {
-    if (style.whiteSpace() == EWhiteSpace::WebkitNowrap) {
+    if (style.whiteSpace() == EWhiteSpace::kWebkitNowrap) {
       // Figure out if we are really nowrapping or if we should just
       // use normal instead. If the width of the cell is fixed, then
       // we don't actually use NOWRAP.
       if (style.width().isFixed())
-        style.setWhiteSpace(EWhiteSpace::Normal);
+        style.setWhiteSpace(EWhiteSpace::kNormal);
       else
-        style.setWhiteSpace(EWhiteSpace::Nowrap);
+        style.setWhiteSpace(EWhiteSpace::kNowrap);
     }
     return;
   }
@@ -211,10 +211,10 @@ static void adjustStyleForHTMLElement(ComputedStyle& style,
   if (isHTMLTableElement(element)) {
     // Tables never support the -webkit-* values for text-align and will reset
     // back to the default.
-    if (style.textAlign() == ETextAlign::WebkitLeft ||
-        style.textAlign() == ETextAlign::WebkitCenter ||
-        style.textAlign() == ETextAlign::WebkitRight)
-      style.setTextAlign(ETextAlign::Start);
+    if (style.textAlign() == ETextAlign::kWebkitLeft ||
+        style.textAlign() == ETextAlign::kWebkitCenter ||
+        style.textAlign() == ETextAlign::kWebkitRight)
+      style.setTextAlign(ETextAlign::kStart);
     return;
   }
 
@@ -239,7 +239,7 @@ static void adjustStyleForHTMLElement(ComputedStyle& style,
     // Ruby text does not support float or position. This might change with
     // evolution of the specification.
     style.setPosition(StaticPosition);
-    style.setFloating(EFloat::None);
+    style.setFloating(EFloat::kNone);
     return;
   }
 
@@ -363,13 +363,13 @@ static void adjustStyleForDisplay(ComputedStyle& style,
   // FIXME: Since we don't support block-flow on flexible boxes yet, disallow
   // setting of block-flow to anything other than TopToBottomWritingMode.
   // https://bugs.webkit.org/show_bug.cgi?id=46418 - Flexible box support.
-  if (style.getWritingMode() != WritingMode::HorizontalTb &&
+  if (style.getWritingMode() != WritingMode::kHorizontalTb &&
       (style.display() == EDisplay::WebkitBox ||
        style.display() == EDisplay::WebkitInlineBox))
-    style.setWritingMode(WritingMode::HorizontalTb);
+    style.setWritingMode(WritingMode::kHorizontalTb);
 
   if (parentStyle.isDisplayFlexibleOrGridBox()) {
-    style.setFloating(EFloat::None);
+    style.setFloating(EFloat::kNone);
     style.setDisplay(equivalentBlockDisplay(style.display()));
 
     // We want to count vertical percentage paddings/margins on flex items

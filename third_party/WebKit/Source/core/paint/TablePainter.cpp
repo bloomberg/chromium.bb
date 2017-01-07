@@ -46,7 +46,7 @@ void TablePainter::paintObject(const PaintInfo& paintInfo,
 
     if (m_layoutTable.collapseBorders() &&
         shouldPaintDescendantBlockBackgrounds(paintPhase) &&
-        m_layoutTable.style()->visibility() == EVisibility::Visible) {
+        m_layoutTable.style()->visibility() == EVisibility::kVisible) {
       // Using our cached sorted styles, we then do individual passes,
       // painting each style of border from lowest precedence to highest
       // precedence.
@@ -73,7 +73,7 @@ void TablePainter::paintBoxDecorationBackground(
     const PaintInfo& paintInfo,
     const LayoutPoint& paintOffset) {
   if (!m_layoutTable.hasBoxDecorationBackground() ||
-      m_layoutTable.style()->visibility() != EVisibility::Visible)
+      m_layoutTable.style()->visibility() != EVisibility::kVisible)
     return;
 
   LayoutRect rect(paintOffset, m_layoutTable.size());
@@ -84,7 +84,7 @@ void TablePainter::paintBoxDecorationBackground(
 
 void TablePainter::paintMask(const PaintInfo& paintInfo,
                              const LayoutPoint& paintOffset) {
-  if (m_layoutTable.style()->visibility() != EVisibility::Visible ||
+  if (m_layoutTable.style()->visibility() != EVisibility::kVisible ||
       paintInfo.phase != PaintPhaseMask)
     return;
 

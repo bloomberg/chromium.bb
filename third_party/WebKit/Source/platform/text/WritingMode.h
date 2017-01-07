@@ -37,22 +37,22 @@ namespace blink {
 // horizontal-tb, vertical-rl and vertical-lr.
 // Since these names aren't very self-explanatory, where possible use the
 // inline utility functions below.
-enum class WritingMode : unsigned { HorizontalTb, VerticalRl, VerticalLr };
+enum class WritingMode : unsigned { kHorizontalTb, kVerticalRl, kVerticalLr };
 
 // Lines have horizontal orientation; modes horizontal-tb.
 inline bool isHorizontalWritingMode(WritingMode writingMode) {
-  return writingMode == WritingMode::HorizontalTb;
+  return writingMode == WritingMode::kHorizontalTb;
 }
 
 // Bottom of the line occurs earlier in the block; modes vertical-lr.
 inline bool isFlippedLinesWritingMode(WritingMode writingMode) {
-  return writingMode == WritingMode::VerticalLr;
+  return writingMode == WritingMode::kVerticalLr;
 }
 
 // Block progression increases in the opposite direction to normal; modes
 // vertical-rl.
 inline bool isFlippedBlocksWritingMode(WritingMode writingMode) {
-  return writingMode == WritingMode::VerticalRl;
+  return writingMode == WritingMode::kVerticalRl;
 }
 
 }  // namespace blink

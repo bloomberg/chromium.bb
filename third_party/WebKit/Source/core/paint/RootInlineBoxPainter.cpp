@@ -17,7 +17,7 @@ void RootInlineBoxPainter::paintEllipsisBox(const PaintInfo& paintInfo,
                                             LayoutUnit lineBottom) const {
   if (m_rootInlineBox.hasEllipsisBox() &&
       m_rootInlineBox.getLineLayoutItem().style()->visibility() ==
-          EVisibility::Visible &&
+          EVisibility::kVisible &&
       paintInfo.phase == PaintPhaseForeground)
     m_rootInlineBox.ellipsisBox()->paint(paintInfo, paintOffset, lineTop,
                                          lineBottom);

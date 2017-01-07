@@ -676,20 +676,21 @@ static inline TextDirection toTextDirection(
     *computedStyle = style;
   switch (direction) {
     case CanvasRenderingContext2DState::DirectionInherit:
-      return style ? style->direction() : TextDirection::Ltr;
+      return style ? style->direction() : TextDirection::kLtr;
     case CanvasRenderingContext2DState::DirectionRTL:
-      return TextDirection::Rtl;
+      return TextDirection::kRtl;
     case CanvasRenderingContext2DState::DirectionLTR:
-      return TextDirection::Ltr;
+      return TextDirection::kLtr;
   }
   ASSERT_NOT_REACHED();
-  return TextDirection::Ltr;
+  return TextDirection::kLtr;
 }
 
 String CanvasRenderingContext2D::direction() const {
   if (state().getDirection() == CanvasRenderingContext2DState::DirectionInherit)
     canvas()->document().updateStyleAndLayoutTreeForNode(canvas());
-  return toTextDirection(state().getDirection(), canvas()) == TextDirection::Rtl
+  return toTextDirection(state().getDirection(), canvas()) ==
+                 TextDirection::kRtl
              ? rtlDirectionString
              : ltrDirectionString;
 }
@@ -845,7 +846,7 @@ void CanvasRenderingContext2D::drawTextInternal(
   const ComputedStyle* computedStyle = 0;
   TextDirection direction =
       toTextDirection(state().getDirection(), canvas(), &computedStyle);
-  bool isRTL = direction == TextDirection::Rtl;
+  bool isRTL = direction == TextDirection::kRtl;
   bool override =
       computedStyle ? isOverride(computedStyle->unicodeBidi()) : false;
 

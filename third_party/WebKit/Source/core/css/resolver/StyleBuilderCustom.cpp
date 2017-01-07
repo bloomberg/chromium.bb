@@ -475,14 +475,14 @@ void StyleBuilderFunctions::applyValueCSSPropertyTextAlign(
       state.style()->setTextAlign(state.parentStyle()->textAlign());
     else
       state.style()->setTextAlign(identValue.convertTo<ETextAlign>());
-  } else if (state.parentStyle()->textAlign() == ETextAlign::Start) {
+  } else if (state.parentStyle()->textAlign() == ETextAlign::kStart) {
     state.style()->setTextAlign(state.parentStyle()->isLeftToRightDirection()
-                                    ? ETextAlign::Left
-                                    : ETextAlign::Right);
-  } else if (state.parentStyle()->textAlign() == ETextAlign::End) {
+                                    ? ETextAlign::kLeft
+                                    : ETextAlign::kRight);
+  } else if (state.parentStyle()->textAlign() == ETextAlign::kEnd) {
     state.style()->setTextAlign(state.parentStyle()->isLeftToRightDirection()
-                                    ? ETextAlign::Right
-                                    : ETextAlign::Left);
+                                    ? ETextAlign::kRight
+                                    : ETextAlign::kLeft);
   } else {
     state.style()->setTextAlign(state.parentStyle()->textAlign());
   }
@@ -758,7 +758,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(
           ContentData::create(state.styleImage(CSSPropertyContent, *item));
     } else if (item->isCounterValue()) {
       const CSSCounterValue* counterValue = toCSSCounterValue(item.get());
-      EListStyleType listStyleType = EListStyleType::None;
+      EListStyleType listStyleType = EListStyleType::kNone;
       CSSValueID listStyleIdent = counterValue->listStyle();
       if (listStyleIdent != CSSValueNone)
         listStyleType =

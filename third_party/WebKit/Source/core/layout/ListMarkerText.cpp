@@ -462,68 +462,68 @@ static EListStyleType effectiveListMarkerType(EListStyleType type, int count) {
   // Note, the following switch statement has been explicitly grouped
   // by list-style-type ordinal range.
   switch (type) {
-    case EListStyleType::ArabicIndic:
-    case EListStyleType::Bengali:
-    case EListStyleType::Cambodian:
-    case EListStyleType::Circle:
-    case EListStyleType::DecimalLeadingZero:
-    case EListStyleType::Decimal:
-    case EListStyleType::Devanagari:
-    case EListStyleType::Disc:
-    case EListStyleType::Gujarati:
-    case EListStyleType::Gurmukhi:
-    case EListStyleType::Kannada:
-    case EListStyleType::Khmer:
-    case EListStyleType::Lao:
-    case EListStyleType::Malayalam:
-    case EListStyleType::Mongolian:
-    case EListStyleType::Myanmar:
-    case EListStyleType::None:
-    case EListStyleType::Oriya:
-    case EListStyleType::Persian:
-    case EListStyleType::Square:
-    case EListStyleType::Telugu:
-    case EListStyleType::Thai:
-    case EListStyleType::Tibetan:
-    case EListStyleType::Urdu:
-    case EListStyleType::KoreanHangulFormal:
-    case EListStyleType::KoreanHanjaFormal:
-    case EListStyleType::KoreanHanjaInformal:
-    case EListStyleType::CjkIdeographic:
-    case EListStyleType::SimpChineseFormal:
-    case EListStyleType::SimpChineseInformal:
-    case EListStyleType::TradChineseFormal:
-    case EListStyleType::TradChineseInformal:
+    case EListStyleType::kArabicIndic:
+    case EListStyleType::kBengali:
+    case EListStyleType::kCambodian:
+    case EListStyleType::kCircle:
+    case EListStyleType::kDecimalLeadingZero:
+    case EListStyleType::kDecimal:
+    case EListStyleType::kDevanagari:
+    case EListStyleType::kDisc:
+    case EListStyleType::kGujarati:
+    case EListStyleType::kGurmukhi:
+    case EListStyleType::kKannada:
+    case EListStyleType::kKhmer:
+    case EListStyleType::kLao:
+    case EListStyleType::kMalayalam:
+    case EListStyleType::kMongolian:
+    case EListStyleType::kMyanmar:
+    case EListStyleType::kNone:
+    case EListStyleType::kOriya:
+    case EListStyleType::kPersian:
+    case EListStyleType::kSquare:
+    case EListStyleType::kTelugu:
+    case EListStyleType::kThai:
+    case EListStyleType::kTibetan:
+    case EListStyleType::kUrdu:
+    case EListStyleType::kKoreanHangulFormal:
+    case EListStyleType::kKoreanHanjaFormal:
+    case EListStyleType::kKoreanHanjaInformal:
+    case EListStyleType::kCjkIdeographic:
+    case EListStyleType::kSimpChineseFormal:
+    case EListStyleType::kSimpChineseInformal:
+    case EListStyleType::kTradChineseFormal:
+    case EListStyleType::kTradChineseInformal:
       return type;  // Can represent all ordinals.
-    case EListStyleType::Armenian:
-    case EListStyleType::LowerArmenian:
-    case EListStyleType::UpperArmenian:
-      return (count < 1 || count > 99999999) ? EListStyleType::Decimal : type;
-    case EListStyleType::Georgian:
-      return (count < 1 || count > 19999) ? EListStyleType::Decimal : type;
-    case EListStyleType::Hebrew:
-      return (count < 0 || count > 999999) ? EListStyleType::Decimal : type;
-    case EListStyleType::LowerRoman:
-    case EListStyleType::UpperRoman:
-      return (count < 1 || count > 3999) ? EListStyleType::Decimal : type;
-    case EListStyleType::CjkEarthlyBranch:
-    case EListStyleType::CjkHeavenlyStem:
-    case EListStyleType::EthiopicHalehameAm:
-    case EListStyleType::EthiopicHalehame:
-    case EListStyleType::EthiopicHalehameTiEr:
-    case EListStyleType::EthiopicHalehameTiEt:
-    case EListStyleType::Hangul:
-    case EListStyleType::HangulConsonant:
-    case EListStyleType::Hiragana:
-    case EListStyleType::HiraganaIroha:
-    case EListStyleType::Katakana:
-    case EListStyleType::KatakanaIroha:
-    case EListStyleType::LowerAlpha:
-    case EListStyleType::LowerGreek:
-    case EListStyleType::LowerLatin:
-    case EListStyleType::UpperAlpha:
-    case EListStyleType::UpperLatin:
-      return (count < 1) ? EListStyleType::Decimal : type;
+    case EListStyleType::kArmenian:
+    case EListStyleType::kLowerArmenian:
+    case EListStyleType::kUpperArmenian:
+      return (count < 1 || count > 99999999) ? EListStyleType::kDecimal : type;
+    case EListStyleType::kGeorgian:
+      return (count < 1 || count > 19999) ? EListStyleType::kDecimal : type;
+    case EListStyleType::kHebrew:
+      return (count < 0 || count > 999999) ? EListStyleType::kDecimal : type;
+    case EListStyleType::kLowerRoman:
+    case EListStyleType::kUpperRoman:
+      return (count < 1 || count > 3999) ? EListStyleType::kDecimal : type;
+    case EListStyleType::kCjkEarthlyBranch:
+    case EListStyleType::kCjkHeavenlyStem:
+    case EListStyleType::kEthiopicHalehameAm:
+    case EListStyleType::kEthiopicHalehame:
+    case EListStyleType::kEthiopicHalehameTiEr:
+    case EListStyleType::kEthiopicHalehameTiEt:
+    case EListStyleType::kHangul:
+    case EListStyleType::kHangulConsonant:
+    case EListStyleType::kHiragana:
+    case EListStyleType::kHiraganaIroha:
+    case EListStyleType::kKatakana:
+    case EListStyleType::kKatakanaIroha:
+    case EListStyleType::kLowerAlpha:
+    case EListStyleType::kLowerGreek:
+    case EListStyleType::kLowerLatin:
+    case EListStyleType::kUpperAlpha:
+    case EListStyleType::kUpperLatin:
+      return (count < 1) ? EListStyleType::kDecimal : type;
   }
 
   ASSERT_NOT_REACHED();
@@ -539,65 +539,65 @@ UChar suffix(EListStyleType type, int count) {
   // Note, the following switch statement has been explicitly
   // grouped by list-style-type suffix.
   switch (effectiveType) {
-    case EListStyleType::Circle:
-    case EListStyleType::Disc:
-    case EListStyleType::None:
-    case EListStyleType::Square:
+    case EListStyleType::kCircle:
+    case EListStyleType::kDisc:
+    case EListStyleType::kNone:
+    case EListStyleType::kSquare:
       return ' ';
-    case EListStyleType::EthiopicHalehame:
-    case EListStyleType::EthiopicHalehameAm:
-    case EListStyleType::EthiopicHalehameTiEr:
-    case EListStyleType::EthiopicHalehameTiEt:
+    case EListStyleType::kEthiopicHalehame:
+    case EListStyleType::kEthiopicHalehameAm:
+    case EListStyleType::kEthiopicHalehameTiEr:
+    case EListStyleType::kEthiopicHalehameTiEt:
       return ethiopicPrefaceColonCharacter;
-    case EListStyleType::Armenian:
-    case EListStyleType::ArabicIndic:
-    case EListStyleType::Bengali:
-    case EListStyleType::Cambodian:
-    case EListStyleType::CjkIdeographic:
-    case EListStyleType::CjkEarthlyBranch:
-    case EListStyleType::CjkHeavenlyStem:
-    case EListStyleType::DecimalLeadingZero:
-    case EListStyleType::Decimal:
-    case EListStyleType::Devanagari:
-    case EListStyleType::Georgian:
-    case EListStyleType::Gujarati:
-    case EListStyleType::Gurmukhi:
-    case EListStyleType::Hangul:
-    case EListStyleType::HangulConsonant:
-    case EListStyleType::Hebrew:
-    case EListStyleType::Hiragana:
-    case EListStyleType::HiraganaIroha:
-    case EListStyleType::Kannada:
-    case EListStyleType::Katakana:
-    case EListStyleType::KatakanaIroha:
-    case EListStyleType::Khmer:
-    case EListStyleType::Lao:
-    case EListStyleType::LowerAlpha:
-    case EListStyleType::LowerArmenian:
-    case EListStyleType::LowerGreek:
-    case EListStyleType::LowerLatin:
-    case EListStyleType::LowerRoman:
-    case EListStyleType::Malayalam:
-    case EListStyleType::Mongolian:
-    case EListStyleType::Myanmar:
-    case EListStyleType::Oriya:
-    case EListStyleType::Persian:
-    case EListStyleType::Telugu:
-    case EListStyleType::Thai:
-    case EListStyleType::Tibetan:
-    case EListStyleType::UpperAlpha:
-    case EListStyleType::UpperArmenian:
-    case EListStyleType::UpperLatin:
-    case EListStyleType::UpperRoman:
-    case EListStyleType::Urdu:
+    case EListStyleType::kArmenian:
+    case EListStyleType::kArabicIndic:
+    case EListStyleType::kBengali:
+    case EListStyleType::kCambodian:
+    case EListStyleType::kCjkIdeographic:
+    case EListStyleType::kCjkEarthlyBranch:
+    case EListStyleType::kCjkHeavenlyStem:
+    case EListStyleType::kDecimalLeadingZero:
+    case EListStyleType::kDecimal:
+    case EListStyleType::kDevanagari:
+    case EListStyleType::kGeorgian:
+    case EListStyleType::kGujarati:
+    case EListStyleType::kGurmukhi:
+    case EListStyleType::kHangul:
+    case EListStyleType::kHangulConsonant:
+    case EListStyleType::kHebrew:
+    case EListStyleType::kHiragana:
+    case EListStyleType::kHiraganaIroha:
+    case EListStyleType::kKannada:
+    case EListStyleType::kKatakana:
+    case EListStyleType::kKatakanaIroha:
+    case EListStyleType::kKhmer:
+    case EListStyleType::kLao:
+    case EListStyleType::kLowerAlpha:
+    case EListStyleType::kLowerArmenian:
+    case EListStyleType::kLowerGreek:
+    case EListStyleType::kLowerLatin:
+    case EListStyleType::kLowerRoman:
+    case EListStyleType::kMalayalam:
+    case EListStyleType::kMongolian:
+    case EListStyleType::kMyanmar:
+    case EListStyleType::kOriya:
+    case EListStyleType::kPersian:
+    case EListStyleType::kTelugu:
+    case EListStyleType::kThai:
+    case EListStyleType::kTibetan:
+    case EListStyleType::kUpperAlpha:
+    case EListStyleType::kUpperArmenian:
+    case EListStyleType::kUpperLatin:
+    case EListStyleType::kUpperRoman:
+    case EListStyleType::kUrdu:
       return '.';
-    case EListStyleType::SimpChineseFormal:
-    case EListStyleType::SimpChineseInformal:
-    case EListStyleType::TradChineseFormal:
-    case EListStyleType::TradChineseInformal:
-    case EListStyleType::KoreanHangulFormal:
-    case EListStyleType::KoreanHanjaFormal:
-    case EListStyleType::KoreanHanjaInformal:
+    case EListStyleType::kSimpChineseFormal:
+    case EListStyleType::kSimpChineseInformal:
+    case EListStyleType::kTradChineseFormal:
+    case EListStyleType::kTradChineseInformal:
+    case EListStyleType::kKoreanHangulFormal:
+    case EListStyleType::kKoreanHanjaFormal:
+    case EListStyleType::kKoreanHanjaInformal:
       return 0x3001;
   }
 
@@ -610,143 +610,143 @@ String text(EListStyleType type, int count) {
   // outside its ordinal range then we fallback to some list style that can
   // represent |count|.
   switch (effectiveListMarkerType(type, count)) {
-    case EListStyleType::None:
+    case EListStyleType::kNone:
       return "";
 
     // We use the same characters for text security.
     // See LayoutText::setInternalString.
-    case EListStyleType::Circle:
+    case EListStyleType::kCircle:
       return String(&whiteBulletCharacter, 1);
-    case EListStyleType::Disc:
+    case EListStyleType::kDisc:
       return String(&bulletCharacter, 1);
-    case EListStyleType::Square:
+    case EListStyleType::kSquare:
       // The CSS 2.1 test suite uses U+25EE BLACK MEDIUM SMALL SQUARE
       // instead, but I think this looks better.
       return String(&blackSquareCharacter, 1);
 
-    case EListStyleType::Decimal:
+    case EListStyleType::kDecimal:
       return String::number(count);
-    case EListStyleType::DecimalLeadingZero:
+    case EListStyleType::kDecimalLeadingZero:
       if (count < -9 || count > 9)
         return String::number(count);
       if (count < 0)
         return "-0" + String::number(-count);  // -01 to -09
       return "0" + String::number(count);      // 00 to 09
 
-    case EListStyleType::ArabicIndic: {
+    case EListStyleType::kArabicIndic: {
       static const UChar arabicIndicNumerals[10] = {
           0x0660, 0x0661, 0x0662, 0x0663, 0x0664,
           0x0665, 0x0666, 0x0667, 0x0668, 0x0669};
       return toNumeric(count, arabicIndicNumerals);
     }
-    case EListStyleType::Bengali: {
+    case EListStyleType::kBengali: {
       static const UChar bengaliNumerals[10] = {0x09E6, 0x09E7, 0x09E8, 0x09E9,
                                                 0x09EA, 0x09EB, 0x09EC, 0x09ED,
                                                 0x09EE, 0x09EF};
       return toNumeric(count, bengaliNumerals);
     }
-    case EListStyleType::Cambodian:
-    case EListStyleType::Khmer: {
+    case EListStyleType::kCambodian:
+    case EListStyleType::kKhmer: {
       static const UChar khmerNumerals[10] = {0x17E0, 0x17E1, 0x17E2, 0x17E3,
                                               0x17E4, 0x17E5, 0x17E6, 0x17E7,
                                               0x17E8, 0x17E9};
       return toNumeric(count, khmerNumerals);
     }
-    case EListStyleType::Devanagari: {
+    case EListStyleType::kDevanagari: {
       static const UChar devanagariNumerals[10] = {
           0x0966, 0x0967, 0x0968, 0x0969, 0x096A,
           0x096B, 0x096C, 0x096D, 0x096E, 0x096F};
       return toNumeric(count, devanagariNumerals);
     }
-    case EListStyleType::Gujarati: {
+    case EListStyleType::kGujarati: {
       static const UChar gujaratiNumerals[10] = {0x0AE6, 0x0AE7, 0x0AE8, 0x0AE9,
                                                  0x0AEA, 0x0AEB, 0x0AEC, 0x0AED,
                                                  0x0AEE, 0x0AEF};
       return toNumeric(count, gujaratiNumerals);
     }
-    case EListStyleType::Gurmukhi: {
+    case EListStyleType::kGurmukhi: {
       static const UChar gurmukhiNumerals[10] = {0x0A66, 0x0A67, 0x0A68, 0x0A69,
                                                  0x0A6A, 0x0A6B, 0x0A6C, 0x0A6D,
                                                  0x0A6E, 0x0A6F};
       return toNumeric(count, gurmukhiNumerals);
     }
-    case EListStyleType::Kannada: {
+    case EListStyleType::kKannada: {
       static const UChar kannadaNumerals[10] = {0x0CE6, 0x0CE7, 0x0CE8, 0x0CE9,
                                                 0x0CEA, 0x0CEB, 0x0CEC, 0x0CED,
                                                 0x0CEE, 0x0CEF};
       return toNumeric(count, kannadaNumerals);
     }
-    case EListStyleType::Lao: {
+    case EListStyleType::kLao: {
       static const UChar laoNumerals[10] = {0x0ED0, 0x0ED1, 0x0ED2, 0x0ED3,
                                             0x0ED4, 0x0ED5, 0x0ED6, 0x0ED7,
                                             0x0ED8, 0x0ED9};
       return toNumeric(count, laoNumerals);
     }
-    case EListStyleType::Malayalam: {
+    case EListStyleType::kMalayalam: {
       static const UChar malayalamNumerals[10] = {
           0x0D66, 0x0D67, 0x0D68, 0x0D69, 0x0D6A,
           0x0D6B, 0x0D6C, 0x0D6D, 0x0D6E, 0x0D6F};
       return toNumeric(count, malayalamNumerals);
     }
-    case EListStyleType::Mongolian: {
+    case EListStyleType::kMongolian: {
       static const UChar mongolianNumerals[10] = {
           0x1810, 0x1811, 0x1812, 0x1813, 0x1814,
           0x1815, 0x1816, 0x1817, 0x1818, 0x1819};
       return toNumeric(count, mongolianNumerals);
     }
-    case EListStyleType::Myanmar: {
+    case EListStyleType::kMyanmar: {
       static const UChar myanmarNumerals[10] = {0x1040, 0x1041, 0x1042, 0x1043,
                                                 0x1044, 0x1045, 0x1046, 0x1047,
                                                 0x1048, 0x1049};
       return toNumeric(count, myanmarNumerals);
     }
-    case EListStyleType::Oriya: {
+    case EListStyleType::kOriya: {
       static const UChar oriyaNumerals[10] = {0x0B66, 0x0B67, 0x0B68, 0x0B69,
                                               0x0B6A, 0x0B6B, 0x0B6C, 0x0B6D,
                                               0x0B6E, 0x0B6F};
       return toNumeric(count, oriyaNumerals);
     }
-    case EListStyleType::Persian:
-    case EListStyleType::Urdu: {
+    case EListStyleType::kPersian:
+    case EListStyleType::kUrdu: {
       static const UChar urduNumerals[10] = {0x06F0, 0x06F1, 0x06F2, 0x06F3,
                                              0x06F4, 0x06F5, 0x06F6, 0x06F7,
                                              0x06F8, 0x06F9};
       return toNumeric(count, urduNumerals);
     }
-    case EListStyleType::Telugu: {
+    case EListStyleType::kTelugu: {
       static const UChar teluguNumerals[10] = {0x0C66, 0x0C67, 0x0C68, 0x0C69,
                                                0x0C6A, 0x0C6B, 0x0C6C, 0x0C6D,
                                                0x0C6E, 0x0C6F};
       return toNumeric(count, teluguNumerals);
     }
-    case EListStyleType::Tibetan: {
+    case EListStyleType::kTibetan: {
       static const UChar tibetanNumerals[10] = {0x0F20, 0x0F21, 0x0F22, 0x0F23,
                                                 0x0F24, 0x0F25, 0x0F26, 0x0F27,
                                                 0x0F28, 0x0F29};
       return toNumeric(count, tibetanNumerals);
     }
-    case EListStyleType::Thai: {
+    case EListStyleType::kThai: {
       static const UChar thaiNumerals[10] = {0x0E50, 0x0E51, 0x0E52, 0x0E53,
                                              0x0E54, 0x0E55, 0x0E56, 0x0E57,
                                              0x0E58, 0x0E59};
       return toNumeric(count, thaiNumerals);
     }
 
-    case EListStyleType::LowerAlpha:
-    case EListStyleType::LowerLatin: {
+    case EListStyleType::kLowerAlpha:
+    case EListStyleType::kLowerLatin: {
       static const LChar lowerLatinAlphabet[26] = {
           'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
           'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
       return toAlphabetic(count, lowerLatinAlphabet);
     }
-    case EListStyleType::UpperAlpha:
-    case EListStyleType::UpperLatin: {
+    case EListStyleType::kUpperAlpha:
+    case EListStyleType::kUpperLatin: {
       static const LChar upperLatinAlphabet[26] = {
           'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
           'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
       return toAlphabetic(count, upperLatinAlphabet);
     }
-    case EListStyleType::LowerGreek: {
+    case EListStyleType::kLowerGreek: {
       static const UChar lowerGreekAlphabet[24] = {
           0x03B1, 0x03B2, 0x03B3, 0x03B4, 0x03B5, 0x03B6, 0x03B7, 0x03B8,
           0x03B9, 0x03BA, 0x03BB, 0x03BC, 0x03BD, 0x03BE, 0x03BF, 0x03C0,
@@ -754,7 +754,7 @@ String text(EListStyleType type, int count) {
       return toAlphabetic(count, lowerGreekAlphabet);
     }
 
-    case EListStyleType::Hiragana: {
+    case EListStyleType::kHiragana: {
       // FIXME: This table comes from the CSS3 draft, and is probably
       // incorrect, given the comments in that draft.
       static const UChar hiraganaAlphabet[48] = {
@@ -766,7 +766,7 @@ String text(EListStyleType type, int count) {
           0x308B, 0x308C, 0x308D, 0x308F, 0x3090, 0x3091, 0x3092, 0x3093};
       return toAlphabetic(count, hiraganaAlphabet);
     }
-    case EListStyleType::HiraganaIroha: {
+    case EListStyleType::kHiraganaIroha: {
       // FIXME: This table comes from the CSS3 draft, and is probably
       // incorrect, given the comments in that draft.
       static const UChar hiraganaIrohaAlphabet[47] = {
@@ -778,7 +778,7 @@ String text(EListStyleType type, int count) {
           0x307F, 0x3057, 0x3091, 0x3072, 0x3082, 0x305B, 0x3059};
       return toAlphabetic(count, hiraganaIrohaAlphabet);
     }
-    case EListStyleType::Katakana: {
+    case EListStyleType::kKatakana: {
       // FIXME: This table comes from the CSS3 draft, and is probably
       // incorrect, given the comments in that draft.
       static const UChar katakanaAlphabet[48] = {
@@ -790,7 +790,7 @@ String text(EListStyleType type, int count) {
           0x30EB, 0x30EC, 0x30ED, 0x30EF, 0x30F0, 0x30F1, 0x30F2, 0x30F3};
       return toAlphabetic(count, katakanaAlphabet);
     }
-    case EListStyleType::KatakanaIroha: {
+    case EListStyleType::kKatakanaIroha: {
       // FIXME: This table comes from the CSS3 draft, and is probably
       // incorrect, given the comments in that draft.
       static const UChar katakanaIrohaAlphabet[47] = {
@@ -803,31 +803,31 @@ String text(EListStyleType type, int count) {
       return toAlphabetic(count, katakanaIrohaAlphabet);
     }
 
-    case EListStyleType::CjkEarthlyBranch: {
+    case EListStyleType::kCjkEarthlyBranch: {
       static const UChar cjkEarthlyBranchAlphabet[12] = {
           0x5B50, 0x4E11, 0x5BC5, 0x536F, 0x8FB0, 0x5DF3,
           0x5348, 0x672A, 0x7533, 0x9149, 0x620C, 0x4EA5};
       return toAlphabetic(count, cjkEarthlyBranchAlphabet);
     }
-    case EListStyleType::CjkHeavenlyStem: {
+    case EListStyleType::kCjkHeavenlyStem: {
       static const UChar cjkHeavenlyStemAlphabet[10] = {
           0x7532, 0x4E59, 0x4E19, 0x4E01, 0x620A,
           0x5DF1, 0x5E9A, 0x8F9B, 0x58EC, 0x7678};
       return toAlphabetic(count, cjkHeavenlyStemAlphabet);
     }
-    case EListStyleType::HangulConsonant: {
+    case EListStyleType::kHangulConsonant: {
       static const UChar hangulConsonantAlphabet[14] = {
           0x3131, 0x3134, 0x3137, 0x3139, 0x3141, 0x3142, 0x3145,
           0x3147, 0x3148, 0x314A, 0x314B, 0x314C, 0x314D, 0x314E};
       return toAlphabetic(count, hangulConsonantAlphabet);
     }
-    case EListStyleType::Hangul: {
+    case EListStyleType::kHangul: {
       static const UChar hangulAlphabet[14] = {
           0xAC00, 0xB098, 0xB2E4, 0xB77C, 0xB9C8, 0xBC14, 0xC0AC,
           0xC544, 0xC790, 0xCC28, 0xCE74, 0xD0C0, 0xD30C, 0xD558};
       return toAlphabetic(count, hangulAlphabet);
     }
-    case EListStyleType::EthiopicHalehame: {
+    case EListStyleType::kEthiopicHalehame: {
       static const UChar ethiopicHalehameGezAlphabet[26] = {
           0x1200, 0x1208, 0x1210, 0x1218, 0x1220, 0x1228, 0x1230,
           0x1240, 0x1260, 0x1270, 0x1280, 0x1290, 0x12A0, 0x12A8,
@@ -835,7 +835,7 @@ String text(EListStyleType type, int count) {
           0x1330, 0x1338, 0x1340, 0x1348, 0x1350};
       return toAlphabetic(count, ethiopicHalehameGezAlphabet);
     }
-    case EListStyleType::EthiopicHalehameAm: {
+    case EListStyleType::kEthiopicHalehameAm: {
       static const UChar ethiopicHalehameAmAlphabet[33] = {
           0x1200, 0x1208, 0x1210, 0x1218, 0x1220, 0x1228, 0x1230,
           0x1238, 0x1240, 0x1260, 0x1270, 0x1278, 0x1280, 0x1290,
@@ -844,7 +844,7 @@ String text(EListStyleType type, int count) {
           0x1330, 0x1338, 0x1340, 0x1348, 0x1350};
       return toAlphabetic(count, ethiopicHalehameAmAlphabet);
     }
-    case EListStyleType::EthiopicHalehameTiEr: {
+    case EListStyleType::kEthiopicHalehameTiEr: {
       static const UChar ethiopicHalehameTiErAlphabet[31] = {
           0x1200, 0x1208, 0x1210, 0x1218, 0x1228, 0x1230, 0x1238, 0x1240,
           0x1250, 0x1260, 0x1270, 0x1278, 0x1290, 0x1298, 0x12A0, 0x12A8,
@@ -852,7 +852,7 @@ String text(EListStyleType type, int count) {
           0x1308, 0x1320, 0x1328, 0x1330, 0x1338, 0x1348, 0x1350};
       return toAlphabetic(count, ethiopicHalehameTiErAlphabet);
     }
-    case EListStyleType::EthiopicHalehameTiEt: {
+    case EListStyleType::kEthiopicHalehameTiEt: {
       static const UChar ethiopicHalehameTiEtAlphabet[34] = {
           0x1200, 0x1208, 0x1210, 0x1218, 0x1220, 0x1228, 0x1230,
           0x1238, 0x1240, 0x1250, 0x1260, 0x1270, 0x1278, 0x1280,
@@ -861,7 +861,7 @@ String text(EListStyleType type, int count) {
           0x1328, 0x1330, 0x1338, 0x1340, 0x1348, 0x1350};
       return toAlphabetic(count, ethiopicHalehameTiEtAlphabet);
     }
-    case EListStyleType::KoreanHangulFormal: {
+    case EListStyleType::kKoreanHangulFormal: {
       static const UChar koreanHangulFormalTable[26] = {
           Korean, 0xB9CC, 0x0000, 0xC5B5, 0x0000, 0xC870, 0x0000,
           0xC2ED, 0xBC31, 0xCC9C, 0xC601, 0xC77C, 0xC774, 0xC0BC,
@@ -869,7 +869,7 @@ String text(EListStyleType type, int count) {
           0xC774, 0xB108, 0xC2A4, 0x0020, 0x0000};
       return toCJKIdeographic(count, koreanHangulFormalTable, Formal);
     }
-    case EListStyleType::KoreanHanjaFormal: {
+    case EListStyleType::kKoreanHanjaFormal: {
       static const UChar koreanHanjaFormalTable[26] = {
           Korean, 0x842C, 0x0000, 0x5104, 0x0000, 0x5146, 0x0000,
           0x62FE, 0x767E, 0x4EDF, 0x96F6, 0x58F9, 0x8CB3, 0x53C3,
@@ -877,7 +877,7 @@ String text(EListStyleType type, int count) {
           0xC774, 0xB108, 0xC2A4, 0x0020, 0x0000};
       return toCJKIdeographic(count, koreanHanjaFormalTable, Formal);
     }
-    case EListStyleType::KoreanHanjaInformal: {
+    case EListStyleType::kKoreanHanjaInformal: {
       static const UChar koreanHanjaInformalTable[26] = {
           Korean, 0x842C, 0x0000, 0x5104, 0x0000, 0x5146, 0x0000,
           0x5341, 0x767E, 0x5343, 0x96F6, 0x4E00, 0x4E8C, 0x4E09,
@@ -885,29 +885,29 @@ String text(EListStyleType type, int count) {
           0xC774, 0xB108, 0xC2A4, 0x0020, 0x0000};
       return toCJKIdeographic(count, koreanHanjaInformalTable, Informal);
     }
-    case EListStyleType::CjkIdeographic:
-    case EListStyleType::TradChineseInformal: {
+    case EListStyleType::kCjkIdeographic:
+    case EListStyleType::kTradChineseInformal: {
       static const UChar traditionalChineseInformalTable[22] = {
           Chinese, 0x842C, 0x0000, 0x5104, 0x0000, 0x5146, 0x0000, 0x5341,
           0x767E,  0x5343, 0x96F6, 0x4E00, 0x4E8C, 0x4E09, 0x56DB, 0x4E94,
           0x516D,  0x4E03, 0x516B, 0x4E5D, 0x8CA0, 0x0000};
       return toCJKIdeographic(count, traditionalChineseInformalTable, Informal);
     }
-    case EListStyleType::SimpChineseInformal: {
+    case EListStyleType::kSimpChineseInformal: {
       static const UChar simpleChineseInformalTable[22] = {
           Chinese, 0x4E07, 0x0000, 0x4EBF, 0x0000, 0x4E07, 0x4EBF, 0x5341,
           0x767E,  0x5343, 0x96F6, 0x4E00, 0x4E8C, 0x4E09, 0x56DB, 0x4E94,
           0x516D,  0x4E03, 0x516B, 0x4E5D, 0x8D1F, 0x0000};
       return toCJKIdeographic(count, simpleChineseInformalTable, Informal);
     }
-    case EListStyleType::TradChineseFormal: {
+    case EListStyleType::kTradChineseFormal: {
       static const UChar traditionalChineseFormalTable[22] = {
           Chinese, 0x842C, 0x0000, 0x5104, 0x0000, 0x5146, 0x0000, 0x62FE,
           0x4F70,  0x4EDF, 0x96F6, 0x58F9, 0x8CB3, 0x53C3, 0x8086, 0x4F0D,
           0x9678,  0x67D2, 0x634C, 0x7396, 0x8CA0, 0x0000};
       return toCJKIdeographic(count, traditionalChineseFormalTable, Formal);
     }
-    case EListStyleType::SimpChineseFormal: {
+    case EListStyleType::kSimpChineseFormal: {
       static const UChar simpleChineseFormalTable[22] = {
           Chinese, 0x4E07, 0x0000, 0x4EBF, 0x0000, 0x4E07, 0x4EBF, 0x62FE,
           0x4F70,  0x4EDF, 0x96F6, 0x58F9, 0x8D30, 0x53C1, 0x8086, 0x4F0D,
@@ -915,22 +915,22 @@ String text(EListStyleType type, int count) {
       return toCJKIdeographic(count, simpleChineseFormalTable, Formal);
     }
 
-    case EListStyleType::LowerRoman:
+    case EListStyleType::kLowerRoman:
       return toRoman(count, false);
-    case EListStyleType::UpperRoman:
+    case EListStyleType::kUpperRoman:
       return toRoman(count, true);
 
-    case EListStyleType::Armenian:
-    case EListStyleType::UpperArmenian:
+    case EListStyleType::kArmenian:
+    case EListStyleType::kUpperArmenian:
       // CSS3 says "armenian" means "lower-armenian".
       // But the CSS2.1 test suite contains uppercase test results for
       // "armenian", so we'll match the test suite.
       return toArmenian(count, true);
-    case EListStyleType::LowerArmenian:
+    case EListStyleType::kLowerArmenian:
       return toArmenian(count, false);
-    case EListStyleType::Georgian:
+    case EListStyleType::kGeorgian:
       return toGeorgian(count);
-    case EListStyleType::Hebrew:
+    case EListStyleType::kHebrew:
       return toHebrew(count);
   }
 

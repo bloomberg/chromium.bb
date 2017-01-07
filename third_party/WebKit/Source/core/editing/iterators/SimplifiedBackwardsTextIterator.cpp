@@ -162,12 +162,12 @@ void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::advance() {
       if (layoutObject && layoutObject->isText() &&
           m_node->getNodeType() == Node::kTextNode) {
         // FIXME: What about kCdataSectionNode?
-        if (layoutObject->style()->visibility() == EVisibility::Visible &&
+        if (layoutObject->style()->visibility() == EVisibility::kVisible &&
             m_offset > 0)
           m_handledNode = handleTextNode();
       } else if (layoutObject && (layoutObject->isLayoutPart() ||
                                   TextIterator::supportsAltText(m_node))) {
-        if (layoutObject->style()->visibility() == EVisibility::Visible &&
+        if (layoutObject->style()->visibility() == EVisibility::kVisible &&
             m_offset > 0)
           m_handledNode = handleReplacedElement();
       } else {

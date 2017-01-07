@@ -41,82 +41,82 @@ PointerEventsHitRules::PointerEventsHitRules(EHitTesting hitTesting,
       canHitFill(false),
       canHitBoundingBox(false) {
   if (request.svgClipContent())
-    pointerEvents = EPointerEvents::Fill;
+    pointerEvents = EPointerEvents::kFill;
 
   if (hitTesting == SVG_GEOMETRY_HITTESTING) {
     switch (pointerEvents) {
-      case EPointerEvents::BoundingBox:
+      case EPointerEvents::kBoundingBox:
         canHitBoundingBox = true;
         break;
-      case EPointerEvents::VisiblePainted:
-      case EPointerEvents::Auto:  // "auto" is like "visiblePainted" when in
-                                  // SVG content
+      case EPointerEvents::kVisiblePainted:
+      case EPointerEvents::kAuto:  // "auto" is like "visiblePainted" when in
+                                   // SVG content
         requireFill = true;
         requireStroke = true;
-      case EPointerEvents::Visible:
+      case EPointerEvents::kVisible:
         requireVisible = true;
         canHitFill = true;
         canHitStroke = true;
         break;
-      case EPointerEvents::VisibleFill:
+      case EPointerEvents::kVisibleFill:
         requireVisible = true;
         canHitFill = true;
         break;
-      case EPointerEvents::VisibleStroke:
+      case EPointerEvents::kVisibleStroke:
         requireVisible = true;
         canHitStroke = true;
         break;
-      case EPointerEvents::Painted:
+      case EPointerEvents::kPainted:
         requireFill = true;
         requireStroke = true;
-      case EPointerEvents::All:
+      case EPointerEvents::kAll:
         canHitFill = true;
         canHitStroke = true;
         break;
-      case EPointerEvents::Fill:
+      case EPointerEvents::kFill:
         canHitFill = true;
         break;
-      case EPointerEvents::Stroke:
+      case EPointerEvents::kStroke:
         canHitStroke = true;
         break;
-      case EPointerEvents::None:
+      case EPointerEvents::kNone:
         // nothing to do here, defaults are all false.
         break;
     }
   } else {
     switch (pointerEvents) {
-      case EPointerEvents::BoundingBox:
+      case EPointerEvents::kBoundingBox:
         canHitBoundingBox = true;
         break;
-      case EPointerEvents::VisiblePainted:
-      case EPointerEvents::Auto:  // "auto" is like "visiblePainted" when in
-                                  // SVG content
+      case EPointerEvents::kVisiblePainted:
+      case EPointerEvents::kAuto:  // "auto" is like "visiblePainted" when in
+                                   // SVG content
         requireVisible = true;
         requireFill = true;
         requireStroke = true;
         canHitFill = true;
         canHitStroke = true;
         break;
-      case EPointerEvents::VisibleFill:
-      case EPointerEvents::VisibleStroke:
-      case EPointerEvents::Visible:
+      case EPointerEvents::kVisibleFill:
+      case EPointerEvents::kVisibleStroke:
+      case EPointerEvents::kVisible:
         requireVisible = true;
         canHitFill = true;
         canHitStroke = true;
         break;
-      case EPointerEvents::Painted:
+      case EPointerEvents::kPainted:
         requireFill = true;
         requireStroke = true;
         canHitFill = true;
         canHitStroke = true;
         break;
-      case EPointerEvents::Fill:
-      case EPointerEvents::Stroke:
-      case EPointerEvents::All:
+      case EPointerEvents::kFill:
+      case EPointerEvents::kStroke:
+      case EPointerEvents::kAll:
         canHitFill = true;
         canHitStroke = true;
         break;
-      case EPointerEvents::None:
+      case EPointerEvents::kNone:
         // nothing to do here, defaults are all false.
         break;
     }

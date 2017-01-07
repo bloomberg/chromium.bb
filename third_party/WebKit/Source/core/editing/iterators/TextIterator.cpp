@@ -532,7 +532,7 @@ void TextIteratorAlgorithm<Strategy>::advance() {
 }
 
 static bool hasVisibleTextNode(LayoutText* layoutObject) {
-  if (layoutObject->style()->visibility() == EVisibility::Visible)
+  if (layoutObject->style()->visibility() == EVisibility::kVisible)
     return true;
 
   if (!layoutObject->isTextFragment())
@@ -547,7 +547,7 @@ static bool hasVisibleTextNode(LayoutText* layoutObject) {
       fragment->firstLetterPseudoElement()->layoutObject();
   return pseudoElementLayoutObject &&
          pseudoElementLayoutObject->style()->visibility() ==
-             EVisibility::Visible;
+             EVisibility::kVisible;
 }
 
 template <typename Strategy>
@@ -592,7 +592,7 @@ bool TextIteratorAlgorithm<Strategy>::handleTextNode() {
         return false;
       }
     }
-    if (layoutObject->style()->visibility() != EVisibility::Visible &&
+    if (layoutObject->style()->visibility() != EVisibility::kVisible &&
         !ignoresStyleVisibility())
       return false;
     int strLength = str.length();
@@ -616,7 +616,7 @@ bool TextIteratorAlgorithm<Strategy>::handleTextNode() {
 
   if (!layoutObject->firstTextBox() && str.length() > 0 &&
       !shouldHandleFirstLetter) {
-    if (layoutObject->style()->visibility() != EVisibility::Visible &&
+    if (layoutObject->style()->visibility() != EVisibility::kVisible &&
         !ignoresStyleVisibility())
       return false;
     m_lastTextNodeEndedWithCollapsedSpace =
@@ -698,7 +698,7 @@ void TextIteratorAlgorithm<Strategy>::handleTextBox() {
                                  ? m_firstLetterText
                                  : toLayoutText(m_node->layoutObject());
 
-  if (layoutObject->style()->visibility() != EVisibility::Visible &&
+  if (layoutObject->style()->visibility() != EVisibility::kVisible &&
       !ignoresStyleVisibility()) {
     m_textBox = nullptr;
   } else {
@@ -767,7 +767,7 @@ void TextIteratorAlgorithm<Strategy>::handleTextBox() {
         if (str[runStart] == '\n') {
           // We need to preserve new lines in case of PreLine.
           // See bug crbug.com/317365.
-          if (layoutObject->style()->whiteSpace() == EWhiteSpace::PreLine)
+          if (layoutObject->style()->whiteSpace() == EWhiteSpace::kPreLine)
             spliceBuffer('\n', m_node, 0, runStart, runStart);
           else
             spliceBuffer(spaceCharacter, m_node, 0, runStart, runStart + 1);
@@ -832,7 +832,7 @@ void TextIteratorAlgorithm<Strategy>::handleTextNodeFirstLetter(
     return;
 
   LayoutObject* pseudoLayoutObject = firstLetterElement->layoutObject();
-  if (pseudoLayoutObject->style()->visibility() != EVisibility::Visible &&
+  if (pseudoLayoutObject->style()->visibility() != EVisibility::kVisible &&
       !ignoresStyleVisibility())
     return;
 
@@ -866,7 +866,7 @@ bool TextIteratorAlgorithm<Strategy>::handleReplacedElement() {
     return false;
 
   LayoutObject* layoutObject = m_node->layoutObject();
-  if (layoutObject->style()->visibility() != EVisibility::Visible &&
+  if (layoutObject->style()->visibility() != EVisibility::kVisible &&
       !ignoresStyleVisibility())
     return false;
 
@@ -1083,7 +1083,7 @@ bool TextIteratorAlgorithm<Strategy>::shouldRepresentNodeOffsetZero() {
   // unrendered content, we would create VisiblePositions on every call to this
   // function without this check.
   if (!m_node->layoutObject() ||
-      m_node->layoutObject()->style()->visibility() != EVisibility::Visible ||
+      m_node->layoutObject()->style()->visibility() != EVisibility::kVisible ||
       (m_node->layoutObject()->isLayoutBlockFlow() &&
        !toLayoutBlock(m_node->layoutObject())->size().height() &&
        !isHTMLBodyElement(*m_node)))

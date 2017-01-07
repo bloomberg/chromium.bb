@@ -663,7 +663,7 @@ bool InlineTextBoxPainter::shouldPaintTextBox(const PaintInfo& paintInfo) {
   // expect PaintPhaseSelection. The existing haveSelection logic in paint()
   // tests for != PaintPhaseTextClip.
   if (m_inlineTextBox.getLineLayoutItem().style()->visibility() !=
-          EVisibility::Visible ||
+          EVisibility::kVisible ||
       m_inlineTextBox.truncation() == cFullTruncation || !m_inlineTextBox.len())
     return false;
   return true;
@@ -1056,7 +1056,7 @@ void InlineTextBoxPainter::paintDecorations(
         ltr == flowIsLTR ? m_inlineTextBox.truncation()
                          : m_inlineTextBox.len() - m_inlineTextBox.truncation(),
         m_inlineTextBox.textPos(),
-        flowIsLTR ? TextDirection::Ltr : TextDirection::Rtl,
+        flowIsLTR ? TextDirection::kLtr : TextDirection::kRtl,
         m_inlineTextBox.isFirstLineStyle()));
     if (!flowIsLTR)
       localOrigin.move(m_inlineTextBox.logicalWidth() - width, LayoutUnit());
@@ -1167,8 +1167,8 @@ void InlineTextBoxPainter::paintCompositionUnderline(
           : m_inlineTextBox.getLineLayoutItem().width(
                 m_inlineTextBox.start(), paintStart - m_inlineTextBox.start(),
                 m_inlineTextBox.textPos(),
-                m_inlineTextBox.isLeftToRightDirection() ? TextDirection::Ltr
-                                                         : TextDirection::Rtl,
+                m_inlineTextBox.isLeftToRightDirection() ? TextDirection::kLtr
+                                                         : TextDirection::kRtl,
                 m_inlineTextBox.isFirstLineStyle());
   // how much line to draw
   float width;
@@ -1186,7 +1186,7 @@ void InlineTextBoxPainter::paintCompositionUnderline(
             : m_inlineTextBox.start() + m_inlineTextBox.len() - paintEnd;
     width = m_inlineTextBox.getLineLayoutItem().width(
         paintFrom, paintLength, LayoutUnit(m_inlineTextBox.textPos() + start),
-        flowIsLTR ? TextDirection::Ltr : TextDirection::Rtl,
+        flowIsLTR ? TextDirection::kLtr : TextDirection::kRtl,
         m_inlineTextBox.isFirstLineStyle());
   }
   // In RTL mode, start and width are computed from the right end of the text

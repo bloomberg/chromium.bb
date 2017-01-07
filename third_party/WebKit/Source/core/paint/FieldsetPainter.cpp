@@ -94,7 +94,7 @@ void FieldsetPainter::paintBoxDecorationBackground(
 
 void FieldsetPainter::paintMask(const PaintInfo& paintInfo,
                                 const LayoutPoint& paintOffset) {
-  if (m_layoutFieldset.style()->visibility() != EVisibility::Visible ||
+  if (m_layoutFieldset.style()->visibility() != EVisibility::kVisible ||
       paintInfo.phase != PaintPhaseMask)
     return;
 

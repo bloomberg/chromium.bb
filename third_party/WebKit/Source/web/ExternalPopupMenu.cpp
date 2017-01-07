@@ -267,7 +267,7 @@ void ExternalPopupMenu::getPopupMenuInfo(WebPopupMenuInfo& info,
       static_cast<int>(menuStyle.font().getFontDescription().computedSize());
   info.selectedIndex = toExternalPopupMenuItemIndex(
       ownerElement.selectedListIndex(), ownerElement);
-  info.rightAligned = menuStyle.direction() == TextDirection::Rtl;
+  info.rightAligned = menuStyle.direction() == TextDirection::kRtl;
   info.allowMultipleSelection = ownerElement.isMultiple();
   if (count < itemCount)
     items.shrink(count);

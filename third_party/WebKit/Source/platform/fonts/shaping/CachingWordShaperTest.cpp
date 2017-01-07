@@ -138,7 +138,7 @@ TEST_F(CachingWordShaperTest, CommonAccentRightToLeftFillGlyphBuffer) {
   // "[] []" with an accent mark over the last square bracket.
   const UChar str[] = {0x5B, 0x5D, 0x20, 0x5B, 0x301, 0x5D, 0x0};
   TextRun textRun(str, 6);
-  textRun.setDirection(TextDirection::Rtl);
+  textRun.setDirection(TextDirection::kRtl);
 
   CachingWordShaper shaper(cache.get());
   GlyphBuffer glyphBuffer;

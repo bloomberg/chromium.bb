@@ -59,11 +59,11 @@ class ShapeCache {
 
     SmallStringKey()
         : m_length(s_emptyValueLength),
-          m_direction(static_cast<unsigned>(TextDirection::Ltr)) {}
+          m_direction(static_cast<unsigned>(TextDirection::kLtr)) {}
 
     SmallStringKey(WTF::HashTableDeletedValueType)
         : m_length(s_deletedValueLength),
-          m_direction(static_cast<unsigned>(TextDirection::Ltr)) {}
+          m_direction(static_cast<unsigned>(TextDirection::kLtr)) {}
 
     template <typename CharacterType>
     SmallStringKey(CharacterType* characters,
@@ -188,7 +188,7 @@ class ShapeCache {
       uint32_t key = run[0];
       // All current codepointsin UTF-32 are bewteen 0x0 and 0x10FFFF,
       // as such use bit 32 to indicate direction.
-      if (run.direction() == TextDirection::Rtl)
+      if (run.direction() == TextDirection::kRtl)
         key |= (1u << 31);
       SingleCharMap::AddResult addResult = m_singleCharMap.add(key, entry);
       isNewEntry = addResult.isNewEntry;

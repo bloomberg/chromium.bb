@@ -181,7 +181,7 @@ LayoutRect InlineFlowBoxPainter::paintRectForImageStrip(
   // off.
   LayoutUnit logicalOffsetOnLine;
   LayoutUnit totalLogicalWidth;
-  if (direction == TextDirection::Ltr) {
+  if (direction == TextDirection::kLtr) {
     for (const InlineFlowBox* curr = m_inlineFlowBox.prevLineBox(); curr;
          curr = curr->prevLineBox())
       logicalOffsetOnLine += curr->logicalWidth();
@@ -245,7 +245,7 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(
     const LayoutRect& cullRect) {
   DCHECK(paintInfo.phase == PaintPhaseForeground);
   if (m_inlineFlowBox.getLineLayoutItem().style()->visibility() !=
-      EVisibility::Visible)
+      EVisibility::kVisible)
     return;
 
   // You can use p::first-line to specify a background. If so, the root line
@@ -316,7 +316,7 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(
       // obviously not right, but it isn't even clear how this should work at
       // all.
       LayoutRect imageStripPaintRect = paintRectForImageStrip(
-          adjustedPaintOffset, frameRect.size(), TextDirection::Ltr);
+          adjustedPaintOffset, frameRect.size(), TextDirection::kLtr);
       GraphicsContextStateSaver stateSaver(paintInfo.context);
       paintInfo.context.clip(adjustedClipRect);
       BoxPainter::paintBorder(
@@ -332,7 +332,7 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(
 void InlineFlowBoxPainter::paintMask(const PaintInfo& paintInfo,
                                      const LayoutPoint& paintOffset) {
   if (m_inlineFlowBox.getLineLayoutItem().style()->visibility() !=
-          EVisibility::Visible ||
+          EVisibility::kVisible ||
       paintInfo.phase != PaintPhaseMask)
     return;
 
@@ -402,7 +402,7 @@ void InlineFlowBoxPainter::paintMask(const PaintInfo& paintInfo,
     // FIXME: What the heck do we do with RTL here? The math we're using is
     // obviously not right, but it isn't even clear how this should work at all.
     LayoutRect imageStripPaintRect = paintRectForImageStrip(
-        adjustedPaintOffset, frameRect.size(), TextDirection::Ltr);
+        adjustedPaintOffset, frameRect.size(), TextDirection::kLtr);
     FloatRect clipRect(clipRectForNinePieceImageStrip(
         m_inlineFlowBox, maskNinePieceImage, paintRect));
     GraphicsContextStateSaver stateSaver(paintInfo.context);

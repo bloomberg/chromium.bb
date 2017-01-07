@@ -344,8 +344,8 @@ TEST_F(NGLengthUtilsTest, testMargins) {
 
   NGConstraintSpace* constraintSpace(ConstructConstraintSpace(200, 300));
 
-  NGBoxStrut margins = ComputeMargins(*constraintSpace, *style_,
-                                      kHorizontalTopBottom, TextDirection::Ltr);
+  NGBoxStrut margins = ComputeMargins(
+      *constraintSpace, *style_, kHorizontalTopBottom, TextDirection::kLtr);
 
   EXPECT_EQ(LayoutUnit(20), margins.block_start);
   EXPECT_EQ(LayoutUnit(52), margins.inline_end);
@@ -362,7 +362,7 @@ TEST_F(NGLengthUtilsTest, testBorders) {
   style_->setBorderRightStyle(BorderStyleSolid);
   style_->setBorderBottomStyle(BorderStyleSolid);
   style_->setBorderLeftStyle(BorderStyleSolid);
-  style_->setWritingMode(WritingMode::VerticalLr);
+  style_->setWritingMode(WritingMode::kVerticalLr);
 
   NGBoxStrut borders = ComputeBorders(*style_);
 
@@ -377,7 +377,7 @@ TEST_F(NGLengthUtilsTest, testPadding) {
   style_->setPaddingRight(Length(52, Fixed));
   style_->setPaddingBottom(Length(Auto));
   style_->setPaddingLeft(Length(11, Percent));
-  style_->setWritingMode(WritingMode::VerticalRl);
+  style_->setWritingMode(WritingMode::kVerticalRl);
 
   NGConstraintSpace* constraintSpace(ConstructConstraintSpace(200, 300));
 
@@ -397,7 +397,7 @@ TEST_F(NGLengthUtilsTest, testAutoMargins) {
   builder.SetInlineSize(LayoutUnit(150));
   NGPhysicalBoxFragment* physical_fragment = builder.ToBoxFragment();
   NGBoxFragment* fragment = new NGBoxFragment(
-      kHorizontalTopBottom, TextDirection::Ltr, physical_fragment);
+      kHorizontalTopBottom, TextDirection::kLtr, physical_fragment);
 
   NGConstraintSpace* constraint_space(ConstructConstraintSpace(200, 300));
 

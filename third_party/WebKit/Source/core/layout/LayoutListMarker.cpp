@@ -370,64 +370,64 @@ int LayoutListMarker::baselinePosition(
 LayoutListMarker::ListStyleCategory LayoutListMarker::getListStyleCategory()
     const {
   switch (style()->listStyleType()) {
-    case EListStyleType::None:
+    case EListStyleType::kNone:
       return ListStyleCategory::None;
-    case EListStyleType::Disc:
-    case EListStyleType::Circle:
-    case EListStyleType::Square:
+    case EListStyleType::kDisc:
+    case EListStyleType::kCircle:
+    case EListStyleType::kSquare:
       return ListStyleCategory::Symbol;
-    case EListStyleType::ArabicIndic:
-    case EListStyleType::Armenian:
-    case EListStyleType::Bengali:
-    case EListStyleType::Cambodian:
-    case EListStyleType::CjkIdeographic:
-    case EListStyleType::CjkEarthlyBranch:
-    case EListStyleType::CjkHeavenlyStem:
-    case EListStyleType::DecimalLeadingZero:
-    case EListStyleType::Decimal:
-    case EListStyleType::Devanagari:
-    case EListStyleType::EthiopicHalehame:
-    case EListStyleType::EthiopicHalehameAm:
-    case EListStyleType::EthiopicHalehameTiEr:
-    case EListStyleType::EthiopicHalehameTiEt:
-    case EListStyleType::Georgian:
-    case EListStyleType::Gujarati:
-    case EListStyleType::Gurmukhi:
-    case EListStyleType::Hangul:
-    case EListStyleType::HangulConsonant:
-    case EListStyleType::Hebrew:
-    case EListStyleType::Hiragana:
-    case EListStyleType::HiraganaIroha:
-    case EListStyleType::Kannada:
-    case EListStyleType::Katakana:
-    case EListStyleType::KatakanaIroha:
-    case EListStyleType::Khmer:
-    case EListStyleType::KoreanHangulFormal:
-    case EListStyleType::KoreanHanjaFormal:
-    case EListStyleType::KoreanHanjaInformal:
-    case EListStyleType::Lao:
-    case EListStyleType::LowerAlpha:
-    case EListStyleType::LowerArmenian:
-    case EListStyleType::LowerGreek:
-    case EListStyleType::LowerLatin:
-    case EListStyleType::LowerRoman:
-    case EListStyleType::Malayalam:
-    case EListStyleType::Mongolian:
-    case EListStyleType::Myanmar:
-    case EListStyleType::Oriya:
-    case EListStyleType::Persian:
-    case EListStyleType::SimpChineseFormal:
-    case EListStyleType::SimpChineseInformal:
-    case EListStyleType::Telugu:
-    case EListStyleType::Thai:
-    case EListStyleType::Tibetan:
-    case EListStyleType::TradChineseFormal:
-    case EListStyleType::TradChineseInformal:
-    case EListStyleType::UpperAlpha:
-    case EListStyleType::UpperArmenian:
-    case EListStyleType::UpperLatin:
-    case EListStyleType::UpperRoman:
-    case EListStyleType::Urdu:
+    case EListStyleType::kArabicIndic:
+    case EListStyleType::kArmenian:
+    case EListStyleType::kBengali:
+    case EListStyleType::kCambodian:
+    case EListStyleType::kCjkIdeographic:
+    case EListStyleType::kCjkEarthlyBranch:
+    case EListStyleType::kCjkHeavenlyStem:
+    case EListStyleType::kDecimalLeadingZero:
+    case EListStyleType::kDecimal:
+    case EListStyleType::kDevanagari:
+    case EListStyleType::kEthiopicHalehame:
+    case EListStyleType::kEthiopicHalehameAm:
+    case EListStyleType::kEthiopicHalehameTiEr:
+    case EListStyleType::kEthiopicHalehameTiEt:
+    case EListStyleType::kGeorgian:
+    case EListStyleType::kGujarati:
+    case EListStyleType::kGurmukhi:
+    case EListStyleType::kHangul:
+    case EListStyleType::kHangulConsonant:
+    case EListStyleType::kHebrew:
+    case EListStyleType::kHiragana:
+    case EListStyleType::kHiraganaIroha:
+    case EListStyleType::kKannada:
+    case EListStyleType::kKatakana:
+    case EListStyleType::kKatakanaIroha:
+    case EListStyleType::kKhmer:
+    case EListStyleType::kKoreanHangulFormal:
+    case EListStyleType::kKoreanHanjaFormal:
+    case EListStyleType::kKoreanHanjaInformal:
+    case EListStyleType::kLao:
+    case EListStyleType::kLowerAlpha:
+    case EListStyleType::kLowerArmenian:
+    case EListStyleType::kLowerGreek:
+    case EListStyleType::kLowerLatin:
+    case EListStyleType::kLowerRoman:
+    case EListStyleType::kMalayalam:
+    case EListStyleType::kMongolian:
+    case EListStyleType::kMyanmar:
+    case EListStyleType::kOriya:
+    case EListStyleType::kPersian:
+    case EListStyleType::kSimpChineseFormal:
+    case EListStyleType::kSimpChineseInformal:
+    case EListStyleType::kTelugu:
+    case EListStyleType::kThai:
+    case EListStyleType::kTibetan:
+    case EListStyleType::kTradChineseFormal:
+    case EListStyleType::kTradChineseInformal:
+    case EListStyleType::kUpperAlpha:
+    case EListStyleType::kUpperArmenian:
+    case EListStyleType::kUpperLatin:
+    case EListStyleType::kUpperRoman:
+    case EListStyleType::kUrdu:
       return ListStyleCategory::Language;
     default:
       ASSERT_NOT_REACHED();
@@ -437,7 +437,7 @@ LayoutListMarker::ListStyleCategory LayoutListMarker::getListStyleCategory()
 
 bool LayoutListMarker::isInside() const {
   return m_listItem->notInList() ||
-         style()->listStylePosition() == EListStylePosition::Inside;
+         style()->listStylePosition() == EListStylePosition::kInside;
 }
 
 IntRect LayoutListMarker::getRelativeMarkerRect() const {

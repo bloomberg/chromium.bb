@@ -505,7 +505,7 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PositionFloatFragment(
   NGExclusion::Type exclusion_type = NGExclusion::kFloatLeft;
   // Calculate the float offset if needed.
   LayoutUnit float_offset;
-  if (CurrentChildStyle().floating() == EFloat::Right) {
+  if (CurrentChildStyle().floating() == EFloat::kRight) {
     float_offset = opportunity.size.inline_size - fragment.InlineSize();
     exclusion_type = NGExclusion::kFloatRight;
   }

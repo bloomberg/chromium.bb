@@ -183,7 +183,7 @@ LayoutRubyBase* LayoutRubyRun::createRubyBase() const {
   RefPtr<ComputedStyle> newStyle =
       ComputedStyle::createAnonymousStyleWithDisplay(styleRef(),
                                                      EDisplay::Block);
-  newStyle->setTextAlign(ETextAlign::Center);  // FIXME: use WEBKIT_CENTER?
+  newStyle->setTextAlign(ETextAlign::kCenter);  // FIXME: use WEBKIT_CENTER?
   layoutObject->setStyle(newStyle.release());
   return layoutObject;
 }

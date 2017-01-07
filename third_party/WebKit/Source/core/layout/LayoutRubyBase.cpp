@@ -134,7 +134,7 @@ void LayoutRubyBase::moveBlockChildren(LayoutRubyBase* toBase,
 
 ETextAlign LayoutRubyBase::textAlignmentForLine(
     bool /* endsWithSoftBreak */) const {
-  return ETextAlign::Justify;
+  return ETextAlign::kJustify;
 }
 
 void LayoutRubyBase::adjustInlineDirectionLineBounds(

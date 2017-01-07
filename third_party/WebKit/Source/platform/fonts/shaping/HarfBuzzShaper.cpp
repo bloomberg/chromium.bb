@@ -108,8 +108,8 @@ static inline hb_direction_t TextDirectionToHBDirection(
               !fontData->isTextOrientationFallback()
           ? HB_DIRECTION_TTB
           : HB_DIRECTION_LTR;
-  return dir == TextDirection::Rtl ? HB_DIRECTION_REVERSE(harfBuzzDirection)
-                                   : harfBuzzDirection;
+  return dir == TextDirection::kRtl ? HB_DIRECTION_REVERSE(harfBuzzDirection)
+                                    : harfBuzzDirection;
 }
 
 inline bool shapeRange(hb_buffer_t* harfBuzzBuffer,

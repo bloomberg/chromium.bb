@@ -68,9 +68,9 @@ void LayoutSVGInlineText::styleDidChange(StyleDifference diff,
   updateScaledFont();
 
   bool newPreserves =
-      style() ? style()->whiteSpace() == EWhiteSpace::Pre : false;
+      style() ? style()->whiteSpace() == EWhiteSpace::kPre : false;
   bool oldPreserves =
-      oldStyle ? oldStyle->whiteSpace() == EWhiteSpace::Pre : false;
+      oldStyle ? oldStyle->whiteSpace() == EWhiteSpace::kPre : false;
   if (oldPreserves != newPreserves) {
     setText(originalText(), true);
     return;
@@ -299,7 +299,7 @@ void LayoutSVGInlineText::addMetricsFromRun(const TextRun& run,
 
   const float cachedFontHeight =
       fontData->getFontMetrics().floatHeight() / m_scalingFactor;
-  const bool preserveWhiteSpace = styleRef().whiteSpace() == EWhiteSpace::Pre;
+  const bool preserveWhiteSpace = styleRef().whiteSpace() == EWhiteSpace::kPre;
   const unsigned runLength = run.length();
 
   // TODO(pdr): Character-based iteration is ambiguous and error-prone. It
@@ -335,7 +335,7 @@ void LayoutSVGInlineText::updateMetricsList(bool& lastCharacterWasWhiteSpace) {
   BidiResolver<TextRunIterator, BidiCharacterRun> bidiResolver;
   BidiRunList<BidiCharacterRun>& bidiRuns = bidiResolver.runs();
   bool bidiOverride = isOverride(styleRef().unicodeBidi());
-  BidiStatus status(TextDirection::Ltr, bidiOverride);
+  BidiStatus status(TextDirection::kLtr, bidiOverride);
   if (run.is8Bit() || bidiOverride) {
     WTF::Unicode::CharDirection direction = WTF::Unicode::LeftToRight;
     // If BiDi override is in effect, use the specified direction.

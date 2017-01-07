@@ -497,7 +497,7 @@ bool WebRemoteFrameImpl::isIgnoredForHitTest() const {
   if (!owner || !owner->layoutObject())
     return false;
   return owner->layoutObject()->style()->pointerEvents() ==
-         EPointerEvents::None;
+         EPointerEvents::kNone;
 }
 
 void WebRemoteFrameImpl::willEnterFullscreen() {

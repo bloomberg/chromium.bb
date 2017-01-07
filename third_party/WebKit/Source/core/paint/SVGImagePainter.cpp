@@ -20,7 +20,7 @@ namespace blink {
 
 void SVGImagePainter::paint(const PaintInfo& paintInfo) {
   if (paintInfo.phase != PaintPhaseForeground ||
-      m_layoutSVGImage.style()->visibility() != EVisibility::Visible ||
+      m_layoutSVGImage.style()->visibility() != EVisibility::kVisible ||
       !m_layoutSVGImage.imageResource()->hasImage())
     return;
 

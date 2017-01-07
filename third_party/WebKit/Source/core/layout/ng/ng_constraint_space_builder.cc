@@ -32,7 +32,7 @@ NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(NGWritingMode writing_mode)
       is_block_direction_triggers_scrollbar_(false),
       fragmentation_type_(kFragmentNone),
       is_new_fc_(false),
-      text_direction_(static_cast<unsigned>(TextDirection::Ltr)),
+      text_direction_(static_cast<unsigned>(TextDirection::kLtr)),
       exclusions_(new NGExclusions()) {}
 
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetAvailableSize(

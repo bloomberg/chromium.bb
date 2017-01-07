@@ -1534,7 +1534,7 @@ static bool isCandidateForOpaquenessTest(const LayoutBox& childBox) {
   if (childStyle.position() != StaticPosition &&
       childBox.containingBlock() != childBox.parent())
     return false;
-  if (childStyle.visibility() != EVisibility::Visible ||
+  if (childStyle.visibility() != EVisibility::kVisible ||
       childStyle.shapeOutside())
     return false;
   if (childBox.size().isZero())
@@ -2286,7 +2286,7 @@ bool LayoutBox::paintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
 }
 
 LayoutRect LayoutBox::localVisualRect() const {
-  if (style()->visibility() != EVisibility::Visible)
+  if (style()->visibility() != EVisibility::kVisible)
     return LayoutRect();
 
   if (hasMask() && !RuntimeEnabledFeatures::slimmingPaintV2Enabled())
@@ -2855,7 +2855,7 @@ void LayoutBox::computeMarginsForDirection(MarginDirection flowDirection,
     const ComputedStyle& containingBlockStyle = containingBlock->styleRef();
     if ((marginStartLength.isAuto() && marginEndLength.isAuto()) ||
         (!marginStartLength.isAuto() && !marginEndLength.isAuto() &&
-         containingBlockStyle.textAlign() == ETextAlign::WebkitCenter)) {
+         containingBlockStyle.textAlign() == ETextAlign::kWebkitCenter)) {
       // Other browsers center the margin box for align=center elements so we
       // match them here.
       LayoutUnit centeredMarginBoxStart = std::max(
@@ -2869,9 +2869,9 @@ void LayoutBox::computeMarginsForDirection(MarginDirection flowDirection,
 
     // Adjust margins for the align attribute
     if ((!containingBlockStyle.isLeftToRightDirection() &&
-         containingBlockStyle.textAlign() == ETextAlign::WebkitLeft) ||
+         containingBlockStyle.textAlign() == ETextAlign::kWebkitLeft) ||
         (containingBlockStyle.isLeftToRightDirection() &&
-         containingBlockStyle.textAlign() == ETextAlign::WebkitRight)) {
+         containingBlockStyle.textAlign() == ETextAlign::kWebkitRight)) {
       if (containingBlockStyle.isLeftToRightDirection() !=
           styleRef().isLeftToRightDirection()) {
         if (!marginStartLength.isAuto())
@@ -3732,7 +3732,7 @@ void LayoutBox::computeInlineStaticDistance(
 
   // FIXME: The static distance computation has not been patched for mixed
   // writing modes yet.
-  if (child->parent()->style()->direction() == TextDirection::Ltr) {
+  if (child->parent()->style()->direction() == TextDirection::kLtr) {
     LayoutUnit staticPosition = child->layer()->staticInlinePosition() -
                                 containerBlock->borderLogicalLeft();
     for (LayoutObject* curr = child->parent(); curr && curr != containerBlock;
@@ -4030,7 +4030,7 @@ void LayoutBox::computePositionedLogicalWidthUsing(
       } else {
         // Use the containing block's direction rather than the parent block's
         // per CSS 2.1 reference test abspos-non-replaced-width-margin-000.
-        if (containerDirection == TextDirection::Ltr) {
+        if (containerDirection == TextDirection::kLtr) {
           marginLogicalLeftValue = LayoutUnit();
           marginLogicalRightValue = availableSpace;  // will be negative
         } else {
@@ -4057,7 +4057,7 @@ void LayoutBox::computePositionedLogicalWidthUsing(
 
       // Use the containing block's direction rather than the parent block's
       // per CSS 2.1 reference test abspos-non-replaced-width-margin-000.
-      if (containerDirection == TextDirection::Rtl)
+      if (containerDirection == TextDirection::kRtl)
         logicalLeftValue = (availableSpace + logicalLeftValue) -
                            marginLogicalLeftValue - marginLogicalRightValue;
     }
@@ -4620,7 +4620,7 @@ PositionWithAffinity LayoutBox::positionForPoint(const LayoutPoint& point) {
        layoutObject = layoutObject->nextSibling()) {
     if ((!layoutObject->slowFirstChild() && !layoutObject->isInline() &&
          !layoutObject->isLayoutBlockFlow()) ||
-        layoutObject->style()->visibility() != EVisibility::Visible)
+        layoutObject->style()->visibility() != EVisibility::kVisible)
       continue;
 
     if (!layoutObject->isBox())

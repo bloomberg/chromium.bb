@@ -2265,7 +2265,7 @@ PassRefPtr<ComputedStyle> Document::styleForPage(int pageIndex) {
 
 bool Document::isPageBoxVisible(int pageIndex) {
   return styleForPage(pageIndex)->visibility() !=
-         EVisibility::Hidden;  // display property doesn't apply to @page.
+         EVisibility::kHidden;  // display property doesn't apply to @page.
 }
 
 void Document::pageSizeAndMarginsInPixels(int pageIndex,
