@@ -13,12 +13,12 @@
 
 namespace {
 // Note that the new histogram names will change once the semantics stabilize;
-const char* const kFeaturesHistogramName = "WebCore.UseCounter_TEST.Features";
-const char* const kCSSHistogramName = "WebCore.UseCounter_TEST.CSSProperties";
+const char* const kFeaturesHistogramName = "Blink.UseCounter.Features";
+const char* const kCSSHistogramName = "Blink.UseCounter.CSSProperties";
 const char* const kSVGFeaturesHistogramName =
-    "WebCore.UseCounter_TEST.SVGImage.Features";
+    "Blink.UseCounter.SVGImage.Features";
 const char* const kSVGCSSHistogramName =
-    "WebCore.UseCounter_TEST.SVGImage.CSSProperties";
+    "Blink.UseCounter.SVGImage.CSSProperties";
 const char* const kLegacyFeaturesHistogramName = "WebCore.FeatureObserver";
 const char* const kLegacyCSSHistogramName =
     "WebCore.FeatureObserver.CSSProperties";

@@ -1277,23 +1277,22 @@ EnumerationHistogram& UseCounter::featuresHistogram() const {
   // that's tricky (SVGImage is intentionally isolated, and the Page that
   // created it may not even exist anymore).
   // So instead we just use a dedicated histogram for the SVG case.
-  DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, histogram,
-                      ("WebCore.UseCounter_TEST.Features",
-                       blink::UseCounter::NumberOfFeatures));
+  DEFINE_STATIC_LOCAL(
+      blink::EnumerationHistogram, histogram,
+      ("Blink.UseCounter.Features", blink::UseCounter::NumberOfFeatures));
   DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, svgHistogram,
-                      ("WebCore.UseCounter_TEST.SVGImage.Features",
+                      ("Blink.UseCounter.SVGImage.Features",
                        blink::UseCounter::NumberOfFeatures));
 
   return m_context == SVGImageContext ? svgHistogram : histogram;
 }
 
 EnumerationHistogram& UseCounter::cssHistogram() const {
-  DEFINE_STATIC_LOCAL(
-      blink::EnumerationHistogram, histogram,
-      ("WebCore.UseCounter_TEST.CSSProperties", kMaximumCSSSampleId));
+  DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, histogram,
+                      ("Blink.UseCounter.CSSProperties", kMaximumCSSSampleId));
   DEFINE_STATIC_LOCAL(
       blink::EnumerationHistogram, svgHistogram,
-      ("WebCore.UseCounter_TEST.SVGImage.CSSProperties", kMaximumCSSSampleId));
+      ("Blink.UseCounter.SVGImage.CSSProperties", kMaximumCSSSampleId));
 
   return m_context == SVGImageContext ? svgHistogram : histogram;
 }
