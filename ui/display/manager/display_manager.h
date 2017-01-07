@@ -50,7 +50,7 @@ class DisplayManagerTestApi;
 // and notifies observers when configuration changes.
 class DISPLAY_MANAGER_EXPORT DisplayManager
 #if defined(OS_CHROMEOS)
-    : public ui::DisplayConfigurator::SoftwareMirroringController
+    : public DisplayConfigurator::SoftwareMirroringController
 #endif
 {
  public:
@@ -72,8 +72,8 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
     virtual void PostDisplayConfigurationChange(bool must_clear_window) = 0;
 
 #if defined(OS_CHROMEOS)
-    // Get the ui::DisplayConfigurator.
-    virtual ui::DisplayConfigurator* display_configurator() = 0;
+    // Get the DisplayConfigurator.
+    virtual DisplayConfigurator* display_configurator() = 0;
 #endif
   };
 
@@ -179,7 +179,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
       const gfx::Insets* overscan_insets,
       const gfx::Size& resolution_in_pixels,
       float device_scale_factor,
-      ui::ColorCalibrationProfile color_profile,
+      ColorCalibrationProfile color_profile,
       const TouchCalibrationData* touch_calibration_data);
 
   // Register stored rotation properties for the internal display.
@@ -217,7 +217,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
 
   // Sets the color calibration of the display to |profile|.
   void SetColorCalibrationProfile(int64_t display_id,
-                                  ui::ColorCalibrationProfile profile);
+                                  ColorCalibrationProfile profile);
 
   // Called when display configuration has changed. The new display
   // configurations is passed as a vector of Display object, which contains each

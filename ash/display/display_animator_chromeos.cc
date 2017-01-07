@@ -190,14 +190,14 @@ void DisplayAnimatorChromeOS::StartFadeInAnimation() {
 }
 
 void DisplayAnimatorChromeOS::OnDisplayModeChanged(
-    const ui::DisplayConfigurator::DisplayStateList& displays) {
+    const display::DisplayConfigurator::DisplayStateList& displays) {
   if (!hiding_layers_.empty())
     StartFadeInAnimation();
 }
 
 void DisplayAnimatorChromeOS::OnDisplayModeChangeFailed(
-    const ui::DisplayConfigurator::DisplayStateList& displays,
-    ui::MultipleDisplayState failed_new_state) {
+    const display::DisplayConfigurator::DisplayStateList& displays,
+    display::MultipleDisplayState failed_new_state) {
   if (!hiding_layers_.empty())
     StartFadeInAnimation();
 }

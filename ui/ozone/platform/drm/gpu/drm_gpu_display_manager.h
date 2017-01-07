@@ -12,13 +12,15 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 
+namespace display {
+struct GammaRampRGBEntry;
+}
+
 namespace ui {
 
 class DrmDeviceManager;
 class DrmDisplay;
 class ScreenManager;
-
-struct GammaRampRGBEntry;
 
 class DrmGpuDisplayManager {
  public:
@@ -43,12 +45,13 @@ class DrmGpuDisplayManager {
                         const DisplayMode_Params& mode,
                         const gfx::Point& origin);
   bool DisableDisplay(int64_t id);
-  bool GetHDCPState(int64_t display_id, HDCPState* state);
-  bool SetHDCPState(int64_t display_id, HDCPState state);
-  void SetColorCorrection(int64_t id,
-                          const std::vector<GammaRampRGBEntry>& degamma_lut,
-                          const std::vector<GammaRampRGBEntry>& gamma_lut,
-                          const std::vector<float>& correction_matrix);
+  bool GetHDCPState(int64_t display_id, display::HDCPState* state);
+  bool SetHDCPState(int64_t display_id, display::HDCPState state);
+  void SetColorCorrection(
+      int64_t id,
+      const std::vector<display::GammaRampRGBEntry>& degamma_lut,
+      const std::vector<display::GammaRampRGBEntry>& gamma_lut,
+      const std::vector<float>& correction_matrix);
 
  private:
   DrmDisplay* FindDisplay(int64_t display_id);

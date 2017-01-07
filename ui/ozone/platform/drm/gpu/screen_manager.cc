@@ -95,8 +95,8 @@ void ScreenManager::AddDisplayController(const scoped_refptr<DrmDevice>& drm,
   HardwareDisplayControllers::iterator it = FindDisplayController(drm, crtc);
   // TODO(dnicoara): Turn this into a DCHECK when async display configuration is
   // properly supported. (When there can't be a race between forcing initial
-  // display configuration in ScreenManager and NativeDisplayDelegate creating
-  // the display controllers.)
+  // display configuration in ScreenManager and display::NativeDisplayDelegate
+  // creating the display controllers.)
   if (it != controllers_.end()) {
     LOG(WARNING) << "Display controller (crtc=" << crtc << ") already present.";
     return;
@@ -343,7 +343,7 @@ OverlayPlane ScreenManager::GetModesetBuffer(
       return *primary;
   }
 
-  gfx::BufferFormat format = ui::DisplaySnapshot::PrimaryFormat();
+  gfx::BufferFormat format = display::DisplaySnapshot::PrimaryFormat();
   scoped_refptr<DrmDevice> drm = controller->GetAllocationDrmDevice();
   uint32_t fourcc_format = ui::GetFourCCFormatForFramebuffer(format);
   scoped_refptr<ScanoutBuffer> buffer =

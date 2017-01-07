@@ -109,10 +109,11 @@ class MockDrmDevice : public DrmDevice {
                         uint32_t flags,
                         uint32_t crtc_count,
                         const PageFlipCallback& callback) override;
-  bool SetColorCorrection(uint32_t crtc_id,
-                          const std::vector<GammaRampRGBEntry>& degamma_lut,
-                          const std::vector<GammaRampRGBEntry>& gamma_lut,
-                          const std::vector<float>& correction_matrix) override;
+  bool SetColorCorrection(
+      uint32_t crtc_id,
+      const std::vector<display::GammaRampRGBEntry>& degamma_lut,
+      const std::vector<display::GammaRampRGBEntry>& gamma_lut,
+      const std::vector<float>& correction_matrix) override;
   bool SetCapability(uint64_t capability, uint64_t value) override;
 
  private:

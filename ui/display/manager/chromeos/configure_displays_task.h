@@ -16,7 +16,7 @@
 #include "ui/display/manager/display_manager_export.h"
 #include "ui/gfx/geometry/point.h"
 
-namespace ui {
+namespace display {
 
 class DisplayMode;
 class DisplaySnapshot;
@@ -86,6 +86,6 @@ class DISPLAY_MANAGER_EXPORT ConfigureDisplaysTask {
   DISALLOW_COPY_AND_ASSIGN(ConfigureDisplaysTask);
 };
 
-}  // namespace ui
+}  // namespace display
 
 #endif  // UI_DISPLAY_MANAGER_CHROMEOS_CONFIGURE_DISPLAYS_TASK_H_

@@ -19,7 +19,7 @@
 #include "ui/display/manager/chromeos/test/action_logger_util.h"
 #include "ui/display/manager/chromeos/test/test_native_display_delegate.h"
 
-namespace ui {
+namespace display {
 namespace test {
 
 namespace {
@@ -154,13 +154,13 @@ class UpdateDisplayConfigurationTaskTest : public testing::Test {
         configuration_status_(false),
         display_state_(MULTIPLE_DISPLAY_STATE_INVALID),
         power_state_(chromeos::DISPLAY_POWER_ALL_ON) {
-    displays_[0] = display::FakeDisplaySnapshot::Builder()
+    displays_[0] = FakeDisplaySnapshot::Builder()
                        .SetId(123)
                        .SetNativeMode(small_mode_.Clone())
                        .SetCurrentMode(small_mode_.Clone())
                        .Build();
 
-    displays_[1] = display::FakeDisplaySnapshot::Builder()
+    displays_[1] = FakeDisplaySnapshot::Builder()
                        .SetId(456)
                        .SetNativeMode(big_mode_.Clone())
                        .SetCurrentMode(big_mode_.Clone())
@@ -495,4 +495,4 @@ TEST_F(UpdateDisplayConfigurationTaskTest,
 }
 
 }  // namespace test
-}  // namespace ui
+}  // namespace display

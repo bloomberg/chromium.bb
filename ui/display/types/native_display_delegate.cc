@@ -4,8 +4,8 @@
 
 #include "ui/display/types/native_display_delegate.h"
 
-namespace ui {
+namespace display {
 
 NativeDisplayDelegate::~NativeDisplayDelegate() {}
 
-}  // namespace ui
+}  // namespace display

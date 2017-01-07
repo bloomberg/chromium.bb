@@ -359,7 +359,7 @@ void ScreenManagerOzone::PostDisplayConfigurationChange(
   DVLOG(1) << "PostDisplayConfigurationChange";
 }
 
-ui::DisplayConfigurator* ScreenManagerOzone::display_configurator() {
+DisplayConfigurator* ScreenManagerOzone::display_configurator() {
   return &display_configurator_;
 }
 

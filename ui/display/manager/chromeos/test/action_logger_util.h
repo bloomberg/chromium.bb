@@ -17,7 +17,7 @@ class Point;
 class Size;
 }  // namespace gfx
 
-namespace ui {
+namespace display {
 
 struct GammaRampRGBEntry;
 class DisplayMode;
@@ -69,7 +69,7 @@ std::string GetSetHDCPStateAction(const DisplaySnapshot& output,
 // Returns a string describing a TestNativeDisplayDelegate::SetColorCorrection()
 // call;
 std::string SetColorCorrectionAction(
-    const ui::DisplaySnapshot& output,
+    const DisplaySnapshot& output,
     const std::vector<GammaRampRGBEntry>& degamma_lut,
     const std::vector<GammaRampRGBEntry>& gamma_lut,
     const std::vector<float>& correction_matrix);
@@ -80,6 +80,6 @@ std::string SetColorCorrectionAction(
 std::string JoinActions(const char* action, ...);
 
 }  // namespace test
-}  // namespace ui
+}  // namespace display
 
 #endif  // UI_DISPLAY_MANAGER_CHROMEOS_TEST_ACTION_LOGGER_UTIL_H_

@@ -16,7 +16,7 @@ typedef unsigned long XID;
 typedef XID RROutput;
 typedef XID RRCrtc;
 
-namespace ui {
+namespace display {
 
 class DISPLAY_MANAGER_EXPORT DisplaySnapshotX11 : public DisplaySnapshot {
  public:
@@ -57,6 +57,6 @@ class DISPLAY_MANAGER_EXPORT DisplaySnapshotX11 : public DisplaySnapshot {
   DISALLOW_COPY_AND_ASSIGN(DisplaySnapshotX11);
 };
 
-}  // namespace ui
+}  // namespace display
 
 #endif  // UI_DISPLAY_MANAGER_CHROMEOS_X11_DISPLAY_SNAPSHOT_X11_H_

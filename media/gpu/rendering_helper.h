@@ -29,7 +29,7 @@ namespace base {
 class WaitableEvent;
 }
 
-namespace ui {
+namespace display {
 class DisplayConfigurator;
 }
 
@@ -197,7 +197,7 @@ class RenderingHelper {
   std::unique_ptr<StubOzoneDelegate> platform_window_delegate_;
 
 #if defined(OS_CHROMEOS)
-  std::unique_ptr<ui::DisplayConfigurator> display_configurator_;
+  std::unique_ptr<display::DisplayConfigurator> display_configurator_;
 #endif
 #endif
 

@@ -395,7 +395,7 @@ void DisplayManager::RegisterDisplayProperty(
     const gfx::Insets* overscan_insets,
     const gfx::Size& resolution_in_pixels,
     float device_scale_factor,
-    ui::ColorCalibrationProfile color_profile,
+    ColorCalibrationProfile color_profile,
     const TouchCalibrationData* touch_calibration_data) {
   if (display_info_.find(display_id) == display_info_.end())
     display_info_[display_id] =
@@ -487,7 +487,7 @@ gfx::Insets DisplayManager::GetOverscanInsets(int64_t display_id) const {
 
 void DisplayManager::SetColorCalibrationProfile(
     int64_t display_id,
-    ui::ColorCalibrationProfile profile) {
+    ColorCalibrationProfile profile) {
 #if defined(OS_CHROMEOS)
   if (!display_info_[display_id].IsColorProfileAvailable(profile))
     return;
@@ -500,7 +500,7 @@ void DisplayManager::SetColorCalibrationProfile(
                                                                     profile)) {
     display_info_[display_id].SetColorProfile(profile);
     UMA_HISTOGRAM_ENUMERATION("ChromeOS.Display.ColorProfile", profile,
-                              ui::NUM_COLOR_PROFILES);
+                              NUM_COLOR_PROFILES);
   }
   if (delegate_)
     delegate_->PostDisplayConfigurationChange(false);
@@ -928,9 +928,9 @@ void DisplayManager::SetMirrorMode(bool mirror) {
 
 #if defined(OS_CHROMEOS)
   if (configure_displays_) {
-    ui::MultipleDisplayState new_state =
-        mirror ? ui::MULTIPLE_DISPLAY_STATE_DUAL_MIRROR
-               : ui::MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED;
+    MultipleDisplayState new_state = mirror
+                                         ? MULTIPLE_DISPLAY_STATE_DUAL_MIRROR
+                                         : MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED;
     delegate_->display_configurator()->SetDisplayMode(new_state);
     return;
   }
@@ -996,7 +996,7 @@ void DisplayManager::SetTouchCalibrationData(
   TouchCalibrationData calibration_data(point_pair_quad, display_bounds);
   DisplayInfoList display_info_list;
   for (const auto& display : active_display_list_) {
-    display::ManagedDisplayInfo info = GetDisplayInfo(display.id());
+    ManagedDisplayInfo info = GetDisplayInfo(display.id());
     if (info.id() == display_id) {
       info.SetTouchCalibrationData(calibration_data);
       update = true;
@@ -1013,7 +1013,7 @@ void DisplayManager::ClearTouchCalibrationData(int64_t display_id) {
   bool update = false;
   DisplayInfoList display_info_list;
   for (const auto& display : active_display_list_) {
-    display::ManagedDisplayInfo info = GetDisplayInfo(display.id());
+    ManagedDisplayInfo info = GetDisplayInfo(display.id());
     if (info.id() == display_id) {
       info.clear_touch_calibration_data();
       update = true;
@@ -1320,8 +1320,8 @@ void DisplayManager::InsertAndUpdateDisplayInfo(
 void DisplayManager::OnDisplayInfoUpdated(
     const ManagedDisplayInfo& display_info) {
 #if defined(OS_CHROMEOS)
-  ui::ColorCalibrationProfile color_profile = display_info.color_profile();
-  if (color_profile != ui::COLOR_PROFILE_STANDARD) {
+  ColorCalibrationProfile color_profile = display_info.color_profile();
+  if (color_profile != COLOR_PROFILE_STANDARD) {
     delegate_->display_configurator()->SetColorCalibrationProfile(
         display_info.id(), color_profile);
   }

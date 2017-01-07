@@ -10,6 +10,10 @@
 #include "base/macros.h"
 #include "ui/ozone/ozone_export.h"
 
+namespace display {
+class NativeDisplayDelegate;
+}
+
 namespace gfx {
 class Rect;
 }
@@ -28,7 +32,6 @@ namespace ui {
 class CursorFactoryOzone;
 class InputController;
 class GpuPlatformSupportHost;
-class NativeDisplayDelegate;
 class OverlayManagerOzone;
 class PlatformWindow;
 class PlatformWindowDelegate;
@@ -102,7 +105,7 @@ class OZONE_EXPORT OzonePlatform {
   virtual std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) = 0;
-  virtual std::unique_ptr<ui::NativeDisplayDelegate>
+  virtual std::unique_ptr<display::NativeDisplayDelegate>
   CreateNativeDisplayDelegate() = 0;
 
   // Ozone platform implementations may also choose to expose mojo interfaces to

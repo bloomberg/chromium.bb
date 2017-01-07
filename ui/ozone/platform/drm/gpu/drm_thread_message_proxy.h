@@ -72,11 +72,12 @@ class DrmThreadMessageProxy : public IPC::MessageFilter,
                            const base::FileDescriptor& fd);
   void OnRemoveGraphicsDevice(const base::FilePath& path);
   void OnGetHDCPState(int64_t display_id);
-  void OnSetHDCPState(int64_t display_id, HDCPState state);
-  void OnSetColorCorrection(int64_t id,
-                            const std::vector<GammaRampRGBEntry>& degamma_lut,
-                            const std::vector<GammaRampRGBEntry>& gamma_lut,
-                            const std::vector<float>& correction_matrix);
+  void OnSetHDCPState(int64_t display_id, display::HDCPState state);
+  void OnSetColorCorrection(
+      int64_t id,
+      const std::vector<display::GammaRampRGBEntry>& degamma_lut,
+      const std::vector<display::GammaRampRGBEntry>& gamma_lut,
+      const std::vector<float>& correction_matrix);
 
   void OnCheckOverlayCapabilitiesCallback(
       gfx::AcceleratedWidget widget,
@@ -89,7 +90,7 @@ class DrmThreadMessageProxy : public IPC::MessageFilter,
   void OnRelinquishDisplayControlCallback(bool success) const;
   void OnGetHDCPStateCallback(int64_t display_id,
                               bool success,
-                              HDCPState state) const;
+                              display::HDCPState state) const;
   void OnSetHDCPStateCallback(int64_t display_id, bool success) const;
 
   DrmThread* drm_thread_;

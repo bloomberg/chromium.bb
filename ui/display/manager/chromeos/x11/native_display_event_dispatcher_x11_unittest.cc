@@ -16,7 +16,7 @@
 #include "ui/display/manager/chromeos/x11/native_display_delegate_x11.h"
 #include "ui/display/manager/chromeos/x11/native_display_event_dispatcher_x11.h"
 
-namespace ui {
+namespace display {
 
 namespace {
 
@@ -137,7 +137,7 @@ void NativeDisplayEventDispatcherX11Test::DispatchScreenChangeEvent() {
   XRRScreenChangeNotifyEvent event = {0};
   event.type = xrandr_event_base_ + RRScreenChangeNotify;
 
-  dispatcher_->DispatchEvent(reinterpret_cast<const PlatformEvent>(&event));
+  dispatcher_->DispatchEvent(reinterpret_cast<const ui::PlatformEvent>(&event));
 }
 
 void NativeDisplayEventDispatcherX11Test::DispatchOutputChangeEvent(
@@ -153,7 +153,7 @@ void NativeDisplayEventDispatcherX11Test::DispatchOutputChangeEvent(
   event.mode = mode;
   event.connection = connected ? RR_Connected : RR_Disconnected;
 
-  dispatcher_->DispatchEvent(reinterpret_cast<const PlatformEvent>(&event));
+  dispatcher_->DispatchEvent(reinterpret_cast<const ui::PlatformEvent>(&event));
 }
 
 }  // namespace
@@ -313,4 +313,4 @@ TEST_F(NativeDisplayEventDispatcherX11Test, UpdateMissingExternalDisplayId) {
   EXPECT_EQ(1, helper_delegate_->num_calls_notify_observers());
 }
 
-}  // namespace ui
+}  // namespace display

@@ -389,7 +389,7 @@ Shell::Shell(ShellDelegate* delegate)
       link_handler_model_factory_(nullptr),
       activation_client_(nullptr),
 #if defined(OS_CHROMEOS)
-      display_configurator_(new ui::DisplayConfigurator()),
+      display_configurator_(new display::DisplayConfigurator()),
 #endif  // defined(OS_CHROMEOS)
       native_cursor_manager_(nullptr),
       simulate_modal_window_open_for_testing_(false),
@@ -604,8 +604,9 @@ void Shell::Init(const ShellInitParams& init_params) {
       ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate(),
       !gpu_support_->IsPanelFittingDisabled());
 #elif defined(USE_X11)
-  display_configurator_->Init(base::MakeUnique<ui::NativeDisplayDelegateX11>(),
-                              !gpu_support_->IsPanelFittingDisabled());
+  display_configurator_->Init(
+      base::MakeUnique<display::NativeDisplayDelegateX11>(),
+      !gpu_support_->IsPanelFittingDisabled());
 #endif
 
   // The DBusThreadManager must outlive this Shell. See the DCHECK in ~Shell.

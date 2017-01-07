@@ -37,7 +37,7 @@ struct DisplaySnapshot_Params {
   int64_t display_id = 0;
   gfx::Point origin;
   gfx::Size physical_size;
-  DisplayConnectionType type = DISPLAY_CONNECTION_TYPE_NONE;
+  display::DisplayConnectionType type = display::DISPLAY_CONNECTION_TYPE_NONE;
   bool is_aspect_preserving_scaling = false;
   bool has_overscan = false;
   bool has_color_correction_matrix = false;

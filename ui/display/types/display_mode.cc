@@ -7,7 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 
-namespace ui {
+namespace display {
 
 DisplayMode::DisplayMode(const gfx::Size& size,
                          bool interlaced,
@@ -36,4 +36,4 @@ void PrintTo(const DisplayMode& mode, std::ostream* os) {
   *os << mode.ToString();
 }
 
-}  // namespace ui
+}  // namespace display

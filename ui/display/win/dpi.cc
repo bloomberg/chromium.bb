@@ -49,8 +49,8 @@ void SetDefaultDeviceScaleFactor(float scale) {
 }
 
 float GetDPIScale() {
-  if (display::Display::HasForceDeviceScaleFactor())
-    return display::Display::GetForcedDeviceScaleFactor();
+  if (Display::HasForceDeviceScaleFactor())
+    return Display::GetForcedDeviceScaleFactor();
   return GetUnforcedDeviceScaleFactor();
 }
 

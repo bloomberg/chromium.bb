@@ -17,7 +17,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace ui {
+namespace display {
 
 // This class represents the state of a display at one point in time. Platforms
 // will extend this class in order to add platform specific configuration and
@@ -43,7 +43,7 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
 
   const gfx::Point& origin() const { return origin_; }
   const gfx::Size& physical_size() const { return physical_size_; }
-  ui::DisplayConnectionType type() const { return type_; }
+  DisplayConnectionType type() const { return type_; }
   bool is_aspect_preserving_scaling() const {
     return is_aspect_preserving_scaling_;
   }
@@ -124,6 +124,6 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
   DISALLOW_COPY_AND_ASSIGN(DisplaySnapshot);
 };
 
-}  // namespace ui
+}  // namespace display
 
 #endif  // UI_DISPLAY_TYPES_DISPLAY_SNAPSHOT_H_

@@ -75,7 +75,7 @@ class RendererFactory {
   DISALLOW_COPY_AND_ASSIGN(RendererFactory);
 };
 
-class WindowManager : public ui::NativeDisplayObserver {
+class WindowManager : public display::NativeDisplayObserver {
  public:
   WindowManager(const base::Closure& quit_closure);
   ~WindowManager() override;
@@ -86,14 +86,15 @@ class WindowManager : public ui::NativeDisplayObserver {
   void RemoveWindow(DemoWindow* window);
 
  private:
-  void OnDisplaysAquired(const std::vector<ui::DisplaySnapshot*>& displays);
+  void OnDisplaysAquired(
+      const std::vector<display::DisplaySnapshot*>& displays);
   void OnDisplayConfigured(const gfx::Rect& bounds, bool success);
 
-  // ui::NativeDisplayDelegate:
+  // display::NativeDisplayDelegate:
   void OnConfigurationChanged() override;
   void OnDisplaySnapshotsInvalidated() override;
 
-  std::unique_ptr<ui::NativeDisplayDelegate> delegate_;
+  std::unique_ptr<display::NativeDisplayDelegate> delegate_;
   base::Closure quit_closure_;
   RendererFactory renderer_factory_;
   std::vector<std::unique_ptr<DemoWindow>> windows_;
@@ -286,7 +287,7 @@ void WindowManager::OnConfigurationChanged() {
 void WindowManager::OnDisplaySnapshotsInvalidated() {}
 
 void WindowManager::OnDisplaysAquired(
-    const std::vector<ui::DisplaySnapshot*>& displays) {
+    const std::vector<display::DisplaySnapshot*>& displays) {
   windows_.clear();
 
   gfx::Point origin;

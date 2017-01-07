@@ -82,25 +82,25 @@ float GetRefreshRate(const drmModeModeInfo& mode) {
   return (clock * 1000.0f) / (htotal * vtotal);
 }
 
-DisplayConnectionType GetDisplayType(drmModeConnector* connector) {
+display::DisplayConnectionType GetDisplayType(drmModeConnector* connector) {
   switch (connector->connector_type) {
     case DRM_MODE_CONNECTOR_VGA:
-      return DISPLAY_CONNECTION_TYPE_VGA;
+      return display::DISPLAY_CONNECTION_TYPE_VGA;
     case DRM_MODE_CONNECTOR_DVII:
     case DRM_MODE_CONNECTOR_DVID:
     case DRM_MODE_CONNECTOR_DVIA:
-      return DISPLAY_CONNECTION_TYPE_DVI;
+      return display::DISPLAY_CONNECTION_TYPE_DVI;
     case DRM_MODE_CONNECTOR_LVDS:
     case DRM_MODE_CONNECTOR_eDP:
     case DRM_MODE_CONNECTOR_DSI:
-      return DISPLAY_CONNECTION_TYPE_INTERNAL;
+      return display::DISPLAY_CONNECTION_TYPE_INTERNAL;
     case DRM_MODE_CONNECTOR_DisplayPort:
-      return DISPLAY_CONNECTION_TYPE_DISPLAYPORT;
+      return display::DISPLAY_CONNECTION_TYPE_DISPLAYPORT;
     case DRM_MODE_CONNECTOR_HDMIA:
     case DRM_MODE_CONNECTOR_HDMIB:
-      return DISPLAY_CONNECTION_TYPE_HDMI;
+      return display::DISPLAY_CONNECTION_TYPE_HDMI;
     default:
-      return DISPLAY_CONNECTION_TYPE_UNKNOWN;
+      return display::DISPLAY_CONNECTION_TYPE_UNKNOWN;
   }
 }
 

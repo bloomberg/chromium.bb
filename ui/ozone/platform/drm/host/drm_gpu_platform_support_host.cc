@@ -207,7 +207,7 @@ void DrmGpuPlatformSupportHost::OnDisplayConfigured(int64_t display_id,
 
 void DrmGpuPlatformSupportHost::OnHDCPStateReceived(int64_t display_id,
                                                     bool status,
-                                                    HDCPState state) {
+                                                    display::HDCPState state) {
   display_manager_->GpuReceivedHDCPState(display_id, status, state);
 }
 
@@ -313,14 +313,14 @@ bool DrmGpuPlatformSupportHost::GpuGetHDCPState(int64_t display_id) {
 }
 
 bool DrmGpuPlatformSupportHost::GpuSetHDCPState(int64_t display_id,
-                                                ui::HDCPState state) {
+                                                display::HDCPState state) {
   return Send(new OzoneGpuMsg_SetHDCPState(display_id, state));
 }
 
 bool DrmGpuPlatformSupportHost::GpuSetColorCorrection(
     int64_t display_id,
-    const std::vector<GammaRampRGBEntry>& degamma_lut,
-    const std::vector<GammaRampRGBEntry>& gamma_lut,
+    const std::vector<display::GammaRampRGBEntry>& degamma_lut,
+    const std::vector<display::GammaRampRGBEntry>& gamma_lut,
     const std::vector<float>& correction_matrix) {
   return Send(new OzoneGpuMsg_SetColorCorrection(display_id, degamma_lut,
                                                  gamma_lut, correction_matrix));

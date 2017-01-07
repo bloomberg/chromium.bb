@@ -33,7 +33,7 @@ const char kSetFullCTMAction[] =
 
 class DisplayColorManagerForTest : public DisplayColorManager {
  public:
-  DisplayColorManagerForTest(ui::DisplayConfigurator* configurator,
+  DisplayColorManagerForTest(display::DisplayConfigurator* configurator,
                              base::SequencedWorkerPool* blocking_pool)
       : DisplayColorManager(configurator, blocking_pool) {}
 
@@ -45,7 +45,7 @@ class DisplayColorManagerForTest : public DisplayColorManager {
   void FinishLoadCalibrationForDisplay(int64_t display_id,
                                        int64_t product_id,
                                        bool has_color_correction_matrix,
-                                       ui::DisplayConnectionType type,
+                                       display::DisplayConnectionType type,
                                        const base::FilePath& path,
                                        bool file_downloaded) override {
     DisplayColorManager::FinishLoadCalibrationForDisplay(
@@ -105,12 +105,13 @@ class DisplayColorManagerTest : public testing::Test {
   void SetUp() override {
     pool_owner_.reset(
         new base::SequencedWorkerPoolOwner(3, "DisplayColorManagerTest"));
-    log_.reset(new ui::test::ActionLogger());
+    log_.reset(new display::test::ActionLogger());
 
     native_display_delegate_ =
-        new ui::test::TestNativeDisplayDelegate(log_.get());
+        new display::test::TestNativeDisplayDelegate(log_.get());
     configurator_.SetDelegateForTesting(
-        std::unique_ptr<ui::NativeDisplayDelegate>(native_display_delegate_));
+        std::unique_ptr<display::NativeDisplayDelegate>(
+            native_display_delegate_));
 
     color_manager_.reset(new DisplayColorManagerForTest(
         &configurator_, pool_owner_->pool().get()));
@@ -146,10 +147,11 @@ class DisplayColorManagerTest : public testing::Test {
  protected:
   std::unique_ptr<base::ScopedPathOverride> path_override_;
   base::FilePath color_path_;
-  std::unique_ptr<ui::test::ActionLogger> log_;
-  ui::DisplayConfigurator configurator_;
-  ui::DisplayConfigurator::TestApi test_api_;
-  ui::test::TestNativeDisplayDelegate* native_display_delegate_;  // not owned
+  std::unique_ptr<display::test::ActionLogger> log_;
+  display::DisplayConfigurator configurator_;
+  display::DisplayConfigurator::TestApi test_api_;
+  display::test::TestNativeDisplayDelegate*
+      native_display_delegate_;  // not owned
   std::unique_ptr<DisplayColorManagerForTest> color_manager_;
 
   base::MessageLoopForUI ui_message_loop_;
@@ -160,16 +162,16 @@ class DisplayColorManagerTest : public testing::Test {
 };
 
 TEST_F(DisplayColorManagerTest, VCGTOnly) {
-  std::unique_ptr<ui::DisplaySnapshot> snapshot =
+  std::unique_ptr<display::DisplaySnapshot> snapshot =
       display::FakeDisplaySnapshot::Builder()
           .SetId(123)
           .SetNativeMode(kDisplaySize)
           .SetCurrentMode(kDisplaySize)
-          .SetType(ui::DISPLAY_CONNECTION_TYPE_INTERNAL)
+          .SetType(display::DISPLAY_CONNECTION_TYPE_INTERNAL)
           .SetHasColorCorrectionMatrix(false)
           .SetProductId(0x06af5c10)
           .Build();
-  std::vector<ui::DisplaySnapshot*> outputs({snapshot.get()});
+  std::vector<display::DisplaySnapshot*> outputs({snapshot.get()});
   native_display_delegate_->set_outputs(outputs);
 
   configurator_.OnConfigurationChanged();
@@ -182,16 +184,16 @@ TEST_F(DisplayColorManagerTest, VCGTOnly) {
 }
 
 TEST_F(DisplayColorManagerTest, VCGTOnlyWithPlatformCTM) {
-  std::unique_ptr<ui::DisplaySnapshot> snapshot =
+  std::unique_ptr<display::DisplaySnapshot> snapshot =
       display::FakeDisplaySnapshot::Builder()
           .SetId(123)
           .SetNativeMode(kDisplaySize)
           .SetCurrentMode(kDisplaySize)
-          .SetType(ui::DISPLAY_CONNECTION_TYPE_INTERNAL)
+          .SetType(display::DISPLAY_CONNECTION_TYPE_INTERNAL)
           .SetHasColorCorrectionMatrix(true)
           .SetProductId(0x06af5c10)
           .Build();
-  std::vector<ui::DisplaySnapshot*> outputs({snapshot.get()});
+  std::vector<display::DisplaySnapshot*> outputs({snapshot.get()});
   native_display_delegate_->set_outputs(outputs);
 
   log_->GetActionsAndClear();
@@ -205,16 +207,16 @@ TEST_F(DisplayColorManagerTest, VCGTOnlyWithPlatformCTM) {
 }
 
 TEST_F(DisplayColorManagerTest, FullWithPlatformCTM) {
-  std::unique_ptr<ui::DisplaySnapshot> snapshot =
+  std::unique_ptr<display::DisplaySnapshot> snapshot =
       display::FakeDisplaySnapshot::Builder()
           .SetId(123)
           .SetNativeMode(kDisplaySize)
           .SetCurrentMode(kDisplaySize)
-          .SetType(ui::DISPLAY_CONNECTION_TYPE_INTERNAL)
+          .SetType(display::DISPLAY_CONNECTION_TYPE_INTERNAL)
           .SetHasColorCorrectionMatrix(true)
           .SetProductId(0x4c834a42)
           .Build();
-  std::vector<ui::DisplaySnapshot*> outputs({snapshot.get()});
+  std::vector<display::DisplaySnapshot*> outputs({snapshot.get()});
   native_display_delegate_->set_outputs(outputs);
 
   configurator_.OnConfigurationChanged();
@@ -228,16 +230,16 @@ TEST_F(DisplayColorManagerTest, FullWithPlatformCTM) {
 }
 
 TEST_F(DisplayColorManagerTest, FullWithoutPlatformCTM) {
-  std::unique_ptr<ui::DisplaySnapshot> snapshot =
+  std::unique_ptr<display::DisplaySnapshot> snapshot =
       display::FakeDisplaySnapshot::Builder()
           .SetId(123)
           .SetNativeMode(kDisplaySize)
           .SetCurrentMode(kDisplaySize)
-          .SetType(ui::DISPLAY_CONNECTION_TYPE_INTERNAL)
+          .SetType(display::DISPLAY_CONNECTION_TYPE_INTERNAL)
           .SetHasColorCorrectionMatrix(false)
           .SetProductId(0x4c834a42)
           .Build();
-  std::vector<ui::DisplaySnapshot*> outputs({snapshot.get()});
+  std::vector<display::DisplaySnapshot*> outputs({snapshot.get()});
   native_display_delegate_->set_outputs(outputs);
 
   configurator_.OnConfigurationChanged();
@@ -250,16 +252,16 @@ TEST_F(DisplayColorManagerTest, FullWithoutPlatformCTM) {
 }
 
 TEST_F(DisplayColorManagerTest, NoMatchProductID) {
-  std::unique_ptr<ui::DisplaySnapshot> snapshot =
+  std::unique_ptr<display::DisplaySnapshot> snapshot =
       display::FakeDisplaySnapshot::Builder()
           .SetId(123)
           .SetNativeMode(kDisplaySize)
           .SetCurrentMode(kDisplaySize)
-          .SetType(ui::DISPLAY_CONNECTION_TYPE_INTERNAL)
+          .SetType(display::DISPLAY_CONNECTION_TYPE_INTERNAL)
           .SetHasColorCorrectionMatrix(false)
           .SetProductId(0)
           .Build();
-  std::vector<ui::DisplaySnapshot*> outputs({snapshot.get()});
+  std::vector<display::DisplaySnapshot*> outputs({snapshot.get()});
   native_display_delegate_->set_outputs(outputs);
 
   configurator_.OnConfigurationChanged();
@@ -273,16 +275,16 @@ TEST_F(DisplayColorManagerTest, NoMatchProductID) {
 }
 
 TEST_F(DisplayColorManagerTest, NoVCGT) {
-  std::unique_ptr<ui::DisplaySnapshot> snapshot =
+  std::unique_ptr<display::DisplaySnapshot> snapshot =
       display::FakeDisplaySnapshot::Builder()
           .SetId(123)
           .SetNativeMode(kDisplaySize)
           .SetCurrentMode(kDisplaySize)
-          .SetType(ui::DISPLAY_CONNECTION_TYPE_INTERNAL)
+          .SetType(display::DISPLAY_CONNECTION_TYPE_INTERNAL)
           .SetHasColorCorrectionMatrix(false)
           .SetProductId(0x0dae3211)
           .Build();
-  std::vector<ui::DisplaySnapshot*> outputs({snapshot.get()});
+  std::vector<display::DisplaySnapshot*> outputs({snapshot.get()});
   native_display_delegate_->set_outputs(outputs);
 
   configurator_.OnConfigurationChanged();

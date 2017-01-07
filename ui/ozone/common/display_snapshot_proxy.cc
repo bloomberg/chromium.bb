@@ -23,19 +23,20 @@ bool SameModes(const DisplayMode_Params& lhs, const DisplayMode_Params& rhs) {
 }  // namespace
 
 DisplaySnapshotProxy::DisplaySnapshotProxy(const DisplaySnapshot_Params& params)
-    : DisplaySnapshot(params.display_id,
-                      params.origin,
-                      params.physical_size,
-                      params.type,
-                      params.is_aspect_preserving_scaling,
-                      params.has_overscan,
-                      params.has_color_correction_matrix,
-                      params.display_name,
-                      params.sys_path,
-                      std::vector<std::unique_ptr<const DisplayMode>>(),
-                      params.edid,
-                      NULL,
-                      NULL),
+    : DisplaySnapshot(
+          params.display_id,
+          params.origin,
+          params.physical_size,
+          params.type,
+          params.is_aspect_preserving_scaling,
+          params.has_overscan,
+          params.has_color_correction_matrix,
+          params.display_name,
+          params.sys_path,
+          std::vector<std::unique_ptr<const display::DisplayMode>>(),
+          params.edid,
+          NULL,
+          NULL),
       string_representation_(params.string_representation) {
   for (size_t i = 0; i < params.modes.size(); ++i) {
     modes_.push_back(base::MakeUnique<DisplayModeProxy>(params.modes[i]));

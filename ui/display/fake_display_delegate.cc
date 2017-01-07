@@ -56,8 +56,7 @@ int64_t FakeDisplayDelegate::AddDisplay(const gfx::Size& display_size) {
   return AddDisplay(builder.Build()) ? id : kInvalidDisplayId;
 }
 
-bool FakeDisplayDelegate::AddDisplay(
-    std::unique_ptr<ui::DisplaySnapshot> display) {
+bool FakeDisplayDelegate::AddDisplay(std::unique_ptr<DisplaySnapshot> display) {
   DCHECK(display);
 
   int64_t display_id = display->display_id();
@@ -114,12 +113,12 @@ void FakeDisplayDelegate::GrabServer() {}
 void FakeDisplayDelegate::UngrabServer() {}
 
 void FakeDisplayDelegate::TakeDisplayControl(
-    const ui::DisplayControlCallback& callback) {
+    const DisplayControlCallback& callback) {
   callback.Run(false);
 }
 
 void FakeDisplayDelegate::RelinquishDisplayControl(
-    const ui::DisplayControlCallback& callback) {
+    const DisplayControlCallback& callback) {
   callback.Run(false);
 }
 
@@ -129,20 +128,20 @@ void FakeDisplayDelegate::SetBackgroundColor(uint32_t color_argb) {}
 
 void FakeDisplayDelegate::ForceDPMSOn() {}
 
-void FakeDisplayDelegate::GetDisplays(const ui::GetDisplaysCallback& callback) {
-  std::vector<ui::DisplaySnapshot*> displays;
+void FakeDisplayDelegate::GetDisplays(const GetDisplaysCallback& callback) {
+  std::vector<DisplaySnapshot*> displays;
   for (auto& display : displays_)
     displays.push_back(display.get());
   callback.Run(displays);
 }
 
-void FakeDisplayDelegate::AddMode(const ui::DisplaySnapshot& output,
-                                  const ui::DisplayMode* mode) {}
+void FakeDisplayDelegate::AddMode(const DisplaySnapshot& output,
+                                  const DisplayMode* mode) {}
 
-void FakeDisplayDelegate::Configure(const ui::DisplaySnapshot& output,
-                                    const ui::DisplayMode* mode,
+void FakeDisplayDelegate::Configure(const DisplaySnapshot& output,
+                                    const DisplayMode* mode,
                                     const gfx::Point& origin,
-                                    const ui::ConfigureCallback& callback) {
+                                    const ConfigureCallback& callback) {
   bool configure_success = false;
 
   if (!mode) {
@@ -172,44 +171,42 @@ void FakeDisplayDelegate::Configure(const ui::DisplaySnapshot& output,
 
 void FakeDisplayDelegate::CreateFrameBuffer(const gfx::Size& size) {}
 
-void FakeDisplayDelegate::GetHDCPState(
-    const ui::DisplaySnapshot& output,
-    const ui::GetHDCPStateCallback& callback) {
-  callback.Run(false, ui::HDCP_STATE_UNDESIRED);
+void FakeDisplayDelegate::GetHDCPState(const DisplaySnapshot& output,
+                                       const GetHDCPStateCallback& callback) {
+  callback.Run(false, HDCP_STATE_UNDESIRED);
 }
 
-void FakeDisplayDelegate::SetHDCPState(
-    const ui::DisplaySnapshot& output,
-    ui::HDCPState state,
-    const ui::SetHDCPStateCallback& callback) {
+void FakeDisplayDelegate::SetHDCPState(const DisplaySnapshot& output,
+                                       HDCPState state,
+                                       const SetHDCPStateCallback& callback) {
   callback.Run(false);
 }
 
-std::vector<ui::ColorCalibrationProfile>
+std::vector<ColorCalibrationProfile>
 FakeDisplayDelegate::GetAvailableColorCalibrationProfiles(
-    const ui::DisplaySnapshot& output) {
-  return std::vector<ui::ColorCalibrationProfile>();
+    const DisplaySnapshot& output) {
+  return std::vector<ColorCalibrationProfile>();
 }
 
 bool FakeDisplayDelegate::SetColorCalibrationProfile(
-    const ui::DisplaySnapshot& output,
-    ui::ColorCalibrationProfile new_profile) {
+    const DisplaySnapshot& output,
+    ColorCalibrationProfile new_profile) {
   return false;
 }
 
 bool FakeDisplayDelegate::SetColorCorrection(
-    const ui::DisplaySnapshot& output,
-    const std::vector<ui::GammaRampRGBEntry>& degamma_lut,
-    const std::vector<ui::GammaRampRGBEntry>& gamma_lut,
+    const DisplaySnapshot& output,
+    const std::vector<GammaRampRGBEntry>& degamma_lut,
+    const std::vector<GammaRampRGBEntry>& gamma_lut,
     const std::vector<float>& correction_matrix) {
   return false;
 }
 
-void FakeDisplayDelegate::AddObserver(ui::NativeDisplayObserver* observer) {
+void FakeDisplayDelegate::AddObserver(NativeDisplayObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void FakeDisplayDelegate::RemoveObserver(ui::NativeDisplayObserver* observer) {
+void FakeDisplayDelegate::RemoveObserver(NativeDisplayObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
@@ -227,7 +224,7 @@ bool FakeDisplayDelegate::InitializeFromSpecString(const std::string& str) {
            str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
     int64_t id = GenerateDisplayID(kReservedManufacturerID, kProductCodeHash,
                                    next_display_id_);
-    std::unique_ptr<ui::DisplaySnapshot> snapshot =
+    std::unique_ptr<DisplaySnapshot> snapshot =
         FakeDisplaySnapshot::CreateFromSpec(id, part);
     if (snapshot) {
       AddDisplay(std::move(snapshot));
@@ -245,7 +242,7 @@ void FakeDisplayDelegate::OnConfigurationChanged() {
   if (!initialized_)
     return;
 
-  for (ui::NativeDisplayObserver& observer : observers_)
+  for (NativeDisplayObserver& observer : observers_)
     observer.OnConfigurationChanged();
 }
 

@@ -183,7 +183,7 @@ using ScopedDrmColorLutPtr = std::unique_ptr<DrmColorLut, base::FreeDeleter>;
 using ScopedDrmColorCtmPtr = std::unique_ptr<DrmColorCtm, base::FreeDeleter>;
 
 ScopedDrmColorLutPtr CreateLutBlob(
-    const std::vector<GammaRampRGBEntry>& source) {
+    const std::vector<display::GammaRampRGBEntry>& source) {
   TRACE_EVENT0("drm", "CreateLutBlob");
   if (source.empty())
     return nullptr;
@@ -251,17 +251,17 @@ bool SetBlobProperty(int fd,
   return success;
 }
 
-std::vector<GammaRampRGBEntry> ResampleLut(
-    const std::vector<GammaRampRGBEntry>& lut_in,
+std::vector<display::GammaRampRGBEntry> ResampleLut(
+    const std::vector<display::GammaRampRGBEntry>& lut_in,
     size_t desired_size) {
   TRACE_EVENT1("drm", "ResampleLut", "desired_size", desired_size);
   if (lut_in.empty())
-    return std::vector<GammaRampRGBEntry>();
+    return std::vector<display::GammaRampRGBEntry>();
 
   if (lut_in.size() == desired_size)
     return lut_in;
 
-  std::vector<GammaRampRGBEntry> result;
+  std::vector<display::GammaRampRGBEntry> result;
   result.resize(desired_size);
 
   for (size_t i = 0; i < desired_size; ++i) {
@@ -699,8 +699,9 @@ bool DrmDevice::DropMaster() {
   return (drmDropMaster(file_.GetPlatformFile()) == 0);
 }
 
-bool DrmDevice::SetGammaRamp(uint32_t crtc_id,
-                             const std::vector<GammaRampRGBEntry>& lut) {
+bool DrmDevice::SetGammaRamp(
+    uint32_t crtc_id,
+    const std::vector<display::GammaRampRGBEntry>& lut) {
   ScopedDrmCrtcPtr crtc = GetCrtc(crtc_id);
   size_t gamma_size = static_cast<size_t>(crtc->gamma_size);
 
@@ -749,8 +750,8 @@ bool DrmDevice::SetGammaRamp(uint32_t crtc_id,
 
 bool DrmDevice::SetColorCorrection(
     uint32_t crtc_id,
-    const std::vector<GammaRampRGBEntry>& degamma_lut,
-    const std::vector<GammaRampRGBEntry>& gamma_lut,
+    const std::vector<display::GammaRampRGBEntry>& degamma_lut,
+    const std::vector<display::GammaRampRGBEntry>& gamma_lut,
     const std::vector<float>& correction_matrix) {
   ScopedDrmObjectPropertyPtr crtc_props(drmModeObjectGetProperties(
       file_.GetPlatformFile(), crtc_id, DRM_MODE_OBJECT_CRTC));

@@ -12,7 +12,7 @@
 #include "ui/display/manager/display_manager_export.h"
 #include "ui/display/types/display_constants.h"
 
-namespace ui {
+namespace display {
 
 class DisplaySnapshot;
 
@@ -33,8 +33,8 @@ GetDisplayPower(const std::vector<DisplaySnapshot*>& displays,
 // Returns whether the DisplayConnectionType |type| is a physically connected
 // display. Currently DISPLAY_CONNECTION_TYPE_VIRTUAL and
 // DISPLAY_CONNECTION_TYPE_NETWORK return false. All other types return true.
-bool IsPhysicalDisplayType(ui::DisplayConnectionType type);
+bool IsPhysicalDisplayType(DisplayConnectionType type);
 
-}  // namespace ui
+}  // namespace display
 
 #endif  // UI_DISPLAY_MANAGER_CHROMEOS_DISPLAY_UTIL_H_

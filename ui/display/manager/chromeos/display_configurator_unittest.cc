@@ -18,19 +18,19 @@
 #include "ui/display/manager/chromeos/test/test_native_display_delegate.h"
 #include "ui/display/util/display_util.h"
 
-namespace ui {
+namespace display {
 namespace test {
 
 namespace {
 
 int64_t kDisplayIds[3] = {123, 456, 789};
 
-std::unique_ptr<ui::DisplayMode> MakeDisplayMode(int width,
-                                                 int height,
-                                                 bool is_interlaced,
-                                                 float refresh_rate) {
-  return base::MakeUnique<ui::DisplayMode>(gfx::Size(width, height),
-                                           is_interlaced, refresh_rate);
+std::unique_ptr<DisplayMode> MakeDisplayMode(int width,
+                                             int height,
+                                             bool is_interlaced,
+                                             float refresh_rate) {
+  return base::MakeUnique<DisplayMode>(gfx::Size(width, height), is_interlaced,
+                                       refresh_rate);
 }
 
 enum CallbackResult {
@@ -221,7 +221,7 @@ class DisplayConfiguratorTest : public testing::Test {
     configurator_.set_state_controller(&state_controller_);
     configurator_.set_mirroring_controller(&mirroring_controller_);
 
-    outputs_[0] = display::FakeDisplaySnapshot::Builder()
+    outputs_[0] = FakeDisplaySnapshot::Builder()
                       .SetId(kDisplayIds[0])
                       .SetNativeMode(small_mode_.Clone())
                       .SetCurrentMode(small_mode_.Clone())
@@ -229,7 +229,7 @@ class DisplayConfiguratorTest : public testing::Test {
                       .SetIsAspectPerservingScaling(true)
                       .Build();
 
-    outputs_[1] = display::FakeDisplaySnapshot::Builder()
+    outputs_[1] = FakeDisplaySnapshot::Builder()
                       .SetId(kDisplayIds[1])
                       .SetNativeMode(big_mode_.Clone())
                       .SetCurrentMode(big_mode_.Clone())
@@ -238,7 +238,7 @@ class DisplayConfiguratorTest : public testing::Test {
                       .SetIsAspectPerservingScaling(true)
                       .Build();
 
-    outputs_[2] = display::FakeDisplaySnapshot::Builder()
+    outputs_[2] = FakeDisplaySnapshot::Builder()
                       .SetId(kDisplayIds[2])
                       .SetNativeMode(small_mode_.Clone())
                       .SetCurrentMode(small_mode_.Clone())
@@ -341,8 +341,8 @@ class DisplayConfiguratorTest : public testing::Test {
 }  // namespace
 
 TEST_F(DisplayConfiguratorTest, FindDisplayModeMatchingSize) {
-  std::unique_ptr<ui::DisplaySnapshot> output =
-      display::FakeDisplaySnapshot::Builder()
+  std::unique_ptr<DisplaySnapshot> output =
+      FakeDisplaySnapshot::Builder()
           .SetId(kDisplayIds[0])
           .AddMode(MakeDisplayMode(1920, 1200, false, 60.0))
           .SetNativeMode(MakeDisplayMode(1920, 1200, false, 50.0))
@@ -418,7 +418,7 @@ TEST_F(DisplayConfiguratorTest, EnableVirtualDisplay) {
   // Add virtual display.
   int64_t virtual_display_id =
       configurator_.AddVirtualDisplay(big_mode_.size());
-  EXPECT_EQ(display::GenerateDisplayID(0x8000, 0x0, 1), virtual_display_id);
+  EXPECT_EQ(GenerateDisplayID(0x8000, 0x0, 1), virtual_display_id);
   EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
             configurator_.display_state());
@@ -472,7 +472,7 @@ TEST_F(DisplayConfiguratorTest, EnableTwoVirtualDisplays) {
   // Add 1st virtual display.
   int64_t virtual_display_id_1 =
       configurator_.AddVirtualDisplay(big_mode_.size());
-  EXPECT_EQ(display::GenerateDisplayID(0x8000, 0x0, 1), virtual_display_id_1);
+  EXPECT_EQ(GenerateDisplayID(0x8000, 0x0, 1), virtual_display_id_1);
   EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
             configurator_.display_state());
@@ -500,7 +500,7 @@ TEST_F(DisplayConfiguratorTest, EnableTwoVirtualDisplays) {
   // Add 2nd virtual display
   int64_t virtual_display_id_2 =
       configurator_.AddVirtualDisplay(big_mode_.size());
-  EXPECT_EQ(display::GenerateDisplayID(0x8000, 0x0, 2), virtual_display_id_2);
+  EXPECT_EQ(GenerateDisplayID(0x8000, 0x0, 2), virtual_display_id_2);
   EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED,
             configurator_.display_state());
@@ -618,7 +618,7 @@ TEST_F(DisplayConfiguratorTest, ConnectSecondOutput) {
   EXPECT_EQ(1, observer_.num_changes());
 
   // Get rid of shared modes to force software mirroring.
-  outputs_[1] = display::FakeDisplaySnapshot::Builder()
+  outputs_[1] = FakeDisplaySnapshot::Builder()
                     .SetId(kDisplayIds[1])
                     .SetNativeMode(big_mode_.Clone())
                     .SetCurrentMode(big_mode_.Clone())
@@ -771,7 +771,7 @@ TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
   EXPECT_EQ(1, observer_.num_changes());
 
   // Get rid of shared modes to force software mirroring.
-  outputs_[1] = display::FakeDisplaySnapshot::Builder()
+  outputs_[1] = FakeDisplaySnapshot::Builder()
                     .SetId(kDisplayIds[1])
                     .SetNativeMode(big_mode_.Clone())
                     .SetCurrentMode(big_mode_.Clone())
@@ -1053,7 +1053,7 @@ TEST_F(DisplayConfiguratorTest, Headless) {
             log_->GetActionsAndClear());
 
   // Connect an external display and check that it's configured correctly.
-  outputs_[0] = display::FakeDisplaySnapshot::Builder()
+  outputs_[0] = FakeDisplaySnapshot::Builder()
                     .SetId(kDisplayIds[0])
                     .SetNativeMode(big_mode_.Clone())
                     .SetCurrentMode(big_mode_.Clone())
@@ -1168,7 +1168,7 @@ TEST_F(DisplayConfiguratorTest, UpdateCachedOutputsEvenAfterFailure) {
 TEST_F(DisplayConfiguratorTest, PanelFitting) {
   // Configure the internal display to support only the big mode and the
   // external display to support only the small mode.
-  outputs_[0] = display::FakeDisplaySnapshot::Builder()
+  outputs_[0] = FakeDisplaySnapshot::Builder()
                     .SetId(kDisplayIds[0])
                     .SetNativeMode(big_mode_.Clone())
                     .SetCurrentMode(big_mode_.Clone())
@@ -1176,7 +1176,7 @@ TEST_F(DisplayConfiguratorTest, PanelFitting) {
                     .SetIsAspectPerservingScaling(true)
                     .Build();
 
-  outputs_[1] = display::FakeDisplaySnapshot::Builder()
+  outputs_[1] = FakeDisplaySnapshot::Builder()
                     .SetId(kDisplayIds[1])
                     .SetNativeMode(small_mode_.Clone())
                     .SetCurrentMode(small_mode_.Clone())
@@ -1508,7 +1508,7 @@ TEST_F(DisplayConfiguratorTest, HandleConfigureCrtcFailure) {
   modes.push_back(MakeDisplayMode(1920, 1080, false, 60.0));
   modes.push_back(MakeDisplayMode(1920, 1080, false, 40.0));
 
-  outputs_[0] = display::FakeDisplaySnapshot::Builder()
+  outputs_[0] = FakeDisplaySnapshot::Builder()
                     .SetId(kDisplayIds[0])
                     .SetNativeMode(modes[0]->Clone())
                     .SetCurrentMode(modes[0]->Clone())
@@ -1539,7 +1539,7 @@ TEST_F(DisplayConfiguratorTest, HandleConfigureCrtcFailure) {
           kUngrab, nullptr),
       log_->GetActionsAndClear());
 
-  outputs_[1] = display::FakeDisplaySnapshot::Builder()
+  outputs_[1] = FakeDisplaySnapshot::Builder()
                     .SetId(kDisplayIds[1])
                     .SetNativeMode(modes[0]->Clone())
                     .SetCurrentMode(modes[0]->Clone())
@@ -2178,4 +2178,4 @@ TEST_F(DisplayConfiguratorTest, SuspendResumeWithMultipleDisplays) {
 }
 
 }  // namespace test
-}  // namespace ui
+}  // namespace display

@@ -17,8 +17,8 @@ DisplayErrorObserver::DisplayErrorObserver() {}
 DisplayErrorObserver::~DisplayErrorObserver() {}
 
 void DisplayErrorObserver::OnDisplayModeChangeFailed(
-    const ui::DisplayConfigurator::DisplayStateList& displays,
-    ui::MultipleDisplayState new_state) {
+    const display::DisplayConfigurator::DisplayStateList& displays,
+    display::MultipleDisplayState new_state) {
   LOG(ERROR) << "Failed to configure the following display(s):";
   for (auto* display : displays) {
     LOG(ERROR) << "- Display with ID = " << display->display_id()
@@ -28,7 +28,7 @@ void DisplayErrorObserver::OnDisplayModeChangeFailed(
   }
 
   base::string16 message =
-      (new_state == ui::MULTIPLE_DISPLAY_STATE_DUAL_MIRROR)
+      (new_state == display::MULTIPLE_DISPLAY_STATE_DUAL_MIRROR)
           ? l10n_util::GetStringUTF16(IDS_ASH_DISPLAY_FAILURE_ON_MIRRORING)
           : ash::SubstituteChromeOSDeviceType(
                 IDS_ASH_DISPLAY_FAILURE_ON_NON_MIRRORING);

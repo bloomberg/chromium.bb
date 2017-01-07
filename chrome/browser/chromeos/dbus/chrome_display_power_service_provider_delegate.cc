@@ -30,7 +30,8 @@ void ChromeDisplayPowerServiceProviderDelegate::SetDisplayPower(
   ui::UserActivityDetector::Get()->OnDisplayPowerChanging();
 
   ash::Shell::GetInstance()->display_configurator()->SetDisplayPower(
-      power_state, ui::DisplayConfigurator::kSetDisplayPowerNoFlags, callback);
+      power_state, display::DisplayConfigurator::kSetDisplayPowerNoFlags,
+      callback);
 }
 
 void ChromeDisplayPowerServiceProviderDelegate::SetDimming(bool dimmed) {

@@ -33,7 +33,7 @@ class ASH_EXPORT PowerButtonController
 // cross-platform.
 #if defined(OS_CHROMEOS)
       ,
-      public ui::DisplayConfigurator::Observer,
+      public display::DisplayConfigurator::Observer,
       public chromeos::PowerManagerClient::Observer
 #endif
 {
@@ -56,9 +56,9 @@ class ASH_EXPORT PowerButtonController
   void OnKeyEvent(ui::KeyEvent* event) override;
 
 #if defined(OS_CHROMEOS)
-  // Overriden from ui::DisplayConfigurator::Observer:
+  // Overriden from display::DisplayConfigurator::Observer:
   void OnDisplayModeChanged(
-      const ui::DisplayConfigurator::DisplayStateList& outputs) override;
+      const display::DisplayConfigurator::DisplayStateList& outputs) override;
 
   // Overridden from chromeos::PowerManagerClient::Observer:
   void PowerButtonEventReceived(bool down,

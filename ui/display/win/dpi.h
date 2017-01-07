@@ -17,7 +17,7 @@ namespace win {
 // command line by --force-device-scale-factor.
 DISPLAY_EXPORT void SetDefaultDeviceScaleFactor(float scale);
 
-// Deprecated. Use display::win::ScreenWin::GetScaleFactorForHWND instead.
+// Deprecated. Use win::ScreenWin::GetScaleFactorForHWND instead.
 //
 // Gets the system's scale factor. For example, if the system DPI is 96 then the
 // scale factor is 1.0. This does not handle per-monitor DPI.

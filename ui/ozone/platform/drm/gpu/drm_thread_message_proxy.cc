@@ -202,7 +202,7 @@ void DrmThreadMessageProxy::OnGetHDCPState(int64_t display_id) {
 }
 
 void DrmThreadMessageProxy::OnSetHDCPState(int64_t display_id,
-                                           HDCPState state) {
+                                           display::HDCPState state) {
   DCHECK(drm_thread_->IsRunning());
   auto callback = base::Bind(&DrmThreadMessageProxy::OnSetHDCPStateCallback,
                              weak_ptr_factory_.GetWeakPtr());
@@ -214,8 +214,8 @@ void DrmThreadMessageProxy::OnSetHDCPState(int64_t display_id,
 
 void DrmThreadMessageProxy::OnSetColorCorrection(
     int64_t id,
-    const std::vector<GammaRampRGBEntry>& degamma_lut,
-    const std::vector<GammaRampRGBEntry>& gamma_lut,
+    const std::vector<display::GammaRampRGBEntry>& degamma_lut,
+    const std::vector<display::GammaRampRGBEntry>& gamma_lut,
     const std::vector<float>& correction_matrix) {
   DCHECK(drm_thread_->IsRunning());
   drm_thread_->task_runner()->PostTask(
@@ -255,9 +255,10 @@ void DrmThreadMessageProxy::OnRelinquishDisplayControlCallback(
   sender_->Send(new OzoneHostMsg_DisplayControlRelinquished(success));
 }
 
-void DrmThreadMessageProxy::OnGetHDCPStateCallback(int64_t display_id,
-                                                   bool success,
-                                                   HDCPState state) const {
+void DrmThreadMessageProxy::OnGetHDCPStateCallback(
+    int64_t display_id,
+    bool success,
+    display::HDCPState state) const {
   sender_->Send(new OzoneHostMsg_HDCPStateReceived(display_id, success, state));
 }
 

@@ -14,18 +14,18 @@
 namespace display {
 namespace test {
 
-// A dummy implementation of display::Screen that contains a single
-// display::Display only. The contained Display can be accessed and modified via
+// A dummy implementation of Screen that contains a single
+// Display only. The contained Display can be accessed and modified via
 // TestScreen::display().
 //
-// NOTE: Adding and removing display::DisplayOberver's are no-ops and observers
+// NOTE: Adding and removing DisplayOberver's are no-ops and observers
 // will NOT be notified ever.
 class TestScreen : public ScreenBase {
  public:
   TestScreen();
   ~TestScreen() override;
 
-  // display::Screen:
+  // Screen:
   gfx::Point GetCursorScreenPoint() override;
   bool IsWindowUnderCursor(gfx::NativeWindow window) override;
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override;

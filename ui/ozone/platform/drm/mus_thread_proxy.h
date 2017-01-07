@@ -94,11 +94,11 @@ class MusThreadProxy : public GpuThreadAdapter,
                                  const gfx::Point& point) override;
   bool GpuDisableNativeDisplay(int64_t display_id) override;
   bool GpuGetHDCPState(int64_t display_id) override;
-  bool GpuSetHDCPState(int64_t display_id, ui::HDCPState state) override;
+  bool GpuSetHDCPState(int64_t display_id, display::HDCPState state) override;
   bool GpuSetColorCorrection(
       int64_t display_id,
-      const std::vector<GammaRampRGBEntry>& degamma_lut,
-      const std::vector<GammaRampRGBEntry>& gamma_lut,
+      const std::vector<display::GammaRampRGBEntry>& degamma_lut,
+      const std::vector<display::GammaRampRGBEntry>& gamma_lut,
       const std::vector<float>& correction_matrix) override;
 
   // Services needed by DrmWindowHost
@@ -133,7 +133,7 @@ class MusThreadProxy : public GpuThreadAdapter,
   void GpuRelinquishDisplayControlCallback(bool success) const;
   void GpuGetHDCPStateCallback(int64_t display_id,
                                bool success,
-                               HDCPState state) const;
+                               display::HDCPState state) const;
   void GpuSetHDCPStateCallback(int64_t display_id, bool success) const;
 
   scoped_refptr<base::SingleThreadTaskRunner> ws_task_runner_;

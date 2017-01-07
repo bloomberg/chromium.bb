@@ -30,7 +30,7 @@ float PixelPitchMmFromDPI(float dpi) {
 }
 
 std::string ModeListString(
-    const std::vector<std::unique_ptr<const ui::DisplayMode>>& modes) {
+    const std::vector<std::unique_ptr<const DisplayMode>>& modes) {
   std::stringstream stream;
   bool first = true;
   for (auto& mode : modes) {
@@ -42,25 +42,25 @@ std::string ModeListString(
   return stream.str();
 }
 
-std::string DisplayConnectionTypeString(ui::DisplayConnectionType type) {
+std::string DisplayConnectionTypeString(DisplayConnectionType type) {
   switch (type) {
-    case ui::DISPLAY_CONNECTION_TYPE_NONE:
+    case DISPLAY_CONNECTION_TYPE_NONE:
       return "none";
-    case ui::DISPLAY_CONNECTION_TYPE_UNKNOWN:
+    case DISPLAY_CONNECTION_TYPE_UNKNOWN:
       return "unknown";
-    case ui::DISPLAY_CONNECTION_TYPE_INTERNAL:
+    case DISPLAY_CONNECTION_TYPE_INTERNAL:
       return "internal";
-    case ui::DISPLAY_CONNECTION_TYPE_VGA:
+    case DISPLAY_CONNECTION_TYPE_VGA:
       return "vga";
-    case ui::DISPLAY_CONNECTION_TYPE_HDMI:
+    case DISPLAY_CONNECTION_TYPE_HDMI:
       return "hdmi";
-    case ui::DISPLAY_CONNECTION_TYPE_DVI:
+    case DISPLAY_CONNECTION_TYPE_DVI:
       return "dvi";
-    case ui::DISPLAY_CONNECTION_TYPE_DISPLAYPORT:
+    case DISPLAY_CONNECTION_TYPE_DISPLAYPORT:
       return "dp";
-    case ui::DISPLAY_CONNECTION_TYPE_NETWORK:
+    case DISPLAY_CONNECTION_TYPE_NETWORK:
       return "network";
-    case ui::DISPLAY_CONNECTION_TYPE_VIRTUAL:
+    case DISPLAY_CONNECTION_TYPE_VIRTUAL:
       return "virtual";
   }
   NOTREACHED();
@@ -85,7 +85,7 @@ StringPiece ExtractSuffix(StringPiece* str, StringPiece delimiter) {
 
 // Parses a display mode from |str| in the format HxW[%R], returning null if
 // |str| is invalid.
-std::unique_ptr<ui::DisplayMode> ParseDisplayMode(const std::string& str) {
+std::unique_ptr<DisplayMode> ParseDisplayMode(const std::string& str) {
   int width = 0;
   int height = 0;
   std::string refresh_rate_str;
@@ -110,8 +110,8 @@ std::unique_ptr<ui::DisplayMode> ParseDisplayMode(const std::string& str) {
     return nullptr;
   }
 
-  return base::MakeUnique<ui::DisplayMode>(gfx::Size(width, height), false,
-                                           static_cast<float>(refresh_rate));
+  return base::MakeUnique<DisplayMode>(gfx::Size(width, height), false,
+                                       static_cast<float>(refresh_rate));
 }
 
 // Parses a list of alternate display modes, adding each new display mode to
@@ -121,7 +121,7 @@ bool HandleModes(FakeDisplaySnapshot::Builder* builder,
   for (const std::string& mode_str :
        base::SplitString(resolutions, ":", base::TRIM_WHITESPACE,
                          base::SPLIT_WANT_NONEMPTY)) {
-    std::unique_ptr<ui::DisplayMode> mode = ParseDisplayMode(mode_str);
+    std::unique_ptr<DisplayMode> mode = ParseDisplayMode(mode_str);
     if (!mode)
       return false;
 
@@ -163,7 +163,7 @@ bool HandleOptions(FakeDisplaySnapshot::Builder* builder, StringPiece options) {
         builder->SetIsAspectPerservingScaling(true);
         break;
       case 'i':
-        builder->SetType(ui::DISPLAY_CONNECTION_TYPE_INTERNAL);
+        builder->SetType(DISPLAY_CONNECTION_TYPE_INTERNAL);
         break;
       default:
         LOG(ERROR) << "Invalid option specifier \"" << options[i] << "\"";
@@ -216,7 +216,7 @@ Builder& Builder::SetNativeMode(const gfx::Size& size) {
   return *this;
 }
 
-Builder& Builder::SetNativeMode(std::unique_ptr<ui::DisplayMode> mode) {
+Builder& Builder::SetNativeMode(std::unique_ptr<DisplayMode> mode) {
   native_mode_ = AddOrFindDisplayMode(std::move(mode));
   return *this;
 }
@@ -226,7 +226,7 @@ Builder& Builder::SetCurrentMode(const gfx::Size& size) {
   return *this;
 }
 
-Builder& Builder::SetCurrentMode(std::unique_ptr<ui::DisplayMode> mode) {
+Builder& Builder::SetCurrentMode(std::unique_ptr<DisplayMode> mode) {
   current_mode_ = AddOrFindDisplayMode(std::move(mode));
   return *this;
 }
@@ -236,7 +236,7 @@ Builder& Builder::AddMode(const gfx::Size& size) {
   return *this;
 }
 
-Builder& Builder::AddMode(std::unique_ptr<ui::DisplayMode> mode) {
+Builder& Builder::AddMode(std::unique_ptr<DisplayMode> mode) {
   AddOrFindDisplayMode(std::move(mode));
   return *this;
 }
@@ -246,7 +246,7 @@ Builder& Builder::SetOrigin(const gfx::Point& origin) {
   return *this;
 }
 
-Builder& Builder::SetType(ui::DisplayConnectionType type) {
+Builder& Builder::SetType(DisplayConnectionType type) {
   type_ = type;
   return *this;
 }
@@ -289,19 +289,19 @@ Builder& Builder::SetHighDPI() {
   return SetDPI(326);  // Retina-ish.
 }
 
-const ui::DisplayMode* Builder::AddOrFindDisplayMode(const gfx::Size& size) {
+const DisplayMode* Builder::AddOrFindDisplayMode(const gfx::Size& size) {
   for (auto& mode : modes_) {
     if (mode->size() == size)
       return mode.get();
   }
 
   // Not found, insert a mode with the size and return.
-  modes_.push_back(base::MakeUnique<ui::DisplayMode>(size, false, 60.0f));
+  modes_.push_back(base::MakeUnique<DisplayMode>(size, false, 60.0f));
   return modes_.back().get();
 }
 
-const ui::DisplayMode* Builder::AddOrFindDisplayMode(
-    std::unique_ptr<ui::DisplayMode> mode) {
+const DisplayMode* Builder::AddOrFindDisplayMode(
+    std::unique_ptr<DisplayMode> mode) {
   for (auto& existing : modes_) {
     if (mode->size() == existing->size() &&
         mode->is_interlaced() == existing->is_interlaced() &&
@@ -317,15 +317,15 @@ const ui::DisplayMode* Builder::AddOrFindDisplayMode(
 FakeDisplaySnapshot::FakeDisplaySnapshot(int64_t display_id,
                                          const gfx::Point& origin,
                                          const gfx::Size& physical_size,
-                                         ui::DisplayConnectionType type,
+                                         DisplayConnectionType type,
                                          bool is_aspect_preserving_scaling,
                                          bool has_overscan,
                                          bool has_color_correction_matrix,
                                          std::string display_name,
                                          int64_t product_id,
                                          DisplayModeList modes,
-                                         const ui::DisplayMode* current_mode,
-                                         const ui::DisplayMode* native_mode)
+                                         const DisplayMode* current_mode,
+                                         const DisplayMode* native_mode)
     : DisplaySnapshot(display_id,
                       origin,
                       physical_size,
@@ -345,7 +345,7 @@ FakeDisplaySnapshot::FakeDisplaySnapshot(int64_t display_id,
 FakeDisplaySnapshot::~FakeDisplaySnapshot() {}
 
 // static
-std::unique_ptr<ui::DisplaySnapshot> FakeDisplaySnapshot::CreateFromSpec(
+std::unique_ptr<DisplaySnapshot> FakeDisplaySnapshot::CreateFromSpec(
     int64_t id,
     const std::string& spec) {
   StringPiece leftover(spec);
@@ -356,7 +356,7 @@ std::unique_ptr<ui::DisplaySnapshot> FakeDisplaySnapshot::CreateFromSpec(
   StringPiece resolutions = ExtractSuffix(&leftover, "#");
 
   // Leftovers should be just the native mode at this point.
-  std::unique_ptr<ui::DisplayMode> native_mode =
+  std::unique_ptr<DisplayMode> native_mode =
       ParseDisplayMode(leftover.as_string());
 
   // Fail without valid native mode.

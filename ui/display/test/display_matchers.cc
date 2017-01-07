@@ -12,12 +12,12 @@ const float kEpsilon = 0.0001f;
 
 // Matcher to check DisplayMode size and refresh rate.
 class DisplayModeMatcher
-    : public testing::MatcherInterface<const ui::DisplayMode&> {
+    : public testing::MatcherInterface<const DisplayMode&> {
  public:
   DisplayModeMatcher(int width, int height, float refresh_rate)
       : size_(width, height), refresh_rate_(refresh_rate) {}
 
-  bool MatchAndExplain(const ui::DisplayMode& mode,
+  bool MatchAndExplain(const DisplayMode& mode,
                        testing::MatchResultListener* listener) const override {
     return mode.size() == size_ &&
            std::fabs(mode.refresh_rate() - refresh_rate_) < kEpsilon;
@@ -38,9 +38,9 @@ class DisplayModeMatcher
 
 }  // namespace
 
-testing::Matcher<const ui::DisplayMode&> IsDisplayMode(int width,
-                                                       int height,
-                                                       float refresh_rate) {
+testing::Matcher<const DisplayMode&> IsDisplayMode(int width,
+                                                   int height,
+                                                   float refresh_rate) {
   return testing::MakeMatcher(
       new DisplayModeMatcher(width, height, refresh_rate));
 }

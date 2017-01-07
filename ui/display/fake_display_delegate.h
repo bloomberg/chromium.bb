@@ -68,7 +68,7 @@ namespace display {
 //
 // FakeDisplayDelegate also implements FakeDisplayController which provides a
 // way to change the display state at runtime.
-class DISPLAY_EXPORT FakeDisplayDelegate : public ui::NativeDisplayDelegate,
+class DISPLAY_EXPORT FakeDisplayDelegate : public NativeDisplayDelegate,
                                            public FakeDisplayController {
  public:
   FakeDisplayDelegate();
@@ -76,43 +76,41 @@ class DISPLAY_EXPORT FakeDisplayDelegate : public ui::NativeDisplayDelegate,
 
   // FakeDisplayController:
   int64_t AddDisplay(const gfx::Size& display_size) override;
-  bool AddDisplay(std::unique_ptr<ui::DisplaySnapshot> display) override;
+  bool AddDisplay(std::unique_ptr<DisplaySnapshot> display) override;
   bool RemoveDisplay(int64_t display_id) override;
 
   // NativeDisplayDelegate overrides:
   void Initialize() override;
   void GrabServer() override;
   void UngrabServer() override;
-  void TakeDisplayControl(const ui::DisplayControlCallback& callback) override;
+  void TakeDisplayControl(const DisplayControlCallback& callback) override;
   void RelinquishDisplayControl(
-      const ui::DisplayControlCallback& callback) override;
+      const DisplayControlCallback& callback) override;
   void SyncWithServer() override;
   void SetBackgroundColor(uint32_t color_argb) override;
   void ForceDPMSOn() override;
-  void GetDisplays(const ui::GetDisplaysCallback& callback) override;
-  void AddMode(const ui::DisplaySnapshot& output,
-               const ui::DisplayMode* mode) override;
-  void Configure(const ui::DisplaySnapshot& output,
-                 const ui::DisplayMode* mode,
+  void GetDisplays(const GetDisplaysCallback& callback) override;
+  void AddMode(const DisplaySnapshot& output, const DisplayMode* mode) override;
+  void Configure(const DisplaySnapshot& output,
+                 const DisplayMode* mode,
                  const gfx::Point& origin,
-                 const ui::ConfigureCallback& callback) override;
+                 const ConfigureCallback& callback) override;
   void CreateFrameBuffer(const gfx::Size& size) override;
-  void GetHDCPState(const ui::DisplaySnapshot& output,
-                    const ui::GetHDCPStateCallback& callback) override;
-  void SetHDCPState(const ui::DisplaySnapshot& output,
-                    ui::HDCPState state,
-                    const ui::SetHDCPStateCallback& callback) override;
-  std::vector<ui::ColorCalibrationProfile> GetAvailableColorCalibrationProfiles(
-      const ui::DisplaySnapshot& output) override;
-  bool SetColorCalibrationProfile(
-      const ui::DisplaySnapshot& output,
-      ui::ColorCalibrationProfile new_profile) override;
-  bool SetColorCorrection(const ui::DisplaySnapshot& output,
-                          const std::vector<ui::GammaRampRGBEntry>& degamma_lut,
-                          const std::vector<ui::GammaRampRGBEntry>& gamma_lut,
+  void GetHDCPState(const DisplaySnapshot& output,
+                    const GetHDCPStateCallback& callback) override;
+  void SetHDCPState(const DisplaySnapshot& output,
+                    HDCPState state,
+                    const SetHDCPStateCallback& callback) override;
+  std::vector<ColorCalibrationProfile> GetAvailableColorCalibrationProfiles(
+      const DisplaySnapshot& output) override;
+  bool SetColorCalibrationProfile(const DisplaySnapshot& output,
+                                  ColorCalibrationProfile new_profile) override;
+  bool SetColorCorrection(const DisplaySnapshot& output,
+                          const std::vector<GammaRampRGBEntry>& degamma_lut,
+                          const std::vector<GammaRampRGBEntry>& gamma_lut,
                           const std::vector<float>& correction_matrix) override;
-  void AddObserver(ui::NativeDisplayObserver* observer) override;
-  void RemoveObserver(ui::NativeDisplayObserver* observer) override;
+  void AddObserver(NativeDisplayObserver* observer) override;
+  void RemoveObserver(NativeDisplayObserver* observer) override;
   FakeDisplayController* GetFakeDisplayController() override;
 
  protected:
@@ -128,8 +126,8 @@ class DISPLAY_EXPORT FakeDisplayDelegate : public ui::NativeDisplayDelegate,
   // Performs callback for Configure().
   void ConfigureDone();
 
-  base::ObserverList<ui::NativeDisplayObserver> observers_;
-  std::vector<std::unique_ptr<ui::DisplaySnapshot>> displays_;
+  base::ObserverList<NativeDisplayObserver> observers_;
+  std::vector<std::unique_ptr<DisplaySnapshot>> displays_;
 
   // Add delay before finishing Configure() and running callback.
   base::OneShotTimer configure_timer_;

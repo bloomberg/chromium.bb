@@ -22,7 +22,7 @@ DisplayModeProxy::DisplayModeProxy(const gfx::Size& size,
 DisplayModeProxy::~DisplayModeProxy() {
 }
 
-std::unique_ptr<DisplayMode> DisplayModeProxy::Clone() const {
+std::unique_ptr<display::DisplayMode> DisplayModeProxy::Clone() const {
   return base::WrapUnique(
       new DisplayModeProxy(size(), is_interlaced(), refresh_rate()));
 }

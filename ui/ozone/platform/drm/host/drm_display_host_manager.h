@@ -48,9 +48,10 @@ class DrmDisplayHostManager : public DeviceEventObserver, GpuThreadObserver {
   // External API.
   void AddDelegate(DrmNativeDisplayDelegate* delegate);
   void RemoveDelegate(DrmNativeDisplayDelegate* delegate);
-  void TakeDisplayControl(const DisplayControlCallback& callback);
-  void RelinquishDisplayControl(const DisplayControlCallback& callback);
-  void UpdateDisplays(const GetDisplaysCallback& callback);
+  void TakeDisplayControl(const display::DisplayControlCallback& callback);
+  void RelinquishDisplayControl(
+      const display::DisplayControlCallback& callback);
+  void UpdateDisplays(const display::GetDisplaysCallback& callback);
 
   // DeviceEventObserver overrides:
   void OnDeviceEvent(const DeviceEvent& event) override;
@@ -65,7 +66,9 @@ class DrmDisplayHostManager : public DeviceEventObserver, GpuThreadObserver {
   void GpuHasUpdatedNativeDisplays(
       const std::vector<DisplaySnapshot_Params>& displays);
   void GpuConfiguredDisplay(int64_t display_id, bool status);
-  void GpuReceivedHDCPState(int64_t display_id, bool status, HDCPState state);
+  void GpuReceivedHDCPState(int64_t display_id,
+                            bool status,
+                            display::HDCPState state);
   void GpuUpdatedHDCPState(int64_t display_id, bool status);
   void GpuTookDisplayControl(bool status);
   void GpuRelinquishedDisplayControl(bool status);
@@ -91,7 +94,8 @@ class DrmDisplayHostManager : public DeviceEventObserver, GpuThreadObserver {
   void OnUpdateGraphicsDevice();
   void OnRemoveGraphicsDevice(const base::FilePath& path);
 
-  void RunUpdateDisplaysCallback(const GetDisplaysCallback& callback) const;
+  void RunUpdateDisplaysCallback(
+      const display::GetDisplaysCallback& callback) const;
 
   void NotifyDisplayDelegate() const;
 
@@ -112,12 +116,12 @@ class DrmDisplayHostManager : public DeviceEventObserver, GpuThreadObserver {
 
   std::vector<std::unique_ptr<DrmDisplayHost>> displays_;
 
-  GetDisplaysCallback get_displays_callback_;
+  display::GetDisplaysCallback get_displays_callback_;
 
   bool display_externally_controlled_ = false;
   bool display_control_change_pending_ = false;
-  DisplayControlCallback take_display_control_callback_;
-  DisplayControlCallback relinquish_display_control_callback_;
+  display::DisplayControlCallback take_display_control_callback_;
+  display::DisplayControlCallback relinquish_display_control_callback_;
 
   // Used to serialize display event processing. This is done since
   // opening/closing DRM devices cannot be done on the UI thread and are handled

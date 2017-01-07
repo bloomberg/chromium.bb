@@ -8,7 +8,7 @@
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/native_display_delegate.h"
 
-namespace ui {
+namespace display {
 
 namespace {
 
@@ -168,4 +168,4 @@ uint32_t ApplyContentProtectionTask::GetDesiredProtectionMask(
   return desired_mask;
 }
 
-}  // namespace ui
+}  // namespace display

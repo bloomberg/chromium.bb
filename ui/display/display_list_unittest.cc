@@ -12,12 +12,10 @@
 #include "ui/display/display.h"
 #include "ui/display/display_observer.h"
 
-using display::Display;
-
 namespace display {
 namespace {
 
-class DisplayObserverImpl : public display::DisplayObserver {
+class DisplayObserverImpl : public DisplayObserver {
  public:
   DisplayObserverImpl() {}
   ~DisplayObserverImpl() override {}
@@ -75,20 +73,20 @@ TEST(DisplayListTest, AddUpdateRemove) {
   DisplayList display_list;
   DisplayObserverImpl observer;
   display_list.AddObserver(&observer);
-  display_list.AddDisplay(display::Display(2, gfx::Rect(0, 0, 801, 802)),
+  display_list.AddDisplay(Display(2, gfx::Rect(0, 0, 801, 802)),
                           DisplayList::Type::PRIMARY);
   EXPECT_EQ("Added id=2", observer.GetAndClearChanges());
 
   // Update the bounds.
   {
-    display::Display updated_display = *(display_list.displays().begin());
+    Display updated_display = *(display_list.displays().begin());
     updated_display.set_bounds(gfx::Rect(0, 0, 803, 802));
     display_list.UpdateDisplay(updated_display, DisplayList::Type::PRIMARY);
     EXPECT_EQ("Changed id=2 bounds", observer.GetAndClearChanges());
   }
 
   // Add another.
-  display_list.AddDisplay(display::Display(3, gfx::Rect(0, 0, 809, 802)),
+  display_list.AddDisplay(Display(3, gfx::Rect(0, 0, 809, 802)),
                           DisplayList::Type::NOT_PRIMARY);
   EXPECT_EQ("Added id=3", observer.GetAndClearChanges());
   ASSERT_EQ(2u, display_list.displays().size());
@@ -111,7 +109,7 @@ TEST(DisplayListTest, AddUpdateRemove) {
 
 TEST(DisplayListTest, SuspendUpdates) {
   DisplayList display_list;
-  display_list.AddDisplay(display::Display(2, gfx::Rect(0, 0, 801, 802)),
+  display_list.AddDisplay(Display(2, gfx::Rect(0, 0, 801, 802)),
                           DisplayList::Type::PRIMARY);
   DisplayObserverImpl observer;
   display_list.AddObserver(&observer);
@@ -119,7 +117,7 @@ TEST(DisplayListTest, SuspendUpdates) {
     // Suspend updates and add a new display.
     std::unique_ptr<DisplayListObserverLock> lock =
         display_list.SuspendObserverUpdates();
-    display_list.AddDisplay(display::Display(3, gfx::Rect(0, 0, 809, 802)),
+    display_list.AddDisplay(Display(3, gfx::Rect(0, 0, 809, 802)),
                             DisplayList::Type::NOT_PRIMARY);
     EXPECT_EQ(2u, display_list.displays().size());
     // No update should have been generated.
@@ -129,7 +127,7 @@ TEST(DisplayListTest, SuspendUpdates) {
   EXPECT_TRUE(observer.GetAndClearChanges().empty());
 
   // Update a display and verify observer called.
-  display::Display updated_display = display_list.displays()[0];
+  Display updated_display = display_list.displays()[0];
   updated_display.set_bounds(gfx::Rect(0, 0, 803, 802));
   display_list.UpdateDisplay(updated_display, DisplayList::Type::PRIMARY);
   EXPECT_EQ("Changed id=2 bounds", observer.GetAndClearChanges());

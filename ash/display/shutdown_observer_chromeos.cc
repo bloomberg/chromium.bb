@@ -10,7 +10,7 @@
 namespace ash {
 
 ShutdownObserver::ShutdownObserver(
-    ui::DisplayConfigurator* display_configurator)
+    display::DisplayConfigurator* display_configurator)
     : display_configurator_(display_configurator) {
   WmShell::Get()->AddShellObserver(this);
 }

@@ -11,7 +11,7 @@
 #include "ui/display/manager/chromeos/display_configurator.h"
 #include "ui/display/types/display_constants.h"
 
-namespace ui {
+namespace display {
 
 struct DisplayConfigureRequest;
 class DisplaySnapshot;
@@ -46,6 +46,6 @@ class DisplayLayoutManager {
   virtual bool IsMirroring() const = 0;
 };
 
-}  // namespace ui
+}  // namespace display
 
 #endif  // UI_DISPLAY_MANAGER_CHROMEOS_DISPLAY_LAYOUT_MANAGER_H_

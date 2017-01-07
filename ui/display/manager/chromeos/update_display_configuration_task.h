@@ -14,7 +14,7 @@
 #include "ui/display/manager/chromeos/configure_displays_task.h"
 #include "ui/display/manager/chromeos/display_configurator.h"
 
-namespace ui {
+namespace display {
 
 class DisplaySnapshot;
 class NativeDisplayDelegate;
@@ -114,6 +114,6 @@ class DISPLAY_MANAGER_EXPORT UpdateDisplayConfigurationTask {
   DISALLOW_COPY_AND_ASSIGN(UpdateDisplayConfigurationTask);
 };
 
-}  // namespace ui
+}  // namespace display
 
 #endif  // UI_DISPLAY_MANAGER_CHROMEOS_UPDATE_DISPLAY_CONFIGURATION_TASK_H_

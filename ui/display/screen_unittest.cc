@@ -21,21 +21,20 @@ const int DEFAULT_DISPLAY_HEIGHT = 1440;
 class ScreenTest : public testing::Test {
  protected:
   ScreenTest() {
-    const display::Display test_display = test_screen_.GetPrimaryDisplay();
-    display::Display display(test_display);
+    const Display test_display = test_screen_.GetPrimaryDisplay();
+    Display display(test_display);
     display.set_id(DEFAULT_DISPLAY_ID);
     display.set_bounds(
         gfx::Rect(0, 0, DEFAULT_DISPLAY_WIDTH, DEFAULT_DISPLAY_HEIGHT));
     test_screen_.display_list().RemoveDisplay(test_display.id());
-    test_screen_.display_list().AddDisplay(display,
-                                           display::DisplayList::Type::PRIMARY);
+    test_screen_.display_list().AddDisplay(display, DisplayList::Type::PRIMARY);
     Screen::SetScreenInstance(&test_screen_);
   }
 
   ~ScreenTest() override { Screen::SetScreenInstance(nullptr); }
 
  private:
-  display::test::TestScreen test_screen_;
+  test::TestScreen test_screen_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenTest);
 };
@@ -59,4 +58,4 @@ TEST_F(ScreenTest, GetDisplayWithDisplayId) {
   EXPECT_EQ(DEFAULT_DISPLAY_HEIGHT, display.size().height());
 }
 
-}  // namespace
+}  // namespace display

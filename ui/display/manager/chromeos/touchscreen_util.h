@@ -16,7 +16,7 @@ namespace display {
 // Given a list of displays and a list of touchscreens, associate them. The
 // information in |displays| will be updated to reflect the mapping.
 DISPLAY_MANAGER_EXPORT void AssociateTouchscreens(
-    std::vector<display::ManagedDisplayInfo>* displays,
+    std::vector<ManagedDisplayInfo>* displays,
     const std::vector<ui::TouchscreenDevice>& touchscreens);
 
 }  // namespace display

@@ -902,21 +902,21 @@ TEST_F(LockStateControllerTest, IgnorePowerButtonIfScreenIsOff) {
 
 TEST_F(LockStateControllerTest, HonorPowerButtonInDockedMode) {
   // Create two outputs, the first internal and the second external.
-  ui::DisplayConfigurator::DisplayStateList outputs;
+  display::DisplayConfigurator::DisplayStateList outputs;
 
-  std::unique_ptr<ui::DisplaySnapshot> internal_display =
+  std::unique_ptr<display::DisplaySnapshot> internal_display =
       display::FakeDisplaySnapshot::Builder()
           .SetId(123)
           .SetNativeMode(gfx::Size(1, 1))
-          .SetType(ui::DISPLAY_CONNECTION_TYPE_INTERNAL)
+          .SetType(display::DISPLAY_CONNECTION_TYPE_INTERNAL)
           .Build();
   outputs.push_back(internal_display.get());
 
-  std::unique_ptr<ui::DisplaySnapshot> external_display =
+  std::unique_ptr<display::DisplaySnapshot> external_display =
       display::FakeDisplaySnapshot::Builder()
           .SetId(456)
           .SetNativeMode(gfx::Size(1, 1))
-          .SetType(ui::DISPLAY_CONNECTION_TYPE_HDMI)
+          .SetType(display::DISPLAY_CONNECTION_TYPE_HDMI)
           .Build();
   outputs.push_back(external_display.get());
 

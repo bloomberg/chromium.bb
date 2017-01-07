@@ -20,17 +20,17 @@ const char kContentProtection[] = "Content Protection";
 
 struct ContentProtectionMapping {
   const char* name;
-  HDCPState state;
+  display::HDCPState state;
 };
 
 const ContentProtectionMapping kContentProtectionStates[] = {
-    {"Undesired", HDCP_STATE_UNDESIRED},
-    {"Desired", HDCP_STATE_DESIRED},
-    {"Enabled", HDCP_STATE_ENABLED}};
+    {"Undesired", display::HDCP_STATE_UNDESIRED},
+    {"Desired", display::HDCP_STATE_DESIRED},
+    {"Enabled", display::HDCP_STATE_ENABLED}};
 
 // Converts |state| to the DRM value associated with the it.
 uint32_t GetContentProtectionValue(drmModePropertyRes* property,
-                                   HDCPState state) {
+                                   display::HDCPState state) {
   std::string name;
   for (size_t i = 0; i < arraysize(kContentProtectionStates); ++i) {
     if (kContentProtectionStates[i].state == state) {
@@ -123,7 +123,7 @@ bool DrmDisplay::Configure(const drmModeModeInfo* mode,
   return true;
 }
 
-bool DrmDisplay::GetHDCPState(HDCPState* state) {
+bool DrmDisplay::GetHDCPState(display::HDCPState* state) {
   ScopedDrmConnectorPtr connector(drm_->GetConnector(connector_));
   if (!connector) {
     PLOG(ERROR) << "Failed to get connector " << connector_;
@@ -151,7 +151,7 @@ bool DrmDisplay::GetHDCPState(HDCPState* state) {
   return false;
 }
 
-bool DrmDisplay::SetHDCPState(HDCPState state) {
+bool DrmDisplay::SetHDCPState(display::HDCPState state) {
   ScopedDrmConnectorPtr connector(drm_->GetConnector(connector_));
   if (!connector) {
     PLOG(ERROR) << "Failed to get connector " << connector_;
@@ -171,8 +171,8 @@ bool DrmDisplay::SetHDCPState(HDCPState state) {
 }
 
 void DrmDisplay::SetColorCorrection(
-    const std::vector<GammaRampRGBEntry>& degamma_lut,
-    const std::vector<GammaRampRGBEntry>& gamma_lut,
+    const std::vector<display::GammaRampRGBEntry>& degamma_lut,
+    const std::vector<display::GammaRampRGBEntry>& gamma_lut,
     const std::vector<float>& correction_matrix) {
   if (!drm_->SetColorCorrection(crtc_, degamma_lut, gamma_lut,
                                 correction_matrix)) {

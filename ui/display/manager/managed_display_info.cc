@@ -312,7 +312,7 @@ ManagedDisplayInfo::ManagedDisplayInfo()
       native_(false),
       is_aspect_preserving_scaling_(false),
       clear_overscan_insets_(false),
-      color_profile_(ui::COLOR_PROFILE_STANDARD) {}
+      color_profile_(COLOR_PROFILE_STANDARD) {}
 
 ManagedDisplayInfo::ManagedDisplayInfo(int64_t id,
                                        const std::string& name,
@@ -330,7 +330,7 @@ ManagedDisplayInfo::ManagedDisplayInfo(int64_t id,
       native_(false),
       is_aspect_preserving_scaling_(false),
       clear_overscan_insets_(false),
-      color_profile_(ui::COLOR_PROFILE_STANDARD) {}
+      color_profile_(COLOR_PROFILE_STANDARD) {}
 
 ManagedDisplayInfo::ManagedDisplayInfo(const ManagedDisplayInfo& other) =
     default;
@@ -500,13 +500,13 @@ std::string ManagedDisplayInfo::ToFullString() const {
   return ToString() + ", display_modes==" + display_modes_str;
 }
 
-void ManagedDisplayInfo::SetColorProfile(ui::ColorCalibrationProfile profile) {
+void ManagedDisplayInfo::SetColorProfile(ColorCalibrationProfile profile) {
   if (IsColorProfileAvailable(profile))
     color_profile_ = profile;
 }
 
 bool ManagedDisplayInfo::IsColorProfileAvailable(
-    ui::ColorCalibrationProfile profile) const {
+    ColorCalibrationProfile profile) const {
   return std::find(available_color_profiles_.begin(),
                    available_color_profiles_.end(),
                    profile) != available_color_profiles_.end();

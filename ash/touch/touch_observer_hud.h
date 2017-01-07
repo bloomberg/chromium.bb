@@ -26,13 +26,14 @@ namespace ash {
 
 // An event filter which handles system level gesture events. Objects of this
 // class manage their own lifetime.
-class ASH_EXPORT TouchObserverHUD : public ui::EventHandler,
-                                    public views::WidgetObserver,
-                                    public display::DisplayObserver,
+class ASH_EXPORT TouchObserverHUD
+    : public ui::EventHandler,
+      public views::WidgetObserver,
+      public display::DisplayObserver,
 #if defined(OS_CHROMEOS)
-                                    public ui::DisplayConfigurator::Observer,
+      public display::DisplayConfigurator::Observer,
 #endif  // defined(OS_CHROMEOS)
-                                    public WindowTreeHostManager::Observer {
+      public WindowTreeHostManager::Observer {
  public:
   // Called to clear touch points and traces from the screen. Default
   // implementation does nothing. Sub-classes should implement appropriately.
@@ -68,9 +69,9 @@ class ASH_EXPORT TouchObserverHUD : public ui::EventHandler,
                                uint32_t metrics) override;
 
 #if defined(OS_CHROMEOS)
-  // Overriden from ui::DisplayConfigurator::Observer.
+  // Overriden from display::DisplayConfigurator::Observer.
   void OnDisplayModeChanged(
-      const ui::DisplayConfigurator::DisplayStateList& outputs) override;
+      const display::DisplayConfigurator::DisplayStateList& outputs) override;
 #endif  // defined(OS_CHROMEOS)
 
   // Overriden form WindowTreeHostManager::Observer.

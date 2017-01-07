@@ -16,46 +16,43 @@
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/events/devices/input_device_event_observer.h"
 
-namespace ui {
-class DisplaySnapshot;
-}
-
 namespace display {
 
 class DisplayManager;
+class DisplaySnapshot;
 
 // An object that observes changes in display configuration and updates
 // DisplayManager.
 class DISPLAY_MANAGER_EXPORT DisplayChangeObserver
-    : public ui::DisplayConfigurator::StateController,
-      public ui::DisplayConfigurator::Observer,
+    : public DisplayConfigurator::StateController,
+      public DisplayConfigurator::Observer,
       public ui::InputDeviceEventObserver {
  public:
   // Returns the mode list for internal display.
   DISPLAY_EXPORT static ManagedDisplayInfo::ManagedDisplayModeList
   GetInternalManagedDisplayModeList(const ManagedDisplayInfo& display_info,
-                                    const ui::DisplaySnapshot& output);
+                                    const DisplaySnapshot& output);
 
   // Returns the resolution list.
   DISPLAY_EXPORT static ManagedDisplayInfo::ManagedDisplayModeList
-  GetExternalManagedDisplayModeList(const ui::DisplaySnapshot& output);
+  GetExternalManagedDisplayModeList(const DisplaySnapshot& output);
 
-  DisplayChangeObserver(ui::DisplayConfigurator* display_configurator,
-                        display::DisplayManager* display_manager);
+  DisplayChangeObserver(DisplayConfigurator* display_configurator,
+                        DisplayManager* display_manager);
   ~DisplayChangeObserver() override;
 
-  // ui::DisplayConfigurator::StateController overrides:
-  ui::MultipleDisplayState GetStateForDisplayIds(
-      const ui::DisplayConfigurator::DisplayStateList& outputs) const override;
+  // DisplayConfigurator::StateController overrides:
+  MultipleDisplayState GetStateForDisplayIds(
+      const DisplayConfigurator::DisplayStateList& outputs) const override;
   bool GetResolutionForDisplayId(int64_t display_id,
                                  gfx::Size* size) const override;
 
-  // Overriden from ui::DisplayConfigurator::Observer:
+  // Overriden from DisplayConfigurator::Observer:
   void OnDisplayModeChanged(
-      const ui::DisplayConfigurator::DisplayStateList& outputs) override;
+      const DisplayConfigurator::DisplayStateList& outputs) override;
   void OnDisplayModeChangeFailed(
-      const ui::DisplayConfigurator::DisplayStateList& displays,
-      ui::MultipleDisplayState failed_new_state) override;
+      const DisplayConfigurator::DisplayStateList& displays,
+      MultipleDisplayState failed_new_state) override;
 
   // Overriden from ui::InputDeviceEventObserver:
   void OnTouchscreenDeviceConfigurationChanged() override;
@@ -66,7 +63,7 @@ class DISPLAY_MANAGER_EXPORT DisplayChangeObserver
  private:
   // Both |display_configurator_| and |display_manager_| are not owned and must
   // outlive DisplayChangeObserver.
-  ui::DisplayConfigurator* display_configurator_;
+  DisplayConfigurator* display_configurator_;
   DisplayManager* display_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayChangeObserver);

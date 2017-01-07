@@ -21,12 +21,12 @@ DrmNativeDisplayDelegate::~DrmNativeDisplayDelegate() {
 }
 
 void DrmNativeDisplayDelegate::OnConfigurationChanged() {
-  for (NativeDisplayObserver& observer : observers_)
+  for (display::NativeDisplayObserver& observer : observers_)
     observer.OnConfigurationChanged();
 }
 
 void DrmNativeDisplayDelegate::OnDisplaySnapshotsInvalidated() {
-  for (NativeDisplayObserver& observer : observers_)
+  for (display::NativeDisplayObserver& observer : observers_)
     observer.OnDisplaySnapshotsInvalidated();
 }
 
@@ -41,12 +41,12 @@ void DrmNativeDisplayDelegate::UngrabServer() {
 }
 
 void DrmNativeDisplayDelegate::TakeDisplayControl(
-    const DisplayControlCallback& callback) {
+    const display::DisplayControlCallback& callback) {
   display_manager_->TakeDisplayControl(callback);
 }
 
 void DrmNativeDisplayDelegate::RelinquishDisplayControl(
-    const DisplayControlCallback& callback) {
+    const display::DisplayControlCallback& callback) {
   display_manager_->RelinquishDisplayControl(callback);
 }
 
@@ -60,18 +60,18 @@ void DrmNativeDisplayDelegate::ForceDPMSOn() {
 }
 
 void DrmNativeDisplayDelegate::GetDisplays(
-    const GetDisplaysCallback& callback) {
+    const display::GetDisplaysCallback& callback) {
   display_manager_->UpdateDisplays(callback);
 }
 
-void DrmNativeDisplayDelegate::AddMode(const ui::DisplaySnapshot& output,
-                                       const ui::DisplayMode* mode) {
-}
+void DrmNativeDisplayDelegate::AddMode(const display::DisplaySnapshot& output,
+                                       const display::DisplayMode* mode) {}
 
-void DrmNativeDisplayDelegate::Configure(const ui::DisplaySnapshot& output,
-                                         const ui::DisplayMode* mode,
-                                         const gfx::Point& origin,
-                                         const ConfigureCallback& callback) {
+void DrmNativeDisplayDelegate::Configure(
+    const display::DisplaySnapshot& output,
+    const display::DisplayMode* mode,
+    const gfx::Point& origin,
+    const display::ConfigureCallback& callback) {
   DrmDisplayHost* display = display_manager_->GetDisplay(output.display_id());
   display->Configure(mode, origin, callback);
 }
@@ -80,48 +80,50 @@ void DrmNativeDisplayDelegate::CreateFrameBuffer(const gfx::Size& size) {
 }
 
 void DrmNativeDisplayDelegate::GetHDCPState(
-    const ui::DisplaySnapshot& output,
-    const GetHDCPStateCallback& callback) {
+    const display::DisplaySnapshot& output,
+    const display::GetHDCPStateCallback& callback) {
   DrmDisplayHost* display = display_manager_->GetDisplay(output.display_id());
   display->GetHDCPState(callback);
 }
 
 void DrmNativeDisplayDelegate::SetHDCPState(
-    const ui::DisplaySnapshot& output,
-    ui::HDCPState state,
-    const SetHDCPStateCallback& callback) {
+    const display::DisplaySnapshot& output,
+    display::HDCPState state,
+    const display::SetHDCPStateCallback& callback) {
   DrmDisplayHost* display = display_manager_->GetDisplay(output.display_id());
   display->SetHDCPState(state, callback);
 }
 
-std::vector<ui::ColorCalibrationProfile>
+std::vector<display::ColorCalibrationProfile>
 DrmNativeDisplayDelegate::GetAvailableColorCalibrationProfiles(
-    const ui::DisplaySnapshot& output) {
-  return std::vector<ui::ColorCalibrationProfile>();
+    const display::DisplaySnapshot& output) {
+  return std::vector<display::ColorCalibrationProfile>();
 }
 
 bool DrmNativeDisplayDelegate::SetColorCalibrationProfile(
-    const ui::DisplaySnapshot& output,
-    ui::ColorCalibrationProfile new_profile) {
+    const display::DisplaySnapshot& output,
+    display::ColorCalibrationProfile new_profile) {
   NOTIMPLEMENTED();
   return false;
 }
 
 bool DrmNativeDisplayDelegate::SetColorCorrection(
-    const ui::DisplaySnapshot& output,
-    const std::vector<GammaRampRGBEntry>& degamma_lut,
-    const std::vector<GammaRampRGBEntry>& gamma_lut,
+    const display::DisplaySnapshot& output,
+    const std::vector<display::GammaRampRGBEntry>& degamma_lut,
+    const std::vector<display::GammaRampRGBEntry>& gamma_lut,
     const std::vector<float>& correction_matrix) {
   DrmDisplayHost* display = display_manager_->GetDisplay(output.display_id());
   display->SetColorCorrection(degamma_lut, gamma_lut, correction_matrix);
   return true;
 }
 
-void DrmNativeDisplayDelegate::AddObserver(NativeDisplayObserver* observer) {
+void DrmNativeDisplayDelegate::AddObserver(
+    display::NativeDisplayObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void DrmNativeDisplayDelegate::RemoveObserver(NativeDisplayObserver* observer) {
+void DrmNativeDisplayDelegate::RemoveObserver(
+    display::NativeDisplayObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 

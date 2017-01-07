@@ -84,7 +84,7 @@ class OzonePlatformX11 : public OzonePlatform {
     return std::move(window);
   }
 
-  std::unique_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
+  std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()
       override {
     return base::MakeUnique<display::FakeDisplayDelegate>();
   }

@@ -22,7 +22,7 @@ class ArcBridgeService;
 // ARC instances.
 class ArcPowerBridge : public ArcService,
                        public InstanceHolder<mojom::PowerInstance>::Observer,
-                       public ui::DisplayConfigurator::Observer,
+                       public display::DisplayConfigurator::Observer,
                        public mojom::PowerHost {
  public:
   explicit ArcPowerBridge(ArcBridgeService* bridge_service);

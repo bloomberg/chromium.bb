@@ -325,8 +325,8 @@ bool ValidateParamsForDisplay(const system_display::DisplayProperties& info,
     gfx::Size size(info.display_mode->width_in_native_pixels,
                    info.display_mode->height_in_native_pixels);
 
-    // NB: info.display_mode is neither an ash::DisplayMode or a
-    // ui::DisplayMode.
+    // NB: info.display_mode is neither a display::ManagedDisplayMode or a
+    // display::DisplayMode.
     scoped_refptr<display::ManagedDisplayMode> new_mode(
         new display::ManagedDisplayMode(
             size, current_mode->refresh_rate(), current_mode->is_interlaced(),

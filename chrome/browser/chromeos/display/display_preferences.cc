@@ -151,34 +151,35 @@ void TouchDataToValue(
                     touch_calibration_data.bounds.height());
 }
 
-std::string ColorProfileToString(ui::ColorCalibrationProfile profile) {
+std::string ColorProfileToString(display::ColorCalibrationProfile profile) {
   switch (profile) {
-    case ui::COLOR_PROFILE_STANDARD:
+    case display::COLOR_PROFILE_STANDARD:
       return "standard";
-    case ui::COLOR_PROFILE_DYNAMIC:
+    case display::COLOR_PROFILE_DYNAMIC:
       return "dynamic";
-    case ui::COLOR_PROFILE_MOVIE:
+    case display::COLOR_PROFILE_MOVIE:
       return "movie";
-    case ui::COLOR_PROFILE_READING:
+    case display::COLOR_PROFILE_READING:
       return "reading";
-    case ui::NUM_COLOR_PROFILES:
+    case display::NUM_COLOR_PROFILES:
       break;
   }
   NOTREACHED();
   return "";
 }
 
-ui::ColorCalibrationProfile StringToColorProfile(const std::string& value) {
+display::ColorCalibrationProfile StringToColorProfile(
+    const std::string& value) {
   if (value == "standard")
-    return ui::COLOR_PROFILE_STANDARD;
+    return display::COLOR_PROFILE_STANDARD;
   else if (value == "dynamic")
-    return ui::COLOR_PROFILE_DYNAMIC;
+    return display::COLOR_PROFILE_DYNAMIC;
   else if (value == "movie")
-    return ui::COLOR_PROFILE_MOVIE;
+    return display::COLOR_PROFILE_MOVIE;
   else if (value == "reading")
-    return ui::COLOR_PROFILE_READING;
+    return display::COLOR_PROFILE_READING;
   NOTREACHED();
-  return ui::COLOR_PROFILE_STANDARD;
+  return display::COLOR_PROFILE_STANDARD;
 }
 
 display::DisplayManager* GetDisplayManager() {
@@ -272,7 +273,8 @@ void LoadDisplayProperties() {
     if (ValueToTouchData(*dict_value, &calibration_data))
       calibration_data_to_set = &calibration_data;
 
-    ui::ColorCalibrationProfile color_profile = ui::COLOR_PROFILE_STANDARD;
+    display::ColorCalibrationProfile color_profile =
+        display::COLOR_PROFILE_STANDARD;
     std::string color_profile_name;
     if (dict_value->GetString("color_profile_name", &color_profile_name))
       color_profile = StringToColorProfile(color_profile_name);
@@ -365,7 +367,7 @@ void StoreCurrentDisplayProperties() {
     }
     if (!info.overscan_insets_in_dip().IsEmpty())
       InsetsToValue(info.overscan_insets_in_dip(), property_value.get());
-    if (info.color_profile() != ui::COLOR_PROFILE_STANDARD) {
+    if (info.color_profile() != display::COLOR_PROFILE_STANDARD) {
       property_value->SetString(
           "color_profile_name", ColorProfileToString(info.color_profile()));
     }

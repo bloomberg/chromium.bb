@@ -9,7 +9,7 @@
 
 #include "ui/display/types/display_types_export.h"
 
-namespace ui {
+namespace display {
 
 // Provides a single entry for a gamma correction table in a GPU.
 struct DISPLAY_TYPES_EXPORT GammaRampRGBEntry {
@@ -18,6 +18,6 @@ struct DISPLAY_TYPES_EXPORT GammaRampRGBEntry {
   uint16_t b;
 };
 
-}  // namespace ui
+}  // namespace display
 
 #endif  // UI_DISPLAY_TYPES_GAMMA_RAMP_RGB_ENTRY_H_

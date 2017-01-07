@@ -30,7 +30,7 @@ namespace win {
 class DisplayInfo;
 class ScreenWinDisplay;
 
-class DISPLAY_EXPORT ScreenWin : public display::Screen {
+class DISPLAY_EXPORT ScreenWin : public Screen {
  public:
   ScreenWin();
   ~ScreenWin() override;
@@ -109,21 +109,18 @@ class DISPLAY_EXPORT ScreenWin : public display::Screen {
   virtual gfx::NativeWindow GetNativeWindowFromHWND(HWND hwnd) const;
 
  protected:
-  // display::Screen:
+  // Screen:
   gfx::Point GetCursorScreenPoint() override;
   bool IsWindowUnderCursor(gfx::NativeWindow window) override;
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override;
   int GetNumDisplays() const override;
-  const std::vector<display::Display>& GetAllDisplays() const override;
-  display::Display GetDisplayNearestWindow(
-      gfx::NativeView window) const override;
-  display::Display GetDisplayNearestPoint(
-      const gfx::Point& point) const override;
-  display::Display GetDisplayMatching(
-      const gfx::Rect& match_rect) const override;
-  display::Display GetPrimaryDisplay() const override;
-  void AddObserver(display::DisplayObserver* observer) override;
-  void RemoveObserver(display::DisplayObserver* observer) override;
+  const std::vector<Display>& GetAllDisplays() const override;
+  Display GetDisplayNearestWindow(gfx::NativeView window) const override;
+  Display GetDisplayNearestPoint(const gfx::Point& point) const override;
+  Display GetDisplayMatching(const gfx::Rect& match_rect) const override;
+  Display GetPrimaryDisplay() const override;
+  void AddObserver(DisplayObserver* observer) override;
+  void RemoveObserver(DisplayObserver* observer) override;
   gfx::Rect ScreenToDIPRectInWindow(
       gfx::NativeView view, const gfx::Rect& screen_rect) const override;
   gfx::Rect DIPToScreenRectInWindow(
@@ -185,10 +182,9 @@ class DISPLAY_EXPORT ScreenWin : public display::Screen {
   // Current list of ScreenWinDisplays.
   std::vector<ScreenWinDisplay> screen_win_displays_;
 
-  // The display::Displays corresponding to |screen_win_displays_| for
-  // GetAllDisplays(). This must be updated anytime |screen_win_displays_| is
-  // updated.
-  std::vector<display::Display> displays_;
+  // The Displays corresponding to |screen_win_displays_| for GetAllDisplays().
+  // This must be updated anytime |screen_win_displays_| is updated.
+  std::vector<Display> displays_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenWin);
 };

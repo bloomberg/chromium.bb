@@ -14,7 +14,7 @@
 #include "ui/display/manager/display_manager_export.h"
 #include "ui/display/types/display_constants.h"
 
-namespace ui {
+namespace display {
 
 class DisplayLayoutManager;
 class NativeDisplayDelegate;
@@ -63,6 +63,6 @@ class DISPLAY_MANAGER_EXPORT QueryContentProtectionTask {
   DISALLOW_COPY_AND_ASSIGN(QueryContentProtectionTask);
 };
 
-}  // namespace ui
+}  // namespace display
 
 #endif  // UI_DISPLAY_MANAGER_CHROMEOS_QUERY_CONTENT_PROTECTION_TASK_H_

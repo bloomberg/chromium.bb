@@ -148,7 +148,7 @@ std::unique_ptr<DisplayColorManager::ColorCalibrationData> ParseDisplayProfile(
 }  // namespace
 
 DisplayColorManager::DisplayColorManager(
-    ui::DisplayConfigurator* configurator,
+    display::DisplayConfigurator* configurator,
     base::SequencedWorkerPool* blocking_pool)
     : configurator_(configurator),
       blocking_pool_(blocking_pool),
@@ -161,17 +161,17 @@ DisplayColorManager::~DisplayColorManager() {
 }
 
 void DisplayColorManager::OnDisplayModeChanged(
-    const ui::DisplayConfigurator::DisplayStateList& display_states) {
-  for (const ui::DisplaySnapshot* state : display_states) {
+    const display::DisplayConfigurator::DisplayStateList& display_states) {
+  for (const display::DisplaySnapshot* state : display_states) {
     // Ensure we always reset the configuration before setting a new one.
     configurator_->SetColorCorrection(
-        state->display_id(), std::vector<ui::GammaRampRGBEntry>(),
-        std::vector<ui::GammaRampRGBEntry>(), std::vector<float>());
+        state->display_id(), std::vector<display::GammaRampRGBEntry>(),
+        std::vector<display::GammaRampRGBEntry>(), std::vector<float>());
 
     if (calibration_map_[state->product_id()]) {
       ApplyDisplayColorCalibration(state->display_id(), state->product_id());
     } else {
-      if (state->product_id() != ui::DisplaySnapshot::kInvalidProductID)
+      if (state->product_id() != display::DisplaySnapshot::kInvalidProductID)
         LoadCalibrationForDisplay(state);
     }
   }
@@ -189,7 +189,7 @@ void DisplayColorManager::ApplyDisplayColorCalibration(int64_t display_id,
 }
 
 void DisplayColorManager::LoadCalibrationForDisplay(
-    const ui::DisplaySnapshot* display) {
+    const display::DisplaySnapshot* display) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (display->display_id() == display::kInvalidDisplayId) {
     LOG(WARNING) << "Trying to load calibration data for invalid display id";
@@ -208,7 +208,7 @@ void DisplayColorManager::FinishLoadCalibrationForDisplay(
     int64_t display_id,
     int64_t product_id,
     bool has_color_correction_matrix,
-    ui::DisplayConnectionType type,
+    display::DisplayConnectionType type,
     const base::FilePath& path,
     bool file_downloaded) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -219,7 +219,7 @@ void DisplayColorManager::FinishLoadCalibrationForDisplay(
     return;
   }
 
-  if (file_downloaded && type == ui::DISPLAY_CONNECTION_TYPE_INTERNAL) {
+  if (file_downloaded && type == display::DISPLAY_CONNECTION_TYPE_INTERNAL) {
     VLOG(1) << "Downloaded ICC file with product id: " << product_string
             << " for internal display id: " << display_id
             << ". Profile will be applied on next startup.";

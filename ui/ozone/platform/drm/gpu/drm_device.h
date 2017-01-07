@@ -26,10 +26,13 @@ typedef struct _drmModeModeInfo drmModeModeInfo;
 
 struct SkImageInfo;
 
+namespace display {
+struct GammaRampRGBEntry;
+}
+
 namespace ui {
 
 class HardwareDisplayPlaneManager;
-struct GammaRampRGBEntry;
 
 // Wraps DRM calls into a nice interface. Used to provide different
 // implementations of the DRM calls. For the actual implementation the DRM API
@@ -158,8 +161,8 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
 
   virtual bool SetColorCorrection(
       uint32_t crtc_id,
-      const std::vector<GammaRampRGBEntry>& degamma_lut,
-      const std::vector<GammaRampRGBEntry>& gamma_lut,
+      const std::vector<display::GammaRampRGBEntry>& degamma_lut,
+      const std::vector<display::GammaRampRGBEntry>& gamma_lut,
       const std::vector<float>& correction_matrix);
 
   virtual bool SetCapability(uint64_t capability, uint64_t value);
@@ -186,7 +189,7 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
   class PageFlipManager;
 
   bool SetGammaRamp(uint32_t crtc_id,
-                    const std::vector<GammaRampRGBEntry>& lut);
+                    const std::vector<display::GammaRampRGBEntry>& lut);
 
   // Path to the DRM device (in sysfs).
   const base::FilePath device_path_;

@@ -102,7 +102,7 @@ void TouchObserverHUD::OnDisplayMetricsChanged(const display::Display& display,
 
 #if defined(OS_CHROMEOS)
 void TouchObserverHUD::OnDisplayModeChanged(
-    const ui::DisplayConfigurator::DisplayStateList& outputs) {
+    const display::DisplayConfigurator::DisplayStateList& outputs) {
   // Clear touch HUD for any change in display mode (single, dual extended, dual
   // mirrored, ...).
   Clear();

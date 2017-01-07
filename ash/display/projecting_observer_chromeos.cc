@@ -22,12 +22,13 @@ ProjectingObserver::ProjectingObserver(
 ProjectingObserver::~ProjectingObserver() {}
 
 void ProjectingObserver::OnDisplayModeChanged(
-    const ui::DisplayConfigurator::DisplayStateList& display_states) {
+    const display::DisplayConfigurator::DisplayStateList& display_states) {
   has_internal_output_ = false;
   output_count_ = display_states.size();
 
   for (size_t i = 0; i < display_states.size(); ++i) {
-    if (display_states[i]->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL) {
+    if (display_states[i]->type() ==
+        display::DISPLAY_CONNECTION_TYPE_INTERNAL) {
       has_internal_output_ = true;
       break;
     }

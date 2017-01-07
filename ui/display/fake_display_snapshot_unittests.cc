@@ -12,14 +12,15 @@
 #include "ui/display/test/display_matchers.h"
 #include "ui/display/types/display_snapshot.h"
 
-using DisplayModeList = ui::DisplaySnapshot::DisplayModeList;
 using testing::SizeIs;
 
 namespace display {
 
+using DisplayModeList = DisplaySnapshot::DisplayModeList;
+
 namespace {
 
-std::unique_ptr<ui::DisplaySnapshot> CreateSnapshot(const std::string& str) {
+std::unique_ptr<DisplaySnapshot> CreateSnapshot(const std::string& str) {
   return FakeDisplaySnapshot::CreateFromSpec(1, str);
 }
 
@@ -36,7 +37,7 @@ TEST(FakeDisplaySnapshotTest, DefaultTypeIsUnknown) {
   auto display = CreateSnapshot("1024x768");
 
   ASSERT_THAT(display->modes(), SizeIs(1));
-  EXPECT_EQ(ui::DISPLAY_CONNECTION_TYPE_UNKNOWN, display->type());
+  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_UNKNOWN, display->type());
 }
 
 TEST(FakeDisplaySnapshotTest, FullNativeMode) {
@@ -60,13 +61,13 @@ TEST(FakeDisplaySnapshotTest, InternalDisplayWithSize) {
 
   ASSERT_THAT(display->modes(), SizeIs(1));
   EXPECT_THAT(*display->native_mode(), IsDisplayMode(1600, 900));
-  EXPECT_EQ(ui::DISPLAY_CONNECTION_TYPE_INTERNAL, display->type());
+  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_INTERNAL, display->type());
 }
 
 TEST(FakeDisplaySnapshotTest, MultipleOptions) {
   auto display = CreateSnapshot("1600x900/aci");
 
-  EXPECT_EQ(ui::DISPLAY_CONNECTION_TYPE_INTERNAL, display->type());
+  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_INTERNAL, display->type());
   EXPECT_TRUE(display->has_color_correction_matrix());
   EXPECT_TRUE(display->is_aspect_preserving_scaling());
 }
@@ -79,7 +80,7 @@ TEST(FakeDisplaySnapshotTest, AlternateDisplayModes) {
   EXPECT_THAT(*modes[0], IsDisplayMode(1920, 1080));
   EXPECT_THAT(*modes[1], IsDisplayMode(1600, 900));
   EXPECT_THAT(*modes[2], IsDisplayMode(1280, 720));
-  EXPECT_EQ(ui::DISPLAY_CONNECTION_TYPE_INTERNAL, display->type());
+  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_INTERNAL, display->type());
 }
 
 TEST(FakeDisplaySnapshotTest, ComplicatedSpecString) {
@@ -93,7 +94,7 @@ TEST(FakeDisplaySnapshotTest, ComplicatedSpecString) {
   EXPECT_THAT(*modes[2], IsDisplayMode(1280, 720, 120.0f));
   EXPECT_EQ(163, display->physical_size().width());
   EXPECT_EQ(91, display->physical_size().height());
-  EXPECT_EQ(ui::DISPLAY_CONNECTION_TYPE_INTERNAL, display->type());
+  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_INTERNAL, display->type());
 }
 
 TEST(FakeDisplaySnapshotTest, BadDisplayMode) {

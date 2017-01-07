@@ -152,7 +152,7 @@ bool DrmWindowHost::CanDispatchEvent(const PlatformEvent& ne) {
     if (!display)
       return false;
 
-    DisplaySnapshot* snapshot = display->snapshot();
+    display::DisplaySnapshot* snapshot = display->snapshot();
     if (!snapshot->current_mode())
       return false;
 

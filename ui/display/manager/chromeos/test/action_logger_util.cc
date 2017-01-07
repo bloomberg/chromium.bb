@@ -16,7 +16,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace ui {
+namespace display {
 namespace test {
 
 std::string DisplaySnapshotToString(const DisplaySnapshot& output) {
@@ -58,7 +58,7 @@ std::string GetSetHDCPStateAction(const DisplaySnapshot& output,
 }
 
 std::string SetColorCorrectionAction(
-    const ui::DisplaySnapshot& output,
+    const DisplaySnapshot& output,
     const std::vector<GammaRampRGBEntry>& degamma_lut,
     const std::vector<GammaRampRGBEntry>& gamma_lut,
     const std::vector<float>& correction_matrix) {
@@ -101,4 +101,4 @@ std::string JoinActions(const char* action, ...) {
 }
 
 }  // namespace test
-}  // namespace ui
+}  // namespace display

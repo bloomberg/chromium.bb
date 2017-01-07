@@ -72,7 +72,7 @@ class OzonePlatformHeadless : public OzonePlatform {
     return base::WrapUnique<PlatformWindow>(
         new HeadlessWindow(delegate, window_manager_.get(), bounds));
   }
-  std::unique_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
+  std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()
       override {
     return base::MakeUnique<display::FakeDisplayDelegate>();
   }

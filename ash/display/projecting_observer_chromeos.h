@@ -16,8 +16,9 @@ class PowerManagerClient;
 
 namespace ash {
 
-class ASH_EXPORT ProjectingObserver : public ui::DisplayConfigurator::Observer,
-                                      public ShellObserver {
+class ASH_EXPORT ProjectingObserver
+    : public display::DisplayConfigurator::Observer,
+      public ShellObserver {
  public:
   // |power_manager_client| must outlive this object.
   explicit ProjectingObserver(
@@ -26,7 +27,7 @@ class ASH_EXPORT ProjectingObserver : public ui::DisplayConfigurator::Observer,
 
   // DisplayConfigurator::Observer implementation:
   void OnDisplayModeChanged(
-      const ui::DisplayConfigurator::DisplayStateList& outputs) override;
+      const display::DisplayConfigurator::DisplayStateList& outputs) override;
 
   // ash::ShellObserver implementation:
   void OnCastingSessionStartedOrStopped(bool started) override;

@@ -12,7 +12,7 @@
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/native_display_observer.h"
 
-namespace ui {
+namespace display {
 namespace test {
 
 TestNativeDisplayDelegate::TestNativeDisplayDelegate(ActionLogger* log)
@@ -127,20 +127,20 @@ void TestNativeDisplayDelegate::SetHDCPState(
   callback.Run(set_hdcp_expectation_);
 }
 
-std::vector<ui::ColorCalibrationProfile>
+std::vector<ColorCalibrationProfile>
 TestNativeDisplayDelegate::GetAvailableColorCalibrationProfiles(
     const DisplaySnapshot& output) {
-  return std::vector<ui::ColorCalibrationProfile>();
+  return std::vector<ColorCalibrationProfile>();
 }
 
 bool TestNativeDisplayDelegate::SetColorCalibrationProfile(
     const DisplaySnapshot& output,
-    ui::ColorCalibrationProfile new_profile) {
+    ColorCalibrationProfile new_profile) {
   return false;
 }
 
 bool TestNativeDisplayDelegate::SetColorCorrection(
-    const ui::DisplaySnapshot& output,
+    const DisplaySnapshot& output,
     const std::vector<GammaRampRGBEntry>& degamma_lut,
     const std::vector<GammaRampRGBEntry>& gamma_lut,
     const std::vector<float>& correction_matrix) {
@@ -158,10 +158,9 @@ void TestNativeDisplayDelegate::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-display::FakeDisplayController*
-TestNativeDisplayDelegate::GetFakeDisplayController() {
+FakeDisplayController* TestNativeDisplayDelegate::GetFakeDisplayController() {
   return nullptr;
 }
 
 }  // namespace test
-}  // namespace ui
+}  // namespace display

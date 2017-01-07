@@ -35,8 +35,8 @@ ScreenWin* g_screen_win_instance = nullptr;
 
 float GetMonitorScaleFactor(HMONITOR monitor) {
   DCHECK(monitor);
-  if (display::Display::HasForceDeviceScaleFactor())
-    return display::Display::GetForcedDeviceScaleFactor();
+  if (Display::HasForceDeviceScaleFactor())
+    return Display::GetForcedDeviceScaleFactor();
 
   if (base::win::IsProcessPerMonitorDpiAware()) {
     static auto get_dpi_for_monitor_func = [](){
@@ -78,8 +78,8 @@ std::vector<DisplayInfo> FindAndRemoveTouchingDisplayInfos(
   return touching_display_infos;
 }
 
-display::Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info) {
-  display::Display display(display_info.id());
+Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info) {
+  Display display(display_info.id());
   float scale_factor = display_info.device_scale_factor();
   display.set_device_scale_factor(scale_factor);
   display.set_work_area(
@@ -122,7 +122,7 @@ std::vector<ScreenWinDisplay> DisplayInfosToScreenWinDisplays(
 
   std::vector<DisplayInfo> available_parents;
   available_parents.push_back(*primary_display_iter);
-  display::DisplayLayoutBuilder builder(primary_display_iter->id());
+  DisplayLayoutBuilder builder(primary_display_iter->id());
   display_infos_remaining.erase(primary_display_iter);
   // Build the tree and determine DisplayPlacements along the way.
   while (available_parents.size()) {
@@ -136,11 +136,11 @@ std::vector<ScreenWinDisplay> DisplayInfosToScreenWinDisplays(
   }
 
   // Layout and create the ScreenWinDisplays.
-  std::vector<display::Display> displays;
+  std::vector<Display> displays;
   for (const auto& display_info : display_infos)
     displays.push_back(CreateDisplayFromDisplayInfo(display_info));
 
-  std::unique_ptr<display::DisplayLayout> layout(builder.Build());
+  std::unique_ptr<DisplayLayout> layout(builder.Build());
   layout->ApplyToDisplayList(&displays, nullptr, 0);
 
   std::vector<ScreenWinDisplay> screen_win_displays;
@@ -151,9 +151,9 @@ std::vector<ScreenWinDisplay> DisplayInfosToScreenWinDisplays(
   return screen_win_displays;
 }
 
-std::vector<display::Display> ScreenWinDisplaysToDisplays(
+std::vector<Display> ScreenWinDisplaysToDisplays(
     const std::vector<ScreenWinDisplay>& screen_win_displays) {
-  std::vector<display::Display> displays;
+  std::vector<Display> displays;
   for (const auto& screen_win_display : screen_win_displays)
     displays.push_back(screen_win_display.display());
 
@@ -220,7 +220,7 @@ gfx::Point ScreenWin::ScreenToDIPPoint(const gfx::Point& pixel_point) {
   const ScreenWinDisplay screen_win_display =
       GetScreenWinDisplayVia(&ScreenWin::GetScreenWinDisplayNearestScreenPoint,
                              pixel_point);
-  const display::Display display = screen_win_display.display();
+  const Display display = screen_win_display.display();
   return ScalePointRelative(screen_win_display.pixel_bounds().origin(),
                             display.bounds().origin(),
                             1.0f / display.device_scale_factor(),
@@ -232,7 +232,7 @@ gfx::Point ScreenWin::DIPToScreenPoint(const gfx::Point& dip_point) {
   const ScreenWinDisplay screen_win_display =
       GetScreenWinDisplayVia(&ScreenWin::GetScreenWinDisplayNearestDIPPoint,
                              dip_point);
-  const display::Display display = screen_win_display.display();
+  const Display display = screen_win_display.display();
   return ScalePointRelative(display.bounds().origin(),
                             screen_win_display.pixel_bounds().origin(),
                             display.device_scale_factor(),
@@ -259,7 +259,7 @@ gfx::Rect ScreenWin::ScreenToDIPRect(HWND hwnd, const gfx::Rect& pixel_bounds) {
             &ScreenWin::GetScreenWinDisplayNearestScreenRect, pixel_bounds);
   float scale_factor = screen_win_display.display().device_scale_factor();
   gfx::Rect dip_rect = ScaleToEnclosingRect(pixel_bounds, 1.0f / scale_factor);
-  const display::Display display = screen_win_display.display();
+  const Display display = screen_win_display.display();
   dip_rect.set_origin(ScalePointRelative(
       screen_win_display.pixel_bounds().origin(),
       display.bounds().origin(),
@@ -276,7 +276,7 @@ gfx::Rect ScreenWin::DIPToScreenRect(HWND hwnd, const gfx::Rect& dip_bounds) {
             &ScreenWin::GetScreenWinDisplayNearestDIPRect, dip_bounds);
   float scale_factor = screen_win_display.display().device_scale_factor();
   gfx::Rect screen_rect = ScaleToEnclosingRect(dip_bounds, scale_factor);
-  const display::Display display = screen_win_display.display();
+  const Display display = screen_win_display.display();
   screen_rect.set_origin(ScalePointRelative(
       display.bounds().origin(),
       screen_win_display.pixel_bounds().origin(),
@@ -384,12 +384,11 @@ int ScreenWin::GetNumDisplays() const {
   return static_cast<int>(screen_win_displays_.size());
 }
 
-const std::vector<display::Display>& ScreenWin::GetAllDisplays() const {
+const std::vector<Display>& ScreenWin::GetAllDisplays() const {
   return displays_;
 }
 
-display::Display ScreenWin::GetDisplayNearestWindow(
-    gfx::NativeView window) const {
+Display ScreenWin::GetDisplayNearestWindow(gfx::NativeView window) const {
   HWND window_hwnd = GetHWNDFromNativeView(window);
   if (!window_hwnd) {
     // When |window| isn't rooted to a display, we should just return the
@@ -409,22 +408,21 @@ Display ScreenWin::GetDisplayNearestPoint(const gfx::Point& point) const {
   return screen_win_display.display();
 }
 
-display::Display ScreenWin::GetDisplayMatching(
-    const gfx::Rect& match_rect) const {
+Display ScreenWin::GetDisplayMatching(const gfx::Rect& match_rect) const {
   ScreenWinDisplay screen_win_display =
       GetScreenWinDisplayNearestScreenRect(match_rect);
   return screen_win_display.display();
 }
 
-display::Display ScreenWin::GetPrimaryDisplay() const {
+Display ScreenWin::GetPrimaryDisplay() const {
   return GetPrimaryScreenWinDisplay().display();
 }
 
-void ScreenWin::AddObserver(display::DisplayObserver* observer) {
+void ScreenWin::AddObserver(DisplayObserver* observer) {
   change_notifier_.AddObserver(observer);
 }
 
-void ScreenWin::RemoveObserver(display::DisplayObserver* observer) {
+void ScreenWin::RemoveObserver(DisplayObserver* observer) {
   change_notifier_.RemoveObserver(observer);
 }
 
@@ -488,7 +486,7 @@ void ScreenWin::OnWndProc(HWND hwnd,
   if (message != WM_DISPLAYCHANGE)
     return;
 
-  std::vector<display::Display> old_displays = std::move(displays_);
+  std::vector<Display> old_displays = std::move(displays_);
   UpdateFromDisplayInfos(GetDisplayInfosFromSystem());
   change_notifier_.NotifyDisplaysChanged(old_displays, displays_);
 }
@@ -513,7 +511,7 @@ ScreenWinDisplay ScreenWin::GetScreenWinDisplayNearestDIPPoint(
     const gfx::Point& dip_point) const {
   ScreenWinDisplay primary_screen_win_display;
   for (const auto& screen_win_display : screen_win_displays_) {
-    display::Display display = screen_win_display.display();
+    Display display = screen_win_display.display();
     const gfx::Rect dip_bounds = display.bounds();
     if (dip_bounds.Contains(dip_point))
       return screen_win_display;
@@ -528,7 +526,7 @@ ScreenWinDisplay ScreenWin::GetScreenWinDisplayNearestDIPRect(
   ScreenWinDisplay closest_screen_win_display;
   int64_t closest_distance_squared = INT64_MAX;
   for (const auto& screen_win_display : screen_win_displays_) {
-    display::Display display = screen_win_display.display();
+    Display display = screen_win_display.display();
     gfx::Rect dip_bounds = display.bounds();
     if (dip_rect.Intersects(dip_bounds))
       return screen_win_display;
@@ -546,7 +544,7 @@ ScreenWinDisplay ScreenWin::GetPrimaryScreenWinDisplay() const {
   MONITORINFOEX monitor_info = MonitorInfoFromWindow(nullptr,
                                                      MONITOR_DEFAULTTOPRIMARY);
   ScreenWinDisplay screen_win_display = GetScreenWinDisplay(monitor_info);
-  display::Display display = screen_win_display.display();
+  Display display = screen_win_display.display();
   // The Windows primary monitor is defined to have an origin of (0, 0).
   DCHECK_EQ(0, display.bounds().origin().x());
   DCHECK_EQ(0, display.bounds().origin().y());

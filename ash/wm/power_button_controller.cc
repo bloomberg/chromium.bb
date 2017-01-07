@@ -194,11 +194,11 @@ void PowerButtonController::OnKeyEvent(ui::KeyEvent* event) {
 
 #if defined(OS_CHROMEOS)
 void PowerButtonController::OnDisplayModeChanged(
-    const ui::DisplayConfigurator::DisplayStateList& display_states) {
+    const display::DisplayConfigurator::DisplayStateList& display_states) {
   bool internal_display_off = false;
   bool external_display_on = false;
-  for (const ui::DisplaySnapshot* display : display_states) {
-    if (display->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL) {
+  for (const display::DisplaySnapshot* display : display_states) {
+    if (display->type() == display::DISPLAY_CONNECTION_TYPE_INTERNAL) {
       if (!display->current_mode())
         internal_display_off = true;
     } else if (display->current_mode()) {

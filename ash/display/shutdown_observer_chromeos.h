@@ -8,7 +8,7 @@
 #include "ash/common/shell_observer.h"
 #include "base/macros.h"
 
-namespace ui {
+namespace display {
 class DisplayConfigurator;
 }
 
@@ -18,14 +18,14 @@ namespace ash {
 // |display_configurator_|.
 class ShutdownObserver : public ShellObserver {
  public:
-  explicit ShutdownObserver(ui::DisplayConfigurator* display_configurator);
+  explicit ShutdownObserver(display::DisplayConfigurator* display_configurator);
   ~ShutdownObserver() override;
 
  private:
   // ShellObserver:
   void OnAppTerminating() override;
 
-  ui::DisplayConfigurator* display_configurator_;
+  display::DisplayConfigurator* display_configurator_;
 
   DISALLOW_COPY_AND_ASSIGN(ShutdownObserver);
 };

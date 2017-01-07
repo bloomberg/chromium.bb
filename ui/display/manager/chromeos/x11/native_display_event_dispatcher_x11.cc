@@ -12,7 +12,7 @@
 #include "ui/display/manager/chromeos/x11/display_snapshot_x11.h"
 #include "ui/events/platform/platform_event_source.h"
 
-namespace ui {
+namespace display {
 
 // static
 const int NativeDisplayEventDispatcherX11::kUseCacheAfterStartupMs = 7000;
@@ -29,13 +29,13 @@ NativeDisplayEventDispatcherX11::NativeDisplayEventDispatcherX11(
 NativeDisplayEventDispatcherX11::~NativeDisplayEventDispatcherX11() {}
 
 bool NativeDisplayEventDispatcherX11::CanDispatchEvent(
-    const PlatformEvent& event) {
+    const ui::PlatformEvent& event) {
   return (event->type - xrandr_event_base_ == RRScreenChangeNotify) ||
          (event->type - xrandr_event_base_ == RRNotify);
 }
 
 uint32_t NativeDisplayEventDispatcherX11::DispatchEvent(
-    const PlatformEvent& event) {
+    const ui::PlatformEvent& event) {
   if (event->type - xrandr_event_base_ == RRScreenChangeNotify) {
     VLOG(1) << "Received RRScreenChangeNotify event";
     delegate_->UpdateXRandRConfiguration(event);
@@ -82,7 +82,7 @@ uint32_t NativeDisplayEventDispatcherX11::DispatchEvent(
       // Update if we failed to fetch the external display's ID before.
       // Internal display's EDID should always be available.
       bool display_id_needs_update =
-          x11_output->type() != ui::DISPLAY_CONNECTION_TYPE_INTERNAL &&
+          x11_output->type() != DISPLAY_CONNECTION_TYPE_INTERNAL &&
           !x11_output->display_id();
 
       if (x11_output->output() == output_change_event->output) {
@@ -90,7 +90,7 @@ uint32_t NativeDisplayEventDispatcherX11::DispatchEvent(
             mode_id == output_change_event->mode &&
             !display_id_needs_update) {
           VLOG(1) << "Ignoring event describing already-cached state";
-          return POST_DISPATCH_PERFORM_DEFAULT;
+          return ui::POST_DISPATCH_PERFORM_DEFAULT;
         }
         found_changed_output = true;
         break;
@@ -114,4 +114,4 @@ void NativeDisplayEventDispatcherX11::SetTickClockForTest(
   startup_time_ = tick_clock_->NowTicks();
 }
 
-}  // namespace ui
+}  // namespace display

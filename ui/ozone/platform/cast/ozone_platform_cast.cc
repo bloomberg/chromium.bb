@@ -75,7 +75,7 @@ class OzonePlatformCast : public OzonePlatform {
     return base::WrapUnique<PlatformWindow>(
         new PlatformWindowCast(delegate, bounds));
   }
-  std::unique_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
+  std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()
       override {
     NOTREACHED();
     return nullptr;

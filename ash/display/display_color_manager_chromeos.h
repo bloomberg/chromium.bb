@@ -23,45 +23,46 @@ namespace base {
 class SequencedWorkerPool;
 }
 
-namespace ui {
+namespace display {
 class DisplaySnapshot;
 struct GammaRampRGBEntry;
-}  // namespace ui
+}  // namespace display
 
 namespace ash {
 
 // An object that observes changes in display configuration applies any color
 // calibration where needed.
 class ASH_EXPORT DisplayColorManager
-    : public ui::DisplayConfigurator::Observer {
+    : public display::DisplayConfigurator::Observer {
  public:
-  DisplayColorManager(ui::DisplayConfigurator* configurator,
+  DisplayColorManager(display::DisplayConfigurator* configurator,
                       base::SequencedWorkerPool* blocking_pool);
   ~DisplayColorManager() override;
 
-  // ui::DisplayConfigurator::Observer
+  // display::DisplayConfigurator::Observer
   void OnDisplayModeChanged(
-      const ui::DisplayConfigurator::DisplayStateList& outputs) override;
+      const display::DisplayConfigurator::DisplayStateList& outputs) override;
   void OnDisplayModeChangeFailed(
-      const ui::DisplayConfigurator::DisplayStateList& displays,
-      ui::MultipleDisplayState failed_new_state) override {}
+      const display::DisplayConfigurator::DisplayStateList& displays,
+      display::MultipleDisplayState failed_new_state) override {}
 
   struct ColorCalibrationData {
     ColorCalibrationData();
     ~ColorCalibrationData();
 
-    std::vector<ui::GammaRampRGBEntry> degamma_lut;
-    std::vector<ui::GammaRampRGBEntry> gamma_lut;
+    std::vector<display::GammaRampRGBEntry> degamma_lut;
+    std::vector<display::GammaRampRGBEntry> gamma_lut;
     std::vector<float> correction_matrix;
   };
 
  protected:
-  virtual void FinishLoadCalibrationForDisplay(int64_t display_id,
-                                               int64_t product_id,
-                                               bool has_color_correction_matrix,
-                                               ui::DisplayConnectionType type,
-                                               const base::FilePath& path,
-                                               bool file_downloaded);
+  virtual void FinishLoadCalibrationForDisplay(
+      int64_t display_id,
+      int64_t product_id,
+      bool has_color_correction_matrix,
+      display::DisplayConnectionType type,
+      const base::FilePath& path,
+      bool file_downloaded);
   virtual void UpdateCalibrationData(
       int64_t display_id,
       int64_t product_id,
@@ -69,9 +70,9 @@ class ASH_EXPORT DisplayColorManager
 
  private:
   void ApplyDisplayColorCalibration(int64_t display_id, int64_t product_id);
-  void LoadCalibrationForDisplay(const ui::DisplaySnapshot* display);
+  void LoadCalibrationForDisplay(const display::DisplaySnapshot* display);
 
-  ui::DisplayConfigurator* configurator_;
+  display::DisplayConfigurator* configurator_;
   std::map<int64_t, std::unique_ptr<ColorCalibrationData>> calibration_map_;
   base::ThreadChecker thread_checker_;
   base::SequencedWorkerPool* blocking_pool_;

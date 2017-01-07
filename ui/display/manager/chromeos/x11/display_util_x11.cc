@@ -7,7 +7,7 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 
-namespace ui {
+namespace display {
 
 namespace {
 
@@ -40,4 +40,4 @@ DisplayConnectionType GetDisplayConnectionTypeFromName(
   return DISPLAY_CONNECTION_TYPE_UNKNOWN;
 }
 
-}  // namespace ui
+}  // namespace display

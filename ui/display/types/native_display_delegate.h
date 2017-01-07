@@ -19,7 +19,7 @@ class Point;
 class Size;
 }
 
-namespace ui {
+namespace display {
 class DisplayMode;
 class DisplaySnapshot;
 class NativeDisplayObserver;
@@ -27,9 +27,9 @@ class NativeDisplayObserver;
 struct GammaRampRGBEntry;
 
 using GetDisplaysCallback =
-    base::Callback<void(const std::vector<ui::DisplaySnapshot*>&)>;
+    base::Callback<void(const std::vector<DisplaySnapshot*>&)>;
 using ConfigureCallback = base::Callback<void(bool)>;
-using GetHDCPStateCallback = base::Callback<void(bool, ui::HDCPState)>;
+using GetHDCPStateCallback = base::Callback<void(bool, HDCPState)>;
 using SetHDCPStateCallback = base::Callback<void(bool)>;
 using DisplayControlCallback = base::Callback<void(bool)>;
 
@@ -73,15 +73,15 @@ class DISPLAY_TYPES_EXPORT NativeDisplayDelegate {
   virtual void GetDisplays(const GetDisplaysCallback& callback) = 0;
 
   // Adds |mode| to |output|. |mode| must be a valid display mode pointer.
-  virtual void AddMode(const ui::DisplaySnapshot& output,
-                       const ui::DisplayMode* mode) = 0;
+  virtual void AddMode(const DisplaySnapshot& output,
+                       const DisplayMode* mode) = 0;
 
   // Configures the display represented by |output| to use |mode| and positions
   // the display to |origin| in the framebuffer. |mode| can be NULL, which
   // represents disabling the display. The callback will return the status of
   // the operation.
-  virtual void Configure(const ui::DisplaySnapshot& output,
-                         const ui::DisplayMode* mode,
+  virtual void Configure(const DisplaySnapshot& output,
+                         const DisplayMode* mode,
                          const gfx::Point& origin,
                          const ConfigureCallback& callback) = 0;
 
@@ -89,27 +89,26 @@ class DISPLAY_TYPES_EXPORT NativeDisplayDelegate {
   virtual void CreateFrameBuffer(const gfx::Size& size) = 0;
 
   // Gets HDCP state of output.
-  virtual void GetHDCPState(const ui::DisplaySnapshot& output,
+  virtual void GetHDCPState(const DisplaySnapshot& output,
                             const GetHDCPStateCallback& callback) = 0;
 
   // Sets HDCP state of output.
-  virtual void SetHDCPState(const ui::DisplaySnapshot& output,
-                            ui::HDCPState state,
+  virtual void SetHDCPState(const DisplaySnapshot& output,
+                            HDCPState state,
                             const SetHDCPStateCallback& callback) = 0;
 
   // Gets the available list of color calibrations.
-  virtual std::vector<ui::ColorCalibrationProfile>
-      GetAvailableColorCalibrationProfiles(
-          const ui::DisplaySnapshot& output) = 0;
+  virtual std::vector<ColorCalibrationProfile>
+  GetAvailableColorCalibrationProfiles(const DisplaySnapshot& output) = 0;
 
   // Sets the color calibration of |output| to |new_profile|.
   virtual bool SetColorCalibrationProfile(
-      const ui::DisplaySnapshot& output,
-      ui::ColorCalibrationProfile new_profile) = 0;
+      const DisplaySnapshot& output,
+      ColorCalibrationProfile new_profile) = 0;
 
   // Set the gamma tables and corection matrix for the display.
   virtual bool SetColorCorrection(
-      const ui::DisplaySnapshot& output,
+      const DisplaySnapshot& output,
       const std::vector<GammaRampRGBEntry>& degamma_lut,
       const std::vector<GammaRampRGBEntry>& gamma_lut,
       const std::vector<float>& correction_matrix) = 0;
@@ -121,9 +120,9 @@ class DISPLAY_TYPES_EXPORT NativeDisplayDelegate {
   // Returns a fake display controller that can modify the fake display state.
   // Will return null if not needed, most likely because the delegate is
   // intended for use on device and doesn't need to fake the display state.
-  virtual display::FakeDisplayController* GetFakeDisplayController() = 0;
+  virtual FakeDisplayController* GetFakeDisplayController() = 0;
 };
 
-}  // namespace ui
+}  // namespace display
 
 #endif  // UI_DISPLAY_TYPES_NATIVE_DISPLAY_DELEGATE_H_

@@ -26,7 +26,7 @@
 #include "ui/gfx/x/x11_error_tracker.h"
 #include "ui/gfx/x/x11_types.h"
 
-namespace ui {
+namespace display {
 
 namespace {
 
@@ -282,8 +282,7 @@ void NativeDisplayDelegateX11::RemoveObserver(NativeDisplayObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-display::FakeDisplayController*
-NativeDisplayDelegateX11::GetFakeDisplayController() {
+FakeDisplayController* NativeDisplayDelegateX11::GetFakeDisplayController() {
   return nullptr;
 }
 
@@ -314,7 +313,7 @@ DisplaySnapshotX11* NativeDisplayDelegateX11::InitDisplaySnapshot(
     std::set<RRCrtc>* last_used_crtcs,
     int index) {
   int64_t display_id = 0;
-  display::EDIDParserX11 edid_parser(output);
+  EDIDParserX11 edid_parser(output);
   if (!edid_parser.GetDisplayId(static_cast<uint8_t>(index), &display_id))
     display_id = index;
 
@@ -628,7 +627,7 @@ XRRCrtcGamma* NativeDisplayDelegateX11::CreateGammaRampForProfile(
 }
 
 bool NativeDisplayDelegateX11::SetColorCorrection(
-    const ui::DisplaySnapshot& output,
+    const DisplaySnapshot& output,
     const std::vector<GammaRampRGBEntry>& degamma_lut,
     const std::vector<GammaRampRGBEntry>& gamma_lut,
     const std::vector<float>& correction_matrix) {
@@ -661,4 +660,4 @@ void NativeDisplayDelegateX11::DrawBackground() {
   XFreeColors(display_, colormap, &color.pixel, 1, 0);
 }
 
-}  // namespace ui
+}  // namespace display

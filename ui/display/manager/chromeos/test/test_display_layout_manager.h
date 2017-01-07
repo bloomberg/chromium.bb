@@ -10,7 +10,7 @@
 #include "ui/display/manager/chromeos/display_configurator.h"
 #include "ui/display/manager/chromeos/display_layout_manager.h"
 
-namespace ui {
+namespace display {
 namespace test {
 
 class TestDisplayLayoutManager : public DisplayLayoutManager {
@@ -41,6 +41,6 @@ class TestDisplayLayoutManager : public DisplayLayoutManager {
 };
 
 }  // namespace test
-}  // namespace ui
+}  // namespace display
 
 #endif  // UI_DISPLAY_MANAGER_CHROMEOS_TEST_TEST_DISPLAY_LAYOUT_MANAGER_H_

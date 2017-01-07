@@ -15,8 +15,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
-using ui::DisplayConfigurator;
-
 namespace display {
 
 namespace {
@@ -30,18 +28,18 @@ float ComputeDeviceScaleFactor(float diagonal_inch,
   return DisplayChangeObserver::FindDeviceScaleFactor(dpi);
 }
 
-std::unique_ptr<ui::DisplayMode> MakeDisplayMode(int width,
-                                                 int height,
-                                                 bool is_interlaced,
-                                                 float refresh_rate) {
-  return base::MakeUnique<ui::DisplayMode>(gfx::Size(width, height),
-                                           is_interlaced, refresh_rate);
+std::unique_ptr<DisplayMode> MakeDisplayMode(int width,
+                                             int height,
+                                             bool is_interlaced,
+                                             float refresh_rate) {
+  return base::MakeUnique<DisplayMode>(gfx::Size(width, height), is_interlaced,
+                                       refresh_rate);
 }
 
 }  // namespace
 
 TEST(DisplayChangeObserverTest, GetExternalManagedDisplayModeList) {
-  std::unique_ptr<ui::DisplaySnapshot> display_snapshot =
+  std::unique_ptr<DisplaySnapshot> display_snapshot =
       FakeDisplaySnapshot::Builder()
           .SetId(123)
           .SetNativeMode(MakeDisplayMode(1920, 1200, false, 60))
@@ -94,9 +92,9 @@ TEST(DisplayChangeObserverTest, GetExternalManagedDisplayModeList) {
 
 TEST(DisplayChangeObserverTest, GetEmptyExternalManagedDisplayModeList) {
   FakeDisplaySnapshot display_snapshot(
-      123, gfx::Point(), gfx::Size(), ui::DISPLAY_CONNECTION_TYPE_UNKNOWN,
-      false, false, false, std::string(), 0,
-      std::vector<std::unique_ptr<const ui::DisplayMode>>(), nullptr, nullptr);
+      123, gfx::Point(), gfx::Size(), DISPLAY_CONNECTION_TYPE_UNKNOWN, false,
+      false, false, std::string(), 0,
+      std::vector<std::unique_ptr<const DisplayMode>>(), nullptr, nullptr);
 
   ManagedDisplayInfo::ManagedDisplayModeList display_modes =
       DisplayChangeObserver::GetExternalManagedDisplayModeList(
@@ -105,7 +103,7 @@ TEST(DisplayChangeObserverTest, GetEmptyExternalManagedDisplayModeList) {
 }
 
 TEST(DisplayChangeObserverTest, GetInternalManagedDisplayModeList) {
-  std::unique_ptr<ui::DisplaySnapshot> display_snapshot =
+  std::unique_ptr<DisplaySnapshot> display_snapshot =
       FakeDisplaySnapshot::Builder()
           .SetId(123)
           .SetNativeMode(MakeDisplayMode(1366, 768, false, 60))
@@ -150,7 +148,7 @@ TEST(DisplayChangeObserverTest, GetInternalManagedDisplayModeList) {
 
 TEST(DisplayChangeObserverTest, GetInternalHiDPIManagedDisplayModeList) {
   // Data picked from peppy.
-  std::unique_ptr<ui::DisplaySnapshot> display_snapshot =
+  std::unique_ptr<DisplaySnapshot> display_snapshot =
       FakeDisplaySnapshot::Builder()
           .SetId(123)
           .SetNativeMode(MakeDisplayMode(2560, 1700, false, 60))
@@ -209,7 +207,7 @@ TEST(DisplayChangeObserverTest, GetInternalHiDPIManagedDisplayModeList) {
 
 TEST(DisplayChangeObserverTest, GetInternalManagedDisplayModeList1_25) {
   // Data picked from peppy.
-  std::unique_ptr<ui::DisplaySnapshot> display_snapshot =
+  std::unique_ptr<DisplaySnapshot> display_snapshot =
       FakeDisplaySnapshot::Builder()
           .SetId(123)
           .SetNativeMode(MakeDisplayMode(1920, 1080, false, 60))
@@ -250,7 +248,7 @@ TEST(DisplayChangeObserverTest, GetInternalManagedDisplayModeList1_25) {
 }
 
 TEST(DisplayChangeObserverTest, GetExternalManagedDisplayModeList4K) {
-  std::unique_ptr<ui::DisplaySnapshot> display_snapshot =
+  std::unique_ptr<DisplaySnapshot> display_snapshot =
       FakeDisplaySnapshot::Builder()
           .SetId(123)
           .SetNativeMode(MakeDisplayMode(3840, 2160, false, 30))
@@ -351,7 +349,7 @@ TEST(DisplayChangeObserverTest, FindDeviceScaleFactor) {
 }
 
 TEST(DisplayChangeObserverTest, FindExternalDisplayNativeModeWhenOverwritten) {
-  std::unique_ptr<ui::DisplaySnapshot> display_snapshot =
+  std::unique_ptr<DisplaySnapshot> display_snapshot =
       FakeDisplaySnapshot::Builder()
           .SetId(123)
           .SetNativeMode(MakeDisplayMode(1920, 1080, true, 60))

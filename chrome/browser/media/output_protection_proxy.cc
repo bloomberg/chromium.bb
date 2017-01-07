@@ -79,7 +79,7 @@ void OutputProtectionProxy::ProcessQueryStatusResult(
             ->IsInsecureCapturingInProgress(render_process_id_,
                                             render_frame_id_);
     if (is_insecure_capture_detected)
-      new_link_mask |= ui::DISPLAY_CONNECTION_TYPE_NETWORK;
+      new_link_mask |= display::DISPLAY_CONNECTION_TYPE_NETWORK;
   }
 
   callback.Run(success, new_link_mask, protection_mask);

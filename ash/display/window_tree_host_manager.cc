@@ -828,7 +828,7 @@ void WindowTreeHostManager::PostDisplayConfigurationChange(
 #endif
 }
 
-ui::DisplayConfigurator* WindowTreeHostManager::display_configurator() {
+display::DisplayConfigurator* WindowTreeHostManager::display_configurator() {
   return Shell::GetInstance()->display_configurator();
 }
 

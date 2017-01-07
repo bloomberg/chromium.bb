@@ -13,10 +13,6 @@ namespace display {
 // before display IDs are known.
 constexpr int64_t kInvalidDisplayId = -1;
 
-}  // namespace display
-
-namespace ui {
-
 // Used to describe the state of a multi-display configuration.
 enum MultipleDisplayState {
   MULTIPLE_DISPLAY_STATE_INVALID,
@@ -70,6 +66,6 @@ enum ColorCalibrationProfile {
   NUM_COLOR_PROFILES,
 };
 
-}  // namespace ui
+}  // namespace display
 
 #endif  // UI_DISPLAY_TYPES_DISPLAY_CONSTANTS_H_

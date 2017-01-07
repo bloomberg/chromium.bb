@@ -27,10 +27,10 @@
 
 #define IPC_MESSAGE_START OzoneGpuMsgStart
 
-IPC_ENUM_TRAITS_MAX_VALUE(ui::DisplayConnectionType,
-                          ui::DISPLAY_CONNECTION_TYPE_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(display::DisplayConnectionType,
+                          display::DISPLAY_CONNECTION_TYPE_LAST)
 
-IPC_ENUM_TRAITS_MAX_VALUE(ui::HDCPState, ui::HDCP_STATE_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(display::HDCPState, display::HDCP_STATE_LAST)
 
 IPC_ENUM_TRAITS_MAX_VALUE(gfx::OverlayTransform, gfx::OVERLAY_TRANSFORM_LAST)
 
@@ -62,7 +62,7 @@ IPC_STRUCT_TRAITS_BEGIN(ui::DisplaySnapshot_Params)
   IPC_STRUCT_TRAITS_MEMBER(maximum_cursor_size)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(ui::GammaRampRGBEntry)
+IPC_STRUCT_TRAITS_BEGIN(display::GammaRampRGBEntry)
   IPC_STRUCT_TRAITS_MEMBER(r)
   IPC_STRUCT_TRAITS_MEMBER(g)
   IPC_STRUCT_TRAITS_MEMBER(b)
@@ -141,13 +141,13 @@ IPC_MESSAGE_CONTROL1(OzoneGpuMsg_GetHDCPState, int64_t /* display_id */)
 
 IPC_MESSAGE_CONTROL2(OzoneGpuMsg_SetHDCPState,
                      int64_t /* display_id */,
-                     ui::HDCPState /* state */)
+                     display::HDCPState /* state */)
 
 IPC_MESSAGE_CONTROL4(OzoneGpuMsg_SetColorCorrection,
-                     int64_t,                             // display ID,
-                     std::vector<ui::GammaRampRGBEntry>,  // degamma lut
-                     std::vector<ui::GammaRampRGBEntry>,  // gamma lut
-                     std::vector<float>)                  // transform matrix
+                     int64_t,                                  // display ID,
+                     std::vector<display::GammaRampRGBEntry>,  // degamma lut
+                     std::vector<display::GammaRampRGBEntry>,  // gamma lut
+                     std::vector<float>)  // transform matrix
 
 IPC_MESSAGE_CONTROL2(OzoneGpuMsg_CheckOverlayCapabilities,
                      gfx::AcceleratedWidget /* widget */,
@@ -169,7 +169,7 @@ IPC_MESSAGE_CONTROL2(OzoneHostMsg_DisplayConfigured,
 IPC_MESSAGE_CONTROL3(OzoneHostMsg_HDCPStateReceived,
                      int64_t /* display_id */,
                      bool /* success */,
-                     ui::HDCPState /* state */)
+                     display::HDCPState /* state */)
 
 // Response for OzoneGpuMsg_SetHDCPState.
 IPC_MESSAGE_CONTROL2(OzoneHostMsg_HDCPStateUpdated,

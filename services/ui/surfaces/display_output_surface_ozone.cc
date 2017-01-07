@@ -35,7 +35,7 @@ DisplayOutputSurfaceOzone::DisplayOutputSurfaceOzone(
       weak_ptr_factory_(this) {
   buffer_queue_.reset(
       new BufferQueue(context_provider->ContextGL(), target, internalformat,
-                      ui::DisplaySnapshot::PrimaryFormat(), &gl_helper_,
+                      display::DisplaySnapshot::PrimaryFormat(), &gl_helper_,
                       gpu_memory_buffer_manager, widget));
 
   capabilities_.uses_default_gl_framebuffer = false;

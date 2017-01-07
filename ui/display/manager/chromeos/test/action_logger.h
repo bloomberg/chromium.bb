@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 
-namespace ui {
+namespace display {
 namespace test {
 
 class ActionLogger {
@@ -31,6 +31,6 @@ class ActionLogger {
 };
 
 }  // namespace test
-}  // namespace ui
+}  // namespace display
 
 #endif  // UI_DISPLAY_MANAGER_CHROMEOS_TEST_ACTION_LOGGER_H_

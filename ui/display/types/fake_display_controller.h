@@ -15,11 +15,9 @@ namespace gfx {
 class Size;
 }
 
-namespace ui {
-class DisplaySnapshot;
-}
-
 namespace display {
+
+class DisplaySnapshot;
 
 // Controls the fake display state. Provided by the NativeDisplayDelegate if
 // it is intended for use off device where there are no physical displays and
@@ -32,7 +30,7 @@ class DISPLAY_TYPES_EXPORT FakeDisplayController {
 
   // Adds |display| to the list of displays and returns true if successful. Will
   // fail if an existing display has the same id as |display|.
-  virtual bool AddDisplay(std::unique_ptr<ui::DisplaySnapshot> display) = 0;
+  virtual bool AddDisplay(std::unique_ptr<DisplaySnapshot> display) = 0;
 
   // Removes a fake display with specified id, returns true if successful.
   virtual bool RemoveDisplay(int64_t display_id) = 0;

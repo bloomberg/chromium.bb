@@ -15,7 +15,7 @@ namespace win {
 
 class DisplayInfo;
 
-// A display used by display::ScreenWin.
+// A display used by ScreenWin.
 // It holds a display and additional parameters used for DPI calculations.
 class ScreenWinDisplay final {
  public:

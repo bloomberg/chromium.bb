@@ -63,7 +63,7 @@ class ShellDesktopControllerAura
       public aura::client::WindowParentingClient,
 #if defined(OS_CHROMEOS)
       public chromeos::PowerManagerClient::Observer,
-      public ui::DisplayConfigurator::Observer,
+      public display::DisplayConfigurator::Observer,
 #endif
       public aura::WindowTreeHostObserver,
       public ui::internal::InputMethodDelegate {
@@ -89,9 +89,9 @@ class ShellDesktopControllerAura
   void PowerButtonEventReceived(bool down,
                                 const base::TimeTicks& timestamp) override;
 
-  // ui::DisplayConfigurator::Observer overrides.
+  // display::DisplayConfigurator::Observer overrides.
   void OnDisplayModeChanged(
-      const ui::DisplayConfigurator::DisplayStateList& displays) override;
+      const display::DisplayConfigurator::DisplayStateList& displays) override;
 #endif
 
   // aura::WindowTreeHostObserver overrides:
@@ -120,7 +120,7 @@ class ShellDesktopControllerAura
   gfx::Size GetPrimaryDisplaySize();
 
 #if defined(OS_CHROMEOS)
-  std::unique_ptr<ui::DisplayConfigurator> display_configurator_;
+  std::unique_ptr<display::DisplayConfigurator> display_configurator_;
 #endif
 
   std::unique_ptr<ShellScreen> screen_;

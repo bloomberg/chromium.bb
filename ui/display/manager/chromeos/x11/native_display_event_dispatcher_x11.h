@@ -13,7 +13,7 @@
 #include "ui/display/manager/chromeos/x11/native_display_delegate_x11.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 
-namespace ui {
+namespace display {
 
 // The implementation is interested in the cases of RRNotify events which
 // correspond to output add/remove events. Note that Output add/remove events
@@ -28,8 +28,8 @@ class DISPLAY_MANAGER_EXPORT NativeDisplayEventDispatcherX11
   ~NativeDisplayEventDispatcherX11() override;
 
   // ui::PlatformEventDispatcher:
-  bool CanDispatchEvent(const PlatformEvent& event) override;
-  uint32_t DispatchEvent(const PlatformEvent& event) override;
+  bool CanDispatchEvent(const ui::PlatformEvent& event) override;
+  uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
 
   void SetTickClockForTest(std::unique_ptr<base::TickClock> tick_clock);
 
@@ -50,6 +50,6 @@ class DISPLAY_MANAGER_EXPORT NativeDisplayEventDispatcherX11
   DISALLOW_COPY_AND_ASSIGN(NativeDisplayEventDispatcherX11);
 };
 
-}  // namespace ui
+}  // namespace display
 
 #endif  // UI_DISPLAY_MANAGER_CHROMEOS_X11_NATIVE_DISPLAY_EVENT_DISPATCHER_X11_H_

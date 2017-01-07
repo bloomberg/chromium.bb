@@ -102,7 +102,7 @@ class MockBufferQueue : public BufferQueue {
       : BufferQueue(gl,
                     target,
                     internalformat,
-                    ui::DisplaySnapshot::PrimaryFormat(),
+                    display::DisplaySnapshot::PrimaryFormat(),
                     nullptr,
                     gpu_memory_buffer_manager,
                     kFakeSurfaceHandle) {}
@@ -263,9 +263,9 @@ std::unique_ptr<BufferQueue> CreateBufferQueue(
     unsigned int target,
     gpu::gles2::GLES2Interface* gl,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
-  std::unique_ptr<BufferQueue> buffer_queue(
-      new BufferQueue(gl, target, GL_RGB, ui::DisplaySnapshot::PrimaryFormat(),
-                      nullptr, gpu_memory_buffer_manager, kFakeSurfaceHandle));
+  std::unique_ptr<BufferQueue> buffer_queue(new BufferQueue(
+      gl, target, GL_RGB, display::DisplaySnapshot::PrimaryFormat(), nullptr,
+      gpu_memory_buffer_manager, kFakeSurfaceHandle));
   buffer_queue->Initialize();
   return buffer_queue;
 }
@@ -332,10 +332,10 @@ TEST(BufferQueueStandaloneTest, CheckBoundFramebuffer) {
   gl_helper.reset(new GLHelper(context_provider->ContextGL(),
                                context_provider->ContextSupport()));
 
-  output_surface.reset(
-      new BufferQueue(context_provider->ContextGL(), GL_TEXTURE_2D, GL_RGB,
-                      ui::DisplaySnapshot::PrimaryFormat(), gl_helper.get(),
-                      gpu_memory_buffer_manager.get(), kFakeSurfaceHandle));
+  output_surface.reset(new BufferQueue(
+      context_provider->ContextGL(), GL_TEXTURE_2D, GL_RGB,
+      display::DisplaySnapshot::PrimaryFormat(), gl_helper.get(),
+      gpu_memory_buffer_manager.get(), kFakeSurfaceHandle));
   output_surface->Initialize();
   output_surface->Reshape(screen_size, 1.0f, gfx::ColorSpace());
   // Trigger a sub-buffer copy to exercise all paths.

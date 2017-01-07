@@ -135,7 +135,7 @@ class OzonePlatformGbm
     platform_window->Initialize();
     return std::move(platform_window);
   }
-  std::unique_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
+  std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()
       override {
     return base::MakeUnique<DrmNativeDisplayDelegate>(display_manager_.get());
   }

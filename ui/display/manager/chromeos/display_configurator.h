@@ -32,7 +32,7 @@ namespace gfx {
 class Size;
 }
 
-namespace ui {
+namespace display {
 struct GammaRampRGBEntry;
 class DisplayLayoutManager;
 class DisplayMode;
@@ -104,7 +104,7 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
 
     // Called when displays are detected.
     virtual MultipleDisplayState GetStateForDisplayIds(
-        const ui::DisplayConfigurator::DisplayStateList& outputs) const = 0;
+        const DisplayConfigurator::DisplayStateList& outputs) const = 0;
 
     // Queries the resolution (|size|) in pixels to select display mode for the
     // given display id.
@@ -285,12 +285,12 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
 
   // Checks the available color profiles for |display_id| and fills the result
   // into |profiles|.
-  std::vector<ui::ColorCalibrationProfile> GetAvailableColorCalibrationProfiles(
+  std::vector<ColorCalibrationProfile> GetAvailableColorCalibrationProfiles(
       int64_t display_id);
 
   // Updates the color calibration to |new_profile|.
   bool SetColorCalibrationProfile(int64_t display_id,
-                                  ui::ColorCalibrationProfile new_profile);
+                                  ColorCalibrationProfile new_profile);
 
   // Enables/disables virtual display.
   int64_t AddVirtualDisplay(const gfx::Size& display_size);
@@ -488,6 +488,6 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   DISALLOW_COPY_AND_ASSIGN(DisplayConfigurator);
 };
 
-}  // namespace ui
+}  // namespace display
 
 #endif  // UI_DISPLAY_MANAGER_CHROMEOS_DISPLAY_CONFIGURATOR_H_

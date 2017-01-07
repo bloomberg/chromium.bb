@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/display/manager/chromeos/display_configurator.h"
 
-namespace ui {
+namespace display {
 
 class DisplayLayoutManager;
 class NativeDisplayDelegate;
@@ -83,6 +83,6 @@ class DISPLAY_MANAGER_EXPORT ApplyContentProtectionTask {
   DISALLOW_COPY_AND_ASSIGN(ApplyContentProtectionTask);
 };
 
-}  // namespace ui
+}  // namespace display
 
 #endif  // UI_DISPLAY_MANAGER_CHROMEOS_APPLY_CONTENT_PROTECTION_TASK_H_

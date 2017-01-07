@@ -7,7 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "ui/display/manager/chromeos/x11/display_mode_x11.h"
 
-namespace ui {
+namespace display {
 
 DisplaySnapshotX11::DisplaySnapshotX11(
     int64_t display_id,
@@ -58,4 +58,4 @@ std::string DisplaySnapshotX11::ToString() const {
       physical_size_.height());
 }
 
-}  // namespace ui
+}  // namespace display

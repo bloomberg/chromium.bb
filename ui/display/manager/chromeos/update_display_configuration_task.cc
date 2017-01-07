@@ -10,7 +10,7 @@
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/native_display_delegate.h"
 
-namespace ui {
+namespace display {
 
 UpdateDisplayConfigurationTask::UpdateDisplayConfigurationTask(
     NativeDisplayDelegate* delegate,
@@ -212,4 +212,4 @@ MultipleDisplayState UpdateDisplayConfigurationTask::ChooseDisplayState()
   return MULTIPLE_DISPLAY_STATE_INVALID;
 }
 
-}  // namespace ui
+}  // namespace display

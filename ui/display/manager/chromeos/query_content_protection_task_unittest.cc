@@ -16,7 +16,7 @@
 #include "ui/display/manager/chromeos/test/test_display_layout_manager.h"
 #include "ui/display/manager/chromeos/test/test_native_display_delegate.h"
 
-namespace ui {
+namespace display {
 namespace test {
 
 namespace {
@@ -24,7 +24,7 @@ namespace {
 std::unique_ptr<DisplaySnapshot> CreateDisplaySnapshot(
     int64_t id,
     DisplayConnectionType type) {
-  return display::FakeDisplaySnapshot::Builder()
+  return FakeDisplaySnapshot::Builder()
       .SetId(id)
       .SetNativeMode(gfx::Size(1024, 768))
       .SetType(type)
@@ -194,4 +194,4 @@ TEST_F(QueryContentProtectionTaskTest, QueryWithMirrorHDCPDisplays) {
 }
 
 }  // namespace test
-}  // namespace ui
+}  // namespace display

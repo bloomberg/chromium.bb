@@ -26,6 +26,10 @@ namespace base {
 struct FileDescriptor;
 }
 
+namespace display {
+struct GammaRampRGBEntry;
+}
+
 namespace gfx {
 class Point;
 class Rect;
@@ -39,7 +43,6 @@ class GbmBuffer;
 class ScanoutBufferGenerator;
 class ScreenManager;
 
-struct GammaRampRGBEntry;
 struct OverlayPlane;
 
 // Holds all the DRM related state and performs all DRM related operations.
@@ -111,14 +114,15 @@ class DrmThread : public base::Thread, public ozone::mojom::DeviceCursor {
   void RemoveGraphicsDevice(const base::FilePath& path);
   void GetHDCPState(
       int64_t display_id,
-      const base::Callback<void(int64_t, bool, HDCPState)>& callback);
+      const base::Callback<void(int64_t, bool, display::HDCPState)>& callback);
   void SetHDCPState(int64_t display_id,
-                    HDCPState state,
+                    display::HDCPState state,
                     const base::Callback<void(int64_t, bool)>& callback);
-  void SetColorCorrection(int64_t display_id,
-                          const std::vector<GammaRampRGBEntry>& degamma_lut,
-                          const std::vector<GammaRampRGBEntry>& gamma_lut,
-                          const std::vector<float>& correction_matrix);
+  void SetColorCorrection(
+      int64_t display_id,
+      const std::vector<display::GammaRampRGBEntry>& degamma_lut,
+      const std::vector<display::GammaRampRGBEntry>& gamma_lut,
+      const std::vector<float>& correction_matrix);
 
   // base::Thread:
   void Init() override;

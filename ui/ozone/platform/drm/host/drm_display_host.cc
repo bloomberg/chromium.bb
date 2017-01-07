@@ -16,7 +16,7 @@ namespace ui {
 
 namespace {
 
-DisplayMode_Params GetDisplayModeParams(const DisplayMode& mode) {
+DisplayMode_Params GetDisplayModeParams(const display::DisplayMode& mode) {
   DisplayMode_Params params;
   params.size = mode.size();
   params.is_interlaced = mode.is_interlaced();
@@ -45,9 +45,9 @@ void DrmDisplayHost::UpdateDisplaySnapshot(
   snapshot_ = base::MakeUnique<DisplaySnapshotProxy>(params);
 }
 
-void DrmDisplayHost::Configure(const DisplayMode* mode,
+void DrmDisplayHost::Configure(const display::DisplayMode* mode,
                                const gfx::Point& origin,
-                               const ConfigureCallback& callback) {
+                               const display::ConfigureCallback& callback) {
   if (is_dummy_) {
     callback.Run(true);
     return;
@@ -78,13 +78,15 @@ void DrmDisplayHost::OnDisplayConfigured(bool status) {
   configure_callback_.Reset();
 }
 
-void DrmDisplayHost::GetHDCPState(const GetHDCPStateCallback& callback) {
+void DrmDisplayHost::GetHDCPState(
+    const display::GetHDCPStateCallback& callback) {
   get_hdcp_callback_ = callback;
   if (!sender_->GpuGetHDCPState(snapshot_->display_id()))
-    OnHDCPStateReceived(false, HDCP_STATE_UNDESIRED);
+    OnHDCPStateReceived(false, display::HDCP_STATE_UNDESIRED);
 }
 
-void DrmDisplayHost::OnHDCPStateReceived(bool status, HDCPState state) {
+void DrmDisplayHost::OnHDCPStateReceived(bool status,
+                                         display::HDCPState state) {
   if (!get_hdcp_callback_.is_null()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(get_hdcp_callback_, status, state));
@@ -96,8 +98,9 @@ void DrmDisplayHost::OnHDCPStateReceived(bool status, HDCPState state) {
   get_hdcp_callback_.Reset();
 }
 
-void DrmDisplayHost::SetHDCPState(HDCPState state,
-                                  const SetHDCPStateCallback& callback) {
+void DrmDisplayHost::SetHDCPState(
+    display::HDCPState state,
+    const display::SetHDCPStateCallback& callback) {
   set_hdcp_callback_ = callback;
   if (!sender_->GpuSetHDCPState(snapshot_->display_id(), state))
     OnHDCPStateUpdated(false);
@@ -116,8 +119,8 @@ void DrmDisplayHost::OnHDCPStateUpdated(bool status) {
 }
 
 void DrmDisplayHost::SetColorCorrection(
-    const std::vector<GammaRampRGBEntry>& degamma_lut,
-    const std::vector<GammaRampRGBEntry>& gamma_lut,
+    const std::vector<display::GammaRampRGBEntry>& degamma_lut,
+    const std::vector<display::GammaRampRGBEntry>& gamma_lut,
     const std::vector<float>& correction_matrix) {
   sender_->GpuSetColorCorrection(snapshot_->display_id(), degamma_lut,
                                  gamma_lut, correction_matrix);
@@ -139,7 +142,7 @@ void DrmDisplayHost::ClearCallbacks() {
   if (!configure_callback_.is_null())
     OnDisplayConfigured(false);
   if (!get_hdcp_callback_.is_null())
-    OnHDCPStateReceived(false, HDCP_STATE_UNDESIRED);
+    OnHDCPStateReceived(false, display::HDCP_STATE_UNDESIRED);
   if (!set_hdcp_callback_.is_null())
     OnHDCPStateUpdated(false);
 }

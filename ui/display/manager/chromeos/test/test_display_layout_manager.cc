@@ -8,7 +8,7 @@
 
 #include "ui/display/types/display_snapshot.h"
 
-namespace ui {
+namespace display {
 namespace test {
 
 TestDisplayLayoutManager::TestDisplayLayoutManager(
@@ -57,4 +57,4 @@ bool TestDisplayLayoutManager::IsMirroring() const {
 }
 
 }  // namespace test
-}  // namespace ui
+}  // namespace display

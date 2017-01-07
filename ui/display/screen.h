@@ -53,24 +53,21 @@ class DISPLAY_EXPORT Screen {
   virtual int GetNumDisplays() const = 0;
 
   // Returns the list of displays that are currently available.
-  virtual const std::vector<display::Display>& GetAllDisplays() const = 0;
+  virtual const std::vector<Display>& GetAllDisplays() const = 0;
 
   // Returns the display nearest the specified window.
   // If the window is NULL or the window is not rooted to a display this will
   // return the primary display.
-  virtual display::Display GetDisplayNearestWindow(
-      gfx::NativeView view) const = 0;
+  virtual Display GetDisplayNearestWindow(gfx::NativeView view) const = 0;
 
   // Returns the display nearest the specified point. |point| should be in DIPs.
-  virtual display::Display GetDisplayNearestPoint(
-      const gfx::Point& point) const = 0;
+  virtual Display GetDisplayNearestPoint(const gfx::Point& point) const = 0;
 
   // Returns the display that most closely intersects the provided bounds.
-  virtual display::Display GetDisplayMatching(
-      const gfx::Rect& match_rect) const = 0;
+  virtual Display GetDisplayMatching(const gfx::Rect& match_rect) const = 0;
 
   // Returns the primary display.
-  virtual display::Display GetPrimaryDisplay() const = 0;
+  virtual Display GetPrimaryDisplay() const = 0;
 
   // Adds/Removes display observers.
   virtual void AddObserver(DisplayObserver* observer) = 0;
@@ -91,8 +88,7 @@ class DISPLAY_EXPORT Screen {
   // Returns true if the display with |display_id| is found and returns that
   // display in |display|. Otherwise returns false and |display| remains
   // untouched.
-  bool GetDisplayWithDisplayId(int64_t display_id,
-                               display::Display* display) const;
+  bool GetDisplayWithDisplayId(int64_t display_id, Display* display) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Screen);

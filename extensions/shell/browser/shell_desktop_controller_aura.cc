@@ -182,13 +182,13 @@ ShellDesktopControllerAura::ShellDesktopControllerAura()
 #if defined(OS_CHROMEOS)
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
-  display_configurator_.reset(new ui::DisplayConfigurator);
+  display_configurator_.reset(new display::DisplayConfigurator);
 #if defined(USE_OZONE)
   display_configurator_->Init(
       ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate(), false);
 #elif defined(USE_X11)
-  display_configurator_->Init(base::MakeUnique<ui::NativeDisplayDelegateX11>(),
-                              false);
+  display_configurator_->Init(
+      base::MakeUnique<display::NativeDisplayDelegateX11>(), false);
 #endif
   display_configurator_->ForceInitialConfigure(0);
   display_configurator_->AddObserver(this);
@@ -258,7 +258,7 @@ void ShellDesktopControllerAura::PowerButtonEventReceived(
 }
 
 void ShellDesktopControllerAura::OnDisplayModeChanged(
-    const ui::DisplayConfigurator::DisplayStateList& displays) {
+    const display::DisplayConfigurator::DisplayStateList& displays) {
   gfx::Size size = GetPrimaryDisplaySize();
   if (!size.IsEmpty())
     host_->UpdateRootWindowSizeInPixels(size);
@@ -386,11 +386,11 @@ void ShellDesktopControllerAura::DestroyRootWindow() {
 
 gfx::Size ShellDesktopControllerAura::GetPrimaryDisplaySize() {
 #if defined(OS_CHROMEOS)
-  const ui::DisplayConfigurator::DisplayStateList& displays =
+  const display::DisplayConfigurator::DisplayStateList& displays =
       display_configurator_->cached_displays();
   if (displays.empty())
     return gfx::Size();
-  const ui::DisplayMode* mode = displays[0]->current_mode();
+  const display::DisplayMode* mode = displays[0]->current_mode();
   return mode ? mode->size() : gfx::Size();
 #else
   return gfx::Size();

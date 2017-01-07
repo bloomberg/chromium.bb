@@ -8,7 +8,7 @@
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/native_display_delegate.h"
 
-namespace ui {
+namespace display {
 
 QueryContentProtectionTask::QueryContentProtectionTask(
     DisplayLayoutManager* layout_manager,
@@ -83,4 +83,4 @@ void QueryContentProtectionTask::OnHDCPStateUpdate(bool success,
   callback_.Run(response_);
 }
 
-}  // namespace ui
+}  // namespace display

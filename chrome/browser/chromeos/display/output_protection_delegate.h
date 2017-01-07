@@ -37,11 +37,11 @@ class OutputProtectionDelegate : public aura::WindowObserver {
                         const EnableProtectionCallback& callback);
 
  private:
-  ui::DisplayConfigurator::ContentProtectionClientId GetClientId();
+  display::DisplayConfigurator::ContentProtectionClientId GetClientId();
 
   void QueryStatusComplete(
       const QueryStatusCallback& callback,
-      const ui::DisplayConfigurator::QueryProtectionResponse& response);
+      const display::DisplayConfigurator::QueryProtectionResponse& response);
   void EnableProtectionComplete(const EnableProtectionCallback& callback,
                                 bool success);
 
@@ -52,7 +52,7 @@ class OutputProtectionDelegate : public aura::WindowObserver {
   // Native window being observed.
   aura::Window* window_;
 
-  ui::DisplayConfigurator::ContentProtectionClientId client_id_;
+  display::DisplayConfigurator::ContentProtectionClientId client_id_;
 
   // The display id which the renderer currently uses.
   int64_t display_id_;

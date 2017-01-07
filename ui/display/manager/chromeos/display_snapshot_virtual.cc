@@ -9,7 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "ui/display/types/display_mode.h"
 
-namespace ui {
+namespace display {
 
 namespace {
 
@@ -50,4 +50,4 @@ std::string DisplaySnapshotVirtual::ToString() const {
       physical_size_.ToString().c_str());
 }
 
-}  // namespace ui
+}  // namespace display

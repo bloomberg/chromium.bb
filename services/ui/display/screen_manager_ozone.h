@@ -83,7 +83,7 @@ class ScreenManagerOzone
   void CloseMirroringDisplayIfNotNecessary() override;
   void PreDisplayConfigurationChange(bool clear_focus) override;
   void PostDisplayConfigurationChange(bool must_clear_window) override;
-  ui::DisplayConfigurator* display_configurator() override;
+  DisplayConfigurator* display_configurator() override;
 
   // mojo::InterfaceFactory<mojom::DisplayController>:
   void Create(const service_manager::Identity& remote_identity,
@@ -93,14 +93,14 @@ class ScreenManagerOzone
   void Create(const service_manager::Identity& remote_identity,
               mojom::TestDisplayControllerRequest request) override;
 
-  ui::DisplayConfigurator display_configurator_;
+  DisplayConfigurator display_configurator_;
   std::unique_ptr<DisplayManager> display_manager_;
   std::unique_ptr<DisplayChangeObserver> display_change_observer_;
 
   ScreenBase* screen_ = nullptr;
   ScreenManagerDelegate* delegate_ = nullptr;
 
-  std::unique_ptr<ui::NativeDisplayDelegate> native_display_delegate_;
+  std::unique_ptr<NativeDisplayDelegate> native_display_delegate_;
 
   // If not null it provides a way to modify the display state when running off
   // device (eg. running mustash on Linux).

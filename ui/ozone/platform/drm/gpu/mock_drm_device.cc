@@ -226,8 +226,8 @@ bool MockDrmDevice::CommitProperties(drmModeAtomicReq* properties,
 
 bool MockDrmDevice::SetColorCorrection(
     uint32_t crtc_id,
-    const std::vector<GammaRampRGBEntry>& degamma_lut,
-    const std::vector<GammaRampRGBEntry>& gamma_lut,
+    const std::vector<display::GammaRampRGBEntry>& degamma_lut,
+    const std::vector<display::GammaRampRGBEntry>& gamma_lut,
     const std::vector<float>& correction_matrix) {
   return true;
 }

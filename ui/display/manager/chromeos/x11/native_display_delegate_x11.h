@@ -41,7 +41,7 @@ extern "C" {
 void XRRFreeScreenResources(XRRScreenResources* resources);
 }
 
-namespace ui {
+namespace display {
 
 class DisplayModeX11;
 class DisplaySnapshotX11;
@@ -98,13 +98,13 @@ class DISPLAY_MANAGER_EXPORT NativeDisplayDelegateX11
       const DisplaySnapshot& output) override;
   bool SetColorCalibrationProfile(const DisplaySnapshot& output,
                                   ColorCalibrationProfile new_profile) override;
-  bool SetColorCorrection(const ui::DisplaySnapshot& output,
+  bool SetColorCorrection(const DisplaySnapshot& output,
                           const std::vector<GammaRampRGBEntry>& degamma_lut,
                           const std::vector<GammaRampRGBEntry>& gamma_lut,
                           const std::vector<float>& correction_matrix) override;
   void AddObserver(NativeDisplayObserver* observer) override;
   void RemoveObserver(NativeDisplayObserver* observer) override;
-  display::FakeDisplayController* GetFakeDisplayController() override;
+  FakeDisplayController* GetFakeDisplayController() override;
 
  private:
   class HelperDelegateX11;
@@ -175,6 +175,6 @@ class DISPLAY_MANAGER_EXPORT NativeDisplayDelegateX11
   DISALLOW_COPY_AND_ASSIGN(NativeDisplayDelegateX11);
 };
 
-}  // namespace ui
+}  // namespace display
 
 #endif  // UI_DISPLAY_MANAGER_CHROMEOS_X11_NATIVE_DISPLAY_DELEGATE_X11_H_

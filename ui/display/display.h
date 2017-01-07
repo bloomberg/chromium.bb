@@ -91,11 +91,11 @@ class DISPLAY_EXPORT Display final {
   int64_t id() const { return id_; }
   void set_id(int64_t id) { id_ = id; }
 
-  // Gets/Sets the display's bounds in display::Screen's coordinates.
+  // Gets/Sets the display's bounds in Screen's coordinates.
   const gfx::Rect& bounds() const { return bounds_; }
   void set_bounds(const gfx::Rect& bounds) { bounds_ = bounds; }
 
-  // Gets/Sets the display's work area in display::Screen's coordinates.
+  // Gets/Sets the display's work area in Screen's coordinates.
   const gfx::Rect& work_area() const { return work_area_; }
   void set_work_area(const gfx::Rect& work_area) { work_area_ = work_area; }
 
@@ -204,8 +204,7 @@ class DISPLAY_EXPORT Display final {
   bool is_monochrome_ = false;
 
 #if !defined(OS_IOS)
-  friend struct mojo::StructTraits<display::mojom::DisplayDataView,
-                                   display::Display>;
+  friend struct mojo::StructTraits<mojom::DisplayDataView, Display>;
 #endif
 };
 

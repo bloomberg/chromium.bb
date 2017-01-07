@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-namespace ui {
+namespace display {
 
 namespace {
 
@@ -60,4 +60,4 @@ gfx::BufferFormat DisplaySnapshot::PrimaryFormat() {
   return gfx::BufferFormat::BGRX_8888;
 }
 
-}  // namespace ui
+}  // namespace display

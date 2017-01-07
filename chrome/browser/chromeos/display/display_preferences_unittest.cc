@@ -268,16 +268,18 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   int64_t id2 = display_manager()->GetSecondaryDisplay().id();
   int64_t dummy_id = id2 + 1;
   ASSERT_NE(id1, dummy_id);
-  std::vector<ui::ColorCalibrationProfile> profiles;
-  profiles.push_back(ui::COLOR_PROFILE_STANDARD);
-  profiles.push_back(ui::COLOR_PROFILE_DYNAMIC);
-  profiles.push_back(ui::COLOR_PROFILE_MOVIE);
-  profiles.push_back(ui::COLOR_PROFILE_READING);
+  std::vector<display::ColorCalibrationProfile> profiles;
+  profiles.push_back(display::COLOR_PROFILE_STANDARD);
+  profiles.push_back(display::COLOR_PROFILE_DYNAMIC);
+  profiles.push_back(display::COLOR_PROFILE_MOVIE);
+  profiles.push_back(display::COLOR_PROFILE_READING);
   // Allows only |id1|.
   display::test::DisplayManagerTestApi(display_manager())
       .SetAvailableColorProfiles(id1, profiles);
-  display_manager()->SetColorCalibrationProfile(id1, ui::COLOR_PROFILE_DYNAMIC);
-  display_manager()->SetColorCalibrationProfile(id2, ui::COLOR_PROFILE_DYNAMIC);
+  display_manager()->SetColorCalibrationProfile(id1,
+                                                display::COLOR_PROFILE_DYNAMIC);
+  display_manager()->SetColorCalibrationProfile(id2,
+                                                display::COLOR_PROFILE_DYNAMIC);
 
   LoggedInAsUser();
 
@@ -509,7 +511,7 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   // Set new display's selected resolution.
   display_manager()->RegisterDisplayProperty(
       id2 + 1, display::Display::ROTATE_0, 1.0f, nullptr, gfx::Size(500, 400),
-      1.0f, ui::COLOR_PROFILE_STANDARD, nullptr);
+      1.0f, display::COLOR_PROFILE_STANDARD, nullptr);
 
   UpdateDisplay("200x200*2, 600x500#600x500|500x400");
 
@@ -535,7 +537,7 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   // Set yet another new display's selected resolution.
   display_manager()->RegisterDisplayProperty(
       id2 + 1, display::Display::ROTATE_0, 1.0f, nullptr, gfx::Size(500, 400),
-      1.0f, ui::COLOR_PROFILE_STANDARD, nullptr);
+      1.0f, display::COLOR_PROFILE_STANDARD, nullptr);
   // Disconnect 2nd display first to generate new id for external display.
   UpdateDisplay("200x200*2");
   UpdateDisplay("200x200*2, 500x400#600x500|500x400%60.0f");
@@ -689,21 +691,21 @@ TEST_F(DisplayPreferencesTest, RestoreColorProfiles) {
 
   // id1's available color profiles list is empty, means somehow the color
   // profile suport is temporary in trouble.
-  EXPECT_NE(ui::COLOR_PROFILE_DYNAMIC,
+  EXPECT_NE(display::COLOR_PROFILE_DYNAMIC,
             display_manager()->GetDisplayInfo(id1).color_profile());
 
   // Once the profile is supported, the color profile should be restored.
-  std::vector<ui::ColorCalibrationProfile> profiles;
-  profiles.push_back(ui::COLOR_PROFILE_STANDARD);
-  profiles.push_back(ui::COLOR_PROFILE_DYNAMIC);
-  profiles.push_back(ui::COLOR_PROFILE_MOVIE);
-  profiles.push_back(ui::COLOR_PROFILE_READING);
+  std::vector<display::ColorCalibrationProfile> profiles;
+  profiles.push_back(display::COLOR_PROFILE_STANDARD);
+  profiles.push_back(display::COLOR_PROFILE_DYNAMIC);
+  profiles.push_back(display::COLOR_PROFILE_MOVIE);
+  profiles.push_back(display::COLOR_PROFILE_READING);
   display::test::DisplayManagerTestApi(
       ash::Shell::GetInstance()->display_manager())
       .SetAvailableColorProfiles(id1, profiles);
 
   LoadDisplayPreferences(false);
-  EXPECT_EQ(ui::COLOR_PROFILE_DYNAMIC,
+  EXPECT_EQ(display::COLOR_PROFILE_DYNAMIC,
             display_manager()->GetDisplayInfo(id1).color_profile());
 }
 

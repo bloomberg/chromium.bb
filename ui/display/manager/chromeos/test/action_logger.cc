@@ -4,7 +4,7 @@
 
 #include "ui/display/manager/chromeos/test/action_logger.h"
 
-namespace ui {
+namespace display {
 namespace test {
 
 ActionLogger::ActionLogger() {}
@@ -24,4 +24,4 @@ std::string ActionLogger::GetActionsAndClear() {
 }
 
 }  // namespace test
-}  // namespace ui
+}  // namespace display

@@ -25,7 +25,7 @@
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/display/util/display_util.h"
 
-namespace ui {
+namespace display {
 
 namespace {
 
@@ -811,7 +811,7 @@ void DisplayConfigurator::OnContentProtectionEnabled(
     content_protection_tasks_.front().Run();
 }
 
-std::vector<ui::ColorCalibrationProfile>
+std::vector<ColorCalibrationProfile>
 DisplayConfigurator::GetAvailableColorCalibrationProfiles(int64_t display_id) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableDisplayColorCalibration)) {
@@ -824,12 +824,12 @@ DisplayConfigurator::GetAvailableColorCalibrationProfiles(int64_t display_id) {
     }
   }
 
-  return std::vector<ui::ColorCalibrationProfile>();
+  return std::vector<ColorCalibrationProfile>();
 }
 
 bool DisplayConfigurator::SetColorCalibrationProfile(
     int64_t display_id,
-    ui::ColorCalibrationProfile new_profile) {
+    ColorCalibrationProfile new_profile) {
   for (const DisplaySnapshot* display : cached_displays_) {
     if (display->display_id() == display_id &&
         IsPhysicalDisplayType(display->type())) {
@@ -1158,13 +1158,13 @@ void DisplayConfigurator::NotifyPowerStateObservers() {
 int64_t DisplayConfigurator::AddVirtualDisplay(const gfx::Size& display_size) {
   if (last_virtual_display_id_ == 0xff) {
     LOG(WARNING) << "Exceeded virtual display id limit";
-    return display::kInvalidDisplayId;
+    return kInvalidDisplayId;
   }
 
-  DisplaySnapshotVirtual* virtual_snapshot = new DisplaySnapshotVirtual(
-      display::GenerateDisplayID(kReservedManufacturerID, 0x0,
-                                 ++last_virtual_display_id_),
-      display_size);
+  DisplaySnapshotVirtual* virtual_snapshot =
+      new DisplaySnapshotVirtual(GenerateDisplayID(kReservedManufacturerID, 0x0,
+                                                   ++last_virtual_display_id_),
+                                 display_size);
   virtual_display_snapshots_.push_back(virtual_snapshot);
   ConfigureDisplays();
 
@@ -1198,4 +1198,4 @@ bool DisplayConfigurator::IsDisplayOn() const {
   return current_power_state_ != chromeos::DISPLAY_POWER_ALL_OFF;
 }
 
-}  // namespace ui
+}  // namespace display

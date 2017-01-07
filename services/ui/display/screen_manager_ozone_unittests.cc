@@ -28,8 +28,6 @@
 
 namespace display {
 
-using ui::DisplayMode;
-using ui::DisplaySnapshot;
 using testing::IsEmpty;
 using testing::SizeIs;
 
@@ -113,7 +111,7 @@ class TestScreenManagerDelegate : public ScreenManagerDelegate {
 
 }  // namespace
 
-// Test fixture with helpers to act like ui::DisplayConfigurator and send
+// Test fixture with helpers to act like DisplayConfigurator and send
 // OnDisplayModeChanged() to ScreenManagerOzone.
 class ScreenManagerOzoneTest : public ui::TaskRunnerTestBase {
  public:
@@ -131,7 +129,7 @@ class ScreenManagerOzoneTest : public ui::TaskRunnerTestBase {
                           .Build());
   }
 
-  void AddDisplay(std::unique_ptr<ui::DisplaySnapshot> snapshot) {
+  void AddDisplay(std::unique_ptr<DisplaySnapshot> snapshot) {
     EXPECT_TRUE(fake_display_controller_->AddDisplay(std::move(snapshot)));
     RunAllTasks();
   }
@@ -157,7 +155,7 @@ class ScreenManagerOzoneTest : public ui::TaskRunnerTestBase {
     screen_manager_ = base::MakeUnique<ScreenManagerOzone>();
 
     // Create NDD for FakeDisplayController.
-    std::unique_ptr<ui::NativeDisplayDelegate> ndd =
+    std::unique_ptr<NativeDisplayDelegate> ndd =
         base::MakeUnique<FakeDisplayDelegate>();
     fake_display_controller_ = ndd->GetFakeDisplayController();
 
@@ -167,7 +165,7 @@ class ScreenManagerOzoneTest : public ui::TaskRunnerTestBase {
     AddDisplay(FakeDisplaySnapshot::Builder()
                    .SetId(1)
                    .SetNativeMode(gfx::Size(1024, 768))
-                   .SetType(ui::DISPLAY_CONNECTION_TYPE_INTERNAL)
+                   .SetType(DISPLAY_CONNECTION_TYPE_INTERNAL)
                    .Build());
 
     screen_manager_->Init(&delegate_);
@@ -251,7 +249,7 @@ TEST_F(ScreenManagerOzoneTest, AddDisplay4k) {
   AddDisplay(FakeDisplaySnapshot::Builder()
                  .SetId(2)
                  .SetNativeMode(gfx::Size(4096, 2160))
-                 .SetType(ui::DISPLAY_CONNECTION_TYPE_DVI)
+                 .SetType(DISPLAY_CONNECTION_TYPE_DVI)
                  .Build());
 
   // Check that display 2 has a device scale factor of 2 since it's a 4k

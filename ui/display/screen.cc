@@ -47,8 +47,8 @@ gfx::Rect Screen::DIPToScreenRectInWindow(gfx::NativeView view,
 }
 
 bool Screen::GetDisplayWithDisplayId(int64_t display_id,
-                                     display::Display* display) const {
-  for (const display::Display& display_in_list : GetAllDisplays()) {
+                                     Display* display) const {
+  for (const Display& display_in_list : GetAllDisplays()) {
     if (display_in_list.id() == display_id) {
       *display = display_in_list;
       return true;

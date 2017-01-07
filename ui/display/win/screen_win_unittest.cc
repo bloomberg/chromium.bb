@@ -43,7 +43,7 @@ class TestScreenWin : public ScreenWin {
   ~TestScreenWin() override = default;
 
  protected:
-  // display::win::ScreenWin:
+  // win::ScreenWin:
   HWND GetHWNDFromNativeView(gfx::NativeView window) const override {
     // NativeView is only used as an identifier in this tests, so interchange
     // NativeView with an HWND for convenience.
@@ -157,9 +157,7 @@ class TestScreenWinManager : public TestScreenWinInitializer {
                   const wchar_t* device_name,
                   float device_scale_factor) override {
     MONITORINFOEX monitor_info =
-        display::win::test::CreateMonitorInfo(pixel_bounds,
-                                              pixel_work,
-                                              device_name);
+        win::test::CreateMonitorInfo(pixel_bounds, pixel_work, device_name);
     monitor_infos_.push_back(monitor_info);
     display_infos_.push_back(DisplayInfo(monitor_info, device_scale_factor,
                                          Display::ROTATE_0));
@@ -3392,7 +3390,7 @@ class ScreenWinUninitializedForced1x : public testing::Test {
   }
 
   void TearDown() override {
-    display::Display::ResetForceDeviceScaleFactorForTesting();
+    Display::ResetForceDeviceScaleFactorForTesting();
     testing::Test::TearDown();
   }
 
@@ -3506,7 +3504,7 @@ class ScreenWinUninitializedForced2x : public testing::Test {
   }
 
   void TearDown() override {
-    display::Display::ResetForceDeviceScaleFactorForTesting();
+    Display::ResetForceDeviceScaleFactorForTesting();
     testing::Test::TearDown();
   }
 

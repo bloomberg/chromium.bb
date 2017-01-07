@@ -13,7 +13,7 @@
 typedef unsigned long XID;
 typedef XID RRMode;
 
-namespace ui {
+namespace display {
 
 class DISPLAY_MANAGER_EXPORT DisplayModeX11 : public DisplayMode {
  public:
@@ -32,6 +32,6 @@ class DISPLAY_MANAGER_EXPORT DisplayModeX11 : public DisplayMode {
   DISALLOW_COPY_AND_ASSIGN(DisplayModeX11);
 };
 
-}  // namespace ui
+}  // namespace display
 
 #endif  // UI_DISPLAY_MANAGER_CHROMEOS_X11_DISPLAY_MODE_X11_H_

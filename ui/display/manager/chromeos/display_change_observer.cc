@@ -28,9 +28,6 @@
 #include "ui/strings/grit/ui_strings.h"
 
 namespace display {
-
-using ui::DisplayConfigurator;
-
 namespace {
 
 // The DPI threshold to determine the device scale factor.
@@ -57,9 +54,9 @@ const int kMinimumWidthFor4K = 3840;
 const float kAdditionalDeviceScaleFactorsFor4k[] = {1.25f, 2.0f};
 
 void UpdateInternalDisplayId(
-    const ui::DisplayConfigurator::DisplayStateList& display_states) {
+    const DisplayConfigurator::DisplayStateList& display_states) {
   for (auto* state : display_states) {
-    if (state->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL) {
+    if (state->type() == DISPLAY_CONNECTION_TYPE_INTERNAL) {
       if (Display::HasInternalDisplay())
         DCHECK_EQ(Display::InternalDisplayId(), state->display_id());
       Display::SetInternalDisplayId(state->display_id());
@@ -73,8 +70,8 @@ void UpdateInternalDisplayId(
 ManagedDisplayInfo::ManagedDisplayModeList
 DisplayChangeObserver::GetInternalManagedDisplayModeList(
     const ManagedDisplayInfo& display_info,
-    const ui::DisplaySnapshot& output) {
-  const ui::DisplayMode* ui_native_mode = output.native_mode();
+    const DisplaySnapshot& output) {
+  const DisplayMode* ui_native_mode = output.native_mode();
   scoped_refptr<ManagedDisplayMode> native_mode = new ManagedDisplayMode(
       ui_native_mode->size(), ui_native_mode->refresh_rate(),
       ui_native_mode->is_interlaced(), true, 1.0,
@@ -86,7 +83,7 @@ DisplayChangeObserver::GetInternalManagedDisplayModeList(
 // static
 ManagedDisplayInfo::ManagedDisplayModeList
 DisplayChangeObserver::GetExternalManagedDisplayModeList(
-    const ui::DisplaySnapshot& output) {
+    const DisplaySnapshot& output) {
   using DisplayModeMap =
       std::map<std::pair<int, int>, scoped_refptr<ManagedDisplayMode>>;
   DisplayModeMap display_mode_map;
@@ -142,8 +139,8 @@ DisplayChangeObserver::GetExternalManagedDisplayModeList(
 }
 
 DisplayChangeObserver::DisplayChangeObserver(
-    ui::DisplayConfigurator* display_configurator,
-    display::DisplayManager* display_manager)
+    DisplayConfigurator* display_configurator,
+    DisplayManager* display_manager)
     : display_configurator_(display_configurator),
       display_manager_(display_manager) {
   ui::InputDeviceManager::GetInstance()->AddObserver(this);
@@ -153,21 +150,21 @@ DisplayChangeObserver::~DisplayChangeObserver() {
   ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
 }
 
-ui::MultipleDisplayState DisplayChangeObserver::GetStateForDisplayIds(
-    const ui::DisplayConfigurator::DisplayStateList& display_states) const {
+MultipleDisplayState DisplayChangeObserver::GetStateForDisplayIds(
+    const DisplayConfigurator::DisplayStateList& display_states) const {
   UpdateInternalDisplayId(display_states);
   if (display_states.size() == 1)
-    return ui::MULTIPLE_DISPLAY_STATE_SINGLE;
+    return MULTIPLE_DISPLAY_STATE_SINGLE;
   DisplayIdList list =
       GenerateDisplayIdList(display_states.begin(), display_states.end(),
-                            [](const ui::DisplaySnapshot* display_state) {
+                            [](const DisplaySnapshot* display_state) {
                               return display_state->display_id();
                             });
 
   const DisplayLayout& layout =
       display_manager_->layout_store()->GetRegisteredDisplayLayout(list);
-  return layout.mirrored ? ui::MULTIPLE_DISPLAY_STATE_DUAL_MIRROR
-                         : ui::MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED;
+  return layout.mirrored ? MULTIPLE_DISPLAY_STATE_DUAL_MIRROR
+                         : MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED;
 }
 
 bool DisplayChangeObserver::GetResolutionForDisplayId(int64_t display_id,
@@ -181,13 +178,13 @@ bool DisplayChangeObserver::GetResolutionForDisplayId(int64_t display_id,
 }
 
 void DisplayChangeObserver::OnDisplayModeChanged(
-    const ui::DisplayConfigurator::DisplayStateList& display_states) {
+    const DisplayConfigurator::DisplayStateList& display_states) {
   UpdateInternalDisplayId(display_states);
 
   std::vector<ManagedDisplayInfo> displays;
   std::set<int64_t> ids;
-  for (const ui::DisplaySnapshot* state : display_states) {
-    const ui::DisplayMode* mode_info = state->current_mode();
+  for (const DisplaySnapshot* state : display_states) {
+    const DisplayMode* mode_info = state->current_mode();
     if (!mode_info)
       continue;
 
@@ -197,7 +194,7 @@ void DisplayChangeObserver::OnDisplayModeChanged(
                     ? 0
                     : kInchInMm * mode_info->size().width() /
                           state->physical_size().width();
-    if (state->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL) {
+    if (state->type() == DISPLAY_CONNECTION_TYPE_INTERNAL) {
       if (dpi)
         device_scale_factor = FindDeviceScaleFactor(dpi);
     } else {
@@ -225,10 +222,10 @@ void DisplayChangeObserver::OnDisplayModeChanged(
 
     std::string name;
     switch (state->type()) {
-      case ui::DISPLAY_CONNECTION_TYPE_INTERNAL:
+      case DISPLAY_CONNECTION_TYPE_INTERNAL:
         name = l10n_util::GetStringUTF8(IDS_DISPLAY_NAME_INTERNAL);
         break;
-      case ui::DISPLAY_CONNECTION_TYPE_VIRTUAL:
+      case DISPLAY_CONNECTION_TYPE_VIRTUAL:
         name = l10n_util::GetStringUTF8(IDS_DISPLAY_NAME_VIRTUAL);
         break;
       default:
@@ -254,7 +251,7 @@ void DisplayChangeObserver::OnDisplayModeChanged(
       new_info.set_device_dpi(dpi);
 
     ManagedDisplayInfo::ManagedDisplayModeList display_modes =
-        (state->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL)
+        (state->type() == DISPLAY_CONNECTION_TYPE_INTERNAL)
             ? GetInternalManagedDisplayModeList(new_info, *state)
             : GetExternalManagedDisplayModeList(*state);
     new_info.SetManagedDisplayModes(display_modes);
@@ -278,8 +275,8 @@ void DisplayChangeObserver::OnDisplayModeChanged(
 }
 
 void DisplayChangeObserver::OnDisplayModeChangeFailed(
-    const ui::DisplayConfigurator::DisplayStateList& displays,
-    ui::MultipleDisplayState failed_new_state) {
+    const DisplayConfigurator::DisplayStateList& displays,
+    MultipleDisplayState failed_new_state) {
   // If display configuration failed during startup, simply update the display
   // manager with detected displays. If no display is detected, it will
   // create a pseudo display.

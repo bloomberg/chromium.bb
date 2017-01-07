@@ -11,7 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "ui/display/types/display_snapshot.h"
 
-namespace ui {
+namespace display {
 
 std::string DisplayPowerStateToString(chromeos::DisplayPowerState state) {
   switch (state) {
@@ -70,9 +70,9 @@ int GetDisplayPower(const std::vector<DisplaySnapshot*>& displays,
   return num_on_displays;
 }
 
-bool IsPhysicalDisplayType(ui::DisplayConnectionType type) {
+bool IsPhysicalDisplayType(DisplayConnectionType type) {
   return !(type &
            (DISPLAY_CONNECTION_TYPE_NETWORK | DISPLAY_CONNECTION_TYPE_VIRTUAL));
 }
 
-}  // namespace ui
+}  // namespace display

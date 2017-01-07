@@ -15,7 +15,7 @@
 #include "ui/display/manager/chromeos/test/action_logger_util.h"
 #include "ui/display/types/native_display_delegate.h"
 
-namespace ui {
+namespace display {
 
 class ActionLogger;
 class DisplaySnapshot;
@@ -73,18 +73,17 @@ class TestNativeDisplayDelegate : public NativeDisplayDelegate {
   void SetHDCPState(const DisplaySnapshot& output,
                     HDCPState state,
                     const SetHDCPStateCallback& callback) override;
-  std::vector<ui::ColorCalibrationProfile> GetAvailableColorCalibrationProfiles(
+  std::vector<ColorCalibrationProfile> GetAvailableColorCalibrationProfiles(
       const DisplaySnapshot& output) override;
-  bool SetColorCalibrationProfile(
-      const DisplaySnapshot& output,
-      ui::ColorCalibrationProfile new_profile) override;
-  bool SetColorCorrection(const ui::DisplaySnapshot& output,
+  bool SetColorCalibrationProfile(const DisplaySnapshot& output,
+                                  ColorCalibrationProfile new_profile) override;
+  bool SetColorCorrection(const DisplaySnapshot& output,
                           const std::vector<GammaRampRGBEntry>& degamma_lut,
                           const std::vector<GammaRampRGBEntry>& gamma_lut,
                           const std::vector<float>& correction_matrix) override;
   void AddObserver(NativeDisplayObserver* observer) override;
   void RemoveObserver(NativeDisplayObserver* observer) override;
-  display::FakeDisplayController* GetFakeDisplayController() override;
+  FakeDisplayController* GetFakeDisplayController() override;
 
  private:
   bool Configure(const DisplaySnapshot& output,
@@ -119,6 +118,6 @@ class TestNativeDisplayDelegate : public NativeDisplayDelegate {
 };
 
 }  // namespace test
-}  // namespace ui
+}  // namespace display
 
 #endif  // UI_DISPLAY_MANAGER_CHROMEOS_TEST_TEST_NATIVE_DISPLAY_DELEGATE_H_

@@ -11,8 +11,9 @@
 namespace display {
 
 // Matcher for DisplayMode size and refresh rate.
-testing::Matcher<const ui::DisplayMode&>
-IsDisplayMode(int width, int height, float refresh_rate = 60.0f);
+testing::Matcher<const DisplayMode&> IsDisplayMode(int width,
+                                                   int height,
+                                                   float refresh_rate = 60.0f);
 
 }  // namespace display
 

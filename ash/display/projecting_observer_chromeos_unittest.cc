@@ -12,19 +12,19 @@
 namespace ash {
 namespace {
 
-std::unique_ptr<ui::DisplaySnapshot> CreateInternalSnapshot() {
+std::unique_ptr<display::DisplaySnapshot> CreateInternalSnapshot() {
   return display::FakeDisplaySnapshot::Builder()
       .SetId(123)
       .SetNativeMode(gfx::Size(1024, 768))
-      .SetType(ui::DISPLAY_CONNECTION_TYPE_INTERNAL)
+      .SetType(display::DISPLAY_CONNECTION_TYPE_INTERNAL)
       .Build();
 }
 
-std::unique_ptr<ui::DisplaySnapshot> CreateVGASnapshot() {
+std::unique_ptr<display::DisplaySnapshot> CreateVGASnapshot() {
   return display::FakeDisplaySnapshot::Builder()
       .SetId(456)
       .SetNativeMode(gfx::Size(1024, 768))
-      .SetType(ui::DISPLAY_CONNECTION_TYPE_VGA)
+      .SetType(display::DISPLAY_CONNECTION_TYPE_VGA)
       .Build();
 }
 
@@ -45,7 +45,7 @@ class ProjectingObserverTest : public testing::Test {
 }  // namespace
 
 TEST_F(ProjectingObserverTest, CheckNoDisplay) {
-  ScopedVector<ui::DisplaySnapshot> displays;
+  ScopedVector<display::DisplaySnapshot> displays;
   observer_.OnDisplayModeChanged(displays.get());
 
   EXPECT_EQ(1, fake_power_client_.num_set_is_projecting_calls());
@@ -53,7 +53,7 @@ TEST_F(ProjectingObserverTest, CheckNoDisplay) {
 }
 
 TEST_F(ProjectingObserverTest, CheckWithoutInternalDisplay) {
-  ScopedVector<ui::DisplaySnapshot> displays;
+  ScopedVector<display::DisplaySnapshot> displays;
   displays.push_back(CreateVGASnapshot());
   observer_.OnDisplayModeChanged(displays.get());
 
@@ -62,7 +62,7 @@ TEST_F(ProjectingObserverTest, CheckWithoutInternalDisplay) {
 }
 
 TEST_F(ProjectingObserverTest, CheckWithInternalDisplay) {
-  ScopedVector<ui::DisplaySnapshot> displays;
+  ScopedVector<display::DisplaySnapshot> displays;
   displays.push_back(CreateInternalSnapshot());
   observer_.OnDisplayModeChanged(displays.get());
 
@@ -71,7 +71,7 @@ TEST_F(ProjectingObserverTest, CheckWithInternalDisplay) {
 }
 
 TEST_F(ProjectingObserverTest, CheckWithTwoVGADisplays) {
-  ScopedVector<ui::DisplaySnapshot> displays;
+  ScopedVector<display::DisplaySnapshot> displays;
   displays.push_back(CreateVGASnapshot());
   displays.push_back(CreateVGASnapshot());
   observer_.OnDisplayModeChanged(displays.get());
@@ -82,7 +82,7 @@ TEST_F(ProjectingObserverTest, CheckWithTwoVGADisplays) {
 }
 
 TEST_F(ProjectingObserverTest, CheckWithInternalAndVGADisplays) {
-  ScopedVector<ui::DisplaySnapshot> displays;
+  ScopedVector<display::DisplaySnapshot> displays;
   displays.push_back(CreateInternalSnapshot());
   displays.push_back(CreateVGASnapshot());
   observer_.OnDisplayModeChanged(displays.get());
@@ -92,7 +92,7 @@ TEST_F(ProjectingObserverTest, CheckWithInternalAndVGADisplays) {
 }
 
 TEST_F(ProjectingObserverTest, CheckWithVGADisplayAndOneCastingSession) {
-  ScopedVector<ui::DisplaySnapshot> displays;
+  ScopedVector<display::DisplaySnapshot> displays;
   displays.push_back(CreateVGASnapshot());
   observer_.OnDisplayModeChanged(displays.get());
 
@@ -104,7 +104,7 @@ TEST_F(ProjectingObserverTest, CheckWithVGADisplayAndOneCastingSession) {
 }
 
 TEST_F(ProjectingObserverTest, CheckWithInternalDisplayAndOneCastingSession) {
-  ScopedVector<ui::DisplaySnapshot> displays;
+  ScopedVector<display::DisplaySnapshot> displays;
   displays.push_back(CreateInternalSnapshot());
   observer_.OnDisplayModeChanged(displays.get());
 
@@ -115,7 +115,7 @@ TEST_F(ProjectingObserverTest, CheckWithInternalDisplayAndOneCastingSession) {
 }
 
 TEST_F(ProjectingObserverTest, CheckProjectingAfterClosingACastingSession) {
-  ScopedVector<ui::DisplaySnapshot> displays;
+  ScopedVector<display::DisplaySnapshot> displays;
   displays.push_back(CreateInternalSnapshot());
   observer_.OnDisplayModeChanged(displays.get());
 
@@ -133,7 +133,7 @@ TEST_F(ProjectingObserverTest, CheckProjectingAfterClosingACastingSession) {
 
 TEST_F(ProjectingObserverTest,
        CheckStopProjectingAfterClosingAllCastingSessions) {
-  ScopedVector<ui::DisplaySnapshot> displays;
+  ScopedVector<display::DisplaySnapshot> displays;
   displays.push_back(CreateInternalSnapshot());
   observer_.OnDisplayModeChanged(displays.get());
 
@@ -146,7 +146,7 @@ TEST_F(ProjectingObserverTest,
 
 TEST_F(ProjectingObserverTest,
        CheckStopProjectingAfterDisconnectingSecondOutput) {
-  ScopedVector<ui::DisplaySnapshot> displays;
+  ScopedVector<display::DisplaySnapshot> displays;
   displays.push_back(CreateInternalSnapshot());
   displays.push_back(CreateVGASnapshot());
   observer_.OnDisplayModeChanged(displays.get());

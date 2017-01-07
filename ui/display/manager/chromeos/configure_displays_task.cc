@@ -10,7 +10,7 @@
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/native_display_delegate.h"
 
-namespace ui {
+namespace display {
 
 namespace {
 
@@ -119,4 +119,4 @@ void ConfigureDisplaysTask::OnConfigured(size_t index, bool success) {
   Run();
 }
 
-}  // namespace ui
+}  // namespace display

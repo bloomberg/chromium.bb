@@ -48,7 +48,7 @@ class DISPLAY_EXPORT DisplayManagerTestApi {
   // Sets the available color profiles for |display_id|.
   void SetAvailableColorProfiles(
       int64_t display_id,
-      const std::vector<ui::ColorCalibrationProfile>& profiles);
+      const std::vector<ColorCalibrationProfile>& profiles);
 
   // Gets the internal ManagedDisplayInfo for a specific display id.
   const ManagedDisplayInfo& GetInternalManagedDisplayInfo(int64_t display_id);
@@ -58,8 +58,7 @@ class DISPLAY_EXPORT DisplayManagerTestApi {
   bool SetDisplayUIScale(int64_t display_id, float scale);
 
   // Sets the touch support for |display_id|.
-  void SetTouchSupport(int64_t display_id,
-                       display::Display::TouchSupport touch_support);
+  void SetTouchSupport(int64_t display_id, Display::TouchSupport touch_support);
 
  private:
   friend class ScopedSetInternalDisplayId;

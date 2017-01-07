@@ -38,6 +38,7 @@ class AudioA11yController;
 
 namespace display {
 class DisplayChangeObserver;
+class DisplayConfigurator;
 class DisplayManager;
 }
 
@@ -46,10 +47,10 @@ class Insets;
 }
 
 namespace ui {
-class DisplayConfigurator;
 class UserActivityDetector;
 class UserActivityPowerManagerNotifier;
 }
+
 namespace views {
 class NonClientFrameView;
 class Widget;
@@ -329,7 +330,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
 #if defined(OS_CHROMEOS)
   // TODO(oshima): Move these objects to WindowTreeHostManager.
-  ui::DisplayConfigurator* display_configurator() {
+  display::DisplayConfigurator* display_configurator() {
     return display_configurator_.get();
   }
   DisplayErrorObserver* display_error_observer() {
@@ -494,7 +495,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<VirtualKeyboardController> virtual_keyboard_controller_;
   std::unique_ptr<chromeos::AudioA11yController> audio_a11y_controller_;
   // Controls video output device state.
-  std::unique_ptr<ui::DisplayConfigurator> display_configurator_;
+  std::unique_ptr<display::DisplayConfigurator> display_configurator_;
   std::unique_ptr<DisplayColorManager> display_color_manager_;
   std::unique_ptr<DisplayErrorObserver> display_error_observer_;
   std::unique_ptr<ProjectingObserver> projecting_observer_;

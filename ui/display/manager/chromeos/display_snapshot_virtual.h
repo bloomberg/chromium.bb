@@ -14,7 +14,7 @@
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
 
-namespace ui {
+namespace display {
 
 // This class represents a virtual display to be enabled on demand. The display
 // is constructed for the desired pixel resolution.
@@ -33,6 +33,6 @@ class DISPLAY_MANAGER_EXPORT DisplaySnapshotVirtual : public DisplaySnapshot {
   DISALLOW_COPY_AND_ASSIGN(DisplaySnapshotVirtual);
 };
 
-}  // namespace ui
+}  // namespace display
 
 #endif  // UI_DISPLAY_MANAGER_CHROMEOS_DISPLAY_SNAPSHOT_VIRTUAL_H_

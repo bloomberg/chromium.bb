@@ -1546,7 +1546,7 @@ TEST_P(DisplayManagerTest, FHD125DefaultsTo08UIScalingNoOverride) {
   const gfx::Insets dummy_overscan_insets;
   display_manager()->RegisterDisplayProperty(
       display_id, display::Display::ROTATE_0, 1.0f, &dummy_overscan_insets,
-      gfx::Size(), 1.0f, ui::ColorCalibrationProfile(), nullptr);
+      gfx::Size(), 1.0f, display::ColorCalibrationProfile(), nullptr);
 
   // Setup the display modes with UI-scale.
   display::ManagedDisplayInfo native_display_info =
@@ -2506,7 +2506,7 @@ TEST_P(DisplayManagerTest, CheckInitializationOfRotationProperty) {
   int64_t id = display_manager()->GetDisplayAt(0).id();
   display_manager()->RegisterDisplayProperty(
       id, display::Display::ROTATE_90, 1.0f, nullptr, gfx::Size(), 1.0f,
-      ui::COLOR_PROFILE_STANDARD, nullptr);
+      display::COLOR_PROFILE_STANDARD, nullptr);
 
   const display::ManagedDisplayInfo& info =
       display_manager()->GetDisplayInfo(id);

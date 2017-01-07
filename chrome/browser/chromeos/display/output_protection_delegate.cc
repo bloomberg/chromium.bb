@@ -40,7 +40,7 @@ OutputProtectionDelegate::OutputProtectionDelegate(int render_process_id,
     : render_process_id_(render_process_id),
       render_frame_id_(render_frame_id),
       window_(nullptr),
-      client_id_(ui::DisplayConfigurator::kInvalidClientId),
+      client_id_(display::DisplayConfigurator::kInvalidClientId),
       display_id_(0),
       weak_ptr_factory_(this) {
   // This can be constructed on IO or UI thread.
@@ -49,7 +49,7 @@ OutputProtectionDelegate::OutputProtectionDelegate(int render_process_id,
 OutputProtectionDelegate::~OutputProtectionDelegate() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  ui::DisplayConfigurator* configurator =
+  display::DisplayConfigurator* configurator =
       ash::Shell::GetInstance()->display_configurator();
   configurator->UnregisterContentProtectionClient(client_id_);
 
@@ -57,24 +57,24 @@ OutputProtectionDelegate::~OutputProtectionDelegate() {
     window_->RemoveObserver(this);
 }
 
-ui::DisplayConfigurator::ContentProtectionClientId
+display::DisplayConfigurator::ContentProtectionClientId
 OutputProtectionDelegate::GetClientId() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (client_id_ == ui::DisplayConfigurator::kInvalidClientId) {
+  if (client_id_ == display::DisplayConfigurator::kInvalidClientId) {
     content::RenderFrameHost* rfh =
         content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
     if (!rfh || !GetCurrentDisplayId(rfh, &display_id_))
-      return ui::DisplayConfigurator::kInvalidClientId;
+      return display::DisplayConfigurator::kInvalidClientId;
 
     aura::Window* window = rfh->GetNativeView();
     if (!window)
-      return ui::DisplayConfigurator::kInvalidClientId;
+      return display::DisplayConfigurator::kInvalidClientId;
 
-    ui::DisplayConfigurator* configurator =
+    display::DisplayConfigurator* configurator =
         ash::Shell::GetInstance()->display_configurator();
     client_id_ = configurator->RegisterContentProtectionClient();
 
-    if (client_id_ != ui::DisplayConfigurator::kInvalidClientId) {
+    if (client_id_ != display::DisplayConfigurator::kInvalidClientId) {
       window->AddObserver(this);
       window_ = window;
     }
@@ -94,7 +94,7 @@ void OutputProtectionDelegate::QueryStatus(
     return;
   }
 
-  ui::DisplayConfigurator* configurator =
+  display::DisplayConfigurator* configurator =
       ash::Shell::GetInstance()->display_configurator();
   configurator->QueryContentProtectionStatus(
       GetClientId(), display_id_,
@@ -107,7 +107,7 @@ void OutputProtectionDelegate::EnableProtection(
     const EnableProtectionCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  ui::DisplayConfigurator* configurator =
+  display::DisplayConfigurator* configurator =
       ash::Shell::GetInstance()->display_configurator();
   configurator->EnableContentProtection(
       GetClientId(), display_id_, desired_method_mask,
@@ -118,7 +118,7 @@ void OutputProtectionDelegate::EnableProtection(
 
 void OutputProtectionDelegate::QueryStatusComplete(
     const QueryStatusCallback& callback,
-    const ui::DisplayConfigurator::QueryProtectionResponse& response) {
+    const display::DisplayConfigurator::QueryProtectionResponse& response) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::RenderFrameHost* rfh =
@@ -157,16 +157,16 @@ void OutputProtectionDelegate::OnWindowHierarchyChanged(
   if (display_id_ == new_display_id)
     return;
 
-  if (desired_method_mask_ != ui::CONTENT_PROTECTION_METHOD_NONE) {
+  if (desired_method_mask_ != display::CONTENT_PROTECTION_METHOD_NONE) {
     // Display changed and should enable output protections on new display.
-    ui::DisplayConfigurator* configurator =
+    display::DisplayConfigurator* configurator =
         ash::Shell::GetInstance()->display_configurator();
     configurator->EnableContentProtection(GetClientId(), new_display_id,
                                           desired_method_mask_,
                                           base::Bind(&DoNothing));
-    configurator->EnableContentProtection(GetClientId(), display_id_,
-                                          ui::CONTENT_PROTECTION_METHOD_NONE,
-                                          base::Bind(&DoNothing));
+    configurator->EnableContentProtection(
+        GetClientId(), display_id_, display::CONTENT_PROTECTION_METHOD_NONE,
+        base::Bind(&DoNothing));
   }
   display_id_ = new_display_id;
 }

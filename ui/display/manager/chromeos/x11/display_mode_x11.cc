@@ -6,7 +6,7 @@
 
 #include "ui/display/manager/chromeos/x11/display_mode_x11.h"
 
-namespace ui {
+namespace display {
 
 DisplayModeX11::DisplayModeX11(const gfx::Size& size,
                                bool interlaced,
@@ -21,4 +21,4 @@ std::unique_ptr<DisplayMode> DisplayModeX11::Clone() const {
       new DisplayModeX11(size(), is_interlaced(), refresh_rate(), mode_id()));
 }
 
-}  // namespace ui
+}  // namespace display

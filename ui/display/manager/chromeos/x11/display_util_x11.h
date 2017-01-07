@@ -13,13 +13,13 @@
 typedef unsigned long XID;
 typedef XID RROutput;
 
-namespace ui {
+namespace display {
 
 // Returns the DisplayConnectionType by matching known type prefixes to |name|.
 // Returns DISPLAY_TYPE_UNKNOWN if no valid match.
 DISPLAY_MANAGER_EXPORT DisplayConnectionType
 GetDisplayConnectionTypeFromName(const std::string& name);
 
-}  // namespace ui
+}  // namespace display
 
 #endif  // UI_DISPLAY_MANAGER_CHROMEOS_X11_DISPLAY_UTIL_X11_H_

@@ -39,7 +39,7 @@ bool SurfacelessGlRenderer::BufferWrapper::Initialize(
   glGenFramebuffersEXT(1, &gl_fb_);
   glGenTextures(1, &gl_tex_);
 
-  gfx::BufferFormat format = ui::DisplaySnapshot::PrimaryFormat();
+  gfx::BufferFormat format = display::DisplaySnapshot::PrimaryFormat();
   scoped_refptr<NativePixmap> pixmap =
       OzonePlatform::GetInstance()
           ->GetSurfaceFactoryOzone()

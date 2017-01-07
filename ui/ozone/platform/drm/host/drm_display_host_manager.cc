@@ -176,7 +176,7 @@ void DrmDisplayHostManager::RemoveDelegate(DrmNativeDisplayDelegate* delegate) {
 }
 
 void DrmDisplayHostManager::TakeDisplayControl(
-    const DisplayControlCallback& callback) {
+    const display::DisplayControlCallback& callback) {
   if (display_control_change_pending_) {
     LOG(ERROR) << "TakeDisplayControl called while change already pending";
     callback.Run(false);
@@ -197,7 +197,7 @@ void DrmDisplayHostManager::TakeDisplayControl(
 }
 
 void DrmDisplayHostManager::RelinquishDisplayControl(
-    const DisplayControlCallback& callback) {
+    const display::DisplayControlCallback& callback) {
   if (display_control_change_pending_) {
     LOG(ERROR)
         << "RelinquishDisplayControl called while change already pending";
@@ -219,7 +219,7 @@ void DrmDisplayHostManager::RelinquishDisplayControl(
 }
 
 void DrmDisplayHostManager::UpdateDisplays(
-    const GetDisplaysCallback& callback) {
+    const display::GetDisplaysCallback& callback) {
   get_displays_callback_ = callback;
   if (!proxy_->GpuRefreshNativeDisplays()) {
     get_displays_callback_.Reset();
@@ -399,7 +399,7 @@ void DrmDisplayHostManager::GpuConfiguredDisplay(int64_t display_id,
 
 void DrmDisplayHostManager::GpuReceivedHDCPState(int64_t display_id,
                                                  bool status,
-                                                 HDCPState state) {
+                                                 display::HDCPState state) {
   DrmDisplayHost* display = GetDisplay(display_id);
   if (display)
     display->OnHDCPStateReceived(status, state);
@@ -457,8 +457,8 @@ void DrmDisplayHostManager::GpuRelinquishedDisplayControl(bool status) {
 }
 
 void DrmDisplayHostManager::RunUpdateDisplaysCallback(
-    const GetDisplaysCallback& callback) const {
-  std::vector<DisplaySnapshot*> snapshots;
+    const display::GetDisplaysCallback& callback) const {
+  std::vector<display::DisplaySnapshot*> snapshots;
   for (const auto& display : displays_)
     snapshots.push_back(display->snapshot());
 

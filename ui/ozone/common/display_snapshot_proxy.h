@@ -12,12 +12,12 @@ namespace ui {
 
 struct DisplaySnapshot_Params;
 
-class DisplaySnapshotProxy : public DisplaySnapshot {
+class DisplaySnapshotProxy : public display::DisplaySnapshot {
  public:
   DisplaySnapshotProxy(const DisplaySnapshot_Params& params);
   ~DisplaySnapshotProxy() override;
 
-  // DisplaySnapshot override:
+  // display::DisplaySnapshot override:
   std::string ToString() const override;
 
  private:

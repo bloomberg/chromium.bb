@@ -8,7 +8,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace ui {
+namespace display {
 
 TEST(DisplayUtilX11Test, GetDisplayConnectionTypeFromName) {
   EXPECT_EQ(DISPLAY_CONNECTION_TYPE_INTERNAL,
@@ -65,4 +65,4 @@ TEST(DisplayUtilX11Test, GetDisplayConnectionTypeFromName) {
             GetDisplayConnectionTypeFromName("D"));
 }
 
-}  // namespace ui
+}  // namespace display
