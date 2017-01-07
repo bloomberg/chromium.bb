@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tab;
 
 import android.graphics.Bitmap;
+import android.support.annotation.Nullable;
 import android.view.ContextMenu;
 
 import org.chromium.chrome.browser.TabLoadStatus;
@@ -240,6 +241,35 @@ public interface TabObserver {
      */
     public void onDidNavigateMainFrame(Tab tab, String url, String baseUrl,
             boolean isNavigationToDifferentPage, boolean isFragmentNavigation, int statusCode);
+
+    /**
+     * Called when a navigation is started in the WebContents.
+     * @param tab The notifying {@link Tab}.
+     * @param url The validated URL for the loading page.
+     * @param isInMainFrame Whether the navigation is for the main frame.
+     * @param isErrorPage Whether the navigation shows an error page.
+     */
+    public void onDidStartNavigation(
+            Tab tab, String url, boolean isInMainFrame, boolean isErrorPage);
+
+    /**
+     * Called when a navigation is finished i.e. committed, aborted or replaced by a new one.
+     * @param tab The notifying {@link Tab}.
+     * @param url The validated URL for the loading page.
+     * @param isInMainFrame Whether the navigation is for the main frame.
+     * @param isErrorPage Whether the navigation shows an error page.
+     * @param hasCommitted Whether the navigation has committed. This returns true for either
+     *                     successful commits or error pages that replace the previous page
+     *                     (distinguished by |isErrorPage|), and false for errors that leave the
+     *                     user on the previous page.
+     * @param isSamePage Whether the main frame navigation did not cause changes to the
+     *                   document (for example scrolling to a named anchor or PopState).
+     * @param pageTransition The page transition type associated with this navigation.
+     * @param errorCode The net error code if an error occurred prior to commit, otherwise net::OK.
+     */
+    public void onDidFinishNavigation(Tab tab, String url, boolean isInMainFrame,
+            boolean isErrorPage, boolean hasCommitted, boolean isSamePage,
+            @Nullable Integer pageTransition, int errorCode);
 
     /**
      * Called when the page has painted something non-empty.

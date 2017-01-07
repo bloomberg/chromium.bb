@@ -147,12 +147,6 @@ public class TabWebContentsObserver extends WebContentsObserver {
     }
 
     @Override
-    public void didFinishNavigation(
-            boolean isMainFrame, boolean isErrorPage, boolean hasCommitted) {
-        if (isMainFrame && hasCommitted) mTab.setIsShowingErrorPage(isErrorPage);
-    }
-
-    @Override
     public void didFinishLoad(long frameId, String validatedUrl, boolean isMainFrame) {
         if (isMainFrame) mTab.didFinishPageLoad();
         PolicyAuditor auditor =
@@ -251,6 +245,26 @@ public class TabWebContentsObserver extends WebContentsObserver {
         }
 
         mTab.stopSwipeRefreshHandler();
+    }
+
+    @Override
+    public void didStartNavigation(String url, boolean isInMainFrame, boolean isErrorPage) {
+        RewindableIterator<TabObserver> observers = mTab.getTabObservers();
+        while (observers.hasNext()) {
+            observers.next().onDidStartNavigation(mTab, url, isInMainFrame, isErrorPage);
+        }
+    }
+
+    @Override
+    public void didFinishNavigation(String url, boolean isInMainFrame, boolean isErrorPage,
+            boolean hasCommitted, boolean isSamePage, Integer pageTransition, int errorCode) {
+        if (isInMainFrame && hasCommitted) mTab.setIsShowingErrorPage(isErrorPage);
+
+        RewindableIterator<TabObserver> observers = mTab.getTabObservers();
+        while (observers.hasNext()) {
+            observers.next().onDidFinishNavigation(mTab, url, isInMainFrame, isErrorPage,
+                    hasCommitted, isSamePage, pageTransition, errorCode);
+        }
     }
 
     @Override

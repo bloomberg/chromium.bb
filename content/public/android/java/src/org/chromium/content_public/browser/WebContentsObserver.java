@@ -4,6 +4,8 @@
 
 package org.chromium.content_public.browser;
 
+import android.support.annotation.Nullable;
+
 import java.lang.ref.WeakReference;
 
 /**
@@ -30,17 +32,31 @@ public abstract class WebContentsObserver {
     public void renderProcessGone(boolean wasOomProtected) {}
 
     /**
-     * Called when the current navigation finishes.
-     *
-     * @param isMainFrame Whether the navigation is for the main frame.
+     * Called when the browser process starts a navigation.
+     * @param url The validated URL for the loading page.
+     * @param isInMainFrame Whether the navigation is for the main frame.
+     * @param isErrorPage Whether the navigation shows an error page.
+     */
+    public void didStartNavigation(String url, boolean isInMainFrame, boolean isErrorPage) {}
+
+    /**
+     * Called when the current navigation is finished. This happens when a navigation is committed,
+     * aborted or replaced by a new one.
+     * @param url The validated URL for the loading page.
+     * @param isInMainFrame Whether the navigation is for the main frame.
      * @param isErrorPage Whether the navigation shows an error page.
      * @param hasCommitted Whether the navigation has committed. This returns true for either
      *                     successful commits or error pages that replace the previous page
      *                     (distinguished by |isErrorPage|), and false for errors that leave the
      *                     user on the previous page.
+     * @param isSamePage Whether the main frame navigation did not cause changes to the
+     *                   document (for example scrolling to a named anchor or PopState).
+     * @param pageTransition The page transition type associated with this navigation.
+     * @param errorCode The net error code if an error occurred prior to commit, otherwise net::OK.
      */
-    public void didFinishNavigation(
-            boolean isMainFrame, boolean isErrorPage, boolean hasCommitted) {}
+    public void didFinishNavigation(String url, boolean isInMainFrame, boolean isErrorPage,
+            boolean hasCommitted, boolean isSamePage, @Nullable Integer pageTransition,
+            int errorCode) {}
 
     /**
      * Called when the a page starts loading.
@@ -56,6 +72,7 @@ public abstract class WebContentsObserver {
 
     /**
      * Called when an error occurs while loading a page and/or the page fails to load.
+     * @param isMainFrame Whether the navigation occurred in main frame.
      * @param errorCode Error code for the occurring error.
      * @param description The description for the error.
      * @param failingUrl The url that was loading when the error occurred.
