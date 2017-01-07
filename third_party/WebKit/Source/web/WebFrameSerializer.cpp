@@ -295,14 +295,14 @@ WebThreadSafeData WebFrameSerializer::generateMHTMLParts(
     serializer.serializeFrame(*frame);
   }
 
-  // There was an error serializing the frame (e.g. of an image resource).
-  if (resources.isEmpty())
-    return WebThreadSafeData();
-
   TRACE_EVENT_END1("page-serialization",
                    "WebFrameSerializer::generateMHTMLParts serializing",
                    "resource count",
                    static_cast<unsigned long long>(resources.size()));
+
+  // There was an error serializing the frame (e.g. of an image resource).
+  if (resources.isEmpty())
+    return WebThreadSafeData();
 
   // Encode serialized resources as MHTML.
   RefPtr<RawData> output = RawData::create();
