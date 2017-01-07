@@ -15,9 +15,12 @@
 #include "media/base/audio_decoder.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/audio_renderer.h"
+#include "media/base/cdm_config.h"
 #include "media/base/cdm_context.h"
+#include "media/base/cdm_factory.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
+#include "media/base/cdm_promise_adapter.h"
 #include "media/base/content_decryption_module.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decryptor.h"
@@ -444,6 +447,120 @@ class MockCdmSessionPromise : public NewSessionCdmPromise {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCdmSessionPromise);
+};
+
+class MockCdm : public ContentDecryptionModule {
+ public:
+  MockCdm(const SessionMessageCB& session_message_cb,
+          const SessionClosedCB& session_closed_cb,
+          const SessionKeysChangeCB& session_keys_change_cb,
+          const SessionExpirationUpdateCB& session_expiration_update_cb);
+
+  // ContentDecryptionModule implementation.
+  // As move-only parameters aren't supported by mock methods, convert promises
+  // into IDs and pass them to On... methods.
+  void SetServerCertificate(const std::vector<uint8_t>& certificate,
+                            std::unique_ptr<SimpleCdmPromise> promise) override;
+  MOCK_METHOD2(OnSetServerCertificate,
+               void(const std::vector<uint8_t>& certificate,
+                    std::unique_ptr<SimpleCdmPromise>& promise));
+
+  void CreateSessionAndGenerateRequest(
+      CdmSessionType session_type,
+      EmeInitDataType init_data_type,
+      const std::vector<uint8_t>& init_data,
+      std::unique_ptr<NewSessionCdmPromise> promise) override;
+  MOCK_METHOD4(OnCreateSessionAndGenerateRequest,
+               void(CdmSessionType session_type,
+                    EmeInitDataType init_data_type,
+                    const std::vector<uint8_t>& init_data,
+                    std::unique_ptr<NewSessionCdmPromise>& promise));
+
+  void LoadSession(CdmSessionType session_type,
+                   const std::string& session_id,
+                   std::unique_ptr<NewSessionCdmPromise> promise) override;
+  MOCK_METHOD3(OnLoadSession,
+               void(CdmSessionType session_type,
+                    const std::string& session_id,
+                    std::unique_ptr<NewSessionCdmPromise>& promise));
+
+  void UpdateSession(const std::string& session_id,
+                     const std::vector<uint8_t>& response,
+                     std::unique_ptr<SimpleCdmPromise> promise) override;
+  MOCK_METHOD3(OnUpdateSession,
+               void(const std::string& session_id,
+                    const std::vector<uint8_t>& response,
+                    std::unique_ptr<SimpleCdmPromise>& promise));
+
+  void CloseSession(const std::string& session_id,
+                    std::unique_ptr<SimpleCdmPromise> promise) override;
+  MOCK_METHOD2(OnCloseSession,
+               void(const std::string& session_id,
+                    std::unique_ptr<SimpleCdmPromise>& promise));
+
+  void RemoveSession(const std::string& session_id,
+                     std::unique_ptr<SimpleCdmPromise> promise) override;
+  MOCK_METHOD2(OnRemoveSession,
+               void(const std::string& session_id,
+                    std::unique_ptr<SimpleCdmPromise>& promise));
+
+  MOCK_METHOD0(GetCdmContext, CdmContext*());
+
+  void CallSessionMessageCB(const std::string& session_id,
+                            ContentDecryptionModule::MessageType message_type,
+                            const std::vector<uint8_t>& message);
+  void CallSessionClosedCB(const std::string& session_id);
+  void CallSessionKeysChangeCB(const std::string& session_id,
+                               bool has_additional_usable_key,
+                               CdmKeysInfo keys_info);
+  void CallSessionExpirationUpdateCB(const std::string& session_id,
+                                     base::Time new_expiry_time);
+
+ protected:
+  ~MockCdm() override;
+
+ private:
+  // Callbacks.
+  SessionMessageCB session_message_cb_;
+  SessionClosedCB session_closed_cb_;
+  SessionKeysChangeCB session_keys_change_cb_;
+  SessionExpirationUpdateCB session_expiration_update_cb_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockCdm);
+};
+
+class MockCdmFactory : public CdmFactory {
+ public:
+  MockCdmFactory();
+  ~MockCdmFactory() override;
+
+  // CdmFactory implementation.
+  // This creates a StrictMock<MockCdm> when called. Although ownership of the
+  // created CDM is passed to |cdm_created_cb|, a copy is kept (and available
+  // using Cdm()). If |key_system| is empty, no CDM will be created.
+  void Create(const std::string& key_system,
+              const GURL& security_origin,
+              const CdmConfig& cdm_config,
+              const SessionMessageCB& session_message_cb,
+              const SessionClosedCB& session_closed_cb,
+              const SessionKeysChangeCB& session_keys_change_cb,
+              const SessionExpirationUpdateCB& session_expiration_update_cb,
+              const CdmCreatedCB& cdm_created_cb) override;
+
+  // Return a pointer to the created CDM.
+  MockCdm* GetCreatedCdm();
+
+  // Provide a callback to be called before the CDM is created and returned.
+  void SetBeforeCreationCB(const base::Closure& before_creation_cb);
+
+ private:
+  // Reference to the created CDM.
+  scoped_refptr<MockCdm> created_cdm_;
+
+  // Callback to be used before Create() successfully calls |cdm_created_cb|.
+  base::Closure before_creation_cb_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockCdmFactory);
 };
 
 class MockStreamParser : public StreamParser {

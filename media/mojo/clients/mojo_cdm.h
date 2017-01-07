@@ -17,6 +17,7 @@
 #include "base/threading/thread_checker.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_initialized_promise.h"
+#include "media/base/cdm_promise_adapter.h"
 #include "media/base/cdm_session_tracker.h"
 #include "media/base/content_decryption_module.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
@@ -113,12 +114,11 @@ class MojoCdm : public ContentDecryptionModule,
   void OnKeyAdded();
 
   // Callbacks to handle CDM promises.
-  void OnSimpleCdmPromiseResult(std::unique_ptr<SimpleCdmPromise> promise,
+  void OnSimpleCdmPromiseResult(uint32_t promise_id,
                                 mojom::CdmPromiseResultPtr result);
-  void OnNewSessionCdmPromiseResult(
-      std::unique_ptr<NewSessionCdmPromise> promise,
-      mojom::CdmPromiseResultPtr result,
-      const std::string& session_id);
+  void OnNewSessionCdmPromiseResult(uint32_t promise_id,
+                                    mojom::CdmPromiseResultPtr result,
+                                    const std::string& session_id);
 
   base::ThreadChecker thread_checker_;
 
@@ -156,6 +156,9 @@ class MojoCdm : public ContentDecryptionModule,
 
   // Keep track of current sessions.
   CdmSessionTracker cdm_session_tracker_;
+
+  // Keep track of outstanding promises.
+  CdmPromiseAdapter cdm_promise_adapter_;
 
   // This must be the last member.
   base::WeakPtrFactory<MojoCdm> weak_factory_;

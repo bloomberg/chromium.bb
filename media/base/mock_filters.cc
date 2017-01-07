@@ -9,6 +9,7 @@
 using ::testing::_;
 using ::testing::Return;
 using ::testing::SaveArg;
+using ::testing::StrictMock;
 
 MATCHER(NotEmpty, "") {
   return !arg.empty();
@@ -178,6 +179,118 @@ MockCdmSessionPromise::MockCdmSessionPromise(bool expect_success,
 MockCdmSessionPromise::~MockCdmSessionPromise() {
   // The EXPECT calls will verify that the promise is in fact fulfilled.
   MarkPromiseSettled();
+}
+
+MockCdm::MockCdm(const SessionMessageCB& session_message_cb,
+                 const SessionClosedCB& session_closed_cb,
+                 const SessionKeysChangeCB& session_keys_change_cb,
+                 const SessionExpirationUpdateCB& session_expiration_update_cb)
+    : session_message_cb_(session_message_cb),
+      session_closed_cb_(session_closed_cb),
+      session_keys_change_cb_(session_keys_change_cb),
+      session_expiration_update_cb_(session_expiration_update_cb) {}
+
+MockCdm::~MockCdm() {}
+
+void MockCdm::SetServerCertificate(const std::vector<uint8_t>& certificate,
+                                   std::unique_ptr<SimpleCdmPromise> promise) {
+  OnSetServerCertificate(certificate, promise);
+}
+
+void MockCdm::CreateSessionAndGenerateRequest(
+    CdmSessionType session_type,
+    EmeInitDataType init_data_type,
+    const std::vector<uint8_t>& init_data,
+    std::unique_ptr<NewSessionCdmPromise> promise) {
+  OnCreateSessionAndGenerateRequest(session_type, init_data_type, init_data,
+                                    promise);
+}
+
+void MockCdm::LoadSession(CdmSessionType session_type,
+                          const std::string& session_id,
+                          std::unique_ptr<NewSessionCdmPromise> promise) {
+  OnLoadSession(session_type, session_id, promise);
+}
+
+void MockCdm::UpdateSession(const std::string& session_id,
+                            const std::vector<uint8_t>& response,
+                            std::unique_ptr<SimpleCdmPromise> promise) {
+  OnUpdateSession(session_id, response, promise);
+}
+
+void MockCdm::CloseSession(const std::string& session_id,
+                           std::unique_ptr<SimpleCdmPromise> promise) {
+  OnCloseSession(session_id, promise);
+}
+
+void MockCdm::RemoveSession(const std::string& session_id,
+                            std::unique_ptr<SimpleCdmPromise> promise) {
+  OnRemoveSession(session_id, promise);
+}
+
+void MockCdm::CallSessionMessageCB(
+    const std::string& session_id,
+    ContentDecryptionModule::MessageType message_type,
+    const std::vector<uint8_t>& message) {
+  session_message_cb_.Run(session_id, message_type, message);
+}
+
+void MockCdm::CallSessionClosedCB(const std::string& session_id) {
+  session_closed_cb_.Run(session_id);
+}
+
+void MockCdm::CallSessionKeysChangeCB(const std::string& session_id,
+                                      bool has_additional_usable_key,
+                                      CdmKeysInfo keys_info) {
+  session_keys_change_cb_.Run(session_id, has_additional_usable_key,
+                              std::move(keys_info));
+}
+
+void MockCdm::CallSessionExpirationUpdateCB(const std::string& session_id,
+                                            base::Time new_expiry_time) {
+  session_expiration_update_cb_.Run(session_id, new_expiry_time);
+}
+
+MockCdmFactory::MockCdmFactory() {}
+
+MockCdmFactory::~MockCdmFactory() {}
+
+void MockCdmFactory::Create(
+    const std::string& key_system,
+    const GURL& security_origin,
+    const CdmConfig& cdm_config,
+    const SessionMessageCB& session_message_cb,
+    const SessionClosedCB& session_closed_cb,
+    const SessionKeysChangeCB& session_keys_change_cb,
+    const SessionExpirationUpdateCB& session_expiration_update_cb,
+    const CdmCreatedCB& cdm_created_cb) {
+  // If no key system specified, notify that Create() failed.
+  if (key_system.empty()) {
+    cdm_created_cb.Run(nullptr, "CDM creation failed");
+    return;
+  }
+
+  // Since there is a CDM, call |before_creation_cb_| first.
+  if (!before_creation_cb_.is_null())
+    before_creation_cb_.Run();
+
+  // Create and return a new MockCdm. Keep a pointer to the created CDM so
+  // that tests can access it. Calls to GetCdmContext() can be ignored.
+  scoped_refptr<MockCdm> cdm = new StrictMock<MockCdm>(
+      session_message_cb, session_closed_cb, session_keys_change_cb,
+      session_expiration_update_cb);
+  created_cdm_ = cdm.get();
+  EXPECT_CALL(*created_cdm_.get(), GetCdmContext());
+  cdm_created_cb.Run(std::move(cdm), "");
+}
+
+MockCdm* MockCdmFactory::GetCreatedCdm() {
+  return created_cdm_.get();
+}
+
+void MockCdmFactory::SetBeforeCreationCB(
+    const base::Closure& before_creation_cb) {
+  before_creation_cb_ = before_creation_cb;
 }
 
 MockStreamParser::MockStreamParser() {}

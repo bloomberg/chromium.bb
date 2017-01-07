@@ -25,13 +25,6 @@
 
 namespace media {
 
-template <typename PromiseType>
-static void RejectPromise(std::unique_ptr<PromiseType> promise,
-                          mojom::CdmPromiseResultPtr result) {
-  promise->reject(result->exception, result->system_code,
-                  result->error_message);
-}
-
 // static
 void MojoCdm::Create(
     const std::string& key_system,
@@ -140,6 +133,9 @@ void MojoCdm::OnConnectionError(uint32_t custom_reason,
     return;
   }
 
+  // As communication with the remote CDM is broken, reject any outstanding
+  // promises and close all the existing sessions.
+  cdm_promise_adapter_.Clear();
   cdm_session_tracker_.CloseRemainingSessions(session_closed_cb_);
 }
 
@@ -154,9 +150,10 @@ void MojoCdm::SetServerCertificate(const std::vector<uint8_t>& certificate,
     return;
   }
 
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
   remote_cdm_->SetServerCertificate(
       certificate, base::Bind(&MojoCdm::OnSimpleCdmPromiseResult,
-                              base::Unretained(this), base::Passed(&promise)));
+                              base::Unretained(this), promise_id));
 }
 
 void MojoCdm::CreateSessionAndGenerateRequest(
@@ -173,10 +170,11 @@ void MojoCdm::CreateSessionAndGenerateRequest(
     return;
   }
 
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
   remote_cdm_->CreateSessionAndGenerateRequest(
       session_type, init_data_type, init_data,
       base::Bind(&MojoCdm::OnNewSessionCdmPromiseResult, base::Unretained(this),
-                 base::Passed(&promise)));
+                 promise_id));
 }
 
 void MojoCdm::LoadSession(CdmSessionType session_type,
@@ -191,10 +189,10 @@ void MojoCdm::LoadSession(CdmSessionType session_type,
     return;
   }
 
-  remote_cdm_->LoadSession(
-      session_type, session_id,
-      base::Bind(&MojoCdm::OnNewSessionCdmPromiseResult, base::Unretained(this),
-                 base::Passed(&promise)));
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
+  remote_cdm_->LoadSession(session_type, session_id,
+                           base::Bind(&MojoCdm::OnNewSessionCdmPromiseResult,
+                                      base::Unretained(this), promise_id));
 }
 
 void MojoCdm::UpdateSession(const std::string& session_id,
@@ -209,10 +207,10 @@ void MojoCdm::UpdateSession(const std::string& session_id,
     return;
   }
 
-  remote_cdm_->UpdateSession(
-      session_id, response,
-      base::Bind(&MojoCdm::OnSimpleCdmPromiseResult, base::Unretained(this),
-                 base::Passed(&promise)));
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
+  remote_cdm_->UpdateSession(session_id, response,
+                             base::Bind(&MojoCdm::OnSimpleCdmPromiseResult,
+                                        base::Unretained(this), promise_id));
 }
 
 void MojoCdm::CloseSession(const std::string& session_id,
@@ -226,9 +224,10 @@ void MojoCdm::CloseSession(const std::string& session_id,
     return;
   }
 
-  remote_cdm_->CloseSession(
-      session_id, base::Bind(&MojoCdm::OnSimpleCdmPromiseResult,
-                             base::Unretained(this), base::Passed(&promise)));
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
+  remote_cdm_->CloseSession(session_id,
+                            base::Bind(&MojoCdm::OnSimpleCdmPromiseResult,
+                                       base::Unretained(this), promise_id));
 }
 
 void MojoCdm::RemoveSession(const std::string& session_id,
@@ -242,9 +241,10 @@ void MojoCdm::RemoveSession(const std::string& session_id,
     return;
   }
 
-  remote_cdm_->RemoveSession(
-      session_id, base::Bind(&MojoCdm::OnSimpleCdmPromiseResult,
-                             base::Unretained(this), base::Passed(&promise)));
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));
+  remote_cdm_->RemoveSession(session_id,
+                             base::Bind(&MojoCdm::OnSimpleCdmPromiseResult,
+                                        base::Unretained(this), promise_id));
 }
 
 CdmContext* MojoCdm::GetCdmContext() {
@@ -341,7 +341,9 @@ void MojoCdm::OnCdmInitialized(mojom::CdmPromiseResultPtr result,
   DCHECK(pending_init_promise_);
 
   if (!result->success) {
-    RejectPromise(std::move(pending_init_promise_), std::move(result));
+    pending_init_promise_->reject(result->exception, result->system_code,
+                                  result->error_message);
+    pending_init_promise_.reset();
     return;
   }
 
@@ -366,24 +368,28 @@ void MojoCdm::OnKeyAdded() {
   decryptor_->OnKeyAdded();
 }
 
-void MojoCdm::OnSimpleCdmPromiseResult(
-    std::unique_ptr<SimpleCdmPromise> promise,
-    mojom::CdmPromiseResultPtr result) {
+void MojoCdm::OnSimpleCdmPromiseResult(uint32_t promise_id,
+                                       mojom::CdmPromiseResultPtr result) {
   if (result->success)
-    promise->resolve();
-  else
-    RejectPromise(std::move(promise), std::move(result));
+    cdm_promise_adapter_.ResolvePromise(promise_id);
+  else {
+    cdm_promise_adapter_.RejectPromise(promise_id, result->exception,
+                                       result->system_code,
+                                       result->error_message);
+  }
 }
 
-void MojoCdm::OnNewSessionCdmPromiseResult(
-    std::unique_ptr<NewSessionCdmPromise> promise,
-    mojom::CdmPromiseResultPtr result,
-    const std::string& session_id) {
+void MojoCdm::OnNewSessionCdmPromiseResult(uint32_t promise_id,
+                                           mojom::CdmPromiseResultPtr result,
+                                           const std::string& session_id) {
   if (result->success) {
     cdm_session_tracker_.AddSession(session_id);
-    promise->resolve(session_id);
-  } else
-    RejectPromise(std::move(promise), std::move(result));
+    cdm_promise_adapter_.ResolvePromise(promise_id, session_id);
+  } else {
+    cdm_promise_adapter_.RejectPromise(promise_id, result->exception,
+                                       result->system_code,
+                                       result->error_message);
+  }
 }
 
 }  // namespace media
