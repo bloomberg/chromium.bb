@@ -368,6 +368,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // is intended for android.
   bool DoesOverlaySupportMetadata() const;
 
+  // Whether the media should be paused when hidden.
+  bool ShouldPauseWhenHidden() const;
+
   blink::WebLocalFrame* frame_;
 
   // The playback state last reported to |delegate_|, to avoid setting duplicate
@@ -430,6 +433,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Set while paused. |paused_time_| is only valid when |paused_| is true.
   bool paused_;
   base::TimeDelta paused_time_;
+
+  // Set if paused automatically when hidden and need to resume when visible.
+  // Reset if paused for any other reason.
+  bool paused_when_hidden_;
 
   // Set when starting, seeking, and resuming (all of which require a Pipeline
   // seek). |seek_time_| is only valid when |seeking_| is true.

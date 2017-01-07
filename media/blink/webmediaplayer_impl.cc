@@ -205,6 +205,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       opaque_(false),
       playback_rate_(0.0),
       paused_(true),
+      paused_when_hidden_(false),
       seeking_(false),
       pending_suspend_resume_cycle_(false),
       ended_(false),
@@ -447,6 +448,9 @@ void WebMediaPlayerImpl::pause() {
   // called when casting begins, and when we exit casting we should end up in a
   // paused state.
   paused_ = true;
+
+  // No longer paused because it was hidden.
+  paused_when_hidden_ = false;
 
 #if defined(OS_ANDROID)  // WMPI_CAST
   if (isRemote()) {
@@ -1342,11 +1346,20 @@ void WebMediaPlayerImpl::OnVideoOpacityChange(bool opaque) {
 void WebMediaPlayerImpl::OnHidden() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  if (IsBackgroundVideoTrackOptimizationEnabled())
-    selectedVideoTrackChanged(nullptr);
-
   if (watch_time_reporter_)
     watch_time_reporter_->OnHidden();
+
+  if (IsBackgroundVideoTrackOptimizationEnabled()) {
+    if (ShouldPauseWhenHidden()) {
+      // OnPause() will set |paused_when_hidden_| to false and call
+      // UpdatePlayState(), so set the flag to true after and then return.
+      OnPause();
+      paused_when_hidden_ = true;
+      return;
+    }
+
+    selectedVideoTrackChanged(nullptr);
+  }
 
   UpdatePlayState();
 
@@ -1365,10 +1378,17 @@ void WebMediaPlayerImpl::OnShown() {
       base::Bind(&VideoFrameCompositor::SetForegroundTime,
                  base::Unretained(compositor_), base::TimeTicks::Now()));
 
-  if (IsBackgroundVideoTrackOptimizationEnabled() &&
-      client_->hasSelectedVideoTrack()) {
-    WebMediaPlayer::TrackId trackId = client_->getSelectedVideoTrackId();
-    selectedVideoTrackChanged(&trackId);
+  if (IsBackgroundVideoTrackOptimizationEnabled()) {
+    if (paused_when_hidden_) {
+      paused_when_hidden_ = false;
+      OnPlay();  // Calls UpdatePlayState() so return afterwards.
+      return;
+    }
+
+    if (client_->hasSelectedVideoTrack()) {
+      WebMediaPlayer::TrackId trackId = client_->getSelectedVideoTrackId();
+      selectedVideoTrackChanged(&trackId);
+    }
   }
 
   must_suspend_ = false;
@@ -2049,6 +2069,15 @@ void WebMediaPlayerImpl::ActivateViewportIntersectionMonitoring(bool activate) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   client_->activateViewportIntersectionMonitoring(activate);
+}
+
+bool WebMediaPlayerImpl::ShouldPauseWhenHidden() const {
+#if defined(OS_ANDROID)  // WMPI_CAST
+  if (isRemote())
+    return false;
+#endif  // defined(OS_ANDROID)  // WMPI_CAST
+
+  return hasVideo() && !hasAudio();
 }
 
 }  // namespace media
