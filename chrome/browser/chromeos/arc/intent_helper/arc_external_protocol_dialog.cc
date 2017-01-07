@@ -34,10 +34,6 @@ namespace arc {
 
 namespace {
 
-constexpr uint32_t kMinVersionForHandleUrl = 2;
-constexpr uint32_t kMinVersionForRequestUrlHandlerList = 2;
-constexpr uint32_t kMinVersionForAddPreferredPackage = 7;
-
 // TODO(yusukes|djacobo): Find a better way to detect a request loop and remove
 // the global variables.
 base::LazyInstance<GURL> g_last_url = LAZY_INSTANCE_INITIALIZER;
@@ -90,8 +86,11 @@ void OpenUrlInChrome(int render_process_host_id,
 void HandleUrlInArc(int render_process_host_id,
                     int routing_id,
                     const std::pair<GURL, std::string>& url_and_package) {
-  auto* instance = ArcIntentHelperBridge::GetIntentHelperInstance(
-      "HandleUrl", kMinVersionForHandleUrl);
+  auto* arc_service_manager = ArcServiceManager::Get();
+  if (!arc_service_manager)
+    return;
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_service_manager->arc_bridge_service()->intent_helper(), HandleUrl);
   if (!instance)
     return;
 
@@ -260,9 +259,15 @@ void OnIntentPickerClosed(int render_process_host_id,
   // |package_name| matches a valid option and return the index.
   const size_t selected_app_index =
       ArcNavigationThrottle::GetAppIndex(handlers, selected_app_package);
+
   // Make sure that the instance at least supports HandleUrl.
-  auto* instance = ArcIntentHelperBridge::GetIntentHelperInstance(
-      "HandleUrl", kMinVersionForHandleUrl);
+  auto* arc_service_manager = ArcServiceManager::Get();
+  mojom::IntentHelperInstance* instance = nullptr;
+  if (arc_service_manager) {
+    instance = ARC_GET_INSTANCE_FOR_METHOD(
+        arc_service_manager->arc_bridge_service()->intent_helper(), HandleUrl);
+  }
+
   if (!instance) {
     close_reason = ArcNavigationThrottle::CloseReason::ERROR;
   } else if (close_reason ==
@@ -280,8 +285,10 @@ void OnIntentPickerClosed(int render_process_host_id,
 
   switch (close_reason) {
     case ArcNavigationThrottle::CloseReason::ALWAYS_PRESSED: {
-      if (ArcIntentHelperBridge::GetIntentHelperInstance(
-              "AddPreferredPackage", kMinVersionForAddPreferredPackage)) {
+      DCHECK(arc_service_manager);
+      if (ARC_GET_INSTANCE_FOR_METHOD(
+              arc_service_manager->arc_bridge_service()->intent_helper(),
+              AddPreferredPackage)) {
         instance->AddPreferredPackage(
             handlers[selected_app_index]->package_name);
       }
@@ -328,7 +335,7 @@ void OnAppIconsReceived(
     std::unique_ptr<ActivityIconLoader::ActivityToIconsMap> icons) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  using AppInfo = arc::ArcNavigationThrottle::AppInfo;
+  using AppInfo = ArcNavigationThrottle::AppInfo;
   std::vector<AppInfo> app_info;
 
   for (const auto& handler : handlers) {
@@ -356,8 +363,15 @@ void OnUrlHandlerList(int render_process_host_id,
                       std::vector<mojom::IntentHandlerInfoPtr> handlers) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  auto* instance = ArcIntentHelperBridge::GetIntentHelperInstance(
-      "HandleUrl", kMinVersionForHandleUrl);
+  auto* arc_service_manager = ArcServiceManager::Get();
+  if (!arc_service_manager) {
+    // ARC is not running anymore. Show the Chrome OS dialog.
+    ShowFallbackExternalProtocolDialog(render_process_host_id, routing_id, url);
+    return;
+  }
+
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_service_manager->arc_bridge_service()->intent_helper(), HandleUrl);
   scoped_refptr<ActivityIconLoader> icon_loader = GetIconLoader();
 
   if (!instance || !icon_loader) {
@@ -457,10 +471,15 @@ bool RunArcExternalProtocolDialog(const GURL& url,
     return false;
   }
 
-  auto* instance = ArcIntentHelperBridge::GetIntentHelperInstance(
-      "RequestUrlHandlerList", kMinVersionForRequestUrlHandlerList);
-  if (!instance)
+  auto* arc_service_manager = ArcServiceManager::Get();
+  if (!arc_service_manager)
     return false;  // ARC is either not supported or not yet ready.
+
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_service_manager->arc_bridge_service()->intent_helper(),
+      RequestUrlHandlerList);
+  if (!instance)
+    return false;  // the same.
 
   WebContents* web_contents =
       tab_util::GetWebContentsByID(render_process_host_id, routing_id);

@@ -27,10 +27,6 @@ namespace arc {
 
 namespace {
 
-constexpr uint32_t kMinVersionForHandleUrl = 2;
-constexpr uint32_t kMinVersionForRequestUrlHandlerList = 2;
-constexpr uint32_t kMinVersionForAddPreferredPackage = 7;
-
 scoped_refptr<ActivityIconLoader> GetIconLoader() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ArcServiceManager* arc_service_manager = ArcServiceManager::Get();
@@ -182,7 +178,9 @@ ArcNavigationThrottle::HandleRequest() {
     return content::NavigationThrottle::PROCEED;
 
   ArcServiceManager* arc_service_manager = ArcServiceManager::Get();
-  DCHECK(arc_service_manager);
+  if (!arc_service_manager)
+    return content::NavigationThrottle::PROCEED;
+
   scoped_refptr<LocalActivityResolver> local_resolver =
       arc_service_manager->activity_resolver();
   if (local_resolver->ShouldChromeHandleUrl(url)) {
@@ -191,8 +189,9 @@ ArcNavigationThrottle::HandleRequest() {
     return content::NavigationThrottle::PROCEED;
   }
 
-  auto* instance = ArcIntentHelperBridge::GetIntentHelperInstance(
-      "RequestUrlHandlerList", kMinVersionForRequestUrlHandlerList);
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_service_manager->arc_bridge_service()->intent_helper(),
+      RequestUrlHandlerList);
   if (!instance)
     return content::NavigationThrottle::PROCEED;
   instance->RequestUrlHandlerList(
@@ -296,8 +295,13 @@ void ArcNavigationThrottle::OnIntentPickerClosed(
   previous_user_action_ = close_reason;
 
   // Make sure that the instance at least supports HandleUrl.
-  auto* instance = ArcIntentHelperBridge::GetIntentHelperInstance(
-      "HandleUrl", kMinVersionForHandleUrl);
+  auto* arc_service_manager = ArcServiceManager::Get();
+  mojom::IntentHelperInstance* instance = nullptr;
+  if (arc_service_manager) {
+    instance = ARC_GET_INSTANCE_FOR_METHOD(
+        arc_service_manager->arc_bridge_service()->intent_helper(), HandleUrl);
+  }
+
   // Since we are selecting an app by its package name, we need to locate it
   // on the |handlers| structure before sending the IPC to ARC.
   const size_t selected_app_index = GetAppIndex(handlers, selected_app_package);
@@ -323,8 +327,10 @@ void ArcNavigationThrottle::OnIntentPickerClosed(
     case CloseReason::ALWAYS_PRESSED: {
       // Call AddPreferredPackage if it is supported. Reusing the same
       // |instance| is okay.
-      if (ArcIntentHelperBridge::GetIntentHelperInstance(
-              "AddPreferredPackage", kMinVersionForAddPreferredPackage)) {
+      DCHECK(arc_service_manager);
+      if (ARC_GET_INSTANCE_FOR_METHOD(
+              arc_service_manager->arc_bridge_service()->intent_helper(),
+              AddPreferredPackage)) {
         instance->AddPreferredPackage(
             handlers[selected_app_index]->package_name);
       }

@@ -126,11 +126,7 @@ ArcIntentHelperBridge::FilterOutIntentHelper(
 }
 
 // static
-mojom::IntentHelperInstance*
-ArcIntentHelperBridge::GetIntentHelperInstanceWithErrorCode(
-    const std::string& method_name_for_logging,
-    uint32_t min_instance_version,
-    GetResult* out_error_code) {
+bool ArcIntentHelperBridge::IsIntentHelperAvailable(GetResult* out_error_code) {
   auto* arc_service_manager = ArcServiceManager::Get();
   if (!arc_service_manager) {
     if (!ArcBridgeService::GetEnabled(base::CommandLine::ForCurrentProcess())) {
@@ -142,7 +138,7 @@ ArcIntentHelperBridge::GetIntentHelperInstanceWithErrorCode(
       if (out_error_code)
         *out_error_code = GetResult::FAILED_ARC_NOT_READY;
     }
-    return nullptr;
+    return false;
   }
 
   auto* intent_helper_holder =
@@ -151,26 +147,10 @@ ArcIntentHelperBridge::GetIntentHelperInstanceWithErrorCode(
     VLOG(2) << "ARC intent helper instance is not ready.";
     if (out_error_code)
       *out_error_code = GetResult::FAILED_ARC_NOT_READY;
-    return nullptr;
+    return false;
   }
 
-  // TODO(lhchavez): Stop calling GetInstanceForVersion() directly.
-  auto* instance = intent_helper_holder->GetInstanceForVersion(
-      min_instance_version, method_name_for_logging.c_str());
-  if (!instance) {
-    if (out_error_code)
-      *out_error_code = GetResult::FAILED_ARC_NOT_SUPPORTED;
-    return nullptr;
-  }
-  return instance;
-}
-
-// static
-mojom::IntentHelperInstance* ArcIntentHelperBridge::GetIntentHelperInstance(
-    const std::string& method_name_for_logging,
-    uint32_t min_instance_version) {
-  return GetIntentHelperInstanceWithErrorCode(method_name_for_logging,
-                                              min_instance_version, nullptr);
+  return true;
 }
 
 void ArcIntentHelperBridge::OnIntentFiltersUpdated(

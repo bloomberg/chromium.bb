@@ -28,12 +28,25 @@ constexpr size_t kLargeIconSizeInDip = 20;
 constexpr size_t kMaxIconSizeInPx = 200;
 constexpr char kPngDataUrlPrefix[] = "data:image/png;base64,";
 
-constexpr int kMinInstanceVersion = 3;  // see intent_helper.mojom
-
 ui::ScaleFactor GetSupportedScaleFactor() {
   std::vector<ui::ScaleFactor> scale_factors = ui::GetSupportedScaleFactors();
   DCHECK(!scale_factors.empty());
   return scale_factors.back();
+}
+
+// Returns an instance for calling RequestActivityIcons().
+mojom::IntentHelperInstance* GetInstanceForRequestActivityIcons(
+    ArcIntentHelperBridge::GetResult* out_error_code) {
+  if (!ArcIntentHelperBridge::IsIntentHelperAvailable(out_error_code))
+    return nullptr;
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
+      ArcServiceManager::Get()->arc_bridge_service()->intent_helper(),
+      RequestActivityIcons);
+  if (!instance && out_error_code) {
+    *out_error_code =
+        ArcIntentHelperBridge::GetResult::FAILED_ARC_NOT_SUPPORTED;
+  }
+  return instance;
 }
 
 }  // namespace
@@ -97,8 +110,7 @@ ActivityIconLoader::GetResult ActivityIconLoader::GetActivityIcons(
   }
 
   ArcIntentHelperBridge::GetResult error_code;
-  auto* instance = ArcIntentHelperBridge::GetIntentHelperInstanceWithErrorCode(
-      "RequestActivityIcons", kMinInstanceVersion, &error_code);
+  auto* instance = GetInstanceForRequestActivityIcons(&error_code);
   if (!instance) {
     // The mojo channel is not yet ready (or not supported at all). Run the
     // callback with |result| that could be empty.

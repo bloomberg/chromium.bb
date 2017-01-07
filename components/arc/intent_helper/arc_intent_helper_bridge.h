@@ -82,17 +82,9 @@ class ArcIntentHelperBridge
   static std::vector<mojom::IntentHandlerInfoPtr> FilterOutIntentHelper(
       std::vector<mojom::IntentHandlerInfoPtr> handlers);
 
-  // Gets the mojo instance if it's available. On failure, returns nullptr and
-  // updates |out_error_code| if it's not nullptr.
-  static mojom::IntentHelperInstance* GetIntentHelperInstanceWithErrorCode(
-      const std::string& method_name_for_logging,
-      uint32_t min_instance_version,
-      GetResult* out_error_code);
-
-  // Does the same as above without asking for the error code.
-  static mojom::IntentHelperInstance* GetIntentHelperInstance(
-      const std::string& method_name_for_logging,
-      uint32_t min_instance_version);
+  // Checks if the intent helper interface is available. When it is not, returns
+  // false and updates |out_error_code| if it's not nullptr.
+  static bool IsIntentHelperAvailable(GetResult* out_error_code);
 
   static const char kArcIntentHelperPackageName[];
 

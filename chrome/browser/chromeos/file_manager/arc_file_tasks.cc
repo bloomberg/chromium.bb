@@ -33,25 +33,7 @@ namespace file_tasks {
 
 namespace {
 
-constexpr int kArcIntentHelperVersionWithUrlListSupport = 4;
-constexpr int kArcIntentHelperVersionWithFullActivityName = 5;
-
 constexpr char kAppIdSeparator = '/';
-
-// Returns the Mojo interface for ARC Intent Helper, with version |minVersion|
-// or above. If the ARC bridge is not established, returns null.
-arc::mojom::IntentHelperInstance* GetArcIntentHelper(
-    Profile* profile,
-    const std::string& method_name_for_logging,
-    uint32_t min_version) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  // File manager in secondary profile cannot access ARC.
-  if (!chromeos::ProfileHelper::IsPrimaryProfile(profile))
-    return nullptr;
-  return arc::ArcIntentHelperBridge::GetIntentHelperInstance(
-      method_name_for_logging, min_version);
-}
 
 // Returns the icon loader that wraps the Mojo interface for ARC Intent Helper.
 scoped_refptr<arc::ActivityIconLoader> GetArcActivityIconLoader() {
@@ -189,9 +171,16 @@ void FindArcTasks(Profile* profile,
                   const FindTasksCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  arc::mojom::IntentHelperInstance* arc_intent_helper =
-      GetArcIntentHelper(profile, "RequestUrlListHandlerList",
-                         kArcIntentHelperVersionWithUrlListSupport);
+  arc::mojom::IntentHelperInstance* arc_intent_helper = nullptr;
+  // File manager in secondary profile cannot access ARC.
+  if (chromeos::ProfileHelper::IsPrimaryProfile(profile)) {
+    auto* arc_service_manager = arc::ArcServiceManager::Get();
+    if (arc_service_manager) {
+      arc_intent_helper = ARC_GET_INSTANCE_FOR_METHOD(
+          arc_service_manager->arc_bridge_service()->intent_helper(),
+          RequestUrlListHandlerList);
+    }
+  }
   if (!arc_intent_helper) {
     callback.Run(std::move(result_list));
     return;
@@ -228,9 +217,16 @@ bool ExecuteArcTask(Profile* profile,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(file_urls.size(), mime_types.size());
 
-  arc::mojom::IntentHelperInstance* const arc_intent_helper =
-      GetArcIntentHelper(profile, "HandleUrlList",
-                         kArcIntentHelperVersionWithFullActivityName);
+  arc::mojom::IntentHelperInstance* arc_intent_helper = nullptr;
+  // File manager in secondary profile cannot access ARC.
+  if (chromeos::ProfileHelper::IsPrimaryProfile(profile)) {
+    auto* arc_service_manager = arc::ArcServiceManager::Get();
+    if (arc_service_manager) {
+      arc_intent_helper = ARC_GET_INSTANCE_FOR_METHOD(
+          arc_service_manager->arc_bridge_service()->intent_helper(),
+          HandleUrlList);
+    }
+  }
   if (!arc_intent_helper)
     return false;
 
