@@ -50,7 +50,7 @@ suite('metrics reporting', function() {
       Polymer.dom.flush();
 
       // Restart button should be hidden by default (in any state).
-      assertFalse(!!page.$$('#metricsReporting paper-button'));
+      assertFalse(!!page.$$('#restart'));
 
       // Simulate toggling via policy.
       cr.webUIListenerCallback('metrics-reporting-change', {
@@ -60,7 +60,7 @@ suite('metrics reporting', function() {
       Polymer.dom.flush();
 
       // No restart button should show because the value is managed.
-      assertFalse(!!page.$$('#metricsReporting paper-button'));
+      assertFalse(!!page.$$('#restart'));
 
       cr.webUIListenerCallback('metrics-reporting-change', {
         enabled: true,
@@ -70,7 +70,7 @@ suite('metrics reporting', function() {
 
       // Changes in policy should not show the restart button because the value
       // is still managed.
-      assertFalse(!!page.$$('#metricsReporting paper-button'));
+      assertFalse(!!page.$$('#restart'));
 
       // Remove the policy and toggle the value.
       cr.webUIListenerCallback('metrics-reporting-change', {
@@ -80,7 +80,7 @@ suite('metrics reporting', function() {
       Polymer.dom.flush();
 
       // Now the restart button should be showing.
-      assertTrue(!!page.$$('#metricsReporting paper-button'));
+      assertTrue(!!page.$$('#restart'));
 
       // Receiving the same values should have no effect.
        cr.webUIListenerCallback('metrics-reporting-change', {
@@ -88,7 +88,7 @@ suite('metrics reporting', function() {
         managed: false,
       });
       Polymer.dom.flush();
-      assertTrue(!!page.$$('#metricsReporting paper-button'));
+      assertTrue(!!page.$$('#restart'));
     });
   });
 });

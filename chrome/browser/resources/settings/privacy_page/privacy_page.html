@@ -38,12 +38,7 @@
         background-image: url(../images/help_outline.svg);
       }
 
-      /* TODO(dbeam): this is similar to a 1 line checkbox. Worth somehow
-       * combining? */
-      #metricsReporting,
-      #safeBrowsingExtendedReporting {
-        align-items: center;
-        display: flex;
+      .settings-row-min-height {
         min-height: var(--settings-row-min-height);
       }
 
@@ -66,7 +61,6 @@
       }
 
       #restart {
-        flex: 1;
         text-align: end;
       }
     </style>
@@ -90,7 +84,7 @@
               label="$i18n{networkPredictionEnabled}"
               hidden="[[!pageVisibility.networkPrediction]]">
           </settings-checkbox>
-          <div id="safeBrowsingExtendedReporting">
+          <div class="layout horizontal center settings-row-min-height">
             <paper-checkbox id="safeBrowsingExtendedReportingCheckbox"
                 on-tap="onSafeBrowsingExtendedReportingCheckboxTap_"
                 checked="[[safeBrowsingExtendedReportingEnabled_]]">
@@ -107,7 +101,7 @@
           </settings-checkbox>
 </if><!-- chromeos -->
 <if expr="not chromeos">
-          <div id="metricsReporting">
+          <div class="layout horizontal center settings-row-min-height">
             <paper-checkbox id="metricsReportingCheckbox"
                 on-tap="onMetricsReportingCheckboxTap_"
                 checked="[[metricsReporting_.enabled]]"
@@ -122,7 +116,7 @@
               </paper-tooltip>
             </template>
             <template is="dom-if" if="[[showRestart_]]" restamp>
-              <div id="restart">
+              <div id="restart" class="flex">
                 <paper-button on-tap="onRestartTap_">
                   $i18n{restart}
                 </paper-button>
