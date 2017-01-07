@@ -452,8 +452,9 @@ public class UrlManagerTest extends InstrumentationTestCase {
         // Make sure only the properly serialized URL is restored.
         UrlManager urlManager = new UrlManager();
         List<UrlInfo> urlInfos = urlManager.getUrls();
-        assertEquals(1, urlInfos.size());
-        assertEquals(URL1, urlInfos.get(0).getUrl());
+        assertEquals(0, urlInfos.size());
+        assertTrue(urlManager.containsInAnyCache(URL1));
+        assertTrue(urlManager.containsInAnyCache(URL2));
     }
 
     @SmallTest
@@ -469,7 +470,9 @@ public class UrlManagerTest extends InstrumentationTestCase {
         // Make sure all URLs are restored.
         UrlManager urlManager = new UrlManager();
         List<UrlInfo> urlInfos = urlManager.getUrls();
-        assertEquals(2, urlInfos.size());
+        assertEquals(0, urlInfos.size());
+        assertTrue(urlManager.containsInAnyCache(URL1));
+        assertTrue(urlManager.containsInAnyCache(URL2));
         Set<String> resolvedUrls = urlManager.getResolvedUrls();
         assertEquals(2, resolvedUrls.size());
     }
@@ -497,7 +500,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
         oldResolvedUrls.add("old");
         ContextUtils.getAppSharedPreferences().edit()
                 .remove(UrlManager.getVersionKey())
-                .putStringSet("physicalweb_resolved_urls", oldResolvedUrls)
+                .putStringSet("physicalweb_nearby_urls", oldResolvedUrls)
                 .apply();
         new UrlManager();
 
@@ -508,7 +511,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
             public boolean isSatisfied() {
                 SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
                 return sharedPreferences.contains(UrlManager.getVersionKey())
-                        && !sharedPreferences.contains("physicalweb_resolved_urls");
+                        && !sharedPreferences.contains("physicalweb_nearby_urls");
             }
         }, 5000, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
 

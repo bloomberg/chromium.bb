@@ -61,16 +61,7 @@ public class PhysicalWeb {
         LocationUtils locationUtils = LocationUtils.getInstance();
         if (locationUtils.hasAndroidLocationPermission()
                 && locationUtils.isSystemLocationSettingEnabled()) {
-            new NearbyBackgroundSubscription(NearbySubscription.SUBSCRIBE, new Runnable() {
-                @Override
-                public void run() {
-                    // We need to clear the list of nearby URLs so that they can be repopulated by
-                    // the new subscription, but we don't know whether we are already subscribed, so
-                    // we need to pass a callback so that we can clear as soon as we are
-                    // resubscribed.
-                    UrlManager.getInstance().clearNearbyUrls();
-                }
-            }).run();
+            new NearbyBackgroundSubscription(NearbySubscription.SUBSCRIBE).run();
         }
     }
 

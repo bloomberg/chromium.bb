@@ -66,7 +66,6 @@ class UrlManager {
     private static final String TAG = "PhysicalWeb";
     private static final String PREFS_VERSION_KEY = "physicalweb_version";
     private static final String PREFS_ALL_URLS_KEY = "physicalweb_all_urls";
-    private static final String PREFS_NEARBY_URLS_KEY = "physicalweb_nearby_urls";
     private static final String PREFS_PWS_RESULTS_KEY = "physicalweb_pws_results";
     private static final String PREFS_NOTIFICATION_UPDATE_TIMESTAMP =
             "physicalweb_notification_update_timestamp";
@@ -182,7 +181,6 @@ class UrlManager {
 
         // This is a new URL. Add it to the nearby set.
         mNearbyUrls.add(urlInfo.getUrl());
-        putCachedNearbyUrls();
 
         if (!PhysicalWeb.isOnboarding() && !mPwsResultMap.containsKey(urlInfo.getUrl())) {
             // We need to resolve the URL.
@@ -207,7 +205,6 @@ class UrlManager {
         }
 
         mNearbyUrls.remove(urlInfo.getUrl());
-        putCachedNearbyUrls();
 
         // If the URL was previously displayable (both nearby and resolved) and is now no longer
         // nearby, notify listeners that the URL is lost.
@@ -313,7 +310,6 @@ class UrlManager {
         intersection.retainAll(mPwsResultMap.keySet());
 
         mNearbyUrls.clear();
-        putCachedNearbyUrls();
 
         // Only notify listeners for URLs that were previously displayable (both nearby and
         // resolved).
@@ -383,8 +379,8 @@ class UrlManager {
                 protected Void doInBackground(Void... params) {
                     prefs.edit()
                             .putInt(PREFS_VERSION_KEY, PREFS_VERSION)
-                            // This clean up code can be deleted in m57.
-                            .remove("physicalweb_resolved_urls")
+                            // This clean up code can be deleted in m59.
+                            .remove("physicalweb_nearby_urls")
                             .apply();
                     return null;
                 }
@@ -403,8 +399,6 @@ class UrlManager {
                 Log.e(TAG, "Could not deserialize UrlInfo", e);
             }
         }
-        mNearbyUrls.addAll(prefs.getStringSet(PREFS_NEARBY_URLS_KEY, new HashSet<String>()));
-        mNearbyUrls.retainAll(mUrlInfoMap.keySet());
         for (String serializedPwsResult : prefs.getStringSet(PREFS_PWS_RESULTS_KEY,
                 new HashSet<String>())) {
             try {
@@ -435,10 +429,6 @@ class UrlManager {
         }
 
         setStringSetInSharedPreferences(PREFS_ALL_URLS_KEY, serializedUrls);
-    }
-
-    private void putCachedNearbyUrls() {
-        setStringSetInSharedPreferences(PREFS_NEARBY_URLS_KEY, mNearbyUrls);
     }
 
     private void putCachedPwsResultMap() {
@@ -801,7 +791,7 @@ class UrlManager {
     static void clearPrefsForTesting() {
         ContextUtils.getAppSharedPreferences().edit()
                 .remove(PREFS_VERSION_KEY)
-                .remove(PREFS_NEARBY_URLS_KEY)
+                .remove(PREFS_ALL_URLS_KEY)
                 .remove(PREFS_NOTIFICATION_UPDATE_TIMESTAMP)
                 .remove(PREFS_PWS_RESULTS_KEY)
                 .apply();
