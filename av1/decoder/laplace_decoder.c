@@ -29,6 +29,8 @@
   aom_decode_pvq_split_(r, adapt, sum, ctx)
 #endif
 
+#define ACCT_STR __func__
+
 static int aom_decode_pvq_split_(aom_reader *r, od_pvq_codeword_ctx *adapt,
  int sum, int ctx OD_ACC_STR) {
   int shift;
@@ -41,8 +43,8 @@ static int aom_decode_pvq_split_(aom_reader *r, od_pvq_codeword_ctx *adapt,
   fctx = 7*ctx + (sum >> shift) - 1;
 #if CONFIG_DAALA_EC
   msbs = od_decode_cdf_adapt(&r->ec, adapt->pvq_split_cdf[fctx],
-   (sum >> shift) + 1, adapt->pvq_split_increment, acc_str);
-  if (shift) count = od_ec_dec_bits(&r->ec, shift, acc_str);
+   (sum >> shift) + 1, adapt->pvq_split_increment, ACCT_STR);
+  if (shift) count = od_ec_dec_bits(&r->ec, shift, ACCT_STR);
 #else
 # error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
 #endif
@@ -140,7 +142,7 @@ int od_laplace_decode_special_(od_ec_dec *dec, unsigned decay, int max OD_ACC_ST
     ms -= 15;
   }
   while (sym >= 15 && ms != 0);
-  if (shift) pos = (xs << shift) + od_ec_dec_bits(dec, shift, acc_str);
+  if (shift) pos = (xs << shift) + od_ec_dec_bits(dec, shift, ACCT_STR);
   else pos = xs;
   OD_ASSERT(pos >> shift <= max >> shift || max == -1);
   if (max != -1 && pos > max) {
