@@ -1,4 +1,5 @@
 function verifyArray(ta, length) {
+    var i;
     for (i = 0; i < length; ++i) {
         if (ta[i] != i) {
             postMessage("FAIL: Transferred data is incorrect. Expected " +
@@ -18,8 +19,9 @@ function verifyArrayType(ta, name) {
 }
 
 self.addEventListener('message', function(e) {
-    var i;
+    var ab;
     var sab;
+    var sab2;
     var ta;
 
     switch (e.data.name) {
@@ -41,6 +43,22 @@ self.addEventListener('message', function(e) {
             ta = e.data.data;
             verifyArrayType(ta, e.data.name);
             verifyArray(ta, e.data.length);
+            break;
+
+        case 'ArrayBufferAndSharedArrayBuffer':
+            ab = e.data.ab;
+            sab = e.data.sab;
+            verifyArray(new Uint8Array(ab), e.data.abByteLength);
+            verifyArray(new Uint8Array(sab), e.data.sabByteLength);
+            break;
+
+        case 'SharedArrayBufferTwice':
+            sab = e.data.sab;
+            sab2 = e.data.sab2;
+            if (sab !== sab2) {
+                postMessage('FAIL: Expected two SharedArrayBuffers to be equal.');
+            }
+            verifyArray(new Uint8Array(sab), e.data.sabByteLength);
             break;
 
         default:

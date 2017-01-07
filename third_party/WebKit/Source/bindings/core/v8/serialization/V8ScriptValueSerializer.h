@@ -70,7 +70,7 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725")
   // neuter objects in the source context).
   // This separation is required by the spec (it prevents neutering from
   // happening if there's a failure earlier in serialization).
-  void prepareTransfer(Transferables*);
+  void prepareTransfer(Transferables*, ExceptionState&);
   void finalizeTransfer(ExceptionState&);
 
   // Shared between File and FileList logic; does not write a leading tag.
@@ -80,6 +80,9 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725")
   void ThrowDataCloneError(v8::Local<v8::String> message) override;
   v8::Maybe<bool> WriteHostObject(v8::Isolate*,
                                   v8::Local<v8::Object> message) override;
+  v8::Maybe<uint32_t> GetSharedArrayBufferId(
+      v8::Isolate*,
+      v8::Local<v8::SharedArrayBuffer>) override;
 
   void* ReallocateBufferMemory(void* oldBuffer,
                                size_t,
@@ -92,6 +95,7 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725")
   const Transferables* m_transferables = nullptr;
   const ExceptionState* m_exceptionState = nullptr;
   WebBlobInfoArray* m_blobInfoArray = nullptr;
+  ArrayBufferArray m_sharedArrayBuffers;
 
 #if DCHECK_IS_ON()
   bool m_serializeInvoked = false;
