@@ -32,7 +32,10 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/display/display_layout_builder.h"
+#include "ui/display/manager/display_layout_store.h"
 #include "ui/display/manager/display_manager.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect.h"
@@ -107,6 +110,13 @@ class WindowCycleControllerTest : public test::AshTestBase {
   const aura::Window::Windows GetWindows(WindowCycleController* controller) {
     return WmWindowAura::ToAuraWindows(
         controller->window_cycle_list()->windows());
+  }
+
+  const views::Widget* GetWindowCycleListWidget() const {
+    return WmShell::Get()
+        ->window_cycle_controller()
+        ->window_cycle_list()
+        ->widget();
   }
 
  private:
@@ -706,6 +716,60 @@ TEST_F(WindowCycleControllerTest, TabPastFullscreenWindow) {
   w1->AddPreTargetHandler(&event_count);
   generator.PressKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
   EXPECT_EQ(1, event_count.GetKeyEventCountAndReset());
+}
+
+// Tests that the Alt+Tab UI's position isn't affected by the origin of the
+// display it's on. See crbug.com/675718
+TEST_F(WindowCycleControllerTest, MultiDisplayPositioning) {
+  int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::DisplayIdList list =
+      display::test::CreateDisplayIdListN(2, primary_id, primary_id + 1);
+
+  auto placements = {
+      display::DisplayPlacement::BOTTOM, display::DisplayPlacement::TOP,
+      display::DisplayPlacement::LEFT, display::DisplayPlacement::RIGHT,
+  };
+
+  gfx::Rect expected_bounds;
+  for (auto placement : placements) {
+    SCOPED_TRACE(placement);
+
+    display::DisplayLayoutBuilder builder(primary_id);
+    builder.AddDisplayPlacement(list[1], primary_id, placement, 0);
+    display_manager()->layout_store()->RegisterLayoutForDisplayIdList(
+        list, builder.Build());
+
+    // Use two displays.
+    UpdateDisplay("500x500,600x600");
+
+    gfx::Rect second_display_bounds =
+        display_manager()->GetDisplayAt(1).bounds();
+    std::unique_ptr<Window> window0(
+        CreateTestWindowInShellWithBounds(second_display_bounds));
+    // Activate this window so that the secondary display becomes the one where
+    // the Alt+Tab UI is shown.
+    wm::ActivateWindow(window0.get());
+    std::unique_ptr<Window> window1(
+        CreateTestWindowInShellWithBounds(second_display_bounds));
+
+    WindowCycleController* controller =
+        WmShell::Get()->window_cycle_controller();
+    controller->HandleCycleWindow(WindowCycleController::FORWARD);
+
+    const gfx::Rect bounds =
+        GetWindowCycleListWidget()->GetWindowBoundsInScreen();
+    EXPECT_TRUE(second_display_bounds.Contains(bounds));
+    EXPECT_FALSE(
+        display_manager()->GetDisplayAt(0).bounds().Intersects(bounds));
+    const gfx::Rect display_relative_bounds =
+        bounds - second_display_bounds.OffsetFromOrigin();
+    // Base case sets the expectation for other cases.
+    if (expected_bounds.IsEmpty())
+      expected_bounds = display_relative_bounds;
+    else
+      EXPECT_EQ(expected_bounds, display_relative_bounds);
+    controller->CompleteCycling();
+  }
 }
 
 }  // namespace ash

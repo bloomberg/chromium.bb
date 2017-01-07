@@ -531,8 +531,9 @@ void WindowCycleList::InitWindowCycleView() {
   root_window->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
       widget, kShellWindowId_OverlayContainer, &params);
   gfx::Rect widget_rect = root_window->GetDisplayNearestWindow().bounds();
-  int widget_height = cycle_view_->GetPreferredSize().height();
-  widget_rect.set_y((widget_rect.height() - widget_height) / 2);
+  const int widget_height = cycle_view_->GetPreferredSize().height();
+  widget_rect.set_y(widget_rect.y() +
+                    (widget_rect.height() - widget_height) / 2);
   widget_rect.set_height(widget_height);
   params.bounds = widget_rect;
   widget->Init(params);

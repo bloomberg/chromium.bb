@@ -53,6 +53,7 @@ class ASH_EXPORT WindowCycleList : public WmWindowObserver,
   friend class WindowCycleControllerTest;
 
   static void DisableInitialDelayForTesting();
+  const views::Widget* widget() const { return cycle_ui_widget_; }
 
   const WindowList& windows() const { return windows_; }
 
