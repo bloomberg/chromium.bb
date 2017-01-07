@@ -858,7 +858,8 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
                                        mojom::ServicePtr service,
                                        bool has_source_instance,
                                        base::WeakPtr<Instance> source_instance,
-                                       mojom::ResolveResultPtr result) {
+                                       mojom::ResolveResultPtr result,
+                                       mojom::ResolveResultPtr parent) {
   // If this request was originated by a specific Instance and that Instance is
   // no longer around, we ignore this response.
   if (has_source_instance && !source_instance)
@@ -875,12 +876,8 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
   }
 
   std::string instance_name = params->target().instance();
-  if (instance_name == params->target().name() &&
-      result->qualifier != result->resolved_name) {
-    instance_name = result->qualifier;
-  }
-  // |result->interface_provider_specs| can be empty when there is no manifest,
-  // e.g. for URL types not resolvable by the resolver.
+
+  // |result->interface_provider_specs| can be empty when there is no manifest.
   InterfaceProviderSpec connection_spec = GetPermissiveInterfaceProviderSpec();
   auto it = result->interface_provider_specs.find(
       mojom::kServiceManager_ConnectorSpec);
@@ -935,7 +932,6 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
   } else {
     // Otherwise we create a new Service pipe.
     mojom::ServiceRequest request(&service);
-    CHECK(!result->package_path.empty());
 
     // The catalog was unable to read a manifest for this service. We can't do
     // anything more.
@@ -950,14 +946,15 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
       return;
     }
 
-    if (target.name() != result->resolved_name) {
-      // This service is part of a package.
+    if (parent) {
+      // This service is provided by another service via a ServiceFactory.
       std::string target_user_id = target.user_id();
       std::string factory_instance_name = instance_name;
-      bool instance_per_child = result->package_spec.has_value() &&
-          HasCapability(result->package_spec.value(),
-                        kCapability_InstancePerChild);
-      if (instance_per_child) {
+
+      auto spec_iter = parent->interface_provider_specs.find(
+          mojom::kServiceManager_ConnectorSpec);
+      if (spec_iter != parent->interface_provider_specs.end() &&
+              HasCapability(spec_iter->second, kCapability_InstancePerChild)) {
         // If configured to start a new instance, create a random instance name
         // for the factory so that we don't reuse an existing process.
         factory_instance_name = base::GenerateGUID();
@@ -971,8 +968,7 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
       }
       instance->StartWithService(std::move(service));
 
-      Identity factory(result->resolved_name, target_user_id,
-                       factory_instance_name);
+      Identity factory(parent->name, target_user_id, factory_instance_name);
       CreateServiceWithFactory(factory, target.name(), std::move(request));
     } else {
       base::FilePath package_path;
@@ -980,6 +976,7 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
             target.name(), &package_path)) {
         package_path = result->package_path;
       }
+      DCHECK(!package_path.empty());
 
       if (!instance->StartWithFilePath(package_path)) {
         OnInstanceError(instance);

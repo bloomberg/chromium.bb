@@ -17,6 +17,7 @@
 #include "components/filesystem/public/interfaces/types.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/catalog/constants.h"
+#include "services/catalog/entry_cache.h"
 #include "services/catalog/instance.h"
 #include "services/catalog/reader.h"
 #include "services/service_manager/public/cpp/connection.h"
@@ -87,7 +88,8 @@ class Catalog::ServiceImpl : public service_manager::Service {
 };
 
 Catalog::Catalog(std::unique_ptr<base::Value> static_manifest) : Catalog() {
-  system_reader_.reset(new Reader(std::move(static_manifest), &system_cache_));
+  system_reader_.reset(new Reader(std::move(static_manifest),
+                                  system_cache_.get()));
   loaded_ = true;
 }
 
@@ -114,7 +116,7 @@ service_manager::mojom::ServicePtr Catalog::TakeService() {
   return std::move(service_);
 }
 
-Catalog::Catalog() : weak_factory_(this) {
+Catalog::Catalog() : system_cache_(new EntryCache), weak_factory_(this) {
   service_context_.reset(new service_manager::ServiceContext(
       base::MakeUnique<ServiceImpl>(this),
       service_manager::mojom::ServiceRequest(&service_)));
@@ -124,7 +126,7 @@ void Catalog::ScanSystemPackageDir() {
   base::FilePath system_package_dir;
   PathService::Get(base::DIR_MODULE, &system_package_dir);
   system_package_dir = system_package_dir.AppendASCII(kPackagesDirName);
-  system_reader_->Read(system_package_dir, &system_cache_,
+  system_reader_->Read(system_package_dir, system_cache_.get(),
                        base::Bind(&Catalog::SystemPackageDirScanned,
                                   weak_factory_.GetWeakPtr()));
 }
@@ -175,7 +177,7 @@ Instance* Catalog::GetInstanceForUserId(const std::string& user_id) {
   Instance* instance = new Instance(system_reader_.get());
   instances_[user_id] = base::WrapUnique(instance);
   if (loaded_)
-    instance->CacheReady(&system_cache_);
+    instance->CacheReady(system_cache_.get());
 
   return instance;
 }
@@ -183,7 +185,7 @@ Instance* Catalog::GetInstanceForUserId(const std::string& user_id) {
 void Catalog::SystemPackageDirScanned() {
   loaded_ = true;
   for (auto& instance : instances_)
-    instance.second->CacheReady(&system_cache_);
+    instance.second->CacheReady(system_cache_.get());
 }
 
 }  // namespace catalog

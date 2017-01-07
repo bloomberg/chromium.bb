@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "services/catalog/entry.h"
+#include "services/catalog/entry_cache.h"
 #include "services/catalog/manifest_provider.h"
 #include "services/catalog/reader.h"
 
@@ -52,9 +53,10 @@ void Instance::ResolveServiceName(const std::string& service_name,
   DCHECK(system_cache_);
 
   // TODO(beng): per-user catalogs.
-  auto entry = system_cache_->find(service_name);
-  if (entry != system_cache_->end()) {
-    callback.Run(service_manager::mojom::ResolveResult::From(*entry->second));
+  const Entry* entry = system_cache_->GetEntry(service_name);
+  if (entry) {
+    callback.Run(service_manager::mojom::ResolveResult::From(entry),
+                 service_manager::mojom::ResolveResult::From(entry->parent()));
     return;
   }
 
@@ -68,17 +70,14 @@ void Instance::GetEntries(const base::Optional<std::vector<std::string>>& names,
   std::vector<mojom::EntryPtr> entries;
   if (!names.has_value()) {
     // TODO(beng): user catalog.
-    for (const auto& entry : *system_cache_)
+    for (const auto& entry : system_cache_->entries())
       AddEntry(*entry.second, &entries);
   } else {
     for (const std::string& name : names.value()) {
-      Entry* entry = nullptr;
+      const Entry* entry = system_cache_->GetEntry(name);
       // TODO(beng): user catalog.
-      if (system_cache_->find(name) != system_cache_->end())
-        entry = (*system_cache_)[name].get();
-      else
-        continue;
-      AddEntry(*entry, &entries);
+      if (entry)
+        AddEntry(*entry, &entries);
     }
   }
   callback.Run(std::move(entries));
@@ -88,7 +87,7 @@ void Instance::GetEntriesProvidingCapability(
     const std::string& capability,
     const GetEntriesProvidingCapabilityCallback& callback) {
   std::vector<mojom::EntryPtr> entries;
-  for (const auto& entry : *system_cache_)
+  for (const auto& entry : system_cache_->entries())
     if (entry.second->ProvidesCapability(capability))
       entries.push_back(mojom::Entry::From(*entry.second));
   callback.Run(std::move(entries));

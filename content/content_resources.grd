@@ -33,7 +33,6 @@
       <include name="IDR_MOJO_CONTENT_PLUGIN_MANIFEST" file="${root_out_dir}/Packages/content_plugin/manifest.json" use_base_dir="false" type="BINDATA" />
       <include name="IDR_MOJO_CONTENT_RENDERER_MANIFEST" file="${root_out_dir}/Packages/content_renderer/manifest.json" use_base_dir="false" type="BINDATA" />
       <include name="IDR_MOJO_CONTENT_UTILITY_MANIFEST" file="${root_out_dir}/Packages/content_utility/manifest.json" use_base_dir="false" type="BINDATA" />
-      <include name="IDR_MOJO_FILE_MANIFEST" file="../services/file/manifest.json" type="BINDATA" />
       <include name="IDR_NETWORK_ERROR_LISTING_HTML" file="browser/resources/net/network_errors_listing.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_NETWORK_ERROR_LISTING_JS" file="browser/resources/net/network_errors_listing.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NETWORK_ERROR_LISTING_CSS" file="browser/resources/net/network_errors_listing.css" flattenhtml="true" type="BINDATA" />

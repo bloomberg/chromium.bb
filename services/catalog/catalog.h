@@ -15,7 +15,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
-#include "services/catalog/types.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/interfaces/resolver.mojom.h"
@@ -37,6 +36,7 @@ class ServiceContext;
 
 namespace catalog {
 
+class EntryCache;
 class Instance;
 class ManifestProvider;
 class Reader;
@@ -111,7 +111,7 @@ class Catalog
   std::map<std::string, std::unique_ptr<Instance>> instances_;
 
   std::unique_ptr<Reader> system_reader_;
-  EntryCache system_cache_;
+  const std::unique_ptr<EntryCache> system_cache_;
   bool loaded_ = false;
 
   scoped_refptr<filesystem::LockTable> lock_table_;

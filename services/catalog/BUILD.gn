@@ -21,6 +21,8 @@ source_set("lib") {
     "constants.h",
     "entry.cc",
     "entry.h",
+    "entry_cache.cc",
+    "entry_cache.h",
     "instance.cc",
     "instance.h",
     "manifest_provider.h",
@@ -28,7 +30,6 @@ source_set("lib") {
     "reader.h",
     "store.cc",
     "store.h",
-    "types.h",
   ]
 
   deps = [

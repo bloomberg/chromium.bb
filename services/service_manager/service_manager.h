@@ -155,7 +155,8 @@ class ServiceManager {
                          mojom::ServicePtr service,
                          bool has_source_instance,
                          base::WeakPtr<Instance> source_instance,
-                         mojom::ResolveResultPtr result);
+                         mojom::ResolveResultPtr result,
+                         mojom::ResolveResultPtr parent);
 
   base::WeakPtr<ServiceManager> GetWeakPtr();
 

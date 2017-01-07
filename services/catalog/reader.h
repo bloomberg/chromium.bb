@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "services/catalog/types.h"
 #include "services/service_manager/public/interfaces/resolver.mojom.h"
 
 namespace base {
@@ -25,6 +24,7 @@ class Value;
 namespace catalog {
 
 class Entry;
+class EntryCache;
 class ManifestProvider;
 
 // Responsible for loading manifests & building the Entry data structures.
@@ -32,7 +32,7 @@ class Reader {
  public:
   using ReadManifestCallback = base::Callback<void(std::unique_ptr<Entry>)>;
   using CreateEntryForNameCallback =
-      base::Callback<void(service_manager::mojom::ResolveResultPtr)>;
+      service_manager::mojom::Resolver::ResolveServiceNameCallback;
 
   // Construct a Reader over a static manifest. This Reader never performs
   // file I/O.
@@ -50,10 +50,10 @@ class Reader {
             EntryCache* cache,
             const base::Closure& read_complete_closure);
 
-  // Returns an Entry for |mojo_name| via |callback|, assuming a manifest file
-  // in the canonical location
+  // Returns an Entry for |name| via |callback|, assuming a manifest file in the
+  // canonical location
   void CreateEntryForName(
-      const std::string& mojo_name,
+      const std::string& name,
       EntryCache* cache,
       const CreateEntryForNameCallback& entry_created_callback);
 

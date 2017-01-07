@@ -12,12 +12,12 @@
 #include "services/catalog/entry.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
 #include "services/catalog/store.h"
-#include "services/catalog/types.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/interfaces/resolver.mojom.h"
 
 namespace catalog {
 
+class EntryCache;
 class Reader;
 
 class Instance : public service_manager::mojom::Resolver,

@@ -195,9 +195,8 @@ std::unique_ptr<Entry> Entry::Deserialize(const base::DictionaryValue& value) {
       services->GetDictionary(i, &service);
       std::unique_ptr<Entry> child = Entry::Deserialize(*service);
       if (child) {
-        child->set_package(entry.get());
-        // Caller must assume ownership of these items.
-        entry->children_.emplace_back(std::move(child));
+        child->set_parent(entry.get());
+        entry->children().emplace_back(std::move(child));
       }
     }
   }
@@ -234,21 +233,15 @@ namespace mojo {
 
 // static
 service_manager::mojom::ResolveResultPtr
-TypeConverter<service_manager::mojom::ResolveResultPtr,
-              catalog::Entry>::Convert(const catalog::Entry& input) {
-  service_manager::mojom::ResolveResultPtr result(
-      service_manager::mojom::ResolveResult::New());
-  result->name = input.name();
-  const catalog::Entry& package = input.package() ? *input.package() : input;
-  result->resolved_name = package.name();
-  result->interface_provider_specs = input.interface_provider_specs();
-  if (input.package()) {
-    auto it = package.interface_provider_specs().find(
-        service_manager::mojom::kServiceManager_ConnectorSpec);
-    if (it != package.interface_provider_specs().end())
-      result->package_spec = it->second;
+TypeConverter<service_manager::mojom::ResolveResultPtr, const catalog::Entry*>
+    ::Convert(const catalog::Entry* input) {
+  service_manager::mojom::ResolveResultPtr result;
+  if (input) {
+    result = service_manager::mojom::ResolveResult::New();
+    result->name = input->name();
+    result->interface_provider_specs = input->interface_provider_specs();
+    result->package_path = input->path();
   }
-  result->package_path = package.path();
   return result;
 }
 

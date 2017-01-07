@@ -19,6 +19,7 @@
 #include "base/values.h"
 #include "services/catalog/constants.h"
 #include "services/catalog/entry.h"
+#include "services/catalog/entry_cache.h"
 #include "services/catalog/manifest_provider.h"
 #include "services/catalog/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/interfaces/constants.mojom.h"
@@ -152,14 +153,8 @@ std::unique_ptr<Entry> ReadManifest(
   return entry;
 }
 
-void AddEntryToCache(EntryCache* cache, std::unique_ptr<Entry> entry) {
-  std::vector<std::unique_ptr<Entry>> children = entry->TakeChildren();
-  for (auto& child : children)
-    AddEntryToCache(cache, std::move(child));
-  (*cache)[entry->name()] = std::move(entry);
-}
-
-void DoNothing(service_manager::mojom::ResolveResultPtr) {}
+void IgnoreResolveResult(service_manager::mojom::ResolveResultPtr,
+                         service_manager::mojom::ResolveResultPtr) {}
 
 void LoadCatalogManifestIntoCache(const base::Value* root,
                                   const base::FilePath& package_dir,
@@ -222,10 +217,12 @@ void LoadCatalogManifestIntoCache(const base::Value* root,
     auto entry = ProcessManifest(
         manifest, is_embedded ? base::FilePath() : package_dir,
         executable_path);
-    if (entry)
-      AddEntryToCache(cache, std::move(entry));
-    else
+    if (entry) {
+      bool added = cache->AddRootEntry(std::move(entry));
+      DCHECK(added);
+    } else {
       LOG(ERROR) << "Failed to read manifest entry for \"" << it.key() << "\".";
+    }
   }
 }
 
@@ -268,18 +265,18 @@ void Reader::Read(const base::FilePath& package_dir,
       FROM_HERE,
       base::Bind(&ScanDir, package_dir,
                  base::Bind(&Reader::OnReadManifest, weak_factory_.GetWeakPtr(),
-                            cache, base::Bind(&DoNothing)),
+                            cache, base::Bind(&IgnoreResolveResult)),
                  base::ThreadTaskRunnerHandle::Get(),
                  read_complete_closure));
 }
 
 void Reader::CreateEntryForName(
-    const std::string& mojo_name,
+    const std::string& name,
     EntryCache* cache,
     const CreateEntryForNameCallback& entry_created_callback) {
   if (manifest_provider_) {
     std::unique_ptr<base::Value> manifest_root =
-        manifest_provider_->GetManifest(mojo_name);
+        manifest_provider_->GetManifest(name);
     if (manifest_root) {
       base::PostTaskAndReplyWithResult(
           file_task_runner_.get(), FROM_HERE,
@@ -292,26 +289,27 @@ void Reader::CreateEntryForName(
   } else if (using_static_catalog_) {
     // A Reader using a static catalog manifest does not support dynamic
     // discovery or introduction of new catalog entries.
-    entry_created_callback.Run(service_manager::mojom::ResolveResultPtr());
+    entry_created_callback.Run(service_manager::mojom::ResolveResultPtr(),
+                               service_manager::mojom::ResolveResultPtr());
     return;
   }
 
   base::FilePath manifest_path_override;
   {
-    auto override_iter = manifest_path_overrides_.find(mojo_name);
+    auto override_iter = manifest_path_overrides_.find(name);
     if (override_iter != manifest_path_overrides_.end())
       manifest_path_override = override_iter->second;
   }
 
   std::string package_name_override;
   {
-    auto override_iter = package_name_overrides_.find(mojo_name);
+    auto override_iter = package_name_overrides_.find(name);
     if (override_iter != package_name_overrides_.end())
       package_name_override = override_iter->second;
   }
   base::PostTaskAndReplyWithResult(
       file_task_runner_.get(), FROM_HERE,
-      base::Bind(&ReadManifest, system_package_dir_, mojo_name,
+      base::Bind(&ReadManifest, system_package_dir_, name,
                  package_name_override, manifest_path_override),
       base::Bind(&Reader::OnReadManifest, weak_factory_.GetWeakPtr(), cache,
                   entry_created_callback));
@@ -340,10 +338,19 @@ void Reader::OnReadManifest(
     std::unique_ptr<Entry> entry) {
   if (!entry)
     return;
-  service_manager::mojom::ResolveResultPtr result =
-      service_manager::mojom::ResolveResult::From(*entry);
-  AddEntryToCache(cache, std::move(entry));
-  entry_created_callback.Run(std::move(result));
+
+  std::string name = entry->name();
+  cache->AddRootEntry(std::move(entry));
+
+  // NOTE: It's currently possible to end up with a duplicate entry, in which
+  // case the above call to AddRootEntry() may actually discard |entry|. We
+  // therefore look up the Entry by name here to get resolution metadata.
+
+  const Entry* resolved_entry = cache->GetEntry(name);
+  DCHECK(resolved_entry);
+  entry_created_callback.Run(
+      service_manager::mojom::ResolveResult::From(resolved_entry),
+      service_manager::mojom::ResolveResult::From(resolved_entry->parent()));
 }
 
 }  // namespace catalog

@@ -30,7 +30,6 @@
 #include "services/catalog/manifest_provider.h"
 #include "services/catalog/public/interfaces/constants.mojom.h"
 #include "services/catalog/store.h"
-#include "services/file/public/interfaces/constants.mojom.h"
 #include "services/service_manager/connect_params.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -255,7 +254,6 @@ ServiceManagerContext::ServiceManagerContext() {
       { mojom::kRendererServiceName, IDR_MOJO_CONTENT_RENDERER_MANIFEST },
       { mojom::kUtilityServiceName, IDR_MOJO_CONTENT_UTILITY_MANIFEST },
       { catalog::mojom::kServiceName, IDR_MOJO_CATALOG_MANIFEST },
-      { file::mojom::kServiceName, IDR_MOJO_FILE_MANIFEST }
     };
 
     for (size_t i = 0; i < arraysize(kManifests); ++i) {

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider_spec.h"
 #include "services/service_manager/public/interfaces/resolver.mojom.h"
@@ -29,9 +30,6 @@ class Entry {
 
   std::unique_ptr<base::DictionaryValue> Serialize() const;
 
-  // If the constructed Entry is a package that provides other Entrys, the
-  // caller must assume ownership of the tree of Entrys by enumerating
-  // services().
   static std::unique_ptr<Entry> Deserialize(const base::DictionaryValue& value);
 
   bool ProvidesCapability(const std::string& capability) const;
@@ -40,12 +38,26 @@ class Entry {
 
   const std::string& name() const { return name_; }
   void set_name(const std::string& name) { name_ = name; }
+
   const base::FilePath& path() const { return path_; }
   void set_path(const base::FilePath& path) { path_ = path; }
+
   const std::string& display_name() const { return display_name_; }
   void set_display_name(const std::string& display_name) {
     display_name_ = display_name;
   }
+
+  const Entry* parent() const { return parent_; }
+  void set_parent(const Entry* parent) { parent_ = parent; }
+
+  const std::vector<std::unique_ptr<Entry>>& children() const {
+    return children_;
+  }
+  std::vector<std::unique_ptr<Entry>>& children() { return children_; }
+  void set_children(std::vector<std::unique_ptr<Entry>>&& children) {
+    children_ = std::move(children);
+  }
+
   void AddInterfaceProviderSpec(
       const std::string& name,
       const service_manager::InterfaceProviderSpec& spec);
@@ -53,29 +65,26 @@ class Entry {
       interface_provider_specs() const {
     return interface_provider_specs_;
   }
-  const Entry* package() const { return package_; }
-  void set_package(Entry* package) { package_ = package; }
-
-  std::vector<std::unique_ptr<Entry>> TakeChildren() {
-    return std::move(children_);
-  }
 
  private:
   std::string name_;
   base::FilePath path_;
   std::string display_name_;
   service_manager::InterfaceProviderSpecMap interface_provider_specs_;
-  Entry* package_ = nullptr;
+  const Entry* parent_ = nullptr;
   std::vector<std::unique_ptr<Entry>> children_;
+
+  DISALLOW_COPY_AND_ASSIGN(Entry);
 };
 
 }  // namespace catalog
 
 namespace mojo {
 template <>
-struct TypeConverter<service_manager::mojom::ResolveResultPtr, catalog::Entry> {
+struct TypeConverter<service_manager::mojom::ResolveResultPtr,
+                     const catalog::Entry*> {
   static service_manager::mojom::ResolveResultPtr Convert(
-      const catalog::Entry& input);
+      const catalog::Entry* input);
 };
 
 template<>
