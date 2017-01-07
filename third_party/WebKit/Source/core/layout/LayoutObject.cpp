@@ -619,8 +619,13 @@ PaintLayer* LayoutObject::paintingLayer() const {
        current = current->isFloating() ? current->containingBlock()
                                        : current->paintInvalidationParent()) {
     if (current->hasLayer() &&
-        toLayoutBoxModelObject(current)->layer()->isSelfPaintingLayer())
+        toLayoutBoxModelObject(current)->layer()->isSelfPaintingLayer()) {
       return toLayoutBoxModelObject(current)->layer();
+    } else if (current->isColumnSpanAll()) {
+      // Column spanners paint through their multicolumn containers which can
+      // be accessed through the associated out-of-flow placeholder's parent.
+      current = current->spannerPlaceholder();
+    }
   }
   // TODO(crbug.com/365897): we should get rid of detached layout subtrees, at
   // which point this code should not be reached.
@@ -1190,14 +1195,8 @@ void LayoutObject::invalidatePaintOfSubtreesIfNeeded(
     const PaintInvalidationState& childPaintInvalidationState) {
   DCHECK(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
 
-  for (LayoutObject* child = slowFirstChild(); child;
-       child = child->nextSibling()) {
-    // Column spanners are invalidated through their placeholders. See
-    // LayoutMultiColumnSpannerPlaceholder::invalidatePaintOfSubtreesIfNeeded().
-    if (child->isColumnSpanAll())
-      continue;
+  for (auto* child = slowFirstChild(); child; child = child->nextSibling())
     child->invalidateTreeIfNeeded(childPaintInvalidationState);
-  }
 }
 
 LayoutRect LayoutObject::selectionRectInViewCoordinates() const {
@@ -2554,8 +2553,6 @@ LayoutObject* LayoutObject::container(const LayoutBoxModelObject* ancestor,
 inline LayoutObject* LayoutObject::paintInvalidationParent() const {
   if (isLayoutView())
     return LayoutAPIShim::layoutObjectFrom(frame()->ownerLayoutItem());
-  if (isColumnSpanAll())
-    return spannerPlaceholder();
   return parent();
 }
 

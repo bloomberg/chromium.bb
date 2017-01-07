@@ -81,8 +81,6 @@ struct PaintPropertyTreeBuilderContext {
   // output clip of child effects that don't have a hard clip.
   const ClipPaintPropertyNode* inputClipOfCurrentEffect = nullptr;
 
-  bool isUnderMultiColumnSpanner = false;
-
   // True if a change has forced all properties in a subtree to be updated. This
   // can be set due to paint offset changes or when the structure of the
   // property tree changes (i.e., a node is added or removed).

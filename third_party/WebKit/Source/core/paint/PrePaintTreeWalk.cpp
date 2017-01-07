@@ -102,25 +102,6 @@ bool PrePaintTreeWalk::walk(const LayoutObject& object,
                             const PrePaintTreeWalkContext& parentContext) {
   PrePaintTreeWalkContext context(parentContext);
 
-  // TODO(pdr): Ensure multi column works with incremental property tree
-  // construction.
-  if (object.isLayoutMultiColumnSpannerPlaceholder()) {
-    // Walk multi-column spanner as if it replaces the placeholder.
-    // Set the flag so that the tree builder can specially handle out-of-flow
-    // positioned descendants if their containers are between the multi-column
-    // container and the spanner. See PaintPropertyTreeBuilder for details.
-    context.treeBuilderContext.isUnderMultiColumnSpanner = true;
-    const auto& placeholder = toLayoutMultiColumnSpannerPlaceholder(object);
-    bool descendantsFullyUpdated =
-        walk(*placeholder.layoutObjectInFlowThread(), context);
-    if (descendantsFullyUpdated) {
-      // If descendants were not fully updated, do not clear flags. During the
-      // next PrePaintTreeWalk, these flags will be used again.
-      object.getMutableForPainting().clearPaintFlags();
-    }
-    return descendantsFullyUpdated;
-  }
-
   // This must happen before updateContextForBoxPosition, because the
   // latter reads some of the state computed uere.
   updateAuxiliaryObjectProperties(object, context);
@@ -154,9 +135,10 @@ bool PrePaintTreeWalk::walk(const LayoutObject& object,
   bool descendantsFullyUpdated = true;
   for (const LayoutObject* child = object.slowFirstChild(); child;
        child = child->nextSibling()) {
-    // Column spanners are walked through their placeholders. See above.
-    if (child->isColumnSpanAll())
+    if (child->isLayoutMultiColumnSpannerPlaceholder()) {
+      child->getMutableForPainting().clearPaintFlags();
       continue;
+    }
     bool childFullyUpdated = walk(*child, context);
     if (!childFullyUpdated)
       descendantsFullyUpdated = false;

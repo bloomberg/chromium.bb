@@ -199,8 +199,10 @@ void PaintInvalidator::updatePaintingLayer(const LayoutObject& object,
   if (object.hasLayer() &&
       toLayoutBoxModelObject(object).hasSelfPaintingLayer()) {
     context.paintingLayer = toLayoutBoxModelObject(object).layer();
-  } else if (object.isFloating() && !object.parent()->isLayoutBlock()) {
-    // See LayoutObject::paintingLayer() for specialty of floating objects.
+  } else if (object.isColumnSpanAll() ||
+             (object.isFloating() && !object.parent()->isLayoutBlock())) {
+    // See LayoutObject::paintingLayer() for the special-cases of floating under
+    // inline and multicolumn.
     context.paintingLayer = object.paintingLayer();
   }
 

@@ -860,39 +860,6 @@ void PaintPropertyTreeBuilder::updateOutOfFlowContext(
   }
 }
 
-// Override ContainingBlockContext based on the properties of a containing block
-// that was previously walked in a subtree other than the current subtree being
-// walked. Used for out-of-flow positioned descendants of multi-column spanner
-// when the containing block is not in the normal tree walk order.
-// For example:
-// <div id="columns" style="columns: 2">
-//   <div id="relative" style="position: relative">
-//     <div id="spanner" style="column-span: all">
-//       <div id="absolute" style="position: absolute"></div>
-//     </div>
-//   </div>
-// <div>
-// The real containing block of "absolute" is "relative" which is not in the
-// tree-walk order of "columns" -> spanner placeholder -> spanner -> absolute.
-// Here we rebuild a ContainingBlockContext based on the properties of
-// "relative" for "absolute".
-static void overrideContainingBlockContextFromRealContainingBlock(
-    const LayoutBlock& containingBlock,
-    PaintPropertyTreeBuilderContext::ContainingBlockContext& context) {
-  const auto* properties =
-      containingBlock.paintProperties()->localBorderBoxProperties();
-  DCHECK(properties);
-
-  context.transform = properties->transform();
-  context.paintOffset = containingBlock.paintOffset();
-  context.shouldFlattenInheritedTransform =
-      context.transform && context.transform->flattensInheritedTransform();
-  context.renderingContextId =
-      context.transform ? context.transform->renderingContextId() : 0;
-  context.clip = properties->clip();
-  context.scroll = properties->scroll();
-}
-
 void PaintPropertyTreeBuilder::updateContextForBoxPosition(
     const LayoutObject& object,
     PaintPropertyTreeBuilderContext& context) {
@@ -904,6 +871,11 @@ void PaintPropertyTreeBuilder::updateContextForBoxPosition(
   if (boxModelObject.isFloating())
     context.current.paintOffset = context.paintOffsetForFloat;
 
+  // Multicolumn spanners are painted starting at the multicolumn container (but
+  // still inherit properties in layout-tree order) so reset the paint offset.
+  if (boxModelObject.isColumnSpanAll())
+    context.current.paintOffset = boxModelObject.container()->paintOffset();
+
   switch (object.styleRef().position()) {
     case StaticPosition:
       break;
@@ -911,25 +883,9 @@ void PaintPropertyTreeBuilder::updateContextForBoxPosition(
       context.current.paintOffset += boxModelObject.offsetForInFlowPosition();
       break;
     case AbsolutePosition: {
-      if (context.isUnderMultiColumnSpanner) {
-        const LayoutObject* container = boxModelObject.container();
-        if (container != context.containerForAbsolutePosition) {
-          // The container of the absolute-position is not in the normal tree-
-          // walk order.
-          context.containerForAbsolutePosition =
-              toLayoutBoxModelObject(container);
-          // The container is never a LayoutInline. In the example above
-          // overrideContainingBlockContextFromRealContainingBlock(), if we
-          // change the container to an inline, there will be an anonymous
-          // blocks created because the spanner is always a block.
-          overrideContainingBlockContextFromRealContainingBlock(
-              toLayoutBlock(*container), context.current);
-        }
-      } else {
-        DCHECK(context.containerForAbsolutePosition ==
-               boxModelObject.container());
-        context.current = context.absolutePosition;
-      }
+      DCHECK(context.containerForAbsolutePosition ==
+             boxModelObject.container());
+      context.current = context.absolutePosition;
 
       // Absolutely positioned content in an inline should be positioned
       // relative to the inline.
@@ -947,14 +903,7 @@ void PaintPropertyTreeBuilder::updateContextForBoxPosition(
       context.current.paintOffset += boxModelObject.offsetForInFlowPosition();
       break;
     case FixedPosition:
-      if (context.isUnderMultiColumnSpanner) {
-        // The container of the fixed-position object may or may not be in the
-        // normal tree-walk order.
-        overrideContainingBlockContextFromRealContainingBlock(
-            toLayoutBlock(*boxModelObject.container()), context.current);
-      } else {
-        context.current = context.fixedPosition;
-      }
+      context.current = context.fixedPosition;
       break;
     default:
       ASSERT_NOT_REACHED();
