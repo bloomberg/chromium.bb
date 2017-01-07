@@ -101,9 +101,11 @@ public class GeolocationHeader {
     public static final int UMA_PERM_MASTER_OFF_APP_BLOCKED_DOMAIN_YES = 40;
     public static final int UMA_PERM_MASTER_OFF_APP_BLOCKED_DOMAIN_PROMPT = 41;
     public static final int UMA_PERM_MASTER_OFF_APP_BLOCKED_DOMAIN_BLOCKED = 42;
-    public static final int UMA_PERM_COUNT = 43;
+    public static final int UMA_PERM_UNSUITABLE_URL = 43;
+    public static final int UMA_PERM_NOT_HTTPS = 44;
+    public static final int UMA_PERM_COUNT = 45;
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({UMA_PERM_HIGH_ACCURACY_APP_YES_DOMAIN_YES_LOCATION,
+    @IntDef({UMA_PERM_UNKNOWN, UMA_PERM_HIGH_ACCURACY_APP_YES_DOMAIN_YES_LOCATION,
             UMA_PERM_HIGH_ACCURACY_APP_YES_DOMAIN_YES_NO_LOCATION,
             UMA_PERM_HIGH_ACCURACY_APP_YES_DOMAIN_PROMPT_LOCATION,
             UMA_PERM_HIGH_ACCURACY_APP_YES_DOMAIN_PROMPT_NO_LOCATION,
@@ -138,7 +140,8 @@ public class GeolocationHeader {
             UMA_PERM_MASTER_OFF_APP_PROMPT_DOMAIN_BLOCKED,
             UMA_PERM_MASTER_OFF_APP_BLOCKED_DOMAIN_YES,
             UMA_PERM_MASTER_OFF_APP_BLOCKED_DOMAIN_PROMPT,
-            UMA_PERM_MASTER_OFF_APP_BLOCKED_DOMAIN_BLOCKED, UMA_PERM_UNKNOWN})
+            UMA_PERM_MASTER_OFF_APP_BLOCKED_DOMAIN_BLOCKED, UMA_PERM_UNSUITABLE_URL,
+            UMA_PERM_NOT_HTTPS})
     public @interface UmaPermission {}
 
     private static final int LOCATION_SOURCE_HIGH_ACCURACY = 0;
@@ -162,6 +165,15 @@ public class GeolocationHeader {
 
     /** The maximum value for the GeolocationHeader.LocationAge* histograms. */
     public static final int LOCATION_AGE_HISTOGRAM_MAX_SECONDS = 30 * 24 * 60 * 60; // 30 days
+
+    private static final int HEADER_ENABLED = 0;
+    private static final int INCOGNITO = 1;
+    private static final int UNSUITABLE_URL = 2;
+    private static final int NOT_HTTPS = 3;
+    private static final int LOCATION_PERMISSION_BLOCKED = 4;
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({HEADER_ENABLED, INCOGNITO, UNSUITABLE_URL, NOT_HTTPS, LOCATION_PERMISSION_BLOCKED})
+    private @interface HeaderState {}
 
     /** The maximum age in milliseconds of a location that we'll send in an X-Geo header. */
     private static final int MAX_LOCATION_AGE = 24 * 60 * 60 * 1000;  // 24 hours
@@ -198,32 +210,33 @@ public class GeolocationHeader {
      */
     public static boolean isGeoHeaderEnabledForUrl(Context context, String url,
             boolean isIncognito) {
-        return isGeoHeaderEnabledForUrl(context, url, isIncognito, false);
+        return geoHeaderStateForUrl(context, url, isIncognito, false) == HEADER_ENABLED;
     }
 
-    private static boolean isGeoHeaderEnabledForUrl(Context context, String url,
-            boolean isIncognito, boolean recordUma) {
+    @HeaderState
+    private static int geoHeaderStateForUrl(
+            Context context, String url, boolean isIncognito, boolean recordUma) {
         // Only send X-Geo in normal mode.
-        if (isIncognito) return false;
+        if (isIncognito) return INCOGNITO;
 
         // Only send X-Geo header to Google domains.
-        if (!UrlUtilities.nativeIsGoogleSearchUrl(url)) return false;
+        if (!UrlUtilities.nativeIsGoogleSearchUrl(url)) return UNSUITABLE_URL;
 
         Uri uri = Uri.parse(url);
-        if (!HTTPS_SCHEME.equals(uri.getScheme())) return false;
+        if (!HTTPS_SCHEME.equals(uri.getScheme())) return NOT_HTTPS;
 
         if (!hasGeolocationPermission(context)) {
             if (recordUma) recordHistogram(UMA_LOCATION_DISABLED_FOR_CHROME_APP);
-            return false;
+            return LOCATION_PERMISSION_BLOCKED;
         }
 
         // Only send X-Geo header if the user hasn't disabled geolocation for url.
         if (isLocationDisabledForUrl(uri, isIncognito)) {
             if (recordUma) recordHistogram(UMA_LOCATION_DISABLED_FOR_GOOGLE_DOMAIN);
-            return false;
+            return LOCATION_PERMISSION_BLOCKED;
         }
 
-        return true;
+        return HEADER_ENABLED;
     }
 
     /**
@@ -245,7 +258,8 @@ public class GeolocationHeader {
         boolean locationAttached = true;
         Location location = null;
         long locationAge = Long.MAX_VALUE;
-        if (isGeoHeaderEnabledForUrl(context, url, isIncognito, true)) {
+        @HeaderState int headerState = geoHeaderStateForUrl(context, url, isIncognito, true);
+        if (headerState == HEADER_ENABLED) {
             // Only send X-Geo header if there's a fresh location available.
             location = GeolocationTracker.getLastKnownLocation(context);
             if (location == null) {
@@ -268,10 +282,10 @@ public class GeolocationHeader {
 
         // Record the permission state with a histogram.
         recordPermissionHistogram(
-                locationSource, appPermission, domainPermission, locationAttached);
+                locationSource, appPermission, domainPermission, locationAttached, headerState);
 
         if (locationSource != LOCATION_SOURCE_MASTER_OFF && appPermission != PERMISSION_BLOCKED
-                && domainPermission != PERMISSION_BLOCKED) {
+                && domainPermission != PERMISSION_BLOCKED && !isIncognito) {
             // Record the Location Age with a histogram.
             recordLocationAgeHistogram(locationSource, locationAge);
             long duration = sFirstLocationTime == Long.MAX_VALUE
@@ -432,7 +446,9 @@ public class GeolocationHeader {
     @UmaPermission
     private static int getPermissionHistogramEnum(@LocationSource int locationSource,
             @Permission int appPermission, @Permission int domainPermission,
-            boolean locationAttached) {
+            boolean locationAttached, @HeaderState int headerState) {
+        if (headerState == UNSUITABLE_URL) return UMA_PERM_UNSUITABLE_URL;
+        if (headerState == NOT_HTTPS) return UMA_PERM_NOT_HTTPS;
         if (locationSource == LOCATION_SOURCE_HIGH_ACCURACY) {
             if (appPermission == PERMISSION_GRANTED) {
                 if (domainPermission == PERMISSION_GRANTED) {
@@ -553,10 +569,11 @@ public class GeolocationHeader {
     /** Records a data point for the Geolocation.Header.PermissionState histogram. */
     private static void recordPermissionHistogram(@LocationSource int locationSource,
             @Permission int appPermission, @Permission int domainPermission,
-            boolean locationAttached) {
+            boolean locationAttached, @HeaderState int headerState) {
+        if (headerState == INCOGNITO) return;
         @UmaPermission
         int result = getPermissionHistogramEnum(
-                locationSource, appPermission, domainPermission, locationAttached);
+                locationSource, appPermission, domainPermission, locationAttached, headerState);
         RecordHistogram.recordEnumeratedHistogram(
                 "Geolocation.Header.PermissionState", result, UMA_PERM_COUNT);
     }
