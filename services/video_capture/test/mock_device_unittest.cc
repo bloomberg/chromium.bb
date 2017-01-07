@@ -12,7 +12,7 @@ namespace video_capture {
 
 // Tests that the service stops the capture device when the client closes the
 // connection to the device proxy.
-TEST_F(MockDeviceTest, DISABLED_DeviceIsStoppedWhenDiscardingDeviceProxy) {
+TEST_F(MockDeviceTest, DeviceIsStoppedWhenDiscardingDeviceProxy) {
   base::RunLoop wait_loop;
 
   // The mock device must hold on to the device client that is passed to it.
@@ -34,7 +34,7 @@ TEST_F(MockDeviceTest, DISABLED_DeviceIsStoppedWhenDiscardingDeviceProxy) {
 
 // Tests that the service stops the capture device when the client closes the
 // connection to the client proxy it provided to the service.
-TEST_F(MockDeviceTest, DISABLED_DeviceIsStoppedWhenDiscardingDeviceClient) {
+TEST_F(MockDeviceTest, DeviceIsStoppedWhenDiscardingDeviceClient) {
   base::RunLoop wait_loop;
 
   // The mock device must hold on to the device client that is passed to it.

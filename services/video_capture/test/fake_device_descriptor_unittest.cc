@@ -19,7 +19,7 @@ class MockCreateDeviceProxyCallback {
 // Tests that when requesting a second proxy for a device without closing the
 // first one, the service revokes access to the first one by closing the
 // connection.
-TEST_F(FakeDeviceDescriptorTest, DISABLED_AccessIsRevokedOnSecondAccess) {
+TEST_F(FakeDeviceDescriptorTest, AccessIsRevokedOnSecondAccess) {
   mojom::DevicePtr device_proxy_1;
   bool device_access_1_revoked = false;
   MockCreateDeviceProxyCallback create_device_proxy_callback_1;
@@ -55,7 +55,7 @@ TEST_F(FakeDeviceDescriptorTest, DISABLED_AccessIsRevokedOnSecondAccess) {
 }
 
 // Tests that a second proxy requested for a device can be used successfully.
-TEST_F(FakeDeviceDescriptorTest, DISABLED_CanUseSecondRequestedProxy) {
+TEST_F(FakeDeviceDescriptorTest, CanUseSecondRequestedProxy) {
   mojom::DevicePtr device_proxy_1;
   factory_->CreateDevice(
       fake_device_descriptor_.device_id, mojo::MakeRequest(&device_proxy_1),

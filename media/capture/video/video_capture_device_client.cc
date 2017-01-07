@@ -21,7 +21,6 @@
 #include "media/capture/video/video_capture_jpeg_decoder.h"
 #include "media/capture/video/video_frame_receiver.h"
 #include "media/capture/video_capture_types.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 #include "third_party/libyuv/include/libyuv.h"
 
 using media::VideoCaptureFormat;
@@ -296,46 +295,32 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
     const VideoCaptureFormat& format,
     base::TimeTicks reference_time,
     base::TimeDelta timestamp) {
-  OnIncomingCapturedBufferExt(std::move(buffer), format, reference_time,
-                              timestamp, gfx::Rect(format.frame_size),
-                              VideoFrameMetadata());
-}
+  DCHECK(IsFormatSupported(format.pixel_format));
+  DCHECK_EQ(media::PIXEL_STORAGE_CPU, format.pixel_storage);
 
-void VideoCaptureDeviceClient::OnIncomingCapturedBufferExt(
-    std::unique_ptr<Buffer> buffer,
-    const VideoCaptureFormat& format,
-    base::TimeTicks reference_time,
-    base::TimeDelta timestamp,
-    gfx::Rect visible_rect,
-    const VideoFrameMetadata& additional_metadata) {
-  const int buffer_id = buffer->id();
-
-  auto buffer_mojo_handle = buffer_pool_->GetHandleForTransit(buffer_id);
-  base::SharedMemoryHandle memory_handle;
-  size_t memory_size = 0;
-  bool read_only_flag = false;
-  const MojoResult unwrap_result_code = mojo::UnwrapSharedMemoryHandle(
-      std::move(buffer_mojo_handle), &memory_handle, &memory_size,
-      &read_only_flag);
-  DCHECK_EQ(MOJO_RESULT_OK, unwrap_result_code);
-
-  scoped_refptr<media::VideoFrame> frame =
-      media::VideoFrame::WrapExternalSharedMemory(
-          format.pixel_format,                    // format
-          format.frame_size,                      // coded_size
-          visible_rect,                           // visible_rect
-          format.frame_size,                      // natural_size
-          static_cast<uint8_t*>(buffer->data()),  // data
-          buffer->mapped_size(),                  // data_size
-          memory_handle,                          // handle
-          0,                                      // shared_memory_offset
-          timestamp);                             // timestamp
-  frame->metadata()->MergeMetadataFrom(&additional_metadata);
+  scoped_refptr<VideoFrame> frame;
+  if (buffer->IsBackedByVideoFrame()) {
+    frame = buffer->GetVideoFrame();
+    frame->set_timestamp(timestamp);
+  } else {
+    frame = VideoFrame::WrapExternalSharedMemory(
+        format.pixel_format, format.frame_size, gfx::Rect(format.frame_size),
+        format.frame_size, reinterpret_cast<uint8_t*>(buffer->data()),
+        VideoFrame::AllocationSize(format.pixel_format, format.frame_size),
+        base::SharedMemory::NULLHandle(), 0u, timestamp);
+  }
+  if (!frame)
+    return;
   frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
                                format.frame_rate);
   frame->metadata()->SetTimeTicks(media::VideoFrameMetadata::REFERENCE_TIME,
                                   reference_time);
+  OnIncomingCapturedVideoFrame(std::move(buffer), std::move(frame));
+}
 
+void VideoCaptureDeviceClient::OnIncomingCapturedVideoFrame(
+    std::unique_ptr<Buffer> buffer,
+    scoped_refptr<VideoFrame> frame) {
   receiver_->OnIncomingCapturedVideoFrame(std::move(buffer), std::move(frame));
 }
 
