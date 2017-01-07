@@ -90,6 +90,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicMac
   CBCharacteristicWriteType GetCBWriteType() const;
   // Returns CoreBluetooth characteristic.
   CBCharacteristic* GetCBCharacteristic() const;
+  // Returns true if this characteristic has been fully discovered.
+  bool IsDiscoveryComplete() const;
 
   // gatt_service_ owns instances of this class.
   BluetoothRemoteGattServiceMac* gatt_service_;

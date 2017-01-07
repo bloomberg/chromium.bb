@@ -132,18 +132,24 @@ using base::scoped_nsobject;
   [self didModifyServices:@[ serviceToRemove ]];
 }
 
-- (void)didDiscoverCharactericsForAllServices {
-  for (CBService* service in _services.get()) {
-    [_delegate peripheral:self.peripheral
-        didDiscoverCharacteristicsForService:service
-                                       error:nil];
-  }
-}
 
 - (void)didModifyServices:(NSArray*)invalidatedServices {
   DCHECK(
       [_delegate respondsToSelector:@selector(peripheral:didModifyServices:)]);
   [_delegate peripheral:self.peripheral didModifyServices:invalidatedServices];
+}
+
+- (void)mockDidDiscoverEvents {
+  [_delegate peripheral:self.peripheral didDiscoverServices:nil];
+  // BluetoothLowEnergyDeviceMac is expected to call
+  // -[CBPeripheral discoverCharacteristics:forService:] for each services,
+  // so -[<CBPeripheralDelegate peripheral:didDiscoverCharacteristicsForService:
+  // error:] needs to be called for all services.
+  for (CBService* service in _services.get()) {
+    [_delegate peripheral:self.peripheral
+        didDiscoverCharacteristicsForService:service
+                                       error:nil];
+  }
 }
 
 - (NSUUID*)identifier {

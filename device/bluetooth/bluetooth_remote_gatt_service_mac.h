@@ -54,6 +54,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceMac
   // Called by the BluetoothLowEnergyDeviceMac instance when the characteristics
   // has been discovered.
   void DidDiscoverCharacteristics();
+  // Sends notification if this service is ready with all characteristics
+  // discovered.
+  void SendNotificationIfComplete();
   // Called by the BluetoothLowEnergyDeviceMac instance when the
   // characteristics value has been read.
   void DidUpdateValue(CBCharacteristic* characteristic, NSError* error);
@@ -65,7 +68,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceMac
   void DidUpdateNotificationState(CBCharacteristic* characteristic,
                                   NSError* error);
   // Returns true if the characteristics has been discovered.
-  bool IsDiscoveryComplete();
+  bool IsDiscoveryComplete() const;
 
   // Returns the mac adapter.
   BluetoothAdapterMac* GetMacAdapter() const;

@@ -371,4 +371,12 @@ CBCharacteristic* BluetoothRemoteGattCharacteristicMac::GetCBCharacteristic()
     const {
   return cb_characteristic_.get();
 }
+
+bool BluetoothRemoteGattCharacteristicMac::IsDiscoveryComplete() const {
+  // TODO: Needs to replace this implementation with a boolean to monitor when
+  // descriptors are discovered. Right now, the characteristic is fully
+  // discovered as soon as it has been created.
+  return true;
+}
+
 }  // namespace device.

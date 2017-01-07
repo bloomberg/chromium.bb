@@ -26,18 +26,6 @@
 using base::mac::ObjCCast;
 using base::scoped_nsobject;
 
-namespace {
-
-void DidDiscoverServices(MockCBPeripheral* peripheral_mock) {
-  [peripheral_mock didDiscoverServicesWithError:nil];
-  // BluetoothLowEnergyDeviceMac is expected to call
-  // -[CBPeripheral discoverCharacteristics:forService:] for each services,
-  // so -[<CBPeripheralDelegate peripheral:didDiscoverCharacteristicsForService:
-  // error:] needs to be called
-  [peripheral_mock didDiscoverCharactericsForAllServices];
-}
-}  // namespace
-
 namespace device {
 
 // This class hides Objective-C from bluetooth_test_mac.h.
@@ -323,7 +311,7 @@ void BluetoothTestMac::SimulateGattServicesDiscovered(
     [services addObject:cb_service_uuid];
   }
   [peripheral_mock addServices:services];
-  DidDiscoverServices(peripheral_mock);
+  [peripheral_mock mockDidDiscoverEvents];
 }
 
 void BluetoothTestMac::SimulateGattServicesChanged(BluetoothDevice* device) {
@@ -348,7 +336,7 @@ void BluetoothTestMac::SimulateGattServiceRemoved(
   [peripheral_mock removeService:mac_gatt_service->GetService()];
   // After -[MockCBPeripheral removeService:], BluetoothLowEnergyDeviceMac is
   // expected to call -[CBPeripheral discoverServices:]
-  DidDiscoverServices(peripheral_mock);
+  [peripheral_mock mockDidDiscoverEvents];
 }
 
 void BluetoothTestMac::SimulateGattCharacteristic(
@@ -365,7 +353,7 @@ void BluetoothTestMac::SimulateGattCharacteristic(
   [peripheral_mock didModifyServices:@[]];
   // After -[MockCBPeripheral didModifyServices:], BluetoothLowEnergyDeviceMac
   // is expected to call -[CBPeripheral discoverServices:]
-  DidDiscoverServices(peripheral_mock);
+  [peripheral_mock mockDidDiscoverEvents];
 }
 
 void BluetoothTestMac::SimulateGattCharacteristicRead(
@@ -444,7 +432,7 @@ void BluetoothTestMac::SimulateGattCharacteristicRemoved(
   MockCBCharacteristic* characteristic_mock =
       ObjCCast<MockCBCharacteristic>(cb_characteristic);
   [service_mock removeCharacteristicMock:characteristic_mock];
-  DidDiscoverServices(peripheral_mock);
+  [peripheral_mock mockDidDiscoverEvents];
 }
 
 void BluetoothTestMac::OnFakeBluetoothDeviceConnectGattCalled() {
