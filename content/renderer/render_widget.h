@@ -12,6 +12,8 @@
 #include <map>
 #include <memory>
 #include <queue>
+#include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -77,7 +79,7 @@ class WebLocalFrame;
 class WebMouseEvent;
 class WebNode;
 struct WebPoint;
-}
+}  // namespace blink
 
 namespace cc {
 class CompositorFrameSink;
@@ -178,10 +180,10 @@ class CONTENT_EXPORT RenderWidget
   bool is_hidden() const { return is_hidden_; }
   // Temporary for debugging purposes...
   bool closing() const { return closing_; }
-  bool has_host_context_menu_location() {
+  bool has_host_context_menu_location() const {
     return has_host_context_menu_location_;
   }
-  gfx::Point host_context_menu_location() {
+  gfx::Point host_context_menu_location() const {
     return host_context_menu_location_;
   }
 
@@ -190,7 +192,7 @@ class CONTENT_EXPORT RenderWidget
     owner_delegate_ = owner_delegate;
   }
 
-  RenderWidgetOwnerDelegate* owner_delegate() { return owner_delegate_; }
+  RenderWidgetOwnerDelegate* owner_delegate() const { return owner_delegate_; }
 
   // ScreenInfo exposed so it can be passed to subframe RenderWidgets.
   ScreenInfo screen_info() const { return screen_info_; }
@@ -201,7 +203,7 @@ class CONTENT_EXPORT RenderWidget
   // active RenderWidgets.
   void SetSwappedOut(bool is_swapped_out);
 
-  bool is_swapped_out() { return is_swapped_out_; }
+  bool is_swapped_out() const { return is_swapped_out_; }
 
   // Manage edit commands to be used for the next keyboard event.
   const EditCommands& edit_commands() const { return edit_commands_; }
@@ -393,7 +395,7 @@ class CONTENT_EXPORT RenderWidget
   // Indicates whether this widget has focus.
   bool has_focus() const { return has_focus_; }
 
-  MouseLockDispatcher* mouse_lock_dispatcher() {
+  MouseLockDispatcher* mouse_lock_dispatcher() const {
     return mouse_lock_dispatcher_.get();
   }
 
