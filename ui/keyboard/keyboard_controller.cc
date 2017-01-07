@@ -306,6 +306,10 @@ void KeyboardController::ShowKeyboardInDisplay(int64_t display_id) {
   ShowKeyboardInternal(display_id);
 }
 
+bool KeyboardController::IsKeyboardWindowCreated() {
+  return keyboard_container_initialized() && ui_->HasKeyboardWindow();
+}
+
 void KeyboardController::OnWindowHierarchyChanged(
     const HierarchyChangeParams& params) {
   if (params.new_parent && params.target == container_.get())

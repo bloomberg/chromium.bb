@@ -363,6 +363,10 @@ ImeMenuTray::~ImeMenuTray() {
   SystemTrayNotifier* tray_notifier = WmShell::Get()->system_tray_notifier();
   tray_notifier->RemoveIMEObserver(this);
   tray_notifier->RemoveVirtualKeyboardObserver(this);
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
+  if (keyboard_controller)
+    keyboard_controller->RemoveObserver(this);
 }
 
 void ImeMenuTray::ShowImeMenuBubble() {
@@ -447,7 +451,14 @@ void ImeMenuTray::ShowKeyboardWithKeyset(const std::string& keyset) {
   show_keyboard_ = true;
   if (keyboard_controller) {
     keyboard_controller->AddObserver(this);
-    keyboard_controller->ShowKeyboard(false);
+    // If the keyboard window hasn't been created yet, it means the extension
+    // cannot receive anything to show the keyboard. Therefore, instead of
+    // relying the extension to show the keyboard, forcibly show the keyboard
+    // window here (which will cause the keyboard window to be created).
+    // Otherwise, the extension will show keyboard by calling private api. The
+    // native side could just skip showing the keyboard.
+    if (!keyboard_controller->IsKeyboardWindowCreated())
+      keyboard_controller->ShowKeyboard(false);
     return;
   }
 
@@ -563,6 +574,11 @@ void ImeMenuTray::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {}
 void ImeMenuTray::OnKeyboardClosed() {
   if (InputMethodManager::Get())
     InputMethodManager::Get()->OverrideKeyboardUrlRef(std::string());
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
+  if (keyboard_controller)
+    keyboard_controller->RemoveObserver(this);
+
   show_keyboard_ = false;
   force_show_keyboard_ = false;
 }

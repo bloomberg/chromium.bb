@@ -1214,7 +1214,13 @@ void InputMethodManagerImpl::MaybeNotifyImeMenuActivationChanged() {
 }
 
 void InputMethodManagerImpl::OverrideKeyboardUrlRef(const std::string& keyset) {
-  GURL url = keyboard::GetOverrideContentUrl();
+  GURL input_view_url;
+  if (GetActiveIMEState()) {
+    input_view_url =
+        GetActiveIMEState()->GetCurrentInputMethod().input_view_url();
+  }
+  GURL url = input_view_url.is_empty() ? keyboard::GetOverrideContentUrl()
+                                       : input_view_url;
 
   // If fails to find ref or tag "id" in the ref, it means the current IME is
   // not system IME, and we don't support show emoji, handwriting or voice
@@ -1222,6 +1228,7 @@ void InputMethodManagerImpl::OverrideKeyboardUrlRef(const std::string& keyset) {
   if (!url.has_ref())
     return;
   std::string overridden_ref = url.ref();
+
   auto i = overridden_ref.find("id=");
   if (i == std::string::npos)
     return;
@@ -1229,8 +1236,7 @@ void InputMethodManagerImpl::OverrideKeyboardUrlRef(const std::string& keyset) {
   if (keyset.empty()) {
     // Resets the url as the input method default url and notify the hash
     // changed to VK.
-    keyboard::SetOverrideContentUrl(
-        GetActiveIMEState()->GetCurrentInputMethod().input_view_url());
+    keyboard::SetOverrideContentUrl(input_view_url);
     keyboard::KeyboardController* keyboard_controller =
         keyboard::KeyboardController::GetInstance();
     if (keyboard_controller)
@@ -1253,6 +1259,11 @@ void InputMethodManagerImpl::OverrideKeyboardUrlRef(const std::string& keyset) {
   GURL::Replacements replacements;
   replacements.SetRefStr(overridden_ref);
   keyboard::SetOverrideContentUrl(url.ReplaceComponents(replacements));
+
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
+  if (keyboard_controller)
+    keyboard_controller->Reload();
 }
 
 bool InputMethodManagerImpl::IsEmojiHandwritingVoiceOnImeMenuEnabled() {
