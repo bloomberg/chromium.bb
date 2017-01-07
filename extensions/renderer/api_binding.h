@@ -35,7 +35,8 @@ class APISignature;
 // signature, throwing an error if they don't match.
 // There should only need to be a single APIBinding object for each API, and
 // each can vend multiple v8::Objects for different contexts.
-// TODO(devlin): What's the lifetime of this object?
+// This object is designed to be one-per-isolate, but used across separate
+// contexts.
 class APIBinding {
  public:
   // The callback to called when an API method is invoked with matching
@@ -89,8 +90,9 @@ class APIBinding {
   // The root name of the API, e.g. "tabs" for chrome.tabs.
   std::string api_name_;
 
-  // A map from method name to expected signature.
-  std::map<std::string, std::unique_ptr<APISignature>> signatures_;
+  // A map from method name to method data.
+  struct MethodData;
+  std::map<std::string, std::unique_ptr<MethodData>> methods_;
 
   // The names of all events associated with this API.
   std::vector<std::string> event_names_;

@@ -49,18 +49,14 @@ std::string GetJSEnumEntryName(const std::string& original) {
   return result;
 }
 
-const char kExtensionAPIPerContextKey[] = "extension_api_binding";
-
-struct APIPerContextData : public base::SupportsUserData::Data {
-  std::vector<std::unique_ptr<APIBinding::HandlerCallback>> context_callbacks;
-};
-
 void CallbackHelper(const v8::FunctionCallbackInfo<v8::Value>& info) {
   gin::Arguments args(info);
 
   // If the current context (the in which this function was created) has been
   // disposed, the per-context data has been deleted. Since it was the owner of
   // the callback, we can no longer access that object.
+  // Various parts of the binding system rely on per-context data. If that has
+  // been deleted (which happens during context shutdown), bail out.
   v8::Local<v8::Context> context = args.isolate()->GetCurrentContext();
   gin::PerContextData* per_context_data = gin::PerContextData::From(context);
   if (!per_context_data)
@@ -70,24 +66,27 @@ void CallbackHelper(const v8::FunctionCallbackInfo<v8::Value>& info) {
   CHECK(args.GetData(&external));
   auto* callback = static_cast<APIBinding::HandlerCallback*>(external->Value());
 
-#if DCHECK_IS_ON()
-  // If there is per-context data, then it should own the callback that is about
-  // to be called. Double-check this in debug builds.
-  APIPerContextData* data = static_cast<APIPerContextData*>(
-      per_context_data->GetUserData(kExtensionAPIPerContextKey));
-  DCHECK(data);
-  DCHECK(std::any_of(
-      data->context_callbacks.begin(), data->context_callbacks.end(),
-      [callback](
-          const std::unique_ptr<APIBinding::HandlerCallback>& live_callback) {
-        return live_callback.get() == callback;
-      }));
-#endif  // DCHECK_IS_ON()
-
   callback->Run(&args);
 }
 
 }  // namespace
+
+struct APIBinding::MethodData {
+  MethodData(std::string full_name,
+             const base::ListValue& method_signature)
+      : full_name(std::move(full_name)),
+        signature(method_signature) {}
+
+  // The fully-qualified name of this api (e.g. runtime.sendMessage instead of
+  // sendMessage).
+  std::string full_name;
+  // The expected API signature.
+  APISignature signature;
+  // The template for the v8::Function for this method.
+  v8::Eternal<v8::FunctionTemplate> function_template;
+  // The callback used by the v8 function.
+  APIBinding::HandlerCallback callback;
+};
 
 APIBinding::APIBinding(const std::string& api_name,
                        const base::ListValue* function_definitions,
@@ -111,7 +110,9 @@ APIBinding::APIBinding(const std::string& api_name,
 
       const base::ListValue* params = nullptr;
       CHECK(func_dict->GetList("parameters", &params));
-      signatures_[name] = base::MakeUnique<APISignature>(*params);
+      methods_[name] = base::MakeUnique<MethodData>(
+          base::StringPrintf("%s.%s", api_name_.c_str(), name.c_str()),
+          *params);
     }
   }
 
@@ -169,33 +170,33 @@ v8::Local<v8::Object> APIBinding::CreateInstance(
   v8::Local<v8::Object> object = v8::Object::New(isolate);
   gin::PerContextData* per_context_data = gin::PerContextData::From(context);
   DCHECK(per_context_data);
-  APIPerContextData* data = static_cast<APIPerContextData*>(
-      per_context_data->GetUserData(kExtensionAPIPerContextKey));
-  if (!data) {
-    auto api_data = base::MakeUnique<APIPerContextData>();
-    data = api_data.get();
-    per_context_data->SetUserData(kExtensionAPIPerContextKey,
-                                  api_data.release());
-  }
 
-  for (const auto& sig : signatures_) {
-    std::string full_method_name =
-        base::StringPrintf("%s.%s", api_name_.c_str(), sig.first.c_str());
-
-    if (!is_available.Run(full_method_name))
+  for (const auto& key_value : methods_) {
+    MethodData& method = *key_value.second;
+    if (!is_available.Run(method.full_name))
       continue;
 
-    auto handler_callback = base::MakeUnique<HandlerCallback>(
-        base::Bind(&APIBinding::HandleCall, weak_factory_.GetWeakPtr(),
-                   full_method_name, sig.second.get()));
-    // TODO(devlin): We should be able to cache these in a function template.
+    v8::Eternal<v8::FunctionTemplate>& function_template =
+        method.function_template;
+    if (function_template.IsEmpty()) {
+      DCHECK(method.callback.is_null());
+      method.callback =
+          base::Bind(&APIBinding::HandleCall, weak_factory_.GetWeakPtr(),
+                     method.full_name, &method.signature);
+      function_template.Set(
+          isolate,
+          v8::FunctionTemplate::New(
+              isolate, &CallbackHelper,
+              v8::External::New(isolate, &method.callback),
+              v8::Local<v8::Signature>(), 0, v8::ConstructorBehavior::kThrow));
+    }
+
+    v8::Local<v8::FunctionTemplate> local_template =
+        function_template.Get(isolate);
     v8::MaybeLocal<v8::Function> maybe_function =
-        v8::Function::New(context, &CallbackHelper,
-                          v8::External::New(isolate, handler_callback.get()),
-                          0, v8::ConstructorBehavior::kThrow);
-    data->context_callbacks.push_back(std::move(handler_callback));
+        local_template->GetFunction(context);
     v8::Maybe<bool> success = object->CreateDataProperty(
-        context, gin::StringToSymbol(isolate, sig.first),
+        context, gin::StringToSymbol(isolate, key_value.first),
         maybe_function.ToLocalChecked());
     DCHECK(success.IsJust());
     DCHECK(success.FromJust());

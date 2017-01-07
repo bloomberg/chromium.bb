@@ -15,6 +15,7 @@
 #include "extensions/renderer/api_request_handler.h"
 #include "gin/arguments.h"
 #include "gin/converter.h"
+#include "gin/public/context_holder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
 
@@ -132,7 +133,15 @@ class APIBindingUnittest : public APIBindingTest {
   void ExpectPass(v8::Local<v8::Object> object,
                   const std::string& script_source,
                   const std::string& expected_json_arguments_single_quotes) {
-    RunTest(object, script_source, true,
+    ExpectPass(ContextLocal(), object, script_source,
+               expected_json_arguments_single_quotes);
+  }
+
+  void ExpectPass(v8::Local<v8::Context> context,
+                  v8::Local<v8::Object> object,
+                  const std::string& script_source,
+                  const std::string& expected_json_arguments_single_quotes) {
+    RunTest(context, object, script_source, true,
             ReplaceSingleQuotes(expected_json_arguments_single_quotes),
             std::string());
   }
@@ -140,7 +149,8 @@ class APIBindingUnittest : public APIBindingTest {
   void ExpectFailure(v8::Local<v8::Object> object,
                      const std::string& script_source,
                      const std::string& expected_error) {
-    RunTest(object, script_source, false, std::string(), expected_error);
+    RunTest(ContextLocal(), object, script_source, false, std::string(),
+            expected_error);
   }
 
   bool HandlerWasInvoked() const { return arguments_ != nullptr; }
@@ -148,7 +158,8 @@ class APIBindingUnittest : public APIBindingTest {
   APIRequestHandler* request_handler() { return request_handler_.get(); }
 
  private:
-  void RunTest(v8::Local<v8::Object> object,
+  void RunTest(v8::Local<v8::Context> context,
+               v8::Local<v8::Object> object,
                const std::string& script_source,
                bool should_pass,
                const std::string& expected_json_arguments,
@@ -161,7 +172,8 @@ class APIBindingUnittest : public APIBindingTest {
   DISALLOW_COPY_AND_ASSIGN(APIBindingUnittest);
 };
 
-void APIBindingUnittest::RunTest(v8::Local<v8::Object> object,
+void APIBindingUnittest::RunTest(v8::Local<v8::Context> context,
+                                 v8::Local<v8::Object> object,
                                  const std::string& script_source,
                                  bool should_pass,
                                  const std::string& expected_json_arguments,
@@ -170,7 +182,6 @@ void APIBindingUnittest::RunTest(v8::Local<v8::Object> object,
   std::string wrapped_script_source =
       base::StringPrintf("(function(obj) { %s })", script_source.c_str());
 
-  v8::Local<v8::Context> context = ContextLocal();
   v8::Local<v8::Function> func =
       FunctionFromString(context, wrapped_script_source);
   ASSERT_FALSE(func.IsEmpty());
@@ -501,6 +512,34 @@ TEST_F(APIBindingUnittest, TestDisposedContext) {
   EXPECT_FALSE(HandlerWasInvoked());
   // This test passes if this does not crash, even under AddressSanitizer
   // builds.
+}
+
+TEST_F(APIBindingUnittest, MultipleContexts) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context_a = ContextLocal();
+  v8::Local<v8::Context> context_b = v8::Context::New(isolate());
+  gin::ContextHolder holder_b(isolate());
+  holder_b.SetContext(context_b);
+
+  std::unique_ptr<base::ListValue> functions = ListValueFromString(kFunctions);
+  ASSERT_TRUE(functions);
+  ArgumentSpec::RefMap refs;
+  APIBinding binding(
+      "test", functions.get(), nullptr, nullptr,
+      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
+      base::MakeUnique<APIBindingHooks>(binding::RunJSFunctionSync()), &refs);
+
+  APIEventHandler event_handler(
+      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  v8::Local<v8::Object> binding_object_a = binding.CreateInstance(
+      context_a, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
+  v8::Local<v8::Object> binding_object_b = binding.CreateInstance(
+      context_b, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
+
+  ExpectPass(context_a, binding_object_a, "obj.oneString('foo');", "['foo']");
+  ExpectPass(context_b, binding_object_b, "obj.oneString('foo');", "['foo']");
+  DisposeContext();
+  ExpectPass(context_b, binding_object_b, "obj.oneString('foo');", "['foo']");
 }
 
 // Tests adding custom hooks for an API method.
