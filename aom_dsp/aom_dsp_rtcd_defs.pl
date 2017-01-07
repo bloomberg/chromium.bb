@@ -844,7 +844,7 @@ if (aom_config("CONFIG_CLPF") eq "yes") {
     add_proto qw/void aom_clpf_detect_multi_hbd/, "const uint16_t *rec, const uint16_t *org, int rstride, int ostride, int x0, int y0, int width, int height, int *sum, int shift, int size";
     # VS compiling for 32 bit targets does not support vector types in
     # structs as arguments, which makes the v256 type of the intrinsics
-    # hard to support, so optimizations for this target is disabled.
+    # hard to support, so optimizations for this target are disabled.
     if ($opts{config} !~ /libs-x86-win32-vs.*/) {
       specialize qw/aom_clpf_block_hbd sse2 ssse3 sse4_1 neon/;
       specialize qw/aom_clpf_detect_hbd sse2 ssse3 sse4_1 neon/;
@@ -856,7 +856,7 @@ if (aom_config("CONFIG_CLPF") eq "yes") {
   add_proto qw/void aom_clpf_detect_multi/, "const uint8_t *rec, const uint8_t *org, int rstride, int ostride, int x0, int y0, int width, int height, int *sum, int size";
   # VS compiling for 32 bit targets does not support vector types in
   # structs as arguments, which makes the v256 type of the intrinsics
-  # hard to support, so optimizations for this target is disabled.
+  # hard to support, so optimizations for this target are disabled.
   if ($opts{config} !~ /libs-x86-win32-vs.*/) {
     specialize qw/aom_clpf_block sse2 ssse3 sse4_1 neon/;
     specialize qw/aom_clpf_detect sse2 ssse3 sse4_1 neon/;
