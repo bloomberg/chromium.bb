@@ -39,6 +39,10 @@ enum State {
 
   // The user was prompted to sign in to Chrome after saving a password.
   CHROME_SIGN_IN_PROMO_STATE,
+
+  // The user was prompted with the Desktop to Mobile promotion after saving
+  // a password.
+  CHROME_DESKTOP_IOS_PROMO_STATE,
 };
 
 }  // namespace ui

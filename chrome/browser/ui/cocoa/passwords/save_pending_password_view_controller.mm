@@ -24,7 +24,7 @@
   ManagePasswordsBubbleModel* model = self.model;
   if (model) {
     model->OnSaveClicked();
-    if (model->ReplaceToShowSignInPromoIfNeeded()) {
+    if (model->ReplaceToShowPromotionIfNeeded()) {
       [self.delegate refreshBubble];
       return;
     }

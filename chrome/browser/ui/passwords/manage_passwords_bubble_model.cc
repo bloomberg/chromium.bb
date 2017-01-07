@@ -17,6 +17,7 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_util.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/grit/chromium_strings.h"
@@ -282,6 +283,7 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
       case password_manager::ui::CREDENTIAL_REQUEST_STATE:
       case password_manager::ui::AUTO_SIGNIN_STATE:
       case password_manager::ui::CHROME_SIGN_IN_PROMO_STATE:
+      case password_manager::ui::CHROME_DESKTOP_IOS_PROMO_STATE:
       case password_manager::ui::INACTIVE_STATE:
         NOTREACHED();
         break;
@@ -305,6 +307,7 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
       case password_manager::ui::MANAGE_STATE:
       case password_manager::ui::CREDENTIAL_REQUEST_STATE:
       case password_manager::ui::CHROME_SIGN_IN_PROMO_STATE:
+      case password_manager::ui::CHROME_DESKTOP_IOS_PROMO_STATE:
       case password_manager::ui::INACTIVE_STATE:
         NOTREACHED();
         break;
@@ -423,11 +426,12 @@ bool ManagePasswordsBubbleModel::ShouldShowMultipleAccountUpdateUI() const {
          local_credentials_.size() > 1 && !password_overridden_;
 }
 
-bool ManagePasswordsBubbleModel::ReplaceToShowSignInPromoIfNeeded() {
+bool ManagePasswordsBubbleModel::ReplaceToShowPromotionIfNeeded() {
   DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_STATE, state_);
   PrefService* prefs = GetProfile()->GetPrefs();
   const browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(GetProfile());
+  // Signin promotion.
   if (password_bubble_experiment::ShouldShowChromeSignInPasswordPromo(
           prefs, sync_service)) {
     interaction_keeper_->ReportInteractions(this);
@@ -440,6 +444,17 @@ bool ManagePasswordsBubbleModel::ReplaceToShowSignInPromoIfNeeded() {
     prefs->SetInteger(password_manager::prefs::kNumberSignInPasswordPromoShown,
                       show_count);
     interaction_keeper_->set_sign_in_promo_shown_count(show_count);
+    return true;
+  }
+  // Desktop to mobile promotion.
+  if (desktop_ios_promotion::IsEligibleForIOSPromotion()) {
+    interaction_keeper_->ReportInteractions(this);
+    title_brand_link_range_ = gfx::Range();
+    title_ = l10n_util::GetStringUTF16(
+        IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE);
+    state_ = password_manager::ui::CHROME_DESKTOP_IOS_PROMO_STATE;
+    // TODO(crbug.com/676655): Update impression count.
+    // TODO(crbug.com/676655): Add required logging.
     return true;
   }
   return false;

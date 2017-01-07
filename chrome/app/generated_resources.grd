@@ -6270,6 +6270,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
           No thanks
         </message>
       </if>
+      <message name="IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE" desc="Title for Chrome iOS promotion appearing in the password bubble after a password is saved.">
+        Try Chrome on iPhone
+      </message>
+      <message name="IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT" desc="Text for Chrome iOS Promotion appearing in the password bubble after a password is saved.">
+        Never type this password again.  Send a link to install Chrome on your phone.
+      </message>
       <message name="IDS_PASSWORD_MANAGER_SIGNIN_PROMO_TITLE" desc="Promotion text for Chrome sign-in appearing in the password bubble after a password is saved.">
         Password saved. To get your passwords on all your devices, sign in to Chrome.
       </message>
@@ -6281,6 +6287,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_UPDATE_PASSWORD" desc="The title of the save password bubble when a password can be updated.">
         Do you want <ph name="PASSWORD_MANAGER_BRAND">$1<ex>Google Chrome</ex></ph> to update your password for this site?
+      </message>
+      <message name="IDS_DESKTOP_TO_IOS_PROMO_SEND_TO_PHONE" desc="The title of the send to phone button in the bubble promoting Chrome for iphone.">
+        Send to phone
+      </message>
+      <message name="IDS_DESKTOP_TO_IOS_PROMO_NO_THANKS" desc="The title of the No Thanks button in the bubble promoting Chrome for iPhone.">
+        No Thanks
       </message>
       <message name="IDS_FLAGS_SUGGESTIONS_WITH_SUB_STRING_MATCH_NAME" desc="Name of the flag for substring matching for Autofill suggestions.">
         Substring matching for Autofill suggestions

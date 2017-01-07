@@ -23,6 +23,8 @@ class WebContents;
 //
 class ManagePasswordsBubbleView : public LocationBarBubbleDelegateView {
  public:
+  static constexpr int kDesiredBubbleWidth = 370;
+
   // Shows the bubble.
   static void ShowBubble(content::WebContents* web_contents,
                          DisplayReason reason);

@@ -111,9 +111,9 @@ class ManagePasswordsBubbleModel {
   bool ShouldShowMultipleAccountUpdateUI() const;
 
   // Returns true and updates the internal state iff the Save bubble should
-  // switch to the Chrome Sign In promo after the password was saved. Otherwise,
+  // switch to show a promotion after the password was saved. Otherwise,
   // returns false and leaves the current state.
-  bool ReplaceToShowSignInPromoIfNeeded();
+  bool ReplaceToShowPromotionIfNeeded();
 
   void SetClockForTesting(std::unique_ptr<base::Clock> clock);
 

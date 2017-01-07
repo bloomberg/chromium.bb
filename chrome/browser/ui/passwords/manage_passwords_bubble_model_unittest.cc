@@ -351,7 +351,7 @@ TEST_F(ManagePasswordsBubbleModelTest, SuppressSignInPromo) {
   EXPECT_CALL(*controller(), SavePassword());
   model()->OnSaveClicked();
 
-  EXPECT_FALSE(model()->ReplaceToShowSignInPromoIfNeeded());
+  EXPECT_FALSE(model()->ReplaceToShowPromotionIfNeeded());
   DestroyModel();
   histogram_tester.ExpectTotalCount(kSignInPromoDismissalReasonMetric, 0);
   histogram_tester.ExpectTotalCount(kSignInPromoCountTilSignInMetric, 0);
@@ -371,7 +371,7 @@ TEST_F(ManagePasswordsBubbleModelTest, SignInPromoOK) {
   EXPECT_CALL(*controller(), SavePassword());
   model()->OnSaveClicked();
 
-  EXPECT_TRUE(model()->ReplaceToShowSignInPromoIfNeeded());
+  EXPECT_TRUE(model()->ReplaceToShowPromotionIfNeeded());
   EXPECT_CALL(*controller(), NavigateToChromeSignIn());
   model()->OnSignInToChromeClicked();
   DestroyModel();
@@ -400,7 +400,7 @@ TEST_F(ManagePasswordsBubbleModelTest, SignInPromoCancel) {
   EXPECT_CALL(*controller(), SavePassword());
   model()->OnSaveClicked();
 
-  EXPECT_TRUE(model()->ReplaceToShowSignInPromoIfNeeded());
+  EXPECT_TRUE(model()->ReplaceToShowPromotionIfNeeded());
   model()->OnSkipSignInClicked();
   DestroyModel();
   histogram_tester.ExpectUniqueSample(
@@ -428,7 +428,7 @@ TEST_F(ManagePasswordsBubbleModelTest, SignInPromoDismiss) {
   EXPECT_CALL(*controller(), SavePassword());
   model()->OnSaveClicked();
 
-  EXPECT_TRUE(model()->ReplaceToShowSignInPromoIfNeeded());
+  EXPECT_TRUE(model()->ReplaceToShowPromotionIfNeeded());
   DestroyModel();
   histogram_tester.ExpectUniqueSample(
       kUIDismissalReasonMetric,

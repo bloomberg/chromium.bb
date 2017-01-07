@@ -51,7 +51,7 @@ void SignInPromoViewControllerTest::SetUpSignInPromoState() {
       {{kChromeSignInPasswordPromoThresholdParam, "3"}});
   GetModelAndCreateIfNull()->OnSaveClicked();
 
-  ASSERT_TRUE(GetModelAndCreateIfNull()->ReplaceToShowSignInPromoIfNeeded());
+  ASSERT_TRUE(GetModelAndCreateIfNull()->ReplaceToShowPromotionIfNeeded());
 
   [delegate() setModel:GetModelAndCreateIfNull()];
   controller_.reset([[SignInPromoViewController alloc]
