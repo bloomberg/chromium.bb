@@ -5,7 +5,9 @@
 #import "chrome/browser/ui/cocoa/autofill/autofill_popup_view_cocoa.h"
 
 #include "base/logging.h"
+#include "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
 #include "chrome/browser/ui/autofill/popup_constants.h"
@@ -16,10 +18,14 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia_util_mac.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 
 using autofill::AutofillPopupView;
 using autofill::AutofillPopupLayoutModel;
@@ -153,6 +159,10 @@ using autofill::AutofillPopupLayoutModel;
                         bounds:(NSRect)bounds
                       selected:(BOOL)isSelected
                    textYOffset:(CGFloat)textYOffset {
+  BOOL isHTTPWarning =
+      (controller_->GetSuggestionAt(index).frontend_id ==
+       autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE);
+
   // If this row is selected, highlight it with this mac system color.
   // Otherwise the controller may have a specific background color for this
   // entry.
@@ -173,6 +183,9 @@ using autofill::AutofillPopupLayoutModel;
 
   // Draw left side if isRTL == NO, right side if isRTL == YES.
   CGFloat x = isRTL ? rightX : leftX;
+  if (isHTTPWarning) {
+    x = [self drawIconAtIndex:index atX:x rightAlign:isRTL bounds:bounds];
+  }
   [self drawName:name
               atX:x
             index:index
@@ -182,7 +195,9 @@ using autofill::AutofillPopupLayoutModel;
 
   // Draw right side if isRTL == NO, left side if isRTL == YES.
   x = isRTL ? leftX : rightX;
-  x = [self drawIconAtIndex:index atX:x rightAlign:!isRTL bounds:bounds];
+  if (!isHTTPWarning) {
+    x = [self drawIconAtIndex:index atX:x rightAlign:!isRTL bounds:bounds];
+  }
   [self drawSubtext:subtext
                 atX:x
               index:index
@@ -263,9 +278,26 @@ using autofill::AutofillPopupLayoutModel;
 }
 
 - (NSImage*)iconAtIndex:(size_t)index {
+  const int kHttpWarningIconWidth = 16;
   const base::string16& icon = controller_->GetSuggestionAt(index).icon;
   if (icon.empty())
     return nil;
+
+  // For the Form-Not-Secure warning about password/credit card fields on HTTP
+  // pages, reuse the omnibox vector icons.
+  if (icon == base::ASCIIToUTF16("httpWarning")) {
+    return NSImageFromImageSkiaWithColorSpace(
+        gfx::CreateVectorIcon(gfx::VectorIconId::LOCATION_BAR_HTTP,
+                              kHttpWarningIconWidth, gfx::kChromeIconGrey),
+        base::mac::GetSRGBColorSpace());
+  }
+
+  if (icon == base::ASCIIToUTF16("httpsInvalid")) {
+    return NSImageFromImageSkiaWithColorSpace(
+        gfx::CreateVectorIcon(gfx::VectorIconId::LOCATION_BAR_HTTPS_INVALID,
+                              kHttpWarningIconWidth, gfx::kGoogleRed700),
+        base::mac::GetSRGBColorSpace());
+  }
 
   int iconId = delegate_->GetIconResourceID(icon);
   DCHECK_NE(-1, iconId);
