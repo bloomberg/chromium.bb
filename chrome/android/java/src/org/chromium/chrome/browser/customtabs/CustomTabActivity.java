@@ -933,7 +933,7 @@ public class CustomTabActivity extends ChromeActivity {
         StrictMode.allowThreadDiskWrites();
         try {
             willChromeHandleIntent |= ExternalNavigationDelegateImpl
-                    .willChromeHandleIntent(this, intent, true);
+                    .willChromeHandleIntent(intent, true);
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }

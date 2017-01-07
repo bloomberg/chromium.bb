@@ -61,8 +61,8 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
             try {
                 // For a URL chrome can handle and there is no default set, handle it ourselves.
                 if (!hasDefaultHandler) {
-                    if (!TextUtils.isEmpty(mClientPackageName) && isPackageSpecializedHandler(
-                            mApplicationContext, mClientPackageName, intent)) {
+                    if (!TextUtils.isEmpty(mClientPackageName)
+                            && isPackageSpecializedHandler(mClientPackageName, intent)) {
                         intent.setPackage(mClientPackageName);
                     } else if (!isExternalProtocol) {
                         return false;

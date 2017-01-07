@@ -246,8 +246,7 @@ public class InstantAppsHandler {
         if (selector != null) selector.setComponent(null);
 
         if (!(isCustomTabsIntent || isChromeDefaultHandler(context))
-                || ExternalNavigationDelegateImpl.isPackageSpecializedHandler(
-                        context, null, intentCopy)) {
+                || ExternalNavigationDelegateImpl.isPackageSpecializedHandler(null, intentCopy)) {
             // Chrome is not the default browser or a specialized handler exists.
             Log.i(TAG, "Not handling with Instant Apps because Chrome is not default or "
                     + "there's a specialized handler");

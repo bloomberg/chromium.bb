@@ -1018,8 +1018,8 @@ public class DownloadManagerService extends BroadcastReceiver implements
         Intent intent = getLaunchIntentFromDownloadId(
                 context, download.getDownloadInfo().getFilePath(),
                 download.getSystemDownloadId(), isSupportedMimeType);
-        return (intent == null) ? false : ExternalNavigationDelegateImpl.resolveIntent(
-                context, intent, true);
+        return (intent == null)
+                ? false : ExternalNavigationDelegateImpl.resolveIntent(intent, true);
     }
 
     /** See {@link #openDownloadedContent(Context, String, boolean, long)}. */
@@ -1049,7 +1049,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
             @Override
             protected void onPostExecute(Intent intent) {
                 if (intent == null
-                        || !ExternalNavigationDelegateImpl.resolveIntent(context, intent, true)
+                        || !ExternalNavigationDelegateImpl.resolveIntent(intent, true)
                         || !DownloadUtils.fireOpenIntentForDownload(context, intent)) {
                     openDownloadsPage(context);
                 }
