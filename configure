@@ -238,6 +238,7 @@ ARCH_EXT_LIST="
 HAVE_LIST="
     ${ARCH_EXT_LIST}
     aom_ports
+    fexcept
     pthread_h
     unistd_h
     wxwidgets
@@ -649,6 +650,12 @@ EOF
     check_header unistd.h # for sysconf(3) and friends.
 
     check_header aom/aom_integer.h -I${source_path} && enable_feature aom_ports
+
+    check_cc <<EOF && enable_feature fexcept
+#define _GNU_SOURCE
+#include <fenv.h>
+int main(void) { (void)feenableexcept(FE_DIVBYZERO | FE_INVALID); return 0; }
+EOF
 }
 
 process_toolchain() {
