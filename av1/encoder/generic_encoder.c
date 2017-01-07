@@ -47,7 +47,7 @@ void aom_encode_cdf_adapt_q15(aom_writer *w, int val, uint16_t *cdf, int n,
       cdf[i] = cdf[i]*32768/ft;
     }
   }
-  aom_write_symbol(w, val, cdf, n);
+  aom_write_cdf(w, val, cdf, n);
   aom_cdf_adapt_q15(val, cdf, n, count, rate);
 }
 
@@ -107,9 +107,9 @@ void generic_encode(aom_writer *w, generic_encoder *model, int x, int max,
   xs = (x + (1 << shift >> 1)) >> shift;
   ms = (max + (1 << shift >> 1)) >> shift;
   OD_ASSERT(max == -1 || xs <= ms);
-  if (max == -1) aom_write_symbol_unscaled(w, OD_MINI(15, xs), cdf, 16);
+  if (max == -1) aom_write_cdf_unscaled(w, OD_MINI(15, xs), cdf, 16);
   else {
-    aom_write_symbol_unscaled(w, OD_MINI(15, xs), cdf, OD_MINI(ms + 1, 16));
+    aom_write_cdf_unscaled(w, OD_MINI(15, xs), cdf, OD_MINI(ms + 1, 16));
   }
   if (xs >= 15) {
     int e;

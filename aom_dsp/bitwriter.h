@@ -183,8 +183,8 @@ static INLINE void aom_write_tree_record(aom_writer *w,
 }
 
 #if CONFIG_EC_MULTISYMBOL
-static INLINE void aom_write_symbol(aom_writer *w, int symb, aom_cdf_prob *cdf,
-                                    int nsymbs) {
+static INLINE void aom_write_cdf(aom_writer *w, int symb, aom_cdf_prob *cdf,
+                                 int nsymbs) {
 #if CONFIG_ANS
   struct rans_sym s;
   (void)nsymbs;
@@ -199,16 +199,19 @@ static INLINE void aom_write_symbol(aom_writer *w, int symb, aom_cdf_prob *cdf,
     "CONFIG_EC_MULTISYMBOL is selected without a valid backing entropy " \
   "coder. Enable daala_ec or ans for a valid configuration."
 #endif
+}
 
+static INLINE void aom_write_symbol(aom_writer *w, int symb, aom_cdf_prob *cdf,
+                                    int nsymbs) {
+  aom_write_cdf(w, symb, cdf, nsymbs);
 #if CONFIG_EC_ADAPT
   update_cdf(cdf, symb, nsymbs);
 #endif
 }
 
 #if CONFIG_PVQ
-static INLINE void aom_write_symbol_unscaled(aom_writer *w, int symb,
-                                             const aom_cdf_prob *cdf,
-                                             int nsymbs) {
+static INLINE void aom_write_cdf_unscaled(aom_writer *w, int symb,
+                                          const aom_cdf_prob *cdf, int nsymbs) {
 #if CONFIG_DAALA_EC
   od_ec_encode_cdf_unscaled(&w->ec, symb, cdf, nsymbs);
 #else
