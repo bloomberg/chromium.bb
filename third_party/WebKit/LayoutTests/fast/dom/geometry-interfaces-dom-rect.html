@@ -52,6 +52,26 @@ test(() => {
 }, 'DOMRect setter');
 
 test(() => {
+  var rect = new DOMRectReadOnly();
+  assert_dom_rect_equals(rect, [0, 0, 0, 0, 0, 0, 0, 0]);
+}, 'DOMRectReadOnly constructor without parameter');
+
+test(() => {
+  var rect = new DOMRectReadOnly(10);
+  assert_dom_rect_equals(rect, [10, 0, 0, 0, 0, 10, 0, 10]);
+}, 'DOMRectReadOnly constructor with x parameter');
+
+test(() => {
+  var rect = new DOMRectReadOnly(10, 20);
+  assert_dom_rect_equals(rect, [10, 20, 0, 0, 20, 10, 20, 10]);
+}, 'DOMRectReadOnly constructor with x, y parameters');
+
+test(() => {
+  var rect = new DOMRectReadOnly(10, 20, 80);
+  assert_dom_rect_equals(rect, [10, 20, 80, 0, 20, 90, 20, 10]);
+}, 'DOMRectReadOnly constructor with x, y, width parameters');
+
+test(() => {
   var rect = new DOMRectReadOnly(10, 20, 80, 50);
   assert_dom_rect_equals(rect, [10, 20, 80, 50, 20, 90, 70, 10]);
 }, 'DOMRectReadOnly constructor with x, y, width, height parameters');
