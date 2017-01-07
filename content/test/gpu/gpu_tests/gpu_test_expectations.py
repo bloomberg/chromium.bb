@@ -88,15 +88,16 @@ class GpuTestExpectations(test_expectations.TestExpectations):
       'flaky', pattern, conditions=conditions, bug=bug,
       max_num_retries=max_num_retries))
 
-  def GetFlakyRetriesForPage(self, browser, page):
-    e = self._GetExpectationObjectForPage(browser, page)
+  def GetFlakyRetriesForTest(self, browser, test_url, test_name):
+    e = self._GetExpectationObjectForTest(browser, test_url, test_name)
     if e:
       return e.max_num_retries
     return 0
 
-  def ExpectationAppliesToPage(self, expectation, browser, page):
-    if not super(GpuTestExpectations, self).ExpectationAppliesToPage(
-        expectation, browser, page):
+  def _ExpectationAppliesToTest(
+      self, expectation, browser, test_url, test_name):
+    if not super(GpuTestExpectations, self)._ExpectationAppliesToTest(
+        expectation, browser, test_url, test_name):
       return False
 
     # We'll only get here if the OS and browser type matched the expectation.

@@ -9,7 +9,6 @@ import unittest
 from telemetry.testing import fakes
 
 from gpu_tests import fake_win_amd_gpu_info
-from gpu_tests import gpu_test_base
 from gpu_tests import path_util
 from gpu_tests import test_expectations
 from gpu_tests import webgl_conformance_expectations
@@ -34,16 +33,12 @@ class FakeWindowsPlatform(fakes.FakePlatform):
     return 'win8'
 
 
-class FakePage(gpu_test_base.PageBase):
-  def __init__(self, url, expectations):
-    super(FakePage, self).__init__(
-      name=('WebglConformance.%s' %
-            url.replace('/', '_').replace('-', '_').
-            replace('\\', '_').rpartition('.')[0].replace('.', '_')),
-      url='file://' + url,
-      page_set=None,
-      shared_page_state_class=gpu_test_base.FakeGpuSharedPageState,
-      expectations=expectations)
+class WebGLTestInfo(object):
+  def __init__(self, url):
+    self.name = ('WebglConformance_%s' %
+                 url.replace('/', '_').replace('-', '_').
+                 replace('\\', '_').rpartition('.')[0].replace('.', '_'))
+    self.url = 'file://' + url
 
 Conditions = collections.\
   namedtuple('Conditions', ['non_gpu', 'vendors', 'devices'])
@@ -60,10 +55,10 @@ class WebGLConformanceExpectationsTest(unittest.TestCase):
                      os.path.join(
                        path_util.GetChromiumSrcDir(),
                        'third_party', 'webgl', 'src', 'sdk', 'tests'))
-    page = FakePage(
-      'conformance/glsl/constructors/glsl-construct-vec-mat-index.html',
-      expectations)
-    expectation = expectations.GetExpectationForPage(browser, page)
+    test_info = WebGLTestInfo(
+      'conformance/glsl/constructors/glsl-construct-vec-mat-index.html')
+    expectation = expectations.GetExpectationForTest(
+      browser, test_info.url, test_info.name)
     # TODO(kbr): change this expectation back to "flaky". crbug.com/534697
     self.assertEquals(expectation, 'fail')
 

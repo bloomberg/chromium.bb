@@ -31,7 +31,7 @@ BROWSER_TYPE_CONDITIONS = [
     'debug', 'release']
 
 class Expectation(object):
-  """Represents a single test expectation for a page.
+  """Represents a single expectation for a test.
 
   Supports conditions based on operating system (e.g., win, mac) and
   browser type (e.g. 'debug', 'release').
@@ -94,7 +94,7 @@ class Expectation(object):
 
 
 class TestExpectations(object):
-  """A class which defines the expectations for a page set test execution"""
+  """A class which defines the expectations for a test execution."""
 
   def __init__(self, url_prefixes=None):
     self._expectations = []
@@ -150,11 +150,11 @@ class TestExpectations(object):
     # Could make this more precise.
     return '*' in input_string or '+' in input_string
 
-  def _BuildExpectationsCache(self, browser, page):
+  def _BuildExpectationsCache(self, browser):
     # Turn off name matching while building the cache.
     self._skip_matching_names = True
     for e in self._expectations:
-      if self.ExpectationAppliesToPage(e, browser, page):
+      if self._ExpectationAppliesToTest(e, browser, None, None):
         if self._HasWildcardCharacters(e.pattern):
           self._expectations_with_wildcards.append(e)
         else:
@@ -198,25 +198,25 @@ class TestExpectations(object):
           break
     return url_path
 
-  def _GetExpectationObjectForPage(self, browser, page):
+  def _GetExpectationObjectForTest(self, browser, test_url, test_name):
     if not self._built_expectation_cache:
-      self._BuildExpectationsCache(browser, page)
-    # First attempt to look up by the page's URL or name.
+      self._BuildExpectationsCache(browser)
+    # First attempt to look up by the test's URL or name.
     e = None
     # Relative URL (common case).
-    url_path = self._GetURLPath(page.url, browser)
+    url_path = self._GetURLPath(test_url, browser)
     if url_path:
       e = self._expectations_by_pattern.get(url_path)
     if e:
       return e
-    if page.name:
-      e = self._expectations_by_pattern.get(page.name)
+    if test_name:
+      e = self._expectations_by_pattern.get(test_name)
     if e:
       return e
     # Fall back to scanning through the expectations containing
     # wildcards.
     for e in self._expectations_with_wildcards:
-      if self.ExpectationAppliesToPage(e, browser, page):
+      if self._ExpectationAppliesToTest(e, browser, test_url, test_name):
         return e
     return None
 
@@ -225,8 +225,8 @@ class TestExpectations(object):
               if not self._HasWildcardCharacters(e.pattern)]
 
 
-  def GetExpectationForPage(self, browser, page):
-    '''Fetches the expectation that applies to the given page.
+  def GetExpectationForTest(self, browser, test_url, test_name):
+    '''Fetches the expectation that applies to the given test.
 
     The implementation of this function performs significant caching
     based on the browser's parameters, which are expected to remain
@@ -234,34 +234,41 @@ class TestExpectations(object):
     ClearExpectationsCacheForTesting is available to clear the cache;
     but file a bug if this is needed for any reason but testing.
     '''
-    e = self._GetExpectationObjectForPage(browser, page)
+    e = self._GetExpectationObjectForTest(browser, test_url, test_name)
     if e:
       return e.expectation
     return 'pass'
 
-  def ExpectationAppliesToPage(self, expectation, browser, page):
-    """Defines whether the given expectation applies to the given page.
+  def _ExpectationAppliesToTest(
+      self, expectation, browser, test_url, test_name):
+    """Defines whether the given expectation applies to the given test.
 
     Override this in subclasses to add more conditions. Call the
     superclass's implementation first, and return false if it returns
-    false. Subclasses must not consult the page's name or URL; that is
+    false. Subclasses must not consult the test's URL or name; that is
     the responsibility of the base class.
 
     Args:
       expectation: an instance of a subclass of Expectation, created
           by a call to CreateExpectation.
       browser: the currently running browser.
-      page: the page to be run.
+      test_url: a string containing the current test's URL. May be
+          None if _skip_matching_names is True.
+      test_name: a string containing the current test's name,
+          including the empty string. May be None if
+          _skip_matching_names is True.
     """
     # While building the expectations cache we need to match
-    # everything except the page's name or URL.
+    # everything except the test's name or URL.
     if not self._skip_matching_names:
+      if test_url is None or test_name is None:
+        raise ValueError('Neither test_url nor test_name may be None')
+
       # Relative URL.
-      if not fnmatch.fnmatch(self._GetURLPath(page.url, browser),
+      if not fnmatch.fnmatch(self._GetURLPath(test_url, browser),
                              expectation.pattern):
         # Name.
-        if not (page.name and fnmatch.fnmatch(page.name,
-                                              expectation.pattern)):
+        if not (test_name and fnmatch.fnmatch(test_name, expectation.pattern)):
           return False
 
     platform = browser.platform
