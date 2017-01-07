@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
+#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -241,6 +242,7 @@ const CGFloat kHorizontalErrorIconFixedSize = 25;
   self.imageView.image = nil;
   self.textLabel.text = nil;
   self.detailTextLabel.text = nil;
+  self.detailTextLabel.textColor = [[MDCPalette greyPalette] tint500];
   self.errorIcon.image = nil;
   self.accessoryType = MDCCollectionViewCellAccessoryNone;
   self.userInteractionEnabled = YES;
