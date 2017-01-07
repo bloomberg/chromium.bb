@@ -11,19 +11,29 @@ let fakeDisplays = fakeVRDisplays();
 
 vr_test( (t) => {
   return navigator.getVRDisplays().then( (displays) => {
-    var display = displays[0];
+    let display = displays[0];
 
     runWithUserGesture( () => {
-      display.requestPresent([{}]).then( () => {
+      display.requestPresent([{ source : webglCanvas }]).then( () => {
         t.step( () => {
-          assert_unreached();
-        }, "Display should not be presenting");
+          assert_true(display.isPresenting);
+        }, "Present request succeeded");
       }, (err) => {
         t.step( () => {
-          assert_false(display.isPresenting);
-        }, "requestPresent rejected and not presenting");
+          assert_unreached(err);
+        }, "Present request rejected");
       }).then( () => {
-        t.done();
+        display.exitPresent().then( () => {
+          t.step( () => {
+            assert_false(display.isPresenting);
+          }, "Display should no longer be presenting");
+        }, (err) => {
+          t.step( () => {
+            assert_unreached(err);
+          }, "Should never reach here");
+        }).then( () => {
+          t.done();
+        });
       });
     });
   }, (err) => {
@@ -33,6 +43,6 @@ vr_test( (t) => {
     t.done();
   });
 }, [fakeDisplays["Pixel"]],
-"Test requestPresent rejects if not provided a layer source");
+"Test exitPresent resolves");
 
 </script>
