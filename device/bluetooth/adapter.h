@@ -28,18 +28,22 @@ class Adapter : public mojom::Adapter,
   ~Adapter() override;
 
   // mojom::Adapter overrides:
-  void GetInfo(const GetInfoCallback& callback) override;
   void ConnectToDevice(const std::string& address,
                        const ConnectToDeviceCallback& callback) override;
   void GetDevices(const GetDevicesCallback& callback) override;
+  void GetInfo(const GetInfoCallback& callback) override;
   void SetClient(mojom::AdapterClientPtr client) override;
+  void StartDiscoverySession(
+      const StartDiscoverySessionCallback& callback) override;
 
   // device::BluetoothAdapter::Observer overrides:
+  void AdapterDiscoveringChanged(device::BluetoothAdapter* adapter,
+                                 bool discovering) override;
   void DeviceAdded(device::BluetoothAdapter* adapter,
                    device::BluetoothDevice* device) override;
-  void DeviceRemoved(device::BluetoothAdapter* adapter,
-                     device::BluetoothDevice* device) override;
   void DeviceChanged(device::BluetoothAdapter* adapter,
+                     device::BluetoothDevice* device) override;
+  void DeviceRemoved(device::BluetoothAdapter* adapter,
                      device::BluetoothDevice* device) override;
 
  private:
@@ -49,6 +53,12 @@ class Adapter : public mojom::Adapter,
 
   void OnConnectError(const ConnectToDeviceCallback& callback,
                       device::BluetoothDevice::ConnectErrorCode error_code);
+
+  void OnStartDiscoverySession(
+      const StartDiscoverySessionCallback& callback,
+      std::unique_ptr<device::BluetoothDiscoverySession> session);
+
+  void OnDiscoverySessionError(const StartDiscoverySessionCallback& callback);
 
   // The current Bluetooth adapter.
   scoped_refptr<device::BluetoothAdapter> adapter_;

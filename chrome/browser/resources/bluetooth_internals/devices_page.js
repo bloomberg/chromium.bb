@@ -11,6 +11,18 @@ cr.define('devices_page', function() {
   /** @const */ var Page = cr.ui.pageManager.Page;
 
   /**
+   * Enum of scan status for the devices page.
+   * @enum {number}
+   */
+  var ScanStatus = {
+    OFF: 0,
+    STARTING: 1,
+    ON: 2,
+    STOPPING: 3,
+  };
+
+
+  /**
    * Page that contains a header and a DevicesView.
    * @constructor
    * @extends {cr.ui.pageManager.Page}
@@ -20,6 +32,10 @@ cr.define('devices_page', function() {
 
     this.deviceTable = new device_table.DeviceTable();
     this.pageDiv.appendChild(this.deviceTable);
+    this.scanBtn_ = this.pageDiv.querySelector('#scan-btn');
+    this.scanBtn_.addEventListener('click', function(event) {
+      this.pageDiv.dispatchEvent(new CustomEvent('scanpressed'));
+    }.bind(this));
   }
 
   DevicesPage.prototype = {
@@ -31,10 +47,32 @@ cr.define('devices_page', function() {
      */
     setDevices: function(devices) {
       this.deviceTable.setDevices(devices);
+    },
+
+    setScanStatus: function(status) {
+      switch (status) {
+        case ScanStatus.OFF:
+          this.scanBtn_.disabled = false;
+          this.scanBtn_.textContent = 'Start Scan';
+          break;
+        case ScanStatus.STARTING:
+          this.scanBtn_.disabled = true;
+          this.scanBtn_.textContent = 'Starting...';
+          break;
+        case ScanStatus.ON:
+          this.scanBtn_.disabled = false;
+          this.scanBtn_.textContent = 'Stop Scan';
+          break;
+        case ScanStatus.STOPPING:
+          this.scanBtn_.disabled = true;
+          this.scanBtn_.textContent = 'Stopping...';
+          break;
+      }
     }
   };
 
   return {
-    DevicesPage: DevicesPage
+    DevicesPage: DevicesPage,
+    ScanStatus: ScanStatus,
   };
 });

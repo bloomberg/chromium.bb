@@ -7,6 +7,21 @@
  *     chrome://bluetooth-internals/.
  */
 cr.define('adapter_broker', function() {
+  /** @typedef {interfaces.BluetoothAdapter.Adapter.ptrClass} */
+  var AdapterPtr;
+  /** @typedef {interfaces.BluetoothDevice.Device.ptrClass} */
+  var DevicePtr;
+  /** @typedef {interfaces.BluetoothAdapter.DiscoverySession.ptrClass} */
+  var DiscoverySessionPtr;
+
+  /**
+   * Enum of adapter property names. Used for adapterchanged events.
+   * @enum {string}
+   */
+  var AdapterProperty = {
+    DISCOVERING: 'discovering',
+  };
+
   /**
    * The proxy class of an adapter and router of adapter events.
    * Exposes an EventTarget interface that allows other object to subscribe to
@@ -15,7 +30,7 @@ cr.define('adapter_broker', function() {
    * handles and back when necessary.
    * @constructor
    * @extends {cr.EventTarget}
-   * @param {!interfaces.BluetoothAdapter.AdapterPtr} adapter
+   * @param {!AdapterPtr} adapter
    */
   var AdapterBroker = function(adapter) {
     this.adapter_ = adapter;
@@ -29,7 +44,7 @@ cr.define('adapter_broker', function() {
     /**
      * Creates a GATT connection to the device with |address|.
      * @param {string} address
-     * @return {!Promise<!interfaces.BluetoothDevice.DevicePtr>}
+     * @return {!Promise<!DevicePtr>}
      */
     connectToDevice: function(address) {
       return this.adapter_.connectToDevice(address).then(function(response) {
@@ -50,19 +65,6 @@ cr.define('adapter_broker', function() {
     },
 
     /**
-     * Sets client of Adapter service.
-     * @param {!interfaces.BluetoothAdapter.AdapterClient} adapterClient
-     */
-    setClient: function(adapterClient) {
-      adapterClient.binding = new interfaces.Bindings.Binding(
-          interfaces.BluetoothAdapter.AdapterClient,
-          adapterClient);
-
-      this.adapter_.setClient(
-          adapterClient.binding.createInterfacePtrAndBind());
-    },
-
-    /**
      * Gets an array of currently detectable devices from the Adapter service.
      * @return {!Array<!interfaces.BluetoothDevice.DeviceInfo>}
      */
@@ -76,7 +78,34 @@ cr.define('adapter_broker', function() {
      */
     getInfo: function() {
       return this.adapter_.getInfo();
-    }
+    },
+
+    /**
+     * Sets client of Adapter service.
+     * @param {!interfaces.BluetoothAdapter.AdapterClient} adapterClient
+     */
+    setClient: function(adapterClient) {
+      adapterClient.binding = new interfaces.Bindings.Binding(
+          interfaces.BluetoothAdapter.AdapterClient,
+          adapterClient);
+
+      this.adapter_.setClient(
+          adapterClient.binding.createInterfacePtrAndBind());
+    },
+
+    /**
+     * Requests the adapter to start a new discovery session.
+     * @return {!Promise<!DiscoverySessionPtr>}
+     */
+    startDiscoverySession: function() {
+      return this.adapter_.startDiscoverySession().then(function(response) {
+        if (!response.session.ptr.isBound()) {
+          throw new Error('Discovery session failed to start');
+        }
+
+        return response.session;
+      });
+    },
   };
 
   /**
@@ -93,11 +122,38 @@ cr.define('adapter_broker', function() {
 
   AdapterClient.prototype = {
     /**
+     * Fires adapterchanged event.
+     * @param {boolean} discovering
+     */
+    discoveringChanged: function(discovering) {
+      var event = new CustomEvent('adapterchanged', {
+        detail: {
+          property: AdapterProperty.DISCOVERING,
+          value: discovering,
+        }
+      });
+      this.adapterBroker_.dispatchEvent(event);
+    },
+
+    /**
      * Fires deviceadded event.
      * @param {!interfaces.BluetoothDevice.DeviceInfo} deviceInfo
      */
     deviceAdded: function(deviceInfo) {
       var event = new CustomEvent('deviceadded', {
+        detail: {
+          deviceInfo: deviceInfo
+        }
+      });
+      this.adapterBroker_.dispatchEvent(event);
+    },
+
+    /**
+     * Fires devicechanged event.
+     * @param {!interfaces.BluetoothDevice.DeviceInfo} deviceInfo
+     */
+    deviceChanged: function(deviceInfo) {
+      var event = new CustomEvent('devicechanged', {
         detail: {
           deviceInfo: deviceInfo
         }
@@ -117,19 +173,6 @@ cr.define('adapter_broker', function() {
       });
       this.adapterBroker_.dispatchEvent(event);
     },
-
-    /**
-     * Fires devicechanged event.
-     * @param {!interfaces.BluetoothDevice.DeviceInfo} deviceInfo
-     */
-    deviceChanged: function(deviceInfo) {
-      var event = new CustomEvent('devicechanged', {
-        detail: {
-          deviceInfo: deviceInfo
-        }
-      });
-      this.adapterBroker_.dispatchEvent(event);
-    }
   };
 
   var adapterBroker = null;
@@ -160,6 +203,7 @@ cr.define('adapter_broker', function() {
   }
 
   return {
+    AdapterProperty: AdapterProperty,
     getAdapterBroker: getAdapterBroker,
   };
 });

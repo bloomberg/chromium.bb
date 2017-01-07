@@ -29,6 +29,8 @@ source_set("mojo") {
     "adapter_factory.h",
     "device.cc",
     "device.h",
+    "discovery_session.cc",
+    "discovery_session.h",
   ]
 
   public_deps = [

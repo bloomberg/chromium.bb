@@ -50,6 +50,12 @@ cr.define('bluetooth_internals', function() {
   /** @type {devices_page.DevicesPage} */
   var devicesPage = null;
 
+  /** @type {interfaces.BluetoothAdapter.DiscoverySession.ptrClass} */
+  var discoverySession = null;
+
+  /** @type {boolean} */
+  var userRequestedScanStop = false;
+
   function handleInspect(event) {
     // TODO(crbug.com/663470): Move connection logic to DeviceDetailsView
     // when it's added in chrome://bluetooth-internals.
@@ -108,6 +114,25 @@ cr.define('bluetooth_internals', function() {
     });
   }
 
+  function updateStoppedDiscoverySession() {
+    devicesPage.setScanStatus(devices_page.ScanStatus.OFF);
+    discoverySession.ptr.reset();
+    discoverySession = null;
+  }
+
+  function setupAdapterSystem(response) {
+    console.log('adapter', response.info);
+
+    adapterBroker.addEventListener('adapterchanged', function(event) {
+      if (event.detail.property == adapter_broker.AdapterProperty.DISCOVERING &&
+          !event.detail.value && !userRequestedScanStop && discoverySession) {
+        updateStoppedDiscoverySession();
+        Snackbar.show(
+            'Discovery session ended unexpectedly', SnackbarType.WARNING);
+      }
+    });
+  }
+
   function setupDeviceSystem(response) {
     // Hook up device collection events.
     adapterBroker.addEventListener('deviceadded', function(event) {
@@ -124,6 +149,44 @@ cr.define('bluetooth_internals', function() {
 
     devicesPage.setDevices(devices);
     devicesPage.pageDiv.addEventListener('inspectpressed', handleInspect);
+
+    devicesPage.pageDiv.addEventListener('scanpressed', function(event) {
+      if (discoverySession && discoverySession.ptr.isBound()) {
+        userRequestedScanStop = true;
+        devicesPage.setScanStatus(devices_page.ScanStatus.STOPPING);
+
+        discoverySession.stop().then(function(response) {
+          if (response.success) {
+            updateStoppedDiscoverySession();
+            userRequestedScanStop = false;
+            return;
+          }
+
+          devicesPage.setScanStatus(devices_page.ScanStatus.ON);
+          Snackbar.show(
+              'Failed to stop discovery session', SnackbarType.ERROR);
+          userRequestedScanStop = false;
+        });
+
+        return;
+      }
+
+      devicesPage.setScanStatus(devices_page.ScanStatus.STARTING);
+      adapterBroker.startDiscoverySession().then(function(session) {
+        discoverySession = session;
+
+        discoverySession.ptr.setConnectionErrorHandler(function() {
+          updateStoppedDiscoverySession();
+          Snackbar.show('Discovery session ended', SnackbarType.WARNING);
+        });
+
+        devicesPage.setScanStatus(devices_page.ScanStatus.ON);
+      }).catch(function(error) {
+        devicesPage.setScanStatus(devices_page.ScanStatus.OFF);
+        Snackbar.show('Failed to start discovery session', SnackbarType.ERROR);
+        console.error(error);
+      });
+    });
   }
 
   function setupPages() {
@@ -154,7 +217,7 @@ cr.define('bluetooth_internals', function() {
     adapter_broker.getAdapterBroker()
       .then(function(broker) { adapterBroker = broker; })
       .then(function() { return adapterBroker.getInfo(); })
-      .then(function(response) { console.log('adapter', response.info); })
+      .then(setupAdapterSystem)
       .then(function() { return adapterBroker.getDevices(); })
       .then(setupDeviceSystem)
       .catch(function(error) {

@@ -39,10 +39,27 @@ struct AdapterInfo {
   bool discovering;
 };
 
-interface Adapter {
-  // Gets basic information about the adapter.
-  GetInfo() => (AdapterInfo info);
+interface DiscoverySession {
+  // Returns true if the session is active, false otherwise. If false, the
+  // adapter might still be discovering as there might still be other active
+  // sessions; this just means that this instance no longer has a say in
+  // whether or not discovery should continue. In this case, a new
+  // DiscoverySession should be started to make sure that device discovery
+  // continues.
+  IsActive() => (bool active);
 
+  // Requests this discovery session instance to stop. If this instance is
+  // active, the session will stop. After a successful invocation, the
+  // adapter may or may not stop device discovery, depending on whether or not
+  // other active discovery sessions are present. Users are highly encouraged
+  // to call this method to end a discovery session, instead of relying on
+  // disconnecting the message pipe, so that they can respond to the result.
+  // Returns true on success. Returns false if this session is inactive or an
+  // error occurs while stopping the session.
+  Stop() => (bool success);
+};
+
+interface Adapter {
   // Creates a GATT connection to the device with |address| and returns a
   // Device if the connection was succesful. The GATT connection is tied to the
   // the lifetime of the Device message pipe.
@@ -53,16 +70,23 @@ interface Adapter {
   // during a classic or low-energy scan.
   GetDevices() => (array<DeviceInfo> devices);
 
+  // Gets basic information about the adapter.
+  GetInfo() => (AdapterInfo info);
+
   // Sets the client that listens for the adapter's events.
   SetClient(AdapterClient client);
+
+  // Requests the adapter to start a new discovery session. Returns null if
+  // session not created successfully.
+  StartDiscoverySession() => (DiscoverySession? session);
 };
 
 interface AdapterClient {
+  // Called when the discovering state of the adapter changes.
+  DiscoveringChanged(bool discovering);
+
   // Called the first time a device is discovered.
   DeviceAdded(DeviceInfo device);
-
-  // Called after the device hasn't been seen for 3 minutes.
-  DeviceRemoved(DeviceInfo device);
 
   // Called when one of the following properties of a device changes:
   //   Address, appearance, Bluetooth class, Inquiry RSSI, Inquiry TX Power,
@@ -72,6 +96,9 @@ interface AdapterClient {
   // guaranteed on ChromeOS or Linux. Because the RSSI is always changing,
   // it's very likely this will be called for each advertising packet.
   DeviceChanged(DeviceInfo device);
+
+  // Called after the device hasn't been seen for 3 minutes.
+  DeviceRemoved(DeviceInfo device);
 };
 
 interface AdapterFactory {

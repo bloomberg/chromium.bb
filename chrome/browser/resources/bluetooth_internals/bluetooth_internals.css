@@ -5,6 +5,7 @@
 
 :root {
   --fade-duration: 225ms;
+  --header-height: 48px;
   --md-timing-function: cubic-bezier(.4, 0, .6, 1);
   --sidebar-width: 155px;
   --sidebar-neg-width: calc(var(--sidebar-width) * -1);
@@ -36,13 +37,26 @@ h1 {
   padding: 24px 16px;
 }
 
+#page-container .header-extras {
+  -webkit-margin-end: 16px;
+  -webkit-margin-start: var(--sidebar-width);
+  align-items: flex-end;
+  display: flex;
+  height: var(--header-height);
+  justify-content: flex-end;
+  left: 0;
+  position: fixed;
+  right: 0;
+  top: 0;
+}
+
 /* Page header */
 .page-header {
   align-items: center;
   background-color: white;
   border-bottom: 1px solid #eee;
   display: flex;
-  height: 48px;
+  height: var(--header-height);
   padding-top: 8px;
   position: sticky;
   top: 0;

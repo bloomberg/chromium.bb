@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="chrome://resources/css/chrome_shared.css">
   <link rel="stylesheet" href="bluetooth_internals.css">
 
+  <link rel="import" href="chrome://resources/html/action_link.html">
   <link rel="import" href="chrome://resources/html/cr/ui.html">
   <link rel="import" href="chrome://resources/html/cr/event_target.html">
   <link rel="import" href="chrome://resources/html/cr/ui/array_data_model.html">
@@ -16,7 +17,6 @@
   <link rel="import" href="chrome://resources/html/cr/ui/overlay.html">
   <link rel="import" href="chrome://resources/html/cr/ui/page_manager/page_manager.html">
   <link rel="import" href="chrome://resources/html/cr/ui/page_manager/page.html">
-  <link rel="import" href="chrome://resources/html/action_link.html">
   <link rel="import" href="chrome://resources/html/util.html">
 
   <script src="snackbar.js"></script>
@@ -35,7 +35,11 @@
       <button id="menu-btn" class="custom-appearance"></button>
       <h1 class="page-title"></h1>
     </header>
-    <section id="devices" hidden></section>
+    <section id="devices" hidden>
+      <div class="header-extras">
+        <button id="scan-btn">Start Scan</button>
+      </div>
+    </section>
   </div>
   <div id="snackbar-container"></div>
   <aside id="sidebar">
