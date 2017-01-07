@@ -315,9 +315,11 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
 
 // Updates the content offset of the tab strip view in order to keep the
 // selected tab view visible.
-// Content offset adjustement is only needed/performed in compact mode.
+// Content offset adjustement is only needed/performed in compact mode or
+// regular mode for newly opened tabs.
 // This method must be called with a valid |tabIndex|.
-- (void)updateContentOffsetForTabIndex:(NSUInteger)tabIndex;
+- (void)updateContentOffsetForTabIndex:(NSUInteger)tabIndex
+                              isNewTab:(BOOL)isNewTab;
 
 // Update the frame of the tab strip view (scrollview) frame, content inset and
 // toggle buttons states depending on the current layout mode.
@@ -639,7 +641,7 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
     [currentTab updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
   }
   [_tabModel setCurrentTab:tappedTab];
-  [self updateContentOffsetForTabIndex:index];
+  [self updateContentOffsetForTabIndex:index isNewTab:NO];
 }
 
 - (void)closeTab:(id)sender {
@@ -943,7 +945,7 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
 
   [self updateContentSizeAndRepositionViews];
   [self setNeedsLayoutWithAnimation];
-  [self updateContentOffsetForTabIndex:modelIndex];
+  [self updateContentOffsetForTabIndex:modelIndex isNewTab:YES];
 }
 
 // Observer method.
@@ -1250,8 +1252,38 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
   return IsCompactTablet() ? kMinTabWidthForCompactLayout : kMinTabWidth;
 }
 
-- (void)updateContentOffsetForTabIndex:(NSUInteger)tabIndex {
+- (void)updateContentOffsetForTabIndex:(NSUInteger)tabIndex
+                              isNewTab:(BOOL)isNewTab {
   DCHECK_NE(NSNotFound, static_cast<NSInteger>(tabIndex));
+
+  if (experimental_flags::IsTabStripAutoScrollNewTabsEnabled() && isNewTab) {
+    // The following code calculates the amount of scroll needed to make
+    // |tabIndex| visible in the "virtual" coordinate system, where root is x=0
+    // and it contains all the tabs laid out as if the tabstrip was infinitely
+    // long. The amount of scroll is calculated as a desired length that it is
+    // just large enough to contain all the tabs to the left of |tabIndex|, with
+    // the standard overlap.
+    NSUInteger numNonClosingTabsToLeft = 0;
+    NSUInteger i = 0;
+    for (TabView* tab in _tabArray.get()) {
+      if ([_closingTabs containsObject:tab])
+        ++i;
+
+      if (i == tabIndex)
+        break;
+
+      ++numNonClosingTabsToLeft;
+      ++i;
+    }
+
+    const CGFloat tabHeight = CGRectGetHeight([_tabStripView bounds]);
+    CGRect scrollRect =
+        CGRectMake(_currentTabWidth * numNonClosingTabsToLeft -
+                       ([self tabOverlap] * (numNonClosingTabsToLeft - 1)),
+                   0, _currentTabWidth, tabHeight);
+    [_tabStripView scrollRectToVisible:scrollRect animated:YES];
+    return;
+  }
 
   if (IsCompactTablet()) {
     if (tabIndex == [_tabArray count] - 1) {
@@ -1603,7 +1635,7 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
   [self updateContentSizeAndRepositionViews];
   NSUInteger selectedModelIndex = [_tabModel indexOfTab:[_tabModel currentTab]];
   if (selectedModelIndex != NSNotFound) {
-    [self updateContentOffsetForTabIndex:selectedModelIndex];
+    [self updateContentOffsetForTabIndex:selectedModelIndex isNewTab:NO];
   }
 }
 

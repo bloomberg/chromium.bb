@@ -40,6 +40,22 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>Title</key>
+			<string>iPad Tab Strip</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>Disable Tab Strip Auto Scroll New Tabs</string>
+			<key>Key</key>
+			<string>TabStripAutoScrollNewTabsDisabled</string>
+			<key>DefaultValue</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+			<key>Title</key>
 			<string>iPad Tab Switcher</string>
 		</dict>
 		<dict>

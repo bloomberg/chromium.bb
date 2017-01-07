@@ -98,6 +98,11 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
                                     BUILDFLAG(GOOGLE_TEST_OAUTH_CLIENT_SECRET));
   }
 
+  // Populate command line flag for the tab strip auto scroll new tabs
+  // experiment from the configuration plist.
+  if ([defaults boolForKey:@"TabStripAutoScrollNewTabsDisabled"])
+    command_line->AppendSwitch(switches::kDisableTabStripAutoScrollNewTabs);
+
   // Populate command line flag for the Tab Switcher experiment from the
   // configuration plist.
   NSString* enableTabSwitcher = [defaults stringForKey:@"EnableTabSwitcher"];

@@ -49,6 +49,10 @@ const char kDisableQRScanner[] = "disable-qr-scanner";
 // Disables the Spotlight actions.
 const char kDisableSpotlightActions[] = "disable-spotlight-actions";
 
+// Disables the tab strip auto scroll new tabs.
+const char kDisableTabStripAutoScrollNewTabs[] =
+    "disable-tab-strip-autoscroll-new-tabs";
+
 // Disables the tab switcher.
 const char kDisableTabSwitcher[] = "disable-tab-switcher";
 

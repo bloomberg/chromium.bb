@@ -273,6 +273,11 @@ bool IsStartupCrashEnabled() {
   return [[NSUserDefaults standardUserDefaults] boolForKey:kEnableStartupCrash];
 }
 
+bool IsTabStripAutoScrollNewTabsEnabled() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  return !command_line->HasSwitch(switches::kDisableTabStripAutoScrollNewTabs);
+}
+
 bool IsTabSwitcherEnabled() {
   // Check if the experimental flag is forced off.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
