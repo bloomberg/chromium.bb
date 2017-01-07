@@ -872,7 +872,7 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
     output = output_api.PresubmitNotifyResult
 
   affected_files = set([f.LocalPath() for f in
-      input_api.change.AffectedFiles(file_filter=source_file_filter)])
+      input_api.AffectedFiles(file_filter=source_file_filter)])
 
   owners_db = input_api.owners_db
   owner_email, reviewers = GetCodereviewOwnerAndReviewers(
@@ -1090,7 +1090,7 @@ def PanProjectChecks(input_api, output_api,
   if owners_check:
     snapshot("checking owners")
     results.extend(input_api.canned_checks.CheckOwners(
-        input_api, output_api, source_file_filter=None))
+        input_api, output_api, source_file_filter=sources))
 
   snapshot("checking long lines")
   results.extend(input_api.canned_checks.CheckLongLines(
