@@ -1353,7 +1353,7 @@ void WebMediaPlayerImpl::OnHidden() {
   if (watch_time_reporter_)
     watch_time_reporter_->OnHidden();
 
-  if (IsBackgroundVideoTrackOptimizationEnabled()) {
+  if (!IsStreaming() && IsBackgroundVideoTrackOptimizationEnabled()) {
     if (ShouldPauseWhenHidden()) {
       // OnPause() will set |paused_when_hidden_| to false and call
       // UpdatePlayState(), so set the flag to true after and then return.
@@ -1382,7 +1382,7 @@ void WebMediaPlayerImpl::OnShown() {
       base::Bind(&VideoFrameCompositor::SetForegroundTime,
                  base::Unretained(compositor_), base::TimeTicks::Now()));
 
-  if (IsBackgroundVideoTrackOptimizationEnabled()) {
+  if (!IsStreaming() && IsBackgroundVideoTrackOptimizationEnabled()) {
     if (paused_when_hidden_) {
       paused_when_hidden_ = false;
       OnPlay();  // Calls UpdatePlayState() so return afterwards.
@@ -1683,7 +1683,7 @@ void WebMediaPlayerImpl::StartPipeline() {
   // TODO(sandersd): FileSystem objects may also be non-static, but due to our
   // caching layer such situations are broken already. http://crbug.com/593159
   bool is_static = !chunk_demuxer_;
-  bool is_streaming = data_source_ && data_source_->IsStreaming();
+  bool is_streaming = IsStreaming();
   UMA_HISTOGRAM_BOOLEAN("Media.IsStreaming", is_streaming);
 
   // ... and we're ready to go!
@@ -1772,7 +1772,7 @@ void WebMediaPlayerImpl::UpdatePlayState() {
   bool is_streaming = false;
 #else
   bool is_remote = false;
-  bool is_streaming = data_source_ && data_source_->IsStreaming();
+  bool is_streaming = IsStreaming();
 #endif
 
   bool is_suspended = pipeline_controller_.IsSuspended();
@@ -2063,6 +2063,10 @@ bool WebMediaPlayerImpl::IsHidden() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   return delegate_ && delegate_->IsHidden();
+}
+
+bool WebMediaPlayerImpl::IsStreaming() const {
+  return data_source_ && data_source_->IsStreaming();
 }
 
 bool WebMediaPlayerImpl::DoesOverlaySupportMetadata() const {
