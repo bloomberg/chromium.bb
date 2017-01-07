@@ -115,6 +115,15 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_DOWNLOADS_DIRECTORY_LABEL" desc="Downloads local directory label.">
     Downloads
   </message>
+  <message name="IDS_FILE_BROWSER_MEDIA_VIEW_IMAGES_ROOT_LABEL" desc="A label for the 'Images' root of media views.">
+    Images
+  </message>
+  <message name="IDS_FILE_BROWSER_MEDIA_VIEW_VIDEOS_ROOT_LABEL" desc="A label for the 'Videos' root of media views.">
+    Videos
+  </message>
+  <message name="IDS_FILE_BROWSER_MEDIA_VIEW_AUDIO_ROOT_LABEL" desc="A label for the 'Audio' root of media views.">
+    Audio
+  </message>
   <message name="IDS_FILE_BROWSER_DOWNLOADS_DIRECTORY_WARNING" desc="Warning displayed to user when viewing downloads folder.">
     <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Caution:<ph name="END_BOLD">&lt;/strong&gt;</ph>  These files are temporary and may be automatically deleted to free up disk space.  <ph name="BEGIN_LINK">&lt;a href="javascript://"&gt;</ph>Learn More<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
