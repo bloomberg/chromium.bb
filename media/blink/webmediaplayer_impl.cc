@@ -1312,14 +1312,20 @@ void WebMediaPlayerImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {
   if (overlay_enabled_ && surface_manager_)
     surface_manager_->NaturalSizeChanged(rotated_size);
 
-  if (pipeline_metadata_.natural_size.IsEmpty()) {
+  gfx::Size old_size = pipeline_metadata_.natural_size;
+  pipeline_metadata_.natural_size = rotated_size;
+  if (old_size.IsEmpty()) {
     // WatchTimeReporter doesn't report metrics for empty videos. Re-create
     // |watch_time_reporter_| if we didn't originally know the video size.
     CreateWatchTimeReporter();
   }
-
-  pipeline_metadata_.natural_size = rotated_size;
   client_->sizeChanged();
+
+  if (observer_) {
+    PipelineMetadata metadata = pipeline_metadata_;
+    metadata.natural_size = size;
+    observer_->OnMetadataChanged(metadata);
+  }
 }
 
 void WebMediaPlayerImpl::OnVideoOpacityChange(bool opaque) {
