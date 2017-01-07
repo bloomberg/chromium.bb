@@ -126,6 +126,8 @@ void ProfileInfoHandler::HandleGetProfileInfo(const base::ListValue* args) {
 
 #if !defined(OS_CHROMEOS)
 void ProfileInfoHandler::HandleGetProfileStats(const base::ListValue* args) {
+  AllowJavascript();
+
   // Because there is open browser window for the current profile, statistics
   // from the ProfileAttributesStorage may not be up-to-date or may be missing
   // (e.g., |item.success| is false). Therefore, query the actual statistics.

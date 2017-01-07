@@ -62,6 +62,7 @@ cr.define('settings_people_page', function() {
       this.methodCalled('getSyncStatus');
       return Promise.resolve({
         signedIn: true,
+        signedInUsername: 'fakeUsername'
       });
     },
 
@@ -141,6 +142,7 @@ cr.define('settings_people_page', function() {
     suite('SyncStatusTests', function() {
       var peoplePage = null;
       var browserProxy = null;
+      var profileInfoBrowserProxy = null;
 
       suiteSetup(function() {
         // Force easy unlock off. Those have their own ChromeOS-only tests.
@@ -152,6 +154,10 @@ cr.define('settings_people_page', function() {
       setup(function() {
         browserProxy = new TestSyncBrowserProxy();
         settings.SyncBrowserProxyImpl.instance_ = browserProxy;
+
+        profileInfoBrowserProxy = new TestProfileInfoBrowserProxy();
+        settings.ProfileInfoBrowserProxyImpl.instance_ =
+            profileInfoBrowserProxy;
 
         PolymerTest.clearBody();
         peoplePage = document.createElement('settings-people-page');
@@ -224,6 +230,70 @@ cr.define('settings_people_page', function() {
           return browserProxy.whenCalled('signOut');
         }).then(function(deleteProfile) {
           assertTrue(deleteProfile);
+        });
+      });
+
+      test('getProfileStatsCount', function() {
+        return profileInfoBrowserProxy.whenCalled('getProfileStatsCount')
+            .then(function() {
+          Polymer.dom.flush();
+
+          // Open the disconnect dialog.
+          disconnectButton = peoplePage.$$('#disconnectButton');
+          assertTrue(!!disconnectButton);
+          MockInteractions.tap(disconnectButton);
+          Polymer.dom.flush();
+
+          assertTrue(peoplePage.$.disconnectDialog.open);
+
+          // Assert the warning message is as expected.
+          var warningMessage = peoplePage.$$('.delete-profile-warning');
+
+          cr.webUIListenerCallback('profile-stats-count-ready', 0);
+          assertEquals(
+              loadTimeData.getStringF('deleteProfileWarningWithoutCounts',
+                                      'fakeUsername'),
+              warningMessage.textContent.trim());
+
+          cr.webUIListenerCallback('profile-stats-count-ready', 1);
+          assertEquals(
+              loadTimeData.getStringF('deleteProfileWarningWithCountsSingular',
+                                      'fakeUsername'),
+              warningMessage.textContent.trim());
+
+          cr.webUIListenerCallback('profile-stats-count-ready', 2);
+          assertEquals(
+              loadTimeData.getStringF('deleteProfileWarningWithCountsPlural', 2,
+                                      'fakeUsername'),
+              warningMessage.textContent.trim());
+
+          // Close the disconnect dialog.
+          MockInteractions.tap(peoplePage.$.disconnectConfirm);
+          return new Promise(function(resolve) {
+            listenOnce(window, 'popstate', resolve);
+          });
+        });
+      });
+
+      test('NavigateDirectlyToSignOutURL', function() {
+        // Navigate to chrome://md-settings/signOut
+        settings.navigateTo(settings.Route.SIGN_OUT);
+        Polymer.dom.flush();
+
+        assertTrue(peoplePage.$.disconnectDialog.open);
+
+        return profileInfoBrowserProxy.whenCalled('getProfileStatsCount')
+            .then(function() {
+          // 'getProfileStatsCount' can be the first message sent to the handler
+          // if the user navigates directly to chrome://md-settings/signOut. if
+          // so, it should not cause a crash.
+          new settings.ProfileInfoBrowserProxyImpl().getProfileStatsCount();
+
+          // Close the disconnect dialog.
+          MockInteractions.tap(peoplePage.$.disconnectConfirm);
+          return new Promise(function(resolve) {
+            listenOnce(window, 'popstate', resolve);
+          });
         });
       });
 
