@@ -25,7 +25,6 @@
 #include "media/capture/video/video_capture_buffer_pool.h"
 #include "media/capture/video/video_capture_buffer_tracker_factory_impl.h"
 #include "media/capture/video/video_capture_device_client.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 
 #if !defined(OS_ANDROID)
 #include "content/browser/compositor/image_transport_factory.h"
@@ -96,11 +95,13 @@ VideoCaptureController::BufferState::BufferState(
     int buffer_id,
     int frame_feedback_id,
     media::VideoFrameConsumerFeedbackObserver* consumer_feedback_observer,
-    media::FrameBufferPool* frame_buffer_pool)
+    media::FrameBufferPool* frame_buffer_pool,
+    scoped_refptr<media::VideoFrame> frame)
     : buffer_id_(buffer_id),
       frame_feedback_id_(frame_feedback_id),
       consumer_feedback_observer_(consumer_feedback_observer),
       frame_buffer_pool_(frame_buffer_pool),
+      frame_(std::move(frame)),
       max_consumer_utilization_(
           media::VideoFrameConsumerFeedbackObserver::kNoUtilizationRecorded),
       consumer_hold_count_(0) {}
@@ -368,19 +369,20 @@ VideoCaptureController::GetVideoCaptureFormat() const {
 }
 
 void VideoCaptureController::OnIncomingCapturedVideoFrame(
-    media::VideoCaptureDevice::Client::Buffer buffer,
+    std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
     scoped_refptr<VideoFrame> frame) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  const int buffer_id = buffer.id();
+  DCHECK(frame_buffer_pool_);
+  const int buffer_id = buffer->id();
   DCHECK_NE(buffer_id, media::VideoCaptureBufferPool::kInvalidId);
 
   // Insert if not exists.
   const auto it =
       buffer_id_to_state_map_
           .insert(std::make_pair(
-              buffer_id, BufferState(buffer_id, buffer.frame_feedback_id(),
+              buffer_id, BufferState(buffer_id, buffer->frame_feedback_id(),
                                      consumer_feedback_observer_.get(),
-                                     frame_buffer_pool_.get())))
+                                     frame_buffer_pool_.get(), frame)))
           .first;
   BufferState& buffer_state = it->second;
   DCHECK(buffer_state.HasZeroConsumerHoldCount());
@@ -400,12 +402,11 @@ void VideoCaptureController::OnIncomingCapturedVideoFrame(
         << media::VideoPixelFormatToString(frame->format());
 
     // Sanity-checks to confirm |frame| is actually being backed by |buffer|.
-    auto buffer_access =
-        buffer.handle_provider()->GetHandleForInProcessAccess();
     DCHECK(frame->storage_type() == media::VideoFrame::STORAGE_SHMEM);
-    DCHECK(frame->data(media::VideoFrame::kYPlane) >= buffer_access->data() &&
+    DCHECK(frame->data(media::VideoFrame::kYPlane) >= buffer->data(0) &&
            (frame->data(media::VideoFrame::kYPlane) <
-            (buffer_access->data() + buffer_access->mapped_size())))
+            (reinterpret_cast<const uint8_t*>(buffer->data(0)) +
+             buffer->mapped_size())))
         << "VideoFrame does not appear to be backed by Buffer";
 
     for (const auto& client : controller_clients_) {
@@ -421,13 +422,9 @@ void VideoCaptureController::OnIncomingCapturedVideoFrame(
         client->known_buffers.push_back(buffer_id);
         is_new_buffer = true;
       }
-      if (is_new_buffer) {
-        mojo::ScopedSharedBufferHandle handle =
-            buffer.handle_provider()->GetHandleForInterProcessTransit();
-        client->event_handler->OnBufferCreated(
-            client->controller_id, std::move(handle),
-            buffer_access->mapped_size(), buffer_id);
-      }
+      if (is_new_buffer)
+        DoNewBufferOnIOThread(client.get(), buffer.get(), frame);
+
       client->event_handler->OnBufferReady(client->controller_id, buffer_id,
                                            frame);
 
@@ -478,6 +475,7 @@ void VideoCaptureController::OnLog(const std::string& message) {
 
 void VideoCaptureController::OnBufferDestroyed(int buffer_id_to_drop) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(frame_buffer_pool_);
 
   for (const auto& client : controller_clients_) {
     if (client->session_closed)
@@ -494,6 +492,21 @@ void VideoCaptureController::OnBufferDestroyed(int buffer_id_to_drop) {
   }
 
   buffer_id_to_state_map_.erase(buffer_id_to_drop);
+}
+
+void VideoCaptureController::DoNewBufferOnIOThread(
+    ControllerClient* client,
+    media::VideoCaptureDevice::Client::Buffer* buffer,
+    const scoped_refptr<media::VideoFrame>& frame) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_EQ(media::VideoFrame::STORAGE_SHMEM, frame->storage_type());
+
+  const int buffer_id = buffer->id();
+  mojo::ScopedSharedBufferHandle handle =
+      frame_buffer_pool_->GetHandleForTransit(buffer_id);
+  client->event_handler->OnBufferCreated(client->controller_id,
+                                         std::move(handle),
+                                         buffer->mapped_size(), buffer_id);
 }
 
 VideoCaptureController::ControllerClient* VideoCaptureController::FindClient(

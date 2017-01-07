@@ -35,9 +35,8 @@ class CAPTURE_EXPORT VideoCaptureBufferPoolImpl
       int count);
 
   // VideoCaptureBufferPool implementation.
-  mojo::ScopedSharedBufferHandle GetHandleForInterProcessTransit(
-      int buffer_id) override;
-  std::unique_ptr<VideoCaptureBufferHandle> GetHandleForInProcessAccess(
+  mojo::ScopedSharedBufferHandle GetHandleForTransit(int buffer_id) override;
+  std::unique_ptr<VideoCaptureBufferHandle> GetBufferHandle(
       int buffer_id) override;
   int ReserveForProducer(const gfx::Size& dimensions,
                          media::VideoPixelFormat format,

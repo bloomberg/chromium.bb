@@ -35,38 +35,39 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
   MOCK_CONST_METHOD0(GetBufferPoolUtilization, double(void));
 
   // Trampoline methods to workaround GMOCK problems with std::unique_ptr<>.
-  Buffer ReserveOutputBuffer(const gfx::Size& dimensions,
-                             media::VideoPixelFormat format,
-                             media::VideoPixelStorage storage,
-                             int frame_feedback_id) override {
+  std::unique_ptr<Buffer> ReserveOutputBuffer(const gfx::Size& dimensions,
+                                              media::VideoPixelFormat format,
+                                              media::VideoPixelStorage storage,
+                                              int frame_feedback_id) override {
     EXPECT_EQ(media::PIXEL_FORMAT_I420, format);
     EXPECT_EQ(media::PIXEL_STORAGE_CPU, storage);
     DoReserveOutputBuffer();
-    return Buffer();
+    return std::unique_ptr<Buffer>();
   }
-  void OnIncomingCapturedBuffer(Buffer buffer,
+  void OnIncomingCapturedBuffer(std::unique_ptr<Buffer> buffer,
                                 const media::VideoCaptureFormat& frame_format,
                                 base::TimeTicks reference_time,
                                 base::TimeDelta timestamp) override {
     DoOnIncomingCapturedBuffer();
   }
   void OnIncomingCapturedBufferExt(
-      Buffer buffer,
-      const media::VideoCaptureFormat& format,
-      base::TimeTicks reference_time,
-      base::TimeDelta timestamp,
-      gfx::Rect visible_rect,
-      const media::VideoFrameMetadata& additional_metadata) override {
+      std::unique_ptr<Buffer> buffer,
+        const media::VideoCaptureFormat& format,
+        base::TimeTicks reference_time,
+        base::TimeDelta timestamp,
+        gfx::Rect visible_rect,
+        const media::VideoFrameMetadata& additional_metadata) override {
     DoOnIncomingCapturedVideoFrame();
   }
-  Buffer ResurrectLastOutputBuffer(const gfx::Size& dimensions,
-                                   media::VideoPixelFormat format,
-                                   media::VideoPixelStorage storage,
-                                   int frame_feedback_id) override {
+  std::unique_ptr<Buffer> ResurrectLastOutputBuffer(
+      const gfx::Size& dimensions,
+      media::VideoPixelFormat format,
+      media::VideoPixelStorage storage,
+      int frame_feedback_id) override {
     EXPECT_EQ(media::PIXEL_FORMAT_I420, format);
     EXPECT_EQ(media::PIXEL_STORAGE_CPU, storage);
     DoResurrectLastOutputBuffer();
-    return Buffer();
+    return std::unique_ptr<Buffer>();
   }
 };
 

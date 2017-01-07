@@ -20,7 +20,6 @@
 #include "content/public/common/content_switches.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/ipc/client/gpu_jpeg_decode_accelerator_host.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace content {
 
@@ -82,7 +81,7 @@ void VideoCaptureGpuJpegDecoder::DecodeCapturedData(
     const media::VideoCaptureFormat& frame_format,
     base::TimeTicks reference_time,
     base::TimeDelta timestamp,
-    media::VideoCaptureDevice::Client::Buffer out_buffer) {
+    std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> out_buffer) {
   DCHECK(CalledOnValidThread());
   DCHECK(decoder_);
 
@@ -122,30 +121,20 @@ void VideoCaptureGpuJpegDecoder::DecodeCapturedData(
   // Mask against 30 bits, to avoid (undefined) wraparound on signed integer.
   next_bitstream_buffer_id_ = (next_bitstream_buffer_id_ + 1) & 0x3FFFFFFF;
 
-  // The APIs of |decoder_| and |decode_done_cb_| require us to wrap the
-  // |out_buffer| in a VideoFrame.
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   const gfx::Size dimensions = frame_format.frame_size;
-  std::unique_ptr<media::VideoCaptureBufferHandle> out_buffer_access =
-      out_buffer.handle_provider()->GetHandleForInProcessAccess();
-  base::SharedMemoryHandle memory_handle;
-  size_t memory_size = 0;
-  bool read_only_flag = false;
-  const MojoResult result = mojo::UnwrapSharedMemoryHandle(
-      out_buffer.handle_provider()->GetHandleForInterProcessTransit(),
-      &memory_handle, &memory_size, &read_only_flag);
-  DCHECK_EQ(MOJO_RESULT_OK, result);
-  DCHECK_GT(memory_size, 0u);
+  base::SharedMemoryHandle out_handle = out_buffer->AsPlatformFile();
   scoped_refptr<media::VideoFrame> out_frame =
       media::VideoFrame::WrapExternalSharedMemory(
-          media::PIXEL_FORMAT_I420,          // format
-          dimensions,                        // coded_size
-          gfx::Rect(dimensions),             // visible_rect
-          dimensions,                        // natural_size
-          out_buffer_access->data(),         // data
-          out_buffer_access->mapped_size(),  // data_size
-          std::move(memory_handle),          // handle
-          0,                                 // shared_memory_offset
-          timestamp);                        // timestamp
+          media::PIXEL_FORMAT_I420,                   // format
+          dimensions,                                 // coded_size
+          gfx::Rect(dimensions),                      // visible_rect
+          dimensions,                                 // natural_size
+          static_cast<uint8_t*>(out_buffer->data()),  // data
+          out_buffer->mapped_size(),                  // data_size
+          out_handle,                                 // handle
+          0,                                          // shared_memory_offset
+          timestamp);                                 // timestamp
   if (!out_frame) {
     base::AutoLock lock(lock_);
     decoder_status_ = FAILED;
@@ -164,6 +153,9 @@ void VideoCaptureGpuJpegDecoder::DecodeCapturedData(
         base::Bind(decode_done_cb_, base::Passed(&out_buffer), out_frame);
   }
   decoder_->Decode(in_buffer, std::move(out_frame));
+#else
+  NOTREACHED();
+#endif
 }
 
 void VideoCaptureGpuJpegDecoder::VideoFrameReady(int32_t bitstream_buffer_id) {

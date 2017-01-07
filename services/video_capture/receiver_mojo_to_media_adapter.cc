@@ -16,9 +16,12 @@ ReceiverMojoToMediaAdapter::ReceiverMojoToMediaAdapter(
 ReceiverMojoToMediaAdapter::~ReceiverMojoToMediaAdapter() = default;
 
 void ReceiverMojoToMediaAdapter::OnIncomingCapturedVideoFrame(
-    media::VideoCaptureDevice::Client::Buffer buffer,
+    std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
     scoped_refptr<media::VideoFrame> frame) {
-  NOTIMPLEMENTED();
+  // O: |frame| should already be backed by a MojoSharedBufferVideoFrame
+  //    assuming we have used the correct buffer factory with the pool.
+  auto video_frame_ptr = media::mojom::VideoFrame::From(std::move(frame));
+  receiver_->OnIncomingCapturedVideoFrame(std::move(video_frame_ptr));
 }
 
 void ReceiverMojoToMediaAdapter::OnError() {

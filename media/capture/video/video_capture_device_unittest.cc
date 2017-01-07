@@ -121,22 +121,22 @@ class MockVideoCaptureClient : public VideoCaptureDevice::Client {
   }
 
   // Trampoline methods to workaround GMOCK problems with std::unique_ptr<>.
-  Buffer ReserveOutputBuffer(const gfx::Size& dimensions,
-                             media::VideoPixelFormat format,
-                             media::VideoPixelStorage storage,
-                             int frame_feedback_id) override {
+  std::unique_ptr<Buffer> ReserveOutputBuffer(const gfx::Size& dimensions,
+                                              media::VideoPixelFormat format,
+                                              media::VideoPixelStorage storage,
+                                              int frame_feedback_id) override {
     DoReserveOutputBuffer();
     NOTREACHED() << "This should never be called";
-    return Buffer();
+    return std::unique_ptr<Buffer>();
   }
-  void OnIncomingCapturedBuffer(Buffer buffer,
+  void OnIncomingCapturedBuffer(std::unique_ptr<Buffer> buffer,
                                 const VideoCaptureFormat& format,
                                 base::TimeTicks reference_time,
                                 base::TimeDelta timestamp) override {
     DoOnIncomingCapturedBuffer();
   }
   void OnIncomingCapturedBufferExt(
-      Buffer buffer,
+      std::unique_ptr<Buffer> buffer,
       const VideoCaptureFormat& format,
       base::TimeTicks reference_time,
       base::TimeDelta timestamp,
@@ -144,13 +144,14 @@ class MockVideoCaptureClient : public VideoCaptureDevice::Client {
       const VideoFrameMetadata& additional_metadata) override {
     DoOnIncomingCapturedVideoFrame();
   }
-  Buffer ResurrectLastOutputBuffer(const gfx::Size& dimensions,
-                                   media::VideoPixelFormat format,
-                                   media::VideoPixelStorage storage,
-                                   int frame_feedback_id) {
+  std::unique_ptr<Buffer> ResurrectLastOutputBuffer(
+      const gfx::Size& dimensions,
+      media::VideoPixelFormat format,
+      media::VideoPixelStorage storage,
+      int frame_feedback_id) {
     DoResurrectLastOutputBuffer();
     NOTREACHED() << "This should never be called";
-    return Buffer();
+    return std::unique_ptr<Buffer>();
   }
 
  private:

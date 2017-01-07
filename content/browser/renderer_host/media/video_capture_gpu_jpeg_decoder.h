@@ -55,7 +55,8 @@ class CONTENT_EXPORT VideoCaptureGpuJpegDecoder
       const media::VideoCaptureFormat& frame_format,
       base::TimeTicks reference_time,
       base::TimeDelta timestamp,
-      media::VideoCaptureDevice::Client::Buffer out_buffer) override;
+      std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> out_buffer)
+      override;
 
   // JpegDecodeAccelerator::Client implementation.
   // These will be called on IO thread.

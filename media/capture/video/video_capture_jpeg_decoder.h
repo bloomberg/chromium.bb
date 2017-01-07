@@ -19,9 +19,9 @@ class CAPTURE_EXPORT VideoCaptureJpegDecoder {
                    // decode error.
   };
 
-  using DecodeDoneCB =
-      base::Callback<void(media::VideoCaptureDevice::Client::Buffer,
-                          scoped_refptr<media::VideoFrame>)>;
+  using DecodeDoneCB = base::Callback<void(
+      std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>,
+      scoped_refptr<media::VideoFrame>)>;
 
   virtual ~VideoCaptureJpegDecoder() {}
 
@@ -38,7 +38,8 @@ class CAPTURE_EXPORT VideoCaptureJpegDecoder {
       const media::VideoCaptureFormat& frame_format,
       base::TimeTicks reference_time,
       base::TimeDelta timestamp,
-      media::VideoCaptureDevice::Client::Buffer out_buffer) = 0;
+      std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>
+          out_buffer) = 0;
 };
 
 }  // namespace media

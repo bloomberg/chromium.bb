@@ -37,7 +37,6 @@
 #include "media/base/yuv_convert.h"
 #include "media/capture/video/video_capture_buffer_pool_impl.h"
 #include "media/capture/video/video_capture_buffer_tracker_factory_impl.h"
-#include "media/capture/video/video_capture_device_client.h"
 #include "media/capture/video_capture_types.h"
 #include "skia/ext/platform_canvas.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -244,25 +243,27 @@ class StubClient : public media::VideoCaptureDevice::Client {
 
   MOCK_METHOD0(DoOnIncomingCapturedBuffer, void(void));
 
-  media::VideoCaptureDevice::Client::Buffer ReserveOutputBuffer(
-      const gfx::Size& dimensions,
-      media::VideoPixelFormat format,
-      media::VideoPixelStorage storage,
-      int frame_feedback_id) override {
+  std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>
+  ReserveOutputBuffer(const gfx::Size& dimensions,
+                      media::VideoPixelFormat format,
+                      media::VideoPixelStorage storage,
+                      int frame_feedback_id) override {
     CHECK_EQ(format, media::PIXEL_FORMAT_I420);
     int buffer_id_to_drop =
         media::VideoCaptureBufferPool::kInvalidId;  // Ignored.
     const int buffer_id = buffer_pool_->ReserveForProducer(
         dimensions, format, storage, frame_feedback_id, &buffer_id_to_drop);
     if (buffer_id == media::VideoCaptureBufferPool::kInvalidId)
-      return media::VideoCaptureDevice::Client::Buffer();
+      return NULL;
 
-    return media::VideoCaptureDeviceClient::MakeBufferStruct(
-        buffer_pool_, buffer_id, frame_feedback_id);
+    return std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>(
+        new AutoReleaseBuffer(buffer_pool_,
+                              buffer_pool_->GetBufferHandle(buffer_id),
+                              buffer_id, frame_feedback_id));
   }
 
   // Trampoline method to workaround GMOCK problems with std::unique_ptr<>.
-  void OnIncomingCapturedBuffer(Buffer buffer,
+  void OnIncomingCapturedBuffer(std::unique_ptr<Buffer> buffer,
                                 const media::VideoCaptureFormat& format,
                                 base::TimeTicks reference_time,
                                 base::TimeDelta timestamp) override {
@@ -270,7 +271,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
   }
 
   void OnIncomingCapturedBufferExt(
-      media::VideoCaptureDevice::Client::Buffer buffer,
+      std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
       const media::VideoCaptureFormat& format,
       base::TimeTicks reference_time,
       base::TimeDelta timestamp,
@@ -284,12 +285,11 @@ class StubClient : public media::VideoCaptureDevice::Client {
     // analysis is too slow, the backlog of frames will grow without bound and
     // trouble erupts. http://crbug.com/174519
     using media::VideoFrame;
-    auto buffer_access =
-        buffer.handle_provider()->GetHandleForInProcessAccess();
     auto frame = VideoFrame::WrapExternalSharedMemory(
         media::PIXEL_FORMAT_I420, format.frame_size, visible_rect,
-        format.frame_size, buffer_access->data(), buffer_access->mapped_size(),
-        base::SharedMemory::NULLHandle(), 0u, base::TimeDelta());
+        format.frame_size, static_cast<uint8_t*>(buffer->data()),
+        buffer->mapped_size(), base::SharedMemory::NULLHandle(), 0u,
+        base::TimeDelta());
     const gfx::Point center = visible_rect.CenterPoint();
     const int center_offset_y =
         (frame->stride(VideoFrame::kYPlane) * center.y()) + center.x();
@@ -303,18 +303,20 @@ class StubClient : public media::VideoCaptureDevice::Client {
         frame->visible_rect().size());
   }
 
-  media::VideoCaptureDevice::Client::Buffer ResurrectLastOutputBuffer(
-      const gfx::Size& dimensions,
-      media::VideoPixelFormat format,
-      media::VideoPixelStorage storage,
-      int frame_feedback_id) override {
+  std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>
+  ResurrectLastOutputBuffer(const gfx::Size& dimensions,
+                            media::VideoPixelFormat format,
+                            media::VideoPixelStorage storage,
+                            int frame_feedback_id) override {
     CHECK_EQ(format, media::PIXEL_FORMAT_I420);
     const int buffer_id =
         buffer_pool_->ResurrectLastForProducer(dimensions, format, storage);
     if (buffer_id == media::VideoCaptureBufferPool::kInvalidId)
-      return media::VideoCaptureDevice::Client::Buffer();
-    return media::VideoCaptureDeviceClient::MakeBufferStruct(
-        buffer_pool_, buffer_id, frame_feedback_id);
+      return nullptr;
+    return std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>(
+        new AutoReleaseBuffer(buffer_pool_,
+                              buffer_pool_->GetBufferHandle(buffer_id),
+                              buffer_id, frame_feedback_id));
   }
 
   void OnError(const tracked_objects::Location& from_here,
@@ -325,6 +327,49 @@ class StubClient : public media::VideoCaptureDevice::Client {
   double GetBufferPoolUtilization() const override { return 0.0; }
 
  private:
+  class AutoReleaseBuffer : public media::VideoCaptureDevice::Client::Buffer {
+   public:
+    AutoReleaseBuffer(
+        const scoped_refptr<media::VideoCaptureBufferPool>& pool,
+        std::unique_ptr<media::VideoCaptureBufferHandle> buffer_handle,
+        int buffer_id,
+        int frame_feedback_id)
+        : id_(buffer_id),
+          frame_feedback_id_(frame_feedback_id),
+          pool_(pool),
+          buffer_handle_(std::move(buffer_handle)) {
+      DCHECK(pool_);
+    }
+    int id() const override { return id_; }
+    int frame_feedback_id() const override { return frame_feedback_id_; }
+    gfx::Size dimensions() const override {
+      return buffer_handle_->dimensions();
+    }
+    size_t mapped_size() const override {
+      return buffer_handle_->mapped_size();
+    }
+    void* data(int plane) override { return buffer_handle_->data(plane); }
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+    base::FileDescriptor AsPlatformFile() override {
+      return base::FileDescriptor();
+    }
+#endif
+    bool IsBackedByVideoFrame() const override {
+      return buffer_handle_->IsBackedByVideoFrame();
+    }
+    scoped_refptr<media::VideoFrame> GetVideoFrame() override {
+      return buffer_handle_->GetVideoFrame();
+    }
+
+   private:
+    ~AutoReleaseBuffer() override { pool_->RelinquishProducerReservation(id_); }
+
+    const int id_;
+    const int frame_feedback_id_;
+    const scoped_refptr<media::VideoCaptureBufferPool> pool_;
+    const std::unique_ptr<media::VideoCaptureBufferHandle> buffer_handle_;
+  };
+
   scoped_refptr<media::VideoCaptureBufferPool> buffer_pool_;
   base::Callback<void(SkColor, const gfx::Size&)> report_callback_;
   base::Closure error_callback_;

@@ -50,7 +50,9 @@ class CAPTURE_EXPORT VideoCaptureBufferTracker {
   void set_frame_feedback_id(int value) { frame_feedback_id_ = value; }
   int frame_feedback_id() { return frame_feedback_id_; }
 
-  virtual std::unique_ptr<VideoCaptureBufferHandle> GetMemoryMappedAccess() = 0;
+  // Returns a scoped handle to the underlying storage.
+  virtual std::unique_ptr<VideoCaptureBufferHandle> GetBufferHandle() = 0;
+
   virtual mojo::ScopedSharedBufferHandle GetHandleForTransit() = 0;
 
  private:

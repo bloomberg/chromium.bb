@@ -30,7 +30,6 @@
 #include "media/capture/capture_export.h"
 #include "media/capture/mojo/image_capture.mojom.h"
 #include "media/capture/video/scoped_result_callback.h"
-#include "media/capture/video/video_capture_buffer_handle.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
 #include "media/capture/video_capture_types.h"
 #include "mojo/public/cpp/bindings/array.h"
@@ -48,6 +47,7 @@ class CAPTURE_EXPORT FrameBufferPool {
 
   virtual void SetBufferHold(int buffer_id) = 0;
   virtual void ReleaseBufferHold(int buffer_id) = 0;
+  virtual mojo::ScopedSharedBufferHandle GetHandleForTransit(int buffer_id) = 0;
 };
 
 class CAPTURE_EXPORT VideoFrameConsumerFeedbackObserver {
@@ -87,47 +87,21 @@ class CAPTURE_EXPORT VideoCaptureDevice
   // All clients must implement OnError().
   class CAPTURE_EXPORT Client {
    public:
-    // Move-only type representing access to a buffer handle as well as
-    // read-write permission to its contents.
+    // Memory buffer returned by Client::ReserveOutputBuffer().
     class CAPTURE_EXPORT Buffer {
      public:
-      // Destructor-only interface for encapsulating scoped access permission to
-      // a Buffer.
-      class CAPTURE_EXPORT ScopedAccessPermission {
-       public:
-        virtual ~ScopedAccessPermission() {}
-      };
-
-      class CAPTURE_EXPORT HandleProvider {
-       public:
-        virtual ~HandleProvider() {}
-        virtual mojo::ScopedSharedBufferHandle
-        GetHandleForInterProcessTransit() = 0;
-        virtual std::unique_ptr<VideoCaptureBufferHandle>
-        GetHandleForInProcessAccess() = 0;
-      };
-
-      Buffer();
-      Buffer(int buffer_id,
-             int frame_feedback_id,
-             std::unique_ptr<HandleProvider> handle_provider,
-             std::unique_ptr<ScopedAccessPermission> access_permission);
-      ~Buffer();
-      Buffer(Buffer&& other);
-      Buffer& operator=(Buffer&& other);
-
-      bool is_valid() const { return handle_provider_ != nullptr; }
-      int id() const { return id_; }
-      int frame_feedback_id() const { return frame_feedback_id_; }
-      HandleProvider* handle_provider() const { return handle_provider_.get(); }
-
-     private:
-      std::unique_ptr<HandleProvider> handle_provider_;
-      std::unique_ptr<ScopedAccessPermission> access_permission_;
-      int id_;
-      int frame_feedback_id_;
-
-      DISALLOW_COPY_AND_ASSIGN(Buffer);
+      virtual ~Buffer() = 0;
+      virtual int id() const = 0;
+      virtual int frame_feedback_id() const = 0;
+      virtual gfx::Size dimensions() const = 0;
+      virtual size_t mapped_size() const = 0;
+      virtual void* data(int plane) = 0;
+      void* data() { return data(0); }
+#if defined(OS_POSIX) && !(defined(OS_MACOSX) && !defined(OS_IOS))
+      virtual base::FileDescriptor AsPlatformFile() = 0;
+#endif
+      virtual bool IsBackedByVideoFrame() const = 0;
+      virtual scoped_refptr<VideoFrame> GetVideoFrame() = 0;
     };
 
     virtual ~Client() {}
@@ -165,19 +139,20 @@ class CAPTURE_EXPORT VideoCaptureDevice
     // backing, but functions as a reservation for external input for the
     // purposes of buffer throttling.
     //
-    // The buffer stays reserved for use by the caller as long as it
-    // holds on to the contained |buffer_read_write_permission|.
-    virtual Buffer ReserveOutputBuffer(const gfx::Size& dimensions,
-                                       VideoPixelFormat format,
-                                       VideoPixelStorage storage,
-                                       int frame_feedback_id) = 0;
+    // The output buffer stays reserved and mapped for use until the Buffer
+    // object is destroyed or returned.
+    virtual std::unique_ptr<Buffer> ReserveOutputBuffer(
+        const gfx::Size& dimensions,
+        VideoPixelFormat format,
+        VideoPixelStorage storage,
+        int frame_feedback_id) = 0;
 
     // Provides VCD::Client with a populated Buffer containing the content of
     // the next video frame. The |buffer| must originate from an earlier call to
     // ReserveOutputBuffer().
     // See OnIncomingCapturedData for details of |reference_time| and
     // |timestamp|.
-    virtual void OnIncomingCapturedBuffer(Buffer buffer,
+    virtual void OnIncomingCapturedBuffer(std::unique_ptr<Buffer> buffer,
                                           const VideoCaptureFormat& format,
                                           base::TimeTicks reference_time,
                                           base::TimeDelta timestamp) = 0;
@@ -185,7 +160,7 @@ class CAPTURE_EXPORT VideoCaptureDevice
     // Extended version of OnIncomingCapturedBuffer() allowing clients to
     // pass a custom |visible_rect| and |additional_metadata|.
     virtual void OnIncomingCapturedBufferExt(
-        Buffer buffer,
+        std::unique_ptr<Buffer> buffer,
         const VideoCaptureFormat& format,
         base::TimeTicks reference_time,
         base::TimeDelta timestamp,
@@ -197,10 +172,11 @@ class CAPTURE_EXPORT VideoCaptureDevice
     // of the Buffer has not been preserved, or if the |dimensions|, |format|,
     // or |storage| disagree with how it was reserved via ReserveOutputBuffer().
     // When this operation fails, nullptr will be returned.
-    virtual Buffer ResurrectLastOutputBuffer(const gfx::Size& dimensions,
-                                             VideoPixelFormat format,
-                                             VideoPixelStorage storage,
-                                             int new_frame_feedback_id) = 0;
+    virtual std::unique_ptr<Buffer> ResurrectLastOutputBuffer(
+        const gfx::Size& dimensions,
+        VideoPixelFormat format,
+        VideoPixelStorage storage,
+        int new_frame_feedback_id) = 0;
 
     // An error has occurred that cannot be handled and VideoCaptureDevice must
     // be StopAndDeAllocate()-ed. |reason| is a text description of the error.

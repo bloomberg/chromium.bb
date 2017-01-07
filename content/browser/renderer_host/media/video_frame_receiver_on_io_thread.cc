@@ -15,7 +15,7 @@ VideoFrameReceiverOnIOThread::VideoFrameReceiverOnIOThread(
 VideoFrameReceiverOnIOThread::~VideoFrameReceiverOnIOThread() = default;
 
 void VideoFrameReceiverOnIOThread::OnIncomingCapturedVideoFrame(
-    media::VideoCaptureDevice::Client::Buffer buffer,
+    std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
     scoped_refptr<media::VideoFrame> frame) {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,

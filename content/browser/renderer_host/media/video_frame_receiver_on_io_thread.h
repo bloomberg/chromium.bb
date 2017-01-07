@@ -22,7 +22,7 @@ class CONTENT_EXPORT VideoFrameReceiverOnIOThread
   ~VideoFrameReceiverOnIOThread() override;
 
   void OnIncomingCapturedVideoFrame(
-      media::VideoCaptureDevice::Client::Buffer buffer,
+      std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
       scoped_refptr<media::VideoFrame> frame) override;
   void OnError() override;
   void OnLog(const std::string& message) override;

@@ -49,11 +49,6 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
       const VideoCaptureJpegDecoderFactoryCB& jpeg_decoder_factory);
   ~VideoCaptureDeviceClient() override;
 
-  static Buffer MakeBufferStruct(
-      scoped_refptr<VideoCaptureBufferPool> buffer_pool,
-      int buffer_id,
-      int frame_feedback_id);
-
   // VideoCaptureDevice::Client implementation.
   void OnIncomingCapturedData(const uint8_t* data,
                               int length,
@@ -62,36 +57,49 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
                               base::TimeTicks reference_time,
                               base::TimeDelta timestamp,
                               int frame_feedback_id = 0) override;
-  Buffer ReserveOutputBuffer(const gfx::Size& dimensions,
-                             media::VideoPixelFormat format,
-                             media::VideoPixelStorage storage,
-                             int frame_feedback_id) override;
-  void OnIncomingCapturedBuffer(Buffer buffer,
+  std::unique_ptr<Buffer> ReserveOutputBuffer(const gfx::Size& dimensions,
+                                              media::VideoPixelFormat format,
+                                              media::VideoPixelStorage storage,
+                                              int frame_feedback_id) override;
+  void OnIncomingCapturedBuffer(std::unique_ptr<Buffer> buffer,
                                 const VideoCaptureFormat& format,
                                 base::TimeTicks reference_time,
                                 base::TimeDelta timestamp) override;
   void OnIncomingCapturedBufferExt(
-      Buffer buffer,
+      std::unique_ptr<Buffer> buffer,
       const VideoCaptureFormat& format,
       base::TimeTicks reference_time,
       base::TimeDelta timestamp,
       gfx::Rect visible_rect,
       const VideoFrameMetadata& additional_metadata) override;
-  Buffer ResurrectLastOutputBuffer(const gfx::Size& dimensions,
-                                   media::VideoPixelFormat format,
-                                   media::VideoPixelStorage storage,
-                                   int new_frame_feedback_id) override;
+  std::unique_ptr<Buffer> ResurrectLastOutputBuffer(
+      const gfx::Size& dimensions,
+      media::VideoPixelFormat format,
+      media::VideoPixelStorage storage,
+      int new_frame_feedback_id) override;
   void OnError(const tracked_objects::Location& from_here,
                const std::string& reason) override;
   void OnLog(const std::string& message) override;
   double GetBufferPoolUtilization() const override;
 
  private:
-  void InitializeI420PlanePointers(const gfx::Size& dimensions,
-                                   uint8_t* const data,
-                                   uint8_t** y_plane_data,
-                                   uint8_t** u_plane_data,
-                                   uint8_t** v_plane_data);
+  // Reserve output buffer into which I420 contents can be copied directly.
+  // The dimensions of the frame is described by |dimensions|, and requested
+  // output buffer format is specified by |storage|. The reserved output buffer
+  // is returned; and the pointer to Y plane is stored at [y_plane_data], U
+  // plane is stored at [u_plane_data], V plane is stored at [v_plane_data].
+  // Returns an nullptr if allocation fails.
+  //
+  // When requested |storage| is PIXEL_STORAGE_CPU, a single shared memory
+  // chunk is reserved. The output buffers stay reserved and mapped for use
+  // until the Buffer objects are destroyed or returned.
+  std::unique_ptr<Buffer> ReserveI420OutputBuffer(
+      const gfx::Size& dimensions,
+      media::VideoPixelStorage storage,
+      int frame_feedback_id,
+      uint8_t** y_plane_data,
+      uint8_t** u_plane_data,
+      uint8_t** v_plane_data);
 
   // A branch of OnIncomingCapturedData for Y16 frame_format.pixel_format.
   void OnIncomingCapturedY16Data(const uint8_t* data,
