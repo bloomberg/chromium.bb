@@ -28,7 +28,8 @@
 #include "third_party/skia/include/core/SkMallocPixelRef.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 #include "ui/android/resources/ui_resource_provider.h"
-#include "ui/gfx/android/device_display_info.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
 namespace {
@@ -694,9 +695,9 @@ bool ReadFromFile(base::File& file,
   // Do some simple sanity check validation.  We can't have thumbnails larger
   // than the max display size of the screen.  We also can't have etc1 texture
   // data larger than the next power of 2 up from that.
-  gfx::DeviceDisplayInfo display_info;
-  int max_dimension = std::max(display_info.GetDisplayWidth(),
-                               display_info.GetDisplayHeight());
+  gfx::Size display_size =
+      display::Screen::GetScreen()->GetPrimaryDisplay().GetSizeInPixel();
+  int max_dimension = std::max(display_size.width(), display_size.height());
 
   if (content_width > max_dimension
       || content_height > max_dimension
