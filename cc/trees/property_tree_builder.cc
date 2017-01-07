@@ -455,12 +455,27 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
   layer->SetClipTreeIndex(data_for_children->clip_tree_parent);
 }
 
+static inline int SortingContextId(Layer* layer) {
+  return layer->sorting_context_id();
+}
+
+static inline int SortingContextId(LayerImpl* layer) {
+  return layer->test_properties()->sorting_context_id;
+}
+
+static inline bool Is3dSorted(Layer* layer) {
+  return layer->Is3dSorted();
+}
+
+static inline bool Is3dSorted(LayerImpl* layer) {
+  return layer->test_properties()->sorting_context_id != 0;
+}
+
 template <typename LayerType>
 static inline bool IsAtBoundaryOf3dRenderingContext(LayerType* layer) {
   return Parent(layer)
-             ? Parent(layer)->sorting_context_id() !=
-                   layer->sorting_context_id()
-             : layer->Is3dSorted();
+             ? SortingContextId(Parent(layer)) != SortingContextId(layer)
+             : Is3dSorted(layer);
 }
 
 static inline gfx::Point3F TransformOrigin(Layer* layer) {
@@ -611,7 +626,7 @@ bool AddTransformNodeIfNeeded(
   node->should_be_snapped = is_snapped;
   node->flattens_inherited_transform = data_for_children->should_flatten;
 
-  node->sorting_context_id = layer->sorting_context_id();
+  node->sorting_context_id = SortingContextId(layer);
 
   if (layer == data_from_ancestor.page_scale_layer)
     data_for_children->in_subtree_of_page_scale_layer = true;
@@ -773,8 +788,8 @@ static inline bool ForceRenderSurface(LayerImpl* layer) {
 
 template <typename LayerType>
 static inline bool LayerIsInExisting3DRenderingContext(LayerType* layer) {
-  return layer->Is3dSorted() && Parent(layer) && Parent(layer)->Is3dSorted() &&
-         (Parent(layer)->sorting_context_id() == layer->sorting_context_id());
+  return Is3dSorted(layer) && Parent(layer) && Is3dSorted(Parent(layer)) &&
+         (SortingContextId(Parent(layer)) == SortingContextId(layer));
 }
 
 static inline bool IsRootForIsolatedGroup(Layer* layer) {
@@ -1196,8 +1211,8 @@ void SetBackfaceVisibilityTransform(LayerType* layer,
     // whether we are in a 3d rendering context by checking if the parent
     // preserves 3d.
     const bool use_local_transform =
-        !layer->Is3dSorted() ||
-        (layer->Is3dSorted() && is_at_boundary_of_3d_rendering_context);
+        !Is3dSorted(layer) ||
+        (Is3dSorted(layer) && is_at_boundary_of_3d_rendering_context);
     layer->SetUseLocalTransformForBackfaceVisibility(use_local_transform);
 
     // A double-sided layer's backface can been shown when its visibile.

@@ -1211,12 +1211,6 @@ void PaintArtifactCompositor::update(
     layer->SetEffectTreeIndex(effectId);
     layer->SetScrollTreeIndex(scrollId);
 
-    // TODO(jbroman): This probably shouldn't be necessary, but it is still
-    // queried by RenderSurfaceImpl.
-    layer->Set3dSortingContextId(layerTree->property_trees()
-                                     ->transform_tree.Node(transformId)
-                                     ->sorting_context_id);
-
     layer->SetShouldCheckBackfaceVisibility(pendingLayer.backfaceHidden);
 
     if (m_extraDataForTestingEnabled)

@@ -66,8 +66,12 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
   layer->SetUIResourceId(uid);
   layer->SetImageBounds(bitmap_size);
   layer->SetLayout(aperture_rect, border, gfx::Rect(), fill_center, false);
+  host_impl.active_tree()->SetRootLayerForTesting(std::move(layer));
+  host_impl.active_tree()->BuildPropertyTreesForTesting();
+
   AppendQuadsData data;
-  layer->AppendQuads(render_pass.get(), &data);
+  host_impl.active_tree()->root_layer_for_testing()->AppendQuads(
+      render_pass.get(), &data);
 
   // Verify quad rects
   const QuadList& quads = render_pass->quad_list;
@@ -170,8 +174,12 @@ void NinePatchLayerLayoutTestWithOcclusion(const gfx::Size& bitmap_size,
   layer->SetUIResourceId(uid);
   layer->SetImageBounds(bitmap_size);
   layer->SetLayout(aperture_rect, border, occlusion, false, false);
+  host_impl.active_tree()->SetRootLayerForTesting(std::move(layer));
+  host_impl.active_tree()->BuildPropertyTreesForTesting();
+
   AppendQuadsData data;
-  layer->AppendQuads(render_pass.get(), &data);
+  host_impl.active_tree()->root_layer_for_testing()->AppendQuads(
+      render_pass.get(), &data);
 
   // Verify quad rects
   const QuadList& quads = render_pass->quad_list;

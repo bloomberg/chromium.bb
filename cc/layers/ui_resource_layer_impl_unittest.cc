@@ -44,16 +44,23 @@ std::unique_ptr<UIResourceLayerImpl> GenerateUIResourceLayer(
   return layer;
 }
 
-void QuadSizeTest(std::unique_ptr<UIResourceLayerImpl> layer,
+void QuadSizeTest(FakeUIResourceLayerTreeHostImpl* host_impl,
+                  std::unique_ptr<UIResourceLayerImpl> layer,
                   size_t expected_quad_size) {
+  host_impl->active_tree()->SetRootLayerForTesting(std::move(layer));
+  host_impl->active_tree()->BuildPropertyTreesForTesting();
+
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
 
   AppendQuadsData data;
-  layer->AppendQuads(render_pass.get(), &data);
+  host_impl->active_tree()->root_layer_for_testing()->AppendQuads(
+      render_pass.get(), &data);
 
   // Verify quad rects
   const QuadList& quads = render_pass->quad_list;
   EXPECT_EQ(expected_quad_size, quads.size());
+
+  host_impl->active_tree()->DetachLayers();
 }
 
 TEST(UIResourceLayerImplTest, VerifyDrawQuads) {
@@ -74,7 +81,7 @@ TEST(UIResourceLayerImplTest, VerifyDrawQuads) {
   UIResourceId uid = 1;
   std::unique_ptr<UIResourceLayerImpl> layer =
       GenerateUIResourceLayer(&host_impl, bitmap_size, layer_size, opaque, uid);
-  QuadSizeTest(std::move(layer), expected_quad_size);
+  QuadSizeTest(&host_impl, std::move(layer), expected_quad_size);
 
   // Make sure we're not appending quads when there are invalid values.
   expected_quad_size = 0;
@@ -84,21 +91,28 @@ TEST(UIResourceLayerImplTest, VerifyDrawQuads) {
                                   layer_size,
                                   opaque,
                                   uid);
-  QuadSizeTest(std::move(layer), expected_quad_size);
+  QuadSizeTest(&host_impl, std::move(layer), expected_quad_size);
 }
 
-void OpaqueBoundsTest(std::unique_ptr<UIResourceLayerImpl> layer,
+void OpaqueBoundsTest(FakeUIResourceLayerTreeHostImpl* host_impl,
+                      std::unique_ptr<UIResourceLayerImpl> layer,
                       const gfx::Rect& expected_opaque_bounds) {
+  host_impl->active_tree()->SetRootLayerForTesting(std::move(layer));
+  host_impl->active_tree()->BuildPropertyTreesForTesting();
+
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
 
   AppendQuadsData data;
-  layer->AppendQuads(render_pass.get(), &data);
+  host_impl->active_tree()->root_layer_for_testing()->AppendQuads(
+      render_pass.get(), &data);
 
   // Verify quad rects
   const QuadList& quads = render_pass->quad_list;
   EXPECT_GE(quads.size(), (size_t)0);
   gfx::Rect opaque_rect = quads.front()->opaque_rect;
   EXPECT_EQ(expected_opaque_bounds, opaque_rect);
+
+  host_impl->active_tree()->DetachLayers();
 }
 
 TEST(UIResourceLayerImplTest, VerifySetOpaqueOnSkBitmap) {
@@ -118,7 +132,7 @@ TEST(UIResourceLayerImplTest, VerifySetOpaqueOnSkBitmap) {
   std::unique_ptr<UIResourceLayerImpl> layer =
       GenerateUIResourceLayer(&host_impl, bitmap_size, layer_size, opaque, uid);
   gfx::Rect expected_opaque_bounds;
-  OpaqueBoundsTest(std::move(layer), expected_opaque_bounds);
+  OpaqueBoundsTest(&host_impl, std::move(layer), expected_opaque_bounds);
 
   opaque = true;
   layer = GenerateUIResourceLayer(&host_impl,
@@ -127,7 +141,7 @@ TEST(UIResourceLayerImplTest, VerifySetOpaqueOnSkBitmap) {
                                   opaque,
                                   uid);
   expected_opaque_bounds = gfx::Rect(layer->bounds());
-  OpaqueBoundsTest(std::move(layer), expected_opaque_bounds);
+  OpaqueBoundsTest(&host_impl, std::move(layer), expected_opaque_bounds);
 }
 
 TEST(UIResourceLayerImplTest, VerifySetOpaqueOnLayer) {
@@ -148,13 +162,13 @@ TEST(UIResourceLayerImplTest, VerifySetOpaqueOnLayer) {
       &host_impl, bitmap_size, layer_size, skbitmap_opaque, uid);
   layer->SetContentsOpaque(false);
   gfx::Rect expected_opaque_bounds;
-  OpaqueBoundsTest(std::move(layer), expected_opaque_bounds);
+  OpaqueBoundsTest(&host_impl, std::move(layer), expected_opaque_bounds);
 
   layer = GenerateUIResourceLayer(
       &host_impl, bitmap_size, layer_size, skbitmap_opaque, uid);
   layer->SetContentsOpaque(true);
   expected_opaque_bounds = gfx::Rect(layer->bounds());
-  OpaqueBoundsTest(std::move(layer), expected_opaque_bounds);
+  OpaqueBoundsTest(&host_impl, std::move(layer), expected_opaque_bounds);
 }
 
 TEST(UIResourceLayerImplTest, Occlusion) {

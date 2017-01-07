@@ -1165,7 +1165,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetUseLocalTransformForBackfaceVisibility(
       use_local_transform_for_backface_visibility_);
   layer->SetShouldCheckBackfaceVisibility(should_check_backface_visibility_);
-  layer->Set3dSortingContextId(inputs_.sorting_context_id);
 
   layer->SetScrollClipLayer(inputs_.scroll_clip_layer_id);
   layer->set_user_scrollable_horizontal(inputs_.user_scrollable_horizontal);

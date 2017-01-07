@@ -75,7 +75,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       effect_tree_index_(EffectTree::kInvalidNodeId),
       clip_tree_index_(ClipTree::kInvalidNodeId),
       scroll_tree_index_(ScrollTree::kInvalidNodeId),
-      sorting_context_id_(0),
       current_draw_mode_(DRAW_MODE_NONE),
       mutable_properties_(MutableProperty::kNone),
       debug_info_(nullptr),
@@ -170,7 +169,7 @@ void LayerImpl::PopulateSharedQuadState(SharedQuadState* state) const {
   state->SetAll(draw_properties_.target_space_transform, bounds(),
                 draw_properties_.visible_layer_rect, draw_properties_.clip_rect,
                 draw_properties_.is_clipped, draw_properties_.opacity,
-                draw_blend_mode_, sorting_context_id_);
+                draw_blend_mode_, GetSortingContextId());
 }
 
 void LayerImpl::PopulateScaledSharedQuadState(
@@ -190,7 +189,7 @@ void LayerImpl::PopulateScaledSharedQuadState(
   state->SetAll(scaled_draw_transform, scaled_bounds, scaled_visible_layer_rect,
                 draw_properties().clip_rect, draw_properties().is_clipped,
                 draw_properties().opacity, draw_blend_mode_,
-                sorting_context_id_);
+                GetSortingContextId());
 }
 
 bool LayerImpl::WillDraw(DrawMode draw_mode,
@@ -353,7 +352,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->effect_tree_index_ = effect_tree_index_;
   layer->clip_tree_index_ = clip_tree_index_;
   layer->scroll_tree_index_ = scroll_tree_index_;
-  layer->sorting_context_id_ = sorting_context_id_;
   layer->has_will_change_transform_hint_ = has_will_change_transform_hint_;
   layer->scrollbars_hidden_ = scrollbars_hidden_;
 
@@ -450,8 +448,7 @@ std::unique_ptr<base::DictionaryValue> LayerImpl::LayerTreeAsJson() {
 }
 
 bool LayerImpl::LayerPropertyChanged() const {
-  if (layer_property_changed_ ||
-      (GetPropertyTrees() && GetPropertyTrees()->full_tree_damaged))
+  if (layer_property_changed_ || GetPropertyTrees()->full_tree_damaged)
     return true;
   if (transform_tree_index() == TransformTree::kInvalidNodeId)
     return false;
@@ -768,10 +765,6 @@ void LayerImpl::SetPosition(const gfx::PointF& position) {
   position_ = position;
 }
 
-void LayerImpl::Set3dSortingContextId(int id) {
-  sorting_context_id_ = id;
-}
-
 bool LayerImpl::TransformIsAnimating() const {
   return GetMutatorHost()->IsAnimatingTransformProperty(
       element_id(), GetElementTypeForAnimation());
@@ -1036,6 +1029,13 @@ bool LayerImpl::CanUseLCDText() const {
       offset_to_transform_parent().y())
     return false;
   return true;
+}
+
+int LayerImpl::GetSortingContextId() const {
+  return layer_tree_impl()
+      ->property_trees()
+      ->transform_tree.Node(transform_tree_index())
+      ->sorting_context_id;
 }
 
 Region LayerImpl::GetInvalidationRegionForDebugging() {

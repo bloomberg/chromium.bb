@@ -355,7 +355,6 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, SortingContextID) {
       Pointee(drawsRectangle(FloatRect(0, 0, 300, 200), Color::lightGray)));
   int lightGraySortingContextId =
       transformNode(lightGrayLayer).sorting_context_id;
-  EXPECT_EQ(lightGrayLayer->sorting_context_id(), lightGraySortingContextId);
   EXPECT_NE(0, lightGraySortingContextId);
 
   // The dark gray layer is 3D sorted with the light gray layer, but has a
@@ -366,7 +365,6 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, SortingContextID) {
       Pointee(drawsRectangle(FloatRect(0, 0, 300, 200), Color::darkGray)));
   int darkGraySortingContextId =
       transformNode(darkGrayLayer).sorting_context_id;
-  EXPECT_EQ(darkGrayLayer->sorting_context_id(), darkGraySortingContextId);
   EXPECT_EQ(lightGraySortingContextId, darkGraySortingContextId);
   EXPECT_NE(lightGrayLayer->transform_tree_index(),
             darkGrayLayer->transform_tree_index());
@@ -377,7 +375,6 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, SortingContextID) {
   EXPECT_THAT(blackLayer->GetPicture(),
               Pointee(drawsRectangle(FloatRect(0, 0, 300, 200), Color::black)));
   int blackSortingContextId = transformNode(blackLayer).sorting_context_id;
-  EXPECT_EQ(blackLayer->sorting_context_id(), blackSortingContextId);
   EXPECT_NE(0, blackSortingContextId);
   EXPECT_NE(lightGraySortingContextId, blackSortingContextId);
 }

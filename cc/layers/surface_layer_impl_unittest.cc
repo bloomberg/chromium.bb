@@ -76,6 +76,7 @@ TEST(SurfaceLayerImplTest, SurfaceStretchedToLayerBounds) {
   // aspect ratios.
   gfx::Size layer_size(400, 100);
   gfx::Size surface_size(300, 300);
+  gfx::Size viewport_size(1000, 1000);
   float surface_scale = 1.f;
   gfx::Transform target_space_transform(
       surface_layer_impl->draw_properties().target_space_transform);
@@ -88,6 +89,8 @@ TEST(SurfaceLayerImplTest, SurfaceStretchedToLayerBounds) {
   surface_layer_impl->SetSurfaceInfo(
       SurfaceInfo(surface_id, surface_scale, surface_size));
   surface_layer_impl->SetStretchContentToFillBounds(true);
+
+  impl.CalcDrawProps(viewport_size);
 
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;

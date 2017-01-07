@@ -45,7 +45,6 @@ class CompositorMutableStateTest : public testing::Test {
     layer->test_properties()->transform = gfx::Transform();
     layer->SetPosition(gfx::PointF());
     layer->SetBounds(gfx::Size(100, 100));
-    layer->Set3dSortingContextId(0);
     layer->SetDrawsContent(true);
   }
 

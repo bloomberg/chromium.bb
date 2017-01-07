@@ -3446,13 +3446,14 @@ TEST_F(LayerTreeHostCommonTest,
   child->SetPosition(gfx::PointF(10.f, 10.f));
   child->SetBounds(gfx::Size(100, 100));
   child->SetDrawsContent(true);
-  child->Set3dSortingContextId(1);
+  child->test_properties()->sorting_context_id = 1;
   child->test_properties()->should_flatten_transform = false;
   grand_child->test_properties()->transform = rotation;
   grand_child->SetBounds(gfx::Size(100, 100));
   grand_child->SetDrawsContent(true);
-  grand_child->Set3dSortingContextId(1);
+  child->test_properties()->sorting_context_id = 1;
   grand_child->test_properties()->should_flatten_transform = false;
+  grand_child->test_properties()->sorting_context_id = 1;
   ExecuteCalculateDrawProperties(root);
 
   // Though all layers have invertible transforms, matrix multiplication using
@@ -3611,11 +3612,11 @@ TEST_F(LayerTreeHostCommonTest,
   child->SetPosition(gfx::PointF(10.f, 10.f));
   child->SetBounds(gfx::Size(300, 300));
   child->test_properties()->should_flatten_transform = false;
-  child->Set3dSortingContextId(1);
+  child->test_properties()->sorting_context_id = 1;
   grand_child->test_properties()->transform = rotation;
   grand_child->SetBounds(gfx::Size(200, 200));
   grand_child->test_properties()->should_flatten_transform = false;
-  grand_child->Set3dSortingContextId(1);
+  grand_child->test_properties()->sorting_context_id = 1;
   occluding_child->SetBounds(gfx::Size(200, 200));
   occluding_child->test_properties()->should_flatten_transform = false;
 
@@ -4295,13 +4296,17 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithPreserves3d) {
   // This 3d rendering context occurs when (a) parent's transform style is flat
   // and (b) the layer's transform style is preserve-3d.
   front_facing_surface->test_properties()->should_flatten_transform = false;
-  front_facing_surface->Set3dSortingContextId(1);
+  front_facing_surface->test_properties()->sorting_context_id = 1;
   back_facing_surface->test_properties()->should_flatten_transform = false;
-  back_facing_surface->Set3dSortingContextId(1);
-  front_facing_child_of_front_facing_surface->Set3dSortingContextId(1);
-  back_facing_child_of_front_facing_surface->Set3dSortingContextId(1);
-  front_facing_child_of_back_facing_surface->Set3dSortingContextId(1);
-  back_facing_child_of_back_facing_surface->Set3dSortingContextId(1);
+  back_facing_surface->test_properties()->sorting_context_id = 1;
+  front_facing_child_of_front_facing_surface->test_properties()
+      ->sorting_context_id = 1;
+  back_facing_child_of_front_facing_surface->test_properties()
+      ->sorting_context_id = 1;
+  front_facing_child_of_back_facing_surface->test_properties()
+      ->sorting_context_id = 1;
+  back_facing_child_of_back_facing_surface->test_properties()
+      ->sorting_context_id = 1;
 
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root);
 
@@ -4435,8 +4440,8 @@ TEST_F(LayerTreeHostCommonTest,
   child1->SetBounds(gfx::Size(100, 100));
   child2->SetBounds(gfx::Size(100, 100));
 
-  front_facing_surface->Set3dSortingContextId(1);
-  back_facing_surface->Set3dSortingContextId(1);
+  front_facing_surface->test_properties()->sorting_context_id = 1;
+  back_facing_surface->test_properties()->sorting_context_id = 1;
 
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root);
 
@@ -4715,8 +4720,8 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
   LayerImpl* parent = root_layer_for_testing();
   parent->SetBounds(gfx::Size(30, 30));
   parent->SetDrawsContent(true);
-  parent->Set3dSortingContextId(1);
   parent->test_properties()->should_flatten_transform = false;
+  parent->test_properties()->sorting_context_id = 1;
 
   LayerImpl* child = AddChildToRoot<LayerImpl>();
   child->SetBounds(gfx::Size(10, 10));
@@ -5888,14 +5893,14 @@ TEST_F(LayerTreeHostCommonTest,
   root->SetBounds(bounds);
   child1->SetBounds(bounds);
   child1->SetDrawsContent(true);
-  child1->Set3dSortingContextId(1);
   child1->test_properties()->should_flatten_transform = false;
+  child1->test_properties()->sorting_context_id = 1;
   child2->SetBounds(bounds);
   child2->SetDrawsContent(true);
-  child2->Set3dSortingContextId(1);
+  child2->test_properties()->sorting_context_id = 1;
   child3->SetBounds(bounds);
   child3->SetDrawsContent(true);
-  child3->Set3dSortingContextId(1);
+  child3->test_properties()->sorting_context_id = 1;
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root);
 
   // Verify which render surfaces were created.
@@ -5928,14 +5933,14 @@ TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
   // behavior.
   child1->SetBounds(bounds);
   child1->SetDrawsContent(true);
-  child1->Set3dSortingContextId(1);
   child1->test_properties()->should_flatten_transform = false;
+  child1->test_properties()->sorting_context_id = 1;
   child2->SetBounds(bounds);
   child2->SetDrawsContent(true);
-  child2->Set3dSortingContextId(1);
+  child2->test_properties()->sorting_context_id = 1;
   child3->SetBounds(bounds);
   child3->SetDrawsContent(true);
-  child3->Set3dSortingContextId(1);
+  child3->test_properties()->sorting_context_id = 1;
 
   child2->test_properties()->AddChild(std::move(child3));
   child1->test_properties()->AddChild(std::move(child2));
@@ -6109,8 +6114,8 @@ TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleLayers) {
   rotation_transform.RotateAboutXAxis(180.0);
 
   child->test_properties()->transform = rotation_transform;
-  child->Set3dSortingContextId(1);
-  grand_child->Set3dSortingContextId(1);
+  child->test_properties()->sorting_context_id = 1;
+  grand_child->test_properties()->sorting_context_id = 1;
   child->layer_tree_impl()->property_trees()->needs_rebuild = true;
 
   ExecuteCalculateDrawProperties(root);
@@ -6170,22 +6175,22 @@ TEST_F(LayerTreeHostCommonTest, TransformAnimationUpdatesBackfaceVisibility) {
   rotate_about_y.RotateAboutYAxis(180.0);
 
   root->SetBounds(gfx::Size(50, 50));
-  root->Set3dSortingContextId(1);
   root->test_properties()->should_flatten_transform = false;
+  root->test_properties()->sorting_context_id = 1;
   back_facing->test_properties()->transform = rotate_about_y;
   back_facing->SetBounds(gfx::Size(50, 50));
-  back_facing->Set3dSortingContextId(1);
   back_facing->test_properties()->should_flatten_transform = false;
+  back_facing->test_properties()->sorting_context_id = 1;
   render_surface1->SetBounds(gfx::Size(30, 30));
-  render_surface1->Set3dSortingContextId(1);
   render_surface1->test_properties()->should_flatten_transform = false;
   render_surface1->test_properties()->double_sided = false;
   render_surface1->test_properties()->force_render_surface = true;
+  render_surface1->test_properties()->sorting_context_id = 1;
   render_surface2->SetBounds(gfx::Size(30, 30));
-  render_surface2->Set3dSortingContextId(1);
   render_surface2->test_properties()->should_flatten_transform = false;
   render_surface2->test_properties()->double_sided = false;
   render_surface2->test_properties()->force_render_surface = true;
+  render_surface2->test_properties()->sorting_context_id = 1;
   ExecuteCalculateDrawProperties(root);
 
   const EffectTree& tree =
@@ -6353,15 +6358,15 @@ TEST_F(LayerTreeHostCommonTest, SingularTransformSubtreesDoNotDraw) {
 
   root->SetBounds(gfx::Size(50, 50));
   root->SetDrawsContent(true);
-  root->Set3dSortingContextId(1);
+  root->test_properties()->sorting_context_id = 1;
   parent->SetBounds(gfx::Size(30, 30));
   parent->SetDrawsContent(true);
-  parent->Set3dSortingContextId(1);
   parent->test_properties()->force_render_surface = true;
+  parent->test_properties()->sorting_context_id = 1;
   child->SetBounds(gfx::Size(20, 20));
   child->SetDrawsContent(true);
-  child->Set3dSortingContextId(1);
   child->test_properties()->force_render_surface = true;
+  child->test_properties()->sorting_context_id = 1;
   ExecuteCalculateDrawProperties(root);
 
   EXPECT_EQ(3u, render_surface_layer_list_impl()->size());

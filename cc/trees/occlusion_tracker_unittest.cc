@@ -1068,9 +1068,9 @@ class OcclusionTrackerTestLayerBehindCameraDoesNotOcclude
     TestContentLayerImpl* layer = this->CreateDrawingLayer(
         parent, transform, gfx::PointF(), gfx::Size(100, 100), true);
     parent->test_properties()->should_flatten_transform = false;
-    parent->Set3dSortingContextId(1);
+    parent->test_properties()->sorting_context_id = 1;
     layer->test_properties()->should_flatten_transform = false;
-    layer->Set3dSortingContextId(1);
+    layer->test_properties()->sorting_context_id = 1;
     this->CalcDrawEtc(parent);
 
     TestOcclusionTrackerWithClip occlusion(gfx::Rect(0, 0, 1000, 1000));

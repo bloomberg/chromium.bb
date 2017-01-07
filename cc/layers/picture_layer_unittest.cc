@@ -233,6 +233,7 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
   // We should now have invalid contents and should therefore clear the
   // recording source.
   layer->PushPropertiesTo(layer_impl);
+  host_impl.pending_tree()->BuildPropertyTreesForTesting();
 
   host_impl.ActivateSyncTree();
 

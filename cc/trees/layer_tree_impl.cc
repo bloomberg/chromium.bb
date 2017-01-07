@@ -1887,8 +1887,8 @@ static void FindClosestMatchingLayer(const gfx::PointF& screen_space_point,
 
     bool in_front_of_previous_candidate =
         state->closest_match &&
-        layer->sorting_context_id() ==
-            state->closest_match->sorting_context_id() &&
+        layer->GetSortingContextId() ==
+            state->closest_match->GetSortingContextId() &&
         distance_to_intersection >
             state->closest_distance + std::numeric_limits<float>::epsilon();
 

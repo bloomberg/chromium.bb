@@ -208,7 +208,7 @@ class CC_EXPORT LayerImpl {
 
   gfx::Vector2dF FixedContainerSizeDelta() const;
 
-  bool Is3dSorted() const { return sorting_context_id_ != 0; }
+  bool Is3dSorted() const { return GetSortingContextId() != 0; }
 
   void SetUseParentBackfaceVisibility(bool use) {
     use_parent_backface_visibility_ = use;
@@ -409,8 +409,10 @@ class CC_EXPORT LayerImpl {
   void set_may_contain_video(bool yes) { may_contain_video_ = yes; }
   bool may_contain_video() const { return may_contain_video_; }
 
-  void Set3dSortingContextId(int id);
-  int sorting_context_id() { return sorting_context_id_; }
+  // Layers that share a sorting context id will be sorted together in 3d
+  // space.  0 is a special value that means this layer will not be sorted and
+  // will be drawn in paint order.
+  int GetSortingContextId() const;
 
   // Get the correct invalidation region instead of conservative Rect
   // for layers that provide it.
@@ -537,11 +539,6 @@ class CC_EXPORT LayerImpl {
 
  protected:
   friend class TreeSynchronizer;
-
-  // Layers that share a sorting context id will be sorted together in 3d
-  // space.  0 is a special value that means this layer will not be sorted and
-  // will be drawn in paint order.
-  int sorting_context_id_;
 
   DrawMode current_draw_mode_;
 
