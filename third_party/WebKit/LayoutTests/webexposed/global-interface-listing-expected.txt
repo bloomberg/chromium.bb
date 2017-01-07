@@ -1151,6 +1151,7 @@ interface DOMRectReadOnly
     getter x
     getter y
     method constructor
+    method toJSON
 interface DOMStringList
     attribute @@toStringTag
     getter length

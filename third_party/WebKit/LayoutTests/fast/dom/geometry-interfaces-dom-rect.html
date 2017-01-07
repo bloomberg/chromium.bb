@@ -41,6 +41,11 @@ test(() => {
 
 test(() => {
   var rect = new DOMRect(10, 20, 80, 50);
+  assert_object_equals(rect.toJSON(), {x: 10, y: 20, width: 80, height: 50, top: 20, right: 90, bottom: 70, left: 10});
+}, 'DOMRect toJSON');
+
+test(() => {
+  var rect = new DOMRect(10, 20, 80, 50);
   rect.x = 30;
   assert_dom_rect_equals(rect, [30, 20, 80, 50, 20, 110, 70, 30]);
   rect.y = -10;
@@ -83,5 +88,10 @@ test(() => {
   assert_readonly(rect, 'width');
   assert_readonly(rect, 'height');
 }, 'DOMRectReadOnly readonly test');
+
+test(() => {
+  var rect = new DOMRectReadOnly(10, 20, 80, 50);
+  assert_object_equals(rect.toJSON(), {x: 10, y: 20, width: 80, height: 50, top: 20, right: 90, bottom: 70, left: 10});
+}, 'DOMRectReadOnly toJSON');
 
 </script>
