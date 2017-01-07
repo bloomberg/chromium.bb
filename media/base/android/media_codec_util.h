@@ -63,8 +63,7 @@ class MEDIA_EXPORT MediaCodecUtil {
   static bool IsKnownUnaccelerated(const std::string& mime_type,
                                    MediaCodecDirection direction);
 
-  // Test whether a URL contains "m3u8". (Using exactly the same logic as
-  // NuPlayer does to determine if a stream is HLS.)
+  // Test whether a URL contains "m3u8".
   static bool IsHLSURL(const GURL& url);
 
   // Test whether the path of a URL ends with ".m3u8".

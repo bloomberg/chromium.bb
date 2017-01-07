@@ -788,14 +788,18 @@ blink::WebTimeRanges WebMediaPlayerImpl::seekable() const {
 
   // Allow a special exception for seeks to zero for streaming sources with a
   // finite duration; this allows looping to work.
-  const bool allow_seek_to_zero = data_source_ && data_source_->IsStreaming() &&
-                                  std::isfinite(seekable_end);
+  const bool is_finite_stream = data_source_ && data_source_->IsStreaming() &&
+                                std::isfinite(seekable_end);
+
+  // Do not change the seekable range when using the fallback path.
+  // The MediaPlayerRenderer will take care of dropping invalid seeks.
+  const bool force_seeks_to_zero = !use_fallback_path_ && is_finite_stream;
 
   // TODO(dalecurtis): Technically this allows seeking on media which return an
-  // infinite duration so long as DataSource::IsStreaming() is false.  While not
+  // infinite duration so long as DataSource::IsStreaming() is false. While not
   // expected, disabling this breaks semi-live players, http://crbug.com/427412.
   const blink::WebTimeRange seekable_range(
-      0.0, allow_seek_to_zero ? 0.0 : seekable_end);
+      0.0, force_seeks_to_zero ? 0.0 : seekable_end);
   return blink::WebTimeRanges(&seekable_range, 1);
 }
 

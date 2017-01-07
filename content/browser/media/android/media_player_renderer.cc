@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "media/base/android/media_service_throttler.h"
+#include "media/base/timestamp_constants.h"
 
 // TODO(tguilbert): Remove this ID once MediaPlayerManager has been deleted
 // and MediaPlayerBridge updated. See comment in header file.
@@ -31,6 +32,7 @@ media::MediaUrlInterceptor* g_media_url_interceptor = nullptr;
 
 MediaPlayerRenderer::MediaPlayerRenderer(RenderFrameHost* render_frame_host)
     : render_frame_host_(render_frame_host),
+      duration_(media::kInfiniteDuration),
       has_error_(false),
       weak_factory_(this) {}
 
@@ -108,7 +110,11 @@ void MediaPlayerRenderer::StartPlayingFrom(base::TimeDelta time) {
     return;
 
   media_player_->Start();
-  media_player_->SeekTo(time);
+
+  // Drop the seek if we are live streaming or if we don't have any duration
+  // information yet.
+  if (duration_ != media::kInfiniteDuration)
+    media_player_->SeekTo(time);
 
   // WMPI needs to receive a BUFFERING_HAVE_ENOUGH data before sending a
   // playback_rate > 0. The MediaPlayer manages its own buffering and will pause
@@ -200,6 +206,11 @@ void MediaPlayerRenderer::OnMediaMetadataChanged(int player_id,
   if (video_size_ != gfx::Size(width, height))
     OnVideoSizeChanged(kUnusedAndIrrelevantPlayerId, width, height);
 
+  // For HLS streams, the reported duration may be zero for infinite streams.
+  // See http://crbug.com/501213.
+  if (duration.is_zero())
+    duration = media::kInfiniteDuration;
+
   if (duration_ != duration) {
     duration_ = duration;
     renderer_client_->OnDurationChange(duration);
@@ -249,17 +260,12 @@ media::MediaPlayerAndroid* MediaPlayerRenderer::GetPlayer(int player_id) {
 bool MediaPlayerRenderer::RequestPlay(int player_id,
                                       base::TimeDelta duration,
                                       bool has_audio) {
-  // TODO(tguilbert): Throttle requests, via exponential backoff.
-  // See crbug.com/636615.
   return true;
 }
 
 void MediaPlayerRenderer::OnDecoderResourcesReleased(int player_id) {
   // Since we are not using a pool of MediaPlayerAndroid instances, this
   // function is not relevant.
-
-  // TODO(tguilbert): Throttle requests, via exponential backoff.
-  // See crbug.com/636615.
 }
 
 // static
