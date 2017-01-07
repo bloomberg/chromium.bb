@@ -1292,14 +1292,13 @@ bool InlineFlowBox::nodeAtPoint(HitTestResult& result,
     }
   }
 
-  if (getLineLayoutItem().style()->hasBorderRadius()) {
-    LayoutPoint adjustedLocation = accumulatedOffset + overflowRect.location();
-    if (getLineLayoutItem().isBox() &&
-        toLayoutBox(LineLayoutAPIShim::layoutObjectFrom(getLineLayoutItem()))
-            ->hitTestClippedOutByRoundedBorder(locationInContainer,
-                                               adjustedLocation))
-      return false;
+  if (getLineLayoutItem().isBox() &&
+      toLayoutBox(LineLayoutAPIShim::layoutObjectFrom(getLineLayoutItem()))
+          ->hitTestClippedOutByBorder(locationInContainer,
+                                      overflowRect.location()))
+    return false;
 
+  if (getLineLayoutItem().style()->hasBorderRadius()) {
     LayoutRect borderRect = logicalFrameRect();
     borderRect.moveBy(accumulatedOffset);
     FloatRoundedRect border = getLineLayoutItem().style()->getRoundedBorderFor(

@@ -1416,7 +1416,8 @@ bool LayoutBox::nodeAtPoint(HitTestResult& result,
       hitTestChildren(result, locationInContainer, adjustedLocation, action))
     return true;
 
-  if (hitTestClippedOutByRoundedBorder(locationInContainer, adjustedLocation))
+  if (style()->hasBorderRadius() &&
+      hitTestClippedOutByBorder(locationInContainer, adjustedLocation))
     return false;
 
   // Now hit test ourselves.
@@ -1452,12 +1453,9 @@ bool LayoutBox::hitTestChildren(HitTestResult& result,
   return false;
 }
 
-bool LayoutBox::hitTestClippedOutByRoundedBorder(
+bool LayoutBox::hitTestClippedOutByBorder(
     const HitTestLocation& locationInContainer,
     const LayoutPoint& borderBoxLocation) const {
-  if (!style()->hasBorderRadius())
-    return false;
-
   LayoutRect borderRect = borderBoxRect();
   borderRect.moveBy(borderBoxLocation);
   return !locationInContainer.intersects(

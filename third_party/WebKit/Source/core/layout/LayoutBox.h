@@ -1289,9 +1289,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   SnapAreaSet* snapAreas() const;
   void clearSnapAreas();
 
-  bool hitTestClippedOutByRoundedBorder(
-      const HitTestLocation& locationInContainer,
-      const LayoutPoint& borderBoxLocation) const;
+  bool hitTestClippedOutByBorder(const HitTestLocation& locationInContainer,
+                                 const LayoutPoint& borderBoxLocation) const;
 
   static bool mustInvalidateFillLayersPaintOnWidthChange(const FillLayer&);
   static bool mustInvalidateFillLayersPaintOnHeightChange(const FillLayer&);
