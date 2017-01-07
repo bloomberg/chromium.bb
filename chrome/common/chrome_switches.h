@@ -96,7 +96,6 @@ extern const char kDisablePushApiBackgroundMode[];
 extern const char kDisableQuic[];
 extern const char kDisableSettingsWindow[];
 extern const char kDisableWebNotificationCustomLayouts[];
-extern const char kDisableWebUsbSecurity[];
 extern const char kDisableZeroBrowsersOpenForTests[];
 extern const char kDiskCacheDir[];
 extern const char kDiskCacheSize[];

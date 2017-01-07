@@ -566,6 +566,8 @@ TEST_F(ExtensionPrinterHandlerTest, GetUsbPrinters) {
   extension_printer_handler_->StartGetPrinters(
       base::Bind(&RecordPrinterList, &call_count, &printers, &is_done));
 
+  base::RunLoop().RunUntilIdle();
+
   FakePrinterProviderAPI* fake_api = GetPrinterProviderAPI();
   ASSERT_TRUE(fake_api);
   ASSERT_EQ(1u, fake_api->pending_get_printers_count());

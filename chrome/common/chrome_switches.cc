@@ -283,9 +283,6 @@ const char kDisableSettingsWindow[]          = "disable-settings-window";
 const char kDisableWebNotificationCustomLayouts[] =
     "disable-web-notification-custom-layouts";
 
-// Disables WebUSB's CORS-like checks for origin->device communication.
-const char kDisableWebUsbSecurity[] = "disable-webusb-security";
-
 // Some tests seem to require the application to close when the last
 // browser window is closed. Thus, we need a switch to force this behavior
 // for ChromeOS Aura, disable "zero window mode".

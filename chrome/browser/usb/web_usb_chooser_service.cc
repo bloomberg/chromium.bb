@@ -36,7 +36,7 @@ void WebUsbChooserService::GetPermission(
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   std::unique_ptr<UsbChooserController> usb_chooser_controller(
       new UsbChooserController(render_frame_host_, std::move(device_filters),
-                               render_frame_host_, callback));
+                               callback));
   std::unique_ptr<ChooserBubbleDelegate> chooser_bubble_delegate(
       new ChooserBubbleDelegate(render_frame_host_,
                                 std::move(usb_chooser_controller)));

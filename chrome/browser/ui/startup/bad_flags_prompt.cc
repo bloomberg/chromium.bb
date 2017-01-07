@@ -87,12 +87,6 @@ void ShowBadFlagsPrompt(Browser* browser) {
     // if they are not.
     switches::kUnsafelyTreatInsecureOriginAsSecure,
 
-    // This flag disables WebUSB's CORS-like checks for origin to device
-    // communication, allowing any origin to ask the user for permission to
-    // connect to a device. It is intended for manufacturers testing their
-    // existing devices until https://crbug.com/598766 is implemented.
-    switches::kDisableWebUsbSecurity,
-
     NULL
   };
 

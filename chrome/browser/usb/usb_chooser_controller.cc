@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/net/referrer.h"
@@ -21,7 +20,6 @@
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/browser/usb/web_usb_histograms.h"
 #include "chrome/browser/usb/web_usb_permission_provider.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/render_frame_host.h"
@@ -34,6 +32,9 @@
 #include "device/usb/webusb_descriptors.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
+
+using content::RenderFrameHost;
+using content::WebContents;
 
 namespace {
 
@@ -71,11 +72,10 @@ base::string16 GetDeviceName(scoped_refptr<device::UsbDevice> device) {
 }  // namespace
 
 UsbChooserController::UsbChooserController(
-    content::RenderFrameHost* owner,
+    RenderFrameHost* render_frame_host,
     mojo::Array<device::usb::DeviceFilterPtr> device_filters,
-    content::RenderFrameHost* render_frame_host,
     const device::usb::ChooserService::GetPermissionCallback& callback)
-    : ChooserController(owner,
+    : ChooserController(render_frame_host,
                         IDS_USB_DEVICE_CHOOSER_PROMPT_ORIGIN,
                         IDS_USB_DEVICE_CHOOSER_PROMPT_EXTENSION_NAME),
       render_frame_host_(render_frame_host),
@@ -141,8 +141,8 @@ void UsbChooserController::Select(const std::vector<size_t>& indices) {
   DCHECK_EQ(1u, indices.size());
   size_t index = indices[0];
   DCHECK_LT(index, devices_.size());
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(render_frame_host_);
+  WebContents* web_contents =
+      WebContents::FromRenderFrameHost(render_frame_host_);
   GURL embedding_origin =
       web_contents->GetMainFrame()->GetLastCommittedURL().GetOrigin();
   Profile* profile =
@@ -223,11 +223,20 @@ void UsbChooserController::GotUsbDeviceList(
 
 bool UsbChooserController::DisplayDevice(
     scoped_refptr<device::UsbDevice> device) const {
-  return device::UsbDeviceFilter::MatchesAny(device, filters_) &&
-         !UsbBlocklist::Get().IsExcluded(device) &&
-         (base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kDisableWebUsbSecurity) ||
-          device::FindInWebUsbAllowedOrigins(
-              device->webusb_allowed_origins(),
-              render_frame_host_->GetLastCommittedURL().GetOrigin()));
+  if (!device::UsbDeviceFilter::MatchesAny(device, filters_))
+    return false;
+
+  if (UsbBlocklist::Get().IsExcluded(device))
+    return false;
+
+  // Embedded frames must have their origin in the list provided by the device.
+  RenderFrameHost* main_frame =
+      WebContents::FromRenderFrameHost(render_frame_host_)->GetMainFrame();
+  if (render_frame_host_ != main_frame) {
+    return device::FindInWebUsbAllowedOrigins(
+        device->webusb_allowed_origins(),
+        render_frame_host_->GetLastCommittedURL().GetOrigin());
+  }
+
+  return true;
 }

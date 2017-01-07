@@ -33,9 +33,8 @@ class UsbChooserController : public ChooserController,
                              public device::UsbService::Observer {
  public:
   UsbChooserController(
-      content::RenderFrameHost* owner,
-      mojo::Array<device::usb::DeviceFilterPtr> device_filters,
       content::RenderFrameHost* render_frame_host,
+      mojo::Array<device::usb::DeviceFilterPtr> device_filters,
       const device::usb::ChooserService::GetPermissionCallback& callback);
   ~UsbChooserController() override;
 
