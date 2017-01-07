@@ -90,6 +90,7 @@ class AFDOUpdateEbuildStage(generic_stages.BuilderStage):
     # If we don't have any boards, leave the called function to guess.
     board = self._boards[0] if self._boards else None
     arch_profiles = {}
+    afdo.InitGSUrls(board)
     for arch in afdo.AFDO_ARCH_GENERATORS:
       afdo_file = afdo.GetLatestAFDOFile(cpv, arch, buildroot, gs_context)
       if not afdo_file:
