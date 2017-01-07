@@ -1634,13 +1634,14 @@ void FFmpegDemuxer::OnEnabledAudioTracksChanged(
   // First disable all streams that need to be disabled and then enable streams
   // that are enabled.
   for (const auto& stream : streams_) {
-    if (stream->type() == DemuxerStream::AUDIO &&
+    if (stream && stream->type() == DemuxerStream::AUDIO &&
         enabled_streams.find(stream.get()) == enabled_streams.end()) {
       DVLOG(1) << __func__ << ": disabling stream " << stream.get();
       stream->set_enabled(false, currTime);
     }
   }
   for (const auto& stream : enabled_streams) {
+    DCHECK(stream);
     DVLOG(1) << __func__ << ": enabling stream " << stream;
     stream->set_enabled(true, currTime);
   }
@@ -1662,7 +1663,7 @@ void FFmpegDemuxer::OnSelectedVideoTrackChanged(
   // First disable all streams that need to be disabled and then enable the
   // stream that needs to be enabled (if any).
   for (const auto& stream : streams_) {
-    if (stream->type() == DemuxerStream::VIDEO &&
+    if (stream && stream->type() == DemuxerStream::VIDEO &&
         stream.get() != selected_stream) {
       DVLOG(1) << __func__ << ": disabling stream " << stream.get();
       stream->set_enabled(false, currTime);
