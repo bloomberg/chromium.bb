@@ -1114,28 +1114,8 @@ NON_SWARMED_GTESTS = {
   }
 }
 
-TELEMETRY_TESTS = {
-  'maps_pixel_test': {
-    'target_name': 'maps',
-    'args': [
-      '--os-type',
-      '${os_type}',
-      '--build-revision',
-      '${got_revision}',
-      '--test-machine-name',
-      '${buildername}',
-    ],
-    'tester_configs': [
-      {
-        'allow_on_android': True,
-      },
-    ],
-  },
-}
-
-# These tests use Telemetry's new, simpler, browser_test_runner.
-# Eventually all of the Telemetry based tests above will be ported to
-# this harness, and the old harness will be deleted.
+# These tests use Telemetry's new browser_test_runner, which is a much
+# simpler harness for correctness testing.
 TELEMETRY_GPU_INTEGRATION_TESTS = {
   'context_lost': {
     'tester_configs': [
@@ -1160,6 +1140,22 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       ],
   },
   'hardware_accelerated_feature': {
+    'tester_configs': [
+      {
+        'allow_on_android': True,
+      },
+    ],
+  },
+  'maps_pixel_test': {
+    'target_name': 'maps',
+    'args': [
+      '--os-type',
+      '${os_type}',
+      '--build-revision',
+      '${got_revision}',
+      '--test-machine-name',
+      '${buildername}',
+    ],
     'tester_configs': [
       {
         'allow_on_android': True,
@@ -1520,8 +1516,7 @@ def generate_gtest(tester_name, tester_config, test, test_config, is_fyi):
   return result
 
 def generate_telemetry_test(tester_name, tester_config,
-                            test, test_config, is_fyi,
-                            use_gpu_integration_test_harness):
+                            test, test_config, is_fyi):
   if not should_run_on_tester(tester_name, tester_config, test_config, is_fyi):
     return None
   test_args = ['-v']
@@ -1565,14 +1560,9 @@ def generate_telemetry_test(tester_name, tester_config,
     swarming.update(test_config['swarming'])
   result = {
     'args': prefix_args + test_args,
-    'isolate_name': (
-      'telemetry_gpu_integration_test' if use_gpu_integration_test_harness
-      else 'telemetry_gpu_test'),
+    'isolate_name': 'telemetry_gpu_integration_test',
     'name': step_name,
-    'override_compile_targets': [
-      ('telemetry_gpu_integration_test_run' if use_gpu_integration_test_harness
-       else 'telemetry_gpu_test_run')
-    ],
+    'override_compile_targets': ['telemetry_gpu_integration_test_run'],
     'swarming': swarming,
   }
   if 'non_precommit_args' in test_config:
@@ -1597,13 +1587,11 @@ def generate_gtests(tester_name, tester_config, test_dictionary, is_fyi):
   return gtests
 
 def generate_telemetry_tests(tester_name, tester_config,
-                             test_dictionary, is_fyi,
-                             use_gpu_integration_test_harness):
+                             test_dictionary, is_fyi):
   isolated_scripts = []
   for test_name, test_config in sorted(test_dictionary.iteritems()):
     test = generate_telemetry_test(
-      tester_name, tester_config, test_name, test_config, is_fyi,
-      use_gpu_integration_test_harness)
+      tester_name, tester_config, test_name, test_config, is_fyi)
     if test:
       isolated_scripts.append(test)
   return isolated_scripts
@@ -1615,9 +1603,8 @@ def generate_all_tests(waterfall, is_fyi):
   for name, config in waterfall['testers'].iteritems():
     gtests = generate_gtests(name, config, COMMON_GTESTS, is_fyi)
     isolated_scripts = \
-      generate_telemetry_tests(name, config, TELEMETRY_TESTS, is_fyi, False) + \
-      generate_telemetry_tests(name, config, TELEMETRY_GPU_INTEGRATION_TESTS,
-                               is_fyi, True)
+      generate_telemetry_tests(
+        name, config, TELEMETRY_GPU_INTEGRATION_TESTS, is_fyi)
     tests[name] = {
       'gtest_tests': sorted(gtests, key=lambda x: x['test']),
       'isolated_scripts': sorted(isolated_scripts, key=lambda x: x['name'])
