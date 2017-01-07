@@ -408,6 +408,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'amd'], bug=663601)
     self.Flaky('deqp/functional/gles3/textureshadow/*',
         ['mac', 'amd'], bug=663601)
+    self.Flaky('deqp/functional/gles3/texturespecification/' +
+        'teximage2d_unpack_params.html',
+        ['mac', 'amd'], bug=679058)
 
     self.Fail('conformance2/rendering/clipping-wide-points.html',
         ['mac', 'amd'], bug=642822)
