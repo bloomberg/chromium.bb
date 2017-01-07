@@ -52,10 +52,12 @@
   aom_read_literal_(r, bits ACCT_STR_ARG(ACCT_STR_NAME))
 #define aom_read_tree_bits(r, tree, probs, ACCT_STR_NAME) \
   aom_read_tree_bits_(r, tree, probs ACCT_STR_ARG(ACCT_STR_NAME))
+#define aom_read_cdf(r, cdf, nsymbs, ACCT_STR_NAME) \
+  aom_read_cdf_(r, cdf, nsymbs ACCT_STR_ARG(ACCT_STR_NAME))
 #define aom_read_symbol(r, cdf, nsymbs, ACCT_STR_NAME) \
   aom_read_symbol_(r, cdf, nsymbs ACCT_STR_ARG(ACCT_STR_NAME))
-#define aom_read_symbol_unscaled(r, cdf, nsymbs, ACCT_STR_NAME) \
-  aom_read_symbol_unscaled_(r, cdf, nsymbs ACCT_STR_ARG(ACCT_STR_NAME))
+#define aom_read_cdf_unscaled(r, cdf, nsymbs, ACCT_STR_NAME) \
+  aom_read_cdf_unscaled_(r, cdf, nsymbs ACCT_STR_ARG(ACCT_STR_NAME))
 
 #ifdef __cplusplus
 extern "C" {
@@ -221,8 +223,8 @@ static INLINE int aom_read_tree_(aom_reader *r, const aom_tree_index *tree,
 }
 
 #if CONFIG_EC_MULTISYMBOL
-static INLINE int aom_read_symbol_(aom_reader *r, aom_cdf_prob *cdf,
-                                   int nsymbs ACCT_STR_PARAM) {
+static INLINE int aom_read_cdf_(aom_reader *r, aom_cdf_prob *cdf,
+                                int nsymbs ACCT_STR_PARAM) {
   int ret;
 #if CONFIG_ANS
   (void)nsymbs;
@@ -235,20 +237,25 @@ static INLINE int aom_read_symbol_(aom_reader *r, aom_cdf_prob *cdf,
   "coder. Enable daala_ec or ans for a valid configuration."
 #endif
 
-#if CONFIG_EC_ADAPT
-  update_cdf(cdf, ret, nsymbs);
-#endif
-
 #if CONFIG_ACCOUNTING
   if (ACCT_STR_NAME) aom_process_accounting(r, ACCT_STR_NAME);
 #endif
   return ret;
 }
 
+static INLINE int aom_read_symbol_(aom_reader *r, aom_cdf_prob *cdf,
+                                   int nsymbs ACCT_STR_PARAM) {
+  int ret;
+  ret = aom_read_cdf(r, cdf, nsymbs, ACCT_STR_NAME);
+#if CONFIG_EC_ADAPT
+  update_cdf(cdf, ret, nsymbs);
+#endif
+  return ret;
+}
+
 #if CONFIG_PVQ
-static INLINE int aom_read_symbol_unscaled_(aom_reader *r,
-                                            const aom_cdf_prob *cdf,
-                                            int nsymbs ACCT_STR_PARAM) {
+static INLINE int aom_read_cdf_unscaled_(aom_reader *r, const aom_cdf_prob *cdf,
+                                         int nsymbs ACCT_STR_PARAM) {
   int ret;
 #if CONFIG_DAALA_EC
   ret = od_ec_decode_cdf_unscaled(&r->ec, cdf, nsymbs);

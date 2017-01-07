@@ -46,7 +46,7 @@ int aom_decode_cdf_adapt_q15_(aom_reader *r, uint16_t *cdf, int n,
       cdf[i] = cdf[i]*32768/ft;
     }
   }
-  val = aom_read_symbol(r, cdf, n, ACCT_STR);
+  val = aom_read_cdf(r, cdf, n, ACCT_STR);
   aom_cdf_adapt_q15(val, cdf, n, count, rate);
   return val;
 }
@@ -110,8 +110,8 @@ int generic_decode_(aom_reader *r, generic_encoder *model, int max,
   id = OD_MINI(GENERIC_TABLES - 1, lg_q1);
   cdf = model->cdf[id];
   ms = (max + (1 << shift >> 1)) >> shift;
-  if (max == -1) xs = aom_read_symbol_unscaled(r, cdf, 16, ACCT_STR);
-  else xs = aom_read_symbol_unscaled(r, cdf, OD_MINI(ms + 1, 16), ACCT_STR);
+  if (max == -1) xs = aom_read_cdf_unscaled(r, cdf, 16, ACCT_STR);
+  else xs = aom_read_cdf_unscaled(r, cdf, OD_MINI(ms + 1, 16), ACCT_STR);
   if (xs == 15) {
     int e;
     unsigned decay;
