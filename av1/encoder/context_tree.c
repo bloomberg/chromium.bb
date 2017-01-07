@@ -30,7 +30,12 @@ static void alloc_mode_context(AV1_COMMON *cm, int num_4x4_blk,
   const int num_blk = (num_4x4_blk < 4 ? 4 : num_4x4_blk);
   const int num_pix = num_blk * tx_size_2d[0];
   int i;
+#if CONFIG_CB4X4 && CONFIG_VAR_TX
+  ctx->num_4x4_blk = num_blk / 4;
+#else
   ctx->num_4x4_blk = num_blk;
+#endif
+
 #if CONFIG_EXT_PARTITION_TYPES
   ctx->partition = partition;
 #endif
