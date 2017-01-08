@@ -12,6 +12,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -68,7 +69,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/views/focus/view_storage.h"
@@ -748,19 +748,18 @@ void ToolbarView::LoadImages() {
 
   back_->SetImage(
       views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_BACK, normal_color));
+      gfx::CreateVectorIcon(kNavigateBackIcon, normal_color));
   back_->SetImage(
       views::Button::STATE_DISABLED,
-      gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_BACK, disabled_color));
+      gfx::CreateVectorIcon(kNavigateBackIcon, normal_color));
   forward_->SetImage(
       views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_FORWARD, normal_color));
-  forward_->SetImage(views::Button::STATE_DISABLED,
-                     gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_FORWARD,
-                                           disabled_color));
-  home_->SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_HOME, normal_color));
+      gfx::CreateVectorIcon(kNavigateForwardIcon, normal_color));
+  forward_->SetImage(
+      views::Button::STATE_DISABLED,
+      gfx::CreateVectorIcon(kNavigateForwardIcon, disabled_color));
+  home_->SetImage(views::Button::STATE_NORMAL,
+                  gfx::CreateVectorIcon(kNavigateHomeIcon, normal_color));
   app_menu_button_->UpdateIcon();
 
   back_->set_ink_drop_base_color(normal_color);

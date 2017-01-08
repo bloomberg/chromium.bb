@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 
 #include "base/memory/ptr_util.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/payments/payment_request_sheet_controller.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/background.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/button.h"
@@ -42,7 +42,7 @@ std::unique_ptr<views::View> CreateSheetHeaderView(
     layout->SkipColumns(1);
   } else {
     views::VectorIconButton* back_arrow = new views::VectorIconButton(delegate);
-    back_arrow->SetIcon(gfx::VectorIconId::NAVIGATE_BACK);
+    back_arrow->SetIcon(kNavigateBackIcon);
     back_arrow->SetSize(back_arrow->GetPreferredSize());
     back_arrow->set_tag(static_cast<int>(
         PaymentRequestCommonTags::BACK_BUTTON_TAG));

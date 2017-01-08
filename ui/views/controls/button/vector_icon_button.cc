@@ -44,10 +44,19 @@ void VectorIconButton::SetIcon(gfx::VectorIconId id) {
   }
 }
 
+void VectorIconButton::SetIcon(const gfx::VectorIcon& icon) {
+  icon_ = &icon;
+  SetIcon(gfx::VectorIconId::VECTOR_ICON_NONE);
+}
+
 void VectorIconButton::OnThemeChanged() {
   SkColor icon_color =
       color_utils::DeriveDefaultIconColor(delegate_->GetVectorIconBaseColor());
-  gfx::ImageSkia image = gfx::CreateVectorIcon(id_, icon_color);
+  gfx::ImageSkia image;
+  if (icon_)
+    image = gfx::CreateVectorIcon(*icon_, icon_color);
+  else
+    image = gfx::CreateVectorIcon(id_, icon_color);
   SetImage(views::CustomButton::STATE_NORMAL, &image);
   image = gfx::CreateVectorIcon(id_, SkColorSetA(icon_color, 0xff / 2));
   SetImage(views::CustomButton::STATE_DISABLED, &image);

@@ -5,6 +5,7 @@
 #include "chrome/browser/recovery/recovery_install_global_error.h"
 
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/recovery_component_installer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,7 +18,6 @@
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/native_theme/native_theme.h"
 
 RecoveryInstallGlobalError::RecoveryInstallGlobalError(Profile* profile)
@@ -69,7 +69,7 @@ base::string16 RecoveryInstallGlobalError::MenuItemLabel() {
 
 gfx::Image RecoveryInstallGlobalError::MenuItemIcon() {
   return gfx::Image(gfx::CreateVectorIcon(
-      gfx::VectorIconId::BROWSER_TOOLS_UPDATE,
+      kBrowserToolsUpdateIcon,
       ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
           ui::NativeTheme::kColorId_AlertSeverityHigh)));
 }
