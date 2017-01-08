@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkPaint.h"
-#include "third_party/skia/include/effects/SkArithmeticMode.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/canvas.h"
