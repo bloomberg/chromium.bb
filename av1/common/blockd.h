@@ -41,19 +41,35 @@ extern "C" {
 #if CONFIG_EXT_INTER
 // Should we try rectangular interintra predictions?
 #define USE_RECT_INTERINTRA 1
-#if CONFIG_COMPOUND_SEGMENT
-#define MAX_SEG_MASK_BITS 3
 
+#if CONFIG_COMPOUND_SEGMENT
+
+// Set COMPOUND_SEGMENT_TYPE to one of the three
+// 0: Uniform
+// 1: Difference weighted
+#define COMPOUND_SEGMENT_TYPE 1
+
+#if COMPOUND_SEGMENT_TYPE == 0
+#define MAX_SEG_MASK_BITS 1
 // SEG_MASK_TYPES should not surpass 1 << MAX_SEG_MASK_BITS
 typedef enum {
   UNIFORM_45 = 0,
   UNIFORM_45_INV,
-  UNIFORM_55,
-  UNIFORM_55_INV,
   SEG_MASK_TYPES,
 } SEG_MASK_TYPE;
+
+#elif COMPOUND_SEGMENT_TYPE == 1
+#define MAX_SEG_MASK_BITS 1
+// SEG_MASK_TYPES should not surpass 1 << MAX_SEG_MASK_BITS
+typedef enum {
+  DIFFWTD_45 = 0,
+  DIFFWTD_45_INV,
+  SEG_MASK_TYPES,
+} SEG_MASK_TYPE;
+
+#endif  // COMPOUND_SEGMENT_TYPE
 #endif  // CONFIG_COMPOUND_SEGMENT
-#endif
+#endif  // CONFIG_EXT_INTER
 
 typedef enum {
   KEY_FRAME = 0,

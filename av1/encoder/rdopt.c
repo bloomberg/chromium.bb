@@ -6852,9 +6852,16 @@ static int64_t pick_interinter_seg_mask(const AV1_COMP *const cpi,
 
   // try each mask type and its inverse
   for (cur_mask_type = 0; cur_mask_type < SEG_MASK_TYPES; cur_mask_type++) {
-    // build mask and inverse
-    build_compound_seg_mask(comp_data->seg_mask, cur_mask_type, p0, bw, p1, bw,
-                            bsize, bh, bw);
+// build mask and inverse
+#if CONFIG_AOM_HIGHBITDEPTH
+    if (hbd)
+      build_compound_seg_mask_highbd(
+          comp_data->seg_mask, cur_mask_type, CONVERT_TO_BYTEPTR(p0), bw,
+          CONVERT_TO_BYTEPTR(p1), bw, bsize, bh, bw, xd->bd);
+    else
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+      build_compound_seg_mask(comp_data->seg_mask, cur_mask_type, p0, bw, p1,
+                              bw, bsize, bh, bw);
 
     // compute rd for mask
     sse = av1_wedge_sse_from_residuals(r1, d10, comp_data->seg_mask, N);
@@ -6871,8 +6878,15 @@ static int64_t pick_interinter_seg_mask(const AV1_COMP *const cpi,
 
   // make final mask
   comp_data->mask_type = best_mask_type;
-  build_compound_seg_mask(comp_data->seg_mask, comp_data->mask_type, p0, bw, p1,
-                          bw, bsize, bh, bw);
+#if CONFIG_AOM_HIGHBITDEPTH
+  if (hbd)
+    build_compound_seg_mask_highbd(
+        comp_data->seg_mask, comp_data->mask_type, CONVERT_TO_BYTEPTR(p0), bw,
+        CONVERT_TO_BYTEPTR(p1), bw, bsize, bh, bw, xd->bd);
+  else
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+    build_compound_seg_mask(comp_data->seg_mask, comp_data->mask_type, p0, bw,
+                            p1, bw, bsize, bh, bw);
 
   return best_rd;
 }

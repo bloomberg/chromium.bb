@@ -196,6 +196,12 @@ void build_compound_seg_mask(uint8_t *mask, SEG_MASK_TYPE mask_type,
                              const uint8_t *src0, int src0_stride,
                              const uint8_t *src1, int src1_stride,
                              BLOCK_SIZE sb_type, int h, int w);
+#if CONFIG_AOM_HIGHBITDEPTH
+void build_compound_seg_mask_highbd(uint8_t *mask, SEG_MASK_TYPE mask_type,
+                                    const uint8_t *src0, int src0_stride,
+                                    const uint8_t *src1, int src1_stride,
+                                    BLOCK_SIZE sb_type, int h, int w, int bd);
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 #endif  // CONFIG_COMPOUND_SEGMENT
 #endif  // CONFIG_EXT_INTER
 
