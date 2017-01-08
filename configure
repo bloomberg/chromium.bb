@@ -275,7 +275,6 @@ EXPERIMENT_LIST="
     motion_var
     warped_motion
     entropy
-    bidir_pred
     bitstream_debug
     alt_intra
     palette
