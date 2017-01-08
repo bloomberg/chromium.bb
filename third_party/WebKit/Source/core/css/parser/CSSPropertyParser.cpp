@@ -758,46 +758,6 @@ static CSSValue* consumeCounter(CSSParserTokenRange& range, int defaultValue) {
   return list;
 }
 
-static CSSValue* consumePageSize(CSSParserTokenRange& range) {
-  return consumeIdent<CSSValueA3, CSSValueA4, CSSValueA5, CSSValueB4,
-                      CSSValueB5, CSSValueLedger, CSSValueLegal,
-                      CSSValueLetter>(range);
-}
-
-static CSSValueList* consumeSize(CSSParserTokenRange& range,
-                                 CSSParserMode cssParserMode) {
-  CSSValueList* result = CSSValueList::createSpaceSeparated();
-
-  if (range.peek().id() == CSSValueAuto) {
-    result->append(*consumeIdent(range));
-    return result;
-  }
-
-  if (CSSValue* width =
-          consumeLength(range, cssParserMode, ValueRangeNonNegative)) {
-    CSSValue* height =
-        consumeLength(range, cssParserMode, ValueRangeNonNegative);
-    result->append(*width);
-    if (height)
-      result->append(*height);
-    return result;
-  }
-
-  CSSValue* pageSize = consumePageSize(range);
-  CSSValue* orientation =
-      consumeIdent<CSSValuePortrait, CSSValueLandscape>(range);
-  if (!pageSize)
-    pageSize = consumePageSize(range);
-
-  if (!orientation && !pageSize)
-    return nullptr;
-  if (pageSize)
-    result->append(*pageSize);
-  if (orientation)
-    result->append(*orientation);
-  return result;
-}
-
 static CSSValue* consumeSnapHeight(CSSParserTokenRange& range,
                                    CSSParserMode cssParserMode) {
   CSSPrimitiveValue* unit =
@@ -3436,8 +3396,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyCounterReset:
       return consumeCounter(m_range,
                             property == CSSPropertyCounterIncrement ? 1 : 0);
-    case CSSPropertySize:
-      return consumeSize(m_range, m_context.mode());
     case CSSPropertySnapHeight:
       return consumeSnapHeight(m_range, m_context.mode());
     case CSSPropertyTextIndent:

@@ -353,7 +353,7 @@ shape-image-threshold interpolable, type_name=float
 shape-margin interpolable, converter=convertLength
 shape-outside interpolable, converter=convertShapeValue, typedom_types=[Image]
 shape-rendering inherited, svg
-size custom_all
+size custom_all, api_class
 snap-height runtime_flag=CSSSnapSize, inherited, custom_all
 speak inherited
 stop-color interpolable, svg, converter=convertColor
