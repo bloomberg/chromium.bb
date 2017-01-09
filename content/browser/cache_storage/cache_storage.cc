@@ -59,7 +59,7 @@ void DoNothingWithBool(bool success) {}
 }  // namespace
 
 const char CacheStorage::kIndexFileName[] = "index.txt";
-const int64_t CacheStorage::kSizeUnknown;
+constexpr int64_t CacheStorage::kSizeUnknown;
 
 struct CacheStorage::CacheMatchResponse {
   CacheMatchResponse() = default;
