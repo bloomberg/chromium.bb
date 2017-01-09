@@ -52,13 +52,12 @@
 
       function setupTest()
       {
+        document.body.offsetHeight; // Force style recalc
         document.getElementById('test').className = 'animating box';
         runAnimationTest(expectedValues, animationStarted, undefined, 'do-not-use-pause-api');
       }
       
-      window.addEventListener('load', function() {
-          window.setTimeout(setupTest, 0);
-      }, false);
+      window.addEventListener('load', setupTest, false);
 
     </script>
 </head>

@@ -40,6 +40,7 @@
     'use strict';
     function runTest()
     {
+        document.body.offsetHeight; // Force style recalc
         var solid_color_overlay = document.getElementById("solid_color_overlay");
         solid_color_overlay.removeAttribute('hidden');
 
