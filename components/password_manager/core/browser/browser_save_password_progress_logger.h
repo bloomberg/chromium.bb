@@ -34,6 +34,10 @@ class BrowserSavePasswordProgressLogger
   // sanitized and passed to SendLog for display.
   void LogFormStructure(StringID label, const autofill::FormStructure& form);
 
+  // Browser-specific addition to the base class' Log* methods. The input is
+  // passed to SendLog for display.
+  void LogString(StringID label, const std::string& s);
+
  protected:
   // autofill::SavePasswordProgressLogger:
   void SendLog(const std::string& log) override;

@@ -228,9 +228,9 @@ class PasswordStore : protected PasswordStoreSync,
   // If such suffix is found, |consumer|->OnReuseFound() is called on the same
   // thread on which this method is called.
   // |consumer| must not be null.
-  void CheckReuse(const base::string16& input,
-                  const std::string& domain,
-                  PasswordReuseDetectorConsumer* consumer);
+  virtual void CheckReuse(const base::string16& input,
+                          const std::string& domain,
+                          PasswordReuseDetectorConsumer* consumer);
 
  protected:
   friend class base::RefCountedThreadSafe<PasswordStore>;

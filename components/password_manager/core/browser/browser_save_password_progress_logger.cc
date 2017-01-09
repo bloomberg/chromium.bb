@@ -75,6 +75,8 @@ BrowserSavePasswordProgressLogger::BrowserSavePasswordProgressLogger(
   DCHECK(log_manager_);
 }
 
+BrowserSavePasswordProgressLogger::~BrowserSavePasswordProgressLogger() {}
+
 void BrowserSavePasswordProgressLogger::LogFormSignatures(
     SavePasswordProgressLogger::StringID label,
     const autofill::PasswordForm& form) {
@@ -144,7 +146,10 @@ std::string BrowserSavePasswordProgressLogger::FormStructureToFieldsLogString(
   return result;
 }
 
-BrowserSavePasswordProgressLogger::~BrowserSavePasswordProgressLogger() {}
+void BrowserSavePasswordProgressLogger::LogString(StringID label,
+                                                  const std::string& s) {
+  LogValue(label, base::StringValue(s));
+}
 
 void BrowserSavePasswordProgressLogger::SendLog(const std::string& log) {
   log_manager_->LogSavePasswordProgress(log);

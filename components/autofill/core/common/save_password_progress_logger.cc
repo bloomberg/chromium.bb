@@ -388,6 +388,8 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Server predictions";
     case SavePasswordProgressLogger::STRING_FORM_VOTES:
       return "Form votes";
+    case SavePasswordProgressLogger::STRING_REUSE_FOUND:
+      return "Password reused from ";
     case SavePasswordProgressLogger::STRING_INVALID:
       return "INVALID";
       // Intentionally no default: clause here -- all IDs need to get covered.

@@ -7,6 +7,8 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "components/password_manager/core/browser/password_reuse_detector_consumer.h"
+#include "url/gurl.h"
 
 namespace password_manager {
 
@@ -15,17 +17,22 @@ class PasswordManagerClient;
 // Class for managing password reuse detection. Now it receives keystrokes and
 // does nothing with them. TODO(crbug.com/657041): write other features of this
 // class when they are implemented. This class is one per-tab.
-class PasswordReuseDetectionManager {
+class PasswordReuseDetectionManager : public PasswordReuseDetectorConsumer {
  public:
   explicit PasswordReuseDetectionManager(PasswordManagerClient* client);
-  ~PasswordReuseDetectionManager();
+  ~PasswordReuseDetectionManager() override;
 
-  void DidNavigateMainFrame();
+  void DidNavigateMainFrame(const GURL& main_frame_url);
   void OnKeyPressed(const base::string16& text);
+
+  // PasswordReuseDetectorConsumer
+  void OnReuseFound(const base::string16& password,
+                    const std::string& saved_domain) override;
 
  private:
   PasswordManagerClient* client_;
   base::string16 input_characters_;
+  GURL main_frame_url_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordReuseDetectionManager);
 };

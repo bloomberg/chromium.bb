@@ -63,6 +63,10 @@ class MockPasswordStore : public PasswordStore {
                std::vector<InteractionsStats>(const GURL& origin_domain));
   MOCK_METHOD1(AddSiteStatsImpl, void(const InteractionsStats&));
   MOCK_METHOD1(RemoveSiteStatsImpl, void(const GURL&));
+  MOCK_METHOD3(CheckReuse,
+               void(const base::string16&,
+                    const std::string&,
+                    PasswordReuseDetectorConsumer*));
 
   PasswordStoreSync* GetSyncInterface() { return this; }
 

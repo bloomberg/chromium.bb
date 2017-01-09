@@ -4,9 +4,15 @@
 
 #include "components/password_manager/core/browser/password_reuse_detection_manager.h"
 
+#include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 
 namespace password_manager {
+
+namespace {
+constexpr size_t kMaxNumberOfCharactersToStore = 30;
+}
 
 PasswordReuseDetectionManager::PasswordReuseDetectionManager(
     PasswordManagerClient* client)
@@ -16,13 +22,36 @@ PasswordReuseDetectionManager::PasswordReuseDetectionManager(
 
 PasswordReuseDetectionManager::~PasswordReuseDetectionManager() {}
 
-void PasswordReuseDetectionManager::DidNavigateMainFrame() {
+void PasswordReuseDetectionManager::DidNavigateMainFrame(
+    const GURL& main_frame_url) {
+  main_frame_url_ = main_frame_url;
   input_characters_.clear();
 }
 
 void PasswordReuseDetectionManager::OnKeyPressed(const base::string16& text) {
-  // TODO(crbug.com/657041): Implement saving of |text| and asking a store about
-  // password reuse.
+  input_characters_ += text;
+  if (input_characters_.size() > kMaxNumberOfCharactersToStore) {
+    input_characters_.erase(
+        0, input_characters_.size() - kMaxNumberOfCharactersToStore);
+  }
+
+  PasswordStore* store = client_->GetPasswordStore();
+  if (!store)
+    return;
+  store->CheckReuse(input_characters_, main_frame_url_.GetOrigin().spec(),
+                    this);
+}
+
+void PasswordReuseDetectionManager::OnReuseFound(
+    const base::string16& password,
+    const std::string& saved_domain) {
+  std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
+  if (password_manager_util::IsLoggingActive(client_)) {
+    logger.reset(
+        new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
+    logger->LogString(BrowserSavePasswordProgressLogger::STRING_REUSE_FOUND,
+                      saved_domain);
+  }
 }
 
 }  // namespace password_manager

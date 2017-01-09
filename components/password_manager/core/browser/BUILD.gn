@@ -285,6 +285,7 @@ source_set("unit_tests") {
     "password_manager_settings_migration_experiment_unittest.cc",
     "password_manager_unittest.cc",
     "password_manager_util_unittest.cc",
+    "password_reuse_detection_manager_unittest.cc",
     "password_reuse_detector_unittest.cc",
     "password_store_default_unittest.cc",
     "password_store_origin_unittest.h",

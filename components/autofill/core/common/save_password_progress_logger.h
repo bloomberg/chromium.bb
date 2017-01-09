@@ -148,6 +148,7 @@ class SavePasswordProgressLogger {
     STRING_FIELDS,
     STRING_SERVER_PREDICTIONS,
     STRING_FORM_VOTES,
+    STRING_REUSE_FOUND,
     STRING_INVALID,  // Represents a string returned in a case of an error.
     STRING_MAX = STRING_INVALID
   };

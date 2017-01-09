@@ -381,7 +381,7 @@ void ChromePasswordManagerClient::HidePasswordGenerationPopup() {
 void ChromePasswordManagerClient::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  password_reuse_detection_manager_.DidNavigateMainFrame();
+  password_reuse_detection_manager_.DidNavigateMainFrame(GetMainFrameURL());
   // After some navigations RenderViewHost persists and just adding the observer
   // will cause multiple call of OnInputEvent. Since Widget API doesn't allow to
   // check whether the observer is already added, the observer is removed and
