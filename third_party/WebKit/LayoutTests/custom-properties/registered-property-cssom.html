@@ -8,11 +8,14 @@
   --color: red;
 }
 #outer {
+  --length: 77px;
   --color: blue;
 }
 </style>
 
-<div id=inner></div>
+<div id=outer>
+  <div id=inner></div>
+</div>
 
 <script>
 var computedStyle = getComputedStyle(inner);
@@ -40,7 +43,7 @@ test(function() {
   assert_equals(inlineStyle.getPropertyValue('--length'), '5');
   assert_equals(inlineStyle.getPropertyValue('--color'), 'hello');
   assert_equals(computedStyle.getPropertyValue('--length'), '0px');
-  assert_equals(computedStyle.getPropertyValue('--color'), 'white');
+  assert_equals(computedStyle.getPropertyValue('--color'), 'blue');
 }, "Formerly valid values are still readable from inline styles but are computed as the unset value");
 
 test(function() {
