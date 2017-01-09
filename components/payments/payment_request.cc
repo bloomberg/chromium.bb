@@ -37,6 +37,7 @@ void PaymentRequest::Init(
   if (!payments::validatePaymentDetails(details, &error)) {
     LOG(ERROR) << error;
     OnError();
+    client_.reset();
     return;
   }
   client_ = std::move(client);
@@ -44,6 +45,10 @@ void PaymentRequest::Init(
 }
 
 void PaymentRequest::Show() {
+  if (!client_.is_bound() || !binding_.is_bound()) {
+    OnError();
+    return;
+  }
   delegate_->ShowPaymentRequestDialog(this);
 }
 
