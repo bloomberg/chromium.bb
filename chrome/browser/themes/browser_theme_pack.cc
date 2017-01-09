@@ -96,12 +96,12 @@ struct PersistingImagesTable {
 
   // String to check for when parsing theme manifests or NULL if this isn't
   // supposed to be changeable by the user.
-  const char* const key;
+  const char* key;
 };
 
 // IDR_* resource names change whenever new resources are added; use persistent
 // IDs when storing to a cached pack.
-PersistingImagesTable kPersistingImages[] = {
+const PersistingImagesTable kPersistingImages[] = {
     {PRS_THEME_FRAME, IDR_THEME_FRAME, "theme_frame"},
     {PRS_THEME_FRAME_INACTIVE, IDR_THEME_FRAME_INACTIVE,
      "theme_frame_inactive"},
@@ -205,12 +205,12 @@ std::string GetScaleFactorsAsString(
 }
 
 struct StringToIntTable {
-  const char* const key;
+  const char* key;
   ThemeProperties::OverwritableByUserThemeProperty id;
 };
 
 // Strings used by themes to identify tints in the JSON.
-StringToIntTable kTintTable[] = {
+const StringToIntTable kTintTable[] = {
   { "buttons", ThemeProperties::TINT_BUTTONS },
   { "frame", ThemeProperties::TINT_FRAME },
   { "frame_inactive", ThemeProperties::TINT_FRAME_INACTIVE },
@@ -222,7 +222,7 @@ StringToIntTable kTintTable[] = {
 const size_t kTintTableLength = arraysize(kTintTable);
 
 // Strings used by themes to identify colors in the JSON.
-StringToIntTable kColorTable[] = {
+const StringToIntTable kColorTable[] = {
   { "frame", ThemeProperties::COLOR_FRAME },
   { "frame_inactive", ThemeProperties::COLOR_FRAME_INACTIVE },
   { "frame_incognito", ThemeProperties::COLOR_FRAME_INCOGNITO },
@@ -247,7 +247,7 @@ StringToIntTable kColorTable[] = {
 const size_t kColorTableLength = arraysize(kColorTable);
 
 // Strings used by themes to identify display properties keys in JSON.
-StringToIntTable kDisplayProperties[] = {
+const StringToIntTable kDisplayProperties[] = {
   { "ntp_background_alignment",
     ThemeProperties::NTP_BACKGROUND_ALIGNMENT },
   { "ntp_background_repeat", ThemeProperties::NTP_BACKGROUND_TILING },
@@ -256,7 +256,7 @@ StringToIntTable kDisplayProperties[] = {
 const size_t kDisplayPropertiesSize = arraysize(kDisplayProperties);
 
 int GetIntForString(const std::string& key,
-                    StringToIntTable* table,
+                    const StringToIntTable* table,
                     size_t table_length) {
   for (size_t i = 0; i < table_length; ++i) {
     if (base::LowerCaseEqualsASCII(key, table[i].key)) {
@@ -274,7 +274,7 @@ struct IntToIntTable {
 
 // Mapping used in CreateFrameImages() to associate frame images with the
 // tint ID that should maybe be applied to it.
-IntToIntTable kFrameTintMap[] = {
+const IntToIntTable kFrameTintMap[] = {
   { PRS_THEME_FRAME, ThemeProperties::TINT_FRAME },
   { PRS_THEME_FRAME_INACTIVE, ThemeProperties::TINT_FRAME_INACTIVE },
   { PRS_THEME_FRAME_OVERLAY, ThemeProperties::TINT_FRAME },
@@ -287,7 +287,7 @@ IntToIntTable kFrameTintMap[] = {
 
 // Mapping used in GenerateTabBackgroundImages() to associate what frame image
 // goes with which tab background.
-IntToIntTable kTabBackgroundMap[] = {
+const IntToIntTable kTabBackgroundMap[] = {
   { PRS_THEME_TAB_BACKGROUND, PRS_THEME_FRAME },
   { PRS_THEME_TAB_BACKGROUND_INCOGNITO, PRS_THEME_FRAME_INCOGNITO },
 };
@@ -310,7 +310,7 @@ struct CropEntry {
 // change without the maximum heights having to be modified.
 // |kThemePackVersion| must be incremented if any of the maximum heights below
 // are modified.
-struct CropEntry kImagesToCrop[] = {
+const struct CropEntry kImagesToCrop[] = {
   { PRS_THEME_FRAME, 120, true },
   { PRS_THEME_FRAME_INACTIVE, 120, true },
   { PRS_THEME_FRAME_INCOGNITO, 120, true },
