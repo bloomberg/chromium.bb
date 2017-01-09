@@ -39,14 +39,6 @@ Polymer({
     },
 
     /**
-     * Whether passwords can be shown or not.
-     * @type {boolean}
-     */
-    showPasswords: {
-      type: Boolean,
-    },
-
-    /**
      * An array of sites to display.
      * @type {!Array<!chrome.passwordsPrivate.ExceptionPair>}
      */
