@@ -1013,7 +1013,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
       "Content-Length: 140\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n"
       "x-original-content-length: 200\r\n"
-      "Cache-Control: max-age=1200\r\n";
+      "Cache-Control: max-age=1200\r\n"
+      "Vary: accept-encoding\r\n";
   response_headers += "\r\n";
 
   // Use secure sockets when fetching the request since Brotli is only enabled
@@ -1031,7 +1032,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
       "Content-Length: 140\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n"
       "x-original-content-length: 200\r\n"
-      "Cache-Control: max-age=1200\r\n";
+      "Cache-Control: max-age=1200\r\n"
+      "Vary: accept-encoding\r\n";
   response_headers += "\r\n";
 
   // Use secure sockets when fetching the request since Brotli is only enabled
@@ -1061,7 +1063,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
       "Content-Length: 140\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n"
       "x-original-content-length: 200\r\n"
-      "Cache-Control: max-age=1200\r\n";
+      "Cache-Control: max-age=1200\r\n"
+      "Vary: accept-encoding\r\n";
   response_headers += "\r\n";
 
   FetchURLRequestAndVerifyBrotli(nullptr, response_headers, false, false);
@@ -1078,7 +1081,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, BrotliAdvertisement) {
       "Content-Length: 140\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n"
       "x-original-content-length: 200\r\n"
-      "Cache-Control: max-age=1200\r\n";
+      "Cache-Control: max-age=1200\r\n"
+      "Vary: accept-encoding\r\n";
   response_headers += "\r\n";
 
   FetchURLRequestAndVerifyBrotli(nullptr, response_headers, false, true);
