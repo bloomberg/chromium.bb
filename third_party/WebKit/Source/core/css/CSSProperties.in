@@ -374,7 +374,7 @@ text-anchor inherited, svg
 text-combine-upright inherited, type_name=TextCombine, name_for_methods=TextCombine
 // FIXME: We shouldn't switch between shorthand/not shorthand based on a runtime flag
 text-decoration use_handlers_for=CSSPropertyTextDecorationLine, longhands=text-decoration-line;text-decoration-style;text-decoration-color
-text-decoration-color runtime_flag=CSS3TextDecorations, interpolable, custom_all
+text-decoration-color runtime_flag=CSS3TextDecorations, interpolable, custom_all, api_class
 text-decoration-line runtime_flag=CSS3TextDecorations, name_for_methods=TextDecoration, type_name=TextDecoration, converter=convertFlags<TextDecoration>
 text-decoration-skip runtime_flag=CSS3TextDecorations, inherited, type_name=TextDecorationSkip, converter=convertFlags<TextDecorationSkip>
 text-decoration-style runtime_flag=CSS3TextDecorations, type_name=TextDecorationStyle

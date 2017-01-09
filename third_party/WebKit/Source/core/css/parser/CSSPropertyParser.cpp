@@ -3471,9 +3471,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyOrphans:
     case CSSPropertyWidows:
       return consumePositiveInteger(m_range);
-    case CSSPropertyTextDecorationColor:
-      ASSERT(RuntimeEnabledFeatures::css3TextDecorationsEnabled());
-      return consumeColor(m_range, m_context.mode());
     case CSSPropertyWebkitTextStrokeWidth:
       return consumeTextStrokeWidth(m_range, m_context.mode());
     case CSSPropertyWebkitTextFillColor:

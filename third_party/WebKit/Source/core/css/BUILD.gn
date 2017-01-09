@@ -345,6 +345,7 @@ blink_core_sources("css") {
     "parser/SizesCalcParser.cpp",
     "properties/CSSPropertyAPI.h",
     "properties/CSSPropertyAPISize.cpp",
+    "properties/CSSPropertyAPITextDecorationColor.cpp",
     "properties/CSSPropertyAPITextUnderlinePosition.cpp",
     "properties/CSSPropertyAPITransformOrigin.cpp",
     "properties/CSSPropertyAPITranslate.cpp",
