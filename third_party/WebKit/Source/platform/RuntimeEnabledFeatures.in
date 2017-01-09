@@ -71,6 +71,7 @@ CSSOffsetPositionAnchor status=experimental
 CSSOffsetRotate status=stable
 CSSOffsetRotation status=stable
 CSSPaintAPI status=experimental, depends_on=CSSTypedOM, depends_on=Worklet
+CSSPaintAPIArguments status=experimental, depends_on=CSSPaintAPI
 CSSSnapSize status=experimental
 CSSStickyPosition status=stable
 CSSTouchActionPanDirections status=stable
