@@ -179,7 +179,14 @@ def get_fyi_waterfall_config():
            'build245-m4--device1', 'build245-m4--device2',
            'build245-m4--device3', 'build245-m4--device4',
            'build245-m4--device5', 'build245-m4--device6',
-           'build245-m4--device7'
+           'build245-m4--device7', 'build248-m4--device1',
+           'build248-m4--device2', 'build248-m4--device3',
+           'build248-m4--device4', 'build248-m4--device5',
+           'build248-m4--device6', 'build248-m4--device7',
+           'build249-m4--device1', 'build249-m4--device2',
+           'build249-m4--device3', 'build249-m4--device4',
+           'build249-m4--device5', 'build249-m4--device6',
+           'build249-m4--device7'
         ]
       }
     ])
@@ -683,7 +690,7 @@ def generate_all_tests(waterfall):
   benchmark_sharding_map['22'] = shard_benchmarks(22, all_benchmarks)
   benchmark_sharding_map['5'] = shard_benchmarks(5, all_benchmarks)
   benchmark_sharding_map['1'] = shard_benchmarks(1, all_benchmarks)
-  benchmark_sharding_map['7'] = shard_benchmarks(7, all_benchmarks)
+  benchmark_sharding_map['21'] = shard_benchmarks(21, all_benchmarks)
 
   for name, config in waterfall['testers'].iteritems():
     use_whitelist = config['use_whitelist']
