@@ -258,6 +258,10 @@ void ClearBrowsingDataHandler::HandleInitialize(const base::ListValue* args) {
   OnStateChanged();
   RefreshHistoryNotice();
 
+  // Restart the counters each time the dialog is reopened.
+  for (const auto& counter : counters_)
+    counter->Restart();
+
   ResolveJavascriptCallback(
       *callback_id,
       *base::Value::CreateNullValue() /* Promise<void> */);
@@ -313,7 +317,6 @@ void ClearBrowsingDataHandler::AddCounter(
   counter->Init(profile_->GetPrefs(),
                 base::Bind(&ClearBrowsingDataHandler::UpdateCounterText,
                            base::Unretained(this)));
-  counter->Restart();
   counters_.push_back(std::move(counter));
 }
 
