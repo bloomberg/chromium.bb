@@ -76,6 +76,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
@@ -1890,30 +1891,14 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragAndDrop) {
   generator.ReleaseLeftButton();
 }
 
-// Used to test drag & drop an item between app list and shelf with multi
-// display environment.
-class ShelfAppBrowserTestWithMultiMonitor
-    : public ShelfAppBrowserTestNoDefaultBrowser {
- protected:
-  ShelfAppBrowserTestWithMultiMonitor() {}
-  ~ShelfAppBrowserTestWithMultiMonitor() override {}
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ShelfAppBrowserTestNoDefaultBrowser::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII("ash-host-window-bounds",
-                                    "800x800,801+0-800x800");
-  }
-
- private:
-
-  DISALLOW_COPY_AND_ASSIGN(ShelfAppBrowserTestWithMultiMonitor);
-};
-
 // Do basic drag and drop interaction tests between the application list and
 // the launcher in the secondary monitor.
-// TODO(msw): fix, http://crbug.com/678622.
-IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestWithMultiMonitor,
-                       DISABLED_BasicDragAndDrop) {
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, MultiDisplayBasicDragAndDrop) {
+  // Update the display configuration to add a secondary display.
+  display::test::DisplayManagerTestApi(
+      ash::Shell::GetInstance()->display_manager())
+      .UpdateDisplay("800x800,801+0-800x800");
+
   // Get a number of interfaces we need.
   DCHECK_EQ(ash::Shell::GetAllRootWindows().size(), 2U);
   aura::Window* secondary_root_window = ash::Shell::GetAllRootWindows()[1];
