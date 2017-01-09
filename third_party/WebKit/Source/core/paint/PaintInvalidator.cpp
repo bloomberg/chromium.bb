@@ -333,12 +333,9 @@ void PaintInvalidator::updateContext(const LayoutObject& object,
         PaintInvalidatorContext::ForcedSubtreeInvalidationChecking;
 
   // TODO(crbug.com/637313): This is temporary before we support filters in
-  // paint property tree.
+  // GeometryMapper.
   // TODO(crbug.com/648274): This is a workaround for multi-column contents.
-  // TODO(crbug.com/672989): This is a workaround for out-of-flow positioned
-  // objects in multi-column spanner.
-  if (object.hasFilterInducingProperty() || object.isLayoutFlowThread() ||
-      object.isColumnSpanAll()) {
+  if (object.hasFilterInducingProperty() || object.isLayoutFlowThread()) {
     context.forcedSubtreeInvalidationFlags |=
         PaintInvalidatorContext::ForcedSubtreeSlowPathRect;
   }
