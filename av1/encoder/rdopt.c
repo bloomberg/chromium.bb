@@ -2006,7 +2006,7 @@ static int64_t rd_pick_intra4x4block(
   const int src_stride = p->src.stride;
   const int dst_stride = pd->dst.stride;
   const uint8_t *src_init = &p->src.buf[row * 4 * src_stride + col * 4];
-  uint8_t *dst_init = &pd->dst.buf[row * 4 * src_stride + col * 4];
+  uint8_t *dst_init = &pd->dst.buf[row * 4 * dst_stride + col * 4];
 #if CONFIG_CB4X4
   // TODO(jingning): This is a temporal change. The whole function should be
   // out when cb4x4 is enabled.
