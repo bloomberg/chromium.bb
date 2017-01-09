@@ -471,6 +471,7 @@ float AudioParamTimeline::valuesForFrameRangeImpl(size_t startFrame,
   int numberOfEvents = m_events.size();
 
   if (numberOfEvents > 0) {
+    bool clampedSomeEventTime = false;
     double currentTime = startFrame / sampleRate;
 
     // Look at all the events in the timeline and check to see if any needs
@@ -482,13 +483,23 @@ float AudioParamTimeline::valuesForFrameRangeImpl(size_t startFrame,
       // in the past so clamp the event time to the current time (start of
       // the rendering quantum).
       if (event.needsTimeClampCheck()) {
-        if (event.time() < currentTime)
+        if (event.time() < currentTime) {
           event.setTime(currentTime);
+          clampedSomeEventTime = true;
+        }
 
         // In all cases, we can clear the flag because the event is either
         // in the future, or we've already checked it (just now).
         event.clearTimeClampCheck();
       }
+    }
+
+    if (clampedSomeEventTime) {
+      // If we clamped some event time to current time, we need to
+      // sort the event list in time order again, but it must be
+      // stable!
+      std::stable_sort(m_events.begin(), m_events.end(),
+                       ParamEvent::eventPreceeds);
     }
 
     // Optimize the case where the last event is in the past.
@@ -646,6 +657,7 @@ float AudioParamTimeline::valuesForFrameRangeImpl(size_t startFrame,
     float value2 = nextEvent ? nextEvent->value() : value1;
     double time2 = nextEvent ? nextEvent->time() : endFrame / sampleRate + 1;
 
+    DCHECK_GE(time2, time1);
     double deltaTime = time2 - time1;
     float k = deltaTime > 0 ? 1 / deltaTime : 0;
 

@@ -124,6 +124,10 @@ class AudioParamTimeline {
                                                double time,
                                                double duration);
 
+    static bool eventPreceeds(const ParamEvent& a, const ParamEvent& b) {
+      return a.time() < b.time();
+    }
+
     Type getType() const { return m_type; }
     float value() const { return m_value; }
     double time() const { return m_time; }
