@@ -33,15 +33,14 @@ enum class AccessPoint;
 class SigninViewControllerDelegateMac : public ConstrainedWindowMacDelegate,
                                         public SigninViewControllerDelegate {
  public:
-  // Creates and displays a constrained window off of |host_web_contents|,
-  // containing |web_contents|. If |wait_for_size| is true, the delegate will
-  // wait for ResizeNativeView() to be called by the base class before
-  // displaying the constrained window. Otherwise, the window's dimensions will
-  // be |frame|.
+  // Creates and displays a constrained window containing |web_contents|. If
+  // |wait_for_size| is true, the delegate will wait for ResizeNativeView() to
+  // be called by the base class before displaying the constrained window.
+  // Otherwise, the window's dimensions will be |frame|.
   SigninViewControllerDelegateMac(
       SigninViewController* signin_view_controller,
       std::unique_ptr<content::WebContents> web_contents,
-      content::WebContents* host_web_contents,
+      Browser* browser,
       NSRect frame,
       bool wait_for_size);
 
@@ -87,9 +86,8 @@ class SigninViewControllerDelegateMac : public ConstrainedWindowMacDelegate,
   // window is sized to the content.
   bool wait_for_size_;
 
-  // The web contents that the constrained window is displayed off of.
-  // Typically, this is going to be the active tab when the window is shown.
-  content::WebContents* host_web_contents_;
+  Browser* browser_;
+
   NSRect window_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninViewControllerDelegateMac);

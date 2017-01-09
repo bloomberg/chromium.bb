@@ -24,6 +24,7 @@ SigninViewControllerDelegate::SigninViewControllerDelegate(
     content::WebContents* web_contents)
     : signin_view_controller_(signin_view_controller),
       web_contents_(web_contents) {
+  DCHECK(web_contents_);
   web_contents_->SetDelegate(this);
 }
 

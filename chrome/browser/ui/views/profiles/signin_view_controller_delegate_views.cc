@@ -49,6 +49,10 @@ SigninViewControllerDelegateViews::SigninViewControllerDelegateViews(
       modal_signin_widget_(nullptr),
       wait_for_size_(wait_for_size),
       browser_(browser) {
+  DCHECK(browser_);
+  DCHECK(browser_->tab_strip_model()->GetActiveWebContents())
+      << "A tab must be active to present the sign-in modal dialog.";
+
   if (!wait_for_size_)
     DisplayModal();
 }
@@ -107,9 +111,16 @@ void SigninViewControllerDelegateViews::ResizeNativeView(int height) {
 }
 
 void SigninViewControllerDelegateViews::DisplayModal() {
-  gfx::NativeWindow window = browser_->tab_strip_model()
-                                 ->GetActiveWebContents()
-                                 ->GetTopLevelNativeWindow();
+  content::WebContents* host_web_contents =
+      browser_->tab_strip_model()->GetActiveWebContents();
+
+  // Avoid displaying the sign-in modal view if there are no active web
+  // contents. This happens if the user closes the browser window before this
+  // dialog has a chance to be displayed.
+  if (!host_web_contents)
+    return;
+
+  gfx::NativeWindow window = host_web_contents->GetTopLevelNativeWindow();
   modal_signin_widget_ =
       constrained_window::CreateBrowserModalDialogViews(this, window);
   modal_signin_widget_->Show();
