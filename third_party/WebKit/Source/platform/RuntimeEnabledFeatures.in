@@ -185,7 +185,7 @@ PaymentDetailsError status=stable
 PaymentDetailsModifierData status=experimental
 // PaymentRequest is enabled by default on Android
 PaymentRequest status=experimental
-PaymentRequestBasicCard status=experimental
+PaymentRequestBasicCard status=stable
 PaymentRequestPayerName status=stable
 PerformanceObserver status=stable
 PermissionDelegation status=test
