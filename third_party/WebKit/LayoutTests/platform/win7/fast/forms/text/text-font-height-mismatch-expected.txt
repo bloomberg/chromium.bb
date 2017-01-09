@@ -1,4 +1,3 @@
-CONSOLE WARNING: Failed to decode downloaded font: NotoSansCJKjp-Regular-cid03075.otf
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x142
@@ -8,20 +7,20 @@ layer at (0,0) size 800x142
         LayoutText {#text} at (0,0) size 273x17
           text run at (0,0) width 273: "Editable text should be centered vertically."
       LayoutBlockFlow {DIV} at (0,34) size 784x28
-        LayoutTextControl {INPUT} at (0,3) size 195x22 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
-        LayoutTextControl {INPUT} at (195,0) size 195x28 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+        LayoutTextControl {INPUT} at (0,0) size 236x28 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+        LayoutTextControl {INPUT} at (236,0) size 236x28 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
       LayoutBlockFlow {DIV} at (0,62) size 784x28
         LayoutTextControl {INPUT} at (0,0) size 294x28 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
       LayoutBlockFlow {DIV} at (0,90) size 784x28
         LayoutTextControl {INPUT} at (0,0) size 199x28 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-layer at (9,52) size 193x24
-  LayoutBlockFlow {DIV} at (1,-1) size 193x24
-    LayoutText {#text} at (0,3) size 74x17
-      text run at (0,3) width 74: "\x{3075} ABCgjy"
-layer at (204,52) size 193x24
-  LayoutBlockFlow {DIV} at (1,2) size 193x24
-    LayoutText {#text} at (0,3) size 74x17
-      text run at (0,3) width 74: "\x{3075} ABCgjy"
+layer at (9,51) size 234x26
+  LayoutBlockFlow {DIV} at (1,1) size 234x26
+    LayoutText {#text} at (0,0) size 74x24
+      text run at (0,0) width 74: "\x{3075} ABCgjy"
+layer at (245,51) size 234x26
+  LayoutBlockFlow {DIV} at (1,1) size 234x26
+    LayoutText {#text} at (0,0) size 74x24
+      text run at (0,0) width 74: "\x{3075} ABCgjy"
 layer at (9,78) size 292x28
   LayoutBlockFlow {DIV} at (1,0) size 292x28
     LayoutText {#text} at (0,0) size 81x27

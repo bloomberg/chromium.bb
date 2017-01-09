@@ -162,7 +162,7 @@ layer at (272,322) size 273x33
     LayoutText {#text} at (0,0) size 37x32
       text run at (0,0) width 37: "foo"
 layer at (30,377) size 118x13
-  LayoutBlockFlow {DIV} at (18,4) size 118x13 [color=#A9A9A9]
+  LayoutBlockFlow {DIV} at (18,4) size 118x13 [color=#757575]
     LayoutText {#text} at (0,0) size 102x13
       text run at (0,0) width 102: "Search for Events"
 layer at (30,377) size 118x13
