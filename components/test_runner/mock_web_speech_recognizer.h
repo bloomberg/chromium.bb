@@ -71,6 +71,8 @@ class MockWebSpeechRecognizer : public blink::WebSpeechRecognizer {
   void PostRunTaskFromQueue();
   void RunTaskFromQueue();
 
+  bool HasPendingNewContextTasks() const;
+
   blink::WebSpeechRecognitionHandle handle_;
   blink::WebSpeechRecognizerClient* client_;
   std::vector<blink::WebString> mock_transcripts_;

@@ -183,7 +183,7 @@ void MockWebSpeechRecognizer::start(
     const blink::WebSpeechRecognitionParams& params,
     blink::WebSpeechRecognizerClient* client) {
   was_aborted_ = false;
-  if (!client_) {
+  if (!client_ && !HasPendingNewContextTasks()) {
     handle_ = handle;
     client_ = client;
   } else {
@@ -316,6 +316,14 @@ void MockWebSpeechRecognizer::RunTaskFromQueue() {
   }
 
   PostRunTaskFromQueue();
+}
+
+bool MockWebSpeechRecognizer::HasPendingNewContextTasks() const {
+  for (const auto& task : task_queue_) {
+    if (task->isNewContextTask())
+      return true;
+  }
+  return false;
 }
 
 }  // namespace test_runner
