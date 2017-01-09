@@ -32,8 +32,8 @@ strong {
 }
 
 .header-logo {
-  content: -webkit-image-set(url(/logo-large.png) 1x,
-                             url(/logo-large2x.png) 2x);
+  content: url(chrome://welcome-win10/logo-large.png);
+  height: 4em;
 }
 
 .text {
@@ -56,7 +56,7 @@ strong {
 }
 
 .sections {
-  margin-bottom: 3em;
+  margin-bottom: 2em;
 }
 
 .section.expandable {
@@ -132,15 +132,14 @@ strong {
 
 .button {
   -webkit-font-smoothing: antialiased;
-  background: var(--paper-blue-a200);
+  background: var(--google-blue-500);
   border-radius: 2px;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .1);
   color: #fff;
   display: inline-block;
-  font-size: .74em;
+  font-size: .8125em;
   font-weight: 500;
-  line-height: 1.75em;
-  min-width: 2em;
+  line-height: 2.25rem;
   padding: 0 1em;
   text-align: center;
   transition: 300ms cubic-bezier(.4, .2, 0, 1);
@@ -160,8 +159,7 @@ strong {
 }
 
 .logo-small {
-  content: -webkit-image-set(url(/logo-small.png) 1x,
-                             url(/logo-small2x.png) 2x);
+  content: url(chrome://welcome-win10/logo-small.png);
   display: inline;
   height: 1.25em;
   vertical-align: top;

@@ -117,11 +117,8 @@ WelcomeWin10UI::WelcomeWin10UI(content::WebUI* web_ui, const GURL& url)
     html_source->SetDefaultResource(IDR_WELCOME_WIN10_SECTIONED_HTML);
   }
 
-  // Logo images of all scales.
-  html_source->AddResourcePath("logo-small.png", IDR_PRODUCT_LOGO_32);
-  html_source->AddResourcePath("logo-small2x.png", IDR_PRODUCT_LOGO_64);
-  html_source->AddResourcePath("logo-large.png", IDR_PRODUCT_LOGO_64);
-  html_source->AddResourcePath("logo-large2x.png", IDR_PRODUCT_LOGO_128);
+  html_source->AddResourcePath("logo-small.png", IDR_PRODUCT_LOGO_64);
+  html_source->AddResourcePath("logo-large.png", IDR_PRODUCT_LOGO_128);
 
   content::WebUIDataSource::Add(profile, html_source);
 }

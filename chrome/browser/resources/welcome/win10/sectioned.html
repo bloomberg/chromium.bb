@@ -8,6 +8,7 @@
   <link rel="import" href="chrome://resources/html/polymer.html">
   <link rel="import" href="chrome://resources/html/util.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+  <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 
   <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
@@ -54,7 +55,9 @@
             </div>
           </template>
         </div>
-        <a href="#" class="button" on-tap="onContinue">$i18n{continueText}</a>
+        <paper-button class="button" on-tap="onContinue">
+          $i18n{continueText}
+        </paper-button>
       </div>
     </div>
     <div class="bg">
