@@ -10,7 +10,7 @@
 #include "remoting/base/constants.h"
 #include "remoting/host/host_attributes.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
+#include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
 using buzz::QName;
 using buzz::XmlElement;

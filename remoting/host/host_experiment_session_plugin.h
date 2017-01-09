@@ -9,7 +9,7 @@
 #include <string>
 
 #include "remoting/protocol/session_plugin.h"
-#include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
+#include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
 namespace remoting {
 
