@@ -371,10 +371,6 @@ TEST_F(MostVisitedSitesWithEmptyCacheTest,
 TEST_F(MostVisitedSitesWithEmptyCacheTest,
        ShouldExposeTopSitesIfSuggestionsServiceFasterButEmpty) {
   // Empty reply from suggestions service causes no update to our observer.
-  // However, the current implementation issues a redundant query to TopSites.
-  // TODO(mastiz): Avoid this redundant call.
-  EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs(_, false))
-      .WillOnce(Invoke(&top_sites_callbacks_, &TopSitesCallbackList::Add));
   suggestions_service_callbacks_.Notify(SuggestionsProfile());
   VerifyAndClearExpectations();
 
@@ -382,8 +378,7 @@ TEST_F(MostVisitedSitesWithEmptyCacheTest,
   // TODO(mastiz): Avoid a second redundant call to the observer.
   EXPECT_CALL(mock_observer_,
               OnMostVisitedURLsAvailable(ElementsAre(MatchesTile(
-                  "Site 1", "http://site1/", NTPTileSource::TOP_SITES))))
-      .Times(2);
+                  "Site 1", "http://site1/", NTPTileSource::TOP_SITES))));
   top_sites_callbacks_.ClearAndNotify(
       {MakeMostVisitedURL("Site 1", "http://site1/")});
   base::RunLoop().RunUntilIdle();

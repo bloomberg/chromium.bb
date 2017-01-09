@@ -63,7 +63,7 @@ MostVisitedSites::MostVisitedSites(
       num_sites_(0),
       top_sites_observer_(this),
       mv_source_(NTPTileSource::TOP_SITES),
-      weak_ptr_factory_(this) {
+      top_sites_weak_ptr_factory_(this) {
   DCHECK(prefs_);
   // top_sites_ can be null in tests.
   // TODO(sfiera): have iOS use a dummy TopSites in its tests.
@@ -169,9 +169,11 @@ void MostVisitedSites::BuildCurrentTiles() {
 void MostVisitedSites::InitiateTopSitesQuery() {
   if (!top_sites_)
     return;
+  if (top_sites_weak_ptr_factory_.HasWeakPtrs())
+    return;  // Ongoing query.
   top_sites_->GetMostVisitedURLs(
       base::Bind(&MostVisitedSites::OnMostVisitedURLsAvailable,
-                 weak_ptr_factory_.GetWeakPtr()),
+                 top_sites_weak_ptr_factory_.GetWeakPtr()),
       false);
 }
 

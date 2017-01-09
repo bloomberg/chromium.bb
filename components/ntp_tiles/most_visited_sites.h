@@ -193,8 +193,9 @@ class MostVisitedSites : public history::TopSitesObserver,
 
   NTPTilesVector current_tiles_;
 
-  // For callbacks may be run after destruction.
-  base::WeakPtrFactory<MostVisitedSites> weak_ptr_factory_;
+  // For callbacks may be run after destruction, used exclusively for TopSites
+  // (since it's used to detect whether there's a query in flight).
+  base::WeakPtrFactory<MostVisitedSites> top_sites_weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MostVisitedSites);
 };
