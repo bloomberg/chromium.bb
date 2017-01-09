@@ -1635,7 +1635,8 @@ crbug.com/600248 imported/wpt/web-animations/interfaces/Animation/onfinish.html 
 crbug.com/600248 imported/wpt/web-animations/interfaces/Animation/playbackRate.html [ Pass Failure ]
 # This test may either fail a DCHECK or time out:
 # https://storage.googleapis.com/chromium-layout-test-archives/mac_chromium_rel_ng/364861/layout-test-results/results.html
-crbug.com/600248 imported/wpt/web-animations/interfaces/Animation/cancel.html [ Crash Timeout ]
+# However, this test seems to just fail now.  Allowing this, with a TODO(https://crbug.com/678077) to fix.
+crbug.com/600248 imported/wpt/web-animations/interfaces/Animation/cancel.html [ Pass Failure Crash Timeout ]
 crbug.com/600248 imported/wpt/web-animations/timing-model/animations/updating-the-finished-state.html [ Pass Failure Timeout ]
 
 crbug.com/611658 [ Win7 ] fast/forms/text/text-font-height-mismatch.html [ Failure ]
