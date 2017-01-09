@@ -365,9 +365,8 @@ base::FilePath FindArchiveToPatch(const InstallationState& original_state,
   // is the value used to select a specific differential update. If an archive
   // can't be found using that, fallback to using the newest version present.
   base::FilePath patch_source;
-  const ProductState* product =
-      original_state.GetProductState(installer_state.system_install(),
-                                     installer_state.state_type());
+  const ProductState* product = original_state.GetProductState(
+      installer_state.system_install(), BrowserDistribution::CHROME_BROWSER);
   if (product) {
     patch_source = installer_state.GetInstallerDirectory(product->version())
         .Append(installer::kChromeArchive);
@@ -681,9 +680,7 @@ bool IsDowngradeAllowed(const MasterPreferences& prefs) {
 }
 
 bool IsChromeActivelyUsed(const InstallerState& installer_state) {
-  BrowserDistribution* chrome_dist =
-      BrowserDistribution::GetSpecificDistribution(
-          BrowserDistribution::CHROME_BROWSER);
+  BrowserDistribution* chrome_dist = BrowserDistribution::GetDistribution();
   if (!installer_state.system_install()) {
     return IsActivelyUsedIn(HKEY_CURRENT_USER,
                             chrome_dist->GetStateKey().c_str());

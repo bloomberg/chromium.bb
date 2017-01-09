@@ -67,8 +67,7 @@ class InstallerState {
   // msi flag if |state| is msi-installed. Returns the product that was added,
   // or NULL if |state| is incompatible with this object. Ownership is not
   // passed to the caller.
-  Product* AddProductFromState(BrowserDistribution::Type type,
-                               const ProductState& state);
+  Product* AddProductFromState(const ProductState& state);
 
   // Returns the product that was added, or NULL if |product| is incompatible
   // with this object. Ownership of the return value is not given to the caller.
@@ -111,10 +110,6 @@ class InstallerState {
 
   // The ClientState key by which we interact with Google Update.
   const base::string16& state_key() const { return state_key_; }
-
-  // Convenience method to return the type of the BrowserDistribution associated
-  // with the ClientState key we will be interacting with.
-  BrowserDistribution::Type state_type() const { return state_type_; }
 
   // Returns true if this is an update of multi-install Chrome to
   // single-install.
@@ -172,7 +167,6 @@ class InstallerState {
   Product* AddProductInDirectory(const base::FilePath* product_dir,
                                  std::unique_ptr<Product> product);
   Product* AddProductFromPreferences(
-      BrowserDistribution::Type distribution_type,
       const MasterPreferences& prefs,
       const InstallationState& machine_state);
 
@@ -182,7 +176,6 @@ class InstallerState {
   Operation operation_;
   base::FilePath target_path_;
   base::string16 state_key_;
-  BrowserDistribution::Type state_type_;
   std::unique_ptr<Product> product_;
   base::Version critical_update_version_;
   ProgressCalculator progress_calculator_;

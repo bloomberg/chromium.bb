@@ -28,7 +28,6 @@ namespace installer {
 
 InstallerState::InstallerState()
     : operation_(UNINITIALIZED),
-      state_type_(BrowserDistribution::CHROME_BROWSER),
       level_(UNKNOWN_LEVEL),
       root_key_(NULL),
       msi_(false),
@@ -38,7 +37,6 @@ InstallerState::InstallerState()
 
 InstallerState::InstallerState(Level level)
     : operation_(UNINITIALIZED),
-      state_type_(BrowserDistribution::CHROME_BROWSER),
       level_(UNKNOWN_LEVEL),
       root_key_(NULL),
       msi_(false),
@@ -70,14 +68,12 @@ void InstallerState::Initialize(const base::CommandLine& command_line,
 
   const bool is_uninstall = command_line.HasSwitch(switches::kUninstall);
 
-  Product* p = AddProductFromPreferences(BrowserDistribution::CHROME_BROWSER,
-                                         prefs, machine_state);
+  Product* p = AddProductFromPreferences(prefs, machine_state);
+  BrowserDistribution* dist = p->distribution();
   VLOG(1) << (is_uninstall ? "Uninstall" : "Install")
-          << " distribution: " << p->distribution()->GetDisplayName();
+          << " distribution: " << dist->GetDisplayName();
 
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   state_key_ = dist->GetStateKey();
-  state_type_ = dist->GetType();
 
   if (is_uninstall) {
     operation_ = UNINSTALL;
@@ -85,7 +81,7 @@ void InstallerState::Initialize(const base::CommandLine& command_line,
     operation_ = SINGLE_INSTALL_OR_UPDATE;
     // Is this a migration from multi-install to single-install?
     const ProductState* state =
-        machine_state.GetProductState(system_install(), state_type_);
+        machine_state.GetProductState(system_install(), dist->GetType());
     is_migrating_to_single_ = state && state->is_multi_install();
   }
 
@@ -154,24 +150,22 @@ Product* InstallerState::AddProduct(std::unique_ptr<Product> product) {
   return AddProductInDirectory(nullptr, std::move(product));
 }
 
-// Adds a product of type |distribution_type| constructed on the basis of
-// |prefs|, setting this object's msi flag if the product is represented in
-// |machine_state| and is msi-installed.  Returns the product that was added,
-// or NULL if |state| is incompatible with this object.  Ownership is not passed
-// to the caller.
+// Adds a product constructed on the basis of |prefs|, setting this object's msi
+// flag if the product is represented in |machine_state| and is msi-installed.
+// Returns the product that was added, or NULL if |state| is incompatible with
+// this object.  Ownership is not passed to the caller.
 Product* InstallerState::AddProductFromPreferences(
-    BrowserDistribution::Type distribution_type,
     const MasterPreferences& prefs,
     const InstallationState& machine_state) {
-  std::unique_ptr<Product> product_ptr(new Product(
-      BrowserDistribution::GetSpecificDistribution(distribution_type)));
+  std::unique_ptr<Product> product_ptr(
+      new Product(BrowserDistribution::GetDistribution()));
   product_ptr->InitializeFromPreferences(prefs);
 
   Product* product = AddProductInDirectory(nullptr, std::move(product_ptr));
 
   if (product != NULL && !msi_) {
     const ProductState* product_state = machine_state.GetProductState(
-        system_install(), distribution_type);
+        system_install(), BrowserDistribution::CHROME_BROWSER);
     if (product_state != NULL)
       msi_ = product_state->is_msi();
   }
@@ -180,10 +174,9 @@ Product* InstallerState::AddProductFromPreferences(
 }
 
 Product* InstallerState::AddProductFromState(
-    BrowserDistribution::Type type,
     const ProductState& state) {
   std::unique_ptr<Product> product_ptr(
-      new Product(BrowserDistribution::GetSpecificDistribution(type)));
+      new Product(BrowserDistribution::GetDistribution()));
   product_ptr->InitializeFromUninstallCommand(state.uninstall_command());
 
   // Strip off <version>/Installer/setup.exe; see GetInstallerDirectory().
@@ -209,7 +202,7 @@ base::Version* InstallerState::GetCurrentVersion(
   DCHECK(product_);
   std::unique_ptr<base::Version> current_version;
   const ProductState* product_state = machine_state.GetProductState(
-      level_ == SYSTEM_LEVEL, product_->distribution()->GetType());
+      level_ == SYSTEM_LEVEL, BrowserDistribution::CHROME_BROWSER);
 
   if (product_state != NULL) {
     const base::Version* version = NULL;
@@ -252,7 +245,6 @@ void InstallerState::Clear() {
   operation_ = UNINITIALIZED;
   target_path_.clear();
   state_key_.clear();
-  state_type_ = BrowserDistribution::CHROME_BROWSER;
   product_.reset();
   critical_update_version_ = base::Version();
   level_ = UNKNOWN_LEVEL;

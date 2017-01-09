@@ -650,8 +650,8 @@ installer::InstallStatus InstallProducts(
   installer_state->SetStage(installer::PRECONDITIONS);
   // Remove any legacy "-multifail" or "-stage:*" values from the product's
   // "ap" value.
-  BrowserDistribution::GetSpecificDistribution(installer_state->state_type())->
-      UpdateInstallStatus(system_install, archive_type, install_status);
+  BrowserDistribution::GetDistribution()->UpdateInstallStatus(
+      system_install, archive_type, install_status);
 
   // Drop to background processing mode if the process was started below the
   // normal process priority class. This is done here because InstallProducts-
@@ -731,9 +731,7 @@ installer::InstallStatus RegisterDevChrome(
     const InstallerState& installer_state,
     const base::FilePath& setup_exe,
     const base::CommandLine& cmd_line) {
-  BrowserDistribution* chrome_dist =
-      BrowserDistribution::GetSpecificDistribution(
-          BrowserDistribution::CHROME_BROWSER);
+  BrowserDistribution* chrome_dist = BrowserDistribution::GetDistribution();
 
   // Only proceed with registering a dev chrome if no real Chrome installation
   // of the same distribution are present on this system.

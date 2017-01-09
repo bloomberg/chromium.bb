@@ -387,9 +387,8 @@ class FindArchiveToPatchTest : public testing::Test {
     installer_state_.reset(new installer::InstallerState(
         kSystemInstall_ ? installer::InstallerState::SYSTEM_LEVEL :
         installer::InstallerState::USER_LEVEL));
-    installer_state_->AddProductFromState(
-        kProductType_,
-        *original_state_->GetProductState(kSystemInstall_, kProductType_));
+    installer_state_->AddProductFromState(*original_state_->GetProductState(
+        kSystemInstall_, BrowserDistribution::CHROME_BROWSER));
 
     // Create archives in the two version dirs.
     ASSERT_TRUE(
@@ -421,8 +420,8 @@ class FindArchiveToPatchTest : public testing::Test {
 
   void InstallProduct() {
     FakeProductState* product = FakeProductState::FromProductState(
-        original_state_->GetNonVersionedProductState(kSystemInstall_,
-                                                     kProductType_));
+        original_state_->GetNonVersionedProductState(
+            kSystemInstall_, BrowserDistribution::CHROME_BROWSER));
 
     product->set_version(product_version_);
     base::CommandLine uninstall_command(
@@ -436,13 +435,12 @@ class FindArchiveToPatchTest : public testing::Test {
 
   void UninstallProduct() {
     FakeProductState::FromProductState(
-        original_state_->GetNonVersionedProductState(kSystemInstall_,
-                                                     kProductType_))
+        original_state_->GetNonVersionedProductState(
+            kSystemInstall_, BrowserDistribution::CHROME_BROWSER))
         ->set_version(base::Version());
   }
 
   static const bool kSystemInstall_;
-  static const BrowserDistribution::Type kProductType_;
   base::ScopedTempDir test_dir_;
   base::Version product_version_;
   base::Version max_version_;
@@ -456,8 +454,6 @@ class FindArchiveToPatchTest : public testing::Test {
 };
 
 const bool FindArchiveToPatchTest::kSystemInstall_ = false;
-const BrowserDistribution::Type FindArchiveToPatchTest::kProductType_ =
-    BrowserDistribution::CHROME_BROWSER;
 
 }  // namespace
 
@@ -711,7 +707,6 @@ class LegacyCleanupsTest : public ::testing::Test {
       operation_ = InstallerState::SINGLE_INSTALL_OR_UPDATE;
       target_path_ = target_path;
       state_key_ = dist->GetStateKey();
-      state_type_ = dist->GetType();
       product_ = base::MakeUnique<Product>(dist);
       level_ = InstallerState::USER_LEVEL;
       root_key_ = HKEY_CURRENT_USER;

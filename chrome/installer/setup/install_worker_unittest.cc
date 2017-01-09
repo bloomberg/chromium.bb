@@ -167,10 +167,6 @@ class MockInstallerState : public InstallerState {
   void set_state_key(const std::wstring& state_key) {
     state_key_ = state_key;
   }
-
-  void set_state_type(BrowserDistribution::Type state_type) {
-    state_type_ = state_type;
-  }
 };
 
 // The test fixture
@@ -205,9 +201,7 @@ class InstallWorkerTest : public testing::Test {
     product_state.set_version(new base::Version(*current_version_));
     product_state.set_brand(L"TEST");
     product_state.set_eula_accepted(1);
-    BrowserDistribution* dist =
-        BrowserDistribution::GetSpecificDistribution(
-            BrowserDistribution::CHROME_BROWSER);
+    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
     base::FilePath install_path =
         installer::GetChromeInstallPath(system_level, dist);
     product_state.SetUninstallProgram(
@@ -243,7 +237,6 @@ class InstallWorkerTest : public testing::Test {
     installer_state->set_operation(operation);
     // Hope this next one isn't checked for now.
     installer_state->set_state_key(L"PROBABLY_INVALID_REG_PATH");
-    installer_state->set_state_type(BrowserDistribution::CHROME_BROWSER);
     return installer_state.release();
   }
 
@@ -255,12 +248,9 @@ class InstallWorkerTest : public testing::Test {
         machine_state.GetProductState(installer_state->system_install(),
                                       BrowserDistribution::CHROME_BROWSER);
     if (chrome) {
-      installer_state->AddProductFromState(BrowserDistribution::CHROME_BROWSER,
-                                           *chrome);
+      installer_state->AddProductFromState(*chrome);
     } else {
-      BrowserDistribution* dist =
-          BrowserDistribution::GetSpecificDistribution(
-              BrowserDistribution::CHROME_BROWSER);
+      BrowserDistribution* dist = BrowserDistribution::GetDistribution();
       installer_state->AddProduct(base::MakeUnique<Product>(dist));
     }
   }

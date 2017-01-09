@@ -301,8 +301,7 @@ bool CreateVisualElementsManifest(const base::FilePath& src_path,
     const base::string16 manifest_template(
         base::ASCIIToUTF16(kManifestTemplate));
 
-    BrowserDistribution* dist = BrowserDistribution::GetSpecificDistribution(
-        BrowserDistribution::CHROME_BROWSER);
+    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
     // TODO(grt): http://crbug.com/75152 Write a reference to a localized
     // resource for |display_name|.
     base::string16 display_name(dist->GetDisplayName());

@@ -89,8 +89,7 @@ TEST_F(InstallerStateTest, WithProduct) {
   {
     RegistryOverrideManager override_manager;
     override_manager.OverrideRegistry(root);
-    BrowserDistribution* dist = BrowserDistribution::GetSpecificDistribution(
-        BrowserDistribution::CHROME_BROWSER);
+    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
     RegKey chrome_key(root, dist->GetVersionKey().c_str(), KEY_ALL_ACCESS);
     EXPECT_TRUE(chrome_key.Valid());
     if (chrome_key.Valid()) {
@@ -134,9 +133,7 @@ TEST_F(InstallerStateTest, InstallerResult) {
     state.Initialize(cmd_line, prefs, machine_state);
     state.WriteInstallerResult(installer::FIRST_INSTALL_SUCCESS,
                                IDS_INSTALL_OS_ERROR_BASE, &launch_cmd);
-    BrowserDistribution* distribution =
-        BrowserDistribution::GetSpecificDistribution(
-            BrowserDistribution::CHROME_BROWSER);
+    BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
     EXPECT_EQ(ERROR_SUCCESS,
         key.Open(root, distribution->GetStateKey().c_str(), KEY_READ));
     EXPECT_EQ(ERROR_SUCCESS,
@@ -210,16 +207,12 @@ TEST_F(InstallerStateTest, InitializeTwice) {
   EXPECT_EQ(InstallerState::USER_LEVEL, installer_state.level());
   EXPECT_EQ(InstallerState::SINGLE_INSTALL_OR_UPDATE,
             installer_state.operation());
-  EXPECT_TRUE(wcsstr(installer_state.target_path().value().c_str(),
-                     BrowserDistribution::GetSpecificDistribution(
-                         BrowserDistribution::CHROME_BROWSER)
-                         ->GetInstallSubDir()
-                         .c_str()));
+  EXPECT_TRUE(wcsstr(
+      installer_state.target_path().value().c_str(),
+      BrowserDistribution::GetDistribution()->GetInstallSubDir().c_str()));
   EXPECT_FALSE(installer_state.verbose_logging());
   EXPECT_EQ(installer_state.state_key(),
-            BrowserDistribution::GetSpecificDistribution(
-                BrowserDistribution::CHROME_BROWSER)->GetStateKey());
-  EXPECT_EQ(installer_state.state_type(), BrowserDistribution::CHROME_BROWSER);
+            BrowserDistribution::GetDistribution()->GetStateKey());
 
   // Now initialize it to install system-level single Chrome.
   {
@@ -233,15 +226,12 @@ TEST_F(InstallerStateTest, InitializeTwice) {
   EXPECT_EQ(InstallerState::SYSTEM_LEVEL, installer_state.level());
   EXPECT_EQ(InstallerState::SINGLE_INSTALL_OR_UPDATE,
             installer_state.operation());
-  EXPECT_TRUE(wcsstr(installer_state.target_path().value().c_str(),
-                     BrowserDistribution::GetSpecificDistribution(
-                         BrowserDistribution::CHROME_BROWSER)->
-                         GetInstallSubDir().c_str()));
+  EXPECT_TRUE(wcsstr(
+      installer_state.target_path().value().c_str(),
+      BrowserDistribution::GetDistribution()->GetInstallSubDir().c_str()));
   EXPECT_TRUE(installer_state.verbose_logging());
   EXPECT_EQ(installer_state.state_key(),
-            BrowserDistribution::GetSpecificDistribution(
-                BrowserDistribution::CHROME_BROWSER)->GetStateKey());
-  EXPECT_EQ(installer_state.state_type(), BrowserDistribution::CHROME_BROWSER);
+            BrowserDistribution::GetDistribution()->GetStateKey());
 }
 
 // A fixture for testing InstallerState::DetermineCriticalVersion.  Individual
