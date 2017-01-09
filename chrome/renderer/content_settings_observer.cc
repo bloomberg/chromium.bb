@@ -57,10 +57,13 @@ GURL GetOriginOrURL(const WebFrame* frame) {
   return top_origin.GetURL();
 }
 
+// Allow passing both WebURL and GURL here, so that we can early return without
+// allocating a new backing string if only the default rule matches.
+template <typename URL>
 ContentSetting GetContentSettingFromRules(
     const ContentSettingsForOneType& rules,
     const WebFrame* frame,
-    const GURL& secondary_url) {
+    const URL& secondary_url) {
   ContentSettingsForOneType::const_iterator it;
   // If there is only one rule, it's the default rule and we don't need to match
   // the patterns.
@@ -70,9 +73,10 @@ ContentSetting GetContentSettingFromRules(
     return rules[0].setting;
   }
   const GURL& primary_url = GetOriginOrURL(frame);
+  const GURL& secondary_gurl = secondary_url;
   for (it = rules.begin(); it != rules.end(); ++it) {
     if (it->primary_pattern.Matches(primary_url) &&
-        it->secondary_pattern.Matches(secondary_url)) {
+        it->secondary_pattern.Matches(secondary_gurl)) {
       return it->setting;
     }
   }
@@ -251,11 +255,9 @@ bool ContentSettingsObserver::allowImage(bool enabled_per_settings,
       return true;
 
     if (content_setting_rules_) {
-      GURL secondary_url(image_url);
-      allow =
-          GetContentSettingFromRules(content_setting_rules_->image_rules,
-                                     render_frame()->GetWebFrame(),
-                                     secondary_url) != CONTENT_SETTING_BLOCK;
+      allow = GetContentSettingFromRules(content_setting_rules_->image_rules,
+                                         render_frame()->GetWebFrame(),
+                                         image_url) != CONTENT_SETTING_BLOCK;
     }
   }
   if (!allow)
@@ -320,8 +322,7 @@ bool ContentSettingsObserver::allowScriptFromSource(
   if (content_setting_rules_) {
     ContentSetting setting =
         GetContentSettingFromRules(content_setting_rules_->script_rules,
-                                   render_frame()->GetWebFrame(),
-                                   GURL(script_url));
+                                   render_frame()->GetWebFrame(), script_url);
     allow = setting != CONTENT_SETTING_BLOCK;
   }
   return allow || IsWhitelistedForContentSettings();
