@@ -150,6 +150,9 @@ class DragImageBuilder {
     // (SkImage::asLegacyBitmap).
     sk_sp<SkSurface> surface =
         SkSurface::MakeRasterN32Premul(m_bounds.width(), m_bounds.height());
+    if (!surface)
+      return nullptr;
+
     surface->getCanvas()->drawPicture(recording);
     RefPtr<Image> image =
         StaticBitmapImage::create(surface->makeImageSnapshot());
