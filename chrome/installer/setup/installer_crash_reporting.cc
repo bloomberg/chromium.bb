@@ -32,27 +32,10 @@ namespace {
 // Crash Keys
 
 const char kCurrentVersion[] = "current-version";
-const char kDistributionType[] = "dist-type";
 const char kIsMultiInstall[] = "multi-install";
 const char kIsSystemLevel[] = "system-level";
 const char kOperation[] = "operation";
 const char kStateKey[] = "state-key";
-
-const char *DistributionTypeToString(BrowserDistribution::Type type) {
-  switch (type) {
-    case BrowserDistribution::CHROME_BROWSER:
-      return "chrome browser";
-    case BrowserDistribution::CHROME_FRAME:
-      return "chrome frame";
-    case BrowserDistribution::CHROME_BINARIES:
-      return "chrome binaries";
-    case BrowserDistribution::NUM_TYPES:
-      // Fall out of switch.
-      break;
-  }
-  NOTREACHED();
-  return "";
-}
 
 const char *OperationToString(InstallerState::Operation operation) {
   switch (operation) {
@@ -122,7 +105,6 @@ size_t RegisterCrashKeys() {
   const base::debug::CrashKey kFixedKeys[] = {
     { crash_keys::kMetricsClientId, crash_keys::kSmallSize },
     { kCurrentVersion, crash_keys::kSmallSize },
-    { kDistributionType, crash_keys::kSmallSize },
     { kIsMultiInstall, crash_keys::kSmallSize },
     { kIsSystemLevel, crash_keys::kSmallSize },
     { kOperation, crash_keys::kSmallSize },
@@ -143,8 +125,6 @@ size_t RegisterCrashKeys() {
 void SetInitialCrashKeys(const InstallerState& state) {
   using base::debug::SetCrashKeyValue;
 
-  SetCrashKeyValue(kDistributionType,
-                   DistributionTypeToString(state.state_type()));
   SetCrashKeyValue(kOperation, OperationToString(state.operation()));
   SetCrashKeyValue(kIsMultiInstall, "false");
   SetCrashKeyValue(kIsSystemLevel, state.system_install() ? "true" : "false");

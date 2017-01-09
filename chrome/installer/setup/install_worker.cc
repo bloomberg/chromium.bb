@@ -39,6 +39,7 @@
 #include "chrome/installer/util/create_reg_key_work_item.h"
 #include "chrome/installer/util/firewall_manager_win.h"
 #include "chrome/installer/util/google_update_constants.h"
+#include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/l10n_string_util.h"
@@ -330,10 +331,9 @@ bool AddAclToPath(const base::FilePath& path,
   return true;
 }
 
-// Migrates the usagestats value from the binaries to Chrome when migrating
-// multi-install Chrome to single-install.
-void AddMigrateUsageStatsWorkItems(const InstallationState& original_state,
-                                   const InstallerState& installer_state,
+// Migrates consent for the collection of usage statistics from the binaries to
+// Chrome when migrating multi-install Chrome to single-install.
+void AddMigrateUsageStatsWorkItems(const InstallerState& installer_state,
                                    WorkItemList* install_list) {
   // This operation doesn't apply to SxS Chrome.
   if (InstallUtil::IsChromeSxSProcess())
@@ -341,28 +341,41 @@ void AddMigrateUsageStatsWorkItems(const InstallationState& original_state,
 
   // Bail out if an existing multi-install Chrome is not being migrated to
   // single-install.
-  if (!installer_state.is_migrating_to_single()) {
-    VLOG(1) << "No multi-install Chrome found to migrate to single-install.";
+  if (!installer_state.is_migrating_to_single())
+    return;
+
+  // Nothing to do if the binaries aren't actually installed.
+  if (!AreBinariesInstalled(installer_state))
+    return;
+
+  BrowserDistribution* chrome_dist = installer_state.product().distribution();
+
+  // Delete any stale value in Chrome's ClientStateMedium key. A new value, if
+  // found, will be written to the ClientState key below.
+  if (installer_state.system_install()) {
+    install_list->AddDeleteRegValueWorkItem(
+        installer_state.root_key(), chrome_dist->GetStateMediumKey(),
+        KEY_WOW64_64KEY, google_update::kRegUsageStatsField);
+  }
+
+  google_update::Tristate consent =
+      GoogleUpdateSettings::GetCollectStatsConsentForApp(
+          installer_state.system_install(), *MakeBinariesRegistrationData());
+  if (consent == google_update::TRISTATE_NONE) {
+    VLOG(1) << "No consent value found to migrate to single-install.";
+    // Delete any stale value in Chrome's ClientState key.
+    install_list->AddDeleteRegValueWorkItem(
+        installer_state.root_key(), chrome_dist->GetStateKey(), KEY_WOW64_64KEY,
+        google_update::kRegUsageStatsField);
     return;
   }
 
-  const ProductState* binaries_state = original_state.GetProductState(
-      installer_state.system_install(), BrowserDistribution::CHROME_BINARIES);
+  VLOG(1) << "Migrating usage stats consent from multi- to single-install.";
 
-  // There is nothing to be done if the binaries do not have stats.
-  DWORD usagestats = 0;
-  if (!binaries_state || !binaries_state->GetUsageStats(&usagestats)) {
-    VLOG(1) << "No usagestats value found to migrate to single-install.";
-    return;
-  }
-
-  VLOG(1) << "Migrating usagestats value from multi-install to single-install.";
-
-  // Write the value that was read to Chrome's ClientState key.
+  // Write consent to Chrome's ClientState key.
   install_list->AddSetRegValueWorkItem(
-      installer_state.root_key(),
-      installer_state.product().distribution()->GetStateKey(), KEY_WOW64_32KEY,
-      google_update::kRegUsageStatsField, usagestats, true);
+      installer_state.root_key(), chrome_dist->GetStateKey(), KEY_WOW64_32KEY,
+      google_update::kRegUsageStatsField, static_cast<DWORD>(consent), true);
 }
 
 }  // namespace
@@ -739,7 +752,7 @@ void AddInstallWorkItems(const InstallationState& original_state,
                                              install_list);
 
   // Migrate usagestats back to Chrome.
-  AddMigrateUsageStatsWorkItems(original_state, installer_state, install_list);
+  AddMigrateUsageStatsWorkItems(installer_state, install_list);
 
   // Append the tasks that run after the installation.
   AppendPostInstallTasks(installer_state,

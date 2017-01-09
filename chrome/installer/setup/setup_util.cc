@@ -12,7 +12,6 @@
 #include <algorithm>
 #include <iterator>
 #include <limits>
-#include <memory>
 #include <set>
 #include <string>
 
@@ -24,6 +23,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
@@ -132,14 +132,7 @@ bool OnUserHive(const base::string16& client_state_path,
 // for this mode of install was dropped from ToT in December 2016. Remove any
 // stray bits in the registry leftover from such installs.
 void RemoveBinariesVersionKey(const InstallerState& installer_state) {
-#if defined(GOOGLE_CHROME_BUILD)
-  UpdatingAppRegistrationData reg_data(
-      L"{4DC8B4CA-1BDA-483e-B5FA-D3C12E15B62D}");
-#else
-  NonUpdatingAppRegistrationData reg_data(L"Software\\Chromium Binaries");
-#endif
-
-  base::string16 path(reg_data.GetVersionKey());
+  base::string16 path(MakeBinariesRegistrationData()->GetVersionKey());
   if (base::win::RegKey(installer_state.root_key(), path.c_str(),
                         KEY_QUERY_VALUE | KEY_WOW64_32KEY)
           .Valid()) {
@@ -467,76 +460,6 @@ bool AdjustProcessPriority() {
   return false;
 }
 
-void MigrateGoogleUpdateStateMultiToSingle(
-    bool system_level,
-    BrowserDistribution::Type to_migrate,
-    const installer::InstallationState& machine_state) {
-  const HKEY root = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  const ProductState* product = NULL;
-  BrowserDistribution* dist = NULL;
-  LONG result = ERROR_SUCCESS;
-  base::win::RegKey state_key;
-
-  Product product_to_migrate(
-      BrowserDistribution::GetSpecificDistribution(to_migrate));
-
-  // Copy usagestats from the binaries to the product's ClientState key.
-  product = machine_state.GetProductState(system_level,
-                                          BrowserDistribution::CHROME_BINARIES);
-  DWORD usagestats = 0;
-  if (product && product->GetUsageStats(&usagestats)) {
-    dist = product_to_migrate.distribution();
-    result = state_key.Open(root, dist->GetStateKey().c_str(),
-                            KEY_SET_VALUE);
-    if (result != ERROR_SUCCESS) {
-      LOG(ERROR) << "Failed opening ClientState key for "
-                 << dist->GetDisplayName() << " to migrate usagestats.";
-    } else {
-      state_key.WriteValue(google_update::kRegUsageStatsField, usagestats);
-    }
-  }
-
-  // Remove the migrating product from the "ap" value of other multi-install
-  // products.
-  for (int i = 0; i < BrowserDistribution::NUM_TYPES; ++i) {
-    BrowserDistribution::Type type =
-        static_cast<BrowserDistribution::Type>(i);
-    if (type == to_migrate)
-      continue;
-    product = machine_state.GetProductState(system_level, type);
-    if (product && product->is_multi_install()) {
-      installer::ChannelInfo channel_info;
-      dist = BrowserDistribution::GetSpecificDistribution(type);
-      result = state_key.Open(root, dist->GetStateKey().c_str(),
-                              KEY_QUERY_VALUE | KEY_SET_VALUE);
-      if (result == ERROR_SUCCESS &&
-          channel_info.Initialize(state_key) &&
-          product_to_migrate.SetChannelFlags(false, &channel_info)) {
-        VLOG(1) << "Moving " << dist->GetDisplayName()
-                << " to channel: " << channel_info.value();
-        channel_info.Write(&state_key);
-      }
-    }
-  }
-
-  // Remove -multi, all product modifiers, and everything else but the channel
-  // name from the "ap" value of the product to migrate.
-  dist = product_to_migrate.distribution();
-  result = state_key.Open(root, dist->GetStateKey().c_str(),
-                          KEY_QUERY_VALUE | KEY_SET_VALUE);
-  if (result == ERROR_SUCCESS) {
-    installer::ChannelInfo channel_info;
-    if (!channel_info.Initialize(state_key)) {
-      LOG(ERROR) << "Failed reading " << dist->GetDisplayName()
-                 << " channel info.";
-    } else if (channel_info.RemoveAllModifiersAndSuffixes()) {
-      VLOG(1) << "Moving " << dist->GetDisplayName()
-              << " to channel: " << channel_info.value();
-      channel_info.Write(&state_key);
-    }
-  }
-}
-
 bool IsUninstallSuccess(InstallStatus install_status) {
   // The following status values represent failed uninstalls:
   // 15: CHROME_NOT_INSTALLED
@@ -853,6 +776,31 @@ void DeRegisterEventLogProvider() {
   // but leaves files behind.
   InstallUtil::DeleteRegistryKey(HKEY_LOCAL_MACHINE, reg_path,
                                  WorkItem::kWow64Default);
+}
+
+std::unique_ptr<AppRegistrationData> MakeBinariesRegistrationData() {
+#if defined(GOOGLE_CHROME_BUILD)
+  return base::MakeUnique<UpdatingAppRegistrationData>(
+      L"{4DC8B4CA-1BDA-483e-B5FA-D3C12E15B62D}");
+#else
+  return base::MakeUnique<NonUpdatingAppRegistrationData>(
+      L"Software\\Chromium Binaries");
+#endif
+}
+
+bool AreBinariesInstalled(const InstallerState& installer_state) {
+  if (InstallUtil::IsChromeSxSProcess())
+    return false;
+
+  base::win::RegKey key;
+  base::string16 pv;
+
+  // True if the "pv" value exists and isn't empty.
+  return key.Open(installer_state.root_key(),
+                  MakeBinariesRegistrationData()->GetVersionKey().c_str(),
+                  KEY_QUERY_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS &&
+         key.ReadValue(google_update::kRegVersionField, &pv) == ERROR_SUCCESS &&
+         !pv.empty();
 }
 
 void DoLegacyCleanups(const InstallerState& installer_state,

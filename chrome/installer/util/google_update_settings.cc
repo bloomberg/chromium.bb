@@ -27,7 +27,6 @@
 #include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
-#include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/product.h"
@@ -270,11 +269,10 @@ bool GoogleUpdateSettings::GetCollectStatsConsent() {
   return GetCollectStatsConsentAtLevel(IsSystemInstall());
 }
 
-// Older versions of Chrome unconditionally read from HKCU\...\ClientState\...
-// and then HKLM\...\ClientState\....  This means that system-level Chrome
-// never checked ClientStateMedium (which has priority according to Google
-// Update) and gave preference to a value in HKCU (which was never checked by
-// Google Update).  From now on, Chrome follows Google Update's policy.
+bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
+  return SetCollectStatsConsentAtLevel(IsSystemInstall(), consented);
+}
+
 bool GoogleUpdateSettings::GetCollectStatsConsentAtLevel(bool system_install) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
 
@@ -284,42 +282,48 @@ bool GoogleUpdateSettings::GetCollectStatsConsentAtLevel(bool system_install) {
         BrowserDistribution::CHROME_BINARIES);
   }
 
+  return GetCollectStatsConsentForApp(system_install,
+                                      dist->GetAppRegistrationData()) ==
+         google_update::TRISTATE_TRUE;
+}
+
+google_update::Tristate GoogleUpdateSettings::GetCollectStatsConsentForApp(
+    bool system_install,
+    const AppRegistrationData& reg_data) {
   RegKey key;
-  DWORD value = 0;
+  DWORD value = google_update::TRISTATE_NONE;
   bool have_value = false;
   const REGSAM kAccess = KEY_QUERY_VALUE | KEY_WOW64_32KEY;
 
   // For system-level installs, try ClientStateMedium first.
   have_value =
       system_install &&
-      key.Open(HKEY_LOCAL_MACHINE, dist->GetStateMediumKey().c_str(),
+      key.Open(HKEY_LOCAL_MACHINE, reg_data.GetStateMediumKey().c_str(),
                kAccess) == ERROR_SUCCESS &&
-      key.ReadValueDW(google_update::kRegUsageStatsField,
-                      &value) == ERROR_SUCCESS;
+      key.ReadValueDW(google_update::kRegUsageStatsField, &value) ==
+          ERROR_SUCCESS;
 
   // Otherwise, try ClientState.
   if (!have_value) {
     have_value =
         key.Open(system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER,
-                 dist->GetStateKey().c_str(),
-                 kAccess) == ERROR_SUCCESS &&
-        key.ReadValueDW(google_update::kRegUsageStatsField,
-                        &value) == ERROR_SUCCESS;
+                 reg_data.GetStateKey().c_str(), kAccess) == ERROR_SUCCESS &&
+        key.ReadValueDW(google_update::kRegUsageStatsField, &value) ==
+            ERROR_SUCCESS;
   }
 
-  // Google Update specifically checks that the value is 1, so we do the same.
-  return have_value && value == 1;
-}
+  if (!have_value)
+    return google_update::TRISTATE_NONE;
 
-bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
-  return SetCollectStatsConsentAtLevel(IsSystemInstall(), consented);
+  return value == google_update::TRISTATE_TRUE ? google_update::TRISTATE_TRUE
+                                               : google_update::TRISTATE_FALSE;
 }
 
 // static
 bool GoogleUpdateSettings::SetCollectStatsConsentAtLevel(bool system_install,
                                                          bool consented) {
-  // Google Update writes and expects 1 for true, 0 for false.
-  DWORD value = consented ? 1 : 0;
+  DWORD value =
+      consented ? google_update::TRISTATE_TRUE : google_update::TRISTATE_FALSE;
 
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
 

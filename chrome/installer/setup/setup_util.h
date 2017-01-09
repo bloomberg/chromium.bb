@@ -12,6 +12,7 @@
 #include <windows.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -88,14 +89,6 @@ bool DeleteFileFromTempProcess(const base::FilePath& path,
 // procesing mode is entered.
 bool AdjustProcessPriority();
 
-// Makes registry adjustments to migrate the Google Update state of |to_migrate|
-// from multi-install to single-install. This includes copying the usagestats
-// value and adjusting the ap values of all multi-install products.
-void MigrateGoogleUpdateStateMultiToSingle(
-    bool system_level,
-    BrowserDistribution::Type to_migrate,
-    const installer::InstallationState& machine_state);
-
 // Returns true if |install_status| represents a successful uninstall code.
 bool IsUninstallSuccess(InstallStatus install_status);
 
@@ -139,6 +132,14 @@ void RegisterEventLogProvider(const base::FilePath& install_directory,
 
 // De-register Chrome's EventLog message provider dll.
 void DeRegisterEventLogProvider();
+
+// Returns a registration data instance for the now-deprecated multi-install
+// binaries.
+std::unique_ptr<AppRegistrationData> MakeBinariesRegistrationData();
+
+// Returns true if the now-deprecated multi-install binaries are registered as
+// an installed product with Google Update.
+bool AreBinariesInstalled(const InstallerState& installer_state);
 
 // Removes leftover bits from features that have been removed from the product.
 void DoLegacyCleanups(const InstallerState& installer_state,

@@ -9,6 +9,11 @@
 
 namespace google_update {
 
+// Specifies whether a tristate item has a value and if so what the value is.
+// When converted from a DWORD in the Windows registry, All values other than 1
+// are mapped to TRISTATE_FALSE.
+enum Tristate { TRISTATE_FALSE = 0, TRISTATE_TRUE = 1, TRISTATE_NONE = 2 };
+
 // The GUID Google Update uses to keep track of Chrome upgrades.
 extern const wchar_t kChromeUpgradeCode[];
 

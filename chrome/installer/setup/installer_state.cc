@@ -12,6 +12,8 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/win/registry.h"
+#include "chrome/installer/setup/setup_util.h"
+#include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
@@ -325,10 +327,8 @@ void InstallerState::WriteInstallerResult(
     // for success, the binaries have been uninstalled and therefore the result
     // will not be read by Google Update.
     InstallUtil::AddInstallerResultItems(
-        system_install, BrowserDistribution::GetSpecificDistribution(
-                            BrowserDistribution::CHROME_BINARIES)
-                            ->GetStateKey(),
-        status, string_resource_id, launch_cmd, install_list.get());
+        system_install, MakeBinariesRegistrationData()->GetStateKey(), status,
+        string_resource_id, launch_cmd, install_list.get());
 #endif
   }
   install_list->Do();
