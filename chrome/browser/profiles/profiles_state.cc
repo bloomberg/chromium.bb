@@ -55,6 +55,7 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kProfileLastUsed, std::string());
   registry->RegisterIntegerPref(prefs::kProfilesNumCreated, 1);
   registry->RegisterListPref(prefs::kProfilesLastActive);
+  registry->RegisterListPref(prefs::kProfilesDeleted);
 
   // Preferences about the user manager.
   registry->RegisterBooleanPref(prefs::kBrowserGuestModeEnabled, true);

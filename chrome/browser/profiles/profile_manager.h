@@ -211,6 +211,10 @@ class ProfileManager : public base::NonThreadSafe,
   // crash) and schedule them for deletion.
   void CleanUpEphemeralProfiles();
 
+  // Checks if files of deleted profiles are left behind (e.g. because of a
+  // browser crash) and delete them in case they still exist.
+  void CleanUpDeletedProfiles();
+
   // Initializes user prefs of |profile|. This includes profile name and
   // avatar values.
   void InitProfileUserPrefs(Profile* profile);

@@ -1355,6 +1355,10 @@ const char kProfileCreatedByVersion[] = "profile.created_by_version";
 // them.
 const char kProfileInfoCache[] = "profile.info_cache";
 
+// A list of profile paths that should be deleted on shutdown. The deletion does
+// not happen if the browser crashes, so we remove the profile on next start.
+const char kProfilesDeleted[] = "profiles.profiles_deleted";
+
 // Deprecated preference for metric / crash reporting on Android. Use
 // kMetricsReportingEnabled instead.
 #if BUILDFLAG(ANDROID_JAVA_UI)

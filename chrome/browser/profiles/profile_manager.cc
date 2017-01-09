@@ -22,6 +22,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "base/value_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/startup_task_runner_service_factory.h"
@@ -223,6 +224,12 @@ void MarkProfileDirectoryForDeletion(const base::FilePath& path) {
   DCHECK(!ContainsKey(ProfilesToDelete(), path) ||
          ProfilesToDelete()[path] == ProfileDeletionStage::SCHEDULING);
   ProfilesToDelete()[path] = ProfileDeletionStage::MARKED;
+  // Remember that this profile was deleted and files should have been deleted
+  // on shutdown. In case of a crash remaining files are removed on next start.
+  ListPrefUpdate deleted_profiles(g_browser_process->local_state(),
+                                  prefs::kProfilesDeleted);
+  std::unique_ptr<base::Value> value(CreateFilePathValue(path));
+  deleted_profiles->Append(std::move(value));
 }
 
 // Cancel a scheduling deletion, so ScheduleProfileDirectoryForDeletion can be
@@ -248,6 +255,13 @@ void NukeProfileFromDisk(const base::FilePath& profile_path) {
   chrome::GetUserCacheDirectory(profile_path, &cache_path);
   base::DeleteFile(profile_path, true);
   base::DeleteFile(cache_path, true);
+}
+
+// Called after a deleted profile was checked and cleaned up.
+void ProfileCleanedUp(const base::Value* profile_path_value) {
+  ListPrefUpdate deleted_profiles(g_browser_process->local_state(),
+                                  prefs::kProfilesDeleted);
+  deleted_profiles->Remove(*profile_path_value, nullptr);
 }
 
 #if defined(OS_CHROMEOS)
@@ -857,6 +871,35 @@ void ProfileManager::CleanUpEphemeralProfiles() {
                             base::Bind(&NukeProfileFromDisk, profile_path));
 
     storage.RemoveProfile(profile_path);
+  }
+}
+
+void ProfileManager::CleanUpDeletedProfiles() {
+  PrefService* local_state = g_browser_process->local_state();
+  DCHECK(local_state);
+  const base::ListValue* deleted_profiles =
+      local_state->GetList(prefs::kProfilesDeleted);
+  DCHECK(deleted_profiles);
+
+  for (const std::unique_ptr<base::Value>& value : *deleted_profiles) {
+    base::FilePath profile_path;
+    bool is_valid_profile_path =
+        base::GetValueAsFilePath(*value, &profile_path) &&
+        profile_path.DirName() == user_data_dir();
+    // Although it should never happen, make sure this is a valid path in the
+    // user_data_dir, so we don't accidentially delete something else.
+    if (is_valid_profile_path) {
+      LOG(WARNING) << "Files of a deleted profile still exist after restart. "
+                      "Cleaning up now.";
+      BrowserThread::PostTaskAndReply(
+          BrowserThread::FILE, FROM_HERE,
+          base::Bind(&NukeProfileFromDisk, profile_path),
+          base::Bind(&ProfileCleanedUp, value.get()));
+    } else {
+      LOG(ERROR) << "Found invalid profile path in deleted_profiles: "
+                 << profile_path.AsUTF8Unsafe();
+      NOTREACHED();
+    }
   }
 }
 

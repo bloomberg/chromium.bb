@@ -1265,6 +1265,8 @@ void ChromeBrowserMainParts::PreProfileInit() {
 
   // Ephemeral profiles may have been left behind if the browser crashed.
   g_browser_process->profile_manager()->CleanUpEphemeralProfiles();
+  // Files of deleted profiles can also be left behind after a crash.
+  g_browser_process->profile_manager()->CleanUpDeletedProfiles();
 #endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
