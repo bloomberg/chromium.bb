@@ -15,11 +15,9 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
-#include "components/favicon_base/favicon_callback.h"
 
 class AppDistributionProvider;
 class BrandedImageProvider;
-class GURL;
 class OmahaServiceProvider;
 class SpotlightProvider;
 class UserFeedbackProvider;
@@ -91,13 +89,6 @@ class ChromeBrowserProvider {
   virtual std::string GetDistributionBrandCode();
   // Returns risk data used in Wallet requests.
   virtual std::string GetRiskData();
-  // Get the favicon for |page_url| and run |callback| with result when loaded.
-  // Note. |callback| is always run asynchronously.
-  virtual void GetFaviconForURL(
-      ChromeBrowserState* browser_state,
-      const GURL& page_url,
-      const std::vector<int>& desired_sizes_in_pixel,
-      const favicon_base::FaviconResultsCallback& callback) const;
   // Creates and returns a new styled text field with the given |frame|.
   virtual UITextField<TextFieldStyling>* CreateStyledTextField(
       CGRect frame) const NS_RETURNS_RETAINED;

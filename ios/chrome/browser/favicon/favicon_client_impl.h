@@ -12,16 +12,12 @@
 #include "components/favicon/core/favicon_client.h"
 #include "components/favicon_base/favicon_callback.h"
 
-namespace ios {
-class ChromeBrowserState;
-}
-
 class GURL;
 
 // FaviconClientImpl implements the favicon::FaviconClient interface on iOS.
 class FaviconClientImpl : public favicon::FaviconClient {
  public:
-  FaviconClientImpl(ios::ChromeBrowserState* browser_state);
+  FaviconClientImpl();
   ~FaviconClientImpl() override;
 
  private:
@@ -32,8 +28,6 @@ class FaviconClientImpl : public favicon::FaviconClient {
       const std::vector<int>& desired_sizes_in_pixel,
       const favicon_base::FaviconResultsCallback& callback,
       base::CancelableTaskTracker* tracker) override;
-
-  ios::ChromeBrowserState* browser_state_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconClientImpl);
 };

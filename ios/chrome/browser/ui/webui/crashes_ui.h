@@ -7,11 +7,6 @@
 
 #include "base/macros.h"
 #include "ios/web/public/webui/web_ui_ios_controller.h"
-#include "ui/base/layout.h"
-
-namespace base {
-class RefCountedMemory;
-}
 
 namespace web {
 class WebUIIOS;
@@ -20,9 +15,6 @@ class WebUIIOS;
 class CrashesUI : public web::WebUIIOSController {
  public:
   explicit CrashesUI(web::WebUIIOS* web_ui);
-
-  static base::RefCountedMemory* GetFaviconResourceBytes(
-      ui::ScaleFactor scale_factor);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CrashesUI);

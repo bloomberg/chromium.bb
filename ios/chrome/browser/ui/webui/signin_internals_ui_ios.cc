@@ -14,7 +14,6 @@
 #include "ios/chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "ios/web/public/web_ui_ios_data_source.h"
 #include "ios/web/public/webui/web_ui_ios.h"
-#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 

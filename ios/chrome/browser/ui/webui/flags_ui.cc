@@ -9,14 +9,12 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted_memory.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/flags_ui/flags_ui_constants.h"
 #include "components/flags_ui/flags_ui_pref_names.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/grit/components_resources.h"
-#include "components/grit/components_scaled_resources.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_chromium_strings.h"
@@ -229,13 +227,6 @@ void BaseFlagsUI::Initialize(web::WebUIIOS* web_ui, FlagsUIKind flags_ui_kind) {
 }
 
 BaseFlagsUI::~BaseFlagsUI() {}
-
-// static
-base::RefCountedMemory* BaseFlagsUI::GetFaviconResourceBytes(
-    ui::ScaleFactor scale_factor) {
-  return ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
-      IDR_FLAGS_FAVICON, scale_factor);
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 //

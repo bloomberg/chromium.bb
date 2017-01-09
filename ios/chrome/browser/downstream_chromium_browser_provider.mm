@@ -11,20 +11,10 @@
 
 #include "base/memory/ptr_util.h"
 #include "ios/chrome/browser/tabs/tab_model_synced_window_delegate_getter.h"
-#include "ios/chrome/browser/ui/webui/chrome_web_ui_ios_controller_factory.h"
 
 DownstreamChromiumBrowserProvider::DownstreamChromiumBrowserProvider() {}
 
 DownstreamChromiumBrowserProvider::~DownstreamChromiumBrowserProvider() {}
-
-void DownstreamChromiumBrowserProvider::GetFaviconForURL(
-    ios::ChromeBrowserState* browser_state,
-    const GURL& page_url,
-    const std::vector<int>& desired_sizes_in_pixel,
-    const favicon_base::FaviconResultsCallback& callback) const {
-  ChromeWebUIIOSControllerFactory::GetInstance()->GetFaviconForURL(
-      browser_state, page_url, desired_sizes_in_pixel, callback);
-}
 
 std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>
 DownstreamChromiumBrowserProvider::CreateSyncedWindowDelegatesGetter(

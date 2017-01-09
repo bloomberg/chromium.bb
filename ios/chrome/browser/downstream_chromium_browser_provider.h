@@ -19,11 +19,6 @@ class DownstreamChromiumBrowserProvider : public ChromiumBrowserProvider {
   // ChromeBrowserProvider implementations.  All of these will move upstream
   // into ChromiumBrowserProvider eventually, and from there callers will be
   // converted to not go through the provider API at all.
-  void GetFaviconForURL(
-      ios::ChromeBrowserState* browser_state,
-      const GURL& page_url,
-      const std::vector<int>& desired_sizes_in_pixel,
-      const favicon_base::FaviconResultsCallback& callback) const override;
   std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>
   CreateSyncedWindowDelegatesGetter(
       ios::ChromeBrowserState* browser_state) override;

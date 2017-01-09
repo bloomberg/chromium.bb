@@ -66,12 +66,6 @@ std::string ChromeBrowserProvider::GetRiskData() {
   return std::string();
 }
 
-void ChromeBrowserProvider::GetFaviconForURL(
-    ios::ChromeBrowserState* browser_state,
-    const GURL& page_url,
-    const std::vector<int>& desired_sizes_in_pixel,
-    const favicon_base::FaviconResultsCallback& callback) const {}
-
 UITextField<TextFieldStyling>* ChromeBrowserProvider::CreateStyledTextField(
     CGRect frame) const {
   return nil;

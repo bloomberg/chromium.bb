@@ -8,11 +8,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ios/web/public/webui/web_ui_ios_controller.h"
-#include "ui/base/layout.h"
-
-namespace base {
-class RefCountedMemory;
-}
 
 class BaseFlagsUI : public web::WebUIIOSController {
  public:
@@ -23,9 +18,6 @@ class BaseFlagsUI : public web::WebUIIOSController {
 
   BaseFlagsUI(web::WebUIIOS* web_ui, FlagsUIKind flags_ui_kind);
   ~BaseFlagsUI() override;
-
-  static base::RefCountedMemory* GetFaviconResourceBytes(
-      ui::ScaleFactor scale_factor);
 
  private:
   void Initialize(web::WebUIIOS* web_ui, FlagsUIKind flags_ui_kind);
