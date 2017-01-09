@@ -135,6 +135,7 @@ enum BasicCardNetwork {
   DISCOVER,
   JCB,
   MASTERCARD,
+  MIR,
   UNIONPAY,
   VISA
 };

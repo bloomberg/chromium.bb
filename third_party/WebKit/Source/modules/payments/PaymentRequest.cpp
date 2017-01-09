@@ -332,6 +332,7 @@ void setBasicCardMethodData(const ScriptValue& input,
                              {BasicCardNetwork::DISCOVER, "discover"},
                              {BasicCardNetwork::JCB, "jcb"},
                              {BasicCardNetwork::MASTERCARD, "mastercard"},
+                             {BasicCardNetwork::MIR, "mir"},
                              {BasicCardNetwork::UNIONPAY, "unionpay"},
                              {BasicCardNetwork::VISA, "visa"}};
 

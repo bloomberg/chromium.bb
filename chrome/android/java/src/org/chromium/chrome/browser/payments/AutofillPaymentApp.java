@@ -134,6 +134,7 @@ public class AutofillPaymentApp implements PaymentApp {
         networks.put(BasicCardNetwork.DISCOVER, "discover");
         networks.put(BasicCardNetwork.JCB, "jcb");
         networks.put(BasicCardNetwork.MASTERCARD, "mastercard");
+        networks.put(BasicCardNetwork.MIR, "mir");
         networks.put(BasicCardNetwork.UNIONPAY, "unionpay");
         networks.put(BasicCardNetwork.VISA, "visa");
         return networks;
