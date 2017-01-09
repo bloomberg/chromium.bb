@@ -353,6 +353,11 @@ NetworkingPrivateServiceClient::GetDeviceStateList() {
   return device_state_list;
 }
 
+std::unique_ptr<base::DictionaryValue>
+NetworkingPrivateServiceClient::GetGlobalPolicy() {
+  return base::MakeUnique<base::DictionaryValue>();
+}
+
 bool NetworkingPrivateServiceClient::EnableNetworkType(
     const std::string& type) {
   return false;

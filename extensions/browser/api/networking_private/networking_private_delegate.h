@@ -164,7 +164,6 @@ class NetworkingPrivateDelegate : public KeyedService {
                                  const std::string& puk,
                                  const VoidCallback& success_callback,
                                  const FailureCallback& failure_callback) = 0;
-
   virtual void SetCellularSimState(const std::string& guid,
                                    bool require_pin,
                                    const std::string& current_pin,
@@ -179,6 +178,12 @@ class NetworkingPrivateDelegate : public KeyedService {
 
   // Returns a list of DeviceStateProperties.
   virtual std::unique_ptr<DeviceStateList> GetDeviceStateList() = 0;
+
+  // Returns a dictionary of global policy values (may be empty). Note: the
+  // dictionary is expected to be a superset of the networkingPrivate
+  // GlobalPolicy dictionary. Any properties not in GlobalPolicy will be
+  // ignored.
+  virtual std::unique_ptr<base::DictionaryValue> GetGlobalPolicy() = 0;
 
   // Returns true if the ONC network type |type| is enabled.
   virtual bool EnableNetworkType(const std::string& type) = 0;

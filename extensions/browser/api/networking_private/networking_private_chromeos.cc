@@ -673,6 +673,17 @@ NetworkingPrivateChromeOS::GetDeviceStateList() {
   return device_state_list;
 }
 
+std::unique_ptr<base::DictionaryValue>
+NetworkingPrivateChromeOS::GetGlobalPolicy() {
+  auto result = base::MakeUnique<base::DictionaryValue>();
+  const base::DictionaryValue* global_network_config =
+      GetManagedConfigurationHandler()->GetGlobalConfigFromPolicy(
+          std::string() /* no username hash, device policy */);
+  if (global_network_config)
+    result->MergeDictionary(global_network_config);
+  return result;
+}
+
 bool NetworkingPrivateChromeOS::EnableNetworkType(const std::string& type) {
   NetworkTypePattern pattern =
       chromeos::onc::NetworkTypePatternFromOncType(type);

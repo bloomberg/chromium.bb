@@ -873,7 +873,15 @@ var availableTests = [
                 }));
           }));
     })));
-  }
+  },
+  function getGlobalPolicy() {
+    chrome.networkingPrivate.getGlobalPolicy(callbackPass(function(result) {
+      assertEq({
+        AllowOnlyPolicyNetworksToAutoconnect: true,
+        AllowOnlyPolicyNetworksToConnect: false,
+      }, result);
+    }));
+  },
 ];
 
 chrome.test.getConfig(function(config) {

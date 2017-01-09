@@ -806,6 +806,15 @@ namespace networkingPrivate {
     long? limit;
   };
 
+  dictionary GlobalPolicy {
+    // If true, only policy networks may auto connect. Defaults to false.
+    boolean? AllowOnlyPolicyNetworksToAutoconnect;
+
+    // If true, only policy networks may be connected to and no new networks may
+    // be added or configured. Defaults to false.
+    boolean? AllowOnlyPolicyNetworksToConnect;
+  };
+
   callback VoidCallback = void();
   callback BooleanCallback = void(boolean result);
   callback StringCallback = void(DOMString result);
@@ -818,6 +827,7 @@ namespace networkingPrivate {
   callback GetDeviceStatesCallback = void(DeviceStateProperties[] result);
   callback GetEnabledNetworkTypesCallback = void(NetworkType[] result);
   callback CaptivePortalStatusCallback = void(CaptivePortalStatus result);
+  callback GetGlobalPolicyCallback = void(GlobalPolicy result);
 
   // These functions all report failures via chrome.runtime.lastError.
   interface Functions {
@@ -1034,6 +1044,10 @@ namespace networkingPrivate {
     static void setCellularSimState(DOMString networkGuid,
                                     CellularSimState simState,
                                     optional VoidCallback callback);
+
+    // Gets the global policy properties. These properties are not expected to
+    // change during a session.
+    static void getGlobalPolicy(GetGlobalPolicyCallback callback);
   };
 
   interface Events {

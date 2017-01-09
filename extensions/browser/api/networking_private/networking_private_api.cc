@@ -779,4 +779,24 @@ void NetworkingPrivateSetCellularSimStateFunction::Failure(
   SendResponse(false);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// NetworkingPrivateGetGlobalPolicyFunction
+
+NetworkingPrivateGetGlobalPolicyFunction::
+    ~NetworkingPrivateGetGlobalPolicyFunction() {}
+
+ExtensionFunction::ResponseAction
+NetworkingPrivateGetGlobalPolicyFunction::Run() {
+  std::unique_ptr<base::DictionaryValue> policy_dict(
+      GetDelegate(browser_context())->GetGlobalPolicy());
+  DCHECK(policy_dict);
+  // private_api::GlobalPolicy is a subset of the global policy dictionary
+  // (by definition), so use the api setter/getter to generate the subset.
+  std::unique_ptr<private_api::GlobalPolicy> policy(
+      private_api::GlobalPolicy::FromValue(*policy_dict));
+  DCHECK(policy);
+  return RespondNow(
+      ArgumentList(private_api::GetGlobalPolicy::Results::Create(*policy)));
+}
+
 }  // namespace extensions

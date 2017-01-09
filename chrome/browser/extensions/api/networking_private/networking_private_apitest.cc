@@ -183,6 +183,10 @@ class TestDelegate : public NetworkingPrivateDelegate {
     return result;
   }
 
+  std::unique_ptr<base::DictionaryValue> GetGlobalPolicy() override {
+    return base::MakeUnique<base::DictionaryValue>();
+  }
+
   bool EnableNetworkType(const std::string& type) override {
     enabled_[type] = true;
     return !fail_;
@@ -462,6 +466,10 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTest, SetCellularSimState) {
   EXPECT_TRUE(RunNetworkingSubtest("setCellularSimState")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTest, GetGlobalPolicy) {
+  EXPECT_TRUE(RunNetworkingSubtest("getGlobalPolicy")) << message_;
+}
+
 // Test failure case
 
 class NetworkingPrivateApiTestFail : public NetworkingPrivateApiTest {
@@ -516,6 +524,7 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail, GetDeviceStates) {
 // * disableNetworkType
 // * enableNetworkType
 // * requestNetworkScan
+// * getGlobalPolicy
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail, StartConnect) {
   EXPECT_FALSE(RunNetworkingSubtest("startConnect")) << message_;

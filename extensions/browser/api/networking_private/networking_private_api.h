@@ -504,6 +504,23 @@ class NetworkingPrivateSetCellularSimStateFunction
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateSetCellularSimStateFunction);
 };
 
+class NetworkingPrivateGetGlobalPolicyFunction
+    : public UIThreadExtensionFunction {
+ public:
+  NetworkingPrivateGetGlobalPolicyFunction() {}
+  DECLARE_EXTENSION_FUNCTION("networkingPrivate.getGlobalPolicy",
+                             NETWORKINGPRIVATE_GETGLOBALPOLICY);
+
+ protected:
+  ~NetworkingPrivateGetGlobalPolicyFunction() override;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetGlobalPolicyFunction);
+};
+
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_API_H_

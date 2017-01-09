@@ -26,6 +26,7 @@
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
@@ -714,6 +715,24 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, CellularSimPuk) {
   // Lock the SIM
   device_test_->SetSimLocked(kCellularDevicePath, true);
   EXPECT_TRUE(RunNetworkingSubtest("cellularSimPuk")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetGlobalPolicy) {
+  base::DictionaryValue global_config;
+  global_config.SetBooleanWithoutPathExpansion(
+      ::onc::global_network_config::kAllowOnlyPolicyNetworksToAutoconnect,
+      true);
+  global_config.SetBooleanWithoutPathExpansion(
+      ::onc::global_network_config::kAllowOnlyPolicyNetworksToConnect, false);
+  global_config.SetBooleanWithoutPathExpansion("SomeNewGlobalPolicy", false);
+  chromeos::NetworkHandler::Get()
+      ->managed_network_configuration_handler()
+      ->SetPolicy(::onc::ONC_SOURCE_DEVICE_POLICY,
+                  std::string() /* no username hash */, base::ListValue(),
+                  global_config);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(RunNetworkingSubtest("getGlobalPolicy")) << message_;
 }
 
 // Tests subset of networking API for the networking API alias - to verify that

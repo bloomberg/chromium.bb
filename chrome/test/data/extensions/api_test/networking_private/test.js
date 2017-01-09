@@ -127,6 +127,9 @@ var availableTests = [
     chrome.networkingPrivate.setCellularSimState(
         kGuid, simState, callbackPass(callbackResult));
   },
+  function getGlobalPolicy() {
+    chrome.networkingPrivate.getGlobalPolicy(callbackPass(callbackResult));
+  }
 ];
 
 var testToRun = window.location.search.substring(1);

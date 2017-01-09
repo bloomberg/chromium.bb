@@ -189,6 +189,9 @@ void NetworkUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
       l10n_util::GetStringUTF16(IDS_NETWORK_UI_FORMAT_SHILL));
 
   localized_strings->SetString(
+      "globalPolicyLabel",
+      l10n_util::GetStringUTF16(IDS_NETWORK_UI_GLOBAL_POLICY));
+  localized_strings->SetString(
       "visibleNetworksLabel",
       l10n_util::GetStringUTF16(IDS_NETWORK_UI_VISIBLE_NETWORKS));
   localized_strings->SetString(

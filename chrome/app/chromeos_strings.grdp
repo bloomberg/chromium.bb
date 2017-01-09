@@ -6277,6 +6277,9 @@ All users must sign out to continue.
   <message name="IDS_NETWORK_UI_FORMAT_SHILL" desc="Label in network property format dropdown for Shill properties">
     Shill
   </message>
+  <message name="IDS_NETWORK_UI_GLOBAL_POLICY" desc="Label for global policy properties">
+    Global Policy:
+  </message>
   <message name="IDS_NETWORK_UI_VISIBLE_NETWORKS" desc="Label for list of visible networks">
     Visible Networks:
   </message>

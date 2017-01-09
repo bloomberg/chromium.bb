@@ -314,6 +314,16 @@ var NetworkUI = (function() {
   };
 
   /**
+   * Requests the global policy dictionary and updates the page.
+   */
+  var requestGlobalPolicy = function() {
+    chrome.networkingPrivate.getGlobalPolicy(function(policy) {
+      document.querySelector('#global-policy').textContent =
+          JSON.stringify(policy);
+    });
+  };
+
+  /**
    * Sets refresh rate if the interval is found in the url.
    */
   var setRefresh = function() {
@@ -334,6 +344,7 @@ var NetworkUI = (function() {
     $('refresh').onclick = requestNetworks;
     setRefresh();
     requestNetworks();
+    requestGlobalPolicy();
   });
 
   document.addEventListener('custom-item-selected', function(event) {
