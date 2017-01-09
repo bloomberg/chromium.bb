@@ -20,7 +20,6 @@
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/toolbar_actions_bar_bubble_mac.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
-#import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/extensions/extension_message_bubble_bridge.h"
@@ -582,14 +581,11 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
     if (NSMinX([button frameAfterAnimation]) == NSMinX(buttonFrame))
       continue;
 
-    // In LTR, We set the x-origin by calculating the proper distance from the
-    // right edge in the container so that, if the container is animating, the
+    // We set the x-origin by calculating the proper distance from the right
+    // edge in the container so that, if the container is animating, the
     // button appears stationary.
-    if (!cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
-      buttonFrame.origin.x = NSWidth([containerView_ frame]) -
-                             (toolbarActionsBar_->GetPreferredSize().width() -
-                              NSMinX(buttonFrame));
-    }
+    buttonFrame.origin.x = NSWidth([containerView_ frame]) -
+        (toolbarActionsBar_->GetPreferredSize().width() - NSMinX(buttonFrame));
     [button setFrame:buttonFrame animate:NO];
   }
 }
@@ -787,16 +783,9 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
 }
 
 - (void)updateGrippyCursors {
-  BOOL canClose = [self visibleButtonCount] > 0;
-  BOOL canOpen = toolbarActionsBar_->GetIconCount() != [buttons_ count];
   [containerView_
-      setCanDragLeft:cocoa_l10n_util::ShouldDoExperimentalRTLLayout()
-                         ? canClose
-                         : canOpen];
-  [containerView_
-      setCanDragRight:cocoa_l10n_util::ShouldDoExperimentalRTLLayout()
-                          ? canOpen
-                          : canClose];
+      setCanDragLeft:toolbarActionsBar_->GetIconCount() != [buttons_ count]];
+  [containerView_ setCanDragRight:[self visibleButtonCount] > 0];
   [[containerView_ window] invalidateCursorRectsForView:containerView_];
 }
 

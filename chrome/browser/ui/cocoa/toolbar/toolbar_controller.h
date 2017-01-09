@@ -200,10 +200,6 @@ class NotificationBridge;
 - (void)installAppMenu;
 // Return a hover button for the current event.
 - (NSButton*)hoverButtonForEvent:(NSEvent*)theEvent;
-// Adjusts browser actions container view in response to toolbar frame changes.
-// Outside of tests, called in response to frame changed/new window
-// notifications.
-- (void)toolbarFrameChanged;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_TOOLBAR_TOOLBAR_CONTROLLER_H_
