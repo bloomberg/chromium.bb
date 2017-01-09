@@ -942,7 +942,9 @@ void PostSubBufferCHROMIUM(GLint x,
                            GLint height) override;
 
 void CopyTextureCHROMIUM(GLenum source_id,
+                         GLint source_level,
                          GLenum dest_id,
+                         GLint dest_level,
                          GLint internalformat,
                          GLenum dest_type,
                          GLboolean unpack_flip_y,
@@ -950,7 +952,9 @@ void CopyTextureCHROMIUM(GLenum source_id,
                          GLboolean unpack_unmultiply_alpha) override;
 
 void CopySubTextureCHROMIUM(GLenum source_id,
+                            GLint source_level,
                             GLenum dest_id,
+                            GLint dest_level,
                             GLint xoffset,
                             GLint yoffset,
                             GLint x,

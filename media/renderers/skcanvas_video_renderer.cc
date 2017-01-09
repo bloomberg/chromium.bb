@@ -120,8 +120,8 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
       gl->GenTextures(1, &texture_copy);
       DCHECK(texture_copy);
       gl->BindTexture(GL_TEXTURE_2D, texture_copy);
-      gl->CopyTextureCHROMIUM(source_textures[i].fID, texture_copy, GL_RGB,
-                              GL_UNSIGNED_BYTE, false, true, false);
+      gl->CopyTextureCHROMIUM(source_textures[i].fID, 0, texture_copy, 0,
+                              GL_RGB, GL_UNSIGNED_BYTE, false, true, false);
 
       gl->DeleteTextures(1, &source_textures[i].fID);
       source_textures[i].fID = texture_copy;
@@ -776,7 +776,7 @@ void SkCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
   // value down to get the expected result.
   // "flip_y == true" means to reverse the video orientation while
   // "flip_y == false" means to keep the intrinsic orientation.
-  gl->CopyTextureCHROMIUM(source_texture, texture, internal_format, type,
+  gl->CopyTextureCHROMIUM(source_texture, 0, texture, 0, internal_format, type,
                           flip_y, premultiply_alpha, false);
   gl->DeleteTextures(1, &source_texture);
   gl->Flush();
@@ -828,7 +828,7 @@ bool SkCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
         destination_gl->CreateAndConsumeTextureCHROMIUM(
             mailbox_holder.texture_target, mailbox_holder.mailbox.name);
 
-    destination_gl->CopyTextureCHROMIUM(intermediate_texture, texture,
+    destination_gl->CopyTextureCHROMIUM(intermediate_texture, 0, texture, 0,
                                         internal_format, type, flip_y,
                                         premultiply_alpha, false);
     destination_gl->DeleteTextures(1, &intermediate_texture);

@@ -1338,19 +1338,23 @@ void GL_APIENTRY GLES2PostSubBufferCHROMIUM(GLint x,
   gles2::GetGLContext()->PostSubBufferCHROMIUM(x, y, width, height);
 }
 void GL_APIENTRY GLES2CopyTextureCHROMIUM(GLenum source_id,
+                                          GLint source_level,
                                           GLenum dest_id,
+                                          GLint dest_level,
                                           GLint internalformat,
                                           GLenum dest_type,
                                           GLboolean unpack_flip_y,
                                           GLboolean unpack_premultiply_alpha,
                                           GLboolean unpack_unmultiply_alpha) {
   gles2::GetGLContext()->CopyTextureCHROMIUM(
-      source_id, dest_id, internalformat, dest_type, unpack_flip_y,
-      unpack_premultiply_alpha, unpack_unmultiply_alpha);
+      source_id, source_level, dest_id, dest_level, internalformat, dest_type,
+      unpack_flip_y, unpack_premultiply_alpha, unpack_unmultiply_alpha);
 }
 void GL_APIENTRY
 GLES2CopySubTextureCHROMIUM(GLenum source_id,
+                            GLint source_level,
                             GLenum dest_id,
+                            GLint dest_level,
                             GLint xoffset,
                             GLint yoffset,
                             GLint x,
@@ -1361,8 +1365,9 @@ GLES2CopySubTextureCHROMIUM(GLenum source_id,
                             GLboolean unpack_premultiply_alpha,
                             GLboolean unpack_unmultiply_alpha) {
   gles2::GetGLContext()->CopySubTextureCHROMIUM(
-      source_id, dest_id, xoffset, yoffset, x, y, width, height, unpack_flip_y,
-      unpack_premultiply_alpha, unpack_unmultiply_alpha);
+      source_id, source_level, dest_id, dest_level, xoffset, yoffset, x, y,
+      width, height, unpack_flip_y, unpack_premultiply_alpha,
+      unpack_unmultiply_alpha);
 }
 void GL_APIENTRY GLES2CompressedCopyTextureCHROMIUM(GLenum source_id,
                                                     GLenum dest_id) {

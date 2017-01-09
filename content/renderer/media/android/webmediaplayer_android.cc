@@ -606,8 +606,8 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
   // value down to get the expected result.
   // flip_y==true means to reverse the video orientation while
   // flip_y==false means to keep the intrinsic orientation.
-  gl->CopyTextureCHROMIUM(src_texture, texture, internal_format, type, flip_y,
-                          premultiply_alpha, false);
+  gl->CopyTextureCHROMIUM(src_texture, 0, texture, 0, internal_format, type,
+                          flip_y, premultiply_alpha, false);
 
   gl->DeleteTextures(1, &src_texture);
   gl->Flush();

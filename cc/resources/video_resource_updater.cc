@@ -713,8 +713,8 @@ void VideoResourceUpdater::CopyPlaneTexture(
   gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
   uint32_t src_texture_id = gl->CreateAndConsumeTextureCHROMIUM(
       mailbox_holder.texture_target, mailbox_holder.mailbox.name);
-  gl->CopySubTextureCHROMIUM(src_texture_id, lock.texture_id(), 0, 0, 0, 0,
-                             output_plane_resource_size.width(),
+  gl->CopySubTextureCHROMIUM(src_texture_id, 0, lock.texture_id(), 0, 0, 0, 0,
+                             0, output_plane_resource_size.width(),
                              output_plane_resource_size.height(), false, false,
                              false);
   gl->DeleteTextures(1, &src_texture_id);

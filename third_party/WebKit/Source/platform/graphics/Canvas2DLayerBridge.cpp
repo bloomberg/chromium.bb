@@ -253,8 +253,8 @@ bool Canvas2DLayerBridge::prepareIOSurfaceMailboxFromImage(
   GLuint imageTexture =
       skia::GrBackendObjectToGrGLTextureInfo(image->getTextureHandle(true))
           ->fID;
-  gl->CopySubTextureCHROMIUM(imageTexture, imageInfo->m_textureId, 0, 0, 0, 0,
-                             m_size.width(), m_size.height(), GL_FALSE,
+  gl->CopySubTextureCHROMIUM(imageTexture, 0, imageInfo->m_textureId, 0, 0, 0,
+                             0, 0, m_size.width(), m_size.height(), GL_FALSE,
                              GL_FALSE, GL_FALSE);
 
   MailboxInfo& info = m_mailboxes.first();

@@ -2690,7 +2690,9 @@ error::Error GLES2DecoderPassthroughImpl::DoPostSubBufferCHROMIUM(
 
 error::Error GLES2DecoderPassthroughImpl::DoCopyTextureCHROMIUM(
     GLenum source_id,
+    GLint source_level,
     GLenum dest_id,
+    GLint dest_level,
     GLint internalformat,
     GLenum dest_type,
     GLboolean unpack_flip_y,
@@ -2705,7 +2707,9 @@ error::Error GLES2DecoderPassthroughImpl::DoCopyTextureCHROMIUM(
 
 error::Error GLES2DecoderPassthroughImpl::DoCopySubTextureCHROMIUM(
     GLenum source_id,
+    GLint source_level,
     GLenum dest_id,
+    GLint dest_level,
     GLint xoffset,
     GLint yoffset,
     GLint x,

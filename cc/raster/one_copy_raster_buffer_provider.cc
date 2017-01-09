@@ -351,7 +351,7 @@ void OneCopyRasterBufferProvider::CopyOnWorkerThread(
       DCHECK_GT(rows_to_copy, 0);
 
       gl->CopySubTextureCHROMIUM(
-          staging_buffer->texture_id, resource_texture_id, 0, y, 0, y,
+          staging_buffer->texture_id, 0, resource_texture_id, 0, 0, y, 0, y,
           resource_lock->size().width(), rows_to_copy, false, false, false);
       y += rows_to_copy;
 

@@ -952,7 +952,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                            GLsizeiptr size);
 
   void DoCopyTextureCHROMIUM(GLuint source_id,
+                             GLint source_level,
                              GLuint dest_id,
+                             GLint dest_level,
                              GLenum internal_format,
                              GLenum dest_type,
                              GLboolean unpack_flip_y,
@@ -960,7 +962,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                              GLboolean unpack_unmultiply_alpha);
 
   void DoCopySubTextureCHROMIUM(GLuint source_id,
+                                GLint source_level,
                                 GLuint dest_id,
+                                GLint dest_level,
                                 GLint xoffset,
                                 GLint yoffset,
                                 GLint x,
@@ -16347,7 +16351,9 @@ bool GLES2DecoderImpl::ValidateCompressedCopyTextureCHROMIUM(
 
 void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
     GLuint source_id,
+    GLint source_level,
     GLuint dest_id,
+    GLint dest_level,
     GLenum internal_format,
     GLenum dest_type,
     GLboolean unpack_flip_y,
@@ -16355,6 +16361,11 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
     GLboolean unpack_unmultiply_alpha) {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoCopyTextureCHROMIUM");
   static const char kFunctionName[] = "glCopyTextureCHROMIUM";
+
+  // TODO(qiankun.miao@intel.com): Remove this after level > 0 support is
+  // implemented. See: https://crbug.com/612542.
+  DCHECK(source_level == 0);
+  DCHECK(dest_level == 0);
 
   TextureRef* source_texture_ref = GetTexture(source_id);
   TextureRef* dest_texture_ref = GetTexture(dest_id);
@@ -16522,7 +16533,9 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
 
 void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
     GLuint source_id,
+    GLint source_level,
     GLuint dest_id,
+    GLint dest_level,
     GLint xoffset,
     GLint yoffset,
     GLint x,
@@ -16533,6 +16546,11 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
     GLboolean unpack_premultiply_alpha,
     GLboolean unpack_unmultiply_alpha) {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoCopySubTextureCHROMIUM");
+
+  // TODO(qiankun.miao@intel.com): Remove this after level > 0 support is
+  // implemented. See: https://crbug.com/612542.
+  DCHECK(source_level == 0);
+  DCHECK(dest_level == 0);
 
   static const char kFunctionName[] = "glCopySubTextureCHROMIUM";
   TextureRef* source_texture_ref = GetTexture(source_id);

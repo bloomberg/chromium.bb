@@ -82,8 +82,8 @@ void AcceleratedStaticBitmapImage::copyToTexture(
   destGL->WaitSyncTokenCHROMIUM(m_textureHolder->syncToken().GetData());
   GLuint sourceTextureId = destGL->CreateAndConsumeTextureCHROMIUM(
       GL_TEXTURE_2D, m_textureHolder->mailbox().name);
-  destGL->CopyTextureCHROMIUM(sourceTextureId, destTextureId, internalFormat,
-                              destType, flipY, false, false);
+  destGL->CopyTextureCHROMIUM(sourceTextureId, 0, destTextureId, 0,
+                              internalFormat, destType, flipY, false, false);
   // This drops the |destGL| context's reference on our |m_mailbox|, but it's
   // still held alive by our SkImage.
   destGL->DeleteTextures(1, &sourceTextureId);
