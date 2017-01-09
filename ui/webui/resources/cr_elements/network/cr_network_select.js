@@ -64,15 +64,6 @@ Polymer({
     },
 
     /**
-     * Show separators between all items.
-     */
-    showSeparators: {
-      type: Boolean,
-      value: false,
-      reflectToAttribute: true,
-    },
-
-    /**
      * List of all network state data for all visible networks.
      * @type {!Array<!CrOnc.NetworkStateProperties>}
      */

@@ -13,9 +13,6 @@
         min-height: 50px;
         overflow-y: auto;
       }
-      cr-network-list-item[show-separator]:not(:first-of-type) {
-        border-top: var(--cr-separator-line);
-      }
     </style>
     <div id="container" class="layout vertical" scrollable>
       <iron-list items="[[getItems_(networks, customItems)]]"
@@ -23,8 +20,7 @@
           selected-item="{{selectedItem}}">
         <template>
           <cr-network-list-item item="[[item]]" is-list-item
-              show-buttons="[[showButtons]]" tabindex$="[[tabIndex]]"
-              show-separator$="[[showSeparators]]">
+              show-buttons="[[showButtons]]" tabindex$="[[tabIndex]]">
           </cr-network-list-item>
         </template>
       </iron-list>

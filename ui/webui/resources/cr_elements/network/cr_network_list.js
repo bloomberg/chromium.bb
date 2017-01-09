@@ -51,13 +51,6 @@ Polymer({
       reflectToAttribute: true,
     },
 
-    /** Whether to show separators between all items. */
-    showSeparators: {
-      type: Boolean,
-      value: false,
-      reflectToAttribute: true,
-    },
-
     /**
      * Reflects the iron-list selecteditem property.
      * @type {!CrNetworkList.CrNetworkListItemType}
@@ -90,7 +83,7 @@ Polymer({
   getItems_: function() {
     let customItems = this.customItems.slice();
     // Flag the first custom item with isFirstCustomItem = true.
-    if (!this.showSeparators && customItems.length > 0)
+    if (customItems.length > 0)
       customItems[0].isFirstCustomItem = true;
     return this.networks.concat(customItems);
   },
