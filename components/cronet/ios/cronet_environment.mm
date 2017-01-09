@@ -135,33 +135,35 @@ void CronetEnvironment::Initialize() {
   g_network_change_notifier = net::NetworkChangeNotifier::Create();
 }
 
-void CronetEnvironment::StartNetLog(base::FilePath::StringType file_name,
+bool CronetEnvironment::StartNetLog(base::FilePath::StringType file_name,
                                     bool log_bytes) {
-  DCHECK(file_name.length());
-  PostToNetworkThread(FROM_HERE,
-                      base::Bind(&CronetEnvironment::StartNetLogOnNetworkThread,
-                                 base::Unretained(this), file_name, log_bytes));
+  if (!file_name.length())
+    return false;
+
+  base::FilePath path(file_name);
+
+  base::ScopedFILE file(base::OpenFile(path, "w"));
+  if (!file) {
+    LOG(ERROR) << "Can not start NetLog to " << path.value() << ": "
+               << strerror(errno);
+    return false;
+  }
+
+  LOG(WARNING) << "Starting NetLog to " << path.value();
+  PostToNetworkThread(
+      FROM_HERE,
+      base::Bind(&CronetEnvironment::StartNetLogOnNetworkThread,
+                 base::Unretained(this), base::Passed(&file), log_bytes));
+
+  return true;
 }
 
-void CronetEnvironment::StartNetLogOnNetworkThread(
-    const base::FilePath::StringType& file_name,
-    bool log_bytes) {
-  DCHECK(file_name.length());
+void CronetEnvironment::StartNetLogOnNetworkThread(base::ScopedFILE file,
+                                                   bool log_bytes) {
   DCHECK(net_log_);
 
   if (net_log_observer_)
     return;
-
-  base::FilePath files_root;
-  if (!PathService::Get(base::DIR_HOME, &files_root))
-    return;
-
-  base::FilePath full_path = files_root.Append(file_name);
-  base::ScopedFILE file(base::OpenFile(full_path, "w"));
-  if (!file) {
-    LOG(ERROR) << "Can not start NetLog to " << full_path.value();
-    return;
-  }
 
   net::NetLogCaptureMode capture_mode =
       log_bytes ? net::NetLogCaptureMode::IncludeSocketBytes()
@@ -171,7 +173,7 @@ void CronetEnvironment::StartNetLogOnNetworkThread(
   net_log_observer_->set_capture_mode(capture_mode);
   net_log_observer_->StartObserving(main_context_->net_log(), std::move(file),
                                     nullptr, main_context_.get());
-  LOG(WARNING) << "Started NetLog to " << full_path.value();
+  LOG(WARNING) << "Started NetLog";
 }
 
 void CronetEnvironment::StopNetLog() {
@@ -234,17 +236,6 @@ void CronetEnvironment::Start() {
   file_user_blocking_thread_->StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 
-  static bool ssl_key_log_file_set = false;
-  if (!ssl_key_log_file_set && !ssl_key_log_file_name_.empty()) {
-    ssl_key_log_file_set = true;
-    base::FilePath ssl_key_log_file;
-    if (!PathService::Get(base::DIR_HOME, &ssl_key_log_file))
-      return;
-    net::SSLClientSocket::SetSSLKeyLogFile(
-        ssl_key_log_file.Append(ssl_key_log_file_name_),
-        file_thread_->task_runner());
-  }
-
   main_context_getter_ = new CronetURLRequestContextGetter(
       this, network_io_thread_->task_runner());
   base::subtle::MemoryBarrier();
@@ -260,6 +251,17 @@ CronetEnvironment::~CronetEnvironment() {
 void CronetEnvironment::InitializeOnNetworkThread() {
   DCHECK(network_io_thread_->task_runner()->BelongsToCurrentThread());
   base::FeatureList::InitializeInstance(std::string(), std::string());
+
+  static bool ssl_key_log_file_set = false;
+  if (!ssl_key_log_file_set && !ssl_key_log_file_name_.empty()) {
+    ssl_key_log_file_set = true;
+    base::FilePath ssl_key_log_file;
+    if (!PathService::Get(base::DIR_HOME, &ssl_key_log_file))
+      return;
+    net::SSLClientSocket::SetSSLKeyLogFile(
+        ssl_key_log_file.Append(ssl_key_log_file_name_),
+        file_thread_->task_runner());
+  }
 
   if (user_agent_partial_)
     user_agent_ = web::BuildUserAgentFromProduct(user_agent_);

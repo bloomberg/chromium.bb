@@ -79,12 +79,16 @@ GRPC_SUPPORT_EXPORT
 // This method must be called after |start|.
 + (void)installIntoSessionConfiguration:(NSURLSessionConfiguration*)config;
 
-// Starts net-internals logging to a file named |fileName| in the application
-// temporary directory. |fileName| must not be empty. Log level is determined
-// by |logBytes| - if YES then LOG_ALL otherwise LOG_ALL_BUT_BYTES. If the file
-// exists it is truncated before starting. If actively logging the call is
-// ignored.
-+ (void)startNetLogToFile:(NSString*)fileName logBytes:(BOOL)logBytes;
+// Returns the absolute path that startNetLogToFile:fileName will actually
+// write to.
++ (NSString*)getNetLogPathForFile:(NSString*)fileName;
+
+// Starts net-internals logging to a file named |fileName|. Where fileName is
+// relative to the application documents directory. |fileName| must not be
+// empty. Log level is determined by |logBytes| - if YES then LOG_ALL otherwise
+// LOG_ALL_BUT_BYTES. If the file exists it is truncated before starting. If
+// actively logging the call is ignored.
++ (BOOL)startNetLogToFile:(NSString*)fileName logBytes:(BOOL)logBytes;
 
 // Stop net-internals logging and flush file to disk. If a logging session is
 // not in progress this call is ignored.

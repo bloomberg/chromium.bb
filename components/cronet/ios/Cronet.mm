@@ -230,10 +230,21 @@ class CronetHttpProtocolHandlerDelegate
   config.protocolClasses = @[ [CRNPauseableHTTPProtocolHandler class] ];
 }
 
-+ (void)startNetLogToFile:(NSString*)fileName logBytes:(BOOL)logBytes {
-  if (gChromeNet.Get().get() && [fileName length]) {
-    gChromeNet.Get()->StartNetLog([fileName UTF8String], logBytes);
++ (NSString*)getNetLogPathForFile:(NSString*)fileName {
+  return [[[[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory
+                                                   inDomains:NSUserDomainMask]
+      lastObject] URLByAppendingPathComponent:fileName] path];
+}
+
++ (BOOL)startNetLogToFile:(NSString*)fileName logBytes:(BOOL)logBytes {
+  if (gChromeNet.Get().get() && [fileName length] &&
+      ![fileName isAbsolutePath]) {
+    return gChromeNet.Get()->StartNetLog(
+        base::SysNSStringToUTF8([self getNetLogPathForFile:fileName]),
+        logBytes);
   }
+
+  return NO;
 }
 
 + (void)stopNetLog {

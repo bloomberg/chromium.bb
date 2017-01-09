@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
@@ -57,7 +58,7 @@ class CronetEnvironment {
 
   // Creates a new net log (overwrites existing file with this name). If
   // actively logging, this call is ignored.
-  void StartNetLog(base::FilePath::StringType file_name, bool log_bytes);
+  bool StartNetLog(base::FilePath::StringType file_name, bool log_bytes);
   // Stops logging and flushes file. If not currently logging this call is
   // ignored.
   void StopNetLog();
@@ -111,8 +112,7 @@ class CronetEnvironment {
                                     const base::Closure& task);
 
   // Helper methods that start/stop net logging on the network thread.
-  void StartNetLogOnNetworkThread(const base::FilePath::StringType& file_name,
-                                  bool log_bytes);
+  void StartNetLogOnNetworkThread(base::ScopedFILE file, bool log_bytes);
   void StopNetLogOnNetworkThread(base::WaitableEvent* log_stopped_event);
 
   // Returns the HttpNetworkSession object from the passed in
