@@ -610,6 +610,7 @@ void FrameLoader::didBeginDocument() {
     String referrerPolicyHeader = m_documentLoader->response().httpHeaderField(
         HTTPNames::Referrer_Policy);
     if (!referrerPolicyHeader.isNull()) {
+      UseCounter::count(*m_frame->document(), UseCounter::ReferrerPolicyHeader);
       m_frame->document()->parseAndSetReferrerPolicy(referrerPolicyHeader);
     }
   }

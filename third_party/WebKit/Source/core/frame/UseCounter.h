@@ -1423,6 +1423,7 @@ class CORE_EXPORT UseCounter {
     TopNavInSandboxWithoutGesture = 1750,
     TopNavInSandboxWithPerm = 1751,
     TopNavInSandboxWithPermButNoGesture = 1752,
+    ReferrerPolicyHeader = 1753,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
