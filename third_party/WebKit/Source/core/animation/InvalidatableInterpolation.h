@@ -5,10 +5,10 @@
 #ifndef InvalidatableInterpolation_h
 #define InvalidatableInterpolation_h
 
+#include "core/animation/Interpolation.h"
 #include "core/animation/InterpolationType.h"
 #include "core/animation/InterpolationTypesMap.h"
 #include "core/animation/PrimitiveInterpolation.h"
-#include "core/animation/StyleInterpolation.h"
 #include "core/animation/TypedInterpolationValue.h"
 #include <memory>
 
