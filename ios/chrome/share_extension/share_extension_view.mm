@@ -51,11 +51,16 @@ const CGFloat kButtonFontSize = 17;
 
 @interface ShareExtensionView () {
   __weak id<ShareExtensionViewActionTarget> _target;
+
+  // Track if a button has been pressed. All button pressing will have no effect
+  // if |_dismissed| is YES.
+  BOOL _dismissed;
 }
 
 // Keep strong references of the views that need to be updated.
 @property(nonatomic, strong) UILabel* titleLabel;
 @property(nonatomic, strong) UILabel* URLLabel;
+@property(nonatomic, strong) UIButton* readingListButton;
 @property(nonatomic, strong) UIImageView* screenshotView;
 @property(nonatomic, strong) UIStackView* itemStack;
 
@@ -74,12 +79,27 @@ const CGFloat kButtonFontSize = 17;
 // Returns a navigationBar.
 - (UINavigationBar*)navigationBar;
 
+// Called when "Read Later" button has been pressed.
+- (void)addToReadingListPressed:(UIButton*)sender;
+
+// Called when "Add to bookmarks" button has been pressed.
+- (void)addToBookmarksPressed:(UIButton*)sender;
+
+// Called when "Cancel" button has been pressed.
+- (void)cancelPressed:(UIButton*)sender;
+
+// Animates the button |sender| by replaceing its string to "Added", then call
+// completion.
+- (void)animateButtonPressed:(UIButton*)sender
+              withCompletion:(void (^)(void))completion;
+
 @end
 
 @implementation ShareExtensionView
 
 @synthesize titleLabel = _titleLabel;
 @synthesize URLLabel = _URLLabel;
+@synthesize readingListButton = _readingListButton;
 @synthesize screenshotView = _screenshotView;
 @synthesize itemStack = _itemStack;
 
@@ -91,6 +111,7 @@ const CGFloat kButtonFontSize = 17;
   if (self) {
     DCHECK(target);
     _target = target;
+    _dismissed = NO;
 
     [self.layer setCornerRadius:kCornerRadius];
     [self setClipsToBounds:YES];
@@ -112,22 +133,21 @@ const CGFloat kButtonFontSize = 17;
     NSString* addToReadingListTitle = NSLocalizedString(
         @"IDS_IOS_ADD_READING_LIST_SHARE_EXTENSION",
         @"The add to reading list button text in share extension.");
-    UIButton* readingListButton = [self
-        buttonWithTitle:addToReadingListTitle
-               selector:@selector(
-                            shareExtensionViewDidSelectAddToReadingList:)];
+    self.readingListButton =
+        [self buttonWithTitle:addToReadingListTitle
+                     selector:@selector(addToReadingListPressed:)];
 
     NSString* addToBookmarksTitle = NSLocalizedString(
         @"IDS_IOS_ADD_BOOKMARKS_SHARE_EXTENSION",
         @"The Add to bookmarks button text in share extension.");
-    UIButton* bookmarksButton = [self
-        buttonWithTitle:addToBookmarksTitle
-               selector:@selector(shareExtensionViewDidSelectAddToBookmarks:)];
+    UIButton* bookmarksButton =
+        [self buttonWithTitle:addToBookmarksTitle
+                     selector:@selector(addToBookmarksPressed:)];
 
     UIStackView* contentStack = [[UIStackView alloc] initWithArrangedSubviews:@[
       [self navigationBar], [self dividerViewWithVibrancy:vibrancyEffect],
       [self sharedItemView], [self dividerViewWithVibrancy:vibrancyEffect],
-      readingListButton, [self dividerViewWithVibrancy:vibrancyEffect],
+      self.readingListButton, [self dividerViewWithVibrancy:vibrancyEffect],
       bookmarksButton
     ]];
     [contentStack setAxis:UILayoutConstraintAxisVertical];
@@ -256,7 +276,7 @@ const CGFloat kButtonFontSize = 17;
   [button setTitleColor:systemColor forState:UIControlStateNormal];
   [[button titleLabel] setFont:[UIFont systemFontOfSize:kButtonFontSize]];
   [button setTranslatesAutoresizingMaskIntoConstraints:NO];
-  [button addTarget:_target
+  [button addTarget:self
                 action:selector
       forControlEvents:UIControlEventTouchUpInside];
   [button.heightAnchor constraintEqualToConstant:kButtonHeight].active = YES;
@@ -281,9 +301,8 @@ const CGFloat kButtonFontSize = 17;
 
   UIBarButtonItem* cancelButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
-                           target:_target
-                           action:@selector(
-                                      shareExtensionViewDidSelectCancel:)];
+                           target:self
+                           action:@selector(cancelPressed:)];
 
   NSString* appName =
       [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"];
@@ -293,6 +312,95 @@ const CGFloat kButtonFontSize = 17;
   [titleItem setHidesBackButton:YES];
   [navigationBar pushNavigationItem:titleItem animated:NO];
   return navigationBar;
+}
+
+- (void)addToReadingListPressed:(UIButton*)sender {
+  if (_dismissed) {
+    return;
+  }
+  _dismissed = YES;
+  [self animateButtonPressed:sender
+              withCompletion:^{
+                [_target shareExtensionViewDidSelectAddToReadingList:sender];
+              }];
+}
+
+- (void)addToBookmarksPressed:(UIButton*)sender {
+  if (_dismissed) {
+    return;
+  }
+  _dismissed = YES;
+  [self animateButtonPressed:sender
+              withCompletion:^{
+                [_target shareExtensionViewDidSelectAddToBookmarks:sender];
+              }];
+}
+
+- (void)animateButtonPressed:(UIButton*)sender
+              withCompletion:(void (^)(void))completion {
+  NSString* addedString =
+      NSLocalizedString(@"IDS_IOS_ADDED_ITEM_SHARE_EXTENSION",
+                        @"Button label after being pressed.");
+  NSString* addedCheckedString =
+      [addedString stringByAppendingString:@" \u2713"];
+  // Create a label with the same style as the split animation between the text
+  // and the checkmark.
+  UILabel* addedLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+  [addedLabel setTranslatesAutoresizingMaskIntoConstraints:NO];
+  [addedLabel setText:addedString];
+  [self addSubview:addedLabel];
+  [addedLabel setFont:[sender titleLabel].font];
+  [addedLabel setTextColor:[sender titleColorForState:UIControlStateNormal]];
+  [addedLabel.leadingAnchor
+      constraintEqualToAnchor:[sender titleLabel].leadingAnchor]
+      .active = YES;
+  [addedLabel.centerYAnchor
+      constraintEqualToAnchor:[sender titleLabel].centerYAnchor]
+      .active = YES;
+  [addedLabel setAlpha:0];
+
+  void (^step3ShowCheck)() = ^{
+    [UIView animateWithDuration:ui_util::kAnimationDuration
+        animations:^{
+          [addedLabel setAlpha:0];
+          [sender setAlpha:1];
+        }
+        completion:^(BOOL finished) {
+          if (completion) {
+            completion();
+          }
+        }];
+  };
+
+  void (^step2ShowTextWithoutCheck)() = ^{
+    [sender setTitle:addedCheckedString forState:UIControlStateNormal];
+    [UIView animateWithDuration:ui_util::kAnimationDuration
+        animations:^{
+          [addedLabel setAlpha:1];
+        }
+        completion:^(BOOL finished) {
+          step3ShowCheck();
+        }];
+  };
+
+  void (^step1HideText)() = ^{
+    [UIView animateWithDuration:ui_util::kAnimationDuration
+        animations:^{
+          [sender setAlpha:0];
+        }
+        completion:^(BOOL finished) {
+          step2ShowTextWithoutCheck();
+        }];
+  };
+  step1HideText();
+}
+
+- (void)cancelPressed:(UIButton*)sender {
+  if (_dismissed) {
+    return;
+  }
+  _dismissed = YES;
+  [_target shareExtensionViewDidSelectCancel:sender];
 }
 
 #pragma mark - Content getters and setters.

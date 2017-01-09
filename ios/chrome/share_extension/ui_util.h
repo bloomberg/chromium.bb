@@ -7,6 +7,9 @@
 
 namespace ui_util {
 
+// Standard animation timing for the extension.
+extern const CGFloat kAnimationDuration;
+
 // Returns the closest pixel-aligned value less than |value|, taking the scale
 // factor into account. At a scale of 1, equivalent to floor().
 CGFloat AlignValueToPixel(CGFloat value);

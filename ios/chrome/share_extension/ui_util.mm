@@ -12,6 +12,8 @@
 
 namespace ui_util {
 
+const CGFloat kAnimationDuration = 0.3;
+
 CGFloat AlignValueToPixel(CGFloat value) {
   CGFloat scale = [[UIScreen mainScreen] scale];
   return floor(value * scale) / scale;

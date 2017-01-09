@@ -28,7 +28,6 @@ const CGFloat kShareExtensionMaxWidth = 390;
 // Clip the last separator out of the table view.
 const CGFloat kScreenShotWidth = 100;
 const CGFloat kScreenShotHeight = 100;
-const CGFloat kAnimationDuration = 0.3;
 const CGFloat kMediumAlpha = 0.5;
 
 }  // namespace
@@ -130,7 +129,7 @@ const CGFloat kMediumAlpha = 0.5;
         constraintEqualToAnchor:self.view.centerYAnchor];
     [_widgetVerticalPlacementConstraint setActive:YES];
     [self.maskView setAlpha:0];
-    [UIView animateWithDuration:kAnimationDuration
+    [UIView animateWithDuration:ui_util::kAnimationDuration
                      animations:^{
                        [self.maskView setAlpha:1];
                        [self.view layoutIfNeeded];
@@ -254,7 +253,7 @@ const CGFloat kMediumAlpha = 0.5;
         [_shareView.topAnchor constraintEqualToAnchor:self.view.bottomAnchor];
   }
   [_widgetVerticalPlacementConstraint setActive:YES];
-  [UIView animateWithDuration:kAnimationDuration
+  [UIView animateWithDuration:ui_util::kAnimationDuration
       animations:^{
         [self.maskView setAlpha:0];
         [self.view layoutIfNeeded];
