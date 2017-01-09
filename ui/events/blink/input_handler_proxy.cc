@@ -540,22 +540,28 @@ void InputHandlerProxy::RecordMainThreadScrollingReasons(
     return;
   }
 
+  // UMA_HISTOGRAM_ENUMERATION requires that the enum_max must be strictly
+  // greater than the sample value. kMainThreadScrollingReasonCount doesn't
+  // include the NotScrollingOnMain enum but the histograms do so adding
+  // the +1 is necessary.
+  uint32_t mainThreadScrollingReasonEnumMax =
+      cc::MainThreadScrollingReason::kMainThreadScrollingReasonCount + 1;
   if (reasons == cc::MainThreadScrollingReason::kNotScrollingOnMain) {
     if (device == blink::WebGestureDeviceTouchscreen) {
       UMA_HISTOGRAM_ENUMERATION(
           kGestureHistogramName,
           cc::MainThreadScrollingReason::kNotScrollingOnMain,
-          cc::MainThreadScrollingReason::kMainThreadScrollingReasonCount);
+          mainThreadScrollingReasonEnumMax);
     } else {
       UMA_HISTOGRAM_ENUMERATION(
           kWheelHistogramName,
           cc::MainThreadScrollingReason::kNotScrollingOnMain,
-          cc::MainThreadScrollingReason::kMainThreadScrollingReasonCount);
+          mainThreadScrollingReasonEnumMax);
     }
   }
 
   for (uint32_t i = 0;
-       i < cc::MainThreadScrollingReason::kMainThreadScrollingReasonCount - 1;
+       i < cc::MainThreadScrollingReason::kMainThreadScrollingReasonCount;
        ++i) {
     unsigned val = 1 << i;
     if (reasons & val) {
@@ -568,13 +574,11 @@ void InputHandlerProxy::RecordMainThreadScrollingReasons(
           continue;
       }
       if (device == blink::WebGestureDeviceTouchscreen) {
-        UMA_HISTOGRAM_ENUMERATION(
-            kGestureHistogramName, i + 1,
-            cc::MainThreadScrollingReason::kMainThreadScrollingReasonCount);
+        UMA_HISTOGRAM_ENUMERATION(kGestureHistogramName, i + 1,
+                                  mainThreadScrollingReasonEnumMax);
       } else {
-        UMA_HISTOGRAM_ENUMERATION(
-            kWheelHistogramName, i + 1,
-            cc::MainThreadScrollingReason::kMainThreadScrollingReasonCount);
+        UMA_HISTOGRAM_ENUMERATION(kWheelHistogramName, i + 1,
+                                  mainThreadScrollingReasonEnumMax);
       }
     }
   }

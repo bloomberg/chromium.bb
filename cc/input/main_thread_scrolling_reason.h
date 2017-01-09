@@ -48,12 +48,11 @@ struct MainThreadScrollingReason {
     kNonInvertibleTransform = 1 << 11,
     kPageBasedScrolling = 1 << 12,
 
-    // TODO(yigu): the following variable is confusing. It's not the count of
-    // values, but the maximum shift + 2 because the loop in
-    // InputHandlerProxy::RecordMainThreadScrollingReasons is "wrong".
-    // It should be the max number of flags in this struct (excluding itself).
-    // Will fix it in a followup patch.
-    kMainThreadScrollingReasonCount = 22,
+    // The maximum number of flags in this struct (excluding itself).
+    // New flags should increment this number but it should never be decremented
+    // because the values are used in UMA histograms. It should also be noted
+    // that it excludes the kNotScrollingOnMain value.
+    kMainThreadScrollingReasonCount = 21,
   };
 
   // Returns true if the given MainThreadScrollingReason can be set by the main
@@ -144,7 +143,7 @@ struct MainThreadScrollingReason {
     if (reason & (reason - 1))
       return -1;
 
-    int index = 0;
+    int index = -1;
     while (reason > 0) {
       reason = reason >> 1;
       ++index;

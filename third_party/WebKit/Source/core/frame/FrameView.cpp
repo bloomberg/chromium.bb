@@ -4898,11 +4898,11 @@ MainThreadScrollingReasons
 FrameView::getStyleRelatedMainThreadScrollingReasons() const {
   MainThreadScrollingReasons reasons =
       static_cast<MainThreadScrollingReasons>(0);
-  for (uint32_t reason = 1;
+  for (uint32_t reason = 0;
        reason < MainThreadScrollingReason::kMainThreadScrollingReasonCount;
        ++reason) {
     if (m_mainThreadScrollingReasonsCounter[reason] > 0) {
-      reasons |= 1 << (reason - 1);
+      reasons |= 1 << reason;
     }
   }
   return reasons;
