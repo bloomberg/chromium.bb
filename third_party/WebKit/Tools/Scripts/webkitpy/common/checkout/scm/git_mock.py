@@ -1,44 +1,20 @@
-# Copyright (C) 2011 Google Inc. All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#    * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#    * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#    * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 from webkitpy.common.system.filesystem_mock import MockFileSystem
 from webkitpy.common.system.executive_mock import MockExecutive
 
 
-class MockSCM(object):
+class MockGit(object):
 
-    # Arguments are generally unused in methods that return canned values below.
-    # pylint: disable=unused-argument
+    # Arguments are listed below, even if they're unused, in order to match
+    # the Git class. pylint: disable=unused-argument
 
-    executable_name = "MockSCM"
+    executable_name = 'mock-git'
 
     def __init__(self, filesystem=None, executive=None):
-        self.checkout_root = "/mock-checkout"
+        self.checkout_root = '/mock-checkout'
         self.added_paths = set()
         self._filesystem = filesystem or MockFileSystem()
         self._executive = executive or MockExecutive()
@@ -109,8 +85,10 @@ class MockSCM(object):
         self._local_commits.append([message])
 
     def local_commits(self):
-        """For testing purposes, returns the internal recording of commits made via commit_locally_with_message.
-        Format as [ message, commit_all_working_directory_changes, author ].
+        """Returns the internal recording of commits made via |commit_locally_with_message|.
+
+        This is a testing convenience method; commits are formatted as:
+          [ message, commit_all_working_directory_changes, author ].
         """
         return self._local_commits
 

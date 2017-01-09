@@ -27,7 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from webkitpy.common.config.builders import BUILDERS
-from webkitpy.common.checkout.scm.scm_mock import MockSCM
+from webkitpy.common.checkout.scm.git_mock import MockGit
 from webkitpy.common.net.buildbot_mock import MockBuildBot
 from webkitpy.common.net.web_mock import MockWeb
 from webkitpy.common.system.system_host_mock import MockSystemHost
@@ -72,7 +72,7 @@ class MockHost(MockSystemHost):
 
     def initialize_scm(self, patch_directories=None):
         if not self._scm:
-            self._scm = MockSCM(filesystem=self.filesystem, executive=self.executive)
+            self._scm = MockGit(filesystem=self.filesystem, executive=self.executive)
         # Various pieces of code (wrongly) call filesystem.chdir(checkout_root).
         # Making the checkout_root exist in the mock filesystem makes that chdir not raise.
         self.filesystem.maybe_make_directory(self._scm.checkout_root)
