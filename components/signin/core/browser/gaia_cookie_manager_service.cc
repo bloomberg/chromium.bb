@@ -506,8 +506,17 @@ void GaiaCookieManagerService::OnCookieChanged(
       case net::CookieStore::ChangeCause::INSERTED:
         source += "INSERTED";
         break;
-      case net::CookieStore::ChangeCause::EXPLICIT:
-        source += "EXPLICIT";
+      case net::CookieStore::ChangeCause::EXPLICIT_DELETE:
+        source += "EXPLICIT_DELETE";
+        break;
+      case net::CookieStore::ChangeCause::EXPLICIT_DUPLICATE_IN_BACKING_STORE:
+        source += "EXPLICIT_DUPLICATE_IN_BACKING_STORE";
+        break;
+      case net::CookieStore::ChangeCause::EXPLICIT_DONT_RECORD:
+        source += "EXPLICIT_DONT_RECORD";
+        break;
+      case net::CookieStore::ChangeCause::EXPLICIT_LAST_ENTRY:
+        source += "EXPLICIT_LAST_ENTRY";
         break;
       case net::CookieStore::ChangeCause::UNKNOWN_DELETION:
         source += "UNKNOWN_DELETION";

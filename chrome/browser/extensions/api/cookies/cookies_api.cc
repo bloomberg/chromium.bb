@@ -146,7 +146,10 @@ void CookiesEventRouter::CookieChanged(
     // Report an inserted cookie as an "explicit" change cause. All other causes
     // only make sense for deletions.
     case net::CookieStore::ChangeCause::INSERTED:
-    case net::CookieStore::ChangeCause::EXPLICIT:
+    case net::CookieStore::ChangeCause::EXPLICIT_DELETE:
+    case net::CookieStore::ChangeCause::EXPLICIT_DUPLICATE_IN_BACKING_STORE:
+    case net::CookieStore::ChangeCause::EXPLICIT_DONT_RECORD:
+    case net::CookieStore::ChangeCause::EXPLICIT_LAST_ENTRY:
       cause = keys::kExplicitChangeCause;
       break;
 
