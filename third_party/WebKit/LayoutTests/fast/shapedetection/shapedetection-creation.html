@@ -40,4 +40,16 @@ test(function() {
   assert_true(barcodeDetector instanceof BarcodeDetector);
 }, 'BarcodeDetector instance can be created.');
 
+// This test verifies that DetectedText can be created
+test(function() {
+  var detectedText = new DetectedText();
+  assert_true(detectedText instanceof DetectedText);
+}, 'DetectedText instance can be created.');
+
+// This test verifies that TextDetector can be created
+test(function() {
+  var textDetector = new TextDetector();
+  assert_true(textDetector instanceof TextDetector);
+}, 'TextDetector instance can be created.');
+
 </script>

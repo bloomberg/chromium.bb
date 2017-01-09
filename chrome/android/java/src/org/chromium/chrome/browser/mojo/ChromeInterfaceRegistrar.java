@@ -6,8 +6,10 @@ package org.chromium.chrome.browser.mojo;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.blink.mojom.BarcodeDetection;
+import org.chromium.blink.mojom.TextDetection;
 import org.chromium.chrome.browser.payments.PaymentRequestFactory;
 import org.chromium.chrome.browser.shapedetection.BarcodeDetectionFactory;
+import org.chromium.chrome.browser.shapedetection.TextDetectionFactory;
 import org.chromium.chrome.browser.webshare.ShareServiceImplementationFactory;
 import org.chromium.content_public.browser.InterfaceRegistrar;
 import org.chromium.content_public.browser.WebContents;
@@ -32,5 +34,6 @@ class ChromeWebContentsInterfaceRegistrar implements InterfaceRegistrar<WebConte
                 ShareService.MANAGER, new ShareServiceImplementationFactory(webContents));
         registry.addInterface(
                 BarcodeDetection.MANAGER, new BarcodeDetectionFactory(webContents));
+        registry.addInterface(TextDetection.MANAGER, new TextDetectionFactory(webContents));
     }
 }

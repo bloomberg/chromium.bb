@@ -1246,6 +1246,11 @@ interface DetectedFace
     attribute @@toStringTag
     getter boundingBox
     method constructor
+interface DetectedText
+    attribute @@toStringTag
+    getter boundingBox
+    getter rawValue
+    method constructor
 interface DeviceLightEvent : Event
     attribute @@toStringTag
     getter value
@@ -6468,6 +6473,10 @@ interface TextDecoder
     getter ignoreBOM
     method constructor
     method decode
+interface TextDetector
+    attribute @@toStringTag
+    method constructor
+    method detect
 interface TextEncoder
     attribute @@toStringTag
     getter encoding

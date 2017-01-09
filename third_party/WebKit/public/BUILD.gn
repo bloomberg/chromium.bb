@@ -664,6 +664,7 @@ mojom("mojo_bindings") {
     "platform/modules/shapedetection/barcodedetection.mojom",
     "platform/modules/shapedetection/facedetection.mojom",
     "platform/modules/shapedetection/facedetection_provider.mojom",
+    "platform/modules/shapedetection/textdetection.mojom",
     "platform/modules/websockets/websocket.mojom",
     "platform/referrer.mojom",
     "platform/site_engagement.mojom",

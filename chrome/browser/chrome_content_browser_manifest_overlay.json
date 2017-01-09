@@ -59,6 +59,7 @@
           "autofill::mojom::PasswordManagerDriver",
           "blink::mojom::BarcodeDetection",
           "blink::mojom::ShareService",
+          "blink::mojom::TextDetection",
           "bluetooth::mojom::AdapterFactory",
           "device::usb::ChooserService",
           "device::usb::DeviceManager",

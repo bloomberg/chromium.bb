@@ -4,6 +4,7 @@
 <script src="../resources/mojo-helpers.js"></script>
 <script src="resources/mock-barcodedetection.js"></script>
 <script src="resources/mock-facedetection.js"></script>
+<script src="resources/mock-textdetection.js"></script>
 <script>
 
 var createTestForImageBitmap = function(createDetector, mockReady,
@@ -60,6 +61,12 @@ function BarcodeDetectorDetectionResultTest(detectionResult, mock) {
   assert_equals(detectionResult[1].rawValue, "dogs", "barcode 2");
 }
 
+function TextDetectorDetectionResultTest(detectionResult, mock) {
+  assert_equals(detectionResult.length, 2, "Number of textBlocks");
+  assert_equals(detectionResult[0].rawValue, "cats", "textBlock 1");
+  assert_equals(detectionResult[1].rawValue, "dogs", "textBlock 2");
+}
+
 // These tests verify that a Detector's detect() works on an ImageBitmap.
 // Use the mock mojo server implemented in mock-{barcode,face}detection.js.
 generate_tests(createTestForImageBitmap, [
@@ -74,6 +81,12 @@ generate_tests(createTestForImageBitmap, [
     () => { return new BarcodeDetector(); },
     () => { return mockBarcodeDetectionReady; },
     BarcodeDetectorDetectionResultTest
+  ],
+  [
+    "Text",
+    () => { return new TextDetector(); },
+    () => { return mockTextDetectionReady; },
+    TextDetectorDetectionResultTest
   ]
 ]);
 

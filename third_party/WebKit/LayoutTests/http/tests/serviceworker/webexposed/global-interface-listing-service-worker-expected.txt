@@ -702,6 +702,9 @@ interface TextDecoder
     getter ignoreBOM
     method constructor
     method decode
+interface TextDetector
+    method constructor
+    method detect
 interface TextEncoder
     getter encoding
     method constructor

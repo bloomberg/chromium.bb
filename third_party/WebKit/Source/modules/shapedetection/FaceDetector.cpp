@@ -6,7 +6,6 @@
 
 #include "core/dom/DOMException.h"
 #include "core/dom/DOMRect.h"
-#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/canvas/CanvasImageSource.h"
 #include "modules/shapedetection/DetectedFace.h"

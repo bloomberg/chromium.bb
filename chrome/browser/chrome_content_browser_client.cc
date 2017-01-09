@@ -206,6 +206,7 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "third_party/WebKit/public/platform/modules/shapedetection/barcodedetection.mojom.h"
+#include "third_party/WebKit/public/platform/modules/shapedetection/textdetection.mojom.h"
 #include "third_party/WebKit/public/platform/modules/webshare/webshare.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -3032,6 +3033,9 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoInterfaces(
       registry->AddInterface(
           web_contents->GetJavaInterfaces()
               ->CreateInterfaceFactory<blink::mojom::BarcodeDetection>());
+      registry->AddInterface(
+          web_contents->GetJavaInterfaces()
+              ->CreateInterfaceFactory<blink::mojom::TextDetection>());
     }
   }
 #endif

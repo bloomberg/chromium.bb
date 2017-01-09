@@ -12,9 +12,13 @@ blink_modules_sources("shapedetection") {
     "DetectedBarcode.h",
     "DetectedFace.cpp",
     "DetectedFace.h",
+    "DetectedText.cpp",
+    "DetectedText.h",
     "FaceDetector.cpp",
     "FaceDetector.h",
     "ShapeDetector.cpp",
     "ShapeDetector.h",
+    "TextDetector.cpp",
+    "TextDetector.h",
   ]
 }

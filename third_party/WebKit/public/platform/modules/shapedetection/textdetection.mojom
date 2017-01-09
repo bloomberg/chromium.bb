@@ -1,0 +1,19 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module blink.mojom;
+
+import "ui/gfx/geometry/mojo/geometry.mojom";
+
+struct TextDetectionResult {
+  string raw_value;
+  gfx.mojom.RectF bounding_box;
+};
+
+interface TextDetection {
+  // |frame_data| contains tightly packed image pixels in ARGB32 format,
+  // row-major order.
+  Detect(handle<shared_buffer> frame_data, uint32 width, uint32 height)
+    => (array<TextDetectionResult> results);
+};

@@ -112,6 +112,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h",
   "+third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h",
   "+third_party/WebKit/public/platform/modules/shapedetection/barcodedetection.mojom.h",
+  "+third_party/WebKit/public/platform/modules/shapedetection/textdetection.mojom.h",
   "+third_party/WebKit/public/platform/modules/webshare/webshare.mojom.h",
   "+third_party/WebKit/public/platform/site_engagement.mojom.h",
   "+third_party/WebKit/public/public_features.h",
