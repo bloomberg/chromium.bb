@@ -849,6 +849,9 @@ void StyleEngine::scheduleInvalidationsForRuleSets(
     DCHECK(!ruleSet->features().needsFullRecalcForRuleSetInvalidation());
 #endif  // DCHECK_IS_ON()
 
+  TRACE_EVENT0("blink,blink_style",
+               "StyleEngine::scheduleInvalidationsForRuleSets");
+
   bool invalidateSlotted = false;
   if (treeScope.rootNode().isShadowRoot()) {
     Element& host = toShadowRoot(treeScope.rootNode()).host();
