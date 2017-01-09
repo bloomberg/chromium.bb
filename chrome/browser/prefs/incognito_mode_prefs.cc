@@ -75,7 +75,6 @@ class PlatformParentalControlsValue {
   static bool IsParentalControlActivityLoggingOn() {
     // Since we can potentially block, make sure the thread is okay with this.
     base::ThreadRestrictions::AssertIOAllowed();
-    base::ThreadRestrictions::AssertWaitAllowed();
 
     // Query this info on Windows 7 and above.
     if (base::win::GetVersion() < base::win::VERSION_WIN7)
