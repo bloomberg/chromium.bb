@@ -135,15 +135,8 @@ Then to run for example the X11 platform:
 
 ### Embedded
 
-The following targets are currently working for embedded builds:
-
-* `content_shell`
-* various unit tests
-
-The following targets are currently NOT supported:
-
-* `ash_shell_with_content`
-* `chrome`
+**Warning: Only some targets such as `content_shell` or unit tests are
+currently working for embedded builds.**
 
 To build `content_shell`, do this from the `src` directory:
 
@@ -160,12 +153,10 @@ Then to run for example the headless platform:
 ```
 
 ### Linux Desktop - ([waterfall](https://build.chromium.org/p/chromium.fyi/builders/Ozone%20Linux/))
-Support for Linux Desktop is currently [in-progress](https://crbug.com/295089).
 
-The following targets are currently working:
-
-* various unit tests
-* `chrome`
+**Warning: Experimental support for Linux Desktop is available since m57
+but this is still [in development](https://crbug.com/295089) and currently has
+many bugs.**
 
 To build `chrome`, do this from the `src` directory:
 
@@ -177,10 +168,9 @@ Then to run for example the X11 platform:
 
 ``` shell
 ./out/OzoneLinuxDesktop/chrome --ozone-platform=x11 \
-                               --mash
+                               --mash \
+                               --window-manager=simple_wm
 ```
-
-Note: You may need to apply [this patch](https://codereview.chromium.org/2485673002/) to avoid missing ash resources during chrome execution.
 
 ### GN Configuration notes
 
@@ -259,15 +249,15 @@ It is still actively being developed in the chromium tree, feel free to discuss
 with us on freenode.net, `#ozone-wayland` channel or on `ozone-dev`.
 
 Below are some quick build & run instructions. It is assumed that you are
-launching `chrome` from a Wayland environment such as `weston`. Apply
-[this patch](https://codereview.chromium.org/2485673002/) and execute the
+launching `chrome` from a Wayland environment such as `weston`. Execute the
 following commands:
 
 ``` shell
 gn args out/OzoneWayland --args="use_ozone=true enable_package_mash_services=true"
 ninja -C out/OzoneWayland chrome
 ./out/OzoneWayland/chrome --ozone-platform=wayland \
-                          --mash
+                          --mash \
+                          --window-manager=simple_wm
 ```
 
 ### Caca
