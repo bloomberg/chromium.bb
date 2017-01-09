@@ -7,8 +7,6 @@ source_set("ocmock") {
   sources = [
     "OCMockObject+BreakpadControllerTesting.h",
     "OCMockObject+BreakpadControllerTesting.mm",
-    "OCMockObject+CrOCMockAdditions.h",
-    "OCMockObject+CrOCMockAdditions.mm",
     "scoped_mock_object.h",
     "scoped_verifying_mock_object.h",
   ]
