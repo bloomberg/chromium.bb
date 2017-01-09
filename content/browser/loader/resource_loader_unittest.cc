@@ -45,7 +45,7 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/cert/x509_certificate.h"
 #include "net/nqe/effective_connection_type.h"
-#include "net/nqe/network_quality_estimator.h"
+#include "net/nqe/network_quality_estimator_test_util.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_private_key.h"
@@ -361,28 +361,6 @@ void CreateTemporaryError(
 
 }  // namespace
 
-class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
- public:
-  TestNetworkQualityEstimator()
-      : net::NetworkQualityEstimator(nullptr,
-                                     std::map<std::string, std::string>()),
-        type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {}
-  ~TestNetworkQualityEstimator() override {}
-
-  net::EffectiveConnectionType GetEffectiveConnectionType() const override {
-    return type_;
-  }
-
-  void set_effective_connection_type(net::EffectiveConnectionType type) {
-    type_ = type;
-  }
-
- private:
-  net::EffectiveConnectionType type_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestNetworkQualityEstimator);
-};
-
 class ResourceLoaderTest : public testing::Test,
                            public ResourceLoaderDelegate {
  protected:
@@ -417,7 +395,7 @@ class ResourceLoaderTest : public testing::Test,
     return net::URLRequestTestJob::test_data_1();
   }
 
-  TestNetworkQualityEstimator* network_quality_estimator() {
+  net::TestNetworkQualityEstimator* network_quality_estimator() {
     return &network_quality_estimator_;
   }
 
@@ -569,7 +547,7 @@ class ResourceLoaderTest : public testing::Test,
   std::deque<bool> handle_external_protocol_results_{false};
 
   net::URLRequestJobFactoryImpl job_factory_;
-  TestNetworkQualityEstimator network_quality_estimator_;
+  net::TestNetworkQualityEstimator network_quality_estimator_;
   net::TestURLRequestContext test_url_request_context_;
   MockResourceContext resource_context_;
   std::unique_ptr<TestBrowserContext> browser_context_;

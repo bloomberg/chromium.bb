@@ -46,7 +46,6 @@
 #include "net/log/test_net_log.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/external_estimate_provider.h"
-#include "net/nqe/network_quality_estimator.h"
 #include "net/nqe/network_quality_estimator_test_util.h"
 #include "net/proxy/proxy_server.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -1022,9 +1021,7 @@ TEST_F(DataReductionProxyConfigTest, AutoLoFiParams) {
   EXPECT_EQ(base::TimeDelta::FromSeconds(expected_hysteresis_sec),
             config.auto_lofi_hysteresis_);
 
-  std::map<std::string, std::string> network_quality_estimator_params;
-  net::TestNetworkQualityEstimator test_network_quality_estimator(
-      network_quality_estimator_params);
+  net::TestNetworkQualityEstimator test_network_quality_estimator;
 
   // Network is slow.
   test_network_quality_estimator.set_effective_connection_type(
@@ -1103,9 +1100,7 @@ TEST_F(DataReductionProxyConfigTest, AutoLoFiParamsSlowConnectionsFlag) {
   EXPECT_EQ(base::TimeDelta::FromSeconds(hysteresis_sec),
             config.auto_lofi_hysteresis_);
 
-  std::map<std::string, std::string> network_quality_estimator_params;
-  net::TestNetworkQualityEstimator test_network_quality_estimator(
-      network_quality_estimator_params);
+  net::TestNetworkQualityEstimator test_network_quality_estimator;
 
   // Network is slow.
   test_network_quality_estimator.set_effective_connection_type(
@@ -1209,9 +1204,7 @@ TEST_F(DataReductionProxyConfigTest, LoFiAccuracy) {
         << test.description;
     config.PopulateAutoLoFiParams();
 
-    std::map<std::string, std::string> network_quality_estimator_params;
-    net::TestNetworkQualityEstimator test_network_quality_estimator(
-        network_quality_estimator_params);
+    net::TestNetworkQualityEstimator test_network_quality_estimator;
 
     base::HistogramTester histogram_tester;
     test_network_quality_estimator.set_effective_connection_type(
@@ -1261,9 +1254,7 @@ TEST_F(DataReductionProxyConfigTest, LoFiAccuracyNonZeroDelay) {
                                          "Enabled");
   config.PopulateAutoLoFiParams();
 
-  std::map<std::string, std::string> network_quality_estimator_params;
-  net::TestNetworkQualityEstimator test_network_quality_estimator(
-      network_quality_estimator_params);
+  net::TestNetworkQualityEstimator test_network_quality_estimator;
 
   base::HistogramTester histogram_tester;
   // Network was predicted to be slow and actually was slow.

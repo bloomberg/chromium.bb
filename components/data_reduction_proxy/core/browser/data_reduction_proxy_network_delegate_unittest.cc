@@ -45,7 +45,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/nqe/effective_connection_type.h"
-#include "net/nqe/network_quality_estimator.h"
 #include "net/nqe/network_quality_estimator_test_util.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_info.h"
@@ -667,9 +666,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RequestDataConfigurations) {
     net::HttpRequestHeaders headers;
     net::ProxyRetryInfoMap proxy_retry_info;
 
-    std::map<std::string, std::string> network_quality_estimator_params;
-    net::TestNetworkQualityEstimator test_network_quality_estimator(
-        network_quality_estimator_params);
+    net::TestNetworkQualityEstimator test_network_quality_estimator;
     test_network_quality_estimator.set_effective_connection_type(
         net::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
     context()->set_network_quality_estimator(&test_network_quality_estimator);
@@ -758,9 +755,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RedirectRequestDataCleared) {
   net::HttpRequestHeaders headers;
   net::ProxyRetryInfoMap proxy_retry_info;
 
-  std::map<std::string, std::string> network_quality_estimator_params;
-  net::TestNetworkQualityEstimator test_network_quality_estimator(
-      network_quality_estimator_params);
+  net::TestNetworkQualityEstimator test_network_quality_estimator;
   test_network_quality_estimator.set_effective_connection_type(
       net::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
   context()->set_network_quality_estimator(&test_network_quality_estimator);
