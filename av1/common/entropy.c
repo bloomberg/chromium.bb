@@ -3515,10 +3515,6 @@ void av1_default_coef_probs(AV1_COMMON *cm) {
 #endif  // CONFIG_EC_MULTISYMBOL
 }
 
-#if CONFIG_ADAPT_SCAN
-#define ADAPT_SCAN_UPDATE_RATE_16 (1 << 13)
-#endif
-
 static void adapt_coef_probs(AV1_COMMON *cm, TX_SIZE tx_size,
                              unsigned int count_sat,
                              unsigned int update_factor) {
