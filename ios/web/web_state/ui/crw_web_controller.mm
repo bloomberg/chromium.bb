@@ -175,10 +175,6 @@ namespace {
 // Key of UMA IOSFix.ViewportZoomBugCount histogram.
 const char kUMAViewportZoomBugCount[] = "Renderer.ViewportZoomBugCount";
 
-// A tag for the web view, so that tests can identify it. This is used instead
-// of exposing a getter (and deliberately not exposed in the header) to make it
-// *very* clear that this is a hack which should only be used as a last resort.
-const NSUInteger kWebViewTag = 0x3eb71e3;
 // URL scheme for messages sent from javascript for asynchronous processing.
 NSString* const kScriptMessageName = @"crwebinvoke";
 
@@ -4667,7 +4663,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
     DCHECK(_webView);
 
-    [_webView setTag:kWebViewTag];
     [_webView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
                                   UIViewAutoresizingFlexibleHeight];
     [_webView setBackgroundColor:[UIColor colorWithWhite:0.2 alpha:1.0]];
