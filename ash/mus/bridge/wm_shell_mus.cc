@@ -142,9 +142,13 @@ WmShellMus::WmShellMus(
   SetKeyboardUI(KeyboardUIMus::Create(window_manager_->connector()));
 
   wallpaper_delegate()->InitializeWallpaper();
+
+  window_manager->activation_client()->AddObserver(this);
 }
 
 WmShellMus::~WmShellMus() {
+  window_manager_->activation_client()->RemoveObserver(this);
+
   // This order mirrors that of Shell.
 
   // Destroy maximize mode controller early on since it has some observers which

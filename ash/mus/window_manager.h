@@ -20,6 +20,12 @@
 #include "ui/aura/mus/window_manager_delegate.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
 
+namespace aura {
+namespace client {
+class ActivationClient;
+}
+}
+
 namespace base {
 class SequencedWorkerPool;
 }
@@ -84,6 +90,8 @@ class WindowManager : public aura::WindowManagerDelegate,
   }
 
   ::wm::FocusController* focus_controller() { return focus_controller_.get(); }
+
+  aura::client::ActivationClient* activation_client();
 
   service_manager::Connector* connector() { return connector_; }
 

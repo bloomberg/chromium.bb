@@ -137,6 +137,10 @@ void WindowManager::Init(
   lookup_.reset(new WmLookupMus);
 }
 
+aura::client::ActivationClient* WindowManager::activation_client() {
+  return focus_controller_.get();
+}
+
 aura::Window* WindowManager::NewTopLevelWindow(
     ui::mojom::WindowType window_type,
     std::map<std::string, std::vector<uint8_t>>* properties) {
