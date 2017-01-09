@@ -1262,17 +1262,20 @@ int av1_get_palette_color_context(const uint8_t *color_map, int cols, int r,
         max_idx = j;
       }
     }
-
     if (max_idx != i) {
-      int temp = scores[i];
-      scores[i] = scores[max_idx];
-      scores[max_idx] = temp;
-
-      temp = color_order[i];
-      color_order[i] = color_order[max_idx];
-      color_order[max_idx] = temp;
+      // Move the score at index 'max_idx' to index 'i', and shift the scores
+      // from 'i' to 'max_idx - 1' by 1.
+      const int max_score = scores[max_idx];
+      const uint8_t max_color_order = color_order[max_idx];
+      int k;
+      for (k = max_idx; k > i; --k) {
+        scores[k] = scores[k - 1];
+        color_order[k] = color_order[k - 1];
+        inverse_color_order[color_order[k]] = k;
+      }
+      scores[i] = max_score;
+      color_order[i] = max_color_order;
       inverse_color_order[color_order[i]] = i;
-      inverse_color_order[color_order[max_idx]] = max_idx;
     }
   }
 
