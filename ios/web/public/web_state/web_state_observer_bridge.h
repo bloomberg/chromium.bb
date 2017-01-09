@@ -30,7 +30,7 @@ class GURL;
         (const web::LoadCommittedDetails&)load_details;
 
 // Invoked by WebStateObserverBridge::PageLoaded.
-- (void)webStateDidLoadPage:(web::WebState*)webState;
+- (void)webStateDidLoadPage:(web::WebState*)webState withSuccess:(BOOL)success;
 
 // Invoked by WebStateObserverBridge::InterstitialDismissed.
 - (void)webStateDidDismissInterstitial:(web::WebState*)webState;

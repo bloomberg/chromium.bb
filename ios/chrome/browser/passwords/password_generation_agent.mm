@@ -334,7 +334,7 @@ bool IsTextField(const autofill::FormFieldData& field) {
 #pragma mark -
 #pragma mark CRWWebStateObserver
 
-- (void)webStateDidLoadPage:(web::WebState*)webState {
+- (void)webStateDidLoadPage:(web::WebState*)webState withSuccess:(BOOL)success {
   [self clearState];
 }
 

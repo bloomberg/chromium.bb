@@ -33,7 +33,7 @@ class ITunesLinksObserverTest : public PlatformTest {
     if (expected_product_id)
       [[mocked_store_kit_launcher_ expect] openAppStore:expected_product_id];
     web_state_.SetCurrentURL(GURL(url_string));
-    [link_observer_ webStateDidLoadPage:&web_state_];
+    [link_observer_ webStateDidLoadPage:&web_state_ withSuccess:YES];
     EXPECT_OCMOCK_VERIFY(mocked_store_kit_launcher_);
   }
 

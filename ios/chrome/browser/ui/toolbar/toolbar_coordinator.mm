@@ -39,7 +39,7 @@
 
 #pragma mark - CRWWebStateObserver
 
-- (void)webStateDidLoadPage:(web::WebState*)webState {
+- (void)webStateDidLoadPage:(web::WebState*)webState withSuccess:(BOOL)success {
   const GURL& pageURL = webState->GetVisibleURL();
   [self.viewController
       setCurrentPageText:base::SysUTF8ToNSString(pageURL.spec())];

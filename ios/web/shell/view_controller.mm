@@ -280,7 +280,7 @@ using web::NavigationManager;
   [self updateToolbar];
 }
 
-- (void)webStateDidLoadPage:(web::WebState*)webState {
+- (void)webStateDidLoadPage:(web::WebState*)webState withSuccess:(BOOL)success {
   DCHECK_EQ(_webState.get(), webState);
   [self updateToolbar];
 }

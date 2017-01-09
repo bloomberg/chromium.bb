@@ -250,7 +250,7 @@ class FormSuggestionControllerTest : public ChromeWebTest {
 TEST_F(FormSuggestionControllerTest, PageLoadShouldBeIgnoredWhenNotWebScheme) {
   SetUpController(@[]);
   SetCurrentUrl("data:text/html;charset=utf8;base64,");
-  [suggestion_controller_ webStateDidLoadPage:web_state()];
+  [suggestion_controller_ webStateDidLoadPage:web_state() withSuccess:YES];
 
   EXPECT_FALSE(GetSuggestionView(input_accessory_view_));
   EXPECT_OCMOCK_VERIFY(mock_js_suggestion_manager_);
@@ -261,7 +261,7 @@ TEST_F(FormSuggestionControllerTest, PageLoadShouldBeIgnoredWhenNotHtml) {
   SetUpController(@[]);
   SetCurrentUrl("http://foo.com");
   SetContentIsHtml(NO);
-  [suggestion_controller_ webStateDidLoadPage:web_state()];
+  [suggestion_controller_ webStateDidLoadPage:web_state() withSuccess:YES];
 
   EXPECT_FALSE(GetSuggestionView(input_accessory_view_));
   EXPECT_OCMOCK_VERIFY(mock_js_suggestion_manager_);
@@ -276,7 +276,7 @@ TEST_F(FormSuggestionControllerTest,
 
   // Load the page. The JS should be injected.
   [[mock_js_suggestion_manager_ expect] inject];
-  [suggestion_controller_ webStateDidLoadPage:web_state()];
+  [suggestion_controller_ webStateDidLoadPage:web_state() withSuccess:YES];
   EXPECT_OCMOCK_VERIFY(mock_js_suggestion_manager_);
 
   // Trigger form activity, which should set up the suggestions view.
@@ -290,7 +290,7 @@ TEST_F(FormSuggestionControllerTest,
 
   // Trigger another page load. The suggestions accessory view should
   // not be present.
-  [accessory_controller_ webStateDidLoadPage:web_state()];
+  [accessory_controller_ webStateDidLoadPage:web_state() withSuccess:YES];
   EXPECT_FALSE(GetSuggestionView(input_accessory_view_));
 }
 

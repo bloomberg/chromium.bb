@@ -46,9 +46,19 @@ void WebStateObserverBridge::DidStopLoading() {
 
 void WebStateObserverBridge::PageLoaded(
     web::PageLoadCompletionStatus load_completion_status) {
-  SEL selector = @selector(webStateDidLoadPage:);
-  if ([observer_ respondsToSelector:selector])
-    [observer_ webStateDidLoadPage:web_state()];
+  SEL selector = @selector(webStateDidLoadPage:withSuccess:);
+  if ([observer_ respondsToSelector:selector]) {
+    BOOL success = NO;
+    switch (load_completion_status) {
+      case PageLoadCompletionStatus::SUCCESS:
+        success = YES;
+        break;
+      case PageLoadCompletionStatus::FAILURE:
+        success = NO;
+        break;
+    }
+    [observer_ webStateDidLoadPage:web_state() withSuccess:success];
+  }
 }
 
 void WebStateObserverBridge::InsterstitialDismissed() {
