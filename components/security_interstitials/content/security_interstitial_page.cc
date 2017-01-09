@@ -33,6 +33,11 @@ SecurityInterstitialPage::SecurityInterstitialPage(
       interstitial_page_(NULL),
       create_view_(true),
       controller_(std::move(controller)) {
+  // Determine if any prefs need to be updated prior to showing the security
+  // interstitial.
+  safe_browsing::UpdatePrefsBeforeSecurityInterstitial(
+      controller_->GetPrefService());
+
   // Creating interstitial_page_ without showing it leaks memory, so don't
   // create it here.
 }
@@ -62,11 +67,6 @@ void SecurityInterstitialPage::Show() {
       web_contents_, ShouldCreateNewNavigation(), request_url_, this);
   if (!create_view_)
     interstitial_page_->DontCreateViewForTesting();
-
-  // Determine if any prefs need to be updated prior to showing the security
-  // interstitial.
-  safe_browsing::UpdatePrefsBeforeSecurityInterstitial(
-      controller_->GetPrefService());
 
   interstitial_page_->Show();
 
