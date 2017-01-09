@@ -43,11 +43,7 @@ class FakeSyncEngine : public SyncEngine {
 
   void Shutdown(ShutdownReason reason) override;
 
-  ModelTypeSet ConfigureDataTypes(
-      ConfigureReason reason,
-      const DataTypeConfigStateMap& config_state_map,
-      const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task,
-      const base::Callback<void()>& retry_callback) override;
+  void ConfigureDataTypes(ConfigureParams params) override;
 
   void EnableEncryptEverything() override;
 

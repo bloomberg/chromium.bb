@@ -29,6 +29,7 @@ void ProxyDataTypeController::LoadModels(
 }
 
 void ProxyDataTypeController::RegisterWithBackend(
+    base::Callback<void(bool)> set_downloaded,
     ModelTypeConfigurer* configurer) {}
 
 void ProxyDataTypeController::StartAssociating(

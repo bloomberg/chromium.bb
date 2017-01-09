@@ -58,6 +58,7 @@ void DirectoryDataTypeController::GetStatusCounters(
 }
 
 void DirectoryDataTypeController::RegisterWithBackend(
+    base::Callback<void(bool)> set_downloaded,
     ModelTypeConfigurer* configurer) {}
 
 void DirectoryDataTypeController::ActivateDataType(

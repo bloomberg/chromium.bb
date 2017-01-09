@@ -508,22 +508,26 @@ void SyncBackendHostCore::DoPurgeDisabledTypes(const ModelTypeSet& to_purge,
 }
 
 void SyncBackendHostCore::DoConfigureSyncer(
-    ConfigureReason reason,
-    const ModelTypeSet& to_download,
-    const ModelSafeRoutingInfo routing_info,
-    const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task,
-    const base::Closure& retry_callback) {
+    ModelTypeConfigurer::ConfigureParams params) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!ready_task.is_null());
-  DCHECK(!retry_callback.is_null());
-  base::Closure chained_ready_task(
-      base::Bind(&SyncBackendHostCore::DoFinishConfigureDataTypes,
-                 weak_ptr_factory_.GetWeakPtr(), to_download, ready_task));
+  DCHECK(!params.ready_task.is_null());
+  DCHECK(!params.retry_callback.is_null());
+
+  registrar_->ConfigureDataTypes(params.enabled_types, params.disabled_types);
+
+  ModelSafeRoutingInfo routing_info;
+  registrar_->GetModelSafeRoutingInfo(&routing_info);
+
+  base::Closure chained_ready_task(base::Bind(
+      &SyncBackendHostCore::DoFinishConfigureDataTypes,
+      weak_ptr_factory_.GetWeakPtr(), params.to_download, params.ready_task));
   base::Closure chained_retry_task(
       base::Bind(&SyncBackendHostCore::DoRetryConfiguration,
-                 weak_ptr_factory_.GetWeakPtr(), retry_callback));
-  sync_manager_->ConfigureSyncer(reason, to_download, routing_info,
-                                 chained_ready_task, chained_retry_task);
+                 weak_ptr_factory_.GetWeakPtr(), params.retry_callback));
+
+  sync_manager_->ConfigureSyncer(params.reason, params.to_download,
+                                 routing_info, chained_ready_task,
+                                 chained_retry_task);
 }
 
 void SyncBackendHostCore::DoFinishConfigureDataTypes(

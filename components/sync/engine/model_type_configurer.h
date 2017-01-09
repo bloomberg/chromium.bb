@@ -23,43 +23,38 @@ struct ActivationContext;
 // removed data types.
 class ModelTypeConfigurer {
  public:
-  enum DataTypeConfigState {
-    CONFIGURE_ACTIVE,    // Actively being configured. Data of such types
-                         // will be downloaded if not present locally.
-    CONFIGURE_INACTIVE,  // Already configured or to be configured in future.
-                         // Data of such types is left as it is, no
-                         // downloading or purging.
-    CONFIGURE_CLEAN,     // Actively being configured but requiring unapply
-                         // and GetUpdates first (e.g. for persistence errors).
-    DISABLED,            // Not syncing. Disabled by user.
-    FATAL,               // Not syncing due to unrecoverable error.
-    CRYPTO,              // Not syncing due to a cryptographer error.
-    UNREADY,             // Not syncing due to transient error.
+  // Utility struct for holding ConfigureDataTypes options.
+  struct ConfigureParams {
+    ConfigureParams();
+    ConfigureParams(ConfigureParams&& other);
+    ~ConfigureParams();
+    ConfigureParams& operator=(ConfigureParams&& other);
+
+    ConfigureReason reason;
+    ModelTypeSet enabled_types;
+    ModelTypeSet disabled_types;
+    ModelTypeSet to_download;
+    ModelTypeSet to_purge;
+    ModelTypeSet to_journal;
+    ModelTypeSet to_unapply;
+    // Run when configuration is done with the set of all types that failed
+    // configuration (if its argument isn't empty, an error was encountered).
+    // TODO(akalin): Use a Delegate class with OnConfigureSuccess,
+    // OnConfigureFailure, and OnConfigureRetry instead of a pair of callbacks.
+    // The awkward part is handling when SyncEngine calls ConfigureDataTypes on
+    // itself to configure Nigori.
+    base::Callback<void(ModelTypeSet, ModelTypeSet)> ready_task;
+    base::Closure retry_callback;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ConfigureParams);
   };
-  typedef std::map<ModelType, DataTypeConfigState> DataTypeConfigStateMap;
 
-  // Configures sync for data types in config_state_map according to the states.
-  // |ready_task| is called on the same thread as ConfigureDataTypes
-  // is called when configuration is done with the set of data types
-  // that succeeded/failed configuration (i.e., configuration succeeded iff
-  // the failed set is empty).
-  // Returns: the set of types that are already configured and are ready to
-  // start.
-  //
-  // TODO(akalin): Use a Delegate class with OnConfigureSuccess,
-  // OnConfigureFailure, and OnConfigureRetry instead of a pair of callbacks.
-  // The awkward part is handling when SyncEngine calls ConfigureDataTypes on
-  // itself to configure Nigori.
-  virtual ModelTypeSet ConfigureDataTypes(
-      ConfigureReason reason,
-      const DataTypeConfigStateMap& config_state_map,
-      const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task,
-      const base::Callback<void()>& retry_callback) = 0;
+  ModelTypeConfigurer();
+  virtual ~ModelTypeConfigurer();
 
-  // Return model types in |state_map| that match |state|.
-  static ModelTypeSet GetDataTypesInState(
-      DataTypeConfigState state,
-      const DataTypeConfigStateMap& state_map);
+  // Changes the set of data types that are currently being synced.
+  virtual void ConfigureDataTypes(ConfigureParams params) = 0;
 
   // Activates change processing for the given directory data type.  This must
   // be called synchronously with the data type's model association so
@@ -80,14 +75,6 @@ class ModelTypeConfigurer {
 
   // Deactivates change processing for the given non-blocking data type.
   virtual void DeactivateNonBlockingDataType(ModelType type) = 0;
-
-  // Set state of |types| in |state_map| to |state|.
-  static void SetDataTypesState(DataTypeConfigState state,
-                                ModelTypeSet types,
-                                DataTypeConfigStateMap* state_map);
-
- protected:
-  virtual ~ModelTypeConfigurer() {}
 };
 
 }  // namespace syncer

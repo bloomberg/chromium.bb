@@ -34,6 +34,11 @@ namespace {
 
 const ModelType kTestModelType = AUTOFILL;
 
+void SetBool(bool* called, bool* out, bool in) {
+  *called = true;
+  *out = in;
+}
+
 // A change processor for testing that connects using a thread-jumping proxy,
 // tracks connected state, and counts DisableSync calls.
 class TestModelTypeProcessor : public FakeModelTypeChangeProcessor,
@@ -48,6 +53,8 @@ class TestModelTypeProcessor : public FakeModelTypeChangeProcessor,
                       const StartCallback& callback) override {
     std::unique_ptr<ActivationContext> activation_context =
         base::MakeUnique<ActivationContext>();
+    activation_context->model_type_state.set_initial_sync_done(
+        initial_sync_done_);
     activation_context->type_processor =
         base::MakeUnique<ModelTypeProcessorProxy>(
             weak_factory_.GetWeakPtr(), base::ThreadTaskRunnerHandle::Get());
@@ -61,9 +68,14 @@ class TestModelTypeProcessor : public FakeModelTypeChangeProcessor,
   }
   void DisconnectSync() override { is_connected_ = false; }
 
+  void set_initial_sync_done(bool initial_sync_done) {
+    initial_sync_done_ = initial_sync_done;
+  }
+
   bool is_connected() { return is_connected_; }
 
  private:
+  bool initial_sync_done_ = false;
   bool is_connected_ = false;
   int* disable_sync_call_count_;
   base::WeakPtrFactory<TestModelTypeProcessor> weak_factory_;
@@ -76,13 +88,8 @@ class TestModelTypeConfigurer : public ModelTypeConfigurer {
   TestModelTypeConfigurer() {}
   ~TestModelTypeConfigurer() override {}
 
-  ModelTypeSet ConfigureDataTypes(
-      ConfigureReason reason,
-      const DataTypeConfigStateMap& config_state_map,
-      const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task,
-      const base::Callback<void()>& retry_callback) override {
+  void ConfigureDataTypes(ConfigureParams params) override {
     NOTREACHED() << "Not implemented.";
-    return ModelTypeSet();
   }
 
   void ActivateDirectoryDataType(ModelType type,
@@ -144,7 +151,14 @@ class ModelTypeControllerTest : public testing::Test, public FakeSyncClient {
                                        base::Unretained(this)));
   }
 
-  void RegisterWithBackend() { controller_->RegisterWithBackend(&configurer_); }
+  void RegisterWithBackend(bool expect_downloaded) {
+    bool called = false;
+    bool downloaded;
+    controller_->RegisterWithBackend(base::Bind(&SetBool, &called, &downloaded),
+                                     &configurer_);
+    EXPECT_TRUE(called);
+    EXPECT_EQ(expect_downloaded, downloaded);
+  }
 
   void StartAssociating() {
     controller_->StartAssociating(base::Bind(
@@ -184,6 +198,10 @@ class ModelTypeControllerTest : public testing::Test, public FakeSyncClient {
                      base::Unretained(this), is_connected));
       PumpModelThread();
     }
+  }
+
+  void SetInitialSyncDone(bool initial_sync_done) {
+    processor_->set_initial_sync_done(initial_sync_done);
   }
 
   SyncPrefs* sync_prefs() { return &sync_prefs_; }
@@ -275,27 +293,37 @@ TEST_F(ModelTypeControllerTest, LoadModelsOnBackendThread) {
 TEST_F(ModelTypeControllerTest, LoadModelsTwice) {
   LoadModels();
   RunAllTasks();
-  LoadModels();
   EXPECT_EQ(DataTypeController::MODEL_LOADED, controller()->state());
-  // The second LoadModels call should set the error.
+  EXPECT_FALSE(load_models_last_error().IsSet());
+  // A second LoadModels call should set the error.
+  LoadModels();
   EXPECT_TRUE(load_models_last_error().IsSet());
 }
 
-TEST_F(ModelTypeControllerTest, ActivateDataTypeOnBackendThread) {
+TEST_F(ModelTypeControllerTest, Activate) {
   LoadModels();
   RunAllTasks();
   EXPECT_EQ(DataTypeController::MODEL_LOADED, controller()->state());
-  RegisterWithBackend();
+  RegisterWithBackend(false);
   ExpectProcessorConnected(true);
 
   StartAssociating();
   EXPECT_EQ(DataTypeController::RUNNING, controller()->state());
 }
 
+TEST_F(ModelTypeControllerTest, ActivateWithInitialSyncDone) {
+  SetInitialSyncDone(true);
+  LoadModels();
+  RunAllTasks();
+  EXPECT_EQ(DataTypeController::MODEL_LOADED, controller()->state());
+  RegisterWithBackend(true);
+  ExpectProcessorConnected(true);
+}
+
 TEST_F(ModelTypeControllerTest, Stop) {
   LoadModels();
   RunAllTasks();
-  RegisterWithBackend();
+  RegisterWithBackend(false);
   ExpectProcessorConnected(true);
 
   StartAssociating();

@@ -6,26 +6,14 @@
 
 namespace syncer {
 
-// static
-ModelTypeSet ModelTypeConfigurer::GetDataTypesInState(
-    DataTypeConfigState state,
-    const DataTypeConfigStateMap& state_map) {
-  ModelTypeSet types;
-  for (DataTypeConfigStateMap::const_iterator type_it = state_map.begin();
-       type_it != state_map.end(); ++type_it) {
-    if (type_it->second == state)
-      types.Put(type_it->first);
-  }
-  return types;
-}
+ModelTypeConfigurer::ConfigureParams::ConfigureParams() = default;
+ModelTypeConfigurer::ConfigureParams::ConfigureParams(ConfigureParams&& other) =
+    default;
+ModelTypeConfigurer::ConfigureParams::~ConfigureParams() = default;
+ModelTypeConfigurer::ConfigureParams& ModelTypeConfigurer::ConfigureParams::
+operator=(ConfigureParams&& other) = default;
 
-// static
-void ModelTypeConfigurer::SetDataTypesState(DataTypeConfigState state,
-                                            ModelTypeSet types,
-                                            DataTypeConfigStateMap* state_map) {
-  for (ModelTypeSet::Iterator it = types.First(); it.Good(); it.Inc()) {
-    (*state_map)[it.Get()] = state;
-  }
-}
+ModelTypeConfigurer::ModelTypeConfigurer() = default;
+ModelTypeConfigurer::~ModelTypeConfigurer() = default;
 
 }  // namespace syncer

@@ -67,11 +67,7 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
       WARN_UNUSED_RESULT;
   void StopSyncingForShutdown() override;
   void Shutdown(ShutdownReason reason) override;
-  ModelTypeSet ConfigureDataTypes(
-      ConfigureReason reason,
-      const DataTypeConfigStateMap& config_state_map,
-      const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task,
-      const base::Callback<void()>& retry_callback) override;
+  void ConfigureDataTypes(ConfigureParams params) override;
   void ActivateDirectoryDataType(ModelType type,
                                  ModelSafeGroup group,
                                  ChangeProcessor* change_processor) override;
@@ -108,15 +104,6 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
  protected:
   // The types and functions below are protected so that test
   // subclasses can use them.
-
-  // Request the syncer to reconfigure with the specfied params.
-  // Virtual for testing.
-  virtual void RequestConfigureSyncer(
-      ConfigureReason reason,
-      ModelTypeSet to_download,
-      const ModelSafeRoutingInfo& routing_info,
-      const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task,
-      const base::Closure& retry_callback);
 
   // Called when the syncer has finished performing a configuration.
   void FinishConfigureDataTypesOnFrontendLoop(

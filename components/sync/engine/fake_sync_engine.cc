@@ -37,13 +37,7 @@ void FakeSyncEngine::StopSyncingForShutdown() {}
 
 void FakeSyncEngine::Shutdown(ShutdownReason reason) {}
 
-ModelTypeSet FakeSyncEngine::ConfigureDataTypes(
-    ConfigureReason reason,
-    const DataTypeConfigStateMap& config_state_map,
-    const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task,
-    const base::Callback<void()>& retry_callback) {
-  return ModelTypeSet();
-}
+void FakeSyncEngine::ConfigureDataTypes(ConfigureParams params) {}
 
 void FakeSyncEngine::EnableEncryptEverything() {}
 

@@ -49,13 +49,7 @@ class SyncEngineForProfileSyncTest : public SyncBackendHostImpl {
 
   void Initialize(InitParams params) override;
 
-  void RequestConfigureSyncer(
-      syncer::ConfigureReason reason,
-      syncer::ModelTypeSet to_download,
-      const syncer::ModelSafeRoutingInfo& routing_info,
-      const base::Callback<void(syncer::ModelTypeSet, syncer::ModelTypeSet)>&
-          ready_task,
-      const base::Closure& retry_callback) override;
+  void ConfigureDataTypes(ConfigureParams params) override;
 
  private:
   // Invoked at the start of HandleSyncManagerInitializationOnFrontendLoop.
@@ -104,15 +98,7 @@ void SyncEngineForProfileSyncTest::Initialize(InitParams params) {
   SyncBackendHostImpl::Initialize(std::move(params));
 }
 
-void SyncEngineForProfileSyncTest::RequestConfigureSyncer(
-    syncer::ConfigureReason reason,
-    syncer::ModelTypeSet to_download,
-    const syncer::ModelSafeRoutingInfo& routing_info,
-    const base::Callback<void(syncer::ModelTypeSet, syncer::ModelTypeSet)>&
-        ready_task,
-    const base::Closure& retry_callback) {
-  syncer::ModelTypeSet failed_configuration_types;
-
+void SyncEngineForProfileSyncTest::ConfigureDataTypes(ConfigureParams params) {
   // The first parameter there should be the set of enabled types.  That's not
   // something we have access to from this strange test harness.  We'll just
   // send back the list of newly configured types instead and hope it doesn't
@@ -122,10 +108,8 @@ void SyncEngineForProfileSyncTest::RequestConfigureSyncer(
       FROM_HERE,
       base::Bind(
           &SyncEngineForProfileSyncTest::FinishConfigureDataTypesOnFrontendLoop,
-          base::Unretained(this),
-          syncer::Difference(to_download, failed_configuration_types),
-          syncer::Difference(to_download, failed_configuration_types),
-          failed_configuration_types, ready_task));
+          base::Unretained(this), params.to_download, params.to_download,
+          syncer::ModelTypeSet(), params.ready_task));
 }
 
 // Helper function for return-type-upcasting of the callback.

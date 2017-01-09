@@ -100,9 +100,10 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
 
   // Registers with sync backend if needed. This function is called by
   // DataTypeManager before downloading initial data. Non-blocking types need to
-  // pass activation context containing progress marker to sync backend before
-  // initial download starts.
-  virtual void RegisterWithBackend(ModelTypeConfigurer* configurer) = 0;
+  // pass activation context containing progress marker to sync backend and use
+  // |set_downloaded| to inform the manager whether their initial sync is done.
+  virtual void RegisterWithBackend(base::Callback<void(bool)> set_downloaded,
+                                   ModelTypeConfigurer* configurer) = 0;
 
   // Will start a potentially asynchronous operation to perform the
   // model association. Once the model association is done the callback will

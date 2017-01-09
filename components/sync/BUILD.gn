@@ -680,6 +680,8 @@ static_library("test_support_engine") {
     "engine/fake_model_type_processor.h",
     "engine/fake_sync_manager.cc",
     "engine/fake_sync_manager.h",
+    "engine/sync_engine_host_stub.cc",
+    "engine/sync_engine_host_stub.h",
     "engine/sync_manager_factory_for_profile_sync_test.cc",
     "engine/sync_manager_factory_for_profile_sync_test.h",
     "engine/test_engine_components_factory.cc",

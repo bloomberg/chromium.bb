@@ -29,7 +29,8 @@ class DirectoryDataTypeController : public DataTypeController {
   // Directory based data types don't need to register with backend.
   // ModelTypeRegistry will create all necessary objects in
   // SetEnabledDirectoryTypes based on routing info.
-  void RegisterWithBackend(ModelTypeConfigurer* configurer) override;
+  void RegisterWithBackend(base::Callback<void(bool)> set_downloaded,
+                           ModelTypeConfigurer* configurer) override;
 
   // Directory specific implementation of ActivateDataType with the
   // type specific ChangeProcessor and ModelSafeGroup.

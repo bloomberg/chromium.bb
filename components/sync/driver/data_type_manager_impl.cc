@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -52,7 +53,8 @@ DataTypeManagerImpl::DataTypeManagerImpl(
     const DataTypeEncryptionHandler* encryption_handler,
     ModelTypeConfigurer* configurer,
     DataTypeManagerObserver* observer)
-    : sync_client_(sync_client),
+    : downloaded_types_(initial_types),
+      sync_client_(sync_client),
       configurer_(configurer),
       controllers_(controllers),
       state_(DataTypeManager::STOPPED),
@@ -165,12 +167,36 @@ void DataTypeManagerImpl::RegisterTypesWithBackend() {
       // successfully. Such types shouldn't be in an error state at the same
       // time.
       DCHECK(!data_type_status_table_.GetFailedTypes().Has(dtc->type()));
-      dtc->RegisterWithBackend(configurer_);
+      dtc->RegisterWithBackend(
+          base::Bind(&DataTypeManagerImpl::SetTypeDownloaded,
+                     base::Unretained(this), dtc->type()),
+          configurer_);
     }
   }
 }
 
-ModelTypeConfigurer::DataTypeConfigStateMap
+// static
+ModelTypeSet DataTypeManagerImpl::GetDataTypesInState(
+    DataTypeConfigState state,
+    const DataTypeConfigStateMap& state_map) {
+  ModelTypeSet types;
+  for (const auto& kv : state_map) {
+    if (kv.second == state)
+      types.Put(kv.first);
+  }
+  return types;
+}
+
+// static
+void DataTypeManagerImpl::SetDataTypesState(DataTypeConfigState state,
+                                            ModelTypeSet types,
+                                            DataTypeConfigStateMap* state_map) {
+  for (ModelTypeSet::Iterator it = types.First(); it.Good(); it.Inc()) {
+    (*state_map)[it.Get()] = state;
+  }
+}
+
+DataTypeManagerImpl::DataTypeConfigStateMap
 DataTypeManagerImpl::BuildDataTypeConfigStateMap(
     const ModelTypeSet& types_being_configured) const {
   // 1. Get the failed types (due to fatal, crypto, and unready errors).
@@ -207,22 +233,14 @@ DataTypeManagerImpl::BuildDataTypeConfigStateMap(
   DVLOG(1) << "Configuring: " << ModelTypeSetToString(to_configure);
   DVLOG(1) << "Disabling: " << ModelTypeSetToString(disabled_types);
 
-  ModelTypeConfigurer::DataTypeConfigStateMap config_state_map;
-  ModelTypeConfigurer::SetDataTypesState(
-      ModelTypeConfigurer::CONFIGURE_INACTIVE, enabled_types,
-      &config_state_map);
-  ModelTypeConfigurer::SetDataTypesState(ModelTypeConfigurer::CONFIGURE_ACTIVE,
-                                         to_configure, &config_state_map);
-  ModelTypeConfigurer::SetDataTypesState(ModelTypeConfigurer::CONFIGURE_CLEAN,
-                                         clean_types, &config_state_map);
-  ModelTypeConfigurer::SetDataTypesState(ModelTypeConfigurer::DISABLED,
-                                         disabled_types, &config_state_map);
-  ModelTypeConfigurer::SetDataTypesState(ModelTypeConfigurer::FATAL,
-                                         fatal_types, &config_state_map);
-  ModelTypeConfigurer::SetDataTypesState(ModelTypeConfigurer::CRYPTO,
-                                         crypto_types, &config_state_map);
-  ModelTypeConfigurer::SetDataTypesState(ModelTypeConfigurer::UNREADY,
-                                         unready_types, &config_state_map);
+  DataTypeConfigStateMap config_state_map;
+  SetDataTypesState(CONFIGURE_INACTIVE, enabled_types, &config_state_map);
+  SetDataTypesState(CONFIGURE_ACTIVE, to_configure, &config_state_map);
+  SetDataTypesState(CONFIGURE_CLEAN, clean_types, &config_state_map);
+  SetDataTypesState(DISABLED, disabled_types, &config_state_map);
+  SetDataTypesState(FATAL, fatal_types, &config_state_map);
+  SetDataTypesState(CRYPTO, crypto_types, &config_state_map);
+  SetDataTypesState(UNREADY, unready_types, &config_state_map);
   return config_state_map;
 }
 
@@ -447,15 +465,21 @@ void DataTypeManagerImpl::StartNextDownload(
   if (download_types_queue_.empty())
     return;
 
-  // Tell the backend about the new set of data types we wish to sync.
-  // The task will be invoked when updates are downloaded.
-  ModelTypeSet ready_types = configurer_->ConfigureDataTypes(
-      last_configure_reason_,
-      BuildDataTypeConfigStateMap(download_types_queue_.front()),
-      base::Bind(&DataTypeManagerImpl::DownloadReady,
-                 weak_ptr_factory_.GetWeakPtr(), download_types_queue_.front()),
-      base::Bind(&DataTypeManagerImpl::OnDownloadRetry,
-                 weak_ptr_factory_.GetWeakPtr()));
+  ModelTypeConfigurer::ConfigureParams config_params;
+  ModelTypeSet ready_types = PrepareConfigureParams(&config_params);
+
+  // The engine's state was initially derived from the types detected to have
+  // been downloaded in the database. Afterwards it is modified only by this
+  // function. We expect |downloaded_types_| to remain consistent because
+  // configuration requests are never aborted; they are retried until they
+  // succeed or the engine is shut down.
+  //
+  // Only one configure is allowed at a time. This is guaranteed by our callers.
+  // The sync engine requests one configure as it is initializing and waits for
+  // it to complete. After engine initialization, all configurations pass
+  // through the DataTypeManager, and we are careful to never send a new
+  // configure request until the current request succeeds.
+  configurer_->ConfigureDataTypes(std::move(config_params));
 
   AssociationTypesInfo association_info;
   association_info.types = download_types_queue_.front();
@@ -467,6 +491,121 @@ void DataTypeManagerImpl::StartNextDownload(
   // Start associating those types that are already downloaded (does nothing
   // if model associator is busy).
   StartNextAssociation(READY_AT_CONFIG);
+}
+
+ModelTypeSet DataTypeManagerImpl::PrepareConfigureParams(
+    ModelTypeConfigurer::ConfigureParams* params) {
+  // Divide up the types into their corresponding actions:
+  // - Types which are newly enabled are downloaded.
+  // - Types which have encountered a fatal error (fatal_types) are deleted
+  //   from the directory and journaled in the delete journal.
+  // - Types which have encountered a cryptographer error (crypto_types) are
+  //   unapplied (local state is purged but sync state is not).
+  // - All other types not in the routing info (types just disabled) are deleted
+  //   from the directory.
+  // - Everything else (enabled types and already disabled types) is not
+  //   touched.
+  const DataTypeConfigStateMap config_state_map =
+      BuildDataTypeConfigStateMap(download_types_queue_.front());
+  const ModelTypeSet fatal_types = GetDataTypesInState(FATAL, config_state_map);
+  const ModelTypeSet crypto_types =
+      GetDataTypesInState(CRYPTO, config_state_map);
+  const ModelTypeSet unready_types =
+      GetDataTypesInState(UNREADY, config_state_map);
+  const ModelTypeSet active_types =
+      GetDataTypesInState(CONFIGURE_ACTIVE, config_state_map);
+  const ModelTypeSet clean_types =
+      GetDataTypesInState(CONFIGURE_CLEAN, config_state_map);
+  const ModelTypeSet inactive_types =
+      GetDataTypesInState(CONFIGURE_INACTIVE, config_state_map);
+
+  ModelTypeSet enabled_types = Union(active_types, clean_types);
+  ModelTypeSet disabled_types = GetDataTypesInState(DISABLED, config_state_map);
+  disabled_types.PutAll(fatal_types);
+  disabled_types.PutAll(crypto_types);
+  disabled_types.PutAll(unready_types);
+
+  DCHECK(Intersection(enabled_types, disabled_types).Empty());
+
+  // The sync engine's enabled types will be updated by adding |enabled_types|
+  // to the list then removing |disabled_types|. Any types which are not in
+  // either of those sets will remain untouched. Types which were not in
+  // |downloaded_types_| previously are not fully downloaded, so we must ask the
+  // engine to download them. Any newly supported datatypes won't have been in
+  // |downloaded_types_|, so they will also be downloaded if they are enabled.
+  ModelTypeSet types_to_download = Difference(enabled_types, downloaded_types_);
+  downloaded_types_.PutAll(enabled_types);
+  downloaded_types_.RemoveAll(disabled_types);
+
+  types_to_download.PutAll(clean_types);
+  types_to_download.RemoveAll(ProxyTypes());
+  if (!types_to_download.Empty())
+    types_to_download.Put(NIGORI);
+
+  // TODO(sync): crbug.com/137550.
+  // It's dangerous to configure types that have progress markers. Types with
+  // progress markers can trigger a MIGRATION_DONE response. We are not
+  // prepared to handle a migration during a configure, so we must ensure that
+  // all our types_to_download actually contain no data before we sync them.
+  //
+  // One common way to end up in this situation used to be types which
+  // downloaded some or all of their data but have not applied it yet. We avoid
+  // problems with those types by purging the data of any such partially synced
+  // types soon after we load the directory.
+  //
+  // Another possible scenario is that we have newly supported or newly enabled
+  // data types being downloaded here but the nigori type, which is always
+  // included in any GetUpdates request, requires migration. The server has
+  // code to detect this scenario based on the configure reason, the fact that
+  // the nigori type is the only requested type which requires migration, and
+  // that the requested types list includes at least one non-nigori type. It
+  // will not send a MIGRATION_DONE response in that case. We still need to be
+  // careful to not send progress markers for non-nigori types, though. If a
+  // non-nigori type in the request requires migration, a MIGRATION_DONE
+  // response will be sent.
+
+  ModelTypeSet types_to_purge =
+      Difference(ModelTypeSet::All(), downloaded_types_);
+  // Include clean_types in types_to_purge, they are part of
+  // |downloaded_types_|, but still need to be cleared.
+  DCHECK(downloaded_types_.HasAll(clean_types));
+  types_to_purge.PutAll(clean_types);
+  types_to_purge.RemoveAll(inactive_types);
+  types_to_purge.RemoveAll(unready_types);
+
+  // If a type has already been disabled and unapplied or journaled, it will
+  // not be part of the |types_to_purge| set, and therefore does not need
+  // to be acted on again.
+  ModelTypeSet types_to_journal = Intersection(fatal_types, types_to_purge);
+  ModelTypeSet unapply_types = Union(crypto_types, clean_types);
+  unapply_types.RetainAll(types_to_purge);
+
+  DCHECK(Intersection(downloaded_types_, types_to_journal).Empty());
+  DCHECK(Intersection(downloaded_types_, crypto_types).Empty());
+  // |downloaded_types_| was already updated to include all enabled types.
+  DCHECK(downloaded_types_.HasAll(types_to_download));
+
+  DVLOG(1) << "Types " << ModelTypeSetToString(types_to_download)
+           << " added; calling ConfigureDataTypes";
+
+  params->reason = last_configure_reason_;
+  params->enabled_types = enabled_types;
+  params->disabled_types = disabled_types;
+  params->to_download = types_to_download;
+  params->to_purge = types_to_purge;
+  params->to_journal = types_to_journal;
+  params->to_unapply = unapply_types;
+  params->ready_task =
+      base::Bind(&DataTypeManagerImpl::DownloadReady,
+                 weak_ptr_factory_.GetWeakPtr(), download_types_queue_.front());
+  params->retry_callback = base::Bind(&DataTypeManagerImpl::OnDownloadRetry,
+                                      weak_ptr_factory_.GetWeakPtr());
+
+  DCHECK(Intersection(active_types, types_to_purge).Empty());
+  DCHECK(Intersection(active_types, fatal_types).Empty());
+  DCHECK(Intersection(active_types, unapply_types).Empty());
+  DCHECK(Intersection(active_types, inactive_types).Empty());
+  return Difference(active_types, types_to_download);
 }
 
 void DataTypeManagerImpl::StartNextAssociation(AssociationGroup group) {
@@ -699,6 +838,14 @@ DataTypeManager::State DataTypeManagerImpl::state() const {
 ModelTypeSet DataTypeManagerImpl::GetEnabledTypes() const {
   return Difference(last_requested_types_,
                     data_type_status_table_.GetFailedTypes());
+}
+
+void DataTypeManagerImpl::SetTypeDownloaded(ModelType type, bool downloaded) {
+  if (downloaded) {
+    downloaded_types_.Put(type);
+  } else {
+    downloaded_types_.Remove(type);
+  }
 }
 
 }  // namespace syncer

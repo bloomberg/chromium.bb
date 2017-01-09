@@ -131,19 +131,6 @@ class SyncEngine : public ModelTypeConfigurer {
   // Must be called *after* StopSyncingForShutdown.
   virtual void Shutdown(ShutdownReason reason) = 0;
 
-  // Changes the set of data types that are currently being synced.
-  // The ready_task will be run when configuration is done with the
-  // set of all types that failed configuration (i.e., if its argument
-  // is non-empty, then an error was encountered).
-  // Returns the set of types that are ready to start without needing any
-  // further sync activity.
-  // ModelTypeConfigurer implementation.
-  ModelTypeSet ConfigureDataTypes(
-      ConfigureReason reason,
-      const DataTypeConfigStateMap& config_state_map,
-      const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task,
-      const base::Callback<void()>& retry_callback) override = 0;
-
   // Turns on encryption of all present and future sync data.
   virtual void EnableEncryptEverything() = 0;
 

@@ -53,6 +53,7 @@ void FakeDataTypeController::LoadModels(
 }
 
 void FakeDataTypeController::RegisterWithBackend(
+    base::Callback<void(bool)> set_downloaded,
     ModelTypeConfigurer* configurer) {
   ++register_with_backend_call_count_;
 }

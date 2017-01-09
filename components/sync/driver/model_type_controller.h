@@ -36,11 +36,8 @@ class ModelTypeController : public DataTypeController {
   void LoadModels(const ModelLoadCallback& model_load_callback) override;
   void GetAllNodes(const AllNodesCallback& callback) override;
   void GetStatusCounters(const StatusCountersCallback& callback) override;
-
-  // Registers non-blocking data type with sync backend. In the process the
-  // activation context is passed to ModelTypeRegistry, where ModelTypeWorker
-  // gets created and connected with ModelTypeProcessor.
-  void RegisterWithBackend(ModelTypeConfigurer* configurer) override;
+  void RegisterWithBackend(base::Callback<void(bool)> set_downloaded,
+                           ModelTypeConfigurer* configurer) override;
   void StartAssociating(const StartCallback& start_callback) override;
   void ActivateDataType(ModelTypeConfigurer* configurer) override;
   void DeactivateDataType(ModelTypeConfigurer* configurer) override;

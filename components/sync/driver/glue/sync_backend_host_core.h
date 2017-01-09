@@ -23,6 +23,7 @@
 #include "components/sync/base/system_encryptor.h"
 #include "components/sync/driver/glue/sync_backend_host_impl.h"
 #include "components/sync/engine/cycle/type_debug_info_observer.h"
+#include "components/sync/engine/model_type_configurer.h"
 #include "components/sync/engine/shutdown_reason.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "url/gurl.h"
@@ -145,12 +146,7 @@ class SyncBackendHostCore
   void DoPurgeDisabledTypes(const ModelTypeSet& to_purge,
                             const ModelTypeSet& to_journal,
                             const ModelTypeSet& to_unapply);
-  void DoConfigureSyncer(
-      ConfigureReason reason,
-      const ModelTypeSet& to_download,
-      const ModelSafeRoutingInfo routing_info,
-      const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task,
-      const base::Closure& retry_callback);
+  void DoConfigureSyncer(ModelTypeConfigurer::ConfigureParams params);
   void DoFinishConfigureDataTypes(
       ModelTypeSet types_to_config,
       const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task);

@@ -35,7 +35,7 @@
 #include "components/sync/engine/net/http_bridge_network_resources.h"
 #include "components/sync/engine/net/network_resources.h"
 #include "components/sync/engine/passive_model_worker.h"
-#include "components/sync/engine/sync_engine_host.h"
+#include "components/sync/engine/sync_engine_host_stub.h"
 #include "components/sync/engine/sync_manager_factory.h"
 #include "components/sync/test/callback_counter.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -67,42 +67,29 @@ void EmptyNetworkTimeUpdate(const base::Time&,
                             const base::TimeDelta&,
                             const base::TimeDelta&) {}
 
-void QuitMessageLoop() {
-  base::MessageLoop::current()->QuitWhenIdle();
-}
-
-class MockSyncEngineHost : public SyncEngineHost {
+class TestSyncEngineHost : public SyncEngineHostStub {
  public:
-  virtual ~MockSyncEngineHost() {}
+  explicit TestSyncEngineHost(
+      base::Callback<void(ModelTypeSet)> set_engine_types)
+      : set_engine_types_(set_engine_types) {}
 
-  MOCK_METHOD5(OnEngineInitialized,
-               void(ModelTypeSet initial_types,
-                    const WeakHandle<JsBackend>&,
-                    const WeakHandle<DataTypeDebugInfoListener>&,
-                    const std::string&,
-                    bool));
-  MOCK_METHOD0(OnSyncCycleCompleted, void());
-  MOCK_METHOD1(OnConnectionStatusChange, void(ConnectionStatus status));
-  MOCK_METHOD0(OnClearServerDataSucceeded, void());
-  MOCK_METHOD0(OnClearServerDataFailed, void());
-  MOCK_METHOD2(OnPassphraseRequired,
-               void(PassphraseRequiredReason, const sync_pb::EncryptedData&));
-  MOCK_METHOD0(OnPassphraseAccepted, void());
-  MOCK_METHOD2(OnEncryptedTypesChanged, void(ModelTypeSet, bool));
-  MOCK_METHOD0(OnEncryptionComplete, void());
-  MOCK_METHOD1(OnMigrationNeededForTypes, void(ModelTypeSet));
-  MOCK_METHOD1(OnProtocolEvent, void(const ProtocolEvent&));
-  MOCK_METHOD2(OnDirectoryTypeCommitCounterUpdated,
-               void(ModelType, const CommitCounters&));
-  MOCK_METHOD2(OnDirectoryTypeUpdateCounterUpdated,
-               void(ModelType, const UpdateCounters&));
-  MOCK_METHOD2(OnDatatypeStatusCounterUpdated,
-               void(ModelType, const StatusCounters&));
-  MOCK_METHOD1(OnExperimentsChanged, void(const Experiments&));
-  MOCK_METHOD1(OnActionableError, void(const SyncProtocolError& sync_error));
-  MOCK_METHOD0(OnSyncConfigureRetry, void());
-  MOCK_METHOD1(OnLocalSetPassphraseEncryption,
-               void(const SyncEncryptionHandler::NigoriState& nigori_state));
+  void OnEngineInitialized(ModelTypeSet initial_types,
+                           const WeakHandle<JsBackend>&,
+                           const WeakHandle<DataTypeDebugInfoListener>&,
+                           const std::string&,
+                           bool success) override {
+    EXPECT_EQ(expect_success_, success);
+    set_engine_types_.Run(initial_types);
+    base::MessageLoop::current()->QuitWhenIdle();
+  }
+
+  void SetExpectSuccess(bool expect_success) {
+    expect_success_ = expect_success;
+  }
+
+ private:
+  base::Callback<void(ModelTypeSet)> set_engine_types_;
+  bool expect_success_ = false;
 };
 
 class FakeSyncManagerFactory : public SyncManagerFactory {
@@ -157,7 +144,10 @@ class BackendSyncClient : public FakeSyncClient {
 class SyncEngineTest : public testing::Test {
  protected:
   SyncEngineTest()
-      : sync_thread_("SyncThreadForTest"), fake_manager_(nullptr) {}
+      : sync_thread_("SyncThreadForTest"),
+        host_(base::Bind(&SyncEngineTest::SetEngineTypes,
+                         base::Unretained(this))),
+        fake_manager_(nullptr) {}
 
   ~SyncEngineTest() override {}
 
@@ -206,8 +196,7 @@ class SyncEngineTest : public testing::Test {
 
   // Synchronously initializes the backend.
   void InitializeBackend(bool expect_success) {
-    EXPECT_CALL(mock_host_, OnEngineInitialized(_, _, _, _, expect_success))
-        .WillOnce(InvokeWithoutArgs(QuitMessageLoop));
+    host_.SetExpectSuccess(expect_success);
     SyncEngine::HttpPostProviderFactoryGetter
         http_post_provider_factory_getter =
             base::Bind(&NetworkResources::GetHttpPostProviderFactory,
@@ -216,7 +205,7 @@ class SyncEngineTest : public testing::Test {
 
     SyncEngine::InitParams params;
     params.sync_task_runner = sync_thread_.task_runner();
-    params.host = &mock_host_;
+    params.host = &host_;
     params.registrar = base::MakeUnique<SyncBackendRegistrar>(
         std::string(), base::Bind(&SyncClient::CreateModelWorkerForGroup,
                                   base::Unretained(&sync_client_)));
@@ -231,55 +220,69 @@ class SyncEngineTest : public testing::Test {
 
     backend_->Initialize(std::move(params));
 
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::action_timeout());
-    run_loop.Run();
+    PumpSyncThread();
     // |fake_manager_factory_|'s fake_manager() is set on the sync
     // thread, but we can rely on the message loop barriers to
     // guarantee that we see the updated value.
     DCHECK(fake_manager_);
   }
 
-  // Returns DataTypeConfigStateMap with all |enabled_types_| in
-  // CONFIGURE_ACTIVE state and all remaining types DISABLED.
-  ModelTypeConfigurer::DataTypeConfigStateMap ConfigStateMapForEnabledTypes() {
-    ModelTypeConfigurer::DataTypeConfigStateMap config_state_map;
-    ModelTypeConfigurer::SetDataTypesState(
-        ModelTypeConfigurer::CONFIGURE_ACTIVE, enabled_types_,
-        &config_state_map);
-    ModelTypeConfigurer::SetDataTypesState(
-        ModelTypeConfigurer::DISABLED,
-        Difference(ModelTypeSet::All(), enabled_types_), &config_state_map);
-    return config_state_map;
+  // Synchronously configures the backend's datatypes.
+  ModelTypeSet ConfigureDataTypes() {
+    return ConfigureDataTypesWithUnready(ModelTypeSet());
   }
 
-  // Synchronously configures the backend's datatypes.
-  ModelTypeSet ConfigureDataTypes(
-      const ModelTypeConfigurer::DataTypeConfigStateMap& config_state_map) {
-    ModelTypeSet ready_types = backend_->ConfigureDataTypes(
-        CONFIGURE_REASON_RECONFIGURATION, config_state_map,
-        base::Bind(&SyncEngineTest::DownloadReady, base::Unretained(this)),
-        base::Bind(&SyncEngineTest::OnDownloadRetry, base::Unretained(this)));
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::action_timeout());
-    run_loop.Run();
+  ModelTypeSet ConfigureDataTypesWithUnready(ModelTypeSet unready_types) {
+    ModelTypeSet disabled_types =
+        Difference(ModelTypeSet::All(), enabled_types_);
+
+    ModelTypeConfigurer::ConfigureParams params;
+    params.reason = CONFIGURE_REASON_RECONFIGURATION;
+    params.enabled_types = Difference(enabled_types_, unready_types);
+    params.disabled_types = Union(disabled_types, unready_types);
+    params.to_download = Difference(params.enabled_types, engine_types_);
+    if (!params.to_download.Empty()) {
+      params.to_download.Put(NIGORI);
+    }
+    params.to_purge = Intersection(engine_types_, disabled_types);
+    params.ready_task =
+        base::Bind(&SyncEngineTest::DownloadReady, base::Unretained(this));
+    params.retry_callback =
+        base::Bind(&SyncEngineTest::OnDownloadRetry, base::Unretained(this));
+
+    ModelTypeSet ready_types =
+        Difference(params.enabled_types, params.to_download);
+    backend_->ConfigureDataTypes(std::move(params));
+    PumpSyncThread();
+
     return ready_types;
   }
 
  protected:
   void DownloadReady(ModelTypeSet succeeded_types, ModelTypeSet failed_types) {
+    engine_types_.PutAll(succeeded_types);
     base::MessageLoop::current()->QuitWhenIdle();
   }
 
   void OnDownloadRetry() { NOTIMPLEMENTED(); }
 
+  void SetEngineTypes(ModelTypeSet engine_types) {
+    EXPECT_TRUE(engine_types_.Empty());
+    engine_types_ = engine_types;
+  }
+
+  void PumpSyncThread() {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::action_timeout());
+    run_loop.Run();
+  }
+
   base::MessageLoop message_loop_;
   base::ScopedTempDir temp_dir_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   base::Thread sync_thread_;
-  StrictMock<MockSyncEngineHost> mock_host_;
+  TestSyncEngineHost host_;
   SyncCredentials credentials_;
   BackendSyncClient sync_client_;
   TestUnrecoverableErrorHandler test_unrecoverable_error_handler_;
@@ -287,6 +290,7 @@ class SyncEngineTest : public testing::Test {
   std::unique_ptr<SyncBackendHostImpl> backend_;
   std::unique_ptr<FakeSyncManagerFactory> fake_manager_factory_;
   FakeSyncManager* fake_manager_;
+  ModelTypeSet engine_types_;
   ModelTypeSet enabled_types_;
   std::unique_ptr<NetworkResources> network_resources_;
   std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state_;
@@ -313,8 +317,7 @@ TEST_F(SyncEngineTest, FirstTimeSync) {
       fake_manager_->GetTypesWithEmptyProgressMarkerToken(ControlTypes())
           .Empty());
 
-  ModelTypeSet ready_types =
-      ConfigureDataTypes(ConfigStateMapForEnabledTypes());
+  ModelTypeSet ready_types = ConfigureDataTypes();
   // Nigori is always downloaded so won't be ready.
   EXPECT_EQ(Difference(ControlTypes(), ModelTypeSet(NIGORI)), ready_types);
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().HasAll(
@@ -343,8 +346,7 @@ TEST_F(SyncEngineTest, Restart) {
       fake_manager_->GetTypesWithEmptyProgressMarkerToken(enabled_types_)
           .Empty());
 
-  ModelTypeSet ready_types =
-      ConfigureDataTypes(ConfigStateMapForEnabledTypes());
+  ModelTypeSet ready_types = ConfigureDataTypes();
   EXPECT_EQ(enabled_types_, ready_types);
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().Empty());
   EXPECT_TRUE(
@@ -380,8 +382,7 @@ TEST_F(SyncEngineTest, PartialTypes) {
       fake_manager_->GetTypesWithEmptyProgressMarkerToken(enabled_types_));
 
   // Now do the actual configuration, which should download and apply bookmarks.
-  ModelTypeSet ready_types =
-      ConfigureDataTypes(ConfigStateMapForEnabledTypes());
+  ModelTypeSet ready_types = ConfigureDataTypes();
   EXPECT_EQ(full_types, ready_types);
   EXPECT_TRUE(
       Intersection(fake_manager_->GetAndResetPurgedTypes(), enabled_types_)
@@ -414,8 +415,7 @@ TEST_F(SyncEngineTest, LostDB) {
   fake_manager_->GetAndResetPurgedTypes();
 
   // The actual configuration should redownload and apply all the enabled types.
-  ModelTypeSet ready_types =
-      ConfigureDataTypes(ConfigStateMapForEnabledTypes());
+  ModelTypeSet ready_types = ConfigureDataTypes();
   // Nigori is always downloaded so won't be ready.
   EXPECT_EQ(Difference(ControlTypes(), ModelTypeSet(NIGORI)), ready_types);
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().HasAll(
@@ -434,8 +434,7 @@ TEST_F(SyncEngineTest, DisableTypes) {
   // Simulate first time sync.
   InitializeBackend(true);
   fake_manager_->GetAndResetPurgedTypes();
-  ModelTypeSet ready_types =
-      ConfigureDataTypes(ConfigStateMapForEnabledTypes());
+  ModelTypeSet ready_types = ConfigureDataTypes();
   // Nigori is always downloaded so won't be ready.
   EXPECT_EQ(Difference(ControlTypes(), ModelTypeSet(NIGORI)), ready_types);
   EXPECT_EQ(enabled_types_, fake_manager_->GetAndResetDownloadedTypes());
@@ -451,7 +450,7 @@ TEST_F(SyncEngineTest, DisableTypes) {
   ModelTypeSet disabled_types(BOOKMARKS, SEARCH_ENGINES);
   ModelTypeSet old_types = enabled_types_;
   enabled_types_.RemoveAll(disabled_types);
-  ready_types = ConfigureDataTypes(ConfigStateMapForEnabledTypes());
+  ready_types = ConfigureDataTypes();
 
   // Only those datatypes disabled should be cleaned. Nothing should be
   // downloaded.
@@ -470,8 +469,7 @@ TEST_F(SyncEngineTest, AddTypes) {
   // Simulate first time sync.
   InitializeBackend(true);
   fake_manager_->GetAndResetPurgedTypes();
-  ModelTypeSet ready_types =
-      ConfigureDataTypes(ConfigStateMapForEnabledTypes());
+  ModelTypeSet ready_types = ConfigureDataTypes();
   // Nigori is always downloaded so won't be ready.
   EXPECT_EQ(Difference(ControlTypes(), ModelTypeSet(NIGORI)), ready_types);
   EXPECT_EQ(enabled_types_, fake_manager_->GetAndResetDownloadedTypes());
@@ -486,7 +484,7 @@ TEST_F(SyncEngineTest, AddTypes) {
   // Then add two datatypes.
   ModelTypeSet new_types(EXTENSIONS, APPS);
   enabled_types_.PutAll(new_types);
-  ready_types = ConfigureDataTypes(ConfigStateMapForEnabledTypes());
+  ready_types = ConfigureDataTypes();
 
   // Only those datatypes added should be downloaded (plus nigori). Nothing
   // should be cleaned aside from the disabled types.
@@ -508,8 +506,7 @@ TEST_F(SyncEngineTest, AddDisableTypes) {
   // Simulate first time sync.
   InitializeBackend(true);
   fake_manager_->GetAndResetPurgedTypes();
-  ModelTypeSet ready_types =
-      ConfigureDataTypes(ConfigStateMapForEnabledTypes());
+  ModelTypeSet ready_types = ConfigureDataTypes();
   // Nigori is always downloaded so won't be ready.
   EXPECT_EQ(Difference(ControlTypes(), ModelTypeSet(NIGORI)), ready_types);
   EXPECT_EQ(enabled_types_, fake_manager_->GetAndResetDownloadedTypes());
@@ -527,7 +524,7 @@ TEST_F(SyncEngineTest, AddDisableTypes) {
   ModelTypeSet new_types(EXTENSIONS, APPS);
   enabled_types_.PutAll(new_types);
   enabled_types_.RemoveAll(disabled_types);
-  ready_types = ConfigureDataTypes(ConfigStateMapForEnabledTypes());
+  ready_types = ConfigureDataTypes();
 
   // Only those datatypes added should be downloaded (plus nigori). Nothing
   // should be cleaned aside from the disabled types.
@@ -564,8 +561,7 @@ TEST_F(SyncEngineTest, NewlySupportedTypes) {
                            enabled_types_));
 
   // Downloads and applies the new types (plus nigori).
-  ModelTypeSet ready_types =
-      ConfigureDataTypes(ConfigStateMapForEnabledTypes());
+  ModelTypeSet ready_types = ConfigureDataTypes();
 
   new_types.Put(NIGORI);
   EXPECT_EQ(Difference(old_types, ModelTypeSet(NIGORI)), ready_types);
@@ -608,8 +604,7 @@ TEST_F(SyncEngineTest, NewlySupportedTypesWithPartialTypes) {
 
   // Downloads and applies the new types and partial types (which includes
   // nigori anyways).
-  ModelTypeSet ready_types =
-      ConfigureDataTypes(ConfigStateMapForEnabledTypes());
+  ModelTypeSet ready_types = ConfigureDataTypes();
   EXPECT_EQ(full_types, ready_types);
   EXPECT_EQ(Union(new_types, partial_types),
             fake_manager_->GetAndResetDownloadedTypes());
@@ -716,25 +711,20 @@ TEST_F(SyncEngineTest, DisableThenPurgeType) {
   InitializeBackend(true);
 
   // First enable the types.
-  ModelTypeSet ready_types =
-      ConfigureDataTypes(ConfigStateMapForEnabledTypes());
+  ModelTypeSet ready_types = ConfigureDataTypes();
 
   // Nigori is always downloaded so won't be ready.
   EXPECT_EQ(Difference(ControlTypes(), ModelTypeSet(NIGORI)), ready_types);
 
   // Then mark the error types as unready (disables without purging).
-  ModelTypeConfigurer::DataTypeConfigStateMap config_state_map =
-      ConfigStateMapForEnabledTypes();
-  ModelTypeConfigurer::SetDataTypesState(ModelTypeConfigurer::UNREADY,
-                                         error_types, &config_state_map);
-  ready_types = ConfigureDataTypes(config_state_map);
+  ready_types = ConfigureDataTypesWithUnready(error_types);
   EXPECT_EQ(Difference(enabled_types_, error_types), ready_types);
   EXPECT_TRUE(
       fake_manager_->GetTypesWithEmptyProgressMarkerToken(error_types).Empty());
 
   // Lastly explicitly disable the error types, which should result in a purge.
   enabled_types_.RemoveAll(error_types);
-  ready_types = ConfigureDataTypes(ConfigStateMapForEnabledTypes());
+  ready_types = ConfigureDataTypes();
   EXPECT_EQ(Difference(enabled_types_, error_types), ready_types);
   EXPECT_FALSE(
       fake_manager_->GetTypesWithEmptyProgressMarkerToken(error_types).Empty());
@@ -821,36 +811,6 @@ TEST_F(SyncEngineTest, ModelTypeConnectorValidDuringShutdown) {
   backend_->DeactivateNonBlockingDataType(AUTOFILL);
   backend_->Shutdown(STOP_SYNC);
   backend_.reset();
-}
-
-// Ensure that types in CONFIGURE_CLEAN state are unapplied.
-TEST_F(SyncEngineTest, ConfigureCelanTypesAreUnapplied) {
-  ModelTypeSet clean_types(AUTOFILL);
-
-  InitializeBackend(true);
-
-  // First enable the types.
-  ModelTypeSet ready_types =
-      ConfigureDataTypes(ConfigStateMapForEnabledTypes());
-  EXPECT_TRUE(
-      fake_manager_->GetTypesWithEmptyProgressMarkerToken(clean_types).Empty());
-
-  // Then unapply AUTOFILL.
-  ModelTypeConfigurer::DataTypeConfigStateMap config_state_map =
-      ConfigStateMapForEnabledTypes();
-  ModelTypeConfigurer::SetDataTypesState(ModelTypeConfigurer::CONFIGURE_CLEAN,
-                                         clean_types, &config_state_map);
-
-  ready_types = ConfigureDataTypes(config_state_map);
-
-  // Autofill should be unapplied as part of PurgeDisabledTypes, but should
-  // retain progress markers.
-  ModelTypeSet purged_types = fake_manager_->GetAndResetPurgedTypes();
-  ModelTypeSet unapplied_types = fake_manager_->GetAndResetUnappliedTypes();
-  EXPECT_EQ(unapplied_types, clean_types);
-  EXPECT_TRUE(purged_types.HasAll(clean_types));
-  EXPECT_TRUE(
-      fake_manager_->GetTypesWithEmptyProgressMarkerToken(clean_types).Empty());
 }
 
 }  // namespace

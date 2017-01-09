@@ -201,124 +201,14 @@ void SyncBackendHostImpl::Shutdown(ShutdownReason reason) {
   registrar_ = nullptr;
 }
 
-ModelTypeSet SyncBackendHostImpl::ConfigureDataTypes(
-    ConfigureReason reason,
-    const DataTypeConfigStateMap& config_state_map,
-    const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task,
-    const base::Callback<void()>& retry_callback) {
-  // Only one configure is allowed at a time.  This is guaranteed by our
-  // callers.  The SyncBackendHostImpl requests one configure as the backend is
-  // initializing and waits for it to complete.  After initialization, all
-  // configurations will pass through the DataTypeManager, which is careful to
-  // never send a new configure request until the current request succeeds.
-
-  // The SyncBackendRegistrar's routing info will be updated by adding the
-  // types_to_add to the list then removing types_to_remove.  Any types which
-  // are not in either of those sets will remain untouched.
-  //
-  // Types which were not in the list previously are not fully downloaded, so we
-  // must ask the syncer to download them.  Any newly supported datatypes will
-  // not have been in that routing info list, so they will be among the types
-  // downloaded if they are enabled.
-  //
-  // The SyncBackendRegistrar's state was initially derived from the types
-  // detected to have been downloaded in the database.  Afterwards it is
-  // modified only by this function.  We expect it to remain in sync with the
-  // backend because configuration requests are never aborted; they are retried
-  // until they succeed or the backend is shut down.
-
-  ModelTypeSet disabled_types = GetDataTypesInState(DISABLED, config_state_map);
-  ModelTypeSet fatal_types = GetDataTypesInState(FATAL, config_state_map);
-  ModelTypeSet crypto_types = GetDataTypesInState(CRYPTO, config_state_map);
-  ModelTypeSet unready_types = GetDataTypesInState(UNREADY, config_state_map);
-
-  disabled_types.PutAll(fatal_types);
-  disabled_types.PutAll(crypto_types);
-  disabled_types.PutAll(unready_types);
-
-  ModelTypeSet active_types =
-      GetDataTypesInState(CONFIGURE_ACTIVE, config_state_map);
-  ModelTypeSet clean_first_types =
-      GetDataTypesInState(CONFIGURE_CLEAN, config_state_map);
-  ModelTypeSet types_to_download = registrar_->ConfigureDataTypes(
-      Union(active_types, clean_first_types), disabled_types);
-  types_to_download.PutAll(clean_first_types);
-  types_to_download.RemoveAll(ProxyTypes());
-  if (!types_to_download.Empty())
-    types_to_download.Put(NIGORI);
-
-  // TODO(sync): crbug.com/137550.
-  // It's dangerous to configure types that have progress markers.  Types with
-  // progress markers can trigger a MIGRATION_DONE response.  We are not
-  // prepared to handle a migration during a configure, so we must ensure that
-  // all our types_to_download actually contain no data before we sync them.
-  //
-  // One common way to end up in this situation used to be types which
-  // downloaded some or all of their data but have not applied it yet.  We avoid
-  // problems with those types by purging the data of any such partially synced
-  // types soon after we load the directory.
-  //
-  // Another possible scenario is that we have newly supported or newly enabled
-  // data types being downloaded here but the nigori type, which is always
-  // included in any GetUpdates request, requires migration.  The server has
-  // code to detect this scenario based on the configure reason, the fact that
-  // the nigori type is the only requested type which requires migration, and
-  // that the requested types list includes at least one non-nigori type.  It
-  // will not send a MIGRATION_DONE response in that case.  We still need to be
-  // careful to not send progress markers for non-nigori types, though.  If a
-  // non-nigori type in the request requires migration, a MIGRATION_DONE
-  // response will be sent.
-
-  ModelSafeRoutingInfo routing_info;
-  registrar_->GetModelSafeRoutingInfo(&routing_info);
-
-  ModelTypeSet current_types = registrar_->GetLastConfiguredTypes();
-  ModelTypeSet types_to_purge = Difference(ModelTypeSet::All(), current_types);
-  ModelTypeSet inactive_types =
-      GetDataTypesInState(CONFIGURE_INACTIVE, config_state_map);
-  // Include clean_first_types in types_to_purge, they are part of
-  // current_types, but still need to be cleared.
-  DCHECK(current_types.HasAll(clean_first_types));
-  types_to_purge.PutAll(clean_first_types);
-  types_to_purge.RemoveAll(inactive_types);
-  types_to_purge.RemoveAll(unready_types);
-
-  // If a type has already been disabled and unapplied or journaled, it will
-  // not be part of the |types_to_purge| set, and therefore does not need
-  // to be acted on again.
-  fatal_types.RetainAll(types_to_purge);
-  ModelTypeSet unapply_types = Union(crypto_types, clean_first_types);
-  unapply_types.RetainAll(types_to_purge);
-
-  DCHECK(Intersection(current_types, fatal_types).Empty());
-  DCHECK(Intersection(current_types, crypto_types).Empty());
-  DCHECK(current_types.HasAll(types_to_download));
-
-  SDVLOG(1) << "Types " << ModelTypeSetToString(types_to_download)
-            << " added; calling DoConfigureSyncer";
-  // Divide up the types into their corresponding actions (each is mutually
-  // exclusive):
-  // - Types which have just been added to the routing info (types_to_download):
-  //   are downloaded.
-  // - Types which have encountered a fatal error (fatal_types) are deleted
-  //   from the directory and journaled in the delete journal.
-  // - Types which have encountered a cryptographer error (crypto_types) are
-  //   unapplied (local state is purged but sync state is not).
-  // - All other types not in the routing info (types just disabled) are deleted
-  //   from the directory.
-  // - Everything else (enabled types and already disabled types) is not
-  //   touched.
+void SyncBackendHostImpl::ConfigureDataTypes(ConfigureParams params) {
   sync_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SyncBackendHostCore::DoPurgeDisabledTypes, core_,
-                            types_to_purge, fatal_types, unapply_types));
-  RequestConfigureSyncer(reason, types_to_download, routing_info, ready_task,
-                         retry_callback);
-
-  DCHECK(Intersection(active_types, types_to_purge).Empty());
-  DCHECK(Intersection(active_types, fatal_types).Empty());
-  DCHECK(Intersection(active_types, unapply_types).Empty());
-  DCHECK(Intersection(active_types, inactive_types).Empty());
-  return Difference(active_types, types_to_download);
+      FROM_HERE,
+      base::Bind(&SyncBackendHostCore::DoPurgeDisabledTypes, core_,
+                 params.to_purge, params.to_journal, params.to_unapply));
+  sync_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&SyncBackendHostCore::DoConfigureSyncer, core_,
+                            base::Passed(&params)));
 }
 
 void SyncBackendHostImpl::EnableEncryptEverything() {
@@ -431,18 +321,6 @@ void SyncBackendHostImpl::DisableDirectoryTypeDebugInfoForwarding() {
       FROM_HERE,
       base::Bind(&SyncBackendHostCore::DisableDirectoryTypeDebugInfoForwarding,
                  core_));
-}
-
-void SyncBackendHostImpl::RequestConfigureSyncer(
-    ConfigureReason reason,
-    ModelTypeSet to_download,
-    const ModelSafeRoutingInfo& routing_info,
-    const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task,
-    const base::Closure& retry_callback) {
-  sync_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&SyncBackendHostCore::DoConfigureSyncer, core_, reason,
-                 to_download, routing_info, ready_task, retry_callback));
 }
 
 void SyncBackendHostImpl::FinishConfigureDataTypesOnFrontendLoop(
