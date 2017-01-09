@@ -507,8 +507,8 @@ void USBDevice::contextDestroyed() {
 }
 
 DEFINE_TRACE(USBDevice) {
-  ContextLifecycleObserver::trace(visitor);
   visitor->trace(m_deviceRequests);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 int USBDevice::findConfigurationIndex(uint8_t configurationValue) const {

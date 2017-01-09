@@ -122,11 +122,11 @@ void BluetoothDevice::dispatchGattServerDisconnected() {
 }
 
 DEFINE_TRACE(BluetoothDevice) {
-  EventTargetWithInlineData::trace(visitor);
-  ContextLifecycleObserver::trace(visitor);
   visitor->trace(m_attributeInstanceMap);
   visitor->trace(m_gatt);
   visitor->trace(m_bluetooth);
+  EventTargetWithInlineData::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 }  // namespace blink

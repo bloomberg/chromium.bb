@@ -246,11 +246,11 @@ void USB::onChooserServiceConnectionError() {
 }
 
 DEFINE_TRACE(USB) {
-  EventTargetWithInlineData::trace(visitor);
-  ContextLifecycleObserver::trace(visitor);
   visitor->trace(m_deviceManagerRequests);
   visitor->trace(m_chooserServiceRequests);
   visitor->trace(m_deviceCache);
+  EventTargetWithInlineData::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 }  // namespace blink
