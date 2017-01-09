@@ -19,40 +19,29 @@
 namespace blink {
 
 BluetoothDevice::BluetoothDevice(ExecutionContext* context,
-                                 const String& id,
-                                 const String& name,
+                                 mojom::blink::WebBluetoothDevicePtr device,
                                  Bluetooth* bluetooth)
     : ContextLifecycleObserver(context),
       m_attributeInstanceMap(new BluetoothAttributeInstanceMap(this)),
-      m_id(id),
-      m_name(name),
+      m_device(std::move(device)),
       m_gatt(BluetoothRemoteGATTServer::create(this)),
       m_bluetooth(bluetooth) {}
 
 // static
-BluetoothDevice* BluetoothDevice::take(ScriptPromiseResolver* resolver,
-                                       const String& id,
-                                       const String& name,
-                                       Bluetooth* bluetooth) {
-  return new BluetoothDevice(resolver->getExecutionContext(), id, name,
+BluetoothDevice* BluetoothDevice::take(
+    ScriptPromiseResolver* resolver,
+    mojom::blink::WebBluetoothDevicePtr device,
+    Bluetooth* bluetooth) {
+  return new BluetoothDevice(resolver->getExecutionContext(), std::move(device),
                              bluetooth);
 }
 
-// static
-mojom::blink::WebBluetoothDeviceIdPtr BluetoothDevice::createMojoDeviceId(
-    const String& deviceId) {
-  auto result = mojom::blink::WebBluetoothDeviceId::New();
-  result->device_id = deviceId;
-  return result;
-}
-
 BluetoothRemoteGATTService* BluetoothDevice::getOrCreateRemoteGATTService(
-    const String& serviceInstanceId,
-    const String& uuid,
+    mojom::blink::WebBluetoothRemoteGATTServicePtr service,
     bool isPrimary,
     const String& deviceInstanceId) {
   return m_attributeInstanceMap->getOrCreateRemoteGATTService(
-      serviceInstanceId, uuid, isPrimary, deviceInstanceId);
+      std::move(service), isPrimary, deviceInstanceId);
 }
 
 bool BluetoothDevice::isValidService(const String& serviceInstanceId) {
@@ -62,14 +51,11 @@ bool BluetoothDevice::isValidService(const String& serviceInstanceId) {
 BluetoothRemoteGATTCharacteristic*
 BluetoothDevice::getOrCreateRemoteGATTCharacteristic(
     ExecutionContext* context,
-    const String& characteristicInstanceId,
     const String& serviceInstanceId,
-    const String& uuid,
-    uint32_t characteristicProperties,
+    mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr characteristic,
     BluetoothRemoteGATTService* service) {
   return m_attributeInstanceMap->getOrCreateRemoteGATTCharacteristic(
-      context, characteristicInstanceId, serviceInstanceId, uuid,
-      characteristicProperties, service);
+      context, serviceInstanceId, std::move(characteristic), service);
 }
 
 bool BluetoothDevice::isValidCharacteristic(
@@ -92,9 +78,7 @@ void BluetoothDevice::disconnectGATTIfConnected() {
     m_gatt->ClearActiveAlgorithms();
     m_bluetooth->removeDevice(id());
     mojom::blink::WebBluetoothService* service = m_bluetooth->service();
-    auto deviceId = mojom::blink::WebBluetoothDeviceId::New();
-    deviceId->device_id = id();
-    service->RemoteServerDisconnect(std::move(deviceId));
+    service->RemoteServerDisconnect(id());
   }
 }
 

@@ -33,8 +33,7 @@ class BluetoothRemoteGATTService final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  BluetoothRemoteGATTService(const String& serviceInstanceId,
-                             const String& uuid,
+  BluetoothRemoteGATTService(mojom::blink::WebBluetoothRemoteGATTServicePtr,
                              bool isPrimary,
                              const String& deviceInstanceId,
                              BluetoothDevice*);
@@ -43,7 +42,7 @@ class BluetoothRemoteGATTService final
   DECLARE_VIRTUAL_TRACE();
 
   // IDL exposed interface:
-  String uuid() { return m_uuid; }
+  String uuid() { return m_service->uuid; }
   bool isPrimary() { return m_isPrimary; }
   BluetoothDevice* device() { return m_device; }
   ScriptPromise getCharacteristic(ScriptState*,
@@ -61,15 +60,14 @@ class BluetoothRemoteGATTService final
       ScriptPromiseResolver*,
       mojom::blink::WebBluetoothResult,
       Optional<Vector<mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr>>
-          services);
+          characteristics);
 
   ScriptPromise getCharacteristicsImpl(
       ScriptState*,
       mojom::blink::WebBluetoothGATTQueryQuantity,
       const String& characteristicUUID = String());
 
-  const String m_serviceInstanceId;
-  const String m_uuid;
+  mojom::blink::WebBluetoothRemoteGATTServicePtr m_service;
   const bool m_isPrimary;
   const String m_deviceInstanceId;
   Member<BluetoothDevice> m_device;

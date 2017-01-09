@@ -160,8 +160,8 @@ void Bluetooth::RequestDeviceCallback(
     return;
 
   if (result == mojom::blink::WebBluetoothResult::SUCCESS) {
-    BluetoothDevice* bluetoothDevice = getBluetoothDeviceRepresentingDevice(
-        device->id->device_id, device->name, resolver);
+    BluetoothDevice* bluetoothDevice =
+        getBluetoothDeviceRepresentingDevice(std::move(device), resolver);
     resolver->resolve(bluetoothDevice);
   } else {
     resolver->reject(BluetoothError::take(resolver, result));
@@ -275,25 +275,24 @@ void Bluetooth::RemoteCharacteristicValueChanged(
     characteristic->dispatchCharacteristicValueChanged(value);
 }
 
-void Bluetooth::GattServerDisconnected(
-    mojom::blink::WebBluetoothDeviceIdPtr deviceId) {
-  BluetoothDevice* device = m_connectedDevices.get(deviceId->device_id);
+void Bluetooth::GattServerDisconnected(const WTF::String& deviceId) {
+  BluetoothDevice* device = m_connectedDevices.get(deviceId);
   if (device) {
     // Remove device from the map before calling dispatchGattServerDisconnected
     // to avoid removing a device the gattserverdisconnected event handler might
     // have re-connected.
-    m_connectedDevices.remove(deviceId->device_id);
+    m_connectedDevices.remove(deviceId);
     device->dispatchGattServerDisconnected();
   }
 }
 
 BluetoothDevice* Bluetooth::getBluetoothDeviceRepresentingDevice(
-    const String& id,
-    const String& name,
+    mojom::blink::WebBluetoothDevicePtr devicePtr,
     ScriptPromiseResolver* resolver) {
+  WTF::String id = devicePtr->id;
   BluetoothDevice* device = m_deviceInstanceMap.get(id);
   if (!device) {
-    device = BluetoothDevice::take(resolver, id, name, this);
+    device = BluetoothDevice::take(resolver, std::move(devicePtr), this);
     auto result = m_deviceInstanceMap.add(id, device);
     DCHECK(result.isNewEntry);
   }

@@ -14,7 +14,6 @@
 #include "modules/bluetooth/BluetoothRemoteGATTCharacteristic.h"
 #include "modules/bluetooth/BluetoothUUID.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 #include <utility>
 
 namespace blink {
@@ -32,13 +31,11 @@ const char kInvalidService[] =
 }  // namespace
 
 BluetoothRemoteGATTService::BluetoothRemoteGATTService(
-    const String& serviceInstanceId,
-    const String& uuid,
+    mojom::blink::WebBluetoothRemoteGATTServicePtr service,
     bool isPrimary,
     const String& deviceInstanceId,
     BluetoothDevice* device)
-    : m_serviceInstanceId(serviceInstanceId),
-      m_uuid(uuid),
+    : m_service(std::move(service)),
       m_isPrimary(isPrimary),
       m_deviceInstanceId(deviceInstanceId),
       m_device(device) {}
@@ -74,21 +71,18 @@ void BluetoothRemoteGATTService::GetCharacteristicsCallback(
     if (quantity == mojom::blink::WebBluetoothGATTQueryQuantity::SINGLE) {
       DCHECK_EQ(1u, characteristics->size());
       resolver->resolve(device()->getOrCreateRemoteGATTCharacteristic(
-          resolver->getExecutionContext(),
-          characteristics.value()[0]->instance_id, serviceInstanceId,
-          characteristics.value()[0]->uuid,
-          characteristics.value()[0]->properties, this));
+          resolver->getExecutionContext(), serviceInstanceId,
+          std::move(characteristics.value()[0]), this));
       return;
     }
 
     HeapVector<Member<BluetoothRemoteGATTCharacteristic>> gattCharacteristics;
     gattCharacteristics.reserveInitialCapacity(characteristics->size());
-    for (const auto& characteristic : characteristics.value()) {
+    for (auto& characteristic : characteristics.value()) {
       gattCharacteristics.push_back(
           device()->getOrCreateRemoteGATTCharacteristic(
-              resolver->getExecutionContext(), characteristic->instance_id,
-              serviceInstanceId, characteristic->uuid,
-              characteristic->properties, this));
+              resolver->getExecutionContext(), serviceInstanceId,
+              std::move(characteristic), this));
     }
     resolver->resolve(gattCharacteristics);
   } else {
@@ -142,7 +136,7 @@ ScriptPromise BluetoothRemoteGATTService::getCharacteristicsImpl(
         DOMException::create(NetworkError, kGATTServerNotConnected));
   }
 
-  if (!device()->isValidService(m_serviceInstanceId)) {
+  if (!device()->isValidService(m_service->instance_id)) {
     return ScriptPromise::rejectWithDOMException(
         scriptState, DOMException::create(InvalidStateError, kInvalidService));
   }
@@ -157,10 +151,10 @@ ScriptPromise BluetoothRemoteGATTService::getCharacteristicsImpl(
   if (!characteristicsUUID.isEmpty())
     uuid = characteristicsUUID;
   service->RemoteServiceGetCharacteristics(
-      m_serviceInstanceId, quantity, uuid,
+      m_service->instance_id, quantity, uuid,
       convertToBaseCallback(
           WTF::bind(&BluetoothRemoteGATTService::GetCharacteristicsCallback,
-                    wrapPersistent(this), m_serviceInstanceId, quantity,
+                    wrapPersistent(this), m_service->instance_id, quantity,
                     wrapPersistent(resolver))));
 
   return promise;

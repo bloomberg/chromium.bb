@@ -30,8 +30,7 @@ class BluetoothAttributeInstanceMap final
   // Otherwise returns the BluetoothRemoteGATTService object already
   // in the map.
   BluetoothRemoteGATTService* getOrCreateRemoteGATTService(
-      const String& serviceInstanceId,
-      const String& uuid,
+      mojom::blink::WebBluetoothRemoteGATTServicePtr,
       bool isPrimary,
       const String& deviceInstanceId);
 
@@ -45,10 +44,8 @@ class BluetoothAttributeInstanceMap final
   // the map.
   BluetoothRemoteGATTCharacteristic* getOrCreateRemoteGATTCharacteristic(
       ExecutionContext*,
-      const String& characteristicInstanceId,
       const String& serviceInstanceId,
-      const String& uuid,
-      uint32_t characteristicProperties,
+      mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr,
       BluetoothRemoteGATTService*);
 
   // Returns true if a BluetoothRemoteGATTCharacteristic with

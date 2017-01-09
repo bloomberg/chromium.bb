@@ -17,16 +17,16 @@ BluetoothAttributeInstanceMap::BluetoothAttributeInstanceMap(
 
 BluetoothRemoteGATTService*
 BluetoothAttributeInstanceMap::getOrCreateRemoteGATTService(
-    const String& serviceInstanceId,
-    const String& uuid,
+    mojom::blink::WebBluetoothRemoteGATTServicePtr remoteGATTService,
     bool isPrimary,
     const String& deviceInstanceId) {
+  String serviceInstanceId = remoteGATTService->instance_id;
   BluetoothRemoteGATTService* service =
       m_serviceIdToObject.get(serviceInstanceId);
 
   if (!service) {
-    service = new BluetoothRemoteGATTService(serviceInstanceId, uuid, isPrimary,
-                                             deviceInstanceId, m_device);
+    service = new BluetoothRemoteGATTService(
+        std::move(remoteGATTService), isPrimary, deviceInstanceId, m_device);
     m_serviceIdToObject.add(serviceInstanceId, service);
   }
 
@@ -41,19 +41,19 @@ bool BluetoothAttributeInstanceMap::containsService(
 BluetoothRemoteGATTCharacteristic*
 BluetoothAttributeInstanceMap::getOrCreateRemoteGATTCharacteristic(
     ExecutionContext* context,
-    const String& characteristicInstanceId,
     const String& serviceInstanceId,
-    const String& uuid,
-    uint32_t characteristicProperties,
+    mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr
+        remoteGATTCharacteristic,
     BluetoothRemoteGATTService* service) {
+  String instanceId = remoteGATTCharacteristic->instance_id;
   BluetoothRemoteGATTCharacteristic* characteristic =
-      m_characteristicIdToObject.get(characteristicInstanceId);
+      m_characteristicIdToObject.get(instanceId);
 
   if (!characteristic) {
     characteristic = BluetoothRemoteGATTCharacteristic::create(
-        context, characteristicInstanceId, serviceInstanceId, uuid,
-        characteristicProperties, service, m_device);
-    m_characteristicIdToObject.add(characteristicInstanceId, characteristic);
+        context, serviceInstanceId, std::move(remoteGATTCharacteristic),
+        service, m_device);
+    m_characteristicIdToObject.add(instanceId, characteristic);
   }
 
   return characteristic;

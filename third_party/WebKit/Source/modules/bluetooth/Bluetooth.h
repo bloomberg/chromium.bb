@@ -56,11 +56,11 @@ class Bluetooth : public GarbageCollectedFinalized<Bluetooth>,
   void RemoteCharacteristicValueChanged(
       const WTF::String& characteristicInstanceId,
       const WTF::Vector<uint8_t>& value) override;
-  void GattServerDisconnected(mojom::blink::WebBluetoothDeviceIdPtr) override;
+  void GattServerDisconnected(const WTF::String& deviceId) override;
 
-  BluetoothDevice* getBluetoothDeviceRepresentingDevice(const String& id,
-                                                        const String& name,
-                                                        ScriptPromiseResolver*);
+  BluetoothDevice* getBluetoothDeviceRepresentingDevice(
+      mojom::blink::WebBluetoothDevicePtr,
+      ScriptPromiseResolver*);
 
   void RequestDeviceCallback(ScriptPromiseResolver*,
                              mojom::blink::WebBluetoothResult,

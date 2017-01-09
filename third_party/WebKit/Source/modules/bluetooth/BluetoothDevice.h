@@ -37,32 +37,24 @@ class BluetoothDevice final : public EventTargetWithInlineData,
 
  public:
   BluetoothDevice(ExecutionContext*,
-                  const String& id,
-                  const String& name,
+                  mojom::blink::WebBluetoothDevicePtr,
                   Bluetooth*);
 
   // Interface required by CallbackPromiseAdapter:
   static BluetoothDevice* take(ScriptPromiseResolver*,
-                               const String& id,
-                               const String& name,
+                               mojom::blink::WebBluetoothDevicePtr,
                                Bluetooth*);
 
-  static mojom::blink::WebBluetoothDeviceIdPtr createMojoDeviceId(
-      const String& deviceId);
-
   BluetoothRemoteGATTService* getOrCreateRemoteGATTService(
-      const String& serviceInstanceId,
-      const String& uuid,
+      mojom::blink::WebBluetoothRemoteGATTServicePtr,
       bool isPrimary,
       const String& deviceInstanceId);
   bool isValidService(const String& serviceInstanceId);
 
   BluetoothRemoteGATTCharacteristic* getOrCreateRemoteGATTCharacteristic(
       ExecutionContext*,
-      const String& characteristicInstanceId,
       const String& serviceInstanceId,
-      const String& uuid,
-      uint32_t characteristicProperties,
+      mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr,
       BluetoothRemoteGATTService*);
   bool isValidCharacteristic(const String& characteristicInstanceId);
 
@@ -104,8 +96,8 @@ class BluetoothDevice final : public EventTargetWithInlineData,
   DECLARE_VIRTUAL_TRACE();
 
   // IDL exposed interface:
-  String id() { return m_id; }
-  String name() { return m_name; }
+  String id() { return m_device->id; }
+  String name() { return m_device->name; }
   BluetoothRemoteGATTServer* gatt() { return m_gatt; }
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(gattserverdisconnected);
@@ -114,8 +106,7 @@ class BluetoothDevice final : public EventTargetWithInlineData,
   // Holds all GATT Attributes associated with this BluetoothDevice.
   Member<BluetoothAttributeInstanceMap> m_attributeInstanceMap;
 
-  const String m_id;
-  const String m_name;
+  mojom::blink::WebBluetoothDevicePtr m_device;
   Member<BluetoothRemoteGATTServer> m_gatt;
   Member<Bluetooth> m_bluetooth;
 };

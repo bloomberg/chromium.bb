@@ -16,7 +16,7 @@
 #include "modules/bluetooth/BluetoothDevice.h"
 #include "modules/bluetooth/BluetoothError.h"
 #include "modules/bluetooth/BluetoothRemoteGATTService.h"
-#include <memory>
+#include <utility>
 
 namespace blink {
 
@@ -42,35 +42,28 @@ DOMDataView* ConvertWTFVectorToDataView(const Vector<uint8_t>& wtfVector) {
 
 BluetoothRemoteGATTCharacteristic::BluetoothRemoteGATTCharacteristic(
     ExecutionContext* context,
-    const String& characteristicInstanceId,
     const String& serviceInstanceId,
-    const String& uuid,
-    uint32_t characteristicProperties,
+    mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr characteristic,
     BluetoothRemoteGATTService* service,
     BluetoothDevice* device)
     : ContextLifecycleObserver(context),
-      m_characteristicInstanceId(characteristicInstanceId),
       m_serviceInstanceId(serviceInstanceId),
-      m_uuid(uuid),
-      m_characteristicProperties(characteristicProperties),
+      m_characteristic(std::move(characteristic)),
       m_service(service),
       m_stopped(false),
       m_device(device) {
   m_properties =
-      BluetoothCharacteristicProperties::create(m_characteristicProperties);
+      BluetoothCharacteristicProperties::create(m_characteristic->properties);
 }
 
 BluetoothRemoteGATTCharacteristic* BluetoothRemoteGATTCharacteristic::create(
     ExecutionContext* context,
-    const String& characteristicInstanceId,
     const String& serviceInstanceId,
-    const String& uuid,
-    uint32_t characteristicProperties,
+    mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr characteristic,
     BluetoothRemoteGATTService* service,
     BluetoothDevice* device) {
   return new BluetoothRemoteGATTCharacteristic(
-      context, characteristicInstanceId, serviceInstanceId, uuid,
-      characteristicProperties, service, device);
+      context, serviceInstanceId, std::move(characteristic), service, device);
 }
 
 void BluetoothRemoteGATTCharacteristic::setValue(DOMDataView* domDataView) {
@@ -95,7 +88,7 @@ void BluetoothRemoteGATTCharacteristic::notifyCharacteristicObjectRemoved() {
   if (!m_stopped) {
     m_stopped = true;
     m_device->bluetooth()->characteristicObjectRemoved(
-        m_characteristicInstanceId);
+        m_characteristic->instance_id);
   }
 }
 
@@ -117,7 +110,7 @@ void BluetoothRemoteGATTCharacteristic::addedEventListener(
   // listeners have been removed. See http://crbug.com/541390
   if (eventType == EventTypeNames::characteristicvaluechanged) {
     m_device->bluetooth()->registerCharacteristicObject(
-        m_characteristicInstanceId, this);
+        m_characteristic->instance_id, this);
   }
 }
 
@@ -156,7 +149,7 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::readValue(
         DOMException::create(NetworkError, kGATTServerNotConnected));
   }
 
-  if (!gatt()->device()->isValidCharacteristic(m_characteristicInstanceId)) {
+  if (!gatt()->device()->isValidCharacteristic(m_characteristic->instance_id)) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
         DOMException::create(InvalidStateError, kInvalidCharacteristic));
@@ -168,7 +161,7 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::readValue(
 
   mojom::blink::WebBluetoothService* service = m_device->bluetooth()->service();
   service->RemoteCharacteristicReadValue(
-      m_characteristicInstanceId,
+      m_characteristic->instance_id,
       convertToBaseCallback(
           WTF::bind(&BluetoothRemoteGATTCharacteristic::ReadValueCallback,
                     wrapPersistent(this), wrapPersistent(resolver))));
@@ -210,7 +203,7 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::writeValue(
         DOMException::create(NetworkError, kGATTServerNotConnected));
   }
 
-  if (!gatt()->device()->isValidCharacteristic(m_characteristicInstanceId)) {
+  if (!gatt()->device()->isValidCharacteristic(m_characteristic->instance_id)) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
         DOMException::create(InvalidStateError, kInvalidCharacteristic));
@@ -237,7 +230,7 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::writeValue(
 
   mojom::blink::WebBluetoothService* service = m_device->bluetooth()->service();
   service->RemoteCharacteristicWriteValue(
-      m_characteristicInstanceId, valueVector,
+      m_characteristic->instance_id, valueVector,
       convertToBaseCallback(WTF::bind(
           &BluetoothRemoteGATTCharacteristic::WriteValueCallback,
           wrapPersistent(this), wrapPersistent(resolver), valueVector)));
@@ -276,7 +269,7 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::startNotifications(
         DOMException::create(NetworkError, kGATTServerNotConnected));
   }
 
-  if (!gatt()->device()->isValidCharacteristic(m_characteristicInstanceId)) {
+  if (!gatt()->device()->isValidCharacteristic(m_characteristic->instance_id)) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
         DOMException::create(InvalidStateError, kInvalidCharacteristic));
@@ -288,7 +281,7 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::startNotifications(
 
   mojom::blink::WebBluetoothService* service = m_device->bluetooth()->service();
   service->RemoteCharacteristicStartNotifications(
-      m_characteristicInstanceId,
+      m_characteristic->instance_id,
       convertToBaseCallback(
           WTF::bind(&BluetoothRemoteGATTCharacteristic::NotificationsCallback,
                     wrapPersistent(this), wrapPersistent(resolver))));
@@ -305,7 +298,7 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::stopNotifications(
         DOMException::create(NetworkError, kGATTServerNotConnected));
   }
 
-  if (!gatt()->device()->isValidCharacteristic(m_characteristicInstanceId)) {
+  if (!gatt()->device()->isValidCharacteristic(m_characteristic->instance_id)) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
         DOMException::create(InvalidStateError, kInvalidCharacteristic));
@@ -317,7 +310,7 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::stopNotifications(
 
   mojom::blink::WebBluetoothService* service = m_device->bluetooth()->service();
   service->RemoteCharacteristicStopNotifications(
-      m_characteristicInstanceId,
+      m_characteristic->instance_id,
       convertToBaseCallback(
           WTF::bind(&BluetoothRemoteGATTCharacteristic::NotificationsCallback,
                     wrapPersistent(this), wrapPersistent(resolver),

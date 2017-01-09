@@ -3,10 +3,10 @@
 # found in the LICENSE file.
 
 typemaps = [
-  "//third_party/WebKit/Source/platform/mojo/Bluetooth.typemap",
   "//third_party/WebKit/Source/platform/mojo/File.typemap",
   "//third_party/WebKit/Source/platform/mojo/Geometry.typemap",
   "//third_party/WebKit/Source/platform/mojo/KURL.typemap",
   "//third_party/WebKit/Source/platform/mojo/SecurityOrigin.typemap",
   "//third_party/WebKit/Source/platform/mojo/String.typemap",
+  "//third_party/WebKit/public/platform/modules/bluetooth/Bluetooth.typemap",
 ]

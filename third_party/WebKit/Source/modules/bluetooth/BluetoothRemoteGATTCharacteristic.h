@@ -42,19 +42,15 @@ class BluetoothRemoteGATTCharacteristic final
  public:
   explicit BluetoothRemoteGATTCharacteristic(
       ExecutionContext*,
-      const String& characteristicInstanceId,
       const String& serviceInstanceId,
-      const String& uuid,
-      uint32_t characteristicProperties,
+      mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr,
       BluetoothRemoteGATTService*,
       BluetoothDevice*);
 
   static BluetoothRemoteGATTCharacteristic* create(
       ExecutionContext*,
-      const String& characteristicInstanceId,
       const String& serviceInstanceId,
-      const String& uuid,
-      uint32_t characteristicProperties,
+      mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr,
       BluetoothRemoteGATTService*,
       BluetoothDevice*);
 
@@ -83,7 +79,7 @@ class BluetoothRemoteGATTCharacteristic final
 
   // IDL exposed interface:
   BluetoothRemoteGATTService* service() { return m_service; }
-  String uuid() { return m_uuid; }
+  String uuid() { return m_characteristic->uuid; }
   BluetoothCharacteristicProperties* properties() { return m_properties; }
   DOMDataView* value() const { return m_value; }
   ScriptPromise readValue(ScriptState*);
@@ -110,10 +106,8 @@ class BluetoothRemoteGATTCharacteristic final
   void NotificationsCallback(ScriptPromiseResolver*,
                              mojom::blink::WebBluetoothResult);
 
-  const String m_characteristicInstanceId;
   const String m_serviceInstanceId;
-  const String m_uuid;
-  const uint32_t m_characteristicProperties;
+  mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr m_characteristic;
   Member<BluetoothRemoteGATTService> m_service;
   bool m_stopped;
   Member<BluetoothCharacteristicProperties> m_properties;

@@ -6,9 +6,20 @@
 #define BluetoothStructTraits_h
 
 #include "device/bluetooth/public/interfaces/uuid.mojom-blink.h"
+#include "public/platform/modules/bluetooth/web_bluetooth.mojom-blink.h"
 #include "wtf/text/WTFString.h"
 
 namespace mojo {
+
+template <>
+struct StructTraits<::blink::mojom::WebBluetoothDeviceIdDataView, WTF::String> {
+  static const WTF::String& device_id(const WTF::String& input) {
+    return input;
+  }
+
+  static bool Read(::blink::mojom::WebBluetoothDeviceIdDataView,
+                   WTF::String* output);
+};
 
 template <>
 struct StructTraits<bluetooth::mojom::UUIDDataView, WTF::String> {
