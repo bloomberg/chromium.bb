@@ -95,7 +95,7 @@ static void collectTextBoxesInFlowBox(InlineFlowBox* flowBox,
     }
 
     if (child->isSVGInlineTextBox())
-      textBoxes.append(toSVGInlineTextBox(child));
+      textBoxes.push_back(toSVGInlineTextBox(child));
   }
 }
 
@@ -140,7 +140,7 @@ static void collectTextBoxesInLogicalOrder(
   textBoxes.shrink(0);
   for (InlineTextBox* textBox = textLineLayout.firstTextBox(); textBox;
        textBox = textBox->nextTextBox())
-    textBoxes.append(toSVGInlineTextBox(textBox));
+    textBoxes.push_back(toSVGInlineTextBox(textBox));
   std::sort(textBoxes.begin(), textBoxes.end(), InlineTextBox::compareByStart);
 }
 

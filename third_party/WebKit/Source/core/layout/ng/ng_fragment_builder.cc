@@ -52,8 +52,8 @@ NGFragmentBuilder& NGFragmentBuilder::AddChild(
     const NGLogicalOffset& child_offset) {
   DCHECK_EQ(type_, NGPhysicalFragment::kFragmentBox)
       << "Only box fragments can have children";
-  children_.append(child->PhysicalFragment());
-  offsets_.append(child_offset);
+  children_.push_back(child->PhysicalFragment());
+  offsets_.push_back(child_offset);
   // Collect child's out of flow descendants.
   const NGPhysicalFragment* physical_fragment = child->PhysicalFragment();
   const Vector<NGStaticPosition>& oof_positions =
@@ -62,7 +62,7 @@ NGFragmentBuilder& NGFragmentBuilder::AddChild(
   for (auto& oof_node : physical_fragment->OutOfFlowDescendants()) {
     NGStaticPosition oof_position = oof_positions[oof_index++];
     out_of_flow_descendant_candidates_.add(oof_node);
-    out_of_flow_candidate_placements_.append(
+    out_of_flow_candidate_placements_.push_back(
         OutOfFlowPlacement{child_offset, oof_position});
   }
   return *this;
@@ -74,7 +74,7 @@ NGFragmentBuilder& NGFragmentBuilder::AddOutOfFlowChildCandidate(
   out_of_flow_descendant_candidates_.add(child);
   NGStaticPosition child_position =
       NGStaticPosition::Create(writing_mode_, direction_, NGPhysicalOffset());
-  out_of_flow_candidate_placements_.append(
+  out_of_flow_candidate_placements_.push_back(
       OutOfFlowPlacement{child_offset, child_position});
   return *this;
 }
@@ -103,7 +103,7 @@ void NGFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
     builder_relative_position.offset =
         child_offset + oof_placement.descendant_position.offset;
     descendants->add(oof_node);
-    descendant_positions->append(builder_relative_position);
+    descendant_positions->push_back(builder_relative_position);
   }
   out_of_flow_descendant_candidates_.clear();
   out_of_flow_candidate_placements_.clear();
@@ -113,7 +113,7 @@ NGFragmentBuilder& NGFragmentBuilder::AddOutOfFlowDescendant(
     NGBlockNode* descendant,
     const NGStaticPosition& position) {
   out_of_flow_descendants_.add(descendant);
-  out_of_flow_positions_.append(position);
+  out_of_flow_positions_.push_back(position);
   return *this;
 }
 
@@ -144,7 +144,7 @@ NGPhysicalBoxFragment* NGFragmentBuilder::ToBoxFragment() {
     NGPhysicalFragment* child = children_[i].get();
     child->SetOffset(offsets_[i].ConvertToPhysical(
         writing_mode_, direction_, physical_size, child->Size()));
-    children.append(child);
+    children.push_back(child);
   }
   return new NGPhysicalBoxFragment(
       physical_size, overflow_.ConvertToPhysical(writing_mode_), children,

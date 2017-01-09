@@ -108,13 +108,13 @@ int TableLayoutAlgorithmFixed::calcWidthArray() {
       if (currentEffectiveColumn >= nEffCols) {
         m_table->appendEffectiveColumn(span);
         nEffCols++;
-        m_width.append(Length());
+        m_width.push_back(Length());
         spanInCurrentEffectiveColumn = span;
       } else {
         if (span < m_table->spanOfEffectiveColumn(currentEffectiveColumn)) {
           m_table->splitEffectiveColumn(currentEffectiveColumn, span);
           nEffCols++;
-          m_width.append(Length());
+          m_width.push_back(Length());
         }
         spanInCurrentEffectiveColumn =
             m_table->spanOfEffectiveColumn(currentEffectiveColumn);

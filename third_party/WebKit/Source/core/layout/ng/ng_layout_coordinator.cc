@@ -11,7 +11,7 @@ namespace blink {
 
 NGLayoutCoordinator::NGLayoutCoordinator(NGLayoutInputNode* input_node,
                                          NGConstraintSpace* constraint_space) {
-  layout_algorithms_.append(
+  layout_algorithms_.push_back(
       NGLayoutInputNode::AlgorithmForInputNode(input_node, constraint_space));
 }
 
@@ -38,7 +38,7 @@ bool NGLayoutCoordinator::Tick(NGPhysicalFragment** out_fragment) {
       fragment_ = fragment;
       return false;
     case kChildAlgorithmRequired:
-      layout_algorithms_.append(child_algorithm);
+      layout_algorithms_.push_back(child_algorithm);
       return false;
   }
 

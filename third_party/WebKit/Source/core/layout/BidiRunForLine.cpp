@@ -184,7 +184,7 @@ void constructBidiRunsForLine(InlineBidiResolver& topResolver,
           runWithContext.runToReplace,
           isolatedResolver.midpointStateForIsolatedRun(
               runWithContext.runToReplace));
-      topResolver.isolatedRuns().append(runWithContext);
+      topResolver.isolatedRuns().push_back(runWithContext);
     }
   }
 }

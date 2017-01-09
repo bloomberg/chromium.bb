@@ -67,7 +67,7 @@ class ExpansionOpportunities {
           text.characters16() + run.m_start, run.m_stop - run.m_start,
           run.m_box->direction(), isAfterExpansion, textJustify);
     }
-    m_runsWithExpansions.append(opportunitiesInRun);
+    m_runsWithExpansions.push_back(opportunitiesInRun);
     m_totalOpportunities += opportunitiesInRun;
   }
   void removeTrailingExpansion() {
@@ -1930,7 +1930,7 @@ void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren,
         if (o->isOutOfFlowPositioned()) {
           o->containingBlock()->insertPositionedObject(box);
         } else if (o->isFloating()) {
-          layoutState.floats().append(FloatWithRect(box));
+          layoutState.floats().push_back(FloatWithRect(box));
           if (box->needsLayout()) {
             // Be sure to at least mark the first line affected by the float as
             // dirty, so that the float gets relaid out. Otherwise we'll miss

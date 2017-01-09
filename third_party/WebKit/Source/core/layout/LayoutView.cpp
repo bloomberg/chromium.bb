@@ -406,7 +406,7 @@ void LayoutView::computeSelfHitTestRects(Vector<LayoutRect>& rects,
   // just use the viewport size (containing block) here because we want to
   // ensure this includes all children (so we can avoid walking them
   // explicitly).
-  rects.append(
+  rects.push_back(
       LayoutRect(LayoutPoint::zero(), LayoutSize(frameView()->contentsSize())));
 }
 
@@ -527,13 +527,13 @@ LayoutSize LayoutView::offsetForFixedPosition(bool includePendingScroll) const {
 
 void LayoutView::absoluteRects(Vector<IntRect>& rects,
                                const LayoutPoint& accumulatedOffset) const {
-  rects.append(
+  rects.push_back(
       pixelSnappedIntRect(accumulatedOffset, LayoutSize(layer()->size())));
 }
 
 void LayoutView::absoluteQuads(Vector<FloatQuad>& quads,
                                MapCoordinatesFlags mode) const {
-  quads.append(localToAbsoluteQuad(
+  quads.push_back(localToAbsoluteQuad(
       FloatRect(FloatPoint(), FloatSize(layer()->size())), mode));
 }
 

@@ -441,7 +441,7 @@ DashArray SVGLayoutSupport::resolveSVGDashArray(
     const SVGLengthContext& lengthContext) {
   DashArray dashArray;
   for (const Length& dashLength : svgDashArray.vector())
-    dashArray.append(lengthContext.valueForLength(dashLength, style));
+    dashArray.push_back(lengthContext.valueForLength(dashLength, style));
   return dashArray;
 }
 
@@ -575,7 +575,7 @@ static SearchCandidate searchTreeForFindClosestLayoutSVGText(
       float distance = distanceToChildLayoutObject(child, point);
       if (distance > closestText.candidateDistance)
         continue;
-      candidates.append(SearchCandidate(child, distance));
+      candidates.push_back(SearchCandidate(child, distance));
     }
   }
 

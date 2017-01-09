@@ -146,7 +146,7 @@ void AbstractInlineTextBox::wordBoundaries(
   while (pos >= 0 && pos < len) {
     int next = iterator->next();
     if (isWordTextBreak(iterator))
-      words.append(WordBoundaries(pos, next));
+      words.push_back(WordBoundaries(pos, next));
     pos = next;
   }
 }

@@ -82,7 +82,7 @@ class TrailingObjects {
 
   void appendObjectIfNeeded(LineLayoutItem object) {
     if (m_whitespace)
-      m_objects.append(object);
+      m_objects.push_back(object);
   }
 
   enum CollapseFirstSpaceOrNot { DoNotCollapseFirstSpace, CollapseFirstSpace };

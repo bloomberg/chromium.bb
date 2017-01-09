@@ -318,7 +318,7 @@ void PaintInvalidationState::updateForChildren(PaintInvalidationReason reason) {
 
   switch (reason) {
     case PaintInvalidationDelayedFull:
-      m_pendingDelayedPaintInvalidations.append(&m_currentObject);
+      m_pendingDelayedPaintInvalidations.push_back(&m_currentObject);
       break;
     case PaintInvalidationSubtree:
       m_forcedSubtreeInvalidationFlags |=

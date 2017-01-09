@@ -138,7 +138,7 @@ void LayoutFlowThread::absoluteQuadsForDescendant(const LayoutBox& descendant,
     // coordinates for zero-height objects.
     fragment.inclusiveIntersect(iterator.fragmentainerInFlowThread());
     fragment.moveBy(-offsetFromFlowThread);
-    quads.append(descendant.localToAbsoluteQuad(FloatRect(fragment), mode));
+    quads.push_back(descendant.localToAbsoluteQuad(FloatRect(fragment), mode));
   }
 }
 

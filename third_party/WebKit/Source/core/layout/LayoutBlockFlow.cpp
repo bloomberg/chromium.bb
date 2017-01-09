@@ -2436,7 +2436,7 @@ void LayoutBlockFlow::computeSelfHitTestRects(
     // It's common for this rect to be entirely contained in our box, so exclude
     // that simple case.
     if (!rect.isEmpty() && (rects.isEmpty() || !rects[0].contains(rect)))
-      rects.append(rect);
+      rects.push_back(rect);
   }
 }
 
@@ -2454,7 +2454,7 @@ void LayoutBlockFlow::absoluteRects(
   // https://bugs.webkit.org/show_bug.cgi?id=46781
   LayoutRect rect(accumulatedOffset, size());
   rect.expand(collapsedMarginBoxLogicalOutsets());
-  rects.append(pixelSnappedIntRect(rect));
+  rects.push_back(pixelSnappedIntRect(rect));
   continuation()->absoluteRects(
       rects,
       accumulatedOffset -
@@ -2481,7 +2481,7 @@ void LayoutBlockFlow::absoluteQuadsForSelf(Vector<FloatQuad>& quads,
   // https://bugs.webkit.org/show_bug.cgi?id=46781
   LayoutRect localRect(LayoutPoint(), size());
   localRect.expand(collapsedMarginBoxLogicalOutsets());
-  quads.append(localToAbsoluteQuad(FloatRect(localRect), mode));
+  quads.push_back(localToAbsoluteQuad(FloatRect(localRect), mode));
 }
 
 LayoutObject* LayoutBlockFlow::hoverAncestor() const {
@@ -3265,7 +3265,7 @@ void LayoutBlockFlow::makeChildrenInlineIfPossible() {
     if (child->isRubyRun() || child->isRubyBase())
       return;
 
-    blocksToRemove.append(toLayoutBlockFlow(child));
+    blocksToRemove.push_back(toLayoutBlockFlow(child));
   }
 
   // If we make an object's children inline we are going to frustrate any future
@@ -4562,7 +4562,7 @@ void LayoutBlockFlow::addOutlineRects(
     if (topMargin || bottomMargin) {
       LayoutRect rect(additionalOffset, size());
       rect.expandEdges(topMargin, LayoutUnit(), bottomMargin, LayoutUnit());
-      rects.append(rect);
+      rects.push_back(rect);
     }
   }
 
@@ -4578,7 +4578,7 @@ void LayoutBlockFlow::addOutlineRects(
       LayoutRect rect(additionalOffset.x() + curr->x(),
                       additionalOffset.y() + top, curr->width(), bottom - top);
       if (!rect.isEmpty())
-        rects.append(rect);
+        rects.push_back(rect);
     }
   }
 

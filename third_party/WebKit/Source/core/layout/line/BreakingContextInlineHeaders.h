@@ -479,7 +479,7 @@ inline void BreakingContext::handleOutOfFlowPositioned(
     m_trailingObjects.appendObjectIfNeeded(box);
   }
   if (!containerIsInline)
-    positionedObjects.append(box);
+    positionedObjects.push_back(box);
   m_width.addUncommittedWidth(
       inlineLogicalWidthFromAncestorsIfNeeded(box).toFloat());
   // Reset prior line break context characters.

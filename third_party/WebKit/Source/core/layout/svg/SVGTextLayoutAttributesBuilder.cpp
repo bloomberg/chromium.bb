@@ -117,7 +117,7 @@ void SVGTextLayoutAttributesBuilder::collectTextPositioningElements(
       positioningElementFromLayoutObject(start);
   unsigned atPosition = m_textPositions.size();
   if (element)
-    m_textPositions.append(TextPosition(element, m_characterCount));
+    m_textPositions.push_back(TextPosition(element, m_characterCount));
 
   for (LayoutObject* child = start.slowFirstChild(); child;
        child = child->nextSibling()) {

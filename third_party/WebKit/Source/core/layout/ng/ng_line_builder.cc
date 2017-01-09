@@ -29,7 +29,8 @@ void NGLineBuilder::Add(unsigned start_index,
                         unsigned end_index,
                         LayoutUnit inline_size) {
   DCHECK_LT(start_index, end_index);
-  line_item_chunks_.append(LineItemChunk{start_index, end_index, inline_size});
+  line_item_chunks_.push_back(
+      LineItemChunk{start_index, end_index, inline_size});
 }
 
 void NGLineBuilder::CreateLine() {
@@ -61,8 +62,8 @@ void NGLineBuilder::CreateLine() {
         text_builder.ToTextFragment(inline_box_, line_item_chunk.start_index,
                                     line_item_chunk.end_index));
 
-    fragments_.append(text_fragment);
-    offsets_.append(NGLogicalOffset(inline_offset, content_size_));
+    fragments_.push_back(text_fragment);
+    offsets_.push_back(NGLogicalOffset(inline_offset, content_size_));
     inline_offset += line_item_chunk.inline_size;
   }
   DCHECK_EQ(fragments_.size(), offsets_.size());
@@ -95,7 +96,7 @@ void NGLineBuilder::BidiReorder() {
   Vector<UBiDiLevel, 32> levels;
   levels.reserveInitialCapacity(line_item_chunks_.size());
   for (const auto& chunk : line_item_chunks_)
-    levels.append(inline_box_->Items()[chunk.start_index].BidiLevel());
+    levels.push_back(inline_box_->Items()[chunk.start_index].BidiLevel());
   Vector<int32_t, 32> indicies_in_visual_order(line_item_chunks_.size());
   NGBidiParagraph::IndiciesInVisualOrder(levels, &indicies_in_visual_order);
 

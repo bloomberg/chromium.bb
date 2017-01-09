@@ -656,7 +656,7 @@ static Vector<PaintLayerStackingNode*> normalFlowListFor(
   PaintLayerStackingNodeIterator it(*node, NormalFlowChildren);
   Vector<PaintLayerStackingNode*> vector;
   while (PaintLayerStackingNode* normalFlowChild = it.next())
-    vector.append(normalFlowChild);
+    vector.push_back(normalFlowChild);
   return vector;
 }
 

@@ -208,7 +208,7 @@ void NGInlineNode::ShapeText() {
     CachingWordShapeIterator iterator(shape_cache, item_run, &item_font);
     RefPtr<const ShapeResult> word_result;
     while (iterator.next(&word_result)) {
-      item.shape_results_.append(word_result.get());
+      item.shape_results_.push_back(word_result.get());
     };
   }
 }

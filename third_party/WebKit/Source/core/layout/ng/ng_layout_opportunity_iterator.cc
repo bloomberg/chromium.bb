@@ -16,7 +16,7 @@ void CollectAllOpportunities(const NGLayoutOpportunityTreeNode* node,
   if (!node)
     return;
   if (node->IsLeafNode())
-    opportunities.append(node->opportunity);
+    opportunities.push_back(node->opportunity);
   CollectAllOpportunities(node->left, opportunities);
   CollectAllOpportunities(node->bottom, opportunities);
   CollectAllOpportunities(node->right, opportunities);
@@ -176,7 +176,7 @@ void InsertExclusion(NGLayoutOpportunityTreeNode* node,
   NGLayoutOpportunity top_layout_opp =
       GetTopSpace(node->opportunity, exclusion->rect);
   if (!top_layout_opp.IsEmpty())
-    opportunities.append(top_layout_opp);
+    opportunities.push_back(top_layout_opp);
 
   node->exclusion = exclusion;
 }

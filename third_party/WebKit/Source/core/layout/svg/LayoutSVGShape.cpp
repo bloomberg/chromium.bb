@@ -246,7 +246,7 @@ void LayoutSVGShape::paint(const PaintInfo& paintInfo,
 void LayoutSVGShape::addOutlineRects(Vector<LayoutRect>& rects,
                                      const LayoutPoint&,
                                      IncludeBlockVisualOverflowOrNot) const {
-  rects.append(LayoutRect(visualRectInLocalSVGCoordinates()));
+  rects.push_back(LayoutRect(visualRectInLocalSVGCoordinates()));
 }
 
 bool LayoutSVGShape::nodeAtFloatPoint(HitTestResult& result,

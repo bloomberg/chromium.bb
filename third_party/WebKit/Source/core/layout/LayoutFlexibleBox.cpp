@@ -963,7 +963,7 @@ void LayoutFlexibleBox::layoutFlexItems(bool relayoutChildren,
       continue;
     }
 
-    allItems.append(constructFlexItem(*child, layoutType));
+    allItems.push_back(constructFlexItem(*child, layoutType));
   }
 
   const LayoutUnit lineBreakLength = mainAxisContentExtent(LayoutUnit::max());
@@ -1420,7 +1420,7 @@ void LayoutFlexibleBox::freezeInflexibleItems(FlexSign flexSign,
         (flexSign == NegativeFlexibility &&
          flexItem.flexBaseContentSize < flexItem.hypotheticalMainContentSize)) {
       flexItem.flexedContentSize = flexItem.hypotheticalMainContentSize;
-      newInflexibleItems.append(&flexItem);
+      newInflexibleItems.push_back(&flexItem);
     }
   }
   freezeViolations(newInflexibleItems, remainingFreeSpace, totalFlexGrow,
@@ -1481,9 +1481,9 @@ bool LayoutFlexibleBox::resolveFlexibleLengths(
 
     LayoutUnit violation = adjustedChildSize - childSize;
     if (violation > 0)
-      minViolations.append(&flexItem);
+      minViolations.push_back(&flexItem);
     else if (violation < 0)
-      maxViolations.append(&flexItem);
+      maxViolations.push_back(&flexItem);
     totalViolation += violation;
   }
 
@@ -1892,8 +1892,8 @@ void LayoutFlexibleBox::layoutAndPlaceChildren(
 
   if (m_numberOfInFlowChildrenOnFirstLine == -1)
     m_numberOfInFlowChildrenOnFirstLine = children.size();
-  lineContexts.append(LineContext(crossAxisOffset, maxChildCrossAxisExtent,
-                                  maxAscent, std::move(children)));
+  lineContexts.push_back(LineContext(crossAxisOffset, maxChildCrossAxisExtent,
+                                     maxAscent, std::move(children)));
   crossAxisOffset += maxChildCrossAxisExtent;
 }
 
@@ -2063,7 +2063,7 @@ void LayoutFlexibleBox::alignChildren(const Vector<LineContext>& lineContexts) {
                                         offset);
       }
     }
-    minMarginAfterBaselines.append(minMarginAfterBaseline);
+    minMarginAfterBaselines.push_back(minMarginAfterBaseline);
   }
 
   if (style()->flexWrap() != FlexWrapReverse)

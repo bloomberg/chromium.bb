@@ -155,7 +155,7 @@ void SVGTextLayoutEngine::recordTextFragment(SVGInlineTextBox* textBox) {
   // Figure out fragment metrics.
   computeCurrentFragmentMetrics(textBox);
 
-  textBox->textFragments().append(m_currentTextFragment);
+  textBox->textFragments().push_back(m_currentTextFragment);
   m_currentTextFragment = SVGTextFragment();
 }
 
@@ -237,7 +237,7 @@ void SVGTextLayoutEngine::layoutInlineTextBox(SVGInlineTextBox* textBox) {
   if (m_inPathLayout)
     return;
 
-  m_lineLayoutBoxes.append(textBox);
+  m_lineLayoutBoxes.push_back(textBox);
 }
 
 static bool definesTextLengthWithSpacing(const InlineFlowBox* start) {

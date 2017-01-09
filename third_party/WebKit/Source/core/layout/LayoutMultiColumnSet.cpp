@@ -612,7 +612,7 @@ bool LayoutMultiColumnSet::computeColumnRuleBounds(
         ruleBottom = ruleTop + ruleThickness;
       }
 
-      columnRuleBounds.append(LayoutRect(
+      columnRuleBounds.push_back(LayoutRect(
           ruleLeft, ruleTop, ruleRight - ruleLeft, ruleBottom - ruleTop));
     }
 

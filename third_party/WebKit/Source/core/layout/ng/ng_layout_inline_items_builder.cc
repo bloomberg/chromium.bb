@@ -99,7 +99,7 @@ void NGLayoutInlineItemsBuilder::Append(const String& string,
                                         const ComputedStyle* style) {
   if (string.isEmpty()) {
     unsigned offset = text_.length();
-    items_->append(NGLayoutInlineItem(offset, offset, style));
+    items_->push_back(NGLayoutInlineItem(offset, offset, style));
     return;
   }
 
@@ -149,7 +149,7 @@ void NGLayoutInlineItemsBuilder::Append(const String& string,
     }
   }
 
-  items_->append(NGLayoutInlineItem(start_offset, text_.length(), style));
+  items_->push_back(NGLayoutInlineItem(start_offset, text_.length(), style));
 }
 
 void NGLayoutInlineItemsBuilder::Append(UChar character) {
@@ -166,7 +166,7 @@ void NGLayoutInlineItemsBuilder::AppendAsOpaqueToSpaceCollapsing(
 
   text_.append(character);
   unsigned end_offset = text_.length();
-  items_->append(NGLayoutInlineItem(end_offset - 1, end_offset, nullptr));
+  items_->push_back(NGLayoutInlineItem(end_offset - 1, end_offset, nullptr));
 }
 
 void NGLayoutInlineItemsBuilder::ProcessPendingNewline(
@@ -252,7 +252,7 @@ void NGLayoutInlineItemsBuilder::EnterInline(LayoutObject* node) {
 
 void NGLayoutInlineItemsBuilder::Enter(LayoutObject* node,
                                        UChar character_to_exit) {
-  exits_.append(OnExitNode{node, character_to_exit});
+  exits_.push_back(OnExitNode{node, character_to_exit});
   has_bidi_controls_ = true;
 }
 

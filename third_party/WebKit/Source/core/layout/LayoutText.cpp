@@ -333,7 +333,7 @@ String LayoutText::plainText() const {
 void LayoutText::absoluteRects(Vector<IntRect>& rects,
                                const LayoutPoint& accumulatedOffset) const {
   for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
-    rects.append(enclosingIntRect(LayoutRect(
+    rects.push_back(enclosingIntRect(LayoutRect(
         LayoutPoint(accumulatedOffset) + box->location(), box->size())));
   }
 }
@@ -392,13 +392,13 @@ void LayoutText::absoluteRectsForRange(Vector<IntRect>& rects,
           r.setX(selectionRect.x().toFloat());
         }
       }
-      rects.append(localToAbsoluteQuad(r).enclosingBoundingBox());
+      rects.push_back(localToAbsoluteQuad(r).enclosingBoundingBox());
     } else {
       // FIXME: This code is wrong. It's converting local to absolute twice.
       // http://webkit.org/b/65722
       FloatRect rect = localQuadForTextBox(box, start, end, useSelectionHeight);
       if (!rect.isZero())
-        rects.append(localToAbsoluteQuad(rect).enclosingBoundingBox());
+        rects.push_back(localToAbsoluteQuad(rect).enclosingBoundingBox());
     }
   }
 }
@@ -449,9 +449,9 @@ void LayoutText::quads(Vector<FloatQuad>& quads,
         boundaries.setHeight(ellipsisRect.maxY() - boundaries.y());
     }
     if (localOrAbsolute == AbsoluteQuads)
-      quads.append(localToAbsoluteQuad(boundaries, mode));
+      quads.push_back(localToAbsoluteQuad(boundaries, mode));
     else
-      quads.append(boundaries);
+      quads.push_back(boundaries);
   }
 }
 
@@ -499,11 +499,11 @@ void LayoutText::absoluteQuadsForRange(Vector<FloatQuad>& quads,
           r.setX(selectionRect.x());
         }
       }
-      quads.append(localToAbsoluteQuad(FloatRect(r)));
+      quads.push_back(localToAbsoluteQuad(FloatRect(r)));
     } else {
       FloatRect rect = localQuadForTextBox(box, start, end, useSelectionHeight);
       if (!rect.isZero())
-        quads.append(localToAbsoluteQuad(rect));
+        quads.push_back(localToAbsoluteQuad(rect));
     }
   }
 }

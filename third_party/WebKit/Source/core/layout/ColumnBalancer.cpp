@@ -292,7 +292,7 @@ void InitialColumnHeightFinder::addContentRun(
         columnSet().newFragmentainerGroupsAllowed())
       return;
   }
-  m_contentRuns.append(ContentRun(endOffsetInFlowThread));
+  m_contentRuns.push_back(ContentRun(endOffsetInFlowThread));
 }
 
 unsigned InitialColumnHeightFinder::contentRunIndexWithTallestColumns() const {

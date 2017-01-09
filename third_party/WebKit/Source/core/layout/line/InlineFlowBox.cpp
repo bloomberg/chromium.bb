@@ -1574,7 +1574,7 @@ void InlineFlowBox::collectLeafBoxesInLogicalOrder(
   for (; leaf; leaf = leaf->nextLeafChild()) {
     minLevel = std::min(minLevel, leaf->bidiLevel());
     maxLevel = std::max(maxLevel, leaf->bidiLevel());
-    leafBoxesInLogicalOrder.append(leaf);
+    leafBoxesInLogicalOrder.push_back(leaf);
   }
 
   if (getLineLayoutItem().style()->rtlOrdering() == EOrder::Visual)

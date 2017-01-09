@@ -71,7 +71,7 @@ void LayoutGrid::Grid::insert(LayoutBox& child, const GridArea& area) {
 
   for (const auto& row : area.rows) {
     for (const auto& column : area.columns)
-      m_grid[row][column].append(&child);
+      m_grid[row][column].push_back(&child);
   }
 
   setGridItemArea(child, area);
@@ -908,9 +908,9 @@ void LayoutGrid::computeUsedBreadthOfGridTracks(
     }
 
     if (trackSize.isContentSized())
-      sizingData.contentSizedTracksIndex.append(i);
+      sizingData.contentSizedTracksIndex.push_back(i);
     if (trackSize.maxTrackBreadth().isFlex())
-      flexibleSizedTracksIndex.append(i);
+      flexibleSizedTracksIndex.push_back(i);
   }
 
   // 2. Resolve content-based TrackSizingFunctions.
@@ -1161,7 +1161,7 @@ double LayoutGrid::findFlexFactorUnitSize(
     if (!trackSize.maxTrackBreadth().isFlex()) {
       leftOverSpace -= tracks[trackIndex].baseSize();
     } else {
-      flexibleTracksIndexes.append(trackIndex);
+      flexibleTracksIndexes.push_back(trackIndex);
       flexFactorSum += trackSize.maxTrackBreadth().flex();
     }
   }
@@ -1537,7 +1537,7 @@ void LayoutGrid::resolveContentBasedTrackSizingFunctions(
                 direction, span, *gridItem, track, sizingData);
           } else if (!spanningItemCrossesFlexibleSizedTracks(span, direction,
                                                              sizingData)) {
-            sizingData.itemsSortedByIncreasingSpan.append(
+            sizingData.itemsSortedByIncreasingSpan.push_back(
                 GridItemWithSpan(*gridItem, span));
           }
         }
@@ -1781,11 +1781,11 @@ void LayoutGrid::resolveContentBasedTrackSizingFunctionsForItems(
       if (!shouldProcessTrackForTrackSizeComputationPhase(phase, trackSize))
         continue;
 
-      sizingData.filteredTracks.append(&track);
+      sizingData.filteredTracks.push_back(&track);
 
       if (trackShouldGrowBeyondGrowthLimitsForTrackSizeComputationPhase(
               phase, trackSize))
-        sizingData.growBeyondGrowthLimitsTracks.append(&track);
+        sizingData.growBeyondGrowthLimitsTracks.push_back(&track);
     }
 
     if (sizingData.filteredTracks.isEmpty())
@@ -2127,9 +2127,9 @@ void LayoutGrid::placeItemsOnGrid(LayoutGrid::Grid& grid,
           (autoPlacementMajorAxisDirection() == ForColumns) ? area.columns
                                                             : area.rows;
       if (majorAxisPositions.isIndefinite())
-        autoMajorAxisAutoGridItems.append(child);
+        autoMajorAxisAutoGridItems.push_back(child);
       else
-        specifiedMajorAxisAutoGridItems.append(child);
+        specifiedMajorAxisAutoGridItems.push_back(child);
       continue;
     }
     grid.insert(*child, area);
@@ -2436,8 +2436,9 @@ Vector<LayoutUnit> LayoutGrid::trackSizesForComputedStyle(
                        : LayoutUnit();
   tracks.reserveCapacity(numPositions - 1);
   for (size_t i = 0; i < numPositions - 2; ++i)
-    tracks.append(positions[i + 1] - positions[i] - offsetBetweenTracks - gap);
-  tracks.append(positions[numPositions - 1] - positions[numPositions - 2]);
+    tracks.push_back(positions[i + 1] - positions[i] - offsetBetweenTracks -
+                     gap);
+  tracks.push_back(positions[numPositions - 1] - positions[numPositions - 2]);
 
   if (!hasCollapsedTracks)
     return tracks;
@@ -2490,7 +2491,7 @@ void LayoutGrid::applyStretchAlignmentToTracksIfNeeded(
   for (unsigned i = 0; i < tracks.size(); ++i) {
     const GridTrackSize& trackSize = gridTrackSize(direction, i, sizingData);
     if (trackSize.hasAutoMaxTrackBreadth())
-      autoSizedTracksIndex.append(i);
+      autoSizedTracksIndex.push_back(i);
   }
 
   unsigned numberOfAutoSizedTracks = autoSizedTracksIndex.size();
@@ -2582,7 +2583,7 @@ void LayoutGrid::layoutGridItems(GridSizingData& sizingData) {
         gridAreaLogicalPosition(area),
         LayoutSize(childGridAreaWidth, childGridAreaHeight));
     if (!gridAreaRect.contains(child->frameRect()))
-      m_gridItemsOverflowingGridArea.append(child);
+      m_gridItemsOverflowingGridArea.push_back(child);
   }
 }
 

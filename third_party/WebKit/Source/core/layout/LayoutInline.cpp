@@ -420,7 +420,7 @@ void LayoutInline::splitInlines(LayoutBlockFlow* fromBlock,
   for (LayoutObject* o = this; o != fromBlock; o = o->parent()) {
     topMostInline = toLayoutInline(o);
     if (inlinesToClone.size() < cMaxSplitDepth)
-      inlinesToClone.append(topMostInline);
+      inlinesToClone.push_back(topMostInline);
     // Keep walking up the chain to ensure |topMostInline| is a child of
     // |fromBlock|, to avoid assertion failure when |fromBlock|'s children are
     // moved to |toBlock| below.
@@ -721,7 +721,7 @@ class AbsoluteRectsGeneratorContext {
     IntRect intRect = enclosingIntRect(rect);
     intRect.move(m_accumulatedOffset.x().toInt(),
                  m_accumulatedOffset.y().toInt());
-    m_rects.append(intRect);
+    m_rects.push_back(intRect);
   }
 
  private:
@@ -765,7 +765,7 @@ class AbsoluteQuadsGeneratorContext {
   }
 
   void operator()(const FloatRect& rect) {
-    m_quads.append(m_geometryMap.absoluteRect(rect));
+    m_quads.push_back(m_geometryMap.absoluteRect(rect));
   }
   void operator()(const LayoutRect& rect) { operator()(FloatRect(rect)); }
 
@@ -1420,7 +1420,7 @@ class AbsoluteLayoutRectsGeneratorContext {
   void operator()(const LayoutRect& rect) {
     LayoutRect layoutRect(rect);
     layoutRect.moveBy(m_accumulatedOffset);
-    m_rects.append(layoutRect);
+    m_rects.push_back(layoutRect);
   }
 
  private:
@@ -1502,7 +1502,7 @@ void LayoutInline::addAnnotatedRegions(Vector<AnnotatedRegionValue>& regions) {
   region.bounds.setX(LayoutUnit(absPos.x() + region.bounds.x()));
   region.bounds.setY(LayoutUnit(absPos.y() + region.bounds.y()));
 
-  regions.append(region);
+  regions.push_back(region);
 }
 
 void LayoutInline::invalidateDisplayItemClients(

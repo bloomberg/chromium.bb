@@ -216,7 +216,7 @@ void LayoutTable::addChild(LayoutObject* child, LayoutObject* beforeChild) {
 
 void LayoutTable::addCaption(const LayoutTableCaption* caption) {
   ASSERT(m_captions.find(caption) == kNotFound);
-  m_captions.append(const_cast<LayoutTableCaption*>(caption));
+  m_captions.push_back(const_cast<LayoutTableCaption*>(caption));
 }
 
 void LayoutTable::removeCaption(const LayoutTableCaption* oldCaption) {
@@ -960,7 +960,7 @@ void LayoutTable::splitEffectiveColumn(unsigned index, unsigned firstSpan) {
 
 void LayoutTable::appendEffectiveColumn(unsigned span) {
   unsigned newColumnIndex = m_effectiveColumns.size();
-  m_effectiveColumns.append(span);
+  m_effectiveColumns.push_back(span);
 
   // Unless the table has cell(s) with colspan that exceed the number of columns
   // afforded by the other rows in the table we can use the fast path when
@@ -1006,7 +1006,7 @@ void LayoutTable::updateColumnCache() const {
        columnLayoutObject = columnLayoutObject->nextColumn()) {
     if (columnLayoutObject->isTableColumnGroupWithColumnChildren())
       continue;
-    m_columnLayoutObjects.append(columnLayoutObject);
+    m_columnLayoutObjects.push_back(columnLayoutObject);
   }
   m_columnLayoutObjectsValid = true;
 }

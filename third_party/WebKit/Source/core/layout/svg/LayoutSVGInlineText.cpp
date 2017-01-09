@@ -309,7 +309,7 @@ void LayoutSVGInlineText::addMetricsFromRun(const TextRun& run,
     bool currentCharacterIsWhiteSpace = run[characterIndex] == ' ';
     if (!preserveWhiteSpace && lastCharacterWasWhiteSpace &&
         currentCharacterIsWhiteSpace) {
-      m_metrics.append(SVGTextMetrics(SVGTextMetrics::SkippedSpaceMetrics));
+      m_metrics.push_back(SVGTextMetrics(SVGTextMetrics::SkippedSpaceMetrics));
       characterIndex++;
       continue;
     }
@@ -317,7 +317,7 @@ void LayoutSVGInlineText::addMetricsFromRun(const TextRun& run,
     unsigned length = isValidSurrogatePair(run, characterIndex) ? 2 : 1;
     float width = charRanges[characterIndex].width() / m_scalingFactor;
 
-    m_metrics.append(SVGTextMetrics(length, width, cachedFontHeight));
+    m_metrics.push_back(SVGTextMetrics(length, width, cachedFontHeight));
 
     lastCharacterWasWhiteSpace = currentCharacterIsWhiteSpace;
     characterIndex += length;

@@ -2441,7 +2441,7 @@ void LayoutObject::addLayerHitTestRects(LayerHitTestRects& layerRects,
     iterValue = &iter->value;
   for (size_t i = 0; i < ownRects.size(); i++) {
     if (!containerRect.contains(ownRects[i])) {
-      iterValue->append(ownRects[i]);
+      iterValue->push_back(ownRects[i]);
       if (iterValue->size() > maxRectsPerLayer) {
         // Just mark the entire layer instead, and switch to walking the layer
         // tree instead of the layout tree.
@@ -3130,7 +3130,7 @@ void LayoutObject::addAnnotatedRegions(Vector<AnnotatedRegionValue>& regions) {
   AnnotatedRegionValue region;
   region.draggable = style()->getDraggableRegionMode() == DraggableRegionDrag;
   region.bounds = LayoutRect(absBounds);
-  regions.append(region);
+  regions.push_back(region);
 }
 
 bool LayoutObject::willRenderImage() {

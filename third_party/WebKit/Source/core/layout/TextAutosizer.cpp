@@ -389,7 +389,7 @@ void TextAutosizer::prepareClusterStack(LayoutObject* layoutObject) {
     m_blocksThatHaveBegunLayout.add(block);
 #endif
     if (Cluster* cluster = maybeCreateCluster(block))
-      m_clusterStack.append(WTF::wrapUnique(cluster));
+      m_clusterStack.push_back(WTF::wrapUnique(cluster));
   }
 }
 
@@ -403,7 +403,7 @@ void TextAutosizer::beginLayout(LayoutBlock* block,
   ASSERT(!m_clusterStack.isEmpty() || block->isLayoutView());
 
   if (Cluster* cluster = maybeCreateCluster(block))
-    m_clusterStack.append(WTF::wrapUnique(cluster));
+    m_clusterStack.push_back(WTF::wrapUnique(cluster));
 
   ASSERT(!m_clusterStack.isEmpty());
 
@@ -1170,7 +1170,7 @@ void TextAutosizer::applyMultiplier(LayoutObject* layoutObject,
       // Don't free currentStyle until the end of the layout pass. This allows
       // other parts of the system to safely hold raw ComputedStyle* pointers
       // during layout, e.g. BreakingContext::m_currentStyle.
-      m_stylesRetainedDuringLayout.append(&currentStyle);
+      m_stylesRetainedDuringLayout.push_back(&currentStyle);
 
       layoutObject->setStyleInternal(style.release());
       DCHECK(!layouter || layoutObject->isDescendantOf(&layouter->root()));

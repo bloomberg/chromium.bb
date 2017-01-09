@@ -98,7 +98,7 @@ static inline void collectDescendantTextNodes(
   for (LayoutObject* descendant = textRoot.firstChild(); descendant;
        descendant = descendant->nextInPreOrder(&textRoot)) {
     if (descendant->isSVGInlineText())
-      descendantTextNodes.append(toLayoutSVGInlineText(descendant));
+      descendantTextNodes.push_back(toLayoutSVGInlineText(descendant));
   }
 }
 
@@ -346,7 +346,7 @@ PositionWithAffinity LayoutSVGText::positionForPoint(
 
 void LayoutSVGText::absoluteQuads(Vector<FloatQuad>& quads,
                                   MapCoordinatesFlags mode) const {
-  quads.append(localToAbsoluteQuad(strokeBoundingBox(), mode));
+  quads.push_back(localToAbsoluteQuad(strokeBoundingBox(), mode));
 }
 
 void LayoutSVGText::paint(const PaintInfo& paintInfo,
@@ -387,7 +387,7 @@ FloatRect LayoutSVGText::visualRectInLocalSVGCoordinates() const {
 void LayoutSVGText::addOutlineRects(Vector<LayoutRect>& rects,
                                     const LayoutPoint&,
                                     IncludeBlockVisualOverflowOrNot) const {
-  rects.append(LayoutRect(objectBoundingBox()));
+  rects.push_back(LayoutRect(objectBoundingBox()));
 }
 
 bool LayoutSVGText::isObjectBoundingBoxValid() const {

@@ -1060,7 +1060,7 @@ void LayoutBlock::removePositionedObjects(
       if (p)
         p->setChildNeedsLayout();
 
-      deadObjects.append(positionedObject);
+      deadObjects.push_back(positionedObject);
     }
   }
 
@@ -1871,7 +1871,7 @@ void LayoutBlock::addOutlineRects(
     const LayoutPoint& additionalOffset,
     IncludeBlockVisualOverflowOrNot includeBlockOverflows) const {
   if (!isAnonymous())  // For anonymous blocks, the children add outline rects.
-    rects.append(LayoutRect(additionalOffset, size()));
+    rects.push_back(LayoutRect(additionalOffset, size()));
 
   if (includeBlockOverflows == IncludeBlockVisualOverflow &&
       !hasOverflowClip() && !hasControlClip()) {

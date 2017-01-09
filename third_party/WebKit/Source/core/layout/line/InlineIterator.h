@@ -661,8 +661,8 @@ static inline BidiRun* addPlaceholderRunForIsolatedInline(
   // FIXME: isolatedRuns() could be a hash of object->run and then we could
   // cheaply ASSERT here that we didn't create multiple objects for the same
   // inline.
-  resolver.isolatedRuns().append(BidiIsolatedRun(obj, pos, root, *isolatedRun,
-                                                 resolver.context()->level()));
+  resolver.isolatedRuns().push_back(BidiIsolatedRun(
+      obj, pos, root, *isolatedRun, resolver.context()->level()));
   return isolatedRun;
 }
 

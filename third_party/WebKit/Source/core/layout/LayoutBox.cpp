@@ -700,7 +700,7 @@ void LayoutBox::scrollRectToVisible(const LayoutRect& rect,
 
 void LayoutBox::absoluteRects(Vector<IntRect>& rects,
                               const LayoutPoint& accumulatedOffset) const {
-  rects.append(pixelSnappedIntRect(accumulatedOffset, size()));
+  rects.push_back(pixelSnappedIntRect(accumulatedOffset, size()));
 }
 
 void LayoutBox::absoluteQuads(Vector<FloatQuad>& quads,
@@ -709,7 +709,7 @@ void LayoutBox::absoluteQuads(Vector<FloatQuad>& quads,
     flowThread->absoluteQuadsForDescendant(*this, quads, mode);
     return;
   }
-  quads.append(
+  quads.push_back(
       localToAbsoluteQuad(FloatRect(0, 0, m_frameRect.width().toFloat(),
                                     m_frameRect.height().toFloat()),
                           mode));
@@ -906,7 +906,7 @@ LayoutRect LayoutBox::backgroundRect(BackgroundRectType rectType) const {
 void LayoutBox::addOutlineRects(Vector<LayoutRect>& rects,
                                 const LayoutPoint& additionalOffset,
                                 IncludeBlockVisualOverflowOrNot) const {
-  rects.append(LayoutRect(additionalOffset, size()));
+  rects.push_back(LayoutRect(additionalOffset, size()));
 }
 
 bool LayoutBox::canResize() const {
@@ -929,7 +929,7 @@ void LayoutBox::addLayerHitTestRects(LayerHitTestRects& layerRects,
 void LayoutBox::computeSelfHitTestRects(Vector<LayoutRect>& rects,
                                         const LayoutPoint& layerOffset) const {
   if (!size().isEmpty())
-    rects.append(LayoutRect(layerOffset, size()));
+    rects.push_back(LayoutRect(layerOffset, size()));
 }
 
 int LayoutBox::verticalScrollbarWidth() const {

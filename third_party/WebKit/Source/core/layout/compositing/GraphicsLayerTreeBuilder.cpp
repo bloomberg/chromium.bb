@@ -85,7 +85,7 @@ void GraphicsLayerTreeBuilder::rebuild(PaintLayer& layer, AncestorInfo info) {
     // which needs to get parented.
     if (hasCompositedLayerMapping &&
         currentCompositedLayerMapping->foregroundLayer())
-      infoForChildren.childLayersOfEnclosingCompositedLayer->append(
+      infoForChildren.childLayersOfEnclosingCompositedLayer->push_back(
           currentCompositedLayerMapping->foregroundLayer());
   }
 
@@ -104,7 +104,7 @@ void GraphicsLayerTreeBuilder::rebuild(PaintLayer& layer, AncestorInfo info) {
       currentCompositedLayerMapping->setSublayers(layerChildren);
 
     if (shouldAppendLayer(layer))
-      info.childLayersOfEnclosingCompositedLayer->append(
+      info.childLayersOfEnclosingCompositedLayer->push_back(
           currentCompositedLayerMapping->childForSuperlayers());
   }
 
@@ -114,7 +114,7 @@ void GraphicsLayerTreeBuilder::rebuild(PaintLayer& layer, AncestorInfo info) {
           ->compositedLayerMapping()
           ->needsToReparentOverflowControls() &&
       layer.scrollParent()->getScrollableArea()->topmostScrollChild() == &layer)
-    info.childLayersOfEnclosingCompositedLayer->append(
+    info.childLayersOfEnclosingCompositedLayer->push_back(
         layer.scrollParent()
             ->compositedLayerMapping()
             ->detachLayerForOverflowControls(*info.enclosingCompositedLayer));

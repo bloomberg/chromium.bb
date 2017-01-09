@@ -30,13 +30,13 @@ class NGInlineNodeForTest : public NGInlineNode {
   void Append(const String& text, const ComputedStyle* style = nullptr) {
     unsigned start = text_content_.length();
     text_content_.append(text);
-    items_.append(NGLayoutInlineItem(start, start + text.length(), style));
+    items_.push_back(NGLayoutInlineItem(start, start + text.length(), style));
   }
 
   void Append(UChar character) {
     text_content_.append(character);
     unsigned end = text_content_.length();
-    items_.append(NGLayoutInlineItem(end - 1, end, nullptr));
+    items_.push_back(NGLayoutInlineItem(end - 1, end, nullptr));
     is_bidi_enabled_ = true;
   }
 
@@ -72,7 +72,7 @@ class NGInlineNodeTest : public ::testing::Test {
     line_builder.CreateFragments(&fragment_builder);
     NGPhysicalBoxFragment* fragment = fragment_builder.ToBoxFragment();
     for (const NGPhysicalFragment* child : fragment->Children()) {
-      fragments_out->append(toNGPhysicalTextFragment(child));
+      fragments_out->push_back(toNGPhysicalTextFragment(child));
     }
   }
 

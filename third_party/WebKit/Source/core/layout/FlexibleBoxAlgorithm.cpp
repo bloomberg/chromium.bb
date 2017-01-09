@@ -78,7 +78,7 @@ bool FlexLayoutAlgorithm::ComputeNextFlexLine(
             m_lineBreakLength &&
         lineHasInFlowItem)
       break;
-    lineItems.append(flexItem);
+    lineItems.push_back(flexItem);
     lineHasInFlowItem = true;
     sumFlexBaseSize += flexItem.flexBaseMarginBoxSize();
     totalFlexGrow += flexItem.box->style()->flexGrow();

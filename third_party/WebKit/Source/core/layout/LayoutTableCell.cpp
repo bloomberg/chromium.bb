@@ -1315,7 +1315,7 @@ static void addBorderStyle(LayoutTable::CollapsedBorderValues& borderValues,
     if (borderValues[i].isSameIgnoringColor(borderValue))
       return;
   }
-  borderValues.append(borderValue);
+  borderValues.push_back(borderValue);
 }
 
 void LayoutTableCell::collectBorderValues(

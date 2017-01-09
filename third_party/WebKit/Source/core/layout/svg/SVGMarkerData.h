@@ -56,7 +56,7 @@ class SVGMarkerData {
   }
 
   void pathIsDone() {
-    m_positions.append(
+    m_positions.push_back(
         MarkerPosition(EndMarker, m_origin, currentAngle(EndMarker)));
   }
 
@@ -121,7 +121,7 @@ class SVGMarkerData {
     // Record the marker for the previous element.
     if (m_elementIndex > 0) {
       SVGMarkerType markerType = m_elementIndex == 1 ? StartMarker : MidMarker;
-      m_positions.append(
+      m_positions.push_back(
           MarkerPosition(markerType, m_origin, currentAngle(markerType)));
     }
 

@@ -286,7 +286,7 @@ void LayoutTableSection::addCell(LayoutTableCell* cell, LayoutTableRow* row) {
       ensureCols(insertionRow + r, m_cCol + 1);
       CellStruct& c = cellAt(insertionRow + r, m_cCol);
       ASSERT(cell);
-      c.cells.append(cell);
+      c.cells.push_back(cell);
       checkThatVectorIsDOMOrdered(c.cells);
       // If cells overlap then we take the slow path for painting.
       if (c.cells.size() > 1)
@@ -649,7 +649,7 @@ void LayoutTableSection::distributeRowSpanHeightToRows(
   for (unsigned row = 0; row < m_grid.size(); row++) {
     if (rowHasOnlySpanningCells(row))
       count++;
-    rowsCountWithOnlySpanningCells.append(count);
+    rowsCountWithOnlySpanningCells.push_back(count);
   }
 
   for (unsigned i = 0; i < rowSpanCells.size(); i++) {
@@ -896,7 +896,7 @@ int LayoutTableSection::calcRowLogicalHeight() {
               std::max(indexOfFirstStretchableRow, rowIndexBelowCell);
         } else if (cell->rowSpan() > 1) {
           DCHECK(!rowSpanCells.contains(cell));
-          rowSpanCells.append(cell);
+          rowSpanCells.push_back(cell);
         }
 
         if (cell->hasOverrideLogicalContentHeight()) {

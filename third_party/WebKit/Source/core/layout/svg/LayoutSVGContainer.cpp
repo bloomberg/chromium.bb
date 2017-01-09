@@ -170,7 +170,7 @@ void LayoutSVGContainer::addOutlineRects(
     Vector<LayoutRect>& rects,
     const LayoutPoint&,
     IncludeBlockVisualOverflowOrNot) const {
-  rects.append(LayoutRect(visualRectInLocalSVGCoordinates()));
+  rects.push_back(LayoutRect(visualRectInLocalSVGCoordinates()));
 }
 
 void LayoutSVGContainer::updateCachedBoundaries() {

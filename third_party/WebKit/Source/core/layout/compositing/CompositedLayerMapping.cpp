@@ -893,7 +893,7 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(
       TRACE_LAYER_INVALIDATION(layers[i].paintLayer,
                                InspectorLayerInvalidationTrackingEvent::
                                    SquashingLayerGeometryWasUpdated);
-      layersNeedingPaintInvalidation.append(layers[i].paintLayer);
+      layersNeedingPaintInvalidation.push_back(layers[i].paintLayer);
     }
     layers[i].offsetFromLayoutObject = newOffsetFromLayoutObject;
     layers[i].offsetFromLayoutObjectSet = true;
@@ -3341,7 +3341,7 @@ bool CompositedLayerMapping::updateSquashingLayerAssignment(
   } else {
     // Must invalidate before adding the squashed layer to the mapping.
     compositor()->paintInvalidationOnCompositingChange(squashedLayer);
-    m_squashedLayers.append(paintInfo);
+    m_squashedLayers.push_back(paintInfo);
   }
   squashedLayer->setGroupedMapping(
       this, PaintLayer::InvalidateLayerAndRemoveFromMapping);
@@ -3390,7 +3390,7 @@ void CompositedLayerMapping::finishAccumulatingSquashingLayers(
       if (invalidateLayerIfNoPrecedingEntry(i))
         m_squashedLayers[i].paintLayer->setGroupedMapping(
             nullptr, PaintLayer::DoNotInvalidateLayerAndRemoveFromMapping);
-      layersNeedingPaintInvalidation.append(m_squashedLayers[i].paintLayer);
+      layersNeedingPaintInvalidation.push_back(m_squashedLayers[i].paintLayer);
     }
 
     m_squashedLayers.remove(nextSquashedLayerIndex,

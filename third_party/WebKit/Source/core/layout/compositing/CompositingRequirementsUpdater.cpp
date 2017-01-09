@@ -38,7 +38,7 @@ namespace blink {
 class OverlapMapContainer {
  public:
   void add(const IntRect& bounds) {
-    m_layerRects.append(bounds);
+    m_layerRects.push_back(bounds);
     m_boundingBox.unite(bounds);
   }
 
@@ -321,7 +321,7 @@ void CompositingRequirementsUpdater::updateRecursive(
       // while we're iterating, so we have to store it for later removal.
       if (unclippedDescendant->layoutObject()->containingBlock() ==
           layer->layoutObject()) {
-        unclippedDescendantsToRemove.append(i);
+        unclippedDescendantsToRemove.push_back(i);
         continue;
       }
       if (layer->scrollsWithRespectTo(unclippedDescendant))
@@ -339,7 +339,7 @@ void CompositingRequirementsUpdater::updateRecursive(
       // TODO(schenney): We only need to promote when the clipParent is not a
       // descendant of the ancestor scroller, which we do not check for here.
       // Hence we might be promoting needlessly.
-      unclippedDescendants.append(layer);
+      unclippedDescendants.push_back(layer);
     }
   }
 

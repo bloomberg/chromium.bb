@@ -193,7 +193,7 @@ class CORE_EXPORT MultiColumnFragmentainerGroupList {
   }
 
   void append(const MultiColumnFragmentainerGroup& group) {
-    m_groups.append(group);
+    m_groups.push_back(group);
   }
   void shrink(size_t size) { m_groups.shrink(size); }
 

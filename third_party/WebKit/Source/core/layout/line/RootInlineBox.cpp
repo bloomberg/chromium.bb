@@ -613,10 +613,10 @@ void RootInlineBox::ascentAndDescentForBox(
                                                  ->lineHeight()
                                                  .isNegative() &&
                                              includeLeading)) {
-    usedFonts->append(box->getLineLayoutItem()
-                          .style(isFirstLineStyle())
-                          ->font()
-                          .primaryFont());
+    usedFonts->push_back(box->getLineLayoutItem()
+                             .style(isFirstLineStyle())
+                             ->font()
+                             .primaryFont());
     for (size_t i = 0; i < usedFonts->size(); ++i) {
       const FontMetrics& fontMetrics = usedFonts->at(i)->getFontMetrics();
       int usedFontAscent = fontMetrics.ascent(baselineType());
