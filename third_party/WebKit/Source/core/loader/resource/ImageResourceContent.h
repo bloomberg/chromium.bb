@@ -113,18 +113,35 @@ class CORE_EXPORT ImageResourceContent final
     m_isRefetchableDataFromDiskCache = false;
   }
 
-  // For ImageResource only.
-  void setImageResourceInfo(ImageResourceInfo*);
-  enum ClearImageOption { ClearExistingImage, KeepExistingImage };
+  // The following public methods should be called from ImageResource only.
+
+  // updateImage() is the single control point of image content modification
+  // from ImageResource that all image updates should call.
+  // We clear and/or update images in this single method
+  // (controlled by UpdateImageOption) rather than providing separate methods,
+  // in order to centralize state changes and
+  // not to expose the state inbetween to ImageResource.
+  enum UpdateImageOption {
+    // Updates the image (including placeholder and decode error handling
+    // and notifying observers) if needed.
+    UpdateImage,
+
+    // Clears the image and then updates the image if needed.
+    ClearAndUpdateImage,
+
+    // Clears the image and always notifies observers (without updating).
+    ClearImageAndNotifyObservers,
+  };
   void updateImage(PassRefPtr<SharedBuffer>,
-                   ClearImageOption,
+                   UpdateImageOption,
                    bool allDataReceived);
-  enum NotifyFinishOption { ShouldNotifyFinish, DoNotNotifyFinish };
-  void clearImage();
-  void clearImageAndNotifyObservers(NotifyFinishOption);
-  ResourcePriority priorityFromObservers() const;
+
   void destroyDecodedData();
   void doResetAnimation();
+
+  void setImageResourceInfo(ImageResourceInfo*);
+
+  ResourcePriority priorityFromObservers() const;
   PassRefPtr<const SharedBuffer> resourceBuffer() const;
   bool shouldUpdateImageImmediately() const;
   bool hasObservers() const {
@@ -144,6 +161,9 @@ class CORE_EXPORT ImageResourceContent final
   void changedInRect(const blink::Image*, const IntRect&) override;
 
   PassRefPtr<Image> createImage();
+  void clearImage();
+
+  enum NotifyFinishOption { ShouldNotifyFinish, DoNotNotifyFinish };
 
   // If not null, changeRect is the changed part of the image.
   void notifyObservers(NotifyFinishOption, const IntRect* changeRect = nullptr);

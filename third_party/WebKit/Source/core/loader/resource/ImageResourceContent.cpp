@@ -297,59 +297,69 @@ void ImageResourceContent::clearImage() {
   m_sizeAvailable = Image::SizeUnavailable;
 }
 
-void ImageResourceContent::clearImageAndNotifyObservers(
-    NotifyFinishOption notifyingFinishOption) {
-  clearImage();
-  notifyObservers(notifyingFinishOption);
-}
-
 void ImageResourceContent::updateImage(PassRefPtr<SharedBuffer> data,
-                                       ClearImageOption clearImageOption,
+                                       UpdateImageOption updateImageOption,
                                        bool allDataReceived) {
   TRACE_EVENT0("blink", "ImageResourceContent::updateImage");
 
-  if (clearImageOption == ImageResourceContent::ClearExistingImage) {
-    clearImage();
-  }
-
-  // Have the image update its data from its internal buffer. It will not do
-  // anything now, but will delay decoding until queried for info (like size or
-  // specific image frames).
-  if (data) {
-    if (!m_image)
-      m_image = createImage();
-    DCHECK(m_image);
-    m_sizeAvailable = m_image->setData(std::move(data), allDataReceived);
-  }
-
-  // Go ahead and tell our observers to try to draw if we have either received
-  // all the data or the size is known. Each chunk from the network causes
-  // observers to repaint, which will force that chunk to decode.
-  if (m_sizeAvailable == Image::SizeUnavailable && !allDataReceived)
-    return;
-
-  if (m_info->isPlaceholder() && allDataReceived && m_image &&
-      !m_image->isNull()) {
-    if (m_sizeAvailable == Image::SizeAvailable) {
-      // TODO(sclittle): Show the original image if the response consists of the
-      // entire image, such as if the entire image response body is smaller than
-      // the requested range.
-      IntSize dimensions = m_image->size();
-
+  // Clears the existing image, if instructed by |updateImageOption|.
+  switch (updateImageOption) {
+    case ClearAndUpdateImage:
+    case ClearImageAndNotifyObservers:
       clearImage();
-      m_image = PlaceholderImage::create(this, dimensions);
-    } else {
-      // Clear the image so that it gets treated like a decoding error, since
-      // the attempt to build a placeholder image failed.
-      clearImage();
-    }
+      break;
+    case UpdateImage:
+      break;
   }
 
-  if (!m_image || m_image->isNull()) {
-    clearImage();
-    m_info->decodeError(allDataReceived);
+  // Updates the image, if instructed by |updateImageOption|.
+  switch (updateImageOption) {
+    case ClearImageAndNotifyObservers:
+      DCHECK(!data);
+      break;
+
+    case UpdateImage:
+    case ClearAndUpdateImage:
+      // Have the image update its data from its internal buffer. It will not do
+      // anything now, but will delay decoding until queried for info (like size
+      // or specific image frames).
+      if (data) {
+        if (!m_image)
+          m_image = createImage();
+        DCHECK(m_image);
+        m_sizeAvailable = m_image->setData(std::move(data), allDataReceived);
+      }
+
+      // Go ahead and tell our observers to try to draw if we have either
+      // received all the data or the size is known. Each chunk from the network
+      // causes observers to repaint, which will force that chunk to decode.
+      if (m_sizeAvailable == Image::SizeUnavailable && !allDataReceived)
+        return;
+
+      if (m_info->isPlaceholder() && allDataReceived && m_image &&
+          !m_image->isNull()) {
+        if (m_sizeAvailable == Image::SizeAvailable) {
+          // TODO(sclittle): Show the original image if the response consists of
+          // the entire image, such as if the entire image response body is
+          // smaller than the requested range.
+          IntSize dimensions = m_image->size();
+
+          clearImage();
+          m_image = PlaceholderImage::create(this, dimensions);
+        } else {
+          // Clear the image so that it gets treated like a decoding error,
+          // since the attempt to build a placeholder image failed.
+          clearImage();
+        }
+      }
+      if (!m_image || m_image->isNull()) {
+        clearImage();
+        m_info->decodeError(allDataReceived);
+      }
+      break;
   }
 
+  // Notifies the observers.
   // It would be nice to only redraw the decoded band of the image, but with the
   // current design (decoding delayed until painting) that seems hard.
   notifyObservers(allDataReceived ? ShouldNotifyFinish : DoNotNotifyFinish);

@@ -237,7 +237,10 @@ void ImageResource::didAddClient(ResourceClient* client) {
 }
 
 void ImageResource::destroyDecodedDataForFailedRevalidation() {
-  getContent()->clearImage();
+  // Clears the image, as we must create a new image for the failed
+  // revalidation response.
+  getContent()->updateImage(nullptr, ImageResourceContent::ClearAndUpdateImage,
+                            false);
   setDecodedSize(0);
 }
 
@@ -282,8 +285,8 @@ void ImageResource::appendData(const char* data, size_t length) {
 
     // Update the image immediately if needed.
     if (getContent()->shouldUpdateImageImmediately()) {
-      getContent()->updateImage(this->data(),
-                                ImageResourceContent::KeepExistingImage, false);
+      getContent()->updateImage(this->data(), ImageResourceContent::UpdateImage,
+                                false);
       return;
     }
 
@@ -311,8 +314,8 @@ void ImageResource::flushImageIfNeeded(TimerBase*) {
   // to call |updateImage()|.
   if (isLoading()) {
     m_lastFlushTime = WTF::monotonicallyIncreasingTime();
-    getContent()->updateImage(this->data(),
-                              ImageResourceContent::KeepExistingImage, false);
+    getContent()->updateImage(this->data(), ImageResourceContent::UpdateImage,
+                              false);
   }
 }
 
@@ -337,7 +340,7 @@ void ImageResource::decodeError(bool allDataReceived) {
 }
 
 void ImageResource::updateImageAndClearBuffer() {
-  getContent()->updateImage(data(), ImageResourceContent::ClearExistingImage,
+  getContent()->updateImage(data(), ImageResourceContent::ClearAndUpdateImage,
                             true);
   clearData();
 }
@@ -348,8 +351,7 @@ void ImageResource::finish(double loadFinishTime) {
     if (data())
       updateImageAndClearBuffer();
   } else {
-    getContent()->updateImage(data(), ImageResourceContent::KeepExistingImage,
-                              true);
+    getContent()->updateImage(data(), ImageResourceContent::UpdateImage, true);
     // As encoded image data can be created from m_image  (see
     // ImageResource::resourceBuffer(), we don't have to keep m_data. Let's
     // clear this. As for the lifetimes of m_image and m_data, see this
@@ -367,8 +369,8 @@ void ImageResource::error(const ResourceError& error) {
   // is really needed, or remove it otherwise.
   setEncodedSize(0);
   Resource::error(error);
-  getContent()->clearImageAndNotifyObservers(
-      ImageResourceContent::ShouldNotifyFinish);
+  getContent()->updateImage(
+      nullptr, ImageResourceContent::ClearImageAndNotifyObservers, true);
 }
 
 void ImageResource::responseReceived(
@@ -437,8 +439,8 @@ void ImageResource::reloadIfLoFiOrPlaceholderImage(
   } else {
     clearData();
     setEncodedSize(0);
-    getContent()->clearImageAndNotifyObservers(
-        ImageResourceContent::DoNotNotifyFinish);
+    getContent()->updateImage(
+        nullptr, ImageResourceContent::ClearImageAndNotifyObservers, false);
   }
 
   setStatus(NotStarted);
