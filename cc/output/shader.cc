@@ -30,6 +30,15 @@ std::string StripLambda(const char(&shader)[size]) {
 // handling them correctly. StipLambda removes this.
 #define SHADER0(Src) StripLambda(#Src)
 
+#define HDR(x)                       \
+  do {                               \
+    header += x + std::string("\n"); \
+  } while (0)
+#define SRC(x)                                           \
+  do {                                                   \
+    source += std::string("  ") + x + std::string("\n"); \
+  } while (0)
+
 using gpu::gles2::GLES2Interface;
 
 namespace cc {
@@ -168,13 +177,18 @@ void VertexShaderBase::Init(GLES2Interface* context,
   std::vector<const char*> uniforms;
   std::vector<int> locations;
 
-  if (has_tex_transform_)
-    uniforms.push_back("texTransform");
-  if (has_vertex_tex_transform_)
-    uniforms.push_back("vertexTexTransform");
-  if (has_tex_matrix_)
-    uniforms.push_back("texMatrix");
-  if (has_ya_uv_tex_scale_offset_) {
+  switch (tex_coord_transform_) {
+    case TEX_COORD_TRANSFORM_NONE:
+      break;
+    case TEX_COORD_TRANSFORM_VEC4:
+    case TEX_COORD_TRANSFORM_TRANSLATED_VEC4:
+      uniforms.push_back("vertexTexTransform");
+      break;
+    case TEX_COORD_TRANSFORM_MATRIX:
+      uniforms.push_back("texMatrix");
+      break;
+  }
+  if (is_ya_uv_) {
     uniforms.push_back("yaTexScale");
     uniforms.push_back("yaTexOffset");
     uniforms.push_back("uvTexScale");
@@ -188,7 +202,7 @@ void VertexShaderBase::Init(GLES2Interface* context,
     uniforms.push_back("viewport");
     uniforms.push_back("edge");
   }
-  if (has_quad_)
+  if (position_source_ == POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM)
     uniforms.push_back("quad");
 
   locations.resize(uniforms.size());
@@ -197,13 +211,18 @@ void VertexShaderBase::Init(GLES2Interface* context,
                              locations.data(), base_uniform_index);
 
   size_t index = 0;
-  if (has_tex_transform_)
-    tex_transform_location_ = locations[index++];
-  if (has_vertex_tex_transform_)
-    vertex_tex_transform_location_ = locations[index++];
-  if (has_tex_matrix_)
-    tex_matrix_location_ = locations[index++];
-  if (has_ya_uv_tex_scale_offset_) {
+  switch (tex_coord_transform_) {
+    case TEX_COORD_TRANSFORM_NONE:
+      break;
+    case TEX_COORD_TRANSFORM_VEC4:
+    case TEX_COORD_TRANSFORM_TRANSLATED_VEC4:
+      vertex_tex_transform_location_ = locations[index++];
+      break;
+    case TEX_COORD_TRANSFORM_MATRIX:
+      tex_matrix_location_ = locations[index++];
+      break;
+  }
+  if (is_ya_uv_) {
     ya_tex_scale_location_ = locations[index++];
     ya_tex_offset_location_ = locations[index++];
     uv_tex_scale_location_ = locations[index++];
@@ -217,7 +236,7 @@ void VertexShaderBase::Init(GLES2Interface* context,
     viewport_location_ = locations[index++];
     edge_location_ = locations[index++];
   }
-  if (has_quad_)
+  if (position_source_ == POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM)
     quad_location_ = locations[index++];
 }
 
@@ -226,7 +245,7 @@ void VertexShaderBase::FillLocations(ShaderLocations* locations) const {
   locations->edge = edge_location();
   locations->viewport = viewport_location();
   locations->matrix = matrix_location();
-  locations->tex_transform = tex_transform_location();
+  locations->vertex_tex_transform = vertex_tex_transform_location();
 }
 
 std::string VertexShaderBase::GetShaderString() const {
@@ -234,237 +253,145 @@ std::string VertexShaderBase::GetShaderString() const {
   // we are unlikely to be vertex shader bound when drawing large quads.
   // Also, some vertex shaders mutate the texture coordinate in such a
   // way that the effective precision might be lower than expected.
-  return base::StringPrintf(
-             "#define TexCoordPrecision highp\n"
-             "#define NUM_STATIC_QUADS %d\n",
-             StaticGeometryBinding::NUM_QUADS) +
-         GetShaderSource();
-}
+  std::string header = "#define TexCoordPrecision highp\n";
+  std::string source = "void main() {\n";
 
-std::string VertexShaderPosTex::GetShaderSource() const {
-  return SHADER0([]() {
-    attribute vec4 a_position;
-    attribute TexCoordPrecision vec2 a_texCoord;
-    uniform mat4 matrix;
-    varying TexCoordPrecision vec2 v_texCoord;
-    void main() {
-      gl_Position = matrix * a_position;
-      v_texCoord = a_texCoord;
-    }
-  });
-}
-
-std::string VertexShaderPosTexYUVStretchOffset::GetShaderSource() const {
-  return SHADER0([]() {
-    precision mediump float;
-    attribute vec4 a_position;
-    attribute TexCoordPrecision vec2 a_texCoord;
-    uniform mat4 matrix;
-    varying TexCoordPrecision vec2 v_yaTexCoord;
-    varying TexCoordPrecision vec2 v_uvTexCoord;
-    uniform TexCoordPrecision vec2 yaTexScale;
-    uniform TexCoordPrecision vec2 yaTexOffset;
-    uniform TexCoordPrecision vec2 uvTexScale;
-    uniform TexCoordPrecision vec2 uvTexOffset;
-    void main() {
-      gl_Position = matrix * a_position;
-      v_yaTexCoord = a_texCoord * yaTexScale + yaTexOffset;
-      v_uvTexCoord = a_texCoord * uvTexScale + uvTexOffset;
-    }
-  });
-}
-
-std::string VertexShaderPos::GetShaderSource() const {
-  return SHADER0([]() {
-    attribute vec4 a_position;
-    uniform mat4 matrix;
-    void main() { gl_Position = matrix * a_position; }
-  });
-}
-
-std::string VertexShaderPosTexTransform::GetShaderSource() const {
-  return SHADER0([]() {
-    attribute vec4 a_position;
-    attribute TexCoordPrecision vec2 a_texCoord;
-    attribute float a_index;
-    uniform mat4 matrix[NUM_STATIC_QUADS];
-    uniform TexCoordPrecision vec4 texTransform[NUM_STATIC_QUADS];
-    uniform float opacity[NUM_STATIC_QUADS * 4];
-    varying TexCoordPrecision vec2 v_texCoord;
-    varying float v_alpha;
-    void main() {
-      int quad_index = int(a_index * 0.25);  // NOLINT
-      gl_Position = matrix[quad_index] * a_position;
-      TexCoordPrecision vec4 texTrans = texTransform[quad_index];
-      v_texCoord = a_texCoord * texTrans.zw + texTrans.xy;
-      v_alpha = opacity[int(a_index)];  // NOLINT
-    }
-  });
-}
-
-std::string VertexShaderPosTexIdentity::GetShaderSource() const {
-  return SHADER0([]() {
-    attribute vec4 a_position;
-    varying TexCoordPrecision vec2 v_texCoord;
-    void main() {
-      gl_Position = a_position;
-      v_texCoord = (a_position.xy + vec2(1.0)) * 0.5;
-    }
-  });
-}
-
-std::string VertexShaderQuad::GetShaderSource() const {
-#if defined(OS_ANDROID)
-  // TODO(epenner): Find the cause of this 'quad' uniform
-  // being missing if we don't add dummy variables.
-  // http://crbug.com/240602
-  return SHADER0([]() {
-    attribute TexCoordPrecision vec4 a_position;
-    attribute float a_index;
-    uniform mat4 matrix;
-    uniform TexCoordPrecision vec2 quad[4];
-    uniform TexCoordPrecision vec2 dummy_uniform;
-    varying TexCoordPrecision vec2 dummy_varying;
-    void main() {
-      vec2 pos = quad[int(a_index)];  // NOLINT
-      gl_Position = matrix * vec4(pos, a_position.z, a_position.w);
-      dummy_varying = dummy_uniform;
-    }
-  });
-#else
-  return SHADER0([]() {
-    attribute TexCoordPrecision vec4 a_position;
-    attribute float a_index;
-    uniform mat4 matrix;
-    uniform TexCoordPrecision vec2 quad[4];
-    void main() {
-      vec2 pos = quad[int(a_index)];  // NOLINT
-      gl_Position = matrix * vec4(pos, a_position.z, a_position.w);
-    }
-  });
-#endif
-}
-
-std::string VertexShaderQuadAA::GetShaderSource() const {
-  return SHADER0([]() {
-    attribute TexCoordPrecision vec4 a_position;
-    attribute float a_index;
-    uniform mat4 matrix;
-    uniform vec4 viewport;
-    uniform TexCoordPrecision vec2 quad[4];
-    uniform TexCoordPrecision vec3 edge[8];
-    varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.
-    void main() {
-      vec2 pos = quad[int(a_index)];  // NOLINT
-      gl_Position = matrix * vec4(pos, a_position.z, a_position.w);
-      vec2 ndc_pos = 0.5 * (1.0 + gl_Position.xy / gl_Position.w);
-      vec3 screen_pos = vec3(viewport.xy + viewport.zw * ndc_pos, 1.0);
-      edge_dist[0] = vec4(dot(edge[0], screen_pos), dot(edge[1], screen_pos),
-                          dot(edge[2], screen_pos), dot(edge[3], screen_pos)) *
-                     gl_Position.w;
-      edge_dist[1] = vec4(dot(edge[4], screen_pos), dot(edge[5], screen_pos),
-                          dot(edge[6], screen_pos), dot(edge[7], screen_pos)) *
-                     gl_Position.w;
-    }
-  });
-}
-
-std::string VertexShaderQuadTexTransformAA::GetShaderSource() const {
-  return SHADER0([]() {
-    attribute TexCoordPrecision vec4 a_position;
-    attribute float a_index;
-    uniform mat4 matrix;
-    uniform vec4 viewport;
-    uniform TexCoordPrecision vec2 quad[4];
-    uniform TexCoordPrecision vec3 edge[8];
-    uniform TexCoordPrecision vec4 texTransform;
-    varying TexCoordPrecision vec2 v_texCoord;
-    varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.
-    void main() {
-      vec2 pos = quad[int(a_index)];  // NOLINT
-      gl_Position = matrix * vec4(pos, a_position.z, a_position.w);
-      vec2 ndc_pos = 0.5 * (1.0 + gl_Position.xy / gl_Position.w);
-      vec3 screen_pos = vec3(viewport.xy + viewport.zw * ndc_pos, 1.0);
-      edge_dist[0] = vec4(dot(edge[0], screen_pos), dot(edge[1], screen_pos),
-                          dot(edge[2], screen_pos), dot(edge[3], screen_pos)) *
-                     gl_Position.w;
-      edge_dist[1] = vec4(dot(edge[4], screen_pos), dot(edge[5], screen_pos),
-                          dot(edge[6], screen_pos), dot(edge[7], screen_pos)) *
-                     gl_Position.w;
-      v_texCoord = (pos.xy + vec2(0.5)) * texTransform.zw + texTransform.xy;
-    }
-  });
-}
-
-std::string VertexShaderTile::GetShaderSource() const {
-  return SHADER0([]() {
-    attribute TexCoordPrecision vec4 a_position;
-    attribute TexCoordPrecision vec2 a_texCoord;
-    attribute float a_index;
-    uniform mat4 matrix;
-    uniform TexCoordPrecision vec2 quad[4];
-    uniform TexCoordPrecision vec4 vertexTexTransform;
-    varying TexCoordPrecision vec2 v_texCoord;
-    void main() {
-      vec2 pos = quad[int(a_index)];  // NOLINT
-      gl_Position = matrix * vec4(pos, a_position.z, a_position.w);
-      v_texCoord = a_texCoord * vertexTexTransform.zw + vertexTexTransform.xy;
-    }
-  });
-}
-
-std::string VertexShaderTileAA::GetShaderSource() const {
-  return SHADER0([]() {
-    attribute TexCoordPrecision vec4 a_position;
-    attribute float a_index;
-    uniform mat4 matrix;
-    uniform vec4 viewport;
-    uniform TexCoordPrecision vec2 quad[4];
-    uniform TexCoordPrecision vec3 edge[8];
-    uniform TexCoordPrecision vec4 vertexTexTransform;
-    varying TexCoordPrecision vec2 v_texCoord;
-    varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.
-    void main() {
-      vec2 pos = quad[int(a_index)];  // NOLINT
-      gl_Position = matrix * vec4(pos, a_position.z, a_position.w);
-      vec2 ndc_pos = 0.5 * (1.0 + gl_Position.xy / gl_Position.w);
-      vec3 screen_pos = vec3(viewport.xy + viewport.zw * ndc_pos, 1.0);
-      edge_dist[0] = vec4(dot(edge[0], screen_pos), dot(edge[1], screen_pos),
-                          dot(edge[2], screen_pos), dot(edge[3], screen_pos)) *
-                     gl_Position.w;
-      edge_dist[1] = vec4(dot(edge[4], screen_pos), dot(edge[5], screen_pos),
-                          dot(edge[6], screen_pos), dot(edge[7], screen_pos)) *
-                     gl_Position.w;
-      v_texCoord = pos.xy * vertexTexTransform.zw + vertexTexTransform.xy;
-    }
-  });
-}
-
-std::string VertexShaderVideoTransform::GetShaderSource() const {
-  return SHADER0([]() {
-    attribute vec4 a_position;
-    attribute TexCoordPrecision vec2 a_texCoord;
-    uniform mat4 matrix;
-    uniform TexCoordPrecision mat4 texMatrix;
-    varying TexCoordPrecision vec2 v_texCoord;
-    void main() {
-      gl_Position = matrix * a_position;
-      v_texCoord = (texMatrix * vec4(a_texCoord.xy, 0.0, 1.0)).xy;
-    }
-  });
-}
-
-#define BLEND_MODE_UNIFORMS "s_backdropTexture", \
-                            "s_originalBackdropTexture", \
-                            "backdropRect"
-#define UNUSED_BLEND_MODE_UNIFORMS (!has_blend_mode() ? 3 : 0)
-#define BLEND_MODE_SET_LOCATIONS(X, POS)                   \
-  if (has_blend_mode()) {                                  \
-    DCHECK_LT(static_cast<size_t>(POS) + 2, arraysize(X)); \
-    backdrop_location_ = locations[POS];                   \
-    original_backdrop_location_ = locations[POS + 1];      \
-    backdrop_rect_location_ = locations[POS + 2];          \
+  // Define the size of quads for attribute indexed uniform arrays.
+  if (use_uniform_arrays_) {
+    header += base::StringPrintf("#define NUM_QUADS %d\n",
+                                 StaticGeometryBinding::NUM_QUADS);
   }
+
+  // Read the index variables.
+  if (use_uniform_arrays_ ||
+      position_source_ == POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM) {
+    HDR("attribute float a_index;");
+    SRC("// Compute indices for uniform arrays.");
+    SRC("int vertex_index = int(a_index);");
+    if (use_uniform_arrays_)
+      SRC("int quad_index = int(a_index * 0.25);");
+    SRC("");
+  }
+
+  // Read the position and compute gl_Position.
+  HDR("attribute TexCoordPrecision vec4 a_position;");
+  SRC("// Compute the position.");
+  switch (position_source_) {
+    case POSITION_SOURCE_ATTRIBUTE:
+      SRC("vec4 pos = a_position;");
+      break;
+    case POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM:
+      HDR("uniform TexCoordPrecision vec2 quad[4];");
+      SRC("vec4 pos = vec4(quad[vertex_index], a_position.z, a_position.w);");
+      break;
+  }
+  if (has_matrix_) {
+    if (use_uniform_arrays_) {
+      HDR("uniform mat4 matrix[NUM_QUADS];");
+      SRC("gl_Position = matrix[quad_index] * pos;");
+    } else {
+      HDR("uniform mat4 matrix;");
+      SRC("gl_Position = matrix * pos;");
+    }
+  } else {
+    SRC("gl_Position = pos;");
+  }
+
+  // Compute the anti-aliasing edge distances.
+  if (has_aa_) {
+    HDR("uniform TexCoordPrecision vec3 edge[8];");
+    HDR("uniform vec4 viewport;");
+    HDR("varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.");
+    SRC("// Compute anti-aliasing properties.\n");
+    SRC("vec2 ndc_pos = 0.5 * (1.0 + gl_Position.xy / gl_Position.w);");
+    SRC("vec3 screen_pos = vec3(viewport.xy + viewport.zw * ndc_pos, 1.0);");
+    SRC("edge_dist[0] = vec4(dot(edge[0], screen_pos),");
+    SRC("                    dot(edge[1], screen_pos),");
+    SRC("                    dot(edge[2], screen_pos),");
+    SRC("                    dot(edge[3], screen_pos)) * gl_Position.w;");
+    SRC("edge_dist[1] = vec4(dot(edge[4], screen_pos),");
+    SRC("                    dot(edge[5], screen_pos),");
+    SRC("                    dot(edge[6], screen_pos),");
+    SRC("                    dot(edge[7], screen_pos)) * gl_Position.w;");
+  }
+
+  // Read, transform, and write texture coordinates.
+  if (tex_coord_source_ != TEX_COORD_SOURCE_NONE) {
+    if (is_ya_uv_) {
+      HDR("varying TexCoordPrecision vec2 v_uvTexCoord;");
+      HDR("varying TexCoordPrecision vec2 v_yaTexCoord;");
+    } else {
+      HDR("varying TexCoordPrecision vec2 v_texCoord;");
+    }
+
+    SRC("// Compute texture coordinates.");
+    // Read coordinates.
+    switch (tex_coord_source_) {
+      case TEX_COORD_SOURCE_NONE:
+        break;
+      case TEX_COORD_SOURCE_POSITION:
+        SRC("vec2 texCoord = pos.xy;");
+        break;
+      case TEX_COORD_SOURCE_ATTRIBUTE:
+        HDR("attribute TexCoordPrecision vec2 a_texCoord;");
+        SRC("vec2 texCoord = a_texCoord;");
+        break;
+    }
+    // Transform coordinates (except YUV).
+    switch (tex_coord_transform_) {
+      case TEX_COORD_TRANSFORM_NONE:
+        break;
+      case TEX_COORD_TRANSFORM_TRANSLATED_VEC4:
+        SRC("texCoord = texCoord + vec2(0.5);");
+      // Fall through...
+      case TEX_COORD_TRANSFORM_VEC4:
+        if (use_uniform_arrays_) {
+          HDR("uniform TexCoordPrecision vec4 vertexTexTransform[NUM_QUADS];");
+          SRC("TexCoordPrecision vec4 texTrans =");
+          SRC("    vertexTexTransform[quad_index];");
+          SRC("texCoord = texCoord * texTrans.zw + texTrans.xy;");
+        } else {
+          HDR("uniform TexCoordPrecision vec4 vertexTexTransform;");
+          SRC("texCoord = texCoord * vertexTexTransform.zw +");
+          SRC("           vertexTexTransform.xy;");
+        }
+        break;
+      case TEX_COORD_TRANSFORM_MATRIX:
+        HDR("uniform TexCoordPrecision mat4 texMatrix;");
+        SRC("texCoord = (texMatrix * vec4(texCoord.xy, 0.0, 1.0)).xy;");
+        break;
+    }
+    // Write the output texture coordinates.
+    if (is_ya_uv_) {
+      HDR("uniform TexCoordPrecision vec2 uvTexOffset;");
+      HDR("uniform TexCoordPrecision vec2 uvTexScale;");
+      HDR("uniform TexCoordPrecision vec2 yaTexOffset;");
+      HDR("uniform TexCoordPrecision vec2 yaTexScale;");
+      SRC("v_yaTexCoord = texCoord * yaTexScale + yaTexOffset;");
+      SRC("v_uvTexCoord = texCoord * uvTexScale + uvTexOffset;");
+    } else {
+      SRC("v_texCoord = texCoord;");
+    }
+  }
+
+  // Write varying vertex opacity.
+  if (has_vertex_opacity_) {
+    DCHECK(use_uniform_arrays_);
+    HDR("uniform float opacity[NUM_QUADS * 4];");
+    HDR("varying float v_alpha;");
+    SRC("v_alpha = opacity[quad_index];");
+  }
+
+  // Add cargo-culted dummy variables for Android.
+  if (has_dummy_variables_) {
+    HDR("uniform TexCoordPrecision vec2 dummy_uniform;");
+    HDR("varying TexCoordPrecision vec2 dummy_varying;");
+    SRC("dummy_varying = dummy_uniform;");
+  }
+
+  source += "}\n";
+  return header + source;
+}
 
 FragmentShaderBase::FragmentShaderBase() {}
 
@@ -875,15 +802,6 @@ std::string FragmentShaderBase::GetShaderSource() const {
   std::string header = "precision mediump float;\n";
   std::string source = "void main() {\n";
 
-#define HDR(x)                       \
-  do {                               \
-    header += x + std::string("\n"); \
-  } while (0)
-#define SRC(x)                                           \
-  do {                                                   \
-    source += std::string("  ") + x + std::string("\n"); \
-  } while (0)
-
   // Read the input into vec4 texColor.
   switch (input_color_type_) {
     case INPUT_COLOR_SOURCE_RGBA_TEXTURE:
@@ -1012,9 +930,6 @@ std::string FragmentShaderBase::GetShaderSource() const {
       break;
   }
   source += "}\n";
-
-#undef HDR
-#undef SRC
 
   return header + source;
 }

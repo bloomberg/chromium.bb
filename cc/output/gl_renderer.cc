@@ -1405,17 +1405,17 @@ void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
   }
   tex_rect.Scale(1.0f / texture_size.width(), 1.0f / texture_size.height());
 
-  DCHECK(locations.tex_transform != -1 || IsContextLost());
+  DCHECK(locations.vertex_tex_transform != -1 || IsContextLost());
   if (params->source_needs_flip) {
     // Flip the content vertically in the shader, as the RenderPass input
     // texture is already oriented the same way as the framebuffer, but the
     // projection transform does a flip.
-    gl_->Uniform4f(locations.tex_transform, tex_rect.x(), 1.0f - tex_rect.y(),
-                   tex_rect.width(), -tex_rect.height());
+    gl_->Uniform4f(locations.vertex_tex_transform, tex_rect.x(),
+                   1.0f - tex_rect.y(), tex_rect.width(), -tex_rect.height());
   } else {
     // Tile textures are oriented opposite the framebuffer, so can use
     // the projection transform to do the flip.
-    gl_->Uniform4f(locations.tex_transform, tex_rect.x(), tex_rect.y(),
+    gl_->Uniform4f(locations.vertex_tex_transform, tex_rect.x(), tex_rect.y(),
                    tex_rect.width(), tex_rect.height());
   }
 
@@ -2541,11 +2541,12 @@ struct TexTransformTextureProgramBinding : TextureProgramBinding {
   template <class Program>
   void Set(Program* program) {
     TextureProgramBinding::Set(program);
-    tex_transform_location = program->vertex_shader().tex_transform_location();
+    vertex_tex_transform_location =
+        program->vertex_shader().vertex_tex_transform_location();
     vertex_opacity_location =
         program->vertex_shader().vertex_opacity_location();
   }
-  int tex_transform_location;
+  int vertex_tex_transform_location;
   int vertex_opacity_location;
 };
 
@@ -2693,7 +2694,7 @@ void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
     draw_cache_.nearest_neighbor = quad->nearest_neighbor;
     draw_cache_.background_color = quad->background_color;
 
-    draw_cache_.uv_xform_location = binding.tex_transform_location;
+    draw_cache_.uv_xform_location = binding.vertex_tex_transform_location;
     draw_cache_.background_color_location = binding.background_color_location;
     draw_cache_.vertex_opacity_location = binding.vertex_opacity_location;
     draw_cache_.matrix_location = binding.matrix_location;

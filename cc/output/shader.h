@@ -30,6 +30,38 @@ enum TexCoordPrecision {
   LAST_TEX_COORD_PRECISION = 2
 };
 
+// Texture coordinate sources for the vertex shader.
+enum TexCoordSource {
+  // Vertex shader does not populate a texture coordinate.
+  TEX_COORD_SOURCE_NONE,
+  // Texture coordinate is set to the untransformed position.
+  TEX_COORD_SOURCE_POSITION,
+  // Texture coordinate has its own attribute.
+  TEX_COORD_SOURCE_ATTRIBUTE,
+};
+
+// Texture coordinate transformation modes for the vertex shader.
+enum TexCoordTransform {
+  // Texture coordinates are not transformed.
+  TEX_COORD_TRANSFORM_NONE,
+  // Texture coordinates are transformed by a uniform vec4, scaling by zw and
+  // then translating by xy.
+  TEX_COORD_TRANSFORM_VEC4,
+  // Same as the above, but add vec2(0.5) to the texture coordinate first.
+  TEX_COORD_TRANSFORM_TRANSLATED_VEC4,
+  // Texture coordiantes are transformed by a uniform mat4.
+  TEX_COORD_TRANSFORM_MATRIX,
+};
+
+// Position source for the vertex shader.
+enum PositionSource {
+  // The position is read directly from the position attribute.
+  POSITION_SOURCE_ATTRIBUTE,
+  // The position is read by attribute index into a uniform array for xy, and
+  // getting zw from the attribute.
+  POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM,
+};
+
 enum SamplerType {
   SAMPLER_TYPE_NA = 0,
   SAMPLER_TYPE_2D = 1,
@@ -91,7 +123,7 @@ struct ShaderLocations {
   int alpha = -1;
   int color_matrix = -1;
   int color_offset = -1;
-  int tex_transform = -1;
+  int vertex_tex_transform = -1;
   int backdrop = -1;
   int backdrop_rect = -1;
   int original_backdrop = -1;
@@ -122,8 +154,6 @@ class VertexShaderBase {
   std::string GetShaderString() const;
   void FillLocations(ShaderLocations* locations) const;
 
-  int tex_transform_location() const { return tex_transform_location_; }
-
   int vertex_tex_transform_location() const {
     return vertex_tex_transform_location_;
   }
@@ -145,25 +175,37 @@ class VertexShaderBase {
   int quad_location() const { return quad_location_; }
 
  protected:
-  virtual std::string GetShaderSource() const = 0;
+  // Use arrays of uniforms for matrix, texTransform, and opacity.
+  bool use_uniform_arrays_ = false;
 
-  bool has_tex_transform_ = false;
-  int tex_transform_location_ = -1;
+  PositionSource position_source_ = POSITION_SOURCE_ATTRIBUTE;
+  TexCoordSource tex_coord_source_ = TEX_COORD_SOURCE_NONE;
+  TexCoordTransform tex_coord_transform_ = TEX_COORD_TRANSFORM_NONE;
 
-  bool has_vertex_tex_transform_ = false;
+  // Used only with TEX_COORD_TRANSFORM_VEC4.
   int vertex_tex_transform_location_ = -1;
 
-  bool has_tex_matrix_ = false;
+  // Used only with TEX_COORD_TRANSFORM_MATRIX.
   int tex_matrix_location_ = -1;
 
-  bool has_ya_uv_tex_scale_offset_ = false;
+  // Uniforms for YUV textures.
+  bool is_ya_uv_ = false;
   int ya_tex_scale_location_ = -1;
   int ya_tex_offset_location_ = -1;
   int uv_tex_scale_location_ = -1;
   int uv_tex_offset_location_ = -1;
 
+  // Matrix to transform the position.
   bool has_matrix_ = false;
   int matrix_location_ = -1;
+
+  // Used only with POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM.
+  int quad_location_ = -1;
+
+  // Extra dummy variables to work around bugs on Android.
+  // TODO(ccameron): This is likley unneeded cargo-culting.
+  // http://crbug.com/240602
+  bool has_dummy_variables_ = false;
 
   bool has_vertex_opacity_ = false;
   int vertex_opacity_location_ = -1;
@@ -171,105 +213,100 @@ class VertexShaderBase {
   bool has_aa_ = false;
   int viewport_location_ = -1;
   int edge_location_ = -1;
-
-  bool has_quad_ = false;
-  int quad_location_ = -1;
 };
 
 class VertexShaderPosTex : public VertexShaderBase {
  public:
-  VertexShaderPosTex() { has_matrix_ = true; }
-  std::string GetShaderSource() const override;
+  VertexShaderPosTex() {
+    tex_coord_source_ = TEX_COORD_SOURCE_ATTRIBUTE;
+    has_matrix_ = true;
+  }
 };
 
 class VertexShaderPosTexYUVStretchOffset : public VertexShaderBase {
  public:
   VertexShaderPosTexYUVStretchOffset() {
+    tex_coord_source_ = TEX_COORD_SOURCE_ATTRIBUTE;
     has_matrix_ = true;
-    has_ya_uv_tex_scale_offset_ = true;
+    is_ya_uv_ = true;
   }
-  std::string GetShaderSource() const override;
 };
 
 class VertexShaderPos : public VertexShaderBase {
  public:
   VertexShaderPos() { has_matrix_ = true; }
-  std::string GetShaderSource() const override;
-};
-
-class VertexShaderPosTexIdentity : public VertexShaderBase {
- public:
-  std::string GetShaderSource() const override;
 };
 
 class VertexShaderPosTexTransform : public VertexShaderBase {
  public:
   VertexShaderPosTexTransform() {
+    tex_coord_source_ = TEX_COORD_SOURCE_ATTRIBUTE;
+    tex_coord_transform_ = TEX_COORD_TRANSFORM_VEC4;
     has_matrix_ = true;
-    has_tex_transform_ = true;
     has_vertex_opacity_ = true;
+    use_uniform_arrays_ = true;
   }
-  std::string GetShaderSource() const override;
 };
 
 class VertexShaderQuad : public VertexShaderBase {
  public:
   VertexShaderQuad() {
+    position_source_ = POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM;
     has_matrix_ = true;
-    has_quad_ = true;
+#if defined(OS_ANDROID)
+    has_dummy_variables_ = true;
+#endif
   }
-  std::string GetShaderSource() const override;
 };
 
 class VertexShaderQuadAA : public VertexShaderBase {
  public:
   VertexShaderQuadAA() {
+    position_source_ = POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM;
     has_matrix_ = true;
     has_aa_ = true;
-    has_quad_ = true;
   }
-  std::string GetShaderSource() const override;
 };
 
 class VertexShaderQuadTexTransformAA : public VertexShaderBase {
  public:
   VertexShaderQuadTexTransformAA() {
+    position_source_ = POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM;
+    tex_coord_source_ = TEX_COORD_SOURCE_POSITION;
+    tex_coord_transform_ = TEX_COORD_TRANSFORM_TRANSLATED_VEC4;
     has_matrix_ = true;
     has_aa_ = true;
-    has_quad_ = true;
-    has_tex_transform_ = true;
   }
-  std::string GetShaderSource() const override;
 };
 
 class VertexShaderTile : public VertexShaderBase {
  public:
   VertexShaderTile() {
+    position_source_ = POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM;
+    tex_coord_source_ = TEX_COORD_SOURCE_ATTRIBUTE;
+    tex_coord_transform_ = TEX_COORD_TRANSFORM_VEC4;
     has_matrix_ = true;
-    has_quad_ = true;
-    has_vertex_tex_transform_ = true;
   }
-  std::string GetShaderSource() const override;
 };
 
 class VertexShaderTileAA : public VertexShaderBase {
  public:
   VertexShaderTileAA() {
+    position_source_ = POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM;
+    tex_coord_source_ = TEX_COORD_SOURCE_POSITION;
+    tex_coord_transform_ = TEX_COORD_TRANSFORM_VEC4;
     has_matrix_ = true;
-    has_quad_ = true;
-    has_vertex_tex_transform_ = true;
     has_aa_ = true;
   }
-  std::string GetShaderSource() const override;
 };
 
 class VertexShaderVideoTransform : public VertexShaderBase {
  public:
   VertexShaderVideoTransform() {
+    tex_coord_source_ = TEX_COORD_SOURCE_ATTRIBUTE;
+    tex_coord_transform_ = TEX_COORD_TRANSFORM_MATRIX;
     has_matrix_ = true;
-    has_tex_matrix_ = true;
   }
-  std::string GetShaderSource() const override;
 };
 
 class FragmentShaderBase {
