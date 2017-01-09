@@ -924,11 +924,24 @@ const ui::ThemeProvider* View::GetThemeProvider() const {
 }
 
 const ui::NativeTheme* View::GetNativeTheme() const {
+  if (native_theme_)
+    return native_theme_;
+
+  if (parent())
+    return parent()->GetNativeTheme();
+
   const Widget* widget = GetWidget();
   if (widget)
     return widget->GetNativeTheme();
 
   return ui::NativeTheme::GetInstanceForNativeUi();
+}
+
+void View::SetNativeTheme(ui::NativeTheme* theme) {
+  ui::NativeTheme* original_native_theme = GetNativeTheme();
+  native_theme_ = theme;
+  if (native_theme_ != original_native_theme)
+    PropagateNativeThemeChanged(theme);
 }
 
 // RTL painting ----------------------------------------------------------------
@@ -1975,6 +1988,9 @@ void View::ViewHierarchyChangedImpl(
 }
 
 void View::PropagateNativeThemeChanged(const ui::NativeTheme* theme) {
+  if (native_theme_ && native_theme_ != theme)
+    return;
+
   {
     internal::ScopedChildrenLock lock(this);
     for (auto* child : children_)

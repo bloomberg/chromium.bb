@@ -13,6 +13,7 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/label.h"
@@ -33,7 +34,11 @@ ConfirmInfoBar::ConfirmInfoBar(std::unique_ptr<ConfirmInfoBarDelegate> delegate)
       label_(nullptr),
       ok_button_(nullptr),
       cancel_button_(nullptr),
-      link_(nullptr) {}
+      link_(nullptr) {
+  // Always use the standard theme for the platform on infobars (infobars in
+  // incognito should have the same appearance as normal infobars).
+  SetNativeTheme(ui::NativeTheme::GetInstanceForNativeUi());
+}
 
 ConfirmInfoBar::~ConfirmInfoBar() {
   // Ensure |elevation_icon_setter_| is destroyed before |ok_button_|.
@@ -91,13 +96,6 @@ void ConfirmInfoBar::ViewHierarchyChanged(
       if (delegate->GetButtons() == ConfirmInfoBarDelegate::BUTTON_CANCEL) {
         // Apply prominent styling only if the cancel button is the only button.
         cancel_button_->SetProminent(true);
-      } else {
-        // Otherwise set the bg color to white and the text color to black.
-        // TODO(estade): These should be removed and moved into the native
-        // theme. Also, infobars should always use the normal (non-incognito)
-        // native theme.
-        cancel_button_->SetBgColorOverride(SK_ColorWHITE);
-        cancel_button_->SetEnabledTextColors(kTextColor);
       }
       AddViewToContentArea(cancel_button_);
       cancel_button_->SizeToPreferredSize();

@@ -539,13 +539,17 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Returns the NativeTheme to use for this View. This calls through to
   // GetNativeTheme() on the Widget this View is in, or provides a default
-  // theme if there's no widget. Warning: the default theme might not be
-  // correct; you should probably override OnNativeThemeChanged().
+  // theme if there's no widget, or returns |native_theme_| if that's
+  // set. Warning: the default theme might not be correct; you should probably
+  // override OnNativeThemeChanged().
   ui::NativeTheme* GetNativeTheme() {
     return const_cast<ui::NativeTheme*>(
         const_cast<const View*>(this)->GetNativeTheme());
   }
   const ui::NativeTheme* GetNativeTheme() const;
+
+  // Sets the native theme and informs descendants.
+  void SetNativeTheme(ui::NativeTheme* theme);
 
   // RTL painting --------------------------------------------------------------
 
@@ -1546,6 +1550,13 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Cached output of painting to be reused in future frames until invalidated.
   ui::PaintCache paint_cache_;
+
+  // Native theme --------------------------------------------------------------
+
+  // A native theme for this view and its descendants. Typically null, in which
+  // case the native theme is drawn from the parent view (eventually the
+  // widget).
+  ui::NativeTheme* native_theme_ = nullptr;
 
   // RTL painting --------------------------------------------------------------
 
