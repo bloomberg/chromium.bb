@@ -444,24 +444,21 @@ AtomicString Resource::httpContentType() const {
 }
 
 bool Resource::passesAccessControlCheck(SecurityOrigin* securityOrigin) const {
-  String ignoredErrorDescription;
-  return passesAccessControlCheck(securityOrigin, ignoredErrorDescription);
-}
+  StoredCredentials storedCredentials =
+      lastResourceRequest().allowStoredCredentials()
+          ? AllowStoredCredentials
+          : DoNotAllowStoredCredentials;
+  CrossOriginAccessControl::AccessStatus status =
+      CrossOriginAccessControl::checkAccess(m_response, storedCredentials,
+                                            securityOrigin);
 
-bool Resource::passesAccessControlCheck(SecurityOrigin* securityOrigin,
-                                        String& errorDescription) const {
-  return blink::passesAccessControlCheck(
-      m_response, lastResourceRequest().allowStoredCredentials()
-                      ? AllowStoredCredentials
-                      : DoNotAllowStoredCredentials,
-      securityOrigin, errorDescription, lastResourceRequest().requestContext());
+  return status == CrossOriginAccessControl::kAccessAllowed;
 }
 
 bool Resource::isEligibleForIntegrityCheck(
     SecurityOrigin* securityOrigin) const {
-  String ignoredErrorDescription;
   return securityOrigin->canRequest(resourceRequest().url()) ||
-         passesAccessControlCheck(securityOrigin, ignoredErrorDescription);
+         passesAccessControlCheck(securityOrigin);
 }
 
 void Resource::setIntegrityDisposition(

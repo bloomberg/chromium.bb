@@ -47,6 +47,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PtrUtil.h"
+#include "wtf/text/StringBuilder.h"
 #include <memory>
 
 namespace blink {
@@ -279,19 +280,28 @@ ResourceRequestBlockedReason ResourceLoader::canAccessResponse(
       (resource->isCacheValidator() && response.httpStatusCode() == 304)
           ? resource->response()
           : response;
-  String errorDescription;
-  if (!passesAccessControlCheck(
+
+  CrossOriginAccessControl::AccessStatus corsStatus =
+      CrossOriginAccessControl::checkAccess(
           responseForAccessControl, resource->options().allowCredentials,
-          sourceOrigin, errorDescription,
-          resource->lastResourceRequest().requestContext())) {
+          sourceOrigin);
+  if (corsStatus != CrossOriginAccessControl::kAccessAllowed) {
     resource->setCORSFailed();
     if (!forPreload) {
       String resourceType = Resource::resourceTypeToString(
           resource->getType(), resource->options().initiatorInfo.name);
-      context().addConsoleMessage(
-          "Access to " + resourceType + " at '" + response.url().getString() +
-          "' from origin '" + sourceOrigin->toString() +
-          "' has been blocked by CORS policy: " + errorDescription);
+      StringBuilder builder;
+      builder.append("Access to ");
+      builder.append(resourceType);
+      builder.append(" at '");
+      builder.append(response.url().getString());
+      builder.append("' from origin '");
+      builder.append(sourceOrigin->toString());
+      builder.append("' has been blocked by CORS policy: ");
+      CrossOriginAccessControl::accessControlErrorString(
+          builder, corsStatus, responseForAccessControl, sourceOrigin,
+          resource->lastResourceRequest().requestContext());
+      context().addConsoleMessage(builder.toString());
     }
     return ResourceRequestBlockedReason::Other;
   }

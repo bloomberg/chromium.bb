@@ -214,11 +214,7 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   virtual void finish(double finishTime);
   void finish() { finish(0.0); }
 
-  // FIXME: Remove the stringless variant once all the callsites' error messages
-  // are updated.
   bool passesAccessControlCheck(SecurityOrigin*) const;
-  bool passesAccessControlCheck(SecurityOrigin*,
-                                String& errorDescription) const;
 
   virtual PassRefPtr<const SharedBuffer> resourceBuffer() const {
     return m_data;

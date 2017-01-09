@@ -553,27 +553,39 @@ bool DocumentThreadableLoader::redirectReceived(
       document().frame()->loader().documentLoader(), redirectResponse,
       resource);
 
-  bool allowRedirect = false;
   String accessControlErrorDescription;
 
-  if (!CrossOriginAccessControl::isLegalRedirectLocation(
-          request.url(), accessControlErrorDescription)) {
-    accessControlErrorDescription =
-        "Redirect from '" + redirectResponse.url().getString() +
-        "' has been blocked by CORS policy: " + accessControlErrorDescription;
-  } else if (!m_sameOriginRequest &&
-             !passesAccessControlCheck(
-                 redirectResponse, effectiveAllowCredentials(),
-                 getSecurityOrigin(), accessControlErrorDescription,
-                 m_requestContext)) {
+  CrossOriginAccessControl::RedirectStatus redirectStatus =
+      CrossOriginAccessControl::checkRedirectLocation(request.url());
+  bool allowRedirect =
+      redirectStatus == CrossOriginAccessControl::kRedirectSuccess;
+  if (!allowRedirect) {
+    StringBuilder builder;
+    builder.append("Redirect from '");
+    builder.append(redirectResponse.url().getString());
+    builder.append("' has been blocked by CORS policy: ");
+    CrossOriginAccessControl::redirectErrorString(builder, redirectStatus,
+                                                  request.url());
+    accessControlErrorDescription = builder.toString();
+  } else if (!m_sameOriginRequest) {
     // The redirect response must pass the access control check if the original
     // request was not same-origin.
-    accessControlErrorDescription =
-        "Redirect from '" + redirectResponse.url().getString() + "' to '" +
-        request.url().getString() + "' has been blocked by CORS policy: " +
-        accessControlErrorDescription;
-  } else {
-    allowRedirect = true;
+    CrossOriginAccessControl::AccessStatus corsStatus =
+        CrossOriginAccessControl::checkAccess(
+            redirectResponse, effectiveAllowCredentials(), getSecurityOrigin());
+    allowRedirect = corsStatus == CrossOriginAccessControl::kAccessAllowed;
+    if (!allowRedirect) {
+      StringBuilder builder;
+      builder.append("Redirect from '");
+      builder.append(redirectResponse.url().getString());
+      builder.append("' to '");
+      builder.append(request.url().getString());
+      builder.append("' has been blocked by CORS policy: ");
+      CrossOriginAccessControl::accessControlErrorString(
+          builder, corsStatus, redirectResponse, getSecurityOrigin(),
+          m_requestContext);
+      accessControlErrorDescription = builder.toString();
+    }
   }
 
   if (!allowRedirect) {
@@ -693,27 +705,41 @@ void DocumentThreadableLoader::handlePreflightResponse(
     const ResourceResponse& response) {
   String accessControlErrorDescription;
 
-  if (!passesAccessControlCheck(
-          response, effectiveAllowCredentials(), getSecurityOrigin(),
-          accessControlErrorDescription, m_requestContext)) {
-    handlePreflightFailure(
-        response.url().getString(),
-        "Response to preflight request doesn't pass access control check: " +
-            accessControlErrorDescription);
+  CrossOriginAccessControl::AccessStatus corsStatus =
+      CrossOriginAccessControl::checkAccess(
+          response, effectiveAllowCredentials(), getSecurityOrigin());
+  if (corsStatus != CrossOriginAccessControl::kAccessAllowed) {
+    StringBuilder builder;
+    builder.append(
+        "Response to preflight request doesn't pass access "
+        "control check: ");
+    CrossOriginAccessControl::accessControlErrorString(
+        builder, corsStatus, response, getSecurityOrigin(), m_requestContext);
+    handlePreflightFailure(response.url().getString(), builder.toString());
     return;
   }
 
-  if (!passesPreflightStatusCheck(response, accessControlErrorDescription)) {
-    handlePreflightFailure(response.url().getString(),
-                           accessControlErrorDescription);
+  CrossOriginAccessControl::PreflightStatus preflightStatus =
+      CrossOriginAccessControl::checkPreflight(response);
+  if (preflightStatus != CrossOriginAccessControl::kPreflightSuccess) {
+    StringBuilder builder;
+    CrossOriginAccessControl::preflightErrorString(builder, preflightStatus,
+                                                   response);
+    handlePreflightFailure(response.url().getString(), builder.toString());
     return;
   }
 
-  if (m_actualRequest.isExternalRequest() &&
-      !passesExternalPreflightCheck(response, accessControlErrorDescription)) {
-    handlePreflightFailure(response.url().getString(),
-                           accessControlErrorDescription);
-    return;
+  if (m_actualRequest.isExternalRequest()) {
+    CrossOriginAccessControl::PreflightStatus externalPreflightStatus =
+        CrossOriginAccessControl::checkExternalPreflight(response);
+    if (externalPreflightStatus !=
+        CrossOriginAccessControl::kPreflightSuccess) {
+      StringBuilder builder;
+      CrossOriginAccessControl::preflightErrorString(
+          builder, externalPreflightStatus, response);
+      handlePreflightFailure(response.url().getString(), builder.toString());
+      return;
+    }
   }
 
   std::unique_ptr<CrossOriginPreflightResultCacheItem> preflightResult =
@@ -798,15 +824,17 @@ void DocumentThreadableLoader::handleResponse(
 
   if (!m_sameOriginRequest &&
       m_options.crossOriginRequestPolicy == UseAccessControl) {
-    String accessControlErrorDescription;
-    if (!passesAccessControlCheck(
-            response, effectiveAllowCredentials(), getSecurityOrigin(),
-            accessControlErrorDescription, m_requestContext)) {
+    CrossOriginAccessControl::AccessStatus corsStatus =
+        CrossOriginAccessControl::checkAccess(
+            response, effectiveAllowCredentials(), getSecurityOrigin());
+    if (corsStatus != CrossOriginAccessControl::kAccessAllowed) {
       reportResponseReceived(identifier, response);
-
+      StringBuilder builder;
+      CrossOriginAccessControl::accessControlErrorString(
+          builder, corsStatus, response, getSecurityOrigin(), m_requestContext);
       dispatchDidFailAccessControlCheck(
           ResourceError(errorDomainBlinkInternal, 0, response.url().getString(),
-                        accessControlErrorDescription));
+                        builder.toString()));
       return;
     }
   }
