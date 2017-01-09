@@ -296,10 +296,10 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
                              media::AudioParameters::kAudioCDSampleRate,
                              media::CHANNEL_LAYOUT_STEREO,
                              media::AudioParameters::kAudioCDSampleRate / 100),
+            MockConstraintFactory().CreateWebMediaConstraints(),
+            base::Bind(&RTCPeerConnectionHandlerTest::OnAudioSourceStarted),
             mock_dependency_factory_.get());
     audio_source->SetAllowInvalidRenderFrameIdForTesting(true);
-    audio_source->SetSourceConstraints(
-        MockConstraintFactory().CreateWebMediaConstraints());
     blink_audio_source.setExtraData(audio_source);  // Takes ownership.
 
     blink::WebMediaStreamSource video_source;
@@ -365,6 +365,10 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     for (const auto& track : video_tracks)
       MediaStreamVideoTrack::GetVideoTrack(track)->Stop();
   }
+
+  static void OnAudioSourceStarted(MediaStreamSource* source,
+                                   MediaStreamRequestResult result,
+                                   const blink::WebString& result_name) {}
 
   base::MessageLoop message_loop_;
   std::unique_ptr<ChildProcess> child_process_;
