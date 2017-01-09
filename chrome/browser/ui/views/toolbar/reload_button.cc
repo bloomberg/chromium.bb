@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -21,6 +20,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/metrics.h"
 #include "ui/views/widget/widget.h"
 
@@ -232,16 +232,17 @@ void ReloadButton::ChangeModeInternal(Mode mode) {
   const ui::ThemeProvider* tp = GetThemeProvider();
   // |tp| can be NULL in unit tests.
   if (tp) {
-    const gfx::VectorIcon& icon =
-        (mode == MODE_RELOAD) ? kNavigateReloadIcon : kNavigateStopIcon;
+    const gfx::VectorIconId icon_id = (mode == MODE_RELOAD)
+                                          ? gfx::VectorIconId::NAVIGATE_RELOAD
+                                          : gfx::VectorIconId::NAVIGATE_STOP;
     const SkColor normal_color =
         tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
     const SkColor disabled_color =
         tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_INACTIVE);
     SetImage(views::Button::STATE_NORMAL,
-             gfx::CreateVectorIcon(icon, normal_color));
+             gfx::CreateVectorIcon(icon_id, normal_color));
     SetImage(views::Button::STATE_DISABLED,
-             gfx::CreateVectorIcon(icon, disabled_color));
+             gfx::CreateVectorIcon(icon_id, disabled_color));
     set_ink_drop_base_color(normal_color);
   }
 

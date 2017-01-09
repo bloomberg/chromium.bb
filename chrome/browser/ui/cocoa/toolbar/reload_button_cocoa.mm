@@ -8,7 +8,6 @@
 
 #include "base/macros.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/command_updater.h"
 #import "chrome/browser/ui/cocoa/accelerators_cocoa.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
@@ -194,16 +193,16 @@ const int kReloadMenuCommands[]  = {
   return VIEW_ID_RELOAD_BUTTON;
 }
 
-- (const gfx::VectorIcon*)vectorIcon {
+- (gfx::VectorIconId)vectorIconId {
   if ([self tag] == IDC_RELOAD) {
-    return &kNavigateReloadIcon;
+    return gfx::VectorIconId::NAVIGATE_RELOAD;
   } else if ([self tag] == IDC_STOP) {
-    return &kNavigateStopIcon;
+    return gfx::VectorIconId::NAVIGATE_STOP;
   } else {
     NOTREACHED();
   }
 
-  return nullptr;
+  return gfx::VectorIconId::VECTOR_ICON_NONE;
 }
 
 - (void)mouseInsideStateDidChange:(BOOL)isInside {

@@ -9,7 +9,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_otr_state.h"
@@ -25,6 +24,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/menu/menu_listener.h"
@@ -136,22 +136,22 @@ void AppMenuButton::UpdateIcon() {
       break;
   }
 
-  const gfx::VectorIcon* icon_id = nullptr;
+  gfx::VectorIconId icon_id = gfx::VectorIconId::VECTOR_ICON_NONE;
   switch (type_) {
     case AppMenuIconController::IconType::NONE:
-      icon_id = &kBrowserToolsIcon;
+      icon_id = gfx::VectorIconId::BROWSER_TOOLS;
       DCHECK_EQ(AppMenuIconController::Severity::NONE, severity_);
       break;
     case AppMenuIconController::IconType::UPGRADE_NOTIFICATION:
-      icon_id = &kBrowserToolsUpdateIcon;
+      icon_id = gfx::VectorIconId::BROWSER_TOOLS_UPDATE;
       break;
     case AppMenuIconController::IconType::GLOBAL_ERROR:
     case AppMenuIconController::IconType::INCOMPATIBILITY_WARNING:
-      icon_id = &kBrowserToolsErrorIcon;
+      icon_id = gfx::VectorIconId::BROWSER_TOOLS_ERROR;
       break;
   }
 
-  SetImage(views::Button::STATE_NORMAL, gfx::CreateVectorIcon(*icon_id, color));
+  SetImage(views::Button::STATE_NORMAL, gfx::CreateVectorIcon(icon_id, color));
 }
 
 void AppMenuButton::SetTrailingMargin(int margin) {

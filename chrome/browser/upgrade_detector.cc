@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/browser_otr_state.h"
@@ -16,6 +15,7 @@
 #include "content/public/browser/notification_service.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 
 // How long to wait between checks for whether the user has been idle.
 static const int kIdleRepeatingTimerWait = 10;  // Minutes (seconds if testing).
@@ -57,7 +57,8 @@ gfx::Image UpgradeDetector::GetIcon() {
   }
   DCHECK_NE(gfx::kPlaceholderColor, color);
 
-  return gfx::Image(gfx::CreateVectorIcon(kBrowserToolsUpdateIcon, color));
+  return gfx::Image(
+      gfx::CreateVectorIcon(gfx::VectorIconId::BROWSER_TOOLS_UPDATE, color));
 }
 
 UpgradeDetector::UpgradeDetector()

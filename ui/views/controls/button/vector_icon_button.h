@@ -9,7 +9,6 @@
 #include "ui/views/controls/button/image_button.h"
 
 namespace gfx {
-struct VectorIcon;
 enum class VectorIconId;
 }
 
@@ -25,11 +24,8 @@ class VIEWS_EXPORT VectorIconButton : public views::ImageButton {
   ~VectorIconButton() override;
 
   // Sets the icon to display and provides a callback which should return the
-  // text color from which to derive this icon's color. The one that takes an ID
-  // is deprecated and should be removed when all vector icons are identified by
-  // VectorIcon structs.
+  // text color from which to derive this icon's color.
   void SetIcon(gfx::VectorIconId id);
-  void SetIcon(const gfx::VectorIcon& icon);
 
   // views::ImageButton:
   void OnThemeChanged() override;
@@ -37,10 +33,7 @@ class VIEWS_EXPORT VectorIconButton : public views::ImageButton {
 
  private:
   VectorIconButtonDelegate* delegate_;
-  // TODO(estade): remove |id_| in favor of |icon_| once all callers have been
-  // updated.
   gfx::VectorIconId id_;
-  const gfx::VectorIcon* icon_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(VectorIconButton);
 };

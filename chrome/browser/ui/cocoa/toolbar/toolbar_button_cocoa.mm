@@ -6,7 +6,6 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/sdk_forward_declarations.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
@@ -205,22 +204,24 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
                                    yRadius:2] fill];
 }
 
-- (const gfx::VectorIcon*)vectorIcon {
+- (gfx::VectorIconId)vectorIconId {
   BOOL isRTL = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
   switch ([self viewID]) {
     case VIEW_ID_BACK_BUTTON:
-      return isRTL ? &kNavigateForwardIcon : &kNavigateBackIcon;
+      return isRTL ? gfx::VectorIconId::NAVIGATE_FORWARD
+                   : gfx::VectorIconId::NAVIGATE_BACK;
     case VIEW_ID_FORWARD_BUTTON:
-      return isRTL ? &kNavigateBackIcon : &kNavigateForwardIcon;
+      return isRTL ? gfx::VectorIconId::NAVIGATE_BACK
+                   : gfx::VectorIconId::NAVIGATE_FORWARD;
     case VIEW_ID_HOME_BUTTON:
-      return &kNavigateHomeIcon;
+      return gfx::VectorIconId::NAVIGATE_HOME;
     case VIEW_ID_APP_MENU:
-      return &kBrowserToolsIcon;
+      return gfx::VectorIconId::BROWSER_TOOLS;
     default:
       break;
   }
 
-  return nullptr;
+  return gfx::VectorIconId::VECTOR_ICON_NONE;
 }
 
 - (SkColor)vectorIconColor:(BOOL)themeIsDark {
@@ -285,9 +286,9 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
   NSImage* disabledIcon = nil;
   BOOL isDarkTheme = NO;
 
-  const gfx::VectorIcon* icon = [self vectorIcon];
-  if (!icon) {
-    // If the button does not have a vector icon (e.g. it's an extension
+  gfx::VectorIconId iconId = [self vectorIconId];
+  if (iconId == gfx::VectorIconId::VECTOR_ICON_NONE) {
+    // If the button does not have a vector icon id (e.g. it's an extension
     // button), use its image. The hover, etc. images will be created using
     // imageForIcon:withBackgroundStyle: so do the same for the default image.
     // If we don't do this, the icon may not appear in the same place as in the
@@ -307,19 +308,19 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
 
     // Create the normal and disabled state icons. These icons are always the
     // same shape but use a different color.
-    if (icon == &kBrowserToolsIcon) {
+    if (iconId == gfx::VectorIconId::BROWSER_TOOLS) {
       normalIcon = [self browserToolsIconForFillColor:normalColor];
       disabledIcon = [self browserToolsIconForFillColor:disabledColor];
     } else {
       normalIcon = NSImageFromImageSkia(
-          gfx::CreateVectorIcon(*icon,
+          gfx::CreateVectorIcon(iconId,
                                 kMDButtonIconSize.width,
                                 normalColor));
 
       // The home button has no icon for its disabled state.
-      if (icon != &kNavigateReloadIcon) {
+      if (iconId != gfx::VectorIconId::NAVIGATE_RELOAD) {
         disabledIcon = NSImageFromImageSkia(
-            gfx::CreateVectorIcon(*icon,
+            gfx::CreateVectorIcon(iconId,
                                   kMDButtonIconSize.width,
                                   disabledColor));
       }

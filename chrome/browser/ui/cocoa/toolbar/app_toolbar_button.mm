@@ -5,7 +5,6 @@
 #import "chrome/browser/ui/cocoa/toolbar/app_toolbar_button.h"
 
 #include "base/macros.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -34,19 +33,19 @@
   type_ = AppMenuIconController::IconType::NONE;
 }
 
-- (const gfx::VectorIcon*)vectorIcon {
+- (gfx::VectorIconId)vectorIconId {
   switch (type_) {
     case AppMenuIconController::IconType::NONE:
       DCHECK_EQ(severity_, AppMenuIconController::Severity::NONE);
-      return &kBrowserToolsIcon;
+      return gfx::VectorIconId::BROWSER_TOOLS;
     case AppMenuIconController::IconType::UPGRADE_NOTIFICATION:
-      return &kBrowserToolsUpdateIcon;
+      return gfx::VectorIconId::BROWSER_TOOLS_UPDATE;
     case AppMenuIconController::IconType::GLOBAL_ERROR:
     case AppMenuIconController::IconType::INCOMPATIBILITY_WARNING:
-      return &kBrowserToolsErrorIcon;
+      return gfx::VectorIconId::BROWSER_TOOLS_ERROR;
   }
 
-  return nullptr;
+  return gfx::VectorIconId::VECTOR_ICON_NONE;
 }
 
 - (SkColor)vectorIconColor:(BOOL)themeIsDark {

@@ -1178,7 +1178,6 @@ split_static_library("ui") {
     ]
     deps += [
       "//apps",
-      "//chrome/app/vector_icons",
       "//chrome/browser/profile_resetter:profile_reset_report_proto",
       "//chrome/common:features",
       "//components/feedback/proto",
