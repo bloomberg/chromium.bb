@@ -1243,12 +1243,6 @@ bool CSSPropertyParser::consumeAnimationShorthand(
   return m_range.atEnd();
 }
 
-static CSSValue* consumeZIndex(CSSParserTokenRange& range) {
-  if (range.peek().id() == CSSValueAuto)
-    return consumeIdent(range);
-  return consumeInteger(range);
-}
-
 static CSSShadowValue* parseSingleShadow(CSSParserTokenRange& range,
                                          CSSParserMode cssParserMode,
                                          bool allowInset,
@@ -3519,8 +3513,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
           allowQuirkyLengths ? UnitlessQuirk::Allow : UnitlessQuirk::Forbid;
       return consumeBorderWidth(m_range, m_context.mode(), unitless);
     }
-    case CSSPropertyZIndex:
-      return consumeZIndex(m_range);
     case CSSPropertyTextShadow:
     case CSSPropertyBoxShadow:
       return consumeShadow(m_range, m_context.mode(),
