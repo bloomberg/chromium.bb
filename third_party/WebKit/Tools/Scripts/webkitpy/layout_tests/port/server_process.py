@@ -408,6 +408,12 @@ class ServerProcess(object):
         if self._proc.poll() is not None:
             self._proc.wait()
 
+    def replace_input(self, stdin):
+        assert self._proc
+        if stdin:
+            self._proc.stdin.close()
+            self._proc.stdin = stdin
+
     def replace_outputs(self, stdout, stderr):
         assert self._proc
         if stdout:

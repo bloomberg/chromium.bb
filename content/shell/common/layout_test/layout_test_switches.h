@@ -10,9 +10,16 @@
 #include <string>
 #include <vector>
 
+#include "build/build_config.h"
+
 namespace switches {
 
 extern const char kAllowExternalPages[];
+#if defined(OS_ANDROID)
+extern const char kAndroidStderrPort[];
+extern const char kAndroidStdinPort[];
+extern const char kAndroidStdoutPort[];
+#endif // defined(OS_ANDROID)
 extern const char kCheckLayoutTestSysDeps[];
 extern const char kCrashOnFailure[];
 extern const char kCustomDevToolsFrontend[];

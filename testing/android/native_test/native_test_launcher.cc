@@ -14,7 +14,6 @@
 
 #include "base/android/base_jni_registrar.h"
 #include "base/android/context_utils.h"
-#include "base/android/fifo_utils.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/at_exit.h"
@@ -105,7 +104,7 @@ static void RunTests(JNIEnv* env,
 
   // A few options, such "--gtest_list_tests", will just use printf directly
   // Always redirect stdout to a known file.
-  if (!base::android::RedirectStream(stdout, stdout_file_path, "a+")) {
+  if (freopen(stdout_file_path.value().c_str(), "a+", stdout) == NULL) {
     AndroidLog(ANDROID_LOG_ERROR, "Failed to redirect stream to file: %s: %s\n",
                stdout_file_path.value().c_str(), strerror(errno));
     exit(EXIT_FAILURE);

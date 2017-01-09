@@ -58,8 +58,6 @@ static_library("content_shell_lib") {
     "app/shell_main_delegate_mac.mm",
     "browser/layout_test/blink_test_controller.cc",
     "browser/layout_test/blink_test_controller.h",
-    "browser/layout_test/layout_test_android.cc",
-    "browser/layout_test/layout_test_android.h",
     "browser/layout_test/layout_test_bluetooth_adapter_provider.cc",
     "browser/layout_test/layout_test_bluetooth_adapter_provider.h",
     "browser/layout_test/layout_test_bluetooth_chooser_factory.cc",
@@ -312,7 +310,14 @@ static_library("content_shell_lib") {
   }
 
   if (is_android) {
-    deps += [ "//content/shell/android:content_shell_jni_headers" ]
+    sources += [
+      "browser/layout_test/scoped_android_configuration.cc",
+      "browser/layout_test/scoped_android_configuration.h",
+    ]
+    deps += [
+      "//base/test:test_support",
+      "//content/shell/android:content_shell_jni_headers",
+    ]
   }
 
   if (is_posix && !is_mac) {

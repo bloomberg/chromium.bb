@@ -32,7 +32,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/run_loop.h"
-#include "content/shell/browser/layout_test/layout_test_android.h"
+#include "content/shell/browser/layout_test/scoped_android_configuration.h"
 #endif
 
 namespace {
@@ -123,7 +123,7 @@ int LayoutTestBrowserMain(
       browser_context_path_for_layout_tests.GetPath().MaybeAsASCII());
 
 #if defined(OS_ANDROID)
-  content::EnsureInitializeForAndroidLayoutTests();
+  content::ScopedAndroidConfiguration android_configuration;
 #endif
 
   int exit_code = main_runner->Initialize(parameters);
@@ -132,6 +132,10 @@ int LayoutTestBrowserMain(
 
   if (exit_code >= 0)
     return exit_code;
+
+#if defined(OS_ANDROID)
+  android_configuration.RedirectStreams();
+#endif
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kCheckLayoutTestSysDeps)) {

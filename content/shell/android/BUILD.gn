@@ -43,6 +43,7 @@ android_library("content_shell_java") {
   deps = [
     ":content_shell_java_resources",
     "//base:base_java",
+    "//base:base_java_test_support",
     "//content/public/android:content_java",
     "//device/geolocation:geolocation_java",
     "//media/base/android:media_java",

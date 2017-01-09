@@ -26,6 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import itertools
 import logging
 import os
 import re
@@ -120,6 +121,11 @@ LAYOUT_TEST_PATH_PREFIX = '/all-tests'
 # 8880 and 9323 are for websocket tests
 # (see http_server.py, apache_http_server.py and websocket_server.py).
 FORWARD_PORTS = '8000 8080 8443 8880 9323'
+
+# We start netcat processes for each of the three stdio streams. In doing so,
+# we attempt to use ports starting from 10201. This starting value is
+# completely arbitrary.
+FIRST_NETCAT_PORT = 10201
 
 MS_TRUETYPE_FONTS_DIR = '/usr/share/fonts/truetype/msttcorefonts/'
 MS_TRUETYPE_FONTS_PACKAGE = 'ttf-mscorefonts-installer'
@@ -298,7 +304,7 @@ class AndroidPort(base.Port):
         self._version = 'icecreamsandwich'
 
         self._host_port = factory.PortFactory(host).get(**kwargs)
-        self._server_process_constructor = self._android_server_process_constructor
+        self.server_process_constructor = self._android_server_process_constructor
 
         if not self.get_option('disable_breakpad'):
             self._dump_reader = DumpReaderAndroid(host, self._build_path())
@@ -640,9 +646,7 @@ class ChromiumAndroidDriver(driver.Driver):
 
     def __init__(self, port, worker_number, pixel_tests, driver_details, android_devices, no_timeout=False):
         super(ChromiumAndroidDriver, self).__init__(port, worker_number, pixel_tests, no_timeout)
-        self._in_fifo_path = driver_details.device_fifo_directory() + 'stdin.fifo'
-        self._out_fifo_path = driver_details.device_fifo_directory() + 'test.fifo'
-        self._err_fifo_path = driver_details.device_fifo_directory() + 'stderr.fifo'
+        self._write_stdin_process = None
         self._read_stdout_process = None
         self._read_stderr_process = None
         self._original_kptr_restrict = None
@@ -857,7 +861,7 @@ class ChromiumAndroidDriver(driver.Driver):
         return '%s\n%s' % (' '.join(last_tombstone), tombstone_contents)
 
     def _get_logcat(self):
-        return list(self._device.adb.Logcat(dump=True, logcat_format='threadtime'))
+        return '\n'.join(self._device.adb.Logcat(dump=True, logcat_format='threadtime'))
 
     def _setup_performance(self):
         # Disable CPU scaling and drop ram cache to reduce noise in tests
@@ -908,18 +912,6 @@ class ChromiumAndroidDriver(driver.Driver):
                 return True
         return False
 
-    def _all_pipes_created(self):
-        return self._device.PathExists(
-            [self._in_fifo_path, self._out_fifo_path, self._err_fifo_path])
-
-    def _remove_all_pipes(self):
-        self._device.RunShellCommand(
-            ['rm', '-f', self._in_fifo_path, self._out_fifo_path, self._err_fifo_path],
-            check_return=True)
-        return (not self._device.PathExists(self._in_fifo_path) and
-                not self._device.PathExists(self._out_fifo_path) and
-                not self._device.PathExists(self._err_fifo_path))
-
     def start(self, pixel_tests, per_test_args, deadline):
         # We override the default start() so that we can call _android_driver_cmd_line()
         # instead of cmd_line().
@@ -946,13 +938,41 @@ class ChromiumAndroidDriver(driver.Driver):
             except ScriptError as error:
                 self._abort('ScriptError("%s") in _start()' % error)
 
-            self._log_error('Failed to start the content_shell application. Retries=%d. Log:%s' % (retries, self._get_logcat()))
+            self._log_error('Failed to start the content_shell application. Retries=%d. Log:\n%s' % (retries, self._get_logcat()))
             self.stop()
             time.sleep(2)
         self._abort('Failed to start the content_shell application multiple times. Giving up.')
 
     def _start_once(self, pixel_tests, per_test_args):
         super(ChromiumAndroidDriver, self)._start(pixel_tests, per_test_args, wait_for_ready=False)
+
+        self._device.adb.Logcat(clear=True)
+
+        self._create_device_crash_dumps_directory()
+
+        # Read back the shell prompt to ensure adb shell is ready.
+        deadline = time.time() + DRIVER_START_STOP_TIMEOUT_SECS
+        self._server_process.start()
+        self._read_prompt(deadline)
+        self._log_debug('Interactive shell started')
+
+        # Start a netcat process to which the test driver will connect to write stdout.
+        self._read_stdout_process, stdout_port = self._start_netcat(
+            'ReadStdout', read_from_stdin=False)
+        self._log_debug('Redirecting stdout to port %d' % stdout_port)
+
+        # Start a netcat process to which the test driver will connect to write stderr.
+        self._read_stderr_process, stderr_port = self._start_netcat(
+            'ReadStderr', first_port=stdout_port + 1, read_from_stdin=False)
+        self._log_debug('Redirecting stderr to port %d' % stderr_port)
+
+        # Start a netcat process to which the test driver will connect to read stdin.
+        self._write_stdin_process, stdin_port = self._start_netcat(
+            'WriteStdin', first_port=stderr_port + 1)
+        self._log_debug('Redirecting stdin to port %d' % stdin_port)
+
+        # Combine the stdin, stdout, and stderr pipes into self._server_process.
+        self._replace_server_process_streams()
 
         # We delay importing forwarder as long as possible because it uses fcntl,
         # which isn't available on windows.
@@ -962,8 +982,10 @@ class ChromiumAndroidDriver(driver.Driver):
         forwarder.Forwarder.Map(
             [(p, p) for p in FORWARD_PORTS.split()],
             self._device)
-
-        self._device.adb.Logcat(clear=True)
+        forwarder.Forwarder.Map(
+            [(forwarder.DYNAMIC_DEVICE_PORT, p)
+             for p in (stdout_port, stderr_port, stdin_port)],
+            self._device)
 
         cmd_line_file_path = self._driver_details.command_line_file()
         original_cmd_line_file_path = cmd_line_file_path + '.orig'
@@ -976,20 +998,17 @@ class ChromiumAndroidDriver(driver.Driver):
                 ['mv', cmd_line_file_path, original_cmd_line_file_path],
                 check_return=True)
 
+        stream_port_args = [
+            '--android-stderr-port=%s' % forwarder.Forwarder.DevicePortForHostPort(stderr_port),
+            '--android-stdin-port=%s' % forwarder.Forwarder.DevicePortForHostPort(stdin_port),
+            '--android-stdout-port=%s' % forwarder.Forwarder.DevicePortForHostPort(stdout_port),
+        ]
+        cmd_line_contents = self._android_driver_cmd_line(pixel_tests, per_test_args + stream_port_args)
         self._device.WriteFile(
             self._driver_details.command_line_file(),
-            ' '.join(self._android_driver_cmd_line(pixel_tests, per_test_args)))
+            ' '.join(cmd_line_contents))
+        self._log_debug('Command-line file contents: %s' % ' '.join(cmd_line_contents))
         self._created_cmd_line = True
-
-        self._device.RunShellCommand(
-            ['rm', '-rf', self._driver_details.device_crash_dumps_directory()],
-            check_return=True)
-        self._device.RunShellCommand(
-            ['mkdir', self._driver_details.device_crash_dumps_directory()],
-            check_return=True)
-        self._device.RunShellCommand(
-            ['chmod', '-R', '777', self._driver_details.device_crash_dumps_directory()],
-            check_return=True)
 
         try:
             self._device.StartActivity(
@@ -1000,61 +1019,45 @@ class ChromiumAndroidDriver(driver.Driver):
             self._log_error('Failed to start the content_shell application. Exception:\n' + str(exc))
             return False
 
-        if not ChromiumAndroidDriver._loop_with_timeout(self._all_pipes_created, DRIVER_START_STOP_TIMEOUT_SECS):
-            return False
-
-        # Read back the shell prompt to ensure adb shell ready.
-        deadline = time.time() + DRIVER_START_STOP_TIMEOUT_SECS
-        self._server_process.start()
-        self._read_prompt(deadline)
-        self._log_debug('Interactive shell started')
-
-        # Start a process to read from the stdout fifo of the test driver and print to stdout.
-        self._log_debug('Redirecting stdout to ' + self._out_fifo_path)
-        self._read_stdout_process = self._port._server_process_constructor(
-            self._port, 'ReadStdout',
-            [self._device.adb.GetAdbPath(), '-s', self._device.serial, 'shell', 'cat', self._out_fifo_path])
-        self._read_stdout_process.start()
-
-        # Start a process to read from the stderr fifo of the test driver and print to stdout.
-        self._log_debug('Redirecting stderr to ' + self._err_fifo_path)
-        self._read_stderr_process = self._port._server_process_constructor(
-            self._port, 'ReadStderr',
-            [self._device.adb.GetAdbPath(), '-s', self._device.serial, 'shell', 'cat', self._err_fifo_path])
-        self._read_stderr_process.start()
-
-        self._log_debug('Redirecting stdin to ' + self._in_fifo_path)
-        self._server_process.write('cat >%s\n' % self._in_fifo_path)
-
-        # Combine the stdout and stderr pipes into self._server_process.
-        self._server_process.replace_outputs(self._read_stdout_process._proc.stdout, self._read_stderr_process._proc.stdout)
-
-        def deadlock_detector(processes, normal_startup_event):
-            if not ChromiumAndroidDriver._loop_with_timeout(lambda: normal_startup_event.is_set(), DRIVER_START_STOP_TIMEOUT_SECS):
-                # If normal_startup_event is not set in time, the main thread must be blocked at
-                # reading/writing the fifo. Kill the fifo reading/writing processes to let the
-                # main thread escape from the deadlocked state. After that, the main thread will
-                # treat this as a crash.
-                self._log_error('Deadlock detected. Processes killed.')
-                for i in processes:
-                    i.kill()
-
-        # Start a thread to kill the pipe reading/writing processes on deadlock of the fifos during startup.
-        normal_startup_event = threading.Event()
-        threading.Thread(
-            name='DeadlockDetector',
-            target=deadlock_detector,
-            args=([self._server_process, self._read_stdout_process, self._read_stderr_process], normal_startup_event)).start()
-
-        # The test driver might crash during startup or when the deadlock detector hits
-        # a deadlock and kills the fifo reading/writing processes.
+        # The test driver might crash during startup.
         if not self._wait_for_server_process_output(self._server_process, deadline, '#READY'):
             return False
 
-        # Inform the deadlock detector that the startup is successful without deadlock.
-        normal_startup_event.set()
         self._log_debug("content_shell is ready")
         return True
+
+    def _create_device_crash_dumps_directory(self):
+        self._device.RunShellCommand(
+            ['rm', '-rf', self._driver_details.device_crash_dumps_directory()],
+            check_return=True)
+        self._device.RunShellCommand(
+            ['mkdir', self._driver_details.device_crash_dumps_directory()],
+            check_return=True)
+        self._device.RunShellCommand(
+            ['chmod', '-R', '777', self._driver_details.device_crash_dumps_directory()],
+            check_return=True)
+
+    def _start_netcat(self, server_name, first_port=FIRST_NETCAT_PORT, read_from_stdin=True):
+        for i in itertools.count(first_port, 65536):
+            nc_cmd = ['nc', '-l', str(i)]
+            if not read_from_stdin:
+                nc_cmd.append('-d')
+            proc = self._port.server_process_constructor(self._port, server_name, nc_cmd)
+            proc.start()
+            self._port.host.executive.wait_limited(proc.pid(), limit_in_seconds=1)
+            if self._port.host.executive.check_running_pid(proc.pid()):
+                return (proc, i)
+
+        raise Exception(
+            'Unable to find a port for netcat process %s' % server_name)
+
+    def _replace_server_process_streams(self):
+        # pylint: disable=protected-access
+        self._server_process.replace_input(
+            self._write_stdin_process._proc.stdin)
+        self._server_process.replace_outputs(
+            self._read_stdout_process._proc.stdout,
+            self._read_stderr_process._proc.stdout)
 
     def _pid_on_target(self):
         pids = self._device.GetPids(self._driver_details.package_name())
@@ -1065,6 +1068,10 @@ class ChromiumAndroidDriver(driver.Driver):
             # Do not try to stop the application if there's something wrong with the device; adb may hang.
             # FIXME: crbug.com/305040. Figure out if it's really hanging (and why).
             self._device.ForceStop(self._driver_details.package_name())
+
+        if self._write_stdin_process:
+            self._write_stdin_process.kill()
+            self._write_stdin_process = None
 
         if self._read_stdout_process:
             self._read_stdout_process.kill()
@@ -1082,10 +1089,6 @@ class ChromiumAndroidDriver(driver.Driver):
         forwarder.Forwarder.KillHost()
 
         super(ChromiumAndroidDriver, self).stop()
-
-        if self._android_devices.is_device_prepared(self._device.serial):
-            if not ChromiumAndroidDriver._loop_with_timeout(self._remove_all_pipes, DRIVER_START_STOP_TIMEOUT_SECS):
-                self._abort('Failed to remove fifo files. May be locked.')
 
         self._clean_up_cmd_line()
 

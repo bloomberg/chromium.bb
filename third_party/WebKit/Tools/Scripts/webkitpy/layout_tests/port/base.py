@@ -172,7 +172,7 @@ class Port(object):
         self._is_wptserve_enabled = getattr(options, 'enable_wptserve', False)
         self._wpt_server = None
         self._image_differ = None
-        self._server_process_constructor = server_process.ServerProcess  # overridable for testing
+        self.server_process_constructor = server_process.ServerProcess  # overridable for testing
         self._http_lock = None  # FIXME: Why does this live on the port object?
         self._dump_reader = None
 

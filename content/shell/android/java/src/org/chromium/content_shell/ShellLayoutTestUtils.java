@@ -4,10 +4,9 @@
 
 package org.chromium.content_shell;
 
-import android.content.Context;
-
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.test.util.UrlUtils;
 
 /**
  * Utility methods used by content_shell for running Blink's layout tests on Android.
@@ -15,11 +14,10 @@ import org.chromium.base.annotations.JNINamespace;
 @JNINamespace("content")
 class ShellLayoutTestUtils {
     /**
-     * @return The directory in which the test files, for example FIFOs, can be stored.
+     * @return The directory in which test data is stored.
      */
-    @SuppressWarnings("unused")
     @CalledByNative
-    private static String getApplicationFilesDirectory(Context appContext) {
-        return appContext.getFilesDir().getAbsolutePath();
+    private static String getIsolatedTestRoot() {
+        return UrlUtils.getIsolatedTestRoot();
     }
 }
