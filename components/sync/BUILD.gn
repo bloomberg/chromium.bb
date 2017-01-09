@@ -436,6 +436,8 @@ static_library("sync") {
     "model/metadata_batch.cc",
     "model/metadata_batch.h",
     "model/metadata_change_list.h",
+    "model/model_error.cc",
+    "model/model_error.h",
     "model/model_type_change_processor.cc",
     "model/model_type_change_processor.h",
     "model/model_type_debug_info.cc",

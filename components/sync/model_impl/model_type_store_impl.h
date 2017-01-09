@@ -111,12 +111,6 @@ class ModelTypeStoreImpl : public ModelTypeStore, public base::NonThreadSafe {
                            const std::string& global_metadata,
                            std::unique_ptr<RecordList> metadata_records);
 
-  // Helper function to create a SyncError with message |msg|.
-  SyncError MakeSyncError(const std::string& msg);
-
-  // The model type using this store.
-  const ModelType type_;
-
   // Backend should be deleted on backend thread.
   // To accomplish this store's dtor posts task to backend thread passing
   // backend ownership to task parameter.

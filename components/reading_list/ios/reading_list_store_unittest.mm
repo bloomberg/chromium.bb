@@ -220,7 +220,7 @@ TEST_F(ReadingListStoreTest, SyncMergeOneEntry) {
 
   std::unique_ptr<syncer::MetadataChangeList> metadata_changes(
       reading_list_store_->CreateMetadataChangeList());
-  const syncer::SyncError error = reading_list_store_->MergeSyncData(
+  const syncer::ModelError error = reading_list_store_->MergeSyncData(
       std::move(metadata_changes), remote_input);
   AssertCounts(0, 0, 1, 0, 0);
   EXPECT_EQ(sync_added_.size(), 1u);
@@ -242,7 +242,7 @@ TEST_F(ReadingListStoreTest, ApplySyncChangesOneAdd) {
 
   add_changes.push_back(syncer::EntityChange::CreateAdd(
       "http://read.example.com/", data.PassToPtr()));
-  syncer::SyncError error = reading_list_store_->ApplySyncChanges(
+  syncer::ModelError error = reading_list_store_->ApplySyncChanges(
       reading_list_store_->CreateMetadataChangeList(), add_changes);
   AssertCounts(0, 0, 1, 0, 0);
   EXPECT_EQ(sync_added_.size(), 1u);
@@ -268,7 +268,7 @@ TEST_F(ReadingListStoreTest, ApplySyncChangesOneMerge) {
   syncer::EntityChangeList add_changes;
   add_changes.push_back(syncer::EntityChange::CreateAdd(
       "http://unread.example.com/", data.PassToPtr()));
-  syncer::SyncError error = reading_list_store_->ApplySyncChanges(
+  syncer::ModelError error = reading_list_store_->ApplySyncChanges(
       reading_list_store_->CreateMetadataChangeList(), add_changes);
   AssertCounts(1, 0, 0, 0, 1);
   EXPECT_EQ(sync_merged_.size(), 1u);
@@ -297,7 +297,7 @@ TEST_F(ReadingListStoreTest, ApplySyncChangesOneIgnored) {
   syncer::EntityChangeList add_changes;
   add_changes.push_back(syncer::EntityChange::CreateAdd(
       "http://unread.example.com/", data.PassToPtr()));
-  syncer::SyncError error = reading_list_store_->ApplySyncChanges(
+  syncer::ModelError error = reading_list_store_->ApplySyncChanges(
       reading_list_store_->CreateMetadataChangeList(), add_changes);
   AssertCounts(1, 0, 0, 0, 1);
   EXPECT_EQ(sync_merged_.size(), 1u);
@@ -307,7 +307,7 @@ TEST_F(ReadingListStoreTest, ApplySyncChangesOneRemove) {
   syncer::EntityChangeList delete_changes;
   delete_changes.push_back(
       syncer::EntityChange::CreateDelete("http://read.example.com/"));
-  syncer::SyncError error = reading_list_store_->ApplySyncChanges(
+  syncer::ModelError error = reading_list_store_->ApplySyncChanges(
       reading_list_store_->CreateMetadataChangeList(), delete_changes);
   AssertCounts(0, 0, 0, 1, 0);
   EXPECT_EQ(sync_removed_.size(), 1u);

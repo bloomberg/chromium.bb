@@ -12,6 +12,7 @@
 #include "components/sync/engine/non_blocking_sync_common.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/model/metadata_batch.h"
+#include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_sync_bridge.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
 #include "components/sync/protocol/model_type_state.pb.h"
@@ -102,10 +103,10 @@ class FakeModelTypeSyncBridge : public ModelTypeSyncBridge {
 
   // ModelTypeSyncBridge implementation
   std::unique_ptr<MetadataChangeList> CreateMetadataChangeList() override;
-  SyncError MergeSyncData(
+  ModelError MergeSyncData(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
       EntityDataMap entity_data_map) override;
-  SyncError ApplySyncChanges(
+  ModelError ApplySyncChanges(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
       EntityChangeList entity_changes) override;
   void GetData(StorageKeyList storage_keys, DataCallback callback) override;
@@ -120,8 +121,8 @@ class FakeModelTypeSyncBridge : public ModelTypeSyncBridge {
   // is a USE_NEW resolution, the data will only exist for one resolve call.
   void SetConflictResolution(ConflictResolution resolution);
 
-  // Sets the error that the next fallible call to the bridge will generate.
-  void ErrorOnNextCall(SyncError::ErrorType error_type);
+  // Sets an error that the next fallible call to the bridge will generate.
+  void ErrorOnNextCall();
 
   const Store& db() { return *db_; }
 
@@ -139,8 +140,8 @@ class FakeModelTypeSyncBridge : public ModelTypeSyncBridge {
   // The conflict resolution to use for calls to ResolveConflict.
   std::unique_ptr<ConflictResolution> conflict_resolution_;
 
-  // The error to produce on the next bridge call.
-  SyncError bridge_error_;
+  // Whether an error should be produced on the next bridge call.
+  bool error_next_ = false;
 };
 
 }  // namespace syncer

@@ -16,6 +16,7 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/model/fake_model_type_sync_bridge.h"
 #include "components/sync/model/metadata_change_list.h"
+#include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_change_processor.h"
 
 using browser_sync::ChromeSyncClient;
@@ -63,14 +64,13 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
 
   TestModelTypeSyncBridge()
       : FakeModelTypeSyncBridge(base::Bind(&ModelTypeChangeProcessor::Create)) {
-    change_processor()->OnMetadataLoaded(syncer::SyncError(),
-                                         db().CreateMetadataBatch());
+    change_processor()->OnMetadataLoaded(db().CreateMetadataBatch());
   }
 
-  syncer::SyncError ApplySyncChanges(
+  syncer::ModelError ApplySyncChanges(
       std::unique_ptr<syncer::MetadataChangeList> metadata_changes,
       syncer::EntityChangeList entity_changes) override {
-    syncer::SyncError error = FakeModelTypeSyncBridge::ApplySyncChanges(
+    syncer::ModelError error = FakeModelTypeSyncBridge::ApplySyncChanges(
         std::move(metadata_changes), entity_changes);
     NotifyObservers();
     return error;
@@ -324,7 +324,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, Error) {
   ASSERT_TRUE(DataChecker(model1, kKey1, kValue1).Wait());
 
   // Set an error in model 1 to trigger in the next GetUpdates.
-  model1->ErrorOnNextCall(syncer::SyncError::DATATYPE_ERROR);
+  model1->ErrorOnNextCall();
   // Write an item on model 0 to trigger a GetUpdates in model 1.
   model0->WriteItem(kKey1, kValue2);
 

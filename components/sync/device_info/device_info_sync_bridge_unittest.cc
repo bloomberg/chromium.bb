@@ -115,9 +115,7 @@ void VerifyEqual(const DeviceInfoSpecifics& specifics,
 }
 
 void VerifyDataBatch(std::map<std::string, DeviceInfoSpecifics> expected,
-                     SyncError error,
                      std::unique_ptr<DataBatch> batch) {
-  EXPECT_FALSE(error.IsSet());
   while (batch->HasNext()) {
     const KeyAndData& pair = batch->Next();
     auto iter = expected.find(pair.first);
@@ -192,8 +190,7 @@ class RecordingModelTypeChangeProcessor : public FakeModelTypeChangeProcessor {
     delete_set_.insert(storage_key);
   }
 
-  void OnMetadataLoaded(SyncError error,
-                        std::unique_ptr<MetadataBatch> batch) override {
+  void OnMetadataLoaded(std::unique_ptr<MetadataBatch> batch) override {
     std::swap(metadata_, batch);
   }
 
@@ -501,7 +498,7 @@ TEST_F(DeviceInfoSyncBridgeTest, GetAllData) {
 TEST_F(DeviceInfoSyncBridgeTest, ApplySyncChangesEmpty) {
   InitializeAndPump();
   EXPECT_EQ(1, change_count());
-  const SyncError error = bridge()->ApplySyncChanges(
+  const ModelError error = bridge()->ApplySyncChanges(
       bridge()->CreateMetadataChangeList(), EntityChangeList());
   EXPECT_FALSE(error.IsSet());
   EXPECT_EQ(1, change_count());
@@ -512,7 +509,7 @@ TEST_F(DeviceInfoSyncBridgeTest, ApplySyncChangesInMemory) {
   EXPECT_EQ(1, change_count());
 
   const DeviceInfoSpecifics specifics = CreateSpecifics(1);
-  const SyncError error_on_add = bridge()->ApplySyncChanges(
+  const ModelError error_on_add = bridge()->ApplySyncChanges(
       bridge()->CreateMetadataChangeList(), EntityAddList({specifics}));
 
   EXPECT_FALSE(error_on_add.IsSet());
@@ -522,7 +519,7 @@ TEST_F(DeviceInfoSyncBridgeTest, ApplySyncChangesInMemory) {
   VerifyEqual(specifics, *info.get());
   EXPECT_EQ(2, change_count());
 
-  const SyncError error_on_delete = bridge()->ApplySyncChanges(
+  const ModelError error_on_delete = bridge()->ApplySyncChanges(
       bridge()->CreateMetadataChangeList(),
       {EntityChange::CreateDelete(specifics.cache_guid())});
 
@@ -541,7 +538,7 @@ TEST_F(DeviceInfoSyncBridgeTest, ApplySyncChangesStore) {
       bridge()->CreateMetadataChangeList();
   metadata_changes->UpdateModelTypeState(state);
 
-  const SyncError error = bridge()->ApplySyncChanges(
+  const ModelError error = bridge()->ApplySyncChanges(
       std::move(metadata_changes), EntityAddList({specifics}));
   EXPECT_FALSE(error.IsSet());
   EXPECT_EQ(2, change_count());
@@ -578,12 +575,12 @@ TEST_F(DeviceInfoSyncBridgeTest, ApplySyncChangesWithLocalGuid) {
   EXPECT_LT(Time::Now() - TimeDelta::FromMinutes(1), last_updated);
   EXPECT_GT(Time::Now() + TimeDelta::FromMinutes(1), last_updated);
 
-  const SyncError error_on_add = bridge()->ApplySyncChanges(
+  const ModelError error_on_add = bridge()->ApplySyncChanges(
       bridge()->CreateMetadataChangeList(), EntityAddList({specifics}));
   EXPECT_FALSE(error_on_add.IsSet());
   EXPECT_EQ(1, change_count());
 
-  const SyncError error_on_delete = bridge()->ApplySyncChanges(
+  const ModelError error_on_delete = bridge()->ApplySyncChanges(
       bridge()->CreateMetadataChangeList(),
       {EntityChange::CreateDelete(specifics.cache_guid())});
   EXPECT_FALSE(error_on_delete.IsSet());
@@ -593,7 +590,7 @@ TEST_F(DeviceInfoSyncBridgeTest, ApplySyncChangesWithLocalGuid) {
 TEST_F(DeviceInfoSyncBridgeTest, ApplyDeleteNonexistent) {
   InitializeAndPump();
   EXPECT_EQ(1, change_count());
-  const SyncError error =
+  const ModelError error =
       bridge()->ApplySyncChanges(bridge()->CreateMetadataChangeList(),
                                  {EntityChange::CreateDelete("guid")});
   EXPECT_FALSE(error.IsSet());
@@ -608,7 +605,7 @@ TEST_F(DeviceInfoSyncBridgeTest, ClearProviderAndApply) {
   const DeviceInfoSpecifics specifics = CreateSpecifics(1, Time::Now());
 
   local_device()->Clear();
-  SyncError error = bridge()->ApplySyncChanges(
+  ModelError error = bridge()->ApplySyncChanges(
       bridge()->CreateMetadataChangeList(), EntityAddList({specifics}));
   EXPECT_FALSE(error.IsSet());
   EXPECT_EQ(1u, bridge()->GetAllDeviceInfo().size());
@@ -622,7 +619,7 @@ TEST_F(DeviceInfoSyncBridgeTest, ClearProviderAndApply) {
 TEST_F(DeviceInfoSyncBridgeTest, MergeEmpty) {
   InitializeAndPump();
   EXPECT_EQ(1, change_count());
-  const SyncError error = bridge()->MergeSyncData(
+  const ModelError error = bridge()->MergeSyncData(
       bridge()->CreateMetadataChangeList(), EntityDataMap());
   EXPECT_FALSE(error.IsSet());
   EXPECT_EQ(1, change_count());
@@ -654,7 +651,7 @@ TEST_F(DeviceInfoSyncBridgeTest, MergeWithData) {
       bridge()->CreateMetadataChangeList();
   metadata_changes->UpdateModelTypeState(state);
 
-  const SyncError error = bridge()->MergeSyncData(
+  const ModelError error = bridge()->MergeSyncData(
       std::move(metadata_changes),
       InlineEntityDataMap({conflict_remote, unique_remote}));
   EXPECT_FALSE(error.IsSet());
@@ -689,7 +686,7 @@ TEST_F(DeviceInfoSyncBridgeTest, MergeLocalGuid) {
   WriteToStore({specifics});
   InitializeAndPump();
 
-  const SyncError error = bridge()->MergeSyncData(
+  const ModelError error = bridge()->MergeSyncData(
       bridge()->CreateMetadataChangeList(), InlineEntityDataMap({specifics}));
   EXPECT_FALSE(error.IsSet());
   EXPECT_EQ(0, change_count());
@@ -704,7 +701,7 @@ TEST_F(DeviceInfoSyncBridgeTest, MergeLocalGuidBeforeReconcile) {
   // The message loop is never pumped, which means local data/metadata is never
   // loaded, and thus reconcile is never called. The bridge should ignore this
   // EntityData because its cache guid is the same the local device's.
-  const SyncError error = bridge()->MergeSyncData(
+  const ModelError error = bridge()->MergeSyncData(
       bridge()->CreateMetadataChangeList(),
       InlineEntityDataMap({CreateSpecifics(kDefaultLocalSuffix)}));
   EXPECT_FALSE(error.IsSet());
@@ -720,7 +717,7 @@ TEST_F(DeviceInfoSyncBridgeTest, ClearProviderAndMerge) {
   const DeviceInfoSpecifics specifics = CreateSpecifics(1, Time::Now());
 
   local_device()->Clear();
-  SyncError error = bridge()->MergeSyncData(
+  ModelError error = bridge()->MergeSyncData(
       bridge()->CreateMetadataChangeList(), InlineEntityDataMap({specifics}));
   EXPECT_FALSE(error.IsSet());
   EXPECT_EQ(1u, bridge()->GetAllDeviceInfo().size());
@@ -798,7 +795,7 @@ TEST_F(DeviceInfoSyncBridgeTest, DisableSync) {
   EXPECT_EQ(1, change_count());
 
   const DeviceInfoSpecifics specifics = CreateSpecifics(1);
-  const SyncError error = bridge()->ApplySyncChanges(
+  const ModelError error = bridge()->ApplySyncChanges(
       bridge()->CreateMetadataChangeList(), EntityAddList({specifics}));
 
   EXPECT_FALSE(error.IsSet());

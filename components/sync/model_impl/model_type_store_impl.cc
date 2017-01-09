@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/sync/model/model_error.h"
 #include "components/sync/model_impl/model_type_store_backend.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
 #include "components/sync/protocol/model_type_state.pb.h"
@@ -69,8 +70,7 @@ ModelTypeStoreImpl::ModelTypeStoreImpl(
     ModelType type,
     scoped_refptr<ModelTypeStoreBackend> backend,
     scoped_refptr<base::SequencedTaskRunner> backend_task_runner)
-    : type_(type),
-      backend_(backend),
+    : backend_(backend),
       backend_task_runner_(backend_task_runner),
       data_prefix_(FormatDataPrefix(type)),
       metadata_prefix_(FormatMetaPrefix(type)),
@@ -231,7 +231,7 @@ void ModelTypeStoreImpl::ReadMetadataRecordsDone(
     Result result) {
   DCHECK(CalledOnValidThread());
   if (result != Result::SUCCESS) {
-    callback.Run(MakeSyncError("Reading metadata failed."),
+    callback.Run(ModelError(FROM_HERE, "Reading metadata failed."),
                  base::MakeUnique<MetadataBatch>());
     return;
   }
@@ -262,7 +262,7 @@ void ModelTypeStoreImpl::ReadAllMetadataDone(
   DCHECK(CalledOnValidThread());
 
   if (result != Result::SUCCESS) {
-    callback.Run(MakeSyncError("Reading metadata failed."),
+    callback.Run(ModelError(FROM_HERE, "Reading metadata failed."),
                  base::MakeUnique<MetadataBatch>());
     return;
   }
@@ -290,8 +290,9 @@ void ModelTypeStoreImpl::DeserializeMetadata(
 
   sync_pb::ModelTypeState state;
   if (!state.ParseFromString(global_metadata)) {
-    callback.Run(MakeSyncError("Failed to deserialize model type state."),
-                 base::MakeUnique<MetadataBatch>());
+    callback.Run(
+        ModelError(FROM_HERE, "Failed to deserialize model type state."),
+        base::MakeUnique<MetadataBatch>());
     return;
   }
   metadata_batch->SetModelTypeState(state);
@@ -299,18 +300,15 @@ void ModelTypeStoreImpl::DeserializeMetadata(
   for (const Record& r : *metadata_records.get()) {
     sync_pb::EntityMetadata entity_metadata;
     if (!entity_metadata.ParseFromString(r.value)) {
-      callback.Run(MakeSyncError("Failed to deserialize entity metadata."),
-                   base::MakeUnique<MetadataBatch>());
+      callback.Run(
+          ModelError(FROM_HERE, "Failed to deserialize entity metadata."),
+          base::MakeUnique<MetadataBatch>());
       return;
     }
     metadata_batch->AddMetadata(r.id, entity_metadata);
   }
 
-  callback.Run(SyncError(), std::move(metadata_batch));
-}
-
-SyncError ModelTypeStoreImpl::MakeSyncError(const std::string& msg) {
-  return SyncError(FROM_HERE, SyncError::DATATYPE_ERROR, msg, type_);
+  callback.Run(ModelError(), std::move(metadata_batch));
 }
 
 std::unique_ptr<ModelTypeStore::WriteBatch>

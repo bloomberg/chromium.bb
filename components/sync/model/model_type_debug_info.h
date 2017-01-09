@@ -46,7 +46,6 @@ class ModelTypeDebugInfo {
       SharedModelTypeProcessor* processor,
       const base::Callback<void(const ModelType,
                                 std::unique_ptr<base::ListValue>)>& callback,
-      SyncError error,
       std::unique_ptr<DataBatch> batch);
 };
 

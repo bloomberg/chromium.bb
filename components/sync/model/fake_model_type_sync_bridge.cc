@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "components/sync/base/hash_util.h"
+#include "components/sync/model/model_error.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/model_impl/in_memory_metadata_change_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -198,14 +199,14 @@ FakeModelTypeSyncBridge::CreateMetadataChangeList() {
   return base::MakeUnique<TestMetadataChangeList>();
 }
 
-SyncError FakeModelTypeSyncBridge::MergeSyncData(
+ModelError FakeModelTypeSyncBridge::MergeSyncData(
     std::unique_ptr<MetadataChangeList> metadata_changes,
     EntityDataMap data_map) {
-  if (bridge_error_.IsSet()) {
-    SyncError error = bridge_error_;
-    bridge_error_ = SyncError();
-    return error;
+  if (error_next_) {
+    error_next_ = false;
+    return ModelError(FROM_HERE, "boom");
   }
+
   // Commit any local entities that aren't being overwritten by the server.
   for (const auto& kv : db_->all_data()) {
     if (data_map.find(kv.first) == data_map.end()) {
@@ -218,17 +219,17 @@ SyncError FakeModelTypeSyncBridge::MergeSyncData(
     db_->PutData(kv.first, kv.second.value());
   }
   ApplyMetadataChangeList(std::move(metadata_changes));
-  return SyncError();
+  return ModelError();
 }
 
-SyncError FakeModelTypeSyncBridge::ApplySyncChanges(
+ModelError FakeModelTypeSyncBridge::ApplySyncChanges(
     std::unique_ptr<MetadataChangeList> metadata_changes,
     EntityChangeList entity_changes) {
-  if (bridge_error_.IsSet()) {
-    SyncError error = bridge_error_;
-    bridge_error_ = SyncError();
-    return error;
+  if (error_next_) {
+    error_next_ = false;
+    return ModelError(FROM_HERE, "boom");
   }
+
   for (const EntityChange& change : entity_changes) {
     switch (change.type()) {
       case EntityChange::ACTION_ADD:
@@ -246,7 +247,7 @@ SyncError FakeModelTypeSyncBridge::ApplySyncChanges(
     }
   }
   ApplyMetadataChangeList(std::move(metadata_changes));
-  return SyncError();
+  return ModelError();
 }
 
 void FakeModelTypeSyncBridge::ApplyMetadataChangeList(
@@ -281,9 +282,9 @@ void FakeModelTypeSyncBridge::ApplyMetadataChangeList(
 
 void FakeModelTypeSyncBridge::GetData(StorageKeyList keys,
                                       DataCallback callback) {
-  if (bridge_error_.IsSet()) {
-    callback.Run(bridge_error_, nullptr);
-    bridge_error_ = SyncError();
+  if (error_next_) {
+    error_next_ = false;
+    change_processor()->ReportError(FROM_HERE, "boom");
     return;
   }
 
@@ -292,13 +293,13 @@ void FakeModelTypeSyncBridge::GetData(StorageKeyList keys,
     DCHECK(db_->HasData(key)) << "No data for " << key;
     batch->Put(key, CopyEntityData(db_->GetData(key)));
   }
-  callback.Run(SyncError(), std::move(batch));
+  callback.Run(std::move(batch));
 }
 
 void FakeModelTypeSyncBridge::GetAllData(DataCallback callback) {
-  if (bridge_error_.IsSet()) {
-    callback.Run(bridge_error_, nullptr);
-    bridge_error_ = SyncError();
+  if (error_next_) {
+    error_next_ = false;
+    change_processor()->ReportError(FROM_HERE, "boom");
     return;
   }
 
@@ -306,7 +307,7 @@ void FakeModelTypeSyncBridge::GetAllData(DataCallback callback) {
   for (const auto& kv : db_->all_data()) {
     batch->Put(kv.first, CopyEntityData(*kv.second));
   }
-  callback.Run(SyncError(), std::move(batch));
+  callback.Run(std::move(batch));
 }
 
 std::string FakeModelTypeSyncBridge::GetClientTag(
@@ -332,13 +333,13 @@ void FakeModelTypeSyncBridge::SetConflictResolution(
       base::MakeUnique<ConflictResolution>(std::move(resolution));
 }
 
-void FakeModelTypeSyncBridge::ErrorOnNextCall(SyncError::ErrorType error_type) {
-  DCHECK(!bridge_error_.IsSet());
-  bridge_error_ = SyncError(FROM_HERE, error_type, "TestError", PREFERENCES);
+void FakeModelTypeSyncBridge::ErrorOnNextCall() {
+  EXPECT_FALSE(error_next_);
+  error_next_ = true;
 }
 
 void FakeModelTypeSyncBridge::CheckPostConditions() {
-  DCHECK(!bridge_error_.IsSet());
+  EXPECT_FALSE(error_next_);
 }
 
 }  // namespace syncer

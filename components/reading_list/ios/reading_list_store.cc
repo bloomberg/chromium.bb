@@ -118,10 +118,8 @@ void ReadingListStore::OnDatabaseLoad(
     std::unique_ptr<syncer::ModelTypeStore::RecordList> entries) {
   DCHECK(CalledOnValidThread());
   if (result != syncer::ModelTypeStore::Result::SUCCESS) {
-    change_processor()->OnMetadataLoaded(
-        change_processor()->CreateAndUploadError(
-            FROM_HERE, "Cannot load Reading List Database."),
-        nullptr);
+    change_processor()->ReportError(FROM_HERE,
+                                    "Cannot load Reading List Database.");
     return;
   }
   auto loaded_entries =
@@ -152,10 +150,14 @@ void ReadingListStore::OnDatabaseLoad(
 }
 
 void ReadingListStore::OnReadAllMetadata(
-    syncer::SyncError sync_error,
+    syncer::ModelError error,
     std::unique_ptr<syncer::MetadataBatch> metadata_batch) {
   DCHECK(CalledOnValidThread());
-  change_processor()->OnMetadataLoaded(sync_error, std::move(metadata_batch));
+  if (error.IsSet()) {
+    change_processor()->ReportError(FROM_HERE, "Failed to read metadata.");
+  } else {
+    change_processor()->OnMetadataLoaded(std::move(metadata_batch));
+  }
 }
 
 void ReadingListStore::OnDatabaseSave(syncer::ModelTypeStore::Result result) {
@@ -196,7 +198,7 @@ ReadingListStore::CreateMetadataChangeList() {
 // combine all change atomically, should save the metadata after the data
 // changes, so that this merge will be re-driven by sync if is not completely
 // saved during the current run.
-syncer::SyncError ReadingListStore::MergeSyncData(
+syncer::ModelError ReadingListStore::MergeSyncData(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityDataMap entity_data_map) {
   DCHECK(CalledOnValidThread());
@@ -275,7 +277,7 @@ syncer::SyncError ReadingListStore::MergeSyncData(
   }
   batch_->TransferMetadataChanges(std::move(metadata_change_list));
 
-  return syncer::SyncError();
+  return syncer::ModelError();
 }
 
 // Apply changes from the sync server locally.
@@ -283,7 +285,7 @@ syncer::SyncError ReadingListStore::MergeSyncData(
 // |metadata_change_list| in case when some of the data changes are filtered
 // out, or even be empty in case when a commit confirmation is processed and
 // only the metadata needs to persisted.
-syncer::SyncError ReadingListStore::ApplySyncChanges(
+syncer::ModelError ReadingListStore::ApplySyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_changes) {
   DCHECK(CalledOnValidThread());
@@ -345,7 +347,7 @@ syncer::SyncError ReadingListStore::ApplySyncChanges(
   }
 
   batch_->TransferMetadataChanges(std::move(metadata_change_list));
-  return syncer::SyncError();
+  return syncer::ModelError();
 }
 
 void ReadingListStore::GetData(StorageKeyList storage_keys,
@@ -359,7 +361,7 @@ void ReadingListStore::GetData(StorageKeyList storage_keys,
     }
   }
 
-  callback.Run(syncer::SyncError(), std::move(batch));
+  callback.Run(std::move(batch));
 }
 
 void ReadingListStore::GetAllData(DataCallback callback) {
@@ -371,7 +373,7 @@ void ReadingListStore::GetAllData(DataCallback callback) {
     AddEntryToBatch(batch.get(), *entry);
   }
 
-  callback.Run(syncer::SyncError(), std::move(batch));
+  callback.Run(std::move(batch));
 }
 
 void ReadingListStore::AddEntryToBatch(syncer::MutableDataBatch* batch,

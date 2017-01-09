@@ -12,12 +12,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/sync/model/metadata_batch.h"
+#include "components/sync/model/model_error.h"
 
 namespace syncer {
 
-MockModelTypeStore::MockModelTypeStore() {}
-
-MockModelTypeStore::~MockModelTypeStore() {}
+MockModelTypeStore::MockModelTypeStore() = default;
+MockModelTypeStore::~MockModelTypeStore() = default;
 
 void MockModelTypeStore::ReadData(const IdList& id_list,
                                   const ReadDataCallback& callback) {
@@ -46,7 +47,7 @@ void MockModelTypeStore::ReadAllMetadata(const ReadMetadataCallback& callback) {
     read_all_metadata_handler_.Run(callback);
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, SyncError(),
+        FROM_HERE, base::Bind(callback, ModelError(),
                               base::Passed(std::unique_ptr<MetadataBatch>())));
   }
 }

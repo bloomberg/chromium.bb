@@ -25,16 +25,16 @@ StubModelTypeSyncBridge::CreateMetadataChangeList() {
   return std::unique_ptr<MetadataChangeList>();
 }
 
-SyncError StubModelTypeSyncBridge::MergeSyncData(
+ModelError StubModelTypeSyncBridge::MergeSyncData(
     std::unique_ptr<MetadataChangeList> metadata_change_list,
     EntityDataMap entity_data_map) {
-  return SyncError();
+  return ModelError();
 }
 
-SyncError StubModelTypeSyncBridge::ApplySyncChanges(
+ModelError StubModelTypeSyncBridge::ApplySyncChanges(
     std::unique_ptr<MetadataChangeList> metadata_change_list,
     EntityChangeList entity_changes) {
-  return SyncError();
+  return ModelError();
 }
 
 void StubModelTypeSyncBridge::GetData(StorageKeyList storage_keys,

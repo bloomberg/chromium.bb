@@ -27,15 +27,10 @@ class MockModelTypeChangeProcessor : public FakeModelTypeChangeProcessor {
 
   void DisableSync() override { disabled_callback_.Run(); }
 
-  void OnMetadataLoaded(SyncError error,
-                        std::unique_ptr<MetadataBatch> batch) override {
-    on_metadata_loaded_error_ = error;
+  void OnMetadataLoaded(std::unique_ptr<MetadataBatch> batch) override {
     on_metadata_loaded_batch_ = std::move(batch);
   }
 
-  const SyncError& on_metadata_loaded_error() const {
-    return on_metadata_loaded_error_;
-  }
   MetadataBatch* on_metadata_loaded_batch() {
     return on_metadata_loaded_batch_.get();
   }
@@ -48,7 +43,6 @@ class MockModelTypeChangeProcessor : public FakeModelTypeChangeProcessor {
   // allows this information to reach somewhere safe instead.
   base::Closure disabled_callback_;
 
-  SyncError on_metadata_loaded_error_;
   std::unique_ptr<MetadataBatch> on_metadata_loaded_batch_;
 };
 
@@ -128,8 +122,6 @@ TEST_F(ModelTypeSyncBridgeTest, DisableSync) {
   // processor about this.
   EXPECT_TRUE(bridge()->processor_disable_sync_called());
 
-  EXPECT_FALSE(
-      bridge()->change_processor()->on_metadata_loaded_error().IsSet());
   MetadataBatch* batch =
       bridge()->change_processor()->on_metadata_loaded_batch();
   EXPECT_NE(nullptr, batch);

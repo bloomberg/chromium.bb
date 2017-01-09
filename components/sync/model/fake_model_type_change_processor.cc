@@ -9,6 +9,7 @@
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/model_type_sync_bridge.h"
 #include "components/sync/model/sync_error.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
 
@@ -19,8 +20,12 @@ std::unique_ptr<ModelTypeChangeProcessor> FakeModelTypeChangeProcessor::Create(
   return base::WrapUnique(new FakeModelTypeChangeProcessor());
 }
 
-FakeModelTypeChangeProcessor::FakeModelTypeChangeProcessor() {}
-FakeModelTypeChangeProcessor::~FakeModelTypeChangeProcessor() {}
+FakeModelTypeChangeProcessor::FakeModelTypeChangeProcessor() = default;
+
+FakeModelTypeChangeProcessor::~FakeModelTypeChangeProcessor() {
+  // If this fails we were expecting an error but never got one.
+  EXPECT_FALSE(expect_error_);
+}
 
 void FakeModelTypeChangeProcessor::Put(
     const std::string& client_tag,
@@ -32,7 +37,6 @@ void FakeModelTypeChangeProcessor::Delete(
     MetadataChangeList* metadata_change_list) {}
 
 void FakeModelTypeChangeProcessor::OnMetadataLoaded(
-    SyncError error,
     std::unique_ptr<MetadataBatch> batch) {}
 
 void FakeModelTypeChangeProcessor::OnSyncStarting(
@@ -49,10 +53,19 @@ bool FakeModelTypeChangeProcessor::IsTrackingMetadata() {
   return true;
 }
 
-SyncError FakeModelTypeChangeProcessor::CreateAndUploadError(
+void FakeModelTypeChangeProcessor::ReportError(const ModelError& error) {
+  EXPECT_TRUE(expect_error_);
+  expect_error_ = false;
+}
+
+void FakeModelTypeChangeProcessor::ReportError(
     const tracked_objects::Location& location,
     const std::string& message) {
-  return SyncError();
+  ReportError(ModelError(location, message));
+}
+
+void FakeModelTypeChangeProcessor::ExpectError() {
+  expect_error_ = true;
 }
 
 }  // namespace syncer

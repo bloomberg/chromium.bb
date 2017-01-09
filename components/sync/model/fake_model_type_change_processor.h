@@ -10,6 +10,7 @@
 
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/metadata_change_list.h"
+#include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_change_processor.h"
 
 namespace syncer {
@@ -32,14 +33,21 @@ class FakeModelTypeChangeProcessor : public ModelTypeChangeProcessor {
            MetadataChangeList* metadata_change_list) override;
   void Delete(const std::string& client_tag,
               MetadataChangeList* metadata_change_list) override;
-  void OnMetadataLoaded(SyncError error,
-                        std::unique_ptr<MetadataBatch> batch) override;
+  void OnMetadataLoaded(std::unique_ptr<MetadataBatch> batch) override;
   void OnSyncStarting(std::unique_ptr<DataTypeErrorHandler> error_handler,
                       const StartCallback& callback) override;
   void DisableSync() override;
   bool IsTrackingMetadata() override;
-  SyncError CreateAndUploadError(const tracked_objects::Location& location,
-                                 const std::string& message) override;
+  void ReportError(const ModelError& error) override;
+  void ReportError(const tracked_objects::Location& location,
+                   const std::string& message) override;
+
+  // Indicates that ReportError should be called in the future.
+  void ExpectError();
+
+ private:
+  // Whether we expect ReportError to be called.
+  bool expect_error_ = false;
 };
 
 }  // namespace syncer
