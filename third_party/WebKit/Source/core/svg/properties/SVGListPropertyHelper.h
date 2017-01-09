@@ -100,7 +100,7 @@ class SVGListPropertyHelper : public SVGPropertyHelper<Derived> {
 
   void append(ItemPropertyType* newItem) {
     ASSERT(newItem);
-    m_values.append(newItem);
+    m_values.push_back(newItem);
     newItem->setOwnerList(this);
   }
 

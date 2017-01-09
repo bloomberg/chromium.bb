@@ -24,7 +24,7 @@ RoundedInnerRectClipper::RoundedInnerRectClipper(
                                       : DisplayItem::kClipBoxPaintPhaseFirst) {
   Vector<FloatRoundedRect> roundedRectClips;
   if (clipRect.isRenderable()) {
-    roundedRectClips.append(clipRect);
+    roundedRectClips.push_back(clipRect);
   } else {
     // We create a rounded rect for each of the corners and clip it, while
     // making sure we clip opposing corners together.
@@ -35,14 +35,14 @@ RoundedInnerRectClipper::RoundedInnerRectClipper(
                           rect.maxY() - clipRect.rect().y());
       FloatRoundedRect::Radii topCornerRadii;
       topCornerRadii.setTopLeft(clipRect.getRadii().topLeft());
-      roundedRectClips.append(FloatRoundedRect(topCorner, topCornerRadii));
+      roundedRectClips.push_back(FloatRoundedRect(topCorner, topCornerRadii));
 
       FloatRect bottomCorner(rect.x().toFloat(), rect.y().toFloat(),
                              clipRect.rect().maxX() - rect.x().toFloat(),
                              clipRect.rect().maxY() - rect.y().toFloat());
       FloatRoundedRect::Radii bottomCornerRadii;
       bottomCornerRadii.setBottomRight(clipRect.getRadii().bottomRight());
-      roundedRectClips.append(
+      roundedRectClips.push_back(
           FloatRoundedRect(bottomCorner, bottomCornerRadii));
     }
 
@@ -53,14 +53,14 @@ RoundedInnerRectClipper::RoundedInnerRectClipper(
                           rect.maxY() - clipRect.rect().y());
       FloatRoundedRect::Radii topCornerRadii;
       topCornerRadii.setTopRight(clipRect.getRadii().topRight());
-      roundedRectClips.append(FloatRoundedRect(topCorner, topCornerRadii));
+      roundedRectClips.push_back(FloatRoundedRect(topCorner, topCornerRadii));
 
       FloatRect bottomCorner(clipRect.rect().x(), rect.y().toFloat(),
                              rect.maxX() - clipRect.rect().x(),
                              clipRect.rect().maxY() - rect.y().toFloat());
       FloatRoundedRect::Radii bottomCornerRadii;
       bottomCornerRadii.setBottomLeft(clipRect.getRadii().bottomLeft());
-      roundedRectClips.append(
+      roundedRectClips.push_back(
           FloatRoundedRect(bottomCorner, bottomCornerRadii));
     }
   }

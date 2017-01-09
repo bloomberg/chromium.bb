@@ -56,7 +56,7 @@ FilterEffect* SVGFETileElement::build(SVGFilterBuilder* filterBuilder,
   ASSERT(input1);
 
   FilterEffect* effect = FETile::create(filter);
-  effect->inputEffects().append(input1);
+  effect->inputEffects().push_back(input1);
   return effect;
 }
 

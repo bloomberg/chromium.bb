@@ -51,7 +51,7 @@ TEST_F(PerformanceObserverTest, Observe) {
   NonThrowableExceptionState exceptionState;
   PerformanceObserverInit options;
   Vector<String> entryTypeVec;
-  entryTypeVec.append("mark");
+  entryTypeVec.push_back("mark");
   options.setEntryTypes(entryTypeVec);
 
   m_observer->observe(options, exceptionState);

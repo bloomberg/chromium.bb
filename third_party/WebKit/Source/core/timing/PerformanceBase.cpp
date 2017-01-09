@@ -113,7 +113,7 @@ PerformanceEntryVector PerformanceBase::getEntries() const {
 
   entries.appendVector(m_resourceTimingBuffer);
   if (m_navigationTiming)
-    entries.append(m_navigationTiming);
+    entries.push_back(m_navigationTiming);
   entries.appendVector(m_frameTimingBuffer);
 
   if (m_userTiming) {
@@ -135,17 +135,17 @@ PerformanceEntryVector PerformanceBase::getEntriesByType(
   switch (type) {
     case PerformanceEntry::Resource:
       for (const auto& resource : m_resourceTimingBuffer)
-        entries.append(resource);
+        entries.push_back(resource);
       break;
     case PerformanceEntry::Navigation:
       if (m_navigationTiming)
-        entries.append(m_navigationTiming);
+        entries.push_back(m_navigationTiming);
       break;
     case PerformanceEntry::Composite:
     case PerformanceEntry::Render:
       for (const auto& frame : m_frameTimingBuffer) {
         if (type == frame->entryTypeEnum()) {
-          entries.append(frame);
+          entries.push_back(frame);
         }
       }
       break;
@@ -186,13 +186,13 @@ PerformanceEntryVector PerformanceBase::getEntriesByName(
   if (entryType.isNull() || type == PerformanceEntry::Resource) {
     for (const auto& resource : m_resourceTimingBuffer) {
       if (resource->name() == name)
-        entries.append(resource);
+        entries.push_back(resource);
     }
   }
 
   if (entryType.isNull() || type == PerformanceEntry::Navigation) {
     if (m_navigationTiming && m_navigationTiming->name() == name)
-      entries.append(m_navigationTiming);
+      entries.push_back(m_navigationTiming);
   }
 
   if (entryType.isNull() || type == PerformanceEntry::Composite ||
@@ -200,7 +200,7 @@ PerformanceEntryVector PerformanceBase::getEntriesByName(
     for (const auto& frame : m_frameTimingBuffer) {
       if (frame->name() == name &&
           (entryType.isNull() || entryType == frame->entryType()))
-        entries.append(frame);
+        entries.push_back(frame);
     }
   }
 
@@ -404,7 +404,7 @@ void PerformanceBase::addNavigationTiming(LocalFrame* frame) {
 }
 
 void PerformanceBase::addResourceTimingBuffer(PerformanceEntry& entry) {
-  m_resourceTimingBuffer.append(&entry);
+  m_resourceTimingBuffer.push_back(&entry);
 
   if (isResourceTimingBufferFull()) {
     dispatchEvent(Event::create(EventTypeNames::resourcetimingbufferfull));
@@ -418,7 +418,7 @@ bool PerformanceBase::isResourceTimingBufferFull() {
 }
 
 void PerformanceBase::addFrameTimingBuffer(PerformanceEntry& entry) {
-  m_frameTimingBuffer.append(&entry);
+  m_frameTimingBuffer.push_back(&entry);
 
   if (isFrameTimingBufferFull())
     dispatchEvent(Event::create(EventTypeNames::frametimingbufferfull));

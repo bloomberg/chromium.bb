@@ -102,7 +102,7 @@ static inline Element* createXHTMLParserErrorHeader(
       CreatedByParser);
 
   Vector<Attribute> reportAttributes;
-  reportAttributes.append(Attribute(
+  reportAttributes.push_back(Attribute(
       styleAttr,
       "display: block; white-space: pre; border: 2px solid #c77; padding: 0 "
       "1em 0 1em; margin: 1em; background-color: #fdd; color: black"));
@@ -115,7 +115,7 @@ static inline Element* createXHTMLParserErrorHeader(
 
   Element* fixed = doc->createElement(divTag, CreatedByParser);
   Vector<Attribute> fixedAttributes;
-  fixedAttributes.append(
+  fixedAttributes.push_back(
       Attribute(styleAttr, "font-family:monospace;font-size:12px"));
   fixed->parserSetAttributes(fixedAttributes);
   reportElement->parserAppendChild(fixed);
@@ -170,7 +170,7 @@ void XMLErrors::insertErrorMessageBlock() {
 
   if (DocumentXSLT::hasTransformSourceDocument(*m_document)) {
     Vector<Attribute> attributes;
-    attributes.append(Attribute(styleAttr, "white-space: normal"));
+    attributes.push_back(Attribute(styleAttr, "white-space: normal"));
     Element* paragraph = m_document->createElement(pTag, CreatedByParser);
     paragraph->parserSetAttributes(attributes);
     paragraph->parserAppendChild(m_document->createTextNode(

@@ -271,7 +271,7 @@ bool BoxPainter::calculateFillLayerOcclusionCulling(
   bool isNonAssociative = false;
   for (auto currentLayer = &fillLayer; currentLayer;
        currentLayer = currentLayer->next()) {
-    reversedPaintList.append(currentLayer);
+    reversedPaintList.push_back(currentLayer);
     // Stop traversal when an opaque layer is encountered.
     // FIXME : It would be possible for the following occlusion culling test to
     // be more aggressive on layers with no repeat by testing whether the image

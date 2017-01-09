@@ -233,8 +233,8 @@ class BasicShapePolygon final : public BasicShape {
 
   void setWindRule(WindRule windRule) { m_windRule = windRule; }
   void appendPoint(const Length& x, const Length& y) {
-    m_values.append(x);
-    m_values.append(y);
+    m_values.push_back(x);
+    m_values.push_back(y);
   }
 
   void path(Path&, const FloatRect&) override;

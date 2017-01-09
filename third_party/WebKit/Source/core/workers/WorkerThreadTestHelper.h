@@ -141,7 +141,7 @@ class WorkerThreadForTest : public WorkerThread {
         WTF::makeUnique<Vector<CSPHeaderAndType>>();
     CSPHeaderAndType headerAndType("contentSecurityPolicy",
                                    ContentSecurityPolicyHeaderTypeReport);
-    headers->append(headerAndType);
+    headers->push_back(headerAndType);
 
     WorkerClients* clients = nullptr;
 

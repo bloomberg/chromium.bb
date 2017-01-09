@@ -1549,13 +1549,13 @@ bool FrameLoader::shouldClose(bool isReload) {
   // Store all references to each subframe in advance since beforeunload's event
   // handler may modify frame
   HeapVector<Member<LocalFrame>> targetFrames;
-  targetFrames.append(m_frame);
+  targetFrames.push_back(m_frame);
   for (Frame* child = m_frame->tree().firstChild(); child;
        child = child->tree().traverseNext(m_frame)) {
     // FIXME: There is not yet any way to dispatch events to out-of-process
     // frames.
     if (child->isLocalFrame())
-      targetFrames.append(toLocalFrame(child));
+      targetFrames.push_back(toLocalFrame(child));
   }
 
   bool shouldClose = false;

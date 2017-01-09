@@ -1032,7 +1032,7 @@ PassRefPtr<ShadowList> StyleBuilderConverter::convertShadowList(
 
   ShadowDataVector shadows;
   for (const auto& item : toCSSValueList(value))
-    shadows.append(convertShadow(state, *item));
+    shadows.push_back(convertShadow(state, *item));
 
   return ShadowList::adopt(shadows);
 }

@@ -84,14 +84,14 @@ void GridPainter::paintChildren(const PaintInfo& paintInfo,
       const Vector<LayoutBox*, 1>& children =
           m_layoutGrid.gridCell(row, column);
       for (auto* child : children)
-        gridItemsToBePainted.append(
+        gridItemsToBePainted.push_back(
             std::make_pair(child, m_layoutGrid.paintIndexForGridItem(child)));
     }
   }
 
   for (auto* item : m_layoutGrid.itemsOverflowingGridArea()) {
     if (item->frameRect().intersects(localVisualRect))
-      gridItemsToBePainted.append(
+      gridItemsToBePainted.push_back(
           std::make_pair(item, m_layoutGrid.paintIndexForGridItem(item)));
   }
 

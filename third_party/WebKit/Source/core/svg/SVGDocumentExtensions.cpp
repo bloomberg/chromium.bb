@@ -225,7 +225,7 @@ void SVGDocumentExtensions::removeElementFromPendingResources(
 
     elements->remove(element);
     if (elements->isEmpty())
-      toBeRemoved.append(entry.key);
+      toBeRemoved.push_back(entry.key);
   }
 
   clearHasPendingResourcesIfPossible(element);

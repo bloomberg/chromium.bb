@@ -29,8 +29,8 @@ const SVGEnumerationStringEntries&
 getStaticStringEntries<MorphologyOperatorType>() {
   DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
   if (entries.isEmpty()) {
-    entries.append(std::make_pair(FEMORPHOLOGY_OPERATOR_ERODE, "erode"));
-    entries.append(std::make_pair(FEMORPHOLOGY_OPERATOR_DILATE, "dilate"));
+    entries.push_back(std::make_pair(FEMORPHOLOGY_OPERATOR_ERODE, "erode"));
+    entries.push_back(std::make_pair(FEMORPHOLOGY_OPERATOR_DILATE, "dilate"));
   }
   return entries;
 }
@@ -111,7 +111,7 @@ FilterEffect* SVGFEMorphologyElement::build(SVGFilterBuilder* filterBuilder,
   float yRadius = radiusY()->currentValue()->value();
   FilterEffect* effect = FEMorphology::create(
       filter, m_svgOperator->currentValue()->enumValue(), xRadius, yRadius);
-  effect->inputEffects().append(input1);
+  effect->inputEffects().push_back(input1);
   return effect;
 }
 

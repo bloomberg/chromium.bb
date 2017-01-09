@@ -1507,7 +1507,7 @@ void EventHandler::updateGestureHoverActiveState(const HitTestRequest& request,
   // work that cleans the hover state.  Because the hover state for the main
   // frame is updated by calling Document::updateHoverActiveState
   while (newHoverFrameInDocument && newHoverFrameInDocument != m_frame) {
-    newHoverFrameChain.append(newHoverFrameInDocument);
+    newHoverFrameChain.push_back(newHoverFrameInDocument);
     Frame* parentFrame = newHoverFrameInDocument->tree().parent();
     newHoverFrameInDocument = parentFrame && parentFrame->isLocalFrame()
                                   ? toLocalFrame(parentFrame)
@@ -1577,7 +1577,7 @@ void EventHandler::updateGestureTargetNodeForMouseEvent(
   LocalFrame* enteredFrameInDocument =
       targetedEvent.hitTestResult().innerNodeFrame();
   while (enteredFrameInDocument) {
-    enteredFrameChain.append(enteredFrameInDocument);
+    enteredFrameChain.push_back(enteredFrameInDocument);
     Frame* parentFrame = enteredFrameInDocument->tree().parent();
     enteredFrameInDocument = parentFrame && parentFrame->isLocalFrame()
                                  ? toLocalFrame(parentFrame)
@@ -1603,13 +1603,13 @@ void EventHandler::updateGestureTargetNodeForMouseEvent(
     }
 
     if (exitedFrameChain.size() > 0) {
-      exitedFrameChain.append(exitedFrameInDocument);
+      exitedFrameChain.push_back(exitedFrameInDocument);
     } else {
       LocalFrame* lastEnteredFrameInDocument =
           indexEnteredFrameChain ? enteredFrameChain[indexEnteredFrameChain - 1]
                                  : nullptr;
       if (exitedFrameInDocument != lastEnteredFrameInDocument)
-        exitedFrameChain.append(exitedFrameInDocument);
+        exitedFrameChain.push_back(exitedFrameInDocument);
       else if (nextExitedFrameInDocument && indexEnteredFrameChain)
         --indexEnteredFrameChain;
     }

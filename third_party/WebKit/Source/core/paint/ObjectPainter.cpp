@@ -258,7 +258,7 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo,
 
   Vector<IntRect> pixelSnappedOutlineRects;
   for (auto& r : outlineRects)
-    pixelSnappedOutlineRects.append(pixelSnappedIntRect(r));
+    pixelSnappedOutlineRects.push_back(pixelSnappedIntRect(r));
 
   IntRect unitedOutlineRect = unionRectEvenIfEmpty(pixelSnappedOutlineRects);
   IntRect bounds = unitedOutlineRect;

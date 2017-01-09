@@ -161,7 +161,7 @@ void LocationPath::appendStep(Step* step) {
   if (stepCount && optimizeStepPair(m_steps[stepCount - 1], step))
     return;
   step->optimize();
-  m_steps.append(step);
+  m_steps.push_back(step);
 }
 
 void LocationPath::insertFirstStep(Step* step) {

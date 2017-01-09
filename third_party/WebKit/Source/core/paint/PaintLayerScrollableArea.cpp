@@ -2054,7 +2054,7 @@ void PaintLayerScrollableArea::PreventRelayoutScope::setBoxNeedsLayout(
   if (!s_needsRelayout)
     s_needsRelayout =
         new PersistentHeapVector<Member<PaintLayerScrollableArea>>();
-  s_needsRelayout->append(&scrollableArea);
+  s_needsRelayout->push_back(&scrollableArea);
 }
 
 void PaintLayerScrollableArea::PreventRelayoutScope::resetRelayoutNeeded() {
@@ -2088,7 +2088,7 @@ void PaintLayerScrollableArea::DelayScrollOffsetClampScope::setNeedsClamp(
     PaintLayerScrollableArea* scrollableArea) {
   if (!scrollableArea->needsScrollOffsetClamp()) {
     scrollableArea->setNeedsScrollOffsetClamp(true);
-    s_needsClamp->append(scrollableArea);
+    s_needsClamp->push_back(scrollableArea);
   }
 }
 

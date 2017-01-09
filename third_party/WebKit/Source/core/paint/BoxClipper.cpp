@@ -89,7 +89,7 @@ BoxClipper::BoxClipper(const LayoutBox& box,
     m_clipType = m_paintInfo.displayItemTypeForClipping();
     Vector<FloatRoundedRect> roundedRects;
     if (hasBorderRadius)
-      roundedRects.append(clipRoundedRect);
+      roundedRects.push_back(clipRoundedRect);
     m_paintInfo.context.getPaintController().createAndAppend<ClipDisplayItem>(
         m_box, m_clipType, pixelSnappedIntRect(clipRect), roundedRects);
   }

@@ -34,7 +34,7 @@ PassRefPtr<QuotesData> QuotesData::create(UChar open1,
 }
 
 void QuotesData::addPair(std::pair<String, String> quotePair) {
-  m_quotePairs.append(quotePair);
+  m_quotePairs.push_back(quotePair);
 }
 
 const String QuotesData::getOpenQuote(int index) const {

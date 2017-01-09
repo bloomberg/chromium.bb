@@ -268,7 +268,7 @@ Node::InsertionNotificationRequest SVGSMILElement::insertedInto(
   // "If no attribute is present, the default begin value (an offset-value of 0)
   // must be evaluated."
   if (!fastHasAttribute(SVGNames::beginAttr))
-    m_beginTimes.append(SMILTimeWithOrigin());
+    m_beginTimes.push_back(SMILTimeWithOrigin());
 
   if (m_isWaitingForFirstInterval)
     resolveFirstInterval();
@@ -412,7 +412,7 @@ bool SVGSMILElement::parseCondition(const String& value,
     type = Condition::EventBase;
   }
 
-  m_conditions.append(
+  m_conditions.push_back(
       Condition::create(type, beginOrEnd, baseID, nameString, offset, repeat));
 
   if (type == Condition::EventBase && beginOrEnd == End)
@@ -439,7 +439,7 @@ void SVGSMILElement::parseBeginOrEnd(const String& parseString,
     if (value.isUnresolved())
       parseCondition(splitString[n], beginOrEnd);
     else if (!existing.contains(value.value()))
-      timeList.append(
+      timeList.push_back(
           SMILTimeWithOrigin(value, SMILTimeWithOrigin::ParserOrigin));
   }
   sortTimeList(timeList);
@@ -714,7 +714,7 @@ SMILTime SVGSMILElement::simpleDuration() const {
 void SVGSMILElement::addBeginTime(SMILTime eventTime,
                                   SMILTime beginTime,
                                   SMILTimeWithOrigin::Origin origin) {
-  m_beginTimes.append(SMILTimeWithOrigin(beginTime, origin));
+  m_beginTimes.push_back(SMILTimeWithOrigin(beginTime, origin));
   sortTimeList(m_beginTimes);
   beginListChanged(eventTime);
 }
@@ -722,7 +722,7 @@ void SVGSMILElement::addBeginTime(SMILTime eventTime,
 void SVGSMILElement::addEndTime(SMILTime eventTime,
                                 SMILTime endTime,
                                 SMILTimeWithOrigin::Origin origin) {
-  m_endTimes.append(SMILTimeWithOrigin(endTime, origin));
+  m_endTimes.push_back(SMILTimeWithOrigin(endTime, origin));
   sortTimeList(m_endTimes);
   endListChanged(eventTime);
 }
@@ -1250,7 +1250,7 @@ void SVGSMILElement::endedActiveInterval() {
 }
 
 void SVGSMILElement::scheduleRepeatEvents(unsigned count) {
-  m_repeatEventCountList.append(count);
+  m_repeatEventCountList.push_back(count);
   scheduleEvent(EventTypeNames::repeatEvent);
   scheduleEvent(AtomicString("repeatn"));
 }

@@ -175,7 +175,7 @@ FilterEffect* FilterEffectBuilder::buildFilterEffect(
       }
       case FilterOperation::SATURATE: {
         Vector<float> inputParameters;
-        inputParameters.append(clampTo<float>(
+        inputParameters.push_back(clampTo<float>(
             toBasicColorMatrixFilterOperation(filterOperation)->amount()));
         effect = FEColorMatrix::create(
             parentFilter, FECOLORMATRIX_TYPE_SATURATE, inputParameters);
@@ -183,7 +183,7 @@ FilterEffect* FilterEffectBuilder::buildFilterEffect(
       }
       case FilterOperation::HUE_ROTATE: {
         Vector<float> inputParameters;
-        inputParameters.append(clampTo<float>(
+        inputParameters.push_back(clampTo<float>(
             toBasicColorMatrixFilterOperation(filterOperation)->amount()));
         effect = FEColorMatrix::create(
             parentFilter, FECOLORMATRIX_TYPE_HUEROTATE, inputParameters);
@@ -195,9 +195,9 @@ FilterEffect* FilterEffectBuilder::buildFilterEffect(
         ComponentTransferFunction transferFunction;
         transferFunction.type = FECOMPONENTTRANSFER_TYPE_TABLE;
         Vector<float> transferParameters;
-        transferParameters.append(
+        transferParameters.push_back(
             clampTo<float>(componentTransferOperation->amount()));
-        transferParameters.append(
+        transferParameters.push_back(
             clampTo<float>(1 - componentTransferOperation->amount()));
         transferFunction.tableValues = transferParameters;
 
@@ -211,8 +211,8 @@ FilterEffect* FilterEffectBuilder::buildFilterEffect(
         ComponentTransferFunction transferFunction;
         transferFunction.type = FECOMPONENTTRANSFER_TYPE_TABLE;
         Vector<float> transferParameters;
-        transferParameters.append(0);
-        transferParameters.append(clampTo<float>(
+        transferParameters.push_back(0);
+        transferParameters.push_back(clampTo<float>(
             toBasicComponentTransferFilterOperation(filterOperation)
                 ->amount()));
         transferFunction.tableValues = transferParameters;
@@ -282,7 +282,7 @@ FilterEffect* FilterEffectBuilder::buildFilterEffect(
         // subregions.
         effect->setClipsToBounds(false);
         effect->setOperatingColorSpace(ColorSpaceDeviceRGB);
-        effect->inputEffects().append(previousEffect);
+        effect->inputEffects().push_back(previousEffect);
       }
       if (previousEffect->originTainted())
         effect->setOriginTainted();

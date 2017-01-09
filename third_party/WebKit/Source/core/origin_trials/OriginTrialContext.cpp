@@ -117,7 +117,7 @@ std::unique_ptr<Vector<String>> OriginTrialContext::parseHeaderValue(
   while (pos < len) {
     String token = extractTokenOrQuotedString(headerValue, pos);
     if (!token.isEmpty())
-      tokens->append(token);
+      tokens->push_back(token);
     // Make sure tokens are comma-separated.
     if (pos < len && headerValue[pos++] != ',')
       return nullptr;
@@ -155,7 +155,7 @@ std::unique_ptr<Vector<String>> OriginTrialContext::getTokens(
 
 void OriginTrialContext::addToken(const String& token) {
   if (!token.isEmpty()) {
-    m_tokens.append(token);
+    m_tokens.push_back(token);
     validateToken(token);
   }
   initializePendingFeatures();
@@ -164,7 +164,7 @@ void OriginTrialContext::addToken(const String& token) {
 void OriginTrialContext::addTokens(const Vector<String>& tokens) {
   for (const String& token : tokens) {
     if (!token.isEmpty()) {
-      m_tokens.append(token);
+      m_tokens.push_back(token);
       validateToken(token);
     }
   }

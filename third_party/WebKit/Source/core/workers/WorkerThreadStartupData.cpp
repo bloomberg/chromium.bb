@@ -66,14 +66,14 @@ WorkerThreadStartupData::WorkerThreadStartupData(
   if (contentSecurityPolicyHeaders) {
     for (const auto& header : *contentSecurityPolicyHeaders) {
       CSPHeaderAndType copiedHeader(header.first.isolatedCopy(), header.second);
-      m_contentSecurityPolicyHeaders->append(copiedHeader);
+      m_contentSecurityPolicyHeaders->push_back(copiedHeader);
     }
   }
 
   m_originTrialTokens = std::unique_ptr<Vector<String>>(new Vector<String>());
   if (originTrialTokens) {
     for (const String& token : *originTrialTokens)
-      m_originTrialTokens->append(token.isolatedCopy());
+      m_originTrialTokens->push_back(token.isolatedCopy());
   }
 }
 

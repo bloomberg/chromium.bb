@@ -368,7 +368,7 @@ StaticNodeList* SVGSVGElement::collectIntersectionOrEnclosureList(
   for (SVGGraphicsElement& element :
        Traversal<SVGGraphicsElement>::descendantsOf(*root)) {
     if (checkIntersectionOrEnclosure(element, rect, mode))
-      nodes.append(&element);
+      nodes.push_back(&element);
   }
 
   return StaticNodeList::adopt(nodes);

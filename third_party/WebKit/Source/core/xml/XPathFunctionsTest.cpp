@@ -44,16 +44,16 @@ static String substring(XPathArguments& args) {
 
 static String substring(const char* string, double pos) {
   XPathArguments args;
-  args.append(new XPath::StringExpression(string));
-  args.append(new XPath::Number(pos));
+  args.push_back(new XPath::StringExpression(string));
+  args.push_back(new XPath::Number(pos));
   return substring(args);
 }
 
 static String substring(const char* string, double pos, double len) {
   XPathArguments args;
-  args.append(new XPath::StringExpression(string));
-  args.append(new XPath::Number(pos));
-  args.append(new XPath::Number(len));
+  args.push_back(new XPath::StringExpression(string));
+  args.push_back(new XPath::Number(pos));
+  args.push_back(new XPath::Number(len));
   return substring(args);
 }
 

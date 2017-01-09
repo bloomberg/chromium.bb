@@ -162,7 +162,7 @@ void PaintLayerStackingNode::rebuildZOrderLists() {
           m_posZOrderList =
               WTF::wrapUnique(new Vector<PaintLayerStackingNode*>);
         }
-        m_posZOrderList->append(layer->stackingNode());
+        m_posZOrderList->push_back(layer->stackingNode());
       }
     }
   }
@@ -185,7 +185,7 @@ void PaintLayerStackingNode::collectLayers(
         (zIndex() >= 0) ? posBuffer : negBuffer;
     if (!buffer)
       buffer = WTF::wrapUnique(new Vector<PaintLayerStackingNode*>);
-    buffer->append(this);
+    buffer->push_back(this);
   }
 
   if (!isStackingContext()) {

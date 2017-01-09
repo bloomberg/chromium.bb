@@ -648,7 +648,7 @@ void PaintLayerPainter::repeatFixedPositionObjectInPages(
   LayoutPoint offsetFromRoot;
   m_paintLayer.convertToLayerCoords(paintingInfo.rootLayer, offsetFromRoot);
   LayoutSize offsetAdjustment = m_paintLayer.location() - offsetFromRoot;
-  layerFragments.append(singleFragmentIgnoredPagination);
+  layerFragments.push_back(singleFragmentIgnoredPagination);
   layerFragments[0].paginationOffset += offsetAdjustment;
   layerFragments[0].layerBounds.move(offsetAdjustment);
 
@@ -657,7 +657,7 @@ void PaintLayerPainter::repeatFixedPositionObjectInPages(
     PaintLayerFragment fragment = layerFragments[i - 1];
     fragment.paginationOffset += pageOffset;
     fragment.layerBounds.moveBy(pageOffset);
-    layerFragments.append(fragment);
+    layerFragments.push_back(fragment);
   }
 }
 
@@ -690,7 +690,7 @@ PaintResult PaintLayerPainter::paintLayerWithTransform(
     if (isFixedPositionObjectInPagedMedia)
       repeatFixedPositionObjectInPages(fragment, paintingInfo, layerFragments);
     else
-      layerFragments.append(fragment);
+      layerFragments.push_back(fragment);
   } else {
     // FIXME: This is a mess. Look closely at this code and the code in Layer
     // and fix any issues in it & refactor to make it obvious from code

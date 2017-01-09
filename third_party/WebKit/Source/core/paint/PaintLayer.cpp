@@ -1546,7 +1546,7 @@ void PaintLayer::appendSingleFragmentIgnoringPagination(
   clipper().calculateRects(clipRectsContext, dirtyRect, fragment.layerBounds,
                            fragment.backgroundRect, fragment.foregroundRect,
                            offsetFromRoot);
-  fragments.append(fragment);
+  fragments.push_back(fragment);
 }
 
 bool PaintLayer::shouldFragmentCompositedBounds(
@@ -1692,7 +1692,7 @@ void PaintLayer::collectFragments(
     // cases, but there should be no reason to do so. Either filter them out
     // here, or, even better: pass a better clip rectangle to the fragmentainer
     // iterator, so that we won't end up with empty fragments here.
-    fragments.append(fragment);
+    fragments.push_back(fragment);
   }
 }
 
@@ -2983,7 +2983,7 @@ FilterOperations PaintLayer::addReflectionToFilterOperations(
   FilterOperations filterOperations = style.filter();
   if (layoutObject()->hasReflection() && layoutObject()->isBox()) {
     BoxReflection reflection = boxReflectionForPaintLayer(*this, style);
-    filterOperations.operations().append(
+    filterOperations.operations().push_back(
         BoxReflectFilterOperation::create(reflection));
   }
   return filterOperations;
@@ -3109,20 +3109,20 @@ void PaintLayer::computeSelfHitTestRects(LayerHitTestRects& rects) const {
       // composited layer. Skip reporting contents for non-composited layers as
       // they'll get projected to the same layer as the bounding box.
       if (compositingState() != NotComposited)
-        rect.append(m_scrollableArea->overflowRect());
+        rect.push_back(m_scrollableArea->overflowRect());
 
       rects.set(this, rect);
       if (const PaintLayer* parentLayer = parent()) {
         LayerHitTestRects::iterator iter = rects.find(parentLayer);
         if (iter == rects.end()) {
           rects.add(parentLayer, Vector<LayoutRect>())
-              .storedValue->value.append(physicalBoundingBox(parentLayer));
+              .storedValue->value.push_back(physicalBoundingBox(parentLayer));
         } else {
-          iter->value.append(physicalBoundingBox(parentLayer));
+          iter->value.push_back(physicalBoundingBox(parentLayer));
         }
       }
     } else {
-      rect.append(logicalBoundingBox());
+      rect.push_back(logicalBoundingBox());
       rects.set(this, rect);
     }
   }

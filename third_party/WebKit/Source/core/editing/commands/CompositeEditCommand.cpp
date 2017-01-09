@@ -327,7 +327,7 @@ void CompositeEditCommand::appendCommandToComposite(
   ensureComposition()->append(command->ensureComposition());
   command->m_composition = nullptr;
   command->setParent(this);
-  m_commands.append(command);
+  m_commands.push_back(command);
 }
 
 void CompositeEditCommand::applyStyle(const EditingStyle* style,
@@ -476,7 +476,7 @@ void CompositeEditCommand::removeChildrenInRange(Node* node,
   HeapVector<Member<Node>> children;
   Node* child = NodeTraversal::childAt(*node, from);
   for (unsigned i = from; child && i < to; i++, child = child->nextSibling())
-    children.append(child);
+    children.push_back(child);
 
   size_t size = children.size();
   for (size_t i = 0; i < size; ++i) {
@@ -528,7 +528,7 @@ void CompositeEditCommand::moveRemainingSiblingsToNewParent(
   NodeVector nodesToRemove;
 
   for (; node && node != pastLastNodeToMove; node = node->nextSibling())
-    nodesToRemove.append(node);
+    nodesToRemove.push_back(node);
 
   for (unsigned i = 0; i < nodesToRemove.size(); i++) {
     removeNode(nodesToRemove[i], editingState);
@@ -677,8 +677,8 @@ static void copyMarkerTypesAndDescriptions(
   types.reserveCapacity(arraySize);
   descriptions.reserveCapacity(arraySize);
   for (const auto& markerPointer : markerPointers) {
-    types.append(markerPointer->type());
-    descriptions.append(markerPointer->description());
+    types.push_back(markerPointer->type());
+    descriptions.push_back(markerPointer->description());
   }
 }
 
@@ -973,7 +973,7 @@ void CompositeEditCommand::deleteInsignificantText(Text* textNode,
 
   for (InlineTextBox* textBox = textLayoutObject->firstTextBox(); textBox;
        textBox = textBox->nextTextBox())
-    sortedTextBoxes.append(textBox);
+    sortedTextBoxes.push_back(textBox);
 
   // If there is mixed directionality text, the boxes can be out of order,
   // (like Arabic with embedded LTR), so sort them first.
@@ -1053,7 +1053,7 @@ void CompositeEditCommand::deleteInsignificantText(const Position& start,
   HeapVector<Member<Text>> nodes;
   for (Node& node : NodeTraversal::startsAt(*start.anchorNode())) {
     if (node.isTextNode())
-      nodes.append(toText(&node));
+      nodes.push_back(toText(&node));
     if (&node == end.anchorNode())
       break;
   }
@@ -1304,7 +1304,7 @@ void CompositeEditCommand::cloneParagraphUnderNewElement(
          NodeTraversal::inclusiveAncestorsOf(*start.anchorNode())) {
       if (runner == outerNode)
         break;
-      ancestors.append(runner);
+      ancestors.push_back(runner);
     }
 
     // Clone every node between start.anchorNode() and outerBlock.

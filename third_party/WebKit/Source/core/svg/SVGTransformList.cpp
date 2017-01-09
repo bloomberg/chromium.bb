@@ -232,7 +232,7 @@ SVGParseStatus parseTransformArgumentsForType(SVGTransformType type,
     if (!parseNumber(ptr, end, argumentValue, AllowLeadingWhitespace))
       break;
 
-    arguments.append(argumentValue);
+    arguments.push_back(argumentValue);
     trailingDelimiter = false;
 
     if (arguments.size() == requiredWithOptional)

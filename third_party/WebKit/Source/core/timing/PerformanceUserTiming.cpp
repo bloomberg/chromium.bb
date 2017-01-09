@@ -84,7 +84,7 @@ static void insertPerformanceEntry(PerformanceEntryMap& performanceEntryMap,
                                    PerformanceEntry& entry) {
   PerformanceEntryMap::iterator it = performanceEntryMap.find(entry.name());
   if (it != performanceEntryMap.end()) {
-    it->value.append(&entry);
+    it->value.push_back(&entry);
   } else {
     PerformanceEntryVector vector(1);
     vector[0] = Member<PerformanceEntry>(entry);

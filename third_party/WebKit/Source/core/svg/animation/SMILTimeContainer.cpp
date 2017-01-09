@@ -461,7 +461,7 @@ SMILTime SMILTimeContainer::updateAnimations(double elapsed, bool seekToTime) {
       // This will calculate the contribution from the animation and update
       // timing.
       if (animation->progress(elapsed, seekToTime)) {
-        sandwich.append(animation);
+        sandwich.push_back(animation);
       } else {
         animation->clearAnimatedType();
       }
@@ -485,7 +485,7 @@ SMILTime SMILTimeContainer::updateAnimations(double elapsed, bool seekToTime) {
       for (const auto& animation : sandwich)
         animation->updateAnimatedValue(resultElement);
 
-      animationsToApply.append(resultElement);
+      animationsToApply.push_back(resultElement);
     }
   }
   m_scheduledAnimations.removeAll(invalidKeys);

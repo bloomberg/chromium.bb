@@ -83,7 +83,7 @@ FilterEffect* SVGFEComponentTransferElement::build(
 
   FilterEffect* effect =
       FEComponentTransfer::create(filter, red, green, blue, alpha);
-  effect->inputEffects().append(input1);
+  effect->inputEffects().push_back(input1);
   return effect;
 }
 

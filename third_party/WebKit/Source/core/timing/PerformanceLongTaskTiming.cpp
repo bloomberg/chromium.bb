@@ -42,7 +42,7 @@ PerformanceLongTaskTiming::PerformanceLongTaskTiming(double startTime,
   // Only one possible name ("frame") currently.
   TaskAttributionTiming* attributionEntry = TaskAttributionTiming::create(
       "frame", culpritFrameSrc, culpritFrameId, culpritFrameName);
-  m_attribution.append(*attributionEntry);
+  m_attribution.push_back(*attributionEntry);
 }
 
 PerformanceLongTaskTiming::~PerformanceLongTaskTiming() {}

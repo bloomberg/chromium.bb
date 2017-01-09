@@ -35,9 +35,9 @@ const SVGEnumerationStringEntries&
 getStaticStringEntries<SVGSpreadMethodType>() {
   DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
   if (entries.isEmpty()) {
-    entries.append(std::make_pair(SVGSpreadMethodPad, "pad"));
-    entries.append(std::make_pair(SVGSpreadMethodReflect, "reflect"));
-    entries.append(std::make_pair(SVGSpreadMethodRepeat, "repeat"));
+    entries.push_back(std::make_pair(SVGSpreadMethodPad, "pad"));
+    entries.push_back(std::make_pair(SVGSpreadMethodReflect, "reflect"));
+    entries.push_back(std::make_pair(SVGSpreadMethodRepeat, "repeat"));
   }
   return entries;
 }
@@ -130,7 +130,8 @@ Vector<Gradient::ColorStop> SVGGradientElement::buildStops() {
     offset = std::min(std::max(previousOffset, offset), 1.0f);
     previousOffset = offset;
 
-    stops.append(Gradient::ColorStop(offset, stop.stopColorIncludingOpacity()));
+    stops.push_back(
+        Gradient::ColorStop(offset, stop.stopColorIncludingOpacity()));
   }
   return stops;
 }

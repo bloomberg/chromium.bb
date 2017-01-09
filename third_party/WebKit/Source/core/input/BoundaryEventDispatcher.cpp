@@ -25,7 +25,7 @@ void buildAncestorChain(EventTarget* target,
   // Index 0 element in the ancestors arrays will be the corresponding
   // target. So the root of their document will be their last element.
   for (Node* node = targetNode; node; node = FlatTreeTraversal::parent(*node))
-    ancestors->append(node);
+    ancestors->push_back(node);
 }
 
 void buildAncestorChainsAndFindCommonAncestors(

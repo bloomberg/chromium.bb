@@ -42,7 +42,7 @@ FilterEffect* SVGFEMergeElement::build(SVGFilterBuilder* filterBuilder,
     FilterEffect* mergeEffect = filterBuilder->getEffectById(
         AtomicString(mergeNode.in1()->currentValue()->value()));
     ASSERT(mergeEffect);
-    mergeInputs.append(mergeEffect);
+    mergeInputs.push_back(mergeEffect);
   }
   return effect;
 }

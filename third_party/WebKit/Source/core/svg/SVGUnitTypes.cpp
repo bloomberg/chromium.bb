@@ -37,10 +37,10 @@ const SVGEnumerationStringEntries&
 getStaticStringEntries<SVGUnitTypes::SVGUnitType>() {
   DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
   if (entries.isEmpty()) {
-    entries.append(std::make_pair(SVGUnitTypes::kSvgUnitTypeUserspaceonuse,
-                                  "userSpaceOnUse"));
-    entries.append(std::make_pair(SVGUnitTypes::kSvgUnitTypeObjectboundingbox,
-                                  "objectBoundingBox"));
+    entries.push_back(std::make_pair(SVGUnitTypes::kSvgUnitTypeUserspaceonuse,
+                                     "userSpaceOnUse"));
+    entries.push_back(std::make_pair(
+        SVGUnitTypes::kSvgUnitTypeObjectboundingbox, "objectBoundingBox"));
   }
   return entries;
 }

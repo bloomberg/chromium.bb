@@ -166,7 +166,7 @@ void InProcessWorkerMessagingProxy::postMessageToWorkerGlobalScope(
     ++m_unconfirmedMessageCount;
     workerThread()->postTask(BLINK_FROM_HERE, std::move(task));
   } else {
-    m_queuedEarlyTasks.append(std::move(task));
+    m_queuedEarlyTasks.push_back(std::move(task));
   }
 }
 

@@ -71,7 +71,7 @@ void PerformanceObserver::disconnect() {
 
 void PerformanceObserver::enqueuePerformanceEntry(PerformanceEntry& entry) {
   ASSERT(isMainThread());
-  m_performanceEntries.append(&entry);
+  m_performanceEntries.push_back(&entry);
   if (m_performance)
     m_performance->activateObserver(*this);
 }

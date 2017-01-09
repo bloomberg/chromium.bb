@@ -575,7 +575,7 @@ SVGInlineTextBoxPainter::collectFragmentsInRange(int startPosition,
             fragment, fragmentStartPosition, fragmentEndPosition))
       continue;
 
-    fragmentInfoList.append(SVGTextFragmentWithRange(
+    fragmentInfoList.push_back(SVGTextFragmentWithRange(
         fragment, fragmentStartPosition, fragmentEndPosition));
   }
   return fragmentInfoList;

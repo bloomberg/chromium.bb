@@ -41,7 +41,7 @@ DEFINE_TRACE_WRAPPERS(CustomElementReactionStack) {
 }
 
 void CustomElementReactionStack::push() {
-  m_stack.append(nullptr);
+  m_stack.push_back(nullptr);
 }
 
 void CustomElementReactionStack::popInvokingReactions() {
@@ -73,7 +73,7 @@ void CustomElementReactionStack::enqueue(Member<ElementQueue>& queue,
                                          CustomElementReaction* reaction) {
   if (!queue)
     queue = new ElementQueue();
-  queue->append(element);
+  queue->push_back(element);
 
   CustomElementReactionQueue* reactions = m_map.get(element);
   if (!reactions) {

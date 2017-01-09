@@ -40,7 +40,7 @@ Vector<PlatformTouchPoint> getCoalescedPoints(
     for (auto& point : touchEvent.touchPoints()) {
       // TODO(nzolghadr): Need to filter out stationary points
       if (point.id() == id)
-        relatedPoints.append(point);
+        relatedPoints.push_back(point);
     }
   }
   return relatedPoints;
@@ -366,7 +366,7 @@ void PointerEventManager::computeTouchTargets(
       touchInfo.targetFrame = touchInfo.touchNode->document().frame();
     }
 
-    touchInfos.append(touchInfo);
+    touchInfos.push_back(touchInfo);
   }
 }
 

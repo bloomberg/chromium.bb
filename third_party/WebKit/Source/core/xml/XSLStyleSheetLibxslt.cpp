@@ -223,7 +223,7 @@ void XSLStyleSheet::loadChildSheets() {
 
 void XSLStyleSheet::loadChildSheet(const String& href) {
   XSLImportRule* childRule = XSLImportRule::create(this, href);
-  m_children.append(childRule);
+  m_children.push_back(childRule);
   childRule->loadSheet();
 }
 

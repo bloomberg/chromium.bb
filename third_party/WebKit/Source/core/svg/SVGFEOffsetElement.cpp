@@ -68,7 +68,7 @@ FilterEffect* SVGFEOffsetElement::build(SVGFilterBuilder* filterBuilder,
 
   FilterEffect* effect = FEOffset::create(filter, m_dx->currentValue()->value(),
                                           m_dy->currentValue()->value());
-  effect->inputEffects().append(input1);
+  effect->inputEffects().push_back(input1);
   return effect;
 }
 

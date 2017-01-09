@@ -175,7 +175,7 @@ FilterEffect* SVGFESpecularLightingElement::build(
       filter, color, m_surfaceScale->currentValue()->value(),
       m_specularConstant->currentValue()->value(),
       m_specularExponent->currentValue()->value(), lightSource.release());
-  effect->inputEffects().append(input1);
+  effect->inputEffects().push_back(input1);
   return effect;
 }
 

@@ -270,7 +270,7 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
       WTF::makeUnique<Vector<CSPHeaderAndType>>();
   CSPHeaderAndType headerAndType("contentSecurityPolicy",
                                  ContentSecurityPolicyHeaderTypeReport);
-  headers->append(headerAndType);
+  headers->push_back(headerAndType);
 
   // Specify PauseWorkerGlobalScopeOnStart so that the worker thread can pause
   // on initialziation to run debugger tasks.

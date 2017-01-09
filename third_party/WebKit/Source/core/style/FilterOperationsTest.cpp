@@ -38,7 +38,7 @@ TEST(FilterOperationsTest, mapRectNoFilter) {
 
 TEST(FilterOperationsTest, mapRectBlur) {
   FilterOperations ops;
-  ops.operations().append(BlurFilterOperation::create(Length(20.0, Fixed)));
+  ops.operations().push_back(BlurFilterOperation::create(Length(20.0, Fixed)));
   EXPECT_TRUE(ops.hasFilterThatMovesPixels());
   EXPECT_EQ(IntRect(-57, -57, 124, 124),
             enclosingIntRect(ops.mapRect(FloatRect(0, 0, 10, 10))));
@@ -46,7 +46,7 @@ TEST(FilterOperationsTest, mapRectBlur) {
 
 TEST(FilterOperationsTest, mapRectDropShadow) {
   FilterOperations ops;
-  ops.operations().append(DropShadowFilterOperation::create(
+  ops.operations().push_back(DropShadowFilterOperation::create(
       ShadowData(FloatPoint(3, 8), 20, 0, Normal, StyleColor(Color(1, 2, 3)))));
   EXPECT_TRUE(ops.hasFilterThatMovesPixels());
   EXPECT_EQ(IntRect(-54, -49, 124, 124),
@@ -55,7 +55,7 @@ TEST(FilterOperationsTest, mapRectDropShadow) {
 
 TEST(FilterOperationsTest, mapRectBoxReflect) {
   FilterOperations ops;
-  ops.operations().append(BoxReflectFilterOperation::create(
+  ops.operations().push_back(BoxReflectFilterOperation::create(
       BoxReflection(BoxReflection::VerticalReflection, 100)));
   EXPECT_TRUE(ops.hasFilterThatMovesPixels());
 
@@ -67,9 +67,9 @@ TEST(FilterOperationsTest, mapRectDropShadowAndBoxReflect) {
   // This is a case where the order of filter operations matters, and it's
   // important that the bounds be filtered in the correct order.
   FilterOperations ops;
-  ops.operations().append(DropShadowFilterOperation::create(ShadowData(
+  ops.operations().push_back(DropShadowFilterOperation::create(ShadowData(
       FloatPoint(100, 200), 0, 0, Normal, StyleColor(Color::black))));
-  ops.operations().append(BoxReflectFilterOperation::create(
+  ops.operations().push_back(BoxReflectFilterOperation::create(
       BoxReflection(BoxReflection::VerticalReflection, 50)));
   EXPECT_TRUE(ops.hasFilterThatMovesPixels());
   EXPECT_EQ(FloatRect(0, -160, 110, 370), ops.mapRect(FloatRect(0, 0, 10, 10)));

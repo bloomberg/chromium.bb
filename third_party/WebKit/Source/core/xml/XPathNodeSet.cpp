@@ -176,14 +176,14 @@ void NodeSet::sort() const {
   for (unsigned i = 0; i < nodeCount; ++i) {
     NodeSetVector& parentsVector = parentMatrix[i];
     Node* n = m_nodes[i].get();
-    parentsVector.append(n);
+    parentsVector.push_back(n);
     if (n->isAttributeNode()) {
       n = toAttr(n)->ownerElement();
-      parentsVector.append(n);
+      parentsVector.push_back(n);
       containsAttributeNodes = true;
     }
     for (n = n->parentNode(); n; n = n->parentNode())
-      parentsVector.append(n);
+      parentsVector.push_back(n);
   }
   sortBlock(0, nodeCount, parentMatrix, containsAttributeNodes);
 
@@ -192,7 +192,7 @@ void NodeSet::sort() const {
   HeapVector<Member<Node>> sortedNodes;
   sortedNodes.reserveInitialCapacity(nodeCount);
   for (unsigned i = 0; i < nodeCount; ++i)
-    sortedNodes.append(parentMatrix[i][0]);
+    sortedNodes.push_back(parentMatrix[i][0]);
 
   const_cast<HeapVector<Member<Node>>&>(m_nodes).swap(sortedNodes);
 }
@@ -227,7 +227,7 @@ void NodeSet::traversalSort() const {
 
   for (Node& n : NodeTraversal::startsAt(*findRootNode(m_nodes.front()))) {
     if (nodes.contains(&n))
-      sortedNodes.append(&n);
+      sortedNodes.push_back(&n);
 
     if (!containsAttributeNodes || !n.isElementNode())
       continue;
@@ -237,7 +237,7 @@ void NodeSet::traversalSort() const {
     for (auto& attribute : attributes) {
       Attr* attr = element->attrIfExists(attribute.name());
       if (attr && nodes.contains(attr))
-        sortedNodes.append(attr);
+        sortedNodes.push_back(attr);
     }
   }
 

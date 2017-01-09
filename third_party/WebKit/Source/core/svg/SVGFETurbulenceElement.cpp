@@ -28,8 +28,8 @@ template <>
 const SVGEnumerationStringEntries& getStaticStringEntries<SVGStitchOptions>() {
   DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
   if (entries.isEmpty()) {
-    entries.append(std::make_pair(kSvgStitchtypeStitch, "stitch"));
-    entries.append(std::make_pair(kSvgStitchtypeNostitch, "noStitch"));
+    entries.push_back(std::make_pair(kSvgStitchtypeStitch, "stitch"));
+    entries.push_back(std::make_pair(kSvgStitchtypeNostitch, "noStitch"));
   }
   return entries;
 }
@@ -38,9 +38,10 @@ template <>
 const SVGEnumerationStringEntries& getStaticStringEntries<TurbulenceType>() {
   DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
   if (entries.isEmpty()) {
-    entries.append(
+    entries.push_back(
         std::make_pair(FETURBULENCE_TYPE_FRACTALNOISE, "fractalNoise"));
-    entries.append(std::make_pair(FETURBULENCE_TYPE_TURBULENCE, "turbulence"));
+    entries.push_back(
+        std::make_pair(FETURBULENCE_TYPE_TURBULENCE, "turbulence"));
   }
   return entries;
 }

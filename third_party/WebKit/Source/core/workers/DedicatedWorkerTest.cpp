@@ -115,7 +115,7 @@ class InProcessWorkerMessagingProxyForTest
         WTF::makeUnique<Vector<CSPHeaderAndType>>();
     CSPHeaderAndType headerAndType("contentSecurityPolicy",
                                    ContentSecurityPolicyHeaderTypeReport);
-    headers->append(headerAndType);
+    headers->push_back(headerAndType);
     workerThread()->start(WorkerThreadStartupData::create(
         scriptURL, "fake user agent", source, nullptr /* cachedMetaData */,
         DontPauseWorkerGlobalScopeOnStart, headers.get(),

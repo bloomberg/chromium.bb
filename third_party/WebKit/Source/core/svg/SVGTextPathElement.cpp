@@ -30,8 +30,8 @@ const SVGEnumerationStringEntries&
 getStaticStringEntries<SVGTextPathMethodType>() {
   DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
   if (entries.isEmpty()) {
-    entries.append(std::make_pair(SVGTextPathMethodAlign, "align"));
-    entries.append(std::make_pair(SVGTextPathMethodStretch, "stretch"));
+    entries.push_back(std::make_pair(SVGTextPathMethodAlign, "align"));
+    entries.push_back(std::make_pair(SVGTextPathMethodStretch, "stretch"));
   }
   return entries;
 }
@@ -41,8 +41,8 @@ const SVGEnumerationStringEntries&
 getStaticStringEntries<SVGTextPathSpacingType>() {
   DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
   if (entries.isEmpty()) {
-    entries.append(std::make_pair(SVGTextPathSpacingAuto, "auto"));
-    entries.append(std::make_pair(SVGTextPathSpacingExact, "exact"));
+    entries.push_back(std::make_pair(SVGTextPathSpacingAuto, "auto"));
+    entries.push_back(std::make_pair(SVGTextPathSpacingExact, "exact"));
   }
   return entries;
 }

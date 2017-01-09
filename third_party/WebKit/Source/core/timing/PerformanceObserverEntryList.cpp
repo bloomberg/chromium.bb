@@ -37,7 +37,7 @@ PerformanceEntryVector PerformanceObserverEntryList::getEntriesByType(
 
   for (const auto& entry : m_performanceEntries) {
     if (entry->entryTypeEnum() == type) {
-      entries.append(entry);
+      entries.push_back(entry);
     }
   }
 
@@ -59,7 +59,7 @@ PerformanceEntryVector PerformanceObserverEntryList::getEntriesByName(
   for (const auto& entry : m_performanceEntries) {
     if (entry->name() == name &&
         (entryType.isNull() || type == entry->entryTypeEnum())) {
-      entries.append(entry);
+      entries.push_back(entry);
     }
   }
 

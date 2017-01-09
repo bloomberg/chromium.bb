@@ -31,9 +31,9 @@ template <>
 const SVGEnumerationStringEntries& getStaticStringEntries<EdgeModeType>() {
   DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
   if (entries.isEmpty()) {
-    entries.append(std::make_pair(EDGEMODE_DUPLICATE, "duplicate"));
-    entries.append(std::make_pair(EDGEMODE_WRAP, "wrap"));
-    entries.append(std::make_pair(EDGEMODE_NONE, "none"));
+    entries.push_back(std::make_pair(EDGEMODE_DUPLICATE, "duplicate"));
+    entries.push_back(std::make_pair(EDGEMODE_WRAP, "wrap"));
+    entries.push_back(std::make_pair(EDGEMODE_NONE, "none"));
   }
   return entries;
 }
@@ -211,7 +211,7 @@ FilterEffect* SVGFEConvolveMatrixElement::build(SVGFilterBuilder* filterBuilder,
       targetPoint(), m_edgeMode->currentValue()->enumValue(),
       m_preserveAlpha->currentValue()->value(),
       m_kernelMatrix->currentValue()->toFloatVector());
-  effect->inputEffects().append(input1);
+  effect->inputEffects().push_back(input1);
   return effect;
 }
 

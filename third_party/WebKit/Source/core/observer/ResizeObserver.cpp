@@ -74,7 +74,7 @@ size_t ResizeObserver::gatherObservations(size_t deeperThan) {
       continue;
     auto depth = observation->targetDepth();
     if (depth > deeperThan) {
-      m_activeObservations.append(*observation);
+      m_activeObservations.push_back(*observation);
       minObservedDepth = std::min(minObservedDepth, depth);
     } else {
       m_skippedObservations = true;
@@ -98,7 +98,7 @@ void ResizeObserver::deliverObservations() {
     observation->setObservationSize(size);
     auto entry = new ResizeObserverEntry(observation->target(),
                                          LayoutRect(location, size));
-    entries.append(entry);
+    entries.push_back(entry);
   }
   m_callback->handleEvent(entries, this);
   clearObservations();

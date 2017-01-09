@@ -72,7 +72,7 @@ class CORE_EXPORT Expression : public ParseNode {
     m_isContextNodeSensitive |= expr->m_isContextNodeSensitive;
     m_isContextPositionSensitive |= expr->m_isContextPositionSensitive;
     m_isContextSizeSensitive |= expr->m_isContextSizeSensitive;
-    m_subExpressions.append(expr);
+    m_subExpressions.push_back(expr);
   }
 
   bool isContextNodeSensitive() const { return m_isContextNodeSensitive; }

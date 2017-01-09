@@ -60,7 +60,7 @@ class NodeSet final : public GarbageCollected<NodeSet> {
   }
 
   // NodeSet itself does not verify that nodes in it are unique.
-  void append(Node* node) { m_nodes.append(node); }
+  void append(Node* node) { m_nodes.push_back(node); }
   void append(const NodeSet& nodeSet) { m_nodes.appendVector(nodeSet.m_nodes); }
 
   // Returns the set's first node in document order, or 0 if the set is empty.

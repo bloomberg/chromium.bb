@@ -620,7 +620,7 @@ void DocumentLoader::clearRedirectChain() {
 }
 
 void DocumentLoader::appendRedirect(const KURL& url) {
-  m_redirectChain.append(url);
+  m_redirectChain.push_back(url);
 }
 
 void DocumentLoader::detachFromFrame() {

@@ -35,7 +35,7 @@ SVGStringList::~SVGStringList() {}
 
 void SVGStringList::initialize(const String& item) {
   m_values.clear();
-  m_values.append(item);
+  m_values.push_back(item);
 }
 
 String SVGStringList::getItem(size_t index, ExceptionState& exceptionState) {
@@ -68,7 +68,7 @@ String SVGStringList::removeItem(size_t index, ExceptionState& exceptionState) {
 }
 
 void SVGStringList::appendItem(const String& newItem) {
-  m_values.append(newItem);
+  m_values.push_back(newItem);
 }
 
 void SVGStringList::replaceItem(const String& newItem,
@@ -91,7 +91,7 @@ void SVGStringList::parseInternal(const CharType*& ptr, const CharType* end) {
       ptr++;
     if (ptr == start)
       break;
-    m_values.append(String(start, ptr - start));
+    m_values.push_back(String(start, ptr - start));
     skipOptionalSVGSpacesOrDelimiter(ptr, end, delimiter);
   }
 }

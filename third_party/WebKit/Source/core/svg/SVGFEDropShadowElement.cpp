@@ -117,7 +117,7 @@ FilterEffect* SVGFEDropShadowElement::build(SVGFilterBuilder* filterBuilder,
   FilterEffect* effect = FEDropShadow::create(
       filter, stdDevX, stdDevY, m_dx->currentValue()->value(),
       m_dy->currentValue()->value(), color, opacity);
-  effect->inputEffects().append(input1);
+  effect->inputEffects().push_back(input1);
   return effect;
 }
 

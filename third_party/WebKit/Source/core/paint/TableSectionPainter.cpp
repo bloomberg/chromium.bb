@@ -314,7 +314,7 @@ void TableSectionPainter::paintObject(const PaintInfo& paintInfo,
             if (!spanningCells.add(cell).isNewEntry)
               continue;
           }
-          cells.append(cell);
+          cells.push_back(cell);
         }
       }
     }

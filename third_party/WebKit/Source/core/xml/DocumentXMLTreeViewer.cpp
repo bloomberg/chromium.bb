@@ -20,7 +20,7 @@ void transformDocumentToXMLTreeView(Document& document) {
   String cssString = loadResourceAsASCIIString("DocumentXMLTreeViewer.css");
 
   HeapVector<ScriptSourceCode> sources;
-  sources.append(ScriptSourceCode(scriptString));
+  sources.push_back(ScriptSourceCode(scriptString));
   v8::HandleScope handleScope(V8PerIsolateData::mainThreadIsolate());
 
   document.frame()->script().executeScriptInIsolatedWorld(

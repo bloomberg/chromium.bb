@@ -33,9 +33,9 @@ const SVGEnumerationStringEntries&
 getStaticStringEntries<SVGMarkerOrientType>() {
   DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
   if (entries.isEmpty()) {
-    entries.append(std::make_pair(SVGMarkerOrientAuto, "auto"));
-    entries.append(std::make_pair(SVGMarkerOrientAngle, "angle"));
-    entries.append(
+    entries.push_back(std::make_pair(SVGMarkerOrientAuto, "auto"));
+    entries.push_back(std::make_pair(SVGMarkerOrientAngle, "angle"));
+    entries.push_back(
         std::make_pair(SVGMarkerOrientAutoStartReverse, "auto-start-reverse"));
   }
   return entries;

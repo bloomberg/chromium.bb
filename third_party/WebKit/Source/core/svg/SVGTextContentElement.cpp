@@ -41,8 +41,8 @@ const SVGEnumerationStringEntries&
 getStaticStringEntries<SVGLengthAdjustType>() {
   DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
   if (entries.isEmpty()) {
-    entries.append(std::make_pair(SVGLengthAdjustSpacing, "spacing"));
-    entries.append(
+    entries.push_back(std::make_pair(SVGLengthAdjustSpacing, "spacing"));
+    entries.push_back(
         std::make_pair(SVGLengthAdjustSpacingAndGlyphs, "spacingAndGlyphs"));
   }
   return entries;

@@ -470,7 +470,7 @@ ComputedStyle* ComputedStyle::addCachedPseudoStyle(
   if (!m_cachedPseudoStyles)
     m_cachedPseudoStyles = WTF::wrapUnique(new PseudoStyleCache);
 
-  m_cachedPseudoStyles->append(pseudo);
+  m_cachedPseudoStyles->push_back(pseudo);
 
   return result;
 }
@@ -1136,7 +1136,7 @@ void ComputedStyle::addPaintImage(StyleImage* image) {
     m_rareNonInheritedData.access()->m_paintImages =
         WTF::makeUnique<Vector<Persistent<StyleImage>>>();
   }
-  m_rareNonInheritedData.access()->m_paintImages->append(image);
+  m_rareNonInheritedData.access()->m_paintImages->push_back(image);
 }
 
 void ComputedStyle::addCursor(StyleImage* image,
@@ -1144,7 +1144,7 @@ void ComputedStyle::addCursor(StyleImage* image,
                               const IntPoint& hotSpot) {
   if (!m_rareInheritedData.access()->cursorData)
     m_rareInheritedData.access()->cursorData = new CursorList;
-  m_rareInheritedData.access()->cursorData->append(
+  m_rareInheritedData.access()->cursorData->push_back(
       CursorData(image, hotSpotSpecified, hotSpot));
 }
 
@@ -1226,7 +1226,7 @@ void ComputedStyle::updateIsStackingContext(bool isDocumentElement,
 
 void ComputedStyle::addCallbackSelector(const String& selector) {
   if (!m_rareNonInheritedData->m_callbackSelectors.contains(selector))
-    m_rareNonInheritedData.access()->m_callbackSelectors.append(selector);
+    m_rareNonInheritedData.access()->m_callbackSelectors.push_back(selector);
 }
 
 void ComputedStyle::setContent(ContentData* contentData) {

@@ -69,9 +69,9 @@ void Step::optimize() {
     if ((!predicate->isContextPositionSensitive() ||
          nodeTest().mergedPredicates().isEmpty()) &&
         !predicate->isContextSizeSensitive() && remainingPredicates.isEmpty()) {
-      nodeTest().mergedPredicates().append(predicate);
+      nodeTest().mergedPredicates().push_back(predicate);
     } else {
-      remainingPredicates.append(predicate);
+      remainingPredicates.push_back(predicate);
     }
   }
   swap(remainingPredicates, m_predicates);

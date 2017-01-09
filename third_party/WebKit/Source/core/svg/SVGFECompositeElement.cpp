@@ -30,14 +30,14 @@ const SVGEnumerationStringEntries&
 getStaticStringEntries<CompositeOperationType>() {
   DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
   if (entries.isEmpty()) {
-    entries.append(std::make_pair(FECOMPOSITE_OPERATOR_OVER, "over"));
-    entries.append(std::make_pair(FECOMPOSITE_OPERATOR_IN, "in"));
-    entries.append(std::make_pair(FECOMPOSITE_OPERATOR_OUT, "out"));
-    entries.append(std::make_pair(FECOMPOSITE_OPERATOR_ATOP, "atop"));
-    entries.append(std::make_pair(FECOMPOSITE_OPERATOR_XOR, "xor"));
-    entries.append(
+    entries.push_back(std::make_pair(FECOMPOSITE_OPERATOR_OVER, "over"));
+    entries.push_back(std::make_pair(FECOMPOSITE_OPERATOR_IN, "in"));
+    entries.push_back(std::make_pair(FECOMPOSITE_OPERATOR_OUT, "out"));
+    entries.push_back(std::make_pair(FECOMPOSITE_OPERATOR_ATOP, "atop"));
+    entries.push_back(std::make_pair(FECOMPOSITE_OPERATOR_XOR, "xor"));
+    entries.push_back(
         std::make_pair(FECOMPOSITE_OPERATOR_ARITHMETIC, "arithmetic"));
-    entries.append(std::make_pair(FECOMPOSITE_OPERATOR_LIGHTER, "lighter"));
+    entries.push_back(std::make_pair(FECOMPOSITE_OPERATOR_LIGHTER, "lighter"));
   }
   return entries;
 }
@@ -140,8 +140,8 @@ FilterEffect* SVGFECompositeElement::build(SVGFilterBuilder* filterBuilder,
       m_k3->currentValue()->value(), m_k4->currentValue()->value());
   FilterEffectVector& inputEffects = effect->inputEffects();
   inputEffects.reserveCapacity(2);
-  inputEffects.append(input1);
-  inputEffects.append(input2);
+  inputEffects.push_back(input1);
+  inputEffects.push_back(input2);
   return effect;
 }
 

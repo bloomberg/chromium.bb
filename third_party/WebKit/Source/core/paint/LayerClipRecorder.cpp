@@ -93,7 +93,7 @@ void LayerClipRecorder::collectRoundedRectClips(
       LayoutSize size(layer->layoutBox()
                           ? toLayoutBox(layer->layoutObject())->size()
                           : LayoutSize(layer->size()));
-      roundedRectClips.append(
+      roundedRectClips.push_back(
           layer->layoutObject()->style()->getRoundedInnerBorderFor(
               LayoutRect(delta, size)));
     }

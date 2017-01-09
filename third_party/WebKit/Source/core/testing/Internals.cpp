@@ -1477,7 +1477,7 @@ Vector<AtomicString> Internals::userPreferredLanguages() const {
 void Internals::setUserPreferredLanguages(const Vector<String>& languages) {
   Vector<AtomicString> atomicLanguages;
   for (size_t i = 0; i < languages.size(); ++i)
-    atomicLanguages.append(AtomicString(languages[i]));
+    atomicLanguages.push_back(AtomicString(languages[i]));
   overrideUserPreferredLanguages(atomicLanguages);
 }
 
@@ -2127,7 +2127,7 @@ Vector<String> Internals::iconURLs(Document* document,
   Vector<String> array;
 
   for (auto& iconURL : iconURLs)
-    array.append(iconURL.m_iconURL.getString());
+    array.push_back(iconURL.m_iconURL.getString());
 
   return array;
 }
@@ -2440,7 +2440,7 @@ ClientRectList* Internals::annotatedRegions(Document* document,
   Vector<FloatQuad> quads;
   for (size_t i = 0; i < regions.size(); ++i) {
     if (regions[i].draggable == draggable)
-      quads.append(FloatQuad(FloatRect(regions[i].bounds)));
+      quads.push_back(FloatQuad(FloatRect(regions[i].bounds)));
   }
   return ClientRectList::create(quads);
 }

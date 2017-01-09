@@ -76,7 +76,7 @@ PassRefPtr<ShadowList> ShadowList::blend(const ShadowList* from,
     else if (!toShadow)
       toShadow = fromShadow->style() == Inset ? &defaultInsetShadowData
                                               : &defaultShadowData;
-    shadows.append(toShadow->blend(*fromShadow, progress, currentColor));
+    shadows.push_back(toShadow->blend(*fromShadow, progress, currentColor));
   }
 
   return ShadowList::adopt(shadows);

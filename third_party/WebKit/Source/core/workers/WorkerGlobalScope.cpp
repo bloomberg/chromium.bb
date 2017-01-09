@@ -185,7 +185,7 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls,
           "The script at '" + url.elidedString() + "' failed to load.");
       return;
     }
-    completedURLs.append(url);
+    completedURLs.push_back(url);
   }
 
   for (const KURL& completeURL : completedURLs) {

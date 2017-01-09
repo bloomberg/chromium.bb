@@ -60,29 +60,32 @@ const SVGEnumerationStringEntries&
 getStaticStringEntries<SVGFEBlendElement::Mode>() {
   DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
   if (entries.isEmpty()) {
-    entries.append(std::make_pair(SVGFEBlendElement::ModeNormal, "normal"));
-    entries.append(std::make_pair(SVGFEBlendElement::ModeMultiply, "multiply"));
-    entries.append(std::make_pair(SVGFEBlendElement::ModeScreen, "screen"));
-    entries.append(std::make_pair(SVGFEBlendElement::ModeDarken, "darken"));
-    entries.append(std::make_pair(SVGFEBlendElement::ModeLighten, "lighten"));
-    entries.append(std::make_pair(SVGFEBlendElement::ModeOverlay, "overlay"));
-    entries.append(
+    entries.push_back(std::make_pair(SVGFEBlendElement::ModeNormal, "normal"));
+    entries.push_back(
+        std::make_pair(SVGFEBlendElement::ModeMultiply, "multiply"));
+    entries.push_back(std::make_pair(SVGFEBlendElement::ModeScreen, "screen"));
+    entries.push_back(std::make_pair(SVGFEBlendElement::ModeDarken, "darken"));
+    entries.push_back(
+        std::make_pair(SVGFEBlendElement::ModeLighten, "lighten"));
+    entries.push_back(
+        std::make_pair(SVGFEBlendElement::ModeOverlay, "overlay"));
+    entries.push_back(
         std::make_pair(SVGFEBlendElement::ModeColorDodge, "color-dodge"));
-    entries.append(
+    entries.push_back(
         std::make_pair(SVGFEBlendElement::ModeColorBurn, "color-burn"));
-    entries.append(
+    entries.push_back(
         std::make_pair(SVGFEBlendElement::ModeHardLight, "hard-light"));
-    entries.append(
+    entries.push_back(
         std::make_pair(SVGFEBlendElement::ModeSoftLight, "soft-light"));
-    entries.append(
+    entries.push_back(
         std::make_pair(SVGFEBlendElement::ModeDifference, "difference"));
-    entries.append(
+    entries.push_back(
         std::make_pair(SVGFEBlendElement::ModeExclusion, "exclusion"));
-    entries.append(std::make_pair(SVGFEBlendElement::ModeHue, "hue"));
-    entries.append(
+    entries.push_back(std::make_pair(SVGFEBlendElement::ModeHue, "hue"));
+    entries.push_back(
         std::make_pair(SVGFEBlendElement::ModeSaturation, "saturation"));
-    entries.append(std::make_pair(SVGFEBlendElement::ModeColor, "color"));
-    entries.append(
+    entries.push_back(std::make_pair(SVGFEBlendElement::ModeColor, "color"));
+    entries.push_back(
         std::make_pair(SVGFEBlendElement::ModeLuminosity, "luminosity"));
   }
   return entries;
@@ -155,8 +158,8 @@ FilterEffect* SVGFEBlendElement::build(SVGFilterBuilder* filterBuilder,
       filter, toWebBlendMode(m_mode->currentValue()->enumValue()));
   FilterEffectVector& inputEffects = effect->inputEffects();
   inputEffects.reserveCapacity(2);
-  inputEffects.append(input1);
-  inputEffects.append(input2);
+  inputEffects.push_back(input1);
+  inputEffects.push_back(input2);
   return effect;
 }
 

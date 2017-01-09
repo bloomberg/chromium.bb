@@ -129,7 +129,7 @@ TEST_F(PerformanceBaseTest, AddLongTaskTiming) {
   NonThrowableExceptionState exceptionState;
   PerformanceObserverInit options;
   Vector<String> entryTypeVec;
-  entryTypeVec.append("longtask");
+  entryTypeVec.push_back("longtask");
   options.setEntryTypes(entryTypeVec);
   m_observer->observe(options, exceptionState);
 
@@ -171,8 +171,8 @@ TEST_F(PerformanceBaseTest, AllowsTimingRedirect) {
   redirectResponse1.setURL(url);
   ResourceResponse redirectResponse2;
   redirectResponse2.setURL(url);
-  redirectChain.append(redirectResponse1);
-  redirectChain.append(redirectResponse2);
+  redirectChain.push_back(redirectResponse1);
+  redirectChain.push_back(redirectResponse2);
   RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::create(url);
   EXPECT_TRUE(allowsTimingRedirect(redirectChain, finalResponse,
                                    *securityOrigin.get(),
@@ -182,7 +182,7 @@ TEST_F(PerformanceBaseTest, AllowsTimingRedirect) {
   KURL redirectUrl(ParsedURLString, crossOriginDomain + "/bar.html");
   ResourceResponse redirectResponse3;
   redirectResponse3.setURL(redirectUrl);
-  redirectChain.append(redirectResponse3);
+  redirectChain.push_back(redirectResponse3);
   EXPECT_FALSE(allowsTimingRedirect(redirectChain, finalResponse,
                                     *securityOrigin.get(),
                                     getExecutionContext()));

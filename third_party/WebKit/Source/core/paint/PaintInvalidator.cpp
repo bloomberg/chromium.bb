@@ -420,7 +420,7 @@ void PaintInvalidator::invalidatePaintIfNeeded(
   PaintInvalidationReason reason = object.invalidatePaintIfNeeded(context);
   switch (reason) {
     case PaintInvalidationDelayedFull:
-      m_pendingDelayedPaintInvalidations.append(&object);
+      m_pendingDelayedPaintInvalidations.push_back(&object);
       break;
     case PaintInvalidationSubtree:
       context.forcedSubtreeInvalidationFlags |=

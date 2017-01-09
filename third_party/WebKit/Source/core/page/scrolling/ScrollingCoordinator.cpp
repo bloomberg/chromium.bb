@@ -578,7 +578,7 @@ static void projectRectsToGraphicsLayerSpaceRecursive(
           *compositedLayer->layoutObject(), rect);
       rect.move(-graphicsLayer->offsetFromLayoutObject());
 
-      glRects->append(rect);
+      glRects->push_back(rect);
     }
   }
 

@@ -60,7 +60,7 @@ bool SVGAnimationElement::parseValues(const String& value,
         goto fail;
     } else {
       parseList[i] = parseList[i].stripWhiteSpace();
-      result.append(parseList[i]);
+      result.push_back(parseList[i]);
     }
   }
 
@@ -90,7 +90,7 @@ static bool parseKeyTimes(const String& string,
         goto fail;
       }
     }
-    result.append(time);
+    result.push_back(time);
   }
   return true;
 fail:
@@ -129,7 +129,7 @@ static bool parseKeySplinesInternal(const String& string,
       ptr++;
     skipOptionalSVGSpaces(ptr, end);
 
-    result.append(gfx::CubicBezier(posA, posB, posC, posD));
+    result.push_back(gfx::CubicBezier(posA, posB, posC, posD));
   }
 
   return ptr == end;
@@ -343,14 +343,14 @@ void SVGAnimationElement::calculateKeyTimesForCalcModePaced() {
 
   Vector<float> keyTimesForPaced;
   float totalDistance = 0;
-  keyTimesForPaced.append(0);
+  keyTimesForPaced.push_back(0);
   for (unsigned n = 0; n < valuesCount - 1; ++n) {
     // Distance in any units
     float distance = calculateDistance(m_values[n], m_values[n + 1]);
     if (distance < 0)
       return;
     totalDistance += distance;
-    keyTimesForPaced.append(distance);
+    keyTimesForPaced.push_back(distance);
   }
   if (!totalDistance)
     return;

@@ -54,8 +54,8 @@ void LayerRectList::append(Node* layerRootNode,
                            int layerOffsetX,
                            int layerOffsetY,
                            ClientRect* layerRelativeRect) {
-  m_list.append(LayerRect::create(layerRootNode, layerType, layerOffsetX,
-                                  layerOffsetY, layerRelativeRect));
+  m_list.push_back(LayerRect::create(layerRootNode, layerType, layerOffsetX,
+                                     layerOffsetY, layerRelativeRect));
 }
 
 DEFINE_TRACE(LayerRectList) {
