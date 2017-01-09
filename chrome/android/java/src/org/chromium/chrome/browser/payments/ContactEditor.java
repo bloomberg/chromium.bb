@@ -63,6 +63,27 @@ public class ContactEditor extends EditorBase<AutofillContact> {
     }
 
     /**
+     * @return Whether this editor requires the payer name.
+     */
+    public boolean getRequestPayerName() {
+        return mRequestPayerName;
+    }
+
+    /**
+     * @return Whether this editor requires the payer phone.
+     */
+    public boolean getRequestPayerPhone() {
+        return mRequestPayerPhone;
+    }
+
+    /**
+     * @return Whether this editor requires the payer email.
+     */
+    public boolean getRequestPayerEmail() {
+        return mRequestPayerEmail;
+    }
+
+    /**
      * Returns the contact completion status with the given name, phone and email.
      *
      * @param name  The payer name to check.

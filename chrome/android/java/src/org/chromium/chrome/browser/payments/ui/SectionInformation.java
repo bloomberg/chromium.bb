@@ -4,11 +4,13 @@
 
 package org.chromium.chrome.browser.payments.ui;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -28,7 +30,7 @@ public class SectionInformation {
     public static final int INVALID_SELECTION = -2;
 
     @PaymentRequestUI.DataType private final int mDataType;
-    private ArrayList<PaymentOption> mItems;
+    protected ArrayList<PaymentOption> mItems;
     private int mSelectedItem;
     public String mErrorMessage;
 
@@ -59,15 +61,7 @@ public class SectionInformation {
     public SectionInformation(@PaymentRequestUI.DataType int sectionType, int selection,
             Collection<? extends PaymentOption> itemCollection) {
         mDataType = sectionType;
-
-        if (itemCollection == null || itemCollection.isEmpty()) {
-            mSelectedItem = NO_SELECTION;
-            mItems = null;
-        } else {
-            mSelectedItem = selection;
-            mItems = new ArrayList<PaymentOption>(itemCollection.size());
-            mItems.addAll(itemCollection);
-        }
+        updateItemsWithCollection(selection, itemCollection);
     }
 
     /**
@@ -192,5 +186,32 @@ public class SectionInformation {
     /** @return The optional error message to display when the selection is invalid. */
     public String getErrorMessage() {
         return mErrorMessage;
+    }
+
+    /**
+     * Returns all the items in the section. Used for testing.
+     *
+     * @return List of items in the section.
+     */
+    @VisibleForTesting
+    public List<PaymentOption> getItemsForTesting() {
+        return mItems;
+    }
+
+    /**
+     * Update the list of items being shown by this section, as well as the selection.
+     *
+     * @param selection      The index of the currently selected item.
+     * @param itemCollection The items in the section.
+     */
+    protected void updateItemsWithCollection(
+            int selection, @Nullable Collection<? extends PaymentOption> itemCollection) {
+        if (itemCollection == null || itemCollection.isEmpty()) {
+            mSelectedItem = NO_SELECTION;
+            mItems = null;
+        } else {
+            mSelectedItem = selection;
+            mItems = new ArrayList<>(itemCollection);
+        }
     }
 }

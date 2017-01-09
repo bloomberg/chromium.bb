@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.payments.ui.Completable;
+import org.chromium.chrome.browser.payments.ui.ContactDetailsSection;
 import org.chromium.chrome.browser.payments.ui.LineItem;
 import org.chromium.chrome.browser.payments.ui.PaymentInformation;
 import org.chromium.chrome.browser.payments.ui.PaymentOption;
@@ -161,10 +162,12 @@ public class PaymentRequestImpl
         }
     };
 
+    /** Limit in the number of suggested items in a section. */
+    public static final int SUGGESTIONS_LIMIT = 4;
+
     private static final String TAG = "cr_PaymentRequest";
     private static final String ANDROID_PAY_METHOD_NAME = "https://android.com/pay";
     private static final String PAYMENT_COMPLETE_ONCE = "payment_complete_once";
-    private static final int SUGGESTIONS_LIMIT = 4;
     private static final Comparator<Completable> COMPLETENESS_COMPARATOR =
             new Comparator<Completable>() {
                 @Override
@@ -250,7 +253,7 @@ public class PaymentRequestImpl
 
     private Map<String, PaymentMethodData> mMethodData;
     private SectionInformation mShippingAddressesSection;
-    private SectionInformation mContactSection;
+    private ContactDetailsSection mContactSection;
     private List<PaymentApp> mApps;
     private List<PaymentApp> mPendingApps;
     private List<PaymentInstrument> mPendingInstruments;
@@ -368,8 +371,10 @@ public class PaymentRequestImpl
         }
 
         if (requestPayerName || requestPayerPhone || requestPayerEmail) {
-            createContactSection(Collections.unmodifiableList(profiles), requestPayerName,
-                    requestPayerPhone, requestPayerEmail);
+            mContactEditor =
+                    new ContactEditor(requestPayerName, requestPayerPhone, requestPayerEmail);
+            mContactSection = new ContactDetailsSection(
+                    mContext, Collections.unmodifiableList(profiles), mContactEditor);
         }
 
         mUI = new PaymentRequestUI(mContext, this, requestShipping,
@@ -440,83 +445,6 @@ public class PaymentRequestImpl
 
         mShippingAddressesSection = new SectionInformation(
                 PaymentRequestUI.TYPE_SHIPPING_ADDRESSES, firstCompleteAddressIndex, addresses);
-    }
-
-    private void createContactSection(List<AutofillProfile> unmodifiableProfiles,
-            boolean requestName, boolean requestPhone, boolean requestEmail) {
-        List<AutofillContact> contacts = new ArrayList<>();
-        List<AutofillContact> uniqueContacts = new ArrayList<>();
-        mContactEditor = new ContactEditor(requestName, requestPhone, requestEmail);
-
-        // Add the profile's valid request values to the editor's autocomplete list and convert
-        // relevant profiles to AutofillContacts.
-        for (int i = 0; i < unmodifiableProfiles.size(); ++i) {
-            AutofillProfile profile = unmodifiableProfiles.get(i);
-            String name = requestName && !TextUtils.isEmpty(profile.getFullName())
-                    ? profile.getFullName()
-                    : null;
-            String phone = requestPhone && !TextUtils.isEmpty(profile.getPhoneNumber())
-                    ? profile.getPhoneNumber()
-                    : null;
-            String email = requestEmail && !TextUtils.isEmpty(profile.getEmailAddress())
-                    ? profile.getEmailAddress()
-                    : null;
-
-            // Add the values to the editor's autocomplete list.
-            mContactEditor.addPayerNameIfValid(name);
-            mContactEditor.addPhoneNumberIfValid(phone);
-            mContactEditor.addEmailAddressIfValid(email);
-
-            // Only create a contact if the profile has relevant information for the merchant.
-            if (name != null || phone != null || email != null) {
-                contacts.add(new AutofillContact(mContext, profile, name, phone, email,
-                        mContactEditor.checkContactCompletionStatus(name, phone, email),
-                        requestName, requestPhone, requestEmail));
-            }
-        }
-
-        // Order the contacts so the ones that have most of the required information are put first.
-        // The sort is stable, so contacts with the same relevance score are sorted by frecency.
-        Collections.sort(contacts, new Comparator<AutofillContact>() {
-            @Override
-            public int compare(AutofillContact a, AutofillContact b) {
-                return b.getRelevanceScore() - a.getRelevanceScore();
-            }
-        });
-
-        // This algorithm is quadratic, but since the number of contacts is generally very small
-        // ( < 10) a faster but more complicated algorithm would be overkill.
-        for (int i = 0; i < contacts.size(); i++) {
-            AutofillContact contact = contacts.get(i);
-
-            // Different contacts can have identical info. Do not add the same contact info or a
-            // subset of it twice. It's important that the profiles be sorted by the quantity of
-            // required info they have.
-            boolean isNewSuggestion = true;
-            for (int j = 0; j < uniqueContacts.size(); ++j) {
-                if (uniqueContacts.get(j).isEqualOrSupersetOf(contact)) {
-                    isNewSuggestion = false;
-                    break;
-                }
-            }
-            if (isNewSuggestion) uniqueContacts.add(contact);
-
-            // Limit the number of suggestions.
-            if (uniqueContacts.size() == SUGGESTIONS_LIMIT) break;
-        }
-
-        // Log the number of suggested contact infos.
-        mJourneyLogger.setNumberOfSuggestionsShown(
-                PaymentRequestJourneyLogger.SECTION_CONTACT_INFO, uniqueContacts.size());
-
-        // Automatically select the first address if it is complete.
-        int firstCompleteContactIndex = SectionInformation.NO_SELECTION;
-        if (!uniqueContacts.isEmpty() && uniqueContacts.get(0).isComplete()) {
-            firstCompleteContactIndex = 0;
-        }
-
-        mContactSection = new SectionInformation(
-                PaymentRequestUI.TYPE_CONTACT_DETAILS, firstCompleteContactIndex, uniqueContacts);
     }
 
     /**
@@ -981,10 +909,19 @@ public class PaymentRequestImpl
                         providePaymentInformation();
                     } else {
                         if (toEdit == null) {
-                            // Address is complete and we were in the "Add flow": add an item to the
-                            // list.
+                            // Address is complete and user was in the "Add flow": add an item to
+                            // the list.
                             mShippingAddressesSection.addAndSelectItem(editedAddress);
                         }
+
+                        if (mContactSection != null) {
+                            // Update |mContactSection| with the new/edited address, which will
+                            // update an existing item or add a new one to the end of the list.
+                            mContactSection.addOrUpdateWithAutofillAddress(editedAddress);
+                            mUI.updateSection(
+                                    PaymentRequestUI.TYPE_CONTACT_DETAILS, mContactSection);
+                        }
+
                         // This updates the line items and the shipping options asynchronously by
                         // sending the new address to the merchant website.
                         mClient.onShippingAddressChange(editedAddress.toPaymentAddress());
@@ -1420,8 +1357,7 @@ public class PaymentRequestImpl
     }
 
     @Override
-    public void onFocusChanged(
-            @PaymentRequestUI.DataType int dataType, boolean willFocus) {
+    public void onFocusChanged(@PaymentRequestUI.DataType int dataType, boolean willFocus) {
         assert dataType == PaymentRequestUI.TYPE_SHIPPING_ADDRESSES;
 
         if (mShippingAddressesSection.getSelectedItem() == null) return;
