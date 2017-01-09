@@ -142,186 +142,193 @@ uint32_t c_v64_ssd_u8(c_v64 a, c_v64 b) {
 
 namespace {
 
-#define MAP(name)                                           \
-  {                                                         \
-    (const void *const) #name, (const void *const)c_##name, \
-        (const void *const)name                             \
+typedef void (*fptr)();
+
+typedef struct {
+  const char *name;
+  fptr ref;
+  fptr simd;
+} mapping;
+
+#define MAP(name)                                                      \
+  {                                                                    \
+    #name, reinterpret_cast < fptr > (c_##name),                       \
+                                      reinterpret_cast < fptr > (name) \
   }
 
-const void *const m[][3] = { MAP(v64_sad_u8),
-                             MAP(v64_ssd_u8),
-                             MAP(v64_add_8),
-                             MAP(v64_add_16),
-                             MAP(v64_sadd_s16),
-                             MAP(v64_add_32),
-                             MAP(v64_sub_8),
-                             MAP(v64_ssub_u8),
-                             MAP(v64_ssub_s8),
-                             MAP(v64_sub_16),
-                             MAP(v64_ssub_s16),
-                             MAP(v64_sub_32),
-                             MAP(v64_ziplo_8),
-                             MAP(v64_ziphi_8),
-                             MAP(v64_ziplo_16),
-                             MAP(v64_ziphi_16),
-                             MAP(v64_ziplo_32),
-                             MAP(v64_ziphi_32),
-                             MAP(v64_pack_s32_s16),
-                             MAP(v64_pack_s16_u8),
-                             MAP(v64_pack_s16_s8),
-                             MAP(v64_unziphi_8),
-                             MAP(v64_unziplo_8),
-                             MAP(v64_unziphi_16),
-                             MAP(v64_unziplo_16),
-                             MAP(v64_or),
-                             MAP(v64_xor),
-                             MAP(v64_and),
-                             MAP(v64_andn),
-                             MAP(v64_mullo_s16),
-                             MAP(v64_mulhi_s16),
-                             MAP(v64_mullo_s32),
-                             MAP(v64_madd_s16),
-                             MAP(v64_madd_us8),
-                             MAP(v64_avg_u8),
-                             MAP(v64_rdavg_u8),
-                             MAP(v64_avg_u16),
-                             MAP(v64_min_u8),
-                             MAP(v64_max_u8),
-                             MAP(v64_min_s8),
-                             MAP(v64_max_s8),
-                             MAP(v64_min_s16),
-                             MAP(v64_max_s16),
-                             MAP(v64_cmpgt_s8),
-                             MAP(v64_cmplt_s8),
-                             MAP(v64_cmpeq_8),
-                             MAP(v64_cmpgt_s16),
-                             MAP(v64_cmplt_s16),
-                             MAP(v64_cmpeq_16),
-                             MAP(v64_shuffle_8),
-                             MAP(imm_v64_align<1>),
-                             MAP(imm_v64_align<2>),
-                             MAP(imm_v64_align<3>),
-                             MAP(imm_v64_align<4>),
-                             MAP(imm_v64_align<5>),
-                             MAP(imm_v64_align<6>),
-                             MAP(imm_v64_align<7>),
-                             MAP(v64_abs_s16),
-                             MAP(v64_unpacklo_u8_s16),
-                             MAP(v64_unpackhi_u8_s16),
-                             MAP(v64_unpacklo_u16_s32),
-                             MAP(v64_unpacklo_s16_s32),
-                             MAP(v64_unpackhi_u16_s32),
-                             MAP(v64_unpackhi_s16_s32),
-                             MAP(imm_v64_shr_n_byte<1>),
-                             MAP(imm_v64_shr_n_byte<2>),
-                             MAP(imm_v64_shr_n_byte<3>),
-                             MAP(imm_v64_shr_n_byte<4>),
-                             MAP(imm_v64_shr_n_byte<5>),
-                             MAP(imm_v64_shr_n_byte<6>),
-                             MAP(imm_v64_shr_n_byte<7>),
-                             MAP(imm_v64_shl_n_byte<1>),
-                             MAP(imm_v64_shl_n_byte<2>),
-                             MAP(imm_v64_shl_n_byte<3>),
-                             MAP(imm_v64_shl_n_byte<4>),
-                             MAP(imm_v64_shl_n_byte<5>),
-                             MAP(imm_v64_shl_n_byte<6>),
-                             MAP(imm_v64_shl_n_byte<7>),
-                             MAP(imm_v64_shl_n_8<1>),
-                             MAP(imm_v64_shl_n_8<2>),
-                             MAP(imm_v64_shl_n_8<3>),
-                             MAP(imm_v64_shl_n_8<4>),
-                             MAP(imm_v64_shl_n_8<5>),
-                             MAP(imm_v64_shl_n_8<6>),
-                             MAP(imm_v64_shl_n_8<7>),
-                             MAP(imm_v64_shr_n_u8<1>),
-                             MAP(imm_v64_shr_n_u8<2>),
-                             MAP(imm_v64_shr_n_u8<3>),
-                             MAP(imm_v64_shr_n_u8<4>),
-                             MAP(imm_v64_shr_n_u8<5>),
-                             MAP(imm_v64_shr_n_u8<6>),
-                             MAP(imm_v64_shr_n_u8<7>),
-                             MAP(imm_v64_shr_n_s8<1>),
-                             MAP(imm_v64_shr_n_s8<2>),
-                             MAP(imm_v64_shr_n_s8<3>),
-                             MAP(imm_v64_shr_n_s8<4>),
-                             MAP(imm_v64_shr_n_s8<5>),
-                             MAP(imm_v64_shr_n_s8<6>),
-                             MAP(imm_v64_shr_n_s8<7>),
-                             MAP(imm_v64_shl_n_16<1>),
-                             MAP(imm_v64_shl_n_16<2>),
-                             MAP(imm_v64_shl_n_16<4>),
-                             MAP(imm_v64_shl_n_16<6>),
-                             MAP(imm_v64_shl_n_16<8>),
-                             MAP(imm_v64_shl_n_16<10>),
-                             MAP(imm_v64_shl_n_16<12>),
-                             MAP(imm_v64_shl_n_16<14>),
-                             MAP(imm_v64_shr_n_u16<1>),
-                             MAP(imm_v64_shr_n_u16<2>),
-                             MAP(imm_v64_shr_n_u16<4>),
-                             MAP(imm_v64_shr_n_u16<6>),
-                             MAP(imm_v64_shr_n_u16<8>),
-                             MAP(imm_v64_shr_n_u16<10>),
-                             MAP(imm_v64_shr_n_u16<12>),
-                             MAP(imm_v64_shr_n_u16<14>),
-                             MAP(imm_v64_shr_n_s16<1>),
-                             MAP(imm_v64_shr_n_s16<2>),
-                             MAP(imm_v64_shr_n_s16<4>),
-                             MAP(imm_v64_shr_n_s16<6>),
-                             MAP(imm_v64_shr_n_s16<8>),
-                             MAP(imm_v64_shr_n_s16<10>),
-                             MAP(imm_v64_shr_n_s16<12>),
-                             MAP(imm_v64_shr_n_s16<14>),
-                             MAP(imm_v64_shl_n_32<1>),
-                             MAP(imm_v64_shl_n_32<4>),
-                             MAP(imm_v64_shl_n_32<8>),
-                             MAP(imm_v64_shl_n_32<12>),
-                             MAP(imm_v64_shl_n_32<16>),
-                             MAP(imm_v64_shl_n_32<20>),
-                             MAP(imm_v64_shl_n_32<24>),
-                             MAP(imm_v64_shl_n_32<28>),
-                             MAP(imm_v64_shr_n_u32<1>),
-                             MAP(imm_v64_shr_n_u32<4>),
-                             MAP(imm_v64_shr_n_u32<8>),
-                             MAP(imm_v64_shr_n_u32<12>),
-                             MAP(imm_v64_shr_n_u32<16>),
-                             MAP(imm_v64_shr_n_u32<20>),
-                             MAP(imm_v64_shr_n_u32<24>),
-                             MAP(imm_v64_shr_n_u32<28>),
-                             MAP(imm_v64_shr_n_s32<1>),
-                             MAP(imm_v64_shr_n_s32<4>),
-                             MAP(imm_v64_shr_n_s32<8>),
-                             MAP(imm_v64_shr_n_s32<12>),
-                             MAP(imm_v64_shr_n_s32<16>),
-                             MAP(imm_v64_shr_n_s32<20>),
-                             MAP(imm_v64_shr_n_s32<24>),
-                             MAP(imm_v64_shr_n_s32<28>),
-                             MAP(v64_shl_8),
-                             MAP(v64_shr_u8),
-                             MAP(v64_shr_s8),
-                             MAP(v64_shl_16),
-                             MAP(v64_shr_u16),
-                             MAP(v64_shr_s16),
-                             MAP(v64_shl_32),
-                             MAP(v64_shr_u32),
-                             MAP(v64_shr_s32),
-                             MAP(v64_hadd_u8),
-                             MAP(v64_hadd_s16),
-                             MAP(v64_dotp_s16),
-                             { NULL, NULL, NULL } };
+const mapping m[] = { MAP(v64_sad_u8),
+                      MAP(v64_ssd_u8),
+                      MAP(v64_add_8),
+                      MAP(v64_add_16),
+                      MAP(v64_sadd_s16),
+                      MAP(v64_add_32),
+                      MAP(v64_sub_8),
+                      MAP(v64_ssub_u8),
+                      MAP(v64_ssub_s8),
+                      MAP(v64_sub_16),
+                      MAP(v64_ssub_s16),
+                      MAP(v64_sub_32),
+                      MAP(v64_ziplo_8),
+                      MAP(v64_ziphi_8),
+                      MAP(v64_ziplo_16),
+                      MAP(v64_ziphi_16),
+                      MAP(v64_ziplo_32),
+                      MAP(v64_ziphi_32),
+                      MAP(v64_pack_s32_s16),
+                      MAP(v64_pack_s16_u8),
+                      MAP(v64_pack_s16_s8),
+                      MAP(v64_unziphi_8),
+                      MAP(v64_unziplo_8),
+                      MAP(v64_unziphi_16),
+                      MAP(v64_unziplo_16),
+                      MAP(v64_or),
+                      MAP(v64_xor),
+                      MAP(v64_and),
+                      MAP(v64_andn),
+                      MAP(v64_mullo_s16),
+                      MAP(v64_mulhi_s16),
+                      MAP(v64_mullo_s32),
+                      MAP(v64_madd_s16),
+                      MAP(v64_madd_us8),
+                      MAP(v64_avg_u8),
+                      MAP(v64_rdavg_u8),
+                      MAP(v64_avg_u16),
+                      MAP(v64_min_u8),
+                      MAP(v64_max_u8),
+                      MAP(v64_min_s8),
+                      MAP(v64_max_s8),
+                      MAP(v64_min_s16),
+                      MAP(v64_max_s16),
+                      MAP(v64_cmpgt_s8),
+                      MAP(v64_cmplt_s8),
+                      MAP(v64_cmpeq_8),
+                      MAP(v64_cmpgt_s16),
+                      MAP(v64_cmplt_s16),
+                      MAP(v64_cmpeq_16),
+                      MAP(v64_shuffle_8),
+                      MAP(imm_v64_align<1>),
+                      MAP(imm_v64_align<2>),
+                      MAP(imm_v64_align<3>),
+                      MAP(imm_v64_align<4>),
+                      MAP(imm_v64_align<5>),
+                      MAP(imm_v64_align<6>),
+                      MAP(imm_v64_align<7>),
+                      MAP(v64_abs_s16),
+                      MAP(v64_unpacklo_u8_s16),
+                      MAP(v64_unpackhi_u8_s16),
+                      MAP(v64_unpacklo_u16_s32),
+                      MAP(v64_unpacklo_s16_s32),
+                      MAP(v64_unpackhi_u16_s32),
+                      MAP(v64_unpackhi_s16_s32),
+                      MAP(imm_v64_shr_n_byte<1>),
+                      MAP(imm_v64_shr_n_byte<2>),
+                      MAP(imm_v64_shr_n_byte<3>),
+                      MAP(imm_v64_shr_n_byte<4>),
+                      MAP(imm_v64_shr_n_byte<5>),
+                      MAP(imm_v64_shr_n_byte<6>),
+                      MAP(imm_v64_shr_n_byte<7>),
+                      MAP(imm_v64_shl_n_byte<1>),
+                      MAP(imm_v64_shl_n_byte<2>),
+                      MAP(imm_v64_shl_n_byte<3>),
+                      MAP(imm_v64_shl_n_byte<4>),
+                      MAP(imm_v64_shl_n_byte<5>),
+                      MAP(imm_v64_shl_n_byte<6>),
+                      MAP(imm_v64_shl_n_byte<7>),
+                      MAP(imm_v64_shl_n_8<1>),
+                      MAP(imm_v64_shl_n_8<2>),
+                      MAP(imm_v64_shl_n_8<3>),
+                      MAP(imm_v64_shl_n_8<4>),
+                      MAP(imm_v64_shl_n_8<5>),
+                      MAP(imm_v64_shl_n_8<6>),
+                      MAP(imm_v64_shl_n_8<7>),
+                      MAP(imm_v64_shr_n_u8<1>),
+                      MAP(imm_v64_shr_n_u8<2>),
+                      MAP(imm_v64_shr_n_u8<3>),
+                      MAP(imm_v64_shr_n_u8<4>),
+                      MAP(imm_v64_shr_n_u8<5>),
+                      MAP(imm_v64_shr_n_u8<6>),
+                      MAP(imm_v64_shr_n_u8<7>),
+                      MAP(imm_v64_shr_n_s8<1>),
+                      MAP(imm_v64_shr_n_s8<2>),
+                      MAP(imm_v64_shr_n_s8<3>),
+                      MAP(imm_v64_shr_n_s8<4>),
+                      MAP(imm_v64_shr_n_s8<5>),
+                      MAP(imm_v64_shr_n_s8<6>),
+                      MAP(imm_v64_shr_n_s8<7>),
+                      MAP(imm_v64_shl_n_16<1>),
+                      MAP(imm_v64_shl_n_16<2>),
+                      MAP(imm_v64_shl_n_16<4>),
+                      MAP(imm_v64_shl_n_16<6>),
+                      MAP(imm_v64_shl_n_16<8>),
+                      MAP(imm_v64_shl_n_16<10>),
+                      MAP(imm_v64_shl_n_16<12>),
+                      MAP(imm_v64_shl_n_16<14>),
+                      MAP(imm_v64_shr_n_u16<1>),
+                      MAP(imm_v64_shr_n_u16<2>),
+                      MAP(imm_v64_shr_n_u16<4>),
+                      MAP(imm_v64_shr_n_u16<6>),
+                      MAP(imm_v64_shr_n_u16<8>),
+                      MAP(imm_v64_shr_n_u16<10>),
+                      MAP(imm_v64_shr_n_u16<12>),
+                      MAP(imm_v64_shr_n_u16<14>),
+                      MAP(imm_v64_shr_n_s16<1>),
+                      MAP(imm_v64_shr_n_s16<2>),
+                      MAP(imm_v64_shr_n_s16<4>),
+                      MAP(imm_v64_shr_n_s16<6>),
+                      MAP(imm_v64_shr_n_s16<8>),
+                      MAP(imm_v64_shr_n_s16<10>),
+                      MAP(imm_v64_shr_n_s16<12>),
+                      MAP(imm_v64_shr_n_s16<14>),
+                      MAP(imm_v64_shl_n_32<1>),
+                      MAP(imm_v64_shl_n_32<4>),
+                      MAP(imm_v64_shl_n_32<8>),
+                      MAP(imm_v64_shl_n_32<12>),
+                      MAP(imm_v64_shl_n_32<16>),
+                      MAP(imm_v64_shl_n_32<20>),
+                      MAP(imm_v64_shl_n_32<24>),
+                      MAP(imm_v64_shl_n_32<28>),
+                      MAP(imm_v64_shr_n_u32<1>),
+                      MAP(imm_v64_shr_n_u32<4>),
+                      MAP(imm_v64_shr_n_u32<8>),
+                      MAP(imm_v64_shr_n_u32<12>),
+                      MAP(imm_v64_shr_n_u32<16>),
+                      MAP(imm_v64_shr_n_u32<20>),
+                      MAP(imm_v64_shr_n_u32<24>),
+                      MAP(imm_v64_shr_n_u32<28>),
+                      MAP(imm_v64_shr_n_s32<1>),
+                      MAP(imm_v64_shr_n_s32<4>),
+                      MAP(imm_v64_shr_n_s32<8>),
+                      MAP(imm_v64_shr_n_s32<12>),
+                      MAP(imm_v64_shr_n_s32<16>),
+                      MAP(imm_v64_shr_n_s32<20>),
+                      MAP(imm_v64_shr_n_s32<24>),
+                      MAP(imm_v64_shr_n_s32<28>),
+                      MAP(v64_shl_8),
+                      MAP(v64_shr_u8),
+                      MAP(v64_shr_s8),
+                      MAP(v64_shl_16),
+                      MAP(v64_shr_u16),
+                      MAP(v64_shr_s16),
+                      MAP(v64_shl_32),
+                      MAP(v64_shr_u32),
+                      MAP(v64_shr_s32),
+                      MAP(v64_hadd_u8),
+                      MAP(v64_hadd_s16),
+                      MAP(v64_dotp_s16),
+                      { NULL, NULL, NULL } };
 #undef MAP
 
 // Map reference functions to machine tuned functions. Since the
 // functions depend on machine tuned types, the non-machine tuned
 // instantiations of the test can't refer to these functions directly,
 // so we refer to them by name and do the mapping here.
-void Map(const char *name, const void **ref, const void **simd) {
+void Map(const char *name, fptr *ref, fptr *simd) {
   unsigned int i;
-  for (i = 0; m[i][0] && strcmp(name, reinterpret_cast<const char *>(m[i][0]));
-       i++) {
+  for (i = 0; m[i].name && strcmp(name, m[i].name); i++) {
   }
 
-  *ref = m[i][1];
-  *simd = m[i][2];
+  *ref = m[i].ref;
+  *simd = m[i].simd;
 }
 
 // Used for printing errors in TestSimd1Arg and TestSimd2Args
@@ -392,9 +399,8 @@ void c_u64_store_aligned(void *p, uint64_t a) {
 // cast to avoid matching errors in the branches eliminated by the
 // typeid tests in the calling function.
 template <typename Ret, typename Arg, typename CRet, typename CArg>
-int CompareSimd1Arg(const void *store, const void *load, const void *simd,
-                    void *d, const void *c_store, const void *c_load,
-                    const void *c_simd, void *ref_d, const void *a) {
+int CompareSimd1Arg(fptr store, fptr load, fptr simd, void *d, fptr c_store,
+                    fptr c_load, fptr c_simd, void *ref_d, const void *a) {
   void (*const my_store)(void *, Ret) = (void (*const)(void *, Ret))store;
   Arg (*const my_load)(const void *) = (Arg(*const)(const void *))load;
   Ret (*const my_simd)(Arg) = (Ret(*const)(Arg))simd;
@@ -412,11 +418,9 @@ int CompareSimd1Arg(const void *store, const void *load, const void *simd,
 
 template <typename Ret, typename Arg1, typename Arg2, typename CRet,
           typename CArg1, typename CArg2>
-int CompareSimd2Args(const void *store, const void *load1, const void *load2,
-                     const void *simd, void *d, const void *c_store,
-                     const void *c_load1, const void *c_load2,
-                     const void *c_simd, void *ref_d, const void *a,
-                     const void *b) {
+int CompareSimd2Args(fptr store, fptr load1, fptr load2, fptr simd, void *d,
+                     fptr c_store, fptr c_load1, fptr c_load2, fptr c_simd,
+                     void *ref_d, const void *a, const void *b) {
   void (*const my_store)(void *, Ret) = (void (*const)(void *, Ret))store;
   Arg1 (*const my_load1)(const void *) = (Arg1(*const)(const void *))load1;
   Arg2 (*const my_load2)(const void *) = (Arg2(*const)(const void *))load2;
@@ -441,8 +445,8 @@ template <typename CRet, typename CArg>
 void TestSimd1Arg(uint32_t iterations, uint32_t mask, uint32_t maskwidth,
                   const char *name) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
-  const void *ref_simd;
-  const void *simd;
+  fptr ref_simd;
+  fptr simd;
   int error = 0;
   DECLARE_ALIGNED(sizeof(CArg), uint16_t, s[sizeof(CArg) / sizeof(uint16_t)]);
   DECLARE_ALIGNED(sizeof(CRet), uint8_t, d[sizeof(CRet)]);
@@ -466,29 +470,26 @@ void TestSimd1Arg(uint32_t iterations, uint32_t mask, uint32_t maskwidth,
     if (typeid(CRet) == typeid(c_v64) && typeid(CArg) == typeid(c_v64)) {
       // V64_V64
       error = CompareSimd1Arg<v64, v64, CRet, CArg>(
-          reinterpret_cast<const void *>(v64_store_aligned),
-          (const void *)v64_load_aligned, simd, d,
-          reinterpret_cast<const void *>(c_v64_store_aligned),
-          reinterpret_cast<const void *>(c_v64_load_aligned), ref_simd, ref_d,
-          s);
+          reinterpret_cast<fptr>(v64_store_aligned),
+          reinterpret_cast<fptr>(v64_load_aligned), simd, d,
+          reinterpret_cast<fptr>(c_v64_store_aligned),
+          reinterpret_cast<fptr>(c_v64_load_aligned), ref_simd, ref_d, s);
     } else if (typeid(CRet) == typeid(uint64_t) &&
                typeid(CArg) == typeid(c_v64)) {
       // U64_V64
       error = CompareSimd1Arg<uint64_t, v64, CRet, CArg>(
-          reinterpret_cast<const void *>(u64_store_aligned),
-          reinterpret_cast<const void *>(v64_load_aligned), simd, d,
-          reinterpret_cast<const void *>(c_v64_store_aligned),
-          reinterpret_cast<const void *>(c_v64_load_aligned), ref_simd, ref_d,
-          s);
+          reinterpret_cast<fptr>(u64_store_aligned),
+          reinterpret_cast<fptr>(v64_load_aligned), simd, d,
+          reinterpret_cast<fptr>(c_v64_store_aligned),
+          reinterpret_cast<fptr>(c_v64_load_aligned), ref_simd, ref_d, s);
     } else if (typeid(CRet) == typeid(int64_t) &&
                typeid(CArg) == typeid(c_v64)) {
       // S64_V64
       error = CompareSimd1Arg<int64_t, v64, CRet, CArg>(
-          reinterpret_cast<const void *>(u64_store_aligned),
-          reinterpret_cast<const void *>(v64_load_aligned), simd, d,
-          reinterpret_cast<const void *>(c_v64_store_aligned),
-          reinterpret_cast<const void *>(c_v64_load_aligned), ref_simd, ref_d,
-          s);
+          reinterpret_cast<fptr>(u64_store_aligned),
+          reinterpret_cast<fptr>(v64_load_aligned), simd, d,
+          reinterpret_cast<fptr>(c_v64_store_aligned),
+          reinterpret_cast<fptr>(c_v64_load_aligned), ref_simd, ref_d, s);
     } else {
       FAIL() << "Internal error: Unknown intrinsic function "
              << typeid(CRet).name() << " " << name << "(" << typeid(CArg).name()
@@ -506,8 +507,8 @@ template <typename CRet, typename CArg1, typename CArg2>
 void TestSimd2Args(uint32_t iterations, uint32_t mask, uint32_t maskwidth,
                    const char *name) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
-  const void *ref_simd;
-  const void *simd;
+  fptr ref_simd;
+  fptr simd;
   int error = 0;
   DECLARE_ALIGNED(sizeof(CArg1), uint16_t,
                   s1[sizeof(CArg1) / sizeof(uint16_t)]);
@@ -537,49 +538,49 @@ void TestSimd2Args(uint32_t iterations, uint32_t mask, uint32_t maskwidth,
         typeid(CArg2) == typeid(c_v64)) {
       // V64_V64V64
       error = CompareSimd2Args<v64, v64, v64, CRet, CArg1, CArg2>(
-          reinterpret_cast<const void *>(v64_store_aligned),
-          reinterpret_cast<const void *>(v64_load_aligned),
-          reinterpret_cast<const void *>(v64_load_aligned), simd, d,
-          reinterpret_cast<const void *>(c_v64_store_aligned),
-          reinterpret_cast<const void *>(c_v64_load_aligned),
-          reinterpret_cast<const void *>(c_v64_load_aligned),
-          reinterpret_cast<const void *>(ref_simd), ref_d, s1, s2);
+          reinterpret_cast<fptr>(v64_store_aligned),
+          reinterpret_cast<fptr>(v64_load_aligned),
+          reinterpret_cast<fptr>(v64_load_aligned), simd, d,
+          reinterpret_cast<fptr>(c_v64_store_aligned),
+          reinterpret_cast<fptr>(c_v64_load_aligned),
+          reinterpret_cast<fptr>(c_v64_load_aligned),
+          reinterpret_cast<fptr>(ref_simd), ref_d, s1, s2);
     } else if (typeid(CRet) == typeid(uint32_t) &&
                typeid(CArg1) == typeid(c_v64) &&
                typeid(CArg2) == typeid(c_v64)) {
       // U32_V64V64
       error = CompareSimd2Args<uint32_t, v64, v64, CRet, CArg1, CArg2>(
-          reinterpret_cast<const void *>(u32_store_aligned),
-          reinterpret_cast<const void *>(v64_load_aligned),
-          reinterpret_cast<const void *>(v64_load_aligned), simd, d,
-          reinterpret_cast<const void *>(c_u32_store_aligned),
-          reinterpret_cast<const void *>(c_v64_load_aligned),
-          reinterpret_cast<const void *>(c_v64_load_aligned),
-          reinterpret_cast<const void *>(ref_simd), ref_d, s1, s2);
+          reinterpret_cast<fptr>(u32_store_aligned),
+          reinterpret_cast<fptr>(v64_load_aligned),
+          reinterpret_cast<fptr>(v64_load_aligned), simd, d,
+          reinterpret_cast<fptr>(c_u32_store_aligned),
+          reinterpret_cast<fptr>(c_v64_load_aligned),
+          reinterpret_cast<fptr>(c_v64_load_aligned),
+          reinterpret_cast<fptr>(ref_simd), ref_d, s1, s2);
     } else if (typeid(CRet) == typeid(int64_t) &&
                typeid(CArg1) == typeid(c_v64) &&
                typeid(CArg2) == typeid(c_v64)) {
       // S64_V64V64
       error = CompareSimd2Args<int64_t, v64, v64, CRet, CArg1, CArg2>(
-          reinterpret_cast<const void *>(u64_store_aligned),
-          reinterpret_cast<const void *>(v64_load_aligned),
-          reinterpret_cast<const void *>(v64_load_aligned), simd, d,
-          reinterpret_cast<const void *>(c_u64_store_aligned),
-          reinterpret_cast<const void *>(c_v64_load_aligned),
-          reinterpret_cast<const void *>(c_v64_load_aligned),
-          reinterpret_cast<const void *>(ref_simd), ref_d, s1, s2);
+          reinterpret_cast<fptr>(u64_store_aligned),
+          reinterpret_cast<fptr>(v64_load_aligned),
+          reinterpret_cast<fptr>(v64_load_aligned), simd, d,
+          reinterpret_cast<fptr>(c_u64_store_aligned),
+          reinterpret_cast<fptr>(c_v64_load_aligned),
+          reinterpret_cast<fptr>(c_v64_load_aligned),
+          reinterpret_cast<fptr>(ref_simd), ref_d, s1, s2);
     } else if (typeid(CRet) == typeid(c_v64) &&
                typeid(CArg1) == typeid(c_v64) &&
                typeid(CArg2) == typeid(uint32_t)) {
       // V64_V64U32
       error = CompareSimd2Args<v64, v64, uint32_t, CRet, CArg1, CArg2>(
-          reinterpret_cast<const void *>(v64_store_aligned),
-          reinterpret_cast<const void *>(v64_load_aligned),
-          reinterpret_cast<const void *>(u32_load_aligned), simd, d,
-          reinterpret_cast<const void *>(c_v64_store_aligned),
-          reinterpret_cast<const void *>(c_v64_load_aligned),
-          reinterpret_cast<const void *>(c_u32_load_aligned),
-          reinterpret_cast<const void *>(ref_simd), ref_d, s1, s2);
+          reinterpret_cast<fptr>(v64_store_aligned),
+          reinterpret_cast<fptr>(v64_load_aligned),
+          reinterpret_cast<fptr>(u32_load_aligned), simd, d,
+          reinterpret_cast<fptr>(c_v64_store_aligned),
+          reinterpret_cast<fptr>(c_v64_load_aligned),
+          reinterpret_cast<fptr>(c_u32_load_aligned),
+          reinterpret_cast<fptr>(ref_simd), ref_d, s1, s2);
     } else {
       FAIL() << "Internal error: Unknown intrinsic function "
              << typeid(CRet).name() << " " << name << "("
