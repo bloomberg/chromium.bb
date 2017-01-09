@@ -41,13 +41,6 @@ namespace net {
 
 namespace {
 
-#if !defined(NDEBUG)
-// The current cookie store. This weak pointer must not be used to do actual
-// work. Its only purpose is to check that there is only one synchronized
-// cookie store.
-CookieStoreIOS* g_current_synchronized_store = nullptr;
-#endif
-
 #pragma mark NotificationTrampoline
 
 // NotificationTrampoline dispatches cookie notifications to all the existing
@@ -734,94 +727,10 @@ void CookieStoreIOS::ClearSystemStore() {
   creation_time_manager_->Clear();
 }
 
-void CookieStoreIOS::SetSynchronizedWithSystemStore(bool synchronized) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (synchronized == (synchronization_state_ != NOT_SYNCHRONIZED))
-    return;  // The cookie store is already in the desired state.
-
-#if !defined(NDEBUG)
-  if (!synchronized) {
-    DCHECK_EQ(this, g_current_synchronized_store)
-        << "This cookie store was not synchronized";
-    g_current_synchronized_store = nullptr;
-  } else {
-    DCHECK_EQ((CookieStoreIOS*)nullptr, g_current_synchronized_store)
-        << "Un-synchronize the current cookie store first.";
-    g_current_synchronized_store = this;
-  }
-#endif
-
-  NSHTTPCookieAcceptPolicy policy =
-      [system_store_ cookieAcceptPolicy];
-  DCHECK(policy == NSHTTPCookieAcceptPolicyAlways ||
-         policy == NSHTTPCookieAcceptPolicyNever);
-
-  // If cookies are disabled, the system cookie store should be empty.
-  DCHECK(policy == NSHTTPCookieAcceptPolicyAlways ||
-         ![[system_store_ cookies] count]);
-
-  // If cookies are disabled, nothing is done now, the work will be done when
-  // cookies are re-enabled.
-  if (policy == NSHTTPCookieAcceptPolicyAlways) {
-    if (synchronized) {
-      synchronization_state_ = SYNCHRONIZING;
-      ClearSystemStore();
-      cookie_monster_->GetAllCookiesAsync(
-          base::Bind(&CookieStoreIOS::AddCookiesToSystemStore,
-                     weak_factory_.GetWeakPtr()));
-      return;
-    } else {
-      // Copy the cookies from the global store to |cookie_monster_|.
-      FlushStore(base::Closure());
-    }
-  }
-  synchronization_state_ = synchronized ? SYNCHRONIZED : NOT_SYNCHRONIZED;
-
-  if (synchronization_state_ == NOT_SYNCHRONIZED) {
-    // If there are pending tasks, then it means that the synchronization is
-    // being canceled. All pending tasks can be sent to cookie_monster_.
-    RunAllPendingTasks();
-  }
-}
-
 bool CookieStoreIOS::SystemCookiesAllowed() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return [system_store_ cookieAcceptPolicy] ==
          NSHTTPCookieAcceptPolicyAlways;
-}
-
-void CookieStoreIOS::AddCookiesToSystemStore(const net::CookieList& cookies) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!SystemCookiesAllowed() || synchronization_state_ != SYNCHRONIZING) {
-    // If synchronization was aborted, the pending tasks have been processed at
-    // that time. Now is too late.
-    DCHECK(tasks_pending_synchronization_.empty());
-    return;
-  }
-
-  // Report metrics.
-  if (metrics_enabled_) {
-    size_t cookie_count = cookies.size();
-    UMA_HISTOGRAM_COUNTS_10000("CookieIOS.CookieReadCount", cookie_count);
-    CheckForCookieLoss(cookie_count, COOKIES_READ);
-  }
-
-  net::CookieList::const_iterator it;
-  for (it = cookies.begin(); it != cookies.end(); ++it) {
-    const net::CanonicalCookie& net_cookie = *it;
-    NSHTTPCookie* system_cookie = SystemCookieFromCanonicalCookie(net_cookie);
-    // Canonical cookie may not be convertable into system cookie if it contains
-    // invalid characters.
-    if (!system_cookie)
-      continue;
-    [system_store_ setCookie:system_cookie];
-    creation_time_manager_->SetCreationTime(system_cookie,
-                                            net_cookie.CreationDate());
-  }
-
-  synchronization_state_ = SYNCHRONIZED;
-  RunAllPendingTasks();
 }
 
 void CookieStoreIOS::WriteToCookieMonster(NSArray* system_cookies) {
@@ -843,17 +752,6 @@ void CookieStoreIOS::WriteToCookieMonster(NSArray* system_cookies) {
   // Update metrics.
   if (metrics_enabled_)
     UMA_HISTOGRAM_COUNTS_10000("CookieIOS.CookieWrittenCount", cookie_count);
-}
-
-void CookieStoreIOS::RunAllPendingTasks() {
-  // Executing the tasks while synchronizing would not run the tasks, but merely
-  // re-enqueue them. This function also does not support mutation of the queue
-  // during the iteration.
-  DCHECK(synchronization_state_ != SYNCHRONIZING);
-  for (const auto& task : tasks_pending_synchronization_) {
-    task.Run();
-  }
-  tasks_pending_synchronization_.clear();
 }
 
 void CookieStoreIOS::DeleteCookiesWithFilter(const CookieFilterFunction& filter,

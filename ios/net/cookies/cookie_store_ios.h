@@ -136,13 +136,6 @@ class CookieStoreIOS : public net::CookieStore,
 
   bool IsEphemeral() override;
 
-  // Changes the synchronization of the store.
-  // If |synchronized| is true, then the system cookie store is used as a
-  // backend, else |cookie_monster_| is used. Cookies are moved from one to
-  // the other accordingly.
-  // TODO(crbug.com/676144): Remove this method. It is used only in tests.
-  void SetSynchronizedWithSystemStore(bool synchronized);
-
  private:
   CookieStoreIOS(
       net::CookieMonster::PersistentCookieStore* persistent_store,
@@ -167,13 +160,9 @@ class CookieStoreIOS : public net::CookieStore,
   // Returns true if the system cookie store policy is
   // |NSHTTPCookieAcceptPolicyAlways|.
   bool SystemCookiesAllowed();
-  // Converts |cookies| to NSHTTPCookie and add them to the system store.
-  void AddCookiesToSystemStore(const net::CookieList& cookies);
   // Copies the cookies to the backing CookieMonster. If the cookie store is not
   // synchronized with the system store, this is a no-op.
   void WriteToCookieMonster(NSArray* system_cookies);
-  // Runs all the pending tasks.
-  void RunAllPendingTasks();
 
   // Inherited CookieNotificationObserver methods.
   void OnSystemCookiesChanged() override;
