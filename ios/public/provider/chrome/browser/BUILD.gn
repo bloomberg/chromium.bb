@@ -14,9 +14,7 @@ source_set("browser") {
   ]
   deps = [
     "//base",
-    "//components/favicon_base",
     "//components/metrics",
-    "//components/sync_sessions",
   ]
   libs = [ "CoreLocation.framework" ]
 }
@@ -36,7 +34,6 @@ source_set("test_support") {
     "//ios/public/provider/chrome/browser/images:test_support",
     "//ios/public/provider/chrome/browser/native_app_launcher:test_support",
     "//ios/public/provider/chrome/browser/omaha:test_support",
-    "//ios/public/provider/chrome/browser/sessions:test_support",
     "//ios/public/provider/chrome/browser/signin:test_support",
     "//ios/public/provider/chrome/browser/spotlight:test_support",
     "//ios/public/provider/chrome/browser/ui",
@@ -54,7 +51,6 @@ source_set("test_support") {
     "//ios/public/provider/chrome/browser/images:test_support",
     "//ios/public/provider/chrome/browser/native_app_launcher:test_support",
     "//ios/public/provider/chrome/browser/omaha:test_support",
-    "//ios/public/provider/chrome/browser/sessions:test_support",
     "//ios/public/provider/chrome/browser/signin:test_support",
     "//ios/public/provider/chrome/browser/ui:test_support",
     "//ios/public/provider/chrome/browser/user_feedback:test_support",

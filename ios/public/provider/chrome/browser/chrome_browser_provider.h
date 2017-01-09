@@ -27,10 +27,6 @@ namespace web {
 class WebState;
 }
 
-namespace sync_sessions {
-class SyncedWindowDelegatesGetter;
-}
-
 @protocol AppRatingPrompt;
 @protocol LogoVendor;
 @protocol TextFieldStyling;
@@ -130,10 +126,6 @@ class ChromeBrowserProvider {
 
   // Returns an instance of the user feedback provider.
   virtual UserFeedbackProvider* GetUserFeedbackProvider() const;
-
-  // Returns the SyncedWindowDelegatesGetter implementation.
-  virtual std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>
-  CreateSyncedWindowDelegatesGetter(ios::ChromeBrowserState* browser_state);
 
   // Returns an instance of the branded image provider.
   virtual BrandedImageProvider* GetBrandedImageProvider() const;

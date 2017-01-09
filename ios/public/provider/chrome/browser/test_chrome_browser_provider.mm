@@ -12,7 +12,6 @@
 #include "ios/public/provider/chrome/browser/distribution/test_app_distribution_provider.h"
 #include "ios/public/provider/chrome/browser/images/test_branded_image_provider.h"
 #include "ios/public/provider/chrome/browser/omaha/test_omaha_service_provider.h"
-#include "ios/public/provider/chrome/browser/sessions/test_synced_window_delegates_getter.h"
 #include "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #include "ios/public/provider/chrome/browser/signin/test_signin_resources_provider.h"
 #import "ios/public/provider/chrome/browser/spotlight/test_spotlight_provider.h"
@@ -86,12 +85,6 @@ UserFeedbackProvider* TestChromeBrowserProvider::GetUserFeedbackProvider()
 
 SpotlightProvider* TestChromeBrowserProvider::GetSpotlightProvider() const {
   return spotlight_provider_.get();
-}
-
-std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>
-TestChromeBrowserProvider::CreateSyncedWindowDelegatesGetter(
-    ios::ChromeBrowserState* browser_state) {
-  return base::MakeUnique<TestSyncedWindowDelegatesGetter>();
 }
 
 BrandedImageProvider* TestChromeBrowserProvider::GetBrandedImageProvider()

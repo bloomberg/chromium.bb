@@ -33,9 +33,6 @@ class TestChromeBrowserProvider : public ChromeBrowserProvider {
   OmahaServiceProvider* GetOmahaServiceProvider() const override;
   UserFeedbackProvider* GetUserFeedbackProvider() const override;
   SpotlightProvider* GetSpotlightProvider() const override;
-  std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>
-  CreateSyncedWindowDelegatesGetter(
-      ios::ChromeBrowserState* browser_state) override;
   BrandedImageProvider* GetBrandedImageProvider() const override;
   id<NativeAppWhitelistManager> GetNativeAppWhitelistManager() const override;
 

@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "components/metrics/metrics_provider.h"
-#include "components/sync_sessions/synced_window_delegates_getter.h"
 
 namespace ios {
 
@@ -83,12 +82,6 @@ void ChromeBrowserProvider::AttachTabHelpers(web::WebState* web_state,
 bool ChromeBrowserProvider::IsSafeBrowsingEnabled(
     const base::Closure& on_update_callback) {
   return false;
-}
-
-std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>
-ChromeBrowserProvider::CreateSyncedWindowDelegatesGetter(
-    ios::ChromeBrowserState* browser_state) {
-  return nullptr;
 }
 
 VoiceSearchProvider* ChromeBrowserProvider::GetVoiceSearchProvider() const {

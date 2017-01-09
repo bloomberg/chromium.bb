@@ -9,11 +9,16 @@ source_set("tabs") {
     "tab_dialog_delegate.h",
     "tab_model.h",
     "tab_model_observer.h",
+    "tab_model_order_controller.h",
+    "tab_model_synced_window_delegate.h",
+    "tab_model_synced_window_delegate_getter.h",
     "tab_private.h",
     "tab_snapshotting_delegate.h",
   ]
   deps = [
+    "//components/sessions",
     "//components/signin/ios/browser",
+    "//components/sync_sessions",
     "//ios/net",
     "//ios/web",
     "//ui/base",
@@ -25,11 +30,8 @@ source_set("tabs_internal") {
   sources = [
     "tab.mm",
     "tab_model.mm",
-    "tab_model_order_controller.h",
     "tab_model_order_controller.mm",
-    "tab_model_synced_window_delegate.h",
     "tab_model_synced_window_delegate.mm",
-    "tab_model_synced_window_delegate_getter.h",
     "tab_model_synced_window_delegate_getter.mm",
   ]
   deps = [
@@ -53,7 +55,6 @@ source_set("tabs_internal") {
     "//components/signin/core/browser",
     "//components/signin/ios/browser",
     "//components/strings",
-    "//components/sync_sessions",
     "//components/url_formatter",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
