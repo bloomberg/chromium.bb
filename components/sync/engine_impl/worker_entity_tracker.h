@@ -40,6 +40,9 @@ class WorkerEntityTracker {
   // Returns true if this entity should be commited to the server.
   bool HasPendingCommit() const;
 
+  // Returns true if pending commit contains deleted entity.
+  bool PendingCommitIsDeletion() const;
+
   // Populates a sync_pb::SyncEntity for a commit.
   void PopulateCommitProto(sync_pb::SyncEntity* commit_entity) const;
 

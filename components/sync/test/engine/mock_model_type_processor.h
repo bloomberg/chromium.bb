@@ -10,6 +10,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -139,6 +140,10 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   std::map<const std::string, int64_t> sequence_numbers_;
   std::map<const std::string, int64_t> base_versions_;
   std::map<const std::string, std::string> assigned_ids_;
+
+  // Set of tag hashes which were deleted with DeleteRequest but haven't yet
+  // been confirmed by the server with OnCommitCompleted.
+  std::set<std::string> pending_deleted_hashes_;
 
   // Callback which will be call during disconnection
   DisconnectCallback disconnect_callback_;

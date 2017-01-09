@@ -118,6 +118,8 @@ CommitRequestData MockModelTypeProcessor::DeleteRequest(
   request_data.sequence_number = GetNextSequenceNumber(tag_hash);
   request_data.base_version = base_version;
 
+  pending_deleted_hashes_.insert(tag_hash);
+
   return request_data;
 }
 
@@ -195,11 +197,22 @@ void MockModelTypeProcessor::OnCommitCompletedImpl(
   type_states_received_on_commit_.push_back(type_state);
   for (CommitResponseDataList::const_iterator it = response_list.begin();
        it != response_list.end(); ++it) {
-    commit_response_items_.insert(std::make_pair(it->client_tag_hash, *it));
+    const std::string tag_hash = it->client_tag_hash;
+    commit_response_items_.insert(std::make_pair(tag_hash, *it));
 
-    // Server wins.  Set the model's base version.
-    SetBaseVersion(it->client_tag_hash, it->response_version);
-    SetServerAssignedId(it->client_tag_hash, it->id);
+    if (pending_deleted_hashes_.find(tag_hash) !=
+        pending_deleted_hashes_.end()) {
+      // Delete request was committed on the server. Erase information we track
+      // about the entity.
+      sequence_numbers_.erase(tag_hash);
+      base_versions_.erase(tag_hash);
+      assigned_ids_.erase(tag_hash);
+      pending_deleted_hashes_.erase(tag_hash);
+    } else {
+      // Server wins.  Set the model's base version.
+      SetBaseVersion(tag_hash, it->response_version);
+      SetServerAssignedId(tag_hash, it->id);
+    }
   }
 }
 

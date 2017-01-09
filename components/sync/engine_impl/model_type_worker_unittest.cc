@@ -1145,4 +1145,36 @@ TEST_F(ModelTypeWorkerTest, DisconnectProcessorFromSyncTest) {
   EXPECT_TRUE(IsProcessorDisconnected());
 }
 
+// Test that deleted entity can be recreated again.
+TEST_F(ModelTypeWorkerTest, RecreateDeletedEntity) {
+  NormalInitialize();
+
+  // Create, then delete entity.
+  CommitRequest(kTag1, kValue1);
+  ASSERT_TRUE(WillCommit());
+  DoSuccessfulCommit();
+
+  DeleteRequest(kTag1);
+  ASSERT_TRUE(WillCommit());
+  DoSuccessfulCommit();
+
+  // Verify that entity got deleted from the server.
+  {
+    const sync_pb::SyncEntity& entity =
+        server()->GetLastCommittedEntity(kHash1);
+    EXPECT_TRUE(entity.deleted());
+  }
+
+  // Create the same entity again.
+  CommitRequest(kTag1, kValue1);
+  ASSERT_TRUE(WillCommit());
+  DoSuccessfulCommit();
+  // Verify that there is a valid entity on the server.
+  {
+    const sync_pb::SyncEntity& entity =
+        server()->GetLastCommittedEntity(kHash1);
+    EXPECT_FALSE(entity.deleted());
+  }
+}
+
 }  // namespace syncer

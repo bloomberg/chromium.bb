@@ -304,7 +304,15 @@ void ModelTypeWorker::OnCommitResponse(CommitResponseDataList* response_list) {
       continue;
     }
 
+    // Remember if entity was deleted. After ReceiveCommitResponse this flag
+    // will not be available.
+    bool is_deletion = entity->PendingCommitIsDeletion();
+
     entity->ReceiveCommitResponse(&response);
+
+    if (is_deletion) {
+      entities_.erase(response.client_tag_hash);
+    }
   }
 
   // Send the responses back to the model thread. It needs to know which

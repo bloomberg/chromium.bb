@@ -25,6 +25,11 @@ bool WorkerEntityTracker::HasPendingCommit() const {
   return !!pending_commit_;
 }
 
+bool WorkerEntityTracker::PendingCommitIsDeletion() const {
+  DCHECK(pending_commit_);
+  return pending_commit_->entity.value().is_deleted();
+}
+
 void WorkerEntityTracker::PopulateCommitProto(
     sync_pb::SyncEntity* commit_entity) const {
   DCHECK(HasPendingCommit());
