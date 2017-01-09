@@ -1187,7 +1187,7 @@ void StyleResolver::applyAnimatedProperties(
     } else {
       // TODO(alancutter): Remove this old code path once animations have
       // completely migrated to InterpolationTypes.
-      toStyleInterpolation(interpolation).apply(state);
+      toLegacyStyleInterpolation(interpolation).apply(state);
     }
   }
 }
