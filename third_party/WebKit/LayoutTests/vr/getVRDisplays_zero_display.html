@@ -5,20 +5,11 @@
 <script src="resources/mock-vr-service.js"></script>
 <script>
 
-vr_test( (t) => {
-  return  navigator.getVRDisplays().then( (displays) => {
-    t.step( () => {
-      assert_true(displays != null);
-      assert_equals(displays.length, 0);
-    }, "getVRDisplays returned correct results");
-  }, (err) => {
-    t.step( () => {
-      assert_unreached("getVRDisplays rejected");
+vr_test((service) => {
+  return  navigator.getVRDisplays().then(devices => {
+      assert_true(devices != null);
+      assert_equals(0, devices.length);
     });
-  }).then( () => {
-    t.done();
-  });
-}, [],
-"WebVR properly returns zero displays");
+}, [], 'test no VRDisplay');
 
 </script>

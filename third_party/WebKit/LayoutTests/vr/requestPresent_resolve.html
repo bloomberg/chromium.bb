@@ -9,30 +9,27 @@
 <script>
 let fakeDisplays = fakeVRDisplays();
 
-vr_test( (t) => {
-  return navigator.getVRDisplays().then( (displays) => {
-    var display = displays[0];
-
-    runWithUserGesture( () => {
-      display.requestPresent([{ source : webglCanvas }]).then( () => {
-        t.step( () => {
-          assert_true(display.isPresenting);
-        }, "Display should be presenting");
-      }, (err) => {
-        t.step( () => {
-          assert_unreached(err);
-        }, "requestPresent rejected");
-      }).then( () => {
-        t.done();
+vr_test((service) => {
+  return navigator.getVRDisplays().then(displays => {
+      assert_true(displays != null);
+      assert_equals(1, displays.length);
+      var asyncTest = async_test(
+          "requestPresent resolves and actually presents");
+      runWithUserGesture( () => {
+        displays[0].requestPresent([{ source : webglCanvas }]).then( () => {
+          asyncTest.step( () => {
+            assert_true(displays[0].isPresenting);
+          }, "Display should be presenting");
+        }, (err) => {
+          asyncTest.step( () => {
+            assert_unreached(err);
+          }, "Should never reach here");
+        }).then( () => {
+          asyncTest.done();
+        });
       });
     });
-  }, (err) => {
-    t.step( () => {
-      assert_unreached();
-    }, "getVRDisplays rejected");
-    t.done();
-  });
-}, [fakeDisplays["Pixel"]],
-"Test requestPresent resolves");
+}, [fakeDisplays['Pixel']],
+'Test requestPresent resolves');
 
 </script>

@@ -8,55 +8,29 @@ function fakeVRDisplays(){
     rightDegrees : 45,
   };
 
-  let generic_left_eye = {
-    fieldOfView : generic_fov,
-    offset : [-0.03, 0, 0],
-    renderWidth : 1024,
-    renderHeight : 1024
-  };
-
-  let generic_right_eye = {
-    fieldOfView :generic_fov,
-    offset : [0.03, 0, 0],
-    renderWidth : 1024,
-    renderHeight : 1024
-  };
-
   return {
     FakeMagicWindowOnly: {
       displayName : "FakeVRDisplay",
       capabilities : {
         hasOrientation : true,
         hasPosition : false,
-        hasExternalDisplay : false,
+        hasExternalDisplay : true,
         canPresent : false
       },
       stageParameters : null,
-      leftEye : generic_left_eye,
-      rightEye : generic_right_eye,
-    },
-
-    FakeRoomScale: {
-      displayName : "FakeVRDisplayRoom",
-      capabilities : {
-        hasOrientation : true,
-        hasPosition : true,
-        hasExternalDisplay : true,
-        canPresent : true,
-        maxLayers : 1
+      leftEye : {
+        fieldOfView: generic_fov,
+        offset : [-0.03, 0, 0],
+        renderWidth: 1024,
+        renderHeight: 1024
       },
-      stageParameters : {
-        standingTransform : [0.0, 0.1, 0.2, 0.3,
-                             0.4, 0.5, 0.6, 0.7,
-                             0.8, 0.9, 1.0, 0.1,
-                             0.2, 0.3, 0.4, 0.5],
-        sizeX : 5.0,
-        sizeZ : 3.0,
-      },
-      leftEye : generic_left_eye,
-      rightEye : generic_right_eye,
+      rightEye : {
+        fieldOfView : generic_fov,
+        offset : [0.03, 0, 0],
+        renderWidth: 1024,
+        renderHeight: 1024
+      }
     },
-
     Pixel: { // Pixel info as of Dec. 22 2016
       displayName : "Google, Inc. Daydream View",
       capabilities : {
@@ -64,7 +38,7 @@ function fakeVRDisplays(){
         hasPosition : false,
         hasExternalDisplay : false,
         canPresent : true,
-        maxLayers : 1
+        maxLayers: 1
       },
       stageParameters : null,
       leftEye : {

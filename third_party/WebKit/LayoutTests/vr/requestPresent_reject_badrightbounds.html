@@ -9,34 +9,30 @@
 <script>
 let fakeDisplays = fakeVRDisplays();
 
-vr_test( (t) => {
-  return navigator.getVRDisplays().then( (displays) => {
-    var display = displays[0];
-
-    runWithUserGesture( () => {
-      display.requestPresent([{
-          source : webglCanvas,
-          rightBounds: [0, 1, 2, 3, 4] // Too long
-        }])
-      .then( () => {
-        t.step( () => {
-          assert_unreached();
-        }, "Display should not be presenting");
-      }, (err) => {
-        t.step( () => {
-          assert_false(display.isPresenting);
-        }, "requestPresent rejected and not presenting");
-      }).then( () => {
-        t.done();
+vr_test((service) => {
+  return navigator.getVRDisplays().then(displays => {
+      assert_true(displays != null);
+      assert_equals(1, displays.length);
+      var asyncTest = async_test(
+          "requestPresent rejects and does not present");
+      runWithUserGesture( () => {
+        displays[0].requestPresent([{
+            source : webglCanvas,
+            rightBounds: [0, 1, 2, 3, 4] // Too long
+          }]).then( () => {
+          asyncTest.step( () => {
+            assert_unreached();
+          }, "Display should not be presenting");
+        }, (err) => {
+          asyncTest.step( () => {
+            assert_false(displays[0].isPresenting);
+          }, "requestPresent rejected and not presenting");
+        }).then( () => {
+          asyncTest.done();
+        });
       });
     });
-  }, (err) => {
-    t.step( () => {
-      assert_unreached(err);
-    }, "getVRDisplays rejected");
-    t.done();
-  });
-}, [fakeDisplays["Pixel"]],
-"Test requestPresent rejects if provided a bad rightBounds");
+}, [fakeDisplays['Pixel']],
+'Test requestPresent rejects if provided a bad rightBounds');
 
 </script>

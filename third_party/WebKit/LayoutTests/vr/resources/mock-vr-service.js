@@ -67,9 +67,8 @@ let mockVRService = loadMojoModules(
 });
 
 function vr_test(func, vrDisplays, name, properties) {
-  mockVRService.then( (service) => {
+  promise_test(t => mockVRService.then((service) => {
     service.setVRDisplays(vrDisplays);
-    let t = async_test(name, properties);
-    func(t);
-  });
+    return func();
+  }), name, properties);
 }
