@@ -57,7 +57,8 @@ Polymer({
       type: String,
       value: function() {
         return loadTimeData.getBoolean('isSecondaryUser') ?
-            loadTimeData.getString('primaryUserEmail') : '';
+            loadTimeData.getString('primaryUserEmail') :
+            '';
       },
       readOnly: true,
     },
@@ -302,128 +303,138 @@ Polymer({
   },
 
   /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
    * @return {string} The text to display for the network connection state.
    * @private
    */
-  getStateText_: function() {
-    return this.i18n('Onc' + this.networkProperties.ConnectionState);
+  getStateText_: function(networkProperties) {
+    return this.i18n('Onc' + networkProperties.ConnectionState);
   },
 
   /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
    * @return {boolean} True if the network is connected.
    * @private
    */
-  isConnectedState_: function() {
-    return this.networkProperties.ConnectionState ==
-        CrOnc.ConnectionState.CONNECTED;
+  isConnectedState_: function(networkProperties) {
+    return networkProperties.ConnectionState == CrOnc.ConnectionState.CONNECTED;
   },
 
   /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
    * @return {boolean}
    * @private
    */
-  isRemembered_: function() {
-    var source = this.networkProperties.Source;
+  isRemembered_: function(networkProperties) {
+    var source = networkProperties.Source;
     return !!source && source != CrOnc.Source.NONE;
   },
 
   /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
    * @return {boolean}
    * @private
    */
-  isRememberedOrConnected_: function() {
-    return this.isRemembered_() || this.isConnectedState_();
+  isRememberedOrConnected_: function(networkProperties) {
+    return this.isRemembered_(networkProperties) ||
+        this.isConnectedState_(networkProperties);
   },
 
   /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
    * @return {boolean}
    * @private
    */
-  showConnect_: function() {
-    return this.networkProperties.Type != CrOnc.Type.ETHERNET &&
-        this.networkProperties.ConnectionState ==
+  showConnect_: function(networkProperties) {
+    return networkProperties.Type != CrOnc.Type.ETHERNET &&
+        networkProperties.ConnectionState ==
         CrOnc.ConnectionState.NOT_CONNECTED;
   },
 
   /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
    * @return {boolean}
    * @private
    */
-  showDisconnect_: function() {
-    return this.networkProperties.Type != CrOnc.Type.ETHERNET &&
-        this.networkProperties.ConnectionState !=
+  showDisconnect_: function(networkProperties) {
+    return networkProperties.Type != CrOnc.Type.ETHERNET &&
+        networkProperties.ConnectionState !=
         CrOnc.ConnectionState.NOT_CONNECTED;
   },
 
   /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
    * @return {boolean}
    * @private
    */
-  showForget_: function() {
-    var type = this.networkProperties.Type;
+  showForget_: function(networkProperties) {
+    var type = networkProperties.Type;
     if (type != CrOnc.Type.WI_FI && type != CrOnc.Type.VPN)
       return false;
-    return this.isRemembered_();
+    return this.isRemembered_(networkProperties);
   },
 
   /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
    * @return {boolean}
    * @private
    */
-  showActivate_: function() {
-    if (this.networkProperties.Type != CrOnc.Type.CELLULAR)
+  showActivate_: function(networkProperties) {
+    if (networkProperties.Type != CrOnc.Type.CELLULAR)
       return false;
-    var activation = this.networkProperties.Cellular.ActivationState;
+    var activation = networkProperties.Cellular.ActivationState;
     return activation == CrOnc.ActivationState.NOT_ACTIVATED ||
         activation == CrOnc.ActivationState.PARTIALLY_ACTIVATED;
   },
 
   /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
    * @return {boolean}
    * @private
    */
-  showConfigure_: function() {
-    var type = this.networkProperties.Type;
+  showConfigure_: function(networkProperties) {
+    var type = networkProperties.Type;
     if (type == CrOnc.Type.CELLULAR || type == CrOnc.Type.WI_MAX)
       return false;
     if (type == CrOnc.Type.WI_FI &&
-        this.networkProperties.ConnectionState !=
+        networkProperties.ConnectionState !=
             CrOnc.ConnectionState.NOT_CONNECTED) {
       return false;
     }
-    return this.isRemembered_();
+    return this.isRemembered_(networkProperties);
   },
 
   /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
    * @return {boolean}
    * @private
    */
-  showViewAccount_: function() {
+  showViewAccount_: function(networkProperties) {
     // Show either the 'Activate' or the 'View Account' button.
-    if (this.showActivate_())
+    if (this.showActivate_(networkProperties))
       return false;
 
-    if (this.networkProperties.Type != CrOnc.Type.CELLULAR ||
-        !this.networkProperties.Cellular) {
+    if (networkProperties.Type != CrOnc.Type.CELLULAR ||
+        !networkProperties.Cellular) {
       return false;
     }
 
     // Only show if online payment URL is provided or the carrier is Verizon.
-    var carrier = CrOnc.getActiveValue(this.networkProperties.Cellular.Carrier);
+    var carrier = CrOnc.getActiveValue(networkProperties.Cellular.Carrier);
     if (carrier != CARRIER_VERIZON) {
-      var paymentPortal = this.networkProperties.Cellular.PaymentPortal;
+      var paymentPortal = networkProperties.Cellular.PaymentPortal;
       if (!paymentPortal || !paymentPortal.Url)
         return false;
     }
 
     // Only show for connected networks or LTE networks with a valid MDN.
-    if (!this.isConnectedState_()) {
-      var technology = this.networkProperties.Cellular.NetworkTechnology;
+    if (!this.isConnectedState_(networkProperties)) {
+      var technology = networkProperties.Cellular.NetworkTechnology;
       if (technology != CrOnc.NetworkTechnology.LTE &&
           technology != CrOnc.NetworkTechnology.LTE_ADVANCED) {
         return false;
       }
-      if (!this.networkProperties.Cellular.MDN)
+      if (!networkProperties.Cellular.MDN)
         return false;
     }
 
@@ -431,17 +442,19 @@ Polymer({
   },
 
   /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {?CrOnc.NetworkStateProperties} defaultNetwork
    * @return {boolean} Whether or not to enable the network connect button.
    * @private
    */
-  enableConnect_: function() {
-    if (!this.showConnect_())
+  enableConnect_: function(networkProperties, defaultNetwork) {
+    if (!this.showConnect_(networkProperties))
       return false;
-    if (this.networkProperties.Type == CrOnc.Type.CELLULAR &&
-        CrOnc.isSimLocked(this.networkProperties)) {
+    if (networkProperties.Type == CrOnc.Type.CELLULAR &&
+        CrOnc.isSimLocked(networkProperties)) {
       return false;
     }
-    if (this.networkProperties.Type == CrOnc.Type.VPN && !this.defaultNetwork)
+    if (networkProperties.Type == CrOnc.Type.VPN && !defaultNetwork)
       return false;
     return true;
   },
@@ -615,12 +628,13 @@ Polymer({
   },
 
   /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
    * @return {boolean} True if the AutoConnect checkbox should be shown.
    * @private
    */
-  showAutoConnect_: function() {
+  showAutoConnect_: function(networkProperties) {
     return this.networkProperties.Type != CrOnc.Type.ETHERNET &&
-        this.isRemembered_();
+        this.isRemembered_(networkProperties);
   },
 
   /**
@@ -632,13 +646,14 @@ Polymer({
   },
 
   /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
    * @return {boolean} True if the prefer network checkbox should be shown.
    * @private
    */
-  showPreferNetwork_: function() {
+  showPreferNetwork_: function(networkProperties) {
     // TODO(stevenjb): Resolve whether or not we want to allow "preferred" for
     // networkProperties.Type == CrOnc.Type.ETHERNET.
-    return this.isRemembered_();
+    return this.isRemembered_(networkProperties);
   },
 
   /**
@@ -735,12 +750,13 @@ Polymer({
   },
 
   /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
    * @return {boolean}
    * @private
    */
-  showAdvanced_: function() {
+  showAdvanced_: function(networkProperties) {
     return this.hasAdvancedFields_() || this.hasDeviceFields_() ||
-        this.isRememberedOrConnected_();
+        this.isRememberedOrConnected_(networkProperties);
   },
 
   /**
@@ -768,15 +784,16 @@ Polymer({
   },
 
   /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
    * @return {boolean} True if the network section should be shown.
    * @private
    */
-  hasNetworkSection_: function() {
+  hasNetworkSection_: function(networkProperties) {
     if (this.networkProperties.Type == CrOnc.Type.VPN)
       return false;
     if (this.networkProperties.Type == CrOnc.Type.CELLULAR)
       return true;
-    return this.isRememberedOrConnected_();
+    return this.isRememberedOrConnected_(networkProperties);
   },
 
   /**

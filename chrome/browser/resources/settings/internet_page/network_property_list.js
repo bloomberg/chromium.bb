@@ -34,6 +34,7 @@ Polymer({
      * Edit type of editable fields. May contain a property for any field in
      * |fields|. Other properties will be ignored. Property values can be:
      *   'String' - A text input will be displayed.
+     *   'Password' - A string with input type = password.
      *   TODO(stevenjb): Support types with custom validation, e.g. IPAddress.
      *   TODO(stevenjb): Support 'Number'.
      * When a field changes, the 'property-change' event will be fired with
@@ -78,17 +79,18 @@ Polymer({
 
   /**
    * @param {string} key The property key.
+   * @param {string} prefix
    * @return {string} The text to display for the property label.
    * @private
    */
-  getPropertyLabel_: function(key) {
-    var oncKey = 'Onc' + this.prefix + key;
+  getPropertyLabel_: function(key, prefix) {
+    var oncKey = 'Onc' + prefix + key;
     oncKey = oncKey.replace(/\./g, '-');
     if (this.i18nExists(oncKey))
       return this.i18n(oncKey);
     // We do not provide translations for every possible network property key.
     // For keys specific to a type, strip the type prefix.
-    var result = this.prefix + key;
+    var result = prefix + key;
     for (let entry in chrome.networkingPrivate.NetworkType) {
       let type = chrome.networkingPrivate.NetworkType[entry];
       if (result.startsWith(type + '.')) {
@@ -100,68 +102,54 @@ Polymer({
   },
 
   /**
-   * @param {string} key The property key.
-   * @return {boolean} Whether or not the property exists in |propertyDict|.
-   * @private
-   */
-  hasPropertyValue_: function(key) {
-    var value = this.get(key, this.propertyDict);
-    return value !== undefined && value !== '';
-  },
-
-  /**
    * Generates a filter function dependent on propertyDict and editFieldTypes.
    * @private
    */
   computeFilter_: function() {
     return function(key) {
-      return this.showProperty_(key);
+      if (this.editFieldTypes.hasOwnProperty(key))
+        return true;
+      var value = this.get(key, this.propertyDict);
+      return value !== undefined && value !== '';
     }.bind(this);
   },
 
   /**
    * @param {string} key The property key.
-   * @return {boolean} Whether or not to show the property. Editable properties
-   *     are always shown.
-   * @private
-   */
-  showProperty_: function(key) {
-    if (this.editFieldTypes.hasOwnProperty(key))
-      return true;
-    return this.hasPropertyValue_(key);
-  },
-
-  /**
-   * @param {string} key The property key.
    * @param {string} type The field type.
+   * @param {!Object} propertyDict
+   * @param {!Object} editFieldTypes
    * @return {boolean}
    * @private
    */
-  isEditable_: function(key, type) {
+  isEditable_: function(key, type, propertyDict, editFieldTypes) {
     var property = /** @type {!CrOnc.ManagedProperty|undefined} */ (
-        this.get(key, this.propertyDict));
+        this.get(key, propertyDict));
     if (this.isNetworkPolicyEnforced(property))
       return false;
-    var editType = this.editFieldTypes[key];
+    var editType = editFieldTypes[key];
     return editType !== undefined && (type == '' || editType == type);
   },
 
   /**
    * @param {string} key The property key.
+   * @param {!Object} propertyDict
    * @return {*} The managed property dictionary associated with |key|.
    * @private
    */
-  getProperty_: function(key) {
-    return this.get(key, this.propertyDict);
+  getProperty_: function(key, propertyDict) {
+    return this.get(key, propertyDict);
   },
 
   /**
    * @param {string} key The property key.
+   * @param {string} prefix
+   * @param {!Object} propertyDict
    * @return {string} The text to display for the property value.
    * @private
    */
-  getPropertyValue_: function(key) {
-    var value = this.get(key, this.propertyDict);
+  getPropertyValue_: function(key, prefix, propertyDict) {
+    var value = this.get(key, propertyDict);
     if (value === undefined)
       return '';
     if (typeof value == 'object') {
@@ -173,7 +161,7 @@ Polymer({
       return value.toString();
     assert(typeof value == 'string');
     let valueStr = /** @type {string} */ (value);
-    var oncKey = 'Onc' + this.prefix + key;
+    var oncKey = 'Onc' + prefix + key;
     oncKey = oncKey.replace(/\./g, '-');
     oncKey += '_' + valueStr;
     if (this.i18nExists(oncKey))

@@ -18,7 +18,7 @@ Polymer({
   properties: {
     /**
      * Device state for the network type.
-     * @type {DeviceStateProperties|undefined}
+     * @type {!DeviceStateProperties|undefined}
      */
     deviceState: {
       type: Object,
@@ -83,7 +83,7 @@ Polymer({
 
   /** @private */
   deviceStateChanged_: function() {
-    if (this.expanded_ && !this.deviceIsEnabled_())
+    if (this.expanded_ && !this.deviceIsEnabled_(this.deviceState))
       this.expanded_ = false;
   },
 
@@ -111,8 +111,10 @@ Polymer({
    */
   showSimInfo_: function() {
     let device = this.deviceState;
-    if (device.Type != CrOnc.Type.CELLULAR || this.deviceIsEnabled_())
+    if (device.Type != CrOnc.Type.CELLULAR ||
+        this.deviceIsEnabled_(this.deviceState)) {
       return false;
+    }
     return device.SimPresent === false ||
         device.SimLockType == CrOnc.LockType.PIN ||
         device.SimLockType == CrOnc.LockType.PUK;
@@ -121,32 +123,32 @@ Polymer({
   /**
    * Returns a NetworkProperties object for <network-siminfo> built from
    * the device properties (since there will be no active network).
+   * @param {!DeviceStateProperties} deviceState
    * @return {!CrOnc.NetworkProperties}
    * @private
    */
-  getCellularState_: function() {
-    let device = this.deviceState;
+  getCellularState_: function(deviceState) {
     return {
       GUID: '',
       Type: CrOnc.Type.CELLULAR,
       Cellular: {
         SIMLockStatus: {
-          LockType: device.SimLockType || '',
-          LockEnabled: device.SimLockType != CrOnc.LockType.NONE,
+          LockType: deviceState.SimLockType || '',
+          LockEnabled: deviceState.SimLockType != CrOnc.LockType.NONE,
         },
-        SIMPresent: device.SimPresent,
+        SIMPresent: deviceState.SimPresent,
       },
     };
   },
 
   /**
+   * @param {!DeviceStateProperties|undefined} deviceState
    * @return {boolean} Whether or not the device state is enabled.
    * @private
    */
-  deviceIsEnabled_: function() {
-    return !!this.deviceState &&
-        this.deviceState.State ==
-        chrome.networkingPrivate.DeviceStateType.ENABLED;
+  deviceIsEnabled_: function(deviceState) {
+    return !!deviceState &&
+        deviceState.State == chrome.networkingPrivate.DeviceStateType.ENABLED;
   },
 
   /**
@@ -168,12 +170,14 @@ Polymer({
   },
 
   /**
+   * @param {boolean} expanded
+   * @param {boolean} wasExpanded
    * @return {boolean} Whether the iron-collapse for the network list should
    *   be opened.
    * @private
    */
-  networksIronCollapseIsOpened_: function() {
-    return this.expanded_ && this.wasExpanded_;
+  networksIronCollapseIsOpened_: function(expanded, wasExpanded) {
+    return expanded && wasExpanded;
   },
 
   /**
@@ -190,7 +194,7 @@ Polymer({
    * @private
    */
   expandIsVisible_: function() {
-    if (!this.deviceIsEnabled_())
+    if (!this.deviceIsEnabled_(this.deviceState))
       return false;
     let type = this.deviceState.Type;
     var minLength =
@@ -205,16 +209,16 @@ Polymer({
   showDetailsIsVisible_: function() {
     if (this.expandIsVisible_())
       return false;
-    return this.deviceIsEnabled_();
+    return this.deviceIsEnabled_(this.deviceState);
   },
 
   /**
+   * @param {!CrOnc.NetworkStateProperties} activeNetworkState
    * @return {boolean} True if the known networks button should be shown.
    * @private
    */
-  knownNetworksIsVisible_: function() {
-    return !!this.activeNetworkState &&
-        this.activeNetworkState.Type == CrOnc.Type.WI_FI;
+  knownNetworksIsVisible_: function(activeNetworkState) {
+    return !!activeNetworkState && activeNetworkState.Type == CrOnc.Type.WI_FI;
   },
 
   /**
@@ -224,7 +228,7 @@ Polymer({
    */
   onDetailsTap_: function(event) {
     if ((event.target && event.target.id == 'expandListButton') ||
-        (this.deviceState && !this.deviceIsEnabled_())) {
+        (this.deviceState && !this.deviceIsEnabled_(this.deviceState))) {
       // Already handled or disabled, do nothing.
       return;
     }
@@ -262,7 +266,7 @@ Polymer({
    * @private
    */
   onDeviceEnabledTap_: function(event) {
-    var deviceIsEnabled = this.deviceIsEnabled_();
+    var deviceIsEnabled = this.deviceIsEnabled_(this.deviceState);
     var type = this.deviceState ? this.deviceState.Type : '';
     this.fire(
         'device-enabled-toggled', {enabled: !deviceIsEnabled, type: type});

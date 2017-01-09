@@ -72,7 +72,7 @@ Polymer({
         return {
           'AccessPointName': 'String',
           'Username': 'String',
-          'Password': 'String'
+          'Password': 'Password'
         };
       },
       readOnly: true
@@ -200,7 +200,7 @@ Polymer({
    * @private
    */
   onOtherApnChange_: function(event) {
-    this.set('otherApn.' + event.detail.field, event.detail.value);
+    this.set('otherApn_.' + event.detail.field, event.detail.value);
     // Don't send a change event for 'Other' until the 'Save' button is tapped.
   },
 

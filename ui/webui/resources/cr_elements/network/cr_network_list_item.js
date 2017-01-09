@@ -145,14 +145,22 @@ Polymer({
     return state;
   },
 
-  /** @private */
-  isSubpageButtonVisible_: function() {
-    return !!this.networkState && this.showButtons;
+  /**
+   * @param {!CrOnc.NetworkStateProperties} networkState
+   * @param {boolean} showButtons
+   * @return {boolean}
+   * @private
+   */
+  isSubpageButtonVisible_: function(networkState, showButtons) {
+    return !!networkState && showButtons;
   },
 
-  /** @private */
+  /**
+   * @return {boolean}
+   * @private
+   */
   isConnected_: function() {
-    return this.networkState &&
+    return !!this.networkState &&
         this.networkState.ConnectionState == CrOnc.ConnectionState.CONNECTED;
   },
 

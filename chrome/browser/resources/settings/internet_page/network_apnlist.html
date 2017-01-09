@@ -8,7 +8,11 @@
 
 <dom-module id="network-apnlist">
   <template>
-    <style include="internet-shared md-select"></style>
+    <style include="internet-shared md-select">
+      paper-button {
+        margin: 4px 0 20px;
+      }
+    </style>
     <div class="settings-box first">
       <div class="start">$i18n{networkSectionAccessPoint}</div>
       <div class="md-select-wrapper">
@@ -28,8 +32,8 @@
           fields="[[otherApnFields_]]" property-dict="[[otherApn_]]"
           edit-field-types="[[otherApnEditTypes_]]" prefix="Cellular.APN.">
       </network-property-list>
-      <paper-button on-tap="onSaveOtherTap_">
-        $i18n{networkButtonSaveApn}
+      <paper-button class="action-button" on-tap="onSaveOtherTap_">
+        $i18n{save}
       </paper-button>
     </div>
   </template>

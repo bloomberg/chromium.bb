@@ -1221,9 +1221,6 @@
     <message name="IDS_SETTINGS_INTERNET_BUTTON_DISCONNECT" desc="Settings > Internet > Network details: The label for the button to disconnect from a network.">
       Disconnect
     </message>
-    <message name="IDS_SETTINGS_INTERNET_BUTTON_SAVE_APN" desc="Settings > Internet > Network details: The label for the button to save an APN configuration.">
-      Save
-    </message>
     <message name="IDS_SETTINGS_NETWORK_TYPE_ETHERNET" desc="The ethernet network type.">
       Ethernet
     </message>

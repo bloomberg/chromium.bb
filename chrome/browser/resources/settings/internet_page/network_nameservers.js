@@ -135,11 +135,13 @@ Polymer({
   },
 
   /**
+   * @param {boolean} editable
+   * @param {string} nameserversType
    * @return {boolean} True if the nameservers are editable.
    * @private
    */
-  canEdit_: function() {
-    return this.editable && this.nameserversType_ == 'custom';
+  canEdit_: function(editable, nameserversType) {
+    return editable && nameserversType == 'custom';
   },
 
   /**
