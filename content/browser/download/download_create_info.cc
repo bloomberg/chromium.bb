@@ -20,7 +20,6 @@ DownloadCreateInfo::DownloadCreateInfo(
       start_time(start_time),
       total_bytes(0),
       has_user_gesture(false),
-      transition_type(ui::PAGE_TRANSITION_LINK),
       result(DOWNLOAD_INTERRUPT_REASON_NONE),
       save_info(std::move(save_info)),
       request_net_log(net_log) {}

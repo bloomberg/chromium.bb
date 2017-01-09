@@ -334,6 +334,7 @@ bool DownloadRequestCore::OnResponseStarted(
 
   RecordDownloadMimeType(create_info->mime_type);
   RecordDownloadContentDisposition(create_info->content_disposition);
+  RecordDownloadSourcePageTransitionType(create_info->transition_type);
 
   delegate_->OnStart(std::move(create_info), std::move(stream_reader),
                      base::ResetAndReturn(&on_started_callback_));

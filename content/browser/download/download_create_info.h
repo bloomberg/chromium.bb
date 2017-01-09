@@ -12,6 +12,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_request_handle.h"
@@ -64,7 +65,7 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   // True if the download was initiated by user action.
   bool has_user_gesture;
 
-  ui::PageTransition transition_type;
+  base::Optional<ui::PageTransition> transition_type;
 
   // The remote IP address where the download was fetched from.  Copied from
   // UrlRequest::GetSocketAddress().

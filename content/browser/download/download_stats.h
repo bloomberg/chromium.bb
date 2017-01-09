@@ -13,9 +13,11 @@
 #include <string>
 #include <vector>
 
+#include "base/optional.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_interrupt_reasons.h"
+#include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -240,6 +242,9 @@ void RecordOriginStateOnResumption(bool is_partial,
 
 void RecordDownloadConnectionSecurity(const GURL& download_url,
                                       const std::vector<GURL>& url_chain);
+
+void RecordDownloadSourcePageTransitionType(
+    const base::Optional<ui::PageTransition>& transition);
 
 }  // namespace content
 
