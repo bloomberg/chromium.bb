@@ -6,11 +6,13 @@ Duration: string
 Request Method: GET
 Priority: Low
 Mime Type: string
+Encoded Length: 0 B 
 Initiator: timeline-network-resource-details.html:15
 URL: anImage.png
 Duration: string
 Request Method: GET
 Priority: Low
 Mime Type: string
+Encoded Length: 0 B 
 Preview: 
 

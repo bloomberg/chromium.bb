@@ -214,7 +214,8 @@ std::unique_ptr<TracedValue> data(unsigned long identifier,
 namespace InspectorResourceFinishEvent {
 std::unique_ptr<TracedValue> data(unsigned long identifier,
                                   double finishTime,
-                                  bool didFail);
+                                  bool didFail,
+                                  int64_t encodedDataLength);
 }
 
 namespace InspectorTimerInstallEvent {

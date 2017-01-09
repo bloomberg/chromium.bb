@@ -23,7 +23,10 @@ Text details for ResourceSendRequest: timeline-network-resource.js
 ResourceReceiveResponse Properties:
 {
     data : {
+        encodedDataLength : <number>
         frame : <string>
+        fromCache : false
+        fromServiceWorker : false
         mimeType : <string>
         requestId : <string>
         statusCode : 0
@@ -39,6 +42,7 @@ ResourceFinish Properties:
 {
     data : {
         didFail : false
+        encodedDataLength : <number>
         finishTime : <number>
         requestId : <string>
     }

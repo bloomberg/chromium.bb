@@ -555,6 +555,9 @@ std::unique_ptr<TracedValue> InspectorReceiveResponseEvent::data(
   value->setString("frame", toHexString(frame));
   value->setInteger("statusCode", response.httpStatusCode());
   value->setString("mimeType", response.mimeType().getString().isolatedCopy());
+  value->setDouble("encodedDataLength", response.encodedDataLength());
+  value->setBoolean("fromCache", response.wasCached());
+  value->setBoolean("fromServiceWorker", response.wasFetchedViaServiceWorker());
   if (response.resourceLoadTiming()) {
     value->beginDictionary("timing");
     recordTiming(*response.resourceLoadTiming(), value.get());
@@ -581,12 +584,14 @@ std::unique_ptr<TracedValue> InspectorReceiveDataEvent::data(
 std::unique_ptr<TracedValue> InspectorResourceFinishEvent::data(
     unsigned long identifier,
     double finishTime,
-    bool didFail) {
+    bool didFail,
+    int64_t encodedDataLength) {
   String requestId = IdentifiersFactory::requestId(identifier);
 
   std::unique_ptr<TracedValue> value = TracedValue::create();
   value->setString("requestId", requestId);
   value->setBoolean("didFail", didFail);
+  value->setDouble("encodedDataLength", encodedDataLength);
   if (finishTime)
     value->setDouble("finishTime", finishTime);
   return value;
