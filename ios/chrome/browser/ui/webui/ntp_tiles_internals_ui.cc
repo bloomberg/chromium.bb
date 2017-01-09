@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/ui/webui/ntp_tiles_internals_ui.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/grit/components_resources.h"
 #include "components/ntp_tiles/field_trial.h"
 #include "components/ntp_tiles/most_visited_sites.h"
@@ -112,7 +113,8 @@ NTPTilesInternalsUI::NTPTilesInternalsUI(web::WebUIIOS* web_ui)
     : web::WebUIIOSController(web_ui) {
   web::WebUIIOSDataSource::Add(ios::ChromeBrowserState::FromWebUIIOS(web_ui),
                                CreateNTPTilesInternalsHTMLSource());
-  web_ui->AddMessageHandler(new IOSNTPTilesInternalsMessageHandlerBridge);
+  web_ui->AddMessageHandler(
+      base::MakeUnique<IOSNTPTilesInternalsMessageHandlerBridge>());
 }
 
 NTPTilesInternalsUI::~NTPTilesInternalsUI() {}

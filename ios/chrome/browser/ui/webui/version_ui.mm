@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/ui/webui/version_ui.h"
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
@@ -108,7 +109,7 @@ web::WebUIIOSDataSource* CreateVersionUIDataSource() {
 }  // namespace
 
 VersionUI::VersionUI(web::WebUIIOS* web_ui) : web::WebUIIOSController(web_ui) {
-  web_ui->AddMessageHandler(new VersionHandler());
+  web_ui->AddMessageHandler(base::MakeUnique<VersionHandler>());
   web::WebUIIOSDataSource::Add(ios::ChromeBrowserState::FromWebUIIOS(web_ui),
                                CreateVersionUIDataSource());
 }

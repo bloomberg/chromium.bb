@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/settings/save_passwords_collection_view_controller.h"
 
 #include <memory>
+#include <vector>
 
 #include "base/ios/ios_util.h"
 #import "base/ios/weak_nsobject.h"
@@ -12,7 +13,7 @@
 #include "base/mac/foundation_util.h"
 #import "base/mac/objc_property_releaser.h"
 #import "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -144,13 +145,13 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   std::unique_ptr<password_manager::SavePasswordsConsumer>
       blacklistPasswordsConsumer_;
   // The list of the user's saved passwords.
-  ScopedVector<autofill::PasswordForm> savedForms_;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> savedForms_;
   // The list of the user's blacklisted sites.
-  ScopedVector<autofill::PasswordForm> blacklistedForms_;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> blacklistedForms_;
   // Deletion of password being asynchronous, and the method taking a reference
   // to the PasswordForm, the PasswordForm must outlive the calls to
   // RemoveLogin. This vector will ensure this.
-  ScopedVector<autofill::PasswordForm> deletedForms_;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> deletedForms_;
   // The current Chrome browser state.
   ios::ChromeBrowserState* browserState_;
   // Object storing the time of the previous successful re-authentication.
@@ -235,9 +236,8 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
           l10n_util::GetNSString(IDS_PASSWORD_MANAGER_SHOW_PASSWORDS_TAB_TITLE);
       [model setHeader:headerItem
           forSectionWithIdentifier:SectionIdentifierSavedPasswords];
-      for (size_t i = 0; i < savedForms_.size(); ++i) {
-        autofill::PasswordForm* form = savedForms_[i];
-        [model addItem:[self savedFormItemWithForm:form]
+      for (const auto& form : savedForms_) {
+        [model addItem:[self savedFormItemWithForm:form.get()]
             toSectionWithIdentifier:SectionIdentifierSavedPasswords];
       }
     }
@@ -249,9 +249,8 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
           l10n_util::GetNSString(IDS_PASSWORD_MANAGER_EXCEPTIONS_TAB_TITLE);
       [model setHeader:headerItem
           forSectionWithIdentifier:SectionIdentifierBlacklist];
-      for (size_t i = 0; i < blacklistedForms_.size(); ++i) {
-        autofill::PasswordForm* form = blacklistedForms_[i];
-        [model addItem:[self blacklistedFormItemWithForm:form]
+      for (const auto& form : blacklistedForms_) {
+        [model addItem:[self blacklistedFormItemWithForm:form.get()]
             toSectionWithIdentifier:SectionIdentifierBlacklist];
       }
     }
@@ -447,11 +446,11 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
     (const std::vector<std::unique_ptr<autofill::PasswordForm>>&)result {
   for (auto it = result.begin(); it != result.end(); ++it) {
     // PasswordForm is needed when user wants to delete the site/password.
-    autofill::PasswordForm* form = new autofill::PasswordForm(**it);
+    auto form = base::MakeUnique<autofill::PasswordForm>(**it);
     if (form->blacklisted_by_user)
-      blacklistedForms_.push_back(form);
+      blacklistedForms_.push_back(std::move(form));
     else
-      savedForms_.push_back(form);
+      savedForms_.push_back(std::move(form));
   }
 
   [self updateEditButton];
@@ -484,7 +483,7 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
               SectionIdentifierSavedPasswords);
     if (experimental_flags::IsViewCopyPasswordsEnabled()) {
       DCHECK_LT(base::checked_cast<size_t>(indexPath.item), savedForms_.size());
-      autofill::PasswordForm* form = savedForms_[indexPath.item];
+      autofill::PasswordForm* form = savedForms_[indexPath.item].get();
       NSString* username = base::SysUTF16ToNSString(form->username_value);
       NSString* password = base::SysUTF16ToNSString(form->password_value);
       NSString* origin =
@@ -531,13 +530,13 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
     unsigned int formIndex = (unsigned int)indexPath.item;
     // Adjust index to account for deleted items.
     formIndex -= blacklisted ? blacklistedDeleted : passwordsDeleted;
-    ScopedVector<autofill::PasswordForm>& forms =
-        blacklisted ? blacklistedForms_ : savedForms_;
+    auto& forms = blacklisted ? blacklistedForms_ : savedForms_;
     DCHECK_LT(formIndex, forms.size());
     auto formIterator = forms.begin() + formIndex;
-    passwordStore_->RemoveLogin(**formIterator);
-    deletedForms_.push_back(*formIterator);
-    forms.weak_erase(formIterator);
+    std::unique_ptr<autofill::PasswordForm> form = std::move(*formIterator);
+    forms.erase(formIterator);
+    passwordStore_->RemoveLogin(*form);
+    deletedForms_.push_back(std::move(form));
     if (blacklisted) {
       ++blacklistedDeleted;
     } else {
@@ -597,7 +596,7 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   passwordStore_->RemoveLogin(form);
   for (auto it = savedForms_.begin(); it != savedForms_.end(); ++it) {
     if (**it == form) {
-      savedForms_.weak_erase(it);
+      savedForms_.erase(it);
       return;
     }
   }

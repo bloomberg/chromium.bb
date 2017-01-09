@@ -7,13 +7,15 @@
 
 #import <Foundation/Foundation.h>
 #include <stdint.h>
+
 #include <map>
+#include <memory>
 #include <set>
+#include <vector>
 
 #include "base/callback_forward.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #import "ios/net/request_tracker.h"
 #import "ios/web/net/crw_request_tracker_delegate.h"
@@ -344,7 +346,7 @@ class RequestTrackerImpl
   // All the live requests associated with the tracker.
   std::set<net::URLRequest*> live_requests_;
   // A list of all the TrackerCounts, including the finished ones.
-  ScopedVector<TrackerCounts> counts_;
+  std::vector<std::unique_ptr<TrackerCounts>> counts_;
   // The system shall never allow the page load estimate to go back.
   float previous_estimate_;
   // Index of the first request to consider for building the estimation.

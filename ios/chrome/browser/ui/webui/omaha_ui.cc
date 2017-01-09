@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/ui/webui/omaha_ui.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -81,7 +82,7 @@ void OmahaDOMHandler::OnDebugInformationAvailable(
 
 // OmahaUI
 OmahaUI::OmahaUI(web::WebUIIOS* web_ui) : WebUIIOSController(web_ui) {
-  web_ui->AddMessageHandler(new OmahaDOMHandler());
+  web_ui->AddMessageHandler(base::MakeUnique<OmahaDOMHandler>());
 
   // Set up the chrome://omaha/ source.
   ios::ChromeBrowserState* browser_state =

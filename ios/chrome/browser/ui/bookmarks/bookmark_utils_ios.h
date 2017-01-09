@@ -6,10 +6,11 @@
 #define IOS_CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_UTILS_IOS_H_
 
 #import <UIKit/UIKit.h>
+
+#include <memory>
 #include <set>
 #include <vector>
 
-#include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 
@@ -151,8 +152,9 @@ class NodesSection {
 // NodesSections.
 // Automatically clears, populates and sorts |nodesSectionVector|.
 // This method is not thread safe - it should only be called from the ui thread.
-void segregateNodes(const NodeVector& vector,
-                    ScopedVector<NodesSection>& nodesSectionVector);
+void segregateNodes(
+    const NodeVector& vector,
+    std::vector<std::unique_ptr<NodesSection>>& nodesSectionVector);
 
 #pragma mark - Useful bookmark manipulation.
 

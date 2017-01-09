@@ -5,13 +5,16 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 
 #include <stdint.h>
+
 #include <memory>
+#include <vector>
 
 #include "base/hash.h"
 #include "base/i18n/string_compare.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -394,30 +397,9 @@ NodesSection::NodesSection() {}
 
 NodesSection::~NodesSection() {}
 
-// Sorts NodesSection by their time.
-class NodesSectionComparator : public std::binary_function<const NodesSection*,
-                                                           const NodesSection*,
-                                                           bool> {
- public:
-  // Returns true if |n1| preceeds |n2|.
-  bool operator()(const NodesSection* n1, const NodesSection* n2) {
-    return n1->time > n2->time;
-  }
-};
-
-// Sorts bookmark nodes by their creation time.
-class NodeCreationComparator : public std::binary_function<const BookmarkNode*,
-                                                           const BookmarkNode*,
-                                                           bool> {
- public:
-  // Returns true if |n1| preceeds |n2|.
-  bool operator()(const BookmarkNode* n1, const BookmarkNode* n2) {
-    return n1->date_added() > n2->date_added();
-  }
-};
-
-void segregateNodes(const NodeVector& vector,
-                    ScopedVector<NodesSection>& nodesSectionVector) {
+void segregateNodes(
+    const NodeVector& vector,
+    std::vector<std::unique_ptr<NodesSection>>& nodesSectionVector) {
   nodesSectionVector.clear();
 
   // Make a localized date formatter.
@@ -436,7 +418,7 @@ void segregateNodes(const NodeVector& vector,
     const std::string timeRepresentation = base::SysNSStringToUTF8(dateString);
 
     BOOL found = NO;
-    for (NodesSection* nodesSection : nodesSectionVector) {
+    for (const auto& nodesSection : nodesSectionVector) {
       if (nodesSection->timeRepresentation == timeRepresentation) {
         nodesSection->vector.push_back(node);
         found = YES;
@@ -448,21 +430,27 @@ void segregateNodes(const NodeVector& vector,
       continue;
 
     // No NodesSection found.
-    NodesSection* nodesSection = new NodesSection;
+    auto nodesSection = base::MakeUnique<NodesSection>();
     nodesSection->time = dateAdded;
     nodesSection->timeRepresentation = timeRepresentation;
     nodesSection->vector.push_back(node);
-    nodesSectionVector.push_back(nodesSection);
+    nodesSectionVector.push_back(std::move(nodesSection));
   }
 
   // Sort the NodesSections.
   std::sort(nodesSectionVector.begin(), nodesSectionVector.end(),
-            NodesSectionComparator());
+            [](const std::unique_ptr<NodesSection>& n1,
+               const std::unique_ptr<NodesSection>& n2) {
+              return n1->time > n2->time;
+            });
 
   // For each NodesSection, sort the nodes inside.
-  for (NodesSection* nodesSection : nodesSectionVector)
+  for (const auto& nodesSection : nodesSectionVector) {
     std::sort(nodesSection->vector.begin(), nodesSection->vector.end(),
-              NodeCreationComparator());
+              [](const BookmarkNode* n1, const BookmarkNode* n2) {
+                return n1->date_added() > n2->date_added();
+              });
+  }
 }
 
 #pragma mark - Useful bookmark manipulation.

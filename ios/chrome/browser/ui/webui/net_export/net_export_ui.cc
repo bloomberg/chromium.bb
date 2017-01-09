@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -244,7 +245,7 @@ void NetExportMessageHandler::OnExportNetLogInfoChanged(base::Value* arg) {
 
 NetExportUI::NetExportUI(web::WebUIIOS* web_ui)
     : web::WebUIIOSController(web_ui) {
-  web_ui->AddMessageHandler(new NetExportMessageHandler());
+  web_ui->AddMessageHandler(base::MakeUnique<NetExportMessageHandler>());
   web::WebUIIOSDataSource::Add(ios::ChromeBrowserState::FromWebUIIOS(web_ui),
                                CreateNetExportHTMLSource());
 }

@@ -6,9 +6,11 @@
 
 #include <string.h>
 
+#include <memory>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_vector.h"
 #import "base/test/ios/wait_util.h"
 #include "base/values.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
@@ -272,13 +274,13 @@ class JsLanguageDetectionManagerDetectLanguageTest
   bool CommandReceived(const base::DictionaryValue& command,
                        const GURL&,
                        bool) {
-    commands_received_.push_back(command.DeepCopy());
+    commands_received_.push_back(command.CreateDeepCopy());
     return true;
   }
 
  protected:
   // Received "languageDetection" commands.
-  ScopedVector<base::DictionaryValue> commands_received_;
+  std::vector<std::unique_ptr<base::DictionaryValue>> commands_received_;
 };
 
 // Tests if |__gCrWeb.languageDetection.detectLanguage| correctly informs the
@@ -307,7 +309,7 @@ TEST_F(JsLanguageDetectionManagerDetectLanguageTest,
   InjectJSAndWaitUntilCondition(@"__gCrWeb.languageDetection.detectLanguage()",
                                 commands_recieved_block);
   ASSERT_EQ(1U, commands_received_.size());
-  base::DictionaryValue* value = commands_received_[0];
+  base::DictionaryValue* value = commands_received_[0].get();
   EXPECT_TRUE(value->HasKey("translationAllowed"));
   bool translation_allowed = true;
   value->GetBoolean("translationAllowed", &translation_allowed);
@@ -338,7 +340,7 @@ TEST_F(JsLanguageDetectionManagerDetectLanguageTest,
     return !commands_received_.empty();
   });
   ASSERT_EQ(1U, commands_received_.size());
-  base::DictionaryValue* value = commands_received_[0];
+  base::DictionaryValue* value = commands_received_[0].get();
 
   EXPECT_TRUE(value->HasKey("translationAllowed"));
   EXPECT_TRUE(value->HasKey("captureTextTime"));

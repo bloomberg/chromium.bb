@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "components/gcm_driver/gcm_client.h"
@@ -171,7 +172,7 @@ GCMInternalsUI::GCMInternalsUI(web::WebUIIOS* web_ui)
   web::WebUIIOSDataSource::Add(ios::ChromeBrowserState::FromWebUIIOS(web_ui),
                                html_source);
 
-  web_ui->AddMessageHandler(new GcmInternalsUIMessageHandler());
+  web_ui->AddMessageHandler(base::MakeUnique<GcmInternalsUIMessageHandler>());
 }
 
 GCMInternalsUI::~GCMInternalsUI() {}

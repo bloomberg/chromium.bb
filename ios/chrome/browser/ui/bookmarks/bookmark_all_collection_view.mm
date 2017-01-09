@@ -4,6 +4,9 @@
 
 #import "ios/chrome/browser/ui/bookmarks/bookmark_all_collection_view.h"
 
+#include <memory>
+#include <vector>
+
 #include "base/logging.h"
 #include "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_nsobject.h"
@@ -38,7 +41,7 @@ typedef enum { kNoUpdate = 0, kOneUpdateDone, kUpdateScheduled } UpdateState;
 
 @interface BookmarkAllCollectionView ()<BookmarkPromoCellDelegate> {
   // A vector of vectors. Url nodes are segregated by month of creation.
-  ScopedVector<NodesSection> _nodesSectionVector;
+  std::vector<std::unique_ptr<NodesSection>> _nodesSectionVector;
   // To avoid refreshing the internal model too often.
   UpdateState _updateScheduled;
   base::mac::ObjCPropertyReleaser _propertyReleaser_BookmarkAllCollectionView;
@@ -177,7 +180,7 @@ typedef enum { kNoUpdate = 0, kOneUpdateDone, kUpdateScheduled } UpdateState;
   // Only remove the node from the list of all nodes. Since we also receive a
   // 'bookmarkNodeChildrenChanged' callback, the collection view will be updated
   // there.
-  for (NodesSection* nodesSection : _nodesSectionVector) {
+  for (const auto& nodesSection : _nodesSectionVector) {
     NodeVector nodeVector = nodesSection->vector;
     // If the node was in _nodesSectionVector, it is now invalid. In that case,
     // remove it from _nodesSectionVector.
@@ -292,7 +295,7 @@ typedef enum { kNoUpdate = 0, kOneUpdateDone, kUpdateScheduled } UpdateState;
   if ([self shouldShowPromoCell])
     section = 1;
 
-  for (NodesSection* nodesSection : _nodesSectionVector) {
+  for (const auto& nodesSection : _nodesSectionVector) {
     NodeVector nodeVector = nodesSection->vector;
     NSInteger item = 0;
     for (const BookmarkNode* node : nodeVector) {

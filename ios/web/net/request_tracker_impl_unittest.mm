@@ -6,11 +6,13 @@
 
 #include <stddef.h>
 
+#include <memory>
+#include <vector>
+
 #include "base/logging.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
@@ -172,8 +174,8 @@ class RequestTrackerTest : public PlatformTest {
   scoped_refptr<web::RequestTrackerImpl> tracker_;
   base::scoped_nsobject<NSString> request_group_id_;
   web::TestBrowserState browser_state_;
-  ScopedVector<net::URLRequestContext> contexts_;
-  ScopedVector<net::URLRequest> requests_;
+  std::vector<std::unique_ptr<net::URLRequestContext>> contexts_;
+  std::vector<std::unique_ptr<net::URLRequest>> requests_;
   net::URLRequestJobFactoryImpl job_factory_;
 
   GURL GetURL(size_t i) {
@@ -254,11 +256,9 @@ class RequestTrackerTest : public PlatformTest {
       url = GetURL(requests_.size());
 
     while (i >= requests_.size()) {
-      contexts_.push_back(new net::URLRequestContext());
-      requests_.push_back(
-          contexts_[i]
-              ->CreateRequest(url, net::DEFAULT_PRIORITY, &request_delegate_)
-              .release());
+      contexts_.push_back(base::MakeUnique<net::URLRequestContext>());
+      requests_.push_back(contexts_[i]->CreateRequest(
+          url, net::DEFAULT_PRIORITY, &request_delegate_));
 
       if (secure) {
         // Put a valid SSLInfo inside
@@ -274,7 +274,7 @@ class RequestTrackerTest : public PlatformTest {
       }
     }
     EXPECT_TRUE(!secure == !requests_[i]->url().SchemeIsCryptographic());
-    return requests_[i];
+    return requests_[i].get();
   }
 
   DummyURLRequestDelegate request_delegate_;

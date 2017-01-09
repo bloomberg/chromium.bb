@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+#include <vector>
+
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -62,27 +65,27 @@ TEST_F(BookmarkIOSUtilsUnitTest, segregateNodesByCreationDate) {
   toSort.push_back(f2a);
   toSort.push_back(f2b);
 
-  ScopedVector<NodesSection> nodesSectionVector;
+  std::vector<std::unique_ptr<NodesSection>> nodesSectionVector;
   bookmark_utils_ios::segregateNodes(toSort, nodesSectionVector);
 
   // Expect the nodes to be sorted in reverse chronological order, grouped by
   // month.
   ASSERT_EQ(nodesSectionVector.size(), 4u);
-  NodesSection* section = nodesSectionVector[0];
+  NodesSection* section = nodesSectionVector[0].get();
   ASSERT_EQ(section->vector.size(), 1u);
   EXPECT_EQ(section->vector[0], f2a);
 
-  section = nodesSectionVector[1];
+  section = nodesSectionVector[1].get();
   ASSERT_EQ(section->vector.size(), 2u);
   EXPECT_EQ(section->vector[0], b);
   EXPECT_EQ(section->vector[1], a);
 
-  section = nodesSectionVector[2];
+  section = nodesSectionVector[2].get();
   ASSERT_EQ(section->vector.size(), 2u);
   EXPECT_EQ(section->vector[0], f1b);
   EXPECT_EQ(section->vector[1], f1a);
 
-  section = nodesSectionVector[3];
+  section = nodesSectionVector[3].get();
   ASSERT_EQ(section->vector.size(), 1u);
   EXPECT_EQ(section->vector[0], f2b);
 }

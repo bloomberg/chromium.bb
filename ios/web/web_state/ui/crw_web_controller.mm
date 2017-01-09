@@ -12,6 +12,7 @@
 #include <cmath>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/containers/mru_cache.h"
@@ -27,6 +28,7 @@
 #import "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_cftyperef.h"
 #import "base/mac/scoped_nsobject.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -319,7 +321,8 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   // WebControllerObserverBridge in order to listen from WebState callbacks.
   // TODO(droger): Remove |_observerBridges| when all CRWWebControllerObservers
   // are converted to WebStateObservers.
-  ScopedVector<web::WebControllerObserverBridge> _observerBridges;
+  std::vector<std::unique_ptr<web::WebControllerObserverBridge>>
+      _observerBridges;
   // YES if a user interaction has been registered at any time once the page has
   // loaded.
   BOOL _userInteractionRegistered;
@@ -5723,8 +5726,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
   DCHECK(![_observers containsObject:observer]);
   [_observers addObject:observer];
-  _observerBridges.push_back(
-      new web::WebControllerObserverBridge(observer, self.webStateImpl, self));
+  _observerBridges.push_back(base::MakeUnique<web::WebControllerObserverBridge>(
+      observer, self.webStateImpl, self));
 
   if ([observer respondsToSelector:@selector(setWebViewProxy:controller:)])
     [observer setWebViewProxy:_webViewProxy controller:self];
@@ -5734,10 +5737,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   DCHECK([_observers containsObject:observer]);
   [_observers removeObject:observer];
   // Remove the associated WebControllerObserverBridge.
-  auto it = std::find_if(_observerBridges.begin(), _observerBridges.end(),
-                         [observer](web::WebControllerObserverBridge* bridge) {
-                           return bridge->web_controller_observer() == observer;
-                         });
+  auto it = std::find_if(
+      _observerBridges.begin(), _observerBridges.end(),
+      [observer](
+          const std::unique_ptr<web::WebControllerObserverBridge>& bridge) {
+        return bridge->web_controller_observer() == observer;
+      });
   DCHECK(it != _observerBridges.end());
   _observerBridges.erase(it);
 }

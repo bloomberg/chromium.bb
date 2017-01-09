@@ -4,11 +4,14 @@
 
 #import "ios/web/webui/crw_web_ui_manager.h"
 
+#include <memory>
+#include <vector>
+
 #include "base/json/string_escape.h"
 #import "base/mac/bind_objc_block.h"
 #import "base/mac/scoped_nsobject.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -69,7 +72,7 @@ const char kScriptCommandPrefix[] = "webui";
 
 @implementation CRWWebUIManager {
   // Set of live WebUI fetchers for retrieving data.
-  ScopedVector<web::URLFetcherBlockAdapter> _fetchers;
+  std::vector<std::unique_ptr<web::URLFetcherBlockAdapter>> _fetchers;
   // Bridge to observe the web state from Objective-C.
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
   // Weak WebStateImpl this CRWWebUIManager is associated with.
@@ -293,7 +296,11 @@ const char kScriptCommandPrefix[] = "webui";
 }
 
 - (void)removeFetcher:(web::URLFetcherBlockAdapter*)fetcher {
-  _fetchers.erase(std::find(_fetchers.begin(), _fetchers.end(), fetcher));
+  _fetchers.erase(std::find_if(
+      _fetchers.begin(), _fetchers.end(),
+      [fetcher](const std::unique_ptr<web::URLFetcherBlockAdapter>& ptr) {
+        return ptr.get() == fetcher;
+      }));
 }
 
 #pragma mark - Testing-Only Methods
@@ -301,9 +308,8 @@ const char kScriptCommandPrefix[] = "webui";
 - (std::unique_ptr<web::URLFetcherBlockAdapter>)
     fetcherForURL:(const GURL&)URL
 completionHandler:(web::URLFetcherBlockAdapterCompletion)handler {
-  return std::unique_ptr<web::URLFetcherBlockAdapter>(
-      new web::URLFetcherBlockAdapter(
-          URL, _webState->GetBrowserState()->GetRequestContext(), handler));
+  return base::MakeUnique<web::URLFetcherBlockAdapter>(
+      URL, _webState->GetBrowserState()->GetRequestContext(), handler);
 }
 
 @end

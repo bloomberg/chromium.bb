@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/flags_ui/flags_ui_constants.h"
@@ -212,7 +213,7 @@ BaseFlagsUI::BaseFlagsUI(web::WebUIIOS* web_ui, FlagsUIKind flags_ui_kind)
 
 void BaseFlagsUI::Initialize(web::WebUIIOS* web_ui, FlagsUIKind flags_ui_kind) {
   FlagsDOMHandler* handler = new FlagsDOMHandler();
-  web_ui->AddMessageHandler(handler);
+  web_ui->AddMessageHandler(base::WrapUnique(handler));
 
   flags_ui::FlagAccess flag_access = flags_ui::kOwnerAccessToFlags;
   if (flags_ui_kind == FLAGS_UI_APPLE)

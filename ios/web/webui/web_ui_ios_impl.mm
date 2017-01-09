@@ -143,11 +143,12 @@ void WebUIIOSImpl::ProcessWebUIIOSMessage(const GURL& source_url,
 // WebUIIOSImpl, protected:
 // -------------------------------------------------------
 
-void WebUIIOSImpl::AddMessageHandler(WebUIIOSMessageHandler* handler) {
+void WebUIIOSImpl::AddMessageHandler(
+    std::unique_ptr<WebUIIOSMessageHandler> handler) {
   DCHECK(!handler->web_ui());
   handler->set_web_ui(this);
   handler->RegisterMessages();
-  handlers_.push_back(handler);
+  handlers_.push_back(std::move(handler));
 }
 
 void WebUIIOSImpl::ExecuteJavascript(const base::string16& javascript) {

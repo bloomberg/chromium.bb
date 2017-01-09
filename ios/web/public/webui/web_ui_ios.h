@@ -41,7 +41,8 @@ class WebUIIOS {
   virtual void SetController(WebUIIOSController* controller) = 0;
 
   // Takes ownership of |handler|, which will be destroyed when the WebUIIOS is.
-  virtual void AddMessageHandler(WebUIIOSMessageHandler* handler) = 0;
+  virtual void AddMessageHandler(
+      std::unique_ptr<WebUIIOSMessageHandler> handler) = 0;
 
   // Used by WebUIIOSMessageHandlers. If the given message is already
   // registered, the call has no effect unless |register_callback_overwrites_|

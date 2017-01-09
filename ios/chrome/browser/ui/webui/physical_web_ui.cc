@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/ui/webui/physical_web_ui.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "components/grit/components_resources.h"
 #include "components/physical_web/data_source/physical_web_data_source.h"
@@ -96,8 +97,7 @@ class PhysicalWebDOMHandler : public web::WebUIIOSMessageHandler {
 
 PhysicalWebUI::PhysicalWebUI(web::WebUIIOS* web_ui)
     : web::WebUIIOSController(web_ui) {
-  PhysicalWebDOMHandler* handler = new PhysicalWebDOMHandler();
-  web_ui->AddMessageHandler(handler);
+  web_ui->AddMessageHandler(base::MakeUnique<PhysicalWebDOMHandler>());
 
   web::WebUIIOSDataSource::Add(ios::ChromeBrowserState::FromWebUIIOS(web_ui),
                                CreatePhysicalWebUIDataSource());
