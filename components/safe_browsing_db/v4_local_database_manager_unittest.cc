@@ -6,8 +6,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/safe_browsing_db/v4_database.h"
 #include "components/safe_browsing_db/v4_local_database_manager.h"
 #include "components/safe_browsing_db/v4_test_util.h"
@@ -28,15 +28,50 @@ FullHash HashForUrl(const GURL& url) {
   return full_hashes[0];
 }
 
-// A fullhash response containing no matches.
-std::string GetEmptyV4HashResponse() {
-  FindFullHashesResponse res;
-  res.mutable_negative_cache_duration()->set_seconds(600);
+// Always returns misses from GetFullHashes().
+class FakeGetHashProtocolManager : public V4GetHashProtocolManager {
+ public:
+  FakeGetHashProtocolManager(
+      net::URLRequestContextGetter* request_context_getter,
+      const StoresToCheck& stores_to_check,
+      const V4ProtocolConfig& config)
+      : V4GetHashProtocolManager(request_context_getter,
+                                 stores_to_check,
+                                 config) {}
 
-  std::string res_data;
-  res.SerializeToString(&res_data);
-  return res_data;
-}
+  void GetFullHashes(const FullHashToStoreAndHashPrefixesMap&,
+                     FullHashCallback callback) override {
+    std::vector<FullHashInfo> full_hash_infos;
+
+    // Async, since the real manager might use a fetcher.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, full_hash_infos));
+  }
+};
+
+class FakeGetHashProtocolManagerFactory
+    : public V4GetHashProtocolManagerFactory {
+ public:
+  std::unique_ptr<V4GetHashProtocolManager> CreateProtocolManager(
+      net::URLRequestContextGetter* request_context_getter,
+      const StoresToCheck& stores_to_check,
+      const V4ProtocolConfig& config) override {
+    return base::MakeUnique<FakeGetHashProtocolManager>(
+        request_context_getter, stores_to_check, config);
+  }
+};
+
+// Use FakeGetHashProtocolManagerFactory in scope, then reset.
+class ScopedFakeGetHashProtocolManagerFactory {
+ public:
+  ScopedFakeGetHashProtocolManagerFactory() {
+    V4GetHashProtocolManager::RegisterFactory(
+        base::MakeUnique<FakeGetHashProtocolManagerFactory>());
+  }
+  ~ScopedFakeGetHashProtocolManagerFactory() {
+    V4GetHashProtocolManager::RegisterFactory(nullptr);
+  }
+};
 
 }  // namespace
 
@@ -214,6 +249,14 @@ class V4LocalDatabaseManagerTest : public PlatformTest {
     WaitForTasksOnTaskRunner();
   }
 
+  void ResetLocalDatabaseManager() {
+    StopLocalDatabaseManager();
+    v4_local_database_manager_ =
+        make_scoped_refptr(new V4LocalDatabaseManager(base_dir_.GetPath()));
+    SetTaskRunnerForTest();
+    StartLocalDatabaseManager();
+  }
+
   void ResetV4Database() {
     V4Database::Destroy(std::move(v4_local_database_manager_->v4_database_));
   }
@@ -372,36 +415,18 @@ TEST_F(V4LocalDatabaseManagerTest, TestChecksAreQueued) {
 
 // Verify that a window where checks cannot be cancelled is closed.
 TEST_F(V4LocalDatabaseManagerTest, CancelPending) {
+  // Setup to receive full-hash misses.
+  ScopedFakeGetHashProtocolManagerFactory pin;
+
+  // Reset the database manager so it picks up the replacement protocol manager.
+  ResetLocalDatabaseManager();
   WaitForTasksOnTaskRunner();
-  net::FakeURLFetcherFactory factory(NULL);
-  // TODO(shess): Modify this to use a mock protocol manager instead
-  // of faking the requests.
-  const char* kReqs[] = {
-      // OSX
-      "Cg8KCHVuaXR0ZXN0EgMxLjAaJwgBCAIIAwgGCAcICAgJCAoQBBAIGgcKBWVXGg-"
-      "pIAEgAyAEIAUgBg==",
 
-      // Linux
-      "Cg8KCHVuaXR0ZXN0EgMxLjAaJwgBCAIIAwgGCAcICAgJCAoQAhAIGgcKBWVXGg-"
-      "pIAEgAyAEIAUgBg==",
-
-      // Windows
-      "Cg8KCHVuaXR0ZXN0EgMxLjAaJwgBCAIIAwgGCAcICAgJCAoQARAIGgcKBWVXGg-"
-      "pIAEgAyAEIAUgBg==",
-  };
-  for (const char* req : kReqs) {
-    const GURL url(
-        base::StringPrintf("https://safebrowsing.googleapis.com/v4/"
-                           "fullHashes:find?$req=%s"
-                           "&$ct=application/x-protobuf&key=test_key_param",
-                           req));
-    factory.SetFakeResponse(url, GetEmptyV4HashResponse(), net::HTTP_OK,
-                            net::URLRequestStatus::SUCCESS);
-  }
-
+  // An URL and matching prefix.
   const GURL url("http://example.com/a/");
   const HashPrefix hash_prefix("eW\x1A\xF\xA9");
 
+  // Put a match in the db that will cause a protocol-manager request.
   StoreAndHashPrefixes store_and_hash_prefixes;
   store_and_hash_prefixes.emplace_back(GetUrlMalwareId(), hash_prefix);
   ReplaceV4Database(store_and_hash_prefixes);
