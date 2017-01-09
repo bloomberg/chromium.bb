@@ -36,8 +36,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 int GetDataVersion(PrefService* prefs);
 
 // Returns the prepopulated URLs for the current country.
-// |default_search_provider_index| is set to the index of the default search
-// provider within the returned vector.
+// If |default_search_provider_index| is non-null, it is set to the index of the
+// default search provider within the returned vector.
 std::vector<std::unique_ptr<TemplateURLData>> GetPrepopulatedEngines(
     PrefService* prefs,
     size_t* default_search_provider_index);

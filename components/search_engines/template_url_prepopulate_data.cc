@@ -1032,7 +1032,8 @@ std::vector<std::unique_ptr<TemplateURLData>> GetPrepopulatedEngines(
     size_t* default_search_provider_index) {
   // If there is a set of search engines in the preferences file, it overrides
   // the built-in set.
-  *default_search_provider_index = 0;
+  if (default_search_provider_index)
+    *default_search_provider_index = 0;
   std::vector<std::unique_ptr<TemplateURLData>> t_urls =
       GetPrepopulatedTemplateURLData(prefs);
   if (!t_urls.empty())

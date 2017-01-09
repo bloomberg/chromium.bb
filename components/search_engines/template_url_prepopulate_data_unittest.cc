@@ -105,10 +105,8 @@ TEST_F(TemplateURLPrepopulateDataTest, UniqueIDs) {
 
   for (size_t i = 0; i < arraysize(kCountryIds); ++i) {
     prefs_.SetInteger(prefs::kCountryIDAtInstall, kCountryIds[i]);
-    size_t default_index;
     std::vector<std::unique_ptr<TemplateURLData>> urls =
-        TemplateURLPrepopulateData::GetPrepopulatedEngines(&prefs_,
-                                                           &default_index);
+        TemplateURLPrepopulateData::GetPrepopulatedEngines(&prefs_, nullptr);
     std::set<int> unique_ids;
     for (size_t turl_i = 0; turl_i < urls.size(); ++turl_i) {
       ASSERT_TRUE(unique_ids.find(urls[turl_i]->prepopulate_id) ==

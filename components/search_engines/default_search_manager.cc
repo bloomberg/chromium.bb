@@ -200,10 +200,9 @@ void DefaultSearchManager::MergePrefsDataWithPrepopulated() {
   if (!prefs_default_search_ || !prefs_default_search_->prepopulate_id)
     return;
 
-  size_t default_search_index;
   std::vector<std::unique_ptr<TemplateURLData>> prepopulated_urls =
       TemplateURLPrepopulateData::GetPrepopulatedEngines(pref_service_,
-                                                         &default_search_index);
+                                                         nullptr);
 
   for (auto& engine : prepopulated_urls) {
     if (engine->prepopulate_id != prefs_default_search_->prepopulate_id)
