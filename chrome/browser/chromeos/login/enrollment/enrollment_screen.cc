@@ -59,12 +59,12 @@ namespace chromeos {
 // static
 EnrollmentScreen* EnrollmentScreen::Get(ScreenManager* manager) {
   return static_cast<EnrollmentScreen*>(
-      manager->GetScreen(WizardController::kEnrollmentScreenName));
+      manager->GetScreen(OobeScreen::SCREEN_OOBE_ENROLLMENT));
 }
 
 EnrollmentScreen::EnrollmentScreen(BaseScreenDelegate* base_screen_delegate,
                                    EnrollmentScreenActor* actor)
-    : BaseScreen(base_screen_delegate, WizardController::kEnrollmentScreenName),
+    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_ENROLLMENT),
       actor_(actor),
       weak_ptr_factory_(this) {}
 

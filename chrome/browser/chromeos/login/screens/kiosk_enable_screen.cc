@@ -13,8 +13,7 @@ namespace chromeos {
 
 KioskEnableScreen::KioskEnableScreen(BaseScreenDelegate* base_screen_delegate,
                                      KioskEnableScreenActor* actor)
-    : BaseScreen(base_screen_delegate,
-                 WizardController::kKioskEnableScreenName),
+    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_KIOSK_ENABLE),
       actor_(actor) {
   DCHECK(actor_);
   if (actor_)

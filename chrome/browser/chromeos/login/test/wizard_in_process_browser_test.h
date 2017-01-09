@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
 namespace chromeos {
@@ -21,7 +22,7 @@ class LoginDisplayHost;
 // right moment in time before wizard is created.
 class WizardInProcessBrowserTest : public InProcessBrowserTest {
  public:
-  explicit WizardInProcessBrowserTest(const char* screen_name);
+  explicit WizardInProcessBrowserTest(OobeScreen screen);
 
   // Overridden from InProcessBrowserTest:
   void SetUp() override;
@@ -37,8 +38,8 @@ class WizardInProcessBrowserTest : public InProcessBrowserTest {
   void TearDownOnMainThread() override;
 
  private:
-  std::string screen_name_;
-  LoginDisplayHost* host_;
+  OobeScreen screen_;
+  LoginDisplayHost* host_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WizardInProcessBrowserTest);
 };

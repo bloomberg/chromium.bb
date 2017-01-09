@@ -22,8 +22,7 @@ HostPairingScreen::HostPairingScreen(
     Delegate* delegate,
     HostPairingScreenActor* actor,
     pairing_chromeos::HostPairingController* remora_controller)
-    : BaseScreen(base_screen_delegate,
-                 WizardController::kHostPairingScreenName),
+    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_HOST_PAIRING),
       delegate_(delegate),
       actor_(actor),
       remora_controller_(remora_controller),

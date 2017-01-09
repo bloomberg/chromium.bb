@@ -97,14 +97,14 @@ void ConfigureErrorScreen(ErrorScreen* screen,
 SupervisedUserCreationScreen* SupervisedUserCreationScreen::Get(
     ScreenManager* manager) {
   return static_cast<SupervisedUserCreationScreen*>(
-      manager->GetScreen(WizardController::kSupervisedUserCreationScreenName));
+      manager->GetScreen(OobeScreen::SCREEN_CREATE_SUPERVISED_USER_FLOW));
 }
 
 SupervisedUserCreationScreen::SupervisedUserCreationScreen(
     BaseScreenDelegate* base_screen_delegate,
     SupervisedUserCreationScreenHandler* actor)
     : BaseScreen(base_screen_delegate,
-                 WizardController::kSupervisedUserCreationScreenName),
+                 OobeScreen::SCREEN_CREATE_SUPERVISED_USER_FLOW),
       actor_(actor),
       on_error_screen_(false),
       manager_signin_in_progress_(false),

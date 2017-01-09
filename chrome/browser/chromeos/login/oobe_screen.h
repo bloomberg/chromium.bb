@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_OOBE_SCREEN_H_
-#define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_OOBE_SCREEN_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_OOBE_SCREEN_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_OOBE_SCREEN_H_
 
 #include <string>
 
 namespace chromeos {
+
+// TODO(jdufault): Rename to LoginScreen or similar since this is not directly
+// tied to Oobe. See crbug.com/678740.
 
 // Different screens in the Oobe. If you update this enum, *make sure* to
 // update kScreenNames in the cc file as well.
@@ -39,6 +42,15 @@ enum class OobeScreen : unsigned int {
   SCREEN_OOBE_HOST_PAIRING,
   SCREEN_DEVICE_DISABLED,
   SCREEN_UNRECOVERABLE_CRYPTOHOME_ERROR,
+  SCREEN_USER_SELECTION,
+
+  // Special "first screen" that initiates login flow.
+  SCREEN_SPECIAL_LOGIN,
+  // Special "first screen" that initiates full OOBE flow.
+  SCREEN_SPECIAL_OOBE,
+  // Special test value that commands not to create any window yet.
+  SCREEN_TEST_NO_WINDOW,
+
   SCREEN_UNKNOWN  // This must always be the last element.
 };
 
@@ -50,4 +62,4 @@ OobeScreen GetOobeScreenFromName(const std::string& name);
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_OOBE_SCREEN_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_OOBE_SCREEN_H_

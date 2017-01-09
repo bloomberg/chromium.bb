@@ -1196,10 +1196,10 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
     delegate_->OnProfilePrepared(profile, browser_launched);
 }
 
-void UserSessionManager::ActivateWizard(const std::string& screen_name) {
+void UserSessionManager::ActivateWizard(OobeScreen screen) {
   LoginDisplayHost* host = LoginDisplayHost::default_host();
   CHECK(host);
-  host->StartWizard(screen_name);
+  host->StartWizard(screen);
 }
 
 void UserSessionManager::InitializeStartUrls() const {
@@ -1278,7 +1278,7 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
       if (!StartupUtils::IsDeviceRegistered())
         StartupUtils::MarkDeviceRegistered(base::Closure());
 
-      ActivateWizard(WizardController::kTermsOfServiceScreenName);
+      ActivateWizard(OobeScreen::SCREEN_TERMS_OF_SERVICE);
       return false;
     }
   }

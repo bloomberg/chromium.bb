@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/mock_enrollment_screen.h"
+#include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
@@ -16,7 +17,6 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/ui/webui/chromeos/login/oobe_screen.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/chromeos_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -32,8 +32,7 @@ namespace chromeos {
 class EnrollmentScreenTest : public WizardInProcessBrowserTest {
  public:
   EnrollmentScreenTest()
-      : WizardInProcessBrowserTest(
-            WizardController::kEnrollmentScreenName) {}
+      : WizardInProcessBrowserTest(OobeScreen::SCREEN_OOBE_ENROLLMENT) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EnrollmentScreenTest);

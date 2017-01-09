@@ -2155,7 +2155,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfServiceWithLocaleSwitch) {
         chromeos::WizardController::default_controller();
   ASSERT_TRUE(wizard_controller);
   ASSERT_TRUE(wizard_controller->current_screen());
-  EXPECT_EQ(chromeos::WizardController::kTermsOfServiceScreenName,
+  EXPECT_EQ(chromeos::OobeScreen::SCREEN_TERMS_OF_SERVICE,
             wizard_controller->current_screen()->screen_id());
 
   // Wait for the Terms of Service to finish downloading.
@@ -2362,7 +2362,7 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, TermsOfServiceScreen) {
         chromeos::WizardController::default_controller();
   ASSERT_TRUE(wizard_controller);
   ASSERT_TRUE(wizard_controller->current_screen());
-  EXPECT_EQ(chromeos::WizardController::kTermsOfServiceScreenName,
+  EXPECT_EQ(chromeos::OobeScreen::SCREEN_TERMS_OF_SERVICE,
             wizard_controller->current_screen()->screen_id());
 
   // Wait for the Terms of Service to finish downloading, then get the status of

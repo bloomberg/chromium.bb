@@ -29,8 +29,7 @@ namespace chromeos {
 TermsOfServiceScreen::TermsOfServiceScreen(
     BaseScreenDelegate* base_screen_delegate,
     TermsOfServiceScreenActor* actor)
-    : BaseScreen(base_screen_delegate,
-                 WizardController::kTermsOfServiceScreenName),
+    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_TERMS_OF_SERVICE),
       actor_(actor) {
   DCHECK(actor_);
   if (actor_)

@@ -26,7 +26,7 @@ const char ResetModel::kContextKeyIsOfficialBuild[] = "is-official-build";
 const char ResetModel::kContextKeyScreenState[] = "screen-state";
 
 ResetModel::ResetModel(BaseScreenDelegate* base_screen_delegate)
-    : BaseScreen(base_screen_delegate, WizardController::kResetScreenName) {}
+    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_RESET) {}
 
 ResetModel::~ResetModel() {}
 

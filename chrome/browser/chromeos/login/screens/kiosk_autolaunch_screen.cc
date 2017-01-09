@@ -14,8 +14,7 @@ namespace chromeos {
 KioskAutolaunchScreen::KioskAutolaunchScreen(
     BaseScreenDelegate* base_screen_delegate,
     KioskAutolaunchScreenActor* actor)
-    : BaseScreen(base_screen_delegate,
-                 WizardController::kKioskAutolaunchScreenName),
+    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_KIOSK_AUTOLAUNCH),
       actor_(actor) {
   DCHECK(actor_);
   if (actor_)

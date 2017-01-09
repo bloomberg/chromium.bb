@@ -15,7 +15,7 @@ namespace chromeos {
 class HIDDetectionScreenTest : public WizardInProcessBrowserTest {
  public:
   HIDDetectionScreenTest()
-      : WizardInProcessBrowserTest(WizardController::kHIDDetectionScreenName) {}
+      : WizardInProcessBrowserTest(OobeScreen::SCREEN_OOBE_HID_DETECTION) {}
 
  protected:
   void SetUpOnMainThread() override {
@@ -25,7 +25,7 @@ class HIDDetectionScreenTest : public WizardInProcessBrowserTest {
 
     hid_detection_screen_ = static_cast<HIDDetectionScreen*>(
         WizardController::default_controller()->GetScreen(
-            WizardController::kHIDDetectionScreenName));
+            OobeScreen::SCREEN_OOBE_HID_DETECTION));
     ASSERT_TRUE(hid_detection_screen_);
     ASSERT_EQ(WizardController::default_controller()->current_screen(),
               hid_detection_screen_);

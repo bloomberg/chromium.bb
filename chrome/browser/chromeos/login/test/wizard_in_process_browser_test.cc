@@ -21,10 +21,8 @@
 
 namespace chromeos {
 
-WizardInProcessBrowserTest::WizardInProcessBrowserTest(const char* screen_name)
-    : screen_name_(screen_name),
-      host_(NULL) {
-}
+WizardInProcessBrowserTest::WizardInProcessBrowserTest(OobeScreen screen)
+    : screen_(screen) {}
 
 void WizardInProcessBrowserTest::SetUp() {
   WizardController::SetZeroDelays();
@@ -39,8 +37,8 @@ void WizardInProcessBrowserTest::SetUpCommandLine(
 
 void WizardInProcessBrowserTest::SetUpOnMainThread() {
   SetUpWizard();
-  if (!screen_name_.empty()) {
-    ShowLoginWizard(screen_name_);
+  if (screen_ != OobeScreen::SCREEN_UNKNOWN) {
+    ShowLoginWizard(screen_);
     host_ = LoginDisplayHost::default_host();
   }
 }

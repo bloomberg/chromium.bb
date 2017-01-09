@@ -42,7 +42,7 @@ class CoreOobeHandler : public BaseScreenHandler,
   class Delegate {
    public:
     // Called when current screen is changed.
-    virtual void OnCurrentScreenChanged(const std::string& screen) = 0;
+    virtual void OnCurrentScreenChanged(OobeScreen screen) = 0;
   };
 
   explicit CoreOobeHandler(OobeUI* oobe_ui);

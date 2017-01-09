@@ -14,8 +14,7 @@ const char UserImageModel::kContextKeyProfilePictureDataURL[] =
 const char UserImageModel::kContextKeySelectedImageURL[] = "selectedImageURL";
 
 UserImageModel::UserImageModel(BaseScreenDelegate* base_screen_delegate)
-    : BaseScreen(base_screen_delegate, WizardController::kUserImageScreenName) {
-}
+    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_USER_IMAGE_PICKER) {}
 
 UserImageModel::~UserImageModel() {}
 

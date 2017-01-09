@@ -25,10 +25,8 @@ const char HIDDetectionModel::kContextKeyContinueButtonEnabled[] =
     "continue-button-enabled";
 
 HIDDetectionModel::HIDDetectionModel(BaseScreenDelegate* base_screen_delegate)
-    : BaseScreen(base_screen_delegate,
-                 WizardController::kHIDDetectionScreenName) {}
+    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_HID_DETECTION) {}
 
-HIDDetectionModel::~HIDDetectionModel() {
-}
+HIDDetectionModel::~HIDDetectionModel() {}
 
 }  // namespace chromeos

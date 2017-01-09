@@ -16,8 +16,7 @@ namespace chromeos {
 DeviceDisabledScreen::DeviceDisabledScreen(
     BaseScreenDelegate* base_screen_delegate,
     DeviceDisabledScreenActor* actor)
-    : BaseScreen(base_screen_delegate,
-                 WizardController::kDeviceDisabledScreenName),
+    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_DEVICE_DISABLED),
       actor_(actor),
       device_disabling_manager_(
           g_browser_process->platform_part()->device_disabling_manager()),

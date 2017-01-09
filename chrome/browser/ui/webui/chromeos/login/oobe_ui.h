@@ -14,9 +14,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/settings/shutdown_policy_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/oobe_screen.h"
 #include "content/public/browser/web_ui_controller.h"
 
 namespace ash {
@@ -163,7 +163,7 @@ class OobeUI : public content::WebUIController,
   void AddScreenHandler(BaseScreenHandler* handler);
 
   // CoreOobeHandler::Delegate implementation:
-  void OnCurrentScreenChanged(const std::string& screen) override;
+  void OnCurrentScreenChanged(OobeScreen screen) override;
 
   // Type of UI.
   std::string display_type_;

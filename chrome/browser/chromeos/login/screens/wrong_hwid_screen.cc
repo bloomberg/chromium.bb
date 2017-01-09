@@ -11,7 +11,7 @@ namespace chromeos {
 
 WrongHWIDScreen::WrongHWIDScreen(BaseScreenDelegate* base_screen_delegate,
                                  WrongHWIDScreenActor* actor)
-    : BaseScreen(base_screen_delegate, WizardController::kWrongHWIDScreenName),
+    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_WRONG_HWID),
       actor_(actor) {
   DCHECK(actor_);
   if (actor_)

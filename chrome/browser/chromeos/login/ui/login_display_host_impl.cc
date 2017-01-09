@@ -172,12 +172,12 @@ class AnimationObserver : public ui::ImplicitAnimationObserver {
 // from ShowLoginWizard(), and sometimes from OnLanguageSwitchedCallback()
 // (if locale was updated).
 void ShowLoginWizardFinish(
-    const std::string& first_screen_name,
+    chromeos::OobeScreen first_screen,
     const chromeos::StartupCustomizationDocument* startup_manifest,
     chromeos::LoginDisplayHost* display_host) {
   TRACE_EVENT0("chromeos", "ShowLoginWizard::ShowLoginWizardFinish");
 
-  display_host->StartWizard(first_screen_name);
+  display_host->StartWizard(first_screen);
 
   // Set initial timezone if specified by customization.
   const std::string timezone_name = startup_manifest->initial_timezone();
@@ -192,14 +192,14 @@ void ShowLoginWizardFinish(
 
 struct ShowLoginWizardSwitchLanguageCallbackData {
   explicit ShowLoginWizardSwitchLanguageCallbackData(
-      const std::string& first_screen_name,
+      chromeos::OobeScreen first_screen,
       const chromeos::StartupCustomizationDocument* startup_manifest,
       chromeos::LoginDisplayHost* display_host)
-      : first_screen_name(first_screen_name),
+      : first_screen(first_screen),
         startup_manifest(startup_manifest),
         display_host(display_host) {}
 
-  const std::string first_screen_name;
+  const chromeos::OobeScreen first_screen;
   const chromeos::StartupCustomizationDocument* const startup_manifest;
   chromeos::LoginDisplayHost* const display_host;
 
@@ -214,8 +214,8 @@ void OnLanguageSwitchedCallback(
     LOG(WARNING) << "Locale could not be found for '" << result.requested_locale
                  << "'";
 
-  ShowLoginWizardFinish(
-      self->first_screen_name, self->startup_manifest, self->display_host);
+  ShowLoginWizardFinish(self->first_screen, self->startup_manifest,
+                        self->display_host);
 }
 
 void EnableSystemSoundsForAccessibility() {
@@ -530,7 +530,7 @@ AutoEnrollmentController* LoginDisplayHostImpl::GetAutoEnrollmentController() {
   return auto_enrollment_controller_.get();
 }
 
-void LoginDisplayHostImpl::StartWizard(const std::string& first_screen_name) {
+void LoginDisplayHostImpl::StartWizard(OobeScreen first_screen) {
   DisableKeyboardOverscroll();
 
   startup_sound_honors_spoken_feedback_ = false;
@@ -538,7 +538,7 @@ void LoginDisplayHostImpl::StartWizard(const std::string& first_screen_name) {
 
   // Keep parameters to restore if renderer crashes.
   restore_path_ = RESTORE_WIZARD;
-  first_screen_name_ = first_screen_name;
+  first_screen_ = first_screen;
   is_showing_login_ = false;
 
   if (waiting_for_wallpaper_load_ && !initialize_webui_hidden_) {
@@ -550,7 +550,8 @@ void LoginDisplayHostImpl::StartWizard(const std::string& first_screen_name) {
   if (!login_window_)
     LoadURL(GURL(kOobeURL));
 
-  DVLOG(1) << "Starting wizard, first_screen_name: " << first_screen_name;
+  DVLOG(1) << "Starting wizard, first_screen: "
+           << GetOobeScreenName(first_screen);
   // Create and show the wizard.
   // Note, dtor of the old WizardController should be called before ctor of the
   // new one, because "default_controller()" is updated there. So pure "reset()"
@@ -560,7 +561,7 @@ void LoginDisplayHostImpl::StartWizard(const std::string& first_screen_name) {
 
   oobe_progress_bar_visible_ = !StartupUtils::IsDeviceRegistered();
   SetOobeProgressBarVisible(oobe_progress_bar_visible_);
-  wizard_controller_->Init(first_screen_name);
+  wizard_controller_->Init(first_screen);
 }
 
 WizardController* LoginDisplayHostImpl::GetWizardController() {
@@ -1094,7 +1095,7 @@ void LoginDisplayHostImpl::StartPostponedWebUI() {
 
   switch (restore_path_) {
     case RESTORE_WIZARD:
-      StartWizard(first_screen_name_);
+      StartWizard(first_screen_);
       break;
     case RESTORE_SIGN_IN:
       StartSignInScreen(LoginScreenContext());
@@ -1246,11 +1247,11 @@ void LoginDisplayHostImpl::DisableRestrictiveProxyCheckForTest() {
 
 // Declared in login_wizard.h so that others don't need to depend on our .h.
 // TODO(nkostylev): Split this into a smaller functions.
-void ShowLoginWizard(const std::string& first_screen_name) {
+void ShowLoginWizard(OobeScreen first_screen) {
   if (browser_shutdown::IsTryingToQuit())
     return;
 
-  VLOG(1) << "Showing OOBE screen: " << first_screen_name;
+  VLOG(1) << "Showing OOBE screen: " << GetOobeScreenName(first_screen);
 
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::Get();
@@ -1282,7 +1283,7 @@ void ShowLoginWizard(const std::string& first_screen_name) {
   LoginDisplayHostImpl* display_host = new LoginDisplayHostImpl(screen_bounds);
 
   bool show_app_launch_splash_screen =
-      (first_screen_name == WizardController::kAppLaunchSplashScreenName);
+      (first_screen == OobeScreen::SCREEN_APP_LAUNCH_SPLASH);
   if (show_app_launch_splash_screen) {
     const std::string& auto_launch_app_id =
         KioskAppManager::Get()->GetAutoLaunchApp();
@@ -1299,11 +1300,12 @@ void ShowLoginWizard(const std::string& first_screen_name) {
       g_browser_process->platform_part()
           ->browser_policy_connector_chromeos()
           ->GetPrescribedEnrollmentConfig();
-  if (enrollment_config.should_enroll() && first_screen_name.empty()) {
+  if (enrollment_config.should_enroll() &&
+      first_screen == OobeScreen::SCREEN_UNKNOWN) {
     // Shows networks screen instead of enrollment screen to resume the
     // interrupted auto start enrollment flow because enrollment screen does
     // not handle flaky network. See http://crbug.com/332572
-    display_host->StartWizard(WizardController::kNetworkScreenName);
+    display_host->StartWizard(OobeScreen::SCREEN_OOBE_NETWORK);
     return;
   }
 
@@ -1318,9 +1320,9 @@ void ShowLoginWizard(const std::string& first_screen_name) {
         ->UpdateTimezoneResolver();
   }
 
-  bool show_login_screen =
-      (first_screen_name.empty() && StartupUtils::IsOobeCompleted()) ||
-      first_screen_name == WizardController::kLoginScreenName;
+  bool show_login_screen = (first_screen == OobeScreen::SCREEN_UNKNOWN &&
+                            StartupUtils::IsOobeCompleted()) ||
+                           first_screen == OobeScreen::SCREEN_SPECIAL_LOGIN;
 
   if (show_login_screen) {
     display_host->StartSignInScreen(LoginScreenContext());
@@ -1350,7 +1352,7 @@ void ShowLoginWizard(const std::string& first_screen_name) {
                                                                   layout);
 
   if (!current_locale.empty() || locale.empty()) {
-    ShowLoginWizardFinish(first_screen_name, startup_manifest, display_host);
+    ShowLoginWizardFinish(first_screen, startup_manifest, display_host);
     return;
   }
 
@@ -1363,7 +1365,7 @@ void ShowLoginWizard(const std::string& first_screen_name) {
 
   std::unique_ptr<ShowLoginWizardSwitchLanguageCallbackData> data(
       new ShowLoginWizardSwitchLanguageCallbackData(
-          first_screen_name, startup_manifest, display_host));
+          first_screen, startup_manifest, display_host));
 
   locale_util::SwitchLanguageCallback callback(
       base::Bind(&OnLanguageSwitchedCallback, base::Passed(std::move(data))));

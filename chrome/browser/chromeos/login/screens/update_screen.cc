@@ -104,7 +104,7 @@ bool UpdateScreen::HasInstance(UpdateScreen* inst) {
 // static
 UpdateScreen* UpdateScreen::Get(ScreenManager* manager) {
   return static_cast<UpdateScreen*>(
-      manager->GetScreen(WizardController::kUpdateScreenName));
+      manager->GetScreen(OobeScreen::SCREEN_OOBE_UPDATE));
 }
 
 UpdateScreen::UpdateScreen(BaseScreenDelegate* base_screen_delegate,

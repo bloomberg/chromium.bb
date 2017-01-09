@@ -44,10 +44,10 @@ const char kStubWifiGuid[] = "wlan0";
 
 class UpdateScreenTest : public WizardInProcessBrowserTest {
  public:
-  UpdateScreenTest() : WizardInProcessBrowserTest("update"),
-                       fake_update_engine_client_(NULL),
-                       network_portal_detector_(NULL) {
-  }
+  UpdateScreenTest()
+      : WizardInProcessBrowserTest(OobeScreen::SCREEN_OOBE_UPDATE),
+        fake_update_engine_client_(nullptr),
+        network_portal_detector_(nullptr) {}
 
  protected:
   void SetUpInProcessBrowserTestFixture() override {
@@ -182,9 +182,9 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
   // Check that OOBE will resume back at this screen.
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
-  EXPECT_EQ(
-      update_screen_->screen_id(),
-      g_browser_process->local_state()->GetString(prefs::kOobeScreenPending));
+  EXPECT_EQ(update_screen_->screen_id(),
+            GetOobeScreenFromName(g_browser_process->local_state()->GetString(
+                prefs::kOobeScreenPending)));
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorIssuingUpdateCheck) {

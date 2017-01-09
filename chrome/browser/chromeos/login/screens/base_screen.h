@@ -9,6 +9,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "components/login/base_screen_handler_utils.h"
 #include "components/login/screens/screen_context.h"
@@ -29,7 +30,7 @@ class ModelViewChannel;
 class BaseScreen {
  public:
   explicit BaseScreen(BaseScreenDelegate* base_screen_delegate,
-                      const std::string& screen_id);
+                      OobeScreen screen_id);
   virtual ~BaseScreen();
 
   // ---- Old implementation ----
@@ -63,7 +64,7 @@ class BaseScreen {
   virtual bool IsStatusAreaDisplayed();
 
   // Returns the identifier of the screen.
-  const std::string& screen_id() const { return screen_id_; }
+  OobeScreen screen_id() const { return screen_id_; }
 
   // Called when user action event with |event_id|
   // happened. Notification about this event comes from the JS
@@ -151,7 +152,7 @@ class BaseScreen {
 
   BaseScreenDelegate* base_screen_delegate_ = nullptr;
 
-  const std::string screen_id_;
+  const OobeScreen screen_id_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseScreen);
 };

@@ -41,14 +41,14 @@ NetworkPortalDetector::CaptivePortalStatus GetCaptivePortalStatus() {
 AutoEnrollmentCheckScreen* AutoEnrollmentCheckScreen::Get(
     ScreenManager* manager) {
   return static_cast<AutoEnrollmentCheckScreen*>(
-      manager->GetScreen(WizardController::kAutoEnrollmentCheckScreenName));
+      manager->GetScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK));
 }
 
 AutoEnrollmentCheckScreen::AutoEnrollmentCheckScreen(
     BaseScreenDelegate* base_screen_delegate,
     AutoEnrollmentCheckScreenActor* actor)
     : BaseScreen(base_screen_delegate,
-                 WizardController::kAutoEnrollmentCheckScreenName),
+                 OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK),
       actor_(actor),
       auto_enrollment_controller_(nullptr),
       captive_portal_status_(

@@ -53,9 +53,9 @@ class MockNetworkStateHelper : public NetworkStateHelper {
 
 class NetworkScreenTest : public WizardInProcessBrowserTest {
  public:
-  NetworkScreenTest(): WizardInProcessBrowserTest("network"),
-                       fake_session_manager_client_(NULL) {
-  }
+  NetworkScreenTest()
+      : WizardInProcessBrowserTest(OobeScreen::SCREEN_OOBE_NETWORK),
+        fake_session_manager_client_(nullptr) {}
 
  protected:
   void SetUpInProcessBrowserTestFixture() override {
@@ -69,10 +69,10 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
   void SetUpOnMainThread() override {
     WizardInProcessBrowserTest::SetUpOnMainThread();
     mock_base_screen_delegate_.reset(new MockBaseScreenDelegate());
-    ASSERT_TRUE(WizardController::default_controller() != NULL);
+    ASSERT_TRUE(WizardController::default_controller() != nullptr);
     network_screen_ =
         NetworkScreen::Get(WizardController::default_controller());
-    ASSERT_TRUE(network_screen_ != NULL);
+    ASSERT_TRUE(network_screen_ != nullptr);
     ASSERT_EQ(WizardController::default_controller()->current_screen(),
               network_screen_);
     network_screen_->base_screen_delegate_ = mock_base_screen_delegate_.get();

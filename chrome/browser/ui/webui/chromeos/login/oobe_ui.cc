@@ -591,9 +591,8 @@ void OobeUI::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void OobeUI::OnCurrentScreenChanged(const std::string& screen) {
+void OobeUI::OnCurrentScreenChanged(OobeScreen new_screen) {
   previous_screen_ = current_screen_;
-  OobeScreen new_screen = GetOobeScreenFromName(screen);
 
   const bool should_dim =
       std::find(std::begin(kDimOverlayScreenIds),

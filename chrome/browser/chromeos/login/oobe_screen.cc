@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/chromeos/login/oobe_screen.h"
+#include "chrome/browser/chromeos/login/oobe_screen.h"
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -13,7 +13,7 @@ namespace {
 // These get mapped by the Screen enum ordinal values, so this has to be defined
 // in the same order as the Screen enum.
 const char* kScreenNames[] = {
-    "hid-detection",                   // SCREEN_OOBE_HID_DETECTION,
+    "hid-detection",                   // SCREEN_OOBE_HID_DETECTION
     "connect",                         // SCREEN_OOBE_NETWORK
     "eula",                            // SCREEN_OOBE_EULA
     "update",                          // SCREEN_OOBE_UPDATE
@@ -40,6 +40,10 @@ const char* kScreenNames[] = {
     "host-pairing",                    // SCREEN_OOBE_HOST_PAIRING
     "device-disabled",                 // SCREEN_DEVICE_DISABLED
     "unrecoverable-cryptohome-error",  // SCREEN_UNRECOVERABLE_CRYPTOHOME_ERROR
+    "userBoard",                       // SCREEN_USER_SELECTION
+    "login",                           // SCREEN_SPECIAL_LOGIN
+    "oobe",                            // SCREEN_SPECIAL_OOBE
+    "test:nowindow",                   // SCREEN_TEST_NO_WINDOW
     "unknown",                         // SCREEN_UNKNOWN
 };
 

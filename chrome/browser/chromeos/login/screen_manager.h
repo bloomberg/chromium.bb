@@ -22,12 +22,12 @@ class ScreenManager {
   virtual ~ScreenManager();
 
   // Getter for screen with lazy initialization.
-  virtual BaseScreen* GetScreen(const std::string& screen_name);
+  virtual BaseScreen* GetScreen(OobeScreen screen);
 
   // Factory for screen instances.
-  virtual BaseScreen* CreateScreen(const std::string& screen_name) = 0;
+  virtual BaseScreen* CreateScreen(OobeScreen screen) = 0;
 
-  bool HasScreen(const std::string& screen_name);
+  bool HasScreen(OobeScreen screen);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(EnrollmentScreenTest, TestCancel);
@@ -38,8 +38,7 @@ class ScreenManager {
   friend class WizardControllerBrokenLocalStateTest;
 
   // Screens.
-  typedef std::map<std::string, linked_ptr<BaseScreen>> ScreenMap;
-  ScreenMap screens_;
+  std::map<OobeScreen, linked_ptr<BaseScreen>> screens_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenManager);
 };

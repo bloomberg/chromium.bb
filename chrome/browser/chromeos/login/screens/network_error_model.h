@@ -7,9 +7,9 @@
 
 #include "base/callback_list.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
-#include "chrome/browser/ui/webui/chromeos/login/oobe_screen.h"
 
 namespace chromeos {
 

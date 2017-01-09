@@ -12,7 +12,7 @@ namespace chromeos {
 
 EnableDebuggingScreen::EnableDebuggingScreen(BaseScreenDelegate* delegate,
                                              EnableDebuggingScreenActor* actor)
-    : BaseScreen(delegate, WizardController::kEnableDebuggingScreenName),
+    : BaseScreen(delegate, OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING),
       actor_(actor) {
   DCHECK(actor_);
   if (actor_)

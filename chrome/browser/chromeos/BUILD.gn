@@ -721,6 +721,8 @@ source_set("chromeos") {
     "login/lock/webui_screen_locker.cc",
     "login/lock/webui_screen_locker.h",
     "login/login_wizard.h",
+    "login/oobe_screen.cc",
+    "login/oobe_screen.h",
     "login/profile_auth_data.cc",
     "login/profile_auth_data.h",
     "login/proxy_settings_dialog.h",

@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/eol_notification.h"
 #include "chrome/browser/chromeos/hats/hats_notification_controller.h"
+#include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_notification_controller.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/signin/token_handle_util.h"
@@ -316,7 +317,7 @@ class UserSessionManager
   void FinalizePrepareProfile(Profile* profile);
 
   // Starts out-of-box flow with the specified screen.
-  void ActivateWizard(const std::string& screen_name);
+  void ActivateWizard(OobeScreen screen);
 
   // Adds first-time login URLs.
   void InitializeStartUrls() const;

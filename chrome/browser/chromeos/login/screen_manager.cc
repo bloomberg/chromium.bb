@@ -12,19 +12,19 @@ ScreenManager::ScreenManager() {
 ScreenManager::~ScreenManager() {
 }
 
-BaseScreen* ScreenManager::GetScreen(const std::string& screen_name) {
-  ScreenMap::const_iterator iter = screens_.find(screen_name);
-  if (iter != screens_.end()) {
+BaseScreen* ScreenManager::GetScreen(OobeScreen screen) {
+  auto iter = screens_.find(screen);
+  if (iter != screens_.end())
     return iter->second.get();
-  }
-  BaseScreen* result = CreateScreen(screen_name);
-  DCHECK(result) << "Can not create screen named " << screen_name;
-  screens_[screen_name] = make_linked_ptr(result);
+
+  BaseScreen* result = CreateScreen(screen);
+  DCHECK(result) << "Can not create screen named " << GetOobeScreenName(screen);
+  screens_[screen] = make_linked_ptr(result);
   return result;
 }
 
-bool ScreenManager::HasScreen(const std::string& screen_name) {
-  return screens_.count(screen_name) > 0;
+bool ScreenManager::HasScreen(OobeScreen screen) {
+  return screens_.count(screen) > 0;
 }
 
 }  // namespace chromeos

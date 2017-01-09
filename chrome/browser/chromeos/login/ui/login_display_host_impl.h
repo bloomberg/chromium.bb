@@ -71,7 +71,7 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   void OpenProxySettings() override;
   void SetStatusAreaVisible(bool visible) override;
   AutoEnrollmentController* GetAutoEnrollmentController() override;
-  void StartWizard(const std::string& first_screen_name) override;
+  void StartWizard(OobeScreen first_screen) override;
   WizardController* GetWizardController() override;
   AppLaunchController* GetAppLaunchController() override;
   void StartUserAdding(const base::Closure& completion_callback) override;
@@ -272,7 +272,7 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   RestorePath restore_path_;
 
   // Stored parameters for StartWizard, required to restore in case of crash.
-  std::string first_screen_name_;
+  OobeScreen first_screen_;
 
   // Called before host deletion.
   base::Closure completion_callback_;

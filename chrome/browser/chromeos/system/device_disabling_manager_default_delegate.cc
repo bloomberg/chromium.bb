@@ -20,7 +20,7 @@ void DeviceDisablingManagerDefaultDelegate::RestartToLoginScreen() {
 
 void DeviceDisablingManagerDefaultDelegate::ShowDeviceDisabledScreen() {
   LoginDisplayHost::default_host()->StartWizard(
-      WizardController::kDeviceDisabledScreenName);
+      OobeScreen::SCREEN_DEVICE_DISABLED);
 }
 
 }  // namespace system

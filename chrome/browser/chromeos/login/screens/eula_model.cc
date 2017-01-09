@@ -13,9 +13,8 @@ const char EulaModel::kUserActionBackButtonClicked[] = "back-button";
 const char EulaModel::kContextKeyUsageStatsEnabled[] = "usageStatsEnabled";
 
 EulaModel::EulaModel(BaseScreenDelegate* base_screen_delegate)
-    : BaseScreen(base_screen_delegate, WizardController::kEulaScreenName) {}
+    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_EULA) {}
 
-EulaModel::~EulaModel() {
-}
+EulaModel::~EulaModel() {}
 
 }  // namespace chromeos

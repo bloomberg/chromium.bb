@@ -68,11 +68,10 @@ const BaseScreen::ContextEditor& BaseScreen::ContextEditor::SetString16List(
 }
 
 BaseScreen::BaseScreen(BaseScreenDelegate* base_screen_delegate,
-                       const std::string& screen_id)
+                       OobeScreen screen_id)
     : base_screen_delegate_(base_screen_delegate), screen_id_(screen_id) {}
 
-BaseScreen::~BaseScreen() {
-}
+BaseScreen::~BaseScreen() {}
 
 void BaseScreen::Initialize(::login::ScreenContext* context) {
   if (context)
@@ -96,7 +95,7 @@ void BaseScreen::CommitContextChanges() {
   if (!context_.HasChanges())
     return;
   if (!channel_) {
-    LOG(ERROR) << "Model-view channel for " << screen_id()
+    LOG(ERROR) << "Model-view channel for " << GetOobeScreenName(screen_id())
                << " is not ready, context changes are not sent to the view.";
     return;
   }

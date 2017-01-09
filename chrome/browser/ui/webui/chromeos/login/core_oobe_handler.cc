@@ -218,11 +218,11 @@ void CoreOobeHandler::ShowDeviceResetScreen() {
     WizardController* wizard_controller =
         WizardController::default_controller();
     if (wizard_controller && !wizard_controller->login_screen_started()) {
-      wizard_controller->AdvanceToScreen(WizardController::kResetScreenName);
+      wizard_controller->AdvanceToScreen(OobeScreen::SCREEN_OOBE_RESET);
     } else {
       DCHECK(LoginDisplayHost::default_host());
       LoginDisplayHost::default_host()->StartWizard(
-          WizardController::kResetScreenName);
+          OobeScreen::SCREEN_OOBE_RESET);
     }
   }
 }
@@ -233,7 +233,7 @@ void CoreOobeHandler::ShowEnableDebuggingScreen() {
       WizardController::default_controller();
   if (wizard_controller && !wizard_controller->login_screen_started()) {
     wizard_controller->AdvanceToScreen(
-        WizardController::kEnableDebuggingScreenName);
+        OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING);
   }
 }
 
@@ -304,13 +304,15 @@ void CoreOobeHandler::HandleSkipUpdateEnrollAfterEula() {
     controller->SkipUpdateEnrollAfterEula();
 }
 
-void CoreOobeHandler::HandleUpdateCurrentScreen(const std::string& screen) {
+void CoreOobeHandler::HandleUpdateCurrentScreen(
+    const std::string& screen_name) {
+  const OobeScreen screen = GetOobeScreenFromName(screen_name);
   if (delegate_)
     delegate_->OnCurrentScreenChanged(screen);
   // TODO(mash): Support EventRewriterController; see crbug.com/647781
   if (!chrome::IsRunningInMash()) {
     KeyboardDrivenEventRewriter::GetInstance()->SetArrowToTabRewritingEnabled(
-      screen == WizardController::kEulaScreenName);
+        screen == OobeScreen::SCREEN_OOBE_EULA);
   }
 }
 

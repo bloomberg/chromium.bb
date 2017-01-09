@@ -33,7 +33,7 @@ const char NetworkErrorModel::kUserActionConnectRequested[] =
     "connect-requested";
 
 NetworkErrorModel::NetworkErrorModel(BaseScreenDelegate* base_screen_delegate)
-    : BaseScreen(base_screen_delegate, WizardController::kErrorScreenName) {}
+    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_ERROR_MESSAGE) {}
 
 NetworkErrorModel::~NetworkErrorModel() {}
 

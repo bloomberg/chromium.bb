@@ -492,7 +492,7 @@ void ExistingUserController::SetDisplayEmail(const std::string& email) {
 }
 
 void ExistingUserController::ShowWrongHWIDScreen() {
-  host_->StartWizard(WizardController::kWrongHWIDScreenName);
+  host_->StartWizard(OobeScreen::SCREEN_WRONG_HWID);
 }
 
 void ExistingUserController::Signout() {
@@ -537,23 +537,23 @@ void ExistingUserController::OnEnrollmentOwnershipCheckCompleted(
 }
 
 void ExistingUserController::ShowEnrollmentScreen() {
-  host_->StartWizard(WizardController::kEnrollmentScreenName);
+  host_->StartWizard(OobeScreen::SCREEN_OOBE_ENROLLMENT);
 }
 
 void ExistingUserController::ShowResetScreen() {
-  host_->StartWizard(WizardController::kResetScreenName);
+  host_->StartWizard(OobeScreen::SCREEN_OOBE_RESET);
 }
 
 void ExistingUserController::ShowEnableDebuggingScreen() {
-  host_->StartWizard(WizardController::kEnableDebuggingScreenName);
+  host_->StartWizard(OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING);
 }
 
 void ExistingUserController::ShowKioskEnableScreen() {
-  host_->StartWizard(WizardController::kKioskEnableScreenName);
+  host_->StartWizard(OobeScreen::SCREEN_KIOSK_ENABLE);
 }
 
 void ExistingUserController::ShowKioskAutolaunchScreen() {
-  host_->StartWizard(WizardController::kKioskAutolaunchScreenName);
+  host_->StartWizard(OobeScreen::SCREEN_KIOSK_AUTOLAUNCH);
 }
 
 void ExistingUserController::ShowTPMError() {

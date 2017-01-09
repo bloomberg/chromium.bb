@@ -1126,7 +1126,7 @@ void SigninScreenHandler::HandleShowSupervisedUserCreationScreen() {
     return;
   }
   LoginDisplayHost::default_host()->StartWizard(
-      WizardController::kSupervisedUserCreationScreenName);
+      OobeScreen::SCREEN_CREATE_SUPERVISED_USER_FLOW);
 }
 
 void SigninScreenHandler::HandleLaunchPublicSession(

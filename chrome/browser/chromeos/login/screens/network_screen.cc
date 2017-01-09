@@ -47,7 +47,7 @@ namespace chromeos {
 // static
 NetworkScreen* NetworkScreen::Get(ScreenManager* manager) {
   return static_cast<NetworkScreen*>(
-      manager->GetScreen(WizardController::kNetworkScreenName));
+      manager->GetScreen(OobeScreen::SCREEN_OOBE_NETWORK));
 }
 
 NetworkScreen::NetworkScreen(BaseScreenDelegate* base_screen_delegate,

@@ -66,7 +66,7 @@ void StartKioskSession() {
   session_manager::SessionManager::Get()->SetSessionState(
       session_manager::SessionState::LOGIN_PRIMARY);
 
-  ShowLoginWizard(chromeos::WizardController::kAppLaunchSplashScreenName);
+  ShowLoginWizard(chromeos::OobeScreen::SCREEN_APP_LAUNCH_SPLASH);
 
   // Login screen is skipped but 'login-prompt-visible' signal is still needed.
   VLOG(1) << "Kiosk app auto launch >> login-prompt-visible";
@@ -76,7 +76,7 @@ void StartKioskSession() {
 // Starts the login/oobe screen.
 void StartLoginOobeSession() {
   // State will be defined once out-of-box/login branching is complete.
-  ShowLoginWizard(std::string());
+  ShowLoginWizard(OobeScreen::SCREEN_UNKNOWN);
 
   // Reset reboot after update flag when login screen is shown.
   policy::BrowserPolicyConnectorChromeOS* connector =

@@ -21,7 +21,7 @@ ControllerPairingScreen::ControllerPairingScreen(
     ControllerPairingScreenActor* actor,
     ControllerPairingController* shark_controller)
     : BaseScreen(base_screen_delegate,
-                 WizardController::kControllerPairingScreenName),
+                 OobeScreen::SCREEN_OOBE_CONTROLLER_PAIRING),
       delegate_(delegate),
       actor_(actor),
       shark_controller_(shark_controller),

@@ -142,8 +142,7 @@ IN_PROC_BROWSER_TEST_F(DeviceDisablingTest, DisableDuringNormalOperation) {
   WizardController* const wizard_controller =
       WizardController::default_controller();
   ASSERT_TRUE(wizard_controller);
-  EXPECT_EQ(wizard_controller->GetScreen(
-                WizardController::kDeviceDisabledScreenName),
+  EXPECT_EQ(wizard_controller->GetScreen(OobeScreen::SCREEN_DEVICE_DISABLED),
             wizard_controller->current_screen());
 }
 

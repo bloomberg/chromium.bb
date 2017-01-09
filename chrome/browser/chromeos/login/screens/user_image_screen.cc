@@ -60,7 +60,7 @@ const int kSyncTimeoutSeconds = 10;
 // static
 UserImageScreen* UserImageScreen::Get(ScreenManager* manager) {
   return static_cast<UserImageScreen*>(
-      manager->GetScreen(WizardController::kUserImageScreenName));
+      manager->GetScreen(OobeScreen::SCREEN_USER_IMAGE_PICKER));
 }
 
 UserImageScreen::UserImageScreen(BaseScreenDelegate* base_screen_delegate,
