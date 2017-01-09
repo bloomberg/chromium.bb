@@ -27,6 +27,23 @@
 #include "ui/display/screen.h"
 #include "ui/events/event_constants.h"
 
+// Helper macro which returns the AppInstance.
+#define GET_APP_INSTANCE(method_name)                                    \
+  (arc::ArcServiceManager::Get()                                         \
+       ? ARC_GET_INSTANCE_FOR_METHOD(                                    \
+             arc::ArcServiceManager::Get()->arc_bridge_service()->app(), \
+             method_name)                                                \
+       : nullptr)
+
+// Helper function which returns the IntentHelperInstance.
+#define GET_INTENT_HELPER_INSTANCE(method_name)                    \
+  (arc::ArcServiceManager::Get()                                   \
+       ? ARC_GET_INSTANCE_FOR_METHOD(arc::ArcServiceManager::Get() \
+                                         ->arc_bridge_service()    \
+                                         ->intent_helper(),        \
+                                     method_name)                  \
+       : nullptr)
+
 namespace arc {
 
 namespace {
@@ -37,67 +54,14 @@ constexpr int kNexus7Height = 600;
 constexpr int kNexus5Width = 410;
 constexpr int kNexus5Height = 690;
 
-// Minimum required versions.
-constexpr uint32_t kMinVersion = 0;
-constexpr uint32_t kCanHandleResolutionMinVersion = 1;
-constexpr uint32_t kSendBroadcastMinVersion = 1;
-constexpr uint32_t kUninstallPackageMinVersion = 2;
-constexpr uint32_t kTaskSupportMinVersion = 3;
-constexpr uint32_t kShowPackageInfoMinVersion = 5;
-constexpr uint32_t kRemoveIconMinVersion = 9;
-constexpr uint32_t kShowPackageInfoOnPageMinVersion = 10;
-
-// Service name strings.
-constexpr char kCanHandleResolutionStr[] = "get resolution capability";
-constexpr char kCloseTaskStr[] = "close task";
-constexpr char kLaunchAppStr[] = "launch app";
-constexpr char kRemoveIconStr[] = "remove icon";
-constexpr char kSetActiveTaskStr[] = "set active task";
-constexpr char kShowPackageInfoStr[] = "show package info";
-constexpr char kUninstallPackageStr[] = "uninstall package";
-
 // Intent helper strings.
 constexpr char kIntentHelperClassName[] =
     "org.chromium.arc.intent_helper.SettingsReceiver";
 constexpr char kIntentHelperPackageName[] = "org.chromium.arc.intent_helper";
-constexpr char kSendBroadcastStr[] = "SendBroadcast";
 constexpr char kSetInTouchModeIntent[] =
     "org.chromium.arc.intent_helper.SET_IN_TOUCH_MODE";
 constexpr char kShowTalkbackSettingsIntent[] =
     "org.chromium.arc.intent_helper.SHOW_TALKBACK_SETTINGS";
-
-// Helper function which returns the AppInstance. Create related logs when error
-// happens.
-arc::mojom::AppInstance* GetAppInstance(uint32_t required_version,
-                                        const std::string& service_name) {
-  auto* arc_service_manager = arc::ArcServiceManager::Get();
-  if (!arc_service_manager) {
-    VLOG(2) << "Request to " << service_name
-            << " when bridge service is not ready.";
-    return nullptr;
-  }
-
-  return arc_service_manager->arc_bridge_service()
-      ->app()
-      ->GetInstanceForVersion(required_version, service_name.c_str());
-}
-
-// Helper function which returns the IntentHelperInstance. Create related logs
-// when error happens.
-arc::mojom::IntentHelperInstance* GetIntentHelperInstance(
-    uint32_t required_version,
-    const std::string& service_name) {
-  auto* arc_service_manager = arc::ArcServiceManager::Get();
-  if (!arc_service_manager) {
-    VLOG(2) << "Request to " << service_name
-            << " when bridge service is not ready.";
-    return nullptr;
-  }
-
-  return arc_service_manager->arc_bridge_service()
-      ->intent_helper()
-      ->GetInstanceForVersion(required_version, service_name.c_str());
-}
 
 void PrioritizeArcInstanceCallback(bool success) {
   VLOG(2) << "Finished prioritizing the instance: result=" << success;
@@ -243,13 +207,12 @@ bool LaunchAppWithRect(content::BrowserContext* context,
     return false;
   }
 
-  arc::mojom::AppInstance* app_instance =
-      GetAppInstance(kMinVersion, kLaunchAppStr);
+  arc::mojom::AppInstance* app_instance = GET_APP_INSTANCE(LaunchApp);
   if (!app_instance)
     return false;
 
   arc::mojom::IntentHelperInstance* intent_helper_instance =
-      GetIntentHelperInstance(kSendBroadcastMinVersion, kSendBroadcastStr);
+      GET_INTENT_HELPER_INSTANCE(SendBroadcast);
   if (intent_helper_instance) {
     base::DictionaryValue extras;
     extras.SetBoolean("inTouchMode", IsMouseOrTouchEventFromFlags(event_flags));
@@ -261,6 +224,10 @@ bool LaunchAppWithRect(content::BrowserContext* context,
   }
 
   if (app_info->shortcut) {
+    // Before calling LaunchIntent, check if the interface is supported. Reusing
+    // the same |app_instance| for LaunchIntent is allowed.
+    if (!GET_APP_INSTANCE(LaunchIntent))
+      return false;
     app_instance->LaunchIntent(app_info->intent_uri, target_rect);
   } else {
     app_instance->LaunchApp(app_info->package_name, app_info->activity,
@@ -342,16 +309,14 @@ bool LaunchApp(content::BrowserContext* context,
 }
 
 void SetTaskActive(int task_id) {
-  arc::mojom::AppInstance* app_instance =
-      GetAppInstance(kTaskSupportMinVersion, kSetActiveTaskStr);
+  arc::mojom::AppInstance* app_instance = GET_APP_INSTANCE(SetTaskActive);
   if (!app_instance)
     return;
   app_instance->SetTaskActive(task_id);
 }
 
 void CloseTask(int task_id) {
-  arc::mojom::AppInstance* app_instance =
-      GetAppInstance(kTaskSupportMinVersion, kCloseTaskStr);
+  arc::mojom::AppInstance* app_instance = GET_APP_INSTANCE(CloseTask);
   if (!app_instance)
     return;
   app_instance->CloseTask(task_id);
@@ -359,7 +324,7 @@ void CloseTask(int task_id) {
 
 void ShowTalkBackSettings() {
   arc::mojom::IntentHelperInstance* intent_helper_instance =
-      GetIntentHelperInstance(kSendBroadcastMinVersion, kSendBroadcastStr);
+      GET_INTENT_HELPER_INSTANCE(SendBroadcast);
   if (!intent_helper_instance)
     return;
 
@@ -381,8 +346,7 @@ bool CanHandleResolution(content::BrowserContext* context,
     return false;
   }
 
-  arc::mojom::AppInstance* app_instance =
-      GetAppInstance(kCanHandleResolutionMinVersion, kCanHandleResolutionStr);
+  arc::mojom::AppInstance* app_instance = GET_APP_INSTANCE(CanHandleResolution);
   if (!app_instance)
     return false;
 
@@ -394,8 +358,7 @@ bool CanHandleResolution(content::BrowserContext* context,
 void UninstallPackage(const std::string& package_name) {
   VLOG(2) << "Uninstalling " << package_name;
 
-  arc::mojom::AppInstance* app_instance =
-      GetAppInstance(kUninstallPackageMinVersion, kUninstallPackageStr);
+  arc::mojom::AppInstance* app_instance = GET_APP_INSTANCE(UninstallPackage);
   if (!app_instance)
     return;
 
@@ -421,8 +384,7 @@ void UninstallArcApp(const std::string& app_id, Profile* profile) {
 void RemoveCachedIcon(const std::string& icon_resource_id) {
   VLOG(2) << "Removing icon " << icon_resource_id;
 
-  arc::mojom::AppInstance* app_instance =
-      GetAppInstance(kRemoveIconMinVersion, kRemoveIconStr);
+  arc::mojom::AppInstance* app_instance = GET_APP_INSTANCE(RemoveCachedIcon);
   if (!app_instance)
     return;
 
@@ -434,7 +396,7 @@ bool ShowPackageInfo(const std::string& package_name) {
   VLOG(2) << "Showing package info for " << package_name;
 
   arc::mojom::AppInstance* app_instance =
-      GetAppInstance(kShowPackageInfoMinVersion, kShowPackageInfoStr);
+      GET_APP_INSTANCE(ShowPackageInfoDeprecated);
   if (!app_instance)
     return false;
 
@@ -448,7 +410,7 @@ bool ShowPackageInfoOnPage(const std::string& package_name,
   VLOG(2) << "Showing package info for " << package_name;
 
   arc::mojom::AppInstance* app_instance =
-      GetAppInstance(kShowPackageInfoOnPageMinVersion, kShowPackageInfoStr);
+      GET_APP_INSTANCE(ShowPackageInfoOnPage);
   if (!app_instance)
     return false;
 
