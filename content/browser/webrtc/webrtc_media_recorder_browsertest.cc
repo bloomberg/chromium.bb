@@ -20,10 +20,12 @@ static struct EncodingParameters {
   bool disable_accelerator;
   std::string mime_type;
 } const kEncodingParameters[] = {
-    {true, "video/webm;codecs=VP8"},   {true, "video/webm;codecs=VP9"},
-    {true, "video/webm;codecs=avc1"},  {true, "video/x-matroska;codecs=AVC1"},
-    {false, "video/webm;codecs=VP8"},  {false, "video/webm;codecs=VP9"},
-    {false, "video/webm;codecs=H264"},
+    {true, "video/webm;codecs=VP8"},
+    {true, "video/webm;codecs=VP9"},
+    {true, "video/x-matroska;codecs=AVC1"},
+    {false, "video/webm;codecs=VP8"},
+    {false, "video/webm;codecs=VP9"},
+    {false, "video/x-matroska;codecs=AVC1"},
 };
 
 }  // namespace
