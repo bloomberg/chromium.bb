@@ -13,7 +13,7 @@ namespace blink {
 
 PresentationConnectionList::PresentationConnectionList(
     ExecutionContext* context)
-    : m_executionContext(context) {}
+    : ContextClient(context) {}
 
 const AtomicString& PresentationConnectionList::interfaceName() const {
   return EventTargetNames::PresentationConnectionList;
@@ -51,8 +51,8 @@ bool PresentationConnectionList::isEmpty() {
 
 DEFINE_TRACE(PresentationConnectionList) {
   visitor->trace(m_connections);
-  visitor->trace(m_executionContext);
   EventTargetWithInlineData::trace(visitor);
+  ContextClient::trace(visitor);
 }
 
 }  // namespace blink

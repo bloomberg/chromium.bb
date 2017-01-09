@@ -96,9 +96,9 @@ MediaStream* MediaStream::create(ExecutionContext* context,
 
 MediaStream::MediaStream(ExecutionContext* context,
                          MediaStreamDescriptor* streamDescriptor)
-    : m_descriptor(streamDescriptor),
-      m_scheduledEventTimer(this, &MediaStream::scheduledEventTimerFired),
-      m_executionContext(context) {
+    : ContextClient(context),
+      m_descriptor(streamDescriptor),
+      m_scheduledEventTimer(this, &MediaStream::scheduledEventTimerFired) {
   m_descriptor->setClient(this);
 
   size_t numberOfAudioTracks = m_descriptor->numberOfAudioComponents();
@@ -127,8 +127,8 @@ MediaStream::MediaStream(ExecutionContext* context,
 MediaStream::MediaStream(ExecutionContext* context,
                          const MediaStreamTrackVector& audioTracks,
                          const MediaStreamTrackVector& videoTracks)
-    : m_scheduledEventTimer(this, &MediaStream::scheduledEventTimerFired),
-      m_executionContext(context) {
+    : ContextClient(context),
+      m_scheduledEventTimer(this, &MediaStream::scheduledEventTimerFired) {
   MediaStreamComponentVector audioComponents;
   MediaStreamComponentVector videoComponents;
 
@@ -295,7 +295,7 @@ void MediaStream::trackEnded() {
 }
 
 void MediaStream::streamEnded() {
-  if (!m_executionContext || m_executionContext->isContextDestroyed())
+  if (!getExecutionContext())
     return;
 
   if (active()) {
@@ -309,9 +309,9 @@ bool MediaStream::addEventListenerInternal(
     EventListener* listener,
     const AddEventListenerOptionsResolved& options) {
   if (eventType == EventTypeNames::active)
-    UseCounter::count(m_executionContext, UseCounter::MediaStreamOnActive);
+    UseCounter::count(getExecutionContext(), UseCounter::MediaStreamOnActive);
   else if (eventType == EventTypeNames::inactive)
-    UseCounter::count(m_executionContext, UseCounter::MediaStreamOnInactive);
+    UseCounter::count(getExecutionContext(), UseCounter::MediaStreamOnInactive);
 
   return EventTargetWithInlineData::addEventListenerInternal(eventType,
                                                              listener, options);
@@ -323,11 +323,11 @@ const AtomicString& MediaStream::interfaceName() const {
 
 void MediaStream::addRemoteTrack(MediaStreamComponent* component) {
   DCHECK(component);
-  if (!m_executionContext || m_executionContext->isContextDestroyed())
+  if (!getExecutionContext())
     return;
 
   MediaStreamTrack* track =
-      MediaStreamTrack::create(m_executionContext, component);
+      MediaStreamTrack::create(getExecutionContext(), component);
   switch (component->source()->type()) {
     case MediaStreamSource::TypeAudio:
       m_audioTracks.push_back(track);
@@ -350,7 +350,7 @@ void MediaStream::addRemoteTrack(MediaStreamComponent* component) {
 
 void MediaStream::removeRemoteTrack(MediaStreamComponent* component) {
   DCHECK(component);
-  if (!m_executionContext || m_executionContext->isContextDestroyed())
+  if (!getExecutionContext())
     return;
 
   MediaStreamTrackVector* tracks = 0;
@@ -395,7 +395,7 @@ void MediaStream::scheduleDispatchEvent(Event* event) {
 }
 
 void MediaStream::scheduledEventTimerFired(TimerBase*) {
-  if (!m_executionContext || m_executionContext->isContextDestroyed())
+  if (!getExecutionContext())
     return;
 
   HeapVector<Member<Event>> events;
@@ -417,8 +417,8 @@ DEFINE_TRACE(MediaStream) {
   visitor->trace(m_videoTracks);
   visitor->trace(m_descriptor);
   visitor->trace(m_scheduledEvents);
-  visitor->trace(m_executionContext);
   EventTargetWithInlineData::trace(visitor);
+  ContextClient::trace(visitor);
   MediaStreamDescriptorClient::trace(visitor);
 }
 

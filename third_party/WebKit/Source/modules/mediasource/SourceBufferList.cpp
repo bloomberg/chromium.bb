@@ -30,7 +30,6 @@
 
 #include "modules/mediasource/SourceBufferList.h"
 
-#include "core/dom/ExecutionContext.h"
 #include "core/events/GenericEventQueue.h"
 #include "modules/EventModules.h"
 #include "modules/mediasource/SourceBuffer.h"
@@ -39,7 +38,7 @@ namespace blink {
 
 SourceBufferList::SourceBufferList(ExecutionContext* context,
                                    GenericEventQueue* asyncEventQueue)
-    : m_executionContext(context), m_asyncEventQueue(asyncEventQueue) {}
+    : ContextClient(context), m_asyncEventQueue(asyncEventQueue) {}
 
 SourceBufferList::~SourceBufferList() {}
 
@@ -79,15 +78,11 @@ const AtomicString& SourceBufferList::interfaceName() const {
   return EventTargetNames::SourceBufferList;
 }
 
-ExecutionContext* SourceBufferList::getExecutionContext() const {
-  return m_executionContext;
-}
-
 DEFINE_TRACE(SourceBufferList) {
-  visitor->trace(m_executionContext);
   visitor->trace(m_asyncEventQueue);
   visitor->trace(m_list);
   EventTargetWithInlineData::trace(visitor);
+  ContextClient::trace(visitor);
 }
 
 }  // namespace blink

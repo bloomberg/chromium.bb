@@ -39,6 +39,7 @@ namespace blink {
 class ExceptionState;
 
 class MODULES_EXPORT MediaStream final : public EventTargetWithInlineData,
+                                         public ContextClient,
                                          public URLRegistrable,
                                          public MediaStreamDescriptorClient {
   USING_GARBAGE_COLLECTED_MIXIN(MediaStream);
@@ -79,7 +80,7 @@ class MODULES_EXPORT MediaStream final : public EventTargetWithInlineData,
   // EventTarget
   const AtomicString& interfaceName() const override;
   ExecutionContext* getExecutionContext() const override {
-    return m_executionContext;
+    return ContextClient::getExecutionContext();
   }
 
   // URLRegistrable
@@ -114,10 +115,9 @@ class MODULES_EXPORT MediaStream final : public EventTargetWithInlineData,
 
   Timer<MediaStream> m_scheduledEventTimer;
   HeapVector<Member<Event>> m_scheduledEvents;
-  Member<ExecutionContext> m_executionContext;
 };
 
-typedef HeapVector<Member<MediaStream>> MediaStreamVector;
+using MediaStreamVector = HeapVector<Member<MediaStream>>;
 
 MediaStream* toMediaStream(MediaStreamDescriptor*);
 

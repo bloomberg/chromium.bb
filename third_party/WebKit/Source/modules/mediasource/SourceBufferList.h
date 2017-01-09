@@ -31,6 +31,7 @@
 #ifndef SourceBufferList_h
 #define SourceBufferList_h
 
+#include "core/dom/ExecutionContext.h"
 #include "modules/EventTargetModules.h"
 #include "platform/heap/Handle.h"
 
@@ -39,8 +40,10 @@ namespace blink {
 class SourceBuffer;
 class GenericEventQueue;
 
-class SourceBufferList final : public EventTargetWithInlineData {
+class SourceBufferList final : public EventTargetWithInlineData,
+                               public ContextClient {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(SourceBufferList);
 
  public:
   static SourceBufferList* create(ExecutionContext* context,
@@ -69,7 +72,9 @@ class SourceBufferList final : public EventTargetWithInlineData {
 
   // EventTarget interface
   const AtomicString& interfaceName() const override;
-  ExecutionContext* getExecutionContext() const override;
+  ExecutionContext* getExecutionContext() const override {
+    return ContextClient::getExecutionContext();
+  }
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -78,7 +83,6 @@ class SourceBufferList final : public EventTargetWithInlineData {
 
   void scheduleEvent(const AtomicString&);
 
-  Member<ExecutionContext> m_executionContext;
   Member<GenericEventQueue> m_asyncEventQueue;
 
   HeapVector<Member<SourceBuffer>> m_list;
