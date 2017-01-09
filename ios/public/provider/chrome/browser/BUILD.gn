@@ -43,17 +43,4 @@ source_set("test_support") {
     "//ios/public/provider/chrome/browser/voice:test_support",
     "//testing/gtest",
   ]
-
-  # TODO(sdefresne): remove once downstream has been converted to depends
-  # directly on the sub-targets.
-  public_deps = [
-    "//ios/public/provider/chrome/browser/distribution:test_support",
-    "//ios/public/provider/chrome/browser/images:test_support",
-    "//ios/public/provider/chrome/browser/native_app_launcher:test_support",
-    "//ios/public/provider/chrome/browser/omaha:test_support",
-    "//ios/public/provider/chrome/browser/signin:test_support",
-    "//ios/public/provider/chrome/browser/ui:test_support",
-    "//ios/public/provider/chrome/browser/user_feedback:test_support",
-    "//ios/public/provider/chrome/browser/voice:test_support",
-  ]
 }
