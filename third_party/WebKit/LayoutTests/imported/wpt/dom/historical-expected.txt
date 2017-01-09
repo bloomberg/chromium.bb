@@ -27,6 +27,10 @@ PASS Historical DOM features must be removed: renameNode
 PASS Historical DOM features must be removed: defaultCharset 
 PASS Historical DOM features must be removed: height 
 PASS Historical DOM features must be removed: width 
+PASS Historical DOM features must be removed: commands 
+PASS Historical DOM features must be removed: cssElementMap 
+PASS Historical DOM features must be removed: async 
+PASS document.load 
 PASS DOMImplementation.getFeature() must be nuked. 
 PASS Historical DOM features must be removed: schemaTypeInfo 
 PASS Historical DOM features must be removed: setIdAttribute 

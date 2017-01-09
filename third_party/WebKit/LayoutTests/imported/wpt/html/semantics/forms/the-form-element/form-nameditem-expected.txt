@@ -15,5 +15,6 @@ PASS Input should only be a named property on the innermost form that contains i
 FAIL Trying to set an expando that would shadow an already-existing named property assert_false: expected false got true
 FAIL Trying to set an expando that shadows a named property that gets added later assert_equals: expected (number) 5 but got (object) Element node <input name="new-name"></input>
 FAIL Trying to set a non-configurable expando that shadows a named property that gets added later assert_equals: expected (number) 5 but got (object) Element node <input name="new-name2"></input>
+PASS Past names map should work correctly 
 Harness: the test ran to completion.
 

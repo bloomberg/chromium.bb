@@ -802,7 +802,12 @@ class Port(object):
             assert manifest_items is not None
             # For most testharness tests, manifest_items looks like:
             # [["/some/test/path.html", {}]]
-            if len(manifest_items) != 1 or manifest_items[0][0][1:] != path_in_wpt:
+            if len(manifest_items) != 1:
+                continue
+            # TODO(qyearsley): Simplify this after http://crbug.com/678077 is resolved.
+            item = manifest_items[0]
+            url = item['url'] if 'url' in item else item[0]
+            if url[1:] != path_in_wpt:
                 # TODO(tkent): foo.any.js and bar.worker.js should be accessed
                 # as foo.any.html, foo.any.worker, and bar.worker with WPTServe.
                 continue
@@ -822,7 +827,11 @@ class Port(object):
         and is assumed to be a list of the format [url, extras],
         or [url, references, extras] for reftests, or None if not found.
         """
-        items = self._wpt_manifest()['items']
+        # TODO(qyearsley): Simplify this after http://crbug.com/678077 is resolved.
+        if 'local_changes' in self._wpt_manifest():
+            items = self._wpt_manifest()['local_changes']['items']
+        else:
+            items = self._wpt_manifest()['items']
         if path_in_wpt in items['manual']:
             return items['manual'][path_in_wpt]
         elif path_in_wpt in items['reftest']:

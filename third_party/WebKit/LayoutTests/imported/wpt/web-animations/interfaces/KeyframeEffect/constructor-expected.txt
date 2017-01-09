@@ -11,7 +11,7 @@ FAIL easing values are parsed correctly when passed to the KeyframeEffectReadOnl
 PASS easing values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in KeyframeTimingOptions 
 FAIL composite values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in property-indexed keyframes effect.getKeyframes is not a function
 FAIL composite values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in regular keyframes effect.getKeyframes is not a function
-FAIL composite values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in KeyframeTimingOptions effect.getKeyframes is not a function
+FAIL composite value is absent if the composite operation specified on the keyframe effect is being used effect.getKeyframes is not a function
 FAIL a KeyframeEffectReadOnly can be constructed with a one property two value property-indexed keyframes specification effect.getKeyframes is not a function
 FAIL a KeyframeEffectReadOnly constructed with a one property two value property-indexed keyframes specification roundtrips effect.getKeyframes is not a function
 FAIL a KeyframeEffectReadOnly can be constructed with a one shorthand property two value property-indexed keyframes specification effect.getKeyframes is not a function
