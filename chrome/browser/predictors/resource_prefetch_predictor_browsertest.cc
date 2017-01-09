@@ -33,6 +33,7 @@ namespace {
 
 const char kFooHost[] = "foo.com";
 const char kBarHost[] = "bar.com";
+const char kBazHost[] = "baz.com";
 
 const char kImageMime[] = "image/png";
 const char kStyleMime[] = "text/css";
@@ -62,6 +63,8 @@ const char kScriptInnerHtmlPath[] = "/predictors/inner_html.js";
 const char kHtmlXHRPath[] = "/predictors/xhr.html";
 const char kScriptXHRPath[] = "/predictors/xhr.js";
 const char kHtmlIframePath[] = "/predictors/html_iframe.html";
+const char kHtmlJavascriptRedirectPath[] =
+    "/predictors/javascript_redirect.html";
 
 struct ResourceSummary {
   ResourceSummary()
@@ -90,6 +93,7 @@ struct RedirectEdge {
   // This response code should be returned by previous url in the chain.
   net::HttpStatusCode code;
   GURL url;
+  bool is_client_side;
 };
 
 // Helper class to track and allow waiting for ResourcePrefetchPredictor
@@ -185,6 +189,24 @@ void CompareSubresources(std::vector<URLRequestSummary> actual_subresources,
 
 std::string CreateVersionedETag(size_t version, const std::string& path) {
   return base::StringPrintf("'%zu%s'", version, path.c_str());
+}
+
+GURL GetRequestURL(const net::test_server::HttpRequest& request) {
+  GURL resource_url = request.GetURL();
+  // Retrieve the host that was used in the request because
+  // resource_url contains a resolved host (e.g. 127.0.0.1).
+  if (request.headers.find("Host") != request.headers.end()) {
+    auto host_port_pair =
+        net::HostPortPair::FromString(request.headers.at("Host"));
+    GURL::Replacements replace_host;
+    replace_host.SetHostStr(host_port_pair.host());
+    resource_url = resource_url.ReplaceComponents(replace_host);
+  } else {
+    ADD_FAILURE() << "Host header was not found in a HttpRequest to url: "
+                  << resource_url.spec();
+  }
+
+  return resource_url;
 }
 
 }  // namespace
@@ -304,11 +326,15 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
     PrefetchURL(main_frame_url);
     // To be sure that the browser send no requests to the server after
     // prefetching.
+    NavigateToURLAndCheckSubresourcesAllCached(main_frame_url);
+  }
+
+  void NavigateToURLAndCheckSubresourcesAllCached(const GURL& navigation_url) {
     for (auto& kv : resources_) {
       if (kv.second.is_observable)
         kv.second.is_prohibited = true;
     }
-    NavigateToURLAndCheckSubresources(main_frame_url);
+    NavigateToURLAndCheckSubresources(navigation_url);
     for (auto& kv : resources_) {
       if (kv.second.is_observable)
         kv.second.is_prohibited = false;
@@ -316,14 +342,15 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
   }
 
   void NavigateToURLAndCheckSubresources(
-      const GURL& main_frame_url,
+      const GURL& navigation_url,
       WindowOpenDisposition disposition = WindowOpenDisposition::CURRENT_TAB) {
-    GURL endpoint_url = GetRedirectEndpoint(main_frame_url);
+    GURL initial_url = GetLastClientSideRedirectEndpoint(navigation_url);
+    GURL main_frame_url = GetRedirectEndpoint(navigation_url);
     std::vector<URLRequestSummary> url_request_summaries;
     for (const auto& kv : resources_) {
       if (kv.second.is_observable) {
         url_request_summaries.push_back(
-            GetURLRequestSummaryForResource(endpoint_url, kv.second));
+            GetURLRequestSummaryForResource(main_frame_url, kv.second));
       }
     }
 
@@ -331,14 +358,15 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
         disposition == WindowOpenDisposition::CURRENT_TAB;
 
     LearningObserver observer(
-        predictor_, UpdateAndGetVisitCount(main_frame_url),
-        CreatePageRequestSummary(endpoint_url.spec(), main_frame_url.spec(),
+        predictor_, UpdateAndGetVisitCount(initial_url),
+        CreatePageRequestSummary(main_frame_url.spec(), initial_url.spec(),
                                  url_request_summaries),
         match_navigation_id);
     ui_test_utils::NavigateToURLWithDisposition(
-        browser(), main_frame_url, disposition,
+        browser(), navigation_url, disposition,
         ui_test_utils::BROWSER_TEST_NONE);
     observer.Wait();
+
     for (auto& kv : resources_) {
       if (kv.second.is_observable)
         kv.second.request.was_cached = true;
@@ -355,6 +383,10 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
       if (kv.second.is_observable)
         kv.second.request.was_cached = true;
     }
+  }
+
+  void TryToPrefetchURL(const GURL& main_frame_url) {
+    predictor_->StartPrefetching(main_frame_url, PrefetchOrigin::EXTERNAL);
   }
 
   ResourceSummary* AddResource(const GURL& resource_url,
@@ -490,6 +522,21 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
     return current;
   }
 
+  GURL GetLastClientSideRedirectEndpoint(const GURL& initial_url) const {
+    GURL last_client_side_redirect_url = initial_url;
+    GURL current = initial_url;
+    while (true) {
+      std::map<GURL, RedirectEdge>::const_iterator it =
+          redirects_.find(current);
+      if (it == redirects_.end())
+        break;
+      current = it->second.url;
+      if (it->second.is_client_side)
+        last_client_side_redirect_url = current;
+    }
+    return last_client_side_redirect_url;
+  }
+
   void MonitorResourceRequest(
       const net::test_server::HttpRequest& request) const {
     std::map<GURL, ResourceSummary>::const_iterator resource_it =
@@ -512,22 +559,8 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
   //      ETag values match, the handler responds with a HTTP 304 status.
   std::unique_ptr<net::test_server::HttpResponse> HandleResourceRequest(
       const net::test_server::HttpRequest& request) const {
-    GURL resource_url = request.GetURL();
-    // Retrieve the host that was used in the request because
-    // resource_url contains a resolved host (e.g. 127.0.0.1).
-    if (request.headers.find("Host") != request.headers.end()) {
-      auto host_port_pair =
-          net::HostPortPair::FromString(request.headers.at("Host"));
-      GURL::Replacements replace_host;
-      replace_host.SetHostStr(host_port_pair.host());
-      resource_url = resource_url.ReplaceComponents(replace_host);
-    } else {
-      ADD_FAILURE() << "Host header was not found in a HttpRequest to url: "
-                    << resource_url.spec();
-    }
-
     std::map<GURL, ResourceSummary>::const_iterator resource_it =
-        resources_.find(resource_url);
+        resources_.find(GetRequestURL(request));
     if (resource_it == resources_.end())
       return nullptr;
 
@@ -560,6 +593,7 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
       http_response->AddCustomHeader("Cache-Control", "no-cache");
     else
       http_response->AddCustomHeader("Cache-Control", "max-age=2147483648");
+
     return std::move(http_response);
   }
 
@@ -570,8 +604,8 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<net::test_server::HttpResponse> HandleRedirectRequest(
       const net::test_server::HttpRequest& request) const {
     std::map<GURL, RedirectEdge>::const_iterator redirect_it =
-        redirects_.find(request.GetURL());
-    if (redirect_it == redirects_.end())
+        redirects_.find(GetRequestURL(request));
+    if (redirect_it == redirects_.end() || redirect_it->second.is_client_side)
       return nullptr;
 
     auto http_response =
@@ -606,21 +640,25 @@ IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest, Simple) {
 }
 
 IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest, Redirect) {
-  AddRedirectChain(GetURL(kRedirectPath), {{net::HTTP_MOVED_PERMANENTLY,
-                                            GetURL(kHtmlSubresourcesPath)}});
+  GURL initial_url = embedded_test_server()->GetURL(kFooHost, kRedirectPath);
+  AddRedirectChain(initial_url, {{net::HTTP_MOVED_PERMANENTLY,
+                                  GetURL(kHtmlSubresourcesPath)}});
   AddResource(GetURL(kImagePath), content::RESOURCE_TYPE_IMAGE, net::LOWEST);
   AddResource(GetURL(kStylePath), content::RESOURCE_TYPE_STYLESHEET,
               net::HIGHEST);
   AddResource(GetURL(kScriptPath), content::RESOURCE_TYPE_SCRIPT, net::MEDIUM);
   AddResource(GetURL(kFontPath), content::RESOURCE_TYPE_FONT_RESOURCE,
               net::HIGHEST);
-  TestLearningAndPrefetching(GetURL(kRedirectPath));
+  TestLearningAndPrefetching(initial_url);
 }
 
 IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest, RedirectChain) {
-  AddRedirectChain(GetURL(kRedirectPath),
-                   {{net::HTTP_FOUND, GetURL(kRedirectPath2)},
-                    {net::HTTP_MOVED_PERMANENTLY, GetURL(kRedirectPath3)},
+  GURL initial_url = embedded_test_server()->GetURL(kFooHost, kRedirectPath);
+  AddRedirectChain(initial_url,
+                   {{net::HTTP_FOUND,
+                     embedded_test_server()->GetURL(kBarHost, kRedirectPath2)},
+                    {net::HTTP_MOVED_PERMANENTLY,
+                     embedded_test_server()->GetURL(kBazHost, kRedirectPath3)},
                     {net::HTTP_FOUND, GetURL(kHtmlSubresourcesPath)}});
   AddResource(GetURL(kImagePath), content::RESOURCE_TYPE_IMAGE, net::LOWEST);
   AddResource(GetURL(kStylePath), content::RESOURCE_TYPE_STYLESHEET,
@@ -628,13 +666,14 @@ IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest, RedirectChain) {
   AddResource(GetURL(kScriptPath), content::RESOURCE_TYPE_SCRIPT, net::MEDIUM);
   AddResource(GetURL(kFontPath), content::RESOURCE_TYPE_FONT_RESOURCE,
               net::HIGHEST);
-  TestLearningAndPrefetching(GetURL(kRedirectPath));
+  TestLearningAndPrefetching(initial_url);
 }
 
 IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
                        HttpToHttpsRedirect) {
   EnableHttpsServer();
-  AddRedirectChain(GetURL(kRedirectPath),
+  GURL initial_url = embedded_test_server()->GetURL(kFooHost, kRedirectPath);
+  AddRedirectChain(initial_url,
                    {{net::HTTP_MOVED_PERMANENTLY,
                      https_server()->GetURL(kHtmlSubresourcesPath)}});
   AddResource(https_server()->GetURL(kImagePath), content::RESOURCE_TYPE_IMAGE,
@@ -645,7 +684,7 @@ IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
               content::RESOURCE_TYPE_SCRIPT, net::MEDIUM);
   AddResource(https_server()->GetURL(kFontPath),
               content::RESOURCE_TYPE_FONT_RESOURCE, net::HIGHEST);
-  TestLearningAndPrefetching(GetURL(kRedirectPath));
+  TestLearningAndPrefetching(initial_url);
 }
 
 IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
@@ -795,6 +834,43 @@ IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest, AlwaysRevalidate) {
   for (auto& resource : resources)
     resource->request.always_revalidate = true;
   TestLearningAndPrefetching(GetURL(kHtmlSubresourcesPath));
+}
+
+// Client-side redirects currently aren't tracked by ResourcePrefetchPredictor.
+// A client-side redirect initiates a new navigation to the redirect destination
+// URL and aborts the current navigation so that the OnLoad event is not fired.
+IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
+                       JavascriptRedirectsAreNotHandled) {
+  std::string redirect_path_with_query =
+      std::string(kHtmlJavascriptRedirectPath) + "?url=" +
+      GetURL(kHtmlSubresourcesPath).spec();
+  GURL initial_url =
+      embedded_test_server()->GetURL(kBarHost, redirect_path_with_query);
+  AddRedirectChain(initial_url, {{net::HTTP_TEMPORARY_REDIRECT,
+                                  GetURL(kHtmlSubresourcesPath), true}});
+  AddResource(GetURL(kImagePath), content::RESOURCE_TYPE_IMAGE, net::LOWEST);
+  AddResource(GetURL(kStylePath), content::RESOURCE_TYPE_STYLESHEET,
+              net::HIGHEST);
+  AddResource(GetURL(kScriptPath), content::RESOURCE_TYPE_SCRIPT, net::MEDIUM);
+  AddResource(GetURL(kFontPath), content::RESOURCE_TYPE_FONT_RESOURCE,
+              net::HIGHEST);
+
+  // Two navigations will occur. LearningObserver will get events only for the
+  // second navigation because the first one will be aborted.
+  NavigateToURLAndCheckSubresources(initial_url);
+  ClearCache();
+  // It is needed to have at least two resource hits to trigger prefetch.
+  NavigateToURLAndCheckSubresources(initial_url);
+  ClearCache();
+  // Prefetching of |initial_url| has no effect because there is no entry in
+  // the predictor database corresponding the client-side redirect.
+  TryToPrefetchURL(initial_url);
+  NavigateToURLAndCheckSubresources(initial_url);
+  ClearCache();
+  // But the predictor database contains all subresources for the endpoint url
+  // so this prefetch works.
+  PrefetchURL(GetURL(kHtmlSubresourcesPath));
+  NavigateToURLAndCheckSubresourcesAllCached(GetURL(kHtmlSubresourcesPath));
 }
 
 }  // namespace predictors

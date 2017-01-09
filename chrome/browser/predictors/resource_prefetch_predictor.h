@@ -50,9 +50,10 @@ class ResourcePrefetcherManager;
 // The overall flow of the resource prefetching algorithm is as follows:
 //
 // * ResourcePrefetchPredictorObserver - Listens for URL requests, responses and
-//   redirects on the IO thread (via ResourceDispatcherHostDelegate) and posts
-//   tasks to the ResourcePrefetchPredictor on the UI thread. This is owned by
-//   the ProfileIOData for the profile.
+//   redirects (client-side redirects are not supported) on the IO thread (via
+//   ResourceDispatcherHostDelegate) and posts tasks to the
+//   ResourcePrefetchPredictor on the UI thread. This is owned by the
+//   ProfileIOData for the profile.
 // * ResourcePrefetchPredictorTables - Persists ResourcePrefetchPredictor data
 //   to a sql database. Runs entirely on the DB thread. Owned by the
 //   PredictorDatabase.
