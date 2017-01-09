@@ -101,6 +101,7 @@ const CGFloat kDistillationIndicatorSize = 18;
 - (void)setDistillationState:
     (ReadingListEntry::DistillationState)distillationState {
   self.displayedCell.distillationState = distillationState;
+  self.displayedCell.accessibilityLabel = [self accessibilityLabel];
   _distillationState = distillationState;
 }
 
@@ -117,16 +118,31 @@ const CGFloat kDistillationIndicatorSize = 18;
   cell.delegate = self;
   cell.distillationState = _distillationState;
   cell.isAccessibilityElement = YES;
-  cell.accessibilityLabel =
-      l10n_util::GetNSStringF(IDS_IOS_READING_LIST_ENTRY_ACCESSIBILITY_LABEL,
-                              base::SysNSStringToUTF16(self.text),
-                              base::SysNSStringToUTF16(self.detailText));
+  cell.accessibilityLabel = [self accessibilityLabel];
 }
 
 #pragma mark - ReadingListCellDelegate
 
 - (void)readingListCellWillPrepareForReload:(ReadingListCell*)cell {
   self.displayedCell = nil;
+}
+
+#pragma mark - Private
+
+- (NSString*)accessibilityLabel {
+  NSString* accessibilityState = nil;
+  if (self.distillationState == ReadingListEntry::PROCESSED) {
+    accessibilityState = l10n_util::GetNSString(
+        IDS_IOS_READING_LIST_ACCESSIBILITY_STATE_DOWNLOADED);
+  } else {
+    accessibilityState = l10n_util::GetNSString(
+        IDS_IOS_READING_LIST_ACCESSIBILITY_STATE_NOT_DOWNLOADED);
+  }
+
+  return l10n_util::GetNSStringF(IDS_IOS_READING_LIST_ENTRY_ACCESSIBILITY_LABEL,
+                                 base::SysNSStringToUTF16(self.text),
+                                 base::SysNSStringToUTF16(accessibilityState),
+                                 base::SysNSStringToUTF16(self.detailText));
 }
 
 #pragma mark - NSObject
