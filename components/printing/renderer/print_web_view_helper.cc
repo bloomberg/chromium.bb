@@ -347,6 +347,7 @@ bool PrintingFrameHasPageSizeStyle(blink::WebLocalFrame* frame,
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
+#if BUILDFLAG(ENABLE_PRINTING)
 // Disable scaling when either:
 // - The PDF specifies disabling scaling.
 // - All the pages in the PDF are the same size,
@@ -389,6 +390,7 @@ bool PDFShouldDisableScaling(blink::WebLocalFrame* frame,
   return PDFShouldDisableScalingBasedOnPreset(preset_options, params,
                                               ignore_page_size);
 }
+#endif
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
 MarginType GetMarginsForPdf(blink::WebLocalFrame* frame,
