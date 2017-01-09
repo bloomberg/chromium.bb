@@ -26,7 +26,6 @@ struct Suggestion;
 
 extern const base::Feature kAutofillCreditCardAssist;
 extern const base::Feature kAutofillCreditCardSigninPromo;
-extern const base::Feature kAutofillProfileCleanup;
 extern const base::Feature kAutofillScanCardholderName;
 extern const base::Feature kAutofillCreditCardPopupLayout;
 extern const char kCreditCardSigninPromoImpressionLimitParamKey[];
@@ -41,9 +40,6 @@ bool IsAutofillEnabled(const PrefService* pref_service);
 // still want to run detection code for metrics purposes. This experiment just
 // disables providing suggestions.
 bool IsInAutofillSuggestionsDisabledExperiment();
-
-// Returns whether the Autofill profile cleanup feature is enabled.
-bool IsAutofillProfileCleanupEnabled();
 
 // Returns whether the Autofill credit card signin promo should be shown.
 bool IsAutofillCreditCardSigninPromoEnabled();

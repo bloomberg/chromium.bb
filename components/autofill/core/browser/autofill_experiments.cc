@@ -28,8 +28,6 @@ const base::Feature kAutofillCreditCardAssist{
     "AutofillCreditCardAssist", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillCreditCardSigninPromo{
     "AutofillCreditCardSigninPromo", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kAutofillProfileCleanup{"AutofillProfileCleanup",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillScanCardholderName{
     "AutofillScanCardholderName", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillCreditCardPopupLayout{
@@ -69,10 +67,6 @@ bool IsInAutofillSuggestionsDisabledExperiment() {
   std::string group_name =
       base::FieldTrialList::FindFullName("AutofillEnabled");
   return group_name == "Disabled";
-}
-
-bool IsAutofillProfileCleanupEnabled() {
-  return base::FeatureList::IsEnabled(kAutofillProfileCleanup);
 }
 
 bool IsAutofillCreditCardSigninPromoEnabled() {

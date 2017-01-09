@@ -538,9 +538,8 @@ class PersonalDataManager : public KeyedService,
   // An observer to listen for changes to prefs::kAutofillWalletImportEnabled.
   std::unique_ptr<BooleanPrefMember> wallet_enabled_pref_;
 
-  // Set to true if autofill profile deduplication is enabled and needs to be
-  // performed on the next data refresh.
-  bool is_autofill_profile_dedupe_pending_ = false;
+  // True if autofill profile cleanup needs to be performed.
+  bool is_autofill_profile_cleanup_pending_ = false;
 
 #if defined(OS_ANDROID)
   // The context for the request to be used to fetch libaddressinput's address

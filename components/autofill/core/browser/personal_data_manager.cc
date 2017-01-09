@@ -292,7 +292,15 @@ void PersonalDataManager::Init(scoped_refptr<AutofillWebDataService> database,
   LoadCreditCards();
 
   database_->AddObserver(this);
-  is_autofill_profile_dedupe_pending_ = IsAutofillProfileCleanupEnabled();
+
+  // Check if profile cleanup has already been performed this major version.
+  is_autofill_profile_cleanup_pending_ =
+      pref_service_->GetInteger(prefs::kAutofillLastVersionDeduped) >=
+      atoi(version_info::GetVersionNumber().c_str());
+  DVLOG(1) << "Autofill profile cleanup "
+           << (is_autofill_profile_cleanup_pending_ ? "needs to be"
+                                                    : "has already been")
+           << " performed for this version";
 }
 
 PersonalDataManager::~PersonalDataManager() {
@@ -309,7 +317,7 @@ void PersonalDataManager::OnSyncServiceInitialized(
     syncer::SyncService* sync_service) {
   // We want to know when, if at all, we need to run autofill profile de-
   // duplication: now or after waiting until sync has started.
-  if (!is_autofill_profile_dedupe_pending_) {
+  if (!is_autofill_profile_cleanup_pending_) {
     // De-duplication isn't enabled.
     return;
   }
@@ -419,7 +427,8 @@ void PersonalDataManager::AutofillMultipleChanged() {
 }
 
 void PersonalDataManager::SyncStarted(syncer::ModelType model_type) {
-  if (model_type == syncer::AUTOFILL_PROFILE) {
+  if (model_type == syncer::AUTOFILL_PROFILE &&
+      is_autofill_profile_cleanup_pending_) {
     // This runs as a one-time fix, tracked in syncable prefs. If it has already
     // run, it is a NOP (other than checking the pref).
     ApplyProfileUseDatesFix();
@@ -1681,11 +1690,10 @@ void PersonalDataManager::ApplyProfileUseDatesFix() {
 }
 
 bool PersonalDataManager::ApplyDedupingRoutine() {
-  if (!is_autofill_profile_dedupe_pending_)
+  if (!is_autofill_profile_cleanup_pending_)
     return false;
 
-  DCHECK(IsAutofillProfileCleanupEnabled());
-  is_autofill_profile_dedupe_pending_ = false;
+  is_autofill_profile_cleanup_pending_ = false;
 
   // No need to de-duplicate if there are less than two profiles.
   if (web_profiles_.size() < 2) {
