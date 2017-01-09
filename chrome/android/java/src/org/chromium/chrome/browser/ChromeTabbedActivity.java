@@ -1202,7 +1202,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 currentTab.loadUrl(new LoadUrlParams(
                         UrlConstants.RECENT_TABS_URL,
                         PageTransition.AUTO_BOOKMARK));
-                RecordUserAction.record("MobileMenuOpenTabs");
+                RecordUserAction.record("MobileMenuRecentTabs");
             }
         } else if (id == R.id.close_all_tabs_menu_id) {
             // Close both incognito and normal tabs

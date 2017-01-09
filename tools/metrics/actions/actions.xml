@@ -9679,6 +9679,7 @@ should be able to be added at any place in this file.
 <action name="MobileMenuOpenTabs">
   <owner>aurimas@chromium.org</owner>
   <description>User pressed 'Recent tabs' in the app menu.</description>
+  <obsolete>This action was renamed to MobileMenuRecentTabs.</obsolete>
 </action>
 
 <action name="MobileMenuPrint">
@@ -9690,6 +9691,11 @@ should be able to be added at any place in this file.
   <owner>aurimas@chromium.org</owner>
   <description>User pressed 'Quit' in the app menu.</description>
   <obsolete>This menu item was never added to the app menu.</obsolete>
+</action>
+
+<action name="MobileMenuRecentTabs">
+  <owner>justincohen@chromium.org</owner>
+  <description>User pressed 'Recent tabs' in the app menu.</description>
 </action>
 
 <action name="MobileMenuReload">

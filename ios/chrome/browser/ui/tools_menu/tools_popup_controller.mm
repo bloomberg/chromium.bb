@@ -203,8 +203,7 @@ NS_INLINE UIEdgeInsets TabHistoryPopupMenuInsets() {
       base::RecordAction(UserMetricsAction("MobileMenuHistory"));
       break;
     case IDC_SHOW_OTHER_DEVICES:
-      // "Open Tabs" is the original name of the "Other Devices" menu item.
-      base::RecordAction(UserMetricsAction("MobileMenuOpenTabs"));
+      base::RecordAction(UserMetricsAction("MobileMenuRecentTabs"));
       break;
     case IDC_STOP:
       base::RecordAction(UserMetricsAction("MobileMenuStop"));

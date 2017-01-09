@@ -64,7 +64,7 @@ const char* kRethrownActions[] = {
 const char* kNewTaskActions[] = {
     "MobileMenuAllBookmarks",     "MobileMenuHistory",
     "MobileMenuNewIncognitoTab",  "MobileMenuNewTab",
-    "MobileMenuOpenTabs",         "MobileMenuVoiceSearch",
+    "MobileMenuRecentTabs",       "MobileMenuVoiceSearch",
     "MobileNTPBookmark",          "MobileNTPForeignSession",
     "MobileNTPMostVisited",       "MobileNTPShowBookmarks",
     "MobileNTPShowMostVisited",   "MobileNTPShowOpenTabs",
