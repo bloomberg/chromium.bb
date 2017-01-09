@@ -3925,7 +3925,7 @@ interface MediaRecorder : EventTarget
     setter onresume
     setter onstart
     setter onstop
-interface MediaSession : EventTarget
+interface MediaSession
     attribute @@toStringTag
     getter metadata
     getter playbackState
