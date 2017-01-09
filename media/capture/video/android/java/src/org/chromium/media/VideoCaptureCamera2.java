@@ -32,6 +32,7 @@ import org.chromium.base.annotations.JNINamespace;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -260,6 +261,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
     private CaptureRequest mPreviewRequest;
     private Handler mMainHandler;
 
+    private Range<Integer> mAeFpsRange;
     private CameraState mCameraState = CameraState.STOPPED;
     private final float mMaxZoom;
     private Rect mCropRect = new Rect();
@@ -375,6 +377,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
             requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_AE_MODE_OFF);
         } else {
             requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_AE_MODE_ON);
+            requestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, mAeFpsRange);
         }
         switch (mFillLightMode) {
             case AndroidFillLightMode.OFF:
@@ -598,8 +601,28 @@ public class VideoCaptureCamera2 extends VideoCapture {
             Log.e(TAG, "No supported resolutions.");
             return false;
         }
-        Log.d(TAG, "allocate: matched (%d x %d)", closestSupportedSize.getWidth(),
-                closestSupportedSize.getHeight());
+        final List<Range<Integer>> fpsRanges = Arrays.asList(cameraCharacteristics.get(
+                CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES));
+        if (fpsRanges.isEmpty()) {
+            Log.e(TAG, "No supported framerate ranges.");
+            return false;
+        }
+        final List<FramerateRange> framerateRanges =
+                new ArrayList<FramerateRange>(fpsRanges.size());
+        // On some legacy implementations FPS values are multiplied by 1000. Multiply by 1000
+        // everywhere for consistency. Set fpsUnitFactor to 1 if fps ranges are already multiplied
+        // by 1000.
+        final int fpsUnitFactor = fpsRanges.get(0).getUpper() > 1000 ? 1 : 1000;
+        for (Range<Integer> range : fpsRanges) {
+            framerateRanges.add(new FramerateRange(
+                    range.getLower() * fpsUnitFactor, range.getUpper() * fpsUnitFactor));
+        }
+        final FramerateRange aeFramerateRange =
+                getClosestFramerateRange(framerateRanges, frameRate * 1000);
+        mAeFpsRange = new Range<Integer>(
+                aeFramerateRange.min / fpsUnitFactor, aeFramerateRange.max / fpsUnitFactor);
+        Log.d(TAG, "allocate: matched (%d x %d) @[%d - %d]", closestSupportedSize.getWidth(),
+                closestSupportedSize.getHeight(), mAeFpsRange.getLower(), mAeFpsRange.getUpper());
 
         // |mCaptureFormat| is also used to configure the ImageReader.
         mCaptureFormat = new VideoCaptureFormat(closestSupportedSize.getWidth(),
