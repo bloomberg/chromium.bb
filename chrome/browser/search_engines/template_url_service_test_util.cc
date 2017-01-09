@@ -12,6 +12,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/search_engines/keyword_table.h"
 #include "components/search_engines/keyword_web_data_service.h"
+#include "components/search_engines/search_engines_test_util.h"
 #include "components/search_engines/template_url_data_util.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/testing_search_terms_data.h"
@@ -153,4 +154,29 @@ void TemplateURLServiceTestUtil::SetGoogleBaseURL(const GURL& base_url) {
   DCHECK(base_url.is_valid());
   search_terms_data_->set_google_base_url(base_url.spec());
   model_->GoogleBaseURLChanged();
+}
+
+TemplateURL* TemplateURLServiceTestUtil::AddExtensionControlledTURL(
+    std::unique_ptr<TemplateURL> extension_turl,
+    std::unique_ptr<TemplateURL::AssociatedExtensionInfo> info) {
+  bool wants_to_be_default = info->wants_to_be_default_engine;
+  TemplateURL* result = model()->AddExtensionControlledTURL(
+      std::move(extension_turl), std::move(info));
+  if (wants_to_be_default && result) {
+    SetExtensionDefaultSearchInPrefs(profile()->GetTestingPrefService(),
+                                     result->data());
+  }
+  return result;
+}
+
+void TemplateURLServiceTestUtil::RemoveExtensionControlledTURL(
+    const std::string& extension_id) {
+  TemplateURL* turl = model()->FindTemplateURLForExtension(
+      extension_id, TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION);
+  ASSERT_TRUE(turl);
+  ASSERT_TRUE(turl->GetExtensionInfoForTesting());
+  if (turl->GetExtensionInfoForTesting()->wants_to_be_default_engine)
+    RemoveExtensionDefaultSearchFromPrefs(profile()->GetTestingPrefService());
+  model()->RemoveExtensionControlledTURL(
+      extension_id, TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION);
 }

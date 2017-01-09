@@ -17,6 +17,7 @@
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/search_engines/search_engines_pref_names.h"
+#include "components/search_engines/search_engines_test_util.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
@@ -413,7 +414,7 @@ TEST_F(TemplateURLServiceSyncTest, GetAllSyncDataBasic) {
   }
 }
 
-TEST_F(TemplateURLServiceSyncTest, GetAllSyncDataWithExtension) {
+TEST_F(TemplateURLServiceSyncTest, GetAllSyncDataWithOmniboxExtension) {
   model()->Add(CreateTestTemplateURL(ASCIIToUTF16("key1"), "http://key1.com"));
   model()->Add(CreateTestTemplateURL(ASCIIToUTF16("key2"), "http://key2.com"));
   std::string fake_id("blahblahblah");
@@ -430,6 +431,41 @@ TEST_F(TemplateURLServiceSyncTest, GetAllSyncDataWithExtension) {
     const TemplateURL* service_turl = model()->GetTemplateURLForGUID(guid);
     std::unique_ptr<TemplateURL> deserialized(Deserialize(*iter));
     AssertEquals(*service_turl, *deserialized);
+  }
+}
+
+TEST_F(TemplateURLServiceSyncTest, GetAllSyncDataWithSearchOverrideExtension) {
+  model()->Add(CreateTestTemplateURL(ASCIIToUTF16("key1"), "http://key1.com"));
+  model()->Add(CreateTestTemplateURL(ASCIIToUTF16("key2"), "http://key2.com"));
+
+  // Change default search provider to an extension one.
+  std::unique_ptr<TemplateURLData> extension =
+      GenerateDummyTemplateURLData("extension");
+  auto ext_dse = base::MakeUnique<TemplateURL>(
+      *extension, TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION);
+  auto ext_info = base::MakeUnique<TemplateURL::AssociatedExtensionInfo>("ext");
+  ext_info->wants_to_be_default_engine = true;
+  test_util_a_->AddExtensionControlledTURL(std::move(ext_dse),
+                                           std::move(ext_info));
+
+  const TemplateURL* ext_turl = model()->GetDefaultSearchProvider();
+  EXPECT_TRUE(model()->IsExtensionControlledDefaultSearch());
+
+  // Extension default search must not be synced across browsers.
+  syncer::SyncDataList all_sync_data =
+      model()->GetAllSyncData(syncer::SEARCH_ENGINES);
+  EXPECT_EQ(2U, all_sync_data.size());
+
+  for (auto sync_data : all_sync_data) {
+    std::string guid = GetGUID(sync_data);
+    const TemplateURL* service_turl = model()->GetTemplateURLForGUID(guid);
+    std::unique_ptr<TemplateURL> deserialized = Deserialize(sync_data);
+    AssertEquals(*service_turl, *deserialized);
+    EXPECT_NE(TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION,
+              deserialized->type());
+    EXPECT_NE(ext_turl->keyword(), deserialized->keyword());
+    EXPECT_NE(ext_turl->short_name(), deserialized->short_name());
+    EXPECT_NE(ext_turl->url(), deserialized->url());
   }
 }
 
@@ -1702,6 +1738,75 @@ TEST_F(TemplateURLServiceSyncTest, SyncWithManagedDefaultSearch) {
   const TemplateURL* expected_default =
       model()->GetTemplateURLForGUID("newdefault");
   RemoveManagedDefaultSearchPreferences(test_util_a_->profile());
+
+  EXPECT_EQ(expected_default, model()->GetDefaultSearchProvider());
+}
+
+TEST_F(TemplateURLServiceSyncTest, SyncWithExtensionDefaultSearch) {
+  // First start off with a few entries and make sure we can set an extension
+  // default search provider.
+  syncer::SyncDataList initial_data = CreateInitialSyncData();
+  model()->MergeDataAndStartSyncing(syncer::SEARCH_ENGINES, initial_data,
+                                    PassProcessor(),
+                                    CreateAndPassSyncErrorFactory());
+  model()->SetUserSelectedDefaultSearchProvider(
+      model()->GetTemplateURLForGUID("key2"));
+
+  // Expect one change because of user default engine change.
+  const size_t pending_changes = processor()->change_list_size();
+  EXPECT_EQ(1U, pending_changes);
+  ASSERT_TRUE(processor()->contains_guid("key2"));
+  EXPECT_EQ(syncer::SyncChange::ACTION_UPDATE,
+            processor()->change_for_guid("key2").change_type());
+
+  const size_t sync_engines_count = model()->
+      GetAllSyncData(syncer::SEARCH_ENGINES).size();
+  EXPECT_EQ(3U, sync_engines_count);
+  ASSERT_TRUE(model()->GetDefaultSearchProvider());
+
+  // Change the default search provider to an extension one.
+  std::unique_ptr<TemplateURLData> extension =
+      GenerateDummyTemplateURLData("extensiondefault");
+  auto ext_dse = base::MakeUnique<TemplateURL>(
+      *extension, TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION);
+  auto ext_info = base::MakeUnique<TemplateURL::AssociatedExtensionInfo>("ext");
+  ext_info->wants_to_be_default_engine = true;
+  test_util_a_->AddExtensionControlledTURL(std::move(ext_dse),
+                                           std::move(ext_info));
+
+  const TemplateURL* dsp_turl = model()->GetDefaultSearchProvider();
+  EXPECT_TRUE(model()->IsExtensionControlledDefaultSearch());
+
+  // Extension-related changes to the DSE should not be synced as search engine
+  // changes.
+  EXPECT_EQ(pending_changes, processor()->change_list_size());
+  EXPECT_EQ(sync_engines_count,
+            model()->GetAllSyncData(syncer::SEARCH_ENGINES).size());
+
+  // Add a new entry from Sync. It should still sync in despite the default
+  // being extension controlled.
+  syncer::SyncChangeList changes;
+  changes.push_back(CreateTestSyncChange(
+      syncer::SyncChange::ACTION_ADD,
+      CreateTestTemplateURL(ASCIIToUTF16("newkeyword"),
+                            "http://new.com/{searchTerms}", "newdefault")));
+  model()->ProcessSyncChanges(FROM_HERE, changes);
+
+  EXPECT_EQ(4U, model()->GetAllSyncData(syncer::SEARCH_ENGINES).size());
+
+  // Change kSyncedDefaultSearchProviderGUID to point to the new entry and
+  // ensure that the DSP remains extension controlled.
+  profile_a()->GetTestingPrefService()->SetString(
+      prefs::kSyncedDefaultSearchProviderGUID, "newdefault");
+
+  EXPECT_EQ(dsp_turl, model()->GetDefaultSearchProvider());
+  EXPECT_TRUE(model()->IsExtensionControlledDefaultSearch());
+
+  // Remove extension DSE. Ensure that the DSP changes to the expected pending
+  // entry from Sync.
+  const TemplateURL* expected_default =
+      model()->GetTemplateURLForGUID("newdefault");
+  test_util_a_->RemoveExtensionControlledTURL("ext");
 
   EXPECT_EQ(expected_default, model()->GetDefaultSearchProvider());
 }

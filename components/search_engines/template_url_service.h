@@ -708,13 +708,6 @@ class TemplateURLService : public WebDataServiceConsumer,
   TemplateURL* FindMatchingExtensionTemplateURL(const TemplateURLData& data,
                                                 TemplateURL::Type type);
 
-  // Finds the most recently-installed NORMAL_CONTROLLED_BY_EXTENSION engine
-  // that supports replacement and wants to be default, if any. Notifies the
-  // DefaultSearchManager, which might change the effective default search
-  // engine.
-  void UpdateExtensionDefaultSearchEngine();
-
-
   // ---------- Browser state related members ---------------------------------
   PrefService* prefs_;
 

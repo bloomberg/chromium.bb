@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
+#include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_service_observer.h"
 
@@ -64,6 +65,18 @@ class TemplateURLServiceTestUtil : public TemplateURLServiceObserver {
 
   // Sets the google base url.  |base_url| must be valid.
   void SetGoogleBaseURL(const GURL& base_url);
+
+  // Adds extension controlled TemplateURL to the model and overrides default
+  // search pref in an extension controlled preferences, if extension wants to
+  // be default.
+  TemplateURL* AddExtensionControlledTURL(
+      std::unique_ptr<TemplateURL> extension_turl,
+      std::unique_ptr<TemplateURL::AssociatedExtensionInfo> info);
+
+  // Removes a TemplateURL controlled by |extension_id| from the model, and,
+  // if necessary, from the extension-controlled default search preference.
+  // This TemplateURL must exist.
+  void RemoveExtensionControlledTURL(const std::string& extension_id);
 
   KeywordWebDataService* web_data_service() { return web_data_service_.get(); }
   TemplateURLService* model() { return model_.get(); }

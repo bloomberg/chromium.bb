@@ -1041,6 +1041,18 @@ std::vector<std::unique_ptr<TemplateURLData>> GetPrepopulatedEngines(
   return GetPrepopulationSetFromCountryID(GetCountryIDFromPrefs(prefs));
 }
 
+std::unique_ptr<TemplateURLData> GetPrepopulatedEngine(PrefService* prefs,
+                                                       int prepopulated_id) {
+  size_t default_index;
+  auto engines =
+      TemplateURLPrepopulateData::GetPrepopulatedEngines(prefs, &default_index);
+  for (auto& engine : engines) {
+    if (engine->prepopulate_id == prepopulated_id)
+      return std::move(engine);
+  }
+  return nullptr;
+}
+
 #if defined(OS_ANDROID)
 
 std::vector<std::unique_ptr<TemplateURLData>> GetLocalPrepopulatedEngines(

@@ -512,10 +512,6 @@ class TemplateURL {
 
     // Whether the search engine is supposed to be default.
     bool wants_to_be_default_engine;
-
-    // Used to resolve conflicts when there are multiple extensions specifying
-    // the default search engine. The most recently-installed wins.
-    base::Time install_time;
   };
 
   explicit TemplateURL(const TemplateURLData& data, Type type = NORMAL);
@@ -534,6 +530,12 @@ class TemplateURL {
   static bool MatchesData(const TemplateURL* t_url,
                           const TemplateURLData* data,
                           const SearchTermsData& search_terms_data);
+
+  // Special case for search_terms_replacement_key comparison, because of
+  // its special initialization in TemplateURL constructor.
+  static bool SearchTermsReplacementKeysMatch(
+      const std::string& search_terms_replacement_key1,
+      const std::string& search_terms_replacement_key2);
 
   const TemplateURLData& data() const { return data_; }
 
@@ -615,6 +617,10 @@ class TemplateURL {
   void set_extension_info(
       std::unique_ptr<AssociatedExtensionInfo> extension_info) {
     extension_info_ = std::move(extension_info);
+  }
+
+  const AssociatedExtensionInfo* GetExtensionInfoForTesting() const {
+    return extension_info_.get();
   }
 
   // Returns true if |url| supports replacement.

@@ -1434,16 +1434,15 @@ TEST_F(TemplateURLServiceTest, DefaultExtensionEngine) {
   std::unique_ptr<TemplateURL::AssociatedExtensionInfo> extension_info(
       new TemplateURL::AssociatedExtensionInfo("ext"));
   extension_info->wants_to_be_default_engine = true;
-  TemplateURL* ext_dse_ptr = model()->AddExtensionControlledTURL(
+  TemplateURL* ext_dse_ptr = test_util()->AddExtensionControlledTURL(
       std::move(ext_dse), std::move(extension_info));
   EXPECT_EQ(ext_dse_ptr, model()->GetDefaultSearchProvider());
 
-  model()->RemoveExtensionControlledTURL(
-      "ext", TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION);
+  test_util()->RemoveExtensionControlledTURL("ext");
   ExpectSimilar(user_dse, model()->GetDefaultSearchProvider());
 }
 
-TEST_F(TemplateURLServiceTest, ExtensionEnginesNotPersist) {
+TEST_F(TemplateURLServiceTest, DefaultExtensionEnginePersist) {
   test_util()->VerifyLoad();
   // Add third-party default search engine.
   TemplateURL* user_dse = AddKeywordWithDate(
@@ -1452,6 +1451,7 @@ TEST_F(TemplateURLServiceTest, ExtensionEnginesNotPersist) {
   model()->SetUserSelectedDefaultSearchProvider(user_dse);
   EXPECT_EQ(user_dse, model()->GetDefaultSearchProvider());
 
+  // Create non-default extension search engine.
   std::unique_ptr<TemplateURL> ext_dse = CreateKeywordWithDate(
       model(), "ext1", "ext1", "http://www.ext1.com/s?q={searchTerms}",
       std::string(), std::string(), std::string(), true, 0, "UTF-8", Time(),
@@ -1459,10 +1459,12 @@ TEST_F(TemplateURLServiceTest, ExtensionEnginesNotPersist) {
   std::unique_ptr<TemplateURL::AssociatedExtensionInfo> extension_info(
       new TemplateURL::AssociatedExtensionInfo("ext1"));
   extension_info->wants_to_be_default_engine = false;
-  model()->AddExtensionControlledTURL(std::move(ext_dse),
-                                      std::move(extension_info));
+
+  test_util()->AddExtensionControlledTURL(std::move(ext_dse),
+                                          std::move(extension_info));
   EXPECT_EQ(user_dse, model()->GetDefaultSearchProvider());
 
+  // Create default extension search engine.
   ext_dse = CreateKeywordWithDate(
       model(), "ext2", "ext2", "http://www.ext2.com/s?q={searchTerms}",
       std::string(), std::string(), std::string(), true, kPrepopulatedId,
@@ -1470,15 +1472,47 @@ TEST_F(TemplateURLServiceTest, ExtensionEnginesNotPersist) {
       TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION);
   extension_info.reset(new TemplateURL::AssociatedExtensionInfo("ext2"));
   extension_info->wants_to_be_default_engine = true;
-  TemplateURL* ext_dse_ptr = model()->AddExtensionControlledTURL(
+
+  auto cloned_ext_dse = base::MakeUnique<TemplateURL>(ext_dse->data());
+  TemplateURL* ext_dse_ptr = test_util()->AddExtensionControlledTURL(
       std::move(ext_dse), std::move(extension_info));
   EXPECT_EQ(ext_dse_ptr, model()->GetDefaultSearchProvider());
 
-  test_util()->ResetModel(true);
-  user_dse = model()->GetTemplateURLForKeyword(ASCIIToUTF16("user"));
-  ExpectSimilar(user_dse, model()->GetDefaultSearchProvider());
+  // A default search engine set by an extension must be persisted across
+  // browser restarts, until the extension is unloaded/disabled.
+  test_util()->ResetModel(false);
+  EXPECT_TRUE(model()->GetTemplateURLForKeyword(ASCIIToUTF16("ext2")));
+  ExpectSimilar(cloned_ext_dse.get(), model()->GetDefaultSearchProvider());
+
+  // Non-default extension engines are not persisted across restarts.
   EXPECT_FALSE(model()->GetTemplateURLForKeyword(ASCIIToUTF16("ext1")));
-  EXPECT_FALSE(model()->GetTemplateURLForKeyword(ASCIIToUTF16("ext2")));
+}
+
+TEST_F(TemplateURLServiceTest, DefaultExtensionEnginePersistsBeforeLoad) {
+  // Chrome will load the extension system before the TemplateURLService, so
+  // extensions controlling the default search engine may be registered before
+  // the service has loaded.
+  std::unique_ptr<TemplateURL> ext_dse = CreateKeywordWithDate(
+      model(), "ext2", "ext2", "http://www.ext2.com/s?q={searchTerms}",
+      std::string(), std::string(), std::string(), true, kPrepopulatedId,
+      "UTF-8", Time(), Time(), Time(),
+      TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION);
+  auto extension_info =
+      base::MakeUnique<TemplateURL::AssociatedExtensionInfo>("ext2");
+  extension_info->wants_to_be_default_engine = true;
+
+  auto cloned_ext_dse = base::MakeUnique<TemplateURL>(ext_dse->data());
+  test_util()->AddExtensionControlledTURL(std::move(ext_dse),
+                                          std::move(extension_info));
+
+  // Default search engine from extension must be persisted between browser
+  // restarts, and should be available before the TemplateURLService is loaded.
+  EXPECT_TRUE(model()->GetTemplateURLForKeyword(ASCIIToUTF16("ext2")));
+  ExpectSimilar(cloned_ext_dse.get(), model()->GetDefaultSearchProvider());
+
+  // Check extension DSE is the same after service load.
+  test_util()->VerifyLoad();
+  ExpectSimilar(cloned_ext_dse.get(), model()->GetDefaultSearchProvider());
 }
 
 TEST_F(TemplateURLServiceTest, ExtensionEngineVsPolicy) {
@@ -1501,7 +1535,7 @@ TEST_F(TemplateURLServiceTest, ExtensionEngineVsPolicy) {
   auto extension_info =
       base::MakeUnique<TemplateURL::AssociatedExtensionInfo>("ext1");
   extension_info->wants_to_be_default_engine = true;
-  TemplateURL* ext_dse_ptr = model()->AddExtensionControlledTURL(
+  TemplateURL* ext_dse_ptr = test_util()->AddExtensionControlledTURL(
       std::move(ext_dse), std::move(extension_info));
   EXPECT_EQ(ext_dse_ptr,
             model()->GetTemplateURLForKeyword(ASCIIToUTF16("ext1")));

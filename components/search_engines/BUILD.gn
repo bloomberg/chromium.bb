@@ -98,6 +98,8 @@ static_library("search_engines") {
 static_library("test_support") {
   testonly = true
   sources = [
+    "search_engines_test_util.cc",
+    "search_engines_test_util.h",
     "testing_search_terms_data.cc",
     "testing_search_terms_data.h",
   ]
@@ -105,6 +107,7 @@ static_library("test_support") {
   public_deps = [
     ":search_engines",
     "//base",
+    "//components/sync_preferences:test_support",
     "//testing/gtest",
   ]
 }
