@@ -33,6 +33,7 @@
 #include "SkColorPriv.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/image-encoders/RGBAtoRGB.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
@@ -44,6 +45,81 @@ extern "C" {
 }
 
 namespace blink {
+
+void RGBAtoRGBScalar(const unsigned char* pixels,
+                     unsigned pixelCount,
+                     unsigned char* output) {
+  // Per <canvas> spec, composite the input image pixels source-over on black.
+  for (; pixelCount-- > 0; pixels += 4) {
+    unsigned char alpha = pixels[3];
+    if (alpha != 255) {
+      *output++ = SkMulDiv255Round(pixels[0], alpha);
+      *output++ = SkMulDiv255Round(pixels[1], alpha);
+      *output++ = SkMulDiv255Round(pixels[2], alpha);
+    } else {
+      *output++ = pixels[0];
+      *output++ = pixels[1];
+      *output++ = pixels[2];
+    }
+  }
+}
+
+// TODO(cavalcantii): use regular macro, see https://crbug.com/673067.
+#ifdef __ARM_NEON__
+void RGBAtoRGBNeon(const unsigned char* input,
+                   const unsigned pixelCount,
+                   unsigned char* output) {
+  const unsigned pixelsPerLoad = 16;
+  const unsigned rgbaStep = pixelsPerLoad * 4, rgbStep = pixelsPerLoad * 3;
+  // Input registers.
+  uint8x16x4_t rgba;
+  // Output registers.
+  uint8x16x3_t rgb;
+  // Intermediate registers.
+  uint8x8_t low, high;
+  uint8x16_t result;
+  unsigned counter;
+  auto transformColor = [&](size_t channel) {
+    // Extracts the low/high part of the 128 bits.
+    low = vget_low_u8(rgba.val[channel]);
+    high = vget_high_u8(rgba.val[channel]);
+    // Scale the color and combine.
+    uint16x8_t temp = vmull_u8(low, vget_low_u8(rgba.val[3]));
+    low = vraddhn_u16(temp, vrshrq_n_u16(temp, 8));
+    temp = vmull_u8(high, vget_high_u8(rgba.val[3]));
+    high = vraddhn_u16(temp, vrshrq_n_u16(temp, 8));
+    result = vcombine_u8(low, high);
+    // Write back the channel to a 128 bits register.
+    rgb.val[channel] = result;
+  };
+
+  for (counter = 0; counter + pixelsPerLoad <= pixelCount;
+       counter += pixelsPerLoad) {
+    // Reads 16 pixels at once, each color channel in a different
+    // 128 bits register.
+    rgba = vld4q_u8(input);
+
+    transformColor(0);
+    transformColor(1);
+    transformColor(2);
+
+    // Write back (interleaved) results to output.
+    vst3q_u8(output, rgb);
+
+    // Advance to next elements (could be avoided loading register with
+    // increment after i.e. "vld4 {vector}, [r1]!").
+    input += rgbaStep;
+    output += rgbStep;
+  }
+
+  // Handle the tail elements.
+  unsigned remaining = pixelCount;
+  remaining -= counter;
+  if (remaining != 0) {
+    RGBAtoRGBScalar(input, remaining, output);
+  }
+}
+#endif
 
 struct JPEGOutputBuffer : public jpeg_destination_mgr {
   DISALLOW_NEW();
@@ -93,25 +169,6 @@ static void finishOutput(j_compress_ptr cinfo) {
 static void handleError(j_common_ptr common) {
   jmp_buf* jumpBufferPtr = static_cast<jmp_buf*>(common->client_data);
   longjmp(*jumpBufferPtr, -1);
-}
-
-static void RGBAtoRGB(const unsigned char* pixels,
-                      unsigned pixelCount,
-                      unsigned char* output) {
-  // Per <canvas> spec, composite the input image pixels source-over on black.
-
-  for (; pixelCount-- > 0; pixels += 4) {
-    unsigned char alpha = pixels[3];
-    if (alpha != 255) {
-      *output++ = SkMulDiv255Round(pixels[0], alpha);
-      *output++ = SkMulDiv255Round(pixels[1], alpha);
-      *output++ = SkMulDiv255Round(pixels[2], alpha);
-    } else {
-      *output++ = pixels[0];
-      *output++ = pixels[1];
-      *output++ = pixels[2];
-    }
-  }
 }
 
 static void disableSubsamplingForHighQuality(jpeg_compress_struct* cinfo,
