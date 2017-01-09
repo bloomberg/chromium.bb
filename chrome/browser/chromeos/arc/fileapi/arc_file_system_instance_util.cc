@@ -14,6 +14,14 @@
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
+#define GET_FILE_SYSTEM_INSTANCE(method_name)                      \
+  (arc::ArcServiceManager::Get()                                   \
+       ? ARC_GET_INSTANCE_FOR_METHOD(arc::ArcServiceManager::Get() \
+                                         ->arc_bridge_service()    \
+                                         ->file_system(),          \
+                                     method_name)                  \
+       : nullptr)
+
 using content::BrowserThread;
 
 namespace arc {
@@ -21,28 +29,6 @@ namespace arc {
 namespace file_system_instance_util {
 
 namespace {
-
-constexpr uint32_t kGetFileSizeVersion = 1;
-constexpr uint32_t kOpenFileToReadVersion = 1;
-constexpr uint32_t kGetDocumentVersion = 2;
-constexpr uint32_t kGetChildDocumentsVersion = 2;
-
-// Returns FileSystemInstance for the given |min_version|, if found.
-// Otherwise, nullptr.
-mojom::FileSystemInstance* GetFileSystemInstance(
-    const std::string& method_name_for_logging,
-    uint32_t min_version) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto* arc_service_manager = arc::ArcServiceManager::Get();
-  if (!arc_service_manager) {
-    LOG(ERROR) << "Failed to get ArcServiceManager.";
-    return nullptr;
-  }
-  // TODO(lhchavez): Stop calling GetInstanceForVersion() directly.
-  return arc_service_manager->arc_bridge_service()
-      ->file_system()
-      ->GetInstanceForVersion(min_version, method_name_for_logging.c_str());
-}
 
 template <typename T>
 void PostToIOThread(const base::Callback<void(T)>& callback, T result) {
@@ -55,8 +41,7 @@ void PostToIOThread(const base::Callback<void(T)>& callback, T result) {
 void GetFileSizeOnUIThread(const GURL& arc_url,
                            const GetFileSizeCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto* file_system_instance =
-      GetFileSystemInstance("GetFileSize", kGetFileSizeVersion);
+  auto* file_system_instance = GET_FILE_SYSTEM_INSTANCE(GetFileSize);
   if (!file_system_instance) {
     callback.Run(-1);
     return;
@@ -67,8 +52,7 @@ void GetFileSizeOnUIThread(const GURL& arc_url,
 void OpenFileToReadOnUIThread(const GURL& arc_url,
                               const OpenFileToReadCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto* file_system_instance =
-      GetFileSystemInstance("OpenFileToRead", kOpenFileToReadVersion);
+  auto* file_system_instance = GET_FILE_SYSTEM_INSTANCE(OpenFileToRead);
   if (!file_system_instance) {
     callback.Run(mojo::ScopedHandle());
     return;
@@ -80,8 +64,7 @@ void GetDocumentOnUIThread(const std::string& authority,
                            const std::string& document_id,
                            const GetDocumentCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto* file_system_instance =
-      GetFileSystemInstance("GetDocument", kGetDocumentVersion);
+  auto* file_system_instance = GET_FILE_SYSTEM_INSTANCE(GetDocument);
   if (!file_system_instance) {
     callback.Run(mojom::DocumentPtr());
     return;
@@ -93,8 +76,7 @@ void GetChildDocumentsOnUIThread(const std::string& authority,
                                  const std::string& parent_document_id,
                                  const GetChildDocumentsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto* file_system_instance =
-      GetFileSystemInstance("GetChildDocuments", kGetChildDocumentsVersion);
+  auto* file_system_instance = GET_FILE_SYSTEM_INSTANCE(GetChildDocuments);
   if (!file_system_instance) {
     callback.Run(base::nullopt);
     return;
