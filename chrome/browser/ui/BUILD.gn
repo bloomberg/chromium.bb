@@ -2117,6 +2117,9 @@ split_static_library("ui") {
       "webui/settings/native_certificates_handler.h",
     ]
   }
+  if (is_win || is_linux) {
+    deps += [ "//components/payments:payment_request_impl" ]
+  }
   if (enable_print_preview) {
     sources += [
       "webui/print_preview/extension_printer_handler.cc",

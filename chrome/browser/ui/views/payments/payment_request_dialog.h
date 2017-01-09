@@ -14,7 +14,7 @@
 
 namespace payments {
 
-class PaymentRequestImpl;
+class PaymentRequest;
 class PaymentRequestSheetController;
 
 // Maps views owned by PaymentRequestDialog::view_stack_ to their controller.
@@ -28,7 +28,7 @@ using ControllerMap =
 // the WebPayments flow and managing the transition between those states.
 class PaymentRequestDialog : public views::DialogDelegateView {
  public:
-  explicit PaymentRequestDialog(PaymentRequestImpl* impl);
+  explicit PaymentRequestDialog(PaymentRequest* request);
   ~PaymentRequestDialog() override;
 
   // views::WidgetDelegate
@@ -51,11 +51,11 @@ class PaymentRequestDialog : public views::DialogDelegateView {
   void ViewHierarchyChanged(const ViewHierarchyChangedDetails& details)
       override;
 
-  // Non-owned reference to the PaymentRequestImpl that initiated this dialog.
-  // Since the PaymentRequestImpl object always outlives this one, the pointer
-  // should always be valid even though there is no direct ownership
-  // relationship between the two.
-  PaymentRequestImpl* impl_;
+  // Non-owned reference to the PaymentRequest that initiated this dialog. Since
+  // the PaymentRequest object always outlives this one, the pointer should
+  // always be valid even though there is no direct ownership relationship
+  // between the two.
+  PaymentRequest* request_;
   ControllerMap controller_map_;
   ViewStack view_stack_;
 

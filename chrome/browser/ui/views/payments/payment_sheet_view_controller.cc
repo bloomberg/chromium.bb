@@ -9,10 +9,10 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/payments/payment_request_impl.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/payments/payment_request.h"
 #include "components/strings/grit/components_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -114,8 +114,9 @@ class PaymentSheetRow : public views::CustomButton {
 }  // namespace
 
 PaymentSheetViewController::PaymentSheetViewController(
-    PaymentRequestImpl* impl, PaymentRequestDialog* dialog)
-  : PaymentRequestSheetController(impl, dialog) {}
+    PaymentRequest* request,
+    PaymentRequestDialog* dialog)
+    : PaymentRequestSheetController(request, dialog) {}
 
 PaymentSheetViewController::~PaymentSheetViewController() {}
 
@@ -156,12 +157,11 @@ void PaymentSheetViewController::ButtonPressed(
 
 std::unique_ptr<views::View>
 PaymentSheetViewController::CreateOrderSummarySectionContent() {
-  base::string16 label_value =
-      l10n_util::GetStringFUTF16(
-          IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SECTION_TOTAL_FORMAT,
-          base::ASCIIToUTF16(impl()->details()->total->label),
-          base::ASCIIToUTF16(impl()->details()->total->amount->currency),
-          base::ASCIIToUTF16(impl()->details()->total->amount->value));
+  base::string16 label_value = l10n_util::GetStringFUTF16(
+      IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SECTION_TOTAL_FORMAT,
+      base::ASCIIToUTF16(request()->details()->total->label),
+      base::ASCIIToUTF16(request()->details()->total->amount->currency),
+      base::ASCIIToUTF16(request()->details()->total->amount->value));
 
   return base::MakeUnique<views::Label>(label_value);
 }

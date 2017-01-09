@@ -11,7 +11,7 @@
 
 namespace payments {
 
-class PaymentRequestImpl;
+class PaymentRequest;
 class PaymentRequestDialog;
 
 // The PaymentRequestSheetController subtype for the Payment Sheet screen of the
@@ -20,7 +20,7 @@ class PaymentSheetViewController : public PaymentRequestSheetController,
                                    public views::VectorIconButtonDelegate {
  public:
   // Does not take ownership of the arguments, which should outlive this object.
-  PaymentSheetViewController(PaymentRequestImpl* impl,
+  PaymentSheetViewController(PaymentRequest* request,
                              PaymentRequestDialog* dialog);
   ~PaymentSheetViewController() override;
 

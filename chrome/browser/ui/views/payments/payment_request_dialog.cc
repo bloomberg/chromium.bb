@@ -8,20 +8,20 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/payments/payment_request_impl.h"
 #include "chrome/browser/ui/views/payments/order_summary_view_controller.h"
 #include "chrome/browser/ui/views/payments/payment_sheet_view_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "components/payments/payment_request.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/layout/fill_layout.h"
 
 namespace chrome {
 
-void ShowPaymentRequestDialog(payments::PaymentRequestImpl* impl) {
+void ShowPaymentRequestDialog(payments::PaymentRequest* request) {
   constrained_window::ShowWebModalDialogViews(
-      new payments::PaymentRequestDialog(impl), impl->web_contents());
+      new payments::PaymentRequestDialog(request), request->web_contents());
 }
 
 }  // namespace chrome
@@ -31,15 +31,15 @@ namespace {
 
 // This function creates an instance of a PaymentRequestSheetController
 // subclass of concrete type |Controller|, passing it non-owned pointers to
-// |dialog| and the |impl| that initiated that dialog. |map| should be owned by
-// |dialog|.
-template<typename Controller>
+// |dialog| and the |request| that initiated that dialog. |map| should be owned
+// by |dialog|.
+template <typename Controller>
 std::unique_ptr<views::View> CreateViewAndInstallController(
     payments::ControllerMap* map,
-    payments::PaymentRequestImpl* impl,
+    payments::PaymentRequest* request,
     payments::PaymentRequestDialog* dialog) {
   std::unique_ptr<Controller> controller =
-      base::MakeUnique<Controller>(impl, dialog);
+      base::MakeUnique<Controller>(request, dialog);
   std::unique_ptr<views::View> view = controller->CreateView();
   (*map)[view.get()] = std::move(controller);
   return view;
@@ -47,8 +47,8 @@ std::unique_ptr<views::View> CreateViewAndInstallController(
 
 }  // namespace
 
-PaymentRequestDialog::PaymentRequestDialog(PaymentRequestImpl* impl)
-    : impl_(impl) {
+PaymentRequestDialog::PaymentRequestDialog(PaymentRequest* request)
+    : request_(request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   SetLayoutManager(new views::FillLayout());
 
@@ -66,7 +66,7 @@ ui::ModalType PaymentRequestDialog::GetModalType() const {
 
 bool PaymentRequestDialog::Cancel() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  impl_->Cancel();
+  request_->Cancel();
   return true;
 }
 
@@ -92,10 +92,9 @@ void PaymentRequestDialog::GoBack() {
 }
 
 void PaymentRequestDialog::ShowOrderSummary() {
-    view_stack_.Push(
-        CreateViewAndInstallController<OrderSummaryViewController>(
-            &controller_map_, impl_, this),
-        true);
+  view_stack_.Push(CreateViewAndInstallController<OrderSummaryViewController>(
+                       &controller_map_, request_, this),
+                   true);
 }
 
 void PaymentRequestDialog::CloseDialog() {
@@ -103,10 +102,9 @@ void PaymentRequestDialog::CloseDialog() {
 }
 
 void PaymentRequestDialog::ShowInitialPaymentSheet() {
-  view_stack_.Push(
-      CreateViewAndInstallController<PaymentSheetViewController>(
-          &controller_map_, impl_, this),
-      false);
+  view_stack_.Push(CreateViewAndInstallController<PaymentSheetViewController>(
+                       &controller_map_, request_, this),
+                   false);
 }
 
 gfx::Size PaymentRequestDialog::GetPreferredSize() const {

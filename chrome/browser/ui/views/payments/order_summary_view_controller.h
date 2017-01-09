@@ -11,7 +11,7 @@
 
 namespace payments {
 
-class PaymentRequestImpl;
+class PaymentRequest;
 class PaymentRequestDialog;
 
 // The PaymentRequestSheetController subtype for the Order Summary screen of the
@@ -20,7 +20,7 @@ class OrderSummaryViewController : public PaymentRequestSheetController,
                                    public views::VectorIconButtonDelegate {
  public:
   // Does not take ownership of the arguments, which should outlive this object.
-  OrderSummaryViewController(PaymentRequestImpl* impl,
+  OrderSummaryViewController(PaymentRequest* request,
                              PaymentRequestDialog* dialog);
   ~OrderSummaryViewController() override;
 

@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_IMPL_H_
-#define CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_IMPL_H_
+#ifndef COMPONENTS_PAYMENTS_PAYMENT_REQUEST_H_
+#define COMPONENTS_PAYMENTS_PAYMENT_REQUEST_H_
+
+#include <memory>
 
 #include "components/payments/payment_request.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -14,12 +16,17 @@ class WebContents;
 
 namespace payments {
 
-class PaymentRequestImpl : payments::mojom::PaymentRequest,
-                           public base::RefCounted<PaymentRequestImpl> {
+class PaymentRequestDelegate;
+class PaymentRequestWebContentsManager;
+
+class PaymentRequest : payments::mojom::PaymentRequest {
  public:
-  PaymentRequestImpl(
+  PaymentRequest(
       content::WebContents* web_contents,
+      std::unique_ptr<PaymentRequestDelegate> delegate,
+      PaymentRequestWebContentsManager* manager,
       mojo::InterfaceRequest<payments::mojom::PaymentRequest> request);
+  ~PaymentRequest() override;
 
   // payments::mojom::PaymentRequest "stub"
   void Init(payments::mojom::PaymentRequestClientPtr client,
@@ -39,21 +46,17 @@ class PaymentRequestImpl : payments::mojom::PaymentRequest,
   content::WebContents* web_contents() { return web_contents_; }
 
  private:
-  friend class base::RefCounted<PaymentRequestImpl>;
-  ~PaymentRequestImpl() override;
-
   content::WebContents* web_contents_;
+  std::unique_ptr<PaymentRequestDelegate> delegate_;
+  // |manager_| owns this PaymentRequest.
+  PaymentRequestWebContentsManager* manager_;
   mojo::Binding<payments::mojom::PaymentRequest> binding_;
   payments::mojom::PaymentRequestClientPtr client_;
   payments::mojom::PaymentDetailsPtr details_;
 
-  DISALLOW_COPY_AND_ASSIGN(PaymentRequestImpl);
+  DISALLOW_COPY_AND_ASSIGN(PaymentRequest);
 };
 
 }  // namespace payments
 
-void CreatePaymentRequestHandler(
-    content::WebContents* web_contents,
-    mojo::InterfaceRequest<payments::mojom::PaymentRequest> request);
-
-#endif  // CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_IMPL_H_
+#endif  // COMPONENTS_PAYMENTS_PAYMENT_REQUEST_H_

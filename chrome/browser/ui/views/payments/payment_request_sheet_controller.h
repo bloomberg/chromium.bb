@@ -17,7 +17,7 @@ class View;
 namespace payments {
 
 class PaymentRequestDialog;
-class PaymentRequestImpl;
+class PaymentRequest;
 
 // The base class for objects responsible for the creation and event handling in
 // views shown in the PaymentRequestDialog.
@@ -25,22 +25,21 @@ class PaymentRequestSheetController {
  public:
   // Objects of this class are owned by |dialog|, so it's a non-owned pointer
   // that should be valid throughout this object's lifetime.
-  // |impl| is also not owned by this and is guaranteed to outlive dialog.
-  // Neither |impl| or |dialog| should be null.
-  PaymentRequestSheetController(PaymentRequestImpl* impl,
+  // |request| is also not owned by this and is guaranteed to outlive dialog.
+  // Neither |request| or |dialog| should be null.
+  PaymentRequestSheetController(PaymentRequest* request,
                                 PaymentRequestDialog* dialog)
-    : impl_(impl),
-      dialog_(dialog) {
-    DCHECK(impl_);
+      : request_(request), dialog_(dialog) {
+    DCHECK(request_);
     DCHECK(dialog_);
   }
   virtual ~PaymentRequestSheetController() {}
 
   virtual std::unique_ptr<views::View> CreateView() = 0;
 
-  // The PaymentRequestImpl object associated with this instance of the dialog.
+  // The PaymentRequest object associated with this instance of the dialog.
   // Caller should not take ownership of the result.
-  PaymentRequestImpl* impl() { return impl_; }
+  PaymentRequest* request() { return request_; }
 
   // The dialog that contains and owns this object.
   // Caller should not take ownership of the result.
@@ -48,7 +47,7 @@ class PaymentRequestSheetController {
 
  private:
   // Not owned. Will outlive this.
-  PaymentRequestImpl* impl_;
+  PaymentRequest* request_;
   // Not owned. Will outlive this.
   PaymentRequestDialog* dialog_;
 

@@ -58,7 +58,6 @@
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/page_load_metrics/metrics_navigation_throttle.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
-#include "chrome/browser/payments/payment_request_impl.h"
 #include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/preferences_connection_manager.h"
@@ -138,7 +137,6 @@
 #include "components/nacl/common/nacl_constants.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
-#include "components/payments/payment_request.mojom.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -254,6 +252,10 @@
 #include "chrome/browser/chrome_browser_main_posix.h"
 #endif
 
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN)
+#include "chrome/browser/payments/payment_request_factory.h"
+#endif
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "base/debug/leak_annotations.h"
 #include "components/crash/content/app/breakpad_linux.h"
@@ -264,6 +266,7 @@
 #include "chrome/browser/android/ntp/new_tab_page_url_handler.h"
 #include "chrome/browser/android/service_tab_launcher.h"
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
+#include "components/payments/payment_request.mojom.h"
 #include "content/public/browser/android/java_interfaces.h"
 #endif
 
@@ -3015,12 +3018,13 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoInterfaces(
                    web_contents->GetJavaInterfaces()->GetWeakPtr()));
   }
 #elif defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN)
+  // TODO(crbug.com/679127): Enable for MacViews implementation.
   if (AreExperimentalWebPlatformFeaturesEnabled()) {
     content::WebContents* web_contents =
         content::WebContents::FromRenderFrameHost(render_frame_host);
     if (web_contents) {
-      registry->AddInterface(
-          base::Bind(CreatePaymentRequestHandler, web_contents));
+      registry->AddInterface(base::Bind(
+          payments::CreatePaymentRequestForWebContents, web_contents));
     }
   }
 #endif

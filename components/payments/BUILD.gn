@@ -24,6 +24,28 @@ mojom("payment_app") {
   ]
 }
 
+# TODO(crbug.com/679381): Create a layered component to that we can remove the
+# iOS check here (iOS strict DEPS checker doesn't like the //content dependency
+# below).
+if (!is_ios) {
+  static_library("payment_request_impl") {
+    sources = [
+      "payment_request.cc",
+      "payment_request.h",
+      "payment_request_delegate.h",
+      "payment_request_web_contents_manager.cc",
+      "payment_request_web_contents_manager.h",
+    ]
+
+    deps = [
+      ":payment_request",
+      ":payment_validation",
+      "//content/public/browser",
+      "//mojo/public/cpp/bindings",
+    ]
+  }
+}
+
 static_library("payment_validation") {
   sources = [
     "payment_details_validation.cc",
