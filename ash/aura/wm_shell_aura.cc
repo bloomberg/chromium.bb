@@ -23,6 +23,7 @@
 #include "ash/shared/immersive_fullscreen_controller.h"
 #include "ash/shell.h"
 #include "ash/touch/touch_uma.h"
+#include "ash/virtual_keyboard_controller.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/maximize_mode/maximize_mode_event_handler_aura.h"
@@ -36,10 +37,6 @@
 #include "ui/aura/env.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/wm/public/activation_client.h"
-
-#if defined(OS_CHROMEOS)
-#include "ash/virtual_keyboard_controller.h"
-#endif
 
 #if defined(USE_X11)
 #include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_x11.h"
@@ -291,7 +288,6 @@ bool WmShellAura::IsTouchDown() {
   return aura::Env::GetInstance()->is_touch_down();
 }
 
-#if defined(OS_CHROMEOS)
 void WmShellAura::ToggleIgnoreExternalKeyboard() {
   Shell::GetInstance()
       ->virtual_keyboard_controller()
@@ -301,7 +297,6 @@ void WmShellAura::ToggleIgnoreExternalKeyboard() {
 void WmShellAura::SetLaserPointerEnabled(bool enabled) {
   Shell::GetInstance()->laser_pointer_controller()->SetEnabled(enabled);
 }
-#endif
 
 void WmShellAura::OnWindowActivated(
     aura::client::ActivationChangeObserver::ActivationReason reason,

@@ -38,8 +38,6 @@ INSTANTIATE_TEST_CASE_P(
                     MaterialDesignController::MATERIAL_EXPERIMENTAL));
 
 // Test if the WM sets correct work area under different density.
-// TODO(msw): Broken on Windows. http://crbug.com/584038
-#if defined(OS_CHROMEOS)
 TEST_P(DIPTest, WorkArea) {
   const int height_offset = GetMdMaximizedWindowHeightOffset();
   UpdateDisplay("1000x900*1.0f");
@@ -79,6 +77,5 @@ TEST_P(DIPTest, WorkArea) {
   EXPECT_EQ(display_2x.bounds().InsetsFrom(work_area).height(),
             shelf->shelf_widget()->GetNativeView()->layer()->bounds().height());
 }
-#endif  // defined(OS_CHROMEOS)
 
 }  // namespace ash

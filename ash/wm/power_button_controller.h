@@ -10,33 +10,22 @@
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "ui/events/event_handler.h"
-
-#if defined(OS_CHROMEOS)
 #include "chromeos/dbus/power_manager_client.h"
 #include "ui/display/manager/chromeos/display_configurator.h"
-#endif
+#include "ui/events/event_handler.h"
 
 namespace ash {
 
 class LockStateController;
-#if defined(OS_CHROMEOS)
 class TabletPowerButtonController;
-#endif
 
 // Handles power & lock button events which may result in the locking or
 // shutting down of the system as well as taking screen shots while in maximize
 // mode.
 class ASH_EXPORT PowerButtonController
-    : public ui::EventHandler
-// TODO(derat): Remove these ifdefs after DisplayConfigurator becomes
-// cross-platform.
-#if defined(OS_CHROMEOS)
-      ,
+    : public ui::EventHandler,
       public display::DisplayConfigurator::Observer,
-      public chromeos::PowerManagerClient::Observer
-#endif
-{
+      public chromeos::PowerManagerClient::Observer {
  public:
   explicit PowerButtonController(LockStateController* controller);
   ~PowerButtonController() override;
@@ -55,7 +44,6 @@ class ASH_EXPORT PowerButtonController
   // ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
 
-#if defined(OS_CHROMEOS)
   // Overriden from display::DisplayConfigurator::Observer:
   void OnDisplayModeChanged(
       const display::DisplayConfigurator::DisplayStateList& outputs) override;
@@ -67,7 +55,6 @@ class ASH_EXPORT PowerButtonController
   TabletPowerButtonController* tablet_power_button_controller_for_test() {
     return tablet_controller_.get();
   }
-#endif
 
  private:
   // Are the power or lock buttons currently held?
@@ -77,11 +64,9 @@ class ASH_EXPORT PowerButtonController
   // True when the volume down button is being held down.
   bool volume_down_pressed_;
 
-#if defined(OS_CHROMEOS)
   // Volume to be restored after a screenshot is taken by pressing the power
   // button while holding VKEY_VOLUME_DOWN.
   int volume_percent_before_screenshot_;
-#endif
 
   // Has the screen brightness been reduced to 0%?
   bool brightness_is_zero_;
@@ -97,10 +82,8 @@ class ASH_EXPORT PowerButtonController
 
   LockStateController* lock_state_controller_;  // Not owned.
 
-#if defined(OS_CHROMEOS)
   // Handles events for convertible/tablet devices.
   std::unique_ptr<TabletPowerButtonController> tablet_controller_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(PowerButtonController);
 };

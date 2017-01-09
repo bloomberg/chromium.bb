@@ -13,18 +13,13 @@
 #include "ash/mus/accessibility_delegate_mus.h"
 #include "ash/mus/context_menu_mus.h"
 #include "ash/mus/shelf_delegate_mus.h"
+#include "ash/mus/system_tray_delegate_mus.h"
 #include "ash/mus/wallpaper_delegate_mus.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "components/user_manager/user_info_impl.h"
 #include "ui/gfx/image/image.h"
-
-#if defined(OS_CHROMEOS)
-#include "ash/mus/system_tray_delegate_mus.h"
-#else
-#include "ash/common/system/tray/default_system_tray_delegate.h"
-#endif
 
 namespace ash {
 namespace {
@@ -151,13 +146,7 @@ ShelfDelegate* ShellDelegateMus::CreateShelfDelegate(ShelfModel* model) {
 }
 
 SystemTrayDelegate* ShellDelegateMus::CreateSystemTrayDelegate() {
-#if defined(OS_CHROMEOS)
   return new SystemTrayDelegateMus();
-#else
-  // Windows and Linux do not support the services required for most system tray
-  // items. Use the same stub delegate as ash_shell_with_content.
-  return new DefaultSystemTrayDelegate();
-#endif
 }
 
 std::unique_ptr<WallpaperDelegate> ShellDelegateMus::CreateWallpaperDelegate() {

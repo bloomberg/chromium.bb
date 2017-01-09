@@ -32,12 +32,11 @@ void ShellContentState::DestroyInstance() {
 }
 
 ShellContentState::ShellContentState() {
-// The keyboard system must be initialized before the RootWindowController is
-// created.
-#if defined(OS_CHROMEOS)
+  // The keyboard system must be initialized before the RootWindowController is
+  // created.
   keyboard::InitializeKeyboard();
-#endif
 }
+
 ShellContentState::~ShellContentState() {}
 
 }  // namespace ash

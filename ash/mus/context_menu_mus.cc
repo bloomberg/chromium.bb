@@ -22,9 +22,7 @@ ContextMenuMus::ContextMenuMus(WmShelf* wm_shelf)
                            IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE);
   AddSubMenuWithStringId(MENU_ALIGNMENT_MENU,
                          IDS_ASH_SHELF_CONTEXT_MENU_POSITION, &alignment_menu_);
-#if defined(OS_CHROMEOS)
   AddItemWithStringId(MENU_CHANGE_WALLPAPER, IDS_AURA_SET_DESKTOP_WALLPAPER);
-#endif
 }
 
 ContextMenuMus::~ContextMenuMus() {}

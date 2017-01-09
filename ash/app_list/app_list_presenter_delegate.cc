@@ -61,12 +61,8 @@ gfx::Point GetCenterOfDisplayForWindow(WmWindow* window, int minimum_height) {
 }
 
 bool IsFullscreenAppListEnabled() {
-#if defined(OS_CHROMEOS)
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAshEnableFullscreenAppList);
-#else
-  return false;
-#endif
 }
 
 }  // namespace

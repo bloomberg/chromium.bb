@@ -216,13 +216,11 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Deactivates the virtual keyboard.
   void DeactivateKeyboard();
 
-#if defined(OS_CHROMEOS)
   // Test if MaximizeModeWindowManager is not enabled, and if
   // MaximizeModeController is not currently setting a display rotation. Or if
   // the |resolution_notification_controller_| is not showing its confirmation
   // dialog. If true then changes to display settings can be saved.
   bool ShouldSaveDisplaySettings();
-#endif
 
   AcceleratorControllerDelegateAura* accelerator_controller_delegate() {
     return accelerator_controller_delegate_.get();
@@ -254,7 +252,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   WindowTreeHostManager* window_tree_host_manager() {
     return window_tree_host_manager_.get();
   }
-#if defined(OS_CHROMEOS)
   PowerEventObserver* power_event_observer() {
     return power_event_observer_.get();
   }
@@ -267,7 +264,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   PartialMagnificationController* partial_magnification_controller() {
     return partial_magnification_controller_.get();
   }
-#endif  // defined(OS_CHROMEOS)
   ScreenshotController* screenshot_controller() {
     return screenshot_controller_.get();
   }
@@ -328,7 +324,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Starts the animation that occurs on first login.
   void DoInitialWorkspaceAnimation();
 
-#if defined(OS_CHROMEOS)
   // TODO(oshima): Move these objects to WindowTreeHostManager.
   display::DisplayConfigurator* display_configurator() {
     return display_configurator_.get();
@@ -356,7 +351,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   chromeos::AudioA11yController* audio_a11y_controller() {
     return audio_a11y_controller_.get();
   }
-#endif  // defined(OS_CHROMEOS)
 
   WindowPositioner* window_positioner() { return window_positioner_.get(); }
 
@@ -368,7 +362,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
     return is_touch_hud_projection_enabled_;
   }
 
-#if defined(OS_CHROMEOS)
   // Creates instance of FirstRunHelper. Caller is responsible for deleting
   // returned object.
   ash::FirstRunHelper* CreateFirstRunHelper();
@@ -380,8 +373,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   StickyKeysController* sticky_keys_controller() {
     return sticky_keys_controller_.get();
   }
-
-#endif  // defined(OS_CHROMEOS)
 
   ScreenPinningController* screen_pinning_controller() {
     return screen_pinning_controller_.get();
@@ -483,7 +474,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   std::unique_ptr<ScreenPinningController> screen_pinning_controller_;
 
-#if defined(OS_CHROMEOS)
   std::unique_ptr<PowerEventObserver> power_event_observer_;
   std::unique_ptr<ui::UserActivityPowerManagerNotifier> user_activity_notifier_;
   std::unique_ptr<VideoActivityNotifier> video_activity_notifier_;
@@ -517,7 +507,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<LaserPointerController> laser_pointer_controller_;
   std::unique_ptr<PartialMagnificationController>
       partial_magnification_controller_;
-#endif  // defined(OS_CHROMEOS)
 
   // |native_cursor_manager_| is owned by |cursor_manager_|, but we keep a
   // pointer to vend to test code.

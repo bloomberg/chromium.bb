@@ -299,13 +299,7 @@ class TouchHudProjectionTest : public TouchHudTestBase {
 };
 
 // Checks if debug touch HUD is correctly initialized for a single display.
-#if defined(OS_WIN) && !defined(USE_ASH)
-// TODO(msw): Broken on Windows. http://crbug.com/584038
-#define MAYBE_SingleDisplay DISABLED_SingleDisplay
-#else
-#define MAYBE_SingleDisplay SingleDisplay
-#endif
-TEST_F(TouchHudDebugTest, MAYBE_SingleDisplay) {
+TEST_F(TouchHudDebugTest, SingleDisplay) {
   // Setup a single display setting.
   SetupSingleDisplay();
 
@@ -496,13 +490,7 @@ TEST_F(TouchHudDebugTest, Headless) {
 // Checks projection touch HUD with a sequence of touch-pressed, touch-moved,
 // and touch-released events.
 // Test if the WM sets correct work area under different density.
-#if defined(OS_WIN) && !defined(USE_ASH)
-// TODO(msw): Broken on Windows. http://crbug.com/584038
-#define MAYBE_TouchMoveRelease DISABLED_TouchMoveRelease
-#else
-#define MAYBE_TouchMoveRelease TouchMoveRelease
-#endif
-TEST_F(TouchHudProjectionTest, MAYBE_TouchMoveRelease) {
+TEST_F(TouchHudProjectionTest, TouchMoveRelease) {
   SetupSingleDisplay();
   EXPECT_EQ(NULL, GetInternalTouchHudProjection());
 
@@ -527,13 +515,7 @@ TEST_F(TouchHudProjectionTest, MAYBE_TouchMoveRelease) {
 
 // Checks projection touch HUD with a sequence of touch-pressed, touch-moved,
 // and touch-cancelled events.
-#if defined(OS_WIN) && !defined(USE_ASH)
-// TODO(msw): Broken on Windows. http://crbug.com/584038
-#define MAYBE_TouchMoveCancel DISABLED_TouchMoveCancel
-#else
-#define MAYBE_TouchMoveCancel TouchMoTouchMoveCancelveRelease
-#endif
-TEST_F(TouchHudProjectionTest, MAYBE_TouchMoveCancel) {
+TEST_F(TouchHudProjectionTest, TouchMoveCancel) {
   SetupSingleDisplay();
   EXPECT_EQ(NULL, GetInternalTouchHudProjection());
 
@@ -557,13 +539,7 @@ TEST_F(TouchHudProjectionTest, MAYBE_TouchMoveCancel) {
 }
 
 // Checks projection touch HUD with two simultaneous touches.
-#if defined(OS_WIN) && !defined(USE_ASH)
-// TODO(msw): Broken on Windows. http://crbug.com/584038
-#define MAYBE_DoubleTouch DISABLED_DoubleTouch
-#else
-#define MAYBE_DoubleTouch DoubleTouch
-#endif
-TEST_F(TouchHudProjectionTest, MAYBE_DoubleTouch) {
+TEST_F(TouchHudProjectionTest, DoubleTouch) {
   SetupSingleDisplay();
   EXPECT_EQ(NULL, GetInternalTouchHudProjection());
 
@@ -597,13 +573,7 @@ TEST_F(TouchHudProjectionTest, MAYBE_DoubleTouch) {
 
 // Checks if turning off touch HUD projection while touching the screen is
 // handled correctly.
-#if defined(OS_WIN) && !defined(USE_ASH)
-// TODO(msw): Broken on Windows. http://crbug.com/584038
-#define MAYBE_DisableWhileTouching DISABLED_DisableWhileTouching
-#else
-#define MAYBE_DisableWhileTouching DisableWhileTouching
-#endif
-TEST_F(TouchHudProjectionTest, MAYBE_DisableWhileTouching) {
+TEST_F(TouchHudProjectionTest, DisableWhileTouching) {
   SetupSingleDisplay();
   EXPECT_EQ(NULL, GetInternalTouchHudProjection());
 

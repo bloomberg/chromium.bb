@@ -20,6 +20,7 @@
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "ash/system/chromeos/screen_layout_observer.h"
 #include "ash/test/ash_md_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
 #include "base/strings/stringprintf.h"
@@ -41,10 +42,6 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(OS_CHROMEOS)
-#include "ash/system/chromeos/screen_layout_observer.h"
-#endif
-
 namespace ash {
 
 namespace {
@@ -54,8 +51,6 @@ WebNotificationTray* GetTray() {
       ->web_notification_tray();
 }
 
-#if defined(OS_CHROMEOS)
-
 WebNotificationTray* GetSecondaryTray() {
   StatusAreaWidget* status_area_widget =
       StatusAreaWidgetTestHelper::GetSecondaryStatusAreaWidget();
@@ -63,8 +58,6 @@ WebNotificationTray* GetSecondaryTray() {
     return status_area_widget->web_notification_tray();
   return NULL;
 }
-
-#endif
 
 message_center::MessageCenter* GetMessageCenter() {
   return GetTray()->message_center();
@@ -270,9 +263,6 @@ TEST_P(WebNotificationTrayTest, DISABLED_ManyPopupNotifications) {
   EXPECT_EQ(message_center::kMaxVisiblePopupNotifications, popups.size());
 }
 
-// Display notification is ChromeOS only.
-#if defined(OS_CHROMEOS)
-
 // Verifies if the notification appears on both displays when extended mode.
 TEST_P(WebNotificationTrayTest, PopupShownOnBothDisplays) {
   if (!SupportsMultipleDisplays())
@@ -306,13 +296,9 @@ TEST_P(WebNotificationTrayTest, PopupShownOnBothDisplays) {
   EXPECT_TRUE(secondary_tray->IsPopupVisible());
 }
 
-#endif  // defined(OS_CHROMEOS)
-
 // PopupAndSystemTray may fail in platforms other than ChromeOS because the
 // RootWindow's bound can be bigger than display::Display's work area so that
 // openingsystem tray doesn't affect at all the work area of popups.
-#if defined(OS_CHROMEOS)
-
 TEST_P(WebNotificationTrayTest, PopupAndSystemTray) {
   TestItem* test_item = new TestItem;
   GetSystemTray()->AddTrayItem(test_item);
@@ -452,11 +438,6 @@ TEST_P(WebNotificationTrayTest, PopupAndFullscreen) {
   EXPECT_EQ(bottom_auto_hidden, GetPopupWorkAreaBottom());
 }
 
-#endif  // defined(OS_CHROMEOS)
-
-// Display notification is ChromeOS only.
-#if defined(OS_CHROMEOS)
-
 TEST_P(WebNotificationTrayTest, PopupAndSystemTrayMultiDisplay) {
   UpdateDisplay("800x600,600x400");
 
@@ -470,10 +451,6 @@ TEST_P(WebNotificationTrayTest, PopupAndSystemTrayMultiDisplay) {
   EXPECT_GT(bottom, GetPopupWorkAreaBottom());
   EXPECT_EQ(bottom_second, GetPopupWorkAreaBottomForTray(GetSecondaryTray()));
 }
-
-#endif  // defined(OS_CHROMEOS)
-
-#if defined(OS_CHROMEOS)
 
 // Tests that there is visual feedback for touch presses.
 TEST_P(WebNotificationTrayTest, TouchFeedback) {
@@ -530,7 +507,5 @@ TEST_P(WebNotificationTrayTest, TouchFeedbackCancellation) {
   EXPECT_FALSE(tray->is_active());
   EXPECT_FALSE(tray->IsMessageCenterBubbleVisible());
 }
-
-#endif  // OS_CHROMEOS
 
 }  // namespace ash

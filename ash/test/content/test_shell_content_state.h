@@ -21,11 +21,9 @@ class TestShellContentState : public ShellContentState {
  public:
   TestShellContentState();
 
-#if defined(OS_CHROMEOS)
   content::ScreenOrientationDelegate* screen_orientation_delegate() {
     return &orientation_delegate_;
   }
-#endif
 
  private:
   ~TestShellContentState() override;

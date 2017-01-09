@@ -7,24 +7,21 @@
 #include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/system/chromeos/audio/tray_audio.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "ash/system/chromeos/power/tablet_power_button_controller.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/session_state_animator.h"
 #include "base/command_line.h"
+#include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/wm/core/compound_event_filter.h"
-
-#if defined(OS_CHROMEOS)
-#include "ash/common/system/chromeos/audio/tray_audio.h"
-#include "ash/system/chromeos/power/tablet_power_button_controller.h"
-#include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#endif
 
 namespace ash {
 
@@ -32,16 +29,13 @@ PowerButtonController::PowerButtonController(LockStateController* controller)
     : power_button_down_(false),
       lock_button_down_(false),
       volume_down_pressed_(false),
-#if defined(OS_CHROMEOS)
       volume_percent_before_screenshot_(0),
-#endif
       brightness_is_zero_(false),
       internal_display_off_and_external_display_on_(false),
       has_legacy_power_button_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kAuraLegacyPowerButton)),
       lock_state_controller_(controller) {
-#if defined(OS_CHROMEOS)
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -52,18 +46,15 @@ PowerButtonController::PowerButtonController(LockStateController* controller)
         new TabletPowerButtonController(lock_state_controller_));
   }
   Shell::GetInstance()->display_configurator()->AddObserver(this);
-#endif
   Shell::GetInstance()->PrependPreTargetHandler(this);
 }
 
 PowerButtonController::~PowerButtonController() {
   Shell::GetInstance()->RemovePreTargetHandler(this);
-#if defined(OS_CHROMEOS)
   Shell::GetInstance()->display_configurator()->RemoveObserver(this);
   tablet_controller_.reset();
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
       this);
-#endif
 }
 
 void PowerButtonController::OnScreenBrightnessChanged(double percent) {
@@ -78,7 +69,6 @@ void PowerButtonController::OnPowerButtonEvent(
   if (lock_state_controller_->ShutdownRequested())
     return;
 
-#if defined(OS_CHROMEOS)
   bool should_take_screenshot = down && volume_down_pressed_ &&
                                 WmShell::Get()
                                     ->maximize_mode_controller()
@@ -90,7 +80,6 @@ void PowerButtonController::OnPowerButtonEvent(
     tablet_controller_->OnPowerButtonEvent(down, timestamp);
     return;
   }
-#endif
 
   // Avoid starting the lock/shutdown sequence if the power button is pressed
   // while the screen is off (http://crbug.com/128451), unless an external
@@ -98,7 +87,6 @@ void PowerButtonController::OnPowerButtonEvent(
   if (brightness_is_zero_ && !internal_display_off_and_external_display_on_)
     return;
 
-#if defined(OS_CHROMEOS)
   // Take screenshot on power button down plus volume down when in touch view.
   if (should_take_screenshot) {
     SystemTray* system_tray = Shell::GetInstance()->GetPrimarySystemTray();
@@ -116,7 +104,6 @@ void PowerButtonController::OnPowerButtonEvent(
         chromeos::CrasAudioHandler::VOLUME_CHANGE_MAXIMIZE_MODE_SCREENSHOT);
     return;
   }
-#endif  // defined(OS_CHROMEOS)
 
   const SessionStateDelegate* session_state_delegate =
       WmShell::Get()->GetSessionStateDelegate();
@@ -181,18 +168,15 @@ void PowerButtonController::OnLockButtonEvent(
 void PowerButtonController::OnKeyEvent(ui::KeyEvent* event) {
   if (event->key_code() == ui::VKEY_VOLUME_DOWN) {
     volume_down_pressed_ = event->type() == ui::ET_KEY_PRESSED;
-#if defined(OS_CHROMEOS)
     if (!event->is_repeat()) {
       chromeos::CrasAudioHandler* audio_handler =
           chromeos::CrasAudioHandler::Get();
       volume_percent_before_screenshot_ =
           audio_handler->GetOutputVolumePercent();
     }
-#endif
   }
 }
 
-#if defined(OS_CHROMEOS)
 void PowerButtonController::OnDisplayModeChanged(
     const display::DisplayConfigurator::DisplayStateList& display_states) {
   bool internal_display_off = false;
@@ -214,6 +198,5 @@ void PowerButtonController::PowerButtonEventReceived(
     const base::TimeTicks& timestamp) {
   OnPowerButtonEvent(down, timestamp);
 }
-#endif  // defined(OS_CHROMEOS)
 
 }  // namespace ash

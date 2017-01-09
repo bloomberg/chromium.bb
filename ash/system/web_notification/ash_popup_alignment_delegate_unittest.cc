@@ -93,13 +93,7 @@ class AshPopupAlignmentDelegateTest : public test::AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(AshPopupAlignmentDelegateTest);
 };
 
-#if defined(OS_WIN) && !defined(USE_ASH)
-// TODO(msw): Broken on Windows. http://crbug.com/584038
-#define MAYBE_ShelfAlignment DISABLED_ShelfAlignment
-#else
-#define MAYBE_ShelfAlignment ShelfAlignment
-#endif
-TEST_F(AshPopupAlignmentDelegateTest, MAYBE_ShelfAlignment) {
+TEST_F(AshPopupAlignmentDelegateTest, ShelfAlignment) {
   const gfx::Rect toast_size(0, 0, 10, 10);
   UpdateDisplay("600x600");
   gfx::Point toast_point;
@@ -186,13 +180,7 @@ TEST_F(AshPopupAlignmentDelegateTest, DockedWindow) {
   EXPECT_FALSE(alignment_delegate()->IsFromLeft());
 }
 
-#if defined(OS_WIN) && !defined(USE_ASH)
-// TODO(msw): Broken on Windows. http://crbug.com/584038
-#define MAYBE_DisplayResize DISABLED_DisplayResize
-#else
-#define MAYBE_DisplayResize DisplayResize
-#endif
-TEST_F(AshPopupAlignmentDelegateTest, MAYBE_DisplayResize) {
+TEST_F(AshPopupAlignmentDelegateTest, DisplayResize) {
   const gfx::Rect toast_size(0, 0, 10, 10);
   UpdateDisplay("600x600");
   int origin_x = alignment_delegate()->GetToastOriginX(toast_size);
@@ -283,13 +271,7 @@ TEST_F(AshPopupAlignmentDelegateTest, Unified) {
 
 // Tests that when the keyboard is showing that notifications appear above it,
 // and that they return to normal once the keyboard is gone.
-#if defined(OS_WIN) && !defined(USE_ASH)
-// TODO(msw): Broken on Windows. http://crbug.com/584038
-#define MAYBE_KeyboardShowing DISABLED_KeyboardShowing
-#else
-#define MAYBE_KeyboardShowing KeyboardShowing
-#endif
-TEST_F(AshPopupAlignmentDelegateTest, MAYBE_KeyboardShowing) {
+TEST_F(AshPopupAlignmentDelegateTest, KeyboardShowing) {
   ASSERT_TRUE(keyboard::IsKeyboardEnabled());
   ASSERT_TRUE(keyboard::IsKeyboardOverscrollEnabled());
 

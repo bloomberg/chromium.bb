@@ -47,20 +47,14 @@ TouchObserverHUD::TouchObserverHUD(aura::Window* initial_root)
 
   // Observe changes in display size and mode to update touch HUD.
   display::Screen::GetScreen()->AddObserver(this);
-#if defined(OS_CHROMEOS)
   Shell::GetInstance()->display_configurator()->AddObserver(this);
-#endif  // defined(OS_CHROMEOS)
-
   Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
   root_window_->AddPreTargetHandler(this);
 }
 
 TouchObserverHUD::~TouchObserverHUD() {
   Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
-
-#if defined(OS_CHROMEOS)
   Shell::GetInstance()->display_configurator()->RemoveObserver(this);
-#endif  // defined(OS_CHROMEOS)
   display::Screen::GetScreen()->RemoveObserver(this);
 
   widget_->RemoveObserver(this);
@@ -100,14 +94,12 @@ void TouchObserverHUD::OnDisplayMetricsChanged(const display::Display& display,
   widget_->SetSize(display.size());
 }
 
-#if defined(OS_CHROMEOS)
 void TouchObserverHUD::OnDisplayModeChanged(
     const display::DisplayConfigurator::DisplayStateList& outputs) {
   // Clear touch HUD for any change in display mode (single, dual extended, dual
   // mirrored, ...).
   Clear();
 }
-#endif  // defined(OS_CHROMEOS)
 
 void TouchObserverHUD::OnDisplaysInitialized() {
   OnDisplayConfigurationChanged();

@@ -10,6 +10,7 @@
 #include "ash/common/gpu_support_stub.h"
 #include "ash/common/palette_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/test/test_session_state_delegate.h"
 #include "ash/common/test/test_shelf_delegate.h"
 #include "ash/common/test/test_system_tray_delegate.h"
@@ -23,10 +24,6 @@
 #include "base/memory/ptr_util.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/image/image.h"
-
-#if defined(OS_CHROMEOS)
-#include "ash/common/system/tray/system_tray_notifier.h"
-#endif
 
 namespace ash {
 namespace test {

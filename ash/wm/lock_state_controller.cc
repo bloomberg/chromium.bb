@@ -25,16 +25,13 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
+#include "base/sys_info.h"
 #include "base/timer/timer.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/session_manager_client.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/wm/core/compound_event_filter.h"
-
-#if defined(OS_CHROMEOS)
-#include "base/sys_info.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager_client.h"
-#endif
 
 #define UMA_HISTOGRAM_LOCK_TIMES(name, sample)                     \
   UMA_HISTOGRAM_CUSTOM_TIMES(name, sample,                         \
@@ -45,9 +42,7 @@ namespace ash {
 
 namespace {
 
-#if defined(OS_CHROMEOS)
 const int kMaxShutdownSoundDurationMs = 1500;
-#endif
 
 }  // namespace
 
@@ -57,10 +52,6 @@ const int kMaxShutdownSoundDurationMs = 1500;
 // For MSan the slowdown depends heavily on the value of msan_track_origins GYP
 // flag. The multiplier below corresponds to msan_track_origins=1.
 static const int kTimeoutMultiplier = 6;
-#elif defined(ADDRESS_SANITIZER) && defined(OS_WIN)
-// Asan/Win has not been optimized yet, give it a higher
-// timeout multiplier. See http://crbug.com/412471
-static const int kTimeoutMultiplier = 3;
 #elif defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) || \
     defined(SYZYASAN)
 static const int kTimeoutMultiplier = 2;
@@ -293,14 +284,12 @@ void LockStateController::StartRealShutdownTimer(bool with_animation_time) {
         animator_->GetDuration(SessionStateAnimator::ANIMATION_SPEED_SHUTDOWN);
   }
 
-#if defined(OS_CHROMEOS)
   base::TimeDelta sound_duration =
       WmShell::Get()->accessibility_delegate()->PlayShutdownSound();
   sound_duration =
       std::min(sound_duration,
                base::TimeDelta::FromMilliseconds(kMaxShutdownSoundDurationMs));
   duration = std::max(duration, sound_duration);
-#endif
 
   real_shutdown_timer_.Start(
       FROM_HERE, duration, base::Bind(&LockStateController::OnRealPowerTimeout,
@@ -477,16 +466,13 @@ void LockStateController::PreLockAnimationFinished(bool request_lock) {
     WmShell::Get()->RecordUserMetricsAction(
         shutdown_after_lock_ ? UMA_ACCEL_LOCK_SCREEN_POWER_BUTTON
                              : UMA_ACCEL_LOCK_SCREEN_LOCK_BUTTON);
-#if defined(OS_CHROMEOS)
     chromeos::DBusThreadManager::Get()
         ->GetSessionManagerClient()
         ->RequestLockScreen();
-#endif
   }
 
   base::TimeDelta timeout =
       base::TimeDelta::FromMilliseconds(kLockFailTimeoutMs);
-#if defined(OS_CHROMEOS)
   // Increase lock timeout for slower hardware, see http://crbug.com/350628
   // The devices with boards "x86-mario", "daisy", "x86-alex" and "x86-zgb" have
   // slower hardware. For "x86-alex" and "x86-zgb" there are some modifications
@@ -498,7 +484,6 @@ void LockStateController::PreLockAnimationFinished(bool request_lock) {
       base::StartsWith(board, "x86-zgb", base::CompareCase::SENSITIVE)) {
     timeout *= 2;
   }
-#endif
   lock_fail_timer_.Start(FROM_HERE, timeout, this,
                          &LockStateController::OnLockFailTimeout);
 

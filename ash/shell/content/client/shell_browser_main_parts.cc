@@ -22,11 +22,14 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/context_factory.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_net_log.h"
+#include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "net/base/net_module.h"
 #include "ui/app_list/presenter/app_list.h"
 #include "ui/aura/env.h"
@@ -42,12 +45,6 @@
 
 #if defined(USE_X11)
 #include "ui/events/devices/x11/touch_factory_x11.h"  // nogncheck
-#endif
-
-#if defined(OS_CHROMEOS)
-#include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #endif
 
 namespace ash {
@@ -98,10 +95,8 @@ void ShellBrowserMainParts::PreMainMessageLoopStart() {
 }
 
 void ShellBrowserMainParts::PostMainMessageLoopStart() {
-#if defined(OS_CHROMEOS)
   chromeos::DBusThreadManager::Initialize(
       chromeos::DBusThreadManager::PROCESS_ASH);
-#endif
 }
 
 void ShellBrowserMainParts::ToolkitInitialized() {
@@ -123,13 +118,11 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   // g_browser_process.
   message_center::MessageCenter::Initialize();
 
-#if defined(OS_CHROMEOS)
   // Create CrasAudioHandler for testing since g_browser_process
   // is absent.
   chromeos::CrasAudioHandler::InitializeForTesting();
 
   bluez::BluezDBusManager::Initialize(nullptr, true /* use stub */);
-#endif
 
   ShellContentState::SetInstance(
       new ShellContentStateImpl(browser_context_.get()));
@@ -167,9 +160,7 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
   // g_browser_process.
   message_center::MessageCenter::Shutdown();
 
-#if defined(OS_CHROMEOS)
   chromeos::CrasAudioHandler::Shutdown();
-#endif
 
   views_delegate_.reset();
 

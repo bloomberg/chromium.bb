@@ -33,13 +33,6 @@
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/window_move_client.h"
 
-#if defined(OS_WIN)
-// Windows headers define macros for these function names which screw with us.
-#if defined(CreateWindow)
-#undef CreateWindow
-#endif
-#endif
-
 namespace ash {
 namespace test {
 
@@ -678,13 +671,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragMultipleWindows) {
 }
 
 // Verifies pressing escape resets the bounds to the original bounds.
-// Disabled crbug.com/166219.
-#if defined(OS_WIN)
-#define MAYBE_EscapeReverts DISABLED_EscapeReverts
-#else
-#define MAYBE_EscapeReverts EscapeReverts
-#endif
-TEST_F(ToplevelWindowEventHandlerTest, MAYBE_EscapeReverts) {
+TEST_F(ToplevelWindowEventHandlerTest, EscapeReverts) {
   std::unique_ptr<aura::Window> target(CreateWindow(HTBOTTOMRIGHT));
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      target.get());
@@ -701,13 +688,7 @@ TEST_F(ToplevelWindowEventHandlerTest, MAYBE_EscapeReverts) {
 }
 
 // Verifies window minimization/maximization completes drag.
-// Disabled crbug.com/166219.
-#if defined(OS_WIN)
-#define MAYBE_MinimizeMaximizeCompletes DISABLED_MinimizeMaximizeCompletes
-#else
-#define MAYBE_MinimizeMaximizeCompletes MinimizeMaximizeCompletes
-#endif
-TEST_F(ToplevelWindowEventHandlerTest, MAYBE_MinimizeMaximizeCompletes) {
+TEST_F(ToplevelWindowEventHandlerTest, MinimizeMaximizeCompletes) {
   // Once window is minimized, window dragging completes.
   {
     std::unique_ptr<aura::Window> target(CreateWindow(HTCAPTION));

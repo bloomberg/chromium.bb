@@ -6,12 +6,10 @@
 #define ASH_CONTENT_SHELL_CONTENT_STATE_H_
 
 #include "ash/content/ash_with_content_export.h"
+#include "ash/content/screen_orientation_delegate_chromeos.h"
 #include "ash/public/cpp/session_types.h"
 #include "base/macros.h"
 
-#if defined(OS_CHROMEOS)
-#include "ash/content/screen_orientation_delegate_chromeos.h"
-#endif
 
 namespace aura {
 class Window;
@@ -50,9 +48,7 @@ class ASH_WITH_CONTENT_EXPORT ShellContentState {
   ShellContentState();
   virtual ~ShellContentState();
 
-#if defined(OS_CHROMEOS)
   ScreenOrientationDelegateChromeos orientation_delegate_;
-#endif
 
  private:
   static ShellContentState* instance_;

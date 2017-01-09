@@ -8,11 +8,19 @@
 
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/mojo_interface_factory.h"
+#include "ash/common/system/chromeos/power/power_status.h"
 #include "ash/common/wm_shell.h"
+#include "ash/mus/network_connect_delegate_mus.h"
 #include "ash/mus/window_manager.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/network/network_connect.h"
+#include "chromeos/network/network_handler.h"
+#include "chromeos/system/fake_statistics_provider.h"
+#include "device/bluetooth/dbus/bluez_dbus_manager.h"  // nogncheck
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context.h"
@@ -25,17 +33,6 @@
 #include "ui/events/event.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/mus/aura_init.h"
-
-#if defined(OS_CHROMEOS)
-#include "ash/common/system/chromeos/power/power_status.h"
-#include "ash/mus/network_connect_delegate_mus.h"
-#include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/network/network_connect.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/system/fake_statistics_provider.h"
-#include "device/bluetooth/dbus/bluez_dbus_manager.h"  // nogncheck
-#endif
 
 namespace ash {
 namespace mus {
@@ -57,9 +54,7 @@ WindowManagerApplication::~WindowManagerApplication() {
   }
 
   gpu_.reset();
-#if defined(OS_CHROMEOS)
   statistics_provider_.reset();
-#endif
   ShutdownComponents();
 }
 
@@ -70,7 +65,7 @@ void WindowManagerApplication::InitWindowManager(
   if (!aura::Env::GetInstance()->HasWindowTreeClient())
     aura::Env::GetInstance()->SetWindowTreeClient(window_tree_client.get());
   InitializeComponents();
-#if defined(OS_CHROMEOS)
+
   // TODO(jamescook): Refactor StatisticsProvider so we can get just the data
   // we need in ash. Right now StatisticsProviderImpl launches the crossystem
   // binary to get system data, which we don't want to do twice on startup.
@@ -78,13 +73,13 @@ void WindowManagerApplication::InitWindowManager(
       new chromeos::system::ScopedFakeStatisticsProvider());
   statistics_provider_->SetMachineStatistic("initial_locale", "en-US");
   statistics_provider_->SetMachineStatistic("keyboard_layout", "");
-#endif
+
   window_manager_->Init(std::move(window_tree_client), blocking_pool);
 }
 
 void WindowManagerApplication::InitializeComponents() {
   message_center::MessageCenter::Initialize();
-#if defined(OS_CHROMEOS)
+
   // Must occur after mojo::ApplicationRunner has initialized AtExitManager, but
   // before WindowManager::Init().
   chromeos::DBusThreadManager::Initialize(
@@ -100,11 +95,9 @@ void WindowManagerApplication::InitializeComponents() {
   // TODO(jamescook): Initialize real audio handler.
   chromeos::CrasAudioHandler::InitializeForTesting();
   PowerStatus::Initialize();
-#endif
 }
 
 void WindowManagerApplication::ShutdownComponents() {
-#if defined(OS_CHROMEOS)
   PowerStatus::Shutdown();
   chromeos::CrasAudioHandler::Shutdown();
   chromeos::NetworkConnect::Shutdown();
@@ -112,7 +105,6 @@ void WindowManagerApplication::ShutdownComponents() {
   chromeos::NetworkHandler::Shutdown();
   bluez::BluezDBusManager::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
-#endif
   message_center::MessageCenter::Shutdown();
 }
 

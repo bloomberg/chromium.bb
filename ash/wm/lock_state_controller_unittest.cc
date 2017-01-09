@@ -643,9 +643,6 @@ TEST_F(LockStateControllerTest, CancelLockToShutdown) {
   EXPECT_FALSE(test_api_->shutdown_timer_is_running());
 }
 
-// TODO(bruthig): Investigate why this hangs on Windows 8 and whether it can be
-// safely enabled on OS_WIN.
-#ifndef OS_WIN
 // Test that we handle the case where lock requests are ignored.
 TEST_F(LockStateControllerTest, Lock) {
   Initialize(false, LoginStatus::USER);
@@ -665,7 +662,6 @@ TEST_F(LockStateControllerTest, Lock) {
   // Act as if the request timed out.
   EXPECT_DEATH(test_api_->trigger_lock_fail_timeout(), "");
 }
-#endif
 
 // Test the basic operation of the lock button (not logged in).
 TEST_F(LockStateControllerTest, LockButtonBasicNotLoggedIn) {

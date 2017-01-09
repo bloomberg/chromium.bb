@@ -9,18 +9,7 @@
 #include "base/path_service.h"
 #include "content/public/app/content_main.h"
 
-#if defined(OS_WIN)
-#include "content/public/app/sandbox_helper_win.h"
-#include "sandbox/win/src/sandbox_types.h"
-#endif
-
-#if defined(OS_WIN)
-int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t*, int) {
-  int argc = 0;
-  char** argv = nullptr;
-#else
 int main(int argc, const char** argv) {
-#endif
   base::CommandLine::Init(argc, argv);
   base::AtExitManager exit_manager;
 
@@ -35,16 +24,8 @@ int main(int argc, const char** argv) {
 
   ash::shell::ShellMainDelegate delegate;
   content::ContentMainParams params(&delegate);
-
-#if defined(OS_WIN)
-  sandbox::SandboxInterfaceInfo sandbox_info = {0};
-  content::InitializeSandboxInfo(&sandbox_info);
-  params.instance = instance;
-  params.sandbox_info = &sandbox_info;
-#else
   params.argc = argc;
   params.argv = argv;
-#endif
 
   return content::ContentMain(params);
 }

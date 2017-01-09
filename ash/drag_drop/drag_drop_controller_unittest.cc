@@ -327,13 +327,7 @@ class DragDropControllerTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(DragDropControllerTest);
 };
 
-// TODO(win_aura) http://crbug.com/154081
-#if defined(OS_WIN)
-#define MAYBE_DragDropInSingleViewTest DISABLED_DragDropInSingleViewTest
-#else
-#define MAYBE_DragDropInSingleViewTest DragDropInSingleViewTest
-#endif
-TEST_F(DragDropControllerTest, MAYBE_DragDropInSingleViewTest) {
+TEST_F(DragDropControllerTest, DragDropInSingleViewTest) {
   std::unique_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
@@ -417,15 +411,7 @@ TEST_F(DragDropControllerTest, DragDropWithZeroDragUpdates) {
   EXPECT_TRUE(drag_view->drag_done_received_);
 }
 
-// TODO(win_aura) http://crbug.com/154081
-#if defined(OS_WIN)
-#define MAYBE_DragDropInMultipleViewsSingleWidgetTest \
-  DISABLED_DragDropInMultipleViewsSingleWidgetTest
-#else
-#define MAYBE_DragDropInMultipleViewsSingleWidgetTest \
-  DragDropInMultipleViewsSingleWidgetTest
-#endif
-TEST_F(DragDropControllerTest, MAYBE_DragDropInMultipleViewsSingleWidgetTest) {
+TEST_F(DragDropControllerTest, DragDropInMultipleViewsSingleWidgetTest) {
   std::unique_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view1 = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view1);
@@ -480,16 +466,7 @@ TEST_F(DragDropControllerTest, MAYBE_DragDropInMultipleViewsSingleWidgetTest) {
   EXPECT_FALSE(drag_view2->drag_done_received_);
 }
 
-// TODO(win_aura) http://crbug.com/154081
-#if defined(OS_WIN)
-#define MAYBE_DragDropInMultipleViewsMultipleWidgetsTest \
-  DISABLED_DragDropInMultipleViewsMultipleWidgetsTest
-#else
-#define MAYBE_DragDropInMultipleViewsMultipleWidgetsTest \
-  DragDropInMultipleViewsMultipleWidgetsTest
-#endif
-TEST_F(DragDropControllerTest,
-       MAYBE_DragDropInMultipleViewsMultipleWidgetsTest) {
+TEST_F(DragDropControllerTest, DragDropInMultipleViewsMultipleWidgetsTest) {
   std::unique_ptr<views::Widget> widget1(CreateNewWidget());
   DragTestView* drag_view1 = new DragTestView;
   AddViewToWidgetAndResize(widget1.get(), drag_view1);
@@ -549,14 +526,7 @@ TEST_F(DragDropControllerTest,
   EXPECT_FALSE(drag_view2->drag_done_received_);
 }
 
-// TODO(win_aura) http://crbug.com/154081
-#if defined(OS_WIN)
-#define MAYBE_ViewRemovedWhileInDragDropTest \
-  DISABLED_ViewRemovedWhileInDragDropTest
-#else
-#define MAYBE_ViewRemovedWhileInDragDropTest ViewRemovedWhileInDragDropTest
-#endif
-TEST_F(DragDropControllerTest, MAYBE_ViewRemovedWhileInDragDropTest) {
+TEST_F(DragDropControllerTest, ViewRemovedWhileInDragDropTest) {
   std::unique_ptr<views::Widget> widget(CreateNewWidget());
   std::unique_ptr<DragTestView> drag_view(new DragTestView);
   AddViewToWidgetAndResize(widget.get(), drag_view.get());
@@ -743,16 +713,7 @@ TEST_F(DragDropControllerTest, SyntheticEventsDuringDragDrop) {
   EXPECT_TRUE(drag_view->drag_done_received_);
 }
 
-// TODO(win_aura) http://crbug.com/154081
-#if defined(OS_WIN)
-#define MAYBE_PressingEscapeCancelsDragDrop \
-  DISABLED_PressingEscapeCancelsDragDrop
-#define MAYBE_CaptureLostCancelsDragDrop DISABLED_CaptureLostCancelsDragDrop
-#else
-#define MAYBE_PressingEscapeCancelsDragDrop PressingEscapeCancelsDragDrop
-#define MAYBE_CaptureLostCancelsDragDrop CaptureLostCancelsDragDrop
-#endif
-TEST_F(DragDropControllerTest, MAYBE_PressingEscapeCancelsDragDrop) {
+TEST_F(DragDropControllerTest, PressingEscapeCancelsDragDrop) {
   std::unique_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
@@ -794,7 +755,7 @@ TEST_F(DragDropControllerTest, MAYBE_PressingEscapeCancelsDragDrop) {
   EXPECT_TRUE(drag_view->drag_done_received_);
 }
 
-TEST_F(DragDropControllerTest, MAYBE_CaptureLostCancelsDragDrop) {
+TEST_F(DragDropControllerTest, CaptureLostCancelsDragDrop) {
   std::unique_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);

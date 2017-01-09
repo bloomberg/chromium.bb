@@ -156,12 +156,7 @@ TEST_F(TooltipControllerTest, TooltipsOnMultiDisplayShouldNotCrash) {
   // Get rid of secondary display. This destroy's the tooltip's aura window. If
   // we have handled this case, we will not crash in the following statement.
   UpdateDisplay("1000x600");
-#if !defined(OS_WIN)
-  // TODO(cpu): Detangle the window destruction notification. Currently
-  // the TooltipController::OnWindowDestroyed is not being called then the
-  // display is torn down so the tooltip is is still there.
   EXPECT_FALSE(helper_->IsTooltipVisible());
-#endif
   EXPECT_EQ(widget2->GetNativeView()->GetRootWindow(), root_windows[0]);
 
   // The tooltip should create a new aura window for itself, so we should still

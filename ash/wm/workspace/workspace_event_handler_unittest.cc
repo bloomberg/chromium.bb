@@ -28,10 +28,6 @@
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/window_move_client.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 namespace ash {
 
 namespace {
@@ -159,12 +155,6 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisResizeEdge) {
   // Restore.
   generator.DoubleClickLeftButton();
   EXPECT_EQ(restored_bounds.ToString(), window->GetBoundsInScreen().ToString());
-
-#if defined(OS_WIN)
-  // Multi display test does not run on Win8 bot. crbug.com/247427.
-  if (!SupportsMultipleDisplays())
-    return;
-#endif
 
   // Verify the double clicking the resize edge works on 2nd display too.
   UpdateDisplay("200x200,400x300");

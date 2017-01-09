@@ -212,13 +212,7 @@ TEST_F(OverviewButtonTrayTest, ActiveStateOnlyDuringOverviewMode) {
 
 // Test that when a hide animation is aborted via deletion, that the
 // OverviewButton is still hidden.
-#if defined(OS_WIN) && !defined(USE_ASH)
-// TODO(msw): Broken on Windows. http://crbug.com/584038
-#define MAYBE_HideAnimationAlwaysCompletes DISABLED_HideAnimationAlwaysCompletes
-#else
-#define MAYBE_HideAnimationAlwaysCompletes HideAnimationAlwaysCompletes
-#endif
-TEST_F(OverviewButtonTrayTest, MAYBE_HideAnimationAlwaysCompletes) {
+TEST_F(OverviewButtonTrayTest, HideAnimationAlwaysCompletes) {
   WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
       true);
 

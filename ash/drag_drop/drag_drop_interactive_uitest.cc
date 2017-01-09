@@ -113,15 +113,9 @@ void DragDropAcrossMultiDisplay_Step1() {
 
 using DragDropTest = test::AshInteractiveUITestBase;
 
-#if !defined(OS_CHROMEOS)
-#define MAYBE_DragDropAcrossMultiDisplay DISABLED_DragDropAcrossMultiDisplay
-#else
-#define MAYBE_DragDropAcrossMultiDisplay DragDropAcrossMultiDisplay
-#endif
-
 // Test if the mouse gets moved properly to another display
 // during drag & drop operation.
-TEST_F(DragDropTest, MAYBE_DragDropAcrossMultiDisplay) {
+TEST_F(DragDropTest, DragDropAcrossMultiDisplay) {
   if (!SupportsMultipleDisplays())
     return;
 

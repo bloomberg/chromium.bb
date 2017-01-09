@@ -583,14 +583,7 @@ TEST_F(PanelLayoutManagerTest, SplitView) {
   EXPECT_NO_FATAL_FAILURE(PanelsNotOverlapping(w1.get(), w2.get()));
 }
 
-#if defined(OS_WIN)
-// RootWindow and Display can't resize on Windows Ash. http://crbug.com/165962
-#define MAYBE_SplitViewOverlapWhenLarge DISABLED_SplitViewOverlapWhenLarge
-#else
-#define MAYBE_SplitViewOverlapWhenLarge SplitViewOverlapWhenLarge
-#endif
-
-TEST_F(PanelLayoutManagerTest, MAYBE_SplitViewOverlapWhenLarge) {
+TEST_F(PanelLayoutManagerTest, SplitViewOverlapWhenLarge) {
   gfx::Rect bounds(0, 0, 600, 201);
   std::unique_ptr<aura::Window> w1(CreatePanelWindow(bounds));
   std::unique_ptr<aura::Window> w2(CreatePanelWindow(bounds));
@@ -855,7 +848,6 @@ TEST_F(PanelLayoutManagerTest, PanelsHideAndRestoreWithShelf) {
   EXPECT_TRUE(w3->IsVisible());
 }
 
-#if !defined(OS_WIN)
 // Verifies that touches along the attached edge of a panel do not
 // target the panel itself.
 TEST_F(PanelLayoutManagerTest, TouchHitTestPanel) {
@@ -910,7 +902,6 @@ TEST_F(PanelLayoutManagerTest, TouchHitTestPanel) {
   target = targeter->FindTargetForEvent(root, &touch);
   EXPECT_NE(w.get(), target);
 }
-#endif  // !defined(OS_WIN)
 
 INSTANTIATE_TEST_CASE_P(LtrRtl,
                         PanelLayoutManagerTextDirectionTest,

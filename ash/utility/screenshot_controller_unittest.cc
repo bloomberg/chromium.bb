@@ -275,7 +275,6 @@ TEST_F(PartialScreenshotControllerTest, MouseWarpTest) {
             aura::Env::GetInstance()->last_mouse_location());
 }
 
-#if defined(OS_CHROMEOS)
 TEST_F(PartialScreenshotControllerTest, VisibilityTest) {
   aura::client::CursorClient* client = Shell::GetInstance()->cursor_manager();
 
@@ -334,7 +333,6 @@ TEST_F(PartialScreenshotControllerTest, LargeCursor) {
   RunAllPendingInMessageLoop();
   EXPECT_FALSE(IsActive());
 }
-#endif
 
 TEST_F(WindowScreenshotControllerTest, KeyboardOperation) {
   ui::test::EventGenerator& generator(GetEventGenerator());

@@ -11,12 +11,9 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "base/macros.h"
 #include "ui/display/display_observer.h"
+#include "ui/display/manager/chromeos/display_configurator.h"
 #include "ui/events/event_handler.h"
 #include "ui/views/widget/widget_observer.h"
-
-#if defined(OS_CHROMEOS)
-#include "ui/display/manager/chromeos/display_configurator.h"
-#endif  // defined(OS_CHROMEOS)
 
 namespace views {
 class Widget;
@@ -30,9 +27,7 @@ class ASH_EXPORT TouchObserverHUD
     : public ui::EventHandler,
       public views::WidgetObserver,
       public display::DisplayObserver,
-#if defined(OS_CHROMEOS)
       public display::DisplayConfigurator::Observer,
-#endif  // defined(OS_CHROMEOS)
       public WindowTreeHostManager::Observer {
  public:
   // Called to clear touch points and traces from the screen. Default
@@ -68,11 +63,9 @@ class ASH_EXPORT TouchObserverHUD
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
 
-#if defined(OS_CHROMEOS)
   // Overriden from display::DisplayConfigurator::Observer.
   void OnDisplayModeChanged(
       const display::DisplayConfigurator::DisplayStateList& outputs) override;
-#endif  // defined(OS_CHROMEOS)
 
   // Overriden form WindowTreeHostManager::Observer.
   void OnDisplaysInitialized() override;

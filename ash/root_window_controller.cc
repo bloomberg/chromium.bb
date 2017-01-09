@@ -7,6 +7,7 @@
 #include <queue>
 #include <vector>
 
+#include "ash/ash_touch_exploration_manager_chromeos.h"
 #include "ash/aura/aura_layout_manager_adapter.h"
 #include "ash/aura/wm_root_window_controller_aura.h"
 #include "ash/aura/wm_shelf_aura.h"
@@ -48,6 +49,7 @@
 #include "ash/touch/touch_hud_debug.h"
 #include "ash/touch/touch_hud_projection.h"
 #include "ash/touch/touch_observer_hud.h"
+#include "ash/wm/boot_splash_screen_chromeos.h"
 #include "ash/wm/panels/attached_panel_window_targeter.h"
 #include "ash/wm/panels/panel_window_event_handler.h"
 #include "ash/wm/stacking_controller.h"
@@ -59,6 +61,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
+#include "chromeos/chromeos_switches.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -66,6 +69,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/chromeos/touch_exploration_controller.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
@@ -77,23 +81,14 @@
 #include "ui/wm/public/tooltip_client.h"
 #include "ui/wm/public/window_types.h"
 
-#if defined(OS_CHROMEOS)
-#include "ash/ash_touch_exploration_manager_chromeos.h"
-#include "ash/wm/boot_splash_screen_chromeos.h"
-#include "chromeos/chromeos_switches.h"
-#include "ui/chromeos/touch_exploration_controller.h"
-#endif
-
 namespace ash {
 namespace {
 
-#if defined(OS_CHROMEOS)
 // Duration for the animation that hides the boot splash screen, in
 // milliseconds.  This should be short enough in relation to
 // wm/window_animation.cc's brightness/grayscale fade animation that the login
 // wallpaper image animation isn't hidden by the splash screen animation.
 const int kBootSplashScreenHideDurationMs = 500;
-#endif
 
 bool IsWindowAboveContainer(aura::Window* window,
                             aura::Window* blocking_container) {
@@ -198,9 +193,7 @@ WorkspaceController* RootWindowController::workspace_controller() {
 void RootWindowController::Shutdown() {
   WmShell::Get()->RemoveShellObserver(this);
 
-#if defined(OS_CHROMEOS)
   touch_exploration_manager_.reset();
-#endif
 
   wm_root_window_controller_->ResetRootForNewWindowsIfNecessary();
 
@@ -270,7 +263,6 @@ const aura::Window* RootWindowController::GetContainer(int container_id) const {
 }
 
 void RootWindowController::OnInitialWallpaperAnimationStarted() {
-#if defined(OS_CHROMEOS)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshAnimateFromBootSplashScreen) &&
       boot_splash_screen_.get()) {
@@ -279,15 +271,12 @@ void RootWindowController::OnInitialWallpaperAnimationStarted() {
     boot_splash_screen_->StartHideAnimation(
         base::TimeDelta::FromMilliseconds(kBootSplashScreenHideDurationMs));
   }
-#endif
 }
 
 void RootWindowController::OnWallpaperAnimationFinished(views::Widget* widget) {
   // Make sure the wallpaper is visible.
   system_wallpaper_->SetColor(SK_ColorBLACK);
-#if defined(OS_CHROMEOS)
   boot_splash_screen_.reset();
-#endif
 }
 
 void RootWindowController::CloseChildWindows() {
@@ -394,10 +383,8 @@ bool RootWindowController::IsVirtualKeyboardWindow(aura::Window* window) {
 
 void RootWindowController::SetTouchAccessibilityAnchorPoint(
     const gfx::Point& anchor_point) {
-#if defined(OS_CHROMEOS)
   if (touch_exploration_manager_)
     touch_exploration_manager_->SetTouchAccessibilityAnchorPoint(anchor_point);
-#endif  // defined(OS_CHROMEOS)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -456,12 +443,10 @@ void RootWindowController::Init(RootWindowType root_window_type) {
     shell->OnRootWindowAdded(WmWindowAura::Get(root_window));
   }
 
-#if defined(OS_CHROMEOS)
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshDisableTouchExplorationMode)) {
     touch_exploration_manager_.reset(new AshTouchExplorationManager(this));
   }
-#endif
 }
 
 void RootWindowController::InitLayoutManagers() {
@@ -509,7 +494,6 @@ void RootWindowController::InitTouchHuds() {
 void RootWindowController::CreateSystemWallpaper(
     RootWindowType root_window_type) {
   SkColor color = SK_ColorBLACK;
-#if defined(OS_CHROMEOS)
   // The splash screen appears on the primary display at boot. If this is a
   // secondary monitor (either connected at boot or connected later) or if the
   // browser restarted for a second login then don't use the boot color.
@@ -519,11 +503,9 @@ void RootWindowController::CreateSystemWallpaper(
           chromeos::switches::kFirstExecAfterBoot);
   if (is_boot_splash_screen)
     color = kChromeOsBootColor;
-#endif
   system_wallpaper_.reset(
       new SystemWallpaperController(GetRootWindow(), color));
 
-#if defined(OS_CHROMEOS)
   // Make a copy of the system's boot splash screen so we can composite it
   // onscreen until the wallpaper is ready.
   if (is_boot_splash_screen &&
@@ -532,7 +514,6 @@ void RootWindowController::CreateSystemWallpaper(
        base::CommandLine::ForCurrentProcess()->HasSwitch(
            switches::kAshAnimateFromBootSplashScreen)))
     boot_splash_screen_.reset(new BootSplashScreen(GetHost()));
-#endif
 }
 
 void RootWindowController::EnableTouchHudProjection() {

@@ -427,7 +427,6 @@ bool WmShellMus::IsTouchDown() {
   return false;
 }
 
-#if defined(OS_CHROMEOS)
 void WmShellMus::ToggleIgnoreExternalKeyboard() {
   NOTIMPLEMENTED();
 }
@@ -435,7 +434,6 @@ void WmShellMus::ToggleIgnoreExternalKeyboard() {
 void WmShellMus::SetLaserPointerEnabled(bool enabled) {
   NOTIMPLEMENTED();
 }
-#endif  // defined(OS_CHROMEOS)
 
 // TODO: support OnAttemptToReactivateWindow, http://crbug.com/615114.
 // TODO: Nuke and let client code use ActivationChangeObserver directly.

@@ -361,8 +361,6 @@ class WindowSelectorTest : public test::AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorTest);
 };
 
-#if !defined(OS_WIN) || defined(USE_ASH)
-// TODO(msw): Broken on Windows. http://crbug.com/584038
 // Tests that the text field in the overview menu is repositioned and resized
 // after a screen rotation.
 TEST_F(WindowSelectorTest, OverviewScreenRotation) {
@@ -396,7 +394,6 @@ TEST_F(WindowSelectorTest, OverviewScreenRotation) {
   EXPECT_EQ(expected_bounds.ToString(),
             text_filter->GetClientAreaBoundsInScreen().ToString());
 }
-#endif
 
 // Tests that an a11y alert is sent on entering overview mode.
 TEST_F(WindowSelectorTest, A11yAlertOnOverviewMode) {

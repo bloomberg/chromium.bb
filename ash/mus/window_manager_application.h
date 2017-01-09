@@ -83,11 +83,9 @@ class WindowManagerApplication : public service_manager::Service {
   // A blocking pool used by the WindowManager's shell; not used in tests.
   scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
 
-#if defined(OS_CHROMEOS)
   std::unique_ptr<NetworkConnectDelegateMus> network_connect_delegate_;
   std::unique_ptr<chromeos::system::ScopedFakeStatisticsProvider>
       statistics_provider_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerApplication);
 };

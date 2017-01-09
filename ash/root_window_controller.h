@@ -40,7 +40,9 @@ class ScopedCaptureClient;
 }
 
 namespace ash {
+class AshTouchExplorationManager;
 class AshWindowTreeHost;
+class BootSplashScreen;
 class DockedWindowLayoutManager;
 enum class LoginStatus;
 class PanelLayoutManager;
@@ -54,11 +56,6 @@ class TouchHudProjection;
 class WmRootWindowControllerAura;
 class WmShelfAura;
 class WorkspaceController;
-
-#if defined(OS_CHROMEOS)
-class BootSplashScreen;
-class AshTouchExplorationManager;
-#endif
 
 // This class maintains the per root window state for ash. This class
 // owns the root window and other dependent objects that should be
@@ -223,12 +220,10 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
 
   std::unique_ptr<SystemWallpaperController> system_wallpaper_;
 
-#if defined(OS_CHROMEOS)
   std::unique_ptr<BootSplashScreen> boot_splash_screen_;
   // Responsible for initializing TouchExplorationController when spoken
   // feedback is on.
   std::unique_ptr<AshTouchExplorationManager> touch_exploration_manager_;
-#endif
 
   // Heads-up displays for touch events. These HUDs are not owned by the root
   // window controller and manage their own lifetimes.

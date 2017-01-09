@@ -78,11 +78,6 @@ class WorkspaceWindowResizerTest : public test::AshMDTestBase {
 
     aura::Window* root = Shell::GetPrimaryRootWindow();
     gfx::Rect root_bounds(root->bounds());
-#if defined(OS_WIN)
-    // RootWindow and Display can't resize on Windows Ash.
-    // http://crbug.com/165962
-    EXPECT_EQ(kRootHeight, root_bounds.height());
-#endif
     EXPECT_EQ(800, root_bounds.width());
     Shell::GetInstance()->SetDisplayWorkAreaInsets(root, gfx::Insets());
     window_.reset(new aura::Window(&delegate_));
@@ -424,7 +419,6 @@ TEST_P(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_2) {
   EXPECT_EQ("0,250 200x100", window2_->bounds().ToString());
 }
 
-#if defined(OS_CHROMEOS)
 // Assertions around attached window resize dragging from the bottom with 3
 // windows.
 TEST_P(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3) {
@@ -469,7 +463,6 @@ TEST_P(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3) {
   EXPECT_EQ("300,300 200x150", window2_->bounds().ToString());
   EXPECT_EQ("300,450 200x100", window3_->bounds().ToString());
 }
-#endif  // defined(OS_CHROMEOS)
 
 // Assertions around attached window resizing (collapsing and expanding) with
 // 3 windows.

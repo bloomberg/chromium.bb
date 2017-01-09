@@ -110,10 +110,8 @@ class WmShellMus : public WmShell,
   void RemovePointerWatcher(views::PointerWatcher* watcher) override;
   void RequestShutdown() override;
   bool IsTouchDown() override;
-#if defined(OS_CHROMEOS)
   void ToggleIgnoreExternalKeyboard() override;
   void SetLaserPointerEnabled(bool enabled) override;
-#endif
 
  private:
   friend class WmShellMusTestApi;

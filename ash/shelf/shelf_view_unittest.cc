@@ -2217,8 +2217,6 @@ TEST_F(ShelfViewInkDropTest, AppListButtonMouseEventsWhenVisible) {
               IsEmpty());
 }
 
-// There is no ink drop effect for gesture events on Windows.
-#if !defined(OS_WIN)
 // Tests that when the app list is hidden, tapping on the app list button
 // transitions ink drop states correctly.
 TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapWhenHidden) {
@@ -2349,7 +2347,6 @@ TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapDragWhenVisible) {
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::HIDDEN));
 }
-#endif  // !defined(OS_WIN)
 
 // Tests that clicking on a shelf item that does not show a menu transitions ink
 // drop states correctly.
@@ -2714,8 +2711,6 @@ TEST_F(OverflowButtonInkDropTest, MouseContextMenu) {
   EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
 }
 
-// There is no ink drop effect for gesture events on Windows.
-#if !defined(OS_WIN)
 // Tests ink drop state transitions for the overflow button when the user taps
 // on it.
 TEST_F(OverflowButtonInkDropTest, TouchActivate) {
@@ -2825,8 +2820,6 @@ TEST_F(OverflowButtonInkDropTest, TouchContextMenu) {
 
   EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
 }
-
-#endif  // !defined(OS_WIN)
 
 // Test fixture for testing material design ink drop on overflow button when it
 // is active.
@@ -2954,8 +2947,6 @@ TEST_F(OverflowButtonActiveInkDropTest, MouseContextMenu) {
   ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
 }
 
-// There is no ink drop effect for gesture events on Windows.
-#if !defined(OS_WIN)
 // Tests ink drop state transitions for the overflow button when it is active
 // and the user taps on it.
 TEST_F(OverflowButtonActiveInkDropTest, TouchDeactivate) {
@@ -3065,8 +3056,6 @@ TEST_F(OverflowButtonActiveInkDropTest, TouchContextMenu) {
 
   ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
 }
-
-#endif  // !defined(OS_WIN)
 
 }  // namespace test
 }  // namespace ash

@@ -84,10 +84,8 @@ void ExpectAllContainers() {
       Shell::GetContainer(root_window, kShellWindowId_OverlayContainer));
   EXPECT_TRUE(Shell::GetContainer(root_window,
                                   kShellWindowId_ImeWindowParentContainer));
-#if defined(OS_CHROMEOS)
   EXPECT_TRUE(
       Shell::GetContainer(root_window, kShellWindowId_MouseCursorContainer));
-#endif
 }
 
 class ModalWindow : public views::WidgetDelegateView {

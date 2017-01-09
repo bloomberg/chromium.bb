@@ -52,10 +52,6 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 namespace ash {
 namespace {
 
@@ -591,14 +587,8 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
   shelf->count_auto_hide_changes_ = 0;
 }
 
-// Need to be implemented.  http://crbug.com/111279.
-#if defined(OS_WIN)
-#define MAYBE_SetVisible DISABLED_SetVisible
-#else
-#define MAYBE_SetVisible SetVisible
-#endif
 // Makes sure SetVisible updates work area and widget appropriately.
-TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
+TEST_F(ShelfLayoutManagerTest, SetVisible) {
   ShelfWidget* shelf_widget = GetShelfWidget();
   ShelfLayoutManager* manager = shelf_widget->shelf_layout_manager();
   // Force an initial layout.
@@ -1537,19 +1527,10 @@ TEST_F(ShelfLayoutManagerTest, WorkAreaChangeWorkspace) {
             widget_one->GetNativeWindow()->bounds().size().GetArea());
 }
 
-// This test fails on Windows (likely due to hard-coded pointer coordinate
-// arithmetic), but the Windows ash shell isn't supported any more so it's
-// probably not worth fixing. Also note that this test uses system tray
-// notification bubbles, which needn't exist: see crbug.com/630641
-#if defined(OS_WIN)
-#define MAYBE_BubbleEnlargesShelfMouseHitArea \
-  DISABLED_BubbleEnlargesShelfMouseHitArea
-#else
-#define MAYBE_BubbleEnlargesShelfMouseHitArea BubbleEnlargesShelfMouseHitArea
-#endif
 // Make sure that the shelf will not hide if the mouse is between a bubble and
-// the shelf.
-TEST_F(ShelfLayoutManagerTest, MAYBE_BubbleEnlargesShelfMouseHitArea) {
+// the shelf. This test uses system tray notification bubbles, which needn't
+// exist: see crbug.com/630641
+TEST_F(ShelfLayoutManagerTest, BubbleEnlargesShelfMouseHitArea) {
   WmShelf* shelf = GetPrimaryShelf();
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
   StatusAreaWidget* status_area_widget =
@@ -1699,17 +1680,9 @@ TEST_F(ShelfLayoutManagerTest,
   EXPECT_EQ(initial_bounds, reshow_target_bounds);
 }
 
-// Flaky crash on Windows (crbug.com/637873).
-#if defined(OS_WIN)
-#define MAYBE_ShutdownHandlesWindowActivation \
-  DISABLED_ShutdownHandlesWindowActivation
-#else
-#define MAYBE_ShutdownHandlesWindowActivation ShutdownHandlesWindowActivation
-#endif
-
 // Tests that during shutdown, that window activation changes are properly
 // handled, and do not crash (crbug.com/458768)
-TEST_F(ShelfLayoutManagerTest, MAYBE_ShutdownHandlesWindowActivation) {
+TEST_F(ShelfLayoutManagerTest, ShutdownHandlesWindowActivation) {
   GetPrimaryShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
   aura::Window* window1 = CreateTestWindowInShellWithId(0);
