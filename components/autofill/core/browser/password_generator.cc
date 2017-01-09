@@ -55,7 +55,7 @@ bool VerifyPassword(const std::string& password) {
 
 namespace autofill {
 
-const int PasswordGenerator::kDefaultPasswordLength = 12;
+const int PasswordGenerator::kDefaultPasswordLength = 15;
 
 void ForceFixPassword(std::string* password) {
   for (char& it : *password) {
