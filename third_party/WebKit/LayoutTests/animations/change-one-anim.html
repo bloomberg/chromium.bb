@@ -1,64 +1,72 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-   "http://www.w3.org/TR/html4/loose.dtd">
-
-<html lang="en">
+<!DOCTYPE html>
+<html>
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Animation using matrix()</title>
-    <style type="text/css" media="screen">
-        #box {
-            position: relative;
-            height: 20px;
-            width: 20px;
-            background-color: #9bb;
-            animation-name: horiz, vert;
-            animation-duration: 1s;
-            animation-iteration-count: infinite;
-            animation-direction: alternate;
-            animation-timing-function: linear;
-         }
-         
-         @keyframes horiz {
-            from { left: 0px; }
-            to { left:300px; }
-         }
-         @keyframes vert {
-            from { top: 0px; }
-            to { top: 300px; }
-         }
-    </style>
-    <script src="resources/animation-test-helpers.js" type="text/javascript" charset="utf-8"></script>
-    <script type="text/javascript" charset="utf-8">
-        
-        const expectedValues = [
-          // [time, element-id, property, expected-value, tolerance]
-          [0.75, "box", "left", 150, 40],
-          [0.75, "box", "top", 225, 40],
-        ];
-
-        function removeAnim()
-        {
-            var target = document.getElementById("box");
-            var left = window.getComputedStyle(target).left;
-            target.style.animationName = "vert";
-            target.style.left = left;
-        }
-        
-        function setup()
-        {
-            setTimeout("removeAnim()", 500);
-        }
-
-        runAnimationTest(expectedValues, setup, undefined, 'do-not-use-pause-api');
-    </script>
+  <meta charset="utf-8">
+  <script src="../resources/testharness.js"></script>
+  <script src="../resources/testharnessreport.js"></script>
+  <style>
+    #box {
+      position: relative;
+      height: 20px;
+      width: 20px;
+      background-color: #9bb;
+      left: 0px;
+      top: 0px;
+      animation-name: horiz, vert;
+      animation-duration: 4s;
+      animation-iteration-count: infinite;
+      animation-direction: alternate;
+      animation-timing-function: linear;
+    }
+    @keyframes horiz {
+      from { left: 100px; }
+      to { left: 500px; }
+    }
+    @keyframes vert {
+      from { top: 100px; }
+      to { top: 500px; }
+    }
+  </style>
 </head>
 <body>
-This test performs two animations, left and top. It animates over 1 second.
-At 0.5 second it removes the left animation and the top animation should continue
-from where it left off.
-<div id="box">
-</div>
-<div id="result">
-</div>
+  <!--
+    This test performs two animations, left and top.
+    When it removes the left animation, the top animation
+    should continue from where it left off.
+  -->
+  <div id="box"></div>
+  <script>
+    'use strict';
+    function waitForProgress() {
+      var initialTop = getComputedStyle(box).top;
+      return new Promise(resolve => {
+        function poll() {
+          var top = getComputedStyle(box).top;
+          if (top === initialTop) {
+            requestAnimationFrame(poll);
+          } else {
+            resolve();
+          }
+        }
+        requestAnimationFrame(poll);
+      });
+    }
+
+    async_test(t => {
+      var previousTop = getComputedStyle(box).top;
+      waitForProgress().then(t.step_func(() => {
+        assert_greater_than(parseFloat(getComputedStyle(box).left), 100);
+        var currentTop = getComputedStyle(box).top;
+        assert_greater_than(parseFloat(currentTop), parseFloat(previousTop));
+        box.style.animationName = 'vert';
+        assert_equals(getComputedStyle(box).left, '0px');
+        assert_equals(getComputedStyle(box).top, currentTop);
+        previousTop = currentTop;
+      })).then(waitForProgress).then(t.step_func_done(() => {
+        assert_equals(getComputedStyle(box).left, '0px');
+        assert_greater_than(parseFloat(getComputedStyle(box).top), parseFloat(previousTop));
+      }));
+    }, 'top animation continues when left animation stops');
+  </script>
 </body>
 </html>
