@@ -18,8 +18,8 @@
   ToolbarControllerStyle style_;
   // Whether the tools menu is visible.
   BOOL toolsMenuVisible_;
-  // Whether the reading list contains unread items.
-  BOOL readingListContainsUnreadItems_;
+  // Whether the reading list contains unseen items.
+  BOOL readingListContainsUnseenItems_;
 }
 @end
 
@@ -48,15 +48,15 @@
   [self updateTintOfButton];
 }
 
-- (void)setReadingListContainsUnreadItems:(BOOL)readingListContainsUnreadItems {
-  readingListContainsUnreadItems_ = readingListContainsUnreadItems;
+- (void)setReadingListContainsUnseenItems:(BOOL)readingListContainsUnseenItems {
+  readingListContainsUnseenItems_ = readingListContainsUnseenItems;
   [self updateTintOfButton];
 }
 
 #pragma mark - Private
 
 - (void)updateTintOfButton {
-  if (toolsMenuVisible_ || readingListContainsUnreadItems_) {
+  if (toolsMenuVisible_ || readingListContainsUnseenItems_) {
     [self setTintColor:toolbar::HighlighButtonTint(style_)
               forState:UIControlStateNormal];
   } else {

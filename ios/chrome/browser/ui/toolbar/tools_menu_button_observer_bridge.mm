@@ -4,31 +4,60 @@
 
 #import "ios/chrome/browser/ui/toolbar/tools_menu_button_observer_bridge.h"
 
+#include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "components/reading_list/ios/reading_list_model.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_tools_menu_button.h"
 
-ToolsMenuButtonObserverBridge::ToolsMenuButtonObserverBridge(
-    ReadingListModel* readingListModel,
-    ToolbarToolsMenuButton* button)
-    : readingListModel_(readingListModel), button_([button retain]) {
-  readingListModel_->AddObserver(this);
-};
+@interface ToolsMenuButtonObserverBridge ()
+- (void)updateButtonWithModel:(const ReadingListModel*)model;
+- (void)buttonPressed:(UIButton*)sender;
+@end
 
-ToolsMenuButtonObserverBridge::~ToolsMenuButtonObserverBridge() {
-  readingListModel_->RemoveObserver(this);
-}
-
-void ToolsMenuButtonObserverBridge::ReadingListModelLoaded(
-    const ReadingListModel* model) {
-  UpdateButtonWithModel(model);
-}
-void ToolsMenuButtonObserverBridge::ReadingListDidApplyChanges(
-    ReadingListModel* model) {
-  UpdateButtonWithModel(model);
+@implementation ToolsMenuButtonObserverBridge {
+  base::scoped_nsobject<ToolbarToolsMenuButton> _button;
+  ReadingListModel* _model;
+  std::unique_ptr<ReadingListModelBridge> _modelBridge;
 }
 
-void ToolsMenuButtonObserverBridge::UpdateButtonWithModel(
-    const ReadingListModel* model) {
-  bool readingListContainsUnreadItems = model->unread_size() > 0;
-  [button_ setReadingListContainsUnreadItems:readingListContainsUnreadItems];
+- (instancetype)initWithModel:(ReadingListModel*)readingListModel
+                toolbarButton:(ToolbarToolsMenuButton*)button {
+  self = [super init];
+  if (self) {
+    _button.reset([button retain]);
+    _model = readingListModel;
+    [_button addTarget:self
+                  action:@selector(buttonPressed:)
+        forControlEvents:UIControlEventTouchUpInside];
+    _modelBridge = base::MakeUnique<ReadingListModelBridge>(self, _model);
+  }
+  return self;
 }
+
+- (void)readingListModelLoaded:(const ReadingListModel*)model {
+  [self updateButtonWithModel:model];
+}
+
+- (void)readingListModelDidApplyChanges:(const ReadingListModel*)model {
+  [self updateButtonWithModel:model];
+}
+
+- (void)readingListModelBeingDeleted:(const ReadingListModel*)model {
+  DCHECK(model == _model);
+  _model = nullptr;
+}
+
+- (void)updateButtonWithModel:(const ReadingListModel*)model {
+  DCHECK(model == _model);
+  BOOL readingListContainsUnseenItems = model->GetLocalUnseenFlag();
+  [_button setReadingListContainsUnseenItems:readingListContainsUnseenItems];
+}
+
+- (void)buttonPressed:(UIButton*)sender {
+  if (_model) {
+    _model->ResetLocalUnseenFlag();
+  }
+  [_button setReadingListContainsUnseenItems:NO];
+}
+
+@end

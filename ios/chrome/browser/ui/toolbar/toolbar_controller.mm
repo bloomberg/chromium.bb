@@ -214,7 +214,8 @@ const LayoutOffset kButtonFadeOutXOffset = 10;
   base::scoped_nsobject<UIButton> stackButton_;
   base::scoped_nsobject<UIButton> shareButton_;
   base::scoped_nsobject<NSArray> standardButtons_;
-  std::unique_ptr<ToolsMenuButtonObserverBridge> toolsMenuButtonObserverBridge_;
+  base::scoped_nsobject<ToolsMenuButtonObserverBridge>
+      toolsMenuButtonObserverBridge_;
   ToolbarControllerStyle style_;
 
   // The following is nil if not visible.
@@ -249,10 +250,11 @@ const LayoutOffset kButtonFadeOutXOffset = 10;
 
 - (void)setReadingListModel:(ReadingListModel*)readingListModel {
   readingListModel_ = readingListModel;
-  if (readingListModel_)
-    toolsMenuButtonObserverBridge_ =
-        base::MakeUnique<ToolsMenuButtonObserverBridge>(readingListModel_,
-                                                        toolsMenuButton_);
+  if (readingListModel_) {
+    toolsMenuButtonObserverBridge_.reset([[ToolsMenuButtonObserverBridge alloc]
+        initWithModel:readingListModel_
+        toolbarButton:toolsMenuButton_]);
+  }
 }
 
 - (instancetype)initWithStyle:(ToolbarControllerStyle)style {

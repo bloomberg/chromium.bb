@@ -49,8 +49,8 @@ class ReadingListModelImpl : public ReadingListModel,
   size_t unseen_size() const override;
 
   void MarkAllSeen() override;
-  bool HasUnseenEntries() const override;
-  void ResetUnseenEntries() override;
+  bool GetLocalUnseenFlag() const override;
+  void ResetLocalUnseenFlag() override;
 
   const std::vector<GURL> Keys() const override;
 
@@ -123,6 +123,9 @@ class ReadingListModelImpl : public ReadingListModel,
   // Update the 3 counts above considering addition/removal of |entry|.
   void UpdateEntryStateCountersOnEntryRemoval(const ReadingListEntry& entry);
   void UpdateEntryStateCountersOnEntryInsertion(const ReadingListEntry& entry);
+
+  // Set the unseen flag to true.
+  void SetUnseenFlag();
 
   std::unique_ptr<ReadingListModelStorage> storage_layer_;
   PrefService* pref_service_;

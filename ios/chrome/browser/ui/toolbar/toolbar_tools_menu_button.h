@@ -28,8 +28,9 @@
 // Informs the button that the Tools Menu's visibility is |toolsMenuVisible|.
 - (void)setToolsMenuIsVisible:(BOOL)toolsMenuVisible;
 
-// Notifies the button that the Reading List's unread item count changed.
-- (void)setReadingListContainsUnreadItems:(BOOL)readingListContainsUnreadItems;
+// Notifies the button should alert user to the presence of reading list unseen
+// items.
+- (void)setReadingListContainsUnseenItems:(BOOL)readingListContainsUnseenItems;
 
 @end
 

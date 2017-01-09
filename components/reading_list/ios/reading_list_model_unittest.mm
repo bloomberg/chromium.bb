@@ -341,7 +341,7 @@ TEST_F(ReadingListModelTest, AddEntry) {
   AssertStorageCount(1, 0);
   EXPECT_EQ(1ul, UnreadSize());
   EXPECT_EQ(0ul, ReadSize());
-  EXPECT_TRUE(model_->HasUnseenEntries());
+  EXPECT_TRUE(model_->GetLocalUnseenFlag());
 
   const ReadingListEntry* other_entry =
       model_->GetEntryByURL(GURL("http://example.com"));
@@ -502,10 +502,12 @@ TEST_F(ReadingListModelTest, EntryFromURL) {
 TEST_F(ReadingListModelTest, UnreadEntry) {
   // Setup.
   model_->AddEntry(GURL("http://example.com"), "sample");
+  EXPECT_TRUE(model_->GetLocalUnseenFlag());
   model_->SetReadStatus(GURL("http://example.com"), true);
   ClearCounts();
   EXPECT_EQ(0ul, UnreadSize());
   EXPECT_EQ(1ul, ReadSize());
+  EXPECT_FALSE(model_->GetLocalUnseenFlag());
 
   // Action.
   model_->SetReadStatus(GURL("http://example.com"), false);
@@ -514,7 +516,7 @@ TEST_F(ReadingListModelTest, UnreadEntry) {
   AssertObserverCount(0, 0, 0, 0, 0, 1, 0, 0, 1);
   EXPECT_EQ(1ul, UnreadSize());
   EXPECT_EQ(0ul, ReadSize());
-  EXPECT_TRUE(model_->HasUnseenEntries());
+  EXPECT_FALSE(model_->GetLocalUnseenFlag());
 
   const ReadingListEntry* other_entry =
       model_->GetEntryByURL(GURL("http://example.com"));

@@ -87,14 +87,26 @@ size_t ReadingListModelImpl::unseen_size() const {
   return unseen_entry_count_;
 }
 
-bool ReadingListModelImpl::HasUnseenEntries() const {
+void ReadingListModelImpl::SetUnseenFlag() {
+  if (!has_unseen_) {
+    has_unseen_ = true;
+    if (!IsPerformingBatchUpdates()) {
+      SetPersistentHasUnseen(true);
+    }
+  }
+}
+
+bool ReadingListModelImpl::GetLocalUnseenFlag() const {
   DCHECK(CalledOnValidThread());
   if (!loaded())
     return false;
-  return has_unseen_;
+  // If there are currently no unseen entries, return false even if has_unseen_
+  // is true.
+  // This is possible if the last unseen entry has be removed via sync.
+  return has_unseen_ && unseen_entry_count_;
 }
 
-void ReadingListModelImpl::ResetUnseenEntries() {
+void ReadingListModelImpl::ResetLocalUnseenFlag() {
   DCHECK(CalledOnValidThread());
   DCHECK(loaded());
   has_unseen_ = false;
@@ -224,8 +236,8 @@ void ReadingListModelImpl::SyncAddEntry(
   for (auto& observer : observers_)
     observer.ReadingListWillAddEntry(this, *entry);
   UpdateEntryStateCountersOnEntryInsertion(*entry);
-  if (!entry->IsRead()) {
-    SetPersistentHasUnseen(true);
+  if (!entry->HasBeenSeen()) {
+    SetUnseenFlag();
   }
   GURL url = entry->URL();
   entries_->insert(std::make_pair(url, std::move(*entry)));
@@ -246,11 +258,15 @@ ReadingListEntry* ReadingListModelImpl::SyncMergeEntry(
   for (auto& observer : observers_)
     observer.ReadingListWillMoveEntry(this, url);
 
+  bool was_seen = existing_entry->HasBeenSeen();
   UpdateEntryStateCountersOnEntryRemoval(*existing_entry);
   existing_entry->MergeWithEntry(*entry);
   existing_entry = GetMutableEntryFromURL(url);
   UpdateEntryStateCountersOnEntryInsertion(*existing_entry);
-
+  if (was_seen && !existing_entry->HasBeenSeen()) {
+    // Only set the flag if a new unseen entry is added.
+    SetUnseenFlag();
+  }
   for (auto& observer : observers_) {
     observer.ReadingListDidMoveEntry(this, url);
     observer.ReadingListDidApplyChanges(this);
@@ -282,6 +298,7 @@ void ReadingListModelImpl::RemoveEntryByURLImpl(const GURL& url,
     storage_layer_->RemoveEntry(*entry);
   }
   UpdateEntryStateCountersOnEntryRemoval(*entry);
+
   entries_->erase(url);
   for (auto& observer : observers_)
     observer.ReadingListDidApplyChanges(this);
@@ -301,9 +318,8 @@ const ReadingListEntry& ReadingListModelImpl::AddEntry(
   ReadingListEntry entry(url, trimmedTitle);
   for (auto& observer : observers_)
     observer.ReadingListWillAddEntry(this, entry);
-  has_unseen_ = true;
-  SetPersistentHasUnseen(true);
   UpdateEntryStateCountersOnEntryInsertion(entry);
+  SetUnseenFlag();
   entries_->insert(std::make_pair(url, std::move(entry)));
 
   if (storage_layer_) {
@@ -336,6 +352,7 @@ void ReadingListModelImpl::SetReadStatus(const GURL& url, bool read) {
   entry.SetRead(read);
   entry.MarkEntryUpdated();
   UpdateEntryStateCountersOnEntryInsertion(entry);
+
   if (storage_layer_) {
     storage_layer_->SaveEntry(entry);
   }
