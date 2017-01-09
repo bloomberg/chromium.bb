@@ -1,0 +1,56 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow div id='contentBox'",
+          "rect": [8, 68, 402, 402],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGEllipse circle",
+          "rect": [47, 107, 324, 324],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [48, 108, 322, 322],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGEllipse circle",
+          "rect": [8, 150, 102, 238],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [9, 151, 100, 236],
+          "reason": "forced by layout"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow div id='contentBox'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGRoot svg",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGEllipse circle",
+      "reason": "SVG resource change"
+    }
+  ]
+}
+

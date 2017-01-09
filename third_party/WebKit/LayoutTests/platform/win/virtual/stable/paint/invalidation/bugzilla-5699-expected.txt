@@ -1,0 +1,93 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow P",
+          "rect": [8, 130, 784, 66],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 178, 36, 17],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 148, 36, 17],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutInline SPAN id='d'",
+          "rect": [8, 145, 4, 17],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 145, 4, 17],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 130, 4, 17],
+          "reason": "style change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow P",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutInline SPAN id='d'",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox '\u00A0'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'Hello'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "forced by layout"
+    }
+  ]
+}
+

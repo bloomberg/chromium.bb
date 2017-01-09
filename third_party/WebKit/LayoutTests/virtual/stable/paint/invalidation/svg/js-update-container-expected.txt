@@ -1,0 +1,38 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGContainer g id='group'",
+          "rect": [0, 0, 76, 76],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [0, 0, 76, 76],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [-1, -1, 42, 42],
+          "reason": "subtree"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGContainer g id='group'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "subtree"
+    }
+  ]
+}
+

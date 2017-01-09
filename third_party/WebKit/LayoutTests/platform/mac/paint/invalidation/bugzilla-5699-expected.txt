@@ -35,6 +35,16 @@
           "object": "LayoutText #text",
           "rect": [8, 130, 4, 18],
           "reason": "style change"
+        },
+        {
+          "object": "LayoutBR BR",
+          "rect": [43, 178, 1, 18],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBR BR",
+          "rect": [43, 148, 1, 18],
+          "reason": "forced by layout"
         }
       ]
     }

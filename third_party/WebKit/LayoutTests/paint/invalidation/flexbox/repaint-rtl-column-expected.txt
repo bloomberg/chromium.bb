@@ -18,13 +18,13 @@
         },
         {
           "object": "LayoutBlockFlow DIV id='left'",
-          "rect": [8, 119, 200, 94],
-          "reason": "incremental"
+          "rect": [8, 68, 200, 145],
+          "reason": "border box change"
         },
         {
           "object": "LayoutBlockFlow DIV id='left'",
-          "rect": [8, 116, 200, 4],
-          "reason": "incremental"
+          "rect": [8, 68, 200, 52],
+          "reason": "border box change"
         },
         {
           "object": "LayoutBlockFlow DIV",
@@ -52,7 +52,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV id='left'",
-      "reason": "incremental"
+      "reason": "border box change"
     },
     {
       "object": "LayoutBlockFlow DIV id='content'",
@@ -64,7 +64,7 @@
     },
     {
       "object": "LayoutBlockFlow DIV id='left'",
-      "reason": "incremental"
+      "reason": "border box change"
     },
     {
       "object": "LayoutBlockFlow DIV id='content'",

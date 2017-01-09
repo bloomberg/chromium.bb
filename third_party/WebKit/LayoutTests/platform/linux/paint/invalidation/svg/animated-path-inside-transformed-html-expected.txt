@@ -19,32 +19,32 @@
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [246, 106, 121, 28],
+          "rect": [247, 90, 122, 43],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGText text id='text'",
-          "rect": [246, 106, 121, 28],
+          "rect": [247, 90, 122, 43],
           "reason": "full"
         },
         {
           "object": "LayoutSVGRect rect id='rect'",
-          "rect": [354, 127, 105, 103],
+          "rect": [355, 125, 103, 104],
           "reason": "full"
         },
         {
           "object": "LayoutSVGRect rect id='rect'",
-          "rect": [110, 84, 103, 102],
+          "rect": [109, 84, 103, 101],
           "reason": "full"
         },
         {
           "object": "LayoutSVGImage image id='image'",
-          "rect": [352, 397, 98, 99],
+          "rect": [90, 208, 98, 97],
           "reason": "full"
         },
         {
           "object": "LayoutSVGImage image id='image'",
-          "rect": [90, 208, 98, 98],
+          "rect": [353, 398, 97, 98],
           "reason": "full"
         }
       ]

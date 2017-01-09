@@ -99,6 +99,11 @@
     "args": ["--stable-release-mode"]
   },
   {
+    "prefix": "stable",
+    "base": "paint/invalidation",
+    "args": ["--stable-release-mode"]
+  },
+  {
     "prefix": "android",
     "base": "fullscreen",
     "args": ["--enable-threaded-compositing",
@@ -344,36 +349,6 @@
     "prefix": "feature-policy",
     "base": "http/tests/feature-policy",
     "args": ["--enable-blink-features=FeaturePolicy"]
-  },
-  {
-    "prefix": "spinvalidation",
-    "base": "compositing",
-    "args": ["--enable-blink-features=SlimmingPaintInvalidation"]
-  },
-  {
-    "prefix": "spinvalidation",
-    "base": "css3",
-    "args": ["--enable-blink-features=SlimmingPaintInvalidation"]
-  },
-  {
-    "prefix": "spinvalidation",
-    "base": "fast",
-    "args": ["--enable-blink-features=SlimmingPaintInvalidation"]
-  },
-  {
-    "prefix": "spinvalidation",
-    "base": "paint",
-    "args": ["--enable-blink-features=SlimmingPaintInvalidation"]
-  },
-  {
-    "prefix": "spinvalidation",
-    "base": "printing",
-    "args": ["--enable-blink-features=SlimmingPaintInvalidation"]
-  },
-  {
-    "prefix": "spinvalidation",
-    "base": "svg",
-    "args": ["--enable-blink-features=SlimmingPaintInvalidation"]
   },
   {
     "prefix": "mojo-localstorage",

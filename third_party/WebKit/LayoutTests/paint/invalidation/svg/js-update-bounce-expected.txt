@@ -8,12 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGEllipse circle id='bounce'",
-          "rect": [101, 101, 68, 68],
+          "rect": [102, 102, 66, 66],
           "reason": "subtree"
         },
         {
           "object": "LayoutSVGEllipse circle id='bounce'",
-          "rect": [1, 1, 68, 68],
+          "rect": [2, 2, 66, 66],
           "reason": "subtree"
         }
       ]

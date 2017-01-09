@@ -1,0 +1,219 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 242, 406, 126],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 476, 406, 90],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 422, 406, 54],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 404, 355, 36],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [65, 386, 304, 36],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [65, 368, 304, 18],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [178, 350, 145, 18],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) SPAN id='greenFloat'",
+          "rect": [372, 435, 48, 17],
+          "reason": "incremental"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'begin again, it was very provoking to find that the hedgehog'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'had\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'unrolled itself, and was in the act of crawling away:'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'besides all\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'this, there was generally a ridge or furrow in the'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'way wherever\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'she wanted to send the hedgehog to, and, as the'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'doubled-up\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'soldiers were always getting up and walking off to'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'other parts of\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'the ground, Alice soon came to the conclusion'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'that it was a very\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'difficult game indeed.\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'The players all played at once without waiting'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutBlockFlow (floating) SPAN id='greenFloat'",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'for turns,\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'quarrelling all the while, and fighting'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'for the hedgehogs; and in\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'a very short time '",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'the'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'Queen'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox ' was in a furious passion, and went\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'stamping'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'about, and shouting \u2018Off with his head!\u2019 or \u2018Off with\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'her'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'head!\u2019 about once in a minute.\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'Alice began to feel very uneasy: to be sure, she had not as\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'yet'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'had any dispute with the Queen, but she knew that it might'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'happen any minute, \u2018and then,\u2019 thought she, \u2018what would'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'become of\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'me? They\u2019re dreadfully fond of beheading people'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'here; the great\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'wonder is, that there\u2018s any one left alive!\u2019'",
+      "reason": "forced by layout"
+    }
+  ]
+}
+

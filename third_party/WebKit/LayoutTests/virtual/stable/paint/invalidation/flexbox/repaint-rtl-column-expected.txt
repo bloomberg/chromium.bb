@@ -1,0 +1,79 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV id='content'",
+          "rect": [8, 116, 200, 252],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='content'",
+          "rect": [8, 119, 200, 249],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='left'",
+          "rect": [8, 119, 200, 94],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='left'",
+          "rect": [8, 116, 200, 4],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [13, 124, 190, 351],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [13, 124, 190, 351],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [13, 121, 190, 351],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [13, 218, 190, 350],
+          "reason": "bounds change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='left'",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='content'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='left'",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='content'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "bounds change"
+    }
+  ]
+}
+

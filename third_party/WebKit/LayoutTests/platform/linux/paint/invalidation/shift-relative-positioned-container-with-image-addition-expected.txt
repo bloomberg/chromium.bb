@@ -27,6 +27,21 @@
           "reason": "layoutObject insertion"
         },
         {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [10, 94, 728, 90],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [10, 94, 728, 90],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [18, 102, 712, 74],
+          "reason": "layoutObject insertion"
+        },
+        {
           "object": "LayoutImage IMG",
           "rect": [58, 236, 489, 537],
           "reason": "bounds change"
@@ -70,19 +85,15 @@
     },
     {
       "object": "LayoutView #document",
-      "reason": "scroll"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "location change"
+      "reason": "style change"
     },
     {
       "object": "LayoutBlockFlow HTML",
-      "reason": "location change"
+      "reason": "layoutObject insertion"
     },
     {
       "object": "LayoutBlockFlow BODY",
-      "reason": "location change"
+      "reason": "layoutObject insertion"
     }
   ]
 }

@@ -1,0 +1,146 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGContainer g id='content'",
+          "rect": [0, 14, 678, 366],
+          "reason": "became visible"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 246, 678, 134],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [0, 246, 678, 134],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 129, 520, 135],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [0, 129, 520, 135],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 14, 368, 131],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [0, 14, 368, 131],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [16, 16, 18, 18],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [16, 16, 18, 18],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [8, 8, 17, 17],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [8, 8, 17, 17],
+          "reason": "layoutObject insertion"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGResourcePattern pattern id='fillPattern'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGResourcePattern pattern id='strokePattern'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g id='content'",
+      "reason": "became visible"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Pattern on fill'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Pattern on stroke'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGText text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Pattern on fill/stroke'",
+      "reason": "layoutObject insertion"
+    }
+  ]
+}
+

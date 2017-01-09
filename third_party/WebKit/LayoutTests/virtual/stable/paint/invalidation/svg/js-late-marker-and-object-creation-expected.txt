@@ -1,0 +1,55 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [202, 210, 113, 113],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [202, 210, 113, 113],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g id='content'",
+          "rect": [203, 211, 111, 111],
+          "reason": "became visible"
+        },
+        {
+          "object": "LayoutSVGEllipse circle",
+          "rect": [0, 0, 4, 4],
+          "reason": "layoutObject insertion"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGContainer g id='content'",
+      "reason": "became visible"
+    },
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGResourceMarker marker id='markerMiddle'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGEllipse circle",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path",
+      "reason": "style change"
+    }
+  ]
+}
+

@@ -8,27 +8,27 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGPath polygon",
-          "rect": [136, 36, 582, 565],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGPath polygon",
-          "rect": [455, 165, 135, 134],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGPath polygon id='t3'",
-          "rect": [319, 165, 135, 134],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGPath polygon",
-          "rect": [46, 165, 135, 134],
+          "rect": [137, 37, 581, 564],
           "reason": "style change"
         },
         {
           "object": "LayoutSVGPath polygon",
           "rect": [183, 165, 134, 134],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGPath polygon",
+          "rect": [456, 165, 133, 134],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGPath polygon id='t3'",
+          "rect": [320, 165, 133, 134],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGPath polygon",
+          "rect": [47, 165, 133, 134],
           "reason": "style change"
         },
         {
@@ -53,7 +53,7 @@
         },
         {
           "object": "LayoutSVGEllipse circle id='t4'",
-          "rect": [45, 27, 9, 9],
+          "rect": [46, 28, 7, 7],
           "reason": "style change"
         }
       ]

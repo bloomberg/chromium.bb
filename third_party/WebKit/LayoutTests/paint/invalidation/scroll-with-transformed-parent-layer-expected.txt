@@ -20,6 +20,11 @@
           "object": "LayoutBlockFlow (positioned) DIV id='moveMe' class='absolute clipped'",
           "rect": [79, 129, 142, 142],
           "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='absolute red'",
+          "rect": [114, 129, 107, 36],
+          "reason": "subtree"
         }
       ]
     }

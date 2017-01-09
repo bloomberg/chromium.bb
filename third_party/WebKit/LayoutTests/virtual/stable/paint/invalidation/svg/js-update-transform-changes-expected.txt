@@ -1,0 +1,24 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGPath polygon id='polygon'",
+          "rect": [264, 218, 164, 107],
+          "reason": "subtree"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGPath polygon id='polygon'",
+      "reason": "subtree"
+    }
+  ]
+}
+

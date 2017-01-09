@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow OPTION id='option'",
-          "rect": [1, 35, 12, 15],
+          "rect": [1, 35, 11, 15],
           "reason": "style change"
         }
       ]

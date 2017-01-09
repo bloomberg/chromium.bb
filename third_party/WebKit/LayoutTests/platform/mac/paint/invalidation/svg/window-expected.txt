@@ -18,17 +18,7 @@
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [37, 142, 551, 394],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGRect rect id='titleBarbigWindow'",
-          "rect": [37, 142, 551, 17],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [37, 522, 551, 14],
+          "rect": [38, 142, 549, 394],
           "reason": "layoutObject insertion"
         },
         {
@@ -42,23 +32,23 @@
           "reason": "layoutObject insertion"
         },
         {
+          "object": "LayoutSVGRect rect id='titleBarbigWindow'",
+          "rect": [38, 142, 549, 16],
+          "reason": "layoutObject insertion"
+        },
+        {
           "object": "LayoutSVGContainer g id='windowTitlebarGroupbigWindow'",
           "rect": [38, 143, 549, 15],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [76, 181, 317, 238],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGRect rect id='titleBarnestedWindow'",
-          "rect": [76, 181, 317, 17],
+          "rect": [38, 523, 549, 13],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [76, 405, 317, 14],
+          "rect": [77, 181, 315, 238],
           "reason": "layoutObject insertion"
         },
         {
@@ -72,8 +62,18 @@
           "reason": "layoutObject insertion"
         },
         {
+          "object": "LayoutSVGRect rect id='titleBarnestedWindow'",
+          "rect": [77, 181, 315, 16],
+          "reason": "layoutObject insertion"
+        },
+        {
           "object": "LayoutSVGContainer g id='windowTitlebarGroupnestedWindow'",
           "rect": [77, 182, 315, 15],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [77, 406, 315, 13],
           "reason": "layoutObject insertion"
         },
         {
@@ -98,27 +98,7 @@
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [623, 91, 176, 160],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [76, 194, 176, 145],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGRect rect id='titleBarcolourPickerWindow'",
-          "rect": [76, 194, 176, 17],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [623, 237, 176, 14],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [76, 325, 176, 14],
+          "rect": [624, 92, 174, 159],
           "reason": "layoutObject insertion"
         },
         {
@@ -142,13 +122,28 @@
           "reason": "layoutObject insertion"
         },
         {
+          "object": "LayoutSVGRect rect",
+          "rect": [77, 195, 174, 143],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGRect rect id='titleBarcolourPickerWindow'",
+          "rect": [77, 195, 174, 16],
+          "reason": "layoutObject insertion"
+        },
+        {
           "object": "LayoutSVGContainer g id='windowTitlebarGroupcolourPickerWindow'",
           "rect": [77, 195, 174, 15],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [311, 376, 160, 145],
+          "rect": [624, 238, 174, 13],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [77, 325, 174, 13],
           "reason": "layoutObject insertion"
         },
         {
@@ -227,13 +222,18 @@
           "reason": "layoutObject insertion"
         },
         {
+          "object": "LayoutSVGRect rect",
+          "rect": [311, 377, 159, 143],
+          "reason": "layoutObject insertion"
+        },
+        {
           "object": "LayoutSVGRect rect id='titleBarsmallWindow'",
-          "rect": [311, 376, 160, 17],
+          "rect": [311, 377, 159, 16],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [311, 507, 160, 14],
+          "rect": [311, 507, 159, 13],
           "reason": "layoutObject insertion"
         },
         {
@@ -253,12 +253,7 @@
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [248, 343, 145, 66],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGRect rect id='titleBarstatusWindow'",
-          "rect": [248, 343, 145, 17],
+          "rect": [249, 343, 143, 65],
           "reason": "layoutObject insertion"
         },
         {
@@ -269,6 +264,11 @@
         {
           "object": "LayoutSVGContainer g id='windowMainGroupstatusWindow'",
           "rect": [249, 344, 143, 64],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGRect rect id='titleBarstatusWindow'",
+          "rect": [249, 343, 143, 16],
           "reason": "layoutObject insertion"
         },
         {
@@ -363,7 +363,7 @@
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [38, 475, 121, 50],
+          "rect": [38, 475, 120, 50],
           "reason": "layoutObject insertion"
         },
         {
@@ -528,137 +528,62 @@
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [768, 93, 13, 13],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [768, 93, 13, 13],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [557, 144, 13, 13],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [362, 183, 13, 13],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [440, 379, 13, 12],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [375, 345, 13, 12],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [376, 183, 12, 13],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [376, 183, 12, 13],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [782, 94, 12, 12],
+          "rect": [615, 99, 12, 11],
           "reason": "bounds change"
         },
         {
           "object": "LayoutSVGPath line",
-          "rect": [782, 94, 12, 12],
+          "rect": [571, 145, 12, 11],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [571, 145, 12, 11],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [235, 197, 12, 11],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [235, 197, 12, 11],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [616, 83, 11, 12],
           "reason": "bounds change"
         },
         {
           "object": "LayoutSVGPath line",
-          "rect": [782, 94, 12, 12],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [782, 94, 12, 12],
-          "reason": "layoutObject insertion"
+          "rect": [616, 83, 11, 12],
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [615, 99, 12, 12],
+          "rect": [376, 345, 11, 12],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [782, 94, 11, 11],
           "reason": "bounds change"
         },
         {
           "object": "LayoutSVGPath line",
-          "rect": [615, 83, 12, 12],
+          "rect": [782, 94, 11, 11],
           "reason": "bounds change"
         },
         {
           "object": "LayoutSVGPath line",
-          "rect": [615, 83, 12, 12],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [571, 144, 12, 12],
+          "rect": [782, 94, 11, 11],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGPath line",
-          "rect": [571, 144, 12, 12],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [454, 379, 12, 12],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [454, 379, 12, 12],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [235, 197, 12, 12],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [235, 197, 12, 12],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [222, 197, 12, 12],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [427, 387, 12, 4],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [349, 192, 12, 4],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [615, 123, 12, 3],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [617, 153, 11, 81],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [617, 153, 11, 81],
+          "rect": [782, 94, 11, 11],
           "reason": "layoutObject insertion"
         },
         {
@@ -668,6 +593,16 @@
         },
         {
           "object": "LayoutSVGContainer use id='maximizeButtonnavWindow'",
+          "rect": [769, 94, 11, 11],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [769, 94, 11, 11],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
           "rect": [769, 94, 11, 11],
           "reason": "layoutObject insertion"
         },
@@ -687,8 +622,38 @@
           "reason": "layoutObject insertion"
         },
         {
+          "object": "LayoutSVGRect rect",
+          "rect": [558, 145, 11, 11],
+          "reason": "layoutObject insertion"
+        },
+        {
           "object": "LayoutSVGViewportContainer svg id='maximizeButton'",
           "rect": [558, 145, 11, 11],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [454, 379, 11, 11],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [454, 379, 11, 11],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [441, 379, 11, 11],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [376, 184, 11, 11],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [376, 184, 11, 11],
           "reason": "layoutObject insertion"
         },
         {
@@ -697,8 +662,18 @@
           "reason": "layoutObject insertion"
         },
         {
+          "object": "LayoutSVGRect rect",
+          "rect": [363, 184, 11, 11],
+          "reason": "layoutObject insertion"
+        },
+        {
           "object": "LayoutSVGViewportContainer svg id='maximizeButton'",
           "rect": [363, 184, 11, 11],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [222, 197, 11, 11],
           "reason": "layoutObject insertion"
         },
         {
@@ -723,27 +698,37 @@
         },
         {
           "object": "LayoutSVGPath line",
-          "rect": [756, 102, 11, 4],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [756, 102, 11, 4],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [545, 153, 11, 4],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGPath line",
-          "rect": [209, 205, 11, 4],
+          "rect": [545, 153, 11, 3],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGPath line",
           "rect": [363, 354, 11, 3],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [756, 103, 11, 2],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [756, 103, 11, 2],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [209, 206, 11, 2],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [617, 153, 10, 81],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [617, 153, 10, 81],
           "reason": "layoutObject insertion"
         },
         {
@@ -912,6 +897,21 @@
           "reason": "layoutObject insertion"
         },
         {
+          "object": "LayoutSVGPath line",
+          "rect": [616, 123, 10, 3],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [350, 192, 10, 3],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [428, 388, 10, 2],
+          "reason": "layoutObject insertion"
+        },
+        {
           "object": "LayoutSVGContainer use id='minimizeButtonnavWindow'",
           "rect": [757, 95, 9, 10],
           "reason": "full"
@@ -993,22 +993,22 @@
         },
         {
           "object": "LayoutSVGPath line",
-          "rect": [-1, 20, 7, 13],
+          "rect": [-1, 21, 7, 11],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGPath line",
-          "rect": [-1, 20, 7, 13],
+          "rect": [-1, 21, 7, 11],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [-1, 20, 7, 13],
+          "rect": [-1, 21, 7, 11],
           "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGPath line",
-          "rect": [-1, 29, 7, 4],
+          "rect": [-1, 29, 6, 3],
           "reason": "layoutObject insertion"
         },
         {

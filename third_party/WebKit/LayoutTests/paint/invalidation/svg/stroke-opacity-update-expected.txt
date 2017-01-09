@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGEllipse circle",
-          "rect": [-1, -1, 205, 205],
+          "rect": [-1, -1, 204, 204],
           "reason": "style change"
         }
       ]
