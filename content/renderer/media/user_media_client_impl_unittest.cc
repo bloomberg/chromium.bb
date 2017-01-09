@@ -206,16 +206,9 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
     create_source_that_fails_ = should_fail;
   }
 
-  static void SignalSourceReady(
-      const MediaStreamSource::ConstraintsCallback& source_ready,
-      MediaStreamSource* source) {
-    source_ready.Run(source, MEDIA_DEVICE_OK, "");
-  }
-
   MediaStreamAudioSource* CreateAudioSource(
       const StreamDeviceInfo& device,
-      const blink::WebMediaConstraints& constraints,
-      const MediaStreamSource::ConstraintsCallback& source_ready) override {
+      const blink::WebMediaConstraints& constraints) override {
     MediaStreamAudioSource* source;
     if (create_source_that_fails_) {
       class FailedAtLifeAudioSource : public MediaStreamAudioSource {
@@ -232,15 +225,6 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
       source = new MediaStreamAudioSource(true);
     }
     source->SetDeviceInfo(device);
-
-    if (!create_source_that_fails_) {
-      // RunUntilIdle is required for this task to complete.
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(&UserMediaClientImplUnderTest::SignalSourceReady,
-                     source_ready, source));
-    }
-
     return source;
   }
 
@@ -362,7 +346,6 @@ class UserMediaClientImplTest : public ::testing::Test {
         ms_dispatcher_->audio_input_request_id(),
         ms_dispatcher_->stream_label(), ms_dispatcher_->audio_input_array(),
         ms_dispatcher_->video_array());
-    base::RunLoop().RunUntilIdle();
   }
 
   void StartMockedVideoSource() {

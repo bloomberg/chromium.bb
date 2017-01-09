@@ -102,11 +102,9 @@ class ProcessedLocalAudioSourceTest : public testing::Test {
         StreamDeviceInfo(MEDIA_DEVICE_AUDIO_CAPTURE, "Mock audio device",
                          "mock_audio_device_id", kSampleRate, kChannelLayout,
                          kRequestedBufferSize),
-        constraints,
-        base::Bind(&ProcessedLocalAudioSourceTest::OnAudioSourceStarted,
-                   base::Unretained(this)),
         &mock_dependency_factory_);
     source->SetAllowInvalidRenderFrameIdForTesting(true);
+    source->SetSourceConstraints(constraints);
     blink_audio_source_.setExtraData(source);  // Takes ownership.
   }
 
@@ -139,10 +137,6 @@ class ProcessedLocalAudioSourceTest : public testing::Test {
     return blink_audio_track_;
   }
 
-  void OnAudioSourceStarted(MediaStreamSource* source,
-                            MediaStreamRequestResult result,
-                            const blink::WebString& result_name) {}
-
  private:
   base::MessageLoop main_thread_message_loop_;  // Needed for MSAudioProcessor.
   MockAudioDeviceFactory mock_audio_device_factory_;
@@ -174,10 +168,7 @@ TEST_F(ProcessedLocalAudioSourceTest, VerifyAudioFlowWithoutAudioProcessing) {
       .WillOnce(WithArg<0>(Invoke(this, &ThisTest::CheckSourceFormatMatches)));
   EXPECT_CALL(*mock_audio_device_factory()->mock_capturer_source(),
               SetAutomaticGainControl(true));
-  EXPECT_CALL(*mock_audio_device_factory()->mock_capturer_source(), Start())
-      .WillOnce(Invoke(
-          capture_source_callback(),
-          &media::AudioCapturerSource::CaptureCallback::OnCaptureStarted));
+  EXPECT_CALL(*mock_audio_device_factory()->mock_capturer_source(), Start());
   ASSERT_TRUE(audio_source()->ConnectToTrack(blink_audio_track()));
   CheckOutputFormatMatches(audio_source()->GetAudioParameters());
 

@@ -31,10 +31,6 @@ class CastReceiverAudioValve :
   void DeliverDecodedAudio(const media::AudioBus* audio_bus,
                            base::TimeTicks playout_time);
 
-  // Called to indicate that audio has started streaming and our capture
-  // callback should be notified.
-  void OnStarted();
-
   // When this returns, no more calls will be forwarded to |cb|.
   void Stop();
 
