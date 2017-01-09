@@ -34,6 +34,8 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
   // Localized strings (alphabetical order).
   AddLocalizedString(source, "clearSearch",
                      IDS_MD_BOOKMARK_MANAGER_CLEAR_SEARCH);
+  AddLocalizedString(source, "emptyList",
+                     IDS_MD_BOOKMARK_MANAGER_EMPTY_LIST);
   AddLocalizedString(source, "menuAddBookmark",
                      IDS_MD_BOOKMARK_MANAGER_MENU_ADD_BOOKMARK);
   AddLocalizedString(source, "menuAddFolder",

@@ -62,5 +62,10 @@ Polymer({
     var menu = /** @type {!CrActionMenuElement} */ (
         this.$.dropdown);
     menu.close();
+  },
+
+  /** @private */
+  isListEmpty_: function() {
+    return this.selectedNode.children.length == 0;
   }
 });

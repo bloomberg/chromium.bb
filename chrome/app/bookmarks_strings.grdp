@@ -327,6 +327,9 @@
   <message name="IDS_MD_BOOKMARK_MANAGER_CLEAR_SEARCH" desc="Title of the button in the bookmark manager that stops a search.">
     Clear search
   </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_EMPTY_LIST" desc="Text on the bookmarks list that indicates that a folder has no bookmarks.">
+    This folder is empty
+  </message>
   <message name="IDS_MD_BOOKMARK_MANAGER_MENU_ADD_BOOKMARK" desc="Title of the bookmark toolbar dropdown menu item that adds a new bookmark.">
     Add new bookmark
   </message>
