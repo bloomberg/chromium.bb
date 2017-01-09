@@ -71,6 +71,12 @@ class SimulatorNotFoundError(TestRunnerError):
         'Simulator does not exist: %s' % iossim_path)
 
 
+class TestDataExtractionError(TestRunnerError):
+  """Error extracting test data or crash reports from a device."""
+  def __init__(self):
+    super(TestDataExtractionError, self).__init__('Failed to extract test data')
+
+
 class XcodeVersionNotFoundError(TestRunnerError):
   """The requested version of Xcode was not found."""
   def __init__(self, xcode_version):
@@ -601,30 +607,36 @@ class DeviceTestRunner(TestRunner):
 
   def extract_test_data(self):
     """Extracts data emitted by the test."""
-    subprocess.check_call([
-      'idevicefs',
-      '--udid', self.udid,
-      'pull',
-      '@%s/Documents' % self.cfbundleid,
-      os.path.join(self.out_dir, 'Documents'),
-    ])
+    try:
+      subprocess.check_call([
+        'idevicefs',
+        '--udid', self.udid,
+        'pull',
+        '@%s/Documents' % self.cfbundleid,
+        os.path.join(self.out_dir, 'Documents'),
+      ])
+    except subprocess.CalledProcessError:
+      raise TestDataExtractionError()
 
   def retrieve_crash_reports(self):
     """Retrieves crash reports produced by the test."""
     logs_dir = os.path.join(self.out_dir, 'Logs')
     os.mkdir(logs_dir)
-    subprocess.check_call([
-      'idevicecrashreport',
-      '--extract',
-      '--udid', self.udid,
-      logs_dir,
-    ])
+    try:
+      subprocess.check_call([
+        'idevicecrashreport',
+        '--extract',
+        '--udid', self.udid,
+        logs_dir,
+      ])
+    except subprocess.CalledProcessError:
+      raise TestDataExtractionError()
 
   def tear_down(self):
     """Performs cleanup actions which must occur after every test launch."""
+    self.screenshot_desktop()
     self.extract_test_data()
     self.retrieve_crash_reports()
-    self.screenshot_desktop()
     self.uninstall_apps()
 
   def get_launch_command(self, test_filter=None, invert=False):
