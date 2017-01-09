@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.payments.ui.EditorFieldModel.EditorValueIconG
 import org.chromium.chrome.browser.payments.ui.EditorModel;
 import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge.DropdownKeyValue;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.payments.mojom.PaymentMethodData;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -112,6 +113,13 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
     private final Set<String> mAcceptedCardTypes;
 
     /**
+     * The card types accepted by the merchant website that should have "basic-card" as the payment
+     * method. This is a subset of the accepted card types. Used when creating the complete payment
+     * instrument.
+     */
+    private final Set<String> mAcceptedBasicCardTypes;
+
+    /**
      * The information about the accepted card types. Used in the editor as a hint to the user about
      * the valid card types. This is important to keep in a list, because the display order matters.
      */
@@ -184,6 +192,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
         mCardTypes.put(VISA, new CardTypeInfo(R.drawable.pr_visa, R.string.autofill_cc_visa));
 
         mAcceptedCardTypes = new HashSet<>();
+        mAcceptedBasicCardTypes = new HashSet<>();
         mAcceptedCardTypeInfos = new ArrayList<>();
         mHandler = new Handler();
 
@@ -252,17 +261,36 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
     /**
      * Adds accepted payment methods to the editor, if they are recognized credit card types.
      *
-     * @param acceptedMethods The accepted method payments.
+     * @param data Supported methods and method specific data. Should not be null.
      */
-    public void addAcceptedPaymentMethodsIfRecognized(String[] acceptedMethods) {
-        assert acceptedMethods != null;
-        for (int i = 0; i < acceptedMethods.length; i++) {
-            String method = acceptedMethods[i];
+    public void addAcceptedPaymentMethodsIfRecognized(PaymentMethodData data) {
+        assert data != null;
+        for (int i = 0; i < data.supportedMethods.length; i++) {
+            String method = data.supportedMethods[i];
             if (mCardTypes.containsKey(method)) {
-                assert !mAcceptedCardTypes.contains(method);
-                mAcceptedCardTypes.add(method);
-                mAcceptedCardTypeInfos.add(mCardTypes.get(method));
+                addAcceptedNetwork(method);
+            } else if (AutofillPaymentApp.BASIC_CARD_METHOD_NAME.equals(method)) {
+                Set<String> basicCardNetworks = AutofillPaymentApp.convertBasicCardToNetworks(data);
+                if (basicCardNetworks != null) {
+                    mAcceptedBasicCardTypes.addAll(basicCardNetworks);
+                    for (String network : basicCardNetworks) {
+                        addAcceptedNetwork(network);
+                    }
+                }
             }
+        }
+    }
+
+    /**
+     * Adds a card network to the list of accepted networks.
+     *
+     * @param network An accepted network. Will be shown in UI only once, regardless of how many
+     *                times this method is called.
+     */
+    private void addAcceptedNetwork(String network) {
+        if (!mAcceptedCardTypes.contains(network)) {
+            mAcceptedCardTypes.add(network);
+            mAcceptedCardTypeInfos.add(mCardTypes.get(network));
         }
     }
 
@@ -291,7 +319,8 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
 
         // Ensure that |instrument| and |card| are never null.
         final AutofillPaymentInstrument instrument = isNewCard
-                ? new AutofillPaymentInstrument(mContext, mWebContents, new CreditCard(), null)
+                ? new AutofillPaymentInstrument(mContext, mWebContents, new CreditCard(),
+                          null /* billingAddress */, null /* methodName */)
                 : toEdit;
         final CreditCard card = instrument.getCard();
 
@@ -344,13 +373,24 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
             @Override
             public void run() {
                 commitChanges(card, isNewCard);
+
+                String methodName = card.getBasicCardPaymentType();
+                if (mAcceptedBasicCardTypes.contains(methodName)) {
+                    methodName = AutofillPaymentApp.BASIC_CARD_METHOD_NAME;
+                }
+                assert methodName != null;
+
+                AutofillProfile billingAddress = null;
                 for (int i = 0; i < mProfilesForBillingAddress.size(); ++i) {
                     if (TextUtils.equals(mProfilesForBillingAddress.get(i).getGUID(),
                             card.getBillingAddressId())) {
-                        instrument.completeInstrument(card, mProfilesForBillingAddress.get(i));
+                        billingAddress = mProfilesForBillingAddress.get(i);
                         break;
                     }
                 }
+                assert billingAddress != null;
+
+                instrument.completeInstrument(card, methodName, billingAddress);
                 callback.onResult(instrument);
             }
         });

@@ -44,8 +44,8 @@ public interface PaymentApp {
 
     /**
      * Returns a list of all payment method names that this app supports. For example, ["visa",
-     * "mastercard"] in basic card payments. Should return a list of at least one method name.
-     * https://w3c.github.io/webpayments-methods-card/#method-id
+     * "mastercard", "basic-card"] in basic card payments. Should return a list of at least one
+     * method name. https://w3c.github.io/webpayments-methods-card/#method-id
      *
      * @return The list of all payment method names that this app supports.
      */

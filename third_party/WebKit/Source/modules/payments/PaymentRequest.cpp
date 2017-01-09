@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8StringResource.h"
 #include "bindings/modules/v8/V8AndroidPayMethodData.h"
+#include "bindings/modules/v8/V8BasicCardRequest.h"
 #include "bindings/modules/v8/V8PaymentDetails.h"
 #include "core/EventTypeNames.h"
 #include "core/dom/DOMException.h"
@@ -20,6 +21,7 @@
 #include "modules/EventTargetModulesNames.h"
 #include "modules/payments/AndroidPayMethodData.h"
 #include "modules/payments/AndroidPayTokenization.h"
+#include "modules/payments/BasicCardRequest.h"
 #include "modules/payments/HTMLIFrameElementPayments.h"
 #include "modules/payments/PaymentAddress.h"
 #include "modules/payments/PaymentItem.h"
@@ -117,27 +119,9 @@ struct TypeConverter<PaymentOptionsPtr, blink::PaymentOptions> {
 namespace blink {
 namespace {
 
-using payments::mojom::blink::AndroidPayCardNetwork;
-using payments::mojom::blink::AndroidPayTokenization;
-
 // If the website does not call complete() 60 seconds after show() has been
 // resolved, then behave as if the website called complete("fail").
 static const int completeTimeoutSeconds = 60;
-
-const struct {
-  const AndroidPayCardNetwork code;
-  const char* name;
-} kAndroidPayNetwork[] = {{AndroidPayCardNetwork::AMEX, "AMEX"},
-                          {AndroidPayCardNetwork::DISCOVER, "DISCOVER"},
-                          {AndroidPayCardNetwork::MASTERCARD, "MASTERCARD"},
-                          {AndroidPayCardNetwork::VISA, "VISA"}};
-
-const struct {
-  const AndroidPayTokenization code;
-  const char* name;
-} kAndroidPayTokenization[] = {
-    {AndroidPayTokenization::GATEWAY_TOKEN, "GATEWAY_TOKEN"},
-    {AndroidPayTokenization::NETWORK_TOKEN, "NETWORK_TOKEN"}};
 
 // Validates ShippingOption or PaymentItem, which happen to have identical
 // fields, except for "id", which is present only in ShippingOption.
@@ -238,14 +222,14 @@ void validateAndConvertTotal(const PaymentItem& input,
   output = payments::mojom::blink::PaymentItem::From(input);
 }
 
-void maybeSetAndroidPayMethodData(const ScriptValue& input,
-                                  PaymentMethodDataPtr& output,
-                                  ExceptionState& exceptionState) {
+// Parses Android Pay data to avoid parsing JSON in the browser.
+void setAndroidPayMethodData(const ScriptValue& input,
+                             PaymentMethodDataPtr& output,
+                             ExceptionState& exceptionState) {
   AndroidPayMethodData androidPay;
-  DummyExceptionStateForTesting dummyExceptionState;
   V8AndroidPayMethodData::toImpl(input.isolate(), input.v8Value(), androidPay,
-                                 dummyExceptionState);
-  if (dummyExceptionState.hadException())
+                                 exceptionState);
+  if (exceptionState.hadException())
     return;
 
   if (androidPay.hasEnvironment() && androidPay.environment() == "TEST")
@@ -266,10 +250,20 @@ void maybeSetAndroidPayMethodData(const ScriptValue& input,
   }
 
   if (androidPay.hasAllowedCardNetworks()) {
+    using payments::mojom::blink::AndroidPayCardNetwork;
+
+    const struct {
+      const AndroidPayCardNetwork code;
+      const char* const name;
+    } androidPayNetwork[] = {{AndroidPayCardNetwork::AMEX, "AMEX"},
+                             {AndroidPayCardNetwork::DISCOVER, "DISCOVER"},
+                             {AndroidPayCardNetwork::MASTERCARD, "MASTERCARD"},
+                             {AndroidPayCardNetwork::VISA, "VISA"}};
+
     for (const String& allowedCardNetwork : androidPay.allowedCardNetworks()) {
-      for (size_t i = 0; i < arraysize(kAndroidPayNetwork); ++i) {
-        if (allowedCardNetwork == kAndroidPayNetwork[i].name) {
-          output->allowed_card_networks.push_back(kAndroidPayNetwork[i].code);
+      for (size_t i = 0; i < arraysize(androidPayNetwork); ++i) {
+        if (allowedCardNetwork == androidPayNetwork[i].name) {
+          output->allowed_card_networks.push_back(androidPayNetwork[i].code);
           break;
         }
       }
@@ -282,10 +276,18 @@ void maybeSetAndroidPayMethodData(const ScriptValue& input,
     output->tokenization_type =
         payments::mojom::blink::AndroidPayTokenization::UNSPECIFIED;
     if (tokenization.hasTokenizationType()) {
-      for (size_t i = 0; i < arraysize(kAndroidPayTokenization); ++i) {
-        if (tokenization.tokenizationType() ==
-            kAndroidPayTokenization[i].name) {
-          output->tokenization_type = kAndroidPayTokenization[i].code;
+      using payments::mojom::blink::AndroidPayTokenization;
+
+      const struct {
+        const AndroidPayTokenization code;
+        const char* const name;
+      } androidPayTokenization[] = {
+          {AndroidPayTokenization::GATEWAY_TOKEN, "GATEWAY_TOKEN"},
+          {AndroidPayTokenization::NETWORK_TOKEN, "NETWORK_TOKEN"}};
+
+      for (size_t i = 0; i < arraysize(androidPayTokenization); ++i) {
+        if (tokenization.tokenizationType() == androidPayTokenization[i].name) {
+          output->tokenization_type = androidPayTokenization[i].code;
           break;
         }
       }
@@ -309,7 +311,63 @@ void maybeSetAndroidPayMethodData(const ScriptValue& input,
   }
 }
 
-void stringifyAndParseMethodSpecificData(const ScriptValue& input,
+// Parses basic-card data to avoid parsing JSON in the browser.
+void setBasicCardMethodData(const ScriptValue& input,
+                            PaymentMethodDataPtr& output,
+                            ExceptionState& exceptionState) {
+  BasicCardRequest basicCard;
+  V8BasicCardRequest::toImpl(input.isolate(), input.v8Value(), basicCard,
+                             exceptionState);
+  if (exceptionState.hadException())
+    return;
+
+  if (basicCard.hasSupportedNetworks()) {
+    using payments::mojom::blink::BasicCardNetwork;
+
+    const struct {
+      const BasicCardNetwork code;
+      const char* const name;
+    } basicCardNetworks[] = {{BasicCardNetwork::AMEX, "amex"},
+                             {BasicCardNetwork::DINERS, "diners"},
+                             {BasicCardNetwork::DISCOVER, "discover"},
+                             {BasicCardNetwork::JCB, "jcb"},
+                             {BasicCardNetwork::MASTERCARD, "mastercard"},
+                             {BasicCardNetwork::UNIONPAY, "unionpay"},
+                             {BasicCardNetwork::VISA, "visa"}};
+
+    for (const String& network : basicCard.supportedNetworks()) {
+      for (size_t i = 0; i < arraysize(basicCardNetworks); ++i) {
+        if (network == basicCardNetworks[i].name) {
+          output->supported_networks.append(basicCardNetworks[i].code);
+          break;
+        }
+      }
+    }
+  }
+
+  if (basicCard.hasSupportedTypes()) {
+    using payments::mojom::blink::BasicCardType;
+
+    const struct {
+      const BasicCardType code;
+      const char* const name;
+    } basicCardTypes[] = {{BasicCardType::CREDIT, "credit"},
+                          {BasicCardType::DEBIT, "debit"},
+                          {BasicCardType::PREPAID, "prepaid"}};
+
+    for (const String& type : basicCard.supportedTypes()) {
+      for (size_t i = 0; i < arraysize(basicCardTypes); ++i) {
+        if (type == basicCardTypes[i].name) {
+          output->supported_types.append(basicCardTypes[i].code);
+          break;
+        }
+      }
+    }
+  }
+}
+
+void stringifyAndParseMethodSpecificData(const Vector<String>& supportedMethods,
+                                         const ScriptValue& input,
                                          PaymentMethodDataPtr& output,
                                          ExceptionState& exceptionState) {
   DCHECK(!input.isEmpty());
@@ -328,7 +386,21 @@ void stringifyAndParseMethodSpecificData(const ScriptValue& input,
 
   output->stringified_data =
       v8StringToWebCoreString<String>(value, DoNotExternalize);
-  maybeSetAndroidPayMethodData(input, output, exceptionState);
+
+  // Serialize payment method specific data to be sent to the payment apps. The
+  // payment apps are responsible for validating and processing their method
+  // data asynchronously. Do not throw exceptions here.
+  if (supportedMethods.contains("https://android.com/pay")) {
+    setAndroidPayMethodData(input, output, exceptionState);
+    if (exceptionState.hadException())
+      exceptionState.clearException();
+  }
+  if (RuntimeEnabledFeatures::paymentRequestBasicCardEnabled() &&
+      supportedMethods.contains("basic-card")) {
+    setBasicCardMethodData(input, output, exceptionState);
+    if (exceptionState.hadException())
+      exceptionState.clearException();
+  }
 }
 
 void validateAndConvertPaymentDetailsModifiers(
@@ -370,7 +442,8 @@ void validateAndConvertPaymentDetailsModifiers(
 
     if (modifier.hasData() && !modifier.data().isEmpty()) {
       stringifyAndParseMethodSpecificData(
-          modifier.data(), output.back()->method_data, exceptionState);
+          modifier.supportedMethods(), modifier.data(),
+          output.back()->method_data, exceptionState);
     } else {
       output.back()->method_data->stringified_data = "";
     }
@@ -458,7 +531,8 @@ void validateAndConvertPaymentMethodData(
     output.back()->supported_methods = paymentMethodData.supportedMethods();
 
     if (paymentMethodData.hasData() && !paymentMethodData.data().isEmpty()) {
-      stringifyAndParseMethodSpecificData(paymentMethodData.data(),
+      stringifyAndParseMethodSpecificData(paymentMethodData.supportedMethods(),
+                                          paymentMethodData.data(),
                                           output.back(), exceptionState);
     } else {
       output.back()->stringified_data = "";
@@ -621,7 +695,9 @@ void PaymentRequest::onUpdatePaymentDetails(
     return;
 
   PaymentDetails details;
-  DummyExceptionStateForTesting exceptionState;
+  ExceptionState exceptionState(v8::Isolate::GetCurrent(),
+                                ExceptionState::ConstructionContext,
+                                "PaymentDetails");
   V8PaymentDetails::toImpl(detailsScriptValue.isolate(),
                            detailsScriptValue.v8Value(), details,
                            exceptionState);

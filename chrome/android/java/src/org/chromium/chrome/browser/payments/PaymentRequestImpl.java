@@ -562,8 +562,9 @@ public class PaymentRequestImpl
                 result.put(methods[j], methodData[i]);
             }
 
-            paymentMethodsCollector.addAcceptedPaymentMethodsIfRecognized(methods);
+            paymentMethodsCollector.addAcceptedPaymentMethodsIfRecognized(methodData[i]);
         }
+
         return Collections.unmodifiableMap(result);
     }
 

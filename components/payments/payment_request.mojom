@@ -106,6 +106,45 @@ struct PaymentShippingOption {
   bool selected;
 };
 
+enum AndroidPayEnvironment {
+  PRODUCTION,
+  TEST
+};
+
+enum AndroidPayCardNetwork {
+  AMEX,
+  DISCOVER,
+  MASTERCARD,
+  VISA
+};
+
+enum AndroidPayTokenization {
+  UNSPECIFIED,
+  GATEWAY_TOKEN,
+  NETWORK_TOKEN
+};
+
+struct AndroidPayTokenizationParameter {
+  string? key;
+  string? value;
+};
+
+enum BasicCardNetwork {
+  AMEX,
+  DINERS,
+  DISCOVER,
+  JCB,
+  MASTERCARD,
+  UNIONPAY,
+  VISA
+};
+
+enum BasicCardType {
+  CREDIT,
+  DEBIT,
+  PREPAID
+};
+
 struct PaymentMethodData {
   array<string> supported_methods;
 
@@ -130,6 +169,10 @@ struct PaymentMethodData {
   array<AndroidPayTokenizationParameter> parameters;
   // Value of 0 means the merchant did not specify or it was an invalid value.
   int32 min_google_play_services_version;
+
+  // Basic card specific method data is parsed in the renderer.
+  array<BasicCardNetwork> supported_networks;
+  array<BasicCardType> supported_types;
 };
 
 struct PaymentDetailsModifier {
@@ -158,29 +201,6 @@ struct PaymentOptions {
   bool request_payer_phone;
   bool request_shipping;
   PaymentShippingType shipping_type;
-};
-
-enum AndroidPayEnvironment {
-  PRODUCTION,
-  TEST
-};
-
-enum AndroidPayCardNetwork {
-  AMEX,
-  DISCOVER,
-  MASTERCARD,
-  VISA
-};
-
-enum AndroidPayTokenization {
-  UNSPECIFIED,
-  GATEWAY_TOKEN,
-  NETWORK_TOKEN
-};
-
-struct AndroidPayTokenizationParameter {
-  string? key;
-  string? value;
 };
 
 enum PaymentComplete {

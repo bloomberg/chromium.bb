@@ -1347,6 +1347,7 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/policy/CombinedPolicyProviderTest.java",
   "javatests/src/org/chromium/chrome/browser/payments/CurrencyStringFormatterTest.java",
   "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestAbortTest.java",
+  "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestBasicCardTest.java",
   "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestCanMakePaymentQueryNoCardTest.java",
   "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestCanMakePaymentQueryTest.java",
   "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestBillingAddressTest.java",

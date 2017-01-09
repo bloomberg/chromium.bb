@@ -12,9 +12,12 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.payments.mojom.BasicCardNetwork;
+import org.chromium.payments.mojom.BasicCardType;
 import org.chromium.payments.mojom.PaymentMethodData;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +27,9 @@ import java.util.Set;
  * Provides access to locally stored user credit cards.
  */
 public class AutofillPaymentApp implements PaymentApp {
+    /** The method name for any type of credit card. */
+    public static final String BASIC_CARD_METHOD_NAME = "basic-card";
+
     private final Context mContext;
     private final WebContents mWebContents;
 
@@ -39,11 +45,14 @@ public class AutofillPaymentApp implements PaymentApp {
     }
 
     @Override
-    public void getInstruments(Map<String, PaymentMethodData> unusedMethodDataMap,
-            String unusedOrigin, final InstrumentsCallback callback) {
+    public void getInstruments(Map<String, PaymentMethodData> methodDataMap, String unusedOrigin,
+            final InstrumentsCallback callback) {
         PersonalDataManager pdm = PersonalDataManager.getInstance();
         List<CreditCard> cards = pdm.getCreditCardsToSuggest();
         final List<PaymentInstrument> instruments = new ArrayList<>(cards.size());
+
+        Set<String> basicCardSupportedNetworks =
+                convertBasicCardToNetworks(methodDataMap.get(BASIC_CARD_METHOD_NAME));
 
         for (int i = 0; i < cards.size(); i++) {
             CreditCard card = cards.get(i);
@@ -56,8 +65,18 @@ public class AutofillPaymentApp implements PaymentApp {
                 billingAddress = null;
             }
 
-            instruments.add(new AutofillPaymentInstrument(mContext, mWebContents, card,
-                    billingAddress));
+            String methodName = null;
+            if (basicCardSupportedNetworks != null
+                    && basicCardSupportedNetworks.contains(card.getBasicCardPaymentType())) {
+                methodName = BASIC_CARD_METHOD_NAME;
+            } else if (methodDataMap.containsKey(card.getBasicCardPaymentType())) {
+                methodName = card.getBasicCardPaymentType();
+            }
+
+            if (methodName != null) {
+                instruments.add(new AutofillPaymentInstrument(mContext, mWebContents, card,
+                        billingAddress, methodName));
+            }
         }
 
         new Handler().post(new Runnable() {
@@ -68,35 +87,77 @@ public class AutofillPaymentApp implements PaymentApp {
         });
     }
 
+    /** @return A set of card networks (e.g., "visa", "amex") accepted by "basic-card" method. */
+    public static Set<String> convertBasicCardToNetworks(PaymentMethodData data) {
+        // No basic card support.
+        if (data == null) return null;
+
+        boolean supportedTypesEmpty =
+                data.supportedTypes == null || data.supportedTypes.length == 0;
+        boolean supportedNetworksEmpty =
+                data.supportedNetworks == null || data.supportedNetworks.length == 0;
+
+        // All basic cards are supported.
+        Map<Integer, String> networks = getNetworks();
+        if (supportedTypesEmpty && supportedNetworksEmpty) return new HashSet<>(networks.values());
+
+        // https://w3c.github.io/webpayments-methods-card/#basiccardrequest defines 3 types of
+        // cards: "credit", "debit", and "prepaid". Specifying a non-empty subset of these types
+        // requires filtering by type, which Chrome cannot yet do.
+        // TODO(rouslan): Distinguish card types. http://crbug.com/602665
+        if (!supportedTypesEmpty) {
+            if (data.supportedTypes.length != 3) return null;
+            Set<Integer> supportedTypes = new HashSet<>();
+            for (int i = 0; i < data.supportedTypes.length; i++) {
+                supportedTypes.add(data.supportedTypes[i]);
+            }
+            if (!supportedTypes.contains(BasicCardType.CREDIT)) return null;
+            if (!supportedTypes.contains(BasicCardType.DEBIT)) return null;
+            if (!supportedTypes.contains(BasicCardType.PREPAID)) return null;
+        }
+
+        // All basic cards are supported.
+        if (supportedNetworksEmpty) return new HashSet<>(networks.values());
+
+        Set<String> result = new HashSet<>();
+        for (int i = 0; i < data.supportedNetworks.length; i++) {
+            String network = networks.get(data.supportedNetworks[i]);
+            if (network != null) result.add(network);
+        }
+        return result;
+    }
+
+    private static Map<Integer, String> getNetworks() {
+        Map<Integer, String> networks = new HashMap<>();
+        networks.put(BasicCardNetwork.AMEX, "amex");
+        networks.put(BasicCardNetwork.DINERS, "diners");
+        networks.put(BasicCardNetwork.DISCOVER, "discover");
+        networks.put(BasicCardNetwork.JCB, "jcb");
+        networks.put(BasicCardNetwork.MASTERCARD, "mastercard");
+        networks.put(BasicCardNetwork.UNIONPAY, "unionpay");
+        networks.put(BasicCardNetwork.VISA, "visa");
+        return networks;
+    }
+
     @Override
     public Set<String> getAppMethodNames() {
-        // https://w3c.github.io/webpayments-methods-card/#method-id
-        // The spec also includes more detailed card types, e.g., "visa/credit" and "visa/debit".
-        // Autofill does not distinguish between these types of cards, so they are not in the list
-        // of supported method names.
-        Set<String> methods = new HashSet<>();
-
-        methods.add("visa");
-        methods.add("mastercard");
-        methods.add("amex");
-        methods.add("discover");
-        methods.add("diners");
-        methods.add("jcb");
-        methods.add("unionpay");
-        methods.add("mir");
-
-        // The spec does not include "generic" card types. That's the type of card for which
-        // Chrome cannot determine the type.
-        methods.add("generic");
-
+        Set<String> methods = new HashSet<>(getNetworks().values());
+        methods.add(BASIC_CARD_METHOD_NAME);
         return methods;
     }
 
     @Override
     public boolean supportsMethodsAndData(Map<String, PaymentMethodData> methodDataMap) {
         assert methodDataMap != null;
+
+        PaymentMethodData basicCardData = methodDataMap.get(BASIC_CARD_METHOD_NAME);
+        if (basicCardData != null) {
+            Set<String> basicCardNetworks = convertBasicCardToNetworks(basicCardData);
+            if (basicCardNetworks != null && !basicCardNetworks.isEmpty()) return true;
+        }
+
         Set<String> methodNames = new HashSet<>(methodDataMap.keySet());
-        methodNames.retainAll(getAppMethodNames());
+        methodNames.retainAll(getNetworks().values());
         return !methodNames.isEmpty();
     }
 

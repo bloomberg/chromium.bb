@@ -270,12 +270,32 @@ test(function() {
 }, 'Android Pay parameters for produciton environment with network token should not throw.');
 
 test(function() {
+  new PaymentRequest([{'supportedMethods': ['basic-card'], 'data': {'supportedTypes': ['debit'], 'supportedNetworks': ['visa']}}], buildDetails());
+}, 'Basic card parameters should not throw.');
+
+test(function() {
+  new PaymentRequest([{'supportedMethods': ['basic-card'], 'data': {'supportedTypes': [], 'supportedNetworks': []}}], buildDetails());
+}, 'Empty basic card parameters should not throw.');
+
+test(function() {
+  new PaymentRequest([{'supportedMethods': ['not-basic-card'], 'data': {'supportedTypes': 0, 'supportedNetworks': 'foo'}}], buildDetails());
+}, 'Invalid basic card parameters should not throw when method name is not "basic-card".');
+
+test(function() {
+  new PaymentRequest([{'supportedMethods': ['basic-card'], 'data': {'supportedTypes': 0, 'supportedNetworks': 'foo'}}], buildDetails());
+}, 'Invalid basic card parameters should not throw even when method name is "basic-card".');
+
+test(function() {
     new PaymentRequest([{'supportedMethods': ['https://android.com/pay'], 'data': {'merchantName': 'Merchant Inc', 'merchantId': '123', 'allowedCardNetworks': ['AMEX', 'DISCOVER', 'MASTERCARD', 'VISA'], 'paymentMethodTokenizationParameters': {'tokenizationType': 'NETWORK_TOKEN', 'parameters': {'key': 'value'}}}}], buildDetails());
 }, 'Android Pay parameters for network token without environment key should not throw.');
 
 test(function() {
-    new PaymentRequest([{'supportedMethods': ['https://android.com/pay'], 'data': {'merchantName': []}}], buildDetails());
-}, 'Invalid Android Pay parameters should not throw.');
+    new PaymentRequest([{'supportedMethods': ['https://bobpay.com'], 'data': {'allowedCardNetworks': 0}}], buildDetails());
+}, 'Invalid Android Pay parameters should not throw when method name is not "https://android.com/pay".');
+
+test(function() {
+    new PaymentRequest([{'supportedMethods': ['https://android.com/pay'], 'data': {'allowedCardNetworks': 0}}], buildDetails());
+}, 'Invalid Android Pay parameters should not throw even when method name is "https://android.com/pay".');
 
 promise_test(function(t) {
     return promise_rejects(t, null, new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails()).abort());
