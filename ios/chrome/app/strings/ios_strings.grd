@@ -901,10 +901,10 @@ Handoff must also be enabled in the General section of Settings, and your device
         Web Services
       </message>
       <message name="IDS_IOS_PAGE_INFO_OFFLINE_PAGE" desc="Message to display in the page info bubble when the page you are on is an offline page.">
-        The page has been saved locally to your Reading List.
+        This page has been saved to your Reading List.
       </message>
       <message name="IDS_IOS_PAGE_INFO_OFFLINE_TITLE" desc="Title of the message to display in the page info bubble when the page you are on is an offline page.">
-        Viewing in Offline Mode
+        Viewing Offline Version
       </message>
       <message name="IDS_IOS_PAGE_INFO_RELOAD" desc="Button title in the page info bubble that allows to reload the current page.">
         Reload
