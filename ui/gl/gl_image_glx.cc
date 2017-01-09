@@ -124,7 +124,7 @@ bool GLImageGLX::Initialize(XID pixmap) {
 
   int config_attribs[] = {
       GLX_DRAWABLE_TYPE,                    GLX_PIXMAP_BIT,
-      GLX_BIND_TO_TEXTURE_TARGETS_EXT,      GLX_TEXTURE_2D_EXT,
+      GLX_BIND_TO_TEXTURE_TARGETS_EXT,      GLX_TEXTURE_2D_BIT_EXT,
       BindToTextureFormat(internalformat_), GL_TRUE,
       0};
   int num_elements = 0;
