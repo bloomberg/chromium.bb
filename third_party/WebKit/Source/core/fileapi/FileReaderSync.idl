@@ -34,8 +34,8 @@
     Exposed=Worker,
     Constructor,
 ] interface FileReaderSync {
-    [CallWith=ExecutionContext, RaisesException] ArrayBuffer readAsArrayBuffer(Blob blob);
-    [CallWith=ExecutionContext, RaisesException] DOMString readAsBinaryString(Blob blob);
-    [CallWith=ExecutionContext, RaisesException] DOMString readAsText(Blob blob, optional DOMString label);
-    [CallWith=ExecutionContext, RaisesException] DOMString readAsDataURL(Blob blob);
+    [CallWith=ScriptState, RaisesException] ArrayBuffer readAsArrayBuffer(Blob blob);
+    [CallWith=ScriptState, RaisesException] DOMString readAsBinaryString(Blob blob);
+    [CallWith=ScriptState, RaisesException] DOMString readAsText(Blob blob, optional DOMString label);
+    [CallWith=ScriptState, RaisesException] DOMString readAsDataURL(Blob blob);
 };

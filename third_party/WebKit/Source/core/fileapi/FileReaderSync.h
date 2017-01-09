@@ -42,6 +42,7 @@ class DOMArrayBuffer;
 class ExceptionState;
 class ExecutionContext;
 class FileReaderLoader;
+class ScriptState;
 
 class FileReaderSync final : public GarbageCollected<FileReaderSync>,
                              public ScriptWrappable {
@@ -50,18 +51,16 @@ class FileReaderSync final : public GarbageCollected<FileReaderSync>,
  public:
   static FileReaderSync* create() { return new FileReaderSync(); }
 
-  DOMArrayBuffer* readAsArrayBuffer(ExecutionContext*, Blob*, ExceptionState&);
-  String readAsBinaryString(ExecutionContext*, Blob*, ExceptionState&);
-  String readAsText(ExecutionContext* executionContext,
-                    Blob* blob,
-                    ExceptionState& ec) {
-    return readAsText(executionContext, blob, "", ec);
+  DOMArrayBuffer* readAsArrayBuffer(ScriptState*, Blob*, ExceptionState&);
+  String readAsBinaryString(ScriptState*, Blob*, ExceptionState&);
+  String readAsText(ScriptState* scriptState, Blob* blob, ExceptionState& ec) {
+    return readAsText(scriptState, blob, "", ec);
   }
-  String readAsText(ExecutionContext*,
+  String readAsText(ScriptState*,
                     Blob*,
                     const String& encoding,
                     ExceptionState&);
-  String readAsDataURL(ExecutionContext*, Blob*, ExceptionState&);
+  String readAsDataURL(ScriptState*, Blob*, ExceptionState&);
 
   DEFINE_INLINE_TRACE() {}
 

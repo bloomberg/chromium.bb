@@ -30,6 +30,6 @@ interface DOMStringList {
     readonly attribute unsigned long length;
     getter DOMString? (unsigned long index);
 
-    [CallWith=ExecutionContext] DOMString? item(unsigned long index);
-    [CallWith=ExecutionContext,MeasureAs=DOMStringListContains] boolean contains(DOMString string);
+    [CallWith=ScriptState] DOMString? item(unsigned long index);
+    [CallWith=ScriptState,MeasureAs=DOMStringListContains] boolean contains(DOMString string);
 };

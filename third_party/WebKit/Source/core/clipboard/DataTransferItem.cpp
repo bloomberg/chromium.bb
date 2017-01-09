@@ -69,14 +69,14 @@ String DataTransferItem::type() const {
   return m_item->type();
 }
 
-void DataTransferItem::getAsString(ExecutionContext* context,
+void DataTransferItem::getAsString(ScriptState* scriptState,
                                    StringCallback* callback) const {
   if (!m_dataTransfer->canReadData())
     return;
   if (!callback || m_item->kind() != DataObjectItem::StringKind)
     return;
 
-  context->postTask(
+  scriptState->getExecutionContext()->postTask(
       TaskType::UserInteraction, BLINK_FROM_HERE,
       createSameThreadTask(&StringCallback::handleEvent,
                            wrapPersistent(callback), m_item->getAsString()),

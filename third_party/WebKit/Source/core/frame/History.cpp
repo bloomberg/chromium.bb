@@ -26,6 +26,7 @@
 #include "core/frame/History.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/loader/DocumentLoader.h"
@@ -121,20 +122,20 @@ bool History::isSameAsCurrentState(SerializedScriptValue* state) const {
   return state == stateInternal();
 }
 
-void History::back(ExecutionContext* context) {
-  go(context, -1);
+void History::back(ScriptState* scriptState) {
+  go(scriptState, -1);
 }
 
-void History::forward(ExecutionContext* context) {
-  go(context, 1);
+void History::forward(ScriptState* scriptState) {
+  go(scriptState, 1);
 }
 
-void History::go(ExecutionContext* context, int delta) {
+void History::go(ScriptState* scriptState, int delta) {
   if (!frame() || !frame()->loader().client())
     return;
 
   DCHECK(isMainThread());
-  Document* activeDocument = toDocument(context);
+  Document* activeDocument = toDocument(scriptState->getExecutionContext());
   if (!activeDocument)
     return;
 

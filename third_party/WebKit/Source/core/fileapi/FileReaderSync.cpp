@@ -31,6 +31,7 @@
 #include "core/fileapi/FileReaderSync.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileError.h"
@@ -41,30 +42,32 @@ namespace blink {
 FileReaderSync::FileReaderSync() {}
 
 DOMArrayBuffer* FileReaderSync::readAsArrayBuffer(
-    ExecutionContext* executionContext,
+    ScriptState* scriptState,
     Blob* blob,
     ExceptionState& exceptionState) {
   ASSERT(blob);
 
   std::unique_ptr<FileReaderLoader> loader =
       FileReaderLoader::create(FileReaderLoader::ReadAsArrayBuffer, nullptr);
-  startLoading(executionContext, *loader, *blob, exceptionState);
+  startLoading(scriptState->getExecutionContext(), *loader, *blob,
+               exceptionState);
 
   return loader->arrayBufferResult();
 }
 
-String FileReaderSync::readAsBinaryString(ExecutionContext* executionContext,
+String FileReaderSync::readAsBinaryString(ScriptState* scriptState,
                                           Blob* blob,
                                           ExceptionState& exceptionState) {
   ASSERT(blob);
 
   std::unique_ptr<FileReaderLoader> loader =
       FileReaderLoader::create(FileReaderLoader::ReadAsBinaryString, nullptr);
-  startLoading(executionContext, *loader, *blob, exceptionState);
+  startLoading(scriptState->getExecutionContext(), *loader, *blob,
+               exceptionState);
   return loader->stringResult();
 }
 
-String FileReaderSync::readAsText(ExecutionContext* executionContext,
+String FileReaderSync::readAsText(ScriptState* scriptState,
                                   Blob* blob,
                                   const String& encoding,
                                   ExceptionState& exceptionState) {
@@ -73,11 +76,12 @@ String FileReaderSync::readAsText(ExecutionContext* executionContext,
   std::unique_ptr<FileReaderLoader> loader =
       FileReaderLoader::create(FileReaderLoader::ReadAsText, nullptr);
   loader->setEncoding(encoding);
-  startLoading(executionContext, *loader, *blob, exceptionState);
+  startLoading(scriptState->getExecutionContext(), *loader, *blob,
+               exceptionState);
   return loader->stringResult();
 }
 
-String FileReaderSync::readAsDataURL(ExecutionContext* executionContext,
+String FileReaderSync::readAsDataURL(ScriptState* scriptState,
                                      Blob* blob,
                                      ExceptionState& exceptionState) {
   ASSERT(blob);
@@ -85,7 +89,8 @@ String FileReaderSync::readAsDataURL(ExecutionContext* executionContext,
   std::unique_ptr<FileReaderLoader> loader =
       FileReaderLoader::create(FileReaderLoader::ReadAsDataURL, nullptr);
   loader->setDataType(blob->type());
-  startLoading(executionContext, *loader, *blob, exceptionState);
+  startLoading(scriptState->getExecutionContext(), *loader, *blob,
+               exceptionState);
   return loader->stringResult();
 }
 

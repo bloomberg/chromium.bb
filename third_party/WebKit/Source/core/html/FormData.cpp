@@ -30,6 +30,7 @@
 
 #include "core/html/FormData.h"
 
+#include "bindings/core/v8/ScriptState.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/File.h"
 #include "core/frame/UseCounter.h"
@@ -100,12 +101,14 @@ void FormData::append(const String& name, const String& value) {
       new Entry(encodeAndNormalize(name), encodeAndNormalize(value)));
 }
 
-void FormData::append(ExecutionContext* context,
+void FormData::append(ScriptState* scriptState,
                       const String& name,
                       Blob* blob,
                       const String& filename) {
-  if (!blob)
-    UseCounter::count(context, UseCounter::FormDataAppendNull);
+  if (!blob) {
+    UseCounter::count(scriptState->getExecutionContext(),
+                      UseCounter::FormDataAppendNull);
+  }
   append(name, blob, filename);
 }
 

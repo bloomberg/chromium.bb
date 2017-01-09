@@ -36,7 +36,7 @@
 
 namespace blink {
 
-class ExecutionContext;
+class ScriptState;
 class SharedWorker;
 
 class SharedWorkerPerformance final
@@ -47,7 +47,7 @@ class SharedWorkerPerformance final
  public:
   static SharedWorkerPerformance& from(SharedWorker&);
 
-  static double workerStart(ExecutionContext*, SharedWorker&);
+  static double workerStart(ScriptState*, SharedWorker&);
   double getWorkerStart(ExecutionContext*, SharedWorker&) const;
 
   DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<SharedWorker>::trace(visitor); }

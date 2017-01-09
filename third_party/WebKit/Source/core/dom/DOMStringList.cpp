@@ -25,7 +25,7 @@
 
 #include "core/dom/DOMStringList.h"
 
-#include "core/dom/ExecutionContext.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "core/frame/UseCounter.h"
 #include <algorithm>
 
@@ -37,15 +37,17 @@ String DOMStringList::anonymousIndexedGetter(unsigned index) const {
   return m_strings[index];
 }
 
-String DOMStringList::item(ExecutionContext* context, unsigned index) const {
+String DOMStringList::item(ScriptState* scriptState, unsigned index) const {
   switch (m_source) {
     case DOMStringList::IndexedDB:
       UseCounter::count(
-          context, UseCounter::DOMStringList_Item_AttributeGetter_IndexedDB);
+          scriptState->getExecutionContext(),
+          UseCounter::DOMStringList_Item_AttributeGetter_IndexedDB);
       break;
     case DOMStringList::Location:
       UseCounter::count(
-          context, UseCounter::DOMStringList_Item_AttributeGetter_Location);
+          scriptState->getExecutionContext(),
+          UseCounter::DOMStringList_Item_AttributeGetter_Location);
       break;
     default:
       NOTREACHED();
@@ -54,15 +56,15 @@ String DOMStringList::item(ExecutionContext* context, unsigned index) const {
   return anonymousIndexedGetter(index);
 }
 
-bool DOMStringList::contains(ExecutionContext* context,
+bool DOMStringList::contains(ScriptState* scriptState,
                              const String& string) const {
   switch (m_source) {
     case DOMStringList::IndexedDB:
-      UseCounter::count(context,
+      UseCounter::count(scriptState->getExecutionContext(),
                         UseCounter::DOMStringList_Contains_Method_IndexedDB);
       break;
     case DOMStringList::Location:
-      UseCounter::count(context,
+      UseCounter::count(scriptState->getExecutionContext(),
                         UseCounter::DOMStringList_Contains_Method_Location);
       break;
     default:

@@ -34,7 +34,7 @@
 
 namespace blink {
 
-class ExecutionContext;
+class ScriptState;
 
 // FIXME: Some consumers of this class may benefit from lazily fetching items
 // rather than creating the list statically as is currently the only option.
@@ -63,8 +63,8 @@ class CORE_EXPORT DOMStringList final
   size_t length() const { return m_strings.size(); }
   String anonymousIndexedGetter(unsigned index) const;
 
-  String item(ExecutionContext*, unsigned index) const;
-  bool contains(ExecutionContext*, const String&) const;
+  String item(ScriptState*, unsigned index) const;
+  bool contains(ScriptState*, const String&) const;
 
   operator const Vector<String>&() const { return m_strings; }
 

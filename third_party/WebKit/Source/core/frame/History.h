@@ -38,9 +38,9 @@ namespace blink {
 
 class LocalFrame;
 class KURL;
-class ExecutionContext;
 class ExceptionState;
 class SecurityOrigin;
+class ScriptState;
 
 // This class corresponds to the History interface.
 class CORE_EXPORT History final : public GarbageCollectedFinalized<History>,
@@ -55,9 +55,9 @@ class CORE_EXPORT History final : public GarbageCollectedFinalized<History>,
   unsigned length() const;
   SerializedScriptValue* state();
 
-  void back(ExecutionContext*);
-  void forward(ExecutionContext*);
-  void go(ExecutionContext*, int delta);
+  void back(ScriptState*);
+  void forward(ScriptState*);
+  void go(ScriptState*, int delta);
 
   void pushState(PassRefPtr<SerializedScriptValue> data,
                  const String& title,

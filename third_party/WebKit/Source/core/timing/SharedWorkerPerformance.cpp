@@ -29,6 +29,7 @@
 
 #include "core/timing/SharedWorkerPerformance.h"
 
+#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/loader/DocumentLoadTiming.h"
@@ -55,10 +56,10 @@ SharedWorkerPerformance& SharedWorkerPerformance::from(
   return *supplement;
 }
 
-double SharedWorkerPerformance::workerStart(ExecutionContext* context,
+double SharedWorkerPerformance::workerStart(ScriptState* scriptState,
                                             SharedWorker& sharedWorker) {
   return SharedWorkerPerformance::from(sharedWorker)
-      .getWorkerStart(context, sharedWorker);
+      .getWorkerStart(scriptState->getExecutionContext(), sharedWorker);
 }
 
 double SharedWorkerPerformance::getWorkerStart(ExecutionContext* context,

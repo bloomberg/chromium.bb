@@ -33,7 +33,6 @@
 
 #include "bindings/core/v8/FileOrUSVString.h"
 #include "bindings/core/v8/Iterable.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/EncodedFormData.h"
@@ -44,6 +43,7 @@ namespace blink {
 
 class Blob;
 class HTMLFormElement;
+class ScriptState;
 
 // Typedef from FormData.idl:
 typedef FileOrUSVString FormDataEntryValue;
@@ -66,7 +66,7 @@ class CORE_EXPORT FormData final
 
   // FormData IDL interface.
   void append(const String& name, const String& value);
-  void append(ExecutionContext*,
+  void append(ScriptState*,
               const String& name,
               Blob*,
               const String& filename = String());

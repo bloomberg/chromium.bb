@@ -4,6 +4,7 @@
 
 #include "core/testing/DictionaryTest.h"
 
+#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8ObjectBuilder.h"
 #include "core/testing/InternalDictionary.h"
 #include "core/testing/InternalDictionaryDerived.h"
@@ -165,10 +166,11 @@ void DictionaryTest::getDerivedDerived(
 }
 
 String DictionaryTest::stringFromIterable(
-    ExecutionContext* executionContext,
+    ScriptState* scriptState,
     Dictionary iterable,
     ExceptionState& exceptionState) const {
   StringBuilder result;
+  ExecutionContext* executionContext = scriptState->getExecutionContext();
   DictionaryIterator iterator = iterable.getIterator(executionContext);
   if (iterator.isNull())
     return emptyString();
