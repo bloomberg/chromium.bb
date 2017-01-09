@@ -1298,6 +1298,11 @@ void RTCPeerConnectionHandler::setRemoteDescription(
   std::string sdp = description.sdp().utf8();
   std::string type = description.type().utf8();
 
+  if (peer_connection_tracker_) {
+    peer_connection_tracker_->TrackSetSessionDescription(
+        this, sdp, type, PeerConnectionTracker::SOURCE_REMOTE);
+  }
+
   webrtc::SdpParseError error;
   // Since CreateNativeSessionDescription uses the dependency factory, we need
   // to make this call on the current thread to be safe.
@@ -1310,12 +1315,12 @@ void RTCPeerConnectionHandler::setRemoteDescription(
     reason_str.append(error.description);
     LOG(ERROR) << reason_str;
     request.requestFailed(blink::WebString::fromUTF8(reason_str));
+    if (peer_connection_tracker_) {
+      peer_connection_tracker_->TrackSessionDescriptionCallback(
+          this, PeerConnectionTracker::ACTION_SET_REMOTE_DESCRIPTION,
+          "OnFailure", reason_str);
+    }
     return;
-  }
-
-  if (peer_connection_tracker_) {
-    peer_connection_tracker_->TrackSetSessionDescription(
-        this, sdp, type, PeerConnectionTracker::SOURCE_REMOTE);
   }
 
   if (!first_remote_description_ && IsOfferOrAnswer(native_desc)) {
