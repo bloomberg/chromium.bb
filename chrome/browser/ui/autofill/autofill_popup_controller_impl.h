@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/autofill/popup_controller_common.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/native_theme/native_theme.h"
 
 namespace autofill {
 
@@ -95,7 +96,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
                                   base::string16* title,
                                   base::string16* body) override;
   bool RemoveSuggestion(int list_index) override;
-  SkColor GetBackgroundColorForRow(int index) const override;
+  ui::NativeTheme::ColorId GetBackgroundColorIDForRow(int index) const override;
   int selected_line() const override;
   const AutofillPopupLayoutModel& layout_model() const override;
 

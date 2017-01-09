@@ -14,6 +14,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
@@ -153,7 +154,9 @@ PasswordGenerationPopupViewViews::PasswordGenerationPopupViewViews(
       PasswordGenerationPopupController::kHorizontalPadding));
   AddChildView(help_label_);
 
-  set_background(views::Background::CreateSolidBackground(kPopupBackground));
+  set_background(views::Background::CreateSolidBackground(
+      GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_ResultsTableNormalBackground)));
 }
 
 PasswordGenerationPopupViewViews::~PasswordGenerationPopupViewViews() {}
@@ -209,9 +212,10 @@ void PasswordGenerationPopupViewViews::PasswordSelectionUpdated() {
 
   password_view_->set_background(
       views::Background::CreateSolidBackground(
-          controller_->password_selected() ?
-          kHoveredBackgroundColor :
-          kPopupBackground));
+          GetNativeTheme()->GetSystemColor(
+              controller_->password_selected() ?
+                  ui::NativeTheme::kColorId_ResultsTableHoveredBackground :
+                  ui::NativeTheme::kColorId_ResultsTableNormalBackground)));
 }
 
 void PasswordGenerationPopupViewViews::Layout() {

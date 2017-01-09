@@ -10,7 +10,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
-#include "chrome/browser/ui/autofill/popup_constants.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_popup_view_bridge.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion.h"
@@ -26,6 +25,8 @@
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
+#include "ui/native_theme/native_theme.h"
+#include "ui/native_theme/native_theme_mac.h"
 
 using autofill::AutofillPopupView;
 using autofill::AutofillPopupLayoutModel;
@@ -170,7 +171,9 @@ using autofill::AutofillPopupLayoutModel;
     [[self highlightColor] set];
     [NSBezierPath fillRect:bounds];
   } else {
-    SkColor backgroundColor = controller_->GetBackgroundColorForRow(index);
+    SkColor backgroundColor =
+      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+        controller_->GetBackgroundColorIDForRow(index));
     [skia::SkColorToSRGBNSColor(backgroundColor) set];
     [NSBezierPath fillRect:bounds];
   }
@@ -213,7 +216,8 @@ using autofill::AutofillPopupLayoutModel;
              bounds:(NSRect)bounds
         textYOffset:(CGFloat)textYOffset {
   NSColor* nameColor = skia::SkColorToSRGBNSColor(
-      controller_->layout_model().GetValueFontColorForRow(index));
+      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+          controller_->layout_model().GetValueFontColorIDForRow(index)));
   NSDictionary* nameAttributes = [NSDictionary
       dictionaryWithObjectsAndKeys:controller_->layout_model()
                                        .GetValueFontListForRow(index)

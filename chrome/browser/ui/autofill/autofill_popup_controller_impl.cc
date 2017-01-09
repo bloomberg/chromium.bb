@@ -13,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
-#include "chrome/browser/ui/autofill/popup_constants.h"
 #include "components/autofill/core/browser/autofill_popup_delegate.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion.h"
@@ -375,11 +374,11 @@ bool AutofillPopupControllerImpl::RemoveSuggestion(int list_index) {
   return true;
 }
 
-SkColor AutofillPopupControllerImpl::GetBackgroundColorForRow(int index) const {
-  if (index == selected_line_)
-    return kHoveredBackgroundColor;
-
-  return SK_ColorTRANSPARENT;
+ui::NativeTheme::ColorId
+AutofillPopupControllerImpl::GetBackgroundColorIDForRow(int index) const {
+  return index == selected_line_ ?
+    ui::NativeTheme::kColorId_ResultsTableHoveredBackground :
+    ui::NativeTheme::kColorId_ResultsTableNormalBackground;
 }
 
 int AutofillPopupControllerImpl::selected_line() const {

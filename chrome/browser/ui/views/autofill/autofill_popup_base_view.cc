@@ -10,6 +10,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/popup_constants.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
@@ -60,7 +61,11 @@ void AutofillPopupBaseView::DoShow() {
     show_time_ = base::Time::Now();
   }
 
-  SetBorder(views::CreateSolidBorder(kPopupBorderThickness, kBorderColor));
+  // TODO(crbug.com/676164): Show different border color when focused/unfocused
+  SetBorder(views::CreateSolidBorder(
+      kPopupBorderThickness,
+      GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_UnfocusedBorderColor)));
 
   DoUpdateBoundsAndRedrawPopup();
   GetWidget()->Show();

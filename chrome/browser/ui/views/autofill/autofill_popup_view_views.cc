@@ -6,7 +6,6 @@
 
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
-#include "chrome/browser/ui/autofill/popup_constants.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -48,7 +47,8 @@ void AutofillPopupViewViews::OnPaint(gfx::Canvas* canvas) {
   if (!controller_)
     return;
 
-  canvas->DrawColor(kPopupBackground);
+  canvas->DrawColor(GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_ResultsTableNormalBackground));
   OnPaintBorder(canvas);
 
   for (size_t i = 0; i < controller_->GetLineCount(); ++i) {
@@ -56,7 +56,10 @@ void AutofillPopupViewViews::OnPaint(gfx::Canvas* canvas) {
 
     if (controller_->GetSuggestionAt(i).frontend_id ==
         POPUP_ITEM_ID_SEPARATOR) {
-      canvas->FillRect(line_rect, kLabelTextColor);
+      canvas->FillRect(
+          line_rect,
+          GetNativeTheme()->GetSystemColor(
+              ui::NativeTheme::kColorId_ResultsTableNormalDimmedText));
     } else {
       DrawAutofillEntry(canvas, i, line_rect);
     }
@@ -92,7 +95,10 @@ void AutofillPopupViewViews::InvalidateRow(size_t row) {
 void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
                                                int index,
                                                const gfx::Rect& entry_rect) {
-  canvas->FillRect(entry_rect, controller_->GetBackgroundColorForRow(index));
+  canvas->FillRect(
+      entry_rect,
+      GetNativeTheme()->GetSystemColor(
+          controller_->GetBackgroundColorIDForRow(index)));
 
   const bool is_http_warning =
       (controller_->GetSuggestionAt(index).frontend_id ==
@@ -150,7 +156,8 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
   canvas->DrawStringRectWithFlags(
       controller_->GetElidedValueAt(index),
       controller_->layout_model().GetValueFontListForRow(index),
-      controller_->layout_model().GetValueFontColorForRow(index),
+      GetNativeTheme()->GetSystemColor(
+          controller_->layout_model().GetValueFontColorIDForRow(index)),
       gfx::Rect(value_x_align_left, value_rect.y(), value_width,
                 value_rect.height()),
       text_align);
@@ -169,11 +176,15 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
       label_x_align_left += is_rtl ? 0 : -label_width;
     }
 
+    // TODO(crbug.com/678033):Add a GetLabelFontColorForRow function similar to
+    // GetValueFontColorForRow so that the cocoa impl could use it too
     canvas->DrawStringRectWithFlags(
         controller_->GetElidedLabelAt(index),
         controller_->layout_model().GetLabelFontListForRow(index),
-        kLabelTextColor, gfx::Rect(label_x_align_left, entry_rect.y(),
-                                   label_width, entry_rect.height()),
+        GetNativeTheme()->GetSystemColor(
+            ui::NativeTheme::kColorId_ResultsTableNormalDimmedText),
+        gfx::Rect(label_x_align_left, entry_rect.y(), label_width,
+                  entry_rect.height()),
         text_align);
   }
 }

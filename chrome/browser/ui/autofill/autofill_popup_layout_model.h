@@ -14,6 +14,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/native_theme/native_theme.h"
 
 namespace gfx {
 class ImageSkia;
@@ -74,8 +75,8 @@ class AutofillPopupLayoutModel {
   const gfx::FontList& GetValueFontListForRow(size_t index) const;
   const gfx::FontList& GetLabelFontListForRow(size_t index) const;
 
-  // Returns the value font color of the row item according to its |index|.
-  SkColor GetValueFontColorForRow(size_t index) const;
+  // Returns the value font color ID of the row item according to its |index|.
+  ui::NativeTheme::ColorId GetValueFontColorIDForRow(size_t index) const;
 
   // Returns the icon image of the item at |index| in the popup.
   gfx::ImageSkia GetIconImage(size_t index) const;

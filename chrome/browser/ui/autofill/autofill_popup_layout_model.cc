@@ -191,15 +191,16 @@ const gfx::FontList& AutofillPopupLayoutModel::GetLabelFontListForRow(
   return smaller_font_list_;
 }
 
-SkColor AutofillPopupLayoutModel::GetValueFontColorForRow(size_t index) const {
+ui::NativeTheme::ColorId AutofillPopupLayoutModel::GetValueFontColorIDForRow(
+    size_t index) const {
   std::vector<autofill::Suggestion> suggestions = delegate_->GetSuggestions();
   switch (suggestions[index].frontend_id) {
     case POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE:
-      return gfx::kGoogleRed700;
+      return ui::NativeTheme::kColorId_AlertSeverityHigh;
     case POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE:
-      return kLabelTextColor;
+      return ui::NativeTheme::kColorId_ResultsTableNormalDimmedText;
     default:
-      return kValueTextColor;
+      return ui::NativeTheme::kColorId_ResultsTableNormalText;
   }
 }
 
