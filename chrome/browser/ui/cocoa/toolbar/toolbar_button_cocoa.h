@@ -10,7 +10,10 @@
 #import "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "ui/gfx/color_utils.h"
-#include "ui/gfx/vector_icons_public.h"
+
+namespace gfx {
+struct VectorIcon;
+}
 
 enum class ToolbarButtonImageBackgroundStyle {
   DEFAULT,
@@ -34,8 +37,8 @@ enum class ToolbarButtonImageBackgroundStyle {
 + (NSSize)toolbarButtonSize;
 // Whether or not to handle the mouse middle click events.
 @property(assign, nonatomic) BOOL handleMiddleClick;
-// Override point for subclasses to return their vector icon id.
-- (gfx::VectorIconId)vectorIconId;
+// Override point for subclasses to return their vector icon.
+- (const gfx::VectorIcon*)vectorIcon;
 // Override point for subclasses to return their vector icon color.
 - (SkColor)vectorIconColor:(BOOL)themeIsDark;
 // When in Material Design mode, sets the images for each of the ToolbarButton's
