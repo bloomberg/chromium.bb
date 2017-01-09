@@ -67,6 +67,10 @@
 #include "extensions/shell/browser/shell_nacl_browser_delegate.h"
 #endif
 
+#if defined(USE_AURA) && defined(USE_X11)
+#include "ui/events/devices/x11/touch_factory_x11.h"
+#endif
+
 using base::CommandLine;
 using content::BrowserContext;
 
@@ -89,7 +93,9 @@ ShellBrowserMainParts::~ShellBrowserMainParts() {
 }
 
 void ShellBrowserMainParts::PreMainMessageLoopStart() {
-  // TODO(jamescook): Initialize touch here?
+#if defined(USE_AURA) && defined(USE_X11)
+  ui::TouchFactory::SetTouchDeviceListFromCommandLine();
+#endif
 #if defined(OS_MACOSX)
   MainPartsPreMainMessageLoopStartMac();
 #endif
