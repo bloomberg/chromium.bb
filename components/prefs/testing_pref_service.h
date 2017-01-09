@@ -40,6 +40,14 @@ class TestingPrefServiceBase : public SuperPrefService {
   // preference has been defined previously.
   void RemoveManagedPref(const std::string& path);
 
+  // Similar to the above, but for extension preferences.
+  // Does not really know about extensions and their order of installation.
+  // Useful in tests that only check that a preference is overridden by an
+  // extension.
+  const base::Value* GetExtensionPref(const std::string& path) const;
+  void SetExtensionPref(const std::string& path, base::Value* value);
+  void RemoveExtensionPref(const std::string& path);
+
   // Similar to the above, but for user preferences.
   const base::Value* GetUserPref(const std::string& path) const;
   void SetUserPref(const std::string& path, base::Value* value);
@@ -54,12 +62,12 @@ class TestingPrefServiceBase : public SuperPrefService {
   static void HandleReadError(PersistentPrefStore::PrefReadError error) {}
 
  protected:
-  TestingPrefServiceBase(
-      TestingPrefStore* managed_prefs,
-      TestingPrefStore* user_prefs,
-      TestingPrefStore* recommended_prefs,
-      ConstructionPrefRegistry* pref_registry,
-      PrefNotifierImpl* pref_notifier);
+  TestingPrefServiceBase(TestingPrefStore* managed_prefs,
+                         TestingPrefStore* extension_prefs,
+                         TestingPrefStore* user_prefs,
+                         TestingPrefStore* recommended_prefs,
+                         ConstructionPrefRegistry* pref_registry,
+                         PrefNotifierImpl* pref_notifier);
 
  private:
   // Reads the value of the preference indicated by |path| from |pref_store|.
@@ -77,6 +85,7 @@ class TestingPrefServiceBase : public SuperPrefService {
 
   // Pointers to the pref stores our value store uses.
   scoped_refptr<TestingPrefStore> managed_prefs_;
+  scoped_refptr<TestingPrefStore> extension_prefs_;
   scoped_refptr<TestingPrefStore> user_prefs_;
   scoped_refptr<TestingPrefStore> recommended_prefs_;
 
@@ -104,6 +113,7 @@ class TestingPrefServiceSimple
 template<>
 TestingPrefServiceBase<PrefService, PrefRegistry>::TestingPrefServiceBase(
     TestingPrefStore* managed_prefs,
+    TestingPrefStore* extension_prefs,
     TestingPrefStore* user_prefs,
     TestingPrefStore* recommended_prefs,
     PrefRegistry* pref_registry,
@@ -131,6 +141,25 @@ template <class SuperPrefService, class ConstructionPrefRegistry>
 void TestingPrefServiceBase<SuperPrefService, ConstructionPrefRegistry>::
     RemoveManagedPref(const std::string& path) {
   RemovePref(managed_prefs_.get(), path);
+}
+
+template <class SuperPrefService, class ConstructionPrefRegistry>
+const base::Value* TestingPrefServiceBase<
+    SuperPrefService,
+    ConstructionPrefRegistry>::GetExtensionPref(const std::string& path) const {
+  return GetPref(extension_prefs_.get(), path);
+}
+
+template <class SuperPrefService, class ConstructionPrefRegistry>
+void TestingPrefServiceBase<SuperPrefService, ConstructionPrefRegistry>::
+    SetExtensionPref(const std::string& path, base::Value* value) {
+  SetPref(extension_prefs_.get(), path, value);
+}
+
+template <class SuperPrefService, class ConstructionPrefRegistry>
+void TestingPrefServiceBase<SuperPrefService, ConstructionPrefRegistry>::
+    RemoveExtensionPref(const std::string& path) {
+  RemovePref(extension_prefs_.get(), path);
 }
 
 template <class SuperPrefService, class ConstructionPrefRegistry>

@@ -64,8 +64,9 @@ class PlatformStateStoreWinTest : public ::testing::Test {
     // Ownership of |user_pref_store| is passed to the service.
     std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> prefs(
         new sync_preferences::TestingPrefServiceSyncable(
-            new TestingPrefStore(), user_pref_store, new TestingPrefStore(),
-            new user_prefs::PrefRegistrySyncable(), new PrefNotifierImpl()));
+            new TestingPrefStore(), new TestingPrefStore(), user_pref_store,
+            new TestingPrefStore(), new user_prefs::PrefRegistrySyncable(),
+            new PrefNotifierImpl()));
     chrome::RegisterUserProfilePrefs(prefs->registry());
     profile_ = profile_manager_.CreateTestingProfile(
         kProfileName_, std::move(prefs), base::UTF8ToUTF16(kProfileName_), 0,

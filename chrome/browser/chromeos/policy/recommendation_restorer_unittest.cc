@@ -94,6 +94,7 @@ RecommendationRestorerTest::RecommendationRestorerTest()
       prefs_(new sync_preferences::TestingPrefServiceSyncable(
           new TestingPrefStore,
           new TestingPrefStore,
+          new TestingPrefStore,
           recommended_prefs_,
           new user_prefs::PrefRegistrySyncable,
           new PrefNotifierImpl)),

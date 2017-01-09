@@ -14,6 +14,7 @@ template <>
 TestingPrefServiceBase<sync_preferences::PrefServiceSyncable,
                        user_prefs::PrefRegistrySyncable>::
     TestingPrefServiceBase(TestingPrefStore* managed_prefs,
+                           TestingPrefStore* extension_prefs,
                            TestingPrefStore* user_prefs,
                            TestingPrefStore* recommended_prefs,
                            user_prefs::PrefRegistrySyncable* pref_registry,
@@ -21,9 +22,9 @@ TestingPrefServiceBase<sync_preferences::PrefServiceSyncable,
     : sync_preferences::PrefServiceSyncable(
           pref_notifier,
           new PrefValueStore(managed_prefs,
-                             nullptr,  // supervised_user_prefs
-                             nullptr,  // extension_prefs
-                             nullptr,  // command_line_prefs
+                             nullptr,          // supervised_user_prefs
+                             extension_prefs,  // extension_prefs
+                             nullptr,          // command_line_prefs
                              user_prefs,
                              recommended_prefs,
                              pref_registry->defaults().get(),
@@ -36,6 +37,7 @@ TestingPrefServiceBase<sync_preferences::PrefServiceSyncable,
                      user_prefs::PrefRegistrySyncable>::HandleReadError),
           false),
       managed_prefs_(managed_prefs),
+      extension_prefs_(extension_prefs),
       user_prefs_(user_prefs),
       recommended_prefs_(recommended_prefs) {}
 
@@ -47,11 +49,13 @@ TestingPrefServiceSyncable::TestingPrefServiceSyncable()
           new TestingPrefStore(),
           new TestingPrefStore(),
           new TestingPrefStore(),
+          new TestingPrefStore(),
           new user_prefs::PrefRegistrySyncable(),
           new PrefNotifierImpl()) {}
 
 TestingPrefServiceSyncable::TestingPrefServiceSyncable(
     TestingPrefStore* managed_prefs,
+    TestingPrefStore* extension_prefs,
     TestingPrefStore* user_prefs,
     TestingPrefStore* recommended_prefs,
     user_prefs::PrefRegistrySyncable* pref_registry,
@@ -59,6 +63,7 @@ TestingPrefServiceSyncable::TestingPrefServiceSyncable(
     : TestingPrefServiceBase<PrefServiceSyncable,
                              user_prefs::PrefRegistrySyncable>(
           managed_prefs,
+          extension_prefs,
           user_prefs,
           recommended_prefs,
           pref_registry,

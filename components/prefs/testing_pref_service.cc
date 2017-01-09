@@ -15,6 +15,7 @@
 template <>
 TestingPrefServiceBase<PrefService, PrefRegistry>::TestingPrefServiceBase(
     TestingPrefStore* managed_prefs,
+    TestingPrefStore* extension_prefs,
     TestingPrefStore* user_prefs,
     TestingPrefStore* recommended_prefs,
     PrefRegistry* pref_registry,
@@ -23,7 +24,7 @@ TestingPrefServiceBase<PrefService, PrefRegistry>::TestingPrefServiceBase(
           pref_notifier,
           new PrefValueStore(managed_prefs,
                              NULL,
-                             NULL,
+                             extension_prefs,
                              NULL,
                              user_prefs,
                              recommended_prefs,
@@ -35,11 +36,13 @@ TestingPrefServiceBase<PrefService, PrefRegistry>::TestingPrefServiceBase(
                                              PrefRegistry>::HandleReadError),
           false),
       managed_prefs_(managed_prefs),
+      extension_prefs_(extension_prefs),
       user_prefs_(user_prefs),
       recommended_prefs_(recommended_prefs) {}
 
 TestingPrefServiceSimple::TestingPrefServiceSimple()
     : TestingPrefServiceBase<PrefService, PrefRegistry>(
+          new TestingPrefStore(),
           new TestingPrefStore(),
           new TestingPrefStore(),
           new TestingPrefStore(),
