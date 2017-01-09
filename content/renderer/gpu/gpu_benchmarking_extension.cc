@@ -20,6 +20,8 @@
 #include "content/common/child_process_messages.h"
 #include "content/common/input/synthetic_gesture_params.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
+#include "content/common/input/synthetic_pointer_action_list_params.h"
+#include "content/common/input/synthetic_pointer_action_params.h"
 #include "content/common/input/synthetic_smooth_drag_gesture_params.h"
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
 #include "content/common/input/synthetic_tap_gesture_params.h"
@@ -27,6 +29,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/chrome_object_extensions_utils.h"
 #include "content/public/renderer/render_thread.h"
+#include "content/renderer/gpu/actions_parser.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -403,9 +406,9 @@ bool BeginSmoothScroll(v8::Isolate* isolate,
   }
   gesture_params->distances.push_back(distance);
 
-  // TODO(nduca): If the render_view_impl is destroyed while the gesture is in
+  // TODO(678879): If the render_view_impl is destroyed while the gesture is in
   // progress, we will leak the callback and context. This needs to be fixed,
-  // somehow.
+  // somehow, see https://crbug.com/678879.
   context.render_view_impl()->GetWidget()->QueueSyntheticGesture(
       std::move(gesture_params),
       base::Bind(&OnSyntheticGestureCompleted,
@@ -446,9 +449,9 @@ bool BeginSmoothDrag(v8::Isolate* isolate,
       static_cast<SyntheticGestureParams::GestureSourceType>(
           gesture_source_type);
 
-  // TODO(nduca): If the render_view_impl is destroyed while the gesture is in
+  // TODO(678879): If the render_view_impl is destroyed while the gesture is in
   // progress, we will leak the callback and context. This needs to be fixed,
-  // somehow.
+  // somehow, see https://crbug.com/678879.
   context.render_view_impl()->GetWidget()->QueueSyntheticGesture(
       std::move(gesture_params),
       base::Bind(&OnSyntheticGestureCompleted,
@@ -546,8 +549,7 @@ gin::ObjectTemplateBuilder GpuBenchmarking::GetObjectTemplateBuilder(
       .SetMethod("printToSkPicture", &GpuBenchmarking::PrintToSkPicture)
       .SetMethod("printPagesToSkPictures",
                  &GpuBenchmarking::PrintPagesToSkPictures)
-      .SetMethod("printPagesToXPS",
-                 &GpuBenchmarking::PrintPagesToXPS)
+      .SetMethod("printPagesToXPS", &GpuBenchmarking::PrintPagesToXPS)
       .SetValue("DEFAULT_INPUT", 0)
       .SetValue("TOUCH_INPUT", 1)
       .SetValue("MOUSE_INPUT", 2)
@@ -559,11 +561,13 @@ gin::ObjectTemplateBuilder GpuBenchmarking::GetObjectTemplateBuilder(
       .SetMethod("scrollBounce", &GpuBenchmarking::ScrollBounce)
       .SetMethod("pinchBy", &GpuBenchmarking::PinchBy)
       .SetMethod("pageScaleFactor", &GpuBenchmarking::PageScaleFactor)
+      .SetMethod("tap", &GpuBenchmarking::Tap)
+      .SetMethod("pointerActionSequence",
+                 &GpuBenchmarking::PointerActionSequence)
       .SetMethod("visualViewportX", &GpuBenchmarking::VisualViewportX)
       .SetMethod("visualViewportY", &GpuBenchmarking::VisualViewportY)
       .SetMethod("visualViewportHeight", &GpuBenchmarking::VisualViewportHeight)
       .SetMethod("visualViewportWidth", &GpuBenchmarking::VisualViewportWidth)
-      .SetMethod("tap", &GpuBenchmarking::Tap)
       .SetMethod("clearImageCache", &GpuBenchmarking::ClearImageCache)
       .SetMethod("runMicroBenchmark", &GpuBenchmarking::RunMicroBenchmark)
       .SetMethod("sendMessageToMicroBenchmark",
@@ -807,9 +811,9 @@ bool GpuBenchmarking::ScrollBounce(gin::Arguments* args) {
     gesture_params->distances.push_back(-distance + overscroll);
   }
 
-  // TODO(nduca): If the render_view_impl is destroyed while the gesture is in
+  // TODO(678879): If the render_view_impl is destroyed while the gesture is in
   // progress, we will leak the callback and context. This needs to be fixed,
-  // somehow.
+  // somehow, see https://crbug.com/678879.
   context.render_view_impl()->GetWidget()->QueueSyntheticGesture(
       std::move(gesture_params),
       base::Bind(&OnSyntheticGestureCompleted,
@@ -857,9 +861,9 @@ bool GpuBenchmarking::PinchBy(gin::Arguments* args) {
                              context.web_frame()->mainWorldScriptContext());
 
 
-  // TODO(nduca): If the render_view_impl is destroyed while the gesture is in
+  // TODO(678879): If the render_view_impl is destroyed while the gesture is in
   // progress, we will leak the callback and context. This needs to be fixed,
-  // somehow.
+  // somehow, see https://crbug.com/678879.
   context.render_view_impl()->GetWidget()->QueueSyntheticGesture(
       std::move(gesture_params),
       base::Bind(&OnSyntheticGestureCompleted,
@@ -957,14 +961,61 @@ bool GpuBenchmarking::Tap(gin::Arguments* args) {
                              callback,
                              context.web_frame()->mainWorldScriptContext());
 
-  // TODO(nduca): If the render_view_impl is destroyed while the gesture is in
+  // TODO(678879): If the render_view_impl is destroyed while the gesture is in
   // progress, we will leak the callback and context. This needs to be fixed,
-  // somehow.
+  // somehow, see https://crbug.com/678879.
   context.render_view_impl()->GetWidget()->QueueSyntheticGesture(
       std::move(gesture_params),
       base::Bind(&OnSyntheticGestureCompleted,
                  base::RetainedRef(callback_and_context)));
 
+  return true;
+}
+
+bool GpuBenchmarking::PointerActionSequence(gin::Arguments* args) {
+  GpuBenchmarkingContext context;
+  if (!context.Init(false))
+    return false;
+
+  v8::Local<v8::Function> callback;
+
+  v8::Local<v8::Object> obj;
+  if (!args->GetNext(&obj)) {
+    args->ThrowError();
+    return false;
+  }
+
+  std::unique_ptr<V8ValueConverter> converter =
+      base::WrapUnique(V8ValueConverter::create());
+  v8::Local<v8::Context> v8_context =
+      context.web_frame()->mainWorldScriptContext();
+  std::unique_ptr<base::Value> value = converter->FromV8Value(obj, v8_context);
+
+  // Get all the pointer actions from the user input and wrap them into a
+  // SyntheticPointerActionListParams object.
+  ActionsParser actions_parser(value.get());
+  if (!actions_parser.ParsePointerActionSequence())
+    return false;
+
+  std::unique_ptr<SyntheticPointerActionListParams> gesture_params =
+      actions_parser.gesture_params();
+
+  if (!GetOptionalArg(args, &callback)) {
+    args->ThrowError();
+    return false;
+  }
+
+  // At the end, we will send a 'FINISH' action and need a callback.
+  scoped_refptr<CallbackAndContext> callback_and_context =
+      new CallbackAndContext(args->isolate(), callback,
+                             context.web_frame()->mainWorldScriptContext());
+  // TODO(678879): If the render_view_impl is destroyed while the gesture is in
+  // progress, we will leak the callback and context. This needs to be fixed,
+  // somehow, see https://crbug.com/678879.
+  context.render_view_impl()->GetWidget()->QueueSyntheticGesture(
+      std::move(gesture_params),
+      base::Bind(&OnSyntheticGestureCompleted,
+                 base::RetainedRef(callback_and_context)));
   return true;
 }
 

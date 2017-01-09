@@ -140,7 +140,14 @@ function touchTapInTarget(targetSelector, targetFrame) {
       scrollPageIfNeeded(targetSelector, targetDocument);
       var target = targetDocument.querySelector(targetSelector);
       var targetRect = target.getBoundingClientRect();
-      chrome.gpuBenchmarking.tap(frameLeft + targetRect.left + boundaryOffset, frameTop + targetRect.top + boundaryOffset, resolve);
+      var xPosition = frameLeft + targetRect.left + boundaryOffset;
+      var yPosition = frameTop + targetRect.top + boundaryOffset;
+      chrome.gpuBenchmarking.pointerActionSequence( [
+        {"source": "touch",
+         "actions": [
+            { "name": "pointerDown", "x": xPosition, "y": yPosition },
+            { "name": "pointerUp" }
+        ]}], resolve);
     } else {
       reject();
     }

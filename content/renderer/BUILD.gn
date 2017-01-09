@@ -124,6 +124,8 @@ target(link_target_type, "renderer") {
     "frame_blame_context.h",
     "gamepad_shared_memory_reader.cc",
     "gamepad_shared_memory_reader.h",
+    "gpu/actions_parser.cc",
+    "gpu/actions_parser.h",
     "gpu/compositor_dependencies.h",
     "gpu/compositor_external_begin_frame_source.cc",
     "gpu/compositor_external_begin_frame_source.h",

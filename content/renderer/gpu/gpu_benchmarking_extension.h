@@ -51,12 +51,13 @@ class GpuBenchmarking : public gin::Wrappable<GpuBenchmarking> {
   bool Swipe(gin::Arguments* args);
   bool ScrollBounce(gin::Arguments* args);
   bool PinchBy(gin::Arguments* args);
+  bool Tap(gin::Arguments* args);
+  bool PointerActionSequence(gin::Arguments* args);
   float VisualViewportX();
   float VisualViewportY();
   float VisualViewportHeight();
   float VisualViewportWidth();
   float PageScaleFactor();
-  bool Tap(gin::Arguments* args);
   void ClearImageCache();
   int RunMicroBenchmark(gin::Arguments* args);
   bool SendMessageToMicroBenchmark(int id, v8::Local<v8::Object> message);
