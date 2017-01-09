@@ -214,7 +214,7 @@ locale.  The strings in this file are specific to iOS.
         Chromium may use web services to improve your browsing experience. You may optionally disable these services. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
       </message>
       <message name="IDS_IOS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY" desc="The text of the identity section for iOS.">
-        Chromiums verified that <ph name="ISSUER">$1<ex>VeriSign</ex></ph> issued this website's certificate.
+        Chromium verified that <ph name="ISSUER">$1<ex>VeriSign</ex></ph> issued this website's certificate.
       </message>
       <message name="IDS_IOS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT" desc="Info bar message to save a password. [Length: 60em]">
         Do you want Chromium to save your password for this site?
