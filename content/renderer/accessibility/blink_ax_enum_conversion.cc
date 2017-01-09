@@ -157,6 +157,8 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_DOCUMENT;
     case blink::WebAXRoleEmbeddedObject:
       return ui::AX_ROLE_EMBEDDED_OBJECT;
+    case blink::WebAXRoleFeed:
+      return ui::AX_ROLE_FEED;
     case blink::WebAXRoleFigcaption:
       return ui::AX_ROLE_FIGCAPTION;
     case blink::WebAXRoleFigure:
@@ -305,6 +307,8 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_TABLE;
     case blink::WebAXRoleTableHeaderContainer:
       return ui::AX_ROLE_TABLE_HEADER_CONTAINER;
+    case blink::WebAXRoleTerm:
+      return ui::AX_ROLE_TERM;
     case blink::WebAXRoleTextField:
       return ui::AX_ROLE_TEXT_FIELD;
     case blink::WebAXRoleTime:

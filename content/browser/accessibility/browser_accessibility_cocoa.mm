@@ -1470,6 +1470,9 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   case ui::AX_ROLE_SWITCH:
     return base::SysUTF16ToNSString(content_client->GetLocalizedString(
         IDS_AX_ROLE_SWITCH));
+  case ui::AX_ROLE_TERM:
+    return base::SysUTF16ToNSString(content_client->GetLocalizedString(
+        IDS_AX_ROLE_DESCRIPTION_TERM));
   case ui::AX_ROLE_TOGGLE_BUTTON:
     return base::SysUTF16ToNSString(content_client->GetLocalizedString(
         IDS_AX_ROLE_TOGGLE_BUTTON));

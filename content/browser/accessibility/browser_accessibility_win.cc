@@ -5349,6 +5349,9 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     case ui::AX_ROLE_FIGURE:
       ia_role = ROLE_SYSTEM_GROUPING;
       break;
+    case ui::AX_ROLE_FEED:
+      ia_role = ROLE_SYSTEM_GROUPING;
+      break;
     case ui::AX_ROLE_FORM:
       role_name = L"form";
       ia2_role = IA2_ROLE_FORM;
@@ -5605,6 +5608,10 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       break;
     case ui::AX_ROLE_TAB_PANEL:
       ia_role = ROLE_SYSTEM_PROPERTYPAGE;
+      break;
+    case ui::AX_ROLE_TERM:
+      ia_role = ROLE_SYSTEM_LISTITEM;
+      ia_state |= STATE_SYSTEM_READONLY;
       break;
     case ui::AX_ROLE_TOGGLE_BUTTON:
       ia_role = ROLE_SYSTEM_PUSHBUTTON;

@@ -91,8 +91,9 @@ enum AccessibilityRole {
   DivRole,                 // No mapping to ARIA role.
   DocumentRole,
   EmbeddedObjectRole,  // No mapping to ARIA role.
-  FigcaptionRole,      // No mapping to ARIA role.
-  FigureRole,          // No mapping to ARIA role.
+  FeedRole,
+  FigcaptionRole,  // No mapping to ARIA role.
+  FigureRole,
   FooterRole,
   FormRole,
   GridRole,
@@ -166,6 +167,7 @@ enum AccessibilityRole {
   TabRole,
   TableHeaderContainerRole,  // No mapping to ARIA role.
   TableRole,
+  TermRole,
   TextFieldRole,
   TimeRole,  // No mapping to ARIA role.
   TimerRole,
