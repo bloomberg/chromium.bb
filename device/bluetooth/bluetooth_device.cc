@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
+#include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
 #include "device/bluetooth/string_util_icu.h"
 #include "grit/bluetooth_strings.h"
@@ -447,6 +448,52 @@ void BluetoothDevice::ClearAdvertisementData() {
   service_data_.clear();
   inquiry_tx_power_ = base::nullopt;
   GetAdapter()->NotifyDeviceChanged(this);
+}
+
+std::vector<BluetoothRemoteGattService*> BluetoothDevice::GetPrimaryServices() {
+  std::vector<BluetoothRemoteGattService*> services;
+  VLOG(2) << "Looking for services.";
+  for (BluetoothRemoteGattService* service : GetGattServices()) {
+    VLOG(2) << "Service in cache: " << service->GetUUID().canonical_value();
+    if (service->IsPrimary()) {
+      services.push_back(service);
+    }
+  }
+  return services;
+}
+
+std::vector<BluetoothRemoteGattService*>
+BluetoothDevice::GetPrimaryServicesByUUID(const BluetoothUUID& service_uuid) {
+  std::vector<BluetoothRemoteGattService*> services;
+  VLOG(2) << "Looking for service: " << service_uuid.canonical_value();
+  for (BluetoothRemoteGattService* service : GetGattServices()) {
+    VLOG(2) << "Service in cache: " << service->GetUUID().canonical_value();
+    if (service->GetUUID() == service_uuid && service->IsPrimary()) {
+      services.push_back(service);
+    }
+  }
+  return services;
+}
+
+std::vector<BluetoothRemoteGattCharacteristic*>
+BluetoothDevice::GetCharacteristicsByUUID(
+    const std::string& service_instance_id,
+    const BluetoothUUID& characteristic_uuid) {
+  std::vector<BluetoothRemoteGattCharacteristic*> characteristics;
+  VLOG(2) << "Looking for characteristic: "
+          << characteristic_uuid.canonical_value();
+  BluetoothRemoteGattService* service = GetGattService(service_instance_id);
+  if (service) {
+    for (BluetoothRemoteGattCharacteristic* characteristic :
+         service->GetCharacteristics()) {
+      VLOG(2) << "Characteristic in cache: "
+              << characteristic->GetUUID().canonical_value();
+      if (characteristic->GetUUID() == characteristic_uuid) {
+        characteristics.push_back(characteristic);
+      }
+    }
+  }
+  return characteristics;
 }
 
 void BluetoothDevice::DidConnectGatt() {

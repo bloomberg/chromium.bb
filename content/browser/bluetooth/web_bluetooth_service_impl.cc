@@ -130,58 +130,6 @@ blink::mojom::WebBluetoothResult TranslateGATTErrorAndRecord(
   return blink::mojom::WebBluetoothResult::GATT_UNTRANSLATED_ERROR_CODE;
 }
 
-// TODO(ortuno): This should really be a BluetoothDevice method.
-// Replace when implemented. http://crbug.com/552022
-std::vector<device::BluetoothRemoteGattCharacteristic*>
-GetCharacteristicsByUUID(device::BluetoothRemoteGattService* service,
-                         const BluetoothUUID& characteristic_uuid) {
-  std::vector<device::BluetoothRemoteGattCharacteristic*> characteristics;
-  VLOG(1) << "Looking for characteristic: "
-          << characteristic_uuid.canonical_value();
-  for (device::BluetoothRemoteGattCharacteristic* characteristic :
-       service->GetCharacteristics()) {
-    VLOG(1) << "Characteristic in cache: "
-            << characteristic->GetUUID().canonical_value();
-    if (characteristic->GetUUID() == characteristic_uuid) {
-      characteristics.push_back(characteristic);
-    }
-  }
-  return characteristics;
-}
-
-// TODO(ortuno): This should really be a BluetoothDevice method.
-// Replace when implemented. http://crbug.com/552022
-std::vector<device::BluetoothRemoteGattService*> GetPrimaryServicesByUUID(
-    device::BluetoothDevice* device,
-    const BluetoothUUID& service_uuid) {
-  std::vector<device::BluetoothRemoteGattService*> services;
-  VLOG(1) << "Looking for service: " << service_uuid.canonical_value();
-  for (device::BluetoothRemoteGattService* service :
-       device->GetGattServices()) {
-    VLOG(1) << "Service in cache: " << service->GetUUID().canonical_value();
-    if (service->GetUUID() == service_uuid && service->IsPrimary()) {
-      services.push_back(service);
-    }
-  }
-  return services;
-}
-
-// TODO(ortuno): This should really be a BluetoothDevice method.
-// Replace when implemented. http://crbug.com/552022
-std::vector<device::BluetoothRemoteGattService*> GetPrimaryServices(
-    device::BluetoothDevice* device) {
-  std::vector<device::BluetoothRemoteGattService*> services;
-  VLOG(1) << "Looking for services.";
-  for (device::BluetoothRemoteGattService* service :
-       device->GetGattServices()) {
-    VLOG(1) << "Service in cache: " << service->GetUUID().canonical_value();
-    if (service->IsPrimary()) {
-      services.push_back(service);
-    }
-  }
-  return services;
-}
-
 }  // namespace
 
 // Struct that holds the result of a cache query.
@@ -523,8 +471,8 @@ void WebBluetoothServiceImpl::RemoteServiceGetCharacteristics(
 
   std::vector<device::BluetoothRemoteGattCharacteristic*> characteristics =
       characteristics_uuid
-          ? GetCharacteristicsByUUID(query_result.service,
-                                     characteristics_uuid.value())
+          ? query_result.device->GetCharacteristicsByUUID(
+                service_instance_id, characteristics_uuid.value())
           : query_result.service->GetCharacteristics();
 
   std::vector<blink::mojom::WebBluetoothRemoteGATTCharacteristicPtr>
@@ -755,8 +703,8 @@ void WebBluetoothServiceImpl::RemoteServerGetPrimaryServicesImpl(
   DCHECK(device->IsGattServicesDiscoveryComplete());
 
   std::vector<device::BluetoothRemoteGattService*> services =
-      services_uuid ? GetPrimaryServicesByUUID(device, services_uuid.value())
-                    : GetPrimaryServices(device);
+      services_uuid ? device->GetPrimaryServicesByUUID(services_uuid.value())
+                    : device->GetPrimaryServices();
 
   std::vector<blink::mojom::WebBluetoothRemoteGATTServicePtr> response_services;
   for (device::BluetoothRemoteGattService* service : services) {

@@ -31,6 +31,7 @@ namespace device {
 
 class BluetoothAdapter;
 class BluetoothGattConnection;
+class BluetoothRemoteGattCharacteristic;
 class BluetoothSocket;
 class BluetoothUUID;
 
@@ -554,6 +555,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
 
   // Return associated BluetoothAdapter.
   BluetoothAdapter* GetAdapter() { return adapter_; }
+
+  std::vector<BluetoothRemoteGattService*> GetPrimaryServices();
+
+  std::vector<BluetoothRemoteGattService*> GetPrimaryServicesByUUID(
+      const BluetoothUUID& service_uuid);
+
+  std::vector<BluetoothRemoteGattCharacteristic*> GetCharacteristicsByUUID(
+      const std::string& service_instance_id,
+      const BluetoothUUID& characteristic_uuid);
 
  protected:
   // BluetoothGattConnection is a friend to call Add/RemoveGattConnection.
