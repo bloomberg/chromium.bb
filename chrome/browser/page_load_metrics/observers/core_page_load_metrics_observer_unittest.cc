@@ -482,6 +482,14 @@ TEST_F(CorePageLoadMetricsObserverTest, NewNavigation) {
       timing.parse_start.value().InMilliseconds(), 1);
 }
 
+TEST_F(CorePageLoadMetricsObserverTest, BytesCounted) {
+  NavigateAndCommit(GURL(kDefaultTestUrl));
+  NavigateAndCommit(GURL(kDefaultTestUrl2));
+  histogram_tester().ExpectTotalCount(internal::kHistogramTotalBytes, 1);
+  histogram_tester().ExpectTotalCount(internal::kHistogramNetworkBytes, 1);
+  histogram_tester().ExpectTotalCount(internal::kHistogramCacheBytes, 1);
+}
+
 TEST_F(CorePageLoadMetricsObserverTest, FirstMeaningfulPaint) {
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);

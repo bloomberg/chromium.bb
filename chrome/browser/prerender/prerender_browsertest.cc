@@ -546,7 +546,7 @@ page_load_metrics::PageLoadExtraInfo GenericPageLoadExtraInfo(
       page_load_metrics::UserInitiatedInfo::BrowserInitiated(), dest_url,
       dest_url, page_load_metrics::ABORT_NONE,
       page_load_metrics::UserInitiatedInfo::NotUserInitiated(),
-      base::TimeDelta(), 0, 0, page_load_metrics::PageLoadMetadata());
+      base::TimeDelta(), 0, 0, 0, 0, page_load_metrics::PageLoadMetadata());
 }
 
 }  // namespace

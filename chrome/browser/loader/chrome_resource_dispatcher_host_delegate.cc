@@ -359,6 +359,8 @@ void NotifyUIThreadOfRequestComplete(
     bool was_cached,
     int net_error,
     int64_t total_received_bytes,
+    int64_t raw_body_bytes,
+    base::TimeTicks request_creation_time,
     base::TimeDelta request_loading_time) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::WebContents* web_contents = web_contents_getter.Run();
@@ -374,7 +376,8 @@ void NotifyUIThreadOfRequestComplete(
       page_load_metrics::MetricsWebContentsObserver::FromWebContents(
           web_contents);
   if (metrics_observer) {
-    metrics_observer->OnRequestComplete(resource_type, was_cached, net_error);
+    metrics_observer->OnRequestComplete(resource_type, was_cached,
+                                        raw_body_bytes, request_creation_time);
   }
 }
 
@@ -836,6 +839,7 @@ void ChromeResourceDispatcherHostDelegate::RequestComplete(
                  info->GetWebContentsGetterForRequest(), url_request->url(),
                  info->GetResourceType(), url_request->was_cached(), net_error,
                  url_request->GetTotalReceivedBytes(),
+                 url_request->GetRawBodyBytes(), url_request->creation_time(),
                  base::TimeTicks::Now() - url_request->creation_time()));
 }
 

@@ -300,6 +300,8 @@ PageLoadTracker::PageLoadTracker(
       page_transition_(navigation_handle->GetPageTransition()),
       num_cache_requests_(0),
       num_network_requests_(0),
+      cache_bytes_(0),
+      network_bytes_(0),
       user_initiated_info_(user_initiated_info),
       aborted_chain_size_(aborted_chain_size),
       aborted_chain_size_same_url_(aborted_chain_size_same_url),
@@ -520,11 +522,14 @@ bool PageLoadTracker::UpdateTiming(const PageLoadTiming& new_timing,
   return false;
 }
 
-void PageLoadTracker::OnLoadedSubresource(bool was_cached) {
+void PageLoadTracker::OnLoadedResource(bool was_cached,
+                                       int64_t raw_body_bytes) {
   if (was_cached) {
     ++num_cache_requests_;
+    cache_bytes_ += raw_body_bytes;
   } else {
     ++num_network_requests_;
+    network_bytes_ += raw_body_bytes;
   }
 }
 
@@ -597,7 +602,7 @@ PageLoadExtraInfo PageLoadTracker::ComputePageLoadExtraInfo() {
       first_background_time, first_foreground_time, started_in_foreground_,
       user_initiated_info_, committed_url_, start_url_, abort_type_,
       abort_user_initiated_info_, time_to_abort, num_cache_requests_,
-      num_network_requests_, metadata_);
+      num_network_requests_, cache_bytes_, network_bytes_, metadata_);
 }
 
 void PageLoadTracker::NotifyAbort(UserAbortType abort_type,

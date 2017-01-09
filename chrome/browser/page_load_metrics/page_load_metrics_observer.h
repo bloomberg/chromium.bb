@@ -118,6 +118,8 @@ struct PageLoadExtraInfo {
       const base::Optional<base::TimeDelta>& time_to_abort,
       int num_cache_requests,
       int num_network_requests,
+      int64_t cache_bytes,
+      int64_t net_bytes,
       const PageLoadMetadata& metadata);
 
   PageLoadExtraInfo(const PageLoadExtraInfo& other);
@@ -167,6 +169,11 @@ struct PageLoadExtraInfo {
   // the WebContents.
   int num_cache_requests;
   int num_network_requests;
+
+  // The number of body (not header) prefilter bytes consumed by requests for
+  // the page.
+  int64_t cache_bytes;
+  int64_t network_bytes;
 
   // Extra information supplied to the page load metrics system from the
   // renderer.
@@ -298,7 +305,8 @@ class PageLoadMetricsObserver {
   // OnComplete is invoked for tracked page loads that committed, immediately
   // before the observer is deleted. Observers that implement OnComplete may
   // also want to implement FlushMetricsOnAppEnterBackground, to avoid loss of
-  // data if the application is killed while in the background.
+  // data if the application is killed while in the background (this happens
+  // frequently on Android).
   virtual void OnComplete(const PageLoadTiming& timing,
                           const PageLoadExtraInfo& extra_info) {}
 

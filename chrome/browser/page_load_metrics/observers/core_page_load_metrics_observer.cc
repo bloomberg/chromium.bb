@@ -203,6 +203,10 @@ const char kHistogramFirstNonScrollInputAfterFirstPaint[] =
 const char kHistogramFirstScrollInputAfterFirstPaint[] =
     "PageLoad.InputTiming.NavigationToFirstScroll.AfterPaint";
 
+const char kHistogramTotalBytes[] = "PageLoad.Experimental.Bytes.Total";
+const char kHistogramNetworkBytes[] = "PageLoad.Experimental.Bytes.Network";
+const char kHistogramCacheBytes[] = "PageLoad.Experimental.Bytes.Cache";
+
 }  // namespace internal
 
 CorePageLoadMetricsObserver::CorePageLoadMetricsObserver()
@@ -532,6 +536,20 @@ void CorePageLoadMetricsObserver::OnComplete(
     const page_load_metrics::PageLoadExtraInfo& info) {
   RecordTimingHistograms(timing, info);
   RecordRappor(timing, info);
+
+  int64_t total_kb = (info.network_bytes + info.cache_bytes) / 1024;
+  int64_t network_kb = info.network_bytes / 1024;
+  int64_t cache_kb = info.cache_bytes / 1024;
+  DCHECK_LE(network_kb, total_kb);
+  DCHECK_LE(cache_kb, total_kb);
+  DCHECK_LE(total_kb, std::numeric_limits<int>::max());
+
+  UMA_HISTOGRAM_CUSTOM_COUNTS(internal::kHistogramNetworkBytes,
+                              static_cast<int>(network_kb), 1, 500 * 1024, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS(internal::kHistogramCacheBytes,
+                              static_cast<int>(cache_kb), 1, 500 * 1024, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS(internal::kHistogramTotalBytes,
+                              static_cast<int>(total_kb), 1, 500 * 1024, 50);
 }
 
 void CorePageLoadMetricsObserver::OnFailedProvisionalLoad(

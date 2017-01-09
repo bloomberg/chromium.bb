@@ -47,6 +47,10 @@ extern const char kHistogramFirstMeaningfulPaintStatus[];
 extern const char kHistogramFirstNonScrollInputAfterFirstPaint[];
 extern const char kHistogramFirstScrollInputAfterFirstPaint[];
 
+extern const char kHistogramTotalBytes[];
+extern const char kHistogramNetworkBytes[];
+extern const char kHistogramCacheBytes[];
+
 enum FirstMeaningfulPaintStatus {
   FIRST_MEANINGFUL_PAINT_RECORDED,
   FIRST_MEANINGFUL_PAINT_BACKGROUNDED,

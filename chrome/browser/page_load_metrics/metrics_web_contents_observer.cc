@@ -178,17 +178,20 @@ void MetricsWebContentsObserver::WillStartNavigationRequest(
 void MetricsWebContentsObserver::OnRequestComplete(
     content::ResourceType resource_type,
     bool was_cached,
-    int net_error) {
-  // For simplicity, only count subresources. Navigations are hard to attribute
-  // here because we won't have a committed load by the time data streams in
-  // from the IO thread.
-  if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME &&
-      net_error != net::OK) {
+    int64_t raw_body_bytes,
+    base::TimeTicks creation_time) {
+  // If the navigation hasn't committed yet then we'll miss the resource (this
+  // happens on the new tab page). Also, if the resource request was started
+  // before this navigation then it should be ignored.
+  // TODO(jkarlin): There is a race here. If a renderer starts URLRequests for
+  // page A after navigating (but before comitting) to page B, then page A's
+  // requests might wind up counting toward page B's size. This should be
+  // relatively rare but we may want to fix this at some point.
+  if (!committed_load_ || creation_time < committed_load_->navigation_start()) {
     return;
   }
-  if (!committed_load_)
-    return;
-  committed_load_->OnLoadedSubresource(was_cached);
+
+  committed_load_->OnLoadedResource(was_cached, raw_body_bytes);
 }
 
 const PageLoadExtraInfo

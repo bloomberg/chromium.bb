@@ -18,6 +18,8 @@ PageLoadExtraInfo::PageLoadExtraInfo(
     const base::Optional<base::TimeDelta>& time_to_abort,
     int num_cache_requests,
     int num_network_requests,
+    int64_t cache_bytes,
+    int64_t network_bytes,
     const PageLoadMetadata& metadata)
     : first_background_time(first_background_time),
       first_foreground_time(first_foreground_time),
@@ -30,6 +32,8 @@ PageLoadExtraInfo::PageLoadExtraInfo(
       time_to_abort(time_to_abort),
       num_cache_requests(num_cache_requests),
       num_network_requests(num_network_requests),
+      cache_bytes(cache_bytes),
+      network_bytes(network_bytes),
       metadata(metadata) {}
 
 PageLoadExtraInfo::PageLoadExtraInfo(const PageLoadExtraInfo& other) = default;

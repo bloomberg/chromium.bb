@@ -72,7 +72,8 @@ class MetricsWebContentsObserver
   // A resource request completed on the IO thread.
   void OnRequestComplete(content::ResourceType resource_type,
                          bool was_cached,
-                         int net_error);
+                         int64_t raw_body_bytes,
+                         base::TimeTicks creation_time);
 
   // Flush any buffered metrics, as part of the metrics subsystem persisting
   // metrics as the application goes into the background. The application may be
