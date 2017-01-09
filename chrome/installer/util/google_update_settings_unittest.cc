@@ -585,32 +585,20 @@ TEST_F(GoogleUpdateSettingsTest, UpdateInstallStatusTest) {
 TEST_F(GoogleUpdateSettingsTest, SetEULAConsent) {
   using installer::FakeInstallationState;
 
-  const bool multi_install = true;
   const bool system_level = true;
   FakeInstallationState machine_state;
 
   // Chrome is installed.
-  machine_state.AddChrome(system_level, multi_install,
-      new base::Version(chrome::kChromeVersion));
+  machine_state.AddChrome(system_level, false /* !multi_install */,
+                          new base::Version(chrome::kChromeVersion));
 
   RegKey key;
   DWORD value;
-  BrowserDistribution* binaries =
-      BrowserDistribution::GetSpecificDistribution(
-          BrowserDistribution::CHROME_BINARIES);
-  BrowserDistribution* chrome =
-      BrowserDistribution::GetSpecificDistribution(
-          BrowserDistribution::CHROME_BROWSER);
+  BrowserDistribution* chrome = BrowserDistribution::GetDistribution();
 
-  // eulaconsent is set on both the product and the binaries.
+  // eulaconsent is set on the product.
   EXPECT_TRUE(GoogleUpdateSettings::SetEULAConsent(machine_state, chrome,
                                                    true));
-  EXPECT_EQ(ERROR_SUCCESS,
-      key.Open(HKEY_LOCAL_MACHINE, binaries->GetStateMediumKey().c_str(),
-               KEY_QUERY_VALUE));
-  EXPECT_EQ(ERROR_SUCCESS,
-      key.ReadValueDW(google_update::kRegEULAAceptedField, &value));
-  EXPECT_EQ(1U, value);
   EXPECT_EQ(ERROR_SUCCESS,
       key.Open(HKEY_LOCAL_MACHINE, chrome->GetStateMediumKey().c_str(),
                KEY_QUERY_VALUE));

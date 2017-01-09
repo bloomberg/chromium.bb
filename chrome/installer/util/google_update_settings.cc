@@ -418,36 +418,13 @@ bool GoogleUpdateSettings::SetEULAConsent(
   DCHECK(dist);
   const DWORD eula_accepted = consented ? 1 : 0;
   const REGSAM kAccess = KEY_SET_VALUE | KEY_WOW64_32KEY;
-  base::string16 reg_path = dist->GetStateMediumKey();
-  bool succeeded = true;
   RegKey key;
 
   // Write the consent value into the product's ClientStateMedium key.
-  if (key.Create(HKEY_LOCAL_MACHINE, reg_path.c_str(),
-                 kAccess) != ERROR_SUCCESS ||
-      key.WriteValue(google_update::kRegEULAAceptedField,
-                     eula_accepted) != ERROR_SUCCESS) {
-    succeeded = false;
-  }
-
-  // If this is a multi-install, also write it into the binaries' key.
-  // --mutli-install is not provided on the command-line, so deduce it from
-  // the product's state.
-  const installer::ProductState* product_state =
-      machine_state.GetProductState(true, dist->GetType());
-  if (product_state != NULL && product_state->is_multi_install()) {
-    dist = BrowserDistribution::GetSpecificDistribution(
-        BrowserDistribution::CHROME_BINARIES);
-    reg_path = dist->GetStateMediumKey();
-    if (key.Create(HKEY_LOCAL_MACHINE, reg_path.c_str(),
-                   kAccess) != ERROR_SUCCESS ||
-        key.WriteValue(google_update::kRegEULAAceptedField,
-                       eula_accepted) != ERROR_SUCCESS) {
-        succeeded = false;
-    }
-  }
-
-  return succeeded;
+  return key.Create(HKEY_LOCAL_MACHINE, dist->GetStateMediumKey().c_str(),
+                    kAccess) == ERROR_SUCCESS &&
+         key.WriteValue(google_update::kRegEULAAceptedField, eula_accepted) ==
+             ERROR_SUCCESS;
 }
 
 int GoogleUpdateSettings::GetLastRunTime() {
