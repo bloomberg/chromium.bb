@@ -122,7 +122,8 @@ def _ExecuteTool(toolname, tool_args, build_directory, filename):
   if command.returncode != 0:
     return {'status': False, 'filename': filename, 'stderr_text': stderr_text}
   else:
-    return {'status': True, 'filename': filename, 'stdout_text': stdout_text}
+    return {'status': True, 'filename': filename, 'stdout_text': stdout_text,
+            'stderr_text': stderr_text}
 
 
 class _CompilerDispatcher(object):
@@ -168,6 +169,7 @@ class _CompilerDispatcher(object):
     if result['status']:
       self.__success_count += 1
       sys.stdout.write(result['stdout_text'])
+      sys.stderr.write(result['stderr_text'])
     else:
       self.__failed_count += 1
       sys.stderr.write('\nFailed to process %s\n' % result['filename'])

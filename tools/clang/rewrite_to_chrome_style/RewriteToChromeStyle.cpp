@@ -24,8 +24,12 @@
 #include "clang/ASTMatchers/ASTMatchersMacros.h"
 #include "clang/Basic/CharInfo.h"
 #include "clang/Basic/SourceManager.h"
+#include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendActions.h"
+#include "clang/Lex/MacroArgs.h"
 #include "clang/Lex/Lexer.h"
+#include "clang/Lex/PPCallbacks.h"
+#include "clang/Lex/Preprocessor.h"
 #include "clang/Tooling/CommonOptionsParser.h"
 #include "clang/Tooling/Refactoring.h"
 #include "clang/Tooling/Tooling.h"
@@ -44,6 +48,7 @@ namespace {
 const char kBlinkFieldPrefix[] = "m_";
 const char kBlinkStaticMemberPrefix[] = "s_";
 const char kGeneratedFileRegex[] = "^gen/|/gen/";
+const char kGMockMethodNamePrefix[] = "gmock_";
 
 template <typename MatcherType, typename NodeType>
 bool IsMatching(const MatcherType& matcher,
@@ -77,6 +82,41 @@ AST_MATCHER_P(clang::FunctionTemplateDecl,
               clang::ast_matchers::internal::Matcher<clang::FunctionDecl>,
               InnerMatcher) {
   return InnerMatcher.matches(*Node.getTemplatedDecl(), Finder, Builder);
+}
+
+// Matches a CXXMethodDecl of a method declared via MOCK_METHODx macro if such
+// method mocks a method matched by the InnerMatcher.  For example if "foo"
+// matcher matches "interfaceMethod", then mocksMethod(foo()) will match
+// "gmock_interfaceMethod" declared by MOCK_METHOD_x(interfaceMethod).
+AST_MATCHER_P(clang::CXXMethodDecl,
+              mocksMethod,
+              clang::ast_matchers::internal::Matcher<clang::CXXMethodDecl>,
+              InnerMatcher) {
+  if (!Node.getDeclName().isIdentifier())
+    return false;
+
+  llvm::StringRef method_name = Node.getName();
+  if (!method_name.startswith(kGMockMethodNamePrefix))
+    return false;
+
+  llvm::StringRef mocked_method_name =
+      method_name.substr(strlen(kGMockMethodNamePrefix));
+  for (const auto& potentially_mocked_method : Node.getParent()->methods()) {
+    if (!potentially_mocked_method->isVirtual())
+      continue;
+
+    clang::DeclarationName decl_name = potentially_mocked_method->getDeclName();
+    if (!decl_name.isIdentifier() ||
+        potentially_mocked_method->getName() != mocked_method_name)
+      continue;
+    if (potentially_mocked_method->getNumParams() != Node.getNumParams())
+      continue;
+
+    if (InnerMatcher.matches(*potentially_mocked_method, Finder, Builder))
+      return true;
+  }
+
+  return false;
 }
 
 // If |InnerMatcher| matches |top|, then the returned matcher will match:
@@ -871,14 +911,20 @@ class RewriterBase : public MatchFinder::MatchCallback {
     return true;
   }
 
+  virtual clang::SourceLocation GetTargetLoc(
+      const MatchFinder::MatchResult& result) {
+    return TargetNodeTraits<TargetNode>::GetLoc(GetTargetNode(result));
+  }
+
   void AddReplacement(const MatchFinder::MatchResult& result,
                       llvm::StringRef old_name,
                       std::string new_name) {
     if (old_name == new_name)
       return;
 
-    clang::SourceLocation loc =
-        TargetNodeTraits<TargetNode>::GetLoc(GetTargetNode(result));
+    clang::SourceLocation loc = GetTargetLoc(result);
+    if (loc.isInvalid())
+      return;
 
     Replacement replacement;
     if (!GenerateReplacement(result, loc, old_name, new_name, &replacement))
@@ -960,6 +1006,78 @@ using UnresolvedMemberRewriter =
     DeclRewriterBase<clang::NamedDecl, clang::UnresolvedMemberExpr>;
 
 using UsingDeclRewriter = DeclRewriterBase<clang::UsingDecl, clang::NamedDecl>;
+
+class GMockMemberRewriter
+    : public DeclRewriterBase<clang::CXXMethodDecl, clang::MemberExpr> {
+ public:
+  using Base = DeclRewriterBase<clang::CXXMethodDecl, clang::MemberExpr>;
+
+  explicit GMockMemberRewriter(std::set<Replacement>* replacements)
+      : Base(replacements) {}
+
+  std::unique_ptr<clang::PPCallbacks> CreatePreprocessorCallbacks() {
+    return llvm::make_unique<GMockMemberRewriter::PPCallbacks>(this);
+  }
+
+  clang::SourceLocation GetTargetLoc(
+      const MatchFinder::MatchResult& result) override {
+    // Find location of the gmock_##MockedMethod identifier.
+    clang::SourceLocation target_loc = Base::GetTargetLoc(result);
+
+    // Find location of EXPECT_CALL macro invocation.
+    clang::SourceLocation macro_call_loc =
+        result.SourceManager->getExpansionLoc(target_loc);
+
+    // Map |macro_call_loc| to argument location (location of the method name
+    // that needs renaming).
+    auto it = expect_call_to_2nd_arg.find(macro_call_loc);
+    if (it == expect_call_to_2nd_arg.end())
+      return clang::SourceLocation();
+    return it->second;
+  }
+
+ private:
+  std::map<clang::SourceLocation, clang::SourceLocation> expect_call_to_2nd_arg;
+
+  // Called from PPCallbacks with the locations of EXPECT_CALL macro invocation:
+  // Example:
+  //   EXPECT_CALL(my_mock, myMethod(123, 456));
+  //   ^- expansion_loc     ^- actual_arg_loc
+  void RecordExpectCallMacroInvocation(clang::SourceLocation expansion_loc,
+                                       clang::SourceLocation second_arg_loc) {
+    expect_call_to_2nd_arg[expansion_loc] = second_arg_loc;
+  }
+
+  class PPCallbacks : public clang::PPCallbacks {
+   public:
+    explicit PPCallbacks(GMockMemberRewriter* rewriter) : rewriter_(rewriter) {}
+    ~PPCallbacks() override {}
+    void MacroExpands(const clang::Token& name,
+                      const clang::MacroDefinition& def,
+                      clang::SourceRange range,
+                      const clang::MacroArgs* args) override {
+      clang::IdentifierInfo* id = name.getIdentifierInfo();
+      if (!id)
+        return;
+
+      if (id->getName() != "EXPECT_CALL")
+        return;
+
+      if (def.getMacroInfo()->getNumArgs() != 2)
+        return;
+
+      // TODO(lukasza): Should check if def.getMacroInfo()->getDefinitionLoc()
+      // is in testing/gmock/include/gmock/gmock-spec-builders.h but I don't
+      // know how to get clang::SourceManager to call getFileName.
+
+      rewriter_->RecordExpectCallMacroInvocation(
+          name.getLocation(), args->getUnexpArgument(1)->getLocation());
+    }
+
+   private:
+    GMockMemberRewriter* rewriter_;
+  };
+};
 
 clang::DeclarationName GetUnresolvedName(
     const clang::UnresolvedMemberExpr& expr) {
@@ -1097,6 +1215,27 @@ using DependentScopeDeclRefExprRewriter =
 
 using CXXDependentScopeMemberExprRewriter =
     UnresolvedRewriterBase<clang::CXXDependentScopeMemberExpr>;
+
+class SourceFileCallbacks : public clang::tooling::SourceFileCallbacks {
+ public:
+  explicit SourceFileCallbacks(GMockMemberRewriter* gmock_member_rewriter)
+      : gmock_member_rewriter_(gmock_member_rewriter) {
+    assert(gmock_member_rewriter);
+  }
+
+  ~SourceFileCallbacks() override {}
+
+  // clang::tooling::SourceFileCallbacks override:
+  bool handleBeginSource(clang::CompilerInstance& compiler,
+                         llvm::StringRef Filename) override {
+    compiler.getPreprocessor().addPPCallbacks(
+        gmock_member_rewriter_->CreatePreprocessorCallbacks());
+    return true;
+  }
+
+ private:
+  GMockMemberRewriter* gmock_member_rewriter_;
+};
 
 }  // namespace
 
@@ -1283,7 +1422,7 @@ int main(int argc, const char* argv[]) {
   //   S s;
   //   s.g();
   //   void (S::*p)() = &S::g;
-  // matches |&S::g| but not |s.g()|.
+  // matches |&S::g| but not |s.g|.
   auto method_ref_matcher = id(
       "expr", declRefExpr(to(method_decl_matcher),
                           // Ignore template substitutions.
@@ -1297,7 +1436,7 @@ int main(int argc, const char* argv[]) {
   //   S s;
   //   s.g();
   //   void (S::*p)() = &S::g;
-  // matches |s.g()| but not |&S::g|.
+  // matches |s.g| but not |&S::g|.
   auto method_member_matcher =
       id("expr", memberExpr(member(method_decl_matcher)));
 
@@ -1466,8 +1605,22 @@ int main(int argc, const char* argv[]) {
   match_finder.addMatcher(cxx_dependent_scope_member_expr_matcher,
                           &cxx_dependent_scope_member_expr_rewriter);
 
+  // GMock calls lookup ========
+  // Given
+  //   EXPECT_CALL(obj, myMethod(...))
+  // will match obj.gmock_myMethod(...) call generated by the macro
+  // (but only if it mocks a Blink method).
+  auto gmock_member_matcher =
+      id("expr", memberExpr(hasDeclaration(
+                     decl(cxxMethodDecl(mocksMethod(method_decl_matcher))))));
+  GMockMemberRewriter gmock_member_rewriter(&replacements);
+  match_finder.addMatcher(gmock_member_matcher, &gmock_member_rewriter);
+
+  // Prepare and run the tool.
+  SourceFileCallbacks source_file_callbacks(&gmock_member_rewriter);
   std::unique_ptr<clang::tooling::FrontendActionFactory> factory =
-      clang::tooling::newFrontendActionFactory(&match_finder);
+      clang::tooling::newFrontendActionFactory(&match_finder,
+                                               &source_file_callbacks);
   int result = tool.run(factory.get());
   if (result != 0)
     return result;
