@@ -3,6 +3,7 @@ include_rules = [
   "+components/onc",
   "+components/pref_registry",
   "+components/proxy_config",
+  "+components/url_formatter",
   "+components/user_manager",
   "+net",
   "+url"
