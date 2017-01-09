@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.history.HistoryProvider.BrowsingHistoryObserver;
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
@@ -274,5 +275,20 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         mSignedInSyncedTextView.setVisibility(mHasSyncedData ? View.VISIBLE : View.GONE);
         mOtherFormsOfBrowsingHistoryTextView.setVisibility(
                 mHasOtherFormsOfBrowsingData ? View.VISIBLE : View.GONE);
+    }
+
+    @VisibleForTesting
+    TextView getSignedInNotSyncedViewForTests() {
+        return mSignedInNotSyncedTextView;
+    }
+
+    @VisibleForTesting
+    TextView getSignedInSyncedViewForTests() {
+        return mSignedInSyncedTextView;
+    }
+
+    @VisibleForTesting
+    TextView getOtherFormsOfBrowsingHistoryViewForTests() {
+        return mOtherFormsOfBrowsingHistoryTextView;
     }
 }

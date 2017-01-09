@@ -181,10 +181,17 @@ public class HistoryManager implements OnMenuItemClickListener {
      *                     the current tab.
      */
     public void openUrl(String url, Boolean isIncognito, boolean createNewTab) {
+        IntentHandler.startActivityForTrustedIntent(
+                getOpenUrlIntent(url, isIncognito, createNewTab));
+    }
+
+    @VisibleForTesting
+    Intent getOpenUrlIntent(String url, Boolean isIncognito, boolean createNewTab) {
         // Construct basic intent.
         Intent viewIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         viewIntent.putExtra(Browser.EXTRA_APPLICATION_ID,
                 mActivity.getApplicationContext().getPackageName());
+        viewIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         // Determine component or class name.
         ComponentName component;
@@ -206,8 +213,7 @@ public class HistoryManager implements OnMenuItemClickListener {
         }
         if (createNewTab) viewIntent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
 
-        // Send intent.
-        IntentHandler.startActivityForTrustedIntent(viewIntent);
+        return viewIntent;
     }
 
     /**
