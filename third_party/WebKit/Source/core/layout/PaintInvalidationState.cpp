@@ -236,8 +236,10 @@ PaintLayer& PaintInvalidationState::childPaintingLayer(
     const LayoutObject& child) const {
   if (child.hasLayer() && toLayoutBoxModelObject(child).hasSelfPaintingLayer())
     return *toLayoutBoxModelObject(child).layer();
-  // See LayoutObject::paintingLayer() for specialty of floating objects.
-  if (child.isFloating() && !m_currentObject.isLayoutBlock())
+  // See LayoutObject::paintingLayer() for the special-cases of floating under
+  // inline and multicolumn.
+  if (child.isColumnSpanAll() ||
+      (child.isFloating() && !m_currentObject.isLayoutBlock()))
     return *child.paintingLayer();
   return m_paintingLayer;
 }
