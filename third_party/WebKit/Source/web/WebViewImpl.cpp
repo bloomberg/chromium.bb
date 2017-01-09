@@ -2217,7 +2217,7 @@ WebInputEventResult WebViewImpl::handleInputEvent(
 
   // FIXME: This should take in the intended frame, not the local frame root.
   WebInputEventResult result = PageWidgetDelegate::handleInputEvent(
-      *this, inputEvent, mainFrameImpl()->frame());
+      *this, WebCoalescedInputEvent(inputEvent), mainFrameImpl()->frame());
   if (result != WebInputEventResult::NotHandled)
     return result;
 

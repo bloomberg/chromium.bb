@@ -120,10 +120,10 @@ WebGestureEvent CreateFling(WebGestureDevice source_device,
                      modifiers);
 }
 
-ScopedWebInputEvent CreateGestureScrollOrPinch(WebInputEvent::Type type,
-                                               float deltaYOrScale = 0,
-                                               int x = 0,
-                                               int y = 0) {
+blink::WebScopedInputEvent CreateGestureScrollOrPinch(WebInputEvent::Type type,
+                                                      float deltaYOrScale = 0,
+                                                      int x = 0,
+                                                      int y = 0) {
   WebGestureEvent gesture(type, WebInputEvent::NoModifiers,
                           WebInputEvent::TimeStampForTesting);
   gesture.sourceDevice = blink::WebGestureDeviceTouchpad;
@@ -271,7 +271,7 @@ class MockInputHandlerProxyClient
                void(const WebInputEvent&));
 
   void DispatchNonBlockingEventToMainThread(
-      ui::ScopedWebInputEvent event,
+      blink::WebScopedInputEvent event,
       const ui::LatencyInfo& latency_info) override {
     CHECK(event.get());
     DispatchNonBlockingEventToMainThread_(*event.get());
@@ -504,7 +504,7 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
 
   void DidHandleInputEventAndOverscroll(
       InputHandlerProxy::EventDisposition event_disposition,
-      ui::ScopedWebInputEvent input_event,
+      blink::WebScopedInputEvent input_event,
       const ui::LatencyInfo& latency_info,
       std::unique_ptr<ui::DidOverscrollParams> overscroll_params) {
     event_disposition_recorder_.push_back(event_disposition);

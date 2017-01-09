@@ -129,21 +129,10 @@ struct WebInputEventSize {
 struct WebInputEventClone {
   template <class EventType>
   bool Execute(const WebInputEvent& event,
-               ScopedWebInputEvent* scoped_event) const {
+               blink::WebScopedInputEvent* scoped_event) const {
     DCHECK_EQ(sizeof(EventType), event.size);
-    *scoped_event = ScopedWebInputEvent(
+    *scoped_event = blink::WebScopedInputEvent(
         new EventType(static_cast<const EventType&>(event)));
-    return true;
-  }
-};
-
-struct WebInputEventDelete {
-  template <class EventType>
-  bool Execute(WebInputEvent* event, bool* /* dummy_var */) const {
-    if (!event)
-      return false;
-    DCHECK_EQ(sizeof(EventType), event->size);
-    delete static_cast<EventType*>(event);
     return true;
   }
 };
@@ -182,17 +171,11 @@ size_t WebInputEventTraits::GetSize(WebInputEvent::Type type) {
   return size;
 }
 
-ScopedWebInputEvent WebInputEventTraits::Clone(const WebInputEvent& event) {
-  ScopedWebInputEvent scoped_event;
+blink::WebScopedInputEvent WebInputEventTraits::Clone(
+    const WebInputEvent& event) {
+  blink::WebScopedInputEvent scoped_event;
   Apply(WebInputEventClone(), event.type, event, &scoped_event);
   return scoped_event;
-}
-
-void WebInputEventTraits::Delete(WebInputEvent* event) {
-  if (!event)
-    return;
-  bool dummy_var = false;
-  Apply(WebInputEventDelete(), event->type, event, &dummy_var);
 }
 
 bool WebInputEventTraits::ShouldBlockEventStream(const WebInputEvent& event) {

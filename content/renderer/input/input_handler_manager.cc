@@ -201,7 +201,7 @@ void InputHandlerManager::ProcessRafAlignedInputOnMainThread(int routing_id) {
 
 void InputHandlerManager::HandleInputEvent(
     int routing_id,
-    ui::ScopedWebInputEvent input_event,
+    blink::WebScopedInputEvent input_event,
     const ui::LatencyInfo& latency_info,
     const InputEventAckStateCallback& callback) {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -230,7 +230,7 @@ void InputHandlerManager::HandleInputEvent(
 void InputHandlerManager::DidHandleInputEventAndOverscroll(
     const InputEventAckStateCallback& callback,
     InputHandlerProxy::EventDisposition event_disposition,
-    ui::ScopedWebInputEvent input_event,
+    blink::WebScopedInputEvent input_event,
     const ui::LatencyInfo& latency_info,
     std::unique_ptr<ui::DidOverscrollParams> overscroll_params) {
   InputEventAckState input_event_ack_state =
@@ -277,7 +277,7 @@ void InputHandlerManager::NeedsMainFrame(int routing_id) {
 
 void InputHandlerManager::DispatchNonBlockingEventToMainThread(
     int routing_id,
-    ui::ScopedWebInputEvent event,
+    blink::WebScopedInputEvent event,
     const ui::LatencyInfo& latency_info) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   client_->DispatchNonBlockingEventToMainThread(routing_id, std::move(event),

@@ -10,14 +10,13 @@
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "cc/input/input_handler.h"
+#include "third_party/WebKit/public/platform/WebCoalescedInputEvent.h"
 #include "third_party/WebKit/public/platform/WebGestureCurve.h"
 #include "third_party/WebKit/public/platform/WebGestureCurveTarget.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebActiveWheelFlingParameters.h"
 #include "ui/events/blink/blink_features.h"
 #include "ui/events/blink/input_scroll_elasticity_controller.h"
-#include "ui/events/blink/scoped_web_input_event.h"
 #include "ui/events/blink/synchronous_input_handler_proxy.h"
 
 namespace base {
@@ -72,11 +71,11 @@ class InputHandlerProxy
   };
   using EventDispositionCallback =
       base::Callback<void(EventDisposition,
-                          ScopedWebInputEvent WebInputEvent,
+                          blink::WebScopedInputEvent WebInputEvent,
                           const LatencyInfo&,
                           std::unique_ptr<ui::DidOverscrollParams>)>;
   void HandleInputEventWithLatencyInfo(
-      ScopedWebInputEvent event,
+      blink::WebScopedInputEvent event,
       const LatencyInfo& latency_info,
       const EventDispositionCallback& callback);
   EventDisposition HandleInputEvent(const blink::WebInputEvent& event);

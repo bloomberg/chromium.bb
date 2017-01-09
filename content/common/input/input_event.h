@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "content/common/content_export.h"
-#include "ui/events/blink/scoped_web_input_event.h"
+#include "third_party/WebKit/public/platform/WebCoalescedInputEvent.h"
 #include "ui/events/latency_info.h"
 
 namespace blink {
@@ -26,7 +26,7 @@ class CONTENT_EXPORT InputEvent {
              const ui::LatencyInfo& latency_info);
   ~InputEvent();
 
-  ui::ScopedWebInputEvent web_event;
+  blink::WebScopedInputEvent web_event;
   ui::LatencyInfo latency_info;
 
  private:

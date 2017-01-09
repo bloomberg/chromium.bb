@@ -154,7 +154,7 @@ void RenderWidgetMusConnection::OnConnectionLost() {
 }
 
 void RenderWidgetMusConnection::OnWindowInputEvent(
-    ui::ScopedWebInputEvent input_event,
+    blink::WebScopedInputEvent input_event,
     const base::Callback<void(ui::mojom::EventResult)>& ack) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // If we don't yet have a RenderWidgetInputHandler then we don't yet have

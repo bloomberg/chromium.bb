@@ -114,8 +114,9 @@ void PageWidgetDelegate::paintIgnoringCompositing(Page& page,
 
 WebInputEventResult PageWidgetDelegate::handleInputEvent(
     PageWidgetEventHandler& handler,
-    const WebInputEvent& event,
+    const WebCoalescedInputEvent& coalescedEvent,
     LocalFrame* root) {
+  const WebInputEvent& event = coalescedEvent.event();
   if (event.modifiers & WebInputEvent::IsTouchAccessibility &&
       WebInputEvent::isMouseEventType(event.type)) {
     PlatformMouseEventBuilder pme(root->view(),
@@ -146,7 +147,7 @@ WebInputEventResult PageWidgetDelegate::handleInputEvent(
       if (!root || !root->view())
         return WebInputEventResult::HandledSuppressed;
       handler.handleMouseMove(*root, static_cast<const WebMouseEvent&>(event),
-                              std::vector<const WebInputEvent*>());
+                              coalescedEvent.getCoalescedEventsPointers());
       return WebInputEventResult::HandledSystem;
     case WebInputEvent::MouseLeave:
       if (!root || !root->view())
@@ -202,9 +203,9 @@ WebInputEventResult PageWidgetDelegate::handleInputEvent(
     case WebInputEvent::TouchScrollStarted:
       if (!root || !root->view())
         return WebInputEventResult::NotHandled;
-      return handler.handleTouchEvent(*root,
-                                      static_cast<const WebTouchEvent&>(event),
-                                      std::vector<const WebInputEvent*>());
+      return handler.handleTouchEvent(
+          *root, static_cast<const WebTouchEvent&>(event),
+          coalescedEvent.getCoalescedEventsPointers());
     case WebInputEvent::GesturePinchBegin:
     case WebInputEvent::GesturePinchEnd:
     case WebInputEvent::GesturePinchUpdate:

@@ -7,7 +7,6 @@
 
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
-#include "ui/events/blink/scoped_web_input_event.h"
 
 namespace content {
 

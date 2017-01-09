@@ -10,6 +10,7 @@ include_rules = [
   # header-only types, and some selected common code.
   "-third_party/WebKit",
   "+third_party/WebKit/public/platform/WebAddressSpace.h",
+  "+third_party/WebKit/public/platform/WebCoalescedInputEvent.h",
   "+third_party/WebKit/public/platform/WebCString.h",
   "+third_party/WebKit/public/platform/WebDisplayMode.h",
   "+third_party/WebKit/public/platform/WebDragOperation.h",

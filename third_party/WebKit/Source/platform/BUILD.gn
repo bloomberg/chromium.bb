@@ -28,6 +28,7 @@ component("blink_common") {
     "exported/FilePathConversion.cpp",
     "exported/URLConversion.cpp",
     "exported/WebCString.cpp",
+    "exported/WebCoalescedInputEvent.cpp",
     "exported/WebString.cpp",
     "exported/linux/WebFontRenderStyle.cpp",
   ]

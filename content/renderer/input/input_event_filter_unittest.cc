@@ -62,7 +62,7 @@ class InputEventRecorder : public content::InputHandlerManager {
   }
 
   void HandleInputEvent(int routing_id,
-                        ui::ScopedWebInputEvent event,
+                        blink::WebScopedInputEvent event,
                         const ui::LatencyInfo& latency_info,
                         const InputHandlerManager::InputEventAckStateCallback&
                             callback) override {

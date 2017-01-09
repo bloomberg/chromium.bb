@@ -124,6 +124,7 @@ source_set("blink_headers") {
     "platform/WebCanvas.h",
     "platform/WebCanvasCaptureHandler.h",
     "platform/WebClipboard.h",
+    "platform/WebCoalescedInputEvent.h",
     "platform/WebColor.h",
     "platform/WebCommon.h",
     "platform/WebCompositeAndReadbackAsyncCallback.h",

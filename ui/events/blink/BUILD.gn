@@ -21,8 +21,6 @@ source_set("blink") {
     "input_handler_proxy_client.h",
     "input_scroll_elasticity_controller.cc",
     "input_scroll_elasticity_controller.h",
-    "scoped_web_input_event.cc",
-    "scoped_web_input_event.h",
     "synchronous_input_handler_proxy.h",
     "web_input_event.cc",
     "web_input_event.h",

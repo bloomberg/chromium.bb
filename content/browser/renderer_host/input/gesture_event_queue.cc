@@ -324,7 +324,7 @@ void GestureEventQueue::QueueScrollOrPinchAndForwardIfNecessary(
   coalesced_gesture_events_.pop_back();
 
   // Extract the second last event in queue.
-  ui::ScopedWebInputEvent second_last_gesture_event = nullptr;
+  blink::WebScopedInputEvent second_last_gesture_event = nullptr;
   if (unsent_events_count > 1 &&
       ui::IsCompatibleScrollorPinch(gesture_event.event,
                                     coalesced_gesture_events_.back().event)) {

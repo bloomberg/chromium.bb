@@ -365,7 +365,7 @@ Response InputHandler::EmulateTouchFromMouseEvent(const std::string& type,
   if (!GetMouseEventButton(button, &event_button, &button_modifiers))
     return Response::InvalidParams("Invalid mouse button");
 
-  ui::ScopedWebInputEvent event;
+  blink::WebScopedInputEvent event;
   blink::WebMouseWheelEvent* wheel_event = nullptr;
   blink::WebMouseEvent* mouse_event = nullptr;
   if (type == Input::EmulateTouchFromMouseEvent::TypeEnum::MouseWheel) {

@@ -28,25 +28,25 @@ std::unique_ptr<content::SyntheticGestureParams> ReadGestureParams(
 }
 }  // namespace
 
-void ParamTraits<ui::ScopedWebInputEvent>::GetSize(base::PickleSizer* s,
-                                                        const param_type& p) {
+void ParamTraits<blink::WebScopedInputEvent>::GetSize(base::PickleSizer* s,
+                                                      const param_type& p) {
   bool valid_web_event = !!p;
   GetParamSize(s, valid_web_event);
   if (valid_web_event)
     GetParamSize(s, static_cast<WebInputEventPointer>(p.get()));
 }
 
-void ParamTraits<ui::ScopedWebInputEvent>::Write(base::Pickle* m,
-                                                      const param_type& p) {
+void ParamTraits<blink::WebScopedInputEvent>::Write(base::Pickle* m,
+                                                    const param_type& p) {
   bool valid_web_event = !!p;
   WriteParam(m, valid_web_event);
   if (valid_web_event)
     WriteParam(m, static_cast<WebInputEventPointer>(p.get()));
 }
 
-bool ParamTraits<ui::ScopedWebInputEvent>::Read(const base::Pickle* m,
-                                                     base::PickleIterator* iter,
-                                                     param_type* p) {
+bool ParamTraits<blink::WebScopedInputEvent>::Read(const base::Pickle* m,
+                                                   base::PickleIterator* iter,
+                                                   param_type* p) {
   bool valid_web_event = false;
   WebInputEventPointer web_event_pointer = NULL;
   if (!ReadParam(m, iter, &valid_web_event) ||
@@ -59,8 +59,8 @@ bool ParamTraits<ui::ScopedWebInputEvent>::Read(const base::Pickle* m,
   return true;
 }
 
-void ParamTraits<ui::ScopedWebInputEvent>::Log(const param_type& p,
-                                                    std::string* l) {
+void ParamTraits<blink::WebScopedInputEvent>::Log(const param_type& p,
+                                                  std::string* l) {
   LogParam(static_cast<WebInputEventPointer>(p.get()), l);
 }
 

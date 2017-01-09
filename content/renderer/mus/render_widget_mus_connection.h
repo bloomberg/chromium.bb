@@ -63,7 +63,7 @@ class CONTENT_EXPORT RenderWidgetMusConnection
 
   void OnConnectionLost();
   void OnWindowInputEvent(
-      ui::ScopedWebInputEvent input_event,
+      blink::WebScopedInputEvent input_event,
       const base::Callback<void(ui::mojom::EventResult)>& ack);
 
   const int routing_id_;

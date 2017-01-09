@@ -47,7 +47,7 @@ void InputHandlerWrapper::TransferActiveWheelFlingAnimation(
 }
 
 void InputHandlerWrapper::DispatchNonBlockingEventToMainThread(
-    ui::ScopedWebInputEvent event,
+    blink::WebScopedInputEvent event,
     const ui::LatencyInfo& latency_info) {
   input_handler_manager_->DispatchNonBlockingEventToMainThread(
       routing_id_, std::move(event), latency_info);

@@ -11,13 +11,13 @@
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits_macros.h"
 #include "content/common/input/synthetic_gesture_packet.h"
-#include "ui/events/blink/scoped_web_input_event.h"
+#include "third_party/WebKit/public/platform/WebCoalescedInputEvent.h"
 
 namespace IPC {
 
 template <>
-struct CONTENT_EXPORT ParamTraits<ui::ScopedWebInputEvent> {
-  typedef ui::ScopedWebInputEvent param_type;
+struct CONTENT_EXPORT ParamTraits<blink::WebScopedInputEvent> {
+  typedef blink::WebScopedInputEvent param_type;
   static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,

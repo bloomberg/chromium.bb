@@ -125,7 +125,7 @@ class MainThreadEventQueueTest : public testing::TestWithParam<unsigned>,
   scoped_refptr<base::TestSimpleTaskRunner> main_task_runner_;
   blink::scheduler::MockRendererScheduler renderer_scheduler_;
   scoped_refptr<MainThreadEventQueue> queue_;
-  std::vector<ui::ScopedWebInputEvent> handled_events_;
+  std::vector<blink::WebScopedInputEvent> handled_events_;
   std::vector<uint32_t> additional_acked_events_;
   int raf_aligned_input_setting_;
   bool needs_main_frame_;

@@ -9,10 +9,9 @@ using blink::WebInputEvent;
 namespace content {
 
 ScopedWebInputEventWithLatencyInfo::ScopedWebInputEventWithLatencyInfo(
-    ui::ScopedWebInputEvent event,
+    blink::WebScopedInputEvent event,
     const ui::LatencyInfo& latency_info)
-    : event_(std::move(event)), latency_(latency_info) {
-}
+    : event_(std::move(event)), latency_(latency_info) {}
 
 ScopedWebInputEventWithLatencyInfo::~ScopedWebInputEventWithLatencyInfo() {}
 

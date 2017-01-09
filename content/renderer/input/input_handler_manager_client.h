@@ -10,8 +10,7 @@
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/common/input/input_event_ack_state.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
-#include "ui/events/blink/scoped_web_input_event.h"
+#include "third_party/WebKit/public/platform/WebCoalescedInputEvent.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace ui {
@@ -46,7 +45,7 @@ class CONTENT_EXPORT InputHandlerManagerClient {
   virtual void DidStopFlinging(int routing_id) = 0;
   virtual void DispatchNonBlockingEventToMainThread(
       int routing_id,
-      ui::ScopedWebInputEvent event,
+      blink::WebScopedInputEvent event,
       const ui::LatencyInfo& latency_info) = 0;
 
  protected:

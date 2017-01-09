@@ -378,8 +378,8 @@ WebInputEventResult WebFrameWidgetImpl::handleInputEvent(
     return WebInputEventResult::HandledSystem;
   }
 
-  return PageWidgetDelegate::handleInputEvent(*this, inputEvent,
-                                              m_localRoot->frame());
+  return PageWidgetDelegate::handleInputEvent(
+      *this, WebCoalescedInputEvent(inputEvent), m_localRoot->frame());
 }
 
 void WebFrameWidgetImpl::setCursorVisibilityState(bool isVisible) {

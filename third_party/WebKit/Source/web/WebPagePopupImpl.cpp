@@ -508,7 +508,7 @@ WebInputEventResult WebPagePopupImpl::handleInputEvent(
   if (m_closing)
     return WebInputEventResult::NotHandled;
   return PageWidgetDelegate::handleInputEvent(
-      *this, event, m_page->deprecatedLocalMainFrame());
+      *this, WebCoalescedInputEvent(event), m_page->deprecatedLocalMainFrame());
 }
 
 void WebPagePopupImpl::setFocus(bool enable) {

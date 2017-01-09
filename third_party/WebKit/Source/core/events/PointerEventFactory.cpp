@@ -219,8 +219,6 @@ PointerEvent* PointerEventFactory::create(
 
   AtomicString pointerEventName =
       pointerEventNameForMouseEventName(mouseEventName);
-  DCHECK(pointerEventName == EventTypeNames::pointermove ||
-         coalescedMouseEvents.isEmpty());
 
   unsigned buttons =
       MouseEvent::platformModifiersToButtons(mouseEvent.getModifiers());
@@ -259,19 +257,22 @@ PointerEvent* PointerEventFactory::create(
 
   updateMousePointerEventInit(mouseEvent, view, &pointerEventInit);
 
-  // Created coalesced events init structure
-  HeapVector<Member<PointerEvent>> coalescedPointerEvents;
-  for (const auto& coalescedMouseEvent : coalescedMouseEvents) {
-    DCHECK_EQ(mouseEvent.pointerProperties().id,
-              coalescedMouseEvent.pointerProperties().id);
-    DCHECK_EQ(mouseEvent.pointerProperties().pointerType,
-              coalescedMouseEvent.pointerProperties().pointerType);
-    PointerEventInit coalescedEventInit = pointerEventInit;
-    updateMousePointerEventInit(coalescedMouseEvent, view, &coalescedEventInit);
-    coalescedPointerEvents.push_back(
-        PointerEvent::create(pointerEventName, coalescedEventInit));
+  // Create coalesced events init structure only for pointermove.
+  if (pointerEventName == EventTypeNames::pointermove) {
+    HeapVector<Member<PointerEvent>> coalescedPointerEvents;
+    for (const auto& coalescedMouseEvent : coalescedMouseEvents) {
+      DCHECK_EQ(mouseEvent.pointerProperties().id,
+                coalescedMouseEvent.pointerProperties().id);
+      DCHECK_EQ(mouseEvent.pointerProperties().pointerType,
+                coalescedMouseEvent.pointerProperties().pointerType);
+      PointerEventInit coalescedEventInit = pointerEventInit;
+      updateMousePointerEventInit(coalescedMouseEvent, view,
+                                  &coalescedEventInit);
+      coalescedPointerEvents.push_back(
+          PointerEvent::create(pointerEventName, coalescedEventInit));
+    }
+    pointerEventInit.setCoalescedEvents(coalescedPointerEvents);
   }
-  pointerEventInit.setCoalescedEvents(coalescedPointerEvents);
 
   return PointerEvent::create(pointerEventName, pointerEventInit);
 }
@@ -285,8 +286,6 @@ PointerEvent* PointerEventFactory::create(
   const PlatformTouchPoint::TouchState pointState = touchPoint.state();
   const AtomicString& type =
       pointerEventNameForTouchPointState(touchPoint.state());
-
-  DCHECK(type == EventTypeNames::pointermove || coalescedPoints.isEmpty());
 
   bool pointerReleasedOrCancelled =
       pointState == PlatformTouchPoint::TouchReleased ||
@@ -310,21 +309,22 @@ PointerEvent* PointerEventFactory::create(
 
   setEventSpecificFields(pointerEventInit, type);
 
-  // Created coalesced events init structure
-  HeapVector<Member<PointerEvent>> coalescedPointerEvents;
-  for (const auto& coalescedTouchPoint : coalescedPoints) {
-    DCHECK_EQ(touchPoint.state(), coalescedTouchPoint.state());
-    DCHECK_EQ(touchPoint.pointerProperties().id,
-              coalescedTouchPoint.pointerProperties().id);
-    DCHECK_EQ(touchPoint.pointerProperties().pointerType,
-              coalescedTouchPoint.pointerProperties().pointerType);
-    PointerEventInit coalescedEventInit = pointerEventInit;
-    updateTouchPointerEventInit(coalescedTouchPoint, targetFrame,
-                                &coalescedEventInit);
-    coalescedPointerEvents.push_back(
-        PointerEvent::create(type, coalescedEventInit));
+  if (type == EventTypeNames::pointermove) {
+    HeapVector<Member<PointerEvent>> coalescedPointerEvents;
+    for (const auto& coalescedTouchPoint : coalescedPoints) {
+      DCHECK_EQ(touchPoint.state(), coalescedTouchPoint.state());
+      DCHECK_EQ(touchPoint.pointerProperties().id,
+                coalescedTouchPoint.pointerProperties().id);
+      DCHECK_EQ(touchPoint.pointerProperties().pointerType,
+                coalescedTouchPoint.pointerProperties().pointerType);
+      PointerEventInit coalescedEventInit = pointerEventInit;
+      updateTouchPointerEventInit(coalescedTouchPoint, targetFrame,
+                                  &coalescedEventInit);
+      coalescedPointerEvents.push_back(
+          PointerEvent::create(type, coalescedEventInit));
+    }
+    pointerEventInit.setCoalescedEvents(coalescedPointerEvents);
   }
-  pointerEventInit.setCoalescedEvents(coalescedPointerEvents);
 
   return PointerEvent::create(type, pointerEventInit);
 }

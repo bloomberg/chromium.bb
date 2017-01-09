@@ -32,7 +32,7 @@
 #define PageWidgetDelegate_h
 
 #include "public/platform/WebCanvas.h"
-#include "public/platform/WebInputEvent.h"
+#include "public/platform/WebCoalescedInputEvent.h"
 #include "public/web/WebWidget.h"
 #include "web/WebExport.h"
 
@@ -85,9 +85,10 @@ class PageWidgetDelegate {
                                        LocalFrame& root);
 
   // See FIXME in the function body about nullptr |root|.
-  static WebInputEventResult handleInputEvent(PageWidgetEventHandler&,
-                                              const WebInputEvent&,
-                                              LocalFrame* root);
+  static WebInputEventResult handleInputEvent(
+      PageWidgetEventHandler&,
+      const WebCoalescedInputEvent& coalescedEvent,
+      LocalFrame* root);
 
  private:
   PageWidgetDelegate() {}

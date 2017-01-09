@@ -98,7 +98,7 @@ void BlimpInputHandlerWrapper::TransferActiveWheelFlingAnimation(
 }
 
 void BlimpInputHandlerWrapper::DispatchNonBlockingEventToMainThread(
-    ui::ScopedWebInputEvent event,
+    blink::WebScopedInputEvent event,
     const ui::LatencyInfo& latency_info) {
   DCHECK(compositor_thread_checker_.CalledOnValidThread());
   DCHECK_EQ(event->type, blink::WebInputEvent::MouseWheel);

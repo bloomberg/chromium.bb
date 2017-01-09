@@ -97,7 +97,7 @@ void InputEventFilter::DidStopFlinging(int routing_id) {
 
 void InputEventFilter::DispatchNonBlockingEventToMainThread(
     int routing_id,
-    ui::ScopedWebInputEvent event,
+    blink::WebScopedInputEvent event,
     const ui::LatencyInfo& latency_info) {
   DCHECK(target_task_runner_->BelongsToCurrentThread());
   RouteQueueMap::iterator iter = route_queues_.find(routing_id);
@@ -210,7 +210,7 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message,
   InputMsg_HandleInputEvent::Param params;
   if (!InputMsg_HandleInputEvent::Read(&message, &params))
     return;
-  ui::ScopedWebInputEvent event =
+  blink::WebScopedInputEvent event =
       ui::WebInputEventTraits::Clone(*std::get<0>(params));
   ui::LatencyInfo latency_info = std::get<1>(params);
   InputEventDispatchType dispatch_type = std::get<2>(params);
@@ -232,7 +232,7 @@ void InputEventFilter::DidForwardToHandlerAndOverscroll(
     int routing_id,
     InputEventDispatchType dispatch_type,
     InputEventAckState ack_state,
-    ui::ScopedWebInputEvent event,
+    blink::WebScopedInputEvent event,
     const ui::LatencyInfo& latency_info,
     std::unique_ptr<DidOverscrollParams> overscroll_params) {
   bool send_ack = dispatch_type == DISPATCH_TYPE_BLOCKING;

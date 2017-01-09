@@ -82,7 +82,7 @@ class TestInputHandlerManager : public InputHandlerManager {
 
   // InputHandlerManager:
   void HandleInputEvent(int routing_id,
-                        ui::ScopedWebInputEvent input_event,
+                        blink::WebScopedInputEvent input_event,
                         const ui::LatencyInfo& latency_info,
                         const InputEventAckStateCallback& callback) override;
 
@@ -108,7 +108,7 @@ void TestInputHandlerManager::SetHandleInputEventResult(
 
 void TestInputHandlerManager::HandleInputEvent(
     int routing_id,
-    ui::ScopedWebInputEvent input_event,
+    blink::WebScopedInputEvent input_event,
     const ui::LatencyInfo& latency_info,
     const InputEventAckStateCallback& callback) {
   if (override_result_) {
@@ -135,7 +135,7 @@ class TestInputHandlerManagerClient : public InputHandlerManagerClient {
   void DidStopFlinging(int routing_id) override {}
   void DispatchNonBlockingEventToMainThread(
       int routing_id,
-      ui::ScopedWebInputEvent event,
+      blink::WebScopedInputEvent event,
       const ui::LatencyInfo& latency_info) override {}
 
   void NotifyInputEventHandled(int routing_id,

@@ -22,7 +22,7 @@ namespace content {
 
 class EventWithDispatchType : public ScopedWebInputEventWithLatencyInfo {
  public:
-  EventWithDispatchType(ui::ScopedWebInputEvent event,
+  EventWithDispatchType(blink::WebScopedInputEvent event,
                         const ui::LatencyInfo& latency,
                         InputEventDispatchType dispatch_type);
   ~EventWithDispatchType();
@@ -120,7 +120,7 @@ class CONTENT_EXPORT MainThreadEventQueue
 
   // Called once the compositor has handled |event| and indicated that it is
   // a non-blocking event to be queued to the main thread.
-  bool HandleEvent(ui::ScopedWebInputEvent event,
+  bool HandleEvent(blink::WebScopedInputEvent event,
                    const ui::LatencyInfo& latency,
                    InputEventDispatchType dispatch_type,
                    InputEventAckState ack_result);
