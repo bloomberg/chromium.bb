@@ -46,6 +46,7 @@
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/masked_window_targeter.h"
+#include "ui/wm/core/shadow_types.h"
 
 namespace app_list {
 
@@ -446,6 +447,7 @@ void AppListView::OnBeforeBubbleWidgetInit(
   }
   // Apply a WM-provided shadow (see ui/wm/core/).
   params->shadow_type = views::Widget::InitParams::SHADOW_TYPE_DROP;
+  params->shadow_elevation = wm::ShadowElevation::LARGE;
 }
 
 int AppListView::GetDialogButtons() const {
