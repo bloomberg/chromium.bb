@@ -69,6 +69,8 @@ static_library("test_support") {
     "perf_time_logger.h",
     "power_monitor_test_base.cc",
     "power_monitor_test_base.h",
+    "scoped_async_task_scheduler.cc",
+    "scoped_async_task_scheduler.h",
     "scoped_command_line.cc",
     "scoped_command_line.h",
     "scoped_feature_list.cc",
