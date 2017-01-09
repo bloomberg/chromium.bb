@@ -17,7 +17,7 @@ Polymer({
 
   /** @override */
   attached: function() {
-    /** @type {BookmarksStoreElement} */ (this.$$('bookmarks-store'))
+    /** @type {BookmarksStore} */ (this.$$('bookmarks-store'))
         .initializeStore();
   },
 });
