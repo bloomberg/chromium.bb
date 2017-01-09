@@ -16,7 +16,7 @@
 #include "net/socket/socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/webrtc/p2p/base/transportchannel.h"
+#include "third_party/webrtc/p2p/base/mockicetransport.h"
 
 using net::IOBuffer;
 
@@ -32,45 +32,6 @@ const char kTestData[] = "data";
 const int kTestDataSize = 4;
 const int kTestError = -32123;
 }  // namespace
-
-class MockTransportChannel : public cricket::TransportChannel {
- public:
-  MockTransportChannel() : cricket::TransportChannel(std::string(), 0) {
-    set_writable(true);
-  }
-
-  MOCK_METHOD4(SendPacket, int(const char* data,
-                               size_t len,
-                               const rtc::PacketOptions& options,
-                               int flags));
-  MOCK_METHOD2(SetOption, int(rtc::Socket::Option opt, int value));
-  MOCK_METHOD0(GetError, int());
-  MOCK_CONST_METHOD0(GetIceRole, cricket::IceRole());
-  MOCK_METHOD1(GetStats, bool(cricket::ConnectionInfos* infos));
-  MOCK_CONST_METHOD0(IsDtlsActive, bool());
-  MOCK_CONST_METHOD1(GetSslRole, bool(rtc::SSLRole* role));
-  MOCK_METHOD1(SetSrtpCiphers, bool(const std::vector<std::string>& ciphers));
-  MOCK_METHOD1(GetSrtpCipher, bool(std::string* cipher));
-  MOCK_METHOD1(GetSslCipher, bool(std::string* cipher));
-  MOCK_CONST_METHOD0(GetLocalCertificate,
-                     rtc::scoped_refptr<rtc::RTCCertificate>());
-
-  // This can't be a real mock method because gmock doesn't support move-only
-  // return values.
-  std::unique_ptr<rtc::SSLCertificate> GetRemoteSSLCertificate()
-      const override {
-    EXPECT_TRUE(false);  // Never called.
-    return nullptr;
-  }
-
-  MOCK_METHOD6(ExportKeyingMaterial,
-               bool(const std::string& label,
-                    const uint8_t* context,
-                    size_t context_len,
-                    bool use_context,
-                    uint8_t* result,
-                    size_t result_len));
-};
 
 class TransportChannelSocketAdapterTest : public testing::Test {
  public:
@@ -89,7 +50,7 @@ class TransportChannelSocketAdapterTest : public testing::Test {
     callback_result_ = result;
   }
 
-  MockTransportChannel channel_;
+  cricket::MockIceTransport channel_;
   std::unique_ptr<TransportChannelSocketAdapter> target_;
   net::CompletionCallback callback_;
   int callback_result_;
