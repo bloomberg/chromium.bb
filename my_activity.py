@@ -433,6 +433,9 @@ class MyActivity(object):
               instance["name"], item["id"]),
           "comments": []
         }
+        if 'shorturl' in instance:
+          issue['url'] = 'http://%s/%d' % (instance['shorturl'], item['id'])
+
         if 'owner' in item:
           issue['owner'] = item['owner']['name']
         else:
