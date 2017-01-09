@@ -206,14 +206,6 @@ be investigated. When a test fails:
     ensure that the bug title reflects something like "Fix and re-enable
     testname".
 4.  Investigate the failure. Some tips for investigating:
-    *   When viewing buildbot step logs, **use the **<font color="blue">[stdout]</font>** link to view logs!**.
-        This will link to logdog logs which do not expire. Do not use or link
-        to the logs found through the <font color="blue">stdio</font> link
-        whenever possible as these logs will expire.
-    *   When investigating Android, look for the logcat which is uploaded to
-        Google Storage at the end of the run. logcat will contain much more
-        detailed Android device and crash info than will be found in
-        Telemetry logs.
     *   If it's a non flaky failure, indentify the first failed
         build so you can narrow down the range of CLs that causes the failure.
         You can use the
@@ -237,6 +229,51 @@ be investigated. When a test fails:
         Often this will immediately reveal failure causes that are opaque from
         the logs alone. On other platforms, Devtools will produce tab
         screenshots as long as the tab did not crash.
+
+### Useful Logs and Debugging Info
+
+1. **Telemetry test runner logs**
+
+    **_Useful Content:_** Best place to start. These logs contain all of the
+    python logging information from the telemetry test runner scripts. 
+
+    **_Where to find:_** These logs can be found from the buildbot build page.
+    Click the _"[stdout]"_ link under any of the telemetry test buildbot steps
+    to view the logs. Do not use the "stdio" link which will show similiar
+    information but will expire earilier and be slower to load.
+
+2. **Android Logcat (Android)**
+
+    **_Useful Content:_** This file contains all Android device logs. All 
+    Android apps and the Android system will log information to logcat. Good
+    place to look if you believe an issue is device related
+    (Android out-of-memory problem for example). Additionally, often information
+    about native crashes will be logged to here.
+
+    **_Where to find:_** These logs can be found from the buildbot status page.
+    Click the _"logcat dump"_ link under one of the _"gsutil upload"_ steps.
+
+3. **Test Trace (Android)**
+
+    **_Useful Content:_** These logs graphically depict the start/end times for
+    all telemetry tests on all of the devices. This can help determine if test
+    failures were caused by an environmental issue.
+    (see [Cross-Device Failures](#Android-Cross-Device-Failures))
+
+    **_Where to find:_** These logs can be found from the buildbot status page.
+    Click the _"Test Trace"_ link under one of the
+    _"gsutil Upload Test Trace"_ steps.
+
+4. **Symbolized Stack Traces (Android)**
+
+    **_Useful Content:_** Contains symbolized stack traces of any Chrome or
+    Android crashes.
+
+    **_Where to find_:** These logs can be found from the buildbot status page.
+    The symbolized stack traces can be found under several steps. Click link
+    under _"symbolized breakpad crashes"_ step to see symbolized Chrome crashes.
+    Click link under _"stack tool with logcat dump"_ to see symbolized Android
+    crashes.
 
 ### Disabling Telemetry Tests
 
