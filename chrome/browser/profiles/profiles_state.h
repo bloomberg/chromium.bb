@@ -108,6 +108,9 @@ void SetLastUsedProfile(const std::string& profile_dir);
 // and they are all locked.
 bool AreAllNonChildNonSupervisedProfilesLocked();
 
+// Returns whether a public session is being run currently.
+bool IsPublicSession();
+
 }  // namespace profiles
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILES_STATE_H_

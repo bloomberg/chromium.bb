@@ -34,6 +34,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/text_elider.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/login/login_state.h"
+#endif
+
 namespace profiles {
 
 bool IsMultipleProfilesEnabled() {
@@ -277,6 +281,15 @@ bool AreAllNonChildNonSupervisedProfilesLocked() {
     }
   }
   return at_least_one_regular_profile_present;
+}
+
+bool IsPublicSession() {
+#if defined(OS_CHROMEOS)
+  if (chromeos::LoginState::IsInitialized()) {
+    return chromeos::LoginState::Get()->IsPublicSessionUser();
+  }
+#endif
+  return false;
 }
 
 }  // namespace profiles
