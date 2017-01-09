@@ -32,17 +32,17 @@ var CMD_REPORT_PHISHING_ERROR = 12;
  * @param {string} cmd  The command to send.
  */
 function sendCommand(cmd) {
-<if expr="not is_ios">
+// <if expr="not is_ios">
   window.domAutomationController.setAutomationId(1);
   window.domAutomationController.send(cmd);
-</if>
-<if expr="is_ios">
+// </if>
+// <if expr="is_ios">
   // TODO(crbug.com/565877): Revisit message passing for WKWebView.
   var iframe = document.createElement('IFRAME');
   iframe.setAttribute('src', 'js-command:' + cmd);
   document.documentElement.appendChild(iframe);
   iframe.parentNode.removeChild(iframe);
-</if>
+// </if>
 }
 
 /**

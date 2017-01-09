@@ -6,7 +6,7 @@
  * @fileoverview Login UI based on a stripped down OOBE controller.
  */
 
-<include src="login_shared.js">
+// <include src="login_shared.js">
 
 /**
  * Asynchronously loads the pin keyboard.

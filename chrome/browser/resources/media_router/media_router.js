@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-<include src="media_router_data.js">
-<include src="media_router_ui_interface.js">
+// <include src="media_router_data.js">
+// <include src="media_router_ui_interface.js">
 
 // Handles user events for the Media Router UI.
 cr.define('media_router', function() {

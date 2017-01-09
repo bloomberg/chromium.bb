@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-<include src="post_message_channel.js">
+// <include src="post_message_channel.js">
 
 /**
  * @fileoverview Saml support for webview based auth.
@@ -39,7 +39,7 @@ cr.define('cr.login', function() {
    * @type {string}
    */
   var injectedJs = String.raw`
-      <include src="webview_saml_injected.js">
+      // <include src="webview_saml_injected.js">
   `;
 
   /**

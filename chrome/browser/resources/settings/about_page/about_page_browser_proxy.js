@@ -7,7 +7,7 @@
  * the browser.
  */
 
-<if expr="chromeos">
+// <if expr="chromeos">
 /**
  * @typedef {{
  *   text: string,
@@ -43,7 +43,7 @@ var BrowserChannel = {
   DEV: 'dev-channel',
   STABLE: 'stable-channel',
 };
-</if>
+// </if>
 
 /**
  * Enumeration of all possible update statuses. The string literals must match
@@ -60,7 +60,7 @@ var UpdateStatus = {
   DISABLED_BY_ADMIN: 'disabled_by_admin',
 };
 
-<if expr="_google_chrome and is_macosx">
+// <if expr="_google_chrome and is_macosx">
 /**
  * @typedef {{
  *   hidden: boolean,
@@ -70,7 +70,7 @@ var UpdateStatus = {
  * }}
  */
 var PromoteUpdaterStatus;
-</if>
+// </if>
 
 /**
  * @typedef {{
@@ -132,14 +132,14 @@ cr.define('settings', function() {
     /** Opens the help page. */
     openHelpPage: function() {},
 
-<if expr="_google_chrome">
+// <if expr="_google_chrome">
     /**
      * Opens the feedback dialog.
      */
     openFeedbackDialog: function() {},
-</if>
+// </if>
 
-<if expr="chromeos">
+// <if expr="chromeos">
     /**
      * Checks for available update and applies if it exists.
      */
@@ -159,14 +159,14 @@ cr.define('settings', function() {
 
     /** @return {!Promise<?RegulatoryInfo>} */
     getRegulatoryInfo: function() {},
-</if>
+// </if>
 
-<if expr="_google_chrome and is_macosx">
+// <if expr="_google_chrome and is_macosx">
     /**
      * Triggers setting up auto-updates for all users.
      */
     promoteUpdater: function() {},
-</if>
+// </if>
   };
 
   /**
@@ -187,26 +187,26 @@ cr.define('settings', function() {
       chrome.send('refreshUpdateStatus');
     },
 
-<if expr="_google_chrome and is_macosx">
+// <if expr="_google_chrome and is_macosx">
     /** @override */
     promoteUpdater: function() {
       chrome.send('promoteUpdater');
     },
-</if>
+// </if>
 
     /** @override */
     openHelpPage: function() {
       chrome.send('openHelpPage');
     },
 
-<if expr="_google_chrome">
+// <if expr="_google_chrome">
     /** @override */
     openFeedbackDialog: function() {
       chrome.send('openFeedbackDialog');
     },
-</if>
+// </if>
 
-<if expr="chromeos">
+// <if expr="chromeos">
     /** @override */
     requestUpdate: function() {
       chrome.send('requestUpdate');
@@ -231,7 +231,7 @@ cr.define('settings', function() {
     getRegulatoryInfo: function() {
       return cr.sendWithPromise('getRegulatoryInfo');
     }
-</if>
+// </if>
   };
 
   return {

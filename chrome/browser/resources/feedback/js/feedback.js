@@ -175,12 +175,12 @@ function sendReport() {
     // Send histograms along with system info.
     useSystemInfo = useHistograms = true;
   }
-<if expr="chromeos">
+// <if expr="chromeos">
   if ($('performance-info-checkbox') == null ||
       !($('performance-info-checkbox').checked)) {
     feedbackInfo.traceId = null;
   }
-</if>
+// </if>
 
   feedbackInfo.sendHistograms = useHistograms;
 
@@ -229,7 +229,7 @@ function dataUrlToBlob(url) {
   return new Blob([new Uint8Array(dataArray)], {type: mimeString});
 }
 
-<if expr="chromeos">
+// <if expr="chromeos">
 /**
  * Update the page when performance feedback state is changed.
  */
@@ -245,7 +245,7 @@ function performanceFeedbackChanged() {
     $('screenshot-checkbox').disabled = false;
   }
 }
-</if>
+// </if>
 
 function resizeAppWindow() {
   // We pick the width from the titlebar, which has no margins.
@@ -367,14 +367,14 @@ function initialize() {
         $('attach-file-note').hidden = true;
       }
 
-<if expr="chromeos">
+// <if expr="chromeos">
       if (feedbackInfo.traceId && ($('performance-info-area'))) {
         $('performance-info-area').hidden = false;
         $('performance-info-checkbox').checked = true;
         performanceFeedbackChanged();
         $('performance-info-link').onclick = openSlowTraceWindow;
       }
-</if>
+// </if>
       chrome.feedbackPrivate.getStrings(function(strings) {
         loadTimeData.data = strings;
         i18nTemplate.process(document, loadTimeData);
@@ -437,10 +437,10 @@ function initialize() {
     $('send-report-button').onclick = sendReport;
     $('cancel-button').onclick = cancel;
     $('remove-attached-file').onclick = clearAttachedFile;
-<if expr="chromeos">
+// <if expr="chromeos">
     $('performance-info-checkbox').addEventListener(
         'change', performanceFeedbackChanged);
-</if>
+// </if>
   });
 }
 

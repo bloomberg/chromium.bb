@@ -12,7 +12,7 @@
 // included file but that's all right since any javascript file should start
 // with a copyright comment anyway.
 
-//<include src="../../assert.js">
+// <include src="../../assert.js">
 
 cr.define('cr.ui', function() {
   /** @const */ var EventTarget = cr.EventTarget;

@@ -6,7 +6,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
   /* Code which is embedded inside of the webview. See below for details.
   /** @const */ var INJECTED_WEBVIEW_SCRIPT = String.raw`
                       (function() {
-                         <include src="../keyboard/keyboard_utils.js">
+                         // <include src="../keyboard/keyboard_utils.js">
                          keyboard.initializeKeyboardFlow(true);
                        })();`;
 

@@ -10,19 +10,19 @@
  * Note that adding a script in this file results in being loaded in each app.
  */
 
-<include src="../../common/js/async_util.js">
-<include src="../../common/js/file_type.js">
-<include src="../../common/js/metrics_base.js">
-<include src="../../common/js/metrics_events.js">
-<include src="../../common/js/metrics.js">
-<include src="../../common/js/util.js">
-<include src="../../common/js/volume_manager_common.js">
-<include src="app_window_wrapper.js">
-<include src="background_base.js">
-<include src="entry_location_impl.js">
-<include src="test_util_base.js">
-<include src="volume_info_impl.js">
-<include src="volume_info_list_impl.js">
-<include src="volume_manager_factory.js">
-<include src="volume_manager_impl.js">
-<include src="volume_manager_util.js">
+// <include src="../../common/js/async_util.js">
+// <include src="../../common/js/file_type.js">
+// <include src="../../common/js/metrics_base.js">
+// <include src="../../common/js/metrics_events.js">
+// <include src="../../common/js/metrics.js">
+// <include src="../../common/js/util.js">
+// <include src="../../common/js/volume_manager_common.js">
+// <include src="app_window_wrapper.js">
+// <include src="background_base.js">
+// <include src="entry_location_impl.js">
+// <include src="test_util_base.js">
+// <include src="volume_info_impl.js">
+// <include src="volume_info_list_impl.js">
+// <include src="volume_manager_factory.js">
+// <include src="volume_manager_impl.js">
+// <include src="volume_manager_util.js">

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-//<include src="../../../../ui/webui/resources/js/cr.js">
-//<include src="../../../../ui/webui/resources/js/load_time_data.js">
-//<include src="../../../../ui/webui/resources/js/i18n_template_no_process.js">
-//<include src="../../../../ui/webui/resources/js/cr/event_target.js">
-//<include src="../../../../ui/webui/resources/js/cr/ui/dialogs.js">
+// <include src="../../../../ui/webui/resources/js/cr.js">
+// <include src="../../../../ui/webui/resources/js/load_time_data.js">
+// <include src="../../../../ui/webui/resources/js/i18n_template_no_process.js">
+// <include src="../../../../ui/webui/resources/js/cr/event_target.js">
+// <include src="../../../../ui/webui/resources/js/cr/ui/dialogs.js">
 
 (function() {
 'use strict';
 
-//<include src="../cws_widget/app_installer.js">
-//<include src="../cws_widget/cws_webview_client.js">
-//<include src="../cws_widget/cws_widget_container.js">
-//<include src="../cws_widget/cws_widget_container_error_dialog.js">
+// <include src="../cws_widget/app_installer.js">
+// <include src="../cws_widget/cws_webview_client.js">
+// <include src="../cws_widget/cws_widget_container.js">
+// <include src="../cws_widget/cws_widget_container_error_dialog.js">
 
 /**
  * @type {?{

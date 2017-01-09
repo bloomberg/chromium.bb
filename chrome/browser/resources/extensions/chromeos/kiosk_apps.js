@@ -143,5 +143,5 @@ cr.define('extensions', function() {
   };
 });
 
-<include src="kiosk_app_list.js">
-<include src="kiosk_app_disable_bailout_confirm.js">
+// <include src="kiosk_app_list.js">
+// <include src="kiosk_app_disable_bailout_confirm.js">

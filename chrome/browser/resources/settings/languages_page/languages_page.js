@@ -353,7 +353,7 @@ Polymer({
     return languageCode == prospectiveUILanguage;
   },
 
-<if expr="chromeos or is_win">
+// <if expr="chromeos or is_win">
    /**
     * @param {string} prospectiveUILanguage
     * @return {string}
@@ -362,7 +362,7 @@ Polymer({
   getProspectiveUILanguageName_: function(prospectiveUILanguage) {
     return this.languageHelper.getLanguage(prospectiveUILanguage).displayName;
   },
-</if>
+// </if>
 
   /**
    * @return {string}
@@ -497,12 +497,12 @@ Polymer({
    * @private
    */
   onRestartTap_: function() {
-<if expr="chromeos">
+// <if expr="chromeos">
     settings.LifetimeBrowserProxyImpl.getInstance().signOutAndRestart();
-</if>
-<if expr="not chromeos">
+// </if>
+// <if expr="not chromeos">
     settings.LifetimeBrowserProxyImpl.getInstance().restart();
-</if>
+// </if>
   },
 
   /**

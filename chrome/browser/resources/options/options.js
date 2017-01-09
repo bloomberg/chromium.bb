@@ -20,9 +20,9 @@ var CreateProfileOverlay = options.CreateProfileOverlay;
 var EditDictionaryOverlay = cr.IsMac ? null : options.EditDictionaryOverlay;
 var EasyUnlockTurnOffOverlay = options.EasyUnlockTurnOffOverlay;
 var FactoryResetOverlay = options.FactoryResetOverlay;
-<if expr="enable_google_now">
+// <if expr="enable_google_now">
 var GeolocationOptions = options.GeolocationOptions;
-</if>
+// </if>
 var FontSettings = options.FontSettings;
 var HandlerOptions = options.HandlerOptions;
 var HomePageOverlay = options.HomePageOverlay;
@@ -176,11 +176,11 @@ function load() {
                               BrowserOptions.getInstance(),
                               [$('customize-sync')]);
 
-<if expr="is_win">
+// <if expr="is_win">
   PageManager.registerOverlay(
       new ResetProfileSettingsOverlay(true /* isTriggered */),
       BrowserOptions.getInstance());
-</if>
+// </if>
 
   if (loadTimeData.getBoolean('showAbout')) {
     PageManager.registerOverlay(help.HelpPage.getInstance(),

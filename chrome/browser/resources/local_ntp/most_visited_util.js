@@ -7,7 +7,7 @@
  * @fileoverview Utilities for rendering most visited thumbnails and titles.
  */
 
-<include src="instant_iframe_validation.js">
+// <include src="instant_iframe_validation.js">
 
 
 /**

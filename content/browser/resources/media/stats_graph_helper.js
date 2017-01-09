@@ -11,7 +11,7 @@
 // Each group has an expand/collapse button and is collapsed initially.
 //
 
-<include src="timeline_graph_view.js"/>
+// <include src="timeline_graph_view.js">
 
 var STATS_GRAPH_CONTAINER_HEADING_CLASS = 'stats-graph-container-heading';
 

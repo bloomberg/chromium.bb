@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-<include src="../uber/uber_page_manager_observer.js">
-<include src="../uber/uber_utils.js">
+// <include src="../uber/uber_page_manager_observer.js">
+// <include src="../uber/uber_utils.js">
 
 (function() {
   var HelpPage = help.HelpPage;

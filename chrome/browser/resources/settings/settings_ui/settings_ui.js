@@ -92,12 +92,12 @@ Polymer({
         people: false,
         onStartup: false,
         reset: false,
-<if expr="not chromeos">
+// <if expr="not chromeos">
         appearance: false,
         defaultBrowser: false,
         advancedSettings: false,
-</if>
-<if expr="chromeos">
+// </if>
+// <if expr="chromeos">
         appearance: {
           setWallpaper: false,
           setTheme: false,
@@ -114,7 +114,7 @@ Polymer({
         downloads: {
           googleDrive: false,
         },
-</if>
+// </if>
       };
     }
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-<include src="extension_command_list.js">
+// <include src="extension_command_list.js">
 
 cr.define('extensions', function() {
   'use strict';

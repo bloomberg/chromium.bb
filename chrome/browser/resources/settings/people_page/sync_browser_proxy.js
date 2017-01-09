@@ -105,7 +105,7 @@ cr.define('settings', function() {
   function SyncBrowserProxy() {}
 
   SyncBrowserProxy.prototype = {
-<if expr="not chromeos">
+// <if expr="not chromeos">
     /**
      * Starts the signin process for the user. Does nothing if the user is
      * already signed in.
@@ -122,14 +122,14 @@ cr.define('settings', function() {
      * Opens the multi-profile user manager.
      */
     manageOtherPeople: function() {},
-</if>
+// </if>
 
-<if expr="chromeos">
+// <if expr="chromeos">
     /**
      * Signs the user out.
      */
     attemptUserExit: function() {},
-</if>
+// </if>
 
     /**
      * Gets the current sync status.
@@ -178,7 +178,7 @@ cr.define('settings', function() {
   cr.addSingletonGetter(SyncBrowserProxyImpl);
 
   SyncBrowserProxyImpl.prototype = {
-<if expr="not chromeos">
+// <if expr="not chromeos">
     /** @override */
     startSignIn: function() {
       chrome.send('SyncSetupStartSignIn');
@@ -193,13 +193,13 @@ cr.define('settings', function() {
     manageOtherPeople: function() {
       chrome.send('SyncSetupManageOtherPeople');
     },
-</if>
-<if expr="chromeos">
+// </if>
+// <if expr="chromeos">
     /** @override */
     attemptUserExit: function() {
       return chrome.send('AttemptUserExit');
     },
-</if>
+// </if>
 
     /** @override */
     getSyncStatus: function() {

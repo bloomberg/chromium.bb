@@ -39,7 +39,7 @@ Polymer({
     chrome.send('selectDownloadLocation');
   },
 
-<if expr="chromeos">
+// <if expr="chromeos">
   /**
    * @param {string} path
    * @return {string} The download location string that is suitable to display
@@ -56,5 +56,5 @@ Polymer({
     path = path.replace(/\//g, ' \u203a ');
     return path;
   },
-</if>
+// </if>
 });

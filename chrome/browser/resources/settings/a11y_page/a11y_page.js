@@ -29,12 +29,12 @@ Polymer({
     },
   },
 
-<if expr="chromeos">
+// <if expr="chromeos">
   /** @private */
   onManageAccessibilityFeaturesTap_: function() {
     settings.navigateTo(settings.Route.MANAGE_ACCESSIBILITY);
   },
-</if>
+// </if>
 
   /** @private */
   onMoreFeaturesTap_: function() {

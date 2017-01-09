@@ -12,7 +12,7 @@ Polymer({
       notify: true,
     },
 
-<if expr="chromeos">
+// <if expr="chromeos">
     /**
      * Whether to show CUPS printers settings.
      * @private {boolean}
@@ -23,7 +23,7 @@ Polymer({
         return loadTimeData.getBoolean('showCupsPrintingFeatures');
       },
     },
-</if>
+// </if>
 
     /** @type {!Array<!CupsPrinterInfo>} */
     cupsPrinters: {
@@ -40,7 +40,7 @@ Polymer({
     'show-cups-printer-details': 'onShowCupsPrinterDetailsPage_',
   },
 
-<if expr="chromeos">
+// <if expr="chromeos">
   /** @private */
   onTapCupsPrinters_: function() {
     settings.navigateTo(settings.Route.CUPS_PRINTERS);
@@ -51,7 +51,7 @@ Polymer({
     settings.navigateTo(settings.Route.CUPS_PRINTER_DETAIL);
     this.$.arraySelector.select(event.detail);
   },
-</if>
+// </if>
 
   /** @private */
   onTapCloudPrinters_: function() {

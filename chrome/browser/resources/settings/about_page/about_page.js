@@ -18,7 +18,7 @@ Polymer({
       value: {message: '', progress: 0, status: UpdateStatus.DISABLED},
     },
 
-<if expr="chromeos">
+// <if expr="chromeos">
     /** @private */
     hasCheckedForUpdates_: {
       type: Boolean,
@@ -33,12 +33,12 @@ Polymer({
 
     /** @private {?RegulatoryInfo} */
     regulatoryInfo_: Object,
-</if>
+// </if>
 
-<if expr="_google_chrome and is_macosx">
+// <if expr="_google_chrome and is_macosx">
     /** @private {!PromoteUpdaterStatus} */
     promoteUpdaterStatus_: Object,
-</if>
+// </if>
 
     /** @private {!{obsolete: boolean, endOfLine: boolean}} */
     obsoleteSystemInfo_: {
@@ -60,7 +60,7 @@ Polymer({
     /** @private */
     showRelaunch_: Boolean,
 
-<if expr="chromeos">
+// <if expr="chromeos">
     /** @private */
     showRelaunchAndPowerwash_: {
       type: Boolean,
@@ -73,18 +73,18 @@ Polymer({
       type: Boolean,
       computed: 'computeShowCheckUpdates_(currentUpdateStatusEvent_)',
     },
-</if>
+// </if>
   },
 
   observers: [
-<if expr="not chromeos">
+// <if expr="not chromeos">
     'updateShowUpdateStatus_(' +
         'obsoleteSystemInfo_, currentUpdateStatusEvent_)',
     'updateShowRelaunch_(currentUpdateStatusEvent_)',
     'updateShowButtonContainer_(showRelaunch_)',
-</if>
+// </if>
 
-<if expr="chromeos">
+// <if expr="chromeos">
     'updateShowUpdateStatus_(' +
         'obsoleteSystemInfo_, currentUpdateStatusEvent_,' +
         'hasCheckedForUpdates_)',
@@ -92,7 +92,7 @@ Polymer({
         'currentChannel_)',
     'updateShowButtonContainer_(' +
         'showRelaunch_, showRelaunchAndPowerwash_, showCheckUpdates_)',
-</if>
+// </if>
   ],
 
 
@@ -110,7 +110,7 @@ Polymer({
     this.lifetimeBrowserProxy_ =
         settings.LifetimeBrowserProxyImpl.getInstance();
 
-<if expr="chromeos">
+// <if expr="chromeos">
     this.addEventListener('target-channel-changed', function(e) {
       this.targetChannel_ = e.detail;
     }.bind(this));
@@ -124,10 +124,10 @@ Polymer({
     this.aboutBrowserProxy_.getRegulatoryInfo().then(function(info) {
       this.regulatoryInfo_ = info;
     }.bind(this));
-</if>
-<if expr="not chromeos">
+// </if>
+// <if expr="not chromeos">
     this.startListening_();
-</if>
+// </if>
   },
 
   /** @private */
@@ -135,11 +135,11 @@ Polymer({
     this.addWebUIListener(
         'update-status-changed',
         this.onUpdateStatusChanged_.bind(this));
-<if expr="_google_chrome and is_macosx">
+// <if expr="_google_chrome and is_macosx">
     this.addWebUIListener(
         'promotion-state-changed',
         this.onPromoteUpdaterStatusChanged_.bind(this));
-</if>
+// </if>
     this.aboutBrowserProxy_.refreshUpdateStatus();
   },
 
@@ -148,14 +148,14 @@ Polymer({
    * @private
    */
   onUpdateStatusChanged_: function(event) {
-<if expr="chromeos">
+// <if expr="chromeos">
     if (event.status == UpdateStatus.CHECKING)
       this.hasCheckedForUpdates_ = true;
-</if>
+// </if>
     this.currentUpdateStatusEvent_ = event;
   },
 
-<if expr="_google_chrome and is_macosx">
+// <if expr="_google_chrome and is_macosx">
   /**
    * @param {!PromoteUpdaterStatus} status
    * @private
@@ -185,7 +185,7 @@ Polymer({
     // actionable items won't trigger action.
     event.stopPropagation();
   },
-</if>
+// </if>
 
   /** @private */
   onHelpTap_: function() {
@@ -199,14 +199,14 @@ Polymer({
 
   /** @private */
   updateShowUpdateStatus_: function() {
-<if expr="chromeos">
+// <if expr="chromeos">
     // Assume the "updated" status is stale if we haven't checked yet.
     if (this.currentUpdateStatusEvent_.status == UpdateStatus.UPDATED &&
         !this.hasCheckedForUpdates_) {
       this.showUpdateStatus_ = false;
       return;
     }
-</if>
+// </if>
     this.showUpdateStatus_ =
         this.currentUpdateStatusEvent_.status != UpdateStatus.DISABLED &&
         !this.obsoleteSystemInfo_.endOfLine;
@@ -218,24 +218,24 @@ Polymer({
    * @private
    */
   updateShowButtonContainer_: function() {
-<if expr="not chromeos">
+// <if expr="not chromeos">
     this.showButtonContainer_ = this.showRelaunch_;
-</if>
-<if expr="chromeos">
+// </if>
+// <if expr="chromeos">
     this.showButtonContainer_ = this.showRelaunch_ ||
         this.showRelaunchAndPowerwash_ || this.showCheckUpdates_;
-</if>
+// </if>
   },
 
   /** @private */
   updateShowRelaunch_: function() {
-<if expr="not chromeos">
+// <if expr="not chromeos">
     this.showRelaunch_ = this.checkStatus_(UpdateStatus.NEARLY_UPDATED);
-</if>
-<if expr="chromeos">
+// </if>
+// <if expr="chromeos">
     this.showRelaunch_ = this.checkStatus_(UpdateStatus.NEARLY_UPDATED) &&
         !this.isTargetChannelMoreStable_();
-</if>
+// </if>
   },
 
   /**
@@ -247,10 +247,10 @@ Polymer({
       case UpdateStatus.CHECKING:
         return this.i18n('aboutUpgradeCheckStarted');
       case UpdateStatus.NEARLY_UPDATED:
-<if expr="chromeos">
+// <if expr="chromeos">
         if (this.currentChannel_ != this.targetChannel_)
           return this.i18n('aboutUpgradeSuccessChannelSwitch');
-</if>
+// </if>
         return this.i18n('aboutUpgradeRelaunch');
       case UpdateStatus.UPDATED:
         return this.i18n('aboutUpgradeUpToDate');
@@ -258,13 +258,13 @@ Polymer({
         assert(typeof this.currentUpdateStatusEvent_.progress == 'number');
         var progressPercent = this.currentUpdateStatusEvent_.progress + '%';
 
-<if expr="chromeos">
+// <if expr="chromeos">
         if (this.currentChannel_ != this.targetChannel_) {
           return this.i18n('aboutUpgradeUpdatingChannelSwitch',
               this.i18n(settings.browserChannelToI18nId(this.targetChannel_)),
               progressPercent);
         }
-</if>
+// </if>
         if (this.currentUpdateStatusEvent_.progress > 0) {
           // NOTE(dbeam): some platforms (i.e. Mac) always send 0% while
           // updating (they don't support incremental upgrade progress). Though
@@ -331,7 +331,7 @@ Polymer({
     return this.currentUpdateStatusEvent_.status == status;
   },
 
-<if expr="chromeos">
+// <if expr="chromeos">
   /**
    * @return {boolean}
    * @private
@@ -384,7 +384,7 @@ Polymer({
   shouldShowRegulatoryInfo_: function() {
     return this.regulatoryInfo_ !== null;
   },
-</if>
+// </if>
 
   /** @private */
   onProductLogoTap_: function() {
@@ -396,10 +396,10 @@ Polymer({
     });
   },
 
-<if expr="_google_chrome">
+// <if expr="_google_chrome">
   /** @private */
   onReportIssueTap_: function() {
     this.aboutBrowserProxy_.openFeedbackDialog();
   },
-</if>
+// </if>
 });

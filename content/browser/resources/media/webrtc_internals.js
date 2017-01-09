@@ -83,13 +83,13 @@ var PeerConnectionRecord = (function() {
 // will be shifted out when the buffer is full.
 var MAX_STATS_DATA_POINT_BUFFER_SIZE = 1000;
 
-<include src="tab_view.js"/>
-<include src="data_series.js"/>
-<include src="ssrc_info_manager.js"/>
-<include src="stats_graph_helper.js"/>
-<include src="stats_table.js"/>
-<include src="peer_connection_update_table.js"/>
-<include src="dump_creator.js"/>
+// <include src="tab_view.js">
+// <include src="data_series.js">
+// <include src="ssrc_info_manager.js">
+// <include src="stats_graph_helper.js">
+// <include src="stats_table.js">
+// <include src="peer_connection_update_table.js">
+// <include src="dump_creator.js">
 
 
 function initialize() {

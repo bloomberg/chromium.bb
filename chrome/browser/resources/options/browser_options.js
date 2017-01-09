@@ -1229,12 +1229,12 @@ cr.define('options', function() {
             SyncSetupOverlay.startSignIn(false /* creatingSupervisedUser */);
             break;
           case 'signOutAndSignIn':
-<if expr="chromeos">
+// <if expr="chromeos">
             // On Chrome OS, sign out the user and sign in again to get fresh
             // credentials on auth errors.
             SyncSetupOverlay.doSignOutOnAuthError();
-</if>
-<if expr="not chromeos">
+// </if>
+// <if expr="not chromeos">
             if (syncData.signoutAllowed) {
               // Silently sign the user out without deleting their profile and
               // prompt them to sign back in.
@@ -1243,7 +1243,7 @@ cr.define('options', function() {
             } else {
               chrome.send('showDisconnectManagedProfileDialog');
             }
-</if>
+// </if>
             break;
           case 'upgradeClient':
             PageManager.showPageByName('help');

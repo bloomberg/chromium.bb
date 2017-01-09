@@ -22,17 +22,17 @@ function toggleHelpBox() {
 }
 
 function diagnoseErrors() {
-<if expr="not chromeos">
+// <if expr="not chromeos">
     if (window.errorPageController)
       errorPageController.diagnoseErrorsButtonClick();
-</if>
-<if expr="chromeos">
+// </if>
+// <if expr="chromeos">
   var extensionId = 'idddmepepmjcgiedknnmlbadcokidhoa';
   var diagnoseFrame = document.getElementById('diagnose-frame');
   diagnoseFrame.innerHTML =
       '<iframe src="chrome-extension://' + extensionId +
       '/index.html"></iframe>';
-</if>
+// </if>
 }
 
 // Subframes use a different layout but the same html file.  This is to make it
@@ -150,9 +150,9 @@ function setUpCachedButton(buttonStrings) {
 }
 
 var primaryControlOnLeft = true;
-<if expr="is_macosx or is_ios or is_linux or is_android">
+// <if expr="is_macosx or is_ios or is_linux or is_android">
 primaryControlOnLeft = false;
-</if>
+// </if>
 
 function onDocumentLoad() {
   var controlButtonDiv = document.getElementById('control-buttons');

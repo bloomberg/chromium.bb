@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-<include src="../../../../ui/webui/resources/js/cr/ui/focus_row.js">
-<include src="../../../../ui/webui/resources/js/cr/ui/focus_grid.js">
-<include src="../uber/uber_utils.js">
-<include src="drag_and_drop_handler.js">
-<include src="extension_code.js">
-<include src="extension_commands_overlay.js">
-<include src="extension_error_overlay.js">
-<include src="extension_focus_manager.js">
-<include src="focus_row.js">
-<include src="extension_list.js">
-<include src="pack_extension_overlay.js">
-<include src="extension_loader.js">
-<include src="extension_options_overlay.js">
+// <include src="../../../../ui/webui/resources/js/cr/ui/focus_row.js">
+// <include src="../../../../ui/webui/resources/js/cr/ui/focus_grid.js">
+// <include src="../uber/uber_utils.js">
+// <include src="drag_and_drop_handler.js">
+// <include src="extension_code.js">
+// <include src="extension_commands_overlay.js">
+// <include src="extension_error_overlay.js">
+// <include src="extension_focus_manager.js">
+// <include src="focus_row.js">
+// <include src="extension_list.js">
+// <include src="pack_extension_overlay.js">
+// <include src="extension_loader.js">
+// <include src="extension_options_overlay.js">
 
-<if expr="chromeos">
-<include src="chromeos/kiosk_apps.js">
-</if>
+// <if expr="chromeos">
+// <include src="chromeos/kiosk_apps.js">
+// </if>
 
 // Used for observing function of the backend datasource for this page by
 // tests.

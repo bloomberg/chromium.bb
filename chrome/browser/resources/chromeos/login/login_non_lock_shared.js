@@ -8,29 +8,29 @@
  * screen, added it to login_shared.js.
  */
 
-<include src="network_dropdown.js">
+// <include src="network_dropdown.js">
 
-<include src="oobe_screen_reset_confirmation_overlay.js">
-<include src="oobe_screen_reset.js">
-<include src="oobe_screen_autolaunch.js">
-<include src="oobe_screen_enable_kiosk.js">
-<include src="oobe_screen_terms_of_service.js">
-<include src="oobe_screen_user_image.js">
+// <include src="oobe_screen_reset_confirmation_overlay.js">
+// <include src="oobe_screen_reset.js">
+// <include src="oobe_screen_autolaunch.js">
+// <include src="oobe_screen_enable_kiosk.js">
+// <include src="oobe_screen_terms_of_service.js">
+// <include src="oobe_screen_user_image.js">
 
-<include src="screen_app_launch_splash.js">
-<include src="screen_arc_terms_of_service.js">
-<include src="screen_error_message.js">
-<include src="screen_gaia_signin.js">
-<include src="screen_password_changed.js">
-<include src="screen_supervised_user_creation.js">
-<include src="screen_tpm_error.js">
-<include src="screen_wrong_hwid.js">
-<include src="screen_confirm_password.js">
-<include src="screen_fatal_error.js">
-<include src="screen_device_disabled.js">
-<include src="screen_unrecoverable_cryptohome_error.js">
+// <include src="screen_app_launch_splash.js">
+// <include src="screen_arc_terms_of_service.js">
+// <include src="screen_error_message.js">
+// <include src="screen_gaia_signin.js">
+// <include src="screen_password_changed.js">
+// <include src="screen_supervised_user_creation.js">
+// <include src="screen_tpm_error.js">
+// <include src="screen_wrong_hwid.js">
+// <include src="screen_confirm_password.js">
+// <include src="screen_fatal_error.js">
+// <include src="screen_device_disabled.js">
+// <include src="screen_unrecoverable_cryptohome_error.js">
 
-<include src="../../gaia_auth_host/authenticator.js">
+// <include src="../../gaia_auth_host/authenticator.js">
 
 // Register assets for async loading.
 [{

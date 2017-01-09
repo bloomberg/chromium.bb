@@ -42,14 +42,14 @@ Polymer({
          document.documentElement.clientHeight);
     this.style.top = percent *
         (document.documentElement.clientHeight - this.offsetHeight) + 'px';
-<if expr="is_macosx">
+// <if expr="is_macosx">
     // On the Mac, if overlay scrollbars are enabled, prevent them from
     // overlapping the triangle.
     if (window.innerWidth == document.body.scrollWidth)
       this.style.right = '16px';
     else
       this.style.right = '0px';
-</if>
+// </if>
     this.style.opacity = 1;
     clearTimeout(this.timerId);
 

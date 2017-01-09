@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-<include src="saml_handler.js">
+// <include src="saml_handler.js">
 
 /**
  * @fileoverview An UI component to authenciate to Chrome. The component hosts

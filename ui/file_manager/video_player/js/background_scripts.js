@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-<include src="error_util.js">
-<include src="test_util.js">
+// <include src="error_util.js">
+// <include src="test_util.js">
 // The main background script must be at the end.
-<include src="background.js">
+// <include src="background.js">

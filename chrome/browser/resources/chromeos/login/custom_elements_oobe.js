@@ -3,33 +3,33 @@
 // found in the LICENSE file.
 
 // This inclusion is types-only. No actual code to execute.
-<include src="oobe_types.js">
+// <include src="oobe_types.js">
 
 // This inclusion should go before other non-trivial includes, as
 // <{controller,host}-paring-screen> depend of it.
-<include src="oobe-screen.js">
+// <include src="oobe-screen.js">
 
-<include src="controller-pairing-screen.js">
-<include src="gaia_buttons.js">
-<include src="gaia_card.js">
-<include src="gaia_header.js">
-<include src="gaia_input_form.js">
-<include src="gaia_input.js">
-<include src="gaia_password_changed.js">
-<include src="host-pairing-screen.js">
-<include src="html-echo.js">
-<include src="notification_card.js">
-<include src="offline_gaia.js">
-<include src="saml_confirm_password.js">
-<include src="saml_interstitial.js">
-<include src="throbber_notice.js">
-<include src="navigation_bar.js">
-<include src="oobe_a11y_option.js">
-<include src="oobe_buttons.js">
-<include src="oobe_dialog.js">
-<include src="oobe_eula.js">
-<include src="oobe_update.js">
-<include src="oobe_i18n_dropdown.js">
-<include src="oobe_welcome_dialog.js">
-<include src="oobe_welcome.js">
-<include src="offline_ad_login.js">
+// <include src="controller-pairing-screen.js">
+// <include src="gaia_buttons.js">
+// <include src="gaia_card.js">
+// <include src="gaia_header.js">
+// <include src="gaia_input_form.js">
+// <include src="gaia_input.js">
+// <include src="gaia_password_changed.js">
+// <include src="host-pairing-screen.js">
+// <include src="html-echo.js">
+// <include src="notification_card.js">
+// <include src="offline_gaia.js">
+// <include src="saml_confirm_password.js">
+// <include src="saml_interstitial.js">
+// <include src="throbber_notice.js">
+// <include src="navigation_bar.js">
+// <include src="oobe_a11y_option.js">
+// <include src="oobe_buttons.js">
+// <include src="oobe_dialog.js">
+// <include src="oobe_eula.js">
+// <include src="oobe_update.js">
+// <include src="oobe_i18n_dropdown.js">
+// <include src="oobe_welcome_dialog.js">
+// <include src="oobe_welcome.js">
+// <include src="offline_ad_login.js">

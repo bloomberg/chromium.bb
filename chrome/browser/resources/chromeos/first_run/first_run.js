@@ -6,7 +6,7 @@
  * @fileoverview First run UI.
  */
 
-<include src="step.js">
+// <include src="step.js">
 
 // Transitions durations.
 /** @const  */ var DEFAULT_TRANSITION_DURATION_MS = 400;

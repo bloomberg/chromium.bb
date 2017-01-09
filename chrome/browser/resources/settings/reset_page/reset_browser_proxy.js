@@ -43,7 +43,7 @@ cr.define('settings', function() {
      */
     getTriggeredResetToolName: function() {},
 
-<if expr="chromeos">
+// <if expr="chromeos">
     /**
      * A method to be called when the reset powerwash dialog is shown.
      */
@@ -53,7 +53,7 @@ cr.define('settings', function() {
      * Initiates a factory reset and restarts ChromeOS.
      */
     requestFactoryResetRestart: function() {},
-</if>
+// </if>
   };
 
   /**
@@ -104,7 +104,7 @@ cr.define('settings', function() {
       return cr.sendWithPromise('getTriggeredResetToolName');
     },
 
-<if expr="chromeos">
+// <if expr="chromeos">
     /** @override */
     onPowerwashDialogShow: function() {
       chrome.send('onPowerwashDialogShow');
@@ -114,7 +114,7 @@ cr.define('settings', function() {
     requestFactoryResetRestart: function() {
       chrome.send('requestFactoryResetRestart');
     },
-</if>
+// </if>
   };
 
   return {
