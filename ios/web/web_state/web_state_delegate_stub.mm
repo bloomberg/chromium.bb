@@ -9,6 +9,8 @@
 
 @implementation CRWWebStateDelegateStub {
   // Backs up the property with the same name.
+  std::unique_ptr<web::WebState::OpenURLParams> _openURLParams;
+  // Backs up the property with the same name.
   std::unique_ptr<web::ContextMenuParams> _contextMenuParams;
   // Backs up the property with the same name.
   BOOL _javaScriptDialogPresenterRequested;
@@ -16,6 +18,13 @@
 
 @synthesize webState = _webState;
 @synthesize changedProgress = _changedProgress;
+
+- (web::WebState*)webState:(web::WebState*)webState
+         openURLWithParams:(const web::WebState::OpenURLParams&)params {
+  _webState = webState;
+  _openURLParams.reset(new web::WebState::OpenURLParams(params));
+  return webState;
+}
 
 - (void)webState:(web::WebState*)webState didChangeProgress:(double)progress {
   _webState = webState;
@@ -34,6 +43,10 @@
   _webState = webState;
   _javaScriptDialogPresenterRequested = YES;
   return nil;
+}
+
+- (const web::WebState::OpenURLParams*)openURLParams {
+  return _openURLParams.get();
 }
 
 - (web::ContextMenuParams*)contextMenuParams {

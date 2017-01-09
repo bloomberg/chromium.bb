@@ -8,10 +8,12 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/utf_string_conversions.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/web_state/context_menu_params.h"
 #import "ios/web/web_state/web_state_delegate_stub.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/gtest_support.h"
+#include "ui/base/page_transition_types.h"
 
 namespace web {
 
@@ -36,7 +38,32 @@ class WebStateDelegateBridgeTest : public PlatformTest {
 
   base::scoped_nsprotocol<id> delegate_;
   std::unique_ptr<WebStateDelegateBridge> bridge_;
+  web::TestWebState test_web_state_;
 };
+
+// Tests |webState:openURLWithParams:| forwarding.
+TEST_F(WebStateDelegateBridgeTest, OpenURLFromWebState) {
+  ASSERT_FALSE([delegate_ webState]);
+  ASSERT_FALSE([delegate_ openURLParams]);
+
+  web::WebState::OpenURLParams params(
+      GURL("https://chromium.test/"),
+      web::Referrer(GURL("https://chromium2.test/"), ReferrerPolicyNever),
+      WindowOpenDisposition::NEW_WINDOW, ui::PAGE_TRANSITION_FORM_SUBMIT, true);
+  EXPECT_EQ(&test_web_state_,
+            bridge_->OpenURLFromWebState(&test_web_state_, params));
+
+  EXPECT_EQ(&test_web_state_, [delegate_ webState]);
+  const web::WebState::OpenURLParams* result_params = [delegate_ openURLParams];
+  ASSERT_TRUE(result_params);
+  EXPECT_EQ(params.url, result_params->url);
+  EXPECT_EQ(params.referrer.url, result_params->referrer.url);
+  EXPECT_EQ(params.referrer.policy, result_params->referrer.policy);
+  EXPECT_EQ(params.disposition, result_params->disposition);
+  EXPECT_EQ(static_cast<int>(params.transition),
+            static_cast<int>(result_params->transition));
+  EXPECT_EQ(params.is_renderer_initiated, result_params->is_renderer_initiated);
+}
 
 // Tests |LoadProgressChanged| forwarding.
 TEST_F(WebStateDelegateBridgeTest, LoadProgressChanged) {

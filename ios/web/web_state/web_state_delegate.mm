@@ -18,6 +18,12 @@ WebStateDelegate::~WebStateDelegate() {
   DCHECK(attached_states_.empty());
 }
 
+WebState* WebStateDelegate::OpenURLFromWebState(
+    WebState*,
+    const WebState::OpenURLParams&) {
+  return nullptr;
+}
+
 void WebStateDelegate::LoadProgressChanged(WebState*, double) {}
 
 bool WebStateDelegate::HandleContextMenu(WebState*, const ContextMenuParams&) {

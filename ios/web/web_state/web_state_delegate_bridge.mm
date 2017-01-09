@@ -14,6 +14,14 @@ WebStateDelegateBridge::WebStateDelegateBridge(id<CRWWebStateDelegate> delegate)
 
 WebStateDelegateBridge::~WebStateDelegateBridge() {}
 
+WebState* WebStateDelegateBridge::OpenURLFromWebState(
+    WebState* source,
+    const WebState::OpenURLParams& params) {
+  if ([delegate_ respondsToSelector:@selector(webState:openURLWithParams:)])
+    return [delegate_ webState:source openURLWithParams:params];
+  return nullptr;
+}
+
 void WebStateDelegateBridge::LoadProgressChanged(WebState* source,
                                                  double progress) {
   if ([delegate_ respondsToSelector:@selector(webState:didChangeProgress:)])

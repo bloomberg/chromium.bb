@@ -8,18 +8,23 @@
 #include <set>
 
 #include "base/callback.h"
+#import "ios/web/public/web_state/web_state.h"
 
 namespace web {
 
 struct ContextMenuParams;
 class JavaScriptDialogPresenter;
-class WebState;
 
 // Objects implement this interface to get notified about changes in the
 // WebState and to provide necessary functionality.
 class WebStateDelegate {
  public:
   WebStateDelegate();
+
+  // Returns the WebState the URL is opened in, or nullptr if the URL wasn't
+  // opened immediately.
+  virtual WebState* OpenURLFromWebState(WebState*,
+                                        const WebState::OpenURLParams&);
 
   // Notifies the delegate that the page has made some progress loading.
   // |progress| is a value between 0.0 (nothing loaded) to 1.0 (page fully

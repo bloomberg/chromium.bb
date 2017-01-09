@@ -612,7 +612,8 @@ BrowserState* WebStateImpl::GetBrowserState() const {
 void WebStateImpl::OpenURL(const WebState::OpenURLParams& params) {
   DCHECK(Configured());
   ClearTransientContentView();
-  [[web_controller_ delegate] openURLWithParams:params];
+  if (delegate_)
+    delegate_->OpenURLFromWebState(this, params);
 }
 
 void WebStateImpl::Stop() {

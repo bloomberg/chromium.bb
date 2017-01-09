@@ -50,8 +50,6 @@ struct Referrer;
 // Called when the page calls window.close() on itself. Begin the shut-down
 // sequence for this controller.
 - (void)webPageOrderedClose;
-// Opens a URL with the given parameters.
-- (void)openURLWithParams:(const web::WebState::OpenURLParams&)params;
 // Called when an external app needs to be opened, it also passes |linkClicked|
 // to track if this call was a result of user action or not. Returns YES iff
 // |URL| is launched in an external app.

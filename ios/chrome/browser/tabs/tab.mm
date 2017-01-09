@@ -1374,34 +1374,6 @@ void AddNetworkClientFactoryOnIOThread(
   }
 }
 
-- (void)openURLWithParams:(const web::WebState::OpenURLParams&)params {
-  switch (params.disposition) {
-    case WindowOpenDisposition::NEW_FOREGROUND_TAB:
-    case WindowOpenDisposition::NEW_BACKGROUND_TAB:
-      [parentTabModel_
-          insertOrUpdateTabWithURL:params.url
-                          referrer:params.referrer
-                        transition:params.transition
-                        windowName:nil
-                            opener:self
-                       openedByDOM:NO
-                           atIndex:TabModelConstants::kTabPositionAutomatically
-                      inBackground:(params.disposition ==
-                                    WindowOpenDisposition::NEW_BACKGROUND_TAB)];
-      break;
-    case WindowOpenDisposition::CURRENT_TAB: {
-      web::NavigationManager::WebLoadParams loadParams(params.url);
-      loadParams.referrer = params.referrer;
-      loadParams.transition_type = params.transition;
-      loadParams.is_renderer_initiated = params.is_renderer_initiated;
-      self.navigationManager->LoadURLWithParams(loadParams);
-    } break;
-    default:
-      NOTIMPLEMENTED();
-      break;
-  };
-}
-
 - (BOOL)openExternalURL:(const GURL&)url linkClicked:(BOOL)linkClicked {
   if (!externalAppLauncher_.get())
     externalAppLauncher_.reset([[ExternalAppLauncher alloc] init]);

@@ -14,6 +14,11 @@
 @protocol CRWWebStateDelegate<NSObject>
 @optional
 
+// Returns the WebState the URL is opened in, or nullptr if the URL wasn't
+// opened immediately.
+- (web::WebState*)webState:(web::WebState*)webState
+         openURLWithParams:(const web::WebState::OpenURLParams&)params;
+
 // Called when the page has made some progress loading. |progress| is a value
 // between 0.0 (nothing loaded) to 1.0 (page fully loaded).
 - (void)webState:(web::WebState*)webState didChangeProgress:(double)progress;
@@ -41,6 +46,8 @@ class WebStateDelegateBridge : public web::WebStateDelegate {
   ~WebStateDelegateBridge() override;
 
   // web::WebStateDelegate methods.
+  WebState* OpenURLFromWebState(WebState*,
+                                const WebState::OpenURLParams&) override;
   void LoadProgressChanged(WebState* source, double progress) override;
   bool HandleContextMenu(WebState* source,
                          const ContextMenuParams& params) override;

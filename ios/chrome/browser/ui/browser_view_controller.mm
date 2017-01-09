@@ -687,6 +687,8 @@ NSString* const kReadingListSnackbarCategory = @"ReadingListSnackbarCategory";
 - (void)showSnackbar:(NSString*)message;
 // Induces an intentional crash in the browser process.
 - (void)induceBrowserCrash;
+// Returns Tab that corresponds to the given |webState|.
+- (Tab*)tabForWebState:(web::WebState*)webState;
 // Saves the image or display error message, based on privacy settings.
 - (void)managePermissionAndSaveImage:(NSData*)data;
 // Saves the image. In order to keep the metadata of the image, the image is
@@ -2363,6 +2365,37 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
 #pragma mark - CRWWebStateDelegate methods.
 
+- (web::WebState*)webState:(web::WebState*)webState
+         openURLWithParams:(const web::WebState::OpenURLParams&)params {
+  switch (params.disposition) {
+    case WindowOpenDisposition::NEW_FOREGROUND_TAB:
+    case WindowOpenDisposition::NEW_BACKGROUND_TAB: {
+      Tab* tab = [[self tabModel]
+          insertOrUpdateTabWithURL:params.url
+                          referrer:params.referrer
+                        transition:params.transition
+                        windowName:nil
+                            opener:[self tabForWebState:webState]
+                       openedByDOM:NO
+                           atIndex:TabModelConstants::kTabPositionAutomatically
+                      inBackground:(params.disposition ==
+                                    WindowOpenDisposition::NEW_BACKGROUND_TAB)];
+      return tab.webState;
+    }
+    case WindowOpenDisposition::CURRENT_TAB: {
+      web::NavigationManager::WebLoadParams loadParams(params.url);
+      loadParams.referrer = params.referrer;
+      loadParams.transition_type = params.transition;
+      loadParams.is_renderer_initiated = params.is_renderer_initiated;
+      webState->GetNavigationManager()->LoadURLWithParams(loadParams);
+      return webState;
+    }
+    default:
+      NOTIMPLEMENTED();
+      return nullptr;
+  };
+}
+
 - (void)webState:(web::WebState*)webState didChangeProgress:(double)progress {
   if (webState == [_model currentTab].webState) {
     // TODO(crbug.com/546406): It is probably possible to do something smarter,
@@ -3679,6 +3712,14 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
 - (web::WebState*)currentWebState {
   return [[_model currentTab] webState];
+}
+
+- (Tab*)tabForWebState:(web::WebState*)webState {
+  for (Tab* tab in _model.get()) {
+    if (tab.webState == webState)
+      return tab;
+  }
+  return nil;
 }
 
 // This is called from within an animation block.
