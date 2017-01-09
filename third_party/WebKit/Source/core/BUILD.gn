@@ -66,17 +66,6 @@ config("blink_core_pch") {
 
       # Force include the header.
       cflags = [ "/FI$precompiled_header" ]
-
-      # Disable warning for "this file was empty after preprocessing". This
-      # error is generated only in C mode for ANSI compatibility. It conflicts
-      # with precompiled headers since the source file that's "compiled" for
-      # making the precompiled header is empty.
-      #
-      # This error doesn't happen every time. In VS2013, it seems if the .pch
-      # file doesn't exist, no error will be generated (probably MS tested this
-      # case but forgot the other one?). To reproduce this error, do a build,
-      # then delete the precompile.c.obj file, then build again.
-      cflags_c = [ "/wd4206" ]
     }
   }
 }
