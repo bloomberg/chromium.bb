@@ -93,12 +93,16 @@ enum PushUnregistrationReason {
   // Automatic - GCM Store reset due to corruption.
   PUSH_UNREGISTRATION_REASON_GCM_STORE_RESET = 6,
 
+  // Unregistering because the service worker was unregistered.
+  PUSH_UNREGISTRATION_REASON_SERVICE_WORKER_UNREGISTERED = 7,
+
   // NOTE: Do not renumber these as that would confuse interpretation of
   // previously logged data. When making changes, also update the enum list
   // in tools/metrics/histograms/histograms.xml to keep it in sync, and
   // update PUSH_UNREGISTRATION_REASON_LAST below.
 
-  PUSH_UNREGISTRATION_REASON_LAST = PUSH_UNREGISTRATION_REASON_GCM_STORE_RESET
+  PUSH_UNREGISTRATION_REASON_LAST =
+      PUSH_UNREGISTRATION_REASON_SERVICE_WORKER_UNREGISTERED
 };
 
 // Push unregistration success/error codes for internal use & reporting in UMA.

@@ -371,6 +371,7 @@ StoragePartitionImpl::StoragePartitionImpl(
     IndexedDBContextImpl* indexed_db_context,
     CacheStorageContextImpl* cache_storage_context,
     ServiceWorkerContextWrapper* service_worker_context,
+    PushMessagingContext* push_messaging_context,
     storage::SpecialStoragePolicy* special_storage_policy,
     HostZoomLevelContext* host_zoom_level_context,
     PlatformNotificationContextImpl* platform_notification_context,
@@ -386,6 +387,7 @@ StoragePartitionImpl::StoragePartitionImpl(
       indexed_db_context_(indexed_db_context),
       cache_storage_context_(cache_storage_context),
       service_worker_context_(service_worker_context),
+      push_messaging_context_(push_messaging_context),
       special_storage_policy_(special_storage_policy),
       host_zoom_level_context_(host_zoom_level_context),
       platform_notification_context_(platform_notification_context),
@@ -428,6 +430,7 @@ StoragePartitionImpl::~StoragePartitionImpl() {
     GetPaymentAppContext()->Shutdown();
 }
 
+// static
 std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
     BrowserContext* context,
     bool in_memory,
@@ -502,6 +505,9 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy(
       context->GetSpecialStoragePolicy());
 
+  scoped_refptr<PushMessagingContext> push_messaging_context(
+      new PushMessagingContext(context, service_worker_context));
+
   scoped_refptr<HostZoomLevelContext> host_zoom_level_context(
       new HostZoomLevelContext(
           context->CreateZoomLevelDelegate(partition_path)));
@@ -528,9 +534,9 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
           filesystem_context.get(), database_tracker.get(),
           dom_storage_context.get(), indexed_db_context.get(),
           cache_storage_context.get(), service_worker_context.get(),
-          special_storage_policy.get(), host_zoom_level_context.get(),
-          platform_notification_context.get(), background_sync_context.get(),
-          payment_app_context.get(),
+          push_messaging_context.get(), special_storage_policy.get(),
+          host_zoom_level_context.get(), platform_notification_context.get(),
+          background_sync_context.get(), payment_app_context.get(),
           std::move(broadcast_channel_provider)));
 
   service_worker_context->set_storage_partition(storage_partition.get());

@@ -94,6 +94,9 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const GURL& origin,
       bool user_visible) override;
   bool SupportNonVisibleMessages() override;
+  void DidDeleteServiceWorkerRegistration(
+      const GURL& origin,
+      int64_t service_worker_registration_id) override;
 
   // content_settings::Observer implementation.
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
@@ -111,6 +114,8 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   void SetMessageCallbackForTesting(const base::Closure& callback);
   void SetContentSettingChangedCallbackForTesting(
+      const base::Closure& callback);
+  void SetServiceWorkerUnregisteredCallbackForTesting(
       const base::Closure& callback);
 
  private:
@@ -248,6 +253,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   base::Closure message_callback_for_testing_;
   base::Closure content_setting_changed_callback_for_testing_;
+  base::Closure service_worker_unregistered_callback_for_testing_;
 
   PushMessagingNotificationManager notification_manager_;
 

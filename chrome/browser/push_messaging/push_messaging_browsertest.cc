@@ -51,6 +51,7 @@
 #include "components/gcm_driver/instance_id/fake_gcm_driver_for_instance_id.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/push_subscription_options.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -97,6 +98,16 @@ void LegacyRegisterCallback(const base::Closure& done_callback,
   done_callback.Run();
 }
 
+void DidRegister(base::Closure done_callback,
+                 const std::string& registration_id,
+                 const std::vector<uint8_t>& p256dh,
+                 const std::vector<uint8_t>& auth,
+                 content::PushRegistrationStatus status) {
+  EXPECT_EQ(content::PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE,
+            status);
+  done_callback.Run();
+}
+
 }  // namespace
 
 class PushMessagingBrowserTest : public InProcessBrowserTest {
@@ -115,7 +126,6 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
 
     InProcessBrowserTest::SetUp();
   }
-
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // Enable experimental features for subscription restrictions.
     command_line->AppendSwitch(
@@ -212,6 +222,13 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   // Calls should be wrapped in the ASSERT_NO_FATAL_FAILURE() macro.
   void SubscribeSuccessfully(bool use_key = true,
                              std::string* out_token = nullptr);
+
+  // Sets up the state corresponding to a dangling push subscription whose
+  // service worker registration no longer exists. Some users may be left with
+  // such orphaned subscriptions due to service worker unregistrations not
+  // clearing push subscriptions in the past. This allows us to emulate that.
+  // Calls should be wrapped in the ASSERT_NO_FATAL_FAILURE() macro.
+  void SetupOrphanedPushSubscription(std::string* out_app_id);
 
   // Legacy subscribe path using GCMDriver rather than Instance IDs. Only
   // for testing that we maintain support for existing stored registrations.
@@ -320,6 +337,31 @@ void PushMessagingBrowserTest::SubscribeSuccessfully(bool use_key,
   }
 
   ASSERT_NO_FATAL_FAILURE(EndpointToToken(script_result, use_key, out_token));
+}
+
+void PushMessagingBrowserTest::SetupOrphanedPushSubscription(
+    std::string* out_app_id) {
+  ASSERT_NO_FATAL_FAILURE(RequestAndAcceptPermission());
+  GURL requesting_origin = https_server()->GetURL("/").GetOrigin();
+  // Use 1234LL as it's unlikely to collide with an active service worker
+  // registration id (they increment from 0).
+  const int64_t service_worker_registration_id = 1234LL;
+
+  content::PushSubscriptionOptions options;
+  options.user_visible_only = true;
+  options.sender_info = GetTestApplicationServerKey();
+  base::RunLoop run_loop;
+  push_service()->SubscribeFromWorker(
+      requesting_origin, service_worker_registration_id, options,
+      base::Bind(&DidRegister, run_loop.QuitClosure()));
+  run_loop.Run();
+
+  PushMessagingAppIdentifier app_identifier =
+      PushMessagingAppIdentifier::FindByServiceWorker(
+          GetBrowser()->profile(), requesting_origin,
+          service_worker_registration_id);
+  ASSERT_FALSE(app_identifier.is_null());
+  *out_app_id = app_identifier.app_id();
 }
 
 void PushMessagingBrowserTest::LegacySubscribeSuccessfully(
@@ -1026,34 +1068,14 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, LegacyPushEvent) {
   EXPECT_EQ("[NULL]", script_result);
 }
 
+// Some users may have gotten into a state in the past where they still have
+// a subscription even though the service worker was unregistered.
+// Emulate this and test a push message triggers unsubscription.
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoServiceWorker) {
-  std::string script_result;
+  std::string app_id;
+  ASSERT_NO_FATAL_FAILURE(SetupOrphanedPushSubscription(&app_id));
 
-  ASSERT_NO_FATAL_FAILURE(SubscribeSuccessfully());
-  PushMessagingAppIdentifier app_identifier =
-      GetAppIdentifierForServiceWorkerRegistration(0LL);
-
-  LoadTestPage();  // Reload to become controlled.
-  ASSERT_TRUE(RunScript("isControlled()", &script_result));
-  ASSERT_EQ("true - is controlled", script_result);
-
-  // Unregister service worker. Sending a message should now fail.
-  ASSERT_TRUE(RunScript("unregisterServiceWorker()", &script_result));
-  ASSERT_EQ("service worker unregistration status: true", script_result);
-  // Ideally unregistering the service worker would unsubscribe from push, but
-  // that isn't yet implemented (crbug.com/402458).
-  histogram_tester_.ExpectTotalCount("PushMessaging.UnregistrationReason", 0);
-  // Since unregistering the service worker doesn't yet unsubscribe from push,
-  // and FindByServiceWorker doesn't require a live SW, we can still lookup the
-  // push subscription's app identifier.
-  GURL origin = https_server()->GetURL("/").GetOrigin();
-  PushMessagingAppIdentifier app_identifier2 =
-      PushMessagingAppIdentifier::FindByServiceWorker(
-          GetBrowser()->profile(), origin,
-          0LL /* service_worker_registration_id */);
-  EXPECT_FALSE(app_identifier2.is_null());
-  EXPECT_EQ(app_identifier.app_id(), app_identifier2.app_id());
-
+  // Try to send a push message.
   gcm::IncomingMessage message;
   message.sender_id = GetTestApplicationServerKey();
   message.raw_data = "testdata";
@@ -1062,12 +1084,13 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoServiceWorker) {
   base::RunLoop run_loop;
   push_service()->SetMessageCallbackForTesting(run_loop.QuitClosure());
   EXPECT_TRUE(IsRegisteredKeepAliveEqualTo(false));
-  push_service()->OnMessage(app_identifier.app_id(), message);
+  push_service()->OnMessage(app_id, message);
   EXPECT_TRUE(IsRegisteredKeepAliveEqualTo(true));
   run_loop.Run();
   EXPECT_TRUE(IsRegisteredKeepAliveEqualTo(false));
 
   // No push data should have been received.
+  std::string script_result;
   ASSERT_TRUE(RunScript("resultQueue.popImmediately()", &script_result));
   EXPECT_EQ("null", script_result);
 
@@ -1082,15 +1105,15 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoServiceWorker) {
       content::PUSH_DELIVERY_STATUS_NO_SERVICE_WORKER, 1);
 
   // Missing Service Workers should trigger an automatic unsubscription attempt.
-  EXPECT_EQ(app_identifier.app_id(), gcm_driver_->last_deletetoken_app_id());
-  PushMessagingAppIdentifier app_identifier3 =
-      PushMessagingAppIdentifier::FindByServiceWorker(
-          GetBrowser()->profile(), origin,
-          0LL /* service_worker_registration_id */);
-  EXPECT_TRUE(app_identifier3.is_null());
+  EXPECT_EQ(app_id, gcm_driver_->last_deletetoken_app_id());
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.UnregistrationReason",
       content::PUSH_UNREGISTRATION_REASON_DELIVERY_NO_SERVICE_WORKER, 1);
+
+  // |app_identifier| should no longer be stored in prefs.
+  PushMessagingAppIdentifier stored_app_identifier =
+      PushMessagingAppIdentifier::FindByAppId(GetBrowser()->profile(), app_id);
+  EXPECT_TRUE(stored_app_identifier.is_null());
 }
 
 // Tests receiving messages for a subscription that no longer exists.
@@ -1527,8 +1550,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, UnsubscribeSuccess) {
   // errors (should deactivate subscription locally anyway).
 
   // Unsubscribing (with an existing reference to a PushSubscription), after
-  // replacing the Service Worker, actually still works, since we don't yet
-  // auto-unsubscribe when a Service Worker is unregistered (crbug.com/402458).
+  // replacing the Service Worker, actually still works, as the Service Worker
+  // registration is unchanged.
   std::string token2;
   ASSERT_NO_FATAL_FAILURE(SubscribeSuccessfully(false /* use_key */, &token2));
   EXPECT_NE(token1, token2);
@@ -1543,21 +1566,31 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, UnsubscribeSuccess) {
       content::PUSH_UNREGISTRATION_REASON_JAVASCRIPT_API, 3);
 
   // Unsubscribing (with an existing reference to a PushSubscription), after
-  // unregistering the Service Worker, actually still works, since we don't yet
-  // auto-unsubscribe when a Service Worker is unregistered (crbug.com/402458).
+  // unregistering the Service Worker, should fail.
   std::string token3;
   ASSERT_NO_FATAL_FAILURE(SubscribeSuccessfully(false /* use_key */, &token3));
   EXPECT_NE(token1, token3);
   EXPECT_NE(token2, token3);
   ASSERT_TRUE(RunScript("storePushSubscription()", &script_result));
   EXPECT_EQ("ok - stored", script_result);
+
+  // Unregister service worker and wait for callback.
+  base::RunLoop run_loop;
+  push_service()->SetServiceWorkerUnregisteredCallbackForTesting(
+      run_loop.QuitClosure());
   ASSERT_TRUE(RunScript("unregisterServiceWorker()", &script_result));
   EXPECT_EQ("service worker unregistration status: true", script_result);
-  ASSERT_TRUE(RunScript("unsubscribeStoredPushSubscription()", &script_result));
-  EXPECT_EQ("unsubscribe result: true", script_result);
-  histogram_tester_.ExpectUniqueSample(
+  run_loop.Run();
+
+  // Unregistering should have triggered an automatic unsubscribe.
+  histogram_tester_.ExpectBucketCount(
       "PushMessaging.UnregistrationReason",
-      content::PUSH_UNREGISTRATION_REASON_JAVASCRIPT_API, 4);
+      content::PUSH_UNREGISTRATION_REASON_SERVICE_WORKER_UNREGISTERED, 1);
+  histogram_tester_.ExpectTotalCount("PushMessaging.UnregistrationReason", 4);
+
+  // Now manual unsubscribe should return false.
+  ASSERT_TRUE(RunScript("unsubscribeStoredPushSubscription()", &script_result));
+  EXPECT_EQ("unsubscribe result: false", script_result);
 }
 
 // Push subscriptions used to be non-InstanceID GCM registrations. Still need
@@ -1614,8 +1647,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, LegacyUnsubscribeSuccess) {
       content::PUSH_UNREGISTRATION_REASON_JAVASCRIPT_API, 4);
 
   // Unsubscribing (with an existing reference to a PushSubscription), after
-  // replacing the Service Worker, actually still works, since we don't yet
-  // auto-unsubscribe when a Service Worker is unregistered (crbug.com/402458).
+  // replacing the Service Worker, actually still works, as the Service Worker
+  // registration is unchanged.
   std::string subscription_id4;
   ASSERT_NO_FATAL_FAILURE(LegacySubscribeSuccessfully(&subscription_id4));
   EXPECT_NE(subscription_id1, subscription_id4);
@@ -1632,8 +1665,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, LegacyUnsubscribeSuccess) {
       content::PUSH_UNREGISTRATION_REASON_JAVASCRIPT_API, 5);
 
   // Unsubscribing (with an existing reference to a PushSubscription), after
-  // unregistering the Service Worker, actually still works, since we don't yet
-  // auto-unsubscribe when a Service Worker is unregistered (crbug.com/402458).
+  // unregistering the Service Worker, should fail.
   std::string subscription_id5;
   ASSERT_NO_FATAL_FAILURE(LegacySubscribeSuccessfully(&subscription_id5));
   EXPECT_NE(subscription_id1, subscription_id5);
@@ -1642,13 +1674,56 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, LegacyUnsubscribeSuccess) {
   EXPECT_NE(subscription_id4, subscription_id5);
   ASSERT_TRUE(RunScript("storePushSubscription()", &script_result));
   EXPECT_EQ("ok - stored", script_result);
+
+  // Unregister service worker and wait for callback.
+  base::RunLoop run_loop;
+  push_service()->SetServiceWorkerUnregisteredCallbackForTesting(
+      run_loop.QuitClosure());
   ASSERT_TRUE(RunScript("unregisterServiceWorker()", &script_result));
   EXPECT_EQ("service worker unregistration status: true", script_result);
+  run_loop.Run();
+
+  // Unregistering should have triggered an automatic unsubscribe.
+  histogram_tester_.ExpectBucketCount(
+      "PushMessaging.UnregistrationReason",
+      content::PUSH_UNREGISTRATION_REASON_SERVICE_WORKER_UNREGISTERED, 1);
+  histogram_tester_.ExpectTotalCount("PushMessaging.UnregistrationReason", 6);
+
+  // Now manual unsubscribe should return false.
   ASSERT_TRUE(RunScript("unsubscribeStoredPushSubscription()", &script_result));
-  EXPECT_EQ("unsubscribe result: true", script_result);
+  EXPECT_EQ("unsubscribe result: false", script_result);
+}
+
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
+                       UnregisteringServiceWorkerUnsubscribes) {
+  std::string script_result;
+
+  ASSERT_NO_FATAL_FAILURE(SubscribeSuccessfully());
+
+  LoadTestPage();  // Reload to become controlled.
+  ASSERT_TRUE(RunScript("isControlled()", &script_result));
+  ASSERT_EQ("true - is controlled", script_result);
+
+  // Unregister the worker, and wait for callback to complete.
+  base::RunLoop run_loop;
+  push_service()->SetServiceWorkerUnregisteredCallbackForTesting(
+      run_loop.QuitClosure());
+  ASSERT_TRUE(RunScript("unregisterServiceWorker()", &script_result));
+  ASSERT_EQ("service worker unregistration status: true", script_result);
+  run_loop.Run();
+
+  // This should have unregistered the push subscription.
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.UnregistrationReason",
-      content::PUSH_UNREGISTRATION_REASON_JAVASCRIPT_API, 6);
+      content::PUSH_UNREGISTRATION_REASON_SERVICE_WORKER_UNREGISTERED, 1);
+
+  // We should not be able to look up the app id.
+  GURL origin = https_server()->GetURL("/").GetOrigin();
+  PushMessagingAppIdentifier app_identifier =
+      PushMessagingAppIdentifier::FindByServiceWorker(
+          GetBrowser()->profile(), origin,
+          0LL /* service_worker_registration_id */);
+  EXPECT_TRUE(app_identifier.is_null());
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
@@ -1942,19 +2017,13 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 }
 
 // Checks automatically unsubscribing due to a revoked permission after
-// previously clearing site data.
-IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
-                       ResetPushPermissionAfterClearingSiteData) {
-  std::string script_result;
-
-  ASSERT_NO_FATAL_FAILURE(SubscribeSuccessfully());
-
-  PushMessagingAppIdentifier app_identifier =
-      GetAppIdentifierForServiceWorkerRegistration(0LL);
-  PushMessagingAppIdentifier stored_app_identifier =
-      PushMessagingAppIdentifier::FindByAppId(GetBrowser()->profile(),
-                                              app_identifier.app_id());
-  EXPECT_FALSE(stored_app_identifier.is_null());
+// previously clearing site data, under legacy conditions (ie. when
+// unregistering a worker did not unsubscribe from push.)
+IN_PROC_BROWSER_TEST_F(
+    PushMessagingBrowserTest,
+    ResetPushPermissionAfterClearingSiteDataUnderLegacyConditions) {
+  std::string app_id;
+  ASSERT_NO_FATAL_FAILURE(SetupOrphanedPushSubscription(&app_id));
 
   // Simulate a user clearing site data (including Service Workers, crucially).
   BrowsingDataRemover* remover =
@@ -1968,7 +2037,6 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   base::RunLoop run_loop;
   push_service()->SetContentSettingChangedCallbackForTesting(
       run_loop.QuitClosure());
-
   // This shouldn't (asynchronously) cause a DCHECK.
   // TODO(johnme): Get this test running on Android with legacy GCM
   // registrations, which have a different codepath due to sender_id being
@@ -1979,14 +2047,15 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   run_loop.Run();
 
   // |app_identifier| should no longer be stored in prefs.
-  PushMessagingAppIdentifier stored_app_identifier2 =
-      PushMessagingAppIdentifier::FindByAppId(GetBrowser()->profile(),
-                                              app_identifier.app_id());
-  EXPECT_TRUE(stored_app_identifier2.is_null());
+  PushMessagingAppIdentifier stored_app_identifier =
+      PushMessagingAppIdentifier::FindByAppId(GetBrowser()->profile(), app_id);
+  EXPECT_TRUE(stored_app_identifier.is_null());
 
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.UnregistrationReason",
       content::PUSH_UNREGISTRATION_REASON_PERMISSION_REVOKED, 1);
+  // Revoked permission should trigger an automatic unsubscription attempt.
+  EXPECT_EQ(app_id, gcm_driver_->last_deletetoken_app_id());
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, EncryptionKeyUniqueness) {

@@ -27,6 +27,8 @@ const uint8_t kTestP256Key[] = {
   0x7F, 0xF2, 0x76, 0xB6, 0x01, 0x20, 0xD8, 0x35, 0xA5, 0xD9, 0x3C, 0x43, 0xFD
 };
 
+const int64_t kInvalidServiceWorkerRegistrationId = -1LL;
+
 static_assert(sizeof(kTestP256Key) == 65,
               "The fake public key must be a valid P-256 uncompressed point.");
 
@@ -55,8 +57,9 @@ blink::WebPushPermissionStatus ToWebPushPermissionStatus(
 
 }  // anonymous namespace
 
-LayoutTestPushMessagingService::LayoutTestPushMessagingService() {
-}
+LayoutTestPushMessagingService::LayoutTestPushMessagingService()
+    : subscribed_service_worker_registration_(
+          kInvalidServiceWorkerRegistrationId) {}
 
 LayoutTestPushMessagingService::~LayoutTestPushMessagingService() {
 }
@@ -89,7 +92,7 @@ void LayoutTestPushMessagingService::SubscribeFromWorker(
     std::vector<uint8_t> auth(
         kAuthentication, kAuthentication + arraysize(kAuthentication));
 
-    is_subscribed_ = true;
+    subscribed_service_worker_registration_ = service_worker_registration_id;
     callback.Run("layoutTestRegistrationId", p256dh, auth,
                  PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE);
   } else {
@@ -134,10 +137,25 @@ void LayoutTestPushMessagingService::Unsubscribe(
       LayoutTestContentBrowserClient::Get()->browser_context(),
       requesting_origin, service_worker_registration_id,
       base::Bind(callback,
-                 is_subscribed_
+                 service_worker_registration_id ==
+                         subscribed_service_worker_registration_
                      ? PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTERED
                      : PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED));
-  is_subscribed_ = false;
+  if (service_worker_registration_id ==
+      subscribed_service_worker_registration_) {
+    subscribed_service_worker_registration_ =
+        kInvalidServiceWorkerRegistrationId;
+  }
+}
+
+void LayoutTestPushMessagingService::DidDeleteServiceWorkerRegistration(
+    const GURL& origin,
+    int64_t service_worker_registration_id) {
+  if (service_worker_registration_id ==
+      subscribed_service_worker_registration_) {
+    subscribed_service_worker_registration_ =
+        kInvalidServiceWorkerRegistrationId;
+  }
 }
 
 }  // namespace content

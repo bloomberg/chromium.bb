@@ -94,6 +94,12 @@ class CONTENT_EXPORT PushMessagingService {
   // permission check behaviour.
   virtual bool SupportNonVisibleMessages() = 0;
 
+  // Unsubscribes the push subscription associated with this service worker
+  // registration, if such a push subscription exists.
+  virtual void DidDeleteServiceWorkerRegistration(
+      const GURL& origin,
+      int64_t service_worker_registration_id) = 0;
+
  protected:
   static void GetSenderId(BrowserContext* browser_context,
                           const GURL& origin,

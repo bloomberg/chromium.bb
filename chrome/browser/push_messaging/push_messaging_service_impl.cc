@@ -775,7 +775,8 @@ void PushMessagingServiceImpl::DidClearPushSubscriptionId(
                               was_subscribed, callback));
 #if defined(OS_ANDROID)
     // On Android the backend is different, and requires the original sender_id.
-    // UnsubscribeBecausePermissionRevoked sometimes calls us with an empty one.
+    // UnsubscribeBecausePermissionRevoked and
+    // DidDeleteServiceWorkerRegistration sometimes call us with an empty one.
     if (sender_id.empty()) {
       unregister_callback.Run(gcm::GCMClient::INVALID_PARAMETER);
     } else {
@@ -820,6 +821,37 @@ void PushMessagingServiceImpl::DidUnsubscribe(
     callback.Run(
         content::PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED);
   }
+}
+
+// DidDeleteServiceWorkerRegistration methods ----------------------------------
+
+void PushMessagingServiceImpl::DidDeleteServiceWorkerRegistration(
+    const GURL& origin,
+    int64_t service_worker_registration_id) {
+  const PushMessagingAppIdentifier& app_identifier =
+      PushMessagingAppIdentifier::FindByServiceWorker(
+          profile_, origin, service_worker_registration_id);
+  if (app_identifier.is_null()) {
+    if (!service_worker_unregistered_callback_for_testing_.is_null())
+      service_worker_unregistered_callback_for_testing_.Run();
+    return;
+  }
+  // Note this will not fully unsubscribe pre-InstanceID subscriptions on
+  // Android from GCM, as that requires a sender_id. (Ideally we'd fetch it
+  // from the SWDB in some "before_unregistered" SWObserver event.)
+  UnsubscribeInternal(
+      content::PUSH_UNREGISTRATION_REASON_SERVICE_WORKER_UNREGISTERED, origin,
+      service_worker_registration_id, app_identifier.app_id(),
+      std::string() /* sender_id */,
+      base::Bind(&UnregisterCallbackToClosure,
+                 service_worker_unregistered_callback_for_testing_.is_null()
+                     ? base::Bind(&base::DoNothing)
+                     : service_worker_unregistered_callback_for_testing_));
+}
+
+void PushMessagingServiceImpl::SetServiceWorkerUnregisteredCallbackForTesting(
+    const base::Closure& callback) {
+  service_worker_unregistered_callback_for_testing_ = callback;
 }
 
 // OnContentSettingChanged methods ---------------------------------------------

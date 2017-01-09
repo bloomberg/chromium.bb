@@ -987,6 +987,8 @@ source_set("browser") {
     "profiler_controller_impl.h",
     "profiler_message_filter.cc",
     "profiler_message_filter.h",
+    "push_messaging/push_messaging_context.cc",
+    "push_messaging/push_messaging_context.h",
     "push_messaging/push_messaging_message_filter.cc",
     "push_messaging/push_messaging_message_filter.h",
     "push_messaging/push_messaging_router.cc",
