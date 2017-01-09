@@ -14,12 +14,12 @@
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 
-// A convenience macro to call arc::InstanceHolder<T>::GetInstanceForVersion().
+// A macro to call InstanceHolder<T>::GetInstanceForVersionDoNotCallDirectly().
 // In order to avoid exposing method names from within the Mojo bindings, we
 // will rely on stringification and the fact that the method min versions have a
 // consistent naming scheme.
 #define ARC_GET_INSTANCE_FOR_METHOD(holder, method_name)        \
-  (holder)->GetInstanceForVersion(                              \
+  (holder)->GetInstanceForVersionDoNotCallDirectly(             \
       std::remove_pointer<decltype(                             \
           holder)>::type::Instance::k##method_name##MinVersion, \
       #method_name)
@@ -60,8 +60,9 @@ class InstanceHolder {
   // not have the requested version, and logs appropriately.
   // This function should not be called directly. Instead, use the
   // ARC_GET_INSTANCE_FOR_METHOD() macro.
-  T* GetInstanceForVersion(uint32_t min_version,
-                           const char method_name_for_logging[]) {
+  T* GetInstanceForVersionDoNotCallDirectly(
+      uint32_t min_version,
+      const char method_name_for_logging[]) {
     if (!instance_) {
       VLOG(1) << "Instance for " << T::Name_ << "::" << method_name_for_logging
               << " not available.";
