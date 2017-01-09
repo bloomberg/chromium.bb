@@ -131,6 +131,11 @@ void ContentSuggestionsService::ClearHistory(
     provider->ClearHistory(begin, end, filter);
   }
   category_ranker_->ClearHistory(begin, end);
+  // This potentially removed personalized data which we shouldn't display
+  // anymore.
+  for (Observer& observer : observers_) {
+    observer.OnFullRefreshRequired();
+  }
 }
 
 void ContentSuggestionsService::ClearAllCachedSuggestions() {
@@ -337,28 +342,22 @@ void ContentSuggestionsService::OnURLsDeleted(
     return;
   }
 
-  // Redirect to ClearHistory().
   if (all_history) {
-    base::Time begin = base::Time();
-    base::Time end = base::Time::Max();
     base::Callback<bool(const GURL& url)> filter =
         base::Bind([](const GURL& url) { return true; });
-    ClearHistory(begin, end, filter);
+    ClearHistory(base::Time(), base::Time::Max(), filter);
   } else {
-    if (deleted_rows.empty()) {
+    // If a user deletes a single URL, we don't consider this a clear user
+    // intend to clear our data.
+    // TODO(tschumann): Single URL deletions should be handled on a case-by-case
+    // basis. However this depends on the provider's details and thus cannot be
+    // done here. Introduce a OnURLsDeleted() method on the providers to move
+    // this decision further down.
+    if (deleted_rows.size() < 2) {
       return;
     }
-
-    base::Time begin = deleted_rows[0].last_visit();
-    base::Time end = deleted_rows[0].last_visit();
     std::set<GURL> deleted_urls;
     for (const history::URLRow& row : deleted_rows) {
-      if (row.last_visit() < begin) {
-        begin = row.last_visit();
-      }
-      if (row.last_visit() > end) {
-        end = row.last_visit();
-      }
       deleted_urls.insert(row.url());
     }
     base::Callback<bool(const GURL& url)> filter = base::Bind(
@@ -366,7 +365,10 @@ void ContentSuggestionsService::OnURLsDeleted(
           return set.count(url) != 0;
         },
         deleted_urls);
-    ClearHistory(begin, end, filter);
+    // We usually don't have any time-related information (the URLRow objects
+    // usually don't provide a |last_visit()| timestamp. Hence we simply clear
+    // the whole history for the selected URLs.
+    ClearHistory(base::Time(), base::Time::Max(), filter);
   }
 }
 

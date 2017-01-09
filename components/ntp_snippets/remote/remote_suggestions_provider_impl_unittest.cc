@@ -371,9 +371,7 @@ class FakeContentSuggestionsProviderObserver
 
   CategoryStatus StatusForCategory(Category category) const {
     auto it = statuses_.find(category);
-    if (it == statuses_.end()) {
-      return CategoryStatus::NOT_PROVIDED;
-    }
+    EXPECT_THAT(it, Not(Eq(statuses_.end())));
     return it->second;
   }
 
@@ -1015,6 +1013,46 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest,
+       ClearHistoryShouldDeleteArchivedSnippets) {
+  auto service = MakeSnippetsService(/*set_empty_response=*/false);
+  // First get suggestions into the archived state which happens through
+  // subsequent fetches. Then we verify the entries are gone from the 'archived'
+  // state by trying to load their images (and we shouldn't even know the URLs
+  // anymore).
+  LoadFromJSONString(service.get(),
+                     GetTestJson({GetSnippetWithUrl("http://id-1"),
+                                  GetSnippetWithUrl("http://id-2")}));
+  LoadFromJSONString(service.get(),
+                     GetTestJson({GetSnippetWithUrl("http://new-id-1"),
+                                  GetSnippetWithUrl("http://new-id-2")}));
+  // Make sure images of both batches are available. This is to sanity check our
+  // assumptions for the test are right.
+  ServeImageCallback cb =
+      base::Bind(&ServeOneByOneImage, &service->GetImageFetcherForTesting());
+  EXPECT_CALL(*image_fetcher(), StartOrQueueNetworkRequest(_, _, _))
+      .Times(2)
+      .WillRepeatedly(WithArgs<0, 2>(Invoke(&cb, &ServeImageCallback::Run)));
+  image_decoder()->SetDecodedImage(gfx::test::CreateImage(1, 1));
+  gfx::Image image = FetchImage(service.get(), MakeArticleID("http://id-1"));
+  ASSERT_FALSE(image.IsEmpty());
+  ASSERT_EQ(1, image.Width());
+  image = FetchImage(service.get(), MakeArticleID("http://new-id-1"));
+  ASSERT_FALSE(image.IsEmpty());
+  ASSERT_EQ(1, image.Width());
+
+  service->ClearHistory(base::Time::UnixEpoch(), base::Time::Max(),
+                        base::Callback<bool(const GURL& url)>());
+
+  // Make sure images of both batches are gone.
+  // Verify we cannot resolve the image of the new snippets.
+  image_decoder()->SetDecodedImage(gfx::test::CreateImage(1, 1));
+  EXPECT_TRUE(
+      FetchImage(service.get(), MakeArticleID("http://id-1")).IsEmpty());
+  EXPECT_TRUE(
+      FetchImage(service.get(), MakeArticleID("http://new-id-1")).IsEmpty());
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
        TestMergingFetchedMoreSnippetsReplaceAll) {
   auto service = MakeSnippetsService(/*set_empty_response=*/false);
   LoadFromJSONString(
@@ -1611,7 +1649,8 @@ TEST_F(RemoteSuggestionsProviderImplTest, ClearHistoryRemovesAllSuggestions) {
   ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(2));
 
   service->DismissSuggestion(MakeArticleID("http://url1.com"));
-  ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
+  ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
+              Not(IsEmpty()));
   ASSERT_THAT(service->GetDismissedSnippetsForTesting(articles_category()),
               SizeIs(1));
 
@@ -1620,9 +1659,26 @@ TEST_F(RemoteSuggestionsProviderImplTest, ClearHistoryRemovesAllSuggestions) {
   base::Callback<bool(const GURL& url)> filter;
   service->ClearHistory(begin, end, filter);
 
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
+  // Verify that the observer received the update with the empty data as well.
+  EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
+              IsEmpty());
   EXPECT_THAT(service->GetDismissedSnippetsForTesting(articles_category()),
               IsEmpty());
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       ShouldKeepArticlesCategoryAvailableAfterClearHistory) {
+  // If the provider marks that category as NOT_PROVIDED, then it won't be shown
+  // at all in the UI and the user cannot load new data :-/.
+  auto service = MakeSnippetsService();
+
+  ASSERT_THAT(observer().StatusForCategory(articles_category()),
+              Eq(CategoryStatus::AVAILABLE));
+  service->ClearHistory(base::Time::UnixEpoch(), base::Time::Max(),
+                        base::Callback<bool(const GURL& url)>());
+
+  EXPECT_THAT(observer().StatusForCategory(articles_category()),
+              Eq(CategoryStatus::AVAILABLE));
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest,

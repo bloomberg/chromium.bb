@@ -56,8 +56,9 @@ const char kCategoryContentAllowFetchingMore[] = "allow_fetching_more";
 // TODO(treib): Remove after M57.
 const char kDeprecatedSnippetHostsPref[] = "ntp_snippets.hosts";
 
+template<typename SnippetPtrContainer>
 std::unique_ptr<std::vector<std::string>> GetSnippetIDVector(
-    const NTPSnippet::PtrVector& snippets) {
+    const SnippetPtrContainer& snippets) {
   auto result = base::MakeUnique<std::vector<std::string>>();
   for (const auto& snippet : snippets) {
     result->push_back(snippet->id());
@@ -456,6 +457,8 @@ void RemoteSuggestionsProviderImpl::ClearHistory(
   // because it is not known which history entries were used for the suggestions
   // personalization.
   if (!ready()) {
+    // No need to refresh the UI afterwards as we didn't provide any data to the
+    // UI so far.
     nuke_when_initialized_ = true;
   } else {
     NukeAllSnippets();
@@ -472,16 +475,18 @@ void RemoteSuggestionsProviderImpl::ClearCachedSuggestions(Category category) {
     return;
   }
   CategoryContent* content = &content_it->second;
-  if (content->snippets.empty()) {
-    return;
+  // TODO(tschumann): We do the unnecessary checks for .empty() in many places
+  // before calling database methods. Change the RemoteSuggestionsDatabase to
+  // return early for those and remove the many if statements in this file.
+  if (!content->snippets.empty()) {
+    database_->DeleteSnippets(GetSnippetIDVector(content->snippets));
+    database_->DeleteImages(GetSnippetIDVector(content->snippets));
+    content->snippets.clear();
   }
-
-  database_->DeleteSnippets(GetSnippetIDVector(content->snippets));
-  database_->DeleteImages(GetSnippetIDVector(content->snippets));
-  content->snippets.clear();
-
-  if (IsCategoryStatusAvailable(content->status)) {
-    NotifyNewSuggestions(category, *content);
+  if (!content->archived.empty()) {
+    database_->DeleteSnippets(GetSnippetIDVector(content->archived));
+    database_->DeleteImages(GetSnippetIDVector(content->archived));
+    content->archived.clear();
   }
 }
 
@@ -880,26 +885,17 @@ void RemoteSuggestionsProviderImpl::ClearOrphanedImages() {
 }
 
 void RemoteSuggestionsProviderImpl::NukeAllSnippets() {
-  std::vector<Category> categories_to_erase;
-
-  // Empty the ARTICLES category and remove all others, since they may or may
-  // not be personalized.
   for (const auto& item : category_contents_) {
     Category category = item.first;
+    const CategoryContent& content = item.second;
 
     ClearCachedSuggestions(category);
-    ClearDismissedSuggestionsForDebugging(category);
-
-    UpdateCategoryStatus(category, CategoryStatus::NOT_PROVIDED);
-
-    // Remove the category entirely; it may or may not reappear.
-    if (category != articles_category_) {
-      categories_to_erase.push_back(category);
+    // Update listeners about the new (empty) state.
+    if (IsCategoryStatusAvailable(content.status)) {
+      NotifyNewSuggestions(category, content);
     }
-  }
-
-  for (Category category : categories_to_erase) {
-    category_contents_.erase(category);
+    // TODO(tschumann): We should not call debug code from production code.
+    ClearDismissedSuggestionsForDebugging(category);
   }
 
   StoreCategoriesToPrefs();

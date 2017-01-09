@@ -152,14 +152,11 @@ void BookmarkSuggestionsProvider::ClearHistory(
   // The last visit dates are not "owned" by the bookmark suggestion provider so
   // it is cleared directly from browsing_data_remover.cc.
   ClearDismissedSuggestionsForDebugging(provided_category_);
+  // TODO(tschumann): Before re-fetching bookmarks we need to trigger a clean-up
+  // of the last-visit dates -- otherwise we depend on the order in which the
+  // ClearHistory events are done and might just pick-up to-be-deleted data
+  // again.
   FetchBookmarks();
-  // Temporarily enter an "explicitly disabled" state, so that any open UIs
-  // will clear the suggestions too.
-  if (category_status_ != CategoryStatus::CATEGORY_EXPLICITLY_DISABLED) {
-    CategoryStatus old_category_status = category_status_;
-    NotifyStatusChanged(CategoryStatus::CATEGORY_EXPLICITLY_DISABLED);
-    NotifyStatusChanged(old_category_status);
-  }
 }
 
 void BookmarkSuggestionsProvider::ClearCachedSuggestions(Category category) {
