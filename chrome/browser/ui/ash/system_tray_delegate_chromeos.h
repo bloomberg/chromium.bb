@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "ash/common/accessibility_types.h"
-#include "ash/common/session/session_state_observer.h"
 #include "ash/common/system/chromeos/supervised/custodian_info_tray_observer.h"
 #include "ash/common/system/tray/ime_info.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
@@ -59,7 +58,6 @@ class SystemTrayDelegateChromeOS
       public input_method::InputMethodManager::Observer,
       public device::BluetoothAdapter::Observer,
       public policy::CloudPolicyStore::Observer,
-      public ash::SessionStateObserver,
       public chrome::BrowserListObserver,
       public extensions::AppWindowRegistry::Observer,
       public user_manager::UserManager::Observer,
@@ -195,10 +193,6 @@ class SystemTrayDelegateChromeOS
   // Overridden from CloudPolicyStore::Observer
   void OnStoreLoaded(policy::CloudPolicyStore* store) override;
   void OnStoreError(policy::CloudPolicyStore* store) override;
-
-  // Overridden from ash::SessionStateObserver
-  void UserAddedToSession(const AccountId& account_id) override;
-  void ActiveUserChanged(const AccountId& account_id) override;
 
   // Overridden from chrome::BrowserListObserver:
   void OnBrowserRemoved(Browser* browser) override;

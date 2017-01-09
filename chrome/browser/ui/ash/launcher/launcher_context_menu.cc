@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/strings/grit/ash_strings.h"
@@ -27,6 +26,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
+#include "components/session_manager/core/session_manager.h"
 #include "content/public/common/context_menu_params.h"
 
 namespace {
@@ -182,7 +182,7 @@ void LauncherContextMenu::AddShelfOptionsMenu() {
                              IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE);
   }
   if (ash::WmShelf::CanChangeShelfAlignment() &&
-      !ash::WmShell::Get()->GetSessionStateDelegate()->IsScreenLocked()) {
+      !session_manager::SessionManager::Get()->IsScreenLocked()) {
     AddSubMenuWithStringId(MENU_ALIGNMENT_MENU,
                            IDS_ASH_SHELF_CONTEXT_MENU_POSITION,
                            &shelf_alignment_menu_);

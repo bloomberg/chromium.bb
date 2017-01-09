@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 
+#include <memory>
+
 #include "ash/common/shelf/shelf_item_types.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
@@ -12,6 +14,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,6 +29,7 @@
 #include "components/arc/test/fake_app_instance.h"
 #include "components/exo/shell_surface.h"
 #include "components/prefs/pref_service.h"
+#include "components/session_manager/core/session_manager.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -41,6 +45,7 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
 
   void SetUp() override {
     arc_test_.SetUp(profile_.get());
+    session_manager_ = base::MakeUnique<session_manager::SessionManager>();
     ash::test::AshTestBase::SetUp();
     controller_.reset(new ChromeLauncherControllerImpl(
         profile(), ash::WmShell::Get()->shelf_model()));
@@ -96,6 +101,7 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<ChromeLauncherControllerImpl> controller_;
   ArcAppTest arc_test_;
+  std::unique_ptr<session_manager::SessionManager> session_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherContextMenuTest);
 };

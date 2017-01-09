@@ -27,14 +27,12 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using session_manager::SessionManager;
 using user_manager::UserManager;
 using user_manager::User;
 using user_manager::UserList;
 
 namespace {
-
-// Limits the number of logged in users to 10 due to memory constraints.
-constexpr uint32_t kMaxUsers = 10;
 
 SessionControllerClient* g_instance = nullptr;
 
@@ -80,7 +78,7 @@ void DoSwitchUser(const AccountId& account_id) {
 }  // namespace
 
 SessionControllerClient::SessionControllerClient() : binding_(this) {
-  session_manager::SessionManager::Get()->AddObserver(this);
+  SessionManager::Get()->AddObserver(this);
   UserManager::Get()->AddSessionStateObserver(this);
 
   ConnectToSessionControllerAndSetClient();
@@ -96,7 +94,7 @@ SessionControllerClient::~SessionControllerClient() {
   DCHECK_EQ(this, g_instance);
   g_instance = nullptr;
 
-  session_manager::SessionManager::Get()->RemoveObserver(this);
+  SessionManager::Get()->RemoveObserver(this);
   UserManager::Get()->RemoveSessionStateObserver(this);
 }
 
@@ -170,7 +168,8 @@ ash::AddUserSessionPolicy SessionControllerClient::GetAddUserSessionPolicy() {
     return ash::AddUserSessionPolicy::ERROR_NOT_ALLOWED_PRIMARY_USER;
   }
 
-  if (UserManager::Get()->GetLoggedInUsers().size() >= kMaxUsers)
+  if (UserManager::Get()->GetLoggedInUsers().size() >=
+      SessionManager::Get()->GetMaximumNumberOfUserSessions())
     return ash::AddUserSessionPolicy::ERROR_MAXIMUM_USERS_REACHED;
 
   return ash::AddUserSessionPolicy::ALLOWED;
@@ -253,12 +252,14 @@ void SessionControllerClient::ConnectToSessionControllerAndSetClient() {
 }
 
 void SessionControllerClient::SendSessionInfoIfChanged() {
+  SessionManager* const session_manager = SessionManager::Get();
+
   ash::mojom::SessionInfoPtr info = ash::mojom::SessionInfo::New();
-  info->max_users = kMaxUsers;
+  info->max_users = session_manager->GetMaximumNumberOfUserSessions();
   info->can_lock_screen = CanLockScreen();
   info->should_lock_screen_automatically = ShouldLockScreenAutomatically();
   info->add_user_session_policy = GetAddUserSessionPolicy();
-  info->state = session_manager::SessionManager::Get()->session_state();
+  info->state = session_manager->session_state();
 
   if (info != last_sent_session_info_) {
     last_sent_session_info_ = info->Clone();

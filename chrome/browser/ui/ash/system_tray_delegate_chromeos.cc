@@ -14,8 +14,6 @@
 #include <vector>
 
 #include "ash/common/login_status.h"
-#include "ash/common/session/session_state_delegate.h"
-#include "ash/common/session/session_state_observer.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/system/chromeos/bluetooth/bluetooth_observer.h"
 #include "ash/common/system/chromeos/power/power_status.h"
@@ -75,6 +73,7 @@
 #include "components/google/core/browser/google_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/prefs/pref_service.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
@@ -131,9 +130,7 @@ void OnAcceptMultiprofilesIntro(bool no_show_again) {
 }
 
 bool IsSessionInSecondaryLoginScreen() {
-  return ash::WmShell::Get()
-      ->GetSessionStateDelegate()
-      ->IsInSecondaryLoginScreen();
+  return session_manager::SessionManager::Get()->IsInSecondaryLoginScreen();
 }
 
 }  // namespace
@@ -176,8 +173,6 @@ void SystemTrayDelegateChromeOS::Initialize() {
   device::BluetoothAdapterFactory::GetAdapter(
       base::Bind(&SystemTrayDelegateChromeOS::InitializeOnAdapterReady,
                  weak_ptr_factory_.GetWeakPtr()));
-
-  ash::WmShell::Get()->GetSessionStateDelegate()->AddSessionStateObserver(this);
 
   BrowserList::AddObserver(this);
 }
@@ -228,8 +223,6 @@ SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
   ui::ime::InputMethodMenuManager::GetInstance()->RemoveObserver(this);
   if (bluetooth_adapter_)
     bluetooth_adapter_->RemoveObserver(this);
-  ash::WmShell::Get()->GetSessionStateDelegate()->RemoveSessionStateObserver(
-      this);
 
   BrowserList::RemoveObserver(this);
   StopObservingAppWindowRegistry();
@@ -340,9 +333,9 @@ void SystemTrayDelegateChromeOS::ShowUserLogin() {
     return;
   }
 
-  if (static_cast<int>(
-          user_manager::UserManager::Get()->GetLoggedInUsers().size()) >=
-      wm_shell->GetSessionStateDelegate()->GetMaximumNumberOfLoggedInUsers()) {
+  if (user_manager::UserManager::Get()->GetLoggedInUsers().size() >=
+      session_manager::SessionManager::Get()
+          ->GetMaximumNumberOfUserSessions()) {
     return;
   }
 
@@ -571,6 +564,7 @@ SystemTrayDelegateChromeOS::CreateRotationLockTrayItem(ash::SystemTray* tray) {
 
 void SystemTrayDelegateChromeOS::UserAddedToSession(
     const user_manager::User* active_user) {
+  GetSystemTrayNotifier()->NotifyUserAddedToSession();
 }
 
 void SystemTrayDelegateChromeOS::ActiveUserChanged(
@@ -890,15 +884,6 @@ void SystemTrayDelegateChromeOS::OnUserImageChanged(
   if (GetUserLoginStatus() != ash::LoginStatus::NOT_LOGGED_IN)
     GetSystemTrayNotifier()->NotifyUserUpdate();
 }
-
-// Overridden from ash::SessionStateObserver
-void SystemTrayDelegateChromeOS::UserAddedToSession(
-    const AccountId& /*account_id*/) {
-  GetSystemTrayNotifier()->NotifyUserAddedToSession();
-}
-
-void SystemTrayDelegateChromeOS::ActiveUserChanged(
-    const AccountId& /* user_id */) {}
 
 // Overridden from chrome::BrowserListObserver.
 void SystemTrayDelegateChromeOS::OnBrowserRemoved(Browser* browser) {

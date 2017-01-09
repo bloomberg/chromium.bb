@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/ash/system_tray_client.h"
 
 #include "ash/common/login_status.h"
-#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
@@ -32,6 +31,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/login/login_state.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
@@ -159,15 +159,11 @@ int SystemTrayClient::GetDialogParentContainerId() {
     return ash::kShellWindowId_LockSystemModalContainer;
   }
 
-  // TODO(mash): Need replacement for SessionStateDelegate. crbug.com/648964
-  if (chrome::IsRunningInMash())
-    return ash::kShellWindowId_SystemModalContainer;
-
-  ash::WmShell* wm_shell = ash::WmShell::Get();
-  const bool session_started =
-      wm_shell->GetSessionStateDelegate()->IsActiveUserSessionStarted();
+  session_manager::SessionManager* const session_manager =
+      session_manager::SessionManager::Get();
+  const bool session_started = session_manager->IsSessionStarted();
   const bool is_in_secondary_login_screen =
-      wm_shell->GetSessionStateDelegate()->IsInSecondaryLoginScreen();
+      session_manager->IsInSecondaryLoginScreen();
 
   if (!session_started || is_in_secondary_login_screen)
     return ash::kShellWindowId_LockSystemModalContainer;
@@ -277,11 +273,8 @@ void SystemTrayClient::ShowPublicAccountInfo() {
 
 void SystemTrayClient::ShowNetworkConfigure(const std::string& network_id) {
   // UI is not available at the lock screen.
-  // TODO(mash): Need replacement for SessionStateDelegate. crbug.com/648964
-  if (!chrome::IsRunningInMash() &&
-      ash::WmShell::Get()->GetSessionStateDelegate()->IsScreenLocked()) {
+  if (session_manager::SessionManager::Get()->IsScreenLocked())
     return;
-  }
 
   // Dialog will default to the primary display.
   chromeos::NetworkConfigView::ShowForNetworkId(network_id,
@@ -315,13 +308,9 @@ void SystemTrayClient::ShowThirdPartyVpnCreate(
 }
 
 void SystemTrayClient::ShowNetworkSettings(const std::string& network_id) {
-  if (!chrome::IsRunningInMash()) {
-    // TODO(mash): Need replacement for SessionStateDelegate. crbug.com/648964
-    if (!LoginState::Get()->IsUserLoggedIn() ||
-        ash::WmShell::Get()
-            ->GetSessionStateDelegate()
-            ->IsInSecondaryLoginScreen())
-      return;
+  if (!LoginState::Get()->IsUserLoggedIn() ||
+      session_manager::SessionManager::Get()->IsInSecondaryLoginScreen()) {
+    return;
   }
 
   std::string page = chrome::kInternetOptionsSubPage;
