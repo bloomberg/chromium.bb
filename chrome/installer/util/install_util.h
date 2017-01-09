@@ -93,9 +93,8 @@ class InstallUtil {
   // with fresh data.
   static void ResetIsPerUserInstallForTest();
 
-  // Returns true if the installation represented by the pair of |dist| and
-  // |system_level| is a multi install.
-  static bool IsMultiInstall(BrowserDistribution* dist, bool system_install);
+  // Returns true if Chrome at |system_level| is a multi install.
+  static bool IsMultiInstall(bool system_install);
 
   // Returns true if this is running setup process for Chrome SxS (as
   // indicated by the presence of --chrome-sxs on the command line) or if this

@@ -279,7 +279,7 @@ bool GoogleUpdateSettings::GetCollectStatsConsentAtLevel(bool system_install) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
 
   // Consent applies to all products in a multi-install package.
-  if (InstallUtil::IsMultiInstall(dist, system_install)) {
+  if (InstallUtil::IsMultiInstall(system_install)) {
     dist = BrowserDistribution::GetSpecificDistribution(
         BrowserDistribution::CHROME_BINARIES);
   }
@@ -324,7 +324,7 @@ bool GoogleUpdateSettings::SetCollectStatsConsentAtLevel(bool system_install,
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
 
   // Consent applies to all products in a multi-install package.
-  if (InstallUtil::IsMultiInstall(dist, system_install)) {
+  if (InstallUtil::IsMultiInstall(system_install)) {
     dist = BrowserDistribution::GetSpecificDistribution(
         BrowserDistribution::CHROME_BINARIES);
   }
@@ -487,7 +487,7 @@ bool GoogleUpdateSettings::UpdateDidRunState(bool did_run, bool system_level) {
   bool result = UpdateDidRunStateForApp(dist->GetAppRegistrationData(),
                                         did_run);
   // Update state for binaries, even if the previous call was unsuccessful.
-  if (InstallUtil::IsMultiInstall(dist, system_level))
+  if (InstallUtil::IsMultiInstall(system_level))
     result = UpdateDidRunStateForBinaries(did_run) && result;
   return result;
 }
@@ -829,8 +829,7 @@ base::string16 GoogleUpdateSettings::GetDownloadPreference() {
 }
 
 void GoogleUpdateSettings::RecordChromeUpdatePolicyHistograms() {
-  const bool is_multi_install = InstallUtil::IsMultiInstall(
-      BrowserDistribution::GetDistribution(), IsSystemInstall());
+  const bool is_multi_install = InstallUtil::IsMultiInstall(IsSystemInstall());
   const base::string16 app_guid =
       BrowserDistribution::GetSpecificDistribution(
           is_multi_install ? BrowserDistribution::CHROME_BINARIES :

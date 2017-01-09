@@ -323,9 +323,8 @@ void InstallUtil::ResetIsPerUserInstallForTest() {
   env->UnSetVar(kEnvProgramFilesPath);
 }
 
-bool InstallUtil::IsMultiInstall(BrowserDistribution* dist,
-                                 bool system_install) {
-  DCHECK(dist);
+bool InstallUtil::IsMultiInstall(bool system_install) {
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   ProductState state;
   return state.Initialize(system_install, dist) && state.is_multi_install();
 }
