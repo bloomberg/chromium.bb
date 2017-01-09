@@ -21,7 +21,6 @@ import java.util.Set;
 
 /** Builds instances of payment apps based on installed third party Android payment apps. */
 public class AndroidPaymentAppFactory implements PaymentAppFactoryAddition {
-    private static final String ACTION_PAY = "org.chromium.intent.action.PAY";
     private static final String ACTION_IS_READY_TO_PAY =
             "org.chromium.intent.action.IS_READY_TO_PAY";
     private static final String METHOD_PREFIX = "https://";
@@ -31,7 +30,7 @@ public class AndroidPaymentAppFactory implements PaymentAppFactoryAddition {
             PaymentAppCreatedCallback callback) {
         Map<String, AndroidPaymentApp> installedApps = new HashMap<>();
         PackageManager pm = context.getPackageManager();
-        Intent payIntent = new Intent(ACTION_PAY);
+        Intent payIntent = new Intent(AndroidPaymentApp.ACTION_PAY);
 
         for (String methodName : methods) {
             if (!methodName.startsWith(METHOD_PREFIX)) continue;

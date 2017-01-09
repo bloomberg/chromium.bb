@@ -30,6 +30,9 @@ import java.util.Set;
 /** The point of interaction with a locally installed 3rd party native Android payment app. */
 public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
         WindowAndroid.IntentCallback {
+    /** The action name for the Pay Intent. */
+    public static final String ACTION_PAY = "org.chromium.intent.action.PAY";
+
     private static final String EXTRA_METHOD_NAME = "methodName";
     private static final String EXTRA_DATA = "data";
     private static final String EXTRA_ORIGIN = "origin";
@@ -61,6 +64,7 @@ public class AndroidPaymentApp extends PaymentInstrument implements PaymentApp,
         mWebContents = webContents;
         mPayIntent = new Intent();
         mPayIntent.setClassName(packageName, activity);
+        mPayIntent.setAction(ACTION_PAY);
         mMethodNames = new HashSet<>();
     }
 
