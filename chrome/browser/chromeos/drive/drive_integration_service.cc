@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/sys_info.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -117,7 +118,8 @@ FileError InitializeMetadata(
     const base::FilePath& downloads_directory) {
   if (!base::DirectoryExists(
           cache_root_directory.Append(kTemporaryFileDirectory))) {
-    LOG(ERROR) << "/tmp should have been created as clear.";
+    if (base::SysInfo::IsRunningOnChromeOS())
+      LOG(ERROR) << "/tmp should have been created as clear.";
     // Create /tmp directory as encrypted. Cryptohome will re-create /tmp
     // direcotry at the next login.
     if (!base::CreateDirectory(
