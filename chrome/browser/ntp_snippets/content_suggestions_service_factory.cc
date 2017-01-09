@@ -140,6 +140,13 @@ void RegisterBookmarkProvider(BookmarkModel* bookmark_model,
 }
 
 #if defined(OS_ANDROID)
+
+bool IsPhysicalWebPageProviderEnabled() {
+  return base::FeatureList::IsEnabled(
+             ntp_snippets::kPhysicalWebPageSuggestionsFeature) &&
+         base::FeatureList::IsEnabled(chrome::android::kPhysicalWebFeature);
+}
+
 void RegisterPhysicalWebPageProvider(
     ContentSuggestionsService* service,
     PhysicalWebDataSource* physical_web_data_source,
@@ -317,8 +324,7 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   }
 
 #if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(
-          ntp_snippets::kPhysicalWebPageSuggestionsFeature)) {
+  if (IsPhysicalWebPageProviderEnabled()) {
     RegisterPhysicalWebPageProvider(service, physical_web_data_source,
                                     pref_service);
   }

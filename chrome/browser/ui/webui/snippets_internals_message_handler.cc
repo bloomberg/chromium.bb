@@ -21,6 +21,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
@@ -297,6 +298,9 @@ void SnippetsInternalsMessageHandler::SendAllContent() {
   SendBoolean("flag-physical-web-page-suggestions",
               base::FeatureList::IsEnabled(
                   ntp_snippets::kPhysicalWebPageSuggestionsFeature));
+
+  SendBoolean("flag-physical-web", base::FeatureList::IsEnabled(
+                                       chrome::android::kPhysicalWebFeature));
 
   SendClassification();
   SendLastRemoteSuggestionsBackgroundFetchTime();
