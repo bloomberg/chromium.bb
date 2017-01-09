@@ -11,6 +11,7 @@
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/views/mus/screen_mus_delegate.h"
 #include "ui/views/mus/window_manager_frame_values.h"
@@ -38,6 +39,7 @@ using Type = display::DisplayList::Type;
 
 ScreenMus::ScreenMus(ScreenMusDelegate* delegate)
     : delegate_(delegate), display_manager_observer_binding_(this) {
+  DCHECK(delegate);
   display::Screen::SetScreenInstance(this);
 }
 
@@ -71,14 +73,7 @@ void ScreenMus::Init(service_manager::Connector* connector) {
 }
 
 gfx::Point ScreenMus::GetCursorScreenPoint() {
-  if (!delegate_) {
-    // TODO(erg): If we need the cursor point in the window manager, we'll need
-    // to make |delegate_| required. It only recently changed to be optional.
-    NOTIMPLEMENTED();
-    return gfx::Point();
-  }
-
-  return delegate_->GetCursorScreenPoint();
+  return aura::Env::GetInstance()->last_mouse_location();
 }
 
 bool ScreenMus::IsWindowUnderCursor(gfx::NativeWindow window) {
@@ -131,8 +126,7 @@ void ScreenMus::OnDisplaysChanged(
           ws_displays[i]
               ->frame_decoration_values.To<WindowManagerFrameValues>();
       WindowManagerFrameValues::SetInstance(frame_values);
-      if (delegate_)
-        delegate_->OnWindowManagerFrameValuesChanged();
+      delegate_->OnWindowManagerFrameValuesChanged();
     }
   }
 }

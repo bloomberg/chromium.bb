@@ -4,6 +4,7 @@
 
 #include "ash/mus/screen_mus.h"
 
+#include "ui/aura/env.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window.h"
 
@@ -21,6 +22,10 @@ display::Display ScreenMus::GetDisplayNearestWindow(
   auto iter = display_list().FindDisplayById(
       static_cast<const aura::WindowTreeHostMus*>(host)->display_id());
   return iter == display_list().displays().end() ? GetPrimaryDisplay() : *iter;
+}
+
+gfx::Point ScreenMus::GetCursorScreenPoint() {
+  return aura::Env::GetInstance()->last_mouse_location();
 }
 
 }  // namespace ash

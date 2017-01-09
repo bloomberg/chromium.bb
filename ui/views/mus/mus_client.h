@@ -127,7 +127,6 @@ class VIEWS_MUS_EXPORT MusClient
 
   // ScreenMusDelegate:
   void OnWindowManagerFrameValuesChanged() override;
-  gfx::Point GetCursorScreenPoint() override;
   aura::Window* GetWindowAtScreenPoint(const gfx::Point& point) override;
 
   // ui:OSExchangeDataProviderFactory::Factory:

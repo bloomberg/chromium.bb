@@ -22,8 +22,6 @@ class VIEWS_MUS_EXPORT ScreenMusDelegate {
  public:
   virtual void OnWindowManagerFrameValuesChanged() = 0;
 
-  virtual gfx::Point GetCursorScreenPoint() = 0;
-
   virtual aura::Window* GetWindowAtScreenPoint(const gfx::Point& point) = 0;
 
  protected:

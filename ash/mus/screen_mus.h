@@ -24,6 +24,7 @@ class ScreenMus : public display::ScreenBase {
  private:
   // display::ScreenBase:
   display::Display GetDisplayNearestWindow(aura::Window* window) const override;
+  gfx::Point GetCursorScreenPoint() override;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenMus);
 };

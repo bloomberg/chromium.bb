@@ -23,7 +23,6 @@ class VIEWS_MUS_EXPORT ScreenMus
     : public display::ScreenBase,
       public NON_EXPORTED_BASE(ui::mojom::DisplayManagerObserver) {
  public:
-  // |delegate| can be nullptr.
   explicit ScreenMus(ScreenMusDelegate* delegate);
   ~ScreenMus() override;
 
@@ -44,7 +43,7 @@ class VIEWS_MUS_EXPORT ScreenMus
   void OnDisplayRemoved(int64_t display_id) override;
   void OnPrimaryDisplayChanged(int64_t primary_display_id) override;
 
-  ScreenMusDelegate* delegate_;  // Can be nullptr.
+  ScreenMusDelegate* delegate_;
   ui::mojom::DisplayManagerPtr display_manager_;
   mojo::Binding<ui::mojom::DisplayManagerObserver>
       display_manager_observer_binding_;

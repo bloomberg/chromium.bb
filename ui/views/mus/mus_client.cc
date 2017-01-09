@@ -262,10 +262,6 @@ aura::PropertyConverter* MusClient::GetPropertyConverter() {
   return property_converter_.get();
 }
 
-gfx::Point MusClient::GetCursorScreenPoint() {
-  return window_tree_client_->GetCursorScreenPoint();
-}
-
 aura::Window* MusClient::GetWindowAtScreenPoint(const gfx::Point& point) {
   for (aura::Window* root : window_tree_client_->GetRoots()) {
     aura::WindowTreeHost* window_tree_host = root->GetHost();
