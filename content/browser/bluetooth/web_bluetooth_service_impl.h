@@ -13,7 +13,6 @@
 #include "base/optional.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/bluetooth/bluetooth_allowed_devices_map.h"
-#include "content/browser/bluetooth/cache_query_result.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -31,6 +30,7 @@ class Origin;
 namespace content {
 
 class BluetoothDeviceChooserController;
+struct CacheQueryResult;
 class FrameConnectedBluetoothDevices;
 class RenderFrameHost;
 class RenderProcessHost;

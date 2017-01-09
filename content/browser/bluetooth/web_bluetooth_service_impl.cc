@@ -184,6 +184,38 @@ std::vector<device::BluetoothRemoteGattService*> GetPrimaryServices(
 
 }  // namespace
 
+// Struct that holds the result of a cache query.
+struct CacheQueryResult {
+  CacheQueryResult() : outcome(CacheQueryOutcome::SUCCESS) {}
+
+  explicit CacheQueryResult(CacheQueryOutcome outcome) : outcome(outcome) {}
+
+  ~CacheQueryResult() {}
+
+  blink::mojom::WebBluetoothResult GetWebResult() const {
+    switch (outcome) {
+      case CacheQueryOutcome::SUCCESS:
+      case CacheQueryOutcome::BAD_RENDERER:
+        NOTREACHED();
+        return blink::mojom::WebBluetoothResult::DEVICE_NO_LONGER_IN_RANGE;
+      case CacheQueryOutcome::NO_DEVICE:
+        return blink::mojom::WebBluetoothResult::DEVICE_NO_LONGER_IN_RANGE;
+      case CacheQueryOutcome::NO_SERVICE:
+        return blink::mojom::WebBluetoothResult::SERVICE_NO_LONGER_EXISTS;
+      case CacheQueryOutcome::NO_CHARACTERISTIC:
+        return blink::mojom::WebBluetoothResult::
+            CHARACTERISTIC_NO_LONGER_EXISTS;
+    }
+    NOTREACHED();
+    return blink::mojom::WebBluetoothResult::DEVICE_NO_LONGER_IN_RANGE;
+  }
+
+  device::BluetoothDevice* device = nullptr;
+  device::BluetoothRemoteGattService* service = nullptr;
+  device::BluetoothRemoteGattCharacteristic* characteristic = nullptr;
+  CacheQueryOutcome outcome;
+};
+
 WebBluetoothServiceImpl::WebBluetoothServiceImpl(
     RenderFrameHost* render_frame_host,
     blink::mojom::WebBluetoothServiceRequest request)
