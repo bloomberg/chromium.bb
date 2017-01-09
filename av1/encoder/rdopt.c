@@ -4526,7 +4526,6 @@ static int64_t encode_inter_mb_segment(const AV1_COMP *const cpi, MACROBLOCK *x,
                                        ENTROPY_CONTEXT *ta, ENTROPY_CONTEXT *tl,
                                        int ir, int ic, int mi_row, int mi_col) {
   const AV1_COMMON *const cm = &cpi->common;
-  int k;
   MACROBLOCKD *xd = &x->e_mbd;
   struct macroblockd_plane *const pd = &xd->plane[0];
   struct macroblock_plane *const p = &x->plane[0];
@@ -4584,14 +4583,14 @@ static int64_t encode_inter_mb_segment(const AV1_COMP *const cpi, MACROBLOCK *x,
                      8, src, p->src.stride, dst, pd->dst.stride);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
-  k = i;
   for (idy = 0; idy < txb_height; idy += num_4x4_h) {
     for (idx = 0; idx < txb_width; idx += num_4x4_w) {
       int64_t dist, ssz, rd, rd1, rd2;
       int block;
       int coeff_ctx;
+      int k;
 
-      k += (idy * 2 + idx);
+      k = i + (idy * 2 + idx);
       if (tx_size == TX_4X4)
         block = k;
       else
