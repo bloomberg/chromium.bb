@@ -709,8 +709,16 @@ void MediaControls::onTimeUpdate() {
 }
 
 void MediaControls::onDurationChange() {
-  m_timeline->setDuration(mediaElement().duration());
+  const double duration = mediaElement().duration();
+
+  // Update the displayed current time/duration.
+  m_durationDisplay->setTextContent(
+      LayoutTheme::theme().formatMediaControlsTime(duration));
+  m_durationDisplay->setCurrentValue(duration);
   updateCurrentTimeDisplay();
+
+  // Update the timeline (the UI with the seek marker).
+  m_timeline->setDuration(duration);
 }
 
 void MediaControls::onPlay() {
