@@ -154,9 +154,7 @@ CSSPrimitiveValue* consumeNumber(CSSParserTokenRange& range,
 inline bool shouldAcceptUnitlessLength(double value,
                                        CSSParserMode cssParserMode,
                                        UnitlessQuirk unitless) {
-  // TODO(timloh): Presentational HTML attributes shouldn't use the CSS parser
-  // for lengths
-  return value == 0 || isUnitLessLengthParsingEnabledForMode(cssParserMode) ||
+  return value == 0 || cssParserMode == SVGAttributeMode ||
          (cssParserMode == HTMLQuirksMode && unitless == UnitlessQuirk::Allow);
 }
 

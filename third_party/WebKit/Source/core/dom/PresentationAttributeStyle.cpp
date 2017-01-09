@@ -192,7 +192,7 @@ StylePropertySet* computePresentationAttributeStyle(Element& element) {
     cacheCleaner.didHitPresentationAttributeCache();
   } else {
     style = MutableStylePropertySet::create(
-        element.isSVGElement() ? SVGAttributeMode : HTMLAttributeMode);
+        element.isSVGElement() ? SVGAttributeMode : HTMLStandardMode);
     AttributeCollection attributes = element.attributesWithoutUpdate();
     for (const Attribute& attr : attributes)
       element.collectStyleForPresentationAttribute(

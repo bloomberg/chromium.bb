@@ -37,9 +37,6 @@ namespace blink {
 enum CSSParserMode {
   HTMLStandardMode,
   HTMLQuirksMode,
-  // HTML attributes are parsed in quirks mode but also allows internal
-  // properties and values.
-  HTMLAttributeMode,
   // SVG attributes are parsed in quirks mode but rules differ slightly.
   SVGAttributeMode,
   // @viewport/@font-face rules are specially tagged in StylePropertySet so
@@ -52,15 +49,11 @@ enum CSSParserMode {
 };
 
 inline bool isQuirksModeBehavior(CSSParserMode mode) {
-  return mode == HTMLQuirksMode;  // || mode == HTMLAttributeMode;
+  return mode == HTMLQuirksMode;
 }
 
 inline bool isUASheetBehavior(CSSParserMode mode) {
   return mode == UASheetMode;
-}
-
-inline bool isUnitLessLengthParsingEnabledForMode(CSSParserMode mode) {
-  return mode == HTMLAttributeMode || mode == SVGAttributeMode;
 }
 
 inline bool isCSSViewportParsingEnabledForMode(CSSParserMode mode) {
