@@ -3636,10 +3636,6 @@ split_static_library("browser") {
     }
   }
 
-  if (android_java_ui) {
-    deps += [ "//third_party/WebKit/public:android_mojo_bindings" ]
-  }
-
   if (enable_plugin_installation) {
     sources += [
       "plugins/plugin_installer.cc",

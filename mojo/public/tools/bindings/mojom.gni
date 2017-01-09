@@ -87,6 +87,10 @@ foreach(configuration, _bindings_configurations) {
 #
 #   visibility (optional)
 #
+#   visibility_blink (optional)
+#       The value to use for visibility for the blink variant. If unset,
+#       |visibility| is used.
+#
 #   use_once_callback (optional)
 #       If set to true, generated classes will use base::OnceCallback instead of
 #       base::RepeatingCallback.
@@ -435,7 +439,11 @@ template("mojom") {
     }
 
     source_set("${target_name}${variant_suffix}") {
-      if (defined(invoker.visibility)) {
+      if (defined(bindings_configuration.for_blink) &&
+          bindings_configuration.for_blink &&
+          defined(invoker.visibility_blink)) {
+        visibility = invoker.visibility_blink
+      } else if (defined(invoker.visibility)) {
         visibility = invoker.visibility
       }
       if (defined(invoker.testonly)) {

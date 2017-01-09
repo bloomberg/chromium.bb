@@ -70,7 +70,6 @@ make_event_factory("event_modules") {
   ]
   deps = make_core_generated_deps + [ "//third_party/WebKit/Source/bindings/modules:modules_bindings_generated_event_interfaces" ]
   deps += [
-    "//device/generic_sensor/public/interfaces",
     "//device/generic_sensor/public/interfaces:interfaces_blink",
     "//device/vr:mojo_bindings_blink",
     "//media/midi:mojo_blink",

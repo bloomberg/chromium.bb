@@ -640,6 +640,11 @@ grit("image_resources") {
 }
 
 mojom("mojo_bindings") {
+  visibility = [ "//content/*" ]
+  visibility_blink = [
+    "//content/common:mojo_bindings_blink",
+    "//third_party/WebKit/Source/platform",
+  ]
   sources = [
     "platform/mime_registry.mojom",
     "platform/modules/app_banner/app_banner.mojom",
@@ -689,6 +694,8 @@ mojom("mojo_bindings") {
 }
 
 mojom("android_mojo_bindings") {
+  visibility = [ ":mojo_bindings" ]
+  visibility_blink = [ ":mojo_bindings_blink" ]
   sources = [
     "platform/modules/installation/installation.mojom",
     "platform/modules/webshare/webshare.mojom",
@@ -711,6 +718,8 @@ mojom("android_mojo_bindings") {
 # because its deps contain too many files in Chromium that would pollute the
 # include paths in generated mojom-blink files for other services.
 mojom("offscreen_canvas_mojo_bindings") {
+  visibility = [ "//content/*" ]
+  visibility_blink = [ "//third_party/WebKit/Source/platform" ]
   sources = [
     "platform/modules/offscreencanvas/offscreen_canvas_surface.mojom",
   ]

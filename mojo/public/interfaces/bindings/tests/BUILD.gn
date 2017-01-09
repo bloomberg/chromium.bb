@@ -61,10 +61,10 @@ mojom("test_export") {
     export_header_blink =
         "mojo/public/cpp/bindings/tests/mojo_test_blink_export.h"
   }
-  visibility = [
-    ":test_export_component",
-    ":test_export_blink_component",
-  ]
+  visibility = [ ":test_export_component" ]
+  if (!is_ios) {
+    visibility_blink = [ ":test_export_blink_component" ]
+  }
 }
 
 mojom("test_exported_import") {
