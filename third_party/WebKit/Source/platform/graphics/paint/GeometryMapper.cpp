@@ -14,6 +14,10 @@ FloatRect GeometryMapper::mapToVisualRectInDestinationSpace(
     const PropertyTreeState& sourceState,
     const PropertyTreeState& destinationState,
     bool& success) {
+  if (sourceState == destinationState) {
+    success = true;
+    return rect;
+  }
   FloatRect result = localToVisualRectInAncestorSpace(
       rect, sourceState, destinationState, success);
   if (success)
@@ -27,6 +31,10 @@ FloatRect GeometryMapper::mapRectToDestinationSpace(
     const PropertyTreeState& sourceState,
     const PropertyTreeState& destinationState,
     bool& success) {
+  if (sourceState == destinationState) {
+    success = true;
+    return rect;
+  }
   FloatRect result =
       localToAncestorRect(rect, sourceState, destinationState, success);
   if (success)
