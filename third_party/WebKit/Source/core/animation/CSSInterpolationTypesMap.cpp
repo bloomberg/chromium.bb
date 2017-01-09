@@ -40,14 +40,39 @@
 
 namespace blink {
 
+static const PropertyRegistry::Registration* getRegistration(
+    const PropertyRegistry* registry,
+    const PropertyHandle& property) {
+  DCHECK(property.isCSSCustomProperty());
+  if (!registry) {
+    return nullptr;
+  }
+  return registry->registration(property.customPropertyName());
+}
+
 const InterpolationTypes& CSSInterpolationTypesMap::get(
     const PropertyHandle& property) const {
   using ApplicableTypesMap =
       HashMap<PropertyHandle, std::unique_ptr<const InterpolationTypes>>;
   DEFINE_STATIC_LOCAL(ApplicableTypesMap, applicableTypesMap, ());
   auto entry = applicableTypesMap.find(property);
-  if (entry != applicableTypesMap.end())
-    return *entry->value.get();
+  bool foundEntry = entry != applicableTypesMap.end();
+
+  // Custom property interpolation types may change over time so don't trust the
+  // applicableTypesMap without checking the registry.
+  if (m_registry && property.isCSSCustomProperty()) {
+    const auto* registration = getRegistration(m_registry.get(), property);
+    if (registration) {
+      if (foundEntry) {
+        applicableTypesMap.remove(entry);
+      }
+      return registration->interpolationTypes();
+    }
+  }
+
+  if (foundEntry) {
+    return *entry->value;
+  }
 
   std::unique_ptr<InterpolationTypes> applicableTypes =
       WTF::makeUnique<InterpolationTypes>();
@@ -277,10 +302,11 @@ const InterpolationTypes& CSSInterpolationTypesMap::get(
       applicableTypes->push_back(
           WTF::makeUnique<CSSTransformInterpolationType>(usedProperty));
       break;
+    case CSSPropertyVariable:
+      DCHECK_EQ(getRegistration(m_registry.get(), property), nullptr);
+      break;
     default:
       DCHECK(!CSSPropertyMetadata::isInterpolableProperty(cssProperty));
-      // TODO(crbug.com/671904): Look up m_registry for custom property
-      // InterpolationTypes.
       break;
   }
 
@@ -288,7 +314,7 @@ const InterpolationTypes& CSSInterpolationTypesMap::get(
       WTF::makeUnique<CSSValueInterpolationType>(usedProperty));
 
   auto addResult = applicableTypesMap.add(property, std::move(applicableTypes));
-  return *addResult.storedValue->value.get();
+  return *addResult.storedValue->value;
 }
 
 size_t CSSInterpolationTypesMap::version() const {

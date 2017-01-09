@@ -31,8 +31,6 @@ class InterpolationType {
   WTF_MAKE_NONCOPYABLE(InterpolationType);
 
  public:
-  virtual ~InterpolationType() { NOTREACHED(); }
-
   PropertyHandle getProperty() const { return m_property; }
 
   // ConversionCheckers are returned from calls to maybeConvertPairwise() and

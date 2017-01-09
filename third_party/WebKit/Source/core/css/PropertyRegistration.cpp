@@ -4,6 +4,7 @@
 
 #include "core/css/PropertyRegistration.h"
 
+#include "core/animation/CSSValueInterpolationType.h"
 #include "core/css/CSSSyntaxDescriptor.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSVariableReferenceValue.h"
@@ -56,6 +57,17 @@ static bool computationallyIndependent(const CSSValue& value) {
   return true;
 }
 
+InterpolationTypes interpolationTypesForSyntax(const AtomicString& propertyName,
+                                               const CSSSyntaxDescriptor&) {
+  PropertyHandle property(propertyName);
+  InterpolationTypes interpolationTypes;
+  // TODO(alancutter): Read the syntax descriptor and add the appropriate
+  // CSSInterpolationType subclasses.
+  interpolationTypes.append(
+      WTF::makeUnique<CSSValueInterpolationType>(property));
+  return interpolationTypes;
+}
+
 void PropertyRegistration::registerProperty(
     ExecutionContext* executionContext,
     const PropertyDescriptor& descriptor,
@@ -89,6 +101,9 @@ void PropertyRegistration::registerProperty(
     return;
   }
 
+  InterpolationTypes interpolationTypes =
+      interpolationTypesForSyntax(atomicName, syntaxDescriptor);
+
   if (descriptor.hasInitialValue()) {
     CSSTokenizer tokenizer(descriptor.initialValue());
     bool isAnimationTainted = false;
@@ -108,9 +123,9 @@ void PropertyRegistration::registerProperty(
     }
     RefPtr<CSSVariableData> initialVariableData = CSSVariableData::create(
         tokenizer.tokenRange(), isAnimationTainted, false);
-    registry.registerProperty(atomicName, syntaxDescriptor,
-                              descriptor.inherits(), initial,
-                              initialVariableData.release());
+    registry.registerProperty(
+        atomicName, syntaxDescriptor, descriptor.inherits(), initial,
+        initialVariableData.release(), std::move(interpolationTypes));
   } else {
     if (!syntaxDescriptor.isTokenStream()) {
       exceptionState.throwDOMException(
@@ -119,7 +134,8 @@ void PropertyRegistration::registerProperty(
       return;
     }
     registry.registerProperty(atomicName, syntaxDescriptor,
-                              descriptor.inherits(), nullptr, nullptr);
+                              descriptor.inherits(), nullptr, nullptr,
+                              std::move(interpolationTypes));
   }
 
   // TODO(timloh): Invalidate only elements with this custom property set
