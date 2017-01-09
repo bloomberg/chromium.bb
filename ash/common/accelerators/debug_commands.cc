@@ -144,6 +144,10 @@ void HandleToggleTouchView() {
 
 #endif  // defined(OS_CHROMEOS)
 
+void HandleTriggerCrash() {
+  CHECK(false) << "Intentional crash via debug accelerator.";
+}
+
 }  // namespace
 
 void PrintUIHierarchies() {
@@ -197,6 +201,9 @@ void PerformDebugActionIfEnabled(AcceleratorAction action) {
       break;
     case DEBUG_PRINT_WINDOW_HIERARCHY:
       HandlePrintWindowHierarchy();
+      break;
+    case DEBUG_TRIGGER_CRASH:
+      HandleTriggerCrash();
       break;
     default:
       break;

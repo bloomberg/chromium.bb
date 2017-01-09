@@ -254,6 +254,7 @@ const AcceleratorData kDebugAcceleratorData[] = {
     {true, ui::VKEY_B, kDebugModifier, DEBUG_TOGGLE_SHOW_DEBUG_BORDERS},
     {true, ui::VKEY_F, kDebugModifier, DEBUG_TOGGLE_SHOW_FPS_COUNTER},
     {true, ui::VKEY_P, kDebugModifier, DEBUG_TOGGLE_SHOW_PAINT_RECTS},
+    {true, ui::VKEY_K, kDebugModifier, DEBUG_TRIGGER_CRASH},
 };
 
 const size_t kDebugAcceleratorDataLength = arraysize(kDebugAcceleratorData);

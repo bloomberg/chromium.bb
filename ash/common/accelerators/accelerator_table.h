@@ -62,6 +62,7 @@ enum AcceleratorAction {
   DEBUG_TOGGLE_SHOW_FPS_COUNTER,
   DEBUG_TOGGLE_SHOW_PAINT_RECTS,
   DEBUG_TOGGLE_WALLPAPER_MODE,
+  DEBUG_TRIGGER_CRASH,  // Intentionally crash the ash process.
   DEV_TOGGLE_ROOT_WINDOW_FULL_SCREEN,
   EXIT,
   FOCUS_NEXT_PANE,
@@ -209,7 +210,8 @@ ASH_EXPORT extern const size_t kDeprecatedAcceleratorsDataLength;
 
 // Debug accelerators. Debug accelerators are only enabled when the "Debugging
 // keyboard shortcuts" flag (--ash-debug-shortcuts) is enabled. Debug actions
-// are always run (similar to reserved actions).
+// are always run (similar to reserved actions). Debug accelerators can be
+// enabled in about:flags.
 ASH_EXPORT extern const AcceleratorData kDebugAcceleratorData[];
 ASH_EXPORT extern const size_t kDebugAcceleratorDataLength;
 
