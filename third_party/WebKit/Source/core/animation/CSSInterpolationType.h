@@ -19,7 +19,7 @@ class CSSInterpolationType : public InterpolationType {
   InterpolationValue maybeConvertSingle(const PropertySpecificKeyframe&,
                                         const InterpolationEnvironment&,
                                         const InterpolationValue& underlying,
-                                        ConversionCheckers&) const override;
+                                        ConversionCheckers&) const final;
   virtual InterpolationValue maybeConvertNeutral(
       const InterpolationValue& underlying,
       ConversionCheckers&) const = 0;
@@ -30,6 +30,7 @@ class CSSInterpolationType : public InterpolationType {
   virtual InterpolationValue maybeConvertValue(const CSSValue&,
                                                const StyleResolverState&,
                                                ConversionCheckers&) const = 0;
+  virtual void additiveKeyframeHook(InterpolationValue&) const {}
 
   InterpolationValue maybeConvertUnderlyingValue(
       const InterpolationEnvironment&) const final;
@@ -42,6 +43,13 @@ class CSSInterpolationType : public InterpolationType {
   virtual void applyStandardPropertyValue(const InterpolableValue&,
                                           const NonInterpolableValue*,
                                           StyleResolverState&) const = 0;
+
+ private:
+  InterpolationValue maybeConvertSingleInternal(
+      const PropertySpecificKeyframe&,
+      const InterpolationEnvironment&,
+      const InterpolationValue& underlying,
+      ConversionCheckers&) const;
 };
 
 }  // namespace blink

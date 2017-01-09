@@ -60,6 +60,21 @@ InterpolationValue CSSInterpolationType::maybeConvertSingle(
     const InterpolationEnvironment& environment,
     const InterpolationValue& underlying,
     ConversionCheckers& conversionCheckers) const {
+  InterpolationValue result = maybeConvertSingleInternal(
+      keyframe, environment, underlying, conversionCheckers);
+  if (result &&
+      keyframe.composite() !=
+          EffectModel::CompositeOperation::CompositeReplace) {
+    additiveKeyframeHook(result);
+  }
+  return result;
+}
+
+InterpolationValue CSSInterpolationType::maybeConvertSingleInternal(
+    const PropertySpecificKeyframe& keyframe,
+    const InterpolationEnvironment& environment,
+    const InterpolationValue& underlying,
+    ConversionCheckers& conversionCheckers) const {
   const CSSValue* value = toCSSPropertySpecificKeyframe(keyframe).value();
 
   if (!value)

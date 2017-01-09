@@ -27,10 +27,6 @@ class CSSScaleInterpolationType : public CSSInterpolationType {
                                   StyleResolverState&) const final;
 
  private:
-  InterpolationValue maybeConvertSingle(const PropertySpecificKeyframe&,
-                                        const InterpolationEnvironment&,
-                                        const InterpolationValue& underlying,
-                                        ConversionCheckers&) const final;
   InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying,
                                          ConversionCheckers&) const final;
   InterpolationValue maybeConvertInitial(const StyleResolverState&,
@@ -40,6 +36,8 @@ class CSSScaleInterpolationType : public CSSInterpolationType {
   InterpolationValue maybeConvertValue(const CSSValue&,
                                        const StyleResolverState&,
                                        ConversionCheckers&) const final;
+  void additiveKeyframeHook(InterpolationValue&) const final;
+
   PairwiseInterpolationValue maybeMergeSingles(
       InterpolationValue&&,
       InterpolationValue&&) const final;

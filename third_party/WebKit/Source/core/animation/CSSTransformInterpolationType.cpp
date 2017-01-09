@@ -206,19 +206,10 @@ InterpolationValue CSSTransformInterpolationType::maybeConvertValue(
   return convertTransform(std::move(transform));
 }
 
-InterpolationValue CSSTransformInterpolationType::maybeConvertSingle(
-    const PropertySpecificKeyframe& keyframe,
-    const InterpolationEnvironment& environment,
-    const InterpolationValue& underlying,
-    ConversionCheckers& conversionCheckers) const {
-  InterpolationValue result = CSSInterpolationType::maybeConvertSingle(
-      keyframe, environment, underlying, conversionCheckers);
-  if (!result)
-    return nullptr;
-  if (keyframe.composite() != EffectModel::CompositeReplace)
-    toCSSTransformNonInterpolableValue(*result.nonInterpolableValue)
-        .setSingleAdditive();
-  return result;
+void CSSTransformInterpolationType::additiveKeyframeHook(
+    InterpolationValue& value) const {
+  toCSSTransformNonInterpolableValue(*value.nonInterpolableValue)
+      .setSingleAdditive();
 }
 
 PairwiseInterpolationValue CSSTransformInterpolationType::maybeMergeSingles(

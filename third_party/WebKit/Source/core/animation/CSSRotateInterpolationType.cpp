@@ -161,19 +161,10 @@ InterpolationValue CSSRotateInterpolationType::maybeConvertValue(
   return convertRotation(StyleBuilderConverter::convertRotation(value));
 }
 
-InterpolationValue CSSRotateInterpolationType::maybeConvertSingle(
-    const PropertySpecificKeyframe& keyframe,
-    const InterpolationEnvironment& environment,
-    const InterpolationValue& underlying,
-    ConversionCheckers& conversionCheckers) const {
-  InterpolationValue result = CSSInterpolationType::maybeConvertSingle(
-      keyframe, environment, underlying, conversionCheckers);
-  if (!result)
-    return nullptr;
-  if (keyframe.composite() != EffectModel::CompositeReplace)
-    toCSSRotateNonInterpolableValue(*result.nonInterpolableValue)
-        .setSingleAdditive();
-  return result;
+void CSSRotateInterpolationType::additiveKeyframeHook(
+    InterpolationValue& value) const {
+  toCSSRotateNonInterpolableValue(*value.nonInterpolableValue)
+      .setSingleAdditive();
 }
 
 PairwiseInterpolationValue CSSRotateInterpolationType::maybeMergeSingles(
