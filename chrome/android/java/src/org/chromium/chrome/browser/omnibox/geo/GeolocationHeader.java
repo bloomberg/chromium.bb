@@ -618,11 +618,11 @@ public class GeolocationHeader {
     private static void recordLocationAgeHistogram(int locationSource, long durationMillis) {
         String name = "";
         if (locationSource == LOCATION_SOURCE_HIGH_ACCURACY) {
-            name = "Geolocation.Header.LocationAgeHighAccuracy";
+            name = "Geolocation.Header.LocationAge.HighAccuracy";
         } else if (locationSource == LOCATION_SOURCE_GPS_ONLY) {
-            name = "Geolocation.Header.LocationAgeGpsOnly";
+            name = "Geolocation.Header.LocationAge.GpsOnly";
         } else if (locationSource == LOCATION_SOURCE_BATTERY_SAVING) {
-            name = "Geolocation.Header.LocationAgeBatterySaving";
+            name = "Geolocation.Header.LocationAge.BatterySaving";
         } else {
             Log.e(TAG, "Unexpected locationSource: " + locationSource);
             assert false : "Unexpected locationSource: " + locationSource;
