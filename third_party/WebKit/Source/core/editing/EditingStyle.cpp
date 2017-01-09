@@ -487,7 +487,7 @@ void EditingStyle::init(Node* node, PropertiesToInclude propertiesToInclude) {
 
   if (node && node->ensureComputedStyle()) {
     const ComputedStyle* computedStyle = node->ensureComputedStyle();
-    removeTextFillAndStrokeColorsIfNeeded(computedStyle);
+    removeInheritedColorsIfNeeded(computedStyle);
     replaceFontSizeByKeywordIfPossible(computedStyle, computedStyleAtPosition);
   }
 
@@ -495,15 +495,19 @@ void EditingStyle::init(Node* node, PropertiesToInclude propertiesToInclude) {
   extractFontSizeDelta();
 }
 
-void EditingStyle::removeTextFillAndStrokeColorsIfNeeded(
+void EditingStyle::removeInheritedColorsIfNeeded(
     const ComputedStyle* computedStyle) {
   // If a node's text fill color is currentColor, then its children use
   // their font-color as their text fill color (they don't
   // inherit it).  Likewise for stroke color.
+  // Similar thing happens for caret-color if it's auto or currentColor.
   if (computedStyle->textFillColor().isCurrentColor())
     m_mutableStyle->removeProperty(CSSPropertyWebkitTextFillColor);
   if (computedStyle->textStrokeColor().isCurrentColor())
     m_mutableStyle->removeProperty(CSSPropertyWebkitTextStrokeColor);
+  if (computedStyle->caretColor().isAutoColor() ||
+      computedStyle->caretColor().isCurrentColor())
+    m_mutableStyle->removeProperty(CSSPropertyCaretColor);
 }
 
 void EditingStyle::setProperty(CSSPropertyID propertyID,

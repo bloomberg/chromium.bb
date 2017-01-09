@@ -3141,19 +3141,17 @@ TEST_P(WebViewTest, SmartClipData) {
       "font-weight: normal; letter-spacing: "
       "normal; orphans: 2; text-align: start; "
       "text-indent: 0px; text-transform: none; white-space: normal; widows: "
-      "2; word-spacing: 0px; -webkit-text-stroke-width: 0px; caret-color: "
-      "auto; text-decoration-style: initial; text-decoration-color: initial;"
-      "\">Air conditioner</div><div id=\"div5\" style=\"padding: 10px; margin: "
-      "10px; border: 2px solid skyblue; float: left; width: "
-      "190px; height: 30px; color: rgb(0, 0, 0); font-family: myahem; "
-      "font-size: 8px; font-style: normal; font-variant-ligatures: normal; "
-      "font-variant-caps: normal; font-weight: normal; "
-      "letter-spacing: normal; orphans: 2; "
-      "text-align: start; text-indent: 0px; text-transform: "
-      "none; white-space: normal; widows: 2; word-spacing: 0px; "
-      "-webkit-text-stroke-width: 0px; caret-color: auto; "
-      "text-decoration-style: initial; text-decoration-color: initial;\">"
-      "Price 10,000,000won</div>";
+      "2; word-spacing: 0px; -webkit-text-stroke-width: 0px; "
+      "text-decoration-style: initial; text-decoration-color: initial;\">Air "
+      "conditioner</div><div id=\"div5\" style=\"padding: 10px; margin: 10px; "
+      "border: 2px solid skyblue; float: left; width: 190px; height: 30px; "
+      "color: rgb(0, 0, 0); font-family: myahem; font-size: 8px; font-style: "
+      "normal; font-variant-ligatures: normal; font-variant-caps: normal; "
+      "font-weight: normal; letter-spacing: normal; orphans: 2; text-align: "
+      "start; text-indent: 0px; text-transform: none; white-space: normal; "
+      "widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; "
+      "text-decoration-style: initial; text-decoration-color: initial;\">Price "
+      "10,000,000won</div>";
   WebString clipText;
   WebString clipHtml;
   WebRect clipRect;
@@ -3182,18 +3180,17 @@ TEST_P(WebViewTest, SmartClipDataWithPinchZoom) {
       "font-weight: normal; letter-spacing: "
       "normal; orphans: 2; text-align: start; "
       "text-indent: 0px; text-transform: none; white-space: normal; widows: "
-      "2; word-spacing: 0px; -webkit-text-stroke-width: 0px; caret-color: "
-      "auto; text-decoration-style: initial; text-decoration-color: initial;"
-      "\">Air conditioner</div><div id=\"div5\" style=\"padding: 10px; margin: "
-      "10px; border: 2px solid skyblue; float: left; width: "
-      "190px; height: 30px; color: rgb(0, 0, 0); font-family: myahem; "
-      "font-size: 8px; font-style: normal; font-variant-ligatures: normal; "
-      "font-variant-caps: normal; font-weight: normal; letter-spacing: normal; "
-      "orphans: 2; text-align: start; text-indent: 0px; "
-      "text-transform: none; white-space: normal; widows: 2; "
-      "word-spacing: 0px; -webkit-text-stroke-width: 0px; caret-color: auto; "
-      "text-decoration-style: initial; text-decoration-color: initial;\">"
-      "Price 10,000,000won</div>";
+      "2; word-spacing: 0px; -webkit-text-stroke-width: 0px; "
+      "text-decoration-style: initial; text-decoration-color: initial;\">Air "
+      "conditioner</div><div id=\"div5\" style=\"padding: 10px; margin: 10px; "
+      "border: 2px solid skyblue; float: left; width: 190px; height: 30px; "
+      "color: rgb(0, 0, 0); font-family: myahem; font-size: 8px; font-style: "
+      "normal; font-variant-ligatures: normal; font-variant-caps: normal; "
+      "font-weight: normal; letter-spacing: normal; orphans: 2; text-align: "
+      "start; text-indent: 0px; text-transform: none; white-space: normal; "
+      "widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; "
+      "text-decoration-style: initial; text-decoration-color: initial;\">Price "
+      "10,000,000won</div>";
   WebString clipText;
   WebString clipHtml;
   WebRect clipRect;

@@ -2205,11 +2205,13 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
     case CSSPropertyCaptionSide:
       return CSSIdentifierValue::create(style.captionSide());
     case CSSPropertyCaretColor:
-      if (style.caretColor().isCurrentColor())
-        return CSSIdentifierValue::create(CSSValueCurrentcolor);
-      if (style.caretColor().isAutoColor())
-        return CSSIdentifierValue::create(CSSValueAuto);
-      return CSSColorValue::create(style.caretColor().color().rgb());
+      return allowVisitedStyle
+                 ? CSSColorValue::create(
+                       style.visitedDependentColor(CSSPropertyCaretColor).rgb())
+                 : currentColorOrValidColor(
+                       style, style.caretColor().isAutoColor()
+                                  ? StyleColor::currentColor()
+                                  : style.caretColor().toStyleColor());
     case CSSPropertyClear:
       return CSSIdentifierValue::create(style.clear());
     case CSSPropertyColor:
