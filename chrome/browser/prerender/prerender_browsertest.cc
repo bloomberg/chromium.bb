@@ -1083,7 +1083,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PageLoadMetricsSimple) {
   histogram_tester().ExpectTotalCount(
       "PageLoad.DocumentTiming.NavigationToFirstLayout", 1);
   histogram_tester().ExpectTotalCount(
-      "PageLoad.PaintTiming.NavigationToFirstContentfulPaint", 1);
+      "PageLoad.ParseTiming.NavigationToParseStart", 1);
 
   // Histogram only emitted during a prerender, which should not happen here.
   histogram_tester().ExpectTotalCount(
@@ -1092,13 +1092,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PageLoadMetricsSimple) {
 
 // Checks that the correct page load metrics observers are produced with a
 // prerender.
-// TODO(https://crbug.com/678976) Fails on ChromeOS and Linux.
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
-#define MAYBE_PageLoadMetricsPrerender DISABLED_PageLoadMetricsPrerender
-#else
-#define MAYBE_PageLoadMetricsPrerender PageLoadMetricsPrerender
-#endif
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PageLoadMetricsPrerender) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PageLoadMetricsPrerender) {
   test_utils::FirstContentfulPaintManagerWaiter* prerender_fcp_waiter =
       test_utils::FirstContentfulPaintManagerWaiter::Create(
           GetPrerenderManager());
@@ -1112,7 +1106,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PageLoadMetricsPrerender) {
   // Histogram logged during the prefetch_loader.html load, but not during the
   // prerender.
   histogram_tester().ExpectTotalCount(
-      "PageLoad.DocumentTiming.NavigationToFirstLayout", 1);
+      "PageLoad.ParseTiming.NavigationToParseStart", 1);
 
   // Histograms only emitted during the simple load which does not happen here
   // (as prefetch_loader.html has an empty body, it does not generate a FCP).
