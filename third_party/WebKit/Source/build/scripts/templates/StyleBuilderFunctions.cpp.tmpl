@@ -100,7 +100,7 @@ namespace blink {
 {{declare_initial_function(property_id)}} {
   CSS{{animation}}Data& data = state.style()->access{{animation}}s();
   data.{{vector}}.clear();
-  data.{{vector}}.append(CSS{{animation}}Data::initial{{attribute}}());
+  data.{{vector}}.push_back(CSS{{animation}}Data::initial{{attribute}}());
 }
 
 {{declare_inherit_function(property_id)}} {
@@ -115,7 +115,7 @@ namespace blink {
   CSS{{animation}}Data& data = state.style()->access{{animation}}s();
   data.{{vector}}.clear();
   for (auto& listValue : toCSSValueList(value))
-    data.{{vector}}.append(CSSToStyleMap::mapAnimation{{attribute}}(*listValue));
+    data.{{vector}}.push_back(CSSToStyleMap::mapAnimation{{attribute}}(*listValue));
 }
 {% endmacro %}
 {{apply_animation('CSSPropertyAnimationDelay', 'Delay', 'Animation')}}

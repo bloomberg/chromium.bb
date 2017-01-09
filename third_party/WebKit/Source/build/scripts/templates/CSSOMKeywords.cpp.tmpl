@@ -21,7 +21,7 @@ KeywordTable createKeywordTable() {
   {
     Vector<CSSValueID> {{property.lower_camel_name}}Keywords;
     {% for keywordValueID in property.keywordIDs %}
-    {{property.lower_camel_name}}Keywords.append({{keywordValueID}});
+    {{property.lower_camel_name}}Keywords.push_back({{keywordValueID}});
     {% endfor %}
     table.set({{property_id}}, {{property.lower_camel_name}}Keywords);
   }

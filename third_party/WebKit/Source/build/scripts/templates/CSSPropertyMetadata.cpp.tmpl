@@ -58,7 +58,7 @@ void CSSPropertyMetadata::filterEnabledCSSPropertiesIntoVector(
   for (unsigned i = 0; i < propertyCount; i++) {
     CSSPropertyID property = properties[i];
     if (isEnabledProperty(property))
-      outVector.append(property);
+      outVector.push_back(property);
   }
 }
 
