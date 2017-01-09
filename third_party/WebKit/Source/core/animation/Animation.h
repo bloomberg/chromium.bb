@@ -221,6 +221,11 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   void notifyAnimationFinished(double monotonicTime, int group) override {}
   void notifyAnimationAborted(double monotonicTime, int group) override {}
 
+  using AnimationPromise = ScriptPromiseProperty<Member<Animation>,
+                                                 Member<Animation>,
+                                                 Member<DOMException>>;
+  void resolvePromiseAsync(AnimationPromise*);
+
   String m_id;
 
   AnimationPlayState m_playState;
@@ -230,10 +235,6 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
 
   unsigned m_sequenceNumber;
 
-  typedef ScriptPromiseProperty<Member<Animation>,
-                                Member<Animation>,
-                                Member<DOMException>>
-      AnimationPromise;
   Member<AnimationPromise> m_finishedPromise;
   Member<AnimationPromise> m_readyPromise;
 

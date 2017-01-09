@@ -37,12 +37,15 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/StyleChangeReason.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/AnimationPlaybackEvent.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/animation/CompositorAnimationPlayer.h"
+#include "platform/heap/Persistent.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
@@ -650,7 +653,7 @@ ExecutionContext* Animation::getExecutionContext() const {
 
 bool Animation::hasPendingActivity() const {
   bool hasPendingPromise =
-      !m_finished && m_finishedPromise &&
+      m_finishedPromise &&
       m_finishedPromise->getState() == ScriptPromisePropertyBase::Pending;
 
   return m_pendingFinishedEvent || hasPendingPromise ||
@@ -1012,9 +1015,9 @@ Animation::PlayStateUpdateScope::~PlayStateUpdateScope() {
         m_animation->m_readyPromise->reject(DOMException::create(AbortError));
       }
       m_animation->m_readyPromise->reset();
-      m_animation->m_readyPromise->resolve(m_animation);
+      m_animation->resolvePromiseAsync(m_animation->m_readyPromise.get());
     } else if (oldPlayState == Pending) {
-      m_animation->m_readyPromise->resolve(m_animation);
+      m_animation->resolvePromiseAsync(m_animation->m_readyPromise.get());
     } else if (newPlayState == Pending) {
       DCHECK_NE(m_animation->m_readyPromise->getState(),
                 AnimationPromise::Pending);
@@ -1031,7 +1034,7 @@ Animation::PlayStateUpdateScope::~PlayStateUpdateScope() {
       }
       m_animation->m_finishedPromise->reset();
     } else if (newPlayState == Finished) {
-      m_animation->m_finishedPromise->resolve(m_animation);
+      m_animation->resolvePromiseAsync(m_animation->m_finishedPromise.get());
     } else if (oldPlayState == Finished) {
       m_animation->m_finishedPromise->reset();
     }
@@ -1107,6 +1110,13 @@ void Animation::invalidateKeyframeEffect(const TreeScope& treeScope) {
     target.setNeedsStyleRecalc(LocalStyleChange,
                                StyleChangeReasonForTracing::create(
                                    StyleChangeReason::StyleSheetChange));
+}
+
+void Animation::resolvePromiseAsync(AnimationPromise* promise) {
+  TaskRunnerHelper::get(TaskType::DOMManipulation, getExecutionContext())
+      ->postTask(BLINK_FROM_HERE,
+                 WTF::bind(&AnimationPromise::resolve<Animation*>,
+                           wrapPersistent(promise), wrapPersistent(this)));
 }
 
 DEFINE_TRACE(Animation) {

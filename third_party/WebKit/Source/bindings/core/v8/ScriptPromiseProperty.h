@@ -105,6 +105,7 @@ void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::resolve(
     NOTREACHED();
     return;
   }
+  DCHECK(!ScriptForbiddenScope::isScriptForbidden());
   if (!getExecutionContext() || getExecutionContext()->isContextDestroyed())
     return;
   m_resolved = value;
