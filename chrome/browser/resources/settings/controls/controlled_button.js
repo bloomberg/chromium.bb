@@ -12,6 +12,12 @@ Polymer({
   ],
 
   properties: {
+    endJustified: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+    },
+
     /** @private */
     controlled_: {
       type: Boolean,

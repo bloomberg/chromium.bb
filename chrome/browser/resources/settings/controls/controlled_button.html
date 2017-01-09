@@ -14,6 +14,7 @@
       :host {
         align-items: center;
         display: flex;
+        --justify-margin: 18px;
       }
 
       :host([controlled_]) {
@@ -23,10 +24,18 @@
       }
 
       cr-policy-pref-indicator {
-        -webkit-margin-start: var(--checkbox-spacing);
         /* Enable pointer events for the indicator so :hover works. Disable
          * clicks/taps via onIndicatorTap_ so outer on-tap doesn't trigger. */
         pointer-events: all;
+      }
+
+      :host(:not([end-justified])) cr-policy-pref-indicator {
+        -webkit-margin-start: var(--justify-margin);
+      }
+
+      :host([end-justified]) cr-policy-pref-indicator {
+        -webkit-margin-end: var(--justify-margin);
+        order: -1;
       }
     </style>
 
