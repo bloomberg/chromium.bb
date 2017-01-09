@@ -367,6 +367,41 @@ std::string CamelCaseToUnderscoreCase(StringRef input) {
   return output;
 }
 
+bool CanBeEvaluatedAtCompileTime(const clang::Stmt* stmt,
+                                 const clang::ASTContext& context) {
+  auto* expr = clang::dyn_cast<clang::Expr>(stmt);
+  if (!expr) {
+    // If the statement is not an expression then it's a constant.
+    return true;
+  }
+
+  // Function calls create non-consistent behaviour. For some template
+  // instantiations they can be constexpr while for others they are not, which
+  // changes the output of isEvaluatable().
+  if (expr->hasNonTrivialCall(context))
+    return false;
+
+  // Recurse on children. If they are all const (or are uses of template
+  // input) then the statement can be considered const. For whatever reason the
+  // below checks can give different-and-less-consistent responses if we call
+  // them on a complex expression than if we call them on the most primitive
+  // pieces (some pieces would say false but the whole thing says true).
+  for (auto* child : expr->children()) {
+    if (!CanBeEvaluatedAtCompileTime(child, context))
+      return false;
+  }
+
+  // If the expression is a template input then its coming at compile time so
+  // we consider it const. And we can't check isEvaluatable() in this case as
+  // it will do bad things/crash.
+  if (expr->isInstantiationDependent())
+    return true;
+
+  // If the expression can be evaluated at compile time, then it should have a
+  // kFoo style name. Otherwise, not.
+  return expr->isEvaluatable(context);
+}
+
 bool IsProbablyConst(const clang::VarDecl& decl,
                      const clang::ASTContext& context) {
   clang::QualType type = decl.getType();
@@ -390,18 +425,7 @@ bool IsProbablyConst(const clang::VarDecl& decl,
   if (!initializer)
     return false;
 
-  // If the expression is dependent on a template input, then we are not
-  // sure if it can be compile-time generated as calling isEvaluatable() is
-  // not valid on |initializer|.
-  // TODO(crbug.com/581218): We could probably look at each compiled
-  // instantiation of the template and see if they are all compile-time
-  // isEvaluable().
-  if (initializer->isInstantiationDependent())
-    return false;
-
-  // If the expression can be evaluated at compile time, then it should have a
-  // kFoo style name. Otherwise, not.
-  return initializer->isEvaluatable(context);
+  return CanBeEvaluatedAtCompileTime(initializer, context);
 }
 
 AST_MATCHER_P(clang::QualType, hasString, std::string, ExpectedString) {
@@ -626,6 +650,12 @@ bool GetNameForDecl(const clang::VarDecl& decl,
     // Don't try to rename constants that already conform to Chrome style.
     if (original_name.size() >= 2 && original_name[0] == 'k' &&
         clang::isUppercase(original_name[1]))
+      return false;
+    // Or names are spelt with underscore casing. While they are actually
+    // compile consts, the author wrote it explicitly as a variable not as
+    // a constant (they would have used kFormat otherwise here), so preserve
+    // it rather than try to mangle a kFormat out of it.
+    if (original_name.find('_') != StringRef::npos)
       return false;
 
     name = 'k';
