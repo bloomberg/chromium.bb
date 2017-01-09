@@ -4550,10 +4550,6 @@ DEFINE_TRACE(WebGL2RenderingContextBase) {
 }
 
 DEFINE_TRACE_WRAPPERS(WebGL2RenderingContextBase) {
-  if (isContextLost()) {
-    return;
-  }
-
   visitor->traceWrappers(m_transformFeedbackBinding);
   visitor->traceWrappers(m_readFramebufferBinding);
   visitor->traceWrappers(m_boundCopyReadBuffer);
