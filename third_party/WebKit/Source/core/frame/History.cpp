@@ -140,11 +140,11 @@ void History::go(ScriptState* scriptState, int delta) {
     return;
 
   if (!activeDocument->frame() ||
-      !activeDocument->frame()->canNavigate(*frame())) {
+      !activeDocument->frame()->canNavigate(*frame()) ||
+      !activeDocument->frame()->isNavigationAllowed() ||
+      !NavigationDisablerForBeforeUnload::isNavigationAllowed()) {
     return;
   }
-  if (!NavigationDisablerForUnload::isNavigationAllowed())
-    return;
 
   if (delta) {
     frame()->loader().client()->navigateBackForward(delta);

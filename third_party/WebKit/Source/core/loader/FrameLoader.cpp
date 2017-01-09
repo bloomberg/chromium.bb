@@ -288,7 +288,7 @@ void FrameLoader::saveScrollState() {
 }
 
 void FrameLoader::dispatchUnloadEvent() {
-  NavigationDisablerForUnload navigationDisabler;
+  FrameNavigationDisabler navigationDisabler(*m_frame);
 
   // If the frame is unloading, the provisional loader should no longer be
   // protected. It will be detached soon.
@@ -1096,7 +1096,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest,
                        HistoryLoadType historyLoadType) {
   DCHECK(m_frame->document());
 
-  if (!m_frame->isNavigationAllowed())
+  if (isBackForwardLoadType(frameLoadType) && !m_frame->isNavigationAllowed())
     return;
 
   if (m_inStopAllLoaders)
@@ -1127,9 +1127,15 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest,
                            ? nullptr
                            : m_frame->findFrameForNavigation(
                                  AtomicString(request.frameName()), *m_frame);
+
   NavigationPolicy policy = navigationPolicyForRequest(request);
   if (targetFrame && targetFrame != m_frame &&
       shouldNavigateTargetFrame(policy)) {
+    if (targetFrame->isLocalFrame() &&
+        !toLocalFrame(targetFrame)->isNavigationAllowed()) {
+      return;
+    }
+
     bool wasInSamePage = targetFrame->page() == m_frame->page();
 
     request.setFrameName("_self");
@@ -1152,6 +1158,9 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest,
     }
     return;
   }
+
+  if (!m_frame->isNavigationAllowed())
+    return;
 
   const KURL& url = request.resourceRequest().url();
   FrameLoadType newLoadType = (frameLoadType == FrameLoadTypeStandard)
@@ -1561,7 +1570,7 @@ bool FrameLoader::shouldClose(bool isReload) {
 
   bool shouldClose = false;
   {
-    NavigationDisablerForUnload navigationDisabler;
+    NavigationDisablerForBeforeUnload navigationDisabler;
     size_t i;
 
     bool didAllowNavigation = false;

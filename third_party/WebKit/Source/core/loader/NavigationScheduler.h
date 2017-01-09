@@ -96,13 +96,13 @@ class CORE_EXPORT NavigationScheduler final
   WebScheduler::NavigatingFrameType m_frameType;
 };
 
-class NavigationDisablerForUnload {
-  WTF_MAKE_NONCOPYABLE(NavigationDisablerForUnload);
+class NavigationDisablerForBeforeUnload {
+  WTF_MAKE_NONCOPYABLE(NavigationDisablerForBeforeUnload);
   STACK_ALLOCATED();
 
  public:
-  NavigationDisablerForUnload() { s_navigationDisableCount++; }
-  ~NavigationDisablerForUnload() {
+  NavigationDisablerForBeforeUnload() { s_navigationDisableCount++; }
+  ~NavigationDisablerForBeforeUnload() {
     DCHECK(s_navigationDisableCount);
     s_navigationDisableCount--;
   }

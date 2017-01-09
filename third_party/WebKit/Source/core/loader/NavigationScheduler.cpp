@@ -105,7 +105,7 @@ void maybeLogScheduledNavigationClobber(ScheduledNavigationType type,
 
 }  // namespace
 
-unsigned NavigationDisablerForUnload::s_navigationDisableCount = 0;
+unsigned NavigationDisablerForBeforeUnload::s_navigationDisableCount = 0;
 
 class ScheduledNavigation
     : public GarbageCollectedFinalized<ScheduledNavigation> {
@@ -360,12 +360,10 @@ bool NavigationScheduler::isNavigationScheduledWithin(double interval) const {
 // TODO(dcheng): There are really two different load blocking concepts at work
 // here and they have been incorrectly tangled together.
 //
-// 1. NavigationDisablerForUnload is for blocking navigation scheduling during
-//    a beforeunload or unload events. Scheduled navigations during
-//    beforeunload would make it possible to get trapped in an endless loop of
-//    beforeunload dialogs. Scheduled navigations during the unload handler
-//    makes is possible to cancel a navigation that was initiated right before
-//    it commits.
+// 1. NavigationDisablerForBeforeUnload is for blocking navigation scheduling
+//    during a beforeunload events. Scheduled navigations during beforeunload
+//    would make it possible to get trapped in an endless loop of beforeunload
+//    dialogs.
 //
 //    Checking Frame::isNavigationAllowed() doesn't make sense in this context:
 //    NavigationScheduler is always cleared when a new load commits, so it's
@@ -379,14 +377,14 @@ bool NavigationScheduler::isNavigationScheduledWithin(double interval) const {
 //    Document::detachLayoutTree().
 inline bool NavigationScheduler::shouldScheduleReload() const {
   return m_frame->page() && m_frame->isNavigationAllowed() &&
-         NavigationDisablerForUnload::isNavigationAllowed();
+         NavigationDisablerForBeforeUnload::isNavigationAllowed();
 }
 
 inline bool NavigationScheduler::shouldScheduleNavigation(
     const String& url) const {
   return m_frame->page() && m_frame->isNavigationAllowed() &&
          (protocolIsJavaScript(url) ||
-          NavigationDisablerForUnload::isNavigationAllowed());
+          NavigationDisablerForBeforeUnload::isNavigationAllowed());
 }
 
 void NavigationScheduler::scheduleRedirect(double delay, const String& url) {
