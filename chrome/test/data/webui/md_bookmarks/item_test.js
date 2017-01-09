@@ -4,9 +4,7 @@
 
 suite('<bookmarks-item>', function() {
   var item;
-  var TEST_ITEM = {
-    id: '0', url: 'http://www.google.com'
-  };
+  var TEST_ITEM = createItem('0');
 
   setup(function() {
     item = document.createElement('bookmarks-item');

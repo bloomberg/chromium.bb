@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-Polymer({
+var BookmarksStore = Polymer({
   is: 'bookmarks-store',
 
   properties: {
@@ -66,8 +66,8 @@ Polymer({
     this.rootNode = rootNode;
     this.idToNodeMap_ = {};
     this.rootNode.path = 'rootNode';
-    this.generatePaths_(rootNode, 0);
-    this.initNodes_(this.rootNode);
+    BookmarksStore.generatePaths(rootNode, 0);
+    BookmarksStore.initNodes(this.rootNode, this.idToNodeMap_);
     this.fire('selected-folder-changed', this.rootNode.children[0].id);
   },
 
@@ -132,43 +132,7 @@ Polymer({
     var parentNode = this.idToNodeMap_[removeInfo.parentId];
     this.splice(parentNode.path + '.children', removeInfo.index, 1);
     this.removeDescendantsFromMap_(id);
-    this.generatePaths_(parentNode, removeInfo.index);
-  },
-
-  /**
-   * Initializes the nodes in the bookmarks tree as follows:
-   * - Populates |idToNodeMap_| with a mapping of all node ids to their
-   *   corresponding BookmarkTreeNode.
-   * - Sets all the nodes to not selected and open by default.
-   * @param {BookmarkTreeNode} bookmarkNode
-   * @private
-   */
-  initNodes_: function(bookmarkNode) {
-    this.idToNodeMap_[bookmarkNode.id] = bookmarkNode;
-    if (bookmarkNode.url)
-      return;
-
-    bookmarkNode.isSelected = false;
-    bookmarkNode.isOpen = true;
-    for (var i = 0; i < bookmarkNode.children.length; i++) {
-      this.initNodes_(bookmarkNode.children[i]);
-    }
-  },
-
-  /**
-   * Stores the path from the store to a node inside the node.
-   * @param {BookmarkTreeNode} bookmarkNode
-   * @param {number} startIndex
-   * @private
-   */
-  generatePaths_: function(bookmarkNode, startIndex) {
-    if (!bookmarkNode.children)
-      return;
-
-    for (var i = startIndex; i < bookmarkNode.children.length; i++) {
-      bookmarkNode.children[i].path = bookmarkNode.path + '.children.#' + i;
-      this.generatePaths_(bookmarkNode.children[i], 0);
-    }
+    BookmarksStore.generatePaths(parentNode, removeInfo.index);
   },
 
   /**
@@ -186,5 +150,41 @@ Polymer({
         this.removeDescendantsFromMap_(node.children[i].id);
     }
     delete this.idToNodeMap_[id];
-  }
+  },
 });
+
+/**
+ * Stores the path from the store to a node inside the node.
+ * @param {BookmarkTreeNode} bookmarkNode
+ * @param {number} startIndex
+ */
+BookmarksStore.generatePaths = function(bookmarkNode, startIndex) {
+  if (!bookmarkNode.children)
+    return;
+
+  for (var i = startIndex; i < bookmarkNode.children.length; i++) {
+    bookmarkNode.children[i].path = bookmarkNode.path + '.children.#' + i;
+    BookmarksStore.generatePaths(bookmarkNode.children[i], 0);
+  }
+};
+
+/**
+ * Initializes the nodes in the bookmarks tree as follows:
+ * - Populates |idToNodeMap_| with a mapping of all node ids to their
+ *   corresponding BookmarkTreeNode.
+ * - Sets all the nodes to not selected and open by default.
+ * @param {BookmarkTreeNode} bookmarkNode
+ * @param {Object=} idToNodeMap
+ */
+BookmarksStore.initNodes = function(bookmarkNode, idToNodeMap) {
+  if (idToNodeMap)
+    idToNodeMap[bookmarkNode.id] = bookmarkNode;
+
+  if (bookmarkNode.url)
+    return;
+
+  bookmarkNode.isSelected = false;
+  bookmarkNode.isOpen = true;
+  for (var i = 0; i < bookmarkNode.children.length; i++)
+    BookmarksStore.initNodes(bookmarkNode.children[i], idToNodeMap);
+};

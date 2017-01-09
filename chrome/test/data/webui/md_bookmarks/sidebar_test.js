@@ -7,30 +7,27 @@ suite('<bookmarks-sidebar>', function() {
   var TEST_TREE;
 
   setup(function() {
-    TEST_TREE = [
-      {
-        id: '0',
-        isSelected: true,
-        children: [
-          {
-            id: '1',
-            isSelected: false,
-            children: [
-              {id: '2', isSelected: false, children: []},
-              {id: '3', isSelected: false, children: []},
-            ],
-          },
-          {id: '4', url: 'link4'},
-          {id: '5', url: 'link5'},
-        ],
-      },
-      {id: '6', isSelected: false, children: []},
-      {id: '7', isSelected: false, children: []}
-    ];
+    TEST_TREE = createFolder('0', [
+      createFolder(
+          '1',
+          [
+            createFolder(
+                '2',
+                [
+                  createFolder('3', []),
+                  createFolder('4', []),
+                ]),
+            createItem('5'),
+            createItem('6'),
+          ]),
+      createFolder('7', []),
+      createFolder('8', []),
+    ]);
 
+    setupTreeForUITests(TEST_TREE);
     sidebar = document.createElement('bookmarks-sidebar');
     replaceBody(sidebar);
-    sidebar.rootFolders = TEST_TREE;
+    sidebar.rootFolders = TEST_TREE.children;
   });
 
   test('selecting and deselecting folders fires event', function() {

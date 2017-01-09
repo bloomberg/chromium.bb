@@ -7,20 +7,16 @@ suite('<bookmarks-store>', function() {
   var TEST_TREE;
 
   setup(function() {
-    TEST_TREE = {
-      id: '0',
-      children: [
-      {
-        id: '1',
-        children: [
-          {id: '2', url: 'link2'},
-          {id: '3', children: []}
-        ]
-      },
-      {id: '4', url: 'link4'},
-      {id: '5', url: 'link5'}
-    ]
-  };
+    TEST_TREE = createFolder('0', [
+      createFolder(
+          '1',
+          [
+            createItem('2', {url: 'link2'}),
+            createFolder('3', []),
+          ]),
+      createItem('4', {url: 'link4'}),
+      createItem('5', {url: 'link5'}),
+    ]);
 
     store = document.createElement('bookmarks-store');
     replaceBody(store);
