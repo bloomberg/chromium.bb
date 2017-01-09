@@ -75,13 +75,9 @@ class CONTENT_EXPORT AudioInputMessageFilter : public IPC::MessageFilter {
                        uint32_t length,
                        uint32_t total_segments);
 
-  // Notification of volume property of an audio input stream.
-  void OnStreamVolume(int stream_id, double volume);
-
   // Received when internal state of browser process' audio input stream has
-  // changed.
-  void OnStreamStateChanged(int stream_id,
-                            media::AudioInputIPCDelegateState state);
+  // encountered an error.
+  void OnStreamError(int stream_id);
 
   // A map of stream ids to delegates.
   IDMap<media::AudioInputIPCDelegate*> delegates_;

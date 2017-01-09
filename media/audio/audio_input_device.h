@@ -103,8 +103,7 @@ class MEDIA_EXPORT AudioInputDevice
                        base::SyncSocket::Handle socket_handle,
                        int length,
                        int total_segments) override;
-  void OnVolume(double volume) override;
-  void OnStateChanged(AudioInputIPCDelegateState state) override;
+  void OnError() override;
   void OnIPCClosed() override;
 
  private:

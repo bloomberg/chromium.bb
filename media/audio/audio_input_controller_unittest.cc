@@ -51,7 +51,6 @@ class MockAudioInputControllerEventHandler
   MockAudioInputControllerEventHandler() {}
 
   MOCK_METHOD1(OnCreated, void(AudioInputController* controller));
-  MOCK_METHOD1(OnRecording, void(AudioInputController* controller));
   MOCK_METHOD2(OnError, void(AudioInputController* controller,
                              AudioInputController::ErrorCode error_code));
   MOCK_METHOD2(OnData,
@@ -120,10 +119,6 @@ TEST_F(AudioInputControllerTest, RecordAndClose) {
   EXPECT_CALL(event_handler, OnCreated(NotNull()))
       .Times(Exactly(1));
 
-  // OnRecording() will be called only once.
-  EXPECT_CALL(event_handler, OnRecording(NotNull()))
-      .Times(Exactly(1));
-
   // OnData() shall be called ten times.
   EXPECT_CALL(event_handler, OnData(NotNull(), NotNull()))
       .Times(AtLeast(10))
@@ -139,7 +134,6 @@ TEST_F(AudioInputControllerTest, RecordAndClose) {
       AudioDeviceDescription::kDefaultDeviceId, NULL);
   ASSERT_TRUE(controller.get());
 
-  // Start recording and trigger one OnRecording() call.
   controller->Record();
 
   // Record and wait until ten OnData() callbacks are received.
@@ -173,12 +167,8 @@ TEST_F(AudioInputControllerTest, SamplesPerPacketTooLarge) {
 TEST_F(AudioInputControllerTest, CloseTwice) {
   MockAudioInputControllerEventHandler event_handler;
 
-  // OnRecording() will be called only once.
+  // OnCreated() will be called only once.
   EXPECT_CALL(event_handler, OnCreated(NotNull()));
-
-  // OnRecording() will be called only once.
-  EXPECT_CALL(event_handler, OnRecording(NotNull()))
-      .Times(Exactly(1));
 
   AudioParameters params(AudioParameters::AUDIO_FAKE,
                          kChannelLayout,

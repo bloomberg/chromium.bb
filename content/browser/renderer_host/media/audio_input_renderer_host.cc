@@ -148,14 +148,6 @@ void AudioInputRendererHost::OnCreated(
                  base::RetainedRef(controller)));
 }
 
-void AudioInputRendererHost::OnRecording(
-    media::AudioInputController* controller) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&AudioInputRendererHost::DoSendRecordingMessage, this,
-                 base::RetainedRef(controller)));
-}
-
 void AudioInputRendererHost::OnError(media::AudioInputController* controller,
     media::AudioInputController::ErrorCode error_code) {
   BrowserThread::PostTask(
@@ -220,17 +212,6 @@ void AudioInputRendererHost::DoCompleteCreation(
       entry->stream_id, foreign_memory_handle, socket_transit_descriptor,
       entry->shared_memory.requested_size(),
       entry->shared_memory_segment_count));
-}
-
-void AudioInputRendererHost::DoSendRecordingMessage(
-    media::AudioInputController* controller) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // TODO(henrika): See crbug.com/115262 for details on why this method
-  // should be implemented.
-  AudioEntry* entry = LookupByController(controller);
-  DCHECK(entry) << "AudioInputController is invalid.";
-  LogMessage(
-      entry->stream_id, "DoSendRecordingMessage: stream is now started", true);
 }
 
 void AudioInputRendererHost::DoHandleError(
@@ -499,8 +480,7 @@ void AudioInputRendererHost::SendErrorMessage(
       base::StringPrintf("SendErrorMessage(error_code=%d)", error_code);
   LogMessage(stream_id, err_msg, true);
 
-  Send(new AudioInputMsg_NotifyStreamStateChanged(
-      stream_id, media::AUDIO_INPUT_IPC_DELEGATE_STATE_ERROR));
+  Send(new AudioInputMsg_NotifyStreamError(stream_id));
 }
 
 void AudioInputRendererHost::DeleteEntries() {

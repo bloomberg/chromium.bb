@@ -64,8 +64,8 @@ TEST(AudioInputDeviceTest, Noop) {
       new AudioInputDevice(base::WrapUnique(input_ipc), io_loop.task_runner()));
 }
 
-ACTION_P2(ReportStateChange, device, state) {
-  static_cast<AudioInputIPCDelegate*>(device)->OnStateChanged(state);
+ACTION_P(ReportStateChange, device) {
+  static_cast<AudioInputIPCDelegate*>(device)->OnError();
 }
 
 // Verify that we get an OnCaptureError() callback if CreateStream fails.
@@ -81,8 +81,7 @@ TEST(AudioInputDeviceTest, FailToCreateStream) {
   device->Initialize(params, &callback, 1);
   device->Start();
   EXPECT_CALL(*input_ipc, CreateStream(_, _, _, _, _))
-      .WillOnce(ReportStateChange(device.get(),
-                                  AUDIO_INPUT_IPC_DELEGATE_STATE_ERROR));
+      .WillOnce(ReportStateChange(device.get()));
   EXPECT_CALL(callback, OnCaptureError(_))
       .WillOnce(QuitLoop(io_loop.task_runner()));
   base::RunLoop().Run();

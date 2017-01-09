@@ -351,8 +351,6 @@ void AudioInputController::DoRecord() {
     handler_->OnLog(this, "AIC::DoRecord");
 
   stream_->Start(this);
-  if (handler_)
-    handler_->OnRecording(this);
 }
 
 void AudioInputController::DoClose() {

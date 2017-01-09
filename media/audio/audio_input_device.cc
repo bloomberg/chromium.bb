@@ -155,53 +155,33 @@ void AudioInputDevice::OnStreamCreated(
   ipc_->RecordStream();
 }
 
-void AudioInputDevice::OnVolume(double volume) {
-  NOTIMPLEMENTED();
-}
-
-void AudioInputDevice::OnStateChanged(
-    AudioInputIPCDelegateState state) {
+void AudioInputDevice::OnError() {
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   // Do nothing if the stream has been closed.
   if (state_ < CREATING_STREAM)
     return;
 
-  // TODO(miu): Clean-up inconsistent and incomplete handling here.
-  // http://crbug.com/180640
-  switch (state) {
-    case AUDIO_INPUT_IPC_DELEGATE_STATE_STOPPED:
-      ShutDownOnIOThread();
-      break;
-    case AUDIO_INPUT_IPC_DELEGATE_STATE_RECORDING:
-      NOTIMPLEMENTED();
-      break;
-    case AUDIO_INPUT_IPC_DELEGATE_STATE_ERROR:
-      DLOG(WARNING) << "AudioInputDevice::OnStateChanged(ERROR)";
-      if (state_ == CREATING_STREAM) {
-        // At this point, we haven't attempted to start the audio thread.
-        // Accessing the hardware might have failed or we may have reached
-        // the limit of the number of allowed concurrent streams.
-        // We must report the error to the |callback_| so that a potential
-        // audio source object will enter the correct state (e.g. 'ended' for
-        // a local audio source).
-        callback_->OnCaptureError(
-            "Maximum allowed input device limit reached or OS failure.");
-      } else {
-        // Don't dereference the callback object if the audio thread
-        // is stopped or stopping.  That could mean that the callback
-        // object has been deleted.
-        // TODO(tommi): Add an explicit contract for clearing the callback
-        // object.  Possibly require calling Initialize again or provide
-        // a callback object via Start() and clear it in Stop().
-        base::AutoLock auto_lock_(audio_thread_lock_);
-        if (audio_thread_)
-          callback_->OnCaptureError("AUDIO_INPUT_IPC_DELEGATE_STATE_ERROR");
-      }
-      break;
-    default:
-      NOTREACHED();
-      break;
+  DLOG(WARNING) << "AudioInputDevice::OnStateChanged(ERROR)";
+  if (state_ == CREATING_STREAM) {
+    // At this point, we haven't attempted to start the audio thread.
+    // Accessing the hardware might have failed or we may have reached
+    // the limit of the number of allowed concurrent streams.
+    // We must report the error to the |callback_| so that a potential
+    // audio source object will enter the correct state (e.g. 'ended' for
+    // a local audio source).
+    callback_->OnCaptureError(
+        "Maximum allowed input device limit reached or OS failure.");
+  } else {
+    // Don't dereference the callback object if the audio thread
+    // is stopped or stopping.  That could mean that the callback
+    // object has been deleted.
+    // TODO(tommi): Add an explicit contract for clearing the callback
+    // object.  Possibly require calling Initialize again or provide
+    // a callback object via Start() and clear it in Stop().
+    base::AutoLock auto_lock_(audio_thread_lock_);
+    if (audio_thread_)
+      callback_->OnCaptureError("IPC delegate state error.");
   }
 }
 

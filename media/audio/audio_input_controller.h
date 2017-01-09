@@ -59,7 +59,6 @@
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Record() ==>                 DoRecord()
 //                      AudioInputStream::Start()
-//                                  .------------------------->  OnRecording()
 //                              kRecording
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Close() ==>                  DoClose()
@@ -113,7 +112,6 @@ class MEDIA_EXPORT AudioInputController
   class MEDIA_EXPORT EventHandler {
    public:
     virtual void OnCreated(AudioInputController* controller) = 0;
-    virtual void OnRecording(AudioInputController* controller) = 0;
     virtual void OnError(AudioInputController* controller,
                          ErrorCode error_code) = 0;
     virtual void OnData(AudioInputController* controller,

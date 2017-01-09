@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/media/audio_input_renderer_host.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -78,10 +79,7 @@ class MockRenderer {
                     base::SyncSocket::TransitDescriptor /*socket_desriptor*/,
                     uint32_t /*length*/,
                     uint32_t /*total_segments*/));
-  MOCK_METHOD2(NotifyStreamVolume, void(int /*stream_id*/, double /*volume*/));
-  MOCK_METHOD2(NotifyStreamStateChanged,
-               void(int /*stream_id*/,
-                    media::AudioInputIPCDelegateState /*state*/));
+  MOCK_METHOD1(NotifyStreamError, void(int /*stream_id*/));
   MOCK_METHOD0(WasShutDown, void());
 };
 
@@ -119,10 +117,8 @@ class AudioInputRendererHostWithInterception : public AudioInputRendererHost {
     IPC_BEGIN_MESSAGE_MAP(AudioInputRendererHostWithInterception, *message)
       IPC_MESSAGE_HANDLER(AudioInputMsg_NotifyStreamCreated,
                           NotifyRendererStreamCreated)
-      IPC_MESSAGE_HANDLER(AudioInputMsg_NotifyStreamVolume,
-                          NotifyRendererStreamVolume)
-      IPC_MESSAGE_HANDLER(AudioInputMsg_NotifyStreamStateChanged,
-                          NotifyRendererStreamStateChanged)
+      IPC_MESSAGE_HANDLER(AudioInputMsg_NotifyStreamError,
+                          NotifyRendererStreamError)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
 
@@ -151,14 +147,8 @@ class AudioInputRendererHostWithInterception : public AudioInputRendererHost {
     memory.Close();
   }
 
-  void NotifyRendererStreamVolume(int stream_id, double volume) {
-    renderer_->NotifyStreamVolume(stream_id, volume);
-  }
-
-  void NotifyRendererStreamStateChanged(
-      int stream_id,
-      media::AudioInputIPCDelegateState state) {
-    renderer_->NotifyStreamStateChanged(stream_id, state);
+  void NotifyRendererStreamError(int stream_id) {
+    renderer_->NotifyStreamError(stream_id);
   }
 
   MockRenderer* renderer_;
@@ -345,9 +335,7 @@ TEST_F(AudioInputRendererHostTest, CreateWithDefaultDevice) {
 // If authorization hasn't been granted, only reply with and error and do
 // nothing else.
 TEST_F(AudioInputRendererHostTest, CreateWithoutAuthorization_Error) {
-  EXPECT_CALL(renderer_,
-              NotifyStreamStateChanged(
-                  kStreamId, media::AUDIO_INPUT_IPC_DELEGATE_STATE_ERROR));
+  EXPECT_CALL(renderer_, NotifyStreamError(kStreamId));
 
   int session_id = 0;
   airh_->OnMessageReceived(AudioInputHostMsg_CreateStream(
@@ -467,9 +455,7 @@ TEST_F(AudioInputRendererHostTest, CreateTwice_Error) {
 
   EXPECT_CALL(renderer_,
               NotifyStreamCreated(kStreamId, _, _, _, kSharedMemoryCount));
-  EXPECT_CALL(renderer_,
-              NotifyStreamStateChanged(
-                  kStreamId, media::AUDIO_INPUT_IPC_DELEGATE_STATE_ERROR));
+  EXPECT_CALL(renderer_, NotifyStreamError(kStreamId));
   EXPECT_CALL(controller_factory_, ControllerCreated());
 
   airh_->OnMessageReceived(AudioInputHostMsg_CreateStream(
@@ -534,9 +520,7 @@ TEST_F(AudioInputRendererHostTest, Error_ClosesController) {
 
   base::RunLoop().RunUntilIdle();
   EXPECT_CALL(*controller_factory_.controller(0), Close(_));
-  EXPECT_CALL(renderer_,
-              NotifyStreamStateChanged(
-                  kStreamId, media::AUDIO_INPUT_IPC_DELEGATE_STATE_ERROR));
+  EXPECT_CALL(renderer_, NotifyStreamError(kStreamId));
 
   controller_factory_.controller(0)->handler()->OnError(
       controller_factory_.controller(0), AudioInputController::UNKNOWN_ERROR);

@@ -106,7 +106,6 @@ class CONTENT_EXPORT AudioInputRendererHost
 
   // AudioInputController::EventHandler implementation.
   void OnCreated(media::AudioInputController* controller) override;
-  void OnRecording(media::AudioInputController* controller) override;
   void OnError(media::AudioInputController* controller,
                media::AudioInputController::ErrorCode error_code) override;
   void OnData(media::AudioInputController* controller,
