@@ -758,7 +758,7 @@ def _CheckTeamTags(input_api, output_api):
       'tools', 'checkteamtags', 'checkteamtags.py')
   args = [input_api.python_executable, checkteamtags_tool,
           '--root', input_api.change.RepositoryRoot()]
-  files = [f.LocalPath() for f in input_api.AffectedFiles()
+  files = [f.LocalPath() for f in input_api.AffectedFiles(include_deletes=False)
            if input_api.os_path.basename(f.AbsoluteLocalPath()).upper() ==
            'OWNERS']
   try:
