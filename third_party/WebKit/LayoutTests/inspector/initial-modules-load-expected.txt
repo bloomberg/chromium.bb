@@ -40,6 +40,7 @@ Running: testCreateNetworkPanel
 Loaded modules:
     animation
     bindings
+    cm
     common
     components
     components_lazy
@@ -67,6 +68,7 @@ Running: testShowSourcesPanel
 Loaded modules:
     animation
     bindings
+    cm
     common
     components
     components_lazy
@@ -94,6 +96,7 @@ Running: testOpenUISourceCode
 Loaded modules:
     animation
     bindings
+    cm
     common
     components
     components_lazy
