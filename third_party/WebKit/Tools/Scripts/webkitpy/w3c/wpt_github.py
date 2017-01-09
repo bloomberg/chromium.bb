@@ -41,9 +41,12 @@ class WPTGitHub(object):
         request.get_method = lambda: method
         response = opener.open(request)
         status_code = response.getcode()
-        return json.load(response), status_code
+        try:
+            return json.load(response), status_code
+        except ValueError:
+            return None, status_code
 
-    def create_pr(self, local_branch_name, desc_title, body):
+    def create_pr(self, remote_branch_name, desc_title, body):
         """Creates a PR on GitHub.
 
         API doc: https://developer.github.com/v3/pulls/#create-a-pull-request
@@ -51,11 +54,9 @@ class WPTGitHub(object):
         Returns:
             A raw response object if successful, None if not.
         """
-        assert local_branch_name
+        assert remote_branch_name
         assert desc_title
         assert body
-
-        pr_branch_name = '{}:{}'.format(self.user, local_branch_name)
 
         # TODO(jeffcarp): CC foolip and qyearsley on all PRs for now
         # TODO(jeffcarp): add HTTP to Host and use that here
@@ -63,7 +64,7 @@ class WPTGitHub(object):
         body = {
             "title": desc_title,
             "body": body,
-            "head": pr_branch_name,
+            "head": remote_branch_name,
             "base": 'master',
         }
         data, status_code = self.request(path, method='POST', body=body)
@@ -79,8 +80,7 @@ class WPTGitHub(object):
         return self.request(path, method='POST', body=body)
 
     def in_flight_pull_requests(self):
-        url_encoded_label = EXPORT_LABEL.replace(' ', '%20')
-        path = '/search/issues?q=repo:w3c/web-platform-tests%20is:open%20type:pr%20labels:{}'.format(url_encoded_label)
+        path = '/search/issues?q=repo:w3c/web-platform-tests%20is:open%20type:pr%20label:{}'.format(EXPORT_LABEL)
         data, status_code = self.request(path, method='GET')
         if status_code == 200:
             return data['items']
@@ -90,9 +90,19 @@ class WPTGitHub(object):
     def merge_pull_request(self, pull_request_number):
         path = '/repos/w3c/web-platform-tests/pulls/%d/merge' % pull_request_number
         body = {}
-        response, content = self.request(path, method='PUT', body=body)
+        data, status_code = self.request(path, method='PUT', body=body)
 
-        if response['status'] == '200':
-            return json.loads(content)
+        if status_code == 200:
+            return data
         else:
             raise Exception('PR could not be merged: %d' % pull_request_number)
+
+    def delete_remote_branch(self, remote_branch_name):
+        path = '/repos/w3c/web-platform-tests/git/refs/heads/%s' % remote_branch_name
+        data, status_code = self.request(path, method='DELETE')
+
+        if status_code != 200:
+            # TODO(jeffcarp): Raise more specific exception (create MergeError class?)
+            raise Exception('PR could not be merged')
+
+        return data

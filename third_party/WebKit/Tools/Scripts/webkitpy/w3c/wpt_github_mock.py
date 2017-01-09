@@ -15,13 +15,16 @@ class MockWPTGitHub(object):
         if self.unsuccessful_merge:
             raise Exception('PR could not be merged: %d' % number)
 
-    def create_pr(self, local_branch_name, desc_title, body):
+    def create_pr(self, remote_branch_name, desc_title, body):
         self.calls.append('create_pr')
 
-        assert local_branch_name
+        assert remote_branch_name
         assert desc_title
         assert body
 
-        self.pull_requests_created.append((local_branch_name, desc_title, body))
+        self.pull_requests_created.append((remote_branch_name, desc_title, body))
 
         return {}
+
+    def delete_remote_branch(self, _):
+        self.calls.append('delete_remote_branch')

@@ -8,46 +8,62 @@ from webkitpy.w3c.local_wpt import LocalWPT
 from webkitpy.w3c.chromium_commit import ChromiumCommit
 
 _log = logging.getLogger(__name__)
+
 CHROMIUM_WPT_DIR = 'third_party/WebKit/LayoutTests/imported/wpt/'
 
+# TODO(jeffcarp): have the script running this fetch Chromium origin/master
+# TODO(jeffcarp): move WPT fetch out of its constructor to match planned ChromiumWPT pattern
 
 class TestExporter(object):
 
     def __init__(self, host, wpt_github, dry_run=False):
         self.host = host
         self.wpt_github = wpt_github
-        self.local_wpt = LocalWPT(self.host)
         self.dry_run = dry_run
+        self.local_wpt = LocalWPT(self.host)
 
     def run(self):
-        # First, poll for an in-flight pull request and merge if exists
+        """Query in-flight pull requests, then merge PR or create one.
+
+        This script assumes it will be run on a regular interval. On
+        each invocation, it will either attempt to merge or attempt to
+        create a PR, never both.
+        """
         pull_requests = self.wpt_github.in_flight_pull_requests()
 
         if len(pull_requests) == 1:
-            pull_request = pull_requests.pop()
-
-            _log.info('In-flight PR found: #%d', pull_request['number'])
-            _log.info(pull_request['title'])
-
-            # TODO(jeffcarp): Check the PR status here
-
-            if self.dry_run:
-                _log.info('[dry_run] Would have attempted to merge PR')
-            else:
-                _log.info('Merging...')
-                self.wpt_github.merge_pull_request(pull_request['number'])
-                _log.info('PR merged!')
+            self.merge_in_flight_pull_request(pull_requests.pop())
         elif len(pull_requests) > 1:
             _log.error(pull_requests)
             # TODO(jeffcarp): Print links to PRs
             raise Exception('More than two in-flight PRs!')
+        else:
+            self.export_first_exportable_commit()
 
-        # Second, look for exportable commits in Chromium
-        # At this point, no in-flight PRs should exist
-        # If there was an issue merging, it should have errored out
+    def merge_in_flight_pull_request(self, pull_request):
+        """Attempt to merge an in-flight PR.
 
-        # TODO(jeffcarp): have the script running this fetch Chromium origin/master
-        # TODO(jeffcarp): move WPT fetch out of its constructor to match planned ChromiumWPT pattern
+        Args:
+            pull_request: a PR object returned from the GitHub API.
+        """
+
+        _log.info('In-flight PR found: #%d', pull_request['number'])
+        _log.info(pull_request['title'])
+
+        # TODO(jeffcarp): Check the PR status here (for Travis CI, etc.)
+
+        if self.dry_run:
+            _log.info('[dry_run] Would have attempted to merge PR')
+            return
+
+        _log.info('Merging...')
+        self.wpt_github.merge_pull_request(pull_request['number'])
+        _log.info('PR merged! Deleting branch.')
+        self.wpt_github.delete_remote_branch('chromium-export-try')
+        _log.info('Branch deleted!')
+
+    def export_first_exportable_commit(self):
+        """Looks for exportable commits in Chromium, creates PR if found."""
 
         wpt_commit, chromium_commit = self.local_wpt.most_recent_chromium_commit()
         assert chromium_commit, 'No Chromium commit found, this is impossible'
@@ -79,8 +95,6 @@ class TestExporter(object):
         patch = outbound_commit.format_patch()
         message = outbound_commit.message()
 
-        # TODO: now do a test comparison of patch against local WPT
-
         if self.dry_run:
             _log.info('[dry_run] Stopping before creating PR')
             _log.info('\n\n[dry_run] message:')
@@ -89,10 +103,10 @@ class TestExporter(object):
             _log.info(patch)
             return
 
-        local_branch_name = self.local_wpt.create_branch_with_patch(message, patch)
+        remote_branch_name = self.local_wpt.create_branch_with_patch(message, patch)
 
         response_data = self.wpt_github.create_pr(
-            local_branch_name=local_branch_name,
+            remote_branch_name=remote_branch_name,
             desc_title=outbound_commit.subject(),
             body=outbound_commit.body())
 

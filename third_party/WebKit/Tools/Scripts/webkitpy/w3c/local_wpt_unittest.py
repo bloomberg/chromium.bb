@@ -85,6 +85,6 @@ class LocalWPTTest(unittest.TestCase):
         local_wpt = LocalWPT(host)
 
         local_branch_name = local_wpt.create_branch_with_patch('message', 'patch')
-        self.assertEqual(len(host.executive.calls), 9)
+        self.assertEqual(len(host.executive.calls), 10)
         self.assertEqual(local_branch_name, 'chromium-export-try')
         # TODO(jeffcarp): Add more specific assertions

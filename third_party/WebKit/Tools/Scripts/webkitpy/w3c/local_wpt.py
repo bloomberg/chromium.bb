@@ -30,6 +30,7 @@ class LocalWPT(object):
         """
         self.host = host
         self.path = path
+        self.branch_name = 'chromium-export-try'
 
         if no_fetch:
             _log.info('Skipping remote WPT fetch')
@@ -68,6 +69,8 @@ class LocalWPT(object):
         self.run(['git', 'reset', '--hard', 'HEAD'])
         self.run(['git', 'clean', '-fdx'])
         self.run(['git', 'checkout', 'origin/master'])
+        if self.branch_name in self.all_branches():
+            self.run(['git', 'branch', '-D', self.branch_name])
 
     def all_branches(self):
         """Returns a list of local and remote branches."""
@@ -82,20 +85,13 @@ class LocalWPT(object):
         """
         self.clean()
         all_branches = self.all_branches()
-        branch_name = 'chromium-export-try'
-        remote_branch_name = 'remotes/github/%s' % branch_name
 
-        if branch_name in all_branches:
-            _log.info('Local branch %s already exists, deleting', branch_name)
-            self.run(['git', 'branch', '-D', branch_name])
+        if self.branch_name in all_branches:
+            _log.info('Local branch %s already exists, deleting', self.branch_name)
+            self.run(['git', 'branch', '-D', self.branch_name])
 
-        if remote_branch_name in all_branches:
-            _log.info('Remote branch %s already exists, deleting', branch_name)
-            # TODO(jeffcarp): Investigate what happens when remote branch exists.
-            self.run(['git', 'push', 'github', ':{}'.format(branch_name)])
-
-        _log.info('Creating local branch %s', branch_name)
-        self.run(['git', 'checkout', '-b', branch_name])
+        _log.info('Creating local branch %s', self.branch_name)
+        self.run(['git', 'checkout', '-b', self.branch_name])
 
         # Remove Chromium WPT directory prefix.
         patch = patch.replace(CHROMIUM_WPT_DIR, '')
@@ -104,9 +100,9 @@ class LocalWPT(object):
         # or something not off-by-one.
         self.run(['git', 'apply', '-'], input=patch)
         self.run(['git', 'commit', '-am', message])
-        self.run(['git', 'push', 'github', branch_name])
+        self.run(['git', 'push', 'github', self.branch_name])
 
-        return branch_name
+        return self.branch_name
 
     def test_patch(self, patch):
         """Returns the expected output of a patch against origin/master.
@@ -127,7 +123,7 @@ class LocalWPT(object):
             self.run(['git', 'add', '.'])
             output = self.run(['git', 'diff', 'origin/master'])
         except ScriptError as error:
-            _log.error('Error while applying patch: %s', error)
+            _log.warning('Patch did not apply cleanly, skipping...')
             output = ''
 
         self.clean()
