@@ -402,6 +402,7 @@ input[type=checkbox]:checked ~ .checkbox::before {
     font-weight: 600;
     margin: 6px 0;
     text-transform: uppercase;
+    transform: translatez(0);
   }
 
   .nav-wrapper {
