@@ -37,11 +37,9 @@ class WebrtcFrameSchedulerSimple : public VideoChannelStateObserver,
   void Start(WebrtcDummyVideoEncoderFactory* video_encoder_factory,
              const base::Closure& capture_callback) override;
   void Pause(bool pause) override;
-  bool GetEncoderFrameParams(
-      const webrtc::DesktopFrame& frame,
-      WebrtcVideoEncoder::FrameParams* params_out) override;
-  void OnFrameEncoded(const WebrtcVideoEncoder::EncodedFrame& encoded_frame,
-                      const webrtc::EncodedImageCallback::Result& send_result,
+  bool OnFrameCaptured(const webrtc::DesktopFrame* frame,
+                       WebrtcVideoEncoder::FrameParams* params_out) override;
+  void OnFrameEncoded(const WebrtcVideoEncoder::EncodedFrame* encoded_frame,
                       HostFrameStats* frame_stats) override;
 
  private:
@@ -52,13 +50,17 @@ class WebrtcFrameSchedulerSimple : public VideoChannelStateObserver,
     ~EncoderBitrateFilter();
 
     void SetBandwidthEstimate(int bandwidth_kbps, base::TimeTicks now);
-    int GetTargetBitrateKbps(webrtc::DesktopSize size, base::TimeTicks now);
+    void SetFrameSize(webrtc::DesktopSize size);
+    int GetTargetBitrateKbps() const;
 
    private:
+    void UpdateTargetBitrate();
+
     std::queue<std::pair<base::TimeTicks, int>> bandwidth_samples_;
     int bandwidth_samples_sum_ = 0;
 
-    int current_target_bitrate_;
+    int minimum_bitrate_ = 0;
+    int current_target_bitrate_ = 0;
   };
 
   void ScheduleNextFrame(base::TimeTicks now);

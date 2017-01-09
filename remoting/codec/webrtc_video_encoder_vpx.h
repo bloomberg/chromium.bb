@@ -41,7 +41,7 @@ class WebrtcVideoEncoderVpx : public WebrtcVideoEncoder {
   void SetLosslessColor(bool want_lossless);
 
   // WebrtcVideoEncoder interface.
-  std::unique_ptr<EncodedFrame> Encode(const webrtc::DesktopFrame& frame,
+  std::unique_ptr<EncodedFrame> Encode(const webrtc::DesktopFrame* frame,
                                        const FrameParams& params) override;
 
  private:
@@ -56,7 +56,7 @@ class WebrtcVideoEncoderVpx : public WebrtcVideoEncoder {
 
   // Prepares |image_| for encoding. Writes updated rectangles into
   // |updated_region|.
-  void PrepareImage(const webrtc::DesktopFrame& frame,
+  void PrepareImage(const webrtc::DesktopFrame* frame,
                     webrtc::DesktopRegion* updated_region);
 
   // Clears active map.

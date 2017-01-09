@@ -139,26 +139,33 @@ void WebrtcVideoStream::OnCaptureResult(
     std::unique_ptr<webrtc::DesktopFrame> frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // TODO(sergeyu): Handle ERROR_PERMANENT result here.
-
-  webrtc::DesktopVector dpi =
-      frame->dpi().is_zero() ? webrtc::DesktopVector(kDefaultDpi, kDefaultDpi)
-                             : frame->dpi();
-
-  if (!frame_size_.equals(frame->size()) || !frame_dpi_.equals(dpi)) {
-    frame_size_ = frame->size();
-    frame_dpi_ = dpi;
-    if (observer_)
-      observer_->OnVideoSizeChanged(this, frame_size_, frame_dpi_);
-  }
-
   captured_frame_timestamps_->capture_ended_time = base::TimeTicks::Now();
   captured_frame_timestamps_->capture_delay =
-      base::TimeDelta::FromMilliseconds(frame->capture_time_ms());
+      base::TimeDelta::FromMilliseconds(frame ? frame->capture_time_ms() : 0);
 
   WebrtcVideoEncoder::FrameParams frame_params;
-  if (!scheduler_->GetEncoderFrameParams(*frame, &frame_params))
+  if (!scheduler_->OnFrameCaptured(frame.get(), &frame_params)) {
     return;
+  }
+
+  // TODO(sergeyu): Handle ERROR_PERMANENT result here.
+  if (frame) {
+    webrtc::DesktopVector dpi =
+        frame->dpi().is_zero() ? webrtc::DesktopVector(kDefaultDpi, kDefaultDpi)
+                               : frame->dpi();
+
+    if (!frame_size_.equals(frame->size()) || !frame_dpi_.equals(dpi)) {
+      frame_size_ = frame->size();
+      frame_dpi_ = dpi;
+      if (observer_)
+        observer_->OnVideoSizeChanged(this, frame_size_, frame_dpi_);
+    }
+  } else {
+    // Save event timestamps to be used for the next frame.
+    next_frame_input_event_timestamps_ =
+        captured_frame_timestamps_->input_event_timestamps;
+    captured_frame_timestamps_->input_event_timestamps = InputEventTimestamps();
+  }
 
   base::PostTaskAndReplyWithResult(
       encode_task_runner_.get(), FROM_HERE,
@@ -185,7 +192,11 @@ void WebrtcVideoStream::CaptureNextFrame() {
   captured_frame_timestamps_.reset(new FrameTimestamps());
   captured_frame_timestamps_->capture_started_time = base::TimeTicks::Now();
 
-  if (event_timestamps_source_) {
+  if (!next_frame_input_event_timestamps_.is_null()) {
+    captured_frame_timestamps_->input_event_timestamps =
+        next_frame_input_event_timestamps_;
+    next_frame_input_event_timestamps_ = InputEventTimestamps();
+  } else if (event_timestamps_source_) {
     captured_frame_timestamps_->input_event_timestamps =
         event_timestamps_source_->TakeLastEventTimestamps();
   }
@@ -202,13 +213,20 @@ WebrtcVideoStream::EncodedFrameWithTimestamps WebrtcVideoStream::EncodeFrame(
   EncodedFrameWithTimestamps result;
   result.timestamps = std::move(timestamps);
   result.timestamps->encode_started_time = base::TimeTicks::Now();
-  result.frame = encoder->Encode(*frame, params);
+  result.frame = encoder->Encode(frame.get(), params);
   result.timestamps->encode_ended_time = base::TimeTicks::Now();
   return result;
 }
 
 void WebrtcVideoStream::OnFrameEncoded(EncodedFrameWithTimestamps frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  HostFrameStats stats;
+  scheduler_->OnFrameEncoded(frame.frame.get(), &stats);
+
+  if (!frame.frame) {
+    return;
+  }
 
   webrtc::EncodedImageCallback::Result result =
       webrtc_transport_->video_encoder_factory()->SendEncodedFrame(
@@ -219,12 +237,9 @@ void WebrtcVideoStream::OnFrameEncoded(EncodedFrameWithTimestamps frame) {
     return;
   }
 
-  HostFrameStats stats;
-  scheduler_->OnFrameEncoded(*frame.frame, result, &stats);
-
   // Send FrameStats message.
   if (video_stats_dispatcher_.is_connected()) {
-    stats.frame_size = frame.frame->data.size();
+    stats.frame_size = frame.frame ? frame.frame->data.size() : 0;
 
     if (!frame.timestamps->input_event_timestamps.is_null()) {
       stats.capture_pending_delay =

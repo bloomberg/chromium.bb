@@ -53,12 +53,13 @@ class WebrtcVideoEncoder {
 
   virtual ~WebrtcVideoEncoder() {}
 
-  // Encode an image stored in |frame|. If |frame.updated_region()| is empty
-  // then the encoder may return a packet (e.g. to top-off previously-encoded
+  // Encode an image stored in |frame|. If frame.updated_region() is empty
+  // then the encoder may return a frame (e.g. to top-off previously-encoded
   // portions of the frame to higher quality) or return nullptr to indicate that
-  // there is no work to do.
+  // there is no work to do. |frame| may be nullptr. This case must be handled
+  // the same as if frame.updated_region() is empty.
   virtual std::unique_ptr<EncodedFrame> Encode(
-      const webrtc::DesktopFrame& frame,
+      const webrtc::DesktopFrame* frame,
       const FrameParams& param) = 0;
 };
 

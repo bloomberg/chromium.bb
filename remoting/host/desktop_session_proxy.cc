@@ -248,7 +248,7 @@ void DesktopSessionProxy::DetachFromDesktop() {
   while (pending_capture_frame_requests_) {
     --pending_capture_frame_requests_;
     video_capturer_->OnCaptureResult(
-        webrtc::DesktopCapturer::Result::ERROR_PERMANENT, nullptr);
+        webrtc::DesktopCapturer::Result::ERROR_TEMPORARY, nullptr);
   }
 }
 
@@ -267,7 +267,7 @@ void DesktopSessionProxy::CaptureFrame() {
     SendToDesktop(new ChromotingNetworkDesktopMsg_CaptureFrame());
   } else {
     video_capturer_->OnCaptureResult(
-        webrtc::DesktopCapturer::Result::ERROR_PERMANENT, nullptr);
+        webrtc::DesktopCapturer::Result::ERROR_TEMPORARY, nullptr);
   }
 }
 

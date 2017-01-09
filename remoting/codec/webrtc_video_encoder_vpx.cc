@@ -274,16 +274,25 @@ void WebrtcVideoEncoderVpx::SetLosslessColor(bool want_lossless) {
 }
 
 std::unique_ptr<WebrtcVideoEncoder::EncodedFrame> WebrtcVideoEncoderVpx::Encode(
-    const webrtc::DesktopFrame& frame,
+    const webrtc::DesktopFrame* frame,
     const FrameParams& params) {
-  DCHECK_LE(32, frame.size().width());
-  DCHECK_LE(32, frame.size().height());
+  webrtc::DesktopSize previous_frame_size =
+      image_ ? webrtc::DesktopSize(image_->w, image_->h)
+             : webrtc::DesktopSize();
+
+  webrtc::DesktopSize frame_size = frame ? frame->size() : previous_frame_size;
+
+  // Don't need to send anything until we get the first non-null frame.
+  if (frame_size.is_empty()) {
+    return nullptr;
+  }
+
+  DCHECK_GE(frame_size.width(), 32);
+  DCHECK_GE(frame_size.height(), 32);
 
   // Create or reconfigure the codec to match the size of |frame|.
-  if (!codec_ ||
-      (image_ &&
-       !frame.size().equals(webrtc::DesktopSize(image_->w, image_->h)))) {
-    Configure(frame.size());
+  if (!codec_ || !frame_size.equals(previous_frame_size)) {
+    Configure(frame_size);
   }
 
   UpdateConfig(params);
@@ -302,7 +311,7 @@ std::unique_ptr<WebrtcVideoEncoder::EncodedFrame> WebrtcVideoEncoderVpx::Encode(
     ClearActiveMap();
 
   if (params.key_frame)
-    updated_region.SetRect(webrtc::DesktopRect::MakeSize(frame.size()));
+    updated_region.SetRect(webrtc::DesktopRect::MakeSize(frame_size));
 
   SetActiveMapFromRegion(updated_region);
 
@@ -337,7 +346,7 @@ std::unique_ptr<WebrtcVideoEncoder::EncodedFrame> WebrtcVideoEncoderVpx::Encode(
   bool got_data = false;
 
   std::unique_ptr<EncodedFrame> encoded_frame(new EncodedFrame());
-  encoded_frame->size = frame.size();
+  encoded_frame->size = frame_size;
 
   while (!got_data) {
     const vpx_codec_cx_pkt_t* vpx_packet =
@@ -472,9 +481,9 @@ void WebrtcVideoEncoderVpx::UpdateConfig(const FrameParams& params) {
 }
 
 void WebrtcVideoEncoderVpx::PrepareImage(
-    const webrtc::DesktopFrame& frame,
+    const webrtc::DesktopFrame* frame,
     webrtc::DesktopRegion* updated_region) {
-  if (frame.updated_region().is_empty()) {
+  if (!frame || frame->updated_region().is_empty()) {
     updated_region->Clear();
     return;
   }
@@ -490,7 +499,7 @@ void WebrtcVideoEncoderVpx::PrepareImage(
     // is required by ConvertRGBToYUVWithRect().
     // TODO(wez): Do we still need 16x16 align, or is even alignment sufficient?
     int padding = use_vp9_ ? 8 : 3;
-    for (webrtc::DesktopRegion::Iterator r(frame.updated_region());
+    for (webrtc::DesktopRegion::Iterator r(frame->updated_region());
          !r.IsAtEnd(); r.Advance()) {
       const webrtc::DesktopRect& rect = r.rect();
       updated_region->AddRect(AlignRect(webrtc::DesktopRect::MakeLTRB(
@@ -505,13 +514,13 @@ void WebrtcVideoEncoderVpx::PrepareImage(
     updated_region->IntersectWith(
         webrtc::DesktopRect::MakeWH(image_->w, image_->h));
   } else {
-    CreateImage(lossless_color_, frame.size(), &image_, &image_buffer_);
+    CreateImage(lossless_color_, frame->size(), &image_, &image_buffer_);
     updated_region->AddRect(webrtc::DesktopRect::MakeWH(image_->w, image_->h));
   }
 
   // Convert the updated region to YUV ready for encoding.
-  const uint8_t* rgb_data = frame.data();
-  const int rgb_stride = frame.stride();
+  const uint8_t* rgb_data = frame->data();
+  const int rgb_stride = frame->stride();
   const int y_stride = image_->stride[0];
   DCHECK_EQ(image_->stride[1], image_->stride[2]);
   const int uv_stride = image_->stride[1];

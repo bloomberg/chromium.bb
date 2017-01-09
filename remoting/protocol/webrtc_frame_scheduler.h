@@ -8,7 +8,6 @@
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/codec/webrtc_video_encoder.h"
-#include "third_party/webrtc/video_encoder.h"
 
 namespace remoting {
 namespace protocol {
@@ -33,18 +32,17 @@ class WebrtcFrameScheduler {
   virtual void Pause(bool pause) = 0;
 
   // Called after |frame| has been captured to get encoding parameters for the
-  // frame. Returns false if the frame should be dropped (e.g. when there are
-  // no changed), true otherwise.
-  virtual bool GetEncoderFrameParams(
-      const webrtc::DesktopFrame& frame,
-      WebrtcVideoEncoder::FrameParams* params_out) = 0;
+  // frame. Returns false if the frame should be dropped (e.g. when there are no
+  // changes), true otherwise. |frame| may be set to nullptr if the capture
+  // request failed.
+  virtual bool OnFrameCaptured(const webrtc::DesktopFrame* frame,
+                               WebrtcVideoEncoder::FrameParams* params_out) = 0;
 
-  // Called after a frame has been encoded and passed to the sender. If
-  // |frame_stats| is not null then sets send_pending_delay, rtt_estimate and
-  // bandwidth_estimate_kbps fields.
+  // Called after a frame has been encoded and passed to the sender.
+  // |encoded_frame| may be nullptr. If |frame_stats| is not null then sets
+  // send_pending_delay, rtt_estimate and bandwidth_estimate_kbps fields.
   virtual void OnFrameEncoded(
-      const WebrtcVideoEncoder::EncodedFrame& encoded_frame,
-      const webrtc::EncodedImageCallback::Result& send_result,
+      const WebrtcVideoEncoder::EncodedFrame* encoded_frame,
       HostFrameStats* frame_stats) = 0;
 };
 
