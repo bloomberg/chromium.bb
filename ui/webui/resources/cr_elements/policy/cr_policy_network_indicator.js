@@ -27,9 +27,9 @@ Polymer({
 
     /**
      * Recommended value for non enforced properties.
-     * @type {?CrOnc.NetworkPropertyType}
+     * @private {!CrOnc.NetworkPropertyType|undefined}
      */
-    recommended: {type: Object, value: null},
+    recommended_: Object,
   },
 
   /**
@@ -49,16 +49,16 @@ Polymer({
     if (property.UserEditable === true &&
         property.hasOwnProperty('UserPolicy')) {
       // We ignore UserEditable unless there is a UserPolicy.
+      this.recommended_ =
+          /** @type {!CrOnc.NetworkPropertyType} */ (property.UserPolicy);
       this.indicatorType = CrPolicyIndicatorType.RECOMMENDED;
-      this.recommended =
-          /** @type {CrOnc.NetworkPropertyType} */ (property.UserPolicy);
     } else if (
         property.DeviceEditable === true &&
         property.hasOwnProperty('DevicePolicy')) {
       // We ignore DeviceEditable unless there is a DevicePolicy.
+      this.recommended_ =
+          /** @type {!CrOnc.NetworkPropertyType} */ (property.DevicePolicy);
       this.indicatorType = CrPolicyIndicatorType.RECOMMENDED;
-      this.recommended =
-          /** @type {CrOnc.NetworkPropertyType} */ (property.DevicePolicy);
     } else if (effective == 'UserPolicy') {
       this.indicatorType = CrPolicyIndicatorType.USER_POLICY;
     } else if (effective == 'DevicePolicy') {
@@ -71,23 +71,22 @@ Polymer({
   },
 
   /**
-   * @param {CrPolicyIndicatorType} type
-   * @param {!CrOnc.ManagedProperty} property
-   * @param {!CrOnc.NetworkPropertyType} recommended
    * @return {string} The tooltip text for |type|.
    * @private
    */
-  getTooltip_: function(type, property, recommended) {
-    if (type == CrPolicyIndicatorType.NONE)
+  getTooltip_: function() {
+    if (this.indicatorType == CrPolicyIndicatorType.NONE)
       return '';
-    if (type == CrPolicyIndicatorType.RECOMMENDED) {
-      var value = property.Active;
-      if (value == undefined && property.Effective)
-        value = property[property.Effective];
-      if (value == recommended)
+    if (this.indicatorType == CrPolicyIndicatorType.RECOMMENDED) {
+      if (!this.property)
+        return '';
+      var value = this.property.Active;
+      if (value == undefined && this.property.Effective)
+        value = this.property[this.property.Effective];
+      if (value == this.recommended_)
         return this.i18n_('controlledSettingRecommendedMatches');
       return this.i18n_('controlledSettingRecommendedDiffers');
     }
-    return this.getPolicyIndicatorTooltip(type, '');
+    return this.getPolicyIndicatorTooltip(this.indicatorType, '');
   }
 });

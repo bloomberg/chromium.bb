@@ -55,7 +55,7 @@
     <div class="settings-box two-line" actionable on-tap="onDetailsTap_">
       <div id="details"
           no-flex$="[[showSimInfo_(deviceState)]]">
-        <cr-network-list-item item="[[activeNetworkState]]" class="flex">
+        <cr-network-list-item item="[[activeNetworkState]]">
         </cr-network-list-item>
         <paper-spinner active="[[scanningIsActive_(deviceState, expanded_)]]"
             hidden$="[[!scanningIsVisible_(deviceState)]]">
