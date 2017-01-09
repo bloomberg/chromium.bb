@@ -59,6 +59,10 @@ class ShortcutHelper {
       const ShortcutInfo& info,
       const SkBitmap& icon_bitmap);
 
+  // Shows toast notifying user that a WebAPK install is already in progress
+  // when user tries to queue a new install for the same WebAPK.
+  static void ShowWebApkInstallInProgressToast();
+
   // Returns the ideal size for an icon representing a web app.
   static int GetIdealHomescreenIconSizeInPx();
 
@@ -101,8 +105,10 @@ class ShortcutHelper {
   static std::string QueryWebApkPackage(const GURL& url);
 
   // Returns true if WebAPKs are enabled and there is an installed WebAPK which
-  // can handle |url|.
-  static bool IsWebApkInstalled(const GURL& url);
+  // can handle |start_url|, or there is one is being installed.
+  static bool IsWebApkInstalled(content::BrowserContext* browser_context,
+                                const GURL& start_url,
+                                const GURL& manifest_url);
 
   // Generates a scope URL based on the passed in |url|. It should be used
   // when the Web Manifest does not specify a scope URL.

@@ -20,6 +20,7 @@
 #include "chrome/browser/android/shortcut_info.h"
 #include "chrome/browser/android/webapk/webapk.pb.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -57,10 +58,11 @@ const char* kDownloadedWebApkPackageName = "party.unicode";
 // WebApkInstaller::InstallOrUpdateWebApkFromGooglePlay() are stubbed out.
 class TestWebApkInstaller : public WebApkInstaller {
  public:
-  TestWebApkInstaller(const ShortcutInfo& shortcut_info,
+  TestWebApkInstaller(content::BrowserContext* browser_context,
+                      const ShortcutInfo& shortcut_info,
                       const SkBitmap& shortcut_icon,
                       bool has_google_play_webapk_install_delegate)
-      : WebApkInstaller(shortcut_info, shortcut_icon),
+      : WebApkInstaller(browser_context, shortcut_info, shortcut_icon),
         has_google_play_webapk_install_delegate_(
             has_google_play_webapk_install_delegate) {}
 
@@ -105,9 +107,9 @@ class TestWebApkInstaller : public WebApkInstaller {
 // Runs the WebApkInstaller installation process/update and blocks till done.
 class WebApkInstallerRunner {
  public:
-  explicit WebApkInstallerRunner(const GURL& best_icon_url)
-      : url_request_context_getter_(new net::TestURLRequestContextGetter(
-            base::ThreadTaskRunnerHandle::Get())),
+  WebApkInstallerRunner(content::BrowserContext* browser_context,
+                        const GURL& best_icon_url)
+      : browser_context_(browser_context),
         best_icon_url_(best_icon_url),
         has_google_play_webapk_install_delegate_(false) {}
 
@@ -118,10 +120,8 @@ class WebApkInstallerRunner {
   }
 
   void RunInstallWebApk() {
-    WebApkInstaller* installer = CreateWebApkInstaller();
-
-    installer->InstallAsyncWithURLRequestContextGetter(
-        url_request_context_getter_.get(),
+    WebApkInstaller::InstallAsyncForTesting(
+        CreateWebApkInstaller(),
         base::Bind(&WebApkInstallerRunner::OnCompleted,
                    base::Unretained(this)));
     Run();
@@ -133,14 +133,14 @@ class WebApkInstallerRunner {
     std::map<std::string, std::string> icon_url_to_murmur2_hash {
       {best_icon_url_.spec(), "0"} };
 
-    CreateWebApkInstaller()->UpdateAsyncWithURLRequestContextGetter(
-        url_request_context_getter_.get(),
-        base::Bind(&WebApkInstallerRunner::OnCompleted, base::Unretained(this)),
+    WebApkInstaller::UpdateAsyncForTesting(
+        CreateWebApkInstaller(),
         kDownloadedWebApkPackageName,
         kWebApkVersion,
         icon_url_to_murmur2_hash,
-        false /* is_manifest_stale */);
-
+        false /* is_manifest_stale */,
+        base::Bind(&WebApkInstallerRunner::OnCompleted,
+                   base::Unretained(this)));
     Run();
   }
 
@@ -149,8 +149,9 @@ class WebApkInstallerRunner {
     info.best_icon_url = best_icon_url_;
 
     // WebApkInstaller owns itself.
-    WebApkInstaller* installer = new TestWebApkInstaller(
-        info, SkBitmap(), has_google_play_webapk_install_delegate_);
+    WebApkInstaller* installer =
+        new TestWebApkInstaller(browser_context_, info, SkBitmap(),
+                                has_google_play_webapk_install_delegate_);
     installer->SetTimeoutMs(100);
     return installer;
   }
@@ -169,8 +170,7 @@ class WebApkInstallerRunner {
     on_completed_callback_.Run();
   }
 
-  scoped_refptr<net::TestURLRequestContextGetter>
-      url_request_context_getter_;
+  content::BrowserContext* browser_context_;
 
   // The Web Manifest's icon URL.
   const GURL best_icon_url_;
@@ -208,7 +208,8 @@ std::unique_ptr<net::test_server::HttpResponse> BuildValidWebApkResponse(
 // Builds WebApk proto and blocks till done.
 class BuildProtoRunner {
  public:
-  BuildProtoRunner() {}
+  explicit BuildProtoRunner(content::BrowserContext* browser_context)
+      : browser_context_(browser_context) {}
 
   ~BuildProtoRunner() {}
 
@@ -221,7 +222,7 @@ class BuildProtoRunner {
 
     // WebApkInstaller owns itself.
     WebApkInstaller* installer =
-        new TestWebApkInstaller(info, SkBitmap(), false);
+        new TestWebApkInstaller(browser_context_, info, SkBitmap(), false);
     installer->BuildWebApkProtoInBackgroundForTesting(
         base::Bind(&BuildProtoRunner::OnBuiltWebApkProto,
                    base::Unretained(this)),
@@ -241,6 +242,8 @@ class BuildProtoRunner {
     webapk_request_ = std::move(webapk);
     on_completed_callback_.Run();
   }
+
+  content::BrowserContext* browser_context_;
 
   // The populated webapk::WebApk.
   std::unique_ptr<webapk::WebApk> webapk_request_;
@@ -269,7 +272,14 @@ class WebApkInstallerTest : public ::testing::Test {
                    base::Unretained(this)));
     ASSERT_TRUE(test_server_.Start());
 
+    profile_.reset(new TestingProfile());
+
     SetDefaults();
+  }
+
+  void TearDown() override {
+    profile_.reset();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Sets the best Web Manifest's icon URL.
@@ -292,11 +302,12 @@ class WebApkInstallerTest : public ::testing::Test {
 
   std::unique_ptr<WebApkInstallerRunner> CreateWebApkInstallerRunner() {
     return std::unique_ptr<WebApkInstallerRunner>(
-        new WebApkInstallerRunner(best_icon_url_));
+        new WebApkInstallerRunner(profile_.get(), best_icon_url_));
   }
 
   std::unique_ptr<BuildProtoRunner> CreateBuildProtoRunner() {
-    return std::unique_ptr<BuildProtoRunner>(new BuildProtoRunner());
+    return std::unique_ptr<BuildProtoRunner>(
+        new BuildProtoRunner(profile_.get()));
   }
 
   net::test_server::EmbeddedTestServer* test_server() { return &test_server_; }
@@ -320,6 +331,7 @@ class WebApkInstallerTest : public ::testing::Test {
                : std::unique_ptr<net::test_server::HttpResponse>();
   }
 
+  std::unique_ptr<TestingProfile> profile_;
   content::TestBrowserThreadBundle thread_bundle_;
   net::EmbeddedTestServer test_server_;
 

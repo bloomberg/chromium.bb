@@ -9,7 +9,9 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
-#include "chrome/browser/android/webapk/webapk_installer.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/android/shortcut_info.h"
+#include "chrome/browser/android/webapk/webapk_install_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -109,10 +111,15 @@ static void UpdateAsync(
   std::string webapk_package;
   ConvertJavaStringToUTF8(env, java_webapk_package, &webapk_package);
 
-  WebApkInstaller* installer = new WebApkInstaller(info, best_icon_bitmap);
-  installer->UpdateAsync(
-      profile,
-      base::Bind(&WebApkUpdateManager::OnBuiltWebApk, id),
-      webapk_package, java_webapk_version, icon_url_to_murmur2_hash,
-      java_is_manifest_stale);
+  WebApkInstallService* install_service = WebApkInstallService::Get(profile);
+  if (install_service->IsInstallInProgress(info.manifest_url)) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&WebApkUpdateManager::OnBuiltWebApk, id, false, ""));
+    return;
+  }
+  install_service->UpdateAsync(
+      info, best_icon_bitmap, webapk_package, java_webapk_version,
+      icon_url_to_murmur2_hash, java_is_manifest_stale,
+      base::Bind(&WebApkUpdateManager::OnBuiltWebApk, id));
 }

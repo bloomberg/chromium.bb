@@ -209,87 +209,59 @@ base::FilePath CreateSubDirAndSetPermissionsInBackground(
 
 }  // anonymous namespace
 
-WebApkInstaller::WebApkInstaller(const ShortcutInfo& shortcut_info,
-                                 const SkBitmap& shortcut_icon)
-    : shortcut_info_(shortcut_info),
-      shortcut_icon_(shortcut_icon),
-      server_url_(GetServerUrl()),
-      webapk_download_url_timeout_ms_(kWebApkDownloadUrlTimeoutMs),
-      download_timeout_ms_(kDownloadTimeoutMs),
-      task_type_(UNDEFINED),
-      weak_ptr_factory_(this) {
-  CreateJavaRef();
-}
-
-void WebApkInstaller::CreateJavaRef() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  java_ref_.Reset(Java_WebApkInstaller_create(
-      env, reinterpret_cast<intptr_t>(this)));
-}
-
 WebApkInstaller::~WebApkInstaller() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_WebApkInstaller_destroy(env, java_ref_);
   java_ref_.Reset();
 }
 
-void WebApkInstaller::InstallAsync(content::BrowserContext* browser_context,
+// static
+void WebApkInstaller::InstallAsync(content::BrowserContext* context,
+                                   const ShortcutInfo& shortcut_info,
+                                   const SkBitmap& shortcut_icon,
                                    const FinishCallback& finish_callback) {
-  InstallAsyncWithURLRequestContextGetter(
-      Profile::FromBrowserContext(browser_context)->GetRequestContext(),
-      finish_callback);
+  // The installer will delete itself when it is done.
+  WebApkInstaller* installer =
+      new WebApkInstaller(context, shortcut_info, shortcut_icon);
+  installer->InstallAsync(finish_callback);
 }
 
-void WebApkInstaller::InstallAsyncWithURLRequestContextGetter(
-    net::URLRequestContextGetter* request_context_getter,
-    const FinishCallback& finish_callback) {
-  request_context_getter_ = request_context_getter;
-  finish_callback_ = finish_callback;
-  task_type_ = INSTALL;
-
-  // We need to take the hash of the bitmap at the icon URL prior to any
-  // transformations being applied to the bitmap (such as encoding/decoding
-  // the bitmap). The icon hash is used to determine whether the icon that
-  // the user sees matches the icon of a WebAPK that the WebAPK server
-  // generated for another user. (The icon can be dynamically generated.)
-  //
-  // We redownload the icon in order to take the Murmur2 hash. The redownload
-  // should be fast because the icon should be in the HTTP cache.
-  DownloadAppIconAndComputeMurmur2Hash();
-}
-
+// static
 void WebApkInstaller::UpdateAsync(
-    content::BrowserContext* browser_context,
-    const FinishCallback& finish_callback,
+    content::BrowserContext* context,
+    const ShortcutInfo& shortcut_info,
+    const SkBitmap& shortcut_icon,
     const std::string& webapk_package,
     int webapk_version,
     const std::map<std::string, std::string>& icon_url_to_murmur2_hash,
-    bool is_manifest_stale) {
-  UpdateAsyncWithURLRequestContextGetter(
-      Profile::FromBrowserContext(browser_context)->GetRequestContext(),
-      finish_callback, webapk_package, webapk_version,
-      icon_url_to_murmur2_hash, is_manifest_stale);
+    bool is_manifest_stale,
+    const FinishCallback& finish_callback) {
+  // The installer will delete itself when it is done.
+  WebApkInstaller* installer =
+      new WebApkInstaller(context, shortcut_info, shortcut_icon);
+  installer->UpdateAsync(
+      webapk_package, webapk_version, icon_url_to_murmur2_hash,
+      is_manifest_stale, finish_callback);
 }
 
-void WebApkInstaller::UpdateAsyncWithURLRequestContextGetter(
-    net::URLRequestContextGetter* request_context_getter,
-    const FinishCallback& finish_callback,
+// staic
+void WebApkInstaller::InstallAsyncForTesting(
+    WebApkInstaller* installer,
+    const FinishCallback& finish_callback) {
+  installer->InstallAsync(finish_callback);
+}
+
+// static
+void WebApkInstaller::UpdateAsyncForTesting(
+    WebApkInstaller* installer,
     const std::string& webapk_package,
     int webapk_version,
     const std::map<std::string, std::string>& icon_url_to_murmur2_hash,
-    bool is_manifest_stale) {
-  request_context_getter_ = request_context_getter;
-  finish_callback_ = finish_callback;
-  webapk_package_ = webapk_package;
-  webapk_version_ = webapk_version;
-  task_type_ = UPDATE;
-
-  base::PostTaskAndReplyWithResult(
-      GetBackgroundTaskRunner().get(), FROM_HERE,
-      base::Bind(&BuildWebApkProtoInBackground, shortcut_info_, shortcut_icon_,
-                 icon_url_to_murmur2_hash, is_manifest_stale),
-      base::Bind(&WebApkInstaller::SendUpdateWebApkRequest,
-                  weak_ptr_factory_.GetWeakPtr()));
+    bool is_manifest_stale,
+    const FinishCallback& finish_callback) {
+  installer->UpdateAsync(
+      webapk_package, webapk_version, icon_url_to_murmur2_hash,
+      is_manifest_stale, finish_callback);
 }
 
 void WebApkInstaller::SetTimeoutMs(int timeout_ms) {
@@ -369,6 +341,61 @@ bool WebApkInstaller::InstallOrUpdateWebApkFromGooglePlay(
         env, java_ref_, java_webapk_package, version, java_title, java_token,
         java_url);
   }
+}
+
+WebApkInstaller::WebApkInstaller(content::BrowserContext* browser_context,
+                                 const ShortcutInfo& shortcut_info,
+                                 const SkBitmap& shortcut_icon)
+    : request_context_getter_(
+          Profile::FromBrowserContext(browser_context)->GetRequestContext()),
+      shortcut_info_(shortcut_info),
+      shortcut_icon_(shortcut_icon),
+      server_url_(GetServerUrl()),
+      webapk_download_url_timeout_ms_(kWebApkDownloadUrlTimeoutMs),
+      download_timeout_ms_(kDownloadTimeoutMs),
+      task_type_(UNDEFINED),
+      weak_ptr_factory_(this) {
+  CreateJavaRef();
+}
+
+void WebApkInstaller::CreateJavaRef() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  java_ref_.Reset(Java_WebApkInstaller_create(
+      env, reinterpret_cast<intptr_t>(this)));
+}
+
+void WebApkInstaller::InstallAsync(const FinishCallback& finish_callback) {
+  finish_callback_ = finish_callback;
+  task_type_ = INSTALL;
+
+  // We need to take the hash of the bitmap at the icon URL prior to any
+  // transformations being applied to the bitmap (such as encoding/decoding
+  // the bitmap). The icon hash is used to determine whether the icon that
+  // the user sees matches the icon of a WebAPK that the WebAPK server
+  // generated for another user. (The icon can be dynamically generated.)
+  //
+  // We redownload the icon in order to take the Murmur2 hash. The redownload
+  // should be fast because the icon should be in the HTTP cache.
+  DownloadAppIconAndComputeMurmur2Hash();
+}
+
+void WebApkInstaller::UpdateAsync(
+    const std::string& webapk_package,
+    int webapk_version,
+    const std::map<std::string, std::string>& icon_url_to_murmur2_hash,
+    bool is_manifest_stale,
+    const FinishCallback& finish_callback) {
+  webapk_package_ = webapk_package;
+  webapk_version_ = webapk_version;
+  finish_callback_ = finish_callback;
+  task_type_ = UPDATE;
+
+  base::PostTaskAndReplyWithResult(
+      GetBackgroundTaskRunner().get(), FROM_HERE,
+      base::Bind(&BuildWebApkProtoInBackground, shortcut_info_, shortcut_icon_,
+                 icon_url_to_murmur2_hash, is_manifest_stale),
+      base::Bind(&WebApkInstaller::SendUpdateWebApkRequest,
+                  weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebApkInstaller::OnURLFetchComplete(const net::URLFetcher* source) {

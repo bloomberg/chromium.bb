@@ -71,7 +71,8 @@ class AppBannerManagerAndroid
   int GetIdealIconSizeInPx() override;
   int GetMinimumIconSizeInPx() override;
   bool IsWebAppInstalled(content::BrowserContext* browser_context,
-                         const GURL& start_url) override;
+                         const GURL& start_url,
+                         const GURL& manifest_url) override;
 
   void PerformInstallableCheck() override;
   void OnAppIconFetched(const SkBitmap& bitmap) override;

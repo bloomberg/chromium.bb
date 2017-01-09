@@ -35,7 +35,8 @@ class AppBannerManagerDesktop
       const extensions::Extension* extension,
       const WebApplicationInfo& web_app_info) override;
   bool IsWebAppInstalled(content::BrowserContext* browser_context,
-                         const GURL& start_url) override;
+                         const GURL& start_url,
+                         const GURL& manifest_url) override;
   void ShowBanner() override;
 
   // content::WebContentsObserver override.

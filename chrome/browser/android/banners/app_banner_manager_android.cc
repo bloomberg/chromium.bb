@@ -142,14 +142,16 @@ int AppBannerManagerAndroid::GetMinimumIconSizeInPx() {
 
 bool AppBannerManagerAndroid::IsWebAppInstalled(
     content::BrowserContext* browser_context,
-    const GURL& start_url) {
-  // Returns true if a WebAPK is installed. Does not check whether a non-WebAPK
-  // web app is installed: this is detected by the content settings check in
-  // AppBannerSettingsHelper::ShouldShowBanner (due to the lack of an API to
-  // detect what is and isn't on the Android homescreen).
-  // This method will still detect the presence of a WebAPK even if Chrome's
-  // data is cleared.
-  return ShortcutHelper::IsWebApkInstalled(start_url);
+    const GURL& start_url,
+    const GURL& manifest_url) {
+  // Returns true if a WebAPK is installed or is being installed.
+  // Does not check whether a non-WebAPK web app is installed: this is detected
+  // by the content settings check in AppBannerSettingsHelper::ShouldShowBanner
+  // (due to the lack of an API to detect what is and isn't on the Android
+  // homescreen). This method will still detect the presence of a WebAPK even if
+  // Chrome's data is cleared.
+  return ShortcutHelper::IsWebApkInstalled(browser_context, start_url,
+                                           manifest_url);
 }
 
 void AppBannerManagerAndroid::PerformInstallableCheck() {

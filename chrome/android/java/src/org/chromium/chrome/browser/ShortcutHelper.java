@@ -219,11 +219,27 @@ public class ShortcutHelper {
      * Show toast to alert user that the shortcut was added to the home screen.
      */
     private static void showAddedToHomescreenToast(final String title) {
-        assert ThreadUtils.runningOnUiThread();
-
         Context applicationContext = ContextUtils.getApplicationContext();
         String toastText = applicationContext.getString(R.string.added_to_homescreen, title);
-        Toast toast = Toast.makeText(applicationContext, toastText, Toast.LENGTH_SHORT);
+        showToast(toastText);
+    }
+
+    /**
+     * Shows toast notifying user that a WebAPK install is already in progress when user tries to
+     * queue a new install for the same WebAPK.
+     */
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private static void showWebApkInstallInProgressToast() {
+        Context applicationContext = ContextUtils.getApplicationContext();
+        String toastText = applicationContext.getString(R.string.webapk_install_in_progress);
+        showToast(toastText);
+    }
+
+    private static void showToast(String text) {
+        assert ThreadUtils.runningOnUiThread();
+        Toast toast =
+                Toast.makeText(ContextUtils.getApplicationContext(), text, Toast.LENGTH_SHORT);
         toast.show();
     }
 

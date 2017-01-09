@@ -1574,6 +1574,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_FAIL_TO_INSTALL_WEBAPK" desc="The installation of a WebAPK fails. [CHAR-LIMIT=27]">
         Unable to add
       </message>
+      <message name="IDS_WEBAPK_INSTALL_IN_PROGRESS" desc="Indicates that an installation for the WebAPK for the specific website is already in progress.">
+        Still adding previous site
+      </message>
 
       <!-- WebsiteSettingsPopup (PageInfo dialog) -->
       <message name="IDS_PAGE_INFO_SITE_SETTINGS_BUTTON" desc="Text in the button that opens a website's Site Settings from the Page Info dialog.">

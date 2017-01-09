@@ -15,7 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/webapk/chrome_webapk_host.h"
-#include "chrome/browser/android/webapk/webapk_installer.h"
+#include "chrome/browser/android/webapk/webapk_install_service.h"
 #include "chrome/browser/manifest/manifest_icon_downloader.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
@@ -85,9 +85,8 @@ void ShortcutHelper::InstallWebApkWithSkBitmap(
     const ShortcutInfo& info,
     const SkBitmap& icon_bitmap,
     const WebApkInstaller::FinishCallback& callback) {
-  // WebApkInstaller destroys itself when it is done.
-  WebApkInstaller* installer = new WebApkInstaller(info, icon_bitmap);
-  installer->InstallAsync(browser_context, callback);
+  WebApkInstallService::Get(browser_context)
+      ->InstallAsync(info, icon_bitmap, callback);
 }
 
 // static
@@ -144,6 +143,11 @@ void ShortcutHelper::AddShortcutWithSkBitmap(
 
   Java_ShortcutHelper_addShortcut(env, java_url, java_user_title, java_bitmap,
                                   info.source);
+}
+
+void ShortcutHelper::ShowWebApkInstallInProgressToast() {
+  Java_ShortcutHelper_showWebApkInstallInProgressToast(
+      base::android::AttachCurrentThread());
 }
 
 int ShortcutHelper::GetIdealHomescreenIconSizeInPx() {
@@ -260,8 +264,13 @@ std::string ShortcutHelper::QueryWebApkPackage(const GURL& url) {
 }
 
 // static
-bool ShortcutHelper::IsWebApkInstalled(const GURL& url) {
-  return !QueryWebApkPackage(url).empty();
+bool ShortcutHelper::IsWebApkInstalled(
+    content::BrowserContext* browser_context,
+    const GURL& start_url,
+    const GURL& manifest_url) {
+  return !QueryWebApkPackage(start_url).empty() ||
+      WebApkInstallService::Get(browser_context)
+      ->IsInstallInProgress(manifest_url);
 }
 
 GURL ShortcutHelper::GetScopeFromURL(const GURL& url) {

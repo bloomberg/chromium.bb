@@ -214,7 +214,8 @@ bool AppBannerManager::IsDebugMode() const {
 
 bool AppBannerManager::IsWebAppInstalled(
     content::BrowserContext* browser_context,
-    const GURL& start_url) {
+    const GURL& start_url,
+    const GURL& manifest_url) {
   return false;
 }
 
@@ -240,7 +241,7 @@ void AppBannerManager::OnDidGetManifest(const InstallableData& data) {
 
 void AppBannerManager::PerformInstallableCheck() {
   if (IsWebAppInstalled(web_contents()->GetBrowserContext(),
-                        manifest_.start_url) &&
+                        manifest_.start_url, manifest_url_) &&
       !IsDebugMode()) {
     ReportStatus(web_contents(), ALREADY_INSTALLED);
     Stop();

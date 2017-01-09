@@ -129,7 +129,8 @@ class AppBannerManager : public content::WebContentsObserver,
 
   // Returns true if the webapp at |start_url| has already been installed.
   virtual bool IsWebAppInstalled(content::BrowserContext* browser_context,
-                                 const GURL& start_url);
+                                 const GURL& start_url,
+                                 const GURL& manifest_url);
 
   // Callback invoked by the InstallableManager once it has fetched the page's
   // manifest.
