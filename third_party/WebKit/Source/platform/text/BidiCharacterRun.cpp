@@ -29,12 +29,12 @@ using namespace WTF;
 
 namespace blink {
 void* BidiCharacterRun::operator new(size_t sz) {
-  return partitionAlloc(Partitions::layoutPartition(), sz,
+  return PartitionAlloc(Partitions::layoutPartition(), sz,
                         WTF_HEAP_PROFILER_TYPE_NAME(BidiCharacterRun));
 }
 
 void BidiCharacterRun::operator delete(void* ptr) {
-  partitionFree(ptr);
+  PartitionFree(ptr);
 }
 
 }  // namespace blink

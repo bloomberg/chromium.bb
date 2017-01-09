@@ -49,13 +49,13 @@ class PartitionStatsDumperImpl final : public WTF::PartitionStatsDumper {
       : m_memoryDump(memoryDump), m_uid(0), m_totalActiveBytes(0) {}
 
   // PartitionStatsDumper implementation.
-  void partitionDumpTotals(const char* partitionName,
+  void PartitionDumpTotals(const char* partitionName,
                            const WTF::PartitionMemoryStats*) override;
-  void partitionsDumpBucketStats(
+  void PartitionsDumpBucketStats(
       const char* partitionName,
       const WTF::PartitionBucketMemoryStats*) override;
 
-  size_t totalActiveBytes() const { return m_totalActiveBytes; }
+  size_t TotalActiveBytes() const { return m_totalActiveBytes; }
 
  private:
   base::trace_event::ProcessMemoryDump* m_memoryDump;
@@ -63,56 +63,58 @@ class PartitionStatsDumperImpl final : public WTF::PartitionStatsDumper {
   size_t m_totalActiveBytes;
 };
 
-void PartitionStatsDumperImpl::partitionDumpTotals(
+void PartitionStatsDumperImpl::PartitionDumpTotals(
     const char* partitionName,
     const WTF::PartitionMemoryStats* memoryStats) {
-  m_totalActiveBytes += memoryStats->totalActiveBytes;
+  m_totalActiveBytes += memoryStats->total_active_bytes;
   std::string dumpName = getPartitionDumpName(partitionName);
   base::trace_event::MemoryAllocatorDump* allocatorDump =
       m_memoryDump->CreateAllocatorDump(dumpName);
-  allocatorDump->AddScalar("size", "bytes", memoryStats->totalResidentBytes);
+  allocatorDump->AddScalar("size", "bytes", memoryStats->total_resident_bytes);
   allocatorDump->AddScalar("allocated_objects_size", "bytes",
-                           memoryStats->totalActiveBytes);
+                           memoryStats->total_active_bytes);
   allocatorDump->AddScalar("virtual_size", "bytes",
-                           memoryStats->totalMmappedBytes);
+                           memoryStats->total_mmapped_bytes);
   allocatorDump->AddScalar("virtual_committed_size", "bytes",
-                           memoryStats->totalCommittedBytes);
+                           memoryStats->total_committed_bytes);
   allocatorDump->AddScalar("decommittable_size", "bytes",
-                           memoryStats->totalDecommittableBytes);
+                           memoryStats->total_decommittable_bytes);
   allocatorDump->AddScalar("discardable_size", "bytes",
-                           memoryStats->totalDiscardableBytes);
+                           memoryStats->total_discardable_bytes);
 }
 
-void PartitionStatsDumperImpl::partitionsDumpBucketStats(
+void PartitionStatsDumperImpl::PartitionsDumpBucketStats(
     const char* partitionName,
     const WTF::PartitionBucketMemoryStats* memoryStats) {
-  ASSERT(memoryStats->isValid);
+  DCHECK(memoryStats->is_valid);
   std::string dumpName = getPartitionDumpName(partitionName);
-  if (memoryStats->isDirectMap)
+  if (memoryStats->is_direct_map) {
     dumpName.append(base::StringPrintf("/directMap_%lu", ++m_uid));
-  else
+  } else {
     dumpName.append(base::StringPrintf(
-        "/bucket_%u", static_cast<unsigned>(memoryStats->bucketSlotSize)));
+        "/bucket_%u", static_cast<unsigned>(memoryStats->bucket_slot_size)));
+  }
 
   base::trace_event::MemoryAllocatorDump* allocatorDump =
       m_memoryDump->CreateAllocatorDump(dumpName);
-  allocatorDump->AddScalar("size", "bytes", memoryStats->residentBytes);
+  allocatorDump->AddScalar("size", "bytes", memoryStats->resident_bytes);
   allocatorDump->AddScalar("allocated_objects_size", "bytes",
-                           memoryStats->activeBytes);
-  allocatorDump->AddScalar("slot_size", "bytes", memoryStats->bucketSlotSize);
+                           memoryStats->active_bytes);
+  allocatorDump->AddScalar("slot_size", "bytes", memoryStats->bucket_slot_size);
   allocatorDump->AddScalar("decommittable_size", "bytes",
-                           memoryStats->decommittableBytes);
+                           memoryStats->decommittable_bytes);
   allocatorDump->AddScalar("discardable_size", "bytes",
-                           memoryStats->discardableBytes);
+                           memoryStats->discardable_bytes);
   allocatorDump->AddScalar("total_pages_size", "bytes",
-                           memoryStats->allocatedPageSize);
+                           memoryStats->allocated_page_size);
   allocatorDump->AddScalar("active_pages", "objects",
-                           memoryStats->numActivePages);
-  allocatorDump->AddScalar("full_pages", "objects", memoryStats->numFullPages);
+                           memoryStats->num_active_pages);
+  allocatorDump->AddScalar("full_pages", "objects",
+                           memoryStats->num_full_pages);
   allocatorDump->AddScalar("empty_pages", "objects",
-                           memoryStats->numEmptyPages);
+                           memoryStats->num_empty_pages);
   allocatorDump->AddScalar("decommitted_pages", "objects",
-                           memoryStats->numDecommittedPages);
+                           memoryStats->num_decommitted_pages);
 }
 
 }  // namespace
@@ -165,7 +167,7 @@ bool PartitionAllocMemoryDumpProvider::OnMemoryDump(
   base::trace_event::MemoryAllocatorDump* allocatedObjectsDump =
       memoryDump->CreateAllocatorDump(Partitions::kAllocatedObjectPoolName);
   allocatedObjectsDump->AddScalar("size", "bytes",
-                                  partitionStatsDumper.totalActiveBytes());
+                                  partitionStatsDumper.TotalActiveBytes());
   memoryDump->AddOwnershipEdge(allocatedObjectsDump->guid(),
                                partitionsDump->guid());
 
@@ -186,11 +188,11 @@ void PartitionAllocMemoryDumpProvider::OnHeapProfilingEnabled(bool enabled) {
       if (!m_allocationRegister)
         m_allocationRegister.reset(new base::trace_event::AllocationRegister());
     }
-    WTF::PartitionAllocHooks::setAllocationHook(reportAllocation);
-    WTF::PartitionAllocHooks::setFreeHook(reportFree);
+    WTF::PartitionAllocHooks::SetAllocationHook(reportAllocation);
+    WTF::PartitionAllocHooks::SetFreeHook(reportFree);
   } else {
-    WTF::PartitionAllocHooks::setAllocationHook(nullptr);
-    WTF::PartitionAllocHooks::setFreeHook(nullptr);
+    WTF::PartitionAllocHooks::SetAllocationHook(nullptr);
+    WTF::PartitionAllocHooks::SetFreeHook(nullptr);
   }
   m_isHeapProfilingEnabled = enabled;
 }

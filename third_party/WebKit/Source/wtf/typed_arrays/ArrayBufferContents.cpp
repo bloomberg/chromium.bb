@@ -111,7 +111,7 @@ void ArrayBufferContents::allocateMemoryWithFlags(size_t size,
                                                   InitializationPolicy policy,
                                                   int flags,
                                                   void*& data) {
-  data = partitionAllocGenericFlags(
+  data = PartitionAllocGenericFlags(
       WTF::Partitions::bufferPartition(), flags, size,
       WTF_HEAP_PROFILER_TYPE_NAME(ArrayBufferContents));
   if (policy == ZeroInitialize && data)

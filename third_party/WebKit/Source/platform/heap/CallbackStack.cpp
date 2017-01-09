@@ -20,13 +20,13 @@ void CallbackStackMemoryPool::initialize() {
   }
   m_freeListNext[kPooledBlockCount - 1] = -1;
   m_pooledMemory = static_cast<CallbackStack::Item*>(
-      WTF::allocPages(nullptr, kBlockBytes * kPooledBlockCount,
+      WTF::AllocPages(nullptr, kBlockBytes * kPooledBlockCount,
                       WTF::kPageAllocationGranularity, WTF::PageAccessible));
   CHECK(m_pooledMemory);
 }
 
 void CallbackStackMemoryPool::shutdown() {
-  WTF::freePages(m_pooledMemory, kBlockBytes * kPooledBlockCount);
+  WTF::FreePages(m_pooledMemory, kBlockBytes * kPooledBlockCount);
   m_pooledMemory = nullptr;
   m_freeListFirst = 0;
 }

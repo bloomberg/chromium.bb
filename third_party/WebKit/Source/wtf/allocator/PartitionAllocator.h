@@ -30,7 +30,7 @@ class WTF_EXPORT PartitionAllocator {
   template <typename T>
   static size_t quantizedSize(size_t count) {
     RELEASE_ASSERT(count <= base::kGenericMaxDirectMapped / sizeof(T));
-    return partitionAllocActualSize(WTF::Partitions::bufferPartition(),
+    return PartitionAllocActualSize(WTF::Partitions::bufferPartition(),
                                     count * sizeof(T));
   }
   template <typename T>

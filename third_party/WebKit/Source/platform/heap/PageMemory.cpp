@@ -12,18 +12,18 @@
 namespace blink {
 
 void MemoryRegion::release() {
-  WTF::freePages(m_base, m_size);
+  WTF::FreePages(m_base, m_size);
 }
 
 bool MemoryRegion::commit() {
-  WTF::recommitSystemPages(m_base, m_size);
-  return WTF::setSystemPagesAccessible(m_base, m_size);
+  WTF::RecommitSystemPages(m_base, m_size);
+  return WTF::SetSystemPagesAccessible(m_base, m_size);
 }
 
 void MemoryRegion::decommit() {
   ASAN_UNPOISON_MEMORY_REGION(m_base, m_size);
-  WTF::decommitSystemPages(m_base, m_size);
-  WTF::setSystemPagesInaccessible(m_base, m_size);
+  WTF::DecommitSystemPages(m_base, m_size);
+  WTF::SetSystemPagesInaccessible(m_base, m_size);
 }
 
 PageMemoryRegion::PageMemoryRegion(Address base,
@@ -65,7 +65,7 @@ PageMemoryRegion* PageMemoryRegion::allocate(size_t size,
   size = (size + WTF::kPageAllocationGranularityOffsetMask) &
          WTF::kPageAllocationGranularityBaseMask;
   Address base = static_cast<Address>(
-      WTF::allocPages(nullptr, size, blinkPageSize, WTF::PageInaccessible));
+      WTF::AllocPages(nullptr, size, blinkPageSize, WTF::PageInaccessible));
   if (!base)
     blinkGCOutOfMemory();
   return new PageMemoryRegion(base, size, numPages, regionTree);

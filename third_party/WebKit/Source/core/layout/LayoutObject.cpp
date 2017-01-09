@@ -139,13 +139,13 @@ bool LayoutObject::s_affectsParentBlock = false;
 
 void* LayoutObject::operator new(size_t sz) {
   ASSERT(isMainThread());
-  return partitionAlloc(WTF::Partitions::layoutPartition(), sz,
+  return PartitionAlloc(WTF::Partitions::layoutPartition(), sz,
                         WTF_HEAP_PROFILER_TYPE_NAME(LayoutObject));
 }
 
 void LayoutObject::operator delete(void* ptr) {
   ASSERT(isMainThread());
-  WTF::partitionFree(ptr);
+  WTF::PartitionFree(ptr);
 }
 
 LayoutObject* LayoutObject::createObject(Element* element,

@@ -53,7 +53,7 @@ void Partitions::initialize(
   base::subtle::SpinLock::Guard guard(s_initializationLock);
 
   if (!s_initialized) {
-    base::partitionAllocGlobalInit(&Partitions::handleOutOfMemory);
+    base::PartitionAllocGlobalInit(&Partitions::handleOutOfMemory);
     m_fastMallocAllocator.init();
     m_bufferAllocator.init();
     m_layoutAllocator.init();
@@ -80,11 +80,11 @@ void Partitions::decommitFreeableMemory() {
   if (!s_initialized)
     return;
 
-  partitionPurgeMemoryGeneric(bufferPartition(),
+  PartitionPurgeMemoryGeneric(bufferPartition(),
                               base::PartitionPurgeDecommitEmptyPages);
-  partitionPurgeMemoryGeneric(fastMallocPartition(),
+  PartitionPurgeMemoryGeneric(fastMallocPartition(),
                               base::PartitionPurgeDecommitEmptyPages);
-  partitionPurgeMemory(layoutPartition(),
+  PartitionPurgeMemory(layoutPartition(),
                        base::PartitionPurgeDecommitEmptyPages);
 }
 
@@ -112,11 +112,11 @@ void Partitions::dumpMemoryStats(
   DCHECK(isMainThread());
 
   decommitFreeableMemory();
-  partitionDumpStatsGeneric(fastMallocPartition(), "fast_malloc", isLightDump,
+  PartitionDumpStatsGeneric(fastMallocPartition(), "fast_malloc", isLightDump,
                             partitionStatsDumper);
-  partitionDumpStatsGeneric(bufferPartition(), "buffer", isLightDump,
+  PartitionDumpStatsGeneric(bufferPartition(), "buffer", isLightDump,
                             partitionStatsDumper);
-  partitionDumpStats(layoutPartition(), "layout", isLightDump,
+  PartitionDumpStats(layoutPartition(), "layout", isLightDump,
                      partitionStatsDumper);
 }
 
@@ -172,12 +172,12 @@ static NEVER_INLINE void partitionsOutOfMemoryUsingLessThan16M() {
   size_t signature = 16 * 1024 * 1024 - 1;
   base::debug::Alias(&signature);
   DLOG(FATAL) << "ParitionAlloc: out of memory with < 16M usage (error:"
-              << getAllocPageErrorCode() << ")";
+              << GetAllocPageErrorCode() << ")";
 }
 
 void Partitions::handleOutOfMemory() {
   volatile size_t totalUsage = totalSizeOfCommittedPages();
-  uint32_t allocPageErrorCode = getAllocPageErrorCode();
+  uint32_t allocPageErrorCode = GetAllocPageErrorCode();
   base::debug::Alias(&allocPageErrorCode);
 
   if (totalUsage >= 2UL * 1024 * 1024 * 1024)

@@ -80,12 +80,12 @@ void InlineBox::remove(MarkLineBoxes markLineBoxes) {
 }
 
 void* InlineBox::operator new(size_t sz) {
-  return partitionAlloc(WTF::Partitions::layoutPartition(), sz,
+  return PartitionAlloc(WTF::Partitions::layoutPartition(), sz,
                         WTF_HEAP_PROFILER_TYPE_NAME(InlineBox));
 }
 
 void InlineBox::operator delete(void* ptr) {
-  WTF::partitionFree(ptr);
+  WTF::PartitionFree(ptr);
 }
 
 const char* InlineBox::boxName() const {

@@ -1194,12 +1194,12 @@ LayoutRect PaintLayer::paintingExtent(const PaintLayer* rootLayer,
 }
 
 void* PaintLayer::operator new(size_t sz) {
-  return partitionAlloc(WTF::Partitions::layoutPartition(), sz,
+  return PartitionAlloc(WTF::Partitions::layoutPartition(), sz,
                         WTF_HEAP_PROFILER_TYPE_NAME(PaintLayer));
 }
 
 void PaintLayer::operator delete(void* ptr) {
-  WTF::partitionFree(ptr);
+  WTF::PartitionFree(ptr);
 }
 
 void PaintLayer::addChild(PaintLayer* child, PaintLayer* beforeChild) {

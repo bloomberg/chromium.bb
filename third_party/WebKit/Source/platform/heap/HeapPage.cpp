@@ -1342,11 +1342,11 @@ void NormalPage::removeFromHeap() {
 #if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
 static void discardPages(Address begin, Address end) {
   uintptr_t beginAddress =
-      WTF::roundUpToSystemPage(reinterpret_cast<uintptr_t>(begin));
+      WTF::RoundUpToSystemPage(reinterpret_cast<uintptr_t>(begin));
   uintptr_t endAddress =
-      WTF::roundDownToSystemPage(reinterpret_cast<uintptr_t>(end));
+      WTF::RoundDownToSystemPage(reinterpret_cast<uintptr_t>(end));
   if (beginAddress < endAddress)
-    WTF::discardSystemPages(reinterpret_cast<void*>(beginAddress),
+    WTF::DiscardSystemPages(reinterpret_cast<void*>(beginAddress),
                             endAddress - beginAddress);
 }
 #endif
