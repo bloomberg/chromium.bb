@@ -350,6 +350,7 @@ blink_core_sources("css") {
     "properties/CSSPropertyAPITranslate.cpp",
     "properties/CSSPropertyAPIWebkitPadding.cpp",
     "properties/CSSPropertyAPIWillChange.cpp",
+    "properties/CSSPropertyAPIZoom.cpp",
     "properties/CSSPropertyDescriptor.h",
     "resolver/AnimatedStyleBuilder.cpp",
     "resolver/AnimatedStyleBuilder.h",

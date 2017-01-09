@@ -1014,32 +1014,6 @@ static CSSValue* consumeColumnSpan(CSSParserTokenRange& range) {
   return consumeIdent<CSSValueAll, CSSValueNone>(range);
 }
 
-static CSSValue* consumeZoom(CSSParserTokenRange& range,
-                             const CSSParserContext& context) {
-  const CSSParserToken& token = range.peek();
-  CSSValue* zoom = nullptr;
-  if (token.type() == IdentToken) {
-    zoom = consumeIdent<CSSValueNormal, CSSValueReset, CSSValueDocument>(range);
-  } else {
-    zoom = consumePercent(range, ValueRangeNonNegative);
-    if (!zoom)
-      zoom = consumeNumber(range, ValueRangeNonNegative);
-  }
-  if (zoom && context.useCounter()) {
-    if (!(token.id() == CSSValueNormal ||
-          (token.type() == NumberToken &&
-           toCSSPrimitiveValue(zoom)->getDoubleValue() == 1) ||
-          (token.type() == PercentageToken &&
-           toCSSPrimitiveValue(zoom)->getDoubleValue() == 100)))
-      context.useCounter()->count(UseCounter::CSSZoomNotEqualToOne);
-    if (token.id() == CSSValueReset)
-      context.useCounter()->count(UseCounter::CSSZoomReset);
-    if (token.id() == CSSValueDocument)
-      context.useCounter()->count(UseCounter::CSSZoomDocument);
-  }
-  return zoom;
-}
-
 static CSSValue* consumeAnimationIterationCount(CSSParserTokenRange& range) {
   if (range.peek().id() == CSSValueInfinite)
     return consumeIdent(range);
@@ -3469,8 +3443,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return consumeColumnGap(m_range, m_context.mode());
     case CSSPropertyColumnSpan:
       return consumeColumnSpan(m_range);
-    case CSSPropertyZoom:
-      return consumeZoom(m_range, m_context);
     case CSSPropertyAnimationDelay:
     case CSSPropertyTransitionDelay:
     case CSSPropertyAnimationDirection:

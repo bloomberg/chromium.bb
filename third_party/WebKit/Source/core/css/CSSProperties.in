@@ -182,7 +182,7 @@ text-orientation inherited, custom_value, type_name=TextOrientation
 writing-mode inherited, custom_value, type_name=WritingMode, keyword_only, keywords=[horizontal-tb|vertical-rl|vertical-lr], initial_keyword=horizontal-tb, field_storage_type=platform/text/WritingMode
 -webkit-writing-mode inherited, custom_value, type_name=WritingMode
 text-rendering inherited, font, type_name=TextRenderingMode
-zoom custom_all
+zoom custom_all, api_class
 
 align-content initial=initialContentAlignment, converter=convertContentAlignmentData
 align-items initial=initialDefaultAlignment, converter=convertSelfOrDefaultAlignmentData
