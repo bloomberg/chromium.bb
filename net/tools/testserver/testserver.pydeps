@@ -54,10 +54,6 @@
 ../../../third_party/tlslite/tlslite/utils/compat.py
 ../../../third_party/tlslite/tlslite/utils/cryptomath.py
 ../../../third_party/tlslite/tlslite/utils/keyfactory.py
-../../../third_party/tlslite/tlslite/utils/openssl_aes.py
-../../../third_party/tlslite/tlslite/utils/openssl_rc4.py
-../../../third_party/tlslite/tlslite/utils/openssl_rsakey.py
-../../../third_party/tlslite/tlslite/utils/openssl_tripledes.py
 ../../../third_party/tlslite/tlslite/utils/p256.py
 ../../../third_party/tlslite/tlslite/utils/pem.py
 ../../../third_party/tlslite/tlslite/utils/pycrypto_aes.py
