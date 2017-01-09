@@ -4,10 +4,10 @@
 
 #include "ash/aura/wm_root_window_controller_aura.h"
 
-#include "ash/aura/wm_shelf_aura.h"
 #include "ash/aura/wm_shell_aura.h"
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf_widget.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -62,7 +62,7 @@ const WmRootWindowControllerAura* WmRootWindowControllerAura::Get(
 }
 
 bool WmRootWindowControllerAura::HasShelf() {
-  return root_window_controller_->wm_shelf_aura()->shelf_widget() != nullptr;
+  return root_window_controller_->wm_shelf()->shelf_widget() != nullptr;
 }
 
 WmShell* WmRootWindowControllerAura::GetShell() {
@@ -70,7 +70,7 @@ WmShell* WmRootWindowControllerAura::GetShell() {
 }
 
 WmShelf* WmRootWindowControllerAura::GetShelf() {
-  return root_window_controller_->wm_shelf_aura();
+  return root_window_controller_->wm_shelf();
 }
 
 WmWindow* WmRootWindowControllerAura::GetWindow() {

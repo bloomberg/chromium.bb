@@ -28,11 +28,12 @@ class Connector;
 
 namespace ash {
 
+class WmShelf;
+
 namespace mus {
 
 class WindowManager;
 class WmRootWindowControllerMus;
-class WmShelfMus;
 class WmTestBase;
 class WmTestHelper;
 class WmWindowMus;
@@ -75,7 +76,7 @@ class RootWindowController {
 
   const display::Display& display() const { return display_; }
 
-  WmShelfMus* wm_shelf() { return wm_shelf_.get(); }
+  WmShelf* wm_shelf() { return wm_shelf_.get(); }
 
  private:
   friend class WmTestBase;
@@ -93,7 +94,7 @@ class RootWindowController {
   display::Display display_;
 
   std::unique_ptr<WmRootWindowControllerMus> wm_root_window_controller_;
-  std::unique_ptr<WmShelfMus> wm_shelf_;
+  std::unique_ptr<WmShelf> wm_shelf_;
 
   std::unique_ptr<aura::client::WindowParentingClient> parenting_client_;
 

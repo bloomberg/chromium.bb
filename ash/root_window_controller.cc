@@ -10,7 +10,6 @@
 #include "ash/ash_touch_exploration_manager_chromeos.h"
 #include "ash/aura/aura_layout_manager_adapter.h"
 #include "ash/aura/wm_root_window_controller_aura.h"
-#include "ash/aura/wm_shelf_aura.h"
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_constants.h"
 #include "ash/common/ash_switches.h"
@@ -20,6 +19,7 @@
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/shelf_widget.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/system/status_area_layout_manager.h"
 #include "ash/common/system/status_area_widget.h"
@@ -282,10 +282,9 @@ void RootWindowController::OnWallpaperAnimationFinished(views::Widget* widget) {
 void RootWindowController::CloseChildWindows() {
   // Remove observer as deactivating keyboard causes
   // docked_window_layout_manager() to fire notifications.
-  if (docked_window_layout_manager() &&
-      wm_shelf_aura_->shelf_layout_manager()) {
+  if (docked_window_layout_manager() && wm_shelf_->shelf_layout_manager()) {
     docked_window_layout_manager()->RemoveObserver(
-        wm_shelf_aura_->shelf_layout_manager());
+        wm_shelf_->shelf_layout_manager());
   }
 
   // Deactivate keyboard container before closing child windows and shutting
@@ -303,23 +302,23 @@ void RootWindowController::MoveWindowsTo(aura::Window* dst) {
 }
 
 ShelfLayoutManager* RootWindowController::GetShelfLayoutManager() {
-  return wm_shelf_aura_->shelf_layout_manager();
+  return wm_shelf_->shelf_layout_manager();
 }
 
 StatusAreaWidget* RootWindowController::GetStatusAreaWidget() {
-  ShelfWidget* shelf_widget = wm_shelf_aura_->shelf_widget();
+  ShelfWidget* shelf_widget = wm_shelf_->shelf_widget();
   return shelf_widget ? shelf_widget->status_area_widget() : nullptr;
 }
 
 SystemTray* RootWindowController::GetSystemTray() {
   // We assume in throughout the code that this will not return NULL. If code
   // triggers this for valid reasons, it should test status_area_widget first.
-  CHECK(wm_shelf_aura_->shelf_widget()->status_area_widget());
-  return wm_shelf_aura_->shelf_widget()->status_area_widget()->system_tray();
+  CHECK(wm_shelf_->shelf_widget()->status_area_widget());
+  return wm_shelf_->shelf_widget()->status_area_widget()->system_tray();
 }
 
 void RootWindowController::UpdateShelfVisibility() {
-  wm_shelf_aura_->UpdateVisibilityState();
+  wm_shelf_->UpdateVisibilityState();
 }
 
 aura::Window* RootWindowController::GetWindowForFullscreenMode() {
@@ -334,7 +333,7 @@ void RootWindowController::ActivateKeyboard(
     return;
   }
   DCHECK(keyboard_controller);
-  keyboard_controller->AddObserver(wm_shelf_aura_->shelf_layout_manager());
+  keyboard_controller->AddObserver(wm_shelf_->shelf_layout_manager());
   keyboard_controller->AddObserver(panel_layout_manager());
   keyboard_controller->AddObserver(docked_window_layout_manager());
   keyboard_controller->AddObserver(workspace_controller()->layout_manager());
@@ -364,7 +363,7 @@ void RootWindowController::DeactivateKeyboard(
     // Virtual keyboard may be deactivated while still showing, notify all
     // observers that keyboard bounds changed to 0 before remove them.
     keyboard_controller->NotifyKeyboardBoundsChanging(gfx::Rect());
-    keyboard_controller->RemoveObserver(wm_shelf_aura_->shelf_layout_manager());
+    keyboard_controller->RemoveObserver(wm_shelf_->shelf_layout_manager());
     keyboard_controller->RemoveObserver(panel_layout_manager());
     keyboard_controller->RemoveObserver(docked_window_layout_manager());
     keyboard_controller->RemoveObserver(
@@ -392,7 +391,7 @@ void RootWindowController::SetTouchAccessibilityAnchorPoint(
 
 RootWindowController::RootWindowController(AshWindowTreeHost* ash_host)
     : ash_host_(ash_host),
-      wm_shelf_aura_(new WmShelfAura),
+      wm_shelf_(base::MakeUnique<WmShelf>()),
       touch_hud_debug_(NULL),
       touch_hud_projection_(NULL) {
   aura::Window* root_window = GetRootWindow();
@@ -451,7 +450,7 @@ void RootWindowController::Init(RootWindowType root_window_type) {
 
 void RootWindowController::InitLayoutManagers() {
   // Create the shelf and status area widgets.
-  DCHECK(!wm_shelf_aura_->shelf_widget());
+  DCHECK(!wm_shelf_->shelf_widget());
   aura::Window* shelf_container = GetContainer(kShellWindowId_ShelfContainer);
   aura::Window* status_container = GetContainer(kShellWindowId_StatusContainer);
   WmWindow* wm_shelf_container = WmWindowAura::Get(shelf_container);
@@ -462,9 +461,9 @@ void RootWindowController::InitLayoutManagers() {
   // Make it easier to resize windows that partially overlap the shelf. Must
   // occur after the ShelfLayoutManager is constructed by ShelfWidget.
   shelf_container->SetEventTargeter(base::MakeUnique<ShelfWindowTargeter>(
-      wm_shelf_container, wm_shelf_aura_.get()));
+      wm_shelf_container, wm_shelf_.get()));
   status_container->SetEventTargeter(base::MakeUnique<ShelfWindowTargeter>(
-      wm_status_container, wm_shelf_aura_.get()));
+      wm_status_container, wm_shelf_.get()));
 
   panel_container_handler_ = base::MakeUnique<PanelWindowEventHandler>();
   GetContainer(kShellWindowId_PanelContainer)
@@ -538,7 +537,7 @@ PanelLayoutManager* RootWindowController::panel_layout_manager() {
 }
 
 void RootWindowController::OnLoginStateChanged(LoginStatus status) {
-  wm_shelf_aura_->UpdateVisibilityState();
+  wm_shelf_->UpdateVisibilityState();
 }
 
 void RootWindowController::OnTouchHudProjectionToggled(bool enabled) {

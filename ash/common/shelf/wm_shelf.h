@@ -23,6 +23,7 @@ class GestureEvent;
 
 namespace ash {
 
+class ShelfBezelEventHandler;
 class ShelfLayoutManager;
 class ShelfLayoutManagerTest;
 class ShelfLockingManager;
@@ -36,6 +37,9 @@ class WmWindow;
 // controller. Note that the shelf widget may not be created until after login.
 class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
  public:
+  WmShelf();
+  ~WmShelf() override;
+
   // Returns the shelf for the display that |window| is on. Note that the shelf
   // widget may not exist, or the shelf may not be visible.
   static WmShelf* ForWindow(WmWindow* window);
@@ -44,7 +48,7 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
   // adjust the alignment (eg. not allowed in guest and supervised user modes).
   static bool CanChangeShelfAlignment();
 
-  virtual void CreateShelfWidget(WmWindow* root);
+  void CreateShelfWidget(WmWindow* root);
   void ShutdownShelfWidget();
   void DestroyShelfWidget();
 
@@ -136,9 +140,6 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
   ShelfView* GetShelfViewForTesting();
 
  protected:
-  WmShelf();
-  ~WmShelf() override;
-
   // ShelfLayoutManagerObserver:
   void WillDeleteShelfLayoutManager() override;
   void WillChangeVisibilityState(ShelfVisibilityState new_state) override;
@@ -147,6 +148,7 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
                            BackgroundAnimatorChangeType change_type) override;
 
  private:
+  class AutoHideEventHandler;
   friend class ShelfLayoutManagerTest;
 
   // Layout manager for the shelf container window. Instances are constructed by
@@ -171,6 +173,14 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
   // Temporary. Used to investigate http://crbug.com/665093 .
   base::TimeTicks time_last_auto_hide_change_;
   int count_auto_hide_changes_ = 0;
+
+  // Forwards mouse and gesture events to ShelfLayoutManager for auto-hide.
+  // TODO(mash): Facilitate simliar functionality in mash: crbug.com/631216
+  std::unique_ptr<AutoHideEventHandler> auto_hide_event_handler_;
+
+  // Forwards touch gestures on a bezel sensor to the shelf.
+  // TODO(mash): Facilitate simliar functionality in mash: crbug.com/636647
+  std::unique_ptr<ShelfBezelEventHandler> bezel_event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(WmShelf);
 };

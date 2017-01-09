@@ -54,7 +54,7 @@ class SystemWallpaperController;
 class TouchHudDebug;
 class TouchHudProjection;
 class WmRootWindowControllerAura;
-class WmShelfAura;
+class WmShelf;
 class WorkspaceController;
 
 // This class maintains the per root window state for ash. This class
@@ -94,7 +94,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
 
   WorkspaceController* workspace_controller();
 
-  WmShelfAura* wm_shelf_aura() const { return wm_shelf_aura_.get(); }
+  WmShelf* wm_shelf() const { return wm_shelf_.get(); }
 
   WmRootWindowControllerAura* wm_root_window_controller() {
     return wm_root_window_controller_;
@@ -216,7 +216,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // The shelf controller for this root window. Exists for the entire lifetime
   // of the RootWindowController so that it is safe for observers to be added
   // to it during construction of the shelf widget and status tray.
-  std::unique_ptr<WmShelfAura> wm_shelf_aura_;
+  std::unique_ptr<WmShelf> wm_shelf_;
 
   std::unique_ptr<SystemWallpaperController> system_wallpaper_;
 

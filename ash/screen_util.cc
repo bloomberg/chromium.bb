@@ -4,7 +4,7 @@
 
 #include "ash/screen_util.h"
 
-#include "ash/aura/wm_shelf_aura.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "base/logging.h"
@@ -20,7 +20,7 @@ namespace ash {
 // static
 gfx::Rect ScreenUtil::GetMaximizedWindowBoundsInParent(aura::Window* window) {
   aura::Window* root_window = window->GetRootWindow();
-  if (GetRootWindowController(root_window)->wm_shelf_aura()->shelf_widget())
+  if (GetRootWindowController(root_window)->wm_shelf()->shelf_widget())
     return GetDisplayWorkAreaBoundsInParent(window);
   else
     return GetDisplayBoundsInParent(window);

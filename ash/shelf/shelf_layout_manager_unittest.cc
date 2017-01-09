@@ -4,7 +4,6 @@
 
 #include "ash/common/shelf/shelf_layout_manager.h"
 
-#include "ash/aura/wm_shelf_aura.h"
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/accelerators/accelerator_table.h"
@@ -1010,8 +1009,8 @@ TEST_F(ShelfLayoutManagerTest, DualDisplayOpenAppListWithShelfAutoHideState) {
   EXPECT_EQ(root_windows.size(), 2U);
 
   // Get the shelves in both displays and set them to be 'AutoHide'.
-  WmShelf* shelf_1 = GetRootWindowController(root_windows[0])->wm_shelf_aura();
-  WmShelf* shelf_2 = GetRootWindowController(root_windows[1])->wm_shelf_aura();
+  WmShelf* shelf_1 = GetRootWindowController(root_windows[0])->wm_shelf();
+  WmShelf* shelf_2 = GetRootWindowController(root_windows[1])->wm_shelf();
   EXPECT_NE(shelf_1, shelf_2);
   EXPECT_NE(shelf_1->GetWindow()->GetRootWindow(),
             shelf_2->GetWindow()->GetRootWindow());
@@ -1131,8 +1130,8 @@ TEST_F(ShelfLayoutManagerTest, ShelfWithSystemModalWindowDualDisplay) {
   EXPECT_EQ(2U, root_windows.size());
 
   // Get the shelves in both displays and set them to be 'AutoHide'.
-  WmShelf* shelf_1 = GetRootWindowController(root_windows[0])->wm_shelf_aura();
-  WmShelf* shelf_2 = GetRootWindowController(root_windows[1])->wm_shelf_aura();
+  WmShelf* shelf_1 = GetRootWindowController(root_windows[0])->wm_shelf();
+  WmShelf* shelf_2 = GetRootWindowController(root_windows[1])->wm_shelf();
   EXPECT_NE(shelf_1, shelf_2);
   EXPECT_NE(shelf_1->GetWindow()->GetRootWindow(),
             shelf_2->GetWindow()->GetRootWindow());

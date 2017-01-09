@@ -14,12 +14,12 @@
 #include <vector>
 
 #include "ash/common/shelf/shelf_layout_manager.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm/container_finder.h"
 #include "ash/common/wm/dock/docked_window_layout_manager.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm/root_window_layout_manager.h"
 #include "ash/mus/bridge/wm_root_window_controller_mus.h"
-#include "ash/mus/bridge/wm_shelf_mus.h"
 #include "ash/mus/bridge/wm_shell_mus.h"
 #include "ash/mus/bridge/wm_window_mus.h"
 #include "ash/mus/non_client_frame_controller.h"
@@ -68,7 +68,7 @@ RootWindowController::RootWindowController(
       window_tree_host_(std::move(window_tree_host)),
       window_count_(0),
       display_(display),
-      wm_shelf_(base::MakeUnique<WmShelfMus>()) {
+      wm_shelf_(base::MakeUnique<WmShelf>()) {
   wm_root_window_controller_ = base::MakeUnique<WmRootWindowControllerMus>(
       window_manager_->shell(), this);
   wm_root_window_controller_->CreateContainers();

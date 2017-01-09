@@ -26,8 +26,6 @@ source_set("lib") {
     "bridge/wm_lookup_mus.h",
     "bridge/wm_root_window_controller_mus.cc",
     "bridge/wm_root_window_controller_mus.h",
-    "bridge/wm_shelf_mus.cc",
-    "bridge/wm_shelf_mus.h",
     "bridge/wm_shell_mus.cc",
     "bridge/wm_shell_mus.h",
     "bridge/wm_window_mus.cc",
