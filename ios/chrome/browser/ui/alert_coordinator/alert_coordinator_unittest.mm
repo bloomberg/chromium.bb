@@ -7,6 +7,7 @@
 #import <UIKit/UIKit.h>
 
 #import "base/mac/foundation_util.h"
+#import "ios/chrome/test/scoped_key_window.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
@@ -23,15 +24,9 @@
 class AlertCoordinatorTest : public PlatformTest {
  protected:
   AlertCoordinatorTest() {
-    // Save the current key window and restore it after the test.
-    previous_key_window_ = [[UIApplication sharedApplication] keyWindow];
-    window_ = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-    [window_ makeKeyAndVisible];
     view_controller_ = [[UIViewController alloc] init];
-    [window_ setRootViewController:view_controller_];
+    [scoped_key_window_.Get() setRootViewController:view_controller_];
   }
-
-  ~AlertCoordinatorTest() override { [previous_key_window_ makeKeyAndVisible]; }
 
   void startAlertCoordinator() { [alert_coordinator_ start]; }
 
@@ -52,9 +47,8 @@ class AlertCoordinatorTest : public PlatformTest {
   }
 
  private:
-  UIWindow* previous_key_window_;
   AlertCoordinator* alert_coordinator_;
-  UIWindow* window_;
+  ScopedKeyWindow scoped_key_window_;
   UIViewController* view_controller_;
 };
 

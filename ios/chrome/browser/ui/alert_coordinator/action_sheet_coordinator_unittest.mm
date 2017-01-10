@@ -7,6 +7,7 @@
 #import <UIKit/UIKit.h>
 
 #import "base/mac/foundation_util.h"
+#import "ios/chrome/test/scoped_key_window.h"
 #include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -15,12 +16,9 @@
 
 // Tests that if there is a popover, it uses the CGRect passed in init.
 TEST(ActionSheetCoordinatorTest, CGRectUsage) {
-  // Setup.
-  UIWindow* window =
-      [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-  [window makeKeyAndVisible];
+  ScopedKeyWindow scoped_key_window;
   UIViewController* viewController = [[UIViewController alloc] init];
-  [window setRootViewController:viewController];
+  [scoped_key_window.Get() setRootViewController:viewController];
 
   UIView* view = [[UIView alloc] initWithFrame:viewController.view.bounds];
 

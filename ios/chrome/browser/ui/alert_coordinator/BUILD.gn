@@ -9,12 +9,16 @@ source_set("alert_coordinator") {
     "action_sheet_coordinator.mm",
     "alert_coordinator.h",
     "alert_coordinator.mm",
+    "form_resubmission_coordinator.h",
+    "form_resubmission_coordinator.mm",
     "input_alert_coordinator.h",
     "input_alert_coordinator.mm",
   ]
   deps = [
     "//base",
+    "//components/strings",
     "//ios/chrome/browser",
+    "//ios/web",
     "//ui/base",
     "//ui/strings",
   ]
@@ -26,11 +30,17 @@ source_set("unit_tests") {
   sources = [
     "action_sheet_coordinator_unittest.mm",
     "alert_coordinator_unittest.mm",
+    "form_resubmission_coordinator_unittest.mm",
     "input_alert_coordinator_unittest.mm",
   ]
   deps = [
     ":alert_coordinator",
     "//base",
+    "//base/test:test_support",
+    "//components/strings",
+    "//ios/chrome/browser/ui",
+    "//ios/chrome/test:test_support",
+    "//ios/web:test_support",
     "//testing/gtest",
     "//third_party/ocmock",
     "//ui/base",

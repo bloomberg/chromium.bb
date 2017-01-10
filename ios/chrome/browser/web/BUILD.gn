@@ -11,8 +11,6 @@ source_set("web") {
     "dom_altering_lock.mm",
     "network_activity_indicator_tab_helper.h",
     "network_activity_indicator_tab_helper.mm",
-    "resubmit_data_controller.h",
-    "resubmit_data_controller.mm",
   ]
   deps = [
     "//base",

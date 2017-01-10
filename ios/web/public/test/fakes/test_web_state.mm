@@ -57,7 +57,7 @@ bool TestWebState::ShouldSuppressDialogs() const {
 void TestWebState::SetShouldSuppressDialogs(bool should_suppress) {}
 
 UIView* TestWebState::GetView() {
-  return nullptr;
+  return view_.get();
 }
 
 const NavigationManager* TestWebState::GetNavigationManager() const {
@@ -71,6 +71,10 @@ NavigationManager* TestWebState::GetNavigationManager() {
 void TestWebState::SetNavigationManager(
     std::unique_ptr<NavigationManager> navigation_manager) {
   navigation_manager_ = std::move(navigation_manager);
+}
+
+void TestWebState::SetView(UIView* view) {
+  view_.reset([view retain]);
 }
 
 CRWJSInjectionReceiver* TestWebState::GetJSInjectionReceiver() const {

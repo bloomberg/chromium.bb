@@ -83,6 +83,7 @@ class TestWebState : public WebState {
   void SetTrustLevel(URLVerificationTrustLevel trust_level);
   void SetNavigationManager(
       std::unique_ptr<NavigationManager> navigation_manager);
+  void SetView(UIView* view);
 
   // Notifier for tests.
   void OnPageLoaded(PageLoadCompletionStatus load_completion_status);
@@ -97,6 +98,7 @@ class TestWebState : public WebState {
   std::string mime_type_;
   std::string content_language_;
   std::unique_ptr<NavigationManager> navigation_manager_;
+  base::scoped_nsobject<UIView> view_;
 
   // A list of observers notified when page state changes. Weak references.
   base::ObserverList<WebStateObserver, true> observers_;

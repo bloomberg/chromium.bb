@@ -98,6 +98,7 @@
 #import "ios/chrome/browser/tabs/tab_snapshotting_delegate.h"
 #include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/u2f/u2f_controller.h"
+#import "ios/chrome/browser/ui/alert_coordinator/form_resubmission_coordinator.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
@@ -112,13 +113,13 @@
 #import "ios/chrome/browser/ui/reader_mode/reader_mode_controller.h"
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_view.h"
 #include "ios/chrome/browser/ui/ui_util.h"
+#import "ios/chrome/browser/ui/util/top_view_controller.h"
 #import "ios/chrome/browser/web/auto_reload_bridge.h"
 #import "ios/chrome/browser/web/blocked_popup_handler.h"
 #import "ios/chrome/browser/web/external_app_launcher.h"
 #include "ios/chrome/browser/web/network_activity_indicator_tab_helper.h"
 #import "ios/chrome/browser/web/passkit_dialog_provider.h"
 #include "ios/chrome/browser/web/print_observer.h"
-#import "ios/chrome/browser/web/resubmit_data_controller.h"
 #import "ios/chrome/browser/xcallback_parameters.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -292,12 +293,9 @@ enum class RendererTerminationTabState {
   base::scoped_nsobject<WebControllerSnapshotHelper>
       webControllerSnapshotHelper_;
 
-  // The controller that displays an action sheet to confirm form data
-  // resubmission.
-  base::scoped_nsobject<ResubmitDataController> resubmitDataController_;
-
-  // Number of attempts to show the resubmit data action sheet.
-  NSUInteger showResubmitDataActionSheetAttempt_;
+  // Coordinates Form Resubmission dialog presentation.
+  base::scoped_nsobject<FormResubmissionCoordinator>
+      formResubmissionCoordinator_;
 
   // Handles support for window.print JavaScript calls.
   std::unique_ptr<PrintObserver> printObserver_;
@@ -374,13 +372,6 @@ enum class RendererTerminationTabState {
 
 // Calls the model and ask to close this tab.
 - (void)closeThisTab;
-
-// Shows the ResubmitDataActionSheet to the user to allow the user to make a
-// choice.
-- (void)showResubmitDataActionSheet;
-
-// Clears the ResubmitDataActionSheet from the UI.
-- (void)clearResubmitDataActionSheet;
 
 // Initialize the Native App Launcher controller.
 - (void)initNativeAppNavigationController;
@@ -1258,7 +1249,7 @@ void AddNetworkClientFactoryOnIOThread(
   [readerModeController_ detachFromWebState];
   readerModeController_.reset();
 
-  [self clearResubmitDataActionSheet];
+  formResubmissionCoordinator_.reset();
 
   // Invalidate any snapshot stored for this session.
   NSString* sessionID = [self currentSessionID];
@@ -1717,62 +1708,28 @@ void AddNetworkClientFactoryOnIOThread(
     onFormResubmissionForRequest:(NSURLRequest*)request
                    continueBlock:(ProceduralBlock)continueBlock
                      cancelBlock:(ProceduralBlock)cancelBlock {
-  // Clear the resubmit data action sheet before loading a new request.
-  [self clearResubmitDataActionSheet];
-  resubmitDataController_.reset([[ResubmitDataController alloc]
-      initWithContinueBlock:continueBlock
-                cancelBlock:cancelBlock]);
-  [self showResubmitDataActionSheet];
-}
+  UIViewController* topController =
+      top_view_controller::TopPresentedViewControllerFrom(
+          [UIApplication sharedApplication].keyWindow.rootViewController);
 
-- (void)showResubmitDataActionSheet {
-  // Return early if the CRWWebController has been closed or web
-  // usage is disabled on it.
-  if (![self.webController webUsageEnabled])
-    return;
-  // Check to see if an action sheet can be shown.
-  if (self.webState && [self.webState->GetView() window]) {
-    // Display the action sheet with the arrow pointing at the top center of the
-    // web contents.
-    CGFloat xOrigin = CGRectGetMidX(self.webState->GetView().frame);
-    CGFloat yOrigin = CGRectGetMinY(self.webState->GetView().frame) +
-                      [[self fullScreenControllerDelegate] headerHeight];
-    [resubmitDataController_
-        presentActionSheetFromRect:CGRectMake(xOrigin, yOrigin, 1, 1)
-                            inView:self.webState->GetView()];
-    showResubmitDataActionSheetAttempt_ = 0;
-    return;
-  }
+  // Display the action sheet with the arrow pointing at the top center of the
+  // web contents.
+  CGPoint dialogLocation =
+      CGPointMake(CGRectGetMidX(webController.view.frame),
+                  CGRectGetMinY(webController.view.frame) +
+                      [[self fullScreenControllerDelegate] headerHeight]);
 
-  // The resubmit data action cannot be presented as the |contentView_| was not
-  // yet added to the window. Retry after |kDelayBetweenAttemptsNanoSecs|.
-  // TODO(crbug.com/227868): The strategy to poll until the resubmit data action
-  // sheet can be presented is a temporary workaround. This needs to be
-  // refactored to match the Chromium implementation:
-  // * web_controller should notify/ the BVC once an action sheet should be
-  //   shown.
-  // * BVC should present the action sheet and then trigger the reload
-  const NSUInteger kMaximumNumberAttempts = 10;
-  // 400 milliseconds
-  const int64_t kDelayBetweenAttemptsNanoSecs = 0.4 * NSEC_PER_SEC;
-  if (showResubmitDataActionSheetAttempt_ >= kMaximumNumberAttempts) {
-    NOTREACHED();
-    [self clearResubmitDataActionSheet];
-    return;
-  }
-  base::WeakNSObject<Tab> weakTab(self);
-  dispatch_after(
-      dispatch_time(DISPATCH_TIME_NOW, kDelayBetweenAttemptsNanoSecs),
-      dispatch_get_main_queue(), ^{
-        [weakTab showResubmitDataActionSheet];
-      });
-  showResubmitDataActionSheetAttempt_++;
-}
-
-- (void)clearResubmitDataActionSheet {
-  [resubmitDataController_ dismissActionSheet];
-  resubmitDataController_.reset();
-  showResubmitDataActionSheetAttempt_ = 0;
+  formResubmissionCoordinator_.reset([[FormResubmissionCoordinator alloc]
+      initWithBaseViewController:topController
+                  dialogLocation:dialogLocation
+                        webState:webController.webState
+               completionHandler:^(BOOL shouldContinue) {
+                 if (shouldContinue)
+                   continueBlock();
+                 else
+                   cancelBlock();
+               }]);
+  [formResubmissionCoordinator_ start];
 }
 
 // The web page wants to close its own window.
@@ -1795,7 +1752,7 @@ void AddNetworkClientFactoryOnIOThread(
                   transition:(ui::PageTransition)transition {
   DCHECK(self.webController.loadPhase == web::LOAD_REQUESTED);
   DCHECK([self navigationManager]);
-  [self clearResubmitDataActionSheet];
+  formResubmissionCoordinator_.reset();
 
   // Move the toolbar to visible during page load.
   [fullScreenController_ disableFullScreen];
