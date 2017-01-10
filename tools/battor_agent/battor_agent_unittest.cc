@@ -862,7 +862,7 @@ TEST_F(BattOrAgentTest, StopTracingFailsIfDataFrameMissingByte) {
 
   // Remove the last byte from the frame to make it invalid.
   std::unique_ptr<vector<char>> frame_bytes =
-      CreateFrame(frame_header, frame, 2);
+      CreateFrame(frame_header, frame, 1);
   frame_bytes->pop_back();
 
   OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES, std::move(frame_bytes));
