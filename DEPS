@@ -437,6 +437,14 @@ deps_os = {
     'src/third_party/wayland-protocols/src':
       Var('chromium_git') + '/external/anongit.freedesktop.org/git/wayland/wayland-protocols.git' + '@' + '2e541a36deff5f2e16e25e27f7f93d26822eecc2',
 
+    # The libevdev library (Chrome OS version).
+    'src/third_party/libevdev/src':
+      Var('chromium_git') + '/chromiumos/platform/libevdev.git' + '@' + '9f7a1961eb4726211e18abd147d5a11a4ea86744',
+
+    # Chrome OS touchpad gestures library.
+    'src/third_party/gestures/gestures':
+      Var('chromium_git') + '/chromiumos/platform/gestures.git' + '@' + '5a656849c7d2b0d0ddbe0ac6d300c1e2fada0bb4',
+
     # Wireless Display Software. Used on Chrome OS.
     'src/third_party/wds/src':
       Var('chromium_git') + '/external/github.com/01org/wds' + '@' + 'ac3d8210d95f3000bf5c8e16a79dbbbf22d554a5',

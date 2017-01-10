@@ -348,6 +348,7 @@ vs-chromium-project.txt
 /third_party/fontconfig/src
 /third_party/freetype-android/src
 /third_party/freetype2/src
+/third_party/gestures/gestures
 /third_party/gles2_conform
 /third_party/glslang/src
 /third_party/glslang-angle/src
@@ -383,6 +384,7 @@ vs-chromium-project.txt
 /third_party/libc++-static/libc++.a
 /third_party/libaddressinput/src
 /third_party/libdrm/src
+/third_party/libevdev/src
 /third_party/libexif/sources
 /third_party/libFuzzer/src
 /third_party/libjingle/source

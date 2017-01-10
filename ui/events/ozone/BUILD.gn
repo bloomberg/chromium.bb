@@ -66,16 +66,6 @@ if (use_ozone) {
     defines = [ "USE_EVDEV_GESTURES" ]
   }
 
-  if (use_evdev_gestures) {
-    pkg_config("libevdev-cros") {
-      packages = [ "libevdev-cros" ]
-    }
-
-    pkg_config("libgestures") {
-      packages = [ "libgestures" ]
-    }
-  }
-
   component("events_ozone_evdev") {
     sources = [
       "evdev/device_event_dispatcher_evdev.cc",
@@ -162,12 +152,12 @@ if (use_ozone) {
         "evdev/libgestures_glue/gesture_timer_provider.h",
       ]
 
-      public_configs += [ ":evdev_gestures" ]
-
-      configs += [
-        ":libevdev-cros",
-        ":libgestures",
+      deps += [
+        "//third_party/gestures",
+        "//third_party/libevdev",
       ]
+
+      public_configs += [ ":evdev_gestures" ]
     }
   }
 }
