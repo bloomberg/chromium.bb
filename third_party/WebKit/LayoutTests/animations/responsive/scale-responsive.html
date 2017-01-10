@@ -8,8 +8,8 @@ assertCSSResponsive({
   configurations: [{
     state: {inherited: '2'},
     expect: [
-      {at: 0.25, is: '1.75 2 1.5'},
-      {at: 0.75, is: '1.25 2 2.5'},
+      {at: 0.25, is: '1.75 1.25 1.5'},
+      {at: 0.75, is: '1.25 1.75 2.5'},
     ],
   }, {
     state: {inherited: '1'},
@@ -27,8 +27,8 @@ assertCSSResponsive({
   configurations: [{
     state: {underlying: '2'},
     expect: [
-      {at: 0.25, is: '1.75 2 1.5'},
-      {at: 0.75, is: '1.25 2 2.5'},
+      {at: 0.25, is: '1.75 1.25 1.5'},
+      {at: 0.75, is: '1.25 1.75 2.5'},
     ],
   }, {
     state: {underlying: '1'},

@@ -26,12 +26,12 @@ assertInterpolation({
   from: neutralKeyframe,
   to: '1.5',
 }, [
-  {at: -1, is: '0.7 0.7'},
-  {at: 0, is: '1.1 1.1'},
-  {at: 0.25, is: '1.2 1.2'},
-  {at: 0.75, is: '1.4 1.4'},
-  {at: 1, is: '1.5 1.5'},
-  {at: 2, is: '1.9 1.9'},
+  {at: -1, is: '0.7'},
+  {at: 0, is: '1.1'},
+  {at: 0.25, is: '1.2'},
+  {at: 0.75, is: '1.4'},
+  {at: 1, is: '1.5'},
+  {at: 2, is: '1.9'},
 ]);
 
 assertInterpolation({
@@ -39,12 +39,12 @@ assertInterpolation({
   from: 'unset',
   to: '1.5',
 }, [
-  {at: -1, is: '0.5 0.5'},
+  {at: -1, is: '0.5'},
   {at: 0, is: '1'},
-  {at: 0.25, is: '1.125 1.125'},
-  {at: 0.75, is: '1.375 1.375'},
-  {at: 1, is: '1.5 1.5'},
-  {at: 2, is: '2 2'},
+  {at: 0.25, is: '1.125'},
+  {at: 0.75, is: '1.375'},
+  {at: 1, is: '1.5'},
+  {at: 2, is: '2'},
 ]);
 
 assertInterpolation({

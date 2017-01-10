@@ -162,9 +162,6 @@ InterpolationValue CSSScaleInterpolationType::maybeConvertValue(
     scale.array[i] = toCSSPrimitiveValue(item).getDoubleValue();
   }
 
-  if (list.length() == 1)
-    scale.array[1] = scale.array[0];
-
   return scale.createInterpolationValue();
 }
 

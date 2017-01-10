@@ -1250,7 +1250,7 @@ PassRefPtr<ScaleTransformOperation> StyleBuilderConverter::convertScale(
   const CSSValueList& list = toCSSValueList(value);
   ASSERT(list.length() <= 3);
   double sx = toCSSPrimitiveValue(list.item(0)).getDoubleValue();
-  double sy = sx;
+  double sy = 1;
   double sz = 1;
   if (list.length() >= 2)
     sy = toCSSPrimitiveValue(list.item(1)).getDoubleValue();
