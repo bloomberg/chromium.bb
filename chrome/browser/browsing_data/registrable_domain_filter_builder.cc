@@ -8,20 +8,13 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "components/content_settings/core/common/content_settings_pattern.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
 
 using net::registry_controlled_domains::GetDomainAndRegistry;
 using net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES;
-using Relation = ContentSettingsPattern::Relation;
 
 namespace {
-
-// Whether this is a registrable domain.
-bool IsRegistrableDomain(const std::string& domain) {
-  return GetDomainAndRegistry(domain, INCLUDE_PRIVATE_REGISTRIES) == domain;
-}
 
 // Whether this is a subdomain of a registrable domain.
 bool IsSubdomainOfARegistrableDomain(const std::string& domain) {
@@ -31,9 +24,10 @@ bool IsSubdomainOfARegistrableDomain(const std::string& domain) {
 }
 
 // Note that for every domain, exactly one of the following holds:
-// 1. IsRegistrableDomain(domain)                  - e.g. google.com
-// 2. IsSubdomainOfARegistrableDomain(domain)      - e.g. www.google.com
-// 3. GetDomainAndRegistry(domain, _) == ""        - e.g. localhost, 127.0.0.1
+// 1. GetDomainAndRegistry(domain, _) == ""        - e.g. localhost, 127.0.0.1
+// 2. GetDomainAndRegistry(domain, _) == domain    - e.g. google.com
+// 3. IsSubdomainOfARegistrableDomain(domain)      - e.g. www.google.com
+// Types 1 and 2 are supported by RegistrableDomainFilterBuilder. Type 3 is not.
 
 
 // True if the domain of |url| is in the whitelist, or isn't in the blacklist.
@@ -50,22 +44,6 @@ bool MatchesURL(
                                             : url.host()) !=
           registerable_domains.end()) ==
          (mode == BrowsingDataFilterBuilder::WHITELIST);
-}
-
-// True if the pattern something in the whitelist, or doesn't match something
-// in the blacklist.
-// The whitelist or blacklist is represented as |patterns|,  and |mode|.
-bool MatchesWebsiteSettingsPattern(
-    const std::vector<ContentSettingsPattern>& domain_patterns,
-    BrowsingDataFilterBuilder::Mode mode,
-    const ContentSettingsPattern& pattern) {
-  for (const ContentSettingsPattern& domain : domain_patterns) {
-    DCHECK(domain.IsValid());
-    Relation relation = pattern.Compare(domain);
-    if (relation == Relation::IDENTITY || relation == Relation::PREDECESSOR)
-      return mode == BrowsingDataFilterBuilder::WHITELIST;
-  }
-  return mode != BrowsingDataFilterBuilder::WHITELIST;
 }
 
 // True if no domains can see the given cookie and we're a blacklist, or any
@@ -136,33 +114,6 @@ void RegistrableDomainFilterBuilder::AddRegisterableDomain(
 base::Callback<bool(const GURL&)>
 RegistrableDomainFilterBuilder::BuildGeneralFilter() const {
   return base::BindRepeating(MatchesURL, domains_, mode());
-}
-
-base::Callback<bool(const ContentSettingsPattern& pattern)>
-RegistrableDomainFilterBuilder
-    ::BuildWebsiteSettingsPatternMatchesFilter() const {
-  std::vector<ContentSettingsPattern> patterns_from_domains;
-  patterns_from_domains.reserve(domains_.size());
-
-  for (const std::string& domain : domains_) {
-    std::unique_ptr<ContentSettingsPattern::BuilderInterface> builder(
-        ContentSettingsPattern::CreateBuilder(/* use_legacy_validate */ false));
-    builder->WithSchemeWildcard()
-        ->WithPortWildcard()
-        ->WithPathWildcard()
-        ->WithHost(domain);
-    if (IsRegistrableDomain(domain))
-      builder->WithDomainWildcard();
-
-    patterns_from_domains.push_back(builder->Build());
-  }
-
-  for (const ContentSettingsPattern& domain : patterns_from_domains) {
-    DCHECK(domain.IsValid());
-  }
-
-  return base::BindRepeating(&MatchesWebsiteSettingsPattern,
-                             std::move(patterns_from_domains), mode());
 }
 
 base::Callback<bool(const net::CanonicalCookie& cookie)>

@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "components/content_settings/core/common/content_settings_pattern.h"
 #include "net/cookies/canonical_cookie.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -43,15 +42,6 @@ void RunTestCase(TestCase test_case,
   EXPECT_TRUE(url.is_valid()) << test_case.url << " is not valid.";
   EXPECT_EQ(test_case.should_match, filter.Run(GURL(test_case.url)))
       << test_case.url;
-}
-
-void RunTestCase(
-    TestCase test_case,
-    const base::Callback<bool(const ContentSettingsPattern&)>& filter) {
-  ContentSettingsPattern pattern =
-      ContentSettingsPattern::FromString(test_case.url);
-  EXPECT_TRUE(pattern.IsValid()) << test_case.url << " is not valid.";
-  EXPECT_EQ(test_case.should_match, filter.Run(pattern)) << pattern.ToString();
 }
 
 void RunTestCase(
@@ -200,134 +190,6 @@ TEST(RegistrableDomainFilterBuilderTest, GURLBlacklist) {
 
       // Check our bare eTLD.
       {"https://sp.nom.br", true},
-  };
-
-  for (TestCase test_case : test_cases)
-    RunTestCase(test_case, filter);
-}
-
-TEST(RegistrableDomainFilterBuilderTest, WhitelistContentSettings) {
-  RegistrableDomainFilterBuilder builder(
-      RegistrableDomainFilterBuilder::WHITELIST);
-  builder.AddRegisterableDomain(std::string(kGoogleDomain));
-  builder.AddRegisterableDomain(std::string(kLongETLDDomain));
-  builder.AddRegisterableDomain(std::string(kIPAddress));
-  builder.AddRegisterableDomain(std::string(kUnknownRegistryDomain));
-  builder.AddRegisterableDomain(std::string(kInternalHostname));
-  base::Callback<bool(const ContentSettingsPattern&)> filter =
-      builder.BuildWebsiteSettingsPatternMatchesFilter();
-
-  TestCase test_cases[] = {
-      // Whitelist matches any patterns that include the whitelisted
-      // registerable domains.
-      {"https://www.google.com", true},
-      {"http://www.google.com", true},
-      {"http://www.google.com/index.html", true},
-      {"http://www.google.com/foo/bar", true},
-      {"www.sub.google.com/bar", true},
-      {"http://www.sub.google.com:8000/foo/bar", true},
-      {"https://[*.]google.com", true},
-      {"https://[*.]google.com:443", true},
-      {"[*.]google.com", true},
-      {"[*.]google.com/foo/bar", true},
-      {"[*.]google.com:80", true},
-      {"www.google.com/?q=test", true},
-      {"192.168.1.1", true},
-      {"192.168.1.1:80", true},
-      // We check that we treat the eTLDs correctly.
-      {"https://website.sp.nom.br", true},
-      {"https://www.website.sp.nom.br", true},
-
-      // Different eTLDs, and a bare eTLD.
-      {"[*.]google", false},
-      {"[*.]google.net", false},
-      {"https://[*.]google.org", false},
-      {"https://[*.]foo.bar.com", false},
-      {"https://sp.nom.br", false},
-      {"http://192.168.1.2", false},
-
-      // Internal hostnames do not have subdomains.
-      {"http://fileserver", true },
-      {"http://[*.]fileserver", false },
-      {"http://website.fileserver", false },
-
-      // This is a valid registrable domain with the TLD "fileserver", which
-      // is unrelated to the internal hostname "fileserver".
-      {"http://second-level-domain.fileserver", true},
-      {"http://[*.]second-level-domain.fileserver", true},
-      {"http://www.second-level-domain.fileserver", true},
-      {"http://[*.]www.second-level-domain.fileserver", true},
-
-      // These patterns are more general than our registerable domain filter,
-      // as they apply to more sites. So we don't match them. The content
-      // settings categories that we'll be seeing from browsing_data_remover
-      // aren't going to have these, but I test for it anyways.
-      {"*", false},
-      {"*:80", false}
-  };
-
-  for (TestCase test_case : test_cases)
-    RunTestCase(test_case, filter);
-}
-
-TEST(RegistrableDomainFilterBuilderTest, BlacklistContentSettings) {
-  RegistrableDomainFilterBuilder builder(
-      RegistrableDomainFilterBuilder::BLACKLIST);
-  builder.AddRegisterableDomain(std::string(kGoogleDomain));
-  builder.AddRegisterableDomain(std::string(kLongETLDDomain));
-  builder.AddRegisterableDomain(std::string(kIPAddress));
-  builder.AddRegisterableDomain(std::string(kUnknownRegistryDomain));
-  builder.AddRegisterableDomain(std::string(kInternalHostname));
-  base::Callback<bool(const ContentSettingsPattern&)> filter =
-      builder.BuildWebsiteSettingsPatternMatchesFilter();
-
-  TestCase test_cases[] = {
-      // Blacklist matches any patterns that isn't in the blacklist
-      // registerable domains.
-      {"https://www.google.com", false},
-      {"http://www.google.com", false},
-      {"http://www.google.com/index.html", false},
-      {"http://www.google.com/foo/bar", false},
-      {"www.sub.google.com/bar", false},
-      {"http://www.sub.google.com:8000/foo/bar", false},
-      {"https://[*.]google.com", false},
-      {"https://[*.]google.com:443", false},
-      {"[*.]google.com", false},
-      {"[*.]google.com/foo/bar", false},
-      {"[*.]google.com:80", false},
-      {"www.google.com/?q=test", false},
-      {"192.168.1.1", false},
-      {"192.168.1.1:80", false},
-      // We check that we treat the eTLDs correctly.
-      {"https://website.sp.nom.br", false},
-      {"https://www.website.sp.nom.br", false},
-
-      // Different eTLDs, and a bare eTLD.
-      {"[*.]google", true},
-      {"[*.]google.net", true},
-      {"https://[*.]google.org", true},
-      {"https://[*.]foo.bar.com", true},
-      {"https://sp.nom.br", true},
-      {"http://192.168.1.2", true},
-
-      // Internal hostnames do not have subdomains.
-      {"fileserver", false },
-      {"http://[*.]fileserver", true },
-      {"website.fileserver", true },
-
-      // This is a valid registrable domain with the TLD "fileserver", which
-      // is unrelated to the internal hostname "fileserver".
-      {"http://second-level-domain.fileserver", false},
-      {"http://[*.]second-level-domain.fileserver", false},
-      {"http://www.second-level-domain.fileserver", false},
-      {"http://[*.]www.second-level-domain.fileserver", false},
-
-      // These patterns are more general than our registerable domain filter,
-      // as they apply to more sites. So we don't match them. The content
-      // settings categories that we'll be seeing from browsing_data_remover
-      // aren't going to have these, but I test for it anyways.
-      {"*", true},
-      {"*:80", true}
   };
 
   for (TestCase test_case : test_cases)

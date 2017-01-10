@@ -23,7 +23,6 @@
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/browsing_data/local_data_container.h"
-#include "chrome/browser/browsing_data/origin_filter_builder.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -73,13 +72,6 @@ Profile* GetActiveUserProfile(bool is_incognito) {
 HostContentSettingsMap* GetHostContentSettingsMap(bool is_incognito) {
   return HostContentSettingsMapFactory::GetForProfile(
       GetActiveUserProfile(is_incognito));
-}
-
-bool ForwardPrimaryPatternCallback(
-    const base::Callback<bool(const ContentSettingsPattern&)> predicate,
-    const ContentSettingsPattern& primary_pattern,
-    const ContentSettingsPattern& secondary_pattern) {
-  return predicate.Run(primary_pattern);
 }
 
 typedef void (*InfoListInsertionFunction)(
@@ -744,13 +736,9 @@ static void ClearCookieData(JNIEnv* env,
 static void ClearBannerData(JNIEnv* env,
                             const JavaParamRef<jclass>& clazz,
                             const JavaParamRef<jstring>& jorigin) {
-  OriginFilterBuilder builder(OriginFilterBuilder::WHITELIST);
-  builder.AddOrigin(url::Origin(GURL(ConvertJavaStringToUTF8(env, jorigin))));
-  GetHostContentSettingsMap(false)
-          ->ClearSettingsForOneTypeWithPredicate(
-              CONTENT_SETTINGS_TYPE_APP_BANNER,
-              base::Bind(&ForwardPrimaryPatternCallback,
-                         builder.BuildWebsiteSettingsPatternMatchesFilter()));
+  GetHostContentSettingsMap(false)->SetWebsiteSettingDefaultScope(
+      GURL(ConvertJavaStringToUTF8(env, jorigin)), GURL(),
+      CONTENT_SETTINGS_TYPE_APP_BANNER, std::string(), nullptr);
 }
 
 // Register native methods

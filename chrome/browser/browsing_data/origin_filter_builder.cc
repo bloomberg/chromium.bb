@@ -7,9 +7,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "components/content_settings/core/common/content_settings_pattern.h"
-
-using Relation = ContentSettingsPattern::Relation;
 
 OriginFilterBuilder::OriginFilterBuilder(Mode mode)
     : BrowsingDataFilterBuilder(mode) {
@@ -44,22 +41,6 @@ base::Callback<bool(const GURL&)>
                     base::Owned(origins), mode());
 }
 
-base::Callback<bool(const ContentSettingsPattern& pattern)>
-    OriginFilterBuilder::BuildWebsiteSettingsPatternMatchesFilter() const {
-  std::vector<ContentSettingsPattern>* patterns_from_origins =
-      new std::vector<ContentSettingsPattern>();
-  patterns_from_origins->reserve(origin_list_.size());
-
-  for (const url::Origin& origin : origin_list_) {
-    patterns_from_origins->push_back(
-        ContentSettingsPattern::FromURLNoWildcard(origin.GetURL()));
-    DCHECK(patterns_from_origins->back().IsValid());
-  }
-
-  return base::Bind(&OriginFilterBuilder::MatchesWebsiteSettingsPattern,
-                    base::Owned(patterns_from_origins), mode());
-}
-
 base::Callback<bool(const net::CanonicalCookie& cookie)>
 OriginFilterBuilder::BuildCookieFilter() const {
   NOTREACHED() <<
@@ -90,20 +71,6 @@ bool OriginFilterBuilder::operator==(const OriginFilterBuilder& other) const {
 
 bool OriginFilterBuilder::IsEmpty() const {
   return origin_list_.empty();
-}
-
-// static
-bool OriginFilterBuilder::MatchesWebsiteSettingsPattern(
-    std::vector<ContentSettingsPattern>* origin_patterns,
-    Mode mode,
-    const ContentSettingsPattern& pattern) {
-  for (const ContentSettingsPattern& origin : *origin_patterns) {
-    DCHECK(origin.IsValid());
-    Relation relation = pattern.Compare(origin);
-    if (relation == Relation::IDENTITY)
-      return mode == WHITELIST;
-  }
-  return mode != WHITELIST;
 }
 
 // static

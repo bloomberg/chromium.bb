@@ -132,11 +132,21 @@ base::Callback<void(T)> IgnoreArgument(const base::Closure& callback) {
   return base::Bind(&IgnoreArgumentHelper<T>, callback);
 }
 
-bool ForwardPrimaryPatternCallback(
-    const base::Callback<bool(const ContentSettingsPattern&)> predicate,
+bool WebsiteSettingsFilterAdapter(
+    const base::Callback<bool(const GURL&)> predicate,
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern) {
-  return predicate.Run(primary_pattern);
+  // Ignore the default setting.
+  if (primary_pattern == ContentSettingsPattern::Wildcard())
+    return false;
+
+  // Website settings only use origin-scoped patterns. The only content setting
+  // currently supported by ChromeBrowsingDataRemoverDelegate is
+  // DURABLE_STORAGE, which also only uses origin-scoped patterns. Such patterns
+  // can be directly translated to a GURL.
+  GURL url(primary_pattern.ToString());
+  DCHECK(url.is_valid());
+  return predicate.Run(url);
 }
 
 #if !defined(DISABLE_NACL)
@@ -256,8 +266,6 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 
   base::Callback<bool(const GURL& url)> filter =
       filter_builder.BuildGeneralFilter();
-  base::Callback<bool(const ContentSettingsPattern& url)> same_pattern_filter =
-      filter_builder.BuildWebsiteSettingsPatternMatchesFilter();
 
   // Some backends support a filter that |is_null()| to make complete deletion
   // more efficient.
@@ -544,7 +552,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     HostContentSettingsMapFactory::GetForProfile(profile_)
         ->ClearSettingsForOneTypeWithPredicate(
             CONTENT_SETTINGS_TYPE_DURABLE_STORAGE,
-            base::Bind(&ForwardPrimaryPatternCallback, same_pattern_filter));
+            base::Bind(&WebsiteSettingsFilterAdapter, filter));
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -553,7 +561,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     HostContentSettingsMapFactory::GetForProfile(profile_)
         ->ClearSettingsForOneTypeWithPredicate(
             CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
-            base::Bind(&ForwardPrimaryPatternCallback, same_pattern_filter));
+            base::Bind(&WebsiteSettingsFilterAdapter, filter));
   }
 
   if ((remove_mask & BrowsingDataRemover::REMOVE_SITE_USAGE_DATA) ||
@@ -561,7 +569,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     HostContentSettingsMapFactory::GetForProfile(profile_)
         ->ClearSettingsForOneTypeWithPredicate(
             CONTENT_SETTINGS_TYPE_APP_BANNER,
-            base::Bind(&ForwardPrimaryPatternCallback, same_pattern_filter));
+            base::Bind(&WebsiteSettingsFilterAdapter, filter));
 
     PermissionDecisionAutoBlocker::RemoveCountsByUrl(profile_, filter);
   }

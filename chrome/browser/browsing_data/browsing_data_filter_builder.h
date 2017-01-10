@@ -11,7 +11,6 @@
 
 #include "base/callback.h"
 
-class ContentSettingsPattern;
 class GURL;
 
 namespace net {
@@ -50,12 +49,6 @@ class BrowsingDataFilterBuilder {
   // Builds a filter that matches URLs that are in the whitelist,
   // or aren't in the blacklist.
   virtual base::Callback<bool(const GURL&)> BuildGeneralFilter() const = 0;
-
-  // Builds a filter that matches website settings patterns that contain
-  // data for URLs in the whitelist, or don't contain data for URLs in the
-  // blacklist.
-  virtual base::Callback<bool(const ContentSettingsPattern& pattern)>
-      BuildWebsiteSettingsPatternMatchesFilter() const = 0;
 
   // Builds a filter that matches cookies whose sources are in the whitelist,
   // or aren't in the blacklist.

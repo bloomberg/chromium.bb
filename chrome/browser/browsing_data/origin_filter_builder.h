@@ -37,16 +37,6 @@ class OriginFilterBuilder : public BrowsingDataFilterBuilder {
   // or aren't in the blacklist.
   base::Callback<bool(const GURL&)> BuildGeneralFilter() const override;
 
-  // Builds a filter that calls ContentSettingsPattern::Compare on the given
-  // pattern and a new pattern constructed by each origin in this filter. The
-  // domain pattern A and given pattern B match when A.Compare(B) is IDENTITY.
-  // This is sufficient, because website settings should only ever store
-  // origin-scoped patterns. Furthermore, website settings patterns support
-  // paths, but only for the file:// scheme, which is in turn not supported
-  // by OriginFilterBuilder.
-  base::Callback<bool(const ContentSettingsPattern& pattern)>
-      BuildWebsiteSettingsPatternMatchesFilter() const override;
-
   // Cookie filter is not implemented in this subclass. Please use
   // a BrowsingDataFilterBuilder with different scoping,
   // such as RegistrableDomainFilterBuilder.
@@ -75,12 +65,6 @@ class OriginFilterBuilder : public BrowsingDataFilterBuilder {
   // The whitelist or blacklist is represented as |origins| and |mode|.
   static bool MatchesURL(
       std::set<url::Origin>* origins, Mode mode, const GURL& url);
-
-  // True if the |pattern| is identical to one of the |origin_patterns|.
-  static bool MatchesWebsiteSettingsPattern(
-      std::vector<ContentSettingsPattern>* origin_patterns,
-      Mode mode,
-      const ContentSettingsPattern& pattern);
 
   // The list of origins and whether they should be interpreted as a whitelist
   // or blacklist.

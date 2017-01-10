@@ -63,15 +63,6 @@ class RegistrableDomainFilterBuilder : public BrowsingDataFilterBuilder {
   // or aren't in the blacklist.
   base::Callback<bool(const GURL&)> BuildGeneralFilter() const override;
 
-  // Builds a filter that calls ContentSettingsPattern::Compare on the given
-  // pattern and a new pattern constructed by each domain in this filter. The
-  // domain pattern A and given pattern B match when A.Compare(B) is IDENTITY
-  // or PREDECESSOR. This means we only match patterns that are the same pattern
-  // or a more specific pattern than our domain (so we shouldn't be matching
-  // wildcard patterns like "*" or "*:80").
-  base::Callback<bool(const ContentSettingsPattern& pattern)>
-      BuildWebsiteSettingsPatternMatchesFilter() const override;
-
   // We do a direct comparison to the registerable domain of the cookie. A
   // whitelist filter will return true if any of its domains match the cookie,
   // and a blacklist filter will return true only if none of its domains match
