@@ -12444,9 +12444,6 @@ bool GLES2DecoderImpl::ClearLevel(Texture* texture,
   } else {
     tile_height = height;
   }
-  // TODO(zmo): This is temporary, only for Canary. Change it to DCHECK before
-  // M57 branch point.
-  CHECK_LE(size, kMaxZeroSize);
 
   {
     // Add extra scope to destroy zero and the object it owns right
