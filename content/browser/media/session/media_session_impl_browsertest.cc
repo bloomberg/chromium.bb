@@ -16,9 +16,9 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "content/browser/media/session/audio_focus_delegate.h"
 #include "content/browser/media/session/media_session_service_impl.h"
+#include "content/browser/media/session/mock_media_session_observer.h"
 #include "content/browser/media/session/mock_media_session_player_observer.h"
 #include "content/public/browser/media_session.h"
-#include "content/public/browser/media_session_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/shell/browser/shell.h"
@@ -53,16 +53,6 @@ class MockAudioFocusDelegate : public AudioFocusDelegate {
   MOCK_METHOD0(AbandonAudioFocus, void());
 };
 
-class MockMediaSessionObserver : public MediaSessionObserver {
- public:
-  MockMediaSessionObserver(MediaSession* media_session)
-      : MediaSessionObserver(media_session) {}
-
-  MOCK_METHOD2(MediaSessionStateChanged,
-               void(bool is_controllable, bool is_suspended));
-  MOCK_METHOD0(MediaSessionDestroyed, void());
-};
-
 class MockMediaSessionServiceImpl : public content::MediaSessionServiceImpl {
  public:
   explicit MockMediaSessionServiceImpl(content::RenderFrameHost* rfh)
@@ -81,7 +71,7 @@ class MediaSessionImplBrowserTest : public content::ContentBrowserTest {
 
     media_session_ = MediaSessionImpl::Get(shell()->web_contents());
     mock_media_session_observer_.reset(
-        new MockMediaSessionObserver(media_session_));
+        new content::MockMediaSessionObserver(media_session_));
     mock_audio_focus_delegate_ = new MockAudioFocusDelegate;
     media_session_->SetDelegateForTests(
         base::WrapUnique(mock_audio_focus_delegate_));
@@ -163,7 +153,7 @@ class MediaSessionImplBrowserTest : public content::ContentBrowserTest {
     mock_media_session_service_->SetPlaybackState(state);
   }
 
-  MockMediaSessionObserver* mock_media_session_observer() {
+  content::MockMediaSessionObserver* mock_media_session_observer() {
     return mock_media_session_observer_.get();
   }
 
@@ -181,7 +171,8 @@ class MediaSessionImplBrowserTest : public content::ContentBrowserTest {
 
  protected:
   MediaSessionImpl* media_session_;
-  std::unique_ptr<MockMediaSessionObserver> mock_media_session_observer_;
+  std::unique_ptr<content::MockMediaSessionObserver>
+      mock_media_session_observer_;
   MockAudioFocusDelegate* mock_audio_focus_delegate_;
   std::unique_ptr<MockMediaSessionServiceImpl> mock_media_session_service_;
 

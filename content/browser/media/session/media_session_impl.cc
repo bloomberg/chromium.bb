@@ -630,10 +630,6 @@ void MediaSessionImpl::UpdateRoutedService() {
   if (routed_service_) {
     NotifyMediaSessionMetadataChange(routed_service_->metadata());
     NotifyMediaSessionActionsChange(routed_service_->actions());
-  } else {
-    NotifyMediaSessionMetadataChange(base::nullopt);
-    NotifyMediaSessionActionsChange(
-        std::set<blink::mojom::MediaSessionAction>());
   }
 }
 
