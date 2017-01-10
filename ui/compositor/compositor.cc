@@ -39,6 +39,7 @@
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator_collection.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gl/gl_switches.h"
 
 namespace {
@@ -218,6 +219,11 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
   host_->GetLayerTree()->SetRootLayer(root_web_layer_);
   host_->SetFrameSinkId(frame_sink_id_);
   host_->SetVisible(true);
+
+  if (command_line->HasSwitch(switches::kUISlowAnimations)) {
+    slow_animations_ = base::MakeUnique<ScopedAnimationDurationScaleMode>(
+        ScopedAnimationDurationScaleMode::SLOW_DURATION);
+  }
 }
 
 Compositor::~Compositor() {

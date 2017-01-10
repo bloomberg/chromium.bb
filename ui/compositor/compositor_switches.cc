@@ -26,6 +26,8 @@ const char kUIEnableZeroCopy[] = "ui-enable-zero-copy";
 
 const char kUIShowPaintRects[] = "ui-show-paint-rects";
 
+const char kUISlowAnimations[] = "ui-slow-animations";
+
 }  // namespace switches
 
 namespace ui {

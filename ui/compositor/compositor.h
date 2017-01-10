@@ -65,6 +65,7 @@ class CompositorVSyncManager;
 class LatencyInfo;
 class Layer;
 class Reflector;
+class ScopedAnimationDurationScaleMode;
 
 #if defined(USE_AURA)
 class Window;
@@ -436,6 +437,7 @@ class COMPOSITOR_EXPORT Compositor
 
   LayerAnimatorCollection layer_animator_collection_;
   scoped_refptr<cc::AnimationTimeline> animation_timeline_;
+  std::unique_ptr<ScopedAnimationDurationScaleMode> slow_animations_;
 
   gfx::ColorSpace color_space_;
 

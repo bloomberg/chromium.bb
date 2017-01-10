@@ -5968,6 +5968,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_MATERIAL_DESIGN_INK_DROP_ANIMATION_SPEED_DESCRIPTION" desc="Description for the flag that sets the material design ink drop animtion speed.">
           Sets the speed of the experimental visual feedback animations for material design.
         </message>
+        <message name="IDS_FLAGS_UI_SLOW_ANIMATIONS_NAME" desc="Name for the flag that enables slow UI animations.">
+          Slow UI animations
+        </message>
+        <message name="IDS_FLAGS_UI_SLOW_ANIMATIONS_DESCRIPTION" desc="Description for the flag that enables slow UI animations.">
+          Makes all UI animations slow.
+        </message>
         <message name="IDS_FLAGS_ASH_TEXT_FILTERING_IN_OVERVIEW_MODE_NAME" desc="Title for the flag for window filtering in overview mode by inputing text">
           Text filtering in Overview Mode
         </message>

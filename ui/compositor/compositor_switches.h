@@ -15,6 +15,7 @@ COMPOSITOR_EXPORT extern const char kUIDisablePartialSwap[];
 COMPOSITOR_EXPORT extern const char kUIEnableRGBA4444Textures[];
 COMPOSITOR_EXPORT extern const char kUIEnableZeroCopy[];
 COMPOSITOR_EXPORT extern const char kUIShowPaintRects[];
+COMPOSITOR_EXPORT extern const char kUISlowAnimations[];
 
 }  // namespace switches
 
