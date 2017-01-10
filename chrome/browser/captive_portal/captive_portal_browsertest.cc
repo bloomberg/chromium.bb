@@ -871,11 +871,11 @@ SSLInterstitialTimerObserver::SSLInterstitialTimerObserver(
       message_loop_runner_(new content::MessageLoopRunner) {
   callback_ = base::Bind(&SSLInterstitialTimerObserver::OnTimerStarted,
                          base::Unretained(this));
-  SSLErrorHandler::SetInterstitialTimerStartedCallbackForTest(&callback_);
+  SSLErrorHandler::SetInterstitialTimerStartedCallbackForTesting(&callback_);
 }
 
 SSLInterstitialTimerObserver::~SSLInterstitialTimerObserver() {
-  SSLErrorHandler::SetInterstitialTimerStartedCallbackForTest(nullptr);
+  SSLErrorHandler::SetInterstitialTimerStartedCallbackForTesting(nullptr);
 }
 
 void SSLInterstitialTimerObserver::WaitForTimerStarted() {
@@ -1125,7 +1125,8 @@ void CaptivePortalBrowserTest::SetUpOnMainThread() {
   // Set SSL interstitial delay long enough so that a captive portal result
   // is guaranteed to arrive during this window, and a captive portal
   // error page is displayed instead of an SSL interstitial.
-  SSLErrorHandler::SetInterstitialDelayForTest(base::TimeDelta::FromHours(1));
+  SSLErrorHandler::SetInterstitialDelayForTesting(
+      base::TimeDelta::FromHours(1));
 }
 
 void CaptivePortalBrowserTest::TearDownOnMainThread() {
@@ -2339,7 +2340,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, SSLCertErrorLogin) {
   // Set SSL interstitial delay to zero so that a captive portal result can not
   // arrive during this window, so an SSL interstitial is displayed instead
   // of a captive portal error page.
-  SSLErrorHandler::SetInterstitialDelayForTest(base::TimeDelta());
+  SSLErrorHandler::SetInterstitialDelayForTesting(base::TimeDelta());
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
   WebContents* broken_tab_contents = tab_strip_model->GetActiveWebContents();
 

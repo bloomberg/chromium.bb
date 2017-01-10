@@ -167,7 +167,7 @@ class SSLErrorHandlerNameMismatchTest : public ChromeRenderViewHostTestHarness {
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    SSLErrorHandler::SetInterstitialDelayForTest(base::TimeDelta());
+    SSLErrorHandler::SetInterstitialDelayForTesting(base::TimeDelta());
     ssl_info_.cert =
         net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
     ssl_info_.cert_status = net::CERT_STATUS_COMMON_NAME_INVALID;
@@ -225,13 +225,13 @@ class SSLErrorHandlerDateInvalidTest : public ChromeRenderViewHostTestHarness {
     clock_->Advance(base::TimeDelta::FromDays(111));
     tick_clock_->Advance(base::TimeDelta::FromDays(222));
 
-    SSLErrorHandler::SetInterstitialDelayForTest(base::TimeDelta());
+    SSLErrorHandler::SetInterstitialDelayForTesting(base::TimeDelta());
     ssl_info_.cert =
         net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
     ssl_info_.cert_status = net::CERT_STATUS_DATE_INVALID;
     error_handler_.reset(
         new SSLErrorHandlerForTest(profile(), web_contents(), ssl_info_));
-    error_handler_->SetNetworkTimeTrackerForTest(tracker_.get());
+    error_handler_->SetNetworkTimeTrackerForTesting(tracker_.get());
 
     // Fix flakiness in case system time is off and triggers a bad clock
     // interstitial. https://crbug.com/666821#c50
@@ -456,7 +456,8 @@ TEST_F(SSLErrorHandlerDateInvalidTest, TimeQueryStarted) {
   base::HistogramTester histograms;
   base::Time network_time;
   base::TimeDelta uncertainty;
-  SSLErrorHandler::SetInterstitialDelayForTest(base::TimeDelta::FromHours(1));
+  SSLErrorHandler::SetInterstitialDelayForTesting(
+      base::TimeDelta::FromHours(1));
   EXPECT_EQ(network_time::NetworkTimeTracker::NETWORK_TIME_NO_SYNC_ATTEMPT,
             tracker()->GetNetworkTime(&network_time, &uncertainty));
 
