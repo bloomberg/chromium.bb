@@ -16,6 +16,10 @@
       'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
     },
     {
+      'target_name': 'byte_reader',
+      'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
+    },
+    {
       'target_name': 'chrome_cast',
       'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
     },
@@ -85,6 +89,14 @@
     },
     {
       'target_name': 'launcher_search_provider',
+      'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
+    },
+    {
+      'target_name': 'metadata_parser_interface',
+      'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
+    },
+    {
+      'target_name': 'metadata_worker_window',
       'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
     },
     {

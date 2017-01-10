@@ -41,7 +41,7 @@ function ContentMetadataProvider(opt_messagePort) {
   /**
    * Map from Entry.toURL() to callback.
    * Note that simultaneous requests for same url are handled in MetadataCache.
-   * @private {!Object<!string, !Array<function(Object)>>}
+   * @private {!Object<!string, !Array<function(!MetadataItem)>>}
    * @const
    */
   this.callbacks_ = {};

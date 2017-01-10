@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * @param {MetadataDispatcher} parent Parent object.
+ * @param {MetadataParserLogger} parent Parent object.
  * @constructor
  * @extends {MetadataParser}
  * @struct
@@ -317,4 +317,4 @@ MpegParser.prototype.processTopLevelAtom = function(
   }
 };
 
-MetadataDispatcher.registerParserClass(MpegParser);
+registerParserClass(MpegParser);

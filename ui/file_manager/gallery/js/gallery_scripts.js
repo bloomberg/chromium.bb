@@ -39,6 +39,7 @@
 // Base classes.
 // <include src="../../file_manager/foreground/js/metadata/metadata_cache_set.js">
 // <include src="../../file_manager/foreground/js/metadata/metadata_provider.js">
+// <include src="../../file_manager/foreground/js/metadata/metadata_request.js">
 
 // <include src="../../file_manager/common/js/async_util.js">
 // <include src="../../file_manager/common/js/file_type.js">

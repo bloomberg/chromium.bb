@@ -50,7 +50,7 @@ ExternalMetadataProvider.prototype.get = function(requests) {
     var entries = requests.map(function(request) {
       return request.entry;
     });
-    var nameMap = [];
+    var nameMap = {};
     for (var i = 0; i < requests.length; i++) {
       for (var j = 0; j < requests[i].names.length; j++) {
         nameMap[requests[i].names[j]] = true;

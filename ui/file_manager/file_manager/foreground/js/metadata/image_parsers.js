@@ -5,7 +5,7 @@
 /**
  * Base class for image metadata parsers that only need to look at a short
  * fragment at the start of the file.
- * @param {MetadataDispatcher} parent Parent object.
+ * @param {MetadataParserLogger} parent Parent object.
  * @param {string} type Image type.
  * @param {RegExp} urlFilter RegExp to match URLs.
  * @param {number} headerSize Size of header.
@@ -51,7 +51,7 @@ SimpleImageParser.prototype.parseHeader = function(metadata, byteReader) {};
 
 /**
  * Parser for the header of png files.
- * @param {MetadataDispatcher} parent Parent object.
+ * @param {MetadataParserLogger} parent Parent object.
  * @extends {SimpleImageParser}
  * @constructor
  * @struct
@@ -81,11 +81,11 @@ PngParser.prototype.parseHeader = function(metadata, br) {
   metadata.height = br.readScalar(4);
 };
 
-MetadataDispatcher.registerParserClass(PngParser);
+registerParserClass(PngParser);
 
 /**
  * Parser for the header of bmp files.
- * @param {MetadataDispatcher} parent Parent object.
+ * @param {MetadataParserLogger} parent Parent object.
  * @constructor
  * @extends {SimpleImageParser}
  * @struct
@@ -111,11 +111,11 @@ BmpParser.prototype.parseHeader = function(metadata, br) {
   metadata.height = br.readScalar(4);
 };
 
-MetadataDispatcher.registerParserClass(BmpParser);
+registerParserClass(BmpParser);
 
 /**
  * Parser for the header of gif files.
- * @param {MetadataDispatcher} parent Parent object.
+ * @param {MetadataParserLogger} parent Parent object.
  * @constructor
  * @extends {SimpleImageParser}
  * @struct
@@ -140,11 +140,11 @@ GifParser.prototype.parseHeader = function(metadata, br) {
   metadata.height = br.readScalar(2);
 };
 
-MetadataDispatcher.registerParserClass(GifParser);
+registerParserClass(GifParser);
 
 /**
  * Parser for the header of webp files.
- * @param {MetadataDispatcher} parent Parent object.
+ * @param {MetadataParserLogger} parent Parent object.
  * @constructor
  * @extends {SimpleImageParser}
  * @struct
@@ -211,11 +211,11 @@ WebpParser.prototype.parseHeader = function(metadata, br) {
   }
 };
 
-MetadataDispatcher.registerParserClass(WebpParser);
+registerParserClass(WebpParser);
 
 /**
  * Parser for the header of .ico icon files.
- * @param {MetadataDispatcher} parent Parent metadata dispatcher object.
+ * @param {MetadataParserLogger} parent Parent metadata dispatcher object.
  * @constructor
  * @extends {SimpleImageParser}
  */
@@ -240,4 +240,4 @@ IcoParser.prototype.parseHeader = function(metadata, byteReader) {
   metadata.height = byteReader.readScalar(1);
 };
 
-MetadataDispatcher.registerParserClass(IcoParser);
+registerParserClass(IcoParser);

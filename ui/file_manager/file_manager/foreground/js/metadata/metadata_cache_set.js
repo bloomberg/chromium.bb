@@ -307,23 +307,3 @@ MetadataCacheSetStorageForLRUCache.prototype.remove = function(url) {
 MetadataCacheSetStorageForLRUCache.prototype.removeAll = function() {
   assertNotReached('Not implemented.');
 };
-
-/**
- * @param {!Entry} entry Entry
- * @param {!Array<string>} names Property name list to be requested.
- * @constructor
- * @struct
- */
-function MetadataRequest(entry, names) {
-  /**
-   * @public {!Entry}
-   * @const
-   */
-  this.entry = entry;
-
-  /**
-   * @public {!Array<string>}
-   * @const
-   */
-  this.names = names;
-}

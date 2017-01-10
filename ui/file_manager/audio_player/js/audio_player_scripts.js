@@ -34,6 +34,7 @@ if (!('allowsEval' in document.securityPolicy))
 // <include src="../../file_manager/foreground/js/metadata/metadata_cache_item.js">
 // <include src="../../file_manager/foreground/js/metadata/metadata_item.js">
 // <include src="../../file_manager/foreground/js/metadata/metadata_model.js">
+// <include src="../../file_manager/foreground/js/metadata/metadata_request.js">
 // <include src="../../file_manager/foreground/js/metadata/multi_metadata_provider.js">
 // <include src="../../file_manager/foreground/js/metadata/thumbnail_model.js">
 

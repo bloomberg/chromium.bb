@@ -457,4 +457,4 @@ ExifParser.prototype.parseOrientation = function(ifd) {
   return null;
 };
 
-MetadataDispatcher.registerParserClass(ExifParser);
+registerParserClass(ExifParser);

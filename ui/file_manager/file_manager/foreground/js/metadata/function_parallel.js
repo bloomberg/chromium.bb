@@ -7,7 +7,7 @@
  *
  * @param {string} name Name of the function.
  * @param {Array<Function>} steps Array of functions to invoke in parallel.
- * @param {Object} logger Logger object.
+ * @param {MetadataParser} logger Logger object.
  * @param {function()} callback Callback to invoke on success.
  * @param {function(string)} failureCallback Callback to invoke on failure.
  * @constructor

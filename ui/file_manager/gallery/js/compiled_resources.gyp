@@ -111,6 +111,7 @@
           '../../file_manager/foreground/js/metadata/metadata_item.js',
           '../../file_manager/foreground/js/metadata/metadata_model.js',
           '../../file_manager/foreground/js/metadata/metadata_provider.js',
+          '../../file_manager/foreground/js/metadata/metadata_request.js',
           '../../file_manager/foreground/js/metadata/multi_metadata_provider.js',
           '../../file_manager/foreground/js/metadata/thumbnail_model.js',
           '../../file_manager/foreground/js/share_client.js',

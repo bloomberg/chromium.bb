@@ -3,89 +3,175 @@
 # found in the LICENSE file.
 {
   'targets': [
-#    {
-#      'target_name': 'byte_reader',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'content_metadata_provider',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'exif_constants',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'exif_parser',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'external_metadata_provider',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'file_system_metadata_provider',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'function_parallel',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'function_sequence',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'id3_parser',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'image_orientation',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'image_parsers',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'metadata_cache_item',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'metadata_cache_set',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'metadata_dispatcher',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'metadata_item',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'metadata_model',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'metadata_parser',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'mpeg_parser',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'multi_metadata_provider',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'new_metadata_provider',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'thumbnail_model',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'byte_reader',
+      'includes': ['../../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'content_metadata_provider',
+      'dependencies': [
+        '<(DEPTH)/ui/file_manager/file_manager/common/js/compiled_resources2.gyp:file_type',
+        '<(DEPTH)/ui/file_manager/file_manager/common/js/compiled_resources2.gyp:util',
+        '<(EXTERNS_GYP):chrome_extensions',
+        'metadata_provider',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'exif_constants',
+      'includes': ['../../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'exif_parser',
+      'dependencies': [
+        '<(DEPTH)/ui/file_manager/externs/compiled_resources2.gyp:exif_entry',
+        'exif_constants',
+        'image_parsers',
+        'metadata_parser',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'external_metadata_provider',
+      'dependencies': [
+        '<(EXTERNS_GYP):file_manager_private',
+        'metadata_provider',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'file_system_metadata_provider',
+      'dependencies': [
+        'metadata_provider',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'function_parallel',
+      'dependencies': [
+        'metadata_parser',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'function_sequence',
+      'dependencies': [
+        'metadata_parser',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'id3_parser',
+      'dependencies': [
+        'byte_reader',
+        'function_parallel',
+        'function_sequence',
+        'metadata_parser',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'image_orientation',
+      'includes': ['../../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'image_parsers',
+      'dependencies': [
+        'metadata_parser',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'metadata_cache_item',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        'metadata_item',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
+    {
+     'target_name': 'metadata_cache_set',
+      'dependencies': [
+        '<(DEPTH)/ui/file_manager/file_manager/common/js/compiled_resources2.gyp:lru_cache',
+        '<(DEPTH)/ui/file_manager/file_manager/common/js/compiled_resources2.gyp:util',
+        '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:event_target',
+        'metadata_cache_item',
+        'metadata_item',
+        'metadata_request',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'metadata_dispatcher',
+      'dependencies': [
+        '<(DEPTH)/ui/file_manager/externs/compiled_resources2.gyp:metadata_worker_window',
+        '<(DEPTH)/ui/file_manager/externs/compiled_resources2.gyp:platform',
+        'metadata_parser',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'metadata_item',
+      'includes': ['../../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'metadata_model',
+      'dependencies': [
+        '<(DEPTH)/ui/file_manager/file_manager/common/js/compiled_resources2.gyp:util',
+        'file_system_metadata_provider',
+        'external_metadata_provider',
+        'content_metadata_provider',
+        'metadata_item',
+        'metadata_cache_set',
+        'metadata_provider',
+        'multi_metadata_provider',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'metadata_parser',
+      'dependencies': [
+        'byte_reader',
+        '<(DEPTH)/ui/file_manager/externs/compiled_resources2.gyp:metadata_worker_window',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'metadata_provider',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        'metadata_item',
+        'metadata_request',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'metadata_request',
+      'includes': ['../../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'mpeg_parser',
+      'dependencies': [
+        'metadata_parser',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'multi_metadata_provider',
+      'dependencies': [
+        'metadata_provider',
+        'file_system_metadata_provider',
+        'external_metadata_provider',
+        'content_metadata_provider',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'thumbnail_model',
+      'dependencies': [
+        'metadata_model',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
   ],
 }

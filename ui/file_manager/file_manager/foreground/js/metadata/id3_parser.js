@@ -17,7 +17,7 @@ importScripts(
 /**
  * ID3 parser.
  *
- * @param {MetadataDispatcher} parent A metadata dispatcher.
+ * @param {MetadataParserLogger} parent A metadata dispatcher.
  * @constructor
  * @struct
  * @extends {MetadataParser}
@@ -729,4 +729,4 @@ Id3Parser.v2 = {
   }
 };
 
-MetadataDispatcher.registerParserClass(Id3Parser);
+registerParserClass(Id3Parser);

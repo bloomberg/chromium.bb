@@ -20,6 +20,7 @@ importScripts(FILE_MANAGER_HOST + '/foreground/js/metadata/byte_reader.js');
  *
  * @param {Object} port Worker port.
  * @constructor
+ * @implements {MetadataParserLogger}
  * @struct
  */
 function MetadataDispatcher(port) {
@@ -53,17 +54,9 @@ function MetadataDispatcher(port) {
 
 /**
  * List of registered parser classes.
- * @private
+ * @private {!Array<function(new:MetadataParser, !MetadataParserLogger)>}
  */
 MetadataDispatcher.parserClasses_ = [];
-
-/**
- * @param {function(!MetadataDispatcher)} parserClass Parser constructor
- *     function.
- */
-MetadataDispatcher.registerParserClass = function(parserClass) {
-  MetadataDispatcher.parserClasses_.push(parserClass);
-};
 
 /**
  * Verbose logging for the dispatcher.
@@ -237,3 +230,11 @@ if (global.constructor.name == 'SharedWorkerGlobalScope') {
   // Non-shared worker.
   new MetadataDispatcher(global);
 }
+
+/**
+ * @param {function(new:MetadataParser, !MetadataParserLogger)} parserClass
+ *     Parser constructor function.
+ */
+registerParserClass = function(parserClass) {
+  MetadataDispatcher.parserClasses_.push(parserClass);
+};

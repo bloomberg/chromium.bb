@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * @param {MetadataDispatcher} parent Parent object.
+ * @param {MetadataParserLogger} parent Parent object.
  * @param {string} type Parser type.
  * @param {RegExp} urlFilter RegExp to match URLs.
  * @constructor
@@ -74,7 +74,7 @@ MetadataParser.readFileBytes = function(file, begin, end, callback, onError) {
 
 /**
  * Base class for image metadata parsers.
- * @param {MetadataDispatcher} parent Parent object.
+ * @param {MetadataParserLogger} parent Parent object.
  * @param {string} type Image type.
  * @param {RegExp} urlFilter RegExp to match URLs.
  * @constructor

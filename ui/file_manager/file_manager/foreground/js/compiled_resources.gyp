@@ -110,6 +110,7 @@
           './metadata/metadata_item.js',
           './metadata/metadata_model.js',
           './metadata/metadata_provider.js',
+          './metadata/metadata_request.js',
           './metadata/multi_metadata_provider.js',
           './metadata/thumbnail_model.js',
           './metadata_box_controller.js',
