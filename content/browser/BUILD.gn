@@ -74,7 +74,6 @@ source_set("browser") {
     "//device/geolocation",
     "//device/geolocation/public/interfaces",
     "//device/nfc:mojo_bindings",
-    "//device/power_monitor",
     "//device/power_save_blocker",
     "//device/screen_orientation/public/interfaces",
     "//device/sensors/public/cpp",

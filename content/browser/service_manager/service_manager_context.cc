@@ -30,6 +30,8 @@
 #include "services/catalog/manifest_provider.h"
 #include "services/catalog/public/interfaces/constants.mojom.h"
 #include "services/catalog/store.h"
+#include "services/device/device_service.h"
+#include "services/device/public/interfaces/constants.mojom.h"
 #include "services/service_manager/connect_params.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -272,6 +274,13 @@ ServiceManagerContext::ServiceManagerContext() {
       std::move(request),
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
 
+  ServiceInfo device_info;
+  device_info.factory =
+      base::Bind(&device::CreateDeviceService,
+                 BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE));
+  ServiceManagerConnection::GetForProcess()->AddEmbeddedService(
+      device::mojom::kServiceName, device_info);
+
   ContentBrowserClient::StaticServiceMap services;
   GetContentClient()->browser()->RegisterInProcessServices(&services);
   for (const auto& entry : services) {
@@ -313,6 +322,15 @@ ServiceManagerContext::ServiceManagerContext() {
   ServiceManagerConnection::GetForProcess()->AddServiceRequestHandler(
       "media", base::Bind(&StartServiceInGpuProcess, "media"));
 #endif
+
+  // Initiates the first connection to device service to create the singleton
+  // instance, later the same instance will serve all the clients wanting to
+  // connect to device service.
+  // TODO(rockot): http://crbug.com/679407 Eliminate this connection once
+  // content_browser is itself a singleton service.
+  std::unique_ptr<service_manager::Connection> device_connection =
+      ServiceManagerConnection::GetForProcess()->GetConnector()->Connect(
+          device::mojom::kServiceName);
 }
 
 ServiceManagerContext::~ServiceManagerContext() {

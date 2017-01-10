@@ -66,6 +66,7 @@
 #include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "services/device/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -509,10 +510,16 @@ void ChildThreadImpl::Init(const Options& options) {
     channel_->AddFilter(new ChildMemoryMessageFilter());
   }
 
-  // In single process mode we may already have a power monitor
-  if (!base::PowerMonitor::Get()) {
-    std::unique_ptr<device::PowerMonitorBroadcastSource> power_monitor_source(
-        new device::PowerMonitorBroadcastSource(GetRemoteInterfaces()));
+  // In single process mode we may already have a power monitor,
+  // also for some edge cases where there is no ServiceManagerConnection, we do
+  // not create the power monitor.
+  if (!base::PowerMonitor::Get() && service_manager_connection_) {
+    std::unique_ptr<service_manager::Connection> device_connection =
+        service_manager_connection_->GetConnector()->Connect(
+            device::mojom::kServiceName);
+    auto power_monitor_source =
+        base::MakeUnique<device::PowerMonitorBroadcastSource>(
+            device_connection->GetRemoteInterfaces());
 
     power_monitor_.reset(
         new base::PowerMonitor(std::move(power_monitor_source)));

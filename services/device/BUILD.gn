@@ -13,6 +13,7 @@ source_set("lib") {
 
   deps = [
     "//base",
+    "//device/power_monitor",
     "//device/time_zone_monitor",
     "//services/service_manager/public/cpp",
   ]

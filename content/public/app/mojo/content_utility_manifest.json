@@ -11,6 +11,9 @@
         "service_manager:service_factory": [
           "service_manager::mojom::ServiceFactory"
         ]
+      },
+      "requires": {
+        "device": [ "device:power_monitor" ]
       }
     }
   }

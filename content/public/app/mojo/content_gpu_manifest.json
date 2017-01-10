@@ -13,7 +13,8 @@
         ]
       },
       "requires": {
-        "content_browser": [ "gpu" ]
+        "content_browser": [ "gpu" ],
+        "device": [ "device:power_monitor" ]
       }
     }
   }

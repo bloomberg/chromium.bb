@@ -166,7 +166,6 @@
 #include "content/public/common/url_constants.h"
 #include "device/battery/battery_monitor_impl.h"
 #include "device/gamepad/gamepad_monitor.h"
-#include "device/power_monitor/power_monitor_message_broadcaster.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gpu_switches.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -1252,10 +1251,6 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
     AddUIThreadInterface(
         registry.get(), base::Bind(&CreateMemoryCoordinatorHandle, GetID()));
   }
-
-  AddUIThreadInterface(
-      registry.get(),
-      base::Bind(&device::PowerMonitorMessageBroadcaster::Create));
 
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE);

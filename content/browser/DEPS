@@ -21,7 +21,6 @@ include_rules = [
   "+device/generic_sensor",  # For sensors service.
   "+device/geolocation",
   "+device/nfc",
-  "+device/power_monitor",
   "+device/power_save_blocker",
   "+device/screen_orientation/public/interfaces",
   "+device/sensors/public",

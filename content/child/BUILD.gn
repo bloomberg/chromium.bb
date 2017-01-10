@@ -237,6 +237,7 @@ target(link_target_type, "child") {
     "//mojo/common",
     "//mojo/edk/system",
     "//net",
+    "//services/device/public/interfaces",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
     "//services/service_manager/runner/common",

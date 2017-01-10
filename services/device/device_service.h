@@ -6,6 +6,7 @@
 #define SERVICES_DEVICE_DEVICE_SERVICE_H_
 
 #include "base/memory/ref_counted.h"
+#include "device/power_monitor/public/interfaces/power_monitor.mojom.h"
 #include "device/time_zone_monitor/public/interfaces/time_zone_monitor.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
@@ -20,6 +21,7 @@ std::unique_ptr<service_manager::Service> CreateDeviceService(
 
 class DeviceService
     : public service_manager::Service,
+      public service_manager::InterfaceFactory<mojom::PowerMonitor>,
       public service_manager::InterfaceFactory<mojom::TimeZoneMonitor> {
  public:
   DeviceService(scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
@@ -31,11 +33,16 @@ class DeviceService
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override;
 
+  // InterfaceFactory<mojom::PowerMonitor>:
+  void Create(const service_manager::Identity& remote_identity,
+              mojom::PowerMonitorRequest request) override;
+
   // InterfaceFactory<mojom::TimeZoneMonitor>:
   void Create(const service_manager::Identity& remote_identity,
               mojom::TimeZoneMonitorRequest request) override;
 
   std::unique_ptr<device::TimeZoneMonitor> time_zone_monitor_;
+
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceService);

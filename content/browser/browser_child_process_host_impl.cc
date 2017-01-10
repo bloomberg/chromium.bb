@@ -46,7 +46,6 @@
 #include "content/public/common/process_type.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/service_manager_connection.h"
-#include "device/power_monitor/power_monitor_message_broadcaster.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 
@@ -97,8 +96,6 @@ class ConnectionFilterImpl : public ConnectionFilter {
   bool OnConnect(const service_manager::Identity& remote_identity,
                  service_manager::InterfaceRegistry* registry,
                  service_manager::Connector* connector) override {
-    registry->AddInterface(
-        base::Bind(&device::PowerMonitorMessageBroadcaster::Create));
     return true;
   }
 
