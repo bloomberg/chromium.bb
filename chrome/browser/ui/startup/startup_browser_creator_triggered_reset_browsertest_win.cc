@@ -24,10 +24,13 @@
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/prefs/pref_service.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -108,6 +111,9 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTriggeredResetTest,
 
   Profile* profile = browser()->profile();
 
+  // Avoid showing the Welcome page.
+  profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, true);
+
   // Set the startup preference to open these URLs.
   SessionStartupPref pref(SessionStartupPref::URLS);
   pref.urls = urls;
@@ -146,19 +152,32 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTriggeredResetTest,
     EXPECT_EQ(expected_urls[i], tab_strip->GetWebContentsAt(i)->GetURL());
 }
 
-IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTriggeredResetTest,
+class StartupBrowserCreatorTriggeredResetFirstRunTest
+    : public StartupBrowserCreatorTriggeredResetTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kForceFirstRun);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTriggeredResetFirstRunTest,
                        TestTriggeredResetDoesNotShowWithFirstRunURLs) {
   // The presence of First Run tabs (in production code, these commonly come
   // from master_preferences) should suppress the reset UI. Check that this is
   // the case.
   ASSERT_TRUE(embedded_test_server()->Start());
   StartupBrowserCreator browser_creator;
-  browser_creator.AddFirstRunTab(GURL("http://new_tab_page"));
   browser_creator.AddFirstRunTab(
       embedded_test_server()->GetURL("/title1.html"));
+  browser_creator.AddFirstRunTab(
+      embedded_test_server()->GetURL("/title2.html"));
 
   // Prep the next launch to be offered a reset prompt.
   MockTriggeredProfileResetter::SetHasResetTrigger(true);
+
+  // Avoid showing the Welcome page.
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage,
+                                               true);
 
   // Do a process-startup browser launch.
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
@@ -174,15 +193,9 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTriggeredResetTest,
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(2, tab_strip->count());
 
-  GURL expected_first_tab_url =
-      signin::ShouldShowPromoAtStartup(browser()->profile(), true)
-          ? signin::GetPromoURL(
-                signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE,
-                signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT, false)
-          : GURL(chrome::kChromeUINewTabURL);
-  EXPECT_EQ(expected_first_tab_url, tab_strip->GetWebContentsAt(0)->GetURL());
-
   EXPECT_EQ("title1.html",
+            tab_strip->GetWebContentsAt(0)->GetURL().ExtractFileName());
+  EXPECT_EQ("title2.html",
             tab_strip->GetWebContentsAt(1)->GetURL().ExtractFileName());
 }
 

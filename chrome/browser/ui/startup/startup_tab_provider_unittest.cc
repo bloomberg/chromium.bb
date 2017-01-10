@@ -192,25 +192,36 @@ TEST(StartupTabProviderTest, CheckPreferencesTabPolicy) {
   SessionStartupPref pref(SessionStartupPref::Type::URLS);
   pref.urls = {GURL(base::ASCIIToUTF16("https://www.google.com"))};
 
-  StartupTabs output = StartupTabProviderImpl::CheckPreferencesTabPolicy(pref);
+  StartupTabs output =
+      StartupTabProviderImpl::CheckPreferencesTabPolicy(pref, false);
 
   ASSERT_EQ(1U, output.size());
   EXPECT_EQ("www.google.com", output[0].url.host());
 }
 
-TEST(StartupTabProviderTest, CheckPreferencesTabPolicy_Negative) {
+TEST(StartupTabProviderTest, CheckPreferencesTabPolicy_WrongType) {
   SessionStartupPref pref_default(SessionStartupPref::Type::DEFAULT);
   pref_default.urls = {GURL(base::ASCIIToUTF16("https://www.google.com"))};
 
   StartupTabs output =
-      StartupTabProviderImpl::CheckPreferencesTabPolicy(pref_default);
+      StartupTabProviderImpl::CheckPreferencesTabPolicy(pref_default, false);
 
   EXPECT_TRUE(output.empty());
 
   SessionStartupPref pref_last(SessionStartupPref::Type::LAST);
   pref_last.urls = {GURL(base::ASCIIToUTF16("https://www.google.com"))};
 
-  output = StartupTabProviderImpl::CheckPreferencesTabPolicy(pref_last);
+  output = StartupTabProviderImpl::CheckPreferencesTabPolicy(pref_last, false);
+
+  EXPECT_TRUE(output.empty());
+}
+
+TEST(StartupTabProviderTest, CheckPreferencesTabPolicy_NotFirstBrowser) {
+  SessionStartupPref pref(SessionStartupPref::Type::URLS);
+  pref.urls = {GURL(base::ASCIIToUTF16("https://www.google.com"))};
+
+  StartupTabs output =
+      StartupTabProviderImpl::CheckPreferencesTabPolicy(pref, true);
 
   EXPECT_TRUE(output.empty());
 }
