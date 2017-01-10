@@ -112,9 +112,9 @@ void ComputeAbsoluteHorizontal(
         }
       }
     } else if (!margin_left) {
-      margin_left = margin_space;
+      margin_left = margin_space - *margin_right;
     } else if (!margin_right) {
-      margin_right = margin_space;
+      margin_right = margin_space - *margin_left;
     } else {
       // Are values overconstrained?
       if (*margin_left + *margin_right != margin_space) {
@@ -256,9 +256,9 @@ void ComputeAbsoluteVertical(
         margin_bottom = margin_space;
       }
     } else if (!margin_top) {
-      margin_top = margin_space;
+      margin_top = margin_space - *margin_bottom;
     } else if (!margin_bottom) {
-      margin_bottom = margin_space;
+      margin_bottom = margin_space - *margin_top;
     } else {
       // Are values overconstrained?
       if (*margin_top + *margin_bottom != margin_space) {
