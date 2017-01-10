@@ -36,6 +36,9 @@ DesktopEnvironmentOptions::operator=(
 
 void DesktopEnvironmentOptions::Initialize() {
   desktop_capture_options_.set_detect_updated_region(true);
+#if defined (OS_WIN)
+  desktop_capture_options_.set_allow_directx_capturer(true);
+#endif
 }
 
 const DesktopCaptureOptions*
