@@ -62,13 +62,11 @@ HMODULE LoadModuleWithDirectory(const base::FilePath& module) {
 }
 
 void RecordDidRun(const base::FilePath& dll_path) {
-  bool system_level = !InstallUtil::IsPerUserInstall(dll_path);
-  GoogleUpdateSettings::UpdateDidRunState(true, system_level);
+  GoogleUpdateSettings::UpdateDidRunState(true);
 }
 
 void ClearDidRun(const base::FilePath& dll_path) {
-  bool system_level = !InstallUtil::IsPerUserInstall(dll_path);
-  GoogleUpdateSettings::UpdateDidRunState(false, system_level);
+  GoogleUpdateSettings::UpdateDidRunState(false);
 }
 
 typedef int (*InitMetro)();

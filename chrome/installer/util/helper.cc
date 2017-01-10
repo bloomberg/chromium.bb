@@ -4,12 +4,8 @@
 
 #include "chrome/installer/util/helper.h"
 
-#include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/path_service.h"
 #include "chrome/installer/util/browser_distribution.h"
-#include "chrome/installer/util/install_util.h"
-#include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/util_constants.h"
 
 namespace installer {
@@ -30,22 +26,6 @@ base::FilePath GetChromeInstallPath(bool system_install,
     install_path = install_path.Append(kInstallBinaryDir);
   }
   return install_path;
-}
-
-BrowserDistribution* GetBinariesDistribution(bool system_install) {
-  ProductState state;
-
-  // If we're part of a multi-install, we need to poll using the multi-installer
-  // package's app guid rather than the browser's. If we can't read the app's
-  // state from the registry, assume it isn't multi-installed.
-  if (!state.Initialize(system_install) || !state.is_multi_install())
-    return BrowserDistribution::GetDistribution();
-  return BrowserDistribution::GetSpecificDistribution(
-      BrowserDistribution::CHROME_BINARIES);
-}
-
-std::wstring GetAppGuidForUpdates(bool system_install) {
-  return GetBinariesDistribution(system_install)->GetAppGuid();
 }
 
 }  // namespace installer.

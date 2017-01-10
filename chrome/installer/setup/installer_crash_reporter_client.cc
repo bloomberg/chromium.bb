@@ -55,8 +55,8 @@ void InstallerCrashReporterClient::GetProductNameAndVersion(
     *version = L"0.0.0.0-devel";
   }
 
-  GoogleUpdateSettings::GetChromeChannelAndModifiers(
-      !GetIsPerUserInstall(exe_path), channel_name);
+  *channel_name =
+      GoogleUpdateSettings::GetChromeChannel(!GetIsPerUserInstall(exe_path));
 }
 
 bool InstallerCrashReporterClient::ShouldShowRestartDialog(

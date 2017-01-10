@@ -22,8 +22,6 @@ class DidRunUpdater : public content::NotificationObserver {
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // True if the process is running from a system-level installation.
-  bool system_level_;
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(DidRunUpdater);

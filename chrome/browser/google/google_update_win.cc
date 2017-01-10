@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -563,7 +564,7 @@ HRESULT UpdateCheckDriver::BeginUpdateCheckInternal(
   // Get a reference to the Chrome app in the bundle.
   if (!app_) {
     base::string16 app_guid =
-        installer::GetAppGuidForUpdates(system_level_install_);
+        BrowserDistribution::GetDistribution()->GetAppGuid();
     DCHECK(!app_guid.empty());
 
     base::win::ScopedComPtr<IDispatch> dispatch;

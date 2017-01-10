@@ -181,23 +181,12 @@ class GoogleUpdateSettings {
   // true if this operation succeeded.
   static bool ClearReferral();
 
-  // Convenience routine: UpdateDidRunStateForApp() specialized for the current
-  // BrowserDistribution, and also updates Chrome Binary's did_run if the
-  // current distribution is multi-install.
-  static bool UpdateDidRunState(bool did_run, bool system_level);
+  // Updates Chrome's "did run" state, returning true if the update succeeds.
+  static bool UpdateDidRunState(bool did_run);
 
-  // Returns only the channel name: "" (stable), "dev", "beta", "canary", or
-  // "unknown" if unknown. This value will not be modified by "-m" for a
-  // multi-install. See kChromeChannel* in util_constants.h
+  // Returns the channel name: "" (stable), "dev", "beta", "canary", or
+  // "unknown" if unknown. See kChromeChannel* in util_constants.h
   static base::string16 GetChromeChannel(bool system_install);
-
-  // Return a human readable modifier for the version string, e.g.
-  // the channel (dev, beta, stable). Returns true if this operation succeeded,
-  // on success, channel contains one of "", "unknown", "dev" or "beta" (unless
-  // it is a multi-install product, in which case it will return "m",
-  // "unknown-m", "dev-m", or "beta-m").
-  static bool GetChromeChannelAndModifiers(bool system_install,
-                                           base::string16* channel);
 
   // This method changes the Google Update "ap" value to move the installation
   // on to or off of one of the recovery channels.

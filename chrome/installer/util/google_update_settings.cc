@@ -7,8 +7,6 @@
 #include <stdint.h>
 
 #include <algorithm>
-#include <limits>
-#include <vector>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -156,60 +154,31 @@ bool RemoveGoogleUpdateStrKey(const wchar_t* const name) {
   return (key.DeleteValue(name) == ERROR_SUCCESS);
 }
 
-// Initializes |channel_info| based on |system_install| and |dist|. Also
-// returns whether the install is a multi-install via output parameter
-// |is_multi_install|. Returns false on failure.
+// Initializes |channel_info| based on |system_install|. Returns false on
+// failure.
 bool InitChannelInfo(bool system_install,
-                     installer::ChannelInfo* channel_info,
-                     bool* is_multi_install) {
-  // Determine whether or not chrome is multi-install. If so, updates are
-  // delivered under the binaries' app guid, so that's where the relevant
-  // channel is found.
-  installer::ProductState state;
-  ignore_result(state.Initialize(system_install));
-  if (!state.is_multi_install()) {
-    // Use the channel info that was just read for this single-install chrome.
-    *channel_info = state.channel();
-  } else {
-    // Read the channel info from the binaries' state key.
-    HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-    BrowserDistribution* dist = BrowserDistribution::GetSpecificDistribution(
-        BrowserDistribution::CHROME_BINARIES);
-    RegKey key(root_key, dist->GetStateKey().c_str(),
-               KEY_READ | KEY_WOW64_32KEY);
-
-    if (!channel_info->Initialize(key))
-      return false;
-  }
-  *is_multi_install = state.is_multi_install();
-  return true;
+                     installer::ChannelInfo* channel_info) {
+  HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  RegKey key(root_key, dist->GetStateKey().c_str(),
+             KEY_QUERY_VALUE | KEY_WOW64_32KEY);
+  return channel_info->Initialize(key);
 }
 
 bool GetChromeChannelInternal(bool system_install,
-                              bool add_multi_modifier,
                               base::string16* channel) {
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-
   // Shortcut in case this distribution knows what channel it is (canary).
-  if (dist->GetChromeChannel(channel))
+  if (BrowserDistribution::GetDistribution()->GetChromeChannel(channel))
     return true;
 
   installer::ChannelInfo channel_info;
-  bool is_multi_install = false;
-  if (!InitChannelInfo(system_install, &channel_info, &is_multi_install)) {
+  if (!InitChannelInfo(system_install, &channel_info)) {
     channel->assign(installer::kChromeChannelUnknown);
     return false;
   }
 
   if (!channel_info.GetChannelName(channel))
     channel->assign(installer::kChromeChannelUnknown);
-
-  // Tag the channel name if this is a multi-install.
-  if (add_multi_modifier && is_multi_install) {
-    if (!channel->empty())
-      channel->push_back(L'-');
-    channel->push_back(L'm');
-  }
 
   return true;
 }
@@ -235,20 +204,6 @@ bool GetUpdatePolicyFromDword(
 }
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
-bool UpdateDidRunStateForApp(const AppRegistrationData& app_reg_data,
-                             bool did_run) {
-  return WriteGoogleUpdateStrKeyInternal(
-      app_reg_data, google_update::kRegDidRunField, did_run ? L"1" : L"0");
-}
-
-// Convenience routine: GoogleUpdateSettings::UpdateDidRunStateForApp()
-// specialized for Chrome Binaries.
-bool UpdateDidRunStateForBinaries(bool did_run) {
-  BrowserDistribution* dist = BrowserDistribution::GetSpecificDistribution(
-      BrowserDistribution::CHROME_BINARIES);
-  return UpdateDidRunStateForApp(dist->GetAppRegistrationData(), did_run);
-}
-
 }  // namespace
 
 bool GoogleUpdateSettings::IsSystemInstall() {
@@ -272,16 +227,9 @@ bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
 }
 
 bool GoogleUpdateSettings::GetCollectStatsConsentAtLevel(bool system_install) {
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-
-  // Consent applies to all products in a multi-install package.
-  if (InstallUtil::IsMultiInstall(system_install)) {
-    dist = BrowserDistribution::GetSpecificDistribution(
-        BrowserDistribution::CHROME_BINARIES);
-  }
-
   return GetCollectStatsConsentForApp(system_install,
-                                      dist->GetAppRegistrationData()) ==
+                                      BrowserDistribution::GetDistribution()
+                                          ->GetAppRegistrationData()) ==
          google_update::TRISTATE_TRUE;
 }
 
@@ -322,14 +270,7 @@ bool GoogleUpdateSettings::SetCollectStatsConsentAtLevel(bool system_install,
                                                          bool consented) {
   DWORD value =
       consented ? google_update::TRISTATE_TRUE : google_update::TRISTATE_FALSE;
-
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-
-  // Consent applies to all products in a multi-install package.
-  if (InstallUtil::IsMultiInstall(system_install)) {
-    dist = BrowserDistribution::GetSpecificDistribution(
-        BrowserDistribution::CHROME_BINARIES);
-  }
 
   // Write to ClientStateMedium for system-level; ClientState otherwise.
   HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
@@ -359,8 +300,7 @@ bool GoogleUpdateSettings::SetCollectStatsConsentAtLevel(bool system_install,
 bool GoogleUpdateSettings::GetCollectStatsConsentDefault(
     bool* stats_consent_default) {
   installer::ChannelInfo channel_info;
-  bool is_multi_install = false;
-  if (InitChannelInfo(IsSystemInstall(), &channel_info, &is_multi_install)) {
+  if (InitChannelInfo(IsSystemInstall(), &channel_info)) {
     base::string16 stats_default = channel_info.GetStatsDefault();
     if (stats_default == L"0" || stats_default == L"1") {
       *stats_consent_default = (stats_default == L"1");
@@ -482,26 +422,17 @@ bool GoogleUpdateSettings::ClearReferral() {
   return ClearGoogleUpdateStrKey(google_update::kRegReferralField);
 }
 
-bool GoogleUpdateSettings::UpdateDidRunState(bool did_run, bool system_level) {
+bool GoogleUpdateSettings::UpdateDidRunState(bool did_run) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  bool result = UpdateDidRunStateForApp(dist->GetAppRegistrationData(),
-                                        did_run);
-  // Update state for binaries, even if the previous call was unsuccessful.
-  if (InstallUtil::IsMultiInstall(system_level))
-    result = UpdateDidRunStateForBinaries(did_run) && result;
-  return result;
+  return WriteGoogleUpdateStrKeyInternal(dist->GetAppRegistrationData(),
+                                         google_update::kRegDidRunField,
+                                         did_run ? L"1" : L"0");
 }
 
 base::string16 GoogleUpdateSettings::GetChromeChannel(bool system_install) {
   base::string16 channel;
-  GetChromeChannelInternal(system_install, false, &channel);
+  GetChromeChannelInternal(system_install, &channel);
   return channel;
-}
-
-bool GoogleUpdateSettings::GetChromeChannelAndModifiers(
-    bool system_install,
-    base::string16* channel) {
-  return GetChromeChannelInternal(system_install, true, channel);
 }
 
 void GoogleUpdateSettings::UpdateInstallStatus(bool system_install,
@@ -590,6 +521,10 @@ bool GoogleUpdateSettings::UpdateGoogleUpdateApKey(
     DCHECK_EQ(installer::UNKNOWN_ARCHIVE_TYPE, archive_type);
   }
 
+  // The mini_installer in Chrome 10 through 12 added "-multifail" to the "ap"
+  // value if "--multi-install" was on the command line. Unconditionally remove
+  // it if present.
+  // TODO(grt): Move this cleanup into mini_installer.cc's SetInstallerFlags.
   if (value->SetMultiFailSuffix(false)) {
     VLOG(1) << "Removed multi-install failure key; switching to channel: "
             << value->value();
@@ -699,21 +634,9 @@ bool GoogleUpdateSettings::AreAutoupdatesEnabled() {
     return false;
   }
 
-  // Auto updates are subtly broken when Chrome and the binaries have different
-  // overrides in place. If this Chrome cannot possibly be multi-install by
-  // virtue of being a side-by-side installation, simply check Chrome's policy.
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   UpdatePolicy app_policy = GetAppUpdatePolicy(dist->GetAppGuid(), nullptr);
-  if (InstallUtil::IsChromeSxSProcess())
-    return app_policy == AUTOMATIC_UPDATES || app_policy == AUTO_UPDATES_ONLY;
-
-  // Otherwise, check for consistency between Chrome and the binaries regardless
-  // of whether or not this Chrome is multi-install since the next update likely
-  // will attempt to migrate it to such.
-  BrowserDistribution* binaries = BrowserDistribution::GetSpecificDistribution(
-      BrowserDistribution::CHROME_BINARIES);
-  return (GetAppUpdatePolicy(binaries->GetAppGuid(), nullptr) == app_policy &&
-          (app_policy == AUTOMATIC_UPDATES || app_policy == AUTO_UPDATES_ONLY));
+  return app_policy == AUTOMATIC_UPDATES || app_policy == AUTO_UPDATES_ONLY;
 #else  // defined(GOOGLE_CHROME_BUILD)
   // Chromium does not auto update.
   return false;
@@ -726,15 +649,6 @@ bool GoogleUpdateSettings::ReenableAutoupdates() {
   int needs_reset_count = 0;
   int did_reset_count = 0;
 
-  // Reset overrides for Chrome and for the binaries if this Chrome supports
-  // multi-install.
-  std::vector<base::string16> app_guids;
-  app_guids.push_back(BrowserDistribution::GetDistribution()->GetAppGuid());
-  if (!InstallUtil::IsChromeSxSProcess()) {
-    app_guids.push_back(BrowserDistribution::GetSpecificDistribution(
-        BrowserDistribution::CHROME_BINARIES)->GetAppGuid());
-  }
-
   UpdatePolicy update_policy = kDefaultUpdatePolicy;
   RegKey policy_key;
   if (policy_key.Open(HKEY_LOCAL_MACHINE, kPoliciesKey,
@@ -744,27 +658,27 @@ bool GoogleUpdateSettings::ReenableAutoupdates() {
     // need to be checked or reset.
     bool automatic_updates_allowed_by_overrides = true;
     DWORD value = 0;
-    for (const base::string16& app_guid : app_guids) {
-      // First check the app-specific override value and reset that if needed.
-      // Note that this intentionally sets the override to AUTOMATIC_UPDATES
-      // even if it was previously AUTO_UPDATES_ONLY. The thinking is that
-      // AUTOMATIC_UPDATES is marginally more likely to let a user update and
-      // this code is only called when a stuck user asks for updates.
-      base::string16 app_update_override(kUpdateOverrideValuePrefix);
-      app_update_override.append(app_guid);
-      if (policy_key.ReadValueDW(app_update_override.c_str(),
-                                 &value) != ERROR_SUCCESS) {
-        automatic_updates_allowed_by_overrides = false;
-      } else if (!GetUpdatePolicyFromDword(value, &update_policy) ||
-                 update_policy != GoogleUpdateSettings::AUTOMATIC_UPDATES) {
-        automatic_updates_allowed_by_overrides = false;
-        ++needs_reset_count;
-        if (policy_key.WriteValue(
-                app_update_override.c_str(),
-                static_cast<DWORD>(GoogleUpdateSettings::AUTOMATIC_UPDATES)) ==
-            ERROR_SUCCESS) {
-          ++did_reset_count;
-        }
+
+    // First check the app-specific override value and reset that if needed.
+    // Note that this intentionally sets the override to AUTOMATIC_UPDATES even
+    // if it was previously AUTO_UPDATES_ONLY. The thinking is that
+    // AUTOMATIC_UPDATES is marginally more likely to let a user update and this
+    // code is only called when a stuck user asks for updates.
+    base::string16 app_update_override(kUpdateOverrideValuePrefix);
+    app_update_override.append(
+        BrowserDistribution::GetDistribution()->GetAppGuid());
+    if (policy_key.ReadValueDW(app_update_override.c_str(), &value) !=
+        ERROR_SUCCESS) {
+      automatic_updates_allowed_by_overrides = false;
+    } else if (!GetUpdatePolicyFromDword(value, &update_policy) ||
+               update_policy != GoogleUpdateSettings::AUTOMATIC_UPDATES) {
+      automatic_updates_allowed_by_overrides = false;
+      ++needs_reset_count;
+      if (policy_key.WriteValue(
+              app_update_override.c_str(),
+              static_cast<DWORD>(GoogleUpdateSettings::AUTOMATIC_UPDATES)) ==
+          ERROR_SUCCESS) {
+        ++did_reset_count;
       }
     }
 
@@ -798,7 +712,6 @@ bool GoogleUpdateSettings::ReenableAutoupdates() {
     // policy set). Simply return whether or not we think updates are enabled.
     return AreAutoupdatesEnabled();
   }
-
 #endif
   // Non Google Chrome isn't going to autoupdate.
   return true;
@@ -829,11 +742,8 @@ base::string16 GoogleUpdateSettings::GetDownloadPreference() {
 }
 
 void GoogleUpdateSettings::RecordChromeUpdatePolicyHistograms() {
-  const bool is_multi_install = InstallUtil::IsMultiInstall(IsSystemInstall());
   const base::string16 app_guid =
-      BrowserDistribution::GetSpecificDistribution(
-          is_multi_install ? BrowserDistribution::CHROME_BINARIES :
-                             BrowserDistribution::CHROME_BROWSER)->GetAppGuid();
+      BrowserDistribution::GetDistribution()->GetAppGuid();
 
   bool is_overridden = false;
   const UpdatePolicy update_policy = GetAppUpdatePolicy(app_guid,

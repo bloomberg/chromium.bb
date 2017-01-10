@@ -29,8 +29,7 @@ std::string GetChannelString() {
   base::string16 channel;
   if (PathService::Get(base::FILE_MODULE, &module)) {
     bool is_system_install = !InstallUtil::IsPerUserInstall(module);
-    GoogleUpdateSettings::GetChromeChannelAndModifiers(is_system_install,
-                                                       &channel);
+    channel = GoogleUpdateSettings::GetChromeChannel(is_system_install);
   }
 #if defined(SYZYASAN)
   if (base::debug::IsBinaryInstrumented())
