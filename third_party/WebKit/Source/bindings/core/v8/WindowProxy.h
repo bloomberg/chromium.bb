@@ -72,9 +72,6 @@ class WindowProxy final : public GarbageCollectedFinalized<WindowProxy> {
   // (e.g., after setting docoument.domain).
   void updateSecurityOrigin(SecurityOrigin*);
 
-  bool isContextInitialized() {
-    return m_scriptState && !!m_scriptState->perContextData();
-  }
   void initializeIfNeeded();
 
   void clearForNavigation();
@@ -87,6 +84,14 @@ class WindowProxy final : public GarbageCollectedFinalized<WindowProxy> {
   DOMWrapperWorld& world() { return *m_world; }
 
  private:
+  // A valid transition is from ContextUninitialized to ContextInitialized,
+  // and then ContextDetached. Other transitions are forbidden.
+  enum class Lifecycle {
+    ContextUninitialized,
+    ContextInitialized,
+    ContextDetached,
+  };
+
   WindowProxy(Frame*, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);
   void initialize();
 
@@ -118,6 +123,7 @@ class WindowProxy final : public GarbageCollectedFinalized<WindowProxy> {
   RefPtr<ScriptState> m_scriptState;
   RefPtr<DOMWrapperWorld> m_world;
   ScopedPersistent<v8::Object> m_globalProxy;
+  Lifecycle m_lifecycle;
 };
 
 }  // namespace blink

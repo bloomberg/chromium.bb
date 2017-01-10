@@ -83,12 +83,15 @@ WindowProxy* WindowProxy::create(v8::Isolate* isolate,
 WindowProxy::WindowProxy(Frame* frame,
                          PassRefPtr<DOMWrapperWorld> world,
                          v8::Isolate* isolate)
-    : m_frame(frame), m_isolate(isolate), m_world(world) {}
+    : m_frame(frame),
+      m_isolate(isolate),
+      m_world(world),
+      m_lifecycle(Lifecycle::ContextUninitialized) {}
 
 WindowProxy::~WindowProxy() {
   // clearForClose() or clearForNavigation() must be invoked before destruction
   // starts.
-  ASSERT(!isContextInitialized());
+  DCHECK(m_lifecycle != Lifecycle::ContextInitialized);
 }
 
 DEFINE_TRACE(WindowProxy) {
@@ -96,7 +99,7 @@ DEFINE_TRACE(WindowProxy) {
 }
 
 void WindowProxy::disposeContext(GlobalDetachmentBehavior behavior) {
-  if (!isContextInitialized())
+  if (m_lifecycle != Lifecycle::ContextInitialized)
     return;
 
   ScriptState::Scope scope(m_scriptState.get());
@@ -133,6 +136,9 @@ void WindowProxy::disposeContext(GlobalDetachmentBehavior behavior) {
   // it up when idle.
   V8GCForContextDispose::instance().notifyContextDisposed(
       m_frame->isMainFrame());
+
+  DCHECK(m_lifecycle == Lifecycle::ContextInitialized);
+  m_lifecycle = Lifecycle::ContextDetached;
 }
 
 void WindowProxy::clearForClose() {
@@ -144,20 +150,21 @@ void WindowProxy::clearForNavigation() {
 }
 
 v8::Local<v8::Object> WindowProxy::globalIfNotDetached() {
-  if (!isContextInitialized())
-    return v8::Local<v8::Object>();
-  DCHECK(m_scriptState->contextIsValid());
-  DCHECK(m_globalProxy == m_scriptState->context()->Global());
-  return m_globalProxy.newLocal(m_isolate);
+  if (m_lifecycle == Lifecycle::ContextInitialized) {
+    DCHECK(m_scriptState->contextIsValid());
+    DCHECK(m_globalProxy == m_scriptState->context()->Global());
+    return m_globalProxy.newLocal(m_isolate);
+  }
+  return v8::Local<v8::Object>();
 }
 
 v8::Local<v8::Object> WindowProxy::releaseGlobal() {
-  ASSERT(!isContextInitialized());
-  // If a ScriptState was created, the context was initialized at some point.
+  DCHECK(m_lifecycle != Lifecycle::ContextInitialized);
   // Make sure the global object was detached from the proxy by calling
   // clearForNavigation().
-  if (m_scriptState)
+  if (m_lifecycle == Lifecycle::ContextDetached)
     ASSERT(m_scriptState->isGlobalObjectDetached());
+
   v8::Local<v8::Object> global = m_globalProxy.newLocal(m_isolate);
   m_globalProxy.clear();
   return global;
@@ -211,12 +218,13 @@ void WindowProxy::setGlobal(v8::Local<v8::Object> global) {
 // If there are JS code holds a closure to the old inner window,
 // it won't be able to reach the outer window via its global object.
 void WindowProxy::initializeIfNeeded() {
-  if (isContextInitialized())
-    return;
-  initialize();
-
-  if (m_world->isMainWorld() && m_frame->isLocalFrame())
-    toLocalFrame(m_frame)->loader().dispatchDidClearWindowObjectInMainWorld();
+  // TODO(haraken): It is wrong to re-initialize an already detached window
+  // proxy. This must be 'if(m_lifecycle == Lifecycle::ContextUninitialized)'.
+  if (m_lifecycle != Lifecycle::ContextInitialized) {
+    initialize();
+    if (m_world->isMainWorld() && m_frame->isLocalFrame())
+      toLocalFrame(m_frame)->loader().dispatchDidClearWindowObjectInMainWorld();
+  }
 }
 
 void WindowProxy::initialize() {
@@ -231,7 +239,6 @@ void WindowProxy::initialize() {
   v8::HandleScope handleScope(m_isolate);
 
   createContext();
-  CHECK(isContextInitialized());
 
   ScriptState::Scope scope(m_scriptState.get());
   v8::Local<v8::Context> context = m_scriptState->context();
@@ -317,6 +324,12 @@ void WindowProxy::createContext() {
   CHECK(!context.IsEmpty());
 
   m_scriptState = ScriptState::create(context, m_world);
+
+  // TODO(haraken): Currently we cannot enable the following DCHECK because
+  // an already detached window proxy can be re-initialized. This is wrong.
+  // DCHECK(m_lifecycle == Lifecycle::ContextUninitialized);
+  m_lifecycle = Lifecycle::ContextInitialized;
+  DCHECK(m_scriptState->contextIsValid());
 }
 
 void WindowProxy::setupWindowPrototypeChain() {
@@ -465,7 +478,12 @@ void WindowProxy::updateDocument() {
   DCHECK(m_world->isMainWorld());
   // For an uninitialized main window proxy, there's nothing we need
   // to update. The update is done when the window proxy gets initialized later.
-  if (!isContextInitialized())
+  if (m_lifecycle == Lifecycle::ContextUninitialized)
+    return;
+  // TODO(yukishiino): Is it okay to not update document when the context
+  // is detached? It's not trivial to fix this because udpateDocumentProperty
+  // requires a not-yet-detached context to instantiate a document wrapper.
+  if (m_lifecycle == Lifecycle::ContextDetached)
     return;
 
   updateActivityLogger();
@@ -523,8 +541,12 @@ static void getter(v8::Local<v8::Name> property,
 void WindowProxy::namedItemAdded(HTMLDocument* document,
                                  const AtomicString& name) {
   DCHECK(m_world->isMainWorld());
-  DCHECK(m_scriptState);
-  if (!isContextInitialized())
+
+  // Context must be initialized before this point.
+  DCHECK(m_lifecycle >= Lifecycle::ContextInitialized);
+  // TODO(yukishiino): Is it okay to not update named properties
+  // after the context gets detached?
+  if (m_lifecycle == Lifecycle::ContextDetached)
     return;
 
   ScriptState::Scope scope(m_scriptState.get());
@@ -540,12 +562,16 @@ void WindowProxy::namedItemAdded(HTMLDocument* document,
 void WindowProxy::namedItemRemoved(HTMLDocument* document,
                                    const AtomicString& name) {
   DCHECK(m_world->isMainWorld());
-  DCHECK(m_scriptState);
-  if (!isContextInitialized())
-    return;
-  if (document->hasNamedItem(name) || document->hasExtraNamedItem(name))
+
+  // Context must be initialized before this point.
+  DCHECK(m_lifecycle >= Lifecycle::ContextInitialized);
+  // TODO(yukishiino): Is it okay to not update named properties
+  // after the context gets detached?
+  if (m_lifecycle == Lifecycle::ContextDetached)
     return;
 
+  if (document->hasNamedItem(name) || document->hasExtraNamedItem(name))
+    return;
   ScriptState::Scope scope(m_scriptState.get());
   v8::Local<v8::Object> documentWrapper =
       m_world->domDataStore().get(document, m_isolate);
@@ -555,8 +581,15 @@ void WindowProxy::namedItemRemoved(HTMLDocument* document,
 }
 
 void WindowProxy::updateSecurityOrigin(SecurityOrigin* origin) {
-  if (!isContextInitialized())
+  // For an uninitialized main window proxy, there's nothing we need
+  // to update. The update is done when the window proxy gets initialized later.
+  if (m_lifecycle == Lifecycle::ContextUninitialized)
     return;
+  // TODO(yukishiino): Is it okay to not update security origin when the context
+  // is detached?
+  if (m_lifecycle == Lifecycle::ContextDetached)
+    return;
+
   setSecurityToken(origin);
 }
 

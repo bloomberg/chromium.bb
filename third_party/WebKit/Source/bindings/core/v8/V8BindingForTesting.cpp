@@ -79,9 +79,6 @@ V8TestingScope::~V8TestingScope() {
   // the isolate.  Otherwise, the leak detector complains.  Really mysterious
   // hack.
   v8::Function::New(context(), nullptr);
-
-  if (m_holder->document().frame())
-    getScriptState()->disposePerContextData();
 }
 
 }  // namespace blink
