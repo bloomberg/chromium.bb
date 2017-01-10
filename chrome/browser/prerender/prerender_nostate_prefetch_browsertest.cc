@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_test_utils.h"
@@ -20,6 +21,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/escape.h"
@@ -49,6 +52,7 @@ const char kPrefetchResponseHeaderCSP[] =
     "prerender/prefetch_response_csp.html";
 const char kPrefetchScript[] = "prerender/prefetch.js";
 const char kPrefetchScript2[] = "prerender/prefetch2.js";
+const char kServiceWorkerLoader[] = "prerender/service_worker.html";
 const char kPrefetchSubresourceRedirectPage[] =
     "prerender/prefetch_subresource_redirect.html";
 
@@ -556,6 +560,46 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, IssuesIdlePriorityRequests) {
       }));
   PrefetchFromFile(kPrefetchPage, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
   script_counter.WaitForCount(1);
+}
+
+// Checks that a registered ServiceWorker (SW) that is not currently running
+// will intercepts a prefetch request.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, ServiceWorkerIntercept) {
+  // Register and launch a SW.
+  base::string16 expected_title = base::ASCIIToUTF16("SW READY");
+  content::TitleWatcher title_watcher(GetActiveWebContents(), expected_title);
+  ui_test_utils::NavigateToURL(
+      current_browser(),
+      src_server()->GetURL(MakeAbsolute(kServiceWorkerLoader)));
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+  // Stop any SW, killing the render process in order to test that the
+  // lightweight renderer created for NoState prefetch does not interfere with
+  // SW startup.
+  int host_count = 0;
+  for (content::RenderProcessHost::iterator iter(
+           content::RenderProcessHost::AllHostsIterator());
+       !iter.IsAtEnd(); iter.Advance()) {
+    ++host_count;
+    iter.GetCurrentValue()->Shutdown(content::RESULT_CODE_KILLED,
+                                     true /* wait */);
+  }
+  // There should be at most one render_process_host, that created for the SW.
+  EXPECT_EQ(1, host_count);
+
+  // Open a new tab to replace the one closed with all the RenderProcessHosts.
+  ui_test_utils::NavigateToURLWithDisposition(
+      current_browser(), GURL(url::kAboutBlankURL),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // The SW intercepts kPrefetchPage and replaces it with a body that contains
+  // an <img> tage for kPrefetchPng. This verifies that the SW ran correctly by
+  // observing the fetch of the image.
+  RequestCounter image_counter;
+  CountRequestFor(kPrefetchPng, &image_counter);
+  PrefetchFromFile(kPrefetchPage, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  image_counter.WaitForCount(1);
 }
 
 }  // namespace prerender
