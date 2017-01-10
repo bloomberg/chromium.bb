@@ -815,6 +815,17 @@ static INLINE int txfm_partition_context(TXFM_CONTEXT *above_ctx,
   TX_SIZE max_tx_size = max_txsize_lookup[bsize];
   int category = TXFM_PARTITION_CONTEXTS - 1;
 
+  // dummy return, not used by others.
+  if (tx_size <= TX_4X4) return 0;
+
+  switch (AOMMAX(block_size_wide[bsize], block_size_high[bsize])) {
+    case 64:
+    case 32: max_tx_size = TX_32X32; break;
+    case 16: max_tx_size = TX_16X16; break;
+    case 8: max_tx_size = TX_8X8; break;
+    default: assert(0);
+  }
+
   if (max_tx_size >= TX_8X8) {
     category = (tx_size != max_tx_size && max_tx_size > TX_8X8) +
                (TX_SIZES - 1 - max_tx_size) * 2;
