@@ -13,15 +13,15 @@ function test() {
     {
         var request = new SDK.NetworkRequest(SDK.targetManager.mainTarget(), "", "", "", "", "");
         request.setResourceType(type);
-        request.requestId = id;
+        request.setRequestId(id);
         request.setIssueTime(startTime);
         request.endTime = endTime;
         target._appendRequest(request);
         target._refresh();
 
-        var isFilteredOut = !!target._nodesByRequestId.get(request.requestId)[Network.NetworkLogView._isFilteredOutSymbol];
+        var isFilteredOut = !!target._nodesByRequestId.get(request.requestId())[Network.NetworkLogView._isFilteredOutSymbol];
         InspectorTest.addResult("");
-        InspectorTest.addResult("Appended request [" + request.requestId + "] of type '" + request.resourceType().name() + "' is hidden: " + isFilteredOut + " from [" + request.startTime + "] to [" + request.endTime + "]");
+        InspectorTest.addResult("Appended request [" + request.requestId() + "] of type '" + request.resourceType().name() + "' is hidden: " + isFilteredOut + " from [" + request.startTime + "] to [" + request.endTime + "]");
         InspectorTest.addResult("Timeline: from [" + target._calculator.minimumBoundary() + "] to [" + target._calculator.maximumBoundary() + "]");
     }
 
