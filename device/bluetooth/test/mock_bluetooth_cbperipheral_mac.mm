@@ -7,6 +7,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "device/bluetooth/test/bluetooth_test_mac.h"
+#include "device/bluetooth/test/mock_bluetooth_cbcharacteristic_mac.h"
 #include "device/bluetooth/test/mock_bluetooth_cbservice_mac.h"
 
 using base::mac::ObjCCast;
@@ -89,6 +90,12 @@ using base::scoped_nsobject;
                      forService:(CBService*)service {
 }
 
+- (void)discoverDescriptorsForCharacteristic:(CBCharacteristic*)characteristic {
+  MockCBCharacteristic* mock_characteristic =
+      ObjCCast<MockCBCharacteristic>(characteristic);
+  [mock_characteristic discoverDescriptors];
+}
+
 - (void)readValueForCharacteristic:(CBCharacteristic*)characteristic {
   DCHECK(_bluetoothTestMac);
   _bluetoothTestMac->OnFakeBluetoothCharacteristicReadValue();
@@ -132,13 +139,6 @@ using base::scoped_nsobject;
   [self didModifyServices:@[ serviceToRemove ]];
 }
 
-
-- (void)didModifyServices:(NSArray*)invalidatedServices {
-  DCHECK(
-      [_delegate respondsToSelector:@selector(peripheral:didModifyServices:)]);
-  [_delegate peripheral:self.peripheral didModifyServices:invalidatedServices];
-}
-
 - (void)mockDidDiscoverEvents {
   [_delegate peripheral:self.peripheral didDiscoverServices:nil];
   // BluetoothLowEnergyDeviceMac is expected to call
@@ -149,7 +149,27 @@ using base::scoped_nsobject;
     [_delegate peripheral:self.peripheral
         didDiscoverCharacteristicsForService:service
                                        error:nil];
+    for (CBCharacteristic* characteristic in service.characteristics) {
+      // After discovering services, BluetoothLowEnergyDeviceMac is expected to
+      // discover characteristics for all services.
+      [_delegate peripheral:self.peripheral
+          didDiscoverDescriptorsForCharacteristic:characteristic
+                                            error:nil];
+    }
   }
+}
+
+- (void)didModifyServices:(NSArray*)invalidatedServices {
+  DCHECK(
+      [_delegate respondsToSelector:@selector(peripheral:didModifyServices:)]);
+  [_delegate peripheral:self.peripheral didModifyServices:invalidatedServices];
+}
+
+- (void)didDiscoverDescriptorsWithCharacteristic:
+    (MockCBCharacteristic*)characteristic_mock {
+  [_delegate peripheral:self.peripheral
+      didDiscoverDescriptorsForCharacteristic:characteristic_mock.characteristic
+                                        error:nil];
 }
 
 - (NSUUID*)identifier {

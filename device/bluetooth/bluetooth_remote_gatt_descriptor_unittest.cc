@@ -52,10 +52,14 @@ class BluetoothRemoteGattDescriptorTest : public BluetoothTest {
   BluetoothRemoteGattDescriptor* descriptor1_ = nullptr;
   BluetoothRemoteGattDescriptor* descriptor2_ = nullptr;
 };
-#endif
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 TEST_F(BluetoothRemoteGattDescriptorTest, GetIdentifier) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   // 2 devices to verify that descriptors on them have distinct IDs.
@@ -130,10 +134,14 @@ TEST_F(BluetoothRemoteGattDescriptorTest, GetIdentifier) {
 
   EXPECT_NE(desc5->GetIdentifier(), desc6->GetIdentifier());
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 TEST_F(BluetoothRemoteGattDescriptorTest, GetUUID) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -172,7 +180,7 @@ TEST_F(BluetoothRemoteGattDescriptorTest, GetUUID) {
   EXPECT_EQ(uuid1, descriptor1->GetUUID());
   EXPECT_EQ(uuid2, descriptor2->GetUUID());
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
 #if defined(OS_ANDROID)
 // Tests ReadRemoteDescriptor and GetValue with empty value buffer.

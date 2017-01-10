@@ -66,6 +66,8 @@ class BluetoothTestMac : public BluetoothTestBase {
   void SimulateGattCharacteristicWriteError(
       BluetoothRemoteGattCharacteristic* characteristic,
       BluetoothRemoteGattService::GattErrorCode error_code) override;
+  void SimulateGattDescriptor(BluetoothRemoteGattCharacteristic* characteristic,
+                              const std::string& uuid) override;
   void SimulateGattNotifySessionStarted(
       BluetoothRemoteGattCharacteristic* characteristic) override;
   void SimulateGattNotifySessionStartError(
@@ -99,7 +101,10 @@ class BluetoothTestMac : public BluetoothTestBase {
   // Returns MockCBPeripheral from BluetoothRemoteGattService.
   MockCBPeripheral* GetMockCBPeripheral(
       BluetoothRemoteGattService* service) const;
-  // Returns MockCBPeripheral from BluetoothRemoteGattService.
+  // Returns MockCBPeripheral from BluetoothRemoteGattCharacteristic.
+  MockCBPeripheral* GetMockCBPeripheral(
+      BluetoothRemoteGattCharacteristic* characteristic) const;
+  // Returns MockCBCharacteristic from BluetoothRemoteGattCharacteristic.
   MockCBCharacteristic* GetCBMockCharacteristic(
       BluetoothRemoteGattCharacteristic* characteristic) const;
 

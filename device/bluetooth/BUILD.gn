@@ -126,6 +126,8 @@ component("bluetooth") {
     "bluetooth_remote_gatt_descriptor.h",
     "bluetooth_remote_gatt_descriptor_android.cc",
     "bluetooth_remote_gatt_descriptor_android.h",
+    "bluetooth_remote_gatt_descriptor_mac.h",
+    "bluetooth_remote_gatt_descriptor_mac.mm",
     "bluetooth_remote_gatt_descriptor_win.cc",
     "bluetooth_remote_gatt_descriptor_win.h",
     "bluetooth_remote_gatt_service.cc",

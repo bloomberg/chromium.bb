@@ -54,6 +54,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceMac
   // Called by the BluetoothLowEnergyDeviceMac instance when the characteristics
   // has been discovered.
   void DidDiscoverCharacteristics();
+  // Called by the BluetoothLowEnergyDeviceMac instance when the descriptors has
+  // been discovered.
+  void DidDiscoverDescriptors(CBCharacteristic* characteristic);
   // Sends notification if this service is ready with all characteristics
   // discovered.
   void SendNotificationIfComplete();

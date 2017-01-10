@@ -11,6 +11,7 @@
 #include "device/bluetooth/bluetooth_adapter_mac.h"
 #include "device/bluetooth/bluetooth_device_mac.h"
 #include "device/bluetooth/bluetooth_gatt_notify_session.h"
+#include "device/bluetooth/bluetooth_remote_gatt_descriptor_mac.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_mac.h"
 
 namespace device {
@@ -129,15 +130,24 @@ bool BluetoothRemoteGattCharacteristicMac::IsNotifying() const {
 
 std::vector<BluetoothRemoteGattDescriptor*>
 BluetoothRemoteGattCharacteristicMac::GetDescriptors() const {
-  NOTIMPLEMENTED();
-  return std::vector<BluetoothRemoteGattDescriptor*>();
+  std::vector<BluetoothRemoteGattDescriptor*> gatt_descriptors;
+  for (const auto& iter : gatt_descriptor_macs_) {
+    BluetoothRemoteGattDescriptor* gatt_descriptor =
+        static_cast<BluetoothRemoteGattDescriptor*>(iter.second.get());
+    gatt_descriptors.push_back(gatt_descriptor);
+  }
+  return gatt_descriptors;
 }
 
 BluetoothRemoteGattDescriptor*
 BluetoothRemoteGattCharacteristicMac::GetDescriptor(
     const std::string& identifier) const {
-  NOTIMPLEMENTED();
-  return nullptr;
+  auto searched_pair = gatt_descriptor_macs_.find(identifier);
+  if (searched_pair == gatt_descriptor_macs_.end()) {
+    return nullptr;
+  }
+  return static_cast<BluetoothRemoteGattDescriptor*>(
+      searched_pair->second.get());
 }
 
 void BluetoothRemoteGattCharacteristicMac::StartNotifySession(
@@ -170,8 +180,8 @@ void BluetoothRemoteGattCharacteristicMac::StartNotifySession(
     return;
   }
 
-  [gatt_service_->GetCBPeripheral() setNotifyValue:YES
-                                 forCharacteristic:cb_characteristic_.get()];
+  [GetCBPeripheral() setNotifyValue:YES
+                  forCharacteristic:cb_characteristic_.get()];
   start_notifications_in_progress_ = true;
 }
 
@@ -204,8 +214,7 @@ void BluetoothRemoteGattCharacteristicMac::ReadRemoteCharacteristic(
   characteristic_value_read_or_write_in_progress_ = true;
   read_characteristic_value_callbacks_ =
       std::make_pair(callback, error_callback);
-  [gatt_service_->GetCBPeripheral()
-      readValueForCharacteristic:cb_characteristic_];
+  [GetCBPeripheral() readValueForCharacteristic:cb_characteristic_];
 }
 
 void BluetoothRemoteGattCharacteristicMac::WriteRemoteCharacteristic(
@@ -232,9 +241,9 @@ void BluetoothRemoteGattCharacteristicMac::WriteRemoteCharacteristic(
   base::scoped_nsobject<NSData> nsdata_value(
       [[NSData alloc] initWithBytes:value.data() length:value.size()]);
   CBCharacteristicWriteType write_type = GetCBWriteType();
-  [gatt_service_->GetCBPeripheral() writeValue:nsdata_value
-                             forCharacteristic:cb_characteristic_
-                                          type:write_type];
+  [GetCBPeripheral() writeValue:nsdata_value
+              forCharacteristic:cb_characteristic_
+                           type:write_type];
   if (write_type == CBCharacteristicWriteWithoutResponse) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -259,8 +268,14 @@ void BluetoothRemoteGattCharacteristicMac::UnsubscribeFromNotifications(
   NOTIMPLEMENTED();
 }
 
+void BluetoothRemoteGattCharacteristicMac::DiscoverDescriptors() {
+  is_discovery_complete_ = false;
+  [GetCBPeripheral()
+      discoverDescriptorsForCharacteristic:cb_characteristic_.get()];
+}
+
 void BluetoothRemoteGattCharacteristicMac::DidUpdateValue(NSError* error) {
-  CHECK_EQ(gatt_service_->GetCBPeripheral().state, CBPeripheralStateConnected);
+  CHECK_EQ(GetCBPeripheral().state, CBPeripheralStateConnected);
   // This method is called when the characteristic is read and when a
   // notification is received.
   if (characteristic_value_read_or_write_in_progress_) {
@@ -297,7 +312,7 @@ void BluetoothRemoteGattCharacteristicMac::UpdateValueAndNotify() {
 }
 
 void BluetoothRemoteGattCharacteristicMac::DidWriteValue(NSError* error) {
-  CHECK_EQ(gatt_service_->GetCBPeripheral().state, CBPeripheralStateConnected);
+  CHECK_EQ(GetCBPeripheral().state, CBPeripheralStateConnected);
   if (!characteristic_value_read_or_write_in_progress_) {
     // In case of buggy device, nothing should be done if receiving extra
     // write confirmation.
@@ -344,6 +359,40 @@ void BluetoothRemoteGattCharacteristicMac::DidUpdateNotificationState(
   }
 }
 
+void BluetoothRemoteGattCharacteristicMac::DidDiscoverDescriptors() {
+  DCHECK(!is_discovery_complete_);
+  std::unordered_set<std::string> descriptor_identifier_to_remove;
+  for (const auto& iter : gatt_descriptor_macs_) {
+    descriptor_identifier_to_remove.insert(iter.first);
+  }
+
+  for (CBDescriptor* cb_descriptor in cb_characteristic_.get().descriptors) {
+    BluetoothRemoteGattDescriptorMac* gatt_descriptor_mac =
+        GetBluetoothRemoteGattDescriptorMac(cb_descriptor);
+    if (gatt_descriptor_mac) {
+      const std::string& identifier = gatt_descriptor_mac->GetIdentifier();
+      descriptor_identifier_to_remove.erase(identifier);
+      continue;
+    }
+    gatt_descriptor_mac =
+        new BluetoothRemoteGattDescriptorMac(this, cb_descriptor);
+    const std::string& identifier = gatt_descriptor_mac->GetIdentifier();
+    auto result_iter = gatt_descriptor_macs_.insert(
+        {identifier, base::WrapUnique(gatt_descriptor_mac)});
+    DCHECK(result_iter.second);
+    GetMacAdapter()->NotifyGattDescriptorAdded(gatt_descriptor_mac);
+  }
+
+  for (const std::string& identifier : descriptor_identifier_to_remove) {
+    auto pair_to_remove = gatt_descriptor_macs_.find(identifier);
+    std::unique_ptr<BluetoothRemoteGattDescriptorMac> descriptor_to_remove;
+    pair_to_remove->second.swap(descriptor_to_remove);
+    gatt_descriptor_macs_.erase(pair_to_remove);
+    GetMacAdapter()->NotifyGattDescriptorRemoved(descriptor_to_remove.get());
+  }
+  is_discovery_complete_ = true;
+}
+
 bool BluetoothRemoteGattCharacteristicMac::IsReadable() const {
   return GetProperties() & BluetoothGattCharacteristic::PROPERTY_READ;
 }
@@ -372,11 +421,34 @@ CBCharacteristic* BluetoothRemoteGattCharacteristicMac::GetCBCharacteristic()
   return cb_characteristic_.get();
 }
 
-bool BluetoothRemoteGattCharacteristicMac::IsDiscoveryComplete() const {
-  // TODO: Needs to replace this implementation with a boolean to monitor when
-  // descriptors are discovered. Right now, the characteristic is fully
-  // discovered as soon as it has been created.
-  return true;
+BluetoothAdapterMac* BluetoothRemoteGattCharacteristicMac::GetMacAdapter()
+    const {
+  return gatt_service_->GetMacAdapter();
 }
 
+CBPeripheral* BluetoothRemoteGattCharacteristicMac::GetCBPeripheral() const {
+  return gatt_service_->GetCBPeripheral();
+}
+
+bool BluetoothRemoteGattCharacteristicMac::IsDiscoveryComplete() const {
+  return is_discovery_complete_;
+}
+
+BluetoothRemoteGattDescriptorMac*
+BluetoothRemoteGattCharacteristicMac::GetBluetoothRemoteGattDescriptorMac(
+    CBDescriptor* cb_descriptor) const {
+  auto found = std::find_if(
+      gatt_descriptor_macs_.begin(), gatt_descriptor_macs_.end(),
+      [cb_descriptor](
+          const std::pair<const std::string,
+                          std::unique_ptr<BluetoothRemoteGattDescriptorMac>>&
+              pair) {
+        return pair.second->GetCBDescriptor() == cb_descriptor;
+      });
+  if (found == gatt_descriptor_macs_.end()) {
+    return nullptr;
+  } else {
+    return found->second.get();
+  }
+}
 }  // namespace device.

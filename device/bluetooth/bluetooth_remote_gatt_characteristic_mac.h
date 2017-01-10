@@ -7,6 +7,8 @@
 
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 
+#include <unordered_map>
+
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/weak_ptr.h"
 
@@ -19,6 +21,8 @@ typedef NS_ENUM(NSInteger, CBCharacteristicWriteType);
 
 namespace device {
 
+class BluetoothAdapterMac;
+class BluetoothRemoteGattDescriptorMac;
 class BluetoothRemoteGattServiceMac;
 
 // The BluetoothRemoteGattCharacteristicMac class implements
@@ -66,9 +70,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicMac
       const ErrorCallback& error_callback) override;
 
  private:
+  friend class BluetoothRemoteGattDescriptorMac;
   friend class BluetoothRemoteGattServiceMac;
   friend class BluetoothTestMac;
 
+  void DiscoverDescriptors();
   // Called by the BluetoothRemoteGattServiceMac instance when the
   // characteristics value has been read.
   void DidUpdateValue(NSError* error);
@@ -80,6 +86,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicMac
   // Called by the BluetoothRemoteGattServiceMac instance when the notify
   // session has been started or failed to be started.
   void DidUpdateNotificationState(NSError* error);
+  // Called by the BluetoothRemoteGattServiceMac instance when the descriptors
+  // has been discovered.
+  void DidDiscoverDescriptors();
   // Returns true if the characteristic is readable.
   bool IsReadable() const;
   // Returns true if the characteristic is writable.
@@ -90,9 +99,17 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicMac
   CBCharacteristicWriteType GetCBWriteType() const;
   // Returns CoreBluetooth characteristic.
   CBCharacteristic* GetCBCharacteristic() const;
+  // Returns the mac adapter.
+  BluetoothAdapterMac* GetMacAdapter() const;
+  // Returns CoreBluetooth peripheral.
+  CBPeripheral* GetCBPeripheral() const;
   // Returns true if this characteristic has been fully discovered.
   bool IsDiscoveryComplete() const;
-
+  // Returns BluetoothRemoteGattDescriptorMac from CBDescriptor.
+  BluetoothRemoteGattDescriptorMac* GetBluetoothRemoteGattDescriptorMac(
+      CBDescriptor* cb_descriptor) const;
+  // Is true if the characteristic has been discovered with all its descriptors.
+  bool is_discovery_complete_;
   // gatt_service_ owns instances of this class.
   BluetoothRemoteGattServiceMac* gatt_service_;
   // A characteristic from CBPeripheral.services.characteristics.
@@ -115,6 +132,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicMac
   std::vector<PendingStartNotifyCall> start_notify_session_callbacks_;
   // Flag indicates if GATT event registration is in progress.
   bool start_notifications_in_progress_;
+  // Map of descriptors, keyed by descriptor identifier.
+  std::unordered_map<std::string,
+                     std::unique_ptr<BluetoothRemoteGattDescriptorMac>>
+      gatt_descriptor_macs_;
   base::WeakPtrFactory<BluetoothRemoteGattCharacteristicMac> weak_ptr_factory_;
 };
 

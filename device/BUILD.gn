@@ -51,6 +51,8 @@ test("device_unittests") {
     "bluetooth/test/bluetooth_test_win.h",
     "bluetooth/test/mock_bluetooth_cbcharacteristic_mac.h",
     "bluetooth/test/mock_bluetooth_cbcharacteristic_mac.mm",
+    "bluetooth/test/mock_bluetooth_cbdescriptor_mac.h",
+    "bluetooth/test/mock_bluetooth_cbdescriptor_mac.mm",
     "bluetooth/test/mock_bluetooth_cbperipheral_mac.h",
     "bluetooth/test/mock_bluetooth_cbperipheral_mac.mm",
     "bluetooth/test/mock_bluetooth_cbservice_mac.h",

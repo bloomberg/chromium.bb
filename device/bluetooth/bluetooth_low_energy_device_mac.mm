@@ -242,22 +242,7 @@ void BluetoothLowEnergyDeviceMac::DidDiscoverCharacteristics(
       GetBluetoothRemoteGattService(cb_service);
   DCHECK(gatt_service);
   gatt_service->DidDiscoverCharacteristics();
-
-  // Notify when all services have been discovered.
-  bool discovery_complete =
-      std::find_if_not(
-          gatt_services_.begin(), gatt_services_.end(),
-          [](GattServiceMap::value_type& pair) {
-            BluetoothRemoteGattService* gatt_service = pair.second.get();
-            return static_cast<BluetoothRemoteGattServiceMac*>(gatt_service)
-                ->IsDiscoveryComplete();
-          }) == gatt_services_.end();
-  if (discovery_complete) {
-    device_uuids_.ReplaceServiceUUIDs(gatt_services_);
-    SetGattServicesDiscoveryComplete(true);
-    adapter_->NotifyGattServicesDiscovered(this);
-    adapter_->NotifyDeviceChanged(this);
-  }
+  SendNotificationIfDiscoveryComplete();
 }
 
 void BluetoothLowEnergyDeviceMac::DidModifyServices(
@@ -309,6 +294,29 @@ void BluetoothLowEnergyDeviceMac::DidUpdateNotificationState(
   gatt_service->DidUpdateNotificationState(characteristic, error);
 }
 
+void BluetoothLowEnergyDeviceMac::DidDiscoverDescriptors(
+    CBCharacteristic* cb_characteristic,
+    NSError* error) {
+  if (error) {
+    // TODO(http://crbug.com/609320): Need to pass the error.
+    // TODO(http://crbug.com/609844): Decide what to do if discover failed
+    VLOG(1) << "Can't discover descriptors: "
+            << error.localizedDescription.UTF8String << " (" << error.domain
+            << ": " << error.code << ")";
+    return;
+  }
+  VLOG(1) << "DidDiscoverDescriptors.";
+  if (!IsGattConnected()) {
+    // Don't discover descriptors if the device disconnected.
+    return;
+  }
+  BluetoothRemoteGattServiceMac* gatt_service =
+      GetBluetoothRemoteGattService(cb_characteristic.service);
+  DCHECK(gatt_service);
+  gatt_service->DidDiscoverDescriptors(cb_characteristic);
+  SendNotificationIfDiscoveryComplete();
+}
+
 // static
 std::string BluetoothLowEnergyDeviceMac::GetPeripheralIdentifier(
     CBPeripheral* peripheral) {
@@ -327,6 +335,24 @@ std::string BluetoothLowEnergyDeviceMac::GetPeripheralHashAddress(
                            sizeof(raw));
   std::string hash = base::HexEncode(raw, sizeof(raw));
   return BluetoothDevice::CanonicalizeAddress(hash);
+}
+
+void BluetoothLowEnergyDeviceMac::SendNotificationIfDiscoveryComplete() {
+  // Notify when all services have been discovered.
+  bool discovery_complete =
+      std::find_if_not(
+          gatt_services_.begin(), gatt_services_.end(),
+          [](GattServiceMap::value_type& pair) {
+            BluetoothRemoteGattService* gatt_service = pair.second.get();
+            return static_cast<BluetoothRemoteGattServiceMac*>(gatt_service)
+                ->IsDiscoveryComplete();
+          }) == gatt_services_.end();
+  if (discovery_complete) {
+    device_uuids_.ReplaceServiceUUIDs(gatt_services_);
+    SetGattServicesDiscoveryComplete(true);
+    adapter_->NotifyGattServicesDiscovered(this);
+    adapter_->NotifyDeviceChanged(this);
+  }
 }
 
 device::BluetoothAdapterMac* BluetoothLowEnergyDeviceMac::GetMacAdapter() {
