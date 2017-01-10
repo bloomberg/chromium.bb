@@ -991,6 +991,10 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
       original_state.GetProductState(installer_state.system_install(),
                                      browser_dist->GetType());
 
+  // Remove the event log provider registration as we are going to delete
+  // the file which serves the resources anyways.
+  DeRegisterEventLogProvider();
+
   // Delete shared registry keys as well (these require admin rights) if
   // remove_all option is specified.
   if (remove_all) {
@@ -1002,10 +1006,6 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
       reg_path.append(installer::kChromeExe);
       InstallUtil::DeleteRegistryKey(HKEY_LOCAL_MACHINE, reg_path,
                                      WorkItem::kWow64Default);
-
-      // Remove the event log provider registration as we are going to delete
-      // the file which serves the resources anyways.
-      DeRegisterEventLogProvider();
     }
   }
 
