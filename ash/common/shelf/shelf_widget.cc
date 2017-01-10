@@ -331,12 +331,6 @@ void ShelfWidget::PostCreateShelf() {
   // Ensure the newly created |shelf_| gets current values.
   background_animator_.Initialize(this);
 
-  // TODO(jamescook): The IsActiveUserSessionStarted() check may not be needed
-  // because the shelf is only created after the first user session is active.
-  // The ShelfView seems to always be visible after login. At the lock screen
-  // the shelf is hidden because its container is hidden. During auto-hide it is
-  // hidden because ShelfWidget is transparent. Some of the ShelfView visibility
-  // code could be simplified. http://crbug.com/674773
   shelf_view_->SetVisible(
       WmShell::Get()->GetSessionStateDelegate()->IsActiveUserSessionStarted());
   shelf_layout_manager_->LayoutShelf();
@@ -346,6 +340,11 @@ void ShelfWidget::PostCreateShelf() {
 
 bool ShelfWidget::IsShelfVisible() const {
   return shelf_view_ && shelf_view_->visible();
+}
+
+void ShelfWidget::SetShelfVisibility(bool visible) {
+  if (shelf_view_)
+    shelf_view_->SetVisible(visible);
 }
 
 bool ShelfWidget::IsShowingAppList() const {

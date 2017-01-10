@@ -27,7 +27,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/ash/ash_util.h"
-#include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/audio/cras_audio_handler.h"
@@ -135,12 +134,8 @@ void StartRestoreAfterCrashSession(Profile* user_profile,
 
   bool is_running_test = command_line->HasSwitch(::switches::kTestName) ||
                          command_line->HasSwitch(::switches::kTestType);
-  if (is_running_test) {
-    // Some browser tests (e.g. BrowserTest.GetSizeForNewRenderView) require
-    // that ash is synchronously initialized before the first test window opens.
-    // Ensure the session-related mojo messages are sent to ash.
-    SessionControllerClient::FlushForTesting();
-  } else {
+
+  if (!is_running_test) {
     // Enable CrasAudioHandler logging when chrome restarts after crashing.
     if (chromeos::CrasAudioHandler::IsInitialized())
       chromeos::CrasAudioHandler::Get()->LogErrors();

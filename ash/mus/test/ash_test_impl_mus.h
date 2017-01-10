@@ -42,10 +42,6 @@ class AshTestImplMus : public AshTestImpl {
   void AddTransientChild(WmWindow* parent, WmWindow* window) override;
 
  private:
-  // Simulates the first user logging in and the session becoming active.
-  // Classic ash handles this via AshTestHelper and TestSessionStateDelegate.
-  void SimulateUserLogin();
-
   // TODO(sky): fold WmTestBase directly into this class when no more subclasses
   // of WmTestBase.
   std::unique_ptr<WmTestBase> wm_test_base_;

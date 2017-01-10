@@ -22,8 +22,6 @@ class SystemTrayClient;
 class VolumeController;
 class VpnListForwarder;
 
-// Browser initialization for Ash. Only runs on Chrome OS.
-// TODO(jamescook): Fold this into ChromeBrowserMainPartsChromeOS.
 class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
  public:
   explicit ChromeBrowserMainExtraPartsAsh(

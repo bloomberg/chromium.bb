@@ -100,6 +100,10 @@ class ASH_EXPORT WmRootWindowController {
   // Creates the shelf for this root window and notifies observers.
   void CreateShelf();
 
+  // Show shelf view if it was created hidden (before session has started).
+  // TODO(jamescook): Eliminate this and handle show via Shelf.
+  void ShowShelf();
+
   // Returns the system tray controller. May be null for external displays.
   SystemTray* GetSystemTray();
 

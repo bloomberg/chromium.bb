@@ -8,7 +8,6 @@
 
 #include <utility>
 
-#include "ash/common/session/session_controller.h"
 #include "ash/common/wm/container_finder.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/display/screen_position_controller.h"
@@ -135,6 +134,9 @@ void WindowManager::Init(
                               this, pointer_watcher_event_router_.get()));
   shell_->Initialize(blocking_pool);
   lookup_.reset(new WmLookupMus);
+
+  // TODO: this should be called when logged in. See http://crbug.com/654606.
+  shell_->CreateShelf();
 }
 
 aura::client::ActivationClient* WindowManager::activation_client() {
@@ -220,9 +222,8 @@ RootWindowController* WindowManager::CreateRootWindowController(
       root_window_controller_ptr.get();
   root_window_controllers_.insert(std::move(root_window_controller_ptr));
 
-  // Create a shelf if a user is already logged in.
-  if (shell_->session_controller()->NumberOfLoggedInUsers())
-    root_window_controller->wm_root_window_controller()->CreateShelf();
+  // TODO: this should be called when logged in. See http://crbug.com/654606.
+  root_window_controller->wm_root_window_controller()->CreateShelf();
 
   for (auto& observer : observers_)
     observer.OnRootWindowControllerAdded(root_window_controller);

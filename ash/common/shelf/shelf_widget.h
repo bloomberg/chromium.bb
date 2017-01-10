@@ -60,6 +60,8 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   ShelfView* CreateShelfView();
   void PostCreateShelf();
 
+  // Set visibility of the shelf.
+  void SetShelfVisibility(bool visible);
   bool IsShelfVisible() const;
 
   bool IsShowingAppList() const;

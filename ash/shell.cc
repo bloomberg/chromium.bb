@@ -271,6 +271,11 @@ void Shell::OnLoginStateChanged(LoginStatus status) {
     observer.OnLoginStateChanged(status);
 }
 
+void Shell::OnLoginUserProfilePrepared() {
+  wm_shell_->CreateShelf();
+  CreateKeyboard();
+}
+
 void Shell::OnAppTerminating() {
   for (auto& observer : *wm_shell_->shell_observers())
     observer.OnAppTerminating();

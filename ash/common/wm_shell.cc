@@ -153,6 +153,11 @@ void WmShell::CreateShelf() {
     root_window->GetRootWindowController()->CreateShelf();
 }
 
+void WmShell::ShowShelf() {
+  for (WmWindow* root_window : GetAllRootWindows())
+    root_window->GetRootWindowController()->ShowShelf();
+}
+
 void WmShell::CreateShelfDelegate() {
   // May be called multiple times as shelves are created and destroyed.
   if (shelf_delegate_)
@@ -269,7 +274,6 @@ WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
       window_cycle_controller_(base::MakeUnique<WindowCycleController>()),
       window_selector_controller_(
           base::MakeUnique<WindowSelectorController>()) {
-  session_controller_->AddSessionStateObserver(this);
 
   prefs::mojom::PreferencesManagerPtr pref_manager_ptr;
   // Can be null in tests.
@@ -280,9 +284,7 @@ WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
   pref_store_ = new preferences::PrefObserverStore(std::move(pref_manager_ptr));
 }
 
-WmShell::~WmShell() {
-  session_controller_->RemoveSessionStateObserver(this);
-}
+WmShell::~WmShell() {}
 
 WmRootWindowController* WmShell::GetPrimaryRootWindowController() {
   return GetPrimaryRootWindow()->GetRootWindowController();
@@ -414,13 +416,6 @@ void WmShell::DeleteToastManager() {
 void WmShell::SetAcceleratorController(
     std::unique_ptr<AcceleratorController> accelerator_controller) {
   accelerator_controller_ = std::move(accelerator_controller);
-}
-
-void WmShell::SessionStateChanged(session_manager::SessionState state) {
-  // Create the shelf when a session becomes active. It's safe to do this
-  // multiple times (e.g. initial login vs. multiprofile add session).
-  if (state == session_manager::SessionState::ACTIVE)
-    CreateShelf();
 }
 
 }  // namespace ash

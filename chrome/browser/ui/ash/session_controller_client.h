@@ -50,9 +50,6 @@ class SessionControllerClient
   static void DoSwitchActiveUser(const AccountId& account_id);
   static void DoCycleActiveUser(bool next_user);
 
-  // Flushes the mojo pipe to ash.
-  static void FlushForTesting();
-
  private:
   // Connects or reconnects to the |session_controller_| interface and set
   // this object as its client.

@@ -221,6 +221,15 @@ void WmRootWindowController::CreateShelf() {
   shelf->shelf_widget()->PostCreateShelf();
 }
 
+void WmRootWindowController::ShowShelf() {
+  WmShelf* shelf = GetShelf();
+  if (!shelf->IsShelfInitialized())
+    return;
+  // TODO(jamescook): Move this into WmShelf.
+  shelf->shelf_widget()->SetShelfVisibility(true);
+  shelf->shelf_widget()->status_area_widget()->Show();
+}
+
 SystemTray* WmRootWindowController::GetSystemTray() {
   ShelfWidget* shelf_widget = GetShelf()->shelf_widget();
   if (!shelf_widget || !shelf_widget->status_area_widget())

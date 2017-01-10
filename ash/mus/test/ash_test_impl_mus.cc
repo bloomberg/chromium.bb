@@ -4,12 +4,8 @@
 
 #include "ash/mus/test/ash_test_impl_mus.h"
 
-#include "ash/common/session/session_controller.h"
 #include "ash/common/test/ash_test.h"
-#include "ash/common/wm_shell.h"
 #include "ash/mus/bridge/wm_window_mus.h"
-#include "ash/public/cpp/session_types.h"
-#include "ash/public/interfaces/session_controller.mojom.h"
 #include "base/memory/ptr_util.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
@@ -44,9 +40,6 @@ AshTestImplMus::~AshTestImplMus() {}
 
 void AshTestImplMus::SetUp() {
   wm_test_base_->SetUp();
-
-  // Most tests assume the user is logged in (and hence the shelf is created).
-  SimulateUserLogin();
 }
 
 void AshTestImplMus::TearDown() {
@@ -105,29 +98,6 @@ void AshTestImplMus::AddTransientChild(WmWindow* parent, WmWindow* window) {
   // TODO(sky): remove this as both classes can share same implementation now.
   ::wm::AddTransientChild(WmWindowAura::GetAuraWindow(parent),
                           WmWindowAura::GetAuraWindow(window));
-}
-
-void AshTestImplMus::SimulateUserLogin() {
-  SessionController* session_controller = WmShell::Get()->session_controller();
-
-  // Simulate the first user logging in.
-  mojom::UserSessionPtr session = mojom::UserSession::New();
-  session->session_id = 1;
-  session->type = user_manager::USER_TYPE_REGULAR;
-  const std::string email("ash.user@example.com");
-  session->serialized_account_id = AccountId::FromUserEmail(email).Serialize();
-  session->display_name = "Ash User";
-  session->display_email = email;
-  session_controller->UpdateUserSession(std::move(session));
-
-  // Simulate the user session becoming active.
-  mojom::SessionInfoPtr info = mojom::SessionInfo::New();
-  info->max_users = 10;
-  info->can_lock_screen = true;
-  info->should_lock_screen_automatically = false;
-  info->add_user_session_policy = AddUserSessionPolicy::ALLOWED;
-  info->state = session_manager::SessionState::ACTIVE;
-  session_controller->SetSessionInfo(std::move(info));
 }
 
 }  // namespace mus

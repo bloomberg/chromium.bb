@@ -318,15 +318,6 @@ void WmShellAura::OnAttemptToReactivateWindow(aura::Window* request_active,
   }
 }
 
-void WmShellAura::SessionStateChanged(session_manager::SessionState state) {
-  // Create the shelf if necessary.
-  WmShell::SessionStateChanged(state);
-
-  // Recreate the keyboard after initial login and after multiprofile login.
-  if (state == session_manager::SessionState::ACTIVE)
-    Shell::GetInstance()->CreateKeyboard();
-}
-
 void WmShellAura::OnDisplayConfigurationChanging() {
   for (auto& observer : display_observers_)
     observer.OnDisplayConfigurationChanging();
