@@ -965,16 +965,26 @@ class NotificationBridge : public AppMenuIconController::Delegate {
     return locationBarView_->GetBubblePointForDecoration(
         locationBarView_->star_decoration());
 
-  // Grab bottom middle of hotdogs.
-  NSRect frame = appMenuButton_.frame;
-  NSPoint point = NSMakePoint(NSMidX(frame), NSMinY(frame));
-  // Inset to account for the whitespace around the hotdogs.
-  point.y += app_menu_controller::kAppMenuBubblePointOffsetY;
-  return [self.view convertPoint:point toView:nil];
+  return [self appMenuBubblePoint];
 }
 
 - (NSPoint)saveCreditCardBubblePoint {
   return locationBarView_->GetSaveCreditCardBubblePoint();
+}
+
+- (NSPoint)appMenuBubblePoint {
+  NSRect frame = appMenuButton_.frame;
+  NSPoint point;
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    // Use the bottom right for MD-style anchoring (no arrow).
+    point = NSMakePoint(NSMaxX(frame), NSMinY(frame));
+  } else {
+    // Grab bottom middle of hotdogs.
+    point = NSMakePoint(NSMidX(frame), NSMinY(frame));
+    // Inset to account for the whitespace around the hotdogs.
+    point.y += app_menu_controller::kAppMenuBubblePointOffsetY;
+  }
+  return [self.view convertPoint:point toView:nil];
 }
 
 - (CGFloat)baseToolbarHeight {

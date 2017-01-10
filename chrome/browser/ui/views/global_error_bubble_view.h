@@ -20,6 +20,7 @@ class GlobalErrorBubbleView : public views::BubbleDialogDelegateView,
  public:
   GlobalErrorBubbleView(
       views::View* anchor_view,
+      const gfx::Point& anchor_point,
       views::BubbleBorder::Arrow arrow,
       Browser* browser,
       const base::WeakPtr<GlobalErrorWithStandardBubble>& error);

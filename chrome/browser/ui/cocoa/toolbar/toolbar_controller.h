@@ -165,6 +165,9 @@ class NotificationBridge;
 // Point on the save credit card icon for the save credit card bubble.
 - (NSPoint)saveCreditCardBubblePoint;
 
+// Point in the window's coordinate system for bubbles attached to the app menu.
+- (NSPoint)appMenuBubblePoint;
+
 // Returns the desired toolbar height for the given compression factor.
 - (CGFloat)desiredHeightForCompression:(CGFloat)compressByHeight;
 
