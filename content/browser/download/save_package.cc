@@ -1262,21 +1262,19 @@ base::FilePath SavePackage::GetSuggestedNameForSaveAs(
   if (title == url_formatter::FormatUrl(page_url)) {
     std::string url_path;
     if (!page_url.SchemeIs(url::kDataScheme)) {
-      std::vector<std::string> url_parts = base::SplitString(
-          page_url.path(), "/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-      if (!url_parts.empty()) {
-        for (int i = static_cast<int>(url_parts.size()) - 1; i >= 0; --i) {
-          url_path = url_parts[i];
-          if (!url_path.empty())
-            break;
-        }
+      name_with_proper_ext = net::GenerateFileName(
+          page_url, std::string(), std::string(), std::string(),
+          contents_mime_type, std::string());
+
+      // If host is used as file name, try to decode punycode.
+      if (name_with_proper_ext.AsUTF8Unsafe() == page_url.host()) {
+        name_with_proper_ext = base::FilePath::FromUTF16Unsafe(
+                url_formatter::IDNToUnicode(page_url.host()));
       }
-      if (url_path.empty())
-        url_path = page_url.host();
     } else {
-      url_path = "dataurl";
+      name_with_proper_ext =
+          base::FilePath::FromUTF8Unsafe(std::string("dataurl"));
     }
-    name_with_proper_ext = base::FilePath::FromUTF8Unsafe(url_path);
   }
 
   // Ask user for getting final saving name.
