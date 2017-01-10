@@ -1835,11 +1835,11 @@ void RenderViewImpl::didHandleGestureEvent(
   }
 }
 
-void RenderViewImpl::initializeLayerTreeView() {
-  RenderWidget::initializeLayerTreeView();
+blink::WebLayerTreeView* RenderViewImpl::initializeLayerTreeView() {
+  blink::WebLayerTreeView* ltv = RenderWidget::initializeLayerTreeView();
   RenderWidgetCompositor* rwc = compositor();
   if (!rwc)
-    return;
+    return ltv;
 
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   // render_thread may be NULL in tests.
@@ -1851,6 +1851,7 @@ void RenderViewImpl::initializeLayerTreeView() {
         webkit_preferences_.enable_scroll_animator);
     has_added_input_handler_ = true;
   }
+  return ltv;
 }
 
 void RenderViewImpl::closeWidgetSoon() {

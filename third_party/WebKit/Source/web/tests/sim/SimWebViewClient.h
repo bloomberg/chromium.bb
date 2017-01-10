@@ -15,7 +15,9 @@ class SimWebViewClient final : public FrameTestHelpers::TestWebViewClient {
  public:
   explicit SimWebViewClient(WebLayerTreeView&);
 
-  WebLayerTreeView* layerTreeView() override { return m_layerTreeView; }
+  WebLayerTreeView* initializeLayerTreeView() override {
+    return m_layerTreeView;
+  }
 
   int visuallyNonEmptyLayoutCount() const {
     return m_visuallyNonEmptyLayoutCount;

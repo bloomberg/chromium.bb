@@ -321,16 +321,13 @@ void TestWebRemoteFrameClient::frameDetached(DetachType type) {
   m_frame->close();
 }
 
-void TestWebViewClient::initializeLayerTreeView() {
+WebLayerTreeView* TestWebViewClient::initializeLayerTreeView() {
   m_layerTreeView = WTF::wrapUnique(new WebLayerTreeViewImplForTesting);
+  return m_layerTreeView.get();
 }
 
-void TestWebViewWidgetClient::initializeLayerTreeView() {
-  m_testWebViewClient->initializeLayerTreeView();
-}
-
-WebLayerTreeView* TestWebViewWidgetClient::layerTreeView() {
-  return m_testWebViewClient->layerTreeView();
+WebLayerTreeView* TestWebViewWidgetClient::initializeLayerTreeView() {
+  return m_testWebViewClient->initializeLayerTreeView();
 }
 
 void TestWebViewWidgetClient::scheduleAnimation() {

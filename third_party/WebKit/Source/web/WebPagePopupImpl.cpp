@@ -383,8 +383,7 @@ void WebPagePopupImpl::setIsAcceleratedCompositingActive(bool enter) {
     TRACE_EVENT0("blink",
                  "WebPagePopupImpl::setIsAcceleratedCompositingActive(true)");
 
-    m_widgetClient->initializeLayerTreeView();
-    m_layerTreeView = m_widgetClient->layerTreeView();
+    m_layerTreeView = m_widgetClient->initializeLayerTreeView();
     if (m_layerTreeView) {
       m_layerTreeView->setVisible(true);
       m_isAcceleratedCompositingActive = true;

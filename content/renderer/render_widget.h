@@ -278,8 +278,7 @@ class CONTENT_EXPORT RenderWidget
                       const gfx::Rect& window_screen_rect) override;
 
   // blink::WebWidgetClient
-  void initializeLayerTreeView() override;
-  blink::WebLayerTreeView* layerTreeView() override;
+  blink::WebLayerTreeView* initializeLayerTreeView() override;
   void didMeaningfulLayout(blink::WebMeaningfulLayout layout_type) override;
   void didChangeCursor(const blink::WebCursorInfo&) override;
   void closeWidgetSoon() override;

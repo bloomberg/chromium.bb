@@ -266,7 +266,7 @@ class CONTENT_EXPORT RenderViewImpl
   void didHandleGestureEvent(const blink::WebGestureEvent& event,
                              bool event_cancelled) override;
   void onMouseDown(const blink::WebNode& mouse_down_node) override;
-  void initializeLayerTreeView() override;
+  blink::WebLayerTreeView* initializeLayerTreeView() override;
 
   // TODO(lfg): Remove once WebViewClient no longer inherits from
   // WebWidgetClient.

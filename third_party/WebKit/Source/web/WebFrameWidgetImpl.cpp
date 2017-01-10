@@ -973,8 +973,7 @@ Element* WebFrameWidgetImpl::focusedElement() const {
 void WebFrameWidgetImpl::initializeLayerTreeView() {
   if (m_client) {
     DCHECK(!m_mutator);
-    m_client->initializeLayerTreeView();
-    m_layerTreeView = m_client->layerTreeView();
+    m_layerTreeView = m_client->initializeLayerTreeView();
     if (m_layerTreeView && m_layerTreeView->compositorAnimationHost()) {
       m_animationHost = WTF::makeUnique<CompositorAnimationHost>(
           m_layerTreeView->compositorAnimationHost());

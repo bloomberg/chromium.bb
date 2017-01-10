@@ -61,15 +61,12 @@ class WebWidgetClient {
   // Called when a region of the WebWidget needs to be re-painted.
   virtual void didInvalidateRect(const WebRect&) {}
 
-  // Attempt to initialize compositing for this widget. If this is successful,
-  // layerTreeView() will return a valid WebLayerTreeView.
-  virtual void initializeLayerTreeView() {}
-
-  // Return a compositing view used for this widget. This is owned by the
+  // Attempt to initialize compositing view for this widget. If successful,
+  // returns a valid WebLayerTreeView which is owned by the
   // WebWidgetClient.
-  virtual WebLayerTreeView* layerTreeView() { return 0; }
-  // FIXME: Remove all overrides of this and change layerTreeView() above to
-  // ASSERT_NOT_REACHED.
+  virtual WebLayerTreeView* initializeLayerTreeView() { return nullptr; }
+
+  // FIXME: Remove all overrides of this.
   virtual bool allowsBrokenNullLayerTreeView() const { return false; }
 
   // Called when a call to WebWidget::animate is required

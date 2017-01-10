@@ -5587,7 +5587,9 @@ class CompositedSelectionBoundsTestWebViewClient
     : public FrameTestHelpers::TestWebViewClient {
  public:
   ~CompositedSelectionBoundsTestWebViewClient() override {}
-  WebLayerTreeView* layerTreeView() override { return &m_testLayerTreeView; }
+  WebLayerTreeView* initializeLayerTreeView() override {
+    return &m_testLayerTreeView;
+  }
 
   CompositedSelectionBoundsTestLayerTreeView& selectionLayerTreeView() {
     return m_testLayerTreeView;
@@ -8133,7 +8135,7 @@ class TestFullscreenWebLayerTreeView : public WebLayerTreeView {
 
 class TestFullscreenWebViewClient : public FrameTestHelpers::TestWebViewClient {
  public:
-  WebLayerTreeView* layerTreeView() override {
+  WebLayerTreeView* initializeLayerTreeView() override {
     return &testFullscreenLayerTreeView;
   }
   TestFullscreenWebLayerTreeView testFullscreenLayerTreeView;

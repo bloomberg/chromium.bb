@@ -327,7 +327,7 @@ void RenderWidgetFullscreenPepper::SetLayer(blink::WebLayer* layer) {
       compositor_->clearRootLayer();
     return;
   }
-  if (!layerTreeView())
+  if (!compositor())
     initializeLayerTreeView();
   layer_->setBounds(blink::WebSize(size()));
   layer_->setDrawsContent(true);

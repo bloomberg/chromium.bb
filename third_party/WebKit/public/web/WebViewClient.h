@@ -272,7 +272,7 @@ class WebViewClient : protected WebWidgetClient {
                      const WebFloatPoint& positionInViewport,
                      const WebFloatSize& velocityInViewport) override {}
   void hasTouchEventHandlers(bool) override {}
-  void initializeLayerTreeView() override {}
+  WebLayerTreeView* initializeLayerTreeView() override { return nullptr; }
   void resetInputMethod() override {}
   WebScreenInfo screenInfo() override { return WebScreenInfo(); }
   void setTouchAction(WebTouchAction touchAction) override {}

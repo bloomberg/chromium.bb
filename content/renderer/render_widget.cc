@@ -1222,7 +1222,7 @@ void RenderWidget::AutoResizeCompositor()  {
     compositor_->setViewportSize(physical_backing_size_);
 }
 
-void RenderWidget::initializeLayerTreeView() {
+blink::WebLayerTreeView* RenderWidget::initializeLayerTreeView() {
   DCHECK(!host_closing_);
 
   compositor_ = RenderWidgetCompositor::Create(this, device_scale_factor_,
@@ -1239,6 +1239,8 @@ void RenderWidget::initializeLayerTreeView() {
   DCHECK_NE(MSG_ROUTING_NONE, routing_id_);
   compositor_->SetFrameSinkId(
       cc::FrameSinkId(RenderThread::Get()->GetClientId(), routing_id_));
+
+  return compositor_.get();
 }
 
 void RenderWidget::WillCloseLayerTreeView() {
@@ -1252,10 +1254,6 @@ void RenderWidget::WillCloseLayerTreeView() {
   // being created, even if one hasn't been created yet.
   if (blink::WebWidget* widget = GetWebWidget())
     widget->willCloseLayerTreeView();
-}
-
-blink::WebLayerTreeView* RenderWidget::layerTreeView() {
-  return compositor_.get();
 }
 
 void RenderWidget::didMeaningfulLayout(blink::WebMeaningfulLayout layout_type) {

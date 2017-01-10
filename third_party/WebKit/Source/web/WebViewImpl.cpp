@@ -3948,8 +3948,7 @@ void WebViewImpl::detachCompositorAnimationTimeline(
 
 void WebViewImpl::initializeLayerTreeView() {
   if (m_client) {
-    m_client->initializeLayerTreeView();
-    m_layerTreeView = m_client->widgetClient()->layerTreeView();
+    m_layerTreeView = m_client->initializeLayerTreeView();
     if (m_layerTreeView && m_layerTreeView->compositorAnimationHost()) {
       m_animationHost = WTF::makeUnique<CompositorAnimationHost>(
           m_layerTreeView->compositorAnimationHost());

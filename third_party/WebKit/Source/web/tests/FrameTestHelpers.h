@@ -149,8 +149,7 @@ class TestWebViewWidgetClient : public TestWebWidgetClient {
       : m_testWebViewClient(testWebViewClient) {}
   virtual ~TestWebViewWidgetClient() {}
 
-  void initializeLayerTreeView() override;
-  WebLayerTreeView* layerTreeView() override;
+  WebLayerTreeView* initializeLayerTreeView() override;
   void scheduleAnimation() override;
   void didMeaningfulLayout(WebMeaningfulLayout) override;
 
@@ -163,8 +162,7 @@ class TestWebViewClient : public WebViewClient {
   TestWebViewClient()
       : m_testWebWidgetClient(this), m_animationScheduled(false) {}
   virtual ~TestWebViewClient() {}
-  void initializeLayerTreeView() override;
-  WebLayerTreeView* layerTreeView() override { return m_layerTreeView.get(); }
+  WebLayerTreeView* initializeLayerTreeView() override;
 
   void scheduleAnimation() override { m_animationScheduled = true; }
   bool animationScheduled() { return m_animationScheduled; }
