@@ -16,7 +16,6 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/supports_user_data.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/tab_restore_service.h"
@@ -98,23 +97,6 @@ void CleanCertificatePolicyCache(
       web::WebThread::UI, FROM_HERE,
       base::Bind(&RestoreCertificatePolicyCacheFromTabs, tabs));
 }
-
-// Wrapper class to attach a TabModel to a base::SupportsUserData object, such
-// as an ios::ChromeBrowserState. This wrapper retains the TabModel it wraps, so
-// any base::SupportsUserData object storing such a wrapper has ownership of the
-// TabModel.
-class TabModelHandle : public base::SupportsUserData::Data {
- public:
-  explicit TabModelHandle(TabModel* model) : tab_model_([model retain]) {}
-  ~TabModelHandle() override {}
-  TabModel* tab_model() { return tab_model_; }
-
- private:
-  base::scoped_nsobject<TabModel> tab_model_;
-};
-
-// Key for storing a TabModelHandle in a ChromeBrowserState.
-const char kTabModelKeyName[] = "tab_model";
 
 }  // anonymous namespace
 
@@ -245,14 +227,6 @@ const char kTabModelKeyName[] = "tab_model";
   return [_tabs count];
 }
 
-+ (instancetype)tabModelForBrowserState:(ios::ChromeBrowserState*)browserState {
-  if (!browserState)
-    return nil;
-  TabModelHandle* handle =
-      static_cast<TabModelHandle*>(browserState->GetUserData(kTabModelKeyName));
-  return handle ? handle->tab_model() : nil;
-}
-
 - (instancetype)initWithSessionWindow:(SessionWindowIOS*)window
                        sessionService:(SessionServiceIOS*)service
                          browserState:(ios::ChromeBrowserState*)browserState {
@@ -325,9 +299,6 @@ const char kTabModelKeyName[] = "tab_model";
                       selector:@selector(applicationWillEnterForeground:)
                           name:UIApplicationWillEnterForegroundNotification
                         object:nil];
-
-    // Store pointer to |self| in |_browserState|.
-    _browserState->SetUserData(kTabModelKeyName, new TabModelHandle(self));
   }
   return self;
 }
@@ -761,9 +732,6 @@ const char kTabModelKeyName[] = "tab_model";
 // NOTE: This can be called multiple times, so must be robust against that.
 - (void)browserStateDestroyed {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  if (_browserState) {
-    _browserState->RemoveUserData(kTabModelKeyName);
-  }
   _browserState = nullptr;
 }
 

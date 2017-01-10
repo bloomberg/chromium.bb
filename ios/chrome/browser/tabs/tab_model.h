@@ -115,10 +115,6 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // Determines the number of tabs in the model.
 @property(nonatomic, readonly) NSUInteger count;
 
-// Returns the TabModel associated with |browserState|. May be null during
-// shutdown.
-+ (instancetype)tabModelForBrowserState:(ios::ChromeBrowserState*)browserState;
-
 // Initializes tabs from a restored session. |-setCurrentTab| needs to be called
 // in order to display the views associated with the tabs. Waits until the views
 // are ready. |browserState| cannot be nil. |service| cannot be nil; this class
@@ -126,7 +122,6 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // session service before they are deallocated. |window| can be nil to create
 // an empty TabModel. In that case no notification will be sent during object
 // creation.
-// |browserState| will have the initialized TabModel stored as user data.
 - (instancetype)initWithSessionWindow:(SessionWindowIOS*)window
                        sessionService:(SessionServiceIOS*)service
                          browserState:(ios::ChromeBrowserState*)browserState

@@ -219,16 +219,6 @@ class TabModelTest : public PlatformTest {
   base::mac::ScopedNSAutoreleasePool pool_;
 };
 
-TEST_F(TabModelTest, IsStoredAsUserData) {
-  EXPECT_EQ(tabModel_,
-            [TabModel tabModelForBrowserState:chrome_browser_state_.get()]);
-  [tabModel_ browserStateDestroyed];
-  EXPECT_EQ(nil,
-            [TabModel tabModelForBrowserState:chrome_browser_state_.get()]);
-  // Verify that a null browser state doesn't break +tabModelForBrowserState.
-  EXPECT_EQ(nil, [TabModel tabModelForBrowserState:nullptr]);
-}
-
 TEST_F(TabModelTest, IsEmpty) {
   EXPECT_EQ([tabModel_ count], 0U);
   EXPECT_TRUE([tabModel_ isEmpty]);
