@@ -19,6 +19,20 @@
 #include "net/base/escape.h"
 #include "url/gurl.h"
 
+namespace {
+// This script disables context menu on img elements.
+// The pages are stored locally and long pressing on them will trigger a context
+// menu on the file:// URL which cannot be opened. Disable the context menu.
+const char kDisableImageContextMenuScript[] =
+    "<script>"
+    "document.addEventListener('DOMContentLoaded', function (event) {"
+    "    var imgMenuDisabler = document.createElement('style');"
+    "    imgMenuDisabler.innerHTML = 'img { -webkit-touch-callout: none; }';"
+    "    document.head.appendChild(imgMenuDisabler);"
+    "}, false);"
+    "</script>";
+}  // namespace
+
 // URLDownloader
 
 URLDownloader::URLDownloader(
@@ -214,6 +228,7 @@ std::string URLDownloader::SaveAndReplaceImagesInHTML(
     const std::vector<dom_distiller::DistillerViewerInterface::ImageInfo>&
         images) {
   std::string mutable_html = html;
+  bool local_images_found = false;
   for (size_t i = 0; i < images.size(); i++) {
     if (images[i].url.SchemeIs(url::kDataScheme)) {
       // Data URI, the data part of the image is empty, no need to store it.
@@ -228,10 +243,15 @@ std::string URLDownloader::SaveAndReplaceImagesInHTML(
     size_t image_url_size = image_url.size();
     size_t pos = mutable_html.find(image_url, 0);
     while (pos != std::string::npos) {
+      local_images_found = true;
       mutable_html.replace(pos, image_url_size, local_image_name);
       pos = mutable_html.find(image_url, pos + local_image_name.size());
     }
   }
+  if (local_images_found) {
+    mutable_html += kDisableImageContextMenuScript;
+  }
+
   return mutable_html;
 }
 
