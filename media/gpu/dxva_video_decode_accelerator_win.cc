@@ -203,6 +203,7 @@ DWORD g_last_exception_code;
 uint64_t g_last_exception_time;
 uint64_t g_last_process_output_time;
 HRESULT g_last_unhandled_error;
+HRESULT g_last_device_removed_reason;
 
 LONG CALLBACK VectoredCrashHandler(EXCEPTION_POINTERS* exception_pointers) {
   if (g_catcher_tls_slot.Get()) {
@@ -1731,6 +1732,9 @@ void DXVAVideoDecodeAccelerator::DoDecode(const gfx::ColorSpace& color_space) {
       (state == kNormal || state == kFlushing || state == kStopped),
       "DoDecode: not in normal/flushing/stopped state", ILLEGAL_STATE, );
 
+  if (d3d11_device_)
+    g_last_device_removed_reason = d3d11_device_->GetDeviceRemovedReason();
+
   MFT_OUTPUT_DATA_BUFFER output_data_buffer = {0};
   DWORD status = 0;
   HRESULT hr;
@@ -1991,6 +1995,7 @@ void DXVAVideoDecodeAccelerator::StopDecoderThread() {
   HRESULT last_unhandled_error = g_last_unhandled_error;
   uint64_t last_exception_time = g_last_exception_time;
   uint64_t last_process_output_time = g_last_process_output_time;
+  HRESULT last_device_removed_reason = g_last_device_removed_reason;
   LARGE_INTEGER perf_frequency;
   ::QueryPerformanceFrequency(&perf_frequency);
   uint32_t output_array_size = output_array_size_;
@@ -2004,6 +2009,7 @@ void DXVAVideoDecodeAccelerator::StopDecoderThread() {
   base::debug::Alias(&last_unhandled_error);
   base::debug::Alias(&last_exception_time);
   base::debug::Alias(&last_process_output_time);
+  base::debug::Alias(&last_device_removed_reason);
   base::debug::Alias(&perf_frequency.QuadPart);
   base::debug::Alias(&output_array_size);
   base::debug::Alias(&sample_count);
