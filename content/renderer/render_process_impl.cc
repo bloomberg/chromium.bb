@@ -19,6 +19,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/debug/crash_logging.h"
 #include "base/feature_list.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/initialization_util.h"
@@ -34,6 +35,10 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "v8/include/v8.h"
+
+#if defined(OS_WIN)
+#include "base/win/win_util.h"
+#endif
 
 namespace {
 
@@ -155,6 +160,13 @@ namespace content {
 RenderProcessImpl::RenderProcessImpl()
     : enabled_bindings_(0) {
 #if defined(OS_WIN)
+  // Record whether the machine is domain joined in a crash key. This will be
+  // used to better identify whether crashes are from enterprise users.
+  // Note that this is done very early on so that crashes have the highest
+  // chance of getting tagged.
+  base::debug::SetCrashKeyValue("enrolled-to-domain",
+                                base::win::IsEnrolledToDomain() ? "yes" : "no");
+
   // HACK:  See http://b/issue?id=1024307 for rationale.
   if (GetModuleHandle(L"LPK.DLL") == NULL) {
     // Makes sure lpk.dll is loaded by gdi32 to make sure ExtTextOut() works
