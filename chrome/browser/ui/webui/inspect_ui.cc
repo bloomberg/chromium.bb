@@ -311,7 +311,7 @@ void DevToolsUIBindingsEnabler::DidNavigateMainFrame(
 
 InspectUI::InspectUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
-  web_ui->AddMessageHandler(new InspectMessageHandler(this));
+  web_ui->AddMessageHandler(base::MakeUnique<InspectMessageHandler>(this));
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, CreateInspectUIHTMLSource());
 

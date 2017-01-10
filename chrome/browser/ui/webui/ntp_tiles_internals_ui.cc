@@ -128,7 +128,8 @@ NTPTilesInternalsUI::NTPTilesInternalsUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui),
                                 CreateNTPTilesInternalsHTMLSource());
-  web_ui->AddMessageHandler(new ChromeNTPTilesInternalsMessageHandlerClient);
+  web_ui->AddMessageHandler(
+      base::MakeUnique<ChromeNTPTilesInternalsMessageHandlerClient>());
 }
 
 NTPTilesInternalsUI::~NTPTilesInternalsUI() {}

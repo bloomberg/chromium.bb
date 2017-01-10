@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -26,13 +27,14 @@
 #include "ui/gfx/text_elider.h"
 
 SigninErrorUI::SigninErrorUI(content::WebUI* web_ui)
-    : SigninErrorUI(web_ui,
-                    new SigninErrorHandler(Profile::FromWebUI(web_ui)
-                                               ->GetOriginalProfile()
-                                               ->IsSystemProfile())) {}
+    : SigninErrorUI(
+          web_ui,
+          base::MakeUnique<SigninErrorHandler>(Profile::FromWebUI(web_ui)
+                                                   ->GetOriginalProfile()
+                                                   ->IsSystemProfile())) {}
 
 SigninErrorUI::SigninErrorUI(content::WebUI* web_ui,
-                             SigninErrorHandler* handler)
+                             std::unique_ptr<SigninErrorHandler> handler)
     : WebDialogUI(web_ui) {
   Profile* webui_profile = Profile::FromWebUI(web_ui);
   Profile* signin_profile;
@@ -120,5 +122,5 @@ SigninErrorUI::SigninErrorUI(content::WebUI* web_ui,
   source->AddLocalizedStrings(strings);
 
   content::WebUIDataSource::Add(webui_profile, source);
-  web_ui->AddMessageHandler(handler);
+  web_ui->AddMessageHandler(std::move(handler));
 }

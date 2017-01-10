@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_handler.h"
 #include "chrome/common/url_constants.h"
@@ -35,7 +36,8 @@ content::WebUIDataSource* CreateQuotaInternalsHTMLSource() {
 
 QuotaInternalsUI::QuotaInternalsUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
-  web_ui->AddMessageHandler(new quota_internals::QuotaInternalsHandler);
+  web_ui->AddMessageHandler(
+      base::MakeUnique<quota_internals::QuotaInternalsHandler>());
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, CreateQuotaInternalsHTMLSource());
 }

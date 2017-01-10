@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -80,7 +81,7 @@ content::WebUIDataSource* CreateTranslateInternalsHTMLSource() {
 
 TranslateInternalsUI::TranslateInternalsUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
-  web_ui->AddMessageHandler(new TranslateInternalsHandler);
+  web_ui->AddMessageHandler(base::MakeUnique<TranslateInternalsHandler>());
 
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, CreateTranslateInternalsHTMLSource());

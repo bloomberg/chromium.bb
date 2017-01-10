@@ -5232,7 +5232,7 @@ std::unique_ptr<WebUIImpl> WebContentsImpl::CreateWebUI(
       WebUIControllerFactoryRegistry::GetInstance()
           ->CreateWebUIControllerForURL(web_ui.get(), url);
   if (controller) {
-    web_ui->AddMessageHandler(new GenericHandler());
+    web_ui->AddMessageHandler(base::MakeUnique<GenericHandler>());
     web_ui->SetController(controller);
     return web_ui;
   }

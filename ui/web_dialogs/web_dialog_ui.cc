@@ -96,10 +96,8 @@ void WebDialogUI::RenderFrameCreated(RenderFrameHost* render_frame_host) {
       render_frame_host->GetRenderViewHost();
   if (0 != (web_ui()->GetBindings() & content::BINDINGS_POLICY_WEB_UI))
     render_view_host->SetWebUIProperty("dialogArguments", dialog_args);
-  for (std::vector<WebUIMessageHandler*>::iterator it = handlers.begin();
-       it != handlers.end(); ++it) {
-    web_ui()->AddMessageHandler(*it);
-  }
+  for (WebUIMessageHandler* handler : handlers)
+    web_ui()->AddMessageHandler(base::WrapUnique(handler));
 
   if (delegate)
     delegate->OnDialogShown(web_ui(), render_view_host);

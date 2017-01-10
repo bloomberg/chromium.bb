@@ -305,8 +305,9 @@ FlagsUI::FlagsUI(content::WebUI* web_ui)
       weak_factory_(this) {
   Profile* profile = Profile::FromWebUI(web_ui);
 
-  FlagsDOMHandler* handler = new FlagsDOMHandler();
-  web_ui->AddMessageHandler(handler);
+  auto handler_owner = base::MakeUnique<FlagsDOMHandler>();
+  FlagsDOMHandler* handler = handler_owner.get();
+  web_ui->AddMessageHandler(std::move(handler_owner));
 
 #if defined(OS_CHROMEOS)
   if (base::SysInfo::IsRunningOnChromeOS() &&

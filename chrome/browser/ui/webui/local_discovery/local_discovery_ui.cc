@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/local_discovery/local_discovery_ui.h"
 
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -133,8 +134,9 @@ LocalDiscoveryUI::LocalDiscoveryUI(content::WebUI* web_ui)
 
   // TODO(gene): Use LocalDiscoveryUIHandler to send updated to the devices
   // page. For example
-  web_ui->AddMessageHandler(new local_discovery::LocalDiscoveryUIHandler());
-  web_ui->AddMessageHandler(new MetricsHandler());
+  web_ui->AddMessageHandler(
+      base::MakeUnique<local_discovery::LocalDiscoveryUIHandler>());
+  web_ui->AddMessageHandler(base::MakeUnique<MetricsHandler>());
 }
 
 void LocalDiscoveryUI::RegisterProfilePrefs(

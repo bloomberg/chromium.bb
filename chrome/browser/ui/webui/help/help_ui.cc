@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/help/help_ui.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/help/help_handler.h"
 #include "chrome/common/url_constants.h"
@@ -34,12 +35,11 @@ HelpUI::HelpUI(content::WebUI* web_ui)
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* source = CreateAboutPageHTMLSource();
 
-  HelpHandler* handler = new HelpHandler();
   base::DictionaryValue localized_strings;
   HelpHandler::GetLocalizedValues(&localized_strings);
   source->AddLocalizedStrings(localized_strings);
   content::WebUIDataSource::Add(profile, source);
-  web_ui->AddMessageHandler(handler);
+  web_ui->AddMessageHandler(base::MakeUnique<HelpHandler>());
 }
 
 HelpUI::~HelpUI() {

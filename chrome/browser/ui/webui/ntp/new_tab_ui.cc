@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/i18n/rtl.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -58,19 +59,20 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
 
   Profile* profile = GetProfile();
   if (!profile->IsOffTheRecord()) {
-    web_ui->AddMessageHandler(new MetricsHandler());
-    web_ui->AddMessageHandler(new CoreAppLauncherHandler());
+    web_ui->AddMessageHandler(base::MakeUnique<MetricsHandler>());
+    web_ui->AddMessageHandler(base::MakeUnique<CoreAppLauncherHandler>());
 
     ExtensionService* service =
         extensions::ExtensionSystem::Get(profile)->extension_service();
     // We might not have an ExtensionService (on ChromeOS when not logged in
     // for example).
-    if (service)
-      web_ui->AddMessageHandler(new AppLauncherHandler(service));
+    if (service) {
+      web_ui->AddMessageHandler(base::MakeUnique<AppLauncherHandler>(service));
+    }
   }
 
   if (!profile->IsGuestSession())
-    web_ui->AddMessageHandler(new ThemeHandler());
+    web_ui->AddMessageHandler(base::MakeUnique<ThemeHandler>());
 
   std::unique_ptr<NewTabHTMLSource> html_source(
       new NewTabHTMLSource(profile->GetOriginalProfile()));

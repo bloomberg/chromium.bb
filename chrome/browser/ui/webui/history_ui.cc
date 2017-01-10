@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -181,14 +182,15 @@ HistoryUI::HistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, CreateHistoryUIHTMLSource(profile));
 
-  web_ui->AddMessageHandler(new BrowsingHistoryHandler());
-  web_ui->AddMessageHandler(new MetricsHandler());
+  web_ui->AddMessageHandler(base::MakeUnique<BrowsingHistoryHandler>());
+  web_ui->AddMessageHandler(base::MakeUnique<MetricsHandler>());
 
   // On mobile we deal with foreign sessions differently.
 #if !defined(OS_ANDROID)
   if (search::IsInstantExtendedAPIEnabled()) {
-    web_ui->AddMessageHandler(new browser_sync::ForeignSessionHandler());
-    web_ui->AddMessageHandler(new HistoryLoginHandler(
+    web_ui->AddMessageHandler(
+        base::MakeUnique<browser_sync::ForeignSessionHandler>());
+    web_ui->AddMessageHandler(base::MakeUnique<HistoryLoginHandler>(
         base::Bind(&HistoryUI::UpdateDataSource, base::Unretained(this))));
   }
 #endif

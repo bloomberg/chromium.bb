@@ -280,8 +280,8 @@ class PrintPreviewObserver : public WebContentsObserver {
     ASSERT_TRUE(ui);
     ASSERT_TRUE(ui->web_ui());
 
-    // The |ui->web_ui()| owns the message handler.
-    ui->web_ui()->AddMessageHandler(new UIDoneLoadingMessageHandler(this));
+    ui->web_ui()->AddMessageHandler(
+        base::MakeUnique<UIDoneLoadingMessageHandler>(this));
     ui->web_ui()->CallJavascriptFunctionUnsafe(
         "onEnableManipulateSettingsForTest");
   }

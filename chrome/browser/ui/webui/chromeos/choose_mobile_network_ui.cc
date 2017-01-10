@@ -268,8 +268,7 @@ void ChooseMobileNetworkHandler::HandlePageReady(const base::ListValue* args) {
 
 ChooseMobileNetworkUI::ChooseMobileNetworkUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
-  ChooseMobileNetworkHandler* handler = new ChooseMobileNetworkHandler();
-  web_ui->AddMessageHandler(handler);
+  web_ui->AddMessageHandler(base::MakeUnique<ChooseMobileNetworkHandler>());
   // Set up the "chrome://choose-mobile-network" source.
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(

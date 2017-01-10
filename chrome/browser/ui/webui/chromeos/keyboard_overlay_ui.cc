@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -421,8 +422,7 @@ void KeyboardOverlayHandler::OpenLearnMorePage(const base::ListValue* args) {
 KeyboardOverlayUI::KeyboardOverlayUI(content::WebUI* web_ui)
     : WebDialogUI(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  KeyboardOverlayHandler* handler = new KeyboardOverlayHandler(profile);
-  web_ui->AddMessageHandler(handler);
+  web_ui->AddMessageHandler(base::MakeUnique<KeyboardOverlayHandler>(profile));
 
   // Set up the chrome://keyboardoverlay/ source.
   content::WebUIDataSource::Add(profile,

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/elapsed_timer.h"
@@ -295,37 +296,43 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   if (is_md) {
     source = CreateMdExtensionsSource();
-    InstallExtensionHandler* install_extension_handler =
-        new InstallExtensionHandler();
-    install_extension_handler->GetLocalizedValues(source);
-    web_ui->AddMessageHandler(install_extension_handler);
+    auto install_extension_handler =
+        base::MakeUnique<InstallExtensionHandler>();
+    InstallExtensionHandler* handler = install_extension_handler.get();
+    web_ui->AddMessageHandler(std::move(install_extension_handler));
+    handler->GetLocalizedValues(source);
   } else {
     source = CreateExtensionsHTMLSource();
 
-    ExtensionSettingsHandler* handler = new ExtensionSettingsHandler();
-    web_ui->AddMessageHandler(handler);
-    handler->GetLocalizedValues(source);
+    auto extension_settings_handler =
+        base::MakeUnique<ExtensionSettingsHandler>();
+    ExtensionSettingsHandler* settings_handler =
+        extension_settings_handler.get();
+    web_ui->AddMessageHandler(std::move(extension_settings_handler));
+    settings_handler->GetLocalizedValues(source);
 
-    ExtensionLoaderHandler* extension_loader_handler =
-        new ExtensionLoaderHandler(profile);
-    extension_loader_handler->GetLocalizedValues(source);
-    web_ui->AddMessageHandler(extension_loader_handler);
+    auto extension_loader_handler =
+        base::MakeUnique<ExtensionLoaderHandler>(profile);
+    ExtensionLoaderHandler* loader_handler = extension_loader_handler.get();
+    web_ui->AddMessageHandler(std::move(extension_loader_handler));
+    loader_handler->GetLocalizedValues(source);
 
-    InstallExtensionHandler* install_extension_handler =
-        new InstallExtensionHandler();
-    install_extension_handler->GetLocalizedValues(source);
-    web_ui->AddMessageHandler(install_extension_handler);
+    auto install_extension_handler =
+        base::MakeUnique<InstallExtensionHandler>();
+    InstallExtensionHandler* install_handler = install_extension_handler.get();
+    web_ui->AddMessageHandler(std::move(install_extension_handler));
+    install_handler->GetLocalizedValues(source);
 
 #if defined(OS_CHROMEOS)
-    chromeos::KioskAppsHandler* kiosk_app_handler =
-        new chromeos::KioskAppsHandler(
-            chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
-                profile));
-    kiosk_app_handler->GetLocalizedValues(source);
-    web_ui->AddMessageHandler(kiosk_app_handler);
+    auto kiosk_app_handler = base::MakeUnique<chromeos::KioskAppsHandler>(
+        chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
+            profile));
+    chromeos::KioskAppsHandler* kiosk_handler = kiosk_app_handler.get();
+    web_ui->AddMessageHandler(std::move(kiosk_app_handler));
+    kiosk_handler->GetLocalizedValues(source);
 #endif
 
-    web_ui->AddMessageHandler(new MetricsHandler());
+    web_ui->AddMessageHandler(base::MakeUnique<MetricsHandler>());
   }
 
   // Need to allow <object> elements so that the <extensionoptions> browser

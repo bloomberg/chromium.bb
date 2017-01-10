@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
@@ -435,7 +436,7 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
 #endif
   AddOptionsPageUIHandler(localized_strings, new HandlerOptionsHandler());
 
-  web_ui->AddMessageHandler(new MetricsHandler());
+  web_ui->AddMessageHandler(base::MakeUnique<MetricsHandler>());
 
   // Enable extension API calls in the WebUI.
   extensions::TabHelper::CreateForWebContents(web_ui->GetWebContents());
@@ -564,7 +565,7 @@ void OptionsUI::AddOptionsPageUIHandler(
   // Add only if handler's service is enabled.
   if (handler->IsEnabled()) {
     // Add handler to the list and also pass the ownership.
-    web_ui()->AddMessageHandler(handler.release());
+    web_ui()->AddMessageHandler(std::move(handler));
     handler_raw->GetLocalizedValues(localized_strings);
     handlers_.push_back(handler_raw);
   }

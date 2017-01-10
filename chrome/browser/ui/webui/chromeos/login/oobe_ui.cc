@@ -209,134 +209,140 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   network_state_informer_ = new NetworkStateInformer();
   network_state_informer_->Init();
 
-  core_handler_ = new CoreOobeHandler(this);
-  AddScreenHandler(core_handler_);
+  auto core_handler = base::MakeUnique<CoreOobeHandler>(this);
+  core_handler_ = core_handler.get();
+  AddScreenHandler(std::move(core_handler));
   core_handler_->SetDelegate(this);
 
-  network_dropdown_handler_ = new NetworkDropdownHandler();
-  AddScreenHandler(network_dropdown_handler_);
+  auto network_dropdown_handler = base::MakeUnique<NetworkDropdownHandler>();
+  network_dropdown_handler_ = network_dropdown_handler.get();
+  AddScreenHandler(std::move(network_dropdown_handler));
 
-  UpdateScreenHandler* update_screen_handler = new UpdateScreenHandler();
-  update_view_ = update_screen_handler;
-  AddScreenHandler(update_screen_handler);
+  auto update_screen_handler = base::MakeUnique<UpdateScreenHandler>();
+  update_view_ = update_screen_handler.get();
+  AddScreenHandler(std::move(update_screen_handler));
 
   if (display_type_ == kOobeDisplay) {
-    NetworkScreenHandler* network_screen_handler =
-        new NetworkScreenHandler(core_handler_);
-    network_view_ = network_screen_handler;
-    AddScreenHandler(network_screen_handler);
+    auto network_screen_handler =
+        base::MakeUnique<NetworkScreenHandler>(core_handler_);
+    network_view_ = network_screen_handler.get();
+    AddScreenHandler(std::move(network_screen_handler));
   }
 
-  EnableDebuggingScreenHandler* debugging_screen_handler =
-      new EnableDebuggingScreenHandler();
-  debugging_screen_actor_ = debugging_screen_handler;
-  AddScreenHandler(debugging_screen_handler);
+  auto debugging_screen_handler =
+      base::MakeUnique<EnableDebuggingScreenHandler>();
+  debugging_screen_actor_ = debugging_screen_handler.get();
+  AddScreenHandler(std::move(debugging_screen_handler));
 
-  EulaScreenHandler* eula_screen_handler = new EulaScreenHandler(core_handler_);
-  eula_view_ = eula_screen_handler;
-  AddScreenHandler(eula_screen_handler);
+  auto eula_screen_handler = base::MakeUnique<EulaScreenHandler>(core_handler_);
+  eula_view_ = eula_screen_handler.get();
+  AddScreenHandler(std::move(eula_screen_handler));
 
-  ResetScreenHandler* reset_screen_handler = new ResetScreenHandler();
-  reset_view_ = reset_screen_handler;
-  AddScreenHandler(reset_screen_handler);
+  auto reset_screen_handler = base::MakeUnique<ResetScreenHandler>();
+  reset_view_ = reset_screen_handler.get();
+  AddScreenHandler(std::move(reset_screen_handler));
 
-  KioskAutolaunchScreenHandler* autolaunch_screen_handler =
-      new KioskAutolaunchScreenHandler();
-  autolaunch_screen_actor_ = autolaunch_screen_handler;
-  AddScreenHandler(autolaunch_screen_handler);
+  auto autolaunch_screen_handler =
+      base::MakeUnique<KioskAutolaunchScreenHandler>();
+  autolaunch_screen_actor_ = autolaunch_screen_handler.get();
+  AddScreenHandler(std::move(autolaunch_screen_handler));
 
-  KioskEnableScreenHandler* kiosk_enable_screen_handler =
-      new KioskEnableScreenHandler();
-  kiosk_enable_screen_actor_ = kiosk_enable_screen_handler;
-  AddScreenHandler(kiosk_enable_screen_handler);
+  auto kiosk_enable_screen_handler =
+      base::MakeUnique<KioskEnableScreenHandler>();
+  kiosk_enable_screen_actor_ = kiosk_enable_screen_handler.get();
+  AddScreenHandler(std::move(kiosk_enable_screen_handler));
 
-  SupervisedUserCreationScreenHandler* supervised_user_creation_screen_handler =
-      new SupervisedUserCreationScreenHandler();
+  auto supervised_user_creation_screen_handler =
+      base::MakeUnique<SupervisedUserCreationScreenHandler>();
   supervised_user_creation_screen_actor_ =
-      supervised_user_creation_screen_handler;
-  AddScreenHandler(supervised_user_creation_screen_handler);
+      supervised_user_creation_screen_handler.get();
+  AddScreenHandler(std::move(supervised_user_creation_screen_handler));
 
-  WrongHWIDScreenHandler* wrong_hwid_screen_handler =
-      new WrongHWIDScreenHandler();
-  wrong_hwid_screen_actor_ = wrong_hwid_screen_handler;
-  AddScreenHandler(wrong_hwid_screen_handler);
+  auto wrong_hwid_screen_handler = base::MakeUnique<WrongHWIDScreenHandler>();
+  wrong_hwid_screen_actor_ = wrong_hwid_screen_handler.get();
+  AddScreenHandler(std::move(wrong_hwid_screen_handler));
 
-  AutoEnrollmentCheckScreenHandler* auto_enrollment_check_screen_handler =
-      new AutoEnrollmentCheckScreenHandler();
-  auto_enrollment_check_screen_actor_ = auto_enrollment_check_screen_handler;
-  AddScreenHandler(auto_enrollment_check_screen_handler);
+  auto auto_enrollment_check_screen_handler =
+      base::MakeUnique<AutoEnrollmentCheckScreenHandler>();
+  auto_enrollment_check_screen_actor_ =
+      auto_enrollment_check_screen_handler.get();
+  AddScreenHandler(std::move(auto_enrollment_check_screen_handler));
 
-  HIDDetectionScreenHandler* hid_detection_screen_handler =
-      new HIDDetectionScreenHandler(core_handler_);
-  hid_detection_view_ = hid_detection_screen_handler;
-  AddScreenHandler(hid_detection_screen_handler);
+  auto hid_detection_screen_handler =
+      base::MakeUnique<HIDDetectionScreenHandler>(core_handler_);
+  hid_detection_view_ = hid_detection_screen_handler.get();
+  AddScreenHandler(std::move(hid_detection_screen_handler));
 
-  error_screen_handler_ = new ErrorScreenHandler();
-  AddScreenHandler(error_screen_handler_);
+  auto error_screen_handler = base::MakeUnique<ErrorScreenHandler>();
+  error_screen_handler_ = error_screen_handler.get();
+  AddScreenHandler(std::move(error_screen_handler));
   network_dropdown_handler_->AddObserver(error_screen_handler_);
 
   error_screen_.reset(new ErrorScreen(nullptr, error_screen_handler_));
   NetworkErrorModel* network_error_model = error_screen_.get();
 
-  EnrollmentScreenHandler* enrollment_screen_handler =
-      new EnrollmentScreenHandler(network_state_informer_, network_error_model);
-  enrollment_screen_actor_ = enrollment_screen_handler;
-  AddScreenHandler(enrollment_screen_handler);
+  auto enrollment_screen_handler = base::MakeUnique<EnrollmentScreenHandler>(
+      network_state_informer_, network_error_model);
+  enrollment_screen_actor_ = enrollment_screen_handler.get();
+  AddScreenHandler(std::move(enrollment_screen_handler));
 
-  TermsOfServiceScreenHandler* terms_of_service_screen_handler =
-      new TermsOfServiceScreenHandler(core_handler_);
-  terms_of_service_screen_actor_ = terms_of_service_screen_handler;
-  AddScreenHandler(terms_of_service_screen_handler);
+  auto terms_of_service_screen_handler =
+      base::MakeUnique<TermsOfServiceScreenHandler>(core_handler_);
+  terms_of_service_screen_actor_ = terms_of_service_screen_handler.get();
+  AddScreenHandler(std::move(terms_of_service_screen_handler));
 
-  ArcTermsOfServiceScreenHandler* arc_terms_of_service_screen_handler =
-      new ArcTermsOfServiceScreenHandler();
-  arc_terms_of_service_screen_actor_ = arc_terms_of_service_screen_handler;
-  AddScreenHandler(arc_terms_of_service_screen_handler);
+  auto arc_terms_of_service_screen_handler =
+      base::MakeUnique<ArcTermsOfServiceScreenHandler>();
+  arc_terms_of_service_screen_actor_ =
+      arc_terms_of_service_screen_handler.get();
+  AddScreenHandler(std::move(arc_terms_of_service_screen_handler));
 
-  UserImageScreenHandler* user_image_screen_handler =
-      new UserImageScreenHandler();
-  user_image_view_ = user_image_screen_handler;
-  AddScreenHandler(user_image_screen_handler);
+  auto user_image_screen_handler = base::MakeUnique<UserImageScreenHandler>();
+  user_image_view_ = user_image_screen_handler.get();
+  AddScreenHandler(std::move(user_image_screen_handler));
 
-  user_board_screen_handler_ = new UserBoardScreenHandler();
-  AddScreenHandler(user_board_screen_handler_);
+  auto user_board_screen_handler = base::MakeUnique<UserBoardScreenHandler>();
+  user_board_screen_handler_ = user_board_screen_handler.get();
+  AddScreenHandler(std::move(user_board_screen_handler));
 
-  gaia_screen_handler_ =
-      new GaiaScreenHandler(core_handler_, network_state_informer_);
-  AddScreenHandler(gaia_screen_handler_);
+  auto gaia_screen_handler = base::MakeUnique<GaiaScreenHandler>(
+      core_handler_, network_state_informer_);
+  gaia_screen_handler_ = gaia_screen_handler.get();
+  AddScreenHandler(std::move(gaia_screen_handler));
 
-  signin_screen_handler_ =
-      new SigninScreenHandler(network_state_informer_, network_error_model,
-                              core_handler_, gaia_screen_handler_);
-  AddScreenHandler(signin_screen_handler_);
+  auto signin_screen_handler = base::MakeUnique<SigninScreenHandler>(
+      network_state_informer_, network_error_model, core_handler_,
+      gaia_screen_handler_);
+  signin_screen_handler_ = signin_screen_handler.get();
+  AddScreenHandler(std::move(signin_screen_handler));
 
-  AppLaunchSplashScreenHandler* app_launch_splash_screen_handler =
-      new AppLaunchSplashScreenHandler(network_state_informer_,
-                                       network_error_model);
-  AddScreenHandler(app_launch_splash_screen_handler);
-  app_launch_splash_screen_actor_ = app_launch_splash_screen_handler;
-
-  if (display_type_ == kOobeDisplay) {
-    ControllerPairingScreenHandler* handler =
-        new ControllerPairingScreenHandler();
-    controller_pairing_screen_actor_ = handler;
-    AddScreenHandler(handler);
-  }
+  auto app_launch_splash_screen_handler =
+      base::MakeUnique<AppLaunchSplashScreenHandler>(network_state_informer_,
+                                                     network_error_model);
+  app_launch_splash_screen_actor_ = app_launch_splash_screen_handler.get();
+  AddScreenHandler(std::move(app_launch_splash_screen_handler));
 
   if (display_type_ == kOobeDisplay) {
-    HostPairingScreenHandler* handler = new HostPairingScreenHandler();
-    host_pairing_screen_actor_ = handler;
-    AddScreenHandler(handler);
+    auto controller_pairing_handler =
+        base::MakeUnique<ControllerPairingScreenHandler>();
+    controller_pairing_screen_actor_ = controller_pairing_handler.get();
+    AddScreenHandler(std::move(controller_pairing_handler));
+
+    auto host_pairing_handler = base::MakeUnique<HostPairingScreenHandler>();
+    host_pairing_screen_actor_ = host_pairing_handler.get();
+    AddScreenHandler(std::move(host_pairing_handler));
   }
 
-  DeviceDisabledScreenHandler* device_disabled_screen_handler =
-      new DeviceDisabledScreenHandler;
-  device_disabled_screen_actor_ = device_disabled_screen_handler;
-  AddScreenHandler(device_disabled_screen_handler);
+  auto device_disabled_screen_handler =
+      base::MakeUnique<DeviceDisabledScreenHandler>();
+  device_disabled_screen_actor_ = device_disabled_screen_handler.get();
+  AddScreenHandler(std::move(device_disabled_screen_handler));
 
   // Initialize KioskAppMenuHandler. Note that it is NOT a screen handler.
-  kiosk_app_menu_handler_ = new KioskAppMenuHandler(network_state_informer_);
-  web_ui->AddMessageHandler(kiosk_app_menu_handler_);
+  auto kiosk_app_menu_handler =
+      base::MakeUnique<KioskAppMenuHandler>(network_state_informer_);
+  kiosk_app_menu_handler_ = kiosk_app_menu_handler.get();
+  web_ui->AddMessageHandler(std::move(kiosk_app_menu_handler));
 
   base::DictionaryValue localized_strings;
   GetLocalizedStrings(&localized_strings);
@@ -512,9 +518,9 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
                                                                        : "off");
 }
 
-void OobeUI::AddScreenHandler(BaseScreenHandler* handler) {
-  web_ui()->AddMessageHandler(handler);
-  handlers_.push_back(handler);
+void OobeUI::AddScreenHandler(std::unique_ptr<BaseScreenHandler> handler) {
+  handlers_.push_back(handler.get());
+  web_ui()->AddMessageHandler(std::move(handler));
 }
 
 void OobeUI::InitializeHandlers() {

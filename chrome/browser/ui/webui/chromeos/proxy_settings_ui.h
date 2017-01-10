@@ -30,8 +30,8 @@ class ProxySettingsUI : public ui::WebDialogUI,
 
   bool initialized_handlers_;
 
-  options::ProxyHandler* proxy_handler_;  // Weak ptr.
-  options::CoreChromeOSOptionsHandler* core_handler_; // WeakPtr.
+  options::ProxyHandler* proxy_handler_ = nullptr;
+  options::CoreChromeOSOptionsHandler* core_handler_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ProxySettingsUI);
 };

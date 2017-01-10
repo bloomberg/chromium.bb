@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/test/test_web_ui.h"
 
@@ -43,8 +44,9 @@ bool TestWebUI::HasRenderFrame() {
   return false;
 }
 
-void TestWebUI::AddMessageHandler(WebUIMessageHandler* handler) {
-  handlers_.push_back(handler);
+void TestWebUI::AddMessageHandler(
+    std::unique_ptr<WebUIMessageHandler> handler) {
+  handlers_.push_back(std::move(handler));
 }
 
 bool TestWebUI::CanCallJavascript() {
@@ -52,19 +54,19 @@ bool TestWebUI::CanCallJavascript() {
 }
 
 void TestWebUI::CallJavascriptFunctionUnsafe(const std::string& function_name) {
-  call_data_.push_back(new CallData(function_name));
+  call_data_.push_back(base::WrapUnique(new CallData(function_name)));
 }
 
 void TestWebUI::CallJavascriptFunctionUnsafe(const std::string& function_name,
                                              const base::Value& arg1) {
-  call_data_.push_back(new CallData(function_name));
+  call_data_.push_back(base::WrapUnique(new CallData(function_name)));
   call_data_.back()->TakeAsArg1(arg1.CreateDeepCopy());
 }
 
 void TestWebUI::CallJavascriptFunctionUnsafe(const std::string& function_name,
                                              const base::Value& arg1,
                                              const base::Value& arg2) {
-  call_data_.push_back(new CallData(function_name));
+  call_data_.push_back(base::WrapUnique(new CallData(function_name)));
   call_data_.back()->TakeAsArg1(arg1.CreateDeepCopy());
   call_data_.back()->TakeAsArg2(arg2.CreateDeepCopy());
 }
@@ -73,7 +75,7 @@ void TestWebUI::CallJavascriptFunctionUnsafe(const std::string& function_name,
                                              const base::Value& arg1,
                                              const base::Value& arg2,
                                              const base::Value& arg3) {
-  call_data_.push_back(new CallData(function_name));
+  call_data_.push_back(base::WrapUnique(new CallData(function_name)));
   call_data_.back()->TakeAsArg1(arg1.CreateDeepCopy());
   call_data_.back()->TakeAsArg2(arg2.CreateDeepCopy());
   call_data_.back()->TakeAsArg3(arg3.CreateDeepCopy());
@@ -84,7 +86,7 @@ void TestWebUI::CallJavascriptFunctionUnsafe(const std::string& function_name,
                                              const base::Value& arg2,
                                              const base::Value& arg3,
                                              const base::Value& arg4) {
-  call_data_.push_back(new CallData(function_name));
+  call_data_.push_back(base::WrapUnique(new CallData(function_name)));
   call_data_.back()->TakeAsArg1(arg1.CreateDeepCopy());
   call_data_.back()->TakeAsArg2(arg2.CreateDeepCopy());
   call_data_.back()->TakeAsArg3(arg3.CreateDeepCopy());
@@ -97,7 +99,8 @@ void TestWebUI::CallJavascriptFunctionUnsafe(
   NOTREACHED();
 }
 
-ScopedVector<WebUIMessageHandler>* TestWebUI::GetHandlersForTesting() {
+std::vector<std::unique_ptr<WebUIMessageHandler>>*
+TestWebUI::GetHandlersForTesting() {
   return &handlers_;
 }
 

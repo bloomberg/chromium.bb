@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -50,7 +51,7 @@ class DeviceLogMessageHandler : public content::WebUIMessageHandler {
 
 DeviceLogUI::DeviceLogUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
-  web_ui->AddMessageHandler(new DeviceLogMessageHandler());
+  web_ui->AddMessageHandler(base::MakeUnique<DeviceLogMessageHandler>());
 
   content::WebUIDataSource* html =
       content::WebUIDataSource::Create(chrome::kChromeUIDeviceLogHost);

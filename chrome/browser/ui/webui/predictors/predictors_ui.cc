@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/predictors/predictors_ui.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/predictors/predictors_handler.h"
 #include "chrome/common/url_constants.h"
@@ -27,6 +28,6 @@ content::WebUIDataSource* CreatePredictorsUIHTMLSource() {
 
 PredictorsUI::PredictorsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  web_ui->AddMessageHandler(new PredictorsHandler(profile));
+  web_ui->AddMessageHandler(base::MakeUnique<PredictorsHandler>(profile));
   content::WebUIDataSource::Add(profile, CreatePredictorsUIHTMLSource());
 }

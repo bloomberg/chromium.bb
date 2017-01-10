@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/invalidations_ui.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/invalidations_message_handler.h"
 #include "chrome/common/url_constants.h"
@@ -28,10 +29,7 @@ InvalidationsUI::InvalidationsUI(content::WebUI* web_ui)
   Profile* profile = Profile::FromWebUI(web_ui);
   if (profile) {
     content::WebUIDataSource::Add(profile, CreateInvalidationsHTMLSource());
-    InvalidationsMessageHandler* message_handler =
-        new InvalidationsMessageHandler();
-    // The MessageHandler of web_ui takes ownership of the object
-    web_ui->AddMessageHandler(message_handler);
+    web_ui->AddMessageHandler(base::MakeUnique<InvalidationsMessageHandler>());
   }
 }
 

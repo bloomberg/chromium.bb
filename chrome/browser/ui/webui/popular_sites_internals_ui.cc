@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/popular_sites_internals_ui.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/ntp_tiles/chrome_popular_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
@@ -95,7 +96,7 @@ PopularSitesInternalsUI::PopularSitesInternalsUI(content::WebUI* web_ui)
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui),
                                 CreatePopularSitesInternalsHTMLSource());
   web_ui->AddMessageHandler(
-      new ChromePopularSitesInternalsMessageHandlerBridge);
+      base::MakeUnique<ChromePopularSitesInternalsMessageHandlerBridge>());
 }
 
 PopularSitesInternalsUI::~PopularSitesInternalsUI() {}

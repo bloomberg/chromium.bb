@@ -13,8 +13,6 @@ namespace base {
 class RefCountedMemory;
 }
 
-class MdDownloadsDOMHandler;
-
 class MdDownloadsUI : public content::WebUIController {
  public:
   explicit MdDownloadsUI(content::WebUI* web_ui);
@@ -23,8 +21,6 @@ class MdDownloadsUI : public content::WebUIController {
       ui::ScaleFactor scale_factor);
 
  private:
-  MdDownloadsDOMHandler* handler_;  // Weak.
-
   DISALLOW_COPY_AND_ASSIGN(MdDownloadsUI);
 };
 

@@ -1170,7 +1170,7 @@ void NetInternalsMessageHandler::IOThreadImpl::SendNetInfo(int info_sources) {
 
 NetInternalsUI::NetInternalsUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
-  web_ui->AddMessageHandler(new NetInternalsMessageHandler());
+  web_ui->AddMessageHandler(base::MakeUnique<NetInternalsMessageHandler>());
 
   // Set up the chrome://net-internals/ source.
   Profile* profile = Profile::FromWebUI(web_ui);

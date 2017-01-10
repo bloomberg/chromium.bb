@@ -893,7 +893,7 @@ void DriveInternalsWebUIHandler::OnPeriodicUpdate(const base::ListValue* args) {
 
 DriveInternalsUI::DriveInternalsUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
-  web_ui->AddMessageHandler(new DriveInternalsWebUIHandler());
+  web_ui->AddMessageHandler(base::MakeUnique<DriveInternalsWebUIHandler>());
 
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIDriveInternalsHost);

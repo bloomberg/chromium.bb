@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string_number_conversions.h"
@@ -170,7 +171,7 @@ void ConflictsDOMHandler::OnScanCompleted() {
 
 ConflictsUI::ConflictsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   content::RecordAction(UserMetricsAction("ViewAboutConflicts"));
-  web_ui->AddMessageHandler(new ConflictsDOMHandler());
+  web_ui->AddMessageHandler(base::MakeUnique<ConflictsDOMHandler>());
 
   // Set up the about:conflicts source.
   Profile* profile = Profile::FromWebUI(web_ui);

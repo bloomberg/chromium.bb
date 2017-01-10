@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/physical_web/physical_web_ui.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/profiles/profile.h"
@@ -81,7 +82,7 @@ PhysicalWebUI::PhysicalWebUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui),
                                 CreatePhysicalWebHTMLSource());
-  web_ui->AddMessageHandler(new PhysicalWebMessageHandler());
+  web_ui->AddMessageHandler(base::MakeUnique<PhysicalWebMessageHandler>());
   base::RecordAction(base::UserMetricsAction("PhysicalWeb.WebUI.Open"));
 }
 

@@ -71,8 +71,8 @@ class CONTENT_EXPORT WebUI {
   // if the URL that created this WebUI was actually visited.
   virtual bool HasRenderFrame() = 0;
 
-  // Takes ownership of |handler|, which will be destroyed when the WebUI is.
-  virtual void AddMessageHandler(WebUIMessageHandler* handler) = 0;
+  virtual void AddMessageHandler(
+      std::unique_ptr<WebUIMessageHandler> handler) = 0;
 
   // Used by WebUIMessageHandlers. If the given message is already registered,
   // the call has no effect unless |register_callback_overwrites_| is set to
@@ -122,7 +122,8 @@ class CONTENT_EXPORT WebUI {
       const std::vector<const base::Value*>& args) = 0;
 
   // Allows mutable access to this WebUI's message handlers for testing.
-  virtual ScopedVector<WebUIMessageHandler>* GetHandlersForTesting() = 0;
+  virtual std::vector<std::unique_ptr<WebUIMessageHandler>>*
+  GetHandlersForTesting() = 0;
 };
 
 }  // namespace content

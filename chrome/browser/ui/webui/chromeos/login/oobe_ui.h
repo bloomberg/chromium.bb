@@ -160,7 +160,7 @@ class OobeUI : public content::WebUIController,
   }
 
  private:
-  void AddScreenHandler(BaseScreenHandler* handler);
+  void AddScreenHandler(std::unique_ptr<BaseScreenHandler> handler);
 
   // CoreOobeHandler::Delegate implementation:
   void OnCurrentScreenChanged(OobeScreen screen) override;

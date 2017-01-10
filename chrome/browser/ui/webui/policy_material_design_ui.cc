@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/policy_ui_handler.h"
 #include "chrome/common/url_constants.h"
@@ -92,7 +93,7 @@ void PolicyMaterialDesignUIHandler::SendPolicyNames() const {
 
 PolicyMaterialDesignUI::PolicyMaterialDesignUI(content::WebUI* web_ui) :
     WebUIController(web_ui) {
-  web_ui->AddMessageHandler(new PolicyMaterialDesignUIHandler);
+  web_ui->AddMessageHandler(base::MakeUnique<PolicyMaterialDesignUIHandler>());
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui),
                                 CreatePolicyMaterialDesignUIHtmlSource());
 }

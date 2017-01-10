@@ -94,7 +94,7 @@ class TaskSchedulerDataHandler : public content::WebUIMessageHandler {
 
 TaskSchedulerInternalsUI::TaskSchedulerInternalsUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
-  web_ui->AddMessageHandler(new TaskSchedulerDataHandler());
+  web_ui->AddMessageHandler(base::MakeUnique<TaskSchedulerDataHandler>());
 
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(

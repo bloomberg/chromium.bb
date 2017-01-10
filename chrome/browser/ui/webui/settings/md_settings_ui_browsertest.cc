@@ -58,7 +58,8 @@ IN_PROC_BROWSER_TEST_F(MdSettingsUITest, ToggleJavaScript) {
                               ->GetWebUI()
                               ->GetHandlersForTesting();
 
-  for (content::WebUIMessageHandler* handler : handlers) {
+  for (const std::unique_ptr<content::WebUIMessageHandler>& handler :
+       handlers) {
     handler->AllowJavascriptForTesting();
     handler->DisallowJavascript();
     handler->AllowJavascriptForTesting();

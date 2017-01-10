@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/sync_file_system_internals/sync_file_system_internals_ui.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/sync_file_system_internals/dump_database_handler.h"
 #include "chrome/browser/ui/webui/sync_file_system_internals/extension_statuses_handler.h"
@@ -45,13 +46,14 @@ SyncFileSystemInternalsUI::SyncFileSystemInternalsUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   web_ui->AddMessageHandler(
-      new syncfs_internals::SyncFileSystemInternalsHandler(profile));
+      base::MakeUnique<syncfs_internals::SyncFileSystemInternalsHandler>(
+          profile));
   web_ui->AddMessageHandler(
-      new syncfs_internals::ExtensionStatusesHandler(profile));
+      base::MakeUnique<syncfs_internals::ExtensionStatusesHandler>(profile));
   web_ui->AddMessageHandler(
-      new syncfs_internals::FileMetadataHandler(profile));
+      base::MakeUnique<syncfs_internals::FileMetadataHandler>(profile));
   web_ui->AddMessageHandler(
-      new syncfs_internals::DumpDatabaseHandler(profile));
+      base::MakeUnique<syncfs_internals::DumpDatabaseHandler>(profile));
   content::WebUIDataSource::Add(profile,
                                 CreateSyncFileSystemInternalsHTMLSource());
 }

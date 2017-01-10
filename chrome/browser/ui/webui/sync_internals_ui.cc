@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/sync_internals_ui.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/sync_internals_message_handler.h"
 #include "chrome/common/url_constants.h"
@@ -50,7 +51,7 @@ SyncInternalsUI::SyncInternalsUI(content::WebUI* web_ui)
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, CreateSyncInternalsHTMLSource());
 
-  web_ui->AddMessageHandler(new SyncInternalsMessageHandler);
+  web_ui->AddMessageHandler(base::MakeUnique<SyncInternalsMessageHandler>());
 }
 
 SyncInternalsUI::~SyncInternalsUI() {}

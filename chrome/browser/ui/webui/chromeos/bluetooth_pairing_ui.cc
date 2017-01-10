@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_ui.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/options/chromeos/bluetooth_options_handler.h"
@@ -19,16 +20,18 @@ using content::WebUIMessageHandler;
 namespace chromeos {
 
 BluetoothPairingUI::BluetoothPairingUI(content::WebUI* web_ui)
-    : WebDialogUI(web_ui),
-      core_handler_(new options::CoreChromeOSOptionsHandler()),
-      bluetooth_handler_(new options::BluetoothOptionsHandler()) {
+    : WebDialogUI(web_ui) {
   base::DictionaryValue localized_strings;
 
-  web_ui->AddMessageHandler(core_handler_);
+  auto core_handler = base::MakeUnique<options::CoreChromeOSOptionsHandler>();
+  core_handler_ = core_handler.get();
+  web_ui->AddMessageHandler(std::move(core_handler));
   core_handler_->set_handlers_host(this);
   core_handler_->GetLocalizedValues(&localized_strings);
 
-  web_ui->AddMessageHandler(bluetooth_handler_);
+  auto bluetooth_handler = base::MakeUnique<options::BluetoothOptionsHandler>();
+  bluetooth_handler_ = bluetooth_handler.get();
+  web_ui->AddMessageHandler(std::move(bluetooth_handler));
   bluetooth_handler_->GetLocalizedValues(&localized_strings);
 
   content::WebUIDataSource* source =

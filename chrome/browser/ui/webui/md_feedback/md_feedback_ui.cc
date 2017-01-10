@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/md_feedback/md_feedback_ui.h"
 
-// #include "chrome/browser/profiles/profile.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/webui/md_feedback/md_feedback_webui_message_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -73,7 +73,8 @@ MdFeedbackUI::MdFeedbackUI(content::WebUI* web_ui)
       CreateMdFeedbackUIHTMLSource(profile_);
   content::WebUIDataSource::Add(profile_, html_source);
 
-  web_ui->AddMessageHandler(new MdFeedbackWebUIMessageHandler(this));
+  web_ui->AddMessageHandler(
+      base::MakeUnique<MdFeedbackWebUIMessageHandler>(this));
 }
 
 MdFeedbackUI::~MdFeedbackUI() {}

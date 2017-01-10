@@ -11,12 +11,14 @@
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_message_handler.h"
 #include "extensions/features/features.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
@@ -79,9 +81,8 @@ void ConstrainedWebDialogUI::RenderFrameCreated(
   RenderViewHost* render_view_host = render_frame_host->GetRenderViewHost();
   render_view_host->SetWebUIProperty("dialogArguments",
                                      dialog_delegate->GetDialogArgs());
-  for (std::vector<WebUIMessageHandler*>::iterator it = handlers.begin();
-       it != handlers.end(); ++it) {
-    web_ui()->AddMessageHandler(*it);
+  for (WebUIMessageHandler* handler : handlers) {
+    web_ui()->AddMessageHandler(base::WrapUnique(handler));
   }
 
   dialog_delegate->OnDialogShown(web_ui(), render_view_host);

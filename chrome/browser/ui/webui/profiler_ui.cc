@@ -16,6 +16,7 @@
 #include "base/bind.h"
 #include "base/debug/debugging_flags.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/tracked_objects.h"
 #include "base/values.h"
@@ -148,7 +149,7 @@ void ProfilerMessageHandler::OnGetData(const base::ListValue* list) {
 ProfilerUI::ProfilerUI(content::WebUI* web_ui)
     : WebUIController(web_ui),
       weak_ptr_factory_(this) {
-  web_ui->AddMessageHandler(new ProfilerMessageHandler());
+  web_ui->AddMessageHandler(base::MakeUnique<ProfilerMessageHandler>());
 
   // Set up the chrome://profiler/ source.
   Profile* profile = Profile::FromWebUI(web_ui);

@@ -27,8 +27,8 @@ class BluetoothPairingUI : public ui::WebDialogUI,
   // Overridden from OptionsPageUIHandlerHost:
   void InitializeHandlers() override;
 
-  options::CoreChromeOSOptionsHandler* core_handler_;
-  options::BluetoothOptionsHandler* bluetooth_handler_;
+  options::CoreChromeOSOptionsHandler* core_handler_ = nullptr;
+  options::BluetoothOptionsHandler* bluetooth_handler_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothPairingUI);
 };

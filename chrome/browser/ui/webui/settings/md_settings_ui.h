@@ -35,7 +35,7 @@ class MdSettingsUI : public content::WebUIController,
   void DocumentOnLoadCompletedInMainFrame() override;
 
  private:
-  void AddSettingsPageUIHandler(SettingsPageUIHandler* handler);
+  void AddSettingsPageUIHandler(std::unique_ptr<SettingsPageUIHandler> handler);
 
   // Weak references; all |handlers_| are owned by |web_ui()|.
   std::unordered_set<SettingsPageUIHandler*> handlers_;

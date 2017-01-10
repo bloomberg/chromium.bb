@@ -247,17 +247,19 @@ void WebUIImpl::ProcessWebUIMessage(const GURL& source_url,
   }
 }
 
-ScopedVector<WebUIMessageHandler>* WebUIImpl::GetHandlersForTesting() {
+std::vector<std::unique_ptr<WebUIMessageHandler>>*
+WebUIImpl::GetHandlersForTesting() {
   return &handlers_;
 }
 
 // WebUIImpl, protected: -------------------------------------------------------
 
-void WebUIImpl::AddMessageHandler(WebUIMessageHandler* handler) {
+void WebUIImpl::AddMessageHandler(
+    std::unique_ptr<WebUIMessageHandler> handler) {
   DCHECK(!handler->web_ui());
   handler->set_web_ui(this);
   handler->RegisterMessages();
-  handlers_.push_back(handler);
+  handlers_.push_back(std::move(handler));
 }
 
 void WebUIImpl::ExecuteJavascript(const base::string16& javascript) {
@@ -294,7 +296,7 @@ void WebUIImpl::AddToSetIfFrameNameMatches(
 }
 
 void WebUIImpl::DisallowJavascriptOnAllHandlers() {
-  for (WebUIMessageHandler* handler : handlers_)
+  for (const std::unique_ptr<WebUIMessageHandler>& handler : handlers_)
     handler->DisallowJavascript();
 }
 

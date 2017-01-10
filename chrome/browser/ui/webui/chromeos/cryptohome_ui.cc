@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/cryptohome_ui.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/cryptohome_web_ui_handler.h"
 #include "chrome/common/url_constants.h"
@@ -27,7 +28,7 @@ content::WebUIDataSource* CreateCryptohomeUIHTMLSource() {
 }  // namespace
 
 CryptohomeUI::CryptohomeUI(content::WebUI* web_ui) : WebUIController(web_ui) {
-  web_ui->AddMessageHandler(new CryptohomeWebUIHandler());
+  web_ui->AddMessageHandler(base::MakeUnique<CryptohomeWebUIHandler>());
 
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, CreateCryptohomeUIHTMLSource());

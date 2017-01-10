@@ -324,7 +324,8 @@ IdentityInternalsUI::IdentityInternalsUI(content::WebUI* web_ui)
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), html_source);
 
-  web_ui->AddMessageHandler(new IdentityInternalsUIMessageHandler());
+  web_ui->AddMessageHandler(
+      base::MakeUnique<IdentityInternalsUIMessageHandler>());
 }
 
 IdentityInternalsUI::~IdentityInternalsUI() {}

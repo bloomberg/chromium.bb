@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SIGNIN_SYNC_CONFIRMATION_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_SIGNIN_SYNC_CONFIRMATION_UI_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
@@ -18,7 +20,8 @@ class SyncConfirmationUI : public ui::WebDialogUI {
  public:
   explicit SyncConfirmationUI(content::WebUI* web_ui);
    // Used to inject a SyncConfirmationHandler in tests.
-   SyncConfirmationUI(content::WebUI* web_ui, SyncConfirmationHandler* handler);
+  SyncConfirmationUI(content::WebUI* web_ui,
+                     std::unique_ptr<SyncConfirmationHandler> handler);
   ~SyncConfirmationUI() override {}
 
   DISALLOW_COPY_AND_ASSIGN(SyncConfirmationUI);

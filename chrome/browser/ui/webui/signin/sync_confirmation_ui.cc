@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -16,10 +17,11 @@
 #include "ui/base/webui/web_ui_util.h"
 
 SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
-    : SyncConfirmationUI(web_ui, new SyncConfirmationHandler) {}
+    : SyncConfirmationUI(web_ui, base::MakeUnique<SyncConfirmationHandler>()) {}
 
 SyncConfirmationUI::SyncConfirmationUI(
-    content::WebUI* web_ui, SyncConfirmationHandler* handler)
+    content::WebUI* web_ui,
+    std::unique_ptr<SyncConfirmationHandler> handler)
     : WebDialogUI(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   bool is_sync_allowed = profile->IsSyncAllowed();
@@ -65,5 +67,5 @@ SyncConfirmationUI::SyncConfirmationUI(
   source->AddLocalizedStrings(strings);
 
   content::WebUIDataSource::Add(profile, source);
-  web_ui->AddMessageHandler(handler);
+  web_ui->AddMessageHandler(std::move(handler));
 }

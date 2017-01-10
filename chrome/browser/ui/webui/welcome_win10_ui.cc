@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/feature_list.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/startup/startup_features.h"
 #include "chrome/browser/ui/webui/welcome_win10_handler.h"
@@ -100,7 +101,8 @@ WelcomeWin10UI::WelcomeWin10UI(content::WebUI* web_ui, const GURL& url)
   bool is_first_run = !UrlContainsKeyValueInQuery(url, "text", "faster");
   bool is_inline_style = ShouldShowInlineStyleVariant(url);
 
-  web_ui->AddMessageHandler(new WelcomeWin10Handler(is_inline_style));
+  web_ui->AddMessageHandler(
+      base::MakeUnique<WelcomeWin10Handler>(is_inline_style));
 
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(url.host());

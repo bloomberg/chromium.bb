@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/options/help_overlay_handler.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/help/help_handler.h"
 #include "chrome/common/chrome_switches.h"
@@ -26,7 +27,7 @@ void HelpOverlayHandler::GetLocalizedValues(
 
 void HelpOverlayHandler::RegisterMessages() {
   if (::switches::AboutInSettingsEnabled())
-    web_ui()->AddMessageHandler(new HelpHandler());
+    web_ui()->AddMessageHandler(base::MakeUnique<HelpHandler>());
 }
 
 }  // namespace options

@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -137,7 +138,7 @@ void ComponentsDOMHandler::HandleCheckUpdate(const base::ListValue* args) {
 ///////////////////////////////////////////////////////////////////////////////
 
 ComponentsUI::ComponentsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
-  web_ui->AddMessageHandler(new ComponentsDOMHandler());
+  web_ui->AddMessageHandler(base::MakeUnique<ComponentsDOMHandler>());
 
   // Set up the chrome://components/ source.
   Profile* profile = Profile::FromWebUI(web_ui);

@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
@@ -43,15 +44,15 @@ AppLauncherPageUI::AppLauncherPageUI(content::WebUI* web_ui)
         extensions::ExtensionSystem::Get(GetProfile())->extension_service();
     // We should not be launched without an ExtensionService.
     DCHECK(service);
-    web_ui->AddMessageHandler(new AppLauncherHandler(service));
-    web_ui->AddMessageHandler(new CoreAppLauncherHandler());
-    web_ui->AddMessageHandler(new MetricsHandler());
+    web_ui->AddMessageHandler(base::MakeUnique<AppLauncherHandler>(service));
+    web_ui->AddMessageHandler(base::MakeUnique<CoreAppLauncherHandler>());
+    web_ui->AddMessageHandler(base::MakeUnique<MetricsHandler>());
   }
 
   // The theme handler can require some CPU, so do it after hooking up the most
   // visited handler. This allows the DB query for the new tab thumbs to happen
   // earlier.
-  web_ui->AddMessageHandler(new ThemeHandler());
+  web_ui->AddMessageHandler(base::MakeUnique<ThemeHandler>());
 
   std::unique_ptr<HTMLSource> html_source(
       new HTMLSource(GetProfile()->GetOriginalProfile()));
@@ -75,7 +76,7 @@ bool AppLauncherPageUI::OverrideHandleWebUIMessage(
     const base::ListValue& args) {
   if (message == "getApps" &&
       AppLauncherLoginHandler::ShouldShow(GetProfile())) {
-    web_ui()->AddMessageHandler(new AppLauncherLoginHandler());
+    web_ui()->AddMessageHandler(base::MakeUnique<AppLauncherLoginHandler>());
   }
   return false;
 }

@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/path_service.h"
@@ -437,7 +438,7 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
 VoiceSearchUI::VoiceSearchUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  web_ui->AddMessageHandler(new VoiceSearchDomHandler(profile));
+  web_ui->AddMessageHandler(base::MakeUnique<VoiceSearchDomHandler>(profile));
 
   // Set up the about:voicesearch source.
   content::WebUIDataSource::Add(profile, CreateVoiceSearchUiHtmlSource());

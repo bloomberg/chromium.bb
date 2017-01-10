@@ -293,7 +293,7 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
 
   // Owned by the |web_ui| passed in the ctor, and guaranteed to be deleted
   // only after it has deleted |this|.
-  MediaRouterWebUIMessageHandler* handler_;
+  MediaRouterWebUIMessageHandler* handler_ = nullptr;
 
   // These are non-null while this instance is registered to receive
   // updates from them.

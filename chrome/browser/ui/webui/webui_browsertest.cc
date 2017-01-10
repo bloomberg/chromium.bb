@@ -71,7 +71,7 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, InPageNavigationsAndReload) {
       ->tab_strip_model()
       ->GetActiveWebContents()
       ->GetWebUI()
-      ->AddMessageHandler(test_handler);
+      ->AddMessageHandler(base::WrapUnique(test_handler));
   test_handler->AllowJavascriptForTesting();
 
   // Push onto window.history. Back should now be an in-page navigation.

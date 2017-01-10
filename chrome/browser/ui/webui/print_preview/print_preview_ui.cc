@@ -11,6 +11,7 @@
 #include "base/id_map.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -435,7 +436,7 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
     : ConstrainedWebDialogUI(web_ui),
       initial_preview_start_time_(base::TimeTicks::Now()),
       id_(g_print_preview_ui_id_map.Get().Add(this)),
-      handler_(NULL),
+      handler_(nullptr),
       source_is_modifiable_(true),
       source_has_selection_(false),
       dialog_closed_(false) {
@@ -446,11 +447,10 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
   // Set up the chrome://theme/ source.
   content::URLDataSource::Add(profile, new ThemeSource(profile));
 
-  // WebUI owns |handler_|.
-  handler_ = new PrintPreviewHandler();
-  web_ui->AddMessageHandler(handler_);
-
-  web_ui->AddMessageHandler(new MetricsHandler());
+  auto handler = base::MakeUnique<PrintPreviewHandler>();
+  handler_ = handler.get();
+  web_ui->AddMessageHandler(std::move(handler));
+  web_ui->AddMessageHandler(base::MakeUnique<MetricsHandler>());
 
   g_print_preview_request_id_map.Get().Set(id_, -1);
 }

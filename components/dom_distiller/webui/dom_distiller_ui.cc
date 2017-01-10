@@ -4,6 +4,7 @@
 
 #include "components/dom_distiller/webui/dom_distiller_ui.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/dom_distiller/core/dom_distiller_constants.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/dom_distiller/webui/dom_distiller_handler.h"
@@ -51,7 +52,8 @@ DomDistillerUi::DomDistillerUi(content::WebUI* web_ui,
   source->SetJsonPath("strings.js");
 
   // Add message handler.
-  web_ui->AddMessageHandler(new DomDistillerHandler(service, scheme));
+  web_ui->AddMessageHandler(
+      base::MakeUnique<DomDistillerHandler>(service, scheme));
 }
 
 DomDistillerUi::~DomDistillerUi() {}

@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -759,8 +760,7 @@ void SimUnlockHandler::UpdatePage(const DeviceState* cellular,
 // SimUnlockUI -----------------------------------------------------------------
 
 SimUnlockUI::SimUnlockUI(content::WebUI* web_ui) : WebUIController(web_ui) {
-  SimUnlockHandler* handler = new SimUnlockHandler();
-  web_ui->AddMessageHandler(handler);
+  web_ui->AddMessageHandler(base::MakeUnique<SimUnlockHandler>());
   SimUnlockUIHTMLSource* html_source = new SimUnlockUIHTMLSource();
 
   // Set up the chrome://sim-unlock/ source.

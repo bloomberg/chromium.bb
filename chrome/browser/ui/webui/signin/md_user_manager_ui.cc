@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -28,17 +29,21 @@
 #endif
 
 MDUserManagerUI::MDUserManagerUI(content::WebUI* web_ui)
-    : WebUIController(web_ui),
-      signin_create_profile_handler_(new SigninCreateProfileHandler()),
-      user_manager_screen_handler_(new UserManagerScreenHandler()) {
-  // The web_ui object takes ownership of these handlers, and will
-  // destroy them when it (the WebUI) is destroyed.
-  web_ui->AddMessageHandler(signin_create_profile_handler_);
-  web_ui->AddMessageHandler(user_manager_screen_handler_);
+    : WebUIController(web_ui) {
+  auto signin_create_profile_handler =
+      base::MakeUnique<SigninCreateProfileHandler>();
+  signin_create_profile_handler_ = signin_create_profile_handler.get();
+  web_ui->AddMessageHandler(std::move(signin_create_profile_handler));
+  auto user_manager_screen_handler =
+      base::MakeUnique<UserManagerScreenHandler>();
+  user_manager_screen_handler_ = user_manager_screen_handler.get();
+  web_ui->AddMessageHandler(std::move(user_manager_screen_handler));
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  auto signin_supervised_user_import_handler =
+      base::MakeUnique<SigninSupervisedUserImportHandler>();
   signin_supervised_user_import_handler_ =
-      new SigninSupervisedUserImportHandler();
-  web_ui->AddMessageHandler(signin_supervised_user_import_handler_);
+      signin_supervised_user_import_handler.get();
+  web_ui->AddMessageHandler(std::move(signin_supervised_user_import_handler));
 #endif
 
   base::DictionaryValue localized_strings;

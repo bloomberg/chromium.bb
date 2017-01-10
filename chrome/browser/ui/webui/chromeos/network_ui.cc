@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
@@ -201,7 +202,7 @@ void NetworkUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
 
 NetworkUI::NetworkUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
-  web_ui->AddMessageHandler(new NetworkConfigMessageHandler());
+  web_ui->AddMessageHandler(base::MakeUnique<NetworkConfigMessageHandler>());
 
   // Enable extension API calls in the WebUI.
   extensions::TabHelper::CreateForWebContents(web_ui->GetWebContents());

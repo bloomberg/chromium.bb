@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
@@ -173,7 +174,7 @@ GCMInternalsUI::GCMInternalsUI(content::WebUI* web_ui)
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, html_source);
 
-  web_ui->AddMessageHandler(new GcmInternalsUIMessageHandler());
+  web_ui->AddMessageHandler(base::MakeUnique<GcmInternalsUIMessageHandler>());
 }
 
 GCMInternalsUI::~GCMInternalsUI() {}

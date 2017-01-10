@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/vr_shell/vr_shell_ui_ui.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/vr_shell/vr_shell_ui_message_handler.h"
 #include "chrome/common/url_constants.h"
@@ -213,7 +214,7 @@ VrShellUIUI::VrShellUIUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   content::URLDataSource::Add(
       profile, new RemoteDataSource(profile->GetRequestContext()));
 #endif
-  web_ui->AddMessageHandler(new VrShellUIMessageHandler);
+  web_ui->AddMessageHandler(base::MakeUnique<VrShellUIMessageHandler>());
 }
 
 VrShellUIUI::~VrShellUIUI() {}

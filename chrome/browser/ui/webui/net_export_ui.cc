@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -367,7 +368,7 @@ void NetExportMessageHandler::FileSelectionCanceled(void* params) {
 }  // namespace
 
 NetExportUI::NetExportUI(content::WebUI* web_ui) : WebUIController(web_ui) {
-  web_ui->AddMessageHandler(new NetExportMessageHandler());
+  web_ui->AddMessageHandler(base::MakeUnique<NetExportMessageHandler>());
 
   // Set up the chrome://net-export/ source.
   Profile* profile = Profile::FromWebUI(web_ui);

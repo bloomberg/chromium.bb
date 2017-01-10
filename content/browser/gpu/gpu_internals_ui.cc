@@ -16,6 +16,7 @@
 #include "base/environment.h"
 #include "base/i18n/time_formatting.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringize_macros.h"
 #include "base/strings/stringprintf.h"
@@ -557,7 +558,7 @@ void GpuMessageHandler::OnGpuSwitched() {
 
 GpuInternalsUI::GpuInternalsUI(WebUI* web_ui)
     : WebUIController(web_ui) {
-  web_ui->AddMessageHandler(new GpuMessageHandler());
+  web_ui->AddMessageHandler(base::MakeUnique<GpuMessageHandler>());
 
   // Set up the chrome://gpu/ source.
   BrowserContext* browser_context =

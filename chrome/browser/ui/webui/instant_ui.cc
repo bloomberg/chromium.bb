@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -173,7 +174,7 @@ void InstantUIMessageHandler::ClearDebugInfo(const base::ListValue* args) {
 // InstantUI
 
 InstantUI::InstantUI(content::WebUI* web_ui) : WebUIController(web_ui) {
-  web_ui->AddMessageHandler(new InstantUIMessageHandler());
+  web_ui->AddMessageHandler(base::MakeUnique<InstantUIMessageHandler>());
 
   // Set up the chrome://instant/ source.
   Profile* profile = Profile::FromWebUI(web_ui);

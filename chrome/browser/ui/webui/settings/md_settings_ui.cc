@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
@@ -73,49 +74,58 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
     : content::WebUIController(web_ui),
       WebContentsObserver(web_ui->GetWebContents()) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  AddSettingsPageUIHandler(new AppearanceHandler(web_ui));
+  AddSettingsPageUIHandler(base::MakeUnique<AppearanceHandler>(web_ui));
 
 #if defined(USE_NSS_CERTS)
-  AddSettingsPageUIHandler(new CertificatesHandler(false));
+  AddSettingsPageUIHandler(base::MakeUnique<CertificatesHandler>(false));
 #elif defined(OS_WIN) || defined(OS_MACOSX)
-  AddSettingsPageUIHandler(new NativeCertificatesHandler());
+  AddSettingsPageUIHandler(base::MakeUnique<NativeCertificatesHandler>());
 #endif  // defined(USE_NSS_CERTS)
 
-  AddSettingsPageUIHandler(new BrowserLifetimeHandler());
-  AddSettingsPageUIHandler(new ClearBrowsingDataHandler(web_ui));
-  AddSettingsPageUIHandler(new CookiesViewHandler());
-  AddSettingsPageUIHandler(new DownloadsHandler());
-  AddSettingsPageUIHandler(new ExtensionControlHandler());
-  AddSettingsPageUIHandler(new FontHandler(web_ui));
-  AddSettingsPageUIHandler(new ImportDataHandler());
-  AddSettingsPageUIHandler(new LanguagesHandler(web_ui));
-  AddSettingsPageUIHandler(new MediaDevicesSelectionHandler(profile));
+  AddSettingsPageUIHandler(base::MakeUnique<BrowserLifetimeHandler>());
+  AddSettingsPageUIHandler(base::MakeUnique<ClearBrowsingDataHandler>(web_ui));
+  AddSettingsPageUIHandler(base::MakeUnique<CookiesViewHandler>());
+  AddSettingsPageUIHandler(base::MakeUnique<DownloadsHandler>());
+  AddSettingsPageUIHandler(base::MakeUnique<ExtensionControlHandler>());
+  AddSettingsPageUIHandler(base::MakeUnique<FontHandler>(web_ui));
+  AddSettingsPageUIHandler(base::MakeUnique<ImportDataHandler>());
+  AddSettingsPageUIHandler(base::MakeUnique<LanguagesHandler>(web_ui));
+  AddSettingsPageUIHandler(
+      base::MakeUnique<MediaDevicesSelectionHandler>(profile));
 #if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
-  AddSettingsPageUIHandler(new MetricsReportingHandler());
+  AddSettingsPageUIHandler(base::MakeUnique<MetricsReportingHandler>());
 #endif
-  AddSettingsPageUIHandler(new OnStartupHandler());
-  AddSettingsPageUIHandler(new PeopleHandler(profile));
-  AddSettingsPageUIHandler(new ProfileInfoHandler(profile));
-  AddSettingsPageUIHandler(new ProtocolHandlersHandler());
-  AddSettingsPageUIHandler(new SafeBrowsingHandler(profile->GetPrefs()));
-  AddSettingsPageUIHandler(new SearchEnginesHandler(profile));
-  AddSettingsPageUIHandler(new SiteSettingsHandler(profile));
-  AddSettingsPageUIHandler(new StartupPagesHandler(web_ui));
+  AddSettingsPageUIHandler(base::MakeUnique<OnStartupHandler>());
+  AddSettingsPageUIHandler(base::MakeUnique<PeopleHandler>(profile));
+  AddSettingsPageUIHandler(base::MakeUnique<ProfileInfoHandler>(profile));
+  AddSettingsPageUIHandler(base::MakeUnique<ProtocolHandlersHandler>());
+  AddSettingsPageUIHandler(
+      base::MakeUnique<SafeBrowsingHandler>(profile->GetPrefs()));
+  AddSettingsPageUIHandler(base::MakeUnique<SearchEnginesHandler>(profile));
+  AddSettingsPageUIHandler(base::MakeUnique<SiteSettingsHandler>(profile));
+  AddSettingsPageUIHandler(base::MakeUnique<StartupPagesHandler>(web_ui));
 
 #if defined(OS_CHROMEOS)
-  AddSettingsPageUIHandler(new chromeos::settings::AccessibilityHandler(
-      web_ui));
-  AddSettingsPageUIHandler(new chromeos::settings::AndroidAppsHandler(profile));
-  AddSettingsPageUIHandler(new chromeos::settings::ChangePictureHandler());
-  AddSettingsPageUIHandler(new chromeos::settings::CupsPrintersHandler(web_ui));
-  AddSettingsPageUIHandler(new chromeos::settings::KeyboardHandler(web_ui));
-  AddSettingsPageUIHandler(new chromeos::settings::PointerHandler());
-  AddSettingsPageUIHandler(new chromeos::settings::StorageHandler());
-  AddSettingsPageUIHandler(new chromeos::settings::InternetHandler());
+  AddSettingsPageUIHandler(
+      base::MakeUnique<chromeos::settings::AccessibilityHandler>(web_ui));
+  AddSettingsPageUIHandler(
+      base::MakeUnique<chromeos::settings::AndroidAppsHandler>(profile));
+  AddSettingsPageUIHandler(
+      base::MakeUnique<chromeos::settings::ChangePictureHandler>());
+  AddSettingsPageUIHandler(
+      base::MakeUnique<chromeos::settings::CupsPrintersHandler>(web_ui));
+  AddSettingsPageUIHandler(
+      base::MakeUnique<chromeos::settings::KeyboardHandler>(web_ui));
+  AddSettingsPageUIHandler(
+      base::MakeUnique<chromeos::settings::PointerHandler>());
+  AddSettingsPageUIHandler(
+      base::MakeUnique<chromeos::settings::StorageHandler>());
+  AddSettingsPageUIHandler(
+      base::MakeUnique<chromeos::settings::InternetHandler>());
 #else
-  AddSettingsPageUIHandler(new DefaultBrowserHandler(web_ui));
-  AddSettingsPageUIHandler(new ManageProfileHandler(profile));
-  AddSettingsPageUIHandler(new SystemHandler());
+  AddSettingsPageUIHandler(base::MakeUnique<DefaultBrowserHandler>(web_ui));
+  AddSettingsPageUIHandler(base::MakeUnique<ManageProfileHandler>(profile));
+  AddSettingsPageUIHandler(base::MakeUnique<SystemHandler>());
 #endif
 
   // Host must be derived from the visible URL, since this might be serving
@@ -131,10 +141,10 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
       chromeos::settings::EasyUnlockSettingsHandler::Create(html_source,
                                                             profile);
   if (easy_unlock_handler)
-    AddSettingsPageUIHandler(easy_unlock_handler);
+    AddSettingsPageUIHandler(base::WrapUnique(easy_unlock_handler));
 
-  AddSettingsPageUIHandler(
-      chromeos::settings::DateTimeHandler::Create(html_source));
+  AddSettingsPageUIHandler(base::WrapUnique(
+      chromeos::settings::DateTimeHandler::Create(html_source)));
 
   html_source->AddBoolean("stylusAllowed", ash::IsPaletteFeatureEnabled());
   html_source->AddBoolean("pinUnlockEnabled",
@@ -145,11 +155,13 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
           !arc::ArcSessionManager::IsOptInVerificationDisabled());
 #endif
 
-  AddSettingsPageUIHandler(AboutHandler::Create(html_source, profile));
-  AddSettingsPageUIHandler(ResetSettingsHandler::Create(html_source, profile));
+  AddSettingsPageUIHandler(
+      base::WrapUnique(AboutHandler::Create(html_source, profile)));
+  AddSettingsPageUIHandler(
+      base::WrapUnique(ResetSettingsHandler::Create(html_source, profile)));
 
   // Add the metrics handler to write uma stats.
-  web_ui->AddMessageHandler(new MetricsHandler());
+  web_ui->AddMessageHandler(base::MakeUnique<MetricsHandler>());
 
   // Add all settings resources.
   for (size_t i = 0; i < kSettingsResourcesSize; ++i) {
@@ -167,10 +179,11 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
 MdSettingsUI::~MdSettingsUI() {
 }
 
-void MdSettingsUI::AddSettingsPageUIHandler(SettingsPageUIHandler* handler) {
+void MdSettingsUI::AddSettingsPageUIHandler(
+    std::unique_ptr<SettingsPageUIHandler> handler) {
   DCHECK(handler);
-  handlers_.insert(handler);
-  web_ui()->AddMessageHandler(handler);  // |handler| is owned by |web_ui()|.
+  handlers_.insert(handler.get());
+  web_ui()->AddMessageHandler(std::move(handler));
 }
 
 void MdSettingsUI::DidStartProvisionalLoadForFrame(

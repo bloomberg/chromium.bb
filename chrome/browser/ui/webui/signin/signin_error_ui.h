@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SIGNIN_SIGNIN_ERROR_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_SIGNIN_SIGNIN_ERROR_UI_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
@@ -18,7 +20,8 @@ class SigninErrorUI : public ui::WebDialogUI {
  public:
   explicit SigninErrorUI(content::WebUI* web_ui);
   // Used to inject a SigninErrorHandler in tests.
-  SigninErrorUI(content::WebUI* web_ui, SigninErrorHandler* handler);
+  SigninErrorUI(content::WebUI* web_ui,
+                std::unique_ptr<SigninErrorHandler> handler);
   ~SigninErrorUI() override {}
 
  private:

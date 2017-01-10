@@ -155,13 +155,15 @@ void MediaRouterUI::UIMediaRoutesObserver::OnRoutesUpdated(
 
 MediaRouterUI::MediaRouterUI(content::WebUI* web_ui)
     : ConstrainedWebDialogUI(web_ui),
-      handler_(new MediaRouterWebUIMessageHandler(this)),
       ui_initialized_(false),
       current_route_request_id_(-1),
       route_request_counter_(0),
       initiator_(nullptr),
       router_(nullptr),
       weak_factory_(this) {
+  auto handler = base::MakeUnique<MediaRouterWebUIMessageHandler>(this);
+  handler_ = handler.get();
+
   // Create a WebUIDataSource containing the chrome://media-router page's
   // content.
   std::unique_ptr<content::WebUIDataSource> html_source(
@@ -184,8 +186,7 @@ MediaRouterUI::MediaRouterUI(content::WebUI* web_ui)
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui),
                                 html_source.release());
 
-  // Ownership of |handler_| is transferred to |web_ui|.
-  web_ui->AddMessageHandler(handler_);
+  web_ui->AddMessageHandler(std::move(handler));
 }
 
 MediaRouterUI::~MediaRouterUI() {
