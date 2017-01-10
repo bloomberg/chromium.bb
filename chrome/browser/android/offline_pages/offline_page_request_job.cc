@@ -641,6 +641,25 @@ int OfflinePageRequestJob::GetResponseCode() const {
   return net::URLRequestRedirectJob::REDIRECT_302_FOUND;
 }
 
+void OfflinePageRequestJob::OnOpenComplete(int result) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY("OfflinePages.RequestJob.OpenFileErrorCode",
+                              -result);
+}
+
+void OfflinePageRequestJob::OnSeekComplete(int64_t result) {
+  if (result < 0) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY("OfflinePages.RequestJob.SeekFileErrorCode",
+                                static_cast<int>(-result));
+  }
+}
+
+void OfflinePageRequestJob::OnReadComplete(net::IOBuffer* buf, int result) {
+  if (result < 0) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY("OfflinePages.RequestJob.ReadFileErrorCode",
+                                -result);
+  }
+}
+
 void OfflinePageRequestJob::FallbackToDefault() {
   OfflinePageRequestInfo* info =
       OfflinePageRequestInfo::GetFromRequest(request());

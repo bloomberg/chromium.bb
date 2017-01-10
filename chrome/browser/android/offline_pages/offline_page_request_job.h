@@ -93,6 +93,11 @@ class OfflinePageRequestJob : public net::URLRequestFileJob {
   bool CopyFragmentOnRedirect(const GURL& location) const override;
   int GetResponseCode() const override;
 
+  // net::URLRequestFileJob overrides:
+  void OnOpenComplete(int result) override;
+  void OnSeekComplete(int64_t result) override;
+  void OnReadComplete(net::IOBuffer* buf, int result) override;
+
   void OnOfflineFilePathAvailable(const base::FilePath& offline_file_path);
   void OnOfflineRedirectAvailabe(const GURL& redirected_url);
 
