@@ -463,8 +463,6 @@ enum EImageRendering {
   ImageRenderingPixelated
 };
 
-enum class EOrder : unsigned { Logical, Visual };
-
 enum RubyPosition { RubyPositionBefore, RubyPositionAfter };
 
 static const size_t GridAutoFlowBits = 4;

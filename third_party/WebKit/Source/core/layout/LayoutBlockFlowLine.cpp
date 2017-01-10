@@ -148,7 +148,7 @@ static inline InlineTextBox* createInlineBoxForText(BidiRun& run,
   if (text.isBR())
     textBox->setIsText(isOnlyRun || text.document().inNoQuirksMode());
   textBox->setDirOverride(
-      run.dirOverride(text.style()->rtlOrdering() == EOrder::Visual));
+      run.dirOverride(text.style()->rtlOrdering() == EOrder::kVisual));
   if (run.m_hasHyphen)
     textBox->setHasHyphen(true);
   return textBox;
@@ -1139,7 +1139,7 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
       resolver.runs().deleteRuns();
     } else {
       VisualDirectionOverride override =
-          (styleToUse.rtlOrdering() == EOrder::Visual
+          (styleToUse.rtlOrdering() == EOrder::kVisual
                ? (styleToUse.direction() == TextDirection::kLtr
                       ? VisualLeftToRightOverride
                       : VisualRightToLeftOverride)

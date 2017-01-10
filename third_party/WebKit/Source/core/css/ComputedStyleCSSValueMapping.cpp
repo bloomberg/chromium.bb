@@ -3069,7 +3069,7 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
       return list;
     }
     case CSSPropertyWebkitRtlOrdering:
-      return CSSIdentifierValue::create(style.rtlOrdering() == EOrder::Visual
+      return CSSIdentifierValue::create(style.rtlOrdering() == EOrder::kVisual
                                             ? CSSValueVisual
                                             : CSSValueLogical);
     case CSSPropertyWebkitTapHighlightColor:

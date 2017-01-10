@@ -3590,25 +3590,25 @@ template <>
 inline EOrder CSSIdentifierValue::convertTo() const {
   switch (m_valueID) {
     case CSSValueLogical:
-      return EOrder::Logical;
+      return EOrder::kLogical;
     case CSSValueVisual:
-      return EOrder::Visual;
+      return EOrder::kVisual;
     default:
       break;
   }
 
   ASSERT_NOT_REACHED();
-  return EOrder::Logical;
+  return EOrder::kLogical;
 }
 
 template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EOrder e)
     : CSSValue(IdentifierClass) {
   switch (e) {
-    case EOrder::Logical:
+    case EOrder::kLogical:
       m_valueID = CSSValueLogical;
       break;
-    case EOrder::Visual:
+    case EOrder::kVisual:
       m_valueID = CSSValueVisual;
       break;
   }

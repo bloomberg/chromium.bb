@@ -809,7 +809,7 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(
   }
 
   if (boxDirection() != other.boxDirection() ||
-      m_inheritedData.m_rtlOrdering != other.m_inheritedData.m_rtlOrdering ||
+      rtlOrdering() != other.rtlOrdering() ||
       textAlign() != other.textAlign() ||
       textTransform() != other.textTransform() ||
       direction() != other.direction() || whiteSpace() != other.whiteSpace() ||

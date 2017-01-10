@@ -645,7 +645,7 @@ TextRun InlineTextBox::constructTextRun(
 
   TextRun run(string, textPos().toFloat(), expansion(), expansionBehavior(),
               direction(),
-              dirOverride() || style.rtlOrdering() == EOrder::Visual);
+              dirOverride() || style.rtlOrdering() == EOrder::kVisual);
   run.setTabSize(!style.collapseWhiteSpace(), style.getTabSize());
   run.setTextJustify(style.getTextJustify());
 

@@ -4913,8 +4913,8 @@ void Document::setEncodingData(const DocumentEncodingData& newData) {
     m_visuallyOrdered = shouldUseVisualOrdering;
     // FIXME: How is possible to not have a layoutObject here?
     if (!layoutViewItem().isNull()) {
-      layoutViewItem().mutableStyleRef().setRTLOrdering(
-          m_visuallyOrdered ? EOrder::Visual : EOrder::Logical);
+      layoutViewItem().mutableStyleRef().setRtlOrdering(
+          m_visuallyOrdered ? EOrder::kVisual : EOrder::kLogical);
     }
     setNeedsStyleRecalc(SubtreeStyleChange,
                         StyleChangeReasonForTracing::create(

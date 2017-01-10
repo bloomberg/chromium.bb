@@ -200,7 +200,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     bool operator==(const InheritedData& other) const {
       return (m_hasSimpleUnderline == other.m_hasSimpleUnderline) &&
              (m_cursorStyle == other.m_cursorStyle) &&
-             (m_rtlOrdering == other.m_rtlOrdering) &&
              (m_insideLink == other.m_insideLink);
     }
 
@@ -213,7 +212,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     unsigned m_cursorStyle : 6;     // ECursor
 
     // non CSS2 inherited
-    unsigned m_rtlOrdering : 1;       // EOrder
     unsigned m_insideLink : 2;     // EInsideLink
   } m_inheritedData;
 
@@ -305,7 +303,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     ComputedStyleBase::setBitDefaults();
     m_inheritedData.m_hasSimpleUnderline = false;
     m_inheritedData.m_cursorStyle = static_cast<unsigned>(initialCursor());
-    m_inheritedData.m_rtlOrdering = static_cast<unsigned>(initialRTLOrdering());
     m_inheritedData.m_insideLink = NotInsideLink;
 
     m_nonInheritedData.m_effectiveDisplay =
@@ -2247,15 +2244,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   void setLineClamp(LineClampValue c) {
     SET_VAR(m_rareNonInheritedData, lineClamp, c);
-  }
-
-  // -webkit-rtl-ordering
-  static EOrder initialRTLOrdering() { return EOrder::Logical; }
-  EOrder rtlOrdering() const {
-    return static_cast<EOrder>(m_inheritedData.m_rtlOrdering);
-  }
-  void setRTLOrdering(EOrder o) {
-    m_inheritedData.m_rtlOrdering = static_cast<unsigned>(o);
   }
 
   // -webkit-ruby-position

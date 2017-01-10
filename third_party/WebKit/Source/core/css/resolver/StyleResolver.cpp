@@ -548,8 +548,8 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForDocument(Document& document) {
   const LocalFrame* frame = document.frame();
 
   RefPtr<ComputedStyle> documentStyle = ComputedStyle::create();
-  documentStyle->setRTLOrdering(document.visuallyOrdered() ? EOrder::Visual
-                                                           : EOrder::Logical);
+  documentStyle->setRtlOrdering(document.visuallyOrdered() ? EOrder::kVisual
+                                                           : EOrder::kLogical);
   documentStyle->setZoom(frame && !document.printing() ? frame->pageZoomFactor()
                                                        : 1);
   FontDescription documentFontDescription = documentStyle->getFontDescription();
