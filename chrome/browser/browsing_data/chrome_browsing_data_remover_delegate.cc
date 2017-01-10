@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/callback.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
@@ -207,6 +208,35 @@ void ClearHostnameResolutionCacheOnIOThread(
 }
 
 }  // namespace
+
+ChromeBrowsingDataRemoverDelegate::SubTask::SubTask(
+    const base::Closure& forward_callback)
+    : is_pending_(false),
+      forward_callback_(forward_callback),
+      weak_ptr_factory_(this) {
+  DCHECK(!forward_callback_.is_null());
+}
+
+ChromeBrowsingDataRemoverDelegate::SubTask::~SubTask() {}
+
+void ChromeBrowsingDataRemoverDelegate::SubTask::Start() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!is_pending_);
+  is_pending_ = true;
+}
+
+base::Closure
+ChromeBrowsingDataRemoverDelegate::SubTask::GetCompletionCallback() {
+  return base::Bind(&SubTask::CompletionCallback,
+                    weak_ptr_factory_.GetWeakPtr());
+}
+
+void ChromeBrowsingDataRemoverDelegate::SubTask::CompletionCallback() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(is_pending_);
+  is_pending_ = false;
+  forward_callback_.Run();
+}
 
 ChromeBrowsingDataRemoverDelegate::ChromeBrowsingDataRemoverDelegate(
     BrowserContext* browser_context)

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browsing_data/browsing_data_remover.h"
-
 #include <stddef.h>
 #include <stdint.h>
 
@@ -35,7 +33,9 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_filter_builder.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_impl.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/browsing_data/registrable_domain_filter_builder.h"
@@ -1090,7 +1090,7 @@ class RemovePermissionPromptCountsTest {
 #if BUILDFLAG(ENABLE_PLUGINS)
 // A small modification to MockBrowsingDataFlashLSOHelper so that it responds
 // immediately and does not wait for the Notify() call. Otherwise it would
-// deadlock BrowsingDataRemover::RemoveImpl.
+// deadlock BrowsingDataRemoverImpl::RemoveImpl.
 class TestBrowsingDataFlashLSOHelper : public MockBrowsingDataFlashLSOHelper {
  public:
   explicit TestBrowsingDataFlashLSOHelper(TestingProfile* profile)
@@ -1111,8 +1111,9 @@ class RemovePluginDataTester {
  public:
   explicit RemovePluginDataTester(TestingProfile* profile)
       : helper_(new TestBrowsingDataFlashLSOHelper(profile)) {
-    BrowsingDataRemoverFactory::GetForBrowserContext(profile)
-        ->OverrideFlashLSOHelperForTesting(helper_);
+    static_cast<BrowsingDataRemoverImpl*>(
+        BrowsingDataRemoverFactory::GetForBrowserContext(profile))
+            ->OverrideFlashLSOHelperForTesting(helper_);
   }
 
   void AddDomain(const std::string& domain) {
@@ -1147,12 +1148,12 @@ class BrowsingDataRemoverTest : public testing::Test {
   BrowsingDataRemoverTest()
       : profile_(new TestingProfile()),
         clear_domain_reliability_tester_(GetProfile()) {
-    remover_ =
-        BrowsingDataRemoverFactory::GetForBrowserContext(profile_.get());
+    remover_ = static_cast<BrowsingDataRemoverImpl*>(
+        BrowsingDataRemoverFactory::GetForBrowserContext(profile_.get()));
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
     static_cast<ChromeBrowsingDataRemoverDelegate*>(
-        remover_->get_embedder_delegate())->OverrideWebappRegistryForTesting(
+        remover_->GetEmbedderDelegate())->OverrideWebappRegistryForTesting(
             base::WrapUnique<WebappRegistry>(new TestWebappRegistry()));
 #endif
   }
@@ -1179,18 +1180,15 @@ class BrowsingDataRemoverTest : public testing::Test {
                                      const base::Time& delete_end,
                                      int remove_mask,
                                      bool include_protected_origins) {
-    BrowsingDataRemover* remover =
-        BrowsingDataRemoverFactory::GetForBrowserContext(profile_.get());
-
     TestStoragePartition storage_partition;
-    remover->OverrideStoragePartitionForTesting(&storage_partition);
+    remover_->OverrideStoragePartitionForTesting(&storage_partition);
 
     int origin_type_mask = BrowsingDataHelper::UNPROTECTED_WEB;
     if (include_protected_origins)
       origin_type_mask |= BrowsingDataHelper::PROTECTED_WEB;
 
-    BrowsingDataRemoverCompletionObserver completion_observer(remover);
-    remover->RemoveAndReply(
+    BrowsingDataRemoverCompletionObserver completion_observer(remover_);
+    remover_->RemoveAndReply(
         delete_begin, delete_end, remove_mask, origin_type_mask,
         &completion_observer);
     completion_observer.BlockUntilCompletion();
@@ -1205,14 +1203,12 @@ class BrowsingDataRemoverTest : public testing::Test {
       const base::Time& delete_end,
       int remove_mask,
       const BrowsingDataFilterBuilder& filter_builder) {
-    BrowsingDataRemover* remover =
-        BrowsingDataRemoverFactory::GetForBrowserContext(profile_.get());
     TestStoragePartition storage_partition;
-    remover->OverrideStoragePartitionForTesting(&storage_partition);
+    remover_->OverrideStoragePartitionForTesting(&storage_partition);
 
     BrowsingDataRemoverCompletionInhibitor completion_inhibitor;
-    remover->RemoveImpl(delete_begin, delete_end, remove_mask, filter_builder,
-                        BrowsingDataHelper::UNPROTECTED_WEB);
+    remover_->RemoveImpl(delete_begin, delete_end, remove_mask, filter_builder,
+                         BrowsingDataHelper::UNPROTECTED_WEB);
     completion_inhibitor.BlockUntilNearCompletion();
     completion_inhibitor.ContinueToCompletion();
 
@@ -1276,8 +1272,8 @@ class BrowsingDataRemoverTest : public testing::Test {
   }
 
  private:
-  // Cached pointer to BrowsingDataRemover for access to testing methods.
-  BrowsingDataRemover* remover_;
+  // Cached pointer to BrowsingDataRemoverImpl for access to testing methods.
+  BrowsingDataRemoverImpl* remover_;
 
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;
@@ -2305,8 +2301,8 @@ TEST_F(BrowsingDataRemoverTest, CompletionInhibition) {
   // from completing until after ContinueToCompletion() is called.
   BrowsingDataRemoverCompletionInhibitor completion_inhibitor;
 
-  BrowsingDataRemover* remover =
-      BrowsingDataRemoverFactory::GetForBrowserContext(GetProfile());
+  BrowsingDataRemoverImpl* remover = static_cast<BrowsingDataRemoverImpl*>(
+      BrowsingDataRemoverFactory::GetForBrowserContext(GetProfile()));
   InspectableCompletionObserver completion_observer(remover);
   remover->RemoveAndReply(base::Time(), base::Time::Max(),
                           BrowsingDataRemover::REMOVE_HISTORY,
@@ -2334,8 +2330,8 @@ TEST_F(BrowsingDataRemoverTest, CompletionInhibition) {
 }
 
 TEST_F(BrowsingDataRemoverTest, EarlyShutdown) {
-  BrowsingDataRemover* remover =
-      BrowsingDataRemoverFactory::GetForBrowserContext(GetProfile());
+  BrowsingDataRemoverImpl* remover = static_cast<BrowsingDataRemoverImpl*>(
+      BrowsingDataRemoverFactory::GetForBrowserContext(GetProfile()));
   InspectableCompletionObserver completion_observer(remover);
   BrowsingDataRemoverCompletionInhibitor completion_inhibitor;
   remover->RemoveAndReply(base::Time(), base::Time::Max(),
@@ -2937,8 +2933,8 @@ class MultipleTasksObserver {
 };
 
 TEST_F(BrowsingDataRemoverTest, MultipleTasks) {
-  BrowsingDataRemover* remover =
-      BrowsingDataRemoverFactory::GetForBrowserContext(GetProfile());
+  BrowsingDataRemoverImpl* remover = static_cast<BrowsingDataRemoverImpl*>(
+      BrowsingDataRemoverFactory::GetForBrowserContext(GetProfile()));
   EXPECT_FALSE(remover->is_removing());
 
   std::unique_ptr<RegistrableDomainFilterBuilder> filter_builder_1(
@@ -2954,7 +2950,7 @@ TEST_F(BrowsingDataRemoverTest, MultipleTasks) {
 
   // Test several tasks with various configuration of masks, filters, and target
   // observers.
-  std::list<BrowsingDataRemover::RemovalTask> tasks;
+  std::list<BrowsingDataRemoverImpl::RemovalTask> tasks;
   tasks.emplace_back(base::Time(), base::Time::Max(),
                      BrowsingDataRemover::REMOVE_HISTORY,
                      BrowsingDataHelper::UNPROTECTED_WEB,
@@ -2986,7 +2982,7 @@ TEST_F(BrowsingDataRemoverTest, MultipleTasks) {
       std::move(filter_builder_2),
       nullptr);
 
-  for (BrowsingDataRemover::RemovalTask& task : tasks) {
+  for (BrowsingDataRemoverImpl::RemovalTask& task : tasks) {
     // All tasks can be directly translated to a RemoveInternal() call. Since
     // that is a private method, we must call the four public versions of
     // Remove.* instead. This also serves as a test that those methods are all
@@ -3011,7 +3007,7 @@ TEST_F(BrowsingDataRemoverTest, MultipleTasks) {
   }
 
   // Use the inhibitor to stop after every task and check the results.
-  for (BrowsingDataRemover::RemovalTask& task : tasks) {
+  for (BrowsingDataRemoverImpl::RemovalTask& task : tasks) {
     EXPECT_TRUE(remover->is_removing());
     observer.ClearLastCalledTarget();
 
@@ -3039,8 +3035,8 @@ TEST_F(BrowsingDataRemoverTest, MultipleTasks) {
 // the parameters. This test demonstrates that even running the tasks without
 // inhibition is executed correctly and doesn't crash.
 TEST_F(BrowsingDataRemoverTest, MultipleTasksInQuickSuccession) {
-  BrowsingDataRemover* remover =
-      BrowsingDataRemoverFactory::GetForBrowserContext(GetProfile());
+  BrowsingDataRemoverImpl* remover = static_cast<BrowsingDataRemoverImpl*>(
+      BrowsingDataRemoverFactory::GetForBrowserContext(GetProfile()));
   EXPECT_FALSE(remover->is_removing());
 
   int test_removal_masks[] = {

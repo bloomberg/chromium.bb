@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_impl.h"
 #include "content/public/test/test_utils.h"
 
 // This class can be used to wait for a BrowsingDataRemover to complete
@@ -33,7 +34,7 @@ class BrowsingDataRemoverCompletionObserver
 };
 
 class BrowsingDataRemoverCompletionInhibitor
-    : public BrowsingDataRemover::CompletionInhibitor {
+    : public BrowsingDataRemoverImpl::CompletionInhibitor {
  public:
   BrowsingDataRemoverCompletionInhibitor();
   ~BrowsingDataRemoverCompletionInhibitor() override;
@@ -42,9 +43,9 @@ class BrowsingDataRemoverCompletionInhibitor
   void ContinueToCompletion();
 
  protected:
-  // BrowsingDataRemover::CompletionInhibitor:
+  // BrowsingDataRemoverImpl::CompletionInhibitor:
   void OnBrowsingDataRemoverWouldComplete(
-      BrowsingDataRemover* remover,
+      BrowsingDataRemoverImpl* remover,
       const base::Closure& continue_to_completion) override;
 
  private:

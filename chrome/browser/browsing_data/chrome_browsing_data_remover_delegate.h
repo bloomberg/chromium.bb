@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/waitable_event_watcher.h"
@@ -31,6 +32,10 @@
 class Profile;
 class WebappRegistry;
 
+namespace content {
+class BrowserContext;
+}
+
 // A delegate used by BrowsingDataRemover to delete data specific to Chrome
 // as the embedder.
 class ChromeBrowsingDataRemoverDelegate : public BrowsingDataRemoverDelegate
@@ -39,6 +44,32 @@ class ChromeBrowsingDataRemoverDelegate : public BrowsingDataRemoverDelegate
 #endif
 {
  public:
+  // Used to track the deletion of a single data storage backend.
+  class SubTask {
+   public:
+    // Creates a SubTask that calls |forward_callback| when completed.
+    // |forward_callback| is only kept as a reference and must outlive SubTask.
+    explicit SubTask(const base::Closure& forward_callback);
+    ~SubTask();
+
+    // Indicate that the task is in progress and we're waiting.
+    void Start();
+
+    // Returns a callback that should be called to indicate that the task
+    // has been finished.
+    base::Closure GetCompletionCallback();
+
+    // Whether the task is still in progress.
+    bool is_pending() const { return is_pending_; }
+
+   private:
+    void CompletionCallback();
+
+    bool is_pending_;
+    const base::Closure& forward_callback_;
+    base::WeakPtrFactory<SubTask> weak_ptr_factory_;
+  };
+
   ChromeBrowsingDataRemoverDelegate(content::BrowserContext* browser_context);
   ~ChromeBrowsingDataRemoverDelegate() override;
 
@@ -99,32 +130,32 @@ class ChromeBrowsingDataRemoverDelegate : public BrowsingDataRemoverDelegate
   // Keeping track of various subtasks to be completed.
   // Non-zero if waiting for SafeBrowsing cookies to be cleared.
   int clear_cookies_count_ = 0;
-  BrowsingDataRemover::SubTask synchronous_clear_operations_;
-  BrowsingDataRemover::SubTask clear_autofill_origin_urls_;
-  BrowsingDataRemover::SubTask clear_flash_content_licenses_;
-  BrowsingDataRemover::SubTask clear_domain_reliability_monitor_;
-  BrowsingDataRemover::SubTask clear_form_;
-  BrowsingDataRemover::SubTask clear_history_;
-  BrowsingDataRemover::SubTask clear_keyword_data_;
+  SubTask synchronous_clear_operations_;
+  SubTask clear_autofill_origin_urls_;
+  SubTask clear_flash_content_licenses_;
+  SubTask clear_domain_reliability_monitor_;
+  SubTask clear_form_;
+  SubTask clear_history_;
+  SubTask clear_keyword_data_;
 #if !defined(DISABLE_NACL)
-  BrowsingDataRemover::SubTask clear_nacl_cache_;
-  BrowsingDataRemover::SubTask clear_pnacl_cache_;
+  SubTask clear_nacl_cache_;
+  SubTask clear_pnacl_cache_;
 #endif
-  BrowsingDataRemover::SubTask clear_hostname_resolution_cache_;
-  BrowsingDataRemover::SubTask clear_network_predictor_;
-  BrowsingDataRemover::SubTask clear_networking_history_;
-  BrowsingDataRemover::SubTask clear_passwords_;
-  BrowsingDataRemover::SubTask clear_passwords_stats_;
-  BrowsingDataRemover::SubTask clear_platform_keys_;
+  SubTask clear_hostname_resolution_cache_;
+  SubTask clear_network_predictor_;
+  SubTask clear_networking_history_;
+  SubTask clear_passwords_;
+  SubTask clear_passwords_stats_;
+  SubTask clear_platform_keys_;
 #if BUILDFLAG(ANDROID_JAVA_UI)
-  BrowsingDataRemover::SubTask clear_precache_history_;
-  BrowsingDataRemover::SubTask clear_offline_page_data_;
+  SubTask clear_precache_history_;
+  SubTask clear_offline_page_data_;
 #endif
 
 #if BUILDFLAG(ENABLE_WEBRTC)
-  BrowsingDataRemover::SubTask clear_webrtc_logs_;
+  SubTask clear_webrtc_logs_;
 #endif
-  BrowsingDataRemover::SubTask clear_auto_sign_in_;
+  SubTask clear_auto_sign_in_;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   uint32_t deauthorize_flash_content_licenses_request_id_ = 0;

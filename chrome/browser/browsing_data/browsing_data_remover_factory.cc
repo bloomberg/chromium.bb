@@ -7,7 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
-#include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_impl.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
@@ -46,7 +46,7 @@ BrowsingDataRemoverFactory* BrowsingDataRemoverFactory::GetInstance() {
 // static
 BrowsingDataRemover* BrowsingDataRemoverFactory::GetForBrowserContext(
     content::BrowserContext* context) {
-  return static_cast<BrowsingDataRemover*>(
+  return static_cast<BrowsingDataRemoverImpl*>(
       GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
@@ -94,8 +94,8 @@ content::BrowserContext* BrowsingDataRemoverFactory::GetBrowserContextToUse(
 
 KeyedService* BrowsingDataRemoverFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  BrowsingDataRemover* remover = new BrowsingDataRemover(context);
-  remover->set_embedder_delegate(
+  BrowsingDataRemoverImpl* remover = new BrowsingDataRemoverImpl(context);
+  remover->SetEmbedderDelegate(
       base::MakeUnique<ChromeBrowsingDataRemoverDelegate>(context));
   return remover;
 }

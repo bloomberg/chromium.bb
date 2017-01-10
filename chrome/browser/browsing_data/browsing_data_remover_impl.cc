@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_impl.h"
 
 #include <map>
 #include <set>
@@ -71,7 +71,7 @@ base::Callback<void(T)> IgnoreArgument(const base::Closure& callback) {
   return base::Bind(&IgnoreArgumentHelper<T>, callback);
 }
 
-// Helper to create callback for BrowsingDataRemover::DoesOriginMatchMask.
+// Helper to create callback for BrowsingDataRemoverImpl::DoesOriginMatchMask.
 bool DoesOriginMatchMaskAndUrls(
     int origin_type_mask,
     const base::Callback<bool(const GURL&)>& predicate,
@@ -127,37 +127,37 @@ void ClearChannelIDsOnIOThread(
 
 }  // namespace
 
-BrowsingDataRemover::CompletionInhibitor*
-    BrowsingDataRemover::completion_inhibitor_ = nullptr;
+BrowsingDataRemoverImpl::CompletionInhibitor*
+    BrowsingDataRemoverImpl::completion_inhibitor_ = nullptr;
 
-BrowsingDataRemover::SubTask::SubTask(const base::Closure& forward_callback)
+BrowsingDataRemoverImpl::SubTask::SubTask(const base::Closure& forward_callback)
     : is_pending_(false),
       forward_callback_(forward_callback),
       weak_ptr_factory_(this) {
   DCHECK(!forward_callback_.is_null());
 }
 
-BrowsingDataRemover::SubTask::~SubTask() {}
+BrowsingDataRemoverImpl::SubTask::~SubTask() {}
 
-void BrowsingDataRemover::SubTask::Start() {
+void BrowsingDataRemoverImpl::SubTask::Start() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!is_pending_);
   is_pending_ = true;
 }
 
-base::Closure BrowsingDataRemover::SubTask::GetCompletionCallback() {
-  return base::Bind(&BrowsingDataRemover::SubTask::CompletionCallback,
+base::Closure BrowsingDataRemoverImpl::SubTask::GetCompletionCallback() {
+  return base::Bind(&BrowsingDataRemoverImpl::SubTask::CompletionCallback,
                     weak_ptr_factory_.GetWeakPtr());
 }
 
-void BrowsingDataRemover::SubTask::CompletionCallback() {
+void BrowsingDataRemoverImpl::SubTask::CompletionCallback() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(is_pending_);
   is_pending_ = false;
   forward_callback_.Run();
 }
 
-BrowsingDataRemover::BrowsingDataRemover(
+BrowsingDataRemoverImpl::BrowsingDataRemoverImpl(
     content::BrowserContext* browser_context)
     : browser_context_(browser_context),
       remove_mask_(-1),
@@ -167,7 +167,7 @@ BrowsingDataRemover::BrowsingDataRemover(
       flash_lso_helper_(BrowsingDataFlashLSOHelper::Create(browser_context_)),
 #endif
       sub_task_forward_callback_(
-          base::Bind(&BrowsingDataRemover::NotifyIfDone,
+          base::Bind(&BrowsingDataRemoverImpl::NotifyIfDone,
                      base::Unretained(this))),
       synchronous_clear_operations_(sub_task_forward_callback_),
       clear_embedder_data_(sub_task_forward_callback_),
@@ -179,9 +179,9 @@ BrowsingDataRemover::BrowsingDataRemover(
   DCHECK(browser_context_);
 }
 
-BrowsingDataRemover::~BrowsingDataRemover() {
+BrowsingDataRemoverImpl::~BrowsingDataRemoverImpl() {
   if (!task_queue_.empty()) {
-    VLOG(1) << "BrowsingDataRemover shuts down with " << task_queue_.size()
+    VLOG(1) << "BrowsingDataRemoverImpl shuts down with " << task_queue_.size()
             << " pending tasks";
   }
 
@@ -196,16 +196,26 @@ BrowsingDataRemover::~BrowsingDataRemover() {
   }
 }
 
-void BrowsingDataRemover::Shutdown() {
+void BrowsingDataRemoverImpl::Shutdown() {
   embedder_delegate_.reset();
 }
 
-void BrowsingDataRemover::SetRemoving(bool is_removing) {
+void BrowsingDataRemoverImpl::SetRemoving(bool is_removing) {
   DCHECK_NE(is_removing_, is_removing);
   is_removing_ = is_removing;
 }
 
-void BrowsingDataRemover::Remove(const base::Time& delete_begin,
+void BrowsingDataRemoverImpl::SetEmbedderDelegate(
+    std::unique_ptr<BrowsingDataRemoverDelegate> embedder_delegate) {
+  embedder_delegate_ = std::move(embedder_delegate);
+}
+
+BrowsingDataRemoverDelegate*
+BrowsingDataRemoverImpl::GetEmbedderDelegate() const {
+  return embedder_delegate_.get();
+}
+
+void BrowsingDataRemoverImpl::Remove(const base::Time& delete_begin,
                                  const base::Time& delete_end,
                                  int remove_mask,
                                  int origin_type_mask) {
@@ -213,7 +223,7 @@ void BrowsingDataRemover::Remove(const base::Time& delete_begin,
                  std::unique_ptr<RegistrableDomainFilterBuilder>(), nullptr);
 }
 
-void BrowsingDataRemover::RemoveAndReply(
+void BrowsingDataRemoverImpl::RemoveAndReply(
     const base::Time& delete_begin,
     const base::Time& delete_end,
     int remove_mask,
@@ -224,7 +234,7 @@ void BrowsingDataRemover::RemoveAndReply(
                  std::unique_ptr<RegistrableDomainFilterBuilder>(), observer);
 }
 
-void BrowsingDataRemover::RemoveWithFilter(
+void BrowsingDataRemoverImpl::RemoveWithFilter(
     const base::Time& delete_begin,
     const base::Time& delete_end,
     int remove_mask,
@@ -236,7 +246,7 @@ void BrowsingDataRemover::RemoveWithFilter(
                  std::move(filter_builder), nullptr);
 }
 
-void BrowsingDataRemover::RemoveWithFilterAndReply(
+void BrowsingDataRemoverImpl::RemoveWithFilterAndReply(
     const base::Time& delete_begin,
     const base::Time& delete_end,
     int remove_mask,
@@ -250,7 +260,7 @@ void BrowsingDataRemover::RemoveWithFilterAndReply(
                  std::move(filter_builder), observer);
 }
 
-void BrowsingDataRemover::RemoveInternal(
+void BrowsingDataRemoverImpl::RemoveInternal(
     const base::Time& delete_begin,
     const base::Time& delete_end,
     int remove_mask,
@@ -286,7 +296,7 @@ void BrowsingDataRemover::RemoveInternal(
   }
 }
 
-void BrowsingDataRemover::RunNextTask() {
+void BrowsingDataRemoverImpl::RunNextTask() {
   DCHECK(!task_queue_.empty());
   const RemovalTask& removal_task = task_queue_.front();
 
@@ -297,7 +307,7 @@ void BrowsingDataRemover::RunNextTask() {
              removal_task.origin_type_mask);
 }
 
-void BrowsingDataRemover::RemoveImpl(
+void BrowsingDataRemoverImpl::RemoveImpl(
     const base::Time& delete_begin,
     const base::Time& delete_end,
     int remove_mask,
@@ -361,14 +371,14 @@ void BrowsingDataRemover::RemoveImpl(
   // Managed devices and supervised users can have restrictions on history
   // deletion.
   // TODO(crbug.com/668114): This should be provided via ContentBrowserClient
-  // once BrowsingDataRemover moves to content.
+  // once BrowsingDataRemoverImpl moves to content.
   PrefService* prefs =
       Profile::FromBrowserContext(browser_context_)->GetPrefs();
   bool may_delete_history =
       prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory);
 
-  // All the UI entry points into the BrowsingDataRemover should be disabled,
-  // but this will fire if something was missed or added.
+  // All the UI entry points into the BrowsingDataRemoverImpl should be
+  // disabled, but this will fire if something was missed or added.
   DCHECK(may_delete_history || (remove_mask & REMOVE_NOCHECKS) ||
       (!(remove_mask & REMOVE_HISTORY) && !(remove_mask & REMOVE_DOWNLOADS)));
 
@@ -530,14 +540,14 @@ void BrowsingDataRemover::RemoveImpl(
           plugin_data_remover_->StartRemoving(delete_begin_);
 
       base::WaitableEventWatcher::EventCallback watcher_callback =
-          base::Bind(&BrowsingDataRemover::OnWaitableEventSignaled,
+          base::Bind(&BrowsingDataRemoverImpl::OnWaitableEventSignaled,
                      weak_ptr_factory_.GetWeakPtr());
       watcher_.StartWatching(event, watcher_callback);
     } else {
       // TODO(msramek): Store filters from the currently executed task on the
       // object to avoid having to copy them to callback methods.
       flash_lso_helper_->StartFetching(base::Bind(
-          &BrowsingDataRemover::OnSitesWithFlashDataFetched,
+          &BrowsingDataRemoverImpl::OnSitesWithFlashDataFetched,
           weak_ptr_factory_.GetWeakPtr(),
           filter_builder.BuildPluginFilter()));
     }
@@ -604,43 +614,43 @@ void BrowsingDataRemover::RemoveImpl(
   synchronous_clear_operations_.GetCompletionCallback().Run();
 }
 
-void BrowsingDataRemover::AddObserver(Observer* observer) {
+void BrowsingDataRemoverImpl::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }
 
-void BrowsingDataRemover::RemoveObserver(Observer* observer) {
+void BrowsingDataRemoverImpl::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void BrowsingDataRemover::OverrideStoragePartitionForTesting(
+void BrowsingDataRemoverImpl::OverrideStoragePartitionForTesting(
     content::StoragePartition* storage_partition) {
   storage_partition_for_testing_ = storage_partition;
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-void BrowsingDataRemover::OverrideFlashLSOHelperForTesting(
+void BrowsingDataRemoverImpl::OverrideFlashLSOHelperForTesting(
     scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper) {
   flash_lso_helper_ = flash_lso_helper;
 }
 #endif
 
-const base::Time& BrowsingDataRemover::GetLastUsedBeginTime() {
+const base::Time& BrowsingDataRemoverImpl::GetLastUsedBeginTime() {
   return delete_begin_;
 }
 
-const base::Time& BrowsingDataRemover::GetLastUsedEndTime() {
+const base::Time& BrowsingDataRemoverImpl::GetLastUsedEndTime() {
   return delete_end_;
 }
 
-int BrowsingDataRemover::GetLastUsedRemovalMask() {
+int BrowsingDataRemoverImpl::GetLastUsedRemovalMask() {
   return remove_mask_;
 }
 
-int BrowsingDataRemover::GetLastUsedOriginTypeMask() {
+int BrowsingDataRemoverImpl::GetLastUsedOriginTypeMask() {
   return origin_type_mask_;
 }
 
-BrowsingDataRemover::RemovalTask::RemovalTask(
+BrowsingDataRemoverImpl::RemovalTask::RemovalTask(
     const base::Time& delete_begin,
     const base::Time& delete_end,
     int remove_mask,
@@ -654,9 +664,9 @@ BrowsingDataRemover::RemovalTask::RemovalTask(
       filter_builder(std::move(filter_builder)),
       observer(observer) {}
 
-BrowsingDataRemover::RemovalTask::~RemovalTask() {}
+BrowsingDataRemoverImpl::RemovalTask::~RemovalTask() {}
 
-bool BrowsingDataRemover::AllDone() {
+bool BrowsingDataRemoverImpl::AllDone() {
   return !synchronous_clear_operations_.is_pending() &&
          !clear_embedder_data_.is_pending() &&
          !clear_cache_.is_pending() &&
@@ -666,7 +676,7 @@ bool BrowsingDataRemover::AllDone() {
          !clear_plugin_data_count_;
 }
 
-void BrowsingDataRemover::Notify() {
+void BrowsingDataRemoverImpl::Notify() {
   // Some tests call |RemoveImpl| directly, without using the task scheduler.
   // TODO(msramek): Improve those tests so we don't have to do this. Tests
   // relying on |RemoveImpl| do so because they need to pass in
@@ -699,11 +709,11 @@ void BrowsingDataRemover::Notify() {
   // are scheduled.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&BrowsingDataRemover::RunNextTask,
+      base::Bind(&BrowsingDataRemoverImpl::RunNextTask,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void BrowsingDataRemover::NotifyIfDone() {
+void BrowsingDataRemoverImpl::NotifyIfDone() {
   // TODO(brettw) http://crbug.com/305259: This should also observe session
   // clearing (what about other things such as passwords, etc.?) and wait for
   // them to complete before continuing.
@@ -713,7 +723,7 @@ void BrowsingDataRemover::NotifyIfDone() {
 
   if (completion_inhibitor_) {
     completion_inhibitor_->OnBrowsingDataRemoverWouldComplete(
-        this, base::Bind(&BrowsingDataRemover::Notify,
+        this, base::Bind(&BrowsingDataRemoverImpl::Notify,
                          weak_ptr_factory_.GetWeakPtr()));
     return;
   }
@@ -722,7 +732,7 @@ void BrowsingDataRemover::NotifyIfDone() {
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-void BrowsingDataRemover::OnWaitableEventSignaled(
+void BrowsingDataRemoverImpl::OnWaitableEventSignaled(
     base::WaitableEvent* waitable_event) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -734,7 +744,7 @@ void BrowsingDataRemover::OnWaitableEventSignaled(
   NotifyIfDone();
 }
 
-void BrowsingDataRemover::OnSitesWithFlashDataFetched(
+void BrowsingDataRemoverImpl::OnSitesWithFlashDataFetched(
     base::Callback<bool(const std::string&)> plugin_filter,
     const std::vector<std::string>& sites) {
   DCHECK_EQ(1, clear_plugin_data_count_);
@@ -751,14 +761,14 @@ void BrowsingDataRemover::OnSitesWithFlashDataFetched(
   for (const std::string& site : sites_to_delete) {
     flash_lso_helper_->DeleteFlashLSOsForSite(
         site,
-        base::Bind(&BrowsingDataRemover::OnFlashDataDeleted,
+        base::Bind(&BrowsingDataRemoverImpl::OnFlashDataDeleted,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
   NotifyIfDone();
 }
 
-void BrowsingDataRemover::OnFlashDataDeleted() {
+void BrowsingDataRemoverImpl::OnFlashDataDeleted() {
   clear_plugin_data_count_--;
   NotifyIfDone();
 }

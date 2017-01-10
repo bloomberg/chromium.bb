@@ -19,8 +19,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_filter_builder.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_impl.h"
 #include "chrome/browser/browsing_data/origin_filter_builder.h"
 #include "chrome/browser/browsing_data/registrable_domain_filter_builder.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -345,10 +345,14 @@ TEST_F(InstantNTPURLRewriteTest, UberURLHandler_InstantExtendedNewTabPage) {
 namespace {
 
 // A BrowsingDataRemover that only records calls.
-class MockBrowsingDataRemover : public BrowsingDataRemover {
+// TODO(msramek): Once BrowsingDataRemoverImpl moves to content/ (non-public),
+// it will not be possible to inherit from it here. However, at that time
+// this functionality will become redundant, as it will no longer be necessary
+// to call to chrome/ to perform deletion. Remove it then.
+class MockBrowsingDataRemover : public BrowsingDataRemoverImpl {
  public:
   explicit MockBrowsingDataRemover(content::BrowserContext* context)
-      : BrowsingDataRemover(context) {}
+      : BrowsingDataRemoverImpl(context) {}
 
   ~MockBrowsingDataRemover() override {
     DCHECK(!expected_calls_.size())

@@ -24,12 +24,12 @@ void BrowsingDataRemoverCompletionObserver::OnBrowsingDataRemoverDone() {
 
 BrowsingDataRemoverCompletionInhibitor::BrowsingDataRemoverCompletionInhibitor()
     : message_loop_runner_(new content::MessageLoopRunner) {
-  BrowsingDataRemover::set_completion_inhibitor_for_testing(this);
+  BrowsingDataRemoverImpl::set_completion_inhibitor_for_testing(this);
 }
 
 BrowsingDataRemoverCompletionInhibitor::
     ~BrowsingDataRemoverCompletionInhibitor() {
-  BrowsingDataRemover::set_completion_inhibitor_for_testing(nullptr);
+  BrowsingDataRemoverImpl::set_completion_inhibitor_for_testing(nullptr);
 }
 
 void BrowsingDataRemoverCompletionInhibitor::BlockUntilNearCompletion() {
@@ -44,7 +44,7 @@ void BrowsingDataRemoverCompletionInhibitor::ContinueToCompletion() {
 }
 
 void BrowsingDataRemoverCompletionInhibitor::OnBrowsingDataRemoverWouldComplete(
-    BrowsingDataRemover* remover,
+    BrowsingDataRemoverImpl* remover,
     const base::Closure& continue_to_completion) {
   DCHECK(continue_to_completion_callback_.is_null());
   continue_to_completion_callback_ = continue_to_completion;
