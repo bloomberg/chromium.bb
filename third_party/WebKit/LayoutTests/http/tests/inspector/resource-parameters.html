@@ -17,7 +17,7 @@ function test()
     function onRequestFinished(event)
     {
         var request = event.data;
-        InspectorTest.addResult(request.url);
+        InspectorTest.addResult(request.url());
         InspectorTest.addObject(new SDK.HAREntry(request).build(), InspectorTest.HARPropertyFormatters);
         InspectorTest.completeTest();
     }

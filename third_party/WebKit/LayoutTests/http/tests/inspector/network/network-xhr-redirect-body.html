@@ -36,7 +36,7 @@ function test()
             var requestMethod = request.requestMethod;
             var actualMethod = request.responseHeaderValue("request-method");
             var body = "[" + (request.requestFormData || "") + "]";
-            InspectorTest.addResult(requestMethod + " " + request.url);
+            InspectorTest.addResult(requestMethod + " " + request.url());
             InspectorTest.addResult("  actual http method was: " + actualMethod);
             InspectorTest.addResult("  request body: " + body);
             InspectorTest.addResult("");

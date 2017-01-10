@@ -56,7 +56,7 @@ function test()
     function step5()
     {
         var request = InspectorTest.networkRequests().pop();
-        InspectorTest.addResult("URL:" + request.url);
+        InspectorTest.addResult("URL:" + request.url());
         InspectorTest.addResult("from memory cache: " + !!request._fromMemoryCache);
         InspectorTest.addResult("from disk cache: " + !!request._fromDiskCache);
         InspectorTest.addResult("has timing: " + !!request._timing);
@@ -74,7 +74,7 @@ function test()
     function step7()
     {
         var request = InspectorTest.networkRequests().pop();
-        InspectorTest.addResult("URL:" + request.url);
+        InspectorTest.addResult("URL:" + request.url());
         InspectorTest.addResult("from memory cache: " + !!request._fromMemoryCache);
         InspectorTest.addResult("from disk cache: " + !!request._fromDiskCache);
         InspectorTest.addResult("has timing: " + !!request._timing);

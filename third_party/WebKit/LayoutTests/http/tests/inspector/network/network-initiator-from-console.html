@@ -20,7 +20,7 @@ var test = function()
     function onRequest(event)
     {
         var request = event.data;
-        if (/silent_script.js/.test(request.url))
+        if (/silent_script.js/.test(request.url()))
             step2();
     }
 

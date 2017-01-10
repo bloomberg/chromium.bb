@@ -69,17 +69,17 @@ InspectorTest.networkRequests = function()
 InspectorTest.dumpNetworkRequests = function()
 {
     var requests = InspectorTest.networkRequests();
-    requests.sort(function(a, b) {return a.url.localeCompare(b.url);});
+    requests.sort(function(a, b) {return a.url().localeCompare(b.url());});
     InspectorTest.addResult("resources count = " + requests.length);
     for (i = 0; i < requests.length; i++)
-        InspectorTest.addResult(requests[i].url);
+        InspectorTest.addResult(requests[i].url());
 }
 
 // |url| must be a regular expression to match request URLs.
 InspectorTest.findRequestsByURLPattern = function(urlPattern)
 {
     return InspectorTest.networkRequests().filter(function(value) {
-        return urlPattern.test(value.url)
+        return urlPattern.test(value.url());
     });
 }
 

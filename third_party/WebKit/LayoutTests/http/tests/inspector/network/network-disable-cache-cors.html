@@ -61,7 +61,7 @@ function test()
             var request = requests[i];
             var method = request.requestMethod;
             if (method === "OPTIONS" || method === "POST")
-                InspectorTest.addResult(method + ": " + request.url);
+                InspectorTest.addResult(method + ": " + request.url());
         }
         InspectorTest.completeTest();
     }

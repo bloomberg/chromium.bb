@@ -25,7 +25,7 @@ function test()
         if (eventUISourceCode.url().indexOf("style.css") == -1)
             return;
         var request = InspectorTest.networkRequests().pop();
-        uiSourceCode = Workspace.workspace.uiSourceCodeForURL(request.url);
+        uiSourceCode = Workspace.workspace.uiSourceCodeForURL(request.url());
         if (!uiSourceCode)
             return;
         uiSourceCode.addRevision("");

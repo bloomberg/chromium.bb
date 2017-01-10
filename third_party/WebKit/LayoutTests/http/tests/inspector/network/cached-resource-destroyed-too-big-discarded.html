@@ -44,7 +44,7 @@ function test()
 
     function step3()
     {
-        InspectorTest.addResult(imageRequest.url);
+        InspectorTest.addResult(imageRequest.url());
         InspectorTest.addResult("request.type: " + imageRequest.resourceType());
         InspectorTest.addResult("request.content.length after requesting content: " + imageRequest.content.length);
         InspectorTest.assertTrue(imageRequest.content.length > 0, "No content before destroying CachedResource.");

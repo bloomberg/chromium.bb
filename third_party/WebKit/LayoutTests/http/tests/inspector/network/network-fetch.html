@@ -11,7 +11,7 @@ function test()
     function step2()
     {
         var request1 = InspectorTest.networkRequests().pop();
-        InspectorTest.addResult(request1.url);
+        InspectorTest.addResult(request1.url());
         InspectorTest.addResult("resource.type: " + request1.resourceType());
         InspectorTest.addResult("resource.content before requesting content: " + request1.content);
         InspectorTest.assertTrue(!request1.failed, "Resource loading failed.");

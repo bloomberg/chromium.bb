@@ -22,7 +22,7 @@ function test()
     function step3()
     {
         var request = InspectorTest.networkRequests().pop();
-        InspectorTest.addResult("URL: " + request.url);
+        InspectorTest.addResult("URL: " + request.url());
         InspectorTest.addResult("Finished: " + request.finished);
         InspectorTest.addResult("Cached: " + request.cached());
         InspectorTest.addResult("Method: " + request.requestMethod);

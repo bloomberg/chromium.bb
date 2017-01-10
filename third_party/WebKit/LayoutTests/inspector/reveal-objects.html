@@ -60,7 +60,7 @@ function test() {
             {
                 var requests = InspectorTest.networkRequests();
                 for (var i = 0; i < requests.length; ++i) {
-                    if (requests[i].url.indexOf("missing.js") !== -1) {
+                    if (requests[i].url().indexOf("missing.js") !== -1) {
                         requestWithoutResource = requests[i];
                         break;
                     }
@@ -120,7 +120,7 @@ function test() {
 
     function revealed(request)
     {
-        InspectorTest.addResult("Request " + new Common.ParsedURL(request.url).lastPathComponent + " revealed in the Network panel");
+        InspectorTest.addResult("Request " + new Common.ParsedURL(request.url()).lastPathComponent + " revealed in the Network panel");
     }
 }
 

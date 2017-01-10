@@ -29,7 +29,7 @@ function test()
         // Mac, so checking last request.
         var request = InspectorTest.networkRequests().pop();
 
-        InspectorTest.addResult(request.url);
+        InspectorTest.addResult(request.url());
         InspectorTest.addResult("resource.requestContentType: " + request.requestContentType());
 
         InspectorTest.completeTest();

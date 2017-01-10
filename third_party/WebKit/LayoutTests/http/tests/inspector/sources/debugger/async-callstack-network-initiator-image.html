@@ -20,7 +20,7 @@ function test()
 
     function requestFinished(event)
     {
-        if (!event.data.url.endsWith("resources/image.png"))
+        if (!event.data.url().endsWith("resources/image.png"))
             return;
 
         var initiatorInfo = event.data.initiatorInfo();

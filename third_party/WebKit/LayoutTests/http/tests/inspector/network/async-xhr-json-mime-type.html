@@ -21,7 +21,7 @@ function test()
 
     function reportRequest(request)
     {
-        InspectorTest.addResult("request.url: " + request.url);
+        InspectorTest.addResult("request.url: " + request.url());
         InspectorTest.addResult("request.type: " + request.resourceType());
         InspectorTest.addResult("request.mimeType: " + request.mimeType);
     }

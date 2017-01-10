@@ -105,9 +105,12 @@ function initialize_extensionsPanelTest()
             showURL("resources", resource.url, lineNumber);
         }
 
+        /**
+         * @param {!SDK.NetworkRequest} request
+         */
         function showRequestHook(request)
         {
-            showURL("network", request.url);
+            showURL("network", request.url());
         }
     }
 

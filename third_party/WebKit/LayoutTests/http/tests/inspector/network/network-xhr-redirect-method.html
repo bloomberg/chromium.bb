@@ -23,7 +23,7 @@ function test()
             var request = requests[i];
             var requestMethod = request.requestMethod;
             var actualMethod = request.responseHeaderValue("request-method");
-            InspectorTest.addResult(requestMethod + " " + request.url);
+            InspectorTest.addResult(requestMethod + " " + request.url());
             InspectorTest.addResult("  actual http method was: " + actualMethod);
             InspectorTest.addResult("");
         }

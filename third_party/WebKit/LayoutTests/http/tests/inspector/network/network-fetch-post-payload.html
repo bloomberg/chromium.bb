@@ -13,7 +13,7 @@ function test()
     function step2()
     {
         var request = InspectorTest.networkRequests().pop();
-        InspectorTest.addResult(request.url);
+        InspectorTest.addResult(request.url());
         InspectorTest.assertEquals("foo", request.queryString(), "Unexpected resource query.");
         InspectorTest.assertEquals(payload, request.requestFormData, "Payload corrupted.");
         InspectorTest.completeTest();

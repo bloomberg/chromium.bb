@@ -9,7 +9,7 @@ function test()
     {
         if (!request)
             return callback();
-        InspectorTest.addResult(request.url);
+        InspectorTest.addResult(request.url());
 
         function contentLoaded()
         {

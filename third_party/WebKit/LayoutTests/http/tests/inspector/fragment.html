@@ -37,11 +37,11 @@ function test()
 
         function filterFrame(request)
         {
-            return request.url.indexOf("fragment-frame.html") !== -1
+            return request.url().indexOf("fragment-frame.html") !== -1
         }
 
         var request = InspectorTest.networkRequests().filter(filterFrame)[0];
-        InspectorTest.addResult("Child frame request url: " + request.url);
+        InspectorTest.addResult("Child frame request url: " + request.url());
         InspectorTest.completeTest(step2);
     }
 }

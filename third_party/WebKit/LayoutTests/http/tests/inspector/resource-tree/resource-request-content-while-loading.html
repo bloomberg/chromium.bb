@@ -22,7 +22,7 @@ function test()
 
     function requestAdded(request)
     {
-        if (request.url.indexOf("styles-initial") === -1)
+        if (request.url().indexOf("styles-initial") === -1)
             return;
         resource = InspectorTest.resourceMatchingURL("styles-initial");
         if (!resource || !resource.request || contentWasRequested) {

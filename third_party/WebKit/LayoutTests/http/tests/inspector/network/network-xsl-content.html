@@ -27,7 +27,7 @@ function test()
     function contentReceived(request, content)
     {
         var output = [];
-        output.push(request.url)
+        output.push(request.url());
         output.push("resource.type: " + request.resourceType());
         output.push("resource.content: " + content);
 

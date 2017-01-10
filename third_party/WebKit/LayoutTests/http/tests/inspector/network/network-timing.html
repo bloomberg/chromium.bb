@@ -36,12 +36,12 @@ function test()
         var requests = InspectorTest.networkRequests();
         var requestsCount = requests.length;
         var request1 = requests[requestsCount - 2];
-        InspectorTest.addResult(request1.url);
+        InspectorTest.addResult(request1.url());
         InspectorTest.assertGreaterOrEqual(request1.latency * 1000, 100 - timerThreshold, "Latency of the first resource");
         InspectorTest.assertGreaterOrEqual(request1.duration * 1000, 300 - timerThreshold, "Duration of the first resource");
 
         var request2 = requests[requestsCount - 1];
-        InspectorTest.addResult(request2.url);
+        InspectorTest.addResult(request2.url());
         InspectorTest.assertGreaterOrEqual(request2.latency * 1000, 100 - timerThreshold, "Latency of the second resource");
         InspectorTest.assertGreaterOrEqual(request2.duration * 1000, 100 - timerThreshold, "Duration of the second resource");
         InspectorTest.completeTest();
