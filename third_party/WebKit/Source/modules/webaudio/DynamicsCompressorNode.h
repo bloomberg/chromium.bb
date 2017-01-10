@@ -53,6 +53,7 @@ class MODULES_EXPORT DynamicsCompressorHandler final : public AudioHandler {
 
   // AudioHandler
   void process(size_t framesToProcess) override;
+  void processOnlyAudioParams(size_t framesToProcess) override;
   void initialize() override;
   void clearInternalStateWhenDisabled() override;
 

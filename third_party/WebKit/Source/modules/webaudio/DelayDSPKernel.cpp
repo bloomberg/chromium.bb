@@ -67,4 +67,13 @@ double DelayDSPKernel::delayTime(float) {
   return getDelayProcessor()->delayTime().finalValue();
 }
 
+void DelayDSPKernel::processOnlyAudioParams(size_t framesToProcess) {
+  DCHECK_LE(framesToProcess, AudioUtilities::kRenderQuantumFrames);
+
+  float values[AudioUtilities::kRenderQuantumFrames];
+
+  getDelayProcessor()->delayTime().calculateSampleAccurateValues(
+      values, framesToProcess);
+}
+
 }  // namespace blink

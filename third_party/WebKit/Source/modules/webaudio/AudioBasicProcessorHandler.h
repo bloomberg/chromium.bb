@@ -49,6 +49,7 @@ class MODULES_EXPORT AudioBasicProcessorHandler : public AudioHandler {
 
   // AudioHandler
   void process(size_t framesToProcess) final;
+  void processOnlyAudioParams(size_t framesToProcess) final;
   void pullInputs(size_t framesToProcess) final;
   void initialize() final;
   void uninitialize() final;

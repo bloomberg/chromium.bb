@@ -1,0 +1,300 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Processing Of AudioParams of Disconnected AudioNodes</title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audio-testing.js"></script>
+  </head>
+
+  <body>
+    <script>
+      // Arbitrary sample rate.
+      var sampleRate = 8000;
+
+      // Arbitrary number of frames for the test, except it must be greater than
+      // |automationEndFrame|.
+      var renderFrames = 1024;
+
+      // The linear ramp automation ends at this frame. Arbitrary, except it
+      // must be strictly less than the render length.
+      var automationEndFrame = 128;
+
+      var audit = Audit.createTaskRunner();
+
+      // There should be a test for every single node which has an AudioParam.
+      // Source nodes are not included in this because the AudioParams for the
+      // source nodes only process when the node has been started.
+
+      audit.defineTask("BiquadFilterNode", function (taskDone) {
+        var nodeName = "BiquadFilterNode"
+        Promise.all([
+          testParamAutomation({
+            nodeName: nodeName,
+            paramName: "Q",
+            initialValue: 2,
+            rampFinalValue: 5
+          }),
+          testParamAutomation({
+            nodeName: nodeName,
+            paramName: "detune",
+            initialValue: 1,
+            rampFinalValue: 0.5
+          }),
+          testParamAutomation({
+            nodeName: nodeName,
+            paramName: "frequency",
+            initialValue: 1000,
+            rampFinalValue: 100
+          }),
+          testParamAutomation({
+            nodeName: nodeName,
+            paramName: "gain",
+            initialValue: -3,
+            rampFinalValue: 3
+          }),
+        ]).then(taskDone);
+      });
+
+      audit.defineTask("DelayNode", function (taskDone) {
+        testParamAutomation({
+          nodeName: "DelayNode",
+          paramName: "delayTime",
+          initialValue: 0.25,
+          rampFinalValue: 0.5
+        }).then(taskDone);
+      });
+
+      audit.defineTask("DynamicsCompressorNode", function (taskDone) {
+        var nodeName = "DynamicsCompressorNode";
+        Promise.all([
+          testParamAutomation({
+            nodeName: nodeName,
+            paramName: "attack",
+            initialValue: 0.1,
+            rampFinalValue: 0.5
+          }),
+          testParamAutomation({
+            nodeName: nodeName,
+            paramName: "knee",
+            initialValue: 0,
+            rampFinalValue: 25
+          }),
+          testParamAutomation({
+            nodeName: nodeName,
+            paramName: "ratio",
+            initialValue: 1,
+            rampFinalValue: 15
+          }),
+          testParamAutomation({
+            nodeName: nodeName,
+            paramName: "release",
+            initialValue: 0,
+            rampFinalValue: 0.75
+          }),
+          testParamAutomation({
+            nodeName: nodeName,
+            paramName: "threshold",
+            initialValue: -50,
+            rampFinalValue: -10
+          })
+        ]).then(taskDone);
+      });
+
+      audit.defineTask("GainNode", function (taskDone) {
+        testParamAutomation({
+          nodeName: "GainNode",
+          paramName: "gain",
+          initialValue: 1,
+          rampFinalValue: 0.5
+        }).then(taskDone);
+      });
+
+      audit.defineTask("PannerNode", function (taskDone) {
+        var nodeName = "PannerNode";
+        Promise.all([
+            testParamAutomation({
+              nodeName: nodeName,
+              paramName: "positionX",
+              initialValue: 0.1,
+              rampFinalValue: 0.5
+            }),
+            testParamAutomation({
+              nodeName: nodeName,
+              paramName: "positionY",
+              initialValue: 2,
+              rampFinalValue: 30
+            }),
+            testParamAutomation({
+              nodeName: nodeName,
+              paramName: "positionZ",
+              initialValue: 1,
+              rampFinalValue: 15
+            }),
+            testParamAutomation({
+              nodeName: nodeName,
+              paramName: "orientationX",
+              initialValue: 0.1,
+              rampFinalValue: 0.5
+            }),
+            testParamAutomation({
+              nodeName: nodeName,
+              paramName: "orientationY",
+              initialValue: 2,
+              rampFinalValue: 30
+            }),
+            testParamAutomation({
+              nodeName: nodeName,
+              paramName: "orientationZ",
+              initialValue: 1,
+              rampFinalValue: 15
+            }),
+          ]).then(taskDone);
+      });
+
+      audit.defineTask("StereoPannerNode", function (taskDone) {
+        testParamAutomation({
+          nodeName: "StereoPannerNode",
+          paramName: "pan",
+          initialValue: 1,
+          rampFinalValue: 0.5
+        }).then(taskDone);
+      });
+
+      audit.defineTask("AudioListener", function (taskDone) {
+        Promise.all([
+          testAudioListener({
+            paramName: "positionX",
+            initialValue: 1,
+            rampFinalValue: 100
+          }),
+          testAudioListener({
+            paramName: "positionY",
+            initialValue: 1,
+            rampFinalValue: 200
+          }),
+          testAudioListener({
+            paramName: "positionZ",
+            initialValue: 1,
+            rampFinalValue: 300
+          }),
+          testAudioListener({
+            paramName: "forwardX",
+            initialValue: 1,
+            rampFinalValue: -100
+          }),
+          testAudioListener({
+            paramName: "forwardY",
+            initialValue: 1,
+            rampFinalValue: -200
+          }),
+          testAudioListener({
+            paramName: "forwardZ",
+            initialValue: 1,
+            rampFinalValue: -300
+          }),
+          testAudioListener({
+            paramName: "upX",
+            initialValue: 1,
+            rampFinalValue: 99
+          }),
+          testAudioListener({
+            paramName: "upY",
+            initialValue: 1,
+            rampFinalValue: 42
+          }),
+          testAudioListener({
+            paramName: "upZ",
+            initialValue: 1,
+            rampFinalValue: 137
+          }),
+        ]).then(taskDone);
+      });
+
+      // Run test of automation processing. |options| is a dictionary that
+      // describes the node to test, the AudioParams to be tested and the values
+      // for the AudioParam.  The members of the dictionary are:
+      //
+      //   nodeName       - name of the node (constructor name)
+      //   paramName      - name of the AudioParam to be tested
+      //   initialValue   - starting value for linear ramp
+      //   rampFinalValue - finale value for linear ramp
+      //
+      // The test is considered to have succeeded if the |.value| of the AudioParam
+      // is the final value.
+      //
+      // A simple graph is created containing the node to be tested, connected
+      // to the destination.  A linear ramp automation is scheduled for the
+      // specified AudioParam, starting and ending at the values given.
+      //
+      // Processing is started and after some number of frames, the |.value| of
+      // the AudioParam is obtained and compared against the final value.  These
+      // should match exactly.
+      function testParamAutomation(options) {
+        var context = new OfflineAudioContext(1, renderFrames, sampleRate);
+
+        // Create the node to be tested
+        var node = new window[options.nodeName](context);
+        node.connect(context.destination);
+
+        // A linear ramp starting at frame 0 to frame |automationEndFrame| is
+        // used for the test.  This value is fairly arbitrary, but it should be
+        // less than the total render frames.
+
+        node[options.paramName].setValueAtTime(options.initialValue, 0);
+        node[options.paramName].linearRampToValueAtTime(options.rampFinalValue,
+          automationEndFrame / context.sampleRate);
+
+        return context.startRendering()
+          .then(function (resultBuffer) {
+            // Sanity check: the given ramp final value must not be the default
+            // value, otherwise we can't easily tell if the automation was
+            // actually run.
+            Should(options.nodeName + "." + options.paramName + " ramp final value",
+            options.rampFinalValue)
+              .notBeEqualTo(node[options.paramName].defaultValue);
+
+            // The actual AudioParam value should be the rampe final value.
+            Should(options.nodeName + "." + options.paramName +
+                ".value",
+                node[options.paramName].value)
+              .beEqualTo(options.rampFinalValue);
+          });
+      }
+
+      function testAudioListener(options) {
+        var context = new OfflineAudioContext(1, renderFrames, sampleRate);
+
+        // Create the node to be tested
+        var node = new PannerNode(context);
+        node.connect(context.destination);
+
+        // A linear ramp starting at frame 0 to frame |automationEndFrame| is
+        // used for the test.  This value is fairly arbitrary, but it should be
+        // less than the total render frames.
+
+        context.listener[options.paramName].setValueAtTime(options.initialValue, 0);
+        context.listener[options.paramName].linearRampToValueAtTime(options.rampFinalValue,
+          automationEndFrame / context.sampleRate);
+
+        return context.startRendering()
+          .then(function (resultBuffer) {
+            // Sanity check: the given ramp final value must not be the default
+            // value, otherwise we can't easily tell if the automation was
+            // actually run.
+            Should("AudioListener." + options.paramName + " ramp final value",
+            options.rampFinalValue)
+              .notBeEqualTo(context.listener[options.paramName].defaultValue);
+
+            // The actual AudioParam value should be the rampe final value.
+            Should("AudioListener." + options.paramName +
+                ".value",
+                context.listener[options.paramName].value)
+              .beEqualTo(options.rampFinalValue);
+          });
+      }
+
+      audit.runTasks();
+    </script>
+  </body>
+</html>

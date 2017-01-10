@@ -96,6 +96,20 @@ void AudioDSPKernelProcessor::process(const AudioBus* source,
   }
 }
 
+void AudioDSPKernelProcessor::processOnlyAudioParams(size_t framesToProcess) {
+  if (!isInitialized())
+    return;
+
+  MutexTryLocker tryLocker(m_processLock);
+  // Only update the AudioParams if we can get the lock.  If not, some
+  // other thread is updating the kernels, so we'll have to skip it
+  // this time.
+  if (tryLocker.locked()) {
+    for (unsigned i = 0; i < m_kernels.size(); ++i)
+      m_kernels[i]->processOnlyAudioParams(framesToProcess);
+  }
+}
+
 // Resets filter state
 void AudioDSPKernelProcessor::reset() {
   ASSERT(isMainThread());

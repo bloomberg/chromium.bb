@@ -51,6 +51,9 @@ BiquadFilterNode::BiquadFilterNode(BaseAudioContext& context)
   // Explicitly set the filter type so that any histograms get updated with the
   // default value.  Otherwise, the histogram won't ever show it.
   setType("lowpass");
+
+  // Initialize the handler so that AudioParams can be processed.
+  handler().initialize();
 }
 
 BiquadFilterNode* BiquadFilterNode::create(BaseAudioContext& context,

@@ -67,6 +67,8 @@ class BiquadProcessor final : public AudioDSPKernelProcessor {
                AudioBus* destination,
                size_t framesToProcess) override;
 
+  void processOnlyAudioParams(size_t framesToProcess) override;
+
   // Get the magnitude and phase response of the filter at the given
   // set of frequencies (in Hz). The phase response is in radians.
   void getFrequencyResponse(int nFrequencies,

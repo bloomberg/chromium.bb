@@ -95,6 +95,14 @@ void AudioBasicProcessorHandler::process(size_t framesToProcess) {
   }
 }
 
+void AudioBasicProcessorHandler::processOnlyAudioParams(
+    size_t framesToProcess) {
+  if (!isInitialized() || !processor())
+    return;
+
+  processor()->processOnlyAudioParams(framesToProcess);
+}
+
 // Nice optimization in the very common case allowing for "in-place" processing
 void AudioBasicProcessorHandler::pullInputs(size_t framesToProcess) {
   // Render input stream - suggest to the input to render directly into output

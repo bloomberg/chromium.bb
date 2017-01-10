@@ -330,6 +330,10 @@ void AudioHandler::processIfNecessary(size_t framesToProcess) {
 
     if (silentInputs && propagatesSilence()) {
       silenceOutputs();
+      // AudioParams still need to be processed so that the value can be updated
+      // if there are automations or so that the upstream nodes get pulled if
+      // any are connected to the AudioParam.
+      processOnlyAudioParams(framesToProcess);
     } else {
       // Unsilence the outputs first because the processing of the node may
       // cause the outputs to go silent and we want to propagate that hint to

@@ -43,6 +43,8 @@ class DelayDSPKernel final : public AudioDelayDSPKernel {
                                      size_t framesToProcess) override;
   double delayTime(float sampleRate) override;
 
+  void processOnlyAudioParams(size_t framesToProcess) override;
+
  private:
   DelayProcessor* getDelayProcessor() {
     return static_cast<DelayProcessor*>(processor());

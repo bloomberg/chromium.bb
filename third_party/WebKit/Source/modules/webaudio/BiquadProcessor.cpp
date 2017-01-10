@@ -25,6 +25,7 @@
 
 #include "modules/webaudio/BiquadDSPKernel.h"
 #include "modules/webaudio/BiquadProcessor.h"
+#include "platform/audio/AudioUtilities.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
 
@@ -116,6 +117,17 @@ void BiquadProcessor::process(const AudioBus* source,
     m_kernels[i]->process(source->channel(i)->data(),
                           destination->channel(i)->mutableData(),
                           framesToProcess);
+}
+
+void BiquadProcessor::processOnlyAudioParams(size_t framesToProcess) {
+  DCHECK_LE(framesToProcess, AudioUtilities::kRenderQuantumFrames);
+
+  float values[AudioUtilities::kRenderQuantumFrames];
+
+  m_parameter1->calculateSampleAccurateValues(values, framesToProcess);
+  m_parameter2->calculateSampleAccurateValues(values, framesToProcess);
+  m_parameter3->calculateSampleAccurateValues(values, framesToProcess);
+  m_parameter4->calculateSampleAccurateValues(values, framesToProcess);
 }
 
 void BiquadProcessor::setType(FilterType type) {

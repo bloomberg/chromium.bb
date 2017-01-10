@@ -234,6 +234,20 @@ void PannerHandler::processSampleAccurateValues(AudioBus* destination,
                                                     framesToProcess);
 }
 
+void PannerHandler::processOnlyAudioParams(size_t framesToProcess) {
+  float values[AudioUtilities::kRenderQuantumFrames];
+
+  DCHECK_LE(framesToProcess, AudioUtilities::kRenderQuantumFrames);
+
+  m_positionX->calculateSampleAccurateValues(values, framesToProcess);
+  m_positionY->calculateSampleAccurateValues(values, framesToProcess);
+  m_positionZ->calculateSampleAccurateValues(values, framesToProcess);
+
+  m_orientationX->calculateSampleAccurateValues(values, framesToProcess);
+  m_orientationY->calculateSampleAccurateValues(values, framesToProcess);
+  m_orientationZ->calculateSampleAccurateValues(values, framesToProcess);
+}
+
 void PannerHandler::initialize() {
   if (isInitialized())
     return;

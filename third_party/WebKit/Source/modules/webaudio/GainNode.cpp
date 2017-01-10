@@ -28,6 +28,7 @@
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/GainOptions.h"
 #include "platform/audio/AudioBus.h"
+#include "platform/audio/AudioUtilities.h"
 
 namespace blink {
 
@@ -93,6 +94,15 @@ void GainHandler::process(size_t framesToProcess) {
       }
     }
   }
+}
+
+void GainHandler::processOnlyAudioParams(size_t framesToProcess) {
+  DCHECK(context()->isAudioThread());
+  DCHECK_LE(framesToProcess, AudioUtilities::kRenderQuantumFrames);
+
+  float values[AudioUtilities::kRenderQuantumFrames];
+
+  m_gain->calculateSampleAccurateValues(values, framesToProcess);
 }
 
 // FIXME: this can go away when we do mixing with gain directly in summing

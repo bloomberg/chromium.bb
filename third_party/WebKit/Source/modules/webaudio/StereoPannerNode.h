@@ -27,6 +27,7 @@ class StereoPannerHandler final : public AudioHandler {
   ~StereoPannerHandler() override;
 
   void process(size_t framesToProcess) override;
+  void processOnlyAudioParams(size_t framesToProcess) override;
   void initialize() override;
 
   void setChannelCount(unsigned long, ExceptionState&) final;

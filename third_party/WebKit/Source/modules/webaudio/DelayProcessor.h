@@ -45,6 +45,8 @@ class DelayProcessor final : public AudioDSPKernelProcessor {
 
   std::unique_ptr<AudioDSPKernel> createKernel() override;
 
+  void processOnlyAudioParams(size_t framesToProcess) override;
+
   AudioParamHandler& delayTime() const { return *m_delayTime; }
   double maxDelayTime() { return m_maxDelayTime; }
 
