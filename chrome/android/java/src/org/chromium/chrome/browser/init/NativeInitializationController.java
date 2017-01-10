@@ -75,14 +75,6 @@ class NativeInitializationController {
         mActivityDelegate = activityDelegate;
     }
 
-    private static boolean shouldFetchVariationsSeedBeforeFRE() {
-        // For now, only do the fetching on official canary and dev builds, as there is a concern
-        // about the extra latency this adds.
-        // TODO(asvitkine): Revise this logic based on histogram data.
-        return ChromeVersionInfo.isOfficialBuild()
-                && (ChromeVersionInfo.isCanaryBuild() || ChromeVersionInfo.isDevBuild());
-    }
-
     /**
      * Start loading the native library in the background. This kicks off the native initialization
      * process.
@@ -95,7 +87,7 @@ class NativeInitializationController {
 
         // TODO(asvitkine): Consider moving this logic to a singleton, like
         // ChromeBrowserInitializer.
-        if (shouldFetchVariationsSeedBeforeFRE()) {
+        if (ChromeVersionInfo.isOfficialBuild()) {
             Context context = ContextUtils.getApplicationContext();
             Intent initialIntent = mActivityDelegate.getInitialIntent();
             if (FirstRunFlowSequencer.checkIfFirstRunIsNecessary(context, initialIntent, false)
