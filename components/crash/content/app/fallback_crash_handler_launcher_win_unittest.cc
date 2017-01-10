@@ -1,0 +1,137 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "components/crash/content/app/fallback_crash_handler_launcher_win.h"
+
+#include <dbghelp.h>
+
+#include "base/command_line.h"
+#include "base/files/file.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
+#include "base/process/process.h"
+#include "base/process/process_handle.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/test/multiprocess_test.h"
+#include "base/win/win_util.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "testing/multiprocess_func_list.h"
+
+namespace crash_reporter {
+
+namespace {
+
+const wchar_t kFileName[] = L"crash.dmp";
+
+MULTIPROCESS_TEST_MAIN(FallbackCrashHandlerLauncherMain) {
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+
+  // Check for presence of the "process" argument.
+  CHECK(cmd_line->HasSwitch("process"));
+
+  // Retrieve and check the handle to verify that it was inherited in.
+  unsigned int uint_process = 0;
+  CHECK(base::StringToUint(cmd_line->GetSwitchValueASCII("process"),
+                           &uint_process));
+  base::Process process(base::win::Uint32ToHandle(uint_process));
+
+  // Verify that the process handle points to our parent.
+  CHECK_EQ(base::GetParentProcessId(base::GetCurrentProcessHandle()),
+           process.Pid());
+
+  // Check the "thread" argument.
+  CHECK(cmd_line->HasSwitch("thread"));
+
+  // Retrieve the thread id.
+  unsigned int thread_id = 0;
+  CHECK(
+      base::StringToUint(cmd_line->GetSwitchValueASCII("thread"), &thread_id));
+
+  // Check the "exception-pointers" argument.
+  CHECK(cmd_line->HasSwitch("exception-pointers"));
+  uint64_t uint_exc_ptrs = 0;
+  CHECK(base::StringToUint64(
+      cmd_line->GetSwitchValueASCII("exception-pointers"), &uint_exc_ptrs));
+
+  EXCEPTION_POINTERS* exc_ptrs = reinterpret_cast<EXCEPTION_POINTERS*>(
+      static_cast<uintptr_t>(uint_exc_ptrs));
+
+  // Check the "database" argument.
+  CHECK(cmd_line->HasSwitch("database"));
+  base::FilePath database_dir = cmd_line->GetSwitchValuePath("database");
+
+  base::FilePath dump_path = database_dir.Append(kFileName);
+
+  // Create a dump file in the directory.
+  base::File dump(dump_path, base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+
+  CHECK(dump.IsValid());
+
+  const MINIDUMP_TYPE kMinidumpType = static_cast<MINIDUMP_TYPE>(
+      MiniDumpWithHandleData | MiniDumpWithUnloadedModules |
+      MiniDumpWithProcessThreadData | MiniDumpWithThreadInfo |
+      MiniDumpWithTokenInformation);
+
+  MINIDUMP_EXCEPTION_INFORMATION exc_info = {};
+  exc_info.ThreadId = thread_id;
+  exc_info.ExceptionPointers = exc_ptrs;
+  exc_info.ClientPointers = TRUE;  // ExceptionPointers in client.
+
+  // Write the minidump as a direct test of the validity and permissions on the
+  // parent handle.
+  if (!MiniDumpWriteDump(process.Handle(),        // Process handle.
+                         process.Pid(),           // Process Id.
+                         dump.GetPlatformFile(),  // File handle.
+                         kMinidumpType,           // Minidump type.
+                         &exc_info,               // Exception Param
+                         nullptr,                 // UserStreamParam,
+                         nullptr)) {              // CallbackParam
+    DWORD error = GetLastError();
+
+    dump.Close();
+    CHECK(base::DeleteFile(dump_path, false));
+    CHECK(false) << "Unable to write dump, error " << error;
+  }
+
+  return 0;
+}
+
+class FallbackCrashHandlerLauncherTest : public base::MultiProcessTest {
+ public:
+  void SetUp() override { ASSERT_TRUE(database_dir_.CreateUniqueTempDir()); }
+
+ protected:
+  base::ScopedTempDir database_dir_;
+};
+
+}  // namespace
+
+TEST_F(FallbackCrashHandlerLauncherTest, LaunchAndWaitForHandler) {
+  base::CommandLine base_cmdline(
+      MakeCmdLine("FallbackCrashHandlerLauncherMain"));
+
+  FallbackCrashHandlerLauncher launcher;
+  ASSERT_TRUE(launcher.Initialize(base_cmdline, database_dir_.GetPath()));
+
+  // Make like an access violation at the current place.
+  EXCEPTION_RECORD exc_record = {};
+  exc_record.ExceptionCode = EXCEPTION_ACCESS_VIOLATION;
+  CONTEXT ctx = {};
+  RtlCaptureContext(&ctx);
+
+  EXCEPTION_POINTERS exc_ptrs = {&exc_record, &ctx};
+
+  ASSERT_EQ(0UL, launcher.LaunchAndWaitForHandler(&exc_ptrs));
+
+  // Check that the dump was written, e.g. it's an existing file with non-zero
+  // size.
+  base::File dump(database_dir_.GetPath().Append(kFileName),
+                  base::File::FLAG_OPEN | base::File::FLAG_READ);
+  ASSERT_TRUE(dump.IsValid());
+  ASSERT_NE(0, dump.GetLength());
+}
+
+}  // namespace crash_reporter
