@@ -83,6 +83,12 @@ public class VariationsSeedService extends IntentService {
         histogram.record(timeDeltaMillis);
     }
 
+    private void recordSeedConnectTime(long timeDeltaMillis) {
+        TimesHistogramSample histogram = new TimesHistogramSample(
+                "Variations.FirstRun.SeedConnectTime", TimeUnit.MILLISECONDS);
+        histogram.record(timeDeltaMillis);
+    }
+
     private boolean downloadContent() {
         HttpURLConnection connection = null;
         try {
@@ -101,6 +107,7 @@ public class VariationsSeedService extends IntentService {
                 return false;
             }
 
+            recordSeedConnectTime(SystemClock.elapsedRealtime() - startTimeMillis);
             // Convert the InputStream into a byte array.
             byte[] rawSeed = getRawSeed(connection);
             String signature = getHeaderFieldOrEmpty(connection, "X-Seed-Signature");
