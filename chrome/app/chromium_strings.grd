@@ -152,21 +152,6 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
         </message>
       </if>
       <if expr="is_win">
-        <message name="IDS_PRODUCT_APP_LAUNCHER_NAME" desc="The Chrome App Launcher application name">
-          Chromium App Launcher
-        </message>
-        <message name="IDS_PRODUCT_BINARIES_NAME" desc="The Chrome Binaries application name">
-          Chromium Binaries
-        </message>
-        <message name="IDS_CHROME_FRAME_TURNDOWN_LEARN_MORE_URL" desc="Link to knowledge-base article about Chromium Frame's turndown">
-          https://support.google.com/chrome/?p=ib_chromeframe
-        </message>
-        <message name="IDS_CHROME_FRAME_TURNDOWN_TEXT_IE_OLDER" desc="Text of Chromium Frame turndown prompt for IE 6, 7, and 8">
-          This site is using the Chromium Frame plugin which will soon be unsupported. Please uninstall it and upgrade to a modern browser.
-        </message>
-        <message name="IDS_CHROME_FRAME_TURNDOWN_TEXT_IE_NEWER" desc="Text of Chromium Frame turndown prompt for IE 9 and 10">
-          This site is using the Chromium Frame plugin that will soon be unsupported. Please uninstall it and download a compatible browser.
-        </message>
         <message name="IDS_SHORTCUT_NEW_WINDOW" desc="The text label of the New window shortcut context menu entry as of Windows 8">
           New window
         </message>
@@ -426,12 +411,6 @@ Chromium is unable to recover your settings.
         </message>
         <message name="IDS_INSTALL_INSUFFICIENT_RIGHTS" desc="Error displayed when a non admin user tries to attempt system level install/uninstall.">
           You do not have appropriate rights for system-level install. Try running the installer again as Administrator.
-        </message>
-        <message name="IDS_INSTALL_NO_PRODUCTS_TO_UPDATE" desc="Error displayed if the installer is not provided one or more products to install/update.">
-          No installation of Chromium found to update.
-        </message>
-        <message name="IDS_INSTALL_MULTI_INSTALLATION_EXISTS" desc="Error during install if a multi-install Chromium is present, thereby preventing the installation of a single-install Chromium.">
-          A conflicting installation of Chromium was found on the system. Please uninstall it and try again.
         </message>
         <message name="IDS_INSTALL_EXISTING_VERSION_LAUNCHED" desc="A message shown to users who try to install Chrome in their user profile directory when their computer already has Chrome installed for all users. In this case, the installer silently launches the existing version of Chrome for all users rather than installing a second version of Chrome.">
           Chromium is already installed for all users on your computer.
