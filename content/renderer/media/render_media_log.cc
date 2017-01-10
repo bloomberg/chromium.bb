@@ -17,18 +17,23 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_thread.h"
 
+#ifndef MEDIA_EVENT_LOG_UTILITY
+#define MEDIA_EVENT_LOG_UTILITY DVLOG(1)
+#endif
+
 namespace {
 
 // Print an event to the chromium log.
 void Log(media::MediaLogEvent* event) {
-  if (event->type == media::MediaLogEvent::PIPELINE_ERROR) {
+  if (event->type == media::MediaLogEvent::PIPELINE_ERROR ||
+      event->type == media::MediaLogEvent::MEDIA_ERROR_LOG_ENTRY) {
     LOG(ERROR) << "MediaEvent: "
                << media::MediaLog::MediaEventToLogString(*event);
   } else if (event->type != media::MediaLogEvent::BUFFERED_EXTENTS_CHANGED &&
              event->type != media::MediaLogEvent::PROPERTY_CHANGE &&
              event->type != media::MediaLogEvent::NETWORK_ACTIVITY_SET) {
-    DVLOG(1) << "MediaEvent: "
-             << media::MediaLog::MediaEventToLogString(*event);
+    MEDIA_EVENT_LOG_UTILITY << "MediaEvent: "
+                            << media::MediaLog::MediaEventToLogString(*event);
   }
 }
 
