@@ -1,22 +1,85 @@
-Linux GTK Theme Integration
+# Linux GTK Theme Integration
 
 The GTK+ port of Chromium has a mode where we try to match the user's GTK theme
-(which can be enabled under Wrench -> Options -> Personal Stuff -> Set to GTK+
-theme). The heuristics often don't pick good colors due to a lack of information
-in the GTK themes.
+(which can be enabled under Settings -> Appearance -> Use GTK+ theme).
 
-Starting in Chrome 9, we're providing a new way for theme authors to control our
-GTK+ theming mode. I am not sure of the earliest build these showed up in, but I
-know 9.0.597 works.
+# GTK3
+
+At some point after version 57, Chromium will switch to using the GTK3 theme by
+default.
+
+## How Chromium determines which colors to use
+
+GTK3 added a new CSS theming engine which gives fine-tuned control over how
+widgets are styled. Chromium's themes, by contrast, are much simpler: it is
+mostly a list of about 80 colors (see //src/ui/native_theme/native_theme.h)
+overridden by the theme. Chromium usually doesn't use GTK to render entire
+widgets, but instead tries to determine colors from them.
+
+There are three types of colors Chromium needs from widgets: 
+
+* Foreground color: determined by the CSS "color" property
+* Background color: determined by the CSS "background-color" and "background-image" properties
+* Border color: determined by the "border-color", "border-image",
+  "border-style", and "border-width" properties
+
+Backgrounds and borders are complicated because in general they might have
+multiple gradients or images. To get the color, Chromium uses GTK to render the
+background or border into a single pixel and uses the resulting color for
+theming. This mostly gives reasonable results, but in case theme authors do not
+like the resulting color, they have the option to theme Chromium widgets
+specially.
+
+## Note to GTK theme authors: How to theme Chromium widgets
+
+Every widget Chromium uses will have a "chromium" style class added to it. For
+example, a texfield selector might look like:
+
+```
+.window.background.chromium .entry.chromium
+```
+
+If themes want to handle Chromium textfields specially, for GTK3.0 - GTK3.19,
+they might use:
+
+```
+/* Normal case */
+.entry {
+    color: #ffffff;
+    background-color: #000000;
+}
+
+/* Chromium-specific case */
+.entry.chromium {
+    color: #ff0000;
+    background-color: #00ff00;
+}
+```
+
+For GTK3.20 or later, themes will as usual have to replace ".entry" with
+"entry".
+
+Additional requirements for border colors to be picked up:
+
+* Must have a border-style that is not none.
+* Must have a border-width that is nonzero.
+
+The list of CSS selectors that Chromium uses to determine its colors is in
+//src/chrome/browser/ui/libgtkui/native_theme_gtk3.cc.
+
+# GTK2
+
+Chromium's GTK2 theme will soon be deprecated, and this section will be removed.
 
 ## Describing the previous heuristics
 
-The frame heuristics were simple. Query the `bg[SELECTED]` and `bg[INSENSITIVE]`
-colors on the `MetaFrames` class and darken them slightly. This usually worked
-OK until the rise of themes that try to make a unified titlebar/menubar look. At
-roughly that time, it seems that people stopped specifying color information for
-the `MetaFrames` class and this has lead to the very orange chrome frame on
-Maverick.
+The heuristics often don't pick good colors due to a lack of information in the
+GTK themes. The frame heuristics were simple. Query the `bg[SELECTED]` and
+`bg[INSENSITIVE]` colors on the `MetaFrames` class and darken them
+slightly. This usually worked OK until the rise of themes that try to make a
+unified titlebar/menubar look. At roughly that time, it seems that people
+stopped specifying color information for the `MetaFrames` class and this has
+lead to the very orange chrome frame on Maverick.
 
 `MetaFrames` is (was?) a class that was used to communicate frame color data to
 the window manager around the Hardy days. (It's still defined in most of

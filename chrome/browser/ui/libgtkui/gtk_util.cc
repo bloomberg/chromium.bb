@@ -294,6 +294,11 @@ ScopedStyleContext AppendNode(GtkStyleContext* context,
       }
     }
   }
+
+  // Always add a "chromium" class so that themes can style chromium
+  // widgets specially if they want to.
+  gtk_widget_path_iter_add_class(path, -1, "chromium");
+
   auto child_context = ScopedStyleContext(gtk_style_context_new());
   gtk_style_context_set_path(child_context, path);
   gtk_style_context_set_state(child_context, state);
