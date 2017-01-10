@@ -1,10 +1,8 @@
 # These tests currently fail when run with --enable-browser-side-navigation
 # See https://crbug.com/576261
 # https://crbug.com/608372: PlzNavigate: support POST navigations
-crbug.com/608372 fast/forms/form-submit-in-submit-event.html [ Failure ]
 crbug.com/608372 fast/forms/submit-to-url-fragment.html [ Failure ]
 crbug.com/608372 fast/forms/xss-auditor-doesnt-crash-on-post-submit.html [ Timeout ]
-crbug.com/608372 fast/loader/form-state-restore-with-frames.html [ Failure ]
 crbug.com/608372 http/tests/history/back-to-post.html [ Timeout ]
 crbug.com/608372 http/tests/navigation/post-goback-same-url.html [ Failure ]
 crbug.com/608372 virtual/stable/http/tests/navigation/post-goback-same-url.html [ Failure ]

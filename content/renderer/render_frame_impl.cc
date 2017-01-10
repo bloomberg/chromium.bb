@@ -5398,6 +5398,15 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
       info.urlRequest.checkForBrowserSideNavigation() &&
       ShouldMakeNetworkRequestForURL(url)) {
     if (info.defaultPolicy == blink::WebNavigationPolicyCurrentTab) {
+      if (RenderThreadImpl::current() &&
+          RenderThreadImpl::current()->layout_test_mode()) {
+        // Layout tests sometimes attempt to load urls of the form
+        // about:blank?foo which the browser doesn't expect and will convert to
+        // about:blank. Don't send these to the browser.
+        if (url.SchemeIs(url::kAboutScheme) && url.path() == "blank")
+          return info.defaultPolicy;
+      }
+
       BeginNavigation(info);
       return blink::WebNavigationPolicyHandledByClient;
     } else {
