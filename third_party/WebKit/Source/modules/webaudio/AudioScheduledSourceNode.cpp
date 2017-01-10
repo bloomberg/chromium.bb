@@ -50,7 +50,8 @@ void AudioScheduledSourceHandler::updateSchedulingInfo(
     size_t quantumFrameSize,
     AudioBus* outputBus,
     size_t& quantumFrameOffset,
-    size_t& nonSilentFramesToProcess) {
+    size_t& nonSilentFramesToProcess,
+    double& startFrameOffset) {
   DCHECK(outputBus);
   if (!outputBus)
     return;
@@ -94,6 +95,10 @@ void AudioScheduledSourceHandler::updateSchedulingInfo(
     // Increment the active source count only if we're transitioning from
     // SCHEDULED_STATE to PLAYING_STATE.
     setPlaybackState(PLAYING_STATE);
+    // Determine the offset of the true start time from the starting frame.
+    startFrameOffset = m_startTime * sampleRate - startFrame;
+  } else {
+    startFrameOffset = 0;
   }
 
   quantumFrameOffset =
