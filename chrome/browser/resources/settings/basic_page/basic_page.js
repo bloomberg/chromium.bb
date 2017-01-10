@@ -183,6 +183,6 @@ Polymer({
    * @private
    */
   getArrowIcon_: function(opened) {
-    return opened ? 'settings:arrow-drop-up' : 'cr:arrow-drop-down';
+    return opened ? 'cr:arrow-drop-up' : 'cr:arrow-drop-down';
   },
 });

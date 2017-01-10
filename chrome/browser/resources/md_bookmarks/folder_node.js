@@ -21,7 +21,7 @@ Polymer({
    * @return {string}
    */
   getFolderIcon_: function() {
-    return this.isSelected ? 'bookmarks:folder-open' : 'bookmarks:folder';
+    return this.isSelected ? 'bookmarks:folder-open' : 'cr:folder';
   },
 
   /**
@@ -29,8 +29,8 @@ Polymer({
    * @return {string}
    */
   getArrowIcon_: function() {
-    return this.item.isOpen ? 'bookmarks:arrow-drop-up' :
-                              'bookmarks:arrow-drop-down';
+    return this.item.isOpen ? 'cr:arrow-drop-up' :
+                              'cr:arrow-drop-down';
   },
 
   /** @private */
