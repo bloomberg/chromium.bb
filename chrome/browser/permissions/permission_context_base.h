@@ -28,6 +28,10 @@ namespace content {
 class WebContents;
 }
 
+namespace safe_browsing {
+class SafeBrowsingDatabaseManager;
+}
+
 using BrowserPermissionCallback = base::Callback<void(ContentSetting)>;
 
 // This base class contains common operations for granting permissions.
@@ -80,7 +84,9 @@ class PermissionContextBase : public KeyedService {
                                  bool user_gesture,
                                  const BrowserPermissionCallback& callback);
 
-  // Returns whether the permission has been granted, denied...
+  // Returns whether the permission has been granted, denied etc.
+  // TODO(meredithl): Ensure that the result accurately reflects whether the
+  // origin is blacklisted for this permission.
   ContentSetting GetPermissionStatus(const GURL& requesting_origin,
                                      const GURL& embedding_origin) const;
 
@@ -164,9 +170,26 @@ class PermissionContextBase : public KeyedService {
   // Called when a request is no longer used so it can be cleaned up.
   void CleanUpRequest(const PermissionRequestID& id);
 
+  // Called when the requesting origin and permission have been checked by Safe
+  // Browsing. |permission_blocked| determines whether to auto-block the
+  // permission request without prompting the user for a decision.
+  void ContinueRequestPermission(content::WebContents* web_contents,
+                                 const PermissionRequestID& id,
+                                 const GURL& requesting_origin,
+                                 const GURL& embedding_origin,
+                                 bool user_gesture,
+                                 const BrowserPermissionCallback& callback,
+                                 bool permission_blocked);
+
+  void SetSafeBrowsingDatabaseManagerAndTimeoutForTest(
+      scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> db_manager,
+      int timeout);
+
   Profile* profile_;
   const content::PermissionType permission_type_;
   const ContentSettingsType content_settings_type_;
+  int safe_browsing_timeout_;
+  scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> db_manager_;
 #if defined(OS_ANDROID)
   std::unique_ptr<PermissionQueueController> permission_queue_controller_;
 #endif

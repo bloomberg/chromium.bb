@@ -5,13 +5,18 @@
 #include "chrome/browser/permissions/permission_context_base.h"
 
 #include <stddef.h>
+
+#include <set>
+#include <string>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_request.h"
@@ -21,14 +26,18 @@
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing_db/database_manager.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/origin_util.h"
 #include "url/gurl.h"
 
@@ -42,6 +51,133 @@ const char PermissionContextBase::kPermissionsKillSwitchFieldStudy[] =
 // static
 const char PermissionContextBase::kPermissionsKillSwitchBlockedValue[] =
     "blocked";
+// Maximum time in milliseconds to wait for safe browsing service to check a
+// url for blacklisting. After this amount of time, the check will be aborted
+// and the url will be treated as not blacklisted.
+// TODO(meredithl): Revisit this once UMA metrics have data about request time.
+const int kCheckUrlTimeoutMs = 2000;
+
+// The client used when checking whether a permission has been blacklisted by
+// Safe Browsing. The check is done asynchronously as no state can be stored in
+// PermissionContextBase (since additional permission requests may be made).
+// This class must be created and destroyed on the UI thread.
+class PermissionsBlacklistingClient
+    : public safe_browsing::SafeBrowsingDatabaseManager::Client,
+      public base::RefCountedThreadSafe<PermissionsBlacklistingClient>,
+      public content::WebContentsObserver {
+ public:
+  static void CheckSafeBrowsingBlacklist(
+      scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> db_manager,
+      content::PermissionType permission_type,
+      const GURL& request_origin,
+      content::WebContents* web_contents,
+      int timeout,
+      base::Callback<void(bool)> callback) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    new PermissionsBlacklistingClient(db_manager, permission_type,
+                                      request_origin, web_contents, timeout,
+                                      callback);
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<PermissionsBlacklistingClient>;
+
+  PermissionsBlacklistingClient(
+      scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> db_manager,
+      content::PermissionType permission_type,
+      const GURL& request_origin,
+      content::WebContents* web_contents,
+      int timeout,
+      base::Callback<void(bool)> callback)
+      : content::WebContentsObserver(web_contents),
+        db_manager_(db_manager),
+        permission_type_(permission_type),
+        callback_(callback),
+        timeout_(timeout),
+        is_active_(true) {
+    // Balanced by a call to Release() in OnCheckApiBlacklistUrlResult().
+    AddRef();
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(&PermissionsBlacklistingClient::StartCheck, this,
+                   request_origin));
+  }
+
+  ~PermissionsBlacklistingClient() override {}
+
+  void StartCheck(const GURL& request_origin) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+    // Start the timer to interrupt into the client callback method with an
+    // empty response if Safe Browsing times out.
+    safe_browsing::ThreatMetadata empty_metadata;
+    timer_ = base::MakeUnique<base::OneShotTimer>();
+    timer_->Start(
+        FROM_HERE, base::TimeDelta::FromMilliseconds(timeout_),
+        base::Bind(&PermissionsBlacklistingClient::OnCheckApiBlacklistUrlResult,
+                   this, request_origin, empty_metadata));
+    db_manager_->CheckApiBlacklistUrl(request_origin, this);
+  }
+
+  // SafeBrowsingDatabaseManager::Client implementation.
+  void OnCheckApiBlacklistUrlResult(
+      const GURL& url,
+      const safe_browsing::ThreatMetadata& metadata) override {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+    if (timer_->IsRunning())
+      timer_->Stop();
+    else
+      db_manager_->CancelApiCheck(this);
+    timer_.reset(nullptr);
+
+    // TODO(meredithl): Convert the strings returned from Safe Browsing to the
+    // ones used by PermissionUtil for comparison.
+    bool permission_blocked =
+        metadata.api_permissions.find(PermissionUtil::GetPermissionString(
+            permission_type_)) != metadata.api_permissions.end();
+
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(
+            &PermissionsBlacklistingClient::EvaluateBlacklistResultOnUiThread,
+            this, permission_blocked));
+  }
+
+  void EvaluateBlacklistResultOnUiThread(bool permission_blocked) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    if (is_active_)
+      callback_.Run(permission_blocked);
+    Release();
+  }
+
+  // WebContentsObserver implementation. Sets the flag so that when the database
+  // manager returns with a result, it won't attempt to run the callback with a
+  // deleted WebContents.
+  void WebContentsDestroyed() override {
+    is_active_ = false;
+    Observe(nullptr);
+  }
+
+  scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> db_manager_;
+  content::PermissionType permission_type_;
+
+  // PermissionContextBase callback to run on the UI thread.
+  base::Callback<void(bool)> callback_;
+
+  // Timer to abort the Safe Browsing check if it takes too long. Created and
+  // used on the IO Thread.
+  std::unique_ptr<base::OneShotTimer> timer_;
+  int timeout_;
+
+  // True if |callback_| should be invoked, if web_contents() is destroyed, this
+  // is set to false.
+  bool is_active_;
+
+  DISALLOW_COPY_AND_ASSIGN(PermissionsBlacklistingClient);
+};
 
 PermissionContextBase::PermissionContextBase(
     Profile* profile,
@@ -50,6 +186,7 @@ PermissionContextBase::PermissionContextBase(
     : profile_(profile),
       permission_type_(permission_type),
       content_settings_type_(content_settings_type),
+      safe_browsing_timeout_(kCheckUrlTimeoutMs),
       weak_factory_(this) {
 #if defined(OS_ANDROID)
   permission_queue_controller_.reset(new PermissionQueueController(
@@ -101,12 +238,60 @@ void PermissionContextBase::RequestPermission(
     return;
   }
 
+  if (base::FeatureList::IsEnabled(features::kPermissionsBlacklist)) {
+    if (!db_manager_) {
+      safe_browsing::SafeBrowsingService* sb_service =
+          g_browser_process->safe_browsing_service();
+      if (sb_service)
+        db_manager_ = sb_service->database_manager();
+    }
+
+    // The client contacts Safe Browsing, and runs the callback with the result.
+    PermissionsBlacklistingClient::CheckSafeBrowsingBlacklist(
+        db_manager_, permission_type_, requesting_origin, web_contents,
+        safe_browsing_timeout_,
+        base::Bind(&PermissionContextBase::ContinueRequestPermission,
+                   weak_factory_.GetWeakPtr(), web_contents, id,
+                   requesting_origin, embedding_origin, user_gesture,
+                   callback));
+  } else {
+    // TODO(meredithl): Add UMA metrics here.
+    ContinueRequestPermission(web_contents, id, requesting_origin,
+                              embedding_origin, user_gesture, callback,
+                              false /* permission blocked */);
+  }
+}
+
+void PermissionContextBase::ContinueRequestPermission(
+    content::WebContents* web_contents,
+    const PermissionRequestID& id,
+    const GURL& requesting_origin,
+    const GURL& embedding_origin,
+    bool user_gesture,
+    const BrowserPermissionCallback& callback,
+    bool permission_blocked) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (permission_blocked) {
+    // TODO(meredithl): Add UMA metrics here.
+    web_contents->GetMainFrame()->AddMessageToConsole(
+        content::CONSOLE_MESSAGE_LEVEL_LOG,
+        base::StringPrintf(
+            "%s permission has been auto-blocked.",
+            PermissionUtil::GetPermissionString(permission_type_).c_str()));
+    // Permission has been blacklisted, block the request.
+    // TODO(meredithl): Consider setting the content setting and persisting
+    // the decision to block.
+    callback.Run(CONTENT_SETTING_BLOCK);
+    return;
+  }
+  // Site is not blacklisted by Safe Browsing for the requested permission.
   ContentSetting content_setting =
       GetPermissionStatus(requesting_origin, embedding_origin);
   if (content_setting == CONTENT_SETTING_ALLOW) {
     HostContentSettingsMapFactory::GetForProfile(profile_)->UpdateLastUsage(
         requesting_origin, embedding_origin, content_settings_type_);
   }
+
   if (content_setting == CONTENT_SETTING_ALLOW ||
       content_setting == CONTENT_SETTING_BLOCK) {
     NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
@@ -324,4 +509,11 @@ void PermissionContextBase::UpdateContentSetting(
       ->SetContentSettingDefaultScope(requesting_origin, embedding_origin,
                                       content_settings_type_, std::string(),
                                       content_setting);
+}
+
+void PermissionContextBase::SetSafeBrowsingDatabaseManagerAndTimeoutForTest(
+    scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> db_manager,
+    int timeout) {
+  db_manager_ = db_manager;
+  safe_browsing_timeout_ = timeout;
 }
