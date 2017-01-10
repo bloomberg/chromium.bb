@@ -92,6 +92,17 @@ DeviceHandler.Notification.DEVICE_NAVIGATION = new DeviceHandler.Notification(
  * @type {DeviceHandler.Notification}
  * @const
  */
+DeviceHandler.Notification.DEVICE_NAVIGATION_READONLY_POLICY =
+    new DeviceHandler.Notification(
+        'deviceNavigation',
+        'REMOVABLE_DEVICE_DETECTION_TITLE',
+        'REMOVABLE_DEVICE_NAVIGATION_MESSAGE_READONLY_POLICY',
+        'REMOVABLE_DEVICE_NAVIGATION_BUTTON_LABEL');
+
+/**
+ * @type {DeviceHandler.Notification}
+ * @const
+ */
 DeviceHandler.Notification.DEVICE_IMPORT = new DeviceHandler.Notification(
     'deviceImport',
     'REMOVABLE_DEVICE_DETECTION_TITLE',
@@ -486,8 +497,14 @@ DeviceHandler.prototype.onMount_ = function(event) {
       .catch(
         function(error) {
           if (metadata.deviceType && metadata.devicePath) {
+            if (metadata.isReadOnly &&
+                !metadata.isReadOnlyRemovableDevice) {
+              DeviceHandler.Notification.DEVICE_NAVIGATION_READONLY_POLICY.show(
+                  /** @type {string} */ (metadata.devicePath));
+            } else {
               DeviceHandler.Notification.DEVICE_NAVIGATION.show(
                   /** @type {string} */ (metadata.devicePath));
+            }
           }
         });
 };
