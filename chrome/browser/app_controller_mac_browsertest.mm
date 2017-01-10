@@ -44,6 +44,7 @@
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -393,7 +394,8 @@ class AppControllerOpenShortcutBrowserTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(AppControllerOpenShortcutBrowserTest,
                        OpenShortcutOnStartup) {
-  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  // The two tabs expected are the Welcome page and the desired URL.
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(g_open_shortcut_url,
       browser()->tab_strip_model()->GetActiveWebContents()
           ->GetLastCommittedURL());
@@ -420,6 +422,15 @@ IN_PROC_BROWSER_TEST_F(AppControllerReplaceNTPBrowserTest,
   // Ensure that there is exactly 1 tab showing, and the tab is the NTP.
   GURL ntp(chrome::kChromeUINewTabURL);
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  browser()->tab_strip_model()->GetActiveWebContents()->GetController().LoadURL(
+      GURL(chrome::kChromeUINewTabURL), content::Referrer(),
+      ui::PageTransition::PAGE_TRANSITION_LINK, std::string());
+
+  // Wait for one navigation on the active web contents.
+  content::TestNavigationObserver ntp_navigation_observer(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  ntp_navigation_observer.Wait();
+
   EXPECT_EQ(ntp,
             browser()
                 ->tab_strip_model()
@@ -429,11 +440,10 @@ IN_PROC_BROWSER_TEST_F(AppControllerReplaceNTPBrowserTest,
   GURL simple(embedded_test_server()->GetURL("/simple.html"));
   SendAppleEventToOpenUrlToAppController(simple);
 
-  // Wait for one navigation on the active web contents.
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  content::TestNavigationObserver obs(
-      browser()->tab_strip_model()->GetActiveWebContents(), 1);
-  obs.Wait();
+  content::TestNavigationObserver event_navigation_observer(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  event_navigation_observer.Wait();
 
   EXPECT_EQ(simple,
             browser()

@@ -7,7 +7,7 @@
 namespace features {
 
 const base::Feature kUseConsolidatedStartupFlow{
-    "UseConsolidatedStartupFlow", base::FEATURE_DISABLED_BY_DEFAULT};
+    "UseConsolidatedStartupFlow", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_WIN)
 const base::Feature kWelcomeWin10InlineStyle{"WelcomeWin10InlineStyle",
