@@ -26,7 +26,7 @@ import org.chromium.ui.gfx.DeviceDisplayInfo;
  * DisplayAndroidManager is a class that informs its observers Display changes.
  */
 @JNINamespace("ui")
-/* package */ class DisplayAndroidManager {
+public class DisplayAndroidManager {
     /**
      * DisplayListenerBackend is an interface that abstract the mechanism used for the actual
      * display update listening. The reason being that from Android API Level 17 DisplayListener
@@ -204,7 +204,7 @@ import org.chromium.ui.gfx.DeviceDisplayInfo;
         return sDisplayAndroidManager;
     }
 
-    /* package */ static Display getDefaultDisplayForContext(Context context) {
+    public static Display getDefaultDisplayForContext(Context context) {
         WindowManager windowManager =
                 (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         return windowManager.getDefaultDisplay();

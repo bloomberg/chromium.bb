@@ -44,7 +44,6 @@
 
 #if defined(OS_ANDROID)
 #include "ui/base/resource/resource_bundle_android.h"
-#include "ui/gfx/android/device_display_info.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -693,8 +692,7 @@ void ResourceBundle::InitSharedInstance(Delegate* delegate) {
   if (display::Display::HasForceDeviceScaleFactor()) {
     display_density = display::Display::GetForcedDeviceScaleFactor();
   } else {
-    gfx::DeviceDisplayInfo device_info;
-    display_density = device_info.GetDIPScale();
+    display_density = GetPrimaryDisplayScale();
   }
   const ScaleFactor closest = FindClosestScaleFactorUnsafe(display_density);
   if (closest != SCALE_FACTOR_100P)
