@@ -28,6 +28,7 @@
 
 #include "core/html/HTMLMediaElement.h"
 #include "core/inspector/InspectorTraceEvents.h"
+#include "core/layout/LayoutBlock.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/paint/PaintLayer.h"
@@ -53,6 +54,11 @@ class GraphicsLayerUpdater::UpdateContext {
   }
 
   const PaintLayer* compositingContainer(const PaintLayer& layer) const {
+    // TODO(chrishtr) this is not very performant for floats, but they should
+    // be uncommon enough, and SPv2 will remove this code.
+    if (layer.layoutObject()->isFloating() && layer.layoutObject()->parent() &&
+        !layer.layoutObject()->parent()->isLayoutBlockFlow())
+      return layer.layoutObject()->containingBlock()->enclosingLayer();
     return layer.stackingNode()->isStacked() ? m_compositingStackingContext
                                              : m_compositingAncestor;
   }

@@ -498,4 +498,22 @@ TEST_P(PaintLayerTest, PaintInvalidationOnCompositedScroll) {
   EXPECT_EQ(LayoutRect(0, 30, 50, 5), content->visualRect());
 }
 
+TEST_P(PaintLayerTest, CompositingContainerFloat) {
+  enableCompositing();
+  setBodyInnerHTML(
+      "<div id='containingBlock' style='position: relative; z-index: 0'>"
+      "  <div style='backface-visibility: hidden'></div>"
+      "  <span style='clip-path: polygon(0px 15px, 0px 54px, 100px 0px)'>"
+      "    <div id='target' style='float: right; position: relative'></div>"
+      "  </span>"
+      "</div>");
+
+  PaintLayer* target =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("target"))->layer();
+  PaintLayer* containingBlock =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("containingBlock"))
+          ->layer();
+  EXPECT_EQ(containingBlock, target->compositingContainer());
+}
+
 }  // namespace blink

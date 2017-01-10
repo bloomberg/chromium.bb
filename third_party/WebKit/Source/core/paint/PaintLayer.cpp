@@ -918,6 +918,11 @@ LayoutPoint PaintLayer::computeOffsetFromTransformedAncestor() const {
 }
 
 PaintLayer* PaintLayer::compositingContainer() const {
+  // Floats have special paintinng order. Also, the container does not need
+  // to be a stacking context, because floats are not stacked.
+  if (m_layoutObject->isFloating() && m_layoutObject->parent() &&
+      !m_layoutObject->parent()->isLayoutBlockFlow())
+    return m_layoutObject->containingBlock()->enclosingLayer();
   if (!stackingNode()->isStacked())
     return parent();
   if (PaintLayerStackingNode* ancestorStackingNode =
