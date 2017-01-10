@@ -1575,7 +1575,7 @@
             ],
             "experiments": [
                 {
-                    "name": "EnabledGlobalMedium",
+                    "name": "EnabledGlobalMedium2",
                     "params": {
                         "config_url": "https://www.gstatic.com/chrome/wifiprefetch/precache_config_gm"
                     }
