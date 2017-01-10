@@ -331,8 +331,10 @@ class BluetoothDetailedView : public TrayDetailsView {
                                       false, bluetooth_enabled);
     if (discovered_not_paired_devices_.size() > 0) {
       if (UseMd()) {
-        scroll_content()->AddChildView(
-            TrayPopupUtils::CreateListItemSeparator(false));
+        if (scroll_content()->has_children()) {
+          scroll_content()->AddChildView(
+              TrayPopupUtils::CreateListItemSeparator(false));
+        }
       } else {
         AddScrollSeparator();
       }
