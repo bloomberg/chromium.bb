@@ -434,6 +434,30 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     }
 
     /**
+     * Test the entries in app menu for media viewer.
+     */
+    @SmallTest
+    @RetryOnFailure
+    public void testAppMenuForMediaViewer() throws InterruptedException {
+        Intent intent = createMinimalCustomTabIntent();
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_IS_MEDIA_VIEWER, true);
+        IntentHandler.addTrustedIntentExtras(intent);
+        startCustomTabActivityWithIntent(intent);
+
+        openAppMenuAndAssertMenuShown();
+        Menu menu = getActivity().getAppMenuHandler().getAppMenu().getMenu();
+        final int expectedMenuSize = 0;
+        final int actualMenuSize = getActualMenuSize(menu);
+
+        assertNotNull("App menu is not initialized: ", menu);
+        assertEquals(expectedMenuSize, actualMenuSize);
+        assertFalse(menu.findItem(R.id.find_in_page_id).isVisible());
+        assertFalse(menu.findItem(R.id.add_to_homescreen_id).isVisible());
+        assertFalse(menu.findItem(R.id.request_desktop_site_id).isVisible());
+        assertFalse(menu.findItem(R.id.open_in_browser_id).isVisible());
+    }
+
+    /**
      * Tests if the default share item can be shown in the app menu.
      */
     @SmallTest

@@ -17,6 +17,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tab.Tab;
@@ -100,10 +101,19 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
             MenuItem bookmarkItem = menu.findItem(R.id.bookmark_this_page_id);
             MenuItem downloadItem = menu.findItem(R.id.offline_page_id);
             MenuItem addToHomeScreenItem = menu.findItem(R.id.add_to_homescreen_id);
+
+            // Hide request desktop site on all chrome:// pages except for the NTP. Check request
+            // desktop site if it's activated on this page.
+            MenuItem requestItem = menu.findItem(R.id.request_desktop_site_id);
+            updateRequestDesktopSiteMenuItem(requestItem, currentTab);
+
             if (mIsMediaViewer) {
                 // Most of the menu items don't make sense when viewing media.
                 iconRow.setVisible(false);
                 openInChromeItem.setVisible(false);
+                menu.findItem(R.id.find_in_page_id).setVisible(false);
+                menu.findItem(R.id.request_desktop_site_id).setVisible(false);
+                addToHomeScreenItem.setVisible(false);
             } else {
                 try {
                     openInChromeItem.setTitle(mDefaultBrowserFetcher.get());
@@ -121,6 +131,8 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
                 addToHomeScreenItem.setVisible(false);
             }
 
+            downloadItem.setEnabled(DownloadUtils.isAllowedToDownloadPage(currentTab));
+
             // Add custom menu items. Make sure they are only added once.
             if (!mIsCustomEntryAdded) {
                 mIsCustomEntryAdded = true;
@@ -129,11 +141,6 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
                     mItemToIndexMap.put(item, i);
                 }
             }
-
-            // Hide request desktop site on all chrome:// pages except for the NTP. Check request
-            // desktop site if it's activated on this page.
-            MenuItem requestItem = menu.findItem(R.id.request_desktop_site_id);
-            updateRequestDesktopSiteMenuItem(requestItem, currentTab);
         }
     }
 

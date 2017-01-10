@@ -93,7 +93,7 @@ public class BookmarkUtils {
                 if (fromCustomTab) {
                     String packageLabel = BuildInfo.getPackageLabel(activity);
                     snackbar = Snackbar.make(
-                            activity.getString(R.string.menu_open_in_product, packageLabel),
+                            activity.getString(R.string.bookmark_page_saved, packageLabel),
                             snackbarController, Snackbar.TYPE_ACTION, Snackbar.UMA_BOOKMARK_ADDED);
                 } else {
                     snackbar = Snackbar.make(
