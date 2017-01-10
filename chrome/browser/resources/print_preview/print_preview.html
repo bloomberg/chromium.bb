@@ -57,7 +57,7 @@
 <body>
   <div id="navbar-container">
     <header>
-      <h1 id="navbar-content-title" i18n-content="title"></h1>
+      <h1 id="navbar-content-title">$i18n{title}</h1>
       <include src="print_header.html">
     </header>
     <div id="navbar-scroll-container">
@@ -78,15 +78,17 @@
       <div id="link-container">
 <if expr="not chromeos">
         <div>
-          <a is="action-link" id="system-dialog-link" class="navbar-link"
-              i18n-content="systemDialogOption"></a>
+          <a is="action-link" id="system-dialog-link" class="navbar-link">
+            $i18n{systemDialogOption}
+          </a>
           <div id="system-dialog-throbber" hidden class="throbber"></div>
         </div>
 </if>
 <if expr="is_macosx">
         <div>
-          <a is="action-link" id="open-pdf-in-preview-link" class="navbar-link"
-              i18n-content="openPdfInPreviewOption"></a>
+          <a is="action-link" id="open-pdf-in-preview-link" class="navbar-link">
+            $i18n{openPdfInPreviewOption}
+          </a>
           <div id="open-preview-app-throbber" hidden class="throbber"></div>
         </div>
 </if>

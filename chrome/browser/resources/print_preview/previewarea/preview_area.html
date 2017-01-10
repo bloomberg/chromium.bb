@@ -3,7 +3,7 @@
     <div class="preview-area-messages">
 
       <div class="preview-area-loading-message preview-area-message">
-        <span i18n-content="loading"></span>
+        <span>$i18n{loading}</span>
         <span class="preview-area-loading-message-jumping-dots jumping-dots"
             ><span>.</span><span>.</span><span>.</span></span>
       </div>
@@ -11,21 +11,24 @@
       <div class="preview-area-custom-message preview-area-message" hidden>
         <div class="preview-area-custom-message-text"></div>
         <div class="preview-area-custom-action-area">
-          <button class="preview-area-open-system-dialog-button"
-              i18n-content="launchNativeDialog"></button>
+          <button class="preview-area-open-system-dialog-button">
+            $i18n{launchNativeDialog}
+          </button>
           <div class="preview-area-open-system-dialog-button-throbber throbber"
               hidden></div>
         </div>
       </div>
 
-      <div class="preview-area-preview-failed-message preview-area-message"
-          i18n-content="previewFailed" hidden></div>
+      <div class="preview-area-preview-failed-message preview-area-message" hidden>
+        $i18n{previewFailed}
+      </div>
 
       <div class="preview-area-print-failed preview-area-message" hidden>
-        <div i18n-content="invalidPrinterSettings"></div>
+        <div>$i18n{invalidPrinterSettings}</div>
         <div class="preview-area-print-failed-action-area">
-          <button class="preview-area-open-system-dialog-button"
-              i18n-content="launchNativeDialog"></button>
+          <button class="preview-area-open-system-dialog-button">
+            $i18n{launchNativeDialog}
+          </button>
           <div class="preview-area-open-system-dialog-button-throbber throbber"
               hidden></div>
         </div>
