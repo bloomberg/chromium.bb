@@ -77,13 +77,20 @@ void SurfaceManager::Destroy(std::unique_ptr<Surface> surface) {
   GarbageCollectSurfaces();
 }
 
-void SurfaceManager::DidSatisfySequences(const FrameSinkId& frame_sink_id,
-                                         std::vector<uint32_t>* sequence) {
+void SurfaceManager::RequireSequence(const SurfaceId& surface_id,
+                                     const SurfaceSequence& sequence) {
+  auto* surface = GetSurfaceForId(surface_id);
+  if (!surface) {
+    DLOG(ERROR) << "Attempting to require callback on nonexistent surface";
+    return;
+  }
+  surface->AddDestructionDependency(sequence);
+}
+
+void SurfaceManager::SatisfySequence(const SurfaceSequence& sequence) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(lifetime_type_, LifetimeType::SEQUENCES);
-  for (uint32_t value : *sequence)
-    satisfied_sequences_.insert(SurfaceSequence(frame_sink_id, value));
-  sequence->clear();
+  satisfied_sequences_.insert(sequence);
   GarbageCollectSurfaces();
 }
 

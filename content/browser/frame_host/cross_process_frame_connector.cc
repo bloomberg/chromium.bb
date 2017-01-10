@@ -98,22 +98,13 @@ void CrossProcessFrameConnector::SetChildFrameSurface(
 
 void CrossProcessFrameConnector::OnSatisfySequence(
     const cc::SurfaceSequence& sequence) {
-  std::vector<uint32_t> sequences;
-  sequences.push_back(sequence.sequence);
-  cc::SurfaceManager* manager = GetSurfaceManager();
-  manager->DidSatisfySequences(sequence.frame_sink_id, &sequences);
+  GetSurfaceManager()->SatisfySequence(sequence);
 }
 
 void CrossProcessFrameConnector::OnRequireSequence(
     const cc::SurfaceId& id,
     const cc::SurfaceSequence& sequence) {
-  cc::SurfaceManager* manager = GetSurfaceManager();
-  cc::Surface* surface = manager->GetSurfaceForId(id);
-  if (!surface) {
-    LOG(ERROR) << "Attempting to require callback on nonexistent surface";
-    return;
-  }
-  surface->AddDestructionDependency(sequence);
+  GetSurfaceManager()->RequireSequence(id, sequence);
 }
 
 gfx::Rect CrossProcessFrameConnector::ChildFrameRect() {

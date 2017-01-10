@@ -427,23 +427,14 @@ void BrowserPluginGuest::SetChildFrameSurface(
 void BrowserPluginGuest::OnSatisfySequence(
     int instance_id,
     const cc::SurfaceSequence& sequence) {
-  std::vector<uint32_t> sequences;
-  sequences.push_back(sequence.sequence);
-  cc::SurfaceManager* manager = GetSurfaceManager();
-  manager->DidSatisfySequences(sequence.frame_sink_id, &sequences);
+  GetSurfaceManager()->SatisfySequence(sequence);
 }
 
 void BrowserPluginGuest::OnRequireSequence(
     int instance_id,
     const cc::SurfaceId& id,
     const cc::SurfaceSequence& sequence) {
-  cc::SurfaceManager* manager = GetSurfaceManager();
-  cc::Surface* surface = manager->GetSurfaceForId(id);
-  if (!surface) {
-    LOG(ERROR) << "Attempting to require callback on nonexistent surface";
-    return;
-  }
-  surface->AddDestructionDependency(sequence);
+  GetSurfaceManager()->RequireSequence(id, sequence);
 }
 
 bool BrowserPluginGuest::HandleFindForEmbedder(

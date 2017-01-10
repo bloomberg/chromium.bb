@@ -247,8 +247,7 @@ TEST_F(SurfaceManagerRefTest, CheckGCWithSequences) {
   EXPECT_NE(manager().GetSurfaceForId(id2), nullptr);
 
   // Satisfy destruction dependency on |id3| and delete during GC.
-  std::vector<uint32_t> satisfied({sequence.sequence});
-  manager().DidSatisfySequences(kFrameSink2, &satisfied);
+  manager().SatisfySequence(sequence);
   EXPECT_EQ(manager().GetSurfaceForId(id3), nullptr);
 
   // Remove ref on |id2| and delete during GC.

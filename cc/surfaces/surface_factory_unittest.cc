@@ -526,8 +526,8 @@ TEST_F(SurfaceFactoryTest, DestroySequence) {
 
   CompositorFrame frame;
   DCHECK(manager_.GetSurfaceForId(id2));
-  std::vector<uint32_t> sequences = {4, 6};
-  manager_.DidSatisfySequences(kArbitraryFrameSinkId, &sequences);
+  manager_.SatisfySequence(SurfaceSequence(kArbitraryFrameSinkId, 4));
+  manager_.SatisfySequence(SurfaceSequence(kArbitraryFrameSinkId, 6));
   DCHECK(!manager_.GetSurfaceForId(id2));
 
   // Check that waiting after the sequence is satisfied works.
@@ -602,9 +602,7 @@ TEST_F(SurfaceFactoryTest, DestroyCycle) {
       SurfaceId(factory_->frame_sink_id(), local_frame_id_)));
 
   // Satisfy last destruction dependency for id2.
-  std::vector<uint32_t> to_satisfy;
-  to_satisfy.push_back(4);
-  manager_.DidSatisfySequences(kAnotherArbitraryFrameSinkId, &to_satisfy);
+  manager_.SatisfySequence(SurfaceSequence(kAnotherArbitraryFrameSinkId, 4));
 
   // id2 and local_frame_id_ are in a reference cycle that has no surface
   // sequences holding on to it, so they should be destroyed.

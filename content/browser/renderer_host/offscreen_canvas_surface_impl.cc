@@ -57,20 +57,11 @@ void OffscreenCanvasSurfaceImpl::OnSurfaceCreated(
 
 void OffscreenCanvasSurfaceImpl::Require(const cc::SurfaceId& surface_id,
                                          const cc::SurfaceSequence& sequence) {
-  cc::SurfaceManager* manager = GetSurfaceManager();
-  cc::Surface* surface = manager->GetSurfaceForId(surface_id);
-  if (!surface) {
-    DLOG(ERROR) << "Attempting to require callback on nonexistent surface";
-    return;
-  }
-  surface->AddDestructionDependency(sequence);
+  GetSurfaceManager()->RequireSequence(surface_id, sequence);
 }
 
 void OffscreenCanvasSurfaceImpl::Satisfy(const cc::SurfaceSequence& sequence) {
-  std::vector<uint32_t> sequences;
-  sequences.push_back(sequence.sequence);
-  cc::SurfaceManager* manager = GetSurfaceManager();
-  manager->DidSatisfySequences(sequence.frame_sink_id, &sequences);
+  GetSurfaceManager()->SatisfySequence(sequence);
 }
 
 }  // namespace content

@@ -63,10 +63,14 @@ class CC_SURFACES_EXPORT SurfaceManager
   // |surface_id| for the first time.
   void SurfaceCreated(const SurfaceInfo& surface_info);
 
-  // A frame for a surface satisfies a set of sequence numbers in a particular
-  // id namespace.
-  void DidSatisfySequences(const FrameSinkId& frame_sink_id,
-                           std::vector<uint32_t>* sequence);
+  // Require that the given sequence number must be satisfied (using
+  // SatisfySequence) before the given surface can be destroyed.
+  void RequireSequence(const SurfaceId& surface_id,
+                       const SurfaceSequence& sequence);
+
+  // Satisfies the given sequence number. Once all sequence numbers that
+  // a surface depends on are satisfied, the surface can be destroyed.
+  void SatisfySequence(const SurfaceSequence& sequence);
 
   void RegisterFrameSinkId(const FrameSinkId& frame_sink_id);
 

@@ -19,20 +19,13 @@ void DirectSurfaceReferenceFactory::SatisfySequence(
     const SurfaceSequence& sequence) const {
   if (!manager_)
     return;
-  std::vector<uint32_t> sequences;
-  sequences.push_back(sequence.sequence);
-  manager_->DidSatisfySequences(sequence.frame_sink_id, &sequences);
+  manager_->SatisfySequence(sequence);
 }
 
 void DirectSurfaceReferenceFactory::RequireSequence(
     const SurfaceId& surface_id,
     const SurfaceSequence& sequence) const {
-  auto* surface = manager_->GetSurfaceForId(surface_id);
-  if (!surface) {
-    LOG(ERROR) << "Attempting to require callback on nonexistent surface";
-    return;
-  }
-  surface->AddDestructionDependency(sequence);
+  manager_->RequireSequence(surface_id, sequence);
 }
 
 }  // namespace cc

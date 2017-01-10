@@ -88,18 +88,12 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
 
 void CompositorFrameSinkSupport::Require(const LocalFrameId& local_frame_id,
                                          const SurfaceSequence& sequence) {
-  Surface* surface = surface_manager_->GetSurfaceForId(
-      SurfaceId(frame_sink_id_, local_frame_id));
-  if (!surface) {
-    DLOG(ERROR) << "Attempting to require callback on nonexistent surface";
-    return;
-  }
-  surface->AddDestructionDependency(sequence);
+  surface_manager_->RequireSequence(SurfaceId(frame_sink_id_, local_frame_id),
+                                    sequence);
 }
 
 void CompositorFrameSinkSupport::Satisfy(const SurfaceSequence& sequence) {
-  std::vector<uint32_t> sequences = {sequence.sequence};
-  surface_manager_->DidSatisfySequences(sequence.frame_sink_id, &sequences);
+  surface_manager_->SatisfySequence(sequence);
 }
 
 void CompositorFrameSinkSupport::DidReceiveCompositorFrameAck() {
