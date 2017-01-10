@@ -467,23 +467,45 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, Jpeg) {
   counter.WaitForCount(1);
 }
 
-// Checks that nothing is prefetched from malware sites.
-// TODO(mattcary): disabled as prefetch process teardown is racey with prerender
-// contents destruction, can fix when prefetch prerenderers are destroyed
-// deterministically.
+// If the main resource is unsafe, the whole prefetch is cancelled.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
-                       DISABLED_PrerenderSafeBrowsingTopLevel) {
+                       PrerenderSafeBrowsingTopLevel) {
   GURL url = src_server()->GetURL(MakeAbsolute(kPrefetchPage));
   GetFakeSafeBrowsingDatabaseManager()->SetThreatTypeForUrl(
       url, safe_browsing::SB_THREAT_TYPE_URL_MALWARE);
-  // Prefetch resources are blocked, but the prerender is not killed in any
-  // special way.
-  // TODO(mattcary): since the prerender will count itself as loaded even if the
-  // fetch of the main resource fails, the test doesn't actually confirm what we
-  // want it to confirm. This may be fixed by planned changes to the prerender
-  // lifecycle.
+
+  RequestCounter main_counter;
+  CountRequestFor(kPrefetchPage, &main_counter);
+  RequestCounter script_counter;
+  CountRequestFor(kPrefetchScript, &script_counter);
+
   std::unique_ptr<TestPrerender> prerender =
       PrefetchFromFile(kPrefetchPage, FINAL_STATUS_SAFE_BROWSING);
+
+  main_counter.WaitForCount(0);
+  script_counter.WaitForCount(0);
+
+  // Verify that the page load did not happen.
+  prerender->WaitForLoads(0);
+}
+
+// If a subresource is unsafe, the corresponding request is cancelled.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
+                       PrerenderSafeBrowsingSubresource) {
+  GURL url = src_server()->GetURL(MakeAbsolute(kPrefetchScript));
+  GetFakeSafeBrowsingDatabaseManager()->SetThreatTypeForUrl(
+      url, safe_browsing::SB_THREAT_TYPE_URL_MALWARE);
+
+  RequestCounter main_counter;
+  CountRequestFor(kPrefetchPage, &main_counter);
+  RequestCounter script_counter;
+  CountRequestFor(kPrefetchScript, &script_counter);
+
+  std::unique_ptr<TestPrerender> prerender =
+      PrefetchFromFile(kPrefetchPage, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+
+  main_counter.WaitForCount(1);
+  script_counter.WaitForCount(0);
 }
 
 // Checks that prefetching a page does not add it to browsing history.

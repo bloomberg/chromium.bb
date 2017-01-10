@@ -70,6 +70,19 @@ std::unique_ptr<base::Value> NetLogStringCallback(const char* name,
   return std::move(event_params);
 }
 
+// Destroys the prerender contents associated with the web_contents, if any.
+void DestroyPrerenderContents(
+    const content::ResourceRequestInfo::WebContentsGetter&
+        web_contents_getter) {
+  content::WebContents* web_contents = web_contents_getter.Run();
+  if (web_contents) {
+    prerender::PrerenderContents* prerender_contents =
+        prerender::PrerenderContents::FromWebContents(web_contents);
+    if (prerender_contents)
+      prerender_contents->Destroy(prerender::FINAL_STATUS_SAFE_BROWSING);
+  }
+}
+
 }  // namespace
 
 // TODO(eroman): Downgrade these CHECK()s to DCHECKs once there is more
@@ -267,7 +280,17 @@ void SafeBrowsingResourceThrottle::OnCheckBrowseUrlResult(
     return;
   }
 
+  const content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request_);
+
   if (request_->load_flags() & net::LOAD_PREFETCH) {
+    // Destroy the prefetch with FINAL_STATUS_SAFEBROSWING.
+    if (resource_type_ == content::RESOURCE_TYPE_MAIN_FRAME) {
+      content::BrowserThread::PostTask(
+          content::BrowserThread::UI, FROM_HERE,
+          base::Bind(&DestroyPrerenderContents,
+                     info->GetWebContentsGetterForRequest()));
+    }
     // Don't prefetch resources that fail safe browsing, disallow them.
     Cancel();
     UMA_HISTOGRAM_ENUMERATION("SB2.ResourceTypes2.UnsafePrefetchCanceled",
@@ -277,9 +300,6 @@ void SafeBrowsingResourceThrottle::OnCheckBrowseUrlResult(
 
   UMA_HISTOGRAM_ENUMERATION("SB2.ResourceTypes2.Unsafe", resource_type_,
                             content::RESOURCE_TYPE_LAST_TYPE);
-
-  const content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(request_);
 
   security_interstitials::UnsafeResource resource;
   resource.url = url;
