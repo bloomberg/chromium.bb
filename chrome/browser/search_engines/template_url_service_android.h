@@ -76,11 +76,17 @@ class TemplateUrlServiceAndroid : public TemplateURLServiceObserver {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& jkeyword);
+
+  // Adds a custom search engine, sets |jkeyword| as its short_name and keyword,
+  // and sets its date_created as |age_in_days| days before the current time.
   base::android::ScopedJavaLocalRef<jstring> AddSearchEngineForTesting(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& jkeyword,
       jint age_in_days);
+
+  // Finds the search engine whose keyword matches |jkeyword| and sets its
+  // last_visited time as the current time.
   base::android::ScopedJavaLocalRef<jstring> UpdateLastVisitedForTesting(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

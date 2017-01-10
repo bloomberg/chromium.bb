@@ -244,9 +244,6 @@ class TemplateURLService : public WebDataServiceConsumer,
                         const base::string16& keyword,
                         const std::string& search_url);
 
-  // Updates the last_visited time of |url| to the current time.
-  void UpdateTemplateURLVisitTime(TemplateURL* url);
-
   // Return true if the given |url| can be made the default. This returns false
   // regardless of |url| if the default search provider is managed by policy or
   // controlled by an extension.
@@ -429,6 +426,7 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   friend class InstantUnitTestBase;
   friend class TemplateURLServiceTestUtil;
+  friend class TemplateUrlServiceAndroid;
 
   using GUIDToTURL = std::map<std::string, TemplateURL*>;
 
@@ -572,6 +570,9 @@ class TemplateURLService : public WebDataServiceConsumer,
   // For each TemplateURL whose url matches the visited url
   // SetKeywordSearchTermsForURL is invoked.
   void UpdateKeywordSearchTermsForURL(const URLVisitedDetails& details);
+
+  // Updates the last_visited time of |url| to the current time.
+  void UpdateTemplateURLVisitTime(TemplateURL* url);
 
   // If necessary, generates a visit for the site http:// + t_url.keyword().
   void AddTabToSearchVisit(const TemplateURL& t_url);
