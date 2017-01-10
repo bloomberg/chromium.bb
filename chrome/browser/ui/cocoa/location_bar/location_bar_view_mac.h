@@ -176,7 +176,13 @@ class LocationBarViewMac : public LocationBar,
 
   bool ShouldShowEVBubble() const;
 
+  // Returns true if the URL is an extension URL and the extension bubble should
+  // be shown.
   bool ShouldShowExtensionBubble() const;
+
+  // Returns true if the the URL is a chrome:// URL and the Chrome bubble should
+  // be shown.
+  bool ShouldShowChromeBubble() const;
 
   // Returns true if the security state decoration should be displayed. The
   // security state should only be shown for valid and invalid HTTPS states.

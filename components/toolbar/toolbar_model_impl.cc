@@ -69,8 +69,9 @@ security_state::SecurityLevel ToolbarModelImpl::GetSecurityLevel(
 
 gfx::VectorIconId ToolbarModelImpl::GetVectorIcon() const {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-  if (GetURL().SchemeIs("chrome-extension"))
-    return gfx::VectorIconId::OMNIBOX_EXTENSION_APP;
+  const auto icon_override = delegate_->GetVectorIconOverride();
+  if (icon_override != gfx::VectorIconId::VECTOR_ICON_NONE)
+    return icon_override;
 
   switch (GetSecurityLevel(false)) {
     case security_state::NONE:

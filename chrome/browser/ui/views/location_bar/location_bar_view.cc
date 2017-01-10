@@ -51,6 +51,7 @@
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
 #include "chrome/browser/ui/views/translate/translate_icon_view.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
@@ -68,10 +69,12 @@
 #include "components/zoom/zoom_event_manager.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/feature_switch.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/compositor/paint_recorder.h"
@@ -878,6 +881,9 @@ void LocationBarView::ShowFirstRunBubbleInternal() {
 }
 
 base::string16 LocationBarView::GetLocationIconText() const {
+  if (GetToolbarModel()->GetURL().SchemeIs(content::kChromeUIScheme))
+    return l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
+
   const base::string16 extension_name = GetExtensionName(
       GetToolbarModel()->GetURL(), delegate_->GetWebContents());
   if (!extension_name.empty())
@@ -896,7 +902,8 @@ bool LocationBarView::ShouldShowKeywordBubble() const {
 
 bool LocationBarView::ShouldShowLocationIconText() const {
   if (!GetOmniboxView()->IsEditingOrEmpty() &&
-      GetToolbarModel()->GetURL().SchemeIs(extensions::kExtensionScheme))
+      (GetToolbarModel()->GetURL().SchemeIs(content::kChromeUIScheme) ||
+       GetToolbarModel()->GetURL().SchemeIs(extensions::kExtensionScheme)))
     return true;
 
   using SecurityLevel = security_state::SecurityLevel;

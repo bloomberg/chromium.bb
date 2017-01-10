@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/web_state/web_state.h"
+#include "ui/gfx/vector_icons_public.h"
 
 ToolbarModelDelegateIOS::ToolbarModelDelegateIOS(TabModel* tab_model)
     : tab_model_([tab_model retain]) {}
@@ -85,6 +86,14 @@ security_state::SecurityLevel ToolbarModelDelegateIOS::GetSecurityLevel()
   return result.security_level;
 }
 
+scoped_refptr<net::X509Certificate> ToolbarModelDelegateIOS::GetCertificate()
+    const {
+  web::NavigationItem* item = GetNavigationItem();
+  if (item)
+    return item->GetSSL().certificate;
+  return scoped_refptr<net::X509Certificate>();
+}
+
 bool ToolbarModelDelegateIOS::FailsMalwareCheck() const {
   web::WebState* web_state = [GetCurrentTab() webState];
   // If there is no active WebState (which can happen during toolbar
@@ -98,10 +107,6 @@ bool ToolbarModelDelegateIOS::FailsMalwareCheck() const {
          security_state::MALICIOUS_CONTENT_STATUS_NONE;
 }
 
-scoped_refptr<net::X509Certificate> ToolbarModelDelegateIOS::GetCertificate()
-    const {
-  web::NavigationItem* item = GetNavigationItem();
-  if (item)
-    return item->GetSSL().certificate;
-  return scoped_refptr<net::X509Certificate>();
+gfx::VectorIconId ToolbarModelDelegateIOS::GetVectorIconOverride() const {
+  return gfx::VectorIconId::VECTOR_ICON_NONE;
 }

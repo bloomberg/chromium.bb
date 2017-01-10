@@ -315,6 +315,7 @@ class LocationBarView : public LocationBar,
   // - For secure/insecure pages, returns text describing the URL's security
   // level.
   // - For extension URLs, returns the extension name.
+  // - For chrome:// URLs, returns the short product name (e.g. Chrome).
   base::string16 GetLocationIconText() const;
 
   bool ShouldShowKeywordBubble() const;

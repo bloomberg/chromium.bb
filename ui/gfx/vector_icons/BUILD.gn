@@ -68,6 +68,8 @@ action("aggregate_vector_icons") {
     "location_bar_https_valid.icon",
     "location_bar_https_valid_in_chip.1x.icon",
     "location_bar_https_valid_in_chip.icon",
+    "location_bar_product.1x.icon",
+    "location_bar_product.icon",
     "location_bar_star.icon",
     "location_bar_star_active.icon",
     "location_on.icon",

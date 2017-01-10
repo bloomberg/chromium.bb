@@ -51,6 +51,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/grit/components_scaled_resources.h"
@@ -63,6 +64,7 @@
 #include "components/zoom/zoom_controller.h"
 #include "components/zoom/zoom_event_manager.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -454,9 +456,9 @@ void LocationBarViewMac::Layout() {
   // displayed, even if the width is narrow.
   CGFloat available_width =
       [cell availableWidthInFrame:[[cell controlView] frame]];
-  is_width_available_for_security_verbose_ = available_width >= kMinURLWidth ||
-                                             ShouldShowEVBubble() ||
-                                             ShouldShowExtensionBubble();
+  is_width_available_for_security_verbose_ =
+      available_width >= kMinURLWidth || ShouldShowEVBubble() ||
+      ShouldShowExtensionBubble() || ShouldShowChromeBubble();
 
   if (!keyword.empty() && !is_keyword_hint) {
     // Switch from location icon to keyword mode.
@@ -488,6 +490,12 @@ void LocationBarViewMac::Layout() {
         GetExtensionName(GetToolbarModel()->GetURL(), GetWebContents()));
     security_state_bubble_decoration_->SetFullLabel(
         base::SysUTF16ToNSString(label));
+  } else if (ShouldShowChromeBubble()) {
+    // Switch from location icon to show Chrome bubble instead.
+    location_icon_decoration_->SetVisible(false);
+    security_state_bubble_decoration_->SetVisible(true);
+    security_state_bubble_decoration_->SetFullLabel(
+        l10n_util::GetNSString(IDS_SHORT_PRODUCT_NAME));
   } else if (ShouldShowSecurityState() ||
              security_state_bubble_decoration_->AnimatingOut()) {
     bool is_security_state_visible =
@@ -661,6 +669,11 @@ bool LocationBarViewMac::ShouldShowEVBubble() const {
 bool LocationBarViewMac::ShouldShowExtensionBubble() const {
   return !GetOmniboxView()->IsEditingOrEmpty() &&
          GetToolbarModel()->GetURL().SchemeIs(extensions::kExtensionScheme);
+}
+
+bool LocationBarViewMac::ShouldShowChromeBubble() const {
+  return !GetOmniboxView()->IsEditingOrEmpty() &&
+         GetToolbarModel()->GetURL().SchemeIs(content::kChromeUIScheme);
 }
 
 bool LocationBarViewMac::ShouldShowSecurityState() const {
@@ -869,7 +882,8 @@ void LocationBarViewMac::UpdateSecurityState(bool tab_changed) {
   // out, animate it back in. Otherwise, if the security state has changed,
   // animate the decoration if animation is enabled and the state changed is
   // not from a tab switch.
-  if ((ShouldShowSecurityState() || ShouldShowExtensionBubble()) &&
+  if ((ShouldShowSecurityState() || ShouldShowExtensionBubble() ||
+       ShouldShowChromeBubble()) &&
       is_width_available_for_security_verbose_) {
     bool is_secure_to_secure = IsSecureConnection(new_security_level) &&
                                IsSecureConnection(security_level_);

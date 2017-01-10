@@ -44,6 +44,7 @@ class ToolbarModelDelegateIOS : public ToolbarModelDelegate {
   SecurityLevel GetSecurityLevel() const override;
   scoped_refptr<net::X509Certificate> GetCertificate() const override;
   bool FailsMalwareCheck() const override;
+  gfx::VectorIconId GetVectorIconOverride() const override;
 
   base::scoped_nsobject<TabModel> tab_model_;
 
