@@ -159,29 +159,13 @@ function compareBuffersWithConstraints(actual, expected, options) {
     var snr = 10 * Math.log10(signalPower / noisePower);
     var maxErrorULP = maxError * scaleFactor;
 
-    if (snr >= thresholdSNR) {
-        testPassed('Exceeded SNR threshold of ' + thresholdSNR + ' dB.');
-    } else {
-        testFailed('Expected SNR of ' + thresholdSNR + ' dB, but actual SNR is ' +
-        snr + ' dB.');
-    }
+    Should("SNR", snr).beGreaterThanOrEqualTo(thresholdSNR);
 
-    if (maxErrorULP <= thresholdDiffULP) {
-        testPassed('Maximum difference below threshold of ' +
-            thresholdDiffULP + ' ulp (' + bitDepth + '-bits).');
-    } else {
-        testFailed('Maximum difference of ' + maxErrorULP +
-            ' at the index ' + errorPosition + ' exceeded threshold of ' +
-            thresholdDiffULP + ' ulp (' + bitDepth + '-bits).');
-    }
+    Should('Maximum difference (in ulp units (' + bitDepth + '-bits))',
+      maxErrorULP).beLessThanOrEqualTo(thresholdDiffULP);
 
-    if (diffCount <= thresholdDiffCount) {
-        testPassed('Number of differences between results is ' +
-            diffCount + ' out of ' + actual.length + '.');
-    } else {
-        testFailed(diffCount + ' differences found but expected no more than ' +
-            diffCount + ' out of ' + actual.length + '.');
-    }
+    Should('Number of differences between results', diffCount)
+      .beLessThanOrEqualTo(thresholdDiffCount);
 }
 
 // Create an impulse in a buffer of length sampleFrameLength

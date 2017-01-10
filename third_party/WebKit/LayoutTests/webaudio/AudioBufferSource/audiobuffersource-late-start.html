@@ -2,15 +2,14 @@
 <html>
 
 <head>
-  <script src="../../resources/js-test.js"></script>
+  <script src="../../resources/testharness.js"></script>
+  <script src="../../resources/testharnessreport.js"></script> 
   <script src="../resources/audit-util.js"></script>
   <script src="../resources/audio-testing.js"></script>
 </head>
 
 <body>
   <script>
-    description('Test the late call of start(0) of BufferSource.');
-    window.jsTestIsAsync = true;
 
     var renderQuantum = 128;
 
@@ -69,17 +68,14 @@
         Should('The index of value change', nonZeroValueIndex)
           .beEqualTo(startIndex);
 
-        if (nonZeroValueIndex === 0)
-          testFailed('The first sample was non-zero value. It should be zero.');
-        else
-          testPassed('The rendered buffer contains non-zero values after the first sample.');
-
+        Should('The index of the first non-zero sample', nonZeroValueIndex)
+          .notBeEqualTo(0)
+      
       }).then(done);
     });
 
     audit.defineTask('finish-test', function (done) {
       done();
-      finishJSTest();
     });
 
     audit.runTasks();

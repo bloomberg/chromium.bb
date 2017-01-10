@@ -3,21 +3,21 @@ Test if AudioBufferSourceNode.playbackRate can playback at different rates prope
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS Exceeded SNR threshold of 103.8508 dB.
-PASS Maximum difference below threshold of 0.3028 ulp (16-bits).
-PASS Number of differences between results is 0 out of 14400.
-PASS Exceeded SNR threshold of 103.8657 dB.
-PASS Maximum difference below threshold of 0.3029 ulp (16-bits).
-PASS Number of differences between results is 0 out of 14400.
-PASS Exceeded SNR threshold of 103.8141 dB.
-PASS Maximum difference below threshold of 0.3047 ulp (16-bits).
-PASS Number of differences between results is 0 out of 14400.
-PASS Exceeded SNR threshold of 103.6818 dB.
-PASS Maximum difference below threshold of 0.3262 ulp (16-bits).
-PASS Number of differences between results is 0 out of 14400.
-PASS Exceeded SNR threshold of 103.1514 dB.
-PASS Maximum difference below threshold of 0.3946 ulp (16-bits).
-PASS Number of differences between results is 0 out of 14400.
+PASS SNR (103.85093009191795) is greater than or equal to 103.8508.
+PASS Maximum difference (in ulp units (16-bits)) (0.302734375) is less than or equal to 0.3028.
+PASS Number of differences between results (0) is less than or equal to 0.
+PASS SNR (103.8658027256771) is greater than or equal to 103.8657.
+PASS Maximum difference (in ulp units (16-bits)) (0.302734375) is less than or equal to 0.3029.
+PASS Number of differences between results (0) is less than or equal to 0.
+PASS SNR (103.81424611365298) is greater than or equal to 103.8141.
+PASS Maximum difference (in ulp units (16-bits)) (0.3046875) is less than or equal to 0.3047.
+PASS Number of differences between results (0) is less than or equal to 0.
+PASS SNR (103.68193381522602) is greater than or equal to 103.6818.
+PASS Maximum difference (in ulp units (16-bits)) (0.326171875) is less than or equal to 0.3262.
+PASS Number of differences between results (0) is less than or equal to 0.
+PASS SNR (103.1515278088242) is greater than or equal to 103.1514.
+PASS Maximum difference (in ulp units (16-bits)) (0.39453125) is less than or equal to 0.3946.
+PASS Number of differences between results (0) is less than or equal to 0.
 PASS successfullyParsed is true
 
 TEST COMPLETE

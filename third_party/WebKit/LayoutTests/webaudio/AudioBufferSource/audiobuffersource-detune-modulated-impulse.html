@@ -2,15 +2,14 @@
 <html>
 
 <head>
-  <script src="../../resources/js-test.js"></script>
+  <script src="../../resources/testharness.js"></script>
+  <script src="../../resources/testharnessreport.js"></script> 
   <script src="../resources/audit-util.js"></script>
   <script src="../resources/audio-testing.js"></script>
 </head>
 
 <body>
   <script>
-    description('AudioBufferSourceNode: DC-driven detune modulation.');
-    window.jsTestIsAsync = true;
 
     var sampleRate = 44100;
 
@@ -84,17 +83,14 @@
           i++;
         }
 
-        if (passed) {
-          testPassed('Increasing detune to 1200 decreased the interval between impulses to half.');
-        } else {
-          testFailed('Increasing detune produced the incorrect result' +
-            'at the index ' + i + '.');
-        }
+        Should('Increasing detune', passed)
+          .summarize(
+            'to 1200 decreased the interval between impulses to half',
+            'produced the incorrect result' + 'at the index ' + i);
       }).then(done);
     });
 
     audit.defineTask('finish', function (done) {
-      finishJSTest();
       done();
     });
 

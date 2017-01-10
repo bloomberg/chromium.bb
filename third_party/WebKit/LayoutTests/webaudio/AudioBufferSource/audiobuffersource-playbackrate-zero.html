@@ -2,15 +2,14 @@
 <html>
 
 <head>
-  <script src="../../resources/js-test.js"></script>
+  <script src="../../resources/testharness.js"></script>
+  <script src="../../resources/testharnessreport.js"></script> 
   <script src="../resources/audit-util.js"></script>
   <script src="../resources/audio-testing.js"></script>
 </head>
 
 <body>
   <script>
-    description('AudioBufferSourceNode: test the "zero" playbackRate.');
-    window.jsTestIsAsync = true;
 
     // Sample rate should be power of 128 to observe the change of AudioParam at
     // the beginning of rendering quantum. (playbackRate is k-rate) This is the
@@ -63,18 +62,15 @@
           }
         }
 
-        if (passed) {
-          testPassed('The zero playbackRate held the sample value correctly.');
-        } else {
-          testFailed('The zero playbackRate should hold the sample value. ' +
-            'Expected ' + rampData[half] + ' but got ' + data[i] + ' at the index ' +
-            i + '.');
-        }
+        Should('The zero playbackRate', passed)
+          .summarize(
+            'held the sample value correctly',
+            'should hold the sample value. ' + 'Expected ' + rampData[half] +
+            ' but got ' + data[i] + ' at the index ' + i);
       }).then(done);
     });
 
     audit.defineTask('finish', function (done) {
-      finishJSTest();
       done();
     });
 

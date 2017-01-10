@@ -2,7 +2,8 @@
 <html>
 
 <head>
-  <script src="../../resources/js-test.js"></script>
+  <script src="../../resources/testharness.js"></script>
+  <script src="../../resources/testharnessreport.js"></script> 
   <script src="../resources/audit-util.js"></script>
   <script src="../resources/audio-testing.js"></script>
   <script src="../resources/audiobuffersource-testing.js"></script>
@@ -11,8 +12,6 @@
 
 <body>
   <script>
-    description('AudioBufferSourceNode: oscillator-driven detune modulation.');
-    window.jsTestIsAsync = true;
 
     var sampleRate = 44100;
     var duration = 0.25;
@@ -83,7 +82,6 @@
     });
 
     audit.defineTask('finish', function (done) {
-      finishJSTest();
       done();
     });
 

@@ -3,15 +3,14 @@
 
 <head>
   <title>Test AudioBufferSourceNode looping without explicit duration</title>
-  <script src="../../resources/js-test.js"></script>
+  <script src="../../resources/testharness.js"></script>
+  <script src="../../resources/testharnessreport.js"></script> 
   <script src="../resources/audit-util.js"></script>
   <script src="../resources/audio-testing.js"></script>
 </head>
 
 <body>
   <script>
-    description("Test AudioBufferSourceNode looping without explicit duration");
-    window.jsTestIsAsync = true;
 
     // Reasonably low sample rate for the optimum test speed.
     var sampleRate = 4096;
@@ -98,7 +97,6 @@
     });
 
     audit.defineTask('finish', function (done) {
-      finishJSTest();
       done();
     });
 

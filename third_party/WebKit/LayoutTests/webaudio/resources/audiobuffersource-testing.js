@@ -45,8 +45,8 @@ function checkSingleTest(renderedBuffer, i) {
                 renderedArray[j] = renderedData[offsetFrame + j];
 
             var s = description + ": expected: " + expected + " actual: " + renderedArray;
-            testFailed(s);
             success = false;
+            Should(s, success).beEqualTo(true);
             break;
         }
     }
@@ -60,14 +60,14 @@ function checkSingleTest(renderedBuffer, i) {
                 renderedArray[j - framesToTest] = renderedData[offsetFrame + j];
 
             var s = description + ": expected: all zeroes actual: " + renderedArray;
-            testFailed(s);
             success = false;
+            Should(s, success).beEqualTo(true);
             break;
         }
     }
 
-    if (success)
-        testPassed(description);
+    Should("", success)
+        .summarize(description, description);
 
     return success;
 }

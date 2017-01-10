@@ -2,15 +2,14 @@
 <html>
   <head>
     <title>Test premature GC upon OscillatorNode and AudioBufferSourceNode</title>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
   </head>
 
   <body>
     <script type="text/javascript">
-      description("Test premature GC upon OscillatorNode and AudioBufferSourceNode");
-      window.jsTestIsAsync = true;
 
       var sampleRate = 44100;
       var renderDuration = 1;
@@ -39,7 +38,7 @@
           // If the node is GCed, |onended| won't be fired. Then this test
           // will be timed out because done() will not get called.
           node.onended = function () {
-            testPassed(sourceNodeType + 'Node 1 survived GC and onended event fired.');
+            Should(sourceNodeType + 'Node 1 survived GC and onended event fired', true).beEqualTo(true);
             done();
           };
 
@@ -66,7 +65,6 @@
       });
 
       audit.defineTask('finish', function (done) {
-        finishJSTest();
         done();
       });
 
