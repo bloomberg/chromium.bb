@@ -76,6 +76,8 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       SkColorSetA(SK_ColorBLACK, 0x48);
   static const SkColor kMenuSeparatorColor = SkColorSetRGB(0xE9, 0xE9, 0xE9);
   static const SkColor kEnabledMenuItemForegroundColor = SK_ColorBLACK;
+  // Separator:
+  static const SkColor kSeparatorColor = SkColorSetRGB(0xE9, 0xE9, 0xE9);
   // Link:
   static const SkColor kLinkEnabledColor = gfx::kGoogleBlue700;
   // Text selection colors:
@@ -206,6 +208,10 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_LinkEnabled:
     case NativeTheme::kColorId_LinkPressed:
       return kLinkEnabledColor;
+
+    // Separator
+    case NativeTheme::kColorId_SeparatorColor:
+      return kSeparatorColor;
 
     // Textfield
     case NativeTheme::kColorId_TextfieldDefaultColor:

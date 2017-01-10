@@ -6,6 +6,7 @@
 
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
+#include "ui/native_theme/native_theme.h"
 
 namespace views {
 
@@ -15,13 +16,11 @@ const char Separator::kViewClassName[] = "Separator";
 // The separator size in pixels.
 const int kSeparatorSize = 1;
 
-// Default color of the separator.
-const SkColor kDefaultColor = SkColorSetARGB(255, 233, 233, 233);
-
 Separator::Separator(Orientation orientation)
     : orientation_(orientation),
-      color_(kDefaultColor),
+      color_overridden_(false),
       size_(kSeparatorSize) {
+  SetColorFromNativeTheme();
 }
 
 Separator::~Separator() {
@@ -29,6 +28,7 @@ Separator::~Separator() {
 
 void Separator::SetColor(SkColor color) {
   color_ = color;
+  color_overridden_ = true;
   SchedulePaint();
 }
 
@@ -37,6 +37,11 @@ void Separator::SetPreferredSize(int size) {
     size_ = size;
     PreferredSizeChanged();
   }
+}
+
+void Separator::SetColorFromNativeTheme() {
+  color_ = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_SeparatorColor);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -56,6 +61,11 @@ void Separator::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 void Separator::OnPaint(gfx::Canvas* canvas) {
   canvas->FillRect(GetContentsBounds(), color_);
+}
+
+void Separator::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  if (!color_overridden_)
+    SetColorFromNativeTheme();
 }
 
 const char* Separator::GetClassName() const {

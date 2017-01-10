@@ -197,6 +197,10 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
     case kColorId_LinkPressed:
       return SK_ColorRED;
 
+    // Separator
+    case kColorId_SeparatorColor:
+      return GetFgColor(GetSeparator(), INSENSITIVE);
+
     // Button
     case kColorId_ButtonEnabledColor:
       return GetTextColor(GetButton(), NORMAL);
@@ -445,6 +449,15 @@ GtkWidget* NativeThemeGtk2::GetMenuItem() const {
   }
 
   return fake_menu_item;
+}
+
+GtkWidget* NativeThemeGtk2::GetSeparator() const {
+  static GtkWidget* fake_separator = NULL;
+
+  if (!fake_separator)
+    fake_separator = gtk_hseparator_new();
+
+  return fake_separator;
 }
 
 }  // namespace libgtkui

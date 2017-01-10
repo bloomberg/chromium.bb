@@ -45,6 +45,7 @@ class NativeThemeGtk2 : public ui::NativeThemeBase {
   GtkWidget* GetTooltip() const;
   GtkWidget* GetMenu() const;
   GtkWidget* GetMenuItem() const;
+  GtkWidget* GetSeparator() const;
 
   DISALLOW_COPY_AND_ASSIGN(NativeThemeGtk2);
 };

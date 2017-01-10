@@ -293,6 +293,8 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_LinkDisabled,
     kColorId_LinkEnabled,
     kColorId_LinkPressed,
+    // Separator
+    kColorId_SeparatorColor,
     // Textfield
     kColorId_TextfieldDefaultColor,
     kColorId_TextfieldDefaultBackground,

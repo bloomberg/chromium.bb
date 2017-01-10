@@ -135,6 +135,10 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
       }
     }
 
+    // Separator
+    case ui::NativeTheme::kColorId_SeparatorColor:
+      return GetFgColor("GtkSeparator#separator.horizontal");
+
     // Button
     case ui::NativeTheme::kColorId_ButtonEnabledColor:
       return GetFgColor("GtkButton#button.text-button GtkLabel#label");
@@ -312,6 +316,7 @@ NativeThemeGtk3::NativeThemeGtk3() {
   g_type_class_unref(g_type_class_ref(gtk_scrollbar_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_toolbar_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_text_view_get_type()));
+  g_type_class_unref(g_type_class_ref(gtk_separator_get_type()));
 
   g_signal_connect_after(gtk_settings_get_default(), "notify::gtk-theme-name",
                          G_CALLBACK(OnThemeChanged), this);
