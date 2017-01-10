@@ -12,11 +12,12 @@
 
 namespace blink {
 
-class CompositorAnimationTimeline;
+class CompositorAnimationHost;
 class CompositorProxyClient;
 class GraphicsLayer;
 class WebImage;
 class WebLayer;
+class WebLayerTreeView;
 class WebViewImpl;
 class HitTestResult;
 struct WebPoint;
@@ -35,11 +36,8 @@ class WebFrameWidgetBase : public WebFrameWidget {
   // Sets the root layer. |WebLayer| can be null when detaching the root layer.
   virtual void setRootLayer(WebLayer*) = 0;
 
-  // Attaches/detaches a CompositorAnimationTimeline to the layer tree.
-  virtual void attachCompositorAnimationTimeline(
-      CompositorAnimationTimeline*) = 0;
-  virtual void detachCompositorAnimationTimeline(
-      CompositorAnimationTimeline*) = 0;
+  virtual WebLayerTreeView* getLayerTreeView() const = 0;
+  virtual CompositorAnimationHost* animationHost() const = 0;
 
   virtual HitTestResult coreHitTestResultAt(const WebPoint&) = 0;
 

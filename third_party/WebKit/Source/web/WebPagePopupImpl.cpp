@@ -138,14 +138,14 @@ class PagePopupChromeClient final : public EmptyChromeClient {
 
   void attachCompositorAnimationTimeline(CompositorAnimationTimeline* timeline,
                                          LocalFrame*) override {
-    if (m_popup->m_compositorAnimationHost)
-      m_popup->m_compositorAnimationHost->addTimeline(*timeline);
+    if (m_popup->m_animationHost)
+      m_popup->m_animationHost->addTimeline(*timeline);
   }
 
   void detachCompositorAnimationTimeline(CompositorAnimationTimeline* timeline,
                                          LocalFrame*) override {
-    if (m_popup->m_compositorAnimationHost)
-      m_popup->m_compositorAnimationHost->removeTimeline(*timeline);
+    if (m_popup->m_animationHost)
+      m_popup->m_animationHost->removeTimeline(*timeline);
   }
 
   WebScreenInfo screenInfo() const override {
@@ -388,12 +388,12 @@ void WebPagePopupImpl::setIsAcceleratedCompositingActive(bool enter) {
     if (m_layerTreeView) {
       m_layerTreeView->setVisible(true);
       m_isAcceleratedCompositingActive = true;
-      m_compositorAnimationHost = WTF::makeUnique<CompositorAnimationHost>(
+      m_animationHost = WTF::makeUnique<CompositorAnimationHost>(
           m_layerTreeView->compositorAnimationHost());
       m_page->layerTreeViewInitialized(*m_layerTreeView);
     } else {
       m_isAcceleratedCompositingActive = false;
-      m_compositorAnimationHost = nullptr;
+      m_animationHost = nullptr;
     }
   }
 }
@@ -412,7 +412,7 @@ void WebPagePopupImpl::willCloseLayerTreeView() {
 
   setIsAcceleratedCompositingActive(false);
   m_layerTreeView = nullptr;
-  m_compositorAnimationHost = nullptr;
+  m_animationHost = nullptr;
 }
 
 void WebPagePopupImpl::updateAllLifecyclePhases() {

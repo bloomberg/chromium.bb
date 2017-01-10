@@ -100,8 +100,8 @@ class WebViewFrameWidget : public WebFrameWidgetBase {
   CompositorProxyClient* createCompositorProxyClient() override;
   void setRootGraphicsLayer(GraphicsLayer*) override;
   void setRootLayer(WebLayer*) override;
-  void attachCompositorAnimationTimeline(CompositorAnimationTimeline*) override;
-  void detachCompositorAnimationTimeline(CompositorAnimationTimeline*) override;
+  WebLayerTreeView* getLayerTreeView() const override;
+  CompositorAnimationHost* animationHost() const override;
   WebWidgetClient* client() const override { return m_client; }
   HitTestResult coreHitTestResultAt(const WebPoint&) override;
 

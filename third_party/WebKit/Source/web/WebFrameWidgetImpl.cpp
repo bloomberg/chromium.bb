@@ -141,7 +141,7 @@ void WebFrameWidgetImpl::close() {
   m_layerTreeView = nullptr;
   m_rootLayer = nullptr;
   m_rootGraphicsLayer = nullptr;
-  m_compositorAnimationHost = nullptr;
+  m_animationHost = nullptr;
 
   m_selfKeepAlive.clear();
 }
@@ -656,7 +656,7 @@ void WebFrameWidgetImpl::willCloseLayerTreeView() {
   setIsAcceleratedCompositingActive(false);
   m_mutator = nullptr;
   m_layerTreeView = nullptr;
-  m_compositorAnimationHost = nullptr;
+  m_animationHost = nullptr;
   m_layerTreeViewClosed = true;
 }
 
@@ -976,7 +976,7 @@ void WebFrameWidgetImpl::initializeLayerTreeView() {
     m_client->initializeLayerTreeView();
     m_layerTreeView = m_client->layerTreeView();
     if (m_layerTreeView && m_layerTreeView->compositorAnimationHost()) {
-      m_compositorAnimationHost = WTF::makeUnique<CompositorAnimationHost>(
+      m_animationHost = WTF::makeUnique<CompositorAnimationHost>(
           m_layerTreeView->compositorAnimationHost());
     }
   }
@@ -1062,16 +1062,12 @@ void WebFrameWidgetImpl::setRootLayer(WebLayer* layer) {
     m_layerTreeView->clearRootLayer();
 }
 
-void WebFrameWidgetImpl::attachCompositorAnimationTimeline(
-    CompositorAnimationTimeline* compositorTimeline) {
-  if (m_compositorAnimationHost)
-    m_compositorAnimationHost->addTimeline(*compositorTimeline);
+WebLayerTreeView* WebFrameWidgetImpl::getLayerTreeView() const {
+  return m_layerTreeView;
 }
 
-void WebFrameWidgetImpl::detachCompositorAnimationTimeline(
-    CompositorAnimationTimeline* compositorTimeline) {
-  if (m_compositorAnimationHost)
-    m_compositorAnimationHost->removeTimeline(*compositorTimeline);
+CompositorAnimationHost* WebFrameWidgetImpl::animationHost() const {
+  return m_animationHost.get();
 }
 
 HitTestResult WebFrameWidgetImpl::coreHitTestResultAt(

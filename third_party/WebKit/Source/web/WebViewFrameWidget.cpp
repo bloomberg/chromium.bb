@@ -227,14 +227,12 @@ void WebViewFrameWidget::setRootLayer(WebLayer* layer) {
   m_webView->setRootLayer(layer);
 }
 
-void WebViewFrameWidget::attachCompositorAnimationTimeline(
-    CompositorAnimationTimeline* compositorTimeline) {
-  m_webView->attachCompositorAnimationTimeline(compositorTimeline);
+WebLayerTreeView* WebViewFrameWidget::getLayerTreeView() const {
+  return m_webView->layerTreeView();
 }
 
-void WebViewFrameWidget::detachCompositorAnimationTimeline(
-    CompositorAnimationTimeline* compositorTimeline) {
-  m_webView->detachCompositorAnimationTimeline(compositorTimeline);
+CompositorAnimationHost* WebViewFrameWidget::animationHost() const {
+  return m_webView->animationHost();
 }
 
 HitTestResult WebViewFrameWidget::coreHitTestResultAt(const WebPoint& point) {

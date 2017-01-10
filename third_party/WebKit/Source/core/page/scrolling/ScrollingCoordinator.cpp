@@ -838,22 +838,21 @@ void ScrollingCoordinator::layerTreeViewInitialized(
     WebLayerTreeView& layerTreeView) {
   if (Platform::current()->isThreadedAnimationEnabled() &&
       layerTreeView.compositorAnimationHost()) {
-    m_compositorAnimationHost = WTF::makeUnique<CompositorAnimationHost>(
+    m_animationHost = WTF::makeUnique<CompositorAnimationHost>(
         layerTreeView.compositorAnimationHost());
     m_programmaticScrollAnimatorTimeline =
         CompositorAnimationTimeline::create();
-    m_compositorAnimationHost->addTimeline(
-        *m_programmaticScrollAnimatorTimeline.get());
+    m_animationHost->addTimeline(*m_programmaticScrollAnimatorTimeline.get());
   }
 }
 
 void ScrollingCoordinator::willCloseLayerTreeView(
     WebLayerTreeView& layerTreeView) {
   if (m_programmaticScrollAnimatorTimeline) {
-    m_compositorAnimationHost->removeTimeline(
+    m_animationHost->removeTimeline(
         *m_programmaticScrollAnimatorTimeline.get());
     m_programmaticScrollAnimatorTimeline = nullptr;
-    m_compositorAnimationHost = nullptr;
+    m_animationHost = nullptr;
   }
 }
 

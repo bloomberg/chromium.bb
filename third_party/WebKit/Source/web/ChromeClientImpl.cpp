@@ -67,6 +67,7 @@
 #include "platform/KeyboardCodes.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/WebFrameScheduler.h"
+#include "platform/animation/CompositorAnimationHost.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -827,8 +828,9 @@ void ChromeClientImpl::attachCompositorAnimationTimeline(
     LocalFrame* localFrame) {
   WebLocalFrameImpl* webFrame =
       WebLocalFrameImpl::fromFrame(localFrame)->localRoot();
-  webFrame->frameWidget()->attachCompositorAnimationTimeline(
-      compositorTimeline);
+  if (CompositorAnimationHost* animationHost =
+          webFrame->frameWidget()->animationHost())
+    animationHost->addTimeline(*compositorTimeline);
 }
 
 void ChromeClientImpl::detachCompositorAnimationTimeline(
@@ -839,9 +841,11 @@ void ChromeClientImpl::detachCompositorAnimationTimeline(
 
   // This method can be called when the frame is being detached, after the
   // widget is destroyed.
-  if (webFrame->frameWidget())
-    webFrame->frameWidget()->detachCompositorAnimationTimeline(
-        compositorTimeline);
+  if (webFrame->frameWidget()) {
+    if (CompositorAnimationHost* animationHost =
+            webFrame->frameWidget()->animationHost())
+      animationHost->removeTimeline(*compositorTimeline);
+  }
 }
 
 void ChromeClientImpl::enterFullscreen(LocalFrame& frame) {
@@ -859,13 +863,13 @@ void ChromeClientImpl::fullscreenElementChanged(Element* fromElement,
 
 void ChromeClientImpl::clearCompositedSelection(LocalFrame* frame) {
   LocalFrame* localRoot = frame->localFrameRoot();
-  auto client =
-      WebLocalFrameImpl::fromFrame(localRoot)->frameWidget()->client();
+  WebFrameWidgetBase* widget =
+      WebLocalFrameImpl::fromFrame(localRoot)->frameWidget();
+  WebWidgetClient* client = widget->client();
   if (!client)
     return;
 
-  auto layerTreeView = client->layerTreeView();
-  if (layerTreeView)
+  if (WebLayerTreeView* layerTreeView = widget->getLayerTreeView())
     layerTreeView->clearSelection();
 }
 
@@ -873,13 +877,13 @@ void ChromeClientImpl::updateCompositedSelection(
     LocalFrame* frame,
     const CompositedSelection& selection) {
   LocalFrame* localRoot = frame->localFrameRoot();
-  WebWidgetClient* client =
-      WebLocalFrameImpl::fromFrame(localRoot)->frameWidget()->client();
+  WebFrameWidgetBase* widget =
+      WebLocalFrameImpl::fromFrame(localRoot)->frameWidget();
+  WebWidgetClient* client = widget->client();
   if (!client)
     return;
 
-  WebLayerTreeView* layerTreeView = client->layerTreeView();
-  if (layerTreeView)
+  if (WebLayerTreeView* layerTreeView = widget->getLayerTreeView())
     layerTreeView->registerSelection(WebSelection(selection));
 }
 

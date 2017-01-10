@@ -466,6 +466,9 @@ class WEB_EXPORT WebViewImpl final
   WebRect computeBlockBound(const WebPoint&, bool ignoreClipping);
 
   WebLayerTreeView* layerTreeView() const { return m_layerTreeView; }
+  CompositorAnimationHost* animationHost() const {
+    return m_animationHost.get();
+  }
 
   bool matchesHeuristicsForGpuRasterizationForTesting() const {
     return m_matchesHeuristicsForGpuRasterization;
@@ -686,7 +689,7 @@ class WEB_EXPORT WebViewImpl final
   RefPtr<UserGestureToken> m_pointerLockGestureToken;
 
   WebLayerTreeView* m_layerTreeView;
-  std::unique_ptr<CompositorAnimationHost> m_compositorAnimationHost;
+  std::unique_ptr<CompositorAnimationHost> m_animationHost;
 
   WebLayer* m_rootLayer;
   GraphicsLayer* m_rootGraphicsLayer;

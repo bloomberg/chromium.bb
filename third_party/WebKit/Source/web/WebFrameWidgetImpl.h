@@ -55,7 +55,6 @@ class InspectorOverlay;
 class LocalFrame;
 class PaintLayerCompositor;
 class UserGestureToken;
-class CompositorAnimationTimeline;
 class WebLayer;
 class WebLayerTreeView;
 class WebMouseEvent;
@@ -138,8 +137,8 @@ class WebFrameWidgetImpl final
   WebWidgetClient* client() const override { return m_client; }
   void setRootGraphicsLayer(GraphicsLayer*) override;
   void setRootLayer(WebLayer*) override;
-  void attachCompositorAnimationTimeline(CompositorAnimationTimeline*) override;
-  void detachCompositorAnimationTimeline(CompositorAnimationTimeline*) override;
+  WebLayerTreeView* getLayerTreeView() const override;
+  CompositorAnimationHost* animationHost() const override;
   HitTestResult coreHitTestResultAt(const WebPoint&) override;
 
   // Exposed for the purpose of overriding device metrics.
@@ -215,7 +214,7 @@ class WebFrameWidgetImpl final
   WebLayerTreeView* m_layerTreeView;
   WebLayer* m_rootLayer;
   GraphicsLayer* m_rootGraphicsLayer;
-  std::unique_ptr<CompositorAnimationHost> m_compositorAnimationHost;
+  std::unique_ptr<CompositorAnimationHost> m_animationHost;
   bool m_isAcceleratedCompositingActive;
   bool m_layerTreeViewClosed;
 

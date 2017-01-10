@@ -121,7 +121,7 @@ class CORE_EXPORT ScrollingCoordinator final
   void updateTouchEventTargetRectsIfNeeded();
 
   CompositorAnimationHost* compositorAnimationHost() {
-    return m_compositorAnimationHost.get();
+    return m_animationHost.get();
   }
   CompositorAnimationTimeline* compositorAnimationTimeline() {
     return m_programmaticScrollAnimatorTimeline.get();
@@ -167,7 +167,7 @@ class CORE_EXPORT ScrollingCoordinator final
 
   bool frameViewIsDirty() const;
 
-  std::unique_ptr<CompositorAnimationHost> m_compositorAnimationHost;
+  std::unique_ptr<CompositorAnimationHost> m_animationHost;
   std::unique_ptr<CompositorAnimationTimeline>
       m_programmaticScrollAnimatorTimeline;
 

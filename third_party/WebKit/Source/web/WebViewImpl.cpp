@@ -2522,7 +2522,7 @@ void WebViewImpl::willCloseLayerTreeView() {
     page()->willCloseLayerTreeView(*m_layerTreeView);
 
   setRootLayer(nullptr);
-  m_compositorAnimationHost = nullptr;
+  m_animationHost = nullptr;
 
   m_mutator = nullptr;
   m_layerTreeView = nullptr;
@@ -3936,14 +3936,14 @@ void WebViewImpl::scheduleAnimationForWidget() {
 
 void WebViewImpl::attachCompositorAnimationTimeline(
     CompositorAnimationTimeline* timeline) {
-  if (m_compositorAnimationHost)
-    m_compositorAnimationHost->addTimeline(*timeline);
+  if (m_animationHost)
+    m_animationHost->addTimeline(*timeline);
 }
 
 void WebViewImpl::detachCompositorAnimationTimeline(
     CompositorAnimationTimeline* timeline) {
-  if (m_compositorAnimationHost)
-    m_compositorAnimationHost->removeTimeline(*timeline);
+  if (m_animationHost)
+    m_animationHost->removeTimeline(*timeline);
 }
 
 void WebViewImpl::initializeLayerTreeView() {
@@ -3951,7 +3951,7 @@ void WebViewImpl::initializeLayerTreeView() {
     m_client->initializeLayerTreeView();
     m_layerTreeView = m_client->widgetClient()->layerTreeView();
     if (m_layerTreeView && m_layerTreeView->compositorAnimationHost()) {
-      m_compositorAnimationHost = WTF::makeUnique<CompositorAnimationHost>(
+      m_animationHost = WTF::makeUnique<CompositorAnimationHost>(
           m_layerTreeView->compositorAnimationHost());
     }
   }
