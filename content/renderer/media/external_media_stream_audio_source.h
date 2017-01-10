@@ -35,7 +35,6 @@ class CONTENT_EXPORT ExternalMediaStreamAudioSource final
   void EnsureSourceIsStopped() final;
 
   // media::AudioCapturerSource::CaptureCallback implementation.
-  void OnCaptureStarted() final;
   void Capture(const media::AudioBus* audio_bus,
                int audio_delay_milliseconds,
                double volume,

@@ -208,24 +208,14 @@ class MockAudioCapturerSource : public media::AudioCapturerSource {
 
   void Initialize(const media::AudioParameters& params,
                   CaptureCallback* callback,
-                  int session_id) override {
-    callback_ = callback;
-  }
-  void Start() override {
-    if (callback_)
-      callback_->OnCaptureStarted();
-  }
+                  int session_id) override {}
+  void Start() override {}
   void Stop() override {}
   void SetVolume(double volume) override {}
   void SetAutomaticGainControl(bool enable) override {}
 
  protected:
   ~MockAudioCapturerSource() override {}
-
- private:
-  CaptureCallback* callback_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(MockAudioCapturerSource);
 };
 
 // Tests in web-platform-tests use absolute path links such as

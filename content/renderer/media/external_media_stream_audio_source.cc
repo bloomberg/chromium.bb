@@ -40,10 +40,7 @@ bool ExternalMediaStreamAudioSource::EnsureSourceIsStarted() {
           << GetAudioParameters().AsHumanReadableString() << "}.";
   source_->Initialize(GetAudioParameters(), this, -1);
   source_->Start();
-  // OnCaptureStarted() is expected to be called synchronously by this
-  // implementation. If this needs to be changed, the source needs to be started
-  // outside of EnsureSourceIsStarted since its design is synchronous.
-  CHECK(was_started_);
+  was_started_ = true;
   return true;
 }
 
@@ -58,10 +55,6 @@ void ExternalMediaStreamAudioSource::EnsureSourceIsStopped() {
           << (is_local_source() ? "local" : "remote")
           << " source with audio parameters={"
           << GetAudioParameters().AsHumanReadableString() << "}.";
-}
-
-void ExternalMediaStreamAudioSource::OnCaptureStarted() {
-  was_started_ = true;
 }
 
 void ExternalMediaStreamAudioSource::Capture(const media::AudioBus* audio_bus,
