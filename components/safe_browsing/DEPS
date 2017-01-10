@@ -1,5 +1,10 @@
 include_rules = [
   "+components/safe_browsing_db",
   "+components/security_interstitials/content",
+  "+components/subresource_filter/content/browser",
   "+content/public/browser",
+  "+content/public/common",
+  "+net/base",
+  "+net/log",
+  "+net/url_request",
 ]

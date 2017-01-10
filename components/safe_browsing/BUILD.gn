@@ -4,13 +4,19 @@
 
 source_set("safe_browsing") {
   sources = [
+    "base_safe_browsing_resource_throttle.cc",
+    "base_safe_browsing_resource_throttle.h",
     "base_ui_manager.cc",
     "base_ui_manager.h",
   ]
 
   deps = [
     "//base:base",
+    "//components/safe_browsing_db:database_manager",
     "//components/security_interstitials/content:security_interstitial_page",
+    "//components/subresource_filter/content/browser:browser",
     "//content/public/browser:browser",
+    "//content/public/common:common",
+    "//net:net",
   ]
 }
