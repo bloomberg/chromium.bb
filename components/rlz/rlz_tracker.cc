@@ -14,11 +14,11 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/rlz/rlz_tracker_delegate.h"
-#include "net/http/http_util.h"
 
 namespace rlz {
 namespace {
@@ -443,9 +443,8 @@ std::string RLZTracker::GetAccessPointHttpHeader(rlz_lib::AccessPoint point) {
   base::string16 rlz_string;
   RLZTracker::GetAccessPointRlz(point, &rlz_string);
   if (!rlz_string.empty()) {
-    net::HttpUtil::AppendHeaderIfMissing("X-Rlz-String",
-                                         base::UTF16ToUTF8(rlz_string),
-                                         &extra_headers);
+    return base::StringPrintf("X-Rlz-String: %s\r\n",
+                              base::UTF16ToUTF8(rlz_string).c_str());
   }
 
   return extra_headers;
