@@ -341,6 +341,10 @@ TEST_F(MediaControlsOrientationLockDelegateTest,
   simulateEnterFullscreen();
   // State set to PendingMetadata.
 
+  // Set up the WebMediaPlayer instance.
+  video().setSrc("http://example.com");
+  testing::runPendingTasks();
+
   simulateVideoNetworkState(HTMLMediaElement::kNetworkIdle);
   simulateVideoReadyState(HTMLMediaElement::kHaveMetadata);
   testing::runPendingTasks();
@@ -355,6 +359,10 @@ TEST_F(MediaControlsOrientationLockDelegateTest, ReceivedMetadataLater) {
   simulateEnterFullscreen();
   // State set to PendingMetadata.
   simulateExitFullscreen();
+
+  // Set up the WebMediaPlayer instance.
+  video().setSrc("http://example.com");
+  testing::runPendingTasks();
 
   simulateVideoNetworkState(HTMLMediaElement::kNetworkIdle);
   simulateVideoReadyState(HTMLMediaElement::kHaveMetadata);

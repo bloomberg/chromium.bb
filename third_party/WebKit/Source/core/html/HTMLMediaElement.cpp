@@ -1662,7 +1662,7 @@ void HTMLMediaElement::setReadyState(ReadyState state) {
     // the earliest possible position.
     setOfficialPlaybackPosition(earliestPossiblePosition());
 
-    m_duration = duration();
+    m_duration = m_webMediaPlayer->duration();
     scheduleEvent(EventTypeNames::durationchange);
 
     if (isHTMLVideoElement())
@@ -1961,10 +1961,7 @@ double HTMLMediaElement::officialPlaybackPosition() const {
   // signal about the state of playback.
   bool waitingForData = m_readyState <= kHaveCurrentData;
   if (m_officialPlaybackPositionNeedsUpdate && !m_paused && !waitingForData) {
-    // Internal player position may advance slightly beyond duration because
-    // many files use imprecise duration. Clamp official position to duration.
-    double newPosition = std::min(duration(), currentPlaybackPosition());
-    setOfficialPlaybackPosition(newPosition);
+    setOfficialPlaybackPosition(currentPlaybackPosition());
   }
 
 #if LOG_OFFICIAL_TIME_STATUS
@@ -1988,7 +1985,17 @@ void HTMLMediaElement::setOfficialPlaybackPosition(double position) const {
                   << " now:" << position;
 #endif
 
-  m_officialPlaybackPosition = position;
+  // Internal player position may advance slightly beyond duration because
+  // many files use imprecise duration. Clamp official position to duration when
+  // known. Duration may be unknown when readyState < HAVE_METADATA.
+  m_officialPlaybackPosition =
+      std::isnan(duration()) ? position : std::min(duration(), position);
+
+  if (m_officialPlaybackPosition != position) {
+    BLINK_MEDIA_LOG << "setOfficialPlaybackPosition(" << (void*)this
+                    << ") position:" << position
+                    << " truncated to duration:" << m_officialPlaybackPosition;
+  }
 
   // Once set, official playback position should hold steady until the next
   // stable state. We approximate this by using a microtask to mark the
@@ -2030,26 +2037,7 @@ void HTMLMediaElement::setCurrentTime(double time) {
 }
 
 double HTMLMediaElement::duration() const {
-  // FIXME: remove m_webMediaPlayer check once we figure out how
-  // m_webMediaPlayer is going out of sync with readystate.
-  // m_webMediaPlayer is cleared but readystate is not set to kHaveNothing.
-  if (!m_webMediaPlayer || m_readyState < kHaveMetadata)
-    return std::numeric_limits<double>::quiet_NaN();
-
-  // FIXME: Refactor so m_duration is kept current (in both MSE and
-  // non-MSE cases) once we have transitioned from kHaveNothing ->
-  // kHaveMetadata. Currently, m_duration may be out of date for at least MSE
-  // case because MediaSource and SourceBuffer do not notify the element
-  // directly upon duration changes caused by endOfStream, remove, or append
-  // operations; rather the notification is triggered by the WebMediaPlayer
-  // implementation observing that the underlying engine has updated duration
-  // and notifying the element to consult its MediaSource for current
-  // duration. See http://crbug.com/266644
-
-  if (m_mediaSource)
-    return m_mediaSource->duration();
-
-  return webMediaPlayer()->duration();
+  return m_duration;
 }
 
 bool HTMLMediaElement::paused() const {
@@ -3070,10 +3058,15 @@ void HTMLMediaElement::timeChanged() {
 
 void HTMLMediaElement::durationChanged() {
   BLINK_MEDIA_LOG << "durationChanged(" << (void*)this << ")";
+
+  // durationChanged() is triggered by media player.
+  CHECK(m_webMediaPlayer);
+  double newDuration = m_webMediaPlayer->duration();
+
   // If the duration is changed such that the *current playback position* ends
   // up being greater than the time of the end of the media resource, then the
   // user agent must also seek to the time of the end of the media resource.
-  durationChanged(duration(), currentPlaybackPosition() > duration());
+  durationChanged(newDuration, currentPlaybackPosition() > newDuration);
 }
 
 void HTMLMediaElement::durationChanged(double duration, bool requestSeek) {

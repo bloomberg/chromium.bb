@@ -714,7 +714,18 @@ double WebMediaPlayerImpl::duration() const {
   if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing)
     return std::numeric_limits<double>::quiet_NaN();
 
-  return GetPipelineDuration();
+  // Use duration from ChunkDemuxer when present. MSE allows users to specify
+  // duration as a double. This propagates to the rest of the pipeline as a
+  // TimeDelta with potentially reduced precision (limited to Microseconds).
+  // ChunkDemuxer returns the full-precision user-specified double. This ensures
+  // users can "get" the exact duration they "set".
+  if (chunk_demuxer_)
+    return chunk_demuxer_->GetDuration();
+
+  base::TimeDelta pipeline_duration = pipeline_.GetMediaDuration();
+  return pipeline_duration == kInfiniteDuration
+             ? std::numeric_limits<double>::infinity()
+             : pipeline_duration.InSecondsF();
 }
 
 double WebMediaPlayerImpl::timelineOffset() const {
@@ -1721,17 +1732,6 @@ void WebMediaPlayerImpl::SetReadyState(WebMediaPlayer::ReadyState state) {
 
 blink::WebAudioSourceProvider* WebMediaPlayerImpl::getAudioSourceProvider() {
   return audio_source_provider_.get();
-}
-
-double WebMediaPlayerImpl::GetPipelineDuration() const {
-  base::TimeDelta duration = pipeline_.GetMediaDuration();
-
-  // Return positive infinity if the resource is unbounded.
-  // http://www.whatwg.org/specs/web-apps/current-work/multipage/video.html#dom-media-duration
-  if (duration == kInfiniteDuration)
-    return std::numeric_limits<double>::infinity();
-
-  return duration.InSecondsF();
 }
 
 static void GetCurrentFrameAndSignal(
