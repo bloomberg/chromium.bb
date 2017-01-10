@@ -1,11 +1,8 @@
-# liblouis: Farsi Grade 1 Braille table
+# liblouis: Persian  Grade 1 Braille table
 #
 # Copyright (C) 2011 by Mesar Hameed <mesar.hameed@gmail.com>
 # Copyright (C) 2011 by Abdolamir Banisaeid <saedjan at gmail.com>
-# Copyright (C) 2016 by Mohammadreza Rashad
-# <mohammadreza5712@gmail.com>
-# Fixed some conflicts in Farsi Braille script and added
-# Farsi-specific signs which weren't available in previous table.
+# Copyright (C) 2016 by Mohammadreza Rashad <mohammadreza5712@gmail.com>
 #
 # liblouis comes with ABSOLUTELY NO WARRANTY.
 #
@@ -13,7 +10,9 @@
 # GNU General Public License, as published by the Free Software
 # Foundation.  Please see the file COPYING for details.
 
-include text_nabcc.dis All display opcodes
+# Fixed some conflicts in Persian Braille script and added
+# Persian-specific signs which weren't available in previous table.
+
 include braille-patterns.cti # unicode braille.
 
 
@@ -120,7 +119,7 @@ uplow Xx 13467,13468
 uplow Yy 134567,134568
 uplow Zz 13567,13568
 
-#-------------------------- Arabic and Persian letters and symbols ---------------------------------
+# -------------------------- Arabic and Persian letters and symbols ---------------------------------
 
 sign \x060C 2
 sign \x061B 23
@@ -183,7 +182,7 @@ sign \x066C 3
 
 # --------------------------- end definitions ---------------------------------
 
-include countries.cti
+# include countries.cti
 
 
 # Braille indicators
@@ -198,17 +197,17 @@ begemph bold 456-456
 endemph bold 4568
 begemph underline 78-78
 endemph underline 78
-begcomp 4568-3467
-# endcomp 4568-1568 (removed to save more cells)
 
 numsign 3456  number sign, just a dots operand
 begnum # 3456-4 print number sign before number
-midnum , 2
+midnum , 3
+midnum ٬ 3
 
 # the decimal digits
 include digits6Dots.uti
 
 # Arabic numerals
+
 digit \x0660 245
 digit \x0661 1
 digit \x0662 12
@@ -221,6 +220,7 @@ digit \x0668 125
 digit \x0669 24
 
 # Persian numerals
+
 digit \x06F0 245
 digit \x06F1 1
 digit \x06F2 12
@@ -242,29 +242,15 @@ prepunc ' 2367
 postpunc ' 3567
 postpunc , 2
 decpoint . 2
+decpoint ٫ 2
 midnum - 36
 hyphen - 36
 postpunc . 256
 postpunc ; 23
-midnum : 25
 postpunc : 25
 postpunc ! 235
-midnum / 348
 postpunc ? 236
 endnum % 25-1234
-midnum ^ 3468
-midnum * 246-135
 prepunc ` 48
 always ... 3-3-3
 
-# special character sequences
-
-compbrl :// URLs
-compbrl www.
-compbrl .com
-compbrl .edu
-compbrl .gov
-compbrl .mil
-compbrl .net
-compbrl .org
-include countries.cti
