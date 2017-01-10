@@ -54,6 +54,7 @@ import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
+import org.chromium.chrome.browser.gsa.GSAState;
 import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.pageinfo.WebsiteSettingsPopup;
@@ -565,6 +566,9 @@ public class CustomTabActivity extends ChromeActivity {
             public void run() {
                 RapporServiceBridge.sampleString(
                         "CustomTabs.ServiceClient.PackageName", packageName);
+                if (GSAState.isGsaPackageName(packageName)) return;
+                RapporServiceBridge.sampleString(
+                        "CustomTabs.ServiceClient.PackageNameThirdParty", packageName);
             }
         });
     }

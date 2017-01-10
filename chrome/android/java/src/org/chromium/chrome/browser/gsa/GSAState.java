@@ -62,6 +62,13 @@ public class GSAState {
         return sGSAState;
     }
 
+    /**
+     * @return Whether the given package name is the package name for Google Search App.
+     */
+    public static boolean isGsaPackageName(String packageName) {
+        return SEARCH_INTENT_PACKAGE.equals(packageName);
+    }
+
     /* Private constructor, since this is a singleton */
     private GSAState(Context context) {
         mContext = context.getApplicationContext();
