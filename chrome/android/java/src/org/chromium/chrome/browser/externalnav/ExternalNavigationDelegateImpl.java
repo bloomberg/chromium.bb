@@ -325,11 +325,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public String getPackageName() {
-        return mApplicationContext.getPackageName();
-    }
-
-    @Override
     public void startActivity(Intent intent, boolean proxy) {
         try {
             forcePdfViewerAsIntentHandlerIfNeeded(intent);
@@ -475,10 +470,11 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
         if (needsToStartIntent) {
             intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-            intent.putExtra(Browser.EXTRA_APPLICATION_ID, getPackageName());
+            String packageName = ContextUtils.getApplicationContext().getPackageName();
+            intent.putExtra(Browser.EXTRA_APPLICATION_ID, packageName);
             if (launchIncogntio) intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true);
             intent.addCategory(Intent.CATEGORY_BROWSABLE);
-            intent.setClassName(getPackageName(), ChromeLauncherActivity.class.getName());
+            intent.setClassName(packageName, ChromeLauncherActivity.class.getName());
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             IntentHandler.addTrustedIntentExtras(intent);
             startActivity(intent, false);
@@ -511,9 +507,10 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             assert false : "clobberCurrentTab was called with an empty tab.";
             Uri uri = Uri.parse(url);
             Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-            intent.putExtra(Browser.EXTRA_APPLICATION_ID, getPackageName());
+            String packageName = ContextUtils.getApplicationContext().getPackageName();
+            intent.putExtra(Browser.EXTRA_APPLICATION_ID, packageName);
             intent.addCategory(Intent.CATEGORY_BROWSABLE);
-            intent.setPackage(getPackageName());
+            intent.setPackage(packageName);
             startActivity(intent, false);
             return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
         }

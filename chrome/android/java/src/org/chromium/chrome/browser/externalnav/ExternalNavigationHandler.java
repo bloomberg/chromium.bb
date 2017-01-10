@@ -16,6 +16,7 @@ import android.util.Pair;
 import android.webkit.WebView;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
@@ -335,6 +336,7 @@ public class ExternalNavigationHandler {
         if (resolvingInfos == null) return OverrideUrlLoadingResult.NO_OVERRIDE;
 
         boolean canResolveActivity = resolvingInfos.size() > 0;
+        String packageName = ContextUtils.getApplicationContext().getPackageName();
         // check whether the intent can be resolved. If not, we will see
         // whether we can download it from the Market.
         if (!canResolveActivity) {
@@ -346,7 +348,7 @@ public class ExternalNavigationHandler {
                 String marketReferrer = IntentUtils.safeGetStringExtra(
                         intent, EXTRA_MARKET_REFERRER);
                 if (TextUtils.isEmpty(marketReferrer)) {
-                    marketReferrer = mDelegate.getPackageName();
+                    marketReferrer = packageName;
                 }
                 return sendIntentToMarket(intent.getPackage(), marketReferrer, params);
             }
@@ -367,7 +369,7 @@ public class ExternalNavigationHandler {
         // Set the Browser application ID to us in case the user chooses Chrome
         // as the app.  This will make sure the link is opened in the same tab
         // instead of making a new one.
-        intent.putExtra(Browser.EXTRA_APPLICATION_ID, mDelegate.getPackageName());
+        intent.putExtra(Browser.EXTRA_APPLICATION_ID, packageName);
         if (params.isOpenInNewTab()) intent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mDelegate.maybeSetWindowId(intent);
@@ -393,7 +395,7 @@ public class ExternalNavigationHandler {
         if (!isExternalProtocol) {
             if (!mDelegate.isSpecializedHandlerAvailable(resolvingInfos)) {
                 if (params.webApkPackageName() != null) {
-                    intent.setPackage(mDelegate.getPackageName());
+                    intent.setPackage(packageName);
                     mDelegate.startActivity(intent, false);
                     return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
                 }
@@ -589,8 +591,8 @@ public class ExternalNavigationHandler {
         // instead: crbug.com/638672.
         Pair<String, String> appInfo = maybeGetPlayStoreAppIdAndReferrer(browserFallbackUrl);
         if (appInfo != null) {
-            String marketReferrer = TextUtils.isEmpty(appInfo.second) ? mDelegate.getPackageName()
-                    : appInfo.second;
+            String marketReferrer = TextUtils.isEmpty(appInfo.second)
+                    ? ContextUtils.getApplicationContext().getPackageName() : appInfo.second;
             return sendIntentToMarket(appInfo.first, marketReferrer, params);
         }
 

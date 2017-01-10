@@ -17,6 +17,7 @@ import android.support.test.filters.SmallTest;
 import android.test.mock.MockContext;
 import android.test.mock.MockPackageManager;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
@@ -294,7 +295,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
         assertNotNull(mDelegate.startActivityIntent);
         Uri uri = mDelegate.startActivityIntent.getData();
         assertEquals("market", uri.getScheme());
-        assertEquals(mDelegate.getPackageName(), uri.getQueryParameter("referrer"));
+        assertEquals(getPackageName(), uri.getQueryParameter("referrer"));
     }
 
     @SmallTest
@@ -702,7 +703,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
 
-        assertEquals("market://details?id=com.imdb.mobile&referrer=test",
+        assertEquals("market://details?id=com.imdb.mobile&referrer=" + getPackageName(),
                 mDelegate.startActivityIntent.getDataString());
 
         String intentBadUrl = "intent:///name/nm0000158#Intent;scheme=imdb;package=com.imdb.mobile;"
@@ -1288,11 +1289,6 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
         }
 
         @Override
-        public String getPackageName() {
-            return "test";
-        }
-
-        @Override
         public void startActivity(Intent intent, boolean proxy) {
             startActivityIntent = intent;
         }
@@ -1523,7 +1519,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 startActivityCalled = true;
                 String packageName = mDelegate.startActivityIntent.getPackage();
                 if (packageName != null) {
-                    startChromeCalled = packageName.equals(mDelegate.getPackageName());
+                    startChromeCalled = packageName.equals(getPackageName());
                     startWebApkCalled =
                             packageName.startsWith(WebApkConstants.WEBAPK_PACKAGE_PREFIX);
                 }
@@ -1545,6 +1541,10 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 }
             }
         }
+    }
+
+    private static String getPackageName() {
+        return ContextUtils.getApplicationContext().getPackageName();
     }
 
     private static class TestPackageManager extends MockPackageManager {
