@@ -3614,6 +3614,17 @@ ScriptValue WebGLRenderingContextBase::getUniform(
                 break;
               case GL_SAMPLER_3D:
               case GL_SAMPLER_2D_ARRAY:
+              case GL_SAMPLER_2D_SHADOW:
+              case GL_SAMPLER_CUBE_SHADOW:
+              case GL_SAMPLER_2D_ARRAY_SHADOW:
+              case GL_INT_SAMPLER_2D:
+              case GL_INT_SAMPLER_CUBE:
+              case GL_INT_SAMPLER_3D:
+              case GL_INT_SAMPLER_2D_ARRAY:
+              case GL_UNSIGNED_INT_SAMPLER_2D:
+              case GL_UNSIGNED_INT_SAMPLER_CUBE:
+              case GL_UNSIGNED_INT_SAMPLER_3D:
+              case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:
                 baseType = GL_INT;
                 length = 1;
                 break;
