@@ -21,6 +21,8 @@
 
 namespace ui {
 
+// Sync versions are not supported in Android.  Callers should fall back
+// to the async version.
 bool GrabViewSnapshot(gfx::NativeView view,
                       std::vector<unsigned char>* png_representation,
                       const gfx::Rect& snapshot_bounds) {
@@ -31,7 +33,6 @@ bool GrabViewSnapshot(gfx::NativeView view,
 bool GrabWindowSnapshot(gfx::NativeWindow window,
                         std::vector<unsigned char>* png_representation,
                         const gfx::Rect& snapshot_bounds) {
-  // Not supported in Android.  Callers should fall back to the async version.
   return false;
 }
 
@@ -44,20 +45,8 @@ static void MakeAsyncCopyRequest(
 
   const display::Display& display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window);
-  float device_scale_factor = display.device_scale_factor();
-  gfx::Rect source_rect_in_pixel =
-      gfx::ScaleToEnclosingRect(source_rect, device_scale_factor);
-
-  // Account for the toolbar offset.
-  gfx::Vector2dF offset_in_pixel =
-      gfx::ScaleVector2d(window->content_offset(), device_scale_factor);
-  gfx::Rect adjusted_source_rect(
-      gfx::ToRoundedPoint(
-          gfx::PointF(source_rect_in_pixel.x() + offset_in_pixel.x(),
-                      source_rect_in_pixel.y() + offset_in_pixel.y())),
-      source_rect_in_pixel.size());
-
-  request->set_area(adjusted_source_rect);
+  float scale = display.device_scale_factor();
+  request->set_area(gfx::ScaleToEnclosingRect(source_rect, scale));
   window->GetCompositor()->RequestCopyOfOutputOnRootLayer(std::move(request));
 }
 
@@ -92,8 +81,11 @@ void GrabViewSnapshotAsync(
     const gfx::Rect& source_rect,
     scoped_refptr<base::TaskRunner> background_task_runner,
     const GrabWindowSnapshotAsyncPNGCallback& callback) {
-  GrabWindowSnapshotAsync(
-      view->GetWindowAndroid(), source_rect, background_task_runner, callback);
+  MakeAsyncCopyRequest(view->GetWindowAndroid(),
+                       source_rect,
+                       base::Bind(&SnapshotAsync::EncodeCopyOutputResult,
+                                  callback,
+                                  background_task_runner));
 }
 
 }  // namespace ui

@@ -422,9 +422,6 @@ void ContentViewCoreImpl::UpdateFrameInfo(
   if (obj.is_null() || !GetWindowAndroid())
     return;
 
-  GetWindowAndroid()->set_content_offset(
-      gfx::Vector2dF(0.0f, top_controls_height * top_controls_shown_ratio));
-
   page_scale_ = page_scale_factor;
 
   // The CursorAnchorInfo API in Android only supports zero width selection

@@ -1357,6 +1357,10 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
   UpdateBackgroundColor(is_transparent ? SK_ColorTRANSPARENT
                                        : frame_metadata.root_background_color);
 
+  view_.set_content_offset(gfx::Vector2dF(0.0f,
+      frame_metadata.top_controls_height *
+          frame_metadata.top_controls_shown_ratio));
+
   // All offsets and sizes are in CSS pixels.
   content_view_core_->UpdateFrameInfo(
       frame_metadata.root_scroll_offset,

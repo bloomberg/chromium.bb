@@ -46,16 +46,6 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
 
   static bool RegisterWindowAndroid(JNIEnv* env);
 
-  // The content offset in CSS pixels. It is used together with device scale
-  // factor to translate snapshots to the correct part of the window.
-  void set_content_offset(const gfx::Vector2dF& content_offset) {
-    content_offset_ = content_offset;
-  }
-
-  gfx::Vector2dF content_offset() const {
-    return content_offset_;
-  }
-
   // Compositor callback relay.
   void OnCompositingDidCommit();
 
@@ -113,7 +103,6 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
 
   base::android::ScopedJavaGlobalRef<jobject> java_window_;
   const int display_id_;
-  gfx::Vector2dF content_offset_;
   WindowAndroidCompositor* compositor_;
 
   base::ObserverList<WindowAndroidObserver> observer_list_;

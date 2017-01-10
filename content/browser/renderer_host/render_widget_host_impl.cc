@@ -91,6 +91,10 @@
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/snapshot/snapshot.h"
 
+#if defined(OS_ANDROID)
+#include "ui/android/view_android.h"
+#endif
+
 #if defined(OS_MACOSX)
 #include "device/power_save_blocker/power_save_blocker.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
@@ -2353,8 +2357,14 @@ void RenderWidgetHostImpl::DidReceiveRendererFrame() {
 void RenderWidgetHostImpl::WindowSnapshotReachedScreen(int snapshot_id) {
   DCHECK(base::MessageLoopForUI::IsCurrent());
 
-  gfx::Rect view_bounds = GetView()->GetViewBounds();
-  gfx::Rect snapshot_bounds(view_bounds.size());
+#if defined(OS_ANDROID)
+  // On Android, call sites should pass in the bounds with correct offset
+  // to capture the intended content area.
+  gfx::Rect snapshot_bounds(GetView()->GetViewBounds());
+  snapshot_bounds.Offset(0, GetView()->GetNativeView()->content_offset().y());
+#else
+  gfx::Rect snapshot_bounds(GetView()->GetViewBounds().size());
+#endif
 
   std::vector<unsigned char> png;
   if (ui::GrabViewSnapshot(
