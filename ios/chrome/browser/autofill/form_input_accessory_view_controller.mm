@@ -475,7 +475,7 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
 #pragma mark -
 #pragma mark CRWWebStateObserver
 
-- (void)webStateDidLoadPage:(web::WebState*)webState withSuccess:(BOOL)success {
+- (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
   [self reset];
 }
 

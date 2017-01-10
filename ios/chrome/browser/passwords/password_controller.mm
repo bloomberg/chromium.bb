@@ -365,7 +365,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 #pragma mark -
 #pragma mark CRWWebStateObserver
 
-- (void)webStateDidLoadPage:(web::WebState*)webState withSuccess:(BOOL)success {
+- (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
   // Clear per-page state.
   formData_.reset();
 

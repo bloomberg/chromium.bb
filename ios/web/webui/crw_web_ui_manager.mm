@@ -132,7 +132,7 @@ const char kScriptCommandPrefix[] = "webui";
           }];
 }
 
-- (void)webStateDidLoadPage:(web::WebState*)webState withSuccess:(BOOL)success {
+- (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
   DCHECK_EQ(webState, _webState);
   // All WebUI pages are HTML based.
   _webState->SetContentsMimeType("text/html");

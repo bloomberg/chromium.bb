@@ -1859,8 +1859,8 @@ void AddNetworkClientFactoryOnIOThread(
   }
 }
 
-- (void)webStateDidLoadPage:(web::WebState*)webState
-                withSuccess:(BOOL)loadSuccess {
+- (void)webState:(web::WebState*)webState
+    didLoadPageWithSuccess:(BOOL)loadSuccess {
   DCHECK(self.webController.loadPhase == web::PAGE_LOADED);
 
   // Cancel prerendering if response is "application/octet-stream". It can be a

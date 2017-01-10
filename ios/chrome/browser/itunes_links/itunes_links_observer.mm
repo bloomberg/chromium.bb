@@ -59,7 +59,7 @@
 
 #pragma mark - CRWWebStateObserver
 
-- (void)webStateDidLoadPage:(web::WebState*)webState withSuccess:(BOOL)success {
+- (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
   GURL URL = webState->GetLastCommittedURL();
   NSString* productID = [ITunesLinksObserver productIDFromURL:URL];
   if (productID)

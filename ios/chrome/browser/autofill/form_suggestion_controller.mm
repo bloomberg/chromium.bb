@@ -133,7 +133,7 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
   [self detachFromWebState];
 }
 
-- (void)webStateDidLoadPage:(web::WebState*)webState withSuccess:(BOOL)success {
+- (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
   [self processPage:webState];
 }
 

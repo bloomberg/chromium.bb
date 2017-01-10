@@ -635,7 +635,7 @@ void GetFormAndField(autofill::FormData* form,
                completionHandler:completionHandler];
 }
 
-- (void)webStateDidLoadPage:(web::WebState*)webState withSuccess:(BOOL)success {
+- (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
   if (!browserState_->GetPrefs()->GetBoolean(
           autofill::prefs::kAutofillEnabled) ||
       !webState->ContentIsHTML()) {
