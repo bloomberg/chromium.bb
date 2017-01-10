@@ -1,4 +1,4 @@
-TestRunner.loadLazyModules(["ui_lazy"]).then(test);
+TestRunner.loadLazyModules(["quick_open"]).then(test);
 function test() {
     TestRunner.addResult("Check to see that FilteredItemSelectionDialog uses proper regex to filter results.");
 
@@ -6,7 +6,7 @@ function test() {
     var overrideShowMatchingItems = true;
     var history = [];
 
-    var StubDelegate = class extends UI.FilteredListWidget.Delegate {
+    var StubDelegate = class extends QuickOpen.FilteredListWidget.Delegate {
         constructor()
         {
             super(history);
@@ -31,7 +31,7 @@ function test() {
 
         TestRunner.addResult("Input:" + JSON.stringify(input));
 
-        var filteredSelectionDialog = new UI.FilteredListWidget(delegate);
+        var filteredSelectionDialog = new QuickOpen.FilteredListWidget(delegate);
         filteredSelectionDialog.showAsDialog();
         var promise = TestRunner.addSniffer(filteredSelectionDialog, "_itemsFilteredForTest").then(accept);
         filteredSelectionDialog.setQuery(query);

@@ -29,8 +29,8 @@ function test()
             {
                 InspectorTest.addResult("Script source was shown.");
                 shownSourceFrame = sourceFrame;
-                InspectorTest.addSniffer(Sources.UISourceCodeFrame.prototype, "_addMessageToSource", didAddMessage);
-                InspectorTest.addSniffer(Sources.UISourceCodeFrame.prototype, "_removeMessageFromSource", didRemoveMessage);
+                InspectorTest.addSniffer(SourceFrame.UISourceCodeFrame.prototype, "_addMessageToSource", didAddMessage);
+                InspectorTest.addSniffer(SourceFrame.UISourceCodeFrame.prototype, "_removeMessageFromSource", didRemoveMessage);
                 InspectorTest.evaluateInPage("addErrorToConsole()");
             }
 

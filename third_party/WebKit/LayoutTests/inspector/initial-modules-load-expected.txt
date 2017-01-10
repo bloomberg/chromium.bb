@@ -51,9 +51,11 @@ Loaded modules:
     host
     main
     network
+    perf_ui
     persistence
     platform
     protocol
+    quick_open
     sdk
     services
     snippets
@@ -79,9 +81,11 @@ Loaded modules:
     host
     main
     network
+    perf_ui
     persistence
     platform
     protocol
+    quick_open
     sdk
     services
     snippets
@@ -107,9 +111,11 @@ Loaded modules:
     host
     main
     network
+    perf_ui
     persistence
     platform
     protocol
+    quick_open
     sdk
     services
     snippets
