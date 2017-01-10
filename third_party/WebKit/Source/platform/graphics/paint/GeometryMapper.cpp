@@ -14,10 +14,6 @@ FloatRect GeometryMapper::mapToVisualRectInDestinationSpace(
     const PropertyTreeState& sourceState,
     const PropertyTreeState& destinationState,
     bool& success) {
-  if (sourceState == destinationState) {
-    success = true;
-    return rect;
-  }
   FloatRect result = localToVisualRectInAncestorSpace(
       rect, sourceState, destinationState, success);
   if (success)
@@ -31,10 +27,6 @@ FloatRect GeometryMapper::mapRectToDestinationSpace(
     const PropertyTreeState& sourceState,
     const PropertyTreeState& destinationState,
     bool& success) {
-  if (sourceState == destinationState) {
-    success = true;
-    return rect;
-  }
   FloatRect result =
       localToAncestorRect(rect, sourceState, destinationState, success);
   if (success)
@@ -66,15 +58,7 @@ FloatRect GeometryMapper::slowMapToVisualRectInDestinationSpace(
   DCHECK(success);
   result.intersect(clipRect);
 
-  const TransformationMatrix& destinationToLca =
-      localToAncestorMatrix(destinationState.transform(), lcaState, success);
-  DCHECK(success);
-  if (destinationToLca.isInvertible()) {
-    success = true;
-    return destinationToLca.inverse().mapRect(result);
-  }
-  success = false;
-  return rect;
+  return ancestorToLocalRect(result, destinationState, lcaState, success);
 }
 
 FloatRect GeometryMapper::slowMapRectToDestinationSpace(
@@ -91,15 +75,7 @@ FloatRect GeometryMapper::slowMapRectToDestinationSpace(
   FloatRect result = localToAncestorRect(rect, sourceState, lcaState, success);
   DCHECK(success);
 
-  const TransformationMatrix& destinationToLca =
-      localToAncestorMatrix(destinationState.transform(), lcaState, success);
-  DCHECK(success);
-  if (destinationToLca.isInvertible()) {
-    success = true;
-    return destinationToLca.inverse().mapRect(result);
-  }
-  success = false;
-  return rect;
+  return ancestorToLocalRect(result, destinationState, lcaState, success);
 }
 
 FloatRect GeometryMapper::localToVisualRectInAncestorSpace(
@@ -107,6 +83,11 @@ FloatRect GeometryMapper::localToVisualRectInAncestorSpace(
     const PropertyTreeState& localState,
     const PropertyTreeState& ancestorState,
     bool& success) {
+  if (localState == ancestorState) {
+    success = true;
+    return rect;
+  }
+
   const auto& transformMatrix =
       localToAncestorMatrix(localState.transform(), ancestorState, success);
   if (!success)
@@ -139,6 +120,11 @@ FloatRect GeometryMapper::localToAncestorRect(
     const PropertyTreeState& localState,
     const PropertyTreeState& ancestorState,
     bool& success) {
+  if (localState.transform() == ancestorState.transform()) {
+    success = true;
+    return rect;
+  }
+
   const auto& transformMatrix =
       localToAncestorMatrix(localState.transform(), ancestorState, success);
   if (!success)
@@ -151,6 +137,11 @@ FloatRect GeometryMapper::ancestorToLocalRect(
     const PropertyTreeState& localState,
     const PropertyTreeState& ancestorState,
     bool& success) {
+  if (localState.transform() == ancestorState.transform()) {
+    success = true;
+    return rect;
+  }
+
   const auto& transformMatrix =
       localToAncestorMatrix(localState.transform(), ancestorState, success);
   if (!success)
@@ -178,11 +169,16 @@ FloatRect GeometryMapper::localToAncestorClipRect(
     const PropertyTreeState& localState,
     const PropertyTreeState& ancestorState,
     bool& success) {
+  FloatRect clip(LayoutRect::infiniteIntRect());
+  if (localState.clip() == ancestorState.clip()) {
+    success = true;
+    return clip;
+  }
+
   PrecomputedDataForAncestor& precomputedData =
       getPrecomputedDataForAncestor(ancestorState);
   const ClipPaintPropertyNode* clipNode = localState.clip();
   Vector<const ClipPaintPropertyNode*> intermediateNodes;
-  FloatRect clip(LayoutRect::infiniteIntRect());
 
   bool found = false;
   // Iterate over the path from localState.clip to ancestorState.clip. Stop if
@@ -231,6 +227,11 @@ const TransformationMatrix& GeometryMapper::localToAncestorMatrix(
     const TransformPaintPropertyNode* localTransformNode,
     const PropertyTreeState& ancestorState,
     bool& success) {
+  if (localTransformNode == ancestorState.transform()) {
+    success = true;
+    return m_identity;
+  }
+
   PrecomputedDataForAncestor& precomputedData =
       getPrecomputedDataForAncestor(ancestorState);
 
@@ -238,7 +239,6 @@ const TransformationMatrix& GeometryMapper::localToAncestorMatrix(
   Vector<const TransformPaintPropertyNode*> intermediateNodes;
   TransformationMatrix transformMatrix;
 
-  bool found = false;
   // Iterate over the path from localTransformNode to ancestorState.transform.
   // Stop if we've found a memoized (precomputed) transform for any particular
   // node.
@@ -246,18 +246,16 @@ const TransformationMatrix& GeometryMapper::localToAncestorMatrix(
     auto it = precomputedData.toAncestorTransforms.find(transformNode);
     if (it != precomputedData.toAncestorTransforms.end()) {
       transformMatrix = it->value;
-      found = true;
       break;
     }
-
-    intermediateNodes.push_back(transformNode);
 
     if (transformNode == ancestorState.transform())
       break;
 
+    intermediateNodes.push_back(transformNode);
     transformNode = transformNode->parent();
   }
-  if (!found && transformNode != ancestorState.transform()) {
+  if (!transformNode) {
     success = false;
     return m_identity;
   }
@@ -266,12 +264,9 @@ const TransformationMatrix& GeometryMapper::localToAncestorMatrix(
   // computing and memoizing transforms as we go.
   for (auto it = intermediateNodes.rbegin(); it != intermediateNodes.rend();
        it++) {
-    if ((*it) != ancestorState.transform()) {
-      TransformationMatrix localTransformMatrix = (*it)->matrix();
-      localTransformMatrix.applyTransformOrigin((*it)->origin());
-      transformMatrix = transformMatrix * localTransformMatrix;
-    }
-
+    TransformationMatrix localTransformMatrix = (*it)->matrix();
+    localTransformMatrix.applyTransformOrigin((*it)->origin());
+    transformMatrix = transformMatrix * localTransformMatrix;
     precomputedData.toAncestorTransforms.set(*it, transformMatrix);
   }
   success = true;

@@ -95,13 +95,18 @@ const static float kTestEpsilon = 1e-6;
                        inputRect, localPropertyTreeState,                      \
                        ancestorPropertyTreeState, success));                   \
     EXPECT_TRUE(success);                                                      \
-    EXPECT_EQ(                                                                 \
-        expectedTransformToAncestor,                                           \
-        getPrecomputedDataForAncestor(ancestorPropertyTreeState)               \
-            .toAncestorTransforms.get(localPropertyTreeState.transform()));    \
-    EXPECT_EQ(expectedClipInAncestorSpace,                                     \
-              getPrecomputedDataForAncestor(ancestorPropertyTreeState)         \
-                  .toAncestorClipRects.get(localPropertyTreeState.clip()));    \
+    if (ancestorPropertyTreeState.transform() !=                               \
+        localPropertyTreeState.transform()) {                                  \
+      EXPECT_EQ(                                                               \
+          expectedTransformToAncestor,                                         \
+          getPrecomputedDataForAncestor(ancestorPropertyTreeState)             \
+              .toAncestorTransforms.get(localPropertyTreeState.transform()));  \
+    }                                                                          \
+    if (ancestorPropertyTreeState.clip() != localPropertyTreeState.clip()) {   \
+      EXPECT_EQ(expectedClipInAncestorSpace,                                   \
+                getPrecomputedDataForAncestor(ancestorPropertyTreeState)       \
+                    .toAncestorClipRects.get(localPropertyTreeState.clip()));  \
+    }                                                                          \
   } while (false)
 
 TEST_F(GeometryMapperTest, Root) {
