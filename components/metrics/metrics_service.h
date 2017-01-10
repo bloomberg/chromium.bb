@@ -50,6 +50,8 @@ namespace metrics {
 
 class MetricsLogUploader;
 class MetricsReportingScheduler;
+class MetricsRotationScheduler;
+class MetricsUploadScheduler;
 class MetricsServiceAccessor;
 class MetricsServiceClient;
 class MetricsStateManager;
@@ -444,8 +446,13 @@ class MetricsService : public base::HistogramFlattener {
   // A number that identifies the how many times the app has been launched.
   int session_id_;
 
-  // The scheduler for determining when uploads should happen.
+  // The scheduler for determining when log rotations+uploads should happen.
+  // TODO(holte): Remove this once we've switched to split schedulers.
   std::unique_ptr<MetricsReportingScheduler> scheduler_;
+  // The scheduler for determining when log rotations should happen.
+  std::unique_ptr<MetricsRotationScheduler> rotation_scheduler_;
+  // The scheduler for determining when uploads should happen.
+  std::unique_ptr<MetricsUploadScheduler> upload_scheduler_;
 
   // Stores the time of the first call to |GetUptimes()|.
   base::TimeTicks first_updated_time_;

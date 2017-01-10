@@ -15,6 +15,7 @@
 namespace metrics {
 
 // Scheduler task to drive a MetricsService object's uploading.
+// TODO(holte): Remove this once we've switched to split schedulers.
 class MetricsReportingScheduler {
  public:
   // Creates MetricsServiceScheduler object with the given |upload_callback|
