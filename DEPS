@@ -353,7 +353,7 @@ deps_os = {
       Var('chromium_git') + '/external/github.com/facebook/fishhook.git' + '@' + 'd172d5247aa590c25d0b1885448bae76036ea22c',
 
     'src/ios/third_party/gcdwebserver/src':
-      Var('chromium_git') + '/external/github.com/swisspol/GCDWebServer.git' + '@' + '3d5fd0b8281a7224c057deb2d17709b5bea64836',
+      Var('chromium_git') + '/external/github.com/swisspol/GCDWebServer.git' + '@' + '43555c66627f6ed44817855a0f6d465f559d30e0',
 
     'src/ios/third_party/material_components_ios/src':
       Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'b1eb638d70792b7aa06118b128e3518c20e2aaae',
