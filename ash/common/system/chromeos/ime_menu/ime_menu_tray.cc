@@ -30,6 +30,8 @@
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/ime_bridge.h"
+#include "ui/base/ime/text_input_client.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -73,6 +75,12 @@ bool IsInLoginOrLockScreen() {
   LoginStatus login =
       WmShell::Get()->system_tray_delegate()->GetUserLoginStatus();
   return !TrayPopupUtils::CanOpenWebUISettings(login);
+}
+
+// Returns true if the current input context type is password.
+bool IsInPasswordInputContext() {
+  return ui::IMEBridge::Get()->GetCurrentInputContext().type ==
+         ui::TEXT_INPUT_TYPE_PASSWORD;
 }
 
 class ImeMenuLabel : public views::Label {
@@ -408,18 +416,13 @@ void ImeMenuTray::ShowImeMenuBubbleInternal() {
                                        ImeListView::SHOW_SINGLE_IME);
   bubble_view->AddChildView(ime_list_view_);
 
-  // The bottom view that contains buttons are not supported in login/lock
-  // screen.
-  if (!IsInLoginOrLockScreen()) {
-    if (ShouldShowEmojiHandwritingVoiceButtons()) {
-      bubble_view->AddChildView(
-          new ImeButtonsView(this, true, true, true, true));
-    } else if (!MaterialDesignController::IsSystemTrayMenuMaterial()) {
-      // For MD, we don't need |ImeButtonsView| as the settings button will be
-      // shown in the title row.
-      bubble_view->AddChildView(
-          new ImeButtonsView(this, false, false, false, true));
-    }
+  if (ShouldShowEmojiHandwritingVoiceButtons()) {
+    bubble_view->AddChildView(new ImeButtonsView(this, true, true, true, true));
+  } else if (!MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    // For MD, we don't need |ImeButtonsView| as the settings button will be
+    // shown in the title row.
+    bubble_view->AddChildView(
+        new ImeButtonsView(this, false, false, false, true));
   }
 
   bubble_.reset(new TrayBubbleWrapper(this, bubble_view));
@@ -484,9 +487,15 @@ bool ImeMenuTray::ShouldBlockShelfAutoHide() const {
 }
 
 bool ImeMenuTray::ShouldShowEmojiHandwritingVoiceButtons() const {
+  // Emoji, handwriting and voice input is not supported for these cases:
+  // 1) features::kEHVInputOnImeMenu is not enabled.
+  // 2) third party IME extensions.
+  // 3) login/lock screen.
+  // 4) password input client.
   return InputMethodManager::Get() &&
          InputMethodManager::Get()->IsEmojiHandwritingVoiceOnImeMenuEnabled() &&
-         !current_ime_.third_party;
+         !current_ime_.third_party && !IsInLoginOrLockScreen() &&
+         !IsInPasswordInputContext();
 }
 
 bool ImeMenuTray::ShouldShowKeyboardToggle() const {

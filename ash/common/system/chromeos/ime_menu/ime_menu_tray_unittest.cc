@@ -16,6 +16,10 @@
 #include "ash/test/status_area_widget_test_helper.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/chromeos/mock_input_method_manager.h"
+#include "ui/base/ime/ime_bridge.h"
+#include "ui/base/ime/text_input_flags.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/label.h"
 
@@ -74,6 +78,13 @@ class ImeMenuTrayTest : public test::AshTestBase {
       }
     }
     return true;
+  }
+
+  // Focuses in the given type of input context.
+  void FocusInInputContext(ui::TextInputType input_type) {
+    ui::IMEEngineHandlerInterface::InputContext input_context(
+        input_type, ui::TEXT_INPUT_MODE_DEFAULT, ui::TEXT_INPUT_FLAG_NONE);
+    ui::IMEBridge::Get()->SetCurrentInputContext(input_context);
   }
 
  private:
@@ -279,6 +290,24 @@ TEST_F(ImeMenuTrayTest, ForceToShowEmojiKeyset) {
   GetTray()->OnKeyboardHidden();
   // The keyboard should still be disabled.
   EXPECT_FALSE(accessibility_delegate->IsVirtualKeyboardEnabled());
+}
+
+TEST_F(ImeMenuTrayTest, ShowEmojiHandwritingVoiceButtons) {
+  FocusInInputContext(ui::TEXT_INPUT_TYPE_TEXT);
+  EXPECT_FALSE(GetTray()->ShouldShowEmojiHandwritingVoiceButtons());
+
+  chromeos::input_method::InputMethodManager* input_method_manager =
+      chromeos::input_method::InputMethodManager::Get();
+  EXPECT_FALSE(input_method_manager);
+  chromeos::input_method::InputMethodManager::Initialize(
+      new chromeos::input_method::MockInputMethodManager);
+  input_method_manager = chromeos::input_method::InputMethodManager::Get();
+  EXPECT_TRUE(input_method_manager &&
+              input_method_manager->IsEmojiHandwritingVoiceOnImeMenuEnabled());
+  EXPECT_TRUE(GetTray()->ShouldShowEmojiHandwritingVoiceButtons());
+
+  FocusInInputContext(ui::TEXT_INPUT_TYPE_PASSWORD);
+  EXPECT_FALSE(GetTray()->ShouldShowEmojiHandwritingVoiceButtons());
 }
 
 }  // namespace ash
