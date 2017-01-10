@@ -508,7 +508,6 @@ InstallStatus InstallOrUpdateProduct(
 
     // Creates shortcuts for Chrome.
     const Product& chrome_product = installer_state.product();
-    BrowserDistribution* chrome_dist = chrome_product.distribution();
     const base::FilePath chrome_exe(
         installer_state.target_path().Append(kChromeExe));
 
@@ -523,8 +522,7 @@ InstallStatus InstallOrUpdateProduct(
         INSTALL_SHORTCUT_REPLACE_EXISTING;
     if (result == installer::FIRST_INSTALL_SUCCESS ||
         result == installer::INSTALL_REPAIRED ||
-        !original_state.GetProductState(installer_state.system_install(),
-                                        chrome_dist->GetType())) {
+        !original_state.GetProductState(installer_state.system_install())) {
       // Always create the shortcuts on a new install, a repair install, and
       // when the Chrome product is being added to the current install.
       install_operation = INSTALL_SHORTCUT_CREATE_ALL;

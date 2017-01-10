@@ -9,7 +9,8 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <wtsapi32.h>
-#include <vector>
+
+#include <string>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -22,7 +23,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
-#include "base/win/windows_version.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
@@ -30,7 +30,6 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/product.h"
 #include "content/public/common/result_codes.h"
@@ -220,12 +219,10 @@ bool LaunchSetupAsConsoleUser(base::CommandLine* cmd_line) {
   cmd_line->AppendSwitchASCII(switches::kToastResultsKey,
                               base::IntToString(key));
 
-  if (base::win::GetVersion() > base::win::VERSION_XP) {
-    // Make sure that in Vista and Above we have the proper DACLs so
-    // the interactive user can launch it.
-    if (!FixDACLsForExecute(cmd_line->GetProgram()))
-      NOTREACHED();
-  }
+  // Make sure that in Vista and Above we have the proper DACLs so the
+  // interactive user can launch it.
+  if (!FixDACLsForExecute(cmd_line->GetProgram()))
+    NOTREACHED();
 
   DWORD console_id = ::WTSGetActiveConsoleSessionId();
   if (console_id == 0xFFFFFFFF) {
@@ -530,8 +527,7 @@ void InactiveUserToastExperiment(int flavor,
   bool system_level_toast = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kSystemLevelToast);
 
-  base::CommandLine cmd(InstallUtil::GetChromeUninstallCmd(
-      system_level_toast, product.distribution()->GetType()));
+  base::CommandLine cmd(InstallUtil::GetChromeUninstallCmd(system_level_toast));
   base::LaunchProcess(cmd, base::LaunchOptions());
 }
 

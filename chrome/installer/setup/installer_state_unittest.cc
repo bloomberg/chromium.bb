@@ -159,7 +159,7 @@ TEST_F(InstallerStateTest, GetCurrentVersionMigrateChrome) {
   FakeInstallationState machine_state;
 
   // Pretend that this version of single-install Chrome is already installed.
-  machine_state.AddChrome(system_install, false,
+  machine_state.AddChrome(system_install,
                           new base::Version(chrome::kChromeVersion));
 
   // Now we're invoked to install multi Chrome.

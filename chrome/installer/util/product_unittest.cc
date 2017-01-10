@@ -61,8 +61,7 @@ TEST(ProductTest, ProductInstallBasic) {
 
     // There should be no installed version in the registry.
     machine_state.Initialize();
-    EXPECT_TRUE(machine_state.GetProductState(
-        system_level, distribution->GetType()) == NULL);
+    EXPECT_EQ(nullptr, machine_state.GetProductState(system_level));
 
     // Let's pretend chrome is installed.
     RegKey version_key(root, distribution->GetVersionKey().c_str(),
@@ -78,9 +77,9 @@ TEST(ProductTest, ProductInstallBasic) {
     // We started out with a non-msi product.
     machine_state.Initialize();
     const installer::ProductState* chrome_state =
-        machine_state.GetProductState(system_level, distribution->GetType());
-    EXPECT_TRUE(chrome_state != NULL);
-    if (chrome_state != NULL) {
+        machine_state.GetProductState(system_level);
+    EXPECT_NE(nullptr, chrome_state);
+    if (chrome_state) {
       EXPECT_EQ(chrome_state->version(), current_version);
       EXPECT_FALSE(chrome_state->is_msi());
     }
@@ -94,10 +93,9 @@ TEST(ProductTest, ProductInstallBasic) {
     // Set the MSI marker, refresh, and verify that we now see the MSI marker.
     EXPECT_TRUE(product->SetMsiMarker(system_level, true));
     machine_state.Initialize();
-    chrome_state =
-        machine_state.GetProductState(system_level, distribution->GetType());
-    EXPECT_TRUE(chrome_state != NULL);
-    if (chrome_state != NULL)
+    chrome_state = machine_state.GetProductState(system_level);
+    EXPECT_NE(nullptr, chrome_state);
+    if (chrome_state)
       EXPECT_TRUE(chrome_state->is_msi());
   }
 }

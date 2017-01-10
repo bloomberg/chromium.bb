@@ -164,13 +164,10 @@ bool InstallUtil::ExecuteExeAsAdmin(const base::CommandLine& cmd,
   return success;
 }
 
-base::CommandLine InstallUtil::GetChromeUninstallCmd(
-    bool system_install,
-    BrowserDistribution::Type distribution_type) {
+base::CommandLine InstallUtil::GetChromeUninstallCmd(bool system_install) {
   ProductState state;
-  if (state.Initialize(system_install, distribution_type)) {
+  if (state.Initialize(system_install))
     return state.uninstall_command();
-  }
   return base::CommandLine(base::CommandLine::NO_PROGRAM);
 }
 
@@ -324,9 +321,8 @@ void InstallUtil::ResetIsPerUserInstallForTest() {
 }
 
 bool InstallUtil::IsMultiInstall(bool system_install) {
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   ProductState state;
-  return state.Initialize(system_install, dist) && state.is_multi_install();
+  return state.Initialize(system_install) && state.is_multi_install();
 }
 
 bool CheckIsChromeSxSProcess() {

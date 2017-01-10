@@ -12,23 +12,21 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "chrome/installer/util/app_commands.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
 
 namespace base {
 class Version;
-namespace win {
-class RegKey;
-}
 }
 
 namespace installer {
 
 class InstallationState;
 
-// A representation of a product's state on the machine based on the contents
-// of the Windows registry.
+// A representation of Chrome's state on the machine based on the contents of
+// the Windows registry.
 // TODO(grt): Pull this out into its own file.
+// TODO(grt): Evaluate whether this is still needed. If yes, rename to
+// ChromeState or somesuch.
 class ProductState {
  public:
   ProductState();
@@ -36,10 +34,7 @@ class ProductState {
 
   // Returns true if the product is installed (i.e., the product's Clients key
   // exists and has a "pv" value); false otherwise.
-  bool Initialize(bool system_install,
-                  BrowserDistribution::Type type);
-  bool Initialize(bool system_install,
-                  BrowserDistribution* distribution);
+  bool Initialize(bool system_install);
 
   // Returns the product's channel info (i.e., the Google Update "ap" value).
   const ChannelInfo& channel() const { return channel_; }
@@ -101,9 +96,6 @@ class ProductState {
   void Clear();
 
  protected:
-  static bool InitializeCommands(const base::win::RegKey& version_key,
-                                 AppCommands* commands);
-
   ChannelInfo channel_;
   std::unique_ptr<base::Version> version_;
   std::unique_ptr<base::Version> old_version_;
@@ -137,8 +129,7 @@ class InstallationState {
 
   // Returns the state of a product or NULL if not installed.
   // Caller does NOT assume ownership of returned pointer.
-  const ProductState* GetProductState(bool system_install,
-                                      BrowserDistribution::Type type) const;
+  const ProductState* GetProductState(bool system_install) const;
 
   // Returns the state of a product, even one that has not yet been installed.
   // This is useful during first install, when some but not all ProductState
@@ -147,21 +138,11 @@ class InstallationState {
   // the version numbers from a ProductState returned by this method.
   // Caller does NOT assume ownership of returned pointer. This method will
   // never return NULL.
-  const ProductState* GetNonVersionedProductState(
-      bool system_install, BrowserDistribution::Type type) const;
+  const ProductState* GetNonVersionedProductState(bool system_install) const;
 
  protected:
-  enum {
-    CHROME_BROWSER_INDEX,
-    CHROME_FRAME_INDEX,
-    CHROME_BINARIES_INDEX,
-    NUM_PRODUCTS
-  };
-
-  static int IndexFromDistType(BrowserDistribution::Type type);
-
-  ProductState user_products_[NUM_PRODUCTS];
-  ProductState system_products_[NUM_PRODUCTS];
+  ProductState user_chrome_;
+  ProductState system_chrome_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InstallationState);

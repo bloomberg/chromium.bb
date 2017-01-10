@@ -365,8 +365,8 @@ base::FilePath FindArchiveToPatch(const InstallationState& original_state,
   // is the value used to select a specific differential update. If an archive
   // can't be found using that, fallback to using the newest version present.
   base::FilePath patch_source;
-  const ProductState* product = original_state.GetProductState(
-      installer_state.system_install(), BrowserDistribution::CHROME_BROWSER);
+  const ProductState* product =
+      original_state.GetProductState(installer_state.system_install());
   if (product) {
     patch_source = installer_state.GetInstallerDirectory(product->version())
         .Append(installer::kChromeArchive);

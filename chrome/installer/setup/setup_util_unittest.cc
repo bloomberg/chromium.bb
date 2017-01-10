@@ -387,8 +387,8 @@ class FindArchiveToPatchTest : public testing::Test {
     installer_state_.reset(new installer::InstallerState(
         kSystemInstall_ ? installer::InstallerState::SYSTEM_LEVEL :
         installer::InstallerState::USER_LEVEL));
-    installer_state_->AddProductFromState(*original_state_->GetProductState(
-        kSystemInstall_, BrowserDistribution::CHROME_BROWSER));
+    installer_state_->AddProductFromState(
+        *original_state_->GetProductState(kSystemInstall_));
 
     // Create archives in the two version dirs.
     ASSERT_TRUE(
@@ -420,8 +420,7 @@ class FindArchiveToPatchTest : public testing::Test {
 
   void InstallProduct() {
     FakeProductState* product = FakeProductState::FromProductState(
-        original_state_->GetNonVersionedProductState(
-            kSystemInstall_, BrowserDistribution::CHROME_BROWSER));
+        original_state_->GetNonVersionedProductState(kSystemInstall_));
 
     product->set_version(product_version_);
     base::CommandLine uninstall_command(
@@ -435,8 +434,7 @@ class FindArchiveToPatchTest : public testing::Test {
 
   void UninstallProduct() {
     FakeProductState::FromProductState(
-        original_state_->GetNonVersionedProductState(
-            kSystemInstall_, BrowserDistribution::CHROME_BROWSER))
+        original_state_->GetNonVersionedProductState(kSystemInstall_))
         ->set_version(base::Version());
   }
 

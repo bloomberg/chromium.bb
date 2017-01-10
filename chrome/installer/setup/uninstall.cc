@@ -988,8 +988,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
 
   // Get the state of the installed product (if any)
   const ProductState* product_state =
-      original_state.GetProductState(installer_state.system_install(),
-                                     browser_dist->GetType());
+      original_state.GetProductState(installer_state.system_install());
 
   // Remove the event log provider registration as we are going to delete
   // the file which serves the resources anyways.

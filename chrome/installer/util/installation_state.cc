@@ -9,10 +9,30 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "base/win/registry.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/install_util.h"
 
 namespace installer {
+
+namespace {
+
+// Initializes |commands| from the "Commands" subkey of |version_key|. Returns
+// false if there is no "Commands" subkey or on error.
+bool InitializeCommands(const base::win::RegKey& version_key,
+                        AppCommands* commands) {
+  static const DWORD kAccess =
+      KEY_ENUMERATE_SUB_KEYS | KEY_QUERY_VALUE | KEY_WOW64_32KEY;
+  base::win::RegKey commands_key;
+
+  if (commands_key.Open(version_key.Handle(), google_update::kRegCommandsKey,
+                        kAccess) == ERROR_SUCCESS) {
+    return commands->Initialize(commands_key, KEY_WOW64_32KEY);
+  }
+  return false;
+}
+
+}  // namespace
 
 ProductState::ProductState()
     : uninstall_command_(base::CommandLine::NO_PROGRAM),
@@ -28,30 +48,10 @@ ProductState::ProductState()
 ProductState::~ProductState() {
 }
 
-bool ProductState::Initialize(bool system_install,
-                              BrowserDistribution::Type type) {
-  return Initialize(system_install,
-                    BrowserDistribution::GetSpecificDistribution(type));
-}
-
-// Initializes |commands| from the "Commands" subkey of |version_key|.
-// Returns false if there is no "Commands" subkey or on error.
-// static
-bool ProductState::InitializeCommands(const base::win::RegKey& version_key,
-                                      AppCommands* commands) {
-  static const DWORD kAccess =
-      KEY_ENUMERATE_SUB_KEYS | KEY_QUERY_VALUE | KEY_WOW64_32KEY;
-  base::win::RegKey commands_key;
-
-  if (commands_key.Open(version_key.Handle(), google_update::kRegCommandsKey,
-                        kAccess) == ERROR_SUCCESS)
-    return commands->Initialize(commands_key, KEY_WOW64_32KEY);
-  return false;
-}
-
-bool ProductState::Initialize(bool system_install,
-                              BrowserDistribution* distribution) {
+bool ProductState::Initialize(bool system_install) {
   static const DWORD kAccess = KEY_QUERY_VALUE | KEY_WOW64_32KEY;
+  const BrowserDistribution* distribution =
+      BrowserDistribution::GetDistribution();
   const std::wstring version_key(distribution->GetVersionKey());
   const std::wstring state_key(distribution->GetStateKey());
   const HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
@@ -95,9 +95,7 @@ bool ProductState::Initialize(bool system_install,
     // Read in the brand code, it may be absent
     key.ReadValue(google_update::kRegBrandField, &brand_);
 
-    // "UninstallString" will be absent for the multi-installer package.
     key.ReadValue(kUninstallStringField, &setup_path);
-    // "UninstallArguments" will be absent for the multi-installer package.
     key.ReadValue(kUninstallArgumentsField, &uninstall_arguments);
     InstallUtil::ComposeCommandLine(setup_path, uninstall_arguments,
                                     &uninstall_command_);
@@ -117,11 +115,9 @@ bool ProductState::Initialize(bool system_install,
     DWORD dw_value = 0;
     msi_ = (key.ReadValueDW(google_update::kRegMSIField,
                             &dw_value) == ERROR_SUCCESS) && (dw_value != 0);
-    // Multi-install is implied or is derived from the command-line.
-    if (distribution->GetType() == BrowserDistribution::CHROME_BINARIES)
-      multi_install_ = true;
-    else
-      multi_install_ = uninstall_command_.HasSwitch(switches::kMultiInstall);
+    // Multi-install is a legacy option that is read for the sole purpose of
+    // migrating clients away from it.
+    multi_install_ = uninstall_command_.HasSwitch(switches::kMultiInstall);
   }
 
   // Read from the ClientStateMedium key.  Values here override those in
@@ -144,7 +140,7 @@ bool ProductState::Initialize(bool system_install,
     }
   }
 
-  return version_.get() != NULL;
+  return version_.get() != nullptr;
 }
 
 base::FilePath ProductState::GetSetupPath() const {
@@ -152,16 +148,17 @@ base::FilePath ProductState::GetSetupPath() const {
 }
 
 const base::Version& ProductState::version() const {
-  DCHECK(version_.get() != NULL);
+  DCHECK(version_);
   return *version_;
 }
 
 ProductState& ProductState::CopyFrom(const ProductState& other) {
   channel_.set_value(other.channel_.value());
-  version_.reset(
-      other.version_.get() ? new base::Version(*other.version_) : NULL);
-  old_version_.reset(
-      other.old_version_.get() ? new base::Version(*other.old_version_) : NULL);
+  version_.reset(other.version_.get() ? new base::Version(*other.version_)
+                                      : nullptr);
+  old_version_.reset(other.old_version_.get()
+                         ? new base::Version(*other.old_version_)
+                         : nullptr);
   brand_ = other.brand_;
   rename_cmd_ = other.rename_cmd_;
   uninstall_command_ = other.uninstall_command_;
@@ -220,55 +217,23 @@ bool ProductState::GetUsageStats(DWORD* usagestats) const {
   return true;
 }
 
-InstallationState::InstallationState() {
-}
-
-// static
-int InstallationState::IndexFromDistType(BrowserDistribution::Type type) {
-  static_assert(BrowserDistribution::CHROME_BROWSER == CHROME_BROWSER_INDEX,
-                "unexpected_chrome_browser_distribution_value_");
-  static_assert(BrowserDistribution::CHROME_FRAME == CHROME_FRAME_INDEX,
-                "unexpected_chrome_frame_distribution_value_");
-  static_assert(BrowserDistribution::CHROME_BINARIES == CHROME_BINARIES_INDEX,
-                "unexpected_chrome_frame_distribution_value_");
-  DCHECK(type == BrowserDistribution::CHROME_BROWSER ||
-         type == BrowserDistribution::CHROME_FRAME ||
-         type == BrowserDistribution::CHROME_BINARIES);
-  return type;
-}
+InstallationState::InstallationState() {}
 
 void InstallationState::Initialize() {
-  BrowserDistribution* distribution;
-
-  distribution = BrowserDistribution::GetSpecificDistribution(
-      BrowserDistribution::CHROME_BROWSER);
-  user_products_[CHROME_BROWSER_INDEX].Initialize(false, distribution);
-  system_products_[CHROME_BROWSER_INDEX].Initialize(true, distribution);
-
-  distribution = BrowserDistribution::GetSpecificDistribution(
-      BrowserDistribution::CHROME_FRAME);
-  user_products_[CHROME_FRAME_INDEX].Initialize(false, distribution);
-  system_products_[CHROME_FRAME_INDEX].Initialize(true, distribution);
-
-  distribution = BrowserDistribution::GetSpecificDistribution(
-      BrowserDistribution::CHROME_BINARIES);
-  user_products_[CHROME_BINARIES_INDEX].Initialize(false, distribution);
-  system_products_[CHROME_BINARIES_INDEX].Initialize(true, distribution);
-}
-
-const ProductState* InstallationState::GetNonVersionedProductState(
-    bool system_install,
-    BrowserDistribution::Type type) const {
-  const ProductState& product_state = (system_install ? system_products_ :
-      user_products_)[IndexFromDistType(type)];
-  return &product_state;
+  user_chrome_.Initialize(false);
+  system_chrome_.Initialize(true);
 }
 
 const ProductState* InstallationState::GetProductState(
-    bool system_install,
-    BrowserDistribution::Type type) const {
+    bool system_install) const {
   const ProductState* product_state =
-      GetNonVersionedProductState(system_install, type);
-  return product_state->version_.get() == NULL ? NULL : product_state;
+      GetNonVersionedProductState(system_install);
+  return product_state->version_.get() ? product_state : nullptr;
 }
+
+const ProductState* InstallationState::GetNonVersionedProductState(
+    bool system_install) const {
+  return system_install ? &system_chrome_ : &user_chrome_;
+}
+
 }  // namespace installer

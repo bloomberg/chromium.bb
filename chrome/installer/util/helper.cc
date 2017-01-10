@@ -33,19 +33,15 @@ base::FilePath GetChromeInstallPath(bool system_install,
 }
 
 BrowserDistribution* GetBinariesDistribution(bool system_install) {
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   ProductState state;
 
   // If we're part of a multi-install, we need to poll using the multi-installer
-  // package's app guid rather than the browser's or Chrome Frame's app guid.
-  // If we can't read the app's state from the registry, assume it isn't
-  // multi-installed.
-  if (state.Initialize(system_install, dist) && state.is_multi_install()) {
-    return BrowserDistribution::GetSpecificDistribution(
-        BrowserDistribution::CHROME_BINARIES);
-  } else {
-    return dist;
-  }
+  // package's app guid rather than the browser's. If we can't read the app's
+  // state from the registry, assume it isn't multi-installed.
+  if (!state.Initialize(system_install) || !state.is_multi_install())
+    return BrowserDistribution::GetDistribution();
+  return BrowserDistribution::GetSpecificDistribution(
+      BrowserDistribution::CHROME_BINARIES);
 }
 
 std::wstring GetAppGuidForUpdates(bool system_install) {

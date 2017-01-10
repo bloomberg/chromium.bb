@@ -589,7 +589,7 @@ TEST_F(GoogleUpdateSettingsTest, SetEULAConsent) {
   FakeInstallationState machine_state;
 
   // Chrome is installed.
-  machine_state.AddChrome(system_level, false /* !multi_install */,
+  machine_state.AddChrome(system_level,
                           new base::Version(chrome::kChromeVersion));
 
   RegKey key;

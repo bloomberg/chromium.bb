@@ -80,8 +80,7 @@ void InstallerState::Initialize(const base::CommandLine& command_line,
   } else {
     operation_ = SINGLE_INSTALL_OR_UPDATE;
     // Is this a migration from multi-install to single-install?
-    const ProductState* state =
-        machine_state.GetProductState(system_install(), dist->GetType());
+    const ProductState* state = machine_state.GetProductState(system_install());
     is_migrating_to_single_ = state && state->is_multi_install();
   }
 
@@ -164,8 +163,8 @@ Product* InstallerState::AddProductFromPreferences(
   Product* product = AddProductInDirectory(nullptr, std::move(product_ptr));
 
   if (product != NULL && !msi_) {
-    const ProductState* product_state = machine_state.GetProductState(
-        system_install(), BrowserDistribution::CHROME_BROWSER);
+    const ProductState* product_state =
+        machine_state.GetProductState(system_install());
     if (product_state != NULL)
       msi_ = product_state->is_msi();
   }
@@ -201,8 +200,8 @@ base::Version* InstallerState::GetCurrentVersion(
     const InstallationState& machine_state) const {
   DCHECK(product_);
   std::unique_ptr<base::Version> current_version;
-  const ProductState* product_state = machine_state.GetProductState(
-      level_ == SYSTEM_LEVEL, BrowserDistribution::CHROME_BROWSER);
+  const ProductState* product_state =
+      machine_state.GetProductState(level_ == SYSTEM_LEVEL);
 
   if (product_state != NULL) {
     const base::Version* version = NULL;

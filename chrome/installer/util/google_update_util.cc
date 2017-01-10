@@ -152,9 +152,8 @@ void ElevateIfNeededToReenableUpdates() {
     return;
   }
   installer::ProductState product_state;
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   const bool system_install = !InstallUtil::IsPerUserInstall(chrome_exe);
-  if (!product_state.Initialize(system_install, dist))
+  if (!product_state.Initialize(system_install))
     return;
   base::FilePath exe_path(product_state.GetSetupPath());
   if (exe_path.empty() || !base::PathExists(exe_path)) {
@@ -164,7 +163,7 @@ void ElevateIfNeededToReenableUpdates() {
 
   base::CommandLine cmd(exe_path);
   cmd.AppendSwitch(installer::switches::kReenableAutoupdates);
-  installer::Product product(dist);
+  installer::Product product(BrowserDistribution::GetDistribution());
   product.InitializeFromUninstallCommand(product_state.uninstall_command());
   product.AppendProductFlags(&cmd);
   if (system_install)

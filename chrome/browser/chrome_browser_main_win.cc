@@ -460,8 +460,6 @@ int ChromeBrowserMainPartsWin::HandleIconsCommands(
 
 // static
 bool ChromeBrowserMainPartsWin::CheckMachineLevelInstall() {
-  // TODO(tommi): Check if using the default distribution is always the right
-  // thing to do.
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   base::Version version;
   InstallUtil::GetChromeVersion(dist, true, &version);
@@ -472,7 +470,7 @@ bool ChromeBrowserMainPartsWin::CheckMachineLevelInstall() {
     base::FilePath user_exe_path(installer::GetChromeInstallPath(false, dist));
     if (base::FilePath::CompareEqualIgnoreCase(exe, user_exe_path.value())) {
       base::CommandLine uninstall_cmd(
-          InstallUtil::GetChromeUninstallCmd(false, dist->GetType()));
+          InstallUtil::GetChromeUninstallCmd(false));
       if (!uninstall_cmd.GetProgram().empty()) {
         uninstall_cmd.AppendSwitch(installer::switches::kSelfDestruct);
         uninstall_cmd.AppendSwitch(installer::switches::kForceUninstall);

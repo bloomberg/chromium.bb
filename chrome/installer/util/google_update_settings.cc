@@ -160,21 +160,20 @@ bool RemoveGoogleUpdateStrKey(const wchar_t* const name) {
 // returns whether the install is a multi-install via output parameter
 // |is_multi_install|. Returns false on failure.
 bool InitChannelInfo(bool system_install,
-                     BrowserDistribution* dist,
                      installer::ChannelInfo* channel_info,
                      bool* is_multi_install) {
   // Determine whether or not chrome is multi-install. If so, updates are
   // delivered under the binaries' app guid, so that's where the relevant
   // channel is found.
   installer::ProductState state;
-  ignore_result(state.Initialize(system_install, dist));
+  ignore_result(state.Initialize(system_install));
   if (!state.is_multi_install()) {
     // Use the channel info that was just read for this single-install chrome.
     *channel_info = state.channel();
   } else {
     // Read the channel info from the binaries' state key.
     HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-    dist = BrowserDistribution::GetSpecificDistribution(
+    BrowserDistribution* dist = BrowserDistribution::GetSpecificDistribution(
         BrowserDistribution::CHROME_BINARIES);
     RegKey key(root_key, dist->GetStateKey().c_str(),
                KEY_READ | KEY_WOW64_32KEY);
@@ -197,8 +196,7 @@ bool GetChromeChannelInternal(bool system_install,
 
   installer::ChannelInfo channel_info;
   bool is_multi_install = false;
-  if (!InitChannelInfo(system_install, dist, &channel_info,
-                       &is_multi_install)) {
+  if (!InitChannelInfo(system_install, &channel_info, &is_multi_install)) {
     channel->assign(installer::kChromeChannelUnknown);
     return false;
   }
@@ -360,11 +358,9 @@ bool GoogleUpdateSettings::SetCollectStatsConsentAtLevel(bool system_install,
 // static
 bool GoogleUpdateSettings::GetCollectStatsConsentDefault(
     bool* stats_consent_default) {
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   installer::ChannelInfo channel_info;
   bool is_multi_install = false;
-  if (InitChannelInfo(IsSystemInstall(), dist, &channel_info,
-                      &is_multi_install)) {
+  if (InitChannelInfo(IsSystemInstall(), &channel_info, &is_multi_install)) {
     base::string16 stats_default = channel_info.GetStatsDefault();
     if (stats_default == L"0" || stats_default == L"1") {
       *stats_consent_default = (stats_default == L"1");

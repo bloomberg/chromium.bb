@@ -43,12 +43,11 @@ class InstallUtil {
   // Launches given exe as admin on Vista.
   static bool ExecuteExeAsAdmin(const base::CommandLine& cmd, DWORD* exit_code);
 
-  // Reads the uninstall command for Chromium from registry and returns it.
-  // If system_install is true the command is read from HKLM, otherwise
-  // from HKCU.
-  static base::CommandLine GetChromeUninstallCmd(
-      bool system_install,
-      BrowserDistribution::Type distribution_type);
+  // Reads the uninstall command for Chromium from the Windows registry and
+  // returns it. If |system_install| is true the command is read from HKLM,
+  // otherwise from HKCU. Returns an empty CommandLine if Chrome is not
+  // installed.
+  static base::CommandLine GetChromeUninstallCmd(bool system_install);
 
   // Find the version of Chrome installed on the system by checking the
   // Google Update registry key. Fills |version| with the version or a

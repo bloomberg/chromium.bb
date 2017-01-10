@@ -148,10 +148,8 @@ class MockInstallationState : public InstallationState {
  public:
   // Included for testing.
   void SetProductState(bool system_install,
-                       BrowserDistribution::Type type,
                        const ProductState& product_state) {
-    ProductState& target = (system_install ? system_products_ :
-        user_products_)[IndexFromDistType(type)];
+    ProductState& target = system_install ? system_chrome_ : user_chrome_;
     target.CopyFrom(product_state);
   }
 };
@@ -212,9 +210,7 @@ class InstallWorkerTest : public testing::Test {
     if (system_level)
       product_state.AddUninstallSwitch(installer::switches::kSystemLevel);
 
-    installation_state->SetProductState(system_level,
-                                        BrowserDistribution::CHROME_BROWSER,
-                                        product_state);
+    installation_state->SetProductState(system_level, product_state);
   }
 
   MockInstallationState* BuildChromeInstallationState(bool system_level) {
@@ -245,8 +241,7 @@ class InstallWorkerTest : public testing::Test {
       MockInstallerState* installer_state) {
     // Fresh install or upgrade?
     const ProductState* chrome =
-        machine_state.GetProductState(installer_state->system_install(),
-                                      BrowserDistribution::CHROME_BROWSER);
+        machine_state.GetProductState(installer_state->system_install());
     if (chrome) {
       installer_state->AddProductFromState(*chrome);
     } else {

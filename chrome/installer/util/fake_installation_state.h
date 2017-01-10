@@ -18,39 +18,27 @@ namespace installer {
 class FakeInstallationState : public InstallationState {
  public:
   // Takes ownership of |version|.
-  void AddChrome(bool system_install, bool multi_install,
-                 base::Version* version) {
+  void AddChrome(bool system_install, base::Version* version) {
     FakeProductState chrome_state;
     chrome_state.set_version(version);
-    chrome_state.set_multi_install(multi_install);
-    base::FilePath setup_exe(
-        GetChromeInstallPath(system_install,
-                             BrowserDistribution::GetSpecificDistribution(
-                                 BrowserDistribution::CHROME_BROWSER)));
+    base::FilePath setup_exe(GetChromeInstallPath(
+        system_install, BrowserDistribution::GetDistribution()));
     setup_exe = setup_exe
         .AppendASCII(version->GetString())
         .Append(kInstallerDir)
         .Append(kSetupExe);
     chrome_state.SetUninstallProgram(setup_exe);
     chrome_state.AddUninstallSwitch(switches::kUninstall);
-    if (multi_install) {
-      chrome_state.AddUninstallSwitch(switches::kMultiInstall);
-      chrome_state.AddUninstallSwitch(switches::kChrome);
-    }
-    SetProductState(system_install, BrowserDistribution::CHROME_BROWSER,
-                    chrome_state);
+    SetProductState(system_install, chrome_state);
   }
 
-  void SetProductState(bool system_install,
-                       BrowserDistribution::Type type,
-                       const ProductState& product_state) {
-    ProductState& target = GetProducts(system_install)[IndexFromDistType(type)];
-    target.CopyFrom(product_state);
+  void SetProductState(bool system_install, const ProductState& product_state) {
+    GetProduct(system_install)->CopyFrom(product_state);
   }
 
  protected:
-  ProductState* GetProducts(bool system_install) {
-    return system_install ? system_products_ : user_products_;
+  ProductState* GetProduct(bool system_install) {
+    return system_install ? &system_chrome_ : &user_chrome_;
   }
 };
 

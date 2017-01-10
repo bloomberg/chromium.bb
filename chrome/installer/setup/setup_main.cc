@@ -490,9 +490,9 @@ bool CheckPreInstallConditions(const InstallationState& original_state,
     BrowserDistribution* browser_dist = product.distribution();
 
     const ProductState* user_level_product_state =
-        original_state.GetProductState(false, browser_dist->GetType());
+        original_state.GetProductState(false);
     const ProductState* system_level_product_state =
-        original_state.GetProductState(true, browser_dist->GetType());
+        original_state.GetProductState(true);
 
     // Allow upgrades to proceed so that out-of-date versions are not left
     // around.
@@ -568,8 +568,7 @@ installer::InstallStatus UninstallProduct(
     bool force_uninstall,
     const Product& product) {
   const ProductState* product_state =
-      original_state.GetProductState(installer_state.system_install(),
-                                     product.distribution()->GetType());
+      original_state.GetProductState(installer_state.system_install());
   if (product_state != NULL) {
     VLOG(1) << "version on the system: "
             << product_state->version().GetString();
@@ -735,13 +734,9 @@ installer::InstallStatus RegisterDevChrome(
 
   // Only proceed with registering a dev chrome if no real Chrome installation
   // of the same distribution are present on this system.
-  const ProductState* existing_chrome =
-      original_state.GetProductState(false,
-                                     BrowserDistribution::CHROME_BROWSER);
-  if (!existing_chrome) {
-    existing_chrome =
-      original_state.GetProductState(true, BrowserDistribution::CHROME_BROWSER);
-  }
+  const ProductState* existing_chrome = original_state.GetProductState(false);
+  if (!existing_chrome)
+    existing_chrome = original_state.GetProductState(true);
   if (existing_chrome) {
     static const wchar_t kPleaseUninstallYourChromeMessage[] =
         L"You already have a full-installation (non-dev) of %1ls, please "
@@ -1174,8 +1169,8 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
 
     if (!IsDowngradeAllowed(prefs)) {
       const Product& product = installer_state.product();
-      const ProductState* product_state = original_state.GetProductState(
-          system_install, product.distribution()->GetType());
+      const ProductState* product_state =
+          original_state.GetProductState(system_install);
       if (product_state != NULL &&
           (product_state->version().CompareTo(*installer_version) > 0)) {
         LOG(ERROR) << "Higher version of "
