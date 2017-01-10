@@ -649,7 +649,6 @@ CookieStoreIOS::CookieStoreIOS(
       system_store_(system_store),
       creation_time_manager_(new CookieCreationTimeManager),
       metrics_enabled_(false),
-      flush_delay_(base::TimeDelta::FromSeconds(10)),
       synchronization_state_(NOT_SYNCHRONIZED),
       cookie_cache_(new CookieCache()),
       weak_factory_(this) {
@@ -753,7 +752,7 @@ void CookieStoreIOS::OnSystemCookiesChanged() {
   flush_closure_.Reset(base::Bind(&CookieStoreIOS::FlushStore,
                                   weak_factory_.GetWeakPtr(), base::Closure()));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, flush_closure_.callback(), flush_delay_);
+      FROM_HERE, flush_closure_.callback(), base::TimeDelta::FromSeconds(10));
 }
 
 std::unique_ptr<net::CookieStore::CookieChangedSubscription>

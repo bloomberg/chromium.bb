@@ -80,11 +80,6 @@ class CookieStoreIOS : public net::CookieStore,
   // Only one cookie store may enable metrics.
   void SetMetricsEnabled();
 
-  // Sets the delay between flushes. Only used in tests.
-  void set_flush_delay_for_testing(base::TimeDelta delay) {
-    flush_delay_ = delay;
-  }
-
   // Inherited CookieStore methods.
   void SetCookieWithOptionsAsync(const GURL& url,
                                  const std::string& cookie_line,
@@ -173,7 +168,6 @@ class CookieStoreIOS : public net::CookieStore,
   base::scoped_nsobject<NSHTTPCookieStorage> system_store_;
   std::unique_ptr<CookieCreationTimeManager> creation_time_manager_;
   bool metrics_enabled_;
-  base::TimeDelta flush_delay_;
   base::CancelableClosure flush_closure_;
 
   SynchronizationState synchronization_state_;
