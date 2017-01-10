@@ -222,8 +222,7 @@ void ChildFrameCompositingHelper::OnSetSurface(
     scale_factor = 1.0f;
 
   surface_layer->SetSurfaceInfo(cc::SurfaceInfo(surface_info.id(), scale_factor,
-                                                surface_info.size_in_pixels()),
-                                false /* stretch_content_to_fill_bounds */);
+                                                surface_info.size_in_pixels()));
   surface_layer->SetMasksToBounds(true);
   std::unique_ptr<cc_blink::WebLayerImpl> layer(
       new cc_blink::WebLayerImpl(surface_layer));

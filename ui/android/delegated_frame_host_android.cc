@@ -33,8 +33,7 @@ scoped_refptr<cc::SurfaceLayer> CreateSurfaceLayer(
     bool surface_opaque) {
   // manager must outlive compositors using it.
   auto layer = cc::SurfaceLayer::Create(surface_manager->reference_factory());
-  layer->SetSurfaceInfo(cc::SurfaceInfo(surface_id, 1.f, surface_size),
-                        false /* stretch_content_to_fill_bounds */);
+  layer->SetSurfaceInfo(cc::SurfaceInfo(surface_id, 1.f, surface_size));
   layer->SetBounds(surface_size);
   layer->SetIsDrawable(true);
   layer->SetContentsOpaque(surface_opaque);

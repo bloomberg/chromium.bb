@@ -24,9 +24,11 @@ class CC_EXPORT SurfaceLayer : public Layer {
   static scoped_refptr<SurfaceLayer> Create(
       scoped_refptr<SurfaceReferenceFactory> ref_factory);
 
-  // When stretch_content_to_fill_bounds is true, scale is unused.
-  void SetSurfaceInfo(const SurfaceInfo& surface_info,
-                      bool stretch_content_to_fill_bounds);
+  void SetSurfaceInfo(const SurfaceInfo& surface_info);
+
+  // When stretch_content_to_fill_bounds is true, the scale of the embedded
+  // surface is ignored and the content will be stretched to fill the bounds.
+  void SetStretchContentToFillBounds(bool stretch_content_to_fill_bounds);
 
   // Layer overrides.
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;

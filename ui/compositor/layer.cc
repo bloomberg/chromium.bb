@@ -660,8 +660,7 @@ void Layer::SetShowSurface(
 
   scoped_refptr<cc::SurfaceLayer> new_layer =
       cc::SurfaceLayer::Create(ref_factory);
-  new_layer->SetSurfaceInfo(surface_info,
-                            false /* stretch_content_to_fill_bounds */);
+  new_layer->SetSurfaceInfo(surface_info);
   SwitchToLayer(new_layer);
   surface_layer_ = new_layer;
 

@@ -62,16 +62,20 @@ SurfaceLayer::~SurfaceLayer() {
   DCHECK(!layer_tree_host());
 }
 
-void SurfaceLayer::SetSurfaceInfo(const SurfaceInfo& surface_info,
-                                  bool stretch_content_to_fill_bounds) {
+void SurfaceLayer::SetSurfaceInfo(const SurfaceInfo& surface_info) {
   RemoveCurrentReference();
   surface_info_ = surface_info;
   if (layer_tree_host()) {
     current_ref_ =
         ref_factory_->CreateReference(layer_tree_host(), surface_info_.id());
   }
-  stretch_content_to_fill_bounds_ = stretch_content_to_fill_bounds;
   UpdateDrawsContent(HasDrawableContent());
+  SetNeedsPushProperties();
+}
+
+void SurfaceLayer::SetStretchContentToFillBounds(
+    bool stretch_content_to_fill_bounds) {
+  stretch_content_to_fill_bounds_ = stretch_content_to_fill_bounds;
   SetNeedsPushProperties();
 }
 

@@ -102,7 +102,7 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
   SurfaceInfo info(
       SurfaceId(kArbitraryFrameSinkId, LocalFrameId(1, kArbitraryToken)), 1.f,
       gfx::Size(1, 1));
-  layer->SetSurfaceInfo(info, false);
+  layer->SetSurfaceInfo(info);
   layer_tree_host_->GetSurfaceSequenceGenerator()->set_frame_sink_id(
       FrameSinkId(1, 1));
   layer_tree_->SetRootLayer(layer);
@@ -112,7 +112,7 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
       FakeLayerTreeHost::Create(&fake_client_, &task_graph_runner_,
                                 animation_host2.get());
   auto layer2 = SurfaceLayer::Create(std::move(ref_factory));
-  layer2->SetSurfaceInfo(info, false);
+  layer2->SetSurfaceInfo(info);
   layer_tree_host2->GetSurfaceSequenceGenerator()->set_frame_sink_id(
       FrameSinkId(2, 2));
   layer_tree_host2->SetRootLayer(layer2);
@@ -167,7 +167,7 @@ class SurfaceLayerSwapPromise : public LayerTreeTest {
     SurfaceInfo info(
         SurfaceId(kArbitraryFrameSinkId, LocalFrameId(1, kArbitraryToken)), 1.f,
         gfx::Size(1, 1));
-    layer_->SetSurfaceInfo(info, false);
+    layer_->SetSurfaceInfo(info);
 
     // Layer hasn't been added to tree so no SurfaceSequence generated yet.
     EXPECT_EQ(0u, required_set_.size());
