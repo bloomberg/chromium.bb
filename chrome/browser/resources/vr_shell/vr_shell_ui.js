@@ -20,6 +20,11 @@ var vrShellUi = (function() {
     return isNaN(value) ? 0 : value;
   }
 
+  function getStyleString(style, property) {
+    let str = style.getPropertyValue(property);
+    return !str || 0 === str.length ? '' : str;
+  }
+
   class ContentQuad {
     constructor() {
       /** @const */ this.SCREEN_HEIGHT = 1.6;
@@ -283,9 +288,10 @@ var vrShellUi = (function() {
 
   class Omnibox {
     constructor(contentQuadId) {
-      this.domUiElement = new DomUiElement('#omni-container');
+      this.domUiElement = new DomUiElement('#omnibox-container');
       this.enabled = false;
       this.loading = false;
+      this.loadingProgress = 0;
       this.level = 0;
       this.visibilityTimeout = 0;
       this.visibilityTimer = null;
@@ -298,10 +304,18 @@ var vrShellUi = (function() {
       scene.updateElement(this.domUiElement.uiElementId, update);
       this.nativeState.visible = false;
 
+      // Pull colors from CSS so that Javascript can set the progress indicator
+      // gradient programmatically.
+      let border =
+          this.domUiElement.domElement.querySelector('#omnibox-border');
+      let style = window.getComputedStyle(border);
+      this.statusBarColor = getStyleString(style, '--statusBarColor');
+      this.backgroundColor = style.backgroundColor;
+
       // Listen to the end of transitions, so that the box can be natively
       // hidden after it finishes hiding itself.
-      document.querySelector('#omni').addEventListener(
-          'transitionend', this.onAnimationDone.bind(this));
+      document.querySelector('#omnibox')
+          .addEventListener('transitionend', this.onAnimationDone.bind(this));
     }
 
     getSecurityIconElementId(level) {
@@ -310,14 +324,14 @@ var vrShellUi = (function() {
         case 0:  // NONE
         case 1:  // HTTP_SHOW_WARNING
         case 4:  // SECURITY_WARNING
-          return '#omni-info-icon';
+          return '#omnibox-info-icon';
         case 2:  // SECURE:
         case 3:  // EV_SECURE:
-          return '#omni-lock-icon';
+          return '#omnibox-lock-icon';
         case 5:  // SECURE_WITH_POLICY_INSTALLED_CERT (ChromeOS only)
         case 6:  // DANGEROUS
         default:
-          return '#omni-warning-icon';
+          return '#omnibox-warning-icon';
       }
     }
 
@@ -329,7 +343,13 @@ var vrShellUi = (function() {
 
     setLoading(loading) {
       this.loading = loading;
+      this.loadingProgress = 0;
       this.resetVisibilityTimer();
+      this.updateState();
+    }
+
+    setLoadingProgress(progress) {
+      this.loadingProgress = progress;
       this.updateState();
     }
 
@@ -342,7 +362,12 @@ var vrShellUi = (function() {
     }
 
     setSecurityLevel(level) {
-      this.level = level;
+      document.querySelector('#omnibox-warning-icon').style.display = 'none';
+      document.querySelector('#omnibox-info-icon').style.display = 'none';
+      document.querySelector('#omnibox-lock-icon').style.display = 'none';
+      let icon = this.getSecurityIconElementId(level);
+      document.querySelector(icon).style.display = 'block';
+
       this.resetVisibilityTimer();
       this.updateState();
     }
@@ -381,21 +406,29 @@ var vrShellUi = (function() {
         return;
       }
 
-      document.querySelector('#omni-warning-icon').style.display = 'none';
-      document.querySelector('#omni-info-icon').style.display = 'none';
-      document.querySelector('#omni-lock-icon').style.display = 'none';
-      let icon = this.getSecurityIconElementId(this.level);
-      document.querySelector(icon).style.display = 'block';
-
-      let state = 'idle';
-      this.visibleAfterTransition = true;
+      let indicator = document.querySelector('#omnibox-border');
       if (this.loading) {
-        state = 'loading';
-      } else if (this.visibilityTimeout > 0 && !this.visibilityTimer) {
-        state = 'hide';
-        this.visibleAfterTransition = false;
+        // Remap load progress range 0-100 as 5-95 percent, to avoid the
+        // extremities of the rounded ends of the omnibox.
+        let percent = Math.round((this.loadingProgress * 0.9 + 0.05) * 100);
+        let gradient = 'linear-gradient(to right, ' + this.statusBarColor +
+            ' 0%, ' + this.statusBarColor + ' ' + percent + '%, ' +
+            this.backgroundColor + ' ' + percent + '%, ' +
+            this.backgroundColor + ' 100%)';
+        indicator.style.background = gradient;
+      } else {
+        indicator.style.background = this.backgroundColor;
       }
-      document.querySelector('#omni').className = state;
+
+      // Make the box fade away if it's disappearing.
+      if (!this.loading && this.visibilityTimeout > 0 &&
+          !this.visibilityTimer) {
+        document.querySelector('#omnibox-border').className = 'hidden';
+        this.visibleAfterTransition = false;
+      } else {
+        document.querySelector('#omnibox-border').className = '';
+        this.visibleAfterTransition = true;
+      }
 
       this.setNativeVisibility(true);
     }
@@ -489,6 +522,9 @@ var vrShellUi = (function() {
     }
     if ('loading' in dict) {
       sceneManager.omnibox.setLoading(dict['loading']);
+    }
+    if ('loadingProgress' in dict) {
+      sceneManager.omnibox.setLoadingProgress(dict['loadingProgress']);
     }
     scene.flush();
   }
