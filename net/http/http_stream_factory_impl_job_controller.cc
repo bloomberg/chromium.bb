@@ -145,9 +145,20 @@ void HttpStreamFactoryImpl::JobController::OnRequestComplete() {
   if (bound_job_) {
     if (bound_job_->job_type() == MAIN) {
       main_job_.reset();
+      // |alternative_job_| can be non-null if |main_job_| is resumed after
+      // |main_job_wait_time_| has elapsed. Allow |alternative_job_| to run to
+      // completion, rather than resetting it. OnOrphanedJobComplete() will
+      // clean up |this| when the job completes.
     } else {
       DCHECK(bound_job_->job_type() == ALTERNATIVE);
       alternative_job_.reset();
+      // If ResumeMainJob() is not executed, reset |main_job_|. Otherwise,
+      // OnOrphanedJobComplete() will clean up |this| when the job completes.
+      // Use |main_job_is_blocked_| and |!main_job_wait_time_.is_zero()| instead
+      // of |main_job_|->is_waiting() because |main_job_| can be in proxy
+      // resolution step.
+      if (main_job_ && (main_job_is_blocked_ || !main_job_wait_time_.is_zero()))
+        main_job_.reset();
     }
     bound_job_ = nullptr;
   }
@@ -177,7 +188,7 @@ void HttpStreamFactoryImpl::JobController::OnStreamReady(
 
   factory_->OnStreamReady(job->proxy_info());
 
-  if (job_bound_ && bound_job_ != job) {
+  if (IsJobOrphaned(job)) {
     // We have bound a job to the associated Request, |job| has been orphaned.
     OnOrphanedJobComplete(job);
     return;
@@ -202,7 +213,7 @@ void HttpStreamFactoryImpl::JobController::OnBidirectionalStreamImplReady(
     const ProxyInfo& used_proxy_info) {
   DCHECK(job);
 
-  if (job_bound_ && bound_job_ != job) {
+  if (IsJobOrphaned(job)) {
     // We have bound a job to the associated Request, |job| has been orphaned.
     OnOrphanedJobComplete(job);
     return;
@@ -253,7 +264,7 @@ void HttpStreamFactoryImpl::JobController::OnStreamFailed(
 
   MaybeResumeMainJob(job, base::TimeDelta());
 
-  if (job_bound_ && bound_job_ != job) {
+  if (IsJobOrphaned(job)) {
     // We have bound a job to the associated Request, |job| has been orphaned.
     OnOrphanedJobComplete(job);
     return;
@@ -291,7 +302,7 @@ void HttpStreamFactoryImpl::JobController::OnCertificateError(
     const SSLInfo& ssl_info) {
   MaybeResumeMainJob(job, base::TimeDelta());
 
-  if (job_bound_ && bound_job_ != job) {
+  if (IsJobOrphaned(job)) {
     // We have bound a job to the associated Request, |job| has been orphaned.
     OnOrphanedJobComplete(job);
     return;
@@ -314,7 +325,7 @@ void HttpStreamFactoryImpl::JobController::OnHttpsProxyTunnelResponse(
     HttpStream* stream) {
   MaybeResumeMainJob(job, base::TimeDelta());
 
-  if (job_bound_ && bound_job_ != job) {
+  if (IsJobOrphaned(job)) {
     // We have bound a job to the associated Request, |job| has been orphaned.
     OnOrphanedJobComplete(job);
     return;
@@ -334,7 +345,7 @@ void HttpStreamFactoryImpl::JobController::OnNeedsClientAuth(
     SSLCertRequestInfo* cert_info) {
   MaybeResumeMainJob(job, base::TimeDelta());
 
-  if (job_bound_ && bound_job_ != job) {
+  if (IsJobOrphaned(job)) {
     // We have bound a job to the associated Request, |job| has been orphaned.
     OnOrphanedJobComplete(job);
     return;
@@ -355,7 +366,7 @@ void HttpStreamFactoryImpl::JobController::OnNeedsProxyAuth(
     HttpAuthController* auth_controller) {
   MaybeResumeMainJob(job, base::TimeDelta());
 
-  if (job_bound_ && bound_job_ != job) {
+  if (IsJobOrphaned(job)) {
     // We have bound a job to the associated Request, |job| has been orphaned.
     OnOrphanedJobComplete(job);
     return;
@@ -422,7 +433,7 @@ void HttpStreamFactoryImpl::JobController::OnNewSpdySessionReady(
   DCHECK(job->using_spdy());
   DCHECK(!is_preconnect_);
 
-  bool is_job_orphaned = job_bound_ && bound_job_ != job;
+  bool is_job_orphaned = IsJobOrphaned(job);
 
   // Cache these values in case the job gets deleted.
   const SSLConfig used_ssl_config = job->server_ssl_config();
@@ -785,7 +796,7 @@ void HttpStreamFactoryImpl::JobController::OnAlternativeJobFailed(Job* job) {
     failed_alternative_service_ = job->alternative_service();
   }
 
-  if (!request_ || (job_bound_ && bound_job_ != job)) {
+  if (IsJobOrphaned(job)) {
     // If |request_| is gone then it must have been successfully served by
     // |main_job_|.
     // If |request_| is bound to a different job, then it is being
@@ -1083,6 +1094,10 @@ void HttpStreamFactoryImpl::JobController::StartAlternativeProxyServerJob() {
     return;
   DCHECK(alternative_job_->alternative_proxy_server().is_valid());
   alternative_job_->Start(request_->stream_type());
+}
+
+bool HttpStreamFactoryImpl::JobController::IsJobOrphaned(Job* job) const {
+  return !request_ || (job_bound_ && bound_job_ != job);
 }
 
 }  // namespace net
