@@ -367,8 +367,6 @@ component("skia") {
   # Select the right BitmapPlatformDevice.
   if (is_win) {
     sources += [ "ext/bitmap_platform_device_win.cc" ]
-  } else if (!is_ios) {
-    sources += [ "ext/bitmap_platform_device_skia.cc" ]
   }
 
   if (is_clang && !is_nacl) {

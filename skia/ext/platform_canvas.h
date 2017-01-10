@@ -14,10 +14,9 @@
 #include "skia/ext/native_drawing_context.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkPixelRef.h"
-#include "third_party/skia/include/core/SkPixmap.h"
 
-class SkBaseDevice;
+class SkCanvas;
+class SkPixmap;
 
 // A PlatformCanvas is a software-rasterized SkCanvas which is *also*
 // addressable by the platform-specific drawing API (GDI, Core Graphics,
@@ -74,13 +73,10 @@ static inline std::unique_ptr<SkCanvas> CreatePlatformCanvas(int width,
   return CreatePlatformCanvasWithSharedSection(width, height, is_opaque, 0,
                                                CRASH_ON_FAILURE);
 #else
-  return CreatePlatformCanvasWithPixels(width, height, is_opaque, 0,
+  return CreatePlatformCanvasWithPixels(width, height, is_opaque, nullptr,
                                         CRASH_ON_FAILURE);
 #endif
 }
-
-SK_API std::unique_ptr<SkCanvas> CreateCanvas(const sk_sp<SkBaseDevice>& device,
-                                              OnFailureType failure_type);
 
 static inline std::unique_ptr<SkCanvas> TryCreateBitmapCanvas(int width,
                                                               int height,
@@ -89,7 +85,7 @@ static inline std::unique_ptr<SkCanvas> TryCreateBitmapCanvas(int width,
   return CreatePlatformCanvasWithSharedSection(width, height, is_opaque, 0,
                                                RETURN_NULL_ON_FAILURE);
 #else
-  return CreatePlatformCanvasWithPixels(width, height, is_opaque, 0,
+  return CreatePlatformCanvasWithPixels(width, height, is_opaque, nullptr,
                                         RETURN_NULL_ON_FAILURE);
 #endif
 }

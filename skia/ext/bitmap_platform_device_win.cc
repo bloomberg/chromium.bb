@@ -8,6 +8,7 @@
 
 #include "base/debug/gdi_debug_util_win.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/win/win_util.h"
 #include "skia/ext/bitmap_platform_device_win.h"
 #include "skia/ext/platform_canvas.h"
@@ -210,9 +211,15 @@ std::unique_ptr<SkCanvas> CreatePlatformCanvasWithSharedSection(
     bool is_opaque,
     HANDLE shared_section,
     OnFailureType failureType) {
-  sk_sp<SkBaseDevice> dev(
+  sk_sp<SkBaseDevice> device(
       BitmapPlatformDevice::Create(width, height, is_opaque, shared_section));
-  return CreateCanvas(dev, failureType);
+  if (!device) {
+    if (CRASH_ON_FAILURE == failureType)
+      SK_CRASH();
+    return nullptr;
+  }
+
+  return base::MakeUnique<SkCanvas>(device.get());
 }
 
 }  // namespace skia

@@ -62,16 +62,6 @@ size_t PlatformCanvasStrideForWidth(unsigned width) {
   return 4 * width;
 }
 
-std::unique_ptr<SkCanvas> CreateCanvas(const sk_sp<SkBaseDevice>& device,
-                                       OnFailureType failureType) {
-  if (!device) {
-    if (CRASH_ON_FAILURE == failureType)
-      SK_CRASH();
-    return nullptr;
-  }
-  return base::MakeUnique<SkCanvas>(device.get());
-}
-
 SkMetaData& GetMetaData(const SkCanvas& canvas) {
   return const_cast<SkCanvas&>(canvas).getMetaData();
 }
@@ -84,6 +74,39 @@ void SetIsPreviewMetafile(const SkCanvas& canvas, bool is_preview) {
 bool IsPreviewMetafile(const SkCanvas& canvas) {
   return GetBoolMetaData(canvas, kIsPreviewMetafileKey);
 }
+#endif
+
+#if !defined(WIN32)
+
+std::unique_ptr<SkCanvas> CreatePlatformCanvasWithPixels(
+    int width,
+    int height,
+    bool is_opaque,
+    uint8_t* data,
+    OnFailureType failureType) {
+
+  SkBitmap bitmap;
+  bitmap.setInfo(SkImageInfo::MakeN32(width, height,
+      is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType));
+
+  if (data) {
+    bitmap.setPixels(data);
+  } else {
+      if (!bitmap.tryAllocPixels()) {
+        if (CRASH_ON_FAILURE == failureType)
+          SK_CRASH();
+        return nullptr;
+      }
+
+      // Follow the logic in SkCanvas::createDevice(), initialize the bitmap if
+      // it is not opaque.
+      if (!is_opaque)
+        bitmap.eraseARGB(0, 0, 0, 0);
+  }
+
+  return base::MakeUnique<SkCanvas>(bitmap);
+}
+
 #endif
 
 }  // namespace skia
