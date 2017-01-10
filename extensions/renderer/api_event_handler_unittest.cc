@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "extensions/renderer/api_binding_test.h"
 #include "extensions/renderer/api_binding_test_util.h"
@@ -15,27 +14,7 @@
 
 namespace extensions {
 
-class APIEventHandlerTest : public APIBindingTest {
- protected:
-  APIEventHandlerTest() {}
-  ~APIEventHandlerTest() override {}
-
-  void CallFunctionOnObject(v8::Local<v8::Context> context,
-                            v8::Local<v8::Object> object,
-                            const std::string& script_source) {
-    std::string wrapped_script_source =
-        base::StringPrintf("(function(obj) { %s })", script_source.c_str());
-    v8::Local<v8::Function> func =
-        FunctionFromString(context, wrapped_script_source);
-    ASSERT_FALSE(func.IsEmpty());
-
-    v8::Local<v8::Value> argv[] = {object};
-    RunFunction(func, context, object, 1, argv);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(APIEventHandlerTest);
-};
+using APIEventHandlerTest = APIBindingTest;
 
 // Tests adding, removing, and querying event listeners by calling the
 // associated methods on the JS object.
