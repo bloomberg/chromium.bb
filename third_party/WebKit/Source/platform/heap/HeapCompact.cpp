@@ -4,6 +4,7 @@
 
 #include "platform/heap/HeapCompact.h"
 
+#include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/heap/Heap.h"
 #include "platform/heap/SparseHeapBitmap.h"
@@ -256,12 +257,8 @@ HeapCompact::HeapCompact()
       m_freeListSize(0),
       m_compactableArenas(0u),
       m_freedPages(0),
-      m_freedSize(0)
-#if DEBUG_LOG_HEAP_COMPACTION_RUNNING_TIME
-      ,
-      m_startCompactionTimeMS(0)
-#endif
-{
+      m_freedSize(0),
+      m_startCompactionTimeMS(0) {
   // The heap compaction implementation assumes the contiguous range,
   //
   //   [Vector1ArenaIndex, HashTableArenaIndex]
@@ -420,11 +417,10 @@ void HeapCompact::relocate(Address from, Address to) {
 void HeapCompact::startThreadCompaction() {
   if (!m_doCompact)
     return;
-#if DEBUG_LOG_HEAP_COMPACTION_RUNNING_TIME
+
   MutexLocker locker(m_mutex);
   if (!m_startCompactionTimeMS)
     m_startCompactionTimeMS = WTF::currentTimeMS();
-#endif
 }
 
 void HeapCompact::finishThreadCompaction() {
@@ -440,16 +436,28 @@ void HeapCompact::finishThreadCompaction() {
 #endif
     m_fixups.reset();
     m_doCompact = false;
+
+    double timeForHeapCompaction =
+        WTF::currentTimeMS() - m_startCompactionTimeMS;
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, timeForHeapCompactionHistogram,
+                        ("BlinkGC.TimeForHeapCompaction", 1, 10 * 1000, 50));
+    timeForHeapCompactionHistogram.count(timeForHeapCompaction);
+    m_startCompactionTimeMS = 0;
+
+    DEFINE_STATIC_LOCAL(
+        CustomCountHistogram, objectSizeFreedByHeapCompaction,
+        ("BlinkGC.ObjectSizeFreedByHeapCompaction", 1, 4 * 1024 * 1024, 50));
+    objectSizeFreedByHeapCompaction.count(m_freedSize / 1024);
+
 #if DEBUG_LOG_HEAP_COMPACTION_RUNNING_TIME
-    double end = WTF::currentTimeMS();
     LOG_HEAP_COMPACTION_INTERNAL(
         "Compaction stats: time=%gms, pages freed=%zu, size=%zu\n",
-        end - m_startCompactionTimeMS, m_freedPages, m_freedSize);
-    m_startCompactionTimeMS = 0;
+        timeForHeapCompaction, m_freedPages, m_freedSize);
 #else
     LOG_HEAP_COMPACTION("Compaction stats: freed pages=%zu size=%zu\n",
                         m_freedPages, m_freedSize);
 #endif
+
     // Compaction has been completed by all participating threads, unblock
     // them all.
     m_finished.broadcast();

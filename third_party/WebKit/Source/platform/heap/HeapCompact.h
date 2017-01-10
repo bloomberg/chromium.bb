@@ -164,9 +164,7 @@ class PLATFORM_EXPORT HeapCompact final {
   size_t m_freedPages;
   size_t m_freedSize;
 
-#if DEBUG_LOG_HEAP_COMPACTION_RUNNING_TIME
   double m_startCompactionTimeMS;
-#endif
 
   static bool s_forceCompactionGC;
 };
