@@ -5,16 +5,20 @@
 <script>
 function test()
 {
-    InspectorTest.recordNetwork();
+    function fetchResources() {
+      InspectorTest.recordNetwork();
 
-    var totalResourceCount = 4;
-    InspectorTest.makeFetch("resources/style.css", {}, ensureAllResources);
-    InspectorTest.makeFetch("resources/abe.png", {}, () => {
-        // Ensures result is cached.
-        InspectorTest.makeFetch("resources/abe.png", {}, ensureAllResources);
-        ensureAllResources();
-    });
-    InspectorTest.makeFetch("missing/foo.bar", {}, ensureAllResources);
+      InspectorTest.makeFetch("resources/style.css", {}, ensureAllResources);
+      InspectorTest.makeFetch("resources/abe.png", {}, () => {
+          // Ensures result is cached.
+          InspectorTest.makeFetch("resources/abe.png", {}, ensureAllResources);
+          ensureAllResources();
+      });
+      InspectorTest.makeFetch("missing/foo.bar", {}, ensureAllResources);
+    }
+
+    InspectorTest.clearNetworkCache(fetchResources);
+
     var filterChecks = [{
         filterText: "-.css",
         isRegex: false
@@ -57,6 +61,7 @@ function test()
     }];
 
     var resourceCount = 0;
+    var totalResourceCount = 4;
     function ensureAllResources()
     {
         if (++resourceCount >= totalResourceCount)

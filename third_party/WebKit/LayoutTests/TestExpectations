@@ -2342,8 +2342,6 @@ crbug.com/678346 [ Win7 Debug ] storage/indexeddb/index-cursor.html [ Pass Timeo
 crbug.com/678346 [ Win7 Debug ] storage/indexeddb/mozilla/test_objectStore_openKeyCursor.html [ Pass Timeout ]
 crbug.com/678346 [ Win7 Debug ] storage/indexeddb/structured-clone.html [ Pass Timeout ]
 
-crbug.com/678486 http/tests/inspector/network/network-filters.html [ Pass Failure ]
-crbug.com/678486 virtual/mojo-loading/http/tests/inspector/network/network-filters.html [ Pass Failure ]
 crbug.com/678487 http/tests/inspector/resource-tree/resource-tree-reload.html [ Failure Timeout Pass ]
 crbug.com/678487 virtual/mojo-loading/http/tests/inspector/resource-tree/resource-tree-reload.html [ Failure Timeout Pass ]
 crbug.com/678488 http/tests/inspector/search/source-frame-replace-2.html [ Timeout Pass ]

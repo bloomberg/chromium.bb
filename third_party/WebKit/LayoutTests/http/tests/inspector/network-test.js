@@ -124,6 +124,15 @@ InspectorTest.makeFetch = function(url, requestInitializer, callback)
     InspectorTest.callFunctionInPageAsync("makeFetch", [url, requestInitializer]).then(callback);
 }
 
+InspectorTest.clearNetworkCache = function(finishedCallback)
+{
+  // This turns cache off and then on, effectively clearning the cache.
+  var networkAgent = InspectorTest.NetworkAgent;
+  var promise = networkAgent.setCacheDisabled(true);
+  promise.then(networkAgent.setCacheDisabled.bind(networkAgent, false));
+  promise.then(finishedCallback);
+}
+
 InspectorTest.HARPropertyFormatters = {
     bodySize: "formatAsTypeName",
     compression: "formatAsTypeName",
