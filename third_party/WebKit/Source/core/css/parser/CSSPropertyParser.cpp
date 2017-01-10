@@ -3564,8 +3564,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyWebkitTransformOriginY:
     case CSSPropertyWebkitPerspectiveOriginY:
       return consumePositionY(m_range, m_context.mode());
-    case CSSPropertyWebkitTransformOriginZ:
-      return consumeLength(m_range, m_context.mode(), ValueRangeAll);
     case CSSPropertyFill:
     case CSSPropertyStroke:
       return consumePaintStroke(m_range, m_context.mode());

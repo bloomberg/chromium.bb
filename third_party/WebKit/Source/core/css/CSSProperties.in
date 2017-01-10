@@ -461,7 +461,7 @@ column-width interpolable, converter=convertComputedLength<float>, custom_all
 -webkit-text-stroke-width inherited, converter=convertTextStrokeWidth
 -webkit-transform-origin-x interpolable, converter=convertLength
 -webkit-transform-origin-y interpolable, converter=convertLength
--webkit-transform-origin-z interpolable, converter=convertComputedLength<float>
+-webkit-transform-origin-z interpolable, converter=convertComputedLength<float>, api_class
 -webkit-user-drag
 -webkit-user-modify inherited
 user-select inherited
