@@ -9,10 +9,10 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "net/quic/core/quic_bug_tracker.h"
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_spdy_stream.h"
 #include "net/quic/core/spdy_utils.h"
+#include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/tools/quic/quic_http_response_cache.h"

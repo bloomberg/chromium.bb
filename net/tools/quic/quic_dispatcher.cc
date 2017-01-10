@@ -11,10 +11,9 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "net/quic/core/crypto/quic_random.h"
-#include "net/quic/core/quic_bug_tracker.h"
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_utils.h"
-
+#include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/tools/quic/chlo_extractor.h"
 #include "net/tools/quic/quic_per_connection_packet_writer.h"
 #include "net/tools/quic/quic_simple_server_session.h"

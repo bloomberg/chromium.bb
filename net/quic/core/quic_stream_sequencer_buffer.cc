@@ -6,8 +6,8 @@
 
 #include "base/format_macros.h"
 #include "base/logging.h"
-#include "net/quic/core/quic_bug_tracker.h"
 #include "net/quic/core/quic_flags.h"
+#include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_str_cat.h"
 
 using std::string;

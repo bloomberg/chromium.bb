@@ -6,9 +6,9 @@
 
 #include <cstdint>
 
-#include "net/quic/core/quic_bug_tracker.h"
 #include "net/quic/core/quic_connection.h"
 #include "net/quic/core/quic_packets.h"
+#include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_str_cat.h"
 
 namespace net {

@@ -9,8 +9,8 @@
 #include "net/log/net_log_with_source.h"
 #include "net/quic/chromium/crypto/proof_verifier_chromium.h"
 #include "net/quic/core/crypto/crypto_protocol.h"
-#include "net/quic/core/quic_bug_tracker.h"
 #include "net/quic/core/quic_server_id.h"
+#include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
 
 using std::string;

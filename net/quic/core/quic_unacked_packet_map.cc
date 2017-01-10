@@ -6,9 +6,9 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "net/quic/core/quic_bug_tracker.h"
 #include "net/quic/core/quic_connection_stats.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_bug_tracker.h"
 
 namespace net {
 

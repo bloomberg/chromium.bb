@@ -9,8 +9,8 @@
 
 #include "base/stl_util.h"
 #include "net/quic/core/congestion_control/rtt_stats.h"
-#include "net/quic/core/quic_bug_tracker.h"
 #include "net/quic/core/quic_flags.h"
+#include "net/quic/platform/api/quic_bug_tracker.h"
 
 namespace net {
 

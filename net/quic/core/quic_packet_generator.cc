@@ -7,8 +7,8 @@
 #include <cstdint>
 
 #include "base/logging.h"
-#include "net/quic/core/quic_bug_tracker.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_bug_tracker.h"
 
 using base::StringPiece;
 

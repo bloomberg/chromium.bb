@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "crypto/random.h"
-#include "net/quic/core/quic_bug_tracker.h"
+#include "net/quic/platform/api/quic_bug_tracker.h"
 
 namespace net {
 

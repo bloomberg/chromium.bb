@@ -8,11 +8,11 @@
 
 #include "base/logging.h"
 #include "net/base/parse_number.h"
-#include "net/quic/core/quic_bug_tracker.h"
 #include "net/quic/core/quic_spdy_session.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/core/quic_write_blocked_list.h"
 #include "net/quic/core/spdy_utils.h"
+#include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 
 using base::IntToString;

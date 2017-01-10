@@ -7,7 +7,7 @@
 // For external QUIC, QUIC_BUG should be #defined to LOG(DFATAL) and
 // QUIC_BUG_IF(condition) to LOG_IF(DFATAL, condition) as client-side log rate
 // limiting is less important and chrome doesn't LOG_FIRST_N anyway.
-#define QUIC_BUG LOG(DFATAL)
-#define QUIC_BUG_IF(condition) LOG_IF(DFATAL, condition)
+#define QUIC_BUG_IMPL LOG(DFATAL)
+#define QUIC_BUG_IF_IMPL(condition) LOG_IF(DFATAL, condition)
 
 #endif  // NET_QUIC_CORE_QUIC_BUG_TRACKER_H_
