@@ -7,6 +7,8 @@
 
 #include <vector>
 
+#include "base/callback.h"
+
 class GURL;
 
 namespace base {
@@ -67,8 +69,13 @@ std::vector<const bookmarks::BookmarkNode*> GetRecentlyVisitedBookmarks(
 std::vector<const bookmarks::BookmarkNode*> GetDismissedBookmarksForDebugging(
     bookmarks::BookmarkModel* bookmark_model);
 
-// Removes last visited date metadata for all bookmarks.
-void RemoveAllLastVisitDates(bookmarks::BookmarkModel* bookmark_model);
+// Removes last-visited data (incl. any other metadata managed by content
+// suggestions) for bookmarks within the provided time range.
+// TODO(tschumann): Implement URL filtering.
+void RemoveLastVisitedDatesBetween(const base::Time& begin,
+                                   const base::Time& end,
+                                   base::Callback<bool(const GURL& url)> filter,
+                                   bookmarks::BookmarkModel* bookmark_model);
 
 }  // namespace ntp_snippets
 

@@ -149,13 +149,14 @@ void BookmarkSuggestionsProvider::ClearHistory(
     base::Time begin,
     base::Time end,
     const base::Callback<bool(const GURL& url)>& filter) {
-  // The last visit dates are not "owned" by the bookmark suggestion provider so
-  // it is cleared directly from browsing_data_remover.cc.
+  // To avoid race conditions with the history-removal of the last-visited
+  // timestamps we also trigger a deletion here. The problem is that we need to
+  // update the bookmarks data here and otherwise (depending on the order in
+  // which the code runs) could pick up to-be-deleted data again.
+  if (bookmark_model_->loaded()) {
+    RemoveLastVisitedDatesBetween(begin, end, filter, bookmark_model_);
+  }
   ClearDismissedSuggestionsForDebugging(provided_category_);
-  // TODO(tschumann): Before re-fetching bookmarks we need to trigger a clean-up
-  // of the last-visit dates -- otherwise we depend on the order in which the
-  // ClearHistory events are done and might just pick-up to-be-deleted data
-  // again.
   FetchBookmarks();
 }
 

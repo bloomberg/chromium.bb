@@ -42,8 +42,8 @@ std::string FormatLastVisitDate(const base::Time& date) {
 }
 
 bool ExtractLastVisitDate(const BookmarkNode& node,
-                 const std::string& meta_info_key,
-                 base::Time* out) {
+                          const std::string& meta_info_key,
+                          base::Time* out) {
   std::string last_visit_date_string;
   if (!node.GetMetaInfo(meta_info_key, &last_visit_date_string)) {
     return false;
@@ -269,21 +269,44 @@ std::vector<const BookmarkNode*> GetDismissedBookmarksForDebugging(
   return result;
 }
 
-void RemoveAllLastVisitDates(bookmarks::BookmarkModel* bookmark_model) {
+namespace {
+
+void ClearLastVisitedMetadataIfBetween(bookmarks::BookmarkModel* model,
+                                       const BookmarkNode& node,
+                                       const base::Time& begin,
+                                       const base::Time& end,
+                                       const std::string& meta_key) {
+  base::Time last_visit_time;
+  if (ExtractLastVisitDate(node, meta_key, &last_visit_time) &&
+      begin <= last_visit_time && last_visit_time <= end) {
+    model->DeleteNodeMetaInfo(&node, meta_key);
+  }
+}
+
+}  // namespace
+
+void RemoveLastVisitedDatesBetween(const base::Time& begin,
+                                   const base::Time& end,
+                                   base::Callback<bool(const GURL& url)> filter,
+                                   bookmarks::BookmarkModel* bookmark_model) {
   // Get all the bookmark URLs.
   std::vector<BookmarkModel::URLAndTitle> bookmark_urls;
   bookmark_model->GetBookmarks(&bookmark_urls);
 
   for (const BookmarkModel::URLAndTitle& url_and_title : bookmark_urls) {
+    if (!filter.Run(url_and_title.url)) {
+      continue;
+    }
     // Get all bookmarks for the given URL.
     std::vector<const BookmarkNode*> bookmarks_for_url;
     bookmark_model->GetNodesByURL(url_and_title.url, &bookmarks_for_url);
 
     for (const BookmarkNode* bookmark : bookmarks_for_url) {
-      bookmark_model->DeleteNodeMetaInfo(bookmark,
-                                         kBookmarkLastVisitDateOnMobileKey);
-      bookmark_model->DeleteNodeMetaInfo(bookmark,
-                                         kBookmarkLastVisitDateOnDesktopKey);
+      // The dismissal metadata is managed by the BookmarkSuggestionsProvider.
+      ClearLastVisitedMetadataIfBetween(bookmark_model, *bookmark, begin, end,
+                                        kBookmarkLastVisitDateOnMobileKey);
+      ClearLastVisitedMetadataIfBetween(bookmark_model, *bookmark, begin, end,
+                                kBookmarkLastVisitDateOnDesktopKey);
     }
   }
 }

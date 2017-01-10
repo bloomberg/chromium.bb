@@ -11,6 +11,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -25,6 +26,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -133,6 +135,7 @@ using domain_reliability::DomainReliabilityService;
 using domain_reliability::DomainReliabilityServiceFactory;
 using testing::_;
 using testing::ByRef;
+using testing::Eq;
 using testing::Invoke;
 using testing::IsEmpty;
 using testing::Matcher;
@@ -141,6 +144,7 @@ using testing::MatcherInterface;
 using testing::MatchResultListener;
 using testing::Not;
 using testing::Return;
+using testing::SizeIs;
 using testing::WithArgs;
 
 namespace {
@@ -3083,6 +3087,9 @@ TEST_F(BrowsingDataRemoverTest, BookmarkLastVisitDatesGetCleared) {
       BookmarkModelFactory::GetForBrowserContext(&profile);
   bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
 
+  const base::Time delete_begin =
+      base::Time::Now() - base::TimeDelta::FromDays(1);
+
   // Create a couple of bookmarks.
   bookmark_model->AddURL(bookmark_model->bookmark_bar_node(), 0,
                          base::string16(),
@@ -3091,13 +3098,23 @@ TEST_F(BrowsingDataRemoverTest, BookmarkLastVisitDatesGetCleared) {
                          base::string16(),
                          GURL("http://foo.org/mobile"));
 
-  // Simulate their visits.
+  // Simulate their visits (this is using Time::Now() as timestamps).
   ntp_snippets::UpdateBookmarkOnURLVisitedInMainFrame(
       bookmark_model, GURL("http://foo.org/desktop"),
       /*is_mobile_platform=*/false);
   ntp_snippets::UpdateBookmarkOnURLVisitedInMainFrame(
       bookmark_model, GURL("http://foo.org/mobile"),
       /*is_mobile_platform=*/true);
+
+  // Add a bookmark with a visited timestamp before the deletion interval.
+  bookmarks::BookmarkNode::MetaInfoMap meta_info = {
+      {"last_visited",
+       base::Int64ToString((delete_begin - base::TimeDelta::FromSeconds(1))
+                               .ToInternalValue())}};
+  bookmark_model->AddURLWithCreationTimeAndMetaInfo(
+      bookmark_model->mobile_node(), 0, base::ASCIIToUTF16("my title"),
+      GURL("http://foo-2.org/"), delete_begin - base::TimeDelta::FromDays(1),
+      &meta_info);
 
   // There should be some recently visited bookmarks.
   EXPECT_THAT(ntp_snippets::GetRecentlyVisitedBookmarks(
@@ -3110,18 +3127,16 @@ TEST_F(BrowsingDataRemoverTest, BookmarkLastVisitDatesGetCleared) {
       BrowsingDataRemoverFactory::GetForBrowserContext(&profile);
 
   BrowsingDataRemoverCompletionObserver completion_observer(remover);
-  remover->RemoveAndReply(base::Time(), base::Time::Max(),
+  remover->RemoveAndReply(delete_begin, base::Time::Max(),
                           BrowsingDataRemover::REMOVE_HISTORY,
                           BrowsingDataHelper::ALL, &completion_observer);
   completion_observer.BlockUntilCompletion();
 
-  // There should be no recently visited bookmarks.
-  EXPECT_THAT(ntp_snippets::GetRecentlyVisitedBookmarks(
-                  bookmark_model, 2, base::Time::UnixEpoch(),
-                  /*consider_visits_from_desktop=*/false),
-              IsEmpty());
-  EXPECT_THAT(ntp_snippets::GetRecentlyVisitedBookmarks(
-                  bookmark_model, 2, base::Time::UnixEpoch(),
-                  /*consider_visits_from_desktop=*/true),
-              IsEmpty());
+  // There should be only 1 recently visited bookmarks.
+  std::vector<const bookmarks::BookmarkNode*> remaining_nodes =
+      ntp_snippets::GetRecentlyVisitedBookmarks(
+          bookmark_model, 3, base::Time::UnixEpoch(),
+          /*consider_visits_from_desktop=*/true);
+  EXPECT_THAT(remaining_nodes, SizeIs(1));
+  EXPECT_THAT(remaining_nodes[0]->url().spec(), Eq("http://foo-2.org/"));
 }

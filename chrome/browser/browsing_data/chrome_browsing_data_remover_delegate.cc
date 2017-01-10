@@ -4,6 +4,10 @@
 
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 
+#include <set>
+#include <string>
+#include <utility>
+
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
@@ -294,12 +298,12 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     }
 
     // Remove the last visit dates meta-data from the bookmark model.
-    // TODO(vitaliii): Do not remove all dates, but only the ones matched by the
-    // time range and the filter.
     bookmarks::BookmarkModel* bookmark_model =
         BookmarkModelFactory::GetForBrowserContext(profile_);
-    if (bookmark_model)
-        ntp_snippets::RemoveAllLastVisitDates(bookmark_model);
+    if (bookmark_model) {
+      ntp_snippets::RemoveLastVisitedDatesBetween(delete_begin_, delete_end_,
+                                                  filter, bookmark_model);
+    }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     // The extension activity log contains details of which websites extensions
