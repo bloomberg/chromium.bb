@@ -33,8 +33,8 @@ static const int domaintxfmrf_params[DOMAINTXFMRF_PARAMS] = {
 
 const sgr_params_type sgr_params[SGRPROJ_PARAMS] = {
   // r1, eps1, r2, eps2
-  { 2, 27, 1, 11 }, { 2, 31, 1, 12 }, { 2, 37, 1, 12 }, { 2, 44, 1, 12 },
-  { 2, 49, 1, 13 }, { 2, 54, 1, 14 }, { 2, 60, 1, 15 }, { 2, 68, 1, 15 },
+  { 2, 25, 1, 11 }, { 2, 35, 1, 12 }, { 2, 45, 1, 13 }, { 2, 55, 1, 14 },
+  { 2, 65, 1, 15 }, { 3, 50, 2, 25 }, { 3, 60, 2, 35 }, { 3, 70, 2, 45 },
 };
 
 typedef void (*restore_func_type)(uint8_t *data8, int width, int height,
@@ -191,7 +191,7 @@ static void loop_wiener_filter(uint8_t *data, int width, int height, int stride,
 
 /* Calculate windowed sums (if sqr=0) or sums of squares (if sqr=1)
    over the input. The window is of size (2r + 1)x(2r + 1), and we
-   only ever have r = 1 or r = 2. So we specialise to these two sizes.
+   specialize to r = 1, 2, 3. A default function is used for r > 3.
 
    Each loop follows the same format: We keep a window's worth of input
    in individual variables and select data out of that as appropriate.
@@ -348,16 +348,161 @@ static void boxsum2(int32_t *src, int width, int height, int src_stride,
   }
 }
 
+static void boxsum3(int32_t *src, int width, int height, int src_stride,
+                    int sqr, int32_t *dst, int dst_stride) {
+  int i, j, a, b, c, d, e, f, g;
+
+  // Vertical sum over 7-pixel regions, from src into dst.
+  if (!sqr) {
+    for (j = 0; j < width; ++j) {
+      a = src[j];
+      b = src[1 * src_stride + j];
+      c = src[2 * src_stride + j];
+      d = src[3 * src_stride + j];
+      e = src[4 * src_stride + j];
+      f = src[5 * src_stride + j];
+      g = src[6 * src_stride + j];
+
+      dst[j] = a + b + c + d;
+      dst[dst_stride + j] = a + b + c + d + e;
+      dst[2 * dst_stride + j] = a + b + c + d + e + f;
+      for (i = 3; i < height - 4; ++i) {
+        dst[i * dst_stride + j] = a + b + c + d + e + f + g;
+        a = b;
+        b = c;
+        c = d;
+        d = e;
+        e = f;
+        f = g;
+        g = src[(i + 4) * src_stride + j];
+      }
+      dst[i * dst_stride + j] = a + b + c + d + e + f + g;
+      dst[(i + 1) * dst_stride + j] = b + c + d + e + f + g;
+      dst[(i + 2) * dst_stride + j] = c + d + e + f + g;
+      dst[(i + 3) * dst_stride + j] = d + e + f + g;
+    }
+  } else {
+    for (j = 0; j < width; ++j) {
+      a = src[j] * src[j];
+      b = src[1 * src_stride + j] * src[1 * src_stride + j];
+      c = src[2 * src_stride + j] * src[2 * src_stride + j];
+      d = src[3 * src_stride + j] * src[3 * src_stride + j];
+      e = src[4 * src_stride + j] * src[4 * src_stride + j];
+      f = src[5 * src_stride + j] * src[5 * src_stride + j];
+      g = src[6 * src_stride + j] * src[6 * src_stride + j];
+
+      dst[j] = a + b + c + d;
+      dst[dst_stride + j] = a + b + c + d + e;
+      dst[2 * dst_stride + j] = a + b + c + d + e + f;
+      for (i = 3; i < height - 4; ++i) {
+        dst[i * dst_stride + j] = a + b + c + d + e + f + g;
+        a = b;
+        b = c;
+        c = d;
+        d = e;
+        e = f;
+        f = g;
+        g = src[(i + 4) * src_stride + j] * src[(i + 4) * src_stride + j];
+      }
+      dst[i * dst_stride + j] = a + b + c + d + e + f + g;
+      dst[(i + 1) * dst_stride + j] = b + c + d + e + f + g;
+      dst[(i + 2) * dst_stride + j] = c + d + e + f + g;
+      dst[(i + 3) * dst_stride + j] = d + e + f + g;
+    }
+  }
+
+  // Horizontal sum over 7-pixel regions of dst
+  for (i = 0; i < height; ++i) {
+    a = dst[i * dst_stride];
+    b = dst[i * dst_stride + 1];
+    c = dst[i * dst_stride + 2];
+    d = dst[i * dst_stride + 3];
+    e = dst[i * dst_stride + 4];
+    f = dst[i * dst_stride + 5];
+    g = dst[i * dst_stride + 6];
+
+    dst[i * dst_stride] = a + b + c + d;
+    dst[i * dst_stride + 1] = a + b + c + d + e;
+    dst[i * dst_stride + 2] = a + b + c + d + e + f;
+    for (j = 3; j < width - 4; ++j) {
+      dst[i * dst_stride + j] = a + b + c + d + e + f + g;
+      a = b;
+      b = c;
+      c = d;
+      d = e;
+      e = f;
+      f = g;
+      g = dst[i * dst_stride + (j + 4)];
+    }
+    dst[i * dst_stride + j] = a + b + c + d + e + f + g;
+    dst[i * dst_stride + (j + 1)] = b + c + d + e + f + g;
+    dst[i * dst_stride + (j + 2)] = c + d + e + f + g;
+    dst[i * dst_stride + (j + 3)] = d + e + f + g;
+  }
+}
+
+// Generic version for any r. To be removed after experiments are done.
+static void boxsumr(int32_t *src, int width, int height, int src_stride, int r,
+                    int sqr, int32_t *dst, int dst_stride) {
+  int32_t *tmp = aom_malloc(width * height * sizeof(*tmp));
+  int tmp_stride = width;
+  int i, j;
+  if (sqr) {
+    for (j = 0; j < width; ++j) tmp[j] = src[j] * src[j];
+    for (j = 0; j < width; ++j)
+      for (i = 1; i < height; ++i)
+        tmp[i * tmp_stride + j] =
+            tmp[(i - 1) * tmp_stride + j] +
+            src[i * src_stride + j] * src[i * src_stride + j];
+  } else {
+    memcpy(tmp, src, sizeof(*tmp) * width);
+    for (j = 0; j < width; ++j)
+      for (i = 1; i < height; ++i)
+        tmp[i * tmp_stride + j] =
+            tmp[(i - 1) * tmp_stride + j] + src[i * src_stride + j];
+  }
+  for (i = 0; i <= r; ++i)
+    memcpy(&dst[i * dst_stride], &tmp[(i + r) * tmp_stride],
+           sizeof(*tmp) * width);
+  for (i = r + 1; i < height - r; ++i)
+    for (j = 0; j < width; ++j)
+      dst[i * dst_stride + j] =
+          tmp[(i + r) * tmp_stride + j] - tmp[(i - r - 1) * tmp_stride + j];
+  for (i = height - r; i < height; ++i)
+    for (j = 0; j < width; ++j)
+      dst[i * dst_stride + j] = tmp[(height - 1) * tmp_stride + j] -
+                                tmp[(i - r - 1) * tmp_stride + j];
+
+  for (i = 0; i < height; ++i) tmp[i * tmp_stride] = dst[i * dst_stride];
+  for (i = 0; i < height; ++i)
+    for (j = 1; j < width; ++j)
+      tmp[i * tmp_stride + j] =
+          tmp[i * tmp_stride + j - 1] + dst[i * src_stride + j];
+
+  for (j = 0; j <= r; ++j)
+    for (i = 0; i < height; ++i)
+      dst[i * dst_stride + j] = tmp[i * tmp_stride + j + r];
+  for (j = r + 1; j < width - r; ++j)
+    for (i = 0; i < height; ++i)
+      dst[i * dst_stride + j] =
+          tmp[i * tmp_stride + j + r] - tmp[i * tmp_stride + j - r - 1];
+  for (j = width - r; j < width; ++j)
+    for (i = 0; i < height; ++i)
+      dst[i * dst_stride + j] =
+          tmp[i * tmp_stride + width - 1] - tmp[i * tmp_stride + j - r - 1];
+  aom_free(tmp);
+}
+
 static void boxsum(int32_t *src, int width, int height, int src_stride, int r,
                    int sqr, int32_t *dst, int dst_stride) {
   if (r == 1)
     boxsum1(src, width, height, src_stride, sqr, dst, dst_stride);
   else if (r == 2)
     boxsum2(src, width, height, src_stride, sqr, dst, dst_stride);
-  else {
-    assert(0 && "boxsum no longer supports r > 2");
-    return;
-  }
+  else if (r == 3)
+    boxsum3(src, width, height, src_stride, sqr, dst, dst_stride);
+  else
+    boxsumr(src, width, height, src_stride, r, sqr, dst, dst_stride);
 }
 
 static void boxnum(int width, int height, int r, int8_t *num, int num_stride) {
@@ -415,7 +560,7 @@ void av1_selfguided_restoration(int32_t *dgd, int width, int height, int stride,
   boxnum(width, height, r, num, width);
   // The following loop is optimized assuming r <= 2. If we allow
   // r > 2, then the loop will need modifying.
-  assert(r <= 2);
+  assert(r <= 3);
   for (i = 0; i < height; ++i) {
     for (j = 0; j < width; ++j) {
       const int k = i * width + j;
