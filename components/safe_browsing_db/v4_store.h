@@ -267,6 +267,7 @@ class V4Store {
                            TestHashPrefixExistsInMapWithDifferentSizes);
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest,
                            TestHashPrefixDoesNotExistInMapWithDifferentSizes);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest, GetMatchingHashPrefixSize32Or21);
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest,
                            TestAdditionsWithRiceEncodingFailsWithInvalidInput);
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestAdditionsWithRiceEncodingSucceeds);

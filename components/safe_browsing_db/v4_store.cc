@@ -764,7 +764,7 @@ HashPrefix V4Store::GetMatchingHashPrefix(const FullHash& full_hash) {
   // It should never be the case that more than one hash prefixes match a given
   // full hash. However, if that happens, this method returns any one of them.
   // It does not guarantee which one of those will be returned.
-  DCHECK_EQ(32u, full_hash.size());
+  DCHECK(full_hash.size() == 32u || full_hash.size() == 21u);
   for (const auto& pair : hash_prefix_map_) {
     const PrefixSize& prefix_size = pair.first;
     const HashPrefixes& hash_prefixes = pair.second;

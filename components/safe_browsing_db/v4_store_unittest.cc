@@ -673,6 +673,22 @@ TEST_F(V4StoreTest, TestHashPrefixDoesNotExistInMapWithDifferentSizes) {
   EXPECT_TRUE(store.GetMatchingHashPrefix(full_hash).empty());
 }
 
+TEST_F(V4StoreTest, GetMatchingHashPrefixSize32Or21) {
+  HashPrefix prefix = "0123";
+  V4Store store(task_runner_, store_path_);
+  store.hash_prefix_map_[4] = prefix;
+
+  FullHash full_hash_21 = "0123456789ABCDEF01234";
+  EXPECT_EQ(prefix, store.GetMatchingHashPrefix(full_hash_21));
+  FullHash full_hash_32 = "0123456789ABCDEF0123456789ABCDEF";
+  EXPECT_EQ(prefix, store.GetMatchingHashPrefix(full_hash_32));
+#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
+  // This hits a DCHECK so it is release mode only.
+  FullHash full_hash_22 = "0123456789ABCDEF012345";
+  EXPECT_EQ(prefix, store.GetMatchingHashPrefix(full_hash_22));
+#endif
+}
+
 #if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
 // This test hits a NOTREACHED so it is a release mode only test.
 TEST_F(V4StoreTest, TestAdditionsWithRiceEncodingFailsWithInvalidInput) {
