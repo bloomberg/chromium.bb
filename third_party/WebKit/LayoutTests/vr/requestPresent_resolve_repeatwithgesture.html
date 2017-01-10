@@ -1,21 +1,16 @@
 <!DOCTYPE html>
+<!-- Specific regression test for crbug.com/654909 -->
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="../resources/mojo-helpers.js"></script>
 <script src="resources/fake-vr-displays.js"></script>
 <script src="resources/mock-vr-service.js"></script>
-<canvas id="webgl2-canvas"></canvas>
+<canvas id="webgl-canvas"></canvas>
 <script src="resources/presentation-setup.js"></script>
 <script>
 let fakeDisplays = fakeVRDisplays();
 
 vr_test( (t) => {
-  if (!gl) {
-    // WebGL 2 is not supported. This is legal.
-    t.done();
-    return Promise.resolve();
-  }
-
   return navigator.getVRDisplays().then( (displays) => {
     var display = displays[0];
 
@@ -24,11 +19,28 @@ vr_test( (t) => {
         t.step( () => {
           assert_true(display.isPresenting);
         }, "Display should be presenting");
+
+        // Call requestPresent again after a short delay
+        setTimeout( () => {
+          runWithUserGesture( () => {
+            display.requestPresent([{ source : webglCanvas }]).then( () => {
+              t.step( () => {
+                assert_true(display.isPresenting);
+              }, "Display should still be presenting");
+            }, (err) => {
+              t.step( () => {
+                assert_unreached(err);
+              }, "Should never reach here");
+            }).then( () => {
+              t.done();
+            });
+          });
+        }, 100);
+
       }, (err) => {
         t.step( () => {
           assert_unreached(err);
         }, "Should never reach here");
-      }).then( () => {
         t.done();
       });
     });
@@ -39,6 +51,6 @@ vr_test( (t) => {
     t.done();
   });
 }, [fakeDisplays["Pixel"]],
-"Test requestPresent resolves when provided a WebGL2 canvas");
+"Test requestPresent resolves with a user gesture when already presenting");
 
 </script>

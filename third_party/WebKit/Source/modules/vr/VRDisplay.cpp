@@ -558,6 +558,7 @@ void VRDisplay::updateLayerBounds() {
     leftBounds->top = 0.0f;
     leftBounds->width = 0.5f;
     leftBounds->height = 1.0f;
+    m_layer.setLeftBounds({0.0f, 0.0f, 0.5f, 1.0f});
   }
 
   if (m_layer.rightBounds().size() == 4) {
@@ -571,6 +572,7 @@ void VRDisplay::updateLayerBounds() {
     rightBounds->top = 0.0f;
     rightBounds->width = 0.5f;
     rightBounds->height = 1.0f;
+    m_layer.setRightBounds({0.5f, 0.0f, 0.5f, 1.0f});
   }
 
   m_display->UpdateLayerBounds(std::move(leftBounds), std::move(rightBounds));

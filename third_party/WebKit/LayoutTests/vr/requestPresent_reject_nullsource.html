@@ -14,7 +14,7 @@ vr_test( (t) => {
     var display = displays[0];
 
     runWithUserGesture( () => {
-      display.requestPresent([{}]).then( () => {
+      display.requestPresent([{ source : null }]).then( () => {
         t.step( () => {
           assert_unreached();
         }, "Display should not be presenting");
@@ -33,6 +33,6 @@ vr_test( (t) => {
     t.done();
   });
 }, [fakeDisplays["Pixel"]],
-"Test requestPresent rejects if not provided a layer source");
+"Test requestPresent rejects if given a null source");
 
 </script>

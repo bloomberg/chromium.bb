@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/fake-vr-displays.js"></script>
+<script src="resources/mock-vr-service.js"></script>
+<script src="resources/test-constants.js"></script>
+<canvas id="webgl-canvas"></canvas>
+<script src="resources/presentation-setup.js"></script>
+<script>
+let fakeDisplays = fakeVRDisplays();
+let fakeDisplay = fakeDisplays["FakeMagicWindowOnly"];
+
+vr_test( (t) => {
+  return navigator.getVRDisplays().then( (displays) => {
+    let display = displays[0];
+
+    function compareEyes(actual, expected) {
+      t.step( () => {
+        assert_equals(actual.offset.length, expected.offset.length);
+        for (let i = 0; i < expected.offset.length; i++) {
+          assert_approx_equals(actual.offset[i], actual.offset[i],
+              FLOAT_EPSILON);
+        }
+
+        let expectedFov = expected.fieldOfView;
+        let actualFov = actual.fieldOfView;
+        // Can't use Object.keys() and a loop - see crbug.com/678718
+        assert_approx_equals(actualFov.upDegrees, expectedFov.upDegrees,
+            FLOAT_EPSILON);
+        assert_approx_equals(actualFov.rightDegrees, expectedFov.rightDegrees,
+            FLOAT_EPSILON);
+        assert_approx_equals(actualFov.downDegrees, expectedFov.downDegrees,
+            FLOAT_EPSILON);
+        assert_approx_equals(actualFov.leftDegrees, expectedFov.leftDegrees,
+            FLOAT_EPSILON);
+
+        assert_equals(actual.renderWidth, expected.renderWidth);
+        assert_equals(actual.renderHeight, expected.renderHeight);
+      }, "Returned eye parameters match provided parameters");
+    }
+
+    compareEyes(display.getEyeParameters("left"), fakeDisplay.leftEye);
+    compareEyes(display.getEyeParameters("right"), fakeDisplay.rightEye);
+    t.done();
+  }, (err) => {
+    t.step( () => {
+      assert_unreached(err);
+    }, "getVRDisplays rejected");
+    t.done();
+  });
+}, [fakeDisplay],
+"Test that actual eye parameters match the expected parameters");
+
+</script>

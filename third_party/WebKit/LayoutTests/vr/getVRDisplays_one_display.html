@@ -4,17 +4,29 @@
 <script src="../resources/mojo-helpers.js"></script>
 <script src="resources/fake-vr-displays.js"></script>
 <script src="resources/mock-vr-service.js"></script>
+<script src="resources/test-constants.js"></script>
 <script>
 let fakeDisplays = fakeVRDisplays();
 
-vr_test((service) => {
-  return navigator.getVRDisplays().then(devices => {
-      assert_true(devices != null);
-      assert_equals(1, devices.length);
-      assert_equals(devices[0].displayName, 'Google, Inc. Daydream View');
-      assert_true(devices[0].capabilities.hasOrientation);
-      assert_true(devices != null);
+vr_test( (t) => {
+  return navigator.getVRDisplays().then( (displays) => {
+    t.step( () => {
+      assert_true(displays != null);
+      assert_equals(displays.length, 1);
+      let display = displays[0];
+      assert_equals(display.displayName, 'Google, Inc. Daydream View');
+      assert_true(display.capabilities.hasOrientation);
+      assert_approx_equals(display.depthNear, 0.01, FLOAT_EPSILON);
+      assert_approx_equals(display.depthFar, 10000.0, FLOAT_EPSILON);
+    }, "getVRDisplays returned correct results");
+  }, (err) => {
+    t.step( () => {
+      assert_unreached("getVRDisplays rejected");
     });
-}, [fakeDisplays['Pixel']], 'test 1 VRDisplay');
+  }).then( () => {
+    t.done();
+  });
+}, [fakeDisplays["Pixel"]],
+"WebVR properly returns a single display");
 
 </script>
