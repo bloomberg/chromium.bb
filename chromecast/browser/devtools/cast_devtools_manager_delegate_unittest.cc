@@ -15,6 +15,7 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/test/gl_surface_test_support.h"
 
 namespace chromecast {
 namespace shell {
@@ -28,6 +29,7 @@ class CastDevToolsManagerDelegateTest
   ~CastDevToolsManagerDelegateTest() override {}
 
   void SetUp() override {
+    gl::GLSurfaceTestSupport::InitializeOneOff();
     initializer_ = base::MakeUnique<content::TestContentClientInitializer>();
     content::RenderViewHostTestHarness::SetUp();
     devtools_manager_delegate_ =
@@ -53,26 +55,24 @@ class CastDevToolsManagerDelegateTest
   DISALLOW_COPY_AND_ASSIGN(CastDevToolsManagerDelegateTest);
 };
 
-// TODO(derekjchow): Make the tests pass on cast testbots.
-// crbug.com/665118
-TEST_F(CastDevToolsManagerDelegateTest, DISABLED_TestSingletonGetter) {
+TEST_F(CastDevToolsManagerDelegateTest, TestSingletonGetter) {
   EXPECT_EQ(devtools_manager_delegate_.get(),
             CastDevToolsManagerDelegate::GetInstance());
 }
 
-TEST_F(CastDevToolsManagerDelegateTest, DISABLED_NoWebContents) {
+TEST_F(CastDevToolsManagerDelegateTest, NoWebContents) {
   EXPECT_TRUE(devtools_manager_delegate_->DiscoverTargets(
       base::Bind(&CastDevToolsManagerDelegateTest::TestDiscoveredTargets,
                  base::Unretained(this), WebContentsSet())));
 }
 
-TEST_F(CastDevToolsManagerDelegateTest, DISABLED_DisabledWebContents) {
+TEST_F(CastDevToolsManagerDelegateTest, DisabledWebContents) {
   EXPECT_TRUE(devtools_manager_delegate_->DiscoverTargets(
       base::Bind(&CastDevToolsManagerDelegateTest::TestDiscoveredTargets,
                  base::Unretained(this), WebContentsSet())));
 }
 
-TEST_F(CastDevToolsManagerDelegateTest, DISABLED_EnabledWebContents) {
+TEST_F(CastDevToolsManagerDelegateTest, EnabledWebContents) {
   devtools_manager_delegate_->EnableWebContentsForDebugging(web_contents());
   WebContentsSet enabled_web_contents({web_contents()});
   EXPECT_TRUE(devtools_manager_delegate_->DiscoverTargets(

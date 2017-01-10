@@ -68,6 +68,7 @@ source_set("test_support") {
     "//base/test:test_support",
     "//chromecast/base",
     "//content/test:test_support",
+    "//mojo/edk/embedder:headers",
   ]
 }
 

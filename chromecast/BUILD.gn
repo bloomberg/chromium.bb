@@ -293,6 +293,7 @@ test("cast_shell_unittests") {
     "//chromecast/app:test_support",
     "//chromecast/app:unittests",
     "//chromecast/browser:unittests",
+    "//ui/gl:test_support",
   ]
 }
 

@@ -258,6 +258,7 @@ source_set("unittests") {
     "//chromecast/base",
     "//content/public/browser",
     "//content/test:test_support",
+    "//ui/gl:test_support",
   ]
 }
 
