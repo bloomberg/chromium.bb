@@ -88,6 +88,7 @@ class WebRuntimeFeatures {
   BLINK_EXPORT static void enableLazyParseCSS(bool);
   BLINK_EXPORT static void enableMediaCapture(bool);
   BLINK_EXPORT static void enableMediaDocumentDownloadButton(bool);
+  BLINK_EXPORT static void enableMediaSession(bool);
   BLINK_EXPORT static void enableMiddleClickAutoscroll(bool);
   BLINK_EXPORT static void enableNavigatorContentUtils(bool);
   BLINK_EXPORT static void enableNetworkInformation(bool);

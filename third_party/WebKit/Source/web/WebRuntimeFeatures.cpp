@@ -166,6 +166,10 @@ void WebRuntimeFeatures::enableMediaDocumentDownloadButton(bool enable) {
   RuntimeEnabledFeatures::setMediaDocumentDownloadButtonEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableMediaSession(bool enable) {
+  RuntimeEnabledFeatures::setMediaSessionEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableNotificationConstructor(bool enable) {
   RuntimeEnabledFeatures::setNotificationConstructorEnabled(enable);
 }

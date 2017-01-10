@@ -112,6 +112,10 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // Presentation API, see https://crbug.com/521319.
   cl->AppendSwitch(switches::kDisableRemotePlaybackAPI);
 
+  // WebView does not support MediaSession API since there's no UI for media
+  // metadata and controls.
+  cl->AppendSwitch(switches::kDisableMediaSessionAPI);
+
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   if (cl->GetSwitchValueASCII(switches::kProcessType).empty()) {
     // Browser process (no type specified).

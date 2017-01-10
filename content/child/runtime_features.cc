@@ -304,6 +304,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::enableSendBeaconThrowForBlobWithNonSimpleType(true);
 
 #if defined(OS_ANDROID)
+  if (command_line.HasSwitch(switches::kDisableMediaSessionAPI))
+    WebRuntimeFeatures::enableMediaSession(false);
+
   WebRuntimeFeatures::enablePaymentRequest(
       base::FeatureList::IsEnabled(features::kWebPayments));
 #endif
