@@ -120,6 +120,9 @@ CORE_EXPORT PositionInFlatTree canonicalPositionOf(const PositionInFlatTree&);
 CORE_EXPORT IntRect absoluteCaretBoundsOf(const VisiblePosition&);
 CORE_EXPORT IntRect absoluteCaretBoundsOf(const VisiblePositionInFlatTree&);
 
+CORE_EXPORT IntRect absoluteSelectionBoundsOf(const VisiblePosition&);
+CORE_EXPORT IntRect absoluteSelectionBoundsOf(const VisiblePositionInFlatTree&);
+
 CORE_EXPORT UChar32 characterAfter(const VisiblePosition&);
 CORE_EXPORT UChar32 characterAfter(const VisiblePositionInFlatTree&);
 CORE_EXPORT UChar32 characterBefore(const VisiblePosition&);

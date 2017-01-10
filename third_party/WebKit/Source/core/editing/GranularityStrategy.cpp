@@ -12,12 +12,12 @@ namespace blink {
 enum class BoundAdjust { CurrentPosIfOnBound, NextBoundIfOnBound };
 enum class SearchDirection { SearchBackwards, SearchForward };
 
-// We use the bottom-left corner of the caret rect to represent the
+// We use the bottom-left corner of the selection rect to represent the
 // location of a VisiblePosition. This way locations corresponding to
 // VisiblePositions on the same line will all have the same y coordinate
 // unless the text is transformed.
 static IntPoint positionLocation(const VisiblePosition& vp) {
-  return absoluteCaretBoundsOf(vp).minXMaxYCorner();
+  return absoluteSelectionBoundsOf(vp).minXMaxYCorner();
 }
 
 // Order is specified using the same contract as comparePositions.

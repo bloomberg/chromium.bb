@@ -2552,10 +2552,42 @@ LayoutRect localCaretRectOfPositionTemplate(
                                       boxPosition.offsetInBox);
 }
 
+// This function was added because the caret rect that will be calcaulated by
+// using the line top value instead of the selection top.
+template <typename Strategy>
+LayoutRect localSelectionRectOfPositionTemplate(
+    const PositionWithAffinityTemplate<Strategy>& position,
+    LayoutObject*& layoutObject) {
+  LayoutRect rect = localCaretRectOfPositionTemplate(position, layoutObject);
+
+  if (rect.isEmpty())
+    return rect;
+
+  InlineBoxPosition boxPosition =
+      computeInlineBoxPosition(position.position(), position.affinity());
+
+  InlineTextBox* box = toInlineTextBox(boxPosition.inlineBox);
+  if (layoutObject->style()->isHorizontalWritingMode()) {
+    rect.setY(box->root().selectionTop());
+    rect.setHeight(box->root().selectionHeight());
+    return rect;
+  }
+
+  rect.setX(box->root().selectionTop());
+  rect.setWidth(box->root().selectionHeight());
+  return rect;
+}
+
 LayoutRect localCaretRectOfPosition(const PositionWithAffinity& position,
                                     LayoutObject*& layoutObject) {
   return localCaretRectOfPositionTemplate<EditingStrategy>(position,
                                                            layoutObject);
+}
+
+LayoutRect localSelectionRectOfPosition(const PositionWithAffinity& position,
+                                        LayoutObject*& layoutObject) {
+  return localSelectionRectOfPositionTemplate<EditingStrategy>(position,
+                                                               layoutObject);
 }
 
 LayoutRect localCaretRectOfPosition(
@@ -3229,6 +3261,24 @@ static IntRect absoluteCaretBoundsOfAlgorithm(
 
 IntRect absoluteCaretBoundsOf(const VisiblePosition& visiblePosition) {
   return absoluteCaretBoundsOfAlgorithm<EditingStrategy>(visiblePosition);
+}
+
+template <typename Strategy>
+static IntRect absoluteSelectionBoundsOfAlgorithm(
+    const VisiblePositionTemplate<Strategy>& visiblePosition) {
+  DCHECK(visiblePosition.isValid()) << visiblePosition;
+  LayoutObject* layoutObject;
+  LayoutRect localRect = localSelectionRectOfPosition(
+      visiblePosition.toPositionWithAffinity(), layoutObject);
+  if (localRect.isEmpty() || !layoutObject)
+    return IntRect();
+
+  return layoutObject->localToAbsoluteQuad(FloatRect(localRect))
+      .enclosingBoundingBox();
+}
+
+IntRect absoluteSelectionBoundsOf(const VisiblePosition& visiblePosition) {
+  return absoluteSelectionBoundsOfAlgorithm<EditingStrategy>(visiblePosition);
 }
 
 IntRect absoluteCaretBoundsOf(
