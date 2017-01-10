@@ -37,6 +37,7 @@ source_set("safe_mode") {
 }
 
 source_set("eg_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "safe_mode_egtest.mm",

@@ -7,13 +7,16 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/app/chrome_overlay_window.h"
 #import "ios/chrome/app/safe_mode/safe_mode_view_controller.h"
 #import "ios/chrome/browser/ui/main/main_view_controller.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #import "ios/chrome/test/base/scoped_block_swizzler.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -80,8 +83,8 @@ void AssertTryAgainButtonOnPage() {
                                 });
 
   // Instantiates a Safe Mode controller and displays it.
-  base::scoped_nsobject<SafeModeViewController> safeModeController(
-      [[SafeModeViewController alloc] initWithDelegate:nil]);
+  SafeModeViewController* safeModeController =
+      [[SafeModeViewController alloc] initWithDelegate:nil];
   [GetActiveViewController() presentViewController:safeModeController
                                           animated:NO
                                         completion:nil];
@@ -110,8 +113,8 @@ void AssertTryAgainButtonOnPage() {
                                  });
 
   // Instantiates a Safe Mode controller and displays it.
-  base::scoped_nsobject<SafeModeViewController> safeModeController(
-      [[SafeModeViewController alloc] initWithDelegate:nil]);
+  SafeModeViewController* safeModeController =
+      [[SafeModeViewController alloc] initWithDelegate:nil];
   [GetActiveViewController() presentViewController:safeModeController
                                           animated:NO
                                         completion:nil];
@@ -146,8 +149,8 @@ void AssertTryAgainButtonOnPage() {
                                   return YES;
                                 });
   // Instantiates a Safe Mode controller and displays it.
-  base::scoped_nsobject<SafeModeViewController> safeModeController(
-      [[SafeModeViewController alloc] initWithDelegate:nil]);
+  SafeModeViewController* safeModeController =
+      [[SafeModeViewController alloc] initWithDelegate:nil];
   [GetActiveViewController() presentViewController:safeModeController
                                           animated:NO
                                         completion:nil];
