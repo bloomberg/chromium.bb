@@ -2687,9 +2687,6 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="Describes an audio clip that gets played for a specific event or control type. Use the default string as a guide to what the audio clip represents or conveys." name="IDS_CHROMEVOX_WRAP_EARCON_DESCRIPTION">
         Wrap from beginning to end or end to beginning inside of a page, dialog, or other container
       </message>
-      <message desc="Announced when ChromeVox has no item in focus." name="IDS_CHROMEVOX_NO_FOCUS">
-        No focus. Press Control N to open a new window.
-      </message>
     </messages>
   </release>
 </grit>
