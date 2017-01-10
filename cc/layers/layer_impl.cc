@@ -1032,10 +1032,7 @@ bool LayerImpl::CanUseLCDText() const {
 }
 
 int LayerImpl::GetSortingContextId() const {
-  return layer_tree_impl()
-      ->property_trees()
-      ->transform_tree.Node(transform_tree_index())
-      ->sorting_context_id;
+  return GetTransformTree().Node(transform_tree_index())->sorting_context_id;
 }
 
 Region LayerImpl::GetInvalidationRegionForDebugging() {
