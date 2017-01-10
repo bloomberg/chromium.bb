@@ -177,7 +177,6 @@ void TestWindowTree::SetWindowOpacity(uint32_t change_id,
 
 void TestWindowTree::AttachCompositorFrameSink(
     uint32_t window_id,
-    ui::mojom::CompositorFrameSinkType type,
     mojo::InterfaceRequest<cc::mojom::MojoCompositorFrameSink> surface,
     cc::mojom::MojoCompositorFrameSinkClientPtr client) {}
 

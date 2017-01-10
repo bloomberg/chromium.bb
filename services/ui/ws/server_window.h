@@ -65,8 +65,8 @@ class ServerWindow {
       cc::mojom::MojoCompositorFrameSinkRequest request,
       cc::mojom::MojoCompositorFrameSinkClientPtr client,
       cc::mojom::DisplayPrivateRequest display_private_request);
+
   void CreateOffscreenCompositorFrameSink(
-      mojom::CompositorFrameSinkType compositor_frame_sink_type,
       cc::mojom::MojoCompositorFrameSinkRequest request,
       cc::mojom::MojoCompositorFrameSinkClientPtr client);
 

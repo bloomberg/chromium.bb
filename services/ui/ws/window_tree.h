@@ -417,7 +417,6 @@ class WindowTree : public mojom::WindowTree,
                         float opacity) override;
   void AttachCompositorFrameSink(
       Id transport_window_id,
-      mojom::CompositorFrameSinkType type,
       cc::mojom::MojoCompositorFrameSinkRequest compositor_frame_sink,
       cc::mojom::MojoCompositorFrameSinkClientPtr client) override;
   void Embed(Id transport_window_id,

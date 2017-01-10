@@ -63,12 +63,10 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
              const ui::mojom::WindowTree::EmbedCallback& callback);
 
   std::unique_ptr<WindowCompositorFrameSink> RequestCompositorFrameSink(
-      ui::mojom::CompositorFrameSinkType type,
       scoped_refptr<cc::ContextProvider> context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
 
   void AttachCompositorFrameSink(
-      ui::mojom::CompositorFrameSinkType type,
       std::unique_ptr<WindowCompositorFrameSinkBinding>
           compositor_frame_sink_binding);
 

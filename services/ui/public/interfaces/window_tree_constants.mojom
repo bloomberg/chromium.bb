@@ -29,23 +29,6 @@ struct WindowData {
   bool visible;
 };
 
-// Each Window has support for two surfaces. Generally the |DEFAULT| surface
-// is used. The |UNDERLAY| surface is useful if the owner of a window wants to
-// to Embed() another client and at the same time draw something under the
-// embedded apps representation.
-// TODO(fsamuel): Remove this once window decorations are no longer underlay
-// surfaces. http://crbug.com/647852.
-enum CompositorFrameSinkType {
-  // Only the owner of a window may obtain this surface.
-  // The window manager can change the offset of this by way of
-  // SetUnderlaySurfaceOffsetAndExtendedHitArea().
-  UNDERLAY,
-
-  // Only the embedded app may obtain this surface. If an app is not embedded
-  // in the Window than the owner may also render to this surface as well.
-  DEFAULT,
-};
-
 // The result of an input event sent to a client app.
 enum EventResult {
   HANDLED,

@@ -2156,9 +2156,9 @@ TEST_F(WindowTreeClientTest, SurfaceIdPropagation) {
   cc::mojom::MojoCompositorFrameSinkClientRequest client_request;
   cc::mojom::MojoCompositorFrameSinkClientPtr surface_client_ptr;
   client_request = mojo::MakeRequest(&surface_client_ptr);
-  wt2()->AttachCompositorFrameSink(
-      window_2_101, mojom::CompositorFrameSinkType::DEFAULT,
-      mojo::MakeRequest(&surface_ptr), std::move(surface_client_ptr));
+  wt2()->AttachCompositorFrameSink(window_2_101,
+                                   mojo::MakeRequest(&surface_ptr),
+                                   std::move(surface_client_ptr));
   cc::CompositorFrame compositor_frame;
   std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
   gfx::Rect frame_rect(0, 0, 100, 100);

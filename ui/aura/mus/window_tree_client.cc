@@ -279,12 +279,11 @@ void WindowTreeClient::Embed(
 
 void WindowTreeClient::AttachCompositorFrameSink(
     Id window_id,
-    ui::mojom::CompositorFrameSinkType type,
     cc::mojom::MojoCompositorFrameSinkRequest compositor_frame_sink,
     cc::mojom::MojoCompositorFrameSinkClientPtr client) {
   DCHECK(tree_);
-  tree_->AttachCompositorFrameSink(
-      window_id, type, std::move(compositor_frame_sink), std::move(client));
+  tree_->AttachCompositorFrameSink(window_id, std::move(compositor_frame_sink),
+                                   std::move(client));
 }
 
 void WindowTreeClient::RegisterWindowMus(WindowMus* window) {

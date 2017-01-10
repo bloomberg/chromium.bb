@@ -26,125 +26,98 @@ void ServerWindowCompositorFrameSinkManager::CreateDisplayCompositorFrameSink(
     cc::mojom::MojoCompositorFrameSinkRequest request,
     cc::mojom::MojoCompositorFrameSinkClientPtr client,
     cc::mojom::DisplayPrivateRequest display_private_request) {
-  CreateCompositorFrameSinkInternal(
-      mojom::CompositorFrameSinkType::DEFAULT, widget, std::move(request),
-      std::move(client), std::move(display_private_request));
+  CreateCompositorFrameSinkInternal(widget, std::move(request),
+                                    std::move(client),
+                                    std::move(display_private_request));
 }
 
 void ServerWindowCompositorFrameSinkManager::CreateOffscreenCompositorFrameSink(
-    mojom::CompositorFrameSinkType compositor_frame_sink_type,
     cc::mojom::MojoCompositorFrameSinkRequest request,
     cc::mojom::MojoCompositorFrameSinkClientPtr client) {
-  CreateCompositorFrameSinkInternal(
-      compositor_frame_sink_type, gfx::kNullAcceleratedWidget,
-      std::move(request), std::move(client), nullptr);
+  CreateCompositorFrameSinkInternal(gfx::kNullAcceleratedWidget,
+                                    std::move(request), std::move(client),
+                                    nullptr);
 }
 
 void ServerWindowCompositorFrameSinkManager::AddChildFrameSinkId(
-    mojom::CompositorFrameSinkType compositor_frame_sink_type,
     const cc::FrameSinkId& frame_sink_id) {
-  auto it = type_to_compositor_frame_sink_map_.find(compositor_frame_sink_type);
-  if (it != type_to_compositor_frame_sink_map_.end()) {
-    it->second.compositor_frame_sink->AddChildFrameSink(frame_sink_id);
+  if (frame_sink_data_) {
+    frame_sink_data_->compositor_frame_sink->AddChildFrameSink(frame_sink_id);
     return;
   }
-  CompositorFrameSinkData& data =
-      type_to_compositor_frame_sink_map_[compositor_frame_sink_type];
-  data.pending_compositor_frame_sink_request =
-      mojo::MakeRequest(&data.compositor_frame_sink);
-  data.compositor_frame_sink->AddChildFrameSink(frame_sink_id);
+  frame_sink_data_ = base::MakeUnique<CompositorFrameSinkData>();
+  frame_sink_data_->pending_compositor_frame_sink_request =
+      mojo::MakeRequest(&frame_sink_data_->compositor_frame_sink);
+  frame_sink_data_->compositor_frame_sink->AddChildFrameSink(frame_sink_id);
 }
 
 void ServerWindowCompositorFrameSinkManager::RemoveChildFrameSinkId(
-    mojom::CompositorFrameSinkType compositor_frame_sink_type,
     const cc::FrameSinkId& frame_sink_id) {
-  auto it = type_to_compositor_frame_sink_map_.find(compositor_frame_sink_type);
-  DCHECK(it != type_to_compositor_frame_sink_map_.end());
-  it->second.compositor_frame_sink->RemoveChildFrameSink(frame_sink_id);
+  DCHECK(frame_sink_data_);
+  frame_sink_data_->compositor_frame_sink->RemoveChildFrameSink(frame_sink_id);
 }
 
-bool ServerWindowCompositorFrameSinkManager::HasCompositorFrameSinkOfType(
-    mojom::CompositorFrameSinkType type) const {
-  return type_to_compositor_frame_sink_map_.count(type) > 0;
+bool ServerWindowCompositorFrameSinkManager::HasCompositorFrameSink() const {
+  return !!frame_sink_data_;
 }
 
-bool ServerWindowCompositorFrameSinkManager::HasAnyCompositorFrameSink() const {
-  return HasCompositorFrameSinkOfType(
-             mojom::CompositorFrameSinkType::DEFAULT) ||
-         HasCompositorFrameSinkOfType(mojom::CompositorFrameSinkType::UNDERLAY);
-}
-
-gfx::Size ServerWindowCompositorFrameSinkManager::GetLatestFrameSize(
-    mojom::CompositorFrameSinkType type) const {
-  auto it = type_to_compositor_frame_sink_map_.find(type);
-  if (it == type_to_compositor_frame_sink_map_.end())
+gfx::Size ServerWindowCompositorFrameSinkManager::GetLatestFrameSize() const {
+  if (!frame_sink_data_)
     return gfx::Size();
 
-  return it->second.latest_submitted_surface_info.size_in_pixels();
+  return frame_sink_data_->latest_submitted_surface_info.size_in_pixels();
 }
 
-cc::SurfaceId ServerWindowCompositorFrameSinkManager::GetLatestSurfaceId(
-    mojom::CompositorFrameSinkType type) const {
-  auto it = type_to_compositor_frame_sink_map_.find(type);
-  if (it == type_to_compositor_frame_sink_map_.end())
+cc::SurfaceId ServerWindowCompositorFrameSinkManager::GetLatestSurfaceId()
+    const {
+  if (!frame_sink_data_)
     return cc::SurfaceId();
 
-  return it->second.latest_submitted_surface_info.id();
+  return frame_sink_data_->latest_submitted_surface_info.id();
 }
 
 void ServerWindowCompositorFrameSinkManager::SetLatestSurfaceInfo(
-    mojom::CompositorFrameSinkType type,
     const cc::SurfaceInfo& surface_info) {
-  CompositorFrameSinkData& data = type_to_compositor_frame_sink_map_[type];
-  data.latest_submitted_surface_info = surface_info;
+  if (!frame_sink_data_)
+    frame_sink_data_ = base::MakeUnique<CompositorFrameSinkData>();
+
+  frame_sink_data_->latest_submitted_surface_info = surface_info;
 }
 
 void ServerWindowCompositorFrameSinkManager::OnRootChanged(
     ServerWindow* old_root,
     ServerWindow* new_root) {
-  for (const auto& pair : type_to_compositor_frame_sink_map_) {
-    if (old_root) {
-      old_root->GetOrCreateCompositorFrameSinkManager()->RemoveChildFrameSinkId(
-          pair.first, pair.second.frame_sink_id);
-    }
-    if (new_root) {
-      new_root->GetOrCreateCompositorFrameSinkManager()->AddChildFrameSinkId(
-          pair.first, pair.second.frame_sink_id);
-    }
+  if (!frame_sink_data_)
+    return;
+
+  if (old_root) {
+    old_root->GetOrCreateCompositorFrameSinkManager()->RemoveChildFrameSinkId(
+        frame_sink_data_->frame_sink_id);
+  }
+  if (new_root) {
+    new_root->GetOrCreateCompositorFrameSinkManager()->AddChildFrameSinkId(
+        frame_sink_data_->frame_sink_id);
   }
 }
 
-bool ServerWindowCompositorFrameSinkManager::
-    IsCompositorFrameSinkReadyAndNonEmpty(
-        mojom::CompositorFrameSinkType type) const {
-  auto iter = type_to_compositor_frame_sink_map_.find(type);
-  if (iter == type_to_compositor_frame_sink_map_.end())
-    return false;
-  if (iter->second.latest_submitted_surface_info.size_in_pixels().IsEmpty())
-    return false;
-  const gfx::Size& latest_submitted_frame_size =
-      iter->second.latest_submitted_surface_info.size_in_pixels();
-  return latest_submitted_frame_size.width() >= window_->bounds().width() &&
-         latest_submitted_frame_size.height() >= window_->bounds().height();
-}
-
 void ServerWindowCompositorFrameSinkManager::CreateCompositorFrameSinkInternal(
-    mojom::CompositorFrameSinkType compositor_frame_sink_type,
     gfx::AcceleratedWidget widget,
     cc::mojom::MojoCompositorFrameSinkRequest request,
     cc::mojom::MojoCompositorFrameSinkClientPtr client,
     cc::mojom::DisplayPrivateRequest display_private_request) {
-  cc::FrameSinkId frame_sink_id(
-      WindowIdToTransportId(window_->id()),
-      static_cast<uint32_t>(compositor_frame_sink_type));
-  CompositorFrameSinkData& data =
-      type_to_compositor_frame_sink_map_[compositor_frame_sink_type];
-  data.frame_sink_id = frame_sink_id;
+  cc::FrameSinkId frame_sink_id(WindowIdToTransportId(window_->id()), 0);
+
+  if (!frame_sink_data_)
+    frame_sink_data_ = base::MakeUnique<CompositorFrameSinkData>();
+
+  frame_sink_data_->frame_sink_id = frame_sink_id;
   cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request;
-  if (data.pending_compositor_frame_sink_request.is_pending()) {
-    private_request = std::move(data.pending_compositor_frame_sink_request);
+  if (frame_sink_data_->pending_compositor_frame_sink_request.is_pending()) {
+    private_request =
+        std::move(frame_sink_data_->pending_compositor_frame_sink_request);
   } else {
-    private_request = mojo::MakeRequest(&data.compositor_frame_sink);
+    private_request =
+        mojo::MakeRequest(&frame_sink_data_->compositor_frame_sink);
   }
   if (widget != gfx::kNullAcceleratedWidget) {
     // TODO(fsamuel): AcceleratedWidget cannot be transported over IPC for Mac
@@ -169,7 +142,7 @@ void ServerWindowCompositorFrameSinkManager::CreateCompositorFrameSinkInternal(
     ServerWindow* root_window = window_->GetRoot();
     if (root_window) {
       root_window->GetOrCreateCompositorFrameSinkManager()->AddChildFrameSinkId(
-          mojom::CompositorFrameSinkType::DEFAULT, frame_sink_id);
+          frame_sink_id);
     }
   }
 }

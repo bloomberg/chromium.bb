@@ -32,15 +32,10 @@ void InitWindow(ServerWindow* window) {
   window->SetVisible(true);
   ServerWindowCompositorFrameSinkManager* compositor_frame_sink_manager =
       window->GetOrCreateCompositorFrameSinkManager();
-  compositor_frame_sink_manager->SetLatestSurfaceInfo(
-      mojom::CompositorFrameSinkType::DEFAULT,
-      cc::SurfaceInfo(
-          cc::SurfaceId(
-              cc::FrameSinkId(WindowIdToTransportId(window->id()),
-                              static_cast<uint32_t>(
-                                  mojom::CompositorFrameSinkType::DEFAULT)),
-              cc::LocalFrameId(1u, kArbitraryToken)),
-          1.0f, gfx::Size(100, 100)));
+  compositor_frame_sink_manager->SetLatestSurfaceInfo(cc::SurfaceInfo(
+      cc::SurfaceId(cc::FrameSinkId(WindowIdToTransportId(window->id()), 0),
+                    cc::LocalFrameId(1u, kArbitraryToken)),
+      1.0f, gfx::Size(100, 100)));
 }
 
 }  // namespace

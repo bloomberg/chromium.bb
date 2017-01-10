@@ -112,12 +112,10 @@ class Window {
   bool IsDrawn() const;
 
   std::unique_ptr<WindowCompositorFrameSink> RequestCompositorFrameSink(
-      mojom::CompositorFrameSinkType type,
       scoped_refptr<cc::ContextProvider> context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
 
   void AttachCompositorFrameSink(
-      mojom::CompositorFrameSinkType type,
       std::unique_ptr<WindowCompositorFrameSinkBinding>
           compositor_frame_sink_binding);
 

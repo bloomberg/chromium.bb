@@ -23,10 +23,7 @@ bool IsValidWindowForEvents(ServerWindow* window) {
   // is valid as we assume the window manager will likely get the event in this
   // case.
   return compositor_frame_sink_manager &&
-         (compositor_frame_sink_manager->HasCompositorFrameSinkOfType(
-              mojom::CompositorFrameSinkType::DEFAULT) ||
-          compositor_frame_sink_manager->HasCompositorFrameSinkOfType(
-              mojom::CompositorFrameSinkType::UNDERLAY));
+         compositor_frame_sink_manager->HasCompositorFrameSink();
 }
 
 ServerWindow* FindDeepestVisibleWindowForEvents(ServerWindow* window,

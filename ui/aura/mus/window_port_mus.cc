@@ -75,7 +75,6 @@ void WindowPortMus::Embed(
 
 std::unique_ptr<WindowCompositorFrameSink>
 WindowPortMus::RequestCompositorFrameSink(
-    ui::mojom::CompositorFrameSinkType type,
     scoped_refptr<cc::ContextProvider> context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
   std::unique_ptr<WindowCompositorFrameSinkBinding>
@@ -84,16 +83,15 @@ WindowPortMus::RequestCompositorFrameSink(
       WindowCompositorFrameSink::Create(std::move(context_provider),
                                         gpu_memory_buffer_manager,
                                         &compositor_frame_sink_binding);
-  AttachCompositorFrameSink(type, std::move(compositor_frame_sink_binding));
+  AttachCompositorFrameSink(std::move(compositor_frame_sink_binding));
   return compositor_frame_sink;
 }
 
 void WindowPortMus::AttachCompositorFrameSink(
-    ui::mojom::CompositorFrameSinkType type,
     std::unique_ptr<WindowCompositorFrameSinkBinding>
         compositor_frame_sink_binding) {
   window_tree_client_->AttachCompositorFrameSink(
-      server_id(), type,
+      server_id(),
       std::move(compositor_frame_sink_binding->compositor_frame_sink_request_),
       mojo::MakeProxy(std::move(
           compositor_frame_sink_binding->compositor_frame_sink_client_)));

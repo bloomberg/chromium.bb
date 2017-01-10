@@ -129,7 +129,6 @@ class WindowTreeClient : public mojom::WindowTreeClient,
 
   void AttachCompositorFrameSink(
       Id window_id,
-      mojom::CompositorFrameSinkType type,
       cc::mojom::MojoCompositorFrameSinkRequest compositor_frame_sink,
       cc::mojom::MojoCompositorFrameSinkClientPtr client);
 

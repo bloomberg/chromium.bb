@@ -37,8 +37,7 @@ MusBrowserCompositorOutputSurface::MusBrowserCompositorOutputSurface(
       window_(nullptr),
       begin_frame_source_(nullptr) {
   ui_compositor_frame_sink_ = ui_window_->RequestCompositorFrameSink(
-      ui::mojom::CompositorFrameSinkType::DEFAULT, context,
-      gpu_memory_buffer_manager);
+      context, gpu_memory_buffer_manager);
   ui_compositor_frame_sink_->BindToClient(this);
 }
 
@@ -58,8 +57,7 @@ MusBrowserCompositorOutputSurface::MusBrowserCompositorOutputSurface(
   aura::WindowPortMus* window_port = aura::WindowPortMus::Get(window_);
   DCHECK(window_port);
   compositor_frame_sink_ = window_port->RequestCompositorFrameSink(
-      ui::mojom::CompositorFrameSinkType::DEFAULT, context,
-      gpu_memory_buffer_manager);
+      context, gpu_memory_buffer_manager);
   compositor_frame_sink_->BindToClient(this);
 }
 

@@ -50,8 +50,7 @@ class AccessPolicy {
   virtual bool CanChangeWindowVisibility(const ServerWindow* window) const = 0;
   virtual bool CanChangeWindowOpacity(const ServerWindow* window) const = 0;
   virtual bool CanSetWindowCompositorFrameSink(
-      const ServerWindow* window,
-      mojom::CompositorFrameSinkType compositor_frame_sink_type) const = 0;
+      const ServerWindow* window) const = 0;
   virtual bool CanSetWindowBounds(const ServerWindow* window) const = 0;
   virtual bool CanSetWindowProperties(const ServerWindow* window) const = 0;
   virtual bool CanSetWindowTextInputState(const ServerWindow* window) const = 0;

@@ -163,8 +163,7 @@ void FrameGenerator::DrawWindow(cc::RenderPass* pass, ServerWindow* window) {
     return;
 
   cc::SurfaceId default_surface_id =
-      window->compositor_frame_sink_manager()->GetLatestSurfaceId(
-          mojom::CompositorFrameSinkType::DEFAULT);
+      window->compositor_frame_sink_manager()->GetLatestSurfaceId();
 
   if (!default_surface_id.is_valid())
     return;
@@ -197,8 +196,7 @@ cc::SurfaceId FrameGenerator::FindParentSurfaceId(ServerWindow* window) {
   // The root window holds the parent SurfaceId. This SurfaceId will have an
   // invalid LocalFrameId before FrameGenerator has submitted a CompositorFrame.
   // After the first frame is submitted it will always be a valid SurfaceId.
-  return root_window_->compositor_frame_sink_manager()->GetLatestSurfaceId(
-      mojom::CompositorFrameSinkType::DEFAULT);
+  return root_window_->compositor_frame_sink_manager()->GetLatestSurfaceId();
 }
 
 void FrameGenerator::AddSurfaceReference(const cc::SurfaceId& parent_id,
@@ -292,17 +290,10 @@ void FrameGenerator::OnWindowDestroying(ServerWindow* window) {
   // ServerWindowCompositorFrameSinkManager.
   DCHECK(compositor_frame_sink_manager);
 
-  cc::SurfaceId default_surface_id =
-      window->compositor_frame_sink_manager()->GetLatestSurfaceId(
-          mojom::CompositorFrameSinkType::DEFAULT);
-  if (default_surface_id.is_valid())
-    RemoveFrameSinkReference(default_surface_id.frame_sink_id());
-
-  cc::SurfaceId underlay_surface_id =
-      window->compositor_frame_sink_manager()->GetLatestSurfaceId(
-          mojom::CompositorFrameSinkType::UNDERLAY);
-  if (underlay_surface_id.is_valid())
-    RemoveFrameSinkReference(underlay_surface_id.frame_sink_id());
+  cc::SurfaceId surface_id =
+      window->compositor_frame_sink_manager()->GetLatestSurfaceId();
+  if (surface_id.is_valid())
+    RemoveFrameSinkReference(surface_id.frame_sink_id());
 }
 
 }  // namespace ws

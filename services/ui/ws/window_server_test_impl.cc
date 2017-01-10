@@ -18,9 +18,7 @@ namespace {
 bool WindowHasValidFrame(const ServerWindow* window) {
   const ServerWindowCompositorFrameSinkManager* manager =
       window->compositor_frame_sink_manager();
-  return manager &&
-         !manager->GetLatestFrameSize(mojom::CompositorFrameSinkType::DEFAULT)
-              .IsEmpty();
+  return manager && !manager->GetLatestFrameSize().IsEmpty();
 }
 
 }  // namespace

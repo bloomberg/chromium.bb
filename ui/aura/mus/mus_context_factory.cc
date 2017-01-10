@@ -27,7 +27,6 @@ void MusContextFactory::OnEstablishedGpuChannel(
   WindowPortMus* window_port = WindowPortMus::Get(host->window());
   DCHECK(window_port);
   auto compositor_frame_sink = window_port->RequestCompositorFrameSink(
-      ui::mojom::CompositorFrameSinkType::DEFAULT,
       gpu_->CreateContextProvider(std::move(gpu_channel)),
       gpu_->gpu_memory_buffer_manager());
   compositor->SetCompositorFrameSink(std::move(compositor_frame_sink));

@@ -126,7 +126,6 @@ class AURA_EXPORT WindowTreeClient
 
   void AttachCompositorFrameSink(
       Id window_id,
-      ui::mojom::CompositorFrameSinkType type,
       cc::mojom::MojoCompositorFrameSinkRequest compositor_frame_sink,
       cc::mojom::MojoCompositorFrameSinkClientPtr client);
 

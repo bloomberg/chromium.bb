@@ -94,11 +94,10 @@ void ServerWindow::CreateDisplayCompositorFrameSink(
 }
 
 void ServerWindow::CreateOffscreenCompositorFrameSink(
-    mojom::CompositorFrameSinkType compositor_frame_sink_type,
     cc::mojom::MojoCompositorFrameSinkRequest request,
     cc::mojom::MojoCompositorFrameSinkClientPtr client) {
   GetOrCreateCompositorFrameSinkManager()->CreateOffscreenCompositorFrameSink(
-      compositor_frame_sink_type, std::move(request), std::move(client));
+      std::move(request), std::move(client));
 }
 
 void ServerWindow::Add(ServerWindow* child) {

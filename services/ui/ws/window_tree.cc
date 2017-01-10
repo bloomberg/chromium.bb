@@ -1415,19 +1415,18 @@ void WindowTree::SetWindowOpacity(uint32_t change_id,
 
 void WindowTree::AttachCompositorFrameSink(
     Id transport_window_id,
-    mojom::CompositorFrameSinkType type,
     cc::mojom::MojoCompositorFrameSinkRequest compositor_frame_sink,
     cc::mojom::MojoCompositorFrameSinkClientPtr client) {
   ServerWindow* window =
       GetWindowByClientId(ClientWindowId(transport_window_id));
   const bool success =
-      window && access_policy_->CanSetWindowCompositorFrameSink(window, type);
+      window && access_policy_->CanSetWindowCompositorFrameSink(window);
   if (!success) {
     DVLOG(1) << "request to AttachCompositorFrameSink failed";
     return;
   }
-  window->CreateOffscreenCompositorFrameSink(
-      type, std::move(compositor_frame_sink), std::move(client));
+  window->CreateOffscreenCompositorFrameSink(std::move(compositor_frame_sink),
+                                             std::move(client));
 }
 
 void WindowTree::SetWindowTextInputState(Id transport_window_id,

@@ -71,7 +71,6 @@ void CompositorMusConnection::AttachCompositorFrameSinkOnCompositorThread(
       std::move(compositor_frame_sink_binding);
   if (root_) {
     root_->AttachCompositorFrameSink(
-        ui::mojom::CompositorFrameSinkType::DEFAULT,
         std::move(window_compositor_frame_sink_binding_));
   }
 }
@@ -159,7 +158,6 @@ void CompositorMusConnection::OnEmbed(ui::Window* root) {
   root_->set_input_event_handler(this);
   if (window_compositor_frame_sink_binding_) {
     root->AttachCompositorFrameSink(
-        ui::mojom::CompositorFrameSinkType::DEFAULT,
         std::move(window_compositor_frame_sink_binding_));
   }
 }

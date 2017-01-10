@@ -139,7 +139,6 @@ interface WindowTree {
   // Attaches a CompositorFrameSink to a particular window.
   AttachCompositorFrameSink(
       uint32 window_id,
-      CompositorFrameSinkType type,
       cc.mojom.MojoCompositorFrameSink& compositor_frame_sink,
       cc.mojom.MojoCompositorFrameSinkClient client);
 
