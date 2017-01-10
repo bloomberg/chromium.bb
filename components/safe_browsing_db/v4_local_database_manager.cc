@@ -160,9 +160,11 @@ void V4LocalDatabaseManager::CancelCheck(Client* client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(enabled_);
 
-  auto it = pending_clients_.find(client);
-  if (it != pending_clients_.end()) {
-    pending_clients_.erase(it);
+  auto pending_it = std::find_if(
+      std::begin(pending_checks_), std::end(pending_checks_),
+      [client](const PendingCheck* check) { return check->client == client; });
+  if (pending_it != pending_checks_.end()) {
+    pending_checks_.erase(pending_it);
   }
 
   auto queued_it =
@@ -375,7 +377,7 @@ void V4LocalDatabaseManager::StopOnIOThread(bool shutdown) {
 
   enabled_ = false;
 
-  pending_clients_.clear();
+  pending_checks_.clear();
 
   RespondSafeToQueuedChecks();
 
@@ -534,8 +536,12 @@ bool V4LocalDatabaseManager::HandleCheck(std::unique_ptr<PendingCheck> check) {
     return true;
   }
 
+  // Add check to pending_checks_ before scheduling PerformFullHashCheck so that
+  // even if the client calls CancelCheck before PerformFullHashCheck gets
+  // called, the check can be found in pending_checks_.
+  pending_checks_.insert(check.get());
+
   // Post on the IO thread to enforce async behavior.
-  pending_clients_.insert(check->client);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&V4LocalDatabaseManager::PerformFullHashCheck, this,
@@ -572,27 +578,26 @@ bool V4LocalDatabaseManager::HandleUrlSynchronously(
 }
 
 void V4LocalDatabaseManager::OnFullHashResponse(
-    std::unique_ptr<PendingCheck> pending_check,
+    std::unique_ptr<PendingCheck> check,
     const std::vector<FullHashInfo>& full_hash_infos) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!enabled_) {
-    DCHECK(pending_clients_.empty());
+    DCHECK(pending_checks_.empty());
     return;
   }
 
-  const auto it = pending_clients_.find(pending_check->client);
-  if (it == pending_clients_.end()) {
+  const auto it = pending_checks_.find(check.get());
+  if (it == pending_checks_.end()) {
     // The check has since been cancelled.
     return;
   }
 
   // Find out the most severe threat, if any, to report to the client.
-  GetSeverestThreatTypeAndMetadata(&pending_check->result_threat_type,
-                                   &pending_check->url_metadata,
-                                   full_hash_infos);
-  pending_clients_.erase(it);
-  RespondToClient(std::move(pending_check));
+  GetSeverestThreatTypeAndMetadata(&check->result_threat_type,
+                                   &check->url_metadata, full_hash_infos);
+  pending_checks_.erase(it);
+  RespondToClient(std::move(check));
 }
 
 void V4LocalDatabaseManager::PerformFullHashCheck(
@@ -622,7 +627,7 @@ void V4LocalDatabaseManager::ProcessQueuedChecks() {
     if (!GetPrefixMatches(it, &full_hash_to_store_and_hash_prefixes)) {
       RespondToClient(std::move(it));
     } else {
-      pending_clients_.insert(it->client);
+      pending_checks_.insert(it.get());
       PerformFullHashCheck(std::move(it), full_hash_to_store_and_hash_prefixes);
     }
   }
@@ -646,11 +651,6 @@ void V4LocalDatabaseManager::RespondToClient(
 
   if (check->client_callback_type == ClientCallbackType::CHECK_BROWSE_URL) {
     DCHECK_EQ(1u, check->urls.size());
-    // TODO(vakh): Remove these CHECKs after fixing bugs 660293, 660359.
-    CHECK(check.get());
-    CHECK(check->client);
-    CHECK_LE(1u, check->urls.size());
-    CHECK(check->urls[0].is_valid());
     check->client->OnCheckBrowseUrlResult(
         check->urls[0], check->result_threat_type, check->url_metadata);
   } else if (check->client_callback_type ==

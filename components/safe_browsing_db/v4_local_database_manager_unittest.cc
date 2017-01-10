@@ -641,6 +641,39 @@ TEST_F(V4LocalDatabaseManagerTest, TestMatchModuleWhitelist) {
       v4_local_database_manager_));
 }
 
+// This verifies the fix for race in http://crbug.com/660293
+TEST_F(V4LocalDatabaseManagerTest, TestCheckBrowseUrlWithSameClientAndCancel) {
+  ScopedFakeGetHashProtocolManagerFactory pin;
+  // Reset the database manager so it picks up the replacement protocol manager.
+  ResetLocalDatabaseManager();
+  WaitForTasksOnTaskRunner();
+
+  StoreAndHashPrefixes store_and_hash_prefixes;
+  store_and_hash_prefixes.emplace_back(GetUrlMalwareId(),
+                                       HashPrefix("sن\340\t\006_"));
+  ReplaceV4Database(store_and_hash_prefixes);
+
+  GURL first_url("http://example.com/a");
+  GURL second_url("http://example.com/");
+  TestClient client(SB_THREAT_TYPE_SAFE, first_url);
+  // The fake database returns a matched hash prefix.
+  EXPECT_FALSE(v4_local_database_manager_->CheckBrowseUrl(first_url, &client));
+
+  // That check gets queued. Now, let's cancel the check. After this, we should
+  // not receive a call for |OnCheckBrowseUrlResult| with |first_url|.
+  v4_local_database_manager_->CancelCheck(&client);
+
+  // Now, re-use that client but for |second_url|.
+  client.expected_url = second_url;
+  EXPECT_FALSE(v4_local_database_manager_->CheckBrowseUrl(second_url, &client));
+
+  // Wait for PerformFullHashCheck to complete.
+  WaitForTasksOnTaskRunner();
+  // |result_received_| is true only if OnCheckBrowseUrlResult gets called with
+  // the |url| equal to |expected_url|, which is |second_url| in this test.
+  EXPECT_TRUE(client.result_received_);
+}
+
 // TODO(nparker): Add tests for
 //   CheckDownloadUrl()
 //   CheckExtensionIDs()

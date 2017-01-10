@@ -238,9 +238,10 @@ void BaseSafeBrowsingResourceThrottle::OnCheckBrowseUrlResult(
   CHECK(url.is_valid());
   CHECK(url_being_checked_.is_valid());
   if (url != url_being_checked_) {
-    char buf[2000];
-    snprintf(buf, sizeof(buf), "sbtr::ocbur:%s -- %s\n", url.spec().c_str(),
-             url_being_checked_.spec().c_str());
+    bool url_had_timed_out = timed_out_urls_.count(url) > 0;
+    char buf[1000];
+    snprintf(buf, sizeof(buf), "sbtr::ocbur:%d:%s -- %s\n", url_had_timed_out,
+             url.spec().c_str(), url_being_checked_.spec().c_str());
     base::debug::Alias(buf);
     CHECK(false) << "buf: " << buf;
   }
@@ -413,6 +414,8 @@ void BaseSafeBrowsingResourceThrottle::OnCheckUrlTimeout() {
 
   OnCheckBrowseUrlResult(url_being_checked_, safe_browsing::SB_THREAT_TYPE_SAFE,
                          safe_browsing::ThreatMetadata());
+
+  timed_out_urls_.insert(url_being_checked_);
 }
 
 void BaseSafeBrowsingResourceThrottle::ResumeRequest() {

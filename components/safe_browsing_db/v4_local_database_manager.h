@@ -9,6 +9,7 @@
 // and database that holds the downloaded updates.
 
 #include <memory>
+#include <unordered_set>
 
 #include "base/memory/weak_ptr.h"
 #include "components/safe_browsing_db/database_manager.h"
@@ -160,9 +161,8 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   FRIEND_TEST_ALL_PREFIXES(V4LocalDatabaseManagerTest,
                            TestGetSeverestThreatTypeAndMetadata);
 
-  // The set of clients awaiting a full hash response. It is used for tracking
-  // which clients have cancelled their outstanding request.
-  typedef std::unordered_set<const Client*> PendingClients;
+  // The checks awaiting a full hash response from SafeBrowsing service.
+  typedef std::unordered_set<const PendingCheck*> PendingChecks;
 
   // Called when all the stores managed by the database have been read from
   // disk after startup and the database is ready for checking resource
@@ -269,9 +269,8 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   // name of the file on disk that would contain the prefixes, if applicable.
   ListInfos list_infos_;
 
-  // The set of clients that are waiting for a full hash response from the
-  // SafeBrowsing service.
-  PendingClients pending_clients_;
+  // The checks awaiting for a full hash response from the SafeBrowsing service.
+  PendingChecks pending_checks_;
 
   // The checks that need to be scheduled when the database becomes ready for
   // use.
