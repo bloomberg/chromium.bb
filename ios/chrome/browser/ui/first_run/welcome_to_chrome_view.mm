@@ -44,7 +44,8 @@ const CGFloat kImageTopPadding[SIZE_CLASS_COUNT] = {32.0, 50.0};
 const CGFloat kTOSLabelTopPadding[SIZE_CLASS_COUNT] = {34.0, 40.0};
 const CGFloat kOptInLabelTopPadding[SIZE_CLASS_COUNT] = {10.0, 14.0};
 const CGFloat kCheckBoxPadding[SIZE_CLASS_COUNT] = {10.0, 16.0};
-const CGFloat kOKButtonBottomPadding[SIZE_CLASS_COUNT] = {16.0, 24.0};
+const CGFloat kOKButtonBottomPadding[SIZE_CLASS_COUNT] = {32.0, 32.0};
+const CGFloat kOKButtonHeight[SIZE_CLASS_COUNT] = {36.0, 54.0};
 // Multiplier matches that used in LaunchScreen.xib to determine size of logo.
 const CGFloat kAppLogoProportionMultiplier = 0.381966;
 
@@ -510,7 +511,11 @@ NSString* const kCheckBoxCheckedImageName = @"checkbox_checked";
 - (void)configureOKButton {
   self.OKButton.titleLabel.font = [[MDFRobotoFontLoader sharedInstance]
       mediumFontOfSize:kOKButtonTitleLabelFontSize[self.cr_widthSizeClass]];
-  [self.OKButton sizeToFit];
+  CGSize size = [self.OKButton
+      sizeThatFits:CGSizeMake(CGFLOAT_MAX,
+                              kOKButtonHeight[self.cr_widthSizeClass])];
+  [self.OKButton setBounds:CGRectMake(0, 0, size.width,
+                                      kOKButtonHeight[self.cr_widthSizeClass])];
 }
 
 #pragma mark -

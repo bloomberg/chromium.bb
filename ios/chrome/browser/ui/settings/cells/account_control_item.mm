@@ -19,7 +19,7 @@ const CGFloat kHorizontalPadding = 16;
 const CGFloat kVerticalPadding = 16;
 
 // Padding used between the image and text.
-const CGFloat kHorizontalPaddingBetweenImageAndText = 10;
+const CGFloat kHorizontalPaddingBetweenImageAndText = 16;
 
 // Padding between top label and detail label.
 const CGFloat kVerticalPaddingBetweenLabelAndDetailLabel = 8;
@@ -150,12 +150,12 @@ const CGFloat kVerticalPaddingBetweenLabelAndDetailLabel = 8;
     _textLeadingAnchorConstraint,
 
     // Set vertical anchors.
-    [_imageView.topAnchor constraintEqualToAnchor:contentView.topAnchor
+    [_textLabel.topAnchor constraintEqualToAnchor:contentView.topAnchor
                                          constant:kVerticalPadding],
-    [_textLabel.topAnchor constraintEqualToAnchor:_imageView.topAnchor],
     [_textLabel.bottomAnchor
         constraintEqualToAnchor:_detailTextLabel.topAnchor
                        constant:-kVerticalPaddingBetweenLabelAndDetailLabel],
+    [_imageView.centerYAnchor constraintEqualToAnchor:_textLabel.centerYAnchor],
     [_detailTextLabel.bottomAnchor
         constraintEqualToAnchor:contentView.bottomAnchor
                        constant:-kVerticalPadding],
