@@ -865,4 +865,15 @@ bool IsCertificateCleared() {
   [self closeSubSettingsMenu];
 }
 
+// Verifies the UI elements are accessible on the Passwords page.
+- (void)testAccessibilityOnPasswords {
+  [ChromeEarlGreyUI openToolsMenu];
+  [[EarlGrey selectElementWithMatcher:settingsButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:passwordsButton()]
+      performAction:grey_tap()];
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [self closeSubSettingsMenu];
+}
+
 @end
