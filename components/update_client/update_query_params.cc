@@ -6,9 +6,12 @@
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "components/update_client/update_query_params_delegate.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
 
 namespace update_client {
 

@@ -7,7 +7,6 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/test/test_timeouts.h"
-#include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -35,6 +34,10 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
+#endif
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
 #endif
 
 using content::RenderViewHost;

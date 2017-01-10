@@ -8,11 +8,14 @@
 #include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
-#include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/ppapi/ppapi_test.h"
 #include "components/nacl/common/nacl_switches.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
 
 static const base::FilePath::CharType kMockNaClGdb[] =
 #if defined(OS_WIN)

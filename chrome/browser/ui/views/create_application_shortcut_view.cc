@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -56,6 +55,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/shortcut.h"
+#include "base/win/windows_version.h"
 #endif  // defined(OS_WIN)
 
 namespace {

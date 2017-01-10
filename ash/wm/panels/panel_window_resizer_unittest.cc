@@ -24,13 +24,16 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/i18n/rtl.h"
-#include "base/win/windows_version.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
 
 namespace ash {
 

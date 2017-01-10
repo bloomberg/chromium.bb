@@ -32,7 +32,6 @@
 #include "base/sys_byteorder.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/nacl_browser_delegate.h"
@@ -78,6 +77,7 @@
 
 #include "base/threading/thread.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/windows_version.h"
 #include "components/nacl/browser/nacl_broker_service_win.h"
 #include "components/nacl/common/nacl_debug_exception_handler_win.h"
 #include "content/public/common/sandbox_init.h"

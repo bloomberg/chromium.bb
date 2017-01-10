@@ -11,7 +11,6 @@
 #include "base/metrics/histogram.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
-#include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_model.h"
@@ -47,6 +46,10 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/masked_window_targeter.h"
 #include "ui/wm/core/shadow_types.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
 
 namespace app_list {
 

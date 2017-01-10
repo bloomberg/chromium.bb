@@ -7,7 +7,6 @@
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/mac/bundle_locations.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
@@ -28,6 +27,7 @@
 #endif
 
 #if defined(OS_MACOSX)
+#include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #endif
 

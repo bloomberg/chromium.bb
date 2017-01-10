@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/ios/ios_util.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -19,6 +18,10 @@
 #include "ui/gfx/font_list.h"  // nogncheck
 #include "ui/gfx/text_elider.h"  // nogncheck
 #include "ui/gfx/text_utils.h"  // nogncheck
+#endif
+
+#if defined(OS_IOS)
+#include "base/ios/ios_util.h"
 #endif
 
 namespace {

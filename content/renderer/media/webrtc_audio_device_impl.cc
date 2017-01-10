@@ -8,12 +8,15 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
-#include "base/win/windows_version.h"
 #include "content/renderer/media/webrtc/processed_local_audio_source.h"
 #include "content/renderer/media/webrtc_audio_renderer.h"
 #include "media/audio/sample_rates.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
 
 using media::AudioParameters;
 using media::ChannelLayout;

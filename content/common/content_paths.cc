@@ -5,9 +5,12 @@
 #include "content/public/common/content_paths.h"
 
 #include "base/files/file_util.h"
-#include "base/mac/bundle_locations.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
+
+#if defined(OS_MACOSX)
+#include "base/mac/bundle_locations.h"
+#endif
 
 namespace content {
 

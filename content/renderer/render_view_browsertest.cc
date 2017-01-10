@@ -19,7 +19,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "cc/trees/layer_tree.h"
 #include "cc/trees/layer_tree_host.h"
@@ -87,6 +86,10 @@
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/range/range.h"
 #include "ui/native_theme/native_theme_switches.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
 
 #if defined(USE_AURA) && defined(USE_X11)
 #include <X11/Xlib.h>

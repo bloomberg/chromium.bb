@@ -149,6 +149,8 @@ component("base") {
     "allocator/allocator_check.h",
     "allocator/allocator_extension.cc",
     "allocator/allocator_extension.h",
+    "allocator/allocator_shim.h",
+    "allocator/oom.h",
     "android/animation_frame_time_histogram.cc",
     "android/animation_frame_time_histogram.h",
     "android/apk_assets.cc",
@@ -170,6 +172,7 @@ component("base") {
     "android/context_utils.cc",
     "android/context_utils.h",
     "android/cpu_features.cc",
+    "android/cpu_features.h",
     "android/cxa_demangle_stub.cc",
     "android/early_trace_event_binding.cc",
     "android/early_trace_event_binding.h",
@@ -188,6 +191,8 @@ component("base") {
     "android/jni_android.h",
     "android/jni_array.cc",
     "android/jni_array.h",
+    "android/jni_generator/jni_generator_helper.h",
+    "android/jni_int_wrapper.h",
     "android/jni_registrar.cc",
     "android/jni_registrar.h",
     "android/jni_string.cc",
@@ -230,6 +235,7 @@ component("base") {
     "atomic_ref_count.h",
     "atomic_sequence_num.h",
     "atomicops.h",
+    "atomicops_internals_atomicword_compat.h",
     "atomicops_internals_portable.h",
     "atomicops_internals_x86_msvc.h",
     "auto_reset.h",
@@ -257,6 +263,7 @@ component("base") {
     "callback_helpers.h",
     "callback_internal.cc",
     "callback_internal.h",
+    "callback_list.h",
     "cancelable_callback.h",
     "command_line.cc",
     "command_line.h",
@@ -313,6 +320,7 @@ component("base") {
     "deferred_sequenced_task_runner.h",
     "environment.cc",
     "environment.h",
+    "event_types.h",
     "feature_list.cc",
     "feature_list.h",
     "file_descriptor_posix.h",
@@ -544,6 +552,7 @@ component("base") {
     "message_loop/message_pump_mac.mm",
     "message_loop/message_pump_win.cc",
     "message_loop/message_pump_win.h",
+    "message_loop/timer_slack.h",
     "metrics/bucket_ranges.cc",
     "metrics/bucket_ranges.h",
     "metrics/field_trial.cc",
@@ -560,6 +569,8 @@ component("base") {
     "metrics/histogram_functions.cc",
     "metrics/histogram_functions.h",
     "metrics/histogram_macros.h",
+    "metrics/histogram_macros_internal.h",
+    "metrics/histogram_macros_local.h",
     "metrics/histogram_samples.cc",
     "metrics/histogram_samples.h",
     "metrics/histogram_snapshot_manager.cc",
@@ -614,6 +625,7 @@ component("base") {
     "pickle.h",
     "posix/eintr_wrapper.h",
     "posix/file_descriptor_shuffle.cc",
+    "posix/file_descriptor_shuffle.h",
     "posix/global_descriptors.cc",
     "posix/global_descriptors.h",
     "posix/safe_strerror.cc",
@@ -706,6 +718,7 @@ component("base") {
     "rand_util_win.cc",
     "run_loop.cc",
     "run_loop.h",
+    "scoped_clear_errno.h",
     "scoped_generic.h",
     "scoped_native_library.cc",
     "scoped_native_library.h",
@@ -789,6 +802,7 @@ component("base") {
     "sys_info.h",
     "sys_info_android.cc",
     "sys_info_chromeos.cc",
+    "sys_info_internal.h",
     "syslog_logging.cc",
     "syslog_logging.h",
 
@@ -846,6 +860,7 @@ component("base") {
     "task_scheduler/task_traits.cc",
     "task_scheduler/task_traits.h",
     "template_util.h",
+    "test/malloc_wrapper.h",
     "third_party/dmg_fp/dmg_fp.h",
     "third_party/dmg_fp/dtoa_wrapper.cc",
     "third_party/dmg_fp/g_fmt.cc",
@@ -854,6 +869,7 @@ component("base") {
     "third_party/nspr/prtime.cc",
     "third_party/nspr/prtime.h",
     "third_party/superfasthash/superfasthash.c",
+    "third_party/valgrind/memcheck.h",
     "threading/non_thread_safe.h",
     "threading/non_thread_safe_impl.cc",
     "threading/non_thread_safe_impl.h",
@@ -1366,7 +1382,10 @@ component("base") {
 
   # Desktop Mac.
   if (is_mac) {
-    sources += [ "power_monitor/power_monitor_device_source_mac.mm" ]
+    sources += [
+      "mac/scoped_typeref.h",
+      "power_monitor/power_monitor_device_source_mac.mm",
+    ]
 
     libs = [
       "ApplicationServices.framework",
