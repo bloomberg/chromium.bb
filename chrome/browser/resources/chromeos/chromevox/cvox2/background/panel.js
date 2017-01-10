@@ -36,6 +36,17 @@ Panel.Mode = {
 };
 
 /**
+ * A callback function to be executed to perform the action from selecting
+ * a menu item after the menu has been closed and focus has been restored
+ * to the page or wherever it was previously.
+ * @param {?Function} callback
+ */
+Panel.setPendingCallback = function(callback) {
+  /** @type {?Function} @private */
+  Panel.pendingCallback_ = callback;
+};
+
+/**
  * Initialize the panel.
  */
 Panel.init = function() {
@@ -84,15 +95,6 @@ Panel.init = function() {
   this.menusEnabled_ = localStorage['useNext'] == 'true';
 
   /**
-   * A callback function to be executed to perform the action from selecting
-   * a menu item after the menu has been closed and focus has been restored
-   * to the page or wherever it was previously.
-   * @type {?Function}
-   * @private
-   */
-  this.pendingCallback_ = null;
-
-  /**
    * True if we're currently in incremental search mode.
    * @type {boolean}
    * @private
@@ -105,6 +107,7 @@ Panel.init = function() {
    */
   this.tutorial_ = new Tutorial();
 
+  Panel.setPendingCallback(null);
   Panel.updateFromPrefs();
 
   Msgs.addTranslatedMessagesToDom(document);
@@ -137,8 +140,6 @@ Panel.init = function() {
 
     Panel.closeMenusAndRestoreFocus();
   }, false);
-
-  Panel.searchInput_.addEventListener('blur', Panel.onSearchInputBlur, false);
 };
 
 /**
@@ -432,7 +433,7 @@ Panel.onSearch = function() {
   Panel.updateFromPrefs();
   Panel.setMode(Panel.Mode.FOCUSED);
 
-  ISearchUI.get(Panel.searchInput_);
+  ISearchUI.init(Panel.searchInput_);
 };
 
 /**
@@ -750,20 +751,6 @@ Panel.onKeyDown = function(event) {
 
   event.preventDefault();
   event.stopPropagation();
-};
-
-/**
- * Called when focus leaves the search input.
- */
-Panel.onSearchInputBlur = function() {
-  if (Panel.searching_) {
-    if (document.activeElement != Panel.searchInput_ || !document.hasFocus()) {
-      Panel.searching_ = false;
-      Panel.setMode(Panel.Mode.COLLAPSED);
-      Panel.updateFromPrefs();
-      Panel.searchInput_.value = '';
-    }
-  }
 };
 
 /**
