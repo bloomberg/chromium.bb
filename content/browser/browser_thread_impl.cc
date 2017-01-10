@@ -356,7 +356,8 @@ void BrowserThreadImpl::ResetGlobalsForTesting(BrowserThread::ID identifier) {
   DCHECK_EQ(globals.states[identifier], BrowserThreadState::SHUTDOWN);
   globals.states[identifier] = BrowserThreadState::UNINITIALIZED;
   globals.task_runners[identifier] = nullptr;
-  SetIOThreadDelegate(nullptr);
+  if (identifier == BrowserThread::IO)
+    SetIOThreadDelegate(nullptr);
 }
 
 BrowserThreadImpl::~BrowserThreadImpl() {

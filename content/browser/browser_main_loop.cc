@@ -1053,6 +1053,7 @@ int BrowserMainLoop::CreateThreads() {
         // redirecting the FILE thread on Windows. http://crbug.com/662122
         thread_to_start = &file_thread_;
         options = ui_message_loop_options;
+        options.timer_slack = base::TIMER_SLACK_MAXIMUM;
 #else
         if (redirect_nonUInonIO_browser_threads) {
           non_ui_non_io_task_runner_traits
