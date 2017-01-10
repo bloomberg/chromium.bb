@@ -176,6 +176,8 @@ static_library("extensions") {
     "api/developer_private/inspectable_views_finder.h",
     "api/developer_private/show_permissions_dialog_helper.cc",
     "api/developer_private/show_permissions_dialog_helper.h",
+    "api/dial/device_description_fetcher.cc",
+    "api/dial/device_description_fetcher.h ",
     "api/dial/dial_api.cc",
     "api/dial/dial_api.h",
     "api/dial/dial_api_factory.cc",

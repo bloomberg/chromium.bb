@@ -17,8 +17,9 @@
 
 using extensions::Extension;
 using extensions::ResultCatcher;
-
-namespace dial = extensions::api::dial;
+using extensions::api::dial::DialDeviceData;
+using extensions::api::dial::DialDeviceDescriptionData;
+using extensions::api::dial::DialRegistry;
 
 namespace {
 
@@ -52,11 +53,11 @@ IN_PROC_BROWSER_TEST_F(DialAPITest, MAYBE_DeviceListEvents) {
       extensions::DialAPIFactory::GetInstance()->GetForBrowserContext(
           profile());
   ASSERT_TRUE(api.get());
-  dial::DialRegistry::DeviceList devices;
+  DialRegistry::DeviceList devices;
 
   ResultCatcher catcher;
 
-  dial::DialDeviceData device1;
+  DialDeviceData device1;
   device1.set_device_id("1");
   device1.set_label("1");
   device1.set_device_description_url(GURL("http://127.0.0.1/dd.xml"));
@@ -64,7 +65,7 @@ IN_PROC_BROWSER_TEST_F(DialAPITest, MAYBE_DeviceListEvents) {
   devices.push_back(device1);
   api->SendEventOnUIThread(devices);
 
-  dial::DialDeviceData device2;
+  DialDeviceData device2;
   device2.set_device_id("2");
   device2.set_label("2");
   device2.set_device_description_url(GURL("http://127.0.0.2/dd.xml"));
@@ -72,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(DialAPITest, MAYBE_DeviceListEvents) {
   devices.push_back(device2);
   api->SendEventOnUIThread(devices);
 
-  dial::DialDeviceData device3;
+  DialDeviceData device3;
   device3.set_device_id("3");
   device3.set_label("3");
   device3.set_device_description_url(GURL("http://127.0.0.3/dd.xml"));
@@ -114,4 +115,23 @@ IN_PROC_BROWSER_TEST_F(DialAPITest, NonWhitelistedExtension) {
 
 IN_PROC_BROWSER_TEST_F(DialAPITest, OnError) {
   ASSERT_TRUE(RunExtensionSubtest("dial/experimental", "on_error.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DialAPITest, FetchDeviceDescription) {
+  scoped_refptr<extensions::DialAPI> api =
+      extensions::DialAPIFactory::GetInstance()->GetForBrowserContext(
+          profile());
+  ASSERT_TRUE(api);
+
+  DialDeviceData test_device("testDeviceId",
+                             GURL("http://127.0.0.1/description.xml"),
+                             base::Time::Now());
+  test_device.set_label("testDevice");
+
+  DialDeviceDescriptionData test_description("<xml>testDescription</xml>",
+                                             GURL("http://127.0.0.1/apps"));
+  api->SetDeviceForTest(test_device, test_description);
+
+  ASSERT_TRUE(RunExtensionSubtest("dial/experimental",
+                                  "fetch_device_description.html"));
 }

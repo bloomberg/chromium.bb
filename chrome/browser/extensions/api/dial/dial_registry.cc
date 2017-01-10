@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/dial/dial_registry.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
@@ -82,6 +83,23 @@ void DialRegistry::OnListenerRemoved() {
     VLOG(2) << "Listeners removed; stopping periodic discovery.";
     StopPeriodicDiscovery();
   }
+}
+
+GURL DialRegistry::GetDeviceDescriptionURL(const std::string& label) const {
+  const auto device_it = device_by_label_map_.find(label);
+  if (device_it != device_by_label_map_.end())
+    return device_it->second->device_description_url();
+
+  return GURL();
+}
+
+void DialRegistry::AddDeviceForTest(const DialDeviceData& device_data) {
+  std::unique_ptr<DialDeviceData> test_data =
+      base::MakeUnique<DialDeviceData>(device_data);
+  device_by_label_map_.insert(
+      std::make_pair(device_data.label(), test_data.get()));
+  device_by_id_map_.insert(
+      std::make_pair(device_data.device_id(), std::move(test_data)));
 }
 
 bool DialRegistry::ReadyToDiscover() {

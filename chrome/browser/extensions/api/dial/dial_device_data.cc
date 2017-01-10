@@ -57,6 +57,11 @@ void DialDeviceData::FillDialDevice(api::dial::DialDevice* device) const {
     device->config_id.reset(new int(config_id_));
 }
 
+DialDeviceDescriptionData::DialDeviceDescriptionData(
+    const std::string& device_description,
+    const GURL& app_url)
+    : device_description(device_description), app_url(app_url) {}
+
 }  // namespace dial
 }  // namespace api
 }  // namespace extensions

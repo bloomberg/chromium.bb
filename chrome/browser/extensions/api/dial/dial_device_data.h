@@ -92,6 +92,16 @@ class DialDeviceData {
   int config_id_;
 };
 
+struct DialDeviceDescriptionData {
+ public:
+  DialDeviceDescriptionData() = default;
+  DialDeviceDescriptionData(const std::string& device_description,
+                            const GURL& app_url);
+
+  std::string device_description;
+  GURL app_url;
+};
+
 }  // namespace dial
 }  // namespace api
 }  // namespace extensions

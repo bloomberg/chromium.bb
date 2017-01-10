@@ -74,6 +74,15 @@ class DialRegistry : public DialService::Observer,
   // already active.
   bool DiscoverNow();
 
+  // Returns the URL of the device description for the device identified by
+  // |label|, or an empty GURL if no such device exists.
+  GURL GetDeviceDescriptionURL(const std::string& label) const;
+
+  // Adds a device directly to the registry as if it was discovered.  For tests
+  // only.  Note that if discovery is actually started, this device will be
+  // removed by PruneExpiredDevices().
+  void AddDeviceForTest(const DialDeviceData& device_data);
+
  protected:
   // Returns a new instance of the DIAL service.  Overridden by tests.
   virtual std::unique_ptr<DialService> CreateDialService();

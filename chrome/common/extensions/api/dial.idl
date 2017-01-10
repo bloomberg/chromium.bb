@@ -21,6 +21,21 @@ namespace dial {
     long? configId;
   };
 
+  // Represents a device description resource successfully fetched from a
+  // DIAL device.
+  dictionary DialDeviceDescription {
+
+    // The label of the device that the description was fetched for.
+    DOMString deviceLabel;
+
+    // The contents of the Application-URL header in the response.
+    DOMString appUrl;
+
+    // The content of the response body.  This will be an XML document
+    // (hopefully) conforming to section 2.3 of the UPnP spec.
+    DOMString deviceDescription;
+  };
+
   enum DialErrorCode {
     no_listeners,
     no_valid_network_interfaces,
@@ -35,6 +50,7 @@ namespace dial {
   };
 
   callback BooleanCallback = void (boolean result);
+  callback DeviceDescriptionCallback = void (DialDeviceDescription result);
 
   interface Functions {
 
@@ -43,6 +59,17 @@ namespace dial {
     // callback is invoked with |true| if discovery was initiated or |false|
     // otherwise.
     static void discoverNow(BooleanCallback callback);
+
+    // Fetches the device description for the DIAL device identified by
+    // |deviceLabel|.  If successful, the callback is invoked with a
+    // DialDeviceDescription containing the content of the device description.
+    //
+    // If unsuccessful, callback is invoked with |null| and lastError is set to
+    // an error message.  If the error occurred during the HTTP fetch itself,
+    // the message will begin with "HTTP XXX:" where XXX is the HTTP result
+    // code.
+    static void fetchDeviceDescription(DOMString deviceLabel,
+                                       DeviceDescriptionCallback callback);
   };
 
   interface Events {
