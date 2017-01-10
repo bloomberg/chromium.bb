@@ -308,6 +308,7 @@ NonClientFrameController::NonClientFrameController(
       widget_, window_manager_client_, ShouldRemoveStandardFrame(*properties),
       ShouldEnableImmersive(*properties));
   window_ = native_widget->GetNativeView();
+  window_->SetProperty(kNonClientFrameControllerKey, this);
   window_->SetProperty(kWidgetCreationTypeKey, WidgetCreationType::FOR_CLIENT);
   window_->AddObserver(this);
   params.native_widget = native_widget;
