@@ -454,11 +454,6 @@ by a child template that "extends" this file.
             android:label="@string/storage_management_activity_label"
             android:exported="false">
         </activity>
-        <activity android:name="org.chromium.chrome.browser.EmbedContentViewActivity"
-            android:theme="@style/ThemeWithActionBar"
-            android:hardwareAccelerated="false"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
-        </activity>
         <activity android:name="org.chromium.chrome.browser.bookmarks.BookmarkActivity"
             android:theme="@style/FullscreenWhiteActivityTheme"
             android:exported="false"

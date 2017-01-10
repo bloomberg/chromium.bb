@@ -1249,7 +1249,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
         // When resuming the activity, force an update to the fullscreen state to ensure a
         // subactivity did not change the fullscreen configuration of this ChromeTab's renderer in
-        // the case where it was shared (i.e. via an EmbedContentViewActivity).
+        // the case where it was shared.
         updateFullscreenEnabledState();
     }
 
