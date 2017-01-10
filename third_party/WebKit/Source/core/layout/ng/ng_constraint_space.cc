@@ -52,6 +52,8 @@ NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
     available_logical_height =
         box.containingBlock()->availableLogicalHeightForPercentageComputation();
   }
+  NGLogicalSize percentage_size = {available_logical_width,
+                                   available_logical_height};
   // When we have an override size, the available_logical_{width,height} will be
   // used as the final size of the box, so it has to include border and
   // padding.
@@ -69,11 +71,12 @@ NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
   bool is_new_fc =
       box.isLayoutBlock() && toLayoutBlock(box).createsNewFormattingContext();
 
-  NGLogicalSize size = {available_logical_width, available_logical_height};
+  NGLogicalSize logical_size = {available_logical_width,
+                                available_logical_height};
   auto writing_mode = FromPlatformWritingMode(box.styleRef().getWritingMode());
   return NGConstraintSpaceBuilder(writing_mode)
-      .SetAvailableSize(size)
-      .SetPercentageResolutionSize(size)
+      .SetAvailableSize(logical_size)
+      .SetPercentageResolutionSize(percentage_size)
       .SetIsInlineDirectionTriggersScrollbar(
           box.styleRef().overflowInlineDirection() == EOverflow::Auto)
       .SetIsBlockDirectionTriggersScrollbar(
