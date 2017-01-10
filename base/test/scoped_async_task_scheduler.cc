@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task_scheduler/task_scheduler.h"
+#include "base/task_scheduler/task_scheduler_impl.h"
 
 namespace base {
 namespace test {
@@ -32,6 +33,8 @@ ScopedAsyncTaskScheduler::ScopedAsyncTaskScheduler() {
 ScopedAsyncTaskScheduler::~ScopedAsyncTaskScheduler() {
   DCHECK_EQ(TaskScheduler::GetInstance(), task_scheduler_);
   TaskScheduler::GetInstance()->Shutdown();
+  static_cast<internal::TaskSchedulerImpl*>(TaskScheduler::GetInstance())
+      ->JoinForTesting();
   TaskScheduler::SetInstance(nullptr);
 }
 
