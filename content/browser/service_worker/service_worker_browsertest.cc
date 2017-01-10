@@ -534,8 +534,6 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
   void ActivateTestHelper(
       const std::string& worker_url,
       ServiceWorkerStatusCode expected_status) {
-    RunOnIOThread(base::Bind(&self::SetUpRegistrationOnIOThread,
-                             base::Unretained(this), worker_url));
     ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
     base::RunLoop run_loop;
     BrowserThread::PostTask(
@@ -775,9 +773,6 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
   void ActivateOnIOThread(const base::Closure& done,
                           ServiceWorkerStatusCode* result) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    version_->set_fetch_handler_existence(
-        ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
-    version_->SetMainScriptHttpResponseInfo(CreateHttpResponseInfo());
     version_->SetStatus(ServiceWorkerVersion::ACTIVATING);
     registration_->SetActiveVersion(version_.get());
     version_->RunAfterStartWorker(
@@ -935,17 +930,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                        ReadResourceFailure_WaitingWorker) {
   StartServerAndNavigateToSetup();
   // Create a registration and active version.
-  RunOnIOThread(base::Bind(&self::SetUpRegistrationOnIOThread,
-                           base::Unretained(this),
-                           "/service_worker/worker.js"));
-  base::RunLoop activate_run_loop;
-  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&self::ActivateOnIOThread, base::Unretained(this),
-                 activate_run_loop.QuitClosure(), &status));
-  activate_run_loop.Run();
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  InstallTestHelper("/service_worker/worker.js", SERVICE_WORKER_OK);
+  ActivateTestHelper("/service_worker/worker.js", SERVICE_WORKER_OK);
   ASSERT_TRUE(registration_->active_version());
 
   // Give the version a controllee.
@@ -953,15 +939,15 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
       base::Bind(&self::AddControlleeOnIOThread, base::Unretained(this)));
 
   // Add a non-existent resource to the version.
-  std::vector<ServiceWorkerDatabase::ResourceRecord> records;
-  records.push_back(
-      ServiceWorkerDatabase::ResourceRecord(30, version_->script_url(), 100));
-  version_->script_cache_map()->SetResources(records);
+  version_->script_cache_map()->resource_map_[version_->script_url()] =
+      ServiceWorkerDatabase::ResourceRecord(30, version_->script_url(), 100);
 
   // Make a waiting version and store it.
   RunOnIOThread(base::Bind(&self::AddWaitingWorkerOnIOThread,
                            base::Unretained(this),
                            "/service_worker/worker.js"));
+  std::vector<ServiceWorkerDatabase::ResourceRecord> records = {
+      ServiceWorkerDatabase::ResourceRecord(31, version_->script_url(), 100)};
   registration_->waiting_version()->script_cache_map()->SetResources(records);
   StoreRegistration(registration_->waiting_version()->version_id(),
                     SERVICE_WORKER_OK);
@@ -1022,12 +1008,15 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                        Activate_NoEventListener) {
   StartServerAndNavigateToSetup();
+  InstallTestHelper("/service_worker/worker.js", SERVICE_WORKER_OK);
   ActivateTestHelper("/service_worker/worker.js", SERVICE_WORKER_OK);
   ASSERT_EQ(ServiceWorkerVersion::ACTIVATING, version_->status());
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, Activate_Rejected) {
   StartServerAndNavigateToSetup();
+  InstallTestHelper("/service_worker/worker_activate_rejected.js",
+                    SERVICE_WORKER_OK);
   ActivateTestHelper("/service_worker/worker_activate_rejected.js",
                      SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED);
 }
@@ -1164,6 +1153,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Response) {
   ServiceWorkerFetchEventResult result;
   ServiceWorkerResponse response;
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
+  InstallTestHelper("/service_worker/fetch_event.js", SERVICE_WORKER_OK);
   ActivateTestHelper("/service_worker/fetch_event.js", SERVICE_WORKER_OK);
 
   FetchOnRegisteredWorker(&result, &response, &blob_data_handle);
@@ -1190,6 +1180,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   ServiceWorkerResponse response2;
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
   const base::Time start_time(base::Time::Now());
+  InstallTestHelper("/service_worker/fetch_event_response_via_cache.js",
+                    SERVICE_WORKER_OK);
   ActivateTestHelper("/service_worker/fetch_event_response_via_cache.js",
                      SERVICE_WORKER_OK);
 
@@ -1216,6 +1208,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   ServiceWorkerFetchEventResult result;
   ServiceWorkerResponse response;
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
+  InstallTestHelper("/service_worker/fetch_event_rejected.js",
+                    SERVICE_WORKER_OK);
   ActivateTestHelper("/service_worker/fetch_event_rejected.js",
                      SERVICE_WORKER_OK);
 
@@ -2552,15 +2546,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserV8CacheTest, Restart) {
   // OnCachedMetadataUpdated() is called.
   cached_metadata_run_loop.Run();
 
-  // Activate the worker.
-  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
-  base::RunLoop activate_run_loop;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&self::ActivateOnIOThread, base::Unretained(this),
-                 activate_run_loop.QuitClosure(), &status));
-  activate_run_loop.Run();
-  ASSERT_EQ(SERVICE_WORKER_OK, status);
   // Stop the worker.
   StopWorker(SERVICE_WORKER_OK);
   // Restart the worker.
@@ -2990,6 +2975,7 @@ class TestMemoryCoordinatorDelegate : public MemoryCoordinatorDelegate {
 IN_PROC_BROWSER_TEST_F(MemoryCoordinatorWithServiceWorkerTest,
                        CannotSuspendRendererWithServiceWorker) {
   StartServerAndNavigateToSetup();
+  InstallTestHelper("/service_worker/fetch_event.js", SERVICE_WORKER_OK);
   ActivateTestHelper("/service_worker/fetch_event.js", SERVICE_WORKER_OK);
 
   MemoryCoordinatorImpl* memory_coordinator =

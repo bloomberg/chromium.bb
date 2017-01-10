@@ -2089,6 +2089,13 @@ EVENT_TYPE(SERVICE_WORKER_START_WORKER)
 // }
 EVENT_TYPE(SERVICE_WORKER_FETCH_EVENT)
 
+// This event is emitted when a request for a service worker script or its
+// imported scripts could not be handled.
+// {
+//   "error": The error reason as a string.
+// }
+EVENT_TYPE(SERVICE_WORKER_SCRIPT_LOAD_UNHANDLED_REQUEST_ERROR)
+
 // ------------------------------------------------------------------------
 // Global events
 // ------------------------------------------------------------------------

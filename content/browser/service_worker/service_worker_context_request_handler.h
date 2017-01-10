@@ -21,19 +21,21 @@ class CONTENT_EXPORT ServiceWorkerContextRequestHandler
  public:
   enum class CreateJobStatus {
     UNINITIALIZED,
-    CREATED_WRITE_JOB_FOR_REGISTER,
-    CREATED_WRITE_JOB_FOR_UPDATE,
-    CREATED_READ_JOB,
-    NO_PROVIDER,
-    NO_VERSION,
-    NO_CONTEXT,
-    IGNORE_REDIRECT,
-    IGNORE_NON_SCRIPT,
-    OUT_OF_RESOURCE_IDS,
-    IGNORE_UNKNOWN,
-    // This is just to distinguish from UNINITIALIZED in case the function that
-    // is supposed to set status didn't do so.
-    DID_NOT_SET_STATUS
+    WRITE_JOB_FOR_REGISTER,
+    WRITE_JOB_FOR_UPDATE,
+    READ_JOB,
+    // When a new worker imports a script that was already imported.
+    READ_JOB_FOR_DUPLICATE_SCRIPT_IMPORT,
+    ERROR_NO_PROVIDER,
+    ERROR_NO_VERSION,
+    ERROR_REDUNDANT_VERSION,
+    ERROR_NO_CONTEXT,
+    ERROR_REDIRECT,
+    // When an installed worker imports a script that was not stored at
+    // installation time.
+    ERROR_UNINSTALLED_SCRIPT_IMPORT,
+    ERROR_OUT_OF_RESOURCE_IDS,
+    NUM_TYPES
   };
 
   ServiceWorkerContextRequestHandler(
@@ -49,13 +51,12 @@ class CONTENT_EXPORT ServiceWorkerContextRequestHandler
       net::NetworkDelegate* network_delegate,
       ResourceContext* resource_context) override;
 
+  static std::string CreateJobStatusToString(CreateJobStatus status);
+
  private:
-  net::URLRequestJob* MaybeCreateJobImpl(CreateJobStatus* out_status,
-                                         net::URLRequest* request,
+  net::URLRequestJob* MaybeCreateJobImpl(net::URLRequest* request,
                                          net::NetworkDelegate* network_delegate,
-                                         ResourceContext* resource_context);
-  bool ShouldAddToScriptCache(const GURL& url);
-  bool ShouldReadFromScriptCache(const GURL& url, int64_t* resource_id_out);
+                                         CreateJobStatus* out_status);
 
   scoped_refptr<ServiceWorkerVersion> version_;
 

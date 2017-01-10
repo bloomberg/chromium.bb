@@ -11,12 +11,35 @@
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/service_worker/service_worker_write_to_cache_job.h"
-#include "content/public/browser/resource_context.h"
 #include "content/public/common/resource_response_info.h"
 #include "net/base/load_flags.h"
+#include "net/log/net_log.h"
+#include "net/log/net_log_event_type.h"
+#include "net/log/net_log_with_source.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_error_job.h"
 
 namespace content {
+
+namespace {
+
+bool IsInstalled(const ServiceWorkerVersion* version) {
+  switch (version->status()) {
+    case ServiceWorkerVersion::NEW:
+    case ServiceWorkerVersion::INSTALLING:
+      return false;
+    case ServiceWorkerVersion::INSTALLED:
+    case ServiceWorkerVersion::ACTIVATING:
+    case ServiceWorkerVersion::ACTIVATED:
+      return true;
+    case ServiceWorkerVersion::REDUNDANT:
+      return false;
+  }
+  NOTREACHED();
+  return false;
+}
+
+}  // namespace
 
 ServiceWorkerContextRequestHandler::ServiceWorkerContextRequestHandler(
     base::WeakPtr<ServiceWorkerContextCore> context,
@@ -36,129 +59,186 @@ ServiceWorkerContextRequestHandler::ServiceWorkerContextRequestHandler(
 ServiceWorkerContextRequestHandler::~ServiceWorkerContextRequestHandler() {
 }
 
+// static
+std::string ServiceWorkerContextRequestHandler::CreateJobStatusToString(
+    CreateJobStatus status) {
+  switch (status) {
+    case CreateJobStatus::UNINITIALIZED:
+      return "UNINITIALIZED";
+    case CreateJobStatus::WRITE_JOB_FOR_REGISTER:
+      return "WRITE_JOB_FOR_REGISTER";
+    case CreateJobStatus::WRITE_JOB_FOR_UPDATE:
+      return "WRITE_JOB_FOR_UPDATE";
+    case CreateJobStatus::READ_JOB:
+      return "READ_JOB";
+    case CreateJobStatus::READ_JOB_FOR_DUPLICATE_SCRIPT_IMPORT:
+      return "READ_JOB_FOR_DUPLICATE_SCRIPT_IMPORT";
+    case CreateJobStatus::ERROR_NO_PROVIDER:
+      return "ERROR_NO_PROVIDER";
+    case CreateJobStatus::ERROR_NO_VERSION:
+      return "ERROR_NO_VERSION";
+    case CreateJobStatus::ERROR_REDUNDANT_VERSION:
+      return "ERROR_REDUNDANT_VERSION";
+    case CreateJobStatus::ERROR_NO_CONTEXT:
+      return "ERROR_NO_CONTEXT";
+    case CreateJobStatus::ERROR_REDIRECT:
+      return "ERROR_REDIRECT";
+    case CreateJobStatus::ERROR_UNINSTALLED_SCRIPT_IMPORT:
+      return "ERROR_UNINSTALLED_SCRIPT_IMPORT";
+    case CreateJobStatus::ERROR_OUT_OF_RESOURCE_IDS:
+      return "ERROR_OUT_OF_RESOURCE_IDS";
+    case CreateJobStatus::NUM_TYPES:
+      NOTREACHED();
+  }
+  NOTREACHED() << static_cast<int>(status);
+  return "UNKNOWN";
+}
+
 net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
     ResourceContext* resource_context) {
-  CreateJobStatus status = CreateJobStatus::DID_NOT_SET_STATUS;
-  net::URLRequestJob* job =
-      MaybeCreateJobImpl(&status, request, network_delegate, resource_context);
-  if (resource_type_ == RESOURCE_TYPE_SERVICE_WORKER) {
-    version_->NotifyMainScriptJobCreated(status);
+  // We only use the script cache for main script loading and
+  // importScripts(), even if a cached script is xhr'd, we don't
+  // retrieve it from the script cache.
+  // TODO(falken): Get the desired behavior clarified in the spec,
+  // and make tweak the behavior here to match.
+  if (resource_type_ != RESOURCE_TYPE_SERVICE_WORKER &&
+      resource_type_ != RESOURCE_TYPE_SCRIPT) {
+    // Fall back to network.
+    return nullptr;
   }
-  return job;
+
+  CreateJobStatus status = CreateJobStatus::UNINITIALIZED;
+  net::URLRequestJob* job =
+      MaybeCreateJobImpl(request, network_delegate, &status);
+  const bool is_main_script = resource_type_ == RESOURCE_TYPE_SERVICE_WORKER;
+  // TODO(falken): Add UMA for CreateJobStatus.
+  if (is_main_script)
+    version_->NotifyMainScriptJobCreated(status);
+  if (job)
+    return job;
+
+  // If we got here, a job couldn't be created. Return an error job rather than
+  // falling back to network. Otherwise the renderer may receive the response
+  // from network and start a service worker whose browser-side
+  // ServiceWorkerVersion is not properly initialized.
+  //
+  // As an exception, allow installed service workers to use importScripts()
+  // to import non-installed scripts.
+  // TODO(falken): This is a spec violation that should be deprecated and
+  // removed. See https://github.com/w3c/ServiceWorker/issues/1021
+  if (status == CreateJobStatus::ERROR_UNINSTALLED_SCRIPT_IMPORT) {
+    // Fall back to network.
+    return nullptr;
+  }
+
+  std::string error_str(CreateJobStatusToString(status));
+  request->net_log().AddEvent(
+      net::NetLogEventType::SERVICE_WORKER_SCRIPT_LOAD_UNHANDLED_REQUEST_ERROR,
+      net::NetLog::StringCallback("error", &error_str));
+
+  return new net::URLRequestErrorJob(request, network_delegate,
+                                     net::Error::ERR_FAILED);
 }
 
 net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJobImpl(
-    CreateJobStatus* out_status,
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
-    ResourceContext* resource_context) {
+    CreateJobStatus* out_status) {
   if (!provider_host_) {
-    *out_status = CreateJobStatus::NO_PROVIDER;
-    return nullptr;
-  }
-  if (!version_) {
-    *out_status = CreateJobStatus::NO_VERSION;
+    *out_status = CreateJobStatus::ERROR_NO_PROVIDER;
     return nullptr;
   }
   if (!context_) {
-    *out_status = CreateJobStatus::NO_CONTEXT;
+    *out_status = CreateJobStatus::ERROR_NO_CONTEXT;
+    return nullptr;
+  }
+  if (!version_) {
+    *out_status = CreateJobStatus::ERROR_NO_VERSION;
+    return nullptr;
+  }
+  // This could happen if browser-side has set the status to redundant but the
+  // worker has not yet stopped. The worker is already doomed so just reject the
+  // request. Handle it specially here because otherwise it'd be unclear whether
+  // "REDUNDANT" should count as installed or not installed when making
+  // decisions about how to handle the request and logging UMA.
+  if (version_->status() == ServiceWorkerVersion::REDUNDANT) {
+    *out_status = CreateJobStatus::ERROR_REDUNDANT_VERSION;
     return nullptr;
   }
 
   // We currently have no use case for hijacking a redirected request.
   if (request->url_chain().size() > 1) {
-    *out_status = CreateJobStatus::IGNORE_REDIRECT;
+    *out_status = CreateJobStatus::ERROR_REDIRECT;
     return nullptr;
   }
 
-  // We only use the script cache for main script loading and
-  // importScripts(), even if a cached script is xhr'd, we don't
-  // retrieve it from the script cache.
-  // TODO(michaeln): Get the desired behavior clarified in the spec,
-  // and make tweak the behavior here to match.
-  if (resource_type_ != RESOURCE_TYPE_SERVICE_WORKER &&
-      resource_type_ != RESOURCE_TYPE_SCRIPT) {
-    *out_status = CreateJobStatus::IGNORE_NON_SCRIPT;
-    return nullptr;
-  }
-
-  if (ShouldAddToScriptCache(request->url())) {
-    ServiceWorkerRegistration* registration =
-        context_->GetLiveRegistration(version_->registration_id());
-    DCHECK(registration);  // We're registering or updating so must be there.
-
-    int64_t resource_id = context_->storage()->NewResourceId();
-    if (resource_id == kInvalidServiceWorkerResourceId) {
-      *out_status = CreateJobStatus::OUT_OF_RESOURCE_IDS;
-      return nullptr;
+  const bool is_main_script = resource_type_ == RESOURCE_TYPE_SERVICE_WORKER;
+  int resource_id =
+      version_->script_cache_map()->LookupResourceId(request->url());
+  if (resource_id != kInvalidServiceWorkerResourceId) {
+    if (IsInstalled(version_.get())) {
+      // An installed worker is loading a stored script.
+      if (is_main_script)
+        version_->embedded_worker()->OnURLJobCreatedForMainScript();
+      *out_status = CreateJobStatus::READ_JOB;
+    } else {
+      // A new worker is loading a stored script. The script was already
+      // imported (or the main script is being recursively imported).
+      *out_status = CreateJobStatus::READ_JOB_FOR_DUPLICATE_SCRIPT_IMPORT;
     }
-
-    // Bypass the browser cache for initial installs and update
-    // checks after 24 hours have passed.
-    int extra_load_flags = 0;
-    base::TimeDelta time_since_last_check =
-        base::Time::Now() - registration->last_update_check();
-    if (time_since_last_check > base::TimeDelta::FromHours(
-                                    kServiceWorkerScriptMaxCacheAgeInHours) ||
-        version_->force_bypass_cache_for_scripts()) {
-      extra_load_flags = net::LOAD_BYPASS_CACHE;
-    }
-
-    ServiceWorkerVersion* stored_version = registration->waiting_version()
-                                               ? registration->waiting_version()
-                                               : registration->active_version();
-    int64_t incumbent_resource_id = kInvalidServiceWorkerResourceId;
-    if (stored_version && stored_version->script_url() == request->url()) {
-      incumbent_resource_id =
-          stored_version->script_cache_map()->LookupResourceId(request->url());
-    }
-    if (resource_type_ == RESOURCE_TYPE_SERVICE_WORKER)
-      version_->embedded_worker()->OnURLJobCreatedForMainScript();
-    *out_status = incumbent_resource_id == kInvalidServiceWorkerResourceId
-                      ? CreateJobStatus::CREATED_WRITE_JOB_FOR_REGISTER
-                      : CreateJobStatus::CREATED_WRITE_JOB_FOR_UPDATE;
-    return new ServiceWorkerWriteToCacheJob(
-        request, network_delegate, resource_type_, context_, version_.get(),
-        extra_load_flags, resource_id, incumbent_resource_id);
-  }
-
-  int64_t resource_id = kInvalidServiceWorkerResourceId;
-  if (ShouldReadFromScriptCache(request->url(), &resource_id)) {
-    if (resource_type_ == RESOURCE_TYPE_SERVICE_WORKER)
-      version_->embedded_worker()->OnURLJobCreatedForMainScript();
-    *out_status = CreateJobStatus::CREATED_READ_JOB;
     return new ServiceWorkerReadFromCacheJob(request, network_delegate,
                                              resource_type_, context_, version_,
                                              resource_id);
   }
 
-  // NULL means use the network.
-  *out_status = CreateJobStatus::IGNORE_UNKNOWN;
-  return nullptr;
-}
-
-bool ServiceWorkerContextRequestHandler::ShouldAddToScriptCache(
-    const GURL& url) {
-  // We only write imports that occur during the initial eval.
-  if (version_->status() != ServiceWorkerVersion::NEW &&
-      version_->status() != ServiceWorkerVersion::INSTALLING) {
-    return false;
+  // An installed worker is importing a non-stored script.
+  if (IsInstalled(version_.get())) {
+    DCHECK(!is_main_script);
+    *out_status = CreateJobStatus::ERROR_UNINSTALLED_SCRIPT_IMPORT;
+    return nullptr;
   }
-  return version_->script_cache_map()->LookupResourceId(url) ==
-         kInvalidServiceWorkerResourceId;
-}
 
-bool ServiceWorkerContextRequestHandler::ShouldReadFromScriptCache(
-    const GURL& url,
-    int64_t* resource_id_out) {
-  // We don't read from the script cache until the version is INSTALLED.
-  if (version_->status() == ServiceWorkerVersion::NEW ||
-      version_->status() == ServiceWorkerVersion::INSTALLING)
-    return false;
-  *resource_id_out = version_->script_cache_map()->LookupResourceId(url);
-  return *resource_id_out != kInvalidServiceWorkerResourceId;
+  // A new worker is loading a script for the first time. Create a write job to
+  // store the script.
+  ServiceWorkerRegistration* registration =
+      context_->GetLiveRegistration(version_->registration_id());
+  DCHECK(registration);  // We're registering or updating so must be there.
+
+  resource_id = context_->storage()->NewResourceId();
+  if (resource_id == kInvalidServiceWorkerResourceId) {
+    *out_status = CreateJobStatus::ERROR_OUT_OF_RESOURCE_IDS;
+    return nullptr;
+  }
+
+  // Bypass the browser cache for initial installs and update checks after 24
+  // hours have passed.
+  int extra_load_flags = 0;
+  base::TimeDelta time_since_last_check =
+      base::Time::Now() - registration->last_update_check();
+  if (time_since_last_check >
+          base::TimeDelta::FromHours(kServiceWorkerScriptMaxCacheAgeInHours) ||
+      version_->force_bypass_cache_for_scripts()) {
+    extra_load_flags = net::LOAD_BYPASS_CACHE;
+  }
+
+  ServiceWorkerVersion* stored_version = registration->waiting_version()
+                                             ? registration->waiting_version()
+                                             : registration->active_version();
+  int64_t incumbent_resource_id = kInvalidServiceWorkerResourceId;
+  if (stored_version && stored_version->script_url() == request->url()) {
+    incumbent_resource_id =
+        stored_version->script_cache_map()->LookupResourceId(request->url());
+  }
+  if (is_main_script)
+    version_->embedded_worker()->OnURLJobCreatedForMainScript();
+  *out_status = incumbent_resource_id == kInvalidServiceWorkerResourceId
+                    ? CreateJobStatus::WRITE_JOB_FOR_REGISTER
+                    : CreateJobStatus::WRITE_JOB_FOR_UPDATE;
+  return new ServiceWorkerWriteToCacheJob(
+      request, network_delegate, resource_type_, context_, version_.get(),
+      extra_load_flags, resource_id, incumbent_resource_id);
 }
 
 }  // namespace content

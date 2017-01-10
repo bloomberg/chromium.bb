@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "content/browser/service_worker/service_worker_context_request_handler.h"
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponseError.h"

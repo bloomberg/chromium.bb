@@ -73,6 +73,9 @@ class CONTENT_EXPORT ServiceWorkerScriptCacheMap {
 
   // The version objects owns its script cache and provides a rawptr to it.
   friend class ServiceWorkerVersion;
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionBrowserTest,
+                           ReadResourceFailure_WaitingWorker);
+
   ServiceWorkerScriptCacheMap(
       ServiceWorkerVersion* owner,
       base::WeakPtr<ServiceWorkerContextCore> context);

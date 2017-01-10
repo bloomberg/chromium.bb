@@ -299,6 +299,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   friend class LinkHeaderServiceWorkerTest;
   friend class ServiceWorkerProviderHostTest;
   friend class ServiceWorkerWriteToCacheJobTest;
+  friend class ServiceWorkerContextRequestHandlerTest;
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWriteToCacheJobTest, Update_SameScript);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWriteToCacheJobTest,
                            Update_SameSizeScript);
@@ -312,16 +313,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
                            DispatchExtendableMessageEvent);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDispatcherHostTest,
                            DispatchExtendableMessageEvent_Fail);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
-                           UpdateBefore24Hours);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
-                           UpdateAfter24Hours);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
-                           UpdateForceBypassCache);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
-                           ServiceWorkerDataRequestAnnotation);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
-                           SkipServiceWorkerForServiceWorkerRequest);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProviderHostTest, ContextSecurity);
 
   struct OneShotGetReadyCallback {
