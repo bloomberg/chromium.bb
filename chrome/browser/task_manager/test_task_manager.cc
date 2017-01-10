@@ -30,6 +30,14 @@ double TestTaskManager::GetCpuUsage(TaskId task_id) const {
   return 0.0;
 }
 
+base::Time TestTaskManager::GetStartTime(TaskId task_id) const {
+  return base::Time();
+}
+
+base::TimeDelta TestTaskManager::GetCpuTime(TaskId task_id) const {
+  return base::TimeDelta();
+}
+
 int64_t TestTaskManager::GetPhysicalMemoryUsage(TaskId task_id) const {
   return -1;
 }

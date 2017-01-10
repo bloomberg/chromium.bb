@@ -3348,6 +3348,12 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
           <message name="IDS_TASK_MANAGER_CPU_COLUMN" desc="The text of the CPU usage column">
             CPU
           </message>
+          <message name="IDS_TASK_MANAGER_START_TIME_COLUMN" desc="The text of the process start time column">
+            Start Time
+          </message>
+          <message name="IDS_TASK_MANAGER_CPU_TIME_COLUMN" desc="The text of the CPU time usage column">
+            CPU Time
+          </message>
           <message name="IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN" desc="Task manager process memory column. This is the similar to the process 'working set' reported by the Windows Task Manager">
             Memory
           </message>
@@ -3418,6 +3424,12 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
           </message>
           <message name="IDS_TASK_MANAGER_CPU_COLUMN" desc="The text of the CPU usage column">
             CPU
+          </message>
+          <message name="IDS_TASK_MANAGER_START_TIME_COLUMN" desc="The text of the process start time column">
+            Start Time
+          </message>
+          <message name="IDS_TASK_MANAGER_CPU_TIME_COLUMN" desc="The text of the CPU time column. This is the time that this process actually occupies the CPU.">
+            CPU Time
           </message>
           <message name="IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN" desc="Task manager process memory column. This is the similar to the process 'working set' reported by the Windows Task Manager">
             Memory

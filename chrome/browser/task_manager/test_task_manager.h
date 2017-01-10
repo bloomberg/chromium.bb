@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "base/timer/mock_timer.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
 
@@ -26,6 +27,8 @@ class TestTaskManager : public TaskManagerInterface {
   bool IsTaskKillable(TaskId task_id) override;
   void KillTask(TaskId task_id) override;
   double GetCpuUsage(TaskId task_id) const override;
+  base::Time GetStartTime(TaskId task_id) const override;
+  base::TimeDelta GetCpuTime(TaskId task_id) const override;
   int64_t GetPhysicalMemoryUsage(TaskId task_id) const override;
   int64_t GetPrivateMemoryUsage(TaskId task_id) const override;
   int64_t GetSharedMemoryUsage(TaskId task_id) const override;

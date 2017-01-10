@@ -93,6 +93,24 @@ double TaskManagerImpl::GetCpuUsage(TaskId task_id) const {
   return GetTaskGroupByTaskId(task_id)->cpu_usage();
 }
 
+base::Time TaskManagerImpl::GetStartTime(TaskId task_id) const {
+#if defined(OS_WIN)
+  return GetTaskGroupByTaskId(task_id)->start_time();
+#else
+  NOTIMPLEMENTED();
+  return base::Time();
+#endif
+}
+
+base::TimeDelta TaskManagerImpl::GetCpuTime(TaskId task_id) const {
+#if defined(OS_WIN)
+  return GetTaskGroupByTaskId(task_id)->cpu_time();
+#else
+  NOTIMPLEMENTED();
+  return base::TimeDelta();
+#endif
+}
+
 int64_t TaskManagerImpl::GetPhysicalMemoryUsage(TaskId task_id) const {
   return GetTaskGroupByTaskId(task_id)->physical_bytes();
 }
