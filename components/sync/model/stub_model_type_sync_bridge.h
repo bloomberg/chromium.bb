@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/optional.h"
 #include "components/sync/model/model_type_sync_bridge.h"
 
 namespace syncer {
@@ -22,10 +23,10 @@ class StubModelTypeSyncBridge : public ModelTypeSyncBridge {
   ~StubModelTypeSyncBridge() override;
 
   std::unique_ptr<MetadataChangeList> CreateMetadataChangeList() override;
-  ModelError MergeSyncData(
+  base::Optional<ModelError> MergeSyncData(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
       EntityDataMap entity_data_map) override;
-  ModelError ApplySyncChanges(
+  base::Optional<ModelError> ApplySyncChanges(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
       EntityChangeList entity_changes) override;
   void GetData(StorageKeyList storage_keys, DataCallback callback) override;

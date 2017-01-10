@@ -113,7 +113,7 @@ DeviceInfoSyncBridge::CreateMetadataChangeList() {
   return WriteBatch::CreateMetadataChangeList();
 }
 
-ModelError DeviceInfoSyncBridge::MergeSyncData(
+base::Optional<ModelError> DeviceInfoSyncBridge::MergeSyncData(
     std::unique_ptr<MetadataChangeList> metadata_change_list,
     EntityDataMap entity_data_map) {
   DCHECK(has_provider_initialized_);
@@ -123,7 +123,7 @@ ModelError DeviceInfoSyncBridge::MergeSyncData(
   // If our dependency was yanked out from beneath us, we cannot correctly
   // handle this request, and all our data will be deleted soon.
   if (local_info == nullptr) {
-    return ModelError();
+    return {};
   }
 
   // Local data should typically be near empty, with the only possible value
@@ -164,10 +164,10 @@ ModelError DeviceInfoSyncBridge::MergeSyncData(
 
   batch->TransferMetadataChanges(std::move(metadata_change_list));
   CommitAndNotify(std::move(batch), has_changes);
-  return ModelError();
+  return {};
 }
 
-ModelError DeviceInfoSyncBridge::ApplySyncChanges(
+base::Optional<ModelError> DeviceInfoSyncBridge::ApplySyncChanges(
     std::unique_ptr<MetadataChangeList> metadata_change_list,
     EntityChangeList entity_changes) {
   DCHECK(has_provider_initialized_);
@@ -176,7 +176,7 @@ ModelError DeviceInfoSyncBridge::ApplySyncChanges(
   // If our dependency was yanked out from beneath us, we cannot correctly
   // handle this request, and all our data will be deleted soon.
   if (local_info == nullptr) {
-    return ModelError();
+    return {};
   }
 
   std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
@@ -203,7 +203,7 @@ ModelError DeviceInfoSyncBridge::ApplySyncChanges(
 
   batch->TransferMetadataChanges(std::move(metadata_change_list));
   CommitAndNotify(std::move(batch), has_changes);
-  return ModelError();
+  return {};
 }
 
 void DeviceInfoSyncBridge::GetData(StorageKeyList storage_keys,
@@ -380,10 +380,10 @@ void DeviceInfoSyncBridge::LoadMetadataIfReady() {
 }
 
 void DeviceInfoSyncBridge::OnReadAllMetadata(
-    ModelError error,
+    base::Optional<ModelError> error,
     std::unique_ptr<MetadataBatch> metadata_batch) {
-  if (error.IsSet()) {
-    change_processor()->ReportError(error);
+  if (error) {
+    change_processor()->ReportError(error.value());
     return;
   }
 

@@ -199,7 +199,7 @@ FakeModelTypeSyncBridge::CreateMetadataChangeList() {
   return base::MakeUnique<TestMetadataChangeList>();
 }
 
-ModelError FakeModelTypeSyncBridge::MergeSyncData(
+base::Optional<ModelError> FakeModelTypeSyncBridge::MergeSyncData(
     std::unique_ptr<MetadataChangeList> metadata_changes,
     EntityDataMap data_map) {
   if (error_next_) {
@@ -219,10 +219,10 @@ ModelError FakeModelTypeSyncBridge::MergeSyncData(
     db_->PutData(kv.first, kv.second.value());
   }
   ApplyMetadataChangeList(std::move(metadata_changes));
-  return ModelError();
+  return {};
 }
 
-ModelError FakeModelTypeSyncBridge::ApplySyncChanges(
+base::Optional<ModelError> FakeModelTypeSyncBridge::ApplySyncChanges(
     std::unique_ptr<MetadataChangeList> metadata_changes,
     EntityChangeList entity_changes) {
   if (error_next_) {
@@ -247,7 +247,7 @@ ModelError FakeModelTypeSyncBridge::ApplySyncChanges(
     }
   }
   ApplyMetadataChangeList(std::move(metadata_changes));
-  return ModelError();
+  return {};
 }
 
 void FakeModelTypeSyncBridge::ApplyMetadataChangeList(

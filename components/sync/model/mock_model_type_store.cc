@@ -47,7 +47,7 @@ void MockModelTypeStore::ReadAllMetadata(const ReadMetadataCallback& callback) {
     read_all_metadata_handler_.Run(callback);
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, ModelError(),
+        FROM_HERE, base::Bind(callback, base::Optional<ModelError>(),
                               base::Passed(std::unique_ptr<MetadataBatch>())));
   }
 }

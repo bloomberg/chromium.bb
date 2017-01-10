@@ -11,6 +11,7 @@
 #include <unordered_set>
 
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/engine/cycle/status_counters.h"
@@ -147,7 +148,7 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
 
   // A cache for any error that may occur during startup and should be passed
   // into the |start_callback_|.
-  ModelError start_error_;
+  base::Optional<ModelError> start_error_;
 
   // Indicates whether the metadata has finished loading.
   bool is_metadata_loaded_ = false;

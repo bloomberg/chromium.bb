@@ -110,18 +110,18 @@ class TestReadingListStorage : public ReadingListModelStorage {
     return std::unique_ptr<syncer::MetadataChangeList>();
   }
 
-  syncer::ModelError MergeSyncData(
+  base::Optional<syncer::ModelError> MergeSyncData(
       std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
       syncer::EntityDataMap entity_data_map) override {
     NOTREACHED();
-    return syncer::ModelError();
+    return {};
   }
 
-  syncer::ModelError ApplySyncChanges(
+  base::Optional<syncer::ModelError> ApplySyncChanges(
       std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
       syncer::EntityChangeList entity_changes) override {
     NOTREACHED();
-    return syncer::ModelError();
+    return {};
   }
 
   void GetData(StorageKeyList storage_keys, DataCallback callback) override {

@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
@@ -119,7 +120,7 @@ class ModelTypeStore {
   typedef base::Callback<void(Result result,
                               std::unique_ptr<RecordList> data_records)>
       ReadAllDataCallback;
-  typedef base::Callback<void(ModelError error,
+  typedef base::Callback<void(base::Optional<ModelError> error,
                               std::unique_ptr<MetadataBatch> metadata_batch)>
       ReadMetadataCallback;
 

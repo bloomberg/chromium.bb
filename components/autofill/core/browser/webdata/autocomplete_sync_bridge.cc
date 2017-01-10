@@ -104,20 +104,20 @@ AutocompleteSyncBridge::CreateMetadataChangeList() {
                                                       syncer::AUTOFILL);
 }
 
-syncer::ModelError AutocompleteSyncBridge::MergeSyncData(
+base::Optional<syncer::ModelError> AutocompleteSyncBridge::MergeSyncData(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityDataMap entity_data_map) {
   DCHECK(thread_checker_.CalledOnValidThread());
   NOTIMPLEMENTED();
-  return syncer::ModelError();
+  return {};
 }
 
-syncer::ModelError AutocompleteSyncBridge::ApplySyncChanges(
+base::Optional<syncer::ModelError> AutocompleteSyncBridge::ApplySyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_changes) {
   DCHECK(thread_checker_.CalledOnValidThread());
   NOTIMPLEMENTED();
-  return syncer::ModelError();
+  return {};
 }
 
 void AutocompleteSyncBridge::AutocompleteSyncBridge::GetData(

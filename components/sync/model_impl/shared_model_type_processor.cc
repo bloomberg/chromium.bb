@@ -97,9 +97,9 @@ void SharedModelTypeProcessor::ConnectIfReady() {
     return;
   }
 
-  if (start_error_.IsSet()) {
-    error_handler_.Run(start_error_);
-    start_error_ = ModelError();
+  if (start_error_) {
+    error_handler_.Run(start_error_.value());
+    start_error_.reset();
     start_callback_.Reset();
     return;
   }
@@ -141,14 +141,12 @@ bool SharedModelTypeProcessor::IsTrackingMetadata() {
 }
 
 void SharedModelTypeProcessor::ReportError(const ModelError& error) {
-  DCHECK(error.IsSet());
-
   if (ConnectPreconditionsMet()) {
     // If both model and sync are ready, then |start_callback_| was already
     // called and this can't be treated as a start error.
     DCHECK(!error_handler_.is_null());
     error_handler_.Run(error);
-  } else if (!start_error_.IsSet()) {
+  } else if (!start_error_) {
     start_error_ = error;
     // An early model error means we're no longer expecting OnMetadataLoaded to
     // be called.
@@ -305,10 +303,10 @@ void SharedModelTypeProcessor::OnCommitCompleted(
     }
   }
 
-  ModelError error =
+  base::Optional<ModelError> error =
       bridge_->ApplySyncChanges(std::move(change_list), EntityChangeList());
-  if (error.IsSet()) {
-    ReportError(error);
+  if (error) {
+    ReportError(error.value());
   }
 }
 
@@ -362,11 +360,11 @@ void SharedModelTypeProcessor::OnUpdateReceived(
   }
 
   // Inform the bridge of the new or updated data.
-  ModelError error =
+  base::Optional<ModelError> error =
       bridge_->ApplySyncChanges(std::move(metadata_changes), entity_changes);
 
-  if (error.IsSet()) {
-    ReportError(error);
+  if (error) {
+    ReportError(error.value());
   } else {
     // There may be new reasons to commit by the time this function is done.
     FlushPendingCommitRequests();
@@ -555,11 +553,11 @@ void SharedModelTypeProcessor::OnInitialUpdateReceived(
   }
 
   // Let the bridge handle associating and merging the data.
-  ModelError error =
+  base::Optional<ModelError> error =
       bridge_->MergeSyncData(std::move(metadata_changes), data_map);
 
-  if (error.IsSet()) {
-    ReportError(error);
+  if (error) {
+    ReportError(error.value());
   } else {
     // We may have new reasons to commit by the time this function is done.
     FlushPendingCommitRequests();

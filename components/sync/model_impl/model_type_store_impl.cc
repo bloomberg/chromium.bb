@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/model/model_error.h"
@@ -308,7 +309,7 @@ void ModelTypeStoreImpl::DeserializeMetadata(
     metadata_batch->AddMetadata(r.id, entity_metadata);
   }
 
-  callback.Run(ModelError(), std::move(metadata_batch));
+  callback.Run({}, std::move(metadata_batch));
 }
 
 std::unique_ptr<ModelTypeStore::WriteBatch>

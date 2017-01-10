@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/supports_user_data.h"
 #include "base/threading/non_thread_safe.h"
@@ -43,10 +44,10 @@ class AutocompleteSyncBridge : public base::SupportsUserData::Data,
   // syncer::ModelTypeService implementation.
   std::unique_ptr<syncer::MetadataChangeList> CreateMetadataChangeList()
       override;
-  syncer::ModelError MergeSyncData(
+  base::Optional<syncer::ModelError> MergeSyncData(
       std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
       syncer::EntityDataMap entity_data_map) override;
-  syncer::ModelError ApplySyncChanges(
+  base::Optional<syncer::ModelError> ApplySyncChanges(
       std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
       syncer::EntityChangeList entity_changes) override;
   void GetData(StorageKeyList storage_keys, DataCallback callback) override;

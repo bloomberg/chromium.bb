@@ -92,8 +92,9 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
 
   // FakeModelTypeSyncBridge overrides.
 
-  ModelError MergeSyncData(std::unique_ptr<MetadataChangeList> mcl,
-                           EntityDataMap entity_data_map) override {
+  base::Optional<ModelError> MergeSyncData(
+      std::unique_ptr<MetadataChangeList> mcl,
+      EntityDataMap entity_data_map) override {
     merge_call_count_++;
     return FakeModelTypeSyncBridge::MergeSyncData(std::move(mcl),
                                                   entity_data_map);

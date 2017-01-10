@@ -255,7 +255,6 @@ DataTypeController::State ModelTypeController::state() const {
 
 void ModelTypeController::ReportModelError(const ModelError& error) {
   DCHECK(CalledOnValidThread());
-  DCHECK(error.IsSet());
   LoadModelsDone(UNRECOVERABLE_ERROR,
                  SyncError(error.location(), SyncError::DATATYPE_ERROR,
                            error.message(), type()));

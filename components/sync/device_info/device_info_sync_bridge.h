@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/sync/device_info/device_info_tracker.h"
@@ -43,10 +44,10 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
 
   // ModelTypeSyncBridge implementation.
   std::unique_ptr<MetadataChangeList> CreateMetadataChangeList() override;
-  ModelError MergeSyncData(
+  base::Optional<ModelError> MergeSyncData(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
       EntityDataMap entity_data_map) override;
-  ModelError ApplySyncChanges(
+  base::Optional<ModelError> ApplySyncChanges(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
       EntityChangeList entity_changes) override;
   void GetData(StorageKeyList storage_keys, DataCallback callback) override;
@@ -90,7 +91,7 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
                       std::unique_ptr<ModelTypeStore> store);
   void OnReadAllData(ModelTypeStore::Result result,
                      std::unique_ptr<ModelTypeStore::RecordList> record_list);
-  void OnReadAllMetadata(ModelError error,
+  void OnReadAllMetadata(base::Optional<ModelError> error,
                          std::unique_ptr<MetadataBatch> metadata_batch);
   void OnCommit(ModelTypeStore::Result result);
 

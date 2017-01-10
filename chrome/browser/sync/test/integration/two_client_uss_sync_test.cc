@@ -4,6 +4,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -67,10 +68,10 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
     change_processor()->OnMetadataLoaded(db().CreateMetadataBatch());
   }
 
-  syncer::ModelError ApplySyncChanges(
+  base::Optional<syncer::ModelError> ApplySyncChanges(
       std::unique_ptr<syncer::MetadataChangeList> metadata_changes,
       syncer::EntityChangeList entity_changes) override {
-    syncer::ModelError error = FakeModelTypeSyncBridge::ApplySyncChanges(
+    auto error = FakeModelTypeSyncBridge::ApplySyncChanges(
         std::move(metadata_changes), entity_changes);
     NotifyObservers();
     return error;

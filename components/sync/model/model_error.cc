@@ -6,25 +6,17 @@
 
 namespace syncer {
 
-ModelError::ModelError() : is_set_(false) {}
-
 ModelError::ModelError(const tracked_objects::Location& location,
                        const std::string& message)
-    : is_set_(true), location_(location), message_(message) {}
+    : location_(location), message_(message) {}
 
 ModelError::~ModelError() = default;
 
-bool ModelError::IsSet() const {
-  return is_set_;
-}
-
 const tracked_objects::Location& ModelError::location() const {
-  DCHECK(IsSet());
   return location_;
 }
 
 const std::string& ModelError::message() const {
-  DCHECK(IsSet());
   return message_;
 }
 
