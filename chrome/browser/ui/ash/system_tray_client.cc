@@ -198,6 +198,14 @@ void SystemTrayClient::SetFlashUpdateAvailable() {
   HandleUpdateAvailable();
 }
 
+void SystemTrayClient::SetPrimaryTrayEnabled(bool enabled) {
+  system_tray_->SetPrimaryTrayEnabled(enabled);
+}
+
+void SystemTrayClient::SetPrimaryTrayVisible(bool visible) {
+  system_tray_->SetPrimaryTrayVisible(visible);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ash::mojom::SystemTrayClient:
 

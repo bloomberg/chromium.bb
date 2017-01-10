@@ -11,6 +11,13 @@ interface SystemTray {
   // Sets the client interface.
   SetClient(SystemTrayClient client);
 
+  // Sets the enabled state of the tray on the primary display. If not |enabled|
+  // any open menu will be closed.
+  SetPrimaryTrayEnabled(bool enabled);
+
+  // Sets the visibility of the tray on the primary display.
+  SetPrimaryTrayVisible(bool visible);
+
   // Sets the clock to use 24 hour time formatting if |use_24_hour| is true.
   // Otherwise sets 12 hour time formatting.
   SetUse24HourClock(bool use_24_hour);

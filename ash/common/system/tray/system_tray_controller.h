@@ -58,6 +58,8 @@ class ASH_EXPORT SystemTrayController
 
   // mojom::SystemTray overrides. Public for testing.
   void SetClient(mojom::SystemTrayClientPtr client) override;
+  void SetPrimaryTrayEnabled(bool enabled) override;
+  void SetPrimaryTrayVisible(bool visible) override;
   void SetUse24HourClock(bool use_24_hour) override;
   void ShowUpdateIcon(mojom::UpdateSeverity severity,
                       bool factory_reset_required) override;

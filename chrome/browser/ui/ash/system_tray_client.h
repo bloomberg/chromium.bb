@@ -50,6 +50,10 @@ class SystemTrayClient : public ash::mojom::SystemTrayClient,
   // when the update is applied.
   void SetFlashUpdateAvailable();
 
+  // Wrappers around ash::mojom::SystemTray interface:
+  void SetPrimaryTrayEnabled(bool enabled);
+  void SetPrimaryTrayVisible(bool visible);
+
   // ash::mojom::SystemTrayClient:
   void ShowSettings() override;
   void ShowDateSettings() override;

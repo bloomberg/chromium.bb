@@ -127,6 +127,40 @@ void SystemTrayController::SetClient(mojom::SystemTrayClientPtr client) {
   system_tray_client_ = std::move(client);
 }
 
+void SystemTrayController::SetPrimaryTrayEnabled(bool enabled) {
+  ash::SystemTray* tray =
+      WmShell::Get()->GetPrimaryRootWindowController()->GetSystemTray();
+  if (!tray)
+    return;
+
+  // We disable the UI to prevent user from interacting with UI elements,
+  // particularly with the system tray menu. However, in case if the system tray
+  // bubble is opened at this point, it remains opened and interactive even
+  // after SystemTray::SetEnabled(false) call, which can be dangerous
+  // (http://crbug.com/497080). Close the menu to fix it. Calling
+  // SystemTray::SetEnabled(false) guarantees, that the menu will not be opened
+  // until the UI is enabled again.
+  if (!enabled && tray->HasSystemBubble())
+    tray->CloseSystemBubble();
+
+  tray->SetEnabled(enabled);
+}
+
+void SystemTrayController::SetPrimaryTrayVisible(bool visible) {
+  ash::SystemTray* tray =
+      WmShell::Get()->GetPrimaryRootWindowController()->GetSystemTray();
+  if (!tray)
+    return;
+
+  tray->SetVisible(visible);
+  tray->GetWidget()->SetOpacity(visible ? 1.f : 0.f);
+  if (visible) {
+    tray->GetWidget()->Show();
+  } else {
+    tray->GetWidget()->Hide();
+  }
+}
+
 void SystemTrayController::SetUse24HourClock(bool use_24_hour) {
   hour_clock_type_ = use_24_hour ? base::k24HourClock : base::k12HourClock;
   WmShell::Get()->system_tray_notifier()->NotifyDateFormatChanged();
