@@ -32,7 +32,7 @@ var childFrameObserver, childConnectionObserver, callbackObserver;
 })();
 
 gc();
-childFrame.contentWindow.gc();
+(() => {childFrame.contentWindow.gc();})()
 shouldBeFalse('childFrameObserver.wasCollected');
 shouldBeFalse('childConnectionObserver.wasCollected');
 shouldBeFalse('callbackObserver.wasCollected');
@@ -40,7 +40,7 @@ shouldBeFalse('callbackObserver.wasCollected');
 // Access objects in an inner function to avoid references to objects
 // remaining live on this function's stack frame (http://crbug.com/595672/).
 (() => {document.body.removeChild(childFrame);})();
-childFrame = null;
+(() => {childFrame = null;})();
 gc();
 shouldBeTrue('childFrameObserver.wasCollected');
 shouldBeTrue('childConnectionObserver.wasCollected');
