@@ -289,7 +289,7 @@ public class GeolocationHeader {
             // Record the Location Age with a histogram.
             recordLocationAgeHistogram(locationSource, locationAge);
             long duration = sFirstLocationTime == Long.MAX_VALUE
-                    ? Long.MAX_VALUE
+                    ? 0
                     : SystemClock.elapsedRealtime() - sFirstLocationTime;
             // Record the Time Listening with a histogram.
             recordTimeListeningHistogram(locationSource, locationAttached, duration);
