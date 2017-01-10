@@ -160,10 +160,6 @@ class ProfileIOData {
   content_settings::CookieSettings* GetCookieSettings() const;
   HostContentSettingsMap* GetHostContentSettingsMap() const;
 
-  IntegerPrefMember* session_startup_pref() const {
-    return &session_startup_pref_;
-  }
-
   StringPrefMember* google_services_account_id() const {
     return &google_services_user_account_id_;
   }
@@ -174,14 +170,6 @@ class ProfileIOData {
 
   BooleanPrefMember* safe_browsing_enabled() const {
     return &safe_browsing_enabled_;
-  }
-
-  BooleanPrefMember* sync_disabled() const {
-    return &sync_disabled_;
-  }
-
-  BooleanPrefMember* signin_allowed() const {
-    return &signin_allowed_;
   }
 
   IntegerPrefMember* network_prediction_options() const {
@@ -542,12 +530,7 @@ class ProfileIOData {
   mutable IntegerPrefMember force_youtube_restrict_;
   mutable BooleanPrefMember safe_browsing_enabled_;
   mutable StringPrefMember allowed_domains_for_apps_;
-  mutable BooleanPrefMember sync_disabled_;
-  mutable BooleanPrefMember signin_allowed_;
   mutable IntegerPrefMember network_prediction_options_;
-  // TODO(marja): Remove session_startup_pref_ if no longer needed.
-  mutable IntegerPrefMember session_startup_pref_;
-  mutable BooleanPrefMember quick_check_enabled_;
   mutable IntegerPrefMember incognito_availibility_pref_;
 
   BooleanPrefMember enable_metrics_;

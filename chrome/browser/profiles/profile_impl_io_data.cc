@@ -379,10 +379,6 @@ void ProfileImplIOData::Handle::LazyInitialize() const {
   // below try to get the ResourceContext pointer.
   initialized_ = true;
   PrefService* pref_service = profile_->GetPrefs();
-  io_data_->session_startup_pref()->Init(
-      prefs::kRestoreOnStartup, pref_service);
-  io_data_->session_startup_pref()->MoveToThread(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   io_data_->safe_browsing_enabled()->Init(prefs::kSafeBrowsingEnabled,
       pref_service);
   io_data_->safe_browsing_enabled()->MoveToThread(

@@ -74,7 +74,6 @@
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/common/signin_pref_names.h"
-#include "components/sync/base/pref_names.h"
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -482,12 +481,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
     google_services_user_account_id_.Init(
         prefs::kGoogleServicesUserAccountId, pref_service);
     google_services_user_account_id_.MoveToThread(io_task_runner);
-
-    sync_disabled_.Init(syncer::prefs::kSyncManaged, pref_service);
-    sync_disabled_.MoveToThread(io_task_runner);
-
-    signin_allowed_.Init(prefs::kSigninAllowed, pref_service);
-    signin_allowed_.MoveToThread(io_task_runner);
   }
 
   if (!IsOffTheRecord())
@@ -1223,12 +1216,9 @@ void ProfileIOData::ShutdownOnUIThread(
   allowed_domains_for_apps_.Destroy();
   enable_metrics_.Destroy();
   safe_browsing_enabled_.Destroy();
-  sync_disabled_.Destroy();
-  signin_allowed_.Destroy();
   network_prediction_options_.Destroy();
   if (media_device_id_salt_.get())
     media_device_id_salt_->ShutdownOnUIThread();
-  session_startup_pref_.Destroy();
   if (url_blacklist_manager_)
     url_blacklist_manager_->ShutdownOnUIThread();
   if (ct_policy_manager_)
