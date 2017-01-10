@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.infobar;
 import android.content.Context;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import org.chromium.base.ObserverList;
@@ -15,7 +16,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.banners.SwipableOverlayView;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabContentViewParent;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
@@ -93,6 +93,31 @@ public class InfoBarContainer extends SwipableOverlayView {
                 int statusCode) {
             setIsObscuredByOtherView(false);
         }
+
+        @Override
+        public void onContentChanged(Tab tab) {
+            if (mTabView == tab.getView()) return;
+            mTabView.removeOnAttachStateChangeListener(mAttachedStateListener);
+            mTabView = tab.getView();
+            mTabView.addOnAttachStateChangeListener(mAttachedStateListener);
+        }
+    };
+
+    /**
+     * Adds/removes the {@link InfoBarContainer} when the tab's view is attached/detached. This is
+     * mostly to ensure the infobars are not shown in tab switcher overview mode.
+     */
+    private final OnAttachStateChangeListener mAttachedStateListener =
+            new OnAttachStateChangeListener() {
+        @Override
+        public void onViewDetachedFromWindow(View v) {
+            removeFromParentView();
+        }
+
+        @Override
+        public void onViewAttachedToWindow(View v) {
+            addToParentView();
+        }
     };
 
     private final InfoBarContainerLayout mLayout;
@@ -106,11 +131,11 @@ public class InfoBarContainer extends SwipableOverlayView {
     /** True when this container has been emptied and its native counterpart has been destroyed. */
     private boolean mDestroyed;
 
-    /** The id of the tab associated with us. Set to Tab.INVALID_TAB_ID if no tab is associated. */
-    private int mTabId;
-
     /** Parent view that contains the InfoBarContainerLayout. */
-    private TabContentViewParent mParentView;
+    private ViewGroup mParentView;
+
+    /** The view that {@link Tab#getView()} returns. */
+    private View mTabView;
 
     /** Whether or not another View is occupying the same space as this one. */
     private boolean mIsObscured;
@@ -118,9 +143,10 @@ public class InfoBarContainer extends SwipableOverlayView {
     private final ObserverList<InfoBarContainerObserver> mObservers =
             new ObserverList<InfoBarContainerObserver>();
 
-    public InfoBarContainer(Context context, int tabId, TabContentViewParent parentView, Tab tab) {
+    public InfoBarContainer(Context context, final ViewGroup parentView, Tab tab) {
         super(context, null);
         tab.addObserver(mTabObserver);
+        mTabView = tab.getView();
 
         // TODO(newt): move this workaround into the infobar views if/when they're scrollable.
         // Workaround for http://crbug.com/407149. See explanation in onMeasure() below.
@@ -133,7 +159,6 @@ public class InfoBarContainer extends SwipableOverlayView {
         lp.topMargin = Math.round(topMarginDp * getResources().getDisplayMetrics().density);
         setLayoutParams(lp);
 
-        mTabId = tabId;
         mParentView = parentView;
 
         mLayout = new InfoBarContainerLayout(context);
@@ -169,6 +194,15 @@ public class InfoBarContainer extends SwipableOverlayView {
         }
     }
 
+    /**
+     * Sets the parent {@link ViewGroup} that contains the {@link InfoBarContainer}.
+     */
+    public void setParentView(ViewGroup parent) {
+        mParentView = parent;
+        removeFromParentView();
+        addToParentView();
+    }
+
     @VisibleForTesting
     public void setAnimationListener(InfoBarAnimationListener listener) {
         mLayout.setAnimationListener(listener);
@@ -184,18 +218,6 @@ public class InfoBarContainer extends SwipableOverlayView {
 
     private void addToParentView() {
         super.addToParentView(mParentView);
-    }
-
-    /**
-     * Called when the parent {@link android.view.ViewGroup} has changed for
-     * this container.
-     */
-    public void onParentViewChanged(int tabId, TabContentViewParent parentView) {
-        mTabId = tabId;
-        mParentView = parentView;
-
-        removeFromParentView();
-        addToParentView();
     }
 
     /**

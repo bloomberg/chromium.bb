@@ -12,7 +12,6 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.accessibility.AccessibilityEventCompat;
 import android.support.v4.view.accessibility.AccessibilityNodeInfoCompat;
@@ -32,6 +31,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.Invalidator.Client;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
@@ -45,7 +45,6 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabContentViewParent;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
@@ -73,7 +72,7 @@ import java.util.List;
  * This class also holds the {@link LayoutManager} responsible to describe the items to be
  * drawn by the UI compositor on the native side.
  */
-public class CompositorViewHolder extends CoordinatorLayout
+public class CompositorViewHolder extends FrameLayout
         implements ContentOffsetProvider, LayoutManagerHost, LayoutRenderHost, Invalidator.Host,
                 FullscreenListener {
 
@@ -112,7 +111,7 @@ public class CompositorViewHolder extends CoordinatorLayout
     private Tab mTabVisible;
 
     /** The currently attached View. */
-    private TabContentViewParent mView;
+    private View mView;
 
     private TabObserver mTabObserver;
     private boolean mEnableCompositorTabStrip;
@@ -354,8 +353,7 @@ public class CompositorViewHolder extends CoordinatorLayout
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent e) {
-        boolean consumedBySuper = super.onInterceptTouchEvent(e);
-        if (consumedBySuper) return true;
+        super.onInterceptTouchEvent(e);
 
         if (mLayoutManager == null) return false;
 
@@ -373,8 +371,7 @@ public class CompositorViewHolder extends CoordinatorLayout
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
-        boolean consumedBySuper = super.onTouchEvent(e);
-        if (consumedBySuper) return true;
+        super.onTouchEvent(e);
 
         if (mFullscreenManager != null) mFullscreenManager.onMotionEvent(e);
         if (mFullscreenTouchEvent) return true;
@@ -839,20 +836,9 @@ public class CompositorViewHolder extends CoordinatorLayout
                     }
                 }
 
-                CoordinatorLayout.LayoutParams layoutParams;
-                if (mView.getLayoutParams() instanceof CoordinatorLayout.LayoutParams) {
-                    layoutParams = (CoordinatorLayout.LayoutParams) mView.getLayoutParams();
-                } else {
-                    layoutParams = new CoordinatorLayout.LayoutParams(
-                            LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-                }
-                layoutParams.setBehavior(mView.getBehavior());
-                // CompositorView has index of 0; TabContentViewParent has index of 1; omnibox
-                // result container (the scrim) has index of 2, Snackbar (if any) has index of 3.
-                // Setting index here explicitly to avoid TabContentViewParent hiding the scrim.
-                // TODO(ianwen): Use more advanced technologies to ensure z-order of the children of
-                // this class, instead of hard-coding.
-                addView(mView, 1, layoutParams);
+                // CompositorView always has index of 0.
+                addView(mView, 1, new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT,
+                        LayoutParams.MATCH_PARENT));
 
                 setFocusable(false);
                 setFocusableInTouchMode(false);
@@ -894,7 +880,7 @@ public class CompositorViewHolder extends CoordinatorLayout
     private void setTab(Tab tab) {
         if (tab != null) tab.loadIfNeeded();
 
-        TabContentViewParent newView = tab != null ? tab.getView() : null;
+        View newView = tab != null ? tab.getView() : null;
         if (mView == newView) return;
 
         // TODO(dtrainor): Look into changing this only if the views differ, but still parse the

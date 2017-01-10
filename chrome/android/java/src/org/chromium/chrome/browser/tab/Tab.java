@@ -191,7 +191,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private GestureStateListener mGestureStateListener;
 
     /** The parent view of the ContentView and the InfoBarContainer. */
-    private TabContentViewParent mContentViewParent;
+    private View mContentView;
 
     /** A list of Tab observers.  These are used to broadcast Tab events to listeners. */
     private final ObserverList<TabObserver> mObservers = new ObserverList<>();
@@ -814,8 +814,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @return The {@link View} displaying the current page in the tab. This can be {@code null}, if
      *         the tab is frozen or being initialized or destroyed.
      */
-    public TabContentViewParent getView() {
-        return mContentViewParent;
+    public View getView() {
+        return mNativePage != null ? mNativePage.getView() : mContentView;
     }
 
     /**
@@ -1754,19 +1754,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             cvc.getContainerView().setOnHierarchyChangeListener(this);
             cvc.getContainerView().setOnSystemUiVisibilityChangeListener(this);
 
-            // Wrap the ContentView in a FrameLayout, which will contain both the ContentView and
-            // the InfoBarContainer. The alternative -- placing the InfoBarContainer inside the
-            // ContentView -- causes problems since then the ContentView would contain both real
-            // views (the infobars) and virtual views (the web page elements), which breaks Android
-            // accessibility. http://crbug.com/416663
-            if (mContentViewParent != null) {
-                assert false;
-                mContentViewParent.removeAllViews();
-            }
-            mContentViewParent = new TabContentViewParent(mThemedApplicationContext, this);
-            mContentViewParent.addView(cvc.getContainerView(), 0, new FrameLayout.LayoutParams(
-                    LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-
+            mContentView = cvc.getContainerView();
             mWebContentsDelegate = mDelegateFactory.createWebContentsDelegate(this);
             mWebContentsObserver =
                     new TabWebContentsObserver(mContentViewCore.getWebContents(), this);
@@ -1783,15 +1771,15 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                     new TabContextMenuPopulator(
                             mDelegateFactory.createContextMenuPopulator(this), this));
 
+            final ViewGroup bottomContainer = (ViewGroup) getActivity()
+                    .findViewById(R.id.bottom_container);
             // In the case where restoring a Tab or showing a prerendered one we already have a
             // valid infobar container, no need to recreate one.
             if (mInfoBarContainer == null) {
                 // The InfoBarContainer needs to be created after the ContentView has been natively
                 // initialized.
-                mInfoBarContainer =  new InfoBarContainer(
-                        mThemedApplicationContext, getId(), mContentViewParent, this);
-            } else {
-                mInfoBarContainer.onParentViewChanged(getId(), mContentViewParent);
+                mInfoBarContainer = new InfoBarContainer(mThemedApplicationContext, bottomContainer,
+                        this);
             }
             mInfoBarContainer.setContentViewCore(mContentViewCore);
 
@@ -2341,7 +2329,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             mSwipeRefreshHandler.destroy();
             mSwipeRefreshHandler = null;
         }
-        mContentViewParent = null;
+        mContentView = null;
         mContentViewCore.destroy();
         mContentViewCore = null;
 

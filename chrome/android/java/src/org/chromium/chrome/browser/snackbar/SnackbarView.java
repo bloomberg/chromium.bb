@@ -12,9 +12,6 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.drawable.GradientDrawable;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.CoordinatorLayout.LayoutParams;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.SurfaceView;
 import android.view.View;
@@ -23,14 +20,12 @@ import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.view.animation.DecelerateInterpolator;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.compositor.CompositorViewHolderBehavior;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
@@ -126,6 +121,9 @@ class SnackbarView {
         startAnimatorOnSurfaceView(animatorSet);
     }
 
+    /**
+     * Adjusts the position of the snackbar on top of the soft keyboard, if any.
+     */
     void adjustViewPosition() {
         mParent.getWindowVisibleDisplayFrame(mCurrentVisibleRect);
         // Only update if the visible frame has changed, otherwise there will be a layout loop.
@@ -185,20 +183,7 @@ class SnackbarView {
     }
 
     private void addToParent() {
-        // LayoutParams in CoordinatorLayout and FrameLayout cannot be used interchangeably. Thus
-        // we create new LayoutParams every time.
-        if (mParent instanceof CoordinatorLayout) {
-            CoordinatorLayout.LayoutParams lp = new LayoutParams(getLayoutParams());
-            lp.gravity = Gravity.BOTTOM | Gravity.START;
-            lp.setBehavior(new CompositorViewHolderBehavior());
-            mParent.addView(mView, lp);
-        } else if (mParent instanceof FrameLayout) {
-            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(getLayoutParams());
-            lp.gravity = Gravity.BOTTOM | Gravity.START;
-            mParent.addView(mView, lp);
-        } else {
-            assert false : "Only FrameLayout and CoordinatorLayout are supported to show snackbars";
-        }
+        mParent.addView(mView);
 
         // Why setting listener on parent? It turns out that if we force a relayout in the layout
         // change listener of the view itself, the force layout flag will be reset to 0 when
@@ -251,7 +236,7 @@ class SnackbarView {
      */
     private ViewGroup findParentView(Activity activity) {
         if (activity instanceof ChromeActivity) {
-            return ((ChromeActivity) activity).getCompositorViewHolder();
+            return (ViewGroup) activity.findViewById(R.id.bottom_container);
         } else {
             return (ViewGroup) activity.findViewById(android.R.id.content);
         }
