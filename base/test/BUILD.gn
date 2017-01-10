@@ -56,7 +56,9 @@ static_library("test_support") {
     "mock_entropy_provider.h",
     "mock_log.cc",
     "mock_log.h",
+    "multiprocess_test.cc",
     "multiprocess_test.h",
+    "multiprocess_test_android.cc",
     "null_task_runner.cc",
     "null_task_runner.h",
     "opaque_ref_counted.cc",
@@ -148,8 +150,6 @@ static_library("test_support") {
       "launcher/test_launcher_tracer.h",
       "launcher/test_results_tracker.cc",
       "launcher/unit_test_launcher.cc",
-      "multiprocess_test.cc",
-      "multiprocess_test_android.cc",
     ]
   }
 
@@ -193,7 +193,11 @@ static_library("test_support") {
   }
 
   if (is_android) {
-    deps += [ ":base_unittests_jni_headers" ]
+    deps += [
+      ":base_unittests_jni_headers",
+      ":test_support_jni_headers",
+    ]
+    public_deps += [ ":test_support_java" ]
   }
 
   if (is_nacl_nonsfi) {
@@ -328,5 +332,43 @@ if (is_android) {
       "android/java/src/org/chromium/base/TestUiThread.java",
     ]
     jni_package = "base"
+  }
+
+  generate_jni("test_support_jni_headers") {
+    sources = [
+      "android/java/src/org/chromium/base/MainReturnCodeResult.java",
+      "android/java/src/org/chromium/base/MultiprocessTestClientLauncher.java",
+    ]
+    jni_package = "base"
+  }
+
+  android_library("test_support_java") {
+    testonly = true
+    deps = [
+      "//base:base_java",
+      "//testing/android/native_test:native_main_runner_java",
+      "//third_party/android_tools:android_support_annotations_java",
+      "//third_party/jsr-305:jsr_305_javalib",
+    ]
+    srcjar_deps = [ ":test_support_java_aidl" ]
+    java_files = [
+      "android/java/src/org/chromium/base/FileDescriptorInfo.java",
+      "android/java/src/org/chromium/base/MainReturnCodeResult.java",
+      "android/java/src/org/chromium/base/MultiprocessTestClientLauncher.java",
+      "android/java/src/org/chromium/base/MultiprocessTestClientService.java",
+      "android/java/src/org/chromium/base/MultiprocessTestClientService0.java",
+      "android/java/src/org/chromium/base/MultiprocessTestClientService1.java",
+      "android/java/src/org/chromium/base/MultiprocessTestClientService2.java",
+      "android/java/src/org/chromium/base/MultiprocessTestClientService3.java",
+      "android/java/src/org/chromium/base/MultiprocessTestClientService4.java",
+    ]
+  }
+
+  android_aidl("test_support_java_aidl") {
+    testonly = true
+    import_include = "android/java/src"
+    sources = [
+      "android/java/src/org/chromium/base/ITestClient.aidl",
+    ]
   }
 }

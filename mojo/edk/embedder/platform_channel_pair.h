@@ -69,6 +69,7 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformChannelPair {
   // |PrepareToPassClientHandleToChildProcess()| and launched the child (using
   // the provided data), to create a client handle connected to the server
   // handle (in the parent process).
+  // TODO(jcivelli): remove the command_line param. http://crbug.com/670106
   static ScopedPlatformHandle PassClientHandleFromParentProcess(
       const base::CommandLine& command_line);
 

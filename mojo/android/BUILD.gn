@@ -131,7 +131,7 @@ shared_library("mojo_java_unittests") {
     ":libsystem_java",
     ":system_java_jni_headers",
     "//base",
-    "//base/test/:test_support",
+    "//base/test:test_support",
     "//build/config/sanitizers:deps",
     "//mojo/edk/system",
     "//mojo/public/cpp/bindings/tests:mojo_public_bindings_test_utils",

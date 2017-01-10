@@ -16,9 +16,6 @@
 #endif
 
 int main(int argc, char** argv) {
-#if defined(OS_ANDROID)
-  base::InitAndroidMultiProcessTestHelper(main);
-#endif
   base::TestSuite test_suite(argc, argv);
   mojo::edk::Init();
   base::TestIOThread test_io_thread(base::TestIOThread::kAutoStart);

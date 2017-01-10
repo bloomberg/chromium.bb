@@ -26,6 +26,7 @@
 #include "base/test/test_support_android.h"
 #include "gtest/gtest.h"
 #include "jni/NativeTest_jni.h"
+#include "testing/android/native_test/main_runner.h"
 #include "testing/android/native_test/native_test_util.h"
 
 using base::android::JavaParamRef;
@@ -127,9 +128,10 @@ static void RunTests(JNIEnv* env,
 }
 
 bool RegisterNativeTestJNI(JNIEnv* env) {
-  if (!base::android::RegisterJni(env)) {
+  if (!base::android::RegisterJni(env))
     return false;
-  }
+  if (!RegisterMainRunnerJni(env))
+    return false;
   return RegisterNativesImpl(env);
 }
 
