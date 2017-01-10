@@ -34,10 +34,7 @@ int main(int argc, char* argv[]) {
 
   // Set NSUserDefaults keys to force pseudo-RTL if needed.
   if ([standardDefaults boolForKey:@"EnablePseudoRTL"]) {
-    NSDictionary* pseudoDict = [NSDictionary
-        dictionaryWithObjectsAndKeys:@"YES", @"AppleTextDirection", @"YES",
-                                     @"NSForceRightToLeftWritingDirection",
-                                     nil];
+    NSDictionary* pseudoDict = @{ @"YES" : @"AppleTextDirection" };
     [standardDefaults registerDefaults:pseudoDict];
   }
 

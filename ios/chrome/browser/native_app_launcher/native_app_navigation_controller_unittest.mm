@@ -133,7 +133,7 @@ TEST_F(NativeAppNavigationControllerTest,
   NSString* const kYoutubeAppId = @"2";
 
   base::scoped_nsobject<InstallationNotifier> installationNotifier(
-      [InstallationNotifier alloc]);
+      [[InstallationNotifier alloc] init]);
 
   FakeNativeAppWhitelistManager* fakeManager =
       [[[FakeNativeAppWhitelistManager alloc] init] autorelease];
