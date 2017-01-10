@@ -328,12 +328,6 @@ void CookieStoreIOS::SetCookieWithOptionsAsync(
       cookie_monster_->SetCookieWithOptionsAsync(url, cookie_line, options,
                                                  WrapSetCallback(callback));
       break;
-    case SYNCHRONIZING:
-      tasks_pending_synchronization_.push_back(
-          base::Bind(&CookieStoreIOS::SetCookieWithOptionsAsync,
-                     weak_factory_.GetWeakPtr(), url, cookie_line, options,
-                     WrapSetCallback(callback)));
-      break;
     case SYNCHRONIZED:
       // The exclude_httponly() option would only be used by a javascript
       // engine.
@@ -406,14 +400,6 @@ void CookieStoreIOS::SetCookieWithDetailsAsync(
           last_access_time, secure, http_only, same_site, enforce_strict_secure,
           priority, WrapSetCallback(callback));
       break;
-    case SYNCHRONIZING:
-      tasks_pending_synchronization_.push_back(
-          base::Bind(&CookieStoreIOS::SetCookieWithDetailsAsync,
-                     weak_factory_.GetWeakPtr(), url, name, value, domain, path,
-                     creation_time, expiration_time, last_access_time, secure,
-                     http_only, same_site, enforce_strict_secure, priority,
-                     WrapSetCallback(callback)));
-      break;
     case SYNCHRONIZED:
       // If cookies are not allowed, they are stashed in the CookieMonster, and
       // should be written there instead.
@@ -460,11 +446,6 @@ void CookieStoreIOS::GetCookiesWithOptionsAsync(
     case NOT_SYNCHRONIZED:
       cookie_monster_->GetCookiesWithOptionsAsync(url, options, callback);
       break;
-    case SYNCHRONIZING:
-      tasks_pending_synchronization_.push_back(
-          base::Bind(&CookieStoreIOS::GetCookiesWithOptionsAsync,
-                     weak_factory_.GetWeakPtr(), url, options, callback));
-      break;
     case SYNCHRONIZED:
       // If cookies are not allowed, they are stashed in the CookieMonster, and
       // should be read from there instead.
@@ -493,11 +474,6 @@ void CookieStoreIOS::GetCookieListWithOptionsAsync(
     case NOT_SYNCHRONIZED:
       cookie_monster_->GetCookieListWithOptionsAsync(url, options, callback);
       break;
-    case SYNCHRONIZING:
-      tasks_pending_synchronization_.push_back(
-          base::Bind(&CookieStoreIOS::GetCookieListWithOptionsAsync,
-                     weak_factory_.GetWeakPtr(), url, options, callback));
-      break;
     case SYNCHRONIZED:
       if (!SystemCookiesAllowed()) {
         // If cookies are not allowed, the cookies are stashed in the
@@ -524,11 +500,6 @@ void CookieStoreIOS::GetAllCookiesAsync(const GetCookieListCallback& callback) {
   switch (synchronization_state_) {
     case NOT_SYNCHRONIZED:
       cookie_monster_->GetAllCookiesAsync(callback);
-      break;
-    case SYNCHRONIZING:
-      tasks_pending_synchronization_.push_back(
-          base::Bind(&CookieStoreIOS::GetAllCookiesAsync,
-                     weak_factory_.GetWeakPtr(), callback));
       break;
     case SYNCHRONIZED:
       if (!SystemCookiesAllowed()) {
@@ -559,11 +530,6 @@ void CookieStoreIOS::DeleteCookieAsync(const GURL& url,
       cookie_monster_->DeleteCookieAsync(url, cookie_name,
                                          WrapClosure(callback));
       break;
-    case SYNCHRONIZING:
-      tasks_pending_synchronization_.push_back(base::Bind(
-          &CookieStoreIOS::DeleteCookieAsync, weak_factory_.GetWeakPtr(), url,
-          cookie_name, WrapClosure(callback)));
-      break;
     case SYNCHRONIZED:
       NSArray* cookies = GetCookiesForURL(system_store_,
                                           url, creation_time_manager_.get());
@@ -590,11 +556,6 @@ void CookieStoreIOS::DeleteCanonicalCookieAsync(
       cookie_monster_->DeleteCanonicalCookieAsync(cookie,
                                                   WrapDeleteCallback(callback));
       break;
-    case SYNCHRONIZING:
-      tasks_pending_synchronization_.push_back(base::Bind(
-          &CookieStoreIOS::DeleteCanonicalCookieAsync,
-          weak_factory_.GetWeakPtr(), cookie, WrapDeleteCallback(callback)));
-      break;
     case SYNCHRONIZED:
       // This relies on the fact cookies are given unique creation dates.
       CookieFilterFunction filter = base::Bind(
@@ -616,12 +577,6 @@ void CookieStoreIOS::DeleteAllCreatedBetweenAsync(
     case NOT_SYNCHRONIZED:
       cookie_monster_->DeleteAllCreatedBetweenAsync(
           delete_begin, delete_end, WrapDeleteCallback(callback));
-      break;
-    case SYNCHRONIZING:
-      tasks_pending_synchronization_.push_back(
-          base::Bind(&CookieStoreIOS::DeleteAllCreatedBetweenAsync,
-                     weak_factory_.GetWeakPtr(), delete_begin, delete_end,
-                     WrapDeleteCallback(callback)));
       break;
     case SYNCHRONIZED:
       CookieFilterFunction filter =
@@ -646,12 +601,6 @@ void CookieStoreIOS::DeleteAllCreatedBetweenWithPredicateAsync(
       cookie_monster_->DeleteAllCreatedBetweenWithPredicateAsync(
           delete_begin, delete_end, predicate, WrapDeleteCallback(callback));
       break;
-    case SYNCHRONIZING:
-      tasks_pending_synchronization_.push_back(
-          base::Bind(&CookieStoreIOS::DeleteAllCreatedBetweenWithPredicateAsync,
-                     weak_factory_.GetWeakPtr(), delete_begin, delete_end,
-                     predicate, WrapDeleteCallback(callback)));
-      break;
     case SYNCHRONIZED:
       CookieFilterFunction filter =
           base::Bind(IsCookieCreatedBetweenWithPredicate, delete_begin,
@@ -670,11 +619,6 @@ void CookieStoreIOS::DeleteSessionCookiesAsync(const DeleteCallback& callback) {
   switch (synchronization_state_) {
     case NOT_SYNCHRONIZED:
       cookie_monster_->DeleteSessionCookiesAsync(WrapDeleteCallback(callback));
-      break;
-    case SYNCHRONIZING:
-      tasks_pending_synchronization_.push_back(
-          base::Bind(&CookieStoreIOS::DeleteSessionCookiesAsync,
-                     weak_factory_.GetWeakPtr(), WrapDeleteCallback(callback)));
       break;
     case SYNCHRONIZED:
       CookieFilterFunction filter = base::Bind(&IsCookieSessionCookie);

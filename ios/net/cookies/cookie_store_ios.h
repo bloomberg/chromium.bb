@@ -146,7 +146,6 @@ class CookieStoreIOS : public net::CookieStore,
 
   enum SynchronizationState {
     NOT_SYNCHRONIZED,  // Uses CookieMonster as backend.
-    SYNCHRONIZING,     // Moves from NSHTTPCookieStorage to CookieMonster.
     SYNCHRONIZED       // Uses NSHTTPCookieStorage as backend.
   };
 
@@ -178,8 +177,6 @@ class CookieStoreIOS : public net::CookieStore,
   base::CancelableClosure flush_closure_;
 
   SynchronizationState synchronization_state_;
-  // Tasks received when SYNCHRONIZING are queued and run when SYNCHRONIZED.
-  std::vector<base::Closure> tasks_pending_synchronization_;
 
   base::ThreadChecker thread_checker_;
 
@@ -252,15 +249,14 @@ class CookieStoreIOS : public net::CookieStore,
   // OnSystemCookiesChanged is responsible for updating the cookie cache (and
   // hence running callbacks).
   //
-  // When this CookieStoreIOS object is not synchronized (or is synchronizing),
-  // the various mutator methods (SetCookieWithOptionsAsync &c) instead store
-  // their state in a CookieMonster object to be written back when the system
-  // store synchronizes. To deliver notifications in a timely manner, the
-  // mutators have to ensure that hooks get run, but only after the changes have
-  // been written back to CookieMonster. To do this, the mutators wrap the
-  // user-supplied callback in a callback which schedules an asynchronous task
-  // to synchronize the cache and run callbacks, then calls through to the
-  // user-specified callback.
+  // When this CookieStoreIOS object is not synchronized, the various mutator
+  // methods (SetCookieWithOptionsAsync &c) instead store their state in a
+  // CookieMonster object to be written back when the system store synchronizes.
+  // To deliver notifications in a timely manner, the mutators have to ensure
+  // that hooks get run, but only after the changes have been written back to
+  // CookieMonster. To do this, the mutators wrap the user-supplied callback in
+  // a callback which schedules an asynchronous task to synchronize the cache
+  // and run callbacks, then calls through to the user-specified callback.
   //
   // These three UpdateCachesAfter functions are responsible for scheduling an
   // asynchronous cache update (using UpdateCachesFromCookieMonster()) and
