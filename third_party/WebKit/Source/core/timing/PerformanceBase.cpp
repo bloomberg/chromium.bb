@@ -556,14 +556,21 @@ double PerformanceBase::clampTimeResolution(double timeSeconds) {
 }
 
 DOMHighResTimeStamp PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
-    double monotonicTime) const {
+    double timeOrigin,
+    double monotonicTime) {
   // Avoid exposing raw platform timestamps.
-  if (m_timeOrigin == 0.0)
+  if (!monotonicTime || !timeOrigin)
     return 0.0;
 
-  double timeInSeconds = monotonicTime - m_timeOrigin;
+  double timeInSeconds = monotonicTime - timeOrigin;
+  DCHECK_GE(timeInSeconds, 0);
   return convertSecondsToDOMHighResTimeStamp(
       clampTimeResolution(timeInSeconds));
+}
+
+DOMHighResTimeStamp PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
+    double monotonicTime) const {
+  return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin, monotonicTime);
 }
 
 DOMHighResTimeStamp PerformanceBase::now() const {

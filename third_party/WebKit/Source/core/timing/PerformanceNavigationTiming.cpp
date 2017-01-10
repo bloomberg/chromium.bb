@@ -9,17 +9,6 @@
 
 namespace blink {
 
-// TODO(sunjian): Move this logic into PerformanceBase
-static double monotonicTimeToDOMHighResTimeStamp(double timeOrigin,
-                                                 double seconds) {
-  DCHECK(seconds >= 0.0);
-  if (!seconds || !timeOrigin)
-    return 0.0;
-  if (seconds < timeOrigin)
-    return 0.0;
-  return PerformanceBase::clampTimeResolution(seconds - timeOrigin) * 1000.0;
-}
-
 PerformanceNavigationTiming::PerformanceNavigationTiming(
     double timeOrigin,
     double unloadEventStart,
@@ -81,43 +70,51 @@ PerformanceNavigationTiming::PerformanceNavigationTiming(
 
 PerformanceNavigationTiming::~PerformanceNavigationTiming() {}
 
-double PerformanceNavigationTiming::unloadEventStart() const {
+DOMHighResTimeStamp PerformanceNavigationTiming::unloadEventStart() const {
   if (!m_allowRedirectDetails || !m_hasSameOriginAsPreviousDocument)
     return 0;
-  return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin, m_unloadEventStart);
+  return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
+      m_timeOrigin, m_unloadEventStart);
 }
 
-double PerformanceNavigationTiming::unloadEventEnd() const {
+DOMHighResTimeStamp PerformanceNavigationTiming::unloadEventEnd() const {
   if (!m_allowRedirectDetails || !m_hasSameOriginAsPreviousDocument)
     return 0;
 
-  return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin, m_unloadEventEnd);
+  return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(m_timeOrigin,
+                                                             m_unloadEventEnd);
 }
 
-double PerformanceNavigationTiming::domInteractive() const {
-  return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin, m_domInteractive);
+DOMHighResTimeStamp PerformanceNavigationTiming::domInteractive() const {
+  return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(m_timeOrigin,
+                                                             m_domInteractive);
 }
 
-double PerformanceNavigationTiming::domContentLoadedEventStart() const {
-  return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin,
-                                            m_domContentLoadedEventStart);
+DOMHighResTimeStamp PerformanceNavigationTiming::domContentLoadedEventStart()
+    const {
+  return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
+      m_timeOrigin, m_domContentLoadedEventStart);
 }
 
-double PerformanceNavigationTiming::domContentLoadedEventEnd() const {
-  return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin,
-                                            m_domContentLoadedEventEnd);
+DOMHighResTimeStamp PerformanceNavigationTiming::domContentLoadedEventEnd()
+    const {
+  return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
+      m_timeOrigin, m_domContentLoadedEventEnd);
 }
 
-double PerformanceNavigationTiming::domComplete() const {
-  return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin, m_domComplete);
+DOMHighResTimeStamp PerformanceNavigationTiming::domComplete() const {
+  return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(m_timeOrigin,
+                                                             m_domComplete);
 }
 
-double PerformanceNavigationTiming::loadEventStart() const {
-  return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin, m_loadEventStart);
+DOMHighResTimeStamp PerformanceNavigationTiming::loadEventStart() const {
+  return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(m_timeOrigin,
+                                                             m_loadEventStart);
 }
 
-double PerformanceNavigationTiming::loadEventEnd() const {
-  return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin, m_loadEventEnd);
+DOMHighResTimeStamp PerformanceNavigationTiming::loadEventEnd() const {
+  return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(m_timeOrigin,
+                                                             m_loadEventEnd);
 }
 
 AtomicString PerformanceNavigationTiming::type() const {
@@ -141,24 +138,28 @@ unsigned short PerformanceNavigationTiming::redirectCount() const {
   return m_redirectCount;
 }
 
-double PerformanceNavigationTiming::fetchStart() const {
-  return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin, m_fetchStart);
+DOMHighResTimeStamp PerformanceNavigationTiming::fetchStart() const {
+  return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(m_timeOrigin,
+                                                             m_fetchStart);
 }
 
-double PerformanceNavigationTiming::redirectStart() const {
+DOMHighResTimeStamp PerformanceNavigationTiming::redirectStart() const {
   if (!m_allowRedirectDetails)
     return 0;
-  return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin, m_redirectStart);
+  return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(m_timeOrigin,
+                                                             m_redirectStart);
 }
 
-double PerformanceNavigationTiming::redirectEnd() const {
+DOMHighResTimeStamp PerformanceNavigationTiming::redirectEnd() const {
   if (!m_allowRedirectDetails)
     return 0;
-  return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin, m_redirectEnd);
+  return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(m_timeOrigin,
+                                                             m_redirectEnd);
 }
 
-double PerformanceNavigationTiming::responseEnd() const {
-  return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin, m_responseEnd);
+DOMHighResTimeStamp PerformanceNavigationTiming::responseEnd() const {
+  return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(m_timeOrigin,
+                                                             m_responseEnd);
 }
 
 void PerformanceNavigationTiming::buildJSONValue(

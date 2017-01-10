@@ -6,6 +6,7 @@
 #define PerformanceNavigationTiming_h
 
 #include "core/CoreExport.h"
+#include "core/dom/DOMHighResTimeStamp.h"
 #include "core/timing/PerformanceResourceTiming.h"
 
 namespace blink {
@@ -42,22 +43,22 @@ class CORE_EXPORT PerformanceNavigationTiming final
                               unsigned long long decodedBodyLength,
                               bool didReuseConnection);
 
-  double unloadEventStart() const;
-  double unloadEventEnd() const;
-  double domInteractive() const;
-  double domContentLoadedEventStart() const;
-  double domContentLoadedEventEnd() const;
-  double domComplete() const;
-  double loadEventStart() const;
-  double loadEventEnd() const;
+  DOMHighResTimeStamp unloadEventStart() const;
+  DOMHighResTimeStamp unloadEventEnd() const;
+  DOMHighResTimeStamp domInteractive() const;
+  DOMHighResTimeStamp domContentLoadedEventStart() const;
+  DOMHighResTimeStamp domContentLoadedEventEnd() const;
+  DOMHighResTimeStamp domComplete() const;
+  DOMHighResTimeStamp loadEventStart() const;
+  DOMHighResTimeStamp loadEventEnd() const;
   AtomicString type() const;
   unsigned short redirectCount() const;
 
   // PerformanceResourceTiming overrides:
-  double fetchStart() const override;
-  double redirectStart() const override;
-  double redirectEnd() const override;
-  double responseEnd() const override;
+  DOMHighResTimeStamp fetchStart() const override;
+  DOMHighResTimeStamp redirectStart() const override;
+  DOMHighResTimeStamp redirectEnd() const override;
+  DOMHighResTimeStamp responseEnd() const override;
 
  protected:
   void buildJSONValue(V8ObjectBuilder&) const override;

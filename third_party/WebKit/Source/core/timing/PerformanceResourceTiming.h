@@ -32,6 +32,7 @@
 #ifndef PerformanceResourceTiming_h
 #define PerformanceResourceTiming_h
 
+#include "core/dom/DOMHighResTimeStamp.h"
 #include "core/timing/PerformanceEntry.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -67,18 +68,18 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
 
   AtomicString initiatorType() const;
 
-  double workerStart() const;
-  virtual double redirectStart() const;
-  virtual double redirectEnd() const;
-  virtual double fetchStart() const;
-  double domainLookupStart() const;
-  double domainLookupEnd() const;
-  double connectStart() const;
-  double connectEnd() const;
-  double secureConnectionStart() const;
-  double requestStart() const;
-  double responseStart() const;
-  virtual double responseEnd() const;
+  DOMHighResTimeStamp workerStart() const;
+  virtual DOMHighResTimeStamp redirectStart() const;
+  virtual DOMHighResTimeStamp redirectEnd() const;
+  virtual DOMHighResTimeStamp fetchStart() const;
+  DOMHighResTimeStamp domainLookupStart() const;
+  DOMHighResTimeStamp domainLookupEnd() const;
+  DOMHighResTimeStamp connectStart() const;
+  DOMHighResTimeStamp connectEnd() const;
+  DOMHighResTimeStamp secureConnectionStart() const;
+  DOMHighResTimeStamp requestStart() const;
+  DOMHighResTimeStamp responseStart() const;
+  virtual DOMHighResTimeStamp responseEnd() const;
   unsigned long long transferSize() const;
   unsigned long long encodedBodySize() const;
   unsigned long long decodedBodySize() const;

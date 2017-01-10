@@ -55,11 +55,11 @@ String PerformanceEntry::entryType() const {
   return m_entryType;
 }
 
-double PerformanceEntry::startTime() const {
+DOMHighResTimeStamp PerformanceEntry::startTime() const {
   return m_startTime;
 }
 
-double PerformanceEntry::duration() const {
+DOMHighResTimeStamp PerformanceEntry::duration() const {
   return m_duration;
 }
 

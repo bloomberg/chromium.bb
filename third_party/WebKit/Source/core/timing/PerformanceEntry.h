@@ -34,6 +34,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
+#include "core/dom/DOMHighResTimeStamp.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
@@ -68,8 +69,8 @@ class CORE_EXPORT PerformanceEntry
 
   String name() const;
   String entryType() const;
-  double startTime() const;
-  double duration() const;
+  DOMHighResTimeStamp startTime() const;
+  DOMHighResTimeStamp duration() const;
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 
