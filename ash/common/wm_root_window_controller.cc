@@ -4,6 +4,7 @@
 
 #include "ash/common/wm_root_window_controller.h"
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/shelf_widget.h"
@@ -27,7 +28,12 @@
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "base/memory/ptr_util.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/models/menu_model.h"
+#include "ui/events/event_targeter.h"
+#include "ui/events/event_utils.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
@@ -228,6 +234,35 @@ WmWindow* WmRootWindowController::GetContainer(int container_id) {
 
 const WmWindow* WmRootWindowController::GetContainer(int container_id) const {
   return root_->GetChildByShellWindowId(container_id);
+}
+
+void WmRootWindowController::ConfigureWidgetInitParamsForContainer(
+    views::Widget* widget,
+    int shell_container_id,
+    views::Widget::InitParams* init_params) {
+  init_params->parent = WmWindowAura::GetAuraWindow(
+      GetWindow()->GetChildByShellWindowId(shell_container_id));
+}
+
+WmWindow* WmRootWindowController::FindEventTarget(
+    const gfx::Point& location_in_screen) {
+  gfx::Point location_in_root =
+      GetWindow()->ConvertPointFromScreen(location_in_screen);
+  aura::Window* root = WmWindowAura::GetAuraWindow(GetWindow());
+  ui::MouseEvent test_event(ui::ET_MOUSE_MOVED, location_in_root,
+                            location_in_root, ui::EventTimeForNow(),
+                            ui::EF_NONE, ui::EF_NONE);
+  ui::EventTarget* event_handler = static_cast<ui::EventTarget*>(root)
+                                       ->GetEventTargeter()
+                                       ->FindTargetForEvent(root, &test_event);
+  return WmWindowAura::Get(static_cast<aura::Window*>(event_handler));
+}
+
+gfx::Point WmRootWindowController::GetLastMouseLocationInRoot() {
+  return WmWindowAura::GetAuraWindow(GetWindow())
+      ->GetHost()
+      ->dispatcher()
+      ->GetLastMouseLocationInRoot();
 }
 
 void WmRootWindowController::ShowContextMenu(

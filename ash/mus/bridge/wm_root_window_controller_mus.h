@@ -54,12 +54,6 @@ class WmRootWindowControllerMus : public WmRootWindowController {
   WmShell* GetShell() override;
   WmShelf* GetShelf() override;
   WmWindow* GetWindow() override;
-  void ConfigureWidgetInitParamsForContainer(
-      views::Widget* widget,
-      int shell_container_id,
-      views::Widget::InitParams* init_params) override;
-  WmWindow* FindEventTarget(const gfx::Point& location_in_screen) override;
-  gfx::Point GetLastMouseLocationInRoot() override;
 
  private:
   friend class RootWindowController;

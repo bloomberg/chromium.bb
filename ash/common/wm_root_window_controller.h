@@ -112,21 +112,21 @@ class ASH_EXPORT WmRootWindowController {
 
   // Configures |init_params| prior to initializing |widget|.
   // |shell_container_id| is the id of the container to parent |widget| to.
-  virtual void ConfigureWidgetInitParamsForContainer(
+  void ConfigureWidgetInitParamsForContainer(
       views::Widget* widget,
       int shell_container_id,
-      views::Widget::InitParams* init_params) = 0;
+      views::Widget::InitParams* init_params);
 
   // Returns the window events will be targeted at for the specified location
   // (in screen coordinates).
   //
   // NOTE: the returned window may not contain the location as resize handles
   // may extend outside the bounds of the window.
-  virtual WmWindow* FindEventTarget(const gfx::Point& location_in_screen) = 0;
+  WmWindow* FindEventTarget(const gfx::Point& location_in_screen);
 
   // Gets the last location seen in a mouse event in this root window's
   // coordinates. This may return a point outside the root window's bounds.
-  virtual gfx::Point GetLastMouseLocationInRoot() = 0;
+  gfx::Point GetLastMouseLocationInRoot();
 
   // Shows a context menu at the |location_in_screen|.
   void ShowContextMenu(const gfx::Point& location_in_screen,

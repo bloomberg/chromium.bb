@@ -14,7 +14,6 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 #include "ui/display/display.h"
-#include "ui/views/widget/widget.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(ash::mus::WmRootWindowControllerMus*);
 
@@ -84,31 +83,6 @@ WmShelf* WmRootWindowControllerMus::GetShelf() {
 
 WmWindow* WmRootWindowControllerMus::GetWindow() {
   return WmWindowMus::Get(root_window_controller_->root());
-}
-
-void WmRootWindowControllerMus::ConfigureWidgetInitParamsForContainer(
-    views::Widget* widget,
-    int shell_container_id,
-    views::Widget::InitParams* init_params) {
-  init_params->parent = WmWindowMus::GetAuraWindow(
-      WmWindowMus::Get(root_window_controller_->root())
-          ->GetChildByShellWindowId(shell_container_id));
-  DCHECK(init_params->parent);
-}
-
-WmWindow* WmRootWindowControllerMus::FindEventTarget(
-    const gfx::Point& location_in_screen) {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
-gfx::Point WmRootWindowControllerMus::GetLastMouseLocationInRoot() {
-  gfx::Point location = root_window_controller_->window_manager()
-                            ->window_tree_client()
-                            ->GetCursorScreenPoint();
-  location -=
-      root_window_controller_->display().bounds().origin().OffsetFromOrigin();
-  return location;
 }
 
 bool WmRootWindowControllerMus::ShouldDestroyWindowInCloseChildWindows(
