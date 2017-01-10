@@ -5290,6 +5290,22 @@
     "isolated_scripts": [
       {
         "args": [
+          "-v"
+        ],
+        "isolate_name": "angle_perftests",
+        "name": "angle_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Linux"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
           "context_lost",
           "--show-stdout",
           "--browser=release",
@@ -9790,6 +9806,22 @@
     "isolated_scripts": [
       {
         "args": [
+          "-v"
+        ],
+        "isolate_name": "angle_perftests",
+        "name": "angle_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Linux"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
           "webgl_conformance",
           "--show-stdout",
           "--browser=release",
@@ -10316,6 +10348,22 @@
       }
     ],
     "isolated_scripts": [
+      {
+        "args": [
+          "-v"
+        ],
+        "isolate_name": "angle_perftests",
+        "name": "angle_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        }
+      },
       {
         "args": [
           "webgl_conformance",
@@ -16320,6 +16368,22 @@
       }
     ],
     "isolated_scripts": [
+      {
+        "args": [
+          "-v"
+        ],
+        "isolate_name": "angle_perftests",
+        "name": "angle_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        }
+      },
       {
         "args": [
           "context_lost",

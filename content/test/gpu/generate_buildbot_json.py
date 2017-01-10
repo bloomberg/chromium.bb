@@ -1399,6 +1399,32 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
   },
 }
 
+# These isolated tests don't use telemetry. They need to be placed in the
+# isolated_scripts section of the generated json.
+NON_TELEMETRY_ISOLATED_SCRIPT_TESTS = {
+  # We run angle_perftests on the ANGLE CQ to ensure the tests don't crash.
+  'angle_perftests': {
+    'tester_configs': [
+      {
+        'fyi_only': True,
+        'run_on_optional': True,
+        # Run on the Win/Linux Release NVIDIA bots.
+        'build_configs': ['Release'],
+        'swarming_dimension_sets': [
+          {
+            'gpu': '10de:104a',
+            'os': 'Windows-2008ServerR2-SP1'
+          },
+          {
+            'gpu': '10de:104a',
+            'os': 'Linux'
+          }
+        ],
+      },
+    ],
+  },
+}
+
 def substitute_args(tester_config, args):
   """Substitutes the ${os_type} variable in |args| from the
      tester_config's "os_type" property.
@@ -1551,62 +1577,6 @@ def generate_gtest(tester_name, tester_config, test, test_config, is_fyi):
   result['use_xvfb'] = False
   return result
 
-def generate_telemetry_test(tester_name, tester_config,
-                            test, test_config, is_fyi):
-  if not should_run_on_tester(tester_name, tester_config, test_config, is_fyi):
-    return None
-  test_args = ['-v']
-  # --expose-gc allows the WebGL conformance tests to more reliably
-  # reproduce GC-related bugs in the V8 bindings.
-  extra_browser_args_string = (
-      '--enable-logging=stderr --js-flags=--expose-gc')
-  if 'extra_browser_args' in test_config:
-    extra_browser_args_string += ' ' + ' '.join(
-        test_config['extra_browser_args'])
-  test_args.append('--extra-browser-args=' + extra_browser_args_string)
-  if 'args' in test_config:
-    test_args.extend(substitute_args(tester_config, test_config['args']))
-  if 'desktop_args' in test_config and not is_android(tester_config):
-    test_args.extend(substitute_args(tester_config,
-                                     test_config['desktop_args']))
-  if 'android_args' in test_config and is_android(tester_config):
-    test_args.extend(substitute_args(tester_config,
-                                     test_config['android_args']))
-  # The step name must end in 'test' or 'tests' in order for the
-  # results to automatically show up on the flakiness dashboard.
-  # (At least, this was true some time ago.) Continue to use this
-  # naming convention for the time being to minimize changes.
-  step_name = test
-  if not (step_name.endswith('test') or step_name.endswith('tests')):
-    step_name = '%s_tests' % step_name
-  # Prepend Telemetry GPU-specific flags.
-  benchmark_name = test_config.get('target_name') or test
-  prefix_args = [
-    benchmark_name,
-    '--show-stdout',
-    '--browser=%s' % tester_config['build_config'].lower()
-  ]
-  swarming = {
-    # Always say this is true regardless of whether the tester
-    # supports swarming. It doesn't hurt.
-    'can_use_on_swarming_builders': True,
-    'dimension_sets': tester_config['swarming_dimensions']
-  }
-  if 'swarming' in test_config:
-    swarming.update(test_config['swarming'])
-  result = {
-    'args': prefix_args + test_args,
-    'isolate_name': 'telemetry_gpu_integration_test',
-    'name': step_name,
-    'override_compile_targets': ['telemetry_gpu_integration_test_run'],
-    'swarming': swarming,
-  }
-  if 'non_precommit_args' in test_config:
-    result['non_precommit_args'] = test_config['non_precommit_args']
-  if 'precommit_args' in test_config:
-    result['precommit_args'] = test_config['precommit_args']
-  return result
-
 def generate_gtests(tester_name, tester_config, test_dictionary, is_fyi):
   # The relative ordering of some of the tests is important to
   # minimize differences compared to the handwritten JSON files, since
@@ -1622,11 +1592,93 @@ def generate_gtests(tester_name, tester_config, test_dictionary, is_fyi):
       gtests.append(test)
   return gtests
 
+def generate_isolated_test(tester_name, tester_config, test, test_config,
+                           is_fyi, extra_browser_args, isolate_name,
+                           override_compile_targets, prefix_args):
+  if not should_run_on_tester(tester_name, tester_config, test_config, is_fyi):
+    return None
+  test_args = ['-v']
+  extra_browser_args_string = ""
+  if extra_browser_args != None:
+    extra_browser_args_string += ' '.join(extra_browser_args)
+  if 'extra_browser_args' in test_config:
+    extra_browser_args_string += ' ' + ' '.join(
+        test_config['extra_browser_args'])
+  if extra_browser_args_string != "":
+    test_args.append('--extra-browser-args=' + extra_browser_args_string)
+  if 'args' in test_config:
+    test_args.extend(substitute_args(tester_config, test_config['args']))
+  if 'desktop_args' in test_config and not is_android(tester_config):
+    test_args.extend(substitute_args(tester_config,
+                                     test_config['desktop_args']))
+  if 'android_args' in test_config and is_android(tester_config):
+    test_args.extend(substitute_args(tester_config,
+                                     test_config['android_args']))
+  # The step name must end in 'test' or 'tests' in order for the
+  # results to automatically show up on the flakiness dashboard.
+  # (At least, this was true some time ago.) Continue to use this
+  # naming convention for the time being to minimize changes.
+  step_name = test
+  if not (step_name.endswith('test') or step_name.endswith('tests')):
+    step_name = '%s_tests' % step_name
+  # Prepend GPU-specific flags.
+  swarming = {
+    # Always say this is true regardless of whether the tester
+    # supports swarming. It doesn't hurt.
+    'can_use_on_swarming_builders': True,
+    'dimension_sets': tester_config['swarming_dimensions']
+  }
+  if 'swarming' in test_config:
+    swarming.update(test_config['swarming'])
+  result = {
+    'args': prefix_args + test_args,
+    'isolate_name': isolate_name,
+    'name': step_name,
+    'swarming': swarming,
+  }
+  if override_compile_targets != None:
+    result['override_compile_targets'] = override_compile_targets
+  if 'non_precommit_args' in test_config:
+    result['non_precommit_args'] = test_config['non_precommit_args']
+  if 'precommit_args' in test_config:
+    result['precommit_args'] = test_config['precommit_args']
+  return result
+
+def generate_telemetry_test(tester_name, tester_config,
+                            test, test_config, is_fyi):
+  extra_browser_args = ['--enable-logging=stderr', '--js-flags=--expose-gc']
+  benchmark_name = test_config.get('target_name') or test
+  prefix_args = [
+    benchmark_name,
+    '--show-stdout',
+    '--browser=%s' % tester_config['build_config'].lower()
+  ]
+  return generate_isolated_test(tester_name, tester_config, test,
+                                test_config, is_fyi, extra_browser_args,
+                                'telemetry_gpu_integration_test',
+                                ['telemetry_gpu_integration_test_run'],
+                                prefix_args)
+
 def generate_telemetry_tests(tester_name, tester_config,
                              test_dictionary, is_fyi):
   isolated_scripts = []
   for test_name, test_config in sorted(test_dictionary.iteritems()):
     test = generate_telemetry_test(
+      tester_name, tester_config, test_name, test_config, is_fyi)
+    if test:
+      isolated_scripts.append(test)
+  return isolated_scripts
+
+def generate_non_telemetry_isolated_test(tester_name, tester_config,
+                                         test, test_config, is_fyi):
+  return generate_isolated_test(tester_name, tester_config, test,
+                                test_config, is_fyi, None, test, None, [])
+
+def generate_non_telemetry_isolated_tests(tester_name, tester_config,
+                                          test_dictionary, is_fyi):
+  isolated_scripts = []
+  for test_name, test_config in sorted(test_dictionary.iteritems()):
+    test = generate_non_telemetry_isolated_test(
       tester_name, tester_config, test_name, test_config, is_fyi)
     if test:
       isolated_scripts.append(test)
@@ -1640,7 +1692,9 @@ def generate_all_tests(waterfall, is_fyi):
     gtests = generate_gtests(name, config, COMMON_GTESTS, is_fyi)
     isolated_scripts = \
       generate_telemetry_tests(
-        name, config, TELEMETRY_GPU_INTEGRATION_TESTS, is_fyi)
+        name, config, TELEMETRY_GPU_INTEGRATION_TESTS, is_fyi) + \
+      generate_non_telemetry_isolated_tests(name, config,
+          NON_TELEMETRY_ISOLATED_SCRIPT_TESTS, is_fyi)
     tests[name] = {
       'gtest_tests': sorted(gtests, key=lambda x: x['test']),
       'isolated_scripts': sorted(isolated_scripts, key=lambda x: x['name'])
