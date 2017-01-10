@@ -21,9 +21,11 @@
 
 import argparse
 import os
+import re
 import shutil
 import subprocess
 import sys
+import urlparse
 
 DEFAULT_USER_REQUEST = True
 DEFAULT_USE_TEST_SCHEDULER = True
@@ -155,9 +157,13 @@ def main(args):
   # Also turning off the strict mode so that we won't run into StrictMode
   # violations when writing to files.
   test_runner_cmd = [
-      test_runner_path, '-f',
+      test_runner_path,
+      '-f',
       'OfflinePageSavePageLaterEvaluationTest.testFailureRate',
-      '--timeout-scale', '20.0', '--strict-mode', 'off',
+      '--timeout-scale',
+      '20.0',
+      '--strict-mode',
+      'off',
   ]
   if options.verbose:
     test_runner_cmd += ['-v']
@@ -183,6 +189,28 @@ def main(args):
           options.output_dir
       ]))
   print 'Test finished!'
+
+  print 'Renaming archive files with host names.'
+  pattern = 'Content-Location: (.*)'
+  for filename in os.listdir(archive_dir):
+    path = os.path.join(archive_dir, filename)
+    with open(path) as f:
+      content = f.read()
+    result = re.search(pattern, content)
+    if (result == None):
+      continue
+    url = result.group(1)
+    url_parse = urlparse.urlparse(url)
+    hostname = url_parse[1].replace('.', '_')
+    url_path = re.sub('[^0-9a-zA-Z]+', '_', url_parse[2][1:])
+
+    if (len(hostname) == 0):
+      hostname = 'error_parsing_hostname'
+      continue
+    newname = hostname + '-' + url_path
+    newpath = os.path.join(archive_dir, newname + '.mhtml')
+    os.rename(path, newpath)
+  print 'Renaming finished.'
 
 
 if __name__ == '__main__':
