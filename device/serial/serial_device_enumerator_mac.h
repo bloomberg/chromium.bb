@@ -17,7 +17,7 @@ class SerialDeviceEnumeratorMac : public SerialDeviceEnumerator {
   ~SerialDeviceEnumeratorMac() override;
 
   // Implementation for SerialDeviceEnumerator.
-  mojo::Array<serial::DeviceInfoPtr> GetDevices() override;
+  std::vector<serial::DeviceInfoPtr> GetDevices() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SerialDeviceEnumeratorMac);

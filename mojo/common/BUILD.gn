@@ -28,8 +28,6 @@ component("common_base") {
   output_name = "mojo_common_lib"
 
   sources = [
-    "common_type_converters.cc",
-    "common_type_converters.h",
     "data_pipe_drainer.cc",
     "data_pipe_drainer.h",
     "data_pipe_utils.cc",
@@ -74,7 +72,6 @@ test("mojo_common_unittests") {
 
   sources = [
     "common_custom_types_unittest.cc",
-    "common_type_converters_unittest.cc",
     "struct_traits_unittest.cc",
   ]
 }

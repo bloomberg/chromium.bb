@@ -88,8 +88,8 @@ int Clamp(int value, int min, int max) {
 // Returns an array of devices as retrieved through the new method of
 // enumerating serial devices (SetupDi).  This new method gives more information
 // about the devices than the old method.
-mojo::Array<serial::DeviceInfoPtr> GetDevicesNew() {
-  mojo::Array<serial::DeviceInfoPtr> devices;
+std::vector<serial::DeviceInfoPtr> GetDevicesNew() {
+  std::vector<serial::DeviceInfoPtr> devices;
 
   // Make a device interface query to find all serial devices.
   HDEVINFO dev_info =
@@ -140,10 +140,10 @@ mojo::Array<serial::DeviceInfoPtr> GetDevicesNew() {
 // Returns an array of devices as retrieved through the old method of
 // enumerating serial devices (searching the registry). This old method gives
 // less information about the devices than the new method.
-mojo::Array<serial::DeviceInfoPtr> GetDevicesOld() {
+std::vector<serial::DeviceInfoPtr> GetDevicesOld() {
   base::win::RegistryValueIterator iter_key(
       HKEY_LOCAL_MACHINE, L"HARDWARE\\DEVICEMAP\\SERIALCOMM\\");
-  mojo::Array<serial::DeviceInfoPtr> devices;
+  std::vector<serial::DeviceInfoPtr> devices;
   for (; iter_key.Valid(); ++iter_key) {
     serial::DeviceInfoPtr info(serial::DeviceInfo::New());
     info->path = base::UTF16ToASCII(iter_key.Value());
@@ -164,9 +164,9 @@ SerialDeviceEnumeratorWin::SerialDeviceEnumeratorWin() {}
 
 SerialDeviceEnumeratorWin::~SerialDeviceEnumeratorWin() {}
 
-mojo::Array<serial::DeviceInfoPtr> SerialDeviceEnumeratorWin::GetDevices() {
-  mojo::Array<serial::DeviceInfoPtr> devices = GetDevicesNew();
-  mojo::Array<serial::DeviceInfoPtr> old_devices = GetDevicesOld();
+std::vector<serial::DeviceInfoPtr> SerialDeviceEnumeratorWin::GetDevices() {
+  std::vector<serial::DeviceInfoPtr> devices = GetDevicesNew();
+  std::vector<serial::DeviceInfoPtr> old_devices = GetDevicesOld();
 
   UMA_HISTOGRAM_SPARSE_SLOWLY(
       "Hardware.Serial.NewMinusOldDeviceListSize",

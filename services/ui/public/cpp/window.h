@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "cc/surfaces/surface_info.h"
-#include "mojo/public/cpp/bindings/array.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 #include "services/ui/common/types.h"
 #include "services/ui/public/cpp/window_compositor_frame_sink.h"

@@ -9,7 +9,6 @@
 #include <unordered_map>
 
 #include "base/bind.h"
-#include "mojo/public/cpp/bindings/array.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace ui {

@@ -13,8 +13,6 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "device/usb/usb_device.h"
-#include "mojo/common/common_type_converters.h"
-#include "mojo/public/cpp/bindings/array.h"
 
 namespace mojo {
 

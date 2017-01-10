@@ -67,7 +67,7 @@ class UserDisplayManager : public mojom::DisplayManager {
   // Fills in a WsDisplayPtr for |display|.
   mojom::WsDisplayPtr GetWsDisplayPtr(const Display& display);
 
-  mojo::Array<mojom::WsDisplayPtr> GetAllDisplays();
+  std::vector<mojom::WsDisplayPtr> GetAllDisplays();
 
   // Calls OnDisplays() on |observer|.
   void CallOnDisplays(mojom::DisplayManagerObserver* observer);

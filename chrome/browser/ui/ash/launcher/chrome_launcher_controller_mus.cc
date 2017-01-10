@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "extensions/grit/extensions_browser_resources.h"
-#include "mojo/common/common_type_converters.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event_constants.h"
 

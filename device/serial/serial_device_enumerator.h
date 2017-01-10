@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "device/serial/serial.mojom.h"
-#include "mojo/public/cpp/bindings/array.h"
 
 namespace device {
 
@@ -20,7 +19,7 @@ class SerialDeviceEnumerator {
   SerialDeviceEnumerator();
   virtual ~SerialDeviceEnumerator();
 
-  virtual mojo::Array<serial::DeviceInfoPtr> GetDevices() = 0;
+  virtual std::vector<serial::DeviceInfoPtr> GetDevices() = 0;
 };
 
 }  // namespace device

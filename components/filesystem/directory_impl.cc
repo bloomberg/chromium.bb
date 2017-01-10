@@ -16,7 +16,6 @@
 #include "components/filesystem/file_impl.h"
 #include "components/filesystem/lock_table.h"
 #include "components/filesystem/util.h"
-#include "mojo/common/common_type_converters.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace filesystem {
@@ -291,14 +290,14 @@ void DirectoryImpl::ReadEntireFile(const std::string& raw_path,
     return;
   }
 
-  std::string contents;
+  std::vector<uint8_t> contents;
   const int kBufferSize = 1 << 16;
   std::unique_ptr<char[]> buf(new char[kBufferSize]);
   int len;
   while ((len = base_file.ReadAtCurrentPos(buf.get(), kBufferSize)) > 0)
-    contents.append(buf.get(), len);
+    contents.insert(contents.end(), buf.get(), buf.get() + len);
 
-  callback.Run(mojom::FileError::OK, mojo::Array<uint8_t>::From(contents));
+  callback.Run(mojom::FileError::OK, contents);
 }
 
 void DirectoryImpl::WriteFile(const std::string& raw_path,

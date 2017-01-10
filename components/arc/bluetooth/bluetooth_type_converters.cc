@@ -17,7 +17,6 @@
 #include "components/arc/bluetooth/bluetooth_type_converters.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/bluetooth_uuid.h"
-#include "mojo/public/cpp/bindings/array.h"
 
 namespace {
 

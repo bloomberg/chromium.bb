@@ -24,8 +24,8 @@ namespace device {
 namespace {
 
 class FakeSerialDeviceEnumerator : public SerialDeviceEnumerator {
-  mojo::Array<serial::DeviceInfoPtr> GetDevices() override {
-    mojo::Array<serial::DeviceInfoPtr> devices(1);
+  std::vector<serial::DeviceInfoPtr> GetDevices() override {
+    std::vector<serial::DeviceInfoPtr> devices(1);
     devices[0] = serial::DeviceInfo::New();
     devices[0]->path = "device";
     return devices;
@@ -50,7 +50,7 @@ class SerialServiceTest : public testing::Test {
  public:
   SerialServiceTest() : connected_(false), expecting_error_(false) {}
 
-  void StoreDevices(mojo::Array<serial::DeviceInfoPtr> devices) {
+  void StoreDevices(std::vector<serial::DeviceInfoPtr> devices) {
     devices_ = std::move(devices);
     StopMessageLoop();
   }
@@ -110,7 +110,7 @@ class SerialServiceTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   std::unique_ptr<base::RunLoop> run_loop_;
-  mojo::Array<serial::DeviceInfoPtr> devices_;
+  std::vector<serial::DeviceInfoPtr> devices_;
   scoped_refptr<TestSerialIoHandler> io_handler_;
   bool connected_;
   bool expecting_error_;
@@ -125,7 +125,7 @@ TEST_F(SerialServiceTest, GetDevices) {
   SerialServiceImpl::Create(NULL, NULL, mojo::MakeRequest(&service));
   service.set_connection_error_handler(base::Bind(
       &SerialServiceTest::OnConnectionError, base::Unretained(this)));
-  mojo::Array<serial::DeviceInfoPtr> result;
+  std::vector<serial::DeviceInfoPtr> result;
   service->GetDevices(
       base::Bind(&SerialServiceTest::StoreDevices, base::Unretained(this)));
   RunMessageLoop();

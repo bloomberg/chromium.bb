@@ -88,9 +88,9 @@ void SerialGetDevicesFunction::Work() {
 
   std::unique_ptr<device::SerialDeviceEnumerator> enumerator =
       device::SerialDeviceEnumerator::Create();
-  mojo::Array<device::serial::DeviceInfoPtr> devices = enumerator->GetDevices();
+  std::vector<device::serial::DeviceInfoPtr> devices = enumerator->GetDevices();
   results_ = serial::GetDevices::Results::Create(
-      devices.To<std::vector<serial::DeviceInfo>>());
+      mojo::ConvertTo<std::vector<serial::DeviceInfo>>(devices));
 }
 
 SerialConnectFunction::SerialConnectFunction() {

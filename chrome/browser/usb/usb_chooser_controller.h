@@ -16,7 +16,6 @@
 #include "chrome/browser/chooser_controller/chooser_controller.h"
 #include "device/usb/public/interfaces/chooser_service.mojom.h"
 #include "device/usb/usb_service.h"
-#include "mojo/public/cpp/bindings/array.h"
 
 namespace content {
 class RenderFrameHost;
@@ -34,7 +33,7 @@ class UsbChooserController : public ChooserController,
  public:
   UsbChooserController(
       content::RenderFrameHost* render_frame_host,
-      mojo::Array<device::usb::DeviceFilterPtr> device_filters,
+      const std::vector<device::usb::DeviceFilterPtr>& device_filters,
       const device::usb::ChooserService::GetPermissionCallback& callback);
   ~UsbChooserController() override;
 

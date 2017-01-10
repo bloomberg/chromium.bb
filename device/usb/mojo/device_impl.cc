@@ -19,7 +19,6 @@
 #include "device/usb/mojo/type_converters.h"
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device.h"
-#include "mojo/common/common_type_converters.h"
 #include "net/base/io_buffer.h"
 
 namespace device {

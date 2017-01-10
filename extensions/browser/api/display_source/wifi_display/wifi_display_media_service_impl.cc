@@ -20,7 +20,7 @@ namespace extensions {
 
 class WiFiDisplayMediaServiceImpl::PacketIOBuffer : public net::IOBuffer {
  public:
-  explicit PacketIOBuffer(mojo::Array<uint8_t> array);
+  explicit PacketIOBuffer(std::vector<uint8_t> array);
 
   int size() const { return packet_data_.size(); }
 
@@ -31,7 +31,7 @@ class WiFiDisplayMediaServiceImpl::PacketIOBuffer : public net::IOBuffer {
 };
 
 WiFiDisplayMediaServiceImpl::PacketIOBuffer::PacketIOBuffer(
-    mojo::Array<uint8_t> array) {
+    std::vector<uint8_t> array) {
   array.Swap(&packet_data_);
   data_ = reinterpret_cast<char*>(packet_data_.data());
 }

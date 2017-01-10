@@ -101,8 +101,8 @@ int Clamp(int value, int min, int max) {
 // Returns an array of devices as retrieved through the new method of
 // enumerating serial devices (IOKit).  This new method gives more information
 // about the devices than the old method.
-mojo::Array<serial::DeviceInfoPtr> GetDevicesNew() {
-  mojo::Array<serial::DeviceInfoPtr> devices;
+std::vector<serial::DeviceInfoPtr> GetDevicesNew() {
+  std::vector<serial::DeviceInfoPtr> devices;
 
   // Make a service query to find all serial devices.
   CFMutableDictionaryRef matchingDict =
@@ -167,7 +167,7 @@ mojo::Array<serial::DeviceInfoPtr> GetDevicesNew() {
 // Returns an array of devices as retrieved through the old method of
 // enumerating serial devices (pattern matching in /dev/). This old method gives
 // less information about the devices than the new method.
-mojo::Array<serial::DeviceInfoPtr> GetDevicesOld() {
+std::vector<serial::DeviceInfoPtr> GetDevicesOld() {
   const base::FilePath kDevRoot("/dev");
   const int kFilesAndSymLinks =
       base::FileEnumerator::FILES | base::FileEnumerator::SHOW_SYM_LINKS;
@@ -181,7 +181,7 @@ mojo::Array<serial::DeviceInfoPtr> GetDevicesOld() {
   valid_patterns.insert("/dev/tty.*");
   valid_patterns.insert("/dev/cu.*");
 
-  mojo::Array<serial::DeviceInfoPtr> devices;
+  std::vector<serial::DeviceInfoPtr> devices;
   base::FileEnumerator enumerator(kDevRoot, false, kFilesAndSymLinks);
   do {
     const base::FilePath next_device_path(enumerator.Next());
@@ -214,9 +214,9 @@ SerialDeviceEnumeratorMac::SerialDeviceEnumeratorMac() {}
 
 SerialDeviceEnumeratorMac::~SerialDeviceEnumeratorMac() {}
 
-mojo::Array<serial::DeviceInfoPtr> SerialDeviceEnumeratorMac::GetDevices() {
-  mojo::Array<serial::DeviceInfoPtr> devices = GetDevicesNew();
-  mojo::Array<serial::DeviceInfoPtr> old_devices = GetDevicesOld();
+std::vector<serial::DeviceInfoPtr> SerialDeviceEnumeratorMac::GetDevices() {
+  std::vector<serial::DeviceInfoPtr> devices = GetDevicesNew();
+  std::vector<serial::DeviceInfoPtr> old_devices = GetDevicesOld();
 
   UMA_HISTOGRAM_SPARSE_SLOWLY(
       "Hardware.Serial.NewMinusOldDeviceListSize",

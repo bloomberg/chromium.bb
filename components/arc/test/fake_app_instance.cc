@@ -15,7 +15,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "mojo/common/common_type_converters.h"
 
 namespace mojo {
 
@@ -114,7 +113,8 @@ bool FakeAppInstance::GenerateAndSendIcon(const mojom::AppInfo& app,
   }
 
   app_host_->OnAppIcon(app.package_name, app.activity, scale_factor,
-                       mojo::Array<uint8_t>::From(*png_data_as_string));
+                       std::vector<uint8_t>(png_data_as_string->begin(),
+                                            png_data_as_string->end()));
 
   return true;
 }
@@ -261,7 +261,8 @@ void FakeAppInstance::RequestIcon(const std::string& icon_resource_id,
 
   std::string png_data_as_string;
   if (GetFakeIcon(scale_factor, &png_data_as_string)) {
-    callback.Run(mojo::Array<uint8_t>::From(png_data_as_string));
+    callback.Run(std::vector<uint8_t>(png_data_as_string.begin(),
+                                      png_data_as_string.end()));
   }
 }
 

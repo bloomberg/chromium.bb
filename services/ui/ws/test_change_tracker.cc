@@ -8,11 +8,8 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "mojo/common/common_type_converters.h"
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/ui/common/util.h"
-
-using mojo::Array;
 
 namespace ui {
 
@@ -301,7 +298,7 @@ void TestChangeTracker::OnWindowHierarchyChanged(
     Id window_id,
     Id old_parent_id,
     Id new_parent_id,
-    Array<mojom::WindowDataPtr> windows) {
+    std::vector<mojom::WindowDataPtr> windows) {
   Change change;
   change.type = CHANGE_TYPE_NODE_HIERARCHY_CHANGED;
   change.window_id = window_id;
@@ -374,17 +371,18 @@ void TestChangeTracker::OnPointerEventObserved(const ui::Event& event,
   AddChange(change);
 }
 
-void TestChangeTracker::OnWindowSharedPropertyChanged(Id window_id,
-                                                      const std::string& name,
-                                                      Array<uint8_t> data) {
+void TestChangeTracker::OnWindowSharedPropertyChanged(
+    Id window_id,
+    const std::string& name,
+    const base::Optional<std::vector<uint8_t>>& data) {
   Change change;
   change.type = CHANGE_TYPE_PROPERTY_CHANGED;
   change.window_id = window_id;
   change.property_key = name;
-  if (data.is_null())
+  if (!data)
     change.property_value = "NULL";
   else
-    change.property_value = data.To<std::string>();
+    change.property_value.assign(data->begin(), data->end());
   AddChange(change);
 }
 

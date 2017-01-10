@@ -9,7 +9,6 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/lib/fixed_buffer.h"
@@ -427,7 +426,7 @@ TEST(UnionTest, PodUnionInArray) {
 }
 
 TEST(UnionTest, PodUnionInArraySerialization) {
-  Array<PodUnionPtr> array(2);
+  std::vector<PodUnionPtr> array(2);
   array[0] = PodUnion::New();
   array[1] = PodUnion::New();
 
@@ -446,7 +445,7 @@ TEST(UnionTest, PodUnionInArraySerialization) {
   mojo::internal::Serialize<ArrayDataView<PodUnionDataView>>(
       array, &buf, &data, &validate_params, nullptr);
 
-  Array<PodUnionPtr> array2;
+  std::vector<PodUnionPtr> array2;
   mojo::internal::Deserialize<ArrayDataView<PodUnionDataView>>(data, &array2,
                                                                nullptr);
 
@@ -457,7 +456,7 @@ TEST(UnionTest, PodUnionInArraySerialization) {
 }
 
 TEST(UnionTest, PodUnionInArraySerializationWithNull) {
-  Array<PodUnionPtr> array(2);
+  std::vector<PodUnionPtr> array(2);
   array[0] = PodUnion::New();
 
   array[0]->set_f_int8(10);
@@ -474,7 +473,7 @@ TEST(UnionTest, PodUnionInArraySerializationWithNull) {
   mojo::internal::Serialize<ArrayDataView<PodUnionDataView>>(
       array, &buf, &data, &validate_params, nullptr);
 
-  Array<PodUnionPtr> array2;
+  std::vector<PodUnionPtr> array2;
   mojo::internal::Deserialize<ArrayDataView<PodUnionDataView>>(data, &array2,
                                                                nullptr);
 
@@ -485,7 +484,7 @@ TEST(UnionTest, PodUnionInArraySerializationWithNull) {
 }
 
 TEST(UnionTest, ObjectUnionInArraySerialization) {
-  Array<ObjectUnionPtr> array(2);
+  std::vector<ObjectUnionPtr> array(2);
   array[0] = ObjectUnion::New();
   array[1] = ObjectUnion::New();
 
@@ -520,7 +519,7 @@ TEST(UnionTest, ObjectUnionInArraySerialization) {
   ASSERT_TRUE(mojo::internal::Array_Data<internal::ObjectUnion_Data>::Validate(
       data, &validation_context, &validate_params));
 
-  Array<ObjectUnionPtr> array2;
+  std::vector<ObjectUnionPtr> array2;
   mojo::internal::Deserialize<ArrayDataView<ObjectUnionDataView>>(data, &array2,
                                                                   nullptr);
 
@@ -848,7 +847,7 @@ TEST(UnionTest, StructInUnionValidationNullable) {
 }
 
 TEST(UnionTest, ArrayInUnionGetterSetter) {
-  Array<int8_t> array(2);
+  std::vector<int8_t> array(2);
   array[0] = 8;
   array[1] = 9;
 
@@ -860,7 +859,7 @@ TEST(UnionTest, ArrayInUnionGetterSetter) {
 }
 
 TEST(UnionTest, ArrayInUnionSerialization) {
-  Array<int8_t> array(2);
+  std::vector<int8_t> array(2);
   array[0] = 8;
   array[1] = 9;
 
@@ -884,7 +883,7 @@ TEST(UnionTest, ArrayInUnionSerialization) {
 }
 
 TEST(UnionTest, ArrayInUnionValidation) {
-  Array<int8_t> array(2);
+  std::vector<int8_t> array(2);
   array[0] = 8;
   array[1] = 9;
 

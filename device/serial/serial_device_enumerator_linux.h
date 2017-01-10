@@ -18,7 +18,7 @@ class SerialDeviceEnumeratorLinux : public SerialDeviceEnumerator {
   ~SerialDeviceEnumeratorLinux() override;
 
   // Implementation for SerialDeviceEnumerator.
-  mojo::Array<serial::DeviceInfoPtr> GetDevices() override;
+  std::vector<serial::DeviceInfoPtr> GetDevices() override;
 
  private:
   ScopedUdevPtr udev_;

@@ -1056,7 +1056,8 @@ void WindowTreeClient::OnWindowSharedPropertyChanged(
   if (ApplyServerChangeToExistingInFlightChange(new_change))
     return;
 
-  WindowPrivate(window).LocalSetSharedProperty(name, new_data);
+  WindowPrivate(window).LocalSetSharedProperty(
+      name, new_data ? &new_data.value() : nullptr);
 }
 
 void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,

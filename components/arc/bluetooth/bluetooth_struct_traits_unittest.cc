@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_uuid.h"
-#include "mojo/public/cpp/bindings/array.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

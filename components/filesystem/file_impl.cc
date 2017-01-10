@@ -17,7 +17,6 @@
 #include "components/filesystem/lock_table.h"
 #include "components/filesystem/shared_temp_dir.h"
 #include "components/filesystem/util.h"
-#include "mojo/common/common_type_converters.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 static_assert(sizeof(off_t) <= sizeof(int64_t), "off_t too big");

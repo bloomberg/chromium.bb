@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/array.h"
 #include "services/ui/common/types.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "ui/gfx/geometry/mojo/geometry.mojom.h"
@@ -151,7 +150,7 @@ class TestChangeTracker {
   void OnWindowHierarchyChanged(Id window_id,
                                 Id old_parent_id,
                                 Id new_parent_id,
-                                mojo::Array<mojom::WindowDataPtr> windows);
+                                std::vector<mojom::WindowDataPtr> windows);
   void OnWindowReordered(Id window_id,
                          Id relative_window_id,
                          mojom::OrderDirection direction);
@@ -164,9 +163,10 @@ class TestChangeTracker {
                           bool matches_pointer_watcher);
   void OnPointerEventObserved(const ui::Event& event,
                               uint32_t window_id);
-  void OnWindowSharedPropertyChanged(Id window_id,
-                                     const std::string& name,
-                                     mojo::Array<uint8_t> data);
+  void OnWindowSharedPropertyChanged(
+      Id window_id,
+      const std::string& name,
+      const base::Optional<std::vector<uint8_t>>& data);
   void OnWindowFocused(Id window_id);
   void OnWindowPredefinedCursorChanged(Id window_id, mojom::Cursor cursor_id);
   void OnChangeCompleted(uint32_t change_id, bool success);

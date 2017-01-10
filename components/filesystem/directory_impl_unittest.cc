@@ -10,12 +10,13 @@
 
 #include "base/macros.h"
 #include "components/filesystem/files_test_base.h"
-#include "mojo/common/common_type_converters.h"
 
 namespace filesystem {
 namespace {
 
 using DirectoryImplTest = FilesTestBase;
+
+constexpr char kData[] = "one two three";
 
 TEST_F(DirectoryImplTest, Read) {
   mojom::DirectoryPtr directory;
@@ -169,10 +170,9 @@ TEST_F(DirectoryImplTest, Clone) {
     // deleted since it has clones.
   }
 
-  std::string data("one two three");
+  std::vector<uint8_t> data(kData, kData + strlen(kData));
   {
-    bool handled =
-        clone_one->WriteFile("data", mojo::Array<uint8_t>::From(data), &error);
+    bool handled = clone_one->WriteFile("data", data, &error);
     ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::OK, error);
   }
@@ -183,8 +183,7 @@ TEST_F(DirectoryImplTest, Clone) {
     ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::OK, error);
 
-    EXPECT_EQ(data,
-              mojo::Array<uint8_t>(std::move(file_contents)).To<std::string>());
+    EXPECT_EQ(data, file_contents);
   }
 }
 
@@ -193,10 +192,9 @@ TEST_F(DirectoryImplTest, WriteFileReadFile) {
   GetTemporaryRoot(&directory);
   mojom::FileError error;
 
-  std::string data("one two three");
+  std::vector<uint8_t> data(kData, kData + strlen(kData));
   {
-    bool handled =
-        directory->WriteFile("data", mojo::Array<uint8_t>::From(data), &error);
+    bool handled = directory->WriteFile("data", data, &error);
     ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::OK, error);
   }
@@ -207,8 +205,7 @@ TEST_F(DirectoryImplTest, WriteFileReadFile) {
     ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::OK, error);
 
-    EXPECT_EQ(data,
-              mojo::Array<uint8_t>(std::move(file_contents)).To<std::string>());
+    EXPECT_EQ(data, file_contents);
   }
 }
 
@@ -268,9 +265,8 @@ TEST_F(DirectoryImplTest, CantWriteFileOnADirectory) {
   }
 
   {
-    std::string data("one two three");
-    bool handled = directory->WriteFile(
-        "my_dir", mojo::Array<uint8_t>::From(data), &error);
+    std::vector<uint8_t> data(kData, kData + strlen(kData));
+    bool handled = directory->WriteFile("my_dir", data, &error);
     ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::NOT_A_FILE, error);
   }

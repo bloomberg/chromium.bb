@@ -23,7 +23,6 @@
 #include "base/time/default_clock.h"
 #include "base/values.h"
 #include "components/prefs/pref_filter.h"
-#include "mojo/common/common_type_converters.h"
 
 namespace filesystem {
 
@@ -366,8 +365,7 @@ void FilesystemJsonPrefStore::OnTempFileWriteStart() {
   serializer.Serialize(*prefs_);
 
   directory_->WriteFile(
-      "tmp",
-      mojo::Array<uint8_t>::From(output),
+      "tmp", std::vector<uint8_t>(output.begin(), output.end()),
       Bind(&FilesystemJsonPrefStore::OnTempFileWrite, AsWeakPtr()));
 }
 

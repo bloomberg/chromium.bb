@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <vector>
+
 namespace mojo {
 
 // Specialize the following class:
@@ -74,11 +76,26 @@ namespace mojo {
 template <typename T, typename U>
 struct TypeConverter;
 
+template <typename T, typename U>
+inline T ConvertTo(const U& obj);
+
 // The following specialization is useful when you are converting between
 // Array<POD> and std::vector<POD>.
 template <typename T>
 struct TypeConverter<T, T> {
   static T Convert(const T& obj) { return obj; }
+};
+
+template <typename T, typename Container>
+struct TypeConverter<std::vector<T>, Container> {
+  static std::vector<T> Convert(const Container& container) {
+    std::vector<T> output;
+    output.reserve(container.size());
+    for (const auto& obj : container) {
+      output.push_back(ConvertTo<T>(obj));
+    }
+    return output;
+  }
 };
 
 // The following helper function is useful for shorthand. The compiler can infer

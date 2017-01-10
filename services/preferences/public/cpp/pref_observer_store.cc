@@ -6,7 +6,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
-#include "mojo/public/cpp/bindings/array.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace preferences {

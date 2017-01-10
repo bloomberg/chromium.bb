@@ -117,7 +117,6 @@ target(link_target_type, "child") {
     "memory/child_memory_coordinator_impl_android.h",
     "memory/child_memory_message_filter.cc",
     "memory/child_memory_message_filter.h",
-    "mojo/type_converters.h",
     "notifications/notification_data_conversions.cc",
     "notifications/notification_data_conversions.h",
     "notifications/notification_dispatcher.cc",

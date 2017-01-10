@@ -8,13 +8,11 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "mojo/common/common_type_converters.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/ui/public/interfaces/clipboard.mojom.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 
-using mojo::Array;
 using ui::mojom::Clipboard;
 
 namespace ui {
@@ -64,14 +62,18 @@ class ClipboardAppTest : public service_manager::test::ServiceTest {
     clipboard_->ReadClipboardData(Clipboard::Type::COPY_PASTE, mime_type,
                                   &sequence_number, &raw_data);
     valid = raw_data.has_value();
-    *data = Array<uint8_t>(std::move(raw_data)).To<std::string>();
+    if (valid)
+      data->assign(raw_data->begin(), raw_data->end());
+    else
+      data->clear();
     return valid;
   }
 
   void SetStringText(const std::string& data) {
     uint64_t sequence_number;
     std::unordered_map<std::string, std::vector<uint8_t>> mime_data;
-    mime_data[mojom::kMimeTypeText] = Array<uint8_t>::From(data);
+    mime_data[mojom::kMimeTypeText] =
+        std::vector<uint8_t>(data.begin(), data.end());
     clipboard_->WriteClipboardData(Clipboard::Type::COPY_PASTE,
                                    std::move(mime_data),
                                    &sequence_number);
@@ -104,10 +106,10 @@ TEST_F(ClipboardAppTest, CanReadBackText) {
 
 TEST_F(ClipboardAppTest, CanSetMultipleDataTypesAtOnce) {
   std::unordered_map<std::string, std::vector<uint8_t>> mime_data;
-  mime_data[mojom::kMimeTypeText] =
-      Array<uint8_t>::From(std::string(kPlainTextData));
+  mime_data[mojom::kMimeTypeText] = std::vector<uint8_t>(
+      kPlainTextData, kPlainTextData + strlen(kPlainTextData));
   mime_data[mojom::kMimeTypeHTML] =
-      Array<uint8_t>::From(std::string(kHtmlData));
+      std::vector<uint8_t>(kHtmlData, kHtmlData + strlen(kHtmlData));
 
   uint64_t sequence_num = 0;
   clipboard_->WriteClipboardData(Clipboard::Type::COPY_PASTE,

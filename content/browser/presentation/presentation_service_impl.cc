@@ -533,7 +533,7 @@ void PresentationServiceImpl::Reset() {
 
   if (on_connection_messages_callback_.get()) {
     on_connection_messages_callback_->Run(
-        mojo::Array<blink::mojom::ConnectionMessagePtr>());
+        std::vector<blink::mojom::ConnectionMessagePtr>());
     on_connection_messages_callback_.reset();
   }
 

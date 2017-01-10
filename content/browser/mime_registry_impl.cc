@@ -7,7 +7,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/common/common_type_converters.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/mime_util.h"
 

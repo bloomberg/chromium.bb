@@ -8,7 +8,6 @@
 #include <string.h>
 
 #include "mojo/public/cpp/bindings/array_traits_carray.h"
-#include "mojo/public/cpp/bindings/array_traits_standard.h"
 #include "mojo/public/cpp/bindings/array_traits_stl.h"
 #include "mojo/public/cpp/bindings/lib/array_serialization.h"
 #include "mojo/public/cpp/bindings/lib/buffer.h"

@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "mojo/common/common_type_converters.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
@@ -155,10 +154,10 @@ void ClipboardMus::ReadText(ui::ClipboardType type,
   base::Optional<std::vector<uint8_t>> text_data;
   uint64_t sequence_number = 0;
   if (clipboard_->ReadClipboardData(GetType(type), ui::mojom::kMimeTypeText,
-                                    &sequence_number, &text_data)) {
-    std::string text =
-        mojo::Array<uint8_t>(std::move(text_data)).To<std::string>();
-    *result = base::UTF8ToUTF16(text);
+                                    &sequence_number, &text_data) &&
+      text_data) {
+    *result = base::UTF8ToUTF16(base::StringPiece(
+        reinterpret_cast<char*>(text_data->data()), text_data->size()));
   }
 }
 
@@ -168,8 +167,9 @@ void ClipboardMus::ReadAsciiText(ui::ClipboardType type,
   base::Optional<std::vector<uint8_t>> text_data;
   uint64_t sequence_number = 0;
   if (clipboard_->ReadClipboardData(GetType(type), ui::mojom::kMimeTypeText,
-                                    &sequence_number, &text_data)) {
-    *result = mojo::Array<uint8_t>(std::move(text_data)).To<std::string>();
+                                    &sequence_number, &text_data) &&
+      text_data) {
+    result->assign(text_data->begin(), text_data->end());
   }
 }
 
@@ -188,17 +188,19 @@ void ClipboardMus::ReadHTML(ui::ClipboardType type,
   base::Optional<std::vector<uint8_t>> html_data;
   uint64_t sequence_number = 0;
   if (clipboard_->ReadClipboardData(GetType(type), ui::mojom::kMimeTypeHTML,
-                                    &sequence_number, &html_data)) {
-    *markup = base::UTF8ToUTF16(
-        mojo::Array<uint8_t>(std::move(html_data)).To<std::string>());
+                                    &sequence_number, &html_data) &&
+      html_data) {
+    *markup = base::UTF8ToUTF16(base::StringPiece(
+        reinterpret_cast<char*>(html_data->data()), html_data->size()));
     *fragment_end = static_cast<uint32_t>(markup->length());
 
     // We only bother fetching the source url if we were the ones who wrote
     // this html data to the clipboard.
     base::Optional<std::vector<uint8_t>> url_data;
     if (clipboard_->ReadClipboardData(GetType(type), kInternalSourceURL,
-                                      &sequence_number, &url_data)) {
-      *src_url = mojo::Array<uint8_t>(std::move(url_data)).To<std::string>();
+                                      &sequence_number, &url_data) &&
+        url_data) {
+      src_url->assign(url_data->begin(), url_data->end());
     }
   }
 }
@@ -208,8 +210,9 @@ void ClipboardMus::ReadRTF(ui::ClipboardType type, std::string* result) const {
   base::Optional<std::vector<uint8_t>> rtf_data;
   uint64_t sequence_number = 0;
   if (clipboard_->ReadClipboardData(GetType(type), ui::mojom::kMimeTypeRTF,
-                                    &sequence_number, &rtf_data)) {
-    *result = mojo::Array<uint8_t>(std::move(rtf_data)).To<std::string>();
+                                    &sequence_number, &rtf_data) &&
+      rtf_data) {
+    result->assign(rtf_data->begin(), rtf_data->end());
   }
 }
 
@@ -255,8 +258,9 @@ void ClipboardMus::ReadData(const FormatType& format,
   uint64_t sequence_number = 0;
   if (clipboard_->ReadClipboardData(ui::mojom::Clipboard::Type::COPY_PASTE,
                                     GetMimeTypeFor(format), &sequence_number,
-                                    &data)) {
-    *result = mojo::Array<uint8_t>(std::move(data)).To<std::string>();
+                                    &data) &&
+      data) {
+    result->assign(data->begin(), data->end());
   }
 }
 
@@ -276,8 +280,7 @@ void ClipboardMus::WriteObjects(ui::ClipboardType type,
 void ClipboardMus::WriteText(const char* text_data, size_t text_len) {
   DCHECK(current_clipboard_);
   current_clipboard_.value()[ui::mojom::kMimeTypeText] =
-      mojo::Array<uint8_t>::From(base::StringPiece(text_data, text_len))
-          .PassStorage();
+      std::vector<uint8_t>(text_data, text_data + text_len);
 }
 
 void ClipboardMus::WriteHTML(const char* markup_data,
@@ -286,20 +289,17 @@ void ClipboardMus::WriteHTML(const char* markup_data,
                              size_t url_len) {
   DCHECK(current_clipboard_);
   current_clipboard_.value()[ui::mojom::kMimeTypeHTML] =
-      mojo::Array<uint8_t>::From(base::StringPiece(markup_data, markup_len))
-          .PassStorage();
+      std::vector<uint8_t>(markup_data, markup_data + markup_len);
   if (url_len > 0) {
     current_clipboard_.value()[kInternalSourceURL] =
-        mojo::Array<uint8_t>::From(base::StringPiece(url_data, url_len))
-            .PassStorage();
+        std::vector<uint8_t>(url_data, url_data + url_len);
   }
 }
 
 void ClipboardMus::WriteRTF(const char* rtf_data, size_t data_len) {
   DCHECK(current_clipboard_);
   current_clipboard_.value()[ui::mojom::kMimeTypeRTF] =
-      mojo::Array<uint8_t>::From(base::StringPiece(rtf_data, data_len))
-          .PassStorage();
+      std::vector<uint8_t>(rtf_data, rtf_data + data_len);
 }
 
 void ClipboardMus::WriteBookmark(const char* title_data,
@@ -314,7 +314,9 @@ void ClipboardMus::WriteBookmark(const char* title_data,
 
   DCHECK(current_clipboard_);
   current_clipboard_.value()[ui::mojom::kMimeTypeMozillaURL] =
-      mojo::Array<uint8_t>::From(bookmark).PassStorage();
+      std::vector<uint8_t>(
+          reinterpret_cast<const uint8_t*>(bookmark.data()),
+          reinterpret_cast<const uint8_t*>(bookmark.data() + bookmark.size()));
 }
 
 void ClipboardMus::WriteWebSmartPaste() {
@@ -328,8 +330,7 @@ void ClipboardMus::WriteBitmap(const SkBitmap& bitmap) {
   // Encode the bitmap as a PNG for transport.
   std::vector<unsigned char> output;
   if (gfx::PNGCodec::FastEncodeBGRASkBitmap(bitmap, false, &output)) {
-    current_clipboard_.value()[ui::mojom::kMimeTypePNG] =
-        mojo::Array<uint8_t>::From(output).PassStorage();
+    current_clipboard_.value()[ui::mojom::kMimeTypePNG] = std::move(output);
   }
 }
 
@@ -338,8 +339,7 @@ void ClipboardMus::WriteData(const FormatType& format,
                              size_t data_len) {
   DCHECK(current_clipboard_);
   current_clipboard_.value()[GetMimeTypeFor(format)] =
-      mojo::Array<uint8_t>::From(base::StringPiece(data_data, data_len))
-          .PassStorage();
+      std::vector<uint8_t>(data_data, data_data + data_len);
 }
 
 }  // namespace views

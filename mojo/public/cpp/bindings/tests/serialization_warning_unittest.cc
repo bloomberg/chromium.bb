@@ -8,7 +8,6 @@
 #include <stddef.h>
 #include <utility>
 
-#include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/lib/fixed_buffer.h"
 #include "mojo/public/cpp/bindings/lib/serialization.h"
@@ -25,15 +24,16 @@ namespace {
 using mojo::internal::ContainerValidateParams;
 
 // Creates an array of arrays of handles (2 X 3) for testing.
-Array<Array<ScopedHandle>> CreateTestNestedHandleArray() {
-  Array<Array<ScopedHandle>> array(2);
+std::vector<base::Optional<std::vector<ScopedHandle>>>
+CreateTestNestedHandleArray() {
+  std::vector<base::Optional<std::vector<ScopedHandle>>> array(2);
   for (size_t i = 0; i < array.size(); ++i) {
-    Array<ScopedHandle> nested_array(3);
+    std::vector<ScopedHandle> nested_array(3);
     for (size_t j = 0; j < nested_array.size(); ++j) {
       MessagePipe pipe;
       nested_array[j] = ScopedHandle::From(std::move(pipe.handle1));
     }
-    array[i] = std::move(nested_array);
+    array[i].emplace(std::move(nested_array));
   }
 
   return array;
@@ -158,9 +158,9 @@ TEST_F(SerializationWarningTest, FixedArrayOfStructsInStruct) {
 
 TEST_F(SerializationWarningTest, ArrayOfArraysOfHandles) {
   using MojomType = ArrayDataView<ArrayDataView<ScopedHandle>>;
-  Array<Array<ScopedHandle>> test_array = CreateTestNestedHandleArray();
-  test_array[0] = nullptr;
-  test_array[1][0] = ScopedHandle();
+  auto test_array = CreateTestNestedHandleArray();
+  test_array[0] = base::nullopt;
+  (*test_array[1])[0] = ScopedHandle();
 
   ContainerValidateParams validate_params_0(
       0, true, new ContainerValidateParams(0, true, nullptr));
@@ -169,7 +169,7 @@ TEST_F(SerializationWarningTest, ArrayOfArraysOfHandles) {
                               &validate_params_0);
 
   test_array = CreateTestNestedHandleArray();
-  test_array[0] = nullptr;
+  test_array[0] = base::nullopt;
   ContainerValidateParams validate_params_1(
       0, false, new ContainerValidateParams(0, true, nullptr));
   TestArrayWarning<MojomType>(
@@ -178,7 +178,7 @@ TEST_F(SerializationWarningTest, ArrayOfArraysOfHandles) {
       &validate_params_1);
 
   test_array = CreateTestNestedHandleArray();
-  test_array[1][0] = ScopedHandle();
+  (*test_array[1])[0] = ScopedHandle();
   ContainerValidateParams validate_params_2(
       0, true, new ContainerValidateParams(0, false, nullptr));
   TestArrayWarning<MojomType>(
@@ -190,7 +190,7 @@ TEST_F(SerializationWarningTest, ArrayOfArraysOfHandles) {
 TEST_F(SerializationWarningTest, ArrayOfStrings) {
   using MojomType = ArrayDataView<StringDataView>;
 
-  Array<std::string> test_array(3);
+  std::vector<std::string> test_array(3);
   for (size_t i = 0; i < test_array.size(); ++i)
     test_array[i] = "hello";
 
@@ -200,7 +200,7 @@ TEST_F(SerializationWarningTest, ArrayOfStrings) {
                               mojo::internal::VALIDATION_ERROR_NONE,
                               &validate_params_0);
 
-  Array<base::Optional<std::string>> optional_test_array(3);
+  std::vector<base::Optional<std::string>> optional_test_array(3);
   ContainerValidateParams validate_params_1(
       0, false, new ContainerValidateParams(0, false, nullptr));
   TestArrayWarning<MojomType>(
@@ -208,7 +208,7 @@ TEST_F(SerializationWarningTest, ArrayOfStrings) {
       mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
       &validate_params_1);
 
-  test_array = Array<std::string>(2);
+  test_array = std::vector<std::string>(2);
   ContainerValidateParams validate_params_2(
       3, true, new ContainerValidateParams(0, false, nullptr));
   TestArrayWarning<MojomType>(

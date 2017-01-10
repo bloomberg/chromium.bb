@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/array.h"
 #include "services/ui/public/cpp/window.h"
 
 namespace ui {
@@ -81,8 +80,6 @@ class WindowPrivate {
   void LocalSetPredefinedCursor(mojom::Cursor cursor) {
     window_->LocalSetPredefinedCursor(cursor);
   }
-  void LocalSetSharedProperty(const std::string& name,
-                              mojo::Array<uint8_t> new_data);
   void LocalSetSharedProperty(const std::string& name,
                               const std::vector<uint8_t>* data) {
     window_->LocalSetSharedProperty(name, data);

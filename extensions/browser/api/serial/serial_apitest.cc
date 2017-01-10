@@ -48,8 +48,8 @@ class FakeSerialDeviceEnumerator : public device::SerialDeviceEnumerator {
  public:
   ~FakeSerialDeviceEnumerator() override {}
 
-  mojo::Array<device::serial::DeviceInfoPtr> GetDevices() override {
-    mojo::Array<device::serial::DeviceInfoPtr> devices;
+  std::vector<device::serial::DeviceInfoPtr> GetDevices() override {
+    std::vector<device::serial::DeviceInfoPtr> devices;
     device::serial::DeviceInfoPtr device0(device::serial::DeviceInfo::New());
     device0->path = "/dev/fakeserialmojo";
     device::serial::DeviceInfoPtr device1(device::serial::DeviceInfo::New());

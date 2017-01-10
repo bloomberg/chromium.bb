@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chromeos/chromeos_switches.h"
 #include "content/public/test/browser_test_utils.h"
-#include "mojo/common/common_type_converters.h"
 #include "ui/events/event_constants.h"
 
 namespace mojo {

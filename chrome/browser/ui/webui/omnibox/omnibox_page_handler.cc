@@ -33,18 +33,17 @@
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/search_engines/template_url.h"
 #include "content/public/browser/web_ui.h"
-#include "mojo/common/common_type_converters.h"
 
 using bookmarks::BookmarkModel;
 
 namespace mojo {
 
 template <>
-struct TypeConverter<mojo::Array<mojom::AutocompleteAdditionalInfoPtr>,
+struct TypeConverter<std::vector<mojom::AutocompleteAdditionalInfoPtr>,
                      AutocompleteMatch::AdditionalInfo> {
-  static mojo::Array<mojom::AutocompleteAdditionalInfoPtr> Convert(
+  static std::vector<mojom::AutocompleteAdditionalInfoPtr> Convert(
       const AutocompleteMatch::AdditionalInfo& input) {
-    mojo::Array<mojom::AutocompleteAdditionalInfoPtr> array(input.size());
+    std::vector<mojom::AutocompleteAdditionalInfoPtr> array(input.size());
     size_t index = 0;
     for (AutocompleteMatch::AdditionalInfo::const_iterator i = input.begin();
          i != input.end(); ++i, index++) {
@@ -92,9 +91,8 @@ struct TypeConverter<mojom::AutocompleteMatchPtr, AutocompleteMatch> {
     result->from_previous = input.from_previous;
 
     result->additional_info =
-        mojo::Array<mojom::AutocompleteAdditionalInfoPtr>::From(
-            input.additional_info)
-            .PassStorage();
+        mojo::ConvertTo<std::vector<mojom::AutocompleteAdditionalInfoPtr>>(
+            input.additional_info);
     return result;
   }
 };
@@ -107,9 +105,8 @@ struct TypeConverter<mojom::AutocompleteResultsForProviderPtr,
     mojom::AutocompleteResultsForProviderPtr result(
         mojom::AutocompleteResultsForProvider::New());
     result->provider_name = input->GetName();
-    result->results =
-        mojo::Array<mojom::AutocompleteMatchPtr>::From(input->matches())
-            .PassStorage();
+    result->results = mojo::ConvertTo<std::vector<mojom::AutocompleteMatchPtr>>(
+        input->matches());
     return result;
   }
 };
@@ -144,12 +141,11 @@ void OmniboxPageHandler::OnResultChanged(bool default_match_changed) {
     ACMatches matches(controller_->result().begin(),
                       controller_->result().end());
     result->combined_results =
-        mojo::Array<mojom::AutocompleteMatchPtr>::From(matches).PassStorage();
+        mojo::ConvertTo<std::vector<mojom::AutocompleteMatchPtr>>(matches);
   }
   result->results_by_provider =
-      mojo::Array<mojom::AutocompleteResultsForProviderPtr>::From(
-          controller_->providers())
-          .PassStorage();
+      mojo::ConvertTo<std::vector<mojom::AutocompleteResultsForProviderPtr>>(
+          controller_->providers());
 
   // Fill AutocompleteMatch::starred.
   BookmarkModel* bookmark_model =

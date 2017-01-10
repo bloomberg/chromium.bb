@@ -29,7 +29,6 @@
 #include "device/usb/usb_device_filter.h"
 #include "device/usb/webusb_descriptors.h"
 #include "jni/UsbChooserDialog_jni.h"
-#include "mojo/common/common_type_converters.h"
 #include "ui/android/window_android.h"
 #include "url/gurl.h"
 

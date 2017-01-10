@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "mojo/public/cpp/bindings/array.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/touchscreen_device.h"

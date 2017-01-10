@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "mojo/common/common_type_converters.h"
 #include "services/ui/common/util.h"
 #include "services/ui/public/cpp/input_event_handler.h"
 #include "services/ui/public/cpp/property_type_converters.h"
@@ -774,10 +773,12 @@ TEST_F(WindowTreeClientTest, NewTopLevelWindowGetsAllChangesInFlight) {
   data->window_id = server_id(root2);
   data->bounds.SetRect(1, 2, 3, 4);
   data->visible = true;
+  constexpr char kXxName[] = "server_xx";
   data->properties["xx"] =
-      mojo::Array<uint8_t>::From(std::string("server_xx")).PassStorage();
+      std::vector<uint8_t>(kXxName, kXxName + strlen(kXxName));
+  constexpr char kYyName[] = "server_yy";
   data->properties["yy"] =
-      mojo::Array<uint8_t>::From(std::string("server_yy")).PassStorage();
+      std::vector<uint8_t>(kYyName, kYyName + strlen(kYyName));
   const int64_t display_id = 1;
   setup.window_tree_client()->OnTopLevelCreated(
       new_window_in_flight_change_id, std::move(data), display_id, true);

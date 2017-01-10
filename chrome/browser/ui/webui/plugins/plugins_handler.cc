@@ -31,7 +31,6 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_constants.h"
-#include "mojo/common/common_type_converters.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::WebPluginInfo;

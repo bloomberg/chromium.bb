@@ -9,7 +9,6 @@
 #include <queue>
 
 #include "extensions/common/mojo/wifi_display_session_service.mojom.h"
-#include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"

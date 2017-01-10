@@ -265,7 +265,7 @@ class IntegrationTestInterfaceImpl : public IntegrationTestInterface {
 
   void Method0(BasicStructPtr param0,
                const Method0Callback& callback) override {
-    callback.Run(Array<uint8_t>::New(0u));
+    callback.Run(std::vector<uint8_t>());
   }
 };
 

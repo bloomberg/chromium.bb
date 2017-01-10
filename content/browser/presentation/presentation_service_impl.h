@@ -100,7 +100,7 @@ class CONTENT_EXPORT PresentationServiceImpl
   static const int kMaxNumQueuedSessionRequests = 10;
 
   using ConnectionMessagesCallback =
-      base::Callback<void(mojo::Array<blink::mojom::ConnectionMessagePtr>)>;
+      base::Callback<void(std::vector<blink::mojom::ConnectionMessagePtr>)>;
   using SendConnectionMessageCallback = base::Callback<void(bool)>;
 
   // Listener implementation owned by PresentationServiceImpl. An instance of

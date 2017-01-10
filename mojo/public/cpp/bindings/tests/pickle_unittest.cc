@@ -301,7 +301,7 @@ TEST_F(PickleTest, BlinkProxyToChromiumService) {
 
 TEST_F(PickleTest, PickleArray) {
   auto proxy = ConnectToChromiumService();
-  auto pickles = Array<PickledStructChromium>::New(2);
+  auto pickles = std::vector<PickledStructChromium>(2);
   pickles[0].set_foo(1);
   pickles[0].set_bar(2);
   pickles[0].set_baz(100);

@@ -38,8 +38,8 @@ SerialDeviceEnumeratorLinux::SerialDeviceEnumeratorLinux() {
 
 SerialDeviceEnumeratorLinux::~SerialDeviceEnumeratorLinux() {}
 
-mojo::Array<serial::DeviceInfoPtr> SerialDeviceEnumeratorLinux::GetDevices() {
-  mojo::Array<serial::DeviceInfoPtr> devices;
+std::vector<serial::DeviceInfoPtr> SerialDeviceEnumeratorLinux::GetDevices() {
+  std::vector<serial::DeviceInfoPtr> devices;
   ScopedUdevEnumeratePtr enumerate(udev_enumerate_new(udev_.get()));
   if (!enumerate) {
     LOG(ERROR) << "Serial device enumeration failed.";

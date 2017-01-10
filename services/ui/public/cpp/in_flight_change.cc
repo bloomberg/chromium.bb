@@ -138,10 +138,10 @@ void InFlightFocusChange::Revert() {
 InFlightPropertyChange::InFlightPropertyChange(
     Window* window,
     const std::string& property_name,
-    const mojo::Array<uint8_t>& revert_value)
+    const base::Optional<std::vector<uint8_t>>& revert_value)
     : InFlightChange(window, ChangeType::PROPERTY),
       property_name_(property_name),
-      revert_value_(revert_value.Clone()) {}
+      revert_value_(revert_value) {}
 
 InFlightPropertyChange::~InFlightPropertyChange() {}
 
@@ -152,12 +152,12 @@ bool InFlightPropertyChange::Matches(const InFlightChange& change) const {
 
 void InFlightPropertyChange::SetRevertValueFrom(const InFlightChange& change) {
   revert_value_ =
-      static_cast<const InFlightPropertyChange&>(change).revert_value_.Clone();
+      static_cast<const InFlightPropertyChange&>(change).revert_value_;
 }
 
 void InFlightPropertyChange::Revert() {
-  WindowPrivate(window())
-      .LocalSetSharedProperty(property_name_, std::move(revert_value_));
+  WindowPrivate(window()).LocalSetSharedProperty(
+      property_name_, revert_value_ ? &revert_value_.value() : nullptr);
 }
 
 // InFlightPredefinedCursorChange ---------------------------------------------

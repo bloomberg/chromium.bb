@@ -135,9 +135,8 @@ TEST_F(WebSocketManagerTest, SendFrameButNotConnectedYet) {
   websocket_manager()->DoCreateWebSocket(mojo::MakeRequest(&websocket));
 
   // This should not crash.
-  mojo::Array<uint8_t> data;
-  websocket->SendFrame(
-      true, blink::mojom::WebSocketMessageType::TEXT, std::move(data));
+  std::vector<uint8_t> data;
+  websocket->SendFrame(true, blink::mojom::WebSocketMessageType::TEXT, data);
 }
 
 TEST_F(WebSocketManagerTest, DelayFor4thPendingConnectionIsZero) {

@@ -14,7 +14,6 @@
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_service.h"
 #include "device/usb/public/interfaces/device_manager.mojom.h"
-#include "mojo/public/cpp/bindings/array.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -48,13 +47,13 @@ class UsbChooserControllerTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    mojo::Array<device::usb::DeviceFilterPtr> device_filters;
+    std::vector<device::usb::DeviceFilterPtr> device_filters;
     device::usb::ChooserService::GetPermissionCallback callback;
     content::WebContentsTester* web_contents_tester =
         content::WebContentsTester::For(web_contents());
     web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
-    usb_chooser_controller_.reset(new UsbChooserController(
-        main_rfh(), std::move(device_filters), callback));
+    usb_chooser_controller_.reset(
+        new UsbChooserController(main_rfh(), device_filters, callback));
     mock_usb_chooser_view_.reset(new MockUsbChooserView());
     usb_chooser_controller_->set_view(mock_usb_chooser_view_.get());
   }

@@ -32,7 +32,6 @@
 #include "media/capture/video/scoped_result_callback.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
 #include "media/capture/video_capture_types.h"
-#include "mojo/public/cpp/bindings/array.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 namespace tracked_objects {

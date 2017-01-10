@@ -19,7 +19,7 @@ jboolean ValidatePaymentDetails(
     const base::android::JavaParamRef<jobject>& buffer) {
   jbyte* buf_in = static_cast<jbyte*>(env->GetDirectBufferAddress(buffer));
   jlong buf_size = env->GetDirectBufferCapacity(buffer);
-  mojo::Array<uint8_t> mojo_buffer = mojo::Array<uint8_t>::New(buf_size);
+  std::vector<uint8_t> mojo_buffer(buf_size);
   memcpy(&mojo_buffer[0], buf_in, buf_size);
   mojom::PaymentDetailsPtr details;
   if (!mojom::PaymentDetails::Deserialize(std::move(mojo_buffer), &details))
