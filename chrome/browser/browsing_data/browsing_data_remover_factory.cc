@@ -24,7 +24,7 @@
 #include "content/public/browser/browser_context.h"
 #include "extensions/features/features.h"
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/precache/precache_manager_factory.h"
 #endif
@@ -66,7 +66,7 @@ BrowsingDataRemoverFactory::BrowsingDataRemoverFactory()
   DependsOn(WebDataServiceFactory::GetInstance());
   DependsOn(WebHistoryServiceFactory::GetInstance());
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   DependsOn(offline_pages::OfflinePageModelFactory::GetInstance());
   DependsOn(precache::PrecacheManagerFactory::GetInstance());
 #endif

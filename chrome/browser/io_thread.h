@@ -38,13 +38,13 @@ class PrefService;
 class PrefRegistrySimple;
 class SystemURLRequestContextGetter;
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 namespace chrome {
 namespace android {
 class ExternalDataUseObserver;
 }
 }
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // defined(OS_ANDROID)
 
 namespace base {
 class CommandLine;
@@ -138,11 +138,11 @@ class IOThread : public content::BrowserThreadDelegate {
     // Global aggregator of data use. It must outlive the
     // |system_network_delegate|.
     std::unique_ptr<data_usage::DataUseAggregator> data_use_aggregator;
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
     // An external observer of data use.
     std::unique_ptr<chrome::android::ExternalDataUseObserver>
         external_data_use_observer;
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // defined(OS_ANDROID)
     // The "system" NetworkDelegate, used for Profile-agnostic network events.
     std::unique_ptr<net::NetworkDelegate> system_network_delegate;
     std::unique_ptr<net::HostResolver> host_resolver;

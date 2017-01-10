@@ -12,7 +12,6 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/common/features.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -27,7 +26,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "url/gurl.h"
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 #include "chrome/browser/download/download_request_infobar_delegate_android.h"
 #else
 #include "chrome/browser/download/download_permission_request.h"
@@ -131,7 +130,7 @@ void DownloadRequestLimiter::TabDownloadState::DidGetUserInteraction(
     return;
   }
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   bool promptable = InfoBarService::FromWebContents(web_contents()) != nullptr;
 #else
   bool promptable =
@@ -165,7 +164,7 @@ void DownloadRequestLimiter::TabDownloadState::PromptUserForDownload(
   if (is_showing_prompt())
     return;
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   DownloadRequestInfoBarDelegateAndroid::Create(
       InfoBarService::FromWebContents(web_contents_), factory_.GetWeakPtr());
 #else

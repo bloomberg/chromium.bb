@@ -7,7 +7,6 @@
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_resource_throttle.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/common/features.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -18,7 +17,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 #include "chrome/browser/android/download/mock_download_controller.h"
 #endif
 
@@ -63,7 +62,7 @@ class DownloadResourceThrottleTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
     web_contents()->SetDelegate(&delegate_);
     run_loop_.reset(new base::RunLoop());
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
     DownloadControllerBase::SetDownloadControllerBase(&download_controller_);
 #endif
   }
@@ -71,7 +70,7 @@ class DownloadResourceThrottleTest : public ChromeRenderViewHostTestHarness {
   void TearDown() override {
     content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
                                        throttle_);
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
     DownloadControllerBase::SetDownloadControllerBase(nullptr);
 #endif
     ChromeRenderViewHostTestHarness::TearDown();
@@ -104,7 +103,7 @@ class DownloadResourceThrottleTest : public ChromeRenderViewHostTestHarness {
   scoped_refptr<DownloadRequestLimiter> limiter_;
   ::testing::NiceMock<MockResourceThrottleDelegate> resource_throttle_delegate_;
   std::unique_ptr<base::RunLoop> run_loop_;
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   chrome::android::MockDownloadController download_controller_;
 #endif
 };
@@ -115,7 +114,7 @@ TEST_F(DownloadResourceThrottleTest, StartDownloadThrottle_Basic) {
   StartThrottle();
 }
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 TEST_F(DownloadResourceThrottleTest, DownloadWithFailedFileAcecssRequest) {
   DownloadControllerBase::Get()
       ->SetApproveFileAccessRequestForTesting(false);

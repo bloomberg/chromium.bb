@@ -399,13 +399,13 @@ const char kIncognitoModeAvailability[] = "incognito.mode_availability";
 // Boolean that is true when Suggest support is enabled.
 const char kSearchSuggestEnabled[] = "search.suggest_enabled";
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 // String indicating the Contextual Search enabled state.
 // "false" - opt-out (disabled)
 // "" (empty string) - undecided
 // "true" - opt-in (enabled)
 const char kContextualSearchEnabled[] = "search.contextual_search_enabled";
-#endif
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_MACOSX)
 // Boolean that indicates whether the browser should put up a confirmation
@@ -1361,10 +1361,10 @@ const char kProfilesDeleted[] = "profiles.profiles_deleted";
 
 // Deprecated preference for metric / crash reporting on Android. Use
 // kMetricsReportingEnabled instead.
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 const char kCrashReportingEnabled[] =
     "user_experience_metrics_crash.reporting_enabled";
-#endif
+#endif  // defined(OS_ANDROID)
 
 // This is the location of a list of dictionaries of plugin stability stats.
 const char kStabilityPluginStats[] =
@@ -1384,7 +1384,7 @@ const char kStabilityKernelCrashCount[] =
 const char kStabilitySystemUncleanShutdownCount[] =
     "user_experience_metrics.stability.system_unclean_shutdowns";
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 // Activity type that is currently in the foreground for the UMA session.
 // Uses the ActivityTypeIds::Type enum.
 const char kStabilityForegroundActivityType[] =
@@ -1405,7 +1405,7 @@ const char kStabilityLaunchedActivityCounts[] =
 // Indexed into by ActivityTypeIds::Type.
 const char kStabilityCrashedActivityCounts[] =
     "user_experience_metrics.stability.crashed_activity_counts";
-#endif
+#endif  // defined(OS_ANDROID)
 
 // The keys below are used for the dictionaries in the
 // kStabilityPluginStats list.
@@ -1529,7 +1529,7 @@ const char kNtpAppPageNames[] = "ntp.app_page_names";
 // Keeps track of which sessions are collapsed in the Other Devices menu.
 const char kNtpCollapsedForeignSessions[] = "ntp.collapsed_foreign_sessions";
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 // Keeps track of recently closed tabs collapsed state in the Other Devices
 // menu.
 const char kNtpCollapsedRecentlyClosedTabs[] =
@@ -1540,7 +1540,7 @@ const char kNtpCollapsedSnapshotDocument[] = "ntp.collapsed_snapshot_document";
 
 // Keeps track of sync promo collapsed state in the Other Devices menu.
 const char kNtpCollapsedSyncPromo[] = "ntp.collapsed_sync_promo";
-#endif
+#endif  // defined(OS_ANDROID)
 
 // Which page should be visible on the new tab page v4
 const char kNtpShownPage[] = "ntp.shown_page";
@@ -2203,14 +2203,14 @@ const char kEnableDRM[] = "settings.privacy.drm_enabled";
 const char kWatchdogExtensionActive[] =
     "profile.extensions.activity_log.num_consumers_active";
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 // A list of partner bookmark rename/remove mappings.
 // Each list item is a dictionary containing a "url", a "provider_title" and
 // "mapped_title" entries, detailing the bookmark target URL (if any), the title
 // given by the PartnerBookmarksProvider and either the user-visible renamed
 // title or an empty string if the bookmark node was removed.
 const char kPartnerBookmarkMappings[] = "partnerbookmarks.mappings";
-#endif
+#endif  // defined(OS_ANDROID)
 
 // Whether DNS Quick Check is disabled in proxy resolution.
 //

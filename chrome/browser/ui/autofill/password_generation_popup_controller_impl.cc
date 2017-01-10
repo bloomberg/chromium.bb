@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/autofill/popup_constants.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/common/features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -33,7 +32,7 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/text_utils.h"
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_application.h"
 #endif
 
@@ -223,7 +222,7 @@ void PasswordGenerationPopupControllerImpl::ViewDestroyed() {
 }
 
 void PasswordGenerationPopupControllerImpl::OnSavedPasswordsLinkClicked() {
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   chrome::android::ChromeApplication::ShowPasswordSettings();
 #else
   chrome::ShowSettingsSubPage(

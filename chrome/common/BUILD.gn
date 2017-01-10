@@ -31,7 +31,6 @@ grit("resources") {
 buildflag_header("features") {
   header = "features.h"
   flags = [
-    "ANDROID_JAVA_UI=$android_java_ui",
     "ENABLE_APP_LIST=$enable_app_list",
     "ENABLE_BACKGROUND=$enable_background",
     "ENABLE_BASIC_PRINT_DIALOG=$enable_basic_print_dialog",

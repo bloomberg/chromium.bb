@@ -12,7 +12,6 @@
 #include "chrome/browser/signin/chrome_signin_client.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/common/features.h"
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/signin_header_helper.h"
@@ -22,13 +21,13 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "net/url_request/url_request.h"
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 #include "chrome/browser/android/signin/account_management_screen_helper.h"
 #else
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // defined(OS_ANDROID)
 
 namespace signin {
 
@@ -56,7 +55,7 @@ void ProcessMirrorHeaderUIThread(int child_id,
       AccountReconcilorFactory::GetForProfile(profile);
   account_reconcilor->OnReceivedManageAccountsResponse(
       manage_accounts_params.service_type);
-#if !BUILDFLAG(ANDROID_JAVA_UI)
+#if !defined(OS_ANDROID)
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (browser) {
     BrowserWindow::AvatarBubbleMode bubble_mode;
@@ -79,7 +78,7 @@ void ProcessMirrorHeaderUIThread(int child_id,
         bubble_mode, manage_accounts_params,
         signin_metrics::AccessPoint::ACCESS_POINT_CONTENT_AREA);
   }
-#else   // BUILDFLAG(ANDROID_JAVA_UI)
+#else   // defined(OS_ANDROID)
   if (service_type == signin::GAIA_SERVICE_TYPE_INCOGNITO) {
     GURL url(manage_accounts_params.continue_url.empty()
                  ? chrome::kChromeUINativeNewTabURL
@@ -93,7 +92,7 @@ void ProcessMirrorHeaderUIThread(int child_id,
     AccountManagementScreenHelper::OpenAccountManagementScreen(profile,
                                                                service_type);
   }
-#endif  // !BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // !defined(OS_ANDROID)
 }
 
 // Returns the parameters contained in the X-Chrome-Manage-Accounts response

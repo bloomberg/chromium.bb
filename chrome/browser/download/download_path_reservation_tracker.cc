@@ -203,7 +203,7 @@ bool CreateReservation(
   // to the user's "My Documents" directory. We'll prompt them in this case.
   if (!base::PathIsWritable(target_dir)) {
     DVLOG(1) << "Unable to write to directory \"" << target_dir.value() << "\"";
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
     // On Android, DIR_USER_DOCUMENTS is in reality a subdirectory
     // of DIR_ANDROID_APP_DATA which isn't accessible by other apps.
     reserved_path->clear();
@@ -213,7 +213,7 @@ bool CreateReservation(
     is_path_writeable = false;
     PathService::Get(chrome::DIR_USER_DOCUMENTS, &target_dir);
     target_path = target_dir.Append(filename);
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // defined(OS_ANDROID)
   }
 
   if (is_path_writeable) {

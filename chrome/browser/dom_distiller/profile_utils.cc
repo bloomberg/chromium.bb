@@ -13,16 +13,15 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/features.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
 #include "components/dom_distiller/content/browser/distiller_ui_handle.h"
 #include "components/dom_distiller/content/browser/dom_distiller_viewer_source.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/dom_distiller/core/url_constants.h"
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 #include "chrome/browser/android/dom_distiller/distiller_ui_handle_android.h"
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // defined(OS_ANDROID)
 
 namespace dom_distiller {
 
@@ -39,9 +38,9 @@ void RegisterViewerSource(Profile* profile) {
       new LazyDomDistillerService(profile, dom_distiller_service_factory);
   std::unique_ptr<DistillerUIHandle> ui_handle;
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   ui_handle.reset(new dom_distiller::android::DistillerUIHandleAndroid());
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // defined(OS_ANDROID)
 
   // Set the JavaScript world ID.
   if (!DistillerJavaScriptWorldIdIsSet()) {

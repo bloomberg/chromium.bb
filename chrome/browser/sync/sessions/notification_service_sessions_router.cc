@@ -24,7 +24,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/features/features.h"
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 #include "chrome/browser/android/tab_android.h"
 #endif
 
@@ -46,7 +46,7 @@ namespace {
 
 SyncedTabDelegate* GetSyncedTabDelegateFromWebContents(
     content::WebContents* web_contents) {
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
   return tab ? tab->GetSyncedTabDelegate() : nullptr;
 #else

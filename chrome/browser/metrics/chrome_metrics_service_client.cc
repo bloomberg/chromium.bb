@@ -78,7 +78,7 @@
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 #include "chrome/browser/metrics/android_metrics_provider.h"
 #include "chrome/browser/metrics/page_load_metrics_provider.h"
 #endif
@@ -324,9 +324,9 @@ void ChromeMetricsServiceClient::RegisterPrefs(PrefRegistrySimple* registry) {
 
   metrics::RegisterMetricsReportingStatePrefs(registry);
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   AndroidMetricsProvider::RegisterPrefs(registry);
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   PluginMetricsProvider::RegisterPrefs(registry);
@@ -553,7 +553,7 @@ void ChromeMetricsServiceClient::Initialize() {
   // Clear deprecated metrics preference for Android.
   // TODO(gayane): Cleanup this code after M60 when the pref would be cleared
   // from clients.
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   local_state->ClearPref(prefs::kCrashReportingEnabled);
 #endif
 
@@ -618,13 +618,13 @@ void ChromeMetricsServiceClient::Initialize() {
       std::unique_ptr<metrics::MetricsProvider>(
           new translate::TranslateRankerMetricsProvider()));
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(
           new AndroidMetricsProvider(local_state)));
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(new PageLoadMetricsProvider()));
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
   google_update_metrics_provider_ = new GoogleUpdateMetricsProviderWin;

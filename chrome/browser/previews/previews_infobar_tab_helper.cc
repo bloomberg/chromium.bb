@@ -12,7 +12,6 @@
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/features.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/previews/core/previews_experiments.h"
@@ -25,7 +24,7 @@
 #include "net/http/http_response_headers.h"
 #include "url/gurl.h"
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 #include "chrome/browser/android/offline_pages/offline_page_tab_helper.h"
 
 namespace {
@@ -46,7 +45,7 @@ void AddPreviewNavigationCallback(content::BrowserContext* browser_context,
 
 }  // namespace
 
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // defined(OS_ANDROID)
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(PreviewsInfoBarTabHelper);
 
@@ -67,7 +66,7 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
     return;
   displayed_preview_infobar_ = false;
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   offline_pages::OfflinePageTabHelper* tab_helper =
       offline_pages::OfflinePageTabHelper::FromWebContents(web_contents());
 
@@ -90,7 +89,7 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
     // Don't try to show other infobars if this is an offline preview.
     return;
   }
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // defined(OS_ANDROID)
 
   const net::HttpResponseHeaders* headers =
       navigation_handle->GetResponseHeaders();

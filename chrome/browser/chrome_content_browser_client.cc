@@ -262,16 +262,13 @@
 #include "components/crash/content/browser/crash_handler_host_linux.h"
 #endif
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/devtools_manager_delegate_android.h"
 #include "chrome/browser/android/ntp/new_tab_page_url_handler.h"
 #include "chrome/browser/android/service_tab_launcher.h"
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 #include "components/payments/payment_request.mojom.h"
 #include "content/public/browser/android/java_interfaces.h"
-#endif
-
-#if defined(OS_ANDROID)
-#include "chrome/browser/android/devtools_manager_delegate_android.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/android/device_display_info.h"
 #else
@@ -700,17 +697,6 @@ class CertificateReportingServiceCertReporter : public SSLCertReporter {
   DISALLOW_COPY_AND_ASSIGN(CertificateReportingServiceCertReporter);
 };
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
-void HandleSingleTabModeBlockOnUIThread(const BlockedWindowParams& params) {
-  WebContents* web_contents = tab_util::GetWebContentsByFrameID(
-      params.render_process_id(), params.opener_render_frame_id());
-  if (!web_contents)
-    return;
-
-  SingleTabModeTabHelper::FromWebContents(web_contents)->HandleOpenUrl(params);
-}
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
-
 #if defined(OS_ANDROID)
 float GetDeviceScaleAdjustment() {
   static const float kMinFSM = 1.05f;
@@ -730,6 +716,15 @@ float GetDeviceScaleAdjustment() {
   float ratio = static_cast<float>(minWidth - kWidthForMinFSM) /
       (kWidthForMaxFSM - kWidthForMinFSM);
   return ratio * (kMaxFSM - kMinFSM) + kMinFSM;
+}
+
+void HandleSingleTabModeBlockOnUIThread(const BlockedWindowParams& params) {
+  WebContents* web_contents = tab_util::GetWebContentsByFrameID(
+      params.render_process_id(), params.opener_render_frame_id());
+  if (!web_contents)
+    return;
+
+  SingleTabModeTabHelper::FromWebContents(web_contents)->HandleOpenUrl(params);
 }
 #endif  // defined(OS_ANDROID)
 
@@ -1531,7 +1526,7 @@ void MaybeAppendBlinkSettingsSwitchForFieldTrial(
                                   base::JoinString(blink_settings, ","));
 }
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 void ForwardShareServiceRequest(
     base::WeakPtr<service_manager::InterfaceProvider> interface_provider,
     blink::mojom::ShareServiceRequest request) {
@@ -2387,7 +2382,7 @@ bool ChromeContentBrowserClient::CanCreateWindow(
     }
   }
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   if (SingleTabModeTabHelper::IsRegistered(opener_render_process_id,
                                            opener_render_frame_id)) {
     BrowserThread::PostTask(BrowserThread::UI,
@@ -2560,7 +2555,7 @@ void ChromeContentBrowserClient::BrowserURLHandlerCreated(
   handler->AddHandlerPair(&WillHandleBrowserAboutURL,
                           BrowserURLHandler::null_handler());
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   // Handler to rewrite chrome://newtab on Android.
   handler->AddHandlerPair(&chrome::android::HandleAndroidNativePageURL,
                           BrowserURLHandler::null_handler());
@@ -2996,7 +2991,7 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoInterfaces(
                      BindSensitiveInputVisibilityService,
                  render_frame_host));
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
   if (web_contents) {
@@ -3006,6 +3001,11 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoInterfaces(
     registry->AddInterface(
         base::Bind(&ForwardShareServiceRequest,
                    web_contents->GetJavaInterfaces()->GetWeakPtr()));
+    if (AreExperimentalWebPlatformFeaturesEnabled()) {
+      registry->AddInterface(
+          web_contents->GetJavaInterfaces()
+              ->CreateInterfaceFactory<blink::mojom::BarcodeDetection>());
+    }
   }
 #elif defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN)
   // TODO(crbug.com/679127): Enable for MacViews implementation.
@@ -3015,21 +3015,6 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoInterfaces(
     if (web_contents) {
       registry->AddInterface(base::Bind(
           payments::CreatePaymentRequestForWebContents, web_contents));
-    }
-  }
-#endif
-
-#if defined(OS_ANDROID)
-  if (AreExperimentalWebPlatformFeaturesEnabled()) {
-    content::WebContents* web_contents =
-        content::WebContents::FromRenderFrameHost(render_frame_host);
-    if (web_contents) {
-      registry->AddInterface(
-          web_contents->GetJavaInterfaces()
-              ->CreateInterfaceFactory<blink::mojom::BarcodeDetection>());
-      registry->AddInterface(
-          web_contents->GetJavaInterfaces()
-              ->CreateInterfaceFactory<blink::mojom::TextDetection>());
     }
   }
 #endif
@@ -3120,7 +3105,7 @@ void ChromeContentBrowserClient::OpenURL(
     const base::Callback<void(content::WebContents*)>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   ServiceTabLauncher::GetInstance()->LaunchTab(browser_context, params,
                                                callback);
 #else

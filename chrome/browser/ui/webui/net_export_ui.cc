@@ -20,7 +20,6 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
-#include "chrome/common/features.h"
 #include "chrome/common/url_constants.h"
 #include "components/grit/components_resources.h"
 #include "components/net_log/chrome_net_log.h"
@@ -34,7 +33,7 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 #include "chrome/browser/android/intent_helper.h"
 #endif
 
@@ -291,7 +290,7 @@ void NetExportMessageHandler::SendEmail(const base::FilePath& file_to_send) {
     return;
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   std::string email;
   std::string subject = "net_internals_log";
   std::string title = "Issue number: ";

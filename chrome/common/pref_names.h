@@ -164,9 +164,9 @@ extern const char kSafeBrowsingExtendedReportingOptInAllowed[];
 extern const char kSSLErrorOverrideAllowed[];
 extern const char kIncognitoModeAvailability[];
 extern const char kSearchSuggestEnabled[];
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 extern const char kContextualSearchEnabled[];
-#endif
+#endif  // defined(OS_ANDROID)
 #if defined(OS_MACOSX)
 extern const char kConfirmToQuitEnabled[];
 extern const char kHideFullscreenToolbar[];
@@ -477,9 +477,9 @@ extern const char kGpuDriverInfoBuildFingerPrint[];
 
 // Deprecated preference for metric / crash reporting on Android. Use
 // kMetricsReportingEnabled instead.
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 extern const char kCrashReportingEnabled[];
-#endif
+#endif  // defined(OS_ANDROID)
 
 extern const char kProfileLastUsed[];
 extern const char kProfilesLastActive[];
@@ -491,12 +491,12 @@ extern const char kProfilesDeleted[];
 extern const char kStabilityOtherUserCrashCount[];
 extern const char kStabilityKernelCrashCount[];
 extern const char kStabilitySystemUncleanShutdownCount[];
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 extern const char kStabilityForegroundActivityType[];
 extern const char kStabilityLaunchedActivityFlags[];
 extern const char kStabilityLaunchedActivityCounts[];
 extern const char kStabilityCrashedActivityCounts[];
-#endif
+#endif  // defined(OS_ANDROID)
 
 extern const char kStabilityPluginStats[];
 extern const char kStabilityPluginName[];
@@ -552,11 +552,11 @@ extern const char kDisablePluginFinder[];
 
 extern const char kNtpAppPageNames[];
 extern const char kNtpCollapsedForeignSessions[];
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 extern const char kNtpCollapsedRecentlyClosedTabs[];
 extern const char kNtpCollapsedSnapshotDocument[];
 extern const char kNtpCollapsedSyncPromo[];
-#endif
+#endif  // defined(OS_ANDROID)
 extern const char kNtpShownPage[];
 
 extern const char kDevToolsAdbKey[];
@@ -810,9 +810,9 @@ extern const char kEnableDRM[];
 
 extern const char kWatchdogExtensionActive[];
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 extern const char kPartnerBookmarkMappings[];
-#endif
+#endif  // defined(OS_ANDROID)
 
 extern const char kQuickCheckEnabled[];
 extern const char kPacHttpsUrlStrippingEnabled[];

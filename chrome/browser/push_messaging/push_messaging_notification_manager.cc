@@ -17,7 +17,6 @@
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/push_messaging/push_messaging_constants.h"
-#include "chrome/common/features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_service_impl.h"
@@ -36,7 +35,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #else
@@ -148,7 +147,7 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
   bool notification_needed = true;
 
   // Sites with a currently visible tab don't need to show notifications.
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   for (auto it = TabModelList::begin(); it != TabModelList::end(); ++it) {
     Profile* profile = (*it)->GetProfile();
     WebContents* active_web_contents = (*it)->GetActiveWebContents();

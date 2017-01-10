@@ -100,7 +100,7 @@
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #endif
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 #include "chrome/browser/sync/glue/synced_window_delegates_getter_android.h"
 #endif
 
@@ -128,7 +128,7 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
  public:
   explicit SyncSessionsClientImpl(Profile* profile) : profile_(profile) {
     window_delegates_getter_.reset(
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
         // Android doesn't have multi-profile support, so no need to pass the
         // profile in.
         new SyncedWindowDelegatesGetterAndroid());
@@ -268,11 +268,11 @@ base::Closure ChromeSyncClient::GetPasswordStateChangedCallback() {
 syncer::SyncApiComponentFactory::RegisterDataTypesMethod
 ChromeSyncClient::GetRegisterPlatformTypesCallback() {
   return base::Bind(
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
       &ChromeSyncClient::RegisterAndroidDataTypes,
 #else
       &ChromeSyncClient::RegisterDesktopDataTypes,
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // defined(OS_ANDROID)
       weak_ptr_factory_.GetWeakPtr());
 }
 

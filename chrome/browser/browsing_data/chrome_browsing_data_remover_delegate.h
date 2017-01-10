@@ -82,7 +82,7 @@ class ChromeBrowsingDataRemoverDelegate : public BrowsingDataRemoverDelegate
       int origin_type_mask,
       const base::Closure& callback) override;
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   void OverrideWebappRegistryForTesting(
       std::unique_ptr<WebappRegistry> webapp_registry);
 #endif
@@ -147,7 +147,7 @@ class ChromeBrowsingDataRemoverDelegate : public BrowsingDataRemoverDelegate
   SubTask clear_passwords_;
   SubTask clear_passwords_stats_;
   SubTask clear_platform_keys_;
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   SubTask clear_precache_history_;
   SubTask clear_offline_page_data_;
 #endif
@@ -169,7 +169,7 @@ class ChromeBrowsingDataRemoverDelegate : public BrowsingDataRemoverDelegate
 
   std::unique_ptr<TemplateURLService::Subscription> template_url_sub_;
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   // WebappRegistry makes calls across the JNI. In unit tests, the Java side is
   // not initialised, so the registry must be mocked out.
   std::unique_ptr<WebappRegistry> webapp_registry_;

@@ -81,12 +81,12 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kSearchSuggestEnabled,
       true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   registry->RegisterStringPref(
       prefs::kContextualSearchEnabled,
       std::string(),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-#endif
+#endif  // defined(OS_ANDROID)
   registry->RegisterBooleanPref(prefs::kSessionExitedCleanly, true);
   registry->RegisterStringPref(prefs::kSessionExitType, std::string());
   registry->RegisterInt64Pref(prefs::kSiteEngagementLastUpdateTime, 0,

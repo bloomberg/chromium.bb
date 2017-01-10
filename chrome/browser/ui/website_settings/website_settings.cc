@@ -41,7 +41,6 @@
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -380,7 +379,7 @@ void WebsiteSettings::Init(const GURL& url,
 #endif
 
   bool isChromeUINativeScheme = false;
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   isChromeUINativeScheme = url.SchemeIs(chrome::kChromeUINativeScheme);
 #endif
 

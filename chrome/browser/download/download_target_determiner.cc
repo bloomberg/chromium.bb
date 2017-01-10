@@ -324,7 +324,7 @@ void DownloadTargetDeterminer::ReserveVirtualPathDone(
   DVLOG(20) << "Reserved path: " << path.AsUTF8Unsafe()
             << " Verified:" << verified;
   DCHECK_EQ(STATE_PROMPT_USER_FOR_DOWNLOAD_PATH, next_state_);
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   if (!verified) {
     if (path.empty()) {
       DownloadManagerService::OnDownloadCanceled(
@@ -794,10 +794,10 @@ Profile* DownloadTargetDeterminer::GetProfile() const {
 
 bool DownloadTargetDeterminer::ShouldPromptForDownload(
     const base::FilePath& filename) const {
-#if BUILDFLAG(ANDROID_JAVA_UI)
-    // Don't prompt user about saving path on Android.
-    // TODO(qinmin): show an error toast to warn user in certain cases.
-    return false;
+#if defined(OS_ANDROID)
+  // Don't prompt user about saving path on Android.
+  // TODO(qinmin): show an error toast to warn user in certain cases.
+  return false;
 #endif
   if (is_resumption_) {
     // For resumed downloads, if the target disposition or prefs require

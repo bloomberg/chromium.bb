@@ -27,10 +27,11 @@ class TestNetErrorTabHelper : public NetErrorTabHelper {
         mock_probe_running_(false),
         last_status_sent_(error_page::DNS_PROBE_MAX),
         mock_sent_count_(0),
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
         times_download_page_later_invoked_(0),
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
-        times_diagnostics_dialog_invoked_(0) {}
+#endif  // defined(OS_ANDROID)
+        times_diagnostics_dialog_invoked_(0) {
+  }
 
   void FinishProbe(DnsProbeStatus status) {
     EXPECT_TRUE(mock_probe_running_);
@@ -42,7 +43,7 @@ class TestNetErrorTabHelper : public NetErrorTabHelper {
   DnsProbeStatus last_status_sent() const { return last_status_sent_; }
   int mock_sent_count() const { return mock_sent_count_; }
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   using NetErrorTabHelper::DownloadPageLater;
 
   const GURL& download_page_later_url() const {
@@ -52,7 +53,7 @@ class TestNetErrorTabHelper : public NetErrorTabHelper {
   int times_download_page_later_invoked() const {
     return times_download_page_later_invoked_;
   }
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // defined(OS_ANDROID)
 
   const std::string& network_diagnostics_url() const {
     return network_diagnostics_url_;
@@ -89,20 +90,20 @@ class TestNetErrorTabHelper : public NetErrorTabHelper {
     times_diagnostics_dialog_invoked_++;
   }
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   void DownloadPageLaterHelper(const GURL& url) override {
     download_page_later_url_ = url;
     times_download_page_later_invoked_++;
   }
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // defined(OS_ANDROID)
 
   bool mock_probe_running_;
   DnsProbeStatus last_status_sent_;
   int mock_sent_count_;
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   GURL download_page_later_url_;
   int times_download_page_later_invoked_;
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // defined(OS_ANDROID)
   std::string network_diagnostics_url_;
   int times_diagnostics_dialog_invoked_;
 };
@@ -169,7 +170,7 @@ class NetErrorTabHelperTest : public ChromeRenderViewHostTestHarness {
     }
   }
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   void NoDownloadPageLaterForNonHttpSchemes(const char* url_string,
                                             bool succeeded) {
     GURL url(url_string);
@@ -371,7 +372,7 @@ TEST_F(NetErrorTabHelperTest, NoDiagnosticsForNonHttpSchemes) {
   }
 }
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 TEST_F(NetErrorTabHelperTest, DownloadPageLater) {
   GURL url("http://somewhere:123/");
   LoadURL(url, false /*succeeded*/);
@@ -406,4 +407,4 @@ TEST_F(NetErrorTabHelperTest, NoDownloadPageLaterForNonHttpSchemes3) {
   NoDownloadPageLaterForNonHttpSchemes("about:blank", true);
 }
 
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // defined(OS_ANDROID)

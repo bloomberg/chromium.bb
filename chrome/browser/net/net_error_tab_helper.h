@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/net/dns_probe_service.h"
-#include "chrome/common/features.h"
 #include "chrome/common/network_diagnostics.mojom.h"
 #include "components/error_page/common/net_error_info.h"
 #include "components/prefs/pref_member.h"
@@ -78,9 +77,9 @@ class NetErrorTabHelper
     return network_diagnostics_bindings_;
   }
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   void DownloadPageLater();
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // defined(OS_ANDROID)
 
  private:
   friend class content::WebContentsUserData<NetErrorTabHelper>;
@@ -97,10 +96,10 @@ class NetErrorTabHelper
   // testing.
   virtual void RunNetworkDiagnosticsHelper(const std::string& sanitized_url);
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   // Virtual for testing.
   virtual void DownloadPageLaterHelper(const GURL& url);
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // defined(OS_ANDROID)
 
   content::WebContentsFrameBindingSet<chrome::mojom::NetworkDiagnostics>
       network_diagnostics_bindings_;

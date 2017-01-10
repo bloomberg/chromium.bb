@@ -23,7 +23,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -41,7 +40,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/vector_icons_public.h"
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 #include <vector>
 
 #include "chrome/browser/android/preferences/pref_service_bridge.h"
@@ -49,7 +48,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "ui/android/window_android.h"
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // defined(OS_ANDROID)
 
 using content::BrowserThread;
 
@@ -185,7 +184,7 @@ MediaStreamDevicesController::MediaStreamDevicesController(
     return;
   }
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   std::vector<ContentSettingsType> content_settings_types;
   if (IsAllowedForAudio())
     content_settings_types.push_back(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
@@ -602,7 +601,7 @@ ContentSetting MediaStreamDevicesController::GetNewSetting(
 
 bool MediaStreamDevicesController::IsUserAcceptAllowed(
     ContentSettingsType content_type) const {
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   content::ContentViewCore* cvc =
       content::ContentViewCore::FromWebContents(web_contents_);
   if (!cvc)

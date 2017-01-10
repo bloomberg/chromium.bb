@@ -164,18 +164,37 @@ java_strings_grd("chrome_strings_grd") {
 
 android_library("chrome_java") {
   deps = [
+    ":chrome_java_resources",
     ":chrome_public_android_manifest",
     ":chrome_public_apk_template_resources",
+    ":document_tab_model_info_proto_java",
     "//base:base_java",
+    "//blimp/client/public:public_java",
     "//chrome/android/webapk/libs/client:client_java",
     "//chrome/android/webapk/libs/common:common_java",
     "//chrome/android/webapk/libs/runtime_library:webapk_service_aidl_java",
     "//components/autofill/android:autofill_java",
+    "//components/bookmarks/common/android:bookmarks_java",
+    "//components/dom_distiller/content/browser/android:dom_distiller_content_java",
+    "//components/dom_distiller/core/android:dom_distiller_core_java",
+    "//components/gcm_driver/android:gcm_driver_java",
+    "//components/gcm_driver/instance_id/android:instance_id_driver_java",
+    "//components/invalidation/impl:java",
+    "//components/location/android:location_java",
     "//components/minidump_uploader:minidump_uploader_java",
+    "//components/navigation_interception/android:navigation_interception_java",
+    "//components/ntp_tiles/android:ntp_tiles_java",
     "//components/payments:payment_request_java",
+    "//components/policy/android:policy_java",
+    "//components/precache/android:precache_java",
     "//components/safe_json/android:safe_json_java",
+    "//components/safe_json/android:safe_json_java",
+    "//components/signin/core/browser/android:java",
     "//components/spellcheck/browser/android:java",
+    "//components/sync/android:sync_java",
+    "//components/url_formatter/android:url_formatter_java",
     "//components/variations/android:variations_java",
+    "//components/web_contents_delegate_android:web_contents_delegate_android_java",
     "//components/web_contents_delegate_android:web_contents_delegate_android_java",
     "//components/web_restrictions:web_restrictions_java",
     "//content/public/android:content_java",
@@ -211,6 +230,7 @@ android_library("chrome_java") {
     "//third_party/jsr-305:jsr_305_javalib",
     "//third_party/leakcanary:leakcanary_java",
     "//ui/android:ui_java",
+    "//ui/base/mojo:mojo_bindings_java",
     "//ui/gfx/geometry/mojo:mojo_java",
     "//url/mojo:url_mojom_gurl_java",
     google_play_services_library,
@@ -227,54 +247,24 @@ android_library("chrome_java") {
     "//chrome:data_use_ui_message_enum_javagen",
     "//chrome:signin_metrics_enum_javagen",
     "//chrome:quick_action_category_enum_javagen",
+    "//chrome:page_info_connection_type_javagen",
+    "//chrome:website_settings_action_javagen",
+    "//components/browsing_data/core:browsing_data_utils_java",
+    "//components/infobars/core:infobar_enums_java",
+    "//components/ntp_snippets:ntp_snippets_java_enums_srcjar",
+    "//components/ntp_tiles:ntp_tiles_enums_java",
+    "//components/offline_pages/core:offline_page_model_enums_java",
+    "//components/omnibox/browser:autocomplete_match_javagen",
+    "//components/omnibox/browser:autocomplete_match_type_javagen",
+    "//components/security_state/core:security_state_enums_java",
+    "//components/signin/core/browser:investigated_scenario_java",
   ]
 
   # Manifest used for linting (determining unused resources).
   android_manifest = chrome_public_android_manifest
 
-  # TODO(sievers): Split java code into components. Not everything
-  # is really all that UI related here.
-  if (android_java_ui) {
-    # From java_sources.gni.
-    java_files = chrome_java_sources
-
-    srcjar_deps += [
-      "//chrome:page_info_connection_type_javagen",
-      "//chrome:website_settings_action_javagen",
-      "//components/browsing_data/core:browsing_data_utils_java",
-      "//components/infobars/core:infobar_enums_java",
-      "//components/ntp_snippets:ntp_snippets_java_enums_srcjar",
-      "//components/ntp_tiles:ntp_tiles_enums_java",
-      "//components/offline_pages/core:offline_page_model_enums_java",
-      "//components/omnibox/browser:autocomplete_match_javagen",
-      "//components/omnibox/browser:autocomplete_match_type_javagen",
-      "//components/security_state/core:security_state_enums_java",
-      "//components/signin/core/browser:investigated_scenario_java",
-    ]
-
-    deps += [
-      ":chrome_java_resources",
-      ":document_tab_model_info_proto_java",
-      "//blimp/client/public:public_java",
-      "//components/bookmarks/common/android:bookmarks_java",
-      "//components/dom_distiller/content/browser/android:dom_distiller_content_java",
-      "//components/dom_distiller/core/android:dom_distiller_core_java",
-      "//components/gcm_driver/android:gcm_driver_java",
-      "//components/gcm_driver/instance_id/android:instance_id_driver_java",
-      "//components/invalidation/impl:java",
-      "//components/location/android:location_java",
-      "//components/navigation_interception/android:navigation_interception_java",
-      "//components/ntp_tiles/android:ntp_tiles_java",
-      "//components/policy/android:policy_java",
-      "//components/precache/android:precache_java",
-      "//components/safe_json/android:safe_json_java",
-      "//components/signin/core/browser/android:java",
-      "//components/sync/android:sync_java",
-      "//components/url_formatter/android:url_formatter_java",
-      "//components/web_contents_delegate_android:web_contents_delegate_android_java",
-      "//ui/base/mojo:mojo_bindings_java",
-    ]
-  }
+  # From java_sources.gni.
+  java_files = chrome_java_sources
 
   if (enable_vr_shell || enable_webvr) {
     java_files += chrome_vr_java_sources

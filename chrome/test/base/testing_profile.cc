@@ -126,7 +126,7 @@
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #endif
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "components/offline_pages/core/stub_offline_page_model.h"
 #endif
@@ -251,7 +251,7 @@ std::unique_ptr<KeyedService> BuildWebDataService(
       &TestProfileErrorCallback);
 }
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 std::unique_ptr<KeyedService> BuildOfflinePageModel(
     content::BrowserContext* context) {
   return base::MakeUnique<offline_pages::StubOfflinePageModel>();
@@ -624,7 +624,7 @@ void TestingProfile::CreateBookmarkModel(bool delete_file) {
     base::FilePath path = GetPath().Append(bookmarks::kBookmarksFileName);
     base::DeleteFile(path, false);
   }
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   offline_pages::OfflinePageModelFactory::GetInstance()->SetTestingFactory(
       this, BuildOfflinePageModel);
 #endif

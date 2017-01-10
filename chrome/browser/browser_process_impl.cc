@@ -842,10 +842,10 @@ void BrowserProcessImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(metrics::prefs::kMetricsReportingEnabled,
                                 GoogleUpdateSettings::GetCollectStatsConsent());
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   registry->RegisterBooleanPref(
       prefs::kCrashReportingEnabled, false);
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // defined(OS_ANDROID)
 }
 
 DownloadRequestLimiter* BrowserProcessImpl::download_request_limiter() {

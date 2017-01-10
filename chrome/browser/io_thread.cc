@@ -119,12 +119,12 @@
 #include "net/cert_net/nss_ocsp.h"
 #endif
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 #include "base/android/build_info.h"
 #include "chrome/browser/android/data_usage/external_data_use_observer.h"
 #include "chrome/browser/android/net/external_estimate_provider_android.h"
 #include "components/data_usage/android/traffic_stats_amortizer.h"
-#endif
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/net/cert_verify_proc_chromeos.h"
@@ -520,9 +520,9 @@ void IOThread::Init() {
 #endif
 
   std::unique_ptr<data_usage::DataUseAmortizer> data_use_amortizer;
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   data_use_amortizer.reset(new data_usage::android::TrafficStatsAmortizer());
-#endif
+#endif  // defined(OS_ANDROID)
 
   globals_->data_use_ascriber =
       base::MakeUnique<data_use_measurement::ChromeDataUseAscriber>();
@@ -540,13 +540,13 @@ void IOThread::Init() {
       globals_->data_use_aggregator.get(),
       true /* is_data_usage_off_the_record */);
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   globals_->external_data_use_observer.reset(
       new chrome::android::ExternalDataUseObserver(
           globals_->data_use_aggregator.get(),
           BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
           BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
-#endif
+#endif  // defined(OS_ANDROID)
 
   globals_->system_network_delegate =
       globals_->data_use_ascriber->CreateNetworkDelegate(
@@ -559,10 +559,10 @@ void IOThread::Init() {
                                  &network_quality_estimator_params);
 
   std::unique_ptr<net::ExternalEstimateProvider> external_estimate_provider;
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   external_estimate_provider.reset(
       new chrome::android::ExternalEstimateProviderAndroid());
-#endif
+#endif  // defined(OS_ANDROID)
   // Pass ownership.
   globals_->network_quality_estimator.reset(new net::NetworkQualityEstimator(
       std::move(external_estimate_provider), network_quality_estimator_params));

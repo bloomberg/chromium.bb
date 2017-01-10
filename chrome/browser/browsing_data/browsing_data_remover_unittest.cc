@@ -101,7 +101,7 @@
 #include "ui/gfx/favicon_size.h"
 #include "url/origin.h"
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 #include "chrome/browser/android/webapps/webapp_registry.h"
 #endif
 
@@ -323,7 +323,7 @@ class TestStoragePartition : public StoragePartition {
   DISALLOW_COPY_AND_ASSIGN(TestStoragePartition);
 };
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 class TestWebappRegistry : public WebappRegistry {
  public:
   TestWebappRegistry() : WebappRegistry() { }
@@ -1151,7 +1151,7 @@ class BrowsingDataRemoverTest : public testing::Test {
     remover_ = static_cast<BrowsingDataRemoverImpl*>(
         BrowsingDataRemoverFactory::GetForBrowserContext(profile_.get()));
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
     static_cast<ChromeBrowsingDataRemoverDelegate*>(
         remover_->GetEmbedderDelegate())->OverrideWebappRegistryForTesting(
             base::WrapUnique<WebappRegistry>(new TestWebappRegistry()));

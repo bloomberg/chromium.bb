@@ -64,7 +64,7 @@
 #include "extensions/features/features.h"
 #include "printing/features/features.h"
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 #include "chrome/browser/android/banners/app_banner_manager_android.h"
 #include "chrome/browser/android/data_usage/data_use_tab_helper.h"
 #include "chrome/browser/android/offline_pages/offline_page_tab_helper.h"
@@ -88,7 +88,7 @@
 #include "components/pdf/browser/pdf_web_contents_helper.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/zoom/zoom_controller.h"
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
@@ -145,7 +145,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   // SessionTabHelper comes first because it sets up the tab ID, and other
   // helpers may rely on that.
   SessionTabHelper::CreateForWebContents(web_contents);
-#if !BUILDFLAG(ANDROID_JAVA_UI)
+#if !defined(OS_ANDROID)
   // ZoomController comes before common tab helpers since ChromeAutofillClient
   // may want to register as a ZoomObserver with it.
   zoom::ZoomController::CreateForWebContents(web_contents);
@@ -203,7 +203,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 
   // --- Platform-specific tab helpers ---
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   banners::AppBannerManagerAndroid::CreateForWebContents(web_contents);
   ContextMenuHelper::CreateForWebContents(web_contents);
   DataUseTabHelper::CreateForWebContents(web_contents);
@@ -258,14 +258,14 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   SupervisedUserNavigationObserver::CreateForWebContents(web_contents);
 #endif
 
-#if BUILDFLAG(ENABLE_PRINTING) && !BUILDFLAG(ANDROID_JAVA_UI)
+#if BUILDFLAG(ENABLE_PRINTING) && !defined(OS_ANDROID)
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   printing::PrintViewManager::CreateForWebContents(web_contents);
   printing::PrintPreviewMessageHandler::CreateForWebContents(web_contents);
 #else
   printing::PrintViewManagerBasic::CreateForWebContents(web_contents);
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
-#endif  // BUILDFLAG(ENABLE_PRINTING) && !BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // BUILDFLAG(ENABLE_PRINTING) && !defined(OS_ANDROID)
 
   bool enabled_distiller = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableDomDistiller);

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ntp_snippets/bookmark_last_visit_updater.h"
 
-#include "chrome/common/features.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/ntp_snippets/bookmarks/bookmark_last_visit_utils.h"
@@ -14,7 +13,7 @@
 namespace {
 
 bool IsMobilePlatform() {
-#if BUILDFLAG(ANDROID_JAVA_UI)  // There are no tab helpers on iOS.
+#if defined(OS_ANDROID)  // There are no tab helpers on iOS.
   return true;
 #else
   return false;

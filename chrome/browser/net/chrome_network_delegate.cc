@@ -63,7 +63,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/url_request/url_request.h"
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/precache/precache_util.h"
 #endif
@@ -384,9 +384,9 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
   RecordNetworkErrorHistograms(request, net_error);
 
   if (net_error == net::OK) {
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
     precache::UpdatePrecacheMetricsAndState(request, profile_);
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // defined(OS_ANDROID)
   }
 
   extensions_delegate_->OnCompleted(request, started, net_error);

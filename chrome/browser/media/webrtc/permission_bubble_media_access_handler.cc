@@ -11,7 +11,6 @@
 #include "chrome/browser/media/webrtc/media_stream_device_permissions.h"
 #include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_thread.h"
@@ -19,7 +18,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 #include <vector>
 
 #include "base/bind.h"
@@ -33,9 +32,9 @@
 #include "chrome/browser/permissions/permission_util.h"
 #else
 #include "chrome/browser/permissions/permission_request_manager.h"
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // defined(OS_ANDROID)
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 namespace {
 // Callback for the permission update infobar when the site and Chrome
 // permissions are mismatched on Android.
@@ -49,7 +48,7 @@ void OnPermissionConflictResolved(
 }
 }  // namespace
 
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // defined(OS_ANDROID)
 
 using content::BrowserThread;
 
@@ -81,7 +80,7 @@ PermissionBubbleMediaAccessHandler::~PermissionBubbleMediaAccessHandler() {}
 bool PermissionBubbleMediaAccessHandler::SupportsStreamType(
     const content::MediaStreamType type,
     const extensions::Extension* extension) {
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   return type == content::MEDIA_DEVICE_VIDEO_CAPTURE ||
          type == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
          type == content::MEDIA_DESKTOP_VIDEO_CAPTURE;
@@ -117,7 +116,7 @@ void PermissionBubbleMediaAccessHandler::HandleRequest(
     const extensions::Extension* extension) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   if (request.video_type == content::MEDIA_DESKTOP_VIDEO_CAPTURE &&
       !base::FeatureList::IsEnabled(
           chrome::android::kUserMediaScreenCapturing)) {
@@ -127,7 +126,7 @@ void PermissionBubbleMediaAccessHandler::HandleRequest(
                  content::MEDIA_DEVICE_INVALID_STATE, nullptr);
     return;
   }
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // defined(OS_ANDROID)
 
   RequestsQueue& queue = pending_requests_[web_contents];
   queue.push_back(PendingAccessRequest(request, callback));
@@ -152,7 +151,7 @@ void PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest(
   DCHECK(!it->second.empty());
 
   const content::MediaStreamRequest request = it->second.front().request;
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   if (request.video_type == content::MEDIA_DESKTOP_VIDEO_CAPTURE) {
     ScreenCaptureInfoBarDelegateAndroid::Create(
         web_contents, request,
@@ -169,7 +168,7 @@ void PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest(
               &PermissionBubbleMediaAccessHandler::OnAccessRequestResponse,
               base::Unretained(this), web_contents)));
   if (!controller->IsAskingForAudio() && !controller->IsAskingForVideo()) {
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
     // If either audio or video was previously allowed and Chrome no longer has
     // the necessary permissions, show a infobar to attempt to address this
     // mismatch.
@@ -192,7 +191,7 @@ void PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest(
     return;
   }
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   PermissionUmaUtil::RecordPermissionPromptShown(
       controller->GetPermissionRequestType(),
       PermissionUtil::GetGestureType(request.user_gesture));

@@ -70,7 +70,7 @@ class BrowsingDataRemover {
     // prohibited from deleting history or downloads.
     REMOVE_NOCHECKS = 1 << 16,
     REMOVE_CACHE_STORAGE = 1 << 17,
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
     REMOVE_WEBAPP_DATA = 1 << 18,
 #endif
     REMOVE_DURABLE_PERMISSION = 1 << 19,
@@ -91,21 +91,18 @@ class BrowsingDataRemover {
                        REMOVE_CACHE_STORAGE |
                        REMOVE_WEBSQL |
                        REMOVE_CHANNEL_IDS |
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
                        REMOVE_WEBAPP_DATA |
 #endif
                        REMOVE_SITE_USAGE_DATA |
                        REMOVE_DURABLE_PERMISSION,
 
     // Datatypes protected by Important Sites.
-    IMPORTANT_SITES_DATATYPES = REMOVE_SITE_DATA |
-                                REMOVE_CACHE,
+    IMPORTANT_SITES_DATATYPES = REMOVE_SITE_DATA | REMOVE_CACHE,
 
     // Datatypes that can be deleted partially per URL / origin / domain,
     // whichever makes sense.
-    FILTERABLE_DATATYPES = REMOVE_SITE_DATA |
-                           REMOVE_CACHE |
-                           REMOVE_DOWNLOADS,
+    FILTERABLE_DATATYPES = REMOVE_SITE_DATA | REMOVE_CACHE | REMOVE_DOWNLOADS,
 
     // Includes all the available remove options. Meant to be used by clients
     // that wish to wipe as much data as possible from a Profile, to make it

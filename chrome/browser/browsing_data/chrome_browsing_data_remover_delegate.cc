@@ -69,7 +69,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/webapps/webapp_registry.h"
 #include "chrome/browser/precache/precache_manager_factory.h"
@@ -261,7 +261,7 @@ ChromeBrowsingDataRemoverDelegate::ChromeBrowsingDataRemoverDelegate(
       clear_passwords_(sub_task_forward_callback_),
       clear_passwords_stats_(sub_task_forward_callback_),
       clear_platform_keys_(sub_task_forward_callback_),
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
       clear_precache_history_(sub_task_forward_callback_),
       clear_offline_page_data_(sub_task_forward_callback_),
 #endif
@@ -269,10 +269,10 @@ ChromeBrowsingDataRemoverDelegate::ChromeBrowsingDataRemoverDelegate(
       clear_webrtc_logs_(sub_task_forward_callback_),
 #endif
       clear_auto_sign_in_(sub_task_forward_callback_),
-#if BUILDFLAG(ANDROID_JAVA_UI)
-    webapp_registry_(new WebappRegistry()),
+#if defined(OS_ANDROID)
+      webapp_registry_(new WebappRegistry()),
 #endif
-    weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {}
 
 ChromeBrowsingDataRemoverDelegate::~ChromeBrowsingDataRemoverDelegate() {
   history_task_tracker_.TryCancelAll();
@@ -474,7 +474,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         clear_webrtc_logs_.GetCompletionCallback());
 #endif
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
     precache::PrecacheManager* precache_manager =
         precache::PrecacheManagerFactory::GetForBrowserContext(profile_);
     // |precache_manager| could be nullptr if the profile is off the record.
@@ -729,7 +729,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       ui_nqe_service->ClearPrefs();
     }
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
     // For now we're considering offline pages as cache, so if we're removing
     // cache we should remove offline pages as well.
     if ((remove_mask & BrowsingDataRemover::REMOVE_CACHE)) {
@@ -815,7 +815,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 
   //////////////////////////////////////////////////////////////////////////////
   // REMOVE_WEBAPP_DATA
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   // Clear all data associated with registered webapps.
   if (remove_mask & BrowsingDataRemover::REMOVE_WEBAPP_DATA)
     webapp_registry_->UnregisterWebappsForUrls(filter);
@@ -833,25 +833,22 @@ void ChromeBrowsingDataRemoverDelegate::NotifyIfDone() {
 }
 
 bool ChromeBrowsingDataRemoverDelegate::AllDone() {
-  return !clear_cookies_count_ &&
-         !synchronous_clear_operations_.is_pending() &&
+  return !clear_cookies_count_ && !synchronous_clear_operations_.is_pending() &&
          !clear_autofill_origin_urls_.is_pending() &&
          !clear_flash_content_licenses_.is_pending() &&
          !clear_domain_reliability_monitor_.is_pending() &&
-         !clear_form_.is_pending() &&
-         !clear_history_.is_pending() &&
+         !clear_form_.is_pending() && !clear_history_.is_pending() &&
          !clear_hostname_resolution_cache_.is_pending() &&
          !clear_keyword_data_.is_pending() &&
 #if !defined(DISABLE_NACL)
-         !clear_nacl_cache_.is_pending() &&
-         !clear_pnacl_cache_.is_pending() &&
+         !clear_nacl_cache_.is_pending() && !clear_pnacl_cache_.is_pending() &&
 #endif
          !clear_network_predictor_.is_pending() &&
          !clear_networking_history_.is_pending() &&
          !clear_passwords_.is_pending() &&
          !clear_passwords_stats_.is_pending() &&
          !clear_platform_keys_.is_pending() &&
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
          !clear_precache_history_.is_pending() &&
          !clear_offline_page_data_.is_pending() &&
 #endif
@@ -861,7 +858,7 @@ bool ChromeBrowsingDataRemoverDelegate::AllDone() {
          !clear_auto_sign_in_.is_pending();
 }
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 void ChromeBrowsingDataRemoverDelegate::OverrideWebappRegistryForTesting(
     std::unique_ptr<WebappRegistry> webapp_registry) {
   webapp_registry_ = std::move(webapp_registry);

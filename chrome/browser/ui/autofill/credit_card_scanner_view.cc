@@ -4,12 +4,11 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/credit_card_scanner_view.h"
-#include "chrome/common/features.h"
 
 namespace autofill {
 
 // Not implemented on other platforms yet.
-#if !BUILDFLAG(ANDROID_JAVA_UI)
+#if !defined(OS_ANDROID)
 // static
 bool CreditCardScannerView::CanShow() {
   return false;

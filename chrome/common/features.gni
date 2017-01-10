@@ -15,12 +15,6 @@ import("//ui/base/ui_features.gni")
 
 # Please keep features in alphabetical order.
 declare_args() {
-  # Whether the Java UI is being used (Java infobars and popups, Java native
-  # settings and first run experience, sign-in etc.).
-  # Default to true if compiling for android, but allow this being overriden
-  # through the environment.
-  android_java_ui = is_android
-
   enable_app_list = is_chromeos
 
   # Enables support for background apps.

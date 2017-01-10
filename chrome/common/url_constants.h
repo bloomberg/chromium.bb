@@ -93,7 +93,7 @@ extern const char kChromeUIVersionURL[];
 extern const char kChromeUIWelcomeURL[];
 extern const char kChromeUIWelcomeWin10URL[];
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 extern const char kChromeUIContextualSearchPromoURL[];
 extern const char kChromeUIJavaCrashURL[];
 extern const char kChromeUINativeScheme[];
@@ -101,7 +101,7 @@ extern const char kChromeUINativeNewTabURL[];
 extern const char kChromeUINativeBookmarksURL[];
 extern const char kChromeUINativePhysicalWebDiagnosticsURL[];
 extern const char kChromeUINativeRecentTabsURL[];
-#endif
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
 extern const char kChromeUIBluetoothPairingURL[];

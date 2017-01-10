@@ -12,7 +12,6 @@
 #include "chrome/browser/net/net_error_diagnostics_dialog.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "components/error_page/common/net_error_info.h"
@@ -26,12 +25,12 @@
 #include "net/base/net_errors.h"
 #include "url/gurl.h"
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 #include "base/guid.h"
 #include "chrome/browser/android/offline_pages/request_coordinator_factory.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // defined(OS_ANDROID)
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -139,7 +138,7 @@ bool NetErrorTabHelper::OnMessageReceived(
     content::RenderFrameHost* render_frame_host) {
   if (render_frame_host != web_contents()->GetMainFrame())
     return false;
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(NetErrorTabHelper, message)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DownloadPageLater, DownloadPageLater)
@@ -149,7 +148,7 @@ bool NetErrorTabHelper::OnMessageReceived(
   return handled;
 #else
   return false;
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // defined(OS_ANDROID)
 }
 
 NetErrorTabHelper::NetErrorTabHelper(WebContents* contents)
@@ -209,7 +208,7 @@ void NetErrorTabHelper::OnDnsProbeFinished(DnsProbeStatus result) {
     SendInfo();
 }
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 void NetErrorTabHelper::DownloadPageLater() {
   // Makes sure that this is coming from an error page.
   content::NavigationEntry* entry =
@@ -224,7 +223,7 @@ void NetErrorTabHelper::DownloadPageLater() {
 
   DownloadPageLaterHelper(url);
 }
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // defined(OS_ANDROID)
 
 void NetErrorTabHelper::InitializePref(WebContents* contents) {
   DCHECK(contents);
@@ -277,7 +276,7 @@ void NetErrorTabHelper::RunNetworkDiagnosticsHelper(
   ShowNetworkDiagnosticsDialog(web_contents(), sanitized_url);
 }
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 void NetErrorTabHelper::DownloadPageLaterHelper(const GURL& page_url) {
   offline_pages::RequestCoordinator* request_coordinator =
       offline_pages::RequestCoordinatorFactory::GetForBrowserContext(
@@ -290,6 +289,6 @@ void NetErrorTabHelper::DownloadPageLaterHelper(const GURL& page_url) {
       offline_pages::RequestCoordinator::RequestAvailability::
           ENABLED_FOR_OFFLINER);
 }
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // defined(OS_ANDROID)
 
 }  // namespace chrome_browser_net

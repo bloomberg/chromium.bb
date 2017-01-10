@@ -154,26 +154,22 @@
 #include "chrome/browser/ui/webui/local_discovery/local_discovery_ui.h"
 #endif
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
-#include "chrome/browser/android/bookmarks/partner_bookmarks_shim.h"
-#include "chrome/browser/android/ntp/recent_tabs_page_prefs.h"
-#include "components/ntp_tiles/popular_sites_impl.h"
-#else
-#include "chrome/browser/ui/startup/startup_browser_creator.h"
-#include "chrome/browser/upgrade_detector.h"
-#endif
-
 #if defined(OS_ANDROID)
+#include "chrome/browser/android/bookmarks/partner_bookmarks_shim.h"
 #include "chrome/browser/android/ntp/content_suggestions_notifier_service.h"
+#include "chrome/browser/android/ntp/recent_tabs_page_prefs.h"
 #include "chrome/browser/android/preferences/browser_prefs_android.h"
 #include "chrome/browser/ntp_snippets/download_suggestions_provider.h"
 #include "components/ntp_snippets/category_rankers/click_based_category_ranker.h"
 #include "components/ntp_snippets/offline_pages/recent_tab_suggestions_provider.h"
 #include "components/ntp_snippets/physical_web_pages/physical_web_page_suggestions_provider.h"
+#include "components/ntp_tiles/popular_sites_impl.h"
 #else
 #include "chrome/browser/services/gcm/gcm_product_util.h"
 #include "chrome/browser/signin/signin_promo.h"
+#include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/webui/foreign_session_handler.h"
+#include "chrome/browser/upgrade_detector.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -567,7 +563,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   SupervisedUserWhitelistService::RegisterProfilePrefs(registry);
 #endif
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   ntp_tiles::PopularSitesImpl::RegisterProfilePrefs(registry);
   variations::VariationsService::RegisterProfilePrefs(registry);
   PartnerBookmarksShim::RegisterProfilePrefs(registry);

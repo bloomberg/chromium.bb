@@ -57,7 +57,7 @@
 #include "ppapi/features/features.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 #include "chrome/browser/android/download/chrome_duplicate_download_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #endif
@@ -617,7 +617,7 @@ void ChromeDownloadManagerDelegate::PromptUserForDownloadPath(
     const base::FilePath& suggested_path,
     const DownloadTargetDeterminerDelegate::FileSelectedCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   content::WebContents* web_contents = download->GetWebContents();
   if (!web_contents) {
     callback.Run(base::FilePath());

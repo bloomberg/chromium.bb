@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "build/build_config.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,7 +19,7 @@
 #include "components/history/core/browser/url_database.h"
 #include "content/public/browser/user_metrics.h"
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 #include "chrome/browser/android/offline_pages/offline_page_bookmark_observer.h"
 #endif
 
@@ -36,7 +35,7 @@ void ChromeBookmarkClient::Init(bookmarks::BookmarkModel* model) {
   if (managed_bookmark_service_)
     managed_bookmark_service_->BookmarkModelCreated(model);
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   offline_page_observer_ =
       base::MakeUnique<offline_pages::OfflinePageBookmarkObserver>(profile_);
   model->AddObserver(offline_page_observer_.get());

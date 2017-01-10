@@ -13,7 +13,6 @@
 #include "chrome/browser/devtools/devtools_network_protocol_handler.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
-#include "chrome/common/features.h"
 #include "chrome/grit/browser_resources.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_agent_host_client.h"
@@ -193,7 +192,7 @@ std::string DevToolsManagerDelegateAndroid::GetTargetTitle(
 
 bool DevToolsManagerDelegateAndroid::DiscoverTargets(
       const DevToolsAgentHost::DiscoveryCallback& callback) {
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   // Enumerate existing tabs, including the ones with no WebContents.
   DevToolsAgentHost::List result;
   std::set<WebContents*> tab_web_contents;
@@ -231,7 +230,7 @@ bool DevToolsManagerDelegateAndroid::DiscoverTargets(
   return true;
 #else
   return false;
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // defined(OS_ANDROID)
 }
 
 scoped_refptr<DevToolsAgentHost>

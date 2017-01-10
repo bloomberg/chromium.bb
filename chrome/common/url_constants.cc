@@ -102,7 +102,7 @@ const char kChromeUIVersionURL[] = "chrome://version/";
 const char kChromeUIWelcomeURL[] = "chrome://welcome/";
 const char kChromeUIWelcomeWin10URL[] = "chrome://welcome-win10/";
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 const char kChromeUIContextualSearchPromoURL[] =
     "chrome://contextual-search-promo";
 const char kChromeUIJavaCrashURL[] = "chrome://java-crash/";
@@ -748,7 +748,7 @@ const char* const kChromeDebugURLs[] = {content::kChromeUIBadCastCrashURL,
                                         content::kChromeUIMemoryExhaustURL,
                                         content::kChromeUIPpapiFlashCrashURL,
                                         content::kChromeUIPpapiFlashHangURL,
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
                                         chrome::kChromeUIJavaCrashURL,
 #endif
                                         chrome::kChromeUIQuitURL,

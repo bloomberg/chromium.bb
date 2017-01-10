@@ -41,7 +41,7 @@
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
 #endif
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 #include "chrome/browser/geolocation/geolocation_permission_context_android.h"
 #else
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
@@ -231,7 +231,7 @@ PermissionManager::PermissionManager(Profile* profile)
   permission_contexts_[PermissionType::NOTIFICATIONS] =
       base::MakeUnique<NotificationPermissionContext>(
           profile, PermissionType::NOTIFICATIONS);
-#if !BUILDFLAG(ANDROID_JAVA_UI)
+#if !defined(OS_ANDROID)
   permission_contexts_[PermissionType::GEOLOCATION] =
       base::MakeUnique<GeolocationPermissionContext>(profile);
 #else

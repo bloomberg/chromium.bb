@@ -9,7 +9,6 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "chrome/browser/speech/tts_platform.h"
-#include "chrome/common/features.h"
 
 class TtsPlatformImplAndroid : public TtsPlatformImpl {
  public:
@@ -41,9 +40,7 @@ class TtsPlatformImplAndroid : public TtsPlatformImpl {
 
   // Static functions.
   static TtsPlatformImplAndroid* GetInstance();
-#if BUILDFLAG(ANDROID_JAVA_UI)
   static bool Register(JNIEnv* env);
-#endif
 
  private:
   friend struct base::DefaultSingletonTraits<TtsPlatformImplAndroid>;

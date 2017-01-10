@@ -55,11 +55,9 @@
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #endif
 
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_application.h"
-#endif
-
-#if !defined(OS_ANDROID)
+#else
 #include "chrome/browser/ui/webui/md_history_ui.h"
 #endif
 
@@ -405,7 +403,7 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const base::ListValue* args) {
 
 void BrowsingHistoryHandler::HandleClearBrowsingData(
     const base::ListValue* args) {
-#if BUILDFLAG(ANDROID_JAVA_UI)
+#if defined(OS_ANDROID)
   chrome::android::ChromeApplication::OpenClearBrowsingData(
       web_ui()->GetWebContents());
 #else

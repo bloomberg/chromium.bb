@@ -17,7 +17,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/features.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/browser/startup_task_runner_service.h"
@@ -71,11 +70,11 @@ KeyedService* BookmarkModelFactory::BuildServiceInstanceFor(
                        content::BrowserThread::GetTaskRunnerForThread(
                            content::BrowserThread::UI));
   bool register_bookmark_undo_service_as_observer = true;
-#if !BUILDFLAG(ANDROID_JAVA_UI)
+#if !defined(OS_ANDROID)
   register_bookmark_undo_service_as_observer =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBookmarkUndo);
-#endif  // !BUILDFLAG(ANDROID_JAVA_UI)
+#endif  // !defined(OS_ANDROID)
   if (register_bookmark_undo_service_as_observer)
     BookmarkUndoServiceFactory::GetForProfile(profile)->Start(bookmark_model);
 
