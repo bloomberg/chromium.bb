@@ -15637,12 +15637,6 @@ read aloud to screenreader users to announce that a completion is available.">
       <message name="IDS_FLAGS_NO_CREDIT_CARD_ABORT_DESCRIPTION" desc="Description for the flag to enable the No Card Abort in Payment Request." translateable="false">
         Whether or not the No Credit Card Abort is enabled.
       </message>
-      <message name="IDS_FLAGS_AUTOFILL_SCAN_THEME_DIALOG_NAME" desc="Title for the flag to enable dialog theme for OCR." translateable="false">
-        OCR dialog theme
-      </message>
-      <message name="IDS_FLAGS_AUTOFILL_SCAN_THEME_DIALOG_DESCRIPTION" desc="Description for the flag to enable dialog theme for OCR." translateable="false">
-        Use the dialog theme when scanning credit cards from autofill popup or web payments
-      </message>
     </if>
 
     <!-- Consistent omnibox geolocation -->
