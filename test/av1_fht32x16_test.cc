@@ -71,10 +71,10 @@ class AV1Trans32x16HT : public libaom_test::TransformTestBase,
 };
 
 TEST_P(AV1Trans32x16HT, MemCheck) { RunMemCheck(); }
-TEST_P(AV1Trans32x16HT, AccuracyCheck) { RunAccuracyCheck(1); }
+TEST_P(AV1Trans32x16HT, AccuracyCheck) { RunAccuracyCheck(4, 0.2); }
 TEST_P(AV1Trans32x16HT, CoeffCheck) { RunCoeffCheck(); }
 TEST_P(AV1Trans32x16HT, InvCoeffCheck) { RunInvCoeffCheck(); }
-TEST_P(AV1Trans32x16HT, InvAccuracyCheck) { RunInvAccuracyCheck(1); }
+TEST_P(AV1Trans32x16HT, InvAccuracyCheck) { RunInvAccuracyCheck(4); }
 
 using std::tr1::make_tuple;
 const Ht32x16Param kArrayHt32x16Param_c[] = {

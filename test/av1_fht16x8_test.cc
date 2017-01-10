@@ -70,7 +70,7 @@ class AV1Trans16x8HT : public libaom_test::TransformTestBase,
   IhtFunc inv_txfm_;
 };
 
-TEST_P(AV1Trans16x8HT, AccuracyCheck) { RunAccuracyCheck(1); }
+TEST_P(AV1Trans16x8HT, AccuracyCheck) { RunAccuracyCheck(1, 0.001); }
 TEST_P(AV1Trans16x8HT, CoeffCheck) { RunCoeffCheck(); }
 TEST_P(AV1Trans16x8HT, MemCheck) { RunMemCheck(); }
 TEST_P(AV1Trans16x8HT, InvCoeffCheck) { RunInvCoeffCheck(); }

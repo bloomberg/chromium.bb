@@ -42,7 +42,7 @@ class TransformTestBase {
 
   virtual void RunInvTxfm(const tran_low_t *out, uint8_t *dst, int stride) = 0;
 
-  void RunAccuracyCheck(int limit) {
+  void RunAccuracyCheck(uint32_t ref_max_error, double ref_avg_error) {
     ACMRandom rnd(ACMRandom::DeterministicSeed());
     uint32_t max_error = 0;
     int64_t total_error = 0;
@@ -104,11 +104,14 @@ class TransformTestBase {
       }
     }
 
-    EXPECT_GE(static_cast<uint32_t>(limit), max_error)
-        << "Error: FHT/IHT has an individual round trip error > " << limit;
+    double avg_error = total_error * 1. / count_test_block / num_coeffs_;
 
-    EXPECT_GE(count_test_block * limit, total_error)
-        << "Error: FHT/IHT has average round trip error > " << limit
+    EXPECT_GE(ref_max_error, max_error)
+        << "Error: FHT/IHT has an individual round trip error > "
+        << ref_max_error;
+
+    EXPECT_GE(ref_avg_error, avg_error)
+        << "Error: FHT/IHT has average round trip error > " << ref_avg_error
         << " per block";
 
     aom_free(test_input_block);

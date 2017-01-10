@@ -120,7 +120,7 @@ class Trans4x4DCT : public libaom_test::TransformTestBase,
   IdctFunc inv_txfm_;
 };
 
-TEST_P(Trans4x4DCT, AccuracyCheck) { RunAccuracyCheck(1); }
+TEST_P(Trans4x4DCT, AccuracyCheck) { RunAccuracyCheck(0, 0.00001); }
 
 TEST_P(Trans4x4DCT, CoeffCheck) { RunCoeffCheck(); }
 
@@ -159,7 +159,7 @@ class Trans4x4HT : public libaom_test::TransformTestBase,
   IhtFunc inv_txfm_;
 };
 
-TEST_P(Trans4x4HT, AccuracyCheck) { RunAccuracyCheck(1); }
+TEST_P(Trans4x4HT, AccuracyCheck) { RunAccuracyCheck(0, 0.00001); }
 
 TEST_P(Trans4x4HT, CoeffCheck) { RunCoeffCheck(); }
 
@@ -197,7 +197,7 @@ class Trans4x4WHT : public libaom_test::TransformTestBase,
   IdctFunc inv_txfm_;
 };
 
-TEST_P(Trans4x4WHT, AccuracyCheck) { RunAccuracyCheck(0); }
+TEST_P(Trans4x4WHT, AccuracyCheck) { RunAccuracyCheck(0, 0.00001); }
 
 TEST_P(Trans4x4WHT, CoeffCheck) { RunCoeffCheck(); }
 
