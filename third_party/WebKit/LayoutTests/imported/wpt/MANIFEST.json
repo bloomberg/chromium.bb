@@ -3715,11 +3715,6 @@
      {}
     ]
    ],
-   "./MANIFEST.json": [
-    [
-     {}
-    ]
-   ],
    "./README.md": [
     [
      {}
@@ -4826,6 +4821,11 @@
     ]
    ],
    "domparsing/insert_adjacent_html.js": [
+    [
+     {}
+    ]
+   ],
+   "domxpath/xml_xpath_tests.xml": [
     [
      {}
     ]
@@ -18728,6 +18728,24 @@
      {}
     ]
    ],
+   "IndexedDB/upgrade-transaction-lifecycle-backend-aborted.html": [
+    [
+     "/IndexedDB/upgrade-transaction-lifecycle-backend-aborted.html",
+     {}
+    ]
+   ],
+   "IndexedDB/upgrade-transaction-lifecycle-committed.html": [
+    [
+     "/IndexedDB/upgrade-transaction-lifecycle-committed.html",
+     {}
+    ]
+   ],
+   "IndexedDB/upgrade-transaction-lifecycle-user-aborted.html": [
+    [
+     "/IndexedDB/upgrade-transaction-lifecycle-user-aborted.html",
+     {}
+    ]
+   ],
    "IndexedDB/value.htm": [
     [
      "/IndexedDB/value.htm",
@@ -32191,10 +32209,6 @@
    "89af73c41d456ee93bd40921e96414c1908fc48c",
    "support"
   ],
-  "./MANIFEST.json": [
-   "a45804cdc253f3d9735529c0bec828441e671aa0",
-   "support"
-  ],
   "./README.md": [
    "930f9755157d0a3da03b6a6f67c3ba12c05b22c4",
    "support"
@@ -33488,7 +33502,7 @@
    "testharness"
   ],
   "IndexedDB/support-promises.js": [
-   "c72263743e6983048484776cabc12f47c069bebf",
+   "174d4db1b6634baeca46c80be43552f9da81ce07",
    "support"
   ],
   "IndexedDB/support.js": [
@@ -33533,6 +33547,18 @@
   ],
   "IndexedDB/transaction_bubble-and-capture.htm": [
    "4a75702a58021e337f884590508c1a0b84063edc",
+   "testharness"
+  ],
+  "IndexedDB/upgrade-transaction-lifecycle-backend-aborted.html": [
+   "c816400517298785753b39639b3cec925d57029e",
+   "testharness"
+  ],
+  "IndexedDB/upgrade-transaction-lifecycle-committed.html": [
+   "6ccbc2eaf0d8db8bbc787bb68dc7a843b6fa0af2",
+   "testharness"
+  ],
+  "IndexedDB/upgrade-transaction-lifecycle-user-aborted.html": [
+   "7a05b801be5b6ca7c651195abda0788c130a540f",
    "testharness"
   ],
   "IndexedDB/value.htm": [
@@ -33704,7 +33730,7 @@
    "support"
   ],
   "common/vendor-prefix.js": [
-   "2807645fda3cb1decbb944627b038fc87ef019a0",
+   "b80ec842b65a3423dd789a2226f2ba3caf598049",
    "support"
   ],
   "css-values/unset-value-storage.html": [
@@ -35666,6 +35692,10 @@
   "domxpath/evaluator-constructor.html": [
    "4842d40e22e25ee72536946d785a3cd03bc6a11d",
    "testharness"
+  ],
+  "domxpath/xml_xpath_tests.xml": [
+   "daef25b99b0e26c6bf726cb2efb8f903337746dd",
+   "support"
   ],
   "encoding/api-basics.html": [
    "f941c016bd9f6117af2e28652c770613c475b064",
