@@ -2600,6 +2600,10 @@ void av1_remove_compressor(AV1_COMP *cpi) {
     cpi->twopass.frame_mb_stats_buf = NULL;
   }
 #endif
+#if CONFIG_INTERNAL_STATS
+  aom_free(cpi->ssim_vars);
+  cpi->ssim_vars = NULL;
+#endif  // CONFIG_INTERNAL_STATS
 
   av1_remove_common(cm);
   av1_free_ref_frame_buffers(cm->buffer_pool);
