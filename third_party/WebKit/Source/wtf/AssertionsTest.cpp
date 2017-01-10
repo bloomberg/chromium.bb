@@ -8,9 +8,31 @@
 #include "wtf/text/StringBuilder.h"
 #include <stdio.h>
 
-#if !LOG_DISABLED
 namespace WTF {
 
+TEST(AssertionsTest, Assertions) {
+  ASSERT(true);
+#if ENABLE(ASSERT)
+  EXPECT_DEATH_IF_SUPPORTED(ASSERT(false), "");
+  EXPECT_DEATH_IF_SUPPORTED(ASSERT_NOT_REACHED(), "");
+#endif
+
+  RELEASE_ASSERT(true);
+  EXPECT_DEATH_IF_SUPPORTED(RELEASE_ASSERT(false), "");
+
+  SECURITY_DCHECK(true);
+#if ENABLE(SECURITY_ASSERT)
+  EXPECT_DEATH_IF_SUPPORTED(SECURITY_DCHECK(false), "");
+#endif
+
+  SECURITY_CHECK(true);
+  EXPECT_DEATH_IF_SUPPORTED(SECURITY_CHECK(false), "");
+
+  EXPECT_DEATH_IF_SUPPORTED(CRASH(), "");
+  EXPECT_DEATH_IF_SUPPORTED(IMMEDIATE_CRASH(), "");
+};
+
+#if !LOG_DISABLED
 static const int kPrinterBufferSize = 256;
 static char gBuffer[kPrinterBufferSize];
 static StringBuilder gBuilder;
@@ -45,6 +67,6 @@ TEST(AssertionsTest, ScopedLogger) {
       ")\n",
       gBuilder.toString());
 };
+#endif  // !LOG_DISABLED
 
 }  // namespace WTF
-#endif  // !LOG_DISABLED
