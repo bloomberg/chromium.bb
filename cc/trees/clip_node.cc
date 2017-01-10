@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/base/math_util.h"
 #include "cc/proto/cc_conversions.h"
 #include "cc/proto/gfx_conversions.h"
 #include "cc/trees/clip_node.h"
+#include "cc/trees/property_tree.h"
 
 namespace cc {
 
@@ -23,9 +25,66 @@ ClipNode::ClipNode()
       layers_are_clipped_when_surfaces_disabled(false),
       resets_clip(false) {}
 
-ClipNode::ClipNode(const ClipNode& other) = default;
+ClipNode::ClipNode(const ClipNode& other)
+    : id(other.id),
+      parent_id(other.parent_id),
+      owning_layer_id(other.owning_layer_id),
+      clip_type(other.clip_type),
+      clip(other.clip),
+      combined_clip_in_target_space(other.combined_clip_in_target_space),
+      clip_in_target_space(other.clip_in_target_space),
+      transform_id(other.transform_id),
+      target_transform_id(other.target_transform_id),
+      target_effect_id(other.target_effect_id),
+      layer_clipping_uses_only_local_clip(
+          other.layer_clipping_uses_only_local_clip),
+      layers_are_clipped(other.layers_are_clipped),
+      layers_are_clipped_when_surfaces_disabled(
+          other.layers_are_clipped_when_surfaces_disabled),
+      resets_clip(other.resets_clip) {
+  if (other.clip_expander) {
+    DCHECK_EQ(clip_type, ClipType::EXPANDS_CLIP);
+    clip_expander = base::MakeUnique<ClipExpander>(*other.clip_expander);
+  }
+}
+
+ClipNode& ClipNode::operator=(const ClipNode& other) {
+  id = other.id;
+  parent_id = other.parent_id;
+  owning_layer_id = other.owning_layer_id;
+  clip_type = other.clip_type;
+  clip = other.clip;
+  combined_clip_in_target_space = other.combined_clip_in_target_space;
+  clip_in_target_space = other.clip_in_target_space;
+  transform_id = other.transform_id;
+  target_transform_id = other.target_transform_id;
+  target_effect_id = other.target_effect_id;
+  layer_clipping_uses_only_local_clip =
+      other.layer_clipping_uses_only_local_clip;
+  layers_are_clipped = other.layers_are_clipped;
+  layers_are_clipped_when_surfaces_disabled =
+      other.layers_are_clipped_when_surfaces_disabled;
+  resets_clip = other.resets_clip;
+
+  if (other.clip_expander) {
+    DCHECK_EQ(clip_type, ClipType::EXPANDS_CLIP);
+    clip_expander = base::MakeUnique<ClipExpander>(*other.clip_expander);
+  } else {
+    clip_expander.reset();
+  }
+
+  return *this;
+}
+
+ClipNode::~ClipNode() {}
 
 bool ClipNode::operator==(const ClipNode& other) const {
+  if (clip_expander && other.clip_expander &&
+      *clip_expander != *other.clip_expander)
+    return false;
+  if ((clip_expander && !other.clip_expander) ||
+      (!clip_expander && other.clip_expander))
+    return false;
   return id == other.id && parent_id == other.parent_id &&
          owning_layer_id == other.owning_layer_id &&
          clip_type == other.clip_type && clip == other.clip &&

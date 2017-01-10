@@ -463,6 +463,8 @@ cc_component("cc") {
     "tiles/tiling_set_raster_queue_required.h",
     "trees/blocking_task_runner.cc",
     "trees/blocking_task_runner.h",
+    "trees/clip_expander.cc",
+    "trees/clip_expander.h",
     "trees/clip_node.cc",
     "trees/clip_node.h",
     "trees/compositor_mode.h",

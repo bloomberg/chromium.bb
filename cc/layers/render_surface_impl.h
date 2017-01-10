@@ -158,6 +158,8 @@ class CC_EXPORT RenderSurfaceImpl {
  private:
   void SetContentRect(const gfx::Rect& content_rect);
   gfx::Rect CalculateClippedAccumulatedContentRect();
+  gfx::Rect CalculateExpandedClipForFilters(
+      const gfx::Transform& target_to_surface);
 
   const EffectNode* OwningEffectNode() const;
 
