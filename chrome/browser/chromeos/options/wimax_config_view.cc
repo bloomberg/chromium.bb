@@ -280,12 +280,12 @@ void WimaxConfigView::Init() {
             IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE_HIDE));
     passphrase_visible_button_->SetImage(
         views::ImageButton::STATE_NORMAL,
-        ResourceBundle::GetSharedInstance().
-        GetImageSkiaNamed(IDR_NETWORK_SHOW_PASSWORD));
+        *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            IDR_NETWORK_SHOW_PASSWORD));
     passphrase_visible_button_->SetImage(
         views::ImageButton::STATE_HOVERED,
-        ResourceBundle::GetSharedInstance().
-        GetImageSkiaNamed(IDR_NETWORK_SHOW_PASSWORD_HOVER));
+        *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            IDR_NETWORK_SHOW_PASSWORD_HOVER));
     passphrase_visible_button_->SetToggledImage(
         views::ImageButton::STATE_NORMAL,
         ResourceBundle::GetSharedInstance().

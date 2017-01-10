@@ -19,7 +19,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/vector_icons_public.h"
+#include "ui/gfx/vector_icon_types.h"
 #include "ui/strings/grit/ui_strings.h"  // Accessibility names
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -148,14 +148,15 @@ void FrameCaptionButtonContainerView::TestApi::EndAnimations() {
 
 void FrameCaptionButtonContainerView::SetButtonImage(
     CaptionButtonIcon icon,
-    gfx::VectorIconId icon_image_id) {
-  button_icon_id_map_[icon] = icon_image_id;
+    const gfx::VectorIcon& icon_definition) {
+  button_icon_map_[icon] = &icon_definition;
 
   FrameCaptionButton* buttons[] = {minimize_button_, size_button_,
                                    close_button_};
   for (size_t i = 0; i < arraysize(buttons); ++i) {
     if (buttons[i]->icon() == icon)
-      buttons[i]->SetImage(icon, FrameCaptionButton::ANIMATE_NO, icon_image_id);
+      buttons[i]->SetImage(icon, FrameCaptionButton::ANIMATE_NO,
+                           icon_definition);
   }
 }
 
@@ -299,9 +300,9 @@ void FrameCaptionButtonContainerView::SetButtonIcon(FrameCaptionButton* button,
   FrameCaptionButton::Animate fcb_animate =
       (animate == ANIMATE_YES) ? FrameCaptionButton::ANIMATE_YES
                                : FrameCaptionButton::ANIMATE_NO;
-  auto it = button_icon_id_map_.find(icon);
-  if (it != button_icon_id_map_.end())
-    button->SetImage(icon, fcb_animate, it->second);
+  auto it = button_icon_map_.find(icon);
+  if (it != button_icon_map_.end())
+    button->SetImage(icon, fcb_animate, *it->second);
 }
 
 bool FrameCaptionButtonContainerView::ShouldSizeButtonBeVisible() const {

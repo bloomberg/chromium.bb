@@ -7,6 +7,7 @@
 #include "ash/common/ash_layout_constants.h"
 #include "ash/common/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/common/frame/header_painter_util.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/debug/leak_annotations.h"
 #include "base/logging.h"  // DCHECK
 #include "grit/ash_resources.h"
@@ -21,7 +22,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
@@ -283,29 +283,27 @@ bool DefaultHeaderPainter::ShouldUseLightImages() {
 
 void DefaultHeaderPainter::UpdateAllButtonImages() {
   caption_button_container_->SetUseLightImages(ShouldUseLightImages());
-  caption_button_container_->SetButtonImage(
-      CAPTION_BUTTON_ICON_MINIMIZE, gfx::VectorIconId::WINDOW_CONTROL_MINIMIZE);
+  caption_button_container_->SetButtonImage(CAPTION_BUTTON_ICON_MINIMIZE,
+                                            kWindowControlMinimizeIcon);
 
   UpdateSizeButtonImages();
 
-  caption_button_container_->SetButtonImage(
-      CAPTION_BUTTON_ICON_CLOSE, gfx::VectorIconId::WINDOW_CONTROL_CLOSE);
+  caption_button_container_->SetButtonImage(CAPTION_BUTTON_ICON_CLOSE,
+                                            kWindowControlCloseIcon);
 
-  caption_button_container_->SetButtonImage(
-      CAPTION_BUTTON_ICON_LEFT_SNAPPED,
-      gfx::VectorIconId::WINDOW_CONTROL_LEFT_SNAPPED);
+  caption_button_container_->SetButtonImage(CAPTION_BUTTON_ICON_LEFT_SNAPPED,
+                                            kWindowControlLeftSnappedIcon);
 
-  caption_button_container_->SetButtonImage(
-      CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
-      gfx::VectorIconId::WINDOW_CONTROL_RIGHT_SNAPPED);
+  caption_button_container_->SetButtonImage(CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
+                                            kWindowControlRightSnappedIcon);
 }
 
 void DefaultHeaderPainter::UpdateSizeButtonImages() {
-  gfx::VectorIconId icon_id = frame_->IsMaximized() || frame_->IsFullscreen()
-                                  ? gfx::VectorIconId::WINDOW_CONTROL_RESTORE
-                                  : gfx::VectorIconId::WINDOW_CONTROL_MAXIMIZE;
+  const gfx::VectorIcon& icon = frame_->IsMaximized() || frame_->IsFullscreen()
+                                    ? kWindowControlRestoreIcon
+                                    : kWindowControlMaximizeIcon;
   caption_button_container_->SetButtonImage(
-      CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE, icon_id);
+      CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE, icon);
 }
 
 gfx::Rect DefaultHeaderPainter::GetLocalBounds() const {

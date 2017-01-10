@@ -68,9 +68,9 @@ NotificationCenterButton::NotificationCenterButton(
     int text_id)
     : views::ToggleImageButton(listener), size_(kButtonSize, kButtonSize) {
   ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
-  SetImage(STATE_NORMAL, resource_bundle.GetImageSkiaNamed(normal_id));
-  SetImage(STATE_HOVERED, resource_bundle.GetImageSkiaNamed(hover_id));
-  SetImage(STATE_PRESSED, resource_bundle.GetImageSkiaNamed(pressed_id));
+  SetImage(STATE_NORMAL, *resource_bundle.GetImageSkiaNamed(normal_id));
+  SetImage(STATE_HOVERED, *resource_bundle.GetImageSkiaNamed(hover_id));
+  SetImage(STATE_PRESSED, *resource_bundle.GetImageSkiaNamed(pressed_id));
   SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                     views::ImageButton::ALIGN_MIDDLE);
   if (text_id)
@@ -159,7 +159,7 @@ MessageCenterButtonBar::MessageCenterButtonBar(
                                    IDS_MESSAGE_CENTER_CLEAR_ALL);
   close_all_button_->SetImage(
       views::Button::STATE_DISABLED,
-      resource_bundle.GetImageSkiaNamed(IDR_NOTIFICATION_CLEAR_ALL_DISABLED));
+      *resource_bundle.GetImageSkiaNamed(IDR_NOTIFICATION_CLEAR_ALL_DISABLED));
   button_container_->AddChildView(close_all_button_);
 
   settings_button_ =

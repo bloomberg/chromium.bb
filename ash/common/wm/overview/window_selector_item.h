@@ -75,8 +75,6 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
     void ResetListener() { listener_ = nullptr; }
 
    private:
-    gfx::ImageSkia icon_image_;
-
     DISALLOW_COPY_AND_ASSIGN(OverviewCloseButton);
   };
 
