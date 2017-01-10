@@ -7,7 +7,7 @@
     New folder
   </message>
   <message name="IDS_BOOKMARK_EDITOR_TITLE" desc="Title of the window the bookmark editor is in.">
-    Edit Bookmark
+    Edit bookmark
   </message>
   <if expr="not use_titlecase">
     <message name="IDS_BOOKMARK_MANAGER_NAME_INPUT_PLACE_HOLDER" desc="Text to show in the URL input field when editing or creating bookmarks.">

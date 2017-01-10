@@ -55,8 +55,13 @@ var BookmarksStore = Polymer({
     chrome.bookmarks.getTree(function(results) {
       this.setupStore_(results[0]);
     }.bind(this));
+    // Attach bookmarks API listeners.
     chrome.bookmarks.onRemoved.addListener(this.onBookmarkRemoved_.bind(this));
+    chrome.bookmarks.onChanged.addListener(this.onBookmarkChanged_.bind(this));
   },
+
+////////////////////////////////////////////////////////////////////////////////
+// bookmarks-store, private:
 
   /**
    * @param {BookmarkTreeNode} rootNode
@@ -70,6 +75,76 @@ var BookmarksStore = Polymer({
     BookmarksStore.initNodes(this.rootNode, this.idToNodeMap_);
     this.fire('selected-folder-changed', this.rootNode.children[0].id);
   },
+
+  /**
+   * @param {BookmarkTreeNode} folder
+   * @private
+   * @return {boolean}
+   */
+  isAncestorOfSelected_: function(folder) {
+    return this.selectedNode.path.startsWith(folder.path);
+  },
+
+  /** @private */
+  updateSelectedNode_: function() {
+    var selectedNode = this.idToNodeMap_[this.selectedId];
+    this.linkPaths('selectedNode', selectedNode.path);
+    this._setSelectedNode(selectedNode);
+  },
+
+  /**
+   * Remove all descendants of a given node from the map.
+   * @param {string} id
+   * @private
+   */
+  removeDescendantsFromMap_: function(id) {
+    var node = this.idToNodeMap_[id];
+    if (!node)
+      return;
+
+    if (node.children) {
+      for (var i = 0; i < node.children.length; i++)
+        this.removeDescendantsFromMap_(node.children[i].id);
+    }
+    delete this.idToNodeMap_[id];
+  },
+
+////////////////////////////////////////////////////////////////////////////////
+// bookmarks-store, bookmarks API event listeners:
+
+  /**
+   * Callback for when a bookmark node is removed.
+   * If a folder is selected or is an ancestor of a selected folder, the parent
+   * of the removed folder will be selected.
+   * @param {string} id The id of the removed bookmark node.
+   * @param {!{index: number,
+   *           parentId: string,
+   *           node: BookmarkTreeNode}} removeInfo
+   */
+  onBookmarkRemoved_: function(id, removeInfo) {
+    if (this.isAncestorOfSelected_(this.idToNodeMap_[id]))
+      this.fire('selected-folder-changed', removeInfo.parentId);
+
+    var parentNode = this.idToNodeMap_[removeInfo.parentId];
+    this.splice(parentNode.path + '.children', removeInfo.index, 1);
+    this.removeDescendantsFromMap_(id);
+    BookmarksStore.generatePaths(parentNode, removeInfo.index);
+  },
+
+  /**
+   * Called when the title of a bookmark changes.
+   * @param {string} id The id of changed bookmark node.
+   * @param {!Object} changeInfo
+   */
+  onBookmarkChanged_: function(id, changeInfo) {
+    if (changeInfo.title)
+      this.set(this.idToNodeMap_[id].path + '.title', changeInfo.title);
+    if (changeInfo.url)
+      this.set(this.idToNodeMap_[id].path + '.url', changeInfo.url);
+  },
+
+////////////////////////////////////////////////////////////////////////////////
+// bookmarks-store, bookmarks app event listeners:
 
   /**
    * Selects the folder specified by the event and deselects the previously
@@ -99,59 +174,10 @@ var BookmarksStore = Polymer({
     if (!folder.isOpen && this.isAncestorOfSelected_(folder))
       this.fire('selected-folder-changed', folder.id);
   },
-
-  /**
-   * @param {BookmarkTreeNode} folder
-   * @private
-   * @return {boolean}
-   */
-  isAncestorOfSelected_: function(folder) {
-    return this.selectedNode.path.startsWith(folder.path);
-  },
-
-  /** @private */
-  updateSelectedNode_: function() {
-    var selectedNode = this.idToNodeMap_[this.selectedId];
-    this.linkPaths('selectedNode', selectedNode.path);
-    this._setSelectedNode(selectedNode);
-  },
-
-  /**
-   * Callback for when a bookmark node is removed.
-   * If a folder is selected or is an ancestor of a selected folder, the parent
-   * of the removed folder will be selected.
-   * @param {string} id The id of the removed bookmark node.
-   * @param {!{index: number,
-   *           parentId: string,
-   *           node: BookmarkTreeNode}} removeInfo
-   */
-  onBookmarkRemoved_: function(id, removeInfo) {
-    if (this.isAncestorOfSelected_(this.idToNodeMap_[id]))
-      this.fire('selected-folder-changed', removeInfo.parentId);
-
-    var parentNode = this.idToNodeMap_[removeInfo.parentId];
-    this.splice(parentNode.path + '.children', removeInfo.index, 1);
-    this.removeDescendantsFromMap_(id);
-    BookmarksStore.generatePaths(parentNode, removeInfo.index);
-  },
-
-  /**
-   * Remove all descendants of a given node from the map.
-   * @param {string} id
-   * @private
-   */
-  removeDescendantsFromMap_: function(id) {
-    var node = this.idToNodeMap_[id];
-    if (!node)
-      return;
-
-    if (node.children) {
-      for (var i = 0; i < node.children.length; i++)
-        this.removeDescendantsFromMap_(node.children[i].id);
-    }
-    delete this.idToNodeMap_[id];
-  },
 });
+
+////////////////////////////////////////////////////////////////////////////////
+// bookmarks-store, static methods:
 
 /**
  * Stores the path from the store to a node inside the node.

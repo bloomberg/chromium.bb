@@ -167,4 +167,24 @@ suite('<bookmarks-store>', function() {
     assertTrue(store.idToNodeMap_['0'].isSelected);
     assertEquals('0', store.selectedId);
   });
+
+  test('bookmark gets updated after editing', function() {
+    // Edit title updates idToNodeMap_ properly.
+    store.onBookmarkChanged_('4', {'title': 'test'});
+    assertEquals('test', store.idToNodeMap_['4'].title);
+    assertEquals('link4', store.idToNodeMap_['4'].url);
+
+    // Edit url updates idToNodeMap_ properly.
+    store.onBookmarkChanged_('5', {'url': 'http://www.google.com'});
+    assertEquals('', store.idToNodeMap_['5'].title);
+    assertEquals('http://www.google.com', store.idToNodeMap_['5'].url);
+
+    // Edit url and title updates idToNodeMap_ properly.
+    store.onBookmarkChanged_('2', {
+      'title': 'test',
+      'url': 'http://www.google.com',
+    });
+    assertEquals('test', store.idToNodeMap_['2'].title);
+    assertEquals('http://www.google.com', store.idToNodeMap_['2'].url);
+  });
 });

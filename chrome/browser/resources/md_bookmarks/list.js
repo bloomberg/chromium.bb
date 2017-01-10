@@ -32,6 +32,8 @@ Polymer({
   /** @private */
   onEditTap_: function() {
     this.closeDropdownMenu_();
+    if (this.menuItem_.url)
+      this.$.editBookmark.showModal();
   },
 
   /** @private */
@@ -55,6 +57,20 @@ Polymer({
       }.bind(this));
     }
     this.closeDropdownMenu_();
+  },
+
+  /** @private */
+  onSaveEditTap_: function() {
+    chrome.bookmarks.update(this.menuItem_.id, {
+      'title': this.menuItem_.title,
+      'url': this.menuItem_.url,
+    });
+    this.$.editBookmark.close();
+  },
+
+  /** @private */
+  onCancelEditTap_: function() {
+    this.$.editBookmark.cancel();
   },
 
   /** @private */

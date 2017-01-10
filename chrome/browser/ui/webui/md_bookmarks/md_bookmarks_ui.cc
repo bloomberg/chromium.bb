@@ -32,8 +32,14 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
       content::WebUIDataSource::Create(chrome::kChromeUIBookmarksHost);
 
   // Localized strings (alphabetical order).
+  AddLocalizedString(source, "cancelEdit", IDS_CANCEL);
   AddLocalizedString(source, "clearSearch",
                      IDS_MD_BOOKMARK_MANAGER_CLEAR_SEARCH);
+  AddLocalizedString(source, "editBookmarkTitle", IDS_BOOKMARK_EDITOR_TITLE);
+  AddLocalizedString(source, "editDialogNameInput",
+                     IDS_BOOKMARK_MANAGER_NAME_INPUT_PLACE_HOLDER);
+  AddLocalizedString(source, "editDialogUrlInput",
+                             IDS_BOOKMARK_MANAGER_URL_INPUT_PLACE_HOLDER);
   AddLocalizedString(source, "emptyList",
                      IDS_MD_BOOKMARK_MANAGER_EMPTY_LIST);
   AddLocalizedString(source, "menuAddBookmark",
@@ -51,6 +57,7 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
   AddLocalizedString(source, "menuSort", IDS_MD_BOOKMARK_MANAGER_MENU_SORT);
   AddLocalizedString(source, "searchPrompt",
                      IDS_BOOKMARK_MANAGER_SEARCH_BUTTON);
+  AddLocalizedString(source, "saveEdit", IDS_SAVE);
   AddLocalizedString(source, "title", IDS_MD_BOOKMARK_MANAGER_TITLE);
 
   // Resources.
