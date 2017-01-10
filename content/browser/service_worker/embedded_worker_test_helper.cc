@@ -186,6 +186,12 @@ class EmbeddedWorkerTestHelper::MockServiceWorkerEventDispatcher
     NOTIMPLEMENTED();
   }
 
+  void DispatchPaymentRequestEvent(
+      payments::mojom::PaymentAppRequestDataPtr data,
+      const DispatchPaymentRequestEventCallback& callback) override {
+    NOTIMPLEMENTED();
+  }
+
   void DispatchExtendableMessageEvent(
       mojom::ExtendableMessageEventPtr event,
       const DispatchExtendableMessageEventCallback& callback) override {

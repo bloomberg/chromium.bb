@@ -35,6 +35,10 @@ class CONTENT_EXPORT PaymentAppProvider {
   // Should be accessed only on the UI thread.
   virtual void GetAllManifests(BrowserContext* browser_context,
                                const GetAllManifestsCallback& callback) = 0;
+  virtual void InvokePaymentApp(
+      BrowserContext* browser_context,
+      int64_t registration_id,
+      payments::mojom::PaymentAppRequestDataPtr data) = 0;
 
  protected:
   virtual ~PaymentAppProvider() {}

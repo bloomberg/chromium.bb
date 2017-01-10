@@ -354,6 +354,7 @@ source_set("common") {
     "//cc/ipc",
     "//cc/surfaces",
     "//components/discardable_memory/common",
+    "//components/payments:payment_app",
     "//components/tracing",
     "//components/tracing:startup_tracing",
     "//content:resources",

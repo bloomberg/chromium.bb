@@ -4,6 +4,7 @@
 
 module content.mojom;
 
+import "components/payments/payment_app.mojom";
 import "content/common/url_loader.mojom";
 import "mojo/common/string16.mojom";
 import "mojo/common/time.mojom";
@@ -43,6 +44,9 @@ interface ServiceWorkerEventDispatcher {
   // Ref: https://wicg.github.io/BackgroundSync/spec/#sync-event
   DispatchSyncEvent(string tag,
                     blink.mojom.BackgroundSyncEventLastChance last_chance)
+      => (blink.mojom.ServiceWorkerEventStatus status,
+          mojo.common.mojom.Time dispatch_event_time);
+  DispatchPaymentRequestEvent(payments.mojom.PaymentAppRequestData data)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo.common.mojom.Time dispatch_event_time);
   DispatchExtendableMessageEvent(ExtendableMessageEvent event)

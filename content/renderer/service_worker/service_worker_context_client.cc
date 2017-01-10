@@ -904,6 +904,12 @@ void ServiceWorkerContextClient::DispatchSyncEvent(
                             web_last_chance);
 }
 
+void ServiceWorkerContextClient::DispatchPaymentRequestEvent(
+    payments::mojom::PaymentAppRequestDataPtr data,
+    const DispatchPaymentRequestEventCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
 void ServiceWorkerContextClient::Send(IPC::Message* message) {
   sender_->Send(message);
 }

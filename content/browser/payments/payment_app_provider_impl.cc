@@ -57,6 +57,13 @@ void PaymentAppProviderImpl::GetAllManifests(
       base::Bind(&GetAllManifestsOnIO, payment_app_context, callback));
 }
 
+void PaymentAppProviderImpl::InvokePaymentApp(
+    BrowserContext* browser_context,
+    int64_t registration_id,
+    payments::mojom::PaymentAppRequestDataPtr data) {
+  NOTIMPLEMENTED();
+}
+
 PaymentAppProviderImpl::PaymentAppProviderImpl() {}
 
 PaymentAppProviderImpl::~PaymentAppProviderImpl() {}

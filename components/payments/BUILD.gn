@@ -20,7 +20,9 @@ mojom("payment_app") {
   ]
 
   public_deps = [
+    ":payment_request",
     "//mojo/common:common_custom_types",
+    "//url/mojo:url_mojom_gurl",
   ]
 }
 

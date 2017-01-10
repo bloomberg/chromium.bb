@@ -4,6 +4,9 @@
 
 module payments.mojom;
 
+import "components/payments/payment_request.mojom";
+import "url/mojo/url.mojom";
+
 enum PaymentAppManifestError {
   NONE,
   NOT_IMPLEMENTED,
@@ -30,4 +33,12 @@ interface PaymentAppManager {
       => (PaymentAppManifestError error);
   GetManifest()
       => (PaymentAppManifest payment_app_manifest, PaymentAppManifestError error);
+};
+
+struct PaymentAppRequestData {
+  url.mojom.Url origin;
+  array<PaymentMethodData> methodData;
+  PaymentItem total;
+  array<PaymentDetailsModifier> modifiers;
+  string optionId;
 };

@@ -19,6 +19,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "components/payments/payment_app.mojom.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
@@ -66,6 +67,9 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
                                    public mojom::ServiceWorkerEventDispatcher {
  public:
   using SyncCallback =
+      base::Callback<void(ServiceWorkerStatusCode,
+                          base::Time /* dispatch_event_time */)>;
+  using PaymentRequestEventCallback =
       base::Callback<void(ServiceWorkerStatusCode,
                           base::Time /* dispatch_event_time */)>;
   using FetchCallback =
@@ -224,6 +228,9 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
       const std::string& tag,
       blink::mojom::BackgroundSyncEventLastChance last_chance,
       const DispatchSyncEventCallback& callback) override;
+  void DispatchPaymentRequestEvent(
+      payments::mojom::PaymentAppRequestDataPtr data,
+      const DispatchPaymentRequestEventCallback& callback) override;
 
   void OnActivateEvent(int request_id);
   void OnInstallEvent(int request_id);
