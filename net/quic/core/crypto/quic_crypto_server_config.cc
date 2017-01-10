@@ -774,8 +774,7 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
                    use_stateless_rejects, server_designated_connection_id, rand,
                    compressed_certs_cache, params, *signed_config,
                    total_framing_overhead, chlo_packet_size, out.get());
-    if (FLAGS_quic_reloadable_flag_quic_export_rej_for_all_rejects &&
-        rejection_observer_ != nullptr) {
+    if (rejection_observer_ != nullptr) {
       rejection_observer_->OnRejectionBuilt(info.reject_reasons, out.get());
     }
     helper.Succeed(std::move(out), std::move(out_diversification_nonce),
@@ -1327,7 +1326,9 @@ void QuicCryptoServerConfig::EvaluateClientHelloAfterGetProof(
     info->reject_reasons.push_back(SERVER_CONFIG_UNKNOWN_CONFIG_FAILURE);
   }
 
-  if (!ValidateExpectedLeafCertificate(client_hello, *signed_config)) {
+  if (signed_config->chain != nullptr &&
+      !ValidateExpectedLeafCertificate(client_hello,
+                                       signed_config->chain->certs)) {
     info->reject_reasons.push_back(INVALID_EXPECTED_LEAF_CERTIFICATE);
   }
 
@@ -1986,8 +1987,8 @@ string QuicCryptoServerConfig::NewServerNonce(QuicRandom* rand,
 
 bool QuicCryptoServerConfig::ValidateExpectedLeafCertificate(
     const CryptoHandshakeMessage& client_hello,
-    const QuicSignedServerConfig& signed_config) const {
-  if (signed_config.chain->certs.empty()) {
+    const std::vector<string>& certs) const {
+  if (certs.empty()) {
     return false;
   }
 
@@ -1995,8 +1996,7 @@ bool QuicCryptoServerConfig::ValidateExpectedLeafCertificate(
   if (client_hello.GetUint64(kXLCT, &hash_from_client) != QUIC_NO_ERROR) {
     return false;
   }
-  return CryptoUtils::ComputeLeafCertHash(signed_config.chain->certs.at(0)) ==
-         hash_from_client;
+  return CryptoUtils::ComputeLeafCertHash(certs.at(0)) == hash_from_client;
 }
 
 bool QuicCryptoServerConfig::ClientDemandsX509Proof(

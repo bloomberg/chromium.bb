@@ -1986,6 +1986,8 @@
       'quic/test_tools/crypto_test_utils_test.cc',
       'quic/test_tools/delayed_verify_strike_register_client.cc',
       'quic/test_tools/delayed_verify_strike_register_client.h',
+      'quic/test_tools/failing_proof_source.cc',
+      'quic/test_tools/failing_proof_source.h',
       'quic/test_tools/fake_proof_source.cc',
       'quic/test_tools/fake_proof_source.h',
       'quic/test_tools/mock_clock.cc',

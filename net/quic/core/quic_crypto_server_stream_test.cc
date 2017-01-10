@@ -24,6 +24,7 @@
 #include "net/quic/core/quic_session.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
+#include "net/quic/test_tools/failing_proof_source.h"
 #include "net/quic/test_tools/quic_crypto_server_config_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -482,30 +483,6 @@ TEST_P(QuicCryptoServerStreamTest, NoTokenBindingWithoutClientSupport) {
   EXPECT_TRUE(server_stream()->encryption_established());
   EXPECT_TRUE(server_stream()->handshake_confirmed());
 }
-
-class FailingProofSource : public ProofSource {
- public:
-  bool GetProof(const QuicSocketAddress& server_address,
-                const string& hostname,
-                const string& server_config,
-                QuicVersion quic_version,
-                StringPiece chlo_hash,
-                const QuicTagVector& connection_options,
-                QuicReferenceCountedPointer<ProofSource::Chain>* out_chain,
-                QuicCryptoProof* out_proof) override {
-    return false;
-  }
-
-  void GetProof(const QuicSocketAddress& server_address,
-                const string& hostname,
-                const string& server_config,
-                QuicVersion quic_version,
-                StringPiece chlo_hash,
-                const QuicTagVector& connection_options,
-                std::unique_ptr<Callback> callback) override {
-    callback->Run(false, nullptr, QuicCryptoProof(), nullptr);
-  }
-};
 
 class QuicCryptoServerStreamTestWithFailingProofSource
     : public QuicCryptoServerStreamTest {
