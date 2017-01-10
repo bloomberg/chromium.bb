@@ -4520,11 +4520,10 @@ static int set_and_cost_bmi_mvs(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // CONFIG_REF_MV && CONFIG_EXT_INTER
 }
 
-static int64_t encode_inter_mb_segment(const AV1_COMP *const cpi, MACROBLOCK *x,
-                                       int64_t best_yrd, int i, int *labelyrate,
-                                       int64_t *distortion, int64_t *sse,
-                                       ENTROPY_CONTEXT *ta, ENTROPY_CONTEXT *tl,
-                                       int ir, int ic, int mi_row, int mi_col) {
+static int64_t encode_inter_mb_segment_sub8x8(
+    const AV1_COMP *const cpi, MACROBLOCK *x, int64_t best_yrd, int i,
+    int *labelyrate, int64_t *distortion, int64_t *sse, ENTROPY_CONTEXT *ta,
+    ENTROPY_CONTEXT *tl, int ir, int ic, int mi_row, int mi_col) {
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
   struct macroblockd_plane *const pd = &xd->plane[0];
@@ -5733,7 +5732,7 @@ static int64_t rd_pick_inter_best_sub8x8_mode(
           }
         }
 
-        bsi->rdstat[index][mode_idx].brdcost = encode_inter_mb_segment(
+        bsi->rdstat[index][mode_idx].brdcost = encode_inter_mb_segment_sub8x8(
             cpi, x, bsi->segment_rd - this_segment_rd, index,
             &bsi->rdstat[index][mode_idx].byrate,
             &bsi->rdstat[index][mode_idx].bdist,
