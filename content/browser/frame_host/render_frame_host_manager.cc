@@ -215,18 +215,6 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
   if (!dest_render_frame_host)
     return nullptr;  // We weren't able to create a pending render frame host.
 
-  // If the current render_frame_host_ isn't live, we should create it so
-  // that we don't show a sad tab while the dest_render_frame_host fetches
-  // its first page.  (Bug 1145340)
-  if (dest_render_frame_host != render_frame_host_.get() &&
-      !render_frame_host_->IsRenderFrameLive()) {
-    // Note: we don't call InitRenderView here because we are navigating away
-    // soon anyway, and we don't have the NavigationEntry for this host.
-    delegate_->CreateRenderViewForRenderManager(
-        render_frame_host_->render_view_host(), MSG_ROUTING_NONE,
-        MSG_ROUTING_NONE, frame_tree_node_->current_replication_state());
-  }
-
   // If the renderer isn't live, then try to create a new one to satisfy this
   // navigation request.
   if (!dest_render_frame_host->IsRenderFrameLive()) {
