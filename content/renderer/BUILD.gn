@@ -350,8 +350,10 @@ target(link_target_type, "renderer") {
     "shared_worker/embedded_shared_worker_content_settings_client_proxy.h",
     "shared_worker/embedded_shared_worker_stub.cc",
     "shared_worker/embedded_shared_worker_stub.h",
-    "shared_worker_repository.cc",
-    "shared_worker_repository.h",
+    "shared_worker/shared_worker_repository.cc",
+    "shared_worker/shared_worker_repository.h",
+    "shared_worker/websharedworker_proxy.cc",
+    "shared_worker/websharedworker_proxy.h",
     "skia_benchmarking_extension.cc",
     "skia_benchmarking_extension.h",
     "speech_recognition_dispatcher.cc",
@@ -382,8 +384,6 @@ target(link_target_type, "renderer") {
     "webscrollbarbehavior_impl_aura.h",
     "webscrollbarbehavior_impl_mac.h",
     "webscrollbarbehavior_impl_mac.mm",
-    "websharedworker_proxy.cc",
-    "websharedworker_proxy.h",
   ]
 
   configs += [

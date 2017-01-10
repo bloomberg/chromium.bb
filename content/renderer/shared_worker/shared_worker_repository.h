@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_SHARED_WORKER_REPOSITORY_H_
-#define CONTENT_RENDERER_SHARED_WORKER_REPOSITORY_H_
+#ifndef CONTENT_RENDERER_SHARED_WORKER_SHARED_WORKER_REPOSITORY_H_
+#define CONTENT_RENDERER_SHARED_WORKER_SHARED_WORKER_REPOSITORY_H_
 
 #include <memory>
 #include <set>
@@ -45,4 +45,4 @@ class SharedWorkerRepository final
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_SHARED_WORKER_REPOSITORY_H_
+#endif  // CONTENT_RENDERER_SHARED_WORKER_SHARED_WORKER_REPOSITORY_H_

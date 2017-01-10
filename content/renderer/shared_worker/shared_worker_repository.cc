@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/shared_worker_repository.h"
+#include "content/renderer/shared_worker/shared_worker_repository.h"
 
 #include "content/child/child_thread_impl.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_frame_impl.h"
-#include "content/renderer/websharedworker_proxy.h"
+#include "content/renderer/shared_worker/websharedworker_proxy.h"
 
 namespace content {
 
