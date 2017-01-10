@@ -5,6 +5,7 @@
 #ifndef BlobEvent_h
 #define BlobEvent_h
 
+#include "core/dom/DOMHighResTimeStamp.h"
 #include "core/fileapi/Blob.h"
 #include "modules/EventModules.h"
 #include "modules/ModulesExport.h"
@@ -23,9 +24,10 @@ class MODULES_EXPORT BlobEvent final : public Event {
 
   static BlobEvent* create(const AtomicString& type,
                            const BlobEventInit& initializer);
-  static BlobEvent* create(const AtomicString& type, Blob*);
+  static BlobEvent* create(const AtomicString& type, Blob*, double);
 
   Blob* data() const { return m_blob.get(); }
+  DOMHighResTimeStamp timecode() const { return m_timecode; }
 
   // Event
   const AtomicString& interfaceName() const final;
@@ -34,9 +36,10 @@ class MODULES_EXPORT BlobEvent final : public Event {
 
  private:
   BlobEvent(const AtomicString& type, const BlobEventInit& initializer);
-  BlobEvent(const AtomicString& type, Blob*);
+  BlobEvent(const AtomicString& type, Blob*, double);
 
   Member<Blob> m_blob;
+  DOMHighResTimeStamp m_timecode;
 };
 
 }  // namespace blink

@@ -14,6 +14,7 @@
 #include "platform/network/mime/ContentType.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebMediaStream.h"
+#include "wtf/CurrentTime.h"
 #include "wtf/PtrUtil.h"
 #include <algorithm>
 #include <limits>
@@ -165,7 +166,6 @@ MediaRecorder::MediaRecorder(ExecutionContext* context,
       m_streamAmountOfTracks(stream->getTracks().size()),
       m_mimeType(options.hasMimeType() ? options.mimeType() : kDefaultMimeType),
       m_stopped(true),
-      m_ignoreMutedMedia(true),
       m_audioBitsPerSecond(0),
       m_videoBitsPerSecond(0),
       m_state(State::Inactive),
@@ -279,7 +279,8 @@ void MediaRecorder::requestData(ExceptionState& exceptionState) {
         "The MediaRecorder's state is '" + stateToString(m_state) + "'.");
     return;
   }
-  writeData(nullptr /* data */, 0 /* length */, true /* lastInSlice */);
+  writeData(nullptr /* data */, 0 /* length */, true /* lastInSlice */,
+            WTF::currentTimeMS());
 }
 
 bool MediaRecorder::isTypeSupported(const String& type) {
@@ -325,7 +326,8 @@ void MediaRecorder::contextDestroyed() {
 
 void MediaRecorder::writeData(const char* data,
                               size_t length,
-                              bool lastInSlice) {
+                              bool lastInSlice,
+                              double timecode) {
   if (m_stopped && !lastInSlice) {
     m_stopped = false;
     scheduleDispatchEvent(Event::create(EventTypeNames::start));
@@ -350,8 +352,9 @@ void MediaRecorder::writeData(const char* data,
 
   // Cache |m_blobData->length()| before release()ng it.
   const long long blobDataLength = m_blobData->length();
-  createBlobEvent(Blob::create(
-      BlobDataHandle::create(std::move(m_blobData), blobDataLength)));
+  createBlobEvent(Blob::create(BlobDataHandle::create(std::move(m_blobData),
+                                                      blobDataLength)),
+                  timecode);
 }
 
 void MediaRecorder::onError(const WebString& message) {
@@ -360,10 +363,9 @@ void MediaRecorder::onError(const WebString& message) {
   scheduleDispatchEvent(Event::create(EventTypeNames::error));
 }
 
-void MediaRecorder::createBlobEvent(Blob* blob) {
-  // TODO(mcasas): Consider launching an Event with a TypedArray inside, see
-  // https://github.com/w3c/mediacapture-record/issues/17.
-  scheduleDispatchEvent(BlobEvent::create(EventTypeNames::dataavailable, blob));
+void MediaRecorder::createBlobEvent(Blob* blob, double timecode) {
+  scheduleDispatchEvent(
+      BlobEvent::create(EventTypeNames::dataavailable, blob, timecode));
 }
 
 void MediaRecorder::stopRecording() {
@@ -372,7 +374,8 @@ void MediaRecorder::stopRecording() {
 
   m_recorderHandler->stop();
 
-  writeData(nullptr /* data */, 0 /* length */, true /* lastInSlice */);
+  writeData(nullptr /* data */, 0 /* length */, true /* lastInSlice */,
+            WTF::currentTimeMS());
   scheduleDispatchEvent(Event::create(EventTypeNames::stop));
 }
 

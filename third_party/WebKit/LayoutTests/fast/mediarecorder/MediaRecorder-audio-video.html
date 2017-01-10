@@ -26,9 +26,15 @@ var makeAsyncTest = function(value, expected) {
     var recorder;
 
     async_test(function(test) {
+        var lastTimestamp = NaN;
         const recorderOnDataAvailable = this.step_func(function(event) {
             // TODO(mcasas): Let the test record for a while.
             // TODO(mcasas): Consider storing recorded data and playing it back.
+            if (!isNaN(lastTimestamp)) {
+                assert_greater_than(event.timecode, lastTimestamp,
+                                    "timecode must be increasing");
+            }
+            lastTimestamp = event.timecode;
 
             if (recorder.state == "recording") {
                 recorder.onstop = recorderOnStopExpected;

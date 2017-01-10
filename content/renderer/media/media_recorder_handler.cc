@@ -61,7 +61,9 @@ MediaRecorderHandler::~MediaRecorderHandler() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   // Send a |last_in_slice| to our |client_|.
   if (client_)
-    client_->writeData(nullptr, 0u, true);
+    client_->writeData(
+        nullptr, 0u, true,
+        (TimeTicks::Now() - TimeTicks::UnixEpoch()).InMillisecondsF());
 }
 
 bool MediaRecorderHandler::canSupportMimeType(
@@ -279,18 +281,20 @@ void MediaRecorderHandler::OnEncodedAudio(
 
 void MediaRecorderHandler::WriteData(base::StringPiece data) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  const TimeTicks now = TimeTicks::Now();
   // Non-buffered mode does not need to check timestamps.
   if (timeslice_.is_zero()) {
-    client_->writeData(data.data(), data.length(), true  /* lastInSlice */);
+    client_->writeData(data.data(), data.length(), true /* lastInSlice */,
+                       (now - TimeTicks::UnixEpoch()).InMillisecondsF());
     return;
   }
 
-  const TimeTicks now = TimeTicks::Now();
   const bool last_in_slice = now > slice_origin_timestamp_ + timeslice_;
   DVLOG_IF(1, last_in_slice) << "Slice finished @ " << now;
   if (last_in_slice)
     slice_origin_timestamp_ = now;
-  client_->writeData(data.data(), data.length(), last_in_slice);
+  client_->writeData(data.data(), data.length(), last_in_slice,
+                     (now - TimeTicks::UnixEpoch()).InMillisecondsF());
 }
 
 void MediaRecorderHandler::OnVideoFrameForTesting(

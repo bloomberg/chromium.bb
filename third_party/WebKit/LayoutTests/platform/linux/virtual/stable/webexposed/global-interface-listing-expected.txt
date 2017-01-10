@@ -251,6 +251,7 @@ interface Blob
 interface BlobEvent : Event
     attribute @@toStringTag
     getter data
+    getter timecode
     method constructor
 interface BroadcastChannel : EventTarget
     attribute @@toStringTag
@@ -3230,7 +3231,6 @@ interface MediaRecorder : EventTarget
     static method isTypeSupported
     attribute @@toStringTag
     getter audioBitsPerSecond
-    getter ignoreMutedMedia
     getter mimeType
     getter ondataavailable
     getter onerror
@@ -3247,7 +3247,6 @@ interface MediaRecorder : EventTarget
     method resume
     method start
     method stop
-    setter ignoreMutedMedia
     setter ondataavailable
     setter onerror
     setter onpause

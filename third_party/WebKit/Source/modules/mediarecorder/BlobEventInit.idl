@@ -6,4 +6,5 @@
 
 dictionary BlobEventInit : EventInit {
     required Blob data;
+             DOMHighResTimeStamp timecode;
 };

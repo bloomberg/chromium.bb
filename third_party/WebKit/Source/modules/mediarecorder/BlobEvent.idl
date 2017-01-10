@@ -8,5 +8,6 @@
     Constructor(DOMString type, BlobEventInit eventInitDict),
 ]
 interface BlobEvent : Event {
-    readonly attribute Blob data;
+    [SameObject] readonly attribute Blob data;
+    readonly attribute DOMHighResTimeStamp timecode;
 };

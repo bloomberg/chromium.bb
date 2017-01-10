@@ -47,10 +47,6 @@ class MODULES_EXPORT MediaRecorder final
   MediaStream* stream() const { return m_stream.get(); }
   const String& mimeType() const { return m_mimeType; }
   String state() const;
-  bool ignoreMutedMedia() const { return m_ignoreMutedMedia; }
-  void setIgnoreMutedMedia(bool ignoreMutedMedia) {
-    m_ignoreMutedMedia = ignoreMutedMedia;
-  }
   unsigned long videoBitsPerSecond() const { return m_videoBitsPerSecond; }
   unsigned long audioBitsPerSecond() const { return m_audioBitsPerSecond; }
 
@@ -83,7 +79,10 @@ class MODULES_EXPORT MediaRecorder final
   bool hasPendingActivity() const final { return !m_stopped; }
 
   // WebMediaRecorderHandlerClient
-  void writeData(const char* data, size_t length, bool lastInSlice) override;
+  void writeData(const char* data,
+                 size_t length,
+                 bool lastInSlice,
+                 double timecode) override;
   void onError(const WebString& message) override;
 
   DECLARE_VIRTUAL_TRACE();
@@ -94,7 +93,7 @@ class MODULES_EXPORT MediaRecorder final
                 const MediaRecorderOptions&,
                 ExceptionState&);
 
-  void createBlobEvent(Blob*);
+  void createBlobEvent(Blob*, double);
 
   void stopRecording();
   void scheduleDispatchEvent(Event*);
@@ -104,7 +103,6 @@ class MODULES_EXPORT MediaRecorder final
   size_t m_streamAmountOfTracks;
   String m_mimeType;
   bool m_stopped;
-  bool m_ignoreMutedMedia;
   int m_audioBitsPerSecond;
   int m_videoBitsPerSecond;
 

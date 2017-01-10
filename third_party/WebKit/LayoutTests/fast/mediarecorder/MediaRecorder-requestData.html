@@ -28,6 +28,7 @@ var makeAsyncTest = function(value, expected) {
             assert_equals(event.data.size, 0,
                           'Recorded data size should be == 0');
             assert_equals(event.data.type, "video/webm");
+            assert_not_equals(event.timecode, NaN, 'timecode');
         });
 
         const recorderOnStop = test.step_func(function() {
@@ -52,7 +53,7 @@ var makeAsyncTest = function(value, expected) {
             recorder.ondataavailable = recorderOnDataAvailable;
             recorder.onstop = recorderOnStop;
             recorder.onerror = recorderOnError;
-            recorder.start(0);
+            recorder.start();
 
             assert_equals(recorder.state, "recording");
             recorder.requestData();

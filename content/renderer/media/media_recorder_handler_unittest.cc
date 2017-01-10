@@ -85,7 +85,7 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
     blink::WebHeap::collectAllGarbageForTesting();
   }
 
-  MOCK_METHOD3(writeData, void(const char*, size_t, bool));
+  MOCK_METHOD4(writeData, void(const char*, size_t, bool, double));
   MOCK_METHOD1(onError, void(const WebString& message));
 
   bool recording() const { return media_recorder_handler_->recording_; }
@@ -209,7 +209,7 @@ TEST_P(MediaRecorderHandlerTest, InitializeStartStop) {
   EXPECT_FALSE(hasAudioRecorders());
 
   // Expect a last call on destruction.
-  EXPECT_CALL(*this, writeData(_, _, true)).Times(1);
+  EXPECT_CALL(*this, writeData(_, _, true, _)).Times(1);
   media_recorder_handler_.reset();
 }
 
@@ -237,9 +237,9 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
     base::Closure quit_closure = run_loop.QuitClosure();
     // writeData() is pinged a number of times as the WebM header is written;
     // the last time it is called it has the encoded data.
-    EXPECT_CALL(*this, writeData(_, Lt(kEncodedSizeThreshold), _))
+    EXPECT_CALL(*this, writeData(_, Lt(kEncodedSizeThreshold), _, _))
         .Times(AtLeast(1));
-    EXPECT_CALL(*this, writeData(_, Gt(kEncodedSizeThreshold), _))
+    EXPECT_CALL(*this, writeData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
         .WillOnce(RunClosure(quit_closure));
 
@@ -254,9 +254,9 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
     base::Closure quit_closure = run_loop.QuitClosure();
     // The second time around writeData() is called a number of times to write
     // the WebM frame header, and then is pinged with the encoded data.
-    EXPECT_CALL(*this, writeData(_, Lt(kEncodedSizeThreshold), _))
+    EXPECT_CALL(*this, writeData(_, Lt(kEncodedSizeThreshold), _, _))
         .Times(AtLeast(1));
-    EXPECT_CALL(*this, writeData(_, Gt(kEncodedSizeThreshold), _))
+    EXPECT_CALL(*this, writeData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
         .WillOnce(RunClosure(quit_closure));
 
@@ -267,7 +267,7 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
   media_recorder_handler_->stop();
 
   // Expect a last call on destruction, with size 0 and |lastInSlice| true.
-  EXPECT_CALL(*this, writeData(nullptr, 0, true)).Times(1);
+  EXPECT_CALL(*this, writeData(nullptr, 0, true, _)).Times(1);
   media_recorder_handler_.reset();
 }
 
@@ -304,9 +304,9 @@ TEST_P(MediaRecorderHandlerTest, EncodeAudioFrames) {
     base::Closure quit_closure = run_loop.QuitClosure();
     // writeData() is pinged a number of times as the WebM header is written;
     // the last time it is called it has the encoded data.
-    EXPECT_CALL(*this, writeData(_, Lt(kEncodedSizeThreshold), _))
+    EXPECT_CALL(*this, writeData(_, Lt(kEncodedSizeThreshold), _, _))
         .Times(AtLeast(1));
-    EXPECT_CALL(*this, writeData(_, Gt(kEncodedSizeThreshold), _))
+    EXPECT_CALL(*this, writeData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
         .WillOnce(RunClosure(quit_closure));
 
@@ -321,9 +321,9 @@ TEST_P(MediaRecorderHandlerTest, EncodeAudioFrames) {
     base::Closure quit_closure = run_loop.QuitClosure();
     // The second time around writeData() is called a number of times to write
     // the WebM frame header, and then is pinged with the encoded data.
-    EXPECT_CALL(*this, writeData(_, Lt(kEncodedSizeThreshold), _))
+    EXPECT_CALL(*this, writeData(_, Lt(kEncodedSizeThreshold), _, _))
         .Times(AtLeast(1));
-    EXPECT_CALL(*this, writeData(_, Gt(kEncodedSizeThreshold), _))
+    EXPECT_CALL(*this, writeData(_, Gt(kEncodedSizeThreshold), _, _))
         .Times(1)
         .WillOnce(RunClosure(quit_closure));
 
@@ -335,7 +335,7 @@ TEST_P(MediaRecorderHandlerTest, EncodeAudioFrames) {
   media_recorder_handler_->stop();
 
   // Expect a last call on destruction, with size 0 and |lastInSlice| true.
-  EXPECT_CALL(*this, writeData(nullptr, 0, true)).Times(1);
+  EXPECT_CALL(*this, writeData(nullptr, 0, true, _)).Times(1);
   media_recorder_handler_.reset();
 }
 

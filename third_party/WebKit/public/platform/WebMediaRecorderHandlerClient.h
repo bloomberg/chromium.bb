@@ -14,7 +14,10 @@ class WebString;
 // Interface used by a MediaRecorder to get errors and recorded data delivered.
 class WebMediaRecorderHandlerClient {
  public:
-  virtual void writeData(const char* data, size_t length, bool lastInslice) = 0;
+  virtual void writeData(const char* data,
+                         size_t length,
+                         bool lastInslice,
+                         double timecode) = 0;
 
   virtual void onError(const WebString& message) = 0;
 };
