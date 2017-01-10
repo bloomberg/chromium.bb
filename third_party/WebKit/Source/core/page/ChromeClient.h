@@ -180,7 +180,11 @@ class CORE_EXPORT ChromeClient : public HostWindow {
   virtual WebScreenInfo screenInfo() const = 0;
   virtual void setCursor(const Cursor&, LocalFrame* localRoot) = 0;
   // End methods used by HostWindow.
+
   virtual Cursor lastSetCursorForTesting() const = 0;
+  Node* lastSetTooltipNodeForTesting() const {
+    return m_lastMouseOverNode.get();
+  }
 
   // Returns a custom visible content rect if a viewport override is active.
   virtual WTF::Optional<IntRect> visibleContentRectForPainting() const {
@@ -338,6 +342,8 @@ class CORE_EXPORT ChromeClient : public HostWindow {
 
   virtual void installSupplements(LocalFrame&) {}
 
+  DECLARE_TRACE();
+
  protected:
   ~ChromeClient() override {}
 
@@ -359,6 +365,7 @@ class CORE_EXPORT ChromeClient : public HostWindow {
                                          const String& message);
   void setToolTip(LocalFrame&, const HitTestResult&);
 
+  WeakMember<Node> m_lastMouseOverNode;
   LayoutPoint m_lastToolTipPoint;
   String m_lastToolTipText;
 

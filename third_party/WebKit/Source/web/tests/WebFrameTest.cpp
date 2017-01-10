@@ -10756,6 +10756,75 @@ TEST_F(WebFrameTest, HidingScrollbarsOnScrollableAreaDisablesScrollbars) {
       scrollerArea->verticalScrollbar()->shouldParticipateInHitTesting());
 }
 
+TEST_F(WebFrameTest, MouseOverDifferntNodeClearsTooltip) {
+  FrameTestHelpers::WebViewHelper webViewHelper;
+  webViewHelper.initialize(true, nullptr, nullptr, nullptr,
+                           [](WebSettings* settings) {});
+  webViewHelper.resize(WebSize(200, 200));
+  WebViewImpl* webView = webViewHelper.webView();
+
+  initializeWithHTML(
+      *webView->mainFrameImpl()->frame(),
+      "<head>"
+      "  <style type='text/css'>"
+      "   div"
+      "    {"
+      "      width: 200px;"
+      "      height: 100px;"
+      "      background-color: #eeeeff;"
+      "    }"
+      "    div:hover"
+      "    {"
+      "      background-color: #ddddff;"
+      "    }"
+      "  </style>"
+      "</head>"
+      "<body>"
+      "  <div id='div1' title='Title Attribute Value'>Hover HERE</div>"
+      "  <div id='div2' title='Title Attribute Value'>Then HERE</div>"
+      "  <br><br><br>"
+      "</body>");
+
+  webView->updateAllLifecyclePhases();
+
+  Document* document = webView->mainFrameImpl()->frame()->document();
+  Element* div1Tag = document->getElementById("div1");
+
+  HitTestResult hitTestResult = webView->coreHitTestResultAt(
+      WebPoint(div1Tag->offsetLeft() + 5, div1Tag->offsetTop() + 5));
+
+  EXPECT_TRUE(hitTestResult.innerElement());
+
+  // Mouse over link. Mouse cursor should be hand.
+  PlatformMouseEvent mouseMoveOverLinkEvent(
+      IntPoint(div1Tag->offsetLeft() + 5, div1Tag->offsetTop() + 5),
+      IntPoint(div1Tag->offsetLeft() + 5, div1Tag->offsetTop() + 5),
+      WebPointerProperties::Button::NoButton, PlatformEvent::MouseMoved, 0,
+      PlatformEvent::NoModifiers, TimeTicks::Now());
+  document->frame()->eventHandler().handleMouseMoveEvent(
+      mouseMoveOverLinkEvent, Vector<PlatformMouseEvent>());
+
+  EXPECT_EQ(document->hoverNode(),
+            document->frame()->chromeClient().lastSetTooltipNodeForTesting());
+  EXPECT_EQ(div1Tag,
+            document->frame()->chromeClient().lastSetTooltipNodeForTesting());
+
+  Element* div2Tag = document->getElementById("div2");
+
+  PlatformMouseEvent mouseMoveEvent(
+      IntPoint(div2Tag->offsetLeft() + 5, div2Tag->offsetTop() + 5),
+      IntPoint(div2Tag->offsetLeft() + 5, div2Tag->offsetTop() + 5),
+      WebPointerProperties::Button::NoButton, PlatformEvent::MouseMoved, 0,
+      PlatformEvent::NoModifiers, TimeTicks::Now());
+  document->frame()->eventHandler().handleMouseMoveEvent(
+      mouseMoveEvent, Vector<PlatformMouseEvent>());
+
+  EXPECT_EQ(document->hoverNode(),
+            document->frame()->chromeClient().lastSetTooltipNodeForTesting());
+  EXPECT_EQ(div2Tag,
+            document->frame()->chromeClient().lastSetTooltipNodeForTesting());
+}
+
 // Makes sure that mouse hover over an overlay scrollbar doesn't activate
 // elements below unless the scrollbar is faded out.
 TEST_F(WebFrameTest, MouseOverLinkAndOverlayScrollbar) {
