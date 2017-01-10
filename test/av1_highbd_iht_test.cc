@@ -86,6 +86,8 @@ class AV1HighbdInvHTNxN : public ::testing::TestWithParam<IHbdHtParam> {
       return 8;
     } else if (256 == num_coeffs_) {
       return 16;
+    } else if (1024 == num_coeffs_) {
+      return 32;
     } else {
       return 0;
     }
@@ -216,4 +218,19 @@ INSTANTIATE_TEST_CASE_P(SSE4_1, AV1HighbdInvHTNxN,
                         ::testing::ValuesIn(kArrayIhtParam));
 #endif  // HAVE_SSE4_1 && CONFIG_AOM_HIGHBITDEPTH
 
+#if HAVE_AVX2 && CONFIG_AOM_HIGHBITDEPTH
+#define PARAM_LIST_32X32                                   \
+  &av1_fwd_txfm2d_32x32_c, &av1_inv_txfm2d_add_32x32_avx2, \
+      &av1_inv_txfm2d_add_32x32_c, 1024
+
+const IHbdHtParam kArrayIhtParam32x32[] = {
+  // 32x32
+  make_tuple(PARAM_LIST_32X32, DCT_DCT, 10),
+  make_tuple(PARAM_LIST_32X32, DCT_DCT, 12),
+};
+
+INSTANTIATE_TEST_CASE_P(AVX2, AV1HighbdInvHTNxN,
+                        ::testing::ValuesIn(kArrayIhtParam32x32));
+
+#endif  // HAVE_AVX2 && CONFIG_AOM_HIGHBITDEPTH
 }  // namespace
