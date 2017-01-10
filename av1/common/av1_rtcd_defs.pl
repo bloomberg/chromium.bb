@@ -765,4 +765,12 @@ if (aom_config("CONFIG_DERING") eq "yes") {
   specialize qw/od_filter_dering_orthogonal_8x8 sse4_1/;
 }
 
+# WARPED_MOTION / GLOBAL_MOTION functions
+
+if ((aom_config("CONFIG_WARPED_MOTION") eq "yes") ||
+    (aom_config("CONFIG_GLOBAL_MOTION") eq "yes")) {
+  add_proto qw/void warp_affine/, "int32_t *mat, uint8_t *ref, int width, int height, int stride, uint8_t *pred, int p_col, int p_row, int p_width, int p_height, int p_stride, int subsampling_x, int subsampling_y, int ref_frm, int32_t alpha, int32_t beta, int32_t gamma, int32_t delta";
+  specialize qw/warp_affine sse2/;
+}
+
 1;

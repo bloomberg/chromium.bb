@@ -157,4 +157,8 @@ ifeq ($(CONFIG_FILTER_INTRA),yes)
 AV1_COMMON_SRCS-$(HAVE_SSE4_1) += common/x86/filterintra_sse4.c
 endif
 
+ifneq ($(findstring yes,$(CONFIG_GLOBAL_MOTION) $(CONFIG_WARPED_MOTION)),)
+AV1_COMMON_SRCS-$(HAVE_SSE2) += common/x86/warp_plane_sse2.c
+endif
+
 $(eval $(call rtcd_h_template,av1_rtcd,av1/common/av1_rtcd_defs.pl))

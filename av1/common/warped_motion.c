@@ -15,6 +15,7 @@
 #include <math.h>
 #include <assert.h>
 
+#include "./av1_rtcd.h"
 #include "av1/common/warped_motion.h"
 
 /* clang-format off */
@@ -412,7 +413,7 @@ static uint8_t warp_interpolate(uint8_t *ref, int x, int y, int width,
 // [-1, 2) * WARPEDPIXEL_PREC_SHIFTS.
 // We need an extra 2 taps to fit this in, for a total of 8 taps.
 /* clang-format off */
-static const int16_t warped_filter[WARPEDPIXEL_PREC_SHIFTS*3][8] = {
+const int16_t warped_filter[WARPEDPIXEL_PREC_SHIFTS*3][8] = {
   // [-1, 0)
   { 0,   0, 128,   0,   0, 0, 0, 0 }, { 0, - 1, 128,   2, - 1, 0, 0, 0 },
   { 1, - 3, 127,   4, - 1, 0, 0, 0 }, { 1, - 4, 126,   6, - 2, 1, 0, 0 },
@@ -891,7 +892,146 @@ static void warp_plane_old(WarpedMotionParams *wm, uint8_t *ref, int width,
    within the block, the parameters must satisfy
    4 * |alpha| + 7 * |beta| <= 1   and   4 * |gamma| + 7 * |delta| <= 1
    for this filter to be applicable.
+
+   Note: warp_affine() assumes that the caller has done all of the relevant
+   checks, ie. that we have a ROTZOOM or AFFINE model, that wm[4] and wm[5]
+   are set appropriately (if using a ROTZOOM model), and that alpha, beta,
+   gamma, delta are all in range.
+
+   TODO(david.barker): Maybe support scaled references?
 */
+static inline int16_t saturate_int16(int32_t v) {
+  if (v > 32767)
+    return 32767;
+  else if (v < -32768)
+    return -32768;
+  return v;
+}
+
+void warp_affine_c(int32_t *mat, uint8_t *ref, int width, int height,
+                   int stride, uint8_t *pred, int p_col, int p_row, int p_width,
+                   int p_height, int p_stride, int subsampling_x,
+                   int subsampling_y, int ref_frm, int32_t alpha, int32_t beta,
+                   int32_t gamma, int32_t delta) {
+  int16_t tmp[15 * 8];
+  int i, j, k, l, m;
+
+  /* Note: For this code to work, the left/right frame borders need to be
+     extended by at least 13 pixels each. By the time we get here, other
+     code will have set up this border, but we allow an explicit check
+     for debugging purposes.
+  */
+  /*for (i = 0; i < height; ++i) {
+    for (j = 0; j < 13; ++j) {
+      assert(ref[i * stride - 13 + j] == ref[i * stride]);
+      assert(ref[i * stride + width + j] == ref[i * stride + (width - 1)]);
+    }
+  }*/
+
+  for (i = p_row; i < p_row + p_height; i += 8) {
+    for (j = p_col; j < p_col + p_width; j += 8) {
+      int32_t x4, y4, ix4, sx4, iy4, sy4;
+      if (subsampling_x)
+        x4 = ROUND_POWER_OF_TWO_SIGNED(
+            mat[2] * 2 * (j + 4) + mat[3] * 2 * (i + 4) + mat[0] +
+                (mat[2] + mat[3] - (1 << WARPEDMODEL_PREC_BITS)) / 2,
+            1);
+      else
+        x4 = mat[2] * (j + 4) + mat[3] * (i + 4) + mat[0];
+
+      if (subsampling_y)
+        y4 = ROUND_POWER_OF_TWO_SIGNED(
+            mat[4] * 2 * (j + 4) + mat[5] * 2 * (i + 4) + mat[1] +
+                (mat[4] + mat[5] - (1 << WARPEDMODEL_PREC_BITS)) / 2,
+            1);
+      else
+        y4 = mat[4] * (j + 4) + mat[5] * (i + 4) + mat[1];
+
+      ix4 = x4 >> WARPEDMODEL_PREC_BITS;
+      sx4 = x4 & ((1 << WARPEDMODEL_PREC_BITS) - 1);
+      iy4 = y4 >> WARPEDMODEL_PREC_BITS;
+      sy4 = y4 & ((1 << WARPEDMODEL_PREC_BITS) - 1);
+
+      // Horizontal filter
+      for (k = -7; k < 8; ++k) {
+        int iy = iy4 + k;
+        if (iy < 0)
+          iy = 0;
+        else if (iy > height - 1)
+          iy = height - 1;
+
+        if (ix4 <= -7) {
+          // In this case, the rightmost pixel sampled is in column
+          // ix4 + 3 + 7 - 3 = ix4 + 7 <= 0, ie. the entire block
+          // will sample only from the leftmost column
+          // (once border extension is taken into account)
+          for (l = 0; l < 8; ++l) {
+            tmp[(k + 7) * 8 + l] =
+                ref[iy * stride] * (1 << WARPEDPIXEL_FILTER_BITS);
+          }
+        } else if (ix4 >= width + 6) {
+          // In this case, the leftmost pixel sampled is in column
+          // ix4 - 3 + 0 - 3 = ix4 - 6 >= width, ie. the entire block
+          // will sample only from the rightmost column
+          // (once border extension is taken into account)
+          for (l = 0; l < 8; ++l) {
+            tmp[(k + 7) * 8 + l] =
+                ref[iy * stride + (width - 1)] * (1 << WARPEDPIXEL_FILTER_BITS);
+          }
+        } else {
+          // If we get here, then
+          // the leftmost pixel sampled is
+          // ix4 - 4 + 0 - 3 = ix4 - 7 >= -13
+          // and the rightmost pixel sampled is at most
+          // ix4 + 3 + 7 - 3 = ix4 + 7 <= width + 12
+          // So, assuming that border extension has been done, we
+          // don't need to explicitly clamp values.
+          int sx = sx4 + alpha * (-4) + beta * k;
+
+          for (l = -4; l < 4; ++l) {
+            int ix = ix4 + l - 3;
+            // At this point, sx = sx4 + alpha * l + beta * k
+            const int16_t *coeffs =
+                warped_filter[ROUND_POWER_OF_TWO_SIGNED(sx,
+                                                        WARPEDDIFF_PREC_BITS) +
+                              WARPEDPIXEL_PREC_SHIFTS];
+            int32_t sum = 0;
+            for (m = 0; m < 8; ++m) {
+              sum += ref[iy * stride + ix + m] * coeffs[m];
+            }
+            tmp[(k + 7) * 8 + (l + 4)] = saturate_int16(sum);
+            sx += alpha;
+          }
+        }
+      }
+
+      // Vertical filter
+      for (k = -4; k < AOMMIN(4, p_row + p_height - i - 4); ++k) {
+        int sy = sy4 + gamma * (-4) + delta * k;
+        for (l = -4; l < 4; ++l) {
+          uint8_t *p =
+              &pred[(i - p_row + k + 4) * p_stride + (j - p_col + l + 4)];
+          // At this point, sy = sy4 + gamma * l + delta * k
+          const int16_t *coeffs = warped_filter[ROUND_POWER_OF_TWO_SIGNED(
+                                                    sy, WARPEDDIFF_PREC_BITS) +
+                                                WARPEDPIXEL_PREC_SHIFTS];
+          int32_t sum = 0;
+          for (m = 0; m < 8; ++m) {
+            sum += tmp[(k + m + 4) * 8 + (l + 4)] * coeffs[m];
+          }
+          sum =
+              clip_pixel(ROUND_POWER_OF_TWO(sum, 2 * WARPEDPIXEL_FILTER_BITS));
+          if (ref_frm)
+            *p = ROUND_POWER_OF_TWO(*p + sum, 1);
+          else
+            *p = sum;
+          sy += gamma;
+        }
+      }
+    }
+  }
+}
+
 static void warp_plane(WarpedMotionParams *wm, uint8_t *ref, int width,
                        int height, int stride, uint8_t *pred, int p_col,
                        int p_row, int p_width, int p_height, int p_stride,
@@ -901,9 +1041,8 @@ static void warp_plane(WarpedMotionParams *wm, uint8_t *ref, int width,
     wm->wmmat[5] = wm->wmmat[2];
     wm->wmmat[4] = -wm->wmmat[3];
   }
-  if (wm->wmtype == ROTZOOM || wm->wmtype == AFFINE) {
-    int32_t tmp[15 * 8];
-    int i, j, k, l, m;
+  if ((wm->wmtype == ROTZOOM || wm->wmtype == AFFINE) && x_scale == 16 &&
+      y_scale == 16) {
     int32_t *mat = wm->wmmat;
     int32_t alpha, beta, gamma, delta;
 
@@ -932,78 +1071,9 @@ static void warp_plane(WarpedMotionParams *wm, uint8_t *ref, int width,
       return;
     }
 
-    for (i = p_row; i < p_row + p_height; i += 8) {
-      for (j = p_col; j < p_col + p_width; j += 8) {
-        int32_t x4, y4, ix4, sx4, iy4, sy4;
-        if (subsampling_x)
-          x4 = ROUND_POWER_OF_TWO_SIGNED(
-              mat[2] * 2 * (j + 4) + mat[3] * 2 * (i + 4) + mat[0] +
-                  (mat[2] + mat[3] - (1 << WARPEDMODEL_PREC_BITS)) / 2,
-              1);
-        else
-          x4 = mat[2] * (j + 4) + mat[3] * (i + 4) + mat[0];
-
-        if (subsampling_y)
-          y4 = ROUND_POWER_OF_TWO_SIGNED(
-              mat[4] * 2 * (j + 4) + mat[5] * 2 * (i + 4) + mat[1] +
-                  (mat[4] + mat[5] - (1 << WARPEDMODEL_PREC_BITS)) / 2,
-              1);
-        else
-          y4 = mat[4] * (j + 4) + mat[5] * (i + 4) + mat[1];
-
-        ix4 = x4 >> WARPEDMODEL_PREC_BITS;
-        sx4 = x4 & ((1 << WARPEDMODEL_PREC_BITS) - 1);
-        iy4 = y4 >> WARPEDMODEL_PREC_BITS;
-        sy4 = y4 & ((1 << WARPEDMODEL_PREC_BITS) - 1);
-
-        // Horizontal filter
-        for (k = -7; k < 8; ++k) {
-          int iy = iy4 + k;
-          if (iy < 0)
-            iy = 0;
-          else if (iy > height - 1)
-            iy = height - 1;
-
-          for (l = -4; l < 4; ++l) {
-            int ix = ix4 + l;
-            int sx = ROUND_POWER_OF_TWO_SIGNED(sx4 + alpha * l + beta * k,
-                                               WARPEDDIFF_PREC_BITS);
-            const int16_t *coeffs = warped_filter[sx + WARPEDPIXEL_PREC_SHIFTS];
-            int32_t sum = 0;
-            for (m = 0; m < 8; ++m) {
-              if (ix + m - 3 < 0)
-                sum += ref[iy * stride] * coeffs[m];
-              else if (ix + m - 3 > width - 1)
-                sum += ref[iy * stride + width - 1] * coeffs[m];
-              else
-                sum += ref[iy * stride + ix + m - 3] * coeffs[m];
-            }
-            tmp[(k + 7) * 8 + (l + 4)] = sum;
-          }
-        }
-
-        // Vertical filter
-        for (k = -4; k < AOMMIN(4, p_row + p_height - i - 4); ++k) {
-          for (l = -4; l < AOMMIN(4, p_col + p_width - j - 4); ++l) {
-            uint8_t *p =
-                &pred[(i - p_row + k + 4) * p_stride + (j - p_col + l + 4)];
-            int sy = ROUND_POWER_OF_TWO_SIGNED(sy4 + gamma * l + delta * k,
-                                               WARPEDDIFF_PREC_BITS);
-            const int16_t *coeffs = warped_filter[sy + WARPEDPIXEL_PREC_SHIFTS];
-            int32_t sum = 0;
-            for (m = 0; m < 8; ++m) {
-              sum += tmp[(k + m + 4) * 8 + (l + 4)] * coeffs[m];
-            }
-            sum = clip_pixel(
-                ROUND_POWER_OF_TWO_SIGNED(sum, 2 * WARPEDPIXEL_FILTER_BITS));
-            if (ref_frm)
-              *p = ROUND_POWER_OF_TWO_SIGNED(*p + sum, 1);
-            else
-              *p = sum;
-          }
-        }
-      }
-    }
+    warp_affine(mat, ref, width, height, stride, pred, p_col, p_row, p_width,
+                p_height, p_stride, subsampling_x, subsampling_y, ref_frm,
+                alpha, beta, gamma, delta);
   } else {
     warp_plane_old(wm, ref, width, height, stride, pred, p_col, p_row, p_width,
                    p_height, p_stride, subsampling_x, subsampling_y, x_scale,
