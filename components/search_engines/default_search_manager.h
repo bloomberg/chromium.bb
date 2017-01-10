@@ -99,6 +99,14 @@ class DefaultSearchManager {
   // Write default search provider data to |pref_service_|.
   void SetUserSelectedDefaultSearchEngine(const TemplateURLData& data);
 
+  // Override the default search provider with an extension.
+  void SetExtensionControlledDefaultSearchEngine(const TemplateURLData& data);
+
+  // Clear the extension-provided default search engine. Does not explicitly
+  // disable Default Search. The new current default search engine will be
+  // defined by policy, extensions, or pre-populated data.
+  void ClearExtensionControlledDefaultSearchEngine();
+
   // Clear the user's default search provider choice from |pref_service_|. Does
   // not explicitly disable Default Search. The new default search
   // engine will be defined by policy, extensions, or pre-populated data.

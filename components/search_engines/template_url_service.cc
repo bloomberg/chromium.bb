@@ -452,18 +452,23 @@ TemplateURL* TemplateURLService::AddWithOverrides(
 TemplateURL* TemplateURLService::AddExtensionControlledTURL(
     std::unique_ptr<TemplateURL> template_url,
     std::unique_ptr<TemplateURL::AssociatedExtensionInfo> info) {
+  DCHECK(loaded_);
   DCHECK(template_url);
   DCHECK_EQ(kInvalidTemplateURLID, template_url->id());
   DCHECK(info);
   DCHECK_NE(TemplateURL::NORMAL, template_url->type());
   DCHECK(
       !FindTemplateURLForExtension(info->extension_id, template_url->type()));
-
   template_url->extension_info_.swap(info);
 
+  KeywordWebDataService::BatchModeScoper scoper(web_data_service_.get());
   TemplateURL* template_url_ptr = AddNoNotify(std::move(template_url), true);
-  if (template_url_ptr)
+  if (template_url_ptr) {
+    if (template_url_ptr->extension_info_->wants_to_be_default_engine) {
+      UpdateExtensionDefaultSearchEngine();
+    }
     NotifyObservers();
+  }
 
   return template_url_ptr;
 }
@@ -481,9 +486,12 @@ void TemplateURLService::RemoveExtensionControlledTURL(
   if (!url)
     return;
   // NULL this out so that we can call RemoveNoNotify.
+  // UpdateExtensionDefaultSearchEngine will cause it to be reset.
   if (default_search_provider_ == url)
     default_search_provider_ = nullptr;
+  KeywordWebDataService::BatchModeScoper scoper(web_data_service_.get());
   RemoveNoNotify(url);
+  UpdateExtensionDefaultSearchEngine();
   NotifyObservers();
 }
 
@@ -1934,7 +1942,6 @@ bool TemplateURLService::ApplyDefaultSearchChangeNoMetrics(
   } else if (source == DefaultSearchManager::FROM_EXTENSION) {
     default_search_provider_ = FindMatchingExtensionTemplateURL(
         *data, TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION);
-    DCHECK(default_search_provider_);
   } else if (source == DefaultSearchManager::FROM_FALLBACK) {
     default_search_provider_ =
         FindPrepopulatedTemplateURL(data->prepopulate_id);
@@ -2454,4 +2461,26 @@ TemplateURL* TemplateURLService::FindMatchingExtensionTemplateURL(
       return turl.get();
   }
   return nullptr;
+}
+
+void TemplateURLService::UpdateExtensionDefaultSearchEngine() {
+  TemplateURL* most_recently_intalled_default = nullptr;
+  for (const auto& turl : template_urls_) {
+    if ((turl->type() == TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION) &&
+        turl->extension_info_->wants_to_be_default_engine &&
+        turl->SupportsReplacement(search_terms_data()) &&
+        (!most_recently_intalled_default ||
+         (most_recently_intalled_default->extension_info_->install_time <
+          turl->extension_info_->install_time)))
+      most_recently_intalled_default = turl.get();
+  }
+
+  if (most_recently_intalled_default) {
+    base::AutoReset<DefaultSearchChangeOrigin> change_origin(
+        &dsp_change_origin_, DSP_CHANGE_OVERRIDE_SETTINGS_EXTENSION);
+    default_search_manager_.SetExtensionControlledDefaultSearchEngine(
+        most_recently_intalled_default->data());
+  } else {
+    default_search_manager_.ClearExtensionControlledDefaultSearchEngine();
+  }
 }

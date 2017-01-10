@@ -15,6 +15,7 @@
 #include "base/compiler_specific.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -139,6 +140,7 @@ TemplateURLData* DefaultSearchManager::GetDefaultSearchEngine(
       *source = FROM_USER;
     return prefs_default_search_.get();
   }
+
   if (source)
     *source = FROM_FALLBACK;
   return g_fallback_search_engines_disabled ?
@@ -165,6 +167,20 @@ void DefaultSearchManager::SetUserSelectedDefaultSearchEngine(
                      *TemplateURLDataToDictionary(data));
 }
 
+void DefaultSearchManager::SetExtensionControlledDefaultSearchEngine(
+    const TemplateURLData& data) {
+  extension_default_search_.reset(new TemplateURLData(data));
+  if (GetDefaultSearchEngineSource() == FROM_EXTENSION)
+    NotifyObserver();
+}
+
+void DefaultSearchManager::ClearExtensionControlledDefaultSearchEngine() {
+  Source old_source = GetDefaultSearchEngineSource();
+  extension_default_search_.reset();
+  if (old_source == FROM_EXTENSION)
+    NotifyObserver();
+}
+
 void DefaultSearchManager::ClearUserSelectedDefaultSearchEngine() {
   if (pref_service_) {
     pref_service_->ClearPref(kDefaultSearchProviderDataPrefName);
@@ -175,13 +191,13 @@ void DefaultSearchManager::ClearUserSelectedDefaultSearchEngine() {
 }
 
 void DefaultSearchManager::OnDefaultSearchPrefChanged() {
-  bool source_was_fallback = GetDefaultSearchEngineSource() == FROM_FALLBACK;
-
+  Source source = GetDefaultSearchEngineSource();
   LoadDefaultSearchEngineFromPrefs();
 
-  // The effective DSE may have changed unless we were using the fallback source
-  // both before and after the above load.
-  if (!source_was_fallback || (GetDefaultSearchEngineSource() != FROM_FALLBACK))
+  // If we were/are FROM_USER or FROM_POLICY the effective DSE may have changed.
+  if (source != FROM_USER && source != FROM_POLICY)
+    source = GetDefaultSearchEngineSource();
+  if (source == FROM_USER || source == FROM_POLICY)
     NotifyObserver();
 }
 
@@ -229,7 +245,6 @@ void DefaultSearchManager::LoadDefaultSearchEngineFromPrefs() {
     return;
 
   prefs_default_search_.reset();
-  extension_default_search_.reset();
   const PrefService::Preference* pref =
       pref_service_->FindPreference(kDefaultSearchProviderDataPrefName);
   DCHECK(pref);
@@ -251,13 +266,8 @@ void DefaultSearchManager::LoadDefaultSearchEngineFromPrefs() {
   if (!turl_data)
     return;
 
-  // Check if default search preference is overriden by extension.
-  if (pref->IsExtensionControlled()) {
-    extension_default_search_ = std::move(turl_data);
-  } else {
-    prefs_default_search_ = std::move(turl_data);
-    MergePrefsDataWithPrepopulated();
-  }
+  prefs_default_search_ = std::move(turl_data);
+  MergePrefsDataWithPrepopulated();
 }
 
 void DefaultSearchManager::LoadPrepopulatedDefaultSearch() {

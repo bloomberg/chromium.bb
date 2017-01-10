@@ -165,6 +165,22 @@ bool IsTemplateParameterString(const std::string& param) {
       (*(param.rbegin()) == kEndParameter);
 }
 
+// Special case for search_terms_replacement_key comparison, because of
+// its special initialization in TemplateUrl constructor.
+bool SearchTermsReplacementKeysMatch(
+    const std::string& search_terms_replacement_key1,
+    const std::string& search_terms_replacement_key2) {
+  if (search_terms_replacement_key1 == search_terms_replacement_key2)
+    return true;
+  if (search_terms_replacement_key1 == google_util::kInstantExtendedAPIParam &&
+      search_terms_replacement_key2 == kGoogleInstantExtendedEnabledKeyFull)
+    return true;
+  if (search_terms_replacement_key2 == google_util::kInstantExtendedAPIParam &&
+      search_terms_replacement_key1 == kGoogleInstantExtendedEnabledKeyFull)
+    return true;
+  return false;
+}
+
 }  // namespace
 
 
@@ -1263,19 +1279,6 @@ bool TemplateURL::MatchesData(const TemplateURL* t_url,
          (t_url->alternate_urls() == data->alternate_urls) &&
          SearchTermsReplacementKeysMatch(t_url->search_terms_replacement_key(),
                                          data->search_terms_replacement_key);
-}
-
-// static
-bool TemplateURL::SearchTermsReplacementKeysMatch(
-    const std::string& search_terms_replacement_key1,
-    const std::string& search_terms_replacement_key2) {
-  if (search_terms_replacement_key1 == google_util::kInstantExtendedAPIParam &&
-      search_terms_replacement_key2 == kGoogleInstantExtendedEnabledKeyFull)
-    return true;
-  if (search_terms_replacement_key2 == google_util::kInstantExtendedAPIParam &&
-      search_terms_replacement_key1 == kGoogleInstantExtendedEnabledKeyFull)
-    return true;
-  return search_terms_replacement_key1 == search_terms_replacement_key2;
 }
 
 base::string16 TemplateURL::AdjustedShortNameForLocaleDirection() const {

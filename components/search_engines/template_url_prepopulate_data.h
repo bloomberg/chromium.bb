@@ -42,10 +42,6 @@ std::vector<std::unique_ptr<TemplateURLData>> GetPrepopulatedEngines(
     PrefService* prefs,
     size_t* default_search_provider_index);
 
-// Returns the prepopulated search engine with the given |prepopulated_id|.
-std::unique_ptr<TemplateURLData> GetPrepopulatedEngine(PrefService* prefs,
-                                                       int prepopulated_id);
-
 #if defined(OS_ANDROID)
 // Returns the prepopulated URLs associated with |locale|, if it differs from
 // the current country.  |locale| should be a two-character uppercase ISO 3166-1

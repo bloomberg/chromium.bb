@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SETTINGS_OVERRIDES_SETTINGS_OVERRIDES_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_SETTINGS_OVERRIDES_SETTINGS_OVERRIDES_API_H_
 
-#include <memory>
 #include <set>
 #include <string>
 
@@ -33,12 +32,14 @@ class SettingsOverridesAPI : public BrowserContextKeyedAPI,
  private:
   friend class BrowserContextKeyedAPIFactory<SettingsOverridesAPI>;
 
+  typedef std::set<scoped_refptr<const Extension> > PendingExtensions;
+
   // Wrappers around PreferenceAPI.
   void SetPref(const std::string& extension_id,
                const std::string& pref_key,
-               std::unique_ptr<base::Value> value) const;
+               base::Value* value);
   void UnsetPref(const std::string& extension_id,
-                 const std::string& pref_key) const;
+                 const std::string& pref_key);
 
   // ExtensionRegistryObserver implementation.
   void OnExtensionLoaded(content::BrowserContext* browser_context,
@@ -47,6 +48,11 @@ class SettingsOverridesAPI : public BrowserContextKeyedAPI,
                            const Extension* extension,
                            UnloadedExtensionInfo::Reason reason) override;
 
+  // KeyedService implementation.
+  void Shutdown() override;
+
+  void OnTemplateURLsLoaded();
+
   void RegisterSearchProvider(const Extension* extension) const;
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "SettingsOverridesAPI"; }
@@ -54,9 +60,15 @@ class SettingsOverridesAPI : public BrowserContextKeyedAPI,
   Profile* profile_;
   TemplateURLService* url_service_;
 
+  // List of extensions waiting for the TemplateURLService to Load to
+  // have search provider registered.
+  PendingExtensions pending_extensions_;
+
   // Listen to extension load, unloaded notifications.
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
+
+  std::unique_ptr<TemplateURLService::Subscription> template_url_sub_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsOverridesAPI);
 };
