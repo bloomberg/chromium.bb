@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/browser_watcher/postmortem_minidump_writer.h"
 #include "third_party/crashpad/crashpad/client/settings.h"
@@ -22,9 +23,73 @@ using base::FilePath;
 namespace browser_watcher {
 
 using ActivitySnapshot = base::debug::ThreadActivityAnalyzer::Snapshot;
+using base::debug::ActivityUserData;
 using base::debug::GlobalActivityAnalyzer;
 using base::debug::ThreadActivityAnalyzer;
 using crashpad::CrashReportDatabase;
+
+namespace {
+
+// Collects stability user data from the recorded format to the collected
+// format.
+void CollectUserData(
+    const ActivityUserData::Snapshot& recorded_map,
+    google::protobuf::Map<std::string, TypedValue>* collected_map) {
+  DCHECK(collected_map);
+
+  for (const auto& name_and_value : recorded_map) {
+    const ActivityUserData::TypedValue& recorded_value = name_and_value.second;
+    TypedValue collected_value;
+
+    switch (recorded_value.type()) {
+      case ActivityUserData::END_OF_VALUES:
+        NOTREACHED();
+        break;
+      case ActivityUserData::RAW_VALUE:
+        collected_value.set_bytes_value(recorded_value.Get().as_string());
+        break;
+      case ActivityUserData::RAW_VALUE_REFERENCE: {
+        base::StringPiece recorded_ref = recorded_value.GetReference();
+        TypedValue::Reference* collected_ref =
+            collected_value.mutable_bytes_reference();
+        collected_ref->set_address(
+            reinterpret_cast<uintptr_t>(recorded_ref.data()));
+        collected_ref->set_size(recorded_ref.size());
+        break;
+      }
+      case ActivityUserData::STRING_VALUE:
+        collected_value.set_string_value(
+            recorded_value.GetString().as_string());
+        break;
+      case ActivityUserData::STRING_VALUE_REFERENCE: {
+        base::StringPiece recorded_ref = recorded_value.GetStringReference();
+        TypedValue::Reference* collected_ref =
+            collected_value.mutable_string_reference();
+        collected_ref->set_address(
+            reinterpret_cast<uintptr_t>(recorded_ref.data()));
+        collected_ref->set_size(recorded_ref.size());
+        break;
+      }
+      case ActivityUserData::CHAR_VALUE:
+        collected_value.set_char_value(
+            std::string(1, recorded_value.GetChar()));
+        break;
+      case ActivityUserData::BOOL_VALUE:
+        collected_value.set_bool_value(recorded_value.GetBool());
+        break;
+      case ActivityUserData::SIGNED_VALUE:
+        collected_value.set_signed_value(recorded_value.GetInt());
+        break;
+      case ActivityUserData::UNSIGNED_VALUE:
+        collected_value.set_unsigned_value(recorded_value.GetUint());
+        break;
+    }
+
+    (*collected_map)[name_and_value.first].Swap(&collected_value);
+  }
+}
+
+}  // namespace
 
 PostmortemReportCollector::PostmortemReportCollector(
     const std::string& product_name,
@@ -169,8 +234,11 @@ PostmortemReportCollector::CollectionStatus PostmortemReportCollector::Collect(
 
   // Early exit if there is no data.
   std::vector<std::string> log_messages = global_analyzer->GetLogMessages();
+  ActivityUserData::Snapshot global_data_snapshot =
+      global_analyzer->GetGlobalUserDataSnapshot();
   ThreadActivityAnalyzer* thread_analyzer = global_analyzer->GetFirstAnalyzer();
-  if (log_messages.empty() && !thread_analyzer) {
+  if (log_messages.empty() && global_data_snapshot.empty() &&
+      !thread_analyzer) {
     return DEBUG_FILE_NO_DATA;
   }
 
@@ -181,6 +249,9 @@ PostmortemReportCollector::CollectionStatus PostmortemReportCollector::Collect(
   for (const std::string& message : log_messages) {
     (*report)->add_log_messages(message);
   }
+
+  // Collect global user data.
+  CollectUserData(global_data_snapshot, (*report)->mutable_global_data());
 
   // Collect thread activity data.
   // Note: a single process is instrumented.
@@ -214,8 +285,11 @@ void PostmortemReportCollector::CollectThread(
   thread_state->set_thread_id(snapshot.thread_id);
   thread_state->set_activity_count(snapshot.activity_stack_depth);
 
-  for (const base::debug::Activity& recorded : snapshot.activity_stack) {
+  for (size_t i = 0; i < snapshot.activity_stack.size(); ++i) {
+    const base::debug::Activity& recorded = snapshot.activity_stack[i];
     Activity* collected = thread_state->add_activities();
+
+    // Collect activity
     switch (recorded.activity_type) {
       case base::debug::Activity::ACT_TASK_RUN:
         collected->set_type(Activity::ACT_TASK_RUN);
@@ -240,6 +314,12 @@ void PostmortemReportCollector::CollectThread(
         break;
       default:
         break;
+    }
+
+    // Collect user data
+    if (i < snapshot.user_data_stack.size()) {
+      CollectUserData(snapshot.user_data_stack[i],
+                      collected->mutable_user_data());
     }
   }
 }
