@@ -19,10 +19,13 @@
 #      'target_name': 'video_player',
 #      'includes': ['../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'video_player_metrics',
-#      'includes': ['../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'video_player_metrics',
+      'dependencies': [
+        '../../file_manager/common/js/compiled_resources2.gyp:metrics_base',
+      ],
+      'includes': ['../../compile_js2.gypi'],
+    },
 #    {
 #      'target_name': 'video_player_scripts',
 #      'includes': ['../../compile_js2.gypi'],

@@ -8,6 +8,7 @@
  * To be included as a first script in main.html
  */
 
+var metrics;  // Needs to be defined in each window which uses metrics.
 var metricsBase = {};
 
 /**

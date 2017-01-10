@@ -23,18 +23,32 @@
       'target_name': 'lru_cache',
       'includes': ['../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'metrics',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'metrics_base',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'metrics_events',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'metrics',
+      'dependencies': [
+        '<(DEPTH)/third_party/analytics/compiled_resources2.gyp:externs',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        '<(EXTERNS_GYP):file_manager_private',
+        '<(EXTERNS_GYP):chrome_extensions',
+        'metrics_base',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'metrics_base',
+      'dependencies': [
+        '<(EXTERNS_GYP):metrics_private',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'metrics_events',
+      'dependencies': [
+        '<(DEPTH)/third_party/analytics/compiled_resources2.gyp:externs',
+        'metrics_base',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'progress_center_common',
       'includes': ['../../../compile_js2.gypi'],
