@@ -13,21 +13,6 @@
 
 namespace policy {
 
-// ConfigurationPolicyHandler for the DefaultSearchEncodings policy.
-class DefaultSearchEncodingsPolicyHandler
-    : public TypeCheckingPolicyHandler {
- public:
-  DefaultSearchEncodingsPolicyHandler();
-  ~DefaultSearchEncodingsPolicyHandler() override;
-
-  // ConfigurationPolicyHandler methods:
-  void ApplyPolicySettings(const PolicyMap& policies,
-                           PrefValueMap* prefs) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DefaultSearchEncodingsPolicyHandler);
-};
-
 // ConfigurationPolicyHandler for the default search policies.
 class DefaultSearchPolicyHandler : public ConfigurationPolicyHandler {
  public:
@@ -41,8 +26,8 @@ class DefaultSearchPolicyHandler : public ConfigurationPolicyHandler {
                            PrefValueMap* prefs) override;
 
  private:
-  // Calls |CheckPolicySettings()| on each of the handlers in |handlers_|
-  // and returns whether all of the calls succeeded.
+  // Checks that value type is valid for each policy and returns whether all of
+  // the policies are valid.
   bool CheckIndividualPolicies(const PolicyMap& policies,
                                PolicyErrorMap* errors);
 
@@ -69,9 +54,6 @@ class DefaultSearchPolicyHandler : public ConfigurationPolicyHandler {
   // Make sure that the |path| is present in |prefs_| and is a ListValue.  If
   // not, set it to an empty list.
   void EnsureListPrefExists(PrefValueMap* prefs, const std::string& path);
-
-  // The ConfigurationPolicyHandler handlers for each default search policy.
-  std::vector<std::unique_ptr<TypeCheckingPolicyHandler>> handlers_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultSearchPolicyHandler);
 };

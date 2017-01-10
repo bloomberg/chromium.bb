@@ -34,12 +34,10 @@ void CleanupDeprecatedTrackedPreferences(
   // Add deprecated previously tracked preferences below for them to be cleaned
   // up from both the pref files and the hash store.
   static const char* const kDeprecatedTrackedPreferences[] = {
-      // TODO(grt): Remove in M44+.
-      "safebrowsing.incident_report_sent",
-      // TODO(mad): Remove in M48+.
-      "software_reporter.prompt_reason",
-      // TODO(zea): Remove in M52+,
-      "sync.remaining_rollback_tries"
+      // TODO(a-v-y): Remove in M60+,
+      "default_search_provider.search_url",
+      "default_search_provider.name",
+      "default_search_provider.keyword"
   };
 
   for (size_t i = 0; i < arraysize(kDeprecatedTrackedPreferences); ++i) {

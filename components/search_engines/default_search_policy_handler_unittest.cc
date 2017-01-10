@@ -146,6 +146,52 @@ TEST_F(DefaultSearchPolicyHandlerTest, Invalid) {
       DefaultSearchManager::kDefaultSearchProviderDataPrefName, &temp));
 }
 
+// Checks that if the default search policy has invalid type for elements,
+// that no elements of the default search policy will be present in prefs.
+TEST_F(DefaultSearchPolicyHandlerTest, InvalidType) {
+  // List of policies defined in test policy.
+  const char* kPolicyNamesToCheck[] = {
+      key::kDefaultSearchProviderEnabled,
+      key::kDefaultSearchProviderName,
+      key::kDefaultSearchProviderKeyword,
+      key::kDefaultSearchProviderSearchURL,
+      key::kDefaultSearchProviderSuggestURL,
+      key::kDefaultSearchProviderIconURL,
+      key::kDefaultSearchProviderEncodings,
+      key::kDefaultSearchProviderAlternateURLs,
+      key::kDefaultSearchProviderSearchTermsReplacementKey,
+      key::kDefaultSearchProviderImageURL,
+      key::kDefaultSearchProviderNewTabURL,
+      key::kDefaultSearchProviderImageURLPostParams};
+
+  PolicyMap policy;
+  BuildDefaultSearchPolicy(&policy);
+
+  for (auto policy_name : kPolicyNamesToCheck) {
+    // Check that policy can be successfully applied first.
+    UpdateProviderPolicy(policy);
+    const base::Value* temp = nullptr;
+    EXPECT_TRUE(store_->GetValue(
+        DefaultSearchManager::kDefaultSearchProviderDataPrefName, &temp));
+
+    auto old_value = base::WrapUnique(policy.GetValue(policy_name)->DeepCopy());
+    // BinaryValue is not supported in any current default search policy params.
+    // Try changing policy param to BinaryValue and check that policy becomes
+    // invalid.
+    policy.Set(policy_name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+               POLICY_SOURCE_CLOUD, base::WrapUnique(new base::BinaryValue()),
+               nullptr);
+    UpdateProviderPolicy(policy);
+
+    EXPECT_FALSE(store_->GetValue(
+        DefaultSearchManager::kDefaultSearchProviderDataPrefName, &temp))
+        << "Policy type check failed " << policy_name;
+    // Return old value to policy map.
+    policy.Set(policy_name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+               POLICY_SOURCE_CLOUD, std::move(old_value), nullptr);
+  }
+}
+
 // Checks that for a fully defined search policy, all elements have been
 // read properly into the dictionary pref.
 TEST_F(DefaultSearchPolicyHandlerTest, FullyDefined) {
@@ -315,4 +361,5 @@ TEST_F(DefaultSearchPolicyHandlerTest, FileURL) {
   EXPECT_TRUE(dictionary->GetString(DefaultSearchManager::kKeyword, &value));
   EXPECT_EQ("_", value);
 }
+
 }  // namespace policy

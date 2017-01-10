@@ -47,7 +47,6 @@
 #include "components/prefs/pref_store.h"
 #include "components/prefs/pref_value_store.h"
 #include "components/search_engines/default_search_manager.h"
-#include "components/search_engines/default_search_pref_migration.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "components/sync/base/model_type.h"
@@ -143,24 +142,6 @@ const PrefHashFilter::TrackedPreferenceMetadata kTrackedPrefs[] = {
   },
   {
     7, prefs::kSearchProviderOverrides,
-    PrefHashFilter::ENFORCE_ON_LOAD,
-    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
-    PrefHashFilter::VALUE_IMPERSONAL
-  },
-  {
-    8, prefs::kDefaultSearchProviderSearchURL,
-    PrefHashFilter::ENFORCE_ON_LOAD,
-    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
-    PrefHashFilter::VALUE_IMPERSONAL
-  },
-  {
-    9, prefs::kDefaultSearchProviderKeyword,
-    PrefHashFilter::ENFORCE_ON_LOAD,
-    PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
-    PrefHashFilter::VALUE_IMPERSONAL
-  },
-  {
-    10, prefs::kDefaultSearchProviderName,
     PrefHashFilter::ENFORCE_ON_LOAD,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
     PrefHashFilter::VALUE_IMPERSONAL
@@ -517,8 +498,6 @@ std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateProfilePrefs(
                  async);
   std::unique_ptr<sync_preferences::PrefServiceSyncable> pref_service =
       factory.CreateSyncable(pref_registry.get());
-
-  ConfigureDefaultSearchPrefMigrationToDictionaryValue(pref_service.get());
 
   return pref_service;
 }

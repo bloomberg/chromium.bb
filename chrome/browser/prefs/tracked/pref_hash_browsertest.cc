@@ -1232,30 +1232,18 @@ class PrefHashBrowserTestDefaultSearch : public PrefHashBrowserTestBase {
         }
       ]
     })";
-    static constexpr char default_search_provider[] = R"(
-    {
-      "default_search_provider" : {
-        "keyword" : "badkeyword",
-        "name" : "badname",
-        "search_url" : "http://bad_default_engine/search?q=dirty_user_query"
-      }
-    })";
 
     // Try to override default search in all three of available preferences.
     auto attack1 = base::DictionaryValue::From(
         base::JSONReader::Read(default_search_provider_data));
     auto attack2 = base::DictionaryValue::From(
         base::JSONReader::Read(search_provider_overrides));
-    auto attack3 = base::DictionaryValue::From(
-        base::JSONReader::Read(default_search_provider));
     unprotected_preferences->MergeDictionary(attack1.get());
     unprotected_preferences->MergeDictionary(attack2.get());
-    unprotected_preferences->MergeDictionary(attack3.get());
     if (protected_preferences) {
       // Override here, too.
       protected_preferences->MergeDictionary(attack1.get());
       protected_preferences->MergeDictionary(attack2.get());
-      protected_preferences->MergeDictionary(attack3.get());
     }
   }
 

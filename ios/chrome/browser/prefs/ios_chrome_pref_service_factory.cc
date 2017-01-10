@@ -14,7 +14,6 @@
 #include "components/prefs/pref_filter.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
-#include "components/search_engines/default_search_pref_migration.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_preferences/pref_service_syncable_factory.h"
 #include "ios/chrome/browser/application_context.h"
@@ -68,7 +67,6 @@ std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateBrowserStatePrefs(
                  pref_io_task_runner);
   std::unique_ptr<sync_preferences::PrefServiceSyncable> pref_service =
       factory.CreateSyncable(pref_registry.get());
-  ConfigureDefaultSearchPrefMigrationToDictionaryValue(pref_service.get());
   return pref_service;
 }
 

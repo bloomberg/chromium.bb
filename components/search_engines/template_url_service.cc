@@ -300,38 +300,6 @@ void TemplateURLService::RegisterProfilePrefs(
                                std::string(),
                                flags);
   registry->RegisterBooleanPref(prefs::kDefaultSearchProviderEnabled, true);
-  registry->RegisterStringPref(prefs::kDefaultSearchProviderName,
-                               std::string());
-  registry->RegisterStringPref(prefs::kDefaultSearchProviderID, std::string());
-  registry->RegisterStringPref(prefs::kDefaultSearchProviderPrepopulateID,
-                               std::string());
-  registry->RegisterStringPref(prefs::kDefaultSearchProviderSuggestURL,
-                               std::string());
-  registry->RegisterStringPref(prefs::kDefaultSearchProviderSearchURL,
-                               std::string());
-  registry->RegisterStringPref(prefs::kDefaultSearchProviderInstantURL,
-                               std::string());
-  registry->RegisterStringPref(prefs::kDefaultSearchProviderImageURL,
-                               std::string());
-  registry->RegisterStringPref(prefs::kDefaultSearchProviderNewTabURL,
-                               std::string());
-  registry->RegisterStringPref(prefs::kDefaultSearchProviderSearchURLPostParams,
-                               std::string());
-  registry->RegisterStringPref(
-      prefs::kDefaultSearchProviderSuggestURLPostParams, std::string());
-  registry->RegisterStringPref(
-      prefs::kDefaultSearchProviderInstantURLPostParams, std::string());
-  registry->RegisterStringPref(prefs::kDefaultSearchProviderImageURLPostParams,
-                               std::string());
-  registry->RegisterStringPref(prefs::kDefaultSearchProviderKeyword,
-                               std::string());
-  registry->RegisterStringPref(prefs::kDefaultSearchProviderIconURL,
-                               std::string());
-  registry->RegisterStringPref(prefs::kDefaultSearchProviderEncodings,
-                               std::string());
-  registry->RegisterListPref(prefs::kDefaultSearchProviderAlternateURLs);
-  registry->RegisterStringPref(
-      prefs::kDefaultSearchProviderSearchTermsReplacementKey, std::string());
 }
 
 // static
