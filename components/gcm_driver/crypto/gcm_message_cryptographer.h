@@ -37,15 +37,9 @@ class GCMMessageCryptographer {
   // unique content encryption key for a given message.
   static const size_t kSaltSize;
 
-  // Label of the encryption group used to calculate the shared secret.
-  enum class Label {
-    P256
-  };
-
-  // Creates a new cryptographer with |label|, identifying the group used for
-  // the key agreement, and the public keys of both the recipient and sender.
-  GCMMessageCryptographer(Label label,
-                          const base::StringPiece& recipient_public_key,
+  // Creates a new cryptographer, identifying the group used for the key
+  // agreement, and the public keys of both the recipient and sender.
+  GCMMessageCryptographer(const base::StringPiece& recipient_public_key,
                           const base::StringPiece& sender_public_key,
                           const std::string& auth_secret);
 

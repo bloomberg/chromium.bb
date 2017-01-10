@@ -44,8 +44,7 @@ bool CreateEncryptedPayloadForTesting(const base::StringPiece& payload,
   const size_t salt_size = GCMMessageCryptographer::kSaltSize;
   crypto::RandBytes(base::WriteInto(&salt, salt_size + 1), salt_size);
 
-  GCMMessageCryptographer cryptographer(GCMMessageCryptographer::Label::P256,
-                                        peer_public_key, public_key,
+  GCMMessageCryptographer cryptographer(peer_public_key, public_key,
                                         auth_secret.as_string());
 
   size_t record_size;

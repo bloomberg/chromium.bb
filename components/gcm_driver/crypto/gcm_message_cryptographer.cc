@@ -24,7 +24,7 @@ namespace {
 // of a uint64_t, which is used to indicate the record sequence number.
 const uint64_t kNonceSize = 12;
 
-// The default record size as defined by draft-thomson-http-encryption.
+// The default record size as defined by httpbis-encryption-encoding-06.
 const size_t kDefaultRecordSize = 4096;
 
 // Key size, in bytes, of a valid AEAD_AES_128_GCM key.
@@ -43,7 +43,7 @@ using EVP_AEAD_CTX_TransformFunction =
 // cek_info = "Content-Encoding: aesgcm" || 0x00 || context
 // nonce_info = "Content-Encoding: nonce" || 0x00 || context
 //
-// context = label || 0x00 ||
+// context = "P-256" || 0x00 ||
 //           length(recipient_public) || recipient_public ||
 //           length(sender_public) || sender_public
 //
@@ -51,21 +51,14 @@ using EVP_AEAD_CTX_TransformFunction =
 // in network byte order (big endian).
 std::string InfoForContentEncoding(
     const char* content_encoding,
-    GCMMessageCryptographer::Label label,
     const base::StringPiece& recipient_public_key,
     const base::StringPiece& sender_public_key) {
-  DCHECK(GCMMessageCryptographer::Label::P256 == label);
   DCHECK_EQ(recipient_public_key.size(), 65u);
   DCHECK_EQ(sender_public_key.size(), 65u);
 
   std::stringstream info_stream;
   info_stream << "Content-Encoding: " << content_encoding << '\x00';
-
-  switch (label) {
-    case GCMMessageCryptographer::Label::P256:
-      info_stream << "P-256" << '\x00';
-      break;
-  }
+  info_stream << "P-256" << '\x00';
 
   uint16_t local_len =
       base::HostToNet16(static_cast<uint16_t>(recipient_public_key.size()));
@@ -86,15 +79,14 @@ const size_t GCMMessageCryptographer::kAuthenticationTagBytes = 16;
 const size_t GCMMessageCryptographer::kSaltSize = 16;
 
 GCMMessageCryptographer::GCMMessageCryptographer(
-    Label label,
     const base::StringPiece& recipient_public_key,
     const base::StringPiece& sender_public_key,
     const std::string& auth_secret)
     : content_encryption_key_info_(
-          InfoForContentEncoding("aesgcm", label, recipient_public_key,
+          InfoForContentEncoding("aesgcm", recipient_public_key,
                                  sender_public_key)),
       nonce_info_(
-          InfoForContentEncoding("nonce", label, recipient_public_key,
+          InfoForContentEncoding("nonce", recipient_public_key,
                                  sender_public_key)),
       auth_secret_(auth_secret) {
 }

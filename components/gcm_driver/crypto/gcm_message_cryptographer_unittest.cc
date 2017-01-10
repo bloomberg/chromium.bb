@@ -138,8 +138,7 @@ class GCMMessageCryptographerTest : public ::testing::Test {
         &peer_public_key));
 
     cryptographer_.reset(
-        new GCMMessageCryptographer(GCMMessageCryptographer::Label::P256,
-                                    local_public_key, peer_public_key,
+        new GCMMessageCryptographer(local_public_key, peer_public_key,
                                     kAuthSecretCommon));
   }
 
@@ -353,11 +352,9 @@ TEST_F(GCMMessageCryptographerTest, AuthSecretAffectsIKM) {
   // Fake IKM to use in the DerivePseudoRandomKey calls.
   const char kFakeIKM[] = "HelloWorld";
 
-  GCMMessageCryptographer hello_cryptographer(
-      GCMMessageCryptographer::Label::P256, public_key, public_key, "Hello");
+  GCMMessageCryptographer hello_cryptographer(public_key, public_key, "Hello");
 
-  GCMMessageCryptographer world_cryptographer(
-      GCMMessageCryptographer::Label::P256, public_key, public_key, "World");
+  GCMMessageCryptographer world_cryptographer(public_key, public_key, "World");
 
   ASSERT_NE(hello_cryptographer.DerivePseudoRandomKey(kFakeIKM), kFakeIKM);
   ASSERT_NE(world_cryptographer.DerivePseudoRandomKey(kFakeIKM), kFakeIKM);
@@ -446,8 +443,7 @@ class GCMMessageCryptographerReferenceTest
     }
 
     std::unique_ptr<GCMMessageCryptographer> instance(
-        new GCMMessageCryptographer(GCMMessageCryptographer::Label::P256,
-                                    receiver_public_key, sender_public_key,
+        new GCMMessageCryptographer(receiver_public_key, sender_public_key,
                                     auth_secret));
 
     if (auth_secret.empty())
