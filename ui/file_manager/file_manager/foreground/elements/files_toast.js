@@ -42,12 +42,12 @@ var FilesToast = Polymer({
     this.generationId_ = 0;
 
     /**
-     * @private {AnimationPlayer}
+     * @private {Animation}
      */
     this.enterAnimationPlayer_ = null;
 
     /**
-     * @private {AnimationPlayer}
+     * @private {Animation}
      */
     this.hideAnimationPlayer_ = null;
   },

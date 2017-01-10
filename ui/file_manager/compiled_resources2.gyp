@@ -7,9 +7,11 @@
       'target_name': 'file_manager_resources',
       'type': 'none',
       'dependencies': [
+        'audio_player/elements/compiled_resources2.gyp:*',
         'audio_player/js/compiled_resources2.gyp:*',
         'file_manager/background/js/compiled_resources2.gyp:*',
         'file_manager/common/js/compiled_resources2.gyp:*',
+        'file_manager/foreground/elements/compiled_resources2.gyp:*',
         'file_manager/foreground/js/compiled_resources2.gyp:*',
         'gallery/js/compiled_resources2.gyp:*',
         'video_player/js/compiled_resources2.gyp:*',

@@ -52,7 +52,8 @@ var FilesSafeMedia = Polymer({
       this.webview_ = null;
     } else if (this.src && !this.webview_) {
       // Create webview node only if src exists to save resouces.
-      var webview = document.createElement('webview');
+      var webview =
+          /** @type {!HTMLElement} */ (document.createElement('webview'));
       this.webview_ = webview;
       webview.partition = 'trusted';
       webview.allowtransparency = 'true';

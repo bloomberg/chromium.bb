@@ -2,6 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @typedef {?{
+ *   mute: string,
+ *   next: string,
+ *   pause: string,
+ *   play: string,
+ *   playList: string,
+ *   previous: string,
+ *   repeat: string,
+ *   seekSlider: string,
+ *   shuffle: string,
+ *   unmute: string,
+ *   volume: string,
+ *   volumeSlider: string,
+ * }}
+ */
+var AriaLabels;
+
 (function() {
   'use strict';
 
@@ -117,6 +135,7 @@
 
       /**
        * Dictionary which contains aria-labels for each controls.
+       * @type {AriaLabels}
        */
       ariaLabels: {
         type: Object,
