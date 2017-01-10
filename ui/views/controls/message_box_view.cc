@@ -148,11 +148,16 @@ void MessageBoxView::ViewHierarchyChanged(
 }
 
 bool MessageBoxView::AcceleratorPressed(const ui::Accelerator& accelerator) {
-  // We only accepts Ctrl-C.
+  // We only accept Ctrl-C.
   DCHECK(accelerator.key_code() == 'C' && accelerator.IsCtrlDown());
 
   // We must not intercept Ctrl-C when we have a text box and it's focused.
   if (prompt_field_ && prompt_field_->HasFocus())
+    return false;
+
+  // Don't intercept Ctrl-C if we only use a single message label supporting
+  // text selection.
+  if (message_labels_.size() == 1u && message_labels_[0]->selectable())
     return false;
 
   ui::ScopedClipboardWriter scw(ui::CLIPBOARD_TYPE_COPY_PASTE);
@@ -189,6 +194,10 @@ void MessageBoxView::Init(const InitParams& params) {
     message_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     message_labels_.push_back(message_label);
   }
+  // Don't enable text selection if multiple labels are used, since text
+  // selection can't span multiple labels.
+  if (message_labels_.size() == 1u)
+    message_labels_[0]->SetSelectable(true);
 
   if (params.options & HAS_PROMPT_FIELD) {
     prompt_field_ = new Textfield;
