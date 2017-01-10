@@ -1202,9 +1202,10 @@ FileTransferController.prototype.canPasteOrDrop_ =
     return false;
   var destinationLocationInfo =
       this.volumeManager_.getLocationInfo(destinationEntry);
-  if (destinationLocationInfo.volumeInfo.error)
-    return false;
   if (!destinationLocationInfo || destinationLocationInfo.isReadOnly)
+    return false;
+  if (destinationLocationInfo.volumeInfo &&
+      destinationLocationInfo.volumeInfo.error)
     return false;
   if (!clipboardData.types || clipboardData.types.indexOf('fs/tag') === -1)
     return false;  // Unsupported type of content.
@@ -1330,7 +1331,8 @@ FileTransferController.prototype.selectDropEffect_ =
       this.volumeManager_.getLocationInfo(destinationEntry);
   if (!destinationLocationInfo)
     return new DropEffectAndLabel(DropEffectType.NONE, null);
-  if (destinationLocationInfo.volumeInfo.error)
+  if (destinationLocationInfo.volumeInfo &&
+      destinationLocationInfo.volumeInfo.error)
     return new DropEffectAndLabel(DropEffectType.NONE, null);
   if (destinationLocationInfo.isReadOnly) {
     if (destinationLocationInfo.isSpecialSearchRoot) {
