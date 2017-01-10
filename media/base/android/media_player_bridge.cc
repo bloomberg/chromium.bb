@@ -468,6 +468,8 @@ void MediaPlayerBridge::OnMediaPrepared() {
   prepared_ = true;
   duration_ = GetDuration();
 
+  UpdateAllowedOperations();
+
   // If media player was recovered from a saved state, consume all the pending
   // events.
   if (should_seek_on_prepare_) {
@@ -484,7 +486,6 @@ void MediaPlayerBridge::OnMediaPrepared() {
     pending_play_ = false;
   }
 
-  UpdateAllowedOperations();
   manager()->OnMediaMetadataChanged(
       player_id(), duration_, width_, height_, true);
 }

@@ -109,12 +109,8 @@ void MediaPlayerRenderer::StartPlayingFrom(base::TimeDelta time) {
   if (has_error_)
     return;
 
+  media_player_->SeekTo(time);
   media_player_->Start();
-
-  // Drop the seek if we are live streaming or if we don't have any duration
-  // information yet.
-  if (duration_ != media::kInfiniteDuration)
-    media_player_->SeekTo(time);
 
   // WMPI needs to receive a BUFFERING_HAVE_ENOUGH data before sending a
   // playback_rate > 0. The MediaPlayer manages its own buffering and will pause
