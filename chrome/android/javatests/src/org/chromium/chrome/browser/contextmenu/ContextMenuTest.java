@@ -251,10 +251,22 @@ public class ContextMenuTest extends DownloadTestBase {
     public void testCopyEmailAddress() throws InterruptedException, TimeoutException {
         Tab tab = getActivity().getActivityTab();
         ContextMenuUtils.selectContextMenuItem(this, tab, "testEmail",
-                R.id.contextmenu_copy_email_address);
+                R.id.contextmenu_copy);
 
         assertEquals("Copied email address is not correct",
                 "someone1@example.com,someone2@example.com", getClipboardText());
+    }
+
+    @MediumTest
+    @Feature({"Browser"})
+    @RetryOnFailure
+    public void testCopyTelNumber() throws InterruptedException, TimeoutException {
+        Tab tab = getActivity().getActivityTab();
+        ContextMenuUtils.selectContextMenuItem(this, tab, "testTel",
+                R.id.contextmenu_copy);
+
+        assertEquals("Copied tel number is not correct",
+                "10000000000", getClipboardText());
     }
 
     @LargeTest

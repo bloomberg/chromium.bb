@@ -35,13 +35,15 @@
         <item android:id="@+id/contextmenu_share_image"
             android:title="@string/contextmenu_share_image"/>
     </group>
-    <group android:id="@+id/contextmenu_group_email">
+    <group android:id="@+id/contextmenu_group_message">
+        <item android:id="@+id/contextmenu_call"
+            android:title="@string/contextmenu_call"/>
         <item android:id="@+id/contextmenu_send_message"
             android:title="@string/contextmenu_send_message"/>
         <item android:id="@+id/contextmenu_add_to_contacts"
             android:title="@string/contextmenu_add_to_contacts"/>
-        <item android:id="@+id/contextmenu_copy_email_address"
-            android:title="@string/contextmenu_copy_email_address"/>
+        <item android:id="@+id/contextmenu_copy"
+            android:title="@string/contextmenu_copy"/>
     </group>
     <group android:id="@+id/contextmenu_group_video">
         <item android:id="@+id/contextmenu_save_video"

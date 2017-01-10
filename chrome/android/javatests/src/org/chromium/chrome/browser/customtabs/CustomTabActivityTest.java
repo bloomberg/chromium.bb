@@ -295,14 +295,15 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     public void testContextMenuEntriesForImage() throws InterruptedException, TimeoutException {
         startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
 
-        final int expectedMenuSize = 11;
+        final int expectedMenuSize = 12;
         Menu menu = ContextMenuUtils.openContextMenu(this, getActivity().getActivityTab(), "logo");
         assertEquals(expectedMenuSize, menu.size());
 
         assertNotNull(menu.findItem(R.id.contextmenu_copy_link_address));
+        assertNotNull(menu.findItem(R.id.contextmenu_call));
         assertNotNull(menu.findItem(R.id.contextmenu_send_message));
         assertNotNull(menu.findItem(R.id.contextmenu_add_to_contacts));
-        assertNotNull(menu.findItem(R.id.contextmenu_copy_email_address));
+        assertNotNull(menu.findItem(R.id.contextmenu_copy));
         assertNotNull(menu.findItem(R.id.contextmenu_copy_link_text));
         assertNotNull(menu.findItem(R.id.contextmenu_save_link_as));
         assertNotNull(menu.findItem(R.id.contextmenu_save_image));
@@ -316,9 +317,10 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         assertTrue(menu.findItem(R.id.contextmenu_search_by_image).isVisible());
 
         assertFalse(menu.findItem(R.id.contextmenu_copy_link_address).isVisible());
+        assertFalse(menu.findItem(R.id.contextmenu_call).isVisible());
         assertFalse(menu.findItem(R.id.contextmenu_send_message).isVisible());
         assertFalse(menu.findItem(R.id.contextmenu_add_to_contacts).isVisible());
-        assertFalse(menu.findItem(R.id.contextmenu_copy_email_address).isVisible());
+        assertFalse(menu.findItem(R.id.contextmenu_copy).isVisible());
         assertFalse(menu.findItem(R.id.contextmenu_copy_link_text).isVisible());
         assertFalse(menu.findItem(R.id.contextmenu_save_link_as).isVisible());
         assertFalse(menu.findItem(R.id.contextmenu_save_video).isVisible());
@@ -334,15 +336,16 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     public void testContextMenuEntriesForLink() throws InterruptedException, TimeoutException {
         startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
 
-        final int expectedMenuSize = 11;
+        final int expectedMenuSize = 12;
         Menu menu = ContextMenuUtils.openContextMenu(this, getActivity().getActivityTab(),
                 "aboutLink");
         assertEquals(expectedMenuSize, menu.size());
 
         assertNotNull(menu.findItem(R.id.contextmenu_copy_link_address));
+        assertNotNull(menu.findItem(R.id.contextmenu_call));
         assertNotNull(menu.findItem(R.id.contextmenu_send_message));
         assertNotNull(menu.findItem(R.id.contextmenu_add_to_contacts));
-        assertNotNull(menu.findItem(R.id.contextmenu_copy_email_address));
+        assertNotNull(menu.findItem(R.id.contextmenu_copy));
         assertNotNull(menu.findItem(R.id.contextmenu_copy_link_text));
         assertNotNull(menu.findItem(R.id.contextmenu_save_link_as));
         assertNotNull(menu.findItem(R.id.contextmenu_save_image));
@@ -355,9 +358,10 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         assertTrue(menu.findItem(R.id.contextmenu_save_link_as).isVisible());
 
         assertFalse(menu.findItem(R.id.contextmenu_share_image).isVisible());
+        assertFalse(menu.findItem(R.id.contextmenu_call).isVisible());
         assertFalse(menu.findItem(R.id.contextmenu_send_message).isVisible());
         assertFalse(menu.findItem(R.id.contextmenu_add_to_contacts).isVisible());
-        assertFalse(menu.findItem(R.id.contextmenu_copy_email_address).isVisible());
+        assertFalse(menu.findItem(R.id.contextmenu_copy).isVisible());
         assertFalse(menu.findItem(R.id.contextmenu_save_image).isVisible());
         assertFalse(menu.findItem(R.id.contextmenu_open_image).isVisible());
         assertFalse(menu.findItem(R.id.contextmenu_search_by_image).isVisible());
@@ -373,14 +377,15 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     public void testContextMenuEntriesForMailto() throws InterruptedException, TimeoutException {
         startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
 
-        final int expectedMenuSize = 11;
+        final int expectedMenuSize = 12;
         Menu menu = ContextMenuUtils.openContextMenu(this, getActivity().getActivityTab(), "email");
         assertEquals(expectedMenuSize, menu.size());
 
         assertNotNull(menu.findItem(R.id.contextmenu_copy_link_address));
+        assertNotNull(menu.findItem(R.id.contextmenu_call));
         assertNotNull(menu.findItem(R.id.contextmenu_send_message));
         assertNotNull(menu.findItem(R.id.contextmenu_add_to_contacts));
-        assertNotNull(menu.findItem(R.id.contextmenu_copy_email_address));
+        assertNotNull(menu.findItem(R.id.contextmenu_copy));
         assertNotNull(menu.findItem(R.id.contextmenu_copy_link_text));
         assertNotNull(menu.findItem(R.id.contextmenu_save_link_as));
         assertNotNull(menu.findItem(R.id.contextmenu_save_image));
@@ -390,7 +395,48 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
 
         assertTrue(menu.findItem(R.id.contextmenu_send_message).isVisible());
         assertTrue(menu.findItem(R.id.contextmenu_add_to_contacts).isVisible());
-        assertTrue(menu.findItem(R.id.contextmenu_copy_email_address).isVisible());
+        assertTrue(menu.findItem(R.id.contextmenu_copy).isVisible());
+
+        assertFalse(menu.findItem(R.id.contextmenu_copy_link_address).isVisible());
+        assertFalse(menu.findItem(R.id.contextmenu_call).isVisible());
+        assertFalse(menu.findItem(R.id.contextmenu_save_image).isVisible());
+        assertFalse(menu.findItem(R.id.contextmenu_share_image).isVisible());
+        assertFalse(menu.findItem(R.id.contextmenu_open_image).isVisible());
+        assertFalse(menu.findItem(R.id.contextmenu_search_by_image).isVisible());
+        assertFalse(menu.findItem(R.id.contextmenu_copy_link_text).isVisible());
+        assertFalse(menu.findItem(R.id.contextmenu_save_link_as).isVisible());
+        assertFalse(menu.findItem(R.id.contextmenu_save_video).isVisible());
+    }
+
+    /**
+     * Test the entries in the context menu shown when long clicking an tel url.
+     * @SmallTest
+     * @RetryOnFailure
+     */
+    @DisabledTest
+    public void testContextMenuEntriesForTel() throws InterruptedException, TimeoutException {
+        startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
+
+        final int expectedMenuSize = 12;
+        Menu menu = ContextMenuUtils.openContextMenu(this, getActivity().getActivityTab(), "tel");
+        assertEquals(expectedMenuSize, menu.size());
+
+        assertNotNull(menu.findItem(R.id.contextmenu_copy_link_address));
+        assertNotNull(menu.findItem(R.id.contextmenu_call));
+        assertNotNull(menu.findItem(R.id.contextmenu_send_message));
+        assertNotNull(menu.findItem(R.id.contextmenu_add_to_contacts));
+        assertNotNull(menu.findItem(R.id.contextmenu_copy));
+        assertNotNull(menu.findItem(R.id.contextmenu_copy_link_text));
+        assertNotNull(menu.findItem(R.id.contextmenu_save_link_as));
+        assertNotNull(menu.findItem(R.id.contextmenu_save_image));
+        assertNotNull(menu.findItem(R.id.contextmenu_share_image));
+        assertNotNull(menu.findItem(R.id.contextmenu_open_image));
+        assertNotNull(menu.findItem(R.id.contextmenu_save_video));
+
+        assertTrue(menu.findItem(R.id.contextmenu_call).isVisible());
+        assertTrue(menu.findItem(R.id.contextmenu_send_message).isVisible());
+        assertTrue(menu.findItem(R.id.contextmenu_add_to_contacts).isVisible());
+        assertTrue(menu.findItem(R.id.contextmenu_copy).isVisible());
 
         assertFalse(menu.findItem(R.id.contextmenu_copy_link_address).isVisible());
         assertFalse(menu.findItem(R.id.contextmenu_save_image).isVisible());

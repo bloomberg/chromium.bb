@@ -1442,7 +1442,10 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_CONTEXTMENU_OPEN_IN_INCOGNITO_TAB" desc="Context sensitive menu item to open the selected link in a new incognito tab. [CHAR-LIMIT=30]">
         Open in incognito tab
       </message>
-      <message name="IDS_CONTEXTMENU_COPY_EMAIL_ADDRESS" desc="Context sensitive menu item for copying email address. [CHAR-LIMIT=30]">
+      <message name="IDS_CONTEXTMENU_CALL" desc="Context sensitive menu for calling phone number. [CHAR-LIMIT=30]">
+        Call
+      </message>
+      <message name="IDS_CONTEXTMENU_COPY" desc="Context sensitive menu item for copying email address/phone number. [CHAR-LIMIT=30]">
         Copy
       </message>
       <message name="IDS_CONTEXTMENU_SEND_MESSAGE" desc="Context sensitive menu item for sending an email message. [CHAR-LIMIT=30]">

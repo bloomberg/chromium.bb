@@ -42,6 +42,27 @@ public class UrlUtilities {
     private static final Pattern URL_SCHEME_PATTERN =
             Pattern.compile("^[a-zA-Z]+$");
 
+    private static final String TEL_SCHEME = "tel:";
+
+    /**
+     * @param uri A URI.
+     *
+     * @return True if the URI's scheme is phone number scheme.
+     */
+    public static boolean isTelScheme(String uri) {
+        return uri != null && uri.startsWith(TEL_SCHEME);
+    }
+
+    /**
+     * @param uri A URI.
+     *
+     * @return The string after tel: scheme. Normally, it should be a phone number, but isn't
+     *         guaranteed.
+     */
+    public static String getTelNumber(String uri) {
+        return uri.split(":")[1];
+    }
+
     /**
      * @param uri A URI.
      *

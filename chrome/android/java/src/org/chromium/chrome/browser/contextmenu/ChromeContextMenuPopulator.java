@@ -50,9 +50,10 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
     // Items that are included in all context menus.
     private static final int[] BASE_WHITELIST = {
             R.id.contextmenu_copy_link_address,
+            R.id.contextmenu_call,
             R.id.contextmenu_send_message,
             R.id.contextmenu_add_to_contacts,
-            R.id.contextmenu_copy_email_address,
+            R.id.contextmenu_copy,
             R.id.contextmenu_copy_link_text,
             R.id.contextmenu_save_link_as,
             R.id.contextmenu_save_image,
@@ -107,7 +108,10 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         static final int ACTION_OPEN_IN_OTHER_WINDOW = 20;
         static final int ACTION_SEND_EMAIL = 23;
         static final int ACTION_ADD_TO_CONTACTS = 24;
-        static final int NUM_ACTIONS = 25;
+        static final int ACTION_CALL = 30;
+        static final int ACTION_SEND_TEXT_MESSAGE = 31;
+        static final int ACTION_COPY_PHONE_NUMBER = 32;
+        static final int NUM_ACTIONS = 33;
 
         // Note: these values must match the ContextMenuSaveLinkType enum in histograms.xml.
         // Only add new values at the end, right before NUM_TYPES. We depend on these specific
@@ -218,7 +222,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         if (MailTo.isMailTo(params.getLinkUrl())) {
             menu.findItem(R.id.contextmenu_copy_link_text).setVisible(false);
             menu.findItem(R.id.contextmenu_copy_link_address).setVisible(false);
-            menu.setGroupVisible(R.id.contextmenu_group_email, true);
+            menu.setGroupVisible(R.id.contextmenu_group_message, true);
             if (!mDelegate.supportsSendEmailMessage()) {
                 menu.findItem(R.id.contextmenu_send_message).setVisible(false);
             }
@@ -226,8 +230,22 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                     || !mDelegate.supportsAddToContacts()) {
                 menu.findItem(R.id.contextmenu_add_to_contacts).setVisible(false);
             }
+            menu.findItem(R.id.contextmenu_call).setVisible(false);
+        } else if (UrlUtilities.isTelScheme(params.getLinkUrl())) {
+            menu.findItem(R.id.contextmenu_copy_link_text).setVisible(false);
+            menu.findItem(R.id.contextmenu_copy_link_address).setVisible(false);
+            menu.setGroupVisible(R.id.contextmenu_group_message, true);
+            if (!mDelegate.supportsCall()) {
+                menu.findItem(R.id.contextmenu_call).setVisible(false);
+            }
+            if (!mDelegate.supportsSendTextMessage()) {
+                menu.findItem(R.id.contextmenu_send_message).setVisible(false);
+            }
+            if (!mDelegate.supportsAddToContacts()) {
+                menu.findItem(R.id.contextmenu_add_to_contacts).setVisible(false);
+            }
         } else {
-            menu.setGroupVisible(R.id.contextmenu_group_email, false);
+            menu.setGroupVisible(R.id.contextmenu_group_message, false);
         }
 
         menu.findItem(R.id.contextmenu_save_link_as).setVisible(
@@ -354,16 +372,30 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_COPY_LINK_ADDRESS);
             mDelegate.onSaveToClipboard(params.getUnfilteredLinkUrl(),
                     ContextMenuItemDelegate.CLIPBOARD_TYPE_LINK_URL);
+        } else if (itemId == R.id.contextmenu_call) {
+            ContextMenuUma.record(params, ContextMenuUma.ACTION_CALL);
+            mDelegate.onCall(params.getLinkUrl());
         } else if (itemId == R.id.contextmenu_send_message) {
-            ContextMenuUma.record(params, ContextMenuUma.ACTION_SEND_EMAIL);
-            mDelegate.onSendEmailMessage(params.getLinkUrl());
+            if (MailTo.isMailTo(params.getLinkUrl())) {
+                ContextMenuUma.record(params, ContextMenuUma.ACTION_SEND_EMAIL);
+                mDelegate.onSendEmailMessage(params.getLinkUrl());
+            } else if (UrlUtilities.isTelScheme(params.getLinkUrl())) {
+                ContextMenuUma.record(params, ContextMenuUma.ACTION_SEND_TEXT_MESSAGE);
+                mDelegate.onSendTextMessage(params.getLinkUrl());
+            }
         } else if (itemId == R.id.contextmenu_add_to_contacts) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_ADD_TO_CONTACTS);
             mDelegate.onAddToContacts(params.getLinkUrl());
-        } else if (itemId == R.id.contextmenu_copy_email_address) {
-            ContextMenuUma.record(params, ContextMenuUma.ACTION_COPY_EMAIL_ADDRESS);
-            mDelegate.onSaveToClipboard(MailTo.parse(params.getLinkUrl()).getTo(),
-                    ContextMenuItemDelegate.CLIPBOARD_TYPE_LINK_URL);
+        } else if (itemId == R.id.contextmenu_copy) {
+            if (MailTo.isMailTo(params.getLinkUrl())) {
+                ContextMenuUma.record(params, ContextMenuUma.ACTION_COPY_EMAIL_ADDRESS);
+                mDelegate.onSaveToClipboard(MailTo.parse(params.getLinkUrl()).getTo(),
+                        ContextMenuItemDelegate.CLIPBOARD_TYPE_LINK_URL);
+            } else if (UrlUtilities.isTelScheme(params.getLinkUrl())) {
+                ContextMenuUma.record(params, ContextMenuUma.ACTION_COPY_PHONE_NUMBER);
+                mDelegate.onSaveToClipboard(UrlUtilities.getTelNumber(params.getLinkUrl()),
+                        ContextMenuItemDelegate.CLIPBOARD_TYPE_LINK_URL);
+            }
         } else if (itemId == R.id.contextmenu_copy_link_text) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_COPY_LINK_TEXT);
             mDelegate.onSaveToClipboard(

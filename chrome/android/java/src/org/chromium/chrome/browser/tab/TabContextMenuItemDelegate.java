@@ -78,6 +78,21 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     }
 
     @Override
+    public boolean supportsCall() {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse("tel:"));
+        return mTab.getWindowAndroid().canResolveActivity(intent);
+    }
+
+    @Override
+    public void onCall(String uri) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setData(Uri.parse(uri));
+        IntentUtils.safeStartActivity(mTab.getActivity(), intent);
+    }
+
+    @Override
     public boolean supportsSendEmailMessage() {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse("mailto:test@example.com"));
@@ -93,6 +108,20 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     }
 
     @Override
+    public boolean supportsSendTextMessage() {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse("sms:"));
+        return mTab.getWindowAndroid().canResolveActivity(intent);
+    }
+
+    @Override
+    public void onSendTextMessage(String url) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse("sms:" + UrlUtilities.getTelNumber(url)));
+        IntentUtils.safeStartActivity(mTab.getActivity(), intent);
+    }
+
+    @Override
     public boolean supportsAddToContacts() {
         Intent intent = new Intent(Intent.ACTION_INSERT);
         intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
@@ -104,8 +133,12 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
         Intent intent = new Intent(Intent.ACTION_INSERT);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
-        intent.putExtra(
-                ContactsContract.Intents.Insert.EMAIL, MailTo.parse(url).getTo().split(",")[0]);
+        if (MailTo.isMailTo(url)) {
+            intent.putExtra(
+                    ContactsContract.Intents.Insert.EMAIL, MailTo.parse(url).getTo().split(",")[0]);
+        } else if (UrlUtilities.isTelScheme(url)) {
+            intent.putExtra(ContactsContract.Intents.Insert.PHONE, UrlUtilities.getTelNumber(url));
+        }
         IntentUtils.safeStartActivity(mTab.getActivity(), intent);
     }
 
