@@ -68,6 +68,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/test/test_content_browser_client.h"
+#include "net/cert/cert_status_flags.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_info.h"
 #include "net/log/net_log_with_source.h"
@@ -2287,7 +2288,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerBrowserTest,
                   SSLStatus::DISPLAYED_INSECURE_CONTENT));
   EXPECT_TRUE(
       https_server.GetCertificate()->Equals(entry->GetSSL().certificate.get()));
-  EXPECT_EQ(0u, entry->GetSSL().cert_status);
+  EXPECT_FALSE(net::IsCertStatusError(entry->GetSSL().cert_status));
 
   shell()->Close();
 
