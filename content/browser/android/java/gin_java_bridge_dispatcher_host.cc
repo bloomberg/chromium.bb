@@ -110,9 +110,10 @@ GinJavaBoundObject::ObjectID GinJavaBridgeDispatcherHost::AddObject(
       is_named ? GinJavaBoundObject::CreateNamed(ref, safe_annotation_clazz)
                : GinJavaBoundObject::CreateTransient(ref, safe_annotation_clazz,
                                                      holder);
-  GinJavaBoundObject::ObjectID object_id = next_object_id_++;
+  GinJavaBoundObject::ObjectID object_id;
   {
     base::AutoLock locker(objects_lock_);
+    object_id = next_object_id_++;
     objects_[object_id] = new_object;
   }
 #if DCHECK_IS_ON()
