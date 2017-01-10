@@ -85,8 +85,7 @@ class CertVerifyProcChromeOSTest : public testing::Test {
     int error =
         verify_proc->Verify(cert, "127.0.0.1", std::string(), flags, NULL,
                             additional_trust_anchors, &verify_result);
-    if (verify_result.verified_cert.get() &&
-        !verify_result.verified_cert->GetIntermediateCertificates().empty()) {
+    if (!verify_result.verified_cert->GetIntermediateCertificates().empty()) {
       net::X509Certificate::OSCertHandle root =
           verify_result.verified_cert->GetIntermediateCertificates().back();
       root_subject_name->assign(root->subjectName);

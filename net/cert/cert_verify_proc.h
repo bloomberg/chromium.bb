@@ -89,9 +89,17 @@ class NET_EXPORT CertVerifyProc
                            VerifyRejectsSHA1AfterDeprecationLegacyMode);
 
   // Performs the actual verification using the desired underlying
-  // cryptographic library. On entry, |verify_result->verified_cert|
-  // is set to |cert|, the unverified chain. If no chain is built, the
-  // value must be left untouched.
+  //
+  // On entry, |verify_result| will be default-initialized as a successful
+  // validation, with |verify_result->verified_cert| set to |cert|.
+  //
+  // Implementations are expected to fill in all applicable fields, excluding
+  // |ocsp_result|, which will be filled in by |Verify()|. If an error code is
+  // returned, |verify_result->cert_status| should be non-zero, indicating an
+  // error occurred.
+  //
+  // On success, net::OK should be returned, with |verify_result| updated to
+  // reflect the successfully verified chain.
   virtual int VerifyInternal(X509Certificate* cert,
                              const std::string& hostname,
                              const std::string& ocsp_response,

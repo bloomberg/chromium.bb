@@ -26,14 +26,25 @@ class NET_EXPORT CertVerifyResult {
 
   void Reset();
 
+  // Comparing CertVerifyResult with a nullptr |verified_cert| is invalid.
   bool operator==(const CertVerifyResult& other) const;
 
-  // The certificate and chain that was constructed during verification.
-  // Note that the though the verified certificate will match the originally
-  // supplied certificate, the intermediate certificates stored within may
-  // be substantially different. In the event of a verification failure, this
-  // will contain the chain as supplied by the server. This may be NULL if
-  // running within the sandbox.
+  // The certificate chain that was constructed during verification.
+  //
+  // Note: Although |verified_cert| will match the originally supplied
+  // certificate to be validated, the results of GetIntermediateCertificates()
+  // may be substantially different, both in order and in content, then the
+  // originally supplied intermediates.
+  //
+  // In the event of validation failures, this may contain the originally
+  // supplied certificate chain or a partially constructed path, depending on
+  // the implementation.
+  //
+  // In the event of validation success, the trust anchor will be
+  // |verified_cert->GetIntermediateCertificates().back()| if
+  // there was a certificate chain to the trust anchor, and will
+  // be |verified_cert->os_cert_handle()| if the certificate was
+  // the trust anchor.
   scoped_refptr<X509Certificate> verified_cert;
 
   // Bitmask of CERT_STATUS_* from net/cert/cert_status_flags.h. Note that
