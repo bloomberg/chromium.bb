@@ -94,6 +94,7 @@ class TestExporter(object):
 
         patch = outbound_commit.format_patch()
         message = outbound_commit.message()
+        author = outbound_commit.author()
 
         if self.dry_run:
             _log.info('[dry_run] Stopping before creating PR')
@@ -103,7 +104,7 @@ class TestExporter(object):
             _log.info(patch)
             return
 
-        remote_branch_name = self.local_wpt.create_branch_with_patch(message, patch)
+        remote_branch_name = self.local_wpt.create_branch_with_patch(message, patch, author)
 
         response_data = self.wpt_github.create_pr(
             remote_branch_name=remote_branch_name,

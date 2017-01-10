@@ -58,6 +58,11 @@ class ChromiumCommit(object):
             'git', 'show', '--format=%b', '--no-patch', self.sha
         ])
 
+    def author(self):
+        return self.host.executive.run_command([
+            'git', 'show', '--format="%aN <%aE>"', '--no-patch', self.sha
+        ])
+
     def message(self):
         """Returns a string with a commit's subject and body."""
         return self.host.executive.run_command([
