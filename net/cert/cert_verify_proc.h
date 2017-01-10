@@ -14,7 +14,6 @@
 #include "base/memory/ref_counted.h"
 #include "net/base/net_export.h"
 #include "net/cert/x509_cert_types.h"
-#include "net/cert/x509_certificate.h"
 
 namespace net {
 
@@ -93,9 +92,17 @@ class NET_EXPORT CertVerifyProc
   // On entry, |verify_result| will be default-initialized as a successful
   // validation, with |verify_result->verified_cert| set to |cert|.
   //
-  // Implementations are expected to fill in all applicable fields, excluding
-  // |ocsp_result|, which will be filled in by |Verify()|. If an error code is
-  // returned, |verify_result->cert_status| should be non-zero, indicating an
+  // Implementations are expected to fill in all applicable fields, excluding:
+  //
+  // * ocsp_result
+  // * has_md2
+  // * has_md4
+  // * has_md5
+  // * has_sha1
+  // * has_sha1_leaf
+  //
+  // which will be filled in by |Verify()|. If an error code is returned,
+  // |verify_result->cert_status| should be non-zero, indicating an
   // error occurred.
   //
   // On success, net::OK should be returned, with |verify_result| updated to
@@ -142,21 +149,6 @@ class NET_EXPORT CertVerifyProc
 
   DISALLOW_COPY_AND_ASSIGN(CertVerifyProc);
 };
-
-// Sets the weak signature hash fields of |verify_result| to true if
-// applicable for |cert|, otherwise does not modify them.
-//
-// The fields in question are: |has_md2|, |has_md4|, |has_md5|,|has_sha1| and
-// |has_sha1_leaf|.
-//
-// Returns the hash algorithm that was determined for |cert|.
-//
-// This function is intended to be used as a helper by platform-specific
-// CertVerifyProc implementations.
-X509Certificate::SignatureHashAlgorithm FillCertVerifyResultWeakSignature(
-    X509Certificate::OSCertHandle cert,
-    bool is_leaf,
-    CertVerifyResult* verify_result);
 
 }  // namespace net
 
