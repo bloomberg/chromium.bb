@@ -36,7 +36,7 @@
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_test_util.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_mock.h"
-#include "ios/chrome/test/testing_application_context.h"
+#include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
@@ -84,14 +84,12 @@ class AuthenticationServiceTest : public PlatformTest,
                                   public OAuth2TokenService::Observer {
  protected:
   AuthenticationServiceTest()
-      : browser_state_manager_(base::FilePath()),
+      : scoped_browser_state_manager_(
+            base::MakeUnique<TestChromeBrowserStateManager>(base::FilePath())),
         refresh_token_available_count_(0) {}
 
   void SetUp() override {
     PlatformTest::SetUp();
-
-    TestingApplicationContext::GetGlobal()->SetChromeBrowserStateManager(
-        &browser_state_manager_);
 
     identity_service_ =
         ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
@@ -144,8 +142,6 @@ class AuthenticationServiceTest : public PlatformTest,
     authentication_service_->Shutdown();
     authentication_service_.reset();
     browser_state_.reset();
-    TestingApplicationContext::GetGlobal()->SetChromeBrowserStateManager(
-        nullptr);
     PlatformTest::TearDown();
   }
 
@@ -158,10 +154,10 @@ class AuthenticationServiceTest : public PlatformTest,
     if (authentication_service_.get()) {
       authentication_service_->Shutdown();
     }
-    authentication_service_.reset(new AuthenticationService(
+    authentication_service_ = base::MakeUnique<AuthenticationService>(
         browser_state_.get(),
         OAuth2TokenServiceFactory::GetForBrowserState(browser_state_.get()),
-        SyncSetupServiceFactory::GetForBrowserState(browser_state_.get())));
+        SyncSetupServiceFactory::GetForBrowserState(browser_state_.get()));
     authentication_service_->Initialize();
   }
 
@@ -214,8 +210,7 @@ class AuthenticationServiceTest : public PlatformTest,
   }
 
   web::TestWebThreadBundle thread_bundle_;
-  TestChromeBrowserStateManager browser_state_manager_;
-
+  IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   ios::FakeChromeIdentityService* identity_service_;
   browser_sync::ProfileSyncServiceMock* profile_sync_service_mock_;

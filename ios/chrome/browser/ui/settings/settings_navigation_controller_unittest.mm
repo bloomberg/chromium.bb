@@ -20,7 +20,7 @@
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
-#include "ios/chrome/test/testing_application_context.h"
+#include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,13 +38,8 @@ using testing::ReturnRef;
 class SettingsNavigationControllerTest : public PlatformTest {
  protected:
   SettingsNavigationControllerTest()
-      : browser_state_manager_(base::FilePath()) {}
-
-  void SetUp() override {
-    PlatformTest::SetUp();
-    TestingApplicationContext::GetGlobal()->SetChromeBrowserStateManager(
-        &browser_state_manager_);
-
+      : scoped_browser_state_manager_(
+            base::MakeUnique<TestChromeBrowserStateManager>(base::FilePath())) {
     TestChromeBrowserState::Builder test_cbs_builder;
     test_cbs_builder.AddTestingFactory(
         AuthenticationServiceFactory::GetInstance(),
@@ -69,7 +64,7 @@ class SettingsNavigationControllerTest : public PlatformTest {
     [defaults setObject:@"Disabled" forKey:kSpdyProxyEnabled];
   };
 
-  void TearDown() override {
+  ~SettingsNavigationControllerTest() override {
     if (initialValueForSpdyProxyEnabled_) {
       [[NSUserDefaults standardUserDefaults]
           setObject:initialValueForSpdyProxyEnabled_.get()
@@ -78,15 +73,12 @@ class SettingsNavigationControllerTest : public PlatformTest {
       [[NSUserDefaults standardUserDefaults]
           removeObjectForKey:kSpdyProxyEnabled];
     }
-    TestingApplicationContext::GetGlobal()->SetChromeBrowserStateManager(
-        nullptr);
-    PlatformTest::TearDown();
   }
 
-  web::TestWebThreadBundle threadBundle_;
-  TestChromeBrowserStateManager browser_state_manager_;
+  web::TestWebThreadBundle thread_bundle_;
+  IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  base::mac::ScopedNSAutoreleasePool pool;
+  base::mac::ScopedNSAutoreleasePool pool_;
   base::scoped_nsprotocol<id> mockDelegate_;
   base::scoped_nsobject<NSString> initialValueForSpdyProxyEnabled_;
 };

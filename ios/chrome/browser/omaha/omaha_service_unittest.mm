@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -19,10 +18,11 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #include "ios/chrome/browser/install_time_util.h"
 #include "ios/chrome/common/channel_info.h"
-#include "ios/chrome/test/testing_application_context.h"
+#include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/omaha/omaha_service_provider.h"
-#include "ios/web/public/test/test_web_thread.h"
+#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/web_thread.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -30,7 +30,7 @@
 
 namespace {
 
-const char kUserDataDir[] = ".";
+const char kUserDataDir[] = FILE_PATH_LITERAL(".");
 
 }  // namespace
 
@@ -38,19 +38,13 @@ class OmahaServiceTest : public PlatformTest {
  public:
   OmahaServiceTest()
       : need_update_(false),
-        loop_(base::MessageLoop::TYPE_IO),
-        browser_state_manager_(base::FilePath(kUserDataDir)),
-        ui_thread_(web::WebThread::UI, &loop_),
-        io_thread_(web::WebThread::IO, &loop_) {
+        scoped_browser_state_manager_(
+            base::MakeUnique<TestChromeBrowserStateManager>(
+                base::FilePath(kUserDataDir))) {
     GetApplicationContext()->GetLocalState()->SetInt64(
         metrics::prefs::kInstallDate, install_time_util::kUnknownInstallDate);
     OmahaService::ClearPersistentStateForTests();
-    test_application_id_ = ios::GetChromeBrowserProvider()
-                               ->GetOmahaServiceProvider()
-                               ->GetApplicationID();
   }
-
-  ~OmahaServiceTest() override {}
 
   void OnNeedUpdate(const UpgradeRecommendedDetails& details) {
     need_update_ = true;
@@ -77,15 +71,18 @@ class OmahaServiceTest : public PlatformTest {
     service->locale_lang_ = std::string();
   }
 
- protected:
-  std::string test_application_id_;
-  bool need_update_;
-  base::MessageLoop loop_;
-  TestChromeBrowserStateManager browser_state_manager_;
+  std::string test_application_id() const {
+    return ios::GetChromeBrowserProvider()
+        ->GetOmahaServiceProvider()
+        ->GetApplicationID();
+  }
 
  private:
-  web::TestWebThread ui_thread_;
-  web::TestWebThread io_thread_;
+  bool need_update_;
+  IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
+  web::TestWebThreadBundle thread_bundle_;
+
+  DISALLOW_COPY_AND_ASSIGN(OmahaServiceTest);
 };
 
 TEST_F(OmahaServiceTest, PingMessageTest) {
@@ -213,7 +210,7 @@ TEST_F(OmahaServiceTest, SendPingSuccess) {
       std::string(
           "<?xml version=\"1.0\"?><response protocol=\"3.0\" server=\"prod\">"
           "<daystart elapsed_seconds=\"56754\"/><app appid=\"") +
-      test_application_id_ +
+      test_application_id() +
       "\" status=\"ok\">"
       "<updatecheck status=\"noupdate\"/><ping status=\"ok\"/>"
       "</app></response>";
@@ -250,7 +247,7 @@ TEST_F(OmahaServiceTest, SendInstallEventSuccess) {
       std::string(
           "<?xml version=\"1.0\"?><response protocol=\"3.0\" server=\"prod\">"
           "<daystart elapsed_seconds=\"56754\"/><app appid=\"") +
-      test_application_id_ +
+      test_application_id() +
       "\" status=\"ok\">"
       "<event status=\"ok\"/>"
       "</app></response>";
@@ -285,7 +282,7 @@ TEST_F(OmahaServiceTest, SendPingReceiveUpdate) {
       std::string(
           "<?xml version=\"1.0\"?><response protocol=\"3.0\" server=\"prod\">"
           "<daystart elapsed_seconds=\"56754\"/><app appid=\"") +
-      test_application_id_ +
+      test_application_id() +
       "\" status=\"ok\">"
       "<updatecheck status=\"ok\"><urls>"
       "<url codebase=\"http://www.goo.fr/foo/\"/></urls>"
@@ -420,7 +417,7 @@ TEST_F(OmahaServiceTest, ActivePingAfterInstallEventTest) {
       std::string(
           "<?xml version=\"1.0\"?><response protocol=\"3.0\" server=\"prod\">"
           "<daystart elapsed_seconds=\"0\"/><app appid=\"") +
-      test_application_id_ +
+      test_application_id() +
       "\" status=\"ok\">"
       "<event status=\"ok\"/>"
       "</app></response>";
@@ -457,7 +454,7 @@ TEST_F(OmahaServiceTest, NonSpammingTest) {
       std::string(
           "<?xml version=\"1.0\"?><response protocol=\"3.0\" server=\"prod\">"
           "<daystart elapsed_seconds=\"0\"/><app appid=\"") +
-      test_application_id_ +
+      test_application_id() +
       "\" status=\"ok\">"
       "<updatecheck status=\"noupdate\"/><ping status=\"ok\"/>"
       "</app></response>";
@@ -493,7 +490,7 @@ TEST_F(OmahaServiceTest, InstallRetryTest) {
       std::string(
           "<?xml version=\"1.0\"?><response protocol=\"3.0\" server=\"prod\">"
           "<daystart elapsed_seconds=\"56754\"/><app appid=\"") +
-      test_application_id_ +
+      test_application_id() +
       "\" status=\"ok\">"
       "<updatecheck status=\"noupdate\"/><ping status=\"ok\"/>"
       "</app></response>";
