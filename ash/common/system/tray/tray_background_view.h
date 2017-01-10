@@ -128,6 +128,9 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // ShelfBackgroundAnimatorObserver:
   void UpdateShelfItemBackground(int alpha) override;
 
+  // Updates the visibility of this tray's separator.
+  void set_separator_visibility(bool visible) { separator_visible_ = visible; }
+
   // Gets the anchor for bubbles, which is tray_container().
   views::View* GetBubbleAnchor() const;
 
@@ -178,6 +181,10 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Determines if the view is active. This changes how the background is drawn
   // in non-MD version and how the ink drop ripples behave in MD version.
   bool is_active_;
+
+  // Visibility of this tray's separator which is a line of 1x32px and 4px to
+  // right of tray.
+  bool separator_visible_;
 
   std::unique_ptr<TrayWidgetObserver> widget_observer_;
   std::unique_ptr<TrayEventFilter> tray_event_filter_;

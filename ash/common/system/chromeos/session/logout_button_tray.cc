@@ -116,6 +116,10 @@ LogoutButtonTray::LogoutButtonTray(WmShelf* wm_shelf)
     // crbug.com/623987
     button->AdjustFontSize(2);
     button_ = button;
+
+    // Since |logout_button_tray| has a red background and it is distinguished
+    // by itself, no separator is needed on its right side.
+    set_separator_visibility(false);
   } else {
     button_ = new LogoutButton(this);
   }

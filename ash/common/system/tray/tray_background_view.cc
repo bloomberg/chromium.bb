@@ -291,6 +291,7 @@ TrayBackgroundView::TrayBackgroundView(WmShelf* wm_shelf)
       shelf_alignment_(SHELF_ALIGNMENT_BOTTOM),
       background_(NULL),
       is_active_(false),
+      separator_visible_(true),
       widget_observer_(new TrayWidgetObserver(this)) {
   DCHECK(wm_shelf_);
   set_notify_enter_exit_on_child(true);
@@ -581,7 +582,8 @@ void TrayBackgroundView::OnPaint(gfx::Canvas* canvas) {
   ActionableView::OnPaint(canvas);
   if (!MaterialDesignController::IsShelfMaterial() ||
       shelf()->GetBackgroundType() ==
-          ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT) {
+          ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT ||
+      !separator_visible_) {
     return;
   }
   //  In the given |canvas|, for a horizontal shelf draw a separator line to the

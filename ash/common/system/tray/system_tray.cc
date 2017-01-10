@@ -221,6 +221,10 @@ SystemTray::SystemTray(WmShelf* wm_shelf)
   if (MaterialDesignController::IsShelfMaterial()) {
     SetInkDropMode(InkDropMode::ON);
     SetContentsBackground(false);
+
+    // Since |system_tray| locates on the right most position, no separator is
+    // required on its right side.
+    set_separator_visibility(false);
   } else {
     SetContentsBackground(true);
   }
