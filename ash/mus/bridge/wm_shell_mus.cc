@@ -57,10 +57,7 @@ class SessionStateDelegateStub : public SessionStateDelegate {
 
   // SessionStateDelegate:
   int GetMaximumNumberOfLoggedInUsers() const override { return 3; }
-  int NumberOfLoggedInUsers() const override {
-    // ash_shell has 2 users.
-    return 2;
-  }
+  int NumberOfLoggedInUsers() const override { return 1; }
   bool IsActiveUserSessionStarted() const override { return true; }
   bool CanLockScreen() const override { return true; }
   bool IsScreenLocked() const override { return screen_locked_; }

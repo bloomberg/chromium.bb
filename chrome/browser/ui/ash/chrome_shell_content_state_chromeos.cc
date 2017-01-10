@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/ash/chrome_shell_content_state.h"
 
-#include "ash/common/session/session_state_delegate.h"
-#include "ash/common/wm_shell.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
@@ -15,9 +13,8 @@
 
 content::BrowserContext* ChromeShellContentState::GetBrowserContextByIndex(
     ash::UserIndex index) {
-  ash::SessionStateDelegate* session_state_delegate =
-      ash::WmShell::Get()->GetSessionStateDelegate();
-  DCHECK_LT(index, session_state_delegate->NumberOfLoggedInUsers());
+  DCHECK_LT(static_cast<size_t>(index),
+            user_manager::UserManager::Get()->GetLoggedInUsers().size());
   user_manager::User* user =
       user_manager::UserManager::Get()->GetLRULoggedInUsers()[index];
   CHECK(user);

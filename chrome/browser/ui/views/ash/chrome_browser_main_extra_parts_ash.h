@@ -14,6 +14,7 @@ class CastConfigClientMediaRouter;
 class ChromeBrowserMainExtraPartsViews;
 class ChromeLauncherControllerMus;
 class ChromeNewWindowClient;
+class ChromeShellContentState;
 class ImmersiveContextMus;
 class ImmersiveHandlerFactoryMus;
 class MediaClient;
@@ -37,6 +38,7 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   ChromeBrowserMainExtraPartsViews* extra_parts_views_;
 
   std::unique_ptr<ChromeLauncherControllerMus> chrome_launcher_controller_mus_;
+  std::unique_ptr<ChromeShellContentState> chrome_shell_content_state_;
   std::unique_ptr<CastConfigClientMediaRouter> cast_config_client_media_router_;
   std::unique_ptr<MediaClient> media_client_;
   std::unique_ptr<ImmersiveHandlerFactoryMus> immersive_handler_factory_;

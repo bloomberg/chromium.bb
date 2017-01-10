@@ -4,9 +4,6 @@
 
 #include "chrome/browser/ui/ash/media_client.h"
 
-#include "ash/common/session/session_state_delegate.h"
-#include "ash/common/wm_shell.h"
-#include "ash/content/shell_content_state.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -17,10 +14,12 @@
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/browser/ui/ash/chrome_shell_content_state.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
@@ -170,12 +169,11 @@ void MediaClient::RequestCaptureState() {
   // thinks [user2, user1]. However, since parts of this system are already
   // asynchronous (see OnRequestUpdate's PostTask()), we're not worrying about
   // this right now.
-  ash::SessionStateDelegate* session_state_delegate =
-      ash::WmShell::Get()->GetSessionStateDelegate();
   std::vector<MediaCaptureState> state;
-  for (ash::UserIndex i = 0;
-       i < session_state_delegate->NumberOfLoggedInUsers(); ++i) {
-    state.push_back(GetMediaCaptureStateByIndex(i));
+  for (uint32_t i = 0;
+       i < user_manager::UserManager::Get()->GetLoggedInUsers().size(); ++i) {
+    state.push_back(
+        GetMediaCaptureStateByIndex(static_cast<ash::UserIndex>(i)));
   }
 
   media_controller_->NotifyCaptureState(std::move(state));
@@ -195,7 +193,7 @@ void MediaClient::OnRequestUpdate(int render_process_id,
 
 MediaCaptureState MediaClient::GetMediaCaptureStateByIndex(int user_index) {
   content::BrowserContext* context =
-      ash::ShellContentState::GetInstance()->GetBrowserContextByIndex(
+      ChromeShellContentState::GetInstance()->GetBrowserContextByIndex(
           user_index);
   return GetMediaCaptureStateOfAllWebContents(context);
 }

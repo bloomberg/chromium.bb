@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/cast_config_client_media_router.h"
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
+#include "chrome/browser/ui/ash/chrome_shell_content_state.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_mus.h"
 #include "chrome/browser/ui/ash/media_client.h"
 #include "chrome/browser/ui/views/ash/tab_scrubber.h"
@@ -81,6 +82,7 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
     chrome_launcher_controller_mus_ =
         base::MakeUnique<ChromeLauncherControllerMus>();
     chrome_launcher_controller_mus_->Init();
+    chrome_shell_content_state_ = base::MakeUnique<ChromeShellContentState>();
   }
 
   cast_config_client_media_router_ =
