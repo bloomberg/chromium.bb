@@ -23,7 +23,7 @@ var test = function()
     {
         setColor(inputColor, format)
         spectrum._hsv[3] = 0;
-        spectrum._innerSetColor(spectrum._hsv, undefined, undefined, Components.Spectrum._ChangeSource.Other);
+        spectrum._innerSetColor(spectrum._hsv, undefined, undefined, ColorPicker.Spectrum._ChangeSource.Other);
         InspectorTest.addResult(spectrum.colorString());
     }
 
@@ -36,7 +36,7 @@ var test = function()
         InspectorTest.addResult(spectrum._colorFormat);
     }
 
-    var spectrum = new Components.Spectrum();
+    var spectrum = new ColorPicker.Spectrum();
     var cf = Common.Color.Format;
     var inputColors = [
         { string: "red", format: cf.Nickname },
@@ -65,6 +65,6 @@ var test = function()
 </script>
 </head>
 <body onload="runTest()">
-<p>Tests Components.Spectrum</p>
+<p>Tests ColorPicker.Spectrum</p>
 </body>
 </html>

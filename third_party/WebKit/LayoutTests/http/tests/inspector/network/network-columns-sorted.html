@@ -35,9 +35,9 @@ function test()
         var columnsView = logView._columns;
         InspectorTest.addSniffer(logView, "dataGridSorted", dataGridSorted.bind(null, logView), true);
 
-        dataGrid.markColumnAsSortedBy('name', UI.DataGrid.Order.Ascending);
+        dataGrid.markColumnAsSortedBy('name', DataGrid.DataGrid.Order.Ascending);
         columnsView.sortByCurrentColumn();
-        dataGrid.markColumnAsSortedBy('name', UI.DataGrid.Order.Descending);
+        dataGrid.markColumnAsSortedBy('name', DataGrid.DataGrid.Order.Descending);
         columnsView.sortByCurrentColumn();
     }
 

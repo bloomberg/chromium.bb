@@ -1,7 +1,7 @@
 function initialize_DataGridTest()
 {
 
-InspectorTest.preloadModule("ui_lazy");
+InspectorTest.preloadModule("data_grid");
 
 InspectorTest.dumpDataGrid = function(root, descentIntoCollapsed, prefix)
 {

@@ -20,7 +20,7 @@ var test = function () {
   }
 
   function createSortAndDumpCookies(cookieData, column, isAsc) {
-    const table = new Components.CookiesTable(true);
+    const table = new CookieTable.CookiesTable(true);
     const cookies = cookieData.map(createCookie);
     table._dataGrid = {isSortOrderAscending: () => isAsc, sortColumnId: () => column};
     table._sortCookies(cookies);
@@ -46,7 +46,7 @@ var test = function () {
     InspectorTest.completeTest();
   }
 
-  self.runtime.loadModulePromise('components_lazy').then(run);
+  self.runtime.loadModulePromise('cookie_table').then(run);
 };
 
 </script>

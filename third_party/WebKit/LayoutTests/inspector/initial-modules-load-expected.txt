@@ -22,6 +22,7 @@ Loaded modules:
 Running: testCreateElementsPanel
 Loaded modules:
     bindings
+    color_picker
     common
     components
     dom_extension
@@ -29,6 +30,7 @@ Loaded modules:
     emulation
     extensions
     host
+    inline_editor
     main
     persistence
     platform
@@ -43,30 +45,29 @@ Loaded modules:
     animation
     bindings
     cm
+    color_picker
     common
     components
-    components_lazy
+    cookie_table
+    data_grid
     diff
     dom_extension
     elements
     emulation
     extensions
     host
+    inline_editor
     main
     network
     perf_ui
     persistence
     platform
     protocol
-    quick_open
     sdk
     services
-    snippets
     source_frame
-    sources
     text_editor
     ui
-    ui_lazy
     workspace
 
 Running: testShowSourcesPanel
@@ -74,15 +75,18 @@ Loaded modules:
     animation
     bindings
     cm
+    color_picker
     common
     components
-    components_lazy
+    cookie_table
+    data_grid
     diff
     dom_extension
     elements
     emulation
     extensions
     host
+    inline_editor
     main
     network
     perf_ui
@@ -97,7 +101,6 @@ Loaded modules:
     sources
     text_editor
     ui
-    ui_lazy
     workspace
 
 Running: testOpenUISourceCode
@@ -105,15 +108,18 @@ Loaded modules:
     animation
     bindings
     cm
+    color_picker
     common
     components
-    components_lazy
+    cookie_table
+    data_grid
     diff
     dom_extension
     elements
     emulation
     extensions
     host
+    inline_editor
     main
     network
     perf_ui
@@ -128,6 +134,5 @@ Loaded modules:
     sources
     text_editor
     ui
-    ui_lazy
     workspace
 

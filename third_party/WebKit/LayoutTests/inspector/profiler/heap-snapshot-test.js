@@ -498,9 +498,9 @@ InspectorTest.checkArrayIsSorted = function(contents, sortType, sortOrder)
     }
 
     var acceptableComparisonResult;
-    if (sortOrder === UI.DataGrid.Order.Ascending) {
+    if (sortOrder === DataGrid.DataGrid.Order.Ascending) {
         acceptableComparisonResult = -1;
-    } else if (sortOrder === UI.DataGrid.Order.Descending) {
+    } else if (sortOrder === DataGrid.DataGrid.Order.Descending) {
         acceptableComparisonResult = 1;
     } else {
         InspectorTest.addResult("Invalid sort order: " + sortOrder);

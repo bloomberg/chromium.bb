@@ -21,7 +21,7 @@ function test()
             {
                 var swatch = sourceFrame.textEditor._codeMirrorElement.querySelector("span[is=color-swatch]");
                 swatch.shadowRoot.querySelector(".color-swatch-inner").click();
-                sourceFrame._spectrum._innerSetColor(Common.Color.parse("#008000").hsva(), "", Common.Color.Format.HEX, Components.Spectrum._ChangeSource.Other);
+                sourceFrame._spectrum._innerSetColor(Common.Color.parse("#008000").hsva(), "", Common.Color.Format.HEX, ColorPicker.Spectrum._ChangeSource.Other);
                 sourceFrame._swatchPopoverHelper.hide(true)
                 InspectorTest.dumpSwatchPositions(sourceFrame, Sources.CSSSourceFrame.SwatchBookmark);
                 next();

@@ -52,13 +52,13 @@ function test()
     }
 
     var columns = [{id: "id", title: "ID column", width: "250px"}];
-    var dataGrid = new UI.ViewportDataGrid(columns);
-    var a = new UI.ViewportDataGridNode({id: "a"});
-    var aa = new UI.ViewportDataGridNode({id: "aa"});
-    var aaa = new UI.ViewportDataGridNode({id: "aaa"});
-    var aab = new UI.ViewportDataGridNode({id: "aab"});
-    var ab = new UI.ViewportDataGridNode({id: "ab"});
-    var b = new UI.ViewportDataGridNode({id: "b"});
+    var dataGrid = new DataGrid.ViewportDataGrid(columns);
+    var a = new DataGrid.ViewportDataGridNode({id: "a"});
+    var aa = new DataGrid.ViewportDataGridNode({id: "aa"});
+    var aaa = new DataGrid.ViewportDataGridNode({id: "aaa"});
+    var aab = new DataGrid.ViewportDataGridNode({id: "aab"});
+    var ab = new DataGrid.ViewportDataGridNode({id: "ab"});
+    var b = new DataGrid.ViewportDataGridNode({id: "b"});
 
     var root = dataGrid.rootNode();
 
@@ -107,7 +107,7 @@ function test()
     dumpNodes();
     attach(aa, aaa);
     attach(aa, aab);
-    var aac = new UI.ViewportDataGridNode({id: "aac"});
+    var aac = new DataGrid.ViewportDataGridNode({id: "aac"});
     attach(aa, aac);
     dumpNodes();
     attach(aa, aac, 0);
@@ -139,7 +139,7 @@ function test()
     // crbug.com/542553 -- the below should not produce exceptions.
     dataGrid.setStickToBottom(true);
     for (var i = 0; i < 500; ++i) {
-        var xn = new UI.ViewportDataGridNode({id: "x" + i});
+        var xn = new DataGrid.ViewportDataGridNode({id: "x" + i});
         root.appendChild(xn);
         if (i + 1 === 500) {
             dataGrid.updateInstantlyForTests();
@@ -152,7 +152,7 @@ function test()
 
     // The below should not crash either.
     for (var i = 0; i < 40; ++i) {
-        var xn = new UI.ViewportDataGridNode({id: "x" + i});
+        var xn = new DataGrid.ViewportDataGridNode({id: "x" + i});
         root.appendChild(xn);
     }
     dataGrid.updateInstantlyForTests();

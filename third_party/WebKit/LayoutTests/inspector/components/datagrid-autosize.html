@@ -4,11 +4,11 @@
 <script type="text/javascript">
 function test()
 {
-    runtime.loadModulePromise("ui_lazy").then(function()
+    runtime.loadModulePromise("data_grid").then(function()
     {
         function testAutoSize(widths, minPercent, maxPercent) {
             InspectorTest.addResult("Auto sizing " + JSON.stringify(widths) + ", minPercent=" + minPercent + ", maxPercent=" + maxPercent);
-            var result = UI.DataGrid.prototype._autoSizeWidths(widths, minPercent, maxPercent);
+            var result = DataGrid.DataGrid.prototype._autoSizeWidths(widths, minPercent, maxPercent);
             InspectorTest.addResult("    " + JSON.stringify(result));
         }
 

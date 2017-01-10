@@ -47,7 +47,7 @@ function test() {
 
     InspectorTest.recordNetwork();
     InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequestFinished);
-    InspectorTest.addSniffer(UI.SortableDataGridNode.prototype, "insertChild", onNodeInserted, true);
+    InspectorTest.addSniffer(DataGrid.SortableDataGridNode.prototype, "insertChild", onNodeInserted, true);
     InspectorTest.NetworkAgent.setCacheDisabled(true, InspectorTest.evaluateInPage.bind(null, "sendXHRRequest()"));
 }
 </script>

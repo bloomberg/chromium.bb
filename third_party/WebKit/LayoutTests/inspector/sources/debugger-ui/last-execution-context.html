@@ -8,7 +8,7 @@ function test()
     var context = new UI.Context();
     context.addFlavorChangeListener(SDK.ExecutionContext, executionContextChanged, this);
     context.addFlavorChangeListener(SDK.Target, targetChanged, this);
-    new Components.ExecutionContextSelector(SDK.targetManager, context);
+    new Main.ExecutionContextSelector(SDK.targetManager, context);
 
     function executionContextChanged(event)
     {
