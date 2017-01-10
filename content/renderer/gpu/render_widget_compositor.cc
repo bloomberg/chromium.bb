@@ -5,6 +5,8 @@
 #include "content/renderer/gpu/render_widget_compositor.h"
 
 #include <stddef.h>
+
+#include <cmath>
 #include <limits>
 #include <string>
 #include <utility>
@@ -49,6 +51,7 @@
 #include "content/common/layer_tree_settings_factory.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/screen_info.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/gpu/render_widget_compositor_delegate.h"
 #include "content/renderer/input/input_handler_manager.h"
@@ -66,11 +69,6 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/native_theme/native_theme_switches.h"
 #include "ui/native_theme/overlay_scrollbar_constants_aura.h"
-
-#if defined(OS_ANDROID)
-#include "base/android/build_info.h"
-#include "ui/gfx/android/device_display_info.h"
-#endif
 
 namespace base {
 class Value;
@@ -143,49 +141,29 @@ cc::LayerSelection ConvertWebSelection(const WebSelection& web_selection) {
   return cc_selection;
 }
 
-gfx::Size CalculateDefaultTileSize(float initial_device_scale_factor) {
+gfx::Size CalculateDefaultTileSize(float initial_device_scale_factor,
+                                   const ScreenInfo& screen_info) {
   int default_tile_size = 256;
 #if defined(OS_ANDROID)
-  // TODO(epenner): unify this for all platforms if it
-  // makes sense (http://crbug.com/159524)
+  const gfx::Size screen_size = gfx::ScaleToFlooredSize(
+      screen_info.rect.size(), screen_info.device_scale_factor);
+  int display_width = screen_size.width();
+  int display_height = screen_size.height();
+  int numTiles = (display_width * display_height) / (256 * 256);
+  if (numTiles > 16)
+    default_tile_size = 384;
+  if (numTiles >= 40)
+    default_tile_size = 512;
 
-  gfx::DeviceDisplayInfo info;
-  bool real_size_supported = true;
-  int display_width = info.GetPhysicalDisplayWidth();
-  int display_height = info.GetPhysicalDisplayHeight();
-  if (display_width == 0 || display_height == 0) {
-    real_size_supported = false;
-    display_width = info.GetDisplayWidth();
-    display_height = info.GetDisplayHeight();
-  }
-
+  // Adjust for some resolutions that barely straddle an extra
+  // tile when in portrait mode. This helps worst case scroll/raster
+  // by not needing a full extra tile for each row.
+  constexpr int tolerance = 10;  // To avoid rounding errors.
   int portrait_width = std::min(display_width, display_height);
-  int landscape_width = std::max(display_width, display_height);
-
-  if (real_size_supported) {
-    // Maximum HD dimensions should be 768x1280
-    // Maximum FHD dimensions should be 1200x1920
-    if (portrait_width > 768 || landscape_width > 1280)
-      default_tile_size = 384;
-    if (portrait_width > 1200 || landscape_width > 1920)
-      default_tile_size = 512;
-
-    // Adjust for some resolutions that barely straddle an extra
-    // tile when in portrait mode. This helps worst case scroll/raster
-    // by not needing a full extra tile for each row.
-    if (default_tile_size == 256 && portrait_width == 768)
-      default_tile_size += 32;
-    if (default_tile_size == 384 && portrait_width == 1200)
-      default_tile_size += 32;
-  } else {
-    // We don't know the exact resolution due to screen controls etc.
-    // So this just estimates the values above using tile counts.
-    int numTiles = (display_width * display_height) / (256 * 256);
-    if (numTiles > 16)
-      default_tile_size = 384;
-    if (numTiles >= 40)
-      default_tile_size = 512;
-  }
+  if (default_tile_size == 256 && std::abs(portrait_width - 768) < tolerance)
+    default_tile_size += 32;
+  if (default_tile_size == 384 && std::abs(portrait_width - 1200) < tolerance)
+    default_tile_size += 32;
 #elif defined(OS_CHROMEOS) || defined(OS_MACOSX)
   // Use 512 for high DPI (dsf=2.0f) devices.
   if (initial_device_scale_factor >= 2.0f)
@@ -215,10 +193,11 @@ static cc::BrowserControlsState ConvertBrowserControlsState(
 std::unique_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
     RenderWidgetCompositorDelegate* delegate,
     float device_scale_factor,
+    const ScreenInfo& screen_info,
     CompositorDependencies* compositor_deps) {
   std::unique_ptr<RenderWidgetCompositor> compositor(
       new RenderWidgetCompositor(delegate, compositor_deps));
-  compositor->Initialize(device_scale_factor);
+  compositor->Initialize(device_scale_factor, screen_info);
   return compositor;
 }
 
@@ -234,10 +213,11 @@ RenderWidgetCompositor::RenderWidgetCompositor(
       remote_proto_channel_receiver_(nullptr),
       weak_factory_(this) {}
 
-void RenderWidgetCompositor::Initialize(float device_scale_factor) {
+void RenderWidgetCompositor::Initialize(float device_scale_factor,
+                                        const ScreenInfo& screen_info) {
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-  cc::LayerTreeSettings settings =
-      GenerateLayerTreeSettings(*cmd, compositor_deps_, device_scale_factor);
+  cc::LayerTreeSettings settings = GenerateLayerTreeSettings(
+      *cmd, compositor_deps_, device_scale_factor, screen_info);
 
   animation_host_ = cc::AnimationHost::CreateMainInstance();
 
@@ -284,7 +264,8 @@ RenderWidgetCompositor::~RenderWidgetCompositor() = default;
 cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
     const base::CommandLine& cmd,
     CompositorDependencies* compositor_deps,
-    float device_scale_factor) {
+    float device_scale_factor,
+    const ScreenInfo& screen_info) {
   cc::LayerTreeSettings settings;
 
   // For web contents, layer transforms should scale up the contents of layers
@@ -296,7 +277,8 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
 
   // TODO(danakj): This should not be a setting O_O; it should change when the
   // device scale factor on LayerTreeHost changes.
-  settings.default_tile_size = CalculateDefaultTileSize(device_scale_factor);
+  settings.default_tile_size =
+      CalculateDefaultTileSize(device_scale_factor, screen_info);
   if (cmd.HasSwitch(switches::kDefaultTileWidth)) {
     int tile_width = 0;
     GetSwitchValueAsInt(cmd, switches::kDefaultTileWidth, 1,

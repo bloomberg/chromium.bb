@@ -1226,7 +1226,7 @@ void RenderWidget::initializeLayerTreeView() {
   DCHECK(!host_closing_);
 
   compositor_ = RenderWidgetCompositor::Create(this, device_scale_factor_,
-                                               compositor_deps_);
+                                               screen_info_, compositor_deps_);
   compositor_->setViewportSize(physical_backing_size_);
   OnDeviceScaleFactorChanged();
   compositor_->SetDeviceColorSpace(screen_info_.icc_profile.GetColorSpace());

@@ -26,6 +26,7 @@
 #include "content/common/renderer.mojom.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/public/common/page_state.h"
+#include "content/public/common/screen_info.h"
 #include "content/public/renderer/renderer_gamepad_provider.h"
 #include "content/renderer/fetchers/manifest_fetcher.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
@@ -347,9 +348,11 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
     if (!task_runner)
       task_runner = base::ThreadTaskRunnerHandle::Get().get();
 
+    ScreenInfo dummy_screen_info;
     cc::LayerTreeSettings settings =
         RenderWidgetCompositor::GenerateLayerTreeSettings(
-            *base::CommandLine::ForCurrentProcess(), deps, 1.f);
+            *base::CommandLine::ForCurrentProcess(), deps, 1.f,
+            dummy_screen_info);
 
     auto compositor_frame_sink = base::MakeUnique<cc::TestCompositorFrameSink>(
         std::move(compositor_context_provider),
