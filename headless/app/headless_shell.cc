@@ -45,7 +45,7 @@ const char kDefaultScreenshotFileName[] = "screenshot.png";
 
 bool ParseWindowSize(std::string window_size, gfx::Size* parsed_window_size) {
   int width, height = 0;
-  if (sscanf(window_size.c_str(), "%dx%d", &width, &height) >= 2 &&
+  if (sscanf(window_size.c_str(), "%d%*[x,]%d", &width, &height) >= 2 &&
       width >= 0 && height >= 0) {
     parsed_window_size->set_width(width);
     parsed_window_size->set_height(height);

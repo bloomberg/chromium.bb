@@ -54,7 +54,7 @@ const char kUserDataDir[] = "user-data-dir";
 // specified virtual time budget is exhausted.
 const char kVirtualTimeBudget[] = "virtual-time-budget";
 
-// Sets the initial window size. Provided as string in the format "800x600".
+// Sets the initial window size. Provided as string in the format "800,600".
 const char kWindowSize[] = "window-size";
 
 }  // namespace switches
