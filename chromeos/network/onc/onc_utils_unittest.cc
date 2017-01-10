@@ -167,17 +167,28 @@ TEST(ONCResolveServerCertRefs, ResolveServerCertRefs) {
 TEST(ONCUtils, ProxySettingsToProxyConfig) {
   std::unique_ptr<base::Value> test_data(ReadTestJson("proxy_config.json"));
 
-  base::ListValue* list_of_tests;
-  test_data->GetAsList(&list_of_tests);
-  ASSERT_TRUE(list_of_tests);
+  base::ListValue* tests1;
+  test_data->GetAsList(&tests1);
+  ASSERT_TRUE(tests1);
+
+  std::unique_ptr<base::ListValue> list_of_tests = tests1->CreateDeepCopy();
+
+  // Additional ONC -> ProxyConfig test cases to test fixup.
+  test_data = ReadTestJson("proxy_config_from_onc.json");
+  base::ListValue* tests2;
+  test_data->GetAsList(&tests2);
+  ASSERT_TRUE(tests2);
+  for (auto iter1 = tests2->begin(); iter1 != tests2->end(); ++iter1)
+    list_of_tests->Append((*iter1)->CreateDeepCopy());
 
   int index = 0;
-  for (base::ListValue::iterator it = list_of_tests->begin();
-       it != list_of_tests->end(); ++it, ++index) {
+  for (auto iter2 = list_of_tests->begin(); iter2 != list_of_tests->end();
+       ++iter2, ++index) {
     SCOPED_TRACE("Test case #" + base::IntToString(index));
 
-    base::DictionaryValue* test_case;
-    (*it)->GetAsDictionary(&test_case);
+    base::DictionaryValue* test_case = nullptr;
+    (*iter2)->GetAsDictionary(&test_case);
+    ASSERT_TRUE(test_case);
 
     base::DictionaryValue* onc_proxy_settings;
     test_case->GetDictionary("ONC_ProxySettings", &onc_proxy_settings);
