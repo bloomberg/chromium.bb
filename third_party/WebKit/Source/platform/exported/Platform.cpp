@@ -48,8 +48,6 @@ static Platform* s_platform = nullptr;
 
 static GCTaskRunner* s_gcTaskRunner = nullptr;
 
-Platform::Platform() : m_mainThread(0) {}
-
 static void maxObservedSizeFunction(size_t sizeInMB) {
   const size_t supportedMaxSizeInMB = 4 * 1024;
   if (sizeInMB >= supportedMaxSizeInMB)
@@ -69,13 +67,16 @@ static void callOnMainThreadFunction(WTF::MainThreadFunction function,
       crossThreadBind(function, crossThreadUnretained(context)));
 }
 
+Platform::Platform() : m_mainThread(0) {
+  WTF::Partitions::initialize(maxObservedSizeFunction);
+}
+
 void Platform::initialize(Platform* platform) {
   ASSERT(!s_platform);
   ASSERT(platform);
   s_platform = platform;
   s_platform->m_mainThread = platform->currentThread();
 
-  WTF::Partitions::initialize(maxObservedSizeFunction);
   WTF::initialize(callOnMainThreadFunction);
 
   ProcessHeap::init();
