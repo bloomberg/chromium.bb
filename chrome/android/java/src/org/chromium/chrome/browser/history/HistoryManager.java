@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.provider.Browser;
 import android.support.annotation.VisibleForTesting;
+import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.OnScrollListener;
@@ -31,8 +32,9 @@ import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -42,7 +44,7 @@ import java.util.List;
 /**
  * Displays and manages the UI for browsing history.
  */
-public class HistoryManager implements OnMenuItemClickListener {
+public class HistoryManager implements OnMenuItemClickListener, SignInStateObserver {
     private static final int FAVICON_MAX_CACHE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
     private static final int MEGABYTES_TO_BYTES =  1024 * 1024;
     private static final String METRICS_PREFIX = "Android.HistoryPage.";
@@ -79,8 +81,9 @@ public class HistoryManager implements OnMenuItemClickListener {
                 R.id.normal_menu_group, R.id.selection_mode_menu_group, this);
         mToolbar.setManager(this);
         mEmptyView = mSelectableListLayout.initializeEmptyView(
-                TintedDrawable.constructTintedDrawable(mActivity.getResources(),
-                        R.drawable.history_large),
+                VectorDrawableCompat.create(
+                        mActivity.getResources(), R.drawable.history_big,
+                        mActivity.getTheme()),
                 R.string.history_manager_empty);
 
         mHistoryAdapter.initialize();
@@ -106,6 +109,8 @@ public class HistoryManager implements OnMenuItemClickListener {
         int maxSize = Math.min((activityManager.getMemoryClass() / 4) * MEGABYTES_TO_BYTES,
                 FAVICON_MAX_CACHE_SIZE_BYTES);
         mLargeIconBridge.createCache(maxSize);
+
+        SigninManager.get(mActivity).addSignInStateObserver(this);
 
         recordUserAction("Show");
     }
@@ -158,6 +163,7 @@ public class HistoryManager implements OnMenuItemClickListener {
         mHistoryAdapter.onDestroyed();
         mLargeIconBridge.destroy();
         mLargeIconBridge = null;
+        SigninManager.get(mActivity).removeSignInStateObserver(this);
     }
 
     /**
@@ -310,5 +316,17 @@ public class HistoryManager implements OnMenuItemClickListener {
         List<HistoryItem> selectedItems = mSelectionDelegate.getSelectedItems();
         RecordHistogram.recordCount100Histogram(
                 METRICS_PREFIX + action + "Selected", selectedItems.size());
+    }
+
+    @Override
+    public void onSignedIn() {
+        mToolbar.onSignInStateChange();
+        mHistoryAdapter.onSignInStateChange();
+    }
+
+    @Override
+    public void onSignedOut() {
+        mToolbar.onSignInStateChange();
+        mHistoryAdapter.onSignInStateChange();
     }
 }

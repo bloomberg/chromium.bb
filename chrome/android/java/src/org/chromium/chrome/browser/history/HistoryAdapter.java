@@ -24,6 +24,7 @@ import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -57,6 +58,8 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
     private long mNextQueryEndTime;
     private String mQueryText = EMPTY_QUERY;
 
+    private final ArrayList<HistoryItemView> mItemViews;
+
     public HistoryAdapter(SelectionDelegate<HistoryItem> delegate, HistoryManager manager,
             HistoryProvider provider) {
         setHasStableIds(true);
@@ -64,6 +67,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         mHistoryProvider = provider;
         mHistoryProvider.setObserver(this);
         mManager = manager;
+        mItemViews = new ArrayList<>();
     }
 
     /**
@@ -150,11 +154,23 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         mHistoryProvider.removeItems();
     }
 
+    /**
+     * Should be called when the user's sign in state changes.
+     */
+    public void onSignInStateChange() {
+        for (HistoryItemView itemView : mItemViews) {
+            itemView.onSignInStateChange();
+        }
+    }
+
     @Override
     protected ViewHolder createViewHolder(ViewGroup parent) {
         View v = LayoutInflater.from(parent.getContext()).inflate(
                 R.layout.history_item_view, parent, false);
-        return new SelectableItemViewHolder<HistoryItem>(v, mSelectionDelegate);
+        SelectableItemViewHolder<HistoryItem> viewHolder =
+                new SelectableItemViewHolder<>(v, mSelectionDelegate);
+        mItemViews.add((HistoryItemView) viewHolder.itemView);
+        return viewHolder;
     }
 
     @Override

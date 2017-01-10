@@ -59,8 +59,9 @@ public class BrowsingHistoryBridge implements HistoryProvider {
 
     @CalledByNative
     public static void createHistoryItemAndAddToList(
-            List<HistoryItem> items, String url, String domain, String title, long[] timestamps) {
-        items.add(new HistoryItem(url, domain, title, timestamps));
+            List<HistoryItem> items, String url, String domain, String title, long[] timestamps,
+            boolean blockedVisit) {
+        items.add(new HistoryItem(url, domain, title, timestamps, blockedVisit));
     }
 
     @CalledByNative

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.history;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.util.AttributeSet;
@@ -17,6 +18,7 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
@@ -29,6 +31,7 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
     private TextView mDomain;
     private TintedImageButton mRemoveButton;
     private ImageView mIconImageView;
+    private VectorDrawableCompat mBlockedVisitDrawable;
 
     private HistoryManager mHistoryManager;
     private final RoundedIconGenerator mIconGenerator;
@@ -63,6 +66,8 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
                 remove();
             }
         });
+
+        updateRemoveButtonVisibility();
     }
 
     @Override
@@ -73,8 +78,23 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
 
         mTitle.setText(item.getTitle());
         mDomain.setText(item.getDomain());
-        mIconImageView.setImageResource(R.drawable.default_favicon);
-        if (mHistoryManager != null) requestIcon();
+
+        if (item.wasBlockedVisit()) {
+            if (mBlockedVisitDrawable == null) {
+                mBlockedVisitDrawable = VectorDrawableCompat.create(
+                        getContext().getResources(), R.drawable.ic_block_red,
+                        getContext().getTheme());
+            }
+            mIconImageView.setImageDrawable(mBlockedVisitDrawable);
+            mTitle.setTextColor(
+                    ApiCompatibilityUtils.getColor(getResources(), R.color.google_red_700));
+        } else {
+            mIconImageView.setImageResource(R.drawable.default_favicon);
+            if (mHistoryManager != null) requestIcon();
+
+            mTitle.setTextColor(
+                    ApiCompatibilityUtils.getColor(getResources(), R.color.default_text_color));
+        }
     }
 
     /**
@@ -85,7 +105,7 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
         if (mHistoryManager == manager) return;
 
         mHistoryManager = manager;
-        requestIcon();
+        if (!getItem().wasBlockedVisit()) requestIcon();
     }
 
     /**
@@ -93,6 +113,13 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
      */
     public void remove() {
         getItem().remove();
+    }
+
+    /**
+     * Should be called when the user's sign in state changes.
+     */
+    public void onSignInStateChange() {
+        updateRemoveButtonVisibility();
     }
 
     @Override
@@ -120,5 +147,11 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
     private void requestIcon() {
         mHistoryManager.getLargeIconBridge().getLargeIconForUrl(
                 getItem().getUrl(), mMinIconSize, this);
+    }
+
+    private void updateRemoveButtonVisibility() {
+        mRemoveButton.setVisibility(
+                PrefServiceBridge.getInstance().canDeleteBrowsingHistory() ? View.VISIBLE
+                        : View.GONE);
     }
 }

@@ -83,7 +83,8 @@ void BrowsingHistoryBridge::OnQueryComplete(
         base::android::ConvertUTF8ToJavaString(env, it->url.spec()),
         base::android::ConvertUTF16ToJavaString(env, domain),
         base::android::ConvertUTF16ToJavaString(env, it->title),
-        base::android::ToJavaLongArray(env, timestamps));
+        base::android::ToJavaLongArray(env, timestamps),
+        it->blocked_visit);
 
     timestamps.clear();
   }

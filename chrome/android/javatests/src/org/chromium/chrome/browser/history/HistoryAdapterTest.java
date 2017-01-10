@@ -11,7 +11,9 @@ import static org.chromium.chrome.browser.widget.DateDividedAdapter.TYPE_NORMAL;
 import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 
 import java.util.Date;
@@ -214,6 +216,24 @@ public class HistoryAdapterTest extends InstrumentationTestCase {
         });
 
         checkAdapterContents(false);
+    }
+
+    @SmallTest
+    public void testBlockedSite() {
+        Date today = new Date();
+        long[] timestamps = {today.getTime()};
+        HistoryItem item1 = StubbedHistoryProvider.createHistoryItem(0, timestamps);
+        mHistoryProvider.addItem(item1);
+
+        HistoryItem item2 = StubbedHistoryProvider.createHistoryItem(5, timestamps);
+        mHistoryProvider.addItem(item2);
+
+        initializeAdapter();
+
+        checkAdapterContents(true, null, null, item1, item2);
+        assertEquals(ContextUtils.getApplicationContext().getString(
+                R.string.android_history_blocked_site), item2.getTitle());
+        assertTrue(item2.wasBlockedVisit());
     }
 
     private void checkAdapterContents(boolean hasHeader, Object... expectedItems) {

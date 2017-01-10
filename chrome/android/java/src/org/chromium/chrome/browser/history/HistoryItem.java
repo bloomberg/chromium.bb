@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.history;
 
 import android.text.TextUtils;
 
+import org.chromium.base.ContextUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.DateDividedAdapter.TimedItem;
 
 import java.util.Arrays;
@@ -15,6 +17,7 @@ public class HistoryItem extends TimedItem {
     private final String mUrl;
     private final String mDomain;
     private final String mTitle;
+    private final boolean mWasBlockedVisit;
     private final long mTimestamp;
     private final long[] mTimestampList;
     private Long mStableId;
@@ -26,12 +29,17 @@ public class HistoryItem extends TimedItem {
      * @param domain The string to display for the item's domain.
      * @param title The string to display for the item's title.
      * @param timestamps The list of timestamps for this item.
+     * @param blockedVisit Whether the visit to this item was blocked when it was attempted.
      */
-    public HistoryItem(String url, String domain, String title, long[] timestamps) {
+    public HistoryItem(String url, String domain, String title, long[] timestamps,
+            boolean blockedVisit) {
         mUrl = url;
         mDomain = domain;
-        mTitle = TextUtils.isEmpty(title) ? url : title;
+        mTitle = blockedVisit ? ContextUtils.getApplicationContext().getString(
+                R.string.android_history_blocked_site)
+                : TextUtils.isEmpty(title) ? url : title;
         mTimestampList = Arrays.copyOf(timestamps, timestamps.length);
+        mWasBlockedVisit = blockedVisit;
 
         // The last timestamp in the list is the most recent visit.
         mTimestamp = mTimestampList[mTimestampList.length - 1];
@@ -50,6 +58,11 @@ public class HistoryItem extends TimedItem {
     /** @return The string to display for the item's title. */
     public String getTitle() {
         return mTitle;
+    }
+
+    /** @return Whether the visit to this item was blocked when it was attempted. */
+    public Boolean wasBlockedVisit() {
+        return mWasBlockedVisit;
     }
 
     @Override

@@ -32,7 +32,7 @@
         android:layout_height="wrap_content"
         android:drawablePadding="3dp"
         android:layout_centerInParent="true"
-        android:textColor="#5B5B5B"
+        android:textColor="@color/google_grey_700"
         android:textSize="16sp"
         android:visibility="gone" />
 

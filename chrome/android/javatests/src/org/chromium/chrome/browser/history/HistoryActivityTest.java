@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.history;
 
+import android.accounts.Account;
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.app.Instrumentation.ActivityMonitor;
@@ -24,17 +25,25 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.childaccounts.ChildAccountService;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 import org.chromium.chrome.browser.widget.selection.SelectableItemViewHolder;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
 import org.chromium.chrome.test.util.ChromeRestriction;
+import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
+import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Tests the {@link HistoryActivity}.
@@ -42,9 +51,10 @@ import java.util.List;
 @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
 public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<HistoryActivity> {
     private static class TestObserver extends RecyclerView.AdapterDataObserver
-            implements SelectionObserver<HistoryItem> {
+            implements SelectionObserver<HistoryItem>, SignInStateObserver {
         public final CallbackHelper onChangedCallback = new CallbackHelper();
         public final CallbackHelper onSelectionCallback = new CallbackHelper();
+        public final CallbackHelper onSigninStateChangedCallback = new CallbackHelper();
 
         private Handler mHandler;
 
@@ -70,6 +80,26 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
                 @Override
                 public void run() {
                     onSelectionCallback.notifyCalled();
+                }
+            });
+        }
+
+        @Override
+        public void onSignedIn() {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    onSigninStateChangedCallback.notifyCalled();
+                }
+            });
+        }
+
+        @Override
+        public void onSignedOut() {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    onSigninStateChangedCallback.notifyCalled();
                 }
             });
         }
@@ -293,6 +323,27 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
         assertEquals(3, mAdapter.getItemCount());
     }
 
+    @SmallTest
+    public void testSupervisedUser() throws Exception {
+        final HistoryManagerToolbar toolbar = mHistoryManager.getToolbarForTests();
+        SelectableItemView<HistoryItem> item = getItemView(2);
+        toggleItemSelection(2);
+
+        assertTrue(toolbar.getItemById(R.id.selection_mode_open_in_incognito).isVisible());
+        assertTrue(toolbar.getItemById(R.id.selection_mode_open_in_incognito).isEnabled());
+        assertTrue(toolbar.getItemById(R.id.selection_mode_delete_menu_id).isVisible());
+        assertTrue(toolbar.getItemById(R.id.selection_mode_delete_menu_id).isEnabled());
+        assertEquals(View.VISIBLE, item.findViewById(R.id.remove).getVisibility());
+
+        signInToSupervisedAccount();
+
+        assertNull(toolbar.getItemById(R.id.selection_mode_open_in_incognito));
+        assertNull(toolbar.getItemById(R.id.selection_mode_delete_menu_id));
+        assertEquals(View.GONE, item.findViewById(R.id.remove).getVisibility());
+
+        signOut();
+    }
+
     private void toggleItemSelection(int position) throws Exception {
         int callCount = mTestObserver.onSelectionCallback.getCallCount();
         final SelectableItemView<HistoryItem> itemView = getItemView(position);
@@ -328,6 +379,64 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
             @Override
             public void run() {
                 mAdapter.hasOtherFormsOfBrowsingData(hasOtherForms, hasSyncedResults);
+            }
+        });
+    }
+
+    private void signInToSupervisedAccount() throws Exception {
+        // Set supervised user.
+        assertTrue(ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                PrefServiceBridge.getInstance().setSupervisedUserId("ChildAccountSUID");
+                return ChildAccountService.isChildAccount()
+                        && !PrefServiceBridge.getInstance().canDeleteBrowsingHistory()
+                        && !PrefServiceBridge.getInstance().isIncognitoModeEnabled();
+            }
+        }));
+
+        // Sign in to account.
+        SigninTestUtil.setUpAuthForTest(getInstrumentation());
+        final Account account = SigninTestUtil.addTestAccount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                SigninManager.get(getActivity()).onFirstRunCheckDone();
+                SigninManager.get(getActivity()).addSignInStateObserver(mTestObserver);
+                SigninManager.get(getActivity()).signIn(account, null, null);
+            }
+        });
+        mTestObserver.onSigninStateChangedCallback.waitForCallback(0, 1,
+                SyncTestUtil.TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        assertEquals(account, SigninTestUtil.getCurrentAccount());
+    }
+
+    private void signOut() throws Exception {
+        // Clear supervised user id.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                PrefServiceBridge.getInstance().setSupervisedUserId("");
+            }
+        });
+
+        // Sign out of account.
+        int currentCallCount = mTestObserver.onSigninStateChangedCallback.getCallCount();
+        SigninTestUtil.resetSigninState();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                SigninManager.get(getActivity()).signOut(null);
+            }
+        });
+        mTestObserver.onSigninStateChangedCallback.waitForCallback(currentCallCount, 1);
+        assertNull(SigninTestUtil.getCurrentAccount());
+
+        // Remove observer
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                SigninManager.get(getActivity()).removeSignInStateObserver(mTestObserver);
             }
         });
     }

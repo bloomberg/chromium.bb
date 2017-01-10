@@ -10,6 +10,8 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
@@ -17,7 +19,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.selection.SelectionToolbar;
 import org.chromium.ui.UiUtils;
@@ -41,10 +45,7 @@ public class HistoryManagerToolbar extends SelectionToolbar<HistoryItem>
         super(context, attrs);
         inflateMenu(R.menu.history_manager_menu);
 
-        if (DeviceFormFactor.isTablet(getContext())) {
-            getMenu().removeItem(R.id.close_menu_id);
-        }
-
+        updateMenuItemVisibility();
         // TODO(twellington): Add content descriptions to the number roll view.
     }
 
@@ -155,5 +156,44 @@ public class HistoryManagerToolbar extends SelectionToolbar<HistoryItem>
 
         // Call #onSelectionStateChange() to reset toolbar buttons and title.
         super.onSelectionStateChange(mSelectionDelegate.getSelectedItems());
+    }
+
+    /**
+     * Should be called when the user's sign in state changes.
+     */
+    public void onSignInStateChange() {
+        updateMenuItemVisibility();
+    }
+
+    private void updateMenuItemVisibility() {
+        if (DeviceFormFactor.isTablet(getContext())) {
+            getMenu().removeItem(R.id.close_menu_id);
+        }
+
+        // Once the selection mode delete or incognito menu options are removed, they will not
+        // be added back until the user refreshes the history UI. This could happen if the user is
+        // signed in to an account that cannot remove browsing history or has incognito disabled and
+        // signs out.
+        if (!PrefServiceBridge.getInstance().canDeleteBrowsingHistory()) {
+            getMenu().removeItem(R.id.selection_mode_delete_menu_id);
+        }
+        if (!PrefServiceBridge.getInstance().isIncognitoModeEnabled()) {
+            getMenu().removeItem(R.id.selection_mode_open_in_incognito);
+        }
+    }
+
+    @VisibleForTesting
+    MenuItem getItemById(int menuItemId) {
+        Menu menu = getMenu();
+        for (int i = 0; i < menu.size(); i++) {
+            MenuItem item = menu.getItem(i);
+            if (item.getItemId() == menuItemId) return item;
+        }
+        return null;
+    }
+
+    @VisibleForTesting
+    Menu getMenuForTest() {
+        return getMenu();
     }
 }

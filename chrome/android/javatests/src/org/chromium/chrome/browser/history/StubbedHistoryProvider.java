@@ -101,15 +101,20 @@ public class StubbedHistoryProvider implements HistoryProvider {
 
     public static HistoryItem createHistoryItem(int which, long[] timestamps) {
         if (which == 0) {
-            return new HistoryItem("http://google.com/", "www.google.com", "Google", timestamps);
+            return new HistoryItem("http://google.com/", "www.google.com", "Google", timestamps,
+                    false);
         } else if (which == 1) {
-            return new HistoryItem("http://foo.com/", "www.foo.com", "Foo", timestamps);
+            return new HistoryItem("http://foo.com/", "www.foo.com", "Foo", timestamps, false);
         } else if (which == 2) {
-            return new HistoryItem("http://bar.com/", "www.bar.com", "Bar", timestamps);
+            return new HistoryItem("http://bar.com/", "www.bar.com", "Bar", timestamps, false);
         } else if (which == 3) {
-            return new HistoryItem("http://news.com/", "www.news.com", "News", timestamps);
+            return new HistoryItem("http://news.com/", "www.news.com", "News", timestamps, false);
         } else if (which == 4) {
-            return new HistoryItem("http://eng.com/", "www.eng.com", "Engineering", timestamps);
+            return new HistoryItem("http://eng.com/", "www.eng.com", "Engineering", timestamps,
+                    false);
+        } else if (which == 5) {
+            return new HistoryItem("http://blocked.com/", "www.blocked.com", "Cannot Visit",
+                    timestamps, true);
         } else {
             return null;
         }
