@@ -51,6 +51,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/language_preferences.h"
+#include "chrome/browser/chromeos/libc_close_tracking.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
@@ -136,6 +137,7 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
+#include "components/version_info/version_info.h"
 #include "components/wallpaper/wallpaper_manager_base.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -360,6 +362,14 @@ void ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
   // Start monitoring OOM kills.
   memory_kills_monitor_ = base::MakeUnique<memory::MemoryKillsMonitor::Handle>(
       memory::MemoryKillsMonitor::StartMonitoring());
+
+  // Enable libc close tracking in browser process on unknown/canary channel for
+  // http://crbug.com/660960.
+  // TODO(xiyuan): Remove this.
+  if (chrome::GetChannel() == version_info::Channel::CANARY ||
+      chrome::GetChannel() == version_info::Channel::UNKNOWN) {
+    chromeos::InitCloseTracking();
+  }
 
   ChromeBrowserMainPartsLinux::PreEarlyInitialization();
 }
@@ -932,6 +942,8 @@ void ChromeBrowserMainPartsChromeos::PostDestroyThreads() {
 
   // Destroy DeviceSettingsService after g_browser_process.
   DeviceSettingsService::Shutdown();
+
+  chromeos::ShutdownCloseTracking();
 }
 
 }  //  namespace chromeos
