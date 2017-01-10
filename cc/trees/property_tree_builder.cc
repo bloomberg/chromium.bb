@@ -636,6 +636,13 @@ bool AddTransformNodeIfNeeded(
   data_for_children->property_trees->transform_id_to_index_map[layer->id()] =
       node->id;
 
+  // For animation subsystem purposes, if this layer has a compositor element
+  // id, we build a map from that id to this transform node.
+  if (layer->element_id()) {
+    data_for_children->property_trees
+        ->element_id_to_transform_node_index[layer->element_id()] = node->id;
+  }
+
   node->scrolls = is_scrollable;
   node->should_be_snapped = is_snapped;
   node->flattens_inherited_transform = data_for_children->should_flatten;
@@ -1100,6 +1107,13 @@ bool AddEffectNodeIfNeeded(
   layer->SetEffectTreeIndex(node_id);
   data_for_children->property_trees->effect_id_to_index_map[layer->id()] =
       node_id;
+
+  // For animation subsystem purposes, if this layer has a compositor element
+  // id, we build a map from that id to this effect node.
+  if (layer->element_id()) {
+    data_for_children->property_trees
+        ->element_id_to_effect_node_index[layer->element_id()] = node_id;
+  }
 
   std::vector<std::unique_ptr<CopyOutputRequest>> layer_copy_requests;
   TakeCopyRequests(layer, &layer_copy_requests);

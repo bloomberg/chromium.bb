@@ -30,7 +30,6 @@
 #include "cc/output/copy_output_result.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/swap_promise.h"
-#include "cc/playback/display_item_list_settings.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
@@ -917,6 +916,93 @@ class LayerTreeHostTestPushNodeOwnerToNodeIdMap : public LayerTreeHostTest {
 // client side Layers would have the correct values for these indexes, but the
 // engine will never build PropertyTrees in LTH remote. See crbug.com/655795.
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPushNodeOwnerToNodeIdMap);
+
+class LayerTreeHostTestPushElementIdToNodeIdMap : public LayerTreeHostTest {
+ protected:
+  void SetupTree() override {
+    root_ = Layer::Create();
+    child_ = Layer::Create();
+    child_->SetElementId(kTestElementId);
+    root_->AddChild(child_);
+    layer_tree()->SetRootLayer(root_);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DidCommit() override {
+    switch (layer_tree_host()->SourceFrameNumber()) {
+      case 1:
+        child_->SetForceRenderSurfaceForTesting(true);
+        break;
+      case 2:
+        child_->SetForceRenderSurfaceForTesting(false);
+        break;
+    }
+  }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
+    PropertyTrees* property_trees = impl->sync_tree()->property_trees();
+    LayerImpl* child_impl_ = impl->sync_tree()->LayerById(child_->id());
+    switch (impl->sync_tree()->source_frame_number()) {
+      case 0:
+        EXPECT_EQ(2U, child_impl_->layer_tree_impl()
+                          ->property_trees()
+                          ->transform_tree.size());
+        EXPECT_EQ(2U, child_impl_->layer_tree_impl()
+                          ->property_trees()
+                          ->effect_tree.size());
+        EXPECT_TRUE(property_trees->element_id_to_transform_node_index.find(
+                        kTestElementId) ==
+                    property_trees->element_id_to_transform_node_index.end());
+        EXPECT_TRUE(property_trees->element_id_to_effect_node_index.find(
+                        kTestElementId) ==
+                    property_trees->element_id_to_effect_node_index.end());
+        break;
+      case 1:
+        EXPECT_EQ(3U, child_impl_->layer_tree_impl()
+                          ->property_trees()
+                          ->transform_tree.size());
+        EXPECT_EQ(3U, child_impl_->layer_tree_impl()
+                          ->property_trees()
+                          ->effect_tree.size());
+        EXPECT_EQ(
+            2,
+            property_trees->element_id_to_transform_node_index[kTestElementId]);
+        EXPECT_EQ(
+            2, property_trees->element_id_to_effect_node_index[kTestElementId]);
+        break;
+      case 2:
+        EXPECT_EQ(2U, child_impl_->layer_tree_impl()
+                          ->property_trees()
+                          ->transform_tree.size());
+        EXPECT_EQ(2U, child_impl_->layer_tree_impl()
+                          ->property_trees()
+                          ->effect_tree.size());
+        EXPECT_TRUE(property_trees->element_id_to_transform_node_index.find(
+                        kTestElementId) ==
+                    property_trees->element_id_to_transform_node_index.end());
+        EXPECT_TRUE(property_trees->element_id_to_effect_node_index.find(
+                        kTestElementId) ==
+                    property_trees->element_id_to_effect_node_index.end());
+        break;
+    }
+    EndTest();
+  }
+
+  void AfterTest() override {}
+
+ private:
+  const ElementId kTestElementId = ElementId(42, 8118);
+
+  scoped_refptr<Layer> root_;
+  scoped_refptr<Layer> child_;
+};
+
+// Validates that, for a layer with a compositor element id set on it, mappings
+// from compositor element id to transform/effect node indexes are created as
+// part of building a layer's property tree and are present on the impl thread.
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPushElementIdToNodeIdMap);
 
 class LayerTreeHostTestSurfaceDamage : public LayerTreeHostTest {
  protected:

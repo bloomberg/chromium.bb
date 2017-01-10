@@ -1536,6 +1536,10 @@ bool PropertyTrees::operator==(const PropertyTrees& other) const {
          effect_id_to_index_map == other.effect_id_to_index_map &&
          clip_id_to_index_map == other.clip_id_to_index_map &&
          scroll_id_to_index_map == other.scroll_id_to_index_map &&
+         element_id_to_effect_node_index ==
+             other.element_id_to_effect_node_index &&
+         element_id_to_transform_node_index ==
+             other.element_id_to_transform_node_index &&
          always_use_active_tree_opacity_effect_ids ==
              other.always_use_active_tree_opacity_effect_ids &&
          needs_rebuild == other.needs_rebuild && changed == other.changed &&
@@ -1557,6 +1561,8 @@ PropertyTrees& PropertyTrees::operator=(const PropertyTrees& from) {
       from.always_use_active_tree_opacity_effect_ids;
   clip_id_to_index_map = from.clip_id_to_index_map;
   scroll_id_to_index_map = from.scroll_id_to_index_map;
+  element_id_to_effect_node_index = from.element_id_to_effect_node_index;
+  element_id_to_transform_node_index = from.element_id_to_transform_node_index;
   needs_rebuild = from.needs_rebuild;
   changed = from.changed;
   full_tree_damaged = from.full_tree_damaged;
@@ -1587,6 +1593,8 @@ void PropertyTrees::clear() {
   effect_id_to_index_map.clear();
   clip_id_to_index_map.clear();
   scroll_id_to_index_map.clear();
+  element_id_to_effect_node_index.clear();
+  element_id_to_transform_node_index.clear();
   always_use_active_tree_opacity_effect_ids.clear();
 
   needs_rebuild = true;

@@ -527,11 +527,24 @@ class CC_EXPORT PropertyTrees final {
   bool operator==(const PropertyTrees& other) const;
   PropertyTrees& operator=(const PropertyTrees& from);
 
+  // These maps map from layer id to the index for each of the respective
+  // property node types.
   std::unordered_map<int, int> transform_id_to_index_map;
   std::unordered_map<int, int> effect_id_to_index_map;
   std::unordered_map<int, int> clip_id_to_index_map;
   std::unordered_map<int, int> scroll_id_to_index_map;
   enum TreeType { TRANSFORM, EFFECT, CLIP, SCROLL };
+
+  // These maps allow mapping directly from a compositor element id to the
+  // respective property node. This will eventually allow simplifying logic in
+  // various places that today has to map from element id to layer id, and then
+  // from layer id to the respective property node. Completing that work is
+  // pending the launch of Slimming Paint v2 and reworking UI compositor logic
+  // to produce cc property trees and these maps.
+  std::unordered_map<ElementId, int, ElementIdHash>
+      element_id_to_effect_node_index;
+  std::unordered_map<ElementId, int, ElementIdHash>
+      element_id_to_transform_node_index;
 
   std::vector<int> always_use_active_tree_opacity_effect_ids;
   TransformTree transform_tree;
