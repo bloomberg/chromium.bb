@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
 #import "components/handoff/handoff_manager.h"
 #include "components/handoff/pref_names_ios.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -17,6 +16,10 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @interface TestDeviceSharingManager : DeviceSharingManager
 + (HandoffManager*)createHandoffManager;
@@ -41,19 +44,19 @@ class DeviceSharingManagerTest : public PlatformTest {
     PlatformTest::SetUp();
     TestChromeBrowserState::Builder mainBrowserStateBuilder;
     chrome_browser_state_ = mainBrowserStateBuilder.Build();
-    sharing_manager_.reset([[TestDeviceSharingManager alloc] init]);
+    sharing_manager_ = [[TestDeviceSharingManager alloc] init];
   }
 
   void TearDown() override {
     [sharing_manager_ updateBrowserState:NULL];
-    sharing_manager_.reset();
+    sharing_manager_ = nil;
   }
 
   const GURL kTestURL1;
   const GURL kTestURL2;
   web::TestWebThreadBundle thread_bundle_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  base::scoped_nsobject<DeviceSharingManager> sharing_manager_;
+  DeviceSharingManager* sharing_manager_;
 };
 
 TEST_F(DeviceSharingManagerTest, NoMainBrowserState) {

@@ -20,6 +20,7 @@ source_set("device_sharing") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "device_sharing_manager_unittest.mm",
