@@ -126,13 +126,7 @@ TEST_F(PepperGamepadHostTest, ValidateGamepadMatch) {
             AddressDiff(&ppapi_gamepad.buttons, &ppapi_gamepad));
 }
 
-// crbug.com/147549
-#if defined(OS_ANDROID)
-#define MAYBE_WaitForReply DISABLED_WaitForReply
-#else
-#define MAYBE_WaitForReply WaitForReply
-#endif
-TEST_F(PepperGamepadHostTest, MAYBE_WaitForReply) {
+TEST_F(PepperGamepadHostTest, WaitForReply) {
   blink::WebGamepads default_data;
   memset(&default_data, 0, sizeof(blink::WebGamepads));
   default_data.items[0].connected = true;

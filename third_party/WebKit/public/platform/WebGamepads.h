@@ -26,7 +26,7 @@
 
 #include "WebGamepad.h"
 
-#pragma pack(push, 1)
+#pragma pack(push, 4)
 
 namespace blink {
 

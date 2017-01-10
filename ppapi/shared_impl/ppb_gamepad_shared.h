@@ -17,7 +17,7 @@ namespace ppapi {
 // TODO(brettw) when we remove the non-IPC-based gamepad implementation, this
 // code should all move into the GamepadResource.
 
-#pragma pack(push, 1)
+#pragma pack(push, 4)
 
 struct WebKitGamepadButton {
   bool pressed;

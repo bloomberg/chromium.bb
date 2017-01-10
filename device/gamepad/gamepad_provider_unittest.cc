@@ -70,14 +70,7 @@ class GamepadProviderTest : public testing::Test, public GamepadTestHelper {
   DISALLOW_COPY_AND_ASSIGN(GamepadProviderTest);
 };
 
-// Crashes. http://crbug.com/106163
-// crbug.com/147549
-#if defined(OS_ANDROID)
-#define MAYBE_PollingAccess DISABLED_PollingAccess
-#else
-#define MAYBE_PollingAccess PollingAccess
-#endif
-TEST_F(GamepadProviderTest, MAYBE_PollingAccess) {
+TEST_F(GamepadProviderTest, PollingAccess) {
   WebGamepads test_data;
   memset(&test_data, 0, sizeof(WebGamepads));
   test_data.items[0].connected = true;
@@ -117,13 +110,7 @@ TEST_F(GamepadProviderTest, MAYBE_PollingAccess) {
   EXPECT_EQ(0.5f, output.items[0].axes[1]);
 }
 
-// http://crbug.com/106163, crbug.com/147549
-#if defined(OS_ANDROID)
-#define MAYBE_ConnectDisconnectMultiple DISABLED_ConnectDisconnectMultiple
-#else
-#define MAYBE_ConnectDisconnectMultiple ConnectDisconnectMultiple
-#endif
-TEST_F(GamepadProviderTest, MAYBE_ConnectDisconnectMultiple) {
+TEST_F(GamepadProviderTest, ConnectDisconnectMultiple) {
   WebGamepads test_data;
   test_data.items[0].connected = true;
   test_data.items[0].timestamp = 0;
@@ -218,12 +205,8 @@ TEST_F(GamepadProviderTest, UserGesture) {
   EXPECT_TRUE(listener.has_user_gesture());
 }
 
-// Crashes. http://crbug.com/106163
-// crbug.com/147549
 // Flaky on MSAN: http://crbug.com/640086
-#if defined(OS_ANDROID)
-#define MAYBE_Sanitization DISABLED_Sanitization
-#elif defined(MEMORY_SANITIZER)
+#if defined(MEMORY_SANITIZER)
 #define MAYBE_Sanitization DISABLED_Sanitization
 #else
 #define MAYBE_Sanitization Sanitization
