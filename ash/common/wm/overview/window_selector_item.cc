@@ -23,7 +23,6 @@
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/auto_reset.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -38,6 +37,7 @@
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/transform_util.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -130,8 +130,9 @@ void SetupFadeInAfterLayout(views::Widget* widget) {
 WindowSelectorItem::OverviewCloseButton::OverviewCloseButton(
     views::ButtonListener* listener)
     : views::ImageButton(listener) {
-  SetImage(views::CustomButton::STATE_NORMAL,
-           gfx::CreateVectorIcon(kWindowControlCloseIcon, kCloseButtonColor));
+  icon_image_ = gfx::CreateVectorIcon(gfx::VectorIconId::WINDOW_CONTROL_CLOSE,
+                                      kCloseButtonColor);
+  SetImage(views::CustomButton::STATE_NORMAL, &icon_image_);
   SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                     views::ImageButton::ALIGN_MIDDLE);
   SetMinimumImageSize(gfx::Size(kHeaderHeight, kHeaderHeight));
