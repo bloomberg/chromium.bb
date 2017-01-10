@@ -167,10 +167,10 @@ struct FormFieldData;
 //                      with locally stored cards and generating descriptions.
 //   exp_month          Expiration month: 1-12
 //   exp_year           Four-digit year: 2017
-//   billing_address_id The guid string that identifies the local profile which
-//                      is the billing address for this card. Can be null in the
-//                      database, but always returned as an empty string in
-//                      CreditCard. Added in version 67.
+//   billing_address_id The string that identifies the local or server profile
+//                      which is the billing address for this card. Can be null
+//                      in the database, but always returned as an empty string
+//                      in CreditCard. Added in version 67.
 //
 // unmasked_credit_cards
 //                      When a masked credit credit card is unmasked and the
@@ -339,7 +339,7 @@ class AutofillTable : public WebDatabaseTable {
   virtual bool GetAutofillProfiles(
       std::vector<std::unique_ptr<AutofillProfile>>* profiles);
   virtual bool GetServerProfiles(
-      std::vector<std::unique_ptr<AutofillProfile>>* profiles);
+      std::vector<std::unique_ptr<AutofillProfile>>* profiles) const;
 
   // Sets the server profiles. All old profiles are deleted and replaced with
   // the given ones.
@@ -362,7 +362,7 @@ class AutofillTable : public WebDatabaseTable {
   virtual bool GetCreditCards(
       std::vector<std::unique_ptr<CreditCard>>* credit_cards);
   virtual bool GetServerCreditCards(
-      std::vector<std::unique_ptr<CreditCard>>* credit_cards);
+      std::vector<std::unique_ptr<CreditCard>>* credit_cards) const;
 
   // Replaces all server credit cards with the given vector. Unmasked cards
   // present in the new list will be preserved (even if the input is MASKED).

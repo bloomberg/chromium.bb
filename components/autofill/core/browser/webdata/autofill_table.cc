@@ -942,7 +942,7 @@ bool AutofillTable::GetAutofillProfiles(
 }
 
 bool AutofillTable::GetServerProfiles(
-    std::vector<std::unique_ptr<AutofillProfile>>* profiles) {
+    std::vector<std::unique_ptr<AutofillProfile>>* profiles) const {
   profiles->clear();
 
   sql::Statement s(db_->GetUniqueStatement(
@@ -1205,7 +1205,7 @@ bool AutofillTable::GetCreditCards(
 }
 
 bool AutofillTable::GetServerCreditCards(
-    std::vector<std::unique_ptr<CreditCard>>* credit_cards) {
+    std::vector<std::unique_ptr<CreditCard>>* credit_cards) const {
   credit_cards->clear();
 
   sql::Statement s(db_->GetUniqueStatement(
