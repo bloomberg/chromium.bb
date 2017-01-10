@@ -15,22 +15,10 @@ namespace ws {
 
 ServerWindowCompositorFrameSinkManager::ServerWindowCompositorFrameSinkManager(
     ServerWindow* window)
-    : window_(window),
-      waiting_for_initial_frames_(
-          window_->properties().count(ui::mojom::kWaitForUnderlay_Property) >
-          0) {}
+    : window_(window) {}
 
 ServerWindowCompositorFrameSinkManager::
     ~ServerWindowCompositorFrameSinkManager() {
-}
-
-bool ServerWindowCompositorFrameSinkManager::ShouldDraw() {
-  if (!waiting_for_initial_frames_)
-    return true;
-
-  waiting_for_initial_frames_ = !IsCompositorFrameSinkReadyAndNonEmpty(
-      mojom::CompositorFrameSinkType::DEFAULT);
-  return !waiting_for_initial_frames_;
 }
 
 void ServerWindowCompositorFrameSinkManager::CreateDisplayCompositorFrameSink(

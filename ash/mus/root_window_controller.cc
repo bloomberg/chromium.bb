@@ -135,7 +135,6 @@ aura::Window* RootWindowController::NewTopLevelWindow(
       window_type == ui::mojom::WindowType::WINDOW ||
       window_type == ui::mojom::WindowType::PANEL;
   if (provide_non_client_frame) {
-    (*properties)[ui::mojom::kWaitForUnderlay_Property].clear();
     // See NonClientFrameController for details on lifetime.
     NonClientFrameController* non_client_frame_controller =
         new NonClientFrameController(container_window, context, bounds,

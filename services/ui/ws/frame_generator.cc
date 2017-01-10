@@ -159,8 +159,7 @@ void FrameGenerator::DrawWindow(cc::RenderPass* pass, ServerWindow* window) {
   if (!window || !window->visible())
     return;
 
-  if (!window->compositor_frame_sink_manager() ||
-      !window->compositor_frame_sink_manager()->ShouldDraw())
+  if (!window->compositor_frame_sink_manager())
     return;
 
   cc::SurfaceId default_surface_id =

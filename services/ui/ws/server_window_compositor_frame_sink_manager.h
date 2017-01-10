@@ -45,9 +45,6 @@ class ServerWindowCompositorFrameSinkManager {
   explicit ServerWindowCompositorFrameSinkManager(ServerWindow* window);
   ~ServerWindowCompositorFrameSinkManager();
 
-  // Returns true if the CompositorFrameSinks from this manager should be drawn.
-  bool ShouldDraw();
-
   // Creates a new CompositorFrameSink of the specified type, replacing the
   // existing one of the specified type.
   void CreateDisplayCompositorFrameSink(
@@ -108,15 +105,6 @@ class ServerWindowCompositorFrameSinkManager {
       std::map<mojom::CompositorFrameSinkType, CompositorFrameSinkData>;
 
   TypeToCompositorFrameSinkMap type_to_compositor_frame_sink_map_;
-
-  // TODO(mfomitchev): This is currently always false. Confirm if we still need
-  // this.
-  // While true the window is not drawn. This is initially true if the window
-  // has the property |kWaitForUnderlay_Property|. This is set to false once
-  // the underlay and default surface have been set *and* their size is at
-  // least that of the window. Ideally we would wait for sizes to match, but
-  // the underlay is not necessarily as big as the window.
-  bool waiting_for_initial_frames_;
 
   DISALLOW_COPY_AND_ASSIGN(ServerWindowCompositorFrameSinkManager);
 };
