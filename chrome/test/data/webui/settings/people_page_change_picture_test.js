@@ -85,10 +85,6 @@ cr.define('settings_people_page_change_picture', function() {
       var settingsCamera = null;
       var discardControlBar = null;
 
-      function getSelectedItem() {
-        return changePicture.$$('#selector .iron-selected');
-      }
-
       suiteSetup(function() {
         loadTimeData.overrideValues({
           profilePhoto: 'Fake Profile Photo description',
@@ -139,7 +135,7 @@ cr.define('settings_people_page_change_picture', function() {
         expectFalse(cameraIcon.hidden);
         expectTrue(settingsCamera.cameraActive);
         expectEquals(ChangePictureSelectionTypes.CAMERA,
-                     getSelectedItem().dataset.type);
+                     changePicture.selectedItem_.dataset.type);
         expectTrue(discardControlBar.hidden);
 
         // Ensure that the camera is deactivated if user navigates away.
@@ -151,16 +147,23 @@ cr.define('settings_people_page_change_picture', function() {
         var profileImage = changePicture.$.profileImage;
         assertTrue(!!profileImage);
 
-        expectEquals(null, getSelectedItem());
+        expectEquals(undefined, changePicture.selectedItem_);
         MockInteractions.tap(profileImage);
 
         return browserProxy.whenCalled('selectProfileImage').then(function() {
           Polymer.dom.flush();
 
           expectEquals(ChangePictureSelectionTypes.PROFILE,
-                       getSelectedItem().dataset.type);
+                       changePicture.selectedItem_.dataset.type);
           expectFalse(settingsCamera.cameraActive);
           expectTrue(discardControlBar.hidden);
+
+          // Ensure that the selection is restored after navigating away and
+          // then back to the subpage.
+          changePicture.currentRouteChanged(settings.Route.BASIC);
+          changePicture.currentRouteChanged(settings.Route.CHANGE_PICTURE);
+          expectEquals(ChangePictureSelectionTypes.PROFILE,
+                       changePicture.selectedItem_.dataset.type);
         });
       });
 
@@ -176,7 +179,7 @@ cr.define('settings_people_page_change_picture', function() {
         // Expect the old image to be selected once an old image is sent via
         // the native interface.
         expectEquals(ChangePictureSelectionTypes.OLD,
-                     getSelectedItem().dataset.type);
+                     changePicture.selectedItem_.dataset.type);
         expectFalse(oldImage.hidden);
         expectFalse(settingsCamera.cameraActive);
         expectFalse(discardControlBar.hidden);
@@ -194,8 +197,8 @@ cr.define('settings_people_page_change_picture', function() {
 
               Polymer.dom.flush();
               expectEquals(ChangePictureSelectionTypes.DEFAULT,
-                           getSelectedItem().dataset.type);
-              expectEquals(firstDefaultImage, getSelectedItem());
+                           changePicture.selectedItem_.dataset.type);
+              expectEquals(firstDefaultImage, changePicture.selectedItem_);
               expectFalse(settingsCamera.cameraActive);
               expectTrue(discardControlBar.hidden);
             });
@@ -211,18 +214,18 @@ cr.define('settings_people_page_change_picture', function() {
 
         return browserProxy.whenCalled('selectDefaultImage').then(function() {
           Polymer.dom.flush();
-          expectEquals(firstDefaultImage, getSelectedItem());
+          expectEquals(firstDefaultImage, changePicture.selectedItem_);
 
           cr.webUIListenerCallback('old-image-changed', 'fake-old-image.jpg');
 
           Polymer.dom.flush();
           expectEquals(ChangePictureSelectionTypes.OLD,
-                       getSelectedItem().dataset.type);
+                       changePicture.selectedItem_.dataset.type);
 
           MockInteractions.tap(discardOldImage);
 
           Polymer.dom.flush();
-          expectEquals(firstDefaultImage, getSelectedItem());
+          expectEquals(firstDefaultImage, changePicture.selectedItem_);
         });
       });
     });

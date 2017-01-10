@@ -138,9 +138,13 @@ Polymer({
 
   /** @protected */
   currentRouteChanged: function(newRoute) {
-    // Reset the selection state when we navigate to this page.
     if (newRoute == settings.Route.CHANGE_PICTURE) {
       this.browserProxy_.initialize();
+
+      // This in needed because we manually clear the selectedItem_ property
+      // when navigating away. The selector element doesn't fire its upward
+      // data binding unless its selected item has changed.
+      this.selectedItem_ = this.$.selector.selectedItem;
     } else {
       // Ensure we deactivate the camera when we navigate away.
       this.selectedItem_ = null;
