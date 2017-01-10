@@ -206,6 +206,10 @@ class SimpleFeature : public Feature {
 
   bool MatchesManifestLocation(Manifest::Location manifest_location) const;
 
+  // Checks if the feature is allowed in a session of type |session_type|
+  // (based on session type feature restrictions).
+  bool MatchesSessionTypes(FeatureSessionType session_type) const;
+
   Availability CheckDependencies(
       const base::Callback<Availability(const Feature*)>& checker) const;
 

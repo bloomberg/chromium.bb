@@ -339,6 +339,14 @@ class UserSessionManager
   // Initializes RLZ. If |disabled| is true, RLZ pings are disabled.
   void InitRlzImpl(Profile* profile, bool disabled);
 
+  // If |user| is not a kiosk app, sets session type as seen by extensions
+  // feature system according to |user|'s type.
+  // The value should eventually be set for kiosk users, too - that's done as
+  // part of special, kiosk user session bring-up.
+  // NOTE: This has to be called before profile is initialized - so it is set up
+  // when extension are loaded during profile initialization.
+  void InitNonKioskExtensionFeaturesSessionType(const user_manager::User* user);
+
   // Callback to process RetrieveActiveSessions() request results.
   void OnRestoreActiveSessions(
       const SessionManagerClient::ActiveSessionsMap& sessions,

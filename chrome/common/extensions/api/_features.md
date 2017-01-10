@@ -309,13 +309,25 @@ will be disabled on other platforms. Also, note that all currently supported
 session types imply that a user is logged into the session (i.e. features that
 use `session_types` property will be disabled when a user is not logged in).
 
-The accepted values are lists of strings from `regular` and `kiosk`.
+The accepted values are lists of strings from `regular`, `kiosk` and
+`kiosk.autolaunched`.
+
+`regular` session is a session launched for a regular, authenticated user.
+
+`kiosk` session is a session launched for a kiosk app - an app that runs on its
+own, in full control of the current session. 
+
+`kiosk.autolaunched` represents auto-launched kiosk session - a kiosk session
+that is launched automatically from Chrome OS login screen, without any user
+interaction. Note that allowing `kiosk` session implies allowing
+`kiosk.autolaunched` session.
 
 ### source
 
 The `source` property specifies that the feature is an alias for the feature
 specified by the property value, and is only allowed for API features.
-For more information about alias features, see [alias](#alias) property documentation.
+For more information about alias features, see [alias](#alias) property
+documentation.
 
 For complex features, `source` property will be set to the `source` value of the
 first component simple feature that has it set.

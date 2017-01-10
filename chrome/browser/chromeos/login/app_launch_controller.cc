@@ -36,6 +36,7 @@
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
+#include "extensions/common/features/feature_session_type.h"
 #include "net/base/network_change_notifier.h"
 
 namespace chromeos {
@@ -171,18 +172,26 @@ void AppLaunchController::StartAppLaunch(bool is_auto_launch) {
   CHECK(KioskAppManager::Get());
   CHECK(KioskAppManager::Get()->GetApp(app_id_, &app));
 
+  int auto_launch_delay = -1;
   if (is_auto_launch) {
-    int delay;
     if (!CrosSettings::Get()->GetInteger(
-            kAccountsPrefDeviceLocalAccountAutoLoginDelay, &delay)) {
-      delay = 0;
+            kAccountsPrefDeviceLocalAccountAutoLoginDelay,
+            &auto_launch_delay)) {
+      auto_launch_delay = 0;
     }
-    DCHECK_EQ(0, delay) << "Kiosks do not support non-zero auto-login delays";
+    DCHECK_EQ(0, auto_launch_delay)
+        << "Kiosks do not support non-zero auto-login delays";
 
     // If we are launching a kiosk app with zero delay, mark it appropriately.
-    if (delay == 0)
+    if (auto_launch_delay == 0)
       KioskAppManager::Get()->SetAppWasAutoLaunchedWithZeroDelay(app_id_);
   }
+
+  extensions::SetCurrentFeatureSessionType(
+      is_auto_launch && auto_launch_delay == 0
+          ? extensions::FeatureSessionType::AUTOLAUNCHED_KIOSK
+          : extensions::FeatureSessionType::KIOSK);
+
   kiosk_profile_loader_.reset(
       new KioskProfileLoader(app.account_id, false, this));
   kiosk_profile_loader_->Start();

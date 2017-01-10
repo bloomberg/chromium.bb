@@ -451,6 +451,10 @@ TEST_F(SimpleFeatureTest, SessionType) {
        Feature::IS_AVAILABLE,
        FeatureSessionType::KIOSK,
        {}},
+      {"session agnostic feature in auto-launched kiosk session",
+       Feature::IS_AVAILABLE,
+       FeatureSessionType::AUTOLAUNCHED_KIOSK,
+       {}},
       {"session agnostic feature in regular session",
        Feature::IS_AVAILABLE,
        FeatureSessionType::REGULAR,
@@ -470,7 +474,19 @@ TEST_F(SimpleFeatureTest, SessionType) {
       {"feature with multiple session types in initial session",
        Feature::INVALID_SESSION_TYPE,
        FeatureSessionType::INITIAL,
-       {FeatureSessionType::REGULAR, FeatureSessionType::KIOSK}}};
+       {FeatureSessionType::REGULAR, FeatureSessionType::KIOSK}},
+      {"feature with auto-launched kiosk session type in regular session",
+       Feature::INVALID_SESSION_TYPE,
+       FeatureSessionType::AUTOLAUNCHED_KIOSK,
+       {FeatureSessionType::REGULAR}},
+      {"feature with auto-launched kiosk session type in auto-launched kiosk",
+       Feature::IS_AVAILABLE,
+       FeatureSessionType::AUTOLAUNCHED_KIOSK,
+       {FeatureSessionType::AUTOLAUNCHED_KIOSK}},
+      {"feature with kiosk session type in auto-launched kiosk session",
+       Feature::IS_AVAILABLE,
+       FeatureSessionType::AUTOLAUNCHED_KIOSK,
+       {FeatureSessionType::KIOSK}}};
 
   for (size_t i = 0; i < arraysize(kTestData); ++i) {
     std::unique_ptr<base::AutoReset<FeatureSessionType>> current_session(

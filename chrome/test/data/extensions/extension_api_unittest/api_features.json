@@ -102,6 +102,11 @@
     "contexts": ["content_script", "blessed_extension", "unblessed_extension"],
     "session_types": ["regular"]
   },
+  "autolaunched_kiosk": {
+    "channel": "stable",
+    "contexts": ["blessed_extension"],
+    "session_types": ["kiosk.autolaunched"]
+  },
   "multiple_session_types": {
     "channel": "stable",
     "contexts": ["content_script", "blessed_extension", "unblessed_extension"],

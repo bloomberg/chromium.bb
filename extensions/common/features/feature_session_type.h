@@ -24,8 +24,11 @@ enum class FeatureSessionType {
   REGULAR = 2,
   // Kiosk app session.
   KIOSK = 3,
+  // Kiosk app session that's been auto-launched from login screen (without
+  // any user interaction).
+  AUTOLAUNCHED_KIOSK = 4,
   // Helper for determining max enum value - not used as a real type.
-  LAST = KIOSK
+  LAST = AUTOLAUNCHED_KIOSK
 };
 
 // Gets the current session type as seen by the Feature system.
@@ -38,7 +41,7 @@ void SetCurrentFeatureSessionType(FeatureSessionType session_type);
 
 // Scoped session type setter. Use for tests.
 std::unique_ptr<base::AutoReset<FeatureSessionType>>
-ScopedCurrentFeatureSessionType(FeatureSessionType type);
+ScopedCurrentFeatureSessionType(FeatureSessionType session_type);
 
 }  // namespace extensions
 

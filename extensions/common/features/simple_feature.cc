@@ -134,6 +134,8 @@ std::string GetDisplayName(FeatureSessionType session_type) {
       return "unknown";
     case FeatureSessionType::KIOSK:
       return "kiosk app";
+    case FeatureSessionType::AUTOLAUNCHED_KIOSK:
+      return "auto-launched kiosk app";
     case FeatureSessionType::REGULAR:
       return "regular user";
   }
@@ -259,11 +261,9 @@ Feature::Availability SimpleFeature::IsAvailableToManifest(
   if (channel_ && *channel_ < GetCurrentChannel())
     return CreateAvailability(UNSUPPORTED_CHANNEL, *channel_);
 
-  FeatureSessionType session = GetCurrentFeatureSessionType();
-  if (!session_types_.empty() &&
-      !base::ContainsValue(session_types_, session)) {
-    return CreateAvailability(INVALID_SESSION_TYPE, session);
-  }
+  const FeatureSessionType session_type = GetCurrentFeatureSessionType();
+  if (!MatchesSessionTypes(session_type))
+    return CreateAvailability(INVALID_SESSION_TYPE, session_type);
 
   return CheckDependencies(base::Bind(&IsAvailableToManifestForBind,
                                       extension_id,
@@ -303,10 +303,9 @@ Feature::Availability SimpleFeature::IsAvailableToContext(
     return CreateAvailability(INVALID_URL, url);
   }
 
-  FeatureSessionType session = GetCurrentFeatureSessionType();
-  if (!session_types_.empty() &&
-      !base::ContainsValue(session_types_, session)) {
-    return CreateAvailability(INVALID_SESSION_TYPE, session);
+  const FeatureSessionType session_type = GetCurrentFeatureSessionType();
+  if (!MatchesSessionTypes(session_type)) {
+    return CreateAvailability(INVALID_SESSION_TYPE, session_type);
   }
 
   // TODO(kalman): Assert that if the context was a webpage or WebUI context
@@ -495,6 +494,20 @@ bool SimpleFeature::MatchesManifestLocation(
   }
   NOTREACHED();
   return false;
+}
+
+bool SimpleFeature::MatchesSessionTypes(FeatureSessionType session_type) const {
+  if (session_types_.empty())
+    return true;
+
+  if (base::ContainsValue(session_types_, session_type))
+    return true;
+
+  // AUTOLAUNCHED_KIOSK session type is subset of KIOSK - accept auto-lauched
+  // kiosk session if kiosk session is allowed. This is the only exception to
+  // rejecting session type that is not present in |session_types_|
+  return session_type == FeatureSessionType::AUTOLAUNCHED_KIOSK &&
+         base::ContainsValue(session_types_, FeatureSessionType::KIOSK);
 }
 
 Feature::Availability SimpleFeature::CheckDependencies(

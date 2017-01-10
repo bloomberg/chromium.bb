@@ -42,7 +42,8 @@ const char* const kTestFeatures[] = {
 const char* const kAliasTestApis[] = {"alias_api_source"};
 
 const char* const kSessionTypeTestFeatures[] = {
-    "test1", "kiosk_only", "non_kiosk", "multiple_session_types"};
+    "test6", "kiosk_only", "non_kiosk", "multiple_session_types",
+    "autolaunched_kiosk"};
 
 struct FeatureSessionTypesTestData {
   std::string api_name;
@@ -337,19 +338,44 @@ TEST(ExtensionAPITest, IsAnyFeatureAvailableToContext) {
 }
 
 TEST(ExtensionAPITest, SessionTypeFeature) {
+  scoped_refptr<const Extension> app =
+      ExtensionBuilder()
+          .SetManifest(
+              DictionaryBuilder()
+                  .Set("name", "app")
+                  .Set("app",
+                       DictionaryBuilder()
+                           .Set("background",
+                                DictionaryBuilder()
+                                    .Set("scripts", ListBuilder()
+                                                        .Append("background.js")
+                                                        .Build())
+                                    .Build())
+                           .Build())
+                  .Set("version", "1")
+                  .Set("manifest_version", 2)
+                  .Build())
+          .Build();
+
   const std::vector<FeatureSessionTypesTestData> kTestData(
       {{"kiosk_only", true, FeatureSessionType::KIOSK},
+       {"kiosk_only", true, FeatureSessionType::AUTOLAUNCHED_KIOSK},
        {"kiosk_only", false, FeatureSessionType::REGULAR},
        {"kiosk_only", false, FeatureSessionType::UNKNOWN},
        {"non_kiosk", false, FeatureSessionType::KIOSK},
        {"non_kiosk", true, FeatureSessionType::REGULAR},
        {"non_kiosk", false, FeatureSessionType::UNKNOWN},
+       {"autolaunched_kiosk", true, FeatureSessionType::AUTOLAUNCHED_KIOSK},
+       {"autolaunched_kiosk", false, FeatureSessionType::KIOSK},
+       {"autolaunched_kiosk", false, FeatureSessionType::REGULAR},
        {"multiple_session_types", true, FeatureSessionType::KIOSK},
        {"multiple_session_types", true, FeatureSessionType::REGULAR},
        {"multiple_session_types", false, FeatureSessionType::UNKNOWN},
-       {"test1", true, FeatureSessionType::KIOSK},
-       {"test1", true, FeatureSessionType::REGULAR},
-       {"test1", true, FeatureSessionType::UNKNOWN}});
+       // test6.foo is available to apps and has no session type restrictions.
+       {"test6.foo", true, FeatureSessionType::KIOSK},
+       {"test6.foo", true, FeatureSessionType::AUTOLAUNCHED_KIOSK},
+       {"test6.foo", true, FeatureSessionType::REGULAR},
+       {"test6.foo", true, FeatureSessionType::UNKNOWN}});
 
   UnittestFeatureProvider api_feature_provider;
 
@@ -363,7 +389,7 @@ TEST(ExtensionAPITest, SessionTypeFeature) {
     std::unique_ptr<base::AutoReset<FeatureSessionType>> current_session(
         ScopedCurrentFeatureSessionType(test.current_session_type));
     EXPECT_EQ(test.expect_available,
-              api.IsAvailable(test.api_name, nullptr,
+              api.IsAvailable(test.api_name, app.get(),
                               Feature::BLESSED_EXTENSION_CONTEXT, GURL(),
                               CheckAliasStatus::NOT_ALLOWED)
                   .is_available())

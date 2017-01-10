@@ -113,6 +113,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
+#include "extensions/common/features/feature_session_type.h"
 #include "net/cert/sth_distributor.h"
 #include "rlz/features/features.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
@@ -506,6 +507,8 @@ void UserSessionManager::PerformPostUserLoggedInActions() {
       network_portal_detector::GetInstance()->SetStrategy(
           PortalDetectorStrategy::STRATEGY_ID_SESSION);
     }
+
+    InitNonKioskExtensionFeaturesSessionType(user_manager->GetPrimaryUser());
   }
 }
 
@@ -572,6 +575,31 @@ void UserSessionManager::InitRlz(Profile* profile) {
       base::Bind(&base::PathExists, GetRlzDisabledFlagPath()),
       base::Bind(&UserSessionManager::InitRlzImpl, AsWeakPtr(), profile));
 #endif
+}
+
+void UserSessionManager::InitNonKioskExtensionFeaturesSessionType(
+    const user_manager::User* user) {
+  // Kiosk session should be set as part of kiosk user session initialization
+  // in normal circumstances (to be able to properly determine whether kiosk
+  // was auto-launched); in case of user session restore, feature session
+  // type has be set before kiosk app controller takes over, as at that point
+  // kiosk app profile would already be initialized - feature session type
+  // should be set before that.
+  // TODO(tbarzic): Note that this does not work well for auto-launched
+  //     sessions, as information about whether session was auto-launched is not
+  //     persisted over session restart - http://crbug.com/677340.
+  if (user->GetType() == user_manager::USER_TYPE_KIOSK_APP) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kLoginUser)) {
+      extensions::SetCurrentFeatureSessionType(
+          extensions::FeatureSessionType::KIOSK);
+    }
+    return;
+  }
+
+  extensions::SetCurrentFeatureSessionType(
+      user->HasGaiaAccount() ? extensions::FeatureSessionType::REGULAR
+                             : extensions::FeatureSessionType::UNKNOWN);
 }
 
 void UserSessionManager::SetFirstLoginPrefs(

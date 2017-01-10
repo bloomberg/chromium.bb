@@ -185,7 +185,7 @@ TEST(USBDevicePermissionTest, InterfaceClass) {
   }
 
   {
-    std::unique_ptr<base::AutoReset<FeatureSessionType>> scoped_session_type_(
+    std::unique_ptr<base::AutoReset<FeatureSessionType>> scoped_session_type(
         ScopedCurrentFeatureSessionType(FeatureSessionType::KIOSK));
     ScopedCurrentChannel channel(version_info::Channel::DEV);
 
@@ -225,7 +225,7 @@ TEST(USBDevicePermissionTest, InterfaceClassWithVendorId) {
   }
 
   {
-    std::unique_ptr<base::AutoReset<FeatureSessionType>> scoped_session_type_(
+    std::unique_ptr<base::AutoReset<FeatureSessionType>> scoped_session_type(
         ScopedCurrentFeatureSessionType(FeatureSessionType::KIOSK));
     ScopedCurrentChannel channel(version_info::Channel::DEV);
 
@@ -238,7 +238,7 @@ TEST(USBDevicePermissionTest, InterfaceClassWithVendorId) {
   }
 
   {
-    std::unique_ptr<base::AutoReset<FeatureSessionType>> scoped_session_type_(
+    std::unique_ptr<base::AutoReset<FeatureSessionType>> scoped_session_type(
         ScopedCurrentFeatureSessionType(FeatureSessionType::KIOSK));
     ScopedCurrentChannel channel(version_info::Channel::DEV);
 
@@ -272,7 +272,7 @@ TEST(USBDevicePermissionTest, CheckHidUsbAgainstInterfaceClass) {
   }
 
   {
-    std::unique_ptr<base::AutoReset<FeatureSessionType>> scoped_session_type_(
+    std::unique_ptr<base::AutoReset<FeatureSessionType>> scoped_session_type(
         ScopedCurrentFeatureSessionType(FeatureSessionType::KIOSK));
     ScopedCurrentChannel channel(version_info::Channel::DEV);
 
@@ -284,7 +284,7 @@ TEST(USBDevicePermissionTest, CheckHidUsbAgainstInterfaceClass) {
   }
 
   {
-    std::unique_ptr<base::AutoReset<FeatureSessionType>> scoped_session_type_(
+    std::unique_ptr<base::AutoReset<FeatureSessionType>> scoped_session_type(
         ScopedCurrentFeatureSessionType(FeatureSessionType::KIOSK));
     ScopedCurrentChannel channel(version_info::Channel::DEV);
 
@@ -375,7 +375,7 @@ TEST(USBDevicePermissionTest, CheckDeviceAgainstDeviceClass) {
   }
 
   {
-    std::unique_ptr<base::AutoReset<FeatureSessionType>> scoped_session_type_(
+    std::unique_ptr<base::AutoReset<FeatureSessionType>> scoped_session_type(
         ScopedCurrentFeatureSessionType(FeatureSessionType::KIOSK));
     ScopedCurrentChannel channel(version_info::Channel::DEV);
 
@@ -387,7 +387,7 @@ TEST(USBDevicePermissionTest, CheckDeviceAgainstDeviceClass) {
     EXPECT_TRUE(permission_data.Check(param.get()));
   }
   {
-    std::unique_ptr<base::AutoReset<FeatureSessionType>> scoped_session_type_(
+    std::unique_ptr<base::AutoReset<FeatureSessionType>> scoped_session_type(
         ScopedCurrentFeatureSessionType(FeatureSessionType::KIOSK));
     ScopedCurrentChannel channel(version_info::Channel::DEV);
 
@@ -410,7 +410,7 @@ TEST(USBDevicePermissionTest, IgnoreNullDeviceClass) {
       CreateTestApp(std::move(permission_data_value));
 
   {
-    std::unique_ptr<base::AutoReset<FeatureSessionType>> scoped_session_type_(
+    std::unique_ptr<base::AutoReset<FeatureSessionType>> scoped_session_type(
         ScopedCurrentFeatureSessionType(FeatureSessionType::KIOSK));
     ScopedCurrentChannel channel(version_info::Channel::DEV);
 
@@ -444,7 +444,7 @@ TEST(USBDevicePermissionTest, CheckDeviceAgainstInterfaceClass) {
   {
     // Interface should match inactive configuration when none of configurations
     // is active.
-    std::unique_ptr<base::AutoReset<FeatureSessionType>> scoped_session_type_(
+    std::unique_ptr<base::AutoReset<FeatureSessionType>> scoped_session_type(
         ScopedCurrentFeatureSessionType(FeatureSessionType::KIOSK));
     ScopedCurrentChannel channel(version_info::Channel::DEV);
 
@@ -457,7 +457,7 @@ TEST(USBDevicePermissionTest, CheckDeviceAgainstInterfaceClass) {
   }
 
   {
-    std::unique_ptr<base::AutoReset<FeatureSessionType>> scoped_session_type_(
+    std::unique_ptr<base::AutoReset<FeatureSessionType>> scoped_session_type(
         ScopedCurrentFeatureSessionType(FeatureSessionType::KIOSK));
     ScopedCurrentChannel channel(version_info::Channel::DEV);
 
@@ -473,7 +473,7 @@ TEST(USBDevicePermissionTest, CheckDeviceAgainstInterfaceClass) {
   {
     // Interface should match inactive configuration when another configuration
     // is active.
-    std::unique_ptr<base::AutoReset<FeatureSessionType>> scoped_session_type_(
+    std::unique_ptr<base::AutoReset<FeatureSessionType>> scoped_session_type(
         ScopedCurrentFeatureSessionType(FeatureSessionType::KIOSK));
     ScopedCurrentChannel channel(version_info::Channel::DEV);
 
@@ -487,7 +487,7 @@ TEST(USBDevicePermissionTest, CheckDeviceAgainstInterfaceClass) {
   }
 
   {
-    std::unique_ptr<base::AutoReset<FeatureSessionType>> scoped_session_type_(
+    std::unique_ptr<base::AutoReset<FeatureSessionType>> scoped_session_type(
         ScopedCurrentFeatureSessionType(FeatureSessionType::KIOSK));
     ScopedCurrentChannel channel(version_info::Channel::DEV);
 
