@@ -66,6 +66,8 @@ class AllStatus : public SyncEngineEventListener {
 
   void IncrementNudgeCounter(NudgeSource source);
 
+  void SetLocalBackendFolder(const std::string& folder);
+
  protected:
   // Examines syncer to calculate syncing and the unsynced count,
   // and returns a Status with new values.

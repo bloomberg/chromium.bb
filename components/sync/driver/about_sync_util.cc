@@ -283,6 +283,9 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   StringSyncStat backend_initialization(section_local,
                                         "Sync Backend Initialization");
   BoolSyncStat is_syncing(section_local, "Syncing");
+  BoolSyncStat is_local_sync_enabled(section_local,
+                                     "Local sync backend enabled");
+  StringSyncStat local_backend_path(section_local, "Local backend path");
 
   base::ListValue* section_network = AddSection(stats_list, "Network");
   BoolSyncStat is_throttled(section_network, "Throttled");
@@ -388,6 +391,10 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
 
   last_synced.SetValue(service->GetLastSyncedTimeString());
   is_setup_complete.SetValue(service->IsFirstSetupComplete());
+  is_local_sync_enabled.SetValue(service->IsLocalSyncEnabled());
+  if (service->IsLocalSyncEnabled() && is_status_valid) {
+    local_backend_path.SetValue(full_status.local_sync_folder);
+  }
   backend_initialization.SetValue(
       service->GetEngineInitializationStateString());
   if (is_status_valid) {

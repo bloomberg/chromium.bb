@@ -185,6 +185,11 @@ void AllStatus::IncrementNudgeCounter(NudgeSource source) {
   NOTREACHED();
 }
 
+void AllStatus::SetLocalBackendFolder(const std::string& folder) {
+  ScopedStatusLock lock(this);
+  status_.local_sync_folder = folder;
+}
+
 ScopedStatusLock::ScopedStatusLock(AllStatus* allstatus)
     : allstatus_(allstatus) {
   allstatus->mutex_.Acquire();

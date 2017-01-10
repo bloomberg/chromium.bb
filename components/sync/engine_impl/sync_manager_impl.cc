@@ -277,6 +277,8 @@ void SyncManagerImpl::Init(InitArgs* args) {
 
   if (args->enable_local_sync_backend) {
     VLOG(1) << "Running against local sync backend.";
+    allstatus_.SetLocalBackendFolder(
+        args->local_sync_backend_folder.AsUTF8Unsafe());
     connection_manager_ = base::MakeUnique<LoopbackConnectionManager>(
         args->cancelation_signal, args->local_sync_backend_folder);
   } else {
