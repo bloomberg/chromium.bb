@@ -15,7 +15,6 @@ namespace offline_pages {
 
 BackgroundLoaderOffliner::BackgroundLoaderOffliner(
     content::BrowserContext* browser_context,
-    const OfflinerPolicy* policy,
     OfflinePageModel* offline_page_model)
     : browser_context_(browser_context),
       offline_page_model_(offline_page_model),

@@ -20,7 +20,6 @@ class BrowserContext;
 
 namespace offline_pages {
 
-class OfflinerPolicy;
 class OfflinePageModel;
 
 // An Offliner implementation that attempts client-side rendering and saving
@@ -30,7 +29,6 @@ class BackgroundLoaderOffliner : public Offliner,
                                  public content::WebContentsObserver {
  public:
   BackgroundLoaderOffliner(content::BrowserContext* browser_context,
-                           const OfflinerPolicy* policy,
                            OfflinePageModel* offline_page_model);
   ~BackgroundLoaderOffliner() override;
 

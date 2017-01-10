@@ -78,7 +78,6 @@ class TestBackgroundLoaderOffliner : public BackgroundLoaderOffliner {
  public:
   explicit TestBackgroundLoaderOffliner(
       content::BrowserContext* browser_context,
-      const OfflinerPolicy* policy,
       OfflinePageModel* offline_page_model);
   ~TestBackgroundLoaderOffliner() override;
   content::WebContentsTester* web_contents() {
@@ -96,9 +95,8 @@ class TestBackgroundLoaderOffliner : public BackgroundLoaderOffliner {
 
 TestBackgroundLoaderOffliner::TestBackgroundLoaderOffliner(
     content::BrowserContext* browser_context,
-    const OfflinerPolicy* policy,
     OfflinePageModel* offline_page_model)
-    : BackgroundLoaderOffliner(browser_context, policy, offline_page_model) {}
+    : BackgroundLoaderOffliner(browser_context, offline_page_model) {}
 
 TestBackgroundLoaderOffliner::~TestBackgroundLoaderOffliner() {}
 
@@ -155,7 +153,7 @@ BackgroundLoaderOfflinerTest::~BackgroundLoaderOfflinerTest() {}
 
 void BackgroundLoaderOfflinerTest::SetUp() {
   model_ = new MockOfflinePageModel();
-  offliner_.reset(new TestBackgroundLoaderOffliner(profile(), nullptr, model_));
+  offliner_.reset(new TestBackgroundLoaderOffliner(profile(), model_));
 }
 
 void BackgroundLoaderOfflinerTest::OnCompletion(

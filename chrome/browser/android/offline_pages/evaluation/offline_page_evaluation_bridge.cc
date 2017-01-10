@@ -167,8 +167,7 @@ OfflinePageEvaluationBridge::GetTestingRequestCoordinator(
     content::BrowserContext* context) {
   std::unique_ptr<OfflinerPolicy> policy(new OfflinerPolicy());
   std::unique_ptr<Offliner> prerenderer_offliner(new PrerenderingOffliner(
-      context, policy.get(),
-      OfflinePageModelFactory::GetForBrowserContext(context)));
+      context, OfflinePageModelFactory::GetForBrowserContext(context)));
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       content::BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
