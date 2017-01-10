@@ -14,7 +14,7 @@
 #include "base/rand_util.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
-#include "components/offline_pages/core/background/offliner_factory.h"
+#include "components/offline_pages/core/background/offliner.h"
 #include "components/offline_pages/core/background/offliner_policy.h"
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/client_policy_controller.h"
@@ -157,7 +157,7 @@ bool IsSingleSuccessResult(const UpdateRequestsResult* result) {
 
 RequestCoordinator::RequestCoordinator(
     std::unique_ptr<OfflinerPolicy> policy,
-    std::unique_ptr<OfflinerFactory> factory,
+    std::unique_ptr<Offliner> offliner,
     std::unique_ptr<RequestQueue> queue,
     std::unique_ptr<Scheduler> scheduler,
     net::NetworkQualityEstimator::NetworkQualityProvider*
@@ -168,9 +168,8 @@ RequestCoordinator::RequestCoordinator(
       processing_state_(ProcessingWindowState::STOPPED),
       use_test_connection_type_(false),
       test_connection_type_(),
-      offliner_(nullptr),
+      offliner_(std::move(offliner)),
       policy_(std::move(policy)),
-      factory_(std::move(factory)),
       queue_(std::move(queue)),
       scheduler_(std::move(scheduler)),
       policy_controller_(new ClientPolicyController()),
@@ -774,10 +773,10 @@ void RequestCoordinator::SendRequestToOffliner(const SavePageRequest& request) {
   if (processing_state_ == ProcessingWindowState::STOPPED)
     return;
 
-  GetOffliner();
   if (!offliner_) {
-    DVLOG(0) << "Unable to create Offliner. "
-             << "Cannot background offline page.";
+    // TODO(chili,petewil): We should have UMA here to track frequency of this,
+    // if it happens at all.
+    DVLOG(0) << "Offliner crashed. Cannot background offline page.";
     return;
   }
 
@@ -1006,12 +1005,6 @@ void RequestCoordinator::NotifyCompleted(
 void RequestCoordinator::NotifyChanged(const SavePageRequest& request) {
   for (Observer& observer : observers_)
     observer.OnChanged(request);
-}
-
-void RequestCoordinator::GetOffliner() {
-  if (!offliner_) {
-    offliner_ = factory_->GetOffliner(policy_.get());
-  }
 }
 
 ClientPolicyController* RequestCoordinator::GetPolicyController() {

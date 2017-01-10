@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "components/offline_pages/core/background/network_quality_provider_stub.h"
-#include "components/offline_pages/core/background/offliner_factory_stub.h"
 #include "components/offline_pages/core/background/offliner_policy.h"
+#include "components/offline_pages/core/background/offliner_stub.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/background/request_queue.h"
 #include "components/offline_pages/core/background/request_queue_in_memory_store.h"
@@ -29,7 +29,7 @@ std::unique_ptr<KeyedService> BuildTestRequestCoordinator(
   std::unique_ptr<RequestQueue> queue(new RequestQueue(std::move(store)));
 
   // Initialize the rest with stubs.
-  std::unique_ptr<OfflinerFactory> offliner_factory(new OfflinerFactoryStub());
+  std::unique_ptr<Offliner> offliner(new OfflinerStub());
   std::unique_ptr<Scheduler> scheduler_stub(new SchedulerStub());
 
   // NetworkQualityProviderStub should be set by the test on the context first.
@@ -37,7 +37,7 @@ std::unique_ptr<KeyedService> BuildTestRequestCoordinator(
       NetworkQualityProviderStub::GetUserData(context);
 
   return std::unique_ptr<RequestCoordinator>(new RequestCoordinator(
-      std::move(policy), std::move(offliner_factory), std::move(queue),
+      std::move(policy), std::move(offliner), std::move(queue),
       std::move(scheduler_stub), network_quality_provider));
 }
 

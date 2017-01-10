@@ -22,8 +22,6 @@
 #include "components/offline_pages/core/background/device_conditions.h"
 #include "components/offline_pages/core/background/network_quality_provider_stub.h"
 #include "components/offline_pages/core/background/offliner.h"
-#include "components/offline_pages/core/background/offliner_factory.h"
-#include "components/offline_pages/core/background/offliner_factory_stub.h"
 #include "components/offline_pages/core/background/offliner_policy.h"
 #include "components/offline_pages/core/background/offliner_stub.h"
 #include "components/offline_pages/core/background/request_queue.h"
@@ -300,17 +298,16 @@ RequestCoordinatorTest::~RequestCoordinatorTest() {}
 
 void RequestCoordinatorTest::SetUp() {
   std::unique_ptr<OfflinerPolicy> policy(new OfflinerPolicy());
-  std::unique_ptr<OfflinerFactory> offliner_factory(new OfflinerFactoryStub());
+  std::unique_ptr<OfflinerStub> offliner(new OfflinerStub());
   // Save the offliner for use by the tests.
-  offliner_ = reinterpret_cast<OfflinerStub*>(
-      offliner_factory->GetOffliner(policy.get()));
+  offliner_ = reinterpret_cast<OfflinerStub*>(offliner.get());
   std::unique_ptr<RequestQueueInMemoryStore> store(
       new RequestQueueInMemoryStore());
   std::unique_ptr<RequestQueue> queue(new RequestQueue(std::move(store)));
   std::unique_ptr<Scheduler> scheduler_stub(new SchedulerStub());
   network_quality_estimator_.reset(new NetworkQualityProviderStub());
   coordinator_.reset(new RequestCoordinator(
-      std::move(policy), std::move(offliner_factory), std::move(queue),
+      std::move(policy), std::move(offliner), std::move(queue),
       std::move(scheduler_stub), network_quality_estimator_.get()));
   coordinator_->AddObserver(&observer_);
   SetNetworkConnected(true);

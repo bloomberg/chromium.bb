@@ -14,14 +14,14 @@
 #include "chrome/browser/android/offline_pages/downloads/offline_page_notification_bridge.h"
 #include "chrome/browser/android/offline_pages/evaluation/evaluation_test_scheduler.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
-#include "chrome/browser/android/offline_pages/prerendering_offliner_factory.h"
+#include "chrome/browser/android/offline_pages/prerendering_offliner.h"
 #include "chrome/browser/android/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/common/chrome_constants.h"
-#include "components/offline_pages/core/background/offliner_factory.h"
+#include "components/offline_pages/core/background/offliner.h"
 #include "components/offline_pages/core/background/offliner_policy.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/background/request_notifier.h"
@@ -166,8 +166,9 @@ std::unique_ptr<KeyedService>
 OfflinePageEvaluationBridge::GetTestingRequestCoordinator(
     content::BrowserContext* context) {
   std::unique_ptr<OfflinerPolicy> policy(new OfflinerPolicy());
-  std::unique_ptr<OfflinerFactory> prerenderer_offliner(
-      new PrerenderingOfflinerFactory(context));
+  std::unique_ptr<Offliner> prerenderer_offliner(new PrerenderingOffliner(
+      context, policy.get(),
+      OfflinePageModelFactory::GetForBrowserContext(context)));
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       content::BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(

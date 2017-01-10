@@ -30,7 +30,6 @@ static_library("background_offliner") {
     "mark_attempt_started_task.cc",
     "mark_attempt_started_task.h",
     "offliner.h",
-    "offliner_factory.h",
     "offliner_policy.h",
     "offliner_policy_utils.cc",
     "offliner_policy_utils.h",
@@ -74,8 +73,6 @@ static_library("test_support") {
   sources = [
     "network_quality_provider_stub.cc",
     "network_quality_provider_stub.h",
-    "offliner_factory_stub.cc",
-    "offliner_factory_stub.h",
     "offliner_stub.cc",
     "offliner_stub.h",
     "request_queue_in_memory_store.cc",

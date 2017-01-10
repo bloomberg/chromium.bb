@@ -20,7 +20,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_pages/core/background/connection_notifier.h"
 #include "components/offline_pages/core/background/device_conditions.h"
-#include "components/offline_pages/core/background/offliner.h"
 #include "components/offline_pages/core/background/request_coordinator_event_logger.h"
 #include "components/offline_pages/core/background/request_notifier.h"
 #include "components/offline_pages/core/background/request_queue.h"
@@ -32,11 +31,8 @@ namespace offline_pages {
 
 struct ClientId;
 class OfflinerPolicy;
-class OfflinerFactory;
 class Offliner;
-class RequestQueue;
 class SavePageRequest;
-class Scheduler;
 class ClientPolicyController;
 
 // Coordinates queueing and processing save page later requests.
@@ -73,7 +69,7 @@ class RequestCoordinator : public KeyedService,
       GetRequestsCallback;
 
   RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
-                     std::unique_ptr<OfflinerFactory> factory,
+                     std::unique_ptr<Offliner> offliner,
                      std::unique_ptr<RequestQueue> queue,
                      std::unique_ptr<Scheduler> scheduler,
                      net::NetworkQualityEstimator::NetworkQualityProvider*
@@ -357,10 +353,6 @@ class RequestCoordinator : public KeyedService,
                        const std::string& name_space,
                        std::unique_ptr<UpdateRequestsResult> result);
 
-  // Returns the appropriate offliner to use, getting a new one from the factory
-  // if needed.
-  void GetOffliner();
-
   // Method to wrap calls to getting the connection type so it can be
   // changed for tests.
   net::NetworkChangeNotifier::ConnectionType GetConnectionType();
@@ -396,8 +388,8 @@ class RequestCoordinator : public KeyedService,
   bool use_test_connection_type_;
   // For use by tests, a fake network connection type
   net::NetworkChangeNotifier::ConnectionType test_connection_type_;
-  // Unowned pointer to the current offliner, if any.
-  Offliner* offliner_;
+  // Owned pointer to the current offliner.
+  std::unique_ptr<Offliner> offliner_;
   base::Time operation_start_time_;
   // The observers.
   base::ObserverList<Observer> observers_;
@@ -405,8 +397,6 @@ class RequestCoordinator : public KeyedService,
   std::unique_ptr<DeviceConditions> current_conditions_;
   // RequestCoordinator takes over ownership of the policy
   std::unique_ptr<OfflinerPolicy> policy_;
-  // OfflinerFactory.  Used to create offline pages. Owned.
-  std::unique_ptr<OfflinerFactory> factory_;
   // RequestQueue.  Used to store incoming requests. Owned.
   std::unique_ptr<RequestQueue> queue_;
   // Scheduler. Used to request a callback when network is available.  Owned.
