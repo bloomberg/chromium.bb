@@ -75,8 +75,7 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver,
     SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT,
     // The website provided a valid certificate, but the certificate or chain
     // is using a deprecated signature algorithm.
-    SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM_MINOR,
-    SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM_MAJOR,
+    SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM,
     // The website has been flagged by Safe Browsing as dangerous for
     // containing malware, social engineering, or unwanted software.
     SITE_IDENTITY_STATUS_MALWARE,

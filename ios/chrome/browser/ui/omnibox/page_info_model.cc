@@ -119,28 +119,12 @@ PageInfoModel::PageInfoModel(ios::ChromeBrowserState* browser_state,
       description.assign(l10n_util::GetStringFUTF16(
           IDS_IOS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY, issuer_name));
     }
-    // The date after which no new SHA-1 certificates may be issued.
-    // 2016-01-01 00:00:00 UTC
-    // WARNING: This value must be kept in sync with WebsiteSettings::Init() in
-    // chrome/browser/ui/website_settings/website_settings.cc.
-    static const int64_t kJanuary2016 = INT64_C(13096080000000000);
-    static const int64_t kJanuary2017 = INT64_C(13127702400000000);
-    if ((ssl.cert_status & net::CERT_STATUS_SHA1_SIGNATURE_PRESENT) &&
-        ssl.certificate->valid_expiry() >=
-            base::Time::FromInternalValue(kJanuary2016)) {
+    if (ssl.cert_status & net::CERT_STATUS_SHA1_SIGNATURE_PRESENT) {
       icon_id = ICON_STATE_INFO;
-      if (ssl.certificate->valid_expiry() >=
-          base::Time::FromInternalValue(kJanuary2017)) {
-        description +=
-            base::UTF8ToUTF16("\n\n") +
-            l10n_util::GetStringUTF16(
-                IDS_PAGE_INFO_SECURITY_TAB_DEPRECATED_SIGNATURE_ALGORITHM_MAJOR);
-      } else {
-        description +=
-            base::UTF8ToUTF16("\n\n") +
-            l10n_util::GetStringUTF16(
-                IDS_PAGE_INFO_SECURITY_TAB_DEPRECATED_SIGNATURE_ALGORITHM_MINOR);
-      }
+      description +=
+          base::UTF8ToUTF16("\n\n") +
+          l10n_util::GetStringUTF16(
+              IDS_PAGE_INFO_SECURITY_TAB_DEPRECATED_SIGNATURE_ALGORITHM);
     }
   } else {
     // HTTP or HTTPS with errors (not warnings).

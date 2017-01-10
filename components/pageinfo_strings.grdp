@@ -3,11 +3,8 @@
   <message name="IDS_PAGE_INFO_HELP_CENTER_LINK" desc="This is the text of the link pointing to the Help Center. This appears at the bottom of the SSL dialog and 'this' refers to the sections within the bubble.">
     What do these mean?
   </message>
-  <message name="IDS_PAGE_INFO_SECURITY_TAB_DEPRECATED_SIGNATURE_ALGORITHM_MINOR" desc="The security summary phrase in the page information panel for a security problem where the site's certificate expires in 2016 and contains a SHA1 signature in the chain (as opposed to 2017 or later). Such certificates will not be supported in a future version of Chrome.">
-    The certificate for this site expires in 2016, and the certificate chain contains a certificate signed using SHA-1.
-  </message>
-  <message name="IDS_PAGE_INFO_SECURITY_TAB_DEPRECATED_SIGNATURE_ALGORITHM_MAJOR" desc="The security summary phrase in the page information panel for a security problem where the site's certificate expires in 2017 or later and contains a SHA1 signature in the chain (as opposed to 2016). Such certificates will not be supported in a future version of Chrome.">
-    The certificate for this site expires in 2017 or later, and the certificate chain contains a certificate signed using SHA-1.
+  <message name="IDS_PAGE_INFO_SECURITY_TAB_DEPRECATED_SIGNATURE_ALGORITHM" desc="The security summary phrase in the page information panel for a security problem where the site's certificate chain contains a SHA1 signature. Such certificates are treated as errors except when a policy override is present.">
+    The certificate chain for this site contains a certificate signed using SHA-1.
   </message>
   <message name="IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_CONNECTION_TEXT" desc="The text of the connection section when the connection is encrypted.">
     Your connection to <ph name="DOMAIN">$1<ex>www.google.com</ex></ph> is encrypted using a modern cipher suite.

@@ -68,22 +68,6 @@ enum SecurityLevel {
   DANGEROUS,
 };
 
-// Describes how the SHA1 deprecation policy applies to an HTTPS
-// connection.
-enum SHA1DeprecationStatus {
-  UNKNOWN_SHA1,
-  // No SHA1 deprecation policy applies.
-  NO_DEPRECATED_SHA1,
-  // The connection used a certificate with a SHA1 signature in the
-  // chain, and policy says that the connection should be treated with a
-  // warning.
-  DEPRECATED_SHA1_MINOR,
-  // The connection used a certificate with a SHA1 signature in the
-  // chain, and policy says that the connection should be treated as
-  // broken HTTPS.
-  DEPRECATED_SHA1_MAJOR,
-};
-
 // The ContentStatus enum is used to describe content on the page that
 // has significantly different security properties than the main page
 // load. Content can be passive content that is displayed (such as
@@ -117,7 +101,8 @@ struct SecurityInfo {
   SecurityLevel security_level;
   // Describes the nature of the page's malicious content, if any.
   MaliciousContentStatus malicious_content_status;
-  SHA1DeprecationStatus sha1_deprecation_status;
+  // True if a SHA1 signature was observed anywhere in the certificate chain.
+  bool sha1_in_chain;
   // |mixed_content_status| describes the presence of content that was
   // loaded over a nonsecure (HTTP) connection.
   ContentStatus mixed_content_status;
@@ -198,10 +183,6 @@ struct VisibleSecurityState {
   bool displayed_password_field_on_http;
   // True if the page was an HTTP page that displayed a credit card field.
   bool displayed_credit_card_field_on_http;
-  // True if Enterprise Policy configured to display as neutral all SHA-1 chains
-  // to a local trust anchor.
-  // TODO(elawrence): remove this in M57, https://crbug.com/676826
-  bool display_sha1_from_local_anchors_as_neutral;
 };
 
 // These security levels describe the treatment given to pages that

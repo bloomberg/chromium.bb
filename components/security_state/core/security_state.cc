@@ -84,27 +84,6 @@ SecurityLevel GetSecurityLevelForNonSecureFieldTrial(
   return level;
 }
 
-SHA1DeprecationStatus GetSHA1DeprecationStatus(
-    const VisibleSecurityState& visible_security_state) {
-  if (!visible_security_state.certificate ||
-      !(visible_security_state.cert_status &
-        net::CERT_STATUS_SHA1_SIGNATURE_PRESENT))
-    return NO_DEPRECATED_SHA1;
-
-  // The internal representation of the dates for UI treatment of SHA-1.
-  // See http://crbug.com/401365 for details.
-  static const int64_t kJanuary2017 = INT64_C(13127702400000000);
-  if (visible_security_state.certificate->valid_expiry() >=
-      base::Time::FromInternalValue(kJanuary2017))
-    return DEPRECATED_SHA1_MAJOR;
-  static const int64_t kJanuary2016 = INT64_C(13096080000000000);
-  if (visible_security_state.certificate->valid_expiry() >=
-      base::Time::FromInternalValue(kJanuary2016))
-    return DEPRECATED_SHA1_MINOR;
-
-  return NO_DEPRECATED_SHA1;
-}
-
 ContentStatus GetContentStatus(bool displayed, bool ran) {
   if (ran && displayed)
     return CONTENT_STATUS_DISPLAYED_AND_RAN;
@@ -119,7 +98,7 @@ SecurityLevel GetSecurityLevelForRequest(
     const VisibleSecurityState& visible_security_state,
     bool used_policy_installed_certificate,
     const IsOriginSecureCallback& is_origin_secure_callback,
-    SHA1DeprecationStatus sha1_status,
+    bool sha1_in_chain,
     ContentStatus mixed_content_status,
     ContentStatus content_with_cert_errors_status) {
   DCHECK(visible_security_state.connection_info_initialized ||
@@ -172,14 +151,10 @@ SecurityLevel GetSecurityLevelForRequest(
     return SECURE_WITH_POLICY_INSTALLED_CERT;
 
   // In most cases, SHA1 use is treated as a certificate error, in which case
-  // DANGEROUS will have been returned above. If SHA1 is permitted, we downgrade
-  // the security level to Neutral or Dangerous depending on policy.
-  if (sha1_status == DEPRECATED_SHA1_MAJOR ||
-      sha1_status == DEPRECATED_SHA1_MINOR) {
-    return (visible_security_state.display_sha1_from_local_anchors_as_neutral)
-               ? NONE
-               : DANGEROUS;
-  }
+  // DANGEROUS will have been returned above. If SHA1 was permitted by policy,
+  // downgrade the security level to Neutral.
+  if (sha1_in_chain)
+    return NONE;
 
   // Active mixed content is handled above.
   DCHECK_NE(CONTENT_STATUS_RAN, mixed_content_status);
@@ -216,14 +191,16 @@ void SecurityInfoForRequest(
         MALICIOUS_CONTENT_STATUS_NONE) {
       security_info->security_level = GetSecurityLevelForRequest(
           visible_security_state, used_policy_installed_certificate,
-          is_origin_secure_callback, UNKNOWN_SHA1, CONTENT_STATUS_UNKNOWN,
+          is_origin_secure_callback, false, CONTENT_STATUS_UNKNOWN,
           CONTENT_STATUS_UNKNOWN);
     }
     return;
   }
   security_info->certificate = visible_security_state.certificate;
-  security_info->sha1_deprecation_status =
-      GetSHA1DeprecationStatus(visible_security_state);
+
+  security_info->sha1_in_chain = visible_security_state.certificate &&
+                                 (visible_security_state.cert_status &
+                                  net::CERT_STATUS_SHA1_SIGNATURE_PRESENT);
   security_info->mixed_content_status =
       GetContentStatus(visible_security_state.displayed_mixed_content,
                        visible_security_state.ran_mixed_content);
@@ -252,7 +229,7 @@ void SecurityInfoForRequest(
 
   security_info->security_level = GetSecurityLevelForRequest(
       visible_security_state, used_policy_installed_certificate,
-      is_origin_secure_callback, security_info->sha1_deprecation_status,
+      is_origin_secure_callback, security_info->sha1_in_chain,
       security_info->mixed_content_status,
       security_info->content_with_cert_errors_status);
 }
@@ -265,7 +242,7 @@ const base::Feature kHttpFormWarningFeature{"HttpFormWarning",
 SecurityInfo::SecurityInfo()
     : security_level(NONE),
       malicious_content_status(MALICIOUS_CONTENT_STATUS_NONE),
-      sha1_deprecation_status(NO_DEPRECATED_SHA1),
+      sha1_in_chain(false),
       mixed_content_status(CONTENT_STATUS_NONE),
       content_with_cert_errors_status(CONTENT_STATUS_NONE),
       scheme_is_cryptographic(false),
@@ -307,8 +284,7 @@ VisibleSecurityState::VisibleSecurityState()
       ran_content_with_cert_errors(false),
       pkp_bypassed(false),
       displayed_password_field_on_http(false),
-      displayed_credit_card_field_on_http(false),
-      display_sha1_from_local_anchors_as_neutral(false) {}
+      displayed_credit_card_field_on_http(false) {}
 
 VisibleSecurityState::~VisibleSecurityState() {}
 
@@ -330,9 +306,7 @@ bool VisibleSecurityState::operator==(const VisibleSecurityState& other) const {
           displayed_password_field_on_http ==
               other.displayed_password_field_on_http &&
           displayed_credit_card_field_on_http ==
-              other.displayed_credit_card_field_on_http &&
-          display_sha1_from_local_anchors_as_neutral ==
-              other.display_sha1_from_local_anchors_as_neutral);
+              other.displayed_credit_card_field_on_http);
 }
 
 }  // namespace security_state

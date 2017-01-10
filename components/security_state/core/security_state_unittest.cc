@@ -115,44 +115,56 @@ class TestSecurityStateHelper {
 
 }  // namespace
 
-// Tests that SHA1-signed certificates expiring in 2016 downgrade the
-// security state of the page.
+// Tests that SHA1-signed certificates, when not allowed by policy, downgrade
+// the security state of the page to DANGEROUS.
+TEST(SecurityStateTest, SHA1Blocked) {
+  TestSecurityStateHelper helper;
+  helper.AddCertStatus(net::CERT_STATUS_WEAK_SIGNATURE_ALGORITHM);
+  helper.AddCertStatus(net::CERT_STATUS_SHA1_SIGNATURE_PRESENT);
+  SecurityInfo security_info;
+  helper.GetSecurityInfo(&security_info);
+  EXPECT_TRUE(security_info.sha1_in_chain);
+  EXPECT_EQ(DANGEROUS, security_info.security_level);
+}
+
+// Tests that SHA1-signed certificates, when allowed by policy, downgrade the
+// security state of the page to NONE.
 TEST(SecurityStateTest, SHA1Warning) {
   TestSecurityStateHelper helper;
   SecurityInfo security_info;
   helper.GetSecurityInfo(&security_info);
-  EXPECT_EQ(DEPRECATED_SHA1_MINOR, security_info.sha1_deprecation_status);
-  EXPECT_EQ(DANGEROUS, security_info.security_level);
+  EXPECT_TRUE(security_info.sha1_in_chain);
+  EXPECT_EQ(NONE, security_info.security_level);
 }
 
-// Tests that SHA1 warnings don't interfere with the handling of mixed
-// content.
+// Tests that SHA1-signed certificates, when allowed by policy, don't interfere
+// with the handling of mixed content.
 TEST(SecurityStateTest, SHA1WarningMixedContent) {
   TestSecurityStateHelper helper;
   helper.SetDisplayedMixedContent(true);
   SecurityInfo security_info1;
   helper.GetSecurityInfo(&security_info1);
-  EXPECT_EQ(DEPRECATED_SHA1_MINOR, security_info1.sha1_deprecation_status);
+  EXPECT_TRUE(security_info1.sha1_in_chain);
   EXPECT_EQ(CONTENT_STATUS_DISPLAYED, security_info1.mixed_content_status);
-  EXPECT_EQ(DANGEROUS, security_info1.security_level);
+  EXPECT_EQ(NONE, security_info1.security_level);
 
   helper.SetDisplayedMixedContent(false);
   helper.SetRanMixedContent(true);
   SecurityInfo security_info2;
   helper.GetSecurityInfo(&security_info2);
-  EXPECT_EQ(DEPRECATED_SHA1_MINOR, security_info2.sha1_deprecation_status);
+  EXPECT_TRUE(security_info2.sha1_in_chain);
   EXPECT_EQ(CONTENT_STATUS_RAN, security_info2.mixed_content_status);
   EXPECT_EQ(DANGEROUS, security_info2.security_level);
 }
 
-// Tests that SHA1 warnings don't interfere with the handling of major
-// cert errors.
+// Tests that SHA1-signed certificates, when allowed by policy,
+// don't interfere with the handling of major cert errors.
 TEST(SecurityStateTest, SHA1WarningBrokenHTTPS) {
   TestSecurityStateHelper helper;
   helper.AddCertStatus(net::CERT_STATUS_DATE_INVALID);
   SecurityInfo security_info;
   helper.GetSecurityInfo(&security_info);
-  EXPECT_EQ(DEPRECATED_SHA1_MINOR, security_info.sha1_deprecation_status);
+  EXPECT_TRUE(security_info.sha1_in_chain);
   EXPECT_EQ(DANGEROUS, security_info.security_level);
 }
 

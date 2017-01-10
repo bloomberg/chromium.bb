@@ -201,16 +201,5 @@ SecurityStateTabHelper::GetVisibleSecurityState() const {
   // information is still being initialized, thus no need to check for that.
   state->malicious_content_status = GetMaliciousContentStatus();
 
-  // If the chain contains SHA1, populate the display policy field.
-  // In M56, we want to display a Neutral security state if the SHA1
-  // certificate was not blocked because the kCertEnableSha1LocalAnchors
-  // policy has been set.
-  // TODO(elawrence): remove this in M57, https://crbug.com/676826
-  if (state->cert_status & net::CERT_STATUS_SHA1_SIGNATURE_PRESENT) {
-    state->display_sha1_from_local_anchors_as_neutral =
-        g_browser_process->local_state()->GetBoolean(
-            ssl_config::prefs::kCertEnableSha1LocalAnchors);
-  }
-
   return state;
 }

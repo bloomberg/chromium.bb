@@ -492,31 +492,13 @@ void WebsiteSettings::Init(const GURL& url,
         site_identity_details_.assign(l10n_util::GetStringFUTF16(
             IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_VERIFIED, issuer_name));
       }
-      switch (security_info.sha1_deprecation_status) {
-        case security_state::DEPRECATED_SHA1_MINOR:
-          site_identity_status_ =
-              SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM_MINOR;
-          site_identity_details_ +=
-              UTF8ToUTF16("\n\n") +
-              l10n_util::GetStringUTF16(
-                  IDS_PAGE_INFO_SECURITY_TAB_DEPRECATED_SIGNATURE_ALGORITHM_MINOR);
-          break;
-        case security_state::DEPRECATED_SHA1_MAJOR:
-          site_identity_status_ =
-              SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM_MAJOR;
-          site_identity_details_ +=
-              UTF8ToUTF16("\n\n") +
-              l10n_util::GetStringUTF16(
-                  IDS_PAGE_INFO_SECURITY_TAB_DEPRECATED_SIGNATURE_ALGORITHM_MAJOR);
-          break;
-        case security_state::NO_DEPRECATED_SHA1:
-          // Nothing to do.
-          break;
-        case security_state::UNKNOWN_SHA1:
-          // UNKNOWN_SHA1 should only appear when certificate info has not been
-          // initialized, in which case this if-statement should not be running
-          // because there is no other cert info.
-          NOTREACHED();
+      if (security_info.sha1_in_chain) {
+        site_identity_status_ =
+            SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM;
+        site_identity_details_ +=
+            UTF8ToUTF16("\n\n") +
+            l10n_util::GetStringUTF16(
+                IDS_PAGE_INFO_SECURITY_TAB_DEPRECATED_SIGNATURE_ALGORITHM);
       }
     }
   } else {
