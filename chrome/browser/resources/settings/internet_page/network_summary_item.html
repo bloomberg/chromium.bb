@@ -83,10 +83,11 @@
         </template>
       </div>
 
-      <template is="dom-if" if="[[enableIsVisible_(deviceState)]]">
+      <template is="dom-if" if="[[enableToggleIsVisible_(deviceState)]]">
         <div class="secondary-action">
           <paper-toggle-button  id="deviceEnabledButton"
               checked="[[deviceIsEnabled_(deviceState)]]"
+              enabled="[[enableToggleIsEnabled_(deviceState)]]"
               on-tap="onDeviceEnabledTap_">
           </paper-toggle-button>
         </div>

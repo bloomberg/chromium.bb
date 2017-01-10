@@ -387,6 +387,11 @@ Polymer({
       if (!device)
         continue;
       let state = activeNetworkStatesByType.get(type) || {GUID: '', Type: type};
+      if (state.Source === undefined &&
+          device.State == chrome.networkingPrivate.DeviceStateType.PROHIBITED) {
+        // Prohibited technologies are enforced by the device policy.
+        state.Source = CrOnc.Source.DEVICE_POLICY;
+      }
       newActiveNetworkStates.push(state);
       this.activeNetworkIds_.add(state.GUID);
     }

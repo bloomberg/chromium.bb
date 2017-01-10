@@ -181,12 +181,23 @@ Polymer({
   },
 
   /**
+   * @param {!DeviceStateProperties} deviceState
    * @return {boolean}
    * @private
    */
-  enableIsVisible_: function() {
-    return this.deviceState.Type != CrOnc.Type.ETHERNET &&
-        this.deviceState.Type != CrOnc.Type.VPN;
+  enableToggleIsVisible_: function(deviceState) {
+    return deviceState.Type != CrOnc.Type.ETHERNET &&
+        deviceState.Type != CrOnc.Type.VPN;
+  },
+
+  /**
+   * @param {!DeviceStateProperties} deviceState
+   * @return {boolean}
+   * @private
+   */
+  enableToggleIsEnabled_: function(deviceState) {
+    return deviceState.State !=
+        chrome.networkingPrivate.DeviceStateType.PROHIBITED;
   },
 
   /**
