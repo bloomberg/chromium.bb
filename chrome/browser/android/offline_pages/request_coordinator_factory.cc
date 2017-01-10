@@ -59,9 +59,9 @@ KeyedService* RequestCoordinatorFactory::BuildServiceInstanceFor(
 
   // Determines which offliner to use based on flag.
   if (ShouldUseNewBackgroundLoader()) {
-    offliner.reset(new BackgroundLoaderOffliner(context, model));
+    offliner.reset(new BackgroundLoaderOffliner(context, policy.get(), model));
   } else {
-    offliner.reset(new PrerenderingOffliner(context, model));
+    offliner.reset(new PrerenderingOffliner(context, policy.get(), model));
   }
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =

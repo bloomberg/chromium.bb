@@ -188,7 +188,7 @@ PrerenderingOfflinerTest::~PrerenderingOfflinerTest() {}
 
 void PrerenderingOfflinerTest::SetUp() {
   model_ = new MockOfflinePageModel();
-  offliner_.reset(new PrerenderingOffliner(profile(), model_));
+  offliner_.reset(new PrerenderingOffliner(profile(), nullptr, model_));
   std::unique_ptr<MockPrerenderingLoader> mock_loader(
       new MockPrerenderingLoader(nullptr));
   loader_ = mock_loader.get();
