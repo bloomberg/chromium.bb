@@ -151,7 +151,6 @@ class NoteTakingHelper : public arc::ArcServiceManager::Observer,
   void LaunchAppForNewNote(Profile* profile, const base::FilePath& path);
 
   // arc::ArcServiceManager::Observer:
-  void OnArcShutdown() override;
   void OnIntentFiltersUpdated() override;
 
   // arc::ArcSessionManager::Observer:

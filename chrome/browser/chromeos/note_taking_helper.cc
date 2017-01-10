@@ -181,8 +181,6 @@ void NoteTakingHelper::LaunchAppForNewNote(Profile* profile,
                             static_cast<int>(LaunchResult::MAX));
 }
 
-void NoteTakingHelper::OnArcShutdown() {}
-
 void NoteTakingHelper::OnIntentFiltersUpdated() {
   if (android_enabled_)
     UpdateAndroidApps();

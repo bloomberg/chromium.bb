@@ -70,6 +70,14 @@ ArcServiceManager* ArcServiceManager::Get() {
   return g_arc_service_manager;
 }
 
+// static
+bool ArcServiceManager::IsInitialized() {
+  if (!g_arc_service_manager)
+    return false;
+  DCHECK(g_arc_service_manager->thread_checker_.CalledOnValidThread());
+  return true;
+}
+
 ArcBridgeService* ArcServiceManager::arc_bridge_service() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return arc_bridge_service_.get();
@@ -92,11 +100,6 @@ void ArcServiceManager::RemoveObserver(Observer* observer) {
 
 void ArcServiceManager::Shutdown() {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  // Before actual shutdown, notify observers for clean up.
-  for (auto& observer : observer_list_)
-    observer.OnArcShutdown();
-
   icon_loader_ = nullptr;
   activity_resolver_ = nullptr;
   services_.clear();

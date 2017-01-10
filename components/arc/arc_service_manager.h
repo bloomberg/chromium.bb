@@ -28,11 +28,6 @@ class ArcServiceManager {
  public:
   class Observer {
    public:
-    // Called when ArcServiceManager is being shut down. Observer
-    // implementation should clean up ARC related stuff here. One of the
-    // typical use cases is calling ArcServiceManager::RemoveObserver().
-    virtual void OnArcShutdown() = 0;
-
     // Called when intent filters are added or removed.
     virtual void OnIntentFiltersUpdated() = 0;
 
@@ -54,6 +49,12 @@ class ArcServiceManager {
   // Gets the global instance of the ARC Service Manager. This can only be
   // called on the thread that this class was created on.
   static ArcServiceManager* Get();
+
+  // Returns if the ARC Service Manager instance exists.
+  // DO NOT CALL THIS. This function is a dirty workaround for properly shutting
+  // down chrome/browser/chromeos/extensions/file_manager/event_router.cc, and
+  // will likely be removed in the future.
+  static bool IsInitialized();
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

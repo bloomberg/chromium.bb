@@ -68,7 +68,6 @@ class EventRouter : public KeyedService,
   ~EventRouter() override;
 
   // arc::ArcServiceManager::Observer overrides.
-  void OnArcShutdown() override;
   void OnIntentFiltersUpdated() override;
 
   // KeyedService overrides.
