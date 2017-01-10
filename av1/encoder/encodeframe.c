@@ -4891,6 +4891,9 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
 #error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
 #endif
   od_adapt_ctx_reset(adapt, 0);
+#elif CONFIG_EC_ADAPT
+  this_tile->tctx = *cm->fc;
+  td->mb.e_mbd.tile_ctx = &this_tile->tctx;
 #endif  // #if CONFIG_PVQ
 
   for (mi_row = tile_info->mi_row_start; mi_row < tile_info->mi_row_end;

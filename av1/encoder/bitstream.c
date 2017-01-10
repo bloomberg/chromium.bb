@@ -3836,7 +3836,7 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
     for (tile_col = 0; tile_col < tile_cols; tile_col++) {
       const int tile_idx = tile_row * tile_cols + tile_col;
       TileBufferEnc *const buf = &tile_buffers[tile_row][tile_col];
-#if CONFIG_PVQ
+#if CONFIG_PVQ || CONFIG_EC_ADAPT
       TileDataEnc *this_tile = &cpi->tile_data[tile_idx];
 #endif
       const TOKENEXTRA *tok = tok_buffers[tile_row][tile_col];
@@ -3917,6 +3917,10 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
       // NOTE: This will not work with CONFIG_ANS turned on.
       od_adapt_ctx_reset(&cpi->td.mb.daala_enc.state.adapt, 0);
       cpi->td.mb.pvq_q = &this_tile->pvq_q;
+#elif CONFIG_EC_ADAPT
+      // Initialise tile context from the frame context
+      this_tile->tctx = *cm->fc;
+      cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
 #endif
       write_modes(cpi, &tile_info, &mode_bc, &tok, tok_end);
       assert(tok == tok_end);

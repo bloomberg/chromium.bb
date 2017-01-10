@@ -3408,6 +3408,11 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_PVQ
       daala_dec_init(cm, &td->xd.daala_dec, &td->bit_reader);
 #endif
+#if CONFIG_EC_ADAPT
+      // Initialise the tile context from the frame context
+      td->tctx = *cm->fc;
+      td->xd.tile_ctx = &td->tctx;
+#endif
 #if CONFIG_PALETTE
       td->xd.plane[0].color_index_map = td->color_index_map[0];
       td->xd.plane[1].color_index_map = td->color_index_map[1];
