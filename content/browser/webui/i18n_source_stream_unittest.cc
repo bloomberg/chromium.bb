@@ -14,32 +14,69 @@ namespace content {
 
 namespace {
 
-// These constants are rather arbitrary, though the offsets and other sizes must
+// This constant is rather arbitrary, though the offsets and other sizes must
 // be less than kBufferSize.
 const int kBufferSize = 256;
-const int kSmallBufferSize = 1;
 
-const int kShortReplacementOffset = 5;
-const char kShortReplacementKey[] = "a";
-const char kShortReplacementToken[] = "$i18n{a}";
-const char kShortReplacementValue[] = "short";
+const int kMinimumSize = 1;
+const int kSmallSize = 5;  // Arbitrary small value > 1.
+const int kInOneReadSize = INT_MAX;
 
-const int kLongReplacementOffset = 33;
-const char kLongReplacementKey[] = "aLongerReplacementName";
-const char kLongReplacementToken[] = "$i18n{aLongerReplacementName}";
-const char kLongReplacementValue[] = "second replacement";
+struct I18nTest {
+  constexpr I18nTest(const char* input, const char* expected_output)
+      : input(input), expected_output(expected_output) {}
 
-const int kSourceSize =
-    50 + arraysize(kShortReplacementToken) + arraysize(kLongReplacementToken);
-const int kResultSize =
-    50 + arraysize(kShortReplacementValue) + arraysize(kLongReplacementValue);
+  const char* input;
+  const char* expected_output;
+};
+
+constexpr I18nTest kTestEmpty = I18nTest("", "");
+
+constexpr I18nTest kTestNoReplacements =
+    I18nTest("This text has no i18n replacements.",
+             "This text has no i18n replacements.");
+
+constexpr I18nTest kTestTagAtEndOfLine =
+    I18nTest("test with tag at end of line $",
+             "test with tag at end of line $");
+
+constexpr I18nTest kTestOneReplacement = I18nTest("$i18n{alpha}", "apple");
+
+constexpr I18nTest kTestOneReplacementPlus =
+    I18nTest("Extra text $i18n{alpha}.", "Extra text apple.");
+
+constexpr I18nTest kTestThreeReplacements =
+    I18nTest("$i18n{alpha}^$i18n{beta}_$i18n{gamma}", "apple^banana_carrot");
+
+constexpr I18nTest kTestExtraBraces =
+    I18nTest("($i18n{alpha})^_^_^_^_$i18n{beta}_beta_$i18n{gamma}}}}}}",
+             "(apple)^_^_^_^_banana_beta_carrot}}}}}");
+
+// These tests with generic names are sequences that might catch an error in the
+// future, depending on how the code changes.
+constexpr I18nTest kTest1 =
+    I18nTest("  }    $($i18n{gamma})^_^_^_^_$i18n{alpha}_$i18n{gamma}$",
+             "  }    $(carrot)^_^_^_^_apple_carrot$");
+
+constexpr I18nTest kTest2 =
+    I18nTest("$i18n{alpha} gamma}{ ^_^_^_^_$abc{beta}:$i18n{gamma}z",
+             "apple gamma}{ ^_^_^_^_$abc{beta}:carrotz");
 
 struct I18nTestParam {
-  I18nTestParam(int buf_size, net::MockSourceStream::Mode read_mode)
-      : buffer_size(buf_size), mode(read_mode) {}
+  constexpr I18nTestParam(
+      const I18nTest* test,
+      int buf_size,
+      int read_size,
+      net::MockSourceStream::Mode read_mode = net::MockSourceStream::SYNC)
+      : buffer_size(buf_size),
+        read_size(read_size),
+        mode(read_mode),
+        test(test) {}
 
   const int buffer_size;
+  const int read_size;
   const net::MockSourceStream::Mode mode;
+  const I18nTest* test;
 };
 
 }  // namespace
@@ -50,32 +87,13 @@ class I18nSourceStreamTest : public ::testing::TestWithParam<I18nTestParam> {
 
   // Helpful function to initialize the test fixture.
   void Init() {
-    source_data_len_ = kBufferSize;
-    for (size_t i = 0; i < source_data_len_; i++)
-      source_data_[i] = i % 256;
-
-    // Inserts must be done last to first as they appear in the buffer.
-    InsertText(source_data_, source_data_len_, kLongReplacementOffset,
-               kLongReplacementToken);
-    InsertText(source_data_, source_data_len_, kShortReplacementOffset,
-               kShortReplacementToken);
-
-    result_data_len_ = kBufferSize;
-    for (size_t i = 0; i < result_data_len_; i++)
-      result_data_[i] = i % 256;
-
-    // Inserts must be done last to first as they appear in the buffer.
-    InsertText(result_data_, result_data_len_, kLongReplacementOffset,
-               kLongReplacementValue);
-    InsertText(result_data_, result_data_len_, kShortReplacementOffset,
-               kShortReplacementValue);
-
     output_buffer_ = new net::IOBuffer(output_buffer_size_);
     std::unique_ptr<net::MockSourceStream> source(new net::MockSourceStream());
     source_ = source.get();
 
-    replacements_[kShortReplacementKey] = kShortReplacementValue;
-    replacements_[kLongReplacementKey] = kLongReplacementValue;
+    replacements_["alpha"] = "apple";
+    replacements_["beta"] = "banana";
+    replacements_["gamma"] = "carrot";
     stream_ = I18nSourceStream::Create(
         std::move(source), net::SourceStream::TYPE_NONE, &replacements_);
   }
@@ -94,30 +112,24 @@ class I18nSourceStreamTest : public ::testing::TestWithParam<I18nTestParam> {
     return previous_result;
   }
 
-  void InsertText(char* buffer,
-                  size_t buffer_length,
-                  size_t offset,
-                  const char* text) {
-    // Intended to be dead simple so that it can be confirmed
-    // as correct by hand.
-    size_t text_length = strlen(text);
-    memmove(buffer + offset + text_length, buffer + offset,
-            buffer_length - offset - text_length);
-    memcpy(buffer + offset, text, text_length);
-  }
-
-  char* source_data() { return source_data_; }
-  size_t source_data_len() { return source_data_len_; }
-
-  char* result_data() { return result_data_; }
-  size_t result_data_len() { return result_data_len_; }
-
   net::IOBuffer* output_buffer() { return output_buffer_.get(); }
   char* output_data() { return output_buffer_->data(); }
   size_t output_buffer_size() { return output_buffer_size_; }
 
   net::MockSourceStream* source() { return source_; }
   I18nSourceStream* stream() { return stream_.get(); }
+
+  void PushReadResults(const char* input, size_t chunk_size) {
+    size_t written = 0;
+    size_t source_size = strlen(GetParam().test->input);
+    while (written != source_size) {
+      size_t write_size = std::min(chunk_size, source_size - written);
+      source()->AddReadResult(input + written, write_size, net::OK,
+                              GetParam().mode);
+      written += write_size;
+    }
+    source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
+  }
 
   // Reads from |stream_| until an error occurs or the EOF is reached.
   // When an error occurs, returns the net error code. When an EOF is reached,
@@ -142,12 +154,6 @@ class I18nSourceStreamTest : public ::testing::TestWithParam<I18nTestParam> {
   }
 
  private:
-  char source_data_[kBufferSize];
-  size_t source_data_len_;
-
-  char result_data_[kBufferSize];
-  size_t result_data_len_;
-
   scoped_refptr<net::IOBuffer> output_buffer_;
   const int output_buffer_size_;
 
@@ -160,72 +166,99 @@ class I18nSourceStreamTest : public ::testing::TestWithParam<I18nTestParam> {
 INSTANTIATE_TEST_CASE_P(
     I18nSourceStreamTests,
     I18nSourceStreamTest,
-    ::testing::Values(I18nTestParam(kBufferSize, net::MockSourceStream::SYNC),
-                      I18nTestParam(kSmallBufferSize,
-                                    net::MockSourceStream::SYNC)));
+    ::testing::Values(
+        I18nTestParam(&kTest1, kBufferSize, kInOneReadSize),
+        I18nTestParam(&kTest1, kBufferSize, kSmallSize),
+        I18nTestParam(&kTest1, kMinimumSize, kMinimumSize),
+        I18nTestParam(&kTest1, kMinimumSize, kSmallSize),
 
-TEST_P(I18nSourceStreamTest, EmptyStream) {
-  Init();
-  source()->AddReadResult("", 0, net::OK, GetParam().mode);
-  std::string actual_output;
-  int result = ReadStream(&actual_output);
-  EXPECT_EQ(net::OK, result);
-  EXPECT_EQ("i18n", stream()->Description());
-}
+        I18nTestParam(&kTest2, kBufferSize, kInOneReadSize),
+        I18nTestParam(&kTest2, kBufferSize, kSmallSize),
+        I18nTestParam(&kTest2, kMinimumSize, kMinimumSize),
+        I18nTestParam(&kTest2, kMinimumSize, kSmallSize),
 
-TEST_P(I18nSourceStreamTest, NoTranslations) {
+        I18nTestParam(&kTestEmpty, kBufferSize, kInOneReadSize),
+        I18nTestParam(&kTestEmpty, kBufferSize, kSmallSize),
+        I18nTestParam(&kTestEmpty, kMinimumSize, kMinimumSize),
+        I18nTestParam(&kTestEmpty, kMinimumSize, kSmallSize),
+
+        I18nTestParam(&kTestExtraBraces, kBufferSize, kInOneReadSize),
+        I18nTestParam(&kTestExtraBraces, kBufferSize, kSmallSize),
+        I18nTestParam(&kTestExtraBraces, kMinimumSize, kMinimumSize),
+        I18nTestParam(&kTestExtraBraces, kMinimumSize, kSmallSize),
+
+        I18nTestParam(&kTestNoReplacements, kBufferSize, kInOneReadSize),
+        I18nTestParam(&kTestNoReplacements, kBufferSize, kSmallSize),
+        I18nTestParam(&kTestNoReplacements, kMinimumSize, kMinimumSize),
+        I18nTestParam(&kTestNoReplacements, kMinimumSize, kSmallSize),
+
+        I18nTestParam(&kTestOneReplacement, kBufferSize, kInOneReadSize),
+        I18nTestParam(&kTestOneReplacement, kBufferSize, kSmallSize),
+        I18nTestParam(&kTestOneReplacement, kMinimumSize, kMinimumSize),
+        I18nTestParam(&kTestOneReplacement, kMinimumSize, kSmallSize),
+
+        I18nTestParam(&kTestOneReplacementPlus, kBufferSize, kInOneReadSize),
+        I18nTestParam(&kTestOneReplacementPlus, kBufferSize, kSmallSize),
+        I18nTestParam(&kTestOneReplacementPlus, kMinimumSize, kMinimumSize),
+        I18nTestParam(&kTestOneReplacementPlus, kMinimumSize, kSmallSize),
+
+        I18nTestParam(&kTestTagAtEndOfLine, kBufferSize, kInOneReadSize),
+        I18nTestParam(&kTestTagAtEndOfLine, kBufferSize, kSmallSize),
+        I18nTestParam(&kTestTagAtEndOfLine, kMinimumSize, kMinimumSize),
+        I18nTestParam(&kTestTagAtEndOfLine, kMinimumSize, kSmallSize),
+
+        I18nTestParam(&kTestThreeReplacements, kBufferSize, kInOneReadSize),
+        I18nTestParam(&kTestThreeReplacements, kBufferSize, kSmallSize),
+        I18nTestParam(&kTestThreeReplacements, kMinimumSize, kMinimumSize),
+        I18nTestParam(&kTestThreeReplacements, kMinimumSize, kSmallSize)));
+
+TEST_P(I18nSourceStreamTest, FilterTests) {
   Init();
-  const char kText[] = "This text has no i18n replacements.";
-  size_t kTextLength = strlen(kText);
-  source()->AddReadResult(kText, kTextLength, net::OK, GetParam().mode);
-  source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
+  // Create the chain of read buffers.
+  PushReadResults(GetParam().test->input, GetParam().read_size);
+
+  // Process the buffers.
   std::string actual_output;
   int rv = ReadStream(&actual_output);
-  EXPECT_EQ(static_cast<int>(kTextLength), rv);
-  EXPECT_EQ(kText, actual_output);
+
+  // Check the results.
+  std::string expected_output(GetParam().test->expected_output);
+  EXPECT_EQ(expected_output.size(), static_cast<size_t>(rv));
+  EXPECT_EQ(expected_output, actual_output);
   EXPECT_EQ("i18n", stream()->Description());
 }
 
-TEST_P(I18nSourceStreamTest, I18nOneRead) {
+TEST_P(I18nSourceStreamTest, LargeFilterTests) {
   Init();
-  source()->AddReadResult(source_data(), kSourceSize, net::OK, GetParam().mode);
-  source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
-  std::string actual_output;
-  int rv = ReadStream(&actual_output);
-  EXPECT_EQ(static_cast<int>(kResultSize), rv);
-  EXPECT_EQ(std::string(result_data(), kResultSize), actual_output);
-  EXPECT_EQ("i18n", stream()->Description());
-}
+  std::string padding;
+  // 251 and 599 are prime and avoid power-of-two repetition.
+  int padding_modulus = 251;
+  int pad_size = 599;
+  padding.resize(pad_size);
+  for (int i = 0; i < pad_size; ++i)
+    padding[i] = i % padding_modulus;
 
-TEST_P(I18nSourceStreamTest, I18nInMultipleReads) {
-  Init();
-  size_t chunk_size = 5;
-  size_t written = 0;
-  while (written + chunk_size < kSourceSize) {
-    source()->AddReadResult(source_data() + written, chunk_size, net::OK,
+  // Create the chain of read buffers.
+  const int kPadCount = 128;  // Arbitrary number of pads to add.
+  for (int i = 0; i < kPadCount; ++i) {
+    source()->AddReadResult(padding.c_str(), padding.size(), net::OK,
                             GetParam().mode);
-    written += chunk_size;
   }
-  source()->AddReadResult(source_data() + written, kSourceSize - written,
-                          net::OK, GetParam().mode);
-  source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
-  std::string actual_output;
-  int rv = ReadStream(&actual_output);
-  EXPECT_EQ(static_cast<int>(kResultSize), rv);
-  EXPECT_EQ(std::string(result_data(), kResultSize), actual_output);
-  EXPECT_EQ("i18n", stream()->Description());
-}
+  PushReadResults(GetParam().test->input, GetParam().read_size);
 
-TEST_P(I18nSourceStreamTest, I18nTagAtEndOfLine) {
-  Init();
-  const char kSourceData[] = "test with tag at end of line $";
-  const size_t source_size = strlen(kSourceData);
-  source()->AddReadResult(kSourceData, source_size, net::OK, GetParam().mode);
-  source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
+  // Process the buffers.
   std::string actual_output;
   int rv = ReadStream(&actual_output);
-  EXPECT_EQ(static_cast<int>(source_size), rv);
-  EXPECT_EQ(kSourceData, actual_output);
+
+  // Check the results.
+  size_t total_padding = kPadCount * padding.size();
+  std::string expected_output(GetParam().test->expected_output);
+  ASSERT_EQ(expected_output.size() + total_padding, static_cast<size_t>(rv));
+  for (int i = 0; i < kPadCount; ++i) {
+    EXPECT_EQ(actual_output.substr(i * padding.size(), padding.size()),
+              padding);
+  }
+  EXPECT_EQ(expected_output, &actual_output[total_padding]);
   EXPECT_EQ("i18n", stream()->Description());
 }
 
