@@ -710,7 +710,8 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   // Ensure the main tab model is created.
   ignore_result([_browserViewWrangler mainTabModel]);
 
-  [self createSpotlightManager];
+  _spotlightManager.reset([[SpotlightManager
+      spotlightManagerWithBrowserState:_mainBrowserState] retain]);
 
   if (reading_list::switches::IsReadingListEnabled()) {
     ShareExtensionService* service =
@@ -1234,13 +1235,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
                   block:^{
                     [DownloadManagerController clearDownloadsDirectory];
                   }];
-}
-
-- (void)createSpotlightManager {
-  if (spotlight::IsSpotlightAvailable()) {
-    _spotlightManager.reset([[SpotlightManager
-        spotlightManagerWithBrowserState:_mainBrowserState] retain]);
-  }
 }
 
 - (void)scheduleSpotlightResync {

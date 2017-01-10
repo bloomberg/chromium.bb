@@ -28,12 +28,15 @@
 
 + (SpotlightManager*)spotlightManagerWithBrowserState:
     (ios::ChromeBrowserState*)browserState {
-  DCHECK(spotlight::IsSpotlightAvailable());
-  return [[[SpotlightManager alloc] initWithBrowserState:browserState]
-      autorelease];
+  if (spotlight::IsSpotlightAvailable()) {
+    return [[[SpotlightManager alloc] initWithBrowserState:browserState]
+        autorelease];
+  }
+  return nil;
 }
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
+  DCHECK(spotlight::IsSpotlightAvailable());
   self = [super init];
   if (self) {
     _topSitesManager.reset([[TopSitesSpotlightManager
