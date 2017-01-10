@@ -2405,10 +2405,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 
   [self restoreStateFromHistory];
-  _webStateImpl->OnPageLoaded(currentURL, loadSuccess);
   _webStateImpl->SetIsLoading(false);
-  // Inform the embedder the load completed.
-  [_delegate webDidFinishWithURL:currentURL loadSuccess:loadSuccess];
+  _webStateImpl->OnPageLoaded(currentURL, loadSuccess);
 }
 
 - (void)goDelta:(int)delta {

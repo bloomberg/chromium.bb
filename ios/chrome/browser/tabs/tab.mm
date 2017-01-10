@@ -143,6 +143,7 @@
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/ui/crw_generic_content_view.h"
 #include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ios/web/public/web_thread.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/web_state_impl.h"
@@ -201,6 +202,7 @@ enum class RendererTerminationTabState {
 }  // namespace
 
 @interface Tab ()<BlockedPopupHandlerDelegate,
+                  CRWWebStateObserver,
                   CRWWebUserInterfaceDelegate,
                   FindInPageControllerDelegate,
                   ReaderModeControllerDelegate> {
@@ -305,6 +307,9 @@ enum class RendererTerminationTabState {
 
   // WebStateImpl for this tab.
   std::unique_ptr<web::WebStateImpl> webStateImpl_;
+
+  // Allows Tab to conform CRWWebStateDelegate protocol.
+  std::unique_ptr<web::WebStateObserverBridge> webStateObserver_;
 
   // Context used by history to scope the lifetime of navigation entry
   // references to Tab.
@@ -549,6 +554,9 @@ void AddNetworkClientFactoryOnIOThread(
         ios::ChromeBrowserState::FromBrowserState(webState->GetBrowserState());
 
     webStateImpl_.reset(static_cast<web::WebStateImpl*>(webState.release()));
+    webStateObserver_.reset(
+        new web::WebStateObserverBridge(webStateImpl_.get(), self));
+
     [self.webController setDelegate:self];
     [self.webController setUIDelegate:self];
 
@@ -1665,7 +1673,7 @@ void AddNetworkClientFactoryOnIOThread(
   return [self tabId];
 }
 
-#pragma mark - WebDelegate protocol methods.
+#pragma mark - CRWWebDelegate and CRWWebStateObserver protocol methods.
 
 - (CRWWebController*)webPageOrderedOpen:(const GURL&)URL
                                referrer:(const web::Referrer&)referrer
@@ -1851,9 +1859,8 @@ void AddNetworkClientFactoryOnIOThread(
   }
 }
 
-// Called when the page finishes loading, with the URL and a boolean indicating
-// if the page was successfully loaded.
-- (void)webDidFinishWithURL:(const GURL&)url loadSuccess:(BOOL)loadSuccess {
+- (void)webStateDidLoadPage:(web::WebState*)webState
+                withSuccess:(BOOL)loadSuccess {
   DCHECK(self.webController.loadPhase == web::PAGE_LOADED);
 
   // Cancel prerendering if response is "application/octet-stream". It can be a
@@ -1866,10 +1873,11 @@ void AddNetworkClientFactoryOnIOThread(
   bool wasPost = false;
   if (self.currentSessionEntry)
     wasPost = self.currentSessionEntry.navigationItem->HasPostData();
+  GURL lastCommittedURL = self.webState->GetLastCommittedURL();
   if (loadSuccess)
-    [autoReloadBridge_ loadFinishedForURL:url wasPost:wasPost];
+    [autoReloadBridge_ loadFinishedForURL:lastCommittedURL wasPost:wasPost];
   else
-    [autoReloadBridge_ loadFailedForURL:url wasPost:wasPost];
+    [autoReloadBridge_ loadFailedForURL:lastCommittedURL wasPost:wasPost];
   [webControllerSnapshotHelper_ setSnapshotCoalescingEnabled:YES];
   if (!loadSuccess) {
     [fullScreenController_ disableFullScreen];
@@ -1877,9 +1885,10 @@ void AddNetworkClientFactoryOnIOThread(
   [self recordInterfaceOrientation];
   navigation_metrics::OriginsSeenService* originsSeenService =
       IOSChromeOriginsSeenServiceFactory::GetForBrowserState(self.browserState);
-  bool already_seen = originsSeenService->Insert(url::Origin::Origin(url));
+  bool alreadySeen =
+      originsSeenService->Insert(url::Origin::Origin(lastCommittedURL));
   navigation_metrics::RecordMainFrameNavigation(
-      url, true, self.browserState->IsOffTheRecord(), already_seen);
+      lastCommittedURL, true, self.browserState->IsOffTheRecord(), alreadySeen);
 
   if (loadSuccess) {
     scoped_refptr<net::HttpResponseHeaders> headers =
@@ -1910,8 +1919,9 @@ void AddNetworkClientFactoryOnIOThread(
   // If the tab switcher is not enabled, don't take snapshot of chrome scheme
   // pages.
   BOOL takeSnapshotOnIpad =
-      IsIPadIdiom() && (experimental_flags::IsTabSwitcherEnabled() ||
-                        !web::GetWebClient()->IsAppSpecificURL(url));
+      IsIPadIdiom() &&
+      (experimental_flags::IsTabSwitcherEnabled() ||
+       !web::GetWebClient()->IsAppSpecificURL(lastCommittedURL));
   // Always take snapshot on iPhone.
   BOOL takeSnapshot = !IsIPadIdiom() || takeSnapshotOnIpad;
   if (loadSuccess && takeSnapshot) {
@@ -2364,6 +2374,8 @@ void AddNetworkClientFactoryOnIOThread(
   // Set the new web state.
   webStateImpl_.reset(webState.release());
   [self.webController setDelegate:self];
+  webStateObserver_.reset(
+      new web::WebStateObserverBridge(webStateImpl_.get(), self));
   // SessionTabHelper comes first because it sets up the tab ID, and other
   // helpers may rely on that.
   IOSChromeSessionTabHelper::CreateForWebState(webStateImpl_.get());

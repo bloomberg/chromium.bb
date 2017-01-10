@@ -243,8 +243,7 @@ class TabTest : public BlockCleanupTest {
     [tab_ webController:mock_web_controller_ titleDidChange:title];
     [[[(id)mock_web_controller_ expect]
         andReturnValue:OCMOCK_VALUE(kPageLoaded)] loadPhase];
-    [[tab_ webController] webStateImpl]->OnPageLoaded(redirectUrl, true);
-    [tab_ webDidFinishWithURL:redirectUrl loadSuccess:YES];
+    [tab_ webStateImpl]->OnPageLoaded(redirectUrl, true);
   }
 
   void BrowseToNewTab() {
@@ -259,7 +258,7 @@ class TabTest : public BlockCleanupTest {
     [tab_ webDidStartLoadingURL:url shouldUpdateHistory:YES];
     [[[(id)mock_web_controller_ expect]
         andReturnValue:OCMOCK_VALUE(kPageLoaded)] loadPhase];
-    [tab_ webDidFinishWithURL:url loadSuccess:YES];
+    [tab_ webStateImpl]->OnPageLoaded(url, true);
     [tab_ webController:mock_web_controller_ titleDidChange:kNewTabTitle];
   }
 

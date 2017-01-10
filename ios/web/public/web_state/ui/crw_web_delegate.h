@@ -78,12 +78,6 @@ struct Referrer;
 // isn't a web concept, so this shoud be expressed differently.
 - (void)webDidStartLoadingURL:(const GURL&)url
           shouldUpdateHistory:(BOOL)updateHistory;
-// Called when the page finishes loading, with the URL, page title and load
-// success status. Phase will be PAGE_LOADED.
-// On the next navigation event, this will be followed by a call to
-// webWillStartLoadingURL.
-- (void)webDidFinishWithURL:(const GURL&)url
-                loadSuccess:(BOOL)loadSuccess;
 // Called when the page load was cancelled by page activity (before a success /
 // failure state is known). Phase will be PAGE_LOADED.
 - (void)webLoadCancelled:(const GURL&)url;
