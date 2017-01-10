@@ -70,6 +70,7 @@ public abstract class ChromeFeatureList {
     public static final String NTP_SNIPPETS_SAVE_TO_OFFLINE = "NTPSaveToOffline";
     public static final String NTP_SNIPPETS_OFFLINE_BADGE = "NTPOfflineBadge";
     public static final String NTP_SUGGESTIONS_SECTION_DISMISSAL = "NTPSuggestionsSectionDismissal";
+    public static final String NTP_SUGGESTIONS_STANDALONE_UI = "NTPSuggestionsStandaloneUI";
     public static final String SERVICE_WORKER_PAYMENT_APPS = "ServiceWorkerPaymentApps";
     public static final String TAB_REPARENTING = "TabReparenting";
     public static final String VR_SHELL = "VrShell";
