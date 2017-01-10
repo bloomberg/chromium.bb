@@ -335,10 +335,10 @@ void Map(const char *name, fptr *ref, fptr *simd) {
 std::string Print(const uint8_t *a, int size) {
   std::string text = "0x";
   for (int i = 0; i < size; i++) {
-    char buf[3];
-    snprintf(buf, sizeof(buf), "%02x",
-             a[!CONFIG_BIG_ENDIAN ? size - 1 - i : i]);
-    text += buf;
+    const uint8_t c = a[!CONFIG_BIG_ENDIAN ? size - 1 - i : i];
+    // Same as snprintf(..., ..., "%02x", c)
+    text += (c >> 4) + '0' + ((c >> 4) > 9) * ('a' - '0' - 10);
+    text += (c & 15) + '0' + ((c & 15) > 9) * ('a' - '0' - 10);
   }
 
   return text;
@@ -448,9 +448,9 @@ void TestSimd1Arg(uint32_t iterations, uint32_t mask, uint32_t maskwidth,
   fptr ref_simd;
   fptr simd;
   int error = 0;
-  DECLARE_ALIGNED(sizeof(CArg), uint16_t, s[sizeof(CArg) / sizeof(uint16_t)]);
-  DECLARE_ALIGNED(sizeof(CRet), uint8_t, d[sizeof(CRet)]);
-  DECLARE_ALIGNED(sizeof(CRet), uint8_t, ref_d[sizeof(CRet)]);
+  DECLARE_ALIGNED(32, uint16_t, s[sizeof(CArg) / sizeof(uint16_t)]);
+  DECLARE_ALIGNED(32, uint8_t, d[sizeof(CRet)]);
+  DECLARE_ALIGNED(32, uint8_t, ref_d[sizeof(CRet)]);
   memset(ref_d, 0, sizeof(ref_d));
   memset(d, 0, sizeof(d));
 
@@ -510,12 +510,10 @@ void TestSimd2Args(uint32_t iterations, uint32_t mask, uint32_t maskwidth,
   fptr ref_simd;
   fptr simd;
   int error = 0;
-  DECLARE_ALIGNED(sizeof(CArg1), uint16_t,
-                  s1[sizeof(CArg1) / sizeof(uint16_t)]);
-  DECLARE_ALIGNED(sizeof(CArg2), uint16_t,
-                  s2[sizeof(CArg2) / sizeof(uint16_t)]);
-  DECLARE_ALIGNED(sizeof(CRet), uint8_t, d[sizeof(CRet)]);
-  DECLARE_ALIGNED(sizeof(CRet), uint8_t, ref_d[sizeof(CRet)]);
+  DECLARE_ALIGNED(32, uint16_t, s1[sizeof(CArg1) / sizeof(uint16_t)]);
+  DECLARE_ALIGNED(32, uint16_t, s2[sizeof(CArg2) / sizeof(uint16_t)]);
+  DECLARE_ALIGNED(32, uint8_t, d[sizeof(CRet)]);
+  DECLARE_ALIGNED(32, uint8_t, ref_d[sizeof(CRet)]);
   memset(ref_d, 0, sizeof(ref_d));
   memset(d, 0, sizeof(d));
 
