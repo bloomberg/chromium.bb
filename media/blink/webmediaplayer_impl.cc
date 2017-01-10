@@ -1204,6 +1204,9 @@ void WebMediaPlayerImpl::OnBufferingStateChange(BufferingState state) {
   if (!pipeline_controller_.IsStable())
     return;
 
+  media_log_->AddEvent(media_log_->CreateBufferingStateChangedEvent(
+      "pipeline_buffering_state", state));
+
   if (state == BUFFERING_HAVE_ENOUGH) {
     if (data_source_ &&
         highest_ready_state_ < WebMediaPlayer::ReadyStateHaveEnoughData) {

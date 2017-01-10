@@ -506,6 +506,8 @@ void AudioRendererImpl::OnStatisticsUpdate(const PipelineStatistics& stats) {
 
 void AudioRendererImpl::OnBufferingStateChange(BufferingState state) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  media_log_->AddEvent(media_log_->CreateBufferingStateChangedEvent(
+      "audio_buffering_state", state));
   client_->OnBufferingStateChange(state);
 }
 

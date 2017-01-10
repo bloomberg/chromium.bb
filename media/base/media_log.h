@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "media/base/buffering_state.h"
 #include "media/base/media_export.h"
 #include "media/base/media_log_event.h"
 #include "media/base/pipeline_impl.h"
@@ -35,6 +36,7 @@ class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
   static MediaLogEvent::Type MediaLogLevelToEventType(MediaLogLevel level);
   static std::string EventTypeToString(MediaLogEvent::Type type);
   static std::string PipelineStatusToString(PipelineStatus status);
+  static std::string BufferingStateToString(BufferingState state);
 
   static std::string MediaEventToLogString(const MediaLogEvent& event);
 
@@ -74,6 +76,10 @@ class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
       int64_t start,
       int64_t current,
       int64_t end);
+
+  std::unique_ptr<MediaLogEvent> CreateBufferingStateChangedEvent(
+      const std::string& property,
+      BufferingState state);
 
   // Report a log message at the specified log level.
   void AddLogEvent(MediaLogLevel level, const std::string& message);

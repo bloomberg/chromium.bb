@@ -18,6 +18,7 @@
 #include "media/base/audio_renderer.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/demuxer_stream_provider.h"
+#include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/renderer_client.h"
 #include "media/base/time_source.h"
@@ -552,20 +553,6 @@ void RendererImpl::OnStatisticsUpdate(const PipelineStatistics& stats) {
   client_->OnStatisticsUpdate(stats);
 }
 
-namespace {
-
-const char* BufferingStateStr(BufferingState state) {
-  switch (state) {
-    case BUFFERING_HAVE_NOTHING:
-      return "HAVE_NOTHING";
-    case BUFFERING_HAVE_ENOUGH:
-      return "HAVE_ENOUGH";
-  }
-  NOTREACHED();
-  return "";
-}
-}
-
 bool RendererImpl::HandleRestartedStreamBufferingChanges(
     DemuxerStream::Type type,
     BufferingState new_buffering_state) {
@@ -635,8 +622,8 @@ void RendererImpl::OnBufferingStateChange(DemuxerStream::Type type,
                                         : &video_buffering_state_;
 
   DVLOG(1) << __func__ << (type == DemuxerStream::AUDIO ? " audio " : " video ")
-           << BufferingStateStr(*buffering_state) << " -> "
-           << BufferingStateStr(new_buffering_state);
+           << MediaLog::BufferingStateToString(*buffering_state) << " -> "
+           << MediaLog::BufferingStateToString(new_buffering_state);
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   bool was_waiting_for_enough_data = WaitingForEnoughData();

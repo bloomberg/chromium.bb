@@ -274,6 +274,8 @@ void VideoRendererImpl::OnStatisticsUpdate(const PipelineStatistics& stats) {
 
 void VideoRendererImpl::OnBufferingStateChange(BufferingState state) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  media_log_->AddEvent(media_log_->CreateBufferingStateChangedEvent(
+      "video_buffering_state", state));
   client_->OnBufferingStateChange(state);
 }
 

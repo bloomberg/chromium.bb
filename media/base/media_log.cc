@@ -170,6 +170,17 @@ std::string MediaLog::MediaEventToLogString(const MediaLogEvent& event) {
   return EventTypeToString(event.type) + " " + params_json;
 }
 
+std::string MediaLog::BufferingStateToString(BufferingState state) {
+  switch (state) {
+    case BUFFERING_HAVE_NOTHING:
+      return "BUFFERING_HAVE_NOTHING";
+    case BUFFERING_HAVE_ENOUGH:
+      return "BUFFERING_HAVE_ENOUGH";
+  }
+  NOTREACHED();
+  return "";
+}
+
 MediaLog::MediaLog() : id_(g_media_log_count.GetNext()) {}
 
 MediaLog::~MediaLog() {}
@@ -274,6 +285,13 @@ std::unique_ptr<MediaLogEvent> MediaLog::CreateBufferedExtentsChangedEvent(
   event->params.SetDouble("buffer_current", current);
   event->params.SetDouble("buffer_end", end);
   return event;
+}
+
+std::unique_ptr<MediaLogEvent> MediaLog::CreateBufferingStateChangedEvent(
+    const std::string& property,
+    BufferingState state) {
+  return CreateStringEvent(MediaLogEvent::PROPERTY_CHANGE, property,
+                           BufferingStateToString(state));
 }
 
 void MediaLog::AddLogEvent(MediaLogLevel level, const std::string& message) {
