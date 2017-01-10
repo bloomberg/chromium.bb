@@ -4,6 +4,8 @@
 
 #include "components/precache/core/precache_database.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
@@ -151,6 +153,9 @@ void PrecacheDatabase::RecordURLPrefetchMetrics(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   UMA_HISTOGRAM_TIMES("Precache.Latency.Prefetch", latency);
+  UMA_HISTOGRAM_ENUMERATION("Precache.CacheStatus.Prefetch",
+                            info.cache_entry_status,
+                            net::HttpResponseInfo::CacheEntryStatus::ENTRY_MAX);
 
   DCHECK(info.headers) << "The headers are required to get the freshness.";
   if (info.headers) {

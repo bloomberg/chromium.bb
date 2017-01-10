@@ -495,7 +495,8 @@ TEST_F(PrecacheManagerTest, RecordStatsForFetchDuringPrecaching) {
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(
       histograms_.GetTotalCountsForPrefix("Precache."),
-      UnorderedElementsAre(Pair("Precache.CacheSize.AllEntries", 1),
+      UnorderedElementsAre(Pair("Precache.CacheStatus.Prefetch", 1),
+                           Pair("Precache.CacheSize.AllEntries", 1),
                            Pair("Precache.DownloadedPrecacheMotivated", 1),
                            Pair("Precache.Fetch.PercentCompleted", 1),
                            Pair("Precache.Fetch.ResponseBytes.Network", 1),
@@ -576,6 +577,7 @@ TEST_F(PrecacheManagerTest, DeleteExpiredPrecacheHistory) {
   RecordStatsForPrecacheFetch(
       GURL("http://yesterday-fetch.com"), std::string(), base::TimeDelta(),
       kCurrentTime - base::TimeDelta::FromDays(1), info_, 1000);
+  expected_histogram_count_map["Precache.CacheStatus.Prefetch"] += 3;
   expected_histogram_count_map["Precache.CacheSize.AllEntries"]++;
   expected_histogram_count_map["Precache.DownloadedPrecacheMotivated"] += 3;
   expected_histogram_count_map["Precache.Fetch.PercentCompleted"]++;

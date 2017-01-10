@@ -260,6 +260,7 @@ TEST_F(PrecacheDatabaseTest, PrecacheOverNetwork) {
 
   ExpectNewSample("Precache.DownloadedPrecacheMotivated", kSize);
   ExpectNewSample("Precache.Latency.Prefetch", kLatency.InMilliseconds());
+  ExpectNewSample("Precache.CacheStatus.Prefetch", kFromNetwork);
   ExpectNewSample("Precache.Freshness.Prefetch", kFreshnessBucket10K);
   ExpectNoOtherSamples();
 }
@@ -273,6 +274,8 @@ TEST_F(PrecacheDatabaseTest, PrecacheFromCacheWithURLTableEntry) {
   EXPECT_EQ(BuildURLTableMap(kURL, kFetchTime), GetActualURLTableMap());
 
   ExpectNewSample("Precache.Latency.Prefetch", 0);
+  ExpectNewSample("Precache.CacheStatus.Prefetch",
+                  net::HttpResponseInfo::ENTRY_USED);
   ExpectNewSample("Precache.Freshness.Prefetch", kFreshnessBucket10K);
   ExpectNoOtherSamples();
 }
@@ -283,6 +286,8 @@ TEST_F(PrecacheDatabaseTest, PrecacheFromCacheWithoutURLTableEntry) {
   EXPECT_TRUE(GetActualURLTableMap().empty());
 
   ExpectNewSample("Precache.Latency.Prefetch", 0);
+  ExpectNewSample("Precache.CacheStatus.Prefetch",
+                  net::HttpResponseInfo::ENTRY_USED);
   ExpectNewSample("Precache.Freshness.Prefetch", kFreshnessBucket10K);
   ExpectNoOtherSamples();
 }
