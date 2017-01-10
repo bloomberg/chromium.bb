@@ -95,7 +95,6 @@ class PPAPI_PROXY_EXPORT PlatformImageData : public ImageData {
   // PPB_ImageData API.
   void* Map() override;
   void Unmap() override;
-  SkCanvas* GetPlatformCanvas() override;
   SkCanvas* GetCanvas() override;
 
   static ImageHandle NullHandle();
@@ -123,7 +122,6 @@ class PPAPI_PROXY_EXPORT SimpleImageData : public ImageData {
   // PPB_ImageData API.
   void* Map() override;
   void Unmap() override;
-  SkCanvas* GetPlatformCanvas() override;
   SkCanvas* GetCanvas() override;
 
  private:

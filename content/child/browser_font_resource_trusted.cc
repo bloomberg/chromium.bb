@@ -315,12 +315,12 @@ PP_Bool BrowserFontResource_Trusted::DrawTextAt(
 
   PPB_ImageData_API* image = static_cast<PPB_ImageData_API*>(
       enter.object());
-  SkCanvas* canvas = image->GetPlatformCanvas();
+  SkCanvas* canvas = image->GetCanvas();
   bool needs_unmapping = false;
   if (!canvas) {
     needs_unmapping = true;
     image->Map();
-    canvas = image->GetPlatformCanvas();
+    canvas = image->GetCanvas();
     if (!canvas)
       return result;  // Failure mapping.
   }

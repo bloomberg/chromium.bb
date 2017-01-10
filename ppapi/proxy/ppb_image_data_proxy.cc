@@ -404,10 +404,6 @@ void PlatformImageData::Unmap() {
   // We need to add a method to TransportDIB to release the handles.
 }
 
-SkCanvas* PlatformImageData::GetPlatformCanvas() {
-  return mapped_canvas_.get();
-}
-
 SkCanvas* PlatformImageData::GetCanvas() {
   return mapped_canvas_.get();
 }
@@ -441,10 +437,6 @@ void* SimpleImageData::Map() {
 void SimpleImageData::Unmap() {
   if (--map_count_ == 0)
     shm_.Unmap();
-}
-
-SkCanvas* SimpleImageData::GetPlatformCanvas() {
-  return NULL;  // No canvas available.
 }
 
 SkCanvas* SimpleImageData::GetCanvas() {
