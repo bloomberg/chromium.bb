@@ -4,24 +4,23 @@
 
 #include "components/exo/wayland/server.h"
 
+#include <alpha-compositing-unstable-v1-server-protocol.h>
+#include <gaming-input-unstable-v1-server-protocol.h>
 #include <grp.h>
+#include <keyboard-configuration-unstable-v1-server-protocol.h>
 #include <linux/input.h>
+#include <presentation-time-server-protocol.h>
+#include <remote-shell-unstable-v1-server-protocol.h>
+#include <secure-output-unstable-v1-server-protocol.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stylus-unstable-v1-server-protocol.h>
+#include <stylus-unstable-v2-server-protocol.h>
 #include <viewporter-server-protocol.h>
+#include <vsync-feedback-unstable-v1-server-protocol.h>
 #include <wayland-server-core.h>
 #include <wayland-server-protocol-core.h>
-
-// Note: core wayland headers need to be included before protocol headers.
-#include <alpha-compositing-unstable-v1-server-protocol.h>       // NOLINT
-#include <keyboard-configuration-unstable-v1-server-protocol.h>  // NOLINT
-#include <gaming-input-unstable-v1-server-protocol.h>            // NOLINT
-#include <remote-shell-unstable-v1-server-protocol.h>            // NOLINT
-#include <secure-output-unstable-v1-server-protocol.h>           // NOLINT
-#include <stylus-unstable-v1-server-protocol.h>                  // NOLINT
-#include <stylus-unstable-v2-server-protocol.h>                  // NOLINT
-#include <vsync-feedback-unstable-v1-server-protocol.h>          // NOLINT
-#include <xdg-shell-unstable-v5-server-protocol.h>               // NOLINT
+#include <xdg-shell-unstable-v5-server-protocol.h>
 
 #include <algorithm>
 #include <cstdlib>
@@ -223,10 +222,10 @@ void surface_frame(wl_client* client,
       wl_resource_create(client, &wl_callback_interface, 1, callback);
 
   // base::Unretained is safe as the resource owns the callback.
-  std::unique_ptr<base::CancelableCallback<void(base::TimeTicks)>>
-  cancelable_callback(
-      new base::CancelableCallback<void(base::TimeTicks)>(base::Bind(
-          &HandleSurfaceFrameCallback, base::Unretained(callback_resource))));
+  auto cancelable_callback =
+      base::MakeUnique<base::CancelableCallback<void(base::TimeTicks)>>(
+          base::Bind(&HandleSurfaceFrameCallback,
+                     base::Unretained(callback_resource)));
 
   GetUserDataAs<Surface>(resource)
       ->RequestFrameCallback(cancelable_callback->callback());
@@ -2649,6 +2648,71 @@ void bind_viewporter(wl_client* client,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// presentation_interface:
+
+void HandleSurfacePresentationCallback(wl_resource* resource,
+                                       base::TimeTicks presentation_time,
+                                       base::TimeDelta refresh) {
+  if (presentation_time.is_null()) {
+    wp_presentation_feedback_send_discarded(resource);
+  } else {
+    int64_t presentation_time_us = presentation_time.ToInternalValue();
+    int64_t seconds = presentation_time_us / base::Time::kMicrosecondsPerSecond;
+    int64_t microseconds =
+        presentation_time_us % base::Time::kMicrosecondsPerSecond;
+    wp_presentation_feedback_send_presented(
+        resource, seconds >> 32, seconds & 0xffffffff,
+        microseconds * base::Time::kNanosecondsPerMicrosecond,
+        refresh.InMicroseconds() * base::Time::kNanosecondsPerMicrosecond, 0, 0,
+        WP_PRESENTATION_FEEDBACK_KIND_VSYNC |
+            WP_PRESENTATION_FEEDBACK_KIND_HW_CLOCK |
+            WP_PRESENTATION_FEEDBACK_KIND_HW_COMPLETION);
+  }
+  wl_client_flush(wl_resource_get_client(resource));
+}
+
+void presentation_destroy(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+void presentation_feedback(wl_client* client,
+                           wl_resource* resource,
+                           wl_resource* surface_resource,
+                           uint32_t id) {
+  wl_resource* presentation_feedback_resource =
+      wl_resource_create(client, &wp_presentation_feedback_interface,
+                         wl_resource_get_version(resource), id);
+
+  // base::Unretained is safe as the resource owns the callback.
+  auto cancelable_callback = base::MakeUnique<
+      base::CancelableCallback<void(base::TimeTicks, base::TimeDelta)>>(
+      base::Bind(&HandleSurfacePresentationCallback,
+                 base::Unretained(presentation_feedback_resource)));
+
+  GetUserDataAs<Surface>(surface_resource)
+      ->RequestPresentationCallback(cancelable_callback->callback());
+
+  SetImplementation(presentation_feedback_resource, nullptr,
+                    std::move(cancelable_callback));
+}
+
+const struct wp_presentation_interface presentation_implementation = {
+    presentation_destroy, presentation_feedback};
+
+void bind_presentation(wl_client* client,
+                       void* data,
+                       uint32_t version,
+                       uint32_t id) {
+  wl_resource* resource =
+      wl_resource_create(client, &wp_presentation_interface, 1, id);
+
+  wl_resource_set_implementation(resource, &presentation_implementation, data,
+                                 nullptr);
+
+  wp_presentation_send_clock_id(resource, CLOCK_MONOTONIC);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // security_interface:
 
 // Implements the security interface to a Surface. The "only visible on secure
@@ -3189,6 +3253,8 @@ Server::Server(Display* display)
                    display_, bind_seat);
   wl_global_create(wl_display_.get(), &wp_viewporter_interface, 1, display_,
                    bind_viewporter);
+  wl_global_create(wl_display_.get(), &wp_presentation_interface, 1, display_,
+                   bind_presentation);
   wl_global_create(wl_display_.get(), &zcr_secure_output_v1_interface, 1,
                    display_, bind_secure_output);
   wl_global_create(wl_display_.get(), &zcr_alpha_compositing_v1_interface, 1,

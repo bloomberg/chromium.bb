@@ -46,10 +46,6 @@ class CompositorFrameSinkHolder
     return weak_factory_.GetWeakPtr();
   }
 
-  using FrameCallback = base::Callback<void(base::TimeTicks frame_time)>;
-  void ActivateFrameCallbacks(std::list<FrameCallback>* frame_callbacks);
-  void CancelFrameCallbacks();
-
   void SetNeedsBeginFrame(bool needs_begin_frame);
 
   void Satisfy(const cc::SurfaceSequence& sequence);
@@ -85,7 +81,6 @@ class CompositorFrameSinkHolder
   Surface* surface_;
   std::unique_ptr<CompositorFrameSink> frame_sink_;
 
-  std::list<FrameCallback> active_frame_callbacks_;
   std::unique_ptr<cc::ExternalBeginFrameSource> begin_frame_source_;
   bool needs_begin_frame_ = false;
   cc::BeginFrameArgs last_begin_frame_args_;

@@ -8,6 +8,7 @@
 
 #include <fcntl.h>
 #include <linux-dmabuf-unstable-v1-client-protocol.h>
+#include <presentation-time-client-protocol.h>
 #include <wayland-client-core.h>
 #include <wayland-client-protocol.h>
 
@@ -21,6 +22,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/scoped_generic.h"
 #include "base/strings/string_number_conversions.h"
@@ -69,6 +71,9 @@ DEFAULT_DELETER(wl_seat, wl_seat_destroy)
 DEFAULT_DELETER(wl_pointer, wl_pointer_destroy)
 DEFAULT_DELETER(wl_touch, wl_touch_destroy)
 DEFAULT_DELETER(wl_callback, wl_callback_destroy)
+DEFAULT_DELETER(wp_presentation, wp_presentation_destroy)
+DEFAULT_DELETER(struct wp_presentation_feedback,
+                wp_presentation_feedback_destroy)
 DEFAULT_DELETER(zwp_linux_buffer_params_v1, zwp_linux_buffer_params_v1_destroy)
 DEFAULT_DELETER(zwp_linux_dmabuf_v1, zwp_linux_dmabuf_v1_destroy)
 
@@ -111,6 +116,7 @@ const int kBenchmarkWarmupFrames = 10;
 struct Globals {
   std::unique_ptr<wl_compositor> compositor;
   std::unique_ptr<wl_shm> shm;
+  std::unique_ptr<wp_presentation> presentation;
   std::unique_ptr<zwp_linux_dmabuf_v1> linux_dmabuf;
   std::unique_ptr<wl_shell> shell;
   std::unique_ptr<wl_seat> seat;
@@ -135,6 +141,9 @@ void RegistryHandler(void* data,
   } else if (strcmp(interface, "wl_seat") == 0) {
     globals->seat.reset(static_cast<wl_seat*>(
         wl_registry_bind(registry, id, &wl_seat_interface, 5)));
+  } else if (strcmp(interface, "wp_presentation") == 0) {
+    globals->presentation.reset(static_cast<wp_presentation*>(
+        wl_registry_bind(registry, id, &wp_presentation_interface, 1)));
   } else if (strcmp(interface, "zwp_linux_dmabuf_v1") == 0) {
     globals->linux_dmabuf.reset(static_cast<zwp_linux_dmabuf_v1*>(
         wl_registry_bind(registry, id, &zwp_linux_dmabuf_v1_interface, 1)));
@@ -271,17 +280,78 @@ void TouchFrame(void* data, wl_touch* touch) {}
 
 void TouchCancel(void* data, wl_touch* touch) {}
 
-struct Frame {
+struct Schedule {
   uint32_t time = 0;
   bool callback_pending = false;
 };
 
 void FrameCallback(void* data, wl_callback* callback, uint32_t time) {
-  Frame* frame = static_cast<Frame*>(data);
+  Schedule* schedule = static_cast<Schedule*>(data);
 
   static uint32_t initial_time = time;
-  frame->time = time - initial_time;
-  frame->callback_pending = false;
+  schedule->time = time - initial_time;
+  schedule->callback_pending = false;
+}
+
+struct Frame {
+  Buffer* buffer = nullptr;
+  base::TimeDelta wall_time;
+  base::TimeDelta cpu_time;
+  std::vector<base::TimeTicks> event_times;
+  std::unique_ptr<struct wp_presentation_feedback> feedback;
+};
+
+struct Presentation {
+  std::deque<std::unique_ptr<Frame>> scheduled_frames;
+  base::TimeDelta wall_time;
+  base::TimeDelta cpu_time;
+  base::TimeDelta latency_time;
+  uint32_t num_frames_presented = 0;
+  uint32_t num_events_presented = 0;
+};
+
+void FeedbackSyncOutput(void* data,
+                        struct wp_presentation_feedback* presentation_feedback,
+                        wl_output* output) {}
+
+void FeedbackPresented(void* data,
+                       struct wp_presentation_feedback* presentation_feedback,
+                       uint32_t tv_sec_hi,
+                       uint32_t tv_sec_lo,
+                       uint32_t tv_nsec,
+                       uint32_t refresh,
+                       uint32_t seq_hi,
+                       uint32_t seq_lo,
+                       uint32_t flags) {
+  Presentation* presentation = static_cast<Presentation*>(data);
+  DCHECK_GT(presentation->scheduled_frames.size(), 0u);
+  std::unique_ptr<Frame> frame =
+      std::move(presentation->scheduled_frames.front());
+  presentation->scheduled_frames.pop_front();
+
+  presentation->wall_time += frame->wall_time;
+  presentation->cpu_time += frame->cpu_time;
+  ++presentation->num_frames_presented;
+
+  int64_t seconds = (static_cast<int64_t>(tv_sec_hi) << 32) + tv_sec_lo;
+  int64_t microseconds = seconds * base::Time::kMicrosecondsPerSecond +
+                         tv_nsec / base::Time::kNanosecondsPerMicrosecond;
+  base::TimeTicks presentation_time =
+      base::TimeTicks::FromInternalValue(microseconds);
+  for (const auto& event_time : frame->event_times) {
+    presentation->latency_time += presentation_time - event_time;
+    ++presentation->num_events_presented;
+  }
+}
+
+void FeedbackDiscarded(void* data,
+                       struct wp_presentation_feedback* presentation_feedback) {
+  Presentation* presentation = static_cast<Presentation*>(data);
+  DCHECK_GT(presentation->scheduled_frames.size(), 0u);
+  std::unique_ptr<Frame> frame =
+      std::move(presentation->scheduled_frames.front());
+  presentation->scheduled_frames.pop_front();
+  LOG(WARNING) << "Frame discarded";
 }
 
 #if defined(OZONE_PLATFORM_GBM)
@@ -385,6 +455,10 @@ int MotionEvents::Run() {
     LOG(ERROR) << "Can't find shm interface";
     return 1;
   }
+  if (!globals_.presentation) {
+    LOG(ERROR) << "Can't find presentation interface";
+    return 1;
+  }
   if (use_drm_ && !globals_.linux_dmabuf) {
     LOG(ERROR) << "Can't find linux_dmabuf interface";
     return 1;
@@ -400,6 +474,7 @@ int MotionEvents::Run() {
 
 #if defined(OZONE_PLATFORM_GBM)
   EGLenum egl_sync_type = 0;
+  sk_sp<const GrGLInterface> native_interface;
   if (use_drm_) {
     // Number of files to look for when discovering DRM devices.
     const uint32_t kDrmMaxMinor = 15;
@@ -453,14 +528,14 @@ int MotionEvents::Run() {
     if (gl::GLSurfaceEGL::HasEGLExtension("EGL_ANDROID_native_fence_sync")) {
       egl_sync_type = EGL_SYNC_NATIVE_FENCE_ANDROID;
     }
-  }
 
-  sk_sp<const GrGLInterface> native_interface(GrGLCreateNativeInterface());
-  DCHECK(native_interface);
-  gr_context_ = sk_sp<GrContext>(GrContext::Create(
-      kOpenGL_GrBackend,
-      reinterpret_cast<GrBackendContext>(native_interface.get())));
-  DCHECK(gr_context_);
+    native_interface = sk_sp<const GrGLInterface>(GrGLCreateNativeInterface());
+    DCHECK(native_interface);
+    gr_context_ = sk_sp<GrContext>(GrContext::Create(
+        kOpenGL_GrBackend,
+        reinterpret_cast<GrBackendContext>(native_interface.get())));
+    DCHECK(gr_context_);
+  }
 #endif
 
   wl_buffer_listener buffer_listener = {BufferRelease};
@@ -539,17 +614,19 @@ int MotionEvents::Run() {
                                       TouchFrame, TouchCancel};
   wl_touch_add_listener(touch.get(), &touch_listener, &event_times);
 
-  Frame frame;
+  Schedule schedule;
   std::unique_ptr<wl_callback> frame_callback;
   wl_callback_listener frame_listener = {FrameCallback};
-  std::deque<Buffer*> pending_frames;
 
-  uint32_t frames = 0;
+  Presentation presentation;
+  std::deque<std::unique_ptr<Frame>> pending_frames;
+
   size_t num_benchmark_runs_left = num_benchmark_runs_;
-  base::TimeTicks benchmark_time;
-  base::TimeDelta benchmark_wall_time;
-  base::TimeDelta benchmark_cpu_time;
+  base::TimeTicks benchmark_start_time;
   std::string fps_counter_text("??");
+
+  wp_presentation_feedback_listener feedback_listener = {
+      FeedbackSyncOutput, FeedbackPresented, FeedbackDiscarded};
 
   SkPaint text_paint;
   text_paint.setTextSize(32.0f);
@@ -558,7 +635,7 @@ int MotionEvents::Run() {
 
   int dispatch_status = 0;
   do {
-    bool enqueue_frame = frame.callback_pending
+    bool enqueue_frame = schedule.callback_pending
                              ? pending_frames.size() < max_frames_pending_
                              : pending_frames.empty();
     if (enqueue_frame) {
@@ -570,22 +647,28 @@ int MotionEvents::Run() {
         return 1;
       }
 
+      auto frame = base::MakeUnique<Frame>();
+      frame->buffer = buffer;
+
       base::TimeTicks wall_time_start;
       base::ThreadTicks cpu_time_start;
       if (num_benchmark_runs_ || show_fps_counter_) {
         wall_time_start = base::TimeTicks::Now();
-        if (frames <= kBenchmarkWarmupFrames)
-          benchmark_time = wall_time_start;
+        if (presentation.num_frames_presented <= kBenchmarkWarmupFrames)
+          benchmark_start_time = wall_time_start;
 
-        if ((wall_time_start - benchmark_time) > benchmark_interval_) {
-          uint32_t benchmark_frames = frames - kBenchmarkWarmupFrames;
+        base::TimeDelta benchmark_time = wall_time_start - benchmark_start_time;
+        if (benchmark_time > benchmark_interval_) {
+          uint32_t benchmark_frames =
+              presentation.num_frames_presented - kBenchmarkWarmupFrames;
           if (num_benchmark_runs_left) {
-            // Print benchmark statistics for the frames produced and exit.
-            // Note: frames produced is not necessarily the same as frames
-            // displayed.
+            // Print benchmark statistics for the frames presented and exit.
             std::cout << benchmark_frames << '\t'
-                      << benchmark_wall_time.InMilliseconds() << '\t'
-                      << benchmark_cpu_time.InMilliseconds() << '\t'
+                      << benchmark_time.InMilliseconds() << '\t'
+                      << presentation.wall_time.InMilliseconds() << '\t'
+                      << presentation.cpu_time.InMilliseconds() << '\t'
+                      << presentation.num_events_presented << '\t'
+                      << presentation.latency_time.InMilliseconds() << '\t'
                       << std::endl;
             if (!--num_benchmark_runs_left)
               return 0;
@@ -595,10 +678,12 @@ int MotionEvents::Run() {
           fps_counter_text = base::UintToString(
               std::round(benchmark_frames / benchmark_interval_.InSecondsF()));
 
-          frames = kBenchmarkWarmupFrames;
-          benchmark_time = wall_time_start;
-          benchmark_wall_time = base::TimeDelta();
-          benchmark_cpu_time = base::TimeDelta();
+          benchmark_start_time = wall_time_start;
+          presentation.wall_time = base::TimeDelta();
+          presentation.cpu_time = base::TimeDelta();
+          presentation.latency_time = base::TimeDelta();
+          presentation.num_frames_presented = kBenchmarkWarmupFrames;
+          presentation.num_events_presented = 0;
         }
 
         cpu_time_start = base::ThreadTicks::Now();
@@ -622,6 +707,8 @@ int MotionEvents::Run() {
           canvas->drawIRect(rect, paint);
           std::string text = base::UintToString(event_times.back());
           canvas->drawText(text.c_str(), text.length(), 8, y + 32, text_paint);
+          frame->event_times.push_back(base::TimeTicks::FromInternalValue(
+              event_times.back() * base::Time::kMicrosecondsPerMillisecond));
           event_times.pop_back();
           y += h;
         }
@@ -633,7 +720,7 @@ int MotionEvents::Run() {
       SkIRect rect = SkIRect::MakeXYWH(-SkScalarHalf(half_width),
                                        -SkScalarHalf(half_height), half_width,
                                        half_height);
-      SkScalar rotation = SkScalarMulDiv(frame.time, kRotationSpeed, 1000);
+      SkScalar rotation = SkScalarMulDiv(schedule.time, kRotationSpeed, 1000);
       canvas->save();
       canvas->translate(half_width, half_height);
       for (size_t i = 0; i < num_rects_; ++i) {
@@ -668,35 +755,43 @@ int MotionEvents::Run() {
       }
 
       buffer->busy = true;
-      pending_frames.push_back(buffer);
 
-      if (num_benchmark_runs_ || show_fps_counter_) {
-        ++frames;
-        benchmark_wall_time += base::TimeTicks::Now() - wall_time_start;
-        benchmark_cpu_time += base::ThreadTicks::Now() - cpu_time_start;
+      if (num_benchmark_runs_) {
+        frame->wall_time = base::TimeTicks::Now() - wall_time_start;
+        frame->cpu_time = base::ThreadTicks::Now() - cpu_time_start;
       }
+      pending_frames.push_back(std::move(frame));
       continue;
     }
 
-    if (!frame.callback_pending) {
+    if (!schedule.callback_pending) {
       DCHECK_GT(pending_frames.size(), 0u);
-      Buffer* buffer = pending_frames.front();
+      std::unique_ptr<Frame> frame = std::move(pending_frames.front());
       pending_frames.pop_front();
 
       wl_surface_set_buffer_scale(surface.get(), scale_);
       wl_surface_damage(surface.get(), 0, 0, width_ / scale_, height_ / scale_);
-      wl_surface_attach(surface.get(), buffer->buffer.get(), 0, 0);
+      wl_surface_attach(surface.get(), frame->buffer->buffer.get(), 0, 0);
 
 #if defined(OZONE_PLATFORM_GBM)
-      if (buffer->egl_sync) {
-        eglClientWaitSyncKHR(eglGetCurrentDisplay(), buffer->egl_sync->get(),
+      if (frame->buffer->egl_sync) {
+        eglClientWaitSyncKHR(eglGetCurrentDisplay(),
+                             frame->buffer->egl_sync->get(),
                              EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, EGL_FOREVER_KHR);
       }
 #endif
 
       frame_callback.reset(wl_surface_frame(surface.get()));
-      wl_callback_add_listener(frame_callback.get(), &frame_listener, &frame);
-      frame.callback_pending = true;
+      wl_callback_add_listener(frame_callback.get(), &frame_listener,
+                               &schedule);
+      schedule.callback_pending = true;
+
+      frame->feedback.reset(
+          wp_presentation_feedback(globals_.presentation.get(), surface.get()));
+      wp_presentation_feedback_add_listener(frame->feedback.get(),
+                                            &feedback_listener, &presentation);
+      presentation.scheduled_frames.push_back(std::move(frame));
+
       wl_surface_commit(surface.get());
       wl_display_flush(display_.get());
       continue;

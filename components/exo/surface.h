@@ -24,6 +24,7 @@
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/compositor/compositor_vsync_manager.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace base {
@@ -60,7 +61,9 @@ using CursorProvider = Pointer;
 
 // This class represents a rectangular area that is displayed on the screen.
 // It has a location, size and pixel contents.
-class Surface : public ui::ContextFactoryObserver, public aura::WindowObserver {
+class Surface : public ui::ContextFactoryObserver,
+                public aura::WindowObserver,
+                public ui::CompositorVSyncManager::Observer {
  public:
   using PropertyDeallocator = void (*)(int64_t value);
 
@@ -87,10 +90,17 @@ class Surface : public ui::ContextFactoryObserver, public aura::WindowObserver {
   // repainted.
   void Damage(const gfx::Rect& rect);
 
-  // Request notification when the next frame is displayed. Useful for
-  // throttling redrawing operations, and driving animations.
+  // Request notification when it's a good time to produce a new frame. Useful
+  // for throttling redrawing operations, and driving animations.
   using FrameCallback = base::Callback<void(base::TimeTicks frame_time)>;
   void RequestFrameCallback(const FrameCallback& callback);
+
+  // Request notification when the next frame is displayed. Useful for
+  // throttling redrawing operations, and driving animations.
+  using PresentationCallback =
+      base::Callback<void(base::TimeTicks presentation_time,
+                          base::TimeDelta refresh)>;
+  void RequestPresentationCallback(const PresentationCallback& callback);
 
   // This sets the region of the surface that contains opaque content.
   void SetOpaqueRegion(const SkRegion& region);
@@ -179,11 +189,15 @@ class Surface : public ui::ContextFactoryObserver, public aura::WindowObserver {
   // Returns a trace value representing the state of the surface.
   std::unique_ptr<base::trace_event::TracedValue> AsTracedValue() const;
 
-  // Called when surface is being scheduled for a draw.
+  // Call this to indicate that surface is being scheduled for a draw.
   void WillDraw();
 
-  // Called when the begin frame source has changed.
-  void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source);
+  // Returns true when there's an active frame callback that requires a
+  // BeginFrame() call.
+  bool NeedsBeginFrame() const;
+
+  // Call this to indicate that it's a good time to start producing a new frame.
+  void BeginFrame(base::TimeTicks frame_time);
 
   // Check whether this Surface and its children need to create new cc::Surface
   // IDs for their contents next time they get new buffer contents.
@@ -199,6 +213,10 @@ class Surface : public ui::ContextFactoryObserver, public aura::WindowObserver {
   void OnWindowAddedToRootWindow(aura::Window* window) override;
   void OnWindowRemovingFromRootWindow(aura::Window* window,
                                       aura::Window* new_root) override;
+
+  // Overridden from ui::CompositorVSyncManager::Observer:
+  void OnUpdateVSyncParameters(base::TimeTicks timebase,
+                               base::TimeDelta interval) override;
 
   // Sets the |value| of the given surface |property|. Setting to the default
   // value (e.g., NULL) removes the property. The caller is responsible for the
@@ -333,6 +351,19 @@ class Surface : public ui::ContextFactoryObserver, public aura::WindowObserver {
   // be drawn. They fire at the first begin frame notification after this.
   std::list<FrameCallback> pending_frame_callbacks_;
   std::list<FrameCallback> frame_callbacks_;
+  std::list<FrameCallback> active_frame_callbacks_;
+
+  // These lists contains the callbacks to notify the client when surface
+  // contents have been presented. These callbacks move to
+  // |presentation_callbacks_| when Commit() is called. Later they are moved to
+  // |swapping_presentation_callbacks_| when the effect of the Commit() is
+  // scheduled to be drawn and then moved to |swapped_presentation_callbacks_|
+  // after receiving VSync parameters update for the previous frame. They fire
+  // at the next VSync parameters update after that.
+  std::list<PresentationCallback> pending_presentation_callbacks_;
+  std::list<PresentationCallback> presentation_callbacks_;
+  std::list<PresentationCallback> swapping_presentation_callbacks_;
+  std::list<PresentationCallback> swapped_presentation_callbacks_;
 
   // This is the state that has yet to be committed.
   State pending_state_;

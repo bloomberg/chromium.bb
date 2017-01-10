@@ -36,20 +36,6 @@ void CompositorFrameSinkHolder::SetResourceReleaseCallback(
   release_callbacks_[id] = callback;
 }
 
-void CompositorFrameSinkHolder::ActivateFrameCallbacks(
-    std::list<FrameCallback>* frame_callbacks) {
-  active_frame_callbacks_.splice(active_frame_callbacks_.end(),
-                                 *frame_callbacks);
-  UpdateNeedsBeginFrame();
-}
-
-void CompositorFrameSinkHolder::CancelFrameCallbacks() {
-  // Call pending frame callbacks with a null frame time to indicate that they
-  // have been cancelled.
-  for (const auto& frame_callback : active_frame_callbacks_)
-    frame_callback.Run(base::TimeTicks());
-}
-
 void CompositorFrameSinkHolder::SetNeedsBeginFrame(bool needs_begin_frame) {
   needs_begin_frame_ = needs_begin_frame;
   OnNeedsBeginFrames(needs_begin_frame);
@@ -72,10 +58,9 @@ void CompositorFrameSinkHolder::DidReceiveCompositorFrameAck() {
 }
 
 void CompositorFrameSinkHolder::OnBeginFrame(const cc::BeginFrameArgs& args) {
-  while (!active_frame_callbacks_.empty()) {
-    active_frame_callbacks_.front().Run(args.frame_time);
-    active_frame_callbacks_.pop_front();
-  }
+  if (surface_)
+    surface_->BeginFrame(args.frame_time);
+
   begin_frame_source_->OnBeginFrame(args);
 }
 
@@ -135,7 +120,7 @@ void CompositorFrameSinkHolder::UpdateNeedsBeginFrame() {
   if (!begin_frame_source_)
     return;
 
-  bool needs_begin_frame = !active_frame_callbacks_.empty();
+  bool needs_begin_frame = surface_ && surface_->NeedsBeginFrame();
   if (needs_begin_frame == needs_begin_frame_)
     return;
 

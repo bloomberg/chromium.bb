@@ -208,8 +208,23 @@ Surface::~Surface() {
   window_->layer()->SetShowSolidColorContent();
 
   frame_callbacks_.splice(frame_callbacks_.end(), pending_frame_callbacks_);
-  compositor_frame_sink_holder_->ActivateFrameCallbacks(&frame_callbacks_);
-  compositor_frame_sink_holder_->CancelFrameCallbacks();
+  active_frame_callbacks_.splice(active_frame_callbacks_.end(),
+                                 frame_callbacks_);
+  // Call all frame callbacks with a null frame time to indicate that they
+  // have been cancelled.
+  for (const auto& frame_callback : active_frame_callbacks_)
+    frame_callback.Run(base::TimeTicks());
+
+  presentation_callbacks_.splice(presentation_callbacks_.end(),
+                                 pending_presentation_callbacks_);
+  swapping_presentation_callbacks_.splice(
+      swapping_presentation_callbacks_.end(), presentation_callbacks_);
+  swapped_presentation_callbacks_.splice(swapped_presentation_callbacks_.end(),
+                                         swapping_presentation_callbacks_);
+  // Call all presentation callbacks with a null presentation time to indicate
+  // that they have been cancelled.
+  for (const auto& presentation_callback : swapped_presentation_callbacks_)
+    presentation_callback.Run(base::TimeTicks(), base::TimeDelta());
 
   compositor_frame_sink_holder_->GetCompositorFrameSink()->EvictFrame();
 }
@@ -241,6 +256,13 @@ void Surface::RequestFrameCallback(const FrameCallback& callback) {
   TRACE_EVENT0("exo", "Surface::RequestFrameCallback");
 
   pending_frame_callbacks_.push_back(callback);
+}
+
+void Surface::RequestPresentationCallback(
+    const PresentationCallback& callback) {
+  TRACE_EVENT0("exo", "Surface::RequestPresentationCallback");
+
+  pending_presentation_callbacks_.push_back(callback);
 }
 
 void Surface::SetOpaqueRegion(const SkRegion& region) {
@@ -470,6 +492,10 @@ void Surface::CommitSurfaceHierarchy() {
   // Move pending frame callbacks to the end of frame_callbacks_.
   frame_callbacks_.splice(frame_callbacks_.end(), pending_frame_callbacks_);
 
+  // Move pending presentation callbacks to the end of presentation_callbacks_.
+  presentation_callbacks_.splice(presentation_callbacks_.end(),
+                                 pending_presentation_callbacks_);
+
   // Synchronize window hierarchy. This will position and update the stacking
   // order of all sub-surfaces after committing all pending state of sub-surface
   // descendants.
@@ -570,13 +596,30 @@ std::unique_ptr<base::trace_event::TracedValue> Surface::AsTracedValue() const {
 }
 
 void Surface::WillDraw() {
-  compositor_frame_sink_holder_->ActivateFrameCallbacks(&frame_callbacks_);
+  active_frame_callbacks_.splice(active_frame_callbacks_.end(),
+                                 frame_callbacks_);
+  swapping_presentation_callbacks_.splice(
+      swapping_presentation_callbacks_.end(), presentation_callbacks_);
+}
+
+bool Surface::NeedsBeginFrame() const {
+  return !active_frame_callbacks_.empty();
+}
+
+void Surface::BeginFrame(base::TimeTicks frame_time) {
+  while (!active_frame_callbacks_.empty()) {
+    active_frame_callbacks_.front().Run(frame_time);
+    active_frame_callbacks_.pop_front();
+  }
 }
 
 void Surface::CheckIfSurfaceHierarchyNeedsCommitToNewSurfaces() {
   if (HasLayerHierarchyChanged())
     SetSurfaceHierarchyNeedsCommitToNewSurfaces();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// ui::ContextFactoryObserver overrides:
 
 void Surface::OnLostResources() {
   if (!local_frame_id_.is_valid())
@@ -586,14 +629,44 @@ void Surface::OnLostResources() {
   UpdateSurface(true);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// aura::WindowObserver overrides:
+
 void Surface::OnWindowAddedToRootWindow(aura::Window* window) {
   window->layer()->GetCompositor()->AddFrameSink(frame_sink_id_);
+  window->layer()->GetCompositor()->vsync_manager()->AddObserver(this);
 }
 
 void Surface::OnWindowRemovingFromRootWindow(aura::Window* window,
                                              aura::Window* new_root) {
   window->layer()->GetCompositor()->RemoveFrameSink(frame_sink_id_);
+  window->layer()->GetCompositor()->vsync_manager()->RemoveObserver(this);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// ui::CompositorVSyncManager::Observer overrides:
+
+void Surface::OnUpdateVSyncParameters(base::TimeTicks timebase,
+                                      base::TimeDelta interval) {
+  // Use current time if platform doesn't provide an accurate timebase.
+  if (timebase.is_null())
+    timebase = base::TimeTicks::Now();
+
+  while (!swapped_presentation_callbacks_.empty()) {
+    swapped_presentation_callbacks_.front().Run(timebase, interval);
+    swapped_presentation_callbacks_.pop_front();
+  }
+
+  // VSync parameters updates are generated at the start of a new swap. Move
+  // the swapping presentation callbacks to swapped callbacks so they fire
+  // at the next VSync parameters update as that will contain the presentation
+  // time for the previous frame.
+  swapped_presentation_callbacks_.splice(swapped_presentation_callbacks_.end(),
+                                         swapping_presentation_callbacks_);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Buffer, private:
 
 Surface::State::State() : input_region(SkIRect::MakeLargest()) {}
 
