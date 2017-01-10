@@ -495,14 +495,12 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
 
             if (awWebResourceResponse != null && awWebResourceResponse.getData() == null) {
                 // In this case the intercepted URLRequest job will simulate an empty response
-                // which doesn't trigger the onReceivedError or onPageFinished callbacks. For
-                // WebViewClassic compatibility we synthesize those callbacks.
-                // http://crbug.com/180950
+                // which doesn't trigger the onReceivedError callback. For WebViewClassic
+                // compatibility we synthesize that callback.  http://crbug.com/180950
                 mContentsClient.getCallbackHelper().postOnReceivedError(
                         request,
                         /* error description filled in by the glue layer */
                         new AwContentsClient.AwWebResourceError());
-                mContentsClient.getCallbackHelper().postOnPageFinished(request.url);
             }
             return awWebResourceResponse;
         }

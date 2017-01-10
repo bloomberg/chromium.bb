@@ -321,8 +321,8 @@ public class ClientOnPageFinishedTest extends AwTestBase {
                         @Override
                         public void run() {
                             try {
-                                latch.await(WAIT_TIMEOUT_MS,
-                                        java.util.concurrent.TimeUnit.MILLISECONDS);
+                                assertTrue(latch.await(WAIT_TIMEOUT_MS,
+                                        java.util.concurrent.TimeUnit.MILLISECONDS));
                             } catch (InterruptedException e) {
                                 fail("Caught InterruptedException " + e);
                             }
@@ -420,6 +420,120 @@ public class ClientOnPageFinishedTest extends AwTestBase {
             onPageFinishedHelper.waitForCallback(currentCallCount);
             assertEquals(url, onPageFinishedHelper.getUrl());
         } finally {
+            webServer.shutdown();
+        }
+    }
+
+    /**
+     * Ensure onPageFinished is called for an empty response (if the response status isn't
+     * HttpStatus.SC_NO_CONTENT).
+     */
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testCalledOnEmptyResponse() throws Throwable {
+        TestWebServer webServer = TestWebServer.start();
+        try {
+            final String url = webServer.setEmptyResponse("/page.html");
+            TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
+                    mContentsClient.getOnPageFinishedHelper();
+            int currentCallCount = onPageFinishedHelper.getCallCount();
+            loadUrlAsync(mAwContents, url);
+            onPageFinishedHelper.waitForCallback(currentCallCount);
+            assertEquals(url, onPageFinishedHelper.getUrl());
+        } finally {
+            webServer.shutdown();
+        }
+    }
+
+    /**
+     * Ensure onPageFinished is called when a provisional load is cancelled.
+     */
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testCalledOnCancelingProvisionalLoad() throws Throwable {
+        TestWebServer webServer = TestWebServer.start();
+        final CountDownLatch testDoneLatch = new CountDownLatch(1);
+        try {
+            final String url = webServer.setResponseWithRunnableAction(
+                    "/slow_page.html", "", null /* headers */, new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                assertTrue(testDoneLatch.await(WAIT_TIMEOUT_MS,
+                                        java.util.concurrent.TimeUnit.MILLISECONDS));
+                            } catch (InterruptedException e) {
+                                fail("Caught InterruptedException " + e);
+                            }
+                        }
+                    });
+            TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
+                    mContentsClient.getOnPageFinishedHelper();
+            int initialCallCount = onPageFinishedHelper.getCallCount();
+            loadUrlAsync(mAwContents, url);
+
+            // Cancel before getting a response from the server.
+            stopLoading(mAwContents);
+
+            onPageFinishedHelper.waitForCallback(initialCallCount);
+            assertEquals(url, onPageFinishedHelper.getUrl());
+
+            // Load another page to ensure onPageFinished isn't called several times.
+            final String syncUrl = webServer.setResponse("/sync.html", "", null);
+            final int synchronizationPageCallCount = onPageFinishedHelper.getCallCount();
+            assertEquals(initialCallCount + 1, synchronizationPageCallCount);
+            loadUrlAsync(mAwContents, syncUrl);
+
+            onPageFinishedHelper.waitForCallback(synchronizationPageCallCount);
+            assertEquals(syncUrl, onPageFinishedHelper.getUrl());
+        } finally {
+            testDoneLatch.countDown();
+            webServer.shutdown();
+        }
+    }
+
+    /**
+     * Ensure onPageFinished is called when a committed load is cancelled.
+     */
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testCalledOnCancelingCommittedLoad() throws Throwable {
+        TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
+                mContentsClient.getOnPageFinishedHelper();
+
+        TestWebServer webServer = TestWebServer.start();
+        final CountDownLatch serverImageUrlLatch = new CountDownLatch(1);
+        final CountDownLatch testDoneLatch = new CountDownLatch(1);
+        try {
+            final String stallingImageUrl = webServer.setResponseWithRunnableAction(
+                    "/stallingImage.html", "", null /* headers */, new Runnable() {
+                        @Override
+                        public void run() {
+                            serverImageUrlLatch.countDown();
+                            try {
+                                assertTrue(testDoneLatch.await(WAIT_TIMEOUT_MS,
+                                        java.util.concurrent.TimeUnit.MILLISECONDS));
+                            } catch (InterruptedException e) {
+                                fail("Caught InterruptedException " + e);
+                            }
+                        }
+                    });
+
+            final String mainPageHtml =
+                    CommonResources.makeHtmlPageFrom("", "<img src=" + stallingImageUrl + ">");
+            final String mainPageUrl = webServer.setResponse("/mainPage.html", mainPageHtml, null);
+
+            assertEquals(0, onPageFinishedHelper.getCallCount());
+            loadUrlAsync(mAwContents, mainPageUrl);
+
+            assertTrue(serverImageUrlLatch.await(
+                    WAIT_TIMEOUT_MS, java.util.concurrent.TimeUnit.MILLISECONDS));
+            assertEquals(0, onPageFinishedHelper.getCallCount());
+            // Our load isn't done since we haven't loaded the image - now cancel the load.
+            stopLoading(mAwContents);
+            onPageFinishedHelper.waitForCallback(0);
+            assertEquals(1, onPageFinishedHelper.getCallCount());
+        } finally {
+            testDoneLatch.countDown();
             webServer.shutdown();
         }
     }
