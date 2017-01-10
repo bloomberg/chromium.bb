@@ -187,6 +187,13 @@ class TestRunner(object):
     self.xcode_version = xcode_version
     self.xctest_path = ''
 
+    self.test_results = {}
+    self.test_results['version'] = 3
+    self.test_results['path_delimiter'] = '.'
+    self.test_results['seconds_since_epoch'] = int(time.time())
+    # This will be overwritten when the tests complete successfully.
+    self.test_results['interrupted'] = True
+
     if xctest:
       plugins_dir = os.path.join(self.app_path, 'PlugIns')
       if not os.path.exists(plugins_dir):
@@ -348,6 +355,21 @@ class TestRunner(object):
           print
         else:
           raise
+
+      # Build test_results.json.
+      self.test_results['interrupted'] = result.crashed
+      self.test_results['num_failures_by_type'] = {
+        'FAIL': len(failed) + len(flaked),
+        'PASS': len(passed),
+      }
+      tests = collections.OrderedDict()
+      for test in passed:
+        tests[test] = { 'expected': 'PASS', 'actual': 'PASS' }
+      for test in failed:
+        tests[test] = { 'expected': 'PASS', 'actual': 'FAIL' }
+      for test in flaked:
+        tests[test] = { 'expected': 'PASS', 'actual': 'FAIL' }
+      self.test_results['tests'] = tests
 
       self.logs['passed tests'] = passed
       for test, log_lines in failed.iteritems():

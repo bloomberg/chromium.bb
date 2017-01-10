@@ -71,6 +71,9 @@ def main(args, test_args):
 
     with open(os.path.join(args.out_dir, 'summary.json'), 'w') as f:
       json.dump(summary, f)
+    if tr:
+      with open(os.path.join(args.out_dir, 'full_results.json'), 'w') as f:
+        json.dump(tr.test_results, f)
 
 
 if __name__ == '__main__':
