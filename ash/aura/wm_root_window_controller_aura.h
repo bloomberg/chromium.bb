@@ -31,7 +31,6 @@ class ASH_EXPORT WmRootWindowControllerAura : public WmRootWindowController {
 
   // WmRootWindowController:
   bool HasShelf() override;
-  WmShell* GetShell() override;
   WmShelf* GetShelf() override;
   WmWindow* GetWindow() override;
   void OnInitialWallpaperAnimationStarted() override;

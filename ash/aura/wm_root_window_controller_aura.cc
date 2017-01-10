@@ -4,7 +4,6 @@
 
 #include "ash/aura/wm_root_window_controller_aura.h"
 
-#include "ash/aura/wm_shell_aura.h"
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
@@ -59,10 +58,6 @@ const WmRootWindowControllerAura* WmRootWindowControllerAura::Get(
 
 bool WmRootWindowControllerAura::HasShelf() {
   return root_window_controller_->wm_shelf()->shelf_widget() != nullptr;
-}
-
-WmShell* WmRootWindowControllerAura::GetShell() {
-  return WmShell::Get();
 }
 
 WmShelf* WmRootWindowControllerAura::GetShelf() {

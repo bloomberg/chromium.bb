@@ -34,7 +34,6 @@ class SystemModalContainerLayoutManager;
 class SystemTray;
 class WallpaperWidgetController;
 class WmShelf;
-class WmShell;
 class WmWindow;
 class WorkspaceController;
 
@@ -92,8 +91,6 @@ class ASH_EXPORT WmRootWindowController {
       WmWindow* window);
 
   virtual bool HasShelf() = 0;
-
-  virtual WmShell* GetShell() = 0;
 
   virtual WmShelf* GetShelf() = 0;
 

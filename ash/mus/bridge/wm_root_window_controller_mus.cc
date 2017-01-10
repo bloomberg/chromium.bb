@@ -73,10 +73,6 @@ bool WmRootWindowControllerMus::HasShelf() {
   return GetShelf() != nullptr;
 }
 
-WmShell* WmRootWindowControllerMus::GetShell() {
-  return shell_;
-}
-
 WmShelf* WmRootWindowControllerMus::GetShelf() {
   return root_window_controller_->wm_shelf();
 }
