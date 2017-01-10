@@ -62,16 +62,26 @@ const char* kRethrownActions[] = {
 
 // A list of actions that indicate a new task has been started.
 const char* kNewTaskActions[] = {
-    "MobileMenuAllBookmarks",     "MobileMenuHistory",
-    "MobileMenuNewIncognitoTab",  "MobileMenuNewTab",
-    "MobileMenuRecentTabs",       "MobileMenuVoiceSearch",
-    "MobileNTPBookmark",          "MobileNTPForeignSession",
-    "MobileNTPMostVisited",       "MobileNTPShowBookmarks",
-    "MobileNTPShowMostVisited",   "MobileNTPShowOpenTabs",
-    "MobileNTPSwitchToBookmarks", "MobileNTPSwitchToMostVisited",
-    "MobileNTPSwitchToOpenTabs",  "MobileTabStripNewTab",
-    "MobileToolbarNewTab",        "MobileToolbarStackViewNewTab",
-    "MobileToolbarVoiceSearch",   "OmniboxInputInProgress",
+    "MobileMenuAllBookmarks",
+    "MobileMenuHistory",
+    "MobileMenuNewIncognitoTab",
+    "MobileMenuNewTab",
+    "MobileMenuRecentTabs",
+    "MobileMenuVoiceSearch",
+    "MobileBookmarkManagerEntryOpened",
+    "MobileRecentTabManagerTabFromOtherDeviceOpened",
+    "MobileNTPMostVisited",
+    "MobileNTPShowBookmarks",
+    "MobileNTPShowMostVisited",
+    "MobileNTPShowOpenTabs",
+    "MobileNTPSwitchToBookmarks",
+    "MobileNTPSwitchToMostVisited",
+    "MobileNTPSwitchToOpenTabs",
+    "MobileTabStripNewTab",
+    "MobileToolbarNewTab",
+    "MobileToolbarStackViewNewTab",
+    "MobileToolbarVoiceSearch",
+    "OmniboxInputInProgress",
 };
 
 // Min and max values (in minutes) for the buckets in the duration histograms.

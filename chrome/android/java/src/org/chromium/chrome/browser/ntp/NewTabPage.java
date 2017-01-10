@@ -254,7 +254,8 @@ public class NewTabPage
 
         private void recordOpenedMostVisitedItem(MostVisitedItem item) {
             if (mIsDestroyed) return;
-            NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_MOST_VISITED_ENTRY);
+            NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_MOST_VISITED_TILE);
+            RecordUserAction.record("MobileNTPMostVisited");
             NewTabPageUma.recordExplicitUserNavigation(
                     item.getUrl(), NewTabPageUma.RAPPOR_ACTION_VISITED_SUGGESTED_TILE);
             RecordHistogram.recordMediumTimesHistogram("NewTabPage.MostVisitedTime",
@@ -349,6 +350,22 @@ public class NewTabPage
         @Override
         public void trackSnippetCategoryActionClick(int category, int position) {
             mSnippetsBridge.onMoreButtonClicked(category, position);
+            switch (category) {
+                case KnownCategories.BOOKMARKS:
+                    NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_BOOKMARKS_MANAGER);
+                    break;
+                // MORE button in both categories leads to the recent tabs manager
+                case KnownCategories.FOREIGN_TABS:
+                case KnownCategories.RECENT_TABS:
+                    NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_RECENT_TABS_MANAGER);
+                    break;
+                case KnownCategories.DOWNLOADS:
+                    NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_DOWNLOADS_MANAGER);
+                    break;
+                default:
+                    // No action associated
+                    break;
+            }
         }
 
         @Override

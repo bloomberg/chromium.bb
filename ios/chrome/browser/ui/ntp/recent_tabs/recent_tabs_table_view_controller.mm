@@ -342,7 +342,8 @@ enum CellType {
   [self dismissRecentTabsModal];
   if (openTabs->GetForeignTab(distantTab->session_tag, distantTab->tab_id,
                               &toLoad)) {
-    base::RecordAction(base::UserMetricsAction("MobileNTPForeignSession"));
+    base::RecordAction(base::UserMetricsAction(
+        "MobileRecentTabManagerTabFromOtherDeviceOpened"));
     new_tab_page_uma::RecordAction(
         _browserState, new_tab_page_uma::ACTION_OPENED_FOREIGN_SESSION);
     [_loader loadSessionTab:toLoad];
@@ -361,7 +362,8 @@ enum CellType {
       TabRestoreServiceDelegateImplIOSFactory::GetForBrowserState(
           _browserState);
   [self dismissRecentTabsModal];
-  base::RecordAction(base::UserMetricsAction("MobileNTPRecentlyClosed"));
+  base::RecordAction(
+      base::UserMetricsAction("MobileRecentTabManagerRecentTabOpened"));
   new_tab_page_uma::RecordAction(
       _browserState, new_tab_page_uma::ACTION_OPENED_RECENTLY_CLOSED_ENTRY);
   _tabRestoreService->RestoreEntryById(delegate, entry->id,

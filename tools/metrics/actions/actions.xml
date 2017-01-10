@@ -9308,6 +9308,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MobileBookmarkManagerEntryOpened">
+  <owner>ianwen@chromium.org</owner>
+  <description>
+    A bookmark was opened from the bookmark manager. Bookmarks opened directly
+    from the NTP will not be counted. Instead those will be counted in the
+    NewTabPage.ContentSuggestions.* histograms.
+  </description>
+</action>
+
 <action name="MobileBookmarkManagerOpen">
   <owner>ianwen@chromium.org</owner>
   <description>
@@ -9823,11 +9832,18 @@ should be able to be added at any place in this file.
   <description>
     Action indicating the user has opened a bookmark from the bookmark manager.
   </description>
+  <obsolete>
+    Deprecated as of 01/2017. Replaced with MobileBookmarkManagerEntryOpened.
+  </obsolete>
 </action>
 
 <action name="MobileNTPForeignSession">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Deprecated as of 01/2017. Replaced with
+    MobileRecentTabManagerTabFromOtherDeviceOpened.
+  </obsolete>
 </action>
 
 <action name="MobileNTPMostVisited">
@@ -9838,6 +9854,10 @@ should be able to be added at any place in this file.
 <action name="MobileNTPRecentlyClosed">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Deprecated as of 01/2017. Replaced with
+    MobileRecentTabManagerRecentTabOpened.
+  </obsolete>
 </action>
 
 <action name="MobileNTPShown">
@@ -10074,6 +10094,24 @@ should be able to be added at any place in this file.
   <description>
     A VIEW intent was received by the tabbed mode activity from Chrome.  This is
     only recorded for intent types that are also allowed from external apps.
+  </description>
+</action>
+
+<action name="MobileRecentTabManagerRecentTabOpened">
+  <owner>finkm@chromium.org</owner>
+  <description>
+    A recently closed tab was opened from the recent tabs manager. Recently
+    closed tabs opened directly from the NTP will not be counted. Instead those
+    will be counted in the NewTabPage.ContentSuggestions.* histograms.
+  </description>
+</action>
+
+<action name="MobileRecentTabManagerTabFromOtherDeviceOpened">
+  <owner>finkm@chromium.org</owner>
+  <description>
+    A tab from another device was opened from the recent tabs manager. Tabs from
+    another device opened directly from the NTP will not be counted. Instead
+    those will be counted in the NewTabPage.ContentSuggestions.* histograms.
   </description>
 </action>
 

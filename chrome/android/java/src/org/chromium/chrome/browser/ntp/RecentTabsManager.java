@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
@@ -180,7 +181,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
     public void openForeignSessionTab(ForeignSession session, ForeignSessionTab tab,
             int windowDisposition) {
         if (mIsDestroyed) return;
-        NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_FOREIGN_SESSION);
+        RecordUserAction.record("MobileRecentTabManagerTabFromOtherDeviceOpened");
         mForeignSessionHelper.openForeignSessionTab(mTab, session, tab, windowDisposition);
     }
 
@@ -193,7 +194,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      */
     public void openRecentlyClosedTab(RecentlyClosedTab tab, int windowDisposition) {
         if (mIsDestroyed) return;
-        NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_RECENTLY_CLOSED_ENTRY);
+        RecordUserAction.record("MobileRecentTabManagerRecentTabOpened");
         mRecentlyClosedTabManager.openRecentlyClosedTab(mTab, tab, windowDisposition);
     }
 

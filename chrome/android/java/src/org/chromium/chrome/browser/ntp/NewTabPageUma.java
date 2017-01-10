@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Records UMA stats for which actions the user takes on the NTP in the
- * "NewTabPage.ActionAndroid" histogram.
+ * "NewTabPage.ActionAndroid2" histogram.
  */
 public final class NewTabPageUma {
     private NewTabPageUma() {}
@@ -40,16 +40,18 @@ public final class NewTabPageUma {
     private static final int ACTION_NAVIGATED_TO_GOOGLE_HOMEPAGE = 1;
     // User navigated to any other page using the omnibox
     private static final int ACTION_NAVIGATED_USING_OMNIBOX = 2;
-    // User opened a most visited page
-    public static final int ACTION_OPENED_MOST_VISITED_ENTRY = 3;
-    // User opened a recently closed tab
-    public static final int ACTION_OPENED_RECENTLY_CLOSED_ENTRY = 4;
-    // User opened a bookmark
-    public static final int ACTION_OPENED_BOOKMARK = 5;
-    // User opened a foreign session (from recent tabs section)
-    public static final int ACTION_OPENED_FOREIGN_SESSION = 6;
+    // User opened a most visited tile
+    public static final int ACTION_OPENED_MOST_VISITED_TILE = 3;
+    // User opened the recent tabs manager
+    public static final int ACTION_OPENED_RECENT_TABS_MANAGER = 4;
+    // User opened the history manager
+    public static final int ACTION_OPENED_HISTORY_MANAGER = 5;
+    // User opened the bookmarks manager
+    public static final int ACTION_OPENED_BOOKMARKS_MANAGER = 6;
+    // User opened the downloads manager
+    public static final int ACTION_OPENED_DOWNLOADS_MANAGER = 7;
     // User navigated to the webpage for a snippet shown on the NTP.
-    public static final int ACTION_OPENED_SNIPPET = 7;
+    public static final int ACTION_OPENED_SNIPPET = 8;
     // User clicked on the "learn more" link in the footer.
     public static final int ACTION_CLICKED_LEARN_MORE = 9;
     // User clicked on the "Refresh" button in the "all dismissed" state.
@@ -109,24 +111,7 @@ public final class NewTabPageUma {
     public static void recordAction(int action) {
         assert action >= 0;
         assert action < NUM_ACTIONS;
-        switch (action) {
-            case ACTION_OPENED_MOST_VISITED_ENTRY:
-                RecordUserAction.record("MobileNTPMostVisited");
-                break;
-            case ACTION_OPENED_RECENTLY_CLOSED_ENTRY:
-                RecordUserAction.record("MobileNTPRecentlyClosed");
-                break;
-            case ACTION_OPENED_BOOKMARK:
-                RecordUserAction.record("MobileNTPBookmark");
-                break;
-            case ACTION_OPENED_FOREIGN_SESSION:
-                RecordUserAction.record("MobileNTPForeignSession");
-                break;
-            default:
-                // No UMA action associated with this type.
-                break;
-        }
-        RecordHistogram.recordEnumeratedHistogram("NewTabPage.ActionAndroid", action, NUM_ACTIONS);
+        RecordHistogram.recordEnumeratedHistogram("NewTabPage.ActionAndroid2", action, NUM_ACTIONS);
     }
 
     /**

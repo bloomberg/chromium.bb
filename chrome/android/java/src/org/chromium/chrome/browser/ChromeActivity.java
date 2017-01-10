@@ -91,6 +91,8 @@ import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.nfc.BeamController;
 import org.chromium.chrome.browser.nfc.BeamProvider;
+import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
@@ -1712,11 +1714,14 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             WebsiteSettingsPopup.show(
                     this, currentTab, null, WebsiteSettingsPopup.OPENED_FROM_MENU);
         } else if (id == R.id.open_history_menu_id) {
+            if (NewTabPage.isNTPUrl(currentTab.getUrl())) {
+                NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_HISTORY_MANAGER);
+            }
+            RecordUserAction.record("MobileMenuHistory");
             if (!HistoryManagerUtils.showHistoryManager(this, currentTab)) {
                 currentTab.loadUrl(
                         new LoadUrlParams(UrlConstants.HISTORY_URL, PageTransition.AUTO_TOPLEVEL));
             }
-            RecordUserAction.record("MobileMenuHistory");
             StartupMetrics.getInstance().recordOpenedHistory();
         } else if (id == R.id.share_menu_id || id == R.id.direct_share_menu_id) {
             onShareMenuItemSelected(id == R.id.direct_share_menu_id,

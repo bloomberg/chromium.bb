@@ -79,6 +79,7 @@ import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.ntp.NativePageAssassin;
+import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
@@ -1168,6 +1169,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     @Override
     public boolean onMenuOrKeyboardAction(final int id, boolean fromMenu) {
         final Tab currentTab = getActivityTab();
+        boolean currentTabIsNtp = currentTab != null && NewTabPage.isNTPUrl(currentTab.getUrl());
         if (id == R.id.move_to_other_window_menu_id) {
             if (currentTab != null) moveTabToOtherWindow(currentTab);
         } else if (id == R.id.new_tab_menu_id) {
@@ -1196,6 +1198,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                         BookmarkUtils.showBookmarkManager(ChromeTabbedActivity.this);
                     }
                 });
+                if (currentTabIsNtp) {
+                    NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_BOOKMARKS_MANAGER);
+                }
                 RecordUserAction.record("MobileMenuAllBookmarks");
             }
         } else if (id == R.id.recent_tabs_menu_id) {
@@ -1203,6 +1208,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 currentTab.loadUrl(new LoadUrlParams(
                         UrlConstants.RECENT_TABS_URL,
                         PageTransition.AUTO_BOOKMARK));
+                if (currentTabIsNtp) {
+                    NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_RECENT_TABS_MANAGER);
+                }
                 RecordUserAction.record("MobileMenuRecentTabs");
             }
         } else if (id == R.id.close_all_tabs_menu_id) {
@@ -1232,6 +1240,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             }
         } else if (id == R.id.downloads_menu_id) {
             DownloadUtils.showDownloadManager(this, currentTab);
+            if (currentTabIsNtp) {
+                NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_DOWNLOADS_MANAGER);
+            }
             RecordUserAction.record("MobileMenuDownloadManager");
         } else if (id == R.id.open_recently_closed_tab) {
             TabModel currentModel = mTabModelSelectorImpl.getCurrentModel();

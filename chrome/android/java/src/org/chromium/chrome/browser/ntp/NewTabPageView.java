@@ -506,12 +506,14 @@ public class NewTabPageView extends FrameLayout
             toolbar.getRecentTabsButton().setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_RECENT_TABS_MANAGER);
                     mManager.navigateToRecentTabs();
                 }
             });
             toolbar.getBookmarksButton().setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_BOOKMARKS_MANAGER);
                     mManager.navigateToBookmarks();
                 }
             });

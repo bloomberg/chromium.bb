@@ -436,7 +436,8 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 
   new_tab_page_uma::RecordAction(self.browserState,
                                  new_tab_page_uma::ACTION_OPENED_BOOKMARK);
-  base::RecordAction(base::UserMetricsAction("MobileNTPBookmark"));
+  base::RecordAction(
+      base::UserMetricsAction("MobileBookmarkManagerEntryOpened"));
   [_loader loadURL:url
                referrer:web::Referrer()
              transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK

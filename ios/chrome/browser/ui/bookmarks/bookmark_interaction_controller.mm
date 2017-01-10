@@ -295,7 +295,8 @@ const int64_t kLastUsedFolderNone = -1;
   if (url != GURL()) {
     new_tab_page_uma::RecordAction(_browserState,
                                    new_tab_page_uma::ACTION_OPENED_BOOKMARK);
-    base::RecordAction(base::UserMetricsAction("MobileNTPBookmark"));
+    base::RecordAction(
+        base::UserMetricsAction("MobileBookmarkManagerEntryOpened"));
 
     if (url.SchemeIs(url::kJavaScriptScheme)) {  // bookmarklet
       NSString* jsToEval = [base::SysUTF8ToNSString(url.GetContent())

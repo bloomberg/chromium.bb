@@ -22,7 +22,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
-import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
@@ -240,7 +239,7 @@ public class BookmarkUtils {
 
         String url = model.getBookmarkById(bookmarkId).getUrl();
 
-        NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_BOOKMARK);
+        RecordUserAction.record("MobileBookmarkManagerEntryOpened");
         RecordHistogram.recordEnumeratedHistogram(
                 "Stars.LaunchLocation", launchLocation, BookmarkLaunchLocation.COUNT);
 
