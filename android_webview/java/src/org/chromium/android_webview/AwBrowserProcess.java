@@ -20,7 +20,6 @@ import org.chromium.android_webview.policy.AwPolicyProvider;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.PackageUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -122,30 +121,10 @@ public abstract class AwBrowserProcess {
         });
     }
 
-    private static boolean checkMinAppVersion(Context context, String packageName, int minVersion) {
-        String appName = context.getPackageName();
-        if (packageName.equals(appName)) {
-            int versionCode = PackageUtils.getPackageVersion(context, packageName);
-            if (versionCode < minVersion) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private static void tryObtainingDataDirLock(Context context) {
-        boolean dieOnFailure = true;
-        // Old versions of Facebook apps share the same data dir with multiple processes; current
-        // versions avoid this issue.
-        if (checkMinAppVersion(context, "com.facebook.katana", 34592776)
-                || checkMinAppVersion(context, "com.facebook.lite", 37569469)
-                || checkMinAppVersion(context, "com.instagram.android", 35440022)) {
-            dieOnFailure = false;
-        }
-        // GMS shares the same data dir with multiple processes in some cases; see b/26879632.
-        if ("com.google.android.gms".equals(context.getPackageName())) {
-            dieOnFailure = false;
-        }
+        // Too many apps rely on this at present to make this fatal,
+        // even though it's known to be unsafe.
+        boolean dieOnFailure = false;
 
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {

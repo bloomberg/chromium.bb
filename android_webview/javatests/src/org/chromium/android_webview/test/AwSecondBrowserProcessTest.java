@@ -13,10 +13,9 @@ import android.os.IBinder;
 import android.os.Parcel;
 import android.os.Process;
 import android.os.RemoteException;
-import android.support.test.filters.LargeTest;
 
 import org.chromium.android_webview.AwBrowserProcess;
-import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.DisabledTest;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -42,15 +41,24 @@ public class AwSecondBrowserProcessTest extends AwTestBase {
         super.tearDown();
     }
 
-    @LargeTest
-    @Feature({"AndroidWebView"})
+    /*
+     * @LargeTest
+     * @Feature({"AndroidWebView"})
+     * We can't test that creating second browser
+     * process succeeds either, because in debug it will crash due to an assert
+     * in the SQL DB code.
+     */
+    @DisabledTest(message = "crbug.com/582146")
     public void testCreatingSecondBrowserProcessFails() throws Throwable {
         startSecondBrowserProcess();
         assertFalse(tryStartingBrowserProcess());
     }
 
-    @LargeTest
-    @Feature({"AndroidWebView"})
+    /*
+     * @LargeTest
+     * @Feature({"AndroidWebView"})
+     */
+    @DisabledTest(message = "crbug.com/582146")
     public void testLockCleanupOnProcessShutdown() throws Throwable {
         startSecondBrowserProcess();
         assertFalse(tryStartingBrowserProcess());
