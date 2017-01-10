@@ -5,6 +5,7 @@
 #include "ash/common/wm/dock/docked_window_resizer.h"
 
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/ash_switches.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/test/test_shelf_delegate.h"
@@ -47,6 +48,8 @@ class DockedWindowResizerTest
   virtual ~DockedWindowResizerTest() {}
 
   void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ash::switches::kAshEnableDockedWindows);
     AshTestBase::SetUp();
     UpdateDisplay("600x400");
   }

@@ -5,6 +5,7 @@
 #include "ash/common/wm/dock/docked_window_layout_manager.h"
 
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/ash_switches.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/test/test_shelf_delegate.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
@@ -18,6 +19,7 @@
 #include "ash/test/shell_test_api.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
+#include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
@@ -42,6 +44,8 @@ class DockedWindowLayoutManagerTest
   virtual ~DockedWindowLayoutManagerTest() {}
 
   void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ash::switches::kAshEnableDockedWindows);
     AshTestBase::SetUp();
     UpdateDisplay("600x600");
 

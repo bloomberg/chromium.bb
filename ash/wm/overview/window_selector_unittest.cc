@@ -543,8 +543,24 @@ TEST_F(WindowSelectorTest, WindowsOrder) {
   ToggleOverview();
 }
 
+// Test class used for tests that need docked windows enabled.
+class EnabledDockedWindowsWindowSelectorTest : public WindowSelectorTest {
+ public:
+  EnabledDockedWindowsWindowSelectorTest() = default;
+  ~EnabledDockedWindowsWindowSelectorTest() override = default;
+
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ash::switches::kAshEnableDockedWindows);
+    WindowSelectorTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EnabledDockedWindowsWindowSelectorTest);
+};
+
 // Tests entering overview mode with docked windows
-TEST_F(WindowSelectorTest, BasicWithDocked) {
+TEST_F(EnabledDockedWindowsWindowSelectorTest, BasicWithDocked) {
   // aura::Window* root_window = Shell::GetPrimaryRootWindow();
   gfx::Rect bounds(300, 0, 200, 200);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
@@ -618,7 +634,7 @@ TEST_F(WindowSelectorTest, BasicWithDocked) {
 
 // Tests that selecting a docked window updates docked layout pushing another
 // window to get docked-minimized.
-TEST_F(WindowSelectorTest, ActivateDockedWindow) {
+TEST_F(EnabledDockedWindowsWindowSelectorTest, ActivateDockedWindow) {
   // aura::Window* root_window = Shell::GetPrimaryRootWindow();
   gfx::Rect bounds(300, 0, 200, 200);
   std::unique_ptr<views::Widget> widget1 = CreateWindowWidget(bounds);
@@ -684,7 +700,7 @@ TEST_F(WindowSelectorTest, ActivateDockedWindow) {
 }
 
 // Tests that clicking on the close button closes the docked window.
-TEST_F(WindowSelectorTest, CloseDockedWindow) {
+TEST_F(EnabledDockedWindowsWindowSelectorTest, CloseDockedWindow) {
   // aura::Window* root_window = Shell::GetPrimaryRootWindow();
   gfx::Rect bounds(300, 0, 200, 200);
   std::unique_ptr<views::Widget> widget1 = CreateWindowWidget(bounds);
@@ -747,7 +763,7 @@ TEST_F(WindowSelectorTest, CloseDockedWindow) {
 }
 
 // Tests that clicking on the close button closes the docked-minimized window.
-TEST_F(WindowSelectorTest, CloseDockedMinimizedWindow) {
+TEST_F(EnabledDockedWindowsWindowSelectorTest, CloseDockedMinimizedWindow) {
   // aura::Window* root_window = Shell::GetPrimaryRootWindow();
   gfx::Rect bounds(300, 0, 200, 200);
   std::unique_ptr<views::Widget> widget1 = CreateWindowWidget(bounds);

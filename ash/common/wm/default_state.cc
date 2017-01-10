@@ -4,6 +4,7 @@
 
 #include "ash/common/wm/default_state.h"
 
+#include "ash/common/ash_switches.h"
 #include "ash/common/wm/dock/docked_window_layout_manager.h"
 #include "ash/common/wm/window_animation_types.h"
 #include "ash/common/wm/window_parenting_utils.h"
@@ -105,7 +106,35 @@ class ScopedDockedLayoutEventSourceResetter {
   DISALLOW_COPY_AND_ASSIGN(ScopedDockedLayoutEventSourceResetter);
 };
 
+void CycleSnap(WindowState* window_state, WMEventType event) {
+  DCHECK(!ash::switches::DockedWindowsEnabled());
+
+  wm::WindowStateType desired_snap_state =
+      event == WM_EVENT_CYCLE_SNAP_DOCK_LEFT
+          ? wm::WINDOW_STATE_TYPE_LEFT_SNAPPED
+          : wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED;
+
+  if (window_state->CanSnap() &&
+      window_state->GetStateType() != desired_snap_state &&
+      window_state->window()->GetType() != ui::wm::WINDOW_TYPE_PANEL) {
+    const wm::WMEvent event(desired_snap_state ==
+                                    wm::WINDOW_STATE_TYPE_LEFT_SNAPPED
+                                ? wm::WM_EVENT_SNAP_LEFT
+                                : wm::WM_EVENT_SNAP_RIGHT);
+    window_state->OnWMEvent(&event);
+    return;
+  }
+
+  if (window_state->IsSnapped()) {
+    window_state->Restore();
+    return;
+  }
+  window_state->window()->Animate(::wm::WINDOW_ANIMATION_TYPE_BOUNCE);
+}
+
 void CycleSnapDock(WindowState* window_state, WMEventType event) {
+  DCHECK(ash::switches::DockedWindowsEnabled());
+
   DockedWindowLayoutManager* dock_layout =
       GetDockedWindowLayoutManager(window_state->window()->GetShell());
   wm::WindowStateType desired_snap_state =
@@ -379,7 +408,10 @@ bool DefaultState::ProcessCompoundEvents(WindowState* window_state,
       return true;
     case WM_EVENT_CYCLE_SNAP_DOCK_LEFT:
     case WM_EVENT_CYCLE_SNAP_DOCK_RIGHT:
-      CycleSnapDock(window_state, event->type());
+      if (ash::switches::DockedWindowsEnabled())
+        CycleSnapDock(window_state, event->type());
+      else
+        CycleSnap(window_state, event->type());
       return true;
     case WM_EVENT_CENTER:
       CenterWindow(window_state);
@@ -657,6 +689,8 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
               : GetDefaultRightSnappedWindowBoundsInParent(window);
       break;
     case WINDOW_STATE_TYPE_DOCKED: {
+      // TODO(afakhry): Remove in M58.
+      DCHECK(ash::switches::DockedWindowsEnabled());
       if (window->GetParent()->GetShellWindowId() !=
           kShellWindowId_DockedContainer) {
         WmWindow* docked_container =

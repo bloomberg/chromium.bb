@@ -5,6 +5,7 @@
 #include "ash/common/wm/workspace/workspace_window_resizer.h"
 
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/ash_switches.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm/window_positioning_utils.h"
@@ -643,6 +644,11 @@ TEST_P(WorkspaceWindowResizerTest, CancelSnapPhantom) {
 
   window_->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
                              display::Screen::GetScreen()->GetPrimaryDisplay());
+
+  // Make the window snappable by making it resizable and maximizable.
+  window_->SetProperty(aura::client::kResizeBehaviorKey,
+                       ui::mojom::kResizeBehaviorCanResize |
+                           ui::mojom::kResizeBehaviorCanMaximize);
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
   EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
   {
@@ -1495,6 +1501,15 @@ TEST_P(WorkspaceWindowResizerTest, TestPartialMaxSizeEnforced) {
 
 // Test that a window with a specified max size can't be snapped.
 TEST_P(WorkspaceWindowResizerTest, PhantomSnapMaxSize) {
+  // Make the window snappable by making it resizable and maximizable.
+  window_->SetProperty(aura::client::kResizeBehaviorKey,
+                       ui::mojom::kResizeBehaviorCanResize |
+                           ui::mojom::kResizeBehaviorCanMaximize);
+
+  // Enable docking for this test.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      ash::switches::kAshEnableDockedWindows);
+
   {
     // With max size not set we get a phantom window controller for dragging off
     // the right hand side.

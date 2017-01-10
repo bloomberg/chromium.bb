@@ -7,6 +7,7 @@
 #include <string>
 
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/ash_switches.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/mru_window_tracker.h"
@@ -24,6 +25,7 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
+#include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -1571,6 +1573,10 @@ TEST_F(MaximizeModeWindowManagerTest, AlwaysOnTopWindows) {
 
 // Tests that docked windows are not maximized, and not tracked.
 TEST_F(MaximizeModeWindowManagerTest, DontMaximizeDockedWindows) {
+  // Enable window docking for this test.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      ash::switches::kAshEnableDockedWindows);
+
   gfx::Rect rect(10, 10, 200, 50);
   std::unique_ptr<aura::Window> window(
       CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));

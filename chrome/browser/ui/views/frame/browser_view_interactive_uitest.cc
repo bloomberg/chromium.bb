@@ -4,11 +4,16 @@
 
 #include "chrome/browser/ui/views/frame/browser_view.h"
 
+#include "base/command_line.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/views/focus/focus_manager.h"
+
+#if defined(USE_ASH)
+#include "ash/common/ash_switches.h"
+#endif
 
 #if defined(USE_AURA)
 #include "chrome/browser/ui/browser_window_state.h"
@@ -58,6 +63,15 @@ class BrowserViewTestParam : public BrowserViewTest,
 // Test that docked state is remembered for app browser windows and not
 // remembered for tabbed browser windows.
 IN_PROC_BROWSER_TEST_P(BrowserViewTestParam, BrowserRemembersDockedState) {
+#if defined(USE_ASH)
+  // Enable window docking for this test.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      ash::switches::kAshEnableDockedWindows);
+  const bool kIsAsh = true;
+#else
+  const bool kIsAsh = false;
+#endif  // defined(USE_ASH)
+
   // Open a new browser window (app or tabbed depending on a parameter).
   bool test_app = TestApp();
   Browser::CreateParams params =
@@ -66,11 +80,7 @@ IN_PROC_BROWSER_TEST_P(BrowserViewTestParam, BrowserRemembersDockedState) {
                      browser()->profile())
                : Browser::CreateParams(browser()->profile());
   params.initial_show_state = ui::SHOW_STATE_DEFAULT;
-#if defined(USE_ASH)
-  const bool kIsAsh = true;
-#else
-  const bool kIsAsh = false;
-#endif
+
   // Default |browser()| is not used by this test.
   browser()->window()->Close();
 

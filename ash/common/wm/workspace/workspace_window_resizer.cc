@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/ash_switches.h"
 #include "ash/common/metrics/user_metrics_action.h"
 #include "ash/common/wm/default_window_resizer.h"
 #include "ash/common/wm/dock/docked_window_layout_manager.h"
@@ -885,6 +886,7 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
                                           ? DOCKED_ALIGNMENT_LEFT
                                           : DOCKED_ALIGNMENT_RIGHT;
   const bool can_dock =
+      ash::switches::DockedWindowsEnabled() &&
       dock_layout_->CanDockWindow(GetTarget(), desired_alignment) &&
       dock_layout_->GetAlignmentOfWindow(GetTarget()) != DOCKED_ALIGNMENT_NONE;
   if (!can_dock) {

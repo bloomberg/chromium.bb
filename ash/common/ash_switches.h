@@ -27,6 +27,7 @@ ASH_EXPORT extern const char kAshEnableFullscreenAppList[];
 ASH_EXPORT extern const char kAshEnableMagnifierKeyScroller[];
 ASH_EXPORT extern const char kAshEnablePalette[];
 ASH_EXPORT extern const char kAshEnablePaletteOnAllDisplays[];
+ASH_EXPORT extern const char kAshEnableDockedWindows[];
 ASH_EXPORT extern const char kAshEnableTouchView[];
 ASH_EXPORT extern const char kAshEnableMirroredScreen[];
 ASH_EXPORT extern const char kAshDisableStableOverviewOrder[];
@@ -41,6 +42,9 @@ ASH_EXPORT extern const char kAuraLegacyPowerButton[];
 
 // True if the pointer (cursor) position should be kept inside root windows.
 ASH_EXPORT bool ConstrainPointerToRoot();
+
+// True if docking windows right or left is enabled.
+ASH_EXPORT bool DockedWindowsEnabled();
 
 }  // namespace switches
 }  // namespace ash

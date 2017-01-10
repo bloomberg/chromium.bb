@@ -5,6 +5,7 @@
 #include "ui/display/manager/display_manager.h"
 
 #include "ash/accelerators/accelerator_commands_aura.h"
+#include "ash/common/ash_switches.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/display/display_configuration_controller.h"
@@ -2272,6 +2273,11 @@ TEST_P(DisplayManagerTest, NoRotateUnifiedDesktop) {
 TEST_P(DisplayManagerTest, UnifiedWithDockWindows) {
   if (!SupportsMultipleDisplays())
     return;
+
+  // Enable window docking for this test.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      ash::switches::kAshEnableDockedWindows);
+
   const int height_offset = GetMdMaximizedWindowHeightOffset();
   display_manager()->SetUnifiedDesktopEnabled(true);
 

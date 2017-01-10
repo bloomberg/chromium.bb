@@ -8,6 +8,7 @@
 #include "ash/common/accelerators/accelerator_table.h"
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/accessibility_types.h"
+#include "ash/common/ash_switches.h"
 #include "ash/common/ime_control_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/brightness_control_delegate.h"
@@ -28,6 +29,7 @@
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
+#include "base/command_line.h"
 #include "base/test/user_action_tester.cc"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/app_list/presenter/app_list.h"
@@ -476,7 +478,64 @@ TEST_F(AcceleratorControllerTest, WindowSnap) {
   }
 }
 
-TEST_F(AcceleratorControllerTest, WindowSnapLeftDockLeftRestore) {
+// Tests that when window docking is disabled, only snapping windows works.
+TEST_F(AcceleratorControllerTest, WindowSnapWithoutDocking) {
+  ASSERT_FALSE(ash::switches::DockedWindowsEnabled());
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
+
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  window_state->Activate();
+
+  // Snap right.
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
+  gfx::Rect normal_bounds = window_state->GetRestoreBoundsInParent();
+  gfx::Rect expected_bounds = wm::GetDefaultRightSnappedWindowBoundsInParent(
+      WmWindowAura::Get(window.get()));
+  EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
+  EXPECT_TRUE(window_state->IsSnapped());
+  // Snap right again ->> becomes normal.
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
+  EXPECT_TRUE(window_state->IsNormalStateType());
+  EXPECT_FALSE(window_state->IsDocked());
+  EXPECT_EQ(normal_bounds.ToString(), window->bounds().ToString());
+  // Snap right.
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
+  EXPECT_TRUE(window_state->IsSnapped());
+  EXPECT_FALSE(window_state->IsDocked());
+  // Snap left.
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
+  EXPECT_TRUE(window_state->IsSnapped());
+  EXPECT_FALSE(window_state->IsDocked());
+  expected_bounds = wm::GetDefaultLeftSnappedWindowBoundsInParent(
+      WmWindowAura::Get(window.get()));
+  EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
+  // Snap left again ->> becomes normal.
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
+  EXPECT_TRUE(window_state->IsNormalStateType());
+  EXPECT_FALSE(window_state->IsDocked());
+  EXPECT_EQ(normal_bounds.ToString(), window->bounds().ToString());
+}
+
+// Test class used for testing docked windows.
+class EnabledDockedWindowsAcceleratorControllerTest
+    : public AcceleratorControllerTest {
+ public:
+  EnabledDockedWindowsAcceleratorControllerTest() = default;
+  ~EnabledDockedWindowsAcceleratorControllerTest() override = default;
+
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ash::switches::kAshEnableDockedWindows);
+    AcceleratorControllerTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EnabledDockedWindowsAcceleratorControllerTest);
+};
+
+TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
+       WindowSnapLeftDockLeftRestore) {
   std::unique_ptr<aura::Window> window0(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
   std::unique_ptr<aura::Window> window1(
@@ -498,7 +557,8 @@ TEST_F(AcceleratorControllerTest, WindowSnapLeftDockLeftRestore) {
   EXPECT_EQ(normal_bounds.ToString(), window1->bounds().ToString());
 }
 
-TEST_F(AcceleratorControllerTest, WindowSnapRightDockRightRestore) {
+TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
+       WindowSnapRightDockRightRestore) {
   std::unique_ptr<aura::Window> window0(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
   std::unique_ptr<aura::Window> window1(
@@ -521,7 +581,8 @@ TEST_F(AcceleratorControllerTest, WindowSnapRightDockRightRestore) {
   EXPECT_EQ(normal_bounds.ToString(), window1->bounds().ToString());
 }
 
-TEST_F(AcceleratorControllerTest, WindowSnapLeftDockLeftSnapRight) {
+TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
+       WindowSnapLeftDockLeftSnapRight) {
   std::unique_ptr<aura::Window> window0(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
   std::unique_ptr<aura::Window> window1(
@@ -546,7 +607,8 @@ TEST_F(AcceleratorControllerTest, WindowSnapLeftDockLeftSnapRight) {
   EXPECT_EQ(expected_bounds2.ToString(), window1->bounds().ToString());
 }
 
-TEST_F(AcceleratorControllerTest, WindowDockLeftMinimizeWindowWithRestore) {
+TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
+       WindowDockLeftMinimizeWindowWithRestore) {
   std::unique_ptr<aura::Window> window0(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
   std::unique_ptr<aura::Window> window1(
@@ -593,7 +655,8 @@ TEST_F(AcceleratorControllerTest, WindowDockLeftMinimizeWindowWithRestore) {
   EXPECT_EQ(window3_docked_bounds.ToString(), window3->bounds().ToString());
 }
 
-TEST_F(AcceleratorControllerTest, WindowPanelDockLeftDockRightRestore) {
+TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
+       WindowPanelDockLeftDockRightRestore) {
   std::unique_ptr<aura::Window> window0(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
 
@@ -620,7 +683,7 @@ TEST_F(AcceleratorControllerTest, WindowPanelDockLeftDockRightRestore) {
   EXPECT_EQ(window_restore_bounds.ToString(), window->bounds().ToString());
 }
 
-TEST_F(AcceleratorControllerTest, CenterWindowAccelerator) {
+TEST_F(EnabledDockedWindowsAcceleratorControllerTest, CenterWindowAccelerator) {
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
   wm::WindowState* window_state = wm::GetWindowState(window.get());

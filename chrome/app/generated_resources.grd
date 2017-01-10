@@ -5938,6 +5938,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ASH_SCREEN_ORIENTATION_LOCK_DESCRIPTION" desc="Description for the flag which can be used for support for javascript locking rotation">
           Allows javascript to lock the screen orienation.
         </message>
+        <message name="IDS_FLAGS_ASH_ENABLE_DOCKED_WINDOWS_NAME" desc="Title for the flag which can be used to enable docking windows to right or left.">
+          Enable docked windows.
+        </message>
+        <message name="IDS_FLAGS_ASH_ENABLE_DOCKED_WINDOWS_DESCRIPTION" desc="Description for the flag which can be used to enable docking windows to right or left.">
+          Enable docking windows to the left and right of the screen.
+        </message>
         <message name="IDS_FLAGS_ASH_ENABLE_TOUCH_VIEW_TESTING_NAME" desc="Title for the flag which can be used to test the TouchView maximizing mode.">
           Enable TouchView maximizing UI for testing
         </message>

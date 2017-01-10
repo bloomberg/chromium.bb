@@ -869,8 +869,7 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_GPU_RASTERIZATION_MSAA_SAMPLE_COUNT_NAME,
      IDS_FLAGS_GPU_RASTERIZATION_MSAA_SAMPLE_COUNT_DESCRIPTION, kOsAll,
      MULTI_VALUE_TYPE(kGpuRasterizationMSAASampleCountChoices)},
-    {"slimming-paint-invalidation",
-     IDS_FLAGS_SLIMMING_PAINT_INVALIDATION_NAME,
+    {"slimming-paint-invalidation", IDS_FLAGS_SLIMMING_PAINT_INVALIDATION_NAME,
      IDS_FLAGS_SLIMMING_PAINT_INVALIDATION_DESCRIPTION, kOsAll,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableSlimmingPaintInvalidation,
                                switches::kDisableSlimmingPaintInvalidation)},
@@ -1021,6 +1020,11 @@ const FeatureEntry kFeatureEntries[] = {
         IDS_FLAGS_ASH_MAXIMIZE_MODE_WINDOW_BACKDROP_DESCRIPTION, kOsCrOS,
         SINGLE_DISABLE_VALUE_TYPE(
             ash::switches::kAshDisableMaximizeModeWindowBackdrop),
+    },
+    {
+        "ash-enable-docked-windows", IDS_FLAGS_ASH_ENABLE_DOCKED_WINDOWS_NAME,
+        IDS_FLAGS_ASH_ENABLE_DOCKED_WINDOWS_DESCRIPTION, kOsAll,
+        SINGLE_VALUE_TYPE(ash::switches::kAshEnableDockedWindows),
     },
     {
         "ash-enable-touch-view-testing",
@@ -2016,8 +2020,7 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_ANDROID_PAY_INTEGRATION_V2_NAME,
      IDS_FLAGS_ENABLE_ANDROID_PAY_INTEGRATION_V2_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kAndroidPayIntegrationV2)},
-    {"android-payment-apps",
-     IDS_FLAGS_ANDROID_PAYMENT_APPS_NAME,
+    {"android-payment-apps", IDS_FLAGS_ANDROID_PAYMENT_APPS_NAME,
      IDS_FLAGS_ANDROID_PAYMENT_APPS_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kAndroidPaymentApps)},
 #endif  // OS_ANDROID
@@ -2054,8 +2057,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"no-credit-card-abort", IDS_FLAGS_NO_CREDIT_CARD_ABORT,
      IDS_FLAGS_NO_CREDIT_CARD_ABORT_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kNoCreditCardAbort)},
-    {"autofill-scan-theme-dialog",
-     IDS_FLAGS_AUTOFILL_SCAN_THEME_DIALOG_NAME,
+    {"autofill-scan-theme-dialog", IDS_FLAGS_AUTOFILL_SCAN_THEME_DIALOG_NAME,
      IDS_FLAGS_AUTOFILL_SCAN_THEME_DIALOG_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kAutofillScanThemeDialog)},
 #endif  // OS_ANDROID

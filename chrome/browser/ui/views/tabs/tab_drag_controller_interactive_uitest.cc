@@ -63,6 +63,7 @@
 
 #if defined(USE_ASH)
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/ash_switches.h"
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/shell.h"
@@ -2474,6 +2475,10 @@ void DetachToDockedWindowNextStep(
 // Drags from browser to separate window, docks that window and releases mouse.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        DetachToDockedWindowFromMaximizedWindow) {
+  // Enable docked windows for this test.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      ash::switches::kAshEnableDockedWindows);
+
   // Maximize the initial browser window.
   browser()->window()->Maximize();
   ASSERT_TRUE(browser()->window()->IsMaximized());

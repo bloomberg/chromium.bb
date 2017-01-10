@@ -7,6 +7,7 @@
 #include "ash/common/accelerators/accelerator_table.h"
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/accessibility_types.h"
+#include "ash/common/ash_switches.h"
 #include "ash/common/ime_control_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/brightness_control_delegate.h"
@@ -26,6 +27,7 @@
 #include "ash/mus/property_util.h"
 #include "ash/mus/test/wm_test_base.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "base/command_line.h"
 #include "base/test/user_action_tester.cc"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/client/aura_constants.h"
@@ -485,7 +487,62 @@ TEST_F(AcceleratorControllerTest, WindowSnap) {
   }
 }
 
-TEST_F(AcceleratorControllerTest, WindowSnapLeftDockLeftRestore) {
+// Tests that when window docking is disabled, only snapping windows works.
+TEST_F(AcceleratorControllerTest, WindowSnapWithoutDocking) {
+  ASSERT_FALSE(ash::switches::DockedWindowsEnabled());
+  WmWindow* window =
+      mus::WmWindowMus::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20)));
+  wm::WindowState* window_state = window->GetWindowState();
+  window_state->Activate();
+
+  // Snap right.
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
+  gfx::Rect normal_bounds = window_state->GetRestoreBoundsInParent();
+  gfx::Rect expected_bounds =
+      wm::GetDefaultRightSnappedWindowBoundsInParent(window);
+  EXPECT_EQ(expected_bounds.ToString(), window->GetBounds().ToString());
+  EXPECT_TRUE(window_state->IsSnapped());
+  // Snap right again ->> becomes normal.
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
+  EXPECT_TRUE(window_state->IsNormalStateType());
+  EXPECT_FALSE(window_state->IsDocked());
+  EXPECT_EQ(normal_bounds.ToString(), window->GetBounds().ToString());
+  // Snap right.
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
+  EXPECT_TRUE(window_state->IsSnapped());
+  EXPECT_FALSE(window_state->IsDocked());
+  // Snap left.
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
+  EXPECT_TRUE(window_state->IsSnapped());
+  EXPECT_FALSE(window_state->IsDocked());
+  expected_bounds = wm::GetDefaultLeftSnappedWindowBoundsInParent(window);
+  EXPECT_EQ(expected_bounds.ToString(), window->GetBounds().ToString());
+  // Snap left again ->> becomes normal.
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
+  EXPECT_TRUE(window_state->IsNormalStateType());
+  EXPECT_FALSE(window_state->IsDocked());
+  EXPECT_EQ(normal_bounds.ToString(), window->GetBounds().ToString());
+}
+
+// Test class used for testing docked windows.
+class EnabledDockedWindowsAcceleratorControllerTest
+    : public AcceleratorControllerTest {
+ public:
+  EnabledDockedWindowsAcceleratorControllerTest() = default;
+  ~EnabledDockedWindowsAcceleratorControllerTest() override = default;
+
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ash::switches::kAshEnableDockedWindows);
+    AcceleratorControllerTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EnabledDockedWindowsAcceleratorControllerTest);
+};
+
+TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
+       WindowSnapLeftDockLeftRestore) {
   CreateTestWindow(gfx::Rect(5, 5, 20, 20));
   WmWindow* window1 =
       mus::WmWindowMus::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20)));
@@ -506,7 +563,8 @@ TEST_F(AcceleratorControllerTest, WindowSnapLeftDockLeftRestore) {
   EXPECT_EQ(normal_bounds.ToString(), window1->GetBounds().ToString());
 }
 
-TEST_F(AcceleratorControllerTest, WindowSnapRightDockRightRestore) {
+TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
+       WindowSnapRightDockRightRestore) {
   CreateTestWindow(gfx::Rect(5, 5, 20, 20));
   WmWindow* window1 =
       mus::WmWindowMus::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20)));
@@ -528,7 +586,8 @@ TEST_F(AcceleratorControllerTest, WindowSnapRightDockRightRestore) {
   EXPECT_EQ(normal_bounds.ToString(), window1->GetBounds().ToString());
 }
 
-TEST_F(AcceleratorControllerTest, WindowSnapLeftDockLeftSnapRight) {
+TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
+       WindowSnapLeftDockLeftSnapRight) {
   mus::WmWindowMus::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20)));
   WmWindow* window1 =
       mus::WmWindowMus::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20)));
@@ -552,7 +611,8 @@ TEST_F(AcceleratorControllerTest, WindowSnapLeftDockLeftSnapRight) {
   EXPECT_EQ(expected_bounds2.ToString(), window1->GetBounds().ToString());
 }
 
-TEST_F(AcceleratorControllerTest, WindowDockLeftMinimizeWindowWithRestore) {
+TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
+       WindowDockLeftMinimizeWindowWithRestore) {
   WindowOwner window_owner(
       mus::WmWindowMus::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20))));
   WindowOwner window1_owner(
@@ -604,7 +664,8 @@ TEST_F(AcceleratorControllerTest, WindowDockLeftMinimizeWindowWithRestore) {
 
 // TODO: Needs CreatePanel(): http://crbug.com/632209.
 /*
-TEST_F(AcceleratorControllerTest, WindowPanelDockLeftDockRightRestore) {
+TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
+       WindowPanelDockLeftDockRightRestore) {
   WmWndow* window0 =
       mus::WmWindowMus::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20)));
 
@@ -632,7 +693,7 @@ TEST_F(AcceleratorControllerTest, WindowPanelDockLeftDockRightRestore) {
 }
 */
 
-TEST_F(AcceleratorControllerTest, CenterWindowAccelerator) {
+TEST_F(EnabledDockedWindowsAcceleratorControllerTest, CenterWindowAccelerator) {
   WindowOwner window_owner(
       mus::WmWindowMus::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20))));
   WmWindow* window = window_owner.window();
