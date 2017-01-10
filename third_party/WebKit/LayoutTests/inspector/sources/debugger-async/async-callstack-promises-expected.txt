@@ -20,6 +20,10 @@ Call stack:
 Call stack:
     0) catchCallback (async-callstack-promises.html:118)
     [Promise.resolve]
+    0) resolveCallback (async-callstack-promises.html:29)
+    1) settledPromise (async-callstack-promises.html:38)
+    2) chained2 (async-callstack-promises.html:112)
+    [Promise.resolve]
     0) resolvePromise (async-callstack-promises.html:12)
     [setTimeout]
     0) promiseCallback (async-callstack-promises.html:21)
@@ -27,11 +31,6 @@ Call stack:
     2) chained1 (async-callstack-promises.html:110)
     [Promise.resolve]
     0) resolvePromise (async-callstack-promises.html:12)
-    [setTimeout]
-    0) promiseCallback (async-callstack-promises.html:21)
-    1) timeoutPromise (async-callstack-promises.html:9)
-    2) doTestThrowFromChain (async-callstack-promises.html:109)
-    3) testFunctionTimeout (async-callstack-promises.html:50)
 
 Call stack:
     0) catchCallback (async-callstack-promises.html:130)
@@ -98,6 +97,10 @@ Call stack:
 Call stack:
     0) chained4 (async-callstack-promises.html:89)
     [Promise.resolve]
+    0) resolveCallback (async-callstack-promises.html:29)
+    1) settledPromise (async-callstack-promises.html:38)
+    2) chained3 (async-callstack-promises.html:87)
+    [Promise.resolve]
     0) resolvePromise (async-callstack-promises.html:12)
     [setTimeout]
     0) promiseCallback (async-callstack-promises.html:21)
@@ -105,11 +108,6 @@ Call stack:
     2) chained1 (async-callstack-promises.html:81)
     [Promise.resolve]
     0) resolvePromise (async-callstack-promises.html:12)
-    [setTimeout]
-    0) promiseCallback (async-callstack-promises.html:21)
-    1) timeoutPromise (async-callstack-promises.html:9)
-    2) doTestChainedPromises (async-callstack-promises.html:79)
-    3) testFunctionTimeout (async-callstack-promises.html:50)
 
 Call stack:
     0) errorCallback (async-callstack-promises.html:60)
@@ -125,8 +123,10 @@ Call stack:
 Call stack:
     0) errorCallback (async-callstack-promises.html:60)
     [Promise.reject]
-    0) doTestSettledPromises (async-callstack-promises.html:74)
-    1) testFunctionTimeout (async-callstack-promises.html:50)
+    0) rejectCallback (async-callstack-promises.html:33)
+    1) settledPromise (async-callstack-promises.html:36)
+    2) doTestSettledPromises (async-callstack-promises.html:74)
+    3) testFunctionTimeout (async-callstack-promises.html:50)
     [setTimeout]
     0) testFunction (async-callstack-promises.html:43)
     [setTimeout]
@@ -157,8 +157,10 @@ Call stack:
 Call stack:
     0) thenCallback (async-callstack-promises.html:55)
     [Promise.resolve]
-    0) doTestSettledPromises (async-callstack-promises.html:73)
-    1) testFunctionTimeout (async-callstack-promises.html:50)
+    0) resolveCallback (async-callstack-promises.html:29)
+    1) settledPromise (async-callstack-promises.html:38)
+    2) doTestSettledPromises (async-callstack-promises.html:73)
+    3) testFunctionTimeout (async-callstack-promises.html:50)
     [setTimeout]
     0) testFunction (async-callstack-promises.html:43)
     [setTimeout]
@@ -174,11 +176,11 @@ Call stack:
     1) timeoutPromise (async-callstack-promises.html:9)
     2) chained4 (async-callstack-promises.html:90)
     [Promise.resolve]
+    0) resolveCallback (async-callstack-promises.html:29)
+    1) settledPromise (async-callstack-promises.html:38)
+    2) chained3 (async-callstack-promises.html:87)
+    [Promise.resolve]
     0) resolvePromise (async-callstack-promises.html:12)
-    [setTimeout]
-    0) promiseCallback (async-callstack-promises.html:21)
-    1) timeoutPromise (async-callstack-promises.html:9)
-    2) chained1 (async-callstack-promises.html:81)
 
 Call stack:
     0) thenCallback (async-callstack-promises.html:55)

@@ -1077,6 +1077,9 @@ crbug.com/377696 printing/width-overflow.html [ Skip ]
 
 crbug.com/474987 [ Win Mac ] css3/flexbox/auto-margins.html [ Failure ]
 
+crbug.com/632829 inspector-protocol/runtime/runtime-await-promise.html [ NeedsManualRebaseline ]
+crbug.com/632829 inspector/sources/debugger-async/async-callstack-promises.html [ NeedsManualRebaseline ]
+
 crbug.com/658305 css3/filters/buffer-offset.html [ Failure Pass ]
 crbug.com/658305 css3/filters/bug419429.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-all-on-background.html [ Failure Pass ]
