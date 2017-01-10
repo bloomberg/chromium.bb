@@ -37,7 +37,7 @@
     [CallWith=ScriptState, RaisesException] IDBRequest get(any key);
     [CallWith=ScriptState, RaisesException] IDBRequest getKey(any key);
     // TODO(cmumford): 0xFFFFFFFF is not necessary. Remove once crbug.com/335871 is fixed.
-    [CallWith=ScriptState, RaisesException] IDBRequest getAll([Default=Undefined] optional any range, optional unsigned long maxCount = 0xFFFFFFFF);
+    [CallWith=ScriptState, RaisesException] IDBRequest getAll([Default=Undefined] optional any range, [EnforceRange] optional unsigned long maxCount = 0xFFFFFFFF);
     // TODO(cmumford): 0xFFFFFFFF is not necessary. Remove once crbug.com/335871 is fixed.
     [CallWith=ScriptState, RaisesException] IDBRequest getAllKeys([Default=Undefined] optional any range, [EnforceRange] optional unsigned long maxCount = 0xFFFFFFFF);
     [CallWith=ScriptState, RaisesException] IDBRequest count([Default=Undefined] optional any key);
