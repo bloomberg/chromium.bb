@@ -36,7 +36,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/signin/core/account_id/account_id.h"
-#include "components/url_formatter/url_fixer.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "crypto/encryptor.h"
@@ -931,9 +930,9 @@ std::unique_ptr<base::DictionaryValue> ConvertOncProxySettingsToProxyConfig(
     std::string pac_url;
     onc_proxy_settings.GetStringWithoutPathExpansion(::onc::proxy::kPAC,
                                                      &pac_url);
-    GURL url(url_formatter::FixupURL(pac_url, std::string()));
-    proxy_dict.reset(ProxyConfigDictionary::CreatePacScript(
-        url.is_valid() ? url.spec() : std::string(), false));
+    GURL url(pac_url);
+    DCHECK(url.is_valid()) << "Invalid URL in ProxySettings.PAC";
+    proxy_dict.reset(ProxyConfigDictionary::CreatePacScript(url.spec(), false));
   } else if (type == ::onc::proxy::kManual) {
     const base::DictionaryValue* manual_dict = nullptr;
     onc_proxy_settings.GetDictionaryWithoutPathExpansion(::onc::proxy::kManual,

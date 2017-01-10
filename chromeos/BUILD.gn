@@ -39,7 +39,6 @@ component("chromeos") {
     "//components/prefs",
     "//components/proxy_config",
     "//components/signin/core/account_id",
-    "//components/url_formatter",
     "//components/user_manager",
     "//crypto",
     "//crypto:platform",

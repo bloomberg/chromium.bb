@@ -171,13 +171,6 @@ TEST(ONCUtils, ProxySettingsToProxyConfig) {
   test_data->GetAsList(&list_of_tests);
   ASSERT_TRUE(list_of_tests);
 
-  // Additional ONC -> ProxyConfig test cases to test fixup.
-  test_data = ReadTestJson("proxy_config_from_onc.json");
-  base::ListValue* list_of_tests2;
-  test_data->GetAsList(&list_of_tests2);
-  ASSERT_TRUE(list_of_tests2);
-  list_of_tests->Append(list_of_tests2->CreateDeepCopy());
-
   int index = 0;
   for (base::ListValue::iterator it = list_of_tests->begin();
        it != list_of_tests->end(); ++it, ++index) {
