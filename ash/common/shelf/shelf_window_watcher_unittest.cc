@@ -4,6 +4,7 @@
 
 #include "ash/common/shelf/shelf_window_watcher.h"
 
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_item_types.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/wm/window_resizer.h"
@@ -35,8 +36,8 @@ class ShelfWindowWatcherTest : public test::AshTestBase {
     test::AshTestBase::TearDown();
   }
 
-  ShelfID CreateShelfItem(WmWindow* window) {
-    ShelfID id = model_->next_id();
+  static ShelfID CreateShelfItem(WmWindow* window) {
+    ShelfID id = WmShell::Get()->shelf_model()->next_id();
     window->SetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE, TYPE_DIALOG);
     return id;
   }
@@ -331,6 +332,28 @@ TEST_F(ShelfWindowWatcherTest, DontCreateShelfEntriesForChildWindows) {
   child_window->Destroy();
   window->Destroy();
   EXPECT_EQ(initial_item_count, model_->item_count());
+}
+
+// Ensures ShelfWindowWatcher supports windows opened prior to session start.
+using ShelfWindowWatcherSessionStartTest = test::NoSessionAshTestBase;
+TEST_F(ShelfWindowWatcherSessionStartTest, PreExistingWindow) {
+  ShelfModel* model = WmShell::Get()->shelf_model();
+  ASSERT_FALSE(
+      WmShell::Get()->GetSessionStateDelegate()->IsActiveUserSessionStarted());
+
+  // ShelfModel only has an APP_LIST item.
+  EXPECT_EQ(1, model->item_count());
+
+  // Construct a window that should get a shelf item once the session starts.
+  std::unique_ptr<views::Widget> widget =
+      CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
+  WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget.get());
+  ShelfWindowWatcherTest::CreateShelfItem(window);
+  EXPECT_EQ(1, model->item_count());
+
+  // Start the test user session; ShelfWindowWatcher will find the open window.
+  SetSessionStarted(true);
+  EXPECT_EQ(2, model->item_count());
 }
 
 }  // namespace ash

@@ -118,13 +118,8 @@ ShelfWindowWatcher::ShelfWindowWatcher(ShelfModel* model)
       observed_container_windows_(&container_window_observer_),
       observed_user_windows_(&user_window_observer_) {
   WmShell::Get()->AddActivationObserver(this);
-  for (WmWindow* root : WmShell::Get()->GetAllRootWindows()) {
-    observed_container_windows_.Add(
-        root->GetChildByShellWindowId(kShellWindowId_DefaultContainer));
-    observed_container_windows_.Add(
-        root->GetChildByShellWindowId(kShellWindowId_PanelContainer));
-  }
-
+  for (const auto& display : display::Screen::GetScreen()->GetAllDisplays())
+    OnDisplayAdded(display);
   display::Screen::GetScreen()->AddObserver(this);
 }
 
@@ -218,16 +213,22 @@ void ShelfWindowWatcher::OnWindowActivated(WmWindow* gained_active,
 void ShelfWindowWatcher::OnDisplayAdded(const display::Display& new_display) {
   WmWindow* root = WmShell::Get()->GetRootWindowForDisplayId(new_display.id());
 
-  // When the primary root window's display get removed, the existing root
-  // window is taken over by the new display and the observer is already set.
+  // When the primary root window's display is removed, the existing root window
+  // is taken over by the new display, and the observer is already set.
   WmWindow* default_container =
       root->GetChildByShellWindowId(kShellWindowId_DefaultContainer);
-  if (!observed_container_windows_.IsObserving(default_container))
+  if (!observed_container_windows_.IsObserving(default_container)) {
+    for (WmWindow* window : default_container->GetChildren())
+      OnUserWindowAdded(window);
     observed_container_windows_.Add(default_container);
+  }
   WmWindow* panel_container =
       root->GetChildByShellWindowId(kShellWindowId_PanelContainer);
-  if (!observed_container_windows_.IsObserving(panel_container))
+  if (!observed_container_windows_.IsObserving(panel_container)) {
+    for (WmWindow* window : panel_container->GetChildren())
+      OnUserWindowAdded(window);
     observed_container_windows_.Add(panel_container);
+  }
 }
 
 void ShelfWindowWatcher::OnDisplayRemoved(const display::Display& old_display) {
