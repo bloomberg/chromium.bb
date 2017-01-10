@@ -434,23 +434,22 @@ class CONTENT_EXPORT ServiceWorkerVersion
   friend class ServiceWorkerStallInStoppingTest;
   friend class ServiceWorkerURLRequestJobTest;
   friend class ServiceWorkerVersionBrowserTest;
-  friend class ServiceWorkerVersionTestP;
+  friend class ServiceWorkerVersionTest;
 
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTestP,
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTest,
                            ActivateWaitingVersion);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTestP,
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTest,
                            FallbackWithNoFetchHandler);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTestP, IdleTimeout);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTestP, SetDevToolsAttached);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTestP, StaleUpdate_FreshWorker);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTestP,
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, IdleTimeout);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, SetDevToolsAttached);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, StaleUpdate_FreshWorker);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest,
                            StaleUpdate_NonActiveWorker);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTestP, StaleUpdate_StartWorker);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTestP,
-                           StaleUpdate_RunningWorker);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTestP,
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, StaleUpdate_StartWorker);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, StaleUpdate_RunningWorker);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest,
                            StaleUpdate_DoNotDeferTimer);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTestP, RequestTimeout);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, RequestTimeout);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerFailToStartTest, Timeout);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionBrowserTest,
                            TimeoutStartingWorker);
@@ -458,12 +457,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
                            TimeoutWorkerInEvent);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerStallInStoppingTest, DetachThenStart);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerStallInStoppingTest, DetachThenRestart);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTestP,
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest,
                            RegisterForeignFetchScopes);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTestP, RequestNowTimeout);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTestP, RequestNowTimeoutKill);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTestP, RequestCustomizedTimeout);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTestP, MixedRequestTimeouts);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, RequestNowTimeout);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, RequestNowTimeoutKill);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, RequestCustomizedTimeout);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, MixedRequestTimeouts);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerURLRequestJobTest, EarlyResponse);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerURLRequestJobTest, CancelRequest);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerActivationTest, SkipWaiting);

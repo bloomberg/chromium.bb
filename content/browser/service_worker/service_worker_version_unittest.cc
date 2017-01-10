@@ -300,13 +300,9 @@ class ServiceWorkerVersionTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerVersionTest);
 };
 
-class ServiceWorkerVersionTestP
-    : public MojoServiceWorkerTestP<ServiceWorkerVersionTest> {};
-
 class MessageReceiverDisallowStart : public MessageReceiver {
  public:
-  MessageReceiverDisallowStart(bool is_mojo_enabled)
-      : MessageReceiver(), is_mojo_enabled_(is_mojo_enabled) {}
+  MessageReceiverDisallowStart() : MessageReceiver() {}
   ~MessageReceiverDisallowStart() override {}
 
   enum class StartMode { STALL, FAIL, SUCCEED };
@@ -320,14 +316,10 @@ class MessageReceiverDisallowStart : public MessageReceiver {
       case StartMode::STALL:
         break;  // Do nothing.
       case StartMode::FAIL:
-        if (is_mojo_enabled_) {
-          ASSERT_EQ(current_mock_instance_index_ + 1,
-                    mock_instance_clients()->size());
-          // Remove the connection by peer
-          mock_instance_clients()->at(current_mock_instance_index_).reset();
-        } else {
-          OnStopWorker(embedded_worker_id);
-        }
+        ASSERT_EQ(current_mock_instance_index_ + 1,
+                  mock_instance_clients()->size());
+        // Remove the connection by peer
+        mock_instance_clients()->at(current_mock_instance_index_).reset();
         break;
       case StartMode::SUCCEED:
         MessageReceiver::OnStartWorker(embedded_worker_id,
@@ -341,15 +333,14 @@ class MessageReceiverDisallowStart : public MessageReceiver {
   void set_start_mode(StartMode mode) { mode_ = mode; }
 
  private:
-  const bool is_mojo_enabled_;
   uint32_t current_mock_instance_index_ = 0;
   StartMode mode_ = StartMode::STALL;
   DISALLOW_COPY_AND_ASSIGN(MessageReceiverDisallowStart);
 };
 
-class ServiceWorkerFailToStartTest : public ServiceWorkerVersionTestP {
+class ServiceWorkerFailToStartTest : public ServiceWorkerVersionTest {
  protected:
-  ServiceWorkerFailToStartTest() : ServiceWorkerVersionTestP() {}
+  ServiceWorkerFailToStartTest() : ServiceWorkerVersionTest() {}
 
   void set_start_mode(MessageReceiverDisallowStart::StartMode mode) {
     MessageReceiverDisallowStart* helper =
@@ -358,7 +349,7 @@ class ServiceWorkerFailToStartTest : public ServiceWorkerVersionTestP {
   }
 
   std::unique_ptr<MessageReceiver> GetMessageReceiver() override {
-    return base::MakeUnique<MessageReceiverDisallowStart>(is_mojo_enabled());
+    return base::MakeUnique<MessageReceiverDisallowStart>();
   }
 
  private:
@@ -405,9 +396,9 @@ class MessageReceiverDisallowStop : public MessageReceiver {
   DISALLOW_COPY_AND_ASSIGN(MessageReceiverDisallowStop);
 };
 
-class ServiceWorkerStallInStoppingTest : public ServiceWorkerVersionTestP {
+class ServiceWorkerStallInStoppingTest : public ServiceWorkerVersionTest {
  protected:
-  ServiceWorkerStallInStoppingTest() : ServiceWorkerVersionTestP() {}
+  ServiceWorkerStallInStoppingTest() : ServiceWorkerVersionTest() {}
 
   std::unique_ptr<MessageReceiver> GetMessageReceiver() override {
     return base::MakeUnique<MessageReceiverDisallowStop>();
@@ -417,7 +408,7 @@ class ServiceWorkerStallInStoppingTest : public ServiceWorkerVersionTestP {
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerStallInStoppingTest);
 };
 
-TEST_P(ServiceWorkerVersionTestP, ConcurrentStartAndStop) {
+TEST_F(ServiceWorkerVersionTest, ConcurrentStartAndStop) {
   // Call StartWorker() multiple times.
   ServiceWorkerStatusCode status1 = SERVICE_WORKER_ERROR_FAILED;
   ServiceWorkerStatusCode status2 = SERVICE_WORKER_ERROR_FAILED;
@@ -485,7 +476,7 @@ TEST_P(ServiceWorkerVersionTestP, ConcurrentStartAndStop) {
   EXPECT_EQ(SERVICE_WORKER_OK, status3);
 }
 
-TEST_P(ServiceWorkerVersionTestP, DispatchEventToStoppedWorker) {
+TEST_F(ServiceWorkerVersionTest, DispatchEventToStoppedWorker) {
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
 
   // Dispatch an event without starting the worker.
@@ -505,7 +496,7 @@ TEST_P(ServiceWorkerVersionTestP, DispatchEventToStoppedWorker) {
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
 }
 
-TEST_P(ServiceWorkerVersionTestP, StartUnregisteredButStillLiveWorker) {
+TEST_F(ServiceWorkerVersionTest, StartUnregisteredButStillLiveWorker) {
   // Start the worker.
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
   version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
@@ -539,7 +530,7 @@ TEST_P(ServiceWorkerVersionTestP, StartUnregisteredButStillLiveWorker) {
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
 }
 
-TEST_P(ServiceWorkerVersionTestP, ReceiveMessageFromWorker) {
+TEST_F(ServiceWorkerVersionTest, ReceiveMessageFromWorker) {
   // Start worker.
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
   version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
@@ -563,7 +554,7 @@ TEST_P(ServiceWorkerVersionTestP, ReceiveMessageFromWorker) {
   EXPECT_EQ(777, receiver.received_values()[1]);
 }
 
-TEST_P(ServiceWorkerVersionTestP, InstallAndWaitCompletion) {
+TEST_F(ServiceWorkerVersionTest, InstallAndWaitCompletion) {
   version_->SetStatus(ServiceWorkerVersion::INSTALLING);
 
   // Wait for the completion.
@@ -579,7 +570,7 @@ TEST_P(ServiceWorkerVersionTestP, InstallAndWaitCompletion) {
   EXPECT_EQ(ServiceWorkerVersion::INSTALLING, version_->status());
 }
 
-TEST_P(ServiceWorkerVersionTestP, ActivateAndWaitCompletion) {
+TEST_F(ServiceWorkerVersionTest, ActivateAndWaitCompletion) {
   // TODO(mek): This test (and the one above for the install event) made more
   // sense back when ServiceWorkerVersion was responsible for updating the
   // status. Now a better version of this test should probably be added to
@@ -600,7 +591,7 @@ TEST_P(ServiceWorkerVersionTestP, ActivateAndWaitCompletion) {
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATING, version_->status());
 }
 
-TEST_P(ServiceWorkerVersionTestP, RepeatedlyObserveStatusChanges) {
+TEST_F(ServiceWorkerVersionTest, RepeatedlyObserveStatusChanges) {
   EXPECT_EQ(ServiceWorkerVersion::NEW, version_->status());
 
   // Repeatedly observe status changes (the callback re-registers itself).
@@ -623,7 +614,7 @@ TEST_P(ServiceWorkerVersionTestP, RepeatedlyObserveStatusChanges) {
   ASSERT_EQ(ServiceWorkerVersion::REDUNDANT, statuses[4]);
 }
 
-TEST_P(ServiceWorkerVersionTestP, IdleTimeout) {
+TEST_F(ServiceWorkerVersionTest, IdleTimeout) {
   // Used to reliably test when the idle time gets reset regardless of clock
   // granularity.
   const base::TimeDelta kOneSecond = base::TimeDelta::FromSeconds(1);
@@ -688,7 +679,7 @@ TEST_P(ServiceWorkerVersionTestP, IdleTimeout) {
   EXPECT_LT(idle_time, version_->idle_time_);
 }
 
-TEST_P(ServiceWorkerVersionTestP, SetDevToolsAttached) {
+TEST_F(ServiceWorkerVersionTest, SetDevToolsAttached) {
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
   version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
                         CreateReceiverOnCurrentThread(&status));
@@ -718,7 +709,7 @@ TEST_P(ServiceWorkerVersionTestP, SetDevToolsAttached) {
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
 }
 
-TEST_P(ServiceWorkerVersionTestP, StoppingBeforeDestruct) {
+TEST_F(ServiceWorkerVersionTest, StoppingBeforeDestruct) {
   RunningStateListener listener;
   version_->AddListener(&listener);
 
@@ -735,7 +726,7 @@ TEST_P(ServiceWorkerVersionTestP, StoppingBeforeDestruct) {
 }
 
 // Test that update isn't triggered for a non-stale worker.
-TEST_P(ServiceWorkerVersionTestP, StaleUpdate_FreshWorker) {
+TEST_F(ServiceWorkerVersionTest, StaleUpdate_FreshWorker) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
   registration_->set_last_update_check(base::Time::Now());
@@ -746,7 +737,7 @@ TEST_P(ServiceWorkerVersionTestP, StaleUpdate_FreshWorker) {
 }
 
 // Test that update isn't triggered for a non-active worker.
-TEST_P(ServiceWorkerVersionTestP, StaleUpdate_NonActiveWorker) {
+TEST_F(ServiceWorkerVersionTest, StaleUpdate_NonActiveWorker) {
   version_->SetStatus(ServiceWorkerVersion::INSTALLING);
   registration_->SetInstallingVersion(version_);
   registration_->set_last_update_check(GetYesterday());
@@ -757,7 +748,7 @@ TEST_P(ServiceWorkerVersionTestP, StaleUpdate_NonActiveWorker) {
 }
 
 // Test that staleness is detected when starting a worker.
-TEST_P(ServiceWorkerVersionTestP, StaleUpdate_StartWorker) {
+TEST_F(ServiceWorkerVersionTest, StaleUpdate_StartWorker) {
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
 
   // Starting the worker marks it as stale.
@@ -777,7 +768,7 @@ TEST_P(ServiceWorkerVersionTestP, StaleUpdate_StartWorker) {
 }
 
 // Test that staleness is detected on a running worker.
-TEST_P(ServiceWorkerVersionTestP, StaleUpdate_RunningWorker) {
+TEST_F(ServiceWorkerVersionTest, StaleUpdate_RunningWorker) {
   // Start a fresh worker.
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
@@ -803,7 +794,7 @@ TEST_P(ServiceWorkerVersionTestP, StaleUpdate_RunningWorker) {
 }
 
 // Test that a stream of events doesn't restart the timer.
-TEST_P(ServiceWorkerVersionTestP, StaleUpdate_DoNotDeferTimer) {
+TEST_F(ServiceWorkerVersionTest, StaleUpdate_DoNotDeferTimer) {
   // Make a stale worker.
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
@@ -839,7 +830,7 @@ TEST_P(ServiceWorkerVersionTestP, StaleUpdate_DoNotDeferTimer) {
   EXPECT_EQ(run_time, version_->update_timer_.desired_run_time());
 }
 
-TEST_P(ServiceWorkerVersionTestP, RequestTimeout) {
+TEST_F(ServiceWorkerVersionTest, RequestTimeout) {
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_NETWORK;  // dummy value
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
 
@@ -868,7 +859,7 @@ TEST_P(ServiceWorkerVersionTestP, RequestTimeout) {
                                        base::Time::Now()));
 }
 
-TEST_P(ServiceWorkerVersionTestP, RequestNowTimeout) {
+TEST_F(ServiceWorkerVersionTest, RequestNowTimeout) {
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_NETWORK;  // dummy value
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
 
@@ -895,7 +886,7 @@ TEST_P(ServiceWorkerVersionTestP, RequestNowTimeout) {
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
 }
 
-TEST_P(ServiceWorkerVersionTestP, RequestNowTimeoutKill) {
+TEST_F(ServiceWorkerVersionTest, RequestNowTimeoutKill) {
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_NETWORK;  // dummy value
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
 
@@ -922,7 +913,7 @@ TEST_P(ServiceWorkerVersionTestP, RequestNowTimeoutKill) {
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
 }
 
-TEST_P(ServiceWorkerVersionTestP, RequestCustomizedTimeout) {
+TEST_F(ServiceWorkerVersionTest, RequestCustomizedTimeout) {
   ServiceWorkerStatusCode first_status =
       SERVICE_WORKER_ERROR_MAX_VALUE;  // dummy value
   ServiceWorkerStatusCode second_status =
@@ -984,7 +975,7 @@ TEST_P(ServiceWorkerVersionTestP, RequestCustomizedTimeout) {
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
 }
 
-TEST_P(ServiceWorkerVersionTestP, MixedRequestTimeouts) {
+TEST_F(ServiceWorkerVersionTest, MixedRequestTimeouts) {
   ServiceWorkerStatusCode sync_status =
       SERVICE_WORKER_ERROR_NETWORK;  // dummy value
   ServiceWorkerStatusCode fetch_status =
@@ -1035,7 +1026,7 @@ TEST_P(ServiceWorkerVersionTestP, MixedRequestTimeouts) {
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
 }
 
-TEST_P(ServiceWorkerFailToStartTest, RendererCrash) {
+TEST_F(ServiceWorkerFailToStartTest, RendererCrash) {
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_NETWORK;  // dummy value
   version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
                         CreateReceiverOnCurrentThread(&status));
@@ -1058,7 +1049,7 @@ TEST_P(ServiceWorkerFailToStartTest, RendererCrash) {
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
 }
 
-TEST_P(ServiceWorkerFailToStartTest, Timeout) {
+TEST_F(ServiceWorkerFailToStartTest, Timeout) {
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_NETWORK;  // dummy value
 
   // Start starting the worker.
@@ -1084,7 +1075,7 @@ TEST_P(ServiceWorkerFailToStartTest, Timeout) {
 
 // Test that a service worker stalled in stopping will timeout and not get in a
 // sticky error state.
-TEST_P(ServiceWorkerStallInStoppingTest, DetachThenStart) {
+TEST_F(ServiceWorkerStallInStoppingTest, DetachThenStart) {
   // Start a worker.
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
   version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
@@ -1132,7 +1123,7 @@ TEST_P(ServiceWorkerStallInStoppingTest, DetachThenStart) {
 
 // Test that a service worker stalled in stopping with a start worker
 // request queued up will timeout and restart.
-TEST_P(ServiceWorkerStallInStoppingTest, DetachThenRestart) {
+TEST_F(ServiceWorkerStallInStoppingTest, DetachThenRestart) {
   // Start a worker.
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
   version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
@@ -1164,7 +1155,7 @@ TEST_P(ServiceWorkerStallInStoppingTest, DetachThenRestart) {
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
 }
 
-TEST_P(ServiceWorkerVersionTestP, RegisterForeignFetchScopes) {
+TEST_F(ServiceWorkerVersionTest, RegisterForeignFetchScopes) {
   version_->SetStatus(ServiceWorkerVersion::INSTALLING);
   // Start a worker.
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
@@ -1240,7 +1231,7 @@ TEST_P(ServiceWorkerVersionTestP, RegisterForeignFetchScopes) {
   EXPECT_EQ(valid_origin, version_->foreign_fetch_origins_[0]);
 }
 
-TEST_P(ServiceWorkerVersionTestP, RendererCrashDuringEvent) {
+TEST_F(ServiceWorkerVersionTest, RendererCrashDuringEvent) {
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_NETWORK;  // dummy value
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
@@ -1275,7 +1266,7 @@ TEST_P(ServiceWorkerVersionTestP, RendererCrashDuringEvent) {
                                        base::Time::Now()));
 }
 
-TEST_P(ServiceWorkerVersionTestP, DispatchEvent) {
+TEST_F(ServiceWorkerVersionTest, DispatchEvent) {
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_NETWORK;  // dummy value
 
   // Activate and start worker.
@@ -1321,7 +1312,7 @@ TEST_P(ServiceWorkerVersionTestP, DispatchEvent) {
                                       base::Time::Now()));
 }
 
-TEST_P(ServiceWorkerFailToStartTest, FailingWorkerUsesNewRendererProcess) {
+TEST_F(ServiceWorkerFailToStartTest, FailingWorkerUsesNewRendererProcess) {
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
 
   helper_->SimulateAddProcessToPattern(pattern_,
@@ -1380,7 +1371,7 @@ TEST_P(ServiceWorkerFailToStartTest, FailingWorkerUsesNewRendererProcess) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_P(ServiceWorkerFailToStartTest, RestartStalledWorker) {
+TEST_F(ServiceWorkerFailToStartTest, RestartStalledWorker) {
   ServiceWorkerStatusCode status1 = SERVICE_WORKER_ERROR_MAX_VALUE;
   ServiceWorkerStatusCode status2 = SERVICE_WORKER_ERROR_MAX_VALUE;
   version_->StartWorker(ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME,
@@ -1403,7 +1394,7 @@ TEST_P(ServiceWorkerFailToStartTest, RestartStalledWorker) {
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
 }
 
-TEST_P(ServiceWorkerVersionTestP, DispatchConcurrentEvent) {
+TEST_F(ServiceWorkerVersionTest, DispatchConcurrentEvent) {
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_NETWORK;  // dummy value
 
   // Activate and start worker.
@@ -1482,7 +1473,7 @@ TEST_P(ServiceWorkerVersionTestP, DispatchConcurrentEvent) {
                                       base::Time::Now()));
 }
 
-TEST_P(ServiceWorkerVersionTestP, DispatchSimpleEvent_Completed) {
+TEST_F(ServiceWorkerVersionTest, DispatchSimpleEvent_Completed) {
   ServiceWorkerStatusCode status =
       SERVICE_WORKER_ERROR_MAX_VALUE;  // dummy value
 
@@ -1519,7 +1510,7 @@ TEST_P(ServiceWorkerVersionTestP, DispatchSimpleEvent_Completed) {
   EXPECT_EQ(SERVICE_WORKER_OK, status);
 }
 
-TEST_P(ServiceWorkerVersionTestP, DispatchSimpleEvent_Rejected) {
+TEST_F(ServiceWorkerVersionTest, DispatchSimpleEvent_Rejected) {
   ServiceWorkerStatusCode status =
       SERVICE_WORKER_ERROR_MAX_VALUE;  // dummy value
 
@@ -1556,7 +1547,7 @@ TEST_P(ServiceWorkerVersionTestP, DispatchSimpleEvent_Rejected) {
   EXPECT_EQ(SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED, status);
 }
 
-TEST_P(ServiceWorkerVersionTestP, DispatchEvent_MultipleResponse) {
+TEST_F(ServiceWorkerVersionTest, DispatchEvent_MultipleResponse) {
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
 
   // Activate and start worker.
@@ -1625,9 +1616,9 @@ TEST_P(ServiceWorkerVersionTestP, DispatchEvent_MultipleResponse) {
                                       base::Time::Now()));
 }
 
-class ServiceWorkerNavigationHintUMATest : public ServiceWorkerVersionTestP {
+class ServiceWorkerNavigationHintUMATest : public ServiceWorkerVersionTest {
  protected:
-  ServiceWorkerNavigationHintUMATest() : ServiceWorkerVersionTestP() {}
+  ServiceWorkerNavigationHintUMATest() : ServiceWorkerVersionTest() {}
 
   void StartWorker(ServiceWorkerMetrics::EventType purpose) {
     ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
@@ -1708,25 +1699,25 @@ const char ServiceWorkerNavigationHintUMATest::kLinkTapUnconfirmed[] =
 const char ServiceWorkerNavigationHintUMATest::kLinkTapDown[] =
     "ServiceWorker.NavigationHintPrecision.LINK_TAP_DOWN";
 
-TEST_P(ServiceWorkerNavigationHintUMATest, LinkMouseDown) {
+TEST_F(ServiceWorkerNavigationHintUMATest, LinkMouseDown) {
   SimpleNavigationHintTest(
       ServiceWorkerMetrics::EventType::NAVIGATION_HINT_LINK_MOUSE_DOWN,
       kLinkMouseDown, {kLinkTapUnconfirmed, kLinkTapDown});
 }
 
-TEST_P(ServiceWorkerNavigationHintUMATest, LinkTapUnconfirmed) {
+TEST_F(ServiceWorkerNavigationHintUMATest, LinkTapUnconfirmed) {
   SimpleNavigationHintTest(
       ServiceWorkerMetrics::EventType::NAVIGATION_HINT_LINK_TAP_UNCONFIRMED,
       kLinkTapUnconfirmed, {kLinkMouseDown, kLinkTapDown});
 }
 
-TEST_P(ServiceWorkerNavigationHintUMATest, LinkTapDown) {
+TEST_F(ServiceWorkerNavigationHintUMATest, LinkTapDown) {
   SimpleNavigationHintTest(
       ServiceWorkerMetrics::EventType::NAVIGATION_HINT_LINK_TAP_DOWN,
       kLinkTapDown, {kLinkMouseDown, kLinkTapUnconfirmed});
 }
 
-TEST_P(ServiceWorkerNavigationHintUMATest, ConcurrentStart) {
+TEST_F(ServiceWorkerNavigationHintUMATest, ConcurrentStart) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   ServiceWorkerStatusCode status1 = SERVICE_WORKER_ERROR_MAX_VALUE;
   ServiceWorkerStatusCode status2 = SERVICE_WORKER_ERROR_MAX_VALUE;
@@ -1760,7 +1751,7 @@ TEST_P(ServiceWorkerNavigationHintUMATest, ConcurrentStart) {
   histogram_tester_.ExpectBucketCount(kNavigationHintPrecision, false, 0);
 }
 
-TEST_P(ServiceWorkerNavigationHintUMATest, StartWhileStopping) {
+TEST_F(ServiceWorkerNavigationHintUMATest, StartWhileStopping) {
   StartWorker(ServiceWorkerMetrics::EventType::NAVIGATION_HINT_LINK_MOUSE_DOWN);
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
   version_->StopWorker(CreateReceiverOnCurrentThread(&status));
@@ -1778,16 +1769,4 @@ TEST_P(ServiceWorkerNavigationHintUMATest, StartWhileStopping) {
   histogram_tester_.ExpectTotalCount(kLinkTapDown, 1);
 }
 
-INSTANTIATE_TEST_CASE_P(ServiceWorkerVersionTestP,
-                        ServiceWorkerVersionTestP,
-                        testing::Bool());
-INSTANTIATE_TEST_CASE_P(ServiceWorkerFailToStartTest,
-                        ServiceWorkerFailToStartTest,
-                        testing::Bool());
-INSTANTIATE_TEST_CASE_P(ServiceWorkerNavigationHintUMATest,
-                        ServiceWorkerNavigationHintUMATest,
-                        testing::Bool());
-INSTANTIATE_TEST_CASE_P(ServiceWorkerStallInStoppingTest,
-                        ServiceWorkerStallInStoppingTest,
-                        testing::Bool());
 }  // namespace content

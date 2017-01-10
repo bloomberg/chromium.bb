@@ -292,8 +292,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   }
 
  private:
-  friend class ServiceWorkerContextCoreTestP;
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextCoreTestP, FailureInfo);
+  friend class ServiceWorkerContextCoreTest;
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextCoreTest, FailureInfo);
 
   typedef std::map<int64_t, ServiceWorkerRegistration*> RegistrationsMap;
   typedef std::map<int64_t, ServiceWorkerVersion*> VersionMap;

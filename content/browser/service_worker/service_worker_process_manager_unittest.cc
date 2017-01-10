@@ -70,10 +70,7 @@ class ServiceWorkerProcessManagerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProcessManagerTest);
 };
 
-class ServiceWorkerProcessManagerTestP
-    : public MojoServiceWorkerTestP<ServiceWorkerProcessManagerTest> {};
-
-TEST_P(ServiceWorkerProcessManagerTestP, SortProcess) {
+TEST_F(ServiceWorkerProcessManagerTest, SortProcess) {
   // Process 1 has 2 refs, 2 has 3 refs and 3 has 1 ref.
   process_manager_->AddProcessReferenceToPattern(pattern_, 1);
   process_manager_->AddProcessReferenceToPattern(pattern_, 1);
@@ -93,7 +90,7 @@ TEST_P(ServiceWorkerProcessManagerTestP, SortProcess) {
               testing::ElementsAre(2, 3));
 }
 
-TEST_P(ServiceWorkerProcessManagerTestP, FindAvailableProcess) {
+TEST_F(ServiceWorkerProcessManagerTest, FindAvailableProcess) {
   std::unique_ptr<MockRenderProcessHost> host1(CreateRenderProcessHost());
   std::unique_ptr<MockRenderProcessHost> host2(CreateRenderProcessHost());
   std::unique_ptr<MockRenderProcessHost> host3(CreateRenderProcessHost());
@@ -125,7 +122,7 @@ TEST_P(ServiceWorkerProcessManagerTestP, FindAvailableProcess) {
   EXPECT_EQ(host3->GetID(), process_manager_->FindAvailableProcess(pattern_));
 }
 
-TEST_P(ServiceWorkerProcessManagerTestP,
+TEST_F(ServiceWorkerProcessManagerTest,
        AllocateWorkerProcess_FindAvailableProcess) {
   const int kEmbeddedWorkerId1 = 100;
   const int kEmbeddedWorkerId2 = 200;
@@ -236,7 +233,7 @@ TEST_P(ServiceWorkerProcessManagerTestP,
   EXPECT_TRUE(instance_info.empty());
 }
 
-TEST_P(ServiceWorkerProcessManagerTestP, AllocateWorkerProcess_InShutdown) {
+TEST_F(ServiceWorkerProcessManagerTest, AllocateWorkerProcess_InShutdown) {
   process_manager_->Shutdown();
   ASSERT_TRUE(process_manager_->IsShutdown());
 
@@ -256,9 +253,5 @@ TEST_P(ServiceWorkerProcessManagerTestP, AllocateWorkerProcess_InShutdown) {
   EXPECT_FALSE(is_new_process);
   EXPECT_TRUE(process_manager_->instance_info_.empty());
 }
-
-INSTANTIATE_TEST_CASE_P(ServiceWorkerProcessManagerTest,
-                        ServiceWorkerProcessManagerTestP,
-                        testing::Bool());
 
 }  // namespace content

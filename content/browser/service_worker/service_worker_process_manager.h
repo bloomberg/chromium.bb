@@ -86,12 +86,12 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
   bool PatternHasProcessToRun(const GURL& pattern) const;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProcessManagerTestP, SortProcess);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProcessManagerTestP,
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProcessManagerTest, SortProcess);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProcessManagerTest,
                            FindAvailableProcess);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProcessManagerTestP,
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProcessManagerTest,
                            AllocateWorkerProcess_FindAvailableProcess);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProcessManagerTestP,
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProcessManagerTest,
                            AllocateWorkerProcess_InShutdown);
 
   // Information about the process for an EmbeddedWorkerInstance.

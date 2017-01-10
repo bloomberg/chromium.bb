@@ -400,16 +400,13 @@ class ServiceWorkerCacheWriterTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerCacheWriterTest);
 };
 
-class ServiceWorkerCacheWriterTestP
-    : public MojoServiceWorkerTestP<ServiceWorkerCacheWriterTest> {};
-
 // Passthrough tests:
 // In these tests, the ServiceWorkerCacheWriter under test has no existing
 // reader, since no calls to ExpectReader() have been made; this means that
 // there is no existing cached response and the incoming data is written back to
 // the cache directly.
 
-TEST_P(ServiceWorkerCacheWriterTestP, PassthroughHeadersSync) {
+TEST_F(ServiceWorkerCacheWriterTest, PassthroughHeadersSync) {
   const size_t kHeaderSize = 16;
   MockServiceWorkerResponseWriter* writer = ExpectWriter();
   writer->ExpectWriteInfoOk(kHeaderSize, false);
@@ -422,7 +419,7 @@ TEST_P(ServiceWorkerCacheWriterTestP, PassthroughHeadersSync) {
   EXPECT_EQ(0U, cache_writer_->bytes_written());
 }
 
-TEST_P(ServiceWorkerCacheWriterTestP, PassthroughHeadersAsync) {
+TEST_F(ServiceWorkerCacheWriterTest, PassthroughHeadersAsync) {
   size_t kHeaderSize = 16;
   MockServiceWorkerResponseWriter* writer = ExpectWriter();
   writer->ExpectWriteInfoOk(kHeaderSize, true);
@@ -438,7 +435,7 @@ TEST_P(ServiceWorkerCacheWriterTestP, PassthroughHeadersAsync) {
   EXPECT_EQ(0U, cache_writer_->bytes_written());
 }
 
-TEST_P(ServiceWorkerCacheWriterTestP, PassthroughDataSync) {
+TEST_F(ServiceWorkerCacheWriterTest, PassthroughDataSync) {
   const std::string data1 = "abcdef";
   const std::string data2 = "ghijklmno";
   size_t response_size = data1.size() + data2.size();
@@ -460,7 +457,7 @@ TEST_P(ServiceWorkerCacheWriterTestP, PassthroughDataSync) {
   EXPECT_TRUE(writer->AllExpectedWritesDone());
 }
 
-TEST_P(ServiceWorkerCacheWriterTestP, PassthroughDataAsync) {
+TEST_F(ServiceWorkerCacheWriterTest, PassthroughDataAsync) {
   const std::string data1 = "abcdef";
   const std::string data2 = "ghijklmno";
   size_t response_size = data1.size() + data2.size();
@@ -488,7 +485,7 @@ TEST_P(ServiceWorkerCacheWriterTestP, PassthroughDataAsync) {
   EXPECT_TRUE(writer->AllExpectedWritesDone());
 }
 
-TEST_P(ServiceWorkerCacheWriterTestP, PassthroughHeadersFailSync) {
+TEST_F(ServiceWorkerCacheWriterTest, PassthroughHeadersFailSync) {
   const size_t kHeaderSize = 16;
   MockServiceWorkerResponseWriter* writer = ExpectWriter();
   writer->ExpectWriteInfo(kHeaderSize, false, net::ERR_FAILED);
@@ -501,7 +498,7 @@ TEST_P(ServiceWorkerCacheWriterTestP, PassthroughHeadersFailSync) {
   EXPECT_EQ(0U, cache_writer_->bytes_written());
 }
 
-TEST_P(ServiceWorkerCacheWriterTestP, PassthroughHeadersFailAsync) {
+TEST_F(ServiceWorkerCacheWriterTest, PassthroughHeadersFailAsync) {
   size_t kHeaderSize = 16;
   MockServiceWorkerResponseWriter* writer = ExpectWriter();
   writer->ExpectWriteInfo(kHeaderSize, true, net::ERR_FAILED);
@@ -517,7 +514,7 @@ TEST_P(ServiceWorkerCacheWriterTestP, PassthroughHeadersFailAsync) {
   EXPECT_EQ(0U, cache_writer_->bytes_written());
 }
 
-TEST_P(ServiceWorkerCacheWriterTestP, PassthroughDataFailSync) {
+TEST_F(ServiceWorkerCacheWriterTest, PassthroughDataFailSync) {
   const std::string data = "abcdef";
 
   MockServiceWorkerResponseWriter* writer = ExpectWriter();
@@ -530,7 +527,7 @@ TEST_P(ServiceWorkerCacheWriterTestP, PassthroughDataFailSync) {
   EXPECT_TRUE(writer->AllExpectedWritesDone());
 }
 
-TEST_P(ServiceWorkerCacheWriterTestP, PassthroughDataFailAsync) {
+TEST_F(ServiceWorkerCacheWriterTest, PassthroughDataFailAsync) {
   const std::string data = "abcdef";
 
   MockServiceWorkerResponseWriter* writer = ExpectWriter();
@@ -552,7 +549,7 @@ TEST_P(ServiceWorkerCacheWriterTestP, PassthroughDataFailAsync) {
 // reader for an existing cached response, so it will compare the response being
 // written to it against the existing cached response.
 
-TEST_P(ServiceWorkerCacheWriterTestP, CompareHeadersSync) {
+TEST_F(ServiceWorkerCacheWriterTest, CompareHeadersSync) {
   size_t response_size = 3;
   MockServiceWorkerResponseWriter* writer = ExpectWriter();
   MockServiceWorkerResponseReader* reader = ExpectReader();
@@ -566,7 +563,7 @@ TEST_P(ServiceWorkerCacheWriterTestP, CompareHeadersSync) {
   EXPECT_TRUE(reader->AllExpectedReadsDone());
 }
 
-TEST_P(ServiceWorkerCacheWriterTestP, CompareDataOkSync) {
+TEST_F(ServiceWorkerCacheWriterTest, CompareDataOkSync) {
   const std::string data1 = "abcdef";
   size_t response_size = data1.size();
 
@@ -588,7 +585,7 @@ TEST_P(ServiceWorkerCacheWriterTestP, CompareDataOkSync) {
   EXPECT_EQ(0U, cache_writer_->bytes_written());
 }
 
-TEST_P(ServiceWorkerCacheWriterTestP, CompareHeadersFailSync) {
+TEST_F(ServiceWorkerCacheWriterTest, CompareHeadersFailSync) {
   size_t response_size = 3;
   MockServiceWorkerResponseWriter* writer = ExpectWriter();
   MockServiceWorkerResponseReader* reader = ExpectReader();
@@ -601,7 +598,7 @@ TEST_P(ServiceWorkerCacheWriterTestP, CompareHeadersFailSync) {
   EXPECT_TRUE(reader->AllExpectedReadsDone());
 }
 
-TEST_P(ServiceWorkerCacheWriterTestP, CompareDataFailSync) {
+TEST_F(ServiceWorkerCacheWriterTest, CompareDataFailSync) {
   const std::string data1 = "abcdef";
   size_t response_size = data1.size();
 
@@ -622,7 +619,7 @@ TEST_P(ServiceWorkerCacheWriterTestP, CompareDataFailSync) {
   EXPECT_EQ(0U, cache_writer_->bytes_written());
 }
 
-TEST_P(ServiceWorkerCacheWriterTestP, CompareShortCacheReads) {
+TEST_F(ServiceWorkerCacheWriterTest, CompareShortCacheReads) {
   const size_t kHeaderSize = 16;
   const std::string& data1 = "abcdef";
   const std::string& cache_data2 = "ghi";
@@ -652,7 +649,7 @@ TEST_P(ServiceWorkerCacheWriterTestP, CompareShortCacheReads) {
   EXPECT_EQ(0U, cache_writer_->bytes_written());
 }
 
-TEST_P(ServiceWorkerCacheWriterTestP, CompareDataOkAsync) {
+TEST_F(ServiceWorkerCacheWriterTest, CompareDataOkAsync) {
   const std::string data1 = "abcdef";
   size_t response_size = data1.size();
 
@@ -674,7 +671,7 @@ TEST_P(ServiceWorkerCacheWriterTestP, CompareDataOkAsync) {
   EXPECT_EQ(0U, cache_writer_->bytes_written());
 }
 
-TEST_P(ServiceWorkerCacheWriterTestP, CompareDataManyOkAsync) {
+TEST_F(ServiceWorkerCacheWriterTest, CompareDataManyOkAsync) {
   const std::string expected_data[] = {
       "abcdef", "ghijkl", "mnopqr", "stuvwxyz",
   };
@@ -709,7 +706,7 @@ TEST_P(ServiceWorkerCacheWriterTestP, CompareDataManyOkAsync) {
 // differs in the cached version. The writer should be asked to rewrite the
 // headers and body with the new value, and the copy reader should be asked to
 // read the header and data1.
-TEST_P(ServiceWorkerCacheWriterTestP, CompareFailedCopySync) {
+TEST_F(ServiceWorkerCacheWriterTest, CompareFailedCopySync) {
   std::string data1 = "abcdef";
   std::string cache_data2 = "ghijkl";
   std::string net_data2 = "mnopqr";
@@ -750,7 +747,7 @@ TEST_P(ServiceWorkerCacheWriterTestP, CompareFailedCopySync) {
 }
 
 // Tests behavior when the cached data is shorter than the network data.
-TEST_P(ServiceWorkerCacheWriterTestP, CompareFailedCopyShort) {
+TEST_F(ServiceWorkerCacheWriterTest, CompareFailedCopyShort) {
   std::string data1 = "abcdef";
   std::string cache_data2 = "mnop";
   std::string net_data2 = "mnopqr";
@@ -792,7 +789,7 @@ TEST_P(ServiceWorkerCacheWriterTestP, CompareFailedCopyShort) {
 }
 
 // Tests behavior when the cached data is longer than the network data.
-TEST_P(ServiceWorkerCacheWriterTestP, CompareFailedCopyLong) {
+TEST_F(ServiceWorkerCacheWriterTest, CompareFailedCopyLong) {
   std::string data1 = "abcdef";
   std::string cache_data2 = "mnop";
   std::string net_data2 = "mnop";
@@ -834,10 +831,6 @@ TEST_P(ServiceWorkerCacheWriterTestP, CompareFailedCopyLong) {
   EXPECT_TRUE(compare_reader->AllExpectedReadsDone());
   EXPECT_TRUE(copy_reader->AllExpectedReadsDone());
 }
-
-INSTANTIATE_TEST_CASE_P(ServiceWorkerCacheWriterTest,
-                        ServiceWorkerCacheWriterTestP,
-                        testing::Bool());
 
 }  // namespace
 }  // namespace content

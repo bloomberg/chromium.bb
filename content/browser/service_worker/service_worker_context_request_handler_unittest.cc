@@ -85,10 +85,7 @@ class ServiceWorkerContextRequestHandlerTest : public testing::Test {
   storage::BlobStorageContext blob_storage_context_;
 };
 
-class ServiceWorkerContextRequestHandlerTestP
-    : public MojoServiceWorkerTestP<ServiceWorkerContextRequestHandlerTest> {};
-
-TEST_P(ServiceWorkerContextRequestHandlerTestP, UpdateBefore24Hours) {
+TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateBefore24Hours) {
   // Give the registration a very recent last update time and pretend
   // we're installing a new version.
   registration_->set_last_update_check(base::Time::Now());
@@ -114,7 +111,7 @@ TEST_P(ServiceWorkerContextRequestHandlerTestP, UpdateBefore24Hours) {
   EXPECT_FALSE(sw_job->net_request_->load_flags() & net::LOAD_BYPASS_CACHE);
 }
 
-TEST_P(ServiceWorkerContextRequestHandlerTestP, UpdateAfter24Hours) {
+TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateAfter24Hours) {
   // Give the registration a old update time and pretend
   // we're installing a new version.
   registration_->set_last_update_check(
@@ -141,7 +138,7 @@ TEST_P(ServiceWorkerContextRequestHandlerTestP, UpdateAfter24Hours) {
   EXPECT_TRUE(sw_job->net_request_->load_flags() & net::LOAD_BYPASS_CACHE);
 }
 
-TEST_P(ServiceWorkerContextRequestHandlerTestP, UpdateForceBypassCache) {
+TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateForceBypassCache) {
   // Give the registration a very recent last update time and pretend
   // we're installing a new version.
   registration_->set_last_update_check(base::Time::Now());
@@ -168,7 +165,7 @@ TEST_P(ServiceWorkerContextRequestHandlerTestP, UpdateForceBypassCache) {
   EXPECT_TRUE(sw_job->net_request_->load_flags() & net::LOAD_BYPASS_CACHE);
 }
 
-TEST_P(ServiceWorkerContextRequestHandlerTestP,
+TEST_F(ServiceWorkerContextRequestHandlerTest,
        ServiceWorkerDataRequestAnnotation) {
   version_->SetStatus(ServiceWorkerVersion::NEW);
   provider_host_->running_hosted_version_ = version_;
@@ -196,7 +193,7 @@ TEST_P(ServiceWorkerContextRequestHandlerTestP,
 
 // Tests starting a service worker when the skip_service_worker flag is on. The
 // flag should be ignored.
-TEST_P(ServiceWorkerContextRequestHandlerTestP,
+TEST_F(ServiceWorkerContextRequestHandlerTest,
        SkipServiceWorkerForServiceWorkerRequest) {
   // Conduct a resource fetch for the main script.
   version_->SetStatus(ServiceWorkerVersion::NEW);
@@ -216,9 +213,5 @@ TEST_P(ServiceWorkerContextRequestHandlerTestP,
       ServiceWorkerRequestHandler::GetHandler(request.get());
   EXPECT_TRUE(handler);
 }
-
-INSTANTIATE_TEST_CASE_P(ServiceWorkerContextRequestHandlerTest,
-                        ServiceWorkerContextRequestHandlerTestP,
-                        testing::Bool());
 
 }  // namespace content

@@ -342,10 +342,7 @@ class ServiceWorkerURLRequestJobTest
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerURLRequestJobTest);
 };
 
-class ServiceWorkerURLRequestJobTestP
-    : public MojoServiceWorkerTestP<ServiceWorkerURLRequestJobTest> {};
-
-TEST_P(ServiceWorkerURLRequestJobTestP, Simple) {
+TEST_F(ServiceWorkerURLRequestJobTest, Simple) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   TestRequest(200, "OK", std::string(), true /* expect_valid_ssl */);
 
@@ -364,7 +361,7 @@ TEST_P(ServiceWorkerURLRequestJobTestP, Simple) {
   EXPECT_EQ(std::string(), info->response_cache_storage_cache_name());
 }
 
-TEST_P(ServiceWorkerURLRequestJobTestP, CustomTimeout) {
+TEST_F(ServiceWorkerURLRequestJobTest, CustomTimeout) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
 
   // Set mock clock on version_ to check timeout behavior.
@@ -409,7 +406,7 @@ class ProviderDeleteHelper : public EmbeddedWorkerTestHelper {
   DISALLOW_COPY_AND_ASSIGN(ProviderDeleteHelper);
 };
 
-TEST_P(ServiceWorkerURLRequestJobTestP, DeletedProviderHostOnFetchEvent) {
+TEST_F(ServiceWorkerURLRequestJobTest, DeletedProviderHostOnFetchEvent) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   // Shouldn't crash if the ProviderHost is deleted prior to completion of
   // the fetch event.
@@ -432,7 +429,7 @@ TEST_P(ServiceWorkerURLRequestJobTestP, DeletedProviderHostOnFetchEvent) {
   EXPECT_FALSE(info->service_worker_ready_time().is_null());
 }
 
-TEST_P(ServiceWorkerURLRequestJobTestP, DeletedProviderHostBeforeFetchEvent) {
+TEST_F(ServiceWorkerURLRequestJobTest, DeletedProviderHostBeforeFetchEvent) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
       GURL("https://example.com/foo.html"), net::DEFAULT_PRIORITY,
@@ -497,7 +494,7 @@ class BlobResponder : public EmbeddedWorkerTestHelper {
   DISALLOW_COPY_AND_ASSIGN(BlobResponder);
 };
 
-TEST_P(ServiceWorkerURLRequestJobTestP, BlobResponse) {
+TEST_F(ServiceWorkerURLRequestJobTest, BlobResponse) {
   ChromeBlobStorageContext* blob_storage_context =
       ChromeBlobStorageContext::GetFor(browser_context_.get());
   std::string expected_response;
@@ -527,7 +524,7 @@ TEST_P(ServiceWorkerURLRequestJobTestP, BlobResponse) {
   EXPECT_FALSE(info->service_worker_ready_time().is_null());
 }
 
-TEST_P(ServiceWorkerURLRequestJobTestP, NonExistentBlobUUIDResponse) {
+TEST_F(ServiceWorkerURLRequestJobTest, NonExistentBlobUUIDResponse) {
   SetUpWithHelper(new BlobResponder("blob-id:nothing-is-here", 0));
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   TestRequest(500, "Service Worker Response Error", std::string(),
@@ -581,7 +578,7 @@ class StreamResponder : public EmbeddedWorkerTestHelper {
   DISALLOW_COPY_AND_ASSIGN(StreamResponder);
 };
 
-TEST_P(ServiceWorkerURLRequestJobTestP, StreamResponse) {
+TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse) {
   const GURL stream_url("blob://stream");
   StreamContext* stream_context =
       GetStreamContextForResourceContext(
@@ -630,7 +627,7 @@ TEST_P(ServiceWorkerURLRequestJobTestP, StreamResponse) {
   EXPECT_FALSE(HasWork());
 }
 
-TEST_P(ServiceWorkerURLRequestJobTestP, StreamResponse_DelayedRegistration) {
+TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_DelayedRegistration) {
   const GURL stream_url("blob://stream");
   StreamContext* stream_context =
       GetStreamContextForResourceContext(
@@ -680,7 +677,7 @@ TEST_P(ServiceWorkerURLRequestJobTestP, StreamResponse_DelayedRegistration) {
   EXPECT_FALSE(HasWork());
 }
 
-TEST_P(ServiceWorkerURLRequestJobTestP, StreamResponse_QuickFinalize) {
+TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_QuickFinalize) {
   const GURL stream_url("blob://stream");
   StreamContext* stream_context =
       GetStreamContextForResourceContext(
@@ -728,7 +725,7 @@ TEST_P(ServiceWorkerURLRequestJobTestP, StreamResponse_QuickFinalize) {
   EXPECT_FALSE(HasWork());
 }
 
-TEST_P(ServiceWorkerURLRequestJobTestP, StreamResponse_Flush) {
+TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_Flush) {
   const GURL stream_url("blob://stream");
   StreamContext* stream_context =
       GetStreamContextForResourceContext(
@@ -774,7 +771,7 @@ TEST_P(ServiceWorkerURLRequestJobTestP, StreamResponse_Flush) {
   EXPECT_FALSE(info->service_worker_ready_time().is_null());
 }
 
-TEST_P(ServiceWorkerURLRequestJobTestP, StreamResponseAndCancel) {
+TEST_F(ServiceWorkerURLRequestJobTest, StreamResponseAndCancel) {
   const GURL stream_url("blob://stream");
   StreamContext* stream_context =
       GetStreamContextForResourceContext(
@@ -827,7 +824,7 @@ TEST_P(ServiceWorkerURLRequestJobTestP, StreamResponseAndCancel) {
   EXPECT_FALSE(info->service_worker_ready_time().is_null());
 }
 
-TEST_P(ServiceWorkerURLRequestJobTestP,
+TEST_F(ServiceWorkerURLRequestJobTest,
        StreamResponse_DelayedRegistrationAndCancel) {
   const GURL stream_url("blob://stream");
   StreamContext* stream_context =
@@ -882,7 +879,7 @@ class FailFetchHelper : public EmbeddedWorkerTestHelper {
   DISALLOW_COPY_AND_ASSIGN(FailFetchHelper);
 };
 
-TEST_P(ServiceWorkerURLRequestJobTestP, FailFetchDispatch) {
+TEST_F(ServiceWorkerURLRequestJobTest, FailFetchDispatch) {
   SetUpWithHelper(new FailFetchHelper);
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
@@ -911,7 +908,7 @@ TEST_P(ServiceWorkerURLRequestJobTestP, FailFetchDispatch) {
   EXPECT_FALSE(info->service_worker_ready_time().is_null());
 }
 
-TEST_P(ServiceWorkerURLRequestJobTestP, FailToActivate_MainResource) {
+TEST_F(ServiceWorkerURLRequestJobTest, FailToActivate_MainResource) {
   RunFailToActivateTest(RESOURCE_TYPE_MAIN_FRAME);
 
   // The load should fail and we should have fallen back to network because
@@ -927,7 +924,7 @@ TEST_P(ServiceWorkerURLRequestJobTestP, FailToActivate_MainResource) {
   EXPECT_EQ(host->controlling_version(), nullptr);
 }
 
-TEST_P(ServiceWorkerURLRequestJobTestP, FailToActivate_Subresource) {
+TEST_F(ServiceWorkerURLRequestJobTest, FailToActivate_Subresource) {
   RunFailToActivateTest(RESOURCE_TYPE_IMAGE);
 
   // The load should fail and we should not fall back to network because
@@ -982,7 +979,7 @@ class EarlyResponseHelper : public EmbeddedWorkerTestHelper {
 
 // This simulates the case when a response is returned and the fetch event is
 // still in flight.
-TEST_P(ServiceWorkerURLRequestJobTestP, EarlyResponse) {
+TEST_F(ServiceWorkerURLRequestJobTest, EarlyResponse) {
   EarlyResponseHelper* helper = new EarlyResponseHelper;
   SetUpWithHelper(helper);
 
@@ -1051,7 +1048,7 @@ class DelayedResponseHelper : public EmbeddedWorkerTestHelper {
 };
 
 // Test cancelling the URLRequest while the fetch event is in flight.
-TEST_P(ServiceWorkerURLRequestJobTestP, CancelRequest) {
+TEST_F(ServiceWorkerURLRequestJobTest, CancelRequest) {
   DelayedResponseHelper* helper = new DelayedResponseHelper;
   SetUpWithHelper(helper);
 
@@ -1080,9 +1077,5 @@ TEST_P(ServiceWorkerURLRequestJobTestP, CancelRequest) {
 
 // TODO(kinuko): Add more tests with different response data and also for
 // FallbackToNetwork case.
-
-INSTANTIATE_TEST_CASE_P(ServiceWorkerURLRequestJobTest,
-                        ServiceWorkerURLRequestJobTestP,
-                        testing::Bool());
 
 }  // namespace content

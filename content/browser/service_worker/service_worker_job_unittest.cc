@@ -143,9 +143,6 @@ class ServiceWorkerJobTest : public testing::Test {
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
 };
 
-class ServiceWorkerJobTestP
-    : public MojoServiceWorkerTestP<ServiceWorkerJobTest> {};
-
 scoped_refptr<ServiceWorkerRegistration> ServiceWorkerJobTest::RunRegisterJob(
     const GURL& pattern,
     const GURL& script_url,
@@ -199,7 +196,7 @@ ServiceWorkerJobTest::CreateControllee() {
           helper_->context()->AsWeakPtr(), NULL));
 }
 
-TEST_P(ServiceWorkerJobTestP, SameDocumentSameRegistration) {
+TEST_F(ServiceWorkerJobTest, SameDocumentSameRegistration) {
   scoped_refptr<ServiceWorkerRegistration> original_registration =
       RunRegisterJob(GURL("http://www.example.com/"),
                      GURL("http://www.example.com/service_worker.js"));
@@ -219,7 +216,7 @@ TEST_P(ServiceWorkerJobTestP, SameDocumentSameRegistration) {
   ASSERT_EQ(registration1, registration2);
 }
 
-TEST_P(ServiceWorkerJobTestP, SameMatchSameRegistration) {
+TEST_F(ServiceWorkerJobTest, SameMatchSameRegistration) {
   bool called;
   scoped_refptr<ServiceWorkerRegistration> original_registration =
       RunRegisterJob(GURL("http://www.example.com/"),
@@ -244,7 +241,7 @@ TEST_P(ServiceWorkerJobTestP, SameMatchSameRegistration) {
   ASSERT_EQ(registration1, registration2);
 }
 
-TEST_P(ServiceWorkerJobTestP, DifferentMatchDifferentRegistration) {
+TEST_F(ServiceWorkerJobTest, DifferentMatchDifferentRegistration) {
   bool called1;
   scoped_refptr<ServiceWorkerRegistration> original_registration1;
   job_coordinator()->Register(
@@ -283,7 +280,7 @@ TEST_P(ServiceWorkerJobTestP, DifferentMatchDifferentRegistration) {
 }
 
 // Make sure basic registration is working.
-TEST_P(ServiceWorkerJobTestP, Register) {
+TEST_F(ServiceWorkerJobTest, Register) {
   scoped_refptr<ServiceWorkerRegistration> registration =
       RunRegisterJob(GURL("http://www.example.com/"),
                      GURL("http://www.example.com/service_worker.js"));
@@ -294,7 +291,7 @@ TEST_P(ServiceWorkerJobTestP, Register) {
 }
 
 // Make sure registrations are cleaned up when they are unregistered.
-TEST_P(ServiceWorkerJobTestP, Unregister) {
+TEST_F(ServiceWorkerJobTest, Unregister) {
   GURL pattern("http://www.example.com/");
 
   scoped_refptr<ServiceWorkerRegistration> registration =
@@ -310,7 +307,7 @@ TEST_P(ServiceWorkerJobTestP, Unregister) {
   ASSERT_EQ(scoped_refptr<ServiceWorkerRegistration>(NULL), registration);
 }
 
-TEST_P(ServiceWorkerJobTestP, Unregister_NothingRegistered) {
+TEST_F(ServiceWorkerJobTest, Unregister_NothingRegistered) {
   GURL pattern("http://www.example.com/");
 
   RunUnregisterJob(pattern, SERVICE_WORKER_ERROR_NOT_FOUND);
@@ -318,7 +315,7 @@ TEST_P(ServiceWorkerJobTestP, Unregister_NothingRegistered) {
 
 // Make sure registering a new script creates a new version and shares an
 // existing registration.
-TEST_P(ServiceWorkerJobTestP, RegisterNewScript) {
+TEST_F(ServiceWorkerJobTest, RegisterNewScript) {
   GURL pattern("http://www.example.com/");
 
   scoped_refptr<ServiceWorkerRegistration> old_registration =
@@ -344,7 +341,7 @@ TEST_P(ServiceWorkerJobTestP, RegisterNewScript) {
 
 // Make sure that when registering a duplicate pattern+script_url
 // combination, that the same registration is used.
-TEST_P(ServiceWorkerJobTestP, RegisterDuplicateScript) {
+TEST_F(ServiceWorkerJobTest, RegisterDuplicateScript) {
   GURL pattern("http://www.example.com/");
   GURL script_url("http://www.example.com/service_worker.js");
 
@@ -383,7 +380,7 @@ class FailToStartWorkerTestHelper : public EmbeddedWorkerTestHelper {
   }
 };
 
-TEST_P(ServiceWorkerJobTestP, Register_FailToStartWorker) {
+TEST_F(ServiceWorkerJobTest, Register_FailToStartWorker) {
   helper_.reset(new FailToStartWorkerTestHelper);
 
   scoped_refptr<ServiceWorkerRegistration> registration =
@@ -396,7 +393,7 @@ TEST_P(ServiceWorkerJobTestP, Register_FailToStartWorker) {
 
 // Register and then unregister the pattern, in parallel. Job coordinator should
 // process jobs until the last job.
-TEST_P(ServiceWorkerJobTestP, ParallelRegUnreg) {
+TEST_F(ServiceWorkerJobTest, ParallelRegUnreg) {
   GURL pattern("http://www.example.com/");
   GURL script_url("http://www.example.com/service_worker.js");
 
@@ -428,7 +425,7 @@ TEST_P(ServiceWorkerJobTestP, ParallelRegUnreg) {
 // Register conflicting scripts for the same pattern. The most recent
 // registration should win, and the old registration should have been
 // shutdown.
-TEST_P(ServiceWorkerJobTestP, ParallelRegNewScript) {
+TEST_F(ServiceWorkerJobTest, ParallelRegNewScript) {
   GURL pattern("http://www.example.com/");
 
   GURL script_url1("http://www.example.com/service_worker1.js");
@@ -466,7 +463,7 @@ TEST_P(ServiceWorkerJobTestP, ParallelRegNewScript) {
 // Register the exact same pattern + script. Requests should be
 // coalesced such that both callers get the exact same registration
 // object.
-TEST_P(ServiceWorkerJobTestP, ParallelRegSameScript) {
+TEST_F(ServiceWorkerJobTest, ParallelRegSameScript) {
   GURL pattern("http://www.example.com/");
 
   GURL script_url("http://www.example.com/service_worker1.js");
@@ -503,7 +500,7 @@ TEST_P(ServiceWorkerJobTestP, ParallelRegSameScript) {
 }
 
 // Call simulataneous unregister calls.
-TEST_P(ServiceWorkerJobTestP, ParallelUnreg) {
+TEST_F(ServiceWorkerJobTest, ParallelUnreg) {
   GURL pattern("http://www.example.com/");
 
   GURL script_url("http://www.example.com/service_worker.js");
@@ -534,7 +531,7 @@ TEST_P(ServiceWorkerJobTestP, ParallelUnreg) {
   ASSERT_EQ(scoped_refptr<ServiceWorkerRegistration>(), registration);
 }
 
-TEST_P(ServiceWorkerJobTestP, AbortAll_Register) {
+TEST_F(ServiceWorkerJobTest, AbortAll_Register) {
   GURL pattern1("http://www1.example.com/");
   GURL pattern2("http://www2.example.com/");
   GURL script_url1("http://www1.example.com/service_worker.js");
@@ -585,7 +582,7 @@ TEST_P(ServiceWorkerJobTestP, AbortAll_Register) {
   EXPECT_EQ(scoped_refptr<ServiceWorkerRegistration>(), registration2);
 }
 
-TEST_P(ServiceWorkerJobTestP, AbortAll_Unregister) {
+TEST_F(ServiceWorkerJobTest, AbortAll_Unregister) {
   GURL pattern1("http://www1.example.com/");
   GURL pattern2("http://www2.example.com/");
 
@@ -611,7 +608,7 @@ TEST_P(ServiceWorkerJobTestP, AbortAll_Unregister) {
   ASSERT_TRUE(unregistration_called2);
 }
 
-TEST_P(ServiceWorkerJobTestP, AbortAll_RegUnreg) {
+TEST_F(ServiceWorkerJobTest, AbortAll_RegUnreg) {
   GURL pattern("http://www.example.com/");
   GURL script_url("http://www.example.com/service_worker.js");
 
@@ -646,7 +643,7 @@ TEST_P(ServiceWorkerJobTestP, AbortAll_RegUnreg) {
 
 // Tests that the waiting worker enters the 'redundant' state upon
 // unregistration.
-TEST_P(ServiceWorkerJobTestP, UnregisterWaitingSetsRedundant) {
+TEST_F(ServiceWorkerJobTest, UnregisterWaitingSetsRedundant) {
   GURL script_url("http://www.example.com/service_worker.js");
   scoped_refptr<ServiceWorkerRegistration> registration =
       RunRegisterJob(GURL("http://www.example.com/"), script_url);
@@ -679,7 +676,7 @@ TEST_P(ServiceWorkerJobTestP, UnregisterWaitingSetsRedundant) {
 
 // Tests that the active worker enters the 'redundant' state upon
 // unregistration.
-TEST_P(ServiceWorkerJobTestP, UnregisterActiveSetsRedundant) {
+TEST_F(ServiceWorkerJobTest, UnregisterActiveSetsRedundant) {
   scoped_refptr<ServiceWorkerRegistration> registration =
       RunRegisterJob(GURL("http://www.example.com/"),
                      GURL("http://www.example.com/service_worker.js"));
@@ -699,7 +696,7 @@ TEST_P(ServiceWorkerJobTestP, UnregisterActiveSetsRedundant) {
 
 // Tests that the active worker enters the 'redundant' state upon
 // unregistration.
-TEST_P(ServiceWorkerJobTestP,
+TEST_F(ServiceWorkerJobTest,
        UnregisterActiveSetsRedundant_WaitForNoControllee) {
   scoped_refptr<ServiceWorkerRegistration> registration =
       RunRegisterJob(GURL("http://www.example.com/"),
@@ -971,7 +968,7 @@ class EvictIncumbentVersionHelper : public UpdateJobTestHelper {
 
 }  // namespace
 
-TEST_P(ServiceWorkerJobTestP, Update_NoChange) {
+TEST_F(ServiceWorkerJobTest, Update_NoChange) {
   UpdateJobTestHelper* update_helper = new UpdateJobTestHelper;
   helper_.reset(update_helper);
   scoped_refptr<ServiceWorkerRegistration> registration =
@@ -1009,7 +1006,7 @@ TEST_P(ServiceWorkerJobTestP, Update_NoChange) {
   EXPECT_FALSE(update_helper->update_found_);
 }
 
-TEST_P(ServiceWorkerJobTestP, Update_BumpLastUpdateCheckTime) {
+TEST_F(ServiceWorkerJobTest, Update_BumpLastUpdateCheckTime) {
   const base::Time kToday = base::Time::Now();
   const base::Time kYesterday =
       kToday - base::TimeDelta::FromDays(1) - base::TimeDelta::FromHours(1);
@@ -1058,7 +1055,7 @@ TEST_P(ServiceWorkerJobTestP, Update_BumpLastUpdateCheckTime) {
   EXPECT_LT(kYesterday, registration->last_update_check());
 }
 
-TEST_P(ServiceWorkerJobTestP, Update_NewVersion) {
+TEST_F(ServiceWorkerJobTest, Update_NewVersion) {
   UpdateJobTestHelper* update_helper = new UpdateJobTestHelper;
   helper_.reset(update_helper);
   scoped_refptr<ServiceWorkerRegistration> registration =
@@ -1150,7 +1147,7 @@ TEST_P(ServiceWorkerJobTestP, Update_NewVersion) {
 
 // Test that the update job uses the script URL of the newest worker when the
 // job starts, rather than when it is scheduled.
-TEST_P(ServiceWorkerJobTestP, Update_ScriptUrlChanged) {
+TEST_F(ServiceWorkerJobTest, Update_ScriptUrlChanged) {
   // Create a registration with an active version.
   scoped_refptr<ServiceWorkerRegistration> registration =
       RunRegisterJob(GURL("http://www.example.com/one/"),
@@ -1178,7 +1175,7 @@ TEST_P(ServiceWorkerJobTestP, Update_ScriptUrlChanged) {
 
 // Test that update succeeds if the incumbent worker was evicted
 // during the update job (this can happen on disk cache failure).
-TEST_P(ServiceWorkerJobTestP, Update_EvictedIncumbent) {
+TEST_F(ServiceWorkerJobTest, Update_EvictedIncumbent) {
   EvictIncumbentVersionHelper* update_helper = new EvictIncumbentVersionHelper;
   helper_.reset(update_helper);
   scoped_refptr<ServiceWorkerRegistration> registration =
@@ -1207,7 +1204,7 @@ TEST_P(ServiceWorkerJobTestP, Update_EvictedIncumbent) {
   EXPECT_FALSE(registration->is_uninstalled());
 }
 
-TEST_P(ServiceWorkerJobTestP, Update_UninstallingRegistration) {
+TEST_F(ServiceWorkerJobTest, Update_UninstallingRegistration) {
   bool called;
   scoped_refptr<ServiceWorkerRegistration> registration =
       RunRegisterJob(GURL("http://www.example.com/one/"),
@@ -1234,7 +1231,7 @@ TEST_P(ServiceWorkerJobTestP, Update_UninstallingRegistration) {
   EXPECT_EQ(NULL, registration->installing_version());
 }
 
-TEST_P(ServiceWorkerJobTestP, RegisterWhileUninstalling) {
+TEST_F(ServiceWorkerJobTest, RegisterWhileUninstalling) {
   GURL pattern("http://www.example.com/one/");
   GURL script1("http://www.example.com/service_worker.js");
   GURL script2("http://www.example.com/service_worker.js?new");
@@ -1285,7 +1282,7 @@ TEST_P(ServiceWorkerJobTestP, RegisterWhileUninstalling) {
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, new_version->status());
 }
 
-TEST_P(ServiceWorkerJobTestP, RegisterAndUnregisterWhileUninstalling) {
+TEST_F(ServiceWorkerJobTest, RegisterAndUnregisterWhileUninstalling) {
   GURL pattern("http://www.example.com/one/");
   GURL script1("http://www.example.com/service_worker.js");
   GURL script2("http://www.example.com/service_worker.js?new");
@@ -1333,8 +1330,7 @@ TEST_P(ServiceWorkerJobTestP, RegisterAndUnregisterWhileUninstalling) {
   EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, new_version->status());
 }
 
-TEST_P(ServiceWorkerJobTestP,
-       RegisterSameScriptMultipleTimesWhileUninstalling) {
+TEST_F(ServiceWorkerJobTest, RegisterSameScriptMultipleTimesWhileUninstalling) {
   GURL pattern("http://www.example.com/one/");
   GURL script1("http://www.example.com/service_worker.js");
   GURL script2("http://www.example.com/service_worker.js?new");
@@ -1385,7 +1381,7 @@ TEST_P(ServiceWorkerJobTestP,
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, new_version->status());
 }
 
-TEST_P(ServiceWorkerJobTestP, RegisterMultipleTimesWhileUninstalling) {
+TEST_F(ServiceWorkerJobTest, RegisterMultipleTimesWhileUninstalling) {
   GURL pattern("http://www.example.com/one/");
   GURL script1("http://www.example.com/service_worker.js?first");
   GURL script2("http://www.example.com/service_worker.js?second");
@@ -1482,7 +1478,7 @@ class EventCallbackHelper : public EmbeddedWorkerTestHelper {
   bool has_fetch_handler_ = true;
 };
 
-TEST_P(ServiceWorkerJobTestP, RemoveControlleeDuringInstall) {
+TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringInstall) {
   EventCallbackHelper* helper = new EventCallbackHelper;
   helper_.reset(helper);
 
@@ -1522,7 +1518,7 @@ TEST_P(ServiceWorkerJobTestP, RemoveControlleeDuringInstall) {
   EXPECT_EQ(registration, FindRegistrationForPattern(pattern));
 }
 
-TEST_P(ServiceWorkerJobTestP, RemoveControlleeDuringRejectedInstall) {
+TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringRejectedInstall) {
   EventCallbackHelper* helper = new EventCallbackHelper;
   helper_.reset(helper);
 
@@ -1558,7 +1554,7 @@ TEST_P(ServiceWorkerJobTestP, RemoveControlleeDuringRejectedInstall) {
   FindRegistrationForPattern(pattern, SERVICE_WORKER_ERROR_NOT_FOUND);
 }
 
-TEST_P(ServiceWorkerJobTestP, RemoveControlleeDuringInstall_RejectActivate) {
+TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringInstall_RejectActivate) {
   EventCallbackHelper* helper = new EventCallbackHelper;
   helper_.reset(helper);
 
@@ -1594,7 +1590,7 @@ TEST_P(ServiceWorkerJobTestP, RemoveControlleeDuringInstall_RejectActivate) {
   FindRegistrationForPattern(pattern, SERVICE_WORKER_OK);
 }
 
-TEST_P(ServiceWorkerJobTestP, HasFetchHandler) {
+TEST_F(ServiceWorkerJobTest, HasFetchHandler) {
   EventCallbackHelper* helper = new EventCallbackHelper;
   helper_.reset(helper);
 
@@ -1645,62 +1641,35 @@ class CheckPauseAfterDownloadEmbeddedWorkerInstanceClient
   DISALLOW_COPY_AND_ASSIGN(CheckPauseAfterDownloadEmbeddedWorkerInstanceClient);
 };
 
-TEST_P(ServiceWorkerJobTestP, Update_PauseAfterDownload) {
+TEST_F(ServiceWorkerJobTest, Update_PauseAfterDownload) {
   UpdateJobTestHelper* update_helper = new UpdateJobTestHelper;
   helper_.reset(update_helper);
-  IPC::TestSink* sink = update_helper->ipc_sink();
 
   std::vector<CheckPauseAfterDownloadEmbeddedWorkerInstanceClient*> clients;
-  if (is_mojo_enabled()) {
-    clients.push_back(helper_->CreateAndRegisterMockInstanceClient<
-                      CheckPauseAfterDownloadEmbeddedWorkerInstanceClient>(
-        helper_->AsWeakPtr()));
-    clients.push_back(helper_->CreateAndRegisterMockInstanceClient<
-                      CheckPauseAfterDownloadEmbeddedWorkerInstanceClient>(
-        helper_->AsWeakPtr()));
-  }
+  clients.push_back(helper_->CreateAndRegisterMockInstanceClient<
+                    CheckPauseAfterDownloadEmbeddedWorkerInstanceClient>(
+      helper_->AsWeakPtr()));
+  clients.push_back(helper_->CreateAndRegisterMockInstanceClient<
+                    CheckPauseAfterDownloadEmbeddedWorkerInstanceClient>(
+      helper_->AsWeakPtr()));
 
   // The initial version should not pause after download.
-  if (is_mojo_enabled())
-    clients[0]->set_next_pause_after_download(false);
+  clients[0]->set_next_pause_after_download(false);
   scoped_refptr<ServiceWorkerRegistration> registration =
       update_helper->SetupInitialRegistration(kNewVersionOrigin);
-  if (is_mojo_enabled()) {
-    ASSERT_EQ(1, clients[0]->num_of_startworker());
-  } else {
-    const IPC::Message* start_msg =
-        sink->GetUniqueMessageMatching(EmbeddedWorkerMsg_StartWorker::ID);
-    ASSERT_TRUE(start_msg);
-    EmbeddedWorkerMsg_StartWorker::Param param;
-    EmbeddedWorkerMsg_StartWorker::Read(start_msg, &param);
-    const EmbeddedWorkerStartParams& start_params = std::get<0>(param);
-    EXPECT_FALSE(start_params.pause_after_download);
-    sink->ClearMessages();
-  }
+  ASSERT_EQ(1, clients[0]->num_of_startworker());
 
   // The updated version should pause after download.
-  if (is_mojo_enabled())
-    clients[1]->set_next_pause_after_download(true);
+  clients[1]->set_next_pause_after_download(true);
   registration->AddListener(update_helper);
   registration->active_version()->StartUpdate();
   base::RunLoop().RunUntilIdle();
-  if (is_mojo_enabled()) {
-    ASSERT_EQ(1, clients[1]->num_of_startworker());
-  } else {
-    const IPC::Message* start_msg =
-        sink->GetUniqueMessageMatching(EmbeddedWorkerMsg_StartWorker::ID);
-    ASSERT_TRUE(start_msg);
-    EmbeddedWorkerMsg_StartWorker::Param param;
-    EmbeddedWorkerMsg_StartWorker::Read(start_msg, &param);
-    const EmbeddedWorkerStartParams& start_params = std::get<0>(param);
-    EXPECT_TRUE(start_params.pause_after_download);
-    sink->ClearMessages();
-  }
+  ASSERT_EQ(1, clients[1]->num_of_startworker());
 }
 
 // Test that activation doesn't complete if it's triggered by removing a
 // controllee and starting the worker failed due to shutdown.
-TEST_P(ServiceWorkerJobTestP, ActivateCancelsOnShutdown) {
+TEST_F(ServiceWorkerJobTest, ActivateCancelsOnShutdown) {
   UpdateJobTestHelper* update_helper = new UpdateJobTestHelper;
   helper_.reset(update_helper);
   GURL pattern("http://www.example.com/");
@@ -1754,9 +1723,5 @@ TEST_P(ServiceWorkerJobTestP, ActivateCancelsOnShutdown) {
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATING, new_version->status());
   registration->RemoveListener(update_helper);
 }
-
-INSTANTIATE_TEST_CASE_P(ServiceWorkerJobTest,
-                        ServiceWorkerJobTestP,
-                        ::testing::Values(false, true));
 
 }  // namespace content

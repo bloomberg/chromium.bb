@@ -189,10 +189,7 @@ class ServiceWorkerReadFromCacheJobTest : public testing::Test {
   MockURLRequestDelegate delegate_;
 };
 
-class ServiceWorkerReadFromCacheJobTestP
-    : public MojoServiceWorkerTestP<ServiceWorkerReadFromCacheJobTest> {};
-
-TEST_P(ServiceWorkerReadFromCacheJobTestP, ReadMainScript) {
+TEST_F(ServiceWorkerReadFromCacheJobTest, ReadMainScript) {
   // Read the main script from the diskcache.
   std::unique_ptr<net::URLRequest> request =
       url_request_context_->CreateRequest(main_script_.url,
@@ -210,7 +207,7 @@ TEST_P(ServiceWorkerReadFromCacheJobTestP, ReadMainScript) {
             DeduceStartWorkerFailureReason(SERVICE_WORKER_OK));
 }
 
-TEST_P(ServiceWorkerReadFromCacheJobTestP, ReadImportedScript) {
+TEST_F(ServiceWorkerReadFromCacheJobTest, ReadImportedScript) {
   // Read the imported script from the diskcache.
   std::unique_ptr<net::URLRequest> request =
       url_request_context_->CreateRequest(imported_script_.url,
@@ -227,7 +224,7 @@ TEST_P(ServiceWorkerReadFromCacheJobTestP, ReadImportedScript) {
             DeduceStartWorkerFailureReason(SERVICE_WORKER_OK));
 }
 
-TEST_P(ServiceWorkerReadFromCacheJobTestP, ResourceNotFound) {
+TEST_F(ServiceWorkerReadFromCacheJobTest, ResourceNotFound) {
   ASSERT_EQ(SERVICE_WORKER_OK, FindRegistration());
 
   // Try to read a nonexistent resource from the diskcache.
@@ -252,9 +249,5 @@ TEST_P(ServiceWorkerReadFromCacheJobTestP, ResourceNotFound) {
   EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, version_->status());
   EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND, FindRegistration());
 }
-
-INSTANTIATE_TEST_CASE_P(ServiceWorkerReadFromCacheJobTest,
-                        ServiceWorkerReadFromCacheJobTestP,
-                        testing::Bool());
 
 }  // namespace content

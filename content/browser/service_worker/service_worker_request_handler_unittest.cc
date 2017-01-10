@@ -114,10 +114,7 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
   storage::BlobStorageContext blob_storage_context_;
 };
 
-class ServiceWorkerRequestHandlerTestP
-    : public MojoServiceWorkerTestP<ServiceWorkerRequestHandlerTest> {};
-
-TEST_P(ServiceWorkerRequestHandlerTestP, InitializeHandler_FTP) {
+TEST_F(ServiceWorkerRequestHandlerTest, InitializeHandler_FTP) {
   std::unique_ptr<net::URLRequest> request =
       CreateRequest("ftp://host/scope/doc", "GET");
   InitializeHandler(request.get(), false, RESOURCE_TYPE_MAIN_FRAME);
@@ -125,42 +122,42 @@ TEST_P(ServiceWorkerRequestHandlerTestP, InitializeHandler_FTP) {
   EXPECT_FALSE(GetHandler(request.get()));
 }
 
-TEST_P(ServiceWorkerRequestHandlerTestP, InitializeHandler_HTTP_MAIN_FRAME) {
+TEST_F(ServiceWorkerRequestHandlerTest, InitializeHandler_HTTP_MAIN_FRAME) {
   // HTTP should have the handler because the response is possible to be a
   // redirect to HTTPS.
   InitializeHandlerSimpleTest("http://host/scope/doc", "GET", false,
                               RESOURCE_TYPE_MAIN_FRAME);
 }
 
-TEST_P(ServiceWorkerRequestHandlerTestP, InitializeHandler_HTTPS_MAIN_FRAME) {
+TEST_F(ServiceWorkerRequestHandlerTest, InitializeHandler_HTTPS_MAIN_FRAME) {
   InitializeHandlerSimpleTest("https://host/scope/doc", "GET", false,
                               RESOURCE_TYPE_MAIN_FRAME);
 }
 
-TEST_P(ServiceWorkerRequestHandlerTestP, InitializeHandler_HTTP_SUB_FRAME) {
+TEST_F(ServiceWorkerRequestHandlerTest, InitializeHandler_HTTP_SUB_FRAME) {
   // HTTP should have the handler because the response is possible to be a
   // redirect to HTTPS.
   InitializeHandlerSimpleTest("http://host/scope/doc", "GET", false,
                               RESOURCE_TYPE_SUB_FRAME);
 }
 
-TEST_P(ServiceWorkerRequestHandlerTestP, InitializeHandler_HTTPS_SUB_FRAME) {
+TEST_F(ServiceWorkerRequestHandlerTest, InitializeHandler_HTTPS_SUB_FRAME) {
   InitializeHandlerSimpleTest("https://host/scope/doc", "GET", false,
                               RESOURCE_TYPE_SUB_FRAME);
 }
 
-TEST_P(ServiceWorkerRequestHandlerTestP, InitializeHandler_HTTPS_OPTIONS) {
+TEST_F(ServiceWorkerRequestHandlerTest, InitializeHandler_HTTPS_OPTIONS) {
   // OPTIONS is also supported. See crbug.com/434660.
   InitializeHandlerSimpleTest("https://host/scope/doc", "OPTIONS", false,
                               RESOURCE_TYPE_MAIN_FRAME);
 }
 
-TEST_P(ServiceWorkerRequestHandlerTestP, InitializeHandler_HTTPS_SKIP) {
+TEST_F(ServiceWorkerRequestHandlerTest, InitializeHandler_HTTPS_SKIP) {
   InitializeHandlerSimpleTest("https://host/scope/doc", "GET", true,
                               RESOURCE_TYPE_MAIN_FRAME);
 }
 
-TEST_P(ServiceWorkerRequestHandlerTestP, InitializeHandler_IMAGE) {
+TEST_F(ServiceWorkerRequestHandlerTest, InitializeHandler_IMAGE) {
   // Check provider host's URL after initializing a handler for an image.
   provider_host_->SetDocumentUrl(GURL("https://host/scope/doc"));
   std::unique_ptr<net::URLRequest> request =
@@ -169,9 +166,5 @@ TEST_P(ServiceWorkerRequestHandlerTestP, InitializeHandler_IMAGE) {
   ASSERT_FALSE(GetHandler(request.get()));
   EXPECT_EQ(GURL("https://host/scope/doc"), provider_host_->document_url());
 }
-
-INSTANTIATE_TEST_CASE_P(ServiceWorkerRequestHandlerTest,
-                        ServiceWorkerRequestHandlerTestP,
-                        testing::Bool());
 
 }  // namespace content

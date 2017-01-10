@@ -149,7 +149,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
 
  private:
   class FileSizeResolver;
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTestP,
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTest,
                            LostActiveVersion);
 
   enum ResponseType {

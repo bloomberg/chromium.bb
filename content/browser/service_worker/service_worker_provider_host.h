@@ -297,7 +297,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
  private:
   friend class ForeignFetchRequestHandlerTest;
   friend class LinkHeaderServiceWorkerTest;
-  friend class ServiceWorkerProviderHostTestP;
+  friend class ServiceWorkerProviderHostTest;
   friend class ServiceWorkerWriteToCacheJobTest;
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWriteToCacheJobTest, Update_SameScript);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWriteToCacheJobTest,
@@ -308,21 +308,21 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
                            Update_ElongatedScript);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWriteToCacheJobTest,
                            Update_EmptyScript);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDispatcherHostTestP,
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDispatcherHostTest,
                            DispatchExtendableMessageEvent);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDispatcherHostTestP,
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDispatcherHostTest,
                            DispatchExtendableMessageEvent_Fail);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTestP,
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
                            UpdateBefore24Hours);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTestP,
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
                            UpdateAfter24Hours);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTestP,
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
                            UpdateForceBypassCache);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTestP,
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
                            ServiceWorkerDataRequestAnnotation);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTestP,
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
                            SkipServiceWorkerForServiceWorkerRequest);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProviderHostTestP, ContextSecurity);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProviderHostTest, ContextSecurity);
 
   struct OneShotGetReadyCallback {
     GetRegistrationForReadyCallback callback;

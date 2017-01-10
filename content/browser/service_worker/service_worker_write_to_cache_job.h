@@ -60,13 +60,13 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
   const static net::Error kIdenticalScriptError;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTestP,
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
                            UpdateBefore24Hours);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTestP,
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
                            UpdateAfter24Hours);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTestP,
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
                            UpdateForceBypassCache);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTestP,
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
                            ServiceWorkerDataRequestAnnotation);
 
   ~ServiceWorkerWriteToCacheJob() override;

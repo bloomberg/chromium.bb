@@ -14,21 +14,6 @@
 
 namespace content {
 
-template <class TestClass>
-class MojoServiceWorkerTestP : public TestClass,
-                               public testing::WithParamInterface<bool> {
- protected:
-  void SetUp() override {
-    if (!is_mojo_enabled()) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kDisableMojoServiceWorker);
-    }
-    TestClass::SetUp();
-  }
-
-  bool is_mojo_enabled() const { return GetParam(); }
-};
-
 template <typename Arg>
 void ReceiveResult(BrowserThread::ID run_quit_thread,
                    const base::Closure& quit,

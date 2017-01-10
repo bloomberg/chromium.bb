@@ -448,10 +448,7 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
   int64_t next_version_id_ = 1L;
 };
 
-class ServiceWorkerWriteToCacheJobTestP
-    : public MojoServiceWorkerTestP<ServiceWorkerWriteToCacheJobTest> {};
-
-TEST_P(ServiceWorkerWriteToCacheJobTestP, Normal) {
+TEST_F(ServiceWorkerWriteToCacheJobTest, Normal) {
   mock_protocol_handler_->SetCreateJobCallback(
       base::Bind(&CreateNormalURLRequestJob));
   request_->Start();
@@ -461,7 +458,7 @@ TEST_P(ServiceWorkerWriteToCacheJobTestP, Normal) {
             version_->script_cache_map()->LookupResourceId(script_url_));
 }
 
-TEST_P(ServiceWorkerWriteToCacheJobTestP, InvalidMimeType) {
+TEST_F(ServiceWorkerWriteToCacheJobTest, InvalidMimeType) {
   mock_protocol_handler_->SetCreateJobCallback(
       base::Bind(&CreateInvalidMimeTypeJob));
   request_->Start();
@@ -472,7 +469,7 @@ TEST_P(ServiceWorkerWriteToCacheJobTestP, InvalidMimeType) {
             version_->script_cache_map()->LookupResourceId(script_url_));
 }
 
-TEST_P(ServiceWorkerWriteToCacheJobTestP, SSLCertificateError) {
+TEST_F(ServiceWorkerWriteToCacheJobTest, SSLCertificateError) {
   mock_protocol_handler_->SetCreateJobCallback(
       base::Bind(&CreateSSLCertificateErrorJob));
   request_->Start();
@@ -492,10 +489,7 @@ class ServiceWorkerWriteToCacheLocalhostTest
   ~ServiceWorkerWriteToCacheLocalhostTest() override {}
 };
 
-class ServiceWorkerWriteToCacheLocalhostTestP
-    : public MojoServiceWorkerTestP<ServiceWorkerWriteToCacheLocalhostTest> {};
-
-TEST_P(ServiceWorkerWriteToCacheLocalhostTestP,
+TEST_F(ServiceWorkerWriteToCacheLocalhostTest,
        SSLCertificateError_AllowInsecureLocalhost) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kAllowInsecureLocalhost);
@@ -510,7 +504,7 @@ TEST_P(ServiceWorkerWriteToCacheLocalhostTestP,
             version_->script_cache_map()->LookupResourceId(script_url_));
 }
 
-TEST_P(ServiceWorkerWriteToCacheLocalhostTestP, SSLCertificateError) {
+TEST_F(ServiceWorkerWriteToCacheLocalhostTest, SSLCertificateError) {
   mock_protocol_handler_->SetCreateJobCallback(
       base::Bind(&CreateSSLCertificateErrorJob));
   request_->Start();
@@ -521,7 +515,7 @@ TEST_P(ServiceWorkerWriteToCacheLocalhostTestP, SSLCertificateError) {
             version_->script_cache_map()->LookupResourceId(script_url_));
 }
 
-TEST_P(ServiceWorkerWriteToCacheLocalhostTestP,
+TEST_F(ServiceWorkerWriteToCacheLocalhostTest,
        CertStatusError_AllowInsecureLocalhost) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kAllowInsecureLocalhost);
@@ -536,7 +530,7 @@ TEST_P(ServiceWorkerWriteToCacheLocalhostTestP,
             version_->script_cache_map()->LookupResourceId(script_url_));
 }
 
-TEST_P(ServiceWorkerWriteToCacheLocalhostTestP, CertStatusError) {
+TEST_F(ServiceWorkerWriteToCacheLocalhostTest, CertStatusError) {
   mock_protocol_handler_->SetCreateJobCallback(
       base::Bind(&CreateCertStatusErrorJob));
   request_->Start();
@@ -547,7 +541,7 @@ TEST_P(ServiceWorkerWriteToCacheLocalhostTestP, CertStatusError) {
             version_->script_cache_map()->LookupResourceId(script_url_));
 }
 
-TEST_P(ServiceWorkerWriteToCacheJobTestP, CertStatusError) {
+TEST_F(ServiceWorkerWriteToCacheJobTest, CertStatusError) {
   mock_protocol_handler_->SetCreateJobCallback(
       base::Bind(&CreateCertStatusErrorJob));
   request_->Start();
@@ -558,14 +552,14 @@ TEST_P(ServiceWorkerWriteToCacheJobTestP, CertStatusError) {
             version_->script_cache_map()->LookupResourceId(script_url_));
 }
 
-TEST_P(ServiceWorkerWriteToCacheJobTestP, Update_SameScript) {
+TEST_F(ServiceWorkerWriteToCacheJobTest, Update_SameScript) {
   std::string response = GenerateLongResponse();
   CreateIncumbent(response);
   scoped_refptr<ServiceWorkerVersion> version = UpdateScript(response);
   EXPECT_EQ(kInvalidServiceWorkerResourceId, GetResourceId(version.get()));
 }
 
-TEST_P(ServiceWorkerWriteToCacheJobTestP, Update_SameSizeScript) {
+TEST_F(ServiceWorkerWriteToCacheJobTest, Update_SameSizeScript) {
   std::string response = GenerateLongResponse();
   CreateIncumbent(response);
 
@@ -600,7 +594,7 @@ TEST_P(ServiceWorkerWriteToCacheJobTestP, Update_SameSizeScript) {
   registration_->SetWaitingVersion(version);
 }
 
-TEST_P(ServiceWorkerWriteToCacheJobTestP, Update_TruncatedScript) {
+TEST_F(ServiceWorkerWriteToCacheJobTest, Update_TruncatedScript) {
   std::string response = GenerateLongResponse();
   CreateIncumbent(response);
 
@@ -629,7 +623,7 @@ TEST_P(ServiceWorkerWriteToCacheJobTestP, Update_TruncatedScript) {
   registration_->SetWaitingVersion(version);
 }
 
-TEST_P(ServiceWorkerWriteToCacheJobTestP, Update_ElongatedScript) {
+TEST_F(ServiceWorkerWriteToCacheJobTest, Update_ElongatedScript) {
   std::string original_response = GenerateLongResponse();
   CreateIncumbent(original_response);
 
@@ -652,7 +646,7 @@ TEST_P(ServiceWorkerWriteToCacheJobTestP, Update_ElongatedScript) {
   registration_->SetWaitingVersion(version);
 }
 
-TEST_P(ServiceWorkerWriteToCacheJobTestP, Update_EmptyScript) {
+TEST_F(ServiceWorkerWriteToCacheJobTest, Update_EmptyScript) {
   // Create empty incumbent.
   CreateIncumbent(std::string());
 
@@ -672,7 +666,7 @@ TEST_P(ServiceWorkerWriteToCacheJobTestP, Update_EmptyScript) {
   EXPECT_EQ(kInvalidServiceWorkerResourceId, GetResourceId(version.get()));
 }
 
-TEST_P(ServiceWorkerWriteToCacheJobTestP, Error) {
+TEST_F(ServiceWorkerWriteToCacheJobTest, Error) {
   mock_protocol_handler_->SetCreateJobCallback(
       base::Bind(&CreateFailedURLRequestJob));
   request_->Start();
@@ -683,7 +677,7 @@ TEST_P(ServiceWorkerWriteToCacheJobTestP, Error) {
             version_->script_cache_map()->LookupResourceId(script_url_));
 }
 
-TEST_P(ServiceWorkerWriteToCacheJobTestP, FailedWriteHeadersToCache) {
+TEST_F(ServiceWorkerWriteToCacheJobTest, FailedWriteHeadersToCache) {
   mock_protocol_handler_->SetCreateJobCallback(
       base::Bind(&CreateNormalURLRequestJob));
   DisableCache();
@@ -692,12 +686,5 @@ TEST_P(ServiceWorkerWriteToCacheJobTestP, FailedWriteHeadersToCache) {
   EXPECT_EQ(net::URLRequestStatus::FAILED, request_->status().status());
   EXPECT_EQ(net::ERR_FAILED, request_->status().error());
 }
-
-INSTANTIATE_TEST_CASE_P(ServiceWorkerWriteToCacheJobTest,
-                        ServiceWorkerWriteToCacheJobTestP,
-                        testing::Bool());
-INSTANTIATE_TEST_CASE_P(ServiceWorkerWriteToCacheLocalhostTest,
-                        ServiceWorkerWriteToCacheLocalhostTestP,
-                        testing::Bool());
 
 }  // namespace content

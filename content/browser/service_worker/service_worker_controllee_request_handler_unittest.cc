@@ -157,10 +157,6 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
   GURL script_url_;
 };
 
-class ServiceWorkerControlleeRequestHandlerTestP
-    : public MojoServiceWorkerTestP<ServiceWorkerControlleeRequestHandlerTest> {
-};
-
 class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
  public:
   ServiceWorkerTestContentBrowserClient() {}
@@ -173,7 +169,7 @@ class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
   }
 };
 
-TEST_P(ServiceWorkerControlleeRequestHandlerTestP, DisallowServiceWorker) {
+TEST_F(ServiceWorkerControlleeRequestHandlerTest, DisallowServiceWorker) {
   ServiceWorkerTestContentBrowserClient test_browser_client;
   ContentBrowserClient* old_browser_client =
       SetBrowserClientForTesting(&test_browser_client);
@@ -207,7 +203,7 @@ TEST_P(ServiceWorkerControlleeRequestHandlerTestP, DisallowServiceWorker) {
   SetBrowserClientForTesting(old_browser_client);
 }
 
-TEST_P(ServiceWorkerControlleeRequestHandlerTestP, ActivateWaitingVersion) {
+TEST_F(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
   // Store a registration that is installed but not activated yet.
   version_->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
@@ -242,7 +238,7 @@ TEST_P(ServiceWorkerControlleeRequestHandlerTestP, ActivateWaitingVersion) {
 }
 
 // Test that an installing registration is associated with a provider host.
-TEST_P(ServiceWorkerControlleeRequestHandlerTestP, InstallingRegistration) {
+TEST_F(ServiceWorkerControlleeRequestHandlerTest, InstallingRegistration) {
   // Create an installing registration.
   version_->SetStatus(ServiceWorkerVersion::INSTALLING);
   version_->set_fetch_handler_existence(
@@ -268,7 +264,7 @@ TEST_P(ServiceWorkerControlleeRequestHandlerTestP, InstallingRegistration) {
 }
 
 // Test to not regress crbug/414118.
-TEST_P(ServiceWorkerControlleeRequestHandlerTestP, DeletedProviderHost) {
+TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedProviderHost) {
   // Store a registration so the call to FindRegistrationForDocument will read
   // from the database.
   version_->set_fetch_handler_existence(
@@ -304,7 +300,7 @@ TEST_P(ServiceWorkerControlleeRequestHandlerTestP, DeletedProviderHost) {
 // Tests the scenario where a controllee request handler was created
 // for a subresource request, but before MaybeCreateJob() is run, the
 // controller/active version becomes null.
-TEST_P(ServiceWorkerControlleeRequestHandlerTestP, LostActiveVersion) {
+TEST_F(ServiceWorkerControlleeRequestHandlerTest, LostActiveVersion) {
   // Store an activated worker.
   version_->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
@@ -343,7 +339,7 @@ TEST_P(ServiceWorkerControlleeRequestHandlerTestP, LostActiveVersion) {
       sub_job->response_type_);
 }
 
-TEST_P(ServiceWorkerControlleeRequestHandlerTestP, FallbackWithNoFetchHandler) {
+TEST_F(ServiceWorkerControlleeRequestHandlerTest, FallbackWithNoFetchHandler) {
   version_->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST);
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
@@ -392,9 +388,5 @@ TEST_P(ServiceWorkerControlleeRequestHandlerTestP, FallbackWithNoFetchHandler) {
   EXPECT_FALSE(sub_cors_job->ShouldFallbackToNetwork());
   EXPECT_FALSE(sub_cors_job->ShouldForwardToServiceWorker());
 }
-
-INSTANTIATE_TEST_CASE_P(ServiceWorkerControlleeRequestHandlerTest,
-                        ServiceWorkerControlleeRequestHandlerTestP,
-                        testing::Bool());
 
 }  // namespace content

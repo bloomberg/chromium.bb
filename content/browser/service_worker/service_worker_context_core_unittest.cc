@@ -34,10 +34,7 @@ class ServiceWorkerContextCoreTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextCoreTest);
 };
 
-class ServiceWorkerContextCoreTestP
-    : public MojoServiceWorkerTestP<ServiceWorkerContextCoreTest> {};
-
-TEST_P(ServiceWorkerContextCoreTestP, FailureInfo) {
+TEST_F(ServiceWorkerContextCoreTest, FailureInfo) {
   const int64_t kVersionId = 55;  // dummy value
 
   EXPECT_EQ(0, context()->GetVersionFailureCount(kVersionId));
@@ -61,9 +58,5 @@ TEST_P(ServiceWorkerContextCoreTestP, FailureInfo) {
   EXPECT_EQ(0, context()->GetVersionFailureCount(kVersionId));
   EXPECT_FALSE(base::ContainsKey(context()->failure_counts_, kVersionId));
 }
-
-INSTANTIATE_TEST_CASE_P(ServiceWorkerContextCoreTest,
-                        ServiceWorkerContextCoreTestP,
-                        testing::Bool());
 
 }  // namespace content

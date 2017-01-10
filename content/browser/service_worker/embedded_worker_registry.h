@@ -112,7 +112,7 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   friend class MojoEmbeddedWorkerInstanceTest;
   friend class EmbeddedWorkerInstance;
   friend class EmbeddedWorkerInstanceTest;
-  FRIEND_TEST_ALL_PREFIXES(EmbeddedWorkerInstanceTestP,
+  FRIEND_TEST_ALL_PREFIXES(EmbeddedWorkerInstanceTest,
                            RemoveWorkerInSharedProcess);
 
   using WorkerInstanceMap = std::map<int, EmbeddedWorkerInstance*>;
