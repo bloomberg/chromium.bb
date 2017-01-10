@@ -10,8 +10,10 @@
 #include <sys/mman.h>
 #include <xf86drm.h>
 #include <xf86drmMode.h>
+#include <algorithm>
 #include <utility>
 
+#include "base/containers/small_map.h"
 #include "ui/display/util/edid_parser.h"
 
 #if !defined(DRM_FORMAT_YV12)
@@ -36,16 +38,21 @@ bool IsCrtcInUse(uint32_t crtc,
   return false;
 }
 
+// Return a CRTC compatible with |connector| and not already used in |displays|.
+// If there are multiple compatible CRTCs, the one that supports the majority of
+// planes will be returned.
 uint32_t GetCrtc(int fd,
                  drmModeConnector* connector,
                  drmModeRes* resources,
                  const ScopedVector<HardwareDisplayControllerInfo>& displays) {
-  // If the connector already has an encoder try to re-use.
-  if (connector->encoder_id) {
-    ScopedDrmEncoderPtr encoder(drmModeGetEncoder(fd, connector->encoder_id));
-    if (encoder && encoder->crtc_id && !IsCrtcInUse(encoder->crtc_id, displays))
-      return encoder->crtc_id;
-  }
+  ScopedDrmPlaneResPtr plane_resources(drmModeGetPlaneResources(fd));
+  std::vector<ScopedDrmPlanePtr> planes;
+  for (uint32_t i = 0; i < plane_resources->count_planes; i++)
+    planes.emplace_back(drmModeGetPlane(fd, plane_resources->planes[i]));
+
+  DCHECK_GE(32, resources->count_crtcs);
+  uint32_t best_crtc = 0;
+  int best_crtc_planes = 0;
 
   // Try to find an encoder for the connector.
   for (int i = 0; i < connector->count_encoders; ++i) {
@@ -55,15 +62,29 @@ uint32_t GetCrtc(int fd,
 
     for (int j = 0; j < resources->count_crtcs; ++j) {
       // Check if the encoder is compatible with this CRTC
-      if (!(encoder->possible_crtcs & (1 << j)) ||
+      int crtc_bit = 1 << j;
+      if (!(encoder->possible_crtcs & crtc_bit) ||
           IsCrtcInUse(resources->crtcs[j], displays))
         continue;
 
-      return resources->crtcs[j];
+      int supported_planes = std::count_if(
+          planes.begin(), planes.end(), [crtc_bit](const ScopedDrmPlanePtr& p) {
+            return p->possible_crtcs & crtc_bit;
+          });
+
+      uint32_t assigned_crtc = 0;
+      if (connector->encoder_id == encoder->encoder_id)
+        assigned_crtc = encoder->crtc_id;
+      if (supported_planes > best_crtc_planes ||
+          (supported_planes == best_crtc_planes &&
+           assigned_crtc == resources->crtcs[j])) {
+        best_crtc_planes = supported_planes;
+        best_crtc = resources->crtcs[j];
+      }
     }
   }
 
-  return 0;
+  return best_crtc;
 }
 
 // Computes the refresh rate for the specific mode. If we have enough
@@ -206,21 +227,54 @@ ScopedVector<HardwareDisplayControllerInfo> GetAvailableDisplayControllerInfos(
   DCHECK(resources) << "Failed to get DRM resources";
   ScopedVector<HardwareDisplayControllerInfo> displays;
 
+  std::vector<ScopedDrmConnectorPtr> available_connectors;
+  std::vector<ScopedDrmConnectorPtr::element_type*> connectors;
   for (int i = 0; i < resources->count_connectors; ++i) {
     ScopedDrmConnectorPtr connector(
         drmModeGetConnector(fd, resources->connectors[i]));
+    connectors.push_back(connector.get());
 
-    if (!connector || connector->connection != DRM_MODE_CONNECTED ||
-        connector->count_modes == 0)
-      continue;
+    if (connector && connector->connection == DRM_MODE_CONNECTED &&
+        connector->count_modes != 0)
+      available_connectors.push_back(std::move(connector));
+  }
 
-    uint32_t crtc_id = GetCrtc(fd, connector.get(), resources.get(), displays);
+  base::SmallMap<std::map<ScopedDrmConnectorPtr::element_type*, int>>
+      connector_crtcs;
+  for (auto& c : available_connectors) {
+    uint32_t possible_crtcs = 0;
+    for (int i = 0; i < c->count_encoders; ++i) {
+      ScopedDrmEncoderPtr encoder(drmModeGetEncoder(fd, c->encoders[i]));
+      if (!encoder)
+        continue;
+      possible_crtcs |= encoder->possible_crtcs;
+    }
+    connector_crtcs[c.get()] = possible_crtcs;
+  }
+  // Make sure to start assigning a crtc to the connector that supports the
+  // fewest crtcs first.
+  std::stable_sort(available_connectors.begin(), available_connectors.end(),
+                   [&connector_crtcs](const ScopedDrmConnectorPtr& c1,
+                                      const ScopedDrmConnectorPtr& c2) {
+                     // When c1 supports a proper subset of the crtcs of c2, we
+                     // should process c1 first (return true).
+                     int c1_crtcs = connector_crtcs[c1.get()];
+                     int c2_crtcs = connector_crtcs[c2.get()];
+                     return (c1_crtcs & c2_crtcs) == c1_crtcs &&
+                            c1_crtcs != c2_crtcs;
+                   });
+
+  for (auto& c : available_connectors) {
+    uint32_t crtc_id = GetCrtc(fd, c.get(), resources.get(), displays);
     if (!crtc_id)
       continue;
 
     ScopedDrmCrtcPtr crtc(drmModeGetCrtc(fd, crtc_id));
-    displays.push_back(new HardwareDisplayControllerInfo(std::move(connector),
-                                                         std::move(crtc), i));
+    size_t index = std::find(connectors.begin(), connectors.end(), c.get()) -
+                   connectors.begin();
+    DCHECK_LT(index, connectors.size());
+    displays.push_back(new HardwareDisplayControllerInfo(
+        std::move(c), std::move(crtc), index));
   }
 
   return displays;
