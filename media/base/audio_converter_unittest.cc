@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string_number_conversions.h"
+#include "media/base/audio_timestamp_helper.h"
 #include "media/base/fake_audio_render_callback.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,7 +60,7 @@ class AudioConverterTest
     // Allocate one callback for generating expected results.
     double step = kSineCycles / static_cast<double>(
         output_parameters_.frames_per_buffer());
-    expected_callback_.reset(new FakeAudioRenderCallback(step));
+    expected_callback_.reset(new FakeAudioRenderCallback(step, kSampleRate));
   }
 
   // Creates |count| input callbacks to be used for conversion testing.
@@ -71,7 +72,7 @@ class AudioConverterTest
         static_cast<double>(output_parameters_.frames_per_buffer()));
 
     for (int i = 0; i < count; ++i) {
-      fake_callbacks_.push_back(new FakeAudioRenderCallback(step));
+      fake_callbacks_.push_back(new FakeAudioRenderCallback(step, kSampleRate));
       converter_->AddInput(fake_callbacks_[i]);
     }
   }
@@ -212,7 +213,7 @@ TEST(AudioConverterTest, AudioDelayAndDiscreteChannelCount) {
   output_parameters.set_channels_for_discrete(5);
 
   AudioConverter converter(input_parameters, output_parameters, false);
-  FakeAudioRenderCallback callback(0.2);
+  FakeAudioRenderCallback callback(0.2, kSampleRate);
   std::unique_ptr<AudioBus> audio_bus = AudioBus::Create(output_parameters);
   converter.AddInput(&callback);
   converter.Convert(audio_bus.get());
@@ -229,8 +230,9 @@ TEST(AudioConverterTest, AudioDelayAndDiscreteChannelCount) {
   // first two callbacks, 512 for the last two callbacks). See
   // SincResampler.ChunkSize().
   int kExpectedDelay = 992;
-
-  EXPECT_EQ(kExpectedDelay, callback.last_frames_delayed());
+  auto expected_delay =
+      AudioTimestampHelper::FramesToTime(kExpectedDelay, kSampleRate);
+  EXPECT_EQ(expected_delay, callback.last_delay());
   EXPECT_EQ(input_parameters.channels(), callback.last_channel_count());
 }
 

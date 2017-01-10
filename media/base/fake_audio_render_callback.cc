@@ -12,12 +12,13 @@
 
 namespace media {
 
-FakeAudioRenderCallback::FakeAudioRenderCallback(double step)
+FakeAudioRenderCallback::FakeAudioRenderCallback(double step, int sample_rate)
     : half_fill_(false),
       step_(step),
-      last_frames_delayed_(-1),
+      last_delay_(base::TimeDelta::Max()),
       last_channel_count_(-1),
-      volume_(1) {
+      volume_(1),
+      sample_rate_(sample_rate) {
   reset();
 }
 
@@ -27,24 +28,23 @@ int FakeAudioRenderCallback::Render(base::TimeDelta delay,
                                     base::TimeTicks delay_timestamp,
                                     int prior_frames_skipped,
                                     AudioBus* audio_bus) {
-  const int kSampleRate = 48000;
-  auto frames_delayed = AudioTimestampHelper::TimeToFrames(delay, kSampleRate);
-  return RenderInternal(audio_bus, frames_delayed, volume_);
+  return RenderInternal(audio_bus, delay, volume_);
 }
 
 double FakeAudioRenderCallback::ProvideInput(AudioBus* audio_bus,
                                              uint32_t frames_delayed) {
   // Volume should only be applied by the caller to ProvideInput, so don't bake
   // it into the rendered audio.
-  RenderInternal(audio_bus, frames_delayed, 1.0);
+  auto delay = AudioTimestampHelper::FramesToTime(frames_delayed, sample_rate_);
+  RenderInternal(audio_bus, delay, 1.0);
   return volume_;
 }
 
 int FakeAudioRenderCallback::RenderInternal(AudioBus* audio_bus,
-                                            uint32_t frames_delayed,
+                                            base::TimeDelta delay,
                                             double volume) {
-  DCHECK_LE(frames_delayed, static_cast<uint32_t>(INT_MAX));
-  last_frames_delayed_ = static_cast<int>(frames_delayed);
+  DCHECK_LE(delay, base::TimeDelta::Max());
+  last_delay_ = delay;
   last_channel_count_ = audio_bus->channels();
 
   int number_of_frames = audio_bus->frames();

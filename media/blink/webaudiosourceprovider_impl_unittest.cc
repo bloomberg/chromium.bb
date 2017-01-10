@@ -23,6 +23,7 @@ namespace media {
 
 namespace {
 const float kTestVolume = 0.25;
+const int kSampleRate = 48000;
 
 class WebAudioSourceProviderImplUnderTest : public WebAudioSourceProviderImpl {
  public:
@@ -64,10 +65,10 @@ class WebAudioSourceProviderImplTest
   WebAudioSourceProviderImplTest()
       : params_(AudioParameters::AUDIO_PCM_LINEAR,
                 CHANNEL_LAYOUT_STEREO,
-                48000,
+                kSampleRate,
                 16,
                 64),
-        fake_callback_(0.1),
+        fake_callback_(0.1, kSampleRate),
         mock_sink_(CreateWaspMockSink(GetParam())),
         wasp_impl_(new WebAudioSourceProviderImplUnderTest(mock_sink_)),
         expected_sink_(GetParam() == WaspSinkStatus::WASP_SINK_OK
@@ -259,7 +260,7 @@ TEST_P(WebAudioSourceProviderImplTest, ProvideInput) {
   bus2->Zero();
   wasp_impl_->provideInput(audio_data, params_.frames_per_buffer());
   ASSERT_TRUE(CompareBusses(bus1.get(), bus2.get()));
-  ASSERT_EQ(fake_callback_.last_frames_delayed(), -1);
+  ASSERT_EQ(fake_callback_.last_delay(), base::TimeDelta::Max());
 
   wasp_impl_->Start();
 
@@ -267,7 +268,7 @@ TEST_P(WebAudioSourceProviderImplTest, ProvideInput) {
   bus1->channel(0)[0] = 1;
   wasp_impl_->provideInput(audio_data, params_.frames_per_buffer());
   ASSERT_TRUE(CompareBusses(bus1.get(), bus2.get()));
-  ASSERT_EQ(fake_callback_.last_frames_delayed(), -1);
+  ASSERT_EQ(fake_callback_.last_delay(), base::TimeDelta::Max());
 
   wasp_impl_->Play();
 

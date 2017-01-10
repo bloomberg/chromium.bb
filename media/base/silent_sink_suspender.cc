@@ -53,8 +53,15 @@ int SilentSinkSuspender::Render(base::TimeDelta delay,
   // the audio data for a future transition out of silence.
   if (!dest) {
     DCHECK(is_using_fake_sink_);
-    DCHECK_EQ(delay, base::TimeDelta());
     DCHECK_EQ(prior_frames_skipped, 0);
+    // |delay_timestamp| contains the value cached at
+    // |latest_output_delay_timestamp_|
+    // so we simulate the real sink output, promoting |delay_timestamp| with
+    // |elapsedTime|.
+    DCHECK_EQ(delay_timestamp, latest_output_delay_timestamp_);
+    base::TimeDelta elapsedTime =
+        base::TimeTicks::Now() - fake_sink_transition_time_;
+    delay_timestamp += elapsedTime;
 
     // If we have no buffers or a transition is pending, one or more extra
     // Render() calls have occurred in before TransitionSinks() can run, so we
@@ -90,6 +97,9 @@ int SilentSinkSuspender::Render(base::TimeDelta delay,
       first_silence_time_ = now;
     if (now - first_silence_time_ > silence_timeout_) {
       is_transition_pending_ = true;
+      latest_output_delay_ = delay;
+      latest_output_delay_timestamp_ = delay_timestamp;
+      fake_sink_transition_time_ = now;
       task_runner_->PostTask(
           FROM_HERE, base::Bind(sink_transition_callback_.callback(), true));
     }
@@ -124,8 +134,8 @@ void SilentSinkSuspender::TransitionSinks(bool use_fake_sink) {
     }
     fake_sink_.Start(
         base::Bind(base::IgnoreResult(&SilentSinkSuspender::Render),
-                   base::Unretained(this), base::TimeDelta(),
-                   base::TimeTicks::Now(), 0, nullptr));
+                   base::Unretained(this), latest_output_delay_,
+                   latest_output_delay_timestamp_, 0, nullptr));
   } else {
     fake_sink_.Stop();
 

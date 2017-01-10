@@ -103,6 +103,14 @@ class MEDIA_EXPORT SilentSinkSuspender
   // on Android to save battery consumption.
   base::CancelableCallback<void(bool)> sink_transition_callback_;
 
+  // Audio output delay at the moment when transition to |fake_sink_| starts.
+  base::TimeDelta latest_output_delay_;
+  // Audio output delay timestamp at the moment when transition to |fake_sink_|
+  // starts.
+  base::TimeTicks latest_output_delay_timestamp_;
+  // Time when transition to |fake_sink_| starts.
+  base::TimeTicks fake_sink_transition_time_;
+
   DISALLOW_COPY_AND_ASSIGN(SilentSinkSuspender);
 };
 

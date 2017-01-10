@@ -25,7 +25,7 @@ class SilentSinkSuspenderTest : public testing::Test {
                 8,
                 128),
         mock_sink_(new testing::StrictMock<MockAudioRendererSink>()),
-        fake_callback_(0.1),
+        fake_callback_(0.1, params_.sample_rate()),
         temp_bus_(AudioBus::Create(params_)),
         // Set a negative timeout so any silence will suspend immediately.
         suspender_(&fake_callback_,
@@ -49,9 +49,12 @@ class SilentSinkSuspenderTest : public testing::Test {
 
 TEST_F(SilentSinkSuspenderTest, BasicPassthough) {
   temp_bus_->Zero();
+  auto delay = base::TimeDelta::FromMilliseconds(20);
   EXPECT_EQ(temp_bus_->frames(),
-            suspender_.Render(base::TimeDelta(), base::TimeTicks(), 0,
-                              temp_bus_.get()));
+            suspender_.Render(delay, base::TimeTicks(), 0, temp_bus_.get()));
+
+  // Delay should remain.
+  EXPECT_EQ(delay, fake_callback_.last_delay());
   EXPECT_FALSE(temp_bus_->AreFramesZero());
 }
 

@@ -43,7 +43,7 @@ class AudioRendererMixerInputTest : public testing::Test,
         kBitsPerChannel, kBufferSize);
 
     CreateMixerInput(kDefaultDeviceId);
-    fake_callback_.reset(new FakeAudioRenderCallback(0));
+    fake_callback_.reset(new FakeAudioRenderCallback(0, kSampleRate));
     audio_bus_ = AudioBus::Create(audio_parameters_);
   }
 

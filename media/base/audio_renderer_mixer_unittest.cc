@@ -88,7 +88,8 @@ class AudioRendererMixerTest
     // Allocate one callback for generating expected results.
     double step = kSineCycles / static_cast<double>(
         output_parameters_.frames_per_buffer());
-    expected_callback_.reset(new FakeAudioRenderCallback(step));
+    expected_callback_.reset(
+        new FakeAudioRenderCallback(step, output_parameters_.sample_rate()));
   }
 
   AudioRendererMixer* GetMixer(int owner_id,
@@ -121,7 +122,8 @@ class AudioRendererMixerTest
            static_cast<double>(output_parameters_.frames_per_buffer()));
 
       for (int j = 0; j < inputs_per_sample_rate; ++j, ++input) {
-        fake_callbacks_.push_back(new FakeAudioRenderCallback(step));
+        fake_callbacks_.push_back(new FakeAudioRenderCallback(
+            step, output_parameters_.sample_rate()));
         mixer_inputs_.push_back(CreateMixerInput());
         mixer_inputs_[input]->Initialize(input_parameters_[i],
                                          fake_callbacks_[input]);

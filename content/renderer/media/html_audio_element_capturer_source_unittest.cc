@@ -65,7 +65,7 @@ class MockMediaStreamAudioSink final : public MediaStreamAudioSink {
 class HTMLAudioElementCapturerSourceTest : public testing::Test {
  public:
   HTMLAudioElementCapturerSourceTest()
-      : fake_callback_(0.1),
+      : fake_callback_(0.1, kAudioTrackSampleRate),
         audio_source_(new media::WebAudioSourceProviderImpl(
             new media::NullAudioSink(base::ThreadTaskRunnerHandle::Get()),
             new media::MediaLog())) {}

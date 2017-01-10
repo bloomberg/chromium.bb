@@ -301,13 +301,13 @@ TEST_F(AudioRendererMixerManagerTest, CreateInput) {
 
   // Create two mixer inputs and ensure this doesn't instantiate any mixers yet.
   EXPECT_EQ(0, mixer_count());
-  media::FakeAudioRenderCallback callback(0);
+  media::FakeAudioRenderCallback callback(0, kSampleRate);
   scoped_refptr<media::AudioRendererMixerInput> input(
       manager_->CreateInput(kRenderFrameId, 0, kDefaultDeviceId,
                             kSecurityOrigin, AudioLatency::LATENCY_PLAYBACK));
   input->Initialize(params, &callback);
   EXPECT_EQ(0, mixer_count());
-  media::FakeAudioRenderCallback another_callback(1);
+  media::FakeAudioRenderCallback another_callback(1, kSampleRate);
   scoped_refptr<media::AudioRendererMixerInput> another_input(
       manager_->CreateInput(kAnotherRenderFrameId, 0, kDefaultDeviceId,
                             kSecurityOrigin, AudioLatency::LATENCY_PLAYBACK));
@@ -351,7 +351,7 @@ TEST_F(AudioRendererMixerManagerTest, CreateInputWithSessionId) {
   media::AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR,
                                 kChannelLayout, kSampleRate, kBitsPerChannel,
                                 kBufferSize);
-  media::FakeAudioRenderCallback callback(0);
+  media::FakeAudioRenderCallback callback(0, kSampleRate);
   EXPECT_EQ(0, mixer_count());
 
   // Empty device id, zero session id;
