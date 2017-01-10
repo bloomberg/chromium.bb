@@ -2873,10 +2873,8 @@ TEST_P(PaintPropertyTreeBuilderTest, MainThreadScrollReasonsWithoutScrolling) {
       "<div class='forceScroll'></div>");
   Element* overflow = document().getElementById("overflow");
   EXPECT_TRUE(frameScroll()->hasBackgroundAttachmentFixedDescendants());
-  EXPECT_TRUE(overflow->layoutObject()
-                  ->paintProperties()
-                  ->scroll()
-                  ->hasBackgroundAttachmentFixedDescendants());
+  // No scroll node is needed.
+  EXPECT_EQ(overflow->layoutObject()->paintProperties()->scroll(), nullptr);
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumn) {

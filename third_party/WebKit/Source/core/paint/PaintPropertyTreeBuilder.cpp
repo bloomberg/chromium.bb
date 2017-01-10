@@ -85,7 +85,8 @@ bool updateScrollTranslation(
   return true;
 }
 
-// True if a new property was created, false if an existing one was updated.
+// True if a new property was created or a main thread scrolling reason changed
+// (which can affect descendants), false if an existing one was updated.
 bool updateScroll(FrameView& frameView,
                   PassRefPtr<const ScrollPaintPropertyNode> parent,
                   PassRefPtr<const TransformPaintPropertyNode> scrollOffset,
@@ -96,16 +97,28 @@ bool updateScroll(FrameView& frameView,
                   MainThreadScrollingReasons mainThreadScrollingReasons) {
   DCHECK(!RuntimeEnabledFeatures::rootLayerScrollingEnabled());
   if (auto* existingScroll = frameView.scroll()) {
+    auto existingReasons = existingScroll->mainThreadScrollingReasons();
     existingScroll->update(std::move(parent), std::move(scrollOffset), clip,
                            bounds, userScrollableHorizontal,
                            userScrollableVertical, mainThreadScrollingReasons);
-    return false;
+    return existingReasons != mainThreadScrollingReasons;
   }
   frameView.setScroll(ScrollPaintPropertyNode::create(
       std::move(parent), std::move(scrollOffset), clip, bounds,
       userScrollableHorizontal, userScrollableVertical,
       mainThreadScrollingReasons));
   return true;
+}
+
+MainThreadScrollingReasons mainThreadScrollingReasons(
+    const FrameView& frameView,
+    MainThreadScrollingReasons ancestorReasons) {
+  auto reasons = ancestorReasons;
+  if (!frameView.frame().settings()->getThreadedScrollingEnabled())
+    reasons |= MainThreadScrollingReason::kThreadedScrollingDisabled;
+  if (frameView.hasBackgroundAttachmentFixedObjects())
+    reasons |= MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
+  return reasons;
 }
 
 void PaintPropertyTreeBuilder::updateProperties(
@@ -156,13 +169,10 @@ void PaintPropertyTreeBuilder::updateProperties(
       bool userScrollableVertical =
           frameView.userInputScrollable(VerticalScrollbar);
 
-      MainThreadScrollingReasons reasons = 0;
-      if (!frameView.frame().settings()->getThreadedScrollingEnabled())
-        reasons |= MainThreadScrollingReason::kThreadedScrollingDisabled;
-      if (frameView.hasBackgroundAttachmentFixedObjects()) {
-        reasons |=
-            MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
-      }
+      auto ancestorReasons =
+          context.current.scroll->mainThreadScrollingReasons();
+      auto reasons = mainThreadScrollingReasons(frameView, ancestorReasons);
+
       context.forceSubtreeUpdate |= updateScroll(
           frameView, context.current.scroll, frameView.scrollTranslation(),
           scrollClip, scrollBounds, userScrollableHorizontal,
@@ -734,19 +744,16 @@ void PaintPropertyTreeBuilder::updateSvgLocalToBorderBoxTransform(
   context.current.paintOffset = LayoutPoint();
 }
 
-MainThreadScrollingReasons mainScrollingReasons(const LayoutObject& object) {
-  MainThreadScrollingReasons reasons = 0;
-  if (!object.document().settings()->getThreadedScrollingEnabled())
-    reasons |= MainThreadScrollingReason::kThreadedScrollingDisabled;
-  // Checking for descendants in the layout tree has two downsides:
-  // 1) There can be more descendants in layout order than in paint order (e.g.,
-  //    fixed position objects).
-  // 2) Iterating overall all background attachment fixed objects for every
-  //    scroll node can be slow, though there will be none in the common case.
-  const FrameView& frameView = *object.frameView();
-  if (frameView.hasBackgroundAttachmentFixedDescendants(object))
-    reasons |= MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
-  return reasons;
+MainThreadScrollingReasons mainThreadScrollingReasons(
+    const LayoutObject& object,
+    MainThreadScrollingReasons ancestorReasons) {
+  // The current main thread scrolling reasons implementation only changes
+  // reasons at frame boundaries, so we can early-out when not at a LayoutView.
+  // TODO(pdr): Need to find a solution to the style-related main thread
+  // scrolling reasons such as opacity and transform which violate this.
+  if (!object.isLayoutView())
+    return ancestorReasons;
+  return mainThreadScrollingReasons(*object.frameView(), ancestorReasons);
 }
 
 void PaintPropertyTreeBuilder::updateScrollAndScrollTranslation(
@@ -755,11 +762,15 @@ void PaintPropertyTreeBuilder::updateScrollAndScrollTranslation(
   if (object.needsPaintPropertyUpdate() || context.forceSubtreeUpdate) {
     bool needsScrollProperties = false;
     if (object.hasOverflowClip()) {
-      auto mainThreadScrollingReasons = mainScrollingReasons(object);
+      auto ancestorReasons =
+          context.current.scroll->mainThreadScrollingReasons();
+      auto reasons = mainThreadScrollingReasons(object, ancestorReasons);
+      bool scrollNodeNeededForMainThreadReasons = ancestorReasons != reasons;
+
       const LayoutBox& box = toLayoutBox(object);
       const auto* scrollableArea = box.getScrollableArea();
       IntSize scrollOffset = box.scrolledContentOffset();
-      if (mainThreadScrollingReasons || !scrollOffset.isZero() ||
+      if (scrollNodeNeededForMainThreadReasons || !scrollOffset.isZero() ||
           scrollableArea->scrollsOverflow()) {
         needsScrollProperties = true;
         auto& properties =
@@ -777,10 +788,18 @@ void PaintPropertyTreeBuilder::updateScrollAndScrollTranslation(
             scrollableArea->userInputScrollable(HorizontalScrollbar);
         bool userScrollableVertical =
             scrollableArea->userInputScrollable(VerticalScrollbar);
+
+        // Main thread scrolling reasons depend on their ancestor's reasons
+        // so ensure the entire subtree is updated when reasons change.
+        if (auto* existingScrollNode = properties.scroll()) {
+          if (existingScrollNode->mainThreadScrollingReasons() != reasons)
+            context.forceSubtreeUpdate = true;
+        }
+
         context.forceSubtreeUpdate |= properties.updateScroll(
             context.current.scroll, properties.scrollTranslation(), scrollClip,
             scrollBounds, userScrollableHorizontal, userScrollableVertical,
-            mainThreadScrollingReasons);
+            reasons);
       }
     }
 

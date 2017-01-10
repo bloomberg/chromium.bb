@@ -90,10 +90,10 @@ TEST_P(PaintPropertyTreeUpdateTest,
                   ->paintProperties()
                   ->scroll()
                   ->hasBackgroundAttachmentFixedDescendants());
-  EXPECT_FALSE(overflowB->layoutObject()
-                   ->paintProperties()
-                   ->scroll()
-                   ->hasBackgroundAttachmentFixedDescendants());
+  EXPECT_TRUE(overflowB->layoutObject()
+                  ->paintProperties()
+                  ->scroll()
+                  ->hasBackgroundAttachmentFixedDescendants());
 
   // Removing a main thread scrolling reason should update the entire tree.
   overflowB->removeAttribute("class");
@@ -116,10 +116,82 @@ TEST_P(PaintPropertyTreeUpdateTest,
                   ->paintProperties()
                   ->scroll()
                   ->hasBackgroundAttachmentFixedDescendants());
-  EXPECT_FALSE(overflowB->layoutObject()
-                   ->paintProperties()
-                   ->scroll()
-                   ->hasBackgroundAttachmentFixedDescendants());
+  EXPECT_TRUE(overflowB->layoutObject()
+                  ->paintProperties()
+                  ->scroll()
+                  ->hasBackgroundAttachmentFixedDescendants());
+}
+
+TEST_P(PaintPropertyTreeUpdateTest, ParentFrameMainThreadScrollReasons) {
+  setBodyInnerHTML(
+      "<style>"
+      "  body { margin: 0; }"
+      "  .fixedBackground {"
+      "    background-image: url('foo');"
+      "    background-attachment: fixed;"
+      "  }"
+      "</style>"
+      "<iframe></iframe>"
+      "<div id='fixedBackground' class='fixedBackground'></div>"
+      "<div id='forceScroll' style='height: 8888px;'></div>");
+  setChildFrameHTML(
+      "<style>body { margin: 0; }</style>"
+      "<div id='forceScroll' style='height: 8888px;'></div>");
+  document().view()->updateAllLifecyclePhases();
+
+  FrameView* parent = document().view();
+  EXPECT_TRUE(frameScroll(parent)->hasBackgroundAttachmentFixedDescendants());
+  FrameView* child = childDocument().view();
+  EXPECT_TRUE(frameScroll(child)->hasBackgroundAttachmentFixedDescendants());
+
+  // Removing a main thread scrolling reason should update the entire tree.
+  auto* fixedBackground = document().getElementById("fixedBackground");
+  fixedBackground->removeAttribute(HTMLNames::classAttr);
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_FALSE(frameScroll(parent)->hasBackgroundAttachmentFixedDescendants());
+  EXPECT_FALSE(frameScroll(child)->hasBackgroundAttachmentFixedDescendants());
+
+  // Adding a main thread scrolling reason should update the entire tree.
+  fixedBackground->setAttribute(HTMLNames::classAttr, "fixedBackground");
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_TRUE(frameScroll(parent)->hasBackgroundAttachmentFixedDescendants());
+  EXPECT_TRUE(frameScroll(child)->hasBackgroundAttachmentFixedDescendants());
+}
+
+TEST_P(PaintPropertyTreeUpdateTest, ChildFrameMainThreadScrollReasons) {
+  setBodyInnerHTML(
+      "<style>body { margin: 0; }</style>"
+      "<iframe></iframe>"
+      "<div id='forceScroll' style='height: 8888px;'></div>");
+  setChildFrameHTML(
+      "<style>"
+      "  body { margin: 0; }"
+      "  .fixedBackground {"
+      "    background-image: url('foo');"
+      "    background-attachment: fixed;"
+      "  }"
+      "</style>"
+      "<div id='fixedBackground' class='fixedBackground'></div>"
+      "<div id='forceScroll' style='height: 8888px;'></div>");
+  document().view()->updateAllLifecyclePhases();
+
+  FrameView* parent = document().view();
+  EXPECT_FALSE(frameScroll(parent)->hasBackgroundAttachmentFixedDescendants());
+  FrameView* child = childDocument().view();
+  EXPECT_TRUE(frameScroll(child)->hasBackgroundAttachmentFixedDescendants());
+
+  // Removing a main thread scrolling reason should update the entire tree.
+  auto* fixedBackground = childDocument().getElementById("fixedBackground");
+  fixedBackground->removeAttribute(HTMLNames::classAttr);
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_FALSE(frameScroll(parent)->hasBackgroundAttachmentFixedDescendants());
+  EXPECT_FALSE(frameScroll(child)->hasBackgroundAttachmentFixedDescendants());
+
+  // Adding a main thread scrolling reason should update the entire tree.
+  fixedBackground->setAttribute(HTMLNames::classAttr, "fixedBackground");
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_FALSE(frameScroll(parent)->hasBackgroundAttachmentFixedDescendants());
+  EXPECT_TRUE(frameScroll(child)->hasBackgroundAttachmentFixedDescendants());
 }
 
 TEST_P(PaintPropertyTreeUpdateTest,
