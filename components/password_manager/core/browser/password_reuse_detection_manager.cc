@@ -6,6 +6,7 @@
 
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 
 namespace password_manager {
@@ -44,7 +45,9 @@ void PasswordReuseDetectionManager::OnKeyPressed(const base::string16& text) {
 
 void PasswordReuseDetectionManager::OnReuseFound(
     const base::string16& password,
-    const std::string& saved_domain) {
+    const std::string& saved_domain,
+    int saved_passwords,
+    int number_matches) {
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
@@ -52,6 +55,8 @@ void PasswordReuseDetectionManager::OnReuseFound(
     logger->LogString(BrowserSavePasswordProgressLogger::STRING_REUSE_FOUND,
                       saved_domain);
   }
+  metrics_util::LogPasswordReuse(password.size(), saved_passwords,
+                                 number_matches);
 }
 
 }  // namespace password_manager

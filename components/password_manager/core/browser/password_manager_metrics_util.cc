@@ -123,6 +123,17 @@ void LogCredentialManagerGetResult(CredentialManagerGetResult result,
   }
 }
 
+void LogPasswordReuse(int password_length,
+                      int saved_passwords,
+                      int number_matches) {
+  UMA_HISTOGRAM_COUNTS_100("PasswordManager.PasswordReuse.PasswordLength",
+                           password_length);
+  UMA_HISTOGRAM_COUNTS_1000("PasswordManager.PasswordReuse.TotalPasswords",
+                            saved_passwords);
+  UMA_HISTOGRAM_COUNTS_1000("PasswordManager.PasswordReuse.NumberOfMatches",
+                            number_matches);
+}
+
 }  // namespace metrics_util
 
 }  // namespace password_manager

@@ -55,7 +55,7 @@ TEST(PasswordReuseDetectorTest, TypingPasswordOnDifferentSite) {
   reuse_detector.OnGetPasswordStoreResults(GetSavedForms());
   MockPasswordReuseDetectorConsumer mockConsumer;
 
-  EXPECT_CALL(mockConsumer, OnReuseFound(_, _)).Times(0);
+  EXPECT_CALL(mockConsumer, OnReuseFound(_, _, _, _)).Times(0);
   reuse_detector.CheckReuse(ASCIIToUTF16("123passwo"), "https://evil.com",
                             &mockConsumer);
   reuse_detector.CheckReuse(ASCIIToUTF16("123passwor"), "https://evil.com",
@@ -63,7 +63,7 @@ TEST(PasswordReuseDetectorTest, TypingPasswordOnDifferentSite) {
   testing::Mock::VerifyAndClearExpectations(&mockConsumer);
 
   EXPECT_CALL(mockConsumer,
-              OnReuseFound(ASCIIToUTF16("password"), "google.com"));
+              OnReuseFound(ASCIIToUTF16("password"), "google.com", 3, 1));
   reuse_detector.CheckReuse(ASCIIToUTF16("123password"), "https://evil.com",
                             &mockConsumer);
 }
@@ -73,7 +73,7 @@ TEST(PasswordReuseDetectorTest, PSLMatchNoReuseEvent) {
   reuse_detector.OnGetPasswordStoreResults(GetSavedForms());
   MockPasswordReuseDetectorConsumer mockConsumer;
 
-  EXPECT_CALL(mockConsumer, OnReuseFound(_, _)).Times(0);
+  EXPECT_CALL(mockConsumer, OnReuseFound(_, _, _, _)).Times(0);
   reuse_detector.CheckReuse(ASCIIToUTF16("123456789"), "https://m.facebook.com",
                             &mockConsumer);
 }
@@ -86,7 +86,7 @@ TEST(PasswordReuseDetectorTest, NoPSLMatchReuseEvent) {
   // a.appspot.com and b.appspot.com are not PSL matches. So reuse event should
   // be raised.
   EXPECT_CALL(mockConsumer,
-              OnReuseFound(ASCIIToUTF16("abcdefghi"), "a.appspot.com"));
+              OnReuseFound(ASCIIToUTF16("abcdefghi"), "a.appspot.com", 3, 1));
   reuse_detector.CheckReuse(ASCIIToUTF16("abcdefghi"), "https://b.appspot.com",
                             &mockConsumer);
 }
@@ -96,7 +96,7 @@ TEST(PasswordReuseDetectorTest, TooShortPasswordNoReuseEvent) {
   reuse_detector.OnGetPasswordStoreResults(GetSavedForms());
   MockPasswordReuseDetectorConsumer mockConsumer;
 
-  EXPECT_CALL(mockConsumer, OnReuseFound(_, _)).Times(0);
+  EXPECT_CALL(mockConsumer, OnReuseFound(_, _, _, _)).Times(0);
   reuse_detector.CheckReuse(ASCIIToUTF16("short"), "evil.com", &mockConsumer);
 }
 
@@ -105,7 +105,7 @@ TEST(PasswordReuseDetectorTest, PasswordNotInputSuffixNoReuseEvent) {
   reuse_detector.OnGetPasswordStoreResults(GetSavedForms());
   MockPasswordReuseDetectorConsumer mockConsumer;
 
-  EXPECT_CALL(mockConsumer, OnReuseFound(_, _)).Times(0);
+  EXPECT_CALL(mockConsumer, OnReuseFound(_, _, _, _)).Times(0);
   reuse_detector.CheckReuse(ASCIIToUTF16("password123"), "https://evil.com",
                             &mockConsumer);
   reuse_detector.CheckReuse(ASCIIToUTF16("123password456"), "https://evil.com",
@@ -122,10 +122,10 @@ TEST(PasswordReuseDetectorTest, OnLoginsChanged) {
     MockPasswordReuseDetectorConsumer mockConsumer;
 
     if (type == PasswordStoreChange::REMOVE) {
-      EXPECT_CALL(mockConsumer, OnReuseFound(_, _)).Times(0);
+      EXPECT_CALL(mockConsumer, OnReuseFound(_, _, _, _)).Times(0);
     } else {
       EXPECT_CALL(mockConsumer,
-                  OnReuseFound(ASCIIToUTF16("password"), "google.com"));
+                  OnReuseFound(ASCIIToUTF16("password"), "google.com", 3, 1));
     }
     reuse_detector.CheckReuse(ASCIIToUTF16("123password"), "https://evil.com",
                               &mockConsumer);

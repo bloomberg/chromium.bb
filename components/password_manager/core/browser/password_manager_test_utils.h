@@ -88,7 +88,8 @@ class MockPasswordReuseDetectorConsumer : public PasswordReuseDetectorConsumer {
   MockPasswordReuseDetectorConsumer();
   ~MockPasswordReuseDetectorConsumer() override;
 
-  MOCK_METHOD2(OnReuseFound, void(const base::string16&, const std::string&));
+  MOCK_METHOD4(OnReuseFound,
+               void(const base::string16&, const std::string&, int, int));
 };
 
 }  // namespace password_manager

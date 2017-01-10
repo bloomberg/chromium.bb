@@ -56,7 +56,8 @@ void PasswordReuseDetector::CheckReuse(
     if (domains.find(registry_controlled_domain) == domains.end()) {
       // Return only one domain.
       const std::string& saved_domain = *domains.begin();
-      consumer->OnReuseFound(input_suffix, saved_domain);
+      consumer->OnReuseFound(input_suffix, saved_domain, saved_passwords_,
+                             domains.size());
       return;
     }
   }
@@ -68,7 +69,11 @@ void PasswordReuseDetector::AddPassword(const autofill::PasswordForm& form) {
     return;
   GURL signon_realm(form.signon_realm);
   const std::string domain = GetRegistryControlledDomain(signon_realm);
-  passwords_[password].insert(domain);
+  std::set<std::string>& domains = passwords_[password];
+  if (domains.find(domain) == domains.end()) {
+    ++saved_passwords_;
+    domains.insert(domain);
+  }
 }
 
 }  // namespace password_manager

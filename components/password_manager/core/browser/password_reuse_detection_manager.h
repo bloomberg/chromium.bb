@@ -27,7 +27,9 @@ class PasswordReuseDetectionManager : public PasswordReuseDetectorConsumer {
 
   // PasswordReuseDetectorConsumer
   void OnReuseFound(const base::string16& password,
-                    const std::string& saved_domain) override;
+                    const std::string& saved_domain,
+                    int saved_passwords,
+                    int number_matches) override;
 
  private:
   PasswordManagerClient* client_;

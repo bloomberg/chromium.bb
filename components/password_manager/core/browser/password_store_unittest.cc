@@ -877,9 +877,9 @@ TEST_F(PasswordStoreTest, CheckPasswordReuse) {
     if (test_data.reused_password) {
       EXPECT_CALL(mock_consumer,
                   OnReuseFound(base::WideToUTF16(test_data.reused_password),
-                               std::string(test_data.reuse_domain)));
+                               std::string(test_data.reuse_domain), 2, 1));
     } else {
-      EXPECT_CALL(mock_consumer, OnReuseFound(_, _)).Times(0);
+      EXPECT_CALL(mock_consumer, OnReuseFound(_, _, _, _)).Times(0);
     }
 
     store->CheckReuse(base::WideToUTF16(test_data.input), test_data.domain,

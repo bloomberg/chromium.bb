@@ -224,6 +224,11 @@ void LogAccountChooserUsability(AccountChooserUsabilityMetric usability);
 void LogCredentialManagerGetResult(CredentialManagerGetResult result,
                                    CredentialManagerGetMediation status);
 
+// Log the password reuse.
+void LogPasswordReuse(int password_length,
+                      int saved_passwords,
+                      int number_matches);
+
 }  // namespace metrics_util
 
 }  // namespace password_manager

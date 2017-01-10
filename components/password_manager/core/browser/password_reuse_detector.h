@@ -56,6 +56,10 @@ class PasswordReuseDetector : public PasswordStoreConsumer {
   // saved.
   std::map<base::string16, std::set<std::string>> passwords_;
 
+  // Number of passwords in |passwords_|, each password is calculated the number
+  // of times how many different sites it's saved on.
+  int saved_passwords_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(PasswordReuseDetector);
 };
 
