@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "ipc/ipc_listener.h"
 #include "third_party/WebKit/public/web/WebSharedWorkerConnector.h"
-#include "url/gurl.h"
 
 namespace IPC {
 class MessageRouter;
@@ -39,13 +38,6 @@ class WebSharedWorkerProxy : public blink::WebSharedWorkerConnector,
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  // Sends a message to the worker thread (forwarded via the RenderViewHost).
-  // If WorkerStarted() has not yet been called, message is queued.
-  bool Send(std::unique_ptr<IPC::Message> message);
-
-  // Sends any messages currently in the queue.
-  void SendQueuedMessages();
-
   void OnWorkerCreated();
   void OnWorkerScriptLoadFailed();
   void OnWorkerConnected();
@@ -58,11 +50,8 @@ class WebSharedWorkerProxy : public blink::WebSharedWorkerConnector,
 
   IPC::MessageRouter* const router_;
 
-  // Stores messages that were sent before the StartWorkerContext message.
-  std::vector<std::unique_ptr<IPC::Message>> queued_messages_;
-
+  int message_port_id_;
   ConnectListener* connect_listener_;
-  bool created_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSharedWorkerProxy);
 };
