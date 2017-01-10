@@ -36,11 +36,6 @@ void ChromeBinariesOperations::AddKeyFiles(
   key_files->push_back(base::FilePath(installer::kChromeDll));
 }
 
-void ChromeBinariesOperations::AddComDllList(
-    const std::set<base::string16>& options,
-    std::vector<base::FilePath>* com_dll_list) const {
-}
-
 void ChromeBinariesOperations::AppendProductFlags(
     const std::set<base::string16>& options,
     base::CommandLine* cmd_line) const {

@@ -12,9 +12,6 @@ namespace switches {
 // Currently this is only required when used in combination with kMultiInstall.
 const char kChrome[] = "chrome";
 
-// Install Chrome Frame.
-const char kChromeFrame[] = "chrome-frame";
-
 // Run the installer for Chrome SxS.
 const char kChromeSxS[] = "chrome-sxs";
 
@@ -209,15 +206,9 @@ const wchar_t kActiveSetupExe[] = L"chrmstp.exe";
 const wchar_t kChromeDll[] = L"chrome.dll";
 const wchar_t kChromeChildDll[] = L"chrome_child.dll";
 const wchar_t kChromeExe[] = L"chrome.exe";
-const wchar_t kChromeFrameDll[] = L"npchrome_frame.dll";
-const wchar_t kChromeFrameHelperDll[] = L"chrome_frame_helper.dll";
-const wchar_t kChromeFrameHelperExe[] = L"chrome_frame_helper.exe";
-const wchar_t kChromeFrameHelperWndClass[] = L"ChromeFrameHelperWindowClass";
-const wchar_t kChromeLauncherExe[] = L"chrome_launcher.exe";
 const wchar_t kChromeNewExe[] = L"new_chrome.exe";
 const wchar_t kChromeOldExe[] = L"old_chrome.exe";
 const wchar_t kCmdOnOsUpgrade[] = L"on-os-upgrade";
-const wchar_t kCmdQuickEnableCf[] = L"quick-enable-cf";
 const wchar_t kEULASentinelFile[] = L"EULA Accepted";
 const wchar_t kGoogleChromeInstallSubDir1[] = L"Google";
 const wchar_t kGoogleChromeInstallSubDir2[] = L"Chrome";

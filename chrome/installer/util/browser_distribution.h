@@ -27,7 +27,6 @@ class BrowserDistribution {
  public:
   enum Type {
     CHROME_BROWSER,
-    CHROME_FRAME,
     CHROME_BINARIES,
     NUM_TYPES
   };

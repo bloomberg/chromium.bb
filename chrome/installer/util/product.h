@@ -60,10 +60,6 @@ class Product {
     return distribution_->GetType() == BrowserDistribution::CHROME_BROWSER;
   }
 
-  bool is_chrome_frame() const {
-    return distribution_->GetType() == BrowserDistribution::CHROME_FRAME;
-  }
-
   bool is_chrome_binaries() const {
     return distribution_->GetType() == BrowserDistribution::CHROME_BINARIES;
   }
@@ -104,9 +100,6 @@ class Product {
 
   // See ProductOperations::AddKeyFiles.
   void AddKeyFiles(std::vector<base::FilePath>* key_files) const;
-
-  // See ProductOperations::AddComDllList.
-  void AddComDllList(std::vector<base::FilePath>* com_dll_list) const;
 
   // See ProductOperations::AppendProductFlags.
   void AppendProductFlags(base::CommandLine* command_line) const;

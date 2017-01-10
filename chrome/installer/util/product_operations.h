@@ -52,12 +52,6 @@ class ProductOperations {
   virtual void AddKeyFiles(const std::set<base::string16>& options,
                            std::vector<base::FilePath>* key_files) const = 0;
 
-  // Adds to |com_dll_list| the list of COM DLLs that are to be registered
-  // and/or unregistered. The list may be empty.
-  virtual void AddComDllList(
-      const std::set<base::string16>& options,
-      std::vector<base::FilePath>* com_dll_list) const = 0;
-
   // Given a command line, appends the set of product-specific flags.  These are
   // required for product-specific uninstall commands, but are of use for any
   // invocation of setup.exe for the product.

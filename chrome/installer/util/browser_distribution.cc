@@ -21,7 +21,6 @@
 #include "chrome/common/chrome_icon_resources_win.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/installer/util/app_registration_data.h"
-#include "chrome/installer/util/chrome_frame_distribution.h"
 #include "chrome/installer/util/chromium_binaries_distribution.h"
 #include "chrome/installer/util/google_chrome_binaries_distribution.h"
 #include "chrome/installer/util/google_chrome_distribution.h"
@@ -44,7 +43,6 @@ const wchar_t kCommandExecuteImplUuid[] =
 
 // The BrowserDistribution objects are never freed.
 BrowserDistribution* g_browser_distribution = NULL;
-BrowserDistribution* g_chrome_frame_distribution = NULL;
 BrowserDistribution* g_binaries_distribution = NULL;
 
 BrowserDistribution::Type GetCurrentDistributionType() {
@@ -102,11 +100,6 @@ BrowserDistribution* BrowserDistribution::GetSpecificDistribution(
       dist = GetOrCreateBrowserDistribution<BrowserDistribution>(
           &g_browser_distribution);
 #endif
-      break;
-
-    case CHROME_FRAME:
-      dist = GetOrCreateBrowserDistribution<ChromeFrameDistribution>(
-          &g_chrome_frame_distribution);
       break;
 
     default:

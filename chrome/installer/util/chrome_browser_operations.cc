@@ -50,11 +50,6 @@ void ChromeBrowserOperations::AddKeyFiles(
   key_files->push_back(base::FilePath(installer::kChromeDll));
 }
 
-void ChromeBrowserOperations::AddComDllList(
-    const std::set<base::string16>& options,
-    std::vector<base::FilePath>* com_dll_list) const {
-}
-
 void ChromeBrowserOperations::AppendProductFlags(
     const std::set<base::string16>& options,
     base::CommandLine* cmd_line) const {

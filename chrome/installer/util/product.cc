@@ -4,7 +4,7 @@
 
 #include "chrome/installer/util/product.h"
 
-#include <algorithm>
+#include <string>
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -13,9 +13,7 @@
 #include "chrome/installer/util/chrome_binaries_operations.h"
 #include "chrome/installer/util/chrome_browser_operations.h"
 #include "chrome/installer/util/chrome_browser_sxs_operations.h"
-#include "chrome/installer/util/chrome_frame_operations.h"
 #include "chrome/installer/util/google_update_constants.h"
-#include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
@@ -33,9 +31,6 @@ Product::Product(BrowserDistribution* distribution)
       operations_.reset(InstallUtil::IsChromeSxSProcess() ?
           new ChromeBrowserSxSOperations() :
           new ChromeBrowserOperations());
-      break;
-    case BrowserDistribution::CHROME_FRAME:
-      operations_.reset(new ChromeFrameOperations());
       break;
     case BrowserDistribution::CHROME_BINARIES:
       operations_.reset(new ChromeBinariesOperations());
@@ -133,10 +128,6 @@ bool Product::ShouldCreateUninstallEntry() const {
 
 void Product::AddKeyFiles(std::vector<base::FilePath>* key_files) const {
   operations_->AddKeyFiles(options_, key_files);
-}
-
-void Product::AddComDllList(std::vector<base::FilePath>* com_dll_list) const {
-  operations_->AddComDllList(options_, com_dll_list);
 }
 
 void Product::AppendProductFlags(base::CommandLine* command_line) const {

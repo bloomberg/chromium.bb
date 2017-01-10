@@ -25,9 +25,6 @@ class ChromeBrowserOperations : public ProductOperations {
   void AddKeyFiles(const std::set<base::string16>& options,
                    std::vector<base::FilePath>* key_files) const override;
 
-  void AddComDllList(const std::set<base::string16>& options,
-                     std::vector<base::FilePath>* com_dll_list) const override;
-
   void AppendProductFlags(const std::set<base::string16>& options,
                           base::CommandLine* cmd_line) const override;
 

@@ -145,7 +145,6 @@ enum InstallerStage {
 namespace switches {
 
 extern const char kChrome[];
-extern const char kChromeFrame[];
 extern const char kChromeSxS[];
 extern const char kConfigureUserSettings[];
 extern const char kCriticalUpdateVersion[];
@@ -204,15 +203,9 @@ extern const wchar_t kActiveSetupExe[];
 extern const wchar_t kChromeDll[];
 extern const wchar_t kChromeChildDll[];
 extern const wchar_t kChromeExe[];
-extern const wchar_t kChromeFrameDll[];
-extern const wchar_t kChromeFrameHelperDll[];
-extern const wchar_t kChromeFrameHelperExe[];
-extern const wchar_t kChromeFrameHelperWndClass[];
-extern const wchar_t kChromeLauncherExe[];
 extern const wchar_t kChromeNewExe[];
 extern const wchar_t kChromeOldExe[];
 extern const wchar_t kCmdOnOsUpgrade[];
-extern const wchar_t kCmdQuickEnableCf[];
 extern const wchar_t kEULASentinelFile[];
 extern const wchar_t kGoogleChromeInstallSubDir1[];
 extern const wchar_t kGoogleChromeInstallSubDir2[];
