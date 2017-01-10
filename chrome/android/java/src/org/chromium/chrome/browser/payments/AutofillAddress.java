@@ -8,6 +8,7 @@ import android.content.Context;
 import android.support.annotation.IntDef;
 import android.telephony.PhoneNumberUtils;
 import android.text.TextUtils;
+import android.util.Pair;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
@@ -158,10 +159,31 @@ public class AutofillAddress extends PaymentOption {
      * status.
      */
     private void checkAndUpdateAddressCompleteness() {
+        Pair<Integer, Integer> messageResIds =
+                getEditMessageAndTitleResIds(checkAddressCompletionStatus(mProfile));
+
+        mEditMessage = messageResIds.first.intValue() == 0
+                ? null
+                : mContext.getString(messageResIds.first);
+        mEditTitle = messageResIds.second.intValue() == 0
+                ? null
+                : mContext.getString(messageResIds.second);
+        mIsComplete = mEditMessage == null;
+    }
+
+    /**
+     * Gets the edit message and title resource Ids for the completion status.
+     *
+     * @param  completionStatus The completion status.
+     * @return The resource Ids. The first is the edit message resource Id. The second is the
+     *         correspond editor title resource Id.
+     */
+    public static Pair<Integer, Integer> getEditMessageAndTitleResIds(
+            @CompletionStatus int completionStatus) {
         int editMessageResId = 0;
         int editTitleResId = 0;
 
-        switch (checkAddressCompletionStatus(mProfile)) {
+        switch (completionStatus) {
             case COMPLETE:
                 editTitleResId = R.string.autofill_edit_profile;
                 break;
@@ -185,9 +207,7 @@ public class AutofillAddress extends PaymentOption {
                 assert false : "Invalid completion status";
         }
 
-        mEditMessage = editMessageResId == 0 ? null : mContext.getString(editMessageResId);
-        mEditTitle = editTitleResId == 0 ? null : mContext.getString(editTitleResId);
-        mIsComplete = mEditMessage == null;
+        return new Pair<Integer, Integer>(editMessageResId, editTitleResId);
     }
 
     /**

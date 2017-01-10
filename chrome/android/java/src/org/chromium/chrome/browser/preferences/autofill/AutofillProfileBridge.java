@@ -45,8 +45,8 @@ public class AutofillProfileBridge {
     /**
      * A convenience class for displaying keyed values in a dropdown.
      */
-    public static class DropdownKeyValue extends Pair<String, String> {
-        public DropdownKeyValue(String key, String value) {
+    public static class DropdownKeyValue extends Pair<String, CharSequence> {
+        public DropdownKeyValue(String key, CharSequence value) {
             super(key, value);
         }
 
@@ -56,13 +56,13 @@ public class AutofillProfileBridge {
         }
 
         /** @return The human-readable localized display value. */
-        public String getValue() {
+        public CharSequence getValue() {
             return super.second;
         }
 
         @Override
         public String toString() {
-            return super.second;
+            return super.second.toString();
         }
     }
 

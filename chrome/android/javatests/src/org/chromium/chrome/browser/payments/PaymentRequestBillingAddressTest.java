@@ -23,7 +23,7 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
      * The index at which the option to add a billing address is located in the billing address
      * selection dropdown.
      */
-    private static final int ADD_BILLING_ADDRESS = 3;
+    private static final int ADD_BILLING_ADDRESS = 7;
 
     /** The index of the billing address dropdown in the card editor. */
     private static final int BILLING_ADDRESS_DROPDOWN_INDEX = 2;
@@ -48,15 +48,42 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
         String profile3 = helper.setProfile(new AutofillProfile("", "https://example.com", true,
                 "Tom Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "", "US",
                 "310-310-6000", "jon.doe@gmail.com", "en-US"));
+
+        // Incomplete profile (invalid address).
+        String profile4 = helper.setProfile(new AutofillProfile("", "https://example.com", true,
+                "Bart Doe", "Google", "340 Main St", "CA", "", "", "90291", "", "US",
+                "310-310-6000", "jon.doe@gmail.com", "en-US"));
+
+        // Incomplete profile (missing phone number)
+        String profile5 = helper.setProfile(new AutofillProfile("", "https://example.com", true,
+                "Lisa Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "", "US", "",
+                "jon.doe@gmail.com", "en-US"));
+
+        // Incomplete profile (missing recipient).
+        String profile6 = helper.setProfile(new AutofillProfile("", "https://example.com", true, "",
+                "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "", "US", "310-310-6000",
+                "jon.doe@gmail.com", "en-US"));
+
+        // Incomplete profile (need more information).
+        String profile7 = helper.setProfile(new AutofillProfile("", "https://example.com", true,
+                "Maggie Doe", "Google", "340 Main St", "CA", "", "", "90291", "", "US", "",
+                "jon.doe@gmail.com", "en-US"));
+
         // This card has no billing address selected.
         helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jane Doe",
-                "4242424242424242", "1111", "12", "2050", "visa", R.drawable.pr_visa,
-                "" /* billingAddressId */, "" /* serverId */));
+                "4242424242424242", "1111", "12", "2050", "visa", R.drawable.pr_visa, profile5,
+                "" /* serverId */));
 
-        // Assign use stats so that profile2 has the highest frecency and profile3 has the lowest.
+        // Assign use stats so that incomplete profiles have the highest frecency, profile2 has the
+        // highest frecency and profile3 has the lowest among the complete profiles, and profile5
+        // has the highest frecency and profile4 has the lowest among the incomplete profiles.
         helper.setProfileUseStatsForTesting(profile1, 5, 5);
         helper.setProfileUseStatsForTesting(profile2, 10, 10);
         helper.setProfileUseStatsForTesting(profile3, 1, 1);
+        helper.setProfileUseStatsForTesting(profile4, 15, 15);
+        helper.setProfileUseStatsForTesting(profile5, 30, 30);
+        helper.setProfileUseStatsForTesting(profile6, 25, 25);
+        helper.setProfileUseStatsForTesting(profile7, 20, 20);
     }
 
     /** Verifies the format of the billing address suggestions when adding a new credit card. */
@@ -74,7 +101,7 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
         // The billing address suggestions should include only the name, address, city, state and
         // zip code of the profile.
         assertTrue(getSpinnerSelectionTextInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX)
-                           .equals("Rob Doe, 340 Main St, Los Angeles, CA 90291"));
+                .equals("Rob Doe, 340 Main St, Los Angeles, CA 90291"));
     }
 
     /**
@@ -89,9 +116,9 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
         clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
         clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
 
-        // There should only be 4 suggestions, the 3 saved addresses and the option to add a new
+        // There should only be 8 suggestions, the 7 saved addresses and the option to add a new
         // address.
-        assertEquals(4, getSpinnerItemCountInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX));
+        assertEquals(8, getSpinnerItemCountInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX));
     }
 
     /**
@@ -114,9 +141,9 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
         // Cancel the creation of a new billing address.
         clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToEdit);
 
-        // There should still only be 4 suggestions, the 3 saved addresses and the option to add a
+        // There should still only be 8 suggestions, the 7 saved addresses and the option to add a
         // new address.
-        assertEquals(4, getSpinnerItemCountInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX));
+        assertEquals(8, getSpinnerItemCountInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX));
     }
 
     /**
@@ -133,7 +160,7 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
 
         // Jon Doe is selected as the billing address.
         assertTrue(getSpinnerSelectionTextInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX)
-                           .equals("Jon Doe, 340 Main St, Los Angeles, CA 90291"));
+                .equals("Jon Doe, 340 Main St, Los Angeles, CA 90291"));
 
         // Select the "+ ADD ADDRESS" option for the billing address.
         setSpinnerSelectionsInCardEditorAndWait(
@@ -144,7 +171,7 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
 
         // Jon Doe is STILL selected as the billing address.
         assertTrue(getSpinnerSelectionTextInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX)
-                           .equals("Jon Doe, 340 Main St, Los Angeles, CA 90291"));
+                .equals("Jon Doe, 340 Main St, Los Angeles, CA 90291"));
     }
 
     /**
@@ -162,7 +189,7 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
 
         // Now in Card Editor to add a billing address. "Select" is selected in the dropdown.
         assertTrue(getSpinnerSelectionTextInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX)
-                           .equals("Select"));
+                .equals("Select"));
 
         // Select the "+ ADD ADDRESS" option for the billing address.
         setSpinnerSelectionsInCardEditorAndWait(
@@ -173,7 +200,7 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
 
         // "Select" is STILL selected as the billing address.
         assertTrue(getSpinnerSelectionTextInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX)
-                           .equals("Select"));
+                .equals("Select"));
     }
 
     /**
@@ -188,8 +215,8 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
         clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
         clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
 
-        // There should be 4 suggestions, the 3 saved addresses and the option to add a new address.
-        assertEquals(4, getSpinnerItemCountInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX));
+        // There should be 8 suggestions, the 7 saved addresses and the option to add a new address.
+        assertEquals(8, getSpinnerItemCountInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX));
 
         // The billing address suggestions should be ordered by frecency.
         assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
@@ -199,7 +226,7 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
         assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
                 2).equals("Tom Doe, 340 Main St, Los Angeles, CA 90291"));
         assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
-                3).equals("Add address"));
+                7).equals("Add address"));
     }
 
     /**
@@ -222,9 +249,9 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
                 "CA", "90291", "999-999-9999"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToEdit);
 
-        // There should be 5 suggestions, the 3 initial addresses, the newly added address and the
+        // There should be 9 suggestions, the 7 initial addresses, the newly added address and the
         // option to add a new address.
-        assertEquals(5, getSpinnerItemCountInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX));
+        assertEquals(9, getSpinnerItemCountInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX));
 
         // The fist suggestion should be the newly added address.
         assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
@@ -238,7 +265,7 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
         assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
                 3).equals("Tom Doe, 340 Main St, Los Angeles, CA 90291"));
         assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
-                4).equals("Add address"));
+                8).equals("Add address"));
     }
 
     /**
@@ -262,12 +289,82 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
         clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
         clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
 
-        // There should be 5 suggestions, the 3 initial addresses, the newly added address and the
+        // There should be 9 suggestions, the 7 initial addresses, the newly added address and the
         // option to add a new address.
-        assertEquals(5, getSpinnerItemCountInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX));
+        assertEquals(9, getSpinnerItemCountInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX));
 
         // The new address should be suggested first.
         assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
                 0).equals("Seb Doe, 340 Main St, Los Angeles, CA 90291"));
+    }
+
+    @MediumTest
+    @Feature({"Payments"})
+    public void testSelectIncompleteBillingAddress_EditComplete()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+        // Edit the second card.
+        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
+        clickOnPaymentMethodSuggestionOptionAndWait(1, mReadyForInput);
+
+        // Now "Select" is selected in the dropdown.
+        assertTrue(getSpinnerSelectionTextInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX)
+                .equals("Select"));
+
+        // The incomplete addresses in the dropdown contain edit required messages.
+        assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
+                3).endsWith("Phone number required"));
+        assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
+                4).endsWith("Recipient required"));
+        assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
+                5).endsWith("More information required"));
+        assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
+                6).endsWith("Invalid address"));
+
+        // Selects the fourth billing addresss that misses phone number brings up the address
+        // editor.
+        setSpinnerSelectionsInCardEditorAndWait(new int[] {DECEMBER, NEXT_YEAR, 3}, mReadyToEdit);
+        setTextInEditorAndWait(new String[] {"Lisa Doe", "Google", "340 Main St", "Los Angeles",
+                "CA", "90291", "999-999-9999"}, mEditorTextUpdate);
+        clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToEdit);
+
+        // The newly completed address must be selected and put at the top of the dropdown.
+        assertTrue(getSpinnerSelectionTextInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX)
+                .equals("Lisa Doe, 340 Main St, Los Angeles, CA 90291"));
+        assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
+                0).equals("Lisa Doe, 340 Main St, Los Angeles, CA 90291"));
+    }
+
+    @MediumTest
+    @Feature({"Payments"})
+    public void testSelectIncompleteBillingAddress_EditCancel()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+        // Edit the only complete card.
+        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
+        clickInPaymentMethodAndWait(R.id.payments_open_editor_pencil_button, mReadyToEdit);
+
+        // Jon Doe is selected as the billing address.
+        assertTrue(getSpinnerSelectionTextInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX)
+                .equals("Jon Doe, 340 Main St, Los Angeles, CA 90291"));
+
+        // The incomplete addresses in the dropdown contain edit required messages.
+        assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
+                3).endsWith("Phone number required"));
+        assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
+                4).endsWith("Recipient required"));
+        assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
+                5).endsWith("More information required"));
+        assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
+                6).endsWith("Invalid address"));
+
+        // Selects the fifth billing addresss that misses recipient name brings up the address
+        // editor.
+        setSpinnerSelectionsInCardEditorAndWait(new int[] {DECEMBER, NEXT_YEAR, 4}, mReadyToEdit);
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToEdit);
+
+        // The previous selected address should be selected after canceling out from edit.
+        assertTrue(getSpinnerSelectionTextInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX)
+                .equals("Jon Doe, 340 Main St, Los Angeles, CA 90291"));
     }
 }

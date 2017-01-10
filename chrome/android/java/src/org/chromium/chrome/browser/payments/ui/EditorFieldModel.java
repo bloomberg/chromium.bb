@@ -212,12 +212,8 @@ public class EditorFieldModel {
         assert dropdownKeyValues != null;
         EditorFieldModel result = new EditorFieldModel(INPUT_TYPE_HINT_DROPDOWN);
         result.mLabel = label;
-        result.mDropdownKeyValues = dropdownKeyValues;
         result.mHint = hint;
-        result.mDropdownKeys = new HashSet<>();
-        for (int i = 0; i < result.mDropdownKeyValues.size(); i++) {
-            result.mDropdownKeys.add(result.mDropdownKeyValues.get(i).getKey());
-        }
+        result.setDropdownKeyValues(dropdownKeyValues);
         return result;
     }
 
@@ -390,6 +386,11 @@ public class EditorFieldModel {
     public void setDropdownKeyValues(List<DropdownKeyValue> dropdownKeyValues) {
         assert mInputTypeHint == INPUT_TYPE_HINT_DROPDOWN;
         mDropdownKeyValues = dropdownKeyValues;
+        mDropdownKeys = new HashSet<>();
+        for (int i = 0; i < mDropdownKeyValues.size(); i++) {
+            mDropdownKeys.add(mDropdownKeyValues.get(i).getKey());
+        }
+        assert mDropdownKeyValues.size() == mDropdownKeys.size();
     }
 
     /** @return The human-readable label for this field. */

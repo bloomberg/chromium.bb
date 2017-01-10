@@ -65,6 +65,8 @@ public class AutofillPaymentApp implements PaymentApp {
                 billingAddress = null;
             }
 
+            if (billingAddress == null) card.setBillingAddressId(null);
+
             String methodName = null;
             if (basicCardSupportedNetworks != null
                     && basicCardSupportedNetworks.contains(card.getBasicCardPaymentType())) {
