@@ -69,7 +69,10 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
         FROM_HERE,
         base::Bind(&MediaRouterUIBrowserTest::ExecuteMediaRouterAction,
                    base::Unretained(this), app_menu_button));
+
+    base::RunLoop run_loop;
     app_menu_button->ShowMenu(false);
+    run_loop.RunUntilIdle();
 
     nav_observer.Wait();
     EXPECT_FALSE(app_menu_button->IsMenuShowing());
@@ -113,9 +116,8 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
   MediaRouterActionController* action_controller_ = nullptr;
 };
 
-// TODO(crbug.com/658005): Fails on multiple platforms.
 IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest,
-                       DISABLED_OpenDialogWithMediaRouterAction) {
+                       OpenDialogWithMediaRouterAction) {
   // We start off at about:blank page.
   // Make sure there is 1 tab and media router is enabled.
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
