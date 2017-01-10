@@ -623,7 +623,32 @@ bool GpuCommandBufferStub::Initialize(
   decoder_->set_engine(executor_.get());
 
   if (offscreen) {
-    surface_ = default_surface;
+    if (init_params.attribs.own_offscreen_surface) {
+      DVLOG(1) << __FUNCTION__ << "Hit the own_offscreen_surface path";
+      use_virtualized_gl_context_ = false;
+      // Currently, we can't separately control alpha channel for surfaces,
+      // it's generally enabled by default except for RGB565 and (on desktop)
+      // smaller-than-32bit formats.
+      //
+      // TODO(klausw): use init_params.attribs.alpha_size here if possible.
+      if (init_params.attribs.depth_size > 0) {
+        surface_format.SetDepthBits(init_params.attribs.depth_size);
+      }
+      if (init_params.attribs.samples > 0) {
+        surface_format.SetSamples(init_params.attribs.samples);
+      }
+      if (init_params.attribs.stencil_size > 0) {
+        surface_format.SetStencilBits(init_params.attribs.stencil_size);
+      }
+      surface_ = gl::init::CreateOffscreenGLSurfaceWithFormat(
+          gfx::Size(), surface_format);
+      if (!surface_) {
+        DLOG(ERROR) << "Failed to create surface.";
+        return false;
+      }
+    } else {
+      surface_ = default_surface;
+    }
   } else {
     surface_ = ImageTransportSurface::CreateNativeSurface(
         AsWeakPtr(), surface_handle_, surface_format);

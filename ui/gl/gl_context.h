@@ -37,6 +37,7 @@ struct GLContextAttribs {
   GpuPreference gpu_preference = PreferIntegratedGpu;
   bool bind_generates_resource = true;
   bool webgl_compatibility_context = false;
+  bool low_priority = false;
 };
 
 // Encapsulates an OpenGL context, hiding platform specific management.

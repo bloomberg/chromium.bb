@@ -134,6 +134,7 @@ bool g_egl_sync_control_supported = false;
 bool g_egl_window_fixed_size_supported = false;
 bool g_egl_surfaceless_context_supported = false;
 bool g_egl_surface_orientation_supported = false;
+bool g_egl_context_priority_supported = false;
 bool g_use_direct_composition = false;
 
 base::LazyInstance<ANGLEPlatformImpl> g_angle_platform_impl =
@@ -242,6 +243,7 @@ bool ValidateEglConfig(EGLDisplay display,
 EGLConfig ChooseConfig(GLSurfaceFormat format) {
   // Choose an EGL configuration.
   // On X this is only used for PBuffer surfaces.
+
   std::vector<EGLint> renderable_types;
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableES3GLContext)) {
@@ -252,6 +254,9 @@ EGLConfig ChooseConfig(GLSurfaceFormat format) {
   EGLint buffer_size = format.GetBufferSize();
   EGLint alpha_size = 8;
   bool want_rgb565 = buffer_size == 16;
+  EGLint depth_size = format.GetDepthBits();
+  EGLint stencil_size = format.GetStencilBits();
+  EGLint samples = format.GetSamples();
 
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
   // If we're using ANGLE_NULL, we may not have a display, in which case we
@@ -278,6 +283,12 @@ EGLConfig ChooseConfig(GLSurfaceFormat format) {
                                     8,
                                     EGL_RED_SIZE,
                                     8,
+                                    EGL_SAMPLES,
+                                    samples,
+                                    EGL_DEPTH_SIZE,
+                                    depth_size,
+                                    EGL_STENCIL_SIZE,
+                                    stencil_size,
                                     EGL_RENDERABLE_TYPE,
                                     renderable_type,
                                     EGL_SURFACE_TYPE,
@@ -292,6 +303,12 @@ EGLConfig ChooseConfig(GLSurfaceFormat format) {
                                    6,
                                    EGL_RED_SIZE,
                                    5,
+                                   EGL_SAMPLES,
+                                   samples,
+                                   EGL_DEPTH_SIZE,
+                                   depth_size,
+                                   EGL_STENCIL_SIZE,
+                                   stencil_size,
                                    EGL_RENDERABLE_TYPE,
                                    renderable_type,
                                    EGL_SURFACE_TYPE,
@@ -505,6 +522,21 @@ bool GLSurfaceEGL::InitializeOneOff(EGLNativeDisplayType native_display) {
       HasEGLExtension("EGL_ANGLE_window_fixed_size");
   g_egl_surface_orientation_supported =
       HasEGLExtension("EGL_ANGLE_surface_orientation");
+  // According to
+  // https://source.android.com/compatibility/android-cdd.html the
+  // EGL_IMG_context_priority extension is mandatory for Virtual
+  // Reality High Performance support, but it's not showing in the
+  // list of reported EGL extensions even though it's supported on
+  // Daydream ready devices. As a fallback, check if other related
+  // extensions that were added for VR support are present, and assume
+  // that this implies context priority is also supported.
+  // TODO(klausw): is there a better way to do this? Filed
+  // https://github.com/googlevr/gvr-android-sdk/issues/330 for
+  // followup.
+  g_egl_context_priority_supported =
+      HasEGLExtension("EGL_IMG_context_priority") || (
+          HasEGLExtension("EGL_ANDROID_front_buffer_auto_refresh") &&
+          HasEGLExtension("EGL_ANDROID_create_native_client_buffer"));
 
   // Need EGL_ANGLE_flexible_surface_compatibility to allow surfaces with and
   // without alpha to be bound to the same context.
@@ -564,6 +596,7 @@ void GLSurfaceEGL::ShutdownOneOff() {
   g_egl_sync_control_supported = false;
   g_egl_window_fixed_size_supported = false;
   g_egl_surface_orientation_supported = false;
+  g_egl_context_priority_supported = false;
   g_use_direct_composition = false;
   g_egl_surfaceless_context_supported = false;
 
@@ -606,6 +639,11 @@ bool GLSurfaceEGL::IsCreateContextWebGLCompatabilitySupported() {
 // static
 bool GLSurfaceEGL::IsEGLSurfacelessContextSupported() {
   return g_egl_surfaceless_context_supported;
+}
+
+// static
+bool GLSurfaceEGL::IsEGLContextPrioritySupported() {
+  return g_egl_context_priority_supported;
 }
 
 // static

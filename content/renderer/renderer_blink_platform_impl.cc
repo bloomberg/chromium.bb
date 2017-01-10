@@ -1020,17 +1020,28 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
   // This is an offscreen context, which doesn't use the default frame buffer,
   // so don't request any alpha, depth, stencil, antialiasing.
   gpu::gles2::ContextCreationAttribHelper attributes;
-  attributes.alpha_size = -1;
-  attributes.depth_size = 0;
-  attributes.stencil_size = 0;
-  attributes.samples = 0;
-  attributes.sample_buffers = 0;
+
+  if (web_attributes.supportOwnOffscreenSurface) {
+    attributes.own_offscreen_surface = true;
+    attributes.low_priority = true;
+    attributes.alpha_size = web_attributes.supportAlpha ? 8 : -1;
+    attributes.depth_size = web_attributes.supportDepth ? 24 : 0;
+    attributes.stencil_size = web_attributes.supportStencil ? 8 : 0;
+    attributes.samples = web_attributes.supportAntialias ? 4 : 0;
+    attributes.sample_buffers = 0;
+  } else {
+    attributes.depth_size = 0;
+    attributes.stencil_size = 0;
+    attributes.samples = 0;
+    attributes.sample_buffers = 0;
+  }
   attributes.bind_generates_resource = false;
   // Prefer discrete GPU for WebGL.
   attributes.gpu_preference = gl::PreferDiscreteGpu;
 
   attributes.fail_if_major_perf_caveat =
       web_attributes.failIfMajorPerformanceCaveat;
+
   DCHECK_GT(web_attributes.webGLVersion, 0u);
   DCHECK_LE(web_attributes.webGLVersion, 2u);
   if (web_attributes.webGLVersion == 2)

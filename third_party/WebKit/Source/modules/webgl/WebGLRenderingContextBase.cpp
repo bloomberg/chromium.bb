@@ -46,6 +46,7 @@
 #include "core/layout/LayoutBox.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/origin_trials/OriginTrials.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "modules/webgl/ANGLEInstancedArrays.h"
 #include "modules/webgl/EXTBlendMinMax.h"
@@ -623,6 +624,17 @@ WebGLRenderingContextBase::createContextProviderInternal(
 
   Platform::ContextAttributes contextAttributes =
       toPlatformContextAttributes(attributes, webGLVersion);
+
+  // If there's a possibility this context may be used with WebVR make sure it
+  // is created with an offscreen surface that can be swapped out for a
+  // VR-specific surface if needed. We can only check the origin trial
+  // if called with a scriptState, not for a canvas.
+  if (RuntimeEnabledFeatures::webVREnabled() ||
+      (scriptState &&
+       OriginTrials::webVREnabled(scriptState->getExecutionContext()))) {
+    contextAttributes.supportOwnOffscreenSurface = true;
+  }
+
   Platform::GraphicsInfo glInfo;
   std::unique_ptr<WebGraphicsContext3DProvider> contextProvider;
   const auto& url = canvas ? canvas->document().topDocument().url()

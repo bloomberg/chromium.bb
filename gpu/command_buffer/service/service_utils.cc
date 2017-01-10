@@ -20,6 +20,9 @@ gl::GLContextAttribs GenerateGLContextAttribs(
     attribs.webgl_compatibility_context =
         IsWebGLContextType(attribs_helper.context_type);
   }
+  if (attribs_helper.low_priority) {
+    attribs.low_priority = true;
+  }
   return attribs;
 }
 

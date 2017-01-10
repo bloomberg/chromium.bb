@@ -32,6 +32,12 @@ extern "C" {
 #define EGL_CONTEXT_WEBGL_COMPATIBILITY_ANGLE 0x3AAC
 #endif /* EGL_ANGLE_create_context_webgl_compatibility */
 
+#ifndef EGL_CONTEXT_PRIORITY_LEVEL_IMG
+#define EGL_CONTEXT_PRIORITY_LEVEL_IMG 0x3100
+#define EGL_CONTEXT_PRIORITY_LOW_IMG 0x3103
+#endif /* EGL_CONTEXT_PRIORITY_LEVEL */
+
+
 using ui::GetLastEGLErrorString;
 
 namespace gl {
@@ -103,6 +109,12 @@ bool GLContextEGL::Initialize(GLSurface* compatible_surface,
         attribs.webgl_compatibility_context ? EGL_TRUE : EGL_FALSE);
   } else {
     DCHECK(!attribs.webgl_compatibility_context);
+  }
+
+  if (GLSurfaceEGL::IsEGLContextPrioritySupported() && attribs.low_priority) {
+    DVLOG(1) << __FUNCTION__ << ": setting low priority";
+    context_attributes.push_back(EGL_CONTEXT_PRIORITY_LEVEL_IMG);
+    context_attributes.push_back(EGL_CONTEXT_PRIORITY_LOW_IMG);
   }
 
   // Append final EGL_NONE to signal the context attributes are finished

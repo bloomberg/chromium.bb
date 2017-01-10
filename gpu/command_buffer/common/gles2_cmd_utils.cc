@@ -1881,6 +1881,8 @@ ContextCreationAttribHelper::ContextCreationAttribHelper()
       fail_if_major_perf_caveat(false),
       lose_context_when_out_of_memory(false),
       should_use_native_gmb_for_backbuffer(false),
+      own_offscreen_surface(false),
+      low_priority(false),
       context_type(CONTEXT_TYPE_OPENGLES2) {}
 
 ContextCreationAttribHelper::ContextCreationAttribHelper(

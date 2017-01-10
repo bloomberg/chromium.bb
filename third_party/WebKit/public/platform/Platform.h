@@ -459,6 +459,12 @@ class BLINK_PLATFORM_EXPORT Platform {
   struct ContextAttributes {
     bool failIfMajorPerformanceCaveat = false;
     unsigned webGLVersion = 0;
+    bool supportOwnOffscreenSurface = false;
+    // The remaining values are only used if supportOwnOffscreenSurface is true.
+    bool supportAlpha = true;
+    bool supportDepth = false;
+    bool supportAntialias = true;
+    bool supportStencil = false;
   };
   struct GraphicsInfo {
     unsigned vendorId = 0;
