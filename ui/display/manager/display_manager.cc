@@ -40,6 +40,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/sys_info.h"
+#include "chromeos/system/devicemode.h"
 #endif
 
 #if defined(OS_WIN)
@@ -136,7 +137,7 @@ DisplayManager::DisplayManager(std::unique_ptr<Screen> screen)
       layout_store_(new DisplayLayoutStore),
       weak_ptr_factory_(this) {
 #if defined(OS_CHROMEOS)
-  configure_displays_ = base::SysInfo::IsRunningOnChromeOS();
+  configure_displays_ = chromeos::IsRunningAsSystemCompositor();
   change_display_upon_host_resize_ = !configure_displays_;
   unified_desktop_enabled_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableUnifiedDesktop);

@@ -100,6 +100,7 @@
 #include "chromeos/audio/audio_a11y_controller.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/system/devicemode.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
@@ -584,7 +585,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   display_configurator_->AddObserver(projecting_observer_.get());
   wm_shell_->AddShellObserver(projecting_observer_.get());
 
-  if (!display_initialized && base::SysInfo::IsRunningOnChromeOS()) {
+  if (!display_initialized && chromeos::IsRunningAsSystemCompositor()) {
     display_change_observer_ = base::MakeUnique<display::DisplayChangeObserver>(
         display_configurator_.get(), display_manager_.get());
 

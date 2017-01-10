@@ -1,5 +1,6 @@
 include_rules = [
   "+cc",
+  "+chromeos/system",
   "+components/discardable_memory/service",
   "+components/discardable_memory/public",
   "+ipc",

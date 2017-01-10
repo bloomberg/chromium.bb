@@ -13,7 +13,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/display/display_animator_chromeos.h"
-#include "base/sys_info.h"
+#include "chromeos/system/devicemode.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #endif
@@ -59,7 +59,7 @@ DisplayConfigurationController::DisplayConfigurationController(
       weak_ptr_factory_(this) {
   window_tree_host_manager_->AddObserver(this);
 #if defined(OS_CHROMEOS)
-  if (base::SysInfo::IsRunningOnChromeOS())
+  if (chromeos::IsRunningAsSystemCompositor())
     limiter_.reset(new DisplayChangeLimiter);
   display_animator_.reset(new DisplayAnimatorChromeOS());
 #endif

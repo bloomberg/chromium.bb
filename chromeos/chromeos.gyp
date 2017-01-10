@@ -390,6 +390,8 @@
       'settings/timezone_settings.h',
       'settings/timezone_settings_helper.cc',
       'settings/timezone_settings_helper.h',
+      'system/devicemode.cc',
+      'system/devicemode.h',
       'system/devicetype.cc',
       'system/devicetype.h',
 

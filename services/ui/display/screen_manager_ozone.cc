@@ -9,8 +9,8 @@
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
-#include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chromeos/system/devicemode.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/display/manager/chromeos/display_change_observer.h"
@@ -148,7 +148,7 @@ void ScreenManagerOzone::Init(ScreenManagerDelegate* delegate) {
 
   // The FakeDisplayController gives us a way to make the NativeDisplayDelegate
   // pretend something display related has happened.
-  if (!base::SysInfo::IsRunningOnChromeOS()) {
+  if (!chromeos::IsRunningAsSystemCompositor()) {
     fake_display_controller_ =
         native_display_delegate_->GetFakeDisplayController();
   }

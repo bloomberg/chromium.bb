@@ -418,6 +418,9 @@ const char kAttestationServer[] = "attestation-server";
 // of network packets from whitelisted sources.
 const char kWakeOnWifiPacket[] = "wake-on-wifi-packet";
 
+// Force system compositor mode when set.
+const char kForceSystemCompositorMode[] = "force-system-compositor-mode";
+
 bool WakeOnWifiEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableWakeOnWifi);
 }

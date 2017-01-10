@@ -16,8 +16,8 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_info.h"
 #include "base/third_party/icu/icu_utf.h"
+#include "chromeos/system/devicemode.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/composition_text.h"
@@ -66,7 +66,7 @@ void InputMethodChromeOS::DispatchKeyEvent(
   // For linux_chromeos, the ime keyboard cannot track the caps lock state by
   // itself, so need to call SetCapsLockEnabled() method to reflect the caps
   // lock state by the key event.
-  if (!base::SysInfo::IsRunningOnChromeOS()) {
+  if (!chromeos::IsRunningAsSystemCompositor()) {
     chromeos::input_method::InputMethodManager* manager =
         chromeos::input_method::InputMethodManager::Get();
     if (manager) {

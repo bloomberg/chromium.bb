@@ -21,7 +21,6 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/component_extension_ime_manager_impl.h"
@@ -33,6 +32,7 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/system/devicemode.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "third_party/icu/source/common/unicode/uloc.h"
@@ -861,7 +861,7 @@ InputMethodManagerImpl::InputMethodManagerImpl(
       is_ime_menu_activated_(false) {
   // TODO(mohsen): Revisit using FakeImeKeyboard with mash when InputController
   // work is ready. http://crbug.com/601981
-  if (base::SysInfo::IsRunningOnChromeOS() && !chrome::IsRunningInMash())
+  if (IsRunningAsSystemCompositor() && !chrome::IsRunningInMash())
     keyboard_.reset(ImeKeyboard::Create());
   else
     keyboard_.reset(new FakeImeKeyboard());

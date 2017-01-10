@@ -50,6 +50,10 @@ component("manager") {
 
   defines = [ "DISPLAY_MANAGER_IMPLEMENTATION" ]
 
+  if (is_chromeos) {
+    deps += [ "//chromeos" ]
+  }
+
   if (use_x11) {
     deps += [ "//ui/gfx/x" ]
   }

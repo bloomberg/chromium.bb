@@ -11,8 +11,8 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/sys_info.h"
 #include "base/time/time.h"
+#include "chromeos/system/devicemode.h"
 #include "ui/display/display.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/chromeos/apply_content_protection_task.h"
@@ -466,7 +466,7 @@ DisplayConfigurator::DisplayConfigurator()
     : state_controller_(NULL),
       mirroring_controller_(NULL),
       is_panel_fitting_enabled_(false),
-      configure_display_(base::SysInfo::IsRunningOnChromeOS()),
+      configure_display_(chromeos::IsRunningAsSystemCompositor()),
       current_display_state_(MULTIPLE_DISPLAY_STATE_INVALID),
       current_power_state_(chromeos::DISPLAY_POWER_ALL_ON),
       requested_display_state_(MULTIPLE_DISPLAY_STATE_INVALID),
