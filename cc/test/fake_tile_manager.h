@@ -23,8 +23,6 @@ class FakeTileManager : public TileManager {
   void AssignMemoryToTiles(
       const GlobalStateThatImpactsTilePriority& state);
 
-  void Release(Tile* tile) override;
-
   std::vector<Tile*> tiles_for_raster;
 
  private:

@@ -90,7 +90,7 @@ Tile* PictureLayerTiling::CreateTile(const Tile::CreateInfo& info) {
     return nullptr;
 
   all_tiles_done_ = false;
-  ScopedTilePtr tile = client_->CreateTile(info);
+  std::unique_ptr<Tile> tile = client_->CreateTile(info);
   Tile* raw_ptr = tile.get();
   tiles_[key] = std::move(tile);
   return raw_ptr;
@@ -306,7 +306,7 @@ void PictureLayerTiling::RemoveTilesInRegion(const Region& layer_invalidation,
     // TODO(danakj): This old_tile will not exist if we are committing to a
     // pending tree since there is no tile there to remove, which prevents
     // tiles from knowing the invalidation rect and content id. crbug.com/490847
-    ScopedTilePtr old_tile = TakeTileAt(key.index_x, key.index_y);
+    std::unique_ptr<Tile> old_tile = TakeTileAt(key.index_x, key.index_y);
     if (recreate_tiles && old_tile) {
       Tile::CreateInfo info = CreateInfoForTile(key.index_x, key.index_y);
       if (Tile* tile = CreateTile(info))
@@ -565,11 +565,11 @@ gfx::RectF PictureLayerTiling::CoverageIterator::texture_rect() const {
   return texture_rect;
 }
 
-ScopedTilePtr PictureLayerTiling::TakeTileAt(int i, int j) {
+std::unique_ptr<Tile> PictureLayerTiling::TakeTileAt(int i, int j) {
   TileMap::iterator found = tiles_.find(TileMapKey(i, j));
   if (found == tiles_.end())
     return nullptr;
-  ScopedTilePtr result = std::move(found->second);
+  std::unique_ptr<Tile> result = std::move(found->second);
   tiles_.erase(found);
   return result;
 }

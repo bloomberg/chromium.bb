@@ -93,7 +93,7 @@ class RasterTaskImpl : public TileTask {
                  bool is_gpu_rasterization)
       : TileTask(!is_gpu_rasterization, dependencies),
         tile_manager_(tile_manager),
-        tile_(tile),
+        tile_id_(tile->id()),
         resource_(resource),
         raster_source_(std::move(raster_source)),
         content_rect_(tile->content_rect()),
@@ -138,7 +138,7 @@ class RasterTaskImpl : public TileTask {
     // Here calling state().IsCanceled() is thread-safe, because this task is
     // already concluded as FINISHED or CANCELLED and no longer will be worked
     // upon by task graph runner.
-    tile_manager_->OnRasterTaskCompleted(std::move(raster_buffer_), tile_,
+    tile_manager_->OnRasterTaskCompleted(std::move(raster_buffer_), tile_id_,
                                          resource_, state().IsCanceled());
   }
 
@@ -155,7 +155,7 @@ class RasterTaskImpl : public TileTask {
   // origin thread. These are not thread-safe and should be accessed only in
   // origin thread. Ensure their access by checking CalledOnValidThread().
   TileManager* tile_manager_;
-  Tile* tile_;
+  Tile::Id tile_id_;
   Resource* resource_;
 
   // The following members should be used for running the task.
@@ -388,9 +388,6 @@ void TileManager::FinishTasksAndCleanUp() {
 
   tile_task_manager_->CheckForCompletedTasks();
 
-  FreeResourcesForReleasedTiles();
-  CleanUpReleasedTiles();
-
   tile_task_manager_ = nullptr;
   resource_pool_ = nullptr;
   more_tiles_need_prepare_check_notifier_.Cancel();
@@ -420,29 +417,8 @@ void TileManager::SetResources(ResourcePool* resource_pool,
 }
 
 void TileManager::Release(Tile* tile) {
-  released_tiles_.push_back(tile);
-}
-
-void TileManager::FreeResourcesForReleasedTiles() {
-  for (auto* tile : released_tiles_)
-    FreeResourcesForTile(tile);
-}
-
-void TileManager::CleanUpReleasedTiles() {
-  std::vector<Tile*> tiles_to_retain;
-  for (auto* tile : released_tiles_) {
-    if (tile->HasRasterTask()) {
-      tiles_to_retain.push_back(tile);
-      continue;
-    }
-
-    DCHECK(!tile->draw_info().has_resource());
-    DCHECK(tiles_.find(tile->id()) != tiles_.end());
-    tiles_.erase(tile->id());
-
-    delete tile;
-  }
-  released_tiles_.swap(tiles_to_retain);
+  FreeResourcesForTile(tile);
+  tiles_.erase(tile->id());
 }
 
 void TileManager::DidFinishRunningTileTasksRequiredForActivation() {
@@ -511,9 +487,6 @@ bool TileManager::PrepareTiles(
     tile_task_manager_->CheckForCompletedTasks();
     did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
   }
-
-  FreeResourcesForReleasedTiles();
-  CleanUpReleasedTiles();
 
   PrioritizedWorkToSchedule prioritized_work = AssignGpuMemoryToTiles();
 
@@ -1049,19 +1022,21 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
 
 void TileManager::OnRasterTaskCompleted(
     std::unique_ptr<RasterBuffer> raster_buffer,
-    Tile* tile,
+    Tile::Id tile_id,
     Resource* resource,
     bool was_canceled) {
-  DCHECK(tile);
-  DCHECK(tiles_.find(tile->id()) != tiles_.end());
   raster_buffer_provider_->ReleaseBufferForRaster(std::move(raster_buffer));
 
-  TileDrawInfo& draw_info = tile->draw_info();
-  DCHECK(tile->raster_task_.get());
-  tile->raster_task_ = nullptr;
+  auto found = tiles_.find(tile_id);
+  Tile* tile = nullptr;
+  if (found != tiles_.end()) {
+    tile = found->second;
+    DCHECK(tile->raster_task_.get());
+    tile->raster_task_ = nullptr;
+  }
 
   // Unref all the images.
-  auto images_it = scheduled_draw_images_.find(tile->id());
+  auto images_it = scheduled_draw_images_.find(tile_id);
   image_controller_.UnrefImages(images_it->second);
   scheduled_draw_images_.erase(images_it);
 
@@ -1071,27 +1046,32 @@ void TileManager::OnRasterTaskCompleted(
     return;
   }
 
-  resource_pool_->OnContentReplaced(resource->id(), tile->id());
+  resource_pool_->OnContentReplaced(resource->id(), tile_id);
   ++flush_stats_.completed_count;
 
+  if (!tile) {
+    resource_pool_->ReleaseResource(resource);
+    return;
+  }
+
+  TileDrawInfo& draw_info = tile->draw_info();
   draw_info.set_use_resource();
   draw_info.resource_ = resource;
   draw_info.contents_swizzled_ = DetermineResourceRequiresSwizzle(tile);
 
   DCHECK(draw_info.IsReadyToDraw());
   draw_info.set_was_ever_ready_to_draw();
-
   client_->NotifyTileStateChanged(tile);
 }
 
-ScopedTilePtr TileManager::CreateTile(const Tile::CreateInfo& info,
-                                      int layer_id,
-                                      int source_frame_number,
-                                      int flags) {
+std::unique_ptr<Tile> TileManager::CreateTile(const Tile::CreateInfo& info,
+                                              int layer_id,
+                                              int source_frame_number,
+                                              int flags) {
   // We need to have a tile task worker pool to do anything meaningful with
   // tiles.
   DCHECK(tile_task_manager_);
-  ScopedTilePtr tile(
+  std::unique_ptr<Tile> tile(
       new Tile(this, info, layer_id, source_frame_number, flags));
   DCHECK(tiles_.find(tile->id()) == tiles_.end());
 
@@ -1209,8 +1189,6 @@ void TileManager::CheckIfMoreTilesNeedToBePrepared() {
                                          ImageDecodeCache::TracingInfo());
     locked_image_tasks_.clear();
   }
-
-  FreeResourcesForReleasedTiles();
 
   resource_pool_->ReduceResourceUsage();
   image_controller_.ReduceMemoryUsage();

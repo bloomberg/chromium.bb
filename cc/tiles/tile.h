@@ -22,11 +22,6 @@ class TileManager;
 
 class CC_EXPORT Tile {
  public:
-  class CC_EXPORT Deleter {
-   public:
-    void operator()(Tile* tile) const;
-  };
-
   class CC_EXPORT CreateInfo {
    public:
     const PictureLayerTiling* tiling;
@@ -53,6 +48,8 @@ class CC_EXPORT Tile {
   enum TileRasterFlags { USE_PICTURE_ANALYSIS = 1 << 0, IS_OPAQUE = 1 << 1 };
 
   typedef uint64_t Id;
+
+  ~Tile();
 
   Id id() const {
     return id_;
@@ -131,7 +128,6 @@ class CC_EXPORT Tile {
        int layer_id,
        int source_frame_number,
        int flags);
-  ~Tile();
 
   TileManager* const tile_manager_;
   const PictureLayerTiling* tiling_;
@@ -163,8 +159,6 @@ class CC_EXPORT Tile {
 
   DISALLOW_COPY_AND_ASSIGN(Tile);
 };
-
-using ScopedTilePtr = std::unique_ptr<Tile, Tile::Deleter>;
 
 }  // namespace cc
 

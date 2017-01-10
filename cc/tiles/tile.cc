@@ -43,6 +43,7 @@ Tile::~Tile() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("cc.debug"),
       "cc::Tile", this);
+  tile_manager_->Release(this);
 }
 
 void Tile::AsValueInto(base::trace_event::TracedValue* value) const {
@@ -81,10 +82,6 @@ size_t Tile::GPUMemoryUsageInBytes() const {
         draw_info_.resource_->size(), draw_info_.resource_->format());
   }
   return 0;
-}
-
-void Tile::Deleter::operator()(Tile* tile) const {
-  tile->tile_manager_->Release(tile);
 }
 
 }  // namespace cc

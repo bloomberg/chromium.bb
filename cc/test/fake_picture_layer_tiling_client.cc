@@ -38,7 +38,7 @@ FakePictureLayerTilingClient::FakePictureLayerTilingClient(
 FakePictureLayerTilingClient::~FakePictureLayerTilingClient() {
 }
 
-ScopedTilePtr FakePictureLayerTilingClient::CreateTile(
+std::unique_ptr<Tile> FakePictureLayerTilingClient::CreateTile(
     const Tile::CreateInfo& info) {
   return tile_manager_->CreateTile(info, 0, 0, 0);
 }

@@ -691,7 +691,8 @@ Region PictureLayerImpl::GetInvalidationRegionForDebugging() {
   return IntersectRegions(invalidation_, update_rect());
 }
 
-ScopedTilePtr PictureLayerImpl::CreateTile(const Tile::CreateInfo& info) {
+std::unique_ptr<Tile> PictureLayerImpl::CreateTile(
+    const Tile::CreateInfo& info) {
   int flags = 0;
 
   // We don't handle solid color masks, so we shouldn't bother analyzing those.

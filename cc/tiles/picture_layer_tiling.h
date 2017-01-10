@@ -39,7 +39,7 @@ class CC_EXPORT PictureLayerTilingClient {
  public:
   // Create a tile at the given content_rect (in the contents scale of the
   // tiling) This might return null if the client cannot create such a tile.
-  virtual ScopedTilePtr CreateTile(const Tile::CreateInfo& info) = 0;
+  virtual std::unique_ptr<Tile> CreateTile(const Tile::CreateInfo& info) = 0;
   virtual gfx::Size CalculateTileSize(
     const gfx::Size& content_bounds) const = 0;
   // This invalidation region defines the area (if any, it can by null) that
@@ -268,12 +268,13 @@ class CC_EXPORT PictureLayerTiling {
     EVENTUALLY_RECT
   };
 
-  using TileMap = std::unordered_map<TileMapKey, ScopedTilePtr, TileMapKeyHash>;
+  using TileMap =
+      std::unordered_map<TileMapKey, std::unique_ptr<Tile>, TileMapKeyHash>;
 
   void SetLiveTilesRect(const gfx::Rect& live_tiles_rect);
   void VerifyLiveTilesRect(bool is_on_recycle_tree) const;
   Tile* CreateTile(const Tile::CreateInfo& info);
-  ScopedTilePtr TakeTileAt(int i, int j);
+  std::unique_ptr<Tile> TakeTileAt(int i, int j);
   // Returns true if the Tile existed and was removed from the tiling.
   bool RemoveTileAt(int i, int j);
   bool TilingMatchesTileIndices(const PictureLayerTiling* twin) const;

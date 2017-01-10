@@ -130,10 +130,10 @@ class CC_EXPORT TileManager {
   // date draw information.
   void Flush();
 
-  ScopedTilePtr CreateTile(const Tile::CreateInfo& info,
-                           int layer_id,
-                           int source_frame_number,
-                           int flags);
+  std::unique_ptr<Tile> CreateTile(const Tile::CreateInfo& info,
+                                   int layer_id,
+                                   int source_frame_number,
+                                   int flags);
 
   bool IsReadyToActivate() const;
   bool IsReadyToDraw() const;
@@ -178,11 +178,6 @@ class CC_EXPORT TileManager {
     raster_buffer_provider_ = raster_buffer_provider;
   }
 
-  void FreeResourcesAndCleanUpReleasedTilesForTesting() {
-    FreeResourcesForReleasedTiles();
-    CleanUpReleasedTiles();
-  }
-
   std::vector<Tile*> AllTilesForTesting() const {
     std::vector<Tile*> tiles;
     for (auto& tile_pair : tiles_)
@@ -207,17 +202,14 @@ class CC_EXPORT TileManager {
   }
 
   void OnRasterTaskCompleted(std::unique_ptr<RasterBuffer> raster_buffer,
-                             Tile* tile,
+                             Tile::Id tile_id,
                              Resource* resource,
                              bool was_canceled);
 
  protected:
-  void FreeResourcesForReleasedTiles();
-  void CleanUpReleasedTiles();
-
   friend class Tile;
-  // Virtual for testing.
-  virtual void Release(Tile* tile);
+  // Must be called by tile during destruction.
+  void Release(Tile* tile);
   Tile::Id GetUniqueTileId() { return ++next_tile_id_; }
 
  private:
@@ -325,8 +317,6 @@ class CC_EXPORT TileManager {
   ImageController image_controller_;
 
   RasterTaskCompletionStats flush_stats_;
-
-  std::vector<Tile*> released_tiles_;
 
   TaskGraph graph_;
 

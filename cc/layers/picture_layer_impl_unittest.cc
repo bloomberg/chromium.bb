@@ -4478,9 +4478,9 @@ TEST_F(PictureLayerImplTest, CloneMissingRecordings) {
   SetupPendingTreeWithFixedTileSize(filled_raster_source, tile_size,
                                     Region(gfx::Rect(layer_bounds)));
   EXPECT_EQ(5u * 5u, pending_tiling->AllTilesForTesting().size());
-  Tile* tile00 = pending_tiling->TileAt(0, 0);
-  Tile* tile11 = pending_tiling->TileAt(1, 1);
-  Tile* tile22 = pending_tiling->TileAt(2, 2);
+  Tile::Id tile00 = pending_tiling->TileAt(0, 0)->id();
+  Tile::Id tile11 = pending_tiling->TileAt(1, 1)->id();
+  Tile::Id tile22 = pending_tiling->TileAt(2, 2)->id();
 
   // Active is not affected yet.
   EXPECT_EQ(3u * 3u, active_tiling->AllTilesForTesting().size());
@@ -4488,9 +4488,9 @@ TEST_F(PictureLayerImplTest, CloneMissingRecordings) {
   // Activate the tree. The tiles are moved to the active tree.
   ActivateTree();
   EXPECT_EQ(5u * 5u, active_tiling->AllTilesForTesting().size());
-  EXPECT_EQ(tile00, active_tiling->TileAt(0, 0));
-  EXPECT_EQ(tile11, active_tiling->TileAt(1, 1));
-  EXPECT_EQ(tile22, active_tiling->TileAt(2, 2));
+  EXPECT_EQ(tile00, active_tiling->TileAt(0, 0)->id());
+  EXPECT_EQ(tile11, active_tiling->TileAt(1, 1)->id());
+  EXPECT_EQ(tile22, active_tiling->TileAt(2, 2)->id());
 }
 
 TEST_F(PictureLayerImplTest, ScrollPastLiveTilesRectAndBack) {
@@ -4771,8 +4771,8 @@ TEST_F(PictureLayerImplTest, HighResWasLowResCollision) {
   // Grab a current low res tile.
   PictureLayerTiling* old_low_res_tiling =
       active_layer()->tilings()->tiling_at(1);
-  Tile* old_low_res_tile =
-      active_layer()->tilings()->tiling_at(1)->TileAt(0, 0);
+  Tile::Id old_low_res_tile_id =
+      active_layer()->tilings()->tiling_at(1)->TileAt(0, 0)->id();
 
   // The tiling knows it has low res content.
   EXPECT_TRUE(active_layer()
@@ -4801,7 +4801,7 @@ TEST_F(PictureLayerImplTest, HighResWasLowResCollision) {
 
   // The old low res tile was destroyed and replaced.
   EXPECT_EQ(old_low_res_tiling, tilings->tiling_at(1));
-  EXPECT_NE(old_low_res_tile, tilings->tiling_at(1)->TileAt(0, 0));
+  EXPECT_NE(old_low_res_tile_id, tilings->tiling_at(1)->TileAt(0, 0)->id());
   EXPECT_TRUE(tilings->tiling_at(1)->TileAt(0, 0));
 
   // New high res tiling.

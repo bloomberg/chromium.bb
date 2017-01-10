@@ -74,7 +74,7 @@ class FixedInvalidationPictureLayerTilingClient
       const Region invalidation)
       : base_client_(base_client), invalidation_(invalidation) {}
 
-  ScopedTilePtr CreateTile(const Tile::CreateInfo& info) override {
+  std::unique_ptr<Tile> CreateTile(const Tile::CreateInfo& info) override {
     return base_client_->CreateTile(info);
   }
 
