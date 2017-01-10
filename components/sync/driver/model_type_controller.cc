@@ -21,7 +21,6 @@
 #include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/model_type_debug_info.h"
 #include "components/sync/model/model_type_sync_bridge.h"
-#include "components/sync/model/sync_error.h"
 #include "components/sync/model/sync_merge_result.h"
 
 namespace syncer {
@@ -31,7 +30,7 @@ namespace {
 void CallOnSyncStartingHelper(
     SyncClient* sync_client,
     ModelType type,
-    std::unique_ptr<DataTypeErrorHandler> error_handler,
+    const ModelErrorHandler& error_handler,
     ModelTypeChangeProcessor::StartCallback callback) {
   base::WeakPtr<ModelTypeSyncBridge> bridge =
       sync_client->GetSyncBridgeForModelType(type);
@@ -59,6 +58,19 @@ void CallGetStatusCountersHelper(
   if (bridge) {
     ModelTypeDebugInfo::GetStatusCounters(bridge, callback);
   }
+}
+
+void ReportError(ModelType model_type,
+                 scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
+                 const base::Closure& dump_stack,
+                 const ModelErrorHandler& error_handler,
+                 const ModelError& error) {
+  if (!dump_stack.is_null())
+    dump_stack.Run();
+  UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures",
+                            ModelTypeToHistogramInt(model_type),
+                            MODEL_TYPE_COUNT);
+  ui_thread->PostTask(error.location(), base::Bind(error_handler, error));
 }
 
 }  // namespace
@@ -104,10 +116,15 @@ void ModelTypeController::LoadModels(
       BindToCurrentThread(base::Bind(&ModelTypeController::OnProcessorStarted,
                                      base::AsWeakPtr(this)));
 
+  ModelErrorHandler error_handler = base::BindRepeating(
+      &ReportError, type(), base::ThreadTaskRunnerHandle::Get(), dump_stack_,
+      base::Bind(&ModelTypeController::ReportModelError,
+                 base::AsWeakPtr(this)));
+
   // Start the type processor on the model thread.
   model_thread_->PostTask(
       FROM_HERE, base::Bind(&CallOnSyncStartingHelper, sync_client_, type(),
-                            base::Passed(CreateErrorHandler()), callback));
+                            std::move(error_handler), std::move(callback)));
 }
 
 void ModelTypeController::GetAllNodes(const AllNodesCallback& callback) {
@@ -147,16 +164,13 @@ void ModelTypeController::LoadModelsDone(ConfigureResult result,
 }
 
 void ModelTypeController::OnProcessorStarted(
-    SyncError error,
     std::unique_ptr<ActivationContext> activation_context) {
   DCHECK(CalledOnValidThread());
   // Hold on to the activation context until ActivateDataType is called.
   if (state_ == MODEL_STARTING) {
     activation_context_ = std::move(activation_context);
   }
-  // TODO(stanisc): Figure out if UNRECOVERABLE_ERROR is OK in this case.
-  ConfigureResult result = error.IsSet() ? UNRECOVERABLE_ERROR : OK;
-  LoadModelsDone(result, error);
+  LoadModelsDone(OK, SyncError());
 }
 
 void ModelTypeController::RegisterWithBackend(
@@ -239,18 +253,12 @@ DataTypeController::State ModelTypeController::state() const {
   return state_;
 }
 
-std::unique_ptr<DataTypeErrorHandler>
-ModelTypeController::CreateErrorHandler() {
+void ModelTypeController::ReportModelError(const ModelError& error) {
   DCHECK(CalledOnValidThread());
-  return base::MakeUnique<DataTypeErrorHandlerImpl>(
-      base::ThreadTaskRunnerHandle::Get(), dump_stack_,
-      base::Bind(&ModelTypeController::ReportLoadModelError,
-                 base::AsWeakPtr(this)));
-}
-
-void ModelTypeController::ReportLoadModelError(const SyncError& error) {
-  DCHECK(CalledOnValidThread());
-  LoadModelsDone(UNRECOVERABLE_ERROR, error);
+  DCHECK(error.IsSet());
+  LoadModelsDone(UNRECOVERABLE_ERROR,
+                 SyncError(error.location(), SyncError::DATATYPE_ERROR,
+                           error.message(), type()));
 }
 
 void ModelTypeController::RecordStartFailure(ConfigureResult result) const {

@@ -31,7 +31,7 @@ SharedModelTypeProcessor::SharedModelTypeProcessor(ModelType type,
 SharedModelTypeProcessor::~SharedModelTypeProcessor() {}
 
 void SharedModelTypeProcessor::OnSyncStarting(
-    std::unique_ptr<DataTypeErrorHandler> error_handler,
+    const ModelErrorHandler& error_handler,
     const StartCallback& start_callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(start_callback_.is_null());
@@ -88,7 +88,7 @@ void SharedModelTypeProcessor::OnMetadataLoaded(
 
 bool SharedModelTypeProcessor::ConnectPreconditionsMet() const {
   return is_metadata_loaded_ && is_initial_pending_data_loaded_ &&
-         error_handler_;
+         !error_handler_.is_null();
 }
 
 void SharedModelTypeProcessor::ConnectIfReady() {
@@ -97,19 +97,20 @@ void SharedModelTypeProcessor::ConnectIfReady() {
     return;
   }
 
-  std::unique_ptr<ActivationContext> activation_context;
-
-  if (!start_error_.IsSet()) {
-    activation_context = base::MakeUnique<ActivationContext>();
-    activation_context->model_type_state = model_type_state_;
-    activation_context->type_processor =
-        base::MakeUnique<ModelTypeProcessorProxy>(
-            weak_ptr_factory_.GetWeakPtr(),
-            base::ThreadTaskRunnerHandle::Get());
+  if (start_error_.IsSet()) {
+    error_handler_.Run(start_error_);
+    start_error_ = ModelError();
+    start_callback_.Reset();
+    return;
   }
 
-  start_callback_.Run(ModelToSyncError(start_error_),
-                      std::move(activation_context));
+  auto activation_context = base::MakeUnique<ActivationContext>();
+  activation_context->model_type_state = model_type_state_;
+  activation_context->type_processor =
+      base::MakeUnique<ModelTypeProcessorProxy>(
+          weak_ptr_factory_.GetWeakPtr(), base::ThreadTaskRunnerHandle::Get());
+
+  start_callback_.Run(std::move(activation_context));
   start_callback_.Reset();
 }
 
@@ -145,8 +146,8 @@ void SharedModelTypeProcessor::ReportError(const ModelError& error) {
   if (ConnectPreconditionsMet()) {
     // If both model and sync are ready, then |start_callback_| was already
     // called and this can't be treated as a start error.
-    DCHECK(error_handler_);
-    error_handler_->OnUnrecoverableError(ModelToSyncError(error));
+    DCHECK(!error_handler_.is_null());
+    error_handler_.Run(error);
   } else if (!start_error_.IsSet()) {
     start_error_ = error;
     // An early model error means we're no longer expecting OnMetadataLoaded to
@@ -642,16 +643,6 @@ ProcessorEntityTracker* SharedModelTypeProcessor::CreateEntity(
   // Verify the tag hash matches, may be relaxed in the future.
   DCHECK_EQ(data.client_tag_hash, GetHashForTag(bridge_->GetClientTag(data)));
   return CreateEntity(bridge_->GetStorageKey(data), data);
-}
-
-SyncError SharedModelTypeProcessor::ModelToSyncError(
-    const ModelError& error) const {
-  if (error.IsSet()) {
-    return SyncError(error.location(), SyncError::DATATYPE_ERROR,
-                     error.message(), type_);
-  } else {
-    return SyncError();
-  }
 }
 
 }  // namespace syncer

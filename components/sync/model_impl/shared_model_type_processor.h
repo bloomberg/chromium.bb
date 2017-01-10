@@ -17,13 +17,11 @@
 #include "components/sync/engine/model_type_processor.h"
 #include "components/sync/engine/non_blocking_sync_common.h"
 #include "components/sync/model/data_batch.h"
-#include "components/sync/model/data_type_error_handler.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/model_type_sync_bridge.h"
-#include "components/sync/model/sync_error.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 
@@ -54,7 +52,7 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
   void Delete(const std::string& storage_key,
               MetadataChangeList* metadata_change_list) override;
   void OnMetadataLoaded(std::unique_ptr<MetadataBatch> batch) override;
-  void OnSyncStarting(std::unique_ptr<DataTypeErrorHandler> error_handler,
+  void OnSyncStarting(const ModelErrorHandler& error_handler,
                       const StartCallback& callback) override;
   void DisableSync() override;
   bool IsTrackingMetadata() override;
@@ -141,9 +139,6 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
   // Version of the above that generates a tag for |data|.
   ProcessorEntityTracker* CreateEntity(const EntityData& data);
 
-  // Helper function to turn a ModelError into a SyncError.
-  SyncError ModelToSyncError(const ModelError& error) const;
-
   const ModelType type_;
   sync_pb::ModelTypeState model_type_state_;
 
@@ -182,9 +177,9 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
   // processor instance so the pointer should never become invalid.
   ModelTypeSyncBridge* const bridge_;
 
-  // The object used for informing sync of errors; will be non-null after
-  // OnSyncStarting has been called. This pointer is not owned.
-  std::unique_ptr<DataTypeErrorHandler> error_handler_;
+  // The callback used for informing sync of errors; will be non-null after
+  // OnSyncStarting has been called.
+  ModelErrorHandler error_handler_;
 
   // WeakPtrFactory for this processor which will be sent to sync thread.
   base::WeakPtrFactory<SharedModelTypeProcessor> weak_ptr_factory_;

@@ -14,6 +14,8 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/data_type_controller.h"
+#include "components/sync/model/model_error.h"
+#include "components/sync/model/sync_error.h"
 
 namespace syncer {
 
@@ -45,12 +47,9 @@ class ModelTypeController : public DataTypeController {
   std::string name() const override;
   State state() const override;
 
- protected:
-  std::unique_ptr<DataTypeErrorHandler> CreateErrorHandler() override;
-
  private:
   void RecordStartFailure(ConfigureResult result) const;
-  void ReportLoadModelError(const SyncError& error);
+  void ReportModelError(const ModelError& error);
 
   // If the DataType controller is waiting for models to load, once the models
   // are loaded this function should be called to let the base class
@@ -61,7 +60,6 @@ class ModelTypeController : public DataTypeController {
   // The function will do the real work when OnProcessorStarted got called. This
   // is called on the UI thread.
   void OnProcessorStarted(
-      SyncError error,
       std::unique_ptr<ActivationContext> activation_context);
 
   // The sync client, which provides access to this type's ModelTypeSyncBridge.

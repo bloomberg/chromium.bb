@@ -8,10 +8,10 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/location.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/engine/activation_context.h"
-#include "components/sync/model/data_type_error_handler.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/model/model_error.h"
 
@@ -20,13 +20,12 @@ namespace syncer {
 class MetadataBatch;
 class MetadataChangeList;
 class ModelTypeSyncBridge;
-class SyncError;
 
 // Interface used by the ModelTypeSyncBridge to inform sync of local
 // changes.
 class ModelTypeChangeProcessor {
  public:
-  typedef base::Callback<void(SyncError, std::unique_ptr<ActivationContext>)>
+  typedef base::Callback<void(std::unique_ptr<ActivationContext>)>
       StartCallback;
 
   // A factory function to make an implementation of ModelTypeChangeProcessor.
@@ -57,12 +56,11 @@ class ModelTypeChangeProcessor {
   // Indicates that sync wants to connect a sync worker to this processor. Once
   // the processor has metadata from the bridge, it will pass the info needed
   // for the worker into |callback|. |error_handler| is how the processor will
-  // inform sync of any unrecoverable errors after calling |callback|, and it is
-  // guaranteed to outlive the processor. StartCallback takes a SyncError and an
-  // ActivationContext; the context should be nullptr iff the error is set.
-  virtual void OnSyncStarting(
-      std::unique_ptr<DataTypeErrorHandler> error_handler,
-      const StartCallback& callback) = 0;
+  // inform sync of any unrecoverable errors, and is guaranteed to outlive the
+  // processor. If an error is encountered, |error_handler| should be called
+  // and |callback| should not.
+  virtual void OnSyncStarting(const ModelErrorHandler& error_handler,
+                              const StartCallback& callback) = 0;
 
   // Indicates that sync is being disabled permanently for this data type. All
   // metadata should be erased from storage.

@@ -71,10 +71,4 @@ void ProxyDataTypeController::GetStatusCounters(
   callback.Run(type(), counters);
 }
 
-std::unique_ptr<DataTypeErrorHandler>
-ProxyDataTypeController::CreateErrorHandler() {
-  NOTREACHED();
-  return nullptr;
-}
-
 }  // namespace syncer

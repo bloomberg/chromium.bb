@@ -31,7 +31,7 @@ ConflictResolution ModelTypeSyncBridge::ResolveConflict(
 }
 
 void ModelTypeSyncBridge::OnSyncStarting(
-    std::unique_ptr<DataTypeErrorHandler> error_handler,
+    const ModelErrorHandler& error_handler,
     const ModelTypeChangeProcessor::StartCallback& start_callback) {
   change_processor_->OnSyncStarting(std::move(error_handler), start_callback);
 }

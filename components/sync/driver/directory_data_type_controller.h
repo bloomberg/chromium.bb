@@ -59,6 +59,9 @@ class DirectoryDataTypeController : public DataTypeController {
                               SyncClient* sync_client,
                               ModelSafeGroup model_safe_group);
 
+  // Create an error handler that reports back to this controller.
+  virtual std::unique_ptr<DataTypeErrorHandler> CreateErrorHandler() = 0;
+
   // Access to the ChangeProcessor for the type being controlled by |this|.
   // Returns null if the ChangeProcessor isn't created or connected.
   virtual ChangeProcessor* GetChangeProcessor() const = 0;

@@ -8,7 +8,6 @@
 #include "base/memory/ptr_util.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/model_type_sync_bridge.h"
-#include "components/sync/model/sync_error.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -40,10 +39,10 @@ void FakeModelTypeChangeProcessor::OnMetadataLoaded(
     std::unique_ptr<MetadataBatch> batch) {}
 
 void FakeModelTypeChangeProcessor::OnSyncStarting(
-    std::unique_ptr<DataTypeErrorHandler> error_handler,
+    const ModelErrorHandler& error_handler,
     const StartCallback& callback) {
   if (!callback.is_null()) {
-    callback.Run(SyncError(), nullptr);
+    callback.Run(nullptr);
   }
 }
 

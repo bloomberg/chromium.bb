@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "components/sync/engine/activation_context.h"
 #include "components/sync/model/conflict_resolution.h"
-#include "components/sync/model/data_type_error_handler.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/model/model_error.h"
@@ -113,7 +112,7 @@ class ModelTypeSyncBridge : public base::SupportsWeakPtr<ModelTypeSyncBridge> {
   // Called by the DataTypeController to gather additional information needed
   // before the processor can be connected to a sync worker. Once the
   // metadata has been loaded, the info is collected and given to |callback|.
-  void OnSyncStarting(std::unique_ptr<DataTypeErrorHandler> error_handler,
+  void OnSyncStarting(const ModelErrorHandler& error_handler,
                       const ModelTypeChangeProcessor::StartCallback& callback);
 
   // Indicates that we no longer want to do any sync-related things for this

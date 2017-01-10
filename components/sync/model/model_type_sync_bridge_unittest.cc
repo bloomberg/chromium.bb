@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "components/sync/model/data_type_error_handler_mock.h"
 #include "components/sync/model/fake_model_type_change_processor.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/stub_model_type_sync_bridge.h"
@@ -84,7 +83,7 @@ class ModelTypeSyncBridgeTest : public ::testing::Test {
 
   void OnSyncStarting() {
     bridge_.OnSyncStarting(
-        base::MakeUnique<DataTypeErrorHandlerMock>(),
+        ModelErrorHandler(),
         base::Bind(&ModelTypeSyncBridgeTest::OnProcessorStarted,
                    base::Unretained(this)));
   }
@@ -94,7 +93,6 @@ class ModelTypeSyncBridgeTest : public ::testing::Test {
 
  private:
   void OnProcessorStarted(
-      SyncError error,
       std::unique_ptr<ActivationContext> activation_context) {
     start_callback_called_ = true;
   }

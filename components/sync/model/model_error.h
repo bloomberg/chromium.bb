@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/location.h"
 
 namespace syncer {
@@ -39,6 +40,9 @@ class ModelError {
   tracked_objects::Location location_;
   std::string message_;
 };
+
+// Typedef for a simple error handler callback.
+using ModelErrorHandler = base::RepeatingCallback<void(const ModelError&)>;
 
 }  // namespace syncer
 

@@ -49,7 +49,7 @@ class TestModelTypeProcessor : public FakeModelTypeChangeProcessor,
         weak_factory_(this) {}
 
   // ModelTypeChangeProcessor implementation.
-  void OnSyncStarting(std::unique_ptr<DataTypeErrorHandler> error_handler,
+  void OnSyncStarting(const ModelErrorHandler& error_handler,
                       const StartCallback& callback) override {
     std::unique_ptr<ActivationContext> activation_context =
         base::MakeUnique<ActivationContext>();
@@ -58,7 +58,7 @@ class TestModelTypeProcessor : public FakeModelTypeChangeProcessor,
     activation_context->type_processor =
         base::MakeUnique<ModelTypeProcessorProxy>(
             weak_factory_.GetWeakPtr(), base::ThreadTaskRunnerHandle::Get());
-    callback.Run(SyncError(), std::move(activation_context));
+    callback.Run(std::move(activation_context));
   }
   void DisableSync() override { (*disable_sync_call_count_)++; }
 

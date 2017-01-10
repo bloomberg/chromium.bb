@@ -35,9 +35,6 @@ class ProxyDataTypeController : public DataTypeController {
   void GetAllNodes(const AllNodesCallback& callback) override;
   void GetStatusCounters(const StatusCountersCallback& callback) override;
 
- protected:
-  std::unique_ptr<DataTypeErrorHandler> CreateErrorHandler() override;
-
  private:
   State state_;
 

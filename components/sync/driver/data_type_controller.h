@@ -159,9 +159,6 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
  protected:
   DataTypeController(ModelType type, const base::Closure& dump_stack);
 
-  // Create an error handler that reports back to this controller.
-  virtual std::unique_ptr<DataTypeErrorHandler> CreateErrorHandler() = 0;
-
   // Allows subclasses to DCHECK that they're on the correct thread.
   bool CalledOnValidThread() const;
 
