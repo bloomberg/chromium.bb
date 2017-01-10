@@ -153,6 +153,9 @@ void Display::SetScaleAndBounds(float device_scale_factor,
                                                1.0f / device_scale_factor_),
                       gfx::ScaleToFlooredSize(bounds_in_pixel.size(),
                                               1.0f / device_scale_factor_));
+#if defined(OS_ANDROID)
+  size_in_pixels_ = bounds_in_pixel.size();
+#endif  // defined(OS_ANDROID)
   UpdateWorkAreaFromInsets(insets);
 }
 
@@ -170,6 +173,9 @@ void Display::UpdateWorkAreaFromInsets(const gfx::Insets& insets) {
 }
 
 gfx::Size Display::GetSizeInPixel() const {
+  // TODO(oshima): This should always use size_in_pixels_.
+  if (!size_in_pixels_.IsEmpty())
+    return size_in_pixels_;
   return gfx::ScaleToFlooredSize(size(), device_scale_factor_);
 }
 

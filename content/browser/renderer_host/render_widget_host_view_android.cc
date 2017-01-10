@@ -89,7 +89,6 @@
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/events/gesture_detection/motion_event.h"
-#include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/android/view_configuration.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -189,11 +188,6 @@ void GLHelperHolder::Initialize() {
   attributes.sample_buffers = 0;
   attributes.bind_generates_resource = false;
 
-  constexpr size_t kBytesPerPixel = 4;
-  size_t full_screen_texture_size_in_bytes =
-      gfx::DeviceDisplayInfo().GetDisplayHeight() *
-      gfx::DeviceDisplayInfo().GetDisplayWidth() * kBytesPerPixel;
-
   gpu::SharedMemoryLimits limits;
   // The GLHelper context doesn't do a lot of stuff, so we don't expect it to
   // need a lot of space for commands.
@@ -202,10 +196,22 @@ void GLHelperHolder::Initialize() {
   // reasonable but small limit.
   limits.start_transfer_buffer_size = 4 * 1024;
   limits.min_transfer_buffer_size = 4 * 1024;
-  limits.max_transfer_buffer_size = full_screen_texture_size_in_bytes;
+
+  // Use the largest available display size as the max texture size.
+  constexpr size_t kBytesPerPixel = 4;
+  size_t max_screen_texture_size_in_bytes = limits.min_transfer_buffer_size;
+  for (auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
+    gfx::Size size = display.GetSizeInPixel();
+    size_t display_size_in_bytes =
+        kBytesPerPixel * size.width() * size.height();
+    if (display_size_in_bytes > max_screen_texture_size_in_bytes)
+      max_screen_texture_size_in_bytes = display_size_in_bytes;
+  }
+
+  limits.max_transfer_buffer_size = max_screen_texture_size_in_bytes;
   // This context is used for doing async readbacks, so allow at least a full
   // screen readback to be mapped.
-  limits.mapped_memory_reclaim_limit = full_screen_texture_size_in_bytes;
+  limits.mapped_memory_reclaim_limit = max_screen_texture_size_in_bytes;
 
   constexpr bool automatic_flushes = false;
   constexpr bool support_locking = false;

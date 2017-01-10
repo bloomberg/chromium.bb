@@ -138,6 +138,9 @@ class DISPLAY_EXPORT Display final {
 
   // Returns the display's size in pixel coordinates.
   gfx::Size GetSizeInPixel() const;
+#if defined(OS_ANDROID)
+  void set_size_in_pixels(const gfx::Size& size) { size_in_pixels_ = size; }
+#endif  // defined(OS_ANDROID)
 
   // Returns a string representation of the display;
   std::string ToString() const;
@@ -193,6 +196,9 @@ class DISPLAY_EXPORT Display final {
  private:
   int64_t id_;
   gfx::Rect bounds_;
+  // If non-empty, then should be same size as |bounds_|. Used to avoid rounding
+  // errors.
+  gfx::Size size_in_pixels_;
   gfx::Rect work_area_;
   float device_scale_factor_;
   Rotation rotation_ = ROTATE_0;
