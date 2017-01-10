@@ -13,9 +13,8 @@ class MarkingVisitor final : public Visitor,
                              public MarkingVisitorImpl<MarkingVisitor> {
  public:
   using Impl = MarkingVisitorImpl<MarkingVisitor>;
-  friend class MarkingVisitorImpl<MarkingVisitor>;
 
-  explicit MarkingVisitor(ThreadState* state, Visitor::MarkingMode mode)
+  MarkingVisitor(ThreadState* state, Visitor::MarkingMode mode)
       : Visitor(state, mode) {}
 
   void markHeader(HeapObjectHeader* header, TraceCallback callback) override {
@@ -65,19 +64,6 @@ class MarkingVisitor final : public Visitor,
   void registerWeakCellWithCallback(void** cell,
                                     WeakCallback callback) override {
     Impl::registerWeakCellWithCallback(cell, callback);
-  }
-
- protected:
-  inline bool shouldMarkObject(const void* objectPointer) const {
-    if (getMarkingMode() != ThreadLocalMarking)
-      return true;
-
-    BasePage* page = pageFromObject(objectPointer);
-    ASSERT(!page->orphaned());
-    // When doing a thread local GC, the marker checks if
-    // the object resides in another thread's heap. If it
-    // does, the object should not be marked & traced.
-    return page->terminating();
   }
 };
 

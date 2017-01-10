@@ -22,8 +22,6 @@ class MarkingVisitorImpl {
                          TraceCallback callback) {
     ASSERT(header);
     ASSERT(objectPointer);
-    if (!toDerived()->shouldMarkObject(objectPointer))
-      return;
 
     // If you hit this ASSERT, it means that there is a dangling pointer
     // from a live thread heap to a dead thread heap.  We must eliminate
@@ -106,19 +104,15 @@ class MarkingVisitorImpl {
   inline bool ensureMarked(const void* objectPointer) {
     if (!objectPointer)
       return false;
-    if (!toDerived()->shouldMarkObject(objectPointer))
-      return false;
-#if ENABLE(ASSERT)
-    if (HeapObjectHeader::fromPayload(objectPointer)->isMarked())
-      return false;
 
-    toDerived()->markNoTracing(objectPointer);
-#else
-    // Inline what the above markNoTracing() call expands to,
-    // so as to make sure that we do get all the benefits.
     HeapObjectHeader* header = HeapObjectHeader::fromPayload(objectPointer);
     if (header->isMarked())
       return false;
+#if ENABLE(ASSERT)
+    toDerived()->markNoTracing(objectPointer);
+#else
+    // Inline what the above markNoTracing() call expands to,
+    // so as to make sure that we do get all the benefits (asserts excepted.)
     header->mark();
 #endif
     return true;
