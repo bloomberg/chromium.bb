@@ -164,6 +164,9 @@ AppCacheUpdateJob::URLFetcher::URLFetcher(const GURL& url,
       redirect_response_code_(-1) {}
 
 AppCacheUpdateJob::URLFetcher::~URLFetcher() {
+  // To defend against URLRequest calling delegate methods during
+  // destruction, we test for a !request_ in those methods.
+  std::unique_ptr<net::URLRequest> temp = std::move(request_);
 }
 
 void AppCacheUpdateJob::URLFetcher::Start() {
@@ -180,6 +183,8 @@ void AppCacheUpdateJob::URLFetcher::OnReceivedRedirect(
     net::URLRequest* request,
     const net::RedirectInfo& redirect_info,
     bool* defer_redirect) {
+  if (!request_)
+    return;
   DCHECK_EQ(request_.get(), request);
   // Redirect is not allowed by the update process.
   job_->MadeProgress();
@@ -191,6 +196,8 @@ void AppCacheUpdateJob::URLFetcher::OnReceivedRedirect(
 
 void AppCacheUpdateJob::URLFetcher::OnResponseStarted(net::URLRequest* request,
                                                       int net_error) {
+  if (!request_)
+    return;
   DCHECK_EQ(request_.get(), request);
   DCHECK_NE(net::ERR_IO_PENDING, net_error);
 
@@ -252,6 +259,8 @@ void AppCacheUpdateJob::URLFetcher::OnResponseStarted(net::URLRequest* request,
 
 void AppCacheUpdateJob::URLFetcher::OnReadCompleted(
     net::URLRequest* request, int bytes_read) {
+  if (!request_)
+    return;
   DCHECK_NE(net::ERR_IO_PENDING, bytes_read);
   DCHECK_EQ(request_.get(), request);
   bool data_consumed = true;
