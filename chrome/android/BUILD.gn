@@ -459,6 +459,7 @@ android_library("chrome_test_java") {
     "//chrome/test/data/image_search/valid.png",
     "//chrome/test/data/navigation_interception/",
     "//chrome/test/data/notifications/",
+    "//chrome/test/data/payments/",
     "//chrome/test/data/popup_blocker/",
     "//chrome/test/data/push_messaging/",
     "//chrome/test/data/translate/",

@@ -124,7 +124,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         mViewCoreRef = new AtomicReference<>();
         mWebContentsRef = new AtomicReference<>();
         mTestFilePath = UrlUtils.getIsolatedTestFilePath(
-                String.format("chrome/test/data/android/payments/%s", testFileName));
+                String.format("chrome/test/data/payments/%s", testFileName));
     }
 
     @Override

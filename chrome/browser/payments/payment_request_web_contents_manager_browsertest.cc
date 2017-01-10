@@ -34,7 +34,7 @@ class PaymentRequestWebContentsManagerBrowserTest
     https_server_.reset(
         new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
     ASSERT_TRUE(https_server_->InitializeAndListen());
-    https_server_->ServeFilesFromSourceDirectory("chrome/test/data");
+    https_server_->ServeFilesFromSourceDirectory("chrome/test/data/payments");
     https_server_->StartAcceptingConnections();
   }
 

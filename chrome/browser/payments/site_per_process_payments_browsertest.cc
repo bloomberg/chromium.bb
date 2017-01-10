@@ -44,7 +44,7 @@ class SitePerProcessPaymentsBrowserTest : public InProcessBrowserTest {
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(https_server_->InitializeAndListen());
     content::SetupCrossSiteRedirector(https_server_.get());
-    https_server_->ServeFilesFromSourceDirectory("chrome/test/data");
+    https_server_->ServeFilesFromSourceDirectory("chrome/test/data/payments");
     https_server_->StartAcceptingConnections();
   }
 
