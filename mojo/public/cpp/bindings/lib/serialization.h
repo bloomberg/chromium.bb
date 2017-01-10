@@ -42,7 +42,7 @@ DataArrayType StructSerializeImpl(UserType* input) {
   void* result_buffer = &result.front();
   // The serialization logic requires that the buffer is 8-byte aligned. If the
   // result buffer is not properly aligned, we have to do an extra copy. In
-  // practice, this should never happen for mojo::Array (backed by std::vector).
+  // practice, this should never happen for std::vector.
   bool need_copy = !IsAligned(result_buffer);
 
   if (need_copy) {
@@ -70,11 +70,9 @@ bool StructDeserializeImpl(const DataArrayType& input, UserType* output) {
                 "Unexpected type.");
   using DataType = typename MojomTypeTraits<MojomType>::Data;
 
-  if (input.is_null())
-    return false;
-
+  // TODO(sammc): Use DataArrayType::empty() once WTF::Vector::empty() exists.
   void* input_buffer =
-      input.empty()
+      input.size() == 0
           ? nullptr
           : const_cast<void*>(reinterpret_cast<const void*>(&input.front()));
 

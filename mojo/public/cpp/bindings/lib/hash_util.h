@@ -10,6 +10,7 @@
 #include <type_traits>
 #include <vector>
 
+#include "base/optional.h"
 #include "mojo/public/cpp/bindings/lib/template_util.h"
 
 namespace mojo {
@@ -59,6 +60,16 @@ struct HashTraits<std::vector<T>, false> {
       seed = HashCombine(seed, element);
     }
     return seed;
+  }
+};
+
+template <typename T>
+struct HashTraits<base::Optional<std::vector<T>>, false> {
+  static size_t Hash(size_t seed, const base::Optional<std::vector<T>>& value) {
+    if (!value)
+      return HashCombine(seed, 0);
+
+    return Hash(seed, *value);
   }
 };
 

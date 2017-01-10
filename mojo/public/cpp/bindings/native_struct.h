@@ -5,7 +5,9 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_NATIVE_STRUCT_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_NATIVE_STRUCT_H_
 
-#include "mojo/public/cpp/bindings/array.h"
+#include <vector>
+
+#include "base/optional.h"
 #include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/lib/native_struct_data.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
@@ -41,7 +43,7 @@ class MOJO_CPP_BINDINGS_EXPORT NativeStruct {
   bool Equals(const NativeStruct& other) const;
   size_t Hash(size_t seed) const;
 
-  Array<uint8_t> data;
+  base::Optional<std::vector<uint8_t>> data;
 };
 
 }  // namespace mojo

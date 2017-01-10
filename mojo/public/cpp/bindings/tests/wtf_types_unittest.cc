@@ -184,7 +184,7 @@ TEST_F(WTFTypesTest, Serialization_PublicAPI) {
 
   blink::TestWTFStructPtr cloned_input = input.Clone();
 
-  WTFArray<uint8_t> data = blink::TestWTFStruct::Serialize(&input);
+  auto data = blink::TestWTFStruct::Serialize(&input);
 
   blink::TestWTFStructPtr output;
   ASSERT_TRUE(blink::TestWTFStruct::Deserialize(std::move(data), &output));

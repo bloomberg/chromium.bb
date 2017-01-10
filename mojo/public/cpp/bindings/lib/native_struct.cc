@@ -15,18 +15,18 @@ NativeStructPtr NativeStruct::New() {
   return rv;
 }
 
-NativeStruct::NativeStruct() : data(nullptr) {}
+NativeStruct::NativeStruct() {}
 
 NativeStruct::~NativeStruct() {}
 
 NativeStructPtr NativeStruct::Clone() const {
   NativeStructPtr rv(New());
-  rv->data = data.Clone();
+  rv->data = data;
   return rv;
 }
 
 bool NativeStruct::Equals(const NativeStruct& other) const {
-  return data.Equals(other.data);
+  return data == other.data;
 }
 
 size_t NativeStruct::Hash(size_t seed) const {

@@ -466,9 +466,7 @@ TEST_F(StructTest, Serialization_NativeStruct) {
 
   {
     NativeStructPtr native(NativeStruct::New());
-    native->data = Array<uint8_t>(2);
-    native->data[0] = 'X';
-    native->data[1] = 'Y';
+    native->data = std::vector<uint8_t>{'X', 'Y'};
 
     size_t size = mojo::internal::PrepareToSerialize<NativeStructDataView>(
         native, nullptr);
@@ -484,11 +482,11 @@ TEST_F(StructTest, Serialization_NativeStruct) {
     NativeStructPtr output_native;
     mojo::internal::Deserialize<NativeStructDataView>(data, &output_native,
                                                       nullptr);
-    EXPECT_FALSE(output_native.is_null());
-    EXPECT_FALSE(output_native->data.is_null());
-    EXPECT_EQ(2u, output_native->data.size());
-    EXPECT_EQ('X', output_native->data[0]);
-    EXPECT_EQ('Y', output_native->data[1]);
+    ASSERT_TRUE(output_native);
+    ASSERT_FALSE(output_native->data->empty());
+    EXPECT_EQ(2u, output_native->data->size());
+    EXPECT_EQ('X', (*output_native->data)[0]);
+    EXPECT_EQ('Y', (*output_native->data)[1]);
   }
 }
 
@@ -496,7 +494,7 @@ TEST_F(StructTest, Serialization_PublicAPI) {
   {
     // A null struct pointer.
     RectPtr null_struct;
-    mojo::Array<uint8_t> data = Rect::Serialize(&null_struct);
+    auto data = Rect::Serialize(&null_struct);
     EXPECT_TRUE(data.empty());
 
     // Initialize it to non-null.
@@ -508,7 +506,7 @@ TEST_F(StructTest, Serialization_PublicAPI) {
   {
     // A struct with no fields.
     EmptyStructPtr empty_struct(EmptyStruct::New());
-    mojo::Array<uint8_t> data = EmptyStruct::Serialize(&empty_struct);
+    auto data = EmptyStruct::Serialize(&empty_struct);
     EXPECT_FALSE(data.empty());
 
     EmptyStructPtr output;
@@ -520,7 +518,7 @@ TEST_F(StructTest, Serialization_PublicAPI) {
     // A simple struct.
     RectPtr rect = MakeRect();
     RectPtr cloned_rect = rect.Clone();
-    mojo::Array<uint8_t> data = Rect::Serialize(&rect);
+    auto data = Rect::Serialize(&rect);
 
     RectPtr output;
     ASSERT_TRUE(Rect::Deserialize(std::move(data), &output));
@@ -536,10 +534,10 @@ TEST_F(StructTest, Serialization_PublicAPI) {
       (*region->rects)[i] = MakeRect(static_cast<int32_t>(i) + 1);
 
     NamedRegionPtr cloned_region = region.Clone();
-    mojo::Array<uint8_t> data = NamedRegion::Serialize(&region);
+    auto data = NamedRegion::Serialize(&region);
 
     // Make sure that the serialized result gets pointers encoded properly.
-    mojo::Array<uint8_t> cloned_data = data.Clone();
+    auto cloned_data = data;
     NamedRegionPtr output;
     ASSERT_TRUE(NamedRegion::Deserialize(std::move(cloned_data), &output));
     EXPECT_TRUE(output.Equals(cloned_region));
@@ -548,7 +546,7 @@ TEST_F(StructTest, Serialization_PublicAPI) {
   {
     // Deserialization failure.
     RectPtr rect = MakeRect();
-    mojo::Array<uint8_t> data = Rect::Serialize(&rect);
+    auto data = Rect::Serialize(&rect);
 
     NamedRegionPtr output;
     EXPECT_FALSE(NamedRegion::Deserialize(std::move(data), &output));

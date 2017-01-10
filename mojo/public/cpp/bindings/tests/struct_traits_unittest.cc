@@ -459,7 +459,7 @@ TEST_F(StructTraitsTest, SerializeStructWithTraits) {
   input.get_mutable_struct_map()["hello"] = NestedStructWithTraitsImpl(1024);
   input.get_mutable_struct_map()["world"] = NestedStructWithTraitsImpl(2048);
 
-  mojo::Array<uint8_t> data = StructWithTraits::Serialize(&input);
+  auto data = StructWithTraits::Serialize(&input);
   StructWithTraitsImpl output;
   ASSERT_TRUE(StructWithTraits::Deserialize(std::move(data), &output));
 

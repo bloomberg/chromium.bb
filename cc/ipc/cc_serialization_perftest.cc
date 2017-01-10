@@ -120,7 +120,7 @@ class CCSerializationPerfTest : public testing::Test {
 
   static void RunDeserializationTestStructTraits(const std::string& test_name,
                                                  const CompositorFrame& frame) {
-    mojo::Array<uint8_t> data = mojom::CompositorFrame::Serialize(&frame);
+    auto data = mojom::CompositorFrame::Serialize(&frame);
     DCHECK_GT(data.size(), 0u);
     for (int i = 0; i < kNumWarmupRuns; ++i) {
       CompositorFrame compositor_frame;
@@ -160,7 +160,7 @@ class CCSerializationPerfTest : public testing::Test {
   static void RunSerializationTestStructTraits(const std::string& test_name,
                                                const CompositorFrame& frame) {
     for (int i = 0; i < kNumWarmupRuns; ++i) {
-      mojo::Array<uint8_t> data = mojom::CompositorFrame::Serialize(&frame);
+      auto data = mojom::CompositorFrame::Serialize(&frame);
       DCHECK_GT(data.size(), 0u);
     }
 
@@ -172,7 +172,7 @@ class CCSerializationPerfTest : public testing::Test {
     size_t count = 0;
     while (start < end) {
       for (int i = 0; i < kTimeCheckInterval; ++i) {
-        mojo::Array<uint8_t> data = mojom::CompositorFrame::Serialize(&frame);
+        auto data = mojom::CompositorFrame::Serialize(&frame);
         DCHECK_GT(data.size(), 0u);
         now = base::TimeTicks::Now();
         // We don't count iterations after the end time.
