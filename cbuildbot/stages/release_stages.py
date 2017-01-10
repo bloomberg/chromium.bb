@@ -418,7 +418,8 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
       skip_delta_payloads: Skip generating delta payloads.
       skip_duts_check: Do not check minimum available DUTs before tests.
     """
-    super(PaygenBuildStage, self).__init__(builder_run, board, **kwargs)
+    super(PaygenBuildStage, self).__init__(
+        builder_run, board, suffix=channel.capitalize(), **kwargs)
     self._run = builder_run
     self.board = board
     self.channel = channel
@@ -460,8 +461,9 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
 
         # Now, schedule the payload tests if desired.
         if not self.skip_testing:
-          PaygenTestStage(suite_name, archive_board, archive_build,
-                          finished_uri, self.skip_duts_check, self._run).Run()
+          PaygenTestStage(
+              self._run, suite_name, archive_board, self.channel,
+              archive_build, finished_uri, self.skip_duts_check).Run()
 
       except (paygen_build_lib.BuildFinished,
               paygen_build_lib.BuildLocked) as e:
@@ -476,14 +478,26 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
 
 class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
   """Stage that schedules the payload tests."""
-  def __init__(self, suite_name, board, build, finished_uri, skip_duts_check,
-               builder_run, **kwargs):
+  def __init__(self, builder_run, suite_name, board, channel, build,
+               finished_uri, skip_duts_check, **kwargs):
+    """Init that accepts the channels argument, if present.
+
+    Args:
+      builder_run: See builder_run on ArchiveStage
+      suite_name: See builder_run on ArchiveStage
+      board: Board of payloads to generate ('x86-mario', 'x86-alex-he', etc)
+      channel: Channel of payloads to generate ('stable', 'beta', etc)
+      build: Version of payloads to generate.
+      finished_uri: GS URI of the finished flag to create on success.
+      skip_duts_check: Do not check minimum available DUTs before tests.
+    """
     self.suite_name = suite_name
     self.board = board
     self.build = build
     self.finished_uri = finished_uri
     self.skip_duts_check = skip_duts_check
-    super(PaygenTestStage, self).__init__(builder_run, board, **kwargs)
+    super(PaygenTestStage, self).__init__(
+        builder_run, board, suffix=channel.capitalize(), **kwargs)
     self._drm = dryrun_lib.DryRunMgr(self._run.debug)
 
   def PerformStage(self):
