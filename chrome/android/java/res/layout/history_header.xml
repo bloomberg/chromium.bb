@@ -8,15 +8,15 @@
     android:layout_height="wrap_content"
     android:orientation="vertical" >
 
-    <TextView
+    <org.chromium.ui.widget.TextViewWithClickableSpans
         android:id="@+id/signed_in_not_synced"
         style="@style/PrivacyDisclaimerText" />
 
-   <TextView
+   <org.chromium.ui.widget.TextViewWithClickableSpans
         android:id="@+id/signed_in_synced"
         style="@style/PrivacyDisclaimerText" />
 
-   <TextView
+   <org.chromium.ui.widget.TextViewWithClickableSpans
         android:id="@+id/other_forms_of_browsing_history"
         style="@style/PrivacyDisclaimerText"  />
 

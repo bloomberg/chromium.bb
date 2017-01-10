@@ -46,7 +46,6 @@ public class HistoryManagerToolbar extends SelectionToolbar<HistoryItem>
         inflateMenu(R.menu.history_manager_menu);
 
         updateMenuItemVisibility();
-        // TODO(twellington): Add content descriptions to the number roll view.
     }
 
     @Override
@@ -121,8 +120,21 @@ public class HistoryManagerToolbar extends SelectionToolbar<HistoryItem>
         boolean wasSelectionEnabled = mIsSelectionEnabled;
         super.onSelectionStateChange(selectedItems);
 
-        if (!wasSelectionEnabled && mIsSelectionEnabled) {
-            mManager.recordUserActionWithOptionalSearch("SelectionEstablished");
+        if (mIsSelectionEnabled) {
+            int numSelected = mSelectionDelegate.getSelectedItems().size();
+
+            // If the delete menu item is shown in the overflow menu instead of as an action, there
+            // may not be a view associated with it.
+            View deleteButton = findViewById(R.id.selection_mode_delete_menu_id);
+            if (deleteButton != null) {
+                deleteButton.setContentDescription(getResources().getQuantityString(
+                        R.plurals.accessibility_remove_selected_items,
+                        numSelected, numSelected));
+            }
+
+            if (!wasSelectionEnabled) {
+                mManager.recordUserActionWithOptionalSearch("SelectionEstablished");
+            }
         }
 
         if (!mIsSearching) return;
