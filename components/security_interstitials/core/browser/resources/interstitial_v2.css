@@ -370,7 +370,7 @@ input[type=checkbox]:checked ~ .checkbox::before {
     padding-left: 24px;
     padding-right: 24px;
     position: fixed;
-    z-index: 1;
+    z-index: 2;
   }
 
   body.safe-browsing .nav-wrapper {
