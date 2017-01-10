@@ -1925,7 +1925,7 @@ static void predict_square_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
     const int bs = tx_size_wide[tx_size];
     const int stride = wpx;
     int r, c;
-    uint8_t *map = NULL;
+    const uint8_t *const map = xd->plane[plane != 0].color_index_map;
 #if CONFIG_AOM_HIGHBITDEPTH
     uint16_t *palette = xd->mi[0]->mbmi.palette_mode_info.palette_colors +
                         plane * PALETTE_MAX_SIZE;
@@ -1933,8 +1933,6 @@ static void predict_square_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
     uint8_t *palette = xd->mi[0]->mbmi.palette_mode_info.palette_colors +
                        plane * PALETTE_MAX_SIZE;
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-
-    map = xd->plane[plane != 0].color_index_map;
 
 #if CONFIG_AOM_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {

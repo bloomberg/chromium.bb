@@ -2270,6 +2270,30 @@ static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
 }
 
 #if CONFIG_PALETTE
+// Extends 'color_map' array from 'orig_width x orig_height' to 'new_width x
+// new_height'. Extra rows and columns are filled in by copying last valid
+// row/column.
+static void extend_palette_color_map(uint8_t *const color_map, int orig_width,
+                                     int orig_height, int new_width,
+                                     int new_height) {
+  int j;
+  assert(new_width >= orig_width);
+  assert(new_height >= orig_height);
+  if (new_width == orig_width && new_height == orig_height) return;
+
+  for (j = orig_height - 1; j >= 0; --j) {
+    memmove(color_map + j * new_width, color_map + j * orig_width, orig_width);
+    // Copy last column to extra columns.
+    memset(color_map + j * new_width + orig_width,
+           color_map[j * new_width + orig_width - 1], new_width - orig_width);
+  }
+  // Copy last row to extra rows.
+  for (j = orig_height; j < new_height; ++j) {
+    memcpy(color_map + j * new_width, color_map + (orig_height - 1) * new_width,
+           new_width);
+  }
+}
+
 static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
                                      BLOCK_SIZE bsize, int palette_ctx,
                                      int dc_mode_cost, MB_MODE_INFO *best_mbmi,
@@ -2281,12 +2305,13 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
   MACROBLOCKD *const xd = &x->e_mbd;
   MODE_INFO *const mic = xd->mi[0];
   MB_MODE_INFO *const mbmi = &mic->mbmi;
-  const int rows = block_size_high[bsize];
-  const int cols = block_size_wide[bsize];
   int this_rate, colors, n;
   const int src_stride = x->plane[0].src.stride;
   const uint8_t *const src = x->plane[0].src.buf;
   uint8_t *const color_map = xd->plane[0].color_index_map;
+  int block_width, block_height, rows, cols;
+  av1_get_block_dimensions(bsize, 0, xd, &block_width, &block_height, &rows,
+                           &cols);
 
   assert(cpi->common.allow_screen_content_tools);
 
@@ -2373,6 +2398,8 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
       pmi->palette_size[0] = k;
 
       av1_calc_indices(data, centroids, color_map, rows * cols, k, 1);
+      extend_palette_color_map(color_map, cols, rows, block_width,
+                               block_height);
       palette_mode_cost =
           dc_mode_cost + cpi->common.bit_depth * k * av1_cost_bit(128, 0) +
           cpi->palette_y_size_cost[bsize - BLOCK_8X8][k - 2] +
@@ -2384,7 +2411,7 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
         for (j = (i == 0 ? 1 : 0); j < cols; ++j) {
           int color_idx;
           const int color_ctx = av1_get_palette_color_context(
-              color_map, cols, i, j, k, color_order, &color_idx);
+              color_map, cols, block_width, i, j, k, color_order, &color_idx);
           assert(color_idx >= 0 && color_idx < k);
           palette_mode_cost +=
               cpi->palette_y_color_cost[k - 2][color_ctx][color_idx];
@@ -2405,7 +2432,7 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
       if (this_rd < *best_rd) {
         *best_rd = this_rd;
         memcpy(best_palette_color_map, color_map,
-               rows * cols * sizeof(color_map[0]));
+               block_width * block_height * sizeof(color_map[0]));
         *best_mbmi = *mbmi;
         rate_overhead = this_rate - tokenonly_rd_stats.rate;
         if (rate) *rate = this_rate;
@@ -4339,8 +4366,6 @@ static void rd_pick_palette_intra_sbuv(
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
   const BLOCK_SIZE bsize = mbmi->sb_type;
-  const int rows = block_size_high[bsize] >> (xd->plane[1].subsampling_y);
-  const int cols = block_size_wide[bsize] >> (xd->plane[1].subsampling_x);
   int this_rate;
   int64_t this_rd;
   int colors_u, colors_v, colors;
@@ -4349,7 +4374,9 @@ static void rd_pick_palette_intra_sbuv(
   const uint8_t *const src_v = x->plane[2].src.buf;
   uint8_t *const color_map = xd->plane[1].color_index_map;
   RD_STATS tokenonly_rd_stats;
-
+  int plane_block_width, plane_block_height, rows, cols;
+  av1_get_block_dimensions(bsize, 1, xd, &plane_block_width,
+                           &plane_block_height, &rows, &cols);
   if (rows * cols > PALETTE_MAX_BLOCK_SIZE) return;
 
 #if CONFIG_FILTER_INTRA
@@ -4437,6 +4464,8 @@ static void rd_pick_palette_intra_sbuv(
         centroids[i * 2 + 1] = lb_v + (2 * i + 1) * (ub_v - lb_v) / n / 2;
       }
       av1_k_means(data, centroids, color_map, rows * cols, n, 2, max_itr);
+      extend_palette_color_map(color_map, cols, rows, plane_block_width,
+                               plane_block_height);
       pmi->palette_size[1] = n;
       for (i = 1; i < 3; ++i) {
         for (j = 0; j < n; ++j) {
@@ -4464,8 +4493,9 @@ static void rd_pick_palette_intra_sbuv(
       for (i = 0; i < rows; ++i) {
         for (j = (i == 0 ? 1 : 0); j < cols; ++j) {
           int color_idx;
-          const int color_ctx = av1_get_palette_color_context(
-              color_map, cols, i, j, n, color_order, &color_idx);
+          const int color_ctx =
+              av1_get_palette_color_context(color_map, cols, plane_block_width,
+                                            i, j, n, color_order, &color_idx);
           assert(color_idx >= 0 && color_idx < n);
           this_rate += cpi->palette_uv_color_cost[n - 2][color_ctx][color_idx];
         }
@@ -4476,7 +4506,8 @@ static void rd_pick_palette_intra_sbuv(
         *best_rd = this_rd;
         *palette_mode_info = *pmi;
         memcpy(best_palette_color_map, color_map,
-               rows * cols * sizeof(best_palette_color_map[0]));
+               plane_block_width * plane_block_height *
+                   sizeof(best_palette_color_map[0]));
         *mode_selected = DC_PRED;
         *rate = this_rate;
         *distortion = tokenonly_rd_stats.dist;
@@ -9039,8 +9070,6 @@ static void restore_uv_color_map(const AV1_COMP *const cpi, MACROBLOCK *x) {
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
   const BLOCK_SIZE bsize = mbmi->sb_type;
-  const int rows = block_size_high[bsize] >> (xd->plane[1].subsampling_y);
-  const int cols = block_size_wide[bsize] >> (xd->plane[1].subsampling_x);
   int src_stride = x->plane[1].src.stride;
   const uint8_t *const src_u = x->plane[1].src.buf;
   const uint8_t *const src_v = x->plane[2].src.buf;
@@ -9052,6 +9081,9 @@ static void restore_uv_color_map(const AV1_COMP *const cpi, MACROBLOCK *x) {
   const uint16_t *const src_u16 = CONVERT_TO_SHORTPTR(src_u);
   const uint16_t *const src_v16 = CONVERT_TO_SHORTPTR(src_v);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
+  int plane_block_width, plane_block_height, rows, cols;
+  av1_get_block_dimensions(bsize, 1, xd, &plane_block_width,
+                           &plane_block_height, &rows, &cols);
   (void)cpi;
 
   for (r = 0; r < rows; ++r) {
@@ -9078,6 +9110,8 @@ static void restore_uv_color_map(const AV1_COMP *const cpi, MACROBLOCK *x) {
 
   av1_calc_indices(data, centroids, color_map, rows * cols,
                    pmi->palette_size[1], 2);
+  extend_palette_color_map(color_map, cols, rows, plane_block_width,
+                           plane_block_height);
 }
 #endif  // CONFIG_PALETTE
 

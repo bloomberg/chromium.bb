@@ -1073,6 +1073,34 @@ static INLINE int is_neighbor_overlappable(const MB_MODE_INFO *mbmi) {
 #endif  // CONFIG_MOTION_VAR
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
+// Returns sub-sampled dimensions of the given block.
+// The output values for 'rows_within_bounds' and 'cols_within_bounds' will
+// differ from 'height' and 'width' when part of the block is outside the right
+// and/or bottom image boundary.
+static INLINE void av1_get_block_dimensions(BLOCK_SIZE bsize, int plane,
+                                            const MACROBLOCKD *xd, int *width,
+                                            int *height,
+                                            int *rows_within_bounds,
+                                            int *cols_within_bounds) {
+  const int block_height = block_size_high[bsize];
+  const int block_width = block_size_wide[bsize];
+  const int block_rows = (xd->mb_to_bottom_edge >= 0)
+                             ? block_height
+                             : (xd->mb_to_bottom_edge >> 3) + block_height;
+  const int block_cols = (xd->mb_to_right_edge >= 0)
+                             ? block_width
+                             : (xd->mb_to_right_edge >> 3) + block_width;
+  const struct macroblockd_plane *const pd = &xd->plane[plane];
+  assert(IMPLIES(plane == PLANE_TYPE_Y, pd->subsampling_x == 0));
+  assert(IMPLIES(plane == PLANE_TYPE_Y, pd->subsampling_y == 0));
+  assert(block_width >= block_cols);
+  assert(block_height >= block_rows);
+  if (width) *width = block_width >> pd->subsampling_x;
+  if (height) *height = block_height >> pd->subsampling_y;
+  if (rows_within_bounds) *rows_within_bounds = block_rows >> pd->subsampling_y;
+  if (cols_within_bounds) *cols_within_bounds = block_cols >> pd->subsampling_x;
+}
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

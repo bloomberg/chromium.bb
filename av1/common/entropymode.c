@@ -1266,9 +1266,9 @@ static const aom_prob
 #endif  // CONFIG_LOOP_RESTORATION
 
 #if CONFIG_PALETTE
-int av1_get_palette_color_context(const uint8_t *color_map, int cols, int r,
-                                  int c, int n, uint8_t *color_order,
-                                  int *color_idx) {
+int av1_get_palette_color_context(const uint8_t *color_map, int width,
+                                  int stride, int r, int c, int palette_size,
+                                  uint8_t *color_order, int *color_idx) {
   int i;
   // The +10 below should not be needed. But we get a warning "array subscript
   // is above array bounds [-Werror=array-bounds]" without it, possibly due to
@@ -1279,15 +1279,15 @@ int av1_get_palette_color_context(const uint8_t *color_map, int cols, int r,
   int color_ctx;
   int color_neighbors[4];
   int inverse_color_order[PALETTE_MAX_SIZE];
-  assert(n <= PALETTE_MAX_SIZE);
+  assert(palette_size <= PALETTE_MAX_SIZE);
 
   // Get color indices of neighbors.
-  color_neighbors[0] = (c - 1 >= 0) ? color_map[r * cols + c - 1] : -1;
+  color_neighbors[0] = (c - 1 >= 0) ? color_map[r * stride + c - 1] : -1;
   color_neighbors[1] =
-      (c - 1 >= 0 && r - 1 >= 0) ? color_map[(r - 1) * cols + c - 1] : -1;
-  color_neighbors[2] = (r - 1 >= 0) ? color_map[(r - 1) * cols + c] : -1;
-  color_neighbors[3] = (r - 1 >= 0 && c + 1 <= cols - 1)
-                           ? color_map[(r - 1) * cols + c + 1]
+      (c - 1 >= 0 && r - 1 >= 0) ? color_map[(r - 1) * stride + c - 1] : -1;
+  color_neighbors[2] = (r - 1 >= 0) ? color_map[(r - 1) * stride + c] : -1;
+  color_neighbors[3] = (r - 1 >= 0 && c + 1 <= width - 1)
+                           ? color_map[(r - 1) * stride + c + 1]
                            : -1;
 
   for (i = 0; i < PALETTE_MAX_SIZE; ++i) {
@@ -1306,7 +1306,7 @@ int av1_get_palette_color_context(const uint8_t *color_map, int cols, int r,
     int max = scores[i];
     int max_idx = i;
     int j;
-    for (j = i + 1; j < n; ++j) {
+    for (j = i + 1; j < palette_size; ++j) {
       if (scores[j] > max) {
         max = scores[j];
         max_idx = j;
@@ -1343,7 +1343,7 @@ int av1_get_palette_color_context(const uint8_t *color_map, int cols, int r,
   }
 
   if (color_idx != NULL) {
-    *color_idx = inverse_color_order[color_map[r * cols + c]];
+    *color_idx = inverse_color_order[color_map[r * stride + c]];
   }
   return color_ctx;
 }

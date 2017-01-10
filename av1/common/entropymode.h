@@ -436,9 +436,12 @@ static INLINE int av1_ceil_log2(int n) {
 }
 
 #if CONFIG_PALETTE
-int av1_get_palette_color_context(const uint8_t *color_map, int cols, int r,
-                                  int c, int n, uint8_t *color_order,
-                                  int *color_idx);
+// Returns the context for palette color index at row 'r' and column 'c',
+// along with the 'color_order' of neighbors and the 'color_idx'.
+// The 'color_map' is a 2D array with the given 'width' and 'stride'.
+int av1_get_palette_color_context(const uint8_t *color_map, int width,
+                                  int stride, int r, int c, int palette_size,
+                                  uint8_t *color_order, int *color_idx);
 #endif  // CONFIG_PALETTE
 
 #ifdef __cplusplus

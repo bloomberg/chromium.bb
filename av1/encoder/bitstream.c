@@ -1938,14 +1938,14 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 #if !CONFIG_PVQ
 #if CONFIG_PALETTE
   for (plane = 0; plane <= 1; ++plane) {
-    if (m->mbmi.palette_mode_info.palette_size[plane] > 0) {
-      const int rows =
-          block_size_high[m->mbmi.sb_type] >> (xd->plane[plane].subsampling_y);
-      const int cols =
-          block_size_wide[m->mbmi.sb_type] >> (xd->plane[plane].subsampling_x);
+    const uint8_t palette_size_plane =
+        m->mbmi.palette_mode_info.palette_size[plane];
+    if (palette_size_plane > 0) {
+      int rows, cols;
+      av1_get_block_dimensions(m->mbmi.sb_type, plane, xd, NULL, NULL, &rows,
+                               &cols);
       assert(*tok < tok_end);
-      pack_palette_tokens(w, tok, m->mbmi.palette_mode_info.palette_size[plane],
-                          rows * cols - 1);
+      pack_palette_tokens(w, tok, palette_size_plane, rows * cols - 1);
       assert(*tok < tok_end + m->mbmi.skip);
     }
   }
