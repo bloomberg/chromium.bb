@@ -615,8 +615,7 @@
     controller[_queue] = v8.InternalPackedArray();
     controller[_queueSize] = 0;
     const sinkAbortPromise =
-        PromiseInvokeOrFallbackOrNoop(controller[_underlyingSink],
-                                      'abort', [reason], 'close', [controller]);
+        PromiseInvokeOrNoop(controller[_underlyingSink], 'abort', [reason]);
     return thenPromise(sinkAbortPromise, () => undefined);
   }
 
@@ -893,25 +892,6 @@
 
   function IsFiniteNonNegativeNumber(v) {
     return Number_isFinite(v) && v >= 0;
-  }
-
-  function PromiseInvokeOrFallbackOrNoop(O, P1, args1, P2, args2) {
-    TEMP_ASSERT(IsPropertyKey(P1),
-                'P1 is a valid property key.');
-    TEMP_ASSERT(IsPropertyKey(P2),
-                'P2 is a valid property key.');
-    try {
-      const method = O[P1];
-      if (method === undefined) {
-        return PromiseInvokeOrNoop(O, P2, args2);
-      }
-      if (typeof method !== 'function') {
-        return Promise_reject(new TypeError(templateErrorIsNotAFunction(P1)));
-      }
-      return Promise_resolve(Function_apply(method, O, args1));
-    } catch (e) {
-      return Promise_reject(e);
-    }
   }
 
   function PromiseInvokeOrNoop(O, P, args) {
