@@ -38,6 +38,13 @@ enum class TaskType : unsigned {
   Presentation,
   Sensor,
 
+  // Use MiscPlatformAPI for a task that is defined in the spec but is not yet
+  // associated with any specific task runner in the spec. MiscPlatformAPI is
+  // not encouraged for stable and matured APIs. The spec should define the task
+  // runner explicitly.
+  // The task runner may be throttled.
+  MiscPlatformAPI,
+
   // Other internal tasks that cannot fit any of the above task runners
   // can be posted here, but the usage is not encouraged. The task runner
   // may be throttled.
@@ -68,6 +75,9 @@ struct TaskTypeTraits : WTF::GenericHashTraits<TaskType> {
   }
 };
 
+// A set of helper functions to get a WebTaskRunner for TaskType and a context
+// object. The posted tasks are guaranteed to run in a sequence if they have the
+// same TaskType and the context objects belong to the same frame.
 class CORE_EXPORT TaskRunnerHelper final {
   STATIC_ONLY(TaskRunnerHelper);
 

@@ -36,6 +36,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "modules/quota/DOMError.h"
 #include "modules/quota/DeprecatedStorageQuotaCallbacksImpl.h"
 #include "modules/quota/StorageErrorCallback.h"
@@ -71,7 +72,7 @@ void StorageQuotaClientImpl::requestQuota(ExecutionContext* executionContext,
                                             callbacks);
   } else {
     // Requesting quota in Worker is not supported.
-    executionContext->postTask(BLINK_FROM_HERE,
+    executionContext->postTask(TaskType::MiscPlatformAPI, BLINK_FROM_HERE,
                                StorageErrorCallback::createSameThreadTask(
                                    errorCallback, NotSupportedError));
   }

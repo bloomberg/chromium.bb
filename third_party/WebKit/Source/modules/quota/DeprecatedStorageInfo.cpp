@@ -32,6 +32,7 @@
 
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "modules/quota/DeprecatedStorageQuota.h"
 #include "modules/quota/StorageErrorCallback.h"
 #include "modules/quota/StorageQuotaCallback.h"
@@ -52,7 +53,7 @@ void DeprecatedStorageInfo::queryUsageAndQuota(
   DeprecatedStorageQuota* storageQuota = getStorageQuota(storageType);
   if (!storageQuota) {
     // Unknown storage type is requested.
-    executionContext->postTask(BLINK_FROM_HERE,
+    executionContext->postTask(TaskType::MiscPlatformAPI, BLINK_FROM_HERE,
                                StorageErrorCallback::createSameThreadTask(
                                    errorCallback, NotSupportedError));
     return;
@@ -71,7 +72,7 @@ void DeprecatedStorageInfo::requestQuota(ExecutionContext* executionContext,
   DeprecatedStorageQuota* storageQuota = getStorageQuota(storageType);
   if (!storageQuota) {
     // Unknown storage type is requested.
-    executionContext->postTask(BLINK_FROM_HERE,
+    executionContext->postTask(TaskType::MiscPlatformAPI, BLINK_FROM_HERE,
                                StorageErrorCallback::createSameThreadTask(
                                    errorCallback, NotSupportedError));
     return;

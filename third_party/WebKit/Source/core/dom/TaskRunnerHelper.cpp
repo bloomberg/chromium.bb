@@ -34,6 +34,7 @@ WebTaskRunner* TaskRunnerHelper::get(TaskType type, LocalFrame* frame) {
     case TaskType::Timer:
     case TaskType::UnspecedTimer:
     case TaskType::Unspecified:
+    case TaskType::MiscPlatformAPI:
       return frame ? frame->frameScheduler()->timerTaskRunner()
                    : Platform::current()->currentThread()->getWebTaskRunner();
     case TaskType::UnspecedLoading:

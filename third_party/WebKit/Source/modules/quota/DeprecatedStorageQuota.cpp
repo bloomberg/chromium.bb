@@ -32,6 +32,7 @@
 
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "modules/quota/DeprecatedStorageQuotaCallbacksImpl.h"
 #include "modules/quota/StorageErrorCallback.h"
 #include "modules/quota/StorageQuotaClient.h"
@@ -58,7 +59,7 @@ void DeprecatedStorageQuota::queryUsageAndQuota(
   if (storageType != WebStorageQuotaTypeTemporary &&
       storageType != WebStorageQuotaTypePersistent) {
     // Unknown storage type is requested.
-    executionContext->postTask(BLINK_FROM_HERE,
+    executionContext->postTask(TaskType::MiscPlatformAPI, BLINK_FROM_HERE,
                                StorageErrorCallback::createSameThreadTask(
                                    errorCallback, NotSupportedError));
     return;
@@ -66,7 +67,7 @@ void DeprecatedStorageQuota::queryUsageAndQuota(
 
   SecurityOrigin* securityOrigin = executionContext->getSecurityOrigin();
   if (securityOrigin->isUnique()) {
-    executionContext->postTask(BLINK_FROM_HERE,
+    executionContext->postTask(TaskType::MiscPlatformAPI, BLINK_FROM_HERE,
                                StorageErrorCallback::createSameThreadTask(
                                    errorCallback, NotSupportedError));
     return;
@@ -90,7 +91,7 @@ void DeprecatedStorageQuota::requestQuota(ExecutionContext* executionContext,
   if (storageType != WebStorageQuotaTypeTemporary &&
       storageType != WebStorageQuotaTypePersistent) {
     // Unknown storage type is requested.
-    executionContext->postTask(BLINK_FROM_HERE,
+    executionContext->postTask(TaskType::MiscPlatformAPI, BLINK_FROM_HERE,
                                StorageErrorCallback::createSameThreadTask(
                                    errorCallback, NotSupportedError));
     return;
@@ -98,7 +99,7 @@ void DeprecatedStorageQuota::requestQuota(ExecutionContext* executionContext,
 
   StorageQuotaClient* client = StorageQuotaClient::from(executionContext);
   if (!client) {
-    executionContext->postTask(BLINK_FROM_HERE,
+    executionContext->postTask(TaskType::MiscPlatformAPI, BLINK_FROM_HERE,
                                StorageErrorCallback::createSameThreadTask(
                                    errorCallback, NotSupportedError));
     return;
