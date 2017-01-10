@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <functional>
 #include <iterator>
+#include <limits>
 #include <memory>
 #include <string>
 #include <utility>
@@ -53,6 +54,8 @@ namespace {
 
 // Maximum PReg file size we're willing to accept.
 const int64_t kMaxPRegFileSize = 1024 * 1024 * 16;
+static_assert(kMaxPRegFileSize <= std::numeric_limits<ptrdiff_t>::max(),
+              "Max PReg file size too large.");
 
 // Constants for PReg file delimiters.
 const base::char16 kDelimBracketOpen = L'[';
@@ -72,12 +75,13 @@ const char kActionTriggerSecureKey[] = "securekey";
 const char kActionTriggerSoft[] = "soft";
 
 // Returns the character at |cursor| and increments it, unless the end is here
-// in which case -1 is returned.
+// in which case -1 is returned. The calling code must guarantee that
+// end - *cursor does not overflow ptrdiff_t.
 int NextChar(const uint8_t** cursor, const uint8_t* end) {
   // Only read the character if a full base::char16 is available.
   // This comparison makes sure no overflow can happen.
   if (*cursor >= end ||
-      static_cast<size_t>(end - *cursor) < sizeof(base::char16))
+      end - *cursor < static_cast<ptrdiff_t>(sizeof(base::char16)))
     return -1;
 
   int result = **cursor | (*(*cursor + 1) << 8);
@@ -85,7 +89,8 @@ int NextChar(const uint8_t** cursor, const uint8_t* end) {
   return result;
 }
 
-// Reads a fixed-size field from a PReg file.
+// Reads a fixed-size field from a PReg file. The calling code must guarantee
+// that both end - *cursor and size do not overflow ptrdiff_t.
 bool ReadFieldBinary(const uint8_t** cursor,
                      const uint8_t* end,
                      uint32_t size,
@@ -94,7 +99,7 @@ bool ReadFieldBinary(const uint8_t** cursor,
     return true;
 
   // Be careful to prevent possible overflows here (don't do *cursor + size).
-  if (*cursor >= end || static_cast<size_t>(end - *cursor) < size)
+  if (*cursor >= end || end - *cursor < static_cast<ptrdiff_t>(size))
     return false;
   const uint8_t* field_end = *cursor + size;
   std::copy(*cursor, field_end, data);
