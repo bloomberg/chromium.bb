@@ -5,12 +5,13 @@
 package org.chromium.chrome.browser.payments;
 
 import android.content.DialogInterface;
+import android.os.Build;
 import android.support.test.filters.MediumTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -114,7 +115,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
 
     /** Attempt to add a credit card with an empty name on card and cancel payment. */
     @MediumTest
-    @FlakyTest(message = "crbug.com/678983")
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // crbug.com/678983
     @Feature({"Payments"})
     public void testAddEmptyNameOnCardAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
