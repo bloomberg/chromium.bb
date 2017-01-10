@@ -167,13 +167,6 @@ KURL ExecutionContext::completeURL(const String& url) const {
   return virtualCompleteURL(url);
 }
 
-void ExecutionContext::postTask(const WebTraceLocation& location,
-                                std::unique_ptr<ExecutionContextTask> task,
-                                const String& taskNameForInstrumentation) {
-  postTask(TaskType::Unspecified, location, std::move(task),
-           taskNameForInstrumentation);
-}
-
 void ExecutionContext::allowWindowInteraction() {
   ++m_windowInteractionTokens;
 }

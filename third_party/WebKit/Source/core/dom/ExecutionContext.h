@@ -100,9 +100,6 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
       const WebTraceLocation&,
       std::unique_ptr<ExecutionContextTask>,
       const String& taskNameForInstrumentation = emptyString()) = 0;
-  void postTask(const WebTraceLocation&,
-                std::unique_ptr<ExecutionContextTask>,
-                const String& taskNameForInstrumentation = emptyString());
 
   // Gets the DOMTimerCoordinator which maintains the "active timer
   // list" of tasks created by setTimeout and setInterval. The

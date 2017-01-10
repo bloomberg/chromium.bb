@@ -126,8 +126,6 @@ class CORE_EXPORT WorkerGlobalScope
   void disableEval(const String& errorMessage) final;
   String userAgent() const final { return m_userAgent; }
 
-  // This is necessary to make parent's postTask visible.
-  using ExecutionContext::postTask;
   void postTask(TaskType,
                 const WebTraceLocation&,
                 std::unique_ptr<ExecutionContextTask>,

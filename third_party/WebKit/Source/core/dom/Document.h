@@ -980,7 +980,6 @@ class CORE_EXPORT Document : public ContainerNode,
   bool isDNSPrefetchEnabled() const { return m_isDNSPrefetchEnabled; }
   void parseDNSPrefetchControlHeader(const String&);
 
-  using ExecutionContext::postTask;
   void postTask(TaskType,
                 const WebTraceLocation&,
                 std::unique_ptr<ExecutionContextTask>,
