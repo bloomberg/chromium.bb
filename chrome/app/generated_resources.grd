@@ -10348,23 +10348,19 @@ I don't think this site should be blocked!
       <message name="IDS_ENTERPRISE_SIGNIN_PROFILE_LINK_LEARN_MORE" desc="The link to get more information about profile linking after signing in to an enterprise account">
         Learn more
       </message>
-      <message name="IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE" desc="Text of the button to create a new profile after enterprise account sign-in">
-        Create a new user
-      </message>
       <message name="IDS_ENTERPRISE_SIGNIN_CANCEL" desc="Text of the button to cancel sign-in">
         Cancel
       </message>
 
       <!-- Enterprise sign-in profile linking -->
-      <!-- TODO(crbug.com/660349): remove "new-style" once the old dialog is gone. -->
-      <message name="IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE_NEW_STYLE" desc="Text of the button to create a new profile after enterprise account sign-in">
+      <message name="IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE" desc="Text of the button to create a new profile after enterprise account sign-in">
         Create a new profile
       </message>
-      <message name="IDS_ENTERPRISE_SIGNIN_CONTINUE_NEW_STYLE" desc="Text of the button to link the current profile with the signed-in enterprise account">
+      <message name="IDS_ENTERPRISE_SIGNIN_CONTINUE" desc="Text of the button to link the current profile with the signed-in enterprise account">
         Link data
       </message>
 
-      <message name="IDS_ENTERPRISE_SIGNIN_ALERT_NEW_STYLE" desc="The text of the prompt to create a new profile after signing in to an enterprise account">
+      <message name="IDS_ENTERPRISE_SIGNIN_ALERT" desc="The text of the prompt to create a new profile after signing in to an enterprise account">
         This account is managed by <ph name="DOMAIN">$1<ex>example.com</ex></ph>
       </message>
 

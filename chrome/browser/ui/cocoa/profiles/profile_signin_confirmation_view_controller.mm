@@ -188,7 +188,7 @@ NSTextField* AddTextField(
 
   // OK button.
   [self addButton:okButton_
-        withTitle:IDS_ENTERPRISE_SIGNIN_CONTINUE_NEW_STYLE
+        withTitle:IDS_ENTERPRISE_SIGNIN_CONTINUE
            target:self
            action:@selector(ok:)
    shouldAutoSize:YES];
@@ -214,7 +214,7 @@ NSTextField* AddTextField(
   // Create Profile link.
   if (offerProfileCreation_) {
     [self addButton:createProfileButton_
-          withTitle:IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE_NEW_STYLE
+          withTitle:IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE
              target:self
              action:@selector(createProfile:)
      shouldAutoSize:YES];
@@ -224,7 +224,7 @@ NSTextField* AddTextField(
   titleField_.reset(
       [AddTextField([self view],
                     l10n_util::GetStringUTF16(
-                        IDS_ENTERPRISE_SIGNIN_TITLE_NEW_STYLE),
+                        IDS_ENTERPRISE_SIGNIN_TITLE),
                     chrome_style::kTitleFontStyle) retain]);
   [titleField_ setFrame:ComputeFrame(
       [titleField_ attributedStringValue], 0.0, 0.0)];
@@ -268,7 +268,7 @@ NSTextField* AddTextField(
   const base::string16 username = base::ASCIIToUTF16(username_);
   const base::string16 prompt_text =
       l10n_util::GetStringFUTF16(
-          IDS_ENTERPRISE_SIGNIN_ALERT_NEW_STYLE,
+          IDS_ENTERPRISE_SIGNIN_ALERT,
           domain, &offset);
   promptField_.reset(
       [AddTextField(promptBox_, prompt_text, chrome_style::kTextFontStyle)
@@ -294,8 +294,8 @@ NSTextField* AddTextField(
   const base::string16 explanation_text =
       l10n_util::GetStringFUTF16(
           offerProfileCreation_ ?
-          IDS_ENTERPRISE_SIGNIN_EXPLANATION_WITH_PROFILE_CREATION_NEW_STYLE :
-          IDS_ENTERPRISE_SIGNIN_EXPLANATION_WITHOUT_PROFILE_CREATION_NEW_STYLE,
+          IDS_ENTERPRISE_SIGNIN_EXPLANATION_WITH_PROFILE_CREATION :
+          IDS_ENTERPRISE_SIGNIN_EXPLANATION_WITHOUT_PROFILE_CREATION,
           username, learn_more_text, &offsets);
   // HyperlinkTextView requires manually inserting the link text
   // into the middle of the message text.  To do this we slice out
