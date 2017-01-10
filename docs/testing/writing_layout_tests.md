@@ -338,6 +338,7 @@ in order to follow the minimality guideline, the test omits the tags `<html>`,
 ```html
 <!doctype html>
 <meta charset="utf-8">
+<title>JavaScript: the true literal</title>
 <link rel="help" href="https://tc39.github.io/ecma262/#sec-boolean-literals">
 <meta name="assert" value="The true literal is equal to itself and immutable">
 <script src="/resources/testharness.js"></script>
@@ -374,7 +375,9 @@ promise_test(() => {
 
 Some points that are not immediately obvious from the example:
 
-* The `<meta name="assert">` describes the purpose of the entire file.
+* The `<meta name="assert">` describes the purpose of the entire file, and
+  is not redundant to `<title>`. Don't add a `<meta name="assert">` when the
+  information in the `<title>` is sufficient.
 * When calling an `assert_` function that compares two values, the first
   argument is the actual value (produced by the functionality being tested), and
   the second argument is the expected value (known good, golden). The order
@@ -390,6 +393,9 @@ Some points that are not immediately obvious from the example:
   redundant.
     * Do not start test case descriptions with redundant terms like "Testing"
       or "Test for".
+    * Test files with a single test case should omit the test case description.
+      The file's `<title>` should be sufficient to describe the scenario being
+      tested.
 * Asynchronous tests have a few subtleties.
     * The `async_test` wrapper calls its function with a test case argument that
       is used to signal when the test case is done, and to connect assertion
@@ -510,6 +516,7 @@ Below is an example of a fairly minimal test that uses a Blink-Specific API
 ```html
 <!doctype html>
 <meta charset="utf-8">
+<title>DOM: Event.isTrusted for UI events</title>
 <link rel="help" href="https://dom.spec.whatwg.org/#dom-event-istrusted">
 <link rel="help" href="https://dom.spec.whatwg.org/#constructing-events">
 <meta name="assert"
