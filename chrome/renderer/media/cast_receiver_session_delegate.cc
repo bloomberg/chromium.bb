@@ -48,7 +48,8 @@ void CastReceiverSessionDelegate::ReceivePacket(
 void CastReceiverSessionDelegate::StartAudio(
     scoped_refptr<CastReceiverAudioValve> audio_valve) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  audio_valve_ = audio_valve;
+  audio_valve_ = std::move(audio_valve);
+  audio_valve_->OnStarted();
   cast_receiver_->RequestDecodedAudioFrame(on_audio_decoded_cb_);
 }
 

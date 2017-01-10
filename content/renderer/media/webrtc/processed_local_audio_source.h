@@ -38,6 +38,8 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
   // ID are derived from |device_info|. |factory| must outlive this instance.
   ProcessedLocalAudioSource(int consumer_render_frame_id,
                             const StreamDeviceInfo& device_info,
+                            const blink::WebMediaConstraints& constraints,
+                            const ConstraintsCallback& started_callback,
                             PeerConnectionDependencyFactory* factory);
 
   ~ProcessedLocalAudioSource() final;
@@ -58,7 +60,6 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
   const blink::WebMediaConstraints& source_constraints() const {
     return constraints_;
   }
-  void SetSourceConstraints(const blink::WebMediaConstraints& constraints);
 
   // The following accessors are not valid until after the source is started
   // (when the first track is connected).
@@ -88,6 +89,7 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
 
   // AudioCapturerSource::CaptureCallback implementation.
   // Called on the AudioCapturerSource audio thread.
+  void OnCaptureStarted() override;
   void Capture(const media::AudioBus* audio_source,
                int audio_delay_milliseconds,
                double volume,
@@ -110,7 +112,10 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
   base::ThreadChecker thread_checker_;
 
   // Cached audio constraints for the capturer.
-  blink::WebMediaConstraints constraints_;
+  const blink::WebMediaConstraints constraints_;
+
+  // Callback that's called when the audio source has been initialized.
+  ConstraintsCallback started_callback_;
 
   // Audio processor doing processing like FIFO, AGC, AEC and NS. Its output
   // data is in a unit of 10 ms data chunk.

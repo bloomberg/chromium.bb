@@ -56,6 +56,12 @@ void CastReceiverAudioValve::DeliverRebufferedAudio(
   }
 }
 
+void CastReceiverAudioValve::OnStarted() {
+  base::AutoLock lock(lock_);
+  if (cb_)
+    cb_->OnCaptureStarted();
+}
+
 void CastReceiverAudioValve::Stop() {
   base::AutoLock lock(lock_);
   cb_ = nullptr;
