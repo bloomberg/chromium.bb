@@ -11,8 +11,8 @@
 
 #include "base/callback.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/presentation_connection_message.h"
-#include "content/public/browser/presentation_session.h"
+#include "content/public/common/presentation_connection_message.h"
+#include "content/public/common/presentation_session.h"
 
 class GURL;
 

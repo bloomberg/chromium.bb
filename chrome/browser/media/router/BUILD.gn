@@ -13,6 +13,7 @@ static_library("router") {
     "//components/keyed_service/content",
     "//components/keyed_service/core",
     "//content/public/browser",
+    "//content/public/common",
     "//third_party/icu",
     "//url",
   ]

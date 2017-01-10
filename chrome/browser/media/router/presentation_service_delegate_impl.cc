@@ -27,9 +27,9 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/presentation_screen_availability_listener.h"
-#include "content/public/browser/presentation_session.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/presentation_session.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/profiles/profile.h"

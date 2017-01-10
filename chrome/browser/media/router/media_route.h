@@ -12,7 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/media/router/media_sink.h"
 #include "chrome/browser/media/router/media_source.h"
-#include "content/public/browser/presentation_session.h"
+#include "content/public/common/presentation_session.h"
 
 namespace media_router {
 

@@ -14,7 +14,7 @@
 #include "chrome/browser/media/router/media_source.h"
 #include "chrome/browser/media/router/mojo/media_router.mojom.h"
 #include "chrome/browser/media/router/route_request_result.h"
-#include "content/public/browser/presentation_session.h"
+#include "content/public/common/presentation_session.h"
 
 namespace mojo {
 

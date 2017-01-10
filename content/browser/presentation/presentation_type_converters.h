@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_PRESENTATION_PRESENTATION_TYPE_CONVERTERS_H_
 
 #include "content/common/content_export.h"
-#include "content/public/browser/presentation_session.h"
+#include "content/public/common/presentation_session.h"
 #include "third_party/WebKit/public/platform/modules/presentation/presentation.mojom.h"
 
 namespace content {
