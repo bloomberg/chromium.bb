@@ -73,6 +73,32 @@ class NoteTakingHelper : public arc::ArcServiceManager::Observer,
     virtual void OnAvailableNoteTakingAppsUpdated() = 0;
   };
 
+  // Describes the result of an attempt to launch a note-taking app. Values must
+  // not be renumbered, as this is used by histogram metrics.
+  enum class LaunchResult {
+    // A Chrome app was launched successfully.
+    CHROME_SUCCESS = 0,
+    // The requested Chrome app was unavailable.
+    CHROME_APP_MISSING = 1,
+    // An Android app was launched successfully.
+    ANDROID_SUCCESS = 2,
+    // An Android app couldn't be launched due to the profile not being allowed
+    // to use ARC.
+    ANDROID_NOT_SUPPORTED_BY_PROFILE = 3,
+    // An Android app couldn't be launched due to ARC not running.
+    ANDROID_NOT_RUNNING = 4,
+    // An Android app couldn't be launched due to a failure to convert the
+    // supplied path to an ARC URL.
+    ANDROID_FAILED_TO_CONVERT_PATH = 5,
+    // No attempt was made due to a preferred app not being specified.
+    NO_APP_SPECIFIED = 6,
+    // No Android or Chrome apps were available.
+    NO_APPS_AVAILABLE = 7,
+    // This value must remain last and should be incremented when a new reason
+    // is inserted.
+    MAX = 8,
+  };
+
   // Callback used to launch a Chrome app.
   using LaunchChromeAppCallback = base::Callback<void(
       Profile*,
@@ -87,6 +113,10 @@ class NoteTakingHelper : public arc::ArcServiceManager::Observer,
   // Chrome app.
   static const char kDevKeepExtensionId[];
   static const char kProdKeepExtensionId[];
+
+  // Names of histograms.
+  static const char kPreferredLaunchResultHistogramName[];
+  static const char kDefaultLaunchResultHistogramName[];
 
   static void Initialize();
   static void Shutdown();
@@ -148,10 +178,10 @@ class NoteTakingHelper : public arc::ArcServiceManager::Observer,
 
   // Helper method that launches |app_id| (either an Android package name or a
   // Chrome extension ID) to create a new note with an optional attached file at
-  // |path|. Returns false if the app couldn't be launched.
-  bool LaunchAppInternal(Profile* profile,
-                         const std::string& app_id,
-                         const base::FilePath& path);
+  // |path|. Returns the attempt's result.
+  LaunchResult LaunchAppInternal(Profile* profile,
+                                 const std::string& app_id,
+                                 const base::FilePath& path);
 
   // content::NotificationObserver:
   void Observe(int type,

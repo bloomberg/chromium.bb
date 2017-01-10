@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/histogram_tester.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -40,9 +41,13 @@ namespace app_runtime = extensions::api::app_runtime;
 
 using arc::mojom::IntentHandlerInfo;
 using arc::mojom::IntentHandlerInfoPtr;
+using base::HistogramTester;
 using HandledIntent = arc::FakeIntentHelperInstance::HandledIntent;
 
 namespace chromeos {
+
+using LaunchResult = NoteTakingHelper::LaunchResult;
+
 namespace {
 
 // Name of default profile.
@@ -348,12 +353,20 @@ TEST_F(NoteTakingHelperTest, LaunchChromeApp) {
   InstallExtension(extension.get(), profile());
 
   // Check the Chrome app is launched with the correct parameters.
+  HistogramTester histogram_tester;
   const base::FilePath kPath("/foo/bar/photo.jpg");
   helper()->LaunchAppForNewNote(profile(), kPath);
   ASSERT_EQ(1u, launched_chrome_apps_.size());
   EXPECT_EQ(NoteTakingHelper::kProdKeepExtensionId,
             launched_chrome_apps_[0].id);
   EXPECT_EQ(kPath, launched_chrome_apps_[0].path);
+
+  histogram_tester.ExpectUniqueSample(
+      NoteTakingHelper::kPreferredLaunchResultHistogramName,
+      static_cast<int>(LaunchResult::NO_APP_SPECIFIED), 1);
+  histogram_tester.ExpectUniqueSample(
+      NoteTakingHelper::kDefaultLaunchResultHistogramName,
+      static_cast<int>(LaunchResult::CHROME_SUCCESS), 1);
 }
 
 TEST_F(NoteTakingHelperTest, FallBackIfPreferredAppUnavailable) {
@@ -365,19 +378,34 @@ TEST_F(NoteTakingHelperTest, FallBackIfPreferredAppUnavailable) {
       CreateExtension(NoteTakingHelper::kDevKeepExtensionId, "dev");
   InstallExtension(dev_extension.get(), profile());
 
-  // Set the prod app as the default and check that it's launched.
+  // Set the prod app as preferred and check that it's launched.
+  std::unique_ptr<HistogramTester> histogram_tester(new HistogramTester());
   helper()->SetPreferredApp(profile(), NoteTakingHelper::kProdKeepExtensionId);
   helper()->LaunchAppForNewNote(profile(), base::FilePath());
   ASSERT_EQ(1u, launched_chrome_apps_.size());
   ASSERT_EQ(NoteTakingHelper::kProdKeepExtensionId,
             launched_chrome_apps_[0].id);
 
+  histogram_tester->ExpectUniqueSample(
+      NoteTakingHelper::kPreferredLaunchResultHistogramName,
+      static_cast<int>(LaunchResult::CHROME_SUCCESS), 1);
+  histogram_tester->ExpectTotalCount(
+      NoteTakingHelper::kDefaultLaunchResultHistogramName, 0);
+
   // Now uninstall the prod app and check that we fall back to the dev app.
   UninstallExtension(prod_extension.get(), profile());
   launched_chrome_apps_.clear();
+  histogram_tester.reset(new HistogramTester());
   helper()->LaunchAppForNewNote(profile(), base::FilePath());
   ASSERT_EQ(1u, launched_chrome_apps_.size());
   EXPECT_EQ(NoteTakingHelper::kDevKeepExtensionId, launched_chrome_apps_[0].id);
+
+  histogram_tester->ExpectUniqueSample(
+      NoteTakingHelper::kPreferredLaunchResultHistogramName,
+      static_cast<int>(LaunchResult::CHROME_APP_MISSING), 1);
+  histogram_tester->ExpectUniqueSample(
+      NoteTakingHelper::kDefaultLaunchResultHistogramName,
+      static_cast<int>(LaunchResult::CHROME_SUCCESS), 1);
 }
 
 TEST_F(NoteTakingHelperTest, ArcInitiallyDisabled) {
@@ -447,10 +475,18 @@ TEST_F(NoteTakingHelperTest, LaunchAndroidApp) {
   ASSERT_TRUE(helper()->IsAppAvailable(profile()));
 
   // The installed app should be launched.
+  std::unique_ptr<HistogramTester> histogram_tester(new HistogramTester());
   helper()->LaunchAppForNewNote(profile(), base::FilePath());
   ASSERT_EQ(1u, intent_helper_.handled_intents().size());
   EXPECT_EQ(GetIntentString(kPackage1, ""),
             GetIntentString(intent_helper_.handled_intents()[0]));
+
+  histogram_tester->ExpectUniqueSample(
+      NoteTakingHelper::kPreferredLaunchResultHistogramName,
+      static_cast<int>(LaunchResult::NO_APP_SPECIFIED), 1);
+  histogram_tester->ExpectUniqueSample(
+      NoteTakingHelper::kDefaultLaunchResultHistogramName,
+      static_cast<int>(LaunchResult::ANDROID_SUCCESS), 1);
 
   // Install a second app and set it as the preferred app.
   const std::string kPackage2 = "org.chromium.package2";
@@ -464,10 +500,17 @@ TEST_F(NoteTakingHelperTest, LaunchAndroidApp) {
 
   // The second app should be launched now.
   intent_helper_.clear_handled_intents();
+  histogram_tester.reset(new HistogramTester());
   helper()->LaunchAppForNewNote(profile(), base::FilePath());
   ASSERT_EQ(1u, intent_helper_.handled_intents().size());
   EXPECT_EQ(GetIntentString(kPackage2, ""),
             GetIntentString(intent_helper_.handled_intents()[0]));
+
+  histogram_tester->ExpectUniqueSample(
+      NoteTakingHelper::kPreferredLaunchResultHistogramName,
+      static_cast<int>(LaunchResult::ANDROID_SUCCESS), 1);
+  histogram_tester->ExpectTotalCount(
+      NoteTakingHelper::kDefaultLaunchResultHistogramName, 0);
 }
 
 TEST_F(NoteTakingHelperTest, LaunchAndroidAppWithPath) {
@@ -500,9 +543,32 @@ TEST_F(NoteTakingHelperTest, LaunchAndroidAppWithPath) {
 
   // When a path that isn't accessible to ARC is passed, the request should be
   // dropped.
+  HistogramTester histogram_tester;
   intent_helper_.clear_handled_intents();
   helper()->LaunchAppForNewNote(profile(), base::FilePath("/bad/path.jpg"));
   EXPECT_TRUE(intent_helper_.handled_intents().empty());
+
+  histogram_tester.ExpectUniqueSample(
+      NoteTakingHelper::kPreferredLaunchResultHistogramName,
+      static_cast<int>(LaunchResult::NO_APP_SPECIFIED), 1);
+  histogram_tester.ExpectUniqueSample(
+      NoteTakingHelper::kDefaultLaunchResultHistogramName,
+      static_cast<int>(LaunchResult::ANDROID_FAILED_TO_CONVERT_PATH), 1);
+}
+
+TEST_F(NoteTakingHelperTest, NoAppsAvailable) {
+  Init(ENABLE_PALETTE | ENABLE_ARC);
+
+  // When no note-taking apps are installed, the histograms should just be
+  // updated.
+  HistogramTester histogram_tester;
+  helper()->LaunchAppForNewNote(profile(), base::FilePath());
+  histogram_tester.ExpectUniqueSample(
+      NoteTakingHelper::kPreferredLaunchResultHistogramName,
+      static_cast<int>(LaunchResult::NO_APP_SPECIFIED), 1);
+  histogram_tester.ExpectUniqueSample(
+      NoteTakingHelper::kDefaultLaunchResultHistogramName,
+      static_cast<int>(LaunchResult::NO_APPS_AVAILABLE), 1);
 }
 
 TEST_F(NoteTakingHelperTest, NotifyObserverAboutAndroidApps) {

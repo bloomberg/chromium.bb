@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -76,6 +77,10 @@ const char NoteTakingHelper::kDevKeepExtensionId[] =
     "ogfjaccbdfhecploibfbhighmebiffla";
 const char NoteTakingHelper::kProdKeepExtensionId[] =
     "hmjkmjkepdijhoojdojkdfohbdgmmhki";
+const char NoteTakingHelper::kPreferredLaunchResultHistogramName[] =
+    "Apps.NoteTakingApp.PreferredLaunchResult";
+const char NoteTakingHelper::kDefaultLaunchResultHistogramName[] =
+    "Apps.NoteTakingApp.DefaultLaunchResult";
 
 // static
 void NoteTakingHelper::Initialize() {
@@ -150,17 +155,30 @@ void NoteTakingHelper::LaunchAppForNewNote(Profile* profile,
                                            const base::FilePath& path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile);
+
+  LaunchResult result = LaunchResult::NO_APP_SPECIFIED;
   std::string app_id = profile->GetPrefs()->GetString(prefs::kNoteTakingAppId);
-  if (!app_id.empty() && LaunchAppInternal(profile, app_id, path))
+  if (!app_id.empty())
+    result = LaunchAppInternal(profile, app_id, path);
+  UMA_HISTOGRAM_ENUMERATION(kPreferredLaunchResultHistogramName,
+                            static_cast<int>(result),
+                            static_cast<int>(LaunchResult::MAX));
+  if (result == LaunchResult::CHROME_SUCCESS ||
+      result == LaunchResult::ANDROID_SUCCESS) {
     return;
+  }
 
   // If the user hasn't chosen an app or we were unable to launch the one that
   // they've chosen, just launch the first one we see.
+  result = LaunchResult::NO_APPS_AVAILABLE;
   NoteTakingAppInfos infos = GetAvailableApps(profile);
   if (infos.empty())
     LOG(WARNING) << "Unable to launch note-taking app; none available";
   else
-    LaunchAppInternal(profile, infos[0].app_id, path);
+    result = LaunchAppInternal(profile, infos[0].app_id, path);
+  UMA_HISTOGRAM_ENUMERATION(kDefaultLaunchResultHistogramName,
+                            static_cast<int>(result),
+                            static_cast<int>(LaunchResult::MAX));
 }
 
 void NoteTakingHelper::OnArcShutdown() {}
@@ -296,29 +314,30 @@ void NoteTakingHelper::OnGotAndroidApps(
     observer.OnAvailableNoteTakingAppsUpdated();
 }
 
-bool NoteTakingHelper::LaunchAppInternal(Profile* profile,
-                                         const std::string& app_id,
-                                         const base::FilePath& path) {
+NoteTakingHelper::LaunchResult NoteTakingHelper::LaunchAppInternal(
+    Profile* profile,
+    const std::string& app_id,
+    const base::FilePath& path) {
   DCHECK(profile);
 
   if (LooksLikeAndroidPackageName(app_id)) {
     // Android app.
     if (!arc::ArcSessionManager::Get()->IsAllowedForProfile(profile)) {
       LOG(WARNING) << "Can't launch Android app " << app_id << " for profile";
-      return false;
+      return LaunchResult::ANDROID_NOT_SUPPORTED_BY_PROFILE;
     }
     auto* helper = ARC_GET_INSTANCE_FOR_METHOD(
         arc::ArcServiceManager::Get()->arc_bridge_service()->intent_helper(),
         HandleIntent);
     if (!helper)
-      return false;
+      return LaunchResult::ANDROID_NOT_RUNNING;
 
     GURL clip_data_uri;
     if (!path.empty()) {
       if (!file_manager::util::ConvertPathToArcUrl(path, &clip_data_uri) ||
           !clip_data_uri.is_valid()) {
         LOG(WARNING) << "Failed to convert " << path.value() << " to ARC URI";
-        return false;
+        return LaunchResult::ANDROID_FAILED_TO_CONVERT_PATH;
       }
     }
 
@@ -327,7 +346,10 @@ bool NoteTakingHelper::LaunchAppInternal(Profile* profile,
     arc::mojom::ActivityNamePtr activity = arc::mojom::ActivityName::New();
     activity->package_name = app_id;
 
+    // TODO(derat): Is there some way to detect whether this fails due to the
+    // package no longer being available?
     helper->HandleIntent(CreateIntentInfo(clip_data_uri), std::move(activity));
+    return LaunchResult::ANDROID_SUCCESS;
   } else {
     // Chrome app.
     const extensions::ExtensionRegistry* extension_registry =
@@ -336,14 +358,14 @@ bool NoteTakingHelper::LaunchAppInternal(Profile* profile,
         app_id, extensions::ExtensionRegistry::ENABLED);
     if (!app) {
       LOG(WARNING) << "Failed to find Chrome note-taking app " << app_id;
-      return false;
+      return LaunchResult::CHROME_APP_MISSING;
     }
     auto action_data = base::MakeUnique<app_runtime::ActionData>();
     action_data->action_type = app_runtime::ActionType::ACTION_TYPE_NEW_NOTE;
     launch_chrome_app_callback_.Run(profile, app, std::move(action_data), path);
+    return LaunchResult::CHROME_SUCCESS;
   }
-
-  return true;
+  NOTREACHED();
 }
 
 void NoteTakingHelper::Observe(int type,
