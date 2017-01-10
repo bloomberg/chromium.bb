@@ -16,6 +16,7 @@
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "components/crash/content/app/breakpad_linux.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/file_descriptor_info.h"
@@ -27,43 +28,25 @@ using content::BrowserThread;
 
 namespace breakpad {
 
-// static
-CrashDumpManager* CrashDumpManager::instance_ = NULL;
-
-// static
-CrashDumpManager* CrashDumpManager::GetInstance() {
-  CHECK(instance_);
-  return instance_;
-}
-
-CrashDumpManager::CrashDumpManager(const base::FilePath& crash_dump_dir)
-    : crash_dump_dir_(crash_dump_dir) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!instance_);
-
-  instance_ = this;
-
-  notification_registrar_.Add(this,
-                              content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                              content::NotificationService::AllSources());
-  notification_registrar_.Add(this,
-                              content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                              content::NotificationService::AllSources());
-
-  BrowserChildProcessObserver::Add(this);
-}
+CrashDumpManager::CrashDumpManager(const base::FilePath& crash_dump_dir,
+                                   int descriptor_id)
+    : crash_dump_dir_(crash_dump_dir), descriptor_id_(descriptor_id) {}
 
 CrashDumpManager::~CrashDumpManager() {
-  instance_ = NULL;
-
-  BrowserChildProcessObserver::Remove(this);
 }
 
-base::File CrashDumpManager::CreateMinidumpFile(int child_process_id) {
+void CrashDumpManager::OnChildStart(int child_process_id,
+                                    content::FileDescriptorInfo* mappings) {
   DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
+
+  if (!breakpad::IsCrashReporterEnabled())
+    return;
+
   base::FilePath minidump_path;
-  if (!base::CreateTemporaryFile(&minidump_path))
-    return base::File();
+  if (!base::CreateTemporaryFile(&minidump_path)) {
+    LOG(ERROR) << "Failed to create temporary file, crash won't be reported.";
+    return;
+  }
 
   // We need read permission as the minidump is generated in several phases
   // and needs to be read at some point.
@@ -71,8 +54,8 @@ base::File CrashDumpManager::CreateMinidumpFile(int child_process_id) {
               base::File::FLAG_WRITE;
   base::File minidump_file(minidump_path, flags);
   if (!minidump_file.IsValid()) {
-    LOG(ERROR) << "Failed to create temporary file, crash won't be reported.";
-    return base::File();
+    LOG(ERROR) << "Failed to open temporary file, crash won't be reported.";
+    return;
   }
 
   {
@@ -81,18 +64,19 @@ base::File CrashDumpManager::CreateMinidumpFile(int child_process_id) {
                               child_process_id));
     child_process_id_to_minidump_path_[child_process_id] = minidump_path;
   }
-  return minidump_file;
+  mappings->Transfer(descriptor_id_,
+                     base::ScopedFD(minidump_file.TakePlatformFile()));
 }
 
 // static
 void CrashDumpManager::ProcessMinidump(
     const base::FilePath& minidump_path,
+    const base::FilePath& crash_dump_dir,
     base::ProcessHandle pid,
     content::ProcessType process_type,
     base::TerminationStatus termination_status,
     base::android::ApplicationState app_state) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  CHECK(instance_);
   int64_t file_size = 0;
   int r = base::GetFileSize(minidump_path, &file_size);
   DCHECK(r) << "Failed to retrieve size for minidump "
@@ -153,7 +137,7 @@ void CrashDumpManager::ProcessMinidump(
 
   // We are dealing with a valid minidump. Copy it to the crash report
   // directory from where Java code will upload it later on.
-  if (instance_->crash_dump_dir_.empty()) {
+  if (crash_dump_dir.empty()) {
     NOTREACHED() << "Failed to retrieve the crash dump directory.";
     return;
   }
@@ -161,7 +145,7 @@ void CrashDumpManager::ProcessMinidump(
   const std::string filename =
       base::StringPrintf("chromium-renderer-minidump-%016" PRIx64 ".dmp%d",
                          rand, pid);
-  base::FilePath dest_path = instance_->crash_dump_dir_.Append(filename);
+  base::FilePath dest_path = crash_dump_dir.Append(filename);
   r = base::Move(minidump_path, dest_path);
   if (!r) {
     LOG(ERROR) << "Failed to move crash dump from " << minidump_path.value()
@@ -169,67 +153,8 @@ void CrashDumpManager::ProcessMinidump(
     base::DeleteFile(minidump_path, false);
     return;
   }
-  VLOG(1) << "Crash minidump successfully generated: " <<
-      instance_->crash_dump_dir_.Append(filename).value();
-}
-
-void CrashDumpManager::BrowserChildProcessHostDisconnected(
-    const content::ChildProcessData& data) {
-  OnChildExit(data.id,
-              data.handle,
-              static_cast<content::ProcessType>(data.process_type),
-              base::TERMINATION_STATUS_MAX_ENUM,
-              base::android::ApplicationStatusListener::GetState());
-}
-
-void CrashDumpManager::BrowserChildProcessCrashed(
-    const content::ChildProcessData& data,
-    int exit_code) {
-  OnChildExit(data.id,
-              data.handle,
-              static_cast<content::ProcessType>(data.process_type),
-              base::TERMINATION_STATUS_ABNORMAL_TERMINATION,
-              base::android::APPLICATION_STATE_UNKNOWN);
-}
-
-void CrashDumpManager::Observe(int type,
-                               const content::NotificationSource& source,
-                               const content::NotificationDetails& details) {
-  content::RenderProcessHost* rph =
-      content::Source<content::RenderProcessHost>(source).ptr();
-  base::TerminationStatus term_status = base::TERMINATION_STATUS_MAX_ENUM;
-  base::android::ApplicationState app_state =
-      base::android::APPLICATION_STATE_UNKNOWN;
-  switch (type) {
-    case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
-      // NOTIFICATION_RENDERER_PROCESS_TERMINATED is sent when the renderer
-      // process is cleanly shutdown. However, we still need to close the
-      // minidump_fd we kept open.
-      term_status = base::TERMINATION_STATUS_NORMAL_TERMINATION;
-      break;
-    }
-    case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
-      // We do not care about android fast shutdowns as it is a known case where
-      // the renderer is intentionally killed when we are done with it.
-      if (rph->FastShutdownStarted()) {
-        break;
-      }
-      content::RenderProcessHost::RendererClosedDetails* process_details =
-          content::Details<content::RenderProcessHost::RendererClosedDetails>(
-              details).ptr();
-      term_status = process_details->status;
-      app_state = base::android::ApplicationStatusListener::GetState();
-      break;
-    }
-    default:
-      NOTREACHED();
-      return;
-  }
-  OnChildExit(rph->GetID(),
-              rph->GetHandle(),
-              content::PROCESS_TYPE_RENDERER,
-              term_status,
-              app_state);
+  VLOG(1) << "Crash minidump successfully generated: "
+          << crash_dump_dir.Append(filename).value();
 }
 
 void CrashDumpManager::OnChildExit(int child_process_id,
@@ -252,11 +177,8 @@ void CrashDumpManager::OnChildExit(int child_process_id,
   }
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&CrashDumpManager::ProcessMinidump,
-                 minidump_path,
-                 pid,
-                 process_type,
-                 termination_status,
+      base::Bind(&CrashDumpManager::ProcessMinidump, minidump_path,
+                 crash_dump_dir_, pid, process_type, termination_status,
                  app_state));
 }
 

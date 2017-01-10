@@ -40,6 +40,7 @@
 #include "chromecast/browser/pref_service_helper.h"
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/chromecast_features.h"
+#include "chromecast/common/global_descriptors.h"
 #include "chromecast/media/base/key_systems_common.h"
 #include "chromecast/media/base/media_resource_tracker.h"
 #include "chromecast/media/base/video_plane_controller.h"
@@ -389,8 +390,10 @@ int CastBrowserMainParts::PreCreateThreads() {
   if (!chromecast::CrashHandler::GetCrashDumpLocation(&crash_dumps_dir)) {
     LOG(ERROR) << "Could not find crash dump location.";
   }
-  cast_browser_process_->SetCrashDumpManager(
-      base::MakeUnique<breakpad::CrashDumpManager>(crash_dumps_dir));
+  breakpad::CrashDumpObserver::Create();
+  breakpad::CrashDumpObserver::GetInstance()->RegisterClient(
+      base::MakeUnique<breakpad::CrashDumpManager>(crash_dumps_dir,
+                                                   kAndroidMinidumpDescriptor));
 #else
   base::FilePath home_dir;
   CHECK(PathService::Get(DIR_CAST_HOME, &home_dir));

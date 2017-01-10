@@ -2824,18 +2824,8 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
   fd = ui::GetLocalePackFd(&region);
   mappings->ShareWithRegion(kAndroidLocalePakDescriptor, fd, region);
 
-  if (breakpad::IsCrashReporterEnabled()) {
-    base::File file =
-        breakpad::CrashDumpManager::GetInstance()->CreateMinidumpFile(
-            child_process_id);
-    if (file.IsValid()) {
-      mappings->Transfer(kAndroidMinidumpDescriptor,
-                         base::ScopedFD(file.TakePlatformFile()));
-    } else {
-      LOG(ERROR) << "Failed to create file for minidump, crash reporting will "
-                 "be disabled for this process.";
-    }
-  }
+  breakpad::CrashDumpObserver::GetInstance()->BrowserChildProcessStarted(
+      child_process_id, mappings);
 
   base::FilePath app_data_path;
   PathService::Get(base::DIR_ANDROID_APP_DATA, &app_data_path);

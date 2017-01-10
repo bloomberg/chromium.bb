@@ -35,7 +35,7 @@
 #include "base/path_service.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
-#include "components/crash/content/browser/crash_micro_dump_manager_android.h"
+#include "components/crash/content/browser/crash_dump_observer_android.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -485,13 +485,8 @@ void AwContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
   fd = ui::GetLocalePackFd(&region);
   mappings->ShareWithRegion(kAndroidWebViewLocalePakDescriptor, fd, region);
 
-  base::ScopedFD crash_signal_file =
-      breakpad::CrashMicroDumpManager::GetInstance()->CreateCrashInfoChannel(
-          child_process_id);
-  if (crash_signal_file.is_valid()) {
-    mappings->Transfer(kAndroidWebViewCrashSignalDescriptor,
-                       std::move(crash_signal_file));
-  }
+  breakpad::CrashDumpObserver::GetInstance()->BrowserChildProcessStarted(
+      child_process_id, mappings);
 }
 
 void AwContentBrowserClient::OverrideWebkitPrefs(

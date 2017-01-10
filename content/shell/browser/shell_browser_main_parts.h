@@ -13,12 +13,6 @@
 #include "content/public/common/main_function_params.h"
 #include "content/shell/browser/shell_browser_context.h"
 
-#if defined(OS_ANDROID)
-namespace breakpad {
-class CrashDumpManager;
-}
-#endif
-
 namespace net {
 class NetLog;
 }
@@ -61,9 +55,6 @@ class ShellBrowserMainParts : public BrowserMainParts {
   }
 
  private:
-#if defined(OS_ANDROID)
-  std::unique_ptr<breakpad::CrashDumpManager> crash_dump_manager_;
-#endif
   std::unique_ptr<net::NetLog> net_log_;
   std::unique_ptr<ShellBrowserContext> browser_context_;
   std::unique_ptr<ShellBrowserContext> off_the_record_browser_context_;
