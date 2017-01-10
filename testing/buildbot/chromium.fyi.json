@@ -769,6 +769,17 @@
           "can_use_on_swarming_builders": false
         },
         "test": "blink_platform_unittests"
+      },
+      {
+        "override_compile_targets": [
+          "chrome_public_test_apk"
+        ],
+        "override_isolate_target": "chrome_public_test_apk",
+        "render_results_dir": "chrome/test/data/android/render_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "chrome_public_test_apk"
       }
     ],
     "scripts": [
