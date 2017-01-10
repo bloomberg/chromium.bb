@@ -406,9 +406,7 @@ BASE_EXPORT void PartitionAllocGlobalInit(void (*oom_handling_function)());
 BASE_EXPORT void PartitionAllocInit(PartitionRoot*,
                                     size_t num_buckets,
                                     size_t max_allocation);
-BASE_EXPORT bool PartitionAllocShutdown(PartitionRoot*);
 BASE_EXPORT void PartitionAllocGenericInit(PartitionRootGeneric*);
-BASE_EXPORT bool PartitionAllocGenericShutdown(PartitionRootGeneric*);
 
 enum PartitionPurgeFlags {
   // Decommitting the ring list of empty pages is reasonably fast.
@@ -886,7 +884,6 @@ class SizeSpecificPartitionAllocator {
   void init() {
     PartitionAllocInit(&partition_root_, kNumBuckets, kMaxAllocation);
   }
-  bool shutdown() { return PartitionAllocShutdown(&partition_root_); }
   ALWAYS_INLINE PartitionRoot* root() { return &partition_root_; }
 
  private:
@@ -897,7 +894,6 @@ class SizeSpecificPartitionAllocator {
 class PartitionAllocatorGeneric {
  public:
   void init() { PartitionAllocGenericInit(&partition_root_); }
-  bool shutdown() { return PartitionAllocGenericShutdown(&partition_root_); }
   ALWAYS_INLINE PartitionRootGeneric* root() { return &partition_root_; }
 
  private:

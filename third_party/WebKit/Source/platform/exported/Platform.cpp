@@ -128,7 +128,6 @@ void Platform::shutdown() {
   ProcessHeap::shutdown();
 
   WTF::shutdown();
-  WTF::Partitions::shutdown();
 
   s_platform->m_mainThread = nullptr;
   s_platform = nullptr;

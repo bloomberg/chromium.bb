@@ -245,60 +245,6 @@ void PartitionAllocGenericInit(PartitionRootGeneric* root) {
   *bucketPtr = &PartitionRootGeneric::gPagedBucket;
 }
 
-static bool PartitionAllocShutdownBucket(PartitionBucket* bucket) {
-  // Failure here indicates a memory leak.
-  bool foundLeak = bucket->num_full_pages != 0;
-  for (PartitionPage* page = bucket->active_pages_head; page;
-       page = page->next_page)
-    foundLeak |= (page->num_allocated_slots > 0);
-  return foundLeak;
-}
-
-static bool PartitionAllocBaseShutdown(PartitionRootBase* root) {
-  DCHECK(root->initialized);
-  root->initialized = false;
-
-  // Now that we've examined all partition pages in all buckets, it's safe
-  // to free all our super pages. Since the super page extent entries are
-  // stored in the super pages, we need to be careful not to access them
-  // after we've released the corresponding super page.
-  PartitionSuperPageExtentEntry* entry = root->first_extent;
-  while (entry) {
-    PartitionSuperPageExtentEntry* nextEntry = entry->next;
-    char* super_page = entry->super_page_base;
-    char* super_pages_end = entry->super_pages_end;
-    while (super_page < super_pages_end) {
-      FreePages(super_page, kSuperPageSize);
-      super_page += kSuperPageSize;
-    }
-    entry = nextEntry;
-  }
-  return root->direct_map_list != nullptr;
-}
-
-bool PartitionAllocShutdown(PartitionRoot* root) {
-  bool foundLeak = false;
-  size_t i;
-  for (i = 0; i < root->num_buckets; ++i) {
-    PartitionBucket* bucket = &root->buckets()[i];
-    foundLeak |= PartitionAllocShutdownBucket(bucket);
-  }
-  foundLeak |= PartitionAllocBaseShutdown(root);
-  return !foundLeak;
-}
-
-bool PartitionAllocGenericShutdown(PartitionRootGeneric* root) {
-  subtle::SpinLock::Guard guard(root->lock);
-  bool foundLeak = false;
-  size_t i;
-  for (i = 0; i < kGenericNumBuckets; ++i) {
-    PartitionBucket* bucket = &root->buckets[i];
-    foundLeak |= PartitionAllocShutdownBucket(bucket);
-  }
-  foundLeak |= PartitionAllocBaseShutdown(root);
-  return !foundLeak;
-}
-
 #if !defined(ARCH_CPU_64_BITS)
 static NOINLINE void partitionOutOfMemoryWithLotsOfUncommitedPages() {
   OOM_CRASH();

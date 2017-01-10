@@ -49,7 +49,6 @@ class WTF_EXPORT Partitions {
   static const char* const kAllocatedObjectPoolName;
 
   static void initialize(ReportPartitionAllocSizeFunction);
-  static void shutdown();
   ALWAYS_INLINE static base::PartitionRootGeneric* bufferPartition() {
     DCHECK(s_initialized);
     return m_bufferAllocator.root();

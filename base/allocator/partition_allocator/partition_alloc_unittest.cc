@@ -60,13 +60,6 @@ void TestSetup() {
   generic_allocator.init();
 }
 
-void TestShutdown() {
-  // We expect no leaks in the general case. We have a test for leak
-  // detection.
-  EXPECT_TRUE(allocator.shutdown());
-  EXPECT_TRUE(generic_allocator.shutdown());
-}
-
 #if !defined(ARCH_CPU_64_BITS) || defined(OS_POSIX)
 bool SetAddressSpaceLimit() {
 #if !defined(ARCH_CPU_64_BITS)
@@ -270,20 +263,6 @@ TEST(PartitionAllocTest, Basic) {
   // decommitted.
   EXPECT_TRUE(bucket->empty_pages_head);
   EXPECT_FALSE(bucket->decommitted_pages_head);
-
-  TestShutdown();
-}
-
-// Check that we can detect a memory leak.
-TEST(PartitionAllocTest, SimpleLeak) {
-  TestSetup();
-  void* leakedPtr = PartitionAlloc(allocator.root(), kTestAllocSize, type_name);
-  (void)leakedPtr;
-  void* leakedPtr2 = PartitionAllocGeneric(generic_allocator.root(),
-                                           kTestAllocSize, type_name);
-  (void)leakedPtr2;
-  EXPECT_FALSE(allocator.shutdown());
-  EXPECT_FALSE(generic_allocator.shutdown());
 }
 
 // Test multiple allocations, and freelist handling.
@@ -322,8 +301,6 @@ TEST(PartitionAllocTest, MultiAlloc) {
   PartitionFree(ptr1);
   PartitionFree(ptr2);
   PartitionFree(ptr3);
-
-  TestShutdown();
 }
 
 // Test a bucket with multiple pages.
@@ -366,8 +343,6 @@ TEST(PartitionAllocTest, MultiPages) {
   EXPECT_EQ(0, page2->num_allocated_slots);
   EXPECT_EQ(0, page2->num_unprovisioned_slots);
   EXPECT_NE(-1, page2->empty_cache_index);
-
-  TestShutdown();
 }
 
 // Test some finer aspects of internal page transitions.
@@ -428,8 +403,6 @@ TEST(PartitionAllocTest, PageTransitions) {
   ptr = reinterpret_cast<char*>(
       PartitionAlloc(allocator.root(), kTestAllocSize, type_name));
   PartitionFree(ptr);
-
-  TestShutdown();
 }
 
 // Test some corner cases relating to page transitions in the internal
@@ -473,8 +446,6 @@ TEST(PartitionAllocTest, FreePageListPageTransitions) {
     FreeFullPage(pages[i]);
   EXPECT_EQ(&PartitionRootGeneric::gSeedPage, bucket->active_pages_head);
   EXPECT_TRUE(bucket->empty_pages_head);
-
-  TestShutdown();
 }
 
 // Test a large series of allocations that cross more than one underlying
@@ -511,8 +482,6 @@ TEST(PartitionAllocTest, MultiPageAllocs) {
   }
   for (i = 0; i < numPagesNeeded; ++i)
     FreeFullPage(pages[i]);
-
-  TestShutdown();
 }
 
 // Test the generic allocation functions that can handle arbitrary sizes and
@@ -607,7 +576,6 @@ TEST(PartitionAllocTest, GenericAlloc) {
   EXPECT_EQ(*newCharPtr, 'F');
 
   PartitionFreeGeneric(generic_allocator.root(), newPtr);
-  TestShutdown();
 }
 
 // Test the generic allocation functions can handle some specific sizes of
@@ -705,8 +673,6 @@ TEST(PartitionAllocTest, GenericAllocSizes) {
   EXPECT_EQ(0, PartitionAllocGenericFlags(generic_allocator.root(),
                                           PartitionAllocReturnNull,
                                           3u * 1024 * 1024 * 1024, type_name));
-
-  TestShutdown();
 }
 
 // Test that we can fetch the real allocated size after an allocation.
@@ -778,8 +744,6 @@ TEST(PartitionAllocTest, GenericAllocGetSize) {
   predictedSize =
       PartitionAllocActualSize(generic_allocator.root(), requestedSize);
   EXPECT_EQ(requestedSize, predictedSize);
-
-  TestShutdown();
 }
 
 // Test the realloc() contract.
@@ -852,8 +816,6 @@ TEST(PartitionAllocTest, Realloc) {
   EXPECT_NE(ptr, ptr2);
 
   PartitionFreeGeneric(generic_allocator.root(), ptr2);
-
-  TestShutdown();
 }
 
 // Tests the handing out of freelists for partial pages.
@@ -1010,8 +972,6 @@ TEST(PartitionAllocTest, PartialPageFreelists) {
       (pageSize + kExtraAllocSize);
   EXPECT_EQ(totalSlots - 1, page->num_unprovisioned_slots);
   PartitionFreeGeneric(generic_allocator.root(), ptr);
-
-  TestShutdown();
 }
 
 // Test some of the fragmentation-resistant properties of the allocator.
@@ -1047,8 +1007,6 @@ TEST(PartitionAllocTest, PageRefilling) {
   FreeFullPage(page2);
   FreeFullPage(page1);
   PartitionFree(ptr);
-
-  TestShutdown();
 }
 
 // Basic tests to ensure that allocations work for partial page buckets.
@@ -1071,8 +1029,6 @@ TEST(PartitionAllocTest, PartialPages) {
   PartitionPage* page2 = GetFullPage(size);
   FreeFullPage(page2);
   FreeFullPage(page1);
-
-  TestShutdown();
 }
 
 // Test correct handling if our mapping collides with another.
@@ -1155,8 +1111,6 @@ TEST(PartitionAllocTest, MappingCollision) {
     FreeFullPage(firstSuperPagePages[i]);
     FreeFullPage(secondSuperPagePages[i]);
   }
-
-  TestShutdown();
 }
 
 // Tests that pages in the free page cache do get freed as appropriate.
@@ -1210,7 +1164,6 @@ TEST(PartitionAllocTest, FreeCache) {
   }
   EXPECT_EQ(kPartitionPageSize,
             allocator.root()->total_size_of_committed_pages);
-  TestShutdown();
 }
 
 // Tests for a bug we had with losing references to free pages.
@@ -1274,8 +1227,6 @@ TEST(PartitionAllocTest, LostFreePagesBug) {
   EXPECT_TRUE(bucket->active_pages_head);
   EXPECT_TRUE(bucket->empty_pages_head);
   EXPECT_TRUE(bucket->decommitted_pages_head);
-
-  TestShutdown();
 }
 
 #if !defined(ARCH_CPU_64_BITS) || defined(OS_POSIX)
@@ -1333,8 +1284,6 @@ static void DoReturnNullTest(size_t allocSize) {
   PartitionFreeGeneric(generic_allocator.root(), ptrs);
 
   EXPECT_TRUE(ClearAddressSpaceLimit());
-
-  TestShutdown();
 }
 
 // Tests that if an allocation fails in "return null" mode, repeating it doesn't
@@ -1387,8 +1336,6 @@ TEST(PartitionAllocDeathTest, LargeAllocs) {
       PartitionAllocGeneric(generic_allocator.root(),
                             static_cast<size_t>(INT_MAX) + 1, type_name),
       "");
-
-  TestShutdown();
 }
 
 // Check that our immediate double-free detection works.
@@ -1401,8 +1348,6 @@ TEST(PartitionAllocDeathTest, ImmediateDoubleFree) {
   PartitionFreeGeneric(generic_allocator.root(), ptr);
 
   EXPECT_DEATH(PartitionFreeGeneric(generic_allocator.root(), ptr), "");
-
-  TestShutdown();
 }
 
 // Check that our refcount-based double-free detection works.
@@ -1421,8 +1366,6 @@ TEST(PartitionAllocDeathTest, RefcountDoubleFree) {
   // fire. However, it does take the "refcount" of the partition page to -1,
   // which is illegal and should be trapped.
   EXPECT_DEATH(PartitionFreeGeneric(generic_allocator.root(), ptr), "");
-
-  TestShutdown();
 }
 
 // Check that guard pages are present where expected.
@@ -1458,8 +1401,6 @@ TEST(PartitionAllocDeathTest, GuardPages) {
   EXPECT_DEATH(*(charPtr + size + kExtraAllocSize) = 'A', "");
 
   PartitionFreeGeneric(generic_allocator.root(), ptr);
-
-  TestShutdown();
 }
 
 // Check that a bad free() is caught where the free() refers to an unused
@@ -1477,8 +1418,6 @@ TEST(PartitionAllocDeathTest, FreeWrongPartitionPage) {
   EXPECT_DEATH(PartitionFreeGeneric(generic_allocator.root(), badPtr), "");
 
   PartitionFreeGeneric(generic_allocator.root(), ptr);
-
-  TestShutdown();
 }
 
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -1755,8 +1694,6 @@ TEST(PartitionAllocTest, DumpMemoryStats) {
 
     PartitionFreeGeneric(generic_allocator.root(), ptr2);
   }
-
-  TestShutdown();
 }
 
 // Tests the API to purge freeable memory.
@@ -1807,8 +1744,6 @@ TEST(PartitionAllocTest, Purge) {
 
   CheckPageInCore(ptr - kPointerOffset, false);
   CheckPageInCore(bigPtr - kPointerOffset, false);
-
-  TestShutdown();
 }
 
 // Tests that we prefer to allocate into a non-empty partition page over an
@@ -1862,8 +1797,6 @@ TEST(PartitionAllocTest, PreferActiveOverEmpty) {
 
   PartitionFreeGeneric(generic_allocator.root(), ptr5);
   PartitionFreeGeneric(generic_allocator.root(), ptr7);
-
-  TestShutdown();
 }
 
 // Tests the API to purge discardable memory.
@@ -2140,8 +2073,6 @@ TEST(PartitionAllocTest, PurgeDiscardable) {
     PartitionFreeGeneric(generic_allocator.root(), ptr1);
     PartitionFreeGeneric(generic_allocator.root(), ptr2);
   }
-
-  TestShutdown();
 }
 
 }  // namespace base

@@ -62,19 +62,6 @@ void Partitions::initialize(
   }
 }
 
-void Partitions::shutdown() {
-  base::subtle::SpinLock::Guard guard(s_initializationLock);
-
-  // We could ASSERT here for a memory leak within the partition, but it leads
-  // to very hard to diagnose ASSERTs, so it's best to leave leak checking for
-  // the valgrind and heapcheck bots, which run without partitions.
-  if (s_initialized) {
-    (void)m_layoutAllocator.shutdown();
-    (void)m_bufferAllocator.shutdown();
-    (void)m_fastMallocAllocator.shutdown();
-  }
-}
-
 void Partitions::decommitFreeableMemory() {
   RELEASE_ASSERT(isMainThread());
   if (!s_initialized)
