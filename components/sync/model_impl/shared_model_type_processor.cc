@@ -48,8 +48,10 @@ void SharedModelTypeProcessor::OnMetadataLoaded(
     std::unique_ptr<MetadataBatch> batch) {
   DCHECK(CalledOnValidThread());
   DCHECK(entities_.empty());
-  DCHECK(!is_metadata_loaded_);
-  DCHECK(!IsConnected());
+
+  // An error occurred earlier in the model.
+  if (is_metadata_loaded_)
+    return;
 
   is_metadata_loaded_ = true;
   // Flip this flag here to cover all cases where we don't need to load data.
@@ -566,7 +568,9 @@ void SharedModelTypeProcessor::OnInitialUpdateReceived(
 
 void SharedModelTypeProcessor::OnInitialPendingDataLoaded(
     std::unique_ptr<DataBatch> data_batch) {
-  DCHECK(!is_initial_pending_data_loaded_);
+  // An error occurred before this callback.
+  if (is_initial_pending_data_loaded_)
+    return;
 
   ConsumeDataBatch(std::move(data_batch));
   is_initial_pending_data_loaded_ = true;

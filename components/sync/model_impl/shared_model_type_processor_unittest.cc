@@ -324,7 +324,7 @@ TEST_F(SharedModelTypeProcessorTest, NonInitialSync) {
 }
 
 // Test that an error during the merge is propagated to the error handler.
-TEST_F(SharedModelTypeProcessorTest, InitialError) {
+TEST_F(SharedModelTypeProcessorTest, MergeError) {
   OnMetadataLoaded();
   OnSyncStarting();
 
@@ -351,6 +351,21 @@ TEST_F(SharedModelTypeProcessorTest, StartErrors) {
   InitializeToMetadataLoaded();
   ExpectError();
   OnSyncStarting();
+
+  // Test an error prior to metadata load.
+  ResetState(false);
+  type_processor()->ReportError(FROM_HERE, "boom");
+  ExpectError();
+  OnSyncStarting();
+  OnMetadataLoaded();
+
+  // Test an error prior to pending data load.
+  ResetStateWriteItem(kKey1, kValue1);
+  InitializeToMetadataLoaded();
+  type_processor()->ReportError(FROM_HERE, "boom");
+  ExpectError();
+  OnSyncStarting();
+  OnPendingCommitDataLoaded();
 }
 
 // This test covers race conditions during loading pending data. All cases
