@@ -53,19 +53,11 @@ void AudioFocusDelegateAndroid::AbandonAudioFocus() {
 }
 
 void AudioFocusDelegateAndroid::OnSuspend(JNIEnv*,
-                                          const JavaParamRef<jobject>&,
-                                          jboolean temporary) {
-  // TODO(mlamouri): this check makes it so that if a MediaSession is paused and
-  // then loses audio focus, it will still stay in the Suspended state.
-  // See https://crbug.com/539998
+                                          const JavaParamRef<jobject>&) {
   if (!media_session_->IsActive())
     return;
 
-  if (temporary) {
-    media_session_->Suspend(MediaSession::SuspendType::SYSTEM);
-  } else {
-    media_session_->Stop(MediaSession::SuspendType::SYSTEM);
-  }
+  media_session_->Suspend(MediaSession::SuspendType::SYSTEM);
 }
 
 void AudioFocusDelegateAndroid::OnResume(JNIEnv*,

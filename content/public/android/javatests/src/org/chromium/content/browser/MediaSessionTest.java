@@ -9,6 +9,8 @@ import android.media.AudioManager;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 
+import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -18,8 +20,11 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.common.ContentSwitches;
+import org.chromium.content_public.browser.MediaSession;
+import org.chromium.content_public.browser.MediaSessionObserver;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 
+import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
 /**
@@ -84,6 +89,35 @@ public class MediaSessionTest extends ContentShellTestBase {
 
     private MockAudioFocusChangeListener mAudioFocusChangeListener;
 
+    @SuppressFBWarnings("URF_UNREAD_FIELD")
+    private MediaSessionObserver mObserver;
+
+    private ArrayList<StateRecord> mStateRecords = new ArrayList<StateRecord>();
+
+    private static class StateRecord {
+        public boolean isControllable;
+        public boolean isSuspended;
+
+        public StateRecord(boolean isControllable, boolean isSuspended) {
+            this.isControllable = isControllable;
+            this.isSuspended = isSuspended;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) return true;
+            if (!(obj instanceof StateRecord)) return false;
+
+            StateRecord other = (StateRecord) obj;
+            return isControllable == other.isControllable && isSuspended == other.isSuspended;
+        }
+
+        @Override
+        public int hashCode() {
+            return (isControllable ? 2 : 0) + (isSuspended ? 1 : 0);
+        }
+    }
+
     @Override
     public void setUp() throws Exception {
         super.setUp();
@@ -95,6 +129,19 @@ public class MediaSessionTest extends ContentShellTestBase {
         }
 
         mAudioFocusChangeListener = new MockAudioFocusChangeListener();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mObserver =
+                        new MediaSessionObserver(MediaSession.fromWebContents(getWebContents())) {
+                            @Override
+                            public void mediaSessionStateChanged(
+                                    boolean isControllable, boolean isSuspended) {
+                                mStateRecords.add(new StateRecord(isControllable, isSuspended));
+                            }
+                        };
+            }
+        });
     }
 
     @Override
@@ -381,5 +428,63 @@ public class MediaSessionTest extends ContentShellTestBase {
 
         DOMUtils.waitForMediaPlay(getWebContents(), LONG_AUDIO);
         DOMUtils.waitForMediaPlay(getWebContents(), LONG_VIDEO);
+    }
+
+    @MediumTest
+    @Feature({"MediaSession"})
+    @RetryOnFailure
+    public void testSessionSuspendedAfterFocusLossWhenPlaying() throws Exception {
+        ArrayList<StateRecord> expectedStates = new ArrayList<StateRecord>();
+        expectedStates.add(new StateRecord(true, false));
+        expectedStates.add(new StateRecord(true, true));
+
+        assertEquals(AudioManager.AUDIOFOCUS_LOSS, mAudioFocusChangeListener.getAudioFocusState());
+        mAudioFocusChangeListener.requestAudioFocus(AudioManager.AUDIOFOCUS_GAIN);
+        assertEquals(AudioManager.AUDIOFOCUS_GAIN, mAudioFocusChangeListener.getAudioFocusState());
+
+        DOMUtils.playMedia(getWebContents(), LONG_AUDIO);
+        DOMUtils.waitForMediaPlay(getWebContents(), LONG_AUDIO);
+
+        // Wait for the media to be really playing.
+        mAudioFocusChangeListener.waitForFocusStateChange(AudioManager.AUDIOFOCUS_LOSS);
+
+        mAudioFocusChangeListener.requestAudioFocus(AudioManager.AUDIOFOCUS_GAIN);
+        assertEquals(AudioManager.AUDIOFOCUS_GAIN, mAudioFocusChangeListener.getAudioFocusState());
+
+        DOMUtils.waitForMediaPauseBeforeEnd(getWebContents(), LONG_AUDIO);
+
+        assertEquals(expectedStates, mStateRecords);
+    }
+
+    @MediumTest
+    @Feature({"MediaSession"})
+    @RetryOnFailure
+    public void testSessionSuspendedAfterFocusLossWhenPaused() throws Exception {
+        ArrayList<StateRecord> expectedStates = new ArrayList<StateRecord>();
+        expectedStates.add(new StateRecord(true, false));
+        expectedStates.add(new StateRecord(true, true));
+
+        assertEquals(AudioManager.AUDIOFOCUS_LOSS, mAudioFocusChangeListener.getAudioFocusState());
+        mAudioFocusChangeListener.requestAudioFocus(AudioManager.AUDIOFOCUS_GAIN);
+        assertEquals(AudioManager.AUDIOFOCUS_GAIN, mAudioFocusChangeListener.getAudioFocusState());
+
+        DOMUtils.playMedia(getWebContents(), LONG_AUDIO);
+        DOMUtils.waitForMediaPlay(getWebContents(), LONG_AUDIO);
+
+        // Wait for the media to be really playing.
+        mAudioFocusChangeListener.waitForFocusStateChange(AudioManager.AUDIOFOCUS_LOSS);
+
+        DOMUtils.pauseMedia(getWebContents(), LONG_AUDIO);
+        DOMUtils.waitForMediaPauseBeforeEnd(getWebContents(), LONG_AUDIO);
+
+        assertEquals(expectedStates, mStateRecords);
+
+        mAudioFocusChangeListener.requestAudioFocus(AudioManager.AUDIOFOCUS_GAIN);
+        assertEquals(AudioManager.AUDIOFOCUS_GAIN, mAudioFocusChangeListener.getAudioFocusState());
+
+        // Wait for 1 second before observing MediaSession state change.
+        Thread.sleep(AUDIO_FOCUS_CHANGE_TIMEOUT);
+
+        assertEquals(expectedStates, mStateRecords);
     }
 }

@@ -29,9 +29,7 @@ class AudioFocusDelegateAndroid : public AudioFocusDelegate {
 
   // Called when the Android system requests the MediaSession to be suspended.
   // Called by Java through JNI.
-  void OnSuspend(JNIEnv* env,
-                 const base::android::JavaParamRef<jobject>& obj,
-                 jboolean temporary);
+  void OnSuspend(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
   // Called when the Android system requests the MediaSession to be resumed.
   // Called by Java through JNI.

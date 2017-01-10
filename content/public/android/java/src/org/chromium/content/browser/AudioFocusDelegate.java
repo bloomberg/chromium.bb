@@ -90,7 +90,7 @@ public class AudioFocusDelegate implements AudioManager.OnAudioFocusChangeListen
                 }
                 break;
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
-                nativeOnSuspend(mNativeAudioFocusDelegateAndroid, true);
+                nativeOnSuspend(mNativeAudioFocusDelegateAndroid);
                 break;
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
                 mIsDucking = true;
@@ -99,7 +99,7 @@ public class AudioFocusDelegate implements AudioManager.OnAudioFocusChangeListen
                 break;
             case AudioManager.AUDIOFOCUS_LOSS:
                 abandonAudioFocus();
-                nativeOnSuspend(mNativeAudioFocusDelegateAndroid, false);
+                nativeOnSuspend(mNativeAudioFocusDelegateAndroid);
                 break;
             default:
                 Log.w(TAG, "onAudioFocusChange called with unexpected value %d", focusChange);
@@ -107,7 +107,7 @@ public class AudioFocusDelegate implements AudioManager.OnAudioFocusChangeListen
         }
     }
 
-    private native void nativeOnSuspend(long nativeAudioFocusDelegateAndroid, boolean temporary);
+    private native void nativeOnSuspend(long nativeAudioFocusDelegateAndroid);
     private native void nativeOnResume(long nativeAudioFocusDelegateAndroid);
     private native void nativeOnStartDucking(long nativeAudioFocusDelegateAndroid);
     private native void nativeOnStopDucking(long nativeAudioFocusDelegateAndroid);
