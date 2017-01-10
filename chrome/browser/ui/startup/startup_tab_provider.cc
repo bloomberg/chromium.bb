@@ -9,11 +9,8 @@
 #include "chrome/browser/profile_resetter/triggered_profile_resetter.h"
 #include "chrome/browser/profile_resetter/triggered_profile_resetter_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/locale_settings.h"
@@ -29,10 +26,6 @@
 #endif
 
 StartupTabs StartupTabProviderImpl::GetOnboardingTabs(Profile* profile) const {
-// Onboarding content has not been launched on Chrome OS.
-#if defined(OS_CHROMEOS)
-  return StartupTabs();
-#else
   if (!profile)
     return StartupTabs();
 
@@ -57,11 +50,10 @@ StartupTabs StartupTabProviderImpl::GetOnboardingTabs(Profile* profile) const {
                                          has_seen_win10_promo, is_signed_in,
                                          is_default_browser);
   }
-#endif  // defined(OS_WIN)
+#endif
 
   return CheckStandardOnboardingTabPolicy(is_first_run, has_seen_welcome_page,
                                           is_signed_in);
-#endif  // defined(OS_CHROMEOS)
 }
 
 StartupTabs StartupTabProviderImpl::GetDistributionFirstRunTabs(
@@ -94,20 +86,8 @@ StartupTabs StartupTabProviderImpl::GetPinnedTabs(
 StartupTabs StartupTabProviderImpl::GetPreferencesTabs(
     const base::CommandLine& command_line,
     Profile* profile) const {
-  // Attempt to find an existing, non-empty tabbed browser for this profile. If
-  // one exists, preferences tabs are not used.
-  BrowserList* browser_list = BrowserList::GetInstance();
-  auto other_tabbed_browser = std::find_if(
-      browser_list->begin(), browser_list->end(), [profile](Browser* browser) {
-        return browser->profile() == profile && browser->is_type_tabbed() &&
-               !browser->tab_strip_model()->empty();
-      });
-  bool profile_has_other_tabbed_browser =
-      other_tabbed_browser != browser_list->end();
-
   return CheckPreferencesTabPolicy(
-      StartupBrowserCreator::GetSessionStartupPref(command_line, profile),
-      profile_has_other_tabbed_browser);
+      StartupBrowserCreator::GetSessionStartupPref(command_line, profile));
 }
 
 StartupTabs StartupTabProviderImpl::GetNewTabPageTabs(
@@ -187,11 +167,9 @@ StartupTabs StartupTabProviderImpl::CheckPinnedTabPolicy(
 
 // static
 StartupTabs StartupTabProviderImpl::CheckPreferencesTabPolicy(
-    const SessionStartupPref& pref,
-    bool profile_has_other_tabbed_browser) {
+    const SessionStartupPref& pref) {
   StartupTabs tabs;
-  if (pref.type == SessionStartupPref::Type::URLS && !pref.urls.empty() &&
-      !profile_has_other_tabbed_browser) {
+  if (pref.type == SessionStartupPref::Type::URLS && !pref.urls.empty()) {
     for (const auto& url : pref.urls)
       tabs.push_back(StartupTab(url, false));
   }

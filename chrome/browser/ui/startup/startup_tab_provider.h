@@ -91,12 +91,10 @@ class StartupTabProviderImpl : public StartupTabProvider {
   static StartupTabs CheckPinnedTabPolicy(const SessionStartupPref& pref,
                                           const StartupTabs& pinned_tabs);
 
-  // Determines whether preferences and window state indicate that
-  // user-specified tabs should be shown as the default new window content, and
-  // returns the specified tabs if so.
-  static StartupTabs CheckPreferencesTabPolicy(
-      const SessionStartupPref& pref,
-      bool profile_has_other_tabbed_browser);
+  // Determines whether preferences indicate that user-specified tabs should be
+  // shown as the default new window content, and returns the specified tabs if
+  // so.
+  static StartupTabs CheckPreferencesTabPolicy(const SessionStartupPref& pref);
 
   // Determines whether startup preferences require the New Tab Page to be
   // explicitly specified. Session Restore does not expect the NTP to be passed.
