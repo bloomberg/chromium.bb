@@ -34,6 +34,7 @@ template("common_tmpl") {
       "data_savings_recorder.h",
       "lofi_decider.h",
       "lofi_ui_service.h",
+      "resource_type_provider.h",
     ]
 
     public_deps = [

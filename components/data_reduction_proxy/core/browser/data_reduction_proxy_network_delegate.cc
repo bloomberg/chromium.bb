@@ -223,14 +223,30 @@ void DataReductionProxyNetworkDelegate::OnBeforeStartTransactionInternal(
     const net::CompletionCallback& callback,
     net::HttpRequestHeaders* headers) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
   if (!data_reduction_proxy_io_data_)
-    return;
-  if (!data_reduction_proxy_io_data_->lofi_decider())
     return;
   if (!data_reduction_proxy_io_data_->IsEnabled())
     return;
-  data_reduction_proxy_io_data_->lofi_decider()->MaybeSetAcceptTransformHeader(
-      *request, data_reduction_proxy_config_->lofi_off(), headers);
+
+  if (request->url().SchemeIsCryptographic() ||
+      !request->url().SchemeIsHTTPOrHTTPS()) {
+    return;
+  }
+
+  if (data_reduction_proxy_io_data_->resource_type_provider()) {
+    // Sets content type of |request| in the resource type provider, so it can
+    // be later used for determining the proxy that should be used for fetching
+    // |request|.
+    data_reduction_proxy_io_data_->resource_type_provider()->SetContentType(
+        *request);
+  }
+
+  if (data_reduction_proxy_io_data_->lofi_decider()) {
+    data_reduction_proxy_io_data_->lofi_decider()
+        ->MaybeSetAcceptTransformHeader(
+            *request, data_reduction_proxy_config_->lofi_off(), headers);
+  }
 }
 
 void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(

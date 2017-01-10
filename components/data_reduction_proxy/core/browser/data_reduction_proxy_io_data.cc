@@ -157,14 +157,13 @@ DataReductionProxyIOData::DataReductionProxyIOData(
   proxy_delegate_.reset(new DataReductionProxyDelegate(
       config_.get(), configurator_.get(), event_creator_.get(),
       bypass_stats_.get(), net_log_));
- }
-
- DataReductionProxyIOData::DataReductionProxyIOData()
-     : client_(Client::UNKNOWN),
-       net_log_(nullptr),
-       url_request_context_getter_(nullptr),
-       weak_factory_(this) {
 }
+
+DataReductionProxyIOData::DataReductionProxyIOData()
+    : client_(Client::UNKNOWN),
+      net_log_(nullptr),
+      url_request_context_getter_(nullptr),
+      weak_factory_(this) {}
 
 DataReductionProxyIOData::~DataReductionProxyIOData() {
   // Guaranteed to be destroyed on IO thread if the IO thread is still
@@ -199,7 +198,7 @@ void DataReductionProxyIOData::InitializeOnIOThread() {
   config_->InitializeOnIOThread(basic_url_request_context_getter_.get(),
                                 url_request_context_getter_);
   bypass_stats_->InitializeOnIOThread();
-  proxy_delegate_->InitializeOnIOThread();
+  proxy_delegate_->InitializeOnIOThread(this);
   if (config_client_.get())
     config_client_->InitializeOnIOThread(url_request_context_getter_);
   if (ui_task_runner_->BelongsToCurrentThread()) {

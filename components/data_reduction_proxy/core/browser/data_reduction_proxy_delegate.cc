@@ -13,6 +13,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -44,6 +45,7 @@ DataReductionProxyDelegate::DataReductionProxyDelegate(
       alternative_proxies_broken_(false),
       tick_clock_(new base::DefaultTickClock()),
       first_data_saver_request_recorded_(false),
+      io_data_(nullptr),
       net_log_(net_log) {
   DCHECK(config_);
   DCHECK(configurator_);
@@ -59,9 +61,12 @@ DataReductionProxyDelegate::~DataReductionProxyDelegate() {
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
 }
 
-void DataReductionProxyDelegate::InitializeOnIOThread() {
+void DataReductionProxyDelegate::InitializeOnIOThread(
+    DataReductionProxyIOData* io_data) {
+  DCHECK(io_data);
   DCHECK(thread_checker_.CalledOnValidThread());
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
+  io_data_ = io_data;
 }
 
 void DataReductionProxyDelegate::OnResolveProxy(
@@ -73,7 +78,8 @@ void DataReductionProxyDelegate::OnResolveProxy(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   OnResolveProxyHandler(url, method, configurator_->GetProxyConfig(),
-                        proxy_service.proxy_retry_info(), config_, result);
+                        proxy_service.proxy_retry_info(), config_, io_data_,
+                        result);
 
   if (!first_data_saver_request_recorded_ && !result->is_empty() &&
       config_->IsDataReductionProxy(result->proxy_server(), nullptr)) {
@@ -250,18 +256,32 @@ void OnResolveProxyHandler(const GURL& url,
                            const net::ProxyConfig& data_reduction_proxy_config,
                            const net::ProxyRetryInfoMap& proxy_retry_info,
                            const DataReductionProxyConfig* config,
+                           DataReductionProxyIOData* io_data,
                            net::ProxyInfo* result) {
   DCHECK(config);
   DCHECK(result->is_empty() || result->is_direct() ||
          !config->IsDataReductionProxy(result->proxy_server(), NULL));
+
   if (!util::EligibleForDataReductionProxy(*result, url, method))
     return;
+
   net::ProxyInfo data_reduction_proxy_info;
   bool data_saver_proxy_used = util::ApplyProxyConfigToProxyInfo(
       data_reduction_proxy_config, proxy_retry_info, url,
       &data_reduction_proxy_info);
   if (data_saver_proxy_used)
     result->OverrideProxyList(data_reduction_proxy_info.proxy_list());
+
+  if (io_data && io_data->resource_type_provider()) {
+    ResourceTypeProvider::ContentType content_type =
+        io_data->resource_type_provider()->GetContentType(url);
+    DCHECK_GT(ResourceTypeProvider::CONTENT_TYPE_MAX, content_type);
+    UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.ResourceContentType",
+                              content_type,
+                              ResourceTypeProvider::CONTENT_TYPE_MAX);
+    // TODO(tbansal): crbug.com/671810: Use the content type to determine the
+    // proxy that should be used for fetching |url|.
+  }
 
   // The |data_reduction_proxy_config| must be valid otherwise the proxy
   // cannot be used.

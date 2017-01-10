@@ -19,6 +19,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -32,6 +33,7 @@
 #include "net/proxy/proxy_retry_info.h"
 #include "net/socket/socket_test_util.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -67,13 +69,9 @@ const Client kClient = Client::UNKNOWN;
 
 class ContentLoFiDeciderTest : public testing::Test {
  public:
-  ContentLoFiDeciderTest() : context_(true) {
-    context_.set_client_socket_factory(&mock_socket_factory_);
-    context_.Init();
-
+  ContentLoFiDeciderTest() : context_(false) {
     test_context_ = DataReductionProxyTestContext::Builder()
                         .WithClient(kClient)
-                        .WithMockClientSocketFactory(&mock_socket_factory_)
                         .WithURLRequestContext(&context_)
                         .Build();
 
@@ -88,7 +86,6 @@ class ContentLoFiDeciderTest : public testing::Test {
     data_reduction_proxy_network_delegate_->InitIODataAndUMA(
         test_context_->io_data(), test_context_->io_data()->bypass_stats());
 
-    context_.set_network_delegate(data_reduction_proxy_network_delegate_.get());
 
     std::unique_ptr<data_reduction_proxy::ContentLoFiDecider>
         data_reduction_proxy_lofi_decider(
@@ -225,7 +222,6 @@ class ContentLoFiDeciderTest : public testing::Test {
 
  protected:
   base::MessageLoopForIO message_loop_;
-  net::MockClientSocketFactory mock_socket_factory_;
   net::TestURLRequestContext context_;
   net::TestDelegate delegate_;
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
@@ -687,4 +683,4 @@ TEST_F(ContentLoFiDeciderTest, MaybeIgnoreBlacklist) {
   EXPECT_EQ("Foo, exp=ignore_preview_blacklist", header_value);
 }
 
-}  // namespace data_reduction_roxy
+}  // namespace data_reduction_proxy

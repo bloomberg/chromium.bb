@@ -35,6 +35,7 @@ class DataReductionProxyBypassStats;
 class DataReductionProxyConfig;
 class DataReductionProxyConfigurator;
 class DataReductionProxyEventCreator;
+class DataReductionProxyIOData;
 
 class DataReductionProxyDelegate
     : public net::ProxyDelegate,
@@ -51,7 +52,7 @@ class DataReductionProxyDelegate
   ~DataReductionProxyDelegate() override;
 
   // Performs initialization on the IO thread.
-  void InitializeOnIOThread();
+  void InitializeOnIOThread(DataReductionProxyIOData* io_data);
 
   // net::ProxyDelegate implementation:
   void OnResolveProxy(const GURL& url,
@@ -137,6 +138,8 @@ class DataReductionProxyDelegate
   // of initialization of |this|, whichever is later.
   base::TimeTicks last_network_change_time_;
 
+  DataReductionProxyIOData* io_data_;
+
   net::NetLog* net_log_;
 
   base::ThreadChecker thread_checker_;
@@ -154,6 +157,7 @@ void OnResolveProxyHandler(const GURL& url,
                            const net::ProxyConfig& data_reduction_proxy_config,
                            const net::ProxyRetryInfoMap& proxy_retry_info,
                            const DataReductionProxyConfig* config,
+                           DataReductionProxyIOData* io_data,
                            net::ProxyInfo* result);
 }  // namespace data_reduction_proxy
 

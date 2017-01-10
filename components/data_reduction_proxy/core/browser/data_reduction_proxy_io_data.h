@@ -24,6 +24,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/core/common/lofi_decider.h"
 #include "components/data_reduction_proxy/core/common/lofi_ui_service.h"
+#include "components/data_reduction_proxy/core/common/resource_type_provider.h"
 
 namespace base {
 class Value;
@@ -169,16 +170,25 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
 
   LoFiDecider* lofi_decider() const { return lofi_decider_.get(); }
 
-  void set_lofi_decider(std::unique_ptr<LoFiDecider> lofi_decider) const {
+  void set_lofi_decider(std::unique_ptr<LoFiDecider> lofi_decider) {
     lofi_decider_ = std::move(lofi_decider);
   }
 
   LoFiUIService* lofi_ui_service() const { return lofi_ui_service_.get(); }
 
   // Takes ownership of |lofi_ui_service|.
-  void set_lofi_ui_service(
-      std::unique_ptr<LoFiUIService> lofi_ui_service) const {
+  void set_lofi_ui_service(std::unique_ptr<LoFiUIService> lofi_ui_service) {
     lofi_ui_service_ = std::move(lofi_ui_service);
+  }
+
+  ResourceTypeProvider* resource_type_provider() const {
+    DCHECK(io_task_runner_->BelongsToCurrentThread());
+    return resource_type_provider_.get();
+  }
+
+  void set_resource_type_provider(
+      std::unique_ptr<ResourceTypeProvider> resource_type_provider) {
+    resource_type_provider_ = std::move(resource_type_provider);
   }
 
   void set_data_usage_source_provider(
@@ -226,10 +236,13 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
   std::unique_ptr<DataReductionProxyConfig> config_;
 
   // Handles getting if a request is in Lo-Fi mode.
-  mutable std::unique_ptr<LoFiDecider> lofi_decider_;
+  std::unique_ptr<LoFiDecider> lofi_decider_;
 
   // Handles showing Lo-Fi UI when a Lo-Fi response is received.
-  mutable std::unique_ptr<LoFiUIService> lofi_ui_service_;
+  std::unique_ptr<LoFiUIService> lofi_ui_service_;
+
+  // Handles getting the content type of a request.
+  std::unique_ptr<ResourceTypeProvider> resource_type_provider_;
 
   // Creates Data Reduction Proxy-related events for logging.
   std::unique_ptr<DataReductionProxyEventCreator> event_creator_;
