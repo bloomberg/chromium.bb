@@ -40,16 +40,16 @@ TEST(PeripheralContentHeuristic, DisallowCrossOriginUnlessLarge) {
                 url::Origin(GURL(kOtherOrigin)), gfx::Size(1000, 1000)));
 }
 
-TEST(PeripheralContentHeuristic, AlwaysAllowTinyContent) {
+TEST(PeripheralContentHeuristic, TinyContent) {
   EXPECT_EQ(RenderFrame::CONTENT_STATUS_ESSENTIAL_SAME_ORIGIN,
             PeripheralContentHeuristic::GetPeripheralStatus(
                 std::set<url::Origin>(), url::Origin(GURL(kSameOrigin)),
                 url::Origin(GURL(kSameOrigin)), gfx::Size(1, 1)));
-  EXPECT_EQ(RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_TINY,
+  EXPECT_EQ(RenderFrame::CONTENT_STATUS_TINY,
             PeripheralContentHeuristic::GetPeripheralStatus(
                 std::set<url::Origin>(), url::Origin(GURL(kSameOrigin)),
                 url::Origin(GURL(kOtherOrigin)), gfx::Size(1, 1)));
-  EXPECT_EQ(RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_TINY,
+  EXPECT_EQ(RenderFrame::CONTENT_STATUS_TINY,
             PeripheralContentHeuristic::GetPeripheralStatus(
                 std::set<url::Origin>(), url::Origin(GURL(kSameOrigin)),
                 url::Origin(GURL(kOtherOrigin)), gfx::Size(5, 5)));
@@ -87,7 +87,7 @@ TEST(PeripheralContentHeuristic, UndefinedSize) {
                 whitelist, url::Origin(GURL(kSameOrigin)),
                 url::Origin(GURL(kOtherOrigin)), gfx::Size()));
 
-  EXPECT_EQ(RenderFrame::CONTENT_STATUS_ESSENTIAL_UNKNOWN_SIZE,
+  EXPECT_EQ(RenderFrame::CONTENT_STATUS_UNKNOWN_SIZE,
             PeripheralContentHeuristic::GetPeripheralStatus(
                 std::set<url::Origin>(), url::Origin(GURL(kSameOrigin)),
                 url::Origin(GURL(kOtherOrigin)), gfx::Size()));

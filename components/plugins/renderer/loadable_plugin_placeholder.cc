@@ -209,8 +209,7 @@ void LoadablePluginPlaceholder::OnUnobscuredRectUpdate(
                                 : RenderFrame::RECORD_DECISION);
 
   bool plugin_is_tiny_and_blocked =
-      is_blocked_for_tinyness_ &&
-      status == RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_TINY;
+      is_blocked_for_tinyness_ && status == RenderFrame::CONTENT_STATUS_TINY;
 
   // Early exit for plugins that we've discovered to be essential.
   if (!plugin_is_tiny_and_blocked &&

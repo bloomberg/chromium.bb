@@ -66,7 +66,7 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
  public:
   // These numeric values are used in UMA logs; do not change them.
   enum PeripheralContentStatus {
-    // Content is peripheral because it doesn't meet any of the below criteria.
+    // Content is peripheral, and should be throttled, but is not tiny.
     CONTENT_STATUS_PERIPHERAL = 0,
     // Content is essential because it's same-origin with the top-level frame.
     CONTENT_STATUS_ESSENTIAL_SAME_ORIGIN = 1,
@@ -74,10 +74,10 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
     CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_BIG = 2,
     // Content is essential because there's large content from the same origin.
     CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_WHITELISTED = 3,
-    // Content is essential because it's tiny in size.
-    CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_TINY = 4,
-    // Content is essential because it has an unknown size.
-    CONTENT_STATUS_ESSENTIAL_UNKNOWN_SIZE = 5,
+    // Content is tiny in size. These are usually blocked.
+    CONTENT_STATUS_TINY = 4,
+    // Content has an unknown size.
+    CONTENT_STATUS_UNKNOWN_SIZE = 5,
     // Must be last.
     CONTENT_STATUS_NUM_ITEMS
   };

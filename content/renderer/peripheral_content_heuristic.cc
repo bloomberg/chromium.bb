@@ -45,11 +45,11 @@ PeripheralContentHeuristic::GetPeripheralStatus(
     return RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_WHITELISTED;
 
   if (unobscured_size.IsEmpty())
-    return RenderFrame::CONTENT_STATUS_ESSENTIAL_UNKNOWN_SIZE;
+    return RenderFrame::CONTENT_STATUS_UNKNOWN_SIZE;
 
   if (unobscured_size.width() <= kTinyContentSize &&
       unobscured_size.height() <= kTinyContentSize) {
-    return RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_TINY;
+    return RenderFrame::CONTENT_STATUS_TINY;
   }
 
   if (IsLargeContent(unobscured_size))
