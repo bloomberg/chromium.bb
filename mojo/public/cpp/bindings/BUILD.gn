@@ -170,7 +170,6 @@ if (!is_ios) {
   # TODO(yzshen): crbug.com/617718 Consider moving this into blink.
   source_set("wtf_support") {
     sources = [
-      "array_traits_wtf.h",
       "array_traits_wtf_vector.h",
       "lib/string_traits_wtf.cc",
       "lib/wtf_clone_equals_util.h",
@@ -178,7 +177,6 @@ if (!is_ios) {
       "lib/wtf_serialization.h",
       "map_traits_wtf_hash_map.h",
       "string_traits_wtf.h",
-      "wtf_array.h",
     ]
 
     public_deps = [

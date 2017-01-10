@@ -77,11 +77,9 @@ if (!is_ios) {
     testonly = true
 
     sources = [
-      "array_common_test.h",
       "container_test_util.cc",
       "container_test_util.h",
       "variant_test_util.h",
-      "wtf_array_unittest.cc",
       "wtf_hash_unittest.cc",
       "wtf_types_unittest.cc",
     ]

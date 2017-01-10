@@ -120,21 +120,21 @@ void setMediaType(NFCRecordPtr& recordPtr,
 }
 
 template <>
-struct TypeConverter<mojo::WTFArray<uint8_t>, WTF::String> {
-  static mojo::WTFArray<uint8_t> Convert(const WTF::String& string) {
+struct TypeConverter<WTF::Vector<uint8_t>, WTF::String> {
+  static WTF::Vector<uint8_t> Convert(const WTF::String& string) {
     WTF::CString utf8String = string.utf8();
     WTF::Vector<uint8_t> array;
     array.append(utf8String.data(), utf8String.length());
-    return mojo::WTFArray<uint8_t>(std::move(array));
+    return array;
   }
 };
 
 template <>
-struct TypeConverter<mojo::WTFArray<uint8_t>, blink::DOMArrayBuffer*> {
-  static mojo::WTFArray<uint8_t> Convert(blink::DOMArrayBuffer* buffer) {
+struct TypeConverter<WTF::Vector<uint8_t>, blink::DOMArrayBuffer*> {
+  static WTF::Vector<uint8_t> Convert(blink::DOMArrayBuffer* buffer) {
     WTF::Vector<uint8_t> array;
     array.append(static_cast<uint8_t*>(buffer->data()), buffer->byteLength());
-    return mojo::WTFArray<uint8_t>(std::move(array));
+    return array;
   }
 };
 
@@ -145,7 +145,7 @@ struct TypeConverter<NFCRecordPtr, WTF::String> {
     record->record_type = NFCRecordType::TEXT;
     record->media_type = kPlainTextMimeType;
     record->media_type.append(kCharSetUTF8);
-    record->data = mojo::WTFArray<uint8_t>::From(string).PassStorage();
+    record->data = mojo::ConvertTo<WTF::Vector<uint8_t>>(string);
     return record;
   }
 };
@@ -156,7 +156,7 @@ struct TypeConverter<NFCRecordPtr, blink::DOMArrayBuffer*> {
     NFCRecordPtr record = NFCRecord::New();
     record->record_type = NFCRecordType::OPAQUE_RECORD;
     record->media_type = kOpaqueMimeType;
-    record->data = mojo::WTFArray<uint8_t>::From(buffer).PassStorage();
+    record->data = mojo::ConvertTo<WTF::Vector<uint8_t>>(buffer);
     return record;
   }
 };
@@ -171,19 +171,21 @@ struct TypeConverter<NFCMessagePtr, WTF::String> {
 };
 
 template <>
-struct TypeConverter<mojo::WTFArray<uint8_t>, blink::ScriptValue> {
-  static mojo::WTFArray<uint8_t> Convert(
+struct TypeConverter<WTF::Optional<WTF::Vector<uint8_t>>, blink::ScriptValue> {
+  static WTF::Optional<WTF::Vector<uint8_t>> Convert(
       const blink::ScriptValue& scriptValue) {
     v8::Local<v8::Value> value = scriptValue.v8Value();
 
     if (value->IsNumber())
-      return mojo::WTFArray<uint8_t>::From(
+      return mojo::ConvertTo<WTF::Vector<uint8_t>>(
           WTF::String::number(value.As<v8::Number>()->Value()));
 
     if (value->IsString()) {
       blink::V8StringResource<> stringResource = value;
-      if (stringResource.prepare())
-        return mojo::WTFArray<uint8_t>::From<WTF::String>(stringResource);
+      if (stringResource.prepare()) {
+        return mojo::ConvertTo<WTF::Vector<uint8_t>>(
+            WTF::String(stringResource));
+      }
     }
 
     if (value->IsObject() && !value->IsArray() && !value->IsArrayBuffer()) {
@@ -192,15 +194,15 @@ struct TypeConverter<mojo::WTFArray<uint8_t>, blink::ScriptValue> {
               .ToLocal(&jsonString)) {
         WTF::String wtfString = blink::v8StringToWebCoreString<WTF::String>(
             jsonString, blink::DoNotExternalize);
-        return mojo::WTFArray<uint8_t>::From(wtfString);
+        return mojo::ConvertTo<WTF::Vector<uint8_t>>(wtfString);
       }
     }
 
     if (value->IsArrayBuffer())
-      return mojo::WTFArray<uint8_t>::From(
+      return mojo::ConvertTo<WTF::Vector<uint8_t>>(
           blink::V8ArrayBuffer::toImpl(value.As<v8::Object>()));
 
-    return nullptr;
+    return WTF::nullopt;
   }
 };
 
@@ -236,14 +238,15 @@ struct TypeConverter<NFCRecordPtr, blink::NFCRecord> {
         break;
     }
 
-    auto recordData = mojo::WTFArray<uint8_t>::From(record.data());
+    auto recordData =
+        mojo::ConvertTo<WTF::Optional<WTF::Vector<uint8_t>>>(record.data());
     // If JS object cannot be converted to uint8_t array, return null,
     // interrupt NFCMessage conversion algorithm and reject promise with
     // SyntaxError exception.
-    if (recordData.is_null())
+    if (!recordData)
       return nullptr;
 
-    recordPtr->data = recordData.PassStorage();
+    recordPtr->data = recordData.value();
     return recordPtr;
   }
 };

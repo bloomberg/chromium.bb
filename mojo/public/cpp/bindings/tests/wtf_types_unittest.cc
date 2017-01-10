@@ -106,29 +106,6 @@ void ExpectStringMap(
 
 }  // namespace
 
-TEST_F(WTFTypesTest, Serialization_WTFArrayToWTFArray) {
-  using MojomType = ArrayDataView<StringDataView>;
-
-  WTFArray<WTF::String> strs = ConstructStringArray();
-  auto cloned_strs = strs.Clone();
-
-  mojo::internal::SerializationContext context;
-  size_t size =
-      mojo::internal::PrepareToSerialize<MojomType>(cloned_strs, &context);
-
-  mojo::internal::FixedBufferForTesting buf(size);
-  typename mojo::internal::MojomTypeTraits<MojomType>::Data* data;
-  mojo::internal::ContainerValidateParams validate_params(
-      0, true, new mojo::internal::ContainerValidateParams(0, false, nullptr));
-  mojo::internal::Serialize<MojomType>(cloned_strs, &buf, &data,
-                                       &validate_params, &context);
-
-  WTFArray<WTF::String> strs2;
-  mojo::internal::Deserialize<MojomType>(data, &strs2, &context);
-
-  EXPECT_TRUE(strs.Equals(strs2));
-}
-
 TEST_F(WTFTypesTest, Serialization_WTFVectorToWTFVector) {
   using MojomType = ArrayDataView<StringDataView>;
 
@@ -152,22 +129,24 @@ TEST_F(WTFTypesTest, Serialization_WTFVectorToWTFVector) {
   EXPECT_EQ(strs, strs2);
 }
 
-TEST_F(WTFTypesTest, Serialization_WTFArrayToMojoArray) {
+TEST_F(WTFTypesTest, Serialization_WTFVectorToStlVector) {
   using MojomType = ArrayDataView<StringDataView>;
 
-  WTFArray<WTF::String> strs = ConstructStringArray();
+  WTF::Vector<WTF::String> strs = ConstructStringArray();
+  auto cloned_strs = strs;
 
   mojo::internal::SerializationContext context;
-  size_t size = mojo::internal::PrepareToSerialize<MojomType>(strs, &context);
+  size_t size =
+      mojo::internal::PrepareToSerialize<MojomType>(cloned_strs, &context);
 
   mojo::internal::FixedBufferForTesting buf(size);
   typename mojo::internal::MojomTypeTraits<MojomType>::Data* data;
   mojo::internal::ContainerValidateParams validate_params(
       0, true, new mojo::internal::ContainerValidateParams(0, false, nullptr));
-  mojo::internal::Serialize<MojomType>(strs, &buf, &data, &validate_params,
-                                       &context);
+  mojo::internal::Serialize<MojomType>(cloned_strs, &buf, &data,
+                                       &validate_params, &context);
 
-  Array<base::Optional<std::string>> strs2;
+  std::vector<base::Optional<std::string>> strs2;
   mojo::internal::Deserialize<MojomType>(data, &strs2, &context);
 
   ASSERT_EQ(4u, strs2.size());
