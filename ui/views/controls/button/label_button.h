@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_CONTROLS_BUTTON_LABEL_BUTTON_H_
 #define UI_VIEWS_CONTROLS_BUTTON_LABEL_BUTTON_H_
 
+#include <array>
 #include <memory>
 
 #include "base/compiler_specific.h"
@@ -150,6 +151,13 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   // NativeThemeDelegate:
   gfx::Rect GetThemePaintRect() const override;
 
+  const std::array<bool, STATE_COUNT>& explicitly_set_colors() const {
+    return explicitly_set_colors_;
+  }
+  void set_explicitly_set_colors(const std::array<bool, STATE_COUNT>& colors) {
+    explicitly_set_colors_ = colors;
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, Init);
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, Label);
@@ -204,7 +212,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   SkColor button_state_colors_[STATE_COUNT];
 
   // Used to track whether SetTextColor() has been invoked.
-  bool explicitly_set_colors_[STATE_COUNT];
+  std::array<bool, STATE_COUNT> explicitly_set_colors_;
 
   // |min_size_| increases monotonically with the preferred size.
   mutable gfx::Size min_size_;

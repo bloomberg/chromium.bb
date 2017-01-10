@@ -251,8 +251,11 @@ void MdTextButton::UpdateColors() {
                     : ui::NativeTheme::kColorId_ButtonEnabledColor;
 
   ui::NativeTheme* theme = GetNativeTheme();
-  if (!explicitly_set_normal_color())
+  if (!explicitly_set_normal_color()) {
+    const auto colors = explicitly_set_colors();
     LabelButton::SetEnabledTextColors(theme->GetSystemColor(fg_color_id));
+    set_explicitly_set_colors(colors);
+  }
 
   // Prominent buttons keep their enabled text color; disabled state is conveyed
   // by shading the background instead.
