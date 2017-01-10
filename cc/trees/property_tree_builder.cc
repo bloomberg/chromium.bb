@@ -1089,11 +1089,11 @@ bool AddEffectNodeIfNeeded(
     node.transform_id = kRootPropertyTreeNodeId;
     node.clip_id = kViewportClipTreeNodeId;
   }
-  data_for_children->effect_tree_parent = effect_tree.Insert(node, parent_id);
-  int node_id = data_for_children->effect_tree_parent;
+  int node_id = effect_tree.Insert(node, parent_id);
+  data_for_children->effect_tree_parent = node_id;
   layer->SetEffectTreeIndex(node_id);
   data_for_children->property_trees->effect_id_to_index_map[layer->id()] =
-      data_for_children->effect_tree_parent;
+      node_id;
 
   std::vector<std::unique_ptr<CopyOutputRequest>> layer_copy_requests;
   TakeCopyRequests(layer, &layer_copy_requests);
