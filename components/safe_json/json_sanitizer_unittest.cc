@@ -133,13 +133,13 @@ TEST_F(JsonSanitizerTest, Json) {
 }
 
 TEST_F(JsonSanitizerTest, Nesting) {
-  // 99 nested arrays are fine.
-  std::string nested(99u, '[');
-  nested.append(99u, ']');
+  // 199 nested arrays are fine.
+  std::string nested(199u, '[');
+  nested.append(199u, ']');
   CheckSuccess(nested);
 
-  // 100 nested arrays is too much.
-  CheckError(std::string(100u, '[') + std::string(100u, ']'));
+  // 200 nested arrays is too much.
+  CheckError(std::string(200u, '[') + std::string(200u, ']'));
 }
 
 TEST_F(JsonSanitizerTest, Unicode) {

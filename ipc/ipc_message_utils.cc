@@ -43,7 +43,7 @@ namespace IPC {
 
 namespace {
 
-const int kMaxRecursionDepth = 100;
+const int kMaxRecursionDepth = 200;
 
 template<typename CharType>
 void LogBytes(const std::vector<CharType>& data, std::string* out) {
@@ -78,7 +78,7 @@ void GetValueSize(base::PickleSizer* sizer,
                   const base::Value* value,
                   int recursion) {
   if (recursion > kMaxRecursionDepth) {
-    LOG(WARNING) << "Max recursion depth hit in GetValueSize.";
+    LOG(ERROR) << "Max recursion depth hit in GetValueSize.";
     return;
   }
 
@@ -142,7 +142,7 @@ void GetValueSize(base::PickleSizer* sizer,
 void WriteValue(base::Pickle* m, const base::Value* value, int recursion) {
   bool result;
   if (recursion > kMaxRecursionDepth) {
-    LOG(WARNING) << "Max recursion depth hit in WriteValue.";
+    LOG(ERROR) << "Max recursion depth hit in WriteValue.";
     return;
   }
 
@@ -256,7 +256,7 @@ bool ReadValue(const base::Pickle* m,
                base::Value** value,
                int recursion) {
   if (recursion > kMaxRecursionDepth) {
-    LOG(WARNING) << "Max recursion depth hit in ReadValue.";
+    LOG(ERROR) << "Max recursion depth hit in ReadValue.";
     return false;
   }
 
