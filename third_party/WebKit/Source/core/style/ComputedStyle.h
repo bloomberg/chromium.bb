@@ -3726,10 +3726,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
                         setVisitedLinkCaretColor, v);
   }
 
-  void inheritUnicodeBidiFrom(const ComputedStyle& parent) {
-    m_nonInheritedData.m_unicodeBidi = parent.m_nonInheritedData.m_unicodeBidi;
-  }
-
   static bool isDisplayFlexibleBox(EDisplay display) {
     return display == EDisplay::Flex || display == EDisplay::InlineFlex;
   }
