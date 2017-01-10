@@ -92,6 +92,22 @@ const char kFunctions[] =
     "    'type': 'function',"
     "    'optional': true"
     "  }]"
+    "}, {"
+    "  'name': 'intAnyOptionalObjectOptionalCallback',"
+    "  'parameters': [{"
+    "    'type': 'integer', 'name': 'tabId', 'minimum': 0"
+    "  }, {"
+    "    'type': 'any', 'name': 'message'"
+    "  }, {"
+    "    'type': 'object',"
+    "    'name': 'options',"
+    "    'properties': {"
+    "      'frameId': {'type': 'integer', 'optional': true, 'minimum': 0}"
+    "    },"
+    "    'optional': true"
+    "  }, {"
+    "    'type': 'function', 'name': 'responseCallback', 'optional': true"
+    "  }]"
     "}]";
 
 const char kError[] = "Uncaught TypeError: Invalid invocation";
@@ -111,6 +127,7 @@ class APIBindingUnittest : public APIBindingTest {
                       v8::Local<v8::Function> callback) {
     last_request_id_.clear();
     arguments_ = std::move(arguments);
+    had_callback_ = !callback.IsEmpty();
     if (!callback.IsEmpty()) {
       last_request_id_ =
           request_handler_->AddPendingRequest(isolate, callback, context);
@@ -132,24 +149,26 @@ class APIBindingUnittest : public APIBindingTest {
 
   void ExpectPass(v8::Local<v8::Object> object,
                   const std::string& script_source,
-                  const std::string& expected_json_arguments_single_quotes) {
+                  const std::string& expected_json_arguments_single_quotes,
+                  bool expect_callback) {
     ExpectPass(ContextLocal(), object, script_source,
-               expected_json_arguments_single_quotes);
+               expected_json_arguments_single_quotes, expect_callback);
   }
 
   void ExpectPass(v8::Local<v8::Context> context,
                   v8::Local<v8::Object> object,
                   const std::string& script_source,
-                  const std::string& expected_json_arguments_single_quotes) {
+                  const std::string& expected_json_arguments_single_quotes,
+                  bool expect_callback) {
     RunTest(context, object, script_source, true,
             ReplaceSingleQuotes(expected_json_arguments_single_quotes),
-            std::string());
+            expect_callback, std::string());
   }
 
   void ExpectFailure(v8::Local<v8::Object> object,
                      const std::string& script_source,
                      const std::string& expected_error) {
-    RunTest(ContextLocal(), object, script_source, false, std::string(),
+    RunTest(ContextLocal(), object, script_source, false, std::string(), false,
             expected_error);
   }
 
@@ -163,9 +182,11 @@ class APIBindingUnittest : public APIBindingTest {
                const std::string& script_source,
                bool should_pass,
                const std::string& expected_json_arguments,
+               bool expect_callback,
                const std::string& expected_error);
 
   std::unique_ptr<base::ListValue> arguments_;
+  bool had_callback_ = false;
   std::unique_ptr<APIRequestHandler> request_handler_;
   std::string last_request_id_;
 
@@ -177,6 +198,7 @@ void APIBindingUnittest::RunTest(v8::Local<v8::Context> context,
                                  const std::string& script_source,
                                  bool should_pass,
                                  const std::string& expected_json_arguments,
+                                 bool expect_callback,
                                  const std::string& expected_error) {
   EXPECT_FALSE(arguments_);
   std::string wrapped_script_source =
@@ -192,12 +214,14 @@ void APIBindingUnittest::RunTest(v8::Local<v8::Context> context,
     RunFunction(func, context, 1, argv);
     ASSERT_TRUE(arguments_) << script_source;
     EXPECT_EQ(expected_json_arguments, ValueToString(*arguments_));
+    EXPECT_EQ(expect_callback, had_callback_) << script_source;
   } else {
     RunFunctionAndExpectError(func, context, 1, argv, expected_error);
     EXPECT_FALSE(arguments_);
   }
 
   arguments_.reset();
+  had_callback_ = false;
 }
 
 TEST_F(APIBindingUnittest, TestEmptyAPI) {
@@ -221,6 +245,8 @@ TEST_F(APIBindingUnittest, TestEmptyAPI) {
 }
 
 TEST_F(APIBindingUnittest, Test) {
+  // TODO(devlin): Move this test to an api_signature_unittest file? It really
+  // only tests parsing.
   std::unique_ptr<base::ListValue> functions = ListValueFromString(kFunctions);
   ASSERT_TRUE(functions);
   ArgumentSpec::RefMap refs;
@@ -238,15 +264,17 @@ TEST_F(APIBindingUnittest, Test) {
   v8::Local<v8::Object> binding_object = binding.CreateInstance(
       context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
 
-  ExpectPass(binding_object, "obj.oneString('foo');", "['foo']");
-  ExpectPass(binding_object, "obj.oneString('');", "['']");
+  ExpectPass(binding_object, "obj.oneString('foo');", "['foo']", false);
+  ExpectPass(binding_object, "obj.oneString('');", "['']", false);
   ExpectFailure(binding_object, "obj.oneString(1);", kError);
   ExpectFailure(binding_object, "obj.oneString();", kError);
   ExpectFailure(binding_object, "obj.oneString({});", kError);
   ExpectFailure(binding_object, "obj.oneString('foo', 'bar');", kError);
 
-  ExpectPass(binding_object, "obj.stringAndInt('foo', 42);", "['foo',42]");
-  ExpectPass(binding_object, "obj.stringAndInt('foo', -1);", "['foo',-1]");
+  ExpectPass(binding_object, "obj.stringAndInt('foo', 42);", "['foo',42]",
+             false);
+  ExpectPass(binding_object, "obj.stringAndInt('foo', -1);", "['foo',-1]",
+             false);
   ExpectFailure(binding_object, "obj.stringAndInt(1);", kError);
   ExpectFailure(binding_object, "obj.stringAndInt('foo');", kError);
   ExpectFailure(binding_object, "obj.stringAndInt(1, 'foo');", kError);
@@ -255,39 +283,56 @@ TEST_F(APIBindingUnittest, Test) {
   ExpectFailure(binding_object, "obj.stringAndInt('foo', 2.3);", kError);
 
   ExpectPass(binding_object, "obj.stringOptionalIntAndBool('foo', 42, true);",
-             "['foo',42,true]");
+             "['foo',42,true]", false);
   ExpectPass(binding_object, "obj.stringOptionalIntAndBool('foo', true);",
-             "['foo',null,true]");
+             "['foo',null,true]", false);
   ExpectFailure(binding_object,
                 "obj.stringOptionalIntAndBool('foo', 'bar', true);", kError);
 
-  ExpectPass(binding_object,
-             "obj.oneObject({prop1: 'foo'});", "[{'prop1':'foo'}]");
+  ExpectPass(binding_object, "obj.oneObject({prop1: 'foo'});",
+             "[{'prop1':'foo'}]", false);
   ExpectFailure(
       binding_object,
       "obj.oneObject({ get prop1() { throw new Error('Badness'); } });",
       "Uncaught Error: Badness");
 
-  ExpectPass(binding_object, "obj.noArgs()", "[]");
+  ExpectPass(binding_object, "obj.noArgs()", "[]", false);
   ExpectFailure(binding_object, "obj.noArgs(0)", kError);
   ExpectFailure(binding_object, "obj.noArgs('')", kError);
   ExpectFailure(binding_object, "obj.noArgs(null)", kError);
   ExpectFailure(binding_object, "obj.noArgs(undefined)", kError);
 
-  ExpectPass(binding_object, "obj.intAndCallback(1, function() {})", "[1]");
+  ExpectPass(binding_object, "obj.intAndCallback(1, function() {})", "[1]",
+             true);
   ExpectFailure(binding_object, "obj.intAndCallback(function() {})", kError);
   ExpectFailure(binding_object, "obj.intAndCallback(1)", kError);
 
   ExpectPass(binding_object, "obj.optionalIntAndCallback(1, function() {})",
-             "[1]");
+             "[1]", true);
   ExpectPass(binding_object, "obj.optionalIntAndCallback(function() {})",
-             "[null]");
+             "[null]", true);
   ExpectFailure(binding_object, "obj.optionalIntAndCallback(1)", kError);
 
-  ExpectPass(binding_object, "obj.optionalCallback(function() {})", "[]");
-  ExpectPass(binding_object, "obj.optionalCallback()", "[]");
-  ExpectPass(binding_object, "obj.optionalCallback(undefined)", "[]");
+  ExpectPass(binding_object, "obj.optionalCallback(function() {})", "[]", true);
+  ExpectPass(binding_object, "obj.optionalCallback()", "[]", false);
+  ExpectPass(binding_object, "obj.optionalCallback(undefined)", "[]", false);
   ExpectFailure(binding_object, "obj.optionalCallback(0)", kError);
+
+  ExpectPass(binding_object,
+             "obj.intAnyOptionalObjectOptionalCallback(4, {foo: 'bar'}, "
+             "function() {})",
+             "[4,{'foo':'bar'},null]", true);
+  ExpectPass(binding_object,
+             "obj.intAnyOptionalObjectOptionalCallback(4, {foo: 'bar'})",
+             "[4,{'foo':'bar'},null]", false);
+  ExpectPass(binding_object,
+             "obj.intAnyOptionalObjectOptionalCallback(4, {foo: 'bar'}, {})",
+             "[4,{'foo':'bar'},{}]", false);
+  ExpectFailure(binding_object,
+                "obj.intAnyOptionalObjectOptionalCallback(4, function() {})",
+                kError);
+  ExpectFailure(binding_object, "obj.intAnyOptionalObjectOptionalCallback(4)",
+                kError);
 }
 
 // Test that enum values are properly exposed on the binding object.
@@ -381,14 +426,15 @@ TEST_F(APIBindingUnittest, TypeRefsTest) {
       context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
 
   ExpectPass(binding_object, "obj.takesRefObj({prop1: 'foo'})",
-             "[{'prop1':'foo'}]");
+             "[{'prop1':'foo'}]", false);
   ExpectPass(binding_object, "obj.takesRefObj({prop1: 'foo', prop2: 2})",
-             "[{'prop1':'foo','prop2':2}]");
+             "[{'prop1':'foo','prop2':2}]", false);
   ExpectFailure(binding_object, "obj.takesRefObj({prop1: 'foo', prop2: 'a'})",
                 kError);
-  ExpectPass(binding_object, "obj.takesRefEnum('alpha')", "['alpha']");
-  ExpectPass(binding_object, "obj.takesRefEnum('beta')", "['beta']");
-  ExpectPass(binding_object, "obj.takesRefEnum(obj.refEnum.BETA)", "['beta']");
+  ExpectPass(binding_object, "obj.takesRefEnum('alpha')", "['alpha']", false);
+  ExpectPass(binding_object, "obj.takesRefEnum('beta')", "['beta']", false);
+  ExpectPass(binding_object, "obj.takesRefEnum(obj.refEnum.BETA)", "['beta']",
+             false);
   ExpectFailure(binding_object, "obj.takesRefEnum('gamma')", kError);
 }
 
@@ -536,10 +582,13 @@ TEST_F(APIBindingUnittest, MultipleContexts) {
   v8::Local<v8::Object> binding_object_b = binding.CreateInstance(
       context_b, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
 
-  ExpectPass(context_a, binding_object_a, "obj.oneString('foo');", "['foo']");
-  ExpectPass(context_b, binding_object_b, "obj.oneString('foo');", "['foo']");
+  ExpectPass(context_a, binding_object_a, "obj.oneString('foo');", "['foo']",
+             false);
+  ExpectPass(context_b, binding_object_b, "obj.oneString('foo');", "['foo']",
+             false);
   DisposeContext();
-  ExpectPass(context_b, binding_object_b, "obj.oneString('foo');", "['foo']");
+  ExpectPass(context_b, binding_object_b, "obj.oneString('foo');", "['foo']",
+             false);
 }
 
 // Tests adding custom hooks for an API method.
@@ -591,7 +640,8 @@ TEST_F(APIBindingUnittest, TestCustomHooks) {
   EXPECT_TRUE(did_call);
 
   // Other methods, like stringAndInt(), should behave normally.
-  ExpectPass(binding_object, "obj.stringAndInt('foo', 42);", "['foo',42]");
+  ExpectPass(binding_object, "obj.stringAndInt('foo', 42);", "['foo',42]",
+             false);
 }
 
 TEST_F(APIBindingUnittest, TestJSCustomHook) {
@@ -652,7 +702,8 @@ TEST_F(APIBindingUnittest, TestJSCustomHook) {
   EXPECT_EQ("[\"foo\"]", ValueToString(*response_args));
 
   // Other methods, like stringAndInt(), should behave normally.
-  ExpectPass(binding_object, "obj.stringAndInt('foo', 42);", "['foo',42]");
+  ExpectPass(binding_object, "obj.stringAndInt('foo', 42);", "['foo',42]",
+             false);
 }
 
 // Tests the updateArgumentsPreValidate hook.
@@ -702,12 +753,13 @@ TEST_F(APIBindingUnittest, TestUpdateArgumentsPreValidate) {
   EXPECT_EQ("[false]", GetStringPropertyFromObject(
                            context->Global(), context, "requestArguments"));
 
-  ExpectPass(binding_object, "obj.oneString(true);", "['hooked']");
+  ExpectPass(binding_object, "obj.oneString(true);", "['hooked']", false);
   EXPECT_EQ("[true]", GetStringPropertyFromObject(
                           context->Global(), context, "requestArguments"));
 
   // Other methods, like stringAndInt(), should behave normally.
-  ExpectPass(binding_object, "obj.stringAndInt('foo', 42);", "['foo',42]");
+  ExpectPass(binding_object, "obj.stringAndInt('foo', 42);", "['foo',42]",
+             false);
 }
 
 // Tests the updateArgumentsPreValidate hook.
@@ -769,7 +821,8 @@ TEST_F(APIBindingUnittest, TestThrowInUpdateArgumentsPreValidate) {
                             "Uncaught Error: Custom Hook Error");
 
   // Other methods, like stringAndInt(), should behave normally.
-  ExpectPass(binding_object, "obj.stringAndInt('foo', 42);", "['foo',42]");
+  ExpectPass(binding_object, "obj.stringAndInt('foo', 42);", "['foo',42]",
+             false);
 }
 
 // Tests that custom JS hooks can return results synchronously.

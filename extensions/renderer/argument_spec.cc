@@ -152,9 +152,12 @@ bool ArgumentSpec::ParseArgument(v8::Local<v8::Context> context,
   if (IsFundamentalType())
     return ParseArgumentToFundamental(context, value, out_value, error);
   if (type_ == ArgumentType::OBJECT) {
-    // TODO(devlin): Currently, this would accept an array (if that array had
-    // all the requisite properties). Is that the right thing to do?
-    if (!value->IsObject()) {
+    // Don't allow functions or arrays (even though they are technically
+    // objects). This is to make it easier to match otherwise-ambiguous
+    // signatures. For instance, if an API method has an optional object
+    // parameter and then an optional callback, we wouldn't necessarily be able
+    // to match the arguments if we allowed functions as objects.
+    if (!value->IsObject() || value->IsFunction() || value->IsArray()) {
       *error = "Wrong type";
       return false;
     }
