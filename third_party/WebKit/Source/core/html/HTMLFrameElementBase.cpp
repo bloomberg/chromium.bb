@@ -130,9 +130,10 @@ void HTMLFrameElementBase::frameOwnerPropertiesChanged() {
     document().frame()->loader().client()->didChangeFrameOwnerProperties(this);
 }
 
-void HTMLFrameElementBase::parseAttribute(const QualifiedName& name,
-                                          const AtomicString& oldValue,
-                                          const AtomicString& value) {
+void HTMLFrameElementBase::parseAttribute(
+    const AttributeModificationParams& params) {
+  const QualifiedName& name = params.name;
+  const AtomicString& value = params.newValue;
   if (name == srcdocAttr) {
     if (!value.isNull()) {
       setLocation(srcdocURL().getString());
@@ -146,7 +147,7 @@ void HTMLFrameElementBase::parseAttribute(const QualifiedName& name,
   } else if (name == idAttr) {
     // Important to call through to base for the id attribute so the hasID bit
     // gets set.
-    HTMLFrameOwnerElement::parseAttribute(name, oldValue, value);
+    HTMLFrameOwnerElement::parseAttribute(params);
     m_frameName = value;
   } else if (name == nameAttr) {
     m_frameName = value;
@@ -167,7 +168,7 @@ void HTMLFrameElementBase::parseAttribute(const QualifiedName& name,
         EventTypeNames::beforeunload,
         createAttributeEventListener(this, name, value, eventParameterName()));
   } else {
-    HTMLFrameOwnerElement::parseAttribute(name, oldValue, value);
+    HTMLFrameOwnerElement::parseAttribute(params);
   }
 }
 

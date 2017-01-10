@@ -114,9 +114,7 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
 
   void handleLocalEvents(Event&) override;
 
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
+  void parseAttribute(const AttributeModificationParams&) override;
   bool isURLAttribute(const Attribute&) const override;
   bool hasLegalLinkAttribute(const QualifiedName&) const override;
 

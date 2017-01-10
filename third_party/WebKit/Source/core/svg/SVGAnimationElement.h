@@ -111,9 +111,7 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
  protected:
   SVGAnimationElement(const QualifiedName&, Document&);
 
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
+  void parseAttribute(const AttributeModificationParams&) override;
   void svgAttributeChanged(const QualifiedName&) override;
 
   String toValue() const;

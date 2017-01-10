@@ -63,14 +63,14 @@ LayoutObject* HTMLMeterElement::createLayoutObject(const ComputedStyle& style) {
   return LabelableElement::createLayoutObject(style);
 }
 
-void HTMLMeterElement::parseAttribute(const QualifiedName& name,
-                                      const AtomicString& oldValue,
-                                      const AtomicString& value) {
+void HTMLMeterElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  const QualifiedName& name = params.name;
   if (name == valueAttr || name == minAttr || name == maxAttr ||
       name == lowAttr || name == highAttr || name == optimumAttr)
     didElementStateChange();
   else
-    LabelableElement::parseAttribute(name, oldValue, value);
+    LabelableElement::parseAttribute(params);
 }
 
 double HTMLMeterElement::value() const {

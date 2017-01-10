@@ -1257,40 +1257,40 @@ static inline AtomicString makeIdForStyleResolution(const AtomicString& value,
 }
 
 DISABLE_CFI_PERF
-void Element::attributeChanged(const QualifiedName& name,
-                               const AtomicString& oldValue,
-                               const AtomicString& newValue,
-                               AttributeModificationReason reason) {
+void Element::attributeChanged(const AttributeModificationParams& params) {
+  const QualifiedName& name = params.name;
   if (ElementShadow* parentElementShadow =
           shadowWhereNodeCanBeDistributedForV0(*this)) {
     if (shouldInvalidateDistributionWhenAttributeChanged(parentElementShadow,
-                                                         name, newValue))
+                                                         name, params.newValue))
       parentElementShadow->setNeedsDistributionRecalc();
   }
-  if (name == HTMLNames::slotAttr && oldValue != newValue) {
-    if (ShadowRoot* root = v1ShadowRootOfParent())
-      root->ensureSlotAssignment().hostChildSlotNameChanged(oldValue, newValue);
+  if (name == HTMLNames::slotAttr && params.oldValue != params.newValue) {
+    if (ShadowRoot* root = v1ShadowRootOfParent()) {
+      root->ensureSlotAssignment().hostChildSlotNameChanged(params.oldValue,
+                                                            params.newValue);
+    }
   }
 
-  parseAttribute(name, oldValue, newValue);
+  parseAttribute(params);
 
   document().incDOMTreeVersion();
 
   if (name == HTMLNames::idAttr) {
     AtomicString oldId = elementData()->idForStyleResolution();
     AtomicString newId =
-        makeIdForStyleResolution(newValue, document().inQuirksMode());
+        makeIdForStyleResolution(params.newValue, document().inQuirksMode());
     if (newId != oldId) {
       elementData()->setIdForStyleResolution(newId);
       document().styleEngine().idChangedForElement(oldId, newId, *this);
     }
   } else if (name == classAttr) {
-    classAttributeChanged(newValue);
+    classAttributeChanged(params.newValue);
   } else if (name == HTMLNames::nameAttr) {
-    setHasName(!newValue.isNull());
+    setHasName(!params.newValue.isNull());
   } else if (isStyledElement()) {
     if (name == styleAttr) {
-      styleAttributeChanged(newValue, reason);
+      styleAttributeChanged(params.newValue, params.reason);
     } else if (isPresentationAttribute(name)) {
       elementData()->m_presentationAttributeStyleIsDirty = true;
       setNeedsStyleRecalc(LocalStyleChange,
@@ -1311,7 +1311,7 @@ void Element::attributeChanged(const QualifiedName& name,
       cache->handleAttributeChanged(name, this);
   }
 
-  if (reason == AttributeModificationReason::kDirectly &&
+  if (params.reason == AttributeModificationReason::kDirectly &&
       name == tabindexAttr && adjustedFocusedElementInTreeScope() == this) {
     // The attribute change may cause supportsFocus() to return false
     // for the element which had focus.
@@ -1338,7 +1338,8 @@ inline void Element::attributeChangedFromParserOrByCloning(
     AttributeModificationReason reason) {
   if (name == isAttr)
     V0CustomElementRegistrationContext::setTypeExtension(this, newValue);
-  attributeChanged(name, nullAtom, newValue, reason);
+  attributeChanged(
+      AttributeModificationParams(name, nullAtom, newValue, reason));
 }
 
 template <typename CharacterType>
@@ -2451,18 +2452,17 @@ Attr* Element::removeAttributeNode(Attr* attr, ExceptionState& exceptionState) {
   return attr;
 }
 
-void Element::parseAttribute(const QualifiedName& name,
-                             const AtomicString&,
-                             const AtomicString& value) {
-  if (name == tabindexAttr) {
+void Element::parseAttribute(const AttributeModificationParams& params) {
+  if (params.name == tabindexAttr) {
     int tabindex = 0;
-    if (value.isEmpty() || !parseHTMLInteger(value, tabindex)) {
+    if (params.newValue.isEmpty() ||
+        !parseHTMLInteger(params.newValue, tabindex)) {
       clearTabIndexExplicitlyIfNeeded();
     } else {
       // We only set when value is in integer range.
       setTabIndexExplicitly();
     }
-  } else if (name == XMLNames::langAttr) {
+  } else if (params.name == XMLNames::langAttr) {
     pseudoStateChanged(CSSSelector::PseudoLang);
   }
 }
@@ -3544,8 +3544,8 @@ void Element::didAddAttribute(const QualifiedName& name,
                               const AtomicString& value) {
   if (name == HTMLNames::idAttr)
     updateId(nullAtom, value);
-  attributeChanged(name, nullAtom, value,
-                   AttributeModificationReason::kDirectly);
+  attributeChanged(AttributeModificationParams(
+      name, nullAtom, value, AttributeModificationReason::kDirectly));
   InspectorInstrumentation::didModifyDOMAttr(this, name, value);
   dispatchSubtreeModifiedEvent();
 }
@@ -3555,8 +3555,8 @@ void Element::didModifyAttribute(const QualifiedName& name,
                                  const AtomicString& newValue) {
   if (name == HTMLNames::idAttr)
     updateId(oldValue, newValue);
-  attributeChanged(name, oldValue, newValue,
-                   AttributeModificationReason::kDirectly);
+  attributeChanged(AttributeModificationParams(
+      name, oldValue, newValue, AttributeModificationReason::kDirectly));
   InspectorInstrumentation::didModifyDOMAttr(this, name, newValue);
   // Do not dispatch a DOMSubtreeModified event here; see bug 81141.
 }
@@ -3565,8 +3565,8 @@ void Element::didRemoveAttribute(const QualifiedName& name,
                                  const AtomicString& oldValue) {
   if (name == HTMLNames::idAttr)
     updateId(oldValue, nullAtom);
-  attributeChanged(name, oldValue, nullAtom,
-                   AttributeModificationReason::kDirectly);
+  attributeChanged(AttributeModificationParams(
+      name, oldValue, nullAtom, AttributeModificationReason::kDirectly));
   InspectorInstrumentation::didRemoveDOMAttr(this, name);
   dispatchSubtreeModifiedEvent();
 }
@@ -4087,9 +4087,7 @@ void Element::logAddElementIfIsolatedWorldAndInDocument(
 
 void Element::logUpdateAttributeIfIsolatedWorldAndInDocument(
     const char element[],
-    const QualifiedName& attributeName,
-    const AtomicString& oldValue,
-    const AtomicString& newValue) {
+    const AttributeModificationParams& params) {
   if (!isConnected())
     return;
   V8DOMActivityLogger* activityLogger =
@@ -4098,9 +4096,9 @@ void Element::logUpdateAttributeIfIsolatedWorldAndInDocument(
     return;
   Vector<String, 4> argv;
   argv.push_back(element);
-  argv.push_back(attributeName.toString());
-  argv.push_back(oldValue);
-  argv.push_back(newValue);
+  argv.push_back(params.name.toString());
+  argv.push_back(params.oldValue);
+  argv.push_back(params.newValue);
   activityLogger->logEvent("blinkSetAttribute", argv.size(), argv.data());
 }
 

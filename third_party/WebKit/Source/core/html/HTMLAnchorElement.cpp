@@ -251,33 +251,30 @@ void HTMLAnchorElement::setActive(bool down) {
   ContainerNode::setActive(down);
 }
 
-void HTMLAnchorElement::attributeChanged(const QualifiedName& name,
-                                         const AtomicString& oldValue,
-                                         const AtomicString& newValue,
-                                         AttributeModificationReason reason) {
-  HTMLElement::attributeChanged(name, oldValue, newValue, reason);
-  if (reason != AttributeModificationReason::kDirectly)
+void HTMLAnchorElement::attributeChanged(
+    const AttributeModificationParams& params) {
+  HTMLElement::attributeChanged(params);
+  if (params.reason != AttributeModificationReason::kDirectly)
     return;
-  if (name != hrefAttr && isLink())
+  if (params.name != hrefAttr && isLink())
     return;
   if (adjustedFocusedElementInTreeScope() != this)
     return;
   blur();
 }
 
-void HTMLAnchorElement::parseAttribute(const QualifiedName& name,
-                                       const AtomicString& oldValue,
-                                       const AtomicString& value) {
-  if (name == hrefAttr) {
+void HTMLAnchorElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  if (params.name == hrefAttr) {
     bool wasLink = isLink();
-    setIsLink(!value.isNull());
+    setIsLink(!params.newValue.isNull());
     if (wasLink || isLink()) {
       pseudoStateChanged(CSSSelector::PseudoLink);
       pseudoStateChanged(CSSSelector::PseudoVisited);
       pseudoStateChanged(CSSSelector::PseudoAnyLink);
     }
     if (isLink()) {
-      String parsedURL = stripLeadingAndTrailingHTMLSpaces(value);
+      String parsedURL = stripLeadingAndTrailingHTMLSpaces(params.newValue);
       if (document().isDNSPrefetchEnabled()) {
         if (protocolIs(parsedURL, "http") || protocolIs(parsedURL, "https") ||
             parsedURL.startsWith("//"))
@@ -285,14 +282,13 @@ void HTMLAnchorElement::parseAttribute(const QualifiedName& name,
       }
     }
     invalidateCachedVisitedLinkHash();
-    logUpdateAttributeIfIsolatedWorldAndInDocument("a", hrefAttr, oldValue,
-                                                   value);
-  } else if (name == nameAttr || name == titleAttr) {
+    logUpdateAttributeIfIsolatedWorldAndInDocument("a", params);
+  } else if (params.name == nameAttr || params.name == titleAttr) {
     // Do nothing.
-  } else if (name == relAttr) {
-    setRel(value);
+  } else if (params.name == relAttr) {
+    setRel(params.newValue);
   } else {
-    HTMLElement::parseAttribute(name, oldValue, value);
+    HTMLElement::parseAttribute(params);
   }
 }
 

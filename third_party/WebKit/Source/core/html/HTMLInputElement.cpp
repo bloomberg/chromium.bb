@@ -485,19 +485,19 @@ void HTMLInputElement::updateType() {
     DCHECK(elementData());
     AttributeCollection attributes = attributesWithoutUpdate();
     if (const Attribute* height = attributes.find(heightAttr)) {
-      TextControlElement::attributeChanged(
+      TextControlElement::attributeChanged(AttributeModificationParams(
           heightAttr, height->value(), height->value(),
-          AttributeModificationReason::kDirectly);
+          AttributeModificationReason::kDirectly));
     }
     if (const Attribute* width = attributes.find(widthAttr)) {
       TextControlElement::attributeChanged(
-          widthAttr, width->value(), width->value(),
-          AttributeModificationReason::kDirectly);
+          AttributeModificationParams(widthAttr, width->value(), width->value(),
+                                      AttributeModificationReason::kDirectly));
     }
     if (const Attribute* align = attributes.find(alignAttr)) {
       TextControlElement::attributeChanged(
-          alignAttr, align->value(), align->value(),
-          AttributeModificationReason::kDirectly);
+          AttributeModificationParams(alignAttr, align->value(), align->value(),
+                                      AttributeModificationReason::kDirectly));
     }
   }
 
@@ -697,17 +697,18 @@ void HTMLInputElement::collectStyleForPresentationAttribute(
   }
 }
 
-void HTMLInputElement::parseAttribute(const QualifiedName& name,
-                                      const AtomicString& oldValue,
-                                      const AtomicString& value) {
+void HTMLInputElement::parseAttribute(
+    const AttributeModificationParams& params) {
   DCHECK(m_inputType);
   DCHECK(m_inputTypeView);
+  const QualifiedName& name = params.name;
+  const AtomicString& value = params.newValue;
 
   if (name == nameAttr) {
     removeFromRadioButtonGroup();
     m_name = value;
     addToRadioButtonGroup();
-    TextControlElement::parseAttribute(name, oldValue, value);
+    TextControlElement::parseAttribute(params);
   } else if (name == autocompleteAttr) {
     if (equalIgnoringCase(value, "off")) {
       m_autocomplete = Off;
@@ -798,7 +799,7 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name,
     setNeedsValidityCheck();
     UseCounter::count(document(), UseCounter::PatternAttribute);
   } else if (name == readonlyAttr) {
-    TextControlElement::parseAttribute(name, oldValue, value);
+    TextControlElement::parseAttribute(params);
     m_inputTypeView->readonlyAttributeChanged();
   } else if (name == listAttr) {
     m_hasNonEmptyList = !value.isEmpty();
@@ -808,13 +809,12 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name,
     }
     UseCounter::count(document(), UseCounter::ListAttribute);
   } else if (name == webkitdirectoryAttr) {
-    TextControlElement::parseAttribute(name, oldValue, value);
+    TextControlElement::parseAttribute(params);
     UseCounter::count(document(), UseCounter::PrefixedDirectoryAttribute);
   } else {
     if (name == formactionAttr)
-      logUpdateAttributeIfIsolatedWorldAndInDocument("input", formactionAttr,
-                                                     oldValue, value);
-    TextControlElement::parseAttribute(name, oldValue, value);
+      logUpdateAttributeIfIsolatedWorldAndInDocument("input", params);
+    TextControlElement::parseAttribute(params);
   }
   m_inputTypeView->attributeChanged();
 }

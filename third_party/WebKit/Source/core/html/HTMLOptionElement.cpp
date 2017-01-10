@@ -195,14 +195,14 @@ int HTMLOptionElement::listIndex() const {
   return -1;
 }
 
-void HTMLOptionElement::parseAttribute(const QualifiedName& name,
-                                       const AtomicString& oldValue,
-                                       const AtomicString& value) {
+void HTMLOptionElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  const QualifiedName& name = params.name;
   if (name == valueAttr) {
     if (HTMLDataListElement* dataList = ownerDataListElement())
       dataList->optionElementChildrenChanged();
   } else if (name == disabledAttr) {
-    if (oldValue.isNull() != value.isNull()) {
+    if (params.oldValue.isNull() != params.newValue.isNull()) {
       pseudoStateChanged(CSSSelector::PseudoDisabled);
       pseudoStateChanged(CSSSelector::PseudoEnabled);
       if (layoutObject())
@@ -210,13 +210,13 @@ void HTMLOptionElement::parseAttribute(const QualifiedName& name,
                                                  EnabledControlState);
     }
   } else if (name == selectedAttr) {
-    if (oldValue.isNull() != value.isNull() && !m_isDirty)
-      setSelected(!value.isNull());
+    if (params.oldValue.isNull() != params.newValue.isNull() && !m_isDirty)
+      setSelected(!params.newValue.isNull());
     pseudoStateChanged(CSSSelector::PseudoDefault);
   } else if (name == labelAttr) {
     updateLabel();
   } else {
-    HTMLElement::parseAttribute(name, oldValue, value);
+    HTMLElement::parseAttribute(params);
   }
 }
 

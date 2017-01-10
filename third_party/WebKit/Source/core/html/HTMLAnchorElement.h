@@ -93,19 +93,14 @@ class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
  protected:
   HTMLAnchorElement(const QualifiedName&, Document&);
 
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
+  void parseAttribute(const AttributeModificationParams&) override;
   bool supportsFocus() const override;
   bool matchesEnabledPseudoClass() const override;
 
  private:
   class NavigationHintSender;
 
-  void attributeChanged(const QualifiedName&,
-                        const AtomicString&,
-                        const AtomicString&,
-                        AttributeModificationReason) override;
+  void attributeChanged(const AttributeModificationParams&) override;
   bool shouldHaveFocusAppearance() const final;
   void dispatchFocusEvent(Element* oldFocusedElement,
                           WebFocusType,

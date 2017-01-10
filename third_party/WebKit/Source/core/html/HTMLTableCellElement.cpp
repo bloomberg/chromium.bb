@@ -109,14 +109,13 @@ void HTMLTableCellElement::collectStyleForPresentationAttribute(
   }
 }
 
-void HTMLTableCellElement::parseAttribute(const QualifiedName& name,
-                                          const AtomicString& oldValue,
-                                          const AtomicString& value) {
-  if (name == rowspanAttr || name == colspanAttr) {
+void HTMLTableCellElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  if (params.name == rowspanAttr || params.name == colspanAttr) {
     if (layoutObject() && layoutObject()->isTableCell())
       toLayoutTableCell(layoutObject())->colSpanOrRowSpanChanged();
   } else {
-    HTMLTablePartElement::parseAttribute(name, oldValue, value);
+    HTMLTablePartElement::parseAttribute(params);
   }
 }
 

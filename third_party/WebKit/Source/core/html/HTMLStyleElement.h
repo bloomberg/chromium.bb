@@ -52,9 +52,7 @@ class CORE_EXPORT HTMLStyleElement final : public HTMLElement,
   HTMLStyleElement(Document&, bool createdByParser);
 
   // overload from HTMLElement
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
+  void parseAttribute(const AttributeModificationParams&) override;
   InsertionNotificationRequest insertedInto(ContainerNode*) override;
   void didNotifySubtreeInsertionsToDocument() override;
   void removedFrom(ContainerNode*) override;

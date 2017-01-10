@@ -81,14 +81,12 @@ void HTMLLIElement::collectStyleForPresentationAttribute(
   }
 }
 
-void HTMLLIElement::parseAttribute(const QualifiedName& name,
-                                   const AtomicString& oldValue,
-                                   const AtomicString& value) {
-  if (name == valueAttr) {
+void HTMLLIElement::parseAttribute(const AttributeModificationParams& params) {
+  if (params.name == valueAttr) {
     if (layoutObject() && layoutObject()->isListItem())
-      parseValue(value);
+      parseValue(params.newValue);
   } else {
-    HTMLElement::parseAttribute(name, oldValue, value);
+    HTMLElement::parseAttribute(params);
   }
 }
 

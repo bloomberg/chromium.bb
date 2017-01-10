@@ -51,9 +51,7 @@ class CORE_EXPORT HTMLOptGroupElement final : public HTMLElement {
   ~HTMLOptGroupElement();
 
   bool supportsFocus() const override;
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
+  void parseAttribute(const AttributeModificationParams&) override;
   void accessKeyAction(bool sendMouseEvents) override;
   void didAddUserAgentShadowRoot(ShadowRoot&) override;
   void attachLayoutTree(const AttachContext& = AttachContext()) override;

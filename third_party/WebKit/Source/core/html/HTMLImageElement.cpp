@@ -248,27 +248,28 @@ void HTMLImageElement::setBestFitURLAndDPRFromImageCandidate(
   }
 }
 
-void HTMLImageElement::parseAttribute(const QualifiedName& name,
-                                      const AtomicString& oldValue,
-                                      const AtomicString& value) {
+void HTMLImageElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  const QualifiedName& name = params.name;
   if (name == altAttr || name == titleAttr) {
     if (userAgentShadowRoot()) {
       Element* text = userAgentShadowRoot()->getElementById("alttext");
       String value = altText();
-      if (text && text->textContent() != value)
+      if (text && text->textContent() != params.newValue)
         text->setTextContent(altText());
     }
   } else if (name == srcAttr || name == srcsetAttr || name == sizesAttr) {
     selectSourceURL(ImageLoader::UpdateIgnorePreviousError);
   } else if (name == usemapAttr) {
-    setIsLink(!value.isNull());
+    setIsLink(!params.newValue.isNull());
   } else if (name == referrerpolicyAttr) {
     m_referrerPolicy = ReferrerPolicyDefault;
-    if (!value.isNull())
+    if (!params.newValue.isNull()) {
       SecurityPolicy::referrerPolicyFromStringWithLegacyKeywords(
-          value, &m_referrerPolicy);
+          params.newValue, &m_referrerPolicy);
+    }
   } else {
-    HTMLElement::parseAttribute(name, oldValue, value);
+    HTMLElement::parseAttribute(params);
   }
 }
 

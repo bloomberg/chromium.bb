@@ -357,6 +357,19 @@ class CORE_EXPORT Element : public ContainerNode {
   NamedNodeMap* attributesForBindings() const;
 
   enum class AttributeModificationReason { kDirectly, kByParser, kByCloning };
+  struct AttributeModificationParams {
+    STACK_ALLOCATED();
+    AttributeModificationParams(const QualifiedName& qname,
+                                const AtomicString& oldValue,
+                                const AtomicString& newValue,
+                                AttributeModificationReason reason)
+        : name(qname), oldValue(oldValue), newValue(newValue), reason(reason) {}
+
+    const QualifiedName& name;
+    const AtomicString& oldValue;
+    const AtomicString& newValue;
+    const AttributeModificationReason reason;
+  };
 
   // |attributeChanged| is called whenever an attribute is added, changed or
   // removed. It handles very common attributes such as id, class, name, style,
@@ -364,19 +377,14 @@ class CORE_EXPORT Element : public ContainerNode {
   //
   // While the owner document is parsed, this function is called after all
   // attributes in a start tag were added to the element.
-  virtual void attributeChanged(const QualifiedName&,
-                                const AtomicString& oldValue,
-                                const AtomicString& newValue,
-                                AttributeModificationReason);
+  virtual void attributeChanged(const AttributeModificationParams&);
 
   // |parseAttribute| is called by |attributeChanged|. If an element
   // implementation needs to check an attribute update, override this function.
   //
   // While the owner document is parsed, this function is called after all
   // attributes in a start tag were added to the element.
-  virtual void parseAttribute(const QualifiedName&,
-                              const AtomicString& oldValue,
-                              const AtomicString& newValue);
+  virtual void parseAttribute(const AttributeModificationParams&);
 
   virtual bool hasLegalLinkAttribute(const QualifiedName&) const;
   virtual const QualifiedName& subResourceAttributeName() const;
@@ -718,9 +726,7 @@ class CORE_EXPORT Element : public ContainerNode {
                                                  const QualifiedName& attr3);
   void logUpdateAttributeIfIsolatedWorldAndInDocument(
       const char element[],
-      const QualifiedName& attributeName,
-      const AtomicString& oldValue,
-      const AtomicString& newValue);
+      const AttributeModificationParams&);
 
   DECLARE_VIRTUAL_TRACE();
 

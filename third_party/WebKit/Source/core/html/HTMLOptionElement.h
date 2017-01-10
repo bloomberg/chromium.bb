@@ -100,9 +100,7 @@ class CORE_EXPORT HTMLOptionElement final : public HTMLElement {
   bool matchesEnabledPseudoClass() const override;
   void attachLayoutTree(const AttachContext& = AttachContext()) override;
   void detachLayoutTree(const AttachContext& = AttachContext()) override;
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
+  void parseAttribute(const AttributeModificationParams&) override;
   InsertionNotificationRequest insertedInto(ContainerNode*) override;
   void removedFrom(ContainerNode*) override;
   void accessKeyAction(bool) override;

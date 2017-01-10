@@ -62,17 +62,17 @@ HTMLLinkElement* HTMLLinkElement::create(Document& document,
 
 HTMLLinkElement::~HTMLLinkElement() {}
 
-void HTMLLinkElement::parseAttribute(const QualifiedName& name,
-                                     const AtomicString& oldValue,
-                                     const AtomicString& value) {
+void HTMLLinkElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  const QualifiedName& name = params.name;
+  const AtomicString& value = params.newValue;
   if (name == relAttr) {
     m_relAttribute = LinkRelAttribute(value);
     m_relList->setRelValues(value);
     process();
   } else if (name == hrefAttr) {
     // Log href attribute before logging resource fetching in process().
-    logUpdateAttributeIfIsolatedWorldAndInDocument("link", hrefAttr, oldValue,
-                                                   value);
+    logUpdateAttributeIfIsolatedWorldAndInDocument("link", params);
     process();
   } else if (name == typeAttr) {
     m_type = value;
@@ -102,7 +102,7 @@ void HTMLLinkElement::parseAttribute(const QualifiedName& name,
         link->setSheetTitle(value);
     }
 
-    HTMLElement::parseAttribute(name, oldValue, value);
+    HTMLElement::parseAttribute(params);
   }
 }
 

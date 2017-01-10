@@ -39,9 +39,7 @@ class SVGAnimateTransformElement final : public SVGAnimateElement {
 
   bool hasValidTarget() override;
 
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
+  void parseAttribute(const AttributeModificationParams&) override;
 
   void resolveTargetProperty() override;
   SVGPropertyBase* createPropertyForAnimation(const String&) const override;

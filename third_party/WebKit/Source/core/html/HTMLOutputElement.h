@@ -61,9 +61,7 @@ class CORE_EXPORT HTMLOutputElement final : public HTMLFormControlElement,
  private:
   explicit HTMLOutputElement(Document&);
 
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
+  void parseAttribute(const AttributeModificationParams&) override;
   const AtomicString& formControlType() const override;
   bool isDisabledFormControl() const override;
   bool matchesEnabledPseudoClass() const override;

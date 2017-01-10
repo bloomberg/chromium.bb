@@ -320,9 +320,7 @@ class CORE_EXPORT HTMLMediaElement
   ~HTMLMediaElement() override;
   void dispose();
 
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
+  void parseAttribute(const AttributeModificationParams&) override;
   void finishParsingChildren() final;
   bool isURLAttribute(const Attribute&) const override;
   void attachLayoutTree(const AttachContext& = AttachContext()) override;

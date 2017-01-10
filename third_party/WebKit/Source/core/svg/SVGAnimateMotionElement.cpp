@@ -71,17 +71,16 @@ bool SVGAnimateMotionElement::hasValidTarget() {
          targetCanHaveMotionTransform(*targetElement());
 }
 
-void SVGAnimateMotionElement::parseAttribute(const QualifiedName& name,
-                                             const AtomicString& oldValue,
-                                             const AtomicString& value) {
-  if (name == SVGNames::pathAttr) {
+void SVGAnimateMotionElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  if (params.name == SVGNames::pathAttr) {
     m_path = Path();
-    buildPathFromString(value, m_path);
+    buildPathFromString(params.newValue, m_path);
     updateAnimationPath();
     return;
   }
 
-  SVGAnimationElement::parseAttribute(name, oldValue, value);
+  SVGAnimationElement::parseAttribute(params);
 }
 
 SVGAnimateMotionElement::RotateMode SVGAnimateMotionElement::getRotateMode()

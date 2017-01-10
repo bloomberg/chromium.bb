@@ -72,9 +72,7 @@ class CORE_EXPORT HTMLMetaElement final : public HTMLElement {
                                     Document*,
                                     bool viewportMetaZeroValuesQuirk);
 
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
+  void parseAttribute(const AttributeModificationParams&) override;
   InsertionNotificationRequest insertedInto(ContainerNode*) override;
   void didNotifySubtreeInsertionsToDocument() override;
 

@@ -42,15 +42,16 @@ SVGScriptElement* SVGScriptElement::create(Document& document,
   return new SVGScriptElement(document, insertedByParser, false);
 }
 
-void SVGScriptElement::parseAttribute(const QualifiedName& name,
-                                      const AtomicString& oldValue,
-                                      const AtomicString& value) {
-  if (name == HTMLNames::onerrorAttr)
+void SVGScriptElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  if (params.name == HTMLNames::onerrorAttr) {
     setAttributeEventListener(
         EventTypeNames::error,
-        createAttributeEventListener(this, name, value, eventParameterName()));
-  else
-    SVGElement::parseAttribute(name, oldValue, value);
+        createAttributeEventListener(this, params.name, params.newValue,
+                                     eventParameterName()));
+  } else {
+    SVGElement::parseAttribute(params);
+  }
 }
 
 void SVGScriptElement::svgAttributeChanged(const QualifiedName& attrName) {

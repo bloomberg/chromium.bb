@@ -46,9 +46,7 @@ class HTMLFrameElement final : public HTMLFrameElementBase {
   bool layoutObjectIsNeeded(const ComputedStyle&) override;
   LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
+  void parseAttribute(const AttributeModificationParams&) override;
 
   bool m_frameBorder;
   bool m_frameBorderSet;

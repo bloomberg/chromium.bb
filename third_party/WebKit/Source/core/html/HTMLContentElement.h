@@ -69,9 +69,7 @@ class CORE_EXPORT HTMLContentElement final : public InsertionPoint {
  private:
   HTMLContentElement(Document&, HTMLContentSelectFilter*);
 
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
+  void parseAttribute(const AttributeModificationParams&) override;
 
   bool validateSelect() const;
   void parseSelect();

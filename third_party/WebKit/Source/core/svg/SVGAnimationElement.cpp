@@ -152,12 +152,13 @@ static bool parseKeySplines(const String& string,
   return true;
 }
 
-void SVGAnimationElement::parseAttribute(const QualifiedName& name,
-                                         const AtomicString& oldValue,
-                                         const AtomicString& value) {
+void SVGAnimationElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  const QualifiedName& name = params.name;
   if (name == SVGNames::valuesAttr) {
-    if (!parseValues(value, m_values)) {
-      reportAttributeParsingError(SVGParseStatus::ParsingFailed, name, value);
+    if (!parseValues(params.newValue, m_values)) {
+      reportAttributeParsingError(SVGParseStatus::ParsingFailed, name,
+                                  params.newValue);
       return;
     }
     updateAnimationMode();
@@ -165,8 +166,10 @@ void SVGAnimationElement::parseAttribute(const QualifiedName& name,
   }
 
   if (name == SVGNames::keyTimesAttr) {
-    if (!parseKeyTimes(value, m_keyTimes, true))
-      reportAttributeParsingError(SVGParseStatus::ParsingFailed, name, value);
+    if (!parseKeyTimes(params.newValue, m_keyTimes, true)) {
+      reportAttributeParsingError(SVGParseStatus::ParsingFailed, name,
+                                  params.newValue);
+    }
     return;
   }
 
@@ -174,20 +177,24 @@ void SVGAnimationElement::parseAttribute(const QualifiedName& name,
     if (isSVGAnimateMotionElement(*this)) {
       // This is specified to be an animateMotion attribute only but it is
       // simpler to put it here where the other timing calculatations are.
-      if (!parseKeyTimes(value, m_keyPoints, false))
-        reportAttributeParsingError(SVGParseStatus::ParsingFailed, name, value);
+      if (!parseKeyTimes(params.newValue, m_keyPoints, false)) {
+        reportAttributeParsingError(SVGParseStatus::ParsingFailed, name,
+                                    params.newValue);
+      }
     }
     return;
   }
 
   if (name == SVGNames::keySplinesAttr) {
-    if (!parseKeySplines(value, m_keySplines))
-      reportAttributeParsingError(SVGParseStatus::ParsingFailed, name, value);
+    if (!parseKeySplines(params.newValue, m_keySplines)) {
+      reportAttributeParsingError(SVGParseStatus::ParsingFailed, name,
+                                  params.newValue);
+    }
     return;
   }
 
   if (name == SVGNames::calcModeAttr) {
-    setCalcMode(value);
+    setCalcMode(params.newValue);
     return;
   }
 
@@ -197,7 +204,7 @@ void SVGAnimationElement::parseAttribute(const QualifiedName& name,
     return;
   }
 
-  SVGSMILElement::parseAttribute(name, oldValue, value);
+  SVGSMILElement::parseAttribute(params);
 }
 
 void SVGAnimationElement::svgAttributeChanged(const QualifiedName& attrName) {

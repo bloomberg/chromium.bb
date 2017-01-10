@@ -118,9 +118,7 @@ class CORE_EXPORT HTMLTextAreaElement final : public TextControlElement {
   bool isTextControl() const override { return true; }
 
   void childrenChanged(const ChildrenChange&) override;
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
+  void parseAttribute(const AttributeModificationParams&) override;
   bool isPresentationAttribute(const QualifiedName&) const override;
   void collectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,

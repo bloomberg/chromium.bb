@@ -86,9 +86,10 @@ void HTMLBodyElement::collectStyleForPresentationAttribute(
   }
 }
 
-void HTMLBodyElement::parseAttribute(const QualifiedName& name,
-                                     const AtomicString& oldValue,
-                                     const AtomicString& value) {
+void HTMLBodyElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  const QualifiedName& name = params.name;
+  const AtomicString& value = params.newValue;
   if (name == vlinkAttr || name == alinkAttr || name == linkAttr) {
     if (value.isNull()) {
       if (name == linkAttr)
@@ -213,7 +214,7 @@ void HTMLBodyElement::parseAttribute(const QualifiedName& name,
         createAttributeEventListener(document().frame(), name, value,
                                      eventParameterName()));
   } else {
-    HTMLElement::parseAttribute(name, oldValue, value);
+    HTMLElement::parseAttribute(params);
   }
 }
 

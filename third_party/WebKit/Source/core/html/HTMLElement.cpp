@@ -426,18 +426,15 @@ const AtomicString& HTMLElement::eventNameForAttributeName(
   return attributeNameToEventNameMap.get(attrName.localName());
 }
 
-void HTMLElement::attributeChanged(const QualifiedName& name,
-                                   const AtomicString& oldValue,
-                                   const AtomicString& newValue,
-                                   AttributeModificationReason reason) {
-  Element::attributeChanged(name, oldValue, newValue, reason);
-  if (reason != AttributeModificationReason::kDirectly)
+void HTMLElement::attributeChanged(const AttributeModificationParams& params) {
+  Element::attributeChanged(params);
+  if (params.reason != AttributeModificationReason::kDirectly)
     return;
   if (adjustedFocusedElementInTreeScope() != this)
     return;
-  if (name == hiddenAttr && !newValue.isNull()) {
+  if (params.name == hiddenAttr && !params.newValue.isNull()) {
     blur();
-  } else if (name == contenteditableAttr) {
+  } else if (params.name == contenteditableAttr) {
     // The attribute change may cause supportsFocus() to return false
     // for the element which had focus.
     //
@@ -449,22 +446,22 @@ void HTMLElement::attributeChanged(const QualifiedName& name,
   }
 }
 
-void HTMLElement::parseAttribute(const QualifiedName& name,
-                                 const AtomicString& oldValue,
-                                 const AtomicString& value) {
-  if (name == tabindexAttr || name == XMLNames::langAttr)
-    return Element::parseAttribute(name, oldValue, value);
+void HTMLElement::parseAttribute(const AttributeModificationParams& params) {
+  if (params.name == tabindexAttr || params.name == XMLNames::langAttr)
+    return Element::parseAttribute(params);
 
-  if (name == dirAttr) {
-    dirAttributeChanged(value);
-  } else if (name == langAttr) {
+  if (params.name == dirAttr) {
+    dirAttributeChanged(params.newValue);
+  } else if (params.name == langAttr) {
     pseudoStateChanged(CSSSelector::PseudoLang);
   } else {
-    const AtomicString& eventName = eventNameForAttributeName(name);
-    if (!eventName.isNull())
+    const AtomicString& eventName = eventNameForAttributeName(params.name);
+    if (!eventName.isNull()) {
       setAttributeEventListener(
-          eventName, createAttributeEventListener(this, name, value,
-                                                  eventParameterName()));
+          eventName,
+          createAttributeEventListener(this, params.name, params.newValue,
+                                       eventParameterName()));
+    }
   }
 }
 

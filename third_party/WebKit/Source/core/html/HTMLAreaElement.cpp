@@ -57,10 +57,10 @@ HTMLAreaElement::~HTMLAreaElement() {}
 
 DEFINE_NODE_FACTORY(HTMLAreaElement)
 
-void HTMLAreaElement::parseAttribute(const QualifiedName& name,
-                                     const AtomicString& oldValue,
-                                     const AtomicString& value) {
-  if (name == shapeAttr) {
+void HTMLAreaElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  const AtomicString& value = params.newValue;
+  if (params.name == shapeAttr) {
     if (equalIgnoringASCIICase(value, "default")) {
       m_shape = Default;
     } else if (equalIgnoringASCIICase(value, "circle") ||
@@ -75,13 +75,13 @@ void HTMLAreaElement::parseAttribute(const QualifiedName& name,
       m_shape = Rect;
     }
     invalidateCachedPath();
-  } else if (name == coordsAttr) {
+  } else if (params.name == coordsAttr) {
     m_coords = parseHTMLListOfFloatingPointNumbers(value.getString());
     invalidateCachedPath();
-  } else if (name == altAttr || name == accesskeyAttr) {
+  } else if (params.name == altAttr || params.name == accesskeyAttr) {
     // Do nothing.
   } else {
-    HTMLAnchorElement::parseAttribute(name, oldValue, value);
+    HTMLAnchorElement::parseAttribute(params);
   }
 }
 

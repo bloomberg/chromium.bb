@@ -139,13 +139,8 @@ class CORE_EXPORT HTMLElement : public Element {
   void applyBorderAttributeToStyle(const AtomicString&,
                                    MutableStylePropertySet*);
 
-  void attributeChanged(const QualifiedName&,
-                        const AtomicString&,
-                        const AtomicString&,
-                        AttributeModificationReason) override;
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
+  void attributeChanged(const AttributeModificationParams&) override;
+  void parseAttribute(const AttributeModificationParams&) override;
   static bool parseColorWithLegacyRules(const String& attributeValue,
                                         Color& parsedColor);
   bool isPresentationAttribute(const QualifiedName&) const override;

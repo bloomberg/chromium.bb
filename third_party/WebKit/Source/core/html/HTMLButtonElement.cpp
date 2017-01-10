@@ -85,13 +85,12 @@ bool HTMLButtonElement::isPresentationAttribute(
   return HTMLFormControlElement::isPresentationAttribute(name);
 }
 
-void HTMLButtonElement::parseAttribute(const QualifiedName& name,
-                                       const AtomicString& oldValue,
-                                       const AtomicString& value) {
-  if (name == typeAttr) {
-    if (equalIgnoringCase(value, "reset"))
+void HTMLButtonElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  if (params.name == typeAttr) {
+    if (equalIgnoringCase(params.newValue, "reset"))
       m_type = RESET;
-    else if (equalIgnoringCase(value, "button"))
+    else if (equalIgnoringCase(params.newValue, "button"))
       m_type = BUTTON;
     else
       m_type = SUBMIT;
@@ -99,10 +98,9 @@ void HTMLButtonElement::parseAttribute(const QualifiedName& name,
     if (formOwner() && isConnected())
       formOwner()->invalidateDefaultButtonStyle();
   } else {
-    if (name == formactionAttr)
-      logUpdateAttributeIfIsolatedWorldAndInDocument("button", formactionAttr,
-                                                     oldValue, value);
-    HTMLFormControlElement::parseAttribute(name, oldValue, value);
+    if (params.name == formactionAttr)
+      logUpdateAttributeIfIsolatedWorldAndInDocument("button", params);
+    HTMLFormControlElement::parseAttribute(params);
   }
 }
 

@@ -386,17 +386,17 @@ bool HTMLTableElement::isPresentationAttribute(
   return HTMLElement::isPresentationAttribute(name);
 }
 
-void HTMLTableElement::parseAttribute(const QualifiedName& name,
-                                      const AtomicString& oldValue,
-                                      const AtomicString& value) {
+void HTMLTableElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  const QualifiedName& name = params.name;
   CellBorders bordersBefore = getCellBorders();
   unsigned short oldPadding = m_padding;
 
   if (name == borderAttr) {
     // FIXME: This attribute is a mess.
-    m_borderAttr = parseBorderWidthAttribute(value);
+    m_borderAttr = parseBorderWidthAttribute(params.newValue);
   } else if (name == bordercolorAttr) {
-    m_borderColorAttr = !value.isEmpty();
+    m_borderColorAttr = !params.newValue.isEmpty();
   } else if (name == frameAttr) {
     // FIXME: This attribute is a mess.
     bool borderTop;
@@ -404,28 +404,28 @@ void HTMLTableElement::parseAttribute(const QualifiedName& name,
     bool borderBottom;
     bool borderLeft;
     m_frameAttr = getBordersFromFrameAttributeValue(
-        value, borderTop, borderRight, borderBottom, borderLeft);
+        params.newValue, borderTop, borderRight, borderBottom, borderLeft);
   } else if (name == rulesAttr) {
     m_rulesAttr = UnsetRules;
-    if (equalIgnoringCase(value, "none"))
+    if (equalIgnoringCase(params.newValue, "none"))
       m_rulesAttr = NoneRules;
-    else if (equalIgnoringCase(value, "groups"))
+    else if (equalIgnoringCase(params.newValue, "groups"))
       m_rulesAttr = GroupsRules;
-    else if (equalIgnoringCase(value, "rows"))
+    else if (equalIgnoringCase(params.newValue, "rows"))
       m_rulesAttr = RowsRules;
-    else if (equalIgnoringCase(value, "cols"))
+    else if (equalIgnoringCase(params.newValue, "cols"))
       m_rulesAttr = ColsRules;
-    else if (equalIgnoringCase(value, "all"))
+    else if (equalIgnoringCase(params.newValue, "all"))
       m_rulesAttr = AllRules;
-  } else if (name == cellpaddingAttr) {
-    if (!value.isEmpty())
-      m_padding = std::max(0, value.toInt());
+  } else if (params.name == cellpaddingAttr) {
+    if (!params.newValue.isEmpty())
+      m_padding = std::max(0, params.newValue.toInt());
     else
       m_padding = 1;
-  } else if (name == colsAttr) {
+  } else if (params.name == colsAttr) {
     // ###
   } else {
-    HTMLElement::parseAttribute(name, oldValue, value);
+    HTMLElement::parseAttribute(params);
   }
 
   if (bordersBefore != getCellBorders() || oldPadding != m_padding) {

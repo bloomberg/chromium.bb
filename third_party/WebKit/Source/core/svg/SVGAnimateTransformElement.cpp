@@ -65,17 +65,16 @@ SVGPropertyBase* SVGAnimateTransformElement::createPropertyForAnimation(
   return SVGTransformList::create(m_transformType, value);
 }
 
-void SVGAnimateTransformElement::parseAttribute(const QualifiedName& name,
-                                                const AtomicString& oldValue,
-                                                const AtomicString& value) {
-  if (name == SVGNames::typeAttr) {
-    m_transformType = parseTransformType(value);
+void SVGAnimateTransformElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  if (params.name == SVGNames::typeAttr) {
+    m_transformType = parseTransformType(params.newValue);
     if (m_transformType == kSvgTransformMatrix)
       m_transformType = kSvgTransformUnknown;
     return;
   }
 
-  SVGAnimateElement::parseAttribute(name, oldValue, value);
+  SVGAnimateElement::parseAttribute(params);
 }
 
 }  // namespace blink

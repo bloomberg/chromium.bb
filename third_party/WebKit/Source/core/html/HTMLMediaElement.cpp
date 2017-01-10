@@ -548,15 +548,15 @@ bool HTMLMediaElement::isMouseFocusable() const {
   return false;
 }
 
-void HTMLMediaElement::parseAttribute(const QualifiedName& name,
-                                      const AtomicString& oldValue,
-                                      const AtomicString& value) {
+void HTMLMediaElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  const QualifiedName& name = params.name;
   if (name == srcAttr) {
     BLINK_MEDIA_LOG << "parseAttribute(" << (void*)this
-                    << ", srcAttr, old=" << oldValue << ", new=" << value
-                    << ")";
+                    << ", srcAttr, old=" << params.oldValue
+                    << ", new=" << params.newValue << ")";
     // Trigger a reload, as long as the 'src' attribute is present.
-    if (!value.isNull()) {
+    if (!params.newValue.isNull()) {
       m_ignorePreloadNone = false;
       invokeLoadAlgorithm();
     }
@@ -570,9 +570,11 @@ void HTMLMediaElement::parseAttribute(const QualifiedName& name,
     // This attribute is an extension described in the Remote Playback API spec.
     // Please see: https://w3c.github.io/remote-playback
     UseCounter::count(document(), UseCounter::DisableRemotePlaybackAttribute);
-    if (oldValue != value) {
-      if (m_webMediaPlayer)
-        m_webMediaPlayer->requestRemotePlaybackDisabled(!value.isNull());
+    if (params.oldValue != params.newValue) {
+      if (m_webMediaPlayer) {
+        m_webMediaPlayer->requestRemotePlaybackDisabled(
+            !params.newValue.isNull());
+      }
       // TODO(mlamouri): there is no direct API to expose if
       // disableRemotePLayback attribute has changed. It will require a direct
       // access to MediaControls for the moment.
@@ -580,7 +582,7 @@ void HTMLMediaElement::parseAttribute(const QualifiedName& name,
         mediaControls()->onDisableRemotePlaybackAttributeChanged();
     }
   } else {
-    HTMLElement::parseAttribute(name, oldValue, value);
+    HTMLElement::parseAttribute(params);
   }
 }
 

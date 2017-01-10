@@ -40,9 +40,7 @@ class SVGAnimateMotionElement final : public SVGAnimationElement {
 
   bool hasValidTarget() override;
 
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
+  void parseAttribute(const AttributeModificationParams&) override;
 
   void resetAnimatedType() override;
   void clearAnimatedType() override;

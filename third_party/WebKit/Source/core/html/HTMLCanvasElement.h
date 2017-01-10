@@ -252,9 +252,7 @@ class CORE_EXPORT HTMLCanvasElement final
 
   bool shouldAccelerate(const IntSize&) const;
 
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
+  void parseAttribute(const AttributeModificationParams&) override;
   LayoutObject* createLayoutObject(const ComputedStyle&) override;
   bool areAuthorShadowsAllowed() const override { return false; }
 

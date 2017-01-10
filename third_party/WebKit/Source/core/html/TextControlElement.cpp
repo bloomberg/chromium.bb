@@ -703,18 +703,17 @@ void TextControlElement::scheduleSelectEvent() {
   document().enqueueUniqueAnimationFrameEvent(event);
 }
 
-void TextControlElement::parseAttribute(const QualifiedName& name,
-                                        const AtomicString& oldValue,
-                                        const AtomicString& value) {
-  if (name == autocapitalizeAttr)
+void TextControlElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  if (params.name == autocapitalizeAttr)
     UseCounter::count(document(), UseCounter::AutocapitalizeAttribute);
 
-  if (name == placeholderAttr) {
+  if (params.name == placeholderAttr) {
     updatePlaceholderText();
     updatePlaceholderVisibility();
     UseCounter::count(document(), UseCounter::PlaceholderAttribute);
   } else {
-    HTMLFormControlElementWithState::parseAttribute(name, oldValue, value);
+    HTMLFormControlElementWithState::parseAttribute(params);
   }
 }
 

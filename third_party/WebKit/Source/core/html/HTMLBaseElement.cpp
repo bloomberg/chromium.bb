@@ -37,13 +37,12 @@ inline HTMLBaseElement::HTMLBaseElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLBaseElement)
 
-void HTMLBaseElement::parseAttribute(const QualifiedName& name,
-                                     const AtomicString& oldValue,
-                                     const AtomicString& value) {
-  if (name == hrefAttr || name == targetAttr)
+void HTMLBaseElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  if (params.name == hrefAttr || params.name == targetAttr)
     document().processBaseElement();
   else
-    HTMLElement::parseAttribute(name, oldValue, value);
+    HTMLElement::parseAttribute(params);
 }
 
 Node::InsertionNotificationRequest HTMLBaseElement::insertedInto(

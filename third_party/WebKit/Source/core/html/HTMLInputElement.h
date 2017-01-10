@@ -324,9 +324,7 @@ class CORE_EXPORT HTMLInputElement : public TextControlElement {
 
   void accessKeyAction(bool sendMouseEvents) final;
 
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
+  void parseAttribute(const AttributeModificationParams&) override;
   bool isPresentationAttribute(const QualifiedName&) const final;
   void collectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,

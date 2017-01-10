@@ -74,9 +74,7 @@ class CORE_EXPORT HTMLMeterElement final : public LabelableElement {
   bool supportLabels() const override { return true; }
 
   LayoutObject* createLayoutObject(const ComputedStyle&) override;
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
+  void parseAttribute(const AttributeModificationParams&) override;
 
   void didElementStateChange();
   void updateValueAppearance(double percentage);

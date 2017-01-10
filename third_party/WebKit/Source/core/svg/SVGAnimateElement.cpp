@@ -152,14 +152,13 @@ void SVGAnimateElement::removedFrom(ContainerNode* rootParent) {
   SVGAnimationElement::removedFrom(rootParent);
 }
 
-void SVGAnimateElement::parseAttribute(const QualifiedName& name,
-                                       const AtomicString& oldValue,
-                                       const AtomicString& value) {
-  if (name == SVGNames::attributeTypeAttr) {
-    setAttributeType(value);
+void SVGAnimateElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  if (params.name == SVGNames::attributeTypeAttr) {
+    setAttributeType(params.newValue);
     return;
   }
-  SVGAnimationElement::parseAttribute(name, oldValue, value);
+  SVGAnimationElement::parseAttribute(params);
 }
 
 void SVGAnimateElement::svgAttributeChanged(const QualifiedName& attrName) {

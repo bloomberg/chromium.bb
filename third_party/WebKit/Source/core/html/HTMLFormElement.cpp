@@ -476,13 +476,12 @@ void HTMLFormElement::reset() {
   m_isInResetFunction = false;
 }
 
-void HTMLFormElement::parseAttribute(const QualifiedName& name,
-                                     const AtomicString& oldValue,
-                                     const AtomicString& value) {
+void HTMLFormElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  const QualifiedName& name = params.name;
   if (name == actionAttr) {
-    m_attributes.parseAction(value);
-    logUpdateAttributeIfIsolatedWorldAndInDocument("form", actionAttr, oldValue,
-                                                   value);
+    m_attributes.parseAction(params.newValue);
+    logUpdateAttributeIfIsolatedWorldAndInDocument("form", params);
 
     // If we're not upgrading insecure requests, and the new action attribute is
     // pointing to an insecure "action" location from a secure page it is marked
@@ -496,15 +495,15 @@ void HTMLFormElement::parseAttribute(const QualifiedName& name,
       UseCounter::count(document().frame(),
                         UseCounter::MixedContentFormPresent);
   } else if (name == targetAttr) {
-    m_attributes.setTarget(value);
+    m_attributes.setTarget(params.newValue);
   } else if (name == methodAttr) {
-    m_attributes.updateMethodType(value);
+    m_attributes.updateMethodType(params.newValue);
   } else if (name == enctypeAttr) {
-    m_attributes.updateEncodingType(value);
+    m_attributes.updateEncodingType(params.newValue);
   } else if (name == accept_charsetAttr) {
-    m_attributes.setAcceptCharset(value);
+    m_attributes.setAcceptCharset(params.newValue);
   } else {
-    HTMLElement::parseAttribute(name, oldValue, value);
+    HTMLElement::parseAttribute(params);
   }
 }
 

@@ -48,9 +48,7 @@ class CORE_EXPORT HTMLMapElement final : public HTMLElement {
  private:
   explicit HTMLMapElement(Document&);
 
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
+  void parseAttribute(const AttributeModificationParams&) override;
 
   InsertionNotificationRequest insertedInto(ContainerNode*) override;
   void removedFrom(ContainerNode*) override;

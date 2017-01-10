@@ -62,18 +62,17 @@ void HTMLFrameElement::attachLayoutTree(const AttachContext& context) {
   }
 }
 
-void HTMLFrameElement::parseAttribute(const QualifiedName& name,
-                                      const AtomicString& oldValue,
-                                      const AtomicString& value) {
-  if (name == frameborderAttr) {
-    m_frameBorder = value.toInt();
-    m_frameBorderSet = !value.isNull();
+void HTMLFrameElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  if (params.name == frameborderAttr) {
+    m_frameBorder = params.newValue.toInt();
+    m_frameBorderSet = !params.newValue.isNull();
     // FIXME: If we are already attached, this has no effect.
-  } else if (name == noresizeAttr) {
+  } else if (params.name == noresizeAttr) {
     if (layoutObject())
       layoutObject()->updateFromElement();
   } else {
-    HTMLFrameElementBase::parseAttribute(name, oldValue, value);
+    HTMLFrameElementBase::parseAttribute(params);
   }
 }
 

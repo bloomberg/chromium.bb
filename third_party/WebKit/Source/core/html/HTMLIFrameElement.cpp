@@ -97,9 +97,10 @@ void HTMLIFrameElement::collectStyleForPresentationAttribute(
   }
 }
 
-void HTMLIFrameElement::parseAttribute(const QualifiedName& name,
-                                       const AtomicString& oldValue,
-                                       const AtomicString& value) {
+void HTMLIFrameElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  const QualifiedName& name = params.name;
+  const AtomicString& value = params.newValue;
   if (name == nameAttr) {
     if (isInDocumentTree() && document().isHTMLDocument()) {
       HTMLDocument& document = toHTMLDocument(this->document());
@@ -144,9 +145,8 @@ void HTMLIFrameElement::parseAttribute(const QualifiedName& name,
       frameOwnerPropertiesChanged();
   } else {
     if (name == srcAttr)
-      logUpdateAttributeIfIsolatedWorldAndInDocument("iframe", srcAttr,
-                                                     oldValue, value);
-    HTMLFrameElementBase::parseAttribute(name, oldValue, value);
+      logUpdateAttributeIfIsolatedWorldAndInDocument("iframe", params);
+    HTMLFrameElementBase::parseAttribute(params);
   }
 }
 

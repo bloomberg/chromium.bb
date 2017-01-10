@@ -49,17 +49,16 @@ HTMLStyleElement* HTMLStyleElement::create(Document& document,
   return new HTMLStyleElement(document, createdByParser);
 }
 
-void HTMLStyleElement::parseAttribute(const QualifiedName& name,
-                                      const AtomicString& oldValue,
-                                      const AtomicString& value) {
-  if (name == titleAttr && m_sheet && isInDocumentTree()) {
-    m_sheet->setTitle(value);
-  } else if (name == mediaAttr && isConnected() && document().isActive() &&
-             m_sheet) {
-    m_sheet->setMediaQueries(MediaQuerySet::create(value));
+void HTMLStyleElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  if (params.name == titleAttr && m_sheet && isInDocumentTree()) {
+    m_sheet->setTitle(params.newValue);
+  } else if (params.name == mediaAttr && isConnected() &&
+             document().isActive() && m_sheet) {
+    m_sheet->setMediaQueries(MediaQuerySet::create(params.newValue));
     document().styleEngine().mediaQueriesChangedInScope(treeScope());
   } else {
-    HTMLElement::parseAttribute(name, oldValue, value);
+    HTMLElement::parseAttribute(params);
   }
 }
 

@@ -53,9 +53,7 @@ class HTMLButtonElement final : public HTMLFormControlElement {
   bool alwaysCreateUserAgentShadowRoot() const override { return false; }
 
   Node::InsertionNotificationRequest insertedInto(ContainerNode*) override;
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
+  void parseAttribute(const AttributeModificationParams&) override;
   bool isPresentationAttribute(const QualifiedName&) const override;
   void defaultEventHandler(Event*) override;
 

@@ -147,9 +147,10 @@ void HTMLTextAreaElement::collectStyleForPresentationAttribute(
   }
 }
 
-void HTMLTextAreaElement::parseAttribute(const QualifiedName& name,
-                                         const AtomicString& oldValue,
-                                         const AtomicString& value) {
+void HTMLTextAreaElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  const QualifiedName& name = params.name;
+  const AtomicString& value = params.newValue;
   if (name == rowsAttr) {
     unsigned rows = 0;
     if (value.isEmpty() || !parseHTMLNonNegativeInteger(value, rows) ||
@@ -200,7 +201,7 @@ void HTMLTextAreaElement::parseAttribute(const QualifiedName& name,
     UseCounter::count(document(), UseCounter::TextAreaMinLength);
     setNeedsValidityCheck();
   } else {
-    TextControlElement::parseAttribute(name, oldValue, value);
+    TextControlElement::parseAttribute(params);
   }
 }
 

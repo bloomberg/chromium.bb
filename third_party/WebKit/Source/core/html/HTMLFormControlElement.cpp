@@ -137,27 +137,25 @@ void HTMLFormControlElement::reset() {
 }
 
 void HTMLFormControlElement::attributeChanged(
-    const QualifiedName& name,
-    const AtomicString& oldValue,
-    const AtomicString& newValue,
-    AttributeModificationReason reason) {
-  HTMLElement::attributeChanged(name, oldValue, newValue, reason);
-  if (name == disabledAttr && oldValue.isNull() != newValue.isNull()) {
+    const AttributeModificationParams& params) {
+  HTMLElement::attributeChanged(params);
+  if (params.name == disabledAttr &&
+      params.oldValue.isNull() != params.newValue.isNull()) {
     disabledAttributeChanged();
-    if (reason == AttributeModificationReason::kDirectly &&
+    if (params.reason == AttributeModificationReason::kDirectly &&
         isDisabledFormControl() && adjustedFocusedElementInTreeScope() == this)
       blur();
   }
 }
 
-void HTMLFormControlElement::parseAttribute(const QualifiedName& name,
-                                            const AtomicString& oldValue,
-                                            const AtomicString& value) {
+void HTMLFormControlElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  const QualifiedName& name = params.name;
   if (name == formAttr) {
     formAttributeChanged();
     UseCounter::count(document(), UseCounter::FormAttribute);
   } else if (name == readonlyAttr) {
-    if (oldValue.isNull() != value.isNull()) {
+    if (params.oldValue.isNull() != params.newValue.isNull()) {
       setNeedsWillValidateCheck();
       pseudoStateChanged(CSSSelector::PseudoReadOnly);
       pseudoStateChanged(CSSSelector::PseudoReadWrite);
@@ -166,14 +164,14 @@ void HTMLFormControlElement::parseAttribute(const QualifiedName& name,
                                                  ReadOnlyControlState);
     }
   } else if (name == requiredAttr) {
-    if (oldValue.isNull() != value.isNull())
+    if (params.oldValue.isNull() != params.newValue.isNull())
       requiredAttributeChanged();
     UseCounter::count(document(), UseCounter::RequiredAttribute);
   } else if (name == autofocusAttr) {
-    HTMLElement::parseAttribute(name, oldValue, value);
+    HTMLElement::parseAttribute(params);
     UseCounter::count(document(), UseCounter::AutoFocusAttribute);
   } else {
-    HTMLElement::parseAttribute(name, oldValue, value);
+    HTMLElement::parseAttribute(params);
   }
 }
 

@@ -121,9 +121,7 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
   static void processCallback(Node*);
 
   // From Node and subclassses
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
+  void parseAttribute(const AttributeModificationParams&) override;
   InsertionNotificationRequest insertedInto(ContainerNode*) override;
   void removedFrom(ContainerNode*) override;
   bool isURLAttribute(const Attribute&) const override;

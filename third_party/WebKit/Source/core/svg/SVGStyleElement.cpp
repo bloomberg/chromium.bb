@@ -81,17 +81,16 @@ void SVGStyleElement::setTitle(const AtomicString& title) {
   setAttribute(SVGNames::titleAttr, title);
 }
 
-void SVGStyleElement::parseAttribute(const QualifiedName& name,
-                                     const AtomicString& oldValue,
-                                     const AtomicString& value) {
-  if (name == SVGNames::titleAttr) {
+void SVGStyleElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  if (params.name == SVGNames::titleAttr) {
     if (m_sheet && isInDocumentTree())
-      m_sheet->setTitle(value);
+      m_sheet->setTitle(params.newValue);
 
     return;
   }
 
-  SVGElement::parseAttribute(name, oldValue, value);
+  SVGElement::parseAttribute(params);
 }
 
 void SVGStyleElement::finishParsingChildren() {

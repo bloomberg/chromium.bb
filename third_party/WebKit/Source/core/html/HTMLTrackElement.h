@@ -59,9 +59,7 @@ class HTMLTrackElement final : public HTMLElement,
   explicit HTMLTrackElement(Document&);
   ~HTMLTrackElement() override;
 
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
+  void parseAttribute(const AttributeModificationParams&) override;
 
   InsertionNotificationRequest insertedInto(ContainerNode*) override;
 

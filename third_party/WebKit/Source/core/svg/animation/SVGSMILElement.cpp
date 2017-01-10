@@ -445,9 +445,9 @@ void SVGSMILElement::parseBeginOrEnd(const String& parseString,
   sortTimeList(timeList);
 }
 
-void SVGSMILElement::parseAttribute(const QualifiedName& name,
-                                    const AtomicString& oldValue,
-                                    const AtomicString& value) {
+void SVGSMILElement::parseAttribute(const AttributeModificationParams& params) {
+  const QualifiedName& name = params.name;
+  const AtomicString& value = params.newValue;
   if (name == SVGNames::beginAttr) {
     if (!m_conditions.isEmpty()) {
       clearConditions();
@@ -477,7 +477,7 @@ void SVGSMILElement::parseAttribute(const QualifiedName& name,
         EventTypeNames::repeatEvent,
         createAttributeEventListener(this, name, value, eventParameterName()));
   } else {
-    SVGElement::parseAttribute(name, oldValue, value);
+    SVGElement::parseAttribute(params);
   }
 }
 

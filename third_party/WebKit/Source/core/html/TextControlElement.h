@@ -151,9 +151,7 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
   bool isPlaceholderEmpty() const;
   virtual void updatePlaceholderText() = 0;
 
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
+  void parseAttribute(const AttributeModificationParams&) override;
 
   void restoreCachedSelection();
 

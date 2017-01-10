@@ -211,14 +211,8 @@ class CORE_EXPORT SVGElement : public Element {
              Document&,
              ConstructionType = CreateSVGElement);
 
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
-
-  void attributeChanged(const QualifiedName&,
-                        const AtomicString&,
-                        const AtomicString&,
-                        AttributeModificationReason) override;
+  void parseAttribute(const AttributeModificationParams&) override;
+  void attributeChanged(const AttributeModificationParams&) override;
 
   void collectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,

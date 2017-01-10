@@ -70,9 +70,10 @@ void HTMLFrameSetElement::collectStyleForPresentationAttribute(
     HTMLElement::collectStyleForPresentationAttribute(name, value, style);
 }
 
-void HTMLFrameSetElement::parseAttribute(const QualifiedName& name,
-                                         const AtomicString& oldValue,
-                                         const AtomicString& value) {
+void HTMLFrameSetElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  const QualifiedName& name = params.name;
+  const AtomicString& value = params.newValue;
   if (name == rowsAttr) {
     if (!value.isNull()) {
       m_rowLengths = parseListOfDimensions(value.getString());
@@ -211,7 +212,7 @@ void HTMLFrameSetElement::parseAttribute(const QualifiedName& name,
         createAttributeEventListener(document().frame(), name, value,
                                      eventParameterName()));
   } else {
-    HTMLElement::parseAttribute(name, oldValue, value);
+    HTMLElement::parseAttribute(params);
   }
 }
 

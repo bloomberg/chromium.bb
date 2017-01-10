@@ -155,9 +155,9 @@ bool SVGSVGElement::zoomAndPanEnabled() const {
   return zoomAndPan == SVGZoomAndPanMagnify;
 }
 
-void SVGSVGElement::parseAttribute(const QualifiedName& name,
-                                   const AtomicString& oldValue,
-                                   const AtomicString& value) {
+void SVGSVGElement::parseAttribute(const AttributeModificationParams& params) {
+  const QualifiedName& name = params.name;
+  const AtomicString& value = params.newValue;
   if (!nearestViewportElement()) {
     bool setListener = true;
 
@@ -206,7 +206,7 @@ void SVGSVGElement::parseAttribute(const QualifiedName& name,
       property->setDefaultValueAsString("100%");
     reportAttributeParsingError(parseError, name, value);
   } else {
-    SVGElement::parseAttribute(name, oldValue, value);
+    SVGElement::parseAttribute(params);
   }
 }
 

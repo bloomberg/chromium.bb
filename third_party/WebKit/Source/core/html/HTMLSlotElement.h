@@ -77,10 +77,7 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   void attachLayoutTree(const AttachContext& = AttachContext()) final;
   void detachLayoutTree(const AttachContext& = AttachContext()) final;
 
-  void attributeChanged(const QualifiedName&,
-                        const AtomicString& oldValue,
-                        const AtomicString& newValue,
-                        AttributeModificationReason) final;
+  void attributeChanged(const AttributeModificationParams&) final;
 
   int tabIndex() const override;
   AtomicString name() const;

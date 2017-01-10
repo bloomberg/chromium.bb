@@ -79,17 +79,15 @@ void HTMLScriptElement::didMoveToNewDocument(Document& oldDocument) {
   HTMLElement::didMoveToNewDocument(oldDocument);
 }
 
-void HTMLScriptElement::parseAttribute(const QualifiedName& name,
-                                       const AtomicString& oldValue,
-                                       const AtomicString& value) {
-  if (name == srcAttr) {
-    m_loader->handleSourceAttribute(value);
-    logUpdateAttributeIfIsolatedWorldAndInDocument("script", srcAttr, oldValue,
-                                                   value);
-  } else if (name == asyncAttr) {
+void HTMLScriptElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  if (params.name == srcAttr) {
+    m_loader->handleSourceAttribute(params.newValue);
+    logUpdateAttributeIfIsolatedWorldAndInDocument("script", params);
+  } else if (params.name == asyncAttr) {
     m_loader->handleAsyncAttribute();
   } else {
-    HTMLElement::parseAttribute(name, oldValue, value);
+    HTMLElement::parseAttribute(params);
   }
 }
 

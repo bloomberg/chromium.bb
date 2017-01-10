@@ -661,34 +661,36 @@ bool SVGElement::inUseShadowTree() const {
   return correspondingUseElement();
 }
 
-void SVGElement::parseAttribute(const QualifiedName& name,
-                                const AtomicString& oldValue,
-                                const AtomicString& value) {
-  if (SVGAnimatedPropertyBase* property = propertyFromAttribute(name)) {
-    SVGParsingError parseError = property->setBaseValueAsString(value);
-    reportAttributeParsingError(parseError, name, value);
+void SVGElement::parseAttribute(const AttributeModificationParams& params) {
+  if (SVGAnimatedPropertyBase* property = propertyFromAttribute(params.name)) {
+    SVGParsingError parseError =
+        property->setBaseValueAsString(params.newValue);
+    reportAttributeParsingError(parseError, params.name, params.newValue);
     return;
   }
 
-  if (name == HTMLNames::classAttr) {
+  if (params.name == HTMLNames::classAttr) {
     // SVG animation has currently requires special storage of values so we set
     // the className here. svgAttributeChanged actually causes the resulting
     // style updates (instead of Element::parseAttribute). We don't
     // tell Element about the change to avoid parsing the class list twice
-    SVGParsingError parseError = m_className->setBaseValueAsString(value);
-    reportAttributeParsingError(parseError, name, value);
-  } else if (name == tabindexAttr) {
-    Element::parseAttribute(name, oldValue, value);
+    SVGParsingError parseError =
+        m_className->setBaseValueAsString(params.newValue);
+    reportAttributeParsingError(parseError, params.name, params.newValue);
+  } else if (params.name == tabindexAttr) {
+    Element::parseAttribute(params);
   } else {
     // standard events
     const AtomicString& eventName =
-        HTMLElement::eventNameForAttributeName(name);
-    if (!eventName.isNull())
+        HTMLElement::eventNameForAttributeName(params.name);
+    if (!eventName.isNull()) {
       setAttributeEventListener(
-          eventName, createAttributeEventListener(this, name, value,
-                                                  eventParameterName()));
-    else
-      Element::parseAttribute(name, oldValue, value);
+          eventName,
+          createAttributeEventListener(this, params.name, params.newValue,
+                                       eventParameterName()));
+    } else {
+      Element::parseAttribute(params);
+    }
   }
 }
 
@@ -914,23 +916,21 @@ void SVGElement::sendSVGLoadEventToSelfAndAncestorChainIfPossible() {
   toSVGElement(parent)->sendSVGLoadEventToSelfAndAncestorChainIfPossible();
 }
 
-void SVGElement::attributeChanged(const QualifiedName& name,
-                                  const AtomicString& oldValue,
-                                  const AtomicString& newValue,
-                                  AttributeModificationReason) {
-  Element::attributeChanged(name, oldValue, newValue,
-                            AttributeModificationReason::kDirectly);
+void SVGElement::attributeChanged(const AttributeModificationParams& params) {
+  Element::attributeChanged(
+      AttributeModificationParams(params.name, params.oldValue, params.newValue,
+                                  AttributeModificationReason::kDirectly));
 
-  if (name == HTMLNames::idAttr)
+  if (params.name == HTMLNames::idAttr)
     rebuildAllIncomingReferences();
 
   // Changes to the style attribute are processed lazily (see
   // Element::getAttribute() and related methods), so we don't want changes to
   // the style attribute to result in extra work here.
-  if (name == HTMLNames::styleAttr)
+  if (params.name == HTMLNames::styleAttr)
     return;
 
-  svgAttributeBaseValChanged(name);
+  svgAttributeBaseValChanged(params.name);
 }
 
 void SVGElement::svgAttributeChanged(const QualifiedName& attrName) {

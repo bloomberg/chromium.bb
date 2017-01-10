@@ -41,9 +41,7 @@ class HTMLDetailsElement final : public HTMLElement {
   void dispatchPendingEvent();
 
   LayoutObject* createLayoutObject(const ComputedStyle&) override;
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
+  void parseAttribute(const AttributeModificationParams&) override;
   void didAddUserAgentShadowRoot(ShadowRoot&) override;
   bool isInteractiveContent() const override;
 

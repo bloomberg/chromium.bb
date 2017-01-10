@@ -199,18 +199,17 @@ void HTMLSlotElement::detachLayoutTree(const AttachContext& context) {
   HTMLElement::detachLayoutTree(context);
 }
 
-void HTMLSlotElement::attributeChanged(const QualifiedName& name,
-                                       const AtomicString& oldValue,
-                                       const AtomicString& newValue,
-                                       AttributeModificationReason reason) {
-  if (name == nameAttr) {
+void HTMLSlotElement::attributeChanged(
+    const AttributeModificationParams& params) {
+  if (params.name == nameAttr) {
     if (ShadowRoot* root = containingShadowRoot()) {
-      if (root->isV1() && oldValue != newValue)
-        root->ensureSlotAssignment().slotRenamed(normalizeSlotName(oldValue),
-                                                 *this);
+      if (root->isV1() && params.oldValue != params.newValue) {
+        root->ensureSlotAssignment().slotRenamed(
+            normalizeSlotName(params.oldValue), *this);
+      }
     }
   }
-  HTMLElement::attributeChanged(name, oldValue, newValue, reason);
+  HTMLElement::attributeChanged(params);
 }
 
 static bool wasInShadowTreeBeforeInserted(HTMLSlotElement& slot,

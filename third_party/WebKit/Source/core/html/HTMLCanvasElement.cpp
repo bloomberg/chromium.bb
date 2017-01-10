@@ -164,12 +164,11 @@ void HTMLCanvasElement::dispose() {
   }
 }
 
-void HTMLCanvasElement::parseAttribute(const QualifiedName& name,
-                                       const AtomicString& oldValue,
-                                       const AtomicString& value) {
-  if (name == widthAttr || name == heightAttr)
+void HTMLCanvasElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  if (params.name == widthAttr || params.name == heightAttr)
     reset();
-  HTMLElement::parseAttribute(name, oldValue, value);
+  HTMLElement::parseAttribute(params);
 }
 
 LayoutObject* HTMLCanvasElement::createLayoutObject(

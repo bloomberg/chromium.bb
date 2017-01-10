@@ -41,9 +41,7 @@ class CORE_EXPORT HTMLFrameElementBase : public HTMLFrameOwnerElement {
  protected:
   HTMLFrameElementBase(const QualifiedName&, Document&);
 
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
+  void parseAttribute(const AttributeModificationParams&) override;
   InsertionNotificationRequest insertedInto(ContainerNode*) override;
   void didNotifySubtreeInsertionsToDocument() final;
   void attachLayoutTree(const AttachContext& = AttachContext()) override;

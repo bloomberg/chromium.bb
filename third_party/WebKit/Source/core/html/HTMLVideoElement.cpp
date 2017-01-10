@@ -114,10 +114,9 @@ bool HTMLVideoElement::isPresentationAttribute(
   return HTMLMediaElement::isPresentationAttribute(name);
 }
 
-void HTMLVideoElement::parseAttribute(const QualifiedName& name,
-                                      const AtomicString& oldValue,
-                                      const AtomicString& value) {
-  if (name == posterAttr) {
+void HTMLVideoElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  if (params.name == posterAttr) {
     // In case the poster attribute is set after playback, don't update the
     // display state, post playback the correct state will be picked up.
     if (getDisplayMode() < Video || !hasAvailableVideoFrame()) {
@@ -138,7 +137,7 @@ void HTMLVideoElement::parseAttribute(const QualifiedName& name,
     if (webMediaPlayer())
       webMediaPlayer()->setPoster(posterImageURL());
   } else {
-    HTMLMediaElement::parseAttribute(name, oldValue, value);
+    HTMLMediaElement::parseAttribute(params);
   }
 }
 

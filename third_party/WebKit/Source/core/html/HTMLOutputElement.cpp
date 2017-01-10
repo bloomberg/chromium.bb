@@ -64,13 +64,12 @@ bool HTMLOutputElement::supportsFocus() const {
   return HTMLElement::supportsFocus();
 }
 
-void HTMLOutputElement::parseAttribute(const QualifiedName& name,
-                                       const AtomicString& oldValue,
-                                       const AtomicString& value) {
-  if (name == HTMLNames::forAttr)
-    setFor(value);
+void HTMLOutputElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  if (params.name == HTMLNames::forAttr)
+    setFor(params.newValue);
   else
-    HTMLFormControlElement::parseAttribute(name, oldValue, value);
+    HTMLFormControlElement::parseAttribute(params);
 }
 
 DOMTokenList* HTMLOutputElement::htmlFor() const {

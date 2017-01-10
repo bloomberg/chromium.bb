@@ -92,11 +92,10 @@ void HTMLEmbedElement::collectStyleForPresentationAttribute(
   }
 }
 
-void HTMLEmbedElement::parseAttribute(const QualifiedName& name,
-                                      const AtomicString& oldValue,
-                                      const AtomicString& value) {
-  if (name == typeAttr) {
-    m_serviceType = value.lower();
+void HTMLEmbedElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  if (params.name == typeAttr) {
+    m_serviceType = params.newValue.lower();
     size_t pos = m_serviceType.find(";");
     if (pos != kNotFound)
       m_serviceType = m_serviceType.left(pos);
@@ -107,12 +106,12 @@ void HTMLEmbedElement::parseAttribute(const QualifiedName& name,
     } else {
       requestPluginCreationWithoutLayoutObjectIfPossible();
     }
-  } else if (name == codeAttr) {
+  } else if (params.name == codeAttr) {
     // TODO(schenney): Remove this branch? It's not in the spec and we're not in
     // the HTMLAppletElement hierarchy.
-    m_url = stripLeadingAndTrailingHTMLSpaces(value);
-  } else if (name == srcAttr) {
-    m_url = stripLeadingAndTrailingHTMLSpaces(value);
+    m_url = stripLeadingAndTrailingHTMLSpaces(params.newValue);
+  } else if (params.name == srcAttr) {
+    m_url = stripLeadingAndTrailingHTMLSpaces(params.newValue);
     if (layoutObject() && isImageType()) {
       if (!m_imageLoader)
         m_imageLoader = HTMLImageLoader::create(this);
@@ -127,7 +126,7 @@ void HTMLEmbedElement::parseAttribute(const QualifiedName& name,
       requestPluginCreationWithoutLayoutObjectIfPossible();
     }
   } else {
-    HTMLPlugInElement::parseAttribute(name, oldValue, value);
+    HTMLPlugInElement::parseAttribute(params);
   }
 }
 

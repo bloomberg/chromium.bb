@@ -93,13 +93,13 @@ void HTMLObjectElement::collectStyleForPresentationAttribute(
     HTMLPlugInElement::collectStyleForPresentationAttribute(name, value, style);
 }
 
-void HTMLObjectElement::parseAttribute(const QualifiedName& name,
-                                       const AtomicString& oldValue,
-                                       const AtomicString& value) {
+void HTMLObjectElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  const QualifiedName& name = params.name;
   if (name == formAttr) {
     formAttributeChanged();
   } else if (name == typeAttr) {
-    m_serviceType = value.lower();
+    m_serviceType = params.newValue.lower();
     size_t pos = m_serviceType.find(";");
     if (pos != kNotFound)
       m_serviceType = m_serviceType.left(pos);
@@ -110,7 +110,7 @@ void HTMLObjectElement::parseAttribute(const QualifiedName& name,
     if (!layoutObject())
       requestPluginCreationWithoutLayoutObjectIfPossible();
   } else if (name == dataAttr) {
-    m_url = stripLeadingAndTrailingHTMLSpaces(value);
+    m_url = stripLeadingAndTrailingHTMLSpaces(params.newValue);
     if (layoutObject() && isImageType()) {
       setNeedsWidgetUpdate(true);
       if (!m_imageLoader)
@@ -120,10 +120,10 @@ void HTMLObjectElement::parseAttribute(const QualifiedName& name,
       reloadPluginOnAttributeChange(name);
     }
   } else if (name == classidAttr) {
-    m_classId = value;
+    m_classId = params.newValue;
     reloadPluginOnAttributeChange(name);
   } else {
-    HTMLPlugInElement::parseAttribute(name, oldValue, value);
+    HTMLPlugInElement::parseAttribute(params);
   }
 }
 

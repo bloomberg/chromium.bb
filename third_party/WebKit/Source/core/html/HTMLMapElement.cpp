@@ -76,23 +76,21 @@ HTMLImageElement* HTMLMapElement::imageElement() {
   return nullptr;
 }
 
-void HTMLMapElement::parseAttribute(const QualifiedName& name,
-                                    const AtomicString& oldValue,
-                                    const AtomicString& value) {
+void HTMLMapElement::parseAttribute(const AttributeModificationParams& params) {
   // FIXME: This logic seems wrong for XML documents.
   // Either the id or name will be used depending on the order the attributes
   // are parsed.
 
-  if (name == idAttr || name == nameAttr) {
-    if (name == idAttr) {
+  if (params.name == idAttr || params.name == nameAttr) {
+    if (params.name == idAttr) {
       // Call base class so that hasID bit gets set.
-      HTMLElement::parseAttribute(name, oldValue, value);
+      HTMLElement::parseAttribute(params);
       if (document().isHTMLDocument())
         return;
     }
     if (isConnected())
       treeScope().removeImageMap(this);
-    String mapName = value;
+    String mapName = params.newValue;
     if (mapName[0] == '#')
       mapName = mapName.substring(1);
     m_name =
@@ -103,7 +101,7 @@ void HTMLMapElement::parseAttribute(const QualifiedName& name,
     return;
   }
 
-  HTMLElement::parseAttribute(name, oldValue, value);
+  HTMLElement::parseAttribute(params);
 }
 
 HTMLCollection* HTMLMapElement::areas() {

@@ -60,9 +60,7 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
                     bool alreadyStarted,
                     bool createdDuringDocumentWrite);
 
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
+  void parseAttribute(const AttributeModificationParams&) override;
   InsertionNotificationRequest insertedInto(ContainerNode*) override;
   void didNotifySubtreeInsertionsToDocument() override;
   void childrenChanged(const ChildrenChange&) override;

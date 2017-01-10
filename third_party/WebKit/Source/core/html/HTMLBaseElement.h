@@ -40,9 +40,7 @@ class HTMLBaseElement final : public HTMLElement {
   explicit HTMLBaseElement(Document&);
 
   bool isURLAttribute(const Attribute&) const override;
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
+  void parseAttribute(const AttributeModificationParams&) override;
   InsertionNotificationRequest insertedInto(ContainerNode*) override;
   void removedFrom(ContainerNode*) override;
 };

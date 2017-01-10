@@ -60,13 +60,12 @@ void HTMLTableColElement::collectStyleForPresentationAttribute(
                                                                style);
 }
 
-void HTMLTableColElement::parseAttribute(const QualifiedName& name,
-                                         const AtomicString& oldValue,
-                                         const AtomicString& value) {
-  if (name == spanAttr) {
+void HTMLTableColElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  if (params.name == spanAttr) {
     unsigned newSpan = 0;
-    if (value.isEmpty() || !parseHTMLNonNegativeInteger(value, newSpan) ||
-        newSpan < 1) {
+    if (params.newValue.isEmpty() ||
+        !parseHTMLNonNegativeInteger(params.newValue, newSpan) || newSpan < 1) {
       // If the value of span is not a valid non-negative integer greater than
       // zero, set it to 1.
       newSpan = 1;
@@ -75,8 +74,8 @@ void HTMLTableColElement::parseAttribute(const QualifiedName& name,
     m_span = newSpan;
     if (layoutObject() && layoutObject()->isLayoutTableCol())
       layoutObject()->updateFromElement();
-  } else if (name == widthAttr) {
-    if (!value.isEmpty()) {
+  } else if (params.name == widthAttr) {
+    if (!params.newValue.isEmpty()) {
       if (layoutObject() && layoutObject()->isLayoutTableCol()) {
         LayoutTableCol* col = toLayoutTableCol(layoutObject());
         int newWidth = width().toInt();
@@ -86,7 +85,7 @@ void HTMLTableColElement::parseAttribute(const QualifiedName& name,
       }
     }
   } else {
-    HTMLTablePartElement::parseAttribute(name, oldValue, value);
+    HTMLTablePartElement::parseAttribute(params);
   }
 }
 

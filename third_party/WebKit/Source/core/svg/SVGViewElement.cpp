@@ -37,13 +37,11 @@ DEFINE_TRACE(SVGViewElement) {
   SVGFitToViewBox::trace(visitor);
 }
 
-void SVGViewElement::parseAttribute(const QualifiedName& name,
-                                    const AtomicString& oldValue,
-                                    const AtomicString& value) {
-  if (SVGZoomAndPan::parseAttribute(name, value))
+void SVGViewElement::parseAttribute(const AttributeModificationParams& params) {
+  if (SVGZoomAndPan::parseAttribute(params.name, params.newValue))
     return;
 
-  SVGElement::parseAttribute(name, oldValue, value);
+  SVGElement::parseAttribute(params);
 }
 
 }  // namespace blink

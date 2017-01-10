@@ -51,9 +51,7 @@ class SVGScriptElement final : public SVGElement,
  private:
   SVGScriptElement(Document&, bool wasInsertedByParser, bool alreadyStarted);
 
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
+  void parseAttribute(const AttributeModificationParams&) override;
   InsertionNotificationRequest insertedInto(ContainerNode*) override;
   void didNotifySubtreeInsertionsToDocument() override;
   void childrenChanged(const ChildrenChange&) override;

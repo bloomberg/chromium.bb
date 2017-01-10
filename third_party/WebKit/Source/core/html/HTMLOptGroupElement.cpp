@@ -63,15 +63,14 @@ bool HTMLOptGroupElement::isDisabledFormControl() const {
   return fastHasAttribute(disabledAttr);
 }
 
-void HTMLOptGroupElement::parseAttribute(const QualifiedName& name,
-                                         const AtomicString& oldValue,
-                                         const AtomicString& value) {
-  HTMLElement::parseAttribute(name, oldValue, value);
+void HTMLOptGroupElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  HTMLElement::parseAttribute(params);
 
-  if (name == disabledAttr) {
+  if (params.name == disabledAttr) {
     pseudoStateChanged(CSSSelector::PseudoDisabled);
     pseudoStateChanged(CSSSelector::PseudoEnabled);
-  } else if (name == labelAttr) {
+  } else if (params.name == labelAttr) {
     updateGroupLabel();
   }
 }

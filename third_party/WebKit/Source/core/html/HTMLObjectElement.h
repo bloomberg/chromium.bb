@@ -83,9 +83,7 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
  private:
   HTMLObjectElement(Document&, bool createdByParser);
 
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
+  void parseAttribute(const AttributeModificationParams&) override;
   bool isPresentationAttribute(const QualifiedName&) const override;
   void collectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,

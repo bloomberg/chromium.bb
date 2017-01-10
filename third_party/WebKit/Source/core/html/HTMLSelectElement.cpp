@@ -294,17 +294,16 @@ bool HTMLSelectElement::isPresentationAttribute(
   return HTMLFormControlElementWithState::isPresentationAttribute(name);
 }
 
-void HTMLSelectElement::parseAttribute(const QualifiedName& name,
-                                       const AtomicString& oldValue,
-                                       const AtomicString& value) {
-  if (name == sizeAttr) {
+void HTMLSelectElement::parseAttribute(
+    const AttributeModificationParams& params) {
+  if (params.name == sizeAttr) {
     unsigned oldSize = m_size;
     // Set the attribute value to a number.
     // This is important since the style rules for this attribute can
     // determine the appearance property.
-    unsigned size = value.getString().toUInt();
+    unsigned size = params.newValue.getString().toUInt();
     AtomicString attrSize = AtomicString::number(size);
-    if (attrSize != value) {
+    if (attrSize != params.newValue) {
       // FIXME: This is horribly factored.
       if (Attribute* sizeAttribute =
               ensureUniqueElementData().attributes().find(sizeAttr))
@@ -319,13 +318,13 @@ void HTMLSelectElement::parseAttribute(const QualifiedName& name,
       if (!usesMenuList())
         saveListboxActiveSelection();
     }
-  } else if (name == multipleAttr) {
-    parseMultipleAttribute(value);
-  } else if (name == accesskeyAttr) {
+  } else if (params.name == multipleAttr) {
+    parseMultipleAttribute(params.newValue);
+  } else if (params.name == accesskeyAttr) {
     // FIXME: ignore for the moment.
     //
   } else {
-    HTMLFormControlElementWithState::parseAttribute(name, oldValue, value);
+    HTMLFormControlElementWithState::parseAttribute(params);
   }
 }
 

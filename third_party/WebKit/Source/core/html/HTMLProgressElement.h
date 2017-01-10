@@ -60,9 +60,7 @@ class CORE_EXPORT HTMLProgressElement final : public LabelableElement {
   LayoutObject* createLayoutObject(const ComputedStyle&) override;
   LayoutProgress* layoutProgress() const;
 
-  void parseAttribute(const QualifiedName&,
-                      const AtomicString&,
-                      const AtomicString&) override;
+  void parseAttribute(const AttributeModificationParams&) override;
 
   void attachLayoutTree(const AttachContext& = AttachContext()) override;
 
