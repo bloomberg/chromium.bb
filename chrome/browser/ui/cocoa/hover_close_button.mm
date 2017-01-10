@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -22,7 +23,6 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/resources/grit/ui_resources.h"
 
 namespace  {
@@ -160,31 +160,30 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
 }
 
 - (NSImage*)imageForHoverState:(HoverState)hoverState {
-  gfx::VectorIconId vectorIconID;
+  const gfx::VectorIcon* vectorIcon = nullptr;
   SkColor vectorIconColor = gfx::kPlaceholderColor;
   TabView* tabView = [self tabView];
 
   switch (hoverState) {
     case kHoverStateNone:
-      vectorIconID = gfx::VectorIconId::TAB_CLOSE_NORMAL;
+      vectorIcon = &kTabCloseNormalIcon;
       vectorIconColor =
           tabView ? [tabView iconColor] : tabs::kDefaultTabTextColor;
       break;
     case kHoverStateMouseOver:
       // For mouse over, the icon color is the fill color of the circle.
-      vectorIconID = gfx::VectorIconId::TAB_CLOSE_HOVERED_PRESSED;
+      vectorIcon = &kTabCloseHoveredPressedIcon;
       vectorIconColor = SkColorSetARGB(0xFF, 0xDB, 0x44, 0x37);
       break;
     case kHoverStateMouseDown:
       // For mouse pressed, the icon color is the fill color of the circle.
-      vectorIconID = gfx::VectorIconId::TAB_CLOSE_HOVERED_PRESSED;
+      vectorIcon = &kTabCloseHoveredPressedIcon;
       vectorIconColor = SkColorSetARGB(0xFF, 0xA8, 0x35, 0x2A);
       break;
   }
 
   return NSImageFromImageSkia(
-      gfx::CreateVectorIcon(vectorIconID, kTabCloseButtonSize,
-          vectorIconColor));
+      gfx::CreateVectorIcon(*vectorIcon, kTabCloseButtonSize, vectorIconColor));
 }
 
 - (void)setHoverState:(HoverState)state {

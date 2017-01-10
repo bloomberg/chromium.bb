@@ -11,6 +11,7 @@
 #include "ash/common/shelf/shelf_view.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/memory/ptr_util.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -24,7 +25,6 @@
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
@@ -43,8 +43,7 @@ OverflowButton::OverflowButton(ShelfView* shelf_view, WmShelf* wm_shelf)
     set_ink_drop_base_color(kShelfInkDropBaseColor);
     set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
     set_hide_ink_drop_when_showing_context_menu(false);
-    bottom_image_md_ =
-        CreateVectorIcon(gfx::VectorIconId::SHELF_OVERFLOW, kShelfIconColor);
+    bottom_image_md_ = CreateVectorIcon(kShelfOverflowIcon, kShelfIconColor);
     bottom_image_ = &bottom_image_md_;
   } else {
     bottom_image_ = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(

@@ -40,9 +40,9 @@
 #include "ui/resources/grit/ui_resources.h"
 
 #if !defined(OS_MACOSX)
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #endif
 
 #if defined(USE_ASH)
@@ -131,8 +131,8 @@ int CommandIdToWindowVectorIndex(int command_id) {
 }
 
 #if !defined(OS_MACOSX)
-gfx::Image CreateFavicon(gfx::VectorIconId id) {
-  return gfx::Image(gfx::CreateVectorIcon(id, 16, gfx::kChromeIconGrey));
+gfx::Image CreateFavicon(const gfx::VectorIcon& icon) {
+  return gfx::Image(gfx::CreateVectorIcon(icon, 16, gfx::kChromeIconGrey));
 }
 #endif
 
@@ -439,7 +439,7 @@ void RecentTabsSubMenuModel::BuildLocalEntries() {
     SetIcon(last_local_model_index_,
             rb.GetNativeImageNamed(IDR_RECENTLY_CLOSED_WINDOW));
 #else
-    SetIcon(last_local_model_index_, CreateFavicon(gfx::VectorIconId::TAB));
+    SetIcon(last_local_model_index_, CreateFavicon(kTabIcon));
 #endif
 
     int added_count = 0;
@@ -552,7 +552,7 @@ void RecentTabsSubMenuModel::BuildLocalWindowItem(
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   SetIcon(curr_model_index, rb.GetNativeImageNamed(IDR_RECENTLY_CLOSED_WINDOW));
 #else
-  SetIcon(curr_model_index, CreateFavicon(gfx::VectorIconId::TAB));
+  SetIcon(curr_model_index, CreateFavicon(kTabIcon));
 #endif
   local_window_items_.push_back(window_id);
 }
@@ -604,14 +604,14 @@ void RecentTabsSubMenuModel::AddDeviceFavicon(
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   SetIcon(index_in_menu, rb.GetNativeImageNamed(favicon_id));
 #else
-  gfx::VectorIconId favicon_id = gfx::VectorIconId::VECTOR_ICON_NONE;
+  const gfx::VectorIcon* favicon = nullptr;
   switch (device_type) {
     case sync_sessions::SyncedSession::TYPE_PHONE:
-      favicon_id = gfx::VectorIconId::SMARTPHONE;
+      favicon = &kSmartphoneIcon;
       break;
 
     case sync_sessions::SyncedSession::TYPE_TABLET:
-      favicon_id = gfx::VectorIconId::TABLET;
+      favicon = &kTabletIcon;
       break;
 
     case sync_sessions::SyncedSession::TYPE_CHROMEOS:
@@ -620,11 +620,11 @@ void RecentTabsSubMenuModel::AddDeviceFavicon(
     case sync_sessions::SyncedSession::TYPE_LINUX:
     case sync_sessions::SyncedSession::TYPE_OTHER:
     case sync_sessions::SyncedSession::TYPE_UNSET:
-      favicon_id = gfx::VectorIconId::LAPTOP;
+      favicon = &kLaptopIcon;
       break;
   }
 
-  SetIcon(index_in_menu, CreateFavicon(favicon_id));
+  SetIcon(index_in_menu, CreateFavicon(*favicon));
 #endif
 }
 

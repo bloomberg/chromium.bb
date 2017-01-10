@@ -17,6 +17,7 @@
 #include "ash/common/system/user/login_status.h"
 #include "ash/common/wm_shell.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/logging.h"
 #include "grit/ash_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -25,7 +26,6 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -197,9 +197,8 @@ void LogoutButtonTray::UpdateButtonTextAndImage(LoginStatus login_status,
   } else {
     button_->SetText(base::string16());
     button_->SetAccessibleName(title);
-    button_->SetImage(
-        views::LabelButton::STATE_NORMAL,
-        gfx::CreateVectorIcon(gfx::VectorIconId::SHELF_LOGOUT, kTrayIconColor));
+    button_->SetImage(views::LabelButton::STATE_NORMAL,
+                      gfx::CreateVectorIcon(kShelfLogoutIcon, kTrayIconColor));
     button_->SetMinSize(gfx::Size(button_size, button_size));
   }
   UpdateVisibility();

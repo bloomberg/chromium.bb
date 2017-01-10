@@ -15,6 +15,7 @@
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -23,7 +24,6 @@
 #include "ui/events/event.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/controls/image_view.h"
 
@@ -37,7 +37,7 @@ VirtualKeyboardTray::VirtualKeyboardTray(WmShelf* wm_shelf)
     SetInkDropMode(InkDropMode::ON);
     SetContentsBackground(false);
     gfx::ImageSkia image_md =
-        CreateVectorIcon(gfx::VectorIconId::SHELF_KEYBOARD, kShelfIconColor);
+        CreateVectorIcon(kShelfKeyboardIcon, kShelfIconColor);
     icon_->SetImage(image_md);
   } else {
     SetContentsBackground(true);

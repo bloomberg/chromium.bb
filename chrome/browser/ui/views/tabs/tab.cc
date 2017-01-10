@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -51,7 +52,6 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
@@ -587,11 +587,9 @@ Tab::Tab(TabController* controller, gfx::AnimationContainer* container)
   // on the current theme and active state.  The hovered and pressed images
   // don't depend on the these, so we can set them here.
   const gfx::ImageSkia& hovered = gfx::CreateVectorIcon(
-      gfx::VectorIconId::TAB_CLOSE_HOVERED_PRESSED,
-      SkColorSetRGB(0xDB, 0x44, 0x37));
+      kTabCloseHoveredPressedIcon, SkColorSetRGB(0xDB, 0x44, 0x37));
   const gfx::ImageSkia& pressed = gfx::CreateVectorIcon(
-      gfx::VectorIconId::TAB_CLOSE_HOVERED_PRESSED,
-      SkColorSetRGB(0xA8, 0x35, 0x2A));
+      kTabCloseHoveredPressedIcon, SkColorSetRGB(0xA8, 0x35, 0x2A));
   close_button_->SetImage(views::CustomButton::STATE_HOVERED, &hovered);
   close_button_->SetImage(views::CustomButton::STATE_PRESSED, &pressed);
 
@@ -1565,8 +1563,8 @@ void Tab::OnButtonColorMaybeChanged() {
     button_color_ = new_button_color;
     title_->SetEnabledColor(title_color);
     alert_indicator_button_->OnParentTabButtonColorChanged();
-    const gfx::ImageSkia& close_button_normal_image = gfx::CreateVectorIcon(
-        gfx::VectorIconId::TAB_CLOSE_NORMAL, button_color_);
+    const gfx::ImageSkia& close_button_normal_image =
+        gfx::CreateVectorIcon(kTabCloseNormalIcon, button_color_);
     close_button_->SetImage(views::CustomButton::STATE_NORMAL,
                             &close_button_normal_image);
   }
