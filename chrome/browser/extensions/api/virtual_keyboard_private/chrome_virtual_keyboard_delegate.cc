@@ -151,12 +151,8 @@ bool ChromeVirtualKeyboardDelegate::SendKeyEvent(const std::string& type,
                                                  int modifiers) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   aura::Window* window = GetKeyboardContainer();
-  return window && keyboard::SendKeyEvent(type,
-                                          char_value,
-                                          key_code,
-                                          key_name,
-                                          modifiers | ui::EF_IS_SYNTHESIZED,
-                                          window->GetHost());
+  return window && keyboard::SendKeyEvent(type, char_value, key_code, key_name,
+                                          modifiers, window->GetHost());
 }
 
 bool ChromeVirtualKeyboardDelegate::ShowLanguageSettings() {

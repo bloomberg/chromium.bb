@@ -169,12 +169,15 @@ bool CanHandleNextIme(ImeControlDelegate* ime_control_delegate) {
 }
 
 bool CanHandleCycleMru(const ui::Accelerator& accelerator) {
-  // Don't do anything when Alt+Tab comes from a virtual keyboard. Touchscreen
-  // users have better window switching options. See http://crbug.com/638269
+  // Don't do anything when Alt+Tab is hit while a virtual keyboard is showing.
+  // Touchscreen users have better window switching options. It would be
+  // preferable if we could tell whether this event actually came from a virtual
+  // keyboard, but there's no easy way to do so, thus we block Alt+Tab when the
+  // virtual keyboard is showing, even if it came from a real keyboard. See
+  // http://crbug.com/638269
   keyboard::KeyboardController* keyboard_controller =
       keyboard::KeyboardController::GetInstance();
-  return !(keyboard_controller && keyboard_controller->keyboard_visible() &&
-           (accelerator.modifiers() & ui::EF_IS_SYNTHESIZED));
+  return !(keyboard_controller && keyboard_controller->keyboard_visible());
 }
 
 // We must avoid showing the Deprecated NEXT_IME notification erronously.
