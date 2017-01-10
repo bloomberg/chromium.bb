@@ -66,7 +66,8 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkMallocPixelRef.h"
 #include "ui/android/window_android.h"
-#include "ui/gfx/android/device_display_info.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/swap_result.h"
 
 namespace gpu {
@@ -79,11 +80,14 @@ namespace {
 
 const unsigned int kMaxDisplaySwapBuffers = 1U;
 
-gpu::SharedMemoryLimits GetCompositorContextSharedMemoryLimits() {
+gpu::SharedMemoryLimits GetCompositorContextSharedMemoryLimits(
+    gfx::NativeWindow window) {
   constexpr size_t kBytesPerPixel = 4;
+  const gfx::Size size = display::Screen::GetScreen()
+                             ->GetDisplayNearestWindow(window)
+                             .GetSizeInPixel();
   const size_t full_screen_texture_size_in_bytes =
-      gfx::DeviceDisplayInfo().GetDisplayHeight() *
-      gfx::DeviceDisplayInfo().GetDisplayWidth() * kBytesPerPixel;
+      size.width() * size.height() * kBytesPerPixel;
 
   gpu::SharedMemoryLimits limits;
   // This limit is meant to hold the contents of the display compositor
@@ -603,7 +607,8 @@ void CompositorImpl::OnGpuChannelEstablished(
       scoped_refptr<cc::ContextProvider> context_provider =
           ContextProviderFactoryImpl::GetInstance()
               ->CreateDisplayContextProvider(
-                  surface_handle_, GetCompositorContextSharedMemoryLimits(),
+                  surface_handle_,
+                  GetCompositorContextSharedMemoryLimits(root_window_),
                   GetCompositorContextAttributes(has_transparent_background_),
                   false /*support_locking*/, false /*automatic_flushes*/,
                   std::move(gpu_channel_host));
