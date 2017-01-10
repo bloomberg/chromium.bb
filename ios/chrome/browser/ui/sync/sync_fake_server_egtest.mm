@@ -41,7 +41,7 @@
 namespace {
 
 // Constant for timeout while waiting for asynchronous sync operations.
-const NSTimeInterval kSyncOperationTimeout = 5.0;
+const NSTimeInterval kSyncOperationTimeout = 10.0;
 
 // Returns a fake identity.
 ChromeIdentity* GetFakeIdentity1() {
