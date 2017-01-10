@@ -548,14 +548,25 @@ int ChromeViewsDelegate::GetDialogRelatedButtonHorizontalSpacing() {
   return ViewsDelegate::GetDialogRelatedButtonHorizontalSpacing();
 }
 
+int ChromeViewsDelegate::GetDialogRelatedControlVerticalSpacing() {
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+    return HarmonyLayoutDelegate::kHarmonyLayoutUnit / 2;
+  return ViewsDelegate::GetDialogRelatedControlVerticalSpacing();
+}
+
 gfx::Insets ChromeViewsDelegate::GetDialogFrameViewInsets() {
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
     // Titles are inset at the top and sides, but not at the bottom.
     return gfx::Insets(HarmonyLayoutDelegate::kHarmonyLayoutUnit,
                        HarmonyLayoutDelegate::kHarmonyLayoutUnit, 0,
                        HarmonyLayoutDelegate::kHarmonyLayoutUnit);
-  }
   return ViewsDelegate::GetDialogFrameViewInsets();
+}
+
+gfx::Insets ChromeViewsDelegate::GetBubbleDialogMargins() {
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+    return gfx::Insets(HarmonyLayoutDelegate::kHarmonyLayoutUnit);
+  return ViewsDelegate::GetBubbleDialogMargins();
 }
 
 #if !defined(USE_ASH)

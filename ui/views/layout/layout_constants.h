@@ -58,7 +58,7 @@ const int kUnrelatedControlLargeVerticalSpacing = 30;
 // top or bottom of a button.
 const int kButtonVEdgeMargin = 9;
 
-// Vertical spacing between the edge of the window and the
+// Horizontal spacing between the edge of the window and the
 // left or right of a button.
 const int kButtonHEdgeMargin = 13;
 
@@ -66,7 +66,7 @@ const int kButtonHEdgeMargin = 13;
 // top or bottom of a button (when using new style dialogs).
 const int kButtonVEdgeMarginNew = 20;
 
-// Vertical spacing between the edge of the window and the
+// Horizontal spacing between the edge of the window and the
 // left or right of a button (when using new style dialogs).
 const int kButtonHEdgeMarginNew = 20;
 

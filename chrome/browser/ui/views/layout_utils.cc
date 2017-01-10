@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/layout_utils.h"
 
 #include "chrome/browser/ui/views/harmony/layout_delegate.h"
-#include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
 
 namespace layout_utils {

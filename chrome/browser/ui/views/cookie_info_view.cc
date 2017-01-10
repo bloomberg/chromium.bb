@@ -23,7 +23,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/window/dialog_delegate.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -148,8 +147,11 @@ void CookieInfoView::Init() {
   expires_value_field_ = new views::Textfield;
 
   views::GridLayout* layout = new views::GridLayout(this);
-  layout->SetInsets(0, views::kButtonHEdgeMarginNew,
-                    0, views::kButtonHEdgeMarginNew);
+  layout->SetInsets(
+      0, LayoutDelegate::Get()->GetLayoutDistance(
+             LayoutDelegate::LayoutDistanceType::BUTTON_HEDGE_MARGIN_NEW),
+      0, LayoutDelegate::Get()->GetLayoutDistance(
+             LayoutDelegate::LayoutDistanceType::BUTTON_HEDGE_MARGIN_NEW));
   SetLayoutManager(layout);
 
   int three_column_layout_id = 0;
@@ -157,7 +159,9 @@ void CookieInfoView::Init() {
   column_set->AddColumn(LayoutDelegate::Get()->GetControlLabelGridAlignment(),
                         views::GridLayout::CENTER, 0,
                         views::GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, LayoutDelegate::Get()->GetLayoutDistance(
+                                      LayoutDelegate::LayoutDistanceType::
+                                          RELATED_CONTROL_HORIZONTAL_SPACING));
   column_set->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
                         0, views::GridLayout::USE_PREF, 0, 0);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,

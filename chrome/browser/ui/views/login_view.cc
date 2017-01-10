@@ -59,8 +59,8 @@ LoginView::LoginView(const base::string16& authority,
   column_set->AddColumn(layout_delegate->GetControlLabelGridAlignment(),
                         GridLayout::CENTER, 0, GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, layout_delegate->GetLayoutDistance(
-                                      LayoutDelegate::LayoutDistanceType::
-                                          RELATED_CONTROL_HORIZONTAL_SPACING));
+                                   LayoutDelegate::LayoutDistanceType::
+                                       RELATED_CONTROL_HORIZONTAL_SPACING));
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
   if (layout_delegate->UseExtraDialogPadding())

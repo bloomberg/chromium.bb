@@ -17,6 +17,8 @@ HarmonyLayoutDelegate* HarmonyLayoutDelegate::Get() {
 
 int HarmonyLayoutDelegate::GetLayoutDistance(LayoutDistanceType type) const {
   switch (type) {
+    case LayoutDistanceType::PANEL_HORIZ_MARGIN:
+      return kHarmonyLayoutUnit;
     case LayoutDistanceType::PANEL_VERT_MARGIN:
       return kHarmonyLayoutUnit;
     case LayoutDistanceType::RELATED_BUTTON_HORIZONTAL_SPACING:
@@ -33,6 +35,8 @@ int HarmonyLayoutDelegate::GetLayoutDistance(LayoutDistanceType type) const {
       return kHarmonyLayoutUnit;
     case LayoutDistanceType::BUTTON_HEDGE_MARGIN_NEW:
       return kHarmonyLayoutUnit;
+    case LayoutDistanceType::CHECKBOX_INDENT:
+      return 0;
   }
   NOTREACHED();
   return 0;

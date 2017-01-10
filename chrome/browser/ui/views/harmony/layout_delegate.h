@@ -10,14 +10,28 @@
 class LayoutDelegate {
  public:
   enum class LayoutDistanceType {
+    // Left or right margin.
+    PANEL_HORIZ_MARGIN,
+    // Top or bottom margin.
     PANEL_VERT_MARGIN,
+    // Horizontal spacing between controls that are logically related.
     RELATED_CONTROL_HORIZONTAL_SPACING,
+    // Vertical spacing between controls that are logically related.
     RELATED_CONTROL_VERTICAL_SPACING,
+    // Horizontal spacing between buttons that are logically related.
     RELATED_BUTTON_HORIZONTAL_SPACING,
+    // Vertical spacing between controls that are logically unrelated.
     UNRELATED_CONTROL_VERTICAL_SPACING,
+    // Larger vertical spacing between unrelated controls.
     UNRELATED_CONTROL_LARGE_VERTICAL_SPACING,
+    // Vertical spacing between the edge of the window and the
+    // top or bottom of a button.
     BUTTON_HEDGE_MARGIN_NEW,
+    // Horizontal spacing between the edge of the window and the
+    // left or right of a button.
     BUTTON_VEDGE_MARGIN_NEW,
+    // Indent of checkboxes relative to related text.
+    CHECKBOX_INDENT,
   };
 
   enum class DialogWidthType {

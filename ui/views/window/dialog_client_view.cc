@@ -10,6 +10,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -68,14 +69,15 @@ void LayoutButton(LabelButton* button,
 
 DialogClientView::DialogClientView(Widget* owner, View* contents_view)
     : ClientView(owner, contents_view),
-      button_row_insets_(0,
-                         kButtonHEdgeMarginNew,
-                         kButtonVEdgeMarginNew,
-                         kButtonHEdgeMarginNew),
       ok_button_(nullptr),
       cancel_button_(nullptr),
       extra_view_(nullptr),
       delegate_allowed_close_(false) {
+  button_row_insets_ =
+      ViewsDelegate::GetInstance()
+          ? ViewsDelegate::GetInstance()->GetDialogButtonInsets()
+          : gfx::Insets(0, kButtonHEdgeMarginNew, kButtonVEdgeMarginNew,
+                        kButtonHEdgeMarginNew);
   // Doing this now ensures this accelerator will have lower priority than
   // one set by the contents view.
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
@@ -159,14 +161,21 @@ gfx::Size DialogClientView::GetPreferredSize() const {
   // Initialize the size to fit the buttons and extra view row.
   int extra_view_padding = 0;
   if (!GetDialogDelegate()->GetExtraViewPadding(&extra_view_padding))
-    extra_view_padding = kRelatedButtonHSpacing;
+    extra_view_padding = ViewsDelegate::GetInstance()
+                             ? ViewsDelegate::GetInstance()
+                                   ->GetDialogRelatedButtonHorizontalSpacing()
+                             : kRelatedButtonHSpacing;
   gfx::Size size(
       (ok_button_ ? ok_button_->GetPreferredSize().width() : 0) +
-      (cancel_button_ ? cancel_button_->GetPreferredSize().width() : 0) +
-      (cancel_button_ && ok_button_ ? kRelatedButtonHSpacing : 0) +
+          (cancel_button_ ? cancel_button_->GetPreferredSize().width() : 0) +
+          (cancel_button_ && ok_button_
+           ? (ViewsDelegate::GetInstance()
+                  ? ViewsDelegate::GetInstance()
+                        ->GetDialogRelatedButtonHorizontalSpacing()
+                  : kRelatedButtonHSpacing) : 0) +
       (ShouldShow(extra_view_) ? extra_view_->GetPreferredSize().width() : 0) +
-      (ShouldShow(extra_view_) && has_dialog_buttons() ?
-           extra_view_padding : 0),
+      (ShouldShow(extra_view_) && has_dialog_buttons() ? extra_view_padding
+                                                       : 0),
       0);
 
   int buttons_height = GetButtonsAndExtraViewRowHeight();
@@ -367,10 +376,13 @@ int DialogClientView::GetButtonsAndExtraViewRowTopPadding() const {
   // Some subclasses of DialogClientView, in order to do their own layout, set
   // button_row_insets_ to gfx::Insets(). To avoid breaking behavior of those
   // dialogs, supplying 0 for the top inset of the row falls back to
+  // ViewsDelegate::GetRelatedControlVerticalSpacing or
   // kRelatedControlVerticalSpacing.
-  // TODO(ellyjones): Figure out a more principled way to approach that issue.
   if (!spacing)
-    spacing = kRelatedControlVerticalSpacing;
+    spacing = ViewsDelegate::GetInstance()
+                  ? ViewsDelegate::GetInstance()
+                        ->GetDialogRelatedControlVerticalSpacing()
+                  : kRelatedControlVerticalSpacing;
   return spacing;
 }
 

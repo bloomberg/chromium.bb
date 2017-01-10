@@ -18,17 +18,20 @@
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/views/harmony/layout_delegate.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/default_style.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/text_utils.h"
+#include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/radio_button.h"
@@ -181,11 +184,16 @@ ContentSettingBubbleContents::~ContentSettingBubbleContents() {
 
 gfx::Size ContentSettingBubbleContents::GetPreferredSize() const {
   gfx::Size preferred_size(views::View::GetPreferredSize());
-  int preferred_width =
-      (!content_setting_bubble_model_->bubble_content().domain_lists.empty() &&
-       (kMinMultiLineContentsWidth > preferred_size.width()))
-          ? kMinMultiLineContentsWidth
-          : preferred_size.width();
+  int preferred_width = LayoutDelegate::Get()->GetDialogPreferredWidth(
+      LayoutDelegate::DialogWidthType::SMALL);
+  if (!preferred_width)
+    preferred_width = (!content_setting_bubble_model_->bubble_content()
+                            .domain_lists.empty() &&
+                       (kMinMultiLineContentsWidth > preferred_size.width()))
+                          ? kMinMultiLineContentsWidth
+                          : preferred_size.width();
+  else
+    preferred_width -= margins().width();
   if (content_setting_bubble_model_->AsSubresourceFilterBubbleModel()) {
     preferred_size.set_width(std::min(preferred_width,
                                       kMaxDefaultContentsWidth));
@@ -200,12 +208,24 @@ void ContentSettingBubbleContents::Init() {
 
   GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
+  const LayoutDelegate* layout_delegate = LayoutDelegate::Get();
+  const int related_control_horizontal_spacing =
+      layout_delegate->GetLayoutDistance(
+          LayoutDelegate::LayoutDistanceType::
+              RELATED_CONTROL_HORIZONTAL_SPACING);
+  const int related_control_vertical_spacing =
+      layout_delegate->GetLayoutDistance(
+          LayoutDelegate::LayoutDistanceType::RELATED_CONTROL_VERTICAL_SPACING);
+  const int unrelated_control_vertical_spacing =
+      layout_delegate->GetLayoutDistance(
+          LayoutDelegate::LayoutDistanceType::
+              UNRELATED_CONTROL_VERTICAL_SPACING);
 
   const int kSingleColumnSetId = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(kSingleColumnSetId);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(0, related_control_horizontal_spacing);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
 
@@ -217,6 +237,11 @@ void ContentSettingBubbleContents::Init() {
     views::Label* title_label = new views::Label(bubble_content.title);
     title_label->SetMultiLine(true);
     title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    if (layout_delegate->IsHarmonyMode()) {
+      ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+      title_label->SetFontList(
+          rb.GetFontListWithDelta(ui::kTitleFontSizeDelta));
+    }
     layout->StartRow(0, kSingleColumnSetId);
     layout->AddView(title_label);
     bubble_content_empty = false;
@@ -224,7 +249,7 @@ void ContentSettingBubbleContents::Init() {
 
   if (!bubble_content.message.empty()) {
     views::Label* message_label = new views::Label(bubble_content.message);
-    layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
+    layout->AddPaddingRow(0, unrelated_control_vertical_spacing);
     message_label->SetMultiLine(true);
     message_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     layout->StartRow(0, kSingleColumnSetId);
@@ -248,8 +273,8 @@ void ContentSettingBubbleContents::Init() {
         layout->AddColumnSet(kItemListColumnSetId);
     item_list_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0,
                                     GridLayout::USE_PREF, 0, 0);
-    item_list_column_set->AddPaddingColumn(
-        0, views::kRelatedControlHorizontalSpacing);
+    item_list_column_set->AddPaddingColumn(0,
+                                           related_control_horizontal_spacing);
     item_list_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
                                     GridLayout::USE_PREF, 0, 0);
 
@@ -257,7 +282,7 @@ void ContentSettingBubbleContents::Init() {
     for (const ContentSettingBubbleModel::ListItem& list_item :
          bubble_content.list_items) {
       if (!bubble_content_empty)
-        layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+        layout->AddPaddingRow(0, related_control_vertical_spacing);
       layout->StartRow(0, kItemListColumnSetId);
       if (list_item.has_link) {
         views::Link* link = new views::Link(base::UTF8ToUTF16(list_item.title));
@@ -281,7 +306,9 @@ void ContentSettingBubbleContents::Init() {
   // Insert a column set with greater indent.
   views::ColumnSet* indented_single_column_set =
       layout->AddColumnSet(indented_kSingleColumnSetId);
-  indented_single_column_set->AddPaddingColumn(0, views::kCheckboxIndent);
+  indented_single_column_set->AddPaddingColumn(
+      0, layout_delegate->GetLayoutDistance(
+             LayoutDelegate::LayoutDistanceType::CHECKBOX_INDENT));
   indented_single_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL,
                                         1, GridLayout::USE_PREF, 0, 0);
 
@@ -289,7 +316,7 @@ void ContentSettingBubbleContents::Init() {
       bubble_content.radio_group;
   if (!radio_group.radio_items.empty()) {
     if (!bubble_content_empty)
-      layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+      layout->AddPaddingRow(0, related_control_vertical_spacing);
     for (ContentSettingBubbleModel::RadioItems::const_iterator i(
          radio_group.radio_items.begin());
          i != radio_group.radio_items.end(); ++i) {
@@ -297,6 +324,14 @@ void ContentSettingBubbleContents::Init() {
           new views::RadioButton(base::UTF8ToUTF16(*i), 0);
       radio->SetEnabled(bubble_content.radio_group_enabled);
       radio->set_listener(this);
+      if (layout_delegate->IsHarmonyMode()) {
+        std::unique_ptr<views::LabelButtonBorder> border =
+            radio->CreateDefaultBorder();
+        gfx::Insets insets = border->GetInsets();
+        border->set_insets(
+            gfx::Insets(insets.top(), 0, insets.bottom(), insets.right()));
+        radio->SetBorder(std::move(border));
+      }
       radio_group_.push_back(radio);
       layout->StartRow(0, indented_kSingleColumnSetId);
       layout->AddView(radio);
@@ -313,11 +348,12 @@ void ContentSettingBubbleContents::Init() {
     const int kMediaMenuColumnSetId = 4;
     views::ColumnSet* menu_column_set =
         layout->AddColumnSet(kMediaMenuColumnSetId);
-    menu_column_set->AddPaddingColumn(0, views::kCheckboxIndent);
+    menu_column_set->AddPaddingColumn(
+        0, layout_delegate->GetLayoutDistance(
+               LayoutDelegate::LayoutDistanceType::CHECKBOX_INDENT));
     menu_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0,
                                GridLayout::USE_PREF, 0, 0);
-    menu_column_set->AddPaddingColumn(
-        0, views::kRelatedControlHorizontalSpacing);
+    menu_column_set->AddPaddingColumn(0, related_control_horizontal_spacing);
     menu_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
                                GridLayout::USE_PREF, 0, 0);
 
@@ -325,7 +361,7 @@ void ContentSettingBubbleContents::Init() {
          bubble_content.media_menus.begin());
          i != bubble_content.media_menus.end(); ++i) {
       if (!bubble_content_empty)
-        layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+        layout->AddPaddingRow(0, related_control_vertical_spacing);
       layout->StartRow(0, kMediaMenuColumnSetId);
 
       views::Label* label =
@@ -376,18 +412,20 @@ void ContentSettingBubbleContents::Init() {
     custom_link_->SetEnabled(bubble_content.custom_link_enabled);
     custom_link_->set_listener(this);
     if (!bubble_content_empty)
-      layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+      layout->AddPaddingRow(0, related_control_vertical_spacing);
     layout->StartRow(0, kSingleColumnSetId);
     layout->AddView(custom_link_);
     bubble_content_empty = false;
   }
 
   if (!bubble_content_empty) {
-    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-    layout->StartRow(0, kSingleColumnSetId);
-    layout->AddView(new views::Separator(views::Separator::HORIZONTAL), 1, 1,
-                    GridLayout::FILL, GridLayout::FILL);
-    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    if (!layout_delegate->IsHarmonyMode()) {
+      layout->AddPaddingRow(0, related_control_vertical_spacing);
+      layout->StartRow(0, kSingleColumnSetId);
+      layout->AddView(new views::Separator(views::Separator::HORIZONTAL), 1, 1,
+                      GridLayout::FILL, GridLayout::FILL);
+    }
+    layout->AddPaddingRow(0, related_control_vertical_spacing);
   }
 }
 

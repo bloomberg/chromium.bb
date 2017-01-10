@@ -205,8 +205,15 @@ class VIEWS_EXPORT ViewsDelegate {
   // dialog layout.
   virtual int GetDialogRelatedButtonHorizontalSpacing();
 
+  // Returns the spacing between a pair of related vertical controls, used for
+  // dialog layout.
+  virtual int GetDialogRelatedControlVerticalSpacing();
+
   // Returns the insets that should be applied around a dialog's frame view.
   virtual gfx::Insets GetDialogFrameViewInsets();
+
+  // Returns the margins that should be applied around a bubble dialog.
+  virtual gfx::Insets GetBubbleDialogMargins();
 
  protected:
   ViewsDelegate();
