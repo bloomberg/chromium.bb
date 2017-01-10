@@ -86,11 +86,11 @@ IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest, InitMenuWithCorrectWord) {
   EXPECT_EQ(static_cast<size_t>(0), menu()->GetMenuSize());
 }
 
-// Tests that right-clicking a misspelled word adds three items:
-// "Add to dictionary", "Ask Google for suggestions", and a separator.
+// Tests that right-clicking a misspelled word adds two items:
+// "Add to dictionary", "Ask Google for suggestions".
 IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest, InitMenuWithMisspelledWord) {
   InitMenu("wiimode", nullptr);
-  EXPECT_EQ(3U, menu()->GetMenuSize());
+  EXPECT_EQ(2U, menu()->GetMenuSize());
 
   // Read all the context-menu items added by this test and verify they are
   // expected ones. We do not check the item titles to prevent resource changes
@@ -107,9 +107,6 @@ IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest, InitMenuWithMisspelledWord) {
   EXPECT_FALSE(item.checked);
   EXPECT_FALSE(item.hidden);
   menu()->GetMenuItem(2, &item);
-  EXPECT_EQ(-1, item.command_id);
-  EXPECT_FALSE(item.enabled);
-  EXPECT_FALSE(item.hidden);
 }
 
 // Tests that right-clicking a correct word when we enable spelling-service
@@ -138,7 +135,7 @@ IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest, EnableSpellingService) {
                           dictionary);
 
   InitMenu("wiimode", nullptr);
-  EXPECT_EQ(3U, menu()->GetMenuSize());
+  EXPECT_EQ(2U, menu()->GetMenuSize());
 
   // To avoid duplicates, this test reads only the "Ask Google for suggestions"
   // item and verifies it is enabled and checked.
@@ -167,9 +164,9 @@ IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest,
       menu()->GetBrowserContext(), SpellingServiceClient::SPELLCHECK));
   InitMenu("asdfkj", "asdf");
 
-  // The test should see a separator, suggestion, "Add to dictionary",
-  // "Ask Google for suggestions", and a separator. Possibly more items (not
-  // relevant here).
+  // The test should see a suggestion, separator, "Add to dictionary",
+  // "Ask Google for suggestions".
+  // Possibly more items (not relevant here).
   EXPECT_LT(3U, menu()->GetMenuSize());
 
   MockRenderViewContextMenu::MockMenuItem item;
@@ -197,11 +194,6 @@ IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest,
   EXPECT_EQ(IDC_CONTENT_CONTEXT_SPELLING_TOGGLE, item.command_id);
   EXPECT_TRUE(item.enabled);
   EXPECT_TRUE(item.checked);
-  EXPECT_FALSE(item.hidden);
-
-  menu()->GetMenuItem(5, &item);
-  EXPECT_EQ(-1, item.command_id);
-  EXPECT_FALSE(item.enabled);
   EXPECT_FALSE(item.hidden);
 }
 
@@ -237,7 +229,7 @@ IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest,
   // or a separator. The next 2 items should be "Add to Dictionary" followed
   // by "Ask Google for suggestions" which should be disabled.
   // TODO(rlp): add autocorrect here when it is functional.
-  EXPECT_LT(2U, menu()->GetMenuSize());
+  EXPECT_LT(1U, menu()->GetMenuSize());
 
   MockRenderViewContextMenu::MockMenuItem item;
   menu()->GetMenuItem(0, &item);
@@ -259,8 +251,8 @@ IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest, SuggestionsForceTopSeparator) {
 
   // First case: Misspelled word, no suggestions, no spellcheck service.
   InitMenu("asdfkj", nullptr);
-  // See SpellingMenuObserverTest.InitMenuWithMisspelledWord on why 3 items.
-  EXPECT_EQ(3U, menu()->GetMenuSize());
+  // See SpellingMenuObserverTest.InitMenuWithMisspelledWord on why 2 items.
+  EXPECT_EQ(2U, menu()->GetMenuSize());
   MockRenderViewContextMenu::MockMenuItem item;
   menu()->GetMenuItem(0, &item);
   EXPECT_NE(-1, item.command_id);

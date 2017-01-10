@@ -266,9 +266,9 @@ const struct UmaEnumCommandIdPair {
     {35, -1, IDC_CONTENT_CONTEXT_VIEWFRAMEINFO},
     {36, -1, IDC_CONTENT_CONTEXT_UNDO},
     {37, -1, IDC_CONTENT_CONTEXT_REDO},
-    {38, -1, IDC_CONTENT_CONTEXT_CUT},
+    {38, 28, IDC_CONTENT_CONTEXT_CUT},
     {39, 4, IDC_CONTENT_CONTEXT_COPY},
-    {40, -1, IDC_CONTENT_CONTEXT_PASTE},
+    {40, 29, IDC_CONTENT_CONTEXT_PASTE},
     {41, -1, IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE},
     {42, -1, IDC_CONTENT_CONTEXT_DELETE},
     {43, -1, IDC_CONTENT_CONTEXT_SELECTALL},
@@ -279,11 +279,11 @@ const struct UmaEnumCommandIdPair {
     {52, -1, IDC_CONTENT_CONTEXT_OPENLINKWITH},
     {53, -1, IDC_CHECK_SPELLING_WHILE_TYPING},
     {54, -1, IDC_SPELLCHECK_MENU},
-    {55, -1, IDC_CONTENT_CONTEXT_SPELLING_TOGGLE},
+    {55, 27, IDC_CONTENT_CONTEXT_SPELLING_TOGGLE},
     {56, -1, IDC_SPELLCHECK_LANGUAGES_FIRST},
     {57, 11, IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE},
-    {58, -1, IDC_SPELLCHECK_SUGGESTION_0},
-    {59, -1, IDC_SPELLCHECK_ADD_TO_DICTIONARY},
+    {58, 25, IDC_SPELLCHECK_SUGGESTION_0},
+    {59, 26, IDC_SPELLCHECK_ADD_TO_DICTIONARY},
     {60, -1, IDC_SPELLPANEL_TOGGLE},
     {61, -1, IDC_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB},
     {62, -1, IDC_WRITING_DIRECTION_MENU},
@@ -797,7 +797,8 @@ void RenderViewContextMenu::InitMenu() {
   }
 
   if (content_type_->SupportsGroup(
-          ContextMenuContentType::ITEM_GROUP_SEARCH_PROVIDER)) {
+          ContextMenuContentType::ITEM_GROUP_SEARCH_PROVIDER) &&
+      params_.misspelled_word.empty()) {
     AppendSearchProvider();
   }
 
@@ -808,7 +809,8 @@ void RenderViewContextMenu::InitMenu() {
   }
 
   if (content_type_->SupportsGroup(
-          ContextMenuContentType::ITEM_GROUP_EDITABLE)) {
+          ContextMenuContentType::ITEM_GROUP_EDITABLE) &&
+      params_.misspelled_word.empty()) {
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
     AppendLanguageSettings();
     AppendPlatformEditableItems();
@@ -880,6 +882,12 @@ void RenderViewContextMenu::RecordUsedItem(int id) {
         content_type_->SupportsGroup(
             ContextMenuContentType::ITEM_GROUP_PRINT)) {
       UMA_HISTOGRAM_ENUMERATION("ContextMenu.SelectedOption.SelectedText",
+                                enum_id,
+                                kUmaEnumToControlId[kMappingSize - 1].enum_id);
+    }
+    // Misspelled word context.
+    if (!params_.misspelled_word.empty()) {
+      UMA_HISTOGRAM_ENUMERATION("ContextMenu.SelectedOption.MisspelledWord",
                                 enum_id,
                                 kUmaEnumToControlId[kMappingSize - 1].enum_id);
     }
@@ -1283,7 +1291,8 @@ void RenderViewContextMenu::AppendCopyItem() {
 void RenderViewContextMenu::AppendPrintItem() {
   if (GetPrefs(browser_context_)->GetBoolean(prefs::kPrintingEnabled) &&
       (params_.media_type == WebContextMenuData::MediaTypeNone ||
-       params_.media_flags & WebContextMenuData::MediaCanPrint)) {
+       params_.media_flags & WebContextMenuData::MediaCanPrint) &&
+      params_.misspelled_word.empty()) {
     menu_model_.AddItemWithStringId(IDC_PRINT, IDS_CONTENT_CONTEXT_PRINT);
   }
 }
@@ -1365,6 +1374,11 @@ void RenderViewContextMenu::AppendEditableItems() {
   if (use_spelling)
     AppendSpellingSuggestionItems();
 
+  if (!params_.misspelled_word.empty()) {
+    AppendSearchProvider();
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+  }
+
 // 'Undo' and 'Redo' for text input with no suggestions and no text selected.
 // We make an exception for OS X as context clicking will select the closest
 // word. In this case both items are always shown.
@@ -1391,10 +1405,12 @@ void RenderViewContextMenu::AppendEditableItems() {
                                   IDS_CONTENT_CONTEXT_COPY);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_PASTE,
                                   IDS_CONTENT_CONTEXT_PASTE);
-  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE,
-                                  IDS_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE);
-  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SELECTALL,
-                                  IDS_CONTENT_CONTEXT_SELECTALL);
+  if (params_.misspelled_word.empty()) {
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE,
+                                    IDS_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE);
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SELECTALL,
+                                    IDS_CONTENT_CONTEXT_SELECTALL);
+  }
 
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
 }

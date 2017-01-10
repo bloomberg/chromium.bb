@@ -169,7 +169,6 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
   proxy_->AddMenuItem(IDC_SPELLCHECK_ADD_TO_DICTIONARY,
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY));
   proxy_->AddSpellCheckServiceItem(integrate_spelling_service_.GetValue());
-  proxy_->AddSeparator();
 }
 
 bool SpellingMenuObserver::IsCommandIdSupported(int command_id) {
