@@ -11,6 +11,8 @@ from webkitpy.w3c.chromium_commit import ChromiumCommit
 
 WPT_REPO_URL = 'https://chromium.googlesource.com/external/w3c/web-platform-tests.git'
 WPT_TMP_DIR = '/tmp/wpt'
+WPT_SSH_URL = 'git@github.com:w3c/web-platform-tests.git'
+REMOTE_NAME = 'github'
 CHROMIUM_WPT_DIR = 'third_party/WebKit/LayoutTests/imported/wpt/'
 
 _log = logging.getLogger(__name__)
@@ -18,15 +20,13 @@ _log = logging.getLogger(__name__)
 
 class LocalWPT(object):
 
-    def __init__(self, host, path=WPT_TMP_DIR, no_fetch=False, use_github=False):
+    def __init__(self, host, path=WPT_TMP_DIR, no_fetch=False):
         """
         Args:
             host: A Host object.
             path: Optional, the directory where LocalWPT will check out web-platform-tests.
             no_fetch: Optional, passing true will skip updating the local WPT.
                 Intended for use only in development after fetching once.
-            use_github: Optional, passing true will check if the GitHub remote is enabled
-                (necessary for later pull request steps).
         """
         self.host = host
         self.path = path
@@ -44,8 +44,8 @@ class LocalWPT(object):
             _log.info('Cloning %s into %s', WPT_REPO_URL, self.path)
             self.host.executive.run_command(['git', 'clone', WPT_REPO_URL, self.path])
 
-        if use_github and 'github' not in self.run(['git', 'remote']):
-            raise Exception('Need to set up remote "github"')
+        if REMOTE_NAME not in self.run(['git', 'remote']):
+            self.run(['git', 'remote', 'add', REMOTE_NAME, WPT_SSH_URL])
 
     def run(self, command, **kwargs):
         """Runs a command in the local WPT directory."""
@@ -100,7 +100,7 @@ class LocalWPT(object):
         # or something not off-by-one.
         self.run(['git', 'apply', '-'], input=patch)
         self.run(['git', 'commit', '--author', author, '-am', message])
-        self.run(['git', 'push', 'github', self.branch_name])
+        self.run(['git', 'push', REMOTE_NAME, self.branch_name])
 
         return self.branch_name
 

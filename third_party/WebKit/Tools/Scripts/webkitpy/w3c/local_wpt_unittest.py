@@ -12,7 +12,7 @@ from webkitpy.w3c.local_wpt import LocalWPT
 
 class LocalWPTTest(unittest.TestCase):
 
-    def test_fetches_if_wpt_exists(self):
+    def test_constructor_fetches_if_wpt_dir_exists(self):
         host = MockHost()
         host.filesystem = MockFileSystem(files={
             '/tmp/wpt': ''
@@ -20,20 +20,22 @@ class LocalWPTTest(unittest.TestCase):
 
         LocalWPT(host)
 
-        self.assertEqual(len(host.executive.calls), 2)
-        self.assertEqual(host.executive.calls[0][1], 'fetch')
-        self.assertEqual(host.executive.calls[1][1], 'checkout')
+        self.assertEqual(host.executive.calls, [
+            ['git', 'fetch', '--all'],
+            ['git', 'checkout', 'origin/master'],
+            ['git', 'remote'],
+            ['git', 'remote', 'add', 'github', 'git@github.com:w3c/web-platform-tests.git']])
 
-    def test_clones_if_wpt_does_not_exist(self):
+    def test_constructor_clones_if_wpt_dir_does_not_exist(self):
         host = MockHost()
         host.filesystem = MockFileSystem()
 
         LocalWPT(host)
 
-        self.assertEqual(len(host.executive.calls), 1)
+        self.assertEqual(len(host.executive.calls), 3)
         self.assertEqual(host.executive.calls[0][1], 'clone')
 
-    def test_no_fetch_flag(self):
+    def test_constructor_no_fetch_flag(self):
         host = MockHost()
         host.filesystem = MockFileSystem(files={
             '/tmp/wpt': ''
@@ -50,8 +52,8 @@ class LocalWPTTest(unittest.TestCase):
         local_wpt = LocalWPT(host)
 
         local_wpt.run(['echo', 'rutabaga'])
-        self.assertEqual(len(host.executive.calls), 2)
-        self.assertEqual(host.executive.calls[1], ['echo', 'rutabaga'])
+        self.assertEqual(len(host.executive.calls), 4)
+        self.assertEqual(host.executive.calls[3], ['echo', 'rutabaga'])
 
     def test_last_wpt_exported_commit(self):
         host = MockHost()
@@ -71,7 +73,7 @@ class LocalWPTTest(unittest.TestCase):
 
     def test_last_wpt_exported_commit_not_found(self):
         host = MockHost()
-        host.executive = MockExecutive(run_command_fn=lambda _: None)
+        host.executive = MockExecutive(run_command_fn=lambda _: '')
         host.filesystem = MockFileSystem()
         local_wpt = LocalWPT(host)
 
@@ -85,10 +87,11 @@ class LocalWPTTest(unittest.TestCase):
         local_wpt = LocalWPT(host)
 
         local_branch_name = local_wpt.create_branch_with_patch('message', 'patch', 'author')
-        self.assertEqual(len(host.executive.calls), 10)
         self.assertEqual(local_branch_name, 'chromium-export-try')
         self.assertEqual(host.executive.calls, [
             ['git', 'clone', 'https://chromium.googlesource.com/external/w3c/web-platform-tests.git', '/tmp/wpt'],
+            ['git', 'remote'],
+            ['git', 'remote', 'add', 'github', 'git@github.com:w3c/web-platform-tests.git'],
             ['git', 'reset', '--hard', 'HEAD'],
             ['git', 'clean', '-fdx'],
             ['git', 'checkout', 'origin/master'],

@@ -98,6 +98,8 @@ class TestExporterTest(unittest.TestCase):
         self.assertIsInstance(commits[0], ChromiumCommit)
         self.assertEqual(self.host.executive.calls, [
             ['git', 'clone', 'https://chromium.googlesource.com/external/w3c/web-platform-tests.git', '/tmp/wpt'],
+            ['git', 'remote'],
+            ['git', 'remote', 'add', 'github', 'git@github.com:w3c/web-platform-tests.git'],
             ['git', 'rev-parse', '--show-toplevel'],
             ['git', 'rev-list', 'beefcafe..HEAD', '--reverse', '--', 'badbeef8/third_party/WebKit/LayoutTests/imported/wpt/'],
             ['git', 'diff-tree', '--name-only', '--no-commit-id', '-r', 'badbeef8', '--',
@@ -130,6 +132,8 @@ class TestExporterTest(unittest.TestCase):
         self.assertEqual(len(commits), 0)
         self.assertEqual(self.host.executive.calls, [
             ['git', 'clone', 'https://chromium.googlesource.com/external/w3c/web-platform-tests.git', '/tmp/wpt'],
+            ['git', 'remote'],
+            ['git', 'remote', 'add', 'github', 'git@github.com:w3c/web-platform-tests.git'],
             ['git', 'rev-parse', '--show-toplevel'],
             ['git', 'rev-list', 'beefcafe..HEAD', '--reverse', '--',
              'badbeef8/third_party/WebKit/LayoutTests/imported/wpt/'],
@@ -150,6 +154,8 @@ class TestExporterTest(unittest.TestCase):
         self.assertEqual(len(commits), 0)
         self.assertEqual(self.host.executive.calls, [
             ['git', 'clone', 'https://chromium.googlesource.com/external/w3c/web-platform-tests.git', '/tmp/wpt'],
+            ['git', 'remote'],
+            ['git', 'remote', 'add', 'github', 'git@github.com:w3c/web-platform-tests.git'],
             ['git', 'rev-parse', '--show-toplevel'],
             ['git', 'rev-list', 'beefcafe..HEAD', '--reverse', '--',
              'badbeef8/third_party/WebKit/LayoutTests/imported/wpt/'],
@@ -170,6 +176,8 @@ class TestExporterTest(unittest.TestCase):
         self.assertEqual(len(commits), 0)
         self.assertEqual(self.host.executive.calls, [
             ['git', 'clone', 'https://chromium.googlesource.com/external/w3c/web-platform-tests.git', '/tmp/wpt'],
+            ['git', 'remote'],
+            ['git', 'remote', 'add', 'github', 'git@github.com:w3c/web-platform-tests.git'],
             ['git', 'rev-parse', '--show-toplevel'],
             ['git', 'rev-list', 'beefcafe..HEAD', '--reverse', '--',
              'badbeef8/third_party/WebKit/LayoutTests/imported/wpt/'],
