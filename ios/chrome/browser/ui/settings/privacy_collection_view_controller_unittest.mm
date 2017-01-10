@@ -84,8 +84,7 @@ class PrivacyCollectionViewControllerTest
 
 // Tests PrivacyCollectionViewController is set up with all appropriate items
 // and sections.
-// TODO(http://crbug.com/677121): reenable this test.
-TEST_F(PrivacyCollectionViewControllerTest, DISABLED_TestModel) {
+TEST_F(PrivacyCollectionViewControllerTest, TestModel) {
   CheckController();
   EXPECT_EQ(4, NumberOfSections());
 
@@ -132,8 +131,9 @@ TEST_F(PrivacyCollectionViewControllerTest, DISABLED_TestModel) {
         contextualSearchSubtitle, sectionIndex, row++);
   }
 #if defined(GOOGLE_CHROME_BUILD)
-  CheckTextCellTitleWithId(IDS_IOS_OPTIONS_SEND_USAGE_DATA, sectionIndex,
-                           row++);
+  CheckDetailItemTextWithIds(IDS_IOS_OPTIONS_SEND_USAGE_DATA,
+                             IDS_IOS_OPTIONS_DATA_USAGE_NEVER, sectionIndex,
+                             row++);
 #endif
   if (web::IsDoNotTrackSupported()) {
     NSString* doNotTrackSubtitle =
