@@ -59,8 +59,13 @@ void SetFlag(volatile std::atomic<uint32_t>* flags, int flag) {
   for (;;) {
     uint32_t new_flags = (loaded_flags & ~flag) | flag;
     // In the failue case, actual "flags" value stored in loaded_flags.
-    if (flags->compare_exchange_weak(loaded_flags, new_flags))
+    // These access are "relaxed" because they are completely independent
+    // of all other values.
+    if (flags->compare_exchange_weak(loaded_flags, new_flags,
+                                     std::memory_order_relaxed,
+                                     std::memory_order_relaxed)) {
       break;
+    }
   }
 }
 
@@ -213,8 +218,11 @@ PersistentMemoryAllocator::Iterator::GetNext(uint32_t* type_return) {
     // again. Failing will also load the existing value into "last" so there
     // is no need to do another such load when the while-loop restarts. A
     // "strong" compare-exchange is used because failing unnecessarily would
-    // mean repeating some fairly costly validations above.
-    if (last_record_.compare_exchange_strong(last, next)) {
+    // mean repeating some fairly costly validations above. This operation
+    // is "relaxed" because the iterator has no other values to protect and
+    // the referenced object will be accessed via an "acquire" in GetAsObject.
+    if (last_record_.compare_exchange_strong(
+            last, next, std::memory_order_relaxed, std::memory_order_relaxed)) {
       *type_return = block->type_id.load(std::memory_order_relaxed);
       break;
     }
@@ -501,8 +509,12 @@ bool PersistentMemoryAllocator::ChangeType(Reference ref,
     return false;
 
   // This is a "strong" exchange because there is no loop that can retry in
-  // the wake of spurious failures possible with "weak" exchanges.
-  return block->type_id.compare_exchange_strong(from_type_id, to_type_id);
+  // the wake of spurious failures possible with "weak" exchanges. Make this
+  // an "acquire-release" so no memory accesses can be reordered either before
+  // or after since changes based on type could happen on either side.
+  return block->type_id.compare_exchange_strong(from_type_id, to_type_id,
+                                                std::memory_order_acq_rel,
+                                                std::memory_order_acquire);
 }
 
 PersistentMemoryAllocator::Reference PersistentMemoryAllocator::Allocate(
@@ -581,8 +593,9 @@ PersistentMemoryAllocator::Reference PersistentMemoryAllocator::AllocateImpl(
         return kReferenceNull;
       }
       const uint32_t new_freeptr = freeptr + page_free;
-      if (shared_meta()->freeptr.compare_exchange_strong(freeptr,
-                                                         new_freeptr)) {
+      if (shared_meta()->freeptr.compare_exchange_strong(
+              freeptr, new_freeptr, std::memory_order_acq_rel,
+              std::memory_order_acquire)) {
         block->size = page_free;
         block->cookie = kBlockCookieWasted;
       }
@@ -605,8 +618,11 @@ PersistentMemoryAllocator::Reference PersistentMemoryAllocator::AllocateImpl(
     // while we were processing. A "weak" exchange would be permissable here
     // because the code will just loop and try again but the above processing
     // is significant so make the extra effort of a "strong" exchange.
-    if (!shared_meta()->freeptr.compare_exchange_strong(freeptr, new_freeptr))
+    if (!shared_meta()->freeptr.compare_exchange_strong(
+            freeptr, new_freeptr, std::memory_order_acq_rel,
+            std::memory_order_acquire)) {
       continue;
+    }
 
     // Given that all memory was zeroed before ever being given to an instance
     // of this class and given that we only allocate in a monotomic fashion
