@@ -9,6 +9,8 @@
 #include <set>
 #include <string>
 
+#include "base/strings/string_piece.h"
+
 namespace base {
 class FilePath;
 }
@@ -46,10 +48,10 @@ class ExtensionIconSet {
   const std::string& Get(int size, MatchType match_type) const;
 
   // Returns true iff the set contains the specified path.
-  bool ContainsPath(const std::string& path) const;
+  bool ContainsPath(base::StringPiece path) const;
 
   // Returns icon size if the set contains the specified path or 0 if not found.
-  int GetIconSizeFromPath(const std::string& path) const;
+  int GetIconSizeFromPath(base::StringPiece path) const;
 
   // Add the paths of all icons in this set into |paths|, handling the
   // conversion of (string) -> (base::FilePath). Note that these paths are not

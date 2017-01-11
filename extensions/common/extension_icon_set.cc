@@ -53,11 +53,11 @@ const std::string& ExtensionIconSet::Get(int size, MatchType match_type) const {
   }
 }
 
-bool ExtensionIconSet::ContainsPath(const std::string& path) const {
+bool ExtensionIconSet::ContainsPath(base::StringPiece path) const {
   return GetIconSizeFromPath(path) != 0;
 }
 
-int ExtensionIconSet::GetIconSizeFromPath(const std::string& path) const {
+int ExtensionIconSet::GetIconSizeFromPath(base::StringPiece path) const {
   if (path.empty())
     return 0;
 

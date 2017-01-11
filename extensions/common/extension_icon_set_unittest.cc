@@ -9,14 +9,14 @@
 
 namespace {
 
-TEST(ExtensionIconSet, Basic) {
+TEST(ExtensionIconSetTest, Basic) {
   ExtensionIconSet icons;
   EXPECT_EQ("", icons.Get(extension_misc::EXTENSION_ICON_LARGE,
-      ExtensionIconSet::MATCH_EXACTLY));
+                          ExtensionIconSet::MATCH_EXACTLY));
   EXPECT_EQ("", icons.Get(extension_misc::EXTENSION_ICON_LARGE,
-      ExtensionIconSet::MATCH_BIGGER));
+                          ExtensionIconSet::MATCH_BIGGER));
   EXPECT_EQ("", icons.Get(extension_misc::EXTENSION_ICON_LARGE,
-      ExtensionIconSet::MATCH_SMALLER));
+                          ExtensionIconSet::MATCH_SMALLER));
   EXPECT_TRUE(icons.map().empty());
 
   icons.Add(extension_misc::EXTENSION_ICON_LARGE, "large.png");
@@ -52,7 +52,7 @@ TEST(ExtensionIconSet, Basic) {
                           ExtensionIconSet::MATCH_BIGGER));
 }
 
-TEST(ExtensionIconSet, Values) {
+TEST(ExtensionIconSetTest, Values) {
   ExtensionIconSet icons;
   EXPECT_FALSE(icons.ContainsPath("foo"));
 
@@ -68,7 +68,7 @@ TEST(ExtensionIconSet, Values) {
   EXPECT_FALSE(icons.ContainsPath("foo"));
 }
 
-TEST(ExtensionIconSet, FindSize) {
+TEST(ExtensionIconSetTest, FindSize) {
   ExtensionIconSet icons;
   EXPECT_EQ(extension_misc::EXTENSION_ICON_INVALID,
             icons.GetIconSizeFromPath("foo"));

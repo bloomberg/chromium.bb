@@ -393,11 +393,12 @@ bool URLIsForExtensionIcon(const GURL& url, const Extension* extension) {
   if (!extension)
     return false;
 
-  std::string path = url.path();
   DCHECK_EQ(url.host(), extension->id());
+  base::StringPiece path = url.path_piece();
   DCHECK(path.length() > 0 && path[0] == '/');
-  path = path.substr(1);
-  return extensions::IconsInfo::GetIcons(extension).ContainsPath(path);
+  base::StringPiece path_without_slash = path.substr(1);
+  return extensions::IconsInfo::GetIcons(extension).ContainsPath(
+      path_without_slash);
 }
 
 class ExtensionProtocolHandler

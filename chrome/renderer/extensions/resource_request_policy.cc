@@ -54,9 +54,9 @@ bool ResourceRequestPolicy::CanRequestResource(
   // hybrid hosted/packaged apps. The one exception is access to icons, since
   // some extensions want to be able to do things like create their own
   // launchers.
-  std::string resource_root_relative_path =
-      resource_url.path().empty() ? std::string()
-      : resource_url.path().substr(1);
+  base::StringPiece resource_root_relative_path =
+      resource_url.path_piece().empty() ? base::StringPiece()
+                                        : resource_url.path_piece().substr(1);
   if (extension->is_hosted_app() &&
       !IconsInfo::GetIcons(extension)
           .ContainsPath(resource_root_relative_path)) {
