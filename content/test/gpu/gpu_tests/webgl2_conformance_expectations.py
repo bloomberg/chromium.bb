@@ -629,6 +629,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
         'tex-3d-srgb8_alpha8-rgba-unsigned_byte.html',
         ['linux', 'nvidia'], bug=679677)
+    self.Fail('conformance2/renderbuffers/framebuffer-test.html',
+        ['linux', 'nvidia', 'opengl'], bug=680278)
+    self.Fail('conformance2/textures/image/' +
+        'tex-3d-rg8ui-rg_integer-unsigned_byte.html',
+        ['linux', ('nvidia', 0xf02)], bug=680282)
 
     # Linux Intel
     self.Fail('conformance2/extensions/ext-color-buffer-float.html',
@@ -657,6 +662,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Linux Intel with ANGLE only
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_07.html',
         ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('conformance2/rendering/blitframebuffer-filter-srgb.html',
+        ['linux', 'intel', 'opengl'], bug=680276)
+    self.Fail('conformance2/rendering/blitframebuffer-outside-readbuffer.html',
+        ['linux', 'intel', 'opengl'], bug=680276)
 
     # Linux AMD only.
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
