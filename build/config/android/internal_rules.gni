@@ -1592,6 +1592,9 @@ if (enable_java_templates) {
             outputs += [ "${invoker.resource_packaged_apk_path}_${_language}" ]
           }
         }
+        if (defined(invoker.aapt_locale_whitelist)) {
+          args += [ "--locale-whitelist=${invoker.aapt_locale_whitelist}" ]
+        }
         if (defined(invoker.extensions_to_not_compress)) {
           args += [
             "--no-compress",
@@ -1605,6 +1608,7 @@ if (enable_java_templates) {
     package_resources_helper(_package_resources_target_name) {
       forward_variables_from(invoker,
                              [
+                               "aapt_locale_whitelist",
                                "alternative_android_sdk_jar",
                                "android_aapt_path",
                                "extensions_to_not_compress",
@@ -1653,6 +1657,7 @@ if (enable_java_templates) {
     package_resources_helper(_incremental_package_resources_target_name) {
       forward_variables_from(invoker,
                              [
+                               "aapt_locale_whitelist",
                                "alternative_android_sdk_jar",
                                "android_aapt_path",
                                "extensions_to_not_compress",

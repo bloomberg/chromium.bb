@@ -1406,6 +1406,8 @@ if (enable_java_templates) {
   #   proguard_jar_path: The path to proguard.jar you wish to use. If undefined,
   #     the proguard used will be the checked in one in //third_party/proguard.
   #   never_incremental: If true, |incremental_apk_by_default| will be ignored.
+  #   aapt_locale_whitelist: If set, all locales not in this list will be
+  #     stripped from resources.arsc.
   #
   # Example
   #   android_apk("foo_apk") {
@@ -2023,6 +2025,7 @@ if (enable_java_templates) {
     create_apk("${_template_name}__create") {
       forward_variables_from(invoker,
                              [
+                               "aapt_locale_whitelist",
                                "alternative_android_sdk_jar",
                                "android_aapt_path",
                                "app_as_shared_lib",

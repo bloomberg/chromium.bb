@@ -4,6 +4,7 @@
 
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
+import("//build/config/locales.gni")
 
 template("system_webview_apk_tmpl") {
   android_apk(target_name) {
@@ -27,6 +28,7 @@ template("system_webview_apk_tmpl") {
     if (build_apk_secondary_abi && android_64bit_target_cpu) {
       secondary_abi_shared_libraries = [ "//android_webview:libwebviewchromium($android_secondary_abi_toolchain)" ]
     }
+    aapt_locale_whitelist = locales
 
     if (!is_java_debug) {
       proguard_enabled = true
