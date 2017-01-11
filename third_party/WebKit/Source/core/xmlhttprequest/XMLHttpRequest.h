@@ -28,6 +28,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/dom/DocumentParserClient.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/SuspendableObject.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/xmlhttprequest/XMLHttpRequestEventTarget.h"
@@ -42,7 +43,6 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/AtomicString.h"
-#include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 #include <memory>
 
@@ -64,8 +64,6 @@ class TextResourceDecoder;
 class ThreadableLoader;
 class WebDataConsumerHandle;
 class XMLHttpRequestUpload;
-
-typedef int ExceptionCode;
 
 class XMLHttpRequest final : public XMLHttpRequestEventTarget,
                              private ThreadableLoaderClient,

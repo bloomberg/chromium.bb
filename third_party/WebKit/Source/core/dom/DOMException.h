@@ -31,13 +31,12 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
+#include "core/dom/ExceptionCode.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
-
-typedef int ExceptionCode;
 
 class CORE_EXPORT DOMException final
     : public GarbageCollectedFinalized<DOMException>,

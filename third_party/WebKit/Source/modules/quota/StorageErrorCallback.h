@@ -31,6 +31,7 @@
 #ifndef StorageErrorCallback_h
 #define StorageErrorCallback_h
 
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "modules/ModulesExport.h"
@@ -40,8 +41,6 @@
 namespace blink {
 
 class DOMError;
-
-typedef int ExceptionCode;
 
 class StorageErrorCallback
     : public GarbageCollectedFinalized<StorageErrorCallback> {

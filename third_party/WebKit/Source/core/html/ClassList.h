@@ -36,8 +36,6 @@ namespace blink {
 
 class Element;
 
-typedef int ExceptionCode;
-
 class ClassList final : public DOMTokenList {
  public:
   static ClassList* create(Element* element) { return new ClassList(element); }

@@ -35,8 +35,6 @@ namespace blink {
 
 class LocalFrame;
 
-typedef int ExceptionCode;
-
 class CORE_EXPORT Navigator final : public GarbageCollected<Navigator>,
                                     public NavigatorCPU,
                                     public NavigatorID,

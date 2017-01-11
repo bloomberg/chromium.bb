@@ -34,8 +34,6 @@
 
 namespace blink {
 
-typedef int ExceptionCode;
-
 class WebGLContextGroup final : public GarbageCollected<WebGLContextGroup>,
                                 public TraceWrapperBase {
   WTF_MAKE_NONCOPYABLE(WebGLContextGroup);
