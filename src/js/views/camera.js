@@ -1935,15 +1935,55 @@ camera.views.Camera.prototype.mediaRecorderRecording_ = function() {
  * @private
  */
 camera.views.Camera.prototype.setDefaultGeometry_ = function() {
-  var bounds = chrome.app.window.current().getBounds();
+  var bounds = chrome.app.window.current().innerBounds;
+
   var targetAspectRatio = this.video_.videoWidth / this.video_.videoHeight;
   var targetWidth = Math.round(screen.width * 0.8);
   var targetHeight = Math.round(targetWidth / targetAspectRatio);
-  chrome.app.window.current().resizeTo(targetWidth, targetHeight);
-  chrome.app.window.current().moveTo(
-      bounds.left - (targetWidth - bounds.width) / 2,
-      bounds.top - (targetHeight - bounds.height) / 2);
-  return bounds.width != targetWidth || bounds.height != targetHeight;
+
+  if (targetWidth == bounds.width && targetHeight == bounds.height)
+    return false;
+
+  bounds.setSize(targetWidth, targetHeight)
+  bounds.setPosition(
+      Math.round(bounds.left - (targetWidth - bounds.width) / 2),
+      Math.round(bounds.top - (targetHeight - bounds.height) / 2));
+  return true;
+};
+
+/**
+ * Snaps the window aspect ratio to the frame size.
+ * @private
+ */
+camera.views.Camera.prototype.snapWindowAspectRatio_ = function() {
+  var bounds = chrome.app.window.current().innerBounds;
+  var windowAspectRatio = bounds.width / bounds.height;
+
+  var targetAspectRatio = this.video_.videoWidth / this.video_.videoHeight;
+
+  // If a user significantly resized the window, then keep the dimensions.
+  if (targetAspectRatio / windowAspectRatio > 1.5 ||
+      windowAspectRatio / targetAspectRatio > 1.5) {
+    return;
+  }
+
+  var targetWidth = Math.round(bounds.height * targetAspectRatio);
+  var targetHeight = bounds.height;
+  if (targetWidth > screen.width) {
+    targetWidth = bounds.width;
+    targetHeight = Math.round(bounds.width / targetAspectRatio);
+  }
+
+  bounds.setSize(targetWidth, targetHeight);
+
+  var targetLeft = Math.round(bounds.left - (targetWidth - bounds.width) / 2);
+  var targetTop = Math.round(bounds.top - (targetHeight - bounds.height) / 2);
+
+  // Clamp the window position so it stays always visible.
+  targetLeft = Math.max(0, Math.min(targetLeft, screen.width - targetWidth));
+  targetTop = Math.max(0, Math.min(targetTop, screen.height - targetHeight));
+
+  bounds.setPosition(targetLeft, targetTop);
 };
 
 /**
@@ -2011,6 +2051,8 @@ camera.views.Camera.prototype.start_ = function() {
     var bounds = chrome.app.window.current().getBounds();
     if (bounds.width == 640 && bounds.height == 360)
       this.setDefaultGeometry_();
+    else
+      this.snapWindowAspectRatio_();
 
     // Remove the initialization layer.
     document.body.classList.remove('initializing');
