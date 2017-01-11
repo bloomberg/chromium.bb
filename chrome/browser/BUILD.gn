@@ -603,6 +603,8 @@ split_static_library("browser") {
     "metrics/metrics_memory_details.h",
     "metrics/metrics_reporting_state.cc",
     "metrics/metrics_reporting_state.h",
+    "metrics/network_quality_estimator_provider_impl.cc",
+    "metrics/network_quality_estimator_provider_impl.h",
     "metrics/perf/perf_provider_chromeos.cc",
     "metrics/perf/perf_provider_chromeos.h",
     "metrics/sampling_metrics_provider.cc",

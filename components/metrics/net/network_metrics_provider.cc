@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "base/bind_helpers.h"
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
@@ -18,6 +20,7 @@
 #include "base/task_runner_util.h"
 #include "build/build_config.h"
 #include "net/base/net_errors.h"
+#include "net/nqe/network_quality_estimator.h"
 
 #if defined(OS_CHROMEOS)
 #include "components/metrics/net/wifi_access_point_info_provider_chromeos.h"
@@ -25,25 +28,145 @@
 
 namespace metrics {
 
+namespace {
+
+// Gets the network quality estimator from |network_quality_estimator_provider|,
+// and provides it to the |callback|.
+void GetAndSetNetworkQualityEstimator(
+    const base::Callback<void(net::NetworkQualityEstimator*)>& callback,
+    NetworkMetricsProvider::NetworkQualityEstimatorProvider*
+        network_quality_estimator_provider) {
+  callback.Run(
+      network_quality_estimator_provider->GetNetworkQualityEstimator());
+}
+
+}  // namespace
+
+// Listens to the changes in the effective conection type.
+class NetworkMetricsProvider::EffectiveConnectionTypeObserver
+    : public net::NetworkQualityEstimator::EffectiveConnectionTypeObserver {
+ public:
+  // |network_quality_estimator| is used to provide the network quality
+  // estimates. Guaranteed to be non-null. |callback| is run on
+  // |callback_task_runner|, and provides notifications about the changes in the
+  // effective connection type.
+  EffectiveConnectionTypeObserver(
+      base::Callback<void(net::EffectiveConnectionType)> callback,
+      const scoped_refptr<base::SequencedTaskRunner>& callback_task_runner)
+      : network_quality_estimator_(nullptr),
+        callback_(callback),
+        callback_task_runner_(callback_task_runner) {
+    DCHECK(callback_);
+    DCHECK(callback_task_runner_);
+    // |this| is initialized and used on the IO thread using
+    // |network_quality_task_runner_|.
+    thread_checker_.DetachFromThread();
+  }
+
+  ~EffectiveConnectionTypeObserver() override {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    if (network_quality_estimator_)
+      network_quality_estimator_->RemoveEffectiveConnectionTypeObserver(this);
+  }
+
+  // Initializes |this| on IO thread using |network_quality_task_runner_|. This
+  // is the same thread on which |network_quality_estimator| lives.
+  void Init(net::NetworkQualityEstimator* network_quality_estimator) {
+    network_quality_estimator_ = network_quality_estimator;
+    if (network_quality_estimator_)
+      network_quality_estimator_->AddEffectiveConnectionTypeObserver(this);
+  }
+
+ private:
+  // net::EffectiveConnectionTypeObserver:
+  void OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType type) override {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    callback_task_runner_->PostTask(FROM_HERE, base::Bind(callback_, type));
+  }
+
+  // Notifies |this| when there is a change in the effective connection type.
+  net::NetworkQualityEstimator* network_quality_estimator_;
+
+  // Called when the effective connection type is changed.
+  base::Callback<void(net::EffectiveConnectionType)> callback_;
+
+  // Task runner on which |callback_| is run.
+  scoped_refptr<base::SequencedTaskRunner> callback_task_runner_;
+
+  base::ThreadChecker thread_checker_;
+
+  DISALLOW_COPY_AND_ASSIGN(EffectiveConnectionTypeObserver);
+};
+
 NetworkMetricsProvider::NetworkMetricsProvider(base::TaskRunner* io_task_runner)
+    : NetworkMetricsProvider(nullptr, io_task_runner) {}
+
+NetworkMetricsProvider::NetworkMetricsProvider(
+    std::unique_ptr<NetworkQualityEstimatorProvider>
+        network_quality_estimator_provider,
+    base::TaskRunner* io_task_runner)
     : io_task_runner_(io_task_runner),
       connection_type_is_ambiguous_(false),
       wifi_phy_layer_protocol_is_ambiguous_(false),
       wifi_phy_layer_protocol_(net::WIFI_PHY_LAYER_PROTOCOL_UNKNOWN),
       total_aborts_(0),
       total_codes_(0),
+      network_quality_estimator_provider_(
+          std::move(network_quality_estimator_provider)),
+      effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
+      effective_connection_type_is_ambiguous_(false),
       weak_ptr_factory_(this) {
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
   connection_type_ = net::NetworkChangeNotifier::GetConnectionType();
   ProbeWifiPHYLayerProtocol();
+
+  if (network_quality_estimator_provider_) {
+    network_quality_task_runner_ =
+        network_quality_estimator_provider_->GetTaskRunner();
+    DCHECK(network_quality_task_runner_);
+    effective_connection_type_observer_.reset(
+        new EffectiveConnectionTypeObserver(
+            base::Bind(
+                &NetworkMetricsProvider::OnEffectiveConnectionTypeChanged,
+                base::Unretained(this)),
+            base::ThreadTaskRunnerHandle::Get()));
+
+    // Get the network quality estimator and initialize
+    // |effective_connection_type_observer_| on the same task runner on  which
+    // the network quality estimator lives. It is safe to use base::Unretained
+    // here since both |network_quality_estimator_provider_| and
+    // |effective_connection_type_observer_| are owned by |this|, and are
+    // deleted on the |network_quality_task_runner_|.
+    network_quality_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&GetAndSetNetworkQualityEstimator,
+                   base::Bind(&EffectiveConnectionTypeObserver::Init,
+                              base::Unretained(
+                                  effective_connection_type_observer_.get())),
+                   network_quality_estimator_provider_.get()));
+  }
 }
 
 NetworkMetricsProvider::~NetworkMetricsProvider() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
+  if (effective_connection_type_observer_ &&
+      !network_quality_task_runner_->DeleteSoon(
+          FROM_HERE, effective_connection_type_observer_.release())) {
+    NOTREACHED() << " ECT observer was not deleted successfully";
+  }
+  if (network_quality_estimator_provider_ &&
+      !network_quality_task_runner_->DeleteSoon(
+          FROM_HERE, network_quality_estimator_provider_.release())) {
+    NOTREACHED()
+        << " Network quality estimate provider was not deleted successfully";
+  }
 }
 
 void NetworkMetricsProvider::ProvideGeneralMetrics(
     ChromeUserMetricsExtension*) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // ProvideGeneralMetrics is called on the main thread, at the time a metrics
   // record is being finalized.
   net::NetworkChangeNotifier::FinalizingMetricsLogRecord();
@@ -52,12 +175,14 @@ void NetworkMetricsProvider::ProvideGeneralMetrics(
 
 void NetworkMetricsProvider::ProvideSystemProfileMetrics(
     SystemProfileProto* system_profile) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   SystemProfileProto::Network* network = system_profile->mutable_network();
   network->set_connection_type_is_ambiguous(connection_type_is_ambiguous_);
   network->set_connection_type(GetConnectionType());
   network->set_wifi_phy_layer_protocol_is_ambiguous(
       wifi_phy_layer_protocol_is_ambiguous_);
   network->set_wifi_phy_layer_protocol(GetWifiPHYLayerProtocol());
+  network->set_effective_connection_type(GetEffectiveConnectionType());
 
   // Update the connection type. Note that this is necessary to set the network
   // type to "none" if there is no network connection for an entire UMA logging
@@ -67,6 +192,7 @@ void NetworkMetricsProvider::ProvideSystemProfileMetrics(
   // Reset the "ambiguous" flags, since a new metrics log session has started.
   connection_type_is_ambiguous_ = false;
   wifi_phy_layer_protocol_is_ambiguous_ = false;
+  effective_connection_type_is_ambiguous_ = false;
 
   if (!wifi_access_point_info_provider_.get()) {
 #if defined(OS_CHROMEOS)
@@ -86,6 +212,7 @@ void NetworkMetricsProvider::ProvideSystemProfileMetrics(
 
 void NetworkMetricsProvider::OnConnectionTypeChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // To avoid reporting an ambiguous connection type for users on flaky
   // connections, ignore transitions to the "none" state. Note that the
   // connection type is refreshed in ProvideSystemProfileMetrics() each time a
@@ -106,6 +233,7 @@ void NetworkMetricsProvider::OnConnectionTypeChanged(
 
 SystemProfileProto::Network::ConnectionType
 NetworkMetricsProvider::GetConnectionType() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   switch (connection_type_) {
     case net::NetworkChangeNotifier::CONNECTION_NONE:
       return SystemProfileProto::Network::CONNECTION_NONE;
@@ -130,6 +258,7 @@ NetworkMetricsProvider::GetConnectionType() const {
 
 SystemProfileProto::Network::WifiPHYLayerProtocol
 NetworkMetricsProvider::GetWifiPHYLayerProtocol() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   switch (wifi_phy_layer_protocol_) {
     case net::WIFI_PHY_LAYER_PROTOCOL_NONE:
       return SystemProfileProto::Network::WIFI_PHY_LAYER_PROTOCOL_NONE;
@@ -150,7 +279,36 @@ NetworkMetricsProvider::GetWifiPHYLayerProtocol() const {
   return SystemProfileProto::Network::WIFI_PHY_LAYER_PROTOCOL_UNKNOWN;
 }
 
+SystemProfileProto::Network::EffectiveConnectionType
+NetworkMetricsProvider::GetEffectiveConnectionType() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (effective_connection_type_is_ambiguous_)
+    return SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_AMBIGUOUS;
+
+  switch (effective_connection_type_) {
+    case net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN:
+      return SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+    case net::EFFECTIVE_CONNECTION_TYPE_OFFLINE:
+      return SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_OFFLINE;
+    case net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G:
+      return SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
+    case net::EFFECTIVE_CONNECTION_TYPE_2G:
+      return SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_2G;
+    case net::EFFECTIVE_CONNECTION_TYPE_3G:
+      return SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_3G;
+    case net::EFFECTIVE_CONNECTION_TYPE_4G:
+      return SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_4G;
+    case net::EFFECTIVE_CONNECTION_TYPE_LAST:
+      NOTREACHED();
+      return SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+  }
+  NOTREACHED();
+  return SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+}
+
 void NetworkMetricsProvider::ProbeWifiPHYLayerProtocol() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   PostTaskAndReplyWithResult(
       io_task_runner_,
       FROM_HERE,
@@ -161,6 +319,7 @@ void NetworkMetricsProvider::ProbeWifiPHYLayerProtocol() {
 
 void NetworkMetricsProvider::OnWifiPHYLayerProtocolResult(
     net::WifiPHYLayerProtocol mode) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (wifi_phy_layer_protocol_ != net::WIFI_PHY_LAYER_PROTOCOL_UNKNOWN &&
       mode != wifi_phy_layer_protocol_) {
     wifi_phy_layer_protocol_is_ambiguous_ = true;
@@ -171,6 +330,7 @@ void NetworkMetricsProvider::OnWifiPHYLayerProtocolResult(
 void NetworkMetricsProvider::WriteWifiAccessPointProto(
     const WifiAccessPointInfoProvider::WifiAccessPointInfo& info,
     SystemProfileProto::Network* network_proto) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   SystemProfileProto::Network::WifiAccessPoint* access_point_info =
       network_proto->mutable_access_point_info();
   SystemProfileProto::Network::WifiAccessPoint::SecurityMode security =
@@ -246,6 +406,7 @@ void NetworkMetricsProvider::WriteWifiAccessPointProto(
 }
 
 void NetworkMetricsProvider::LogAggregatedMetrics() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   base::HistogramBase* error_codes = base::SparseHistogram::FactoryGet(
       "Net.ErrorCodesForMainFrame3",
       base::HistogramBase::kUmaTargetedHistogramFlag);
@@ -261,6 +422,17 @@ void NetworkMetricsProvider::LogAggregatedMetrics() {
     total_codes_ += new_codes;
     total_aborts_ += new_aborts;
   }
+}
+
+void NetworkMetricsProvider::OnEffectiveConnectionTypeChanged(
+    net::EffectiveConnectionType type) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (effective_connection_type_ != type &&
+      type != net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN &&
+      effective_connection_type_ != net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
+    effective_connection_type_is_ambiguous_ = true;
+  }
+  effective_connection_type_ = type;
 }
 
 }  // namespace metrics

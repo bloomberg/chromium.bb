@@ -32,6 +32,7 @@
 #include "chrome/browser/metrics/chrome_stability_metrics_provider.h"
 #include "chrome/browser/metrics/https_engagement_metrics_provider.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
+#include "chrome/browser/metrics/network_quality_estimator_provider_impl.h"
 #include "chrome/browser/metrics/sampling_metrics_provider.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/metrics/time_ticks_experiment_win.h"
@@ -571,10 +572,12 @@ void ChromeMetricsServiceClient::Initialize() {
       std::unique_ptr<metrics::MetricsProvider>(
           new ExtensionsMetricsProvider(metrics_state_manager_)));
 #endif
+
   metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(
-          new metrics::NetworkMetricsProvider(
-              content::BrowserThread::GetBlockingPool())));
+      base::MakeUnique<metrics::NetworkMetricsProvider>(
+          base::MakeUnique<metrics::NetworkQualityEstimatorProviderImpl>(
+              g_browser_process->io_thread()),
+          content::BrowserThread::GetBlockingPool()));
 
   // Currently, we configure OmniboxMetricsProvider to not log events to UMA
   // if there is a single incognito session visible. In the future, it may
