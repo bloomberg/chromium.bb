@@ -129,6 +129,11 @@ id<GREYMatcher> tabWithTitle(const std::string& tab_title) {
                     notPartOfOmnibox, nil);
 }
 
+// Matcher for a Go button that is interactable.
+id<GREYMatcher> goButtonMatcher() {
+  return grey_allOf(grey_accessibilityID(@"Go"), grey_interactable(), nil);
+}
+
 // Tests that page successfully reloads.
 - (void)testReload {
   // Set up test HTTP server responses.
@@ -621,8 +626,7 @@ id<GREYMatcher> tabWithTitle(const std::string& tab_title) {
       conditionWithName:@"Wait for the keyboard to show up."
                   block:^BOOL {
                     NSError* error = nil;
-                    [[EarlGrey
-                        selectElementWithMatcher:grey_accessibilityID(@"Go")]
+                    [[EarlGrey selectElementWithMatcher:goButtonMatcher()]
                         assertWithMatcher:grey_notNil()
                                     error:&error];
                     return (error == nil);
