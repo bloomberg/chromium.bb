@@ -14,11 +14,6 @@ const char kDeviceManagementUrl[]           = "device-management-url";
 // Disables fetching and storing cloud policy for components.
 const char kDisableComponentCloudPolicy[]   = "disable-component-cloud-policy";
 
-// Disables the verification of policy signing keys.
-// TODO(atwilson): Remove this once all test servers have been updated to
-// produce verification signatures.
-const char kDisablePolicyKeyVerification[]  = "disable-policy-key-verification";
-
 // Always treat user as affiliated.
 // TODO(antrim): Remove once test servers correctly produce affiliation ids.
 const char kUserAlwaysAffiliated[]  = "user-always-affiliated";

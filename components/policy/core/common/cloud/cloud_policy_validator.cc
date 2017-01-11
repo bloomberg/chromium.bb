@@ -33,8 +33,9 @@ const int kTimestampGraceIntervalHours = 2;
 const char kMetricPolicyKeyVerification[] = "Enterprise.PolicyKeyVerification";
 
 enum MetricPolicyKeyVerification {
+  // Obsolete. Kept to avoid reuse, as this is used in histograms.
   // UMA metric recorded when the client has no verification key.
-  METRIC_POLICY_KEY_VERIFICATION_KEY_MISSING,
+  METRIC_POLICY_KEY_VERIFICATION_KEY_MISSING_DEPRECATED,
   // Recorded when the policy being verified has no key signature (e.g. policy
   // fetched before the server supported the verification key).
   METRIC_POLICY_KEY_VERIFICATION_SIGNATURE_MISSING,
@@ -180,7 +181,9 @@ CloudPolicyValidatorBase::CloudPolicyValidatorBase(
       canonicalize_user_(false),
       verification_key_(GetPolicyVerificationKey()),
       allow_key_rotation_(false),
-      background_task_runner_(background_task_runner) {}
+      background_task_runner_(background_task_runner) {
+  DCHECK(!verification_key_.empty());
+}
 
 void CloudPolicyValidatorBase::PostValidationTask(
     const base::Closure& completion_callback) {
@@ -269,14 +272,6 @@ void CloudPolicyValidatorBase::RunChecks() {
 // Verifies the |new_public_key_verification_signature_deprecated| for the
 // |new_public_key| in the policy blob.
 bool CloudPolicyValidatorBase::CheckNewPublicKeyVerificationSignature() {
-  // Skip verification if the key is empty (disabled via command line).
-  if (verification_key_.empty()) {
-    UMA_HISTOGRAM_ENUMERATION(kMetricPolicyKeyVerification,
-                              METRIC_POLICY_KEY_VERIFICATION_KEY_MISSING,
-                              METRIC_POLICY_KEY_VERIFICATION_SIZE);
-    return true;
-  }
-
   if (!policy_->has_new_public_key_verification_signature_deprecated()) {
     // Policy does not contain a verification signature, so log an error.
     LOG(ERROR) << "Policy is missing public_key_verification_signature";
@@ -392,8 +387,7 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckInitialKey() {
 }
 
 CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckCachedKey() {
-  if (!verification_key_.empty() &&
-      !CheckVerificationKeySignature(cached_key_, verification_key_,
+  if (!CheckVerificationKeySignature(cached_key_, verification_key_,
                                      cached_key_signature_)) {
     LOG(ERROR) << "Cached key signature verification failed";
     return VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE;

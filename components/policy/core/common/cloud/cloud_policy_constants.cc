@@ -99,13 +99,8 @@ const uint8_t kPolicyVerificationKey[] = {
 const char kPolicyVerificationKeyHash[] = "1:356l7w";
 
 std::string GetPolicyVerificationKey() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisablePolicyKeyVerification)) {
-    return std::string();
-  } else {
-    return std::string(reinterpret_cast<const char*>(kPolicyVerificationKey),
-                       sizeof(kPolicyVerificationKey));
-  }
+  return std::string(reinterpret_cast<const char*>(kPolicyVerificationKey),
+                     sizeof(kPolicyVerificationKey));
 }
 
 }  // namespace policy

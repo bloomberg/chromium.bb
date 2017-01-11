@@ -831,7 +831,6 @@ void SAMLEnrollmentTest::SetUp() {
 void SAMLEnrollmentTest::SetUpCommandLine(base::CommandLine* command_line) {
   command_line->AppendSwitchASCII(policy::switches::kDeviceManagementUrl,
                                   test_server_->GetServiceURL().spec());
-  command_line->AppendSwitch(policy::switches::kDisablePolicyKeyVerification);
 
   SamlTest::SetUpCommandLine(command_line);
 }
