@@ -7,9 +7,9 @@
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/update/tray_update.h"
-#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/root_window_controller.h"
 
 namespace ash {
 

@@ -65,6 +65,7 @@ class MediaController;
 class MruWindowTracker;
 class NewWindowController;
 class PaletteDelegate;
+class RootWindowController;
 class ScopedDisableInternalMouseAndKeyboard;
 class SessionController;
 class SessionStateDelegate;
@@ -88,7 +89,6 @@ class WindowResizer;
 class WindowSelectorController;
 class WmActivationObserver;
 class WmDisplayObserver;
-class WmRootWindowController;
 class WmWindow;
 class WorkspaceEventHandler;
 
@@ -225,7 +225,7 @@ class ASH_EXPORT WmShell {
   virtual WmWindow* GetCaptureWindow() = 0;
 
   // Convenience for GetPrimaryRootWindow()->GetRootWindowController().
-  WmRootWindowController* GetPrimaryRootWindowController();
+  RootWindowController* GetPrimaryRootWindowController();
 
   virtual WmWindow* GetPrimaryRootWindow() = 0;
 

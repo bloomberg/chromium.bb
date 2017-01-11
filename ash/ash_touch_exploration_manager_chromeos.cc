@@ -6,7 +6,6 @@
 
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
-#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
@@ -96,10 +95,8 @@ void AshTouchExplorationManager::HandleAccessibilityGesture(
 void AshTouchExplorationManager::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t changed_metrics) {
-  if (root_window_controller_->wm_root_window_controller()
-          ->GetWindow()
-          ->GetDisplayNearestWindow()
-          .id() == display.id())
+  if (root_window_controller_->GetWindow()->GetDisplayNearestWindow().id() ==
+      display.id())
     UpdateTouchExplorationState();
 }
 
@@ -157,11 +154,9 @@ void AshTouchExplorationManager::UpdateTouchExplorationState() {
               touch_accessibility_enabler_.get());
     }
     if (pass_through_surface) {
-      const gfx::Rect& work_area =
-          root_window_controller_->wm_root_window_controller()
-              ->GetWindow()
-              ->GetDisplayNearestWindow()
-              .work_area();
+      const gfx::Rect& work_area = root_window_controller_->GetWindow()
+                                       ->GetDisplayNearestWindow()
+                                       .work_area();
       touch_exploration_controller_->SetExcludeBounds(work_area);
       SilenceSpokenFeedback();
       WmShell::Get()->accessibility_delegate()->ClearFocusHighlight();

@@ -21,8 +21,8 @@
 #include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace ash {
+class RootWindowController;
 class WmShell;
-class WmRootWindowController;
 class WorkspaceLayoutManagerBackdropDelegate;
 
 namespace wm {
@@ -116,7 +116,7 @@ class ASH_EXPORT WorkspaceLayoutManager
 
   WmWindow* window_;
   WmWindow* root_window_;
-  WmRootWindowController* root_window_controller_;
+  RootWindowController* root_window_controller_;
   WmShell* shell_;
 
   // Set of windows we're listening to.

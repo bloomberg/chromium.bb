@@ -7,9 +7,9 @@
 #include "ash/ash_export.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm_lookup.h"
-#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/root_window_controller.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/widget/widget.h"
@@ -20,7 +20,7 @@ namespace {
 class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
                                        public views::WidgetObserver {
  public:
-  ShowWallpaperAnimationObserver(WmRootWindowController* root_window_controller,
+  ShowWallpaperAnimationObserver(RootWindowController* root_window_controller,
                                  views::Widget* wallpaper_widget,
                                  bool is_initial_animation)
       : root_window_controller_(root_window_controller),
@@ -51,7 +51,7 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
   // Overridden from views::WidgetObserver.
   void OnWidgetDestroying(views::Widget* widget) override { delete this; }
 
-  WmRootWindowController* root_window_controller_;
+  RootWindowController* root_window_controller_;
   views::Widget* wallpaper_widget_;
 
   // Is this object observing the initial brightness/grayscale animation?
@@ -114,7 +114,7 @@ void WallpaperWidgetController::OnWindowBoundsChanged(
 }
 
 void WallpaperWidgetController::StartAnimating(
-    WmRootWindowController* root_window_controller) {
+    RootWindowController* root_window_controller) {
   if (widget_) {
     ui::ScopedLayerAnimationSettings settings(
         widget_->GetLayer()->GetAnimator());

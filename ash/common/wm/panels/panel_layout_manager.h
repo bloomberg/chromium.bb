@@ -36,7 +36,7 @@ class PanelCalloutWidget;
 class WmShelf;
 
 namespace wm {
-class WmRootWindowController;
+class RootWindowController;
 }
 
 // PanelLayoutManager is responsible for organizing panels within the
@@ -170,7 +170,7 @@ class ASH_EXPORT PanelLayoutManager
   // Parent window associated with this layout manager.
   WmWindow* panel_container_;
 
-  WmRootWindowController* root_window_controller_;
+  RootWindowController* root_window_controller_;
 
   // Protect against recursive calls to OnWindowAddedToLayout().
   bool in_add_window_;

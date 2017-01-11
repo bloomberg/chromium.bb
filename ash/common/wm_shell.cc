@@ -46,9 +46,9 @@
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/common/wm/system_modal_container_layout_manager.h"
 #include "ash/common/wm/window_cycle_controller.h"
-#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/root_window_controller.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -286,7 +286,7 @@ WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
 
 WmShell::~WmShell() {}
 
-WmRootWindowController* WmShell::GetPrimaryRootWindowController() {
+RootWindowController* WmShell::GetPrimaryRootWindowController() {
   return GetPrimaryRootWindow()->GetRootWindowController();
 }
 

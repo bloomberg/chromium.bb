@@ -21,15 +21,12 @@ WmLookupAura::~WmLookupAura() {
   WmLookup::Set(nullptr);
 }
 
-WmRootWindowController* WmLookupAura::GetRootWindowControllerWithDisplayId(
+RootWindowController* WmLookupAura::GetRootWindowControllerWithDisplayId(
     int64_t id) {
   aura::Window* root_window = Shell::GetInstance()
                                   ->window_tree_host_manager()
                                   ->GetRootWindowForDisplayId(id);
-  return root_window
-             ? RootWindowController::ForWindow(root_window)
-                   ->wm_root_window_controller()
-             : nullptr;
+  return root_window ? RootWindowController::ForWindow(root_window) : nullptr;
 }
 
 WmWindow* WmLookupAura::GetWindowForWidget(views::Widget* widget) {

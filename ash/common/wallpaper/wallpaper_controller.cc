@@ -8,10 +8,10 @@
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wallpaper/wallpaper_view.h"
 #include "ash/common/wallpaper/wallpaper_widget_controller.h"
-#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/root_window_controller.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/task_runner.h"
@@ -220,7 +220,7 @@ void WallpaperController::InstallDesktopController(WmWindow* root_window) {
       return;
   }
 
-  WmRootWindowController* controller = root_window->GetRootWindowController();
+  RootWindowController* controller = root_window->GetRootWindowController();
   controller->SetAnimatingWallpaperWidgetController(
       new AnimatingWallpaperWidgetController(component));
   component->StartAnimating(controller);
@@ -235,7 +235,7 @@ void WallpaperController::InstallDesktopControllerForAllWindows() {
 bool WallpaperController::ReparentWallpaper(int container) {
   bool moved = false;
   for (WmWindow* root_window : WmShell::Get()->GetAllRootWindows()) {
-    WmRootWindowController* root_window_controller =
+    RootWindowController* root_window_controller =
         root_window->GetRootWindowController();
     // In the steady state (no animation playing) the wallpaper widget
     // controller exists in the RootWindowController.

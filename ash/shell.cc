@@ -41,7 +41,6 @@
 #include "ash/common/wm/system_modal_container_layout_manager.h"
 #include "ash/common/wm/window_positioner.h"
 #include "ash/common/wm/workspace_controller.h"
-#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/display_color_manager_chromeos.h"

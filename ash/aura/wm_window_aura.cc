@@ -150,13 +150,9 @@ const WmWindow* WmWindowAura::GetRootWindow() const {
   return Get(window_->GetRootWindow());
 }
 
-WmRootWindowController* WmWindowAura::GetRootWindowController() {
+RootWindowController* WmWindowAura::GetRootWindowController() {
   aura::Window* root = window_->GetRootWindow();
-  if (!root)
-    return nullptr;
-
-  RootWindowController* rwc = RootWindowController::ForWindow(root);
-  return rwc ? rwc->wm_root_window_controller() : nullptr;
+  return root ? RootWindowController::ForWindow(root) : nullptr;
 }
 
 WmShell* WmWindowAura::GetShell() const {

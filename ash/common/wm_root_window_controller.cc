@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/wm_root_window_controller.h"
+#include "ash/root_window_controller.h"
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/session/session_state_delegate.h"
@@ -41,7 +41,10 @@
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
+// TODO(sky): this file is temporary and here to make review easier. The
+// contents of this file will be folded into root_window_controller.cc shortly.
 namespace ash {
 namespace {
 
@@ -63,6 +66,7 @@ void MoveOriginRelativeToSize(const gfx::Size& src_size,
 }
 
 // Reparents |window| to |new_parent|.
+// TODO(sky): This should take an aura::Window. http://crbug.com/671246.
 void ReparentWindow(WmWindow* window, WmWindow* new_parent) {
   const gfx::Size src_size = window->GetParent()->GetBounds().size();
   const gfx::Size dst_size = new_parent->GetBounds().size();
@@ -96,6 +100,7 @@ void ReparentWindow(WmWindow* window, WmWindow* new_parent) {
 }
 
 // Reparents the appropriate set of windows from |src| to |dst|.
+// TODO(sky): This should take an aura::Window. http://crbug.com/671246.
 void ReparentAllWindows(WmWindow* src, WmWindow* dst) {
   // Set of windows to move.
   const int kContainerIdsToMove[] = {
@@ -143,6 +148,7 @@ void ReparentAllWindows(WmWindow* src, WmWindow* dst) {
 }
 
 // Creates a new window for use as a container.
+// TODO(sky): This should create an aura::Window. http://crbug.com/671246.
 WmWindow* CreateContainer(int window_id, const char* name, WmWindow* parent) {
   WmWindow* window = WmShell::Get()->NewWindow(ui::wm::WINDOW_TYPE_UNKNOWN,
                                                ui::LAYER_NOT_DRAWN);
@@ -154,210 +160,178 @@ WmWindow* CreateContainer(int window_id, const char* name, WmWindow* parent) {
   return window;
 }
 
+// TODO(sky): This should take an aura::Window. http://crbug.com/671246.
+bool ShouldDestroyWindowInCloseChildWindows(WmWindow* window) {
+  if (!WmWindowAura::GetAuraWindow(window)->owned_by_parent())
+    return false;
+
+  if (!WmShell::Get()->IsRunningInMash())
+    return true;
+
+  aura::WindowMus* window_mus =
+      aura::WindowMus::Get(WmWindowAura::GetAuraWindow(window));
+  return Shell::window_tree_client()->WasCreatedByThisClient(window_mus) ||
+         Shell::window_tree_client()->IsRoot(window_mus);
+}
+
 }  // namespace
 
-WmRootWindowController::WmRootWindowController(
-    RootWindowController* root_window_controller,
-    WmWindow* root)
-    : root_window_controller_(root_window_controller), root_(root) {
-  DCHECK(root_window_controller_);
-  DCHECK(root_);
-}
-
-WmRootWindowController::~WmRootWindowController() {
-  if (animating_wallpaper_widget_controller_.get())
-    animating_wallpaper_widget_controller_->StopAnimating();
-}
-
-void WmRootWindowController::SetWallpaperWidgetController(
+void RootWindowController::SetWallpaperWidgetController(
     WallpaperWidgetController* controller) {
   wallpaper_widget_controller_.reset(controller);
 }
 
-void WmRootWindowController::SetAnimatingWallpaperWidgetController(
+void RootWindowController::SetAnimatingWallpaperWidgetController(
     AnimatingWallpaperWidgetController* controller) {
   if (animating_wallpaper_widget_controller_.get())
     animating_wallpaper_widget_controller_->StopAnimating();
   animating_wallpaper_widget_controller_.reset(controller);
 }
 
-wm::WorkspaceWindowState WmRootWindowController::GetWorkspaceWindowState() {
+wm::WorkspaceWindowState RootWindowController::GetWorkspaceWindowState() {
   return workspace_controller_ ? workspace_controller()->GetWindowState()
                                : wm::WORKSPACE_WINDOW_STATE_DEFAULT;
 }
 
 SystemModalContainerLayoutManager*
-WmRootWindowController::GetSystemModalLayoutManager(WmWindow* window) {
+RootWindowController::GetSystemModalLayoutManager(WmWindow* window) {
   WmWindow* modal_container = nullptr;
   if (window) {
     WmWindow* window_container = wm::GetContainerForWindow(window);
     if (window_container &&
         window_container->GetShellWindowId() >=
             kShellWindowId_LockScreenContainer) {
-      modal_container = GetContainer(kShellWindowId_LockSystemModalContainer);
+      modal_container = GetWmContainer(kShellWindowId_LockSystemModalContainer);
     } else {
-      modal_container = GetContainer(kShellWindowId_SystemModalContainer);
+      modal_container = GetWmContainer(kShellWindowId_SystemModalContainer);
     }
   } else {
     int modal_window_id =
         WmShell::Get()->GetSessionStateDelegate()->IsUserSessionBlocked()
             ? kShellWindowId_LockSystemModalContainer
             : kShellWindowId_SystemModalContainer;
-    modal_container = GetContainer(modal_window_id);
+    modal_container = GetWmContainer(modal_window_id);
   }
   return modal_container ? static_cast<SystemModalContainerLayoutManager*>(
                                modal_container->GetLayoutManager())
                          : nullptr;
 }
 
-bool WmRootWindowController::HasShelf() {
-  return GetShelf()->shelf_widget() != nullptr;
+bool RootWindowController::HasShelf() {
+  return wm_shelf_->shelf_widget() != nullptr;
 }
 
-WmShelf* WmRootWindowController::GetShelf() {
-  return root_window_controller_->wm_shelf();
+WmShelf* RootWindowController::GetShelf() {
+  return wm_shelf_.get();
 }
 
-void WmRootWindowController::CreateShelf() {
-  WmShelf* shelf = GetShelf();
-  if (shelf->IsShelfInitialized())
+void RootWindowController::CreateShelf() {
+  if (wm_shelf_->IsShelfInitialized())
     return;
-  shelf->InitializeShelf();
+  wm_shelf_->InitializeShelf();
 
   if (panel_layout_manager_)
-    panel_layout_manager_->SetShelf(shelf);
+    panel_layout_manager_->SetShelf(wm_shelf_.get());
   if (docked_window_layout_manager_) {
-    docked_window_layout_manager_->SetShelf(shelf);
-    if (shelf->shelf_layout_manager())
-      docked_window_layout_manager_->AddObserver(shelf->shelf_layout_manager());
+    docked_window_layout_manager_->SetShelf(wm_shelf_.get());
+    if (wm_shelf_->shelf_layout_manager())
+      docked_window_layout_manager_->AddObserver(
+          wm_shelf_->shelf_layout_manager());
   }
 
   // Notify shell observers that the shelf has been created.
   // TODO(jamescook): Move this into WmShelf::InitializeShelf(). This will
   // require changing AttachedPanelWidgetTargeter's access to WmShelf.
-  WmShell::Get()->NotifyShelfCreatedForRootWindow(GetWindow());
+  WmShell::Get()->NotifyShelfCreatedForRootWindow(
+      WmWindowAura::Get(GetRootWindow()));
 
-  shelf->shelf_widget()->PostCreateShelf();
+  wm_shelf_->shelf_widget()->PostCreateShelf();
 }
 
-void WmRootWindowController::ShowShelf() {
-  WmShelf* shelf = GetShelf();
-  if (!shelf->IsShelfInitialized())
+void RootWindowController::ShowShelf() {
+  if (!wm_shelf_->IsShelfInitialized())
     return;
   // TODO(jamescook): Move this into WmShelf.
-  shelf->shelf_widget()->SetShelfVisibility(true);
-  shelf->shelf_widget()->status_area_widget()->Show();
+  wm_shelf_->shelf_widget()->SetShelfVisibility(true);
+  wm_shelf_->shelf_widget()->status_area_widget()->Show();
 }
 
-SystemTray* WmRootWindowController::GetSystemTray() {
-  ShelfWidget* shelf_widget = GetShelf()->shelf_widget();
-  if (!shelf_widget || !shelf_widget->status_area_widget())
-    return nullptr;
-  return shelf_widget->status_area_widget()->system_tray();
+const WmWindow* RootWindowController::GetWindow() const {
+  return WmWindowAura::Get(GetRootWindow());
 }
 
-WmWindow* WmRootWindowController::GetWindow() {
-  return root_;
+const WmWindow* RootWindowController::GetWmContainer(int container_id) const {
+  const aura::Window* window = GetContainer(container_id);
+  return WmWindowAura::Get(window);
 }
 
-WmWindow* WmRootWindowController::GetContainer(int container_id) {
-  return root_->GetChildByShellWindowId(container_id);
-}
-
-const WmWindow* WmRootWindowController::GetContainer(int container_id) const {
-  return root_->GetChildByShellWindowId(container_id);
-}
-
-void WmRootWindowController::ConfigureWidgetInitParamsForContainer(
+void RootWindowController::ConfigureWidgetInitParamsForContainer(
     views::Widget* widget,
     int shell_container_id,
     views::Widget::InitParams* init_params) {
-  init_params->parent = WmWindowAura::GetAuraWindow(
-      GetWindow()->GetChildByShellWindowId(shell_container_id));
+  init_params->parent = GetContainer(shell_container_id);
 }
 
-WmWindow* WmRootWindowController::FindEventTarget(
+WmWindow* RootWindowController::FindEventTarget(
     const gfx::Point& location_in_screen) {
-  gfx::Point location_in_root =
-      GetWindow()->ConvertPointFromScreen(location_in_screen);
-  aura::Window* root = WmWindowAura::GetAuraWindow(GetWindow());
+  gfx::Point location_in_root(location_in_screen);
+  aura::Window* root_window = GetRootWindow();
+  ::wm::ConvertPointFromScreen(root_window, &location_in_root);
   ui::MouseEvent test_event(ui::ET_MOUSE_MOVED, location_in_root,
                             location_in_root, ui::EventTimeForNow(),
                             ui::EF_NONE, ui::EF_NONE);
-  ui::EventTarget* event_handler = static_cast<ui::EventTarget*>(root)
-                                       ->GetEventTargeter()
-                                       ->FindTargetForEvent(root, &test_event);
+  ui::EventTarget* event_handler =
+      static_cast<ui::EventTarget*>(root_window)
+          ->GetEventTargeter()
+          ->FindTargetForEvent(root_window, &test_event);
   return WmWindowAura::Get(static_cast<aura::Window*>(event_handler));
 }
 
-gfx::Point WmRootWindowController::GetLastMouseLocationInRoot() {
-  return WmWindowAura::GetAuraWindow(GetWindow())
-      ->GetHost()
-      ->dispatcher()
-      ->GetLastMouseLocationInRoot();
+gfx::Point RootWindowController::GetLastMouseLocationInRoot() {
+  return window_tree_host_->dispatcher()->GetLastMouseLocationInRoot();
 }
 
-void WmRootWindowController::ShowContextMenu(
-    const gfx::Point& location_in_screen,
-    ui::MenuSourceType source_type) {
+void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
+                                           ui::MenuSourceType source_type) {
   ShellDelegate* delegate = WmShell::Get()->delegate();
   DCHECK(delegate);
-  menu_model_.reset(delegate->CreateContextMenu(GetShelf(), nullptr));
+  menu_model_.reset(delegate->CreateContextMenu(wm_shelf_.get(), nullptr));
   if (!menu_model_)
     return;
 
-  menu_model_adapter_.reset(new views::MenuModelAdapter(
-      menu_model_.get(), base::Bind(&WmRootWindowController::OnMenuClosed,
-                                    base::Unretained(this))));
+  menu_model_adapter_ = base::MakeUnique<views::MenuModelAdapter>(
+      menu_model_.get(),
+      base::Bind(&RootWindowController::OnMenuClosed, base::Unretained(this)));
 
   // The wallpaper controller may not be set yet if the user clicked on the
   // status area before the initial animation completion. See crbug.com/222218
   if (!wallpaper_widget_controller())
     return;
 
-  menu_runner_.reset(new views::MenuRunner(
+  menu_runner_ = base::MakeUnique<views::MenuRunner>(
       menu_model_adapter_->CreateMenu(),
-      views::MenuRunner::CONTEXT_MENU | views::MenuRunner::ASYNC));
+      views::MenuRunner::CONTEXT_MENU | views::MenuRunner::ASYNC);
   ignore_result(
       menu_runner_->RunMenuAt(wallpaper_widget_controller()->widget(), nullptr,
                               gfx::Rect(location_in_screen, gfx::Size()),
                               views::MENU_ANCHOR_TOPLEFT, source_type));
 }
 
-void WmRootWindowController::OnInitialWallpaperAnimationStarted() {
-  root_window_controller_->OnInitialWallpaperAnimationStarted();
-}
-
-void WmRootWindowController::OnWallpaperAnimationFinished(
-    views::Widget* widget) {
-  root_window_controller_->OnWallpaperAnimationFinished(widget);
-  WmShell::Get()->wallpaper_delegate()->OnWallpaperAnimationFinished();
-  // Only removes old component when wallpaper animation finished. If we
-  // remove the old one before the new wallpaper is done fading in there will
-  // be a white flash during the animation.
-  if (animating_wallpaper_widget_controller()) {
-    WallpaperWidgetController* controller =
-        animating_wallpaper_widget_controller()->GetController(true);
-    DCHECK_EQ(controller->widget(), widget);
-    // Release the old controller and close its wallpaper widget.
-    SetWallpaperWidgetController(controller);
-  }
-}
-
-void WmRootWindowController::UpdateAfterLoginStatusChange(LoginStatus status) {
+void RootWindowController::UpdateAfterLoginStatusChange(LoginStatus status) {
   StatusAreaWidget* status_area_widget =
-      GetShelf()->shelf_widget()->status_area_widget();
+      wm_shelf_->shelf_widget()->status_area_widget();
   if (status_area_widget)
     status_area_widget->UpdateAfterLoginStatusChange(status);
 }
 
-void WmRootWindowController::MoveWindowsTo(WmWindow* dest) {
+void RootWindowController::MoveWindowsTo(aura::Window* dst) {
   // Clear the workspace controller, so it doesn't incorrectly update the shelf.
   workspace_controller_.reset();
-  ReparentAllWindows(GetWindow(), dest);
+  ReparentAllWindows(GetWindow(), WmWindowAura::Get(dst));
 }
 
-void WmRootWindowController::CreateContainers() {
+void RootWindowController::CreateContainers() {
+  WmWindow* root = GetWindow();
   // These containers are just used by PowerButtonController to animate groups
   // of containers simultaneously without messing up the current transformations
   // on those containers. These are direct children of the root window; all of
@@ -368,27 +342,27 @@ void WmRootWindowController::CreateContainers() {
   // is moved to the lock screen wallpaper container (and moved back on unlock).
   // Ensure that there's an opaque layer occluding the non-lock-screen layers.
   WmWindow* wallpaper_container = CreateContainer(
-      kShellWindowId_WallpaperContainer, "WallpaperContainer", root_);
+      kShellWindowId_WallpaperContainer, "WallpaperContainer", root);
   wallpaper_container->SetChildWindowVisibilityChangesAnimated();
 
   WmWindow* non_lock_screen_containers =
       CreateContainer(kShellWindowId_NonLockScreenContainersContainer,
-                      "NonLockScreenContainersContainer", root_);
+                      "NonLockScreenContainersContainer", root);
   // Clip all windows inside this container, as half pixel of the window's
   // texture may become visible when the screen is scaled. crbug.com/368591.
   non_lock_screen_containers->SetMasksToBounds(true);
 
   WmWindow* lock_wallpaper_containers =
       CreateContainer(kShellWindowId_LockScreenWallpaperContainer,
-                      "LockScreenWallpaperContainer", root_);
+                      "LockScreenWallpaperContainer", root);
   lock_wallpaper_containers->SetChildWindowVisibilityChangesAnimated();
 
   WmWindow* lock_screen_containers =
       CreateContainer(kShellWindowId_LockScreenContainersContainer,
-                      "LockScreenContainersContainer", root_);
+                      "LockScreenContainersContainer", root);
   WmWindow* lock_screen_related_containers =
       CreateContainer(kShellWindowId_LockScreenRelatedContainersContainer,
-                      "LockScreenRelatedContainersContainer", root_);
+                      "LockScreenRelatedContainersContainer", root);
 
   CreateContainer(kShellWindowId_UnparentedControlContainer,
                   "UnparentedControlContainer", non_lock_screen_containers);
@@ -525,78 +499,82 @@ void WmRootWindowController::CreateContainers() {
       WmWindow::BoundsInScreenBehavior::USE_SCREEN_COORDINATES);
 
   WmWindow* mouse_cursor_container = CreateContainer(
-      kShellWindowId_MouseCursorContainer, "MouseCursorContainer", root_);
+      kShellWindowId_MouseCursorContainer, "MouseCursorContainer", root);
   mouse_cursor_container->SetBoundsInScreenBehaviorForChildren(
       WmWindow::BoundsInScreenBehavior::USE_SCREEN_COORDINATES);
 
   CreateContainer(kShellWindowId_PowerButtonAnimationContainer,
-                  "PowerButtonAnimationContainer", root_);
+                  "PowerButtonAnimationContainer", root);
 }
 
-void WmRootWindowController::CreateLayoutManagers() {
+void RootWindowController::CreateLayoutManagers() {
   GetShelf()->CreateShelfWidget(GetWindow());
 
-  root_window_layout_manager_ = new wm::RootWindowLayoutManager(root_);
-  root_->SetLayoutManager(base::WrapUnique(root_window_layout_manager_));
+  WmWindow* root = GetWindow();
+  root_window_layout_manager_ = new wm::RootWindowLayoutManager(root);
+  root->SetLayoutManager(base::WrapUnique(root_window_layout_manager_));
 
-  WmWindow* default_container = GetContainer(kShellWindowId_DefaultContainer);
+  WmWindow* default_container = GetWmContainer(kShellWindowId_DefaultContainer);
   // Installs WorkspaceLayoutManager on |default_container|.
   workspace_controller_.reset(new WorkspaceController(default_container));
 
-  WmWindow* modal_container = GetContainer(kShellWindowId_SystemModalContainer);
+  WmWindow* modal_container =
+      GetWmContainer(kShellWindowId_SystemModalContainer);
   DCHECK(modal_container);
   modal_container->SetLayoutManager(
       base::MakeUnique<SystemModalContainerLayoutManager>(modal_container));
 
   WmWindow* lock_modal_container =
-      GetContainer(kShellWindowId_LockSystemModalContainer);
+      GetWmContainer(kShellWindowId_LockSystemModalContainer);
   DCHECK(lock_modal_container);
   lock_modal_container->SetLayoutManager(
       base::MakeUnique<SystemModalContainerLayoutManager>(
           lock_modal_container));
 
-  WmWindow* lock_container = GetContainer(kShellWindowId_LockScreenContainer);
+  WmWindow* lock_container = GetWmContainer(kShellWindowId_LockScreenContainer);
   DCHECK(lock_container);
   lock_container->SetLayoutManager(
       base::MakeUnique<LockLayoutManager>(lock_container));
 
   WmWindow* always_on_top_container =
-      GetContainer(kShellWindowId_AlwaysOnTopContainer);
+      GetWmContainer(kShellWindowId_AlwaysOnTopContainer);
   DCHECK(always_on_top_container);
   always_on_top_controller_ =
       base::MakeUnique<AlwaysOnTopController>(always_on_top_container);
 
   // Create Docked windows layout manager
-  WmWindow* docked_container = GetContainer(kShellWindowId_DockedContainer);
+  WmWindow* docked_container = GetWmContainer(kShellWindowId_DockedContainer);
   docked_window_layout_manager_ =
       new DockedWindowLayoutManager(docked_container);
   docked_container->SetLayoutManager(
       base::WrapUnique(docked_window_layout_manager_));
 
   // Create Panel layout manager
-  WmWindow* panel_container = GetContainer(kShellWindowId_PanelContainer);
+  WmWindow* panel_container = GetWmContainer(kShellWindowId_PanelContainer);
   panel_layout_manager_ = new PanelLayoutManager(panel_container);
   panel_container->SetLayoutManager(base::WrapUnique(panel_layout_manager_));
 
-  wm::WmSnapToPixelLayoutManager::InstallOnContainers(root_);
+  wm::WmSnapToPixelLayoutManager::InstallOnContainers(root);
 }
 
-void WmRootWindowController::ResetRootForNewWindowsIfNecessary() {
+void RootWindowController::ResetRootForNewWindowsIfNecessary() {
   WmShell* shell = WmShell::Get();
   // Change the target root window before closing child windows. If any child
   // being removed triggers a relayout of the shelf it will try to build a
   // window list adding windows from the target root window's containers which
   // may have already gone away.
-  if (shell->GetRootWindowForNewWindows() == GetWindow()) {
+  WmWindow* root = GetWindow();
+  if (shell->GetRootWindowForNewWindows() == root) {
     // The root window for new windows is being destroyed. Switch to the primary
     // root window if possible.
     WmWindow* primary_root = shell->GetPrimaryRootWindow();
-    shell->set_root_window_for_new_windows(
-        primary_root == GetWindow() ? nullptr : primary_root);
+    shell->set_root_window_for_new_windows(primary_root == root ? nullptr
+                                                                : primary_root);
   }
 }
 
-void WmRootWindowController::CloseChildWindows() {
+// TODO(sky): fold into CloseChildWindows() when move back.
+void RootWindowController::CloseChildWindowsImpl() {
   // NOTE: this may be called multiple times.
 
   // |panel_layout_manager_| needs to be shut down before windows are destroyed.
@@ -620,7 +598,8 @@ void WmRootWindowController::CloseChildWindows() {
   // Explicitly destroy top level windows. We do this because such windows may
   // query the RootWindow for state.
   WmWindowTracker non_toplevel_windows;
-  non_toplevel_windows.Add(root_);
+  WmWindow* root = GetWindow();
+  non_toplevel_windows.Add(root);
   while (!non_toplevel_windows.windows().empty()) {
     WmWindow* non_toplevel_window = non_toplevel_windows.Pop();
     WmWindowTracker toplevel_windows;
@@ -636,12 +615,12 @@ void WmRootWindowController::CloseChildWindows() {
       toplevel_windows.Pop()->Destroy();
   }
   // And then remove the containers.
-  while (!root_->GetChildren().empty()) {
-    WmWindow* child = root_->GetChildren()[0];
+  while (!root->GetChildren().empty()) {
+    WmWindow* child = root->GetChildren()[0];
     if (ShouldDestroyWindowInCloseChildWindows(child))
       child->Destroy();
     else
-      root_->RemoveChild(child);
+      root->RemoveChild(child);
   }
 
   shelf->DestroyShelfWidget();
@@ -652,25 +631,11 @@ void WmRootWindowController::CloseChildWindows() {
     shelf->ShutdownShelf();
 }
 
-bool WmRootWindowController::ShouldDestroyWindowInCloseChildWindows(
-    WmWindow* window) {
-  if (!WmWindowAura::GetAuraWindow(window)->owned_by_parent())
-    return false;
-
-  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::LOCAL)
-    return true;
-
-  aura::WindowMus* window_mus =
-      aura::WindowMus::Get(WmWindowAura::GetAuraWindow(window));
-  return Shell::window_tree_client()->WasCreatedByThisClient(window_mus) ||
-         Shell::window_tree_client()->IsRoot(window_mus);
-}
-
-void WmRootWindowController::OnMenuClosed() {
+void RootWindowController::OnMenuClosed() {
   menu_runner_.reset();
   menu_model_adapter_.reset();
   menu_model_.reset();
-  GetShelf()->UpdateVisibilityState();
+  wm_shelf_->UpdateVisibilityState();
 }
 
 }  // namespace ash

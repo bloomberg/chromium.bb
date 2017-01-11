@@ -53,7 +53,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow,
   // WmWindow:
   void Destroy() override;
   const WmWindow* GetRootWindow() const override;
-  WmRootWindowController* GetRootWindowController() override;
+  RootWindowController* GetRootWindowController() override;
   WmShell* GetShell() const override;
   void SetName(const char* name) override;
   std::string GetName() const override;

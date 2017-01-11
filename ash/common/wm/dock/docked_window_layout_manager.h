@@ -27,7 +27,7 @@ namespace ash {
 class DockedBackgroundWidget;
 class DockedWindowLayoutManagerObserver;
 class DockedWindowResizerTest;
-class WmRootWindowController;
+class RootWindowController;
 class WmShelf;
 
 // DockedWindowLayoutManager is responsible for organizing windows when they are
@@ -252,7 +252,7 @@ class ASH_EXPORT DockedWindowLayoutManager
   // Parent window associated with this layout manager.
   WmWindow* dock_container_;
 
-  WmRootWindowController* root_window_controller_;
+  RootWindowController* root_window_controller_;
 
   // Protect against recursive calls to Relayout().
   bool in_layout_;

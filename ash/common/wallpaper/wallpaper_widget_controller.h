@@ -14,7 +14,7 @@
 
 namespace ash {
 
-class WmRootWindowController;
+class RootWindowController;
 class WmWindow;
 
 // This class implements a widget-based wallpaper.
@@ -41,7 +41,7 @@ class ASH_EXPORT WallpaperWidgetController : public views::WidgetObserver,
   // Starts wallpaper fade in animation. |root_window_controller| is
   // the root window where the animation will happen. (This is
   // necessary this as |layer_| doesn't have access to the root window).
-  void StartAnimating(WmRootWindowController* root_window_controller);
+  void StartAnimating(RootWindowController* root_window_controller);
 
   views::Widget* widget() { return widget_; }
 

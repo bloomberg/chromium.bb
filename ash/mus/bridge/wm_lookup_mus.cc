@@ -21,12 +21,11 @@ WmLookupMus::~WmLookupMus() {
     WmLookup::Set(nullptr);
 }
 
-WmRootWindowController* WmLookupMus::GetRootWindowControllerWithDisplayId(
+ash::RootWindowController* WmLookupMus::GetRootWindowControllerWithDisplayId(
     int64_t id) {
   return WmShellMus::Get()
       ->GetRootWindowControllerWithDisplayId(id)
-      ->ash_root_window_controller()
-      ->wm_root_window_controller();
+      ->ash_root_window_controller();
 }
 
 WmWindow* WmLookupMus::GetWindowForWidget(views::Widget* widget) {

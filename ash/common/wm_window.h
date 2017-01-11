@@ -42,8 +42,8 @@ class Widget;
 namespace ash {
 
 class ImmersiveFullscreenController;
+class RootWindowController;
 class WmLayoutManager;
-class WmRootWindowController;
 class WmShell;
 class WmTransientWindowObserver;
 class WmWindowObserver;
@@ -72,7 +72,7 @@ class ASH_EXPORT WmWindow {
         const_cast<const WmWindow*>(this)->GetRootWindow());
   }
   virtual const WmWindow* GetRootWindow() const = 0;
-  virtual WmRootWindowController* GetRootWindowController() = 0;
+  virtual RootWindowController* GetRootWindowController() = 0;
 
   // TODO(sky): fix constness.
   virtual WmShell* GetShell() const = 0;

@@ -9,10 +9,10 @@
 
 #include "ash/common/wallpaper/wallpaper_view.h"
 #include "ash/common/wallpaper/wallpaper_widget_controller.h"
-#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/root_window_controller.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_wallpaper_delegate.h"
 #include "base/message_loop/message_loop.h"
@@ -111,7 +111,7 @@ class WallpaperControllerTest : public test::AshTestBase {
     test::AshTestBase::SetUp();
     // Ash shell initialization creates wallpaper. Reset it so we can manually
     // control wallpaper creation and animation in our tests.
-    WmRootWindowController* root_window_controller =
+    RootWindowController* root_window_controller =
         WmShell::Get()->GetPrimaryRootWindow()->GetRootWindowController();
     root_window_controller->SetWallpaperWidgetController(nullptr);
     root_window_controller->SetAnimatingWallpaperWidgetController(nullptr);
@@ -236,7 +236,7 @@ TEST_F(WallpaperControllerTest, ControllerOwnership) {
   controller->CreateEmptyWallpaper();
 
   // The new wallpaper is ready to animate.
-  WmRootWindowController* root_window_controller =
+  RootWindowController* root_window_controller =
       WmShell::Get()->GetPrimaryRootWindow()->GetRootWindowController();
   EXPECT_TRUE(root_window_controller->animating_wallpaper_widget_controller()
                   ->GetController(false));
@@ -272,7 +272,7 @@ TEST_F(WallpaperControllerTest, WallpaperMovementDuringUnlock) {
 
   // In this state we have two wallpaper views stored in different properties.
   // Both are in the lock screen wallpaper container.
-  WmRootWindowController* root_window_controller =
+  RootWindowController* root_window_controller =
       WmShell::Get()->GetPrimaryRootWindow()->GetRootWindowController();
   EXPECT_TRUE(root_window_controller->animating_wallpaper_widget_controller()
                   ->GetController(false));
@@ -313,7 +313,7 @@ TEST_F(WallpaperControllerTest, ChangeWallpaperQuick) {
   // Change to a new wallpaper.
   controller->CreateEmptyWallpaper();
 
-  WmRootWindowController* root_window_controller =
+  RootWindowController* root_window_controller =
       WmShell::Get()->GetPrimaryRootWindow()->GetRootWindowController();
   WallpaperWidgetController* animating_controller =
       root_window_controller->animating_wallpaper_widget_controller()

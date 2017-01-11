@@ -15,7 +15,7 @@ class Widget;
 
 namespace ash {
 
-class WmRootWindowController;
+class RootWindowController;
 class WmWindow;
 
 // WmLookup is used to lookup various wm types.
@@ -24,9 +24,9 @@ class ASH_EXPORT WmLookup {
   static void Set(WmLookup* lookup);
   static WmLookup* Get();
 
-  // Returns the WmRootWindowController with the specified display id, or null
-  // if there isn't one.
-  virtual WmRootWindowController* GetRootWindowControllerWithDisplayId(
+  // Returns the RootWindowController with the specified display id, or null if
+  // there isn't one.
+  virtual RootWindowController* GetRootWindowControllerWithDisplayId(
       int64_t id) = 0;
 
   // Returns the WmWindow for the specified widget.

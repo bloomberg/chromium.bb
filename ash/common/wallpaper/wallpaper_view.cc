@@ -10,9 +10,9 @@
 #include "ash/common/wallpaper/wallpaper_widget_controller.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm_lookup.h"
-#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/root_window_controller.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
@@ -210,7 +210,7 @@ views::Widget* CreateWallpaper(WmWindow* root_window, int container_id) {
       WmLookup::Get()->GetWindowForWidget(wallpaper_widget);
   wallpaper_window->SetVisibilityAnimationType(animation_type);
 
-  WmRootWindowController* root_window_controller =
+  RootWindowController* root_window_controller =
       root_window->GetRootWindowController();
 
   // Enable wallpaper transition for the following cases:

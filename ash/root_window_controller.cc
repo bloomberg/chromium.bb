@@ -29,6 +29,7 @@
 #include "ash/common/wm/container_finder.h"
 #include "ash/common/wm/dock/docked_window_layout_manager.h"
 #include "ash/common/wm/fullscreen_window_finder.h"
+#include "ash/common/wm/lock_layout_manager.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm/root_window_layout_manager.h"
 #include "ash/common/wm/switchable_windows.h"
@@ -36,7 +37,6 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/workspace/workspace_layout_manager.h"
 #include "ash/common/wm/workspace_controller.h"
-#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/high_contrast/high_contrast_controller.h"
@@ -65,17 +65,24 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/screen_position_client.h"
+#include "ui/aura/mus/window_mus.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/base/models/menu_model.h"
 #include "ui/chromeos/touch_exploration_controller.h"
 #include "ui/display/types/display_constants.h"
+#include "ui/events/event_utils.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/view_model.h"
 #include "ui/views/view_model_utils.h"
 #include "ui/wm/core/capture_controller.h"
+#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/visibility_controller.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/tooltip_client.h"
@@ -146,6 +153,8 @@ RootWindowController::~RootWindowController() {
   // The CaptureClient needs to be around for as long as the RootWindow is
   // valid.
   capture_client_.reset();
+  if (animating_wallpaper_widget_controller_.get())
+    animating_wallpaper_widget_controller_->StopAnimating();
 }
 
 void RootWindowController::CreateForPrimaryDisplay(AshWindowTreeHost* host) {
@@ -189,16 +198,12 @@ const aura::Window* RootWindowController::GetRootWindow() const {
   return GetHost()->window();
 }
 
-WorkspaceController* RootWindowController::workspace_controller() {
-  return wm_root_window_controller_->workspace_controller();
-}
-
 void RootWindowController::Shutdown() {
   WmShell::Get()->RemoveShellObserver(this);
 
   touch_exploration_manager_.reset();
 
-  wm_root_window_controller_->ResetRootForNewWindowsIfNecessary();
+  ResetRootForNewWindowsIfNecessary();
 
   CloseChildWindows();
   aura::Window* root_window = GetRootWindow();
@@ -281,6 +286,17 @@ void RootWindowController::OnWallpaperAnimationFinished(views::Widget* widget) {
   // Make sure the wallpaper is visible.
   system_wallpaper_->SetColor(SK_ColorBLACK);
   boot_splash_screen_.reset();
+  WmShell::Get()->wallpaper_delegate()->OnWallpaperAnimationFinished();
+  // Only removes old component when wallpaper animation finished. If we
+  // remove the old one before the new wallpaper is done fading in there will
+  // be a white flash during the animation.
+  if (animating_wallpaper_widget_controller()) {
+    WallpaperWidgetController* controller =
+        animating_wallpaper_widget_controller()->GetController(true);
+    DCHECK_EQ(controller->widget(), widget);
+    // Release the old controller and close its wallpaper widget.
+    SetWallpaperWidgetController(controller);
+  }
 }
 
 void RootWindowController::CloseChildWindows() {
@@ -295,14 +311,10 @@ void RootWindowController::CloseChildWindows() {
   // down associated layout managers.
   DeactivateKeyboard(keyboard::KeyboardController::GetInstance());
 
-  wm_root_window_controller_->CloseChildWindows();
+  CloseChildWindowsImpl();
 
   aura::client::SetDragDropClient(GetRootWindow(), nullptr);
   aura::client::SetTooltipClient(GetRootWindow(), nullptr);
-}
-
-void RootWindowController::MoveWindowsTo(aura::Window* dst) {
-  wm_root_window_controller_->MoveWindowsTo(WmWindowAura::Get(dst));
 }
 
 ShelfLayoutManager* RootWindowController::GetShelfLayoutManager() {
@@ -342,8 +354,7 @@ void RootWindowController::ActivateKeyboard(
   keyboard_controller->AddObserver(docked_window_layout_manager());
   keyboard_controller->AddObserver(workspace_controller()->layout_manager());
   keyboard_controller->AddObserver(
-      wm_root_window_controller_->always_on_top_controller()
-          ->GetLayoutManager());
+      always_on_top_controller_->GetLayoutManager());
   WmShell::Get()->NotifyVirtualKeyboardActivated(true);
   aura::Window* parent = GetContainer(kShellWindowId_ImeWindowParentContainer);
   DCHECK(parent);
@@ -373,8 +384,7 @@ void RootWindowController::DeactivateKeyboard(
     keyboard_controller->RemoveObserver(
         workspace_controller()->layout_manager());
     keyboard_controller->RemoveObserver(
-        wm_root_window_controller_->always_on_top_controller()
-            ->GetLayoutManager());
+        always_on_top_controller_->GetLayoutManager());
     WmShell::Get()->NotifyVirtualKeyboardActivated(false);
   }
 }
@@ -400,16 +410,10 @@ RootWindowController::RootWindowController(
       mus_window_tree_host_(window_tree_host),
       window_tree_host_(ash_host ? ash_host->AsWindowTreeHost()
                                  : window_tree_host),
-      wm_shelf_(base::MakeUnique<WmShelf>()),
-      touch_hud_debug_(NULL),
-      touch_hud_projection_(NULL) {
+      wm_shelf_(base::MakeUnique<WmShelf>()) {
   DCHECK((ash_host && !window_tree_host) || (!ash_host && window_tree_host));
   aura::Window* root_window = GetRootWindow();
   GetRootWindowSettings(root_window)->controller = this;
-
-  // Has to happen after this is set as |controller| of RootWindowSettings.
-  wm_root_window_controller_ = base::MakeUnique<WmRootWindowController>(
-      this, WmWindowAura::Get(root_window));
 
   stacking_controller_.reset(new StackingController);
   aura::client::SetWindowParentingClient(root_window,
@@ -426,7 +430,7 @@ void RootWindowController::Init(RootWindowType root_window_type) {
     shell->InitRootWindow(root_window);
   }
 
-  wm_root_window_controller_->CreateContainers();
+  CreateContainers();
 
   CreateSystemWallpaper(root_window_type);
 
@@ -436,13 +440,12 @@ void RootWindowController::Init(RootWindowType root_window_type) {
   if (wm_shell->GetPrimaryRootWindowController()
           ->GetSystemModalLayoutManager(nullptr)
           ->has_window_dimmer()) {
-    wm_root_window_controller_->GetSystemModalLayoutManager(nullptr)
-        ->CreateModalBackground();
+    GetSystemModalLayoutManager(nullptr)->CreateModalBackground();
   }
 
   wm_shell->AddShellObserver(this);
 
-  wm_root_window_controller_->root_window_layout_manager()->OnWindowResized();
+  root_window_layout_manager_->OnWindowResized();
   if (root_window_type == RootWindowType::PRIMARY) {
     if (!wm_shell->IsRunningInMash())
       shell->InitKeyboard();
@@ -451,7 +454,7 @@ void RootWindowController::Init(RootWindowType root_window_type) {
 
     // Create a shelf if a user is already logged in.
     if (wm_shell->GetSessionStateDelegate()->NumberOfLoggedInUsers())
-      wm_root_window_controller_->CreateShelf();
+      CreateShelf();
 
     // Notify shell observers about new root window.
     if (!wm_shell->IsRunningInMash())
@@ -475,7 +478,7 @@ void RootWindowController::InitLayoutManagers() {
   WmWindow* wm_shelf_container = WmWindowAura::Get(shelf_container);
   WmWindow* wm_status_container = WmWindowAura::Get(status_container);
 
-  wm_root_window_controller_->CreateLayoutManagers();
+  CreateLayoutManagers();
 
   // Make it easier to resize windows that partially overlap the shelf. Must
   // occur after the ShelfLayoutManager is constructed by ShelfWidget.
@@ -547,15 +550,6 @@ void RootWindowController::DisableTouchHudProjection() {
   if (!touch_hud_projection_)
     return;
   touch_hud_projection_->Remove();
-}
-
-DockedWindowLayoutManager*
-RootWindowController::docked_window_layout_manager() {
-  return wm_root_window_controller_->docked_window_layout_manager();
-}
-
-PanelLayoutManager* RootWindowController::panel_layout_manager() {
-  return wm_root_window_controller_->panel_layout_manager();
 }
 
 void RootWindowController::OnLoginStateChanged(LoginStatus status) {

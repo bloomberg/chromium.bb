@@ -10,7 +10,6 @@
 
 #include "ash/common/wm/container_finder.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm_root_window_controller.h"
 #include "ash/display/screen_position_controller.h"
 #include "ash/mus/accelerators/accelerator_handler.h"
 #include "ash/mus/accelerators/accelerator_ids.h"
@@ -27,6 +26,7 @@
 #include "ash/mus/window_manager_observer.h"
 #include "ash/mus/window_properties.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/event_client_impl.h"
@@ -230,7 +230,6 @@ RootWindowController* WindowManager::CreateRootWindowController(
 
   // TODO: this should be called when logged in. See http://crbug.com/654606.
   root_window_controller->ash_root_window_controller()
-      ->wm_root_window_controller()
       ->CreateShelf();
 
   for (auto& observer : observers_)

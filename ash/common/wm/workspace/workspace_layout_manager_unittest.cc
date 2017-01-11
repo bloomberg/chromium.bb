@@ -21,9 +21,9 @@
 #include "ash/common/wm/wm_screen_util.h"
 #include "ash/common/wm/workspace/workspace_window_resizer.h"
 #include "ash/common/wm_lookup.h"
-#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/root_window_controller.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "ui/aura/env.h"
@@ -389,7 +389,7 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeWithEmptySize) {
   WmWindow* window = window_owner.window();
   window->GetWindowState()->Maximize();
   WmWindow* default_container =
-      WmShell::Get()->GetPrimaryRootWindowController()->GetContainer(
+      WmShell::Get()->GetPrimaryRootWindowController()->GetWmContainer(
           kShellWindowId_DefaultContainer);
   default_container->AddChild(window);
   window->Show();
@@ -944,7 +944,7 @@ class WorkspaceLayoutManagerBackdropTest : public AshTest {
     AshTest::SetUp();
     UpdateDisplay("800x600");
     default_container_ =
-        WmShell::Get()->GetPrimaryRootWindowController()->GetContainer(
+        WmShell::Get()->GetPrimaryRootWindowController()->GetWmContainer(
             kShellWindowId_DefaultContainer);
   }
 
@@ -1125,7 +1125,7 @@ class WorkspaceLayoutManagerKeyboardTest : public AshTest {
     AshTest::SetUp();
     UpdateDisplay("800x600");
     WmWindow* default_container =
-        WmShell::Get()->GetPrimaryRootWindowController()->GetContainer(
+        WmShell::Get()->GetPrimaryRootWindowController()->GetWmContainer(
             kShellWindowId_DefaultContainer);
     layout_manager_ = GetWorkspaceLayoutManager(default_container);
   }

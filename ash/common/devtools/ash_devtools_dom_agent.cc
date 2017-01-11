@@ -5,9 +5,9 @@
 #include "ash/common/devtools/ash_devtools_dom_agent.h"
 
 #include "ash/common/wm_lookup.h"
-#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/root_window_controller.h"
 #include "components/ui_devtools/devtools_server.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/display/display.h"
