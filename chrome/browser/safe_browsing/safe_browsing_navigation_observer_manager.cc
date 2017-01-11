@@ -194,7 +194,7 @@ SafeBrowsingNavigationObserverManager::IdentifyReferrerChainForDownload(
     const GURL& target_url,
     int target_tab_id,
     int user_gesture_count_limit,
-    std::vector<ReferrerChainEntry>* out_referrer_chain) {
+    ReferrerChain* out_referrer_chain) {
   if (!target_url.is_valid())
     return INVALID_URL;
 
@@ -225,7 +225,7 @@ SafeBrowsingNavigationObserverManager::IdentifyReferrerChainForPPAPIDownload(
     int tab_id,
     bool has_user_gesture,
     int user_gesture_count_limit,
-    std::vector<ReferrerChainEntry>* out_referrer_chain) {
+    ReferrerChain* out_referrer_chain) {
   if (!initiating_frame_url.is_valid())
     return INVALID_URL;
 
@@ -397,7 +397,6 @@ NavigationEvent* SafeBrowsingNavigationObserverManager::FindNavigationEvent(
   // the vector in reverse order to get the latest match.
   for (auto rit = it->second.rbegin(); rit != it->second.rend(); ++rit) {
     // If tab id is not valid, we only compare url, otherwise we compare both.
-    if (rit->destination_url == search_url)
     if (rit->destination_url == search_url &&
         (target_tab_id == -1 || rit->target_tab_id == target_tab_id)) {
       // If both source_url and source_main_frame_url are empty, and this
@@ -413,6 +412,8 @@ NavigationEvent* SafeBrowsingNavigationObserverManager::FindNavigationEvent(
               FindNavigationEvent(rit->original_request_url,
                                   GURL(),
                                   rit->target_tab_id);
+          if (!retargeting_nav_event)
+            return nullptr;
           // Adjust retargeting navigation event's attributes.
           retargeting_nav_event->has_server_redirect = true;
           retargeting_nav_event->destination_url = search_url;
@@ -429,28 +430,29 @@ NavigationEvent* SafeBrowsingNavigationObserverManager::FindNavigationEvent(
 }
 
 void SafeBrowsingNavigationObserverManager::AddToReferrerChain(
-    std::vector<ReferrerChainEntry>* referrer_chain,
+    ReferrerChain* referrer_chain,
     NavigationEvent* nav_event,
     ReferrerChainEntry::URLType type) {
-  ReferrerChainEntry referrer_chain_entry;
-  referrer_chain_entry.set_url(nav_event->destination_url.spec());
-  referrer_chain_entry.set_type(type);
+  std::unique_ptr<ReferrerChainEntry> referrer_chain_entry =
+      base::MakeUnique<ReferrerChainEntry>();
+  referrer_chain_entry->set_url(nav_event->destination_url.spec());
+  referrer_chain_entry->set_type(type);
   auto ip_it = host_to_ip_map_.find(nav_event->destination_url.host());
   if (ip_it != host_to_ip_map_.end()) {
     for (ResolvedIPAddress entry : ip_it->second) {
-      referrer_chain_entry.add_ip_addresses(entry.ip);
+      referrer_chain_entry->add_ip_addresses(entry.ip);
     }
   }
   // Since we only track navigation to landing referrer, we will not log the
   // referrer of the landing referrer page.
   if (type != ReferrerChainEntry::LANDING_REFERRER) {
-    referrer_chain_entry.set_referrer_url(nav_event->source_url.spec());
-    referrer_chain_entry.set_referrer_main_frame_url(
+    referrer_chain_entry->set_referrer_url(nav_event->source_url.spec());
+    referrer_chain_entry->set_referrer_main_frame_url(
         nav_event->source_main_frame_url.spec());
   }
-  referrer_chain_entry.set_is_retargeting(nav_event->source_tab_id !=
+  referrer_chain_entry->set_is_retargeting(nav_event->source_tab_id !=
                                           nav_event->target_tab_id);
-  referrer_chain_entry.set_navigation_time_msec(
+  referrer_chain_entry->set_navigation_time_msec(
       nav_event->last_updated.ToJavaTime());
   referrer_chain->push_back(std::move(referrer_chain_entry));
 }
@@ -459,7 +461,7 @@ void SafeBrowsingNavigationObserverManager::GetRemainingReferrerChain(
     NavigationEvent* last_nav_event_traced,
     int current_user_gesture_count,
     int user_gesture_count_limit,
-    std::vector<ReferrerChainEntry>* out_referrer_chain,
+    ReferrerChain* out_referrer_chain,
     SafeBrowsingNavigationObserverManager::AttributionResult* out_result) {
 
   while (current_user_gesture_count < user_gesture_count_limit) {

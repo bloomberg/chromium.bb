@@ -32,6 +32,7 @@ class SafeBrowsingNavigationObserverManager
       public base::RefCountedThreadSafe<SafeBrowsingNavigationObserverManager> {
  public:
   static const base::Feature kDownloadAttribution;
+  typedef std::vector<std::unique_ptr<ReferrerChainEntry>> ReferrerChain;
 
   // For UMA histogram counting. Do NOT change order.
   enum AttributionResult {
@@ -90,7 +91,7 @@ class SafeBrowsingNavigationObserverManager
       const GURL& target_url,
       int target_tab_id,  // -1 if tab id is not valid
       int user_gesture_count_limit,
-      std::vector<ReferrerChainEntry>* out_referrer_chain);
+      ReferrerChain* out_referrer_chain);
 
   // Based on the |initiating_frame_url| and its associated |tab_id|, trace back
   // the observed NavigationEvents in navigation_map_ to identify the sequence
@@ -105,7 +106,7 @@ class SafeBrowsingNavigationObserverManager
       int tab_id,
       bool has_user_gesture,
       int user_gesture_count_limit,
-      std::vector<ReferrerChainEntry>* out_referrer_chain);
+      ReferrerChain* out_referrer_chain);
 
  private:
   friend class base::RefCountedThreadSafe<
@@ -180,19 +181,18 @@ class SafeBrowsingNavigationObserverManager
                                        const GURL& target_main_frame_url,
                                        int target_tab_id);
 
-  void AddToReferrerChain(std::vector<ReferrerChainEntry>* referrer_chain,
+  void AddToReferrerChain(ReferrerChain* referrer_chain,
                           NavigationEvent* nav_event,
                           ReferrerChainEntry::URLType type);
 
   // Helper function to get the remaining referrer chain when we've already
   // traced back |current_user_gesture_count| number of user gestures.
   // This function modifies the |out_referrer_chain| and |out_result|.
-  void GetRemainingReferrerChain(
-    NavigationEvent* last_nav_event_traced,
-    int current_user_gesture_count,
-    int user_gesture_count_limit,
-    std::vector<ReferrerChainEntry>* out_referrer_chain,
-    AttributionResult* out_result);
+  void GetRemainingReferrerChain(NavigationEvent* last_nav_event_traced,
+                                 int current_user_gesture_count,
+                                 int user_gesture_count_limit,
+                                 ReferrerChain* out_referrer_chain,
+                                 AttributionResult* out_result);
 
   // navigation_map_ keeps track of all the observed navigations. This map is
   // keyed on the resolved request url. In other words, in case of server

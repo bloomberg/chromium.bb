@@ -33,6 +33,8 @@ using content::DownloadItem;
 
 namespace safe_browsing {
 
+typedef SafeBrowsingNavigationObserverManager::ReferrerChain ReferrerChain;
+
 const char kSingleFrameTestURL[] =
     "/safe_browsing/download_protection/navigation_observer/"
     "navigation_observer_tests.html";
@@ -234,24 +236,25 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
                                 const GURL& expected_referrer_url,
                                 const GURL& expected_referrer_main_frame_url,
                                 bool expected_is_retargeting,
-                                ReferrerChainEntry actual_entry) {
-    EXPECT_EQ(expected_url.spec(), actual_entry.url());
-    EXPECT_EQ(expected_type, actual_entry.type());
+                                ReferrerChainEntry* actual_entry) {
+    EXPECT_EQ(expected_url.spec(), actual_entry->url());
+    EXPECT_EQ(expected_type, actual_entry->type());
     if (expected_ip_address.empty()) {
-      ASSERT_EQ(0, actual_entry.ip_addresses_size());
+      ASSERT_EQ(0, actual_entry->ip_addresses_size());
     } else {
-      ASSERT_EQ(1, actual_entry.ip_addresses_size());
-      EXPECT_EQ(expected_ip_address, actual_entry.ip_addresses(0));
+      ASSERT_EQ(1, actual_entry->ip_addresses_size());
+      EXPECT_EQ(expected_ip_address, actual_entry->ip_addresses(0));
     }
-    EXPECT_EQ(expected_referrer_url.spec(), actual_entry.referrer_url());
+    EXPECT_EQ(expected_referrer_url.spec(), actual_entry->referrer_url());
     EXPECT_EQ(expected_referrer_main_frame_url.spec(),
-              actual_entry.referrer_main_frame_url());
-    EXPECT_EQ(expected_is_retargeting, actual_entry.is_retargeting());
+              actual_entry->referrer_main_frame_url());
+    EXPECT_EQ(expected_is_retargeting, actual_entry->is_retargeting());
   }
 
-  std::vector<ReferrerChainEntry> IdentifyReferrerChainForDownload(
-      DownloadItem* download) {
-    std::vector<ReferrerChainEntry> referrer_chain;
+  // Identify referrer chain of a DownloadItem and populate |referrer_chain|.
+  void IdentifyReferrerChainForDownload(
+      DownloadItem* download,
+      ReferrerChain* referrer_chain) {
     int download_tab_id =
         SessionTabHelper::IdForTab(download->GetWebContents());
     // IdentifyReferrerChain should return SUCCESS(1), SUCCESS_LANDING_PAGE(2),
@@ -259,15 +262,15 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
     EXPECT_LE(observer_manager_->IdentifyReferrerChainForDownload(
                   download->GetURL(), download_tab_id,
                   2,  // kDownloadAttributionUserGestureLimit
-                  &referrer_chain),
+                  referrer_chain),
               SafeBrowsingNavigationObserverManager::SUCCESS_LANDING_REFERRER);
-    return referrer_chain;
   }
 
-  std::vector<ReferrerChainEntry> IdentifyReferrerChainForPPAPIDownload(
+  // Identify referrer chain of a PPAPI download and populate |referrer_chain|.
+  void IdentifyReferrerChainForPPAPIDownload(
       const GURL& initiating_frame_url,
-      content::WebContents* web_contents) {
-    std::vector<ReferrerChainEntry> referrer_chain;
+      content::WebContents* web_contents,
+      ReferrerChain* referrer_chain) {
     int tab_id = SessionTabHelper::IdForTab(web_contents);
     bool has_user_gesture = observer_manager_->HasUserGesture(web_contents);
     observer_manager_->OnUserGestureConsumed(web_contents, base::Time::Now());
@@ -276,9 +279,8 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
                   tab_id,
                   has_user_gesture,
                   2,  // kDownloadAttributionUserGestureLimit)
-                  &referrer_chain),
+                  referrer_chain),
               SafeBrowsingNavigationObserverManager::SUCCESS_LANDING_REFERRER);
-    return referrer_chain;
   }
 
   void VerifyHostToIpMap() {
@@ -346,7 +348,8 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest, TypeInURLDownload) {
                         nav_map->at(download_url).at(0));
   VerifyHostToIpMap();
 
-  auto referrer_chain = IdentifyReferrerChainForDownload(GetDownload());
+  ReferrerChain referrer_chain;
+  IdentifyReferrerChainForDownload(GetDownload(), &referrer_chain);
   ASSERT_EQ(1U, referrer_chain.size());
   VerifyReferrerChainEntry(download_url,                      // url
                            ReferrerChainEntry::DOWNLOAD_URL,  // type
@@ -354,7 +357,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest, TypeInURLDownload) {
                            GURL(),                            // referrer_url
                            GURL(),  // referrer_main_frame_url
                            false,   // is_retargeting
-                           referrer_chain[0]);
+                           referrer_chain[0].get());
 }
 // Click on a link and start download on the same page.
 IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest, DirectDownload) {
@@ -385,7 +388,8 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest, DirectDownload) {
                         nav_map->at(download_url).at(0));
   VerifyHostToIpMap();
 
-  auto referrer_chain = IdentifyReferrerChainForDownload(GetDownload());
+  ReferrerChain referrer_chain;
+  IdentifyReferrerChainForDownload(GetDownload(), &referrer_chain);
   ASSERT_EQ(2U, referrer_chain.size());
   VerifyReferrerChainEntry(download_url,                      // url
                            ReferrerChainEntry::DOWNLOAD_URL,  // type
@@ -393,14 +397,14 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest, DirectDownload) {
                            initial_url,                       // referrer_url
                            initial_url,  // referrer_main_frame_url
                            false,        // is_retargeting
-                           referrer_chain[0]);
+                           referrer_chain[0].get());
   VerifyReferrerChainEntry(initial_url,                       // url
                            ReferrerChainEntry::LANDING_PAGE,  // type
                            test_server_ip,                    // ip_address
                            GURL(),                            // referrer_url
                            GURL(),  // referrer_main_frame_url
                            false,   // is_retargeting
-                           referrer_chain[1]);
+                           referrer_chain[1].get());
 }
 
 // Click on a link with rel="noreferrer" attribute, and start download on the
@@ -434,7 +438,8 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                         nav_map->at(download_url).at(0));
   VerifyHostToIpMap();
 
-  auto referrer_chain = IdentifyReferrerChainForDownload(GetDownload());
+  ReferrerChain referrer_chain;
+  IdentifyReferrerChainForDownload(GetDownload(), &referrer_chain);
   ASSERT_EQ(2U, referrer_chain.size());
   VerifyReferrerChainEntry(download_url,                      // url
                            ReferrerChainEntry::DOWNLOAD_URL,  // type
@@ -442,14 +447,14 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                            initial_url,                       // referrer_url
                            initial_url,  // referrer_main_frame_url
                            false,        // is_retargeting
-                           referrer_chain[0]);
+                           referrer_chain[0].get());
   VerifyReferrerChainEntry(initial_url,                       // url
                            ReferrerChainEntry::LANDING_PAGE,  // type
                            test_server_ip,                    // ip_address
                            GURL(),                            // referrer_url
                            GURL(),  // referrer_main_frame_url
                            false,   // is_retargeting
-                           referrer_chain[1]);
+                           referrer_chain[1].get());
 }
 
 // Click on a link with rel="noreferrer" attribute, and start download in a
@@ -497,7 +502,8 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                         nav_map->at(download_url).at(1));
   VerifyHostToIpMap();
 
-  auto referrer_chain = IdentifyReferrerChainForDownload(GetDownload());
+  ReferrerChain referrer_chain;
+  IdentifyReferrerChainForDownload(GetDownload(), &referrer_chain);
   ASSERT_EQ(2U, referrer_chain.size());
   VerifyReferrerChainEntry(download_url,                      // url
                            ReferrerChainEntry::DOWNLOAD_URL,  // type
@@ -505,14 +511,14 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                            initial_url,                       // referrer_url
                            initial_url,  // referrer_main_frame_url
                            true,         // is_retargeting
-                           referrer_chain[0]);
+                           referrer_chain[0].get());
   VerifyReferrerChainEntry(initial_url,                       // url
                            ReferrerChainEntry::LANDING_PAGE,  // type
                            test_server_ip,                    // ip_address
                            GURL(),                            // referrer_url
                            GURL(),  // referrer_main_frame_url
                            false,   // is_retargeting
-                           referrer_chain[1]);
+                           referrer_chain[1].get());
 }
 
 // Click on a link which navigates to a page then redirects to a download using
@@ -528,7 +534,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
   ASSERT_TRUE(nav_map);
   // Since unlike server redirects client redirects commit and then generate a
   // second navigation, our observer records two NavigationEvents for this test.
-  ASSERT_EQ(std::size_t(3), nav_map->size());
+  ASSERT_EQ(3U, nav_map->size());
   ASSERT_EQ(1U, nav_map->at(redirect_url).size());
   ASSERT_EQ(1U, nav_map->at(download_url).size());
   ASSERT_EQ(1U, nav_map->at(initial_url).size());
@@ -558,29 +564,30 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                         nav_map->at(download_url).at(0));
   VerifyHostToIpMap();
 
-  auto referrer_chain = IdentifyReferrerChainForDownload(GetDownload());
-  ASSERT_EQ(std::size_t(3), referrer_chain.size());
+  ReferrerChain referrer_chain;
+  IdentifyReferrerChainForDownload(GetDownload(), &referrer_chain);
+  ASSERT_EQ(3U, referrer_chain.size());
   VerifyReferrerChainEntry(download_url,                      // url
                            ReferrerChainEntry::DOWNLOAD_URL,  // type
                            test_server_ip,                    // ip_address
                            redirect_url,                      // referrer_url
                            redirect_url,  // referrer_main_frame_url
                            false,         // is_retargeting
-                           referrer_chain[0]);
+                           referrer_chain[0].get());
   VerifyReferrerChainEntry(redirect_url,                         // url
                            ReferrerChainEntry::CLIENT_REDIRECT,  // type
                            test_server_ip,                       // ip_address
                            initial_url,                          // referrer_url
                            initial_url,  // referrer_main_frame_url
                            false,        // is_retargeting
-                           referrer_chain[1]);
+                           referrer_chain[1].get());
   VerifyReferrerChainEntry(initial_url,                       // url
                            ReferrerChainEntry::LANDING_PAGE,  // type
                            test_server_ip,                    // ip_address
                            GURL(),                            // referrer_url
                            GURL(),  // referrer_main_frame_url
                            false,   // is_retargeting
-                           referrer_chain[2]);
+                           referrer_chain[2].get());
 }
 
 // Click on a link which navigates to a page then redirects to a download using
@@ -594,7 +601,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
   std::string test_server_ip(embedded_test_server()->host_port_pair().host());
   auto nav_map = navigation_map();
   ASSERT_TRUE(nav_map);
-  ASSERT_EQ(std::size_t(3), nav_map->size());
+  ASSERT_EQ(3U, nav_map->size());
   ASSERT_EQ(2U, nav_map->at(redirect_url).size());
   ASSERT_EQ(1U, nav_map->at(download_url).size());
   ASSERT_EQ(1U, nav_map->at(initial_url).size());
@@ -635,29 +642,30 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                         nav_map->at(download_url).at(0));
   VerifyHostToIpMap();
 
-  auto referrer_chain = IdentifyReferrerChainForDownload(GetDownload());
-  ASSERT_EQ(std::size_t(3), referrer_chain.size());
+  ReferrerChain referrer_chain;
+  IdentifyReferrerChainForDownload(GetDownload(), &referrer_chain);
+  ASSERT_EQ(3U, referrer_chain.size());
   VerifyReferrerChainEntry(download_url,                      // url
                            ReferrerChainEntry::DOWNLOAD_URL,  // type
                            test_server_ip,                    // ip_address
                            redirect_url,                      // referrer_url
                            redirect_url,  // referrer_main_frame_url
                            false,         // is_retargeting
-                           referrer_chain[0]);
+                           referrer_chain[0].get());
   VerifyReferrerChainEntry(redirect_url,                         // url
                            ReferrerChainEntry::CLIENT_REDIRECT,  // type
                            test_server_ip,                       // ip_address
                            initial_url,                          // referrer_url
                            initial_url,  // referrer_main_frame_url
                            true,         // is_retargeting
-                           referrer_chain[1]);
+                           referrer_chain[1].get());
   VerifyReferrerChainEntry(initial_url,                       // url
                            ReferrerChainEntry::LANDING_PAGE,  // type
                            test_server_ip,                    // ip_address
                            GURL(),                            // referrer_url
                            GURL(),  // referrer_main_frame_url
                            false,   // is_retargeting
-                           referrer_chain[2]);
+                           referrer_chain[2].get());
 }
 
 // Click on a link which redirects twice before reaching download using
@@ -674,7 +682,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
   std::string test_server_ip(embedded_test_server()->host_port_pair().host());
   auto nav_map = navigation_map();
   ASSERT_TRUE(nav_map);
-  ASSERT_EQ(std::size_t(4), nav_map->size());
+  ASSERT_EQ(4U, nav_map->size());
   ASSERT_EQ(1U, nav_map->at(first_redirect_url).size());
   ASSERT_EQ(1U, nav_map->at(second_redirect_url).size());
   ASSERT_EQ(1U, nav_map->at(download_url).size());
@@ -713,36 +721,37 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                         nav_map->at(download_url).at(0));
   VerifyHostToIpMap();
 
-  auto referrer_chain = IdentifyReferrerChainForDownload(GetDownload());
-  ASSERT_EQ(std::size_t(4), referrer_chain.size());
+  ReferrerChain referrer_chain;
+  IdentifyReferrerChainForDownload(GetDownload(), &referrer_chain);
+  ASSERT_EQ(4U, referrer_chain.size());
   VerifyReferrerChainEntry(download_url,                      // url
                            ReferrerChainEntry::DOWNLOAD_URL,  // type
                            test_server_ip,                    // ip_address
                            second_redirect_url,               // referrer_url
                            second_redirect_url,  // referrer_main_frame_url
                            false,                // is_retargeting
-                           referrer_chain[0]);
+                           referrer_chain[0].get());
   VerifyReferrerChainEntry(second_redirect_url,                  // url
                            ReferrerChainEntry::CLIENT_REDIRECT,  // type
                            test_server_ip,                       // ip_address
                            first_redirect_url,                   // referrer_url
                            first_redirect_url,  // referrer_main_frame_url
                            false,               // is_retargeting
-                           referrer_chain[1]);
+                           referrer_chain[1].get());
   VerifyReferrerChainEntry(first_redirect_url,                   // url
                            ReferrerChainEntry::CLIENT_REDIRECT,  // type
                            test_server_ip,                       // ip_address
                            initial_url,                          // referrer_url
                            initial_url,  // referrer_main_frame_url
                            false,        // is_retargeting
-                           referrer_chain[2]);
+                           referrer_chain[2].get());
   VerifyReferrerChainEntry(initial_url,                       // url
                            ReferrerChainEntry::LANDING_PAGE,  // type
                            test_server_ip,                    // ip_address
                            GURL(),                            // referrer_url
                            GURL(),  // referrer_main_frame_url
                            false,   // is_retargeting
-                           referrer_chain[3]);
+                           referrer_chain[3].get());
 }
 
 // Click on a link which redirects to download using window.location.
@@ -775,7 +784,8 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                         false,         // has_server_redirect
                         nav_map->at(download_url).at(0));
 
-  auto referrer_chain = IdentifyReferrerChainForDownload(GetDownload());
+  ReferrerChain referrer_chain;
+  IdentifyReferrerChainForDownload(GetDownload(), &referrer_chain);
   ASSERT_EQ(2U, referrer_chain.size());
   VerifyReferrerChainEntry(download_url,                      // url
                            ReferrerChainEntry::DOWNLOAD_URL,  // type
@@ -783,14 +793,14 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                            initial_url,                       // referrer_url
                            initial_url,  // referrer_main_frame_url
                            false,        // is_retargeting
-                           referrer_chain[0]);
+                           referrer_chain[0].get());
   VerifyReferrerChainEntry(initial_url,                       // url
                            ReferrerChainEntry::LANDING_PAGE,  // type
                            test_server_ip,                    // ip_address
                            GURL(),                            // referrer_url
                            GURL(),  // referrer_main_frame_url
                            false,   // is_retargeting
-                           referrer_chain[1]);
+                           referrer_chain[1].get());
 }
 
 // Click on a link which redirects twice until it reaches download using a
@@ -804,7 +814,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest, MixRedirects) {
   std::string test_server_ip(embedded_test_server()->host_port_pair().host());
   auto nav_map = navigation_map();
   ASSERT_TRUE(nav_map);
-  ASSERT_EQ(std::size_t(3), nav_map->size());
+  ASSERT_EQ(3U, nav_map->size());
   ASSERT_EQ(1U, nav_map->at(redirect_url).size());
   ASSERT_EQ(1U, nav_map->at(download_url).size());
   ASSERT_EQ(1U, nav_map->at(initial_url).size());
@@ -834,29 +844,30 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest, MixRedirects) {
                         nav_map->at(download_url).at(0));
   VerifyHostToIpMap();
 
-  auto referrer_chain = IdentifyReferrerChainForDownload(GetDownload());
-  ASSERT_EQ(std::size_t(3), referrer_chain.size());
+  ReferrerChain referrer_chain;
+  IdentifyReferrerChainForDownload(GetDownload(), &referrer_chain);
+  ASSERT_EQ(3U, referrer_chain.size());
   VerifyReferrerChainEntry(download_url,                      // url
                            ReferrerChainEntry::DOWNLOAD_URL,  // type
                            test_server_ip,                    // ip_address
                            redirect_url,                      // referrer_url
                            redirect_url,  // referrer_main_frame_url
                            false,         // is_retargeting
-                           referrer_chain[0]);
+                           referrer_chain[0].get());
   VerifyReferrerChainEntry(redirect_url,                         // url
                            ReferrerChainEntry::CLIENT_REDIRECT,  // type
                            test_server_ip,                       // ip_address
                            initial_url,                          // referrer_url
                            initial_url,  // referrer_main_frame_url
                            false,        // is_retargeting
-                           referrer_chain[1]);
+                           referrer_chain[1].get());
   VerifyReferrerChainEntry(initial_url,                       // url
                            ReferrerChainEntry::LANDING_PAGE,  // type
                            test_server_ip,                    // ip_address
                            GURL(),                            // referrer_url
                            GURL(),  // referrer_main_frame_url
                            false,   // is_retargeting
-                           referrer_chain[2]);
+                           referrer_chain[2].get());
 }
 
 // Use javascript to open download in a new tab.
@@ -868,7 +879,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest, NewTabDownload) {
   std::string test_server_ip(embedded_test_server()->host_port_pair().host());
   auto nav_map = navigation_map();
   ASSERT_TRUE(nav_map);
-  ASSERT_EQ(std::size_t(3), nav_map->size());
+  ASSERT_EQ(3U, nav_map->size());
   ASSERT_EQ(2U, nav_map->at(blank_url).size());
   ASSERT_EQ(1U, nav_map->at(download_url).size());
   ASSERT_EQ(1U, nav_map->at(initial_url).size());
@@ -913,29 +924,30 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest, NewTabDownload) {
             nav_map->at(download_url).at(0).target_tab_id);
   VerifyHostToIpMap();
 
-  auto referrer_chain = IdentifyReferrerChainForDownload(GetDownload());
-  ASSERT_EQ(std::size_t(3), referrer_chain.size());
+  ReferrerChain referrer_chain;
+  IdentifyReferrerChainForDownload(GetDownload(), &referrer_chain);
+  ASSERT_EQ(3U, referrer_chain.size());
   VerifyReferrerChainEntry(download_url,                      // url
                            ReferrerChainEntry::DOWNLOAD_URL,  // type
                            test_server_ip,                    // ip_address
                            blank_url,                         // referrer_url
                            blank_url,  // referrer_main_frame_url
                            false,      // is_retargeting
-                           referrer_chain[0]);
+                           referrer_chain[0].get());
   VerifyReferrerChainEntry(blank_url,                            // url
                            ReferrerChainEntry::CLIENT_REDIRECT,  // type
                            "",                                   // ip_address
                            initial_url,                          // referrer_url
                            initial_url,  // referrer_main_frame_url
                            true,         // is_retargeting
-                           referrer_chain[1]);
+                           referrer_chain[1].get());
   VerifyReferrerChainEntry(initial_url,                       // url
                            ReferrerChainEntry::LANDING_PAGE,  // type
                            test_server_ip,                    // ip_address
                            GURL(),                            // referrer_url
                            GURL(),  // referrer_main_frame_url
                            false,   // is_retargeting
-                           referrer_chain[2]);
+                           referrer_chain[2].get());
 }
 
 // Use javascript to open download in a new tab and download has a data url.
@@ -948,7 +960,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
   std::string test_server_ip(embedded_test_server()->host_port_pair().host());
   auto nav_map = navigation_map();
   ASSERT_TRUE(nav_map);
-  ASSERT_EQ(std::size_t(3), nav_map->size());
+  ASSERT_EQ(3U, nav_map->size());
   ASSERT_EQ(2U, nav_map->at(blank_url).size());
   ASSERT_EQ(1U, nav_map->at(download_url).size());
   ASSERT_EQ(1U, nav_map->at(initial_url).size());
@@ -994,29 +1006,30 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
               nav_map->at(download_url).at(0).target_tab_id);
   VerifyHostToIpMap();
 
-  auto referrer_chain = IdentifyReferrerChainForDownload(GetDownload());
-  ASSERT_EQ(std::size_t(3), referrer_chain.size());
+  ReferrerChain referrer_chain;
+  IdentifyReferrerChainForDownload(GetDownload(), &referrer_chain);
+  ASSERT_EQ(3U, referrer_chain.size());
   VerifyReferrerChainEntry(download_url,                      // url
                            ReferrerChainEntry::DOWNLOAD_URL,  // type
                            "",                                // ip_address
                            blank_url,                         // referrer_url
                            blank_url,  // referrer_main_frame_url
                            false,      // is_retargeting
-                           referrer_chain[0]);
+                           referrer_chain[0].get());
   VerifyReferrerChainEntry(blank_url,                            // url
                            ReferrerChainEntry::CLIENT_REDIRECT,  // type
                            "",                                   // ip_address
                            initial_url,                          // referrer_url
                            initial_url,  // referrer_main_frame_url
                            true,         // is_retargeting
-                           referrer_chain[1]);
+                           referrer_chain[1].get());
   VerifyReferrerChainEntry(initial_url,                       // url
                            ReferrerChainEntry::LANDING_PAGE,  // type
                            test_server_ip,                    // ip_address
                            GURL(),                            // referrer_url
                            GURL(),  // referrer_main_frame_url
                            false,   // is_retargeting
-                           referrer_chain[2]);
+                           referrer_chain[2].get());
 }
 
 // TODO(jialiul): Need to figure out why this test is failing on Windows and
@@ -1055,7 +1068,8 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                         nav_map->at(download_url).at(0));
   VerifyHostToIpMap();
 
-  auto referrer_chain = IdentifyReferrerChainForDownload(GetDownload());
+  ReferrerChain referrer_chain;
+  IdentifyReferrerChainForDownload(GetDownload(), &referrer_chain);
   ASSERT_EQ(2U, referrer_chain.size());
   VerifyReferrerChainEntry(download_url,                      // url
                            ReferrerChainEntry::DOWNLOAD_URL,  // type
@@ -1063,14 +1077,14 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                            initial_url,                       // referrer_url
                            initial_url,  // referrer_main_frame_url
                            false,        // is_retargeting
-                           referrer_chain[0]);
+                           referrer_chain[0].get());
   VerifyReferrerChainEntry(initial_url,                       // url
                            ReferrerChainEntry::LANDING_PAGE,  // type
                            test_server_ip,                    // ip_address
                            GURL(),                            // referrer_url
                            GURL(),  // referrer_main_frame_url
                            false,   // is_retargeting
-                           referrer_chain[1]);
+                           referrer_chain[1].get());
 }
 
 // Click a link in a subframe and start download.
@@ -1090,7 +1104,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
   std::string test_server_ip(embedded_test_server()->host_port_pair().host());
   auto nav_map = navigation_map();
   ASSERT_TRUE(nav_map);
-  ASSERT_EQ(std::size_t(5), nav_map->size());
+  ASSERT_EQ(5U, nav_map->size());
   ASSERT_EQ(1U, nav_map->at(multi_frame_test_url).size());
   ASSERT_EQ(1U, nav_map->at(iframe_url).size());
   ASSERT_EQ(1U, nav_map->at(iframe_retargeting_url).size());
@@ -1138,7 +1152,8 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                         nav_map->at(download_url).at(0));
   VerifyHostToIpMap();
 
-  auto referrer_chain = IdentifyReferrerChainForDownload(GetDownload());
+  ReferrerChain referrer_chain;
+  IdentifyReferrerChainForDownload(GetDownload(), &referrer_chain);
   ASSERT_EQ(4U, referrer_chain.size());
   VerifyReferrerChainEntry(download_url,                      // url
                            ReferrerChainEntry::DOWNLOAD_URL,  // type
@@ -1146,28 +1161,28 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                            iframe_url,                        // referrer_url
                            multi_frame_test_url,  // referrer_main_frame_url
                            false,                 // is_retargeting
-                           referrer_chain[0]);
+                           referrer_chain[0].get());
   VerifyReferrerChainEntry(iframe_url,                        // url
                            ReferrerChainEntry::LANDING_PAGE,  // type
                            test_server_ip,                    // ip_address
                            GURL(),                            // referrer_url
                            multi_frame_test_url,  // referrer_main_frame_url
                            false,                 // is_retargeting
-                           referrer_chain[1]);
+                           referrer_chain[1].get());
   VerifyReferrerChainEntry(multi_frame_test_url,                 // url
                            ReferrerChainEntry::CLIENT_REDIRECT,  // type
                            test_server_ip,                       // ip_address
                            initial_url,  // referrer_url
                            initial_url,  // referrer_main_frame_url
                            false,                 // is_retargeting
-                           referrer_chain[2]);
+                           referrer_chain[2].get());
   VerifyReferrerChainEntry(initial_url,                           // url
                            ReferrerChainEntry::LANDING_REFERRER,  // type
                            test_server_ip,                        // ip_address
                            GURL(),  // referrer_url
                            GURL(),  // referrer_main_frame_url
                            false,                 // is_retargeting
-                           referrer_chain[3]);
+                           referrer_chain[3].get());
 }
 
 // Click a link in a subframe and open download in a new tab.
@@ -1253,7 +1268,8 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                         nav_map->at(download_url).at(0));
   VerifyHostToIpMap();
 
-  auto referrer_chain = IdentifyReferrerChainForDownload(GetDownload());
+  ReferrerChain referrer_chain;
+  IdentifyReferrerChainForDownload(GetDownload(), &referrer_chain);
   EXPECT_EQ(5U, referrer_chain.size());
   VerifyReferrerChainEntry(download_url,                      // url
                            ReferrerChainEntry::DOWNLOAD_URL,  // type
@@ -1261,35 +1277,35 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                            blank_url,                         // referrer_url
                            blank_url,  // referrer_main_frame_url
                            false,      // is_retargeting
-                           referrer_chain[0]);
+                           referrer_chain[0].get());
   VerifyReferrerChainEntry(blank_url,                            // url
                            ReferrerChainEntry::CLIENT_REDIRECT,  // type
                            "",                                   // ip_address
                            iframe_retargeting_url,               // referrer_url
                            multi_frame_test_url,  // referrer_main_frame_url
                            true,                  // is_retargeting
-                           referrer_chain[1]);
+                           referrer_chain[1].get());
   VerifyReferrerChainEntry(iframe_retargeting_url,            // url
                            ReferrerChainEntry::LANDING_PAGE,  // type
                            test_server_ip,                    // ip_address
                            GURL(),                            // referrer_url
                            multi_frame_test_url,  // referrer_main_frame_url
                            false,                 // is_retargeting
-                           referrer_chain[2]);
+                           referrer_chain[2].get());
   VerifyReferrerChainEntry(multi_frame_test_url,                 // url
                            ReferrerChainEntry::CLIENT_REDIRECT,  // type
                            test_server_ip,                       // ip_address
                            initial_url,  // referrer_url
                            initial_url,  // referrer_main_frame_url
                            false,                 // is_retargeting
-                           referrer_chain[3]);
+                           referrer_chain[3].get());
   VerifyReferrerChainEntry(initial_url,                           // url
                            ReferrerChainEntry::LANDING_REFERRER,  // type
                            test_server_ip,                        // ip_address
                            GURL(),  // referrer_url
                            GURL(),  // referrer_main_frame_url
                            false,                 // is_retargeting
-                           referrer_chain[4]);
+                           referrer_chain[4].get());
 }
 
 // Click a link which redirects to the landing page, and then click on the
@@ -1304,7 +1320,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest, CompleteReferrerChain) {
   std::string test_server_ip(embedded_test_server()->host_port_pair().host());
   auto nav_map = navigation_map();
   ASSERT_TRUE(nav_map);
-  ASSERT_EQ(std::size_t(4), nav_map->size());
+  ASSERT_EQ(4U, nav_map->size());
   ASSERT_EQ(1U, nav_map->at(redirect_url).size());
   ASSERT_EQ(1U, nav_map->at(landing_url).size());
   ASSERT_EQ(1U, nav_map->at(download_url).size());
@@ -1343,29 +1359,30 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest, CompleteReferrerChain) {
                         nav_map->at(download_url).at(0));
   VerifyHostToIpMap();
 
-  auto referrer_chain = IdentifyReferrerChainForDownload(GetDownload());
-  EXPECT_EQ(std::size_t(4), referrer_chain.size());
+  ReferrerChain referrer_chain;
+  IdentifyReferrerChainForDownload(GetDownload(), &referrer_chain);
+  EXPECT_EQ(4U, referrer_chain.size());
   VerifyReferrerChainEntry(download_url,                      // url
                            ReferrerChainEntry::DOWNLOAD_URL,  // type
                            test_server_ip,                    // ip_address
                            landing_url,                       // referrer_url
                            landing_url,  // referrer_main_frame_url
                            false,        // is_retargeting
-                           referrer_chain[0]);
+                           referrer_chain[0].get());
   VerifyReferrerChainEntry(landing_url,                       // url
                            ReferrerChainEntry::LANDING_PAGE,  // type
                            test_server_ip,                    // ip_address
                            redirect_url,                      // referrer_url
                            redirect_url,  // referrer_main_frame_url
                            false,         // is_retargeting
-                           referrer_chain[1]);
+                           referrer_chain[1].get());
   VerifyReferrerChainEntry(redirect_url,                         // url
                            ReferrerChainEntry::CLIENT_REDIRECT,  // type
                            test_server_ip,                       // ip_address
                            initial_url,                          // referrer_url
                            initial_url,  // referrer_main_frame_url
                            false,        // is_retargeting
-                           referrer_chain[2]);
+                           referrer_chain[2].get());
   VerifyReferrerChainEntry(
       initial_url,                           // url
       ReferrerChainEntry::LANDING_REFERRER,  // type
@@ -1373,7 +1390,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest, CompleteReferrerChain) {
       GURL(),  // referrer_url is empty since this beyonds 2 clicks.
       GURL(),  // referrer_main_frame_url is empty for the same reason.
       false,   // is_retargeting
-      referrer_chain[3]);
+      referrer_chain[3].get());
 }
 
 // Click three links before reaching download.
@@ -1394,7 +1411,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
   std::string test_server_ip(embedded_test_server()->host_port_pair().host());
   auto nav_map = navigation_map();
   ASSERT_TRUE(nav_map);
-  ASSERT_EQ(std::size_t(5), nav_map->size());
+  ASSERT_EQ(5U, nav_map->size());
   ASSERT_EQ(1U, nav_map->at(initial_url).size());
   ASSERT_EQ(1U, nav_map->at(page_before_landing_referrer_url).size());
   ASSERT_EQ(1U, nav_map->at(landing_referrer_url).size());
@@ -1442,22 +1459,23 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                         nav_map->at(download_url).at(0));
   VerifyHostToIpMap();
 
-  auto referrer_chain = IdentifyReferrerChainForDownload(GetDownload());
-  EXPECT_EQ(std::size_t(3), referrer_chain.size());
+  ReferrerChain referrer_chain;
+  IdentifyReferrerChainForDownload(GetDownload(), &referrer_chain);
+  EXPECT_EQ(3U, referrer_chain.size());
   VerifyReferrerChainEntry(download_url,                      // url
                            ReferrerChainEntry::DOWNLOAD_URL,  // type
                            test_server_ip,                    // ip_address
                            landing_url,                       // referrer_url
                            landing_url,  // referrer_main_frame_url
                            false,        // is_retargeting
-                           referrer_chain[0]);
+                           referrer_chain[0].get());
   VerifyReferrerChainEntry(landing_url,                       // url
                            ReferrerChainEntry::LANDING_PAGE,  // type
                            test_server_ip,                    // ip_address
                            landing_referrer_url,              // referrer_url
                            landing_referrer_url,  // referrer_main_frame_url
                            false,                 // is_retargeting
-                           referrer_chain[1]);
+                           referrer_chain[1].get());
   VerifyReferrerChainEntry(
       landing_referrer_url,                  // url
       ReferrerChainEntry::LANDING_REFERRER,  // type
@@ -1465,7 +1483,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
       GURL(),  // referrer_url is empty since this beyonds 2 clicks.
       GURL(),  // referrer_main_frame_url is empty for the same reason.
       false,   // is_retargeting
-      referrer_chain[2]);
+      referrer_chain[2].get());
   // page_before_landing_referrer_url is not in referrer chain.
 }
 
@@ -1482,7 +1500,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
   SimulateUserGesture();
   auto nav_map = navigation_map();
   ASSERT_TRUE(nav_map);
-  ASSERT_EQ(std::size_t(3), nav_map->size());
+  ASSERT_EQ(3U, nav_map->size());
   ASSERT_EQ(1U, nav_map->at(redirect_url).size());
   ASSERT_EQ(1U, nav_map->at(landing_url).size());
   ASSERT_EQ(1U, nav_map->at(initial_url).size());
@@ -1512,24 +1530,26 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                         nav_map->at(landing_url).at(0));
   VerifyHostToIpMap();
 
-  auto referrer_chain = IdentifyReferrerChainForPPAPIDownload(
-      landing_url, browser()->tab_strip_model()->GetActiveWebContents());
-
-  EXPECT_EQ(std::size_t(3), referrer_chain.size());
+  ReferrerChain referrer_chain;
+  IdentifyReferrerChainForPPAPIDownload(
+      landing_url,
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      &referrer_chain);
+  EXPECT_EQ(3U, referrer_chain.size());
   VerifyReferrerChainEntry(landing_url,                       // url
                            ReferrerChainEntry::LANDING_PAGE,  // type
                            test_server_ip,                    // ip_address
                            redirect_url,                      // referrer_url
                            redirect_url,  // referrer_main_frame_url
                            false,         // is_retargeting
-                           referrer_chain[0]);
+                           referrer_chain[0].get());
   VerifyReferrerChainEntry(redirect_url,                         // url
                            ReferrerChainEntry::CLIENT_REDIRECT,  // type
                            test_server_ip,                       // ip_address
                            initial_url,                          // referrer_url
                            initial_url,  // referrer_main_frame_url
                            false,        // is_retargeting
-                           referrer_chain[1]);
+                           referrer_chain[1].get());
   VerifyReferrerChainEntry(
       initial_url,                           // url
       ReferrerChainEntry::LANDING_REFERRER,  // type
@@ -1537,7 +1557,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
       GURL(),  // referrer_url is empty since this beyonds 2 clicks.
       GURL(),  // referrer_main_frame_url is empty for the same reason.
       false,   // is_retargeting
-      referrer_chain[2]);
+      referrer_chain[2].get());
 }
 
 // Click a link which redirects to a page that triggers PPAPI download without
@@ -1552,7 +1572,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
 
   auto nav_map = navigation_map();
   ASSERT_TRUE(nav_map);
-  ASSERT_EQ(std::size_t(3), nav_map->size());
+  ASSERT_EQ(3U, nav_map->size());
   ASSERT_EQ(1U, nav_map->at(redirect_url).size());
   ASSERT_EQ(1U, nav_map->at(hosting_url).size());
   ASSERT_EQ(1U, nav_map->at(landing_url).size());
@@ -1582,31 +1602,33 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                         nav_map->at(hosting_url).at(0));
   VerifyHostToIpMap();
 
-  auto referrer_chain = IdentifyReferrerChainForPPAPIDownload(
-      hosting_url, browser()->tab_strip_model()->GetActiveWebContents());
-
-  EXPECT_EQ(std::size_t(3), referrer_chain.size());
+  ReferrerChain referrer_chain;
+  IdentifyReferrerChainForPPAPIDownload(
+      hosting_url,
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      &referrer_chain);
+  EXPECT_EQ(3U, referrer_chain.size());
   VerifyReferrerChainEntry(hosting_url,                       // url
                            ReferrerChainEntry::CLIENT_REDIRECT,  // type
                            test_server_ip,                    // ip_address
                            redirect_url,                      // referrer_url
                            redirect_url,  // referrer_main_frame_url
                            false,         // is_retargeting
-                           referrer_chain[0]);
+                           referrer_chain[0].get());
   VerifyReferrerChainEntry(redirect_url,                         // url
                            ReferrerChainEntry::CLIENT_REDIRECT,  // type
                            test_server_ip,                       // ip_address
                            landing_url,                          // referrer_url
                            landing_url,  // referrer_main_frame_url
                            false,        // is_retargeting
-                           referrer_chain[1]);
+                           referrer_chain[1].get());
   VerifyReferrerChainEntry(landing_url,                       // url
                            ReferrerChainEntry::LANDING_PAGE,  // type
                            test_server_ip,                    // ip_address
                            GURL(),  // no more referrer before landing_url
                            GURL(),
                            false,   // is_retargeting
-                           referrer_chain[2]);
+                           referrer_chain[2].get());
 }
 
 // Server-side redirect.
@@ -1639,7 +1661,8 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest, ServerRedirect) {
                         true,          // has_server_redirect
                         nav_map->at(download_url).at(0));
 
-  auto referrer_chain = IdentifyReferrerChainForDownload(GetDownload());
+  ReferrerChain referrer_chain;
+  IdentifyReferrerChainForDownload(GetDownload(), &referrer_chain);
   ASSERT_EQ(1U, referrer_chain.size());
   VerifyReferrerChainEntry(download_url,                      // url
                            ReferrerChainEntry::DOWNLOAD_URL,  // type
@@ -1647,7 +1670,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest, ServerRedirect) {
                            GURL(),                            // referrer_url
                            GURL(),  // referrer_main_frame_url
                            false,   // is_retargeting
-                           referrer_chain[0]);
+                           referrer_chain[0].get());
 }
 
 // Retargeting immediately followed by server-side redirect.
@@ -1690,7 +1713,8 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                         true,          // has_server_redirect
                         nav_map->at(download_url).at(0));
 
-  auto referrer_chain = IdentifyReferrerChainForDownload(GetDownload());
+  ReferrerChain referrer_chain;
+  IdentifyReferrerChainForDownload(GetDownload(), &referrer_chain);
   ASSERT_EQ(2U, referrer_chain.size());
   VerifyReferrerChainEntry(download_url,                      // url
                            ReferrerChainEntry::DOWNLOAD_URL,  // type
@@ -1698,14 +1722,14 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                            initial_url,                       // referrer_url
                            initial_url,  // referrer_main_frame_url
                            true,         // is_retargeting
-                           referrer_chain[0]);
+                           referrer_chain[0].get());
   VerifyReferrerChainEntry(initial_url,                       // url
                            ReferrerChainEntry::LANDING_PAGE,  // type
                            test_server_ip,                    // ip_address
                            GURL(),                            // referrer_url
                            GURL(),  // referrer_main_frame_url
                            false,   // is_retargeting
-                           referrer_chain[1]);
+                           referrer_chain[1].get());
 }
 
 // host_to_ip_map_ size should increase by one after a new navigation.

@@ -1834,7 +1834,7 @@ void DownloadProtectionService::AddReferrerChainToClientDownloadRequest(
   UMA_HISTOGRAM_BOOLEAN(
       "SafeBrowsing.ReferrerHasInvalidTabID.DownloadAttribution",
       download_tab_id == -1);
-  std::vector<ReferrerChainEntry> attribution_chain;
+  SafeBrowsingNavigationObserverManager::ReferrerChain attribution_chain;
   SafeBrowsingNavigationObserverManager::AttributionResult result =
       navigation_observer_manager_->IdentifyReferrerChainForDownload(
           download_url,
@@ -1847,8 +1847,8 @@ void DownloadProtectionService::AddReferrerChainToClientDownloadRequest(
   UMA_HISTOGRAM_ENUMERATION(
       "SafeBrowsing.ReferrerAttributionResult.DownloadAttribution", result,
       SafeBrowsingNavigationObserverManager::ATTRIBUTION_FAILURE_TYPE_MAX);
-  for (auto entry : attribution_chain)
-    out_request->add_referrer_chain()->Swap(&entry);
+  for (auto& entry : attribution_chain)
+    out_request->add_referrer_chain()->Swap(entry.get());
 }
 
 void DownloadProtectionService::AddReferrerChainToPPAPIClientDownloadRequest(
@@ -1865,7 +1865,7 @@ void DownloadProtectionService::AddReferrerChainToPPAPIClientDownloadRequest(
   UMA_HISTOGRAM_BOOLEAN(
       "SafeBrowsing.ReferrerHasInvalidTabID.DownloadAttribution",
       tab_id == -1);
-  std::vector<ReferrerChainEntry> attribution_chain;
+  SafeBrowsingNavigationObserverManager::ReferrerChain attribution_chain;
   SafeBrowsingNavigationObserverManager::AttributionResult result =
       navigation_observer_manager_->IdentifyReferrerChainForPPAPIDownload(
           initiating_frame_url,
@@ -1879,8 +1879,8 @@ void DownloadProtectionService::AddReferrerChainToPPAPIClientDownloadRequest(
   UMA_HISTOGRAM_ENUMERATION(
       "SafeBrowsing.ReferrerAttributionResult.PPAPIDownloadAttribution", result,
       SafeBrowsingNavigationObserverManager::ATTRIBUTION_FAILURE_TYPE_MAX);
-  for (auto entry : attribution_chain)
-    out_request->add_referrer_chain()->Swap(&entry);
+  for (auto& entry : attribution_chain)
+    out_request->add_referrer_chain()->Swap(entry.get());
 }
 
 }  // namespace safe_browsing
