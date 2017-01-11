@@ -33,6 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "core/fetch/FetchContext.h"
+#include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/loader/LinkLoader.h"
@@ -42,6 +43,7 @@
 
 namespace blink {
 
+class ClientHintsPreferences;
 class Document;
 class DocumentLoader;
 class LocalFrame;
@@ -145,10 +147,18 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
   void addConsoleMessage(const String&,
                          LogMessageType = LogErrorMessage) const override;
   SecurityOrigin* getSecurityOrigin() const override;
-  void modifyRequestForCSP(ResourceRequest&) override;
-  void addClientHintsIfNecessary(FetchRequest&) override;
-  void addCSPHeaderIfNecessary(Resource::Type, FetchRequest&) override;
-  void populateRequestData(ResourceRequest&) override;
+
+  void populateResourceRequest(Resource::Type,
+                               const ClientHintsPreferences&,
+                               const FetchRequest::ResourceWidth&,
+                               ResourceRequest&) override;
+  void setFirstPartyCookieAndRequestorOrigin(ResourceRequest&) override;
+
+  // Exposed for testing.
+  void modifyRequestForCSP(ResourceRequest&);
+  void addClientHintsIfNecessary(const ClientHintsPreferences&,
+                                 const FetchRequest::ResourceWidth&,
+                                 ResourceRequest&);
 
   MHTMLArchive* archive() const override;
 
@@ -183,6 +193,8 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
                                           WebURLRequest::RequestContext,
                                           Resource*,
                                           LinkLoader::CanLoadResources);
+
+  void addCSPHeaderIfNecessary(Resource::Type, ResourceRequest&);
 
   // FIXME: Oilpan: Ideally this should just be a traced Member but that will
   // currently leak because ComputedStyle and its data are not on the heap.

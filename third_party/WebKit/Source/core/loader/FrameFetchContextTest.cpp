@@ -172,22 +172,18 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
     KURL inputURL(ParsedURLString, input);
     KURL expectedURL(ParsedURLString, expected);
 
-    FetchRequest fetchRequest =
-        FetchRequest(ResourceRequest(inputURL), FetchInitiatorInfo());
-    fetchRequest.mutableResourceRequest().setRequestContext(requestContext);
-    fetchRequest.mutableResourceRequest().setFrameType(frameType);
+    ResourceRequest resourceRequest(inputURL);
+    resourceRequest.setRequestContext(requestContext);
+    resourceRequest.setFrameType(frameType);
 
-    fetchContext->modifyRequestForCSP(fetchRequest.mutableResourceRequest());
+    fetchContext->modifyRequestForCSP(resourceRequest);
 
-    EXPECT_EQ(expectedURL.getString(),
-              fetchRequest.resourceRequest().url().getString());
-    EXPECT_EQ(expectedURL.protocol(),
-              fetchRequest.resourceRequest().url().protocol());
-    EXPECT_EQ(expectedURL.host(), fetchRequest.resourceRequest().url().host());
-    EXPECT_EQ(expectedURL.port(), fetchRequest.resourceRequest().url().port());
-    EXPECT_EQ(expectedURL.hasPort(),
-              fetchRequest.resourceRequest().url().hasPort());
-    EXPECT_EQ(expectedURL.path(), fetchRequest.resourceRequest().url().path());
+    EXPECT_EQ(expectedURL.getString(), resourceRequest.url().getString());
+    EXPECT_EQ(expectedURL.protocol(), resourceRequest.url().protocol());
+    EXPECT_EQ(expectedURL.host(), resourceRequest.url().host());
+    EXPECT_EQ(expectedURL.port(), resourceRequest.url().port());
+    EXPECT_EQ(expectedURL.hasPort(), resourceRequest.url().hasPort());
+    EXPECT_EQ(expectedURL.path(), resourceRequest.url().path());
   }
 
   void expectUpgradeInsecureRequestHeader(const char* input,
@@ -195,23 +191,21 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
                                           bool shouldPrefer) {
     KURL inputURL(ParsedURLString, input);
 
-    FetchRequest fetchRequest =
-        FetchRequest(ResourceRequest(inputURL), FetchInitiatorInfo());
-    fetchRequest.mutableResourceRequest().setRequestContext(
-        WebURLRequest::RequestContextScript);
-    fetchRequest.mutableResourceRequest().setFrameType(frameType);
+    ResourceRequest resourceRequest(inputURL);
+    resourceRequest.setRequestContext(WebURLRequest::RequestContextScript);
+    resourceRequest.setFrameType(frameType);
 
-    fetchContext->modifyRequestForCSP(fetchRequest.mutableResourceRequest());
+    fetchContext->modifyRequestForCSP(resourceRequest);
 
-    EXPECT_EQ(shouldPrefer ? String("1") : String(),
-              fetchRequest.resourceRequest().httpHeaderField(
-                  HTTPNames::Upgrade_Insecure_Requests));
+    EXPECT_EQ(
+        shouldPrefer ? String("1") : String(),
+        resourceRequest.httpHeaderField(HTTPNames::Upgrade_Insecure_Requests));
 
     // Calling modifyRequestForCSP more than once shouldn't affect the
     // header.
     if (shouldPrefer) {
-      fetchContext->modifyRequestForCSP(fetchRequest.mutableResourceRequest());
-      EXPECT_EQ("1", fetchRequest.resourceRequest().httpHeaderField(
+      fetchContext->modifyRequestForCSP(resourceRequest);
+      EXPECT_EQ("1", resourceRequest.httpHeaderField(
                          HTTPNames::Upgrade_Insecure_Requests));
     }
   }
@@ -221,18 +215,14 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
       WebURLRequest::FrameType frameType,
       const AtomicString& expectedEmbeddingCSP) {
     KURL inputURL(ParsedURLString, input);
+    ResourceRequest resourceRequest(inputURL);
+    resourceRequest.setRequestContext(WebURLRequest::RequestContextScript);
+    resourceRequest.setFrameType(frameType);
 
-    FetchRequest fetchRequest =
-        FetchRequest(ResourceRequest(inputURL), FetchInitiatorInfo());
-    fetchRequest.mutableResourceRequest().setRequestContext(
-        WebURLRequest::RequestContextScript);
-    fetchRequest.mutableResourceRequest().setFrameType(frameType);
-
-    fetchContext->modifyRequestForCSP(fetchRequest.mutableResourceRequest());
+    fetchContext->modifyRequestForCSP(resourceRequest);
 
     EXPECT_EQ(expectedEmbeddingCSP,
-              fetchRequest.resourceRequest().httpHeaderField(
-                  HTTPNames::Embedding_CSP));
+              resourceRequest.httpHeaderField(HTTPNames::Embedding_CSP));
   }
 
   void setFrameOwnerBasedOnFrameType(WebURLRequest::FrameType frameType,
@@ -419,19 +409,22 @@ class FrameFetchContextHintsTest : public FrameFetchContextTest {
                     bool isPresent,
                     const char* headerValue,
                     float width = 0) {
-    KURL inputURL(ParsedURLString, input);
-    FetchRequest fetchRequest =
-        FetchRequest(ResourceRequest(inputURL), FetchInitiatorInfo());
+    ClientHintsPreferences hintsPreferences;
+
+    FetchRequest::ResourceWidth resourceWidth;
     if (width > 0) {
-      FetchRequest::ResourceWidth resourceWidth;
       resourceWidth.width = width;
       resourceWidth.isSet = true;
-      fetchRequest.setResourceWidth(resourceWidth);
     }
-    fetchContext->addClientHintsIfNecessary(fetchRequest);
+
+    KURL inputURL(ParsedURLString, input);
+    ResourceRequest resourceRequest(inputURL);
+
+    fetchContext->addClientHintsIfNecessary(hintsPreferences, resourceWidth,
+                                            resourceRequest);
 
     EXPECT_EQ(isPresent ? String(headerValue) : String(),
-              fetchRequest.resourceRequest().httpHeaderField(headerName));
+              resourceRequest.httpHeaderField(headerName));
   }
 };
 
@@ -545,7 +538,7 @@ TEST_F(FrameFetchContextTest, MainResource) {
                 request, Resource::MainResource, FetchRequest::NoDefer));
 }
 
-TEST_F(FrameFetchContextTest, PopulateRequestData) {
+TEST_F(FrameFetchContextTest, SetFirstPartyCookieAndRequestorOrigin) {
   struct TestCase {
     const char* documentURL;
     bool documentSandboxed;
@@ -564,13 +557,14 @@ TEST_F(FrameFetchContextTest, PopulateRequestData) {
        "http://example.test"},
 
       // If the request already has a requestor origin, then
-      // 'populateRequestData' leaves it alone:
+      // 'setFirstPartyCookieAndRequestorOrigin' leaves it alone:
       {"http://example.test", false, "http://not-example.test",
        WebURLRequest::FrameTypeNone, "http://not-example.test"},
       {"http://example.test", true, "http://not-example.test",
        WebURLRequest::FrameTypeNone, "http://not-example.test"},
 
-      // If the request's frame type is not 'none', then 'populateRequestData'
+      // If the request's frame type is not 'none', then
+      // 'setFirstPartyCookieAndRequestorOrigin'
       // leaves it alone:
       {"http://example.test", false, "", WebURLRequest::FrameTypeTopLevel, ""},
       {"http://example.test", false, "", WebURLRequest::FrameTypeAuxiliary, ""},
@@ -601,7 +595,7 @@ TEST_F(FrameFetchContextTest, PopulateRequestData) {
     }
 
     // Compare the populated |requestorOrigin| against |test.serializedOrigin|
-    fetchContext->populateRequestData(request);
+    fetchContext->setFirstPartyCookieAndRequestorOrigin(request);
     if (strlen(test.serializedOrigin) == 0) {
       EXPECT_TRUE(request.requestorOrigin()->isUnique());
     } else {
@@ -616,8 +610,6 @@ TEST_F(FrameFetchContextTest, PopulateRequestData) {
 TEST_F(FrameFetchContextTest, ModifyPriorityForLowPriorityIframes) {
   Settings* settings = document->frame()->settings();
   settings->setLowPriorityIframes(false);
-  FetchRequest request(ResourceRequest("http://www.example.com"),
-                       FetchInitiatorInfo());
   FrameFetchContext* childFetchContext = createChildFrame();
 
   // No low priority iframes, expect default values.

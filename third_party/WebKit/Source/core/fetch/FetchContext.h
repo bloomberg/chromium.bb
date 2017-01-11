@@ -44,6 +44,7 @@
 
 namespace blink {
 
+class ClientHintsPreferences;
 class KURL;
 class MHTMLArchive;
 class ResourceError;
@@ -165,10 +166,17 @@ class CORE_EXPORT FetchContext
   virtual void addConsoleMessage(const String&,
                                  LogMessageType = LogErrorMessage) const;
   virtual SecurityOrigin* getSecurityOrigin() const { return nullptr; }
-  virtual void modifyRequestForCSP(ResourceRequest&);
-  virtual void addClientHintsIfNecessary(FetchRequest&);
-  virtual void addCSPHeaderIfNecessary(Resource::Type, FetchRequest&);
-  virtual void populateRequestData(ResourceRequest&);
+
+  // Populates the ResourceRequest using the given values and information
+  // stored in the FetchContext implementation. Used by ResourceFetcher to
+  // prepare a ResourceRequest instance at the start of resource loading.
+  virtual void populateResourceRequest(Resource::Type,
+                                       const ClientHintsPreferences&,
+                                       const FetchRequest::ResourceWidth&,
+                                       ResourceRequest&);
+  // Sets the first party for cookies and requestor origin using information
+  // stored in the FetchContext implementation.
+  virtual void setFirstPartyCookieAndRequestorOrigin(ResourceRequest&);
 
   virtual MHTMLArchive* archive() const { return nullptr; }
 

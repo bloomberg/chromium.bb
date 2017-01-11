@@ -405,7 +405,8 @@ void finishPingRequestInitialization(
   request.setRequestContext(requestContext);
   FetchContext& fetchContext = frame->document()->fetcher()->context();
   fetchContext.addAdditionalRequestHeaders(request, FetchSubresource);
-  fetchContext.populateRequestData(request);
+  // TODO(tyoshino): Call populateResourceRequest() if appropriate.
+  fetchContext.setFirstPartyCookieAndRequestorOrigin(request);
 }
 
 bool sendPingCommon(LocalFrame* frame,

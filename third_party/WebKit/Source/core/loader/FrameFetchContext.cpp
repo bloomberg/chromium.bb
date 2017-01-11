@@ -896,52 +896,66 @@ void FrameFetchContext::modifyRequestForCSP(ResourceRequest& resourceRequest) {
   frame()->loader().modifyRequestForCSP(resourceRequest, m_document);
 }
 
-void FrameFetchContext::addClientHintsIfNecessary(FetchRequest& fetchRequest) {
+void FrameFetchContext::addClientHintsIfNecessary(
+    const ClientHintsPreferences& hintsPreferences,
+    const FetchRequest::ResourceWidth& resourceWidth,
+    ResourceRequest& request) {
   if (!RuntimeEnabledFeatures::clientHintsEnabled() || !m_document)
     return;
 
   bool shouldSendDPR = m_document->clientHintsPreferences().shouldSendDPR() ||
-                       fetchRequest.clientHintsPreferences().shouldSendDPR();
+                       hintsPreferences.shouldSendDPR();
   bool shouldSendResourceWidth =
       m_document->clientHintsPreferences().shouldSendResourceWidth() ||
-      fetchRequest.clientHintsPreferences().shouldSendResourceWidth();
+      hintsPreferences.shouldSendResourceWidth();
   bool shouldSendViewportWidth =
       m_document->clientHintsPreferences().shouldSendViewportWidth() ||
-      fetchRequest.clientHintsPreferences().shouldSendViewportWidth();
+      hintsPreferences.shouldSendViewportWidth();
 
   if (shouldSendDPR) {
-    fetchRequest.mutableResourceRequest().addHTTPHeaderField(
+    request.addHTTPHeaderField(
         "DPR", AtomicString(String::number(m_document->devicePixelRatio())));
   }
 
   if (shouldSendResourceWidth) {
-    FetchRequest::ResourceWidth resourceWidth = fetchRequest.getResourceWidth();
     if (resourceWidth.isSet) {
       float physicalWidth =
           resourceWidth.width * m_document->devicePixelRatio();
-      fetchRequest.mutableResourceRequest().addHTTPHeaderField(
+      request.addHTTPHeaderField(
           "Width", AtomicString(String::number(ceil(physicalWidth))));
     }
   }
 
   if (shouldSendViewportWidth && frame()->view()) {
-    fetchRequest.mutableResourceRequest().addHTTPHeaderField(
+    request.addHTTPHeaderField(
         "Viewport-Width",
         AtomicString(String::number(frame()->view()->viewportWidth())));
   }
 }
 
 void FrameFetchContext::addCSPHeaderIfNecessary(Resource::Type type,
-                                                FetchRequest& fetchRequest) {
+                                                ResourceRequest& request) {
   if (!m_document)
     return;
 
   const ContentSecurityPolicy* csp = m_document->contentSecurityPolicy();
   if (csp->shouldSendCSPHeader(type))
-    fetchRequest.mutableResourceRequest().addHTTPHeaderField("CSP", "active");
+    request.addHTTPHeaderField("CSP", "active");
 }
 
-void FrameFetchContext::populateRequestData(ResourceRequest& request) {
+void FrameFetchContext::populateResourceRequest(
+    Resource::Type type,
+    const ClientHintsPreferences& hintsPreferences,
+    const FetchRequest::ResourceWidth& resourceWidth,
+    ResourceRequest& request) {
+  setFirstPartyCookieAndRequestorOrigin(request);
+  modifyRequestForCSP(request);
+  addClientHintsIfNecessary(hintsPreferences, resourceWidth, request);
+  addCSPHeaderIfNecessary(type, request);
+}
+
+void FrameFetchContext::setFirstPartyCookieAndRequestorOrigin(
+    ResourceRequest& request) {
   if (!m_document)
     return;
 

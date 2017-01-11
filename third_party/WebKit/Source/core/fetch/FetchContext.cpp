@@ -105,12 +105,11 @@ void FetchContext::sendImagePing(const KURL&) {}
 void FetchContext::addConsoleMessage(const String&,
                                      FetchContext::LogMessageType) const {}
 
-void FetchContext::modifyRequestForCSP(ResourceRequest&) {}
+void FetchContext::populateResourceRequest(Resource::Type,
+                                           const ClientHintsPreferences&,
+                                           const FetchRequest::ResourceWidth&,
+                                           ResourceRequest&) {}
 
-void FetchContext::addClientHintsIfNecessary(FetchRequest&) {}
-
-void FetchContext::addCSPHeaderIfNecessary(Resource::Type, FetchRequest&) {}
-
-void FetchContext::populateRequestData(ResourceRequest&) {}
+void FetchContext::setFirstPartyCookieAndRequestorOrigin(ResourceRequest&) {}
 
 }  // namespace blink

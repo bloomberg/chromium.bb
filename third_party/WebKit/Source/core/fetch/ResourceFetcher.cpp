@@ -453,18 +453,19 @@ Resource* ResourceFetcher::requestResource(
     FetchRequest& request,
     const ResourceFactory& factory,
     const SubstituteData& substituteData) {
+  ResourceRequest& resourceRequest = request.mutableResourceRequest();
+
   unsigned long identifier = createUniqueIdentifier();
   network_instrumentation::ScopedResourceLoadTracker scopedResourceLoadTracker(
-      identifier, request.resourceRequest());
+      identifier, resourceRequest);
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.Fetch.RequestResourceTime");
   DCHECK(request.options().synchronousPolicy == RequestAsynchronously ||
          factory.type() == Resource::Raw ||
          factory.type() == Resource::XSLStyleSheet);
 
-  context().populateRequestData(request.mutableResourceRequest());
-  context().modifyRequestForCSP(request.mutableResourceRequest());
-  context().addClientHintsIfNecessary(request);
-  context().addCSPHeaderIfNecessary(factory.type(), request);
+  context().populateResourceRequest(
+      factory.type(), request.clientHintsPreferences(),
+      request.getResourceWidth(), resourceRequest);
 
   // TODO(dproy): Remove this. http://crbug.com/659666
   TRACE_EVENT1("blink", "ResourceFetcher::requestResource", "url",
@@ -473,15 +474,14 @@ Resource* ResourceFetcher::requestResource(
   if (!request.url().isValid())
     return nullptr;
 
-  request.mutableResourceRequest().setPriority(computeLoadPriority(
+  resourceRequest.setPriority(computeLoadPriority(
       factory.type(), request, ResourcePriority::NotVisible));
-  initializeResourceRequest(request.mutableResourceRequest(), factory.type(),
-                            request.defer());
-  network_instrumentation::resourcePrioritySet(
-      identifier, request.resourceRequest().priority());
+  initializeResourceRequest(resourceRequest, factory.type(), request.defer());
+  network_instrumentation::resourcePrioritySet(identifier,
+                                               resourceRequest.priority());
 
   ResourceRequestBlockedReason blockedReason = context().canRequest(
-      factory.type(), request.resourceRequest(),
+      factory.type(), resourceRequest,
       MemoryCache::removeFragmentIdentifierIfNeeded(request.url()),
       request.options(), request.forPreload(), request.getOriginRestriction());
   if (blockedReason != ResourceRequestBlockedReason::None) {
@@ -490,12 +490,12 @@ Resource* ResourceFetcher::requestResource(
   }
 
   context().willStartLoadingResource(
-      identifier, request.mutableResourceRequest(), factory.type(),
+      identifier, resourceRequest, factory.type(),
       request.options().initiatorInfo.name, request.forPreload());
   if (!request.url().isValid())
     return nullptr;
 
-  bool isDataUrl = request.resourceRequest().url().protocolIsData();
+  bool isDataUrl = resourceRequest.url().protocolIsData();
   bool isStaticData = isDataUrl || substituteData.isValid() || m_archive;
   Resource* resource(nullptr);
   if (isStaticData) {
@@ -523,7 +523,7 @@ Resource* ResourceFetcher::requestResource(
 
   updateMemoryCacheStats(resource, policy, request, factory, isStaticData);
 
-  request.mutableResourceRequest().setAllowStoredCredentials(
+  resourceRequest.setAllowStoredCredentials(
       request.options().allowCredentials == AllowStoredCredentials);
 
   switch (policy) {
@@ -534,7 +534,7 @@ Resource* ResourceFetcher::requestResource(
       resource = createResourceForLoading(request, request.charset(), factory);
       break;
     case Revalidate:
-      initializeRevalidation(request.mutableResourceRequest(), resource);
+      initializeRevalidation(resourceRequest, resource);
       break;
     case Use:
       if (resource->isLinkPreload() && !request.isLinkPreload())
@@ -561,9 +561,8 @@ Resource* ResourceFetcher::requestResource(
     // promotions. This can happen when a visible image's priority is increased
     // and then another reference to the image is parsed (which would be at a
     // lower priority).
-    if (request.resourceRequest().priority() >
-        resource->resourceRequest().priority())
-      resource->didChangePriority(request.resourceRequest().priority(), 0);
+    if (resourceRequest.priority() > resource->resourceRequest().priority())
+      resource->didChangePriority(resourceRequest.priority(), 0);
   }
 
   // If only the fragment identifiers differ, it is the same resource.
