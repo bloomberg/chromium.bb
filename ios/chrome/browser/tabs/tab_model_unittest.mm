@@ -147,7 +147,7 @@ class TabModelTest : public PlatformTest {
     TestChromeBrowserState::Builder test_cbs_builder;
     chrome_browser_state_ = test_cbs_builder.Build();
 
-    sessionWindow_.reset([[SessionWindowIOS new] retain]);
+    sessionWindow_.reset([[SessionWindowIOS alloc] init]);
     // Create tab model with just a dummy session service so the async state
     // saving doesn't trigger unless actually wanted.
     base::scoped_nsobject<TestSessionService> test_service(

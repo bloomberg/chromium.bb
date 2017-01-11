@@ -8,6 +8,7 @@ source_set("tabs") {
     "tab_delegate.h",
     "tab_dialog_delegate.h",
     "tab_model.h",
+    "tab_model_list.h",
     "tab_model_observer.h",
     "tab_model_order_controller.h",
     "tab_model_synced_window_delegate.h",
@@ -36,6 +37,7 @@ source_set("tabs_internal") {
   ]
   deps = [
     ":tabs",
+    ":tabs_internal_arc",
     "//base",
     "//components/content_settings/core/browser",
     "//components/favicon/core",
@@ -106,10 +108,24 @@ source_set("tabs_internal") {
     "//ui/base",
     "//url",
   ]
+  allow_circular_includes_from = [ ":tabs_internal_arc" ]
   libs = [
     "CoreLocation.framework",
     "UIKit.framework",
   ]
+}
+
+source_set("tabs_internal_arc") {
+  sources = [
+    "tab_model_list.mm",
+  ]
+  deps = [
+    ":tabs",
+    "//base",
+    "//ios/chrome/browser/browser_state",
+  ]
+  libs = [ "Foundation.framework" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 source_set("unit_tests") {
@@ -122,6 +138,7 @@ source_set("unit_tests") {
   deps = [
     ":tabs",
     ":tabs_internal",
+    ":unit_tests_arc",
     "//base",
     "//components/bookmarks/test",
     "//components/history/core/browser",
@@ -146,4 +163,21 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//third_party/ocmock",
   ]
+}
+
+source_set("unit_tests_arc") {
+  testonly = true
+  sources = [
+    "tab_model_list_unittest.mm",
+  ]
+  deps = [
+    ":tabs",
+    ":tabs_internal",
+    "//base",
+    "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/sessions:test_support",
+    "//ios/web:test_support",
+    "//testing/gtest",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
 }

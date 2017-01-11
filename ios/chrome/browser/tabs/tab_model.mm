@@ -30,6 +30,7 @@
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #include "ios/chrome/browser/tab_parenting_global_observer.h"
 #import "ios/chrome/browser/tabs/tab.h"
+#import "ios/chrome/browser/tabs/tab_model_list.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/tabs/tab_model_order_controller.h"
 #import "ios/chrome/browser/tabs/tab_model_synced_window_delegate.h"
@@ -299,6 +300,9 @@ void CleanCertificatePolicyCache(
                       selector:@selector(applicationWillEnterForeground:)
                           name:UIApplicationWillEnterForegroundNotification
                         object:nil];
+
+    // Associate with ios::ChromeBrowserState.
+    RegisterTabModelWithChromeBrowserState(_browserState, self);
   }
   return self;
 }
@@ -732,6 +736,9 @@ void CleanCertificatePolicyCache(
 // NOTE: This can be called multiple times, so must be robust against that.
 - (void)browserStateDestroyed {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+  if (_browserState) {
+    UnregisterTabModelFromChromeBrowserState(_browserState, self);
+  }
   _browserState = nullptr;
 }
 
