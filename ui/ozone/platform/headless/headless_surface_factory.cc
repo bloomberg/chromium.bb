@@ -9,7 +9,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/threading/worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -53,8 +53,12 @@ class FileSurface : public SurfaceOzoneCanvas {
     // TODO(dnicoara) Use SkImage instead to potentially avoid a copy.
     // See crbug.com/361605 for details.
     if (surface_->getCanvas()->readPixels(&bitmap, 0, 0)) {
-      base::WorkerPool::PostTask(
-          FROM_HERE, base::Bind(&WriteDataToFile, location_, bitmap), true);
+      base::PostTaskWithTraits(
+          FROM_HERE, base::TaskTraits()
+                         .WithShutdownBehavior(
+                             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+                         .MayBlock(),
+          base::Bind(&WriteDataToFile, location_, bitmap));
     }
   }
   std::unique_ptr<gfx::VSyncProvider> CreateVSyncProvider() override {
