@@ -42,9 +42,6 @@ public abstract class ContentSwitches {
     // Native switch - chrome_switches::kDisablePopupBlocking
     public static final String DISABLE_POPUP_BLOCKING = "disable-popup-blocking";
 
-    // Enable mouse hover emulation by holding your finger just over the screen.
-    public static final String ENABLE_TOUCH_HOVER = "enable-touch-hover";
-
     // Native switch kEnableCredentialManagerAPI
     public static final String ENABLE_CREDENTIAL_MANAGER_API = "enable-credential-manager-api";
 

@@ -1502,9 +1502,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_SECCOMP_FILTER_SANDBOX_ANDROID_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kSeccompSandboxAndroid)},
 #endif  // OS_ANDROID
-    {"enable-touch-hover", IDS_FLAGS_TOUCH_HOVER_NAME,
-     IDS_FLAGS_TOUCH_HOVER_DESCRIPTION, kOsAndroid,
-     SINGLE_VALUE_TYPE("enable-touch-hover")},
 #if defined(OS_CHROMEOS)
     {"enable-wifi-credential-sync", IDS_FLAGS_WIFI_CREDENTIAL_SYNC_NAME,
      IDS_FLAGS_WIFI_CREDENTIAL_SYNC_DESCRIPTION, kOsCrOS,

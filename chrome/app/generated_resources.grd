@@ -14698,12 +14698,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         Enable "Ok Google"
       </message>
 
-      <message name="IDS_FLAGS_TOUCH_HOVER_NAME" desc="Name of the 'Enable support for hover capable touchscreens' flag.">
-        Support for hover capable touchscreens
-      </message>
-      <message name="IDS_FLAGS_TOUCH_HOVER_DESCRIPTION" desc="Description of the 'Enable support for hover capable touchscreens' flag.">
-        Enables hover feature by holding your finger just over the screen to experience a mouseover event.
-      </message>
       <message name="IDS_ALLOW_INSECURE_LOCALHOST" desc="Name of the 'Allow insecure localhost' flag.">
         Allow invalid certificates for resources loaded from localhost.
       </message>

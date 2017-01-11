@@ -40,7 +40,6 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.TraceEvent;
@@ -60,7 +59,6 @@ import org.chromium.content.browser.input.SelectPopup;
 import org.chromium.content.browser.input.SelectPopupDialog;
 import org.chromium.content.browser.input.SelectPopupDropdown;
 import org.chromium.content.browser.input.SelectPopupItem;
-import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.AccessibilitySnapshotNode;
 import org.chromium.content_public.browser.ActionModeCallbackHelper;
@@ -384,9 +382,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
 
     // A ViewAndroidDelegate that delegates to the current container view.
     private ViewAndroidDelegate mViewAndroidDelegate;
-
-    // A flag to determine if we enable hover feature or not.
-    private Boolean mEnableTouchHover;
 
     // NOTE: This object will not be released by Android framework until the matching
     // ResultReceiver in the InputMethodService (IME app) gets gc'ed.
@@ -1563,16 +1558,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         try {
             if (mBrowserAccessibilityManager != null && !mIsObscuredByAnotherView) {
                 return mBrowserAccessibilityManager.onHoverEvent(offset);
-            }
-
-            // TODO(lanwei): Remove this switch once experimentation is complete -
-            // crbug.com/418188
-            if (event.getToolType(0) == MotionEvent.TOOL_TYPE_FINGER) {
-                if (mEnableTouchHover == null) {
-                    mEnableTouchHover =
-                            CommandLine.getInstance().hasSwitch(ContentSwitches.ENABLE_TOUCH_HOVER);
-                }
-                if (!mEnableTouchHover.booleanValue()) return false;
             }
 
             if (mNativeContentViewCore != 0) {
