@@ -206,6 +206,20 @@ action("aggregate_vector_icons") {
     "system_tray_update.icon",
     "system_tray_volume_mute.1x.icon",
     "system_tray_volume_mute.icon",
+    "window_control_back.1x.icon",
+    "window_control_back.icon",
+    "window_control_close.1x.icon",
+    "window_control_close.icon",
+    "window_control_left_snapped.1x.icon",
+    "window_control_left_snapped.icon",
+    "window_control_maximize.1x.icon",
+    "window_control_maximize.icon",
+    "window_control_minimize.1x.icon",
+    "window_control_minimize.icon",
+    "window_control_restore.1x.icon",
+    "window_control_restore.icon",
+    "window_control_right_snapped.1x.icon",
+    "window_control_right_snapped.icon",
   ]
 
   output_cc = "$target_gen_dir/vector_icons.cc"

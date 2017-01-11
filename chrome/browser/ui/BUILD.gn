@@ -1417,6 +1417,7 @@ split_static_library("ui") {
       "//ash/common/strings",
       "//ash/public/cpp",
       "//ash/public/interfaces",
+      "//ash/resources/vector_icons",
       "//components/session_manager/core",
       "//components/user_manager",
       "//services/ui/public/cpp",

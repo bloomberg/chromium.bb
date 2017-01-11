@@ -8,6 +8,7 @@
 #include "ash/common/frame/caption_buttons/frame_caption_button.h"
 #include "ash/common/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state_aura.h"
@@ -18,7 +19,6 @@
 #include "ui/display/screen.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -65,8 +65,7 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
           GetAshLayoutSize(AshLayoutSize::NON_BROWSER_CAPTION_BUTTON));
       for (int icon = 0; icon < CAPTION_BUTTON_ICON_COUNT; ++icon) {
         caption_button_container_->SetButtonImage(
-            static_cast<CaptionButtonIcon>(icon),
-            gfx::VectorIconId::WINDOW_CONTROL_CLOSE);
+            static_cast<CaptionButtonIcon>(icon), kWindowControlCloseIcon);
       }
 
       AddChildView(caption_button_container_);

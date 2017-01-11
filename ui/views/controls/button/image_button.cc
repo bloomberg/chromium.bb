@@ -48,10 +48,14 @@ const gfx::ImageSkia& ImageButton::GetImage(ButtonState state) const {
 }
 
 void ImageButton::SetImage(ButtonState for_state, const gfx::ImageSkia* image) {
+  SetImage(for_state, image ? *image : gfx::ImageSkia());
+}
+
+void ImageButton::SetImage(ButtonState for_state, const gfx::ImageSkia& image) {
   if (for_state == STATE_HOVERED)
-    set_animate_on_state_change(image != nullptr);
+    set_animate_on_state_change(!image.isNull());
   const gfx::Size old_preferred_size = GetPreferredSize();
-  images_[for_state] = image ? *image : gfx::ImageSkia();
+  images_[for_state] = image;
 
   if (old_preferred_size != GetPreferredSize())
     PreferredSizeChanged();
@@ -250,11 +254,11 @@ const gfx::ImageSkia& ToggleImageButton::GetImage(
 }
 
 void ToggleImageButton::SetImage(ButtonState image_state,
-                                 const gfx::ImageSkia* image) {
+                                 const gfx::ImageSkia& image) {
   if (toggled_) {
-    alternate_images_[image_state] = image ? *image : gfx::ImageSkia();
+    alternate_images_[image_state] = image;
   } else {
-    images_[image_state] = image ? *image : gfx::ImageSkia();
+    images_[image_state] = image;
     if (state() == image_state)
       SchedulePaint();
   }

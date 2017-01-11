@@ -1342,6 +1342,7 @@ test("ash_unittests") {
     "//ash/public/cpp",
     "//ash/public/interfaces",
     "//ash/resources",
+    "//ash/resources/vector_icons",
     "//ash/test:ash_with_aura_test_support",
     "//ash/test:test_support_without_content",
     "//ash/touch_hud",

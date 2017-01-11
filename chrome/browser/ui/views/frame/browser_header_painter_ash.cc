@@ -7,6 +7,7 @@
 #include "ash/common/ash_layout_constants.h"
 #include "ash/common/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/common/frame/header_painter_util.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/logging.h"  // DCHECK
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
@@ -22,7 +23,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -285,29 +285,27 @@ void BrowserHeaderPainterAsh::PaintTitleBar(gfx::Canvas* canvas) {
 }
 
 void BrowserHeaderPainterAsh::UpdateCaptionButtons() {
-  caption_button_container_->SetButtonImage(
-      ash::CAPTION_BUTTON_ICON_MINIMIZE,
-      gfx::VectorIconId::WINDOW_CONTROL_MINIMIZE);
-  caption_button_container_->SetButtonImage(
-      ash::CAPTION_BUTTON_ICON_CLOSE, gfx::VectorIconId::WINDOW_CONTROL_CLOSE);
+  caption_button_container_->SetButtonImage(ash::CAPTION_BUTTON_ICON_MINIMIZE,
+                                            ash::kWindowControlMinimizeIcon);
+  caption_button_container_->SetButtonImage(ash::CAPTION_BUTTON_ICON_CLOSE,
+                                            ash::kWindowControlCloseIcon);
   caption_button_container_->SetButtonImage(
       ash::CAPTION_BUTTON_ICON_LEFT_SNAPPED,
-      gfx::VectorIconId::WINDOW_CONTROL_LEFT_SNAPPED);
+      ash::kWindowControlLeftSnappedIcon);
   caption_button_container_->SetButtonImage(
       ash::CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
-      gfx::VectorIconId::WINDOW_CONTROL_RIGHT_SNAPPED);
+      ash::kWindowControlRightSnappedIcon);
 
-  gfx::VectorIconId size_icon_id = gfx::VectorIconId::WINDOW_CONTROL_MAXIMIZE;
+  const gfx::VectorIcon* size_icon = &ash::kWindowControlMaximizeIcon;
   gfx::Size button_size(
       GetAshLayoutSize(AshLayoutSize::BROWSER_RESTORED_CAPTION_BUTTON));
   if (frame_->IsMaximized() || frame_->IsFullscreen()) {
-    size_icon_id = gfx::VectorIconId::WINDOW_CONTROL_RESTORE;
+    size_icon = &ash::kWindowControlRestoreIcon;
     button_size =
         GetAshLayoutSize(AshLayoutSize::BROWSER_MAXIMIZED_CAPTION_BUTTON);
   }
   caption_button_container_->SetButtonImage(
-      ash::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
-      size_icon_id);
+      ash::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE, *size_icon);
   caption_button_container_->SetButtonSize(button_size);
 }
 
