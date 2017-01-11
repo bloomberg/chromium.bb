@@ -106,16 +106,23 @@ class HeadlessShell : public HeadlessWebContents::Observer,
 
     // TODO(alexclarke): Should we navigate to about:blank first if using
     // virtual time?
-    if (!args.empty() && !args[0].empty())
-      builder.SetInitialURL(GURL(args[0]));
-
-    web_contents_ = builder.Build();
-    if (!web_contents_) {
-      LOG(ERROR) << "Navigation failed";
-      browser_->Shutdown();
-      return;
+    if (args.empty())
+      args.push_back("about:blank");
+    for (auto it = args.rbegin(); it != args.rend(); ++it) {
+      GURL url(*it);
+      HeadlessWebContents* web_contents = builder.SetInitialURL(url).Build();
+      if (!web_contents) {
+        LOG(ERROR) << "Navigation to " << url << " failed";
+        browser_->Shutdown();
+        return;
+      }
+      if (!web_contents_ && !RemoteDebuggingEnabled()) {
+        // TODO(jzfeng): Support observing multiple targets.
+        url_ = url;
+        web_contents_ = web_contents;
+        web_contents_->AddObserver(this);
+      }
     }
-    web_contents_->AddObserver(this);
   }
 
   void Shutdown() {
@@ -138,8 +145,6 @@ class HeadlessShell : public HeadlessWebContents::Observer,
 
   // HeadlessWebContents::Observer implementation:
   void DevToolsTargetReady() override {
-    if (RemoteDebuggingEnabled())
-      return;
     web_contents_->GetDevToolsTarget()->AttachClient(devtools_client_.get());
     devtools_client_->GetInspector()->GetExperimental()->AddObserver(this);
     devtools_client_->GetPage()->AddObserver(this);
@@ -400,6 +405,41 @@ class HeadlessShell : public HeadlessWebContents::Observer,
   DISALLOW_COPY_AND_ASSIGN(HeadlessShell);
 };
 
+bool ValidateCommandLine(const base::CommandLine& command_line) {
+  if (!command_line.HasSwitch(::switches::kRemoteDebuggingPort)) {
+    if (command_line.GetArgs().size() <= 1)
+      return true;
+    LOG(ERROR) << "Open multiple tabs is only supported when the "
+               << "remote debug port is set.";
+    return false;
+  }
+  if (command_line.HasSwitch(switches::kDumpDom)) {
+    LOG(ERROR) << "Dump DOM is disabled when remote debugging is enabled.";
+    return false;
+  }
+  if (command_line.HasSwitch(switches::kRepl)) {
+    LOG(ERROR) << "Evaluate Javascript is disabled "
+               << "when remote debugging is enabled.";
+    return false;
+  }
+  if (command_line.HasSwitch(switches::kScreenshot)) {
+    LOG(ERROR) << "Capture screenshot is disabled "
+               << "when remote debugging is enabled.";
+    return false;
+  }
+  if (command_line.HasSwitch(switches::kTimeout)) {
+    LOG(ERROR) << "Navigation timeout is disabled "
+               << "when remote debugging is enabled.";
+    return false;
+  }
+  if (command_line.HasSwitch(switches::kVirtualTimeBudget)) {
+    LOG(ERROR) << "Virtual time budget is disabled "
+               << "when remote debugging is enabled.";
+    return false;
+  }
+  return true;
+}
+
 int HeadlessShellMain(int argc, const char** argv) {
   RunChildProcessIfNeeded(argc, argv);
   HeadlessShell shell;
@@ -407,6 +447,9 @@ int HeadlessShellMain(int argc, const char** argv) {
 
   // Enable devtools if requested.
   base::CommandLine command_line(argc, argv);
+  if (!ValidateCommandLine(command_line))
+    return EXIT_FAILURE;
+
   if (command_line.HasSwitch(::switches::kRemoteDebuggingPort)) {
     std::string address = kDevToolsHttpServerAddress;
     if (command_line.HasSwitch(switches::kRemoteDebuggingAddress)) {
