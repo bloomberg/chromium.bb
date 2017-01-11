@@ -889,12 +889,19 @@ void ProfileManager::CleanUpDeletedProfiles() {
     // Although it should never happen, make sure this is a valid path in the
     // user_data_dir, so we don't accidentially delete something else.
     if (is_valid_profile_path) {
-      LOG(WARNING) << "Files of a deleted profile still exist after restart. "
-                      "Cleaning up now.";
-      BrowserThread::PostTaskAndReply(
-          BrowserThread::FILE, FROM_HERE,
-          base::Bind(&NukeProfileFromDisk, profile_path),
+      if (base::PathExists(profile_path)) {
+        LOG(WARNING) << "Files of a deleted profile still exist after restart. "
+                        "Cleaning up now.";
+        BrowserThread::PostTaskAndReply(
+            BrowserThread::FILE, FROM_HERE,
+            base::Bind(&NukeProfileFromDisk, profile_path),
+            base::Bind(&ProfileCleanedUp, value.get()));
+      } else {
+        // Everything is fine, the profile was removed on shutdown.
+        BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
           base::Bind(&ProfileCleanedUp, value.get()));
+      }
     } else {
       LOG(ERROR) << "Found invalid profile path in deleted_profiles: "
                  << profile_path.AsUTF8Unsafe();
