@@ -2188,7 +2188,9 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   BOOL textInserted = NO;
   if (textToBeInserted_.length() >
       ((hasMarkedText_ || oldHasMarkedText) ? 0u : 1u)) {
-    widgetHost->ImeCommitText(textToBeInserted_, gfx::Range::InvalidRange(), 0);
+    widgetHost->ImeCommitText(textToBeInserted_,
+                              std::vector<blink::WebCompositionUnderline>(),
+                              gfx::Range::InvalidRange(), 0);
     textInserted = YES;
   }
 
@@ -3241,7 +3243,8 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
     gfx::Range replacement_range(replacementRange);
     if (renderWidgetHostView_->GetActiveWidget()) {
       renderWidgetHostView_->GetActiveWidget()->ImeCommitText(
-          base::SysNSStringToUTF16(im_text), replacement_range, 0);
+          base::SysNSStringToUTF16(im_text),
+          std::vector<blink::WebCompositionUnderline>(), replacement_range, 0);
     }
   }
 

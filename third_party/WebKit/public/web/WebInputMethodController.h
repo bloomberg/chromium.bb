@@ -38,7 +38,9 @@ class WebInputMethodController {
   // Called to inform the controller that deleting the ongoing composition if
   // any, inserting the specified text, and moving the caret according to
   // relativeCaretPosition.
-  virtual bool commitText(const WebString& text, int relativeCaretPosition) = 0;
+  virtual bool commitText(const WebString& text,
+                          const WebVector<WebCompositionUnderline>& underlines,
+                          int relativeCaretPosition) = 0;
 
   // Called to inform the controller to confirm an ongoing composition.
   virtual bool finishComposingText(

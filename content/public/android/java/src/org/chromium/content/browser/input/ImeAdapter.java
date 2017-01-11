@@ -574,7 +574,7 @@ public class ImeAdapter {
                 timestampMs, COMPOSITION_KEY_CODE, 0, false, unicodeFromKeyEvent);
 
         if (isCommit) {
-            nativeCommitText(mNativeImeAdapterAndroid, text.toString(), newCursorPosition);
+            nativeCommitText(mNativeImeAdapterAndroid, text, text.toString(), newCursorPosition);
         } else {
             nativeSetComposingText(
                     mNativeImeAdapterAndroid, text, text.toString(), newCursorPosition);
@@ -777,7 +777,7 @@ public class ImeAdapter {
     private native void nativeSetComposingText(long nativeImeAdapterAndroid, CharSequence text,
             String textStr, int newCursorPosition);
     private native void nativeCommitText(
-            long nativeImeAdapterAndroid, String textStr, int newCursorPosition);
+            long nativeImeAdapterAndroid, CharSequence text, String textStr, int newCursorPosition);
     private native void nativeFinishComposingText(long nativeImeAdapterAndroid);
     private native void nativeAttachImeAdapter(long nativeImeAdapterAndroid);
     private native void nativeSetEditableSelectionOffsets(long nativeImeAdapterAndroid,

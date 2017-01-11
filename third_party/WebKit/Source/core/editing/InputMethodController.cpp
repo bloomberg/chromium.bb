@@ -267,13 +267,18 @@ bool InputMethodController::finishComposingText(
     return result;
   }
 
-  return replaceCompositionAndMoveCaret(composingText(), 0);
+  return replaceCompositionAndMoveCaret(composingText(), 0,
+                                        Vector<CompositionUnderline>());
 }
 
-bool InputMethodController::commitText(const String& text,
-                                       int relativeCaretPosition) {
-  if (hasComposition())
-    return replaceCompositionAndMoveCaret(text, relativeCaretPosition);
+bool InputMethodController::commitText(
+    const String& text,
+    const Vector<CompositionUnderline>& underlines,
+    int relativeCaretPosition) {
+  if (hasComposition()) {
+    return replaceCompositionAndMoveCaret(text, relativeCaretPosition,
+                                          underlines);
+  }
 
   // We should do nothing in this case, because:
   // 1. No need to insert text when text is empty.
@@ -281,7 +286,8 @@ bool InputMethodController::commitText(const String& text,
   // duplicate selection change event.
   if (!text.length() && !relativeCaretPosition)
     return false;
-  return insertTextAndMoveCaret(text, relativeCaretPosition);
+
+  return insertTextAndMoveCaret(text, relativeCaretPosition, underlines);
 }
 
 bool InputMethodController::replaceComposition(const String& text) {
@@ -324,9 +330,30 @@ static int computeAbsoluteCaretPosition(size_t textStart,
   return textStart + textLength + relativeCaretPosition;
 }
 
+void InputMethodController::addCompositionUnderlines(
+    const Vector<CompositionUnderline>& underlines,
+    ContainerNode* rootEditableElement,
+    unsigned offset) {
+  for (const auto& underline : underlines) {
+    unsigned underlineStart = offset + underline.startOffset();
+    unsigned underlineEnd = offset + underline.endOffset();
+
+    EphemeralRange ephemeralLineRange =
+        PlainTextRange(underlineStart, underlineEnd)
+            .createRange(*rootEditableElement);
+    if (ephemeralLineRange.isNull())
+      continue;
+
+    document().markers().addCompositionMarker(
+        ephemeralLineRange.startPosition(), ephemeralLineRange.endPosition(),
+        underline.color(), underline.thick(), underline.backgroundColor());
+  }
+}
+
 bool InputMethodController::replaceCompositionAndMoveCaret(
     const String& text,
-    int relativeCaretPosition) {
+    int relativeCaretPosition,
+    const Vector<CompositionUnderline>& underlines) {
   Element* rootEditableElement = frame().selection().rootEditableElement();
   if (!rootEditableElement)
     return false;
@@ -339,6 +366,8 @@ bool InputMethodController::replaceCompositionAndMoveCaret(
 
   if (!replaceComposition(text))
     return false;
+
+  addCompositionUnderlines(underlines, rootEditableElement, textStart);
 
   int absoluteCaretPosition = computeAbsoluteCaretPosition(
       textStart, text.length(), relativeCaretPosition);
@@ -359,8 +388,10 @@ bool InputMethodController::insertText(const String& text) {
   return true;
 }
 
-bool InputMethodController::insertTextAndMoveCaret(const String& text,
-                                                   int relativeCaretPosition) {
+bool InputMethodController::insertTextAndMoveCaret(
+    const String& text,
+    int relativeCaretPosition,
+    const Vector<CompositionUnderline>& underlines) {
   PlainTextRange selectionRange = getSelectionOffsets();
   if (selectionRange.isNull())
     return false;
@@ -369,6 +400,11 @@ bool InputMethodController::insertTextAndMoveCaret(const String& text,
   if (text.length()) {
     if (!insertText(text))
       return false;
+
+    Element* rootEditableElement = frame().selection().rootEditableElement();
+    if (rootEditableElement) {
+      addCompositionUnderlines(underlines, rootEditableElement, textStart);
+    }
   }
 
   int absoluteCaretPosition = computeAbsoluteCaretPosition(
@@ -578,17 +614,8 @@ void InputMethodController::setComposition(
         LayoutTheme::theme().platformDefaultCompositionBackgroundColor());
     return;
   }
-  for (const auto& underline : underlines) {
-    unsigned underlineStart = baseOffset + underline.startOffset();
-    unsigned underlineEnd = baseOffset + underline.endOffset();
-    EphemeralRange ephemeralLineRange = EphemeralRange(
-        Position(baseNode, underlineStart), Position(baseNode, underlineEnd));
-    if (ephemeralLineRange.isNull())
-      continue;
-    document().markers().addCompositionMarker(
-        ephemeralLineRange.startPosition(), ephemeralLineRange.endPosition(),
-        underline.color(), underline.thick(), underline.backgroundColor());
-  }
+
+  addCompositionUnderlines(underlines, baseNode->parentNode(), baseOffset);
 }
 
 PlainTextRange InputMethodController::createSelectionRangeForSetComposition(
@@ -627,17 +654,7 @@ void InputMethodController::setCompositionFromExistingText(
 
   clear();
 
-  for (const auto& underline : underlines) {
-    unsigned underlineStart = compositionStart + underline.startOffset();
-    unsigned underlineEnd = compositionStart + underline.endOffset();
-    EphemeralRange ephemeralLineRange =
-        PlainTextRange(underlineStart, underlineEnd).createRange(*editable);
-    if (ephemeralLineRange.isNull())
-      continue;
-    document().markers().addCompositionMarker(
-        ephemeralLineRange.startPosition(), ephemeralLineRange.endPosition(),
-        underline.color(), underline.thick(), underline.backgroundColor());
-  }
+  addCompositionUnderlines(underlines, editable, compositionStart);
 
   m_hasComposition = true;
   if (!m_compositionRange)

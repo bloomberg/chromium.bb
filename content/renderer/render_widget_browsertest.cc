@@ -36,8 +36,10 @@ class RenderWidgetTest : public RenderViewTest {
   }
 
   void CommitText(std::string text) {
-    widget()->OnImeCommitText(base::UTF8ToUTF16(text),
-                              gfx::Range::InvalidRange(), 0);
+    widget()->OnImeCommitText(
+        base::UTF8ToUTF16(text),
+        std::vector<blink::WebCompositionUnderline>(),
+        gfx::Range::InvalidRange(), 0);
   }
 
   ui::TextInputType GetTextInputType() { return widget()->GetTextInputType(); }

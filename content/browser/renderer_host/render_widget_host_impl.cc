@@ -1637,11 +1637,13 @@ void RenderWidgetHostImpl::ImeSetComposition(
             selection_start, selection_end));
 }
 
-void RenderWidgetHostImpl::ImeCommitText(const base::string16& text,
-                                         const gfx::Range& replacement_range,
-                                         int relative_cursor_pos) {
-  Send(new InputMsg_ImeCommitText(GetRoutingID(), text, replacement_range,
-                                  relative_cursor_pos));
+void RenderWidgetHostImpl::ImeCommitText(
+    const base::string16& text,
+    const std::vector<blink::WebCompositionUnderline>& underlines,
+    const gfx::Range& replacement_range,
+    int relative_cursor_pos) {
+  Send(new InputMsg_ImeCommitText(GetRoutingID(), text, underlines,
+                                  replacement_range, relative_cursor_pos));
 }
 
 void RenderWidgetHostImpl::ImeFinishComposingText(bool keep_selection) {

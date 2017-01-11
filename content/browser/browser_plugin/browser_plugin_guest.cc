@@ -897,11 +897,13 @@ void BrowserPluginGuest::OnImeSetComposition(
                                       selection_start, selection_end));
 }
 
-void BrowserPluginGuest::OnImeCommitText(int browser_plugin_instance_id,
-                                         const std::string& text,
-                                         int relative_cursor_pos) {
+void BrowserPluginGuest::OnImeCommitText(
+    int browser_plugin_instance_id,
+    const std::string& text,
+    const std::vector<blink::WebCompositionUnderline>& underlines,
+    int relative_cursor_pos) {
   Send(new InputMsg_ImeCommitText(routing_id(), base::UTF8ToUTF16(text),
-                                  gfx::Range::InvalidRange(),
+                                  underlines, gfx::Range::InvalidRange(),
                                   relative_cursor_pos));
 }
 

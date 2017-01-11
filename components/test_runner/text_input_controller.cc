@@ -171,7 +171,8 @@ void TextInputController::Install(blink::WebLocalFrame* frame) {
 
 void TextInputController::InsertText(const std::string& text) {
   if (auto* controller = GetInputMethodController()) {
-    controller->commitText(blink::WebString::fromUTF8(text), 0);
+    controller->commitText(blink::WebString::fromUTF8(text),
+                           std::vector<blink::WebCompositionUnderline>(), 0);
   }
 }
 

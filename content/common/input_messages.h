@@ -177,10 +177,12 @@ IPC_MESSAGE_ROUTED5(
 
 // This message deletes the current composition, inserts specified text, and
 // moves the cursor.
-IPC_MESSAGE_ROUTED3(InputMsg_ImeCommitText,
-                    base::string16 /* text */,
-                    gfx::Range /* replacement_range */,
-                    int /* relative_cursor_pos */)
+IPC_MESSAGE_ROUTED4(
+    InputMsg_ImeCommitText,
+    base::string16 /* text */,
+    std::vector<blink::WebCompositionUnderline>, /* underlines */
+    gfx::Range /* replacement_range */,
+    int /* relative_cursor_pos */)
 
 // This message inserts the ongoing composition.
 IPC_MESSAGE_ROUTED1(InputMsg_ImeFinishComposingText, bool /* keep_selection */)

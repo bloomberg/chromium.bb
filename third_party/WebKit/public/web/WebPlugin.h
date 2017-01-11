@@ -178,7 +178,9 @@ class WebPlugin {
 
   // Deletes the ongoing composition if any, inserts the specified text, and
   // moves the caret according to relativeCaretPosition.
-  virtual bool commitText(const WebString& text, int relativeCaretPosition) {
+  virtual bool commitText(const WebString& text,
+                          const WebVector<WebCompositionUnderline>& underlines,
+                          int relativeCaretPosition) {
     return false;
   }
 

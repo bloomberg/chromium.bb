@@ -547,10 +547,12 @@ bool BrowserPlugin::setComposition(
     int selectionEnd) {
   if (!attached())
     return false;
+
   std::vector<blink::WebCompositionUnderline> std_underlines;
   for (size_t i = 0; i < underlines.size(); ++i) {
     std_underlines.push_back(underlines[i]);
   }
+
   BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_ImeSetComposition(
       browser_plugin_instance_id_,
       text.utf8(),
@@ -561,13 +563,21 @@ bool BrowserPlugin::setComposition(
   return true;
 }
 
-bool BrowserPlugin::commitText(const blink::WebString& text,
-                               int relative_cursor_pos) {
+bool BrowserPlugin::commitText(
+    const blink::WebString& text,
+    const blink::WebVector<blink::WebCompositionUnderline>& underlines,
+    int relative_cursor_pos) {
   if (!attached())
     return false;
 
+  std::vector<blink::WebCompositionUnderline> std_underlines;
+  for (size_t i = 0; i < underlines.size(); ++i) {
+    std_underlines.push_back(std_underlines[i]);
+  }
+
   BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_ImeCommitText(
-      browser_plugin_instance_id_, text.utf8(), relative_cursor_pos));
+      browser_plugin_instance_id_, text.utf8(), std_underlines,
+      relative_cursor_pos));
   // TODO(kochi): This assumes the IPC handling always succeeds.
   return true;
 }

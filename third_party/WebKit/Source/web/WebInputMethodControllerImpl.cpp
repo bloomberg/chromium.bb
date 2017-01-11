@@ -115,19 +115,23 @@ bool WebInputMethodControllerImpl::finishComposingText(
           : InputMethodController::DoNotKeepSelection);
 }
 
-bool WebInputMethodControllerImpl::commitText(const WebString& text,
-                                              int relativeCaretPosition) {
+bool WebInputMethodControllerImpl::commitText(
+    const WebString& text,
+    const WebVector<WebCompositionUnderline>& underlines,
+    int relativeCaretPosition) {
   UserGestureIndicator gestureIndicator(DocumentUserGestureToken::create(
       frame()->document(), UserGestureToken::NewGesture));
 
   if (WebPlugin* plugin = focusedPluginIfInputMethodSupported())
-    return plugin->commitText(text, relativeCaretPosition);
+    return plugin->commitText(text, underlines, relativeCaretPosition);
 
   // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-  return inputMethodController().commitText(text, relativeCaretPosition);
+  return inputMethodController().commitText(
+      text, CompositionUnderlineVectorBuilder(underlines),
+      relativeCaretPosition);
 }
 
 WebTextInputInfo WebInputMethodControllerImpl::textInputInfo() {

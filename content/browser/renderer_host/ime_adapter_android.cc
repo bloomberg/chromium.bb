@@ -148,20 +148,14 @@ void ImeAdapterAndroid::SetComposingText(JNIEnv* env,
 
   base::string16 text16 = ConvertJavaStringToUTF16(env, text_str);
 
-  std::vector<blink::WebCompositionUnderline> underlines;
-  // Iterate over spans in |text|, dispatch those that we care about (e.g.,
-  // BackgroundColorSpan) to a matching callback (e.g.,
-  // AppendBackgroundColorSpan()), and populate |underlines|.
-  Java_ImeAdapter_populateUnderlinesFromSpans(
-      env, obj, text, reinterpret_cast<jlong>(&underlines));
+  std::vector<blink::WebCompositionUnderline> underlines =
+      GetUnderlinesFromSpans(env, obj, text, text16);
 
   // Default to plain underline if we didn't find any span that we care about.
   if (underlines.empty()) {
     underlines.push_back(blink::WebCompositionUnderline(
         0, text16.length(), SK_ColorBLACK, false, SK_ColorTRANSPARENT));
   }
-  // Sort spans by |.startOffset|.
-  std::sort(underlines.begin(), underlines.end());
 
   // relative_cursor_pos is as described in the Android API for
   // InputConnection#setComposingText, whereas the parameters for
@@ -174,7 +168,8 @@ void ImeAdapterAndroid::SetComposingText(JNIEnv* env,
 }
 
 void ImeAdapterAndroid::CommitText(JNIEnv* env,
-                                   const JavaParamRef<jobject>&,
+                                   const JavaParamRef<jobject>& obj,
+                                   const JavaParamRef<jobject>& text,
                                    const JavaParamRef<jstring>& text_str,
                                    int relative_cursor_pos) {
   RenderWidgetHostImpl* rwhi = GetRenderWidgetHostImpl();
@@ -182,6 +177,9 @@ void ImeAdapterAndroid::CommitText(JNIEnv* env,
     return;
 
   base::string16 text16 = ConvertJavaStringToUTF16(env, text_str);
+
+  std::vector<blink::WebCompositionUnderline> underlines =
+      GetUnderlinesFromSpans(env, obj, text, text16);
 
   // relative_cursor_pos is as described in the Android API for
   // InputConnection#commitText, whereas the parameters for
@@ -191,7 +189,8 @@ void ImeAdapterAndroid::CommitText(JNIEnv* env,
   else
     relative_cursor_pos -= text16.length();
 
-  rwhi->ImeCommitText(text16, gfx::Range::InvalidRange(), relative_cursor_pos);
+  rwhi->ImeCommitText(text16, underlines, gfx::Range::InvalidRange(),
+                      relative_cursor_pos);
 }
 
 void ImeAdapterAndroid::FinishComposingText(JNIEnv* env,
@@ -343,6 +342,25 @@ WebContents* ImeAdapterAndroid::GetWebContents() {
   if (!rwh)
     return nullptr;
   return WebContents::FromRenderViewHost(RenderViewHost::From(rwh));
+}
+
+std::vector<blink::WebCompositionUnderline>
+ImeAdapterAndroid::GetUnderlinesFromSpans(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jobject>& text,
+    const base::string16& text16) {
+  std::vector<blink::WebCompositionUnderline> underlines;
+  // Iterate over spans in |text|, dispatch those that we care about (e.g.,
+  // BackgroundColorSpan) to a matching callback (e.g.,
+  // AppendBackgroundColorSpan()), and populate |underlines|.
+  Java_ImeAdapter_populateUnderlinesFromSpans(
+      env, obj, text, reinterpret_cast<jlong>(&underlines));
+
+  // Sort spans by |.startOffset|.
+  std::sort(underlines.begin(), underlines.end());
+
+  return underlines;
 }
 
 }  // namespace content

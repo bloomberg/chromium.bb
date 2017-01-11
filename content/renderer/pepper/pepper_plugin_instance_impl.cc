@@ -2260,7 +2260,8 @@ bool PepperPluginInstanceImpl::SimulateIMEEvent(
       if (!render_frame_)
         return false;
       render_frame_->SimulateImeCommitText(
-          base::UTF8ToUTF16(input_event.character_text), gfx::Range());
+          base::UTF8ToUTF16(input_event.character_text),
+          std::vector<blink::WebCompositionUnderline>(), gfx::Range());
       break;
     default:
       return false;

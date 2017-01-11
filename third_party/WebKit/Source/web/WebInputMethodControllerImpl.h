@@ -31,7 +31,9 @@ class WebInputMethodControllerImpl : public WebInputMethodController {
                       const WebVector<WebCompositionUnderline>& underlines,
                       int selectionStart,
                       int selectionEnd) override;
-  bool commitText(const WebString& text, int relativeCaretPosition) override;
+  bool commitText(const WebString& text,
+                  const WebVector<WebCompositionUnderline>& underlines,
+                  int relativeCaretPosition) override;
   bool finishComposingText(
       ConfirmCompositionBehavior selectionBehavior) override;
   WebTextInputInfo textInputInfo() override;

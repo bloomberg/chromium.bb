@@ -1257,6 +1257,7 @@ TEST_F(RenderViewImplTest, ImeComposition) {
 
       case IME_COMMITTEXT:
         view()->OnImeCommitText(base::WideToUTF16(ime_message->ime_string),
+                                std::vector<blink::WebCompositionUnderline>(),
                                 gfx::Range::InvalidRange(), 0);
         break;
 
@@ -1518,7 +1519,9 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
 
   for (size_t i = 0; i < bounds.size(); ++i)
     EXPECT_LT(0, bounds[i].width());
-  view()->OnImeCommitText(empty_string, gfx::Range::InvalidRange(), 0);
+  view()->OnImeCommitText(empty_string,
+                          std::vector<blink::WebCompositionUnderline>(),
+                          gfx::Range::InvalidRange(), 0);
 
   // Non surrogate pair unicode character.
   const base::string16 unicode_composition = base::UTF8ToUTF16(
@@ -1529,7 +1532,8 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
   ASSERT_EQ(unicode_composition.size(), bounds.size());
   for (size_t i = 0; i < bounds.size(); ++i)
     EXPECT_LT(0, bounds[i].width());
-  view()->OnImeCommitText(empty_string, gfx::Range::InvalidRange(), 0);
+  view()->OnImeCommitText(empty_string, empty_underline,
+                          gfx::Range::InvalidRange(), 0);
 
   // Surrogate pair character.
   const base::string16 surrogate_pair_char =
@@ -1543,7 +1547,8 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
   ASSERT_EQ(surrogate_pair_char.size(), bounds.size());
   EXPECT_LT(0, bounds[0].width());
   EXPECT_EQ(0, bounds[1].width());
-  view()->OnImeCommitText(empty_string, gfx::Range::InvalidRange(), 0);
+  view()->OnImeCommitText(empty_string, empty_underline,
+                          gfx::Range::InvalidRange(), 0);
 
   // Mixed string.
   const base::string16 surrogate_pair_mixed_composition =
@@ -1566,7 +1571,8 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
       EXPECT_LT(0, bounds[i].width());
     }
   }
-  view()->OnImeCommitText(empty_string, gfx::Range::InvalidRange(), 0);
+  view()->OnImeCommitText(empty_string, empty_underline,
+                          gfx::Range::InvalidRange(), 0);
 }
 #endif
 

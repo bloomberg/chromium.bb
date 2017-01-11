@@ -1391,8 +1391,9 @@ void RenderFrameImpl::SimulateImeSetComposition(
 
 void RenderFrameImpl::SimulateImeCommitText(
     const base::string16& text,
+    const std::vector<blink::WebCompositionUnderline>& underlines,
     const gfx::Range& replacement_range) {
-  render_view_->OnImeCommitText(text, replacement_range, 0);
+  render_view_->OnImeCommitText(text, underlines, replacement_range, 0);
 }
 
 void RenderFrameImpl::SimulateImeFinishComposingText(bool keep_selection) {

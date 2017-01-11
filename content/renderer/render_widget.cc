@@ -1539,9 +1539,11 @@ void RenderWidget::OnImeSetComposition(
   UpdateCompositionInfo(false /* not an immediate request */);
 }
 
-void RenderWidget::OnImeCommitText(const base::string16& text,
-                                   const gfx::Range& replacement_range,
-                                   int relative_cursor_pos) {
+void RenderWidget::OnImeCommitText(
+    const base::string16& text,
+    const std::vector<WebCompositionUnderline>& underlines,
+    const gfx::Range& replacement_range,
+    int relative_cursor_pos) {
   if (!ShouldHandleImeEvents())
     return;
 
@@ -1562,7 +1564,8 @@ void RenderWidget::OnImeCommitText(const base::string16& text,
   ImeEventGuard guard(this);
   input_handler_->set_handling_input_event(true);
   if (auto* controller = GetInputMethodController())
-    controller->commitText(text, relative_cursor_pos);
+    controller->commitText(text, WebVector<WebCompositionUnderline>(underlines),
+                           relative_cursor_pos);
   input_handler_->set_handling_input_event(false);
   UpdateCompositionInfo(false /* not an immediate request */);
 }

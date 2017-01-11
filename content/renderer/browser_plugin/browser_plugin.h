@@ -115,8 +115,10 @@ class CONTENT_EXPORT BrowserPlugin :
       const blink::WebVector<blink::WebCompositionUnderline>& underlines,
       int selectionStart,
       int selectionEnd) override;
-  bool commitText(const blink::WebString& text,
-                  int relative_cursor_pos) override;
+  bool commitText(
+      const blink::WebString& text,
+      const blink::WebVector<blink::WebCompositionUnderline>& underlines,
+      int relative_cursor_pos) override;
   bool finishComposingText(
       blink::WebInputMethodController::ConfirmCompositionBehavior
           selection_behavior) override;

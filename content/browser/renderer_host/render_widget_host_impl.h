@@ -403,9 +403,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   //   (on Windows);
   // * when it receives a "commit" signal of GtkIMContext (on Linux);
   // * when insertText of NSTextInput is called (on Mac).
-  void ImeCommitText(const base::string16& text,
-                     const gfx::Range& replacement_range,
-                     int relative_cursor_pos);
+  void ImeCommitText(
+      const base::string16& text,
+      const std::vector<blink::WebCompositionUnderline>& underlines,
+      const gfx::Range& replacement_range,
+      int relative_cursor_pos);
 
   // Finishes an ongoing composition.
   // A browser should call this function or ImeCommitText:

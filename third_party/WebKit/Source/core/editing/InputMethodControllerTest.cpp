@@ -9,6 +9,7 @@
 #include "core/dom/Range.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/markers/DocumentMarkerController.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -284,7 +285,7 @@ TEST_F(InputMethodControllerTest, CommitTextKeepingStyle) {
   underlines.push_back(CompositionUnderline(3, 12, Color(255, 0, 0), false, 0));
   controller().setCompositionFromExistingText(underlines, 3, 12);
 
-  controller().commitText(String("123789"), 0);
+  controller().commitText(String("123789"), underlines, 0);
   EXPECT_STREQ("abc1<b>2</b>37<b>8</b>9", div->innerHTML().utf8().data());
 }
 
@@ -891,7 +892,9 @@ TEST_F(InputMethodControllerTest, InsertLineBreakAfterConfirmingText) {
   Element* div =
       insertHTMLElement("<div id='sample' contenteditable></div>", "sample");
 
-  controller().commitText("hello", 0);
+  Vector<CompositionUnderline> underlines;
+  underlines.append(CompositionUnderline(0, 2, Color(255, 0, 0), false, 0));
+  controller().commitText("hello", underlines, 0);
   EXPECT_STREQ("hello", div->innerText().utf8().data());
 
   controller().setEditableSelectionOffsets(PlainTextRange(2, 2));
@@ -1004,7 +1007,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForInsert) {
   // Insert new text without previous composition.
   document().setTitle(emptyString());
   document().updateStyleAndLayout();
-  controller().commitText("hello", 0);
+  controller().commitText("hello", underlines, 0);
   EXPECT_STREQ("beforeinput.data:hello;input.data:hello;",
                document().title().utf8().data());
 
@@ -1016,7 +1019,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForInsert) {
   // Insert new text with previous composition.
   document().setTitle(emptyString());
   document().updateStyleAndLayout();
-  controller().commitText("hello", 1);
+  controller().commitText("hello", underlines, 1);
   EXPECT_STREQ(
       "beforeinput.data:hello;input.data:hello;compositionend.data:hello;",
       document().title().utf8().data());
@@ -1032,7 +1035,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForInsertEmptyText) {
   // Insert empty text without previous composition.
   document().setTitle(emptyString());
   document().updateStyleAndLayout();
-  controller().commitText("", 0);
+  controller().commitText("", underlines, 0);
   EXPECT_STREQ("", document().title().utf8().data());
 
   document().setTitle(emptyString());
@@ -1043,7 +1046,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForInsertEmptyText) {
   // Insert empty text with previous composition.
   document().setTitle(emptyString());
   document().updateStyleAndLayout();
-  controller().commitText("", 1);
+  controller().commitText("", underlines, 1);
   EXPECT_STREQ("beforeinput.data:;compositionend.data:;",
                document().title().utf8().data());
 }
@@ -1080,7 +1083,7 @@ TEST_F(InputMethodControllerTest, CompositionEndEventForInsert) {
   // Insert new text with previous composition. Note that it moves the caret to
   // [4,4] before firing 'compositonend' event.
   document().updateStyleAndLayout();
-  controller().commitText("hello", -1);
+  controller().commitText("hello", underlines, -1);
   document().updateStyleAndLayout();
   EXPECT_EQ(3u, controller().getSelectionOffsets().start());
   EXPECT_EQ(3u, controller().getSelectionOffsets().end());
@@ -1144,6 +1147,56 @@ TEST_F(InputMethodControllerTest, FinishCompositionRemovedRange) {
 
   controller().finishComposingText(InputMethodController::KeepSelection);
   EXPECT_EQ(WebTextInputTypeTelephone, controller().textInputType());
+}
+
+TEST_F(InputMethodControllerTest, SetCompositionPlainTextWithUnderline) {
+  insertHTMLElement("<div id='sample' contenteditable></div>", "sample");
+
+  Vector<CompositionUnderline> underlines;
+  underlines.push_back(CompositionUnderline(0, 1, Color(255, 0, 0), false, 0));
+
+  controller().setComposition(" ", underlines, 1, 1);
+
+  ASSERT_EQ(1u, document().markers().markers().size());
+
+  EXPECT_EQ(0u, document().markers().markers()[0]->startOffset());
+  EXPECT_EQ(1u, document().markers().markers()[0]->endOffset());
+}
+
+TEST_F(InputMethodControllerTest, CommitPlainTextWithUnderlineInsert) {
+  insertHTMLElement("<div id='sample' contenteditable>Initial text.</div>",
+                    "sample");
+
+  Vector<CompositionUnderline> underlines;
+
+  controller().setEditableSelectionOffsets(PlainTextRange(8, 8));
+
+  underlines.push_back(CompositionUnderline(1, 11, Color(255, 0, 0), false, 0));
+
+  controller().commitText(String("underlined"), underlines, 0);
+
+  ASSERT_EQ(1u, document().markers().markers().size());
+
+  EXPECT_EQ(9u, document().markers().markers()[0]->startOffset());
+  EXPECT_EQ(19u, document().markers().markers()[0]->endOffset());
+}
+
+TEST_F(InputMethodControllerTest, CommitPlainTextWithUnderlineReplace) {
+  insertHTMLElement("<div id='sample' contenteditable>Initial text.</div>",
+                    "sample");
+
+  Vector<CompositionUnderline> underlines;
+
+  controller().setCompositionFromExistingText(underlines, 8, 12);
+
+  underlines.push_back(CompositionUnderline(1, 11, Color(255, 0, 0), false, 0));
+
+  controller().commitText(String("string"), underlines, 0);
+
+  ASSERT_EQ(1u, document().markers().markers().size());
+
+  EXPECT_EQ(9u, document().markers().markers()[0]->startOffset());
+  EXPECT_EQ(15u, document().markers().markers()[0]->endOffset());
 }
 
 }  // namespace blink
