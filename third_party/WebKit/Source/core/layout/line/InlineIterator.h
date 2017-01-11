@@ -146,7 +146,7 @@ static inline WTF::Unicode::CharDirection embedCharFromDirection(
     TextDirection dir,
     EUnicodeBidi unicodeBidi) {
   using namespace WTF::Unicode;
-  if (unicodeBidi == Embed) {
+  if (unicodeBidi == EUnicodeBidi::kEmbed) {
     return dir == TextDirection::kRtl ? RightToLeftEmbedding
                                       : LeftToRightEmbedding;
   }
@@ -166,7 +166,7 @@ static inline void notifyObserverEnteredObject(Observer* observer,
 
   const ComputedStyle& style = object.styleRef();
   EUnicodeBidi unicodeBidi = style.unicodeBidi();
-  if (unicodeBidi == UBNormal) {
+  if (unicodeBidi == EUnicodeBidi::kNormal) {
     // http://dev.w3.org/csswg/css3-writing-modes/#unicode-bidi
     // "The element does not open an additional level of embedding with respect
     // to the bidirectional algorithm."
@@ -195,7 +195,7 @@ static inline void notifyObserverWillExitObject(Observer* observer,
     return;
 
   EUnicodeBidi unicodeBidi = object.style()->unicodeBidi();
-  if (unicodeBidi == UBNormal)
+  if (unicodeBidi == EUnicodeBidi::kNormal)
     return;  // Nothing to do for unicode-bidi: normal
   if (treatAsIsolated(object.styleRef())) {
     observer->exitIsolate();

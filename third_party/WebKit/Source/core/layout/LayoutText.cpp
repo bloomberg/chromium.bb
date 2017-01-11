@@ -794,7 +794,7 @@ LayoutRect LayoutText::localCaretRect(InlineBox* inlineBox,
 
   // for unicode-bidi: plaintext, use inlineBoxBidiLevel() to test the correct
   // direction for the cursor.
-  if (rightAligned && style()->unicodeBidi() == Plaintext) {
+  if (rightAligned && style()->unicodeBidi() == EUnicodeBidi::kPlaintext) {
     if (inlineBox->bidiLevel() % 2 != 1)
       rightAligned = false;
   }

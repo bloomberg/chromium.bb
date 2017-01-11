@@ -2453,22 +2453,22 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EUnicodeBidi e)
     : CSSValue(IdentifierClass) {
   switch (e) {
-    case UBNormal:
+    case EUnicodeBidi::kNormal:
       m_valueID = CSSValueNormal;
       break;
-    case Embed:
+    case EUnicodeBidi::kEmbed:
       m_valueID = CSSValueEmbed;
       break;
-    case Override:
+    case EUnicodeBidi::kBidiOverride:
       m_valueID = CSSValueBidiOverride;
       break;
-    case Isolate:
+    case EUnicodeBidi::kIsolate:
       m_valueID = CSSValueIsolate;
       break;
-    case IsolateOverride:
+    case EUnicodeBidi::kIsolateOverride:
       m_valueID = CSSValueIsolateOverride;
       break;
-    case Plaintext:
+    case EUnicodeBidi::kPlaintext:
       m_valueID = CSSValuePlaintext;
       break;
   }
@@ -2478,26 +2478,26 @@ template <>
 inline EUnicodeBidi CSSIdentifierValue::convertTo() const {
   switch (m_valueID) {
     case CSSValueNormal:
-      return UBNormal;
+      return EUnicodeBidi::kNormal;
     case CSSValueEmbed:
-      return Embed;
+      return EUnicodeBidi::kEmbed;
     case CSSValueBidiOverride:
-      return Override;
+      return EUnicodeBidi::kBidiOverride;
     case CSSValueIsolate:
     case CSSValueWebkitIsolate:
-      return Isolate;
+      return EUnicodeBidi::kIsolate;
     case CSSValueIsolateOverride:
     case CSSValueWebkitIsolateOverride:
-      return IsolateOverride;
+      return EUnicodeBidi::kIsolateOverride;
     case CSSValuePlaintext:
     case CSSValueWebkitPlaintext:
-      return Plaintext;
+      return EUnicodeBidi::kPlaintext;
     default:
       break;
   }
 
   ASSERT_NOT_REACHED();
-  return UBNormal;
+  return EUnicodeBidi::kNormal;
 }
 
 template <>

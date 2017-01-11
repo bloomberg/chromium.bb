@@ -142,11 +142,12 @@ void constructBidiRunsForLine(InlineBidiResolver& topResolver,
         topResolver.midpointStateForIsolatedRun(isolatedRun.runToReplace);
     EUnicodeBidi unicodeBidi = isolatedInline.style()->unicodeBidi();
     TextDirection direction;
-    if (unicodeBidi == Plaintext) {
+    if (unicodeBidi == EUnicodeBidi::kPlaintext) {
       direction = determinePlaintextDirectionality(
           isolatedInline, isNewUBAParagraph ? startObj : 0);
     } else {
-      ASSERT(unicodeBidi == Isolate || unicodeBidi == IsolateOverride);
+      DCHECK(unicodeBidi == EUnicodeBidi::kIsolate ||
+             unicodeBidi == EUnicodeBidi::kIsolateOverride);
       direction = isolatedInline.style()->direction();
     }
     isolatedResolver.setStatus(BidiStatus::createForIsolate(

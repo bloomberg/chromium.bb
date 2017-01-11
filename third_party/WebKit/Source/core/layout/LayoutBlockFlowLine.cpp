@@ -660,7 +660,8 @@ void LayoutBlockFlow::updateLogicalWidthForAlignment(
     unsigned expansionOpportunityCount) {
   TextDirection direction;
   if (rootInlineBox &&
-      rootInlineBox->getLineLayoutItem().style()->unicodeBidi() == Plaintext)
+      rootInlineBox->getLineLayoutItem().style()->unicodeBidi() ==
+          EUnicodeBidi::kPlaintext)
     direction = rootInlineBox->direction();
   else
     direction = style()->direction();
@@ -1144,7 +1145,8 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
                       ? VisualLeftToRightOverride
                       : VisualRightToLeftOverride)
                : NoVisualOverride);
-      if (isNewUBAParagraph && styleToUse.unicodeBidi() == Plaintext &&
+      if (isNewUBAParagraph &&
+          styleToUse.unicodeBidi() == EUnicodeBidi::kPlaintext &&
           !resolver.context()->parent()) {
         TextDirection direction = determinePlaintextDirectionality(
             resolver.position().root(), resolver.position().getLineLayoutItem(),
@@ -2111,7 +2113,7 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(
     resolver.setStatus(last->lineBreakBidiStatus());
   } else {
     TextDirection direction = style()->direction();
-    if (style()->unicodeBidi() == Plaintext)
+    if (style()->unicodeBidi() == EUnicodeBidi::kPlaintext)
       direction = determinePlaintextDirectionality(LineLayoutItem(this));
     resolver.setStatus(
         BidiStatus(direction, isOverride(style()->unicodeBidi())));

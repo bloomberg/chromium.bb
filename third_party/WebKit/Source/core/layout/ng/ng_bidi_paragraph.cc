@@ -21,7 +21,7 @@ bool NGBidiParagraph::SetParagraph(const String& text,
   ICUError error;
   ubidi_setPara(
       ubidi_, text.characters16(), text.length(),
-      block_style->unicodeBidi() == Plaintext
+      block_style->unicodeBidi() == EUnicodeBidi::kPlaintext
           ? UBIDI_DEFAULT_LTR
           : (block_style->direction() == TextDirection::kRtl ? UBIDI_RTL
                                                              : UBIDI_LTR),

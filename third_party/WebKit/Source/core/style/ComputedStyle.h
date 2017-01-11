@@ -317,7 +317,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_nonInheritedData.m_clear = initialClear();
     m_nonInheritedData.m_position = initialPosition();
     m_nonInheritedData.m_tableLayout = initialTableLayout();
-    m_nonInheritedData.m_unicodeBidi = initialUnicodeBidi();
+    m_nonInheritedData.m_unicodeBidi =
+        static_cast<unsigned>(initialUnicodeBidi());
     m_nonInheritedData.m_breakBefore = initialBreakBefore();
     m_nonInheritedData.m_breakAfter = initialBreakAfter();
     m_nonInheritedData.m_breakInside = initialBreakInside();
@@ -1855,11 +1856,13 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // unicode-bidi
-  static EUnicodeBidi initialUnicodeBidi() { return UBNormal; }
+  static EUnicodeBidi initialUnicodeBidi() { return EUnicodeBidi::kNormal; }
   EUnicodeBidi unicodeBidi() const {
     return static_cast<EUnicodeBidi>(m_nonInheritedData.m_unicodeBidi);
   }
-  void setUnicodeBidi(EUnicodeBidi b) { m_nonInheritedData.m_unicodeBidi = b; }
+  void setUnicodeBidi(EUnicodeBidi b) {
+    m_nonInheritedData.m_unicodeBidi = static_cast<unsigned>(b);
+  }
 
   // vertical-align
   static EVerticalAlign initialVerticalAlign() {

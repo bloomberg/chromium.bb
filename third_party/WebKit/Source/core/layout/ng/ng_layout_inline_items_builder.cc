@@ -207,8 +207,8 @@ void NGLayoutInlineItemsBuilder::EnterBlock(const ComputedStyle* style) {
   // elements.
   // Plaintext and direction are handled as the paragraph level by
   // NGBidiParagraph::SetParagraph().
-  if (style->unicodeBidi() == Override ||
-      style->unicodeBidi() == IsolateOverride) {
+  if (style->unicodeBidi() == EUnicodeBidi::kBidiOverride ||
+      style->unicodeBidi() == EUnicodeBidi::kIsolateOverride) {
     AppendBidiControl(style, leftToRightOverrideCharacter,
                       rightToLeftOverrideCharacter);
     Enter(nullptr, popDirectionalFormattingCharacter);
@@ -219,28 +219,28 @@ void NGLayoutInlineItemsBuilder::EnterInline(LayoutObject* node) {
   // https://drafts.csswg.org/css-writing-modes-3/#bidi-control-codes-injection-table
   const ComputedStyle* style = node->style();
   switch (style->unicodeBidi()) {
-    case UBNormal:
+    case EUnicodeBidi::kNormal:
       break;
-    case Embed:
+    case EUnicodeBidi::kEmbed:
       AppendBidiControl(style, leftToRightEmbedCharacter,
                         rightToLeftEmbedCharacter);
       Enter(node, popDirectionalFormattingCharacter);
       break;
-    case Override:
+    case EUnicodeBidi::kBidiOverride:
       AppendBidiControl(style, leftToRightOverrideCharacter,
                         rightToLeftOverrideCharacter);
       Enter(node, popDirectionalFormattingCharacter);
       break;
-    case Isolate:
+    case EUnicodeBidi::kIsolate:
       AppendBidiControl(style, leftToRightIsolateCharacter,
                         rightToLeftIsolateCharacter);
       Enter(node, popDirectionalIsolateCharacter);
       break;
-    case Plaintext:
+    case EUnicodeBidi::kPlaintext:
       AppendAsOpaqueToSpaceCollapsing(firstStrongIsolateCharacter);
       Enter(node, popDirectionalIsolateCharacter);
       break;
-    case IsolateOverride:
+    case EUnicodeBidi::kIsolateOverride:
       AppendAsOpaqueToSpaceCollapsing(firstStrongIsolateCharacter);
       AppendBidiControl(style, leftToRightOverrideCharacter,
                         rightToLeftOverrideCharacter);
