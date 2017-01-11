@@ -1184,9 +1184,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_SYNC_LOADING" desc="Preference title to let the user change their encryption password. [CHAR-LIMIT=20]">
         Loading…
       </message>
-      <message name="IDS_SYNC_IMPORT_DATA_TITLE" desc="Preference title of screen to let user choose to switch sync accounts. [CHAR-LIMIT=24]">
-        Import data?
-      </message>
       <message name="IDS_SYNC_IMPORT_DATA_PROMPT" desc="Prompt for the user to choose how they want to handle their existing sync data">
          You have bookmarks, history, passwords, and other settings from <ph name ="FROM_ACCOUNT">%1$s<ex>johndoe@old.com</ex></ph>.
       </message>

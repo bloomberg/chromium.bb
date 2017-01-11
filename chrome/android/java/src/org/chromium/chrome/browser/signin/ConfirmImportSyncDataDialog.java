@@ -13,6 +13,7 @@ import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.base.VisibleForTesting;
@@ -159,8 +160,15 @@ public class ConfirmImportSyncDataDialog extends DialogFragment
             }
         }
 
+        if (importSyncType == ImportSyncType.SWITCHING_SYNC_ACCOUNTS) {
+            // Re-order the buttons so that Import Data is last and Don't Import (the default) is
+            // at the top.
+            LinearLayout layout = (LinearLayout) v.findViewById(R.id.sync_import_data_content);
+            layout.removeView(mConfirmImportOption);
+            layout.addView(mConfirmImportOption);
+        }
+
         return new AlertDialog.Builder(getActivity(), R.style.AlertDialogTheme)
-                .setTitle(R.string.sync_import_data_title)
                 .setPositiveButton(R.string.continue_button, this)
                 .setNegativeButton(R.string.cancel, this)
                 .setView(v)
