@@ -9,7 +9,7 @@
     Constructor(DOMString transformList),
     Constructor(sequence<unrestricted double> numberSequence),
     RaisesException=Constructor,
-    // FIXME: Exposed=(Window,Worker)
+    Exposed=(Window,Worker),
     RuntimeEnabled=GeometryInterfaces,
 ] interface DOMMatrix : DOMMatrixReadOnly {
     [RaisesException, NewObject] static DOMMatrix fromMatrix(optional DOMMatrixInit other);
