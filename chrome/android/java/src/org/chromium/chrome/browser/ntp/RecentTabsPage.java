@@ -165,7 +165,7 @@ public class RecentTabsPage
 
     @Override
     public void destroy() {
-        assert getView().getParent() == null : "Destroy called before removed from window";
+        assert !mIsAttachedToWindow : "Destroy called before removed from window";
         mRecentTabsManager.destroy();
         mRecentTabsManager = null;
         mAdapter.notifyDataSetInvalidated();
