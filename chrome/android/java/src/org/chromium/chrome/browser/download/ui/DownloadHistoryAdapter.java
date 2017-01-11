@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.content_public.browser.DownloadState;
 
 import java.util.List;
+import java.util.Set;
 
 /** Bridges the user's download history and the UI used to display it. */
 public class DownloadHistoryAdapter extends DateDividedAdapter implements DownloadUiObserver {
@@ -248,12 +249,21 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         DownloadHistoryItemWrapper existingWrapper = list.get(index);
         boolean isUpdated = existingWrapper.replaceItem(item);
 
+        // Re-add the file mapping once it finishes downloading. This accounts for the backend
+        // creating DownloadItems with a null file path, then updating it after the download starts.
+        // Doing it once after completion instead of at every update is a compromise that prevents
+        // us from rapidly and repeatedly updating the map with the same info.
+        if (item.getDownloadInfo().state() == DownloadState.COMPLETE) {
+            mFilePathsToItemsMap.addItem(existingWrapper);
+        }
+
         if (item.getDownloadInfo().state() == DownloadState.CANCELLED) {
             // The old one is being removed.
             filter(mFilter);
         } else if (existingWrapper.isVisibleToUser(mFilter)) {
             if (existingWrapper.getPosition() == TimedItem.INVALID_POSITION) {
                 filter(mFilter);
+                for (TestObserver observer : mObservers) observer.onDownloadItemUpdated(item);
             } else if (isUpdated) {
                 notifyItemChanged(existingWrapper.getPosition());
                 for (TestObserver observer : mObservers) observer.onDownloadItemUpdated(item);
@@ -307,7 +317,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
      * @param filePath The file path used to retrieve items.
      * @return DownloadHistoryItemWrappers associated with filePath.
      */
-    List<DownloadHistoryItemWrapper> getItemsForFilePath(String filePath) {
+    Set<DownloadHistoryItemWrapper> getItemsForFilePath(String filePath) {
         return mFilePathsToItemsMap.getItemsForFilePath(filePath);
     }
 

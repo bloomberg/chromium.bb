@@ -428,7 +428,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
 
         for (DownloadHistoryItemWrapper item : selectedItems) {
             if (!filePathsToRemove.contains(item.getFilePath())) {
-                List<DownloadHistoryItemWrapper> itemsForFilePath =
+                Set<DownloadHistoryItemWrapper> itemsForFilePath =
                         mHistoryAdapter.getItemsForFilePath(item.getFilePath());
                 if (itemsForFilePath != null) {
                     itemsToRemove.addAll(itemsForFilePath);

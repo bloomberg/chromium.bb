@@ -19,6 +19,8 @@ import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadIte
 import org.chromium.content.browser.test.NativeLibraryTestBase;
 import org.chromium.content_public.browser.DownloadState;
 
+import java.util.Set;
+
 /**
  * Tests a DownloadHistoryAdapter that is isolated from the real bridges.
  */
@@ -194,7 +196,7 @@ public class DownloadHistoryAdapterTest extends NativeLibraryTestBase {
         // Add a third item with the same date as the second item.
         assertEquals(2, mObserver.onDownloadItemCreatedCallback.getCallCount());
         DownloadItem item2 = StubbedProvider.createDownloadItem(
-                2, "19840117 18:00", false, DownloadState.IN_PROGRESS);
+                2, "19840117 18:00", false, DownloadState.IN_PROGRESS, 0);
         mAdapter.onDownloadItemCreated(item2);
         mObserver.onDownloadItemCreatedCallback.waitForCallback(2);
         assertEquals(mObserver.createdItem, item2);
@@ -205,7 +207,7 @@ public class DownloadHistoryAdapterTest extends NativeLibraryTestBase {
         // but it should now be visible.
         int callCount = mObserver.onDownloadItemUpdatedCallback.getCallCount();
         DownloadItem item3 = StubbedProvider.createDownloadItem(
-                2, "19840117 18:00", false, DownloadState.COMPLETE);
+                2, "19840117 18:00", false, DownloadState.COMPLETE, 100);
         mAdapter.onDownloadItemUpdated(item3);
         mObserver.onDownloadItemUpdatedCallback.waitForCallback(callCount);
         assertEquals(mObserver.updatedItem, item3);
@@ -233,7 +235,7 @@ public class DownloadHistoryAdapterTest extends NativeLibraryTestBase {
         // Initialize the DownloadHistoryAdapter with three items in two date buckets.
         DownloadItem regularItem = StubbedProvider.createDownloadItem(0, "19840116 18:00");
         DownloadItem offTheRecordItem = StubbedProvider.createDownloadItem(
-                1, "19840116 12:00", true, DownloadState.COMPLETE);
+                1, "19840116 12:00", true, DownloadState.COMPLETE, 100);
         OfflinePageDownloadItem offlineItem =
                 StubbedProvider.createOfflineItem(2, "19840117 12:01");
         mDownloadDelegate.regularItems.add(regularItem);
@@ -332,6 +334,52 @@ public class DownloadHistoryAdapterTest extends NativeLibraryTestBase {
         checkAdapterContents(null, item2);
         mOfflineDelegate.observer.onItemDeleted(item2.getGuid());
         assertEquals(0, mAdapter.getItemCount());
+    }
+
+    @SmallTest
+    public void testInProgress_FilePathMapAccurate() throws Exception {
+        Set<DownloadHistoryItemWrapper> toDelete;
+
+        initializeAdapter(false);
+        assertEquals(0, mAdapter.getItemCount());
+        assertEquals(0, mAdapter.getTotalDownloadSize());
+
+        // Simulate the creation of a new item by providing a DownloadItem without a path.
+        DownloadItem itemCreated = StubbedProvider.createDownloadItem(
+                9, "19840118 12:01", false, DownloadState.IN_PROGRESS, 0);
+        mAdapter.onDownloadItemCreated(itemCreated);
+        mObserver.onDownloadItemCreatedCallback.waitForCallback(0);
+        assertEquals(mObserver.createdItem, itemCreated);
+
+        checkAdapterContents();
+        toDelete = mAdapter.getItemsForFilePath(itemCreated.getDownloadInfo().getFilePath());
+        assertNull(toDelete);
+
+        // Update the Adapter with new information about the item.
+        int callCount = mObserver.onDownloadItemUpdatedCallback.getCallCount();
+        DownloadItem itemUpdated = StubbedProvider.createDownloadItem(
+                10, "19840118 12:01", false, DownloadState.IN_PROGRESS, 50);
+        mAdapter.onDownloadItemUpdated(itemUpdated);
+        mObserver.onDownloadItemUpdatedCallback.waitForCallback(callCount);
+        assertEquals(mObserver.updatedItem, itemUpdated);
+
+        checkAdapterContents(null, itemUpdated);
+        toDelete = mAdapter.getItemsForFilePath(itemUpdated.getDownloadInfo().getFilePath());
+        assertNull(toDelete);
+
+        // Tell the Adapter that the item has finished downloading.
+        callCount = mObserver.onDownloadItemUpdatedCallback.getCallCount();
+        DownloadItem itemCompleted = StubbedProvider.createDownloadItem(
+                10, "19840118 12:01", false, DownloadState.COMPLETE, 100);
+        mAdapter.onDownloadItemUpdated(itemCompleted);
+        mObserver.onDownloadItemUpdatedCallback.waitForCallback(callCount);
+        assertEquals(mObserver.updatedItem, itemCompleted);
+        checkAdapterContents(null, itemCompleted);
+
+        // Confirm that the file now shows up when trying to delete it.
+        toDelete = mAdapter.getItemsForFilePath(itemCompleted.getDownloadInfo().getFilePath());
+        assertEquals(1, toDelete.size());
+        assertEquals(itemCompleted.getId(), toDelete.iterator().next().getId());
     }
 
     /** Checks that the adapter has the correct items in the right places. */

@@ -4,10 +4,12 @@
 
 package org.chromium.chrome.browser.download.ui;
 
-import java.util.ArrayList;
+import android.text.TextUtils;
+
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Multiple download items may reference the same location on disk. This class maintains a mapping
@@ -15,16 +17,17 @@ import java.util.Map;
  * TODO(twellington): remove this class after the backend handles duplicate removal.
  */
 class FilePathsToDownloadItemsMap {
-    private final Map<String, ArrayList<DownloadHistoryItemWrapper>> mMap = new HashMap<>();
+    private final Map<String, Set<DownloadHistoryItemWrapper>> mMap = new HashMap<>();
 
     /**
-     * Adds a DownloadHistoryItemWrapper to the map. This method does not check whether the item
-     * already exists in the map.
+     * Adds a DownloadHistoryItemWrapper to the map if it has a valid path.
      * @param wrapper The item to add to the map.
      */
     void addItem(DownloadHistoryItemWrapper wrapper) {
+        if (TextUtils.isEmpty(wrapper.getFilePath())) return;
+
         if (!mMap.containsKey(wrapper.getFilePath())) {
-            mMap.put(wrapper.getFilePath(), new ArrayList<DownloadHistoryItemWrapper>());
+            mMap.put(wrapper.getFilePath(), new HashSet<DownloadHistoryItemWrapper>());
         }
         mMap.get(wrapper.getFilePath()).add(wrapper);
     }
@@ -35,21 +38,15 @@ class FilePathsToDownloadItemsMap {
      * @param wrapper The item to remove from the map.
      */
     void removeItem(DownloadHistoryItemWrapper wrapper) {
-        ArrayList<DownloadHistoryItemWrapper> matchingItems = mMap.get(wrapper.getFilePath());
-        if (matchingItems == null) return;
+        Set<DownloadHistoryItemWrapper> matchingItems = mMap.get(wrapper.getFilePath());
+        if (matchingItems == null || !matchingItems.contains(wrapper)) return;
 
-        for (int i = 0; i < matchingItems.size(); i++) {
-            if (!matchingItems.get(i).equals(wrapper)) continue;
-
+        if (matchingItems.size() == 1) {
             // If this is the only DownloadHistoryItemWrapper that references the file path,
             // remove the file path from the map.
-            if (matchingItems.size() == 1) {
-                mMap.remove(wrapper.getFilePath());
-            } else {
-                matchingItems.remove(i);
-            }
-
-            return;
+            mMap.remove(wrapper.getFilePath());
+        } else {
+            matchingItems.remove(wrapper);
         }
     }
 
@@ -58,7 +55,7 @@ class FilePathsToDownloadItemsMap {
      * @param filePath The file path used to retrieve items.
      * @return DownloadHistoryItemWrappers associated with filePath.
      */
-    List<DownloadHistoryItemWrapper> getItemsForFilePath(String filePath) {
+    Set<DownloadHistoryItemWrapper> getItemsForFilePath(String filePath) {
         return mMap.get(filePath);
     }
 }
