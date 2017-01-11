@@ -147,6 +147,7 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
 
  private:
   ThemePainter& painter() override { return m_painter; }
+  void didChangeThemeEngine() override;
 
   int menuListInternalPadding(const ComputedStyle&, int padding) const;
 

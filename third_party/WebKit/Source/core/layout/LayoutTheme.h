@@ -58,6 +58,10 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
 
   virtual ThemePainter& painter() = 0;
 
+  // This function is called after associated WebThemeEngine instance
+  // was replaced. This is called only in tests.
+  virtual void didChangeThemeEngine() {}
+
   static void setSizeIfAuto(ComputedStyle&, const IntSize&);
 
   // This method is called whenever style has been computed for an element and

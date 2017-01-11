@@ -363,6 +363,10 @@ float LayoutThemeDefault::clampedMenuListArrowPaddingSize(
   return originalSize * style.effectiveZoom();
 }
 
+void LayoutThemeDefault::didChangeThemeEngine() {
+  m_menuListArrowWidthInDIP = 0;
+}
+
 // static
 void LayoutThemeDefault::setDefaultFontSize(int fontSize) {
   LayoutThemeFontProvider::setDefaultFontSize(fontSize);

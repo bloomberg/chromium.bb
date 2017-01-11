@@ -35,6 +35,7 @@
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8Initializer.h"
 #include "core/animation/AnimationClock.h"
+#include "core/layout/LayoutTheme.h"
 #include "core/page/Page.h"
 #include "core/workers/WorkerBackingThread.h"
 #include "gin/public/v8_platform.h"
@@ -124,6 +125,7 @@ bool layoutTestMode() {
 
 void setMockThemeEnabledForTest(bool value) {
   LayoutTestSupport::setMockThemeEnabledForTest(value);
+  LayoutTheme::theme().didChangeThemeEngine();
 }
 
 void setFontAntialiasingEnabledForTest(bool value) {
