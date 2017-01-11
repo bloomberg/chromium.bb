@@ -336,14 +336,14 @@ def ExperimentalCanvasFeaturesPages(base_name):
       'pixel_offscreenCanvas_2d_commit_main.html',
       base_name + '_OffscreenCanvasAccelerated2D',
       test_rect=[0, 0, 300, 300],
-      revision=2,
+      revision=3,
       browser_args=browser_args),
 
     PixelTestPage(
       'pixel_offscreenCanvas_2d_commit_worker.html',
       base_name + '_OffscreenCanvasAccelerated2DWorker',
       test_rect=[0, 0, 300, 300],
-      revision=2,
+      revision=3,
       browser_args=browser_args),
 
     PixelTestPage(
@@ -378,7 +378,7 @@ def ExperimentalCanvasFeaturesPages(base_name):
       'pixel_offscreenCanvas_2d_resize_on_worker.html',
       base_name + '_OffscreenCanvas2DResizeOnWorker',
       test_rect=[0, 0, 200, 200],
-      revision=1,
+      revision=2,
       browser_args=browser_args),
 
     PixelTestPage(

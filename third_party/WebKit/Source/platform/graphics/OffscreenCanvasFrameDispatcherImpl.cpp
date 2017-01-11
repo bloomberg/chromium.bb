@@ -209,9 +209,6 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
   cc::TransferableResource resource;
   resource.id = m_nextResourceId;
   resource.format = cc::ResourceFormat::RGBA_8888;
-  // TODO(crbug.com/645590): filter should respect the image-rendering CSS
-  // property of associated canvas element.
-  resource.filter = GL_LINEAR;
   resource.size = gfx::Size(m_width, m_height);
   // TODO(crbug.com/646022): making this overlay-able.
   resource.is_overlay_candidate = false;
@@ -281,6 +278,8 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
   float vertexOpacity[4] = {1.f, 1.f, 1.f, 1.f};
   // TODO(crbug.com/645994): this should be true when using style
   // "image-rendering: pixelated".
+  // TODO(crbug.com/645590): filter should respect the image-rendering CSS
+  // property of associated canvas element.
   const bool nearestNeighbor = false;
   quad->SetAll(sqs, bounds, bounds, bounds, needsBlending, resource.id,
                gfx::Size(), premultipliedAlpha, uvTopLeft, uvBottomRight,
