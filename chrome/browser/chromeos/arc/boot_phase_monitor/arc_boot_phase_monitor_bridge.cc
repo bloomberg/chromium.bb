@@ -2,24 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
+#include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
 
 #include "base/logging.h"
+#include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_instance_throttle.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/arc/arc_bridge_service.h"
 
 namespace arc {
-
-namespace {
-
-void PrioritizeArcInstanceCallback(bool success) {
-  VLOG(2) << "Finished prioritizing the instance: result=" << success;
-  if (!success)
-    LOG(WARNING) << "Failed to prioritize ARC";
-}
-
-}  // namespace
 
 ArcBootPhaseMonitorBridge::ArcBootPhaseMonitorBridge(
     ArcBridgeService* bridge_service)
@@ -48,11 +39,14 @@ void ArcBootPhaseMonitorBridge::OnInstanceClosed() {
 void ArcBootPhaseMonitorBridge::OnBootCompleted() {
   DCHECK(thread_checker_.CalledOnValidThread());
   VLOG(2) << "OnBootCompleted";
+
   chromeos::SessionManagerClient* session_manager_client =
       chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
-  session_manager_client->PrioritizeArcInstance(
-      base::Bind(PrioritizeArcInstanceCallback));
   session_manager_client->EmitArcBooted();
+
+  // Start monitoring window activation changes to prioritize/throttle the
+  // container when needed.
+  throttle_ = base::MakeUnique<ArcInstanceThrottle>();
 }
 
 }  // namespace arc

@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ARC_BOOT_PHASE_MONITOR_ARC_BOOT_PHASE_MONITOR_BRIDGE_H_
-#define COMPONENTS_ARC_BOOT_PHASE_MONITOR_ARC_BOOT_PHASE_MONITOR_BRIDGE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_ARC_BOOT_PHASE_MONITOR_ARC_BOOT_PHASE_MONITOR_BRIDGE_H_
+#define CHROME_BROWSER_CHROMEOS_ARC_BOOT_PHASE_MONITOR_ARC_BOOT_PHASE_MONITOR_BRIDGE_H_
+
+#include <memory>
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
@@ -15,6 +17,7 @@
 namespace arc {
 
 class ArcBridgeService;
+class ArcInstanceThrottle;
 
 // Receives boot phase notifications from ARC.
 class ArcBootPhaseMonitorBridge
@@ -34,6 +37,7 @@ class ArcBootPhaseMonitorBridge
 
  private:
   mojo::Binding<mojom::BootPhaseMonitorHost> binding_;
+  std::unique_ptr<ArcInstanceThrottle> throttle_;
 
   base::ThreadChecker thread_checker_;
 
@@ -42,4 +46,4 @@ class ArcBootPhaseMonitorBridge
 
 }  // namespace arc
 
-#endif  // COMPONENTS_ARC_BOOT_PHASE_MONITOR_ARC_BOOT_PHASE_MONITOR_BRIDGE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_ARC_BOOT_PHASE_MONITOR_ARC_BOOT_PHASE_MONITOR_BRIDGE_H_

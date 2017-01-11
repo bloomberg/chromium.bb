@@ -17,8 +17,6 @@ static_library("arc") {
     "bluetooth/bluetooth_struct_traits.h",
     "bluetooth/bluetooth_type_converters.cc",
     "bluetooth/bluetooth_type_converters.h",
-    "boot_phase_monitor/arc_boot_phase_monitor_bridge.cc",
-    "boot_phase_monitor/arc_boot_phase_monitor_bridge.h",
     "clipboard/arc_clipboard_bridge.cc",
     "clipboard/arc_clipboard_bridge.h",
     "crash_collector/arc_crash_collector_bridge.cc",
