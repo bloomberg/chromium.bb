@@ -12,17 +12,14 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.blimp_public.BlimpClientContext;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.PasswordUIView;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
-import org.chromium.chrome.browser.blimp.BlimpClientContextFactory;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPreferences;
 import org.chromium.chrome.browser.preferences.password.SavePasswordsPreferences;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListener;
 import org.chromium.chrome.browser.signin.SigninManager;
@@ -99,8 +96,6 @@ public class MainPreferences extends PreferenceFragment
     private void updatePreferences() {
         if (getPreferenceScreen() != null) getPreferenceScreen().removeAll();
         addPreferencesFromResource(R.xml.main_preferences);
-
-        addBlimpPreferences();
 
         if (TemplateUrlService.getInstance().isLoaded()) {
             updateSummary();
@@ -247,11 +242,5 @@ public class MainPreferences extends PreferenceFragment
                 return super.isPreferenceClickDisabledByPolicy(preference);
             }
         };
-    }
-
-    private void addBlimpPreferences() {
-        BlimpClientContext blimpClientContext = BlimpClientContextFactory
-                .getBlimpClientContextForProfile(Profile.getLastUsedProfile().getOriginalProfile());
-        blimpClientContext.attachBlimpPreferences(this);
     }
 }

@@ -8,14 +8,11 @@
 #include "base/android/jni_registrar.h"
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
-#include "blimp/client/public/android/blimp_jni_registrar.h"
 #include "chrome/browser/after_startup_task_utils_android.h"
 #include "chrome/browser/android/accessibility/font_size_prefs_android.h"
 #include "chrome/browser/android/appmenu/app_menu_drag_helper.h"
 #include "chrome/browser/android/banners/app_banner_infobar_delegate_android.h"
 #include "chrome/browser/android/banners/app_banner_manager_android.h"
-#include "chrome/browser/android/blimp/blimp_client_context_factory_android.h"
-#include "chrome/browser/android/blimp/chrome_blimp_client_context_delegate_android.h"
 #include "chrome/browser/android/bookmarks/bookmark_bridge.h"
 #include "chrome/browser/android/bookmarks/partner_bookmarks_reader.h"
 #include "chrome/browser/android/bottombar/overlay_panel_content.h"
@@ -238,8 +235,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"AutofillProfileBridge", autofill::RegisterAutofillProfileBridge},
     {"BackgroundSchedulerBridge",
      offline_pages::android::RegisterBackgroundSchedulerBridge},
-    {"BlimpClientContextFactory", RegisterBlimpClientContextFactoryJni},
-    {"Blimp", blimp::client::RegisterBlimpJni},
     {"BluetoothChooserAndroid", BluetoothChooserAndroid::Register},
     {"BookmarkBridge", BookmarkBridge::RegisterBookmarkBridge},
     {"BrowsingDataCounterBridge", BrowsingDataCounterBridge::Register},
@@ -250,8 +245,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"ChildAccountService", RegisterChildAccountService},
     {"ChromeApplication", chrome::android::ChromeApplication::RegisterBindings},
     {"ChromeBackupAgent", chrome::android::RegisterBackupAgent},
-    {"ChromeBlimpClientContextDelegate",
-     ChromeBlimpClientContextDelegateAndroid::RegisterJni},
     {"ChromeBrowserProvider",
      ChromeBrowserProvider::RegisterChromeBrowserProvider},
     {"ChromeFeatureList", chrome::android::RegisterChromeFeatureListJni},

@@ -55,7 +55,6 @@ import org.chromium.chrome.browser.appmenu.AppMenu;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuObserver;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
-import org.chromium.chrome.browser.blimp.ChromeBlimpClientContextDelegate;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
@@ -103,7 +102,6 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.printing.PrintShareActivity;
 import org.chromium.chrome.browser.printing.TabPrinter;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.snackbar.DataReductionPromoSnackbarController;
 import org.chromium.chrome.browser.snackbar.DataUseSnackbarController;
@@ -251,9 +249,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     // See enableHardwareAcceleration()
     private boolean mSetWindowHWA;
-
-    // Chrome delegate that includes functionalities needed by Blimp client.
-    private ChromeBlimpClientContextDelegate mBlimpClientContextDelegate;
 
     // Skips capturing screenshot for testing purpose.
     private boolean mScreenshotCaptureSkippedForTesting;
@@ -628,9 +623,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     @Override
     public void initializeState() {
         super.initializeState();
-        mBlimpClientContextDelegate =
-                ChromeBlimpClientContextDelegate.createAndSetDelegateForContext(
-                        Profile.getLastUsedProfile().getOriginalProfile());
 
         IntentHandler.setTestIntentsEnabled(
                 CommandLine.getInstance().hasSwitch(ContentSwitches.ENABLE_TEST_INTENTS));
@@ -994,11 +986,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         manager.removeAccessibilityStateChangeListener(this);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             manager.removeTouchExplorationStateChangeListener(mTouchExplorationStateChangeListener);
-        }
-
-        if (mBlimpClientContextDelegate != null) {
-            mBlimpClientContextDelegate.destroy();
-            mBlimpClientContextDelegate = null;
         }
 
         super.onDestroy();

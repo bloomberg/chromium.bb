@@ -1,5 +1,4 @@
 include_rules = [
-  "+blimp/client/public/android/java/src/org/chromium/blimp_public",
   "+components/autofill/android/java/src/org/chromium/components/autofill",
   "+components/bookmarks/common/android/java/src/org/chromium/components/bookmarks",
   "+components/dom_distiller/content/browser/android/java/src/org/chromium/components/dom_distiller/content",

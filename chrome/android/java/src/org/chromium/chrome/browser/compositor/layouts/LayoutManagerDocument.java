@@ -259,17 +259,13 @@ public class LayoutManagerDocument extends LayoutManager
         String url = tab.getUrl();
         boolean isNativePage = url != null && url.startsWith(UrlConstants.CHROME_NATIVE_SCHEME);
         int themeColor = tab.getThemeColor();
-        // TODO(xingliu): Remove this override themeColor for Blimp tabs. See crbug.com/644774.
-        if (tab.isBlimpTab() && tab.getBlimpContents() != null) {
-            themeColor = tab.getBlimpContents().getThemeColor();
-        }
 
-        boolean canUseLiveTexture = tab.isBlimpTab()
-                || tab.getContentViewCore() != null && !tab.isShowingSadTab() && !isNativePage;
+        boolean canUseLiveTexture =
+                tab.getContentViewCore() != null && !tab.isShowingSadTab() && !isNativePage;
 
         boolean needsUpdate = layoutTab.initFromHost(tab.getBackgroundColor(), tab.shouldStall(),
                 canUseLiveTexture, themeColor, ColorUtils.getTextBoxColorForToolbarBackground(
-                                    mContext.getResources(), tab, themeColor),
+                                                       mContext.getResources(), tab, themeColor),
                 ColorUtils.getTextBoxAlphaForToolbarBackground(tab));
         if (needsUpdate) requestUpdate();
 

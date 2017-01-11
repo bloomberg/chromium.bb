@@ -36,7 +36,6 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.blimp_public.contents.BlimpContents;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActionModeCallback;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -54,7 +53,6 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.banners.AppBannerManager;
-import org.chromium.chrome.browser.blimp.BlimpClientContextFactory;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchTabHelper;
@@ -157,9 +155,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     /** Whether or not this tab is an incognito tab. */
     private final boolean mIncognito;
 
-    /** Whether or not this tab is running in blimp mode. */
-    private boolean mBlimp;
-
     /**
      * An Application {@link Context}.  Unlike {@link #mActivity}, this is the only one that is
      * publicly exposed to help prevent leaking the {@link Activity}.
@@ -199,9 +194,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     // Content layer Observers and Delegates
     private ContentViewClient mContentViewClient;
     private TabWebContentsObserver mWebContentsObserver;
-    private TabBlimpContentsObserver mBlimpContentsObserver;
     private TabWebContentsDelegateAndroid mWebContentsDelegate;
-    private BlimpContents mBlimpContents;
 
     /**
      * If this tab was opened from another tab, store the id of the tab that
@@ -642,50 +635,29 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @return Whether or not this tab has a previous navigation entry.
      */
     public boolean canGoBack() {
-        if (isBlimpTab()) {
-            return getBlimpContents() != null
-                    && getBlimpContents().getNavigationController().canGoBack();
-        } else {
-            return getWebContents() != null
-                    && getWebContents().getNavigationController().canGoBack();
-        }
+        return getWebContents() != null && getWebContents().getNavigationController().canGoBack();
     }
 
     /**
      * @return Whether or not this tab has a navigation entry after the current one.
      */
     public boolean canGoForward() {
-        if (isBlimpTab()) {
-            return getBlimpContents() != null
-                    && getBlimpContents().getNavigationController().canGoForward();
-        } else {
-            return getWebContents() != null
-                    && getWebContents().getNavigationController().canGoForward();
-        }
+        return getWebContents() != null
+                && getWebContents().getNavigationController().canGoForward();
     }
 
     /**
      * Goes to the navigation entry before the current one.
      */
     public void goBack() {
-        if (isBlimpTab()) {
-            if (getBlimpContents() != null) getBlimpContents().getNavigationController().goBack();
-        } else {
-            if (getWebContents() != null) getWebContents().getNavigationController().goBack();
-        }
+        if (getWebContents() != null) getWebContents().getNavigationController().goBack();
     }
 
     /**
      * Goes to the navigation entry after the current one.
      */
     public void goForward() {
-        if (isBlimpTab()) {
-            if (getBlimpContents() != null) {
-                getBlimpContents().getNavigationController().goForward();
-            }
-        } else {
-            if (getWebContents() != null) getWebContents().getNavigationController().goForward();
-        }
+        if (getWebContents() != null) getWebContents().getNavigationController().goForward();
     }
 
     /**
@@ -940,11 +912,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     public void reload() {
         // TODO(dtrainor): Should we try to rebuild the ContentView if it's frozen?
-        if (isBlimpTab()) {
-            if (getBlimpContents() != null) {
-                getBlimpContents().getNavigationController().reload();
-            }
-        } else if (isOfflinePage()) {
+        if (isOfflinePage()) {
             // If current page is an offline page, reload it with custom behavior defined in extra
             // header respected.
             OfflinePageUtils.reload(this);
@@ -996,13 +964,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     public int getProgress() {
         if (!isLoading()) return 100;
 
-        if (mBlimp) {
-            return mBlimpContentsObserver != null ? mBlimpContentsObserver.getMostRecentProgress()
-                                                  : 0;
-        } else {
-            TabWebContentsDelegateAndroid delegate = getTabWebContentsDelegateAndroid();
-            return delegate != null ? delegate.getMostRecentProgress() : 0;
-        }
+        TabWebContentsDelegateAndroid delegate = getTabWebContentsDelegateAndroid();
+        return delegate != null ? delegate.getMostRecentProgress() : 0;
     }
 
     /**
@@ -1039,12 +1002,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         // corresponds to the didChangeThemeColor in WebContentsObserver.
         if (getWebContents() != null && didWebContentsThemeColorChange) {
             themeColor = getWebContents().getThemeColor();
-            if (themeColor != 0 && !ColorUtils.isValidThemeColor(themeColor)) themeColor = 0;
-        }
-
-        // Apply theme color for Blimp tab.
-        if (isBlimpTab() && getBlimpContents() != null) {
-            themeColor = getBlimpContents().getThemeColor();
             if (themeColor != 0 && !ColorUtils.isValidThemeColor(themeColor)) themeColor = 0;
         }
 
@@ -1087,20 +1044,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     public WebContents getWebContents() {
         return mContentViewCore != null ? mContentViewCore.getWebContents() : null;
-    }
-
-    /**
-     * @return The {@link BlimpContents} associated with this tab, if in blimp mode.
-     */
-    public BlimpContents getBlimpContents() {
-        return mBlimpContents;
-    }
-
-    /**
-     * @return Whether or not this tab is running in blimp mode.
-     */
-    public boolean isBlimpTab() {
-        return mBlimp;
     }
 
     /**
@@ -1288,7 +1231,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             assert !isFrozen();
 
             if (mContentViewCore != null) mContentViewCore.onShow();
-            if (mBlimpContents != null) mBlimpContents.show();
 
             if (mTabUma != null) {
                 mTabUma.onShow(type, getTimestampMillis(),
@@ -1328,7 +1270,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             mIsHidden = true;
 
             if (mContentViewCore != null) mContentViewCore.onHide();
-            if (mBlimpContents != null) mBlimpContents.hide();
 
             // Clean up any fullscreen state that might impact other tabs.
             if (mFullscreenManager != null) {
@@ -1415,12 +1356,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             mBrowserControlsVisibilityDelegate =
                     mDelegateFactory.createBrowserControlsVisibilityDelegate(this);
 
-            mBlimp = BlimpClientContextFactory
-                             .getBlimpClientContextForProfile(
-                                     Profile.getLastUsedProfile().getOriginalProfile())
-                             .isBlimpEnabled()
-                    && !mIncognito;
-
             // Attach the TabContentManager if we have one.  This will bind this Tab's content layer
             // to this manager.
             // TODO(dtrainor): Remove this and move to a pull model instead of pushing the layer.
@@ -1431,19 +1366,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             if (getFrozenContentsState() != null || getPendingLoadParams() != null) {
                 if (unfreeze) unfreezeContents();
                 return;
-            }
-
-            if (isBlimpTab() && getBlimpContents() == null) {
-                Profile profile = Profile.getLastUsedProfile();
-                if (mIncognito) profile = profile.getOffTheRecordProfile();
-                mBlimpContents = nativeInitBlimpContents(
-                        mNativeTabAndroid, profile, mWindowAndroid.getNativePointer());
-                if (mBlimpContents != null) {
-                    mBlimpContentsObserver = new TabBlimpContentsObserver(this);
-                    mBlimpContents.addObserver(mBlimpContentsObserver);
-                } else {
-                    mBlimp = false;
-                }
             }
 
             boolean creatingWebContents = webContents == null;
@@ -1618,8 +1540,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     public View getContentView() {
         if (!isNativePage()) {
             return getView();
-        } else if (mBlimpContents != null) {
-            return mBlimpContents.getView();
         } else if (mContentViewCore != null) {
             return mContentViewCore.getContainerView();
         }
@@ -1966,9 +1886,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         destroyNativePageInternal(currentNativePage);
         destroyContentViewCore(true);
 
-        // Native part of BlimpContents is destroyed on the subsequent call to nativeDestroy.
-        mBlimpContents = null;
-
         // Destroys the native tab after destroying the ContentView but before destroying the
         // InfoBarContainer. The native tab should be destroyed before the infobar container as
         // destroying the native tab cleanups up any remaining infobars. The infobar container
@@ -2004,10 +1921,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     public String getUrl() {
         String url = getWebContents() != null ? getWebContents().getUrl() : "";
 
-        if (isBlimpTab() && getBlimpContents() != null) {
-            url = getBlimpContents().getNavigationController().getUrl();
-        }
-
         // If we have a ContentView, or a NativePage, or the url is not empty, we have a WebContents
         // so cache the WebContent's url. If not use the cached version.
         if (getContentViewCore() != null || getNativePage() != null || !TextUtils.isEmpty(url)) {
@@ -2034,8 +1947,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         String title = "";
         if (mNativePage != null) {
             title = mNativePage.getTitle();
-        } else if (getBlimpContents() != null) {
-            title = getBlimpContents().getNavigationController().getTitle();
         } else if (getWebContents() != null) {
             title = getWebContents().getTitle();
         }
@@ -2744,21 +2655,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             }
             updateFullscreenEnabledState();
         }
-
-        // For blimp mode, offset the blimp view by the height of browser controls. This will ensure
-        // that the view doesn't get clipped at the bottom of the page and also the touch offsets
-        // would work correctly.
-        if (getBlimpContents() != null && mFullscreenManager != null) {
-            ViewGroup blimpView = getBlimpContents().getView();
-            FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) blimpView.getLayoutParams();
-            if (lp == null) {
-                lp = new FrameLayout.LayoutParams(
-                        LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-            }
-
-            lp.topMargin = mFullscreenManager.getTopControlsHeight();
-            blimpView.setLayoutParams(lp);
-        }
     }
 
     /**
@@ -3167,8 +3063,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private native void nativeInitWebContents(long nativeTabAndroid, boolean incognito,
             WebContents webContents, TabWebContentsDelegateAndroid delegate,
             ContextMenuPopulator contextMenuPopulator);
-    private native BlimpContents nativeInitBlimpContents(
-            long nativeTabAndroid, Profile profile, long windowAndroidPtr);
     private native void nativeUpdateDelegates(long nativeTabAndroid,
             TabWebContentsDelegateAndroid delegate, ContextMenuPopulator contextMenuPopulator);
     private native void nativeDestroyWebContents(long nativeTabAndroid, boolean deleteNative);

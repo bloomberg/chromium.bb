@@ -11,12 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
-#include "blimp/client/public/blimp_client_context.h"
-#include "blimp/client/public/contents/blimp_contents.h"
-#include "blimp/client/public/contents/blimp_contents_view.h"
-#include "blimp/client/public/contents/blimp_navigation_controller.h"
 #include "cc/layers/layer.h"
-#include "chrome/browser/android/blimp/blimp_client_context_factory.h"
 #include "chrome/browser/android/compositor/tab_content_manager.h"
 #include "chrome/browser/android/metrics/uma_utils.h"
 #include "chrome/browser/android/offline_pages/offline_page_bridge.h"
@@ -368,41 +363,7 @@ void TabAndroid::InitWebContents(
   // off the record state.
   CHECK_EQ(GetProfile()->IsOffTheRecord(), incognito);
 
-  if (!blimp_contents_)
-    content_layer_->InsertChild(web_contents_->GetNativeView()->GetLayer(), 0);
-}
-
-base::android::ScopedJavaLocalRef<jobject> TabAndroid::InitBlimpContents(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& j_profile,
-    jlong window_android_ptr) {
-  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile.obj());
-  DCHECK(!profile->IsOffTheRecord());
-  blimp::client::BlimpClientContext* context =
-      BlimpClientContextFactory::GetForBrowserContext(profile);
-  DCHECK(context);
-  ui::WindowAndroid* window =
-      reinterpret_cast<ui::WindowAndroid*>(window_android_ptr);
-  blimp_contents_ = context->CreateBlimpContents(window);
-  // If creating a BlimpContents failed, fall back to WebContents-based by
-  // doing an early out here.
-  if (!blimp_contents_)
-    return nullptr;
-
-  // Let's detach the layer from WebContents first, just to be sure.
-  if (web_contents_ && web_contents_->GetNativeView() &&
-      web_contents_->GetNativeView()->GetLayer()) {
-    cc::Layer* web_contents_layer = web_contents_->GetNativeView()->GetLayer();
-    if (web_contents_layer->parent() == content_layer_.get())
-      web_contents_layer->RemoveFromParent();
-  }
-
-  // Attach the layer holding the tab contents to the |content_layer_|.
-  content_layer_->InsertChild(
-      blimp_contents_->GetView()->GetNativeView()->GetLayer(), 0);
-
-  return blimp_contents_->GetJavaObject();
+  content_layer_->InsertChild(web_contents_->GetNativeView()->GetLayer(), 0);
 }
 
 void TabAndroid::UpdateDelegates(
@@ -526,11 +487,6 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
     // typing chrome://history as well as selecting from the drop down menu.
     if (fixed_url.spec() == chrome::kChromeUIHistoryURL) {
       content::RecordAction(base::UserMetricsAction("ShowHistory"));
-    }
-
-    if (blimp_contents()) {
-      blimp_contents()->GetNavigationController().LoadURL(fixed_url);
-      return DEFAULT_PAGE_LOAD;
     }
 
     content::NavigationController::LoadURLParams load_params(fixed_url);

@@ -27,12 +27,6 @@
 class GURL;
 class Profile;
 
-namespace blimp {
-namespace client {
-class BlimpContents;
-}
-}
-
 namespace cc {
 class Layer;
 }
@@ -86,11 +80,6 @@ class TabAndroid : public CoreTabHelperDelegate,
 
   // Return the WebContents, if any, currently owned by this TabAndroid.
   content::WebContents* web_contents() const { return web_contents_.get(); }
-
-  // Return the BlimpContents, if any, currently owned by this TabAndroid.
-  blimp::client::BlimpContents* blimp_contents() const {
-    return blimp_contents_.get();
-  }
 
   // Return the cc::Layer that represents the content for this TabAndroid.
   scoped_refptr<cc::Layer> GetContentLayer() const;
@@ -153,11 +142,6 @@ class TabAndroid : public CoreTabHelperDelegate,
       const base::android::JavaParamRef<jobject>& jweb_contents,
       const base::android::JavaParamRef<jobject>& jweb_contents_delegate,
       const base::android::JavaParamRef<jobject>& jcontext_menu_populator);
-  base::android::ScopedJavaLocalRef<jobject> InitBlimpContents(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jobject>& j_profile,
-      jlong window_android_ptr);
   void UpdateDelegates(
         JNIEnv* env,
         const base::android::JavaParamRef<jobject>& obj,
@@ -265,8 +249,6 @@ class TabAndroid : public CoreTabHelperDelegate,
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<android::TabWebContentsDelegateAndroid>
       web_contents_delegate_;
-
-  std::unique_ptr<blimp::client::BlimpContents> blimp_contents_;
 
   std::unique_ptr<browser_sync::SyncedTabDelegateAndroid> synced_tab_delegate_;
 
