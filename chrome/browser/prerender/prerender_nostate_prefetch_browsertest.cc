@@ -178,6 +178,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchHistograms) {
       "Prerender.websame_PrefetchTTFCP.Warm.Cacheable.Visible", 1);
   histogram_tester().ExpectTotalCount(
       "Prerender.websame_NoStatePrefetchResponseTypes", 2);
+  histogram_tester().ExpectTotalCount("Prerender.websame_PrefetchAge", 1);
 }
 
 // Checks the prefetch of an img tag.

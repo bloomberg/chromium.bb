@@ -468,10 +468,9 @@ void PrerenderHistograms::RecordPrefetchFirstContentfulPaintTime(
 
   if (!prefetch_age.is_zero()) {
     DCHECK_NE(origin, ORIGIN_NONE);
-    RecordHistogramTime(
-        GetHistogramName(origin, IsOriginWash(), "Prerender.PrefetchAge"),
-        base::TimeDelta::FromMilliseconds(10), base::TimeDelta::FromMinutes(30),
-        prefetch_age, 50);
+    RecordHistogramTime(GetHistogramName(origin, IsOriginWash(), "PrefetchAge"),
+                        base::TimeDelta::FromMilliseconds(10),
+                        base::TimeDelta::FromMinutes(30), prefetch_age, 50);
   }
 
   std::string histogram_base_name;
