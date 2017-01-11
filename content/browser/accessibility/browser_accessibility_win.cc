@@ -3623,12 +3623,6 @@ STDMETHODIMP BrowserAccessibilityWin::QueryService(REFGUID guid_service,
   if (!instance_active())
     return E_FAIL;
 
-  // The system uses IAccessible APIs for many purposes, but only
-  // assistive technology like screen readers uses IAccessible2.
-  // Enable full accessibility support when IAccessible2 APIs are queried.
-  if (riid == IID_IAccessible2)
-    BrowserAccessibilityStateImpl::GetInstance()->EnableAccessibility();
-
   if (guid_service == GUID_IAccessibleContentDocument) {
     // Special Mozilla extension: return the accessible for the root document.
     // Screen readers use this to distinguish between a document loaded event
