@@ -88,7 +88,7 @@ SuggestAppsDialog.prototype.show = function() {
  * Shows suggest-apps dialog by file extension and mime.
  *
  * @param {string} extension Extension of the file with a trailing dot.
- * @param {string} mime Mime of the file.
+ * @param {?string} mime Mime of the file.
  * @param {function(SuggestAppsDialog.Result, ?string)} onDialogClosed Called
  *     when the dialog is closed, with a result code and an optionally an
  *     extension id, if an extension was installed.
@@ -96,11 +96,11 @@ SuggestAppsDialog.prototype.show = function() {
 SuggestAppsDialog.prototype.showByExtensionAndMime =
     function(extension, mime, onDialogClosed) {
   assert(extension && extension[0] === '.');
+  var options = {file_extension: extension.substr(1)};
+  if (mime)
+    options.mime_type = mime;
   this.showInternal_(
-      {
-        file_extension: extension.substr(1),
-        mime_type: mime
-      },
+      options,
       str('SUGGEST_DIALOG_TITLE'),
       FileTasks.createWebStoreLink(extension, mime),
       onDialogClosed);

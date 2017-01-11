@@ -206,7 +206,7 @@ FileTasks.prototype.openSuggestAppsDialog = function(
   var extension = splitted[1];
 
   // Returns with failure if the file has neither extension nor MIME type.
-  if (!extension || !mimeType) {
+  if (!extension && !mimeType) {
     onFailure();
     return;
   }
