@@ -2553,7 +2553,7 @@ LayoutRect localCaretRectOfPositionTemplate(
                                       boxPosition.offsetInBox);
 }
 
-// This function was added because the caret rect that will be calcaulated by
+// This function was added because the caret rect that is calculated by
 // using the line top value instead of the selection top.
 template <typename Strategy>
 LayoutRect localSelectionRectOfPositionTemplate(

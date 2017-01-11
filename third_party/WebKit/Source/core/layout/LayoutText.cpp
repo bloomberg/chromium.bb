@@ -741,9 +741,22 @@ LayoutRect LayoutText::localCaretRect(InlineBox* inlineBox,
     return LayoutRect();
 
   InlineTextBox* box = toInlineTextBox(inlineBox);
+  // Find an InlineBox before caret position, which is used to get caret height.
+  InlineBox* caretBox = box;
+  if (box->getLineLayoutItem().style(box->isFirstLineStyle())->direction() ==
+      TextDirection::kLtr) {
+    if (box->prevLeafChild() && caretOffset == 0)
+      caretBox = box->prevLeafChild();
+  } else {
+    if (box->nextLeafChild() && caretOffset == 0)
+      caretBox = box->nextLeafChild();
+  }
 
-  int height = box->root().selectionHeight().toInt();
-  int top = box->root().selectionTop().toInt();
+  // Get caret height from a font of character.
+  const ComputedStyle* styleToUse =
+      caretBox->getLineLayoutItem().style(caretBox->isFirstLineStyle());
+  int height = styleToUse->font().primaryFont()->getFontMetrics().height();
+  int top = caretBox->logicalTop().toInt();
 
   // Go ahead and round left to snap it to the nearest pixel.
   LayoutUnit left = box->positionForOffset(caretOffset);
