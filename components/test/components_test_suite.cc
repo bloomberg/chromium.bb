@@ -23,6 +23,8 @@
 #include "url/url_util.h"
 
 #if !defined(OS_IOS)
+#include "content/public/common/content_client.h"
+#include "content/public/test/content_test_suite_base.h"
 #include "content/public/test/test_content_client_initializer.h"
 #include "content/public/test/unittest_test_suite.h"
 #include "ui/gl/test/gl_surface_test_support.h"
@@ -58,6 +60,12 @@ class ComponentsTestSuite : public base::TestSuite {
 
 #if !defined(OS_IOS)
     gl::GLSurfaceTestSupport::InitializeOneOff();
+
+    // Setup content scheme statics.
+    {
+      content::ContentClient content_client;
+      content::ContentTestSuiteBase::RegisterContentSchemes(&content_client);
+    }
 #endif
 #if defined(OS_ANDROID)
     // Register JNI bindings for android.

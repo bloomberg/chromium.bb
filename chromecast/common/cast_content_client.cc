@@ -56,10 +56,6 @@ std::string BuildAndroidOsInfo() {
 }
 #endif
 
-const url::SchemeWithType kChromeResourceSchemeWithType = {
-  kChromeResourceScheme, url::SCHEME_WITHOUT_PORT
-};
-
 }  // namespace
 
 std::string GetUserAgent() {
@@ -83,11 +79,8 @@ std::string GetUserAgent() {
 CastContentClient::~CastContentClient() {
 }
 
-void CastContentClient::AddAdditionalSchemes(
-    std::vector<url::SchemeWithType>* standard_schemes,
-    std::vector<url::SchemeWithType>* referrer_schemes,
-    std::vector<std::string>* savable_schemes) {
-  standard_schemes->push_back(kChromeResourceSchemeWithType);
+void CastContentClient::AddAdditionalSchemes(Schemes* schemes) {
+  schemes->standard_schemes.push_back(kChromeResourceScheme);
 }
 
 std::string CastContentClient::GetUserAgent() const {

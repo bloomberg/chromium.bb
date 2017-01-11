@@ -5425,8 +5425,7 @@ void RenderFrameImpl::OnGetSavableResourceLinks() {
   std::vector<SavableSubframe> subframes;
   SavableResourcesResult result(&resources_list, &subframes);
 
-  if (!GetSavableResourceLinksForFrame(
-          frame_, &result, const_cast<const char**>(GetSavableSchemes()))) {
+  if (!GetSavableResourceLinksForFrame(frame_, &result)) {
     Send(new FrameHostMsg_SavableResourceLinksError(routing_id_));
     return;
   }

@@ -555,31 +555,37 @@ void ChromeContentClient::AddContentDecryptionModules(
   // TODO(jrummell): Add External Clear Key CDM for testing, if it's available.
 }
 
-static const url::SchemeWithType kChromeStandardURLSchemes[] = {
-    {extensions::kExtensionScheme, url::SCHEME_WITHOUT_PORT},
-    {chrome::kChromeNativeScheme, url::SCHEME_WITHOUT_PORT},
-    {chrome::kChromeSearchScheme, url::SCHEME_WITHOUT_PORT},
-    {dom_distiller::kDomDistillerScheme, url::SCHEME_WITHOUT_PORT},
+static const char* const kChromeStandardURLSchemes[] = {
+    extensions::kExtensionScheme,
+    chrome::kChromeNativeScheme,
+    chrome::kChromeSearchScheme,
+    dom_distiller::kDomDistillerScheme,
 #if defined(OS_CHROMEOS)
-    {chrome::kCrosScheme, url::SCHEME_WITHOUT_PORT},
+    chrome::kCrosScheme,
 #endif
 };
 
-void ChromeContentClient::AddAdditionalSchemes(
-    std::vector<url::SchemeWithType>* standard_schemes,
-    std::vector<url::SchemeWithType>* referrer_schemes,
-    std::vector<std::string>* savable_schemes) {
-  for (const url::SchemeWithType& standard_scheme : kChromeStandardURLSchemes)
-    standard_schemes->push_back(standard_scheme);
+void ChromeContentClient::AddAdditionalSchemes(Schemes* schemes) {
+  for (auto& standard_scheme : kChromeStandardURLSchemes)
+    schemes->standard_schemes.push_back(standard_scheme);
 
 #if defined(OS_ANDROID)
-  referrer_schemes->push_back(
-      {chrome::kAndroidAppScheme, url::SCHEME_WITHOUT_PORT});
+  schemes->referrer_schemes.push_back(chrome::kAndroidAppScheme);
 #endif
 
-  savable_schemes->push_back(extensions::kExtensionScheme);
-  savable_schemes->push_back(chrome::kChromeSearchScheme);
-  savable_schemes->push_back(dom_distiller::kDomDistillerScheme);
+  schemes->savable_schemes.push_back(extensions::kExtensionScheme);
+  schemes->savable_schemes.push_back(chrome::kChromeSearchScheme);
+  schemes->savable_schemes.push_back(dom_distiller::kDomDistillerScheme);
+
+  schemes->secure_schemes.push_back(chrome::kChromeSearchScheme);
+  schemes->secure_schemes.push_back(content::kChromeUIScheme);
+  schemes->secure_schemes.push_back(extensions::kExtensionScheme);
+  schemes->secure_origins = GetSecureOriginWhitelist();
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  if (extensions::feature_util::ExtensionServiceWorkersEnabled())
+    schemes->service_worker_schemes.push_back(extensions::kExtensionScheme);
+#endif
 }
 
 std::string ChromeContentClient::GetProduct() const {
@@ -638,23 +644,6 @@ bool ChromeContentClient::GetSandboxProfileForSandboxType(
   return false;
 }
 #endif
-
-void ChromeContentClient::AddSecureSchemesAndOrigins(
-    std::set<std::string>* schemes,
-    std::set<GURL>* origins) {
-  schemes->insert(chrome::kChromeSearchScheme);
-  schemes->insert(content::kChromeUIScheme);
-  schemes->insert(extensions::kExtensionScheme);
-  GetSecureOriginWhitelist(origins);
-}
-
-void ChromeContentClient::AddServiceWorkerSchemes(
-    std::set<std::string>* schemes) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (extensions::feature_util::ExtensionServiceWorkersEnabled())
-    schemes->insert(extensions::kExtensionScheme);
-#endif
-}
 
 bool ChromeContentClient::AllowScriptExtensionForServiceWorker(
     const GURL& script_url) {

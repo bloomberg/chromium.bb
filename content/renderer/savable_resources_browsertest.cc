@@ -63,19 +63,11 @@ class SavableResourcesTest : public ContentBrowserTest {
     std::vector<SavableSubframe> subframes;
     SavableResourcesResult result(&resources_list, &subframes);
 
-    const char* savable_schemes[] = {
-      "http",
-      "https",
-      "file",
-      NULL
-    };
-
     RenderFrame* render_frame =
         RenderFrame::FromRoutingID(render_frame_routing_id);
 
     ASSERT_TRUE(GetSavableResourceLinksForFrame(
-        render_frame->GetWebFrame(),
-        &result, savable_schemes));
+        render_frame->GetWebFrame(), &result));
 
     EXPECT_THAT(resources_list, expected_resources_matcher);
 

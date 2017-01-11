@@ -50,8 +50,7 @@ struct SavableResourcesResult {
 // Otherwise returns false (i.e. if the frame contains a non-savable content).
 CONTENT_EXPORT bool GetSavableResourceLinksForFrame(
     blink::WebFrame* frame,
-    SavableResourcesResult* result,
-    const char** savable_schemes);
+    SavableResourcesResult* result);
 
 // Returns the value in an elements resource url attribute. For IMG, SCRIPT or
 // INPUT TYPE=image, returns the value in "src". For LINK TYPE=text/css, returns

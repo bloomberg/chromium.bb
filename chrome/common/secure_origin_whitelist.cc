@@ -4,14 +4,13 @@
 
 #include "chrome/common/secure_origin_whitelist.h"
 
-#include <vector>
-
 #include "base/command_line.h"
 #include "base/strings/string_split.h"
 #include "chrome/common/chrome_switches.h"
 #include "extensions/common/constants.h"
 
-void GetSecureOriginWhitelist(std::set<GURL>* origins) {
+std::vector<GURL> GetSecureOriginWhitelist() {
+  std::vector<GURL> origins;
   // If kUnsafelyTreatInsecureOriginAsSecure option is given and
   // kUserDataDir is present, add the given origins as trustworthy
   // for whitelisting.
@@ -23,11 +22,14 @@ void GetSecureOriginWhitelist(std::set<GURL>* origins) {
         switches::kUnsafelyTreatInsecureOriginAsSecure);
     for (const std::string& origin : base::SplitString(
              origins_str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL))
-      origins->insert(GURL(origin));
+      origins.push_back(GURL(origin));
   }
+
+  return origins;
 }
 
-void GetSchemesBypassingSecureContextCheckWhitelist(
-    std::set<std::string>* schemes) {
-  schemes->insert(extensions::kExtensionScheme);
+std::set<std::string> GetSchemesBypassingSecureContextCheckWhitelist() {
+  std::set<std::string> schemes;
+  schemes.insert(extensions::kExtensionScheme);
+  return schemes;
 }

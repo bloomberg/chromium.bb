@@ -5,7 +5,11 @@
 #ifndef CONTENT_COMMON_URL_SCHEMES_H_
 #define CONTENT_COMMON_URL_SCHEMES_H_
 
+#include <string>
+#include <vector>
+
 #include "content/common/content_export.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -20,6 +24,17 @@ namespace content {
 // sets of schemes are locked down. The embedder can add additional schemes by
 // overriding the ContentClient::AddAdditionalSchemes method.
 CONTENT_EXPORT void RegisterContentSchemes(bool lock_schemes);
+
+// See comment in ContentClient::AddAdditionalSchemes for explanations. These
+// getters can be invoked on any thread.
+const std::vector<std::string>& GetSavableSchemes();
+const std::vector<std::string>& GetSecureSchemes();
+const std::vector<GURL>& GetSecureOrigins();
+const std::vector<std::string>& GetServiceWorkerSchemes();
+
+// Resets the internal secure schemes/origins and service worker whitelists.
+// Used only for testing.
+void CONTENT_EXPORT RefreshSecuritySchemesForTesting();
 
 }  // namespace content
 

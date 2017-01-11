@@ -422,16 +422,12 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   pdf::PepperPDFHost::SetPrintClient(pdf_print_client_.get());
 #endif
 
-  std::set<GURL> origins;
-  GetSecureOriginWhitelist(&origins);
-  for (const GURL& origin : origins) {
+  for (auto& origin : GetSecureOriginWhitelist()) {
     WebSecurityPolicy::addOriginTrustworthyWhiteList(
         WebSecurityOrigin::create(origin));
   }
 
-  std::set<std::string> schemes;
-  GetSchemesBypassingSecureContextCheckWhitelist(&schemes);
-  for (const std::string& scheme : schemes) {
+  for (auto& scheme : GetSchemesBypassingSecureContextCheckWhitelist()) {
     WebSecurityPolicy::addSchemeToBypassSecureContextWhitelist(
         WebString::fromUTF8(scheme));
   }

@@ -74,13 +74,9 @@ void ShellContentClient::AddPepperPlugins(
 #endif  // !defined(DISABLE_NACL)
 }
 
-void ShellContentClient::AddAdditionalSchemes(
-    std::vector<url::SchemeWithType>* standard_schemes,
-    std::vector<url::SchemeWithType>* referrer_schemes,
-    std::vector<std::string>* savable_schemes) {
-  standard_schemes->push_back(url::SchemeWithType{extensions::kExtensionScheme,
-                                                  url::SCHEME_WITHOUT_PORT});
-  savable_schemes->push_back(kExtensionScheme);
+void ShellContentClient::AddAdditionalSchemes(Schemes* schemes) {
+  schemes->standard_schemes.push_back(extensions::kExtensionScheme);
+  schemes->savable_schemes.push_back(kExtensionScheme);
 }
 
 std::string ShellContentClient::GetUserAgent() const {

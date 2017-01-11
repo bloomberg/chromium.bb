@@ -7,39 +7,50 @@
 #include <string.h>
 
 #include <algorithm>
-#include <string>
-#include <vector>
 
 #include "base/strings/string_util.h"
-#include "content/common/savable_url_schemes.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
 #include "url/url_util.h"
 
+namespace content {
 namespace {
+
+// These lists are lazily initialized below and are leaked on shutdown to
+// prevent any destructors from being called that will slow us down or cause
+// problems.
+std::vector<std::string>* savable_schemes = nullptr;
+std::vector<std::string>* secure_schemes = nullptr;
+// Note we store GURLs here instead of strings to deal with canonicalization.
+std::vector<GURL>* secure_origins = nullptr;
+std::vector<std::string>* service_worker_schemes = nullptr;
+
+const char* const kDefaultSavableSchemes[] = {
+  url::kHttpScheme,
+  url::kHttpsScheme,
+  url::kFileScheme,
+  url::kFileSystemScheme,
+  url::kFtpScheme,
+  kChromeDevToolsScheme,
+  kChromeUIScheme,
+  url::kDataScheme
+};
 
 }  // namespace
 
-namespace content {
-
 void RegisterContentSchemes(bool lock_schemes) {
-  std::vector<url::SchemeWithType> additional_standard_schemes;
-  std::vector<url::SchemeWithType> additional_referrer_schemes;
-  std::vector<std::string> additional_savable_schemes;
-
-  GetContentClient()->AddAdditionalSchemes(&additional_standard_schemes,
-                                           &additional_referrer_schemes,
-                                           &additional_savable_schemes);
+  ContentClient::Schemes schemes;
+  GetContentClient()->AddAdditionalSchemes(&schemes);
 
   url::AddStandardScheme(kChromeDevToolsScheme, url::SCHEME_WITHOUT_PORT);
   url::AddStandardScheme(kChromeUIScheme, url::SCHEME_WITHOUT_PORT);
   url::AddStandardScheme(kGuestScheme, url::SCHEME_WITHOUT_PORT);
 
-  for (const url::SchemeWithType& scheme : additional_standard_schemes)
-    url::AddStandardScheme(scheme.scheme, scheme.type);
+  for (auto& scheme : schemes.standard_schemes)
+    url::AddStandardScheme(scheme.c_str(), url::SCHEME_WITHOUT_PORT);
 
-  for (const url::SchemeWithType& scheme : additional_referrer_schemes)
-    url::AddReferrerScheme(scheme.scheme, scheme.type);
+  for (auto& scheme : schemes.referrer_schemes)
+    url::AddReferrerScheme(scheme.c_str(), url::SCHEME_WITHOUT_PORT);
 
   // Prevent future modification of the scheme lists. This is to prevent
   // accidental creation of data races in the program. Add*Scheme aren't
@@ -49,29 +60,47 @@ void RegisterContentSchemes(bool lock_schemes) {
   if (lock_schemes)
     url::LockSchemeRegistries();
 
-  // We rely on the above lock to protect this part from being invoked twice.
-  if (!additional_savable_schemes.empty()) {
-    const char* const* default_schemes = GetSavableSchemesInternal();
-    const char* const* default_schemes_end = NULL;
-    for (default_schemes_end = default_schemes; *default_schemes_end;
-         ++default_schemes_end) {}
-    const int default_schemes_count = default_schemes_end - default_schemes;
+  // Combine the default savable schemes with the additional ones given.
+  savable_schemes = new std::vector<std::string>;
+  for (auto& default_scheme : kDefaultSavableSchemes)
+    savable_schemes->push_back(default_scheme);
+  savable_schemes->insert(savable_schemes->end(),
+                          schemes.savable_schemes.begin(),
+                          schemes.savable_schemes.end());
 
-    int schemes = static_cast<int>(additional_savable_schemes.size());
-    // The array, and the copied schemes won't be freed, but will remain
-    // reachable.
-    char **savable_schemes = new char*[schemes + default_schemes_count + 1];
-    memcpy(savable_schemes,
-           default_schemes,
-           default_schemes_count * sizeof(default_schemes[0]));
-    for (int i = 0; i < schemes; ++i) {
-      savable_schemes[default_schemes_count + i] =
-          base::strdup(additional_savable_schemes[i].c_str());
-    }
-    savable_schemes[default_schemes_count + schemes] = 0;
+  secure_schemes = new std::vector<std::string>;
+  *secure_schemes = std::move(schemes.secure_schemes);
 
-    SetSavableSchemes(savable_schemes);
-  }
+  service_worker_schemes = new std::vector<std::string>;
+  *service_worker_schemes = std::move(schemes.service_worker_schemes);
+
+  secure_origins = new std::vector<GURL>;
+  *secure_origins = std::move(schemes.secure_origins);
+}
+
+const std::vector<std::string>& GetSavableSchemes() {
+  return *savable_schemes;
+}
+
+const std::vector<std::string>& GetSecureSchemes() {
+  return *secure_schemes;
+}
+
+const std::vector<GURL>& GetSecureOrigins() {
+  return *secure_origins;
+}
+
+const std::vector<std::string>& GetServiceWorkerSchemes() {
+  return *service_worker_schemes;
+}
+
+void RefreshSecuritySchemesForTesting() {
+  ContentClient::Schemes schemes;
+  GetContentClient()->AddAdditionalSchemes(&schemes);
+
+  *secure_schemes = std::move(schemes.secure_schemes);
+  *service_worker_schemes = std::move(schemes.service_worker_schemes);
+  *secure_origins = std::move(schemes.secure_origins);
 }
 
 }  // namespace content

@@ -69,7 +69,6 @@ static_library("common") {
     "chrome_content_client.cc",
     "chrome_content_client.h",
     "chrome_content_client_constants.cc",
-    "chrome_content_client_ios.mm",
     "chrome_media_client_android.cc",
     "chrome_media_client_android.h",
     "chrome_result_codes.h",

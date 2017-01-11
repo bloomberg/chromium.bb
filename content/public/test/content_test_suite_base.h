@@ -16,16 +16,15 @@ class ContentClient;
 // initializes bits and pieces of content; see the implementation of Initialize
 // for details.
 class ContentTestSuiteBase : public base::TestSuite {
+ public:
+  // Registers content's schemes. During this call, the given content_client is
+  // registered temporarily so that it can provide additional schemes.
+  static void RegisterContentSchemes(ContentClient* content_client);
+
  protected:
   ContentTestSuiteBase(int argc, char** argv);
 
   void Initialize() override;
-
-  // The methods below are for unit test setup.
-
-  // Registers content's schemes. During this call, the given content_client is
-  // registered temporarily so that it can provide additional schemes.
-  static void RegisterContentSchemes(ContentClient* content_client);
 
   // Registers renderer/utility/gpu processes to run in-thread.
   void RegisterInProcessThreads();
