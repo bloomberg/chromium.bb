@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.payments.ui;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.view.View;
 import android.view.ViewGroup;
@@ -71,6 +72,19 @@ public class BillingAddressAdapter<T> extends ArrayAdapter<T> {
         // Don't display last item, it is used as hint.
         int count = super.getCount();
         return count > 0 ? count - 1 : count;
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        View view = super.getView(position, convertView, parent);
+
+        // Add the left and right padding of the parent's background to the selected item view to
+        // avoid overlaping the downward triangle.
+        Rect rect = new Rect();
+        parent.getBackground().getPadding(rect);
+        view.setPadding(view.getPaddingLeft() + rect.left, view.getPaddingTop(),
+                view.getPaddingRight() + rect.right, view.getPaddingBottom());
+        return view;
     }
 
     @Override
