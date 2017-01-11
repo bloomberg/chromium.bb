@@ -29,8 +29,14 @@
 #include "media/media_features.h"
 
 #if defined(OS_WIN)
+#include "base/win/pe_image.h"
 #include "chrome/install_static/install_util.h"
 #include "components/browser_watcher/stability_data_names.h"
+#endif
+
+#if defined(OS_WIN)
+// http://blogs.msdn.com/oldnewthing/archive/2004/10/25/247180.aspx
+extern "C" IMAGE_DOS_HEADER __ImageBase;
 #endif
 
 namespace chrome {
@@ -109,11 +115,11 @@ void SetupStabilityDebugging() {
       stability_file, kMemorySize, kAllocatorId,
       browser_watcher::kStabilityDebuggingFeature.name, kStackDepth);
 
-  // Record basic information: product, version, channel, special build and
-  // platform.
+  // Record basic information.
   base::debug::GlobalActivityTracker* global_tracker =
       base::debug::GlobalActivityTracker::Get();
   if (global_tracker) {
+    // Record product, version, channel, special build and platform.
     wchar_t exe_file[MAX_PATH] = {};
     CHECK(::GetModuleFileName(nullptr, exe_file, arraysize(exe_file)));
 
@@ -136,6 +142,18 @@ void SetupStabilityDebugging() {
 #elif defined(ARCH_CPU_X86_64)
     global_data.SetString(browser_watcher::kStabilityPlatform, "Win64");
 #endif
+
+    // Record information about chrome's module.
+    global_data.SetUint(browser_watcher::kStabilityModuleAddress,
+                        reinterpret_cast<uint64_t>(&__ImageBase));
+
+    base::win::PEImage pe(&__ImageBase);
+    PIMAGE_NT_HEADERS headers = pe.GetNTHeaders();
+    CHECK(headers);
+    global_data.SetUint(browser_watcher::kStabilityModuleTimestamp,
+                        headers->FileHeader.TimeDateStamp);
+    global_data.SetUint(browser_watcher::kStabilityModuleSize,
+                        headers->OptionalHeader.SizeOfImage);
   }
 }
 #endif  // defined(OS_WIN)
