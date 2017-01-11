@@ -236,6 +236,7 @@ source_set("blink_headers") {
     "platform/WebMessagePortChannel.h",
     "platform/WebMessagePortChannelClient.h",
     "platform/WebMixedContent.h",
+    "platform/WebMixedContentContextType.h",
     "platform/WebMockClipboard.h",
     "platform/WebNativeScrollBehavior.h",
     "platform/WebNavigationHintType.h",

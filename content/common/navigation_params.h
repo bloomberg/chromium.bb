@@ -21,6 +21,7 @@
 #include "content/public/common/referrer.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_response.h"
+#include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -144,12 +145,14 @@ struct CONTENT_EXPORT BeginNavigationParams {
   // TODO(clamy): See if it is possible to reuse this in
   // ResourceMsg_Request_Params.
   BeginNavigationParams();
-  BeginNavigationParams(std::string headers,
-                        int load_flags,
-                        bool has_user_gesture,
-                        bool skip_service_worker,
-                        RequestContextType request_context_type,
-                        const base::Optional<url::Origin>& initiator_origin);
+  BeginNavigationParams(
+      std::string headers,
+      int load_flags,
+      bool has_user_gesture,
+      bool skip_service_worker,
+      RequestContextType request_context_type,
+      blink::WebMixedContentContextType mixed_content_context_type,
+      const base::Optional<url::Origin>& initiator_origin);
   BeginNavigationParams(const BeginNavigationParams& other);
   ~BeginNavigationParams();
 
@@ -167,6 +170,9 @@ struct CONTENT_EXPORT BeginNavigationParams {
 
   // Indicates the request context type.
   RequestContextType request_context_type;
+
+  // The mixed content context type for potential mixed content checks.
+  blink::WebMixedContentContextType mixed_content_context_type;
 
   // See WebSearchableFormData for a description of these.
   GURL searchable_form_url;

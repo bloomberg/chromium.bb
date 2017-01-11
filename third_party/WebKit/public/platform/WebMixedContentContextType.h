@@ -28,22 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebMixedContent_h
-#define WebMixedContent_h
-
-#include "public/platform/WebMixedContentContextType.h"
-#include "public/platform/WebURLRequest.h"
+#ifndef WebMixedContentContextType_h
+#define WebMixedContentContextType_h
 
 namespace blink {
 
-// Helper functions related to mixed content checks.
-class WebMixedContent {
- public:
-  BLINK_PLATFORM_EXPORT static WebMixedContentContextType
-  contextTypeFromRequestContext(WebURLRequest::RequestContext,
-                                bool strictMixedContentCheckingForPlugin);
+// Types and helper functions related to mixed content checks.
+enum class WebMixedContentContextType {
+  NotMixedContent,
+  Blockable,
+  OptionallyBlockable,
+  ShouldBeBlockable,
+  Last = ShouldBeBlockable
 };
 
 }  // namespace blink
 
-#endif  // WebMixedContent_h
+#endif  // WebMixedContentContextType_h

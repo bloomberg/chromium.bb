@@ -71,7 +71,7 @@
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebCachePolicy.h"
-#include "public/platform/WebMixedContent.h"
+#include "public/platform/WebMixedContentContextType.h"
 #include "public/platform/WebURLLoaderClient.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/CurrentTime.h"
@@ -211,15 +211,14 @@ KURL urlWithoutFragment(const KURL& url) {
   return result;
 }
 
-String mixedContentTypeForContextType(
-    WebMixedContent::ContextType contextType) {
+String mixedContentTypeForContextType(WebMixedContentContextType contextType) {
   switch (contextType) {
-    case WebMixedContent::ContextType::NotMixedContent:
+    case WebMixedContentContextType::NotMixedContent:
       return protocol::Network::Request::MixedContentTypeEnum::None;
-    case WebMixedContent::ContextType::Blockable:
+    case WebMixedContentContextType::Blockable:
       return protocol::Network::Request::MixedContentTypeEnum::Blockable;
-    case WebMixedContent::ContextType::OptionallyBlockable:
-    case WebMixedContent::ContextType::ShouldBeBlockable:
+    case WebMixedContentContextType::OptionallyBlockable:
+    case WebMixedContentContextType::ShouldBeBlockable:
       return protocol::Network::Request::MixedContentTypeEnum::
           OptionallyBlockable;
   }

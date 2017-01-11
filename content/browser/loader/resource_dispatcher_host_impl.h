@@ -37,6 +37,7 @@
 #include "ipc/ipc_message.h"
 #include "net/base/load_states.h"
 #include "net/base/request_priority.h"
+#include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -618,6 +619,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       ResourceType resource_type,
       ResourceContext* resource_context,
       RequestContextType fetch_request_context_type,
+      blink::WebMixedContentContextType fetch_mixed_content_context_type,
       AppCacheService* appcache_service,
       int child_id,
       int route_id,

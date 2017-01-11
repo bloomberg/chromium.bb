@@ -6228,7 +6228,9 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
       info.urlRequest.hasUserGesture(),
       info.urlRequest.skipServiceWorker() !=
           blink::WebURLRequest::SkipServiceWorker::None,
-      GetRequestContextTypeForWebURLRequest(info.urlRequest), initiator_origin);
+      GetRequestContextTypeForWebURLRequest(info.urlRequest),
+      GetMixedContentContextTypeForWebURLRequest(info.urlRequest),
+      initiator_origin);
 
   if (!info.form.isNull()) {
     WebSearchableFormData web_searchable_form_data(info.form);

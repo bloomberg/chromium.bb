@@ -11,6 +11,7 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/request_context_type.h"
+#include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 
 namespace net {
 class URLRequest;
@@ -27,7 +28,8 @@ class NavigationResourceThrottle : public ResourceThrottle {
   NavigationResourceThrottle(
       net::URLRequest* request,
       ResourceDispatcherHostDelegate* resource_dispatcher_host_delegate,
-      RequestContextType request_context_type);
+      RequestContextType request_context_type,
+      blink::WebMixedContentContextType mixed_content_context_type);
   ~NavigationResourceThrottle() override;
 
   // ResourceThrottle overrides:
@@ -56,6 +58,7 @@ class NavigationResourceThrottle : public ResourceThrottle {
   net::URLRequest* request_;
   ResourceDispatcherHostDelegate* resource_dispatcher_host_delegate_;
   RequestContextType request_context_type_;
+  blink::WebMixedContentContextType mixed_content_context_type_;
   bool in_cross_site_transition_;
   NavigationThrottle::ThrottleCheckResult on_transfer_done_result_;
 

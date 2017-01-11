@@ -99,7 +99,8 @@ void CheckWillStartRequestOnUIThread(
     bool has_user_gesture,
     ui::PageTransition transition,
     bool is_external_protocol,
-    RequestContextType request_context_type) {
+    RequestContextType request_context_type,
+    blink::WebMixedContentContextType mixed_content_context_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   NavigationHandleImpl* navigation_handle =
       FindNavigationHandle(render_process_id, render_frame_host_id, callback);
@@ -109,6 +110,7 @@ void CheckWillStartRequestOnUIThread(
   navigation_handle->WillStartRequest(
       method, resource_request_body, sanitized_referrer, has_user_gesture,
       transition, is_external_protocol, request_context_type,
+      mixed_content_context_type,
       base::Bind(&SendCheckResultToIOThread, callback));
 }
 
@@ -178,10 +180,12 @@ void WillProcessResponseOnUIThread(
 NavigationResourceThrottle::NavigationResourceThrottle(
     net::URLRequest* request,
     ResourceDispatcherHostDelegate* resource_dispatcher_host_delegate,
-    RequestContextType request_context_type)
+    RequestContextType request_context_type,
+    blink::WebMixedContentContextType mixed_content_context_type)
     : request_(request),
       resource_dispatcher_host_delegate_(resource_dispatcher_host_delegate),
       request_context_type_(request_context_type),
+      mixed_content_context_type_(mixed_content_context_type),
       in_cross_site_transition_(false),
       on_transfer_done_result_(NavigationThrottle::DEFER),
       weak_ptr_factory_(this) {}
@@ -214,7 +218,8 @@ void NavigationResourceThrottle::WillStartRequest(bool* defer) {
                      request_->url(), Referrer(GURL(request_->referrer()),
                                                info->GetReferrerPolicy())),
                  info->HasUserGesture(), info->GetPageTransition(),
-                 is_external_protocol, request_context_type_));
+                 is_external_protocol, request_context_type_,
+                 mixed_content_context_type_));
   *defer = true;
 }
 

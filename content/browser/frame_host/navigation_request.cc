@@ -43,6 +43,7 @@
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/redirect_info.h"
+#include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
 
 namespace content {
@@ -228,7 +229,9 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
       BeginNavigationParams(entry.extra_headers(), net::LOAD_NORMAL,
                             false,  // has_user_gestures
                             false,  // skip_service_worker
-                            REQUEST_CONTEXT_TYPE_LOCATION, initiator),
+                            REQUEST_CONTEXT_TYPE_LOCATION,
+                            blink::WebMixedContentContextType::Blockable,
+                            initiator),
       entry.ConstructRequestNavigationParams(
           frame_entry, is_same_document_history_load,
           is_history_navigation_in_new_child,
@@ -239,7 +242,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
           controller->GetLastCommittedEntryIndex(),
           controller->GetEntryCount()),
       browser_initiated,
-      true, // may_transfer
+      true,  // may_transfer
       &frame_entry, &entry));
   return navigation_request;
 }
@@ -357,6 +360,7 @@ void NavigationRequest::BeginNavigation() {
                                      common_params_.referrer),
         begin_params_.has_user_gesture, common_params_.transition, false,
         begin_params_.request_context_type,
+        begin_params_.mixed_content_context_type,
         base::Bind(&NavigationRequest::OnStartChecksComplete,
                    base::Unretained(this)));
     return;

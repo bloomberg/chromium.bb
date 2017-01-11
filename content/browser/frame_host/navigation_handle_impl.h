@@ -26,6 +26,7 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/common/request_context_type.h"
+#include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 #include "url/gurl.h"
 
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
@@ -155,6 +156,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     return request_context_type_;
   }
 
+  blink::WebMixedContentContextType mixed_content_context_type() const {
+    DCHECK_GE(state_, WILL_SEND_REQUEST);
+    return mixed_content_context_type_;
+  }
+
   // Get the unique id from the NavigationEntry associated with this
   // NavigationHandle. Note that a synchronous, renderer-initiated navigation
   // will not have a NavigationEntry associated with it, and this will return 0.
@@ -221,6 +227,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       ui::PageTransition transition,
       bool is_external_protocol,
       RequestContextType request_context_type,
+      blink::WebMixedContentContextType mixed_content_context_type,
       const ThrottleChecksFinishedCallback& callback);
 
   // Called when the URLRequest will be redirected in the network stack.
@@ -397,6 +404,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // The fetch request context type.
   RequestContextType request_context_type_;
+
+  // The mixed content context type for potential mixed content checks.
+  blink::WebMixedContentContextType mixed_content_context_type_;
 
   // This callback will be run when all throttle checks have been performed.
   ThrottleChecksFinishedCallback complete_callback_;

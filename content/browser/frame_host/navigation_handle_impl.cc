@@ -30,6 +30,7 @@
 #include "content/public/common/url_constants.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/redirect_info.h"
+#include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -92,6 +93,7 @@ NavigationHandleImpl::NavigationHandleImpl(
       navigation_start_(navigation_start),
       pending_nav_entry_id_(pending_nav_entry_id),
       request_context_type_(REQUEST_CONTEXT_TYPE_UNSPECIFIED),
+      mixed_content_context_type_(blink::WebMixedContentContextType::Blockable),
       should_replace_current_entry_(false),
       is_download_(false),
       is_stream_(false),
@@ -315,6 +317,7 @@ NavigationHandleImpl::CallWillStartRequestForTesting(
   WillStartRequest(method, resource_request_body, sanitized_referrer,
                    has_user_gesture, transition, is_external_protocol,
                    REQUEST_CONTEXT_TYPE_LOCATION,
+                   blink::WebMixedContentContextType::Blockable,
                    base::Bind(&UpdateThrottleCheckResult, &result));
 
   // Reset the callback to ensure it will not be called later.
@@ -422,6 +425,7 @@ void NavigationHandleImpl::WillStartRequest(
     ui::PageTransition transition,
     bool is_external_protocol,
     RequestContextType request_context_type,
+    blink::WebMixedContentContextType mixed_content_context_type,
     const ThrottleChecksFinishedCallback& callback) {
   if (method != "POST")
     DCHECK(!resource_request_body);
@@ -435,6 +439,7 @@ void NavigationHandleImpl::WillStartRequest(
   transition_ = transition;
   is_external_protocol_ = is_external_protocol;
   request_context_type_ = request_context_type;
+  mixed_content_context_type_ = mixed_content_context_type;
   state_ = WILL_SEND_REQUEST;
   complete_callback_ = callback;
 

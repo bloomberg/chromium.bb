@@ -18,6 +18,7 @@
 #include "third_party/WebKit/public/platform/WebCachePolicy.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
+#include "third_party/WebKit/public/platform/WebMixedContent.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
@@ -469,6 +470,19 @@ STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_XSLT,
 RequestContextType GetRequestContextTypeForWebURLRequest(
     const blink::WebURLRequest& request) {
   return static_cast<RequestContextType>(request.getRequestContext());
+}
+
+blink::WebMixedContentContextType GetMixedContentContextTypeForWebURLRequest(
+    const blink::WebURLRequest& request) {
+  bool block_mixed_plugin_content = false;
+  if (request.getExtraData()) {
+    RequestExtraData* extra_data =
+        static_cast<RequestExtraData*>(request.getExtraData());
+    block_mixed_plugin_content = extra_data->block_mixed_plugin_content();
+  }
+
+  return blink::WebMixedContent::contextTypeFromRequestContext(
+      request.getRequestContext(), block_mixed_plugin_content);
 }
 
 STATIC_ASSERT_ENUM(SkipServiceWorker::NONE,

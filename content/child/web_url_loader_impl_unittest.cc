@@ -269,6 +269,7 @@ class WebURLLoaderImplTest : public testing::Test {
 
   void DoStartAsyncRequest() {
     blink::WebURLRequest request{GURL(kTestURL)};
+    request.setRequestContext(blink::WebURLRequest::RequestContextInternal);
     client()->loader()->loadAsynchronously(request, client());
     ASSERT_TRUE(peer());
   }
@@ -276,6 +277,7 @@ class WebURLLoaderImplTest : public testing::Test {
   void DoStartAsyncRequestWithPriority(
       blink::WebURLRequest::Priority priority) {
     blink::WebURLRequest request{GURL(kTestURL)};
+    request.setRequestContext(blink::WebURLRequest::RequestContextInternal);
     request.setPriority(priority);
     client()->loader()->loadAsynchronously(request, client());
     ASSERT_TRUE(peer());
@@ -668,6 +670,7 @@ TEST_F(WebURLLoaderImplTest, SyncLengths) {
   const int kEncodedDataLength = 130;
   const GURL url(kTestURL);
   blink::WebURLRequest request(url);
+  request.setRequestContext(blink::WebURLRequest::RequestContextInternal);
 
   // Prepare a mock response
   SyncLoadResponse sync_load_response;

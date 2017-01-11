@@ -84,7 +84,9 @@ BeginNavigationParams::BeginNavigationParams()
     : load_flags(0),
       has_user_gesture(false),
       skip_service_worker(false),
-      request_context_type(REQUEST_CONTEXT_TYPE_LOCATION) {}
+      request_context_type(REQUEST_CONTEXT_TYPE_LOCATION),
+      mixed_content_context_type(blink::WebMixedContentContextType::Blockable) {
+}
 
 BeginNavigationParams::BeginNavigationParams(
     std::string headers,
@@ -92,12 +94,14 @@ BeginNavigationParams::BeginNavigationParams(
     bool has_user_gesture,
     bool skip_service_worker,
     RequestContextType request_context_type,
+    blink::WebMixedContentContextType mixed_content_context_type,
     const base::Optional<url::Origin>& initiator_origin)
     : headers(headers),
       load_flags(load_flags),
       has_user_gesture(has_user_gesture),
       skip_service_worker(skip_service_worker),
       request_context_type(request_context_type),
+      mixed_content_context_type(mixed_content_context_type),
       initiator_origin(initiator_origin) {}
 
 BeginNavigationParams::BeginNavigationParams(

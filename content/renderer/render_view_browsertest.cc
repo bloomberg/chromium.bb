@@ -684,6 +684,7 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
       blink::WebURLRequest::FetchCredentialsModeInclude);
   request.setFetchRedirectMode(blink::WebURLRequest::FetchRedirectModeManual);
   request.setFrameType(blink::WebURLRequest::FrameTypeTopLevel);
+  request.setRequestContext(blink::WebURLRequest::RequestContextInternal);
   blink::WebFrameClient::NavigationPolicyInfo policy_info(request);
   policy_info.navigationType = blink::WebNavigationTypeLinkClicked;
   policy_info.defaultPolicy = blink::WebNavigationPolicyCurrentTab;

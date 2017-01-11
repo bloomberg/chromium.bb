@@ -35,7 +35,7 @@
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ResourceRequest.h"
-#include "public/platform/WebMixedContent.h"
+#include "public/platform/WebMixedContentContextType.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/text/WTFString.h"
 
@@ -80,7 +80,7 @@ class CORE_EXPORT MixedContentChecker final {
   static void checkMixedPrivatePublic(LocalFrame*,
                                       const AtomicString& resourceIPAddress);
 
-  static WebMixedContent::ContextType contextTypeForInspector(
+  static WebMixedContentContextType contextTypeForInspector(
       LocalFrame*,
       const ResourceRequest&);
 

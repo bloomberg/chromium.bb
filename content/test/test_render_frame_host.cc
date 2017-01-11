@@ -24,6 +24,7 @@
 #include "content/test/test_render_view_host.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/base/load_flags.h"
+#include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
@@ -412,7 +413,8 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
     // TODO(mkwst): The initiator origin here is incorrect.
     BeginNavigationParams begin_params(
         std::string(), net::LOAD_NORMAL, has_user_gesture, false,
-        REQUEST_CONTEXT_TYPE_HYPERLINK, url::Origin());
+        REQUEST_CONTEXT_TYPE_HYPERLINK,
+        blink::WebMixedContentContextType::Blockable, url::Origin());
     CommonNavigationParams common_params;
     common_params.url = url;
     common_params.referrer = Referrer(GURL(), blink::WebReferrerPolicyDefault);

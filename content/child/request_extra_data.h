@@ -149,6 +149,15 @@ class CONTENT_EXPORT RequestExtraData
     download_to_network_cache_only_ = download_to_cache;
   }
 
+  // Copy of the settings value determining if mixed plugin content should be
+  // blocked.
+  bool block_mixed_plugin_content() const {
+    return block_mixed_plugin_content_;
+  }
+  void set_block_mixed_plugin_content(bool block_mixed_plugin_content) {
+    block_mixed_plugin_content_ = block_mixed_plugin_content;
+  }
+
   void CopyToResourceRequest(ResourceRequest* request) const;
 
  private:
@@ -171,6 +180,7 @@ class CONTENT_EXPORT RequestExtraData
   bool initiated_in_secure_context_;
   bool is_prefetch_;
   bool download_to_network_cache_only_;
+  bool block_mixed_plugin_content_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestExtraData);
 };

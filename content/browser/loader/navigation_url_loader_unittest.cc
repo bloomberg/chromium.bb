@@ -106,9 +106,10 @@ class NavigationURLLoaderTest : public testing::Test {
   std::unique_ptr<NavigationURLLoader> MakeTestLoader(
       const GURL& url,
       NavigationURLLoaderDelegate* delegate) {
-    BeginNavigationParams begin_params(std::string(), net::LOAD_NORMAL, false,
-                                       false, REQUEST_CONTEXT_TYPE_LOCATION,
-                                       url::Origin(url));
+    BeginNavigationParams begin_params(
+        std::string(), net::LOAD_NORMAL, false, false,
+        REQUEST_CONTEXT_TYPE_LOCATION,
+        blink::WebMixedContentContextType::Blockable, url::Origin(url));
     CommonNavigationParams common_params;
     common_params.url = url;
     std::unique_ptr<NavigationRequestInfo> request_info(

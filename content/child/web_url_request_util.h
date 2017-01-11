@@ -13,6 +13,7 @@
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
+#include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 
 namespace blink {
 class WebHTTPBody;
@@ -55,6 +56,8 @@ FetchRedirectMode GetFetchRedirectModeForWebURLRequest(
 RequestContextFrameType GetRequestContextFrameTypeForWebURLRequest(
     const blink::WebURLRequest& request);
 RequestContextType GetRequestContextTypeForWebURLRequest(
+    const blink::WebURLRequest& request);
+blink::WebMixedContentContextType GetMixedContentContextTypeForWebURLRequest(
     const blink::WebURLRequest& request);
 SkipServiceWorker GetSkipServiceWorkerForWebURLRequest(
     const blink::WebURLRequest& request);

@@ -19,6 +19,7 @@
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/request_priority.h"
+#include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "ui/base/page_transition_types.h"
@@ -115,6 +116,10 @@ struct CONTENT_EXPORT ResourceRequest {
   // The request context passed to the ServiceWorker.
   RequestContextType fetch_request_context_type =
       REQUEST_CONTEXT_TYPE_UNSPECIFIED;
+
+  // The mixed content context type to be used for mixed content checks.
+  blink::WebMixedContentContextType fetch_mixed_content_context_type =
+      blink::WebMixedContentContextType::Blockable;
 
   // The frame type passed to the ServiceWorker.
   RequestContextFrameType fetch_frame_type =

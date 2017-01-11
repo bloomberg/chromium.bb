@@ -1083,9 +1083,10 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
 
       // Make a navigation request.
       TestNavigationURLLoaderDelegate delegate;
-      BeginNavigationParams begin_params(std::string(), net::LOAD_NORMAL, false,
-                                         false, REQUEST_CONTEXT_TYPE_LOCATION,
-                                         url::Origin(url));
+      BeginNavigationParams begin_params(
+          std::string(), net::LOAD_NORMAL, false, false,
+          REQUEST_CONTEXT_TYPE_LOCATION,
+          blink::WebMixedContentContextType::Blockable, url::Origin(url));
       CommonNavigationParams common_params;
       common_params.url = url;
       std::unique_ptr<NavigationRequestInfo> request_info(
@@ -2641,9 +2642,11 @@ TEST_P(ResourceDispatcherHostTest, CancelRequestsForContext) {
   if (IsBrowserSideNavigationEnabled()) {
     // Create a NavigationRequest.
     TestNavigationURLLoaderDelegate delegate;
-    BeginNavigationParams begin_params(std::string(), net::LOAD_NORMAL, false,
-                                       false, REQUEST_CONTEXT_TYPE_LOCATION,
-                                       url::Origin(download_url));
+    BeginNavigationParams begin_params(
+        std::string(), net::LOAD_NORMAL, false, false,
+        REQUEST_CONTEXT_TYPE_LOCATION,
+        blink::WebMixedContentContextType::Blockable,
+        url::Origin(download_url));
     CommonNavigationParams common_params;
     common_params.url = download_url;
     std::unique_ptr<NavigationRequestInfo> request_info(
