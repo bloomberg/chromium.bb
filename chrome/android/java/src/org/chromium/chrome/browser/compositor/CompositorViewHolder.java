@@ -832,8 +832,7 @@ public class CompositorViewHolder extends FrameLayout
                 }
 
                 // CompositorView always has index of 0.
-                addView(mView, 1, new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT,
-                        LayoutParams.MATCH_PARENT));
+                addView(mView, 1);
 
                 setFocusable(false);
                 setFocusableInTouchMode(false);
