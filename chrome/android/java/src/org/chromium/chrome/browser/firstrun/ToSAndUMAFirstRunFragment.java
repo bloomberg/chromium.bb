@@ -106,10 +106,13 @@ public class ToSAndUMAFirstRunFragment extends FirstRunPage {
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
 
+        // This may be called before onViewCreated(), in which case the below is not yet relevant.
+        if (mTitle == null) return;
+
         if (!isVisibleToUser) {
             // Restore original enabled & visibility states, in case the user returns to the page.
             setSpinnerVisible(false);
-        } else if (mSendReportCheckBox != null) {
+        } else {
             // On certain versions of Android, the checkbox will appear unchecked upon revisiting
             // the page.  Force it to the end state of the drawable animation as a work around.
             // crbug.com/666258
