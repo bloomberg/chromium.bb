@@ -141,6 +141,7 @@
 #include "content/renderer/web_frame_utils.h"
 #include "content/renderer/web_ui_extension.h"
 #include "crypto/sha2.h"
+#include "gin/modules/console.h"
 #include "gin/modules/module_registry.h"
 #include "media/audio/audio_output_device.h"
 #include "media/base/audio_renderer_mixer_input.h"
@@ -2621,6 +2622,9 @@ void RenderFrameImpl::EnsureMojoBuiltinsAreAvailable(
     return;
 
   v8::HandleScope handle_scope(isolate);
+
+  registry->AddBuiltinModule(isolate, gin::Console::kModuleName,
+                             gin::Console::GetModule(isolate));
   registry->AddBuiltinModule(isolate, mojo::edk::js::Core::kModuleName,
                              mojo::edk::js::Core::GetModule(isolate));
   registry->AddBuiltinModule(isolate, mojo::edk::js::Support::kModuleName,

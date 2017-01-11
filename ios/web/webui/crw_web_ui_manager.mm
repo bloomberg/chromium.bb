@@ -226,6 +226,7 @@ const char kScriptCommandPrefix[] = "webui";
       {mojo::kRouterModuleName, IDR_MOJO_ROUTER_JS},
       {mojo::kUnicodeModuleName, IDR_MOJO_UNICODE_JS},
       {mojo::kValidatorModuleName, IDR_MOJO_VALIDATOR_JS},
+      {web::kConsoleModuleName, IDR_IOS_CONSOLE_JS},
       {web::kSyncMessageChannelModuleName,
        IDR_IOS_MOJO_SYNC_MESSAGE_CHANNEL_JS},
       {web::kHandleUtilModuleName, IDR_IOS_MOJO_HANDLE_UTIL_JS},

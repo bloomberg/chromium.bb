@@ -16,6 +16,7 @@
 #include "extensions/renderer/process_info_native_handler.h"
 #include "gin/converter.h"
 #include "gin/dictionary.h"
+#include "gin/modules/console.h"
 #include "mojo/edk/js/core.h"
 #include "mojo/edk/js/handle.h"
 #include "mojo/edk/js/support.h"
@@ -153,6 +154,9 @@ void ApiTestEnvironment::RegisterModules() {
       "exports.$set('AttachFilteredEvent', function() {});"
       "exports.$set('MatchAgainstEventFilter', function() { return [] });");
 
+  gin::ModuleRegistry::From(env()->context()->v8_context())
+      ->AddBuiltinModule(env()->isolate(), gin::Console::kModuleName,
+                         gin::Console::GetModule(env()->isolate()));
   gin::ModuleRegistry::From(env()->context()->v8_context())
       ->AddBuiltinModule(env()->isolate(), mojo::edk::js::Core::kModuleName,
                          mojo::edk::js::Core::GetModule(env()->isolate()));

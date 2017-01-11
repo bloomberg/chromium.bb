@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 define("mojo/public/js/router", [
+  "console",
   "mojo/public/js/codec",
   "mojo/public/js/core",
   "mojo/public/js/connector",
   "mojo/public/js/validator",
-], function(codec, core, connector, validator) {
+], function(console, codec, core, connector, validator) {
 
   var Connector = connector.Connector;
   var MessageReader = codec.MessageReader;
@@ -117,8 +118,12 @@ define("mojo/public/js/router", [
       var reader = new MessageReader(message);
       var requestID = reader.requestID;
       var completer = this.completers_.get(requestID);
-      this.completers_.delete(requestID);
-      completer.resolve(message);
+      if (completer) {
+        this.completers_.delete(requestID);
+        completer.resolve(message);
+      } else {
+        console.log("Unexpected response with request ID: " + requestID);
+      }
     } else {
       if (this.incomingReceiver_)
         this.incomingReceiver_.accept(message);
@@ -127,10 +132,12 @@ define("mojo/public/js/router", [
 
   Router.prototype.handleInvalidIncomingMessage_ = function(message, error) {
     if (!this.testingController_) {
-      // TODO(yzshen): Consider logging and notifying the embedder.
+      // TODO(yzshen): Consider notifying the embedder.
       // TODO(yzshen): This should also trigger connection error handler.
       // Consider making accept() return a boolean and let the connector deal
       // with this, as the C++ code does.
+      console.log("Invalid message: " + validator.validationError[error]);
+
       this.close();
       return;
     }

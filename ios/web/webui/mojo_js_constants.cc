@@ -6,6 +6,7 @@
 
 namespace web {
 
+const char kConsoleModuleName[] = "console";
 const char kSyncMessageChannelModuleName[] =
     "ios/mojo/public/js/sync_message_channel";
 const char kHandleUtilModuleName[] = "ios/mojo/public/js/handle_util";
