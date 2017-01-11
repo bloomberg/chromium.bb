@@ -234,7 +234,7 @@ buffered-rendering svg
 caption-side inherited, keyword_only, independent, keywords=[top|bottom|left|right], initial_keyword=top
 caret-color interpolable, inherited, custom_all, api_class
 clear
-clip interpolable, converter=convertClip, custom_all
+clip interpolable, converter=convertClip, custom_all, api_class
 clip-path interpolable, converter=convertClipPath
 clip-rule inherited, svg, type_name=WindRule
 color-interpolation inherited, svg
