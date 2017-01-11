@@ -171,6 +171,9 @@ public class MostVisitedItem implements OnCreateContextMenuListener, OnClickList
                     public boolean isItemSupported(@ContextMenuItemId int menuItemId) {
                         return true;
                     }
+
+                    @Override
+                    public void onContextMenuCreated() {}
                 });
     }
 

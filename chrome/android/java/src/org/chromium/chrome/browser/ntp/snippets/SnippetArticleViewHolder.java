@@ -147,6 +147,11 @@ public class SnippetArticleViewHolder
     }
 
     @Override
+    public void onContextMenuCreated() {
+        mNewTabPageManager.trackSnippetMenuOpened(mArticle);
+    }
+
+    @Override
     protected Delegate getContextMenuDelegate() {
         return this;
     }

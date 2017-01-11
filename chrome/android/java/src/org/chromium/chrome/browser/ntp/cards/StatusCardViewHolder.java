@@ -113,6 +113,9 @@ public class StatusCardViewHolder extends CardViewHolder implements ContextMenuM
     }
 
     @Override
+    public void onContextMenuCreated() {}
+
+    @Override
     public boolean isDismissable() {
         return SnippetsConfig.isSectionDismissalEnabled();
     }

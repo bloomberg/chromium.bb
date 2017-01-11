@@ -156,6 +156,9 @@ class ActionItem extends OptionalLeaf {
             return menuItemId == ContextMenuManager.ID_REMOVE && isDismissable();
         }
 
+        @Override
+        public void onContextMenuCreated() {}
+
         public void onBindViewHolder(ActionItem item) {
             super.onBindViewHolder();
             mActionListItem = item;

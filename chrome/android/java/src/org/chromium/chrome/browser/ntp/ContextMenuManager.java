@@ -55,11 +55,17 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
         /** Remove the current item. */
         void removeItem();
 
-        /** @return whether the current item can be saved offline. */
+        /**
+         * @return the URL of the current item for saving offline, or null if the item can't be
+         *         saved offline.
+         */
         String getUrl();
 
         /** @return whether the given menu item is supported. */
         boolean isItemSupported(@ContextMenuItemId int menuItemId);
+
+        /** Called when a context menu has been created. */
+        void onContextMenuCreated();
     }
 
     /** Interface for a view that can be set to stop responding to touches. */
@@ -74,10 +80,11 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
 
     /**
      * Populates the context menu.
+     *
      * @param menu The menu to populate.
      * @param associatedView The view that requested a context menu.
      * @param delegate Delegate that defines the configuration of the menu and what to do when items
-     *                 are tapped.
+     *            are tapped.
      */
     public void createContextMenu(ContextMenu menu, View associatedView, Delegate delegate) {
         OnMenuItemClickListener listener = new ItemClickListener(delegate);
@@ -94,6 +101,8 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
 
         // No item added. We won't show the menu, so we can skip the rest.
         if (!hasItems) return;
+
+        delegate.onContextMenuCreated();
 
         associatedView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
             @Override
