@@ -614,6 +614,25 @@ TEST_F(WidgetTest, WindowMouseModalityTest) {
   top_level_widget.CloseNow();
 }
 
+TEST_F(WidgetTest, SetScreenBoundsOnNativeWindow) {
+  Widget widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.native_widget =
+      CreatePlatformDesktopNativeWidgetImpl(params, &widget, nullptr);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(10, 10, 100, 100);
+  widget.Init(params);
+  widget.Show();
+  aura::Window* window = widget.GetNativeWindow();
+  display::Screen* screen = display::Screen::GetScreen();
+
+  const gfx::Rect new_screen_bounds(50, 50, 150, 150);
+  window->SetBoundsInScreen(new_screen_bounds,
+                            screen->GetPrimaryDisplay());
+  EXPECT_EQ(new_screen_bounds, widget.GetWindowBoundsInScreen());
+  widget.CloseNow();
+}
+
 #if defined(OS_WIN)
 // Tests whether we can activate the top level widget when a modal dialog is
 // active.

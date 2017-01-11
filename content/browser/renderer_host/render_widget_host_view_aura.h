@@ -332,6 +332,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
     return delegated_frame_host_.get();
   }
 
+  // Returns the top level window that is hosting the renderwidget.
+  virtual aura::Window* GetToplevelWindow();
+
  private:
   friend class DelegatedFrameHostClientAura;
   friend class InputMethodAuraTestBase;

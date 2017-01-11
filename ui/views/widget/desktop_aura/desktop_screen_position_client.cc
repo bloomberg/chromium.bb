@@ -38,10 +38,17 @@ void DesktopScreenPositionClient::SetBounds(aura::Window* window,
   // TODO(jam): Use the 3rd parameter, |display|.
   aura::Window* root = window->GetRootWindow();
 
-  // This method assumes that |window| does not have an associated
-  // DesktopNativeWidgetAura.
   internal::NativeWidgetPrivate* desktop_native_widget =
       DesktopNativeWidgetAura::ForWindow(root);
+  // The screen bounds request to the content_window_ should be interpreted as
+  // a widget bounds change.
+  if (desktop_native_widget &&
+      desktop_native_widget->GetNativeView() == window) {
+    desktop_native_widget->GetWidget()->SetBounds(bounds);
+    return;
+  }
+  // The following logic assumes that |window| does not have an associated
+  // DesktopNativeWidgetAura.
   DCHECK(!desktop_native_widget ||
          desktop_native_widget->GetNativeView() != window);
 
