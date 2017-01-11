@@ -315,11 +315,7 @@ var vrShellUi = (function() {
       this.backgroundColor = style.backgroundColor;
       this.fadeTimeMs = getStyleFloat(style, '--fadeTimeMs');
       this.fadeYOffset = getStyleFloat(style, '--fadeYOffset');
-
-      // Listen to the end of transitions, so that the box can be natively
-      // hidden after it finishes hiding itself.
-      document.querySelector('#omnibox')
-          .addEventListener('transitionend', this.onAnimationDone.bind(this));
+      this.opacity = getStyleFloat(style, '--opacity');
     }
 
     getSecurityIconElementId(level) {
@@ -398,15 +394,10 @@ var vrShellUi = (function() {
       this.updateState();
     }
 
-    onAnimationDone(e) {
-      if (e.propertyName == 'opacity' && this.hidden) {
-        this.setNativeVisibility(false);
-      }
-    }
-
     updateState() {
+      this.setNativeVisibility(this.enabled);
+
       if (!this.enabled) {
-        this.setNativeVisibility(false);
         return;
       }
 
@@ -429,22 +420,25 @@ var vrShellUi = (function() {
       if (shouldBeHidden != this.hidden) {
         // Make the box fade away if it's disappearing.
         this.hidden = shouldBeHidden;
-        document.querySelector('#omnibox-border').className =
-            this.hidden ? 'hidden' : '';
+
+        // Fade-out or fade-in the box.
+        let opacityAnimation =
+            new api.Animation(this.domUiElement.uiElementId, this.fadeTimeMs);
+        opacityAnimation.setOpacity(this.hidden ? 0.0 : this.opacity);
+        ui.addAnimation(opacityAnimation);
 
         // Drop the position as it fades, or raise the position if appearing.
         let yOffset = this.hidden ? this.fadeYOffset : 0;
-        let animation =
+        let positionAnimation =
             new api.Animation(this.domUiElement.uiElementId, this.fadeTimeMs);
-        animation.setTranslation(
+        positionAnimation.setTranslation(
             this.domUiElement.translationX,
             this.domUiElement.translationY + yOffset,
             this.domUiElement.translationZ);
-        ui.addAnimation(animation);
-        ui.flush();
+        ui.addAnimation(positionAnimation);
       }
 
-      this.setNativeVisibility(true);
+      ui.flush();
     }
 
     setNativeVisibility(visible) {

@@ -90,11 +90,15 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
           uniform samplerExternalOES u_Texture;
           uniform vec4 u_CopyRect;  // rectangle
           varying vec2 v_TexCoordinate;
+          uniform lowp vec4 color;
+          uniform mediump float opacity;
+
           void main() {
             vec2 scaledTex =
                 vec2(u_CopyRect[0] + v_TexCoordinate.x * u_CopyRect[2],
                      u_CopyRect[1] + v_TexCoordinate.y * u_CopyRect[3]);
-            gl_FragColor = texture2D(u_Texture, scaledTex);
+            lowp vec4 color = texture2D(u_Texture, scaledTex);
+            gl_FragColor = vec4(color.xyz, color.w * opacity);
           });
     case vr_shell::ShaderID::WEBVR_VERTEX_SHADER:
       return SHADER(
@@ -230,11 +234,13 @@ TexturedQuadRenderer::TexturedQuadRenderer()
   tex_uniform_handle_ = glGetUniformLocation(program_handle_, "u_Texture");
   copy_rect_uniform_handle_ =
       glGetUniformLocation(program_handle_, "u_CopyRect");
+  opacity_handle_ = glGetUniformLocation(program_handle_, "opacity");
 }
 
 void TexturedQuadRenderer::Draw(int texture_data_handle,
                                 const gvr::Mat4f& combined_matrix,
-                                const Rectf& copy_rect) {
+                                const Rectf& copy_rect,
+                                float opacity) {
   PrepareToDraw(combined_matrix_handle_, combined_matrix);
 
   // Link texture data with texture unit.
@@ -247,6 +253,7 @@ void TexturedQuadRenderer::Draw(int texture_data_handle,
 
   glUniform1i(tex_uniform_handle_, 0);
   glUniform4fv(copy_rect_uniform_handle_, 1, (float*)(&copy_rect));
+  glUniform1f(opacity_handle_, opacity);
 
   glDrawArrays(GL_TRIANGLES, 0, kVerticesNumber);
 

@@ -53,12 +53,13 @@ class TexturedQuadRenderer : public BaseRenderer {
 
   // Draw the content rect in the texture quad.
   void Draw(int texture_data_handle, const gvr::Mat4f& combined_matrix,
-            const Rectf& copy_rect);
+            const Rectf& copy_rect, float opacity);
 
  private:
   GLuint combined_matrix_handle_;
   GLuint copy_rect_uniform_handle_;
   GLuint tex_uniform_handle_;
+  GLuint opacity_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(TexturedQuadRenderer);
 };

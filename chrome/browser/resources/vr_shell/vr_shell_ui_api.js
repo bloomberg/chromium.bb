@@ -24,7 +24,9 @@ api.Command = {
  * @param {Array<Object>} commands
  */
 api.sendCommands = function(commands) {
-  chrome.send('updateScene', commands);
+  if (commands.length > 0) {
+    chrome.send('updateScene', commands);
+  }
 };
 
 /**
@@ -214,11 +216,20 @@ api.UiElementUpdate = class {
 
   /**
    * Causes an element to be rendered relative to the field of view, rather
-   * than the scene.  Elements locked in this way should not have a parent.
+   * than the scene. Elements locked in this way should not have a parent.
    * @param {boolean} locked
    */
   setLockToFieldOfView(locked) {
     this.properties['lockToFov'] = !!locked;
+  }
+
+  /**
+   * Causes an element to be rendered with a specified opacity, between 0.0 and
+   * 1.0. Opacity is inherited by children.
+   * @param {number} opacity
+   */
+  setOpacity(opacity) {
+    this.properties['opacity'] = opacity;
   }
 };
 
@@ -257,7 +268,8 @@ api.Property = {
   'SIZE': 1,
   'TRANSLATION': 2,
   'SCALE': 3,
-  'ROTATION': 4
+  'ROTATION': 4,
+  'OPACITY': 5
 };
 
 /**
@@ -358,5 +370,14 @@ api.Animation = class {
     this.to.x = x;
     this.to.y = y;
     this.to.z = z;
+  }
+
+  /**
+   * Set the animation's final element opacity.
+   * @param {number} opacity
+   */
+  setOpacity(opacity) {
+    this.property = api.Property.OPACITY;
+    this.to.x = opacity;
   }
 };

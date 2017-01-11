@@ -128,16 +128,11 @@ html {
 #omnibox-border {
   --fadeTimeMs: 500;
   --fadeYOffset: -0.1;
+  --opacity: 0.9;
   --statusBarColor: rgb(66, 133, 244);
   background-color: #ececec;
   border-radius: 200px;
-  opacity: 0.9;
   padding: 6px;
-  transition: opacity 500ms ease;
-}
-
-#omnibox-border.hidden {
-  opacity: 0;
 }
 
 #omnibox {

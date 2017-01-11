@@ -27,6 +27,7 @@ class Animation {
     TRANSLATION,
     SCALE,
     ROTATION,
+    OPACITY,
   };
 
   Animation(int id,

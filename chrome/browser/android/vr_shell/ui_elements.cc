@@ -122,6 +122,9 @@ void ContentRectangle::Animate(int64_t time) {
           animation.from.push_back(translation.y);
           animation.from.push_back(translation.z);
           break;
+        case Animation::OPACITY:
+          animation.from.push_back(opacity);
+          break;
       }
     }
     CHECK_EQ(animation.from.size(), animation.to.size());
@@ -170,6 +173,10 @@ void ContentRectangle::Animate(int64_t time) {
         translation.y = values[1];
         translation.z = values[2];
         break;
+      case Animation::OPACITY:
+        CHECK_EQ(animation.from.size(), 1u);
+        opacity = values[0];
+        break;
     }
   }
   for (auto it = animations.begin(); it != animations.end();) {
@@ -180,6 +187,14 @@ void ContentRectangle::Animate(int64_t time) {
       ++it;
     }
   }
+}
+
+bool ContentRectangle::IsVisible() const {
+  return visible && computed_opacity > 0.0f;
+}
+
+bool ContentRectangle::IsHitTestable() const {
+  return IsVisible() && hit_testable;
 }
 
 }  // namespace vr_shell

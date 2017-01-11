@@ -96,6 +96,9 @@ void ParseEndpointToFloats(Animation::Property property,
     case Animation::Property::TRANSLATION:
       ParseFloats(dict, {"x", "y", "z"}, vec);
       break;
+    case Animation::Property::OPACITY:
+      ParseFloats(dict, {"x"}, vec);
+      break;
   }
 }
 
@@ -324,7 +327,9 @@ void UiScene::UpdateTransforms(float screen_tilt, int64_t time_in_micro) {
   for (auto& element : ui_elements_) {
     element->transform.MakeIdentity();
     element->transform.Scale(element->size.x, element->size.y, element->size.z);
-    ApplyRecursiveTransforms(*element.get(), &element->transform);
+    element->computed_opacity = 1.0f;
+    ApplyRecursiveTransforms(*element.get(), &element->transform,
+                             &element->computed_opacity);
     element->transform.Rotate(1.0f, 0.0f, 0.0f, screen_tilt);
   }
 }
@@ -352,19 +357,21 @@ UiScene::UiScene() = default;
 UiScene::~UiScene() = default;
 
 void UiScene::ApplyRecursiveTransforms(const ContentRectangle& element,
-                                       ReversibleTransform* transform) {
+                                       ReversibleTransform* transform,
+                                       float* opacity) {
   transform->Scale(element.scale.x, element.scale.y, element.scale.z);
   transform->Rotate(element.rotation.x, element.rotation.y,
                     element.rotation.z, element.rotation.angle);
   transform->Translate(element.translation.x, element.translation.y,
                        element.translation.z);
+  *opacity *= element.opacity;
 
   if (element.parent_id >= 0) {
     const ContentRectangle* parent = GetUiElementById(element.parent_id);
     CHECK(parent != nullptr);
     ApplyAnchoring(*parent, element.x_anchoring, element.y_anchoring,
                    transform);
-    ApplyRecursiveTransforms(*parent, transform);
+    ApplyRecursiveTransforms(*parent, transform, opacity);
   }
 }
 
@@ -385,6 +392,10 @@ void UiScene::ApplyDictToElement(const base::DictionaryValue& dict,
   ParseVec3f(dict, "scale", &element->scale);
   ParseRotationAxisAngle(dict, "rotation", &element->rotation);
   ParseVec3f(dict, "translation", &element->translation);
+  double opacity;
+  if (dict.GetDouble("opacity", &opacity)) {
+    element->opacity = opacity;
+  }
 
   if (dict.GetBoolean("contentQuad", &element->content_quad)) {
     if (element->content_quad) {

@@ -71,7 +71,8 @@ class UiScene {
 
  private:
   void ApplyRecursiveTransforms(const ContentRectangle& element,
-                                ReversibleTransform* transform);
+                                ReversibleTransform* transform,
+                                float* opacity);
   void ApplyDictToElement(const base::DictionaryValue& dict,
                           ContentRectangle *element);
 

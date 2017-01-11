@@ -487,9 +487,9 @@ void VrShellGl::UpdateController(const gvr::Vec3f& forward_vector) {
   InputTarget input_target = InputTarget::NONE;
 
   for (const auto& plane : scene_->GetUiElements()) {
-    if (!plane->visible || !plane->hit_testable) {
+    if (!plane->IsHitTestable())
       continue;
-    }
+
     float distance_to_plane = plane->GetRayDistance(kOrigin, eye_to_target);
     gvr::Vec3f plane_intersection_point =
         GetRayPoint(kOrigin, eye_to_target, distance_to_plane);
@@ -701,9 +701,8 @@ void VrShellGl::DrawVrShell(const gvr::Mat4f& head_pose,
   std::vector<const ContentRectangle*> head_locked_elements;
   std::vector<const ContentRectangle*> world_elements;
   for (const auto& rect : scene_->GetUiElements()) {
-    if (!rect->visible) {
+    if (!rect->IsVisible())
       continue;
-    }
     if (rect->lock_to_fov) {
       head_locked_elements.push_back(rect.get());
     } else {
@@ -813,7 +812,7 @@ void VrShellGl::DrawElements(
     }
     gvr::Mat4f transform = MatrixMul(render_matrix, rect->transform.to_world);
     vr_shell_renderer_->GetTexturedQuadRenderer()->Draw(
-        texture_handle, transform, copy_rect);
+        texture_handle, transform, copy_rect, rect->computed_opacity);
   }
 }
 
