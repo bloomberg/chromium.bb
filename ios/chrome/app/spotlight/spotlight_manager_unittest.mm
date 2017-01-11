@@ -8,7 +8,6 @@
 #import <Foundation/Foundation.h>
 
 #include "base/location.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
@@ -30,6 +29,10 @@
 #import "net/base/mac/url_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 const char kDummyIconUrl[] = "http://www.example.com/touch_icon.png";
 
@@ -101,9 +104,9 @@ class SpotlightManagerTest : public testing::Test {
     mock_favicon_service_.reset(new MockFaviconService());
     large_icon_service_.reset(
         new TestLargeIconService(mock_favicon_service_.get()));
-    bookmarksSpotlightManager_.reset([[BookmarksSpotlightManager alloc]
+    bookmarksSpotlightManager_ = [[BookmarksSpotlightManager alloc]
         initWithLargeIconService:large_icon_service_.get()
-                   bookmarkModel:model_.get()]);
+                   bookmarkModel:model_.get()];
   }
 
   base::MessageLoop loop_;
@@ -111,7 +114,7 @@ class SpotlightManagerTest : public testing::Test {
   std::unique_ptr<TestLargeIconService> large_icon_service_;
   base::CancelableTaskTracker cancelable_task_tracker_;
   std::unique_ptr<bookmarks::BookmarkModel> model_;
-  base::scoped_nsobject<BookmarksSpotlightManager> bookmarksSpotlightManager_;
+  BookmarksSpotlightManager* bookmarksSpotlightManager_;
 };
 
 TEST_F(SpotlightManagerTest, testSpotlightID) {
@@ -134,7 +137,7 @@ TEST_F(SpotlightManagerTest, testParentKeywordsForNode) {
   bookmarks::test::AddNodesFromModelString(model_.get(), root, model_string);
   const bookmarks::BookmarkNode* eNode =
       root->GetChild(3)->GetChild(0)->GetChild(0);
-  base::scoped_nsobject<NSMutableArray> keywords([[NSMutableArray alloc] init]);
+  NSMutableArray* keywords = [[NSMutableArray alloc] init];
   [bookmarksSpotlightManager_ getParentKeywordsForNode:eNode inArray:keywords];
   EXPECT_EQ([keywords count], 2u);
   EXPECT_TRUE([[keywords objectAtIndex:0] isEqualToString:@"21"]);
@@ -155,7 +158,7 @@ TEST_F(SpotlightManagerTest, testBookmarksCreateSpotlightItemsWithUrl) {
   NSString* spotlightID = [bookmarksSpotlightManager_
       spotlightIDForURL:eNode->url()
                   title:base::SysUTF16ToNSString(eNode->GetTitle())];
-  base::scoped_nsobject<NSMutableArray> keywords([[NSMutableArray alloc] init]);
+  NSMutableArray* keywords = [[NSMutableArray alloc] init];
   [bookmarksSpotlightManager_ getParentKeywordsForNode:eNode inArray:keywords];
   NSArray* items = [bookmarksSpotlightManager_
       spotlightItemsWithURL:eNode->url()
@@ -166,7 +169,7 @@ TEST_F(SpotlightManagerTest, testBookmarksCreateSpotlightItemsWithUrl) {
   EXPECT_NSEQ([item uniqueIdentifier], spotlightID);
   EXPECT_NSEQ([[item attributeSet] title], @"e");
   EXPECT_NSEQ([[[item attributeSet] URL] absoluteString], @"http://e.com/");
-  [bookmarksSpotlightManager_ addKeywords:keywords.get() toSearchableItem:item];
+  [bookmarksSpotlightManager_ addKeywords:keywords toSearchableItem:item];
   // We use the set intersection to verify that the item from the Spotlight
   // manager
   // contains all the newly added Keywords.
