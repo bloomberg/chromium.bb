@@ -42,14 +42,12 @@ class BluetoothRemoteGATTCharacteristic final
  public:
   explicit BluetoothRemoteGATTCharacteristic(
       ExecutionContext*,
-      const String& serviceInstanceId,
       mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr,
       BluetoothRemoteGATTService*,
       BluetoothDevice*);
 
   static BluetoothRemoteGATTCharacteristic* create(
       ExecutionContext*,
-      const String& serviceInstanceId,
       mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr,
       BluetoothRemoteGATTService*,
       BluetoothDevice*);
@@ -106,7 +104,6 @@ class BluetoothRemoteGATTCharacteristic final
   void NotificationsCallback(ScriptPromiseResolver*,
                              mojom::blink::WebBluetoothResult);
 
-  const String m_serviceInstanceId;
   mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr m_characteristic;
   Member<BluetoothRemoteGATTService> m_service;
   bool m_stopped;

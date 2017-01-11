@@ -44,7 +44,6 @@ class BluetoothAttributeInstanceMap final
   // the map.
   BluetoothRemoteGATTCharacteristic* getOrCreateRemoteGATTCharacteristic(
       ExecutionContext*,
-      const String& serviceInstanceId,
       mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr,
       BluetoothRemoteGATTService*);
 

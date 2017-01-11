@@ -51,11 +51,10 @@ bool BluetoothDevice::isValidService(const String& serviceInstanceId) {
 BluetoothRemoteGATTCharacteristic*
 BluetoothDevice::getOrCreateRemoteGATTCharacteristic(
     ExecutionContext* context,
-    const String& serviceInstanceId,
     mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr characteristic,
     BluetoothRemoteGATTService* service) {
   return m_attributeInstanceMap->getOrCreateRemoteGATTCharacteristic(
-      context, serviceInstanceId, std::move(characteristic), service);
+      context, std::move(characteristic), service);
 }
 
 bool BluetoothDevice::isValidCharacteristic(

@@ -53,7 +53,6 @@ class BluetoothDevice final : public EventTargetWithInlineData,
 
   BluetoothRemoteGATTCharacteristic* getOrCreateRemoteGATTCharacteristic(
       ExecutionContext*,
-      const String& serviceInstanceId,
       mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr,
       BluetoothRemoteGATTService*);
   bool isValidCharacteristic(const String& characteristicInstanceId);

@@ -42,12 +42,10 @@ DOMDataView* ConvertWTFVectorToDataView(const Vector<uint8_t>& wtfVector) {
 
 BluetoothRemoteGATTCharacteristic::BluetoothRemoteGATTCharacteristic(
     ExecutionContext* context,
-    const String& serviceInstanceId,
     mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr characteristic,
     BluetoothRemoteGATTService* service,
     BluetoothDevice* device)
     : ContextLifecycleObserver(context),
-      m_serviceInstanceId(serviceInstanceId),
       m_characteristic(std::move(characteristic)),
       m_service(service),
       m_stopped(false),
@@ -58,12 +56,11 @@ BluetoothRemoteGATTCharacteristic::BluetoothRemoteGATTCharacteristic(
 
 BluetoothRemoteGATTCharacteristic* BluetoothRemoteGATTCharacteristic::create(
     ExecutionContext* context,
-    const String& serviceInstanceId,
     mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr characteristic,
     BluetoothRemoteGATTService* service,
     BluetoothDevice* device) {
   return new BluetoothRemoteGATTCharacteristic(
-      context, serviceInstanceId, std::move(characteristic), service, device);
+      context, std::move(characteristic), service, device);
 }
 
 void BluetoothRemoteGATTCharacteristic::setValue(DOMDataView* domDataView) {

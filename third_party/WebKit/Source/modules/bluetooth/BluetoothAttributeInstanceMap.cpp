@@ -41,7 +41,6 @@ bool BluetoothAttributeInstanceMap::containsService(
 BluetoothRemoteGATTCharacteristic*
 BluetoothAttributeInstanceMap::getOrCreateRemoteGATTCharacteristic(
     ExecutionContext* context,
-    const String& serviceInstanceId,
     mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr
         remoteGATTCharacteristic,
     BluetoothRemoteGATTService* service) {
@@ -51,8 +50,7 @@ BluetoothAttributeInstanceMap::getOrCreateRemoteGATTCharacteristic(
 
   if (!characteristic) {
     characteristic = BluetoothRemoteGATTCharacteristic::create(
-        context, serviceInstanceId, std::move(remoteGATTCharacteristic),
-        service, m_device);
+        context, std::move(remoteGATTCharacteristic), service, m_device);
     m_characteristicIdToObject.add(instanceId, characteristic);
   }
 
