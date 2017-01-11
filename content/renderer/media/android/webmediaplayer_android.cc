@@ -576,8 +576,6 @@ void WebMediaPlayerAndroid::paint(blink::WebCanvas* canvas,
 bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
     gpu::gles2::GLES2Interface* gl,
     unsigned int texture,
-    unsigned int internal_format,
-    unsigned int type,
     bool premultiply_alpha,
     bool flip_y) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
@@ -606,9 +604,16 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
   // value down to get the expected result.
   // flip_y==true means to reverse the video orientation while
   // flip_y==false means to keep the intrinsic orientation.
-  gl->CopyTextureCHROMIUM(src_texture, 0, texture, 0, internal_format, type,
-                          flip_y, premultiply_alpha, false);
 
+  // The video's texture might be larger than the natural size because
+  // the encoder might have had to round up to the size of a macroblock.
+  // Make sure to only copy the natural size to avoid putting garbage
+  // into the bottom of the destination texture.
+  const gfx::Size& natural_size = video_frame->natural_size();
+  gl->CopySubTextureCHROMIUM(src_texture, 0, texture, 0,
+                             0, 0, 0, 0,
+                             natural_size.width(), natural_size.height(),
+                             flip_y, premultiply_alpha, false);
   gl->DeleteTextures(1, &src_texture);
   gl->Flush();
 

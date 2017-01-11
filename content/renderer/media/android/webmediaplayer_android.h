@@ -129,8 +129,6 @@ class WebMediaPlayerAndroid
 
   bool copyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface* gl,
                                          unsigned int texture,
-                                         unsigned int internal_format,
-                                         unsigned int type,
                                          bool premultiply_alpha,
                                          bool flip_y) override;
 

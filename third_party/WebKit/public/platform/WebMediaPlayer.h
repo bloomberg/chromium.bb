@@ -181,16 +181,21 @@ class WebMediaPlayer {
 
   virtual void paint(WebCanvas*, const WebRect&, SkPaint&) = 0;
 
-  // TODO(dshwang): remove non-|target| version. crbug.com/349871
+  // TODO(kbr): remove non-|target| version. crbug.com/349871
+  //
+  // Do a GPU-GPU texture copy of the natural size of the current
+  // video frame to |texture|. Caller is responsible for allocating
+  // |texture| with the appropriate size. If the copy is impossible or
+  // fails, it returns false.
   virtual bool copyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface*,
                                                  unsigned texture,
-                                                 unsigned internalFormat,
-                                                 unsigned type,
                                                  bool premultiplyAlpha,
                                                  bool flipY) {
     return false;
   }
 
+  // TODO(kbr): when updating calling code to use this, remove the
+  // |internalFormat| and |type| parameters. crbug.com/349871
   // Do a GPU-GPU textures copy. If the copy is impossible or fails, it returns
   // false.
   virtual bool copyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface*,
