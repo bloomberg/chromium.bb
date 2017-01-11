@@ -145,8 +145,14 @@ class MockPeerConnectionDependencyFactory
   scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcSignalingThread()
       const override;
 
+  // If |fail| is true, subsequent calls to CreateSessionDescription will
+  // return nullptr. This can be used to fake a blob of SDP that fails to be
+  // parsed.
+  void SetFailToCreateSessionDescription(bool fail);
+
  private:
   base::Thread signaling_thread_;
+  bool fail_to_create_session_description_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MockPeerConnectionDependencyFactory);
 };

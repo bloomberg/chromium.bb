@@ -47,13 +47,13 @@ void WebRTCVoidRequest::reset() {
 }
 
 void WebRTCVoidRequest::requestSucceeded() const {
-  ASSERT(m_private.get());
-  m_private->requestSucceeded();
+  if (m_private.get())
+    m_private->requestSucceeded();
 }
 
 void WebRTCVoidRequest::requestFailed(const WebString& error) const {
-  ASSERT(m_private.get());
-  m_private->requestFailed(error);
+  if (m_private.get())
+    m_private->requestFailed(error);
 }
 
 }  // namespace blink

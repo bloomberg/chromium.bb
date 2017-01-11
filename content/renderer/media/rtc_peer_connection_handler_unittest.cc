@@ -184,6 +184,11 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
       TrackIceGatheringStateChange,
       void(RTCPeerConnectionHandler* pc_handler,
            WebRTCPeerConnectionHandlerClient::ICEGatheringState state));
+  MOCK_METHOD4(TrackSessionDescriptionCallback,
+               void(RTCPeerConnectionHandler* pc_handler,
+                    Action action,
+                    const std::string& type,
+                    const std::string& value));
   MOCK_METHOD1(TrackOnRenegotiationNeeded,
                void(RTCPeerConnectionHandler* pc_handler));
   MOCK_METHOD2(TrackCreateDTMFSender,
@@ -479,6 +484,36 @@ TEST_F(RTCPeerConnectionHandlerTest, setLocalDescription) {
   EXPECT_EQ(kDummySdpType, mock_peer_connection_->local_description()->type());
   mock_peer_connection_->local_description()->ToString(&sdp_string);
   EXPECT_EQ(kDummySdp, sdp_string);
+
+  // TODO(deadbeef): Also mock the "success" callback from the PeerConnection
+  // and ensure that the sucessful result is tracked by PeerConnectionTracker.
+}
+
+// Test that setLocalDescription with invalid SDP will result in a failure, and
+// is tracked as a failure with PeerConnectionTracker.
+TEST_F(RTCPeerConnectionHandlerTest, setLocalDescriptionParseError) {
+  blink::WebRTCVoidRequest request;
+  blink::WebRTCSessionDescription description;
+  description.initialize(kDummySdpType, kDummySdp);
+  testing::InSequence sequence;
+  // Expect two "Track" calls, one for the start of the attempt and one for the
+  // failure.
+  EXPECT_CALL(
+      *mock_tracker_.get(),
+      TrackSetSessionDescription(pc_handler_.get(), kDummySdp, kDummySdpType,
+                                 PeerConnectionTracker::SOURCE_LOCAL));
+  EXPECT_CALL(
+      *mock_tracker_.get(),
+      TrackSessionDescriptionCallback(
+          pc_handler_.get(),
+          PeerConnectionTracker::ACTION_SET_LOCAL_DESCRIPTION, "OnFailure", _));
+
+  // Used to simulate a parse failure.
+  mock_dependency_factory_->SetFailToCreateSessionDescription(true);
+  pc_handler_->setLocalDescription(request, description);
+  base::RunLoop().RunUntilIdle();
+  // A description that failed to be applied shouldn't be stored.
+  EXPECT_TRUE(pc_handler_->localDescription().sdp().isEmpty());
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, setRemoteDescription) {
@@ -505,6 +540,36 @@ TEST_F(RTCPeerConnectionHandlerTest, setRemoteDescription) {
   EXPECT_EQ(kDummySdpType, mock_peer_connection_->remote_description()->type());
   mock_peer_connection_->remote_description()->ToString(&sdp_string);
   EXPECT_EQ(kDummySdp, sdp_string);
+
+  // TODO(deadbeef): Also mock the "success" callback from the PeerConnection
+  // and ensure that the sucessful result is tracked by PeerConnectionTracker.
+}
+
+// Test that setRemoteDescription with invalid SDP will result in a failure, and
+// is tracked as a failure with PeerConnectionTracker.
+TEST_F(RTCPeerConnectionHandlerTest, setRemoteDescriptionParseError) {
+  blink::WebRTCVoidRequest request;
+  blink::WebRTCSessionDescription description;
+  description.initialize(kDummySdpType, kDummySdp);
+  testing::InSequence sequence;
+  // Expect two "Track" calls, one for the start of the attempt and one for the
+  // failure.
+  EXPECT_CALL(
+      *mock_tracker_.get(),
+      TrackSetSessionDescription(pc_handler_.get(), kDummySdp, kDummySdpType,
+                                 PeerConnectionTracker::SOURCE_REMOTE));
+  EXPECT_CALL(*mock_tracker_.get(),
+              TrackSessionDescriptionCallback(
+                  pc_handler_.get(),
+                  PeerConnectionTracker::ACTION_SET_REMOTE_DESCRIPTION,
+                  "OnFailure", _));
+
+  // Used to simulate a parse failure.
+  mock_dependency_factory_->SetFailToCreateSessionDescription(true);
+  pc_handler_->setRemoteDescription(request, description);
+  base::RunLoop().RunUntilIdle();
+  // A description that failed to be applied shouldn't be stored.
+  EXPECT_TRUE(pc_handler_->remoteDescription().sdp().isEmpty());
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, setConfiguration) {

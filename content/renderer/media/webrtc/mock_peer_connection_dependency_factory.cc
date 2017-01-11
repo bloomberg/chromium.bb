@@ -360,6 +360,8 @@ MockPeerConnectionDependencyFactory::CreateSessionDescription(
     const std::string& type,
     const std::string& sdp,
     webrtc::SdpParseError* error) {
+  if (fail_to_create_session_description_)
+    return nullptr;
   return new MockSessionDescription(type, sdp);
 }
 
@@ -374,6 +376,11 @@ MockPeerConnectionDependencyFactory::CreateIceCandidate(
 scoped_refptr<base::SingleThreadTaskRunner>
 MockPeerConnectionDependencyFactory::GetWebRtcSignalingThread() const {
   return signaling_thread_.task_runner();
+}
+
+void MockPeerConnectionDependencyFactory::SetFailToCreateSessionDescription(
+    bool fail) {
+  fail_to_create_session_description_ = fail;
 }
 
 }  // namespace content
