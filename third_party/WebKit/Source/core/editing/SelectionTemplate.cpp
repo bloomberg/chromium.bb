@@ -103,6 +103,27 @@ bool SelectionTemplate<Strategy>::assertValid() const {
 }
 #endif
 
+#ifndef NDEBUG
+template <typename Strategy>
+void SelectionTemplate<Strategy>::showTreeForThis() const {
+  if (m_base.isNull()) {
+    LOG(INFO) << "\nbase is null";
+    return;
+  }
+
+  LOG(INFO) << "\n"
+            << m_base.anchorNode()
+                   ->toMarkedTreeString(m_base.anchorNode(), "B",
+                                        m_extent.anchorNode(), "E")
+                   .utf8()
+                   .data()
+            << "base: " << m_base.toAnchorTypeAndOffsetString().utf8().data()
+            << "\n"
+            << "extent: "
+            << m_extent.toAnchorTypeAndOffsetString().utf8().data();
+}
+#endif
+
 template <typename Strategy>
 void SelectionTemplate<Strategy>::printTo(std::ostream* ostream,
                                           const char* type) const {

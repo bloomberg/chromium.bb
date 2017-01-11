@@ -100,6 +100,9 @@ class CORE_EXPORT SelectionTemplate final {
   }
 
   void printTo(std::ostream*, const char* type) const;
+#ifndef NDEBUG
+  void showTreeForThis() const;
+#endif
 
  private:
   friend class SelectionEditor;
