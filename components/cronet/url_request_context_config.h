@@ -13,6 +13,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "net/base/hash_value.h"
+#include "net/cert/cert_verifier.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -174,6 +175,67 @@ struct URLRequestContextConfig {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextConfig);
+};
+
+// Stores intermediate state for URLRequestContextConfig.  Initializes with
+// (mostly) sane defaults, then the appropriate member variables can be
+// modified, and it can be finalized with Build().
+struct URLRequestContextConfigBuilder {
+  URLRequestContextConfigBuilder();
+  ~URLRequestContextConfigBuilder();
+
+  // Finalize state into a URLRequestContextConfig.  Must only be called once,
+  // as once |mock_cert_verifier| is moved into a URLRequestContextConfig, it
+  // cannot be used again.
+  std::unique_ptr<URLRequestContextConfig> Build();
+
+  // Enable QUIC.
+  bool enable_quic = false;
+  // QUIC User Agent ID.
+  std::string quic_user_agent_id = "";
+  // Enable SPDY.
+  bool enable_spdy = true;
+  // Enable SDCH.
+  bool enable_sdch = false;
+  // Type of http cache.
+  URLRequestContextConfig::HttpCacheType http_cache =
+      URLRequestContextConfig::DISABLED;
+  // Max size of http cache in bytes.
+  int http_cache_max_size = 0;
+  // Disable caching for HTTP responses. Other information may be stored in
+  // the cache.
+  bool load_disable_cache = false;
+  // Storage path for http cache and cookie storage.
+  std::string storage_path = "";
+  // User-Agent request header field.
+  std::string user_agent = "";
+  // Experimental options encoded as a string in a JSON format containing
+  // experiments and their corresponding configuration options. The format
+  // is a JSON object with the name of the experiment as the key, and the
+  // configuration options as the value. An example:
+  //   {"experiment1": {"option1": "option_value1", "option2": "option_value2",
+  //    ...}, "experiment2: {"option3", "option_value3", ...}, ...}
+  std::string experimental_options = "{}";
+  // Enable Data Reduction Proxy with authentication key.
+  std::string data_reduction_proxy_key = "";
+  std::string data_reduction_primary_proxy = "";
+  std::string data_reduction_fallback_proxy = "";
+  std::string data_reduction_secure_proxy_check_url = "";
+
+  // Certificate verifier for testing.
+  std::unique_ptr<net::CertVerifier> mock_cert_verifier = nullptr;
+
+  // Enable network quality estimator.
+  bool enable_network_quality_estimator = false;
+
+  // Enable public key pinning bypass for local trust anchors.
+  bool bypass_public_key_pinning_for_local_trust_anchors = true;
+
+  // Data to populate CertVerifierCache.
+  std::string cert_verifier_data = "";
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(URLRequestContextConfigBuilder);
 };
 
 }  // namespace cronet

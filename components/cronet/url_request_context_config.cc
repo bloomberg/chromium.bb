@@ -392,4 +392,19 @@ void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
   // TODO(mef): Use |config| to set cookies.
 }
 
+URLRequestContextConfigBuilder::URLRequestContextConfigBuilder() {}
+URLRequestContextConfigBuilder::~URLRequestContextConfigBuilder() {}
+
+std::unique_ptr<URLRequestContextConfig>
+URLRequestContextConfigBuilder::Build() {
+  return base::MakeUnique<URLRequestContextConfig>(
+      enable_quic, quic_user_agent_id, enable_spdy, enable_sdch, http_cache,
+      http_cache_max_size, load_disable_cache, storage_path, user_agent,
+      experimental_options, data_reduction_proxy_key,
+      data_reduction_primary_proxy, data_reduction_fallback_proxy,
+      data_reduction_secure_proxy_check_url, std::move(mock_cert_verifier),
+      enable_network_quality_estimator,
+      bypass_public_key_pinning_for_local_trust_anchors, cert_verifier_data);
+}
+
 }  // namespace cronet

@@ -272,28 +272,18 @@ void CronetEnvironment::InitializeOnNetworkThread() {
     return;
   cache_path = cache_path.Append(FILE_PATH_LITERAL("cronet"));
 
-  std::unique_ptr<URLRequestContextConfig> config(new URLRequestContextConfig(
-      quic_enabled_,  // Enable QUIC.
-      quic_enabled_ && quic_user_agent_id_.empty()
-          ? getDefaultQuicUserAgentId()
-          : quic_user_agent_id_,      // QUIC User Agent ID.
-      http2_enabled_,                 // Enable SPDY.
-      false,                          // Enable SDCH
-      URLRequestContextConfig::DISK,  // Type of http cache.
-      0,                              // Max size of http cache in bytes.
-      false,                          // Disable caching for HTTP responses.
-      cache_path.value(),  // Storage path for http cache and cookie storage.
-      user_agent_,         // User-Agent request header field.
-      "{}",                // JSON encoded experimental options.
-      "",                  // Data reduction proxy key.
-      "",                  // Data reduction proxy.
-      "",                  // Fallback data reduction proxy.
-      "",                  // Data reduction proxy secure proxy check URL.
-      std::move(mock_cert_verifier_),  // MockCertVerifier to use for testing
-                                       // purposes.
-      false,                           // Enable network quality estimator.
-      true,  // Enable bypassing of public key pinning for local trust anchors
-      ""));  // Certificate verifier cache data.
+  URLRequestContextConfigBuilder context_config_builder;
+  context_config_builder.enable_quic = quic_enabled_;   // Enable QUIC.
+  context_config_builder.enable_spdy = http2_enabled_;  // Enable HTTP/2.
+  context_config_builder.http_cache = URLRequestContextConfig::DISK;
+  context_config_builder.storage_path =
+      cache_path.value();  // Storage path for http cache and cookie storage.
+  context_config_builder.user_agent =
+      user_agent_;  // User-Agent request header field.
+  context_config_builder.mock_cert_verifier = std::move(
+      mock_cert_verifier_);  // MockCertVerifier to use for testing purposes.
+  std::unique_ptr<URLRequestContextConfig> config =
+      context_config_builder.Build();
 
   net::URLRequestContextBuilder context_builder;
 
