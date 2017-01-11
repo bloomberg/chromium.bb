@@ -417,7 +417,7 @@ y interpolable, svg, converter=convertLength
 -webkit-box-pack
 -webkit-box-reflect converter=convertBoxReflect
 column-count interpolable, type_name=unsigned short, custom_all
-column-gap interpolable, converter=convertComputedLength<float>, custom_all
+column-gap interpolable, converter=convertComputedLength<float>, custom_all, api_class
 column-rule-color interpolable, custom_all
 column-rule-style type_name=EBorderStyle, initial=initialBorderStyle
 column-rule-width interpolable, converter=convertLineWidth<unsigned short>

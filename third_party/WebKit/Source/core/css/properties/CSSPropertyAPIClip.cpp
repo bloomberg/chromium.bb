@@ -20,7 +20,8 @@ CSSValue* consumeClipComponent(CSSParserTokenRange& range,
       range, cssParserMode, ValueRangeAll,
       CSSPropertyParserHelpers::UnitlessQuirk::Allow);
 }
-}
+
+}  // namespace
 
 const CSSValue* CSSPropertyAPIClip::parseSingleValue(
     CSSParserTokenRange& range,
