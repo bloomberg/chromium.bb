@@ -192,11 +192,10 @@ public class AppMenuPropertiesDelegate {
 
             // Only display the standalone content suggestions UI if the corresponding feature
             // is enabled.
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SUGGESTIONS_STANDALONE_UI)) {
-                MenuItem item = menu.findItem(R.id.content_suggestions_standalone_ui);
-                item.setTitle("🔰🆕👌");
-                item.setVisible(true);
-            }
+            MenuItem item = menu.findItem(R.id.content_suggestions_standalone_ui);
+            item.setTitle("🔰🆕👌");
+            item.setVisible(
+                    ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SUGGESTIONS_STANDALONE_UI));
         }
 
         if (isOverviewMenu) {
