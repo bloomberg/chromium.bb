@@ -105,4 +105,8 @@ message PrecacheConfigurationSettings {
   // affects the fetcher's behavior with respect to max_bytes_total and
   // total_resources_count.
   optional bool global_ranking = 9 [default = false];
+
+  // If true, resource fetches are only made over the network for a given URL if
+  // an existing cache entry exists and has revalidation headers.
+  optional bool revalidation_only = 10 [default = false];
 };

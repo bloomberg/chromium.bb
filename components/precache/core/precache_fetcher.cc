@@ -241,13 +241,15 @@ PrecacheFetcher::Fetcher::Fetcher(
     const std::string& referrer,
     const base::Callback<void(const Fetcher&)>& callback,
     bool is_resource_request,
-    size_t max_bytes)
+    size_t max_bytes,
+    bool revalidation_only)
     : request_context_(request_context),
       url_(url),
       referrer_(referrer),
       callback_(callback),
       is_resource_request_(is_resource_request),
       max_bytes_(max_bytes),
+      revalidation_only_(revalidation_only),
       response_bytes_(0),
       network_response_bytes_(0),
       was_cached_(false) {
@@ -330,7 +332,8 @@ void PrecacheFetcher::Fetcher::OnURLFetchComplete(
     const net::URLFetcher* source) {
   CHECK(source);
   if (fetch_stage_ == FetchStage::CACHE &&
-      (source->GetStatus().error() == net::ERR_CACHE_MISS ||
+      ((source->GetStatus().error() == net::ERR_CACHE_MISS &&
+        !revalidation_only_) ||
        (source->GetResponseHeaders() &&
         source->GetResponseHeaders()->HasValidators()))) {
     // If the resource was not found in the cache, request it from the
@@ -488,7 +491,8 @@ void PrecacheFetcher::Start() {
   pool_.Add(base::MakeUnique<Fetcher>(
       request_context_.get(), config_url, std::string(),
       base::Bind(&PrecacheFetcher::OnConfigFetchComplete, AsWeakPtr()),
-      false /* is_resource_request */, std::numeric_limits<int32_t>::max()));
+      false /* is_resource_request */, std::numeric_limits<int32_t>::max(),
+      false /* revalidation_only */));
 }
 
 void PrecacheFetcher::StartNextResourceFetch() {
@@ -503,7 +507,8 @@ void PrecacheFetcher::StartNextResourceFetch() {
     pool_.Add(base::MakeUnique<Fetcher>(
         request_context_.get(), resource.url, resource.referrer,
         base::Bind(&PrecacheFetcher::OnResourceFetchComplete, AsWeakPtr()),
-        true /* is_resource_request */, max_bytes));
+        true /* is_resource_request */, max_bytes,
+        unfinished_work_->config_settings().revalidation_only()));
 
     resources_fetching_.push_back(std::move(resource));
     resources_to_fetch_.pop_front();
@@ -519,7 +524,8 @@ void PrecacheFetcher::StartNextManifestFetches() {
         request_context_.get(), top_host.manifest_url, top_host.hostname,
         base::Bind(&PrecacheFetcher::OnManifestFetchComplete, AsWeakPtr(),
                    top_host.visits),
-        false /* is_resource_request */, std::numeric_limits<int32_t>::max()));
+        false /* is_resource_request */, std::numeric_limits<int32_t>::max(),
+        false /* revalidation_only */));
     top_hosts_fetching_.push_back(std::move(top_host));
     top_hosts_to_fetch_.pop_front();
   }

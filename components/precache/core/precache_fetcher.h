@@ -292,14 +292,25 @@ class PrecacheFetcher : public base::SupportsWeakPtr<PrecacheFetcher> {
 // network_url_fetcher() will return nullptr.
 class PrecacheFetcher::Fetcher : public net::URLFetcherDelegate {
  public:
-  // Construct a new Fetcher. This will create and start a new URLFetcher for
-  // the specified URL using the specified request context.
+  // Construct a new Fetcher. This will create and start a new URLFetcher
+  // immediately. Parameters:
+  //   request_context: The request context to pass to the URLFetcher.
+  //   url: The URL to fetch.
+  //   referrer: The hostname of the manifest requesting this resource. Empty
+  //       for config fetches.
+  //   callback: Called when the fetch is finished or cancelled.
+  //   is_resource_request: If true, the URL may be refreshed using
+  //       LOAD_VALIDATE_CACHE.
+  //   max_bytes: The number of bytes to download before cancelling.
+  //   revalidation_only: If true, the URL is fetched only if it has an existing
+  //       cache entry with conditional headers.
   Fetcher(net::URLRequestContextGetter* request_context,
           const GURL& url,
           const std::string& referrer,
           const base::Callback<void(const Fetcher&)>& callback,
           bool is_resource_request,
-          size_t max_bytes);
+          size_t max_bytes,
+          bool revalidation_only);
   ~Fetcher() override;
   void OnURLFetchDownloadProgress(const net::URLFetcher* source,
                                   int64_t current,
@@ -322,12 +333,14 @@ class PrecacheFetcher::Fetcher : public net::URLFetcherDelegate {
   void LoadFromCache();
   void LoadFromNetwork();
 
+  // The arguments to this Fetcher's constructor.
   net::URLRequestContextGetter* const request_context_;
   const GURL url_;
   const std::string referrer_;
   const base::Callback<void(const Fetcher&)> callback_;
   const bool is_resource_request_;
   const size_t max_bytes_;
+  const bool revalidation_only_;
 
   FetchStage fetch_stage_;
   // The cache_url_fetcher_ is kept alive until Fetcher destruction for testing.
