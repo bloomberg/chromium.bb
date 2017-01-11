@@ -22,6 +22,8 @@ class LinearAnimation;
 
 namespace chromeos {
 
+class CircularThrobberView;
+
 // An overlay view used during touch calibration. This view is responsible for
 // all animations and UX during touch calibration on all displays currently
 // active on the device. The view on the display being calibrated is the primary
@@ -111,6 +113,18 @@ class TouchCalibratorView : public views::View, public gfx::AnimationDelegate {
   // Linear animation used for various aniations including fade-in, fade out,
   // and view translation.
   std::unique_ptr<gfx::LinearAnimation> animator_;
+
+  // View responsible for displaying the animated circular icon that the user
+  // touches to calibrate the screen.
+  CircularThrobberView* throbber_circle_;
+
+  // A hint box displayed next to the first touch point to assist user with
+  // information about the next step.
+  views::View* hint_box_view_;
+
+  // View that contains the animated throbber circle and a text label informing
+  // the user to tap the circle to continue calibration.
+  views::View* touch_point_view_;
 
   State state_ = UNKNOWN;
 
