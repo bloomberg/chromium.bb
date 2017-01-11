@@ -5,7 +5,6 @@
 #ifndef CHROME_INSTALLER_UTIL_CHROME_BROWSER_SXS_OPERATIONS_H_
 #define CHROME_INSTALLER_UTIL_CHROME_BROWSER_SXS_OPERATIONS_H_
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/installer/util/chrome_browser_operations.h"
 
@@ -16,11 +15,9 @@ class ChromeBrowserSxSOperations : public ChromeBrowserOperations {
  public:
   ChromeBrowserSxSOperations() {}
 
-  void AppendProductFlags(const std::set<base::string16>& options,
-                          base::CommandLine* cmd_line) const override;
+  void AppendProductFlags(base::CommandLine* cmd_line) const override;
 
-  void AppendRenameFlags(const std::set<base::string16>& options,
-                         base::CommandLine* cmd_line) const override;
+  void AppendRenameFlags(base::CommandLine* cmd_line) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserSxSOperations);

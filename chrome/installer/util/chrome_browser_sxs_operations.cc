@@ -11,21 +11,19 @@
 namespace installer {
 
 void ChromeBrowserSxSOperations::AppendProductFlags(
-    const std::set<base::string16>& options,
     base::CommandLine* cmd_line) const {
   DCHECK(cmd_line);
 
   cmd_line->AppendSwitch(switches::kChromeSxS);
-  ChromeBrowserOperations::AppendProductFlags(options, cmd_line);
+  ChromeBrowserOperations::AppendProductFlags(cmd_line);
 }
 
 void ChromeBrowserSxSOperations::AppendRenameFlags(
-    const std::set<base::string16>& options,
     base::CommandLine* cmd_line) const {
   DCHECK(cmd_line);
 
   cmd_line->AppendSwitch(switches::kChromeSxS);
-  ChromeBrowserOperations::AppendRenameFlags(options, cmd_line);
+  ChromeBrowserOperations::AppendRenameFlags(cmd_line);
 }
 
 }  // namespace installer

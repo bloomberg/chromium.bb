@@ -5,12 +5,9 @@
 #ifndef CHROME_INSTALLER_UTIL_PRODUCT_OPERATIONS_H_
 #define CHROME_INSTALLER_UTIL_PRODUCT_OPERATIONS_H_
 
-#include <set>
-#include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/strings/string16.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 
@@ -22,51 +19,30 @@ class CommandLine;
 
 namespace installer {
 
-class ChannelInfo;
-class MasterPreferences;
 
 // An interface to product-specific operations that depend on product
-// configuration.  Implementations are expected to be stateless.  Configuration
-// can be read from a MasterPreferences instance or from a product's uninstall
-// command.
+// configuration. Implementations are expected to be stateless.
 class ProductOperations {
  public:
   virtual ~ProductOperations() {}
 
-  // Reads product-specific options from |prefs|, adding them to |options|.
-  virtual void ReadOptions(const MasterPreferences& prefs,
-                           std::set<base::string16>* options) const = 0;
-
-  // Reads product-specific options from |command|, adding them to |options|.
-  virtual void ReadOptions(const base::CommandLine& command,
-                           std::set<base::string16>* options) const = 0;
-
   // A key-file is a file such as a DLL on Windows that is expected to be in use
-  // when the product is being used.  For example "chrome.dll" for Chrome.
+  // when the product is being used. For example "chrome.dll" for Chrome.
   // Before attempting to delete an installation directory during an
   // uninstallation, the uninstaller will check if any one of a potential set of
-  // key files is in use and if they are, abort the delete operation.  Only if
-  // none of the key files are in use, can the folder be deleted.  Note that
-  // this function does not return a full path to the key file(s), only (a) file
+  // key files is in use and if they are, abort the delete operation. Only if
+  // none of the key files are in use, can the folder be deleted. Note that this
+  // function does not return a full path to the key file(s), only (a) file
   // name(s).
-  virtual void AddKeyFiles(const std::set<base::string16>& options,
-                           std::vector<base::FilePath>* key_files) const = 0;
+  virtual void AddKeyFiles(std::vector<base::FilePath>* key_files) const = 0;
 
-  // Given a command line, appends the set of product-specific flags.  These are
+  // Given a command line, appends the set of product-specific flags. These are
   // required for product-specific uninstall commands, but are of use for any
   // invocation of setup.exe for the product.
-  virtual void AppendProductFlags(const std::set<base::string16>& options,
-                                  base::CommandLine* cmd_line) const = 0;
+  virtual void AppendProductFlags(base::CommandLine* cmd_line) const = 0;
 
   // Given a command line, appends the set of product-specific rename flags.
-  virtual void AppendRenameFlags(const std::set<base::string16>& options,
-                                 base::CommandLine* cmd_line) const = 0;
-
-  // Adds or removes product-specific flags in |channel_info|.  Returns true if
-  // |channel_info| is modified.
-  virtual bool SetChannelFlags(const std::set<base::string16>& options,
-                               bool set,
-                               ChannelInfo* channel_info) const = 0;
+  virtual void AppendRenameFlags(base::CommandLine* cmd_line) const = 0;
 
   // Modifies a ShellUtil::ShortcutProperties object by assigning default values
   // to unintialized members.
@@ -79,7 +55,6 @@ class ProductOperations {
   // experiment. This function determines if the user qualifies and if so it
   // sets the wheels in motion or in simple cases does the experiment itself.
   virtual void LaunchUserExperiment(const base::FilePath& setup_path,
-                                    const std::set<base::string16>& options,
                                     InstallStatus status,
                                     bool system_level) const = 0;
 };

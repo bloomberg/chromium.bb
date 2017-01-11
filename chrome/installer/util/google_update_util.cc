@@ -164,7 +164,6 @@ void ElevateIfNeededToReenableUpdates() {
   base::CommandLine cmd(exe_path);
   cmd.AppendSwitch(installer::switches::kReenableAutoupdates);
   installer::Product product(BrowserDistribution::GetDistribution());
-  product.InitializeFromUninstallCommand(product_state.uninstall_command());
   product.AppendProductFlags(&cmd);
   if (system_install)
     cmd.AppendSwitch(installer::switches::kSystemLevel);

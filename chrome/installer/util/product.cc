@@ -15,12 +15,9 @@
 #include "chrome/installer/util/chrome_browser_sxs_operations.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/install_util.h"
-#include "chrome/installer/util/master_preferences.h"
-#include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/product_operations.h"
 
 using base::win::RegKey;
-using installer::MasterPreferences;
 
 namespace installer {
 
@@ -31,15 +28,6 @@ Product::Product(BrowserDistribution* distribution)
                       : new ChromeBrowserOperations()) {}
 
 Product::~Product() {
-}
-
-void Product::InitializeFromPreferences(const MasterPreferences& prefs) {
-  operations_->ReadOptions(prefs, &options_);
-}
-
-void Product::InitializeFromUninstallCommand(
-    const base::CommandLine& uninstall_command) {
-  operations_->ReadOptions(uninstall_command, &options_);
 }
 
 bool Product::LaunchChrome(const base::FilePath& application_path) const {
@@ -112,19 +100,15 @@ bool Product::SetMsiMarker(bool system_install, bool set) const {
 }
 
 void Product::AddKeyFiles(std::vector<base::FilePath>* key_files) const {
-  operations_->AddKeyFiles(options_, key_files);
+  operations_->AddKeyFiles(key_files);
 }
 
 void Product::AppendProductFlags(base::CommandLine* command_line) const {
-  operations_->AppendProductFlags(options_, command_line);
+  operations_->AppendProductFlags(command_line);
 }
 
 void Product::AppendRenameFlags(base::CommandLine* command_line) const {
-  operations_->AppendRenameFlags(options_, command_line);
-}
-
-bool Product::SetChannelFlags(bool set, ChannelInfo* channel_info) const {
-  return operations_->SetChannelFlags(options_, set, channel_info);
+  operations_->AppendRenameFlags(command_line);
 }
 
 void Product::AddDefaultShortcutProperties(
@@ -141,8 +125,7 @@ void Product::LaunchUserExperiment(const base::FilePath& setup_path,
     VLOG(1) << "LaunchUserExperiment status: " << status << " product: "
             << distribution_->GetDisplayName()
             << " system_level: " << system_level;
-    operations_->LaunchUserExperiment(
-        setup_path, options_, status, system_level);
+    operations_->LaunchUserExperiment(setup_path, status, system_level);
   }
 }
 

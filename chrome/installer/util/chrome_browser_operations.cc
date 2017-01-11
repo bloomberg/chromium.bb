@@ -6,91 +6,27 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/strings/string_util.h"
 #include "chrome/installer/util/browser_distribution.h"
-#include "chrome/installer/util/channel_info.h"
-#include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
-#include "chrome/installer/util/master_preferences.h"
-#include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/user_experiment.h"
 #include "chrome/installer/util/util_constants.h"
 
 namespace installer {
 
-void ChromeBrowserOperations::ReadOptions(const MasterPreferences& prefs,
-                                          std::set<base::string16>* options)
-    const {
-  DCHECK(options);
-
-  bool pref_value;
-
-  if (prefs.GetBool(master_preferences::kMultiInstall, &pref_value) &&
-      pref_value) {
-    options->insert(kOptionMultiInstall);
-  }
-}
-
-void ChromeBrowserOperations::ReadOptions(
-    const base::CommandLine& uninstall_command,
-    std::set<base::string16>* options) const {
-  DCHECK(options);
-
-  if (uninstall_command.HasSwitch(switches::kMultiInstall))
-    options->insert(kOptionMultiInstall);
-}
-
 void ChromeBrowserOperations::AddKeyFiles(
-    const std::set<base::string16>& options,
     std::vector<base::FilePath>* key_files) const {
   DCHECK(key_files);
   key_files->push_back(base::FilePath(installer::kChromeDll));
 }
 
 void ChromeBrowserOperations::AppendProductFlags(
-    const std::set<base::string16>& options,
     base::CommandLine* cmd_line) const {
-  DCHECK(cmd_line);
-
-  if (options.find(kOptionMultiInstall) != options.end()) {
-    // Add --multi-install if it isn't already there.
-    if (!cmd_line->HasSwitch(switches::kMultiInstall))
-      cmd_line->AppendSwitch(switches::kMultiInstall);
-
-    // --chrome is only needed in multi-install.
-    cmd_line->AppendSwitch(switches::kChrome);
-  }
 }
 
 void ChromeBrowserOperations::AppendRenameFlags(
-    const std::set<base::string16>& options,
     base::CommandLine* cmd_line) const {
-  DCHECK(cmd_line);
-
-  // Add --multi-install if it isn't already there.
-  if (options.find(kOptionMultiInstall) != options.end() &&
-      !cmd_line->HasSwitch(switches::kMultiInstall)) {
-    cmd_line->AppendSwitch(switches::kMultiInstall);
-  }
-}
-
-bool ChromeBrowserOperations::SetChannelFlags(
-    const std::set<base::string16>& options,
-    bool set,
-    ChannelInfo* channel_info) const {
-#if defined(GOOGLE_CHROME_BUILD)
-  DCHECK(channel_info);
-  bool chrome_changed = channel_info->SetChrome(set);
-  // Remove App Launcher's channel flags, since App Launcher does not exist as
-  // an independent product, and is a part of Chrome.
-  bool app_launcher_changed = channel_info->SetAppLauncher(false);
-  return chrome_changed || app_launcher_changed;
-#else
-  return false;
-#endif
 }
 
 // Modifies a ShortcutProperties object by adding default values to
@@ -121,11 +57,10 @@ void ChromeBrowserOperations::AddDefaultShortcutProperties(
 
 void ChromeBrowserOperations::LaunchUserExperiment(
     const base::FilePath& setup_path,
-    const std::set<base::string16>& options,
     InstallStatus status,
     bool system_level) const {
   base::CommandLine base_command(setup_path);
-  AppendProductFlags(options, &base_command);
+  AppendProductFlags(&base_command);
   installer::LaunchBrowserUserExperiment(base_command, status, system_level);
 }
 

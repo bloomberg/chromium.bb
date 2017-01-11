@@ -16,29 +16,20 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/installation_state.h"
-#include "chrome/installer/util/master_preferences.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::win::RegKey;
 using installer::Product;
-using installer::MasterPreferences;
 using registry_util::RegistryOverrideManager;
 
 TEST(ProductTest, ProductInstallBasic) {
   // TODO(tommi): We should mock this and use our mocked distribution.
-  const bool multi_install = false;
   const bool system_level = true;
-  base::CommandLine cmd_line = base::CommandLine::FromString(
-      std::wstring(L"setup.exe") +
-      (multi_install ? L" --multi-install --chrome" : L"") +
-      (system_level ? L" --system-level" : L""));
-  installer::MasterPreferences prefs(cmd_line);
   installer::InstallationState machine_state;
   machine_state.Initialize();
 
   std::unique_ptr<Product> product =
       base::MakeUnique<Product>(BrowserDistribution::GetDistribution());
-  product->InitializeFromPreferences(prefs);
   BrowserDistribution* distribution = product->distribution();
 
   base::FilePath user_data_dir;

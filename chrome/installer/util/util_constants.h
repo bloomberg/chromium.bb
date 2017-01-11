@@ -229,9 +229,6 @@ extern const wchar_t kInstallerResult[];
 extern const wchar_t kInstallerResultUIString[];
 extern const wchar_t kInstallerSuccessLaunchCmdLine[];
 
-// Product options.
-extern const wchar_t kOptionMultiInstall[];
-
 // Chrome channel display names.
 // NOTE: Canary is not strictly a 'channel', but rather a separate product
 //     installed side-by-side. However, GoogleUpdateSettings::GetChromeChannel

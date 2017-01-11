@@ -5,7 +5,6 @@
 #ifndef CHROME_INSTALLER_UTIL_CHROME_BROWSER_OPERATIONS_H_
 #define CHROME_INSTALLER_UTIL_CHROME_BROWSER_OPERATIONS_H_
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/installer/util/product_operations.h"
 
@@ -16,24 +15,11 @@ class ChromeBrowserOperations : public ProductOperations {
  public:
   ChromeBrowserOperations() {}
 
-  void ReadOptions(const MasterPreferences& prefs,
-                   std::set<base::string16>* options) const override;
+  void AddKeyFiles(std::vector<base::FilePath>* key_files) const override;
 
-  void ReadOptions(const base::CommandLine& uninstall_command,
-                   std::set<base::string16>* options) const override;
+  void AppendProductFlags(base::CommandLine* cmd_line) const override;
 
-  void AddKeyFiles(const std::set<base::string16>& options,
-                   std::vector<base::FilePath>* key_files) const override;
-
-  void AppendProductFlags(const std::set<base::string16>& options,
-                          base::CommandLine* cmd_line) const override;
-
-  void AppendRenameFlags(const std::set<base::string16>& options,
-                         base::CommandLine* cmd_line) const override;
-
-  bool SetChannelFlags(const std::set<base::string16>& options,
-                       bool set,
-                       ChannelInfo* channel_info) const override;
+  void AppendRenameFlags(base::CommandLine* cmd_line) const override;
 
   void AddDefaultShortcutProperties(
       BrowserDistribution* dist,
@@ -41,7 +27,6 @@ class ChromeBrowserOperations : public ProductOperations {
       ShellUtil::ShortcutProperties* properties) const override;
 
   void LaunchUserExperiment(const base::FilePath& setup_path,
-                            const std::set<base::string16>& options,
                             InstallStatus status,
                             bool system_level) const override;
 

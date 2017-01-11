@@ -231,8 +231,6 @@ const wchar_t kInstallerResultUIString[] = L"InstallerResultUIString";
 const wchar_t kInstallerSuccessLaunchCmdLine[] =
     L"InstallerSuccessLaunchCmdLine";
 
-const wchar_t kOptionMultiInstall[] = L"multi-install";
-
 // Chrome channel display names.
 const wchar_t kChromeChannelUnknown[] = L"unknown";
 const wchar_t kChromeChannelCanary[] = L"canary";

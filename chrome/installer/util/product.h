@@ -8,8 +8,6 @@
 #include <stdint.h>
 
 #include <memory>
-#include <set>
-#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -24,8 +22,6 @@ class CommandLine;
 
 namespace installer {
 
-class ChannelInfo;
-class MasterPreferences;
 class Product;
 class ProductOperations;
 
@@ -44,25 +40,8 @@ class Product {
 
   ~Product();
 
-  void InitializeFromPreferences(const MasterPreferences& prefs);
-
-  void InitializeFromUninstallCommand(
-      const base::CommandLine& uninstall_command);
-
   BrowserDistribution* distribution() const {
     return distribution_;
-  }
-
-  bool HasOption(const std::wstring& option) const {
-    return options_.find(option) != options_.end();
-  }
-
-  // Returns true if the set of options is mutated by this operation.
-  bool SetOption(const std::wstring& option, bool set) {
-    if (set)
-      return options_.insert(option).second;
-    else
-      return options_.erase(option) != 0;
   }
 
   // Launches Chrome without waiting for it to exit.
@@ -92,9 +71,6 @@ class Product {
   // See ProductOperations::AppendRenameFlags.
   void AppendRenameFlags(base::CommandLine* command_line) const;
 
-  // See Productoperations::SetChannelFlags.
-  bool SetChannelFlags(bool set, ChannelInfo* channel_info) const;
-
   // See ProductOperations::AddDefaultShortcutProperties.
   void AddDefaultShortcutProperties(
       const base::FilePath& target_exe,
@@ -111,7 +87,6 @@ class Product {
 
   BrowserDistribution* const distribution_;
   const std::unique_ptr<ProductOperations> operations_;
-  std::set<std::wstring> options_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Product);

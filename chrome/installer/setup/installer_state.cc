@@ -112,7 +112,7 @@ void InstallerState::set_level(Level level) {
 // debug builds.  See the log messages for details.
 bool InstallerState::CanAddProduct(const base::FilePath* product_dir) const {
   if (product_) {
-    LOG(DFATAL) << "Cannot process more than one single-install product.";
+    LOG(DFATAL) << "Cannot process more than one product.";
     return false;
   }
   return true;
@@ -127,7 +127,6 @@ Product* InstallerState::AddProductInDirectory(
     std::unique_ptr<Product> product) {
   DCHECK(product);
   const Product& the_product = *product;
-  DCHECK(!the_product.HasOption(kOptionMultiInstall));
 
   if (!CanAddProduct(product_dir))
     return nullptr;
@@ -158,7 +157,6 @@ Product* InstallerState::AddProductFromPreferences(
     const InstallationState& machine_state) {
   std::unique_ptr<Product> product_ptr(
       new Product(BrowserDistribution::GetDistribution()));
-  product_ptr->InitializeFromPreferences(prefs);
 
   Product* product = AddProductInDirectory(nullptr, std::move(product_ptr));
 
@@ -176,7 +174,6 @@ Product* InstallerState::AddProductFromState(
     const ProductState& state) {
   std::unique_ptr<Product> product_ptr(
       new Product(BrowserDistribution::GetDistribution()));
-  product_ptr->InitializeFromUninstallCommand(state.uninstall_command());
 
   // Strip off <version>/Installer/setup.exe; see GetInstallerDirectory().
   base::FilePath product_dir =
