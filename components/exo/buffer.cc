@@ -464,9 +464,9 @@ bool Buffer::ProduceTransferableResource(
     Texture* texture = contents_texture_.get();
 
     // This binds the latest contents of this buffer to |texture|.
-    resource->mailbox_holder = gpu::MailboxHolder(
-        texture->mailbox(), texture->BindTexImage(), texture_target_);
-
+    gpu::SyncToken sync_token = texture->BindTexImage();
+    resource->mailbox_holder =
+        gpu::MailboxHolder(texture->mailbox(), sync_token, texture_target_);
     resource->is_overlay_candidate = is_overlay_candidate_;
 
     // The contents texture will be released when no longer used by the
@@ -491,12 +491,11 @@ bool Buffer::ProduceTransferableResource(
   Texture* texture = texture_.get();
 
   // The contents texture will be released when copy has completed.
-  resource->mailbox_holder = gpu::MailboxHolder(
-      texture->mailbox(),
-      contents_texture->CopyTexImage(
-          texture, base::Bind(&Buffer::ReleaseContentsTexture, AsWeakPtr(),
-                              base::Passed(&contents_texture_))),
-      GL_TEXTURE_2D);
+  gpu::SyncToken sync_token = contents_texture->CopyTexImage(
+      texture, base::Bind(&Buffer::ReleaseContentsTexture, AsWeakPtr(),
+                          base::Passed(&contents_texture_)));
+  resource->mailbox_holder =
+      gpu::MailboxHolder(texture->mailbox(), sync_token, GL_TEXTURE_2D);
   resource->is_overlay_candidate = false;
 
   // The mailbox texture will be released when no longer used by the
