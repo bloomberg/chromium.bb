@@ -21,6 +21,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -418,8 +419,9 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         waitUntilAppBannerInfoBarAppears(NATIVE_APP_TITLE);
     }
 
-    @MediumTest
-    @Feature({"AppBanners"})
+    // @MediumTest
+    // @Feature({"AppBanners"})
+    @DisabledTest
     public void testBannerAppearsThenDoesNotAppearAgainForCustomTime() throws Exception {
         AppBannerManager.setDaysAfterDismissAndIgnoreForTesting(7, 7);
         triggerWebAppBanner(mWebAppUrl, WEB_APP_TITLE, false);
