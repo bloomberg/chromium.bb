@@ -40,42 +40,6 @@ enum ErrorType {
   ERROR_COUNT,
 };
 
-// TODO(ljusten): 2016/12/26: Remove 4 enums below as soon as Chrome code has
-// been switched to new enum above.
-
-// Enum values.
-enum ADJoinErrorType {
-  AD_JOIN_ERROR_NONE = 0,
-  AD_JOIN_ERROR_UNKNOWN = 1,
-  AD_JOIN_ERROR_DBUS_FAILURE = 2,
-  // Should be the last.
-  AD_JOIN_ERROR_COUNT = 3,
-};
-
-enum AuthUserErrorType {
-  AUTH_USER_ERROR_NONE = 0,
-  AUTH_USER_ERROR_UNKNOWN = 1,
-  AUTH_USER_ERROR_DBUS_FAILURE = 2,
-  // Should be the last.
-  AUTH_USER_ERROR_COUNT = 3,
-};
-
-enum RefreshUserPolicyErrorType {
-  REFRESH_USER_POLICY_ERROR_NONE = 0,
-  REFRESH_USER_POLICY_ERROR_UNKNOWN = 1,
-  REFRESH_USER_POLICY_ERROR_DBUS_FAILURE = 2,
-  // Should be the last.
-  REFRESH_USER_POLICY_ERROR_COUNT = 3,
-};
-
-enum RefreshDevicePolicyErrorType {
-  REFRESH_DEVICE_POLICY_ERROR_NONE = 0,
-  REFRESH_DEVICE_POLICY_ERROR_UNKNOWN = 1,
-  REFRESH_DEVICE_POLICY_ERROR_DBUS_FAILURE = 2,
-  // Should be the last.
-  REFRESH_DEVICE_POLICY_ERROR_COUNT = 3,
-};
-
 }  // namespace authpolicy
 
 #endif  // SYSTEM_API_DBUS_AUTHPOLICY_DBUS_CONSTANTS_H_
