@@ -1189,6 +1189,11 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
                             int is_compound, int allow_hp, aom_reader *r) {
   int i;
   int ret = 1;
+#if CONFIG_EC_ADAPT
+  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+#else
+  FRAME_CONTEXT *ec_ctx = cm->fc;
+#endif
 #if CONFIG_REF_MV
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
 #if CONFIG_CB4X4
@@ -1203,6 +1208,7 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
   (void)block;
 #endif  // CONFIG_REF_MV
   (void)ref_frame;
+  (void)cm;
 
   switch (mode) {
 #if CONFIG_EXT_INTER
@@ -1221,10 +1227,10 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
                         mbmi->ref_mv_idx);
         nmv_context_counts *const mv_counts =
             counts ? &counts->mv[nmv_ctx] : NULL;
-        read_mv(r, &mv[i].as_mv, &ref_mv[i].as_mv, &cm->fc->nmvc[nmv_ctx],
+        read_mv(r, &mv[i].as_mv, &ref_mv[i].as_mv, &ec_ctx->nmvc[nmv_ctx],
                 mv_counts, allow_hp);
 #else
-        read_mv(r, &mv[i].as_mv, &ref_mv[i].as_mv, &cm->fc->nmvc, mv_counts,
+        read_mv(r, &mv[i].as_mv, &ref_mv[i].as_mv, &ec_ctx->nmvc, mv_counts,
                 allow_hp);
 #endif
         ret = ret && is_mv_valid(&mv[i].as_mv);
@@ -1290,10 +1296,10 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
                         mbmi->ref_mv_idx);
         nmv_context_counts *const mv_counts =
             counts ? &counts->mv[nmv_ctx] : NULL;
-        read_mv(r, &mv[i].as_mv, &ref_mv[i].as_mv, &cm->fc->nmvc[nmv_ctx],
+        read_mv(r, &mv[i].as_mv, &ref_mv[i].as_mv, &ec_ctx->nmvc[nmv_ctx],
                 mv_counts, allow_hp);
 #else
-        read_mv(r, &mv[i].as_mv, &ref_mv[i].as_mv, &cm->fc->nmvc, mv_counts,
+        read_mv(r, &mv[i].as_mv, &ref_mv[i].as_mv, &ec_ctx->nmvc, mv_counts,
                 allow_hp);
 #endif
         ret = ret && is_mv_valid(&mv[i].as_mv);
@@ -1332,11 +1338,11 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
                                 xd->ref_mv_stack[rf_type], 0, mbmi->ref_mv_idx);
       nmv_context_counts *const mv_counts =
           counts ? &counts->mv[nmv_ctx] : NULL;
-      read_mv(r, &mv[0].as_mv, &ref_mv[0].as_mv, &cm->fc->nmvc[nmv_ctx],
+      read_mv(r, &mv[0].as_mv, &ref_mv[0].as_mv, &ec_ctx->nmvc[nmv_ctx],
               mv_counts, allow_hp);
 #else
       nmv_context_counts *const mv_counts = counts ? &counts->mv : NULL;
-      read_mv(r, &mv[0].as_mv, &ref_mv[0].as_mv, &cm->fc->nmvc, mv_counts,
+      read_mv(r, &mv[0].as_mv, &ref_mv[0].as_mv, &ec_ctx->nmvc, mv_counts,
               allow_hp);
 #endif
       assert(is_compound);
@@ -1353,12 +1359,12 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
       nmv_context_counts *const mv_counts =
           counts ? &counts->mv[nmv_ctx] : NULL;
       mv[0].as_int = nearest_mv[0].as_int;
-      read_mv(r, &mv[1].as_mv, &ref_mv[1].as_mv, &cm->fc->nmvc[nmv_ctx],
+      read_mv(r, &mv[1].as_mv, &ref_mv[1].as_mv, &ec_ctx->nmvc[nmv_ctx],
               mv_counts, allow_hp);
 #else
       nmv_context_counts *const mv_counts = counts ? &counts->mv : NULL;
       mv[0].as_int = nearest_mv[0].as_int;
-      read_mv(r, &mv[1].as_mv, &ref_mv[1].as_mv, &cm->fc->nmvc, mv_counts,
+      read_mv(r, &mv[1].as_mv, &ref_mv[1].as_mv, &ec_ctx->nmvc, mv_counts,
               allow_hp);
 #endif
       assert(is_compound);
@@ -1374,12 +1380,12 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
       nmv_context_counts *const mv_counts =
           counts ? &counts->mv[nmv_ctx] : NULL;
       mv[0].as_int = near_mv[0].as_int;
-      read_mv(r, &mv[1].as_mv, &ref_mv[1].as_mv, &cm->fc->nmvc[nmv_ctx],
+      read_mv(r, &mv[1].as_mv, &ref_mv[1].as_mv, &ec_ctx->nmvc[nmv_ctx],
               mv_counts, allow_hp);
 #else
       nmv_context_counts *const mv_counts = counts ? &counts->mv : NULL;
       mv[0].as_int = near_mv[0].as_int;
-      read_mv(r, &mv[1].as_mv, &ref_mv[1].as_mv, &cm->fc->nmvc, mv_counts,
+      read_mv(r, &mv[1].as_mv, &ref_mv[1].as_mv, &ec_ctx->nmvc, mv_counts,
               allow_hp);
 #endif
       assert(is_compound);
@@ -1395,11 +1401,11 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
                                 xd->ref_mv_stack[rf_type], 0, mbmi->ref_mv_idx);
       nmv_context_counts *const mv_counts =
           counts ? &counts->mv[nmv_ctx] : NULL;
-      read_mv(r, &mv[0].as_mv, &ref_mv[0].as_mv, &cm->fc->nmvc[nmv_ctx],
+      read_mv(r, &mv[0].as_mv, &ref_mv[0].as_mv, &ec_ctx->nmvc[nmv_ctx],
               mv_counts, allow_hp);
 #else
       nmv_context_counts *const mv_counts = counts ? &counts->mv : NULL;
-      read_mv(r, &mv[0].as_mv, &ref_mv[0].as_mv, &cm->fc->nmvc, mv_counts,
+      read_mv(r, &mv[0].as_mv, &ref_mv[0].as_mv, &ec_ctx->nmvc, mv_counts,
               allow_hp);
 #endif
       assert(is_compound);

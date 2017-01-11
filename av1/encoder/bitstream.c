@@ -1244,17 +1244,22 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
 #endif
                                 aom_writer *w) {
   AV1_COMMON *const cm = &cpi->common;
-#if !CONFIG_REF_MV
-  nmv_context *nmvc = &cm->fc->nmvc;
-#endif
-
-#if CONFIG_DELTA_Q
+#if CONFIG_DELTA_Q || CONFIG_EC_ADAPT
   MACROBLOCK *const x = &cpi->td.mb;
   MACROBLOCKD *const xd = &x->e_mbd;
 #else
   const MACROBLOCK *x = &cpi->td.mb;
   const MACROBLOCKD *xd = &x->e_mbd;
 #endif
+#if CONFIG_EC_ADAPT
+  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+#else
+  FRAME_CONTEXT *ec_ctx = cm->fc;
+#endif
+#if !CONFIG_REF_MV
+  nmv_context *nmvc = &ec_ctx->nmvc;
+#endif
+
   const struct segmentation *const seg = &cm->seg;
   struct segmentation_probs *const segp = &cm->fc->seg;
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
@@ -1465,7 +1470,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
               int nmv_ctx = av1_nmv_ctx(mbmi_ext->ref_mv_count[rf_type],
                                         mbmi_ext->ref_mv_stack[rf_type], ref,
                                         mbmi->ref_mv_idx);
-              nmv_context *nmvc = &cm->fc->nmvc[nmv_ctx];
+              nmv_context *nmvc = &ec_ctx->nmvc[nmv_ctx];
 #endif
               av1_encode_mv(cpi, w, &mi->bmi[j].as_mv[ref].as_mv,
 #if CONFIG_EXT_INTER
@@ -1490,7 +1495,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
             int nmv_ctx = av1_nmv_ctx(mbmi_ext->ref_mv_count[rf_type],
                                       mbmi_ext->ref_mv_stack[rf_type], 1,
                                       mbmi->ref_mv_idx);
-            nmv_context *nmvc = &cm->fc->nmvc[nmv_ctx];
+            nmv_context *nmvc = &ec_ctx->nmvc[nmv_ctx];
 #endif
             av1_encode_mv(cpi, w, &mi->bmi[j].as_mv[1].as_mv,
                           &mi->bmi[j].ref_mv[1].as_mv,
@@ -1504,7 +1509,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
             int nmv_ctx = av1_nmv_ctx(mbmi_ext->ref_mv_count[rf_type],
                                       mbmi_ext->ref_mv_stack[rf_type], 0,
                                       mbmi->ref_mv_idx);
-            nmv_context *nmvc = &cm->fc->nmvc[nmv_ctx];
+            nmv_context *nmvc = &ec_ctx->nmvc[nmv_ctx];
 #endif
             av1_encode_mv(cpi, w, &mi->bmi[j].as_mv[0].as_mv,
                           &mi->bmi[j].ref_mv[0].as_mv,
@@ -1529,7 +1534,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
           int nmv_ctx = av1_nmv_ctx(mbmi_ext->ref_mv_count[rf_type],
                                     mbmi_ext->ref_mv_stack[rf_type], ref,
                                     mbmi->ref_mv_idx);
-          nmv_context *nmvc = &cm->fc->nmvc[nmv_ctx];
+          nmv_context *nmvc = &ec_ctx->nmvc[nmv_ctx];
 #endif
           ref_mv = mbmi_ext->ref_mvs[mbmi->ref_frame[ref]][0];
 #if CONFIG_EXT_INTER
@@ -1555,7 +1560,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
         int nmv_ctx =
             av1_nmv_ctx(mbmi_ext->ref_mv_count[rf_type],
                         mbmi_ext->ref_mv_stack[rf_type], 1, mbmi->ref_mv_idx);
-        nmv_context *nmvc = &cm->fc->nmvc[nmv_ctx];
+        nmv_context *nmvc = &ec_ctx->nmvc[nmv_ctx];
 #endif
         av1_encode_mv(cpi, w, &mbmi->mv[1].as_mv,
                       &mbmi_ext->ref_mvs[mbmi->ref_frame[1]][0].as_mv,
@@ -1569,7 +1574,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
         int nmv_ctx =
             av1_nmv_ctx(mbmi_ext->ref_mv_count[rf_type],
                         mbmi_ext->ref_mv_stack[rf_type], 0, mbmi->ref_mv_idx);
-        nmv_context *nmvc = &cm->fc->nmvc[nmv_ctx];
+        nmv_context *nmvc = &ec_ctx->nmvc[nmv_ctx];
 #endif
         av1_encode_mv(cpi, w, &mbmi->mv[0].as_mv,
                       &mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0].as_mv,
