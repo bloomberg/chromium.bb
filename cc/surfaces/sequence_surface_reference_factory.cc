@@ -4,29 +4,20 @@
 
 #include "cc/surfaces/sequence_surface_reference_factory.h"
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "cc/surfaces/sequence_surface_reference.h"
+
+#include "cc/surfaces/surface_sequence.h"
 
 namespace cc {
 
-std::unique_ptr<SurfaceReferenceBase>
-SequenceSurfaceReferenceFactory::CreateReference(
+base::Closure SequenceSurfaceReferenceFactory::CreateReference(
     SurfaceReferenceOwner* owner,
     const SurfaceId& surface_id) const {
   auto seq = owner->GetSurfaceSequenceGenerator()->CreateSurfaceSequence();
   RequireSequence(surface_id, seq);
-  return base::MakeUnique<SequenceSurfaceReference>(make_scoped_refptr(this),
-                                                    seq);
-}
-
-void SequenceSurfaceReferenceFactory::DestroyReference(
-    SurfaceReferenceBase* surface_ref) const {
-  // This method can only be called by a SurfaceReferenceBase because it's
-  // private and only SurfaceReferenceBase is a friend. The reference only
-  // calls this method on the factory that created it. So it's safe to cast
-  // the passed reference to the type returned by CreateReference.
-  auto ref = static_cast<SequenceSurfaceReference*>(surface_ref);
-  SatisfySequence(ref->sequence());
+  return base::Bind(&SequenceSurfaceReferenceFactory::SatisfySequence, this,
+                    seq);
 }
 
 }  // namespace cc

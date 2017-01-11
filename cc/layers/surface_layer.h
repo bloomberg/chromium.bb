@@ -8,11 +8,8 @@
 #include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer.h"
-#include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_info.h"
-#include "cc/surfaces/surface_reference_base.h"
 #include "cc/surfaces/surface_reference_factory.h"
-#include "cc/surfaces/surface_sequence.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace cc {
@@ -50,7 +47,7 @@ class CC_EXPORT SurfaceLayer : public Layer {
 
   SurfaceInfo surface_info_;
   scoped_refptr<SurfaceReferenceFactory> ref_factory_;
-  std::unique_ptr<SurfaceReferenceBase> current_ref_;
+  base::Closure reference_returner_;
   bool stretch_content_to_fill_bounds_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceLayer);

@@ -8,22 +8,22 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/surface_layer_impl.h"
 #include "cc/output/swap_promise.h"
 #include "cc/surfaces/surface_sequence_generator.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/swap_promise_manager.h"
+#include "cc/trees/task_runner_provider.h"
 
 namespace cc {
 
 class SatisfySwapPromise : public SwapPromise {
  public:
   SatisfySwapPromise(
-      std::unique_ptr<SurfaceReferenceBase> surface_ref,
+      base::Closure reference_returner,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
-      : surface_ref_(std::move(surface_ref)),
+      : reference_returner_(reference_returner),
         main_task_runner_(std::move(main_task_runner)) {}
 
   ~SatisfySwapPromise() override {}
@@ -34,17 +34,17 @@ class SatisfySwapPromise : public SwapPromise {
   void WillSwap(CompositorFrameMetadata* metadata) override {}
 
   void DidSwap() override {
-    main_task_runner_->DeleteSoon(FROM_HERE, surface_ref_.release());
+    main_task_runner_->PostTask(FROM_HERE, reference_returner_);
   }
 
   DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override {
-    main_task_runner_->DeleteSoon(FROM_HERE, surface_ref_.release());
+    main_task_runner_->PostTask(FROM_HERE, reference_returner_);
     return DidNotSwapAction::BREAK_PROMISE;
   }
 
   int64_t TraceId() const override { return 0; }
 
-  std::unique_ptr<SurfaceReferenceBase> surface_ref_;
+  base::Closure reference_returner_;
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(SatisfySwapPromise);
@@ -66,7 +66,7 @@ void SurfaceLayer::SetSurfaceInfo(const SurfaceInfo& surface_info) {
   RemoveCurrentReference();
   surface_info_ = surface_info;
   if (layer_tree_host()) {
-    current_ref_ =
+    reference_returner_ =
         ref_factory_->CreateReference(layer_tree_host(), surface_info_.id());
   }
   UpdateDrawsContent(HasDrawableContent());
@@ -96,7 +96,7 @@ void SurfaceLayer::SetLayerTreeHost(LayerTreeHost* host) {
   RemoveCurrentReference();
   Layer::SetLayerTreeHost(host);
   if (layer_tree_host()) {
-    current_ref_ =
+    reference_returner_ =
         ref_factory_->CreateReference(layer_tree_host(), surface_info_.id());
   }
 }
@@ -110,10 +110,11 @@ void SurfaceLayer::PushPropertiesTo(LayerImpl* layer) {
 }
 
 void SurfaceLayer::RemoveCurrentReference() {
-  if (!current_ref_)
+  if (!reference_returner_)
     return;
   auto swap_promise = base::MakeUnique<SatisfySwapPromise>(
-      std::move(current_ref_), base::ThreadTaskRunnerHandle::Get());
+      std::move(reference_returner_),
+      layer_tree_host()->GetTaskRunnerProvider()->MainThreadTaskRunner());
   layer_tree_host()->GetSwapPromiseManager()->QueueSwapPromise(
       std::move(swap_promise));
 }

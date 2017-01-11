@@ -12,34 +12,19 @@ namespace {
 
 // TODO(mfomitchev, samans): Remove these stub classes once the SurfaceReference
 // work is complete.
-class StubSurfaceReference : public cc::SurfaceReferenceBase {
- public:
-  StubSurfaceReference(scoped_refptr<const cc::SurfaceReferenceFactory> factory)
-      : cc::SurfaceReferenceBase(factory) {}
-
-  ~StubSurfaceReference() override { Destroy(); }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(StubSurfaceReference);
-};
-
 class StubSurfaceReferenceFactory : public cc::SurfaceReferenceFactory {
  public:
   StubSurfaceReferenceFactory() = default;
 
   // cc::SurfaceReferenceFactory:
-  std::unique_ptr<cc::SurfaceReferenceBase> CreateReference(
+  base::Closure CreateReference(
       cc::SurfaceReferenceOwner* owner,
       const cc::SurfaceId& surface_id) const override {
-    return base::MakeUnique<StubSurfaceReference>(make_scoped_refptr(this));
+    return base::Closure();
   }
 
  protected:
   ~StubSurfaceReferenceFactory() override = default;
-
- private:
-  // cc::SurfaceReferenceFactory:
-  void DestroyReference(cc::SurfaceReferenceBase* surface_ref) const override {}
 
   DISALLOW_COPY_AND_ASSIGN(StubSurfaceReferenceFactory);
 };
