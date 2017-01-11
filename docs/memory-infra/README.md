@@ -93,7 +93,7 @@ memory used by various subsystems of Chrome.
  * **UI**: Android only. Memory used by Android java bitmaps for the UI.
  * **V8**: Memory used by V8 Javascript engine.
  * **Web Cache**: Memory used by resources downloaded from the Web, like images
-   and scipts.
+   and scripts.
 
 The **tracing column in gray** reports memory that is used to collect all of the
 above information. This memory would not be used if tracing were not enabled,
@@ -106,6 +106,19 @@ and it is discounted from malloc and the blue columns.
 [cc-memory]:  probe-cc.md
 [gpu-memory]: probe-gpu.md
 [partalloc]:  /base/allocator/partition_allocator/PartitionAlloc.md
+
+## 'effective\_size' vs. 'size'
+
+This is a little like the difference between 'self time' and 'cumulative time'
+in a profiling tool. Size is the total amount of memory allocated/requested
+by a subsystem whereas effective size is the total amount of memory
+used/consumed by a subsystem. If Skia allocates 10mb via partition_alloc
+that memory would show up in the size of both Skia and partition_alloc
+but only in the effective size of Skia since although partition_alloc
+allocates the 10mb it does so on behalf of Skia which is responsible
+for the memory. Summing all effective sizes gives the total amount of
+memory used whereas summing size would give a number larger than the total
+amount of memory used.
 
 ## Related Pages
 
