@@ -13,7 +13,10 @@
         ]
       },
       "requires": {
-        "device": [ "device:power_monitor" ]
+        "device": [
+          "device:power_monitor",
+          "device:time_zone_monitor"
+        ]
       }
     }
   }
