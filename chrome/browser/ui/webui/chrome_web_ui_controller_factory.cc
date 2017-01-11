@@ -538,15 +538,19 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<InspectUI>;
 #endif
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-  if (url.host_piece() == chrome::kChromeUIChromeSigninHost)
+  if (url.host_piece() == chrome::kChromeUIChromeSigninHost &&
+      !profile->IsOffTheRecord())
     return &NewWebUI<InlineLoginUI>;
   if (url.host_piece() == chrome::kChromeUIMdUserManagerHost)
     return &NewWebUI<MDUserManagerUI>;
-  if (url.host_piece() == chrome::kChromeUISigninErrorHost)
+  if (url.host_piece() == chrome::kChromeUISigninErrorHost &&
+      !profile->IsOffTheRecord())
     return &NewWebUI<SigninErrorUI>;
-  if (url.host_piece() == chrome::kChromeUISyncConfirmationHost)
+  if (url.host_piece() == chrome::kChromeUISyncConfirmationHost &&
+      !profile->IsOffTheRecord())
     return &NewWebUI<SyncConfirmationUI>;
-  if (url.host_piece() == chrome::kChromeUISigninEmailConfirmationHost)
+  if (url.host_piece() == chrome::kChromeUISigninEmailConfirmationHost &&
+      !profile->IsOffTheRecord())
     return &NewWebUI<SigninEmailConfirmationUI>;
   if (url.host_piece() == chrome::kChromeUIWelcomeHost)
     return &NewWebUI<WelcomeUI>;
