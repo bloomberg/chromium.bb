@@ -1855,7 +1855,9 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
                                      BLOCK_SIZE bsize, int palette_ctx,
                                      int dc_mode_cost, MB_MODE_INFO *best_mbmi,
                                      uint8_t *best_palette_color_map,
-                                     int64_t *best_rd) {
+                                     int64_t *best_rd, int *rate,
+                                     int *rate_tokenonly, int64_t *distortion,
+                                     int *skippable) {
   int rate_overhead = 0;
   MACROBLOCKD *const xd = &x->e_mbd;
   MODE_INFO *const mic = xd->mi[0];
@@ -1974,13 +1976,22 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
         }
       }
       this_rd = RDCOST(x->rdmult, x->rddiv, this_rate, tokenonly_rd_stats.dist);
-
+      if (!xd->lossless[mbmi->segment_id] && mbmi->sb_type >= BLOCK_8X8) {
+        tokenonly_rd_stats.rate -=
+            cpi->tx_size_cost[max_txsize_lookup[bsize] - TX_8X8]
+                             [get_tx_size_context(xd)]
+                             [tx_size_to_depth(mbmi->tx_size)];
+      }
       if (this_rd < *best_rd) {
         *best_rd = this_rd;
         memcpy(best_palette_color_map, color_map,
                rows * cols * sizeof(color_map[0]));
         *best_mbmi = *mbmi;
         rate_overhead = this_rate - tokenonly_rd_stats.rate;
+        if (rate) *rate = this_rate;
+        if (rate_tokenonly) *rate_tokenonly = tokenonly_rd_stats.rate;
+        if (distortion) *distortion = tokenonly_rd_stats.dist;
+        if (skippable) *skippable = tokenonly_rd_stats.skip;
       }
     }
   }
@@ -3008,7 +3019,8 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 #if CONFIG_PALETTE
   if (cpi->common.allow_screen_content_tools) {
     rd_pick_palette_intra_sby(cpi, x, bsize, palette_ctx, bmode_costs[DC_PRED],
-                              &best_mbmi, best_palette_color_map, &best_rd);
+                              &best_mbmi, best_palette_color_map, &best_rd,
+                              rate, rate_tokenonly, distortion, skippable);
   }
 #endif  // CONFIG_PALETTE
 
@@ -9910,7 +9922,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     mbmi->ref_frame[1] = NONE;
     rate_overhead_palette = rd_pick_palette_intra_sby(
         cpi, x, bsize, palette_ctx, intra_mode_cost[DC_PRED], &mbmi_dummy,
-        best_palette_color_map, &dummy_rd);
+        best_palette_color_map, &dummy_rd, NULL, NULL, NULL, NULL);
     if (pmi->palette_size[0] == 0) goto PALETTE_EXIT;
     memcpy(color_map, best_palette_color_map,
            rows * cols * sizeof(best_palette_color_map[0]));
