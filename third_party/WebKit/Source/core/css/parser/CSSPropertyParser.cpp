@@ -3442,8 +3442,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return consumeTextEmphasisStyle(m_range);
     case CSSPropertyOutlineColor:
       return consumeOutlineColor(m_range, m_context.mode());
-    case CSSPropertyOutlineOffset:
-      return consumeLength(m_range, m_context.mode(), ValueRangeAll);
     case CSSPropertyOutlineWidth:
       return consumeLineWidth(m_range, m_context.mode(), UnitlessQuirk::Forbid);
     case CSSPropertyTransform:

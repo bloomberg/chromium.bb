@@ -321,7 +321,7 @@ opacity interpolable, type_name=float
 order type_name=int
 orphans interpolable, inherited, type_name=short
 outline-color interpolable, custom_all
-outline-offset interpolable, converter=convertComputedLength<int>
+outline-offset interpolable, converter=convertComputedLength<int>, api_class
 outline-style custom_all
 outline-width interpolable, converter=convertLineWidth<unsigned short>
 overflow-anchor runtime_flag=ScrollAnchoring, type_name=EOverflowAnchor
