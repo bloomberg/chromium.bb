@@ -159,6 +159,7 @@ SpdyFramer::SpdyFramer(SpdyFramer::DecoderAdapterFactoryFn adapter_factory,
   if (adapter_factory != nullptr) {
     decoder_adapter_ = adapter_factory(this);
   }
+  skip_rewritelength_ = FLAGS_chromium_http2_flag_remove_rewritelength;
 }
 
 SpdyFramer::SpdyFramer(CompressionOption option)
@@ -1860,12 +1861,21 @@ SpdySerializedFrame SpdyFramer::SerializeDataFrameHeaderWithPaddingLengthField(
   }
 
   SpdyFrameBuilder builder(frame_size);
-  builder.BeginNewFrame(*this, DATA, flags, data_ir.stream_id());
-  if (data_ir.padded()) {
-    builder.WriteUInt8(data_ir.padding_payload_len() & 0xff);
+  if (!skip_rewritelength_) {
+    builder.BeginNewFrame(*this, DATA, flags, data_ir.stream_id());
+    if (data_ir.padded()) {
+      builder.WriteUInt8(data_ir.padding_payload_len() & 0xff);
+    }
+    builder.OverwriteLength(*this, num_padding_fields + data_ir.data_len() +
+                                       data_ir.padding_payload_len());
+  } else {
+    builder.BeginNewFrame(*this, DATA, flags, data_ir.stream_id(),
+                          num_padding_fields + data_ir.data_len() +
+                              data_ir.padding_payload_len());
+    if (data_ir.padded()) {
+      builder.WriteUInt8(data_ir.padding_payload_len() & 0xff);
+    }
   }
-  builder.OverwriteLength(*this, num_padding_fields + data_ir.data_len() +
-                                     data_ir.padding_payload_len());
   DCHECK_EQ(frame_size, builder.length());
   return builder.take();
 }
@@ -1993,7 +2003,29 @@ SpdySerializedFrame SpdyFramer::SerializeHeaders(const SpdyHeadersIR& headers) {
   }
 
   SpdyFrameBuilder builder(size);
-  builder.BeginNewFrame(*this, HEADERS, flags, headers.stream_id());
+
+  if (!skip_rewritelength_) {
+    builder.BeginNewFrame(*this, HEADERS, flags, headers.stream_id());
+  } else {
+    // Compute frame length field.
+    size_t length_field = 0;
+    if (headers.padded()) {
+      length_field += 1;  // Padding length field.
+    }
+    if (headers.has_priority()) {
+      length_field += 4;  // Dependency field.
+      length_field += 1;  // Weight field.
+    }
+    length_field += headers.padding_payload_len();
+    length_field += hpack_encoding.size();
+    // If the HEADERS frame with payload would exceed the max frame size, then
+    // WritePayloadWithContinuation() will serialize CONTINUATION frames as
+    // necessary.
+    length_field =
+        std::min(length_field, kMaxControlFrameSize - GetFrameHeaderSize());
+    builder.BeginNewFrame(*this, HEADERS, flags, headers.stream_id(),
+                          length_field);
+  }
   DCHECK_EQ(GetHeadersMinimumSize(), builder.length());
 
   int padding_payload_len = 0;
@@ -2066,10 +2098,13 @@ SpdySerializedFrame SpdyFramer::SerializePushPromise(
   }
 
   SpdyFrameBuilder builder(size);
-  builder.BeginNewFrame(*this,
-                        PUSH_PROMISE,
-                        flags,
-                        push_promise.stream_id());
+  if (!skip_rewritelength_) {
+    builder.BeginNewFrame(*this, PUSH_PROMISE, flags, push_promise.stream_id());
+  } else {
+    size_t length = std::min(size, kMaxControlFrameSize) - GetFrameHeaderSize();
+    builder.BeginNewFrame(*this, PUSH_PROMISE, flags, push_promise.stream_id(),
+                          length);
+  }
   int padding_payload_len = 0;
   if (push_promise.padded()) {
     builder.WriteUInt8(push_promise.padding_payload_len());
@@ -2399,7 +2434,7 @@ void SpdyFramer::WritePayloadWithContinuation(SpdyFrameBuilder* builder,
     string padding = string(padding_payload_len, 0);
     builder->WriteBytes(padding.data(), padding.length());
   }
-  if (bytes_remaining > 0) {
+  if (bytes_remaining > 0 && !skip_rewritelength_) {
     builder->OverwriteLength(*this,
                              kMaxControlFrameSize - GetFrameHeaderSize());
   }
@@ -2412,7 +2447,12 @@ void SpdyFramer::WritePayloadWithContinuation(SpdyFrameBuilder* builder,
     if (bytes_remaining == bytes_to_write) {
       flags |= end_flag;
     }
-    builder->BeginNewFrame(*this, CONTINUATION, flags, stream_id);
+    if (!skip_rewritelength_) {
+      builder->BeginNewFrame(*this, CONTINUATION, flags, stream_id);
+    } else {
+      builder->BeginNewFrame(*this, CONTINUATION, flags, stream_id,
+                             bytes_to_write);
+    }
     // Write payload fragment.
     builder->WriteBytes(
         &hpack_encoding[hpack_encoding.size() - bytes_remaining],
