@@ -146,28 +146,30 @@ class CAPTURE_EXPORT VideoCaptureDevice
         VideoPixelStorage storage,
         int frame_feedback_id) = 0;
 
-    // Captured new video data, held in |frame| or |buffer|, respectively for
-    // OnIncomingCapturedVideoFrame() and  OnIncomingCapturedBuffer().
-    //
-    // In both cases, as the frame is backed by a reservation returned by
-    // ReserveOutputBuffer(), delivery is guaranteed and will require no
-    // additional copies in the browser process.
+    // Provides VCD::Client with a populated Buffer containing the content of
+    // the next video frame. The |buffer| must originate from an earlier call to
+    // ReserveOutputBuffer().
     // See OnIncomingCapturedData for details of |reference_time| and
     // |timestamp|.
-    // TODO(chfremer): Consider removing one of the two in order to simplify the
-    // interface.
     virtual void OnIncomingCapturedBuffer(std::unique_ptr<Buffer> buffer,
                                           const VideoCaptureFormat& format,
                                           base::TimeTicks reference_time,
                                           base::TimeDelta timestamp) = 0;
-    virtual void OnIncomingCapturedVideoFrame(
+
+    // Extended version of OnIncomingCapturedBuffer() allowing clients to
+    // pass a custom |visible_rect| and |additional_metadata|.
+    virtual void OnIncomingCapturedBufferExt(
         std::unique_ptr<Buffer> buffer,
-        scoped_refptr<VideoFrame> frame) = 0;
+        const VideoCaptureFormat& format,
+        base::TimeTicks reference_time,
+        base::TimeDelta timestamp,
+        gfx::Rect visible_rect,
+        const VideoFrameMetadata& additional_metadata) = 0;
 
     // Attempts to reserve the same Buffer provided in the last call to one of
-    // the OnIncomingCapturedXXX() methods. This will fail if the content of the
-    // Buffer has not been preserved, or if the |dimensions|, |format|, or
-    // |storage| disagree with how it was reserved via ReserveOutputBuffer().
+    // the OnIncomingCapturedBufferXXX() methods. This will fail if the content
+    // of the Buffer has not been preserved, or if the |dimensions|, |format|,
+    // or |storage| disagree with how it was reserved via ReserveOutputBuffer().
     // When this operation fails, nullptr will be returned.
     virtual std::unique_ptr<Buffer> ResurrectLastOutputBuffer(
         const gfx::Size& dimensions,
