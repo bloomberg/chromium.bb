@@ -263,7 +263,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   Member<LocalFrame> m_frame;
   Member<Document> m_document;
   Member<DOMVisualViewport> m_visualViewport;
-  Timer<LocalDOMWindow> m_unusedPreloadsTimer;
+  TaskRunnerTimer<LocalDOMWindow> m_unusedPreloadsTimer;
 
   bool m_shouldPrintWhenFinishedLoading;
 

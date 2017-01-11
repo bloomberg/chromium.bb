@@ -274,7 +274,10 @@ bool LocalDOMWindow::allowPopUp() {
 LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
     : m_frame(&frame),
       m_visualViewport(DOMVisualViewport::create(this)),
-      m_unusedPreloadsTimer(this, &LocalDOMWindow::warnUnusedPreloads),
+      m_unusedPreloadsTimer(
+          TaskRunnerHelper::get(TaskType::UnspecedTimer, &frame),
+          this,
+          &LocalDOMWindow::warnUnusedPreloads),
       m_shouldPrintWhenFinishedLoading(false),
       m_customElements(this, nullptr) {}
 
