@@ -58,8 +58,6 @@ class WPTGitHub(object):
         assert desc_title
         assert body
 
-        # TODO(jeffcarp): CC foolip and qyearsley on all PRs for now
-        # TODO(jeffcarp): add HTTP to Host and use that here
         path = '/repos/w3c/web-platform-tests/pulls'
         body = {
             "title": desc_title,

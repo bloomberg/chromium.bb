@@ -4,11 +4,6 @@
 
 """A script for exporting and importing changes between the Chromium repo
 and the web-platform-tests repo.
-
-TODO(jeffcarp): does not handle reverted changes right now
-TODO(jeffcarp): it also doesn't handle changes to -expected.html files
-TODO(jeffcarp): Currently this script only does export; also add an option
-import as well.
 """
 
 import argparse

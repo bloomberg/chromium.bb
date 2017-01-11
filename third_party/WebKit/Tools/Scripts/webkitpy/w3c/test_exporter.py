@@ -11,8 +11,6 @@ _log = logging.getLogger(__name__)
 
 CHROMIUM_WPT_DIR = 'third_party/WebKit/LayoutTests/imported/wpt/'
 
-# TODO(jeffcarp): have the script running this fetch Chromium origin/master
-# TODO(jeffcarp): move WPT fetch out of its constructor to match planned ChromiumWPT pattern
 
 class TestExporter(object):
 
