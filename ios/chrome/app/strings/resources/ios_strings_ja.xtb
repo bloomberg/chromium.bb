@@ -20,6 +20,7 @@
 <translation id="1254117744268754948">フォルダの選択</translation>
 <translation id="1272079795634619415">中止</translation>
 <translation id="129553762522093515">最近閉じたタブ</translation>
+<translation id="1323735185997015385">削除</translation>
 <translation id="132683371494960526">ダブルタップして親フォルダを変更。</translation>
 <translation id="1340643665687018190">メニューを閉じる</translation>
 <translation id="1375321115329958930">保存したパスワード</translation>
@@ -63,6 +64,7 @@
 <translation id="2068952045031577364">過去 1 週間</translation>
 <translation id="2079545284768500474">取り消す</translation>
 <translation id="209018056901015185">PC版サイトをリクエスト</translation>
+<translation id="2100215774115172756">リーディング リストはオフラインで使用できます。</translation>
 <translation id="2103075008456228677">history.google.com を開く</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />件の項目を移動しました</translation>
 <translation id="2149973817440762519">ブックマークを編集</translation>
@@ -82,6 +84,7 @@
 <translation id="2572712655377361602">端末ポリシーにより写真へのアクセスがブロックされました</translation>
 <translation id="2584132361465095047">アカウントを追加...</translation>
 <translation id="2593774076813182497">ページを印刷できません。</translation>
+<translation id="2648803196158606475">既読を削除</translation>
 <translation id="2653659639078652383">送信</translation>
 <translation id="2684815431982545828">新しいタブ</translation>
 <translation id="2690858294534178585">カメラが使用中です</translation>
@@ -100,22 +103,25 @@
 <translation id="2898963176829412617">新しいフォルダ...</translation>
 <translation id="2903493209154104877">住所</translation>
 <translation id="2921219216347069551">ページを共有できない</translation>
+<translation id="292639812446257861">未読にする</translation>
 <translation id="2933759065870693102">照明</translation>
 <translation id="2969979262385602596">ログインできません。後でもう一度お試しください。</translation>
 <translation id="2989805286512600854">新しいタブで開く</translation>
 <translation id="3024255823539804759">過去 1 日</translation>
 <translation id="3037605927509011580">エラー</translation>
 <translation id="3050311348724540835"><ph name="HISTORY_URL" /> は利用できません。閲覧履歴に移動するには、ツールメニューの [<ph name="SHOW_HISTORY" />] を選択してください。</translation>
+<translation id="3112556859945124369">マーク...</translation>
 <translation id="3151924044251363314">パスフレーズを知っているユーザーだけが暗号化データを読み取ることができます。パスフレーズが Google に送信されたり Google で保存されたりすることはありません。パスフレーズを忘れた場合や、この設定を変更する場合は、同期をリセットする必要があります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
+<translation id="3157684681743766797">すべてマーク...</translation>
 <translation id="3172213052701798825">Google Smart Lock for Passwords</translation>
 <translation id="3175081911749765310">ウェブサービス</translation>
 <translation id="3207960819495026254">ブックマークしました</translation>
 <translation id="3210163015918861891">同期はOFFです</translation>
+<translation id="3237561509210981547">ページをリーディング リストに追加するには、<ph name="BEGIN_BOLD_FONT" />[共有] &gt; [後で読む]<ph name="END_BOLD_FONT" /> をタップします。</translation>
 <translation id="3240426699337459095">リンクをコピーしました</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />、<ph name="ADDITIONAL_INFO" />、<ph name="INDEX" /> / <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">開いているタブ</translation>
-<translation id="3289005573061089144">データをインポートしますか？</translation>
 <translation id="3324193307694657476">住所2行目</translation>
 <translation id="3329904751041170572">サーバーに接続できませんでした。</translation>
 <translation id="3335947283844343239">閉じたタブを開く</translation>
@@ -124,6 +130,7 @@
 <translation id="3414292259312108062">このパスワードは<ph name="BEGIN_LINK" />Googleの保存パスワード<ph name="END_LINK" />として保存され、次回から自動入力されます。</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" />分</translation>
 <translation id="3448016392200048164">分割表示</translation>
+<translation id="3474068797193663261">ページをリーディング リストに追加するには、<ph name="BEGIN_BOLD_FONT" />メニュー &gt; [共有] &gt; [後で読む]<ph name="END_BOLD_FONT" /> をタップします。</translation>
 <translation id="3474649192738347024">フォームに入力されました。</translation>
 <translation id="3478058380795961209">有効期限（月）</translation>
 <translation id="3482959374254649722">タブを同期しています...</translation>
@@ -183,6 +190,7 @@
 <translation id="481968316161811770">Cookie、サイトデータ</translation>
 <translation id="4875622588773761625"><ph name="PASSWORD_MANAGER_BRAND" /> でこのサイトのパスワードを更新しますか？</translation>
 <translation id="4881695831933465202">開く</translation>
+<translation id="4904877109095351937">既読にする</translation>
 <translation id="4923459931733593730">お支払い</translation>
 <translation id="4930268273022498155">既存のデータを削除します。<ph name="USER_EMAIL1" /> に切り替えると、削除したデータを取得できます。</translation>
 <translation id="4941089862236492464">アイテムの共有中に問題が発生しました。</translation>
@@ -360,6 +368,7 @@
 <translation id="8428213095426709021">設定</translation>
 <translation id="8433678324664858900">候補を表示</translation>
 <translation id="8458397775385147834">1件の項目を削除しました</translation>
+<translation id="8487700953926739672">オフラインでの利用</translation>
 <translation id="8503813439785031346">ユーザー名</translation>
 <translation id="8517375800490286174">オープンソースライセンス</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" />タブ: <ph name="FIRST_VISIBLE_TAB" />～<ph name="LAST_VISIBLE_TAB" />/<ph name="NUMBER_OF_OPEN_TABS" /></translation>
@@ -369,6 +378,7 @@
 <translation id="8605219856220328675">タブを閉じる。</translation>
 <translation id="8620640915598389714">編集</translation>
 <translation id="8636825310635137004">他の端末と同じタブを使用するには、同期を有効にします。</translation>
+<translation id="8654802032646794042">キャンセル</translation>
 <translation id="8680787084697685621">アカウントのログイン情報が古くなっています。</translation>
 <translation id="8699098509676302392">住所を追加...</translation>
 <translation id="8721297211384281569">ツールメニュー</translation>

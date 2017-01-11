@@ -177,6 +177,7 @@
 <translation id="2899328121302785497">{COUNT,plural, =1{ліва фігурна дужка}one{# ліва фігурна дужка}few{# ліві фігурні дужки}many{# лівих фігурних дужок}other{# left braces}}</translation>
 <translation id="2911433807131383493">Відкрити навчальний посібник ChromeVox</translation>
 <translation id="2932083475399492303">Переключення між структурною лінією та лінією розмітки</translation>
+<translation id="2944762337049891859">Автоматично озвучувати сторінку, коли вона завантажиться.</translation>
 <translation id="2964026537669811554">Група заголовків</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{знак табуляції}one{# знак табуляції}few{# знаки табуляції}many{# знаків табуляції}other{# tabs}}</translation>
 <translation id="2972078295414139404">Немає попереднього натиснутого посилання.</translation>
@@ -307,6 +308,7 @@
 <translation id="3712520970944678024">Керування мовленням</translation>
 <translation id="3716845769494773620">Багаторядковий</translation>
 <translation id="3731746171184829332">Немає попереднього заголовка.</translation>
+<translation id="3735039640698208086">Під час відтворення аудіо…</translation>
 <translation id="3762198587642264450">Перейти в кінець поточного рядка</translation>
 <translation id="3777255250339039212">заголовок 1</translation>
 <translation id="3793710123303304873">Ви закрили діалогове вікно.</translation>
@@ -547,6 +549,7 @@
 <translation id="5876817486144482042">Зменшити гучність мовлення</translation>
 <translation id="5887397643266327462">Брайлівські субтитри ввімкнено.</translation>
 <translation id="5891934789323004067">Таблиця</translation>
+<translation id="5899860758576822363">Відтворювати тихіше, коли ChromeVox зчитує з екрана</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{знак рівності}one{# знак рівності}few{# знаки рівності}many{# знаків рівності}other{# equal signs}}</translation>
 <translation id="5939518447894949180">Скинути</translation>
 <translation id="5948123859135882163">Переключення між структурним і семантичним аналізом математичних виразів</translation>
@@ -579,6 +582,7 @@
 <translation id="6281876499889881039">Наступний схожий елемент.</translation>
 <translation id="6282062888058716985">навігація</translation>
 <translation id="6290434000785343030">Немає наступного комбінованого вікна.</translation>
+<translation id="6305702903308659374">Не змінювати гучність, навіть коли ChromeVox зчитує з екрана</translation>
 <translation id="6307969636681130414">Натиснуто</translation>
 <translation id="6322856989298155004">Звуки</translation>
 <translation id="6324551002951139333">Виявлено граматичну помилку</translation>
@@ -694,6 +698,7 @@
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, повзунок</translation>
 <translation id="7552432549459840808">Корисні комбінації клавіш у Chrome</translation>
 <translation id="7579911500627256166">крапка <ph name="DOT" /></translation>
+<translation id="7591126877589047423">Елемент не вибрано. Натисніть клавіші Ctrl+N, щоб відкрити нове вікно.</translation>
 <translation id="7596919493010894443">виділення очищено</translation>
 <translation id="7604026522577407655">Перейти на початок поточного стовпця</translation>
 <translation id="7604451927827590395">заголовок</translation>
@@ -769,6 +774,7 @@
 <translation id="8455868257606149352">Макс. <ph name="X" /></translation>
 <translation id="84575901236241018">має клавішу доступу: <ph name="KEY" /></translation>
 <translation id="847154984256717791">зайнято</translation>
+<translation id="8476408756881832830">Призупиняти відтворення, коли ChromeVox зчитує з екрана</translation>
 <translation id="8476508772960940536">огляд вікна</translation>
 <translation id="8503360654911991865">Зменшити деталізацію навігації</translation>
 <translation id="8520472399088452386">Кнопка обертання</translation>

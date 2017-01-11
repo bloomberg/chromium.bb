@@ -20,6 +20,7 @@
 <translation id="1254117744268754948">בחר תיקייה</translation>
 <translation id="1272079795634619415">הפסק</translation>
 <translation id="129553762522093515">נסגרו לאחרונה</translation>
+<translation id="1323735185997015385">מחק</translation>
 <translation id="132683371494960526">הקש פעמיים כדי לשנות את תיקיית האב.</translation>
 <translation id="1340643665687018190">סגור את התפריט</translation>
 <translation id="1375321115329958930">סיסמאות שמורות</translation>
@@ -63,6 +64,7 @@
 <translation id="2068952045031577364">מהשבוע האחרון</translation>
 <translation id="2079545284768500474">בטל</translation>
 <translation id="209018056901015185">טען גירסת מחשב שולחני</translation>
+<translation id="2100215774115172756">רשימת הקריאה שלך זמינה במצב לא מקוון.</translation>
 <translation id="2103075008456228677">‏פתח את history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> פריטים הועברו</translation>
 <translation id="2149973817440762519">ערוך סימניות</translation>
@@ -82,6 +84,7 @@
 <translation id="2572712655377361602">הגישה לתמונות שלך נחסמה עקב מדיניות שהוגדרה למכשיר</translation>
 <translation id="2584132361465095047">הוסף חשבון…</translation>
 <translation id="2593774076813182497">לא ניתן להדפיס את הדף הזה.</translation>
+<translation id="2648803196158606475">מחק פריטים שנקראו</translation>
 <translation id="2653659639078652383">שלח</translation>
 <translation id="2684815431982545828">כרטיסייה חדשה</translation>
 <translation id="2690858294534178585">המצלמה נמצאת בשימוש</translation>
@@ -100,22 +103,25 @@
 <translation id="2898963176829412617">תיקייה חדשה…</translation>
 <translation id="2903493209154104877">כתובות</translation>
 <translation id="2921219216347069551">לא ניתן לשתף את הדף</translation>
+<translation id="292639812446257861">סמן כ'לא נקרא'</translation>
 <translation id="2933759065870693102">פנס</translation>
 <translation id="2969979262385602596">הכניסה נכשלה. נסה שוב מאוחר יותר.</translation>
 <translation id="2989805286512600854">פתח בכרטיסייה חדשה</translation>
 <translation id="3024255823539804759">מהיום האחרון</translation>
 <translation id="3037605927509011580">אוי, לא!</translation>
 <translation id="3050311348724540835">הקישור <ph name="HISTORY_URL" /> אינו זמין. כדי לגשת להיסטוריית הגלישה שלך, בחר באפשרות '<ph name="SHOW_HISTORY" />' בתפריט 'כלים'.</translation>
+<translation id="3112556859945124369">סמן…</translation>
 <translation id="3151924044251363314">‏רק מי שיודע את ביטוי הסיסמה שלך יכול לקרוא את הנתונים המוצפנים. ביטוי הסיסמה לא נשלח אל Google והיא אינה מאחסנת אותו. אם תשכח את ביטוי הסיסמה, או אם תרצה לשנות את ההגדרה הזו, יהיה עליך לאפס את הסינכרון. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
+<translation id="3157684681743766797">סמן הכול…</translation>
 <translation id="3172213052701798825">‏Google Smart Lock לסיסמאות</translation>
 <translation id="3175081911749765310">שירותי אינטרנט</translation>
 <translation id="3207960819495026254">מסומן בסימניה</translation>
 <translation id="3210163015918861891">הסנכרון כבוי</translation>
+<translation id="3237561509210981547">כדי להוסיף דף לרשימת הקריאה, הקש על <ph name="BEGIN_BOLD_FONT" />שתף &gt; קרא אחר כך<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3240426699337459095">הקישור הועתק</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> מתוך <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">כרטיסיות פתוחות</translation>
-<translation id="3289005573061089144">האם לייבא נתונים?</translation>
 <translation id="3324193307694657476">כתובת, שורה 2</translation>
 <translation id="3329904751041170572">לא ניתן להתחבר לשרת.</translation>
 <translation id="3335947283844343239">פתח מחדש כרטיסייה שנסגרה</translation>
@@ -124,6 +130,7 @@
 <translation id="3414292259312108062">‏Chrome יאחסן את הסיסמה ב<ph name="BEGIN_LINK" />סיסמאות Google השמורות<ph name="END_LINK" /> ויזין אותה באופן אוטומטי כדי שלא תצטרך לזכור אותה.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> דק'</translation>
 <translation id="3448016392200048164">תצוגה מפוצלת</translation>
+<translation id="3474068797193663261">כדי להוסיף דף לרשימת הקריאה, הקש על <ph name="BEGIN_BOLD_FONT" />תפריט &gt; שתף &gt; קרא אחר כך<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3474649192738347024">טפסים מולאו.</translation>
 <translation id="3478058380795961209">חודש פקיעת התוקף</translation>
 <translation id="3482959374254649722">מסנכרן את הכרטיסיות שלך...</translation>
@@ -183,6 +190,7 @@
 <translation id="481968316161811770">‏קובצי cookie, נתוני אתרים</translation>
 <translation id="4875622588773761625">האם תרצה ש-<ph name="PASSWORD_MANAGER_BRAND" /> יעדכן את הסיסמה שלך בשביל האתר הזה?</translation>
 <translation id="4881695831933465202">פתח</translation>
+<translation id="4904877109095351937">סמן כ'נקרא'</translation>
 <translation id="4923459931733593730">תשלום</translation>
 <translation id="4930268273022498155">מחק נתונים קיימים. כדי לאחזר אותם, חזור אל <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">מצטערים, אירעה בעיה בשיתוף הפריט שלך.</translation>
@@ -360,6 +368,7 @@
 <translation id="8428213095426709021">הגדרות</translation>
 <translation id="8433678324664858900">הצג הצעות</translation>
 <translation id="8458397775385147834">פריט אחד נמחק</translation>
+<translation id="8487700953926739672">זמין במצב לא מקוון</translation>
 <translation id="8503813439785031346">שם משתמש</translation>
 <translation id="8517375800490286174">רישיונות קוד פתוח</translation>
 <translation id="8524799873541103884">כרטיסיות <ph name="INCOGNITO" /> ‏<ph name="FIRST_VISIBLE_TAB" /> עד <ph name="LAST_VISIBLE_TAB" /> מתוך <ph name="NUMBER_OF_OPEN_TABS" /></translation>
@@ -369,6 +378,7 @@
 <translation id="8605219856220328675">סגור כרטיסייה.</translation>
 <translation id="8620640915598389714">ערוך</translation>
 <translation id="8636825310635137004">כדי לקבל את הכרטיסיות מהמכשירים האחרים שלך, הפעל את הסנכרון.</translation>
+<translation id="8654802032646794042">ביטול</translation>
 <translation id="8680787084697685621">פרטי הכניסה לחשבון אינם מעודכנים.</translation>
 <translation id="8699098509676302392">הוסף כתובת...</translation>
 <translation id="8721297211384281569">התפריט 'כלים'</translation>

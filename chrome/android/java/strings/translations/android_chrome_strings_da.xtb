@@ -67,7 +67,7 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="1623104350909869708">Undgå, at denne side opretter yderligere dialogbokse</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Fjern 1 valgt element}one{Fjern # valgt element}other{Fjern # valgte elementer}}</translation>
 <translation id="1639239467298939599">Indlæser...</translation>
-<translation id="1641113438599504367">Sikker browsing</translation>
+<translation id="1641113438599504367">Beskyttet browsing</translation>
 <translation id="164269334534774161">Du ser en offlinekopi af denne side fra <ph name="CREATION_TIME" /></translation>
 <translation id="1643702317193804718">Oversætter siden til <ph name="SOURCE_LANGUAGE" />…</translation>
 <translation id="1644574205037202324">Historik</translation>
@@ -269,6 +269,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="3828029223314399057">Søg i bogmærker</translation>
 <translation id="3845539888601087042">Viser historik fra de enheder, hvor du er logget ind. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">Spol fremad</translation>
+<translation id="3890664840433101773">Tilføj e-mail</translation>
 <translation id="3894427358181296146">Tilføj mappe</translation>
 <translation id="3895926599014793903">Tving aktivering af zoom</translation>
 <translation id="3917783807003067648">Placeringen er blokeret</translation>
@@ -326,7 +327,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4526249700380860531">Se og administrer gemte adgangskoder på <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Vælg mappe</translation>
 <translation id="4535858793016067060">Slå "Ukendte kilder" til i sikkerhedsindstillingerne i Android for at afprøve eksperimentet "Forbedring af funktionen Føj til startskærm". Sørg for at deaktivere denne indstilling, når du er færdig med at teste den.</translation>
-<translation id="4543661749405994812">Kopiér e-mailadresse</translation>
 <translation id="4558311620361989323">Genveje på websider</translation>
 <translation id="4572422548854449519">Log ind på administreret konto</translation>
 <translation id="457875822857220463">Levering</translation>
@@ -371,6 +371,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4988526792673242964">Sider</translation>
 <translation id="4996978546172906250">Del via</translation>
 <translation id="5000922062037820727">Blokeret (anbefales)</translation>
+<translation id="5004339818306944878">Brug op til 60 % færre data, og gør nettet hurtigere. Google-servere optimerer de sider, du besøger.</translation>
 <translation id="5005498671520578047">Kopiér adgangskode</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> vil gerne oprette forbindelse</translation>
 <translation id="5016205925109358554">Serif</translation>
@@ -393,10 +394,12 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="5171045022955879922">Søg, eller indtast webadresse</translation>
 <translation id="5184329579814168207">Åbn i Chrome</translation>
 <translation id="5199929503336119739">Arbejdsprofil</translation>
+<translation id="5205222826937269299">Navn påkrævet</translation>
 <translation id="5209320130288484488">Der blev ikke fundet nogen enheder</translation>
 <translation id="5210286577605176222">Gå til den forrige fane</translation>
 <translation id="5210365745912300556">Luk fanen</translation>
 <translation id="5222676887888702881">Log ud</translation>
+<translation id="5222812217790122047">E-mail påkrævet</translation>
 <translation id="5233638681132016545">Ny fane</translation>
 <translation id="5271967389191913893">Enheden kan ikke åbne det indhold, der skal downloades.</translation>
 <translation id="528192093759286357">Træk fra toppen, og tryk på tilbageknappen igen for at afslutte fuld skærm.</translation>
@@ -523,7 +526,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Forslag til søgning og webadresser</translation>
 <translation id="6463070039183944536">Tilføjer...</translation>
-<translation id="6464825623202322042">Denne enhed</translation>
 <translation id="6475951671322991020">Download video</translation>
 <translation id="6477460825583319731">Ugyldig e-mailadresse</translation>
 <translation id="6482749332252372425">Download af <ph name="FILE_NAME" /> mislykkedes, fordi der ikke er nok lagerplads.</translation>
@@ -570,6 +572,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6868088497967843822">Log ind for at hente bogmærker, historik og andre indstillinger til alle dine enheder.</translation>
 <translation id="688738109438487280">Føj eksisterende data til <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d åben fane}one{%1$d åben fane}other{%1$d åbne faner}}</translation>
+<translation id="6896758677409633944">Kopiér</translation>
 <translation id="6937422995269576720">Kortnummer er ugyldigt</translation>
 <translation id="6945221475159498467">Vælg</translation>
 <translation id="6963766334940102469">Slet bogmærker</translation>
@@ -594,6 +597,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7094922512924405309">Der blev ikke fundet nogen Fysisk web-sider i nærheden</translation>
 <translation id="7138678301420049075">Andet</translation>
 <translation id="7180611975245234373">Opdater</translation>
+<translation id="7189372733857464326">Venter på, at Google Play-tjenester er opdateret</translation>
 <translation id="7191430249889272776">Fanen blev åbnet i baggrunden.</translation>
 <translation id="7243308994586599757">Du finder indstillingerne nederst på skærmen</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> anvender din placering til at vise lokale søgeresultater</translation>
@@ -654,6 +658,7 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="7851858861565204677">Andre enheder</translation>
 <translation id="7875915731392087153">Opret e-mail</translation>
 <translation id="7876243839304621966">Fjern alt</translation>
+<translation id="7882131421121961860">Der blev ikke fundet nogen historik</translation>
 <translation id="7929962904089429003">Åbn menuen</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> er forældet.</translation>
 <translation id="7947953824732555851">Acceptér og log ind</translation>
@@ -701,6 +706,7 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="8321376388213838985">Der vises snart flere artikler. Hav en god eftermiddag!</translation>
 <translation id="8372893542064058268">Tillad synkronisering i baggrunden for et bestemt website.</translation>
 <translation id="8374821112118309944">Du skal opdatere TalkBack til en nyere version.</translation>
+<translation id="8393700583063109961">Send en besked</translation>
 <translation id="8396312449826231789">Kun godkendte websites</translation>
 <translation id="8413126021676339697">Vis hele historikken</translation>
 <translation id="8428213095426709021">Indstillinger</translation>
@@ -781,6 +787,7 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Billeder</translation>
 <translation id="932327136139879170">Start</translation>
+<translation id="932599481871055447">Gem data, og få en hurtigere browsingoplevelse</translation>
 <translation id="938850635132480979">Fejl: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Adgang til din mikrofon</translation>
 <translation id="951339005376969845">Slet eksisterende data. Du kan hente dem ved at skifte tilbage til <ph name="FROM_ACCOUNT" />.</translation>

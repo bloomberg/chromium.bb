@@ -177,6 +177,7 @@
 <translation id="2899328121302785497">{COUNT,plural, =1{venstre klammeparentes}other{# venstre klammeparenteser}}</translation>
 <translation id="2911433807131383493">Åpne ChromeVox-veiledningen</translation>
 <translation id="2932083475399492303">Veksle linjetypen mellom strukturell og utforming</translation>
+<translation id="2944762337049891859">Les siden automatisk når den er lastet inn.</translation>
 <translation id="2964026537669811554">Overskriftsgruppe</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{tabulator}other{# tabulatorer}}</translation>
 <translation id="2972078295414139404">Ingen tidligere besøkt link.</translation>
@@ -307,6 +308,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="3712520970944678024">Kontroll av tale</translation>
 <translation id="3716845769494773620">Flere linjer</translation>
 <translation id="3731746171184829332">Det finnes ingen tidligere overskrifter.</translation>
+<translation id="3735039640698208086">Ved avspilling av lyd:</translation>
 <translation id="3762198587642264450">Gå til slutten av den gjeldende raden</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">Lukket dialogen.</translation>
@@ -547,6 +549,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="5876817486144482042">Reduser talevolumet</translation>
 <translation id="5887397643266327462">Punktskrift-teksting er slått på.</translation>
 <translation id="5891934789323004067">Tabell</translation>
+<translation id="5899860758576822363">Spill av med lavere volum ved opplesning fra ChromeVox</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{likhetstegn}other{# likhetstegn}}</translation>
 <translation id="5939518447894949180">Tilbakestill</translation>
 <translation id="5948123859135882163">Bytt mellom strukturell og semantisk tolkning av matematiske uttrykk</translation>
@@ -579,6 +582,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="6281876499889881039">Neste lignende element.</translation>
 <translation id="6282062888058716985">nav</translation>
 <translation id="6290434000785343030">Det finnes ikke flere kombinasjonsfelt.</translation>
+<translation id="6305702903308659374">Spill av med normalt volum selv ved opplesning fra ChromeVox</translation>
 <translation id="6307969636681130414">Trykket på</translation>
 <translation id="6322856989298155004">Lyder</translation>
 <translation id="6324551002951139333">En grammatisk feil er oppdaget</translation>
@@ -694,6 +698,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, glidebryter</translation>
 <translation id="7552432549459840808">Nyttige hurtigtaster i Chrome</translation>
 <translation id="7579911500627256166">punkt <ph name="DOT" /></translation>
+<translation id="7591126877589047423">Ikke noe i fokus. Trykk på Ctrl+N for å åpne et nytt vindu.</translation>
 <translation id="7596919493010894443">utvalget ble tømt</translation>
 <translation id="7604026522577407655">Gå til begynnelsen av den nåværende kolonnen</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -769,6 +774,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="8455868257606149352">Maksimum <ph name="X" /></translation>
 <translation id="84575901236241018">har tilgangstast, <ph name="KEY" /></translation>
 <translation id="847154984256717791">opptatt</translation>
+<translation id="8476408756881832830">Sett avspillingen på pause ved opplesning fra ChromeVox</translation>
 <translation id="8476508772960940536">vindusoversikt</translation>
 <translation id="8503360654911991865">Reduser detaljnivået på navigeringen</translation>
 <translation id="8520472399088452386">Verdisettingsknapp</translation>

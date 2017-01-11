@@ -20,6 +20,7 @@
 <translation id="1254117744268754948">ഫോൾഡർ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="1272079795634619415">നിര്‍ത്തുക</translation>
 <translation id="129553762522093515">സമീപകാലത്ത് അടച്ചവ</translation>
+<translation id="1323735185997015385">ഇല്ലാതാക്കുക</translation>
 <translation id="132683371494960526">പാരന്റ് ഫോൾഡർ മാറ്റാൻ രണ്ടുതവണ ടാപ്പുചെയ്യുക.</translation>
 <translation id="1340643665687018190">മെനു അടയ്‌ക്കുക</translation>
 <translation id="1375321115329958930">സംരക്ഷിച്ച പാസ്‌വേഡുകള്‍</translation>
@@ -63,6 +64,7 @@
 <translation id="2068952045031577364">കഴിഞ്ഞ ആഴ്‌ചയിലെ</translation>
 <translation id="2079545284768500474">പൂര്‍‌വ്വാവസ്ഥയിലാക്കുക</translation>
 <translation id="209018056901015185">ഡെസ്‌ക്‌ടോപ്പ് സൈറ്റ് അഭ്യർത്ഥിക്കുക</translation>
+<translation id="2100215774115172756">നിങ്ങളുടെ വായന ലിസ്‌റ്റ് ഓഫ്‌ലൈനിൽ ലഭ്യമാണ്.</translation>
 <translation id="2103075008456228677">history.google.com തുറക്കുക</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ഇനങ്ങൾ നീക്കി</translation>
 <translation id="2149973817440762519">ബുക്മാര്‍ക്ക് എഡിറ്റ് ചെയ്യുക</translation>
@@ -82,6 +84,7 @@
 <translation id="2572712655377361602">ഒരു ഉപകരണ നയം, നിങ്ങളുടെ ഫോട്ടോകളിലേക്കുള്ള ആക്‌സസ്സ് ബ്ലോക്കുചെയ്‌തിരിക്കുന്നു</translation>
 <translation id="2584132361465095047">അക്കൗണ്ട് ചേർക്കുക...</translation>
 <translation id="2593774076813182497">ഈ പേജ് പ്രിന്റുചെയ്യാനാവില്ല.</translation>
+<translation id="2648803196158606475">വായിച്ചവ ഇല്ലാതാക്കുക</translation>
 <translation id="2653659639078652383">സമര്‍പ്പിക്കൂ</translation>
 <translation id="2684815431982545828">പുതിയ ടാബ്</translation>
 <translation id="2690858294534178585">ക്യാമറ ഉപയോഗത്തിലാണ്</translation>
@@ -100,22 +103,25 @@
 <translation id="2898963176829412617">പുതിയ ഫോൾഡർ…</translation>
 <translation id="2903493209154104877">വിലാസങ്ങള്‍‌</translation>
 <translation id="2921219216347069551">പേജ് പങ്കിടാൻ കഴിയില്ല</translation>
+<translation id="292639812446257861">വായിക്കാത്തതായി അടയാളപ്പെടുത്തുക</translation>
 <translation id="2933759065870693102">ടോർച്ച്</translation>
 <translation id="2969979262385602596">സൈൻ ഇൻ ചെയ്യുന്നത് പരാജയപ്പെട്ടു. പിന്നീട് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="2989805286512600854">പുതിയ ടാബില്‍ തുറക്കുക</translation>
 <translation id="3024255823539804759">കഴിഞ്ഞ ദിവസത്തെ</translation>
 <translation id="3037605927509011580">കഷ്ടം!</translation>
 <translation id="3050311348724540835"><ph name="HISTORY_URL" /> ലഭ്യമല്ല. നിങ്ങളുടെ ബ്രൗസിംഗ് ചരിത്രം ആക്‌സസ് ചെയ്യാൻ, ടൂളുകൾ മെനുവിൽ നിന്ന് "<ph name="SHOW_HISTORY" />" തിരഞ്ഞെടുക്കുക.</translation>
+<translation id="3112556859945124369">അടയാളപ്പെടുത്തുക…</translation>
 <translation id="3151924044251363314">നിങ്ങളുടെ പാസ്‌ഫ്രെയ്‌സുള്ള ഒരാൾക്ക് മാത്രമേ എൻക്രിപ്‌റ്റുചെയ്‌ത ഡാറ്റ വായിക്കാനാവൂ. Google-ലേക്ക് പാസ്‌ഫ്രെയ്‌സ് അയയ്‌ക്കുകയോ Google അത് സൂക്ഷിക്കുകയോ ഇല്ല. പാസ്‌ഫ്രെയ്‌സ് മറന്നുപോവുകയോ ഈ ക്രമീകരണം മാറ്റണമെന്നുണ്ടെങ്കിലോ നിങ്ങൾ സമന്വയം റീസെറ്റുചെയ്യേണ്ടതുണ്ട്. <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" /></translation>
+<translation id="3157684681743766797">എല്ലാം അടയാളപ്പെടുത്തുക…</translation>
 <translation id="3172213052701798825">പാസ്‌വേഡുകൾക്കുള്ള Google Smart Lock</translation>
 <translation id="3175081911749765310">വെബ് സേവനങ്ങൾ</translation>
 <translation id="3207960819495026254">ബുക്ക്‌മാർക്കുചെയ്‌തു</translation>
 <translation id="3210163015918861891">സമന്വയം ഓഫാണ്</translation>
+<translation id="3237561509210981547">നിങ്ങളുടെ വായന ലിസ്‌റ്റിൽ ഒരു പേജ് ചേർക്കാൻ, <ph name="BEGIN_BOLD_FONT" />പങ്കിടുക &gt; പിന്നീട് വായിക്കുക<ph name="END_BOLD_FONT" /> ടാപ്പുചെയ്യുക.</translation>
 <translation id="3240426699337459095">ലിങ്ക് പകർത്തി</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> / <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">ഓപ്പൺ ടാബുകൾ</translation>
-<translation id="3289005573061089144">വിവരം ഇമ്പോർട്ടുചെയ്യണോ?</translation>
 <translation id="3324193307694657476">വിലാസം 2</translation>
 <translation id="3329904751041170572">സെര്‍വറിലേക്ക് കണക്റ്റുചെയ്യാൻ കഴിഞ്ഞില്ല.</translation>
 <translation id="3335947283844343239">അടച്ച ടാബ് വീണ്ടും തുറക്കുക</translation>
@@ -124,6 +130,7 @@
 <translation id="3414292259312108062">ഇത് നിങ്ങളുടെ <ph name="BEGIN_LINK" />Google സംരക്ഷിത പാസ്‌വേഡുകളിൽ<ph name="END_LINK" /> Chrome സംരക്ഷിക്കുകയും നിങ്ങൾക്കായി ഓട്ടോഫിൽ ചെയ്യുകയും ചെയ്യുന്നതിനാൽ ഓർക്കേണ്ടതില്ല.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> മി.</translation>
 <translation id="3448016392200048164">വിഭജിത കാഴ്‌ച</translation>
+<translation id="3474068797193663261">നിങ്ങളുടെ വായന ലിസ്‌റ്റിൽ ഒരു പേജ് ചേർക്കാൻ, <ph name="BEGIN_BOLD_FONT" />മെനു &gt; പങ്കിടുക &gt; പിന്നീട് വായിക്കുക<ph name="END_BOLD_FONT" /> ടാപ്പുചെയ്യുക.</translation>
 <translation id="3474649192738347024">ഫോമുകൾ പൂരിപ്പിച്ചു.</translation>
 <translation id="3478058380795961209">കാലഹരണപ്പെടുന്ന മാസം</translation>
 <translation id="3482959374254649722">നിങ്ങളുടെ ടാബുകൾ സമന്വയിപ്പിക്കുന്നു...</translation>
@@ -183,6 +190,7 @@
 <translation id="481968316161811770">കുക്കികളും സൈറ്റ് ഡാറ്റയും</translation>
 <translation id="4875622588773761625">ഈ സൈറ്റിനായി നിങ്ങളുടെ പാസ്‌വേഡ് <ph name="PASSWORD_MANAGER_BRAND" /> അപ്‌ഡേറ്റുചെയ്യണോ?</translation>
 <translation id="4881695831933465202">തുറക്കുക</translation>
+<translation id="4904877109095351937">വായിച്ചതായി അടയാളപ്പെടുത്തുക</translation>
 <translation id="4923459931733593730">പേയ്‌മെന്റ് രീതി</translation>
 <translation id="4930268273022498155">നിലവിലുള്ള വിവരങ്ങൾ ഇല്ലാതാക്കുക. <ph name="USER_EMAIL1" /> എന്നതിലേക്ക് വീണ്ടും മാറുന്നതിലൂടെ നിങ്ങൾക്ക് ഇത് വീണ്ടെടുക്കാം.</translation>
 <translation id="4941089862236492464">ക്ഷമിക്കണം, നിങ്ങളുടെ ഇനം പങ്കിടുന്നതിൽ ഒരു പ്രശ്‌നമുണ്ടായിരുന്നു.</translation>
@@ -360,6 +368,7 @@
 <translation id="8428213095426709021">ക്രമീകരണങ്ങള്‍</translation>
 <translation id="8433678324664858900">നിർദ്ദേശങ്ങൾ കാണിക്കുക</translation>
 <translation id="8458397775385147834">ഒരു ഇനം ഇല്ലാതാക്കി</translation>
+<translation id="8487700953926739672">ഓഫ്‌ലൈനില്‍ ലഭ്യമാണ്</translation>
 <translation id="8503813439785031346">ഉപയോക്തൃനാമം</translation>
 <translation id="8517375800490286174">ഓപ്പൺ സോഴ്‌സ് ലൈസൻസുകൾ</translation>
 <translation id="8524799873541103884"><ph name="NUMBER_OF_OPEN_TABS" />-ൽ <ph name="FIRST_VISIBLE_TAB" /> മുതൽ <ph name="LAST_VISIBLE_TAB" /> വരെയുള്ള <ph name="INCOGNITO" /> ആൾമാറാട്ട ടാബുകൾ</translation>
@@ -369,6 +378,7 @@
 <translation id="8605219856220328675">ടാബ് അടയ്‌ക്കുക.</translation>
 <translation id="8620640915598389714">എഡിറ്റുചെയ്യുക</translation>
 <translation id="8636825310635137004">നിങ്ങളുടെ മറ്റ് ഉപകരണങ്ങളിൽ നിന്നുള്ള ടാബുകൾ ലഭിക്കാൻ, സമന്വയിപ്പിക്കൽ ഓണാക്കുക.</translation>
+<translation id="8654802032646794042">റദ്ദാക്കുക</translation>
 <translation id="8680787084697685621">അക്കൗണ്ട് പ്രവേശന വിവരങ്ങള്‍ കാലഹരണപ്പെട്ടതാണ്.</translation>
 <translation id="8699098509676302392">വിലാസം ചേർക്കുക...</translation>
 <translation id="8721297211384281569">ഉപകരണ മെനു</translation>

@@ -177,6 +177,7 @@
 <translation id="2899328121302785497">{COUNT,plural, =1{sol küme parantezi}other{# sol küme parantezi}}</translation>
 <translation id="2911433807131383493">ChromeVox eğiticiyi aç</translation>
 <translation id="2932083475399492303">Yapısal veya düzen satır türü arasında geçiş yap</translation>
+<translation id="2944762337049891859">Yüklenmesi bittikten sonra sayfayı otomatik olarak oku.</translation>
 <translation id="2964026537669811554">Başlık grubu</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{sekme}other{# sekme}}</translation>
 <translation id="2972078295414139404">Ziyaret edilmiş başka önceki bağlantı yok.</translation>
@@ -307,6 +308,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'u kullanarak Kapat düğmesine gidin 
 <translation id="3712520970944678024">Konuşmayı Denetleme</translation>
 <translation id="3716845769494773620">Çok satırlı</translation>
 <translation id="3731746171184829332">Önceki başlık yok.</translation>
+<translation id="3735039640698208086">Ses çalarken...</translation>
 <translation id="3762198587642264450">Mevcut satırın sonuna git</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">İletişim kutusundan çıkıldı.</translation>
@@ -547,6 +549,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="5876817486144482042">Konuşma ses düzeyini düşür</translation>
 <translation id="5887397643266327462">Braille altyazıları etkinleştirildi.</translation>
 <translation id="5891934789323004067">Tablo</translation>
+<translation id="5899860758576822363">ChromeVox konuşurken daha düşük ses seviyesinde çal</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{eşit işareti}other{# eşit işareti}}</translation>
 <translation id="5939518447894949180">Sıfırla</translation>
 <translation id="5948123859135882163">Matematik ifadelerde yapısal ve anlamsal yorum arasında geçiş yap</translation>
@@ -579,6 +582,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="6281876499889881039">Sonraki benzer öğe.</translation>
 <translation id="6282062888058716985">nav</translation>
 <translation id="6290434000785343030">Sonraki birleşik giriş kutusu yok.</translation>
+<translation id="6305702903308659374">ChromeVox konuşurken bile normal ses seviyesinde çal</translation>
 <translation id="6307969636681130414">Basıldı</translation>
 <translation id="6322856989298155004">Ses</translation>
 <translation id="6324551002951139333">Dil bilgisi hatası algılandı</translation>
@@ -694,6 +698,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, kaydırma çubuğu</translation>
 <translation id="7552432549459840808">Yararlı Chrome Kısayolları</translation>
 <translation id="7579911500627256166">nokta <ph name="DOT" /></translation>
+<translation id="7591126877589047423">Odak yok. Yeni bir pencere açmak için Control+N tuşlarına basın.</translation>
 <translation id="7596919493010894443">seçim temizlendi</translation>
 <translation id="7604026522577407655">Mevcut sütunun başlangıcına git</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -769,6 +774,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="8455868257606149352">En çok: <ph name="X" /></translation>
 <translation id="84575901236241018">erişim tuşu var, <ph name="KEY" /></translation>
 <translation id="847154984256717791">meşgul</translation>
+<translation id="8476408756881832830">ChromeVox konuşurken çalmayı duraklat</translation>
 <translation id="8476508772960940536">pencere genel bakışı</translation>
 <translation id="8503360654911991865">Gezinme hassasiyetini azalt</translation>
 <translation id="8520472399088452386">Dönme düğmesi</translation>

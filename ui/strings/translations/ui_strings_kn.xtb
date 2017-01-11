@@ -84,6 +84,7 @@
 <translation id="6394627529324717982">ಅರ್ಧವಿರಾಮ</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 ಸೆಕೆಂ ಹಿಂದೆ}one{# ಸೆಕೆಂಡುಗಳ ಹಿಂದೆ}other{# ಸೆಕೆಂಡುಗಳ ಹಿಂದೆ}}</translation>
 <translation id="6528179044667508675">ಅಡಚಣೆ ಮಾಡಬೇಡಿ</translation>
+<translation id="6612467943526193239">ಮಾಪನಾಂಕದಿಂದ ನಿರ್ಗಮಿಸಲು Esc ಒತ್ತಿರಿ.</translation>
 <translation id="6620110761915583480">ಫೈಲ್ ಉಳಿಸು</translation>
 <translation id="6699343763173986273">ಮೀಡಿಯಾದ ಮುಂದಿನ ಟ್ರ್ಯಾಕ್</translation>
 <translation id="6786750046913594791">ಫೋಲ್ಡರ್ ಮುಚ್ಚಿರಿ</translation>
@@ -121,7 +122,7 @@
 <translation id="8328145009876646418">ಎಡ ಬದಿ</translation>
 <translation id="8331626408530291785">ಮೇಲೆ ಸ್ಕ್ರೋಲ್ ಮಾಡು</translation>
 <translation id="8371695176452482769">ಈಗ ಮಾತನಾಡಿ</translation>
-<translation id="838869780401515933">ಪರಿಶೀಲಿಸು</translation>
+<translation id="838869780401515933">ಪರಿಶೀಲಿಸಿ</translation>
 <translation id="8392688371657486010">ನೀವು ಯಾವುದೇ ಅಧಿಸೂಚನೆಗಳನ್ನು ಹೊಂದಿಲ್ಲ</translation>
 <translation id="8394908167088220973">ಮೀಡಿಯಾ ಪ್ಲೇ/ವಿರಾಮ</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>

@@ -1886,6 +1886,7 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 <translation id="6770454900105963262">Rapportér informasjon om aktive kioskøkter</translation>
 <translation id="6774533686631353488">Tillat bruk av integrerte meldingsverter på brukernivå (installert uten administratorrettigheter).</translation>
 <translation id="6786747875388722282">Utvidelser</translation>
+<translation id="6786967369487349613">Konfigurerer katalogen for roamingprofiler</translation>
 <translation id="6810445994095397827">Blokkér JavaScript på disse nettstedene</translation>
 <translation id="681446116407619279">Støttede autentiseringssystemer</translation>
 <translation id="6828905844648501476">Hvis denne regelen settes til true (sann) eller ikke konfigureres, tillater <ph name="PRODUCT_NAME" /> «Legg til person» fra brukerbehandlingen.
@@ -2053,6 +2054,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7249828445670652637">Slå på CA-sertifikater for <ph name="PRODUCT_OS_NAME" /> for ARC-apper</translation>
 <translation id="7258823566580374486">Aktiver begrensning (curtaining) av verter for fjerntilgang</translation>
 <translation id="7260277299188117560">Automatisk oppdatering for p2p aktivert</translation>
+<translation id="7261252191178797385">Bakgrunnsbilde på enheten</translation>
 <translation id="7267809745244694722">Medietaster har standardfunksjon som funksjonstaster</translation>
 <translation id="7271085005502526897">Import av hjemmeside fra standard nettleser ved første kjøring</translation>
 <translation id="7273823081800296768">Hvis denne innstillingen er aktivert eller ikke konfigurert, kan brukere velge å knytte sammen klienter og verter ved tilkobling, og dermed sørge for at PIN-koden ikke må angis hver gang.
@@ -2142,6 +2144,15 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Vær oppmerksom på at denne regelen avhenger av at operativsystemstakken for sertifikatverifisering tillater SHA-1-signaturer. Hvis en OS-oppdatering endrer hvordan OS-et håndterer SHA-1-sertifikater, kan det hende denne regelen ikke har noen effekt lenger. Videre er denne regelen ment som en midlertidig løsning for å gi bedrifter mer tid til å gå bort fra bruken av SHA-1. Denne regelen blir fjernet ca. 1. januar 2019.
 
       Hvis denne regelen ikke er konfigurert eller er angitt som false (usann), følger <ph name="PRODUCT_NAME" /> den offentlig kunngjorte planen for SHA-1-avvikling.</translation>
+<translation id="7589150663293249656">Slår på oppretting av roamingkopier for <ph name="PRODUCT_NAME" />-profildata.
+
+      Hvis du slår på denne innstillingen, blir innstillingene som er lagret i <ph name="PRODUCT_NAME" />-profiler – for eksempel bokmerker, autofylldata, passord og så videre – også skrevet til en fil som lagres i mappen for roamingbrukerprofilen eller et sted som bestemmes av administratoren via regelen <ph name="ROAMINGPROFILELOCATION_POLICY_NAME" />.
+
+      Google Synkronisering slås automatisk av når denne regelen slås på.
+
+      For å forhindre tilfeldige datalekkasjer anbefales det også å sette regelen <ph name="SIGNINALLOWED_POLICY_NAME" /> til False (usann).
+
+      Hvis denne regelen er slått av eller ikke er angitt, blir bare de vanlige, lokale profilene brukt.</translation>
 <translation id="7593523670408385997">Konfigurerer bufferstørrelsen som <ph name="PRODUCT_NAME" /> bruker for lagring av bufrede filer på disken.
 
       Hvis du angir denne innstillingen, bruker <ph name="PRODUCT_NAME" /> den tildelte bufferstørrelsen uansett om brukeren har spesifisert «--disk-cache-size»-flagget eller ikke. Verdien som er angitt i denne innstillingen er ikke en hard grense, men et forslag til buffersystemet. Alle verdier under et par megabyte er for små og blir avrundet oppover til et logisk minimum.
@@ -2381,6 +2392,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis brukeren har slått på synkronisering, lagres alle disse dataene i vedkommendes synkroniseringsprofil på samme måte som vanlige profiler. Inkognitomodus er også tilgjengelig hvis den ikke er eksplisitt slått av av regelen.
 
       Hvis regelen er slått av eller ikke angitt, aktiveres vanlige profiler ved pålogging.</translation>
+<translation id="8158758865057576716">Slår på oppretting av roamingkopier for <ph name="PRODUCT_NAME" />-profildata.</translation>
 <translation id="8164246350636985940">Standardfunksjonalitet for nettsteder som ikke er i noen innholdspakke.
 
           Denne regelen er bare for intern bruk i <ph name="PRODUCT_NAME" />.</translation>
@@ -2674,6 +2686,13 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="8992176907758534924">Ikke la noen nettsteder vise bilder</translation>
 <translation id="9035964157729712237">Utvidelses-ID-er som skal unntas sperrelisten</translation>
 <translation id="9042911395677044526">Tillater skyving av nettverkskonfigurasjon for enkeltbrukere på en <ph name="PRODUCT_OS_NAME" />-enhet. Nettverkskonfigurasjon er en JSON-formatert streng, som definert av Open Network Configuration-formatet beskrevet på <ph name="ONC_SPEC_URL" /></translation>
+<translation id="908115901708809140">Konfigurerer katalogen <ph name="PRODUCT_NAME" /> bruker til å lagre roamingkopien av profilene.
+
+      Hvis du angir denne regelen, bruker <ph name="PRODUCT_NAME" /> den angitte katalogen til å lagre roamingkopien av profilene hvis regelen <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> er slått på. Hvis regelen <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> er slått av eller ikke er angitt, brukes ikke verdien som er lagret i denne regelen.
+
+      Gå til https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for å se en liste over variabler som kan brukes.
+
+      Hvis denne regelen ikke angis, brukes standardbanen for roamingprofiler.</translation>
 <translation id="9084985621503260744">Angi om videoaktivitet skal påvirke strømbehandling</translation>
 <translation id="9088433379343318874">Slå på innholdsleverandøren for administrerte brukere</translation>
 <translation id="9088444059179765143">Konfigurer metoden for automatisk påvisning av tidssoner</translation>
@@ -2709,6 +2728,17 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis innstillingen er aktivert, kan ikke brukere ta skjermdumper ved hjelp av hurtigtaster eller programmeringsgrensesnitt for utvidelser.
 
       Hvis innstillingen er deaktivert eller ikke angitt, er det fritt frem for å ta skjermdumper.</translation>
+<translation id="9213347477683611358">Konfigurer bakgrunnsbildet som vises på påloggingsskjermen, på enhentsnivå hvis ingen brukere har logget på enheten ennå. Regelen angis ved å spesifisere nettadressen hvor Chrome OS-enheten kan laste ned bakgrunnsbildet, og en kryptografisk hash-verdi som brukes til bekrefte nedlastingens integritet. Bildet må være i JPEG-format, og filstørrelsen kan ikke overskride 16 MB. Nettadressen må være tilgjengelig uten autentisering. Bakgrunnsbildet lastes ned og bufres. Det lastes ned på nytt hvis nettadressen eller hash-verdien endres.
+
+      Regelen skal spesifiseres som en streng der nettadressen og hash-verdien skrives i JSON-format, for eksempel
+      {
+        «url»: "https://example.com/device_wallpaper.jpg",
+        «hash»: "examplewallpaperhash"
+      }
+
+      Hvis regelen for enhetsbakgrunn ikke angis, laster Chrome OS ned og bruker bakgrunnsbildet på påloggingsskjermen hvis ingen brukere har logget på enheten ennå. Når en bruker logger på, blir den aktuelle brukerens bakgrunnsregler tatt i bruk.
+
+      Hvis regelen for enhetsbakgrunn ikke angis, bestemmer brukerens bakgrunnsregler hva som vises – såfremt brukerens bakgrunnsregler er angitt.</translation>
 <translation id="9217154963008402249">Frekvensen for nettverkspakker for overvåking</translation>
 <translation id="922540222991413931">Konfigurering av installeringskilder for utvidelser, programmer og brukerskript</translation>
 <translation id="924557436754151212">Importér lagrede passord fra standard nettleser ved første kjøring</translation>

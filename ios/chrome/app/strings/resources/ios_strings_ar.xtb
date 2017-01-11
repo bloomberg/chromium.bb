@@ -20,6 +20,7 @@
 <translation id="1254117744268754948">اختيار مجلد</translation>
 <translation id="1272079795634619415">إيقاف</translation>
 <translation id="129553762522093515">المغلقة حديثًا</translation>
+<translation id="1323735185997015385">حذف</translation>
 <translation id="132683371494960526">انقر نقرًا مزدوجًا لتغيير المجلد الرئيسي.</translation>
 <translation id="1340643665687018190">إغلاق القائمة</translation>
 <translation id="1375321115329958930">كلمات المرور المحفوظة</translation>
@@ -63,6 +64,7 @@
 <translation id="2068952045031577364">الأسبوع الماضي</translation>
 <translation id="2079545284768500474">تراجع</translation>
 <translation id="209018056901015185">طلب موقع سطح المكتب</translation>
+<translation id="2100215774115172756">قائمة القراءة متاحة بلا اتصال بالإنترنت.</translation>
 <translation id="2103075008456228677">‏فتح history.google.com</translation>
 <translation id="2116625576999540962">تم نقل <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> من العناصر</translation>
 <translation id="2149973817440762519">تعديل الإشارة</translation>
@@ -82,6 +84,7 @@
 <translation id="2572712655377361602">حظرت سياسة الجهاز الدخول إلى صورك</translation>
 <translation id="2584132361465095047">إضافة حساب...</translation>
 <translation id="2593774076813182497">لا يمكن طباعة هذه الصفحة.</translation>
+<translation id="2648803196158606475">حذف المقروءة</translation>
 <translation id="2653659639078652383">إرسال</translation>
 <translation id="2684815431982545828">علامة تبويب جديدة</translation>
 <translation id="2690858294534178585">الكاميرا قيد الاستخدام</translation>
@@ -100,22 +103,25 @@
 <translation id="2898963176829412617">مجلد جديد...</translation>
 <translation id="2903493209154104877">العناوين</translation>
 <translation id="2921219216347069551">تتعذر مشاركة الصفحة</translation>
+<translation id="292639812446257861">وضع علامة كغير مقروءة</translation>
 <translation id="2933759065870693102">الكشاف</translation>
 <translation id="2969979262385602596">تعذّر تسجيل الدخول. الرجاء إعادة المحاولة لاحقًا.</translation>
 <translation id="2989805286512600854">فتح في علامة تبويب جديدة</translation>
 <translation id="3024255823539804759">اليوم الماضي</translation>
 <translation id="3037605927509011580">عذرًا!</translation>
 <translation id="3050311348724540835"><ph name="HISTORY_URL" /> غير متاح. للوصول إلى سجل التصفح، حدد "<ph name="SHOW_HISTORY" />" من قائمة الأدوات.</translation>
+<translation id="3112556859945124369">وضع علامة...</translation>
 <translation id="3151924044251363314">‏لا يمكن لأحد قراءة بياناتك المشفرة سوى من لديه عبارة المرور التي تستخدمها. ولا يتم إرسال عبارة المرور إلى شركة Google. في حالة نسيان عبارة المرور أو أردت تغيير هذا الإعداد، ستحتاج إلى إعادة ضبط المزامنة. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
+<translation id="3157684681743766797">وضع علامة على الكل...</translation>
 <translation id="3172213052701798825">‏Google Smart Lock لكلمات المرور</translation>
 <translation id="3175081911749765310">خدمات الويب</translation>
 <translation id="3207960819495026254">محدد بعلامة متابعة القراءة</translation>
 <translation id="3210163015918861891">تم إيقاف المزامنة</translation>
+<translation id="3237561509210981547">لإضافة صفحة إلى قائمة القراءة، انقر على <ph name="BEGIN_BOLD_FONT" />مشاركة &gt; القراءة لاحقًا<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3240426699337459095">تم نسخ الرابط</translation>
 <translation id="3244271242291266297">الشهر</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />، و<ph name="ADDITIONAL_INFO" />، و<ph name="INDEX" /> من <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">علامات التبويب المفتوحة</translation>
-<translation id="3289005573061089144">هل تريد استيراد البيانات؟</translation>
 <translation id="3324193307694657476">العنوان 2</translation>
 <translation id="3329904751041170572">تعذر الاتصال بالخادم.</translation>
 <translation id="3335947283844343239">إعادة فتح علامة التبويب المغلقة</translation>
@@ -124,6 +130,7 @@
 <translation id="3414292259312108062">‏سيخزن Chrome ذلك في <ph name="BEGIN_LINK" />كلمات مرور Chrome المحفوظة<ph name="END_LINK" /> ويكتبها تلقائيًا بالنيابة عنك حتى لا تضطر لحفظها بنفسك.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> دقيقة</translation>
 <translation id="3448016392200048164">تقسيم العرض</translation>
+<translation id="3474068797193663261">لإضافة صفحة إلى قائمة القراءة، انقر على <ph name="BEGIN_BOLD_FONT" /> القائمة &gt; مشاركة &gt; القراءة لاحقًا<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3474649192738347024">تم ملء النماذج.</translation>
 <translation id="3478058380795961209">شهر انتهاء الصلاحية</translation>
 <translation id="3482959374254649722">جارٍ مزامنة علامات التبويب الخاصة بك ...</translation>
@@ -183,6 +190,7 @@
 <translation id="481968316161811770">ملفات تعريف الارتباط، وبيانات موقع الويب</translation>
 <translation id="4875622588773761625">هل تريد تحديث كلمة مرورك لهذا الموقع من خلال <ph name="PASSWORD_MANAGER_BRAND" />؟</translation>
 <translation id="4881695831933465202">فتح</translation>
+<translation id="4904877109095351937">وضع علامة كمقروءة</translation>
 <translation id="4923459931733593730">الدفع</translation>
 <translation id="4930268273022498155">يمكنك حذف البيانات الحالية. يمكنك استرداد هذه البيانات بالتبديل مرة أخرى إلى <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">عذرًا، حدثت مشكلة أثناء مشاركة العنصر.</translation>
@@ -360,6 +368,7 @@
 <translation id="8428213095426709021">إعدادات</translation>
 <translation id="8433678324664858900">عرض الاقتراحات</translation>
 <translation id="8458397775385147834">تم حذف عنصر واحد</translation>
+<translation id="8487700953926739672">التوفر في وضع عدم الاتصال</translation>
 <translation id="8503813439785031346">اسم المستخدم</translation>
 <translation id="8517375800490286174">تراخيص البرامج مفتوحة المصدر</translation>
 <translation id="8524799873541103884">علامات تبويب <ph name="INCOGNITO" /><ph name="FIRST_VISIBLE_TAB" /> عبر <ph name="LAST_VISIBLE_TAB" /> من <ph name="NUMBER_OF_OPEN_TABS" /></translation>
@@ -369,6 +378,7 @@
 <translation id="8605219856220328675">إغلاق علامة التبويب.</translation>
 <translation id="8620640915598389714">تعديل</translation>
 <translation id="8636825310635137004">للحصول على علامات التبويب من أجهزتك الأخرى، شغِّل المزامنة.</translation>
+<translation id="8654802032646794042">إلغاء</translation>
 <translation id="8680787084697685621">تفاصيل تسجيل الدخول إلى الحساب قديمة.</translation>
 <translation id="8699098509676302392">جارٍ إضافة عنوان...</translation>
 <translation id="8721297211384281569">قائمة الأدوات</translation>

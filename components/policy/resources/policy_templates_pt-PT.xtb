@@ -1814,6 +1814,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="6770454900105963262">Comunicar informações acerca de sessões ativas do quiosque</translation>
 <translation id="6774533686631353488">Permitir anfitriões de Mensagens nativas de nível de utilizador (instalados sem autorizações de administração).</translation>
 <translation id="6786747875388722282">Extensões</translation>
+<translation id="6786967369487349613">Definir o diretório do perfil de roaming</translation>
 <translation id="6810445994095397827">Bloquear JavaScript nestes sites</translation>
 <translation id="681446116407619279">Esquemas de autenticação suportados</translation>
 <translation id="6828905844648501476">Se esta política for definida como verdadeira ou não configurada, o <ph name="PRODUCT_NAME" /> permite Adicionar pessoa a partir do gestor de utilizadores.
@@ -1976,6 +1977,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="7249828445670652637">Ativar certificados da AC (Autoridade de certificação) do <ph name="PRODUCT_OS_NAME" /> em aplicações ARC</translation>
 <translation id="7258823566580374486">Ativar proteção de anfitriões de acesso remoto</translation>
 <translation id="7260277299188117560">Atualização automática de p2p ativada</translation>
+<translation id="7261252191178797385">Imagem de fundo do dispositivo</translation>
 <translation id="7267809745244694722">Teclas multimédia predefinidas para teclas de função</translation>
 <translation id="7271085005502526897">Importar página inicial a partir do navegador predefinido na primeira execução</translation>
 <translation id="7273823081800296768">Se esta definição estiver ativada ou não estiver configurada, os utilizadores podem optar por sincronizar clientes e anfitriões no momento da ligação, eliminando a necessidade permanente de introduzir um PIN.
@@ -2061,6 +2063,15 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Tenha em atenção que esta política depende da pilha de confirmação de certificados de sistema operativo que autoriza assinaturas SHA-1. Se uma atualização do SO alterar o processamento do SO de certificados SHA-1, esta política pode deixar de ter efeito. Além disso, esta política serve de solução temporária para dar às empresas mais tempo para se desvincularem do SHA-1. Esta política será removida em meados do dia 1 de janeiro de 2019.
 
       Se esta política não for definida ou se for definida como falsa, o <ph name="PRODUCT_NAME" /> segue o calendário de descontinuação do SHA-1 anunciado publicamente.</translation>
+<translation id="7589150663293249656">Permite a criação de cópias de roaming para dados de perfis do <ph name="PRODUCT_NAME" />.
+
+      Se ativar esta definição, as definições armazenadas nos perfis do <ph name="PRODUCT_NAME" />, como marcadores, dados de preenchimento automático, palavras-passe, etc., também são escritas num ficheiro armazenado na pasta do perfil de utilizador Roaming ou numa localização especificada pelo administrador através da política <ph name="ROAMINGPROFILELOCATION_POLICY_NAME" />.
+
+      O Google Sync é desativado automaticamente quando esta política estiver ativada.
+
+      Para evitar fugas de dados acidentais, é aconselhável definir também a política <ph name="SIGNINALLOWED_POLICY_NAME" /> como False.
+
+      Se esta política estiver desativada ou não estiver definida, apenas são utilizados os perfis locais normais.</translation>
 <translation id="7593523670408385997">Configura o tamanho da cache que o <ph name="PRODUCT_NAME" /> utilizará para armazenar ficheiros em cache no disco.
 
       Se definir esta política, o <ph name="PRODUCT_NAME" /> utilizará o tamanho da cache fornecido, independentemente de o utilizador ter especificado ou não a sinalização "--disk-cache-size". O valor especificado nesta política não é um limite rígido, mas, sim, uma sugestão para o sistema de colocação em cache. Qualquer valor alguns megabytes abaixo é demasiado pequeno e será arredondado para o mesmo valor mínimo.
@@ -2292,6 +2303,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Se o utilizador tiver ativado a sincronização, todos estes dados são mantidos no perfil de sincronização, tal como nos perfis normais. O modo de navegação anónima também está disponível se não tiver sido explicitamente desativado pela política.
 
       Se a política for definida como desativada ou não for definida, o início de sessão encaminha para perfis normais.</translation>
+<translation id="8158758865057576716">Permitir a criação de cópias de roaming para dados de perfis do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8164246350636985940">O comportamento predefinido para sites que não estejam num pacote de conteúdo.
 
           Esta política destina-se à utilização interna do próprio <ph name="PRODUCT_NAME" />.</translation>
@@ -2565,6 +2577,13 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="8992176907758534924">Não permitir que os sites mostrem imagens</translation>
 <translation id="9035964157729712237">IDs de extensões a excluir da lista negra</translation>
 <translation id="9042911395677044526">Permite que a configuração de rede seja aplicada por utilizador para um aparelho <ph name="PRODUCT_OS_NAME" />. A configuração de rede é uma cadeia de formato JSON, conforme definido pelo formato de Configuração de Rede Aberta descrito em <ph name="ONC_SPEC_URL" /></translation>
+<translation id="908115901708809140">Configura o diretório utilizado pelo <ph name="PRODUCT_NAME" /> para armazenar a cópia de roaming dos perfis.
+
+      Se definir esta política, o <ph name="PRODUCT_NAME" /> utiliza o diretório fornecido para armazenar a cópia de roaming dos perfis se a política <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> estiver ativada. Se a política <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> estiver desativada ou não estiver definida, não é utilizado o valor armazenado nesta política.
+
+      Consulte https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para obter uma lista das variáveis que podem ser utilizadas.
+
+      Se esta política não estiver definida, é utilizado o caminho do perfil de roaming predefinido.</translation>
 <translation id="9084985621503260744">Especificar se a atividade do vídeo afeta a gestão da energia</translation>
 <translation id="9088433379343318874">Ativar o fornecedor de conteúdos do utilizador supervisionado</translation>
 <translation id="9088444059179765143">Configurar o método de deteção automática do fuso horário</translation>
@@ -2593,6 +2612,17 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Se a política estiver ativada, não é possível efetuar capturas de ecrã com atalhos de teclado ou APIs de extensões.
 
       Se a política estiver desativada ou não for especificada, as capturas de ecrã são permitidas.</translation>
+<translation id="9213347477683611358">Configure uma imagem de fundo ao nível do dispositivo mostrada no ecrã de início de sessão se nenhum utilizador tiver iniciado sessão no dispositivo. A política é definida ao especificar o URL a partir do qual o dispositivo com o SO Chrome pode transferir a imagem de fundo e um hash criptográfico para verificar a integridade da transferência. A imagem tem de estar no formato JPEG e o tamanho do ficheiro não pode exceder 16 MB. O URL tem de ser acessível sem nenhuma autenticação. A imagem de fundo é transferida e colocada na cache. É transferida sempre que o URL ou o hash for alterado.
+
+      A política deve ser especificada como uma string que expressa o URL e o hash no formato JSON, por exemplo,
+      {
+        "url": "https://example.com/device_wallpaper.jpg",
+        "hash": "examplewallpaperhash"
+      }
+
+      Se a política de imagem de fundo do dispositivo estiver definida, o dispositivo com o SO Chrome transfere e utiliza a imagem de fundo no ecrã de início de sessão se nenhum utilizador tiver iniciado sessão no dispositivo. Depois de o utilizador iniciar sessão, é aplicada a política de imagem de fundo do mesmo.
+
+      Se a política de imagem de fundo do dispositivo não estiver definida, cabe à política de imagem de fundo do utilizador decidir o que deve apresentar se estiver definida.</translation>
 <translation id="9217154963008402249">Frequência dos pacotes de monitorização de rede</translation>
 <translation id="922540222991413931">Configurar fontes de instalação de extensões, aplicações e scripts do utilizador</translation>
 <translation id="924557436754151212">Importar palavras-passe guardadas a partir do navegador predefinido na primeira execução</translation>

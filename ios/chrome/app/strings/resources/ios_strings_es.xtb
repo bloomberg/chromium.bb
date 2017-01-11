@@ -20,6 +20,7 @@
 <translation id="1254117744268754948">Seleccionar carpeta</translation>
 <translation id="1272079795634619415">Interrumpir</translation>
 <translation id="129553762522093515">Cerrado recientemente</translation>
+<translation id="1323735185997015385">Eliminar</translation>
 <translation id="132683371494960526">Toca dos veces para cambiar la carpeta principal.</translation>
 <translation id="1340643665687018190">Cerrar el menú</translation>
 <translation id="1375321115329958930">Contraseñas guardadas</translation>
@@ -63,6 +64,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="2068952045031577364">La semana pasada</translation>
 <translation id="2079545284768500474">Deshacer</translation>
 <translation id="209018056901015185">Ver como ordenador</translation>
+<translation id="2100215774115172756">Tu lista de lectura está disponible sin conexión.</translation>
 <translation id="2103075008456228677">Abrir history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementos eliminados</translation>
 <translation id="2149973817440762519">Editar marcador</translation>
@@ -82,6 +84,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="2572712655377361602">Una política de dispositivos ha bloqueado el acceso a tus fotos</translation>
 <translation id="2584132361465095047">Añadir cuenta…</translation>
 <translation id="2593774076813182497">Esta página no se puede imprimir.</translation>
+<translation id="2648803196158606475">Eliminar entradas leídas</translation>
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2684815431982545828">Nueva pestaña</translation>
 <translation id="2690858294534178585">La cámara se está utilizando</translation>
@@ -100,22 +103,25 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="2898963176829412617">Nueva carpeta…</translation>
 <translation id="2903493209154104877">Direcciones</translation>
 <translation id="2921219216347069551">Error al compartir página</translation>
+<translation id="292639812446257861">Marcar como no leídas</translation>
 <translation id="2933759065870693102">Linterna</translation>
 <translation id="2969979262385602596">Error al iniciar sesión. Inténtalo más tarde.</translation>
 <translation id="2989805286512600854">Abrir en una pestaña nueva</translation>
 <translation id="3024255823539804759">Ayer</translation>
 <translation id="3037605927509011580">¡Oh, no!</translation>
 <translation id="3050311348724540835"><ph name="HISTORY_URL" /> no está disponible. Selecciona <ph name="SHOW_HISTORY" /> en el menú de herramientas para acceder a tu historial de navegación.</translation>
+<translation id="3112556859945124369">Marcar…</translation>
 <translation id="3151924044251363314">Solo alguien que tenga tu frase de contraseña puede leer tus datos cifrados. Google no envía ni almacena la frase de contraseña. Si la olvidas o quieres cambiar esta configuración, debes restablecer la sincronización. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
+<translation id="3157684681743766797">Marcar todas…</translation>
 <translation id="3172213052701798825">Google Smart Lock para contraseñas</translation>
 <translation id="3175081911749765310">Servicios web</translation>
 <translation id="3207960819495026254">Añadido a marcadores</translation>
 <translation id="3210163015918861891">La sincronización está desactivada</translation>
+<translation id="3237561509210981547">Para añadir una página a la lista de lectura, toca <ph name="BEGIN_BOLD_FONT" />Compartir &gt; Leer más adelante<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3240426699337459095">Enlace copiado</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> de <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Pestañas abiertas</translation>
-<translation id="3289005573061089144">¿Importar datos?</translation>
 <translation id="3324193307694657476">Dirección 2</translation>
 <translation id="3329904751041170572">No se ha podido establecer conexión con el servidor.</translation>
 <translation id="3335947283844343239">Volver a abrir pestaña cerrada</translation>
@@ -124,6 +130,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="3414292259312108062">Chrome almacenará esta contraseña en las <ph name="BEGIN_LINK" />contraseñas guardadas de Google<ph name="END_LINK" /> y utilizará la función Autocompletar para que no tengas que memorizarla.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Vista dividida</translation>
+<translation id="3474068797193663261">Para añadir una página a la lista de lectura, toca <ph name="BEGIN_BOLD_FONT" />Menú &gt; Compartir &gt; Leer más adelante<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3474649192738347024">Se han rellenado formularios.</translation>
 <translation id="3478058380795961209">Mes de caducidad</translation>
 <translation id="3482959374254649722">Sincronizando tus pestañas...</translation>
@@ -183,6 +190,7 @@ Tus datos se han cifrado con tu frase de contraseña de sincronización. Introd�
 <translation id="481968316161811770">Cookies y datos de sitios web</translation>
 <translation id="4875622588773761625">¿Quieres que <ph name="PASSWORD_MANAGER_BRAND" /> actualice tu contraseña para este sitio web?</translation>
 <translation id="4881695831933465202">Abrir</translation>
+<translation id="4904877109095351937">Marcar como leídas</translation>
 <translation id="4923459931733593730">Pago</translation>
 <translation id="4930268273022498155">Elimina los datos actuales. Para recuperarlos, cambia a <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Error al compartir tu elemento</translation>
@@ -360,6 +368,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="8428213095426709021">Ajustes</translation>
 <translation id="8433678324664858900">Mostrar sugerencias</translation>
 <translation id="8458397775385147834">1 elemento eliminado</translation>
+<translation id="8487700953926739672">Disponible sin conexión</translation>
 <translation id="8503813439785031346">Nombre de usuario</translation>
 <translation id="8517375800490286174">Licencias de código abierto</translation>
 <translation id="8524799873541103884">Pestañas de <ph name="INCOGNITO" />: de <ph name="FIRST_VISIBLE_TAB" /> a <ph name="LAST_VISIBLE_TAB" /> de <ph name="NUMBER_OF_OPEN_TABS" /></translation>
@@ -369,6 +378,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="8605219856220328675">Cerrar pestaña.</translation>
 <translation id="8620640915598389714">Editar</translation>
 <translation id="8636825310635137004">Activa la sincronización para ver las pestañas de tus otros dispositivos.</translation>
+<translation id="8654802032646794042">Cancelar</translation>
 <translation id="8680787084697685621">La información de inicio de sesión no está actualizada.</translation>
 <translation id="8699098509676302392">Añadir dirección...</translation>
 <translation id="8721297211384281569">Menú de herramientas</translation>

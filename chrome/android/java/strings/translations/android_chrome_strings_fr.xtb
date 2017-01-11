@@ -269,6 +269,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="3828029223314399057">Rechercher dans les favoris</translation>
 <translation id="3845539888601087042">Affichage de l'historique des appareils auxquels vous êtes connecté. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="3859306556332390985">Avance rapide</translation>
+<translation id="3890664840433101773">Ajouter une adresse e-mail</translation>
 <translation id="3894427358181296146">Ajouter un dossier</translation>
 <translation id="3895926599014793903">Forcer l'activation du zoom</translation>
 <translation id="3917783807003067648">Position bloquée</translation>
@@ -326,7 +327,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4526249700380860531">Afficher et gérer les mots de passe enregistrés sur <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Sélectionner un dossier</translation>
 <translation id="4535858793016067060">Activez l'option "Sources inconnues" dans les paramètres de sécurité d'Android pour tester l'écran "Ajouter sur la page d'accueil" amélioré. N'oubliez pas de désactiver ce paramètre lorsque vous avez terminé le test.</translation>
-<translation id="4543661749405994812">Copier l'adresse e-mail</translation>
 <translation id="4558311620361989323">Raccourcis de pages Web</translation>
 <translation id="4572422548854449519">Se connecter à un compte géré</translation>
 <translation id="457875822857220463">Livraison</translation>
@@ -371,6 +371,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4988526792673242964">Pages</translation>
 <translation id="4996978546172906250">Partager via</translation>
 <translation id="5000922062037820727">Bloquée (recommandé)</translation>
+<translation id="5004339818306944878">Utilisez jusqu'à 60 % de données en moins et naviguez plus rapidement sur le Web. Grâce aux serveurs Google, les pages que vous consultez sont optimisées.</translation>
 <translation id="5005498671520578047">Copier mot de passe</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> tente de se connecter</translation>
 <translation id="5016205925109358554">Serif</translation>
@@ -393,10 +394,12 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="5171045022955879922">Rechercher ou saisir une URL</translation>
 <translation id="5184329579814168207">Ouvrir dans Chrome</translation>
 <translation id="5199929503336119739">Profil professionnel</translation>
+<translation id="5205222826937269299">Veuillez saisir un nom</translation>
 <translation id="5209320130288484488">Aucun appareil trouvé.</translation>
 <translation id="5210286577605176222">Accéder à l'onglet précédent</translation>
 <translation id="5210365745912300556">Fermer l'onglet</translation>
 <translation id="5222676887888702881">Déconnexion</translation>
+<translation id="5222812217790122047">Veuillez saisir une adresse e-mail</translation>
 <translation id="5233638681132016545">Nouvel onglet</translation>
 <translation id="5271967389191913893">Impossible d'ouvrir le contenu à télécharger sur l'appareil.</translation>
 <translation id="528192093759286357">Pour quitter le mode plein écran, faites glisser un doigt du haut vers le bas, puis appuyez sur le bouton Retour.</translation>
@@ -523,7 +526,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Suggestions de recherche et d'URL</translation>
 <translation id="6463070039183944536">Ajout…</translation>
-<translation id="6464825623202322042">Cet appareil</translation>
 <translation id="6475951671322991020">Télécharger la vidéo</translation>
 <translation id="6477460825583319731">Adresse e-mail non valide</translation>
 <translation id="6482749332252372425">Échec du téléchargement du fichier "<ph name="FILE_NAME" />" en raison de l'espace de stockage insuffisant.</translation>
@@ -570,6 +572,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6868088497967843822">Connectez-vous pour récupérer vos favoris, votre historique, vos mots de passe et d'autres paramètres sur tous vos appareils.</translation>
 <translation id="688738109438487280">Ajoutez les données existantes au compte <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d onglet ouvert}one{%1$d onglet ouvert}other{%1$d onglets ouverts}}</translation>
+<translation id="6896758677409633944">Copier</translation>
 <translation id="6937422995269576720">Numéro de carte non valide</translation>
 <translation id="6945221475159498467">Sélectionner</translation>
 <translation id="6963766334940102469">Supprimer des favoris</translation>
@@ -594,6 +597,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7094922512924405309">Aucune page Web physique n'a été trouvée.</translation>
 <translation id="7138678301420049075">Autre</translation>
 <translation id="7180611975245234373">Actualiser</translation>
+<translation id="7189372733857464326">En attente de la fin de la mise à jour des services Google Play</translation>
 <translation id="7191430249889272776">L'onglet a été ouvert en arrière-plan.</translation>
 <translation id="7243308994586599757">Options disponibles au bas de l'écran</translation>
 <translation id="7244362611678346589">Le site <ph name="SEARCH_ENGINE_URL" /> utilise votre position pour afficher les résultats de recherche à proximité.</translation>
@@ -654,6 +658,7 @@ Votre compte Google conserve peut-être d'autres formes d'historique de navigati
 <translation id="7851858861565204677">Autres appareils</translation>
 <translation id="7875915731392087153">Créer un e-mail</translation>
 <translation id="7876243839304621966">Tout supprimer</translation>
+<translation id="7882131421121961860">Aucun historique trouvé</translation>
 <translation id="7929962904089429003">Ouvrir le menu</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> est obsolète.</translation>
 <translation id="7947953824732555851">Accepter/Se connecter</translation>
@@ -701,6 +706,7 @@ Votre compte Google conserve peut-être d'autres formes d'historique de navigati
 <translation id="8321376388213838985">D'autres articles vous seront bientôt proposés. Bon après-midi !</translation>
 <translation id="8372893542064058268">Autorise la synchronisation en arrière-plan pour un site spécifique.</translation>
 <translation id="8374821112118309944">Vous devez mettre à jour TalkBack vers une version plus récente</translation>
+<translation id="8393700583063109961">Envoyer un message</translation>
 <translation id="8396312449826231789">Uniquement les sites approuvés</translation>
 <translation id="8413126021676339697">Afficher l'historique complet</translation>
 <translation id="8428213095426709021">Paramètres</translation>
@@ -780,6 +786,7 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Images</translation>
 <translation id="932327136139879170">Accueil</translation>
+<translation id="932599481871055447">Consommez moins de données et naviguez plus vite</translation>
 <translation id="938850635132480979">Erreur <ph name="ERROR_CODE" />.</translation>
 <translation id="945632385593298557">Accéder à votre micro</translation>
 <translation id="951339005376969845">Supprimer les données actuelles. Vous pouvez les récupérer en repassant sur le compte <ph name="FROM_ACCOUNT" />.</translation>

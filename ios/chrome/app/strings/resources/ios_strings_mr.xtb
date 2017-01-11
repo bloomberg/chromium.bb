@@ -20,6 +20,7 @@
 <translation id="1254117744268754948">फोल्डर निवडा</translation>
 <translation id="1272079795634619415">थांबा</translation>
 <translation id="129553762522093515">अलीकडे बंद केलेले</translation>
+<translation id="1323735185997015385">हटवा</translation>
 <translation id="132683371494960526">मुख्य फोल्डर बदलण्यासाठी दोनदा टॅप करा.</translation>
 <translation id="1340643665687018190">मेनू बंद करा</translation>
 <translation id="1375321115329958930">जतन केलेले संकेतशब्द</translation>
@@ -63,6 +64,7 @@
 <translation id="2068952045031577364">गेल्या आठवड्यात</translation>
 <translation id="2079545284768500474">पूर्ववत करा</translation>
 <translation id="209018056901015185">डेस्कटॉप साइटची विनंती करा</translation>
+<translation id="2100215774115172756">आपली वाचन सूची ऑफलाइन उपलब्ध आहे.</translation>
 <translation id="2103075008456228677">history.google.com उघडा</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> आयटम हलविले</translation>
 <translation id="2149973817440762519">बुकमार्क संपादित करा</translation>
@@ -82,6 +84,7 @@
 <translation id="2572712655377361602">डिव्हाइस धोरणाने आपल्या फोटोंंमधील प्रवेश अवरोधित केला</translation>
 <translation id="2584132361465095047">खाते जोडा...</translation>
 <translation id="2593774076813182497">या पृष्ठाचे मुद्रण केले जाऊ शकत नाही.</translation>
+<translation id="2648803196158606475">वाचलेले हटवा</translation>
 <translation id="2653659639078652383">सबमिट करा</translation>
 <translation id="2684815431982545828">नवीन टॅब</translation>
 <translation id="2690858294534178585">कॅमेरा वापरात आहे</translation>
@@ -100,22 +103,25 @@
 <translation id="2898963176829412617">नवीन फोल्डर...</translation>
 <translation id="2903493209154104877">पत्ते</translation>
 <translation id="2921219216347069551">पृष्ठ सामायिक करू शकत नाही</translation>
+<translation id="292639812446257861">न वाचलेले चिन्हांकित करा</translation>
 <translation id="2933759065870693102">टॉर्च</translation>
 <translation id="2969979262385602596">साइन इन करण्यात अयशस्वी. कृपया नंतर पुन्हा प्रयत्न करा.</translation>
 <translation id="2989805286512600854">नवीन टॅबमध्ये उघडा</translation>
 <translation id="3024255823539804759">काल</translation>
 <translation id="3037605927509011580">च्चक!</translation>
 <translation id="3050311348724540835"><ph name="HISTORY_URL" /> उपलब्ध नाही. आपल्या ब्राउझिंग इतिहासामध्ये प्रवेश करण्यासाठी, साधने मेनमधून "<ph name="SHOW_HISTORY" />" निवडा.</translation>
+<translation id="3112556859945124369">चिन्हांकित करा…</translation>
 <translation id="3151924044251363314">फक्त आपला सांकेतिक वाक्यांश असलेली एखादी व्यक्ती आपला कूटबद्ध डेटा वाचू शकते. सांकेतिक वाक्यांश Google कडे पाठविला किंवा त्याद्वारे संचयित केला जात नाही. आपण आपला सांकेतिक वाक्यांश विसरल्यास किंवा हे सेटिंग बदलू इच्छित असल्यास, आपल्याला संकालन रीसेट करावे लागेल. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
+<translation id="3157684681743766797">सर्व चिन्हांकित करा…</translation>
 <translation id="3172213052701798825">संकेतशब्दांसाठी Google Smart Lock</translation>
 <translation id="3175081911749765310">वेब सेवा</translation>
 <translation id="3207960819495026254">बुकमार्क केलेली</translation>
 <translation id="3210163015918861891">संकालन बंद आहे</translation>
+<translation id="3237561509210981547">आपल्या वाचन सूचीमध्ये एक पृष्‍ठ जोडण्‍यासाठी, <ph name="BEGIN_BOLD_FONT" />सामायिक करा &gt; नंतर वाचा<ph name="END_BOLD_FONT" /> टॅप करा.</translation>
 <translation id="3240426699337459095">दुवा कॉपी केला</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="NUM_SUGGESTIONS" /> पैकी <ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /></translation>
 <translation id="3268451620468152448">उघडे Tabs</translation>
-<translation id="3289005573061089144">डेटा आयात करायचा?</translation>
 <translation id="3324193307694657476">पत्ता 2</translation>
 <translation id="3329904751041170572">सर्व्हरशी कनेक्ट करू शकलो नाही.</translation>
 <translation id="3335947283844343239">बंद केलेले टॅब पुन्हा उघडा</translation>
@@ -124,6 +130,7 @@
 <translation id="3414292259312108062">Chrome हे आपल्या <ph name="BEGIN_LINK" />Google ने जतन केलेले संकेतशब्द<ph name="END_LINK" /> मध्ये जतन करेल आणि आपल्यासाठी हे स्वयं-भरण करेल जेणेकरून आपल्याला हे लक्षात ठेवावे लागत नाही.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> मिनिटे</translation>
 <translation id="3448016392200048164">विभाजित दृश्य</translation>
+<translation id="3474068797193663261">आपल्या वाचन सूचीमध्ये एक पृष्‍ठ जोडण्‍यासाठी, <ph name="BEGIN_BOLD_FONT" />मेनू &gt; सामायिक करा &gt; नंतर वाचा<ph name="END_BOLD_FONT" /> टॅप करा.</translation>
 <translation id="3474649192738347024">फॉर्म भरले.</translation>
 <translation id="3478058380795961209">कालबाह्यता महिना:</translation>
 <translation id="3482959374254649722">आपले टॅब संकालित करीत आहे...</translation>
@@ -184,6 +191,7 @@
 <translation id="481968316161811770">कुकीज, साइट डेटा</translation>
 <translation id="4875622588773761625"><ph name="PASSWORD_MANAGER_BRAND" /> नी या साइटसाठी आपला संकेतशब्द अद्यतनित करावा असे आपण इच्छिता?</translation>
 <translation id="4881695831933465202">उघडा</translation>
+<translation id="4904877109095351937">वाचले चिन्हांकित करा</translation>
 <translation id="4923459931733593730">देयक</translation>
 <translation id="4930268273022498155">विद्यमान डेटा हटवा. <ph name="USER_EMAIL1" /> वर परत स्विच करून आपण तो पुनर्प्राप्त करू शकता.</translation>
 <translation id="4941089862236492464">क्षमस्व, आपला आयटम सामायिक करताना समस्या आली.</translation>
@@ -361,6 +369,7 @@
 <translation id="8428213095426709021">सेटिंग्ज</translation>
 <translation id="8433678324664858900">सूचना दर्शवा</translation>
 <translation id="8458397775385147834">1 आयटम हटविला</translation>
+<translation id="8487700953926739672">ऑफलाइन उपलब्ध</translation>
 <translation id="8503813439785031346">वापरकर्तानाव</translation>
 <translation id="8517375800490286174">मुक्त स्त्रोत परवाने</translation>
 <translation id="8524799873541103884"><ph name="NUMBER_OF_OPEN_TABS" /> पैकी <ph name="LAST_VISIBLE_TAB" /> ते <ph name="FIRST_VISIBLE_TAB" /> <ph name="INCOGNITO" /> टॅब</translation>
@@ -370,6 +379,7 @@
 <translation id="8605219856220328675">टॅब बंद करा.</translation>
 <translation id="8620640915598389714">संपादित करा</translation>
 <translation id="8636825310635137004">आपल्या इतर डिव्हाइसेस मधून आपले टॅब प्राप्त करण्यासाठी, संकालन चालू करा</translation>
+<translation id="8654802032646794042">रद्द करा</translation>
 <translation id="8680787084697685621">खाते साइन-इन तपशील कालबाह्य झाला.</translation>
 <translation id="8699098509676302392">पत्ता जोडा...</translation>
 <translation id="8721297211384281569">साधने मेनू</translation>

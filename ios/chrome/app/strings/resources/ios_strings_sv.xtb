@@ -20,6 +20,7 @@
 <translation id="1254117744268754948">Välj mapp</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="129553762522093515">Nyligen stängda</translation>
+<translation id="1323735185997015385">Radera</translation>
 <translation id="132683371494960526">Tryck snabbt två gånger om du vill ändra överordnad mapp.</translation>
 <translation id="1340643665687018190">Stäng menyn</translation>
 <translation id="1375321115329958930">Sparade lösenord</translation>
@@ -63,6 +64,7 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="2068952045031577364">Senaste veckan</translation>
 <translation id="2079545284768500474">Ångra</translation>
 <translation id="209018056901015185">Använd skrivbordsversion</translation>
+<translation id="2100215774115172756">Läslistan är tillgänglig offline.</translation>
 <translation id="2103075008456228677">Öppna history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> objekt flyttades</translation>
 <translation id="2149973817440762519">Redigera bokmärke</translation>
@@ -82,6 +84,7 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="2572712655377361602">Åtkomsten till bilderna har blockerats av en enhetspolicy</translation>
 <translation id="2584132361465095047">Lägg till konto …</translation>
 <translation id="2593774076813182497">Sidan kan inte skrivas ut.</translation>
+<translation id="2648803196158606475">Radera lästa</translation>
 <translation id="2653659639078652383">Skicka</translation>
 <translation id="2684815431982545828">Ny flik</translation>
 <translation id="2690858294534178585">Kameran används</translation>
@@ -100,22 +103,25 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="2898963176829412617">Ny mapp ...</translation>
 <translation id="2903493209154104877">Adresser</translation>
 <translation id="2921219216347069551">Kan inte dela sidan</translation>
+<translation id="292639812446257861">Markera som oläst</translation>
 <translation id="2933759065870693102">Ficklampa</translation>
 <translation id="2969979262385602596">Det gick inte att logga in. Försök igen senare.</translation>
 <translation id="2989805286512600854">Öppna i ny flik</translation>
 <translation id="3024255823539804759">Senaste dagen</translation>
 <translation id="3037605927509011580">Oj, ett fel har uppstått!</translation>
 <translation id="3050311348724540835"><ph name="HISTORY_URL" /> är inte tillgänglig. Välj <ph name="SHOW_HISTORY" /> från verktygsmenyn för att öppna webbhistoriken.</translation>
+<translation id="3112556859945124369">Markera …</translation>
 <translation id="3151924044251363314">Endast personer som har ditt lösenord kan läsa dina krypterade uppgifter. Lösenfrasen skickas inte till och sparas inte av Google. Om du glömmer lösenfrasen måste du återställa synkroniseringen. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
+<translation id="3157684681743766797">Markera alla …</translation>
 <translation id="3172213052701798825">Google Smart Lock för lösenord</translation>
 <translation id="3175081911749765310">Webbtjänster</translation>
 <translation id="3207960819495026254">Bokmärkt</translation>
 <translation id="3210163015918861891">Synkronisering har inaktiverats</translation>
+<translation id="3237561509210981547">Tryck på <ph name="BEGIN_BOLD_FONT" />Dela &gt; Läs senare<ph name="END_BOLD_FONT" /> om du vill lägga till en sida i läslistan.</translation>
 <translation id="3240426699337459095">Länken har kopierats</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> av <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Öppna flikar</translation>
-<translation id="3289005573061089144">Vill du importera data?</translation>
 <translation id="3324193307694657476">Adressrad 2</translation>
 <translation id="3329904751041170572">Det gick inte att ansluta till servern.</translation>
 <translation id="3335947283844343239">Öppna stängd flik igen</translation>
@@ -124,6 +130,7 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="3414292259312108062">Chrome vill spara lösenordet i <ph name="BEGIN_LINK" />lösenord som Google sparat<ph name="END_LINK" /> och fylla i det automatiskt så att du slipper komma ihåg det.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Delad vy</translation>
+<translation id="3474068797193663261">Tryck på <ph name="BEGIN_BOLD_FONT" />Meny &gt; Dela &gt; Läs senare<ph name="END_BOLD_FONT" /> om du vill lägga till en sida i läslistan.</translation>
 <translation id="3474649192738347024">Formulären har fyllts i.</translation>
 <translation id="3478058380795961209">Sista giltighetsmånad</translation>
 <translation id="3482959374254649722">Flikarna synkroniseras ...</translation>
@@ -183,6 +190,7 @@ Din data har krypterats med lösenfrasen för synkronisering. Ange den om du vil
 <translation id="481968316161811770">Cookies, webbplatsdata</translation>
 <translation id="4875622588773761625">Vill du att lösenordet för den här webbplatsen ska uppdateras med <ph name="PASSWORD_MANAGER_BRAND" />?</translation>
 <translation id="4881695831933465202">Öppna</translation>
+<translation id="4904877109095351937">Markera som läst</translation>
 <translation id="4923459931733593730">Betalning</translation>
 <translation id="4930268273022498155">Radera befintlig data. Om du byter tillbaka till <ph name="USER_EMAIL1" /> finns den kvar där.</translation>
 <translation id="4941089862236492464">Det gick inte att dela objektet.</translation>
@@ -360,6 +368,7 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="8428213095426709021">Inställningar</translation>
 <translation id="8433678324664858900">Visa förslag</translation>
 <translation id="8458397775385147834">1 objekt har tagits bort</translation>
+<translation id="8487700953926739672">Tillgänglig offline</translation>
 <translation id="8503813439785031346">Användarnamn</translation>
 <translation id="8517375800490286174">Licenser för öppen källkod</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" />-flikarna <ph name="FIRST_VISIBLE_TAB" /> till <ph name="LAST_VISIBLE_TAB" /> av <ph name="NUMBER_OF_OPEN_TABS" /></translation>
@@ -369,6 +378,7 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="8605219856220328675">Stäng fliken.</translation>
 <translation id="8620640915598389714">Redigera</translation>
 <translation id="8636825310635137004">Aktivera synkronisering om du vill ha samma flikar tillgängliga på alla enheter.</translation>
+<translation id="8654802032646794042">Avbryt</translation>
 <translation id="8680787084697685621">Inloggningsuppgifterna för kontot är inte aktuella.</translation>
 <translation id="8699098509676302392">Lägg till adress …</translation>
 <translation id="8721297211384281569">Verktyg</translation>

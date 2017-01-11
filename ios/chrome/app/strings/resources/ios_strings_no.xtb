@@ -20,6 +20,7 @@
 <translation id="1254117744268754948">Valg av mappe</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="129553762522093515">Nylig lukket</translation>
+<translation id="1323735185997015385">Slett</translation>
 <translation id="132683371494960526">Dobbelttrykk for å bytte overordnet mappe.</translation>
 <translation id="1340643665687018190">Lukk menyen</translation>
 <translation id="1375321115329958930">Lagrede passord</translation>
@@ -63,6 +64,7 @@ Noen nettsteder kan for eksempel svare på forespørselen ved å vise deg annons
 <translation id="2068952045031577364">Den siste uken</translation>
 <translation id="2079545284768500474">Angre</translation>
 <translation id="209018056901015185">Bruk skrivebordsversjon</translation>
+<translation id="2100215774115172756">Leselisten din er tilgjengelig uten nett.</translation>
 <translation id="2103075008456228677">Åpne history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementer er flyttet</translation>
 <translation id="2149973817440762519">Rediger bokmerke</translation>
@@ -82,6 +84,7 @@ Noen nettsteder kan for eksempel svare på forespørselen ved å vise deg annons
 <translation id="2572712655377361602">En enhetsinnstilling har blokkert tilgangen til bildene dine</translation>
 <translation id="2584132361465095047">Legg til en konto …</translation>
 <translation id="2593774076813182497">Denne siden kan ikke skrives ut.</translation>
+<translation id="2648803196158606475">Slett leste</translation>
 <translation id="2653659639078652383">Send</translation>
 <translation id="2684815431982545828">Ny fane</translation>
 <translation id="2690858294534178585">Kameraet er i bruk</translation>
@@ -100,22 +103,25 @@ Noen nettsteder kan for eksempel svare på forespørselen ved å vise deg annons
 <translation id="2898963176829412617">Ny mappe</translation>
 <translation id="2903493209154104877">Adresser</translation>
 <translation id="2921219216347069551">Kan ikke dele siden</translation>
+<translation id="292639812446257861">Merk som ulest</translation>
 <translation id="2933759065870693102">Lommelykt</translation>
 <translation id="2969979262385602596">Kunne ikke logge på. Prøv igjen senere.</translation>
 <translation id="2989805286512600854">Åpne i ny fane</translation>
 <translation id="3024255823539804759">Det siste døgnet</translation>
 <translation id="3037605927509011580">Æsj!</translation>
 <translation id="3050311348724540835"><ph name="HISTORY_URL" /> er ikke tilgjengelig. For å få tilgang til nettleserloggen din, velg «<ph name="SHOW_HISTORY" />» fra verktøymenyen.</translation>
+<translation id="3112556859945124369">Merk…</translation>
 <translation id="3151924044251363314">Bare personer som har passordfrasen din, kan lese de krypterte dataene dine. Passordfrasen blir verken sendt til Google eller lagret. Hvis du glemmer den, må du tilbakestille synkroniseringen. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
+<translation id="3157684681743766797">Merk alle…</translation>
 <translation id="3172213052701798825">Google Smart Lock for passord</translation>
 <translation id="3175081911749765310">Nettjenester</translation>
 <translation id="3207960819495026254">Bokmerket</translation>
 <translation id="3210163015918861891">Synkronisering er av</translation>
+<translation id="3237561509210981547">For å legge til en side i leselisten din, trykk på <ph name="BEGIN_BOLD_FONT" />Del &gt; Les senere<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3240426699337459095">Linken er kopiert</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> av <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Åpne faner</translation>
-<translation id="3289005573061089144">Vil du importere data?</translation>
 <translation id="3324193307694657476">Adresse 2</translation>
 <translation id="3329904751041170572">Kunne ikke koble til tjeneren.</translation>
 <translation id="3335947283844343239">Åpne lukkede faner igjen</translation>
@@ -124,6 +130,7 @@ Noen nettsteder kan for eksempel svare på forespørselen ved å vise deg annons
 <translation id="3414292259312108062">Chrome lagrer dette i <ph name="BEGIN_LINK" />Google-lagrede passord<ph name="END_LINK" />. Deretter legges det inn automatisk, slik at du ikke trenger å huske det selv.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Delt visning</translation>
+<translation id="3474068797193663261">For å legge til en side i leselisten din, trykk på <ph name="BEGIN_BOLD_FONT" />Meny &gt; Del &gt; Les senere<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3474649192738347024">Skjemaene er fylt ut.</translation>
 <translation id="3478058380795961209">Utløpsmåned</translation>
 <translation id="3482959374254649722">Fanene dine synkroniseres …</translation>
@@ -183,6 +190,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering. Skriv den inn
 <translation id="481968316161811770">Informasjonskapsler og nettstedsdata</translation>
 <translation id="4875622588773761625">Vil du at <ph name="PASSWORD_MANAGER_BRAND" /> skal oppdatere passordet for dette nettstedet?</translation>
 <translation id="4881695831933465202">Åpne</translation>
+<translation id="4904877109095351937">Merk som lest</translation>
 <translation id="4923459931733593730">Betaling</translation>
 <translation id="4930268273022498155">Slett eksisterende data. Du kan hente ut dataene ved å bytte tilbake til <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Det oppsto et problem under delingen av artikkelen.</translation>
@@ -360,6 +368,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="8428213095426709021">Innstillinger</translation>
 <translation id="8433678324664858900">Vis forslag</translation>
 <translation id="8458397775385147834">1 element slettet</translation>
+<translation id="8487700953926739672">Tilgjengelig utenfor nettet</translation>
 <translation id="8503813439785031346">Brukernavn</translation>
 <translation id="8517375800490286174">Lisenser for åpen kildekode</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" />fane <ph name="FIRST_VISIBLE_TAB" /> til og med <ph name="LAST_VISIBLE_TAB" /> av <ph name="NUMBER_OF_OPEN_TABS" /></translation>
@@ -369,6 +378,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="8605219856220328675">Lukk fanen.</translation>
 <translation id="8620640915598389714">Endre</translation>
 <translation id="8636825310635137004">For å få fanene dine fra de andre enhetene du bruker, slå på synkronisering.</translation>
+<translation id="8654802032646794042">Avbryt</translation>
 <translation id="8680787084697685621">Kontoens påloggingsdetaljer er utdaterte.</translation>
 <translation id="8699098509676302392">Legg til adresse…</translation>
 <translation id="8721297211384281569">Verktøy-menyen</translation>

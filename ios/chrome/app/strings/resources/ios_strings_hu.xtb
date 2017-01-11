@@ -20,6 +20,7 @@
 <translation id="1254117744268754948">Mappa kiválasztása</translation>
 <translation id="1272079795634619415">Leállítás</translation>
 <translation id="129553762522093515">Mostanában bezárt</translation>
+<translation id="1323735185997015385">Törlés</translation>
 <translation id="132683371494960526">Koppintson duplán a szülőmappa módosításához.</translation>
 <translation id="1340643665687018190">Menü bezárása</translation>
 <translation id="1375321115329958930">Mentett jelszavak</translation>
@@ -63,6 +64,7 @@ Bizonyos webhelyek például úgy válaszolhatnak a kérésre, hogy olyan hirdet
 <translation id="2068952045031577364">Elmúlt hét</translation>
 <translation id="2079545284768500474">Visszavonás</translation>
 <translation id="209018056901015185">Asztali webhely kérése</translation>
+<translation id="2100215774115172756">Az olvasólista offline módban áll rendelkezésre</translation>
 <translation id="2103075008456228677">A history.google.com megnyitása</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elem áthelyezve</translation>
 <translation id="2149973817440762519">Könyvjelző szerkesztése</translation>
@@ -82,6 +84,7 @@ Bizonyos webhelyek például úgy válaszolhatnak a kérésre, hogy olyan hirdet
 <translation id="2572712655377361602">Egy eszközszabályzat letiltotta a fényképeihez való hozzáférést</translation>
 <translation id="2584132361465095047">Fiók hozzáadása...</translation>
 <translation id="2593774076813182497">Az oldal nem nyomtatható.</translation>
+<translation id="2648803196158606475">Olvasottak törlése</translation>
 <translation id="2653659639078652383">Elküldés</translation>
 <translation id="2684815431982545828">Új lap</translation>
 <translation id="2690858294534178585">A kamera épp használatban van</translation>
@@ -100,22 +103,25 @@ Bizonyos webhelyek például úgy válaszolhatnak a kérésre, hogy olyan hirdet
 <translation id="2898963176829412617">Új mappa...</translation>
 <translation id="2903493209154104877">Címek</translation>
 <translation id="2921219216347069551">Az oldal megosztása sikertelen</translation>
+<translation id="292639812446257861">Megjelölés olvasatlanként</translation>
 <translation id="2933759065870693102">Vaku</translation>
 <translation id="2969979262385602596">Nem sikerült bejelentkezni. Kérjük, próbálja újra később.</translation>
 <translation id="2989805286512600854">Megnyitás új lapon</translation>
 <translation id="3024255823539804759">Elmúlt nap</translation>
 <translation id="3037605927509011580">A manóba!</translation>
 <translation id="3050311348724540835">A(z) <ph name="HISTORY_URL" /> nem áll rendelkezésre. A böngészési előzmények megnyitásához válassza az „<ph name="SHOW_HISTORY" />” lehetőséget az eszközök menüből.</translation>
+<translation id="3112556859945124369">Megjelölés…</translation>
 <translation id="3151924044251363314">Titkosított adatait csak az olvashatja el, aki rendelkezik összetett jelszavával. Az összetett jelszót a Google nem kapja meg, és nem is tárolja. Ha elfelejtette összetett jelszavát, vagy módosítaná ezt a beállítást, alaphelyzetbe kell állítania a szinkronizálást. <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" /></translation>
+<translation id="3157684681743766797">Az összes megjelölése…</translation>
 <translation id="3172213052701798825">Google Smart Lock a jelszavakhoz</translation>
 <translation id="3175081911749765310">Webszolgáltató</translation>
 <translation id="3207960819495026254">Könyvjelzőzött</translation>
 <translation id="3210163015918861891">A szinkronizálás ki van kapcsolva</translation>
+<translation id="3237561509210981547">Ha oldalt szeretne hozzáadni az olvasólistájához, koppintson a <ph name="BEGIN_BOLD_FONT" />Megosztás &gt; Olvasás később<ph name="END_BOLD_FONT" /> lehetőségre.</translation>
 <translation id="3240426699337459095">Link másolva</translation>
 <translation id="3244271242291266297">HH</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="NUM_SUGGESTIONS" />/<ph name="INDEX" />. javaslat</translation>
 <translation id="3268451620468152448">Megnyitott lapok</translation>
-<translation id="3289005573061089144">Importálja az adatokat?</translation>
 <translation id="3324193307694657476">Cím 2. sora</translation>
 <translation id="3329904751041170572">Nem lehet kapcsolódni a szerverhez.</translation>
 <translation id="3335947283844343239">Bezárt lap megnyitása</translation>
@@ -124,6 +130,7 @@ Bizonyos webhelyek például úgy válaszolhatnak a kérésre, hogy olyan hirdet
 <translation id="3414292259312108062">A Chrome eltárolja ezt a jelszót a <ph name="BEGIN_LINK" />mentett Google-jelszavak<ph name="END_LINK" /> közé, és szükség esetén automatikusan beilleszti, így Önnek nem kell megjegyeznie.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> perc</translation>
 <translation id="3448016392200048164">Osztott nézet</translation>
+<translation id="3474068797193663261">Ha oldalt szeretne hozzáadni az olvasólistájához, koppintson a <ph name="BEGIN_BOLD_FONT" />Menü &gt; Megosztás &gt; Olvasás később<ph name="END_BOLD_FONT" /> lehetőségre.</translation>
 <translation id="3474649192738347024">Mezők kitöltve.</translation>
 <translation id="3478058380795961209">Lejárat hónapja</translation>
 <translation id="3482959374254649722">Lapok szinkronizálása…</translation>
@@ -183,6 +190,7 @@ Adatai az összetett szinkronizálási jelszavával vannak titkosítva. Írja be
 <translation id="481968316161811770">Cookie-k, webhelyadatok</translation>
 <translation id="4875622588773761625">Szeretné, hogy a(z) <ph name="PASSWORD_MANAGER_BRAND" /> frissítse jelszavát ezen a webhelyen?</translation>
 <translation id="4881695831933465202">Megnyitás</translation>
+<translation id="4904877109095351937">Megjelölés olvasottként</translation>
 <translation id="4923459931733593730">Fizetés</translation>
 <translation id="4930268273022498155">Meglévő adatok törlése. Ezeket úgy hívhatja le, hogy visszavált a következő fiókra: <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Sajnos hiba történt az elem megosztásakor.</translation>
@@ -361,6 +369,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="8428213095426709021">Beállítások</translation>
 <translation id="8433678324664858900">Javaslatok megjelenítése</translation>
 <translation id="8458397775385147834">1 elem törölve</translation>
+<translation id="8487700953926739672">Offline elérhető</translation>
 <translation id="8503813439785031346">Felhasználónév</translation>
 <translation id="8517375800490286174">Nyílt forráskódú licencek</translation>
 <translation id="8524799873541103884">Lapok <ph name="INCOGNITO" /> módban: <ph name="FIRST_VISIBLE_TAB" />–<ph name="LAST_VISIBLE_TAB" />/<ph name="NUMBER_OF_OPEN_TABS" /></translation>
@@ -370,6 +379,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="8605219856220328675">Lap bezárása.</translation>
 <translation id="8620640915598389714">Szerkesztés</translation>
 <translation id="8636825310635137004">Ha a többi eszközén is szeretné elérni lapjait, kapcsolja be a szinkronizálást</translation>
+<translation id="8654802032646794042">Mégse</translation>
 <translation id="8680787084697685621">A fiók bejelentkezési részletei elavultak.</translation>
 <translation id="8699098509676302392">Cím hozzáadása…</translation>
 <translation id="8721297211384281569">Eszközök menü</translation>
