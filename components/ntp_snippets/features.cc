@@ -4,6 +4,7 @@
 
 #include "components/ntp_snippets/features.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/time/clock.h"
 #include "components/ntp_snippets/category_rankers/click_based_category_ranker.h"
 #include "components/ntp_snippets/category_rankers/constant_category_ranker.h"

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/ptr_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/browsing_data/cache_test_util.h"
 #include "net/disk_cache/disk_cache.h"
