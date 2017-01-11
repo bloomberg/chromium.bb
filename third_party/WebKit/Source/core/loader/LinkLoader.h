@@ -41,6 +41,7 @@
 #include "platform/PrerenderClient.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Optional.h"
 
 namespace blink {
 
@@ -101,7 +102,8 @@ class CORE_EXPORT LinkLoader final
                                   CanLoadResources,
                                   MediaPreloadPolicy,
                                   ViewportDescriptionWrapper*);
-  static bool getResourceTypeFromAsAttribute(const String& as, Resource::Type&);
+  static WTF::Optional<Resource::Type> getResourceTypeFromAsAttribute(
+      const String& as);
 
   DECLARE_TRACE();
 

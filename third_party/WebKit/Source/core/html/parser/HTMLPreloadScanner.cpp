@@ -51,6 +51,7 @@
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/network/mime/ContentType.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
+#include "wtf/Optional.h"
 #include <memory>
 
 namespace blink {
@@ -120,7 +121,7 @@ static String initiatorFor(const StringImpl* tagImpl) {
     return scriptTag.localName();
   if (match(tagImpl, videoTag))
     return videoTag.localName();
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return emptyString();
 }
 
@@ -205,13 +206,17 @@ class TokenPreloadScanner::StartTagScanner {
       const ReferrerPolicy documentReferrerPolicy) {
     PreloadRequest::RequestType requestType =
         PreloadRequest::RequestTypePreload;
+    WTF::Optional<Resource::Type> type;
     if (shouldPreconnect()) {
       requestType = PreloadRequest::RequestTypePreconnect;
     } else {
       if (isLinkRelPreload()) {
         requestType = PreloadRequest::RequestTypeLinkRelPreload;
+        type = resourceTypeForLinkPreload();
+        if (type == WTF::nullopt)
+          return nullptr;
       }
-      if (!shouldPreload()) {
+      if (!shouldPreload(type)) {
         return nullptr;
       }
     }
@@ -230,9 +235,8 @@ class TokenPreloadScanner::StartTagScanner {
       resourceWidth.isSet = true;
     }
 
-    Resource::Type type;
-    if (!resourceType(type))
-      return nullptr;
+    if (type == WTF::nullopt)
+      type = resourceType();
 
     // The element's 'referrerpolicy' attribute (if present) takes precedence
     // over the document's referrer policy.
@@ -240,8 +244,9 @@ class TokenPreloadScanner::StartTagScanner {
                                         ? m_referrerPolicy
                                         : documentReferrerPolicy;
     auto request = PreloadRequest::createIfNeeded(
-        initiatorFor(m_tagImpl), position, m_urlToLoad, predictedBaseURL, type,
-        referrerPolicy, resourceWidth, clientHintsPreferences, requestType);
+        initiatorFor(m_tagImpl), position, m_urlToLoad, predictedBaseURL,
+        type.value(), referrerPolicy, resourceWidth, clientHintsPreferences,
+        requestType);
     if (!request)
       return nullptr;
 
@@ -349,8 +354,7 @@ class TokenPreloadScanner::StartTagScanner {
     } else if (match(attributeName, asAttr)) {
       m_asAttributeValue = attributeValue.lower();
     } else if (match(attributeName, typeAttr)) {
-      m_matched &= MIMETypeRegistry::isSupportedStyleSheetMIMEType(
-          ContentType(attributeValue).type());
+      m_typeAttributeValue = attributeValue;
     } else if (!m_referrerPolicySet &&
                match(attributeName, referrerpolicyAttr) &&
                !attributeValue.isNull()) {
@@ -443,25 +447,26 @@ class TokenPreloadScanner::StartTagScanner {
     return m_charset;
   }
 
-  bool resourceType(Resource::Type& type) const {
+  WTF::Optional<Resource::Type> resourceTypeForLinkPreload() const {
+    DCHECK(m_linkIsPreload);
+    return LinkLoader::getResourceTypeFromAsAttribute(m_asAttributeValue);
+  }
+
+  Resource::Type resourceType() const {
     if (match(m_tagImpl, scriptTag)) {
-      type = Resource::Script;
+      return Resource::Script;
     } else if (match(m_tagImpl, imgTag) || match(m_tagImpl, videoTag) ||
                (match(m_tagImpl, inputTag) && m_inputIsImage)) {
-      type = Resource::Image;
+      return Resource::Image;
     } else if (match(m_tagImpl, linkTag) && m_linkIsStyleSheet) {
-      type = Resource::CSSStyleSheet;
+      return Resource::CSSStyleSheet;
     } else if (m_linkIsPreconnect) {
-      type = Resource::Raw;
-    } else if (m_linkIsPreload) {
-      if (!LinkLoader::getResourceTypeFromAsAttribute(m_asAttributeValue, type))
-        return false;
+      return Resource::Raw;
     } else if (match(m_tagImpl, linkTag) && m_linkIsImport) {
-      type = Resource::ImportResource;
-    } else {
-      ASSERT_NOT_REACHED();
+      return Resource::ImportResource;
     }
-    return true;
+    NOTREACHED();
+    return Resource::Raw;
   }
 
   bool shouldPreconnect() const {
@@ -474,14 +479,39 @@ class TokenPreloadScanner::StartTagScanner {
            !m_urlToLoad.isEmpty();
   }
 
-  bool shouldPreload() const {
+  bool shouldPreloadLink(WTF::Optional<Resource::Type>& type) const {
+    if (m_linkIsStyleSheet) {
+      return m_typeAttributeValue.isEmpty() ||
+             MIMETypeRegistry::isSupportedStyleSheetMIMEType(
+                 ContentType(m_typeAttributeValue).type());
+    } else if (m_linkIsPreload) {
+      if (m_typeAttributeValue.isEmpty())
+        return true;
+      String typeFromAttribute = ContentType(m_typeAttributeValue).type();
+      if ((type == Resource::Font &&
+           !MIMETypeRegistry::isSupportedFontMIMEType(typeFromAttribute)) ||
+          (type == Resource::Image &&
+           !MIMETypeRegistry::isSupportedImagePrefixedMIMEType(
+               typeFromAttribute)) ||
+          (type == Resource::CSSStyleSheet &&
+           !MIMETypeRegistry::isSupportedStyleSheetMIMEType(
+               typeFromAttribute))) {
+        return false;
+      }
+    } else if (!m_linkIsImport) {
+      return false;
+    }
+
+    return true;
+  }
+
+  bool shouldPreload(WTF::Optional<Resource::Type>& type) const {
     if (m_urlToLoad.isEmpty())
       return false;
     if (!m_matched)
       return false;
-    if (match(m_tagImpl, linkTag) && !m_linkIsStyleSheet && !m_linkIsImport &&
-        !m_linkIsPreload)
-      return false;
+    if (match(m_tagImpl, linkTag))
+      return shouldPreloadLink(type);
     if (match(m_tagImpl, inputTag) && !m_inputIsImage)
       return false;
     if (match(m_tagImpl, scriptTag) &&

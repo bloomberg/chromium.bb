@@ -182,27 +182,25 @@ static void preconnectIfNeeded(
   }
 }
 
-bool LinkLoader::getResourceTypeFromAsAttribute(const String& as,
-                                                Resource::Type& type) {
+WTF::Optional<Resource::Type> LinkLoader::getResourceTypeFromAsAttribute(
+    const String& as) {
   DCHECK_EQ(as.lower(), as);
   if (as == "image") {
-    type = Resource::Image;
+    return Resource::Image;
   } else if (as == "script") {
-    type = Resource::Script;
+    return Resource::Script;
   } else if (as == "style") {
-    type = Resource::CSSStyleSheet;
+    return Resource::CSSStyleSheet;
   } else if (as == "media") {
-    type = Resource::Media;
+    return Resource::Media;
   } else if (as == "font") {
-    type = Resource::Font;
+    return Resource::Font;
   } else if (as == "track") {
-    type = Resource::TextTrack;
-  } else {
-    type = Resource::Raw;
-    if (!as.isEmpty())
-      return false;
+    return Resource::TextTrack;
+  } else if (as.isEmpty()) {
+    return Resource::Raw;
   }
-  return true;
+  return WTF::nullopt;
 }
 
 void LinkLoader::createLinkPreloadResourceClient(Resource* resource) {
@@ -300,8 +298,9 @@ static Resource* preloadIfNeeded(const LinkRelAttribute& relAttribute,
   }
   if (caller == LinkCalledFromHeader)
     UseCounter::count(document, UseCounter::LinkHeaderPreload);
-  Resource::Type resourceType;
-  if (!LinkLoader::getResourceTypeFromAsAttribute(as, resourceType)) {
+  Optional<Resource::Type> resourceType =
+      LinkLoader::getResourceTypeFromAsAttribute(as);
+  if (resourceType == WTF::nullopt) {
     document.addConsoleMessage(ConsoleMessage::create(
         OtherMessageSource, WarningMessageLevel,
         String("<link rel=preload> must have a valid `as` value")));
@@ -309,15 +308,15 @@ static Resource* preloadIfNeeded(const LinkRelAttribute& relAttribute,
     return nullptr;
   }
 
-  if (!isSupportedType(resourceType, mimeType)) {
+  if (!isSupportedType(resourceType.value(), mimeType)) {
     document.addConsoleMessage(ConsoleMessage::create(
         OtherMessageSource, WarningMessageLevel,
         String("<link rel=preload> has an unsupported `type` value")));
     return nullptr;
   }
   ResourceRequest resourceRequest(document.completeURL(href));
-  ResourceFetcher::determineRequestContext(resourceRequest, resourceType,
-                                           false);
+  ResourceFetcher::determineRequestContext(resourceRequest,
+                                           resourceType.value(), false);
 
   if (referrerPolicy != ReferrerPolicyDefault) {
     resourceRequest.setHTTPReferrer(SecurityPolicy::generateReferrer(
@@ -339,7 +338,7 @@ static Resource* preloadIfNeeded(const LinkRelAttribute& relAttribute,
   }
   linkRequest.setForPreload(true, monotonicallyIncreasingTime());
   linkRequest.setLinkPreload(true);
-  return document.loader()->startPreload(resourceType, linkRequest);
+  return document.loader()->startPreload(resourceType.value(), linkRequest);
 }
 
 static Resource* prefetchIfNeeded(Document& document,
