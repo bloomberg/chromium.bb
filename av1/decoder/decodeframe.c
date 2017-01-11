@@ -1854,17 +1854,28 @@ static PARTITION_TYPE read_partition(AV1_COMMON *cm, MACROBLOCKD *xd,
   FRAME_COUNTS *const counts = xd->counts;
 #endif
   PARTITION_TYPE p;
+#if CONFIG_EC_ADAPT
+  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+  (void)cm;
+#elif CONFIG_EC_MULTISYMBOL
+  FRAME_CONTEXT *ec_ctx = cm->fc;
+#endif
 
   if (has_rows && has_cols)
 #if CONFIG_EXT_PARTITION_TYPES
     if (bsize <= BLOCK_8X8)
+#if CONFIG_EC_MULTISYMBOL
+      p = (PARTITION_TYPE)aom_read_symbol(r, ec_ctx->partition_cdf[ctx],
+                                          PARTITION_TYPES, ACCT_STR);
+#else
       p = (PARTITION_TYPE)aom_read_tree(r, av1_partition_tree, probs, ACCT_STR);
+#endif
     else
       p = (PARTITION_TYPE)aom_read_tree(r, av1_ext_partition_tree, probs,
                                         ACCT_STR);
 #else
 #if CONFIG_EC_MULTISYMBOL
-    p = (PARTITION_TYPE)aom_read_symbol(r, cm->fc->partition_cdf[ctx],
+    p = (PARTITION_TYPE)aom_read_symbol(r, ec_ctx->partition_cdf[ctx],
                                         PARTITION_TYPES, ACCT_STR);
 #else
     p = (PARTITION_TYPE)aom_read_tree(r, av1_partition_tree, probs, ACCT_STR);
