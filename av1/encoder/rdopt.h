@@ -48,8 +48,8 @@ static INLINE void av1_update_txb_coeff_cost(RD_STATS *rd_stats, int plane,
   }
 #endif
 
-  assert(blk_row < 16);
-  assert(blk_col < 16);
+  assert(blk_row < TXB_COEFF_COST_MAP_SIZE);
+  assert(blk_col < TXB_COEFF_COST_MAP_SIZE);
 }
 #endif
 
