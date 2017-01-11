@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_reg_util_win.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/master_preferences.h"
@@ -35,12 +36,10 @@ TEST(ProductTest, ProductInstallBasic) {
   installer::InstallationState machine_state;
   machine_state.Initialize();
 
-  std::unique_ptr<Product> product = base::MakeUnique<Product>(
-      BrowserDistribution::GetSpecificDistribution(
-          BrowserDistribution::CHROME_BROWSER));
+  std::unique_ptr<Product> product =
+      base::MakeUnique<Product>(BrowserDistribution::GetDistribution());
   product->InitializeFromPreferences(prefs);
   BrowserDistribution* distribution = product->distribution();
-  EXPECT_EQ(BrowserDistribution::CHROME_BROWSER, distribution->GetType());
 
   base::FilePath user_data_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));

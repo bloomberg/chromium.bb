@@ -13,9 +13,10 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
+
+class BrowserDistribution;
 
 namespace base {
 class CommandLine;
@@ -50,14 +51,6 @@ class Product {
 
   BrowserDistribution* distribution() const {
     return distribution_;
-  }
-
-  bool is_type(BrowserDistribution::Type type) const {
-    return distribution_->GetType() == type;
-  }
-
-  bool is_chrome() const {
-    return distribution_->GetType() == BrowserDistribution::CHROME_BROWSER;
   }
 
   bool HasOption(const std::wstring& option) const {
@@ -116,8 +109,8 @@ class Product {
     MSI_STATE = 0x01
   };
 
-  BrowserDistribution* distribution_;
-  std::unique_ptr<ProductOperations> operations_;
+  BrowserDistribution* const distribution_;
+  const std::unique_ptr<ProductOperations> operations_;
   std::set<std::wstring> options_;
 
  private:

@@ -127,9 +127,7 @@ class GoogleUpdateSettingsTest : public testing::Test {
   // Test the writing and deleting functionality of the experiments label
   // helper.
   void TestExperimentsLabelHelper(SystemUserInstall install) {
-    BrowserDistribution* chrome =
-        BrowserDistribution::GetSpecificDistribution(
-            BrowserDistribution::CHROME_BROWSER);
+    BrowserDistribution* chrome = BrowserDistribution::GetDistribution();
     base::string16 value;
 #if defined(GOOGLE_CHROME_BUILD)
     EXPECT_TRUE(chrome->ShouldSetExperimentLabels());
@@ -1190,9 +1188,7 @@ base::string16* CollectStatsConsent::chrome_state_key_;
 base::string16* CollectStatsConsent::chrome_state_medium_key_;
 
 void CollectStatsConsent::SetUpTestCase() {
-  BrowserDistribution* dist =
-      BrowserDistribution::GetSpecificDistribution(
-          BrowserDistribution::CHROME_BROWSER);
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   chrome_version_key_ = new base::string16(dist->GetVersionKey());
   chrome_state_key_ = new base::string16(dist->GetStateKey());
   chrome_state_medium_key_ = new base::string16(dist->GetStateMediumKey());

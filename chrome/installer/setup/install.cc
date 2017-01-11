@@ -431,8 +431,6 @@ void RegisterChromeOnMachine(const installer::InstallerState& installer_state,
                              const installer::Product& product,
                              bool make_chrome_default,
                              const base::Version& version) {
-  DCHECK(product.is_chrome());
-
   // Try to add Chrome to Media Player shim inclusion list. We don't do any
   // error checking here because this operation will fail if user doesn't
   // have admin rights and we want to ignore the error.

@@ -41,21 +41,16 @@ const wchar_t kCommandExecuteImplUuid[] =
 
 // The BrowserDistribution objects are never freed.
 BrowserDistribution* g_browser_distribution = NULL;
-BrowserDistribution::Type GetCurrentDistributionType() {
-  return BrowserDistribution::CHROME_BROWSER;
-}
 
 }  // namespace
 
 BrowserDistribution::BrowserDistribution()
-    : type_(CHROME_BROWSER),
-      app_reg_data_(base::MakeUnique<NonUpdatingAppRegistrationData>(
+    : app_reg_data_(base::MakeUnique<NonUpdatingAppRegistrationData>(
           L"Software\\Chromium")) {}
 
 BrowserDistribution::BrowserDistribution(
-    Type type,
     std::unique_ptr<AppRegistrationData> app_reg_data)
-    : type_(type), app_reg_data_(std::move(app_reg_data)) {}
+    : app_reg_data_(std::move(app_reg_data)) {}
 
 BrowserDistribution::~BrowserDistribution() {}
 
@@ -73,14 +68,8 @@ BrowserDistribution* BrowserDistribution::GetOrCreateBrowserDistribution(
   return *dist;
 }
 
-BrowserDistribution* BrowserDistribution::GetDistribution() {
-  return GetSpecificDistribution(GetCurrentDistributionType());
-}
-
 // static
-BrowserDistribution* BrowserDistribution::GetSpecificDistribution(
-    BrowserDistribution::Type type) {
-  DCHECK_EQ(type, CHROME_BROWSER);
+BrowserDistribution* BrowserDistribution::GetDistribution() {
   BrowserDistribution* dist = NULL;
 
 #if defined(GOOGLE_CHROME_BUILD)

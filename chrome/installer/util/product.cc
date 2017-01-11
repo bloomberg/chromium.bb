@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/process/launch.h"
 #include "base/win/registry.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/chrome_browser_operations.h"
 #include "chrome/installer/util/chrome_browser_sxs_operations.h"
 #include "chrome/installer/util/google_update_constants.h"
@@ -24,18 +25,10 @@ using installer::MasterPreferences;
 namespace installer {
 
 Product::Product(BrowserDistribution* distribution)
-    : distribution_(distribution) {
-  switch (distribution->GetType()) {
-    case BrowserDistribution::CHROME_BROWSER:
-      operations_.reset(InstallUtil::IsChromeSxSProcess() ?
-          new ChromeBrowserSxSOperations() :
-          new ChromeBrowserOperations());
-      break;
-    default:
-      NOTREACHED() << "Unsupported BrowserDistribution::Type: "
-                   << distribution->GetType();
-  }
-}
+    : distribution_(distribution),
+      operations_(InstallUtil::IsChromeSxSProcess()
+                      ? new ChromeBrowserSxSOperations()
+                      : new ChromeBrowserOperations()) {}
 
 Product::~Product() {
 }

@@ -14,8 +14,6 @@ base::string16 GetSuffixedRegistryPath(const wchar_t* suffix) {
   BrowserDistribution* chrome_distribution =
       BrowserDistribution::GetDistribution();
   DCHECK(chrome_distribution);
-  DCHECK_EQ(BrowserDistribution::CHROME_BROWSER,
-            chrome_distribution->GetType());
 
   DCHECK_EQ(L'\\', *suffix);
   DCHECK_NE(L'\\', chrome_distribution->GetRegistryPath().back());

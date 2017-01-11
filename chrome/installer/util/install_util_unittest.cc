@@ -4,6 +4,7 @@
 
 #include "chrome/installer/util/install_util.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -13,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_path_override.h"
@@ -38,9 +40,7 @@ class MockRegistryValuePredicate : public InstallUtil::RegistryValuePredicate {
 class TestBrowserDistribution : public BrowserDistribution {
  public:
   TestBrowserDistribution()
-      : BrowserDistribution(CHROME_BROWSER,
-                            std::unique_ptr<AppRegistrationData>(
-                                new TestAppRegistrationData())) {}
+      : BrowserDistribution(base::MakeUnique<TestAppRegistrationData>()) {}
 };
 
 class InstallUtilTest : public testing::Test {

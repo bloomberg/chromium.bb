@@ -14,6 +14,7 @@
 #include <utility>
 
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -26,7 +27,6 @@
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installer_util_strings.h"
 #include "chrome/installer/util/l10n_string_util.h"
@@ -96,13 +96,12 @@ void NavigateToUrlWithIExplore(const base::string16& url) {
 }  // namespace
 
 GoogleChromeDistribution::GoogleChromeDistribution()
-    : BrowserDistribution(CHROME_BROWSER,
-                          std::unique_ptr<AppRegistrationData>(
-                              new UpdatingAppRegistrationData(kChromeGuid))) {}
+    : BrowserDistribution(
+          base::MakeUnique<UpdatingAppRegistrationData>(kChromeGuid)) {}
 
 GoogleChromeDistribution::GoogleChromeDistribution(
     std::unique_ptr<AppRegistrationData> app_reg_data)
-    : BrowserDistribution(CHROME_BROWSER, std::move(app_reg_data)) {}
+    : BrowserDistribution(std::move(app_reg_data)) {}
 
 void GoogleChromeDistribution::DoPostUninstallOperations(
     const base::Version& version,

@@ -34,7 +34,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
-#include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/util_constants.h"
@@ -567,7 +566,6 @@ void InstallUtil::AddUpdateDowngradeVersionItem(
     WorkItemList* list) {
   DCHECK(list);
   DCHECK(dist);
-  DCHECK_EQ(BrowserDistribution::CHROME_BROWSER, dist->GetType());
   base::Version downgrade_version = GetDowngradeVersion(system_install, dist);
   HKEY root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   if (!current_version ||
