@@ -4,9 +4,9 @@
 
 #include "ash/common/wm/always_on_top_controller.h"
 
-#include "ash/aura/wm_root_window_controller_aura.h"
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/workspace/workspace_layout_manager.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"

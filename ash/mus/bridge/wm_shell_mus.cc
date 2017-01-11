@@ -22,7 +22,6 @@
 #include "ash/mus/accelerators/accelerator_controller_delegate_mus.h"
 #include "ash/mus/accelerators/accelerator_controller_registrar.h"
 #include "ash/mus/bridge/immersive_handler_factory_mus.h"
-#include "ash/mus/bridge/wm_root_window_controller_mus.h"
 #include "ash/mus/bridge/wm_window_mus.h"
 #include "ash/mus/bridge/workspace_event_handler_mus.h"
 #include "ash/mus/drag_window_resizer.h"
@@ -165,27 +164,25 @@ WmShellMus* WmShellMus::Get() {
   return static_cast<WmShellMus*>(WmShell::Get());
 }
 
-void WmShellMus::AddRootWindowController(
-    WmRootWindowControllerMus* controller) {
+void WmShellMus::AddRootWindowController(RootWindowController* controller) {
   root_window_controllers_.push_back(controller);
   // The first root window will be the initial root for new windows.
   if (!GetRootWindowForNewWindows())
-    set_root_window_for_new_windows(controller->GetWindow());
+    set_root_window_for_new_windows(WmWindowMus::Get(controller->root()));
 }
 
-void WmShellMus::RemoveRootWindowController(
-    WmRootWindowControllerMus* controller) {
+void WmShellMus::RemoveRootWindowController(RootWindowController* controller) {
   auto iter = std::find(root_window_controllers_.begin(),
                         root_window_controllers_.end(), controller);
   DCHECK(iter != root_window_controllers_.end());
   root_window_controllers_.erase(iter);
 }
 
-WmRootWindowControllerMus* WmShellMus::GetRootWindowControllerWithDisplayId(
+RootWindowController* WmShellMus::GetRootWindowControllerWithDisplayId(
     int64_t id) {
-  for (WmRootWindowControllerMus* root_window_controller :
+  for (RootWindowController* root_window_controller :
        root_window_controllers_) {
-    if (root_window_controller->GetDisplay().id() == id)
+    if (root_window_controller->display().id() == id)
       return root_window_controller;
   }
   NOTREACHED();
@@ -228,11 +225,12 @@ WmWindow* WmShellMus::GetCaptureWindow() {
 }
 
 WmWindow* WmShellMus::GetPrimaryRootWindow() {
-  return root_window_controllers_[0]->GetWindow();
+  return WmWindowMus::Get(root_window_controllers_[0]->root());
 }
 
 WmWindow* WmShellMus::GetRootWindowForDisplayId(int64_t display_id) {
-  return GetRootWindowControllerWithDisplayId(display_id)->GetWindow();
+  return WmWindowMus::Get(
+      GetRootWindowControllerWithDisplayId(display_id)->root());
 }
 
 const display::ManagedDisplayInfo& WmShellMus::GetDisplayInfo(
@@ -274,10 +272,10 @@ bool WmShellMus::IsForceMaximizeOnFirstRun() {
 
 void WmShellMus::SetDisplayWorkAreaInsets(WmWindow* window,
                                           const gfx::Insets& insets) {
-  WmRootWindowControllerMus* root_window_controller_mus =
-      static_cast<WmWindowMus*>(window)->GetRootWindowControllerMus();
-  root_window_controller_mus->root_window_controller()->SetWorkAreaInests(
-      insets);
+  RootWindowController* root_window_controller =
+      RootWindowController::ForWindow(
+          static_cast<WmWindowMus*>(window)->aura_window());
+  root_window_controller->SetWorkAreaInests(insets);
 }
 
 bool WmShellMus::IsPinned() {
@@ -308,7 +306,7 @@ bool WmShellMus::IsMouseEventsEnabled() {
 std::vector<WmWindow*> WmShellMus::GetAllRootWindows() {
   std::vector<WmWindow*> wm_windows(root_window_controllers_.size());
   for (size_t i = 0; i < root_window_controllers_.size(); ++i)
-    wm_windows[i] = root_window_controllers_[i]->GetWindow();
+    wm_windows[i] = WmWindowMus::Get(root_window_controllers_[i]->root());
   return wm_windows;
 }
 

@@ -9,7 +9,6 @@
 
 #include "ash/ash_touch_exploration_manager_chromeos.h"
 #include "ash/aura/aura_layout_manager_adapter.h"
-#include "ash/aura/wm_root_window_controller_aura.h"
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_constants.h"
 #include "ash/common/ash_switches.h"
@@ -37,6 +36,7 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/workspace/workspace_layout_manager.h"
 #include "ash/common/wm/workspace_controller.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/high_contrast/high_contrast_controller.h"
@@ -139,20 +139,31 @@ bool IsWindowAboveContainer(aura::Window* window,
 
 }  // namespace
 
+RootWindowController::~RootWindowController() {
+  Shutdown();
+  ash_host_.reset();
+  mus_window_tree_host_.reset();
+  // The CaptureClient needs to be around for as long as the RootWindow is
+  // valid.
+  capture_client_.reset();
+}
+
 void RootWindowController::CreateForPrimaryDisplay(AshWindowTreeHost* host) {
-  RootWindowController* controller = new RootWindowController(host);
-  controller->Init(RootWindowController::PRIMARY);
+  RootWindowController* controller = new RootWindowController(host, nullptr);
+  controller->Init(RootWindowType::PRIMARY);
 }
 
 void RootWindowController::CreateForSecondaryDisplay(AshWindowTreeHost* host) {
-  RootWindowController* controller = new RootWindowController(host);
-  controller->Init(RootWindowController::SECONDARY);
+  RootWindowController* controller = new RootWindowController(host, nullptr);
+  controller->Init(RootWindowType::SECONDARY);
 }
 
 // static
 RootWindowController* RootWindowController::ForWindow(
     const aura::Window* window) {
-  CHECK(Shell::HasInstance());
+  DCHECK(window);
+  CHECK(WmShell::HasInstance() &&
+        (WmShell::Get()->IsRunningInMash() || Shell::HasInstance()));
   return GetRootWindowController(window->GetRootWindow());
 }
 
@@ -162,20 +173,12 @@ RootWindowController* RootWindowController::ForTargetRootWindow() {
   return GetRootWindowController(Shell::GetTargetRootWindow());
 }
 
-RootWindowController::~RootWindowController() {
-  Shutdown();
-  ash_host_.reset();
-  // The CaptureClient needs to be around for as long as the RootWindow is
-  // valid.
-  capture_client_.reset();
-}
-
 aura::WindowTreeHost* RootWindowController::GetHost() {
-  return ash_host_->AsWindowTreeHost();
+  return window_tree_host_;
 }
 
 const aura::WindowTreeHost* RootWindowController::GetHost() const {
-  return ash_host_->AsWindowTreeHost();
+  return window_tree_host_;
 }
 
 aura::Window* RootWindowController::GetRootWindow() {
@@ -203,7 +206,8 @@ void RootWindowController::Shutdown() {
   // Forget with the display ID so that display lookup
   // ends up with invalid display.
   GetRootWindowSettings(root_window)->display_id = display::kInvalidDisplayId;
-  ash_host_->PrepareForShutdown();
+  if (ash_host_)
+    ash_host_->PrepareForShutdown();
 
   system_wallpaper_.reset();
   aura::client::SetScreenPositionClient(root_window, NULL);
@@ -259,7 +263,7 @@ aura::Window* RootWindowController::GetContainer(int container_id) {
 }
 
 const aura::Window* RootWindowController::GetContainer(int container_id) const {
-  return ash_host_->AsWindowTreeHost()->window()->GetChildById(container_id);
+  return window_tree_host_->window()->GetChildById(container_id);
 }
 
 void RootWindowController::OnInitialWallpaperAnimationStarted() {
@@ -389,16 +393,23 @@ void RootWindowController::SetTouchAccessibilityAnchorPoint(
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindowController, private:
 
-RootWindowController::RootWindowController(AshWindowTreeHost* ash_host)
+RootWindowController::RootWindowController(
+    AshWindowTreeHost* ash_host,
+    aura::WindowTreeHost* window_tree_host)
     : ash_host_(ash_host),
+      mus_window_tree_host_(window_tree_host),
+      window_tree_host_(ash_host ? ash_host->AsWindowTreeHost()
+                                 : window_tree_host),
       wm_shelf_(base::MakeUnique<WmShelf>()),
       touch_hud_debug_(NULL),
       touch_hud_projection_(NULL) {
+  DCHECK((ash_host && !window_tree_host) || (!ash_host && window_tree_host));
   aura::Window* root_window = GetRootWindow();
   GetRootWindowSettings(root_window)->controller = this;
 
   // Has to happen after this is set as |controller| of RootWindowSettings.
-  wm_root_window_controller_ = WmRootWindowControllerAura::Get(root_window);
+  wm_root_window_controller_ = base::MakeUnique<WmRootWindowController>(
+      this, WmWindowAura::Get(root_window));
 
   stacking_controller_.reset(new StackingController);
   aura::client::SetWindowParentingClient(root_window,
@@ -408,8 +419,12 @@ RootWindowController::RootWindowController(AshWindowTreeHost* ash_host)
 
 void RootWindowController::Init(RootWindowType root_window_type) {
   aura::Window* root_window = GetRootWindow();
-  Shell* shell = Shell::GetInstance();
-  shell->InitRootWindow(root_window);
+  WmShell* wm_shell = WmShell::Get();
+  Shell* shell = nullptr;
+  if (!wm_shell->IsRunningInMash()) {
+    shell = Shell::GetInstance();
+    shell->InitRootWindow(root_window);
+  }
 
   wm_root_window_controller_->CreateContainers();
 
@@ -418,32 +433,36 @@ void RootWindowController::Init(RootWindowType root_window_type) {
   InitLayoutManagers();
   InitTouchHuds();
 
-  if (WmShell::Get()
-          ->GetPrimaryRootWindowController()
+  if (wm_shell->GetPrimaryRootWindowController()
           ->GetSystemModalLayoutManager(nullptr)
           ->has_window_dimmer()) {
     wm_root_window_controller_->GetSystemModalLayoutManager(nullptr)
         ->CreateModalBackground();
   }
 
-  WmShell::Get()->AddShellObserver(this);
+  wm_shell->AddShellObserver(this);
 
   wm_root_window_controller_->root_window_layout_manager()->OnWindowResized();
-  if (root_window_type == PRIMARY) {
-    shell->InitKeyboard();
+  if (root_window_type == RootWindowType::PRIMARY) {
+    if (!wm_shell->IsRunningInMash())
+      shell->InitKeyboard();
   } else {
-    ash_host_->AsWindowTreeHost()->Show();
+    window_tree_host_->Show();
 
     // Create a shelf if a user is already logged in.
-    if (WmShell::Get()->GetSessionStateDelegate()->NumberOfLoggedInUsers())
+    if (wm_shell->GetSessionStateDelegate()->NumberOfLoggedInUsers())
       wm_root_window_controller_->CreateShelf();
 
     // Notify shell observers about new root window.
-    shell->OnRootWindowAdded(WmWindowAura::Get(root_window));
+    if (!wm_shell->IsRunningInMash())
+      shell->OnRootWindowAdded(WmWindowAura::Get(root_window));
   }
 
+  // TODO: AshTouchExplorationManager doesn't work with mus.
+  // http://crbug.com/679782
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshDisableTouchExplorationMode)) {
+          switches::kAshDisableTouchExplorationMode) &&
+      !wm_shell->IsRunningInMash()) {
     touch_exploration_manager_.reset(new AshTouchExplorationManager(this));
   }
 }
@@ -483,6 +502,9 @@ void RootWindowController::InitLayoutManagers() {
 }
 
 void RootWindowController::InitTouchHuds() {
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAshTouchHud))
     set_touch_hud_debug(new TouchHudDebug(GetRootWindow()));
@@ -497,7 +519,7 @@ void RootWindowController::CreateSystemWallpaper(
   // secondary monitor (either connected at boot or connected later) or if the
   // browser restarted for a second login then don't use the boot color.
   const bool is_boot_splash_screen =
-      root_window_type == PRIMARY &&
+      root_window_type == RootWindowType::PRIMARY &&
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kFirstExecAfterBoot);
   if (is_boot_splash_screen)

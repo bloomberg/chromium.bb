@@ -21,8 +21,6 @@ class Widget;
 namespace ash {
 namespace mus {
 
-class WmRootWindowControllerMus;
-
 // WmWindow implementation for mus.
 //
 // WmWindowMus is tied to the life of the underlying aura::Window (it is stored
@@ -43,12 +41,6 @@ class WmWindowMus : public WmWindowAura {
 
   static WmWindowMus* Get(views::Widget* widget);
 
-  WmRootWindowControllerMus* GetRootWindowControllerMus() {
-    return const_cast<WmRootWindowControllerMus*>(
-        const_cast<const WmWindowMus*>(this)->GetRootWindowControllerMus());
-  }
-  const WmRootWindowControllerMus* GetRootWindowControllerMus() const;
-
   static WmWindowMus* AsWmWindowMus(WmWindow* window) {
     return static_cast<WmWindowMus*>(window);
   }
@@ -60,7 +52,6 @@ class WmWindowMus : public WmWindowAura {
   bool IsContainer() const;
 
   // WmWindow:
-  WmRootWindowController* GetRootWindowController() override;
   WmShell* GetShell() const override;
   void CloseWidget() override;
   void AddLimitedPreTargetHandler(ui::EventHandler* handler) override;

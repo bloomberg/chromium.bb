@@ -27,7 +27,12 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "base/memory/ptr_util.h"
+#include "ui/aura/env.h"
+#include "ui/aura/mus/window_mus.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
@@ -151,7 +156,13 @@ WmWindow* CreateContainer(int window_id, const char* name, WmWindow* parent) {
 
 }  // namespace
 
-WmRootWindowController::WmRootWindowController(WmWindow* root) : root_(root) {}
+WmRootWindowController::WmRootWindowController(
+    RootWindowController* root_window_controller,
+    WmWindow* root)
+    : root_window_controller_(root_window_controller), root_(root) {
+  DCHECK(root_window_controller_);
+  DCHECK(root_);
+}
 
 WmRootWindowController::~WmRootWindowController() {
   if (animating_wallpaper_widget_controller_.get())
@@ -199,6 +210,14 @@ WmRootWindowController::GetSystemModalLayoutManager(WmWindow* window) {
                          : nullptr;
 }
 
+bool WmRootWindowController::HasShelf() {
+  return GetShelf()->shelf_widget() != nullptr;
+}
+
+WmShelf* WmRootWindowController::GetShelf() {
+  return root_window_controller_->wm_shelf();
+}
+
 void WmRootWindowController::CreateShelf() {
   WmShelf* shelf = GetShelf();
   if (shelf->IsShelfInitialized())
@@ -235,6 +254,10 @@ SystemTray* WmRootWindowController::GetSystemTray() {
   if (!shelf_widget || !shelf_widget->status_area_widget())
     return nullptr;
   return shelf_widget->status_area_widget()->system_tray();
+}
+
+WmWindow* WmRootWindowController::GetWindow() {
+  return root_;
 }
 
 WmWindow* WmRootWindowController::GetContainer(int container_id) {
@@ -301,10 +324,13 @@ void WmRootWindowController::ShowContextMenu(
                               views::MENU_ANCHOR_TOPLEFT, source_type));
 }
 
-void WmRootWindowController::OnInitialWallpaperAnimationStarted() {}
+void WmRootWindowController::OnInitialWallpaperAnimationStarted() {
+  root_window_controller_->OnInitialWallpaperAnimationStarted();
+}
 
 void WmRootWindowController::OnWallpaperAnimationFinished(
     views::Widget* widget) {
+  root_window_controller_->OnWallpaperAnimationFinished(widget);
   WmShell::Get()->wallpaper_delegate()->OnWallpaperAnimationFinished();
   // Only removes old component when wallpaper animation finished. If we
   // remove the old one before the new wallpaper is done fading in there will
@@ -624,6 +650,20 @@ void WmRootWindowController::CloseChildWindows() {
   // unittests. Avoid notifying WmShelf that the shelf has been destroyed twice.
   if (shelf->IsShelfInitialized())
     shelf->ShutdownShelf();
+}
+
+bool WmRootWindowController::ShouldDestroyWindowInCloseChildWindows(
+    WmWindow* window) {
+  if (!WmWindowAura::GetAuraWindow(window)->owned_by_parent())
+    return false;
+
+  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::LOCAL)
+    return true;
+
+  aura::WindowMus* window_mus =
+      aura::WindowMus::Get(WmWindowAura::GetAuraWindow(window));
+  return Shell::window_tree_client()->WasCreatedByThisClient(window_mus) ||
+         Shell::window_tree_client()->IsRoot(window_mus);
 }
 
 void WmRootWindowController::OnMenuClosed() {

@@ -10,11 +10,11 @@
 
 #include "ash/common/wm/container_finder.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/display/screen_position_controller.h"
 #include "ash/mus/accelerators/accelerator_handler.h"
 #include "ash/mus/accelerators/accelerator_ids.h"
 #include "ash/mus/bridge/wm_lookup_mus.h"
-#include "ash/mus/bridge/wm_root_window_controller_mus.h"
 #include "ash/mus/bridge/wm_shell_mus.h"
 #include "ash/mus/bridge/wm_window_mus.h"
 #include "ash/mus/move_event_handler.h"
@@ -27,6 +27,7 @@
 #include "ash/mus/window_manager_observer.h"
 #include "ash/mus/window_properties.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shell.h"
 #include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/event_client_impl.h"
 #include "ash/wm/window_properties.h"
@@ -95,6 +96,7 @@ WindowManager::WindowManager(service_manager::Connector* connector)
 WindowManager::~WindowManager() {
   Shutdown();
   aura::Env::GetInstance()->RemoveObserver(this);
+  ash::Shell::set_window_tree_client(nullptr);
 }
 
 void WindowManager::Init(
@@ -103,6 +105,9 @@ void WindowManager::Init(
   DCHECK(window_manager_client_);
   DCHECK(!window_tree_client_);
   window_tree_client_ = std::move(window_tree_client);
+
+  DCHECK_EQ(nullptr, ash::Shell::window_tree_client());
+  ash::Shell::set_window_tree_client(window_tree_client_.get());
 
   aura::Env::GetInstance()->AddObserver(this);
 
@@ -204,10 +209,10 @@ display::mojom::DisplayController* WindowManager::GetDisplayController() {
 
 RootWindowController* WindowManager::CreateRootWindowController(
     std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
-    const display::Display& display) {
-  // TODO(sky): this is temporary, should use RootWindowController directly.
-  aura::client::SetCaptureClient(window_tree_host->window(),
-                                 wm_state_->capture_controller());
+    const display::Display& display,
+    ash::RootWindowController::RootWindowType root_window_type) {
+  // TODO(sky): all of these calls to SetFooClient() are done in
+  // Shell::InitRootWindow(). When Shell is used these can be removed.
   aura::client::SetFocusClient(window_tree_host->window(),
                                focus_controller_.get());
   aura::client::SetActivationClient(window_tree_host->window(),
@@ -217,13 +222,16 @@ RootWindowController* WindowManager::CreateRootWindowController(
                                         screen_position_controller_.get());
 
   std::unique_ptr<RootWindowController> root_window_controller_ptr(
-      new RootWindowController(this, std::move(window_tree_host), display));
+      new RootWindowController(this, std::move(window_tree_host), display,
+                               root_window_type));
   RootWindowController* root_window_controller =
       root_window_controller_ptr.get();
   root_window_controllers_.insert(std::move(root_window_controller_ptr));
 
   // TODO: this should be called when logged in. See http://crbug.com/654606.
-  root_window_controller->wm_root_window_controller()->CreateShelf();
+  root_window_controller->ash_root_window_controller()
+      ->wm_root_window_controller()
+      ->CreateShelf();
 
   for (auto& observer : observers_)
     observer.OnRootWindowControllerAdded(root_window_controller);
@@ -238,8 +246,8 @@ void WindowManager::DestroyRootWindowController(
     RootWindowController* root_window_controller) {
   if (root_window_controllers_.size() > 1) {
     DCHECK_NE(root_window_controller, GetPrimaryRootWindowController());
-    root_window_controller->wm_root_window_controller()->MoveWindowsTo(
-        WmWindowMus::Get(GetPrimaryRootWindowController()->root()));
+    root_window_controller->ash_root_window_controller()->MoveWindowsTo(
+        GetPrimaryRootWindowController()->root());
   }
 
   root_window_controller->Shutdown();
@@ -303,9 +311,10 @@ void WindowManager::Shutdown() {
 }
 
 RootWindowController* WindowManager::GetPrimaryRootWindowController() {
-  return static_cast<WmRootWindowControllerMus*>(
-             WmShell::Get()->GetPrimaryRootWindowController())
-      ->root_window_controller();
+  return RootWindowController::ForWindow(
+      static_cast<WmWindowMus*>(
+          WmShell::Get()->GetPrimaryRootWindowController()->GetWindow())
+          ->aura_window());
 }
 
 RootWindowController*
@@ -318,11 +327,9 @@ WindowManager::GetRootWindowControllerForNewTopLevelWindow(
       return root_window_controller_ptr.get();
   }
 
-  return static_cast<WmRootWindowControllerMus*>(
-             WmShellMus::Get()
-                 ->GetRootWindowForNewWindows()
-                 ->GetRootWindowController())
-      ->root_window_controller();
+  return RootWindowController::ForWindow(
+      static_cast<WmWindowMus*>(WmShellMus::Get()->GetRootWindowForNewWindows())
+          ->aura_window());
 }
 
 void WindowManager::OnEmbed(
@@ -427,7 +434,12 @@ void WindowManager::OnWmWillCreateDisplay(const display::Display& display) {
 void WindowManager::OnWmNewDisplay(
     std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
     const display::Display& display) {
-  CreateRootWindowController(std::move(window_tree_host), display);
+  ash::RootWindowController::RootWindowType root_window_type =
+      screen_->display_list().displays().size() == 1
+          ? ash::RootWindowController::RootWindowType::PRIMARY
+          : ash::RootWindowController::RootWindowType::SECONDARY;
+  CreateRootWindowController(std::move(window_tree_host), display,
+                             root_window_type);
 }
 
 void WindowManager::OnWmDisplayRemoved(

@@ -4,9 +4,9 @@
 
 #include "ash/ash_touch_exploration_manager_chromeos.h"
 
-#include "ash/aura/wm_root_window_controller_aura.h"
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"

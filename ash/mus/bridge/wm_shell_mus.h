@@ -29,8 +29,8 @@ namespace mus {
 class AcceleratorControllerDelegateMus;
 class AcceleratorControllerRegistrar;
 class ImmersiveHandlerFactoryMus;
+class RootWindowController;
 class WindowManager;
-class WmRootWindowControllerMus;
 class WmShellMusTestApi;
 
 // WmShell implementation for mus.
@@ -44,10 +44,10 @@ class WmShellMus : public WmShell,
 
   static WmShellMus* Get();
 
-  void AddRootWindowController(WmRootWindowControllerMus* controller);
-  void RemoveRootWindowController(WmRootWindowControllerMus* controller);
+  void AddRootWindowController(RootWindowController* controller);
+  void RemoveRootWindowController(RootWindowController* controller);
 
-  WmRootWindowControllerMus* GetRootWindowControllerWithDisplayId(int64_t id);
+  RootWindowController* GetRootWindowControllerWithDisplayId(int64_t id);
 
   AcceleratorControllerDelegateMus* accelerator_controller_delegate() {
     return accelerator_controller_delegate_.get();
@@ -125,7 +125,7 @@ class WmShellMus : public WmShell,
 
   views::PointerWatcherEventRouter* pointer_watcher_event_router_;
 
-  std::vector<WmRootWindowControllerMus*> root_window_controllers_;
+  std::vector<RootWindowController*> root_window_controllers_;
 
   std::unique_ptr<AcceleratorControllerDelegateMus>
       accelerator_controller_delegate_;

@@ -19,7 +19,6 @@
 #include "ash/common/wm/dock/docked_window_layout_manager.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm/root_window_layout_manager.h"
-#include "ash/mus/bridge/wm_root_window_controller_mus.h"
 #include "ash/mus/bridge/wm_shell_mus.h"
 #include "ash/mus/bridge/wm_window_mus.h"
 #include "ash/mus/non_client_frame_controller.h"
@@ -27,7 +26,7 @@
 #include "ash/mus/screen_mus.h"
 #include "ash/mus/window_manager.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/wm/stacking_controller.h"
+#include "ash/root_window_settings.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
@@ -41,12 +40,19 @@
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_property.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/display_list.h"
+
+DECLARE_WINDOW_PROPERTY_TYPE(ash::mus::RootWindowController*);
 
 namespace ash {
 namespace mus {
 namespace {
+
+DEFINE_LOCAL_WINDOW_PROPERTY_KEY(ash::mus::RootWindowController*,
+                                 kRootWindowControllerKey,
+                                 nullptr);
 
 bool IsFullscreen(aura::PropertyConverter* property_converter,
                   const std::vector<uint8_t>& transport_data) {
@@ -63,25 +69,20 @@ bool IsFullscreen(aura::PropertyConverter* property_converter,
 RootWindowController::RootWindowController(
     WindowManager* window_manager,
     std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
-    const display::Display& display)
+    const display::Display& display,
+    ash::RootWindowController::RootWindowType root_window_type)
     : window_manager_(window_manager),
-      window_tree_host_(std::move(window_tree_host)),
+      window_tree_host_(window_tree_host.get()),
       window_count_(0),
-      display_(display),
-      wm_shelf_(base::MakeUnique<WmShelf>()) {
-  wm_root_window_controller_ = base::MakeUnique<WmRootWindowControllerMus>(
-      window_manager_->shell(), this);
-  wm_root_window_controller_->CreateContainers();
-  wm_root_window_controller_->CreateLayoutManagers();
-
-  parenting_client_ = base::MakeUnique<StackingController>();
-  aura::client::SetWindowParentingClient(root(), parenting_client_.get());
+      display_(display) {
+  ash::InitRootWindowSettings(window_tree_host->window());
+  window_tree_host->window()->SetProperty(kRootWindowControllerKey, this);
+  WmShellMus::Get()->AddRootWindowController(this);
+  ash_root_window_controller_ = base::WrapUnique(
+      new ash::RootWindowController(nullptr, window_tree_host.release()));
+  ash_root_window_controller_->Init(root_window_type);
 
   disconnected_app_handler_.reset(new DisconnectedAppHandler(root()));
-
-  // Force a layout of the root, and its children, RootWindowLayout handles
-  // both.
-  wm_root_window_controller_->root_window_layout_manager()->OnWindowResized();
 
   for (size_t i = 0; i < kNumActivatableShellWindowIds; ++i) {
     window_manager_->window_manager_client()->AddActivationParent(
@@ -91,16 +92,18 @@ RootWindowController::RootWindowController(
 
 RootWindowController::~RootWindowController() {
   Shutdown();
-  // Destroy WindowTreeHost last as it owns the root Window.
-  wm_shelf_.reset();
-  wm_root_window_controller_.reset();
-  window_tree_host_.reset();
+  ash_root_window_controller_.reset();
+  WmShellMus::Get()->RemoveRootWindowController(this);
+}
+
+// static
+RootWindowController* RootWindowController::ForWindow(aura::Window* window) {
+  return window->GetRootWindow()->GetProperty(kRootWindowControllerKey);
 }
 
 void RootWindowController::Shutdown() {
   // NOTE: Shutdown() may be called multiple times.
-  wm_root_window_controller_->ResetRootForNewWindowsIfNecessary();
-  wm_root_window_controller_->CloseChildWindows();
+  ash_root_window_controller_->Shutdown();
 }
 
 service_manager::Connector* RootWindowController::GetConnector() {
@@ -160,7 +163,8 @@ aura::Window* RootWindowController::NewTopLevelWindow(
   } else {
     WmWindowMus* root = WmWindowMus::Get(this->root());
     gfx::Point origin =
-        wm_root_window_controller_->ConvertPointToScreen(root, gfx::Point());
+        root->ConvertPointToTarget(root->GetRootWindow(), gfx::Point());
+    origin += display_.bounds().OffsetFromOrigin();
     gfx::Rect bounds_in_screen(origin, bounds.size());
     static_cast<WmWindowMus*>(
         ash::wm::GetDefaultParent(WmWindowMus::Get(context),
@@ -187,9 +191,10 @@ void RootWindowController::SetWorkAreaInests(const gfx::Insets& insets) {
 
   // Push new display insets to service:ui if we have a connection.
   auto* display_controller = window_manager_->GetDisplayController();
-  if (display_controller)
+  if (display_controller) {
     display_controller->SetDisplayWorkArea(display_.id(),
                                            display_.bounds().size(), insets);
+  }
 }
 
 void RootWindowController::SetDisplay(const display::Display& display) {

@@ -10,6 +10,7 @@
 #include <memory>
 #include <set>
 
+#include "ash/root_window_controller.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
@@ -127,7 +128,8 @@ class WindowManager : public aura::WindowManagerDelegate,
 
   RootWindowController* CreateRootWindowController(
       std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
-      const display::Display& display);
+      const display::Display& display,
+      ash::RootWindowController::RootWindowType root_window_type);
 
   // Deletes the specified RootWindowController. Called when a display is
   // removed.

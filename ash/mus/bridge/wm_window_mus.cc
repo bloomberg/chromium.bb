@@ -13,9 +13,9 @@
 #include "ash/common/wm_transient_window_observer.h"
 #include "ash/common/wm_window_observer.h"
 #include "ash/common/wm_window_property.h"
-#include "ash/mus/bridge/wm_root_window_controller_mus.h"
 #include "ash/mus/bridge/wm_shell_mus.h"
 #include "ash/mus/property_util.h"
+#include "ash/mus/root_window_controller.h"
 #include "ash/mus/window_manager.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/wm/window_properties.h"
@@ -57,17 +57,8 @@ WmWindowMus* WmWindowMus::Get(views::Widget* widget) {
   return WmWindowMus::Get(widget->GetNativeView());
 }
 
-const WmRootWindowControllerMus* WmWindowMus::GetRootWindowControllerMus()
-    const {
-  return WmRootWindowControllerMus::Get(aura_window()->GetRootWindow());
-}
-
 bool WmWindowMus::IsContainer() const {
   return GetShellWindowId() != kShellWindowId_Invalid;
-}
-
-WmRootWindowController* WmWindowMus::GetRootWindowController() {
-  return GetRootWindowControllerMus();
 }
 
 WmShell* WmWindowMus::GetShell() const {

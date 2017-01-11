@@ -5,7 +5,6 @@
 #include "ash/aura/wm_window_aura.h"
 
 #include "ash/aura/aura_layout_manager_adapter.h"
-#include "ash/aura/wm_root_window_controller_aura.h"
 #include "ash/aura/wm_shell_aura.h"
 #include "ash/common/ash_constants.h"
 #include "ash/common/shelf/shelf_item_types.h"
@@ -15,6 +14,7 @@
 #include "ash/common/wm_window_observer.h"
 #include "ash/common/wm_window_property.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/resize_handle_window_targeter.h"
@@ -152,7 +152,11 @@ const WmWindow* WmWindowAura::GetRootWindow() const {
 
 WmRootWindowController* WmWindowAura::GetRootWindowController() {
   aura::Window* root = window_->GetRootWindow();
-  return root ? WmRootWindowControllerAura::Get(root) : nullptr;
+  if (!root)
+    return nullptr;
+
+  RootWindowController* rwc = RootWindowController::ForWindow(root);
+  return rwc ? rwc->wm_root_window_controller() : nullptr;
 }
 
 WmShell* WmWindowAura::GetShell() const {

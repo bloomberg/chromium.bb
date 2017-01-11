@@ -29,6 +29,7 @@ class KeyboardController;
 
 namespace ui {
 class EventHandler;
+class WindowTreeHost;
 }
 
 namespace views {
@@ -53,9 +54,13 @@ class SystemTray;
 class SystemWallpaperController;
 class TouchHudDebug;
 class TouchHudProjection;
-class WmRootWindowControllerAura;
+class WmRootWindowController;
 class WmShelf;
 class WorkspaceController;
+
+namespace mus {
+class RootWindowController;
+}
 
 // This class maintains the per root window state for ash. This class
 // owns the root window and other dependent objects that should be
@@ -64,12 +69,15 @@ class WorkspaceController;
 // The RootWindowController for particular root window is stored in
 // its property (RootWindowSettings) and can be obtained using
 // |GetRootWindowController(aura::WindowEventDispatcher*)| function.
-//
-// NOTE: In classic ash there is one RootWindow per display, so every RootWindow
-// has a RootWindowController. In mus/mash there is one RootWindow per top-level
-// Widget, so not all RootWindows have a RootWindowController.
 class ASH_EXPORT RootWindowController : public ShellObserver {
  public:
+  // Enumerates the type of display. If there is only a single display then
+  // it is primary. In a multi-display environment one monitor is deemed the
+  // PRIMARY and all others SECONDARY.
+  enum class RootWindowType { PRIMARY, SECONDARY };
+
+  ~RootWindowController() override;
+
   // Creates and Initialize the RootWindowController for primary display.
   static void CreateForPrimaryDisplay(AshWindowTreeHost* host);
 
@@ -82,8 +90,8 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // Returns the RootWindowController of the target root window.
   static RootWindowController* ForTargetRootWindow();
 
-  ~RootWindowController() override;
-
+  // TODO(sky): move these to a separate class or use AshWindowTreeHost in
+  // mash. http://crbug.com/671246.
   AshWindowTreeHost* ash_host() { return ash_host_.get(); }
   const AshWindowTreeHost* ash_host() const { return ash_host_.get(); }
 
@@ -96,8 +104,8 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
 
   WmShelf* wm_shelf() const { return wm_shelf_.get(); }
 
-  WmRootWindowControllerAura* wm_root_window_controller() {
-    return wm_root_window_controller_;
+  WmRootWindowController* wm_root_window_controller() {
+    return wm_root_window_controller_.get();
   }
 
   // Get touch HUDs associated with this root window controller.
@@ -180,8 +188,16 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   void SetTouchAccessibilityAnchorPoint(const gfx::Point& anchor_point);
 
  private:
-  explicit RootWindowController(AshWindowTreeHost* host);
-  enum RootWindowType { PRIMARY, SECONDARY };
+  // TODO(sky): remove this. Temporary during ash-mus unification.
+  // http://crbug.com/671246.
+  friend class mus::RootWindowController;
+
+  // Creates a new RootWindowController with the specified host. Only one of
+  // |ash_host| or |window_tree_host| should be specified. This takes ownership
+  // of the supplied arguments.
+  // TODO(sky): mash should create AshWindowTreeHost, http://crbug.com/671246.
+  RootWindowController(AshWindowTreeHost* ash_host,
+                       aura::WindowTreeHost* window_tree_host);
 
   // Initializes the RootWindowController based on |root_window_type|.
   void Init(RootWindowType root_window_type);
@@ -207,9 +223,11 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   void OnTouchHudProjectionToggled(bool enabled) override;
 
   std::unique_ptr<AshWindowTreeHost> ash_host_;
+  std::unique_ptr<aura::WindowTreeHost> mus_window_tree_host_;
+  // This comes from |ash_host_| or |mus_window_tree_host_|.
+  aura::WindowTreeHost* window_tree_host_;
 
-  // Owned by the root window.
-  WmRootWindowControllerAura* wm_root_window_controller_ = nullptr;
+  std::unique_ptr<WmRootWindowController> wm_root_window_controller_;
 
   std::unique_ptr<StackingController> stacking_controller_;
 

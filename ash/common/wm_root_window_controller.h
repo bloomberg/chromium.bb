@@ -30,6 +30,7 @@ class AlwaysOnTopController;
 class AnimatingWallpaperWidgetController;
 class DockedWindowLayoutManager;
 class PanelLayoutManager;
+class RootWindowController;
 class SystemModalContainerLayoutManager;
 class SystemTray;
 class WallpaperWidgetController;
@@ -46,8 +47,9 @@ class RootWindowLayoutManager;
 // Provides state associated with a root of a window hierarchy.
 class ASH_EXPORT WmRootWindowController {
  public:
-  explicit WmRootWindowController(WmWindow* window);
-  virtual ~WmRootWindowController();
+  WmRootWindowController(RootWindowController* root_window_controller,
+                         WmWindow* window);
+  ~WmRootWindowController();
 
   DockedWindowLayoutManager* docked_window_layout_manager() {
     return docked_window_layout_manager_;
@@ -90,9 +92,9 @@ class ASH_EXPORT WmRootWindowController {
   SystemModalContainerLayoutManager* GetSystemModalLayoutManager(
       WmWindow* window);
 
-  virtual bool HasShelf() = 0;
+  bool HasShelf();
 
-  virtual WmShelf* GetShelf() = 0;
+  WmShelf* GetShelf();
 
   // Creates the shelf for this root window and notifies observers.
   void CreateShelf();
@@ -105,7 +107,7 @@ class ASH_EXPORT WmRootWindowController {
   SystemTray* GetSystemTray();
 
   // Returns the window associated with this WmRootWindowController.
-  virtual WmWindow* GetWindow() = 0;
+  WmWindow* GetWindow();
 
   // Gets the WmWindow whose shell window id is |container_id|.
   WmWindow* GetContainer(int container_id);
@@ -135,8 +137,8 @@ class ASH_EXPORT WmRootWindowController {
 
   // Called when the wallpaper animation has started or finished.
   // TODO: port remaining classic ash wallpaper functionality here.
-  virtual void OnInitialWallpaperAnimationStarted();
-  virtual void OnWallpaperAnimationFinished(views::Widget* widget);
+  void OnInitialWallpaperAnimationStarted();
+  void OnWallpaperAnimationFinished(views::Widget* widget);
 
   // Called when the login status changes after login (such as lock/unlock).
   // TODO(oshima): Investigate if we can merge this and |OnLoginStateChanged|.
@@ -160,13 +162,18 @@ class ASH_EXPORT WmRootWindowController {
   // Called during shutdown to destroy state such as windows and LayoutManagers.
   void CloseChildWindows();
 
+ private:
+  friend class RootWindowController;
+
   // Called from CloseChildWindows() to determine if the specified window should
   // be destroyed.
-  virtual bool ShouldDestroyWindowInCloseChildWindows(WmWindow* window) = 0;
+  bool ShouldDestroyWindowInCloseChildWindows(WmWindow* window);
 
- private:
   // Callback for MenuModelAdapter.
   void OnMenuClosed();
+
+  // TODO(sky): remove this, needed until merge two classes.
+  RootWindowController* root_window_controller_;
 
   WmWindow* root_;
 
