@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "media/base/gmock_callback_support.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
@@ -25,6 +26,7 @@ using ::testing::Mock;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
+using ::testing::WithArg;
 
 namespace media {
 
@@ -36,6 +38,15 @@ ACTION_P2(SetBufferingState, renderer_client, buffering_state) {
 
 ACTION_P2(SetError, renderer_client, error) {
   (*renderer_client)->OnError(error);
+}
+
+ACTION(PostCallback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, arg0);
+}
+
+ACTION(PostQuitWhenIdle) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 
 class RendererImplTest : public ::testing::Test {
@@ -753,15 +764,91 @@ TEST_F(RendererImplTest, StreamStatusNotificationHandling) {
 
   // Verify that DemuxerStream status changes cause the corresponding
   // audio/video renderer to be flushed and restarted.
-  base::TimeDelta time0;
   EXPECT_CALL(time_source_, StopTicking());
   EXPECT_CALL(*audio_renderer_, Flush(_)).WillOnce(RunClosure<0>());
-  EXPECT_CALL(*audio_renderer_, StartPlaying()).Times(1);
-  audio_stream_status_change_cb.Run(false, time0);
+  EXPECT_CALL(*audio_renderer_, StartPlaying())
+      .Times(1)
+      .WillOnce(
+          SetBufferingState(&audio_renderer_client_, BUFFERING_HAVE_ENOUGH));
+  audio_stream_status_change_cb.Run(false, base::TimeDelta());
 
   EXPECT_CALL(*video_renderer_, Flush(_)).WillOnce(RunClosure<0>());
-  EXPECT_CALL(*video_renderer_, StartPlayingFrom(_)).Times(1);
-  video_stream_status_change_cb.Run(false, time0);
+  EXPECT_CALL(*video_renderer_, StartPlayingFrom(_))
+      .Times(1)
+      .WillOnce(DoAll(
+          SetBufferingState(&video_renderer_client_, BUFFERING_HAVE_ENOUGH),
+          PostQuitWhenIdle()));
+
+  video_stream_status_change_cb.Run(false, base::TimeDelta());
+  base::RunLoop().Run();
+}
+
+// Stream status changes are handled asynchronously by the renderer and may take
+// some time to process. This test verifies that all status changes are
+// processed correctly by the renderer even if status changes of the stream
+// happen much faster than the renderer can process them. In that case the
+// renderer may postpone processing status changes, but still must process all
+// of them eventually.
+TEST_F(RendererImplTest, PostponedStreamStatusNotificationHandling) {
+  CreateAudioAndVideoStream();
+
+  DemuxerStream::StreamStatusChangeCB audio_stream_status_change_cb;
+  DemuxerStream::StreamStatusChangeCB video_stream_status_change_cb;
+  EXPECT_CALL(*audio_stream_, SetStreamStatusChangeCB(_))
+      .WillOnce(SaveArg<0>(&audio_stream_status_change_cb));
+  EXPECT_CALL(*video_stream_, SetStreamStatusChangeCB(_))
+      .WillOnce(SaveArg<0>(&video_stream_status_change_cb));
+  SetAudioRendererInitializeExpectations(PIPELINE_OK);
+  SetVideoRendererInitializeExpectations(PIPELINE_OK);
+  InitializeAndExpect(PIPELINE_OK);
+  Play();
+
+  EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH))
+      .Times(2);
+
+  EXPECT_CALL(time_source_, StopTicking()).Times(2);
+  EXPECT_CALL(time_source_, StartTicking()).Times(2);
+  EXPECT_CALL(*audio_renderer_, Flush(_))
+      .Times(2)
+      .WillRepeatedly(DoAll(
+          SetBufferingState(&audio_renderer_client_, BUFFERING_HAVE_NOTHING),
+          WithArg<0>(PostCallback())));
+  EXPECT_CALL(*audio_renderer_, StartPlaying())
+      .Times(2)
+      .WillOnce(
+          SetBufferingState(&audio_renderer_client_, BUFFERING_HAVE_ENOUGH))
+      .WillOnce(DoAll(
+          SetBufferingState(&audio_renderer_client_, BUFFERING_HAVE_ENOUGH),
+          PostQuitWhenIdle()));
+  // The first stream status change will be processed immediately. Each status
+  // change processing involves Flush + StartPlaying when the Flush is done. The
+  // Flush operation is async in this case, so the second status change will be
+  // postponed by renderer until after processing the first one is finished. But
+  // we must still get two pairs of Flush/StartPlaying calls eventually.
+  audio_stream_status_change_cb.Run(false, base::TimeDelta());
+  audio_stream_status_change_cb.Run(true, base::TimeDelta());
+  base::RunLoop().Run();
+
+  EXPECT_CALL(*video_renderer_, Flush(_))
+      .Times(2)
+      .WillRepeatedly(DoAll(
+          SetBufferingState(&video_renderer_client_, BUFFERING_HAVE_NOTHING),
+          WithArg<0>(PostCallback())));
+  EXPECT_CALL(*video_renderer_, StartPlayingFrom(base::TimeDelta()))
+      .Times(2)
+      .WillOnce(
+          SetBufferingState(&video_renderer_client_, BUFFERING_HAVE_ENOUGH))
+      .WillOnce(DoAll(
+          SetBufferingState(&video_renderer_client_, BUFFERING_HAVE_ENOUGH),
+          PostQuitWhenIdle()));
+  // The first stream status change will be processed immediately. Each status
+  // change processing involves Flush + StartPlaying when the Flush is done. The
+  // Flush operation is async in this case, so the second status change will be
+  // postponed by renderer until after processing the first one is finished. But
+  // we must still get two pairs of Flush/StartPlaying calls eventually.
+  video_stream_status_change_cb.Run(false, base::TimeDelta());
+  video_stream_status_change_cb.Run(true, base::TimeDelta());
+  base::RunLoop().Run();
 }
 
 }  // namespace media

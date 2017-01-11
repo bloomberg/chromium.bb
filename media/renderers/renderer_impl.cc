@@ -214,28 +214,32 @@ void RendererImpl::StartPlayingFrom(base::TimeDelta time) {
     video_renderer_->StartPlayingFrom(time);
 }
 
-void RendererImpl::RestartStreamPlayback(DemuxerStream* stream,
+void RendererImpl::OnStreamStatusChanged(DemuxerStream* stream,
                                          bool enabled,
                                          base::TimeDelta time) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(stream);
   bool video = (stream->type() == DemuxerStream::VIDEO);
   DVLOG(1) << __func__ << (video ? " video" : " audio") << " stream=" << stream
-           << " enabled=" << stream->enabled() << " time=" << time.InSecondsF();
+           << " enabled=" << enabled << " time=" << time.InSecondsF();
   if ((state_ != STATE_PLAYING) || (audio_ended_ && video_ended_))
     return;
+  if (restarting_audio_ || restarting_video_) {
+    DVLOG(3) << __func__ << ": postponed stream " << stream
+             << " status change handling.";
+    pending_stream_status_notifications_.push_back(
+        base::Bind(&RendererImpl::OnStreamStatusChanged, weak_this_, stream,
+                   enabled, time));
+    return;
+  }
   if (stream->type() == DemuxerStream::VIDEO) {
     DCHECK(video_renderer_);
-    if (restarting_video_)
-      return;
     restarting_video_ = true;
     video_renderer_->Flush(
         base::Bind(&RendererImpl::RestartVideoRenderer, weak_this_, time));
   } else if (stream->type() == DemuxerStream::AUDIO) {
     DCHECK(audio_renderer_);
     DCHECK(time_source_);
-    if (restarting_audio_)
-      return;
     restarting_audio_ = true;
     // Stop ticking (transition into paused state) in audio renderer before
     // calling Flush, since after Flush we are going to restart playback by
@@ -386,7 +390,7 @@ void RendererImpl::InitializeAudioRenderer() {
   }
 
   audio_stream->SetStreamStatusChangeCB(base::Bind(
-      &RendererImpl::RestartStreamPlayback, weak_this_, audio_stream));
+      &RendererImpl::OnStreamStatusChanged, weak_this_, audio_stream));
 
   audio_renderer_client_.reset(
       new RendererClientInternal(DemuxerStream::AUDIO, this));
@@ -435,7 +439,7 @@ void RendererImpl::InitializeVideoRenderer() {
   }
 
   video_stream->SetStreamStatusChangeCB(base::Bind(
-      &RendererImpl::RestartStreamPlayback, weak_this_, video_stream));
+      &RendererImpl::OnStreamStatusChanged, weak_this_, video_stream));
 
   video_renderer_client_.reset(
       new RendererClientInternal(DemuxerStream::VIDEO, this));
@@ -556,6 +560,7 @@ void RendererImpl::OnStatisticsUpdate(const PipelineStatistics& stats) {
 bool RendererImpl::HandleRestartedStreamBufferingChanges(
     DemuxerStream::Type type,
     BufferingState new_buffering_state) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
   // When restarting playback we want to defer the BUFFERING_HAVE_NOTHING for
   // the stream being restarted, to allow continuing uninterrupted playback on
   // the other stream.
@@ -563,7 +568,9 @@ bool RendererImpl::HandleRestartedStreamBufferingChanges(
     if (new_buffering_state == BUFFERING_HAVE_ENOUGH) {
       DVLOG(1) << __func__ << " Got BUFFERING_HAVE_ENOUGH for video stream,"
                               " resuming playback.";
-      restarting_video_ = false;
+      task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&RendererImpl::OnStreamRestartCompleted, weak_this_));
       if (state_ == STATE_PLAYING &&
           !deferred_video_underflow_cb_.IsCancelled()) {
         // If deferred_video_underflow_cb_ wasn't triggered, then audio should
@@ -608,10 +615,22 @@ bool RendererImpl::HandleRestartedStreamBufferingChanges(
       // Now that we have decoded enough audio, pause playback momentarily to
       // ensure video renderer is synchronised with audio.
       PausePlayback();
-      restarting_audio_ = false;
+      task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&RendererImpl::OnStreamRestartCompleted, weak_this_));
     }
   }
   return false;
+}
+
+void RendererImpl::OnStreamRestartCompleted() {
+  DCHECK(restarting_audio_ || restarting_video_);
+  restarting_audio_ = false;
+  restarting_video_ = false;
+  if (!pending_stream_status_notifications_.empty()) {
+    pending_stream_status_notifications_.front().Run();
+    pending_stream_status_notifications_.pop_front();
+  }
 }
 
 void RendererImpl::OnBufferingStateChange(DemuxerStream::Type type,
