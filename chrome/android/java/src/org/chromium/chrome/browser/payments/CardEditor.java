@@ -196,7 +196,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
                         AutofillAddress.checkAddressCompletionStatus(a) == AutofillAddress.COMPLETE;
                 boolean isBComplete =
                         AutofillAddress.checkAddressCompletionStatus(b) == AutofillAddress.COMPLETE;
-                return (isBComplete ? 1 : 0) - (isAComplete ? 1 : 0);
+                return ApiCompatibilityUtils.compareBoolean(isBComplete, isAComplete);
             }
         });
 
