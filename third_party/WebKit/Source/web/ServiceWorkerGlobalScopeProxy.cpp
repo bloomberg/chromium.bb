@@ -64,7 +64,6 @@
 #include "public/platform/modules/notifications/WebNotificationData.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 #include "public/web/WebSerializedScriptValue.h"
 #include "public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
 #include "web/WebEmbeddedWorkerImpl.h"
@@ -200,7 +199,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(
 
 void ServiceWorkerGlobalScopeProxy::onNavigationPreloadResponse(
     int fetchEventID,
-    std::unique_ptr<WebServiceWorkerResponse> response,
+    std::unique_ptr<WebURLResponse> response,
     std::unique_ptr<WebDataConsumerHandle> dataConsumeHandle) {
   FetchEvent* fetchEvent = m_pendingPreloadFetchEvents.take(fetchEventID);
   DCHECK(fetchEvent);

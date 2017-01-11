@@ -25,7 +25,7 @@ class RespondWithObserver;
 class ScriptState;
 class WebDataConsumerHandle;
 struct WebServiceWorkerError;
-class WebServiceWorkerResponse;
+class WebURLResponse;
 
 // A fetch event is dispatched by the client to a service worker's script
 // context. RespondWithObserver can be used to notify the client about the
@@ -55,7 +55,7 @@ class MODULES_EXPORT FetchEvent final : public ExtendableEvent {
   ScriptPromise preloadResponse(ScriptState*);
 
   void onNavigationPreloadResponse(ScriptState*,
-                                   std::unique_ptr<WebServiceWorkerResponse>,
+                                   std::unique_ptr<WebURLResponse>,
                                    std::unique_ptr<WebDataConsumerHandle>);
   void onNavigationPreloadError(ScriptState*,
                                 std::unique_ptr<WebServiceWorkerError>);

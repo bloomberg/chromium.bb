@@ -45,6 +45,7 @@ struct WebServiceWorkerClientQueryOptions;
 class WebServiceWorkerContextProxy;
 class WebServiceWorkerProvider;
 class WebServiceWorkerResponse;
+class WebURLResponse;
 }
 
 namespace IPC {
@@ -266,7 +267,7 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
 
   void OnNavigationPreloadResponse(
       int fetch_event_id,
-      std::unique_ptr<blink::WebServiceWorkerResponse> response,
+      std::unique_ptr<blink::WebURLResponse> response,
       std::unique_ptr<blink::WebDataConsumerHandle> data_consumer_handle);
   void OnNavigationPreloadError(
       int fetch_event_id,

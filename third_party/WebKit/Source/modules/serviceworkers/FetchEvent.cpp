@@ -12,8 +12,8 @@
 #include "modules/fetch/Response.h"
 #include "modules/serviceworkers/ServiceWorkerError.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
+#include "public/platform/WebURLResponse.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerError.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
 
@@ -107,7 +107,7 @@ FetchEvent::FetchEvent(ScriptState* scriptState,
 
 void FetchEvent::onNavigationPreloadResponse(
     ScriptState* scriptState,
-    std::unique_ptr<WebServiceWorkerResponse> response,
+    std::unique_ptr<WebURLResponse> response,
     std::unique_ptr<WebDataConsumerHandle> dataConsumeHandle) {
   if (!scriptState->contextIsValid())
     return;
@@ -117,17 +117,17 @@ void FetchEvent::onNavigationPreloadResponse(
       new BodyStreamBuffer(scriptState, new BytesConsumerForDataConsumerHandle(
                                             scriptState->getExecutionContext(),
                                             std::move(dataConsumeHandle))));
-  const WebVector<WebURL>& webURLList = response->urlList();
-  // Navigation preload doesn't support redirect.
-  DCHECK_EQ(1u, webURLList.size());
   Vector<KURL> urlList(1);
-  urlList[0] = webURLList[0];
+  urlList[0] = response->url();
   responseData->setURLList(urlList);
-  responseData->setStatus(response->status());
-  responseData->setStatusMessage(response->statusText());
-  responseData->setResponseTime(response->responseTime());
-  for (const auto& header : response->headers())
+  responseData->setStatus(response->httpStatusCode());
+  responseData->setStatusMessage(response->httpStatusText());
+  responseData->setResponseTime(response->toResourceResponse().responseTime());
+  const HTTPHeaderMap& headers(
+      response->toResourceResponse().httpHeaderFields());
+  for (const auto& header : headers) {
     responseData->headerList()->append(header.key, header.value);
+  }
   FetchResponseData* taintedResponse =
       responseData->createBasicFilteredResponse();
   m_preloadResponseProperty->resolve(

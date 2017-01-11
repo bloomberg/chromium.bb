@@ -30,6 +30,7 @@
 #include "content/child/service_worker/web_service_worker_registration_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/web_data_consumer_handle_impl.h"
+#include "content/child/web_url_loader_impl.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/devtools_messages.h"
 #include "content/common/message_port_messages.h"
@@ -54,6 +55,7 @@
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationData.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerClientQueryOptions.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
@@ -258,22 +260,11 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
       mojom::DownloadedTempFilePtr downloaded_file) override {
     DCHECK(!response_);
     DCHECK(!downloaded_file);
-    response_ = base::MakeUnique<blink::WebServiceWorkerResponse>();
-    response_->setURLList(std::vector<blink::WebURL>({url_}));
-    DCHECK(response_head.headers);
-    response_->setStatus(response_head.headers->response_code());
-    response_->setStatusText(
-        blink::WebString::fromUTF8(response_head.headers->GetStatusText()));
-    response_->setResponseType(blink::WebServiceWorkerResponseTypeBasic);
-    size_t iter = 0;
-    std::string header_name;
-    std::string header_value;
-    while (response_head.headers->EnumerateHeaderLines(&iter, &header_name,
-                                                       &header_value)) {
-      response_->appendHeader(blink::WebString::fromUTF8(header_name),
-                              blink::WebString::fromUTF8(header_value));
-    }
-    response_->setResponseTime(response_head.response_time.ToInternalValue());
+    response_ = base::MakeUnique<blink::WebURLResponse>();
+    // TODO(horo): Set report_security_info to true when DevTools is attached.
+    const bool report_security_info = false;
+    WebURLLoaderImpl::PopulateURLResponse(url_, response_head, response_.get(),
+                                          report_security_info);
     MaybeReportResponseToClient();
   }
 
@@ -343,7 +334,7 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
   mojom::URLLoaderPtr url_loader_;
   mojo::Binding<mojom::URLLoaderClient> binding_;
 
-  std::unique_ptr<blink::WebServiceWorkerResponse> response_;
+  std::unique_ptr<blink::WebURLResponse> response_;
   mojo::ScopedDataPipeConsumerHandle body_;
   bool result_reported_ = false;
 };
@@ -1266,7 +1257,7 @@ void ServiceWorkerContextClient::OnPing() {
 
 void ServiceWorkerContextClient::OnNavigationPreloadResponse(
     int fetch_event_id,
-    std::unique_ptr<blink::WebServiceWorkerResponse> response,
+    std::unique_ptr<blink::WebURLResponse> response,
     std::unique_ptr<blink::WebDataConsumerHandle> data_consumer_handle) {
   proxy_->onNavigationPreloadResponse(fetch_event_id, std::move(response),
                                       std::move(data_consumer_handle));

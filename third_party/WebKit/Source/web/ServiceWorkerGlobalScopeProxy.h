@@ -50,7 +50,7 @@ class WebEmbeddedWorkerImpl;
 class WebServiceWorkerContextClient;
 struct WebServiceWorkerError;
 class WebServiceWorkerRequest;
-class WebServiceWorkerResponse;
+class WebURLResponse;
 
 // This class is created and destructed on the main thread, but live most
 // of its time as a resident of the worker thread.
@@ -113,7 +113,7 @@ class ServiceWorkerGlobalScopeProxy final
   bool hasFetchEventHandler() override;
   void onNavigationPreloadResponse(
       int fetchEventID,
-      std::unique_ptr<WebServiceWorkerResponse>,
+      std::unique_ptr<WebURLResponse>,
       std::unique_ptr<WebDataConsumerHandle>) override;
   void onNavigationPreloadError(
       int fetchEventID,
