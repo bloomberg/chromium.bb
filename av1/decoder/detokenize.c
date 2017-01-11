@@ -80,7 +80,11 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
   aom_prob(*coef_probs)[COEFF_CONTEXTS][UNCONSTRAINED_NODES] =
       fc->coef_probs[tx_size_ctx][type][ref];
   const aom_prob *prob;
-#if CONFIG_EC_MULTISYMBOL
+#if CONFIG_EC_ADAPT
+  aom_cdf_prob(*coef_cdfs)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
+      xd->tile_ctx->coef_cdfs[tx_size][type][ref];
+  aom_cdf_prob(*cdf)[ENTROPY_TOKENS];
+#elif CONFIG_EC_MULTISYMBOL
   aom_cdf_prob(*coef_cdfs)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
       fc->coef_cdfs[tx_size_ctx][type][ref];
   aom_cdf_prob(*cdf)[ENTROPY_TOKENS];
