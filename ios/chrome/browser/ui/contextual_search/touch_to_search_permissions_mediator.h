@@ -42,9 +42,8 @@ typedef NS_ENUM(NSInteger, TouchToSearchPreferenceState) {
 // Touch-to-Search feature.
 @interface TouchToSearchPermissionsMediator : NSObject
 
-// YES if the device supports Touch-to-Search (based on command line flags and
-// Finch experiments). The return value will be the same over the lifetime of
-// a Chrome process.
+// YES if the device supports Touch-to-Search (based on command line flags). The
+// return value will be the same over the lifetime of a Chrome process.
 + (BOOL)isTouchToSearchAvailableOnDevice;
 
 // Designated initializer.

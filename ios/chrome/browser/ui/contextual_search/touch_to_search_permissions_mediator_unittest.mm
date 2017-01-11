@@ -555,11 +555,14 @@ TEST(TouchToSearchPermissionsAvailabilityTest, CommandLinePermissions) {
 }
 
 TEST(TouchToSearchPermissionsAvailabilityTest, FieldTrial) {
+  // Field trial support is not currently supported, so it is expected
+  // that under all field trial configs, the feature will remain disabled.
+  // If field trial support is added back in, this test should be updated.
   const struct {
     const std::string trial_group_name;
     bool expect_available;
   } tests[] = {
-      {"Enabled", true},
+      {"Enabled", false},
       {"Disabled", false},
       {"Control", false},
       {"Spadoinkle", false},

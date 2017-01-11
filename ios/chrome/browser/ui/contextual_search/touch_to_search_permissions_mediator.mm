@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
-#include "base/metrics/field_trial.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
@@ -24,9 +23,6 @@
 #include "net/base/network_change_notifier.h"
 
 namespace {
-// Field trial constants.
-const char kContextualSearchFieldTrialName[] = "ContextualSearchIOS";
-const char kContextualSearchFieldTrialEnabled[] = "Enabled";
 // Maps pref string values to state enum.
 const struct {
   const char* value;
@@ -68,22 +64,25 @@ const struct {
 @synthesize observing = _observing;
 
 + (BOOL)isTouchToSearchAvailableOnDevice {
-  // If the disable flag is flipped, the feature isn't available.
-  // If the enable flag is flipped, it's available.
-  // If the browser is in the field trial, it's available.
-  BOOL available = NO;
+  // By default the feature is not available. If the enable flag
+  // (switches::kEnableContextualSearch) is flipped, then it is available.
+  // The disable switch (switches::kDisableContextualSearch) is also supported,
+  // although it is only useful when Finch experiments are also supported.
+
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableContextualSearch)) {
+    // If both enable and disable flags are present, disable wins.
     return NO;
-  } else if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-                 switches::kEnableContextualSearch)) {
-    available = YES;
-  } else {
-    available =
-        base::FieldTrialList::FindFullName(kContextualSearchFieldTrialName) ==
-        kContextualSearchFieldTrialEnabled;
   }
-  return available && !tests_hook::DisableContextualSearch();
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableContextualSearch)) {
+    // Even if the command line flag is flipped, don't enable the feature if
+    // test hooks disable it.
+    return !tests_hook::DisableContextualSearch();
+  }
+
+  return NO;
 }
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
