@@ -21,7 +21,8 @@
 #include "content/public/common/url_constants.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
-#include "net/cert/multi_log_ct_verifier.h"
+#include "net/cert/ct_policy_status.h"
+#include "net/cert/do_nothing_ct_verifier.h"
 #include "net/cert_net/nss_ocsp.h"
 #include "net/cookies/cookie_store.h"
 #include "net/dns/host_resolver.h"
@@ -46,6 +47,28 @@ namespace shell {
 namespace {
 
 const char kCookieStoreFile[] = "Cookies";
+
+// A CTPolicyEnforcer that accepts all certificates.
+class IgnoresCTPolicyEnforcer : public net::CTPolicyEnforcer {
+ public:
+  IgnoresCTPolicyEnforcer() = default;
+  ~IgnoresCTPolicyEnforcer() override = default;
+
+  net::ct::CertPolicyCompliance DoesConformToCertPolicy(
+      net::X509Certificate* cert,
+      const net::SCTList& verified_scts,
+      const net::NetLogWithSource& net_log) override {
+    return net::ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS;
+  }
+
+  net::ct::EVPolicyCompliance DoesConformToCTEVPolicy(
+      net::X509Certificate* cert,
+      const net::ct::EVCertsWhitelist* ev_whitelist,
+      const net::SCTList& verified_scts,
+      const net::NetLogWithSource& net_log) override {
+    return net::ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY;
+  }
+};
 
 }  // namespace
 
@@ -205,8 +228,9 @@ void URLRequestContextFactory::InitializeSystemContextDependencies() {
   cert_verifier_ = net::CertVerifier::CreateDefault();
   ssl_config_service_ = new net::SSLConfigServiceDefaults;
   transport_security_state_.reset(new net::TransportSecurityState());
-  cert_transparency_verifier_.reset(new net::MultiLogCTVerifier());
-  ct_policy_enforcer_.reset(new net::CTPolicyEnforcer());
+  // Certificate transparency is current disabled for Chromecast.
+  cert_transparency_verifier_.reset(new net::DoNothingCTVerifier());
+  ct_policy_enforcer_.reset(new IgnoresCTPolicyEnforcer());
 
   http_auth_handler_factory_ =
       net::HttpAuthHandlerFactory::CreateDefault(host_resolver_.get());
