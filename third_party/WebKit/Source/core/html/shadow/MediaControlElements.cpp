@@ -856,8 +856,12 @@ bool MediaControlVolumeSliderElement::willRespondToMouseClickEvents() {
 }
 
 void MediaControlVolumeSliderElement::setVolume(double volume) {
-  if (value().toDouble() != volume)
-    setValue(String::number(volume));
+  if (value().toDouble() == volume)
+    return;
+
+  setValue(String::number(volume));
+  if (LayoutObject* layoutObject = this->layoutObject())
+    layoutObject->setShouldDoFullPaintInvalidation();
 }
 
 bool MediaControlVolumeSliderElement::keepEventInNode(Event* event) {
