@@ -3953,7 +3953,7 @@ void LayerTreeHostImpl::SetTreeLayerScrollOffsetMutated(
   // TODO(wkorman): Build map from element id to scroll node in property tree
   // builder and make use of it below.
   const int scroll_node_index =
-      property_trees->scroll_id_to_index_map[layer_id];
+      property_trees->layer_id_to_scroll_node_index[layer_id];
   if (scroll_node_index != ScrollTree::kInvalidNodeId) {
     property_trees->scroll_tree.OnScrollOffsetAnimated(
         layer_id, transform_node_index, scroll_node_index, scroll_offset, tree);

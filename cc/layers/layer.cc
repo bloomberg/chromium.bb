@@ -472,8 +472,10 @@ void Layer::SetOpacity(float opacity) {
   SetSubtreePropertyChanged();
   if (layer_tree_host_ && !force_rebuild) {
     PropertyTrees* property_trees = layer_tree_->property_trees();
-    auto effect_id_to_index = property_trees->effect_id_to_index_map.find(id());
-    if (effect_id_to_index != property_trees->effect_id_to_index_map.end()) {
+    auto effect_id_to_index =
+        property_trees->layer_id_to_effect_node_index.find(id());
+    if (effect_id_to_index !=
+        property_trees->layer_id_to_effect_node_index.end()) {
       EffectNode* node =
           property_trees->effect_tree.Node(effect_id_to_index->second);
       node->opacity = opacity;
@@ -579,7 +581,7 @@ void Layer::SetPosition(const gfx::PointF& position) {
   if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
                                        id())) {
     DCHECK_EQ(transform_tree_index(),
-              property_trees->transform_id_to_index_map[id()]);
+              property_trees->layer_id_to_transform_node_index[id()]);
     TransformNode* transform_node =
         property_trees->transform_tree.Node(transform_tree_index());
     transform_node->update_post_local_transform(position, transform_origin());
@@ -640,7 +642,7 @@ void Layer::SetTransform(const gfx::Transform& transform) {
       // are axis
       // align with respect to one another.
       DCHECK_EQ(transform_tree_index(),
-                property_trees->transform_id_to_index_map[id()]);
+                property_trees->layer_id_to_transform_node_index[id()]);
       TransformNode* transform_node =
           property_trees->transform_tree.Node(transform_tree_index());
       bool preserves_2d_axis_alignment =
@@ -677,7 +679,7 @@ void Layer::SetTransformOrigin(const gfx::Point3F& transform_origin) {
   if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
                                        id())) {
     DCHECK_EQ(transform_tree_index(),
-              property_trees->transform_id_to_index_map[id()]);
+              property_trees->layer_id_to_transform_node_index[id()]);
     TransformNode* transform_node =
         property_trees->transform_tree.Node(transform_tree_index());
     transform_node->update_pre_local_transform(transform_origin);
@@ -780,7 +782,7 @@ void Layer::SetScrollOffset(const gfx::ScrollOffset& scroll_offset) {
   if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
                                        id())) {
     DCHECK_EQ(transform_tree_index(),
-              property_trees->transform_id_to_index_map[id()]);
+              property_trees->layer_id_to_transform_node_index[id()]);
     TransformNode* transform_node =
         property_trees->transform_tree.Node(transform_tree_index());
     transform_node->scroll_offset = CurrentScrollOffset();
@@ -813,7 +815,7 @@ void Layer::SetScrollOffsetFromImplSide(
   if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
                                        id())) {
     DCHECK_EQ(transform_tree_index(),
-              property_trees->transform_id_to_index_map[id()]);
+              property_trees->layer_id_to_transform_node_index[id()]);
     TransformNode* transform_node =
         property_trees->transform_tree.Node(transform_tree_index());
     transform_node->scroll_offset = CurrentScrollOffset();
@@ -1422,7 +1424,7 @@ void Layer::OnOpacityAnimated(float opacity) {
     if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT,
                                          id())) {
       DCHECK_EQ(effect_tree_index(),
-                property_trees->effect_id_to_index_map[id()]);
+                property_trees->layer_id_to_effect_node_index[id()]);
       EffectNode* node = property_trees->effect_tree.Node(effect_tree_index());
       node->opacity = opacity;
       property_trees->effect_tree.set_needs_update(true);
@@ -1442,7 +1444,7 @@ void Layer::OnTransformAnimated(const gfx::Transform& transform) {
     if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
                                          id())) {
       DCHECK_EQ(transform_tree_index(),
-                property_trees->transform_id_to_index_map[id()]);
+                property_trees->layer_id_to_transform_node_index[id()]);
       TransformNode* node =
           property_trees->transform_tree.Node(transform_tree_index());
       node->local = transform;
@@ -1468,7 +1470,7 @@ void Layer::OnIsAnimatingChanged(const PropertyAnimationState& mask,
   if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
                                        id())) {
     DCHECK_EQ(transform_tree_index(),
-              property_trees->transform_id_to_index_map[id()]);
+              property_trees->layer_id_to_transform_node_index[id()]);
     transform_node =
         property_trees->transform_tree.Node(transform_tree_index());
   }
@@ -1476,7 +1478,7 @@ void Layer::OnIsAnimatingChanged(const PropertyAnimationState& mask,
   EffectNode* effect_node = nullptr;
   if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT, id())) {
     DCHECK_EQ(effect_tree_index(),
-              property_trees->effect_id_to_index_map[id()]);
+              property_trees->layer_id_to_effect_node_index[id()]);
     effect_node = property_trees->effect_tree.Node(effect_tree_index());
   }
 

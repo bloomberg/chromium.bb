@@ -716,7 +716,7 @@ void PropertyTreeManager::setupRootClipNode() {
   // cc is hardcoded to use clip node index 1 for viewport clip.
   cc::ClipTree& clipTree = m_propertyTrees.clip_tree;
   clipTree.clear();
-  m_propertyTrees.clip_id_to_index_map.clear();
+  m_propertyTrees.layer_id_to_clip_node_index.clear();
   cc::ClipNode& clipNode =
       *clipTree.Node(clipTree.Insert(cc::ClipNode(), kRealRootNodeId));
   DCHECK_EQ(clipNode.id, kSecondaryRootNodeId);
@@ -729,7 +729,8 @@ void PropertyTreeManager::setupRootClipNode() {
   clipNode.transform_id = kRealRootNodeId;
   clipNode.target_transform_id = kRealRootNodeId;
   clipNode.target_effect_id = kSecondaryRootNodeId;
-  m_propertyTrees.clip_id_to_index_map[clipNode.owning_layer_id] = clipNode.id;
+  m_propertyTrees.layer_id_to_clip_node_index[clipNode.owning_layer_id] =
+      clipNode.id;
 
   m_clipNodeMap.set(ClipPaintPropertyNode::root(), clipNode.id);
   m_rootLayer->SetClipTreeIndex(clipNode.id);
@@ -739,7 +740,7 @@ void PropertyTreeManager::setupRootEffectNode() {
   // cc is hardcoded to use effect node index 1 for root render surface.
   cc::EffectTree& effectTree = m_propertyTrees.effect_tree;
   effectTree.clear();
-  m_propertyTrees.effect_id_to_index_map.clear();
+  m_propertyTrees.layer_id_to_effect_node_index.clear();
   cc::EffectNode& effectNode =
       *effectTree.Node(effectTree.Insert(cc::EffectNode(), kInvalidNodeId));
   DCHECK_EQ(effectNode.id, kSecondaryRootNodeId);
@@ -747,7 +748,7 @@ void PropertyTreeManager::setupRootEffectNode() {
   effectNode.transform_id = kRealRootNodeId;
   effectNode.clip_id = kSecondaryRootNodeId;
   effectNode.has_render_surface = true;
-  m_propertyTrees.effect_id_to_index_map[effectNode.owning_layer_id] =
+  m_propertyTrees.layer_id_to_effect_node_index[effectNode.owning_layer_id] =
       effectNode.id;
 
   m_effectStack.push_back(
@@ -758,13 +759,13 @@ void PropertyTreeManager::setupRootEffectNode() {
 void PropertyTreeManager::setupRootScrollNode() {
   cc::ScrollTree& scrollTree = m_propertyTrees.scroll_tree;
   scrollTree.clear();
-  m_propertyTrees.scroll_id_to_index_map.clear();
+  m_propertyTrees.layer_id_to_scroll_node_index.clear();
   cc::ScrollNode& scrollNode =
       *scrollTree.Node(scrollTree.Insert(cc::ScrollNode(), kRealRootNodeId));
   DCHECK_EQ(scrollNode.id, kSecondaryRootNodeId);
   scrollNode.owning_layer_id = m_rootLayer->id();
   scrollNode.transform_id = kSecondaryRootNodeId;
-  m_propertyTrees.scroll_id_to_index_map[scrollNode.owning_layer_id] =
+  m_propertyTrees.layer_id_to_scroll_node_index[scrollNode.owning_layer_id] =
       scrollNode.id;
 
   m_scrollNodeMap.set(ScrollPaintPropertyNode::root(), scrollNode.id);
@@ -833,7 +834,8 @@ int PropertyTreeManager::compositorIdForClipNode(
 
   cc::ClipNode& compositorNode = *clipTree().Node(id);
   compositorNode.owning_layer_id = dummyLayer->id();
-  m_propertyTrees.clip_id_to_index_map[compositorNode.owning_layer_id] = id;
+  m_propertyTrees.layer_id_to_clip_node_index[compositorNode.owning_layer_id] =
+      id;
 
   // TODO(jbroman): Don't discard rounded corners.
   compositorNode.clip = clipNode->clipRect().rect();
@@ -874,7 +876,8 @@ int PropertyTreeManager::compositorIdForScrollNode(
 
   cc::ScrollNode& compositorNode = *scrollTree().Node(id);
   compositorNode.owning_layer_id = parentId;
-  m_propertyTrees.scroll_id_to_index_map[compositorNode.owning_layer_id] = id;
+  m_propertyTrees
+      .layer_id_to_scroll_node_index[compositorNode.owning_layer_id] = id;
 
   compositorNode.scrollable = true;
 
@@ -1028,7 +1031,7 @@ void PropertyTreeManager::buildEffectNodesRecursively(
   effectNode.opacity = nextEffect->opacity();
   effectNode.filters = nextEffect->filter().asCcFilterOperations();
   effectNode.blend_mode = nextEffect->blendMode();
-  m_propertyTrees.effect_id_to_index_map[effectNode.owning_layer_id] =
+  m_propertyTrees.layer_id_to_effect_node_index[effectNode.owning_layer_id] =
       effectNode.id;
   m_effectStack.push_back(BlinkEffectAndCcIdPair{nextEffect, effectNode.id});
 

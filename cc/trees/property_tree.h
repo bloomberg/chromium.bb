@@ -529,10 +529,10 @@ class CC_EXPORT PropertyTrees final {
 
   // These maps map from layer id to the index for each of the respective
   // property node types.
-  std::unordered_map<int, int> transform_id_to_index_map;
-  std::unordered_map<int, int> effect_id_to_index_map;
-  std::unordered_map<int, int> clip_id_to_index_map;
-  std::unordered_map<int, int> scroll_id_to_index_map;
+  std::unordered_map<int, int> layer_id_to_transform_node_index;
+  std::unordered_map<int, int> layer_id_to_effect_node_index;
+  std::unordered_map<int, int> layer_id_to_clip_node_index;
+  std::unordered_map<int, int> layer_id_to_scroll_node_index;
   enum TreeType { TRANSFORM, EFFECT, CLIP, SCROLL };
 
   // These maps allow mapping directly from a compositor element id to the

@@ -216,15 +216,15 @@ void ScrollbarAnimationControllerThinning::ApplyOpacity(float opacity) {
     PropertyTrees* property_trees =
         scrollbar->layer_tree_impl()->property_trees();
     // If this method is called during LayerImpl::PushPropertiesTo, we may not
-    // yet have valid effect_id_to_index_map entries as property trees are
-    // pushed after layers during activation. We can skip updating opacity in
-    // that case as we are only registering a scrollbar and because opacity will
-    // be overwritten anyway when property trees are pushed.
+    // yet have valid layer_id_to_effect_node_index entries as property trees
+    // are pushed after layers during activation. We can skip updating opacity
+    // in that case as we are only registering a scrollbar and because opacity
+    // will be overwritten anyway when property trees are pushed.
     if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT,
                                          scrollbar->id())) {
       property_trees->effect_tree.OnOpacityAnimated(
           effective_opacity,
-          property_trees->effect_id_to_index_map[scrollbar->id()],
+          property_trees->layer_id_to_effect_node_index[scrollbar->id()],
           scrollbar->layer_tree_impl());
     }
   }

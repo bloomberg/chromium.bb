@@ -505,8 +505,8 @@ void LayerImpl::UpdatePropertyTreeTransformIsAnimated(bool is_animated) {
   if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
                                        id())) {
     TransformTree& transform_tree = GetTransformTree();
-    TransformNode* node =
-        transform_tree.Node(property_trees->transform_id_to_index_map[id()]);
+    TransformNode* node = transform_tree.Node(
+        property_trees->layer_id_to_transform_node_index[id()]);
     // A LayerImpl's own current state is insufficient for determining whether
     // it owns a TransformNode, since this depends on the state of the
     // corresponding Layer at the time of the last commit. For example, if
@@ -553,13 +553,13 @@ void LayerImpl::OnIsAnimatingChanged(const PropertyAnimationState& mask,
   if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
                                        id())) {
     transform_node = GetTransformTree().Node(
-        property_trees->transform_id_to_index_map[id()]);
+        property_trees->layer_id_to_transform_node_index[id()]);
   }
 
   EffectNode* effect_node = nullptr;
   if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT, id())) {
-    effect_node =
-        GetEffectTree().Node(property_trees->effect_id_to_index_map[id()]);
+    effect_node = GetEffectTree().Node(
+        property_trees->layer_id_to_effect_node_index[id()]);
   }
 
   for (int property = TargetProperty::FIRST_TARGET_PROPERTY;
@@ -721,7 +721,7 @@ float LayerImpl::Opacity() const {
   if (!property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT, id()))
     return 1.f;
   EffectNode* node =
-      GetEffectTree().Node(property_trees->effect_id_to_index_map[id()]);
+      GetEffectTree().Node(property_trees->layer_id_to_effect_node_index[id()]);
   return node->opacity;
 }
 
@@ -729,8 +729,8 @@ const gfx::Transform& LayerImpl::Transform() const {
   PropertyTrees* property_trees = GetPropertyTrees();
   DCHECK(property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
                                           id()));
-  TransformNode* node =
-      GetTransformTree().Node(property_trees->transform_id_to_index_map[id()]);
+  TransformNode* node = GetTransformTree().Node(
+      property_trees->layer_id_to_transform_node_index[id()]);
   return node->local;
 }
 

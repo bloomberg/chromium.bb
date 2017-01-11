@@ -162,7 +162,7 @@ int RenderSurfaceImpl::ClipTreeIndex() const {
 int RenderSurfaceImpl::EffectTreeIndex() const {
   DCHECK_EQ(effect_tree_index_,
             layer_tree_impl_->property_trees()
-                ->effect_id_to_index_map[stable_effect_id_]);
+                ->layer_id_to_effect_node_index[stable_effect_id_]);
   return effect_tree_index_;
 }
 
