@@ -257,21 +257,3 @@ function grainLengthInSampleFrames(grainOffset, duration, sampleRate) {
 function isValidNumber(x) {
     return !isNaN(x) && (x != Infinity) && (x != -Infinity);
 }
-
-// Compute the (linear) signal-to-noise ratio between |actual| and
-// |expected|.  The result is NOT in dB!  If the |actual| and
-// |expected| have different lengths, the shorter length is used.
-function computeSNR(actual, expected) {
-    var signalPower = 0;
-    var noisePower = 0;
-
-    var length = Math.min(actual.length, expected.length);
-
-    for (var k = 0; k < length; ++k) {
-        var diff = actual[k] - expected[k];
-        signalPower += expected[k] * expected[k];
-        noisePower += diff * diff;
-    }
-
-    return signalPower / noisePower;
-}

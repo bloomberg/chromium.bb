@@ -88,15 +88,10 @@ class AudioScheduledSourceHandler : public AudioHandler {
   //                         rendering.
   // nonSilentFramesToProcess : Number of frames rendering non-silence (will be
   //                            <= quantumFrameSize).
-  // startFrameOffset : The fractional frame offset from quantumFrameOffset
-  //                    and the actual starting time of the source. This is
-  //                    non-zero only when transitioning from the
-  //                    SCHEDULED_STATE to the PLAYING_STATE.
   void updateSchedulingInfo(size_t quantumFrameSize,
                             AudioBus* outputBus,
                             size_t& quantumFrameOffset,
-                            size_t& nonSilentFramesToProcess,
-                            double& startFrameOffset);
+                            size_t& nonSilentFramesToProcess);
 
   // Called when we have no more sound to play or the stop() time has been
   // reached. No onEnded event is called.

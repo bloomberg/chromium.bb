@@ -119,10 +119,9 @@ void AudioBufferSourceHandler::process(size_t framesToProcess) {
 
     size_t quantumFrameOffset;
     size_t bufferFramesToProcess;
-    double startTimeOffset;
 
     updateSchedulingInfo(framesToProcess, outputBus, quantumFrameOffset,
-                         bufferFramesToProcess, startTimeOffset);
+                         bufferFramesToProcess);
 
     if (!bufferFramesToProcess) {
       outputBus->zero();

@@ -239,10 +239,9 @@ void OscillatorHandler::process(size_t framesToProcess) {
 
   size_t quantumFrameOffset;
   size_t nonSilentFramesToProcess;
-  double startFrameOffset;
 
   updateSchedulingInfo(framesToProcess, outputBus, quantumFrameOffset,
-                       nonSilentFramesToProcess, startFrameOffset);
+                       nonSilentFramesToProcess);
 
   if (!nonSilentFramesToProcess) {
     outputBus->zero();
@@ -286,19 +285,6 @@ void OscillatorHandler::process(size_t framesToProcess) {
   // Start rendering at the correct offset.
   destP += quantumFrameOffset;
   int n = nonSilentFramesToProcess;
-
-  // If startFrameOffset is not 0, that means the oscillator doesn't actually
-  // start at quantumFrameOffset, but just past that time.  Adjust destP and n
-  // to reflect that, and adjust virtualReadIndex to start the value at
-  // startFrameOffset.
-  if (startFrameOffset > 0) {
-    ++destP;
-    --n;
-    virtualReadIndex += (1 - startFrameOffset) * frequency * rateScale;
-    DCHECK(virtualReadIndex < periodicWaveSize);
-  } else if (startFrameOffset < 0) {
-    virtualReadIndex = -startFrameOffset * frequency * rateScale;
-  }
 
   while (n--) {
     unsigned readIndex = static_cast<unsigned>(virtualReadIndex);

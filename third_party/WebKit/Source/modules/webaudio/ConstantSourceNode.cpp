@@ -58,12 +58,11 @@ void ConstantSourceHandler::process(size_t framesToProcess) {
 
   size_t quantumFrameOffset;
   size_t nonSilentFramesToProcess;
-  double startFrameOffset;
 
   // Figure out where in the current rendering quantum that the source is
   // active and for how many frames.
   updateSchedulingInfo(framesToProcess, outputBus, quantumFrameOffset,
-                       nonSilentFramesToProcess, startFrameOffset);
+                       nonSilentFramesToProcess);
 
   if (!nonSilentFramesToProcess) {
     outputBus->zero();
