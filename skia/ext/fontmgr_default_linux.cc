@@ -13,13 +13,14 @@ namespace {
 SkFontMgr* g_default_fontmgr;
 }  // namespace
 
-void SetDefaultSkiaFactory(SkFontMgr* fontmgr) {
-  g_default_fontmgr = fontmgr;
+void SetDefaultSkiaFactory(sk_sp<SkFontMgr> fontmgr) {
+  SkASSERT(g_default_fontmgr == nullptr);
+  g_default_fontmgr = fontmgr.release();
 }
 
-SK_API SkFontMgr* SkFontMgr::Factory() {
+SK_API sk_sp<SkFontMgr> SkFontMgr::Factory() {
   if (g_default_fontmgr) {
-    return SkRef(g_default_fontmgr);
+    return sk_ref_sp(g_default_fontmgr);
   }
   sk_sp<SkFontConfigInterface> fci(SkFontConfigInterface::RefGlobal());
   return fci ? SkFontMgr_New_FCI(std::move(fci)) : nullptr;

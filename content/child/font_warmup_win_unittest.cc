@@ -16,6 +16,7 @@
 #include "base/sys_byteorder.h"
 #include "base/win/windows_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkString.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/ports/SkFontMgr.h"
@@ -130,7 +131,9 @@ const wchar_t* kTestFontFamilyInvalid = L"InvalidFont";
 
 class TestSkFontMgr : public SkFontMgr {
  public:
-  TestSkFontMgr() { content::SetPreSandboxWarmupFontMgrForTesting(this); }
+  TestSkFontMgr() {
+    content::SetPreSandboxWarmupFontMgrForTesting(sk_ref_sp(this));
+  }
   ~TestSkFontMgr() override {
     content::SetPreSandboxWarmupFontMgrForTesting(nullptr);
   }

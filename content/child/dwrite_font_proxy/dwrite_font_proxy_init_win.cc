@@ -70,14 +70,11 @@ void InitializeDWriteFontProxy() {
         &font_fallback, g_font_collection.Get(), sender);
   }
 
-  sk_sp<SkFontMgr> skia_font_manager(SkFontMgr_New_DirectWrite(
-      factory.Get(), g_font_collection.Get(), font_fallback.Get()));
-  blink::WebFontRendering::setSkiaFontManager(skia_font_manager.get());
+  sk_sp<SkFontMgr> skia_font_manager = SkFontMgr_New_DirectWrite(
+      factory.Get(), g_font_collection.Get(), font_fallback.Get());
+  blink::WebFontRendering::setSkiaFontManager(skia_font_manager);
 
-  // Add an extra ref for SetDefaultSkiaFactory, which keeps a ref but doesn't
-  // addref.
-  skia_font_manager->ref();
-  SetDefaultSkiaFactory(skia_font_manager.get());
+  SetDefaultSkiaFactory(std::move(skia_font_manager));
 
   // When IDWriteFontFallback is not available (prior to Win8.1) Skia will
   // still attempt to use DirectWrite to determine fallback fonts (in

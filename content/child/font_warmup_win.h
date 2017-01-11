@@ -12,6 +12,7 @@
 #include "content/common/content_export.h"
 
 class SkFontMgr;
+template <typename T> class sk_sp;
 
 namespace content {
 
@@ -39,7 +40,8 @@ CONTENT_EXPORT void ResetEmulatedGdiHandlesForTesting();
 
 // Sets the pre-sandbox warmup font manager directly. This should only be used
 // for testing the implementation.
-CONTENT_EXPORT void SetPreSandboxWarmupFontMgrForTesting(SkFontMgr* fontmgr);
+CONTENT_EXPORT void SetPreSandboxWarmupFontMgrForTesting(
+    sk_sp<SkFontMgr> fontmgr);
 
 // Directwrite connects to the font cache service to retrieve information about
 // fonts installed on the system etc. This works well outside the sandbox and

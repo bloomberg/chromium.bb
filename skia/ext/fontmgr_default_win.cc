@@ -9,19 +9,21 @@
 
 namespace {
 
+// This is a leaky bare owning pointer.
 SkFontMgr* g_default_fontmgr;
 
 }  // namespace
 
-void SetDefaultSkiaFactory(SkFontMgr* fontmgr) {
-  g_default_fontmgr = fontmgr;
+void SetDefaultSkiaFactory(sk_sp<SkFontMgr> fontmgr) {
+  SkASSERT(g_default_fontmgr == nullptr);
+  g_default_fontmgr = fontmgr.release();
 }
 
-SK_API SkFontMgr* SkFontMgr::Factory() {
+SK_API sk_sp<SkFontMgr> SkFontMgr::Factory() {
   // This will be set when DirectWrite is in use, and an SkFontMgr has been
   // created with the pre-sandbox warmed up one. Otherwise, we fallback to a
   // GDI SkFontMgr which is used in the browser.
   if (g_default_fontmgr)
-    return SkRef(g_default_fontmgr);
+    return sk_ref_sp(g_default_fontmgr);
   return SkFontMgr_New_GDI();
 }

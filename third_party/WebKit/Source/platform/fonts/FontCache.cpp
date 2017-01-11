@@ -233,12 +233,9 @@ FontVerticalDataCache& fontVerticalDataCacheInstance() {
   return fontVerticalDataCache;
 }
 
-void FontCache::setFontManager(const sk_sp<SkFontMgr>& fontManager) {
+void FontCache::setFontManager(sk_sp<SkFontMgr> fontManager) {
   DCHECK(!s_staticFontManager);
-  s_staticFontManager = fontManager.get();
-  // Explicitly AddRef since we're going to hold on to the object for the life
-  // of the program.
-  s_staticFontManager->ref();
+  s_staticFontManager = fontManager.release();
 }
 
 PassRefPtr<OpenTypeVerticalData> FontCache::getVerticalData(

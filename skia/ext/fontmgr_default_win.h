@@ -8,7 +8,8 @@
 #include "third_party/skia/include/core/SkTypes.h"
 
 class SkFontMgr;
+template <typename T> class sk_sp;
 
-void SK_API SetDefaultSkiaFactory(SkFontMgr* fontmgr);
+void SK_API SetDefaultSkiaFactory(sk_sp<SkFontMgr> fontmgr);
 
 #endif  // SKIA_EXT_FONTMGR_DEFAULT_WIN_H_

@@ -8,7 +8,8 @@
 #include "third_party/skia/include/core/SkTypes.h"
 
 class SkFontMgr;
+template <typename T> class sk_sp;
 
-SK_API void SetDefaultSkiaFactory(SkFontMgr* fontmgr);
+SK_API void SetDefaultSkiaFactory(sk_sp<SkFontMgr> fontmgr);
 
 #endif  // SKIA_EXT_FONTMGR_DEFAULT_ANDROID_H_

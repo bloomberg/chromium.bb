@@ -34,14 +34,8 @@
 
 namespace blink {
 
-FontCache::FontCache() : m_purgePreventCount(0) {
-  if (s_staticFontManager) {
-    adopted(s_staticFontManager);
-    m_fontManager = sk_ref_sp(s_staticFontManager);
-  } else {
-    m_fontManager = nullptr;
-  }
-}
+FontCache::FontCache()
+    : m_purgePreventCount(0), m_fontManager(sk_ref_sp(s_staticFontManager)) {}
 
 static AtomicString& mutableSystemFontFamily() {
   DEFINE_STATIC_LOCAL(AtomicString, systemFontFamily, ());

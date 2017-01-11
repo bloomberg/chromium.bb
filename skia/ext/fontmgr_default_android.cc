@@ -8,14 +8,15 @@
 #include "third_party/skia/include/ports/SkFontMgr_android.h"
 
 namespace {
+// An owning leaky bare pointer.
 SkFontMgr* g_default_fontmgr;
 }  // namespace
 
-SK_API void SetDefaultSkiaFactory(SkFontMgr* fontmgr) {
-  g_default_fontmgr = fontmgr;
+SK_API void SetDefaultSkiaFactory(sk_sp<SkFontMgr> fontmgr) {
+  g_default_fontmgr = fontmgr.release();
 }
 
-SK_API SkFontMgr* SkFontMgr::Factory() {
-  return g_default_fontmgr ? SkRef(g_default_fontmgr)
+SK_API sk_sp<SkFontMgr> SkFontMgr::Factory() {
+  return g_default_fontmgr ? sk_ref_sp(g_default_fontmgr)
                            : SkFontMgr_New_Android(nullptr);
 }

@@ -416,7 +416,7 @@ void PatchServiceManagerCalls() {
 
 GdiFontPatchData* PatchGdiFontEnumeration(const base::FilePath& path) {
   if (!g_warmup_fontmgr)
-    g_warmup_fontmgr = SkFontMgr_New_DirectWrite();
+    g_warmup_fontmgr = SkFontMgr_New_DirectWrite().release();
   DCHECK(g_warmup_fontmgr);
   return new GdiFontPatchDataImpl(path);
 }
@@ -429,8 +429,9 @@ void ResetEmulatedGdiHandlesForTesting() {
   g_fake_gdi_object_factory.Get().ResetObjectHandles();
 }
 
-void SetPreSandboxWarmupFontMgrForTesting(SkFontMgr* fontmgr) {
-  g_warmup_fontmgr = fontmgr;
+void SetPreSandboxWarmupFontMgrForTesting(sk_sp<SkFontMgr> fontmgr) {
+  SkSafeUnref(g_warmup_fontmgr);
+  g_warmup_fontmgr = fontmgr.release();
 }
 
 }  // namespace content

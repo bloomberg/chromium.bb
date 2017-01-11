@@ -63,7 +63,7 @@ std::string GetAndroidFontsDirectory() {
   return android_fonts_dir;
 }
 
-SkFontMgr* CreateAndroidFontMgr(std::string android_fonts_dir) {
+sk_sp<SkFontMgr> CreateAndroidFontMgr(std::string android_fonts_dir) {
   SkFontMgr_Android_CustomFonts custom;
   custom.fSystemFontUse =
       SkFontMgr_Android_CustomFonts::SystemFontUse::kOnlyCustom;
