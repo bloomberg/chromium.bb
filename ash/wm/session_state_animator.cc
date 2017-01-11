@@ -4,9 +4,11 @@
 
 #include "ash/wm/session_state_animator.h"
 
+#include "ash/common/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/window_animations.h"
+#include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -15,6 +17,17 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
+
+namespace {
+
+bool IsTouchViewEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kAshEnableTouchView) ||
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kAshEnableTouchViewTesting);
+}
+
+}  // namespace
 
 const int SessionStateAnimator::kAllLockScreenContainersMask =
     SessionStateAnimator::LOCK_SCREEN_WALLPAPER |
@@ -82,7 +95,8 @@ base::TimeDelta SessionStateAnimator::GetDuration(
     case ANIMATION_SPEED_UNDO_MOVE_WINDOWS:
       return base::TimeDelta::FromMilliseconds(350);
     case ANIMATION_SPEED_SHUTDOWN:
-      return base::TimeDelta::FromMilliseconds(1000);
+      return IsTouchViewEnabled() ? base::TimeDelta::FromMilliseconds(2500)
+                                  : base::TimeDelta::FromMilliseconds(1000);
     case ANIMATION_SPEED_REVERT_SHUTDOWN:
       return base::TimeDelta::FromMilliseconds(500);
   }

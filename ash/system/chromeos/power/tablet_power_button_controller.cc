@@ -23,7 +23,7 @@ namespace {
 
 // Amount of time the power button must be held to start the pre-shutdown
 // animation when in tablet mode.
-constexpr int kShutdownTimeoutMs = 1000;
+constexpr int kShutdownTimeoutMs = 500;
 
 // Amount of time since last SuspendDone() that power button event needs to be
 // ignored.
