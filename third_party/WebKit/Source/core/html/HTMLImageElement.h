@@ -71,6 +71,10 @@ class CORE_EXPORT HTMLImageElement final
 
   unsigned naturalWidth() const;
   unsigned naturalHeight() const;
+
+  unsigned layoutBoxWidth() const;
+  unsigned layoutBoxHeight() const;
+
   const String& currentSrc() const;
 
   bool isServerMap() const;

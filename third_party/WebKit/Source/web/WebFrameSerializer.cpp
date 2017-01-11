@@ -40,6 +40,7 @@
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/loader/DocumentLoader.h"
@@ -91,6 +92,11 @@ class MHTMLFrameSerializerDelegate final : public FrameSerializer::Delegate {
   Vector<Attribute> getCustomAttributes(const Element&) override;
 
  private:
+  void getCustomAttributesForImageElement(const HTMLImageElement&,
+                                          Vector<Attribute>*);
+  void getCustomAttributesForFormControlElement(const Element&,
+                                                Vector<Attribute>*);
+
   WebFrameSerializer::MHTMLPartsGenerationDelegate& m_webDelegate;
 };
 
@@ -193,16 +199,63 @@ Vector<Attribute> MHTMLFrameSerializerDelegate::getCustomAttributes(
     const Element& element) {
   Vector<Attribute> attributes;
 
-  // Disable all form elements in MTHML to tell the user that the form cannot be
-  // worked on. MHTML is loaded in full sandboxing mode which disable the form
-  // submission and script execution.
-  if (element.isFormControlElement() &&
-      !element.fastHasAttribute(HTMLNames::disabledAttr)) {
-    Attribute disabledAttribute(HTMLNames::disabledAttr, "");
-    attributes.push_back(disabledAttribute);
+  if (isHTMLImageElement(element)) {
+    getCustomAttributesForImageElement(toHTMLImageElement(element),
+                                       &attributes);
+  } else if (element.isFormControlElement()) {
+    getCustomAttributesForFormControlElement(element, &attributes);
   }
 
   return attributes;
+}
+
+void MHTMLFrameSerializerDelegate::getCustomAttributesForImageElement(
+    const HTMLImageElement& element,
+    Vector<Attribute>* attributes) {
+  // Currently only the value of src is pulled into the archive and the srcset
+  // attribute is ignored (see shouldIgnoreAttribute() above). If the device
+  // has a higher DPR, a different image from srcset could be loaded instead.
+  // When this occurs, we should provide the rendering width and height for
+  // <img> element if not set.
+
+  // The image should be loaded and participate the layout.
+  ImageResourceContent* image = element.cachedImage();
+  if (!image || !image->hasImage() || image->errorOccurred() ||
+      !element.layoutObject()) {
+    return;
+  }
+
+  // The width and height attributes should not be set.
+  if (element.fastHasAttribute(HTMLNames::widthAttr) ||
+      element.fastHasAttribute(HTMLNames::heightAttr)) {
+    return;
+  }
+
+  // Check if different image is loaded. naturalWidth/naturalHeight will return
+  // the image size adjusted with current DPR.
+  if (((int)element.naturalWidth()) == image->getImage()->width() &&
+      ((int)element.naturalHeight()) == image->getImage()->height()) {
+    return;
+  }
+
+  Attribute widthAttribute(HTMLNames::widthAttr,
+                           AtomicString::number(element.layoutBoxWidth()));
+  attributes->push_back(widthAttribute);
+  Attribute heightAttribute(HTMLNames::heightAttr,
+                            AtomicString::number(element.layoutBoxHeight()));
+  attributes->push_back(heightAttribute);
+}
+
+void MHTMLFrameSerializerDelegate::getCustomAttributesForFormControlElement(
+    const Element& element,
+    Vector<Attribute>* attributes) {
+  // Disable all form elements in MTHML to tell the user that the form cannot be
+  // worked on. MHTML is loaded in full sandboxing mode which disable the form
+  // submission and script execution.
+  if (element.fastHasAttribute(HTMLNames::disabledAttr))
+    return;
+  Attribute disabledAttribute(HTMLNames::disabledAttr, "");
+  attributes->push_back(disabledAttribute);
 }
 
 bool cacheControlNoStoreHeaderPresent(

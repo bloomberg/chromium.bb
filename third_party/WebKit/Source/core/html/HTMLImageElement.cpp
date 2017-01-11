@@ -451,10 +451,7 @@ unsigned HTMLImageElement::width() {
     }
   }
 
-  LayoutBox* box = layoutBox();
-  return box ? adjustForAbsoluteZoom(box->contentBoxRect().pixelSnappedWidth(),
-                                     box)
-             : 0;
+  return layoutBoxWidth();
 }
 
 unsigned HTMLImageElement::height() {
@@ -478,10 +475,7 @@ unsigned HTMLImageElement::height() {
     }
   }
 
-  LayoutBox* box = layoutBox();
-  return box ? adjustForAbsoluteZoom(box->contentBoxRect().pixelSnappedHeight(),
-                                     box)
-             : 0;
+  return layoutBoxHeight();
 }
 
 unsigned HTMLImageElement::naturalWidth() const {
@@ -508,6 +502,20 @@ unsigned HTMLImageElement::naturalHeight() const {
                   ImageResourceContent::IntrinsicCorrectedToDPR)
       .height()
       .toUnsigned();
+}
+
+unsigned HTMLImageElement::layoutBoxWidth() const {
+  LayoutBox* box = layoutBox();
+  return box ? adjustForAbsoluteZoom(box->contentBoxRect().pixelSnappedWidth(),
+                                     box)
+             : 0;
+}
+
+unsigned HTMLImageElement::layoutBoxHeight() const {
+  LayoutBox* box = layoutBox();
+  return box ? adjustForAbsoluteZoom(box->contentBoxRect().pixelSnappedHeight(),
+                                     box)
+             : 0;
 }
 
 const String& HTMLImageElement::currentSrc() const {

@@ -143,6 +143,8 @@ class WebFrameSerializerTest : public testing::Test {
     return serializerClient.toString();
   }
 
+  WebViewImpl* webView() { return m_helper.webView(); }
+
   WebLocalFrameImpl* mainFrameImpl() {
     return m_helper.webView()->mainFrameImpl();
   }
@@ -282,6 +284,49 @@ TEST_F(WebFrameSerializerSanitizationTest, FromBrokenImageDocument) {
   String mhtml = generateMHTMLParts("http://www.test.com", "broken-image.png",
                                     "image/png");
   EXPECT_TRUE(mhtml.isEmpty());
+}
+
+TEST_F(WebFrameSerializerSanitizationTest, ImageLoadedFromSrcsetForHiDPI) {
+  URLTestHelpers::registerMockedURLLoad(
+      KURL(ParsedURLString, "http://www.test.com/1x.png"),
+      "frameserialization/1x.png");
+  URLTestHelpers::registerMockedURLLoad(
+      KURL(ParsedURLString, "http://www.test.com/2x.png"),
+      "frameserialization/2x.png");
+
+  // Set high DPR in order to load image from srcset, instead of src.
+  webView()->setDeviceScaleFactor(2.0f);
+
+  String mhtml = generateMHTMLParts("http://www.test.com", "img_srcset.html");
+
+  // srcset attribute should be skipped.
+  EXPECT_EQ(WTF::kNotFound, mhtml.find("srcset="));
+
+  // Width and height attributes should be set when none is present in <img>.
+  EXPECT_NE(WTF::kNotFound,
+            mhtml.find("id=3D\"i1\" width=3D\"6\" height=3D\"6\">"));
+
+  // Height attribute should not be set if width attribute is already present in
+  // <img>
+  EXPECT_NE(WTF::kNotFound, mhtml.find("id=3D\"i2\" width=3D\"8\">"));
+}
+
+TEST_F(WebFrameSerializerSanitizationTest, ImageLoadedFromSrcForNormalDPI) {
+  URLTestHelpers::registerMockedURLLoad(
+      KURL(ParsedURLString, "http://www.test.com/1x.png"),
+      "frameserialization/1x.png");
+  URLTestHelpers::registerMockedURLLoad(
+      KURL(ParsedURLString, "http://www.test.com/2x.png"),
+      "frameserialization/2x.png");
+
+  String mhtml = generateMHTMLParts("http://www.test.com", "img_srcset.html");
+
+  // srcset attribute should be skipped.
+  EXPECT_EQ(WTF::kNotFound, mhtml.find("srcset="));
+
+  // New width and height attributes should not be set.
+  EXPECT_NE(WTF::kNotFound, mhtml.find("id=3D\"i1\">"));
+  EXPECT_NE(WTF::kNotFound, mhtml.find("id=3D\"i2\" width=3D\"8\">"));
 }
 
 }  // namespace blink
