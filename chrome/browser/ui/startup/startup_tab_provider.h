@@ -68,11 +68,13 @@ class StartupTabProviderImpl : public StartupTabProvider {
 #if defined(OS_WIN)
   // Determines which tabs should be shown according to onboarding/first run
   // policy, including promo content specific to Windows 10.
-  static StartupTabs CheckWin10OnboardingTabPolicy(bool is_first_run,
-                                                   bool has_seen_welcome_page,
-                                                   bool has_seen_win10_promo,
-                                                   bool is_signed_in,
-                                                   bool is_default_browser);
+  static StartupTabs CheckWin10OnboardingTabPolicy(
+      bool is_first_run,
+      bool has_seen_welcome_page,
+      bool has_seen_win10_promo,
+      bool is_signed_in,
+      bool set_default_browser_allowed,
+      bool is_default_browser);
 #endif
 
   // Processes first run URLs specified in Master Preferences file, replacing

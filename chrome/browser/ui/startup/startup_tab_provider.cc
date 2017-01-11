@@ -50,12 +50,23 @@ StartupTabs StartupTabProviderImpl::GetOnboardingTabs(Profile* profile) const {
     PrefService* local_state = g_browser_process->local_state();
     bool has_seen_win10_promo =
         local_state && local_state->GetBoolean(prefs::kHasSeenWin10PromoPage);
+    // The set default browser operation can be disabled by the browser
+    // distribution (e.g. SxS Canary), or by enterprise policy. In these cases,
+    // the Win 10 promo page should not be displayed.
+    bool disabled_by_enterprise_policy =
+        local_state &&
+        local_state->IsManagedPreference(
+            prefs::kDefaultBrowserSettingEnabled) &&
+        !local_state->GetBoolean(prefs::kDefaultBrowserSettingEnabled);
+    bool set_default_browser_allowed =
+        !disabled_by_enterprise_policy &&
+        shell_integration::CanSetAsDefaultBrowser();
     bool is_default_browser =
         g_browser_process->CachedDefaultWebClientState() ==
         shell_integration::IS_DEFAULT;
-    return CheckWin10OnboardingTabPolicy(is_first_run, has_seen_welcome_page,
-                                         has_seen_win10_promo, is_signed_in,
-                                         is_default_browser);
+    return CheckWin10OnboardingTabPolicy(
+        is_first_run, has_seen_welcome_page, has_seen_win10_promo, is_signed_in,
+        set_default_browser_allowed, is_default_browser);
   }
 #endif  // defined(OS_WIN)
 
@@ -135,12 +146,15 @@ StartupTabs StartupTabProviderImpl::CheckWin10OnboardingTabPolicy(
     bool has_seen_welcome_page,
     bool has_seen_win10_promo,
     bool is_signed_in,
+    bool set_default_browser_allowed,
     bool is_default_browser) {
   StartupTabs tabs;
-  if (!has_seen_win10_promo && !is_default_browser)
+  if (set_default_browser_allowed && !has_seen_win10_promo &&
+      !is_default_browser) {
     tabs.emplace_back(GetWin10WelcomePageUrl(!is_first_run), false);
-  else if (!has_seen_welcome_page && !is_signed_in)
+  } else if (!has_seen_welcome_page && !is_signed_in) {
     tabs.emplace_back(GetWelcomePageUrl(!is_first_run), false);
+  }
   return tabs;
 }
 #endif

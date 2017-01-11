@@ -46,7 +46,7 @@ TEST(StartupTabProviderTest, CheckWin10OnboardingTabPolicy) {
   // Show Win 10 Welcome page if it has not been seen, but the standard page
   // has.
   StartupTabs output = StartupTabProviderImpl::CheckWin10OnboardingTabPolicy(
-      true, true, false, false, false);
+      true, true, false, false, true, false);
 
   ASSERT_EQ(1U, output.size());
   EXPECT_EQ(StartupTabProviderImpl::GetWin10WelcomePageUrl(false),
@@ -56,7 +56,7 @@ TEST(StartupTabProviderTest, CheckWin10OnboardingTabPolicy) {
   // Show standard Welcome page if the Win 10 Welcome page has been seen, but
   // the standard page has not.
   output = StartupTabProviderImpl::CheckWin10OnboardingTabPolicy(
-      true, false, true, false, false);
+      true, false, true, false, true, false);
 
   ASSERT_EQ(1U, output.size());
   EXPECT_EQ(StartupTabProviderImpl::GetWelcomePageUrl(false), output[0].url);
@@ -65,7 +65,7 @@ TEST(StartupTabProviderTest, CheckWin10OnboardingTabPolicy) {
   // If neither page has been seen, the Win 10 Welcome page takes precedence
   // this launch.
   output = StartupTabProviderImpl::CheckWin10OnboardingTabPolicy(
-      true, false, false, false, false);
+      true, false, false, false, true, false);
 
   ASSERT_EQ(1U, output.size());
   EXPECT_EQ(StartupTabProviderImpl::GetWin10WelcomePageUrl(false),
@@ -77,7 +77,7 @@ TEST(StartupTabProviderTest, CheckWin10OnboardingTabPolicy_LaterRunVariant) {
   // Show a variant of the Win 10 Welcome page after first run, if it has not
   // been seen.
   StartupTabs output = StartupTabProviderImpl::CheckWin10OnboardingTabPolicy(
-      false, false, false, false, false);
+      false, false, false, false, true, false);
 
   ASSERT_EQ(1U, output.size());
   EXPECT_EQ(StartupTabProviderImpl::GetWin10WelcomePageUrl(true),
@@ -87,7 +87,7 @@ TEST(StartupTabProviderTest, CheckWin10OnboardingTabPolicy_LaterRunVariant) {
   // Show a variant of the standard Welcome page after first run, if the Win 10
   // Welcome page has already been seen but the standard has not.
   output = StartupTabProviderImpl::CheckWin10OnboardingTabPolicy(
-      false, false, true, false, false);
+      false, false, true, false, true, false);
 
   ASSERT_EQ(1U, output.size());
   EXPECT_EQ(StartupTabProviderImpl::GetWelcomePageUrl(true), output[0].url);
@@ -97,14 +97,14 @@ TEST(StartupTabProviderTest, CheckWin10OnboardingTabPolicy_LaterRunVariant) {
 TEST(StartupTabProviderTest, CheckWin10OnboardingTabPolicy_Negative) {
   // Do not show either page if it has already been shown.
   StartupTabs output = StartupTabProviderImpl::CheckWin10OnboardingTabPolicy(
-      true, true, true, false, false);
+      true, true, true, false, true, false);
 
   EXPECT_TRUE(output.empty());
 
   // If Chrome is already the default browser, don't show the Win 10 Welcome
   // page, and don't preempt the standard Welcome page.
   output = StartupTabProviderImpl::CheckWin10OnboardingTabPolicy(
-      true, false, false, false, true);
+      true, false, false, false, true, true);
 
   ASSERT_EQ(1U, output.size());
   EXPECT_EQ(StartupTabProviderImpl::GetWelcomePageUrl(false), output[0].url);
@@ -112,10 +112,28 @@ TEST(StartupTabProviderTest, CheckWin10OnboardingTabPolicy_Negative) {
 
   // If the user is signed in, block showing the standard Welcome page.
   output = StartupTabProviderImpl::CheckWin10OnboardingTabPolicy(
-      true, false, true, true, false);
+      true, false, true, true, true, false);
 
   EXPECT_TRUE(output.empty());
 }
+
+TEST(StartupTabProviderTest,
+     CheckWin10OnboardingTabPolicy_SetDefaultBrowserNotAllowed) {
+  // Skip the Win 10 promo if setting the default browser is not allowed.
+  StartupTabs output = StartupTabProviderImpl::CheckWin10OnboardingTabPolicy(
+      true, false, false, false, false, false);
+
+  ASSERT_EQ(1U, output.size());
+  EXPECT_EQ(StartupTabProviderImpl::GetWelcomePageUrl(false), output[0].url);
+
+  // After first run, no onboarding content is displayed when setting the
+  // default browser is not allowed.
+  output = StartupTabProviderImpl::CheckWin10OnboardingTabPolicy(
+      true, true, false, false, false, false);
+
+  EXPECT_TRUE(output.empty());
+}
+
 #endif
 
 TEST(StartupTabProviderTest, CheckMasterPrefsTabPolicy) {
