@@ -39,6 +39,7 @@ class MEDIA_EXPORT AudioOutputResampler : public AudioOutputDispatcher {
   ~AudioOutputResampler() override;
 
   // AudioOutputDispatcher interface.
+  AudioOutputProxy* CreateStreamProxy() override;
   bool OpenStream() override;
   bool StartStream(AudioOutputStream::AudioSourceCallback* callback,
                    AudioOutputProxy* stream_proxy) override;
@@ -62,7 +63,8 @@ class MEDIA_EXPORT AudioOutputResampler : public AudioOutputDispatcher {
 
   // Map of outstanding OnMoreDataConverter objects.  A new object is created
   // on every StartStream() call and destroyed on CloseStream().
-  typedef std::map<AudioOutputProxy*, OnMoreDataConverter*> CallbackMap;
+  typedef std::map<AudioOutputProxy*, std::unique_ptr<OnMoreDataConverter>>
+      CallbackMap;
   CallbackMap callbacks_;
 
   // Used by AudioOutputDispatcherImpl; kept so we can reinitialize on the fly.
@@ -84,6 +86,7 @@ class MEDIA_EXPORT AudioOutputResampler : public AudioOutputDispatcher {
   // to a fake stream indefinitely for transient errors.
   base::Timer reinitialize_timer_;
 
+  base::WeakPtrFactory<AudioOutputResampler> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(AudioOutputResampler);
 };
 

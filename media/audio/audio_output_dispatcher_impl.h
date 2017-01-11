@@ -42,24 +42,13 @@ class MEDIA_EXPORT AudioOutputDispatcherImpl : public AudioOutputDispatcher {
                             const base::TimeDelta& close_delay);
   ~AudioOutputDispatcherImpl() override;
 
-  // Opens a new physical stream if there are no pending streams in
-  // |idle_streams_|.  Do not call Close() or Stop() if this method fails.
+  // AudioOutputDispatcher implementation.
+  AudioOutputProxy* CreateStreamProxy() override;
   bool OpenStream() override;
-
-  // If there are pending streams in |idle_streams_| then it reuses one of
-  // them, otherwise creates a new one.
   bool StartStream(AudioOutputStream::AudioSourceCallback* callback,
                    AudioOutputProxy* stream_proxy) override;
-
-  // Stops the stream assigned to the specified proxy and moves it into
-  // |idle_streams_| for reuse by other proxies.
   void StopStream(AudioOutputProxy* stream_proxy) override;
-
   void StreamVolumeSet(AudioOutputProxy* stream_proxy, double volume) override;
-
-  // Closes |idle_streams_| until the number of |idle_streams_| is equal to the
-  // |idle_proxies_| count.  If there are no |idle_proxies_| a single stream is
-  // kept alive until |close_timer_| fires.
   void CloseStream(AudioOutputProxy* stream_proxy) override;
 
   // Returns true if there are any open AudioOutputProxy objects.
@@ -77,6 +66,8 @@ class MEDIA_EXPORT AudioOutputDispatcherImpl : public AudioOutputDispatcher {
   // Similar to CloseAllIdleStreams(), but keeps |keep_alive| streams alive.
   void CloseIdleStreams(size_t keep_alive);
 
+  void StopPhysicalStream(AudioOutputStream* stream);
+
   size_t idle_proxies_;
   std::vector<AudioOutputStream*> idle_streams_;
 
@@ -93,6 +84,7 @@ class MEDIA_EXPORT AudioOutputDispatcherImpl : public AudioOutputDispatcher {
   AudioStreamIDMap audio_stream_ids_;
   int audio_stream_id_;
 
+  base::WeakPtrFactory<AudioOutputDispatcherImpl> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(AudioOutputDispatcherImpl);
 };
 

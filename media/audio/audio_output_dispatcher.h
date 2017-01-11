@@ -38,6 +38,11 @@ class MEDIA_EXPORT AudioOutputDispatcher {
                         const std::string& device_id);
   virtual ~AudioOutputDispatcher();
 
+  // Creates an instance of AudioOutputProxy, which uses |this| as dispatcher.
+  // The client owns the returned pointer, which can be deleted using
+  // AudioOutputProxy::Close.
+  virtual AudioOutputProxy* CreateStreamProxy() = 0;
+
   // Called by AudioOutputProxy to open the stream.
   // Returns false, if it fails to open it.
   virtual bool OpenStream() = 0;

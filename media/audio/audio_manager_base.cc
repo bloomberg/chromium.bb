@@ -278,7 +278,7 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
                    CompareByParams(dispatcher_params));
   if (it != output_dispatchers_.end()) {
     delete dispatcher_params;
-    return new AudioOutputProxy((*it)->dispatcher.get());
+    return (*it)->dispatcher->CreateStreamProxy();
   }
 
   const base::TimeDelta kCloseDelay =
@@ -294,7 +294,7 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
 
   dispatcher_params->dispatcher = std::move(dispatcher);
   output_dispatchers_.push_back(dispatcher_params);
-  return new AudioOutputProxy(dispatcher_params->dispatcher.get());
+  return dispatcher_params->dispatcher->CreateStreamProxy();
 }
 
 void AudioManagerBase::ShowAudioInputSettings() {

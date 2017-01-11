@@ -11,10 +11,10 @@
 
 namespace media {
 
-AudioOutputProxy::AudioOutputProxy(AudioOutputDispatcher* dispatcher)
-    : dispatcher_(dispatcher),
-      state_(kCreated),
-      volume_(1.0) {
+AudioOutputProxy::AudioOutputProxy(
+    base::WeakPtr<AudioOutputDispatcher> dispatcher)
+    : dispatcher_(std::move(dispatcher)), state_(kCreated), volume_(1.0) {
+  DCHECK(dispatcher_);
 }
 
 AudioOutputProxy::~AudioOutputProxy() {
@@ -26,7 +26,7 @@ bool AudioOutputProxy::Open() {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(state_, kCreated);
 
-  if (!dispatcher_->OpenStream()) {
+  if (!dispatcher_ || !dispatcher_->OpenStream()) {
     state_ = kOpenError;
     return false;
   }
@@ -43,7 +43,7 @@ void AudioOutputProxy::Start(AudioSourceCallback* callback) {
   // calls to succeed after failing, so we allow it to be called again.
   DCHECK(state_ == kOpened || state_ == kStartError);
 
-  if (!dispatcher_->StartStream(callback, this)) {
+  if (!dispatcher_ || !dispatcher_->StartStream(callback, this)) {
     state_ = kStartError;
     callback->OnError(this);
     return;
@@ -56,14 +56,17 @@ void AudioOutputProxy::Stop() {
   if (state_ != kPlaying)
     return;
 
-  dispatcher_->StopStream(this);
+  if (dispatcher_)
+    dispatcher_->StopStream(this);
   state_ = kOpened;
 }
 
 void AudioOutputProxy::SetVolume(double volume) {
   DCHECK(CalledOnValidThread());
   volume_ = volume;
-  dispatcher_->StreamVolumeSet(this, volume);
+
+  if (dispatcher_)
+    dispatcher_->StreamVolumeSet(this, volume);
 }
 
 void AudioOutputProxy::GetVolume(double* volume) {
@@ -78,7 +81,7 @@ void AudioOutputProxy::Close() {
 
   // kStartError means OpenStream() succeeded and the stream must be closed
   // before destruction.
-  if (state_ != kCreated && state_ != kOpenError)
+  if (state_ != kCreated && state_ != kOpenError && dispatcher_)
     dispatcher_->CloseStream(this);
 
   state_ = kClosed;

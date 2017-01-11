@@ -229,7 +229,8 @@ AudioOutputResampler::AudioOutputResampler(AudioManager* audio_manager,
                           close_delay_,
                           base::Bind(&AudioOutputResampler::Reinitialize,
                                      base::Unretained(this)),
-                          false) {
+                          false),
+      weak_factory_(this) {
   DCHECK(input_params.IsValid());
   DCHECK(output_params.IsValid());
   DCHECK_EQ(output_params_.format(), AudioParameters::AUDIO_PCM_LOW_LATENCY);
@@ -241,7 +242,9 @@ AudioOutputResampler::AudioOutputResampler(AudioManager* audio_manager,
 }
 
 AudioOutputResampler::~AudioOutputResampler() {
-  DCHECK(callbacks_.empty());
+  for (auto& iter : callbacks_) {
+    StopStream(iter.first);
+  }
 }
 
 void AudioOutputResampler::Reinitialize() {
@@ -266,6 +269,11 @@ void AudioOutputResampler::Initialize() {
   DCHECK(callbacks_.empty());
   dispatcher_ = base::MakeUnique<AudioOutputDispatcherImpl>(
       audio_manager_, output_params_, device_id_, close_delay_);
+}
+
+AudioOutputProxy* AudioOutputResampler::CreateStreamProxy() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  return new AudioOutputProxy(weak_factory_.GetWeakPtr());
 }
 
 bool AudioOutputResampler::OpenStream() {
@@ -333,9 +341,10 @@ bool AudioOutputResampler::StartStream(
   CallbackMap::iterator it = callbacks_.find(stream_proxy);
   if (it == callbacks_.end()) {
     resampler_callback = new OnMoreDataConverter(params_, output_params_);
-    callbacks_[stream_proxy] = resampler_callback;
+    callbacks_[stream_proxy] =
+        base::WrapUnique<OnMoreDataConverter>(resampler_callback);
   } else {
-    resampler_callback = it->second;
+    resampler_callback = it->second.get();
   }
 
   resampler_callback->Start(callback);
@@ -376,11 +385,7 @@ void AudioOutputResampler::CloseStream(AudioOutputProxy* stream_proxy) {
 
   // We assume that StopStream() is always called prior to CloseStream(), so
   // that it is safe to delete the OnMoreDataConverter here.
-  CallbackMap::iterator it = callbacks_.find(stream_proxy);
-  if (it != callbacks_.end()) {
-    delete it->second;
-    callbacks_.erase(it);
-  }
+  callbacks_.erase(stream_proxy);
 
   // Start the reinitialization timer if there are no active proxies and we're
   // not using the originally requested output parameters.  This allows us to
