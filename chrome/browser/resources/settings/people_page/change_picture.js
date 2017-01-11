@@ -282,6 +282,9 @@ Polymer({
           selector.selectPrevious();
         } while (this.selectedItem_.hidden);
 
+        if (this.selectedItem_.dataset.type != ChangePictureSelectionTypes.FILE)
+          this.selectImage_(this.selectedItem_);
+
         this.lastSelectedImageType_ = this.selectedItem_.dataset.type;
         e.detail.keyboardEvent.preventDefault();
         break;
@@ -293,6 +296,9 @@ Polymer({
         do {
           selector.selectNext();
         } while (this.selectedItem_.hidden);
+
+        if (this.selectedItem_.dataset.type != ChangePictureSelectionTypes.FILE)
+          this.selectImage_(this.selectedItem_);
 
         this.lastSelectedImageType_ = this.selectedItem_.dataset.type;
         e.detail.keyboardEvent.preventDefault();

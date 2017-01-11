@@ -201,6 +201,14 @@ cr.define('settings_people_page_change_picture', function() {
               expectEquals(firstDefaultImage, changePicture.selectedItem_);
               expectFalse(settingsCamera.cameraActive);
               expectTrue(discardControlBar.hidden);
+
+              // Now verify that arrow keys actually select the new image.
+              browserProxy.resetResolver('selectDefaultImage');
+              MockInteractions.pressAndReleaseKeyOn(
+                  changePicture.selectedItem_, 39 /* right */);
+              return browserProxy.whenCalled('selectDefaultImage');
+            }).then(function(args) {
+              expectEquals('chrome://foo/2.png', args[0]);
             });
       });
 
