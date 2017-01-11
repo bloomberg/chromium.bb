@@ -98,7 +98,12 @@ class Supplement : public GarbageCollectedMixin {
   // TODO(haraken): Remove the default constructor.
   // All Supplement objects should be instantiated with m_host.
   Supplement() {}
+
   explicit Supplement(T& host) : m_host(&host) {}
+
+  // Supplementable and its supplements live and die together.
+  // Thus host() should never return null (if the default constructor
+  // is completely removed).
   T* host() const { return m_host; }
 
   static void provideTo(Supplementable<T>& host,

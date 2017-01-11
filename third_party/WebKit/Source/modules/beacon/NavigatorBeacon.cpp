@@ -22,12 +22,11 @@
 namespace blink {
 
 NavigatorBeacon::NavigatorBeacon(Navigator& navigator)
-    : ContextClient(navigator.frame()), m_transmittedBytes(0) {}
+    : Supplement<Navigator>(navigator), m_transmittedBytes(0) {}
 
 NavigatorBeacon::~NavigatorBeacon() {}
 
 DEFINE_TRACE(NavigatorBeacon) {
-  ContextClient::trace(visitor);
   Supplement<Navigator>::trace(visitor);
 }
 
@@ -71,15 +70,15 @@ bool NavigatorBeacon::canSendBeacon(ExecutionContext* context,
   }
 
   // If detached from frame, do not allow sending a Beacon.
-  if (!frame() || !frame()->client())
+  if (!host()->frame())
     return false;
 
   return true;
 }
 
 int NavigatorBeacon::maxAllowance() const {
-  DCHECK(frame());
-  const Settings* settings = frame()->settings();
+  DCHECK(host()->frame());
+  const Settings* settings = host()->frame()->settings();
   if (settings) {
     int maxAllowed = settings->getMaxBeaconTransmission();
     if (maxAllowed < m_transmittedBytes)
@@ -100,19 +99,26 @@ bool NavigatorBeacon::sendBeacon(
     const String& urlstring,
     const ArrayBufferViewOrBlobOrStringOrFormData& data,
     ExceptionState& exceptionState) {
-  NavigatorBeacon& impl = NavigatorBeacon::from(navigator);
+  return NavigatorBeacon::from(navigator).sendBeaconImpl(scriptState, urlstring,
+                                                         data, exceptionState);
+}
 
+bool NavigatorBeacon::sendBeaconImpl(
+    ScriptState* scriptState,
+    const String& urlstring,
+    const ArrayBufferViewOrBlobOrStringOrFormData& data,
+    ExceptionState& exceptionState) {
   ExecutionContext* context = scriptState->getExecutionContext();
   KURL url = context->completeURL(urlstring);
-  if (!impl.canSendBeacon(context, url, exceptionState))
+  if (!canSendBeacon(context, url, exceptionState))
     return false;
 
-  int allowance = impl.maxAllowance();
+  int allowance = maxAllowance();
   int bytes = 0;
   bool allowed;
 
   if (data.isArrayBufferView()) {
-    allowed = PingLoader::sendBeacon(impl.frame(), allowance, url,
+    allowed = PingLoader::sendBeacon(host()->frame(), allowance, url,
                                      data.getAsArrayBufferView(), bytes);
   } else if (data.isBlob()) {
     Blob* blob = data.getAsBlob();
@@ -128,20 +134,21 @@ bool NavigatorBeacon::sendBeacon(
         return false;
       }
     }
-    allowed = PingLoader::sendBeacon(impl.frame(), allowance, url, blob, bytes);
+    allowed =
+        PingLoader::sendBeacon(host()->frame(), allowance, url, blob, bytes);
   } else if (data.isString()) {
-    allowed = PingLoader::sendBeacon(impl.frame(), allowance, url,
+    allowed = PingLoader::sendBeacon(host()->frame(), allowance, url,
                                      data.getAsString(), bytes);
   } else if (data.isFormData()) {
-    allowed = PingLoader::sendBeacon(impl.frame(), allowance, url,
+    allowed = PingLoader::sendBeacon(host()->frame(), allowance, url,
                                      data.getAsFormData(), bytes);
   } else {
-    allowed =
-        PingLoader::sendBeacon(impl.frame(), allowance, url, String(), bytes);
+    allowed = PingLoader::sendBeacon(host()->frame(), allowance, url, String(),
+                                     bytes);
   }
 
   if (allowed) {
-    impl.addTransmittedBytes(bytes);
+    addTransmittedBytes(bytes);
     return true;
   }
 
