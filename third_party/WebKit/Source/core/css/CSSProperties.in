@@ -448,7 +448,7 @@ column-width interpolable, converter=convertComputedLength<float>, custom_all
 -webkit-perspective-origin-x interpolable, converter=convertLength
 -webkit-perspective-origin-y interpolable, converter=convertLength
 -webkit-print-color-adjust inherited, independent, keyword_only, keywords=[economy|exact], initial_keyword=economy
--webkit-rtl-ordering inherited, type_name=EOrder, setter=setRtlOrdering, initial=initialRtlOrdering, keyword_only, keywords=[logical|visual], initial_keyword=logical
+-webkit-rtl-ordering inherited, independent, type_name=EOrder, setter=setRtlOrdering, initial=initialRtlOrdering, keyword_only, keywords=[logical|visual], initial_keyword=logical
 -webkit-ruby-position inherited, type_name=RubyPosition
 -webkit-tap-highlight-color inherited, converter=convertColor
 -webkit-text-combine inherited, type_name=TextCombine, name_for_methods=TextCombine
