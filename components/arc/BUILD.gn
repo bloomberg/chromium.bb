@@ -193,6 +193,7 @@ static_library("arc_test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "arc_service_manager_unittest.cc",
     "arc_session_runner_unittest.cc",
     "bluetooth/arc_bluetooth_bridge_unittest.cc",
     "bluetooth/bluetooth_struct_traits_unittest.cc",

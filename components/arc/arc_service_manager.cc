@@ -4,8 +4,6 @@
 
 #include "components/arc/arc_service_manager.h"
 
-#include <utility>
-
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/task_runner.h"
@@ -83,9 +81,32 @@ ArcBridgeService* ArcServiceManager::arc_bridge_service() {
   return arc_bridge_service_.get();
 }
 
-void ArcServiceManager::AddService(std::unique_ptr<ArcService> service) {
+bool ArcServiceManager::AddServiceInternal(
+    const std::string& name,
+    std::unique_ptr<ArcService> service) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  services_.emplace_back(std::move(service));
+  if (!name.empty() && services_.count(name) != 0) {
+    LOG(ERROR) << "Ignoring registration of service with duplicate name: "
+               << name;
+    return false;
+  }
+  services_.insert(std::make_pair(name, std::move(service)));
+  return true;
+}
+
+ArcService* ArcServiceManager::GetNamedServiceInternal(
+    const std::string& name) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (name.empty()) {
+    LOG(ERROR) << "kArcServiceName[] should be a fully-qualified class name.";
+    return nullptr;
+  }
+  auto service = services_.find(name);
+  if (service == services_.end()) {
+    LOG(ERROR) << "Named service " << name << " not found";
+    return nullptr;
+  }
+  return service->second.get();
 }
 
 void ArcServiceManager::AddObserver(Observer* observer) {
