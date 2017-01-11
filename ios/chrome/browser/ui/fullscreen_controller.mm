@@ -144,8 +144,6 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
 - (void)decrementFullScreenLock;
 // Called when the application is about to be the foreground application.
 - (void)applicationWillEnterForeground:(NSNotification*)notification;
-// TODO(shreyasv): Make the following methods act on a WebViewScrollView proxy
-// instead of taking in a UIScrollView directly.
 // Called from -webViewScrollViewDidScroll: Returns YES if the scroll should be
 // ignored.
 - (BOOL)shouldIgnoreScroll:(CRWWebViewScrollViewProxy*)webViewScrollViewProxy;
@@ -294,8 +292,8 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
                selector:@selector(decrementFullScreenLock)
                    name:ios_internal::kSideSwipeDidStopNotification
                  object:nil];
-    // TODO(jbbegue): Evaluate using a listener instead of a notification
-    // crbug/451373.
+    // TODO(crbug.com/451373): Evaluate using listeners instead of
+    // notifications.
     [center addObserver:self
                selector:@selector(overscrollActionsWillStart)
                    name:kOverscrollActionsWillStart
