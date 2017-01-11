@@ -2479,19 +2479,16 @@ void LayoutBox::computeLogicalWidth(
   computedValues.m_margins.m_start = marginStart();
   computedValues.m_margins.m_end = marginEnd();
 
-  if (isOutOfFlowPositioned()) {
-    computePositionedLogicalWidth(computedValues);
+  // The parent box is flexing us, so it has increased or decreased our
+  // width.  Use the width from the style context.
+  if (hasOverrideLogicalContentWidth()) {
+    computedValues.m_extent =
+        overrideLogicalContentWidth() + borderAndPaddingLogicalWidth();
     return;
   }
 
-  // The parent box is flexing us, so it has increased or decreased our
-  // width.  Use the width from the style context.
-  // FIXME: Account for writing-mode in flexible boxes.
-  // https://bugs.webkit.org/show_bug.cgi?id=46418
-  if (hasOverrideLogicalContentWidth() &&
-      parent()->isFlexibleBoxIncludingDeprecated()) {
-    computedValues.m_extent =
-        overrideLogicalContentWidth() + borderAndPaddingLogicalWidth();
+  if (isOutOfFlowPositioned()) {
+    computePositionedLogicalWidth(computedValues);
     return;
   }
 
@@ -2979,8 +2976,6 @@ void LayoutBox::computeLogicalHeight(
 
     // The parent box is flexing us, so it has increased or decreased our
     // height. We have to grab our cached flexible height.
-    // FIXME: Account for writing-mode in flexible boxes.
-    // https://bugs.webkit.org/show_bug.cgi?id=46418
     if (hasOverrideLogicalContentHeight()) {
       h = Length(overrideLogicalContentHeight(), Fixed);
     } else if (treatAsReplaced) {
