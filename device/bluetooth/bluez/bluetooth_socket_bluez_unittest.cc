@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_async_task_scheduler.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -175,6 +176,7 @@ class BluetoothSocketBlueZTest : public testing::Test {
 
  protected:
   base::MessageLoop message_loop_;
+  base::test::ScopedAsyncTaskScheduler scoped_async_task_scheduler_;
 
   scoped_refptr<BluetoothAdapter> adapter_;
 

@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_scheduler.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_uuid.h"
@@ -150,7 +150,7 @@ class BluetoothAdapterProfileBlueZTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskScheduler scoped_task_scheduler_;
 
   scoped_refptr<BluetoothAdapter> adapter_;
 

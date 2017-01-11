@@ -23,8 +23,8 @@
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/threading/worker_pool.h"
 #include "base/time/time.h"
 #include "device/bluetooth/bluez/bluetooth_service_attribute_value_bluez.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
@@ -515,8 +515,12 @@ void FakeBluetoothDeviceClient::ConnectProfile(
     return;
   }
 
-  base::WorkerPool::GetTaskRunner(false)
-      ->PostTask(FROM_HERE, base::Bind(&SimulatedProfileSocket, fds[0]));
+  base::PostTaskWithTraits(
+      FROM_HERE, base::TaskTraits()
+                     .WithShutdownBehavior(
+                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+                     .MayBlock(),
+      base::Bind(&SimulatedProfileSocket, fds[0]));
 
   base::ScopedFD fd(fds[1]);
 
