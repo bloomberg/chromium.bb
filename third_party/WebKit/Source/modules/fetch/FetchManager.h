@@ -21,13 +21,14 @@ class FetchManager final : public GarbageCollected<FetchManager>,
 
  public:
   static FetchManager* create(ExecutionContext*);
-  explicit FetchManager(ExecutionContext*);
   ScriptPromise fetch(ScriptState*, FetchRequestData*);
   void contextDestroyed() override;
 
   DECLARE_TRACE();
 
  private:
+  explicit FetchManager(ExecutionContext*);
+
   class Loader;
 
   // Removes loader from |m_loaders|.
