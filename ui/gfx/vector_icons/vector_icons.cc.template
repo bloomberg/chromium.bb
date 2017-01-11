@@ -12,18 +12,11 @@
 
 #define ICON_TEMPLATE(icon_name, ...) \
     case VectorIconId::icon_name: {\
-      static PathElement path[] = {__VA_ARGS__};\
+      static constexpr PathElement path[] = {__VA_ARGS__};\
       return path;\
     }
 
 namespace gfx {
-
-#if defined(OS_WIN)
-#pragma warning(push)
-
-// Disable "function size suppresses optimizations" warning.
-#pragma warning(disable: 4883)
-#endif  // defined(OS_WIN)
 
 const PathElement* GetPathForVectorIcon(VectorIconId id) {
   switch (id) {
@@ -46,9 +39,5 @@ TEMPLATE_PLACEHOLDER_1X
       return GetPathForVectorIcon(id);
   }
 }
-
-#if defined(OS_WIN)
-#pragma warning(pop)
-#endif  // defined(OS_WIN)
 
 }  // namespace gfx
