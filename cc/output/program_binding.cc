@@ -13,6 +13,96 @@ using gpu::gles2::GLES2Interface;
 
 namespace cc {
 
+ProgramKey::ProgramKey() = default;
+ProgramKey::ProgramKey(const ProgramKey& other) = default;
+ProgramKey::~ProgramKey() = default;
+
+bool ProgramKey::operator==(const ProgramKey& other) const {
+  return type_ == other.type_ && precision_ == other.precision_ &&
+         sampler_ == other.sampler_ && blend_mode_ == other.blend_mode_ &&
+         aa_mode_ == other.aa_mode_ && swizzle_mode_ == other.swizzle_mode_ &&
+         is_opaque_ == other.is_opaque_ &&
+         premultiplied_alpha_ == other.premultiplied_alpha_ &&
+         has_background_color_ == other.has_background_color_ &&
+         mask_mode_ == other.mask_mode_ &&
+         mask_for_background_ == other.mask_for_background_ &&
+         has_color_matrix_ == other.has_color_matrix_;
+}
+
+// static
+ProgramKey ProgramKey::DebugBorder() {
+  ProgramKey result;
+  result.type_ = PROGRAM_TYPE_DEBUG_BORDER;
+  return result;
+}
+
+// static
+ProgramKey ProgramKey::SolidColor(AAMode aa_mode) {
+  ProgramKey result;
+  result.type_ = PROGRAM_TYPE_SOLID_COLOR;
+  result.aa_mode_ = aa_mode;
+  return result;
+}
+
+// static
+ProgramKey ProgramKey::Tile(TexCoordPrecision precision,
+                            SamplerType sampler,
+                            AAMode aa_mode,
+                            SwizzleMode swizzle_mode,
+                            bool is_opaque) {
+  ProgramKey result;
+  result.type_ = PROGRAM_TYPE_TILE;
+  result.precision_ = precision;
+  result.sampler_ = sampler;
+  result.aa_mode_ = aa_mode;
+  result.swizzle_mode_ = swizzle_mode;
+  result.is_opaque_ = is_opaque;
+  return result;
+}
+
+// static
+ProgramKey ProgramKey::Texture(TexCoordPrecision precision,
+                               SamplerType sampler,
+                               PremultipliedAlphaMode premultiplied_alpha,
+                               bool has_background_color) {
+  ProgramKey result;
+  result.type_ = PROGRAM_TYPE_TEXTURE;
+  result.precision_ = precision;
+  result.sampler_ = sampler;
+  result.premultiplied_alpha_ = premultiplied_alpha;
+  result.has_background_color_ = has_background_color;
+  return result;
+}
+
+// static
+ProgramKey ProgramKey::RenderPass(TexCoordPrecision precision,
+                                  SamplerType sampler,
+                                  BlendMode blend_mode,
+                                  AAMode aa_mode,
+                                  MaskMode mask_mode,
+                                  bool mask_for_background,
+                                  bool has_color_matrix) {
+  ProgramKey result;
+  result.type_ = PROGRAM_TYPE_RENDER_PASS;
+  result.precision_ = precision;
+  result.sampler_ = sampler;
+  result.blend_mode_ = blend_mode;
+  result.aa_mode_ = aa_mode;
+  result.mask_mode_ = mask_mode;
+  result.mask_for_background_ = mask_for_background;
+  result.has_color_matrix_ = has_color_matrix;
+  return result;
+}
+
+// static
+ProgramKey ProgramKey::VideoStream(TexCoordPrecision precision) {
+  ProgramKey result;
+  result.type_ = PROGRAM_TYPE_VIDEO_STREAM;
+  result.precision_ = precision;
+  result.sampler_ = SAMPLER_TYPE_EXTERNAL_OES;
+  return result;
+}
+
 ProgramBindingBase::ProgramBindingBase()
     : program_(0),
       vertex_shader_id_(0),

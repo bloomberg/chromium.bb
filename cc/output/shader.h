@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "base/macros.h"
 #include "cc/base/cc_export.h"
 
@@ -235,95 +236,163 @@ class VertexShaderBase {
 
 class VertexShaderPosTex : public VertexShaderBase {
  public:
-  void SetSubclassProperties() {
-    tex_coord_source_ = TEX_COORD_SOURCE_ATTRIBUTE;
-    has_matrix_ = true;
+  void CheckSubclassProperties() {
+    DCHECK_EQ(tex_coord_source_, TEX_COORD_SOURCE_ATTRIBUTE);
+    DCHECK_EQ(has_matrix_, true);
+
+    DCHECK_EQ(use_uniform_arrays_, false);
+    DCHECK_EQ(position_source_, POSITION_SOURCE_ATTRIBUTE);
+    DCHECK_EQ(tex_coord_transform_, TEX_COORD_TRANSFORM_NONE);
+    DCHECK_EQ(is_ya_uv_, false);
+    DCHECK_EQ(has_dummy_variables_, false);
+    DCHECK_EQ(has_vertex_opacity_, false);
+    DCHECK_EQ(aa_mode_, NO_AA);
   }
 };
 
 class VertexShaderPosTexYUVStretchOffset : public VertexShaderBase {
  public:
-  void SetSubclassProperties() {
-    tex_coord_source_ = TEX_COORD_SOURCE_ATTRIBUTE;
-    has_matrix_ = true;
-    is_ya_uv_ = true;
+  void CheckSubclassProperties() {
+    DCHECK_EQ(tex_coord_source_, TEX_COORD_SOURCE_ATTRIBUTE);
+    DCHECK_EQ(has_matrix_, true);
+    DCHECK_EQ(is_ya_uv_, true);
+
+    DCHECK_EQ(use_uniform_arrays_, false);
+    DCHECK_EQ(position_source_, POSITION_SOURCE_ATTRIBUTE);
+    DCHECK_EQ(tex_coord_transform_, TEX_COORD_TRANSFORM_NONE);
+    DCHECK_EQ(has_dummy_variables_, false);
+    DCHECK_EQ(has_vertex_opacity_, false);
+    DCHECK_EQ(aa_mode_, NO_AA);
   }
 };
 
 class VertexShaderPos : public VertexShaderBase {
  public:
-  void SetSubclassProperties() { has_matrix_ = true; }
+  void CheckSubclassProperties() {
+    DCHECK_EQ(has_matrix_, true);
+
+    DCHECK_EQ(position_source_, POSITION_SOURCE_ATTRIBUTE);
+    DCHECK_EQ(tex_coord_source_, TEX_COORD_SOURCE_NONE);
+    DCHECK_EQ(tex_coord_transform_, TEX_COORD_TRANSFORM_NONE);
+    DCHECK_EQ(is_ya_uv_, false);
+    DCHECK_EQ(has_dummy_variables_, false);
+    DCHECK_EQ(has_vertex_opacity_, false);
+    DCHECK_EQ(aa_mode_, NO_AA);
+    DCHECK_EQ(use_uniform_arrays_, false);
+  }
 };
 
 class VertexShaderPosTexTransform : public VertexShaderBase {
  public:
-  void SetSubclassProperties() {
-    tex_coord_source_ = TEX_COORD_SOURCE_ATTRIBUTE;
-    tex_coord_transform_ = TEX_COORD_TRANSFORM_VEC4;
-    has_matrix_ = true;
-    has_vertex_opacity_ = true;
-    use_uniform_arrays_ = true;
+  void CheckSubclassProperties() {
+    DCHECK_EQ(tex_coord_source_, TEX_COORD_SOURCE_ATTRIBUTE);
+    DCHECK_EQ(tex_coord_transform_, TEX_COORD_TRANSFORM_VEC4);
+    DCHECK_EQ(has_matrix_, true);
+    DCHECK_EQ(has_vertex_opacity_, true);
+    DCHECK_EQ(use_uniform_arrays_, true);
+
+    DCHECK_EQ(position_source_, POSITION_SOURCE_ATTRIBUTE);
+    DCHECK_EQ(is_ya_uv_, false);
+    DCHECK_EQ(has_dummy_variables_, false);
+    DCHECK_EQ(aa_mode_, NO_AA);
   }
 };
 
 class VertexShaderQuad : public VertexShaderBase {
  public:
-  void SetSubclassProperties() {
-    position_source_ = POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM;
-    has_matrix_ = true;
+  void CheckSubclassProperties() {
+    DCHECK_EQ(position_source_, POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM);
+    DCHECK_EQ(has_matrix_, true);
 #if defined(OS_ANDROID)
-    has_dummy_variables_ = true;
+    DCHECK_EQ(has_dummy_variables_, true);
 #endif
+
+    DCHECK_EQ(use_uniform_arrays_, false);
+    DCHECK_EQ(tex_coord_source_, TEX_COORD_SOURCE_NONE);
+    DCHECK_EQ(tex_coord_transform_, TEX_COORD_TRANSFORM_NONE);
+    DCHECK_EQ(is_ya_uv_, false);
+    DCHECK_EQ(has_vertex_opacity_, false);
+    DCHECK_EQ(aa_mode_, NO_AA);
   }
 };
 
 class VertexShaderQuadAA : public VertexShaderBase {
  public:
-  void SetSubclassProperties() {
-    position_source_ = POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM;
-    has_matrix_ = true;
-    aa_mode_ = USE_AA;
+  void CheckSubclassProperties() {
+    DCHECK_EQ(position_source_, POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM);
+    DCHECK_EQ(has_matrix_, true);
+    DCHECK_EQ(aa_mode_, USE_AA);
+
+    DCHECK_EQ(use_uniform_arrays_, false);
+    DCHECK_EQ(tex_coord_source_, TEX_COORD_SOURCE_NONE);
+    DCHECK_EQ(tex_coord_transform_, TEX_COORD_TRANSFORM_NONE);
+    DCHECK_EQ(is_ya_uv_, false);
+    DCHECK_EQ(has_dummy_variables_, false);
+    DCHECK_EQ(has_vertex_opacity_, false);
   }
 };
 
 class VertexShaderQuadTexTransformAA : public VertexShaderBase {
  public:
-  void SetSubclassProperties() {
-    position_source_ = POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM;
-    tex_coord_source_ = TEX_COORD_SOURCE_POSITION;
-    tex_coord_transform_ = TEX_COORD_TRANSFORM_TRANSLATED_VEC4;
-    has_matrix_ = true;
-    aa_mode_ = USE_AA;
+  void CheckSubclassProperties() {
+    DCHECK_EQ(position_source_, POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM);
+    DCHECK_EQ(tex_coord_source_, TEX_COORD_SOURCE_POSITION);
+    DCHECK_EQ(tex_coord_transform_, TEX_COORD_TRANSFORM_TRANSLATED_VEC4);
+    DCHECK_EQ(has_matrix_, true);
+    DCHECK_EQ(aa_mode_, USE_AA);
+
+    DCHECK_EQ(use_uniform_arrays_, false);
+    DCHECK_EQ(is_ya_uv_, false);
+    DCHECK_EQ(has_dummy_variables_, false);
+    DCHECK_EQ(has_vertex_opacity_, false);
   }
 };
 
 class VertexShaderTile : public VertexShaderBase {
  public:
-  void SetSubclassProperties() {
-    position_source_ = POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM;
-    tex_coord_source_ = TEX_COORD_SOURCE_ATTRIBUTE;
-    tex_coord_transform_ = TEX_COORD_TRANSFORM_VEC4;
-    has_matrix_ = true;
+  void CheckSubclassProperties() {
+    DCHECK_EQ(position_source_, POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM);
+    DCHECK_EQ(tex_coord_source_, TEX_COORD_SOURCE_ATTRIBUTE);
+    DCHECK_EQ(tex_coord_transform_, TEX_COORD_TRANSFORM_VEC4);
+    DCHECK_EQ(has_matrix_, true);
+
+    DCHECK_EQ(use_uniform_arrays_, false);
+    DCHECK_EQ(is_ya_uv_, false);
+    DCHECK_EQ(has_dummy_variables_, false);
+    DCHECK_EQ(has_vertex_opacity_, false);
+    DCHECK_EQ(aa_mode_, NO_AA);
   }
 };
 
 class VertexShaderTileAA : public VertexShaderBase {
  public:
-  void SetSubclassProperties() {
-    position_source_ = POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM;
-    tex_coord_source_ = TEX_COORD_SOURCE_POSITION;
-    tex_coord_transform_ = TEX_COORD_TRANSFORM_VEC4;
-    has_matrix_ = true;
-    aa_mode_ = USE_AA;
+  void CheckSubclassProperties() {
+    DCHECK_EQ(position_source_, POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM);
+    DCHECK_EQ(tex_coord_source_, TEX_COORD_SOURCE_POSITION);
+    DCHECK_EQ(tex_coord_transform_, TEX_COORD_TRANSFORM_VEC4);
+    DCHECK_EQ(has_matrix_, true);
+    DCHECK_EQ(aa_mode_, USE_AA);
+
+    DCHECK_EQ(use_uniform_arrays_, false);
+    DCHECK_EQ(is_ya_uv_, false);
+    DCHECK_EQ(has_dummy_variables_, false);
+    DCHECK_EQ(has_vertex_opacity_, false);
   }
 };
 
 class VertexShaderVideoTransform : public VertexShaderBase {
  public:
-  void SetSubclassProperties() {
-    tex_coord_source_ = TEX_COORD_SOURCE_ATTRIBUTE;
-    tex_coord_transform_ = TEX_COORD_TRANSFORM_MATRIX;
-    has_matrix_ = true;
+  void CheckSubclassProperties() {
+    DCHECK_EQ(tex_coord_source_, TEX_COORD_SOURCE_ATTRIBUTE);
+    DCHECK_EQ(tex_coord_transform_, TEX_COORD_TRANSFORM_MATRIX);
+    DCHECK_EQ(has_matrix_, true);
+
+    DCHECK_EQ(use_uniform_arrays_, false);
+    DCHECK_EQ(position_source_, POSITION_SOURCE_ATTRIBUTE);
+    DCHECK_EQ(is_ya_uv_, false);
+    DCHECK_EQ(has_dummy_variables_, false);
+    DCHECK_EQ(has_vertex_opacity_, false);
+    DCHECK_EQ(aa_mode_, NO_AA);
   }
 };
 
@@ -411,168 +480,347 @@ class FragmentShaderBase {
 
 class FragmentShaderRGBATexVaryingAlpha : public FragmentShaderBase {
  public:
-  void SetSubclassProperties() {
-    has_varying_alpha_ = true;
-    frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
+  void CheckSubclassProperties() {
+    DCHECK_EQ(has_varying_alpha_, true);
+    DCHECK_EQ(frag_color_mode_, FRAG_COLOR_MODE_DEFAULT);
+
+    DCHECK_EQ(aa_mode_, NO_AA);
+    DCHECK_EQ(swizzle_mode_, NO_SWIZZLE);
+    DCHECK_EQ(premultiply_alpha_mode_, PREMULTIPLIED_ALPHA);
+    DCHECK_EQ(input_color_type_, INPUT_COLOR_SOURCE_RGBA_TEXTURE);
+    DCHECK_EQ(has_rgba_fragment_tex_transform_, false);
+    DCHECK_EQ(ignore_sampler_type_, false);
+    DCHECK_EQ(mask_mode_, NO_MASK);
+    DCHECK_EQ(has_color_matrix_, false);
+    DCHECK_EQ(has_uniform_alpha_, false);
+    DCHECK_EQ(has_background_color_, false);
   }
 };
 
 class FragmentShaderRGBATexPremultiplyAlpha : public FragmentShaderBase {
  public:
-  void SetSubclassProperties() {
-    has_varying_alpha_ = true;
-    premultiply_alpha_mode_ = NON_PREMULTIPLIED_ALPHA;
-    frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
+  void CheckSubclassProperties() {
+    DCHECK_EQ(has_varying_alpha_, true);
+    DCHECK_EQ(premultiply_alpha_mode_, NON_PREMULTIPLIED_ALPHA);
+    DCHECK_EQ(frag_color_mode_, FRAG_COLOR_MODE_DEFAULT);
+
+    DCHECK_EQ(aa_mode_, NO_AA);
+    DCHECK_EQ(swizzle_mode_, NO_SWIZZLE);
+    DCHECK_EQ(input_color_type_, INPUT_COLOR_SOURCE_RGBA_TEXTURE);
+    DCHECK_EQ(has_rgba_fragment_tex_transform_, false);
+    DCHECK_EQ(ignore_sampler_type_, false);
+    DCHECK_EQ(mask_mode_, NO_MASK);
+    DCHECK_EQ(has_color_matrix_, false);
+    DCHECK_EQ(has_uniform_alpha_, false);
+    DCHECK_EQ(has_background_color_, false);
   }
 };
 
 class FragmentShaderTexBackgroundVaryingAlpha : public FragmentShaderBase {
  public:
-  void SetSubclassProperties() {
-    has_background_color_ = true;
-    has_varying_alpha_ = true;
-    frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
+  void CheckSubclassProperties() {
+    DCHECK_EQ(has_background_color_, true);
+    DCHECK_EQ(has_varying_alpha_, true);
+    DCHECK_EQ(frag_color_mode_, FRAG_COLOR_MODE_DEFAULT);
+
+    DCHECK_EQ(aa_mode_, NO_AA);
+    DCHECK_EQ(swizzle_mode_, NO_SWIZZLE);
+    DCHECK_EQ(premultiply_alpha_mode_, PREMULTIPLIED_ALPHA);
+    DCHECK_EQ(input_color_type_, INPUT_COLOR_SOURCE_RGBA_TEXTURE);
+    DCHECK_EQ(has_rgba_fragment_tex_transform_, false);
+    DCHECK_EQ(ignore_sampler_type_, false);
+    DCHECK_EQ(mask_mode_, NO_MASK);
+    DCHECK_EQ(has_color_matrix_, false);
+    DCHECK_EQ(has_uniform_alpha_, false);
   }
 };
 
 class FragmentShaderTexBackgroundPremultiplyAlpha : public FragmentShaderBase {
  public:
-  void SetSubclassProperties() {
-    has_background_color_ = true;
-    has_varying_alpha_ = true;
-    premultiply_alpha_mode_ = NON_PREMULTIPLIED_ALPHA;
-    frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
+  void CheckSubclassProperties() {
+    DCHECK_EQ(has_background_color_, true);
+    DCHECK_EQ(has_varying_alpha_, true);
+    DCHECK_EQ(premultiply_alpha_mode_, NON_PREMULTIPLIED_ALPHA);
+    DCHECK_EQ(frag_color_mode_, FRAG_COLOR_MODE_DEFAULT);
+
+    DCHECK_EQ(aa_mode_, NO_AA);
+    DCHECK_EQ(swizzle_mode_, NO_SWIZZLE);
+    DCHECK_EQ(input_color_type_, INPUT_COLOR_SOURCE_RGBA_TEXTURE);
+    DCHECK_EQ(has_rgba_fragment_tex_transform_, false);
+    DCHECK_EQ(ignore_sampler_type_, false);
+    DCHECK_EQ(mask_mode_, NO_MASK);
+    DCHECK_EQ(has_color_matrix_, false);
+    DCHECK_EQ(has_uniform_alpha_, false);
   }
 };
 
 class FragmentShaderRGBATexAlpha : public FragmentShaderBase {
  public:
-  void SetSubclassProperties() {
-    has_uniform_alpha_ = true;
-    frag_color_mode_ = FRAG_COLOR_MODE_APPLY_BLEND_MODE;
+  void CheckSubclassProperties() {
+    DCHECK_EQ(has_uniform_alpha_, true);
+    DCHECK_EQ(frag_color_mode_, FRAG_COLOR_MODE_APPLY_BLEND_MODE);
+
+    DCHECK_EQ(aa_mode_, NO_AA);
+    DCHECK_EQ(has_varying_alpha_, false);
+    DCHECK_EQ(swizzle_mode_, NO_SWIZZLE);
+    DCHECK_EQ(premultiply_alpha_mode_, PREMULTIPLIED_ALPHA);
+    DCHECK_EQ(input_color_type_, INPUT_COLOR_SOURCE_RGBA_TEXTURE);
+    DCHECK_EQ(has_rgba_fragment_tex_transform_, false);
+    DCHECK_EQ(ignore_sampler_type_, false);
+    DCHECK_EQ(mask_mode_, NO_MASK);
+    DCHECK_EQ(has_color_matrix_, false);
+    DCHECK_EQ(has_background_color_, false);
   }
 };
 
 class FragmentShaderRGBATexColorMatrixAlpha : public FragmentShaderBase {
  public:
-  void SetSubclassProperties() {
-    has_uniform_alpha_ = true;
-    has_color_matrix_ = true;
-    frag_color_mode_ = FRAG_COLOR_MODE_APPLY_BLEND_MODE;
+  void CheckSubclassProperties() {
+    DCHECK_EQ(has_uniform_alpha_, true);
+    DCHECK_EQ(has_color_matrix_, true);
+    DCHECK_EQ(frag_color_mode_, FRAG_COLOR_MODE_APPLY_BLEND_MODE);
+
+    DCHECK_EQ(aa_mode_, NO_AA);
+    DCHECK_EQ(has_varying_alpha_, false);
+    DCHECK_EQ(swizzle_mode_, NO_SWIZZLE);
+    DCHECK_EQ(premultiply_alpha_mode_, PREMULTIPLIED_ALPHA);
+    DCHECK_EQ(input_color_type_, INPUT_COLOR_SOURCE_RGBA_TEXTURE);
+    DCHECK_EQ(has_rgba_fragment_tex_transform_, false);
+    DCHECK_EQ(ignore_sampler_type_, false);
+    DCHECK_EQ(mask_mode_, NO_MASK);
+    DCHECK_EQ(has_background_color_, false);
   }
 };
 
 class FragmentShaderRGBATexOpaque : public FragmentShaderBase {
  public:
-  void SetSubclassProperties() { frag_color_mode_ = FRAG_COLOR_MODE_OPAQUE; }
+  void CheckSubclassProperties() {
+    DCHECK_EQ(frag_color_mode_, FRAG_COLOR_MODE_OPAQUE);
+
+    DCHECK_EQ(aa_mode_, NO_AA);
+    DCHECK_EQ(has_varying_alpha_, false);
+    DCHECK_EQ(swizzle_mode_, NO_SWIZZLE);
+    DCHECK_EQ(premultiply_alpha_mode_, PREMULTIPLIED_ALPHA);
+    DCHECK_EQ(input_color_type_, INPUT_COLOR_SOURCE_RGBA_TEXTURE);
+    DCHECK_EQ(has_rgba_fragment_tex_transform_, false);
+    DCHECK_EQ(ignore_sampler_type_, false);
+    DCHECK_EQ(mask_mode_, NO_MASK);
+    DCHECK_EQ(has_color_matrix_, false);
+    DCHECK_EQ(has_uniform_alpha_, false);
+    DCHECK_EQ(has_background_color_, false);
+  }
 };
 
 class FragmentShaderRGBATex : public FragmentShaderBase {
  public:
-  void SetSubclassProperties() { frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT; }
+  void CheckSubclassProperties() {
+    DCHECK_EQ(frag_color_mode_, FRAG_COLOR_MODE_DEFAULT);
+    DCHECK_EQ(sampler_type_, SAMPLER_TYPE_EXTERNAL_OES);
+
+    DCHECK_EQ(aa_mode_, NO_AA);
+    DCHECK_EQ(has_varying_alpha_, false);
+    DCHECK_EQ(swizzle_mode_, NO_SWIZZLE);
+    DCHECK_EQ(premultiply_alpha_mode_, PREMULTIPLIED_ALPHA);
+    DCHECK_EQ(input_color_type_, INPUT_COLOR_SOURCE_RGBA_TEXTURE);
+    DCHECK_EQ(has_rgba_fragment_tex_transform_, false);
+    DCHECK_EQ(ignore_sampler_type_, false);
+    DCHECK_EQ(mask_mode_, NO_MASK);
+    DCHECK_EQ(has_color_matrix_, false);
+    DCHECK_EQ(has_uniform_alpha_, false);
+    DCHECK_EQ(has_background_color_, false);
+  }
 };
 
 // Swizzles the red and blue component of sampled texel with alpha.
 class FragmentShaderRGBATexSwizzleAlpha : public FragmentShaderBase {
  public:
-  void SetSubclassProperties() {
-    has_uniform_alpha_ = true;
-    swizzle_mode_ = DO_SWIZZLE;
-    frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
+  void CheckSubclassProperties() {
+    DCHECK_EQ(has_uniform_alpha_, true);
+    DCHECK_EQ(swizzle_mode_, DO_SWIZZLE);
+    DCHECK_EQ(frag_color_mode_, FRAG_COLOR_MODE_DEFAULT);
+
+    DCHECK_EQ(aa_mode_, NO_AA);
+    DCHECK_EQ(has_varying_alpha_, false);
+    DCHECK_EQ(premultiply_alpha_mode_, PREMULTIPLIED_ALPHA);
+    DCHECK_EQ(input_color_type_, INPUT_COLOR_SOURCE_RGBA_TEXTURE);
+    DCHECK_EQ(has_rgba_fragment_tex_transform_, false);
+    DCHECK_EQ(ignore_sampler_type_, false);
+    DCHECK_EQ(mask_mode_, NO_MASK);
+    DCHECK_EQ(has_color_matrix_, false);
+    DCHECK_EQ(has_background_color_, false);
   }
 };
 
 // Swizzles the red and blue component of sampled texel without alpha.
 class FragmentShaderRGBATexSwizzleOpaque : public FragmentShaderBase {
  public:
-  void SetSubclassProperties() {
-    swizzle_mode_ = DO_SWIZZLE;
-    frag_color_mode_ = FRAG_COLOR_MODE_OPAQUE;
+  void CheckSubclassProperties() {
+    DCHECK_EQ(swizzle_mode_, DO_SWIZZLE);
+    DCHECK_EQ(frag_color_mode_, FRAG_COLOR_MODE_OPAQUE);
+
+    DCHECK_EQ(aa_mode_, NO_AA);
+    DCHECK_EQ(has_varying_alpha_, false);
+    DCHECK_EQ(premultiply_alpha_mode_, PREMULTIPLIED_ALPHA);
+    DCHECK_EQ(input_color_type_, INPUT_COLOR_SOURCE_RGBA_TEXTURE);
+    DCHECK_EQ(has_rgba_fragment_tex_transform_, false);
+    DCHECK_EQ(ignore_sampler_type_, false);
+    DCHECK_EQ(mask_mode_, NO_MASK);
+    DCHECK_EQ(has_color_matrix_, false);
+    DCHECK_EQ(has_uniform_alpha_, false);
+    DCHECK_EQ(has_background_color_, false);
   }
 };
 
 class FragmentShaderRGBATexAlphaAA : public FragmentShaderBase {
  public:
-  void SetSubclassProperties() {
-    aa_mode_ = USE_AA;
-    has_uniform_alpha_ = true;
-    frag_color_mode_ = FRAG_COLOR_MODE_APPLY_BLEND_MODE;
+  void CheckSubclassProperties() {
+    DCHECK_EQ(aa_mode_, USE_AA);
+    DCHECK_EQ(has_uniform_alpha_, true);
+    DCHECK_EQ(frag_color_mode_, FRAG_COLOR_MODE_APPLY_BLEND_MODE);
+
+    DCHECK_EQ(has_varying_alpha_, false);
+    DCHECK_EQ(swizzle_mode_, NO_SWIZZLE);
+    DCHECK_EQ(premultiply_alpha_mode_, PREMULTIPLIED_ALPHA);
+    DCHECK_EQ(input_color_type_, INPUT_COLOR_SOURCE_RGBA_TEXTURE);
+    DCHECK_EQ(has_rgba_fragment_tex_transform_, false);
+    DCHECK_EQ(ignore_sampler_type_, false);
+    DCHECK_EQ(mask_mode_, NO_MASK);
+    DCHECK_EQ(has_color_matrix_, false);
+    DCHECK_EQ(has_background_color_, false);
   }
 };
 
 class FragmentShaderRGBATexClampAlphaAA : public FragmentShaderBase {
  public:
-  void SetSubclassProperties() {
-    aa_mode_ = USE_AA;
-    has_uniform_alpha_ = true;
-    has_rgba_fragment_tex_transform_ = true;
-    frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
+  void CheckSubclassProperties() {
+    DCHECK_EQ(aa_mode_, USE_AA);
+    DCHECK_EQ(has_uniform_alpha_, true);
+    DCHECK_EQ(has_rgba_fragment_tex_transform_, true);
+    DCHECK_EQ(frag_color_mode_, FRAG_COLOR_MODE_DEFAULT);
+
+    DCHECK_EQ(has_varying_alpha_, false);
+    DCHECK_EQ(swizzle_mode_, NO_SWIZZLE);
+    DCHECK_EQ(premultiply_alpha_mode_, PREMULTIPLIED_ALPHA);
+    DCHECK_EQ(input_color_type_, INPUT_COLOR_SOURCE_RGBA_TEXTURE);
+    DCHECK_EQ(ignore_sampler_type_, false);
+    DCHECK_EQ(mask_mode_, NO_MASK);
+    DCHECK_EQ(has_color_matrix_, false);
+    DCHECK_EQ(has_background_color_, false);
   }
 };
 
 // Swizzles the red and blue component of sampled texel.
 class FragmentShaderRGBATexClampSwizzleAlphaAA : public FragmentShaderBase {
  public:
-  void SetSubclassProperties() {
-    aa_mode_ = USE_AA;
-    has_uniform_alpha_ = true;
-    has_rgba_fragment_tex_transform_ = true;
-    swizzle_mode_ = DO_SWIZZLE;
-    frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
+  void CheckSubclassProperties() {
+    DCHECK_EQ(aa_mode_, USE_AA);
+    DCHECK_EQ(has_uniform_alpha_, true);
+    DCHECK_EQ(has_rgba_fragment_tex_transform_, true);
+    DCHECK_EQ(swizzle_mode_, DO_SWIZZLE);
+    DCHECK_EQ(frag_color_mode_, FRAG_COLOR_MODE_DEFAULT);
+
+    DCHECK_EQ(has_varying_alpha_, false);
+    DCHECK_EQ(premultiply_alpha_mode_, PREMULTIPLIED_ALPHA);
+    DCHECK_EQ(input_color_type_, INPUT_COLOR_SOURCE_RGBA_TEXTURE);
+    DCHECK_EQ(ignore_sampler_type_, false);
+    DCHECK_EQ(mask_mode_, NO_MASK);
+    DCHECK_EQ(has_color_matrix_, false);
+    DCHECK_EQ(has_background_color_, false);
   }
 };
 
 class FragmentShaderRGBATexAlphaMask : public FragmentShaderBase {
  public:
-  void SetSubclassProperties() {
-    has_uniform_alpha_ = true;
-    mask_mode_ = HAS_MASK;
-    frag_color_mode_ = FRAG_COLOR_MODE_APPLY_BLEND_MODE;
-    ignore_sampler_type_ = true;
+  void CheckSubclassProperties() {
+    DCHECK_EQ(has_uniform_alpha_, true);
+    DCHECK_EQ(mask_mode_, HAS_MASK);
+    DCHECK_EQ(frag_color_mode_, FRAG_COLOR_MODE_APPLY_BLEND_MODE);
+    DCHECK_EQ(ignore_sampler_type_, true);
+
+    DCHECK_EQ(aa_mode_, NO_AA);
+    DCHECK_EQ(has_varying_alpha_, false);
+    DCHECK_EQ(swizzle_mode_, NO_SWIZZLE);
+    DCHECK_EQ(premultiply_alpha_mode_, PREMULTIPLIED_ALPHA);
+    DCHECK_EQ(input_color_type_, INPUT_COLOR_SOURCE_RGBA_TEXTURE);
+    DCHECK_EQ(has_rgba_fragment_tex_transform_, false);
+    DCHECK_EQ(has_color_matrix_, false);
+    DCHECK_EQ(has_background_color_, false);
   }
 };
 
 class FragmentShaderRGBATexAlphaMaskAA : public FragmentShaderBase {
  public:
-  void SetSubclassProperties() {
-    aa_mode_ = USE_AA;
-    has_uniform_alpha_ = true;
-    mask_mode_ = HAS_MASK;
-    frag_color_mode_ = FRAG_COLOR_MODE_APPLY_BLEND_MODE;
-    ignore_sampler_type_ = true;
+  void CheckSubclassProperties() {
+    DCHECK_EQ(aa_mode_, USE_AA);
+    DCHECK_EQ(has_uniform_alpha_, true);
+    DCHECK_EQ(mask_mode_, HAS_MASK);
+    DCHECK_EQ(frag_color_mode_, FRAG_COLOR_MODE_APPLY_BLEND_MODE);
+    DCHECK_EQ(ignore_sampler_type_, true);
+
+    DCHECK_EQ(has_varying_alpha_, false);
+    DCHECK_EQ(swizzle_mode_, NO_SWIZZLE);
+    DCHECK_EQ(premultiply_alpha_mode_, PREMULTIPLIED_ALPHA);
+    DCHECK_EQ(input_color_type_, INPUT_COLOR_SOURCE_RGBA_TEXTURE);
+    DCHECK_EQ(has_rgba_fragment_tex_transform_, false);
+    DCHECK_EQ(has_color_matrix_, false);
+    DCHECK_EQ(has_background_color_, false);
   }
 };
 
 class FragmentShaderRGBATexAlphaMaskColorMatrixAA : public FragmentShaderBase {
  public:
-  void SetSubclassProperties() {
-    aa_mode_ = USE_AA;
-    has_uniform_alpha_ = true;
-    mask_mode_ = HAS_MASK;
-    has_color_matrix_ = true;
-    frag_color_mode_ = FRAG_COLOR_MODE_APPLY_BLEND_MODE;
-    ignore_sampler_type_ = true;
+  void CheckSubclassProperties() {
+    DCHECK_EQ(aa_mode_, USE_AA);
+    DCHECK_EQ(has_uniform_alpha_, true);
+    DCHECK_EQ(mask_mode_, HAS_MASK);
+    DCHECK_EQ(has_color_matrix_, true);
+    DCHECK_EQ(frag_color_mode_, FRAG_COLOR_MODE_APPLY_BLEND_MODE);
+    DCHECK_EQ(ignore_sampler_type_, true);
+
+    DCHECK_EQ(has_varying_alpha_, false);
+    DCHECK_EQ(swizzle_mode_, NO_SWIZZLE);
+    DCHECK_EQ(premultiply_alpha_mode_, PREMULTIPLIED_ALPHA);
+    DCHECK_EQ(input_color_type_, INPUT_COLOR_SOURCE_RGBA_TEXTURE);
+    DCHECK_EQ(has_rgba_fragment_tex_transform_, false);
+    DCHECK_EQ(has_background_color_, false);
   }
 };
 
 class FragmentShaderRGBATexAlphaColorMatrixAA : public FragmentShaderBase {
  public:
-  void SetSubclassProperties() {
-    aa_mode_ = USE_AA;
-    has_uniform_alpha_ = true;
-    has_color_matrix_ = true;
-    frag_color_mode_ = FRAG_COLOR_MODE_APPLY_BLEND_MODE;
+  void CheckSubclassProperties() {
+    DCHECK_EQ(aa_mode_, USE_AA);
+    DCHECK_EQ(has_uniform_alpha_, true);
+    DCHECK_EQ(has_color_matrix_, true);
+    DCHECK_EQ(frag_color_mode_, FRAG_COLOR_MODE_APPLY_BLEND_MODE);
+
+    DCHECK_EQ(has_varying_alpha_, false);
+    DCHECK_EQ(swizzle_mode_, NO_SWIZZLE);
+    DCHECK_EQ(premultiply_alpha_mode_, PREMULTIPLIED_ALPHA);
+    DCHECK_EQ(input_color_type_, INPUT_COLOR_SOURCE_RGBA_TEXTURE);
+    DCHECK_EQ(has_rgba_fragment_tex_transform_, false);
+    DCHECK_EQ(ignore_sampler_type_, false);
+    DCHECK_EQ(mask_mode_, NO_MASK);
+    DCHECK_EQ(has_background_color_, false);
   }
 };
 
 class FragmentShaderRGBATexAlphaMaskColorMatrix : public FragmentShaderBase {
  public:
-  void SetSubclassProperties() {
-    has_uniform_alpha_ = true;
-    mask_mode_ = HAS_MASK;
-    has_color_matrix_ = true;
-    frag_color_mode_ = FRAG_COLOR_MODE_APPLY_BLEND_MODE;
-    ignore_sampler_type_ = true;
+  void CheckSubclassProperties() {
+    DCHECK_EQ(has_uniform_alpha_, true);
+    DCHECK_EQ(mask_mode_, HAS_MASK);
+    DCHECK_EQ(has_color_matrix_, true);
+    DCHECK_EQ(frag_color_mode_, FRAG_COLOR_MODE_APPLY_BLEND_MODE);
+    DCHECK_EQ(ignore_sampler_type_, true);
+
+    DCHECK_EQ(aa_mode_, NO_AA);
+    DCHECK_EQ(has_varying_alpha_, false);
+    DCHECK_EQ(swizzle_mode_, NO_SWIZZLE);
+    DCHECK_EQ(premultiply_alpha_mode_, PREMULTIPLIED_ALPHA);
+    DCHECK_EQ(input_color_type_, INPUT_COLOR_SOURCE_RGBA_TEXTURE);
+    DCHECK_EQ(has_rgba_fragment_tex_transform_, false);
+    DCHECK_EQ(has_background_color_, false);
   }
 };
 
@@ -580,7 +828,7 @@ class FragmentShaderYUVVideo : public FragmentShaderBase {
  public:
   FragmentShaderYUVVideo();
 
-  void SetSubclassProperties() {}
+  void CheckSubclassProperties() {}
 
   void Init(gpu::gles2::GLES2Interface* context,
             unsigned program,
@@ -628,18 +876,39 @@ class FragmentShaderYUVVideo : public FragmentShaderBase {
 
 class FragmentShaderColor : public FragmentShaderBase {
  public:
-  void SetSubclassProperties() {
-    input_color_type_ = INPUT_COLOR_SOURCE_UNIFORM;
-    frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
+  void CheckSubclassProperties() {
+    DCHECK_EQ(input_color_type_, INPUT_COLOR_SOURCE_UNIFORM);
+    DCHECK_EQ(frag_color_mode_, FRAG_COLOR_MODE_DEFAULT);
+
+    DCHECK_EQ(aa_mode_, NO_AA);
+    DCHECK_EQ(has_varying_alpha_, false);
+    DCHECK_EQ(swizzle_mode_, NO_SWIZZLE);
+    DCHECK_EQ(premultiply_alpha_mode_, PREMULTIPLIED_ALPHA);
+    DCHECK_EQ(has_rgba_fragment_tex_transform_, false);
+    DCHECK_EQ(ignore_sampler_type_, false);
+    DCHECK_EQ(mask_mode_, NO_MASK);
+    DCHECK_EQ(has_color_matrix_, false);
+    DCHECK_EQ(has_uniform_alpha_, false);
+    DCHECK_EQ(has_background_color_, false);
   }
 };
 
 class FragmentShaderColorAA : public FragmentShaderBase {
  public:
-  void SetSubclassProperties() {
-    input_color_type_ = INPUT_COLOR_SOURCE_UNIFORM;
-    aa_mode_ = USE_AA;
-    frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
+  void CheckSubclassProperties() {
+    DCHECK_EQ(input_color_type_, INPUT_COLOR_SOURCE_UNIFORM);
+    DCHECK_EQ(aa_mode_, USE_AA);
+    DCHECK_EQ(frag_color_mode_, FRAG_COLOR_MODE_DEFAULT);
+
+    DCHECK_EQ(has_varying_alpha_, false);
+    DCHECK_EQ(swizzle_mode_, NO_SWIZZLE);
+    DCHECK_EQ(premultiply_alpha_mode_, PREMULTIPLIED_ALPHA);
+    DCHECK_EQ(has_rgba_fragment_tex_transform_, false);
+    DCHECK_EQ(ignore_sampler_type_, false);
+    DCHECK_EQ(mask_mode_, NO_MASK);
+    DCHECK_EQ(has_color_matrix_, false);
+    DCHECK_EQ(has_uniform_alpha_, false);
+    DCHECK_EQ(has_background_color_, false);
   }
 };
 
