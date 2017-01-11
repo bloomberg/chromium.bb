@@ -16,7 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_split.h"
-#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/printing/pwg_raster_converter.h"
 #include "components/cloud_devices/common/cloud_device_description.h"
 #include "components/cloud_devices/common/printer_description.h"
@@ -69,10 +69,9 @@ UpdateJobFileInfoOnWorkerThread(
 
 // Callback to PWG raster conversion.
 // Posts a task to update print job with info about file containing converted
-// PWG raster data. The task is posted to |slow_task_runner|.
+// PWG raster data.
 void UpdateJobFileInfo(
     std::unique_ptr<extensions::PrinterProviderPrintJob> job,
-    const scoped_refptr<base::TaskRunner>& slow_task_runner,
     const ExtensionPrinterHandler::PrintJobCallback& callback,
     bool success,
     const base::FilePath& pwg_file_path) {
@@ -81,8 +80,11 @@ void UpdateJobFileInfo(
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      slow_task_runner.get(), FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits()
+                     .WithShutdownBehavior(
+                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+                     .MayBlock(),
       base::Bind(&UpdateJobFileInfoOnWorkerThread, pwg_file_path,
                  base::Passed(&job)),
       callback);
@@ -122,12 +124,8 @@ bool ParseProvisionalUsbPrinterId(const std::string& printer_id,
 }  // namespace
 
 ExtensionPrinterHandler::ExtensionPrinterHandler(
-    content::BrowserContext* browser_context,
-    const scoped_refptr<base::TaskRunner>& slow_task_runner)
-    : browser_context_(browser_context),
-      slow_task_runner_(slow_task_runner),
-      weak_ptr_factory_(this) {
-}
+    content::BrowserContext* browser_context)
+    : browser_context_(browser_context), weak_ptr_factory_(this) {}
 
 ExtensionPrinterHandler::~ExtensionPrinterHandler() {
 }
@@ -274,8 +272,7 @@ void ExtensionPrinterHandler::ConvertToPWGRaster(
       data.get(),
       PWGRasterConverter::GetConversionSettings(printer_description, page_size),
       PWGRasterConverter::GetBitmapSettings(printer_description, ticket),
-      base::Bind(&UpdateJobFileInfo, base::Passed(&job), slow_task_runner_,
-                 callback));
+      base::Bind(&UpdateJobFileInfo, base::Passed(&job), callback));
 }
 
 void ExtensionPrinterHandler::DispatchPrintJob(

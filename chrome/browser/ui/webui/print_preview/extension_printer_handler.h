@@ -19,7 +19,6 @@ namespace base {
 class DictionaryValue;
 class ListValue;
 class RefCountedMemory;
-class TaskRunner;
 }
 
 namespace content {
@@ -49,9 +48,7 @@ class ExtensionPrinterHandler : public PrinterHandler {
   using PrintJobCallback = base::Callback<void(
       std::unique_ptr<extensions::PrinterProviderPrintJob>)>;
 
-  ExtensionPrinterHandler(
-      content::BrowserContext* browser_context,
-      const scoped_refptr<base::TaskRunner>& slow_task_runner);
+  explicit ExtensionPrinterHandler(content::BrowserContext* browser_context);
 
   ~ExtensionPrinterHandler() override;
 
@@ -121,8 +118,6 @@ class ExtensionPrinterHandler : public PrinterHandler {
 
   std::unique_ptr<printing::PWGRasterConverter> pwg_raster_converter_;
   int pending_enumeration_count_ = 0;
-
-  scoped_refptr<base::TaskRunner> slow_task_runner_;
 
   base::WeakPtrFactory<ExtensionPrinterHandler> weak_ptr_factory_;
 
