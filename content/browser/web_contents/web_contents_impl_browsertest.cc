@@ -1174,10 +1174,12 @@ class DownloadImageObserver {
 };
 
 void DownloadImageTestInternal(Shell* shell,
-                               const GURL &image_url,
-                               int expected_http_status) {
+                               const GURL& image_url,
+                               int expected_http_status,
+                               int expected_number_of_images) {
   using ::testing::_;
   using ::testing::InvokeWithoutArgs;
+  using ::testing::SizeIs;
 
   // Set up everything.
   DownloadImageObserver download_image_observer;
@@ -1186,7 +1188,8 @@ void DownloadImageTestInternal(Shell* shell,
 
   // Set up expectation and stub.
   EXPECT_CALL(download_image_observer,
-              OnFinishDownloadImage(_, expected_http_status, _, _, _));
+              OnFinishDownloadImage(_, expected_http_status, _,
+                                    SizeIs(expected_number_of_images), _));
   ON_CALL(download_image_observer, OnFinishDownloadImage(_, _, _, _, _))
       .WillByDefault(
           InvokeWithoutArgs(loop_runner.get(), &MessageLoopRunner::Quit));
@@ -1218,16 +1221,26 @@ void ExpectNoValidImageCallback(const base::Closure& quit_closure,
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        DownloadImage_HttpImage) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL kImageUrl =
-      embedded_test_server()->GetURL("/image.jpg");
-  DownloadImageTestInternal(shell(), kImageUrl, 200);
+  const GURL kImageUrl = embedded_test_server()->GetURL("/single_face.jpg");
+  DownloadImageTestInternal(shell(), kImageUrl, 200, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        DownloadImage_Deny_FileImage) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  shell()->LoadURL(embedded_test_server()->GetURL("/simple_page.html"));
+
+  const GURL kImageUrl = GetTestUrl("", "single_face.jpg");
+  DownloadImageTestInternal(shell(), kImageUrl, 0, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       DownloadImage_Allow_FileImage) {
+  shell()->LoadURL(GetTestUrl("", "simple_page.html"));
+
   const GURL kImageUrl =
       GetTestUrl("", "image.jpg");
-  DownloadImageTestInternal(shell(), kImageUrl, 0);
+  DownloadImageTestInternal(shell(), kImageUrl, 0, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, DownloadImage_NoValidImage) {
@@ -1240,6 +1253,19 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, DownloadImage_NoValidImage) {
       base::Bind(&ExpectNoValidImageCallback, run_loop.QuitClosure()));
 
   run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, DownloadImage_DataImage) {
+  const GURL kImageUrl = GURL(
+      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHE"
+      "lEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==");
+  DownloadImageTestInternal(shell(), kImageUrl, 0, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       DownloadImage_InvalidDataImage) {
+  const GURL kImageUrl = GURL("data:image/png;invalid");
+  DownloadImageTestInternal(shell(), kImageUrl, 0, 0);
 }
 
 class MouseLockDelegate : public WebContentsDelegate {

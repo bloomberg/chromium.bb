@@ -154,11 +154,6 @@ public class MediaImageManager implements ImageDownloadCallback {
     public void onFinishDownloadImage(int id, int httpStatusCode, String imageUrl,
             List<Bitmap> bitmaps, List<Rect> originalImageSizes) {
         if (id != mRequestId) return;
-        if (httpStatusCode < 200 || httpStatusCode >= 300) {
-            mCallback.onImageDownloaded(null);
-            clearRequests();
-            return;
-        }
 
         Iterator<Bitmap> iterBitmap = bitmaps.iterator();
         Iterator<Rect> iterSize = originalImageSizes.iterator();
