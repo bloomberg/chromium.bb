@@ -159,15 +159,7 @@ std::unique_ptr<net::ProxyService> ProxyServiceFactory::CreateProxyService(
 #endif
 
 #if !defined(OS_ANDROID)
-    // In-process Mojo PAC can only be set on the command line, so its presence
-    // should override other options.
-    if (command_line.HasSwitch(switches::kV8PacMojoInProcess)) {
-      proxy_service = net::CreateProxyServiceUsingMojoInProcess(
-          std::move(proxy_config_service),
-          new net::ProxyScriptFetcherImpl(context),
-          std::move(dhcp_proxy_script_fetcher), context->host_resolver(),
-          net_log, network_delegate);
-    } else if (EnableOutOfProcessV8Pac(command_line)) {
+    if (EnableOutOfProcessV8Pac(command_line)) {
       proxy_service = net::CreateProxyServiceUsingMojoFactory(
           UtilityProcessMojoProxyResolverFactory::GetInstance(),
           std::move(proxy_config_service),

@@ -867,9 +867,6 @@ const char kUserDataDir[]                   = "user-data-dir";
 // Uses experimental simple cache backend if possible.
 const char kUseSimpleCacheBackend[]         = "use-simple-cache-backend";
 
-// Enables using an in-process Mojo service for the v8 proxy resolver.
-const char kV8PacMojoInProcess[] = "v8-pac-mojo-in-process";
-
 // Enables using an out-of-process Mojo service for the v8 proxy resolver.
 const char kV8PacMojoOutOfProcess[] = "v8-pac-mojo-out-of-process";
 

@@ -704,8 +704,6 @@ if (use_v8_in_net && !is_android) {
     sources = [
       "dns/mojo_host_resolver_impl.cc",
       "dns/mojo_host_resolver_impl.h",
-      "proxy/in_process_mojo_proxy_resolver_factory.cc",
-      "proxy/in_process_mojo_proxy_resolver_factory.h",
       "proxy/mojo_proxy_resolver_factory.h",
       "proxy/proxy_resolver_factory_mojo.cc",
       "proxy/proxy_resolver_factory_mojo.h",
@@ -718,12 +716,6 @@ if (use_v8_in_net && !is_android) {
       "//base",
       "//mojo/public/cpp/bindings",
       "//net/interfaces",
-
-      # NOTE(amistry): As long as we support in-process Mojo v8 PAC, we need
-      # this dependency since in_process_mojo_proxy_resolver_factory creates
-      # the utility process side Mojo services in the browser process.
-      # Ultimately, this will go away when we only support out-of-process.
-      ":net_utility_services",
     ]
   }
 
