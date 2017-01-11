@@ -35,6 +35,10 @@ class ChromeCrashReporterClient : public crash_reporter::CrashReporterClient {
 
   bool GetCrashDumpLocation(base::FilePath* crash_dir) override;
 
+#if defined(OS_MACOSX)
+  bool GetCrashMetricsLocation(base::FilePath* metrics_dir) override;
+#endif
+
   size_t RegisterCrashKeys() override;
 
   bool IsRunningUnattended() override;

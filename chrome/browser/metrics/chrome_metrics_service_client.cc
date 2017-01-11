@@ -222,7 +222,7 @@ std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
       // Register data that will be populated for the current run.
       file_metrics_provider->RegisterSource(
           active_path,
-          metrics::FileMetricsProvider::SOURCE_HISTOGRAMS_ATOMIC_FILE,
+          metrics::FileMetricsProvider::SOURCE_HISTOGRAMS_ACTIVE_FILE,
           metrics::FileMetricsProvider::ASSOCIATE_CURRENT_RUN,
           kCrashpadHistogramAllocatorName);
     }
