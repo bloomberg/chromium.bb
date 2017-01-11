@@ -46,6 +46,7 @@ class SigninViewControllerDelegate : public content::WebContentsDelegate {
       SigninViewController* signin_view_controller,
       Browser* browser);
 
+  // Closes the modal sign-in dialog.
   void CloseModalSignin();
 
   // Either navigates back in the signin flow if the history state allows it or
