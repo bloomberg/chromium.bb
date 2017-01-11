@@ -363,7 +363,7 @@ TEST_F(TouchToSearchPermissionsMediatorTest, AudienceNotifications) {
       ^bool(void) {
         return [audience updated];
       },
-      nullptr, delay);
+      false, delay);
   EXPECT_TRUE([audience updated]);
   // Reset |audience|.
   [audience setUpdated:NO];
@@ -410,7 +410,7 @@ TEST_F(TouchToSearchPermissionsMediatorTest, AudienceNotifications) {
       ^bool(void) {
         return [audience updated];
       },
-      nullptr, delay);
+      false, delay);
   EXPECT_TRUE([audience updated]);
   // Reset |audience|.
   [audience setUpdated:NO];
@@ -443,7 +443,7 @@ TEST_F(TouchToSearchPermissionsMediatorTest, AudienceNotifications) {
       ^bool(void) {
         return [audience2 updated];
       },
-      nullptr, delay);
+      false, delay);
   EXPECT_TRUE([audience2 updated]);
 }
 

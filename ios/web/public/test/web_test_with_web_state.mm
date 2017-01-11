@@ -113,9 +113,7 @@ void WebTestWithWebState::WaitForBackgroundTasks() {
 }
 
 void WebTestWithWebState::WaitForCondition(ConditionBlock condition) {
-  base::MessageLoop* messageLoop = base::MessageLoop::current();
-  DCHECK(messageLoop);
-  base::test::ios::WaitUntilCondition(condition, messageLoop,
+  base::test::ios::WaitUntilCondition(condition, true,
                                       base::TimeDelta::FromSeconds(10));
 }
 

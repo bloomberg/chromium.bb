@@ -38,7 +38,7 @@ class NewTabPagePerfTest : public PerfTestWithBVC {
   }
   void SettleUI() {
     base::test::ios::WaitUntilCondition(
-        nil, nullptr, base::TimeDelta::FromSecondsD(kMaxUICatchupDelay));
+        nil, false, base::TimeDelta::FromSecondsD(kMaxUICatchupDelay));
   }
 };
 

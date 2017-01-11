@@ -257,9 +257,9 @@ void StackViewControllerPerfTest::WaitForPageLoad(Tab* tab) {
       ^bool() {
         return !tab.webState->IsLoading();
       },
-      nullptr, base::TimeDelta::FromSecondsD(kMaxPageLoadDelay));
+      false, base::TimeDelta::FromSecondsD(kMaxPageLoadDelay));
   base::test::ios::WaitUntilCondition(
-      nil, nullptr, base::TimeDelta::FromSecondsD(kMaxUICatchupDelay));
+      nil, false, base::TimeDelta::FromSecondsD(kMaxUICatchupDelay));
 }
 
 base::TimeDelta StackViewControllerPerfTest::OpenStackView() {
@@ -271,7 +271,7 @@ base::TimeDelta StackViewControllerPerfTest::OpenStackView() {
       ^bool() {
         return [delegate_ showAnimationEnded];
       },
-      nullptr, base::TimeDelta::FromSecondsD(kTotalSpinDelay));
+      false, base::TimeDelta::FromSecondsD(kTotalSpinDelay));
 }
 
 void StackViewControllerPerfTest::MainControllerShowTabSwitcher() {
@@ -326,7 +326,7 @@ base::TimeDelta StackViewControllerPerfTest::CloseStackView() {
       ^bool() {
         return [delegate_ dismissAnimationEnded];
       },
-      nullptr, base::TimeDelta::FromSecondsD(kTotalSpinDelay));
+      false, base::TimeDelta::FromSecondsD(kTotalSpinDelay));
 
   [view_controller_ dismissViewControllerAnimated:NO completion:nil];
   if (!reuse_svc_)
@@ -338,7 +338,7 @@ base::TimeDelta StackViewControllerPerfTest::CloseStackView() {
   // in the OS during view teardown to resolve, so that the view gets its
   // dismissal callbacks.
   base::test::ios::WaitUntilCondition(
-      nil, nullptr, base::TimeDelta::FromSecondsD(kSpinDelay));
+      nil, false, base::TimeDelta::FromSecondsD(kSpinDelay));
 
   return closeTime;
 }

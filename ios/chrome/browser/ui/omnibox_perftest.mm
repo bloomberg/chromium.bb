@@ -159,7 +159,7 @@ class OmniboxPerfTest : public PerfTest {
         ^bool() {
           return [keyboard_listener_ isKeyboardVisible];
         },
-        nullptr, base::TimeDelta());
+        false, base::TimeDelta());
     base::test::ios::TimeUntilCondition(
         ^{
           [textField resignFirstResponder];
@@ -167,7 +167,7 @@ class OmniboxPerfTest : public PerfTest {
         ^bool() {
           return ![keyboard_listener_ isKeyboardVisible];
         },
-        nullptr, base::TimeDelta());
+        false, base::TimeDelta());
     [textField removeFromSuperview];
     return elapsed;
   }
@@ -182,7 +182,7 @@ class OmniboxPerfTest : public PerfTest {
         ^bool() {
           return [keyboard_listener_ isKeyboardVisible];
         },
-        nullptr, base::TimeDelta());
+        false, base::TimeDelta());
   }
 
   // Performs necessary cleanup (so next pass of unit test can start from
@@ -197,7 +197,7 @@ class OmniboxPerfTest : public PerfTest {
         ^bool() {
           return ![keyboard_listener_ isKeyboardVisible];
         },
-        nullptr, base::TimeDelta());
+        false, base::TimeDelta());
   }
 
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
