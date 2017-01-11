@@ -95,7 +95,6 @@ display log messages to the `LogCat` pane.
 <classpathentry kind="src" path="third_party/libjingle/source/talk/app/webrtc/javatests/src"/>
 <classpathentry kind="src" path="third_party/libjingle/source/talk/examples/android/src"/>
 <classpathentry kind="src" path="android_webview/java/src"/>
-<classpathentry kind="src" path="android_webview/java/generated_src"/>
 <classpathentry kind="src" path="android_webview/test/shell/src"/>
 <classpathentry kind="src" path="android_webview/unittestjava/src"/>
 <classpathentry kind="src" path="android_webview/javatests/src"/>
