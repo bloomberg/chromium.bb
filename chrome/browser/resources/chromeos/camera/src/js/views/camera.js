@@ -1766,7 +1766,18 @@ camera.views.Camera.prototype.synchronizeBounds_ = function() {
   if (!this.video_.videoHeight)
     return;
 
-  var scale = Math.min(1, document.body.offsetHeight / this.video_.videoHeight);
+  var videoRatio = this.video_.videoWidth / this.video_.videoHeight;
+  var bodyRatio = document.body.offsetWidth / document.body.offsetHeight;
+
+  var scale;
+  if (videoRatio > bodyRatio) {
+    scale = Math.min(1, document.body.offsetHeight / this.video_.videoHeight)
+    document.body.classList.add('letterbox');
+  } else {
+    scale = Math.min(1, document.body.offsetWidth / this.video_.videoWidth);
+    document.body.classList.remove('letterbox');
+  }
+
   this.mainPreviewProcessor_.scale = scale;
   this.mainFastProcessor_.scale = scale / 2;
 
