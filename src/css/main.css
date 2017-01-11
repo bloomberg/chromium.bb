@@ -226,13 +226,22 @@ body:not(.controls-visible) .dynamic {
       url(../images/2x/gallery_button_delete.png) 2x);
 }
 
-#main-canvas-wrapper,
-#main-preview-canvas-wrapper,
-#main-fast-canvas-wrapper,
-#main-canvas-wrapper canvas,
-#main-preview-canvas-wrapper canvas,
-#main-fast-canvas-wrapper canvas {
+body.letterbox #main-canvas-wrapper,
+body.letterbox #main-preview-canvas-wrapper,
+body.letterbox #main-fast-canvas-wrapper,
+body.letterbox #main-canvas-wrapper canvas,
+body.letterbox #main-preview-canvas-wrapper canvas,
+body.letterbox #main-fast-canvas-wrapper canvas {
   width: 100%;
+}
+
+body:not(.letterbox) #main-canvas-wrapper,
+body:not(.letterbox) #main-preview-canvas-wrapper,
+body:not(.letterbox) #main-fast-canvas-wrapper,
+body:not(.letterbox) #main-canvas-wrapper canvas,
+body:not(.letterbox) #main-preview-canvas-wrapper canvas,
+body:not(.letterbox) #main-fast-canvas-wrapper canvas {
+  height: 100%;
 }
 
 #main-canvas-wrapper canvas,
