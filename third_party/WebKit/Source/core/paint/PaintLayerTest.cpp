@@ -501,11 +501,14 @@ TEST_P(PaintLayerTest, PaintInvalidationOnCompositedScroll) {
 TEST_P(PaintLayerTest, CompositingContainerFloat) {
   enableCompositing();
   setBodyInnerHTML(
-      "<div id='containingBlock' style='position: relative; z-index: 0'>"
-      "  <div style='backface-visibility: hidden'></div>"
-      "  <span style='clip-path: polygon(0px 15px, 0px 54px, 100px 0px)'>"
-      "    <div id='target' style='float: right; position: relative'></div>"
-      "  </span>"
+      "<div id='compositedContainer' style='position: relative;"
+      "    will-change: transform'>"
+      "  <div id='containingBlock' style='position: relative; z-index: 0'>"
+      "    <div style='backface-visibility: hidden'></div>"
+      "    <span style='clip-path: polygon(0px 15px, 0px 54px, 100px 0px)'>"
+      "      <div id='target' style='float: right; position: relative'></div>"
+      "    </span>"
+      "  </div>"
       "</div>");
 
   PaintLayer* target =
@@ -514,6 +517,16 @@ TEST_P(PaintLayerTest, CompositingContainerFloat) {
       toLayoutBoxModelObject(getLayoutObjectByElementId("containingBlock"))
           ->layer();
   EXPECT_EQ(containingBlock, target->compositingContainer());
+  PaintLayer* compositedContainer =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("compositedContainer"))
+          ->layer();
+
+  // enclosingLayerWithCompositedLayerMapping is not needed or applicable to
+  // SPv2.
+  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    EXPECT_EQ(compositedContainer,
+              target->enclosingLayerWithCompositedLayerMapping(ExcludeSelf));
+  }
 }
 
 }  // namespace blink
