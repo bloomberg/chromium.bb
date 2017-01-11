@@ -27,10 +27,6 @@ Platform::ContextAttributes toPlatformContextAttributes(
   Platform::ContextAttributes result;
   result.failIfMajorPerformanceCaveat = attrs.failIfMajorPerformanceCaveat();
   result.webGLVersion = webGLVersion;
-  result.supportAlpha = attrs.alpha();
-  result.supportDepth = attrs.depth();
-  result.supportStencil = attrs.stencil();
-  result.supportAntialias = attrs.antialias();
   return result;
 }
 
