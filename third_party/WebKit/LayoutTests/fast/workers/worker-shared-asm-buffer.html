@@ -16,7 +16,7 @@ function runTest()
         "    function Module(stdlib, foreign, heap) {",
         "        'use asm';",
         "        var MEM32 = new stdlib.Int32Array(heap);",
-        "        function load() { var res = MEM32[255]; MEM32[255] = 123457; return res; }",
+        "        function load() { var res = 0; res = MEM32[255]|0; MEM32[255] = 123457; return res|0; }",
         "        return { load: load };",
         "    }",
         "    var buffer = e.data;",
