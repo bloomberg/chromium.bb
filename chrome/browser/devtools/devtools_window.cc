@@ -926,7 +926,7 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
     url_string += "&can_dock=true";
   if (panel.size())
     url_string += "&panel=" + panel;
-  return DevToolsUIBindings::SanitizeFrontendURL(GURL(url_string));
+  return DevToolsUI::SanitizeFrontendURL(GURL(url_string));
 }
 
 // static

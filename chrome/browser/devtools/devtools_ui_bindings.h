@@ -42,8 +42,6 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
   static DevToolsUIBindings* ForWebContents(
       content::WebContents* web_contents);
 
-  static GURL SanitizeFrontendURL(const GURL& url);
-
   class Delegate {
    public:
     virtual ~Delegate() {}
@@ -200,7 +198,6 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
   typedef base::Callback<void(bool)> InfoBarCallback;
   void ShowDevToolsConfirmInfoBar(const base::string16& message,
                                   const InfoBarCallback& callback);
-  void UpdateFrontendHost();
 
   // Extensions support.
   void AddDevToolsExtensionsToClient();

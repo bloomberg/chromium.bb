@@ -3708,7 +3708,6 @@ test("unit_tests") {
 
   if (!is_ios && !is_android) {
     sources += [
-      "../browser/devtools/devtools_ui_bindings_unittest.cc",
       "../browser/download/download_dir_policy_handler_unittest.cc",
       "../browser/lifetime/keep_alive_registry_unittest.cc",
       "../browser/renderer_context_menu/render_view_context_menu_test_util.cc",
@@ -3717,6 +3716,7 @@ test("unit_tests") {
       "../browser/ui/autofill/save_card_bubble_controller_impl_unittest.cc",
       "../browser/ui/bluetooth/bluetooth_chooser_controller_unittest.cc",
       "../browser/ui/passwords/manage_passwords_ui_controller_unittest.cc",
+      "../browser/ui/webui/devtools_ui_unittest.cc",
     ]
     deps += [
       ":unit_tests_js",
