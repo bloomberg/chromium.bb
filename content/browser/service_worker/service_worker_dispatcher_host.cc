@@ -333,13 +333,6 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
 
   std::vector<GURL> urls = {provider_host->document_url(), pattern, script_url};
   if (!ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(urls)) {
-    // Temporary debugging for https://crbug.com/630495
-    base::debug::ScopedCrashKey host_url_key(
-        "swdh_register_cannot_host_url", provider_host->document_url().spec());
-    base::debug::ScopedCrashKey scope_url_key("swdh_register_cannot_scope_url",
-                                              pattern.spec());
-    base::debug::ScopedCrashKey script_url_key(
-        "swdh_register_cannot_script_url", script_url.spec());
     bad_message::ReceivedBadMessage(this, bad_message::SWDH_REGISTER_CANNOT);
     return;
   }
@@ -558,12 +551,6 @@ void ServiceWorkerDispatcherHost::OnGetRegistration(
 
   std::vector<GURL> urls = {provider_host->document_url(), document_url};
   if (!ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(urls)) {
-    // Temporary debugging for https://crbug.com/630496
-    base::debug::ScopedCrashKey host_url_key(
-        "swdh_get_registration_cannot_host_url",
-        provider_host->document_url().spec());
-    base::debug::ScopedCrashKey document_url_key(
-        "swdh_get_registration_cannot_document_url", document_url.spec());
     bad_message::ReceivedBadMessage(this,
                                     bad_message::SWDH_GET_REGISTRATION_CANNOT);
     return;
