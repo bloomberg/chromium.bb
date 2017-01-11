@@ -334,13 +334,13 @@ DomKey GetDomKeyFromAndroidKeycode(int keycode) {
     case AKEYCODE_TV_INPUT_HDMI_4:
       return DomKey::TV_INPUT_HDMI4;
     case AKEYCODE_TV_INPUT_COMPOSITE_1:
-      return DomKey::TV_INPUT_COMPONENT1;
-    case AKEYCODE_TV_INPUT_COMPOSITE_2:
-      return DomKey::TV_INPUT_COMPONENT2;
-    case AKEYCODE_TV_INPUT_COMPONENT_1:
       return DomKey::TV_INPUT_COMPOSITE1;
-    case AKEYCODE_TV_INPUT_COMPONENT_2:
+    case AKEYCODE_TV_INPUT_COMPOSITE_2:
       return DomKey::TV_INPUT_COMPOSITE2;
+    case AKEYCODE_TV_INPUT_COMPONENT_1:
+      return DomKey::TV_INPUT_COMPONENT1;
+    case AKEYCODE_TV_INPUT_COMPONENT_2:
+      return DomKey::TV_INPUT_COMPONENT2;
     case AKEYCODE_TV_INPUT_VGA_1:
       return DomKey::TV_INPUT_VGA1;
     case AKEYCODE_TV_AUDIO_DESCRIPTION:
