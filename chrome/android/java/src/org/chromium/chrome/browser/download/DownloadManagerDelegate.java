@@ -239,4 +239,16 @@ public class DownloadManagerDelegate {
             mCallback.onQueryCompleted(result, mShowNotifications);
         }
     }
+
+    static Uri getContentUriFromDownloadManager(Context context, long downloadId) {
+        DownloadManager manager =
+                (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
+        Uri contentUri = null;
+        try {
+            contentUri = manager.getUriForDownloadedFile(downloadId);
+        } catch (SecurityException e) {
+            Log.e(TAG, "unable to get content URI from DownloadManager");
+        }
+        return contentUri;
+    }
 }

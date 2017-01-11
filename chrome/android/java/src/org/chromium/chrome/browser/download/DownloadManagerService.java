@@ -987,11 +987,12 @@ public class DownloadManagerService extends BroadcastReceiver implements
             Context context, @Nullable String filePath, long downloadId,
             boolean isSupportedMimeType) {
         assert !ThreadUtils.runningOnUiThread();
-        DownloadManager manager =
-                (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
-        Uri contentUri = manager.getUriForDownloadedFile(downloadId);
+        Uri contentUri = DownloadManagerDelegate.getContentUriFromDownloadManager(
+                context, downloadId);
         if (contentUri == null) return null;
 
+        DownloadManager manager =
+                (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
         String mimeType = manager.getMimeTypeForDownloadedFile(downloadId);
         if (isSupportedMimeType) {
             // Redirect the user to an internal media viewer.  The file path is necessary to show
@@ -1000,7 +1001,6 @@ public class DownloadManagerService extends BroadcastReceiver implements
             if (filePath != null) fileUri = Uri.fromFile(new File(filePath));
             return DownloadUtils.getMediaViewerIntentForDownloadItem(fileUri, contentUri, mimeType);
         }
-
         return DownloadUtils.createViewIntentForDownloadItem(contentUri, mimeType);
     }
 
