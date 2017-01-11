@@ -256,7 +256,7 @@ fill interpolable, inherited, svg, setter=setFillPaint, custom_all
 fill-opacity interpolable, inherited, svg, converter=convertNumberOrPercentage
 fill-rule inherited, svg, type_name=WindRule
 filter interpolable, converter=convertFilterOperations
-flex-basis interpolable, converter=convertLengthOrAuto
+flex-basis interpolable, converter=convertLengthOrAuto, api_class
 flex-direction
 flex-grow interpolable, type_name=float
 flex-shrink interpolable, type_name=float

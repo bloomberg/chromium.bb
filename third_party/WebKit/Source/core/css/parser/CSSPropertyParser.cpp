@@ -1872,14 +1872,6 @@ static CSSValue* consumeNoneOrURI(CSSParserTokenRange& range) {
   return consumeUrl(range);
 }
 
-static CSSValue* consumeFlexBasis(CSSParserTokenRange& range,
-                                  CSSParserMode cssParserMode) {
-  // FIXME: Support intrinsic dimensions too.
-  if (range.peek().id() == CSSValueAuto)
-    return consumeIdent(range);
-  return consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative);
-}
-
 static CSSValue* consumeStrokeDasharray(CSSParserTokenRange& range) {
   CSSValueID id = range.peek().id();
   if (id == CSSValueNone)
@@ -3534,8 +3526,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyMarkerEnd:
     case CSSPropertyMask:
       return consumeNoneOrURI(m_range);
-    case CSSPropertyFlexBasis:
-      return consumeFlexBasis(m_range, m_context.mode());
     case CSSPropertyFlexGrow:
     case CSSPropertyFlexShrink:
       return consumeNumber(m_range, ValueRangeNonNegative);

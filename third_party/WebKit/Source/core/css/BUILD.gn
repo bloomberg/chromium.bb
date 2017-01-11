@@ -347,6 +347,7 @@ blink_core_sources("css") {
     "properties/CSSPropertyAPICaretColor.cpp",
     "properties/CSSPropertyAPIClip.cpp",
     "properties/CSSPropertyAPIColumnGap.cpp",
+    "properties/CSSPropertyAPIFlexBasis.cpp",
     "properties/CSSPropertyAPIFontSizeAdjust.cpp",
     "properties/CSSPropertyAPISize.cpp",
     "properties/CSSPropertyAPITextDecorationColor.cpp",
