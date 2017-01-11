@@ -112,7 +112,7 @@ class SystemGestureEventFilter;
 class SystemModalContainerEventFilter;
 class SystemTray;
 class ToplevelWindowEventHandler;
-class TouchTransformerController;
+class AshTouchTransformController;
 class ScreenLayoutObserver;
 class VirtualKeyboardController;
 class VideoActivityNotifier;
@@ -268,7 +268,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   PowerEventObserver* power_event_observer() {
     return power_event_observer_.get();
   }
-  TouchTransformerController* touch_transformer_controller() {
+  AshTouchTransformController* touch_transformer_controller() {
     return touch_transformer_controller_.get();
   }
   LaserPointerController* laser_pointer_controller() {
@@ -516,7 +516,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<ScreenOrientationController> screen_orientation_controller_;
   std::unique_ptr<ScreenLayoutObserver> screen_layout_observer_;
 
-  std::unique_ptr<TouchTransformerController> touch_transformer_controller_;
+  std::unique_ptr<AshTouchTransformController> touch_transformer_controller_;
 
   std::unique_ptr<ui::EventHandler> magnifier_key_scroll_handler_;
   std::unique_ptr<ui::EventHandler> speech_feedback_handler_;

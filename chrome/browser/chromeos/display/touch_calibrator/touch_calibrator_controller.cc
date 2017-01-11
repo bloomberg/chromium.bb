@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/display/touch_calibrator/touch_calibrator_controller.h"
 
 #include "ash/shell.h"
-#include "ash/touch/touch_transformer_controller.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/display/touch_calibrator/touch_calibrator_view.h"
 #include "ui/display/screen.h"
@@ -53,7 +52,7 @@ void TouchCalibratorController::StartCalibration(
         base::MakeUnique<TouchCalibratorView>(display, is_primary_view);
   }
 
-  // TODO(malaykeshav): Call TouchTransformerController::SetForCalibration()
+  // TODO(malaykeshav): Call TouchTransformController::SetForCalibration()
 
   // Add self as an event handler target.
   ash::Shell::GetInstance()->AddPreTargetHandler(this);
@@ -65,7 +64,7 @@ void TouchCalibratorController::StopCalibration() {
   is_calibrating_ = false;
   ash::Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
 
-  // TODO(malaykeshav): Call TouchTransformerController::SetForCalibration()
+  // TODO(malaykeshav): Call TouchTransformController::SetForCalibration()
 
   // Remove self as the event handler.
   ash::Shell::GetInstance()->RemovePreTargetHandler(this);

@@ -70,7 +70,7 @@
 #include "ash/system/chromeos/power/power_event_observer.h"
 #include "ash/system/chromeos/power/video_activity_notifier.h"
 #include "ash/system/chromeos/screen_layout_observer.h"
-#include "ash/touch/touch_transformer_controller.h"
+#include "ash/touch/ash_touch_transform_controller.h"
 #include "ash/utility/screenshot_controller.h"
 #include "ash/virtual_keyboard_controller.h"
 #include "ash/wm/ash_focus_rules.h"
@@ -743,11 +743,12 @@ void Shell::Init(const ShellInitParams& init_params) {
   wm_shell_->SetSystemTrayDelegate(
       base::WrapUnique(wm_shell_->delegate()->CreateSystemTrayDelegate()));
 
-  // Create TouchTransformerController before
+  // Create AshTouchTransformController before
   // WindowTreeHostManager::InitDisplays()
-  // since TouchTransformerController listens on
+  // since AshTouchTransformController listens on
   // WindowTreeHostManager::Observer::OnDisplaysInitialized().
-  touch_transformer_controller_.reset(new TouchTransformerController());
+  touch_transformer_controller_.reset(new AshTouchTransformController(
+      display_configurator_.get(), display_manager_.get()));
 
   wm_shell_->SetKeyboardUI(KeyboardUI::Create());
 

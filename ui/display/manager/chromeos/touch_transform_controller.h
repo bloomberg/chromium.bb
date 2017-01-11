@@ -1,0 +1,90 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef UI_DISPLAY_MANAGER_CHROMEOS_TOUCH_TRANSFORM_CONTROLLER_H_
+#define UI_DISPLAY_MANAGER_CHROMEOS_TOUCH_TRANSFORM_CONTROLLER_H_
+
+#include "base/macros.h"
+#include "ui/display/manager/display_manager_export.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/size_f.h"
+#include "ui/gfx/transform.h"
+
+namespace ui {
+struct TouchscreenDevice;
+}
+
+namespace display {
+
+class DisplayConfigurator;
+class DisplayManager;
+class ManagedDisplayInfo;
+
+namespace test {
+class TouchTransformControllerTest;
+}
+
+// TouchTransformController matches touchscreen displays with touch
+// input-devices and computes the coordinate transforms between display space
+// and input-device space.
+class DISPLAY_MANAGER_EXPORT TouchTransformController {
+ public:
+  TouchTransformController(DisplayConfigurator* display_configurator,
+                           DisplayManager* display_manager);
+  ~TouchTransformController();
+
+  // Updates the transform for touch input-devices and pushes the new transforms
+  // into device manager.
+  void UpdateTouchTransforms() const;
+
+ private:
+  friend class test::TouchTransformControllerTest;
+
+  // Returns a transform that will be used to change an event's location from
+  // the touchscreen's coordinate system into |display|'s coordinate system.
+  // The transform is also responsible for properly scaling the display if the
+  // display supports panel fitting.
+  //
+  // On X11 events are reported in framebuffer coordinate space, so the
+  // |framebuffer_size| is used for scaling.
+  // On Ozone events are reported in the touchscreen's resolution, so
+  // |touch_display| is used to determine the size and scale the event.
+  gfx::Transform GetTouchTransform(const ManagedDisplayInfo& display,
+                                   const ManagedDisplayInfo& touch_display,
+                                   const ui::TouchscreenDevice& touchscreen,
+                                   const gfx::Size& framebuffer_size) const;
+
+  // Returns the scaling factor for the touch radius such that it scales the
+  // radius from |touch_device|'s coordinate system to the |touch_display|'s
+  // coordinate system.
+  double GetTouchResolutionScale(
+      const ManagedDisplayInfo& touch_display,
+      const ui::TouchscreenDevice& touch_device) const;
+
+  // For the provided |display| update the touch radius mapping.
+  void UpdateTouchRadius(const ManagedDisplayInfo& display) const;
+
+  // For a given |target_display| and |target_display_id| update the touch
+  // transformation based on the touchscreen associated with |touch_display|.
+  // |target_display_id| is the display id whose root window will receive the
+  // touch events.
+  // |touch_display| is the physical display that has the touchscreen
+  // from which the events arrive.
+  // |target_display| provides the dimensions to which the touch event will be
+  // transformed.
+  void UpdateTouchTransform(int64_t target_display_id,
+                            const ManagedDisplayInfo& touch_display,
+                            const ManagedDisplayInfo& target_display) const;
+
+  // Both |display_configurator_| and |display_manager_| are not owned and must
+  // outlive TouchTransformController.
+  DisplayConfigurator* display_configurator_;
+  DisplayManager* display_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(TouchTransformController);
+};
+
+}  // namespace display
+
+#endif  // UI_DISPLAY_MANAGER_CHROMEOS_TOUCH_TRANSFORM_CONTROLLER_H_

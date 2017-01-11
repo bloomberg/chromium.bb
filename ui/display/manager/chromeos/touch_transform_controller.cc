@@ -2,28 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/touch/touch_transformer_controller.h"
+#include "ui/display/manager/chromeos/touch_transform_controller.h"
 
-#include "ash/display/window_tree_host_manager.h"
-#include "ash/host/ash_window_tree_host.h"
-#include "ash/root_window_controller.h"
-#include "ash/shell.h"
+#include <utility>
+#include <vector>
+
 #include "third_party/skia/include/core/SkMatrix44.h"
-#include "ui/aura/window_tree_host.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/manager/chromeos/display_configurator.h"
 #include "ui/display/manager/display_manager.h"
+#include "ui/display/manager/managed_display_info.h"
+#include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/events/devices/device_data_manager.h"
 
-namespace ash {
+namespace display {
 
 namespace {
-
-display::DisplayManager* GetDisplayManager() {
-  return Shell::GetInstance()->display_manager();
-}
 
 ui::TouchscreenDevice FindTouchscreenById(int id) {
   const std::vector<ui::TouchscreenDevice>& touchscreens =
@@ -122,12 +118,11 @@ bool GetCalibratedTransform(
 }
 
 // Returns an uncalibrated touch transform.
-gfx::Transform GetUncalibratedTransform(
-    const gfx::Transform& tm,
-    const display::ManagedDisplayInfo& display,
-    const display::ManagedDisplayInfo& touch_display,
-    const gfx::SizeF& touch_area,
-    const gfx::SizeF& touch_native_size) {
+gfx::Transform GetUncalibratedTransform(const gfx::Transform& tm,
+                                        const ManagedDisplayInfo& display,
+                                        const ManagedDisplayInfo& touch_display,
+                                        const gfx::SizeF& touch_area,
+                                        const gfx::SizeF& touch_native_size) {
   gfx::SizeF current_size(display.bounds_in_native().size());
   gfx::Transform ctm(tm);
   // Take care of panel fitting only if supported. Panel fitting is emulated
@@ -167,8 +162,8 @@ gfx::Transform GetUncalibratedTransform(
 // so we need to scale the touch radius to be compatible with the display's
 // resolution. We compute the scale as
 // sqrt of (display_area / touchscreen_area)
-double TouchTransformerController::GetTouchResolutionScale(
-    const display::ManagedDisplayInfo& touch_display,
+double TouchTransformController::GetTouchResolutionScale(
+    const ManagedDisplayInfo& touch_display,
     const ui::TouchscreenDevice& touch_device) const {
   if (touch_device.id == ui::InputDevice::kInvalidId ||
       touch_device.size.IsEmpty() ||
@@ -186,9 +181,9 @@ double TouchTransformerController::GetTouchResolutionScale(
   return ratio;
 }
 
-gfx::Transform TouchTransformerController::GetTouchTransform(
-    const display::ManagedDisplayInfo& display,
-    const display::ManagedDisplayInfo& touch_display,
+gfx::Transform TouchTransformController::GetTouchTransform(
+    const ManagedDisplayInfo& display,
+    const ManagedDisplayInfo& touch_display,
     const ui::TouchscreenDevice& touchscreen,
     const gfx::Size& framebuffer_size) const {
   auto current_size = gfx::SizeF(display.bounds_in_native().size());
@@ -263,7 +258,7 @@ gfx::Transform TouchTransformerController::GetTouchTransform(
     // inform the user with proper UX.
 
     // Clear stored calibration data.
-    GetDisplayManager()->ClearTouchCalibrationData(touch_display.id());
+    display_manager_->ClearTouchCalibrationData(touch_display.id());
 
     // Return uncalibrated transform.
     return GetUncalibratedTransform(ctm, display, touch_display, touch_area,
@@ -274,16 +269,16 @@ gfx::Transform TouchTransformerController::GetTouchTransform(
   return stored_ctm;
 }
 
-TouchTransformerController::TouchTransformerController() {
-  Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
-}
+TouchTransformController::TouchTransformController(
+    DisplayConfigurator* display_configurator,
+    DisplayManager* display_manager)
+    : display_configurator_(display_configurator),
+      display_manager_(display_manager) {}
 
-TouchTransformerController::~TouchTransformerController() {
-  Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
-}
+TouchTransformController::~TouchTransformController() {}
 
-void TouchTransformerController::UpdateTouchRadius(
-    const display::ManagedDisplayInfo& display) const {
+void TouchTransformController::UpdateTouchRadius(
+    const ManagedDisplayInfo& display) const {
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
   for (const auto& device_id : display.input_devices()) {
     device_manager->UpdateTouchRadiusScale(
@@ -292,13 +287,12 @@ void TouchTransformerController::UpdateTouchRadius(
   }
 }
 
-void TouchTransformerController::UpdateTouchTransform(
+void TouchTransformController::UpdateTouchTransform(
     int64_t target_display_id,
-    const display::ManagedDisplayInfo& touch_display,
-    const display::ManagedDisplayInfo& target_display) const {
+    const ManagedDisplayInfo& touch_display,
+    const ManagedDisplayInfo& target_display) const {
   ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
-  gfx::Size fb_size =
-      Shell::GetInstance()->display_configurator()->framebuffer_size();
+  gfx::Size fb_size = display_configurator_->framebuffer_size();
   for (const auto& device_id : touch_display.input_devices()) {
     device_manager->UpdateTouchInfoForDisplay(
         target_display_id, device_id,
@@ -307,50 +301,45 @@ void TouchTransformerController::UpdateTouchTransform(
   }
 }
 
-void TouchTransformerController::UpdateTouchTransformer() const {
-  ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
-  device_manager->ClearTouchDeviceAssociations();
+void TouchTransformController::UpdateTouchTransforms() const {
+  ui::DeviceDataManager::GetInstance()->ClearTouchDeviceAssociations();
 
-  // Display IDs and display::ManagedDisplayInfo for mirror or extended mode.
-  int64_t display1_id = display::kInvalidDisplayId;
-  int64_t display2_id = display::kInvalidDisplayId;
-  display::ManagedDisplayInfo display1;
-  display::ManagedDisplayInfo display2;
-  // Display ID and display::ManagedDisplayInfo for single display mode.
-  int64_t single_display_id = display::kInvalidDisplayId;
-  display::ManagedDisplayInfo single_display;
+  // Display IDs and ManagedDisplayInfo for mirror or extended mode.
+  int64_t display1_id = kInvalidDisplayId;
+  int64_t display2_id = kInvalidDisplayId;
+  ManagedDisplayInfo display1;
+  ManagedDisplayInfo display2;
+  // Display ID and ManagedDisplayInfo for single display mode.
+  int64_t single_display_id = kInvalidDisplayId;
+  ManagedDisplayInfo single_display;
 
-  WindowTreeHostManager* window_tree_host_manager =
-      Shell::GetInstance()->window_tree_host_manager();
-  display::DisplayManager* display_manager = GetDisplayManager();
-  if (display_manager->num_connected_displays() == 0) {
+  if (display_manager_->num_connected_displays() == 0) {
     return;
-  } else if (display_manager->num_connected_displays() == 1 ||
-             display_manager->IsInUnifiedMode()) {
-    single_display_id = display_manager->first_display_id();
-    DCHECK(single_display_id != display::kInvalidDisplayId);
-    single_display = display_manager->GetDisplayInfo(single_display_id);
+  } else if (display_manager_->num_connected_displays() == 1 ||
+             display_manager_->IsInUnifiedMode()) {
+    single_display_id = display_manager_->first_display_id();
+    DCHECK(single_display_id != kInvalidDisplayId);
+    single_display = display_manager_->GetDisplayInfo(single_display_id);
     UpdateTouchRadius(single_display);
   } else {
-    display::DisplayIdList list = display_manager->GetCurrentDisplayIdList();
+    DisplayIdList list = display_manager_->GetCurrentDisplayIdList();
     display1_id = list[0];
     display2_id = list[1];
-    DCHECK(display1_id != display::kInvalidDisplayId &&
-           display2_id != display::kInvalidDisplayId);
-    display1 = display_manager->GetDisplayInfo(display1_id);
-    display2 = display_manager->GetDisplayInfo(display2_id);
+    DCHECK(display1_id != kInvalidDisplayId &&
+           display2_id != kInvalidDisplayId);
+    display1 = display_manager_->GetDisplayInfo(display1_id);
+    display2 = display_manager_->GetDisplayInfo(display2_id);
     UpdateTouchRadius(display1);
     UpdateTouchRadius(display2);
   }
 
-  if (display_manager->IsInMirrorMode()) {
-    int64_t primary_display_id =
-        window_tree_host_manager->GetPrimaryDisplayId();
-    if (GetDisplayManager()->SoftwareMirroringEnabled()) {
+  if (display_manager_->IsInMirrorMode()) {
+    int64_t primary_display_id = Screen::GetScreen()->GetPrimaryDisplay().id();
+    if (display_manager_->SoftwareMirroringEnabled()) {
       // In extended but software mirroring mode, there is a WindowTreeHost for
       // each display, but all touches are forwarded to the primary root
       // window's WindowTreeHost.
-      display::ManagedDisplayInfo target_display =
+      ManagedDisplayInfo target_display =
           primary_display_id == display1_id ? display1 : display2;
       UpdateTouchTransform(target_display.id(), display1, target_display);
       UpdateTouchTransform(target_display.id(), display2, target_display);
@@ -363,7 +352,7 @@ void TouchTransformerController::UpdateTouchTransformer() const {
     return;
   }
 
-  if (display_manager->num_connected_displays() > 1) {
+  if (display_manager_->num_connected_displays() > 1) {
     // In actual extended mode, each display is associated with one
     // WindowTreeHost.
     UpdateTouchTransform(display1_id, display1, display1);
@@ -375,12 +364,4 @@ void TouchTransformerController::UpdateTouchTransformer() const {
   UpdateTouchTransform(single_display_id, single_display, single_display);
 }
 
-void TouchTransformerController::OnDisplaysInitialized() {
-  UpdateTouchTransformer();
-}
-
-void TouchTransformerController::OnDisplayConfigurationChanged() {
-  UpdateTouchTransformer();
-}
-
-}  // namespace ash
+}  // namespace display
