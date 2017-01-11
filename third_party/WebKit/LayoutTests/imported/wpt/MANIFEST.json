@@ -4825,11 +4825,6 @@
      {}
     ]
    ],
-   "domxpath/xml_xpath_tests.xml": [
-    [
-     {}
-    ]
-   ],
    "encoding/idlharness-expected.txt": [
     [
      {}
@@ -16231,11 +16226,6 @@
     ]
    ],
    "user-timing/test_user_timing_mark_and_measure_exception_when_invoke_with_timing_attributes.js": [
-    [
-     {}
-    ]
-   ],
-   "vr/idlharness-expected.txt": [
     [
      {}
     ]
@@ -30090,12 +30080,6 @@
      {}
     ]
    ],
-   "vr/idlharness.html": [
-    [
-     "/vr/idlharness.html",
-     {}
-    ]
-   ],
    "web-animations/animation-model/animation-types/addition-per-property.html": [
     [
      "/web-animations/animation-model/animation-types/addition-per-property.html",
@@ -30771,6 +30755,12 @@
    "webstorage/storage_supported_property_names.html": [
     [
      "/webstorage/storage_supported_property_names.html",
+     {}
+    ]
+   ],
+   "webvr/idlharness.html": [
+    [
+     "/webvr/idlharness.html",
      {}
     ]
    ],
@@ -35622,7 +35612,7 @@
    "testharness"
   ],
   "domparsing/createContextualFragment.html": [
-   "8bef29fbcd55de439592e184559054651dfaf63e",
+   "e3d576cab516b137b3c758f4ab7528303a28744a",
    "testharness"
   ],
   "domparsing/innerhtml-01-expected.txt": [
@@ -35692,10 +35682,6 @@
   "domxpath/evaluator-constructor.html": [
    "4842d40e22e25ee72536946d785a3cd03bc6a11d",
    "testharness"
-  ],
-  "domxpath/xml_xpath_tests.xml": [
-   "daef25b99b0e26c6bf726cb2efb8f903337746dd",
-   "support"
   ],
   "encoding/api-basics.html": [
    "f941c016bd9f6117af2e28652c770613c475b064",
@@ -38178,7 +38164,7 @@
    "support"
   ],
   "html/browsers/origin/cross-origin-objects/cross-origin-objects-exceptions-expected.txt": [
-   "009570cc12dd630755937131e8c285a8cf05d442",
+   "56bb3aabf5fe7ba9d38e088224ad3b7ee60d8c3a",
    "support"
   ],
   "html/browsers/origin/cross-origin-objects/cross-origin-objects-exceptions.html": [
@@ -48942,11 +48928,11 @@
    "testharness"
   ],
   "innerText/setter-tests.js": [
-   "7cb4a4eac030f3d5c09031af1e1f80ff0a01d488",
+   "21cf96bdb5c7c77684c92df45650d054c173d3f2",
    "support"
   ],
   "innerText/setter.html": [
-   "e93c4f0206d22a59c7d22fae0fdc7a03ec1e3dac",
+   "34c84d25188b369a46a1919398bcde4fafc2d4b3",
    "testharness"
   ],
   "input-events/idlharness.html": [
@@ -52177,14 +52163,6 @@
    "d985098b8e5163756342f609dffa3ccf26d273b1",
    "testharness"
   ],
-  "vr/idlharness-expected.txt": [
-   "8929a16ee3585369c3c94cb89ac1db19681445d5",
-   "support"
-  ],
-  "vr/idlharness.html": [
-   "ecfd51818c20d46b9983bb1d045a9308fc9a26b7",
-   "testharness"
-  ],
   "web-animations/README.md": [
    "1ca6d7de0c5f9fd9679ee43893889fc0c10106bf",
    "support"
@@ -52867,6 +52845,10 @@
   ],
   "webstorage/storage_supported_property_names.html": [
    "19fd5ede17b9c7e9d234e855eb7dd7fe343bc73e",
+   "testharness"
+  ],
+  "webvr/idlharness.html": [
+   "ecfd51818c20d46b9983bb1d045a9308fc9a26b7",
    "testharness"
   ],
   "workers/README.md": [
