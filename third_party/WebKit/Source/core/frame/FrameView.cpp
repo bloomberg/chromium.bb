@@ -2938,10 +2938,12 @@ void FrameView::updateLifecyclePhasesInternal(
 
         updateCompositedSelectionIfNeeded();
       }
-    }
 
-    if (targetState >= DocumentLifecycle::PrePaintClean)
-      prePaint();
+      // TODO(pdr): prePaint should be under the "Paint" devtools timeline step
+      // for slimming paint v2.
+      if (targetState >= DocumentLifecycle::PrePaintClean)
+        prePaint();
+    }
 
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
       DocumentAnimations::updateAnimations(layoutView()->document());
