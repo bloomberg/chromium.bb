@@ -60,10 +60,12 @@ GpuService::~GpuService() {
   shutdown_event_.Signal();
 }
 
-void GpuService::InitializeWithHost(mojom::GpuHostPtr gpu_host) {
+void GpuService::InitializeWithHost(mojom::GpuHostPtr gpu_host,
+                                    const gpu::GpuPreferences& preferences) {
   DCHECK(CalledOnValidThread());
   DCHECK(!gpu_host_);
   gpu_host_ = std::move(gpu_host);
+  gpu_preferences_ = preferences;
   gpu_info_.video_decode_accelerator_capabilities =
       media::GpuVideoDecodeAccelerator::GetCapabilities(gpu_preferences_);
   gpu_info_.video_encode_accelerator_supported_profiles =

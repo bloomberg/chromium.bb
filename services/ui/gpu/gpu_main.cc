@@ -14,6 +14,10 @@
 #include "services/ui/common/server_gpu_memory_buffer_manager.h"
 #include "services/ui/gpu/gpu_service.h"
 
+#if defined(OS_MACOSX)
+#include "base/message_loop/message_pump_mac.h"
+#endif
+
 namespace {
 
 #if defined(USE_X11)
@@ -104,14 +108,15 @@ void GpuMain::OnStart() {
 }
 
 void GpuMain::CreateGpuService(mojom::GpuServiceRequest request,
-                               mojom::GpuHostPtr gpu_host) {
+                               mojom::GpuHostPtr gpu_host,
+                               const gpu::GpuPreferences& preferences) {
   // |this| will outlive the gpu thread and so it's safe to use
   // base::Unretained here.
   gpu_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&GpuMain::CreateGpuServiceOnGpuThread, base::Unretained(this),
                  base::Passed(std::move(request)),
-                 base::Passed(gpu_host.PassInterface())));
+                 base::Passed(gpu_host.PassInterface()), preferences));
 }
 
 void GpuMain::CreateDisplayCompositor(
@@ -211,10 +216,11 @@ void GpuMain::TearDownOnGpuThread() {
 
 void GpuMain::CreateGpuServiceOnGpuThread(
     mojom::GpuServiceRequest request,
-    mojom::GpuHostPtrInfo gpu_host_info) {
+    mojom::GpuHostPtrInfo gpu_host_info,
+    const gpu::GpuPreferences& preferences) {
   mojom::GpuHostPtr gpu_host;
   gpu_host.Bind(std::move(gpu_host_info));
-  gpu_service_->InitializeWithHost(std::move(gpu_host));
+  gpu_service_->InitializeWithHost(std::move(gpu_host), preferences);
   gpu_service_->Bind(std::move(request));
 
   if (pending_display_compositor_request_.is_pending()) {

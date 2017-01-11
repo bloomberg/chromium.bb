@@ -19,7 +19,6 @@
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "gpu/ipc/service/gpu_config.h"
 #include "gpu/ipc/service/x_util.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/ui/gpu/interfaces/gpu_host.mojom.h"
 #include "services/ui/gpu/interfaces/gpu_service.mojom.h"
@@ -53,8 +52,17 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
 
   ~GpuService() override;
 
-  void InitializeWithHost(mojom::GpuHostPtr gpu_host);
+  void InitializeWithHost(mojom::GpuHostPtr gpu_host,
+                          const gpu::GpuPreferences& preferences);
   void Bind(mojom::GpuServiceRequest request);
+
+  media::MediaGpuChannelManager* media_gpu_channel_manager() {
+    return media_gpu_channel_manager_.get();
+  }
+
+  gpu::GpuChannelManager* gpu_channel_manager() {
+    return gpu_channel_manager_.get();
+  }
 
  private:
   friend class GpuMain;

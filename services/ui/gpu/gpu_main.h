@@ -28,7 +28,8 @@ class GpuMain : public gpu::GpuSandboxHelper, public mojom::GpuMain {
 
   // mojom::GpuMain implementation:
   void CreateGpuService(mojom::GpuServiceRequest request,
-                        mojom::GpuHostPtr gpu_host) override;
+                        mojom::GpuHostPtr gpu_host,
+                        const gpu::GpuPreferences& preferences) override;
   void CreateDisplayCompositor(
       cc::mojom::DisplayCompositorRequest request,
       cc::mojom::DisplayCompositorClientPtr client) override;
@@ -51,7 +52,8 @@ class GpuMain : public gpu::GpuSandboxHelper, public mojom::GpuMain {
       cc::mojom::DisplayCompositorRequest request,
       cc::mojom::DisplayCompositorClientPtrInfo client_info);
   void CreateGpuServiceOnGpuThread(mojom::GpuServiceRequest request,
-                                   mojom::GpuHostPtrInfo gpu_host_info);
+                                   mojom::GpuHostPtrInfo gpu_host_info,
+                                   const gpu::GpuPreferences& preferences);
   void BindGpuInternalOnGpuThread(mojom::GpuServiceRequest request);
 
   void TearDownOnCompositorThread();

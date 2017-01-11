@@ -5,6 +5,7 @@
 module ui.mojom;
 
 import "cc/ipc/display_compositor.mojom";
+import "gpu/ipc/common/gpu_preferences.mojom";
 import "services/ui/gpu/interfaces/gpu_host.mojom";
 import "services/ui/gpu/interfaces/gpu_service.mojom";
 
@@ -16,5 +17,6 @@ interface GpuMain {
     cc.mojom.DisplayCompositorClient display_compositor_client);
 
   CreateGpuService(GpuService& gpu_service,
-                   GpuHost gpu_host);
+                   GpuHost gpu_host,
+                   gpu.mojom.GpuPreferences preferences);
 };

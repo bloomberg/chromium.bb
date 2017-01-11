@@ -107,8 +107,13 @@ GpuHost::GpuHost(GpuHostDelegate* delegate)
   //   connector->BindInterface("gpu", &gpu_main_);
   gpu_main_impl_ = base::MakeUnique<GpuMain>(MakeRequest(&gpu_main_));
   gpu_main_impl_->OnStart();
+
+  // TODO(sad): Correctly initialize gpu::GpuPreferences (like it is initialized
+  // in GpuProcessHost::Init()).
+  gpu::GpuPreferences preferences;
   gpu_main_->CreateGpuService(MakeRequest(&gpu_service_),
-                              gpu_host_binding_.CreateInterfacePtrAndBind());
+                              gpu_host_binding_.CreateInterfacePtrAndBind(),
+                              preferences);
   gpu_memory_buffer_manager_ = base::MakeUnique<ServerGpuMemoryBufferManager>(
       gpu_service_.get(), next_client_id_++);
 }
