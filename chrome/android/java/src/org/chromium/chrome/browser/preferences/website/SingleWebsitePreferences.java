@@ -488,7 +488,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
     private boolean hasXGeoLocationPermission(Context context) {
         String searchUrl = TemplateUrlService.getInstance().getUrlForSearchQuery("foo");
         return mSite.getAddress().matches(searchUrl)
-                && GeolocationHeader.isGeoHeaderEnabledForUrl(context, searchUrl, false);
+                && GeolocationHeader.isGeoHeaderEnabledForUrl(searchUrl, false);
     }
 
     /**

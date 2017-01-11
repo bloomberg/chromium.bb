@@ -10,7 +10,6 @@ import android.os.Build;
 import android.os.SystemClock;
 import android.support.test.filters.SmallTest;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.Feature;
@@ -86,7 +85,7 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
                 GeolocationInfo infoHttp = new GeolocationInfo("http://www.google.de", null, false);
                 infoHttps.setContentSetting(httpsPermission);
                 infoHttp.setContentSetting(httpPermission);
-                String header = GeolocationHeader.getGeoHeader(ContextUtils.getApplicationContext(),
+                String header = GeolocationHeader.getGeoHeader(
                         "https://www.google.de/search?q=kartoffelsalat",
                         getActivity().getActivityTab());
                 assertHeaderState(header, shouldBeNull);
@@ -100,8 +99,8 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
             @Override
             public void run() {
                 setMockLocation(latitute, longitude, time);
-                String header = GeolocationHeader.getGeoHeader(ContextUtils.getApplicationContext(),
-                        SEARCH_URL_1, getActivity().getActivityTab());
+                String header = GeolocationHeader.getGeoHeader(SEARCH_URL_1,
+                        getActivity().getActivityTab());
                 assertHeaderState(header, shouldBeNull);
             }
         });
@@ -134,8 +133,7 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
             ThreadUtils.runOnUiThreadBlocking(new Runnable() {
                 @Override
                 public void run() {
-                    assertNull(GeolocationHeader.getGeoHeader(
-                            ContextUtils.getApplicationContext(), url, tab));
+                    assertNull(GeolocationHeader.getGeoHeader(url, tab));
                 }
             });
         } catch (InterruptedException e) {
@@ -149,8 +147,7 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
             ThreadUtils.runOnUiThreadBlocking(new Runnable() {
                 @Override
                 public void run() {
-                    assertNotNull(GeolocationHeader.getGeoHeader(
-                            ContextUtils.getApplicationContext(), url, tab));
+                    assertNotNull(GeolocationHeader.getGeoHeader(url, tab));
                 }
             });
         } catch (InterruptedException e) {

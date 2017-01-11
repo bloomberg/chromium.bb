@@ -106,7 +106,7 @@ public class GeolocationSnackbarController implements SnackbarController {
 
         // Don't show the snackbar if Chrome doesn't have location permission since X-Geo won't be
         // sent unless the user explicitly grants this permission.
-        if (!GeolocationHeader.hasGeolocationPermission(context)) return true;
+        if (!GeolocationHeader.hasGeolocationPermission()) return true;
 
         // Don't show the snackbar if Google isn't the default search engine since X-Geo won't be
         // sent unless the user explicitly sets Google as their default search engine and sees that

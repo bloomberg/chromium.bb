@@ -1030,13 +1030,13 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         if (hasFocus && currentTab != null && !currentTab.isIncognito()) {
             if (mNativeInitialized
                     && TemplateUrlService.getInstance().isDefaultSearchEngineGoogle()) {
-                GeolocationHeader.primeLocationForGeoHeader(getContext());
+                GeolocationHeader.primeLocationForGeoHeader();
             } else {
                 mDeferredNativeRunnables.add(new Runnable() {
                     @Override
                     public void run() {
                         if (TemplateUrlService.getInstance().isDefaultSearchEngineGoogle()) {
-                            GeolocationHeader.primeLocationForGeoHeader(getContext());
+                            GeolocationHeader.primeLocationForGeoHeader();
                         }
                     }
                 });
@@ -2192,8 +2192,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         // Loads the |url| in the current ContentView and gives focus to the ContentView.
         if (currentTab != null && !url.isEmpty()) {
             LoadUrlParams loadUrlParams = new LoadUrlParams(url);
-            loadUrlParams.setVerbatimHeaders(
-                    GeolocationHeader.getGeoHeader(getContext(), url, currentTab));
+            loadUrlParams.setVerbatimHeaders(GeolocationHeader.getGeoHeader(url, currentTab));
             loadUrlParams.setTransitionType(transition | PageTransition.FROM_ADDRESS_BAR);
             currentTab.loadUrl(loadUrlParams);
 

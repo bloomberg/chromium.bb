@@ -360,8 +360,7 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
         ContentSetting locationPermission = locationSettings.getContentSetting();
         if (locationPermission == ContentSetting.ASK) {
             // Handle the case where the geoHeader being sent when no permission has been specified.
-            if (checkGeoHeader && GeolocationHeader.isGeoHeaderEnabledForUrl(
-                    mContext, url, false)) {
+            if (checkGeoHeader && GeolocationHeader.isGeoHeaderEnabledForUrl(url, false)) {
                 locationPermission = ContentSetting.ALLOW;
             }
         }

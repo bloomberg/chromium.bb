@@ -189,33 +189,29 @@ public class GeolocationHeader {
     /**
      * Requests a location refresh so that a valid location will be available for constructing
      * an X-Geo header in the near future (i.e. within 5 minutes).
-     *
-     * @param context The Context used to get the device location.
      */
-    public static void primeLocationForGeoHeader(Context context) {
-        if (!hasGeolocationPermission(context)) return;
+    public static void primeLocationForGeoHeader() {
+        if (!hasGeolocationPermission()) return;
 
         if (sFirstLocationTime == Long.MAX_VALUE) {
             sFirstLocationTime = SystemClock.elapsedRealtime();
         }
-        GeolocationTracker.refreshLastKnownLocation(context, REFRESH_LOCATION_AGE);
+        GeolocationTracker.refreshLastKnownLocation(
+                ContextUtils.getApplicationContext(), REFRESH_LOCATION_AGE);
     }
 
     /**
      * Returns whether the X-Geo header is allowed to be sent for the current URL.
      *
-     * @param context The Context used to get the device location.
      * @param url The URL of the request with which this header will be sent.
      * @param isIncognito Whether the request will happen in an incognito tab.
      */
-    public static boolean isGeoHeaderEnabledForUrl(Context context, String url,
-            boolean isIncognito) {
-        return geoHeaderStateForUrl(context, url, isIncognito, false) == HEADER_ENABLED;
+    public static boolean isGeoHeaderEnabledForUrl(String url, boolean isIncognito) {
+        return geoHeaderStateForUrl(url, isIncognito, false) == HEADER_ENABLED;
     }
 
     @HeaderState
-    private static int geoHeaderStateForUrl(
-            Context context, String url, boolean isIncognito, boolean recordUma) {
+    private static int geoHeaderStateForUrl(String url, boolean isIncognito, boolean recordUma) {
         // Only send X-Geo in normal mode.
         if (isIncognito) return INCOGNITO;
 
@@ -225,7 +221,7 @@ public class GeolocationHeader {
         Uri uri = Uri.parse(url);
         if (!HTTPS_SCHEME.equals(uri.getScheme())) return NOT_HTTPS;
 
-        if (!hasGeolocationPermission(context)) {
+        if (!hasGeolocationPermission()) {
             if (recordUma) recordHistogram(UMA_LOCATION_DISABLED_FOR_CHROME_APP);
             return LOCATION_PERMISSION_BLOCKED;
         }
@@ -248,20 +244,20 @@ public class GeolocationHeader {
      *
      * Returns null otherwise.
      *
-     * @param context The Context used to get the device location.
      * @param url The URL of the request with which this header will be sent.
      * @param tab The Tab currently being accessed.
      * @return The X-Geo header string or null.
      */
-    public static String getGeoHeader(Context context, String url, Tab tab) {
+    public static String getGeoHeader(String url, Tab tab) {
         boolean isIncognito = tab.isIncognito();
         boolean locationAttached = true;
         Location location = null;
         long locationAge = Long.MAX_VALUE;
-        @HeaderState int headerState = geoHeaderStateForUrl(context, url, isIncognito, true);
+        @HeaderState int headerState = geoHeaderStateForUrl(url, isIncognito, true);
         if (headerState == HEADER_ENABLED) {
             // Only send X-Geo header if there's a fresh location available.
-            location = GeolocationTracker.getLastKnownLocation(context);
+            location =
+                    GeolocationTracker.getLastKnownLocation(ContextUtils.getApplicationContext());
             if (location == null) {
                 recordHistogram(UMA_LOCATION_NOT_AVAILABLE);
                 locationAttached = false;
@@ -276,8 +272,8 @@ public class GeolocationHeader {
             locationAttached = false;
         }
 
-        @LocationSource int locationSource = getLocationSource(context);
-        @Permission int appPermission = getGeolocationPermission(context, tab);
+        @LocationSource int locationSource = getLocationSource();
+        @Permission int appPermission = getGeolocationPermission(tab);
         @Permission int domainPermission = getDomainPermission(url, isIncognito);
 
         // Record the permission state with a histogram.
@@ -322,16 +318,11 @@ public class GeolocationHeader {
     }
 
     @CalledByNative
-    public static boolean hasGeolocationPermission() {
-        Context context = ContextUtils.getApplicationContext();
-        return hasGeolocationPermission(context);
-    }
-
-    static boolean hasGeolocationPermission(Context context) {
+    static boolean hasGeolocationPermission() {
         int pid = Process.myPid();
         int uid = Process.myUid();
-        if (ApiCompatibilityUtils.checkPermission(
-                context, Manifest.permission.ACCESS_COARSE_LOCATION, pid, uid)
+        if (ApiCompatibilityUtils.checkPermission(ContextUtils.getApplicationContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION, pid, uid)
                 != PackageManager.PERMISSION_GRANTED) {
             return false;
         }
@@ -340,8 +331,8 @@ public class GeolocationHeader {
         // incorrectly requires FINE_LOCATION permission (it should only require COARSE_LOCATION
         // permission). http://crbug.com/580733
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M
-                && ApiCompatibilityUtils.checkPermission(
-                        context, Manifest.permission.ACCESS_FINE_LOCATION, pid, uid)
+                && ApiCompatibilityUtils.checkPermission(ContextUtils.getApplicationContext(),
+                        Manifest.permission.ACCESS_FINE_LOCATION, pid, uid)
                         != PackageManager.PERMISSION_GRANTED) {
             return false;
         }
@@ -354,8 +345,8 @@ public class GeolocationHeader {
      * This permission can be either granted, blocked or prompt.
      */
     @Permission
-    static int getGeolocationPermission(Context context, Tab tab) {
-        if (hasGeolocationPermission(context)) return PERMISSION_GRANTED;
+    static int getGeolocationPermission(Tab tab) {
+        if (hasGeolocationPermission()) return PERMISSION_GRANTED;
         return tab.getWindowAndroid().canRequestPermission(
                        Manifest.permission.ACCESS_COARSE_LOCATION)
                 ? PERMISSION_PROMPT
@@ -402,9 +393,9 @@ public class GeolocationHeader {
 
     /** Returns the location source. */
     @LocationSource
-    private static int getLocationSource(Context context) {
-        LocationManager locationManager =
-                (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+    private static int getLocationSource() {
+        LocationManager locationManager = (LocationManager) ContextUtils.getApplicationContext()
+                .getSystemService(Context.LOCATION_SERVICE);
         List<String> providers = locationManager.getProviders(true);
         boolean hasNetworkProvider = false;
         boolean hasGpsProvider = false;
