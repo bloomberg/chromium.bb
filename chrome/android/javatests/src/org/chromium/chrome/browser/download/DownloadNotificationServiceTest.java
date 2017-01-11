@@ -80,7 +80,7 @@ public class DownloadNotificationServiceTest extends
         super.setupService();
         SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();
-        editor.remove(DownloadNotificationService.KEY_PENDING_DOWNLOAD_NOTIFICATIONS);
+        editor.remove(DownloadSharedPreferenceHelper.KEY_PENDING_DOWNLOAD_NOTIFICATIONS);
         editor.apply();
         super.tearDown();
     }
@@ -148,7 +148,7 @@ public class DownloadNotificationServiceTest extends
         SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putStringSet(
-                DownloadNotificationService.KEY_PENDING_DOWNLOAD_NOTIFICATIONS, notifications);
+                DownloadSharedPreferenceHelper.KEY_PENDING_DOWNLOAD_NOTIFICATIONS, notifications);
         editor.apply();
         startNotificationService();
         assertTrue(scheduler.mScheduled);
@@ -195,7 +195,7 @@ public class DownloadNotificationServiceTest extends
         SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putStringSet(
-                DownloadNotificationService.KEY_PENDING_DOWNLOAD_NOTIFICATIONS, notifications);
+                DownloadSharedPreferenceHelper.KEY_PENDING_DOWNLOAD_NOTIFICATIONS, notifications);
         editor.apply();
         startNotificationService();
         assertFalse(scheduler.mScheduled);
@@ -223,7 +223,7 @@ public class DownloadNotificationServiceTest extends
                 ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putStringSet(
-                DownloadNotificationService.KEY_PENDING_DOWNLOAD_NOTIFICATIONS, notifications);
+                DownloadSharedPreferenceHelper.KEY_PENDING_DOWNLOAD_NOTIFICATIONS, notifications);
         editor.apply();
         startNotificationService();
         assertTrue(getService().isPaused());
@@ -231,7 +231,7 @@ public class DownloadNotificationServiceTest extends
         assertTrue(getService().getNotificationIds().contains(1));
         assertTrue(getService().getNotificationIds().contains(2));
         assertTrue(sharedPrefs.contains(
-                DownloadNotificationService.KEY_PENDING_DOWNLOAD_NOTIFICATIONS));
+                DownloadSharedPreferenceHelper.KEY_PENDING_DOWNLOAD_NOTIFICATIONS));
     }
 
     /**
@@ -255,7 +255,7 @@ public class DownloadNotificationServiceTest extends
         SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putStringSet(
-                DownloadNotificationService.KEY_PENDING_DOWNLOAD_NOTIFICATIONS, notifications);
+                DownloadSharedPreferenceHelper.KEY_PENDING_DOWNLOAD_NOTIFICATIONS, notifications);
         editor.apply();
         startNotificationService();
         assertEquals(2, getService().getNotificationIds().size());
@@ -268,17 +268,17 @@ public class DownloadNotificationServiceTest extends
         assertEquals(3, getService().getNotificationIds().size());
         int lastNotificationId = getService().getLastAddedNotificationId();
         Set<String> entries = DownloadManagerService.getStoredDownloadInfo(
-                sharedPrefs, DownloadNotificationService.KEY_PENDING_DOWNLOAD_NOTIFICATIONS);
+                sharedPrefs, DownloadSharedPreferenceHelper.KEY_PENDING_DOWNLOAD_NOTIFICATIONS);
         assertEquals(3, entries.size());
 
         service.notifyDownloadSuccessful(guid1, "/path/to/success", "success", 100L, false, false);
         entries = DownloadManagerService.getStoredDownloadInfo(
-                sharedPrefs, DownloadNotificationService.KEY_PENDING_DOWNLOAD_NOTIFICATIONS);
+                sharedPrefs, DownloadSharedPreferenceHelper.KEY_PENDING_DOWNLOAD_NOTIFICATIONS);
         assertEquals(2, entries.size());
 
         service.notifyDownloadFailed(guid2, "failed");
         entries = DownloadManagerService.getStoredDownloadInfo(
-                sharedPrefs, DownloadNotificationService.KEY_PENDING_DOWNLOAD_NOTIFICATIONS);
+                sharedPrefs, DownloadSharedPreferenceHelper.KEY_PENDING_DOWNLOAD_NOTIFICATIONS);
         assertEquals(1, entries.size());
 
         service.notifyDownloadCanceled(guid3);
@@ -326,7 +326,7 @@ public class DownloadNotificationServiceTest extends
         SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putStringSet(
-                DownloadNotificationService.KEY_PENDING_DOWNLOAD_NOTIFICATIONS, notifications);
+                DownloadSharedPreferenceHelper.KEY_PENDING_DOWNLOAD_NOTIFICATIONS, notifications);
         editor.apply();
         startNotificationService();
         DownloadNotificationService service = bindNotificationService();
@@ -370,12 +370,12 @@ public class DownloadNotificationServiceTest extends
                 ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putStringSet(
-                DownloadNotificationService.KEY_PENDING_DOWNLOAD_NOTIFICATIONS, notifications);
+                DownloadSharedPreferenceHelper.KEY_PENDING_DOWNLOAD_NOTIFICATIONS, notifications);
         editor.apply();
         startNotificationService();
         assertTrue(getService().isPaused());
         assertFalse(sharedPrefs.contains(
-                DownloadNotificationService.KEY_PENDING_DOWNLOAD_NOTIFICATIONS));
+                DownloadSharedPreferenceHelper.KEY_PENDING_DOWNLOAD_NOTIFICATIONS));
     }
 
     @SmallTest
