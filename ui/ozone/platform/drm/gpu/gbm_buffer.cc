@@ -30,10 +30,13 @@ GbmBuffer::GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
                      gbm_bo* bo,
                      uint32_t format,
                      uint32_t flags,
+                     uint64_t modifier,
+                     uint32_t addfb_flags,
                      std::vector<base::ScopedFD>&& fds,
                      const gfx::Size& size,
+
                      const std::vector<gfx::NativePixmapPlane>&& planes)
-    : GbmBufferBase(gbm, bo, format, flags),
+    : GbmBufferBase(gbm, bo, format, flags, modifier, addfb_flags),
       format_(format),
       flags_(flags),
       fds_(std::move(fds)),
@@ -91,17 +94,14 @@ gfx::Size GbmBuffer::GetSize() const {
   return size_;
 }
 
-// static
-scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
+scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferForBO(
     const scoped_refptr<GbmDevice>& gbm,
+    gbm_bo* bo,
     uint32_t format,
     const gfx::Size& size,
-    uint32_t flags) {
-  TRACE_EVENT2("drm", "GbmBuffer::CreateBuffer", "device",
-               gbm->device_path().value(), "size", size.ToString());
-
-  gbm_bo* bo =
-      gbm_bo_create(gbm->device(), size.width(), size.height(), format, flags);
+    uint32_t flags,
+    uint64_t modifier,
+    uint32_t addfb_flags) {
   if (!bo)
     return nullptr;
 
@@ -128,12 +128,47 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
         gbm_bo_get_plane_stride(bo, i), gbm_bo_get_plane_offset(bo, i),
         gbm_bo_get_plane_size(bo, i), gbm_bo_get_plane_format_modifier(bo, i));
   }
-  scoped_refptr<GbmBuffer> buffer(new GbmBuffer(
-      gbm, bo, format, flags, std::move(fds), size, std::move(planes)));
+  scoped_refptr<GbmBuffer> buffer(
+      new GbmBuffer(gbm, bo, format, flags, modifier, addfb_flags,
+                    std::move(fds), size, std::move(planes)));
   if (flags & GBM_BO_USE_SCANOUT && !buffer->GetFramebufferId())
     return nullptr;
 
   return buffer;
+}
+
+// static
+scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferWithModifiers(
+    const scoped_refptr<GbmDevice>& gbm,
+    uint32_t format,
+    const gfx::Size& size,
+    uint32_t flags,
+    const std::vector<uint64_t>& modifiers) {
+  TRACE_EVENT2("drm", "GbmBuffer::CreateBufferWithModifiers", "device",
+               gbm->device_path().value(), "size", size.ToString());
+
+  gbm_bo* bo =
+      gbm_bo_create_with_modifiers(gbm->device(), size.width(), size.height(),
+                                   format, modifiers.data(), modifiers.size());
+
+  return CreateBufferForBO(gbm, bo, format, size, flags,
+                           gbm_bo_get_format_modifier(bo),
+                           DRM_MODE_FB_MODIFIERS);
+}
+
+// static
+scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
+    const scoped_refptr<GbmDevice>& gbm,
+    uint32_t format,
+    const gfx::Size& size,
+    uint32_t flags) {
+  TRACE_EVENT2("drm", "GbmBuffer::CreateBuffer", "device",
+               gbm->device_path().value(), "size", size.ToString());
+
+  gbm_bo* bo =
+      gbm_bo_create(gbm->device(), size.width(), size.height(), format, flags);
+
+  return CreateBufferForBO(gbm, bo, format, size, flags, 0, 0);
 }
 
 // static
@@ -177,7 +212,7 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferFromFds(
   if (use_scanout)
     flags |= GBM_BO_USE_SCANOUT;
   scoped_refptr<GbmBuffer> buffer(new GbmBuffer(
-      gbm, bo, format, flags, std::move(fds), size, std::move(planes)));
+      gbm, bo, format, flags, 0, 0, std::move(fds), size, std::move(planes)));
   // If scanout support for buffer is expected then make sure we managed to
   // create a framebuffer for it as otherwise using it for scanout will fail.
   if (use_scanout && !buffer->GetFramebufferId())

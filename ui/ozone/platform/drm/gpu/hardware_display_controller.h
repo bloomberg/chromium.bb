@@ -127,6 +127,10 @@ class HardwareDisplayController {
 
   bool IsFormatSupported(uint32_t fourcc_format, uint32_t z_order) const;
 
+  // Return the supported modifiers for |fourcc_format| for this
+  // controller.
+  std::vector<uint64_t> GetFormatModifiers(uint32_t fourcc_format);
+
   // Set the hardware cursor to show the contents of |surface|.
   bool SetCursor(const scoped_refptr<ScanoutBuffer>& buffer);
 

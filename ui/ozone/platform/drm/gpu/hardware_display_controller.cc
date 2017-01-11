@@ -145,6 +145,28 @@ bool HardwareDisplayController::IsFormatSupported(uint32_t fourcc_format,
   return true;
 }
 
+std::vector<uint64_t> HardwareDisplayController::GetFormatModifiers(
+    uint32_t format) {
+  std::vector<uint64_t> modifiers;
+
+  if (crtc_controllers_.empty())
+    return modifiers;
+
+  modifiers = crtc_controllers_[0]->GetFormatModifiers(format);
+
+  for (size_t i = 1; i < crtc_controllers_.size(); ++i) {
+    std::vector<uint64_t> other =
+        crtc_controllers_[i]->GetFormatModifiers(format);
+    std::vector<uint64_t> intersection;
+
+    std::set_intersection(modifiers.begin(), modifiers.end(), other.begin(),
+                          other.end(), std::back_inserter(intersection));
+    modifiers = std::move(intersection);
+  }
+
+  return modifiers;
+}
+
 bool HardwareDisplayController::SetCursor(
     const scoped_refptr<ScanoutBuffer>& buffer) {
   bool status = true;

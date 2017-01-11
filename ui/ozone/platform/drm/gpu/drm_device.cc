@@ -476,12 +476,14 @@ bool DrmDevice::AddFramebuffer2(uint32_t width,
                                 uint32_t handles[4],
                                 uint32_t strides[4],
                                 uint32_t offsets[4],
+                                uint64_t modifiers[4],
                                 uint32_t* framebuffer,
                                 uint32_t flags) {
   DCHECK(file_.IsValid());
   TRACE_EVENT1("drm", "DrmDevice::AddFramebuffer", "handle", handles[0]);
-  return !drmModeAddFB2(file_.GetPlatformFile(), width, height, format, handles,
-                        strides, offsets, framebuffer, flags);
+  return !drmModeAddFB2WithModifiers(file_.GetPlatformFile(), width, height,
+                                     format, handles, strides, offsets,
+                                     modifiers, framebuffer, flags);
 }
 
 bool DrmDevice::RemoveFramebuffer(uint32_t framebuffer) {

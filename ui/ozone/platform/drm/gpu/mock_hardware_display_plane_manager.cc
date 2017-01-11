@@ -25,6 +25,7 @@ MockHardwareDisplayPlaneManager::MockHardwareDisplayPlaneManager(
       std::unique_ptr<HardwareDisplayPlane> plane(
           new HardwareDisplayPlane(kPlaneBaseId + i, 1 << crtc_idx));
       plane->Initialize(drm, std::vector<uint32_t>(1, DRM_FORMAT_XRGB8888),
+                        std::vector<drm_format_modifier>(),  // modifiers
                         false, true);
       planes_.push_back(std::move(plane));
     }
@@ -54,7 +55,9 @@ void MockHardwareDisplayPlaneManager::InitForTest(
   for (size_t i = 0; i < count; i++) {
     std::unique_ptr<HardwareDisplayPlane> plane(
         new HardwareDisplayPlane(planes[i].id, planes[i].allowed_crtc_mask));
-    plane->Initialize(drm_, planes[i].allowed_formats, false, true);
+    plane->Initialize(drm_, planes[i].allowed_formats,
+                      std::vector<drm_format_modifier>(),  // modifiers
+                      false, true);
     planes_.push_back(std::move(plane));
   }
   // The real HDPM uses sorted planes, so sort them for consistency.
@@ -72,7 +75,9 @@ void MockHardwareDisplayPlaneManager::SetPlaneProperties(
   for (size_t i = 0; i < count; i++) {
     std::unique_ptr<HardwareDisplayPlane> plane(
         new HardwareDisplayPlane(planes[i].id, planes[i].allowed_crtc_mask));
-    plane->Initialize(drm_, planes[i].allowed_formats, false, true);
+    plane->Initialize(drm_, planes[i].allowed_formats,
+                      std::vector<drm_format_modifier>(),  // modifiers
+                      false, true);
     planes_.push_back(std::move(plane));
   }
 

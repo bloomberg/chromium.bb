@@ -104,6 +104,8 @@ class HardwareDisplayPlaneManager {
                          uint32_t z_order,
                          uint32_t crtc_id) const;
 
+  std::vector<uint64_t> GetFormatModifiers(uint32_t crtc_id, uint32_t format);
+
  protected:
   virtual bool SetPlaneData(HardwareDisplayPlaneList* plane_list,
                             HardwareDisplayPlane* hw_plane,

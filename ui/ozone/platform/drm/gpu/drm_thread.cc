@@ -125,8 +125,21 @@ void DrmThread::CreateBuffer(gfx::AcceleratedWidget widget,
       break;
   }
 
-  *buffer = GbmBuffer::CreateBuffer(
-      gbm, ui::GetFourCCFormatFromBufferFormat(format), size, flags);
+  DrmWindow* window = screen_manager_->GetWindow(widget);
+  std::vector<uint64_t> modifiers;
+
+  uint32_t fourcc_format = ui::GetFourCCFormatFromBufferFormat(format);
+
+  // TODO(hoegsberg): We shouldn't really get here without a window,
+  // but it happens during init. Need to figure out why.
+  if (window && window->GetController())
+    modifiers = window->GetController()->GetFormatModifiers(fourcc_format);
+
+  if (modifiers.size() > 0 && !(flags & GBM_BO_USE_LINEAR))
+    *buffer = GbmBuffer::CreateBufferWithModifiers(gbm, fourcc_format, size,
+                                                   flags, modifiers);
+  else
+    *buffer = GbmBuffer::CreateBuffer(gbm, fourcc_format, size, flags);
 }
 
 void DrmThread::CreateBufferFromFds(

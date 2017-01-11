@@ -74,6 +74,7 @@ class MockDrmDevice : public DrmDevice {
                        uint32_t handles[4],
                        uint32_t strides[4],
                        uint32_t offsets[4],
+                       uint64_t modifiers[4],
                        uint32_t* framebuffer,
                        uint32_t flags) override;
   bool RemoveFramebuffer(uint32_t framebuffer) override;

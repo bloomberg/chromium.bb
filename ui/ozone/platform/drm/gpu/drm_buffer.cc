@@ -71,7 +71,8 @@ bool DrmBuffer::Initialize(const SkImageInfo& info,
     uint32_t offsets[4] = {0};
     fb_pixel_format_ = GetFourCCCodeForSkColorType(info.colorType());
     if (!drm_->AddFramebuffer2(info.width(), info.height(), fb_pixel_format_,
-                               handles, strides, offsets, &framebuffer_, 0)) {
+                               handles, strides, offsets, nullptr,
+                               &framebuffer_, 0)) {
       PLOG(ERROR) << "DrmBuffer: AddFramebuffer2: handle " << handle_;
       return false;
     }

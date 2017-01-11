@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane.h"
 
 #include <drm_fourcc.h>
+#include <drm_mode.h>
 
 #include "base/logging.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
@@ -54,11 +55,14 @@ bool HardwareDisplayPlane::CanUseForCrtc(uint32_t crtc_index) {
   return possible_crtcs_ & (1 << crtc_index);
 }
 
-bool HardwareDisplayPlane::Initialize(DrmDevice* drm,
-                                      const std::vector<uint32_t>& formats,
-                                      bool is_dummy,
-                                      bool test_only) {
+bool HardwareDisplayPlane::Initialize(
+    DrmDevice* drm,
+    const std::vector<uint32_t>& formats,
+    const std::vector<drm_format_modifier>& format_modifiers,
+    bool is_dummy,
+    bool test_only) {
   supported_formats_ = formats;
+  supported_format_modifiers_ = format_modifiers;
 
   if (test_only)
     return true;
@@ -110,6 +114,23 @@ bool HardwareDisplayPlane::IsSupportedFormat(uint32_t format) {
 
 const std::vector<uint32_t>& HardwareDisplayPlane::supported_formats() const {
   return supported_formats_;
+}
+
+std::vector<uint64_t> HardwareDisplayPlane::ModifiersForFormat(
+    uint32_t format) {
+  std::vector<uint64_t> modifiers;
+
+  uint32_t format_index =
+      std::find(supported_formats_.begin(), supported_formats_.end(), format) -
+      supported_formats_.begin();
+  DCHECK_LT(format_index, supported_formats_.size());
+
+  for (const auto& modifier : supported_format_modifiers_) {
+    if (modifier.formats & (1 << format_index))
+      modifiers.push_back(modifier.modifier);
+  }
+
+  return modifiers;
 }
 
 bool HardwareDisplayPlane::InitializeProperties(

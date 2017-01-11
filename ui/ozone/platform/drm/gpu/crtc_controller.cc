@@ -120,6 +120,10 @@ bool CrtcController::IsFormatSupported(uint32_t fourcc_format,
                                                   crtc_);
 }
 
+std::vector<uint64_t> CrtcController::GetFormatModifiers(uint32_t format) {
+  return drm_->plane_manager()->GetFormatModifiers(crtc_, format);
+}
+
 void CrtcController::OnPageFlipEvent(unsigned int frame,
                                      unsigned int seconds,
                                      unsigned int useconds) {

@@ -58,6 +58,16 @@ class CrtcController : public base::SupportsWeakPtr<CrtcController> {
   // |fourcc_format| format.
   bool IsFormatSupported(uint32_t fourcc_format, uint32_t z_order) const;
 
+  // Returns a vector of format modifiers for the given fourcc format
+  // on this CRTCs primary plane. A format modifier describes the
+  // actual layout of the buffer, such as whether it's linear, tiled
+  // one way or another or maybe compressed. Except for generic
+  // modifiers such as DRM_FORMAT_MOD_NONE (linear), the modifier
+  // values are 64 bit values that we don't understand at this
+  // level. We pass the modifers to gbm_bo_create_with_modifiers() and
+  // gbm will pick a modifier as it allocates the bo.
+  std::vector<uint64_t> GetFormatModifiers(uint32_t fourcc_format);
+
   // Called if the page flip event wasn't scheduled (ie: page flip fails). This
   // will then signal the request such that the caller doesn't wait for the
   // event forever.
