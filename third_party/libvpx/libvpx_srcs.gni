@@ -2306,7 +2306,6 @@ libvpx_srcs_arm64 = [
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/hadamard_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/idct16x16_1_add_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/idct16x16_add_neon.c",
-  "//third_party/libvpx/source/libvpx/vpx_dsp/arm/idct16x16_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/idct32x32_135_add_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/idct32x32_1_add_neon.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/arm/idct32x32_34_add_neon.c",

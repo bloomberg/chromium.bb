@@ -427,10 +427,12 @@ void vpx_lpf_vertical_8_dual_neon(uint8_t *s, int pitch, const uint8_t *blimit0,
 #define vpx_lpf_vertical_8_dual vpx_lpf_vertical_8_dual_neon
 
 void vpx_mbpost_proc_across_ip_c(unsigned char *dst, int pitch, int rows, int cols,int flimit);
-#define vpx_mbpost_proc_across_ip vpx_mbpost_proc_across_ip_c
+void vpx_mbpost_proc_across_ip_neon(unsigned char *dst, int pitch, int rows, int cols,int flimit);
+#define vpx_mbpost_proc_across_ip vpx_mbpost_proc_across_ip_neon
 
 void vpx_mbpost_proc_down_c(unsigned char *dst, int pitch, int rows, int cols,int flimit);
-#define vpx_mbpost_proc_down vpx_mbpost_proc_down_c
+void vpx_mbpost_proc_down_neon(unsigned char *dst, int pitch, int rows, int cols,int flimit);
+#define vpx_mbpost_proc_down vpx_mbpost_proc_down_neon
 
 void vpx_minmax_8x8_c(const uint8_t *s, int p, const uint8_t *d, int dp, int *min, int *max);
 void vpx_minmax_8x8_neon(const uint8_t *s, int p, const uint8_t *d, int dp, int *min, int *max);
