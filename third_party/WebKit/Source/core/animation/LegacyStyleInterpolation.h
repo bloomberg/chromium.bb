@@ -48,13 +48,25 @@ class CORE_EXPORT LegacyStyleInterpolation : public Interpolation {
 
   PropertyHandle getProperty() const final { return PropertyHandle(id()); }
 
- private:
-  CSSPropertyID m_id;
+  void interpolate(int iteration, double fraction) final;
 
+ protected:
   LegacyStyleInterpolation(std::unique_ptr<InterpolableValue> start,
                            std::unique_ptr<InterpolableValue> end,
-                           CSSPropertyID id)
-      : Interpolation(std::move(start), std::move(end)), m_id(id) {}
+                           CSSPropertyID);
+
+ private:
+  const std::unique_ptr<InterpolableValue> m_start;
+  const std::unique_ptr<InterpolableValue> m_end;
+  CSSPropertyID m_id;
+
+  mutable double m_cachedFraction;
+  mutable int m_cachedIteration;
+  mutable std::unique_ptr<InterpolableValue> m_cachedValue;
+
+  InterpolableValue* getCachedValueForTesting() const final {
+    return m_cachedValue.get();
+  }
 };
 
 DEFINE_TYPE_CASTS(LegacyStyleInterpolation,

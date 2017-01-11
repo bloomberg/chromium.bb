@@ -1,8 +1,8 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/Interpolation.h"
+#include "core/animation/LegacyStyleInterpolation.h"
 
 #include <memory>
 
@@ -34,19 +34,21 @@ bool typesMatch(const InterpolableValue* start, const InterpolableValue* end) {
 
 }  // namespace
 
-Interpolation::Interpolation(std::unique_ptr<InterpolableValue> start,
-                             std::unique_ptr<InterpolableValue> end)
-    : m_start(std::move(start)),
+LegacyStyleInterpolation::LegacyStyleInterpolation(
+    std::unique_ptr<InterpolableValue> start,
+    std::unique_ptr<InterpolableValue> end,
+    CSSPropertyID id)
+    : Interpolation(),
+      m_start(std::move(start)),
       m_end(std::move(end)),
+      m_id(id),
       m_cachedFraction(0),
       m_cachedIteration(0),
       m_cachedValue(m_start ? m_start->clone() : nullptr) {
   RELEASE_ASSERT(typesMatch(m_start.get(), m_end.get()));
 }
 
-Interpolation::~Interpolation() {}
-
-void Interpolation::interpolate(int iteration, double fraction) {
+void LegacyStyleInterpolation::interpolate(int iteration, double fraction) {
   if (m_cachedFraction != fraction || m_cachedIteration != iteration) {
     m_start->interpolate(*m_end, fraction, *m_cachedValue);
     m_cachedIteration = iteration;

@@ -40,7 +40,7 @@ class CORE_EXPORT InvalidatableInterpolation : public Interpolation {
   InvalidatableInterpolation(PropertyHandle property,
                              PassRefPtr<PropertySpecificKeyframe> startKeyframe,
                              PassRefPtr<PropertySpecificKeyframe> endKeyframe)
-      : Interpolation(nullptr, nullptr),
+      : Interpolation(),
         m_property(property),
         m_interpolationTypes(nullptr),
         m_interpolationTypesVersion(0),
@@ -51,6 +51,11 @@ class CORE_EXPORT InvalidatableInterpolation : public Interpolation {
 
   using ConversionCheckers = InterpolationType::ConversionCheckers;
 
+  InterpolableValue* getCachedValueForTesting() const final {
+    // TODO(suzyh): Add meaningful implementation here
+    NOTREACHED();
+    return nullptr;
+  }
   std::unique_ptr<TypedInterpolationValue> maybeConvertUnderlyingValue(
       const InterpolationEnvironment&) const;
   const TypedInterpolationValue* ensureValidConversion(

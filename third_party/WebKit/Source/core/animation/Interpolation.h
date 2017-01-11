@@ -21,9 +21,9 @@ class CORE_EXPORT Interpolation : public RefCounted<Interpolation> {
   WTF_MAKE_NONCOPYABLE(Interpolation);
 
  public:
-  virtual ~Interpolation();
+  virtual ~Interpolation() {}
 
-  virtual void interpolate(int iteration, double fraction);
+  virtual void interpolate(int iteration, double fraction) = 0;
 
   virtual bool isInvalidatableInterpolation() const { return false; }
   virtual bool isLegacyStyleInterpolation() const { return false; }
@@ -32,20 +32,9 @@ class CORE_EXPORT Interpolation : public RefCounted<Interpolation> {
   virtual bool dependsOnUnderlyingValue() const { return false; }
 
  protected:
-  const std::unique_ptr<InterpolableValue> m_start;
-  const std::unique_ptr<InterpolableValue> m_end;
+  Interpolation() {}
 
-  mutable double m_cachedFraction;
-  mutable int m_cachedIteration;
-  mutable std::unique_ptr<InterpolableValue> m_cachedValue;
-
-  Interpolation(std::unique_ptr<InterpolableValue> start,
-                std::unique_ptr<InterpolableValue> end);
-
- private:
-  InterpolableValue* getCachedValueForTesting() const {
-    return m_cachedValue.get();
-  }
+  virtual InterpolableValue* getCachedValueForTesting() const = 0;
 
   friend class AnimationInterpolableValueTest;
   friend class AnimationInterpolationEffectTest;

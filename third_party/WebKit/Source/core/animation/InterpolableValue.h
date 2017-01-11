@@ -38,7 +38,7 @@ class CORE_EXPORT InterpolableValue {
                            const double progress,
                            InterpolableValue& result) const = 0;
 
-  friend class Interpolation;
+  friend class LegacyStyleInterpolation;
   friend class PairwisePrimitiveInterpolation;
 
   // Keep interpolate private, but allow calls within the hierarchy without

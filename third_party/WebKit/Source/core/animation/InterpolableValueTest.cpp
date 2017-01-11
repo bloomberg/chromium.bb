@@ -4,8 +4,7 @@
 
 #include "core/animation/InterpolableValue.h"
 
-#include "core/animation/Interpolation.h"
-#include "core/animation/PropertyHandle.h"
+#include "core/animation/LegacyStyleInterpolation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <memory>
 
@@ -13,7 +12,7 @@ namespace blink {
 
 namespace {
 
-class SampleInterpolation : public Interpolation {
+class SampleInterpolation : public LegacyStyleInterpolation {
  public:
   static PassRefPtr<Interpolation> create(
       std::unique_ptr<InterpolableValue> start,
@@ -21,14 +20,12 @@ class SampleInterpolation : public Interpolation {
     return adoptRef(new SampleInterpolation(std::move(start), std::move(end)));
   }
 
-  PropertyHandle getProperty() const override {
-    return PropertyHandle(CSSPropertyBackgroundColor);
-  }
-
  private:
   SampleInterpolation(std::unique_ptr<InterpolableValue> start,
                       std::unique_ptr<InterpolableValue> end)
-      : Interpolation(std::move(start), std::move(end)) {}
+      : LegacyStyleInterpolation(std::move(start),
+                                 std::move(end),
+                                 CSSPropertyBackgroundColor) {}
 };
 
 }  // namespace
