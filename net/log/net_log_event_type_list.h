@@ -1535,6 +1535,15 @@ EVENT_TYPE(HTTP2_STREAM_UPDATE_RECV_WINDOW)
 //   }
 EVENT_TYPE(HTTP2_STREAM_ERROR)
 
+// A PRIORITY update is sent to the server.
+//   {
+//     "stream_id":        <The stream id>,
+//     "parent_stream_id": <The stream's new parent stream>,
+//     "weight":           <The stream's new weight>,
+//     "exclusive":        <Whether the new dependency is exclusive>,
+//   }
+EVENT_TYPE(HTTP2_STREAM_SEND_PRIORITY)
+
 // ------------------------------------------------------------------------
 // SpdyProxyClientSocket
 // ------------------------------------------------------------------------

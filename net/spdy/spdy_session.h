@@ -326,7 +326,11 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // okay to create a new stream (in which case |spdy_stream| is
   // reset).  Returns an error (not ERR_IO_PENDING) otherwise, and
   // resets |spdy_stream|.
+  //
+  // If a stream was found and the stream is still open, the priority
+  // of that stream is updated to match |priority|.
   int GetPushStream(const GURL& url,
+                    RequestPriority priority,
                     base::WeakPtr<SpdyStream>* spdy_stream,
                     const NetLogWithSource& stream_net_log);
 
@@ -674,7 +678,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   void TryCreatePushStream(SpdyStreamId stream_id,
                            SpdyStreamId associated_stream_id,
-                           SpdyPriority priority,
                            SpdyHeaderBlock headers);
 
   // Close the stream pointed to by the given iterator. Note that that
@@ -694,12 +697,16 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // Send a RST_STREAM frame with the given parameters. There should
   // either be no active stream with the given ID, or that active
   // stream should be closed shortly after this function is called.
-  //
-  // TODO(akalin): Rename this to EnqueueResetStreamFrame().
   void EnqueueResetStreamFrame(SpdyStreamId stream_id,
                                RequestPriority priority,
                                SpdyRstStreamStatus status,
                                const std::string& description);
+
+  // Send a PRIORITY frame with the given parameters.
+  void EnqueuePriorityFrame(SpdyStreamId stream_id,
+                            SpdyStreamId dependency_id,
+                            int weight,
+                            bool exclusive);
 
   // Calls DoReadLoop. Use this function instead of DoReadLoop when
   // posting a task to pump the read loop.

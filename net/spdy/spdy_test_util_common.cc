@@ -787,6 +787,19 @@ SpdySerializedFrame SpdyTestUtil::ConstructSpdyRstStream(
       headerless_spdy_framer_.SerializeRstStream(rst_ir));
 }
 
+// TODO(jgraettinger): Eliminate uses of this method in tests (prefer
+// SpdyPriorityIR).
+SpdySerializedFrame SpdyTestUtil::ConstructSpdyPriority(
+    SpdyStreamId stream_id,
+    SpdyStreamId parent_stream_id,
+    RequestPriority request_priority,
+    bool exclusive) {
+  int weight = Spdy3PriorityToHttp2Weight(
+      ConvertRequestPriorityToSpdyPriority(request_priority));
+  SpdyPriorityIR ir(stream_id, parent_stream_id, weight, exclusive);
+  return SpdySerializedFrame(headerless_spdy_framer_.SerializePriority(ir));
+}
+
 SpdySerializedFrame SpdyTestUtil::ConstructSpdyGet(
     const char* const url,
     SpdyStreamId stream_id,

@@ -107,7 +107,7 @@ std::unique_ptr<base::Value> NetLogSpdyHeadersSentCallback(
     SpdyStreamId parent_stream_id,
     bool exclusive,
     NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  auto dict = base::MakeUnique<base::DictionaryValue>();
   dict->Set("headers", ElideSpdyHeaderBlockForNetLog(*headers, capture_mode));
   dict->SetBoolean("fin", fin);
   dict->SetInteger("stream_id", stream_id);
@@ -125,7 +125,7 @@ std::unique_ptr<base::Value> NetLogSpdyHeadersReceivedCallback(
     bool fin,
     SpdyStreamId stream_id,
     NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  auto dict = base::MakeUnique<base::DictionaryValue>();
   dict->Set("headers", ElideSpdyHeaderBlockForNetLog(*headers, capture_mode));
   dict->SetBoolean("fin", fin);
   dict->SetInteger("stream_id", stream_id);
@@ -136,7 +136,7 @@ std::unique_ptr<base::Value> NetLogSpdySessionCloseCallback(
     int net_error,
     const std::string* description,
     NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  auto dict = base::MakeUnique<base::DictionaryValue>();
   dict->SetInteger("net_error", net_error);
   dict->SetString("description", *description);
   return std::move(dict);
@@ -145,7 +145,7 @@ std::unique_ptr<base::Value> NetLogSpdySessionCloseCallback(
 std::unique_ptr<base::Value> NetLogSpdySessionCallback(
     const HostPortProxyPair* host_pair,
     NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  auto dict = base::MakeUnique<base::DictionaryValue>();
   dict->SetString("host", host_pair->first.ToString());
   dict->SetString("proxy", host_pair->second.ToPacString());
   return std::move(dict);
@@ -154,7 +154,7 @@ std::unique_ptr<base::Value> NetLogSpdySessionCallback(
 std::unique_ptr<base::Value> NetLogSpdyInitializedCallback(
     NetLogSource source,
     NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  auto dict = base::MakeUnique<base::DictionaryValue>();
   if (source.IsValid()) {
     source.AddToEventParameters(dict.get());
   }
@@ -165,7 +165,7 @@ std::unique_ptr<base::Value> NetLogSpdyInitializedCallback(
 std::unique_ptr<base::Value> NetLogSpdySettingsCallback(
     const HostPortPair& host_port_pair,
     NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  auto dict = base::MakeUnique<base::DictionaryValue>();
   dict->SetString("host", host_port_pair.ToString());
   return std::move(dict);
 }
@@ -174,7 +174,7 @@ std::unique_ptr<base::Value> NetLogSpdySettingCallback(
     SpdySettingsIds id,
     uint32_t value,
     NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  auto dict = base::MakeUnique<base::DictionaryValue>();
   dict->SetInteger("id", id);
   dict->SetInteger("value", value);
   return std::move(dict);
@@ -183,8 +183,8 @@ std::unique_ptr<base::Value> NetLogSpdySettingCallback(
 std::unique_ptr<base::Value> NetLogSpdySendSettingsCallback(
     const SettingsMap* settings,
     NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  std::unique_ptr<base::ListValue> settings_list(new base::ListValue());
+  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto settings_list = base::MakeUnique<base::ListValue>();
   for (SettingsMap::const_iterator it = settings->begin();
        it != settings->end(); ++it) {
     const SpdySettingsIds id = it->first;
@@ -200,7 +200,7 @@ std::unique_ptr<base::Value> NetLogSpdyWindowUpdateFrameCallback(
     SpdyStreamId stream_id,
     uint32_t delta,
     NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  auto dict = base::MakeUnique<base::DictionaryValue>();
   dict->SetInteger("stream_id", static_cast<int>(stream_id));
   dict->SetInteger("delta", delta);
   return std::move(dict);
@@ -210,7 +210,7 @@ std::unique_ptr<base::Value> NetLogSpdySessionWindowUpdateCallback(
     int32_t delta,
     int32_t window_size,
     NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  auto dict = base::MakeUnique<base::DictionaryValue>();
   dict->SetInteger("delta", delta);
   dict->SetInteger("window_size", window_size);
   return std::move(dict);
@@ -221,7 +221,7 @@ std::unique_ptr<base::Value> NetLogSpdyDataCallback(
     int size,
     bool fin,
     NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  auto dict = base::MakeUnique<base::DictionaryValue>();
   dict->SetInteger("stream_id", static_cast<int>(stream_id));
   dict->SetInteger("size", size);
   dict->SetBoolean("fin", fin);
@@ -233,7 +233,7 @@ std::unique_ptr<base::Value> NetLogSpdyRstCallback(
     int status,
     const std::string* description,
     NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  auto dict = base::MakeUnique<base::DictionaryValue>();
   dict->SetInteger("stream_id", static_cast<int>(stream_id));
   dict->SetInteger("status", status);
   dict->SetString("description", *description);
@@ -245,7 +245,7 @@ std::unique_ptr<base::Value> NetLogSpdyPingCallback(
     bool is_ack,
     const char* type,
     NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  auto dict = base::MakeUnique<base::DictionaryValue>();
   dict->SetInteger("unique_id", static_cast<int>(unique_id));
   dict->SetString("type", type);
   dict->SetBoolean("is_ack", is_ack);
@@ -259,7 +259,7 @@ std::unique_ptr<base::Value> NetLogSpdyGoAwayCallback(
     SpdyGoAwayStatus status,
     base::StringPiece debug_data,
     NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  auto dict = base::MakeUnique<base::DictionaryValue>();
   dict->SetInteger("last_accepted_stream_id",
                    static_cast<int>(last_stream_id));
   dict->SetInteger("active_streams", active_streams);
@@ -275,7 +275,7 @@ std::unique_ptr<base::Value> NetLogSpdyPushPromiseReceivedCallback(
     SpdyStreamId stream_id,
     SpdyStreamId promised_stream_id,
     NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  auto dict = base::MakeUnique<base::DictionaryValue>();
   dict->Set("headers", ElideSpdyHeaderBlockForNetLog(*headers, capture_mode));
   dict->SetInteger("id", stream_id);
   dict->SetInteger("promised_stream_id", promised_stream_id);
@@ -286,7 +286,7 @@ std::unique_ptr<base::Value> NetLogSpdyAdoptedPushStreamCallback(
     SpdyStreamId stream_id,
     const GURL* url,
     NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  auto dict = base::MakeUnique<base::DictionaryValue>();
   dict->SetInteger("stream_id", stream_id);
   dict->SetString("url", url->spec());
   return std::move(dict);
@@ -305,6 +305,20 @@ std::unique_ptr<base::Value> NetLogSpdySessionStalledCallback(
   dict->SetInteger("num_pushed_streams", num_pushed_streams);
   dict->SetInteger("max_concurrent_streams", max_concurrent_streams);
   dict->SetString("url", url);
+  return std::move(dict);
+}
+
+std::unique_ptr<base::Value> NetLogSpdyPriorityCallback(
+    SpdyStreamId stream_id,
+    SpdyStreamId parent_stream_id,
+    int weight,
+    bool exclusive,
+    NetLogCaptureMode capture_mode) {
+  auto dict = base::MakeUnique<base::DictionaryValue>();
+  dict->SetInteger("stream_id", stream_id);
+  dict->SetInteger("parent_stream_id", parent_stream_id);
+  dict->SetInteger("weight", weight);
+  dict->SetBoolean("exclusive", exclusive);
   return std::move(dict);
 }
 
@@ -825,6 +839,7 @@ bool SpdySession::VerifyDomainAuthentication(const std::string& domain) {
 }
 
 int SpdySession::GetPushStream(const GURL& url,
+                               RequestPriority priority,
                                base::WeakPtr<SpdyStream>* stream,
                                const NetLogWithSource& stream_net_log) {
   CHECK(!in_io_loop_);
@@ -838,7 +853,26 @@ int SpdySession::GetPushStream(const GURL& url,
   if (*stream) {
     DCHECK_LT(streams_pushed_and_claimed_count_, streams_pushed_count_);
     streams_pushed_and_claimed_count_++;
+
+    // If the stream is still open, update its priority to match
+    // the priority of the matching request.
+    if (!(*stream)->IsClosed() && (*stream)->priority() != priority) {
+      (*stream)->set_priority(priority);
+
+      // Send PRIORITY updates.
+      auto updates = priority_dependency_state_.OnStreamUpdate(
+          (*stream)->stream_id(),
+          ConvertRequestPriorityToSpdyPriority(priority));
+      for (auto u : updates) {
+        ActiveStreamMap::iterator it = active_streams_.find(u.id);
+        DCHECK(it != active_streams_.end());
+        int weight = Spdy3PriorityToHttp2Weight(
+            ConvertRequestPriorityToSpdyPriority(it->second->priority()));
+        EnqueuePriorityFrame(u.id, u.dependent_stream_id, weight, u.exclusive);
+      }
+    }
   }
+
   return OK;
 }
 
@@ -1070,8 +1104,8 @@ std::unique_ptr<SpdySerializedFrame> SpdySession::CreateHeaders(
   SpdyStreamId dependent_stream_id = 0;
   bool exclusive = false;
 
-  priority_dependency_state_.OnStreamSynSent(stream_id, spdy_priority,
-                                             &dependent_stream_id, &exclusive);
+  priority_dependency_state_.OnStreamCreation(stream_id, spdy_priority,
+                                              &dependent_stream_id, &exclusive);
 
   if (net_log().IsCapturing()) {
     net_log().AddEvent(
@@ -1327,6 +1361,28 @@ void SpdySession::EnqueueResetStreamFrame(SpdyStreamId stream_id,
 
   EnqueueSessionWrite(priority, RST_STREAM, std::move(rst_frame));
   RecordProtocolErrorHistogram(MapRstStreamStatusToProtocolError(status));
+}
+
+void SpdySession::EnqueuePriorityFrame(SpdyStreamId stream_id,
+                                       SpdyStreamId dependency_id,
+                                       int weight,
+                                       bool exclusive) {
+  net_log().AddEvent(NetLogEventType::HTTP2_STREAM_SEND_PRIORITY,
+                     base::Bind(&NetLogSpdyPriorityCallback, stream_id,
+                                dependency_id, weight, exclusive));
+
+  DCHECK(buffered_spdy_framer_.get());
+  std::unique_ptr<SpdySerializedFrame> frame(
+      buffered_spdy_framer_->CreatePriority(stream_id, dependency_id, weight,
+                                            exclusive));
+
+  // PRIORITY frames describe sequenced updates to the tree, so they must
+  // be serialized. We do this by queueing all PRIORITY frames at HIGHEST
+  // priority.
+  EnqueueWrite(HIGHEST, PRIORITY,
+               base::MakeUnique<SimpleBufferProducer>(
+                   base::MakeUnique<SpdyBuffer>(std::move(frame))),
+               base::WeakPtr<SpdyStream>());
 }
 
 void SpdySession::PumpReadLoop(ReadState expected_read_state, int result) {
@@ -2466,7 +2522,6 @@ void SpdySession::OnWindowUpdate(SpdyStreamId stream_id,
 
 void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
                                       SpdyStreamId associated_stream_id,
-                                      SpdyPriority priority,
                                       SpdyHeaderBlock headers) {
   // Server-initiated streams should have even sequence numbers.
   if ((stream_id & 0x1) != 0) {
@@ -2501,8 +2556,8 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
 
   last_accepted_push_stream_id_ = stream_id;
 
-  RequestPriority request_priority =
-      ConvertSpdyPriorityToRequestPriority(priority);
+  // Pushed streams are speculative, so they start at an IDLE priority.
+  const RequestPriority request_priority = IDLE;
 
   if (availability_state_ == STATE_GOING_AWAY) {
     // TODO(akalin): This behavior isn't in the SPDY spec, although it
@@ -2619,6 +2674,16 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
                      stream_max_recv_window_size_, net_log_));
   stream->set_stream_id(stream_id);
 
+  // Convert RequestPriority to a SpdyPriority to send in a PRIORITY frame.
+  SpdyPriority spdy_priority =
+      ConvertRequestPriorityToSpdyPriority(request_priority);
+  SpdyStreamId dependency_id = 0;
+  bool exclusive = false;
+  priority_dependency_state_.OnStreamCreation(stream_id, spdy_priority,
+                                              &dependency_id, &exclusive);
+  EnqueuePriorityFrame(stream_id, dependency_id,
+                       Spdy3PriorityToHttp2Weight(spdy_priority), exclusive);
+
   // PUSH_PROMISE arrives on associated stream.
   associated_it->second->AddRawReceivedBytes(last_compressed_frame_len_);
   last_compressed_frame_len_ = 0;
@@ -2660,8 +2725,7 @@ void SpdySession::OnPushPromise(SpdyStreamId stream_id,
                                  &headers, stream_id, promised_stream_id));
   }
 
-  // Any priority will do.  TODO(baranovich): Pass parent stream id priority?
-  TryCreatePushStream(promised_stream_id, stream_id, 0, std::move(headers));
+  TryCreatePushStream(promised_stream_id, stream_id, std::move(headers));
 }
 
 void SpdySession::SendStreamWindowUpdate(SpdyStreamId stream_id,
