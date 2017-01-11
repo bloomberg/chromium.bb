@@ -410,7 +410,10 @@ void ResourcePool::EvictExpiredResources() {
   EvictResourcesNotUsedSince(current_time - resource_expiration_delay_);
 
   if (unused_resources_.empty() && busy_resources_.empty()) {
-    // Nothing is evictable.
+    // If nothing is evictable, we have deleted one (and possibly more)
+    // resources without any new activity. Flush to ensure these deletions are
+    // processed.
+    resource_provider_->FlushPendingDeletions();
     return;
   }
 

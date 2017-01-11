@@ -1448,8 +1448,10 @@ void LayerTreeHostImpl::ReclaimResources(
     const ReturnedResourceArray& resources) {
   // TODO(piman): We may need to do some validation on this ack before
   // processing it.
-  if (resource_provider_)
-    resource_provider_->ReceiveReturnsFromParent(resources);
+  if (!resource_provider_)
+    return;
+
+  resource_provider_->ReceiveReturnsFromParent(resources);
 
   // In OOM, we now might be able to release more resources that were held
   // because they were exported.
@@ -1472,11 +1474,8 @@ void LayerTreeHostImpl::ReclaimResources(
   // If we're not visible, we likely released resources, so we want to
   // aggressively flush here to make sure those DeleteTextures make it to the
   // GPU process to free up the memory.
-  if (compositor_frame_sink_->context_provider() && !visible_) {
-    compositor_frame_sink_->context_provider()
-        ->ContextGL()
-        ->ShallowFlushCHROMIUM();
-  }
+  if (!visible_)
+    resource_provider_->FlushPendingDeletions();
 }
 
 void LayerTreeHostImpl::OnDraw(const gfx::Transform& transform,

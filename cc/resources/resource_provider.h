@@ -150,6 +150,10 @@ class CC_EXPORT ResourceProvider
       bool read_lock_fences_enabled);
 
   void DeleteResource(ResourceId id);
+  // In the case of GPU resources, we may need to flush the GL context to ensure
+  // that texture deletions are seen in a timely fashion. This function should
+  // be called after texture deletions that may happen during an idle state.
+  void FlushPendingDeletions() const;
 
   // Update pixels from image, copying source_rect (in image) to dest_offset (in
   // the resource).

@@ -847,6 +847,11 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
   resources_.erase(it);
 }
 
+void ResourceProvider::FlushPendingDeletions() const {
+  if (auto* gl = ContextGL())
+    gl->ShallowFlushCHROMIUM();
+}
+
 ResourceProvider::ResourceType ResourceProvider::GetResourceType(
     ResourceId id) {
   return GetResource(id)->type;
