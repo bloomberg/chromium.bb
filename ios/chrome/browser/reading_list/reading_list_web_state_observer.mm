@@ -271,7 +271,6 @@ void ReadingListWebStateObserver::LoadOfflineReadingListEntry() {
   web::NavigationManager* manager = web_state()->GetNavigationManager();
   web::NavigationItem* item = manager->GetPendingItem();
   if (item) {
-    web_state()->Stop();
     web::WebState::OpenURLParams params(url, item->GetReferrer(),
                                         WindowOpenDisposition::CURRENT_TAB,
                                         item->GetTransitionType(), NO);
