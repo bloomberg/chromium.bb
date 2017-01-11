@@ -15,6 +15,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/tab_capture/offscreen_tab.h"
@@ -87,7 +88,7 @@ void FilterDeprecatedGoogConstraints(TabCapture::CaptureOptions* options) {
     std::vector<std::string> bad_keys;
     base::DictionaryValue::Iterator it(*dict);
     for (; !it.IsAtEnd(); it.Advance()) {
-      if (it.key().find("goog") == 0)
+      if (base::StartsWith(it.key(), "goog", base::CompareCase::SENSITIVE))
         bad_keys.push_back(it.key());
     }
     for (const std::string& k : bad_keys) {
