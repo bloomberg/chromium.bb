@@ -21,39 +21,39 @@
       margin: 10px 0;
       background-color: green;
     }
-    
-    #container.moved .software {
-      left: 300px;
-    }
 
     #container.moved .hardware {
       transform: translateX(300px);
     }
 
-    .software {
-      -webkit-transition: left 300ms linear;
-    }
-
     .hardware {
-      -webkit-transition: transform 1s linear;
+      -webkit-transition: transform 100ms linear;
       transform: translateX(0);
     }
 
    </style>
-   <script src="../animations/resources/animation-test-helpers.js"></script>
    <script>
+    'use strict';
+    function waitForCompositor() {
+      var tester = document.getElementById('tester');
+      return tester.animate({transform: ['scale(1)', 'scale(1)']}, 1).finished;
+    }
 
     function testEnded()
     {
-      if (window.testRunner)
-        testRunner.notifyDone();
+      waitForCompositor().then(() => {
+        if (window.testRunner)
+          testRunner.notifyDone();
+      });
     }
     
     function startTest()
     {
       if (window.testRunner)
         testRunner.waitUntilDone();
+
       document.getElementById('tester').addEventListener('webkitTransitionEnd', testEnded, false);
+      document.getElementById('container').offsetTop; // Force style recalc
       document.getElementById('container').className = 'moved';
     }
     
@@ -63,7 +63,6 @@
 <body>
 
   <div id="container">
-    <!-- <div class="software box"></div> -->
     <div id="tester" class="hardware box"></div>
   </div>
 
