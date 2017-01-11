@@ -430,11 +430,14 @@ void HTMLElement::attributeChanged(const AttributeModificationParams& params) {
   Element::attributeChanged(params);
   if (params.reason != AttributeModificationReason::kDirectly)
     return;
-  if (adjustedFocusedElementInTreeScope() != this)
-    return;
+  // adjustedFocusedElementInTreeScope() is not trivial. We should check
+  // attribute names, then call adjustedFocusedElementInTreeScope().
   if (params.name == hiddenAttr && !params.newValue.isNull()) {
-    blur();
+    if (adjustedFocusedElementInTreeScope() == this)
+      blur();
   } else if (params.name == contenteditableAttr) {
+    if (adjustedFocusedElementInTreeScope() != this)
+      return;
     // The attribute change may cause supportsFocus() to return false
     // for the element which had focus.
     //
