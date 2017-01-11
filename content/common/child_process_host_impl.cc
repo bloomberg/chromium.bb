@@ -160,6 +160,7 @@ bool ChildProcessHostImpl::InitChannel() {
 
   for (size_t i = 0; i < filters_.size(); ++i)
     filters_[i]->OnFilterAdded(channel_.get());
+  delegate_->OnChannelInitialized(channel_.get());
 
   // Make sure these messages get sent first.
 #if defined(IPC_MESSAGE_LOG_ENABLED)

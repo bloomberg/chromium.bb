@@ -114,6 +114,7 @@ source_set("browser") {
     "//services/service_manager/runner/common",
     "//services/service_manager/runner/host:lib",
     "//services/shape_detection/public/interfaces:interfaces",
+    "//services/ui/gpu/interfaces",
     "//services/ui/public/cpp/gpu",
     "//skia",
     "//sql",

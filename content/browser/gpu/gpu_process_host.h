@@ -28,6 +28,7 @@
 #include "gpu/ipc/common/surface_handle.h"
 #include "ipc/ipc_sender.h"
 #include "ipc/message_filter.h"
+#include "services/ui/gpu/interfaces/gpu_main.mojom.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "url/gurl.h"
@@ -287,6 +288,8 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   ClientIdToShaderCacheMap client_id_to_shader_cache_;
 
   std::string shader_prefix_key_;
+
+  ui::mojom::GpuMainAssociatedPtr gpu_main_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuProcessHost);
 };

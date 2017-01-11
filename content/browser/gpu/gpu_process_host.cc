@@ -613,6 +613,10 @@ bool GpuProcessHost::Init() {
     return false;
   }
 
+  process_->child_channel()
+      ->GetAssociatedInterfaceSupport()
+      ->GetRemoteAssociatedInterface(&gpu_main_ptr_);
+
   if (!Send(new GpuMsg_Initialize(gpu_preferences)))
     return false;
 

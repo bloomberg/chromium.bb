@@ -84,6 +84,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
 
   // ChildProcessHostDelegate implementation:
   bool CanShutdown() override;
+  void OnChannelInitialized(IPC::Channel* channel) override;
   void OnChildDisconnected() override;
   const base::Process& GetProcess() const override;
   service_manager::InterfaceProvider* GetRemoteInterfaces() override;
@@ -112,6 +113,8 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   ChildConnection* child_connection() const {
     return child_connection_.get();
   }
+
+  IPC::Channel* child_channel() const { return channel_; }
 
   typedef std::list<BrowserChildProcessHostImpl*> BrowserChildProcessList;
  private:
@@ -168,6 +171,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   // The memory allocator, if any, in which the process will write its metrics.
   std::unique_ptr<base::SharedPersistentMemoryAllocator> metrics_allocator_;
 
+  IPC::Channel* channel_ = nullptr;
   bool is_channel_connected_;
   bool notify_child_disconnected_;
 

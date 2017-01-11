@@ -209,11 +209,18 @@ void GpuChildThread::Init(const base::Time& process_start_time) {
 
   if (GetContentClient()->gpu())  // NULL in tests.
     GetContentClient()->gpu()->Initialize(this);
+  channel()->AddAssociatedInterface(base::Bind(
+      &GpuChildThread::CreateGpuMainService, base::Unretained(this)));
 }
 
 void GpuChildThread::OnFieldTrialGroupFinalized(const std::string& trial_name,
                                                 const std::string& group_name) {
   Send(new GpuHostMsg_FieldTrialActivated(trial_name));
+}
+
+void GpuChildThread::CreateGpuMainService(
+    ui::mojom::GpuMainAssociatedRequest request) {
+  // TODO(sad): Implement.
 }
 
 bool GpuChildThread::Send(IPC::Message* msg) {

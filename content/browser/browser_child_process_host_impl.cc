@@ -161,6 +161,7 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
     : data_(process_type),
       delegate_(delegate),
       child_token_(mojo::edk::GenerateRandomToken()),
+      channel_(nullptr),
       is_channel_connected_(false),
       notify_child_disconnected_(false),
       weak_factory_(this) {
@@ -397,6 +398,10 @@ bool BrowserChildProcessHostImpl::CanShutdown() {
   return delegate_->CanShutdown();
 }
 
+void BrowserChildProcessHostImpl::OnChannelInitialized(IPC::Channel* channel) {
+  channel_ = channel;
+}
+
 void BrowserChildProcessHostImpl::OnChildDisconnected() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 #if defined(OS_WIN)
@@ -456,6 +461,7 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
     }
 #endif
   }
+  channel_ = nullptr;
   delete delegate_;  // Will delete us
 }
 

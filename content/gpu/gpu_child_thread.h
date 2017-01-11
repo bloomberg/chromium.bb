@@ -28,6 +28,7 @@
 #include "gpu/ipc/service/x_util.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
+#include "services/ui/gpu/interfaces/gpu_main.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gpu {
@@ -82,6 +83,8 @@ class GpuChildThread : public ChildThreadImpl,
   gpu::GpuWatchdogThread* watchdog_thread() { return watchdog_thread_.get(); }
 
  private:
+  void CreateGpuMainService(ui::mojom::GpuMainAssociatedRequest request);
+
   // ChildThreadImpl:.
   bool Send(IPC::Message* msg) override;
   bool OnControlMessageReceived(const IPC::Message& msg) override;
