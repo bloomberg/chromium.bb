@@ -2,6 +2,9 @@
 
 <html>
 <head>
+  <meta charset="utf-8">
+  <script src="../resources/testharness.js"></script>
+  <script src="../resources/testharnessreport.js"></script>
   <style>
     #container {
       position: relative;
@@ -19,39 +22,46 @@
       transition-timing-function: linear;
     }
   </style>
-  <script>
-    if (window.testRunner) {
-      testRunner.dumpAsText();
-      testRunner.waitUntilDone();
-    }
-
-    function startTransition()
-    {
-      var box = document.getElementById('box');
-      box.style.left = '300px';
-      box.style.opacity = 0.5;
-      window.setTimeout(function() {
-        box.style.left = '0px';
-        
-        window.setTimeout(function() {
-          var boxPos = parseInt(window.getComputedStyle(box).left);
-          document.getElementById('result').innerHTML = (boxPos < 200) ? "PASS" : "FAIL";
-          if (window.testRunner)
-              testRunner.notifyDone();
-        }, 250);
-      }, 500);
-    }
-    window.addEventListener('load', startTransition, false)
-  </script>
 </head>
 <body>
 
-<p>Box should start moving left after left style is reset after 500ms</p>
 <div id="container">
   <div id="box">
   </div>
 </div>
-<div id="result">
-</div>
+  <script>
+    'use strict';
+
+    // It may take a number of frames before the property updates.
+    // https://bugs.chromium.org/p/chromium/issues/detail?id=679981
+    function waitForProgress() {
+      var initialLeft = getComputedStyle(box).left;
+      return new Promise(resolve => {
+        function poll() {
+          var currentLeft = getComputedStyle(box).left;
+          if (currentLeft === initialLeft) {
+            requestAnimationFrame(poll);
+          } else {
+            resolve();
+          }
+        }
+        requestAnimationFrame(poll);
+      });
+    }
+
+    async_test(t => {
+      box.offsetTop; // Force style recalc
+      box.style.left = '300px';
+      box.style.opacity = 0.5;
+      var previousLeft;
+      waitForProgress().then(() => {
+        previousLeft = getComputedStyle(box).left;
+        box.style.left = '0px';
+      }).then(waitForProgress).then(t.step_func_done(() => {
+        var currentLeft = getComputedStyle(box).left;
+        assert_less_than(parseFloat(currentLeft), parseFloat(previousLeft));
+      }));
+    }, 'Box should start moving left after left style is reset');
+  </script>
 </body>
 </html>
