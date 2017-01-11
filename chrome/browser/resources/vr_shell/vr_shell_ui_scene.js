@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var ui = new Object();
+var scene = {};
 
 /**
- * The scene class assists in managing element and animations in the scene.
- * It allows scene update commands to be queued in batches, and manages
- * allocation of element and animation IDs.
+ * The scene class assists in managing element and animations in the UI.  It
+ * allows UI update API commands to be queued in batches, and manages allocation
+ * of element and animation IDs.
  *
  * Examples:
  *
- * var scene = new ui.Scene();
+ * var ui = new scene.Scene();
  *
  * // Add an element.
  * var el = new api.UiElement(100, 200, 50, 50);
@@ -24,25 +24,25 @@ var ui = new Object();
  * // Place it just below the content quad edge.
  * el.setTranslation(0, -0.2, 0.0);
  *
- * // Add it to the scene.
- * var buttonId = scene.addElement(el);
- * scene.flush();
+ * // Add it to the ui.
+ * var buttonId = ui.addElement(el);
+ * ui.flush();
  *
  * // Make the button twice as big.
  * var update = new api.UiElementUpdate();
  * update.setSize(bunttonWidth * 2, buttonHeight * 2);
- * scene.updateElement(buttonId, update);
- * scene.flush();
+ * ui.updateElement(buttonId, update);
+ * ui.flush();
  *
  * // Animate the button size back to its original size, over 250 ms.
  * var resize = new api.Animation(buttonId, 250);
  * resize.setSize(buttonWidth, buttonHeight);
- * scene.addAnimation(resize);
- * scene.flush();
+ * ui.addAnimation(resize);
+ * ui.flush();
  *
  * @struct
  */
-ui.Scene = class {
+scene.Scene = class {
   constructor() {
     /** @private {number} */
     this.idIndex = 1;
