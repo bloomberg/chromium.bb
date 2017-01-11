@@ -91,6 +91,9 @@ class HtmlChecker(object):
         file_filter=self.file_filter, include_deletes=False)
 
     for f in affected_files:
+      if not f.LocalPath().endswith('.html'):
+        continue
+
       errors = []
 
       for line_number, line in f.ChangedContents():
