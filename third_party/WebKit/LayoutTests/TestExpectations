@@ -2384,3 +2384,5 @@ crbug.com/588060 paint/invalidation/inline-outline-repaint.html [ NeedsRebaselin
 crbug.com/588060 virtual/stable/paint/invalidation/inline-outline-repaint.html [ NeedsRebaseline ]
 
 crbug.com/680043 sensor/ambient-light-sensor.html [ Pass Failure ]
+
+crbug.com/680050 inspector/sources/debugger-ui/watch-expressions-panel-switch.html [ Pass Timeout ]
