@@ -76,6 +76,40 @@ void F() {
   const int kIsAConstToo = number;
 }
 
+namespace test_member_in_template {
+
+template <typename T>
+class HasAMember {
+ public:
+  HasAMember() {}
+  HasAMember(const T&) {}
+
+  void UsesMember() { const int not_const = i_; }
+  void AlsoUsesMember();
+
+ private:
+  int i_;
+};
+
+template <typename T>
+void HasAMember<T>::AlsoUsesMember() {
+  const int not_const = i_;
+}
+
+template <typename T>
+static void BasedOnSubType(const HasAMember<T>& t) {
+  const HasAMember<T> problematic_not_const(t);
+}
+
+void Run() {
+  HasAMember<int>().UsesMember();
+
+  BasedOnSubType<int>(HasAMember<int>());
+  enum E { A };
+  BasedOnSubType<E>(HasAMember<E>());
+}
+}
+
 namespace test_template_arg_is_function {
 
 void F(int x) {}

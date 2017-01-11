@@ -431,15 +431,36 @@ bool CanBeEvaluatedAtCompileTime(const clang::Stmt* stmt,
       return false;
   }
 
-  // If the expression is a template input then its coming at compile time so
-  // we consider it const. And we can't check isEvaluatable() in this case as
-  // it will do bad things/crash.
-  if (expr->isInstantiationDependent())
-    return true;
+  // If the expression depends on template input, we can not call
+  // isEvaluatable() on it as it will do bad things/crash.
+  if (!expr->isInstantiationDependent()) {
+    // If the expression can be evaluated at compile time, then it should have a
+    // kFoo style name. Otherwise, not.
+    return expr->isEvaluatable(context);
+  }
 
-  // If the expression can be evaluated at compile time, then it should have a
-  // kFoo style name. Otherwise, not.
-  return expr->isEvaluatable(context);
+  // We do our best to figure out special cases as we come across them here, for
+  // template dependent situations. Some cases in code are only considered
+  // instantiation dependent for some template instantiations! Which is
+  // terrible! So most importantly we try to match isEvaluatable in those cases.
+  switch (expr->getStmtClass()) {
+    case clang::Stmt::CXXThisExprClass:
+      return false;
+    case clang::Stmt::DeclRefExprClass: {
+      auto* declref = clang::dyn_cast<clang::DeclRefExpr>(expr);
+      auto* decl = declref->getDecl();
+      if (clang::dyn_cast<clang::VarDecl>(decl))
+        return false;
+      break;
+    }
+
+    default:
+      break;
+  }
+
+  // Otherwise, we consider depending on template parameters to not interfere
+  // with being const.. with exceptions hopefully covered above.
+  return true;
 }
 
 bool IsProbablyConst(const clang::VarDecl& decl,

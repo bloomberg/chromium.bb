@@ -75,6 +75,40 @@ void F() {
   const int isAConstToo = number;
 }
 
+namespace test_member_in_template {
+
+template <typename T>
+class HasAMember {
+ public:
+  HasAMember() {}
+  HasAMember(const T&) {}
+
+  void usesMember() { const int notConst = m_i; }
+  void alsoUsesMember();
+
+ private:
+  int m_i;
+};
+
+template <typename T>
+void HasAMember<T>::alsoUsesMember() {
+  const int notConst = m_i;
+}
+
+template <typename T>
+static void basedOnSubType(const HasAMember<T>& t) {
+  const HasAMember<T> problematicNotConst(t);
+}
+
+void Run() {
+  HasAMember<int>().usesMember();
+
+  basedOnSubType<int>(HasAMember<int>());
+  enum E { A };
+  basedOnSubType<E>(HasAMember<E>());
+}
+}
+
 namespace test_template_arg_is_function {
 
 void f(int x) {}
