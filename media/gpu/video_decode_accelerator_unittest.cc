@@ -50,6 +50,7 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/launcher/unit_test_launcher.h"
+#include "base/test/scoped_task_scheduler.h"
 #include "base/test/test_suite.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -1765,6 +1766,13 @@ class VDATestSuite : public base::TestSuite {
     base::MessageLoop main_loop;
 #endif  // OS_WIN || USE_OZONE
 
+    base::test::ScopedTaskScheduler scoped_task_scheduler(&main_loop);
+
+    media::g_env =
+        reinterpret_cast<media::VideoDecodeAcceleratorTestEnvironment*>(
+            testing::AddGlobalTestEnvironment(
+                new media::VideoDecodeAcceleratorTestEnvironment()));
+
 #if defined(USE_OZONE)
     ui::OzonePlatform::InitializeForUI();
 #endif
@@ -1846,11 +1854,6 @@ int main(int argc, char** argv) {
   }
 
   base::ShadowingAtExitManager at_exit_manager;
-
-  media::g_env =
-      reinterpret_cast<media::VideoDecodeAcceleratorTestEnvironment*>(
-          testing::AddGlobalTestEnvironment(
-              new media::VideoDecodeAcceleratorTestEnvironment()));
 
   return base::LaunchUnitTestsSerially(
       argc, argv,
