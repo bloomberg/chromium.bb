@@ -733,13 +733,15 @@ void ArcSessionManager::CancelAuthCode() {
     return;
   }
 
-  // In case |state_| is ACTIVE, UI page can be ARC_LOADING (which means normal
-  // ARC booting) or ERROR (in case ARC can not be started). If ARC is booting
-  // normally don't stop it on progress close.
+  // If ARC failed to boot normally, stop ARC. Similarly, if the current page is
+  // LSO, closing the window should stop ARC since the user activity chooses to
+  // not sign in. In any other case, ARC is booting normally and the instance
+  // should not be stopped.
   if ((state_ != State::SHOWING_TERMS_OF_SERVICE &&
        state_ != State::CHECKING_ANDROID_MANAGEMENT) &&
       (!support_host_ ||
-       support_host_->ui_page() != ArcSupportHost::UIPage::ERROR)) {
+       (support_host_->ui_page() != ArcSupportHost::UIPage::ERROR &&
+        support_host_->ui_page() != ArcSupportHost::UIPage::LSO))) {
     return;
   }
 
