@@ -527,6 +527,71 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
 {% endif %}{# not is_array_buffer_or_view #}
 {% endblock %}
 {##############################################################################}
+{% block install_runtime_enabled %}
+{% if needs_runtime_enabled_installer %}
+{% from 'attributes.cpp.tmpl' import attribute_configuration with context %}
+{% from 'methods.cpp.tmpl' import install_custom_signature with context %}
+void {{v8_class_or_partial}}::installRuntimeEnabledFeatures(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface) {
+  {% if runtime_enabled_feature_name %}
+#error "We don't expect a runtime enabled interface {{v8_class_or_partial}} to have installRuntimeEnabledFeatures()."
+  {% endif %}
+
+  {% if is_partial %}
+  {{v8_class}}::installRuntimeEnabledFeatures(isolate, world, instance, prototype, interface);
+  {% endif %}
+
+  v8::Local<v8::FunctionTemplate> interfaceTemplate = {{v8_class}}::wrapperTypeInfo.domTemplate(isolate, world);
+  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
+  ALLOW_UNUSED_LOCAL(signature);
+
+  {# TODO(peria): Generate code to install constants. It depends on runtime_enabled_feaure of this interface. #}
+
+  {% for feature_name, attrs in runtime_enabled_attributes | groupby('runtime_enabled_feature_name') %}
+  {% filter runtime_enabled(feature_name) %}
+  {% for attribute in attrs | unique_by('name') | sort %}
+  {% if attribute.is_data_type_property %}
+  const V8DOMConfiguration::AttributeConfiguration attribute{{attribute.name}}Configuration = {{attribute_configuration(attribute)}};
+  V8DOMConfiguration::installAttribute(isolate, world, instance, prototype, attribute{{attribute.name}}Configuration);
+  {% else %}
+  const V8DOMConfiguration::AccessorConfiguration accessor{{attribute.name}}Configuration = {{attribute_configuration(attribute)}};
+  V8DOMConfiguration::installAccessor(isolate, world, instance, prototype, interface, signature, accessor{{attribute.name}}Configuration);
+  {% endif %}
+  {% endfor %}
+  {% endfilter %}
+  {% endfor %}
+
+  {% if iterator_method and iterator_method.runtime_enabled_feature_name %}
+  {% filter exposed(iterator_method.exposed_test) %}
+  {% filter runtime_enabled(iterator_method.runtime_enabled_feature_name) %}
+  // Runtime enabled iterator (@@iterator)
+#error "{{v8_class_or_partial}} should not have runtime enabled iterators."
+  {% endfilter %}
+  {% endfilter %}
+  {% endif %}
+
+  {% if methods | custom_registration(is_partial) %}
+  {% for method in methods | custom_registration(is_partial) %}
+  {% filter exposed(method.overloads.exposed_test_all
+                    if method.overloads else method.exposed_test) %}
+  {% set feature_name = (method.overloads.runtime_enabled_all
+                         if method.overloads else method.runtime_enabled_feature_name) %}
+  {% if feature_name %}
+  {% filter runtime_enabled(feature_name) %}
+  {% if method.is_cross_origin %}
+#error "{{v8_class_or_partial}} should not have runtime enabled and cross origin methods."
+  {% else %}
+  {{install_custom_signature(method, 'instance', 'prototype', 'interface', 'signature') | indent(2)}}
+  {% endif %}
+  {% endfilter %}
+  {% endif %}
+  {% endfilter %}
+  {% endfor %}
+  {% endif %}
+}
+
+{% endif %}{# needs_runtime_enabled_installer #}
+{% endblock %}
+{##############################################################################}
 {% block origin_trials %}
 {% from 'attributes.cpp.tmpl' import attribute_configuration with context %}
 {% from 'constants.cpp.tmpl' import constant_configuration with context %}

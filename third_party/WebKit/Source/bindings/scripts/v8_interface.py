@@ -254,6 +254,10 @@ def interface_context(interface, interfaces):
     cpp_class_name_or_partial = cpp_name_or_partial(interface)
     v8_class_name_or_partial = v8_utilities.v8_class_name_or_partial(interface)
 
+    # TODO(peria): Generate the target list from 'Window' and 'HTMLDocument'.
+    needs_runtime_enabled_installer = v8_class_name in [
+        'V8Window', 'V8HTMLDocument', 'V8Document', 'V8Node', 'V8EventTarget']
+
     context = {
         'cpp_class': cpp_class_name,
         'cpp_class_or_partial': cpp_class_name_or_partial,
@@ -279,6 +283,7 @@ def interface_context(interface, interfaces):
         'is_typed_array_type': is_typed_array_type,
         'lifetime': 'Dependent' if (has_visit_dom_wrapper or is_dependent_lifetime) else 'Independent',
         'measure_as': v8_utilities.measure_as(interface, None),  # [MeasureAs]
+        'needs_runtime_enabled_installer': needs_runtime_enabled_installer,
         'origin_trial_enabled_function': v8_utilities.origin_trial_enabled_function_name(interface),
         'parent_interface': parent_interface,
         'pass_cpp_type': cpp_name(interface) + '*',

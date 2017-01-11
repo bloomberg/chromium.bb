@@ -150,6 +150,15 @@ class {{v8_class}} {
   {% endfor %}
   {% endif %}
 
+  {% if needs_runtime_enabled_installer %}
+  {{exported}}static void installRuntimeEnabledFeatures(
+      v8::Isolate* isolate,
+      const DOMWrapperWorld& world,
+      v8::Local<v8::Object> instance,
+      v8::Local<v8::Object> prototype,
+      v8::Local<v8::Function> interface);
+  {% endif %}
+
   {% for feature in origin_trial_features %}
 
   static void install{{feature.name}}(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface);

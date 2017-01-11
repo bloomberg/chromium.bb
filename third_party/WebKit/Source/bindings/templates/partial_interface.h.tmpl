@@ -42,6 +42,15 @@ class {{v8_class_or_partial}} {
   {% endif %}
   {% endfor %}
 
+  {% if needs_runtime_enabled_installer %}
+  static void installRuntimeEnabledFeatures(
+      v8::Isolate* isolate,
+      const DOMWrapperWorld& world,
+      v8::Local<v8::Object> instance,
+      v8::Local<v8::Object> prototype,
+      v8::Local<v8::Function> interface);
+  {% endif %}
+
  private:
   static void install{{v8_class}}Template(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::FunctionTemplate> interfaceTemplate);
 };
