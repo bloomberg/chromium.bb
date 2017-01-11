@@ -150,15 +150,11 @@ class Feature {
   virtual bool IsIdInBlacklist(const std::string& extension_id) const = 0;
   virtual bool IsIdInWhitelist(const std::string& extension_id) const = 0;
 
-  void set_check_channel(bool check_channel) { check_channel_ = check_channel; }
-
  protected:
   std::string name_;
   std::string alias_;
   std::string source_;
   bool no_parent_;
-  // TODO(devlin): Remove this once we set the feature channel for tests.
-  bool check_channel_;
 };
 
 }  // namespace extensions

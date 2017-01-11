@@ -12,7 +12,6 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
-#include "components/version_info/version_info.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/shell/browser/desktop_controller.h"
@@ -23,10 +22,7 @@ namespace extensions {
 
 AppShellTest::AppShellTest()
     : browser_context_(nullptr),
-      extension_system_(nullptr),
-      // Default channel is STABLE but override with UNKNOWN so that unlaunched
-      // or incomplete APIs can write tests.
-      current_channel_(version_info::Channel::UNKNOWN) {
+      extension_system_(nullptr) {
 #if defined(OS_MACOSX)
   // TODO(phajdan.jr): Make browser tests self-contained on Mac; remove this.
   // Set up the application path as though we we are inside the App Shell.app

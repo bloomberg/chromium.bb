@@ -9,7 +9,6 @@
 
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_base.h"
-#include "extensions/common/features/feature_channel.h"
 
 namespace content {
 class BrowserContext;
@@ -35,7 +34,6 @@ class AppShellTest : public content::BrowserTestBase {
  protected:
   content::BrowserContext* browser_context_;
   ShellExtensionSystem* extension_system_;
-  ScopedCurrentChannel current_channel_;
 };
 
 }  // namespace extensions
