@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "12.07",
+  "version": "12.08",
   "entries": [
     {
       "id": 1,
@@ -1428,6 +1428,19 @@ LONG_STRING_CONST(
         }
       },
       "vendor_id": "0x8086",
+      "features": [
+        "all"
+      ]
+    },
+    {
+      "id": 130,
+      "description": "Older NVIDIA GPUs on macOS render incorrectly",
+      "cr_bugs": [676975],
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x10de",
+      "device_id": ["0x0407"],
       "features": [
         "all"
       ]
