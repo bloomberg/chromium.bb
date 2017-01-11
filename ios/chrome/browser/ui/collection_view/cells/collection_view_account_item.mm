@@ -242,6 +242,7 @@ const CGFloat kHorizontalErrorIconFixedSize = 25;
   self.imageView.image = nil;
   self.textLabel.text = nil;
   self.detailTextLabel.text = nil;
+  self.textLabel.textColor = [[MDCPalette greyPalette] tint900];
   self.detailTextLabel.textColor = [[MDCPalette greyPalette] tint500];
   self.errorIcon.image = nil;
   self.accessoryType = MDCCollectionViewCellAccessoryNone;
