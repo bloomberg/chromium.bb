@@ -95,12 +95,6 @@
 #include "content/public/test/ppapi_test_utils.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "ash/common/accessibility_types.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/chromeos/accessibility/speech_monitor.h"
-#endif
-
 using extensions::ContextMenuMatcher;
 using extensions::ExtensionsAPIClient;
 using extensions::MenuItem;
@@ -2221,30 +2215,6 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, ScreenCoordinates) {
       "platform_apps/web_view/common", "screen_coordinates"))
           << message_;
 }
-
-#if defined(OS_CHROMEOS)
-// Flaky, see http://crbug.com/611736.
-IN_PROC_BROWSER_TEST_P(WebViewTest, DISABLED_ChromeVoxInjection) {
-  EXPECT_FALSE(
-      chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
-
-  chromeos::SpeechMonitor monitor;
-  chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(
-      true, ash::A11Y_NOTIFICATION_NONE);
-  EXPECT_TRUE(monitor.SkipChromeVoxEnabledMessage());
-
-  ASSERT_TRUE(StartEmbeddedTestServer());
-  content::WebContents* guest_web_contents = LoadGuest(
-      "/extensions/platform_apps/web_view/chromevox_injection/guest.html",
-      "web_view/chromevox_injection");
-  ASSERT_TRUE(guest_web_contents);
-
-  for (;;) {
-    if (monitor.GetNextUtterance() == "chrome vox test title")
-      break;
-  }
-}
-#endif
 
 // Flaky on Windows. http://crbug.com/303966
 #if defined(OS_WIN)

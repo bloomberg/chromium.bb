@@ -18,9 +18,6 @@ class WebViewGuestDelegate {
   // Called when context menu operation was handled.
   virtual bool HandleContextMenu(const content::ContextMenuParams& params) = 0;
 
-  // Called just after additional initialization is performed.
-  virtual void OnDidInitialize() = 0;
-
   // Shows the context menu for the guest.
   virtual void OnShowContextMenu(int request_id) = 0;
 

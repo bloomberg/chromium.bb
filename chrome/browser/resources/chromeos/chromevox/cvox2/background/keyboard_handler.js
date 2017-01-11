@@ -23,6 +23,8 @@ BackgroundKeyboardHandler = function() {
 
   document.addEventListener('keydown', this.onKeyDown.bind(this), false);
   document.addEventListener('keyup', this.onKeyUp.bind(this), false);
+
+  chrome.accessibilityPrivate.setKeyboardListener(true, false);
 };
 
 BackgroundKeyboardHandler.prototype = {

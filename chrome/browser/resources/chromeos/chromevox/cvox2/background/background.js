@@ -88,12 +88,6 @@ Background = function() {
    */
   this.currentRange_ = null;
 
-  /**
-   * @type {cursors.Range}
-   * @private
-   */
-  this.savedRange_ = null;
-
   // Manually bind all functions to |this|.
   for (var func in this) {
     if (typeof(this[func]) == 'function')
@@ -155,9 +149,6 @@ Background = function() {
 
   /** @type {!LiveRegions} @private */
   this.liveRegions_ = new LiveRegions(this);
-
-  /** @type {boolean} @private */
-  this.inExcursion_ = false;
 
   /**
    * Stores the mode as computed the last time a current range was set.
@@ -397,9 +388,6 @@ Background.prototype = {
    * @override
    */
   setCurrentRange: function(newRange) {
-    if (!this.inExcursion_ && newRange)
-      this.savedRange_ = new cursors.Range(newRange.start, newRange.end);
-
     if (newRange && !newRange.isValid())
       return;
 

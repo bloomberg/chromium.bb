@@ -401,8 +401,6 @@ void WebViewGuest::DidInitialize(const base::DictionaryValue& create_params) {
                               content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
                               content::Source<WebContents>(web_contents()));
 
-  if (web_view_guest_delegate_)
-    web_view_guest_delegate_->OnDidInitialize();
   ExtensionsAPIClient::Get()->AttachWebContentsHelpers(web_contents());
   web_view_permission_helper_.reset(new WebViewPermissionHelper(this));
 

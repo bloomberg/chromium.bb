@@ -66,7 +66,6 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
@@ -87,7 +86,6 @@
 #include "ui/keyboard/keyboard_util.h"
 
 using content::BrowserThread;
-using content::RenderViewHost;
 using extensions::api::braille_display_private::BrailleController;
 using extensions::api::braille_display_private::DisplayState;
 using extensions::api::braille_display_private::KeyEvent;
@@ -261,7 +259,6 @@ AccessibilityManager::AccessibilityManager()
       select_to_speak_enabled_(false),
       switch_access_enabled_(false),
       spoken_feedback_notification_(ash::A11Y_NOTIFICATION_NONE),
-      should_speak_chrome_vox_announcements_on_user_screen_(true),
       system_sounds_enabled_(false),
       braille_display_connected_(false),
       scoped_braille_observer_(this),
@@ -277,9 +274,6 @@ AccessibilityManager::AccessibilityManager()
                               content::NotificationService::AllSources());
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_PROFILE_DESTROYED,
-                              content::NotificationService::AllSources());
-  notification_registrar_.Add(this,
-                              chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
                               content::NotificationService::AllSources());
 
   input_method::InputMethodManager::Get()->AddObserver(this);
@@ -483,7 +477,7 @@ void AccessibilityManager::UpdateSpokenFeedbackFromPref() {
   NotifyAccessibilityStatusChanged(details);
 
   if (enabled) {
-    chromevox_loader_->Load(profile_, "window.INJECTED_AFTER_LOAD = true;",
+    chromevox_loader_->Load(profile_,
                             base::Bind(&AccessibilityManager::PostLoadChromeVox,
                                        weak_ptr_factory_.GetWeakPtr()));
   } else {
@@ -886,8 +880,7 @@ void AccessibilityManager::UpdateSelectToSpeakFromPref() {
   select_to_speak_enabled_ = enabled;
 
   if (enabled) {
-    select_to_speak_loader_->Load(profile_, "" /* init_script_str */,
-                                  base::Closure() /* done_cb */);
+    select_to_speak_loader_->Load(profile_, base::Closure() /* done_cb */);
     select_to_speak_event_handler_.reset(
         new chromeos::SelectToSpeakEventHandler());
   } else {
@@ -1163,10 +1156,6 @@ base::TimeDelta AccessibilityManager::PlayShutdownSound() {
   return media::SoundsManager::Get()->GetDuration(SOUND_SHUTDOWN);
 }
 
-void AccessibilityManager::InjectChromeVox(RenderViewHost* render_view_host) {
-  chromevox_loader_->LoadExtension(profile_, render_view_host, base::Closure());
-}
-
 std::unique_ptr<AccessibilityStatusSubscription>
 AccessibilityManager::RegisterCallback(const AccessibilityStatusCallback& cb) {
   return callback_list_.Add(cb);
@@ -1245,9 +1234,6 @@ void AccessibilityManager::Observe(
       // Update |profile_| when entering a session.
       SetProfile(ProfileManager::GetActiveUserProfile());
 
-      // Ensure ChromeVox makes announcements at the start of new sessions.
-      should_speak_chrome_vox_announcements_on_user_screen_ = true;
-
       // Add a session state observer to be able to monitor session changes.
       if (!session_state_observer_.get() && ash::Shell::HasInstance())
         session_state_observer_.reset(
@@ -1258,19 +1244,6 @@ void AccessibilityManager::Observe(
       Profile* profile = content::Source<Profile>(source).ptr();
       if (profile_ == profile)
         SetProfile(NULL);
-      break;
-    }
-    case chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED: {
-      bool is_screen_locked = *content::Details<bool>(details).ptr();
-      if (spoken_feedback_enabled_) {
-        if (is_screen_locked)
-          chromevox_loader_->LoadToLockScreen(base::Closure());
-        // If spoken feedback was enabled, make sure it is also enabled on
-        // the user screen.
-        // The status tray gets verbalized by user screen ChromeVox, so we need
-        // to load it on the user screen even if the screen is locked.
-        chromevox_loader_->LoadToUserScreen(base::Closure());
-      }
       break;
     }
   }
@@ -1320,24 +1293,17 @@ void AccessibilityManager::PostLoadChromeVox() {
   // Do any setup work needed immediately after ChromeVox actually loads.
   PlayEarcon(SOUND_SPOKEN_FEEDBACK_ENABLED, PlaySoundOption::ALWAYS);
 
-  if (chromevox_loader_->loaded_on_lock_screen() ||
-      should_speak_chrome_vox_announcements_on_user_screen_) {
-    extensions::EventRouter* event_router =
-        extensions::EventRouter::Get(profile_);
-    CHECK(event_router);
+  extensions::EventRouter* event_router =
+      extensions::EventRouter::Get(profile_);
+  CHECK(event_router);
 
-    std::unique_ptr<base::ListValue> event_args(new base::ListValue());
-    std::unique_ptr<extensions::Event> event(new extensions::Event(
-        extensions::events::ACCESSIBILITY_PRIVATE_ON_INTRODUCE_CHROME_VOX,
-        extensions::api::accessibility_private::OnIntroduceChromeVox::
-            kEventName,
-        std::move(event_args)));
-    event_router->DispatchEventWithLazyListener(
-        extension_misc::kChromeVoxExtensionId, std::move(event));
-  }
-
-  should_speak_chrome_vox_announcements_on_user_screen_ =
-      chromevox_loader_->loaded_on_lock_screen();
+  std::unique_ptr<base::ListValue> event_args(new base::ListValue());
+  std::unique_ptr<extensions::Event> event(new extensions::Event(
+      extensions::events::ACCESSIBILITY_PRIVATE_ON_INTRODUCE_CHROME_VOX,
+      extensions::api::accessibility_private::OnIntroduceChromeVox::kEventName,
+      std::move(event_args)));
+  event_router->DispatchEventWithLazyListener(
+      extension_misc::kChromeVoxExtensionId, std::move(event));
 
   if (!chromevox_panel_) {
     chromevox_panel_ = new ChromeVoxPanel(profile_);

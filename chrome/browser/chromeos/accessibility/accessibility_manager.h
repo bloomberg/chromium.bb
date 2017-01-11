@@ -26,10 +26,6 @@
 #include "extensions/browser/extension_system.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
-namespace content {
-class RenderViewHost;
-}
-
 class Profile;
 
 namespace chromeos {
@@ -235,9 +231,6 @@ class AccessibilityManager
   // Initiates play of shutdown sound and returns it's duration.
   base::TimeDelta PlayShutdownSound();
 
-  // Injects ChromeVox scripts into given |render_view_host|.
-  void InjectChromeVox(content::RenderViewHost* render_view_host);
-
   // Register a callback to be notified when the status of an accessibility
   // option changes.
   std::unique_ptr<AccessibilityStatusSubscription> RegisterCallback(
@@ -385,8 +378,6 @@ class AccessibilityManager
   bool switch_access_enabled_;
 
   ash::AccessibilityNotificationVisibility spoken_feedback_notification_;
-
-  bool should_speak_chrome_vox_announcements_on_user_screen_;
 
   bool system_sounds_enabled_;
 
