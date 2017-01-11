@@ -2910,7 +2910,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushInvalidAssociatedStreamID9) {
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
   SpdySerializedFrame stream2_rst(
-      spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_INVALID_STREAM));
+      spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_STREAM_CLOSED));
   MockWrite writes[] = {
       CreateMockWrite(stream1_syn, 0), CreateMockWrite(stream2_rst, 3),
   };
@@ -3043,7 +3043,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushOnClosedStream) {
   SpdySerializedFrame stream1_syn(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   SpdySerializedFrame rst(
-      spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_INVALID_STREAM));
+      spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_STREAM_CLOSED));
   MockWrite writes[] = {
       CreateMockWrite(stream1_syn, 0), CreateMockWrite(rst, 5),
   };

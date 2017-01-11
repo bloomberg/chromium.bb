@@ -758,7 +758,7 @@ SpdySerializedFrame SpdyTestUtil::ConstructSpdyGoAway() {
 
 SpdySerializedFrame SpdyTestUtil::ConstructSpdyGoAway(
     SpdyStreamId last_good_stream_id) {
-  SpdyGoAwayIR go_ir(last_good_stream_id, GOAWAY_OK, "go away");
+  SpdyGoAwayIR go_ir(last_good_stream_id, GOAWAY_NO_ERROR, "go away");
   return SpdySerializedFrame(headerless_spdy_framer_.SerializeFrame(go_ir));
 }
 

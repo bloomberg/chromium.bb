@@ -417,24 +417,22 @@ const char* SpdyFramer::StatusCodeToString(int status_code) {
       return "NO_ERROR";
     case RST_STREAM_PROTOCOL_ERROR:
       return "PROTOCOL_ERROR";
-    case RST_STREAM_INVALID_STREAM:
-      return "INVALID_STREAM";
-    case RST_STREAM_REFUSED_STREAM:
-      return "REFUSED_STREAM";
-    case RST_STREAM_UNSUPPORTED_VERSION:
-      return "UNSUPPORTED_VERSION";
-    case RST_STREAM_CANCEL:
-      return "CANCEL";
     case RST_STREAM_INTERNAL_ERROR:
       return "INTERNAL_ERROR";
     case RST_STREAM_FLOW_CONTROL_ERROR:
       return "FLOW_CONTROL_ERROR";
-    case RST_STREAM_STREAM_IN_USE:
-      return "STREAM_IN_USE";
-    case RST_STREAM_STREAM_ALREADY_CLOSED:
-      return "STREAM_ALREADY_CLOSED";
-    case RST_STREAM_FRAME_TOO_LARGE:
-      return "FRAME_TOO_LARGE";
+    case RST_STREAM_SETTINGS_TIMEOUT:
+      return "SETTINGS_TIMEOUT";
+    case RST_STREAM_STREAM_CLOSED:
+      return "STREAM_CLOSED";
+    case RST_STREAM_FRAME_SIZE_ERROR:
+      return "FRAME_SIZE_ERROR";
+    case RST_STREAM_REFUSED_STREAM:
+      return "REFUSED_STREAM";
+    case RST_STREAM_CANCEL:
+      return "CANCEL";
+    case RST_STREAM_COMPRESSION_ERROR:
+      return "COMPRESSION_ERROR";
     case RST_STREAM_CONNECT_ERROR:
       return "CONNECT_ERROR";
     case RST_STREAM_ENHANCE_YOUR_CALM:
@@ -1464,8 +1462,8 @@ size_t SpdyFramer::ProcessGoAwayFramePayload(const char* data, size_t len) {
       DCHECK(successful_read);
 
       // Parse status code.
-      SpdyGoAwayStatus status = GOAWAY_OK;
-      uint32_t status_raw = GOAWAY_OK;
+      SpdyGoAwayStatus status = GOAWAY_NO_ERROR;
+      uint32_t status_raw = GOAWAY_NO_ERROR;
       successful_read = reader.ReadUInt32(&status_raw);
       DCHECK(successful_read);
       if (IsValidGoAwayStatus(status_raw)) {

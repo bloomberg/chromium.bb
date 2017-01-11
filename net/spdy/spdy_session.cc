@@ -457,28 +457,26 @@ Error MapFramerErrorToNetError(SpdyFramer::SpdyError err) {
 SpdyProtocolErrorDetails MapRstStreamStatusToProtocolError(
     SpdyRstStreamStatus status) {
   switch (status) {
+    case RST_STREAM_NO_ERROR:
+      return STATUS_CODE_NO_ERROR;
     case RST_STREAM_PROTOCOL_ERROR:
       return STATUS_CODE_PROTOCOL_ERROR;
-    case RST_STREAM_INVALID_STREAM:
-      return STATUS_CODE_INVALID_STREAM;
-    case RST_STREAM_REFUSED_STREAM:
-      return STATUS_CODE_REFUSED_STREAM;
-    case RST_STREAM_UNSUPPORTED_VERSION:
-      return STATUS_CODE_UNSUPPORTED_VERSION;
-    case RST_STREAM_CANCEL:
-      return STATUS_CODE_CANCEL;
     case RST_STREAM_INTERNAL_ERROR:
       return STATUS_CODE_INTERNAL_ERROR;
     case RST_STREAM_FLOW_CONTROL_ERROR:
       return STATUS_CODE_FLOW_CONTROL_ERROR;
-    case RST_STREAM_STREAM_IN_USE:
-      return STATUS_CODE_STREAM_IN_USE;
-    case RST_STREAM_STREAM_ALREADY_CLOSED:
-      return STATUS_CODE_STREAM_ALREADY_CLOSED;
-    case RST_STREAM_FRAME_SIZE_ERROR:
-      return STATUS_CODE_FRAME_SIZE_ERROR;
     case RST_STREAM_SETTINGS_TIMEOUT:
       return STATUS_CODE_SETTINGS_TIMEOUT;
+    case RST_STREAM_STREAM_CLOSED:
+      return STATUS_CODE_STREAM_CLOSED;
+    case RST_STREAM_FRAME_SIZE_ERROR:
+      return STATUS_CODE_FRAME_SIZE_ERROR;
+    case RST_STREAM_REFUSED_STREAM:
+      return STATUS_CODE_REFUSED_STREAM;
+    case RST_STREAM_CANCEL:
+      return STATUS_CODE_CANCEL;
+    case RST_STREAM_COMPRESSION_ERROR:
+      return STATUS_CODE_COMPRESSION_ERROR;
     case RST_STREAM_CONNECT_ERROR:
       return STATUS_CODE_CONNECT_ERROR;
     case RST_STREAM_ENHANCE_YOUR_CALM:
@@ -487,8 +485,6 @@ SpdyProtocolErrorDetails MapRstStreamStatusToProtocolError(
       return STATUS_CODE_INADEQUATE_SECURITY;
     case RST_STREAM_HTTP_1_1_REQUIRED:
       return STATUS_CODE_HTTP_1_1_REQUIRED;
-    case RST_STREAM_NO_ERROR:
-      return STATUS_CODE_NO_ERROR;
     default:
       NOTREACHED();
       return static_cast<SpdyProtocolErrorDetails>(-1);
@@ -2600,9 +2596,7 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
       active_streams_.find(associated_stream_id);
   if (associated_it == active_streams_.end()) {
     EnqueueResetStreamFrame(
-        stream_id,
-        request_priority,
-        RST_STREAM_INVALID_STREAM,
+        stream_id, request_priority, RST_STREAM_STREAM_CLOSED,
         base::StringPrintf("Received push for inactive associated stream %d",
                            associated_stream_id));
     return;

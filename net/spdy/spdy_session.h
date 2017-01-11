@@ -117,20 +117,22 @@ enum SpdyProtocolErrorDetails {
   // SpdyRstStreamStatus mappings.
   STATUS_CODE_NO_ERROR = 41,
   STATUS_CODE_PROTOCOL_ERROR = 11,
-  STATUS_CODE_INVALID_STREAM = 12,
-  STATUS_CODE_REFUSED_STREAM = 13,
-  STATUS_CODE_UNSUPPORTED_VERSION = 14,
-  STATUS_CODE_CANCEL = 15,
   STATUS_CODE_INTERNAL_ERROR = 16,
   STATUS_CODE_FLOW_CONTROL_ERROR = 17,
-  STATUS_CODE_STREAM_IN_USE = 18,
-  STATUS_CODE_STREAM_ALREADY_CLOSED = 19,
-  STATUS_CODE_FRAME_SIZE_ERROR = 21,
   STATUS_CODE_SETTINGS_TIMEOUT = 32,
+  STATUS_CODE_STREAM_CLOSED = 12,
+  STATUS_CODE_FRAME_SIZE_ERROR = 21,
+  STATUS_CODE_REFUSED_STREAM = 13,
+  STATUS_CODE_CANCEL = 15,
+  STATUS_CODE_COMPRESSION_ERROR = 42,
   STATUS_CODE_CONNECT_ERROR = 33,
   STATUS_CODE_ENHANCE_YOUR_CALM = 34,
   STATUS_CODE_INADEQUATE_SECURITY = 35,
   STATUS_CODE_HTTP_1_1_REQUIRED = 36,
+  // Deprecated SpdyRstStrreamStatus mappings.
+  STATUS_CODE_UNSUPPORTED_VERSION = 14,
+  STATUS_CODE_STREAM_IN_USE = 18,
+  STATUS_CODE_STREAM_ALREADY_CLOSED = 19,
 
   // SpdySession errors
   PROTOCOL_ERROR_UNEXPECTED_PING = 22,
@@ -142,7 +144,7 @@ enum SpdyProtocolErrorDetails {
   PROTOCOL_ERROR_RECEIVE_WINDOW_VIOLATION = 28,
 
   // Next free value.
-  NUM_SPDY_PROTOCOL_ERROR_DETAILS = 42,
+  NUM_SPDY_PROTOCOL_ERROR_DETAILS = 43,
 };
 SpdyProtocolErrorDetails NET_EXPORT_PRIVATE
     MapFramerErrorToProtocolError(SpdyFramer::SpdyError error);
@@ -155,7 +157,7 @@ SpdyGoAwayStatus NET_EXPORT_PRIVATE MapNetErrorToGoAwayStatus(Error err);
 // to be updated with new values, as do the mapping functions above.
 static_assert(17 == SpdyFramer::LAST_ERROR,
               "SpdyProtocolErrorDetails / Spdy Errors mismatch");
-static_assert(17 == RST_STREAM_NUM_STATUS_CODES,
+static_assert(14 == RST_STREAM_NUM_STATUS_CODES,
               "SpdyProtocolErrorDetails / RstStreamStatus mismatch");
 
 // A helper class used to manage a request to create a stream.
