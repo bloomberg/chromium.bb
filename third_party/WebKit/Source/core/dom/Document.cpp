@@ -121,7 +121,6 @@
 #include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/EditingUtilities.h"
-#include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/serializers/Serialization.h"
@@ -4954,116 +4953,6 @@ const KURL& Document::baseURLForOverride(const KURL& baseURLOverride) const {
       baseURLFromParent = &parent->baseURL();
   }
   return baseURLFromParent ? *baseURLFromParent : baseURLOverride;
-}
-
-// Support for Javascript execCommand, and related methods
-
-static Editor::Command command(Document* document, const String& commandName) {
-  LocalFrame* frame = document->frame();
-  if (!frame || frame->document() != document)
-    return Editor::Command();
-
-  document->updateStyleAndLayoutTree();
-  return frame->editor().createCommandFromDOM(commandName);
-}
-
-bool Document::execCommand(const String& commandName,
-                           bool,
-                           const String& value,
-                           ExceptionState& exceptionState) {
-  if (!isHTMLDocument() && !isXHTMLDocument()) {
-    exceptionState.throwDOMException(
-        InvalidStateError, "execCommand is only supported on HTML documents.");
-    return false;
-  }
-  if (focusedElement() && isTextControlElement(*focusedElement()))
-    UseCounter::count(*this, UseCounter::ExecCommandOnInputOrTextarea);
-
-  // We don't allow recursive |execCommand()| to protect against attack code.
-  // Recursive call of |execCommand()| could be happened by moving iframe
-  // with script triggered by insertion, e.g. <iframe src="javascript:...">
-  // <iframe onload="...">. This usage is valid as of the specification
-  // although, it isn't common use case, rather it is used as attack code.
-  if (m_isRunningExecCommand) {
-    String message =
-        "We don't execute document.execCommand() this time, because it is "
-        "called recursively.";
-    addConsoleMessage(
-        ConsoleMessage::create(JSMessageSource, WarningMessageLevel, message));
-    return false;
-  }
-  AutoReset<bool> executeScope(&m_isRunningExecCommand, true);
-
-  // Postpone DOM mutation events, which can execute scripts and change
-  // DOM tree against implementation assumption.
-  EventQueueScope eventQueueScope;
-  Editor::tidyUpHTMLStructure(*this);
-  Editor::Command editorCommand = command(this, commandName);
-
-  DEFINE_STATIC_LOCAL(SparseHistogram, editorCommandHistogram,
-                      ("WebCore.Document.execCommand"));
-  editorCommandHistogram.sample(editorCommand.idForHistogram());
-  return editorCommand.execute(value);
-}
-
-bool Document::queryCommandEnabled(const String& commandName,
-                                   ExceptionState& exceptionState) {
-  if (!isHTMLDocument() && !isXHTMLDocument()) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
-        "queryCommandEnabled is only supported on HTML documents.");
-    return false;
-  }
-
-  return command(this, commandName).isEnabled();
-}
-
-bool Document::queryCommandIndeterm(const String& commandName,
-                                    ExceptionState& exceptionState) {
-  if (!isHTMLDocument() && !isXHTMLDocument()) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
-        "queryCommandIndeterm is only supported on HTML documents.");
-    return false;
-  }
-
-  return command(this, commandName).state() == MixedTriState;
-}
-
-bool Document::queryCommandState(const String& commandName,
-                                 ExceptionState& exceptionState) {
-  if (!isHTMLDocument() && !isXHTMLDocument()) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
-        "queryCommandState is only supported on HTML documents.");
-    return false;
-  }
-
-  return command(this, commandName).state() == TrueTriState;
-}
-
-bool Document::queryCommandSupported(const String& commandName,
-                                     ExceptionState& exceptionState) {
-  if (!isHTMLDocument() && !isXHTMLDocument()) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
-        "queryCommandSupported is only supported on HTML documents.");
-    return false;
-  }
-
-  return command(this, commandName).isSupported();
-}
-
-String Document::queryCommandValue(const String& commandName,
-                                   ExceptionState& exceptionState) {
-  if (!isHTMLDocument() && !isXHTMLDocument()) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
-        "queryCommandValue is only supported on HTML documents.");
-    return "";
-  }
-
-  return command(this, commandName).value();
 }
 
 KURL Document::openSearchDescriptionURL() {

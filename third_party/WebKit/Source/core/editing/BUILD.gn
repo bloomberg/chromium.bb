@@ -80,6 +80,7 @@ blink_core_sources("editing") {
     "commands/DeleteFromTextNodeCommand.h",
     "commands/DeleteSelectionCommand.cpp",
     "commands/DeleteSelectionCommand.h",
+    "commands/DocumentExecCommand.cpp",
     "commands/DragAndDropCommand.cpp",
     "commands/DragAndDropCommand.h",
     "commands/EditCommand.cpp",
