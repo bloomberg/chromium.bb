@@ -27,7 +27,8 @@ void RequestCoordinatorFactoryTest::FlushBlockingPool() {
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
 }
 
-TEST_F(RequestCoordinatorFactoryTest, BuildRequestCoordinator) {
+// Flaky on android_n5x_swarming_rel. https://crbug.com/679844
+TEST_F(RequestCoordinatorFactoryTest, DISABLED_BuildRequestCoordinator) {
   RequestCoordinatorFactory* factory = RequestCoordinatorFactory::GetInstance();
   EXPECT_NE(nullptr, factory);
   RequestCoordinator* coordinator1 =
