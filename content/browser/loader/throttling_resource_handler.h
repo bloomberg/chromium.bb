@@ -10,8 +10,10 @@
 #include <memory>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/loader/layered_resource_handler.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/resource_throttle.h"
 #include "net/url_request/redirect_info.h"
 #include "url/gurl.h"
@@ -25,8 +27,9 @@ namespace content {
 struct ResourceResponse;
 
 // Used to apply a list of ResourceThrottle instances to an URLRequest.
-class ThrottlingResourceHandler : public LayeredResourceHandler,
-                                  public ResourceThrottle::Delegate {
+class CONTENT_EXPORT ThrottlingResourceHandler
+    : public LayeredResourceHandler,
+      public ResourceThrottle::Delegate {
  public:
   ThrottlingResourceHandler(
       std::unique_ptr<ResourceHandler> next_handler,
@@ -72,6 +75,8 @@ class ThrottlingResourceHandler : public LayeredResourceHandler,
   scoped_refptr<ResourceResponse> deferred_response_;
 
   bool cancelled_by_resource_throttle_;
+
+  DISALLOW_COPY_AND_ASSIGN(ThrottlingResourceHandler);
 };
 
 }  // namespace content

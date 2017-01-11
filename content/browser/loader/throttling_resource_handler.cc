@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "content/browser/loader/resource_controller.h"
-#include "content/browser/loader/resource_request_info_impl.h"
 #include "content/public/common/resource_response.h"
 #include "net/url_request/url_request.h"
 
@@ -123,7 +122,12 @@ void ThrottlingResourceHandler::CancelWithError(int error_code) {
 }
 
 void ThrottlingResourceHandler::Resume() {
-  DCHECK(!cancelled_by_resource_throttle_);
+  // Throttles expect to be able to cancel requests out-of-band, so just do
+  // nothing if one request resumes after another cancels. Can't even recognize
+  // out-of-band cancels and for synchronous teardown, since don't know if the
+  // currently active throttle called Cancel() or if it was another one.
+  if (cancelled_by_resource_throttle_)
+    return;
 
   DeferredStage last_deferred_stage = deferred_stage_;
   deferred_stage_ = DEFERRED_NONE;
