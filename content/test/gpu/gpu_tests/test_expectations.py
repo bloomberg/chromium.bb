@@ -9,7 +9,7 @@ import urlparse
 #
 # Operating systems:
 #     win, xp, vista, win7, win8, win10, mac, leopard, snowleopard,
-#     lion, mountainlion, mavericks, yosemite, linux, chromeos,
+#     lion, mountainlion, mavericks, yosemite, sierra, linux, chromeos,
 #     android
 #
 # Browser types:
@@ -21,7 +21,7 @@ import urlparse
 
 WIN_CONDITIONS = ['xp', 'vista', 'win7', 'win8', 'win10']
 MAC_CONDITIONS = ['leopard', 'snowleopard', 'lion', 'mountainlion',
-                 'mavericks', 'yosemite']
+                  'mavericks', 'yosemite', 'sierra']
 
 OS_CONDITIONS = ['win', 'mac', 'linux', 'chromeos', 'android'] + \
                 WIN_CONDITIONS + MAC_CONDITIONS
@@ -74,7 +74,8 @@ class Expectation(object):
 
     Operating systems:
       win, xp, vista, win7, mac, leopard, snowleopard, lion,
-      mountainlion, mavericks, yosemite, linux, chromeos, android
+      mountainlion, mavericks, yosemite, sierra, linux, chromeos,
+      android
 
     Browser types:
       android-webview-shell, android-content-shell, android-chromium,
@@ -83,6 +84,7 @@ class Expectation(object):
     Sample usage in SetExpectations in subclasses:
       self.Fail('gl-enable-vertex-attrib.html',
          ['mac', 'release'], bug=123)
+
     """
     cl = condition.lower()
     if cl in OS_CONDITIONS:

@@ -430,6 +430,32 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('amd', 0x679e)], bug=483282)
 
     # Mac Intel
+
+    self.Fail(
+      'conformance2/textures/canvas/tex-2d-rgb9_e5-rgb-float.html',
+      ['sierra', 'intel'], bug=663188)
+    self.Fail(
+      'conformance2/textures/canvas/tex-2d-rgb9_e5-rgb-half_float.html',
+      ['sierra', 'intel'], bug=663188)
+    self.Fail(
+      'conformance2/textures/canvas/tex-3d-rgb9_e5-rgb-float.html',
+      ['sierra', 'intel'], bug=663188)
+    self.Fail(
+      'conformance2/textures/canvas/tex-3d-rgb9_e5-rgb-half_float.html',
+      ['sierra', 'intel'], bug=663188)
+    self.Fail(
+      'conformance2/textures/webgl_canvas/tex-2d-rgb9_e5-rgb-float.html',
+      ['sierra', 'intel'], bug=663188)
+    self.Fail(
+      'conformance2/textures/webgl_canvas/tex-2d-rgb9_e5-rgb-half_float.html',
+      ['sierra', 'intel'], bug=663188)
+    self.Fail(
+      'conformance2/textures/webgl_canvas/tex-3d-rgb9_e5-rgb-float.html',
+      ['sierra', 'intel'], bug=663188)
+    self.Fail(
+      'conformance2/textures/webgl_canvas/tex-3d-rgb9_e5-rgb-half_float.html',
+      ['sierra', 'intel'], bug=663188)
+
     self.Fail('deqp/functional/gles3/fbomultisample*',
         ['mac', 'intel'], bug=641209)
     self.Fail('deqp/functional/gles3/texturefiltering/2d_combinations_01.html',
