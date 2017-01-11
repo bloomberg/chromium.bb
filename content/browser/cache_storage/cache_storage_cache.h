@@ -325,8 +325,9 @@ class CONTENT_EXPORT CacheStorageCache {
   // Asynchronously calculates the current cache size, notifies the quota
   // manager of any change from the last report, and sets cache_size_ to the new
   // size.
-  void UpdateCacheSize();
+  void UpdateCacheSize(const base::Closure& callback);
   void UpdateCacheSizeGotSize(std::unique_ptr<CacheStorageCacheHandle>,
+                              const base::Closure& callback,
                               int current_cache_size);
 
   // Returns ERROR_NOT_FOUND if not found. Otherwise deletes and returns OK.

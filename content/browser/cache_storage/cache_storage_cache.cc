@@ -938,13 +938,11 @@ void CacheStorageCache::WriteSideDataDidWrite(const ErrorCallback& callback,
                                               int rv) {
   if (rv != expected_bytes) {
     entry->Doom();
-    UpdateCacheSize();
-    callback.Run(CACHE_STORAGE_ERROR_NOT_FOUND);
+    UpdateCacheSize(base::Bind(callback, CACHE_STORAGE_ERROR_NOT_FOUND));
     return;
   }
 
-  UpdateCacheSize();
-  callback.Run(CACHE_STORAGE_OK);
+  UpdateCacheSize(base::Bind(callback, CACHE_STORAGE_OK));
 }
 
 void CacheStorageCache::Put(const CacheStorageBatchOperation& operation,
@@ -1126,8 +1124,7 @@ void CacheStorageCache::PutDidWriteHeaders(
   // from the blob into the cache entry.
 
   if (put_context->response->blob_uuid.empty()) {
-    UpdateCacheSize();
-    put_context->callback.Run(CACHE_STORAGE_OK);
+    UpdateCacheSize(base::Bind(put_context->callback, CACHE_STORAGE_OK));
     return;
   }
 
@@ -1168,27 +1165,28 @@ void CacheStorageCache::PutDidWriteBlobToCache(
     return;
   }
 
-  UpdateCacheSize();
-  put_context->callback.Run(CACHE_STORAGE_OK);
+  UpdateCacheSize(base::Bind(put_context->callback, CACHE_STORAGE_OK));
 }
 
-void CacheStorageCache::UpdateCacheSize() {
+void CacheStorageCache::UpdateCacheSize(const base::Closure& callback) {
   if (backend_state_ != BACKEND_OPEN)
     return;
 
   // Note that the callback holds a cache handle to keep the cache alive during
   // the operation since this UpdateCacheSize is often run after an operation
   // completes and runs its callback.
-  int rv = backend_->CalculateSizeOfAllEntries(base::Bind(
-      &CacheStorageCache::UpdateCacheSizeGotSize,
-      weak_ptr_factory_.GetWeakPtr(), base::Passed(CreateCacheHandle())));
+  int rv = backend_->CalculateSizeOfAllEntries(
+      base::Bind(&CacheStorageCache::UpdateCacheSizeGotSize,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(CreateCacheHandle()), callback));
 
   if (rv != net::ERR_IO_PENDING)
-    UpdateCacheSizeGotSize(CreateCacheHandle(), rv);
+    UpdateCacheSizeGotSize(CreateCacheHandle(), callback, rv);
 }
 
 void CacheStorageCache::UpdateCacheSizeGotSize(
     std::unique_ptr<CacheStorageCacheHandle> cache_handle,
+    const base::Closure& callback,
     int current_cache_size) {
   DCHECK_NE(current_cache_size, CacheStorage::kSizeUnknown);
   int64_t old_cache_size = cache_size_;
@@ -1202,6 +1200,8 @@ void CacheStorageCache::UpdateCacheSizeGotSize(
 
   if (cache_observer_)
     cache_observer_->CacheSizeUpdated(this, current_cache_size);
+
+  callback.Run();
 }
 
 void CacheStorageCache::Delete(const CacheStorageBatchOperation& operation,
@@ -1256,8 +1256,7 @@ void CacheStorageCache::DeleteDidQueryCache(
     entry->Doom();
   }
 
-  UpdateCacheSize();
-  callback.Run(CACHE_STORAGE_OK);
+  UpdateCacheSize(base::Bind(callback, CACHE_STORAGE_OK));
 }
 
 void CacheStorageCache::KeysImpl(
