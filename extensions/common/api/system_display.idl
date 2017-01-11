@@ -157,6 +157,9 @@ namespace system.display {
     // isSelected=true. Only available on Chrome OS. Will be set to an empty
     // array on other platforms.
     DisplayMode[] modes;
+
+    // True if this display has a touch input device associated with it.
+    boolean hasTouchSupport;
   };
 
   dictionary DisplayProperties {

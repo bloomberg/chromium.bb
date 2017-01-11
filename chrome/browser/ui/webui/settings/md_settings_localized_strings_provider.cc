@@ -608,9 +608,18 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       {"displayOverscanResize", IDS_SETTINGS_DISPLAY_OVERSCAN_RESIZE},
       {"displayOverscanPosition", IDS_SETTINGS_DISPLAY_OVERSCAN_POSITION},
       {"displayOverscanReset", IDS_SETTINGS_DISPLAY_OVERSCAN_RESET},
+      {"displayTouchCalibrationTitle",
+       IDS_SETTINGS_DISPLAY_TOUCH_CALIBRATION_TITLE},
+      {"displayTouchCalibrationText",
+       IDS_SETTINGS_DISPLAY_TOUCH_CALIBRATION_TEXT}
   };
   AddLocalizedStringsBulk(html_source, display_strings,
                           arraysize(display_strings));
+
+  html_source->AddBoolean(
+      "enableTouchCalibrationSetting",
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableTouchCalibrationSetting));
 
   LocalizedString storage_strings[] = {
       {"storageTitle", IDS_SETTINGS_STORAGE_TITLE},

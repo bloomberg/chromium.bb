@@ -166,6 +166,20 @@ Polymer({
   },
 
   /**
+   * Returns true if the given display has touch support and is not an internal
+   * display. If the feature is not enabled via the switch, this will return
+   * false.
+   * @param {!chrome.system.display.DisplayUnitInfo} display Display being
+   *     checked for touch support.
+   * @return {boolean}
+   * @private
+   */
+  showTouchCalibrationSetting_: function(display) {
+    return !display.isInternal && display.hasTouchSupport &&
+        loadTimeData.getBoolean('enableTouchCalibrationSetting');
+  },
+
+  /**
    * @param {!Array<!chrome.system.display.DisplayUnitInfo>} displays
    * @return {boolean}
    * @private
@@ -293,6 +307,16 @@ Polymer({
    */
   onSelectDisplayTab_: function(e) {
     this.onSelectDisplay_({detail: e.detail.item.displayId});
+  },
+
+  /**
+   * Handles event when a touch calibration option is selected.
+   * @param {!Event} e
+   * @private
+   */
+  onTouchCalibrationTap_: function(e) {
+    settings.display.systemDisplayApi.touchCalibrationStart(
+        this.selectedDisplay.id);
   },
 
   /**

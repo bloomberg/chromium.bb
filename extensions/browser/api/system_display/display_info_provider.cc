@@ -70,6 +70,8 @@ api::system_display::DisplayUnitInfo DisplayInfoProvider::CreateDisplayUnitInfo(
   unit.work_area.top = work_area.y();
   unit.work_area.width = work_area.width();
   unit.work_area.height = work_area.height();
+  unit.has_touch_support =
+      display.touch_support() == display::Display::TOUCH_SUPPORT_AVAILABLE;
   return unit;
 }
 

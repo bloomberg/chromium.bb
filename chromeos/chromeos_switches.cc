@@ -259,6 +259,11 @@ const char kEnableRequestTabletSite[] = "enable-request-tablet-site";
 const char kEnableScreenshotTestingWithMode[] =
     "enable-screenshot-testing-with-mode";
 
+// Enables the touch calibration option in MD settings UI for valid touch
+// displays.
+const char kEnableTouchCalibrationSetting[] =
+    "enable-touch-calibration-setting";
+
 // Enables touchpad three-finger-click as middle button.
 const char kEnableTouchpadThreeFingerClick[] =
     "enable-touchpad-three-finger-click";

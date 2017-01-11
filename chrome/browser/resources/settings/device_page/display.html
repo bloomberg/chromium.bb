@@ -129,7 +129,7 @@
           <span class="md-select-underline"></span>
         </div>
       </div>
-      <div id="subpage-trigger" class="settings-box embedded two-line"
+      <div class="settings-box embedded two-line"
           on-tap="onOverscanTap_" hidden$="[[selectedDisplay.isInternal]]"
           actionable>
         <div class="start">
@@ -143,6 +143,16 @@
           display-id="{{overscanDisplayId}}">
       </settings-display-overscan-dialog>
 
+      <div class="settings-box embedded two-line"
+          on-tap="onTouchCalibrationTap_"
+          hidden$="[[!showTouchCalibrationSetting_(selectedDisplay)]]"
+          actionable>
+        <div class="start">
+          <div>$i18n{displayTouchCalibrationTitle}</div>
+          <div class="secondary">$i18n{displayTouchCalibrationText}</div>
+        </div>
+        <button class="subpage-arrow" is="paper-icon-button-light"></button>
+      </div>
     </div>
   </template>
   <script src="display.js"></script>
