@@ -42,7 +42,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2063848847527508675">Chrome OS needs to be restarted to apply the update.</translation>
 <translation id="2077129598763517140">Use hardware acceleration when available</translation>
 <translation id="2084710999043359739">Add to Chrome</translation>
-<translation id="2120620239521071941">This will delete <ph name="ITEMS_COUNT" /> items from this device. To retrieve your data later, sign in to Chrome as <ph name="USER_EMAIL" />.</translation>
 <translation id="2147651015520127414">Chrome verified that <ph name="ISSUER" /> issued this website's certificate.</translation>
 <translation id="2246246234298806438">Google Chrome cannot show the print preview when the built-in PDF viewer is missing.</translation>
 <translation id="2252923619938421629">Help make Google Chrome better by reporting the current settings</translation>
@@ -61,7 +60,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="2485422356828889247">Uninstall</translation>
 <translation id="2580411288591421699">Cannot install the same Google Chrome version that is currently running. Please close Google Chrome and try again.</translation>
 <translation id="2582790009689336987">This computer will soon stop receiving Google Chrome updates because this Linux system will no longer be supported.</translation>
-<translation id="2586406160782125153">This will delete your browsing data from this device. To retrieve your data later, sign in to Chrome as <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Chrome logo</translation>
 <translation id="2664962310688259219">Chrome OS open source licences</translation>
 <translation id="2665296953892887393">Help make Google Chrome better by sending crash reports and <ph name="UMA_LINK" /> to Google</translation>
@@ -99,7 +97,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="345171907106878721">Add yourself to Chrome</translation>
 <translation id="3612333635265770873">A module with the same name has been known to conflict with Google Chrome.</translation>
 <translation id="3622797965165704966">Now it's easier to use Chrome with your Google Account and on shared computers.</translation>
-<translation id="3718181793972440140">This will delete 1 item from this device. To retrieve your data later, sign in to Chrome as <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">The extension "<ph name="EXTENSION_NAME" />" has changed the page that is shown when you start Chrome.</translation>
 <translation id="3738139272394829648">Touch to Search</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>

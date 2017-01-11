@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">Odabir mape</translation>
 <translation id="1272079795634619415">Zaustavi</translation>
 <translation id="129553762522093515">Nedavno zatvoreno</translation>
-<translation id="1323735185997015385">Izbriši</translation>
 <translation id="132683371494960526">Dodirnite dvaput da biste promijenili nadređenu mapu.</translation>
 <translation id="1340643665687018190">Zatvori izbornik</translation>
 <translation id="1375321115329958930">Spremljene zaporke</translation>
@@ -64,7 +63,6 @@ Na primjer, neke web-lokacije mogu reagirati na taj zahtjev prikazivanjem oglasa
 <translation id="2068952045031577364">Od proteklog tjedna</translation>
 <translation id="2079545284768500474">Poništi</translation>
 <translation id="209018056901015185">Prikaži klasičnu stranicu</translation>
-<translation id="2100215774115172756">Vaš popis za čitanje dostupan je offline.</translation>
 <translation id="2103075008456228677">Otvori history.google.com</translation>
 <translation id="2116625576999540962">Broj premještenih stavki: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="2149973817440762519">Uredi oznaku</translation>
@@ -84,7 +82,6 @@ Na primjer, neke web-lokacije mogu reagirati na taj zahtjev prikazivanjem oglasa
 <translation id="2572712655377361602">Pravila za uređaje blokirala su pristup fotografijama</translation>
 <translation id="2584132361465095047">Dodaj račun…</translation>
 <translation id="2593774076813182497">Stranicu nije moguće ispisati.</translation>
-<translation id="2648803196158606475">Izbriši pročitano</translation>
 <translation id="2653659639078652383">Pošalji</translation>
 <translation id="2684815431982545828">Nova kartica</translation>
 <translation id="2690858294534178585">Fotoaparat je aktivan</translation>
@@ -103,25 +100,22 @@ Na primjer, neke web-lokacije mogu reagirati na taj zahtjev prikazivanjem oglasa
 <translation id="2898963176829412617">Nova mapa…</translation>
 <translation id="2903493209154104877">Adrese</translation>
 <translation id="2921219216347069551">Nije moguće dijeliti stranicu</translation>
-<translation id="292639812446257861">Označi kao nepročitano</translation>
 <translation id="2933759065870693102">Svjetlo</translation>
 <translation id="2969979262385602596">Prijava nije uspjela. Pokušajte ponovo kasnije.</translation>
 <translation id="2989805286512600854">Otvori u novoj kartici</translation>
 <translation id="3024255823539804759">Od proteklog dana</translation>
 <translation id="3037605927509011580">O, ne!</translation>
 <translation id="3050311348724540835">Veza <ph name="HISTORY_URL" /> nije dostupna. Da biste pristupili povijesti pregledavanja, odaberite "<ph name="SHOW_HISTORY" />" u izborniku s alatima.</translation>
-<translation id="3112556859945124369">Označi...</translation>
 <translation id="3151924044251363314">Samo osoba koja ima vašu šifru može čitati vaše kriptirane podatke. Šifra se ne šalje Googleu i ne pohranjuje na njemu. Ako je zaboravite ili želite promijeniti tu postavku, morat ćete poništiti sinkronizaciju. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
-<translation id="3157684681743766797">Označi sve...</translation>
 <translation id="3172213052701798825">Google Smart Lock za zaporke</translation>
 <translation id="3175081911749765310">Web-usluge</translation>
 <translation id="3207960819495026254">Označeno</translation>
 <translation id="3210163015918861891">Sinkronizacija je isključena</translation>
-<translation id="3237561509210981547">Za dodavanje stranice na popis za čitanje dodirnite <ph name="BEGIN_BOLD_FONT" />Dijeli &gt; Kasnije čitanje<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3240426699337459095">Veza je kopirana</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> od <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Otvorene kartice</translation>
+<translation id="3289005573061089144">Želite li uvesti podatke?</translation>
 <translation id="3324193307694657476">2. adresni redak</translation>
 <translation id="3329904751041170572">Povezivanje s poslužiteljem nije moguće.</translation>
 <translation id="3335947283844343239">Ponovo otvori zatvorenu karticu</translation>
@@ -130,7 +124,6 @@ Na primjer, neke web-lokacije mogu reagirati na taj zahtjev prikazivanjem oglasa
 <translation id="3414292259312108062">Chrome će to pohraniti u vašim <ph name="BEGIN_LINK" />Googleovim spremljenim zaporkama<ph name="END_LINK" /> i automatski popuniti umjesto vas kako ne biste morali pamtiti.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Podijeljeni prikaz</translation>
-<translation id="3474068797193663261">Za dodavanje stranice na popis za čitanje dodirnite <ph name="BEGIN_BOLD_FONT" />Izbornik &gt; Dijeli &gt; Kasnije čitanje<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3474649192738347024">Obrasci su ispunjeni.</translation>
 <translation id="3478058380795961209">Mjesec isteka</translation>
 <translation id="3482959374254649722">Sinkronizacija kartica...</translation>
@@ -190,7 +183,6 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju. Unesite je da biste
 <translation id="481968316161811770">Kolačići, podaci web-lokacije</translation>
 <translation id="4875622588773761625">Želite li da <ph name="PASSWORD_MANAGER_BRAND" /> ažurira vašu zaporku za tu web-lokaciju?</translation>
 <translation id="4881695831933465202">Otvori</translation>
-<translation id="4904877109095351937">Označi kao pročitano</translation>
 <translation id="4923459931733593730">Plaćanje</translation>
 <translation id="4930268273022498155">Postojeći će se podaci izbrisati. Dohvatiti ih možete tako da se vratite na <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Došlo je do problema prilikom dijeljenja vaše stavke.</translation>
@@ -368,7 +360,6 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="8428213095426709021">Postavke</translation>
 <translation id="8433678324664858900">Pokaži prijedloge</translation>
 <translation id="8458397775385147834">Izbrisana je 1 stavka</translation>
-<translation id="8487700953926739672">Dostupno izvanmrežno</translation>
 <translation id="8503813439785031346">Korisničko ime</translation>
 <translation id="8517375800490286174">Licence otvorenog koda</translation>
 <translation id="8524799873541103884">Kartice <ph name="INCOGNITO" /> od <ph name="FIRST_VISIBLE_TAB" /> do <ph name="LAST_VISIBLE_TAB" /> od ukupno <ph name="NUMBER_OF_OPEN_TABS" /></translation>
@@ -378,7 +369,6 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="8605219856220328675">Zatvori karticu.</translation>
 <translation id="8620640915598389714">Uredi</translation>
 <translation id="8636825310635137004">Da bi se prikazale kartice s vaših ostalih uređaja, uključite sinkronizaciju.</translation>
-<translation id="8654802032646794042">Odustani</translation>
 <translation id="8680787084697685621">Pojedinosti prijave na račun su zastarjele.</translation>
 <translation id="8699098509676302392">Dodaj adresu...</translation>
 <translation id="8721297211384281569">Izbornik alata</translation>

@@ -82,7 +82,6 @@
 <translation id="1753706481035618306">పేజీ సంఖ్య</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows నెట్‌వర్క్ సమస్య విశ్లేషణలను అమలు చేయడం ప్రయత్నించండి<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">దయచేసి మీ సమకాలీకరణ పాస్‌ఫ్రేజ్‌ను నవీకరించండి.</translation>
-<translation id="1787142507584202372">మీ తెరవబడిన ట్యాబ్‌లు ఇక్కడ కనిపిస్తాయి</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803678881841855883">Google సురక్షిత బ్రౌజింగ్ ఇటీవల <ph name="SITE" />లో <ph name="BEGIN_LINK" />మాల్వేర్‌ని గుర్తించింది<ph name="END_LINK" />. సాధారణంగా సురక్షితమైన వెబ్‌సైట్‌‌లు కూడా కొన్నిసార్లు మాల్వేర్ బారినపడతాయి. మాల్వేర్‌ పంపిణీదారుగా పేరుగాంచిన <ph name="SUBRESOURCE_HOST" /> నుండి ఇతరులకు హాని తలపట్టే లాంటి కంటెంట్ సంక్రమిస్తుంది. <ph name="BEGIN_LEARN_MORE_LINK" />మరింత తెలుసుకోండి<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">చెల్లని అభ్యర్థన లేదా అభ్యర్థన పరామితులు</translation>
@@ -175,7 +174,6 @@
 <translation id="2712118517637785082">మీరు <ph name="DOMAIN" />కు కనెక్ట్ కావడానికి ప్రయత్నించారు, కానీ సర్వర్ అందించిన ప్రమాణపత్రాన్ని దాన్ని జారీ చేసినవారు రద్దు చేసారు. దీని ప్రకారం, సర్వర్ అందించిన భద్రతా ఆధారాలు ఖచ్చితంగా విశ్వసించలేనివి. మీరు దాడి చేసే వారితో కమ్యూనికేట్ చేస్తుండవచ్చు. <ph name="BEGIN_LEARN_MORE_LINK" />మరింత తెలుసుకోండి<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="2712173769900027643">అనుమతి అడుగు</translation>
 <translation id="2713444072780614174">తెలుపు</translation>
-<translation id="2720342946869265578">సమీపం</translation>
 <translation id="2721148159707890343">అభ్యర్థన విజయవంతం అయింది</translation>
 <translation id="2728127805433021124">సర్వర్ యొక్క ప్రమాణపత్రం ఒక బలహీనమైన సంతకం అల్గారిథమ్ ఉపయోగించి సంతకం చేయబడింది.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />కనెక్టివిటీ సమస్య విశ్లేషణలను అమలు చేయడం<ph name="END_LINK" /></translation>
@@ -372,7 +370,6 @@
 <translation id="4728558894243024398">ప్లాట్‌ఫారమ్</translation>
 <translation id="4744603770635761495">అమలు చేయగల మార్గం</translation>
 <translation id="4756388243121344051">&amp;చరిత్ర</translation>
-<translation id="4759118997339041434">చెల్లింపు స్వీయపూరణ నిలిపివేయబడింది</translation>
 <translation id="4764776831041365478"><ph name="URL" /> వద్ద వెబ్‌పేజీ తాత్కాలికంగా తెరుచుకోవటం లేదు లేదా అది క్రొత్త వెబ్ చిరునామాకు శాశ్వతంగా తరలించబడి ఉండవచ్చు.</translation>
 <translation id="4771973620359291008">తెలియని లోపం ఒకటి ఏర్పడింది.</translation>
 <translation id="4800132727771399293">మీ గడువు ముగింపు తేదీ మరియు CVCని తనిఖీ చేసి, మళ్లీ ప్రయత్నించండి</translation>
@@ -531,6 +528,7 @@
 <translation id="6644283850729428850">ఈ విధానం విలువ తగ్గించబడింది.</translation>
 <translation id="6652240803263749613">ఈ సర్వర్ ఇది ఒక <ph name="DOMAIN" /> అని నిరూపించుకోలేకపోయింది; దీని భద్రతా ప్రమాణపత్రాన్ని మీ కంప్యూటర్ ఆపరేటింగ్ సిస్టమ్ విశ్వసించలేదు. తప్పుగా కాన్ఫిగర్ చేయడం వలన లేదా దాడిచేసే వ్యక్తి మీ కనెక్షన్‌కి అంతరాయం కలిగించడం వలన ఇలా జరిగి ఉండవచ్చు. <ph name="BEGIN_LEARN_MORE_LINK" />మరింత తెలుసుకోండి<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="6656103420185847513">ఫోల్డర్‌ను సవరించండి</translation>
+<translation id="6660210980321319655">స్వయంచాలకంగా నివేదించబడిన సమయం <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Chromium నుండి ఫారమ్ సూచనను తీసివేయాలా?</translation>
 <translation id="6685834062052613830">సైన్ అవుట్ చేసి, సెటప్‌ను పూర్తి చేయండి</translation>
 <translation id="6710213216561001401">మునుపటి</translation>
@@ -677,7 +675,6 @@
 <translation id="8150722005171944719"><ph name="URL" />లో ఫైల్ చదవగలిగేది కాదు. దీన్ని తీసివేసి ఉండవచ్చు, తరలించి ఉండవచ్చు లేదా ఫైల్ అనుమతులు ప్రాప్యతను నిరోధిస్తుండవచ్చు.</translation>
 <translation id="8194797478851900357">&amp;తరలించడాన్ని రద్దు చేయి</translation>
 <translation id="8201077131113104583">ID "<ph name="EXTENSION_ID" />" ఉన్న పొడిగింపు కోసం నవీకరణ URL చెల్లదు.</translation>
-<translation id="8202097416529803614">ఆర్డర్ సారాంశం</translation>
 <translation id="8218327578424803826">కేటాయించిన స్థానం:</translation>
 <translation id="8225771182978767009">ఈ కంప్యూటర్‌ను సెటప్ చేసిన వ్యక్తి ఈ సైట్‌ను బ్లాక్ చేయడానికి ఎంచుకున్నారు.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
@@ -723,7 +720,6 @@
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> &lt;abbr id="dnsDefinition"&gt;DNS చిరునామా&lt;/abbr&gt; కనుగొనబడలేదు. సమస్యను నిర్ధారిస్తోంది.</translation>
 <translation id="8790007591277257123">&amp;తొలగించడాన్ని పునరావృతం చేయి</translation>
 <translation id="8798099450830957504">డిఫాల్ట్</translation>
-<translation id="8800988563907321413">మీ సమీపంలోని సూచనలు ఇక్కడ కనిపిస్తాయి</translation>
 <translation id="8804164990146287819">గోప్యతా విధానం</translation>
 <translation id="8820817407110198400">బుక్‌మార్క్‌లు</translation>
 <translation id="8834246243508017242">పరిచయాలను ఉపయోగించి స్వీయపూర్తిని ప్రారంభించండి…</translation>

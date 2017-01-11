@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">ಫೋಲ್ಡರ್ ಆರಿಸಿ</translation>
 <translation id="1272079795634619415">ನಿಲ್ಲಿಸು</translation>
 <translation id="129553762522093515">ಇತ್ತೀಚೆಗೆ ಮುಚ್ಚಲಾಗಿರುವುದು</translation>
-<translation id="1323735185997015385">ಅಳಿಸು</translation>
 <translation id="132683371494960526">ಮೂಲ ಫೋಲ್ಡರ್‌ ಅನ್ನು ಬದಲಾಯಿಸಲು ಡಬಲ್‌ ಟ್ಯಾಪ್ ಮಾಡಿ.</translation>
 <translation id="1340643665687018190">ಮುಚ್ಚು ಮೆನು</translation>
 <translation id="1375321115329958930">ಉಳಿಸಿದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು</translation>
@@ -64,7 +63,6 @@
 <translation id="2068952045031577364">ಕಳೆದ ವಾರ</translation>
 <translation id="2079545284768500474">ರದ್ದುಮಾಡಿ</translation>
 <translation id="209018056901015185">ಡೆಸ್ಕ್‌ಟಾಪ್‌ ಸೈಟ್‌ ಅನ್ನು ವಿನಂತಿಸಿ</translation>
-<translation id="2100215774115172756">ನಿಮ್ಮ ಓದುವ ಪಟ್ಟಿಯು ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿ ಲಭ್ಯವಿದೆ.</translation>
 <translation id="2103075008456228677">history.google.com ತೆರೆಯಿರಿ</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ಐಟಂಗಳನ್ನು ಸರಿಸಲಾಗಿದೆ</translation>
 <translation id="2149973817440762519">ಬುಕ್‌ಮಾರ್ಕ್ ಎಡಿಟ್ ಮಾಡಿ</translation>
@@ -84,7 +82,6 @@
 <translation id="2572712655377361602">ಸಾಧನದ ನೀತಿಯೊಂದು ನಿಮ್ಮ ಫೋಟೋಗಳಿಗೆ ಪ್ರವೇಶವನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ</translation>
 <translation id="2584132361465095047">ಖಾತೆ ಸೇರಿಸಿ...</translation>
 <translation id="2593774076813182497">ಈ ಪುಟವನ್ನು ಮುದ್ರಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
-<translation id="2648803196158606475">ಓದಿರುವುದನ್ನು ಅಳಿಸಿ</translation>
 <translation id="2653659639078652383">ಸಲ್ಲಿಸು</translation>
 <translation id="2684815431982545828">ಹೊಸ ಟ್ಯಾಬ್</translation>
 <translation id="2690858294534178585">ಕ್ಯಾಮರಾ ಬಳಕೆಯಲ್ಲಿದೆ</translation>
@@ -103,25 +100,22 @@
 <translation id="2898963176829412617">ಹೊಸ ಫೋಲ್ಡರ್‌…</translation>
 <translation id="2903493209154104877">ವಿಳಾಸಗಳು</translation>
 <translation id="2921219216347069551">ಪುಟವನ್ನು ಹಂಚಲಾಗುವುದಿಲ್ಲ</translation>
-<translation id="292639812446257861">ಓದದಿರುವುದು ಎಂಬಂತೆ ಗುರುತಿಸಿ</translation>
 <translation id="2933759065870693102">ಟಾರ್ಚ್</translation>
 <translation id="2969979262385602596">ಸೈನ್ ಇನ್ ವಿಫಲವಾಗಿದೆ. ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="2989805286512600854">ಹೊಸ ಟ್ಯಾಬ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="3024255823539804759">ಹಿಂದಿನ ದಿನ</translation>
 <translation id="3037605927509011580">ಓಹ್, ಹೋಯ್ತು!</translation>
 <translation id="3050311348724540835"><ph name="HISTORY_URL" /> ಲಭ್ಯವಿಲ್ಲ. ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸ ಪ್ರವೇಶಿಸಲು, ಪರಿಕರಗಳ ಮೆನುವಿನಿಂದ "<ph name="SHOW_HISTORY" />" ಆಯ್ಕೆಮಾಡಿ.</translation>
-<translation id="3112556859945124369">ಗುರುತಿಸಿ...</translation>
 <translation id="3151924044251363314">ನಿಮ್ಮ ಎನ್‍‍ಕ್ರಿಪ್ಟ್ ಮಾಡಲಾದ ಡೇಟಾವನ್ನು ನಿಮ್ಮ ಪಾಸ್‍‍ಫ್ರೇಸ್‍‍ ಹೊಂದಿರುವವರು ಮಾತ್ರ ಓದಬಹುದು. Google ನಿಂದ ಪಾಸ್‍‍ಫ್ರೇಸ್‍ ಅನ್ನು ಕಳುಹಿಸಲಾಗುವುದಿಲ್ಲ ಅಥವಾ ಅದನ್ನು ಸಂಗ್ರಹಿಸುವುದೂ ಇಲ್ಲ. ನಿಮ್ಮ ಪಾಸ್‍‍ಫ್ರೇಸ್ ಅನ್ನು ನೀವು ಮರೆತಿದ್ದರೆ ಅಥವಾ ಈ ಸೆಟ್ಟಿಂಗ್ ಬದಲಾಯಿಸಲು ಬಯಸಿದರೆ, ನೀವು ಸಿಂಕ್ ಅನ್ನು ಮರುಹೊಂದಿಸುವ ಅಗತ್ಯವಿರುತ್ತದೆ. <ph name="BEGIN_LINK" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LINK" /></translation>
-<translation id="3157684681743766797">ಎಲ್ಲವನ್ನೂ ಗುರುತಿಸಿ…</translation>
 <translation id="3172213052701798825">ಪಾಸ್‌ವರ್ಡ್‌ಗಳಿಗಾಗಿ Google Smart Lock</translation>
 <translation id="3175081911749765310">ವೆಬ್‌ ಸೇವೆಗಳು</translation>
 <translation id="3207960819495026254">ಬುಕ್‌ಮಾರ್ಕ್‌ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="3210163015918861891">ಸಿಂಕ್ ಆಫ್ ಆಗಿದೆ</translation>
-<translation id="3237561509210981547">ನಿಮ್ಮ ಓದುವ ಪಟ್ಟಿಗೆ ಪುಟವನ್ನು ಸೇರಿಸಲು, <ph name="BEGIN_BOLD_FONT" />ಹಂಚಿಕೊಳ್ಳಿ &gt; ನಂತರ ಓದಿ<ph name="END_BOLD_FONT" /> ಟ್ಯಾಪ್ ಮಾಡಿ.</translation>
 <translation id="3240426699337459095">ಲಿಂಕ್ ನಕಲಿಸಲಾಗಿದೆ</translation>
 <translation id="3244271242291266297">ಮಿಮೀ</translation>
 <translation id="3252394070589632019"><ph name="NUM_SUGGESTIONS" /> ರಲ್ಲಿ <ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /></translation>
 <translation id="3268451620468152448">ತೆರೆದ ಟ್ಯಾಬ್‌ಗಳು</translation>
+<translation id="3289005573061089144">ಡೇಟಾ ಆಮದು ಮಾಡುವುದೇ?</translation>
 <translation id="3324193307694657476">ವಿಳಾಸ 2</translation>
 <translation id="3329904751041170572">ಸರ್ವರ್‌ಗೆ ಸಂಪರ್ಕಹೊಂದಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.</translation>
 <translation id="3335947283844343239">ಮುಚ್ಚಿದ ಟ್ಯಾಬ್ ಮರುತೆರೆ</translation>
@@ -130,7 +124,6 @@
 <translation id="3414292259312108062">Chrome ಇದನ್ನು ನಿಮ್ಮ <ph name="BEGIN_LINK" />Google ಉಳಿಸಲಾದ ಪಾಸ್‌ವಡ್‌‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> ಸಂಗ್ರಹಿಸುತ್ತದೆ ಮತ್ತು ಅದನ್ನು ಸ್ವಯಂ ಭರ್ತಿ ಮಾಡುತ್ತದೆ ಆದ್ದರಿಂದ ನೀವು ಅದನ್ನು ನೆನಪಿಡುವ ಅಗತ್ಯವಿಲ್ಲ.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> ನಿಮಿಷ</translation>
 <translation id="3448016392200048164">ವಿಭಜಿತ ವೀಕ್ಷಣೆ</translation>
-<translation id="3474068797193663261">ನಿಮ್ಮ ಓದುವ ಪಟ್ಟಿಗೆ ಪುಟವನ್ನು ಸೇರಿಸಲು, <ph name="BEGIN_BOLD_FONT" />ಮೆನು &gt; ಹಂಚಿಕೊಳ್ಳಿ &gt; ನಂತರ ಓದಿ<ph name="END_BOLD_FONT" /> ಅನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ.</translation>
 <translation id="3474649192738347024">ಫಾರ್ಮ್‌ಗಳನ್ನು ಭರ್ತಿ ಮಾಡಲಾಗಿದೆ.</translation>
 <translation id="3478058380795961209">ಮುಕ್ತಾಯದ ತಿಂಗಳು</translation>
 <translation id="3482959374254649722">ನಿಮ್ಮ ಟ್ಯಾಬ್‌ಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
@@ -190,7 +183,6 @@
 <translation id="481968316161811770">ಕುಕೀಗಳು, ಸೈಟ್‌ ಡೇಟಾ</translation>
 <translation id="4875622588773761625">ಈ ಸೈಟ್‌ಗೆ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ <ph name="PASSWORD_MANAGER_BRAND" /> ಅಪ್‌ಡೇಟ್ ಮಾಡಲು ಬಯಸುವಿರಾ?</translation>
 <translation id="4881695831933465202">ತೆರೆ</translation>
-<translation id="4904877109095351937">ಓದಿದೆ ಎಂಬಂತೆ ಗುರುತಿಸಿ</translation>
 <translation id="4923459931733593730">ಪಾವತಿ</translation>
 <translation id="4930268273022498155">ಪ್ರಸ್ತುತ ಡೇಟಾ ಅಳಿಸಿ. ನೀವು ಮರಳಿ <ph name="USER_EMAIL1" /> ಗೆ ಬದಲಾಯಿಸುವ ಮೂಲಕ ಅದನ್ನು ಹಿಂಪಡೆಯಬಹುದು.</translation>
 <translation id="4941089862236492464">ಕ್ಷಮಿಸಿ, ನಿಮ್ಮ ಐಟಂ ಅನ್ನು ಹಂಚುವಲ್ಲಿ ಸಮಸ್ಯೆ ಇದೆ.</translation>
@@ -368,7 +360,6 @@
 <translation id="8428213095426709021">ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="8433678324664858900">ಸಲಹೆಗಳನ್ನು ತೋರಿಸಿ</translation>
 <translation id="8458397775385147834">1 ಐಟಂ ಅಳಿಸಲಾಗಿದೆ</translation>
-<translation id="8487700953926739672">ಆಫ್‌ಲೈನ್ ಲಭ್ಯವಿದೆ</translation>
 <translation id="8503813439785031346">ಬಳಕೆದಾರಹೆಸರು</translation>
 <translation id="8517375800490286174">ಮೂಲ ಪರವಾನಗಿಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="8524799873541103884"><ph name="NUMBER_OF_OPEN_TABS" /> ರಲ್ಲಿ <ph name="LAST_VISIBLE_TAB" /> ಮೂಲಕ <ph name="INCOGNITO" /> ಟ್ಯಾಬ್‌ಗಳು <ph name="FIRST_VISIBLE_TAB" /></translation>
@@ -378,7 +369,6 @@
 <translation id="8605219856220328675">ಟ್ಯಾಬ್ ಮುಚ್ಚಿ.</translation>
 <translation id="8620640915598389714">ಎಡಿಟ್</translation>
 <translation id="8636825310635137004">ನಿಮ್ಮ ಇತರ ಸಾಧನಗಳಿಂದ ನಿಮ್ಮ ಟ್ಯಾಬ್‌ಗಳನ್ನು ಪಡೆದುಕೊಳ್ಳಲು, ಸಿಂಕ್‌ ಆನ್‌ ಮಾಡಿ.</translation>
-<translation id="8654802032646794042">ರದ್ದುಮಾಡಿ</translation>
 <translation id="8680787084697685621">ಖಾತೆಯ ಸೈನ್-ಇನ್ ವಿವರಗಳು ಹಳೆಯದಾಗಿವೆ.</translation>
 <translation id="8699098509676302392">ವಿಳಾಸ ಸೇರಿಸಿ...</translation>
 <translation id="8721297211384281569">ಪರಿಕರಗಳ ಮೆನು</translation>

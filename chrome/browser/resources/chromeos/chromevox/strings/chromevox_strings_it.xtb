@@ -177,7 +177,6 @@
 <translation id="2899328121302785497">{COUNT,plural, =1{parentesi graffa di apertura}other{# parentesi graffe di apertura}}</translation>
 <translation id="2911433807131383493">Apri il tutorial di ChromeVox</translation>
 <translation id="2932083475399492303">Alterna tipo di linea strutturale o di layout</translation>
-<translation id="2944762337049891859">Leggi automaticamente la pagina al termine del caricamento.</translation>
 <translation id="2964026537669811554">Gruppo di intestazioni</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{carattere di tabulazione}other{# caratteri di tabulazione}}</translation>
 <translation id="2972078295414139404">Nessun link visitato precedente.</translation>
@@ -308,7 +307,6 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="3712520970944678024">Controllo vocale</translation>
 <translation id="3716845769494773620">Multiriga</translation>
 <translation id="3731746171184829332">Nessuna intestazione precedente.</translation>
-<translation id="3735039640698208086">Durante la riproduzione audio...</translation>
 <translation id="3762198587642264450">Vai alla fine della riga corrente</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">Finestra di dialogo chiusa.</translation>
@@ -549,7 +547,6 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="5876817486144482042">Abbassa volume comandi vocali</translation>
 <translation id="5887397643266327462">Sottotitoli braille attivati.</translation>
 <translation id="5891934789323004067">Tabella</translation>
-<translation id="5899860758576822363">Riproduci con volume più basso durante la lettura vocale di ChromeVox</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{uguale}other{# segni di uguale}}</translation>
 <translation id="5939518447894949180">Ripristina</translation>
 <translation id="5948123859135882163">Passa dall'interpretazione strutturale a quella semantica delle espressioni matematiche</translation>
@@ -582,7 +579,6 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="6281876499889881039">Elemento simile successivo.</translation>
 <translation id="6282062888058716985">nav</translation>
 <translation id="6290434000785343030">Nessuna casella combinata successiva.</translation>
-<translation id="6305702903308659374">Riproduci con volume normale anche durante la lettura vocale di ChromeVox</translation>
 <translation id="6307969636681130414">Premuto</translation>
 <translation id="6322856989298155004">Suoni</translation>
 <translation id="6324551002951139333">Errore grammaticale rilevato</translation>
@@ -698,7 +694,6 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, dispositivo di scorrimento</translation>
 <translation id="7552432549459840808">Utili scorciatoie di Chrome</translation>
 <translation id="7579911500627256166">punto <ph name="DOT" /></translation>
-<translation id="7591126877589047423">Nessuno stato attivo. Premi Ctrl+N per aprire una nuova finestra.</translation>
 <translation id="7596919493010894443">selezione cancellata</translation>
 <translation id="7604026522577407655">Vai all'inizio della colonna corrente</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -774,7 +769,6 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="8455868257606149352">Massimo: <ph name="X" /></translation>
 <translation id="84575901236241018">dispone di tasto di accesso, <ph name="KEY" /></translation>
 <translation id="847154984256717791">occupato</translation>
-<translation id="8476408756881832830">Interrompi la riproduzione durante la lettura vocale di ChromeVox</translation>
 <translation id="8476508772960940536">panoramica finestra</translation>
 <translation id="8503360654911991865">Riduci livello di dettaglio navigazione</translation>
 <translation id="8520472399088452386">Pulsante di selezione</translation>

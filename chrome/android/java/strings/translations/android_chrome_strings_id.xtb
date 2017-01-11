@@ -269,7 +269,6 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="3828029223314399057">Cari bookmark</translation>
 <translation id="3845539888601087042">Menampilkan riwayat dari perangkat yang Anda gunakan untuk masuk. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">Cari maju</translation>
-<translation id="3890664840433101773">Tambahkan email</translation>
 <translation id="3894427358181296146">Tambah folder</translation>
 <translation id="3895926599014793903">Memaksa pengaktifan zoom</translation>
 <translation id="3917783807003067648">Lokasi diblokir</translation>
@@ -327,6 +326,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4526249700380860531">Melihat dan mengelola sandi yang tersimpan di <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Pilih folder</translation>
 <translation id="4535858793016067060">Aktifkan “Sumber tidak dikenal” di setelan keamanan Android untuk mencoba eksperimen "Tambah ke layar Utama yang Disempurnakan". Pastikan untuk menonaktifkan setelan ini setelah Anda mencobanya.</translation>
+<translation id="4543661749405994812">Salin alamat email</translation>
 <translation id="4558311620361989323">Pintasan halaman web</translation>
 <translation id="4572422548854449519">Masuk ke akun yang dikelola</translation>
 <translation id="457875822857220463">Pengiriman</translation>
@@ -371,7 +371,6 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4988526792673242964">Laman</translation>
 <translation id="4996978546172906250">Bagikan dengan</translation>
 <translation id="5000922062037820727">Diblokir (disarankan)</translation>
-<translation id="5004339818306944878">Menghemat data hingga 60% dan mempercepat web. Server Google akan mengoptimalkan halaman yang Anda kunjungi.</translation>
 <translation id="5005498671520578047">Salin sandi</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> ingin terhubung</translation>
 <translation id="5016205925109358554">Serif</translation>
@@ -394,12 +393,10 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="5171045022955879922">Telusuri atau ketik URL</translation>
 <translation id="5184329579814168207">Buka di Chrome</translation>
 <translation id="5199929503336119739">Profil kerja</translation>
-<translation id="5205222826937269299">Nama wajib diisi</translation>
 <translation id="5209320130288484488">Perangkat tidak ditemukan</translation>
 <translation id="5210286577605176222">Beralih ke tab sebelumnya</translation>
 <translation id="5210365745912300556">Tutup tab</translation>
 <translation id="5222676887888702881">Keluar</translation>
-<translation id="5222812217790122047">Email wajib diisi</translation>
 <translation id="5233638681132016545">Tab baru</translation>
 <translation id="5271967389191913893">Perangkat tidak dapat membuka konten untuk didownload.</translation>
 <translation id="528192093759286357">Seret dari atas dan ketuk tombol kembali untuk keluar dari mode layar penuh.</translation>
@@ -526,6 +523,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6448273550210938826">Penelusuran dan saran URL</translation>
 <translation id="6463070039183944536">Menambahkan…</translation>
+<translation id="6464825623202322042">Perangkat ini</translation>
 <translation id="6475951671322991020">Download video</translation>
 <translation id="6477460825583319731">Alamat email tidak valid</translation>
 <translation id="6482749332252372425">Download <ph name="FILE_NAME" /> gagal karena ruang penyimpanan tidak cukup.</translation>
@@ -572,7 +570,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6868088497967843822">Masuk untuk mendapatkan bookmark, riwayat, sandi, dan setelan Anda lainnya di semua perangkat</translation>
 <translation id="688738109438487280">Menambahkan data yang sudah ada ke <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d tab terbuka}other{%1$d tab terbuka}}</translation>
-<translation id="6896758677409633944">Salin</translation>
 <translation id="6937422995269576720">Nomor kartu tidak valid</translation>
 <translation id="6945221475159498467">Pilih</translation>
 <translation id="6963766334940102469">Hapus bookmark</translation>
@@ -597,7 +594,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7094922512924405309">Laman Web Fisik di sekitar tidak ditemukan</translation>
 <translation id="7138678301420049075">Lainnya</translation>
 <translation id="7180611975245234373">Segarkan</translation>
-<translation id="7189372733857464326">Menunggu Layanan Google Play selesai di-update</translation>
 <translation id="7191430249889272776">Tab dibuka di latar belakang.</translation>
 <translation id="7243308994586599757">Opsi terdapat di dekat bagian bawah layar</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> menggunakan lokasi Anda untuk menampilkan hasil penelusuran lokal</translation>
@@ -658,7 +654,6 @@ Akun Google Anda mungkin memiliki bentuk riwayat penjelajahan lain seperti penel
 <translation id="7851858861565204677">Perangkat lain</translation>
 <translation id="7875915731392087153">Buat email</translation>
 <translation id="7876243839304621966">Hapus semua</translation>
-<translation id="7882131421121961860">Tidak ada riwayat</translation>
 <translation id="7929962904089429003">Membuka menu</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> sudah usang.</translation>
 <translation id="7947953824732555851">Terima dan masuk</translation>
@@ -706,7 +701,6 @@ Akun Google Anda mungkin memiliki bentuk riwayat penjelajahan lain seperti penel
 <translation id="8321376388213838985">Artikel lainnya akan segera muncul. Nikmati siang Anda.</translation>
 <translation id="8372893542064058268">Mengizinkan Sinkronisasi Latar Belakang untuk situs tertentu.</translation>
 <translation id="8374821112118309944">Anda perlu memperbarui TalkBack ke versi yang lebih baru.</translation>
-<translation id="8393700583063109961">Kirim pesan</translation>
 <translation id="8396312449826231789">Hanya situs yang disetujui</translation>
 <translation id="8413126021676339697">Tampilkan riwayat lengkap</translation>
 <translation id="8428213095426709021">Setelan</translation>
@@ -786,7 +780,6 @@ Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang did
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Gambar</translation>
 <translation id="932327136139879170">Beranda</translation>
-<translation id="932599481871055447">Hemat data dan akses lebih cepat</translation>
 <translation id="938850635132480979">Kesalahan: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Akses mikrofon Anda</translation>
 <translation id="951339005376969845">Hapus data yang sudah ada. Anda dapat mengambilnya dengan beralih ke <ph name="FROM_ACCOUNT" />.</translation>

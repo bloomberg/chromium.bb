@@ -1805,7 +1805,6 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6770454900105963262">Aktiivisten kioskikäyttökertojen tietojen raportointi</translation>
 <translation id="6774533686631353488">Salli laitteen oman viestijärjestelmän käyttäjätason isännät (asennettu ilman järjestelmänvalvojan oikeuksia).</translation>
 <translation id="6786747875388722282">Laajennukset</translation>
-<translation id="6786967369487349613">Määritä roaming-profiilihakemisto</translation>
 <translation id="6810445994095397827">Estä JavaScript näissä sivustoissa</translation>
 <translation id="681446116407619279">Tuetut todennusjärjestelmät</translation>
 <translation id="6828905844648501476">Jos tämän käytännön arvo on Tosi tai sitä ei määritetä, <ph name="PRODUCT_NAME" /> sallii uusien profiilien luomisen käyttäjäprofiilien hallinnassa.
@@ -1966,7 +1965,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7249828445670652637">Salli <ph name="PRODUCT_OS_NAME" /> -CA-varmenteiden käyttö ARC-sovelluksille</translation>
 <translation id="7258823566580374486">Ota etäisäntien verhoaminen käyttöön</translation>
 <translation id="7260277299188117560">Automaattinen p2p-päivitys käytössä</translation>
-<translation id="7261252191178797385">Laitteen taustakuva</translation>
 <translation id="7267809745244694722">Medianäppäimet toimivat oletuksena toimintonäppäiminä</translation>
 <translation id="7271085005502526897">Tuo saapumissivu oletusselaimesta ensimmäisellä käyttökerralla</translation>
 <translation id="7273823081800296768">Jos tämä asetus on käytössä tai sen arvoa ei ole määritetty, käyttäjät voivat muodostaa laiteparin asiakkaiden ja isäntien välille yhteyden muodostamishetkellä. Tällöin PIN-koodia ei tarvitse antaa joka kerta.
@@ -2052,15 +2050,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Huom. Tämän käytännön toiminta riippuu siitä, salliiko käyttöjärjestelmän varmennepino SHA-1-allekirjoitukset. Jos käyttöjärjestelmän päivitys muuttaa tapaa, jolla käyttöjärjestelmä käsittelee SHA-1-varmenteita, tämän käytännön toiminta voi päättyä. Käytäntö on tarkoitettu väliaikaiseksi ratkaisuksi, joka antaa yrityksille lisäaikaa SHA-1:n käytön lopettamiseen. Käytäntö poistetaan 1.1.2019 tai sen tienoilla.
 
       Jos tätä käytäntöä ei määritetä tai sen arvo on epätosi, <ph name="PRODUCT_NAME" /> noudattaa aiemmin julkaistua SHA-1:n käytöstä poistamisen aikataulua.</translation>
-<translation id="7589150663293249656">Sallii roaming-kopioiden luomisen <ph name="PRODUCT_NAME" /> ‑profiilitiedoista.
-
-      Jos tämä asetus on käytössä, <ph name="PRODUCT_NAME" /> ‑profiileihin tallennetut tiedot, esim. kirjanmerkit, automaattisen täytön tiedot ja salasanat, tallennetaan myös roaming-käyttäjän profiilitiedostoon tai järjestelmänvalvojan <ph name="ROAMINGPROFILELOCATION_POLICY_NAME" />-käytännössä määrittämään sijaintiin.
-
-      Google Sync on automaattisesti pois käytöstä, kun tämä käytäntö on käytössä.
-
-      Jotta tahattomat tietovuodot voidaan estää, <ph name="SIGNINALLOWED_POLICY_NAME" />-käytännölle suositellaan arvoa Epätosi.
-
-      Jos tämä käytäntö ei ole käytössä tai sitä ei ole määritelty, vain paikallisia profiileja käytetään.</translation>
 <translation id="7593523670408385997">Määrittää sen välimuistin koon, jota <ph name="PRODUCT_NAME" /> käyttää välimuistiin tallennettujen tiedostojen tallentamiseen.
 
       Jos asetat tämän käytännön, <ph name="PRODUCT_NAME" /> käyttää määritettyä välimuistin kokoa riippumatta siitä, onko käyttäjä määrittänyt levyn välimuistin kokoon liittyvän merkinnän (--disk-cache-size). Tässä käytännössä määritetty arvo ei ole tiukka raja, vaan suositus välimuistijärjestelmälle. Paria megatavua pienempi arvo on liian pieni, joten se pyöristetään ylöspäin pienimpään sallittuun arvoon.
@@ -2292,7 +2281,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Jos käyttäjä on ottanut synkronoinnin käyttöön, kaikki nämä tiedot säilytetään käyttäjän synkronointiprofiilissa samoin kuin tavallisissa profiileissa. Incognito-tila on myös saatavilla, ellei käytäntö ole erikseen poistanut sitä käytöstä.
 
       Jos käytäntö on poistettu käytöstä tai sitä ei ole asetettu, kirjautuminen avaa tavallisen profiilin.</translation>
-<translation id="8158758865057576716">Salli roaming-kopioiden luomisen <ph name="PRODUCT_NAME" /> ‑profiilitiedoista.</translation>
 <translation id="8164246350636985940">Mihinkään sisältöpakettiin kuulumattomien sivustojen oletustoiminta.
 
           Tämä käytäntö on tarkoitettu tuotteen <ph name="PRODUCT_NAME" /> sisäiseen käyttöön.</translation>
@@ -2565,13 +2553,6 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="8992176907758534924">Älä anna sivustojen näyttää kuvia</translation>
 <translation id="9035964157729712237">Kieltoluettelosta poistettavat laajennuksien tunnukset</translation>
 <translation id="9042911395677044526">Antaa määrittää tuotetta <ph name="PRODUCT_OS_NAME" /> käyttävien laitteiden verkkoasetukset käyttäjäkohtaisesti. Verkkoasetukset määritetään JSON-muotoiltuna merkkijonona Open Network Configuration -muodossa, josta on lisätietoja osoitteessa <ph name="ONC_SPEC_URL" /></translation>
-<translation id="908115901708809140">Määrittää hakemiston, jota <ph name="PRODUCT_NAME" /> käyttää profiilien roaming-kopioiden säilyttämiseen.
-
-      Jos määrität tämän käytännön ja <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> on käytössä, <ph name="PRODUCT_NAME" /> käyttää määritettyä hakemistoa. Jos <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> ei ole käytössä tai sille ei ole määritetty arvoa, tämän käytännön arvoa ei sovelleta.
-
-      Katso luettelo mahdollisista muuttujista osoitteessa https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
-
-      Jos tätä käytäntöä ei ole määritetty, roaming-profiilien oletuspolkua käytetään.</translation>
 <translation id="9084985621503260744">Määritä, vaikuttaako videotoiminta virranhallintaan</translation>
 <translation id="9088433379343318874">Ota käyttöön valvotun käyttäjän sisällön tarjoaja</translation>
 <translation id="9088444059179765143">Määritä aikavyöhykkeen automaattinen tunnistamistapa.</translation>
@@ -2600,17 +2581,6 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
       Jos asetus on käytössä, kuvakaappauksia ei voi ottaa pikanäppäimien tai laajennuksien sovellusliittymien avulla.
 
       Jos asetus ei ole käytössä tai sitä ei ole määritetty, kuvakaappauksia saa ottaa.</translation>
-<translation id="9213347477683611358">Määritä laitetason taustakuva, joka näytetään kirjautumisnäytöllä, kun yksikään käyttäjä ei ole kirjautuneena laitteelle. Käytäntö määritetään antamalla URL-osoite, josta Chrome-käyttöjärjestelmää käyttävä laite voi ladata taustakuvan ja hajautusarvo, jonka avulla lataus todennetaan. Kuvan on oltava JPEG-muodossa, ja sen enimmäiskoko on 16 Mt. URL-osoitteen käyttäminen ei saa edellyttää todennusta. Taustakuva ladataan ja tallennetaan välimuistiin. Kuva ladataan uudelleen, jos URL-osoite tai hajautusarvo muuttuu.
-
-      Määritä käytäntö merkkijonona, joka sisältää URL-osoitteen ja hajautusarvon JSON-muodossa, esim.
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      Jos laitteelle on määritetty taustakuvakäytäntö eikä kukaan käyttäjistä ole kirjautunut laitteelle, Chrome-käyttöjärjestelmää käyttävä laite lataa taustakuvan ja käyttää sitä kirjautumisnäytöllä. Kun käyttäjä kirjautuu sisään, hänen taustakuvakäytäntönsä astuu voimaan.
-
-      Jos laitteelle ei ole määritetty taustakuvakäytäntöä, käyttäjän taustakuvakäytäntö (jos sellainen on määritetty) määrittää näytettävän kuvan.</translation>
 <translation id="9217154963008402249">Verkon valvontapakettien lähetystiheys</translation>
 <translation id="922540222991413931">Määritä laajennusten, sovellusten ja käyttäjien komentosarjojen asennuslähteet</translation>
 <translation id="924557436754151212">Tuo tallennetut salasanat oletusselaimesta ensimmäisellä käyttökerralla</translation>

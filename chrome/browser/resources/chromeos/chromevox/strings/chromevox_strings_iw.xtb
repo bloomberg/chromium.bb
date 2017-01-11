@@ -177,7 +177,6 @@
 <translation id="2899328121302785497">{COUNT,plural, =1{סוגר מסולסל שמאלי}two{# סימני סוגר מסולסל שמאלי}many{# סימני סוגר מסולסל שמאלי}other{# סימני סוגר מסולסל שמאלי}}</translation>
 <translation id="2911433807131383493">‏פתח את המדריך של ChromeVox</translation>
 <translation id="2932083475399492303">החלף סוג שורה בין מבנית או פריסה</translation>
-<translation id="2944762337049891859">קרא את הדף באופן אוטומטי בסיום טעינתו.</translation>
 <translation id="2964026537669811554">קבוצת כותרות</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{טאב}two{# סימני טאב}many{# סימני טאב}other{# סימני טאב}}</translation>
 <translation id="2972078295414139404">אין קישורים קודמים שבהם ביקרת.</translation>
@@ -308,7 +307,6 @@
 <translation id="3712520970944678024">בקרת דיבור</translation>
 <translation id="3716845769494773620">שורות מרובות</translation>
 <translation id="3731746171184829332">אין כותרת קודמת.</translation>
-<translation id="3735039640698208086">בהשמעת אודיו...</translation>
 <translation id="3762198587642264450">עבור לסוף השורה הנוכחית</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">יצאת מתיבת דו-שיח.</translation>
@@ -549,7 +547,6 @@
 <translation id="5876817486144482042">החלש עוצמת דיבור</translation>
 <translation id="5887397643266327462">כיתובי ברייל הופעלו.</translation>
 <translation id="5891934789323004067">טבלה</translation>
-<translation id="5899860758576822363">‏הפעל בעוצמת שמע נמוכה כשמכשיר ה-ChromeVox מדבר</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{סימן שווה}two{# סימני שווה}many{# סימני שווה}other{# סימני שווה}}</translation>
 <translation id="5939518447894949180">אפס</translation>
 <translation id="5948123859135882163">עבור בין פירוש מבני וסמנטי של ביטויים מתמטיים</translation>
@@ -582,7 +579,6 @@
 <translation id="6281876499889881039">הרכיב הדומה הבא.</translation>
 <translation id="6282062888058716985">nav</translation>
 <translation id="6290434000785343030">אין עוד תיבה משולבת.</translation>
-<translation id="6305702903308659374">‏הפעל בעוצמת שמע רגילה גם אם מכשיר ה-ChromeVox מדבר</translation>
 <translation id="6307969636681130414">לחוץ</translation>
 <translation id="6322856989298155004">צלילים</translation>
 <translation id="6324551002951139333">Grammatical mistake detected</translation>
@@ -698,7 +694,6 @@
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, מחוון</translation>
 <translation id="7552432549459840808">‏מקשי קיצור מועילים ב-Chrome</translation>
 <translation id="7579911500627256166">נקודה <ph name="DOT" /></translation>
-<translation id="7591126877589047423">‏אין מיקוד. הקש על Control + N כדי לפתוח חלון חדש.</translation>
 <translation id="7596919493010894443">הבחירה נוקתה</translation>
 <translation id="7604026522577407655">עבור לתחילת העמודה הנוכחית</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -774,7 +769,6 @@
 <translation id="8455868257606149352">מקסימום <ph name="X" /></translation>
 <translation id="84575901236241018">כולל מקש גישה, <ph name="KEY" /></translation>
 <translation id="847154984256717791">עסוק</translation>
-<translation id="8476408756881832830">‏השהה את ההפעלה כשמכשיר ה-ChromeVox מדבר</translation>
 <translation id="8476508772960940536">סקירת חלון</translation>
 <translation id="8503360654911991865">הקטן רמת פירוט של ניווט</translation>
 <translation id="8520472399088452386">לחצן סיבוב</translation>

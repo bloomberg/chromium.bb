@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">Vælg mappe</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="129553762522093515">Senest lukkede</translation>
-<translation id="1323735185997015385">Slet</translation>
 <translation id="132683371494960526">Tryk to gange for at ændre den overordnede mappe.</translation>
 <translation id="1340643665687018190">Luk menu</translation>
 <translation id="1375321115329958930">Gemte adgangskoder</translation>
@@ -64,7 +63,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="2068952045031577364">Seneste uge</translation>
 <translation id="2079545284768500474">Fortryd</translation>
 <translation id="209018056901015185">Vis computerversion</translation>
-<translation id="2100215774115172756">Din læseliste er tilgængelig offline.</translation>
 <translation id="2103075008456228677">Åbn history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> bogmærker blev flyttet</translation>
 <translation id="2149973817440762519">Rediger bogmærke</translation>
@@ -84,7 +82,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="2572712655377361602">En enhedspolitik har blokeret adgangen til dine billeder</translation>
 <translation id="2584132361465095047">Tilføj konto...</translation>
 <translation id="2593774076813182497">Denne side kan ikke udskrives.</translation>
-<translation id="2648803196158606475">Slet læste</translation>
 <translation id="2653659639078652383">Indsend</translation>
 <translation id="2684815431982545828">Ny fane</translation>
 <translation id="2690858294534178585">Kameraet er i brug</translation>
@@ -103,25 +100,22 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="2898963176829412617">Ny mappe...</translation>
 <translation id="2903493209154104877">Adresser</translation>
 <translation id="2921219216347069551">Siden kan ikke deles</translation>
-<translation id="292639812446257861">Markér som ulæst</translation>
 <translation id="2933759065870693102">Lommelygte</translation>
 <translation id="2969979262385602596">Login mislykkedes. Prøv igen senere.</translation>
 <translation id="2989805286512600854">Åbn på ny fane</translation>
 <translation id="3024255823539804759">Seneste døgn</translation>
 <translation id="3037605927509011580">Øv, surt!</translation>
 <translation id="3050311348724540835"><ph name="HISTORY_URL" /> er ikke tilgængelig. Vælg "<ph name="SHOW_HISTORY" />" i værktøjsmenuen for at åbne din browserhistorik.</translation>
-<translation id="3112556859945124369">Markér…</translation>
 <translation id="3151924044251363314">Det er kun personer med din adgangssætning, der kan læse dine krypterede data. Adgangssætningen sendes ikke til eller gemmes af Google. Hvis du glemmer din adgangssætning eller vil ændre denne indstilling, skal du nulstille synkroniseringen. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
-<translation id="3157684681743766797">Markér alle…</translation>
 <translation id="3172213052701798825">Google Smart Lock til adgangskoder</translation>
 <translation id="3175081911749765310">Webtjenester</translation>
 <translation id="3207960819495026254">Bogmærket</translation>
 <translation id="3210163015918861891">Synkronisering er slået fra</translation>
-<translation id="3237561509210981547">Hvis du vil føje en side til din læseliste, skal du trykke på <ph name="BEGIN_BOLD_FONT" />Del &gt; Læs senere<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3240426699337459095">Linket er kopieret</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> af <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Åbne faner</translation>
+<translation id="3289005573061089144">Vil du importere data?</translation>
 <translation id="3324193307694657476">Adresse 2</translation>
 <translation id="3329904751041170572">Der kunne ikke oprettes forbindelse til serveren.</translation>
 <translation id="3335947283844343239">Åbn lukket fane igen</translation>
@@ -130,7 +124,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="3414292259312108062">Chrome gemmer denne i dine <ph name="BEGIN_LINK" />Gemte adgangskoder på Google<ph name="END_LINK" /> og autofylder den for dig, så du ikke behøver at huske den selv.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min.</translation>
 <translation id="3448016392200048164">Opdelt visning</translation>
-<translation id="3474068797193663261">Hvis du vil føje en side til din læseliste, skal du trykke på <ph name="BEGIN_BOLD_FONT" />Menu &gt; Del &gt; Læs senere<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3474649192738347024">Formularerne er udfyldt.</translation>
 <translation id="3478058380795961209">Udløbsmåned:</translation>
 <translation id="3482959374254649722">Synkroniserer dine faner...</translation>
@@ -190,7 +183,6 @@ Dine data er krypteret med din adgangssætning til synkronisering. Indtast den f
 <translation id="481968316161811770">Cookies, websitedata</translation>
 <translation id="4875622588773761625">Skal <ph name="PASSWORD_MANAGER_BRAND" /> opdatere din adgangskode til dette website?</translation>
 <translation id="4881695831933465202">Åbn</translation>
-<translation id="4904877109095351937">Markér som læst</translation>
 <translation id="4923459931733593730">Betaling</translation>
 <translation id="4930268273022498155">Slet eksisterende data. Du kan hente dem ved at skifte tilbage til <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Beklager, men der opstod et problem med at dele dit element.</translation>
@@ -368,7 +360,6 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="8428213095426709021">Indstillinger</translation>
 <translation id="8433678324664858900">Vis forslag</translation>
 <translation id="8458397775385147834">1 bogmærke blev slettet</translation>
-<translation id="8487700953926739672">Tilgængelig offline</translation>
 <translation id="8503813439785031346">Brugernavn</translation>
 <translation id="8517375800490286174">Open source-licenser</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" />-fane <ph name="FIRST_VISIBLE_TAB" /> til <ph name="LAST_VISIBLE_TAB" /> af <ph name="NUMBER_OF_OPEN_TABS" /></translation>
@@ -378,7 +369,6 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="8605219856220328675">Luk fane.</translation>
 <translation id="8620640915598389714">Rediger</translation>
 <translation id="8636825310635137004">Aktivér synkronisering for at få adgang til dine faner på dine andre enheder.</translation>
-<translation id="8654802032646794042">Annuller</translation>
 <translation id="8680787084697685621">Oplysningerne om kontologin er forældede.</translation>
 <translation id="8699098509676302392">Tilføj adresse...</translation>
 <translation id="8721297211384281569">Menuen Værktøjer</translation>

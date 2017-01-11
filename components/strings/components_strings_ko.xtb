@@ -82,7 +82,6 @@
 <translation id="1753706481035618306">페이지 번호</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows 네트워크 진단 프로그램을 실행<ph name="END_LINK" />해 보세요.</translation>
 <translation id="1783075131180517613">동기화 암호를 업데이트하세요.</translation>
-<translation id="1787142507584202372">열린 탭이 여기에 표시됩니다.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803678881841855883">Google 세이프 브라우징이 최근 <ph name="SITE" />에서 <ph name="BEGIN_LINK" />멀웨어를 감지<ph name="END_LINK" />했습니다. 안전하던 웹사이트도 멀웨어에 감염되는 경우가 있습니다. 악성 콘텐츠의 출처는 알려진 멀웨어 배포자인 <ph name="SUBRESOURCE_HOST" />입니다. <ph name="BEGIN_LEARN_MORE_LINK" />자세히 알아보기<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1821930232296380041">잘못된 요청 또는 요청 매개변수</translation>
@@ -175,7 +174,6 @@
 <translation id="2712118517637785082"><ph name="DOMAIN" />에 접속하려 했으나 발행기관에서 서버가 제시한 인증서를 폐기했습니다. 이는 서버가 제시한 보안 자격증명 정보는 절대 신뢰할 수 없음을 의미합니다. 현재 해커와 통신 중일 수도 있습니다. <ph name="BEGIN_LEARN_MORE_LINK" />자세히 알아보기<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2712173769900027643">권한 요청</translation>
 <translation id="2713444072780614174">흰색</translation>
-<translation id="2720342946869265578">주변</translation>
 <translation id="2721148159707890343">요청 성공</translation>
 <translation id="2728127805433021124">서버의 인증서가 안전성이 낮은 서명 알고리즘을 사용하여 서명되어 있습니다.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />연결 진단 프로그램 실행<ph name="END_LINK" /></translation>
@@ -372,7 +370,6 @@
 <translation id="4728558894243024398">플랫폼</translation>
 <translation id="4744603770635761495">실행 가능 경로</translation>
 <translation id="4756388243121344051">방문 기록(&amp;H)</translation>
-<translation id="4759118997339041434">결제 자동완성 사용 중지</translation>
 <translation id="4764776831041365478"><ph name="URL" />의 웹페이지가 일시적으로 다운되었거나 새 웹 주소로 완전히 이동했을 수 있습니다.</translation>
 <translation id="4771973620359291008">알 수 없는 오류가 발생했습니다.</translation>
 <translation id="4800132727771399293">유효기간과 CVC를 확인한 후 다시 시도해 주세요.</translation>
@@ -531,6 +528,7 @@
 <translation id="6644283850729428850">이 정책은 사용되지 않습니다.</translation>
 <translation id="6652240803263749613">컴퓨터의 운영체제에서 보안 인증서를 신뢰하지 않아서 서버 도메인이 <ph name="DOMAIN" />임을 증명할 수 없습니다. 설정이 잘못되었거나 해커가 연결을 가로채고 있기 때문일 수 있습니다. <ph name="BEGIN_LEARN_MORE_LINK" />자세히 알아보기<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6656103420185847513">폴더 수정</translation>
+<translation id="6660210980321319655"><ph name="CRASH_TIME" />에 자동으로 신고됨</translation>
 <translation id="6671697161687535275">Chromium에서 자동완성 항목 추천을 삭제하시겠습니까?</translation>
 <translation id="6685834062052613830">로그아웃 후 설정 완료</translation>
 <translation id="6710213216561001401">이전</translation>
@@ -677,7 +675,6 @@
 <translation id="8150722005171944719"><ph name="URL" />의 파일을 읽을 수 없습니다. 삭제 또는 이동되었거나 파일 사용 권한이 액세스를 차단할 수도 있습니다.</translation>
 <translation id="8194797478851900357">이동 실행 취소(&amp;U)</translation>
 <translation id="8201077131113104583">ID가 '<ph name="EXTENSION_ID" />'인 확장 프로그램에 대한 잘못된 업데이트 URL</translation>
-<translation id="8202097416529803614">주문 요약</translation>
 <translation id="8218327578424803826">지정된 위치:</translation>
 <translation id="8225771182978767009">컴퓨터를 설정한 사용자가 이 사이트를 차단했습니다.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
@@ -723,7 +720,6 @@
 <translation id="8740359287975076522"><ph name="HOST_NAME" />의 &lt;abbr id="dnsDefinition"&gt;DNS 주소&lt;/abbr&gt;를 찾을 수 없습니다. 문제를 진단하는 중입니다.</translation>
 <translation id="8790007591277257123">삭제 다시 실행(&amp;R)</translation>
 <translation id="8798099450830957504">기본값</translation>
-<translation id="8800988563907321413">주변 추천 항목이 여기에 표시됩니다.</translation>
 <translation id="8804164990146287819">개인정보처리방침</translation>
 <translation id="8820817407110198400">북마크</translation>
 <translation id="8834246243508017242">주소록을 사용해 자동완성 기능 사용 설정…</translation>

@@ -82,7 +82,6 @@
 <translation id="1753706481035618306">পৃষ্ঠা সংখ্যা</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows নেটওয়ার্ক ডায়গনিস্টিক্স চালিয়ে দেখুন<ph name="END_LINK" />।</translation>
 <translation id="1783075131180517613">দয়া করে আপনার সিঙ্ক পাসফ্রেজ আপডেট করুন৷</translation>
-<translation id="1787142507584202372">আপনার খোলা ট্যাবগুলি এখানে দেখা যাবে</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803678881841855883">Google নিরাপদ ব্রাউজিং সম্প্রতি <ph name="SITE" /> এ <ph name="BEGIN_LINK" />মালওয়ের শনাক্ত করেছে<ph name="END_LINK" />। যেসব ওয়েবসাইট সাধারণত নিরাপদ থাকে, সেগুলি কখনও কখনও মালওয়ের দ্বারা আক্রান্ত হয়। একটি পরিচিত মালওয়ের বিতরণকারী, <ph name="SUBRESOURCE_HOST" /> থেকে ক্ষতিকারক সামগ্রীটি এসেছে। <ph name="BEGIN_LEARN_MORE_LINK" />আরো জানুন<ph name="END_LEARN_MORE_LINK" />।</translation>
 <translation id="1821930232296380041">অবৈধ অনুরোধ বা অনুরোধ মাপকাঠিগুলি</translation>
@@ -176,7 +175,6 @@
 <translation id="2712118517637785082">আপনি <ph name="DOMAIN" /> এ পৌঁছানোর প্রচেষ্টা করেছেন, তবে সার্ভারটি যে শংসাপত্রটি উপস্থাপন করেছে সেটির ইস্যুকারী সেটিকে প্রত্যাহার করেছে। এর অর্থ হ'ল সার্ভারটি যে সুরক্ষা প্রমানপত্র উপস্থাপন করেছে তা একেবারেই বিশ্বাসযোগ্য নয়। হতে পারে আপনি একজন আক্রমণকারীর সাথে যোগাযোগ করছেন। <ph name="BEGIN_LEARN_MORE_LINK" />আরো জানুন<ph name="END_LEARN_MORE_LINK" />।</translation>
 <translation id="2712173769900027643">অনুমতি নিন</translation>
 <translation id="2713444072780614174">সাদা</translation>
-<translation id="2720342946869265578">আশেপাশে</translation>
 <translation id="2721148159707890343">অনুরোধ সফল হয়েছে</translation>
 <translation id="2728127805433021124">একটি দুর্বল স্বাক্ষর অ্যালগোরিদম ব্যবহার করে সার্ভারের শংসাপত্রে সাইন করা হয়েছে৷</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />সংযোগের ডায়গনিস্টিক্স চালান<ph name="END_LINK" /></translation>
@@ -373,7 +371,6 @@
 <translation id="4728558894243024398">প্ল্যাটফর্ম</translation>
 <translation id="4744603770635761495">সম্পাদনযোগ্য পথ</translation>
 <translation id="4756388243121344051">&amp;ইতিহাস</translation>
-<translation id="4759118997339041434">পেমেন্ট স্বতঃপূর্ণকরণ অক্ষম করা হয়েছে</translation>
 <translation id="4764776831041365478"><ph name="URL" />-এ ওয়েবপৃষ্ঠাটি হতে পারে অস্থায়ীভাবে ডাউন আছে অথবা হতে পারে এটি স্থায়ীভাবে কোনো নতুন ওয়েব ঠিকানাতে সরানো হয়েছে৷</translation>
 <translation id="4771973620359291008">একটি অজানা ত্রুটি ঘটেছে৷</translation>
 <translation id="4800132727771399293">আপনার মেয়াদ শেষের তারিখ এবং CVC পরীক্ষা করুন এবং আবার চেষ্টা করুন</translation>
@@ -531,6 +528,7 @@
 <translation id="6644283850729428850">এই নীতিটি অসমর্থিত হয়েছে৷</translation>
 <translation id="6652240803263749613">এই সার্ভার প্রমাণ করতে পারেনি যে এটা <ph name="DOMAIN" />; আপনার কম্পিউটারের অপারেটিং সিস্টেম এর নিরাপত্তা শংসাপত্রটিকে বিশ্বাস করে না। কোনো ভুল কনফিগারেশনের কারণে অথবা কোনো আক্রমণকারী আপনার সংযোগ মাঝপথে আটকে দিচ্ছে বলে এমনটা হতে পারে। <ph name="BEGIN_LEARN_MORE_LINK" />আরো জানুন<ph name="END_LEARN_MORE_LINK" />।</translation>
 <translation id="6656103420185847513">ফোল্ডার সম্পাদনা করুন</translation>
+<translation id="6660210980321319655">স্বয়ংক্রিয়ভাবে প্রতিবেদন করা হয়েছে <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Chromium থেকে ফর্ম প্রস্তাবনা সরাবেন?</translation>
 <translation id="6685834062052613830">প্রস্থান করুন করে সেটআপ সম্পূর্ণ করুন</translation>
 <translation id="6710213216561001401">পূর্ববর্তী</translation>
@@ -677,7 +675,6 @@
 <translation id="8150722005171944719"><ph name="URL" />এ ফাইলটি পাঠযোগ্য নয়৷ এটা মুছে ফেলা হয়েছে পারে, সরিয়ে দেওয়া হয়েছে, অথবা ফাইল অনুমতি প্রবেশাধিকার প্রতিরোধ করতে পারে৷</translation>
 <translation id="8194797478851900357">&amp;সরানোকে পূর্বাবস্থায় ফেরান</translation>
 <translation id="8201077131113104583">"<ph name="EXTENSION_ID" />" ID যুক্ত এক্সটেনশানের অবৈধ আপডেট URL।</translation>
-<translation id="8202097416529803614">অর্ডারের সারসংক্ষেপ</translation>
 <translation id="8218327578424803826">নির্ধারিত অবস্থান:</translation>
 <translation id="8225771182978767009">এই কম্পিউটার যিনি সেট আপ করেছেন তিনি এই সাইটটি অবরুদ্ধ করার বিষয়টি চয়ন করেছেন।</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
@@ -723,7 +720,6 @@
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> এর &lt;abbr id="dnsDefinition"&gt;DNS ঠিকানা&lt;/abbr&gt; পাওয়া যায়নি। সমস্যা নির্ণয় করা হচ্ছে।</translation>
 <translation id="8790007591277257123">&amp;মুছে ফেলাকে পুনরায় করুন</translation>
 <translation id="8798099450830957504">ডিফল্ট</translation>
-<translation id="8800988563907321413">আপনার জন্য আশেপাশের প্রস্তাবনাগুলি এখানে দেখা যাবে</translation>
 <translation id="8804164990146287819">গোপনীয়তা নীতি</translation>
 <translation id="8820817407110198400">বুকমার্কস</translation>
 <translation id="8834246243508017242">পরিচিতিগুলি ব্যবহার করে স্বতঃপূর্ণ সক্ষম করুন...</translation>

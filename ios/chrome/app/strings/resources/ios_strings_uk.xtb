@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">Вибрати папку</translation>
 <translation id="1272079795634619415">Зупинити</translation>
 <translation id="129553762522093515">Нещодавно закриті</translation>
-<translation id="1323735185997015385">Видалити</translation>
 <translation id="132683371494960526">Двічі торкніться, щоб змінити батьківську папку.</translation>
 <translation id="1340643665687018190">Закрити меню</translation>
 <translation id="1375321115329958930">Збережені паролі</translation>
@@ -64,7 +63,6 @@
 <translation id="2068952045031577364">Останній тиждень</translation>
 <translation id="2079545284768500474">Скасувати</translation>
 <translation id="209018056901015185">Повна версія сайту</translation>
-<translation id="2100215774115172756">Ваш список читання доступний у режимі офлайн.</translation>
 <translation id="2103075008456228677">Відкрити history.google.com</translation>
 <translation id="2116625576999540962">Переміщено елементів: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="2149973817440762519">Редагувати закладку</translation>
@@ -84,7 +82,6 @@
 <translation id="2572712655377361602">пристрою</translation>
 <translation id="2584132361465095047">Додати обліковий запис…</translation>
 <translation id="2593774076813182497">Не вдається роздрукувати сторінку.</translation>
-<translation id="2648803196158606475">Видалити прочитані</translation>
 <translation id="2653659639078652383">Надіслати</translation>
 <translation id="2684815431982545828">Нова вкладка</translation>
 <translation id="2690858294534178585">Камера використовується</translation>
@@ -103,25 +100,22 @@
 <translation id="2898963176829412617">Нова папка…</translation>
 <translation id="2903493209154104877">Адреси</translation>
 <translation id="2921219216347069551">Неможливо поділитися</translation>
-<translation id="292639812446257861">Позначити як непрочитані</translation>
 <translation id="2933759065870693102">Ліхтарик</translation>
 <translation id="2969979262385602596">Не вдалося ввійти. Спробуйте пізніше.</translation>
 <translation id="2989805286512600854">Відкрити в новій вкладці</translation>
 <translation id="3024255823539804759">Останній день</translation>
 <translation id="3037605927509011580">От халепа!</translation>
 <translation id="3050311348724540835">URL-адреса <ph name="HISTORY_URL" /> недоступна. Щоб відкрити історію перегляду, натисніть "<ph name="SHOW_HISTORY" />" в меню "Інструменти".</translation>
-<translation id="3112556859945124369">Позначити…</translation>
 <translation id="3151924044251363314">Ваші зашифровані дані можуть переглядати лише користувачі, які знають вашу парольну фразу. Парольна фраза не надсилається й не зберігається в Google. Якщо ви забули її або хочете змінити це налаштування, скиньте синхронізацію. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
-<translation id="3157684681743766797">Позначити всі…</translation>
 <translation id="3172213052701798825">Google Smart Lock для паролів</translation>
 <translation id="3175081911749765310">Веб-служби</translation>
 <translation id="3207960819495026254">Створено закладку</translation>
 <translation id="3210163015918861891">Синхронізацію вимкнено</translation>
-<translation id="3237561509210981547">Щоб додати сторінку в список читання, торкніться опції <ph name="BEGIN_BOLD_FONT" />Поділитися &gt; Читати пізніше<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3240426699337459095">Посилання скопійовано</translation>
 <translation id="3244271242291266297">ММ</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> з <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Відкриті вкладки</translation>
+<translation id="3289005573061089144">Імпортувати дані?</translation>
 <translation id="3324193307694657476">Адреса 2</translation>
 <translation id="3329904751041170572">Не вдалось під’єднатися до сервера.</translation>
 <translation id="3335947283844343239">Знову відкрити закриту вкладку</translation>
@@ -130,7 +124,6 @@
 <translation id="3414292259312108062">Chrome додасть пароль у розділ <ph name="BEGIN_LINK" />Збережені паролі Google<ph name="END_LINK" /> й автоматично вводитиме його, тож вам не потрібно нічого запам’ятовувати.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> хв</translation>
 <translation id="3448016392200048164">Режим розділеного екрана</translation>
-<translation id="3474068797193663261">Щоб додати сторінку в список читання, торкніться опції <ph name="BEGIN_BOLD_FONT" />Меню &gt; Поділитися &gt; Читати пізніше<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3474649192738347024">Форми заповнено.</translation>
 <translation id="3478058380795961209">Місяць закінчення терміну дії</translation>
 <translation id="3482959374254649722">Синхронізація вкладок…</translation>
@@ -190,7 +183,6 @@
 <translation id="481968316161811770">Файли cookie й дані із сайтів</translation>
 <translation id="4875622588773761625">Оновити пароль для цього сайту в <ph name="PASSWORD_MANAGER_BRAND" />?</translation>
 <translation id="4881695831933465202">Відкрити</translation>
-<translation id="4904877109095351937">Позначити як прочитані</translation>
 <translation id="4923459931733593730">Оплата</translation>
 <translation id="4930268273022498155">Видалити наявні дані. Щоб відновити їх, поверніться в обліковий запис <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Під час спроби поділитися елементом виникла проблема.</translation>
@@ -368,7 +360,6 @@
 <translation id="8428213095426709021">Налаштування</translation>
 <translation id="8433678324664858900">Показ. пропозиції</translation>
 <translation id="8458397775385147834">Видалено 1 елемент</translation>
-<translation id="8487700953926739672">Доступ у режимі офлайн</translation>
 <translation id="8503813439785031346">Ім’я користувача</translation>
 <translation id="8517375800490286174">Ліцензії ПЗ з відкритим кодом</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" />: вкладки <ph name="FIRST_VISIBLE_TAB" />–<ph name="LAST_VISIBLE_TAB" /> з <ph name="NUMBER_OF_OPEN_TABS" /></translation>
@@ -378,7 +369,6 @@
 <translation id="8605219856220328675">Закрити вкладку.</translation>
 <translation id="8620640915598389714">Редагувати</translation>
 <translation id="8636825310635137004">Щоб мати доступ до вкладок з інших пристроїв, увімкніть синхронізацію.</translation>
-<translation id="8654802032646794042">Скасувати</translation>
 <translation id="8680787084697685621">Дані для входу в обліковий запис застаріли.</translation>
 <translation id="8699098509676302392">Додати адресу…</translation>
 <translation id="8721297211384281569">Меню інструментів</translation>

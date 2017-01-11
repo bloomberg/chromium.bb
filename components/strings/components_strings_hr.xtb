@@ -82,7 +82,6 @@
 <translation id="1753706481035618306">Broj stranice</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Pokušajte pokrenuti Mrežnu dijagnostiku sustava Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Ažurirajte zaporku za sinkronizaciju.</translation>
-<translation id="1787142507584202372">Ovdje se prikazuju vaše otvorene kartice</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803678881841855883">Google sigurno pregledavanje nedavno je <ph name="BEGIN_LINK" />otkrilo zlonamjerni softver<ph name="END_LINK" /> na web-lokaciji <ph name="SITE" />. Web-lokacije koje su inače sigurne ponekad mogu biti zaražene zlonamjernim softverom. Zlonamjerni sadržaj potječe s hosta <ph name="SUBRESOURCE_HOST" /> koji je poznati distributer zlonamjernog softvera. <ph name="BEGIN_LEARN_MORE_LINK" />Saznajte više<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">Nevažeći zahtjev ili parametri zahtjeva</translation>
@@ -175,7 +174,6 @@
 <translation id="2712118517637785082">Pokušali ste otvoriti <ph name="DOMAIN" />, ali izdavač je povukao certifikat koji je poslužitelj prikazao. To znači da sigurnosne vjerodajnice koje je poslužitelj prikazao nikako ne biste trebali smatrati pouzdanima. Možda komunicirate s napadačem. <ph name="BEGIN_LEARN_MORE_LINK" />Saznajte više<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="2712173769900027643">Traži dopuštenje</translation>
 <translation id="2713444072780614174">Bijela</translation>
-<translation id="2720342946869265578">U blizini</translation>
 <translation id="2721148159707890343">Zahtjev je uspio</translation>
 <translation id="2728127805433021124">Certifikat poslužitelja potpisan je slabim algoritmom potpisa.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />pokrenuti Dijagnostiku povezivosti<ph name="END_LINK" /></translation>
@@ -371,7 +369,6 @@
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="4744603770635761495">Izvršna putanja</translation>
 <translation id="4756388243121344051">&amp;Povijest</translation>
-<translation id="4759118997339041434">Automatsko popunjavanje podataka o plaćanju onemogućeno je</translation>
 <translation id="4764776831041365478">Web-stranica na adresi <ph name="URL" /> možda privremeno nije dostupna ili je trajno preseljena na novu web-adresu.</translation>
 <translation id="4771973620359291008">Došlo je do nepoznate pogreške.</translation>
 <translation id="4800132727771399293">Provjerite datum isteka i CVC pa pokušajte ponovo</translation>
@@ -530,6 +527,7 @@
 <translation id="6644283850729428850">Ovo je pravilo zastarjelo.</translation>
 <translation id="6652240803263749613">Poslužitelj nije mogao dokazati da je to <ph name="DOMAIN" /> jer operativni sustav računala sigurnosni certifikat ne smatra pouzdanim. Razlog može biti pogrešna konfiguracija ili napad na vašu vezu. <ph name="BEGIN_LEARN_MORE_LINK" />Saznajte više<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="6656103420185847513">Uređivanje mape</translation>
+<translation id="6660210980321319655">Automatski prijavljeno <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Želite li ukloniti prijedlog iz Chromiuma?</translation>
 <translation id="6685834062052613830">Odjavite se i dovršite postavljanje</translation>
 <translation id="6710213216561001401">Prethodno</translation>
@@ -676,7 +674,6 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="8150722005171944719">Datoteka na adresi <ph name="URL" /> nije čitljiva. Možda je uklonjena ili premještena ili dozvole datoteka sprječavaju pristup.</translation>
 <translation id="8194797478851900357">&amp;Poništi premještanje</translation>
 <translation id="8201077131113104583">Nevažeći URL ažuriranja za proširenje s ID-om "<ph name="EXTENSION_ID" />".</translation>
-<translation id="8202097416529803614">Sažetak narudžbe</translation>
 <translation id="8218327578424803826">Dodijeljena lokacija:</translation>
 <translation id="8225771182978767009">Osoba koja je postavila računalo blokirala je tu web-lokaciju.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
@@ -722,7 +719,6 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;DNS adresa&lt;/abbr&gt; hosta <ph name="HOST_NAME" /> nije pronađena. U tijeku je dijagnosticiranje problema.</translation>
 <translation id="8790007591277257123">&amp;Ponovi brisanje</translation>
 <translation id="8798099450830957504">Zadano</translation>
-<translation id="8800988563907321413">Ovdje se prikazuju prijedlozi u blizini za vas</translation>
 <translation id="8804164990146287819">Pravila o privatnosti</translation>
 <translation id="8820817407110198400">Knjižne oznake</translation>
 <translation id="8834246243508017242">Omogući Automatsko popunjavanje pomoću Kontakata...</translation>

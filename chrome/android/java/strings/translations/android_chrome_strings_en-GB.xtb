@@ -269,7 +269,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="3828029223314399057">Search bookmarks</translation>
 <translation id="3845539888601087042">Showing history from your signed-in devices. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">Seek forward</translation>
-<translation id="3890664840433101773">Add email</translation>
 <translation id="3894427358181296146">Add folder</translation>
 <translation id="3895926599014793903">Force enable zoom</translation>
 <translation id="3917783807003067648">Location is blocked</translation>
@@ -327,6 +326,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4526249700380860531">View and manage saved passwords at <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Choose folder</translation>
 <translation id="4535858793016067060">Turn on “Unknown sources” in Android security settings to try "Improved Add to Home screen" experiment. Make sure to disable this setting when you’ve finished trying it out.</translation>
+<translation id="4543661749405994812">Copy email address</translation>
 <translation id="4558311620361989323">Web page shortcuts</translation>
 <translation id="4572422548854449519">Sign in to managed account</translation>
 <translation id="457875822857220463">Delivery</translation>
@@ -371,7 +371,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4988526792673242964">Pages</translation>
 <translation id="4996978546172906250">Share via</translation>
 <translation id="5000922062037820727">Blocked (recommended)</translation>
-<translation id="5004339818306944878">Use up to 60% less data and speed up the web. Google servers will optimise the pages you visit.</translation>
 <translation id="5005498671520578047">Copy password</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> wants to connect</translation>
 <translation id="5016205925109358554">Serif</translation>
@@ -394,12 +393,10 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="5171045022955879922">Search or type URL</translation>
 <translation id="5184329579814168207">Open in Chrome</translation>
 <translation id="5199929503336119739">Work profile</translation>
-<translation id="5205222826937269299">Name required</translation>
 <translation id="5209320130288484488">No devices found</translation>
 <translation id="5210286577605176222">Jump to the previous tab</translation>
 <translation id="5210365745912300556">Close tab</translation>
 <translation id="5222676887888702881">Sign out</translation>
-<translation id="5222812217790122047">Email (required)</translation>
 <translation id="5233638681132016545">New tab</translation>
 <translation id="5271967389191913893">Device cannot open the content to be downloaded.</translation>
 <translation id="528192093759286357">Drag from top and touch the back button to exit full screen.</translation>
@@ -526,6 +523,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Search and URL suggestions</translation>
 <translation id="6463070039183944536">Adding...</translation>
+<translation id="6464825623202322042">This device</translation>
 <translation id="6475951671322991020">Download video</translation>
 <translation id="6477460825583319731">Invalid email address</translation>
 <translation id="6482749332252372425"><ph name="FILE_NAME" /> download failed due to lack of storage space.</translation>
@@ -572,7 +570,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6868088497967843822">Sign in to get your bookmarks, history, passwords and other settings on all your devices</translation>
 <translation id="688738109438487280">Add existing data to <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d open tab}other{%1$d open tabs}}</translation>
-<translation id="6896758677409633944">Copy</translation>
 <translation id="6937422995269576720">Card number invalid</translation>
 <translation id="6945221475159498467">Select</translation>
 <translation id="6963766334940102469">Delete bookmarks</translation>
@@ -597,7 +594,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7094922512924405309">No nearby Physical Web pages found</translation>
 <translation id="7138678301420049075">Other</translation>
 <translation id="7180611975245234373">Refresh</translation>
-<translation id="7189372733857464326">Waiting for Google Play Services to finish updating</translation>
 <translation id="7191430249889272776">Tab opened in background.</translation>
 <translation id="7243308994586599757">Options available near bottom of the screen</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> uses your location to show local search results</translation>
@@ -658,7 +654,6 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="7851858861565204677">Other Devices</translation>
 <translation id="7875915731392087153">Create email</translation>
 <translation id="7876243839304621966">Remove all</translation>
-<translation id="7882131421121961860">No history found</translation>
 <translation id="7929962904089429003">Opening the menu</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> is out of date.</translation>
 <translation id="7947953824732555851">Accept and sign in</translation>
@@ -706,7 +701,6 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8321376388213838985">More articles will appear soon. Enjoy your afternoon.</translation>
 <translation id="8372893542064058268">Allow Background Sync for a specific site.</translation>
 <translation id="8374821112118309944">You need to update TalkBack to a newer version.</translation>
-<translation id="8393700583063109961">Send message</translation>
 <translation id="8396312449826231789">Only approved sites</translation>
 <translation id="8413126021676339697">Show full history</translation>
 <translation id="8428213095426709021">Settings</translation>
@@ -784,7 +778,6 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Images</translation>
 <translation id="932327136139879170">Home</translation>
-<translation id="932599481871055447">Save data and browse faster</translation>
 <translation id="938850635132480979">Error: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Access your microphone</translation>
 <translation id="951339005376969845">Delete existing data. You can retrieve it by switching back to <ph name="FROM_ACCOUNT" />.</translation>

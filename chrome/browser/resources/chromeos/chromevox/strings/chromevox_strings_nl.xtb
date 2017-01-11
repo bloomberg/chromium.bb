@@ -177,7 +177,6 @@
 <translation id="2899328121302785497">{COUNT,plural, =1{accolade links}other{# accolades links}}</translation>
 <translation id="2911433807131383493">ChromeVox-handleiding openen</translation>
 <translation id="2932083475399492303">Regeltype schakelen tussen structureel en indeling</translation>
-<translation id="2944762337049891859">Pagina automatisch lezen nadat deze is geladen.</translation>
 <translation id="2964026537669811554">Kopgroep</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{tab}other{# tabs}}</translation>
 <translation id="2972078295414139404">Geen vorige bezochte link.</translation>
@@ -308,7 +307,6 @@ Als je klaar bent met de handleiding, gebruik je ChromeVox om naar de knop Sluit
 <translation id="3712520970944678024">Spraak beheren</translation>
 <translation id="3716845769494773620">Meerdere regels</translation>
 <translation id="3731746171184829332">Geen vorige kop.</translation>
-<translation id="3735039640698208086">Tijdens het afspelen van audio...</translation>
 <translation id="3762198587642264450">Naar het einde van de huidige rij gaan</translation>
 <translation id="3777255250339039212">k1</translation>
 <translation id="3793710123303304873">Dialoogvenster afgesloten.</translation>
@@ -549,7 +547,6 @@ Druk op Alt + F om het menu van de Chrome-browser te openen.</translation>
 <translation id="5876817486144482042">Spraakvolume verlagen</translation>
 <translation id="5887397643266327462">Braille-ondertiteling ingeschakeld.</translation>
 <translation id="5891934789323004067">Tabel</translation>
-<translation id="5899860758576822363">Afspelen met lager volume wanneer ChromeVox spreekt</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{gelijkteken}other{# gelijktekens}}</translation>
 <translation id="5939518447894949180">Resetten</translation>
 <translation id="5948123859135882163">Interpretatie van wiskundige formules schakelen tussen structureel en semantisch</translation>
@@ -582,7 +579,6 @@ Druk op Alt + F om het menu van de Chrome-browser te openen.</translation>
 <translation id="6281876499889881039">Volgend vergelijkbaar element.</translation>
 <translation id="6282062888058716985">navigatie</translation>
 <translation id="6290434000785343030">Geen volgende keuzelijst met invoervak.</translation>
-<translation id="6305702903308659374">Afspelen met normaal volume, ook als ChromeVox spreekt</translation>
 <translation id="6307969636681130414">Ingedrukt.</translation>
 <translation id="6322856989298155004">Geluiden</translation>
 <translation id="6324551002951139333">Grammaticafout ontdekt</translation>
@@ -698,7 +694,6 @@ Druk op Alt + F om het menu van de Chrome-browser te openen.</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, scrollbar</translation>
 <translation id="7552432549459840808">Handige Chrome-snelkoppelingen</translation>
 <translation id="7579911500627256166">punt <ph name="DOT" /></translation>
-<translation id="7591126877589047423">Geen focus. Druk op Ctrl-N om een nieuw venster te openen.</translation>
 <translation id="7596919493010894443">selectie gewist</translation>
 <translation id="7604026522577407655">Naar het begin van de huidige kolom gaan</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -774,7 +769,6 @@ Druk op Alt + F om het menu van de Chrome-browser te openen.</translation>
 <translation id="8455868257606149352">Max. <ph name="X" /></translation>
 <translation id="84575901236241018">heeft toegangscode, <ph name="KEY" /></translation>
 <translation id="847154984256717791">bezet</translation>
-<translation id="8476408756881832830">Afspelen onderbreken wanneer ChromeVox spreekt</translation>
 <translation id="8476508772960940536">vensteroverzicht</translation>
 <translation id="8503360654911991865">Detailniveau van navigatie verkleinen</translation>
 <translation id="8520472399088452386">Kringveld</translation>

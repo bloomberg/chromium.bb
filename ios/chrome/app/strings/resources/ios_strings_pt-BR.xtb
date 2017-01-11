@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">Escolher pasta</translation>
 <translation id="1272079795634619415">Parar</translation>
 <translation id="129553762522093515">Recentemente fechadas</translation>
-<translation id="1323735185997015385">Excluir</translation>
 <translation id="132683371494960526">Toque duas vezes para alterar a pasta pai.</translation>
 <translation id="1340643665687018190">Fechar menu</translation>
 <translation id="1375321115329958930">Senhas salvas</translation>
@@ -65,7 +64,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="2068952045031577364">Da última semana</translation>
 <translation id="2079545284768500474">Desfazer</translation>
 <translation id="209018056901015185">Site para computador</translation>
-<translation id="2100215774115172756">Sua lista de leitura está disponível off-line.</translation>
 <translation id="2103075008456228677">Abrir history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> itens movidos</translation>
 <translation id="2149973817440762519">Editar favoritos</translation>
@@ -85,7 +83,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="2572712655377361602">Uma política do dispositivo bloqueou o acesso às suas fotos</translation>
 <translation id="2584132361465095047">Adicionar conta…</translation>
 <translation id="2593774076813182497">Não é possível imprimir esta página.</translation>
-<translation id="2648803196158606475">Excluir lidas</translation>
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2684815431982545828">Nova guia</translation>
 <translation id="2690858294534178585">A câmera está sendo usada</translation>
@@ -104,25 +101,22 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="2898963176829412617">Nova pasta...</translation>
 <translation id="2903493209154104877">Endereços</translation>
 <translation id="2921219216347069551">Não é possível compartilhar a página</translation>
-<translation id="292639812446257861">Marcar como não lidas</translation>
 <translation id="2933759065870693102">Lanterna</translation>
 <translation id="2969979262385602596">Falha durante o login. Tente novamente mais tarde.</translation>
 <translation id="2989805286512600854">Abrir em uma nova guia</translation>
 <translation id="3024255823539804759">Do dia anterior</translation>
 <translation id="3037605927509011580">Ah, não!</translation>
 <translation id="3050311348724540835"><ph name="HISTORY_URL" /> não está disponível. Para acessar seu histórico de navegação, selecione "<ph name="SHOW_HISTORY" />" no menu de ferramentas.</translation>
-<translation id="3112556859945124369">Marcar...</translation>
 <translation id="3151924044251363314">Somente uma pessoa com sua senha longa pode ler seus dados criptografados. A senha longa não é enviada ou armazenada pelo Google. Se você esquecer sua senha longa ou desejar alterar essa configuração, será necessário redefinir a sincronização. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
-<translation id="3157684681743766797">Marcar tudo...</translation>
 <translation id="3172213052701798825">Google Smart Lock para senhas</translation>
 <translation id="3175081911749765310">Serviços da Web</translation>
 <translation id="3207960819495026254">Adicionada aos favoritos</translation>
 <translation id="3210163015918861891">A sincronização está desativada</translation>
-<translation id="3237561509210981547">Para adicionar uma página à sua lista de leitura, toque em <ph name="BEGIN_BOLD_FONT" />Compartilhar &gt; Ler mais tarde<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3240426699337459095">Link copiado</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> de <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Guias abertas</translation>
+<translation id="3289005573061089144">Importar dados?</translation>
 <translation id="3324193307694657476">Endereço 2</translation>
 <translation id="3329904751041170572">Não foi possível se conectar ao servidor.</translation>
 <translation id="3335947283844343239">Reabrir guia fechada</translation>
@@ -131,7 +125,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="3414292259312108062">O Chrome armazenará esta senha nas suas <ph name="BEGIN_LINK" />senhas salvas do Google<ph name="END_LINK" /> e a preencherá automaticamente para você, para que não precise se lembrar dela.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> minutos</translation>
 <translation id="3448016392200048164">Visualização dividida</translation>
-<translation id="3474068797193663261">Para adicionar uma página à sua lista de leitura, toque em <ph name="BEGIN_BOLD_FONT" />Menu &gt; Compartilhar &gt; Ler mais tarde<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3474649192738347024">Formulários preenchidos.</translation>
 <translation id="3478058380795961209">Mês de vencimento</translation>
 <translation id="3482959374254649722">Sincronizando suas guias...</translation>
@@ -190,7 +183,6 @@ Seus dados são criptografados com sua senha longa de sincronização. Informe-a
 <translation id="481968316161811770">Dados do site e arquivos "cookies"</translation>
 <translation id="4875622588773761625">Deseja que <ph name="PASSWORD_MANAGER_BRAND" /> atualize sua senha para este site?</translation>
 <translation id="4881695831933465202">Abrir</translation>
-<translation id="4904877109095351937">Marcar como lidas</translation>
 <translation id="4923459931733593730">Pagamento</translation>
 <translation id="4930268273022498155">Excluir dados já existentes. É possível recuperá-los voltando para a conta <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Ocorreu um problema ao compartilhar seu item.</translation>
@@ -368,7 +360,6 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="8428213095426709021">Configurações</translation>
 <translation id="8433678324664858900">Mostrar sugestões</translation>
 <translation id="8458397775385147834">1 item excluído</translation>
-<translation id="8487700953926739672">Disponível off-line</translation>
 <translation id="8503813439785031346">Nome de usuário</translation>
 <translation id="8517375800490286174">Licenças de código aberto</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> Guias <ph name="FIRST_VISIBLE_TAB" /> a <ph name="LAST_VISIBLE_TAB" /> de <ph name="NUMBER_OF_OPEN_TABS" /></translation>
@@ -378,7 +369,6 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="8605219856220328675">Fechar guia.</translation>
 <translation id="8620640915598389714">Editar</translation>
 <translation id="8636825310635137004">Para ver as guias dos seus outros dispositivos, ative a sincronização.</translation>
-<translation id="8654802032646794042">Cancelar</translation>
 <translation id="8680787084697685621">Os detalhes de login da conta estão desatualizados.</translation>
 <translation id="8699098509676302392">Adicionar endereço…</translation>
 <translation id="8721297211384281569">Menu Ferramentas</translation>

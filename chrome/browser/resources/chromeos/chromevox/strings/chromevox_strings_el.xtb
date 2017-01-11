@@ -177,7 +177,6 @@
 <translation id="2899328121302785497">{COUNT,plural, =1{αριστερό άγκιστρο}other{# αριστερά άγκιστρα}}</translation>
 <translation id="2911433807131383493">Άνοιγμα εκπαιδευτικού οδηγού ChromeVox</translation>
 <translation id="2932083475399492303">Εναλλαγή τύπου γραμμής μεταξύ δομικού ή διαρθρωτικού</translation>
-<translation id="2944762337049891859">Αυτόματη ανάγνωση σελίδας αφού ολοκληρωθεί η φόρτωση.</translation>
 <translation id="2964026537669811554">Επικεφαλίδα ομάδας</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{χαρακτήρας "tab"}other{# χαρακτήρες "tab"}}</translation>
 <translation id="2972078295414139404">Δεν υπάρχει προηγούμενος σύνδεσμος που έχετε επισκεφτεί.</translation>
@@ -308,7 +307,6 @@
 <translation id="3712520970944678024">Έλεγχος ομιλίας</translation>
 <translation id="3716845769494773620">Πολλαπλών γραμμών</translation>
 <translation id="3731746171184829332">Δεν υπάρχει προηγούμενη επικεφαλίδα.</translation>
-<translation id="3735039640698208086">Κατά την αναπαραγωγή ήχου…</translation>
 <translation id="3762198587642264450">Μετάβαση στο τέλος της τρέχουσας σειράς</translation>
 <translation id="3777255250339039212">ετικέτα 1</translation>
 <translation id="3793710123303304873">Έξοδος από το παράθυρο διαλόγου.</translation>
@@ -549,7 +547,6 @@
 <translation id="5876817486144482042">Μείωση έντασης ομιλίας</translation>
 <translation id="5887397643266327462">Οι υπότιτλοι braille ενεργοποιήθηκαν.</translation>
 <translation id="5891934789323004067">Πίνακας</translation>
-<translation id="5899860758576822363">Αναπαραγωγή σε χαμηλότερη ένταση κατά την εκφώνηση από το ChromeVox</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{σύμβολο "ίσον"}other{# σύμβολα "ίσον"}}</translation>
 <translation id="5939518447894949180">Επαναφορά</translation>
 <translation id="5948123859135882163">Εναλλαγή ερμηνείας μαθηματικών εκφράσεων μεταξύ συντακτικής και σημασιολογικής</translation>
@@ -582,7 +579,6 @@
 <translation id="6281876499889881039">Επόμενο παρόμοιο στοιχείο.</translation>
 <translation id="6282062888058716985">πλοήγηση</translation>
 <translation id="6290434000785343030">Δεν υπάρχει επόμενο σύνθετο πλαίσιο.</translation>
-<translation id="6305702903308659374">Αναπαραγωγή σε κανονική ένταση ακόμα και κατά την εκφώνηση από το ChromeVox</translation>
 <translation id="6307969636681130414">Έχει πατηθεί</translation>
 <translation id="6322856989298155004">Ήχοι</translation>
 <translation id="6324551002951139333">Έχει εντοπιστεί γραμματικό λάθος</translation>
@@ -698,7 +694,6 @@
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, ρυθμιστικό</translation>
 <translation id="7552432549459840808">Χρήσιμες συντομεύσεις Chrome</translation>
 <translation id="7579911500627256166">κουκκίδα <ph name="DOT" /></translation>
-<translation id="7591126877589047423">Χωρίς εστίαση. Πατήστε Control + N για να ανοίξετε ένα νέο παράθυρο.</translation>
 <translation id="7596919493010894443">διαγραφή επιλογής</translation>
 <translation id="7604026522577407655">Μετάβαση στην αρχή της τρέχουσας στήλης</translation>
 <translation id="7604451927827590395">κεφαλίδα ρόλου</translation>
@@ -774,7 +769,6 @@
 <translation id="8455868257606149352">Μέγιστο <ph name="X" /></translation>
 <translation id="84575901236241018">διαθέτει το κλειδί πρόσβασης, <ph name="KEY" /></translation>
 <translation id="847154984256717791">απασχολημένο</translation>
-<translation id="8476408756881832830">Παύση αναπαραγωγής κατά την εκφώνηση από το ChromeVox</translation>
 <translation id="8476508772960940536">επισκόπηση παραθύρου</translation>
 <translation id="8503360654911991865">Μείωση ευαισθησίας πλοήγησης</translation>
 <translation id="8520472399088452386">Κουμπί περιστροφής</translation>

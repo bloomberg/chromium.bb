@@ -1932,7 +1932,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="6770454900105963262">Laporkan maklumat tentang sesi kios aktif</translation>
 <translation id="6774533686631353488">Benarkan hos Pemesejan Asli tahap pengguna (dipasang tanpa kebenaran pentadbir).</translation>
 <translation id="6786747875388722282">Pelanjutan</translation>
-<translation id="6786967369487349613">Tetapkan direktori profil perayauan</translation>
 <translation id="6810445994095397827">Sekat JavaScript pada tapak ini</translation>
 <translation id="681446116407619279">Skim pengesahan yang disokong</translation>
 <translation id="6828905844648501476">Jika dasar ini ditetapkan kepada benar atau tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> akan membolehkan Tambah Orang daripada pengurus pengguna.
@@ -2109,7 +2108,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7249828445670652637">Dayakan sijil CA <ph name="PRODUCT_OS_NAME" /> pada apl ARC</translation>
 <translation id="7258823566580374486">Dayakan pengadangan hos akses jauh</translation>
 <translation id="7260277299188117560">Auto kemas kini p2p didayakan</translation>
-<translation id="7261252191178797385">Imej kertas dinding peranti</translation>
 <translation id="7267809745244694722">Kekunci media lalai kepada kekunci fungsi</translation>
 <translation id="7271085005502526897">Import halaman utama daripada penyemak imbas lalai pada kali pertama menjalankannya</translation>
 <translation id="7273823081800296768">Jika tetapan ini didayakan atau tidak dikonfigurasi, maka pengguna boleh memilih untuk memasangkan pelanggan dan hos pada masa sambungan, lantas menyingkirkan keperluan untuk memasukkan PIN setiap kali.
@@ -2199,15 +2197,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Sila ambil perhatian bahawa dasar ini bergantung pada tindanan pengesahan sijil sistem pengendalian yang membenarkan tandatangan SHA-1. Jika kemas kini OS mengubah cara pengendalian OS terhadap sijil SHA-1, dasar ini tidak berkuat kuasa lagi.  Selain itu, dasar ini bertujuan digunakan sebagai penyelesaian sementara bagi memberikan pihak syarikat lebih masa untuk beralih daripada SHA-1.  Dasar ini akan dialih keluar pada atau kira-kira 1 Januari 2019.
 
       Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, maka <ph name="PRODUCT_NAME" /> akan mengikut jadual penamatan SHA-1 yang telah diumumkan.</translation>
-<translation id="7589150663293249656">Mendayakan pembuatan salinan perayauan bagi data profil <ph name="PRODUCT_NAME" />.
-
-      Jika anda mendayakan tetapan ini, tetapan yang disimpan dalam profil <ph name="PRODUCT_NAME" /> seperti penanda halaman, data autolengkap, kata laluan dan sebagainya akan turut ditulis ke fail yang disimpan di folder profil pengguna Perayauan atau lokasi yang ditentukan oleh Pentadbir melalui dasar <ph name="ROAMINGPROFILELOCATION_POLICY_NAME" />.
-
-      Google Sync dilumpuhkan secara automatik apabila dasar ini didayakan.
-
-      Untuk mengelakkan kebocoran data yang tidak disengajakan, anda dinasihati supaya menetapkan dasar <ph name="SIGNINALLOWED_POLICY_NAME" /> kepada Palsu.
-
-      Jika dasar ini dilumpuhkan atau dibiarkan tidak ditetapkan, hanya profil setempat biasa akan digunakan.</translation>
 <translation id="7593523670408385997">Mengkonfigurasikan saiz cache yang <ph name="PRODUCT_NAME" /> akan gunakan untuk menyimpan fail cache pada cakera.
 
       Jika anda menetapkan dasar ini, <ph name="PRODUCT_NAME" /> akan menggunakan saiz cache yang diberikan tidak kira sama ada pengguna telah menyatakan bendera '--saiz-cache-cakera' atau tidak. Nilai yang dinyatakan dalam dasar ini bukan sempadan keras tetapi lebih kepada cadangan kepada sistem cache, sebarang nilai di bawah beberapa megabait adalah terlalu kecil dan akan dibulatkan kepada jumlah minimum yang munasabah.
@@ -2454,7 +2443,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika pengguna mendayakan penyegerakan, semua data ini disimpan dalam profil penyegerakan mereka sama seperti profil biasa. Mod inkognito turut tersedia jika tidak dilumpuhkan secara jelas oleh dasar.
 
       Jika dasar ini ditetapkan kepada dilumpuhkan atau dibiarkan tanpa ditetapkan, tindakan log masuk akan menghala ke profil biasa.</translation>
-<translation id="8158758865057576716">Dayakan pembuatan salinan perayauan bagi data profil <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8164246350636985940">Gelagat lalai untuk tapak yang tiada dalam sebarang pek kandungan.
 
           Dasar ini adalah untuk kegunaan dalaman oleh <ph name="PRODUCT_NAME" /> sendiri.</translation>
@@ -2751,13 +2739,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="8992176907758534924">Jangan benarkan mana-mana tapak untuk menunjukkan imej</translation>
 <translation id="9035964157729712237">ID sambungan untuk dikecualikan daripada senarai hitam</translation>
 <translation id="9042911395677044526">Membenarkan penolakan konfigurasi rangkaian digunakan untuk setiap pengguna pada peranti <ph name="PRODUCT_OS_NAME" />. Konfigurasi rangkaian ialah rentetan berformat JSON seperti yang ditakrifkan oleh format Konfigurasi Rangkaian Terbuka yang dihuraikan di <ph name="ONC_SPEC_URL" /></translation>
-<translation id="908115901708809140">Mengkonfigurasikan direktori yang akan digunakan oleh <ph name="PRODUCT_NAME" /> untuk menyimpan salinan perayauan profil.
-
-      Jika anda menetapkan dasar ini, <ph name="PRODUCT_NAME" /> akan menggunakan direktori yang disediakan untuk menyimpan salinan perayauan profil jika dasar <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> telah didayakan. Jika dasar <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> dilumpuhkan atau dibiarkan tidak ditetapkan, nilai yang disimpan dalam dasar ini tidak akan digunakan.
-
-      Lihat https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables untuk mendapatkan senarai pemboleh ubah yang boleh digunakan.
-
-      Jika dasar ini dibiarkan tidak ditetapkan, laluan profil perayauan lalai akan digunakan.</translation>
 <translation id="9084985621503260744">Menyatakan sama ada aktiviti video menjejaskan pengurusan kuasa</translation>
 <translation id="9088433379343318874">Dayakan penyedia kandungan pengguna di bawah seliaan</translation>
 <translation id="9088444059179765143">Konfigurasi kaedah pengesanan zon waktu automatik</translation>
@@ -2793,17 +2774,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika didayakan, tangkapan skrin tidak boleh diambil menggunakan pintasan papan kekunci atau API sambungan.
 
       Jika dilumpuhkan atau tidak ditentukan, pengambilan tangkapan skrin dibenarkan.</translation>
-<translation id="9213347477683611358">Mengkonfigurasikan imej kertas dinding tahap peranti yang dipaparkan pada skrin log masuk jika belum ada pengguna yang pernah log masuk ke peranti. Dasar ini ditetapkan dengan menentukan URL tempat peranti OS Chrome boleh memuat turun imej kertas dinding itu dan cincangan kriptografi digunakan untuk mengesahkan integriti muat turun itu. Imej mestilah dalam format JPEG dan saiznya tidak boleh melebihi 16MB. URL mestilah boleh diakses tanpa sebarang pengesahan. Imej kertas dinding dimuat turun dan dicache. Imej kertas dinding akan dimuat turun semula setiap kali URL atau cincangan berubah.
-
-      Dasar ini hendaklah ditetapkan sebagai rentetan yang menyatakan URL dan cincangan dalam format JSON, mis.,
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      Jika dasar kertas dinding peranti ditetapkan, peranti OS Chrome akan memuat turun dan menggunakan imej kertas dinding pada skrin log masuk jika belum ada pengguna yang pernah log masuk ke peranti. Sebaik sahaja pengguna log masuk, dasar kertas dinding pengguna akan berkuat kuasa.
-
-      Jika dasar kertas dinding peranti dibiarkan tidak ditetapkan dan jika dasar kertas dinding pengguna ditetapkan, dasar kertas dinding pengguna akan menentukan item yang perlu dipaparkan.</translation>
 <translation id="9217154963008402249">Kekerapan pemantauan bingkisan rangkaian</translation>
 <translation id="922540222991413931">Konfigurasi sambungan, apl dan sumber pemasangan skrip pengguna</translation>
 <translation id="924557436754151212">Import kata laluan yang disimpan daripada penyemak imbas lalai pada kali pertama menjalankannya</translation>

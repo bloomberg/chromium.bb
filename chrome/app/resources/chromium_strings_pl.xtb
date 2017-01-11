@@ -30,7 +30,6 @@
 <translation id="1881322772814446296">Logujesz się na zarządzane konto i przekazujesz jego administratorowi kontrolę nad swoim profilem Chromium. Twoje dane Chromium, takie jak aplikacje, zakładki, historia, hasła i inne ustawienia, zostaną trwale powiązane z użytkownikiem <ph name="USER_NAME" />. Będzie można je usunąć w Panelu kont Google, ale nie będzie można ich powiązać z innym kontem. Możesz też utworzyć nowy profil, by przechowywać swoje dotychczasowe dane Chromium osobno. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium nie odpowiada. Uruchomić go teraz ponownie?</translation>
 <translation id="1967743265616885482">Znane są przypadki konfliktu modułu o takiej nazwie z Chromium.</translation>
-<translation id="2008474315282236005">Spowoduje to usunięcie 1 elementu z tego urządzenia. Aby później odzyskać dane, zaloguj się w Chromium jako <ph name="USER_EMAIL" />.</translation>
 <translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Spowoduje to trwałe usunięcie co najmniej $1 elementu z tego urządzenia. Aby później odzyskać dane, zaloguj się w Chromium jako $2.}few{Spowoduje to trwałe usunięcie co najmniej $1 elementów z tego urządzenia. Aby później odzyskać dane, zaloguj się w Chromium jako $2.}many{Spowoduje to trwałe usunięcie co najmniej $1 elementów z tego urządzenia. Aby później odzyskać dane, zaloguj się w Chromium jako $2.}other{Spowoduje to trwałe usunięcie co najmniej $1 elementu z tego urządzenia. Aby później odzyskać dane, zaloguj się w Chromium jako $2.}}</translation>
 <translation id="2077129598763517140">Użyj akceleracji sprzętowej, gdy jest dostępna</translation>
 <translation id="2119636228670142020">System operacyjny &amp;Chromium – informacje</translation>
@@ -78,7 +77,6 @@
 <translation id="3312805357485578561">Chromium wykrył nietypowe zachowanie</translation>
 <translation id="331951419404882060">System operacyjny Chromium nie może zsynchronizować danych z powodu błędu logowania.</translation>
 <translation id="3360567213983886831">Pliki binarne Chromium</translation>
-<translation id="3474745554856756813">Spowoduje to usunięcie <ph name="ITEMS_COUNT" /> elementów z tego urządzenia. Aby później odzyskać dane, zaloguj się w Chromium jako <ph name="USER_EMAIL" />.</translation>
 <translation id="3509308970982693815">Zamknij wszystkie okna Chromium i spróbuj ponownie.</translation>
 <translation id="352783484088404971">Usuń z Chromium...</translation>
 <translation id="3549345495227188780">Pierwsze kroki z systemem operacyjnym Chromium</translation>
@@ -229,7 +227,6 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="7617377681829253106">Przeglądarka Chromium jest jeszcze lepsza</translation>
 <translation id="7641113255207688324">Chromium nie jest domyślną przeglądarką.</translation>
 <translation id="7729447699958282447">Chromium nie może zsynchronizować danych, ponieważ synchronizacja jest niedostępna w Twojej domenie.</translation>
-<translation id="7745317241717453663">Spowoduje to usunięcie danych przeglądania z tego urządzenia. Aby później odzyskać dane, zaloguj się w Chromium jako <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Instalator nie mógł utworzyć katalogu tymczasowego. Sprawdź, czy na dysku jest dość wolnego miejsca oraz sprawdź, czy posiadasz uprawnienia do instalowania programów.</translation>
 <translation id="7937630085815544518">Byłeś zalogowany w Chromium jako <ph name="USER_EMAIL_ADDRESS" />. Zaloguj się ponownie, korzystając z tego samego konta.</translation>
 <translation id="795025003224538582">Nie uruchamiaj ponownie</translation>

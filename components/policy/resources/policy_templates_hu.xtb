@@ -1803,7 +1803,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="6770454900105963262">Az aktív kioszkmunkamenetekkel kapcsolatos információk jelentése</translation>
 <translation id="6774533686631353488">Felhasználói szintű (rendszergazdai engedély nélkül telepített) natív üzenetváltási szerverek használatának engedélyezése.</translation>
 <translation id="6786747875388722282">Bővítmények</translation>
-<translation id="6786967369487349613">Barangolási profilcímtár beállítása</translation>
 <translation id="6810445994095397827">JavaScript letiltása ezeken a webhelyeken</translation>
 <translation id="681446116407619279">Támogatott hitelesítési sémák</translation>
 <translation id="6828905844648501476">Ha a házirend értéke igaz, vagy ha nincs beállítva, akkor a <ph name="PRODUCT_NAME" /> lehetővé teszi személyek hozzáadását a felhasználókezelőből.
@@ -1966,7 +1965,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="7249828445670652637">A(z) <ph name="PRODUCT_OS_NAME" /> által az ARC-alkalmazásoknak kiadott CA-tanúsítványok engedélyezése</translation>
 <translation id="7258823566580374486">Távoli hozzáférésű gazdagépek lefüggönyözésének engedélyezése</translation>
 <translation id="7260277299188117560">Az egyenrangú kapcsolatok automatikus frissítésének engedélyezése</translation>
-<translation id="7261252191178797385">Eszköz háttérképe</translation>
 <translation id="7267809745244694722">A médiabillentyűk alapértelmezés szerint a funkcióbillentyűk</translation>
 <translation id="7271085005502526897">Kezdőlap importálása az alapértelmezett böngészőből az első indításkor</translation>
 <translation id="7273823081800296768">Ha ez a beállítás engedélyezve van, vagy nincs konfigurálva, akkor a felhasználók párosíthatják a klienseket és a gazdagépeket a kapcsolódáskor, így nincs szükség minden alkalommal a PIN-kód megadására.
@@ -2052,15 +2050,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Felhívjuk figyelmét arra, hogy ez az irányelv az SHA-1-aláírásokat engedélyező operációs rendszer tanúsítványhitelesítési készletétől függ. Ha az operációs rendszer valamelyik frissítése módosítja az SHA-1-tanúsítványok kezelésének módját, akkor előfordulhat, hogy ez az irányelv a továbbiakban nem fog működni.  Továbbá ez az irányelv csak ideiglenes megoldásként szolgál, hogy a vállalatoknak több idejük legyen áttérni az SHA-1-ről.  Ez az irányelv 2019. január 1-jén eltávolításra kerül.
 
       Ha az irányelv nincs beállítva, vagy „hamis” értékre van állítva, akkor a(z) <ph name="PRODUCT_NAME" /> követi az SHA-1 nyilvánosan közzétett megszüntetési időpontját.</translation>
-<translation id="7589150663293249656">Lehetővé teszi barangolási példányok létrehozását a(z) <ph name="PRODUCT_NAME" /> profiladatai számára.
-
-      Ha engedélyezi ezt a beállítást, a rendszer a(z) <ph name="PRODUCT_NAME" />-profilokban, például a könyvjelzőkben, automatikus kitöltési adatokban, jelszavakban stb. tárolt beállításokat a Barangoló felhasználói profil mappájában, illetve a rendszergazda által, a(z) <ph name="ROAMINGPROFILELOCATION_POLICY_NAME" /> irányelvének megfelelően megadott helyen tárolt fájlba is beírja.
-
-      Az irányelv engedélyezésekor a rendszer automatikusan letiltja a Google Sync szolgáltatást.
-
-      Az esetleges adatszivárgások megelőzése érdekében célszerű továbbá a(z) <ph name="SIGNINALLOWED_POLICY_NAME" /> irányelv értékét hamisra állítani.
-
-      Ha ez az irányelv le van tiltva, vagy ha nincs beállítva, a rendszer kizárólag a normál helyi profilokat fogja használni.</translation>
 <translation id="7593523670408385997">Konfigurálja a gyorsítótár méretét, amelyet a(z) <ph name="PRODUCT_NAME" /> arra használ, hogy a gyorsítótárazott fájlokat a merevlemezen tárolja.
 
       Ha beállítja ezt a házirendet, a(z) <ph name="PRODUCT_NAME" /> attól függetlenül használni fogja a megadott méretű gyorsítótárat, hogy a felhasználó megadta-e a „--disk-cache-size” jelölőt. A házirendben meghatározott érték nem abszolút határ, inkább egy javaslat a gyorsítótárazó rendszer számára. A néhány megabájt alatti, túl kicsi értékeket a rendszer automatikusan felkerekíti egy használható minimumra.
@@ -2292,7 +2281,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha a felhasználó engedélyezte a szinkronizálást, akkor a normál profilokhoz hasonlóan ezek az adatok is megmaradnak a szinkronizálási profiljában. Az inkognitómód is használható, ha a rá vonatkozó házirend kifejezetten le nem tiltja.
 
       Ha a házirend le van tiltva, vagy ha nincs beállítva, akkor a bejelentkezés normál profilhoz vezet.</translation>
-<translation id="8158758865057576716">Lehetővé teszi barangolási példányok létrehozását a(z) <ph name="PRODUCT_NAME" /> profiladatai számára.</translation>
 <translation id="8164246350636985940">A nem tartalomcsomagban lévő fájlok alapértelmezett viselkedése.
 
           Ez a házirend belső használatra készült a <ph name="PRODUCT_NAME" /> számára.</translation>
@@ -2567,13 +2555,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="8992176907758534924">Egy webhely sem jeleníthet meg képeket</translation>
 <translation id="9035964157729712237">A feketelista alól kivételt képező bővítményazonosítók.</translation>
 <translation id="9042911395677044526">Lehetővé teszi a hálózati konfiguráció push módszerrel történő alkalmazását <ph name="PRODUCT_OS_NAME" /> eszközre. A hálózati konfiguráció a JSON formátumú karakterlánc által meghatározott Open Network Configuration formában leírt karakterlánc, amely a következő helyen van meghatározva: <ph name="ONC_SPEC_URL" /></translation>
-<translation id="908115901708809140">Beállítja a címtárat, amelyet a(z) <ph name="PRODUCT_NAME" /> a profilok barangolási példányának tárolására használ majd.
-
-      Ha beállítja ezt az irányelvet, a(z) <ph name="PRODUCT_NAME" /> a megadott címtárat fogja használni a profilok barangolási példányának tárolására, ha a(z) <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> irányelv engedélyezve volt. Ha a(z) <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> irányelv le van tiltva, vagy ha nincs beállítva, az ebben az irányelvben tárolt értéket nem használja a rendszer.
-
-      A felhasználható változók listáját a https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables webhelyen találja.
-
-      Ha az irányelv nincs beállítva, a rendszer az alapértelmezett barangolási profil elérési útját fogja használni.</translation>
 <translation id="9084985621503260744">Megadja, hogy a videotevékenység hatással van-e az energiagazdálkodásra</translation>
 <translation id="9088433379343318874">Felügyelt felhasználó tartalomszolgáltatójának engedélyezése</translation>
 <translation id="9088444059179765143">Az automatikus időzóna-érzékelés módszerének konfigurálása</translation>
@@ -2602,17 +2583,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha engedélyezve van, nem lehet képernyőképeket készíteni billentyűkódokkal vagy bővítmény API-kkal.
 
       Ha le van tiltva vagy nincs megadva, akkor lehetséges képernyőképek készítése.</translation>
-<translation id="9213347477683611358">Beállítja az eszközszintű háttérképet, amely akkor jelenik meg a bejelentkezési képernyőn, ha még nem jelentkezett be felhasználó az eszközre. Az irányelv annak az URL-nek a megadásával állítható be, ahonnan a Chrome OS-eszköz letöltheti a háttérképet és a letöltés integritásának ellenőrzésére szolgáló kriptográfiai hash-értéket. A képnek JPEG formátumban kell lennie, mérete pedig nem haladhatja meg a 16 MB-ot. Az URL-nek hitelesítés nélkül is elérhetőnek kell lennie. A letöltés után a háttérkép a gyorsítótárba kerül. A rendszer az URL vagy a hash-érték változása esetén minden esetben újból letölti a képet.
-
-      Az irányelvet olyan karakterláncként kell megadni, amely JSON formátumban fejezi ki az URL-t és a hash-értéket, például:
-      {
-        „url”: „https://example.com/eszkoz_hatterkep.jpg”,
-        „hash”: „examplewallpaperhash”
-      }
-
-      Ha az eszköz háttérképekre vonatkozó irányelve van beállítva, a Chrome OS-eszköz letölti és felhasználja a háttérképet a bejelentkezési képernyőn, ha még nem jelentkezett be felhasználó az eszközre. A felhasználó bejelentkezése után a felhasználó háttérképekre vonatkozó irányelve lép érvénybe.
-
-      Ha az eszköz háttérképekre vonatkozó irányelve nincs beállítva, a felhasználó háttérképekre vonatkozó irányelvén múlik, hogy mi jelenik meg, ha a felhasználó háttérképekre vonatkozó irányelve van beállítva.</translation>
 <translation id="9217154963008402249">Az ellenőrző hálózati csomagok gyakorisága</translation>
 <translation id="922540222991413931">Bővítmény-, alkalmazás- és felhasználói szkripttelepítési források konfigurálása</translation>
 <translation id="924557436754151212">Mentett jelszavak importálása az alapértelmezett böngészőből az első indításkor</translation>

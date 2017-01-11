@@ -82,7 +82,6 @@
 <translation id="1753706481035618306">מספר דף</translation>
 <translation id="1768211456781949159">‏<ph name="BEGIN_LINK" />נסה להפעיל את אבחון הרשת של Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">עדכן את משפט-הסיסמה של הסינכרון.</translation>
-<translation id="1787142507584202372">כאן מופיעות הכרטיסיות שאתה פותח</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803678881841855883">‏גלישה בטוחה של Google <ph name="BEGIN_LINK" />זיהתה לאחרונה תוכנה זדונית<ph name="END_LINK" /> ב-<ph name="SITE" />. לעיתים קורה שאתרים בטוחים נדבקים בתוכנה זדונית. מקור התוכן הזדוני הוא <ph name="SUBRESOURCE_HOST" />. זהו מפיץ ידוע של תוכנה זדונית. <ph name="BEGIN_LEARN_MORE_LINK" />למידע נוסף<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">הבקשה או הפרמטרים של הבקשה אינם חוקיים</translation>
@@ -175,7 +174,6 @@
 <translation id="2712118517637785082">ניסית להגיע אל <ph name="DOMAIN" />, אך האישור שהשרת הציג בוטל על-ידי המנפיק שלו. פירוש הדבר הוא שאין לתת אמון באישורי האבטחה שהשרת הציג. ייתכן שאתה מתקשר עם תוקף. <ph name="BEGIN_LEARN_MORE_LINK" />למידע נוסף<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="2712173769900027643">בקש רשות</translation>
 <translation id="2713444072780614174">לבן</translation>
-<translation id="2720342946869265578">קרוב</translation>
 <translation id="2721148159707890343">הבקשה בוצעה בהצלחה</translation>
 <translation id="2728127805433021124">האישור של השרת נחתם באמצעות אלגוריתם של חתימה חלשה.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />מפעיל את אבחון הקישוריות<ph name="END_LINK" /></translation>
@@ -372,7 +370,6 @@
 <translation id="4728558894243024398">פלטפורמה</translation>
 <translation id="4744603770635761495">נתיב להפעלה</translation>
 <translation id="4756388243121344051">&amp;היסטוריה</translation>
-<translation id="4759118997339041434">המילוי האוטומטי של תשלומים הושבת</translation>
 <translation id="4764776831041365478">ייתכן שדף האינטרנט בכתובת <ph name="URL" /> אינו פעיל זמנית, או שהועבר לכתובת אינטרנט חדשה לצמיתות.</translation>
 <translation id="4771973620359291008">‏אירעה שגיאה לא מוכרת.
 
@@ -536,6 +533,7 @@ Del</translation>
 <translation id="6644283850729428850">מדיניות זו אינה בתוקף.</translation>
 <translation id="6652240803263749613">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; מערכת ההפעלה של המחשב לא סומכת על אישור האבטחה שלו. ייתכן שהסיבה לכך היא הגדרה שגויה או שתוקף מיירט את החיבור שלך. <ph name="BEGIN_LEARN_MORE_LINK" />למידע נוסף<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="6656103420185847513">ערוך תיקייה</translation>
+<translation id="6660210980321319655">דיווח אוטומטי <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">‏האם להסיר מ-Chromium הצעות לטפסים?</translation>
 <translation id="6685834062052613830">צא והשלם את ההגדרה</translation>
 <translation id="6710213216561001401">הקודם</translation>
@@ -682,7 +680,6 @@ Del</translation>
 <translation id="8150722005171944719">הקובץ הנמצא ב-<ph name="URL" /> לא ניתן לקריאה. ייתכן שהקובץ הוסר או הועבר, או שהרשאות הקובץ מונעות גישה אליו.</translation>
 <translation id="8194797478851900357">&amp;ביטול העברה</translation>
 <translation id="8201077131113104583">כתובת אתר לא חוקית לעדכון עבור תוסף עם המזהה "<ph name="EXTENSION_ID" />".</translation>
-<translation id="8202097416529803614">סיכום הזמנה</translation>
 <translation id="8218327578424803826">מיקום מוקצה:</translation>
 <translation id="8225771182978767009">האדם שהגדיר את המחשב הזה בחר לחסום את האתר הזה.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
@@ -728,7 +725,6 @@ Del</translation>
 <translation id="8740359287975076522">‏לא ניתן היה למצוא את &lt;abbr id="dnsDefinition"&gt;כתובת ה-DNS&lt;/abbr&gt; של <ph name="HOST_NAME" />. מאבחן את הבעיה.</translation>
 <translation id="8790007591277257123">&amp;ביצוע מחדש של מחיקה</translation>
 <translation id="8798099450830957504">ברירת מחדל</translation>
-<translation id="8800988563907321413">כאן מופיעות הצעות עבורך למקומות קרובים</translation>
 <translation id="8804164990146287819">מדיניות פרטיות</translation>
 <translation id="8820817407110198400">סימניות</translation>
 <translation id="8834246243508017242">הפעל מילוי אוטומטי באמצעות 'אנשי קשר'…</translation>

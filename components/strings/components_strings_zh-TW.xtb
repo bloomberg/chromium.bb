@@ -82,7 +82,6 @@
 <translation id="1753706481035618306">頁碼</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />嘗試執行 Windows 網路診斷<ph name="END_LINK" />。</translation>
 <translation id="1783075131180517613">請更新您的同步通關密語。</translation>
-<translation id="1787142507584202372">這裡會顯示你最近開啟的分頁</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803678881841855883">Google 安全瀏覽功能最近在 <ph name="SITE" /> 上<ph name="BEGIN_LINK" />偵測到惡意軟體<ph name="END_LINK" />。即使是平常可以安全使用的網站，有時也會遭到惡意軟體感染。這些惡意內容來自已知的惡意軟體散佈網站 <ph name="SUBRESOURCE_HOST" />。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1821930232296380041">要求或要求參數無效</translation>
@@ -175,7 +174,6 @@
 <translation id="2712118517637785082">你嘗試連上 <ph name="DOMAIN" />，但伺服器的憑證已遭到核發單位撤銷。在這種情況下，請勿信任伺服器提供的安全性憑證。你的連線對象可能是攻擊者的電腦。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2712173769900027643">要求權限</translation>
 <translation id="2713444072780614174">白色</translation>
-<translation id="2720342946869265578">鄰近網頁</translation>
 <translation id="2721148159707890343">要求成功</translation>
 <translation id="2728127805433021124">伺服器憑證是以防護力較弱的簽章演算法進行簽署。</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />執行連線診斷<ph name="END_LINK" /></translation>
@@ -372,7 +370,6 @@
 <translation id="4728558894243024398">平台</translation>
 <translation id="4744603770635761495">可執行檔的路徑</translation>
 <translation id="4756388243121344051">記錄(&amp;H)</translation>
-<translation id="4759118997339041434">付款資訊自動填入功能已停用</translation>
 <translation id="4764776831041365478"><ph name="URL" /> 的網頁可能暫時無法使用或被永久移至新網址。</translation>
 <translation id="4771973620359291008">發生不明的錯誤。</translation>
 <translation id="4800132727771399293">請檢查您的有效期限和信用卡安全碼，然後再試一次</translation>
@@ -531,6 +528,7 @@
 <translation id="6644283850729428850">這項政策已遭取代。</translation>
 <translation id="6652240803263749613">這個伺服器無法證明所在網域是 <ph name="DOMAIN" />；電腦的作業系統不信任伺服器的安全性憑證。這可能是因為設定錯誤，或是有攻擊者攔截你的連線。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6656103420185847513">編輯資料夾</translation>
+<translation id="6660210980321319655">已自動回報 (<ph name="CRASH_TIME" />)</translation>
 <translation id="6671697161687535275">要從 Chromium 中移除表單填寫建議嗎？</translation>
 <translation id="6685834062052613830">請登出並完成設定程序</translation>
 <translation id="6710213216561001401">返回</translation>
@@ -677,7 +675,6 @@
 <translation id="8150722005171944719">無法讀取位於 <ph name="URL" /> 的檔案。這個檔案可能已遭移除或移動位置，或者檔案權限為禁止存取。</translation>
 <translation id="8194797478851900357">復原移動(&amp;U)</translation>
 <translation id="8201077131113104583">擴充功能 (ID：「<ph name="EXTENSION_ID" />」) 的更新網址無效。</translation>
-<translation id="8202097416529803614">訂單摘要</translation>
 <translation id="8218327578424803826">指派的位置：</translation>
 <translation id="8225771182978767009">設定這部電腦的使用者選擇封鎖這個網站。</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />、<ph name="TYPE_2" /></translation>
@@ -723,7 +720,6 @@
 <translation id="8740359287975076522">找不到 <ph name="HOST_NAME" /> 的 &lt;abbr id="dnsDefinition"&gt;DNS 位址&lt;/abbr&gt;，正在診斷問題。</translation>
 <translation id="8790007591277257123">重做刪除(&amp;R)</translation>
 <translation id="8798099450830957504">預設</translation>
-<translation id="8800988563907321413">這裡會顯示系統建議你瀏覽的鄰近網頁</translation>
 <translation id="8804164990146287819">隱私權政策</translation>
 <translation id="8820817407110198400">書籤</translation>
 <translation id="8834246243508017242">啟用「使用聯絡人資料自動填入」功能…</translation>

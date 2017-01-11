@@ -1784,7 +1784,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6770454900105963262">Ofereix informació de les sessions de quiosc actives</translation>
 <translation id="6774533686631353488">Permetre amfitrions de missatgeria nadius per a l'usuari (instal·lació sense permisos d'administrador)</translation>
 <translation id="6786747875388722282">Extensions</translation>
-<translation id="6786967369487349613">Estableix el directori de perfils itinerants</translation>
 <translation id="6810445994095397827">Bloqueja JavaScript en aquests llocs</translation>
 <translation id="681446116407619279">Esquemes d'autenticació compatibles</translation>
 <translation id="6828905844648501476">Si aquesta política s'estableix en "true" o no es configura, <ph name="PRODUCT_NAME" /> permetrà que s'utilitzi l'opció Afegeix una persona des de l'administrador d'usuaris.
@@ -1944,7 +1943,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7249828445670652637">Activa l'ús de certificats de CA de <ph name="PRODUCT_OS_NAME" /> a les aplicacions ARC</translation>
 <translation id="7258823566580374486">Activa l'ocultació d'amfitrions d'accés remot</translation>
 <translation id="7260277299188117560">Actualització automàtica de P2P activada</translation>
-<translation id="7261252191178797385">Imatge de fons de pantalla del dispositiu</translation>
 <translation id="7267809745244694722">De manera predeterminada, les tecles multimèdia actuen com les tecles de funció.</translation>
 <translation id="7271085005502526897">Importació de la pàgina d'inici des del navegador predeterminat en la primera execució</translation>
 <translation id="7273823081800296768">Si aquesta configuració està activada o no configurada, els usuaris podran optar per emparellar clients i amfitrions en el temps de connexió, amb la qual cosa ja no s'haurà d'introduir el PIN cada vegada.
@@ -2033,15 +2031,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Tingues en compte que aquesta política depèn que la pila de verificació de certificats del sistema operatiu admeti signatures SHA-1. Si una actualització del SO canvia la gestió de certificats SHA-1, és possible que aquesta política ja no tingui efecte. A més, aquesta política és una solució temporal per donar més temps a les empreses per desvincular-se d'SHA-1, i se suprimirà l'1 de gener del 2019 o un dia proper a aquesta data.
 
       Si aquesta política no es defineix o es defineix com a "false", <ph name="PRODUCT_NAME" /> seguirà el programa de desactivació d'SHA-1 anunciat públicament.</translation>
-<translation id="7589150663293249656">Permet crear còpies itinerants de les dades de perfil que tingui <ph name="PRODUCT_NAME" />.
-
-      Si actives aquesta opció, les opcions de configuració emmagatzemades als perfils que hi ha a <ph name="PRODUCT_NAME" />, com ara les adreces d'interès, les dades d'emplenament automàtic o les contrasenyes, entre d'altres, també s'introduiran en un fitxer emmagatzemat a la carpeta Itinerància del perfil de l'usuari o a la ubicació especificada per l'Administrador mitjançant la política <ph name="ROAMINGPROFILELOCATION_POLICY_NAME" />.
-
-      Google Sync es desactiva automàticament quan s'activa aquesta política.
-
-      Perquè no es filtrin dades accidentalment, es recomana establir la política <ph name="SIGNINALLOWED_POLICY_NAME" /> també com a falsa.
-
-      Si aquesta política es desactiva o no s'estableix, només s'utilitzaran els perfils locals habituals.</translation>
 <translation id="7593523670408385997">Defineix la mida de memòria cau que <ph name="PRODUCT_NAME" /> utilitzarà per emmagatzemar fitxers de la memòria cau al disc.
 
       Si definiu aquesta política, <ph name="PRODUCT_NAME" /> utilitzarà la mida de memòria cau proporcionada, tant si l'usuari ha marcat "--disk-cache-size" com si no. El valor que s'especifica en aquesta política no és un límit estricte, és més aviat un suggeriment per al sistema de memòria cau; qualsevol valor per sota d'uns quants megabytes és massa petit i s'arrodonirà a l'alça per arribar a un mínim acceptable.
@@ -2273,7 +2262,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
        Si l'usuari ha activat la sincronització, totes aquestes dades es conservaran al seu perfil de sincronització, igual que es fa amb els perfils normals. El mode d'incògnit també estarà disponible si la política no el desactiva expressament.
 
       Si la política s'estableix com a desactivada o no s'estableix, l'inici de sessió donarà accés a perfils normals.</translation>
-<translation id="8158758865057576716">Permet crear còpies itinerants de les dades de perfil que tingui <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8164246350636985940">Comportament predeterminat dels llocs no inclosos en paquets de contingut.
 
 
@@ -2527,13 +2515,6 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8992176907758534924">No permetis que cap lloc mostri imatges</translation>
 <translation id="9035964157729712237">ID de les extensions que s'han d'excloure de la llista negra</translation>
 <translation id="9042911395677044526">Permet aplicar la configuració de la xarxa per usuari a un dispositiu <ph name="PRODUCT_OS_NAME" />. La configuració de la xarxa és una cadena en format JSON, segons la definició del format de la configuració de xarxa oberta que apareix a <ph name="ONC_SPEC_URL" /></translation>
-<translation id="908115901708809140">Configura el directori que utilitzarà <ph name="PRODUCT_NAME" /> per emmagatzemar la còpia itinerant dels perfils.
-
-      Si estableixes aquesta política, <ph name="PRODUCT_NAME" /> utilitzarà el directori proporcionat per emmagatzemar-hi la còpia itinerant del perfils si la política <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> s'ha activat. Si la política <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> es desactiva o no s'estableix, el valor que s'hi hagi emmagatzemat no s'utilitzarà.
-
-      Per veure una llista de les variables que es poden utilitzar, consulta https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
-
-      Si aquesta política no s'estableix, s'utilitzarà el camí del perfil itinerant predeterminat.</translation>
 <translation id="9084985621503260744">Especifica si l'activitat de vídeo afecta la gestió d'alimentació</translation>
 <translation id="9088433379343318874">Activa el proveïdor de contingut de l'usuari supervisat</translation>
 <translation id="9088444059179765143">Configura el mètode de detecció automàtica de la zona horària</translation>
@@ -2562,17 +2543,6 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
       Si activeu aquest paràmetre, les captures de pantalla no es poden fer amb les tecles de drecera ni amb les API de l'extensió.
 
       Si desactiveu o no especifiqueu aquest paràmetre, es permetran les captures de pantalla.</translation>
-<translation id="9213347477683611358">Configura la imatge de fons de la pantalla d'inici de sessió d'un dispositiu si ningú no hi ha iniciat la sessió. Per establir la política, cal especificar l'URL que pot fer servir el dispositiu de Chrome OS per baixar la imatge i un resum criptogràfic per verificar la integritat de la baixada.
-
-      La política s'ha d'especificar en forma de cadena amb l'URL i el resum en format JSON. Per exemple:
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      Si la política de fons de pantalla del dispositiu s'estableix, el dispositiu de Chrome OS baixarà la imatge i la farà servir a la pantalla d'inici de sessió si ningú no ha iniciat la sessió. Un cop que un usuari l'hagi iniciada, la política de fons de pantalla de l'usuari s'executarà.
-
-      Si la política de fons de pantalla del dispositiu no s'estableix, la política de fons de pantalla de l'usuari determinarà el que es mostra si està establerta. </translation>
 <translation id="9217154963008402249">Freqüència dels paquets de xarxa de supervisió</translation>
 <translation id="922540222991413931">Configura fonts d'instal·lació d'extensions, d'aplicacions i de scripts d'usuari</translation>
 <translation id="924557436754151212">Importació de les contrasenyes desades des del navegador predeterminat en la primera execució</translation>

@@ -1803,7 +1803,6 @@
 <translation id="6770454900105963262">回報運作中資訊站工作階段相關資訊</translation>
 <translation id="6774533686631353488">允許使用者層級的內建訊息傳遞主機 (無管理員授權情況下安裝)。</translation>
 <translation id="6786747875388722282">擴充功能</translation>
-<translation id="6786967369487349613">設定漫遊設定檔目錄</translation>
 <translation id="6810445994095397827">封鎖這些網站的 JavaScript</translation>
 <translation id="681446116407619279">支援的驗證機制</translation>
 <translation id="6828905844648501476">如果將這項政策設為 True 或未設定，<ph name="PRODUCT_NAME" /> 將允許從使用者管理工具新增使用者。
@@ -1962,7 +1961,6 @@
 <translation id="7249828445670652637">允許 ARC 應用程式使用「<ph name="PRODUCT_OS_NAME" />」CA 憑證</translation>
 <translation id="7258823566580374486">啟用遠端存取主機遮幕</translation>
 <translation id="7260277299188117560">已啟用自動更新 P2P</translation>
-<translation id="7261252191178797385">裝置桌布圖片</translation>
 <translation id="7267809745244694722">媒體鍵預設為功能鍵</translation>
 <translation id="7271085005502526897">第一次執行時從預設瀏覽器匯入首頁</translation>
 <translation id="7273823081800296768">不論這項政策處於啟用或未設定的狀態，使用者都可以選擇讓用戶端與主機在連線時自動配對，不需要每次都輸入 PIN。
@@ -2048,15 +2046,6 @@
       請注意，這項政策取決於允許 SHA-1 簽名的作業系統憑證驗證堆疊。如果作業系統更新變更了作業系統的 SHA-1 憑證處理方式，這項政策可能就會失效。此外，這項政策是暫時性的解決方案，目的是讓使用 SHA-1 憑證的企業有更多時間尋找其他解決方案。我們將於 2019 年 1 月 1 日左右移除這項政策。
 
       如果未設定這項政策，或是將這項政策設為 false，<ph name="PRODUCT_NAME" /> 將會遵循公開宣佈的 SHA-1 淘汰時間表。</translation>
-<translation id="7589150663293249656">允許建立 <ph name="PRODUCT_NAME" /> 設定檔資料的漫遊複本。
-
-      如果啟用這項設定，系統會將儲存在 <ph name="PRODUCT_NAME" /> 設定檔中的設定 (例如書籤、自動填入資料、密碼等等) 一併寫入儲存在漫遊使用者設定檔資料夾中的檔案，或是管理員透過 <ph name="ROAMINGPROFILELOCATION_POLICY_NAME" /> 政策指定的位置。
-
-      啟用這項政策時，Google Sync 會自動遭到停用。
-
-      為避免意外洩漏資料，建議你同時將 <ph name="SIGNINALLOWED_POLICY_NAME" /> 政策設為 False。
-
-      如果停用或未設定這項政策，系統只會使用一般本機設定檔。</translation>
 <translation id="7593523670408385997">設定快取大小，供 <ph name="PRODUCT_NAME" /> 在磁碟中儲存快取檔案時套用。
 
       如果設定這項政策，則不論使用者是否指定「--disk-cache-size」參數，<ph name="PRODUCT_NAME" /> 都會使用政策提供的快取大小。在這項政策中指定的值是對快取系統的建議值，而非不可變動的界限。如果是不到幾 MB 的值，由於太小的緣故，系統會進位到合適的最小值。
@@ -2287,7 +2276,6 @@
       如果使用者啟用了同步處理功能，這些資料會全部保留在使用者的同步處理設定檔中，就像一般設定檔一樣。如果政策並未明確指定停用無痕模式，那麼使用者也能使用無痕模式。
 
       如果將這項政策設為停用或不予設定，登入時會導向一般設定檔。</translation>
-<translation id="8158758865057576716">允許建立 <ph name="PRODUCT_NAME" /> 設定檔資料的漫遊複本。</translation>
 <translation id="8164246350636985940">非內容套件內網站的預設行為。
 
           這項政策僅供 <ph name="PRODUCT_NAME" /> 內部使用。</translation>
@@ -2526,13 +2514,6 @@
 <translation id="8992176907758534924">不允許任何網站顯示圖片</translation>
 <translation id="9035964157729712237">要從黑名單上移除的擴充功能 ID</translation>
 <translation id="9042911395677044526">允許將網路設定按照使用者套用至安裝了 <ph name="PRODUCT_OS_NAME" /> 的裝置。本網路設定是由開放網路設定格式 (網址為：<ph name="ONC_SPEC_URL" />) 所定義的 JSON 格式字串。</translation>
-<translation id="908115901708809140">設定 <ph name="PRODUCT_NAME" /> 用於儲存設定檔漫遊複本的目錄。
-
-      設定這項政策後，如果啟用 <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> 政策，<ph name="PRODUCT_NAME" /> 將使用你所提供的目錄儲存設定檔的漫遊複本。如果停用或未設定 <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> 政策，系統則不會使用這項政策所儲存的值。
-
-      如需可使用的變數清單，請參閱 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
-
-      如果未設定這項政策，系統會使用預設的漫遊設定檔路徑。</translation>
 <translation id="9084985621503260744">指定會影響電源管理的視訊活動</translation>
 <translation id="9088433379343318874">啟用受監管的使用者內容提供者</translation>
 <translation id="9088444059179765143">設定自動偵測時區方式</translation>
@@ -2561,17 +2542,6 @@
       如果您啟用這項設定，就無法透過鍵盤快速鍵或擴充功能 API 擷取螢幕畫面。
 
       如果您停用這項設定或未指定，則可擷取螢幕畫面。</translation>
-<translation id="9213347477683611358">設定還沒有任何使用者登入裝置時，登入畫面顯示的裝置層級桌布圖片。如要設定這項政策，請指定 Chrome 作業系統裝置可下載桌布圖片的網址，以及用於驗證下載完整性的加密編譯雜湊值。圖片必須為 JPEG 格式，且大小不得超過 16MB。網址則必須可供直接存取，不必經過任何驗證。系統會下載並快取桌布圖片，每當網址或雜湊值有所變更即重新下載。
-
-      指定政策時，請使用 JSON 格式的字串來表示網址和雜湊值。範例如下：
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      設定這項裝置桌布政策後，如果還沒有任何使用者登入裝置，Chrome 作業系統裝置將下載並使用桌布圖片 (顯示在登入畫面)。一旦使用者登入裝置，使用者的桌布政策就會生效。
-
-      如果未設定這項裝置桌布政策，則會由使用者的桌布政策 (如有設定) 決定要顯示的圖片。</translation>
 <translation id="9217154963008402249">監控網路封包的傳送頻率</translation>
 <translation id="922540222991413931">設定擴充功能、應用程式和使用者指令碼安裝來源</translation>
 <translation id="924557436754151212">第一次執行時從預設瀏覽器匯入已儲存的密碼</translation>

@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">Избор директоријума</translation>
 <translation id="1272079795634619415">Заустави</translation>
 <translation id="129553762522093515">Недавно затворено</translation>
-<translation id="1323735185997015385">Избриши</translation>
 <translation id="132683371494960526">Додирните двапут да бисте променили надређени директоријум.</translation>
 <translation id="1340643665687018190">Затвори мени</translation>
 <translation id="1375321115329958930">Сачуване лозинке</translation>
@@ -64,7 +63,6 @@
 <translation id="2068952045031577364">Претходна недеља</translation>
 <translation id="2079545284768500474">Опозови</translation>
 <translation id="209018056901015185">Захтевај сајт за рачунар</translation>
-<translation id="2100215774115172756">Листа за читање је доступна офлајн.</translation>
 <translation id="2103075008456228677">Отвори history.google.com</translation>
 <translation id="2116625576999540962">Број премештених ставки је <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="2149973817440762519">Измените обележивач</translation>
@@ -84,7 +82,6 @@
 <translation id="2572712655377361602">Смернице за уређај су блокирале приступ сликама</translation>
 <translation id="2584132361465095047">Додај налог…</translation>
 <translation id="2593774076813182497">Није могуће штампати ову страницу.</translation>
-<translation id="2648803196158606475">Избриши прочитано</translation>
 <translation id="2653659639078652383">Пошаљи</translation>
 <translation id="2684815431982545828">Нова картица</translation>
 <translation id="2690858294534178585">Камера се користи</translation>
@@ -103,25 +100,22 @@
 <translation id="2898963176829412617">Нови директоријум...</translation>
 <translation id="2903493209154104877">Адресе</translation>
 <translation id="2921219216347069551">Дељење странице није могуће</translation>
-<translation id="292639812446257861">Означи као непрочитано</translation>
 <translation id="2933759065870693102">Блиц</translation>
 <translation id="2969979262385602596">Пријављивање није успело. Пробајте поново касније.</translation>
 <translation id="2989805286512600854">Отвори у новој картици</translation>
 <translation id="3024255823539804759">Претходни дан</translation>
 <translation id="3037605927509011580">О, не!</translation>
 <translation id="3050311348724540835">URL <ph name="HISTORY_URL" /> није доступан. Да бисте приступили историји прегледања, изаберите „<ph name="SHOW_HISTORY" />“ у менију алатки.</translation>
-<translation id="3112556859945124369">Означи…</translation>
 <translation id="3151924044251363314">Само неко ко има приступну фразу може да чита шифроване податке. Приступна фраза се не шаље Google-у нити је он чува. Ако заборавите приступну фразу или желите да промените ово подешавање, треба да ресетујете синхронизацију. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
-<translation id="3157684681743766797">Означи све…</translation>
 <translation id="3172213052701798825">Google Smart Lock за лозинке</translation>
 <translation id="3175081911749765310">Веб-услуге</translation>
 <translation id="3207960819495026254">Обележено</translation>
 <translation id="3210163015918861891">Синхронизација је искључена</translation>
-<translation id="3237561509210981547">Да бисте додали страницу на листу за читање, додирните <ph name="BEGIN_BOLD_FONT" />Дели &gt; Прочитајте касније<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3240426699337459095">Линк је копиран</translation>
 <translation id="3244271242291266297">ММ</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> од <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Отворене картице</translation>
+<translation id="3289005573061089144">Желите да увезете податке?</translation>
 <translation id="3324193307694657476">2. ред за адресу</translation>
 <translation id="3329904751041170572">Повезивање са сервером није могуће.</translation>
 <translation id="3335947283844343239">Поново отвори затворену картицу</translation>
@@ -130,7 +124,6 @@
 <translation id="3414292259312108062">Chrome ће ово сачувати у вашим <ph name="BEGIN_LINK" />Google сачуваним лозинкама<ph name="END_LINK" /> и аутоматски унети тако да не морате да памтите.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> мин</translation>
 <translation id="3448016392200048164">Подељени приказ</translation>
-<translation id="3474068797193663261">Да бисте додали страницу на листу за читање, додирните <ph name="BEGIN_BOLD_FONT" />Мени &gt; Дели &gt; Прочитајте касније<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3474649192738347024">Обрасци су попуњени.</translation>
 <translation id="3478058380795961209">Месец истека</translation>
 <translation id="3482959374254649722">Синхронизација картица је у току...</translation>
@@ -190,7 +183,6 @@
 <translation id="481968316161811770">Колачићи, подаци о сајтовима</translation>
 <translation id="4875622588773761625">Желите ли да <ph name="PASSWORD_MANAGER_BRAND" /> ажурира лозинку за овај сајт?</translation>
 <translation id="4881695831933465202">Отвори</translation>
-<translation id="4904877109095351937">Означи као прочитано</translation>
 <translation id="4923459931733593730">Плаћање</translation>
 <translation id="4930268273022498155">Избришите постојеће податке. Можете да их вратите ако се вратите на <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Жао нам је, дошло је до проблема при дељењу ставке.</translation>
@@ -368,7 +360,6 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="8428213095426709021">Подешавања</translation>
 <translation id="8433678324664858900">Прикажи предлоге</translation>
 <translation id="8458397775385147834">1 ставка је избрисана</translation>
-<translation id="8487700953926739672">Доступно ван мреже</translation>
 <translation id="8503813439785031346">Корисничко име</translation>
 <translation id="8517375800490286174">Лиценце отвореног кода</translation>
 <translation id="8524799873541103884">Картице <ph name="INCOGNITO" /> <ph name="FIRST_VISIBLE_TAB" /> до <ph name="LAST_VISIBLE_TAB" /> од <ph name="NUMBER_OF_OPEN_TABS" /></translation>
@@ -378,7 +369,6 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="8605219856220328675">Затвори картицу.</translation>
 <translation id="8620640915598389714">Измени</translation>
 <translation id="8636825310635137004">Да би вам картице биле доступне на другим уређајима, укључите синхронизацију.</translation>
-<translation id="8654802032646794042">Откажи</translation>
 <translation id="8680787084697685621">Детаљи за пријављивање на налог су застарели.</translation>
 <translation id="8699098509676302392">Додај адресу...</translation>
 <translation id="8721297211384281569">Мени Алатке</translation>

@@ -177,7 +177,6 @@
 <translation id="2899328121302785497">{COUNT,plural, =1{лева витичаста заграда}one{# лева витичаста заграда}few{# леве витичасте заграде}other{# левих витичастих заграда}}</translation>
 <translation id="2911433807131383493">Отварање ChromeVox водича</translation>
 <translation id="2932083475399492303">Пребацивање типа линије са линије структуре на линију распореда и обрнуто</translation>
-<translation id="2944762337049891859">Аутоматски прочитај страницу када заврши са учитавањем.</translation>
 <translation id="2964026537669811554">Група заглавља</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{табулатор}one{# табулатор}few{# табулатора}other{# табулатора}}</translation>
 <translation id="2972078295414139404">Нема претходног посећеног линка.</translation>
@@ -308,7 +307,6 @@
 <translation id="3712520970944678024">Контролисање говора</translation>
 <translation id="3716845769494773620">Вишелинијско</translation>
 <translation id="3731746171184829332">Нема претходног заглавља.</translation>
-<translation id="3735039640698208086">Док се репродукује звук…</translation>
 <translation id="3762198587642264450">Прелазак на крај актуелног реда</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">Изашли сте из дијалога.</translation>
@@ -549,7 +547,6 @@
 <translation id="5876817486144482042">Смањивање јачине звука говора</translation>
 <translation id="5887397643266327462">Титлови на Брајевој азбуци су омогућени.</translation>
 <translation id="5891934789323004067">Табела</translation>
-<translation id="5899860758576822363">Репродукуј при мањој јачини звука док ChromeVox говори</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{знак једнакости}one{# знак једнакости}few{# знака једнакости}other{# знакова једнакости}}</translation>
 <translation id="5939518447894949180">Ресетуј</translation>
 <translation id="5948123859135882163">Пребацујте тумачење математичких израза са структуралног на семантичко и обрнуто</translation>
@@ -582,7 +579,6 @@
 <translation id="6281876499889881039">Следећи слични елемент.</translation>
 <translation id="6282062888058716985">навигација</translation>
 <translation id="6290434000785343030">Нема следећег комбинованог оквира.</translation>
-<translation id="6305702903308659374">Репродукуј при нормалној јачини звука чак и ако ChromeVox говори</translation>
 <translation id="6307969636681130414">Притиснуто</translation>
 <translation id="6322856989298155004">Звукови</translation>
 <translation id="6324551002951139333">Откривена је граматичка грешка</translation>
@@ -698,7 +694,6 @@
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, клизач</translation>
 <translation id="7552432549459840808">Корисне пречице за Chrome</translation>
 <translation id="7579911500627256166">тачка <ph name="DOT" /></translation>
-<translation id="7591126877589047423">Нема фокуса. Притисните Control + N да бисте отворили нови прозор.</translation>
 <translation id="7596919493010894443">избор је обрисан</translation>
 <translation id="7604026522577407655">Прелазак на почетак актуелне колоне</translation>
 <translation id="7604451927827590395">наслов</translation>
@@ -774,7 +769,6 @@
 <translation id="8455868257606149352">Највише <ph name="X" /></translation>
 <translation id="84575901236241018">има приступну шифру, <ph name="KEY" /></translation>
 <translation id="847154984256717791">заузето</translation>
-<translation id="8476408756881832830">Паузирај репродукцију док ChromeVox говори</translation>
 <translation id="8476508772960940536">преглед прозора</translation>
 <translation id="8503360654911991865">Смањивање грануларности навигације</translation>
 <translation id="8520472399088452386">Дугме за промену вредности</translation>

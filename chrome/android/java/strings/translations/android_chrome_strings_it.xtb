@@ -269,7 +269,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="3828029223314399057">Cerca tra i Preferiti</translation>
 <translation id="3845539888601087042">È visualizzata la cronologia dei dispositivi su cui hai eseguito l'accesso. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="3859306556332390985">Posiziona avanti</translation>
-<translation id="3890664840433101773">Aggiungi email</translation>
 <translation id="3894427358181296146">Aggiungi cartella</translation>
 <translation id="3895926599014793903">Attivazione forzata dello zoom</translation>
 <translation id="3917783807003067648">Geolocalizzazione bloccata</translation>
@@ -327,6 +326,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4526249700380860531">Controlla e gestisci le password salvate all'indirizzo <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Scegli cartella</translation>
 <translation id="4535858793016067060">Attiva l'opzione "Origini sconosciute" nelle impostazioni Sicurezza di Android per provare l'esperimento "Funzione Aggiungi a schermata Home migliorata". Assicurati di disattivare questa opzione quando hai finito la prova.</translation>
+<translation id="4543661749405994812">Copia indirizzo email</translation>
 <translation id="4558311620361989323">Scorciatoie delle pagine web</translation>
 <translation id="4572422548854449519">Accedi all'account gestito</translation>
 <translation id="457875822857220463">Consegna</translation>
@@ -371,7 +371,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4988526792673242964">Pagine</translation>
 <translation id="4996978546172906250">Condividi tramite</translation>
 <translation id="5000922062037820727">Bloccata (opzione consigliata)</translation>
-<translation id="5004339818306944878">Utilizza fino al 60% di dati in meno e velocizza il Web. I server Google ottimizzeranno le pagine che visiti.</translation>
 <translation id="5005498671520578047">Copia password</translation>
 <translation id="5011311129201317034">Il sito <ph name="SITE" /> desidera collegarsi</translation>
 <translation id="5016205925109358554">Serif</translation>
@@ -394,12 +393,10 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="5171045022955879922">Cerca o digita un URL</translation>
 <translation id="5184329579814168207">Apri in Chrome</translation>
 <translation id="5199929503336119739">Profilo di lavoro</translation>
-<translation id="5205222826937269299">Nome obbligatorio</translation>
 <translation id="5209320130288484488">Nessun dispositivo trovato</translation>
 <translation id="5210286577605176222">Vai alla scheda precedente</translation>
 <translation id="5210365745912300556">Chiudi scheda</translation>
 <translation id="5222676887888702881">Esci</translation>
-<translation id="5222812217790122047">Email obbligatoria</translation>
 <translation id="5233638681132016545">Nuova scheda</translation>
 <translation id="5271967389191913893">Non è possibile aprire i contenuti da scaricare sul dispositivo.</translation>
 <translation id="528192093759286357">Trascina dall'alto e tocca il pulsante Indietro per uscire dalla modalità a schermo intero.</translation>
@@ -526,6 +523,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6448273550210938826">Suggerimenti di ricerca e URL</translation>
 <translation id="6463070039183944536">Aggiunta in corso...</translation>
+<translation id="6464825623202322042">Questo dispositivo</translation>
 <translation id="6475951671322991020">Scarica video</translation>
 <translation id="6477460825583319731">Indirizzo email non valido</translation>
 <translation id="6482749332252372425">Download di <ph name="FILE_NAME" /> non riuscito a causa dello spazio di archiviazione insufficiente.</translation>
@@ -572,7 +570,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6868088497967843822">Accedi per visualizzare i tuoi Preferiti, la cronologia, le password e altre impostazioni su tutti i tuoi dispositivi</translation>
 <translation id="688738109438487280">Aggiungi dati esistenti a <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d scheda aperta}other{%1$d schede aperte}}</translation>
-<translation id="6896758677409633944">Copia</translation>
 <translation id="6937422995269576720">Numero di carta non valido</translation>
 <translation id="6945221475159498467">Seleziona</translation>
 <translation id="6963766334940102469">Elimina Preferiti</translation>
@@ -597,7 +594,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7094922512924405309">Nessuna pagina Physical Web trovata nelle vicinanze</translation>
 <translation id="7138678301420049075">Altro</translation>
 <translation id="7180611975245234373">Aggiorna</translation>
-<translation id="7189372733857464326">In attesa che Google Play Services termini l'aggiornamento</translation>
 <translation id="7191430249889272776">Scheda aperta in background.</translation>
 <translation id="7243308994586599757">Opzioni disponibili nella parte inferiore dello schermo</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> utilizza la tua posizione per mostrare i risultati della ricerca locale.</translation>
@@ -658,7 +654,6 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="7851858861565204677">Altri dispositivi</translation>
 <translation id="7875915731392087153">Crea email</translation>
 <translation id="7876243839304621966">Rimuovi tutto</translation>
-<translation id="7882131421121961860">Nessuna cronologia trovata</translation>
 <translation id="7929962904089429003">Apri il menu</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> è obsoleto.</translation>
 <translation id="7947953824732555851">Accetta e accedi</translation>
@@ -706,7 +701,6 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="8321376388213838985">A breve verranno visualizzati altri articoli. Buon pomeriggio.</translation>
 <translation id="8372893542064058268">Consenti la sincronizzazione in background per un sito specifico.</translation>
 <translation id="8374821112118309944">Aggiorna TalkBack a una versione più recente.</translation>
-<translation id="8393700583063109961">Invia messaggio</translation>
 <translation id="8396312449826231789">Solo siti approvati</translation>
 <translation id="8413126021676339697">Mostra cronologia completa</translation>
 <translation id="8428213095426709021">Impostazioni</translation>
@@ -786,7 +780,6 @@ Per ottenere nuove licenze, connettiti a Internet e riproduci i contenuti scaric
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Immagini</translation>
 <translation id="932327136139879170">Home page</translation>
-<translation id="932599481871055447">Risparmia dati e naviga più velocemente</translation>
 <translation id="938850635132480979">Errore: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Accesso al microfono</translation>
 <translation id="951339005376969845">Elimina i dati esistenti. Puoi recuperarli tornando all'account <ph name="FROM_ACCOUNT" />.</translation>

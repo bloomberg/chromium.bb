@@ -1900,7 +1900,6 @@ Iwapo sera hii haitawekwa au orodha ni tupu miradi yote itapatikana katika <ph n
 <translation id="6770454900105963262">Ripoti taarifa kuhusu vipindi vya skrini nzima vinavyoendelea</translation>
 <translation id="6774533686631353488">Ruhusu wapangishi wa Ujumbe Asili wa ngazi ya mtumiaji (wanaosakinishwa bila idhini ya msimamizi).</translation>
 <translation id="6786747875388722282">Viendelezi</translation>
-<translation id="6786967369487349613">Weka saraka ya wasifu isiyo ya kawaida</translation>
 <translation id="6810445994095397827">Zuia JavaScript kwenye tovuti hizi</translation>
 <translation id="681446116407619279">Mipango inayohimiliwa ya uthibitishaji</translation>
 <translation id="6828905844648501476">Sera hii ikiwekwa kuwa ndivyo au isisanidiwe <ph name="PRODUCT_NAME" /> itaruhusu kipengee cha Ongeza Mtu kutoka kwa msimamizi wa mtumiaji.
@@ -2070,7 +2069,6 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 <translation id="7249828445670652637">Washa kipengele cha vyeti vya CA vya <ph name="PRODUCT_OS_NAME" /> kwenye programu za ARC</translation>
 <translation id="7258823566580374486">Wezesha uzuiaji wa wapangishaji wa ufikiaji mbali.</translation>
 <translation id="7260277299188117560">Usasishaji kiotomatiki wa P2P umewashwa</translation>
-<translation id="7261252191178797385">Picha ya mandhari ya kifaa</translation>
 <translation id="7267809745244694722">Vitufe vya media huelekeza kwenye vitufe vya vitendo kwa chaguo-msingi</translation>
 <translation id="7271085005502526897">Leta ukurasa wa mwanzo kutoka kwenye kivinjari chaguo-msingi kwenye uendeshaji wa kwanza</translation>
 <translation id="7273823081800296768">Mpangilio huu ukiwashwa au usiposanidiwa, basi watumiaji wanaweza kuchagua kuoanisha viteja na mpangishi wakati wa kuunganisha, hivyo kuondoa haja ya kuingiza PIN kila wakati.
@@ -2160,15 +2158,6 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
       Kumbuka kwamba sera hii inategemea bunda la kuthibitisha cheti cha mfumo wa uendeshaji kuruhusu sahihi za SHA-1. Ikiwa sasisho la Mfumo wa Uendeshaji litabadilisha Mfumo wa Uendeshaji unaoshughulikia vyeti vya SHA-1, sera hii haitakuwa na athari tena. Aidha, sera hii inanuiwa kutumiwa kama njia ya muda ya kuzipa biashara muda zaidi wa kuhama SHA-1.  Sera hii itaondolewa mnamo au kufikia tarehe 1 Januari 2019.
 
       Sera hii isipowekwa au ikiwekwa kuwa sivyo, basi <ph name="PRODUCT_NAME" /> itafuata ratiba iliyotangazwa hadharani ya SHA-1 kuacha kuendesha huduma.</translation>
-<translation id="7589150663293249656">Huwasha uundaji wa nakala zisizo za kawaida za data ya wasifu wa <ph name="PRODUCT_NAME" />.
-
-      Ukiwasha uundaji huu, mipangilio iliyohifadhiwa katika wasifu wa <ph name="PRODUCT_NAME" /> kama vile alamisho, data ya kujaza kiotomatiki, manenosiri, n.k. pia itahifadhiwa kwenye faili iliyohifadhiwa katika folda ya wasifu wa mtumiaji Isiyo ya kawaida au mahali palipobainishwa na Msimamizi kupitia sera ya <ph name="ROAMINGPROFILELOCATION_POLICY_NAME" />.
-
-      Usawazishaji kwenye Google unazimwa kiotomatiki wakati sera hii imewashwa.
-
-      Ili kuzuia kupotea kwa data kwa bahati mbaya, ni vyema pia kuweka sera ya <ph name="SIGNINALLOWED_POLICY_NAME" /> kuwa Sivyo.
-
-      Sera hii ikizimwa au kuachwa bila kuwekwa wasifu wa karibu wa kawaida pekee ndio utakaotumiwa.</translation>
 <translation id="7593523670408385997">Husanidi ukubwa wa akiba ambao <ph name="PRODUCT_NAME" /> itatumia kwa ajili ya kuhifadhi faili zilizoakibishwa kwenye diski.
 
     Ukiweka sera hii, <ph name="PRODUCT_NAME" /> itatumia ukubwa wa akiba uliotolewa bila kujali kama mtumiaji amebainisha alama ya '- ukubwa wa-diski ya-kuakibisha' au la. Thamani iliyobainishwa katika sera hii sio kikomo kisichoweza kurekebishwa bali ni pendekezo la mfumo wa kuakibisha, thamani yoyote chini ya megabaiti chache ni ndogo mno na itazidishwa hadi kiwango cha chini kinachokubalika.
@@ -2410,7 +2399,6 @@ Kama sera hii haitawekwa, hali ya juu ya utofautishaji itazimwa mwanzoni lakini 
       Ikiwa mtumiaji amewasha kipengele cha kusawazisha, data hii yote itahifadhiwa katika wasifu wake wa kusawazisha kama wasifu wa kawaida. Pia hali fiche inapatikana isipozimwa kabisa na sera.
 
       Sera ikiwekwa kuwa imezimwa au isipowekwa, kuingia katika akaunti husababisha kuwepo kwa wasifu wa kawaida.</translation>
-<translation id="8158758865057576716">Washa uundaji wa nakala zisizo za kawaida za data ya wasifu wa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8164246350636985940">Tabia chaguo-msingi ya tovuti zisizo katika furushi lolote la maudhui.
 
           Sera hii ni ya matumizi ya ndani na <ph name="PRODUCT_NAME" /> yenyewe.</translation>
@@ -2687,13 +2675,6 @@ Mfumo wa kipimo  lazima uwe 100% au zaidi. Thamani zitakazofupisha kuchelewa kwa
 <translation id="8992176907758534924">Usiruhusu tovuti yoyote kuonyesha picha</translation>
 <translation id="9035964157729712237">Vitambulisho vya viendelezi vya kuondolewa kenye orodha isiyokubalika</translation>
 <translation id="9042911395677044526">Inaruhusu kusukuma kwa usanidi wa mtandao kutekelezwa kwa kila mtumiaji katika kifaa cha <ph name="PRODUCT_OS_NAME" />. Usanidi wa mtandao ni mtungo ulioumbizwa wa JSON kama ilivyofasiliwa kwa umbizo la Fungua Usanidi wa Mtandao ilivyofafanuliwa katika <ph name="ONC_SPEC_URL" /></translation>
-<translation id="908115901708809140">Huweka mipangilio ya saraka ambayo <ph name="PRODUCT_NAME" /> itatumia kuhifadhi nakala isiyo ya kawaida ya wasifu.
-
-      Ukiweka sera hii, <ph name="PRODUCT_NAME" /> itatumia saraka iliyotolewa kuhifadhi nakala isiyo ya kawaida ya wasifu ikiwa sera ya <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> imezimwa. Ikiwa sera ya <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> itazimwa au kuachwa bila kuwekwa thamani iliyohifadhiwa katika sera hii haitatumika.
-
-      Angalia https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables ili upate orodha ya vigezo vinavyoweza kutumiwa.
-
-      Sera hii ikiachwa bila kuwekwa, njia ya wasifu isiyo ya kawaida chaguo-msingi itatumiwa.</translation>
 <translation id="9084985621503260744">Bainisha iwapo shughuli za video zinaathiri udhibiti wa nishati</translation>
 <translation id="9088433379343318874">Washa mtoa huduma za maudhui ya mtumiaji anayesimamiwa</translation>
 <translation id="9088444059179765143">Weka mbinu ya ugunduzi wa saa za eneo kiotomatiki</translation>
@@ -2730,17 +2711,6 @@ Mfumo wa kipimo  lazima uwe 100% au zaidi. Thamani zitakazofupisha kuchelewa kwa
       Ikiwashwa picha za skrini haziwezi kupigwa kwa kutumia mikato ya kibodi au APl za kiendelezi.
 
       Ikizimwa au isipobainishwa, upigaji picha za skrini unaruhusiwa.</translation>
-<translation id="9213347477683611358">Weka mipangilio ya picha ya mandhari ya kiwango cha kifaa ambayo imeonyeshwa kwenye skrini ya kuingia katika akaunti ikiwa hakuna mtumiaji aliyeingia katika kifaa. Sera inawekwa kwa kubainisha URL ambayo kifaa cha Mfumo wa Uendeshaji wa Chrome kinaweza kupakua picha ya mandhari na alama ya reli ya kriptografia inayotumiwa kuthibitisha kwamba kipakuliwa hakina virusi. Lazima picha iwe ya aina ya faili ya JPEG, ukubwa wake usizidi MB 16. Lazima URL ifikiwe bila uthibitishaji wowote. Picha ya mandhari hupakuliwa na kuakibishwa. Itapakuliwa tena wakati URL au alama ya reli inabadilika.
-
-      Sera inapaswa kubainishwa kama mfuatano unaoeleza URL na alama ya reli katika aina ya faili ya JSON, kwa mfano,
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      Ikiwa sera ya mandhari ya kifaa itawekwa, kifaa cha Mfumo wa Uendeshaji wa Chrome kitapakua na kutumia picha ya mandhari kwenye skrini ya kuingia katika akaunti ikiwa hakuna mtumiaji ambaye ameingia katika kifaa. Pindi tu mtumiaji anapoingia katika akaunti, sera ya mandhari ya mtumiaji itaanza kutumika.
-
-      Ikiwa sera ya mandhari ya kifaa itaachwa bila kuwekwa, ni sera ya mandhari ya mtumiaji itakayoamua kitu cha kuonyesha ikiwa sera ya mandhari ya mtumiaji itakwekwa.</translation>
 <translation id="9217154963008402249">Idadi ya kufuatilia vifurushi vya mtandao</translation>
 <translation id="922540222991413931">Sanidi viendelezi, programu, na vyanzo vya kusakinisha hati</translation>
 <translation id="924557436754151212">Leta manenosiri yaliyohifadhiwa kutoka kwenye kivinjari chaguo-msingi kwenye uendeshaji wa kwanza</translation>

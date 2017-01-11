@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">Wybierz folder</translation>
 <translation id="1272079795634619415">Zatrzymaj</translation>
 <translation id="129553762522093515">Ostatnio zamknięte</translation>
-<translation id="1323735185997015385">Usuń</translation>
 <translation id="132683371494960526">Kliknij dwukrotnie, by zmienić folder nadrzędny.</translation>
 <translation id="1340643665687018190">Zamknij menu</translation>
 <translation id="1375321115329958930">Zapisane hasła</translation>
@@ -64,7 +63,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="2068952045031577364">Ostatni tydzień</translation>
 <translation id="2079545284768500474">Cofnij</translation>
 <translation id="209018056901015185">Pobierz witrynę dla komputera</translation>
-<translation id="2100215774115172756">Twoja lista stron do przeczytania jest dostępna offline.</translation>
 <translation id="2103075008456228677">Otwórz history.google.com</translation>
 <translation id="2116625576999540962">Przeniesione elementy: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="2149973817440762519">Edytuj zakładkę</translation>
@@ -84,7 +82,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="2572712655377361602">Zasady dotyczące urządzeń zablokowały dostęp do Twoich zdjęć</translation>
 <translation id="2584132361465095047">Dodaj konto…</translation>
 <translation id="2593774076813182497">Tej strony nie można wydrukować.</translation>
-<translation id="2648803196158606475">Usuń przeczytane</translation>
 <translation id="2653659639078652383">Prześlij</translation>
 <translation id="2684815431982545828">Nowa karta</translation>
 <translation id="2690858294534178585">Aparat jest w użyciu</translation>
@@ -103,25 +100,22 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="2898963176829412617">Nowy folder…</translation>
 <translation id="2903493209154104877">Adresy</translation>
 <translation id="2921219216347069551">Nie można udostępnić</translation>
-<translation id="292639812446257861">Oznacz jako nieprzeczytane</translation>
 <translation id="2933759065870693102">Latarka</translation>
 <translation id="2969979262385602596">Nie udało się zalogować. Spróbuj ponownie później.</translation>
 <translation id="2989805286512600854">Otwórz w nowej karcie</translation>
 <translation id="3024255823539804759">Ostatni dzień</translation>
 <translation id="3037605927509011580">Kurza twarz!</translation>
 <translation id="3050311348724540835">Adres <ph name="HISTORY_URL" /> jest niedostępny. Aby uzyskać dostęp do historii przeglądania, wybierz „<ph name="SHOW_HISTORY" />” z menu narzędzi.</translation>
-<translation id="3112556859945124369">Oznacz…</translation>
 <translation id="3151924044251363314">Twoje zaszyfrowane dane może odczytać tylko ktoś znający hasło. Google nie otrzyma Twojego hasła ani nie będzie go przechowywać. Jeśli je zapomnisz lub zechcesz zmienić to ustawienie, musisz zresetować synchronizację. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
-<translation id="3157684681743766797">Oznacz wszystko…</translation>
 <translation id="3172213052701798825">Smart Lock Google na hasła</translation>
 <translation id="3175081911749765310">Usługi internetowe</translation>
 <translation id="3207960819495026254">Dodano do zakładek</translation>
 <translation id="3210163015918861891">Synchronizacja jest wyłączona</translation>
-<translation id="3237561509210981547">Aby dodać stronę do listy Do przeczytania, dotknij opcji <ph name="BEGIN_BOLD_FONT" />Udostępnij &gt; Przeczytaj później<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3240426699337459095">Link skopiowany</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> z <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Otwarte karty</translation>
+<translation id="3289005573061089144">Zaimportować dane?</translation>
 <translation id="3324193307694657476">Adres 2</translation>
 <translation id="3329904751041170572">Nie można połączyć się z serwerem.</translation>
 <translation id="3335947283844343239">Otwórz ponownie zamkniętą kartę</translation>
@@ -130,7 +124,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="3414292259312108062">Chrome umieści to hasło w <ph name="BEGIN_LINK" />zapisanych hasłach Google<ph name="END_LINK" /> i będzie je automatycznie wstawiać, więc nie musisz go zapamiętywać.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Widok dzielony</translation>
-<translation id="3474068797193663261">Aby dodać stronę do listy Do przeczytania, dotknij opcji <ph name="BEGIN_BOLD_FONT" />Menu &gt; Udostępnij &gt; Przeczytaj później<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3474649192738347024">Formularze wypełnione.</translation>
 <translation id="3478058380795961209">Miesiąc utraty ważności</translation>
 <translation id="3482959374254649722">Synchronizuję karty...</translation>
@@ -190,7 +183,6 @@ Dane zostały zaszyfrowane z użyciem Twojego hasła synchronizacji. Wpisz je, 
 <translation id="481968316161811770">Cookie i dane stron</translation>
 <translation id="4875622588773761625">Czy <ph name="PASSWORD_MANAGER_BRAND" /> ma zaktualizować hasło do tej strony?</translation>
 <translation id="4881695831933465202">Otwórz</translation>
-<translation id="4904877109095351937">Oznacz jako przeczytane</translation>
 <translation id="4923459931733593730">Płatność</translation>
 <translation id="4930268273022498155">Usuń istniejące dane. Aby je pobrać, przełącz się z powrotem na konto <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Niestety, wystąpił problem z udostępnieniem tej rzeczy.</translation>
@@ -368,7 +360,6 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="8428213095426709021">Ustawienia</translation>
 <translation id="8433678324664858900">Pokazuj propozycje</translation>
 <translation id="8458397775385147834">Usunąłeś 1 element</translation>
-<translation id="8487700953926739672">Dostępny offline</translation>
 <translation id="8503813439785031346">Nazwa użytkownika</translation>
 <translation id="8517375800490286174">Licencje typu open source</translation>
 <translation id="8524799873541103884">Karty <ph name="INCOGNITO" /> od <ph name="FIRST_VISIBLE_TAB" /> do <ph name="LAST_VISIBLE_TAB" /> z <ph name="NUMBER_OF_OPEN_TABS" /></translation>
@@ -378,7 +369,6 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="8605219856220328675">Zamknij kartę</translation>
 <translation id="8620640915598389714">Edytuj</translation>
 <translation id="8636825310635137004">Aby korzystać z kart ze swoich innych urządzeń, włącz synchronizację</translation>
-<translation id="8654802032646794042">Anuluj</translation>
 <translation id="8680787084697685621">Dane logowania na konto są nieaktualne.</translation>
 <translation id="8699098509676302392">Dodaj adres…</translation>
 <translation id="8721297211384281569">Menu Narzędzia</translation>

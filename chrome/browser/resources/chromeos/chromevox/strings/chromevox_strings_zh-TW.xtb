@@ -177,7 +177,6 @@
 <translation id="2899328121302785497">{COUNT,plural, =1{左大括弧}other{# 個左大括弧}}</translation>
 <translation id="2911433807131383493">開啟 ChromeVox 教學課程</translation>
 <translation id="2932083475399492303">切換行類型 (結構化或版面配置)</translation>
-<translation id="2944762337049891859">網頁載入完成後自動朗讀網頁內容。</translation>
 <translation id="2964026537669811554">標題群組</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{Tab 字元}other{# 個 Tab 字元}}</translation>
 <translation id="2972078295414139404">沒有上一個已造訪的連結。</translation>
@@ -308,7 +307,6 @@
 <translation id="3712520970944678024">控制語音</translation>
 <translation id="3716845769494773620">多行</translation>
 <translation id="3731746171184829332">沒有上一個標題。</translation>
-<translation id="3735039640698208086">播放音訊時...</translation>
 <translation id="3762198587642264450">前往目前列的結尾</translation>
 <translation id="3777255250339039212">第 1 階</translation>
 <translation id="3793710123303304873">結束對話方塊。</translation>
@@ -549,7 +547,6 @@
 <translation id="5876817486144482042">降低說話音量</translation>
 <translation id="5887397643266327462">點字字幕已啟用。</translation>
 <translation id="5891934789323004067">表格</translation>
-<translation id="5899860758576822363">ChromeVox 朗讀時調降音訊的播放音量</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{等號}other{# 個等號}}</translation>
 <translation id="5939518447894949180">重設</translation>
 <translation id="5948123859135882163">切換數學運算式的轉譯方式 (選擇結構化轉譯或語意轉譯)</translation>
@@ -582,7 +579,6 @@
 <translation id="6281876499889881039">下一個相似的元素。</translation>
 <translation id="6282062888058716985">導覽</translation>
 <translation id="6290434000785343030">沒有下一個下拉式方塊。</translation>
-<translation id="6305702903308659374">ChromeVox 朗讀時仍維持音訊的標準音量</translation>
 <translation id="6307969636681130414">已按下</translation>
 <translation id="6322856989298155004">音效</translation>
 <translation id="6324551002951139333">偵測到文法錯誤</translation>
@@ -698,7 +694,6 @@
 <translation id="7540083713905917247"><ph name="VALUE" />，<ph name="NAME" />，滑桿</translation>
 <translation id="7552432549459840808">實用的 Chrome 快速鍵</translation>
 <translation id="7579911500627256166">點 <ph name="DOT" /></translation>
-<translation id="7591126877589047423">沒有焦點。按下 Ctrl + N 鍵可開啟新視窗。</translation>
 <translation id="7596919493010894443">已清除所選項目</translation>
 <translation id="7604026522577407655">前往目前欄的開頭</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -774,7 +769,6 @@
 <translation id="8455868257606149352">最大值：<ph name="X" /></translation>
 <translation id="84575901236241018">有快捷鍵「<ph name="KEY" />」</translation>
 <translation id="847154984256717791">忙碌</translation>
-<translation id="8476408756881832830">ChromeVox 朗讀時暫停播放音訊</translation>
 <translation id="8476508772960940536">視窗總覽</translation>
 <translation id="8503360654911991865">降低導覽精細度</translation>
 <translation id="8520472399088452386">微調按鈕</translation>

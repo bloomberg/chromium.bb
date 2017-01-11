@@ -177,7 +177,6 @@
 <translation id="2899328121302785497">{COUNT,plural, =1{kaliwang brace}one{# kaliwang brace}other{# na kaliwang brace}}</translation>
 <translation id="2911433807131383493">Buksan ang tutorial ng ChromeVox</translation>
 <translation id="2932083475399492303">I-toggle ang uri ng linya sa pagitan ng structural o layout</translation>
-<translation id="2944762337049891859">Awtomatikong basahin ang page pagkatapos nitong mag-load.</translation>
 <translation id="2964026537669811554">Pangkat ng heading</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{tab}one{# tab}other{# na tab}}</translation>
 <translation id="2972078295414139404">Walang nakaraang binisitang link.</translation>
@@ -308,7 +307,6 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="3712520970944678024">Pagkontrol sa Speech</translation>
 <translation id="3716845769494773620">Maramihang linya</translation>
 <translation id="3731746171184829332">Walang nakaraang heading.</translation>
-<translation id="3735039640698208086">Kapag nagpe-play ng audio...</translation>
 <translation id="3762198587642264450">Pumunta sa dulo ng kasalukuyang row</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">Lumabas sa dialog.</translation>
@@ -549,7 +547,6 @@ Upang buksan ang menu ng Chrome browser, pindutin ang Alt+F.</translation>
 <translation id="5876817486144482042">Hinaan ang volume ng speech</translation>
 <translation id="5887397643266327462">Na-enable ang mga caption ng braille.</translation>
 <translation id="5891934789323004067">Talahanayan</translation>
-<translation id="5899860758576822363">I-play sa mas mahinang volume kapag nagsasalita ang ChromeVox</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{equal}one{# equal sign}other{# na equal sign}}</translation>
 <translation id="5939518447894949180">I-reset</translation>
 <translation id="5948123859135882163">I-toggle ang pag-interpret sa mga math expression sa pagitan ng structural at semantic</translation>
@@ -582,7 +579,6 @@ Upang buksan ang menu ng Chrome browser, pindutin ang Alt+F.</translation>
 <translation id="6281876499889881039">Susunod na katulad na elemento.</translation>
 <translation id="6282062888058716985">nav</translation>
 <translation id="6290434000785343030">Walang susunod na combo box.</translation>
-<translation id="6305702903308659374">I-play sa normal na volume kahit na nagsasalita ang ChromeVox</translation>
 <translation id="6307969636681130414">Pinindot</translation>
 <translation id="6322856989298155004">Mga Tunog</translation>
 <translation id="6324551002951139333">Nakakita ng pagkakamali sa grammar</translation>
@@ -698,7 +694,6 @@ Upang buksan ang menu ng Chrome browser, pindutin ang Alt+F.</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, slider</translation>
 <translation id="7552432549459840808">Mga Kapaki-pakinabang na Shortcut sa Chrome</translation>
 <translation id="7579911500627256166">dot <ph name="DOT" /></translation>
-<translation id="7591126877589047423">Walang focus. Pindutin ang Control N upang magbukas ng bagong window.</translation>
 <translation id="7596919493010894443">na-clear ang pagpili</translation>
 <translation id="7604026522577407655">Pumunta sa umpisa ng kasalukuyang column</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -774,7 +769,6 @@ Upang buksan ang menu ng Chrome browser, pindutin ang Alt+F.</translation>
 <translation id="8455868257606149352">Max <ph name="X" /></translation>
 <translation id="84575901236241018">may access key, <ph name="KEY" /></translation>
 <translation id="847154984256717791">busy</translation>
-<translation id="8476408756881832830">I-pause ang pag-playback kapag nagsasalita ang ChromeVox</translation>
 <translation id="8476508772960940536">pangkalahatang-ideya ng window</translation>
 <translation id="8503360654911991865">Bawasan ang granularity ng nabigasyon</translation>
 <translation id="8520472399088452386">Spin button</translation>

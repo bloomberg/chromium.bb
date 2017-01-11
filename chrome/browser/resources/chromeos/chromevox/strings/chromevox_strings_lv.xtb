@@ -177,7 +177,6 @@
 <translation id="2899328121302785497">{COUNT,plural, =1{atverošā figūriekava}zero{# atverošo figūriekavu}one{# atverošā figūriekava}other{# atverošās figūriekavas}}</translation>
 <translation id="2911433807131383493">Atvērt ChromeVox mācības</translation>
 <translation id="2932083475399492303">Mainīt līniju veidu uz struktūras līnijām vai izkārtojuma līnijām</translation>
-<translation id="2944762337049891859">Automātiski lasīt lapu, kad ir pabeigta tās ielāde.</translation>
 <translation id="2964026537669811554">Virsrakstu grupa</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{tabulēšanas rakstzīme}zero{# tabulēšanas rakstzīmju}one{# tabulēšanas rakstzīme}other{# tabulēšanas rakstzīmes}}</translation>
 <translation id="2972078295414139404">Iepriekš nav nevienas apmeklētās saites.</translation>
@@ -308,7 +307,6 @@ Ja esat pabeidzis pamācības skatīšanu, izmantojiet ChromeVox, lai pārietu u
 <translation id="3712520970944678024">Runas kontrole</translation>
 <translation id="3716845769494773620">Daudzrindu</translation>
 <translation id="3731746171184829332">Iepriekš nav neviena virsraksta.</translation>
-<translation id="3735039640698208086">Kad tiek atskaņots audio…</translation>
 <translation id="3762198587642264450">Pāriet uz pašreizējās rindas beigām</translation>
 <translation id="3777255250339039212">1. līmeņa virsraksts</translation>
 <translation id="3793710123303304873">Tika aizvērts dialoglodziņš.</translation>
@@ -549,7 +547,6 @@ Lai atvērtu Chrome pārlūka izvēlni, vienlaikus nospiediet alternēšanas tau
 <translation id="5876817486144482042">Samazināt runas skaļumu</translation>
 <translation id="5887397643266327462">Braila parakstu funkcija ir iespējota.</translation>
 <translation id="5891934789323004067">Tabula</translation>
-<translation id="5899860758576822363">Atskaņot klusāk ChromeVox komentāru izvades laikā</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{vienādības zīme}zero{# vienādības zīmju}one{# vienādības zīme}other{# vienādības zīmes}}</translation>
 <translation id="5939518447894949180">Atiestatīt</translation>
 <translation id="5948123859135882163">Pārslēgt matemātisko izteiksmju interpretāciju starp strukturālo un semantisko.</translation>
@@ -582,7 +579,6 @@ Lai atvērtu Chrome pārlūka izvēlni, vienlaikus nospiediet alternēšanas tau
 <translation id="6281876499889881039">Nākamais līdzīgais elements.</translation>
 <translation id="6282062888058716985">navigācija</translation>
 <translation id="6290434000785343030">Tālāk nav neviena kombinētā lodziņa.</translation>
-<translation id="6305702903308659374">Atskaņot parastā skaļumā ChromeVox komentāru izvades laikā</translation>
 <translation id="6307969636681130414">Nospiests</translation>
 <translation id="6322856989298155004">Signāli</translation>
 <translation id="6324551002951139333">Konstatēta gramatiska kļūda</translation>
@@ -698,7 +694,6 @@ Lai atvērtu Chrome pārlūka izvēlni, vienlaikus nospiediet alternēšanas tau
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, slīdnis</translation>
 <translation id="7552432549459840808">Noderīgi Chrome īsinājumtaustiņi</translation>
 <translation id="7579911500627256166">punkts <ph name="DOT" /></translation>
-<translation id="7591126877589047423">Nekas nav atlasīts. Nospiediet Control+N, lai atvērtu jaunu logu.</translation>
 <translation id="7596919493010894443">atlase noņemta</translation>
 <translation id="7604026522577407655">Pāriet uz pašreizējās slejas sākumu</translation>
 <translation id="7604451927827590395">virsraksts</translation>
@@ -774,7 +769,6 @@ Lai atvērtu Chrome pārlūka izvēlni, vienlaikus nospiediet alternēšanas tau
 <translation id="8455868257606149352">maks.: <ph name="X" /></translation>
 <translation id="84575901236241018">ir piekļuves taustiņš: <ph name="KEY" /></translation>
 <translation id="847154984256717791">aizņemts</translation>
-<translation id="8476408756881832830">Apturēt atskaņošanu ChromeVox komentāru izvades laikā</translation>
 <translation id="8476508772960940536">loga kopsavilkums</translation>
 <translation id="8503360654911991865">Samazināt navigācijas precizitāti</translation>
 <translation id="8520472399088452386">Skaitītājpoga</translation>

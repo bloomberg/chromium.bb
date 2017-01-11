@@ -82,7 +82,6 @@
 <translation id="1753706481035618306">पृष्ठ क्रमांक</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows नेटवर्क निदान चालवून पहा<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">कृपया आपले संंकालित सांकेतिक वाक्यांश अद्यतनित करा.</translation>
-<translation id="1787142507584202372">आपले खुले टॅब येथे दिसतात</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803678881841855883">Google सुरक्षित ब्राउझिंगला अलीकडे <ph name="SITE" /> वर <ph name="BEGIN_LINK" />मालवेअर आढळले आहे<ph name="END_LINK" />. सामान्यतः सुरक्षित असलेल्या वेबसाइट काहीवेळा मालवेअरमुळे संक्रमित झालेल्या असतात. एक ज्ञात मालवेअर वितरक असलेल्या, <ph name="SUBRESOURCE_HOST" /> कडून दुर्भावनापूर्ण सामग्री येते. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जाणून घ्या<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">अवैध विनंती किंवा विनंती मापदंड</translation>
@@ -175,7 +174,6 @@
 <translation id="2712118517637785082">आपण <ph name="DOMAIN" /> वर पोहोचण्याचा प्रयत्न केला, परंतु सर्व्हरने सादर केलेले प्रमाणपत्र त्याच्या जारीकर्त्याद्वारे मागे घेतले गेले आहे. याचा अर्थ सर्व्हरने सादर केलेल्या सुरक्षितता क्रेडेन्शियलवर अजिबात विश्वास ठेऊ नये. आपण कदाचित आक्रमणकर्त्याशी संप्रेषण करत आहात. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जाणून घ्या<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2712173769900027643">परवानगी मागा</translation>
 <translation id="2713444072780614174">पांढरा</translation>
-<translation id="2720342946869265578">जवळपास</translation>
 <translation id="2721148159707890343">विनंती यशस्वी</translation>
 <translation id="2728127805433021124">सर्व्हरचे प्रमाणपत्र कमकुवत स्वाक्षरी अल्गोरिदम वापरून स्वाक्षरित केले आहे.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />कनेक्टिव्हिटी निदान चालविणे<ph name="END_LINK" /></translation>
@@ -372,7 +370,6 @@
 <translation id="4728558894243024398">प्लॅटफॉर्म</translation>
 <translation id="4744603770635761495">कार्यवाहीयोग्य पथ</translation>
 <translation id="4756388243121344051">&amp;इतिहास</translation>
-<translation id="4759118997339041434">पेमेंट स्वयंभरण अक्षम केले</translation>
 <translation id="4764776831041365478"><ph name="URL" /> येथील वेबपृष्ठ कदाचित तात्पुरते बंद आहे किंवा ते कदाचित कायमचे नवीन वेब पत्त्यावर हलवले आहे.</translation>
 <translation id="4771973620359291008">एक अज्ञात त्रुटी आली आहे.</translation>
 <translation id="4800132727771399293">आपली कालबाह्यता तारीख आणि CVC तपासा आणि पुन्हा प्रयत्न करा</translation>
@@ -532,6 +529,7 @@
 <translation id="6644283850729428850">हे धोरण नापसंत आहे.</translation>
 <translation id="6652240803263749613">हा सर्व्हर <ph name="DOMAIN" /> हे असल्याचे सिद्ध करू शकला नाही; याचे सुरक्षा प्रमाणपत्र आपल्या संगणकाच्या ऑपरेटिंग प्रणालीद्वारे विश्वसनीय नाही; हे कदाचित एका चुकीच्या कॉन्फिगरेशनमुळे किंवा आक्रमणकर्त्याने आपले कनेक्शन आंतरखंडित केल्यामुळे झाले असू शकते. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जाणून घ्या<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="6656103420185847513">फोल्डर संपादित करा</translation>
+<translation id="6660210980321319655">स्वयंचलितपणे <ph name="CRASH_TIME" /> वाजता अहवाल दिला</translation>
 <translation id="6671697161687535275">Chromium वरून फॉर्म सूचना काढायच्या?</translation>
 <translation id="6685834062052613830">साइन आउट करा आणि सेटअप पूर्ण करा</translation>
 <translation id="6710213216561001401">मागील</translation>
@@ -678,7 +676,6 @@
 <translation id="8150722005171944719"><ph name="URL" /> येथील फाइल वाचनीय नाही. ती काढून टाकलेली, हलविलेली असू शकते किंवा फाइल परवानग्या प्रवेश प्रतिबंधित करत असू शकतात.</translation>
 <translation id="8194797478851900357">&amp;हलवा पूर्ववत करा</translation>
 <translation id="8201077131113104583">"<ph name="EXTENSION_ID" />" ID असलेल्या विस्तारासाठी अवैध अद्यतन URL.</translation>
-<translation id="8202097416529803614">ऑर्डर सारांश</translation>
 <translation id="8218327578424803826">नियुक्त केलेले स्थान:</translation>
 <translation id="8225771182978767009">ज्या व्यक्तीने हा संगणक सेट केला त्या व्यक्तीने ही साइट अवरोधित करण्याचे निवडले आहे.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
@@ -724,7 +721,6 @@
 <translation id="8740359287975076522"><ph name="HOST_NAME" />चा &lt;abbr id="dnsDefinition"&gt;DNS पत्ता&lt;/abbr&gt; शोधणे शक्य झाले नाही. समस्येचे निराकरण करीत आहे.</translation>
 <translation id="8790007591277257123">&amp;पुन्हा करा हटवा</translation>
 <translation id="8798099450830957504">डीफॉल्ट</translation>
-<translation id="8800988563907321413">आपल्या जवळपासच्या सूचना येथे दिसतात</translation>
 <translation id="8804164990146287819">गोपनीयता धोरण</translation>
 <translation id="8820817407110198400">Bookmarks</translation>
 <translation id="8834246243508017242">संपर्क वापरून स्वयं-भरण सक्षम करा...</translation>

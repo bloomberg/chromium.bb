@@ -38,7 +38,6 @@
 <translation id="2063848847527508675">अपडेट लागू करने के लिए Chrome OS को फिर से चालू करने की आवश्यकता होती है.</translation>
 <translation id="2077129598763517140">उपलब्ध होने पर हार्डवेयर त्वरण का उपयोग करें</translation>
 <translation id="2084710999043359739">Chrome में जोड़ें</translation>
-<translation id="2120620239521071941">ऐसा करने से इस डिवाइस से <ph name="ITEMS_COUNT" /> आइटम हट जाएंगे. बाद में अपना डेटा पाने के लिए, Chrome में <ph name="USER_EMAIL" /> के रूप में प्रवेश करें.</translation>
 <translation id="2147651015520127414">Chrome ने सत्‍यापित किया है कि वेबसाइट का यह प्रमाणपत्र <ph name="ISSUER" /> ने जारी किया है.</translation>
 <translation id="2246246234298806438">अंतर्निहित PDF दिखाने का साधन गुम होने पर Google Chrome प्रिंट पूर्वावलोकन नहीं दिखा सकता.</translation>
 <translation id="2252923619938421629">वर्तमान सेटिंग की रिपोर्ट करके Google Chrome को बेहतर बनाने में सहायता करें</translation>
@@ -57,7 +56,6 @@
 <translation id="2485422356828889247">विस्थापित करें</translation>
 <translation id="2580411288591421699">Google Chrome के उस वर्शन के समान वर्शन को इंस्‍टॉल नहीं कर सकता, जो वर्तमान में चल रहा है. कृपया Google Chrome बंद करें और फिर से प्रयास करें.</translation>
 <translation id="2582790009689336987">यह कंप्‍यूटर जल्‍दी ही Google Chrome के अपडेट प्राप्‍त करना बंद कर देगा क्‍योंकि यह Linux सिस्टम अब समर्थित नहीं रहेगा.</translation>
-<translation id="2586406160782125153">ऐसा करने से इस डिवाइस से आपका ब्राउज़िंग डेटा हट जाएगा. बाद में अपना डेटा पाने के लिए, Chrome में <ph name="USER_EMAIL" /> के रूप में प्रवेश करें.</translation>
 <translation id="2588322182880276190">Chrome लोगो</translation>
 <translation id="2664962310688259219">Chrome OS ओपन सोर्स लाइसेंस</translation>
 <translation id="2665296953892887393">Google को क्रैश रिपोर्ट और <ph name="UMA_LINK" /> भेजकर Google Chrome को बेहतर बनाने में सहायता करें</translation>
@@ -73,7 +71,7 @@
 <translation id="2888126860611144412">क्रोम के बारे में</translation>
 <translation id="2900322993655997287">Google Chrome डिफ़ॉल्ट ब्राउज़र निर्धारित या सेट नहीं कर सकता.</translation>
 <translation id="3037838751736561277">Google Chrome पृष्ठभूमि मोड में है.</translation>
-<translation id="3047079729301751317"><ph name="USERNAME" /> को डिसकनेक्ट करने से आपका इतिहास, बुकमार्क, सेटिंग, और इस डिवाइस पर संग्रहीत अन्य Chrome डेटा साफ़ हो जाएगा. आपके Google खाते में संग्रहीत डेटा साफ़ नहीं होगा और उसे <ph name="GOOGLE_DASHBOARD_LINK" />Google डैशबोर्ड<ph name="END_GOOGLE_DASHBOARD_LINK" /> पर प्रबंधित किया जा सकता है.</translation>
+<translation id="3047079729301751317"><ph name="USERNAME" /> को डिस्कनेक्ट करने से आपका इतिहास, बुकमार्क, सेटिंग, और इस डिवाइस पर संग्रहीत अन्य Chrome डेटा साफ़ हो जाएगा. आपके Google खाते में संग्रहीत डेटा साफ़ नहीं होगा और उसे <ph name="GOOGLE_DASHBOARD_LINK" />Google डैशबोर्ड<ph name="END_GOOGLE_DASHBOARD_LINK" /> पर प्रबंधित किया जा सकता है.</translation>
 <translation id="3065168410429928842">Chrome टैब</translation>
 <translation id="3080151273017101988">Google Chrome के बंद होने पर पृष्ठभूमि ऐप्स  चलाना जारी रखें</translation>
 <translation id="3089968997497233615">Google Chrome का एक नया, सुरक्षित वर्शन उपलब्‍ध है.</translation>
@@ -95,7 +93,6 @@
 <translation id="345171907106878721">स्वयं को Chrome में जोड़ें</translation>
 <translation id="3612333635265770873">इसी नाम के एक मॉड्यूल को Google Chrome का विरोध करने के लिए जाना जाता है.</translation>
 <translation id="3622797965165704966">अब अपने Google खाते के साथ और साझा किए गए कंप्यूटर पर Chrome का उपयोग करना आसान हो गया है.</translation>
-<translation id="3718181793972440140">ऐसा करने से इस डिवाइस से 1 आइटम हट जाएगा. बाद में अपना डेटा पाने के लिए, Chrome में <ph name="USER_EMAIL" /> के रूप में प्रवेश करें.</translation>
 <translation id="3735758079232443276">एक्सटेंशन "<ph name="EXTENSION_NAME" />" ने यह बदल दिया है कि जब आप Chrome प्रारंभ करते हैं तब कौन सा पृष्‍ठ दिखाया जाए.</translation>
 <translation id="3738139272394829648">खोजने के लिए स्पर्श करें</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -152,7 +149,7 @@
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />सेवा की शर्तों<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5243785881901838525">Google पेमेंट्स (Chrome पर कॉपी किया गया)</translation>
 <translation id="5251420635869119124">अतिथि कोई पदचिह्न छोड़े बिना Chrome का उपयोग कर सकते हैं.</translation>
-<translation id="5253588388888612165">यदि आप इस कंप्यूटर को <ph name="PROFILE_NAME" /> से साझा करते हैं, तो स्वयं को Chrome में अलग से जोड़ें. अन्यथा उनके Google खाते को डिसकनेक्ट करें.</translation>
+<translation id="5253588388888612165">यदि आप इस कंप्यूटर को <ph name="PROFILE_NAME" /> से साझा करते हैं, तो स्वयं को Chrome में अलग से जोड़ें. अन्यथा उनके Google खाते को डिस्कनेक्ट करें.</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome 1 सेकंड में पुन: प्रारंभ हो जाएगा.}one{Google Chrome # सेकंड में पुन: प्रारंभ हो जाएगा.}other{Google Chrome # सेकंड में पुन: प्रारंभ हो जाएगा.}}</translation>
 <translation id="5328989068199000832">Google Chrome बाइनरी</translation>
 <translation id="5334545119300433702">यह मॉड्यूल Google Chrome से विरोध के लिए जाना जाता है.</translation>

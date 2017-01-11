@@ -1918,7 +1918,6 @@ Ja šī politika nav iestatīta, lietotājs var atspējot jebkuru sistēmā inst
 <translation id="6770454900105963262">Ziņošana par aktīvām kioska sesijām</translation>
 <translation id="6774533686631353488">Atļaut izmantot lietotāja līmeņa vietējās ziņojumapmaiņas saimniekdatorus (tiks instalēti bez administratora atļaujas).</translation>
 <translation id="6786747875388722282">Paplašinājumi</translation>
-<translation id="6786967369487349613">Iestatīt viesabonēšanas profila direktoriju</translation>
 <translation id="6810445994095397827">Bloķēt JavaScript šajās vietnēs</translation>
 <translation id="681446116407619279">Atbalstītās autentifikācijas shēmas</translation>
 <translation id="6828905844648501476">Ja šai politikai ir iestatīta vērtība Patiesa vai ja politika nav konfigurēta, pārlūkā <ph name="PRODUCT_NAME" /> lietotāju pārzinī ir iespējota funkcija “Pievienot personu”.
@@ -2095,7 +2094,6 @@ Ja šī politika nav iestatīta, lietotājs var atspējot jebkuru sistēmā inst
 <translation id="7249828445670652637">Iespējot <ph name="PRODUCT_OS_NAME" /> CA sertifikātus ARC lietotnēm</translation>
 <translation id="7258823566580374486">Aizsegšanas režīma iespējošana attālās piekļuves saimniekdatoriem</translation>
 <translation id="7260277299188117560">Ir iespējota P2P automātiska atjaunināšana</translation>
-<translation id="7261252191178797385">Ierīces fona attēls</translation>
 <translation id="7267809745244694722">Multivides taustiņu noklusējuma darbības maiņa, lai tie darbotos kā funkciju taustiņi</translation>
 <translation id="7271085005502526897">Mājaslapas importēšana no noklusējuma pārlūka pirmajā palaišanas reizē</translation>
 <translation id="7273823081800296768">Ja šis iestatījums ir iespējots vai nav konfigurēts, lietotāji var izvēlēties savienot klientus un saimniekdatorus pārī savienojuma izveides laikā, tādējādi izvairoties no atkārtotas PIN koda ievadīšanas.
@@ -2185,15 +2183,6 @@ Ja šī politika nav iestatīta, lietotājs var atspējot jebkuru sistēmā inst
       Ņemiet vērā, ka šī politika ir atkarīga no operētājsistēmas sertifikātu verifikācijas kopas, kura atļauj SHA-1 sertifikātus. Ja, atjauninot operētājsistēmu, tiek mainīts veids, kā operētājsistēma apstrādā SHA-1 sertifikātus, šī politika, iespējams, vairs nebūs spēkā. Turklāt šī politika ir pagaidu risinājums, lai uzņēmumiem būtu vairāk laika pārtraukt SHA-1 lietošanu. Šī politika tiks noņemta 2019. gada 1. janvārī vai ap to laiku.
 
       Ja politika nav iestatīta vai ir iestatīta vērtība “Nepatiesa”, pārlūkā <ph name="PRODUCT_NAME" /> tiks ievērots publicētais SHA-1 lietošanas pārtraukšanas grafiks.</translation>
-<translation id="7589150663293249656">Iespējo viesabonēšanas kopiju izveidi <ph name="PRODUCT_NAME" /> profilu datiem.
-
-      Ja iespējosiet šo iestatījumu, <ph name="PRODUCT_NAME" /> profilos saglabātie iestatījumi, piemēram, grāmatzīmes, automātiskās aizpildes dati, paroles utt., tiks saglabāti arī failā, kas tiks glabāts viesabonēšanas lietotāju profilu mapē vai vietā, ko norādījis administrators, izmantojot politiku <ph name="ROAMINGPROFILELOCATION_POLICY_NAME" />.
-
-      Kad šī politika ir iespējota, pakalpojums Google Sync tiek automātiski atspējots.
-
-      Lai novērstu nejaušu datu noplūdi, ieteicams politikai <ph name="SIGNINALLOWED_POLICY_NAME" /> iestatīt vērtību False.
-
-      Ja šī politika ir atspējota vai nav iestatīta, tiek izmantoti tikai parastie lokālie profili.</translation>
 <translation id="7593523670408385997">Konfigurē kešatmiņas lielumu, kas tiks izmantots pārlūkā <ph name="PRODUCT_NAME" />, lai kešatmiņā ievietotos failus uzglabātu diskā.
 
       Ja iestatīsiet šo politiku, pārlūkā <ph name="PRODUCT_NAME" /> tiks izmantots norādītais kešatmiņas lielums neatkarīgi no tā, vai lietotājs ir norādījis atzīmi “--disk-cache-size”. Šajā politikā norādītā vērtība nav stingri noteikts ierobežojums, bet drīzāk kā ieteikums kešdarbes sistēmai, turklāt jebkura vērtība, kas ir zemāka par dažiem megabaitiem, ir pārāk maza un tiks noapaļota uz saprātīgu minimālo vērtību.
@@ -2440,7 +2429,6 @@ Ja šī politika nav iestatīta, lietotājs var atspējot jebkuru sistēmā inst
       Ja lietotājs ir iespējojis sinhronizāciju, visi šie dati tiek saglabāti lietotāja sinhronizācijas profilā tieši tāpat kā parastos profilos. Inkognito režīms arī ir pieejams, ja nav atspējots saskaņā ar politiku.
 
       Ja politika ir iestatīta kā atspējota vai nav iestatīta, pierakstīšanās tiek veikta parastajos profilos.</translation>
-<translation id="8158758865057576716">Iespējot viesabonēšanas kopiju izveidi <ph name="PRODUCT_NAME" /> profilu datiem.</translation>
 <translation id="8164246350636985940">Noklusējuma darbība vietnēm, kas nav iekļautas nevienā satura pakotnē.
 
           Šī politika ir paredzēta tikai <ph name="PRODUCT_NAME" /> iekšējai lietošanai.</translation>
@@ -2738,13 +2726,6 @@ Ja šī politika nav iestatīta, lietotājs var atspējot jebkuru sistēmā inst
 <translation id="9035964157729712237">Paplašinājumu ID numuri, kas noņemami no melnā saraksta</translation>
 <translation id="9042911395677044526">Ļauj pārsūtīšanas tīkla konfigurāciju izmantot konkrētam lietotājam <ph name="PRODUCT_OS_NAME" /> ierīcē. Tīkla konfigurācija ir JSON formatēta virkne, kā 
 definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph name="ONC_SPEC_URL" /></translation>
-<translation id="908115901708809140">Konfigurē direktoriju, ko <ph name="PRODUCT_NAME" /> izmanto profilu viesabonēšanas kopiju glabāšanai.
-
-      Ja iestatīsiet šo politiku, <ph name="PRODUCT_NAME" /> izmantos norādīto direktoriju, lai glabātu profilu viesabonēšanas kopiju; politikai <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> ir jābūt iespējotai. Ja politika <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> ir atspējota vai nav iestatīta, šajā politikā saglabātā vērtība netiek izmantota.
-
-      Vietnē https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables ir sniegts izmantojamo mainīgo saraksts.
-
-      Ja šī politika netiks iestatīta, tiks izmantots viesabonēšanas profilu noklusējuma ceļš.</translation>
 <translation id="9084985621503260744">Video darbības ietekmes uz jaudas pārvaldību norādīšana</translation>
 <translation id="9088433379343318874">Iespējot uzraudzītā lietotāja satura nodrošinātāju</translation>
 <translation id="9088444059179765143">Automātiskās laika joslas noteikšanas metodes konfigurēšana</translation>
@@ -2780,17 +2761,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
       Ja šis iestatījums ir iespējots, nevar uzņemt ekrānuzņēmumus, izmantojot īsinājumtaustiņus vai paplašinājumu API.
 
       Ja šis iestatījums ir atspējots vai nav norādīts, veidot ekrānuzņēmumus ir atļauts.</translation>
-<translation id="9213347477683611358">Konfigurējiet ierīces līmeņa fona tapetes attēlu, kas tiek rādīts pieteikšanās ekrānā, ja ierīcē vēl nav pierakstījies neviens lietotājs. Politika tiek iestatīta, norādot URL, no kura Chrome OS ierīce var lejupielādēt fona tapetes attēlu, un kriptogrāfisku jaucējkodu, kas tiek izmantots lejupielādes integritātes pārbaudei. Attēlam jābūt JPEG formātā, tā lielums nedrīkst pārsniegt 16 MB. Lai piekļūtu vietrādim URL, nedrīkst pieprasīt autentificēšanos. Fona tapetes attēls tiek lejupielādēts un saglabāts kešatmiņā. Tas tiks atkārtoti lejupielādēts, kad tiks mainīts URL vai jaucējkods.
-
-      Politika ir jānorāda kā virkne, kurā ietverts URL un jaucējkods JSON formātā, piemēram,
-      {
-        "url": "https://example.com/ierices_fona_tapete.jpg",
-        "hash": "fonatapetesjaucejkodapiemers"
-      }
-
-      Ja ierīces fona tapetes politika būs iestatīta un neviens lietotājs vēl nebūs pierakstījies ierīcē, Chrome OS ierīce lejupielādēs un pieteikšanās ekrānā izmantos fona tapetes attēlu. Tiklīdz kāds lietotājs pieteiksies, tiks aktivizēta lietotāja fona tapetes politika.
-
-      Ja ierīces fona tapetes politika nebūs iestatīta, taču lietotāja fona tapetes politika būs iestatīta, lietotāja fona tapetes politika noteiks, kas tiks rādīts.</translation>
 <translation id="9217154963008402249">Pārraudzības tīkla pakešu biežums</translation>
 <translation id="922540222991413931">Konfigurē paplašinājumu, lietotņu un lietotāja skriptu instalēšanas avotus</translation>
 <translation id="924557436754151212">Saglabāto paroļu importēšana no noklusējuma pārlūka pirmajā palaišanas reizē</translation>

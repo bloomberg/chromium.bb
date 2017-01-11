@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">Choose Folder</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="129553762522093515">Recently closed</translation>
-<translation id="1323735185997015385">delete</translation>
 <translation id="132683371494960526">Double tap to change the parent folder.</translation>
 <translation id="1340643665687018190">Close menu</translation>
 <translation id="1375321115329958930">Saved Passwords</translation>
@@ -64,7 +63,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="2068952045031577364">Past Week</translation>
 <translation id="2079545284768500474">Undo</translation>
 <translation id="209018056901015185">Request Desktop Site</translation>
-<translation id="2100215774115172756">Your reading list is available offline.</translation>
 <translation id="2103075008456228677">Open history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> items moved</translation>
 <translation id="2149973817440762519">Edit Bookmark</translation>
@@ -84,7 +82,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="2572712655377361602">A device policy blocked access to your photos</translation>
 <translation id="2584132361465095047">Add Account…</translation>
 <translation id="2593774076813182497">This page cannot be printed.</translation>
-<translation id="2648803196158606475">Delete Read</translation>
 <translation id="2653659639078652383">Submit</translation>
 <translation id="2684815431982545828">New Tab</translation>
 <translation id="2690858294534178585">Camera is in use</translation>
@@ -103,25 +100,22 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="2898963176829412617">New Folder…</translation>
 <translation id="2903493209154104877">Addresses</translation>
 <translation id="2921219216347069551">Cannot Share Page</translation>
-<translation id="292639812446257861">Mark Unread</translation>
 <translation id="2933759065870693102">Torch</translation>
 <translation id="2969979262385602596">Failed to sign in. Please try again later.</translation>
 <translation id="2989805286512600854">Open in New Tab</translation>
 <translation id="3024255823539804759">Past Day</translation>
 <translation id="3037605927509011580">Aw, Snap!</translation>
 <translation id="3050311348724540835"><ph name="HISTORY_URL" /> is not available. To access your browsing history, select "<ph name="SHOW_HISTORY" />" from the tools menu.</translation>
-<translation id="3112556859945124369">Mark…</translation>
 <translation id="3151924044251363314">Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase or want to change this setting, you will need to reset sync. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
-<translation id="3157684681743766797">Mark All…</translation>
 <translation id="3172213052701798825">Google Smart Lock for Passwords</translation>
 <translation id="3175081911749765310">Web Services</translation>
 <translation id="3207960819495026254">Bookmarked</translation>
 <translation id="3210163015918861891">Sync is Off</translation>
-<translation id="3237561509210981547">To add a page to your reading list, tap <ph name="BEGIN_BOLD_FONT" />Share &gt; Read Later<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3240426699337459095">Link copied</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> of <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Open Tabs</translation>
+<translation id="3289005573061089144">Import Data?</translation>
 <translation id="3324193307694657476">Address 2</translation>
 <translation id="3329904751041170572">Could not connect to the server.</translation>
 <translation id="3335947283844343239">Re-open Closed Tab</translation>
@@ -130,7 +124,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="3414292259312108062">Chrome will store this in your <ph name="BEGIN_LINK" />Google saved passwords<ph name="END_LINK" /> and autofill it for you so that you don't have to remember it yourself.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Split View</translation>
-<translation id="3474068797193663261">To add a page to your reading list, tap <ph name="BEGIN_BOLD_FONT" />Menu &gt; Share &gt; Read Later<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3474649192738347024">Forms filled.</translation>
 <translation id="3478058380795961209">Month of Expiry</translation>
 <translation id="3482959374254649722">Syncing your tabs...</translation>
@@ -190,7 +183,6 @@ Your data is encrypted with your sync passphrase. Enter it to start sync.</trans
 <translation id="481968316161811770">Cookies, Site Data</translation>
 <translation id="4875622588773761625">Do you want <ph name="PASSWORD_MANAGER_BRAND" /> to update your password for this site?</translation>
 <translation id="4881695831933465202">Open</translation>
-<translation id="4904877109095351937">Mark Read</translation>
 <translation id="4923459931733593730">Payment</translation>
 <translation id="4930268273022498155">Delete existing data. You can retrieve it by switching back to <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Sorry, there was a problem sharing your item.</translation>
@@ -368,7 +360,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="8428213095426709021">Settings</translation>
 <translation id="8433678324664858900">Show Suggestions</translation>
 <translation id="8458397775385147834">1 item deleted</translation>
-<translation id="8487700953926739672">Available offline</translation>
 <translation id="8503813439785031346">Username</translation>
 <translation id="8517375800490286174">Open-Source Licences</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> Tabs <ph name="FIRST_VISIBLE_TAB" /> through <ph name="LAST_VISIBLE_TAB" /> of <ph name="NUMBER_OF_OPEN_TABS" /></translation>
@@ -378,7 +369,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="8605219856220328675">Close tab.</translation>
 <translation id="8620640915598389714">Edit</translation>
 <translation id="8636825310635137004">To get your tabs from your other devices, turn on sync.</translation>
-<translation id="8654802032646794042">cancel</translation>
 <translation id="8680787084697685621">Account sign-in details are out of date.</translation>
 <translation id="8699098509676302392">Add Address...</translation>
 <translation id="8721297211384281569">Tools Menu</translation>

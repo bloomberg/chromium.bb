@@ -1824,7 +1824,6 @@
 <translation id="6770454900105963262">Raportează informații despre sesiunile chioșc active</translation>
 <translation id="6774533686631353488">Permiteți gazde de mesagerie nativă la nivel de utilizator (instalate fără permisiuni de administrator)</translation>
 <translation id="6786747875388722282">Extensii</translation>
-<translation id="6786967369487349613">Setează directorul profilului de roaming</translation>
 <translation id="6810445994095397827">Blochează JavaScript de pe aceste site-uri</translation>
 <translation id="681446116407619279">Scheme de autentificare acceptate</translation>
 <translation id="6828905844648501476">Dacă această politică este activată sau nu este configurată, <ph name="PRODUCT_NAME" /> va permite utilizarea funcției Adaugă o persoană din managerul de utilizatori.
@@ -1988,7 +1987,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7249828445670652637">Activează certificatele CA <ph name="PRODUCT_OS_NAME" /> pentru aplicațiile ARC</translation>
 <translation id="7258823566580374486">Permite protecția gazdelor de acces la distanță</translation>
 <translation id="7260277299188117560">Actualizare automată p2p este activată</translation>
-<translation id="7261252191178797385">Imaginea de fundal a dispozitivului</translation>
 <translation id="7267809745244694722">Tastele media au în mod prestabilit rolul de taste pentru funcții</translation>
 <translation id="7271085005502526897">Importați pagina de pornire din browserul prestabilit, la prima rulare</translation>
 <translation id="7273823081800296768">Dacă această setare este activată sau nu este configurată, utilizatorii pot alege să împerecheze clienții și gazdele în momentul conectării, eliminând necesitatea de a introduce un PIN de fiecare dată.
@@ -2074,15 +2072,6 @@ nu poate fi stabilit de utilizator din setările browserului.
       Reține că această politică depinde de acceptarea semnăturilor SHA-1 de către stiva de verificare a certificatelor sistemului de operare. Dacă o actualizare a sistemului de operare modifică modul în care sistemul de operare gestionează certificatele semnate cu SHA-1, este posibil ca această politică să nu se mai aplice. Mai mult, această politică are rolul de soluție temporară, pentru a le oferi companiilor mai mult timp să renunțe la standardul SHA-1. Această politică va fi eliminată în data de 1 ianuarie 2019 sau în jurul acestei date.
 
       Dacă această politică nu este configurată sau nu este activată, <ph name="PRODUCT_NAME" /> urmează programul anunțat public de renunțare la dezvoltarea SHA-1.</translation>
-<translation id="7589150663293249656">Activează crearea unor copii de roaming pentru datele profilului <ph name="PRODUCT_NAME" />.
-
-      Dacă activezi setarea, setările stocate în profilurile <ph name="PRODUCT_NAME" />, cum ar fi marcajele, datele de completare automată, parolele etc., vor fi scrise și într-un fișier stocat în dosarul profilului de utilizator pentru Roaming sau într-o locație specificată de administrator prin politica <ph name="ROAMINGPROFILELOCATION_POLICY_NAME" />.
-
-      Sincronizarea Google este dezactivată automat când această politică este activată.
-
-      Pentru a preveni divulgarea din greșeală a datelor, se recomandă să dezactivezi și politica <ph name="SIGNINALLOWED_POLICY_NAME" />.
-
-      Dacă politica este dezactivată sau nu este configurată, se vor folosi numai profilurile locale obișnuite.</translation>
 <translation id="7593523670408385997">Configurează dimensiunea memoriei cache pe care <ph name="PRODUCT_NAME" /> o va utiliza pentru a stoca pe disc fișierele salvate în memoria cache.
 
       Dacă setați această politică, <ph name="PRODUCT_NAME" /> va utiliza dimensiunea indicată a memoriei cache, indiferent dacă utilizatorul a specificat parametrul „--disk-cache-size” sau nu. Valoarea specificată în această politică nu reprezintă o limită fermă, ci doar o sugestie pentru sistemul de salvare în memoria cache. Orice valoare sub câțiva megabytes este prea mică și va fi rotunjită în sus la o limită rezonabilă.
@@ -2316,7 +2305,6 @@ nu poate fi stabilit de utilizator din setările browserului.
       Dacă utilizatorul a activat sincronizarea, toate aceste date sunt păstrate în profilul de sincronizare al acestuia, exact ca în cazul profilurilor obișnuite. Este disponibil și modul incognito, cu excepția cazului în care este explicit dezactivat de politică.
 
       Dacă politica este dezactivată sau nu este configurată, conectarea face legătura cu profilurile obișnuite.</translation>
-<translation id="8158758865057576716">Activează crearea unor copii de roaming pentru datele profilului <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8164246350636985940">Comportamentul prestabilit pentru site-urile care nu sunt incluse în niciun pachet de conținut.
 
           Această politică este destinată să fie utilizată la nivel intern de <ph name="PRODUCT_NAME" />.</translation>
@@ -2593,13 +2581,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="8992176907758534924">Nu permite niciunui site să afișeze imagini</translation>
 <translation id="9035964157729712237">ID-urile extensiilor excluse din lista neagră</translation>
 <translation id="9042911395677044526">Această politică permite trimiterea configurației rețelei pentru a fi aplicată pentru fiecare utilizator pe un dispozitiv cu <ph name="PRODUCT_OS_NAME" />. Configurația rețelei este un șir în formatul JSON, conform definirii acestuia de către formatul Open Network Configuration descris la <ph name="ONC_SPEC_URL" /></translation>
-<translation id="908115901708809140">Configurează directorul folosit de <ph name="PRODUCT_NAME" /> ca să stocheze copia de roaming a profilurilor.
-
-      Dacă setezi politica, <ph name="PRODUCT_NAME" /> va folosi directorul specificat ca să stocheze copia de roaming a profilurilor, dacă politica <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> este activată. Dacă politica <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> este dezactivată sau nu este configurată, valoarea stocată în această politică nu este folosită.
-
-      Consultă https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables pentru o listă de variabile care pot fi folosite.
-
-      Dacă politica nu este configurată, se va folosi calea prestabilită a profilului de roaming.</translation>
 <translation id="9084985621503260744">Specificați dacă activitatea video afectează gestionarea consumului de energie</translation>
 <translation id="9088433379343318874">Activează furnizorul de conținut pentru utilizatori monitorizați</translation>
 <translation id="9088444059179765143">Configurează metoda de detectare automată a fusului orar</translation>
@@ -2628,17 +2609,6 @@ nu poate fi stabilit de utilizator din setările browserului.
       Dacă politica este activată, nu se pot realiza capturi de ecran utilizând comenzile rapide de la tastatură sau API-urile cu extensii.
 
       Dacă politica este dezactivată sau nu este specificată, se permite realizarea capturilor de ecran.</translation>
-<translation id="9213347477683611358">Configurează imaginea de fundal la nivel de dispozitiv afișată pe ecranul de conectare, dacă încă nu s-a conectat niciun utilizator pe dispozitiv. Politica se configurează prin specificarea adresei URL de la care dispozitivul cu sistemul de operare Chrome poate descărca imaginea de fundal și a unui cod hash criptografic folosit pentru a verifica integritatea descărcării. Imaginea trebuie să fie în format JPEG, iar dimensiunea fișierului nu trebuie să depășească 16 MB. Adresa URL trebuie să poată fi accesată fără autentificare. Imaginea de fundal este descărcată și stocată în memoria cache. Aceasta va fi descărcată din nou, ori de câte ori adresa URL sau codul hash se modifică.
-
-      Politica trebuie să fie specificată ca șir ce exprimă adresa URL și codul hash în format JSON, de ex.,
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      Dacă politica privind imaginea de fundal a dispozitivului este configurată, dispozitivul cu sistemul de operare Chrome va descărca și va folosi imaginea de fundal pe ecranul de conectare, dacă încă nu s-a conectat niciun utilizator pe dispozitiv. După ce un utilizator se conectează, se aplică politica acestuia privind imaginea de fundal.
-
-      Dacă politica privind imaginea de fundal a dispozitivului nu este configurată, politica utilizatorului privind imaginea de fundal decide ce se afișează, dacă aceasta este configurată.</translation>
 <translation id="9217154963008402249">Frecvența pachetelor de monitorizare din rețea</translation>
 <translation id="922540222991413931">Configurați sursele pentru instalarea extensiilor, a aplicațiilor și a scripturilor de utilizator</translation>
 <translation id="924557436754151212">Importați parolele salvate din browserul prestabilit, la prima rulare</translation>

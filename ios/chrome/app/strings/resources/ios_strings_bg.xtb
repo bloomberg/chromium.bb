@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">Избор на папка</translation>
 <translation id="1272079795634619415">Стоп</translation>
 <translation id="129553762522093515">Наскоро затворени</translation>
-<translation id="1323735185997015385">Изтриване</translation>
 <translation id="132683371494960526">Докоснете двукратно, за да промените главната папка.</translation>
 <translation id="1340643665687018190">Затваряне на менюто</translation>
 <translation id="1375321115329958930">Запазени пароли</translation>
@@ -64,7 +63,6 @@
 <translation id="2068952045031577364">Последната седмица</translation>
 <translation id="2079545284768500474">Отмяна</translation>
 <translation id="209018056901015185">Заявка за настолния сайт</translation>
-<translation id="2100215774115172756">Списъкът ви за четене е налице офлайн.</translation>
 <translation id="2103075008456228677">Към history.google.com</translation>
 <translation id="2116625576999540962">Преместихте <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> елемента</translation>
 <translation id="2149973817440762519">Редактиране на отметката</translation>
@@ -84,7 +82,6 @@
 <translation id="2572712655377361602">Достъпът до снимките ви е блокиран от правило за устройства</translation>
 <translation id="2584132361465095047">Добавяне на профил…</translation>
 <translation id="2593774076813182497">Стр. не може да се отпечата.</translation>
-<translation id="2648803196158606475">Изтриване на прочетените</translation>
 <translation id="2653659639078652383">Изпращане</translation>
 <translation id="2684815431982545828">Нов раздел</translation>
 <translation id="2690858294534178585">Камерата се използва</translation>
@@ -103,25 +100,22 @@
 <translation id="2898963176829412617">Нова папка…</translation>
 <translation id="2903493209154104877">Адреси</translation>
 <translation id="2921219216347069551">Стр. не може да се сподели</translation>
-<translation id="292639812446257861">Означаване като непрочетено</translation>
 <translation id="2933759065870693102">Фенерче</translation>
 <translation id="2969979262385602596">Влизането не бе успешно. Моля, опитайте пак по-късно.</translation>
 <translation id="2989805286512600854">Отваряне в нов раздел</translation>
 <translation id="3024255823539804759">Последния ден</translation>
 <translation id="3037605927509011580">Ужас!</translation>
 <translation id="3050311348724540835">Няма достъп до <ph name="HISTORY_URL" />. За да отворите историята си на сърфиране, изберете „<ph name="SHOW_HISTORY" />“ от менюто с инструменти.</translation>
-<translation id="3112556859945124369">Означаване…</translation>
 <translation id="3151924044251363314">Само някой с пропуска ви може да прочете шифрованите ви данни – той не се изпраща до Google, нито се съхранява от нас. Ако го забравите или искате да промените тази настройка, ще се наложи да нулирате синхронизирането. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
-<translation id="3157684681743766797">Означаване на всички…</translation>
 <translation id="3172213052701798825">Google Smart Lock за пароли</translation>
 <translation id="3175081911749765310">Уеб услуги</translation>
 <translation id="3207960819495026254">С отметка</translation>
 <translation id="3210163015918861891">Синхронизирането е изключено</translation>
-<translation id="3237561509210981547">За да добавите страница към списъка си за четене, докоснете <ph name="BEGIN_BOLD_FONT" />Споделяне &gt; Четене по-късно<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3240426699337459095">Връзката е копирана</translation>
 <translation id="3244271242291266297">ММ</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> от <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Отворени раздели</translation>
+<translation id="3289005573061089144">Да се импортират ли данните?</translation>
 <translation id="3324193307694657476">Адрес 2</translation>
 <translation id="3329904751041170572">Не можа да се установи връзка със сървъра.</translation>
 <translation id="3335947283844343239">Повторно отваряне на затворения раздел</translation>
@@ -130,7 +124,6 @@
 <translation id="3414292259312108062">Chrome ще съхрани тази парола при <ph name="BEGIN_LINK" />останалите, запазени в Google<ph name="END_LINK" />, и автоматично ще я попълва вместо вас, за да не се налага да я помните.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> мин</translation>
 <translation id="3448016392200048164">Разделен изглед</translation>
-<translation id="3474068797193663261">За да добавите страница към списъка си за четене, докоснете <ph name="BEGIN_BOLD_FONT" />иконата за меню &gt; Споделяне &gt; Четене по-късно<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3474649192738347024">Формулярите са попълнени.</translation>
 <translation id="3478058380795961209">Месец на валидност</translation>
 <translation id="3482959374254649722">Разделите ви се синхронизират...</translation>
@@ -190,7 +183,6 @@
 <translation id="481968316161811770">„Бисквитки“ и данни за сайтове</translation>
 <translation id="4875622588773761625">Искате ли <ph name="PASSWORD_MANAGER_BRAND" /> да актуализира паролата ви за този сайт?</translation>
 <translation id="4881695831933465202">Отваряне</translation>
-<translation id="4904877109095351937">Означаване като прочетено</translation>
 <translation id="4923459931733593730">Плащане</translation>
 <translation id="4930268273022498155">Изтриване на съществуващите данни. Можете да ги извлечете, като превключите обратно към <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">При споделянето на елемента възникна проблем.</translation>
@@ -368,7 +360,6 @@
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8433678324664858900">Предложения</translation>
 <translation id="8458397775385147834">Изтрихте 1 елемент</translation>
-<translation id="8487700953926739672">Налице офлайн</translation>
 <translation id="8503813439785031346">Потребителско име</translation>
 <translation id="8517375800490286174">Лицензи за отворен код</translation>
 <translation id="8524799873541103884">Раздели в режим „<ph name="INCOGNITO" />“: <ph name="FIRST_VISIBLE_TAB" /> до <ph name="LAST_VISIBLE_TAB" /> от общо <ph name="NUMBER_OF_OPEN_TABS" /></translation>
@@ -378,7 +369,6 @@
 <translation id="8605219856220328675">Затваряне на раздела.</translation>
 <translation id="8620640915598389714">Редактиране</translation>
 <translation id="8636825310635137004">Включете синхронизирането, за да получите разделите си от другите си устройства.</translation>
-<translation id="8654802032646794042">Отказ</translation>
 <translation id="8680787084697685621">Данните за вход в профила ви не са актуални.</translation>
 <translation id="8699098509676302392">Добавяне на адрес...</translation>
 <translation id="8721297211384281569">Меню „Инструменти“</translation>

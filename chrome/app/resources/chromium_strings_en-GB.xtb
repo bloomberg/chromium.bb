@@ -32,7 +32,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1881322772814446296">You are signing in with a managed account and giving its administrator control over your Chromium profile. Your Chromium data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME" />. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. You can optionally create a new profile to keep your existing Chromium data separate. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium is unresponsive. Relaunch now?</translation>
 <translation id="1967743265616885482">A module with the same name has been known to conflict with Google Chrome.</translation>
-<translation id="2008474315282236005">This will delete 1 item from this device. To retrieve your data later, sign in to Chromium as <ph name="USER_EMAIL" />.</translation>
 <translation id="2061399003623151192">{NUM_ITEMS,plural, =1{This will permanently delete at least $1 item from this device. To retrieve your data later, sign in to Chromium as $2.}other{This will permanently delete at least $1 items from this device. To retrieve your data later, sign in to Chromium as $2.}}</translation>
 <translation id="2077129598763517140">Use hardware acceleration when available</translation>
 <translation id="2119636228670142020">About &amp;Chromium OS</translation>
@@ -82,7 +81,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3312805357485578561">Chromium has detected unusual behaviour</translation>
 <translation id="331951419404882060">Chromium OS could not sync your data due to an error signing in.</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
-<translation id="3474745554856756813">This will delete <ph name="ITEMS_COUNT" /> items from this device. To retrieve your data later, sign in to Chromium as <ph name="USER_EMAIL" />.</translation>
 <translation id="3509308970982693815">Please close all Chromium windows and try again.</translation>
 <translation id="352783484088404971">Remove From Chromium...</translation>
 <translation id="3549345495227188780">Get Started with Chromium OS</translation>
@@ -233,7 +231,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="7617377681829253106">Chromium just got better</translation>
 <translation id="7641113255207688324">Chromium isn't your default browser.</translation>
 <translation id="7729447699958282447">Chromium could not sync your data because Sync is not available for your domain.</translation>
-<translation id="7745317241717453663">This will delete your browsing data from this device. To retrieve your data later, sign in to Chromium as <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">The installer couldn't create a temporary directory. Please check for free disk space and permission to install software.</translation>
 <translation id="7937630085815544518">You were signed in to Chromium as <ph name="USER_EMAIL_ADDRESS" />. Please use the same account to sign in again.</translation>
 <translation id="795025003224538582">Don't restart</translation>

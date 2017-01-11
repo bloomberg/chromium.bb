@@ -82,7 +82,6 @@
 <translation id="1753706481035618306">Номер на страницата</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Опитайте да стартирате мрежова диагностика в Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Моля, актуализирайте пропуска си за синхронизиране.</translation>
-<translation id="1787142507584202372">Тук ще се показват отворените ви раздели</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803678881841855883">Google Безопасно сърфиране наскоро <ph name="BEGIN_LINK" />откри злонамерен софтуер<ph name="END_LINK" /> на <ph name="SITE" />. Уебсайтовете, които обикновено са безопасни, понякога се заразяват с такъв софтуер. Източникът на съответното съдържание е <ph name="SUBRESOURCE_HOST" /> – известен разпространител на злонамерен софтуер. <ph name="BEGIN_LEARN_MORE_LINK" />Научете повече<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">Заявката или параметрите й са невалидни</translation>
@@ -175,7 +174,6 @@
 <translation id="2712118517637785082">Направихте опит да се свържете с/ъс <ph name="DOMAIN" />, но сървърът предoстави сертификат, анулиран от издателя му. Това означава, че в никакъв случай не трябва да се доверявате на представените от сървъра идентификационни данни за сигурност. Възможно е да сте се свързали с извършител на атака. <ph name="BEGIN_LEARN_MORE_LINK" />Научете повече<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="2712173769900027643">Искане на разрешение</translation>
 <translation id="2713444072780614174">бяло</translation>
-<translation id="2720342946869265578">В близост</translation>
 <translation id="2721148159707890343">Заявката е успешна</translation>
 <translation id="2728127805433021124">Сертификатът на сървъра е подписан със слаб алгоритъм.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Стартирайте диагностика на свързаността<ph name="END_LINK" /></translation>
@@ -372,7 +370,6 @@
 <translation id="4728558894243024398">Платформа</translation>
 <translation id="4744603770635761495">Път към изпълнимия файл</translation>
 <translation id="4756388243121344051">&amp;История</translation>
-<translation id="4759118997339041434">Автоматичното попълване на данните за плащане е деактивирано</translation>
 <translation id="4764776831041365478">До уеб страницата на адрес <ph name="URL" /> може временно да няма достъп или да е преместена за постоянно на нов уеб адрес.</translation>
 <translation id="4771973620359291008">Възникна неизвестна грешка.</translation>
 <translation id="4800132727771399293">Прегледайте датата на валидност и кода за проверка и оптитайте отново</translation>
@@ -531,6 +528,7 @@
 <translation id="6644283850729428850">Това правило е оттеглено.</translation>
 <translation id="6652240803263749613">Сървърът не можа да докаже, че е <ph name="DOMAIN" />. Сертификатът му за сигурност не се счита за надежден от операционната система на компютъра ви. Това може да се дължи на неправилно конфигуриране или на прехващане на връзката ви от извършител на атака. <ph name="BEGIN_LEARN_MORE_LINK" />Научете повече<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="6656103420185847513">Редактиране на папката</translation>
+<translation id="6660210980321319655">Сигналът е подаден автоматично в/ъв <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Предложението за формуляри да се премахне ли от Chromium?</translation>
 <translation id="6685834062052613830">Излизане от профила и завършване на настройването</translation>
 <translation id="6710213216561001401">Предишна</translation>
@@ -677,7 +675,6 @@
 <translation id="8150722005171944719">Файлът на адрес <ph name="URL" /> не може да бъде прочетен.  Възможно е да е премахнат, преместен или разрешенията му да предотвратяват достъпа.</translation>
 <translation id="8194797478851900357">&amp;Отмяна на преместването</translation>
 <translation id="8201077131113104583">Невалиден URL адрес за актуализиране на разширението с идентификационен номер <ph name="EXTENSION_ID" />.</translation>
-<translation id="8202097416529803614">Обобщена информация за поръчката</translation>
 <translation id="8218327578424803826">Зададено местоположение:</translation>
 <translation id="8225771182978767009">Човекът, който е настроил компютъра, е блокирал този сайт.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" /> и <ph name="TYPE_2" /></translation>
@@ -723,7 +720,6 @@
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;DNS адресът&lt;/abbr&gt; на <ph name="HOST_NAME" /> не можа да бъде намерен. Проблемът се диагностицира.</translation>
 <translation id="8790007591277257123">&amp;Възстановяване на изтриването</translation>
 <translation id="8798099450830957504">По подразбиране</translation>
-<translation id="8800988563907321413">Тук ще се показват предложения за неща в близост</translation>
 <translation id="8804164990146287819">Декларация за поверителност</translation>
 <translation id="8820817407110198400">Отметки</translation>
 <translation id="8834246243508017242">Активиране на използването на контактите при автоматично попълване…</translation>

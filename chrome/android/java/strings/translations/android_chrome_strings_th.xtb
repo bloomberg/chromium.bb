@@ -269,7 +269,6 @@
 <translation id="3828029223314399057">ค้นหาบุ๊กมาร์ก</translation>
 <translation id="3845539888601087042">กำลังแสดงประวัติการเข้าชมจากอุปกรณ์ที่คุณลงชื่อเข้าใช้ <ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="3859306556332390985">ไปข้างหน้า</translation>
-<translation id="3890664840433101773">เพิ่มอีเมล</translation>
 <translation id="3894427358181296146">เพิ่มโฟลเดอร์</translation>
 <translation id="3895926599014793903">บังคับให้เปิดใช้การซูม</translation>
 <translation id="3917783807003067648">บล็อกตำแหน่งอยู่</translation>
@@ -327,6 +326,7 @@
 <translation id="4526249700380860531">ดูและจัดการรหัสผ่านที่บันทึกไว้ที่ <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">เลือกโฟลเดอร์</translation>
 <translation id="4535858793016067060">เปิด “แหล่งที่มาที่ไม่รู้จัก” ในการตั้งค่าความปลอดภัยของ Android เพื่อทดลองประสบการณ์ "การเพิ่มหน้าจอหลักที่ปรับปรุงใหม่" อย่าลืมปิดใช้การตั้งค่าหลังจากที่คุณลองใช้เสร็จแล้ว</translation>
+<translation id="4543661749405994812">คัดลอกที่อยู่อีเมล</translation>
 <translation id="4558311620361989323">แป้นพิมพ์ลัดสำหรับหน้าเว็บ</translation>
 <translation id="4572422548854449519">ลงชื่อเข้าใช้บัญชีที่มีการจัดการ</translation>
 <translation id="457875822857220463">การจัดส่ง</translation>
@@ -371,7 +371,6 @@
 <translation id="4988526792673242964">หน้า</translation>
 <translation id="4996978546172906250">แชร์ผ่าน</translation>
 <translation id="5000922062037820727">ถูกบล็อก (แนะนำ)</translation>
-<translation id="5004339818306944878">ใช้ข้อมูลเครือข่ายมือถือน้อยลงถึง 60% และท่องเว็บได้เร็วขึ้น เซิร์ฟเวอร์ Google จะเพิ่มประสิทธิภาพหน้าที่คุณเข้าชม</translation>
 <translation id="5005498671520578047">คัดลอกรหัสผ่าน</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> ต้องการเชื่อมต่อ</translation>
 <translation id="5016205925109358554">Serif</translation>
@@ -394,12 +393,10 @@
 <translation id="5171045022955879922">ค้นหาหรือพิมพ์ URL</translation>
 <translation id="5184329579814168207">เปิดใน Chrome</translation>
 <translation id="5199929503336119739">โปรไฟล์งาน</translation>
-<translation id="5205222826937269299">ต้องระบุชื่อ</translation>
 <translation id="5209320130288484488">ไม่พบอุปกรณ์</translation>
 <translation id="5210286577605176222">ข้ามไปยังแท็บก่อนหน้า</translation>
 <translation id="5210365745912300556">ปิดแท็บ</translation>
 <translation id="5222676887888702881">ออกจากระบบ</translation>
-<translation id="5222812217790122047">ต้องระบุอีเมล</translation>
 <translation id="5233638681132016545">แท็บใหม่</translation>
 <translation id="5271967389191913893">อุปกรณ์ไม่สามารถเปิดเนื้อหาที่จะดาวน์โหลดได้</translation>
 <translation id="528192093759286357">ลากจากด้านบน แล้วแตะปุ่มกลับเพื่อออกจากโหมดเต็มหน้าจอ</translation>
@@ -526,6 +523,7 @@
 <translation id="6447842834002726250">คุกกี้</translation>
 <translation id="6448273550210938826">การค้นหาและคำแนะนำ URL</translation>
 <translation id="6463070039183944536">กำลังเพิ่ม…</translation>
+<translation id="6464825623202322042">อุปกรณ์นี้</translation>
 <translation id="6475951671322991020">ดาวน์โหลดวิดีโอ</translation>
 <translation id="6477460825583319731">ที่อยู่อีเมลไม่ถูกต้อง</translation>
 <translation id="6482749332252372425">การดาวน์โหลด <ph name="FILE_NAME" /> ล้มเหลวเพราะพื้นที่เก็บข้อมูลไม่เพียงพอ</translation>
@@ -572,7 +570,6 @@
 <translation id="6868088497967843822">ลงชื่อเข้าใช้เพื่อรับบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ บนอุปกรณ์ทั้งหมดของคุณ</translation>
 <translation id="688738109438487280">เพิ่มข้อมูลที่มีอยู่ลงใน <ph name="TO_ACCOUNT" /></translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{แท็บที่เปิดอยู่ %1$d แท็บ}other{แท็บที่เปิดอยู่ %1$d แท็บ}}</translation>
-<translation id="6896758677409633944">คัดลอก</translation>
 <translation id="6937422995269576720">หมายเลขบัตรไม่ถูกต้อง</translation>
 <translation id="6945221475159498467">เลือก</translation>
 <translation id="6963766334940102469">ลบบุ๊กมาร์ก</translation>
@@ -597,7 +594,6 @@
 <translation id="7094922512924405309">ไม่พบหน้า Physical Web ที่อยู่ใกล้เคียง</translation>
 <translation id="7138678301420049075">อื่นๆ</translation>
 <translation id="7180611975245234373">รีเฟรช</translation>
-<translation id="7189372733857464326">กำลังรอให้บริการ Google Play อัปเดตเสร็จสิ้น</translation>
 <translation id="7191430249889272776">แท็บเปิดในพื้นหลัง</translation>
 <translation id="7243308994586599757">มีตัวเลือกอยู่ทางด้านล่างของหน้าจอ</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> ใช้ตำแหน่งเพื่อแสดงผลการค้นหาในท้องถิ่น</translation>
@@ -658,7 +654,6 @@
 <translation id="7851858861565204677">อุปกรณ์อื่นๆ</translation>
 <translation id="7875915731392087153">สร้างอีเมล</translation>
 <translation id="7876243839304621966">ลบทั้งหมด</translation>
-<translation id="7882131421121961860">ไม่พบประวัติ</translation>
 <translation id="7929962904089429003">เปิดเมนู</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> ล้าสมัย</translation>
 <translation id="7947953824732555851">ยอมรับและลงชื่อเข้าใช้</translation>
@@ -706,7 +701,6 @@
 <translation id="8321376388213838985">บทความอื่นๆ จะปรากฏขึ้นในอีกไม่ช้า ขอให้เพลิดเพลินกับยามบ่าย</translation>
 <translation id="8372893542064058268">อนุญาตให้ใช้การซิงค์ในแบ็กกราวด์สำหรับเว็บไซต์ที่เจาะจง</translation>
 <translation id="8374821112118309944">คุณต้องอัปเดต TalkBack เป็นเวอร์ชันใหม่</translation>
-<translation id="8393700583063109961">ส่งข้อความ</translation>
 <translation id="8396312449826231789">เฉพาะไซต์ที่อนุมัติ</translation>
 <translation id="8413126021676339697">แสดงประวัติการเข้าชมทั้งหมด</translation>
 <translation id="8428213095426709021">การตั้งค่า</translation>
@@ -787,7 +781,6 @@
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">ภาพ</translation>
 <translation id="932327136139879170">หน้าแรก</translation>
-<translation id="932599481871055447">ประหยัดข้อมูลเครือข่ายมือถือและท่องเว็บได้เร็วขึ้น</translation>
 <translation id="938850635132480979">ข้อผิดพลาด: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">เข้าถึงไมโครโฟน</translation>
 <translation id="951339005376969845">ลบข้อมูลที่มีอยู่ คุณสามารถดึงข้อมูลกลับมาโดยเปลี่ยนกลับไปเป็น <ph name="FROM_ACCOUNT" /></translation>

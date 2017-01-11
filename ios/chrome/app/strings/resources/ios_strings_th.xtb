@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">เลือกโฟลเดอร์</translation>
 <translation id="1272079795634619415">หยุด</translation>
 <translation id="129553762522093515">เพิ่งปิด</translation>
-<translation id="1323735185997015385">ลบ</translation>
 <translation id="132683371494960526">แตะ 2 ครั้งเพื่อเปลี่ยนโฟลเดอร์ระดับบนสุด</translation>
 <translation id="1340643665687018190">ปิดเมนู</translation>
 <translation id="1375321115329958930">รหัสผ่านที่บันทึกไว้</translation>
@@ -62,7 +61,6 @@
 <translation id="2068952045031577364">สัปดาห์ที่ผ่านมา</translation>
 <translation id="2079545284768500474">เลิกทำ</translation>
 <translation id="209018056901015185">ขอไซต์สำหรับเดสก์ท็อป</translation>
-<translation id="2100215774115172756">รายการรออ่านพร้อมใช้งานแบบออฟไลน์</translation>
 <translation id="2103075008456228677">เปิด history.google.com</translation>
 <translation id="2116625576999540962">ย้ายแล้ว <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> รายการ</translation>
 <translation id="2149973817440762519">แก้ไขบุ๊กมาร์ก</translation>
@@ -82,7 +80,6 @@
 <translation id="2572712655377361602">นโยบายของอุปกรณ์บล็อกการเข้าถึงรูปภาพของคุณ</translation>
 <translation id="2584132361465095047">เพิ่มบัญชี…</translation>
 <translation id="2593774076813182497">หน้านี้ไม่สามารถพิมพ์ได้</translation>
-<translation id="2648803196158606475">ลบรายการที่อ่านแล้ว</translation>
 <translation id="2653659639078652383">ส่ง</translation>
 <translation id="2684815431982545828">แท็บใหม่</translation>
 <translation id="2690858294534178585">ใช้กล้องถ่ายรูปอยู่</translation>
@@ -101,25 +98,22 @@
 <translation id="2898963176829412617">โฟลเดอร์ใหม่…</translation>
 <translation id="2903493209154104877">ที่อยู่</translation>
 <translation id="2921219216347069551">ไม่สามารถแชร์เว็บ</translation>
-<translation id="292639812446257861">ทำเครื่องหมายว่ายังไม่ได้อ่าน</translation>
 <translation id="2933759065870693102">แฟลช</translation>
 <translation id="2969979262385602596">ไม่สามารถลงชื่อเข้าใช้ได้ โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="2989805286512600854">เปิดในแท็บใหม่</translation>
 <translation id="3024255823539804759">วันที่ผ่านมา</translation>
 <translation id="3037605927509011580">แย่จัง!</translation>
 <translation id="3050311348724540835"><ph name="HISTORY_URL" /> ไม่พร้อมให้บริการ หากต้องการเข้าถึงประวัติการท่องเว็บ เลือก "<ph name="SHOW_HISTORY" />" จากเมนูเครื่องมือ</translation>
-<translation id="3112556859945124369">ทำเครื่องหมาย…</translation>
 <translation id="3151924044251363314">เฉพาะผู้ที่มีรหัสผ่านของคุณเท่านั้นจึงจะสามารถอ่านข้อมูลที่เข้ารหัสของคุณได้ Google จะไม่ส่งหรือจัดเก็บรหัสผ่านนี้ หากคุณลืมรหัสผ่านหรือต้องการเปลี่ยนการตั้งค่านี้ คุณจะต้องรีเซ็ตการซิงค์ <ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" /></translation>
-<translation id="3157684681743766797">ทำเครื่องหมายทั้งหมด…</translation>
 <translation id="3172213052701798825">Google Smart Lock สำหรับรหัสผ่าน</translation>
 <translation id="3175081911749765310">บริการทางเว็บ</translation>
 <translation id="3207960819495026254">บุ๊กมาร์กแล้ว</translation>
 <translation id="3210163015918861891">ซิงค์ปิดอยู่</translation>
-<translation id="3237561509210981547">หากต้องการเพิ่มหน้าในรายการรออ่าน ให้แตะ <ph name="BEGIN_BOLD_FONT" />แชร์ &gt; อ่านภายหลัง<ph name="END_BOLD_FONT" /></translation>
 <translation id="3240426699337459095">คัดลอกลิงก์แล้ว</translation>
 <translation id="3244271242291266297">ดด</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> จาก <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">แท็บที่เปิดอยู่</translation>
+<translation id="3289005573061089144">ต้องการนำเข้าข้อมูลไหม</translation>
 <translation id="3324193307694657476">ที่อยู่ 2</translation>
 <translation id="3329904751041170572">ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์</translation>
 <translation id="3335947283844343239">เปิดแท็บที่ปิดไปแล้วขึ้นใหม่</translation>
@@ -128,7 +122,6 @@
 <translation id="3414292259312108062">Chrome จะเก็บข้อมูลนี้ไว้ใน<ph name="BEGIN_LINK" />รหัสผ่านที่บันทึกไว้ของ Google<ph name="END_LINK" /> และป้อนให้คุณโดยอัตโนมัติ เพื่อให้คุณไม่ต้องจำเอง</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> นาที</translation>
 <translation id="3448016392200048164">Split View</translation>
-<translation id="3474068797193663261">หากต้องการเพิ่มหน้าในรายการรออ่าน ให้แตะ <ph name="BEGIN_BOLD_FONT" />เมนู &gt; แชร์ &gt; อ่านภายหลัง<ph name="END_BOLD_FONT" /></translation>
 <translation id="3474649192738347024">กรอกฟอร์มแล้ว</translation>
 <translation id="3478058380795961209">เดือนที่หมดอายุ</translation>
 <translation id="3482959374254649722">กำลังซิงค์แท็บ...</translation>
@@ -188,7 +181,6 @@
 <translation id="481968316161811770">คุกกี้ ข้อมูลเว็บไซต์</translation>
 <translation id="4875622588773761625">คุณต้องการให้ <ph name="PASSWORD_MANAGER_BRAND" /> อัปเดตรหัสผ่านของคุณสำหรับเว็บไซต์นี้ไหม</translation>
 <translation id="4881695831933465202">เปิด</translation>
-<translation id="4904877109095351937">ทำเครื่องหมายว่าอ่านแล้ว</translation>
 <translation id="4923459931733593730">การชำระเงิน</translation>
 <translation id="4930268273022498155">ลบข้อมูลที่มีอยู่ คุณสามารถดึงข้อมูลได้ด้วยการเปลี่ยนกลับเป็น <ph name="USER_EMAIL1" /></translation>
 <translation id="4941089862236492464">ขออภัย เกิดปัญหาในการแชร์รายการของคุณ</translation>
@@ -366,7 +358,6 @@
 <translation id="8428213095426709021">การตั้งค่า</translation>
 <translation id="8433678324664858900">แสดงคำแนะนำ</translation>
 <translation id="8458397775385147834">ลบแล้ว 1 รายการ</translation>
-<translation id="8487700953926739672">ใช้งานแบบออฟไลน์ได้</translation>
 <translation id="8503813439785031346">ชื่อผู้ใช้</translation>
 <translation id="8517375800490286174">สัญญาอนุญาตโอเพนซอร์ส</translation>
 <translation id="8524799873541103884">แท็บ <ph name="INCOGNITO" /> <ph name="FIRST_VISIBLE_TAB" /> ถึง <ph name="LAST_VISIBLE_TAB" /> จาก <ph name="NUMBER_OF_OPEN_TABS" /></translation>
@@ -376,7 +367,6 @@
 <translation id="8605219856220328675">ปิดแท็บ</translation>
 <translation id="8620640915598389714">แก้ไข</translation>
 <translation id="8636825310635137004">เปิดการซิงค์เพื่อรับแท็บจากอุปกรณ์เครื่องอื่นๆ ของคุณ</translation>
-<translation id="8654802032646794042">ยกเลิก</translation>
 <translation id="8680787084697685621">รายละเอียดการลงชื่อเข้าใช้บัญชีเก่าเกินไป</translation>
 <translation id="8699098509676302392">เพิ่มที่อยู่...</translation>
 <translation id="8721297211384281569">เมนูเครื่องมือ</translation>

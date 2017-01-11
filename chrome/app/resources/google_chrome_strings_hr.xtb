@@ -38,7 +38,6 @@
 <translation id="2063848847527508675">Potrebno je ponovo pokrenuti Chrome OS kako bi se ažuriranje primijenilo.</translation>
 <translation id="2077129598763517140">Upotrijebi hardversko ubrzanje kada je dostupno</translation>
 <translation id="2084710999043359739">Dodajte u Chrome</translation>
-<translation id="2120620239521071941">Time će se izbrisati sljedeći broj stavki s uređaja: <ph name="ITEMS_COUNT" />. Da biste kasnije dohvatili svoje podatke, prijavite se na Chrome kao <ph name="USER_EMAIL" />.</translation>
 <translation id="2147651015520127414">Chrome je potvrdio da je <ph name="ISSUER" /> izdao certifikat web-lokacije.</translation>
 <translation id="2246246234298806438">Google Chrome ne može prikazati pregled ispisa ako nema ugrađeni preglednik PDF-a.</translation>
 <translation id="2252923619938421629">Pomognite poboljšati Google Chrome tako što ćete prijaviti trenutačne postavke</translation>
@@ -57,7 +56,6 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="2485422356828889247">Deinstaliraj</translation>
 <translation id="2580411288591421699">Nije moguće instalirati istu verziju programa Google Chrome koja je trenutačno pokrenuta. Zatvorite Google Chrome i pokušajte ponovo.</translation>
 <translation id="2582790009689336987">Ovo će računalo uskoro prestati primati ažuriranja za Google Chrome jer taj sustav Linuxa više neće biti podržan.</translation>
-<translation id="2586406160782125153">Time će se izbrisati podaci o pregledavanju s uređaja. Da biste kasnije dohvatili svoje podatke, prijavite se na Chrome kao <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Logotip Chrome</translation>
 <translation id="2664962310688259219">Licence otvorenog izvornog koda OS-a Chrome</translation>
 <translation id="2665296953892887393">Pomognite nam poboljšati Google Chrome šaljući izvješća o rušenju programa i <ph name="UMA_LINK" /> Googleu</translation>
@@ -95,7 +93,6 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="345171907106878721">Dodajte sebe kao korisnika Chromea</translation>
 <translation id="3612333635265770873">Modul s tim nazivom već je bio u konfliktu s preglednikom Google Chrome.</translation>
 <translation id="3622797965165704966">Upotreba Chromea s vašim Google računom te na dijeljenim računalima sada je još jednostavnija.</translation>
-<translation id="3718181793972440140">Time će se izbrisati jedna stavka s uređaja. Da biste kasnije dohvatili svoje podatke, prijavite se na Chrome kao <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Proširenje "<ph name="EXTENSION_NAME" />" promijenilo je stranicu koja se prikazuje prilikom pokretanja Chromea.</translation>
 <translation id="3738139272394829648">Dodirnite za pretraživanje</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>

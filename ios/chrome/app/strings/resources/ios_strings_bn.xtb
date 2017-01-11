@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">ফোল্ডার বেছে নিন</translation>
 <translation id="1272079795634619415">বন্ধ</translation>
 <translation id="129553762522093515">সম্প্রতি বন্ধ হয়েছে</translation>
-<translation id="1323735185997015385">মুছুন</translation>
 <translation id="132683371494960526">মূল ফোল্ডার পরিবর্তন করতে দুবার আলতো চাপুন।</translation>
 <translation id="1340643665687018190">মেনু বন্ধ করুন</translation>
 <translation id="1375321115329958930">সংরক্ষিত পাসওয়ার্ড</translation>
@@ -64,7 +63,6 @@
 <translation id="2068952045031577364">গত সপ্তাহ</translation>
 <translation id="2079545284768500474">পূর্বাবস্থায় ফিরুন</translation>
 <translation id="209018056901015185">ডেস্কটপ সাইট অনুরোধ করুন</translation>
-<translation id="2100215774115172756">আপনার পড়ার তালিকা অফলাইনে উপলব্ধ।</translation>
 <translation id="2103075008456228677">history.google.com খুলুন</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />টি আইটেম সরানো হয়েছে</translation>
 <translation id="2149973817440762519">বুকমার্ক সম্পাদনা করুন</translation>
@@ -84,7 +82,6 @@
 <translation id="2572712655377361602">একটি ডিভাইস নীতি আপনার ফটোতে অ্যাক্সেস অবরুদ্ধ করেছে</translation>
 <translation id="2584132361465095047">অ্যাকাউন্ট যোগ করুন...</translation>
 <translation id="2593774076813182497">এই পৃষ্ঠাটির প্রিন্ট করা যাবে না৷</translation>
-<translation id="2648803196158606475">’পড়া হয়েছে’ মুছুন</translation>
 <translation id="2653659639078652383">জমা</translation>
 <translation id="2684815431982545828">নতুন ট্যাব</translation>
 <translation id="2690858294534178585">ক্যামেরা ব্যবহার করা হচ্ছে</translation>
@@ -103,25 +100,22 @@
 <translation id="2898963176829412617">নতুন ফোল্ডার...</translation>
 <translation id="2903493209154104877">ঠিকানা</translation>
 <translation id="2921219216347069551">পৃষ্ঠা শেয়ার করা যায়নি</translation>
-<translation id="292639812446257861">অপঠিত হিসেবে চিহ্নিত করুন</translation>
 <translation id="2933759065870693102">টর্চ</translation>
 <translation id="2969979262385602596">প্রবেশ করুন করতে ব্যর্থ হয়েছে৷ দয়া করে পরে আবার চেষ্টা করুন৷</translation>
 <translation id="2989805286512600854">নতুন ট্যাবে খুলুন</translation>
 <translation id="3024255823539804759">গত দিন</translation>
 <translation id="3037605927509011580">ইস!</translation>
 <translation id="3050311348724540835"><ph name="HISTORY_URL" /> উপলব্ধ নয়। আপনার ব্রাউজিং ইতিহাস অ্যাক্সেস করতে, সরঞ্জামগুলি মেনু থেকে "<ph name="SHOW_HISTORY" />" নির্বাচন করুন।</translation>
-<translation id="3112556859945124369">চিহ্নিত করুন…</translation>
 <translation id="3151924044251363314">শুধুমাত্র আপনার পাসফ্রেজ সহ কোনো ব্যক্তি আপনার এনক্রিপ্ট করা ডেটা পড়তে পারবেন৷ পাসফ্রেজটি Google এ পাঠানো হয় না বা এর দ্বারা সংরক্ষণ করা হয় না৷ যদি আপনি আপনার পাসফ্রেজ ভুলে যান, তাহলে আপনাকে সিঙ্ক পুনরায় সেট করতে হবে৷ <ph name="BEGIN_LINK" />আরো জানুন<ph name="END_LINK" /></translation>
-<translation id="3157684681743766797">সবগুলি চিহ্নিত করুন…</translation>
 <translation id="3172213052701798825">পাসওয়ার্ডের জন্য Google Smart Lock</translation>
 <translation id="3175081911749765310">ওয়েব পরিষেবা</translation>
 <translation id="3207960819495026254">বুকমার্ক করা হয়েছে</translation>
 <translation id="3210163015918861891">সিঙ্ক বন্ধ রয়েছে</translation>
-<translation id="3237561509210981547">আপনার পড়ার তালিকায় কোনো পৃষ্ঠা যোগ করতে, <ph name="BEGIN_BOLD_FONT" />শেয়ার &gt; পরে পড়ুন<ph name="END_BOLD_FONT" /> আলতো চাপুন।</translation>
 <translation id="3240426699337459095">লিঙ্ক অনুলিপি করা হয়েছে</translation>
 <translation id="3244271242291266297">মিমি</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="NUM_SUGGESTIONS" /> এর <ph name="INDEX" /></translation>
 <translation id="3268451620468152448">ওপেন ট্যাব</translation>
+<translation id="3289005573061089144">ডেটা আমদানি করবেন?</translation>
 <translation id="3324193307694657476">ঠিকানা ২</translation>
 <translation id="3329904751041170572">সার্ভারের সাথে সংযোগ করা যাযনি৷</translation>
 <translation id="3335947283844343239">বন্ধ হওয়া ট্যাব পুনরায় খুলুন</translation>
@@ -130,7 +124,6 @@
 <translation id="3414292259312108062">Chrome এটিকে আপনার <ph name="BEGIN_LINK" />Google এর সংরক্ষিত পাসওয়ার্ডগুলি<ph name="END_LINK" /> এ সংরক্ষণ করতে এবং আপনার জন্য এটিকে স্বতঃপূর্ণ করবে যাতে করে আপনাকে এটি আর মনে রাখতে না হয়৷</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> মিনিট</translation>
 <translation id="3448016392200048164">বিভক্ত দৃশ্য</translation>
-<translation id="3474068797193663261">আপনার পড়ার তালিকায় কোনো পৃষ্ঠা যোগ করতে, <ph name="BEGIN_BOLD_FONT" />মেনু &gt; শেয়ার &gt; পরে পড়ুন<ph name="END_BOLD_FONT" /> আলতো চাপুন।</translation>
 <translation id="3474649192738347024">ফর্মগুলি পূরণ করা হয়েছে৷</translation>
 <translation id="3478058380795961209">মেয়াদপূর্তির মাস</translation>
 <translation id="3482959374254649722">আপনার ট্যাবগুলি সিঙ্ক করা হচ্ছে ...</translation>
@@ -190,7 +183,6 @@
 <translation id="481968316161811770">কুকিজ, সাইট ডেটা</translation>
 <translation id="4875622588773761625">আপনি কি চান যে এই সাইটের জন্য <ph name="PASSWORD_MANAGER_BRAND" /> আপনার পাসওয়ার্ড আপডেট করুক?</translation>
 <translation id="4881695831933465202">খুলুন</translation>
-<translation id="4904877109095351937">পঠিত হিসেবে চিহ্নিত করুন</translation>
 <translation id="4923459931733593730">অর্থপ্রদান</translation>
 <translation id="4930268273022498155">বিদ্যমান ডেটা মুছুন। আপনি <ph name="USER_EMAIL1" /> এ ফিরে গিয়ে এটি পুনরুদ্ধার করতে পারেন।</translation>
 <translation id="4941089862236492464">দুঃখিত, আপনার জিনিস শেয়ার করার সময় একটা সমস্যা ছিল।</translation>
@@ -369,7 +361,6 @@
 <translation id="8428213095426709021">সেটিংস</translation>
 <translation id="8433678324664858900">পরামর্শগুলি দেখান</translation>
 <translation id="8458397775385147834">১টি আইটেম মোছা হয়েছে</translation>
-<translation id="8487700953926739672">অফলাইনে উপলব্ধ</translation>
 <translation id="8503813439785031346">ব্যবহারকারীর নাম</translation>
 <translation id="8517375800490286174">ওপেন সোর্স লাইসেন্স</translation>
 <translation id="8524799873541103884"><ph name="NUMBER_OF_OPEN_TABS" />টির মধ্যে <ph name="FIRST_VISIBLE_TAB" /> থেকে <ph name="LAST_VISIBLE_TAB" /> পর্যন্ত <ph name="INCOGNITO" /> ট্যাব</translation>
@@ -379,7 +370,6 @@
 <translation id="8605219856220328675">ট্যাব বন্ধ করুন।</translation>
 <translation id="8620640915598389714">সম্পাদনা করুন</translation>
 <translation id="8636825310635137004">আপনার অন্য ডিভাইসগুলি থেকে আপনার ট্যাবগুলি পেতে, সিঙ্ক চালু করুন।</translation>
-<translation id="8654802032646794042">বাতিল করুন</translation>
 <translation id="8680787084697685621">অ্যাকাউন্ট সাইন-ইন বিশদ তারিখ সীমার বাইরে৷</translation>
 <translation id="8699098509676302392">ঠিকানা যোগ করুন...</translation>
 <translation id="8721297211384281569">সরঞ্জাম মেনু</translation>

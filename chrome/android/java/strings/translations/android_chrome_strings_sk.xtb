@@ -269,7 +269,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="3828029223314399057">Prehľadať záložky</translation>
 <translation id="3845539888601087042">Zobrazuje sa história zo zariadení, na ktorých ste prihlásený/-á. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 <translation id="3859306556332390985">Pretočiť dopredu</translation>
-<translation id="3890664840433101773">Pridanie e-mailu</translation>
 <translation id="3894427358181296146">Pridanie priečinka</translation>
 <translation id="3895926599014793903">Vynútiť povolenie priblíženia</translation>
 <translation id="3917783807003067648">Poloha je zablokovaná</translation>
@@ -327,6 +326,7 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="4526249700380860531">Zobrazte si a spravujte uložené heslá na stránke <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Výber priečinka</translation>
 <translation id="4535858793016067060">Ak chcete vyskúšať experimentálnu funkciu „Zlepšené pridávanie na plochu“, zapnite v nastaveniach zabezpečenia Androidu položku „Neznáme zdroje“. Po dokončení skúšania nezabudnite toto nastavenie opäť deaktivovať.</translation>
+<translation id="4543661749405994812">Kopírovať e-mailovú adresu</translation>
 <translation id="4558311620361989323">Skratky pre webové stránky</translation>
 <translation id="4572422548854449519">Prihlásenie do spravovaného účtu</translation>
 <translation id="457875822857220463">Doručenie</translation>
@@ -371,7 +371,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="4988526792673242964">Stránky</translation>
 <translation id="4996978546172906250">Zdieľať prostredníctvom</translation>
 <translation id="5000922062037820727">Blokované (odporúčané)</translation>
-<translation id="5004339818306944878">Ušetrite až 60 % dát a načítajte weby rýchlejšie. Servery Google budú optimalizovať stránky, ktoré navštívite.</translation>
 <translation id="5005498671520578047">Kopírovanie hesla</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> žiada o pripojenie</translation>
 <translation id="5016205925109358554">Pätkové</translation>
@@ -394,12 +393,10 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="5171045022955879922">Vyhľadajte alebo zadajte webovú adresu</translation>
 <translation id="5184329579814168207">Otvoriť v prehliadači Chrome</translation>
 <translation id="5199929503336119739">Pracovný profil</translation>
-<translation id="5205222826937269299">Meno je povinný údaj</translation>
 <translation id="5209320130288484488">Nenašli sa žiadne zariadenia</translation>
 <translation id="5210286577605176222">Prechod na predchádzajúcu kartu</translation>
 <translation id="5210365745912300556">Zatvoriť kartu</translation>
 <translation id="5222676887888702881">Odhlásiť sa</translation>
-<translation id="5222812217790122047">E-mailová adresa je povinný údaj</translation>
 <translation id="5233638681132016545">Nová karta</translation>
 <translation id="5271967389191913893">Zariadenie nemôže otvoriť obsah na stiahnutie</translation>
 <translation id="528192093759286357">Režim celej obrazovky ukončíte potiahnutím z hornej časti a klepnutím na tlačidlo Späť.</translation>
@@ -526,6 +523,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="6447842834002726250">Súbory cookie</translation>
 <translation id="6448273550210938826">Návrhy pre vyhľadávanie a webové adresy</translation>
 <translation id="6463070039183944536">Pridáva sa…</translation>
+<translation id="6464825623202322042">Toto zariadenie</translation>
 <translation id="6475951671322991020">Stiahnuť video</translation>
 <translation id="6477460825583319731">Neplatná e-mailová adresa</translation>
 <translation id="6482749332252372425">Súbor <ph name="FILE_NAME" /> sa nepodarilo stiahnuť z dôvodu nedostatku voľného miesta v úložisku.</translation>
@@ -572,7 +570,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="6868088497967843822">Prihláste sa a získate tak svoje záložky, históriu, heslá a ďalšie nastavenia na všetkých svojich zariadeniach.</translation>
 <translation id="688738109438487280">Pridať existujúce dáta do účtu <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d otvorená karta}few{%1$d otvorené karty}many{%1$d otvorenej karty}other{%1$d otvorených kariet}}</translation>
-<translation id="6896758677409633944">Kopírovať</translation>
 <translation id="6937422995269576720">Neplatné číslo karty</translation>
 <translation id="6945221475159498467">Vybrať</translation>
 <translation id="6963766334940102469">Odstrániť záložky</translation>
@@ -597,7 +594,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7094922512924405309">Nenašli sa žiadne stránky Fyzického webu v okolí</translation>
 <translation id="7138678301420049075">Iné</translation>
 <translation id="7180611975245234373">Obnoviť</translation>
-<translation id="7189372733857464326">Čaká sa na dokončenie aktualizácie služieb Google Play Services</translation>
 <translation id="7191430249889272776">Karta je otvorená na pozadí.</translation>
 <translation id="7243308994586599757">Možnosti sú k dispozícii v dolnej časti obrazovky</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> používa vašu polohu na zobrazovanie miestnych výsledkov vyhľadávania.</translation>
@@ -658,7 +654,6 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />history.google
 <translation id="7851858861565204677">Ďalšie zariadenia</translation>
 <translation id="7875915731392087153">Vytvorte správu</translation>
 <translation id="7876243839304621966">Odstrániť všetko</translation>
-<translation id="7882131421121961860">Nenašla sa žiadna história</translation>
 <translation id="7929962904089429003">Otvorenie ponuky</translation>
 <translation id="7942131818088350342">Aplikácia <ph name="PRODUCT_NAME" /> je zastaraná.</translation>
 <translation id="7947953824732555851">Prijať a prihl. sa</translation>
@@ -706,7 +701,6 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />history.google
 <translation id="8321376388213838985">Čoskoro sa zobrazia ďalšie články. Príjemné popoludnie!</translation>
 <translation id="8372893542064058268">Povolenie synchronizácie na pozadí na konkrétnom webe.</translation>
 <translation id="8374821112118309944">Aplikáciu TalkBack je potrebné aktualizovať na novšiu verziu.</translation>
-<translation id="8393700583063109961">Odoslať správu</translation>
 <translation id="8396312449826231789">Iba schválené stránky</translation>
 <translation id="8413126021676339697">Zobraziť celú históriu</translation>
 <translation id="8428213095426709021">Nastavenia</translation>
@@ -785,7 +779,6 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />history.google
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Obrázky</translation>
 <translation id="932327136139879170">Domov</translation>
-<translation id="932599481871055447">Šetrite dáta a prehliadajte rýchlejšie</translation>
 <translation id="938850635132480979">Chyba: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Prístup k mikrofónu</translation>
 <translation id="951339005376969845">Odstrániť existujúce údaje. Načítate ich prepnutím späť na účet <ph name="FROM_ACCOUNT" />.</translation>

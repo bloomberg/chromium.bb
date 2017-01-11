@@ -41,7 +41,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="2063848847527508675">Redémarrez Chrome OS pour appliquer la mise à jour.</translation>
 <translation id="2077129598763517140">Utiliser l'accélération matérielle (le cas échéant)</translation>
 <translation id="2084710999043359739">Ajouter à Chrome</translation>
-<translation id="2120620239521071941">Cette action aura pour effet de supprimer <ph name="ITEMS_COUNT" /> éléments de cet appareil. Pour récupérer vos données ultérieurement, connectez-vous à Chrome en tant que <ph name="USER_EMAIL" />.</translation>
 <translation id="2147651015520127414">Chrome a confirmé que le certificat de ce site Web a bien été émis par <ph name="ISSUER" />.</translation>
 <translation id="2246246234298806438">Impossible d'afficher l'aperçu d'impression dans Google Chrome, car la visionneuse de documents PDF intégrée est absente.</translation>
 <translation id="2252923619938421629">Aidez-nous à améliorer Google Chrome en nous signalant vos paramètres.</translation>
@@ -60,7 +59,6 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="2485422356828889247">Désinstaller</translation>
 <translation id="2580411288591421699">Impossible d'installer la version de Google Chrome qui est en cours d'exécution. Fermez Google Chrome et réessayez.</translation>
 <translation id="2582790009689336987">Cet ordinateur ne recevra bientôt plus les mises à jour de Google Chrome, car la compatibilité ne sera plus assurée sur ce système Linux.</translation>
-<translation id="2586406160782125153">Cette action aura pour effet de supprimer vos données de navigation de cet appareil. Pour récupérer vos données ultérieurement, connectez-vous à Chrome en tant que <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Logo Google Chrome</translation>
 <translation id="2664962310688259219">Licences Chrome OS Open Source</translation>
 <translation id="2665296953892887393">Aidez-nous à améliorer Google Chrome en nous envoyant des rapports d'erreur et des <ph name="UMA_LINK" />.</translation>
@@ -98,7 +96,6 @@ Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie 
 <translation id="345171907106878721">Ajouter un utilisateur à Chrome</translation>
 <translation id="3612333635265770873">Nous avons constaté qu'un module du même nom crée des conflits avec Google Chrome.</translation>
 <translation id="3622797965165704966">Il est désormais plus facile d'utiliser Chrome avec votre compte Google et sur des ordinateurs partagés.</translation>
-<translation id="3718181793972440140">Cette action aura pour effet de supprimer 1 élément de cet appareil. Pour récupérer vos données ultérieurement, connectez-vous à Chrome en tant que <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">L'extension <ph name="EXTENSION_NAME" /> a modifié la page qui s'affiche lorsque vous démarrez Chrome.</translation>
 <translation id="3738139272394829648">Appuyer pour rechercher</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>

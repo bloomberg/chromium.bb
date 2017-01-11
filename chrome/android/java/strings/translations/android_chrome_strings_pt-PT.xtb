@@ -269,7 +269,6 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="3828029223314399057">Pesquisar marcadores</translation>
 <translation id="3845539888601087042">A mostrar o histórico do seus dispositivos com sessão iniciada. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">Procurar para a frente</translation>
-<translation id="3890664840433101773">Adicionar email</translation>
 <translation id="3894427358181296146">Adicionar pasta</translation>
 <translation id="3895926599014793903">Forçar ativação do zoom</translation>
 <translation id="3917783807003067648">A localização está bloqueada</translation>
@@ -327,6 +326,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4526249700380860531">Ver e gerir as palavras-passe guardadas em <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Escolher pasta</translation>
 <translation id="4535858793016067060">Ative "Fontes desconhecidas" nas definições de segurança do Android para testar a experiência "Adicionar ao ecrã principal" melhorada. Certifique-se de que desativa esta definição quando terminar de a experimentar.</translation>
+<translation id="4543661749405994812">Copiar endereço de email</translation>
 <translation id="4558311620361989323">Atalhos da página Web</translation>
 <translation id="4572422548854449519">Iniciar sessão na conta gerida</translation>
 <translation id="457875822857220463">Entrega</translation>
@@ -371,7 +371,6 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4988526792673242964">Páginas </translation>
 <translation id="4996978546172906250">Partilhar através de</translation>
 <translation id="5000922062037820727">Bloqueado (recomendado)</translation>
-<translation id="5004339818306944878">Utilize até menos 60% de dados e acelere a Web. Os servidores da Google otimizam as páginas que visita.</translation>
 <translation id="5005498671520578047">Copiar palavra-passe</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> pretende estabelecer ligação</translation>
 <translation id="5016205925109358554">Serif</translation>
@@ -394,12 +393,10 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="5171045022955879922">Pesquisar ou escrever URL</translation>
 <translation id="5184329579814168207">Abrir no Chrome</translation>
 <translation id="5199929503336119739">Perfil de trabalho</translation>
-<translation id="5205222826937269299">Nome obrigatório</translation>
 <translation id="5209320130288484488">Não foram encontrados aparelhos</translation>
 <translation id="5210286577605176222">Ir para o separador anterior</translation>
 <translation id="5210365745912300556">Fechar separador</translation>
 <translation id="5222676887888702881">Terminar sessão</translation>
-<translation id="5222812217790122047">Email obrigatório</translation>
 <translation id="5233638681132016545">Novo separador</translation>
 <translation id="5271967389191913893">O dispositivo não consegue abrir o conteúdo a transferir.</translation>
 <translation id="528192093759286357">Arraste a partir da parte superior e toque no botão de retrocesso para sair do ecrã inteiro.</translation>
@@ -526,6 +523,7 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Pesquisa e sugestões de URL</translation>
 <translation id="6463070039183944536">A adicionar...</translation>
+<translation id="6464825623202322042">Este dispositivo</translation>
 <translation id="6475951671322991020">Transferir vídeo</translation>
 <translation id="6477460825583319731">Endereço de email inválido</translation>
 <translation id="6482749332252372425">A transferência de <ph name="FILE_NAME" /> falhou devido à falta de espaço de armazenamento.</translation>
@@ -572,7 +570,6 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="6868088497967843822">Iniciar sessão para aceder aos marcadores, ao histórico, às palavras-passe e a outras definições em todos os dispositivos</translation>
 <translation id="688738109438487280">Adicionar dados existentes a <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d separador aberto}other{%1$d separadores abertos}}</translation>
-<translation id="6896758677409633944">Copiar</translation>
 <translation id="6937422995269576720">Número de cartão inválido</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
 <translation id="6963766334940102469">Eliminar marcadores</translation>
@@ -597,7 +594,6 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="7094922512924405309">Não foram encontradas páginas da Web física próximas</translation>
 <translation id="7138678301420049075">Outros</translation>
 <translation id="7180611975245234373">Atualizar</translation>
-<translation id="7189372733857464326">A aguardar pela conclusão da atualização dos Serviços do Google Play…</translation>
 <translation id="7191430249889272776">Separador aberto em segundo plano.</translation>
 <translation id="7243308994586599757">Opções disponíveis junto à parte inferior do ecrã</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> utiliza a sua localização para mostrar resultados da pesquisa locais</translation>
@@ -658,7 +654,6 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="7851858861565204677">Outros aparelhos</translation>
 <translation id="7875915731392087153">Criar email</translation>
 <translation id="7876243839304621966">Remover tudo</translation>
-<translation id="7882131421121961860">Nenhum histórico encontrado</translation>
 <translation id="7929962904089429003">Abrir o menu</translation>
 <translation id="7942131818088350342">O <ph name="PRODUCT_NAME" /> está desatualizado.</translation>
 <translation id="7947953824732555851">Aceitar e in. sessão</translation>
@@ -706,7 +701,6 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="8321376388213838985">Serão apresentados mais artigos em breve. Desfrute da sua tarde.</translation>
 <translation id="8372893542064058268">Permitir Sincronização em segundo plano num site específico.</translation>
 <translation id="8374821112118309944">Tem de atualizar o TalkBack para uma versão mais recente.</translation>
-<translation id="8393700583063109961">Enviar mensagem</translation>
 <translation id="8396312449826231789">Apenas sites aprovados</translation>
 <translation id="8413126021676339697">Mostrar histórico completo</translation>
 <translation id="8428213095426709021">Definições</translation>
@@ -787,7 +781,6 @@ Para obter licenças novas, ligue-se à Internet e reproduza o conteúdo transfe
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Imagens</translation>
 <translation id="932327136139879170">Página inicial</translation>
-<translation id="932599481871055447">Poupe dados e navegue mais rápido</translation>
 <translation id="938850635132480979">Erro: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Aceder ao microfone</translation>
 <translation id="951339005376969845">Eliminar os dados existentes. Pode obtê-los ao mudar novamente para <ph name="FROM_ACCOUNT" />.</translation>

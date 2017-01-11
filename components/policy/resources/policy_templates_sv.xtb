@@ -1938,7 +1938,6 @@
 <translation id="6770454900105963262">Rapportera information om aktiva kiosksessioner</translation>
 <translation id="6774533686631353488">Tillåt Native Messaging-värdar på användarnivå (installerade utan administratörsbehörighet).</translation>
 <translation id="6786747875388722282">Tillägg</translation>
-<translation id="6786967369487349613">Ange roamingprofilkatalogen</translation>
 <translation id="6810445994095397827">Blockera JavaScript på dessa webbplatser</translation>
 <translation id="681446116407619279">Autentiseringsscheman som stöds</translation>
 <translation id="6828905844648501476">Om den här principen är inställd på sant eller inte är konfigurerad tillåter <ph name="PRODUCT_NAME" /> Lägg till person i användarhanteraren.
@@ -2114,7 +2113,6 @@
 <translation id="7249828445670652637">Aktivera användning av CA-certifikat i <ph name="PRODUCT_OS_NAME" /> för ARC-appar</translation>
 <translation id="7258823566580374486">Aktivera avskärmning av fjärråtkomstvärdar</translation>
 <translation id="7260277299188117560">Automatisk uppdatering av p2p har aktiverats</translation>
-<translation id="7261252191178797385">Enhetens bakgrundsbild</translation>
 <translation id="7267809745244694722">Standard för medieknappar ändras till funktionstangenter</translation>
 <translation id="7271085005502526897">Importera startsida från standardwebbläsaren första gången den körs</translation>
 <translation id="7273823081800296768">Om inställningen är aktiverad eller inte konfigurerad kan användare välja att koppla ihop klienter och värdar vid anslutningstillfället så att de slipper ange en pinkod varje gång.
@@ -2204,15 +2202,6 @@
       Observera att principen är beroende av att stacken för certifikatverifiering i operativsystemet tillåter SHA-1-signaturer. Om en uppdatering av operativsystemet leder till en ändring av hur SHA-1-certifikat hanteras där kanske den här principen inte längre har någon funktion. Vidare är principen bara en tillfällig lösning som ska ge företag längre tid på sig att avveckla SHA-1. Principen kommer att tas bort den 1 januari 2019 eller däromkring.
 
       Om principen inte anges eller om den har ställts in på falskt kommer den utlysta tidsplanen för utfasning av SHA-1 att följas i <ph name="PRODUCT_NAME" />.</translation>
-<translation id="7589150663293249656">Aktiverar framställningen av roamingkopior för profiluppgifterna för <ph name="PRODUCT_NAME" />.
-
-      Om du aktiverar den här inställningen skrivs även inställningarna som lagras i <ph name="PRODUCT_NAME" />-profiler (exempelvis bokmärken, autofylluppgifter och lösenord) till en fil som lagras i användarprofilmappen för roaming eller en plats som anges av administratören i policyn <ph name="ROAMINGPROFILELOCATION_POLICY_NAME" />.
-
-      Google Synk inaktiveras automatiskt när policyn aktiveras.
-
-      Ställ även in policyn <ph name="SIGNINALLOWED_POLICY_NAME" /> på falskt för att förhindra oavsiktligt dataläckage.
-
-      Om policyn inaktiveras eller inte anges används endast de vanliga, lokala profilerna.</translation>
 <translation id="7593523670408385997">Konfigurerar storleken på cacheminnet där <ph name="PRODUCT_NAME" /> sparar cachade filer på skivan.
 
       När den här principen har getts ett värde använder <ph name="PRODUCT_NAME" /> ett cacheminne med den angivna storleken oavsett om användaren har angett en storlek med flaggan --disk-cache-size eller inte. Det värde som anges i principen är inte en fast gräns utan snarare ett förslag till cachesystemet. Om värdet är mindre än några MB är det för litet och avrundas uppåt till en vettig minimigräns.
@@ -2459,7 +2448,6 @@
       Om användaren har aktiverat synkronisering sparas all data i synkprofilen, precis som med vanliga profiler. Inkognitoläge är också tillgängligt om det inte har inaktiverats explicit av en policy.
 
       Om policyn är inaktiverad eller inte inställd aktiveras vanliga profiler vid inloggning.</translation>
-<translation id="8158758865057576716">Aktivera framställningen av roamingkopior för profiluppgifterna för <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8164246350636985940">Standardinställningen för webbplatser som inte har något innehållspaket.
 
           Denna princip gäller endast internt i <ph name="PRODUCT_NAME" />.</translation>
@@ -2757,13 +2745,6 @@
 <translation id="8992176907758534924">Tillåt inte att bilder visas på någon webbplats</translation>
 <translation id="9035964157729712237">Tilläggs-ID:n att undanta från svartlistan</translation>
 <translation id="9042911395677044526">Tillåter att en pushad nätverkskonfiguration används per användare på en <ph name="PRODUCT_OS_NAME" />-enhet. Nätverkskonfigurationen är en JSON-formaterad sträng som definieras av formatet för öppen nätverkskonfiguration som beskrivs på <ph name="ONC_SPEC_URL" /></translation>
-<translation id="908115901708809140">Konfigurerar katalogen där <ph name="PRODUCT_NAME" /> ska lagra roamingkopian av profilerna.
-
-      Om du anger den här policyn lagrar <ph name="PRODUCT_NAME" /> roamingkopian av profilerna i den angivna katalogen förutsatt att policyn <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> har aktiverats. Om policyn <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> har inaktiverats eller inte angetts används inte värdet som har lagrats i policyn.
-
-      På https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables finns en lista över de variabler som kan användas.
-
-      Om den här policyn inte anges används standardroamingprofilens sökväg.</translation>
 <translation id="9084985621503260744">Ange om videoaktivitet påverkar energihanteringen</translation>
 <translation id="9088433379343318874">Aktiverar den kontrollerade användarens innehållsleverantör</translation>
 <translation id="9088444059179765143">Konfigurera metod för automatisk tidszonsangivelse</translation>
@@ -2799,17 +2780,6 @@
       Om inställningen aktiveras kan du ta skärmdumpar med kortkommandon eller API:er för tillägg.
 
       Om inställningen inaktiveras eller inte anges är tagning av skärmdumpar tillåtet.</translation>
-<translation id="9213347477683611358">Konfigurera den bakgrundsbild på enhetsnivå som visas på inloggningsskärmen om ingen användare har loggat in på enheten. Ange policyn genom att ange webbadressen som Chrome OS-enheten kan ladda ned bakgrundsbilden från och en kryptografisk hash som används för att verifiera nedladdningens integritet. Bilden måste vara i JPEG-format och dess filstorlek får inte överskrida 16 MB. Webbadressen måste vara tillgänglig utan autentisering. Bakgrundsbilden laddas ned och lagras i cacheminnet. Den laddas ned igen varje gång webbadressen eller hashen ändras.
-
-      Policyn ska anges som en sträng som uttrycker webbadressen och hashen i JSON-format, till exempel
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      Om enhetens bakgrundspolicy anges laddar Chrome OS-enheten ned och använder bakgrundsbilden på inloggningsskärmen om ingen användare har loggat in på enheten. Användarens bakgrundspolicy börjar gälla när användaren har loggat in.
-
-      Om enhetens bakgrundspolicy inte har angetts bestämmer användarens angivna bakgrundspolicy vad som ska visas.</translation>
 <translation id="9217154963008402249">Frekvens för nätverkspaket för övervakning</translation>
 <translation id="922540222991413931">Konfigurera installationskällor för tillägg, appar och användarskript</translation>
 <translation id="924557436754151212">Importera sparade lösenord från standardwebbläsaren första gången den körs</translation>

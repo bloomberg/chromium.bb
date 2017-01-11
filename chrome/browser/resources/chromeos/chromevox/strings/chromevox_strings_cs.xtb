@@ -177,7 +177,6 @@
 <translation id="2899328121302785497">{COUNT,plural, =1{levá složená závorka}few{# levé složené závorky}many{# left braces}other{# levých složených závorek}}</translation>
 <translation id="2911433807131383493">Otevřít výukový program funkce ChromeVox</translation>
 <translation id="2932083475399492303">Přepnout typ řádku mezi strukturou a rozložením</translation>
-<translation id="2944762337049891859">Po načtení stránku automaticky přečíst.</translation>
 <translation id="2964026537669811554">Skupina nadpisů</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{tabulátor}few{# tabulátory}many{# tabs}other{# tabulátorů}}</translation>
 <translation id="2972078295414139404">Žádný předchozí navštívený odkaz není.</translation>
@@ -308,7 +307,6 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="3712520970944678024">Ovládání řeči</translation>
 <translation id="3716845769494773620">Víceřádkový</translation>
 <translation id="3731746171184829332">Žádný předchozí nadpis.</translation>
-<translation id="3735039640698208086">Při přehrávání zvuku...</translation>
 <translation id="3762198587642264450">Přejít na konec aktuálního řádku</translation>
 <translation id="3777255250339039212">nadp 1</translation>
 <translation id="3793710123303304873">Opustili jste dialog.</translation>
@@ -549,7 +547,6 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="5876817486144482042">Snížit hlasitost řeči</translation>
 <translation id="5887397643266327462">Titulky v Braillově písmu jsou zapnuty.</translation>
 <translation id="5891934789323004067">Tabulka</translation>
-<translation id="5899860758576822363">Při hlasové odezvě ChromeVox snížit hlasitost přehrávání</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{rovná se}few{# znaky rovná se}many{# equal signs}other{# znaků rovná se}}</translation>
 <translation id="5939518447894949180">Resetovat</translation>
 <translation id="5948123859135882163">Přepnout mezi strukturální a sémantickou interpretací matematických výrazů</translation>
@@ -582,7 +579,6 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="6281876499889881039">Další podobný prvek.</translation>
 <translation id="6282062888058716985">navig</translation>
 <translation id="6290434000785343030">Žádné další pole se seznamem.</translation>
-<translation id="6305702903308659374">Při hlasové odezvě ChromeVox zachovat normální hlasitost přehrávání</translation>
 <translation id="6307969636681130414">Stisknuto</translation>
 <translation id="6322856989298155004">Zvuky</translation>
 <translation id="6324551002951139333">Zjištěna gramatická chyba</translation>
@@ -698,7 +694,6 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="7540083713905917247">posuvník <ph name="NAME" />, <ph name="VALUE" /></translation>
 <translation id="7552432549459840808">Užitečné klávesové zkratky prohlížeče Chrome</translation>
 <translation id="7579911500627256166">bod <ph name="DOT" /></translation>
-<translation id="7591126877589047423">Nejste na nic zaměřeni. Stisknutím kombinace kláves Ctrl+N otevřete nové okno prohlížeče.</translation>
 <translation id="7596919493010894443">výběr byl vymazán</translation>
 <translation id="7604026522577407655">Přejít na začátek aktuálního sloupce</translation>
 <translation id="7604451927827590395">nadp</translation>
@@ -774,7 +769,6 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="8455868257606149352">Max <ph name="X" /></translation>
 <translation id="84575901236241018">má přístupový klíč <ph name="KEY" /></translation>
 <translation id="847154984256717791">zaneprázdněno</translation>
-<translation id="8476408756881832830">Při hlasové odezvě ChromeVox pozastavit přehrávání</translation>
 <translation id="8476508772960940536">přehled okna</translation>
 <translation id="8503360654911991865">Snížit rozlišovací schopnost navigace</translation>
 <translation id="8520472399088452386">Číselník</translation>

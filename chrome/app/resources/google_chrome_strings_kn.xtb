@@ -40,7 +40,6 @@
 <translation id="2063848847527508675">ಅಪ್‌ಡೇಟ್ ಅನ್ವಯಿಸಲು Chrome OS ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಬೇಕಾಗುತ್ತದೆ.</translation>
 <translation id="2077129598763517140">ಲಭ್ಯವಿರುವಾಗ ಹಾರ್ಡ್‌ವೇರ್ ಆಕ್ಸಲರೇಶನ್ ಬಳಸು</translation>
 <translation id="2084710999043359739">Chrome ಗೆ ಸೇರಿಸಿ</translation>
-<translation id="2120620239521071941">ಈ ಸಾಧನದಿಂದ <ph name="ITEMS_COUNT" /> ಐಟಂಗಳನ್ನು ಇದು ಅಳಿಸುತ್ತದೆ. ನಂತರ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಮರುಪಡೆಯಲು, <ph name="USER_EMAIL" /> ನಂತೆ Chrome ಗೆ ಸೈನ್‌‌ ಇನ್ ಮಾಡಿ.</translation>
 <translation id="2147651015520127414">ಈ ವೆಬ್‌ಸೈಟ್‌ನ ಪ್ರಮಾಣಪತ್ರವನ್ನು <ph name="ISSUER" /> ನೀಡಿದೆ ಎಂಬುದಾಗಿ Chrome ಪರಿಶೀಲಿಸಿದೆ.</translation>
 <translation id="2246246234298806438">ಬಿಲ್ಟ್ ಇನ್ PDF ವೀಕ್ಷಣೆಯು ಕಾಣೆಯಾಗಿರುವಾಗ Google Chrome ಮುದ್ರಣ ಪೂರ್ವವೀಕ್ಷಣೆಯನ್ನು ತೋರಿಸುವುದಿಲ್ಲ.</translation>
 <translation id="2252923619938421629">ಪ್ರಸ್ತುತ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ವರದಿ ಮಾಡುವುದರ ಮೂಲಕ Google Chrome ಅನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ಸಹಾಯಮಾಡಿ</translation>
@@ -59,7 +58,6 @@
 <translation id="2485422356828889247">ಅಸ್ಥಾಪಿಸು</translation>
 <translation id="2580411288591421699">ಪ್ರಸ್ತುತ ಚಾಲನೆಯಲ್ಲಿರುವ ಅದೇ Google Chrome ಆವೃತ್ತಿಯನ್ನು ಸ್ಥಾಪಿಸಲಾಗುವುದಿಲ್ಲ. ದಯವಿಟ್ಟು Google Chrome ಮುಚ್ಚಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="2582790009689336987">ಈ Linux ಸಿಸ್ಟಂ ಇನ್ನೂ ಬೆಂಬಲಿಸಲ್ಪಡದಿರುವುದರಿಂದ ಈ ಕಂಪ್ಯೂಟರ್ ಶೀಘ್ರದಲ್ಲಿಯೇ Google Chrome ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಸ್ವೀಕರಿಸುವುದನ್ನು ನಿಲ್ಲಿಸುತ್ತದೆ.</translation>
-<translation id="2586406160782125153">ಈ ಸಾಧನದಿಂದ ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ಇದು ಅಳಿಸುತ್ತದೆ. ನಂತರ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಮರುಪಡೆಯಲು, <ph name="USER_EMAIL" /> ನಂತೆ Chrome ಗೆ ಸೈನ್‌ ಇನ್ ಮಾಡಿ.</translation>
 <translation id="2588322182880276190">Chrome ಲೋಗೊ</translation>
 <translation id="2664962310688259219">Chrome OS ಮುಕ್ತ ಮೂಲ ಪರವಾನಗಿಗಳು</translation>
 <translation id="2665296953892887393">Google ಗೆ ಕ್ರ್ಯಾಶ್ ವರದಿಗಳನ್ನು ಮತ್ತು <ph name="UMA_LINK" /> ಕಳುಹಿಸುವುದರಿಂದ Google Chrome ಅನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ಸಹಾಯ ಮಾಡಿ</translation>
@@ -97,7 +95,6 @@
 <translation id="345171907106878721">ನಿಮ್ಮನ್ನು Chrome ಗೆ ಸೇರಿಸಿಕೊಳ್ಳಿ</translation>
 <translation id="3612333635265770873">ಒಂದೇ ಹೆಸರಿರುವ ಮಾಡ್ಯುಲ್ ಮತ್ತು Google Chrome ನೊಂದಿಗೆ ಘರ್ಷಣೆ ಆಗಬಹುದು.</translation>
 <translation id="3622797965165704966">ನಿಮ್ಮ Google ಖಾತೆಯ ಮೂಲಕ ಮತ್ತು ಹಂಚಿದ ಕಂಪ್ಯೂಟರ್‌ಗಳಲ್ಲಿ Chrome ಬಳಕೆ ಈಗ ತುಂಬಾ ಸುಲಭವಾಗಿದೆ.</translation>
-<translation id="3718181793972440140">ಈ ಸಾಧನದಿಂದ 1 ಐಟಂ ಅನ್ನು ಇದು ಅಳಿಸುತ್ತದೆ. ನಂತರ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಮರುಪಡೆಯಲು, <ph name="USER_EMAIL" /> ನಂತೆ Chrome ಗೆ ಸೈನ್‌ ಇನ್ ಮಾಡಿ.</translation>
 <translation id="3735758079232443276">ನೀವು Chrome ಪ್ರಾರಂಭಿಸಿದಾಗ ತೋರಿಸಬೇಕಾದ ಪುಟವನ್ನು "<ph name="EXTENSION_NAME" />" ವಿಸ್ತರಣೆಯು ಬದಲಾಯಿಸಿದೆ.</translation>
 <translation id="3738139272394829648">ಹುಡುಕಲು ಸ್ಪರ್ಶಿಸು</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>

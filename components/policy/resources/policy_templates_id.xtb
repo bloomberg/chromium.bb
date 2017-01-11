@@ -1810,7 +1810,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="6770454900105963262">Melaporkan informasi tentang sesi kios aktif</translation>
 <translation id="6774533686631353488">Izinkan host Native Messaging tingkat pengguna (dipasang tanpa izin admin).</translation>
 <translation id="6786747875388722282">Ekstensi</translation>
-<translation id="6786967369487349613">Menyetel direktori profil roaming</translation>
 <translation id="6810445994095397827">Cekal JavaScript di situs ini</translation>
 <translation id="681446116407619279">Skema autentikasi yang didukung</translation>
 <translation id="6828905844648501476">Jika kebijakan ini disetel ke True atau tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> akan memungkinkan Tambahkan Orang dari pengelola pengguna.
@@ -1973,7 +1972,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="7249828445670652637">Mengaktifkan sertifikat CA <ph name="PRODUCT_OS_NAME" /> untuk aplikasi ARC</translation>
 <translation id="7258823566580374486">Mengaktifkan pemberian tirai hosting akses jarak jauh</translation>
 <translation id="7260277299188117560">Pembaruan p2p otomatis diaktifkan</translation>
-<translation id="7261252191178797385">Gambar wallpaper perangkat</translation>
 <translation id="7267809745244694722">Default tombol media ke tombol fungsi</translation>
 <translation id="7271085005502526897">Impor beranda dari browser default saat pertama kali dijalankan</translation>
 <translation id="7273823081800296768">Jika setelan diaktifkan atau dikonfigurasikan, pengguna dapat memilih untuk menyandingkan klien dan host pada waktu tersambung, menghilangkan keharusan untuk memasukkan PIN setiap waktu.
@@ -2059,15 +2057,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Perlu diingat bahwa kebijakan ini bergantung pada tumpukan verifikasi sertifikat sistem operasi yang mengizinkan tanda tangan SHA-1. Jika pembaruan OS mengubah penanganan OS terkait sertifikat SHA-1, kebijakan ini mungkin tidak berlaku lagi.  Selain itu, kebijakan ini dimaksudkan sebagai solusi sementara guna memberikan perusahaan lebih banyak waktu untuk beralih dari SHA-1.  Kebijakan ini akan dihapus pada atau sekitar tanggal 1 Januari 2019.
 
       Jika kebijakan ini tidak disetel, atau disetel ke false, <ph name="PRODUCT_NAME" /> akan mengikuti jadwal penghentian SHA-1 yang diumumkan secara publik.</translation>
-<translation id="7589150663293249656">Mengaktifkan pembuatan salinan roaming untuk data profil <ph name="PRODUCT_NAME" />.
-
-      Jika Anda mengaktifkan setelan ini, setelan yang disimpan di profil <ph name="PRODUCT_NAME" /> seperti bookmark, data IsiOtomatis, sandi, dll. juga akan ditulis ke file yang disimpan di folder profil pengguna Roaming atau lokasi yang ditentukan oleh Administrator melalui kebijakan <ph name="ROAMINGPROFILELOCATION_POLICY_NAME" />.
-
-      Jika kebijakan ini diaktifkan, Google Sync otomatis dinonaktifkan.
-
-      Untuk mencegah kebocoran data yang tidak disengaja, kebijakan <ph name="SIGNINALLOWED_POLICY_NAME" /> sebaiknya disetel ke False.
-
-      Jika kebijakan ini dinonaktifkan atau tidak disetel, hanya profil lokal reguler yang akan digunakan.</translation>
 <translation id="7593523670408385997">Mengonfigurasi ukuran cache yang akan digunakan <ph name="PRODUCT_NAME" /> untuk menyimpan file dalam cache di disk.
 
       Jika Anda menyetel kebijakan ini, <ph name="PRODUCT_NAME" /> akan menggunakan ukuran cache yang disediakan terlepas dari apakah pengguna menentukan tanda '--disk-cache-size' atau tidak. Nilai yang ditentukan dalam kebijakan ini bukan merupakan batas mutlak namun merupakan saran terhadap sistem penyimpanan dalam cache, nilai apa pun di bawah beberapa megabyte dianggap terlalu kecil dan akan dibulatkan ke nilai minimum yang lebih wajar.
@@ -2299,7 +2288,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Jika pengguna mengaktifkan sinkronkan semua, data ini akan dipertahankan di profil sinkronisasinya layaknya di profil reguler. Mode penyamaran juga tersedia jika tidak dinonaktifkan secara eksplisit oleh kebijakan.
 
       Jika kebijakan ini disetel ke nonaktif atau dibiarkan tidak disetel, proses masuk akan mengarahkan ke profil reguler.</translation>
-<translation id="8158758865057576716">Mengaktifkan pembuatan salinan roaming untuk data profil <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8164246350636985940">Perilaku default untuk situs tidak ada pada paket konten mana pun.
 
           Kebijakan ini untuk penggunaan internal <ph name="PRODUCT_NAME" /> itu sendiri.</translation>
@@ -2572,13 +2560,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="8992176907758534924">Jangan izinkan situs apa pun menampilkan gambar</translation>
 <translation id="9035964157729712237">ID Ekstensi yang dikeluarkan dari daftar hitam</translation>
 <translation id="9042911395677044526">Memungkinkan konfigurasi jaringan dorongan untuk diterapkan per pengguna ke perangkat <ph name="PRODUCT_OS_NAME" />. Konfigurasi jaringan adalah string berformat JSON seperti yang didefinisikan oleh format Konfigurasi Jaringan Terbuka yang diuraikan di <ph name="ONC_SPEC_URL" /></translation>
-<translation id="908115901708809140">Mengonfigurasi direktori yang akan digunakan <ph name="PRODUCT_NAME" /> untuk menyimpan salinan roaming profil.
-
-      Jika Anda menyetel kebijakan ini dan <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> telah diaktifkan, <ph name="PRODUCT_NAME" /> akan menggunakan direktori yang ada untuk menyimpan salinan roaming profil. Jika kebijakan <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> dinonaktifkan atau tidak disetel, nilai yang disimpan di kebijakan ini tidak digunakan.
-
-      Buka https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables untuk mengetahui daftar variabel yang dapat digunakan.
-
-      Jika kebijakan ini tidak disetel, jalur profil roaming default akan digunakan.</translation>
 <translation id="9084985621503260744">Tentukan apakah aktivitas video memengaruhi pengelolaan daya</translation>
 <translation id="9088433379343318874">Izinkan penyedia konten pengguna yang dilindungi</translation>
 <translation id="9088444059179765143">Mengonfigurasi metode deteksi zona waktu otomatis</translation>
@@ -2607,17 +2588,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Jika diaktifkan, tangkapan layar tidak akan dapat dilakukan dengan menggunakan pintasan keyboard atau API ekstensi.
 
       Jika dinonaktifkan atau tidak ditentukan, pengambilan tangkapan layar akan diizinkan.</translation>
-<translation id="9213347477683611358">Mengonfigurasi gambar wallpaper tingkat perangkat yang ditampilkan di layar login jika belum ada pengguna yang login ke perangkat. Kebijakan ini disetel dengan menetapkan URL tempat perangkat Chrome OS dapat mendownload gambar wallpaper dan potongan kriptografi yang digunakan untuk memverifikasi integritas download. Gambar harus dalam format JPEG dan ukuran filenya tidak boleh melebihi 16MB. URL harus dapat diakses tanpa autentikasi apa pun. Gambar wallpaper akan didownload dan disimpan dalam cache. Gambar ini akan didownload jika URL atau potongan berubah.
-
-      Kebijakan ini harus ditetapkan sebagai string yang mengekspresikan URL dan potongan dalam format JSON, misalnya:
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      Jika kebijakan wallpaper perangkat disetel dan belum ada pengguna yang login ke perangkat, perangkat Chrome OS akan mendownload dan menggunakan gambar wallpaper pada layar login. Setelah pengguna login, kebijakan wallpaper pengguna akan diterapkan.
-
-      Jika kebijakan wallpaper tidak disetel namun kebijakan wallpaper pengguna disetel, kebijakan wallpaper pengguna akan menentukan gambar yang akan ditampilkan.</translation>
 <translation id="9217154963008402249">Frekuensi paket jaringan pemantauan</translation>
 <translation id="922540222991413931">Konfigurasi sumber pemasangan skrip pengguna, aplikasi, dan ekstensi</translation>
 <translation id="924557436754151212">Impor sandi yang disimpan dari browser default saat pertama kali dijalankan</translation>

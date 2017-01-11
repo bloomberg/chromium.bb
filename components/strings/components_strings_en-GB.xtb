@@ -82,7 +82,6 @@
 <translation id="1753706481035618306">Page number</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Try running Windows Network Diagnostics<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Please update your sync passphrase.</translation>
-<translation id="1787142507584202372">Your open tabs appear here</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803678881841855883">Google Safe Browsing recently <ph name="BEGIN_LINK" />detected malware<ph name="END_LINK" /> on <ph name="SITE" />. Websites that are normally safe are sometimes infected with malware. The malicious content comes from <ph name="SUBRESOURCE_HOST" />, a known malware distributor. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">Invalid request or request parameters</translation>
@@ -175,7 +174,6 @@
 <translation id="2712118517637785082">You attempted to reach <ph name="DOMAIN" />, but the certificate that the server presented has been revoked by its issuer. This means that the security credentials the server presented absolutely should not be trusted. You may be communicating with an attacker. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="2712173769900027643">Ask permission</translation>
 <translation id="2713444072780614174">White</translation>
-<translation id="2720342946869265578">Nearby</translation>
 <translation id="2721148159707890343">Request succeeded</translation>
 <translation id="2728127805433021124">Server's certificate is signed using a weak signature algorithm.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Running Connectivity Diagnostics<ph name="END_LINK" /></translation>
@@ -372,7 +370,6 @@
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4744603770635761495">Executable Path</translation>
 <translation id="4756388243121344051">&amp;History</translation>
-<translation id="4759118997339041434">Payment autofilling disabled</translation>
 <translation id="4764776831041365478">The web page at <ph name="URL" /> might be temporarily down or it may have moved permanently to a new web address.</translation>
 <translation id="4771973620359291008">An unknown error has occurred.</translation>
 <translation id="4800132727771399293">Check your expiration date and CVC and try again</translation>
@@ -531,6 +528,7 @@
 <translation id="6644283850729428850">This policy has been deprecated.</translation>
 <translation id="6652240803263749613">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by your computer's operating system. This may be caused by a misconfiguration or an attacker intercepting your connection. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="6656103420185847513">Edit Folder</translation>
+<translation id="6660210980321319655">Automatically reported <ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">Remove form suggestion from Chromium?</translation>
 <translation id="6685834062052613830">Sign out and complete setup</translation>
 <translation id="6710213216561001401">Previous</translation>
@@ -677,7 +675,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="8150722005171944719">The file at <ph name="URL" /> is not readable.  It may have been removed, moved or file permissions may be preventing access.</translation>
 <translation id="8194797478851900357">&amp;Undo Move</translation>
 <translation id="8201077131113104583">Invalid update URL for extension with ID "<ph name="EXTENSION_ID" />".</translation>
-<translation id="8202097416529803614">Order summary</translation>
 <translation id="8218327578424803826">Assigned Location:</translation>
 <translation id="8225771182978767009">The person who set up this computer has chosen to block this site.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
@@ -723,7 +720,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="8740359287975076522"><ph name="HOST_NAME" />’s &lt;abbr id="dnsDefinition"&gt;DNS address&lt;/abbr&gt; could not be found. Diagnosing the problem.</translation>
 <translation id="8790007591277257123">&amp;Redo delete</translation>
 <translation id="8798099450830957504">Default</translation>
-<translation id="8800988563907321413">Your nearby suggestions appear here</translation>
 <translation id="8804164990146287819">Privacy Policy</translation>
 <translation id="8820817407110198400">Bookmarks</translation>
 <translation id="8834246243508017242">Enable Autofill using Contacts…</translation>

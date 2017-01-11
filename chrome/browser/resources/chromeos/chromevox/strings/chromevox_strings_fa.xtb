@@ -177,7 +177,6 @@
 <translation id="2899328121302785497">{COUNT,plural, =1{آکولاد چپ}one{# آکولاد چپ}other{# آکولاد چپ}}</translation>
 <translation id="2911433807131383493">‏باز کردن برنامه آموزشی ChromeVox</translation>
 <translation id="2932083475399492303">تعویض نوع خط بین حالت چیدمان یا ساختاری</translation>
-<translation id="2944762337049891859">خواندن صفحه به‌صورت خودکار بعد از اتمام بارگیری.</translation>
 <translation id="2964026537669811554">سرگروه</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{علامت جهش}one{# علامت جهش}other{# علامت جهش}}</translation>
 <translation id="2972078295414139404">پیوند بازدید شده قبلی وجود ندارد.</translation>
@@ -308,7 +307,6 @@
 <translation id="3712520970944678024">کنترل گفتگو</translation>
 <translation id="3716845769494773620">چند خطی</translation>
 <translation id="3731746171184829332">عنوان قبلی وجود ندارد.</translation>
-<translation id="3735039640698208086">هنگام پخش صدا...</translation>
 <translation id="3762198587642264450">رفتن به انتهای ردیف کنونی</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">از گفتگو خارج شد.</translation>
@@ -549,7 +547,6 @@
 <translation id="5876817486144482042">کاهش میزان صدای گفتار</translation>
 <translation id="5887397643266327462">زیرنویس بریل فعال شد.</translation>
 <translation id="5891934789323004067">جدول</translation>
-<translation id="5899860758576822363">‏پخش با صدایی کمتر هنگامی که ChromeVox درحال صحبت کردن است</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{علامت مساوی}one{# علامت مساوی}other{# علامت مساوی}}</translation>
 <translation id="5939518447894949180">بازنشانی</translation>
 <translation id="5948123859135882163">جابه‌جایی بین تفسیر ساختاری و معنایی عبارات ریاضی</translation>
@@ -582,7 +579,6 @@
 <translation id="6281876499889881039">عنصر مشابه بعدی.</translation>
 <translation id="6282062888058716985">nav</translation>
 <translation id="6290434000785343030">کادر ترکیبی بعدی وجود ندارد.</translation>
-<translation id="6305702903308659374">‏پخش با صدایی معمولی حتی اگر ChromeVox درحال صحبت کردن باشد</translation>
 <translation id="6307969636681130414">فشرده شده</translation>
 <translation id="6322856989298155004">آواها</translation>
 <translation id="6324551002951139333">اشتباه دستوری شناسایی شد</translation>
@@ -698,7 +694,6 @@
 <translation id="7540083713905917247"><ph name="VALUE" />، <ph name="NAME" />، اسلایدر</translation>
 <translation id="7552432549459840808">‏میان‌برهای مفید Chrome</translation>
 <translation id="7579911500627256166">نقطه <ph name="DOT" /></translation>
-<translation id="7591126877589047423">‏بدون کانونی کردن. برای باز کردن پنجره‌‌ای جدید، Control N را فشار دهید.</translation>
 <translation id="7596919493010894443">موارد انتخابی پاک شد</translation>
 <translation id="7604026522577407655">رفتن به ابتدای ستون کنونی</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -774,7 +769,6 @@
 <translation id="8455868257606149352">حداکثر <ph name="X" /></translation>
 <translation id="84575901236241018">کلید دسترسی دارد، <ph name="KEY" /></translation>
 <translation id="847154984256717791">مشغول</translation>
-<translation id="8476408756881832830">‏توقف بازپخش هنگامی که ChromeVox درحال صحبت کردن است</translation>
 <translation id="8476508772960940536">نمای کلی پنجره</translation>
 <translation id="8503360654911991865">کاهش جزئیات پیمایش</translation>
 <translation id="8520472399088452386">دکمه چرخش</translation>

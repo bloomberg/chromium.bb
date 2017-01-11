@@ -1918,7 +1918,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6770454900105963262">Mag-ulat ng impormasyon tungkol sa mga aktibong session ng kiosk</translation>
 <translation id="6774533686631353488">Bigyang-daan ang mga host ng Native na Pagmemensahe sa antas ng user (na-install nang walang mga pahintulot ng admin).</translation>
 <translation id="6786747875388722282">Mga Extension</translation>
-<translation id="6786967369487349613">Itakda ang direktoryo ng roaming na profile</translation>
 <translation id="6810445994095397827">I-block ang JavaScript sa mga site na ito</translation>
 <translation id="681446116407619279">Mga suportadong scheme ng pagpapatotoo</translation>
 <translation id="6828905844648501476">Kung hindi itatakda ang patakarang ito sa true o hindi ito iko-configure, papayagan ng <ph name="PRODUCT_NAME" /> ang Magdagdag ng Tao mula sa user manager.
@@ -2095,7 +2094,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7249828445670652637">I-enable ang mga CA certificate ng <ph name="PRODUCT_OS_NAME" /> sa mga ARC app</translation>
 <translation id="7258823566580374486">Paganahin ang paghadlang sa mga host ng malayuang pag-access</translation>
 <translation id="7260277299188117560">Naka-enable ang auto update p2p</translation>
-<translation id="7261252191178797385">Larawan ng wallpaper sa device</translation>
 <translation id="7267809745244694722">Magde-default ang mga media key sa mga function key</translation>
 <translation id="7271085005502526897">Import ng homapage mula sa default na browser sa unang pagtakbo</translation>
 <translation id="7273823081800296768">Kung naka-enable o hindi na-configure ang setting na ito, maaaring mag-opt ang mga user na ipares ang mga client at host sa oras ng koneksyon, na inaalis ang pangangailangang maglagay ng PIN sa bawat pagkakataon.
@@ -2185,15 +2183,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Tandaan na nakadepende ang patakarang ito sa operating system certificate verification stack na pumapayag sa mga SHA-1 signature. Kung mabago ng isang update sa OS ang pangangasiwa ng OS sa mga SHA-1 certificate, maaaring mawalan na nang bisa ang patakarang ito.  Bukod pa rito, maaaring nilayon ang patakarang ito na maging isang pansamantalang remedyo upang mabigyan ang mga kumpanya ng higit pang oras upang makalipat mula sa SHA-1.  Aalisin ang patakarang ito sa petsa o malapit sa petsang ika-1 ng Enero, 2019.
 
       Kung hindi nakatakda ang patakarang ito o nakatakda sa false, susundin ng <ph name="PRODUCT_NAME" /> ang inanunsyo sa publiko na iskedyul ng paghinto sa paggamit ng SHA-1.</translation>
-<translation id="7589150663293249656">Ine-enable ang paggawa ng mga roaming na kopya para sa data ng profile sa <ph name="PRODUCT_NAME" />.
-
-      Kung ie-enable mo ang setting na ito, ang mga setting na naka-store sa mga profile sa <ph name="PRODUCT_NAME" /> tulad ng mga bookmark, data ng autofill, password, atbp. ay isusulat din sa isang file na naka-store sa folder ng profile ng user na Roaming o sa lokasyong tinukoy ng Administrator sa pamamagitan ng patakaran ng <ph name="ROAMINGPROFILELOCATION_POLICY_NAME" />.
-
-      Awtomatikong naka-disable ang Google Sync kapag naka-enable ang patakarang ito.
-
-      Upang maiwasan ang mga aksidenteng pag-leak ng data, ipinapayong itakda rin ang patakaran ng <ph name="SIGNINALLOWED_POLICY_NAME" /> sa False.
-
-      Kung naka-disable ang patakarang ito o iniwang hindi nakatakda, ang mga regular na lokal na profile lang ang gagamitin.</translation>
 <translation id="7593523670408385997">Kino-configure ang laki ng cache na gagamitin ng <ph name="PRODUCT_NAME" /> sa pag-iimbak ng mga na-cache na file sa disk.
 
       Kung itinakda mo ang patakarang ito, gagamitin ng <ph name="PRODUCT_NAME" /> ang ibinigay na laki ng cache tinukoy man ng user ang '--disk-cache-size' flag o hindi. Ang value na tinutukoy sa patakarang ito ay hindi isang ganap na hangganan ngunit sa halip ay isang suhestiyon sa sistema sa pagka-cache, masyadong maliit ang anumang value na mas mababa sa ilang megabyte at ira-round up sa isang maayos na minimum.
@@ -2439,7 +2428,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung na-enable ng user ang pag-sync, pinapanatili ang lahat ng data na ito sa profile sa pag-sync ng mga ito tulad sa mga regular na profile. Available din ang Incognito mode kung hindi hayagang dini-disable ng patakaran.
 
       Kung nakatakda ang patakaran sa naka-disable o hinayaang hindi nakatakda, hahantong ang mga pag-sign in sa mga regular na profile.</translation>
-<translation id="8158758865057576716">I-enable ang paggawa ng mga roaming na kopya para sa data ng profile sa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8164246350636985940">Ang default na gawi para sa mga site na wala sa anumang content pack.
 
           Ang patakarang ito ay para sa internal na paggamit ng <ph name="PRODUCT_NAME" /> mismo.</translation>
@@ -2731,13 +2719,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="8992176907758534924">Huwag payagan ang anumang site na magpakita ng mga larawan</translation>
 <translation id="9035964157729712237">Ang mga ID ng Extension upang maibukod mula sa blacklist</translation>
 <translation id="9042911395677044526">Nagbibigay-daan na malapat sa bawat user ang configuration ng pushing network sa isang <ph name="PRODUCT_OS_NAME" /> na device. Ang configuration ng network ay isang naka-format sa JSON  na string tulad ng tinutukoy ng format ng Configuration ng Open Network na inilalarawan sa <ph name="ONC_SPEC_URL" /></translation>
-<translation id="908115901708809140">Nagko-configure ng direktoryong gagamitin ng <ph name="PRODUCT_NAME" /> para sa pag-store ng roaming na kopya ng mga profile.
-
-      Kung itatakda mo ang patakarang ito, gagamitin ng <ph name="PRODUCT_NAME" /> ang ibinigay na direktoryo upang i-store ang roaming na kopya ng mga profile kung naka-enable ang patakaran ng <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" />. Kung naka-disable ang patakaran ng <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> o iniwang hindi nakatakda, hindi gagamitin ang naka-store na value sa patakarang ito.
-
-      Tingnan ang https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para sa listahan ng mga variable na maaaring gamitin.
-
-      Kung iniwang hindi nakatakda ang patakarang ito, gagamitin ang path ng default na roaming na profile.</translation>
 <translation id="9084985621503260744">Tukuyin kung nakakaapekto ang aktibidad ng video sa pamamahala ng power</translation>
 <translation id="9088433379343318874">I-enable ang content provider ng pinangangasiwaang user</translation>
 <translation id="9088444059179765143">I-configure ang awtomatikong paraan ng pag-detect ng timezone</translation>
@@ -2773,17 +2754,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung pinapagana, hindi makakakuha ng mga screenshot gamit ang mga keyboard shortcut o mga extension API.
 
       Kung hindi pinapagana o hindi tinukoy, papayagan ang pagkuha ng mga screenshot.</translation>
-<translation id="9213347477683611358">Nagko-configure ng larawan ng wallpaper sa device na ipinapakita sa screen ng pag-login kung wala pang naka-sign in na user sa device. Itinatakda ang patakaran sa pamamagitan ng pagtukoy sa URL kung saan maaaring i-download ng Chrome OS device ang larawan ng wallpaper at isang cryptographic hash na ginagamit upang i-verify ang integridad ng pag-download. Dapat ay nasa format na JPEG ang larawan, at hindi dapat lumampas ang laki ng file sa 16MB. Dapat ay naa-access ang URL nang walang anumang pag-authenticate. Na-download at na-cache ang larawan ng wallpaper. Ida-download itong muli sa tuwing magbabago ang URL o ang hash.
-
-      Dapat ay tukuyin ang patakaran bilang isang string na nagpapakita ng URL at hash sa format na JSON, hal.,
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      Kung nakatakda ang patakaran sa wallpaper ng device, ida-download at gagamitin ng Chrome OS device ang larawan ng wallpaper sa screen ng pag-login kung wala pang naka-sign in na user sa device. Kapag naka-login na ang user, ilalapat na ang patakaran sa wallpaper ng user.
-
-      Kung hindi nakatakda ang patakaran sa wallpaper ng device, ang patakaran sa wallpaper ng user ang magpapasya kung ano ang ipapakita kung nakatakda na ang patakaran sa wallpaper ng user.</translation>
 <translation id="9217154963008402249">Dalas ng mga sinusubaybayang network packet</translation>
 <translation id="922540222991413931">Mag-configure ng mga pinagmulan ng pag-install ng extension, app, at script ng user</translation>
 <translation id="924557436754151212">Mag-import ng mga naka-save na password mula sa default na browser sa unang pagtakbo</translation>

@@ -1809,7 +1809,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="6770454900105963262">Izvješćivanje o informacijama o aktivnim sesijama kioska</translation>
 <translation id="6774533686631353488">Dopusti hostove Lokalnog slanja poruka na razini korisnika (instaliranih bez administratorskih dopuštenja).</translation>
 <translation id="6786747875388722282">Proširenja</translation>
-<translation id="6786967369487349613">Postavljanje direktorija roaming profila</translation>
 <translation id="6810445994095397827">Blok JavaScript na ovim web-lokacijama</translation>
 <translation id="681446116407619279">Podržane sheme autentifikacije</translation>
 <translation id="6828905844648501476">Ako se pravilo postavi na "True" ili se ne konfigurira, <ph name="PRODUCT_NAME" /> dopustit će dodavanje osoba iz upravitelja korisnika.
@@ -1968,7 +1967,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="7249828445670652637">Omogući <ph name="PRODUCT_OS_NAME" /> CA certifikate za ARC aplikacije</translation>
 <translation id="7258823566580374486">Omogući skrivanje hosta za daljinski pristup</translation>
 <translation id="7260277299188117560">Omogućeno je automatsko ažuriranje p2p</translation>
-<translation id="7261252191178797385">Slika pozadine uređaja</translation>
 <translation id="7267809745244694722">Medijske tipke postavi kao zadane funkcijske tipke</translation>
 <translation id="7271085005502526897">Uvoz početne stranice iz zadanog preglednika pri prvom pokretanju</translation>
 <translation id="7273823081800296768">Ako je ta postavka omogućena ili nije konfigurirana, tada korisnici mogu odabrati hoće li upariti klijente i hostove u trenutku povezivanja tako da ne moraju svaki put unositi PIN.
@@ -2054,15 +2052,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
       Napominjemo da to pravilo ovisi o tome dopušta li snop za potvrdu certifikata operativnog sustava SHA-1 potpise. Ako se ažuriranjem OS-a promijeni njegovo rukovanje SHA-1 certifikatima, to pravilo možda više neće imati utjecaja. Nadalje, to je pravilo predviđeno kao privremeno rješenje kako bi organizacije imale više vremena za napuštanje algoritma SHA-1. Pravilo će se ukloniti 1. siječnja 2019. ili oko tog datuma.
 
       Ako se to pravilo ne postavi ili se postavi na False, <ph name="PRODUCT_NAME" /> slijedi javno najavljeni raspored ukidanja algoritma SHA-1.</translation>
-<translation id="7589150663293249656">Omogućuje izradu roaming kopija podataka <ph name="PRODUCT_NAME" /> profila.
-
-      Ako omogućite tu opciju, spremljene postavke <ph name="PRODUCT_NAME" /> profila kao što su oznake, podaci za automatsko popunjavanje, zaporke itd. također će se zapisati u datoteku spremljenu u mapu roaming korisničkog profila ili na lokaciju koju je administrator odredio putem pravila <ph name="ROAMINGPROFILELOCATION_POLICY_NAME" />.
-
-      Google Sync automatski se onemogućuje kad se omogući to pravilo.
-
-      Kako bi se spriječilo slučajno otkrivanje podataka, također se preporučuje postavljanje pravila <ph name="SIGNINALLOWED_POLICY_NAME" /> na False.
-
-      Ako se to pravilo onemogući ili se ne postavi, upotrebljavat će se samo uobičajeni lokalni profili.</translation>
 <translation id="7593523670408385997">Konfigurira veličinu predmemorije koju će <ph name="PRODUCT_NAME" /> upotrebljavati za pohranu predmemoriranih datoteka na disku.
 
       Ako postavite ovo pravilo, <ph name="PRODUCT_NAME" /> upotrebljavat će ponuđenu veličinu predmemorije, bez obzira je li korisnik označio "--disk-cache-size". Vrijednost navedena u ovom pravilu nije čvrsto postavljena granica, već prijedlog za sustav predmemoriranja; svaka vrijednost ispod nekoliko megabajta premala je i zaokružit će se na prihvatljivi minimum.
@@ -2294,7 +2283,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
       Ako je korisnik omogućio sinkronizaciju, svi ti podaci sačuvat će se na njegovom profilu za sinkronizaciju isto kao i s normalnim profilima. Anonimni način također je dostupan ako nije izričito onemogućen pravilom.
 
       Ako se pravilo postavi na onemogućeno ili se ne postavi, prijava vodi na normalne profile.</translation>
-<translation id="8158758865057576716">Omogućuje izradu roaming kopija podataka <ph name="PRODUCT_NAME" /> profila.</translation>
 <translation id="8164246350636985940">Zadano ponašanje za web-lokacije koje nisu ni u jednom paketu sadržaja.
 
           To je pravilo za internu upotrebu preglednika <ph name="PRODUCT_NAME" />.</translation>
@@ -2558,13 +2546,6 @@ Svaka stavka na popisu jest niz koji sadrži ID proširenja i URL za ažuriranje
 <translation id="8992176907758534924">Ne dopuštaj web-lokacijama prikazivanje slika</translation>
 <translation id="9035964157729712237">ID-jevi proširenja za izuzimanje s crne liste</translation>
 <translation id="9042911395677044526">Omogućuje nametanje mrežne konfiguracije za primjenu po korisniku na uređaju <ph name="PRODUCT_OS_NAME" />. Mrežna je konfiguracija niz u formatu JSON, kao što je definirano formatom "Open Network Configuration" koji je opisan na adresi <ph name="ONC_SPEC_URL" /></translation>
-<translation id="908115901708809140">Konfigurira direktorij koji će <ph name="PRODUCT_NAME" /> upotrebljavati za spremanje roaming kopija profila.
-
-      Ako postavite to pravilo, <ph name="PRODUCT_NAME" /> upotrebljavat će navedeni direktorij za spremanje roaming kopija profila ako je omogućeno pravilo <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" />. Ako je pravilo <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> onemogućeno ili nije postavljeno, vrijednost spremljena u tom pravilu neće se upotrebljavati.
-
-      Popis varijabli koje se mogu koristiti možete pronaći na stranici https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
-
-      Ako se pravilo ne postavi, koristit će se zadani put roaming profila.</translation>
 <translation id="9084985621503260744">Odredi utječe li aktivnost videozapisa na upravljanje napajanjem</translation>
 <translation id="9088433379343318874">Omogući davatelja sadržaja nadziranog korisnika</translation>
 <translation id="9088444059179765143">Konfiguriraj način automatskog otkrivanja vremenske zone</translation>
@@ -2593,17 +2574,6 @@ Svaka stavka na popisu jest niz koji sadrži ID proširenja i URL za ažuriranje
       Ako je omogućeno, snimke zaslona ne mogu se izrađivati upotrebom tipkovničkih prečaca ni API-ja proširenja.
 
       Ako je onemogućeno ili nije određeno, izrada snimki zaslona dopuštena je.</translation>
-<translation id="9213347477683611358">Konfigurira pozadinsku sliku koja se prikazuje na zaslonu za prijavu na razini uređaja ako na uređaju još nema prijavljenih korisnika. Pravilo se postavlja određivanjem URL-a s kojega uređaj s OS-om Chrome može preuzeti pozadinsku sliku i kriptografskog raspršivanja za provjeru integriteta preuzimanja. Slika mora biti u JPEG formatu i ne smije biti veća od 16 MB. URL-u se mora moći pristupiti bez autentifikacije. Pozadinska slika preuzima se i sprema u predmemoriju. Ponovo će se preuzeti svaki put kada se URL ili raspršivanje promijene.
-
-      Pravilo se navodi kao niz koji izražava URL i sažetak u JSON obliku, na primjer:
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      Ako se postavi pravilo o pozadini uređaja, uređaj s OS-om Chrome preuzet će i upotrijebiti pozadinsku sliku na zaslonu za prijavu ako na uređaju još nema prijavljenih korisnika. Kad se korisnik prijavi, počinje se primjenjivati njegovo pravilo o pozadini.
-
-      Ako se pravilo o pozadini uređaja ne postavi, pozadinska slika odabire se na temelju korisnikovog pravila o pozadini.</translation>
 <translation id="9217154963008402249">Učestalost mrežnih paketa za praćenje</translation>
 <translation id="922540222991413931">Konfiguracija izvora instalacija proširenja, aplikacija i korisničkih skripti</translation>
 <translation id="924557436754151212">Uvoz spremljenih zaporki iz zadanog preglednika pri prvom pokretanju</translation>

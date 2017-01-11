@@ -177,7 +177,6 @@
 <translation id="2899328121302785497">{COUNT,plural, =1{zaviti oklepaj}one{# zaviti oklepaj}two{# zavita oklepaja}few{# zaviti oklepaji}other{# zavitih oklepajev}}</translation>
 <translation id="2911433807131383493">Odpiranje vadnice za ChromeVox</translation>
 <translation id="2932083475399492303">Preklapljanje med strukturno vrstico in vrstico postavitve</translation>
-<translation id="2944762337049891859">Samodejno branje strani po dokončanju nalaganja.</translation>
 <translation id="2964026537669811554">Skupina naslova</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{tabulator}one{# tabulator}two{# tabulatorja}few{# tabulatorji}other{# tabulatorjev}}</translation>
 <translation id="2972078295414139404">Ni prejšnje obiskane povezave</translation>
@@ -308,7 +307,6 @@
 <translation id="3712520970944678024">Nadzor govora</translation>
 <translation id="3716845769494773620">V več vrsticah</translation>
 <translation id="3731746171184829332">Ni prejšnjega naslova.</translation>
-<translation id="3735039640698208086">Ko se predvaja zvok …</translation>
 <translation id="3762198587642264450">Pomik na konec trenutne vrstice</translation>
 <translation id="3777255250339039212">n1</translation>
 <translation id="3793710123303304873">Izhod iz pogovornega okna.</translation>
@@ -549,7 +547,6 @@
 <translation id="5876817486144482042">Zmanjšanje glasnosti govora</translation>
 <translation id="5887397643266327462">Braillovi napisi so omogočeni.</translation>
 <translation id="5891934789323004067">Tabela</translation>
-<translation id="5899860758576822363">Predvajanje pri nižji glasnosti, ko ChromeVox govori</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{enačaj}one{# enačaj}two{# enačaja}few{# enačaji}other{# enačajev}}</translation>
 <translation id="5939518447894949180">Ponastavi</translation>
 <translation id="5948123859135882163">Preklop načina obravnavanja matematičnih obrazcev med strukturnim in semantičnim načinom</translation>
@@ -582,7 +579,6 @@
 <translation id="6281876499889881039">Naslednji podobni element.</translation>
 <translation id="6282062888058716985">nav</translation>
 <translation id="6290434000785343030">Ni naslednjega kombiniranega polja.</translation>
-<translation id="6305702903308659374">Predvajanje pri običajni glasnosti, tudi če ChromeVox govori</translation>
 <translation id="6307969636681130414">Pritisnjeno</translation>
 <translation id="6322856989298155004">Zvoki</translation>
 <translation id="6324551002951139333">Zaznana je bila slovnična napaka</translation>
@@ -698,7 +694,6 @@
 <translation id="7540083713905917247">drsnik z vrednostjo <ph name="VALUE" /> in imenom <ph name="NAME" /></translation>
 <translation id="7552432549459840808">Uporabne bližnjice za Chrome</translation>
 <translation id="7579911500627256166">pika <ph name="DOT" /></translation>
-<translation id="7591126877589047423">Izbran ni noben element. Odprite novo okno s pritiskom tipk CTRL + N.</translation>
 <translation id="7596919493010894443">izbor počiščen</translation>
 <translation id="7604026522577407655">Pomik na začetek trenutnega stolpca</translation>
 <translation id="7604451927827590395">glav</translation>
@@ -774,7 +769,6 @@
 <translation id="8455868257606149352">Največ <ph name="X" /></translation>
 <translation id="84575901236241018">ima tipko za dostop <ph name="KEY" /></translation>
 <translation id="847154984256717791">zaseden</translation>
-<translation id="8476408756881832830">Zaustavitev predvajanja, ko ChromeVox govori</translation>
 <translation id="8476508772960940536">pregled okna</translation>
 <translation id="8503360654911991865">Zmanjšanje razdrobljenosti krmarjenja</translation>
 <translation id="8520472399088452386">Pomikalnik</translation>

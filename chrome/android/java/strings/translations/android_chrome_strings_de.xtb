@@ -269,7 +269,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="3828029223314399057">In Lesezeichen suchen</translation>
 <translation id="3845539888601087042">Der Verlauf für alle Geräte, auf denen Sie angemeldet sind, wird angezeigt. <ph name="BEGIN_LINK" />Weitere Informationen.<ph name="END_LINK" /></translation>
 <translation id="3859306556332390985">Nach vorne navigieren</translation>
-<translation id="3890664840433101773">E-Mail-Adresse hinzufügen</translation>
 <translation id="3894427358181296146">Ordner hinzufügen</translation>
 <translation id="3895926599014793903">Zoom zwingend aktivieren</translation>
 <translation id="3917783807003067648">Standort blockiert</translation>
@@ -327,6 +326,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4526249700380860531">Unter <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> gespeicherte Passwörter aufrufen und verwalten</translation>
 <translation id="4532845899244822526">Ordner auswählen</translation>
 <translation id="4535858793016067060">Aktivieren Sie in den Sicherheitseinstellungen von Android die Option "Unbekannte Quellen", um den Test für die verbesserte Option "Zum Startbildschirm hinzufügen" auszuprobieren. Sie sollten diese Einstellung jedoch wieder deaktivieren, wenn Sie den Test beenden.</translation>
+<translation id="4543661749405994812">E-Mail-Adresse kopieren</translation>
 <translation id="4558311620361989323">Tastenkombinationen für Webseiten</translation>
 <translation id="4572422548854449519">In verwaltetem Konto anmelden</translation>
 <translation id="457875822857220463">Lieferung</translation>
@@ -371,7 +371,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4988526792673242964">Seiten</translation>
 <translation id="4996978546172906250">Teilen über</translation>
 <translation id="5000922062037820727">Blockiert (empfohlen)</translation>
-<translation id="5004339818306944878">Bis zu 60 % weniger Datenverbrauch und schnelleres Internet. Google-Server optimieren die Seiten, die Sie besuchen.</translation>
 <translation id="5005498671520578047">Passwort kopieren</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> möchte eine Verbindung herstellen</translation>
 <translation id="5016205925109358554">Serifenschrift</translation>
@@ -394,12 +393,10 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="5171045022955879922">Suchen oder URL eingeben</translation>
 <translation id="5184329579814168207">In Chrome öffnen</translation>
 <translation id="5199929503336119739">Arbeitsprofil</translation>
-<translation id="5205222826937269299">Name erforderlich</translation>
 <translation id="5209320130288484488">Keine Geräte gefunden</translation>
 <translation id="5210286577605176222">Zum vorherigen Tab wechseln</translation>
 <translation id="5210365745912300556">Tab schließen</translation>
 <translation id="5222676887888702881">Abmelden</translation>
-<translation id="5222812217790122047">E-Mail-Adresse erforderlich</translation>
 <translation id="5233638681132016545">Neuer Tab</translation>
 <translation id="5271967389191913893">Das Gerät kann den Inhalt, der heruntergeladen werden soll, nicht öffnen.</translation>
 <translation id="528192093759286357">Ziehen Sie zum Beenden des Vollbildmodus von oben und tippen Sie auf die Zurück-Taste.</translation>
@@ -526,6 +523,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Such- und URL-Vorschläge</translation>
 <translation id="6463070039183944536">Wird hinzugefügt…</translation>
+<translation id="6464825623202322042">Dieses Gerät</translation>
 <translation id="6475951671322991020">Video herunterladen</translation>
 <translation id="6477460825583319731">Ungültige E-Mail-Adresse</translation>
 <translation id="6482749332252372425"><ph name="FILE_NAME" /> konnte nicht heruntergeladen werden, weil nicht genügend Speicherplatz vorhanden ist.</translation>
@@ -572,7 +570,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6868088497967843822">Melden Sie sich an, um Ihre Lesezeichen, Ihren Verlauf, Ihre Passwörter und andere Einstellungen auf allen Ihren Geräten aufzurufen.</translation>
 <translation id="688738109438487280">Vorhandene Daten werden zu <ph name="TO_ACCOUNT" /> hinzugefügt.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d geöffneter Tab}other{%1$d geöffnete Tabs}}</translation>
-<translation id="6896758677409633944">Kopieren</translation>
 <translation id="6937422995269576720">Kartennummer ist ungültig</translation>
 <translation id="6945221475159498467">Auswählen</translation>
 <translation id="6963766334940102469">Lesezeichen löschen</translation>
@@ -597,7 +594,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7094922512924405309">Keine Physical Web-Seiten zu Objekten in der Nähe gefunden</translation>
 <translation id="7138678301420049075">Sonstiges</translation>
 <translation id="7180611975245234373">Aktualisieren</translation>
-<translation id="7189372733857464326">Warten auf Abschluss der Google Play-Dienste-Aktualisierung</translation>
 <translation id="7191430249889272776">Tab im Hintergrund geöffnet</translation>
 <translation id="7243308994586599757">Optionen unten auf dem Bildschirm verfügbar</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> zeigt Ihnen lokale Suchergebnisse basierend auf Ihrem Standort.</translation>
@@ -658,7 +654,6 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="7851858861565204677">Andere Geräte</translation>
 <translation id="7875915731392087153">E-Mail erstellen</translation>
 <translation id="7876243839304621966">Alle entfernen</translation>
-<translation id="7882131421121961860">Kein Verlauf gefunden</translation>
 <translation id="7929962904089429003">Menü öffnen</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> ist veraltet.</translation>
 <translation id="7947953824732555851">Akzeptieren und anmelden</translation>
@@ -706,7 +701,6 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="8321376388213838985">Weitere Artikel werden in Kürze erscheinen. Schönen Nachmittag!</translation>
 <translation id="8372893542064058268">Lässt die Hintergrundsynchronisierung für eine bestimmte Website zu.</translation>
 <translation id="8374821112118309944">TalkBack muss auf eine neuere Version aktualisiert werden.</translation>
-<translation id="8393700583063109961">Nachricht senden</translation>
 <translation id="8396312449826231789">Nur genehmigte Websites</translation>
 <translation id="8413126021676339697">Gesamtverlauf anzeigen</translation>
 <translation id="8428213095426709021">Einstellungen</translation>
@@ -787,7 +781,6 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="932327136139879170">Privat</translation>
-<translation id="932599481871055447">Geringerer Datenverbrauch und schnelleres Surfen</translation>
 <translation id="938850635132480979">Fehler: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Mikrofonzugriff</translation>
 <translation id="951339005376969845">Vorhandene Daten werden gelöscht. Wenn Sie Ihre vorhandenen Daten abrufen möchten, wechseln Sie zurück zu <ph name="FROM_ACCOUNT" />.</translation>

@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">选择文件夹</translation>
 <translation id="1272079795634619415">停止</translation>
 <translation id="129553762522093515">最近关闭的标签页</translation>
-<translation id="1323735185997015385">删除</translation>
 <translation id="132683371494960526">点按两次即可更改父文件夹。</translation>
 <translation id="1340643665687018190">关闭菜单</translation>
 <translation id="1375321115329958930">已保存的密码</translation>
@@ -64,7 +63,6 @@
 <translation id="2068952045031577364">过去 1 周</translation>
 <translation id="2079545284768500474">撤消</translation>
 <translation id="209018056901015185">请求切换到桌面版网站</translation>
-<translation id="2100215774115172756">您阅读清单中的网页可供离线浏览。</translation>
 <translation id="2103075008456228677">打开 history.google.com</translation>
 <translation id="2116625576999540962">移动了<ph name="NUMBER_OF_SELECTED_BOOKMARKS" />项</translation>
 <translation id="2149973817440762519">修改书签</translation>
@@ -84,7 +82,6 @@
 <translation id="2572712655377361602">设备政策已禁用对您的照片的访问权限</translation>
 <translation id="2584132361465095047">添加帐号…</translation>
 <translation id="2593774076813182497">此页面无法打印。</translation>
-<translation id="2648803196158606475">删除已读项</translation>
 <translation id="2653659639078652383">提交</translation>
 <translation id="2684815431982545828">打开新的标签页</translation>
 <translation id="2690858294534178585">相机正在使用中</translation>
@@ -103,25 +100,22 @@
 <translation id="2898963176829412617">新建文件夹…</translation>
 <translation id="2903493209154104877">地址</translation>
 <translation id="2921219216347069551">无法分享网页</translation>
-<translation id="292639812446257861">标记为未读</translation>
 <translation id="2933759065870693102">闪光灯</translation>
 <translation id="2969979262385602596">登录失败，请稍后重试。</translation>
 <translation id="2989805286512600854">在新标签页中打开</translation>
 <translation id="3024255823539804759">过去 1 天</translation>
 <translation id="3037605927509011580">喔唷，崩溃啦！</translation>
 <translation id="3050311348724540835">无法访问 <ph name="HISTORY_URL" />。要访问您的浏览记录，请从工具菜单中选择“<ph name="SHOW_HISTORY" />”。</translation>
-<translation id="3112556859945124369">标为…</translation>
 <translation id="3151924044251363314">只有知道您密码的人才能读取您的已加密数据。系统不会将该密码发送给 Google，Google 也不会存储该密码。如果您忘记了密码或想更改此设置，则需重置同步设置。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
-<translation id="3157684681743766797">全部标为…</translation>
 <translation id="3172213052701798825">Google Smart Lock（密码专用）</translation>
 <translation id="3175081911749765310">网络服务</translation>
 <translation id="3207960819495026254">已加书签</translation>
 <translation id="3210163015918861891">同步功能已关闭</translation>
-<translation id="3237561509210981547">要将网页添加到您的阅读清单，请依次点按<ph name="BEGIN_BOLD_FONT" />分享 &gt; 稍后阅读<ph name="END_BOLD_FONT" />。</translation>
 <translation id="3240426699337459095">已复制链接</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />，<ph name="ADDITIONAL_INFO" />，第 <ph name="INDEX" /> 项建议（共 <ph name="NUM_SUGGESTIONS" /> 项）</translation>
 <translation id="3268451620468152448">打开的标签页</translation>
+<translation id="3289005573061089144">导入数据？</translation>
 <translation id="3324193307694657476">地址第2行</translation>
 <translation id="3329904751041170572">无法连接到服务器。</translation>
 <translation id="3335947283844343239">重新打开关闭的标签页</translation>
@@ -130,7 +124,6 @@
 <translation id="3414292259312108062">Chrome 会将此密码存储在 <ph name="BEGIN_LINK" />Google 保存的密码<ph name="END_LINK" />中，并会在需要时自动填充此密码，因此您记不住它也没有关系。</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" />分钟</translation>
 <translation id="3448016392200048164">分割视图</translation>
-<translation id="3474068797193663261">要将网页添加到您的阅读清单，请依次点按<ph name="BEGIN_BOLD_FONT" />菜单 &gt; 分享 &gt; 稍后阅读<ph name="END_BOLD_FONT" />。</translation>
 <translation id="3474649192738347024">表单已填好。</translation>
 <translation id="3478058380795961209">到期月份</translation>
 <translation id="3482959374254649722">正在同步您的标签页…</translation>
@@ -190,7 +183,6 @@
 <translation id="481968316161811770">Cookie 和网站数据</translation>
 <translation id="4875622588773761625">要让<ph name="PASSWORD_MANAGER_BRAND" />更新您登录此网站时使用的密码吗？</translation>
 <translation id="4881695831933465202">打开</translation>
-<translation id="4904877109095351937">标记为已读</translation>
 <translation id="4923459931733593730">付款</translation>
 <translation id="4930268273022498155">删除现有数据。您可通过切换回 <ph name="USER_EMAIL1" /> 来获取现有数据。</translation>
 <translation id="4941089862236492464">很抱歉，分享您的信息时出现问题。</translation>
@@ -368,7 +360,6 @@
 <translation id="8428213095426709021">设置</translation>
 <translation id="8433678324664858900">显示建议</translation>
 <translation id="8458397775385147834">删除了1项</translation>
-<translation id="8487700953926739672">可离线查看</translation>
 <translation id="8503813439785031346">用户名</translation>
 <translation id="8517375800490286174">开放源代码许可</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" />标签页<ph name="FIRST_VISIBLE_TAB" />-<ph name="LAST_VISIBLE_TAB" />（共<ph name="NUMBER_OF_OPEN_TABS" />个）</translation>
@@ -378,7 +369,6 @@
 <translation id="8605219856220328675">关闭标签页。</translation>
 <translation id="8620640915598389714">修改</translation>
 <translation id="8636825310635137004">要在您的其他设备上访问您的标签页，请开启同步功能。</translation>
-<translation id="8654802032646794042">取消</translation>
 <translation id="8680787084697685621">帐号登录详细信息已过期。</translation>
 <translation id="8699098509676302392">添加地址…</translation>
 <translation id="8721297211384281569">工具菜单</translation>

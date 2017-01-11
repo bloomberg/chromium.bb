@@ -269,7 +269,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="3828029223314399057">Yer işaretlerinde ara</translation>
 <translation id="3845539888601087042">Oturum açtığınız cihazlardan geçmiş bilgileri gösteriliyor. <ph name="BEGIN_LINK" />Daha fazla bilgi edinin<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">İleriye doğru git</translation>
-<translation id="3890664840433101773">E-posta adresi ekle</translation>
 <translation id="3894427358181296146">Klasör ekleyin</translation>
 <translation id="3895926599014793903">Yakınlaştırmayı etkinleştirmeye zorla</translation>
 <translation id="3917783807003067648">Konum engellendi</translation>
@@ -327,6 +326,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4526249700380860531">Kaydedilmiş şifreleri <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> adresinden görüntüleyin ve yönetin</translation>
 <translation id="4532845899244822526">Klasör seçin</translation>
 <translation id="4535858793016067060">"İyileştirilmiş Ana Ekrana Ekle" özelliğini denemek için Android güvenlik ayarlarından "Bilinmeyen Kaynaklar'ı" açın. Denemeyi bitirdikten sonra bu ayarı tekrar devre dışı bırakmayı unutmayın.</translation>
+<translation id="4543661749405994812">E-posta adresini kopyala</translation>
 <translation id="4558311620361989323">Web sayfası kısayolları</translation>
 <translation id="4572422548854449519">Yönetilen hesapta oturum açın</translation>
 <translation id="457875822857220463">Teslimat</translation>
@@ -371,7 +371,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4988526792673242964">Sayfalar</translation>
 <translation id="4996978546172906250">Paylaşım yöntemi:</translation>
 <translation id="5000922062037820727">Engellendi (önerilir)</translation>
-<translation id="5004339818306944878">%60'a kadar daha az veri kullanın ve web'i hızlandırın. Google sunucuları, ziyaret ettiğiniz sayfaları optimize eder.</translation>
 <translation id="5005498671520578047">Şifreyi kopyalayın</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> bağlanmak istiyor</translation>
 <translation id="5016205925109358554">Serif</translation>
@@ -394,12 +393,10 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="5171045022955879922">Arayın veya URL'yi yazın</translation>
 <translation id="5184329579814168207">Chrome'da aç</translation>
 <translation id="5199929503336119739">İş profili</translation>
-<translation id="5205222826937269299">Ad gerekli</translation>
 <translation id="5209320130288484488">Cihaz bulunamadı</translation>
 <translation id="5210286577605176222">Önceki sekmeye gider</translation>
 <translation id="5210365745912300556">Sekmeyi kapat</translation>
 <translation id="5222676887888702881">Çıkış</translation>
-<translation id="5222812217790122047">E-posta gerekli</translation>
 <translation id="5233638681132016545">Yeni sekme</translation>
 <translation id="5271967389191913893">Cihaz, indirilecek içeriği açamıyor.</translation>
 <translation id="528192093759286357">Tam ekrandan çıkmak için yukarıdan sürükleyin ve geri düğmesine dokunun.</translation>
@@ -526,6 +523,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6447842834002726250">Çerezler</translation>
 <translation id="6448273550210938826">Arama ve URL önerileri</translation>
 <translation id="6463070039183944536">Ekleniyor...</translation>
+<translation id="6464825623202322042">Bu cihazda</translation>
 <translation id="6475951671322991020">Videoyu indir</translation>
 <translation id="6477460825583319731">Geçersiz e-posta adresi</translation>
 <translation id="6482749332252372425">Depolama alanı yetersiz olduğu için <ph name="FILE_NAME" /> dosyası indirilemedi.</translation>
@@ -572,7 +570,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6868088497967843822">Yer işaretlerinize, geçmişinize ve diğer ayarlarınıza tüm cihazlarınızdan erişmek için oturum açın.</translation>
 <translation id="688738109438487280">Mevcut veriler <ph name="TO_ACCOUNT" /> hesabına eklenir.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d açık sekme}other{%1$d açık sekme}}</translation>
-<translation id="6896758677409633944">Kopyala</translation>
 <translation id="6937422995269576720">Geçersiz kart numarası</translation>
 <translation id="6945221475159498467">Seç</translation>
 <translation id="6963766334940102469">Yer işaretlerini silme</translation>
@@ -597,7 +594,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7094922512924405309">Yakınlarda herhangi bir Fiziksel Web sayfası bulunamadı</translation>
 <translation id="7138678301420049075">Diğer</translation>
 <translation id="7180611975245234373">Yenile</translation>
-<translation id="7189372733857464326">Güncellemenin tamamlanması için Google Play Hizmetleri bekleniyor</translation>
 <translation id="7191430249889272776">Sekme arka planda açıldı.</translation>
 <translation id="7243308994586599757">Sayfanın altına yakın bir yerde kullanılabilen seçenekler</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" />, yerel arama sonuçlarını göstermek için konumunuzu kullanır</translation>
@@ -658,7 +654,6 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="7851858861565204677">Diğer cihazlar</translation>
 <translation id="7875915731392087153">E-posta oluşturun</translation>
 <translation id="7876243839304621966">Tümünü kaldır</translation>
-<translation id="7882131421121961860">Geçmiş bulunamadı</translation>
 <translation id="7929962904089429003">Menüyü açar</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> güncel değil.</translation>
 <translation id="7947953824732555851">Kabul et ve oturum aç</translation>
@@ -706,7 +701,6 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="8321376388213838985">Yakında daha fazla seçenek gösterilecek. Güzel bir öğleden sonra geçirmenizi dileriz.</translation>
 <translation id="8372893542064058268">Belirli bir site için Arka Plan Senkronizasyonuna izin verin.</translation>
 <translation id="8374821112118309944">TalkBack'i daha yeni bir sürüme güncellemeniz gerekiyor.</translation>
-<translation id="8393700583063109961">İleti gönder</translation>
 <translation id="8396312449826231789">Sadece onaylı siteler</translation>
 <translation id="8413126021676339697">Tüm geçmişi göster</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
@@ -787,7 +781,6 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Resimler</translation>
 <translation id="932327136139879170">Ana Sayfa</translation>
-<translation id="932599481871055447">Verileri kaydedin ve daha hızlı göz atın</translation>
 <translation id="938850635132480979">Hata: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Mikrofonunuza erişim</translation>
 <translation id="951339005376969845">Mevcut veriler silinir. İlgili verileri tekrar <ph name="FROM_ACCOUNT" /> hesabına geçerek alabilirsiniz.</translation>

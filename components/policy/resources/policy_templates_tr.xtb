@@ -1915,7 +1915,6 @@ Bu politika ayarlanmadan bırakılırsa kullanıcı sistemde yüklü herhangi bi
 <translation id="6770454900105963262">Aktif kiosk oturumlarıyla ilgili bilgileri raporla</translation>
 <translation id="6774533686631353488">Kullanıcı düzeyinde Yerel Mesajlaşma ana makinelerine izin ver (yönetici şifreleri olmadan yüklenir).</translation>
 <translation id="6786747875388722282">Uzantılar</translation>
-<translation id="6786967369487349613">Dolaşım profili dizinini ayarlayın</translation>
 <translation id="6810445994095397827">Bu sitelerde JavaScript'i engelle</translation>
 <translation id="681446116407619279">Desteklenen kimlik doğrulama şemaları</translation>
 <translation id="6828905844648501476">Bu politika doğru seçeneğine ayarlanırsa veya yapılandırılmazsa <ph name="PRODUCT_NAME" />, kullanıcı yöneticisinin Kişi Ekle işlevinin kullanılmasına izin verir.
@@ -2089,7 +2088,6 @@ Ayrıca, RemoteAccessHostClientDomain konusuna bakın.</translation>
 <translation id="7249828445670652637">ARC uygulamalarına ilişkin <ph name="PRODUCT_OS_NAME" /> CA sertifikalarını etkinleştir</translation>
 <translation id="7258823566580374486">Uzaktan erişen ana makinelerin perdelenmesini etkinleştirme</translation>
 <translation id="7260277299188117560">p2p otomatik güncellemesi etkin</translation>
-<translation id="7261252191178797385">Cihaz duvar kağıdı resmi</translation>
 <translation id="7267809745244694722">Medya tuşları varsayılan olarak işlev tuşlarına ayarlanır</translation>
 <translation id="7271085005502526897">İlk çalıştırmada ana sayfayı varsayılan tarayıcıdan içe aktar</translation>
 <translation id="7273823081800296768">Bu ayar etkinleştirilirse veya yapılandırılmazsa, kullanıcılar bağlantı zamanında istemcileri ve ana makineleri eşleştirmeyi seçebilir, bu da her defasında PIN girme gereğini ortadan kaldırır.
@@ -2179,15 +2177,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
       Bu politikanın, SHA-1 imzalarına izin veren işletim sistemi sertifika doğrulama yığınına bağlı olduğu unutulmamalıdır. Bir işletim sistemi güncellemesi, işletim sisteminin SHA-1 sertifikalarını işleme şeklini değiştirirse bu politikanın etkisi ortadan kalkabilir. Bunun yanı sıra, bu politika kurumlara SHA-1'i kullanımdan kaldırmaları için zaman kazandıran geçici bir çözüm sağlamak amacıyla hazırlanmıştır. Bu politika, 1 Ocak 2019'da veya buna yakın bir tarihte kaldırılacaktır.
 
       Bu politika ayarlanmazsa veya yanlış seçeneğine ayarlanırsa <ph name="PRODUCT_NAME" />, SHA-1'in kullanımdan kaldırılmasına yönelik herkese açık şekilde yapılan duyuruları takip eder.</translation>
-<translation id="7589150663293249656"><ph name="PRODUCT_NAME" /> profil verileri için dolaşım kopyalarının oluşturulmasını etkinleştirir.
-
-      Bu ayarı etkinleştirirseniz <ph name="PRODUCT_NAME" /> profillerinde depolanan yer işaretleri, otomatik doldurma verileri, şifreler gibi ayarlar Dolaşım kullanıcı profilinde saklanan bir dosyaya veya Yönetici tarafından <ph name="ROAMINGPROFILELOCATION_POLICY_NAME" /> politikası aracılığıyla belirlenen bir konuma da yazılır.
-
-      Bu politika etkinleştirildiğinde Google Sync otomatik olarak devre dışı bırakılır.
-
-      Yanlışlıkla veri sızıntılarının olmasını önlemek için <ph name="SIGNINALLOWED_POLICY_NAME" /> politikasının Yanlış (False) değerine ayarlanması da tavsiye edilir.
-
-      Bu politika devre dışı bırakılırsa veya ayarlanmazsa yalnızca normal yerel profiller kullanılır.</translation>
 <translation id="7593523670408385997">Önbelleğe alınan dosyaları diskte depolamak için <ph name="PRODUCT_NAME" /> tarafından kullanılacak önbellek boyutunu yapılandırır.
 
       Bu politikayı ayarlarsanız kullanıcı "--disk-cache-size" bayrağını belirtmiş olsun veya olmasın, <ph name="PRODUCT_NAME" /> sağlanan önbellek boyutunu kullanır. Bu politikada belirtilen değer kesin bir sınır değil, daha çok önbellek sistemi için bir öneridir. Birkaç mega baytın altındaki her değer çok küçük sayılır ve mantıklı bir minimum sayı olacak şekilde ayarlanır.
@@ -2431,7 +2420,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
       Kullanıcı, senkronizasyonu etkinleştirmişse tüm bu veriler normal profillerde olduğu gibi kullanıcının senkronizasyon profilinde saklanır. Politika tarafından açıkça devre dışı bırakılmamışsa gizli mod da kullanılabilir.
 
       Politika devre dışı olarak ayarlanırsa veya ayarlanmadan bırakılırsa oturum açıldığında normal profiller kullanılır.</translation>
-<translation id="8158758865057576716"><ph name="PRODUCT_NAME" /> profil verileri için dolaşım kopyalarının oluşturulmasını etkinleştir.</translation>
 <translation id="8164246350636985940">Siteler için varsayılan davranış hiçbir içerik paketinde yok.
 
           Bu politika <ph name="PRODUCT_NAME" /> tarafından dahili kullanım içindir.</translation>
@@ -2719,13 +2707,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="8992176907758534924">Hiçbir sitenin resimleri görüntülemesine izin verme</translation>
 <translation id="9035964157729712237">Kara listeden muaf tutulacak uzantı kimlikleri</translation>
 <translation id="9042911395677044526">Kullanıcılara ayrı ayrı uygulanacak ağ yapılandırmasını bir <ph name="PRODUCT_OS_NAME" /> cihazına iletmeye olanak verir. Ağ yapılandırması, Açık Ağ Yapılandırma biçimi tarafından <ph name="ONC_SPEC_URL" /> adresinde tanımlandığı gibi, JSON biçimli bir dizedir.</translation>
-<translation id="908115901708809140"><ph name="PRODUCT_NAME" /> tarafından profillerin dolaşım kopyasını depolamak için kullanılan dizini yapılandırır.
-
-      Bu politikayı ayarlarsanız ve <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> politikası da etkinleştirildiyse <ph name="PRODUCT_NAME" />, profillerin dolaşım kopyasını depolamak için sağlanan dizini kullanır. <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> politikası devre dışı bırakılırsa veya ayarlanmazsa bu politikada belirlenen değer kullanılmaz.
-
-      Kullanılabilecek değişkenlerin listesi için https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables adresine bakın.
-
-      Bu politika ayarlanmazsa varsayılan dolaşım profili yolu kullanılır.</translation>
 <translation id="9084985621503260744">Video etkinliğinin güç yönetimini etkileyip etkilemeyeceğini belirtme</translation>
 <translation id="9088433379343318874">Denetlenen kullanıcı içerik sağlayıcısını etkinleştirme</translation>
 <translation id="9088444059179765143">Otomatik saat dilimi algılama yöntemini yapılandır</translation>
@@ -2762,17 +2743,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
       Etkinleştirilirse, klavye kısayolları veya uzantı API'ları kullanılarak ekran görüntüleri alınamaz.
 
       Devre dışı bırakılırsa veya belirtilmezse, ekran görüntülerinin alınmasına izin verilir.</translation>
-<translation id="9213347477683611358">Cihazda henüz hiçbir kullanıcı oturum açmadığında giriş ekranında gösterilen cihaz düzeyindeki duvar kağıdı resmini yapılandırın. Politikayı ayarlamak için Chrome OS cihazın, duvar kağıdı resmini hangi URL'den indireceği ve indirilen dosyanın bütünlüğünü doğrulamak için kullanılacak bir şifreleme karması belirtilmelidir. Resim JPEG biçiminde olmalı, dosya boyutu 16 MB'yi aşmamalıdır. URL'ye kimlik doğrulaması yapılmadan erişilebilmelidir. Duvar kağıdı resmi indirilip önbelleğe alınır. URL veya karma değiştiğinde yeniden indirilir.
-
-      Politika, URL'yi ve karmayı JSON biçiminde ifade eden bir dizi olarak belirtilmelidir. Örneğin:
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      Cihaz duvar kağıdı politikası ayarlanırsa Chrome OS cihaz, duvar kağıdı resmini indirir ve cihazda henüz hiçbir kullanıcı oturum açmamışken giriş ekranında bu resmi kullanır. Kullanıcı giriş yaptıktan sonra, kullanıcının duvar kağıdı politikası devreye girer.
-
-      Cihaz duvar kağıdı politikası ayarlanmamış ve kullanıcının duvar kağıdı politikası ayarlanmışsa neyin gösterileceğini kullanıcının duvar kağıdı politikası belirler.</translation>
 <translation id="9217154963008402249">İzleme amaçlı ağ paketlerinin sıklığı</translation>
 <translation id="922540222991413931">Uzantı, uygulama ve kullanıcı komut dosyası yükleme kaynaklarını yapılandır</translation>
 <translation id="924557436754151212">İlk çalıştırmada kayıtlı şifreleri varsayılan tarayıcıdan içe aktar</translation>

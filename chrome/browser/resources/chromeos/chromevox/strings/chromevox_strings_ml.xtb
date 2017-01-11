@@ -177,7 +177,6 @@
 <translation id="2899328121302785497">{COUNT,plural, =1{ഇടത് ബ്രേസ്}other{# ഇടത് ബ്രേസുകൾ}}</translation>
 <translation id="2911433807131383493">ChromeVox ട്യൂട്ടോറിയൽ തുറക്കുക</translation>
 <translation id="2932083475399492303">ഘടനാപരമായവയ്‌ക്ക് അല്ലെങ്കിൽ ലേഔട്ടിന് ഇടയിലുള്ള ലൈൻ തരം ടോഗിൾ ചെയ്യുക</translation>
-<translation id="2944762337049891859">പേജ് പൂർണ്ണമായി ലോഡുചെയ്‌ത ശേഷം അത് സ്വയമേവ വായിക്കുക.</translation>
 <translation id="2964026537669811554">ശീർഷക ഗ്രൂപ്പ്</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{ടാബ്}other{# ടാബുകൾ}}</translation>
 <translation id="2972078295414139404">സന്ദർശിച്ച മുമ്പത്തെ ലിങ്കൊന്നുമില്ല.</translation>
@@ -308,7 +307,6 @@
 <translation id="3712520970944678024">സംഭാഷണ നിയന്ത്രണം</translation>
 <translation id="3716845769494773620">ഒന്നിലധികം രേഖകൾ</translation>
 <translation id="3731746171184829332">മുൻ തലക്കെട്ടൊന്നുമില്ല.</translation>
-<translation id="3735039640698208086">ഓഡിയോ പ്ലേ ചെയ്യുമ്പോൾ...</translation>
 <translation id="3762198587642264450">നിലവിലെ വരിയുടെ അവസാനത്തിലേക്ക് പോകുക</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">ഡയലോഗിൽ നിന്ന് പുറത്തുകടന്നു.</translation>
@@ -549,7 +547,6 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, Alt+F അമർ
 <translation id="5876817486144482042">സംഭാഷണ ശബ്ദം കുറയ്‌ക്കുക</translation>
 <translation id="5887397643266327462">ബ്രെയ്‌ലി അടിക്കുറിപ്പുകൾ പ്രവർത്തനക്ഷമമാക്കി.</translation>
 <translation id="5891934789323004067">പട്ടിക</translation>
-<translation id="5899860758576822363">ChromeVox സംസാരിക്കുമ്പോൾ കുറഞ്ഞ ശബ്‌ദത്തിൽ പ്ലേ ചെയ്യുക</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{സമചിഹ്നം}other{# സമചിഹ്നങ്ങൾ}}</translation>
 <translation id="5939518447894949180">വീണ്ടും സജ്ജീകരിക്കുക</translation>
 <translation id="5948123859135882163">ഘടനാപരമായതിനും സെമാന്റിക്കിനുമിടയിൽ മാത്ത് എക്‌സ്‌പ്രഷനുകളുടെ വ്യാഖ്യാനം ടോഗിൾ ചെയ്യുക</translation>
@@ -582,7 +579,6 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, Alt+F അമർ
 <translation id="6281876499889881039">അടുത്ത സമാന ഘടകം.</translation>
 <translation id="6282062888058716985">nav</translation>
 <translation id="6290434000785343030">അടുത്ത കോമ്പോ ബോക്‌സ് ഒന്നുമില</translation>
-<translation id="6305702903308659374">ChromeVox സംസാരിക്കുകയാണെങ്കിലും സാധാരണ ശബ്‌ദത്തിൽ പ്ലേ ചെയ്യുക</translation>
 <translation id="6307969636681130414">അമർത്തിയത്</translation>
 <translation id="6322856989298155004">ശബ്‌ദം</translation>
 <translation id="6324551002951139333">വ്യാകരണത്തെറ്റ് കണ്ടെത്തി</translation>
@@ -698,7 +694,6 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, Alt+F അമർ
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, സ്ലൈഡർ</translation>
 <translation id="7552432549459840808">സഹായകരമായ Chrome കുറുക്കുവഴികൾ</translation>
 <translation id="7579911500627256166"><ph name="DOT" /> ഡോട്ട്</translation>
-<translation id="7591126877589047423">ഫോക്കസ് ഇല്ല. ഒരു പുതിയ വിൻഡോ തുറക്കാൻ Control N അമർത്തുക.</translation>
 <translation id="7596919493010894443">തിരഞ്ഞെടുത്തവ മായ്‌ച്ചു</translation>
 <translation id="7604026522577407655">നിലവിലെ നിരയുടെ തുടക്കത്തിലേക്ക് പോകുക</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -774,7 +769,6 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, Alt+F അമർ
 <translation id="8455868257606149352">പരമാവധി <ph name="X" /></translation>
 <translation id="84575901236241018">ഇതിന് ആക്‌സസ്സ് കീ <ph name="KEY" /> ഉണ്ട്</translation>
 <translation id="847154984256717791">തിരക്കിൽ</translation>
-<translation id="8476408756881832830">ChromeVox സംസാരിക്കുമ്പോൾ പ്ലേബാക്ക് താൽക്കാലികമായി നിർത്തുക</translation>
 <translation id="8476508772960940536">വിൻഡോ ചുരുക്കവിവരണം</translation>
 <translation id="8503360654911991865">നാവിഗേഷൻ ഗ്രാനുലാരിറ്റി കുറയ്ക്കുക</translation>
 <translation id="8520472399088452386">സ്‌പിൻ ബട്ടൺ</translation>

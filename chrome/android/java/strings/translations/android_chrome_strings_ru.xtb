@@ -269,7 +269,6 @@
 <translation id="3828029223314399057">Искать в закладках</translation>
 <translation id="3845539888601087042">Показана история со всех устройств, на которых используется этот аккаунт. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="3859306556332390985">Перемотать вперед</translation>
-<translation id="3890664840433101773">Добавление адреса электронной почты</translation>
 <translation id="3894427358181296146">Добавление папки</translation>
 <translation id="3895926599014793903">Принудительно изменять масштаб</translation>
 <translation id="3917783807003067648">Доступ к геоданным запрещен</translation>
@@ -327,6 +326,7 @@
 <translation id="4526249700380860531">Просматривайте сохраненные пароли и управляйте ими на странице <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Выбор папки</translation>
 <translation id="4535858793016067060">Хотите опробовать экспериментальную улучшенную функцию добавления на главный экран? Разрешите установку приложений из неизвестных источников в настройках безопасности устройства Android. Позже этот параметр можно будет отключить.</translation>
+<translation id="4543661749405994812">Скопировать адрес эл. почты</translation>
 <translation id="4558311620361989323">Работа с веб-страницами</translation>
 <translation id="4572422548854449519">Войдите в управляемый аккаунт</translation>
 <translation id="457875822857220463">Доставка</translation>
@@ -371,7 +371,6 @@
 <translation id="4988526792673242964">Страницы</translation>
 <translation id="4996978546172906250">Способ отправки</translation>
 <translation id="5000922062037820727">Заблокировано (рекомендуется)</translation>
-<translation id="5004339818306944878">Экономьте до 60% трафика и сделайте интернет-соединение быстрее. Сервера Google будут оптимизировать загружаемые страницы.</translation>
 <translation id="5005498671520578047">Для копирования пароля</translation>
 <translation id="5011311129201317034">Сайт <ph name="SITE" /> запрашивает подключение</translation>
 <translation id="5016205925109358554">С засечками</translation>
@@ -394,12 +393,10 @@
 <translation id="5171045022955879922">Введите запрос или URL</translation>
 <translation id="5184329579814168207">Открыть в Chrome</translation>
 <translation id="5199929503336119739">Рабочий профиль</translation>
-<translation id="5205222826937269299">Введите имя или название</translation>
 <translation id="5209320130288484488">Устройства не найдены</translation>
 <translation id="5210286577605176222">Перейти к предыдущей вкладке</translation>
 <translation id="5210365745912300556">Закрыть вкладку</translation>
 <translation id="5222676887888702881">Выйти</translation>
-<translation id="5222812217790122047">Введите адрес электронной почты</translation>
 <translation id="5233638681132016545">Новая вкладка</translation>
 <translation id="5271967389191913893">Не удается открыть скачанный контент.</translation>
 <translation id="528192093759286357">Чтобы выйти из полноэкранного режима, проведите по экрану сверху вниз и нажмите кнопку "Назад".</translation>
@@ -526,6 +523,7 @@
 <translation id="6447842834002726250">Файлы сookie</translation>
 <translation id="6448273550210938826">Поиск и предложения URL</translation>
 <translation id="6463070039183944536">Добавление…</translation>
+<translation id="6464825623202322042">На этом устройстве</translation>
 <translation id="6475951671322991020">Скачать видео</translation>
 <translation id="6477460825583319731">Неверный адрес электронной почты</translation>
 <translation id="6482749332252372425">Не удалось скачать файл <ph name="FILE_NAME" />, так как места для хранения данных недостаточно.</translation>
@@ -572,7 +570,6 @@
 <translation id="6868088497967843822">Войдите в аккаунт, чтобы синхронизировать закладки, историю, пароли и другие настройки на всех устройствах.</translation>
 <translation id="688738109438487280">Объединить сохраненные данные с данными пользователя <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d открытая вкладка}one{%1$d открытая вкладка}few{%1$d открытые вкладки}many{%1$d открытых вкладок}other{%1$d открытой вкладки}}</translation>
-<translation id="6896758677409633944">Копировать</translation>
 <translation id="6937422995269576720">Недействительный номер карты</translation>
 <translation id="6945221475159498467">Выбрать</translation>
 <translation id="6963766334940102469">Удалить закладки</translation>
@@ -597,7 +594,6 @@
 <translation id="7094922512924405309">Ничего не найдено</translation>
 <translation id="7138678301420049075">Другое</translation>
 <translation id="7180611975245234373">Обновить</translation>
-<translation id="7189372733857464326">Обновление сервисов Google Play…</translation>
 <translation id="7191430249889272776">Вкладка открыта в фоновом режиме</translation>
 <translation id="7243308994586599757">Доступные параметры указаны в нижней части экрана</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> использует ваше местоположение, чтобы показывать результаты поиска по адресам.</translation>
@@ -658,7 +654,6 @@
 <translation id="7851858861565204677">Другие устройства</translation>
 <translation id="7875915731392087153">Написать письмо</translation>
 <translation id="7876243839304621966">Удалить все</translation>
-<translation id="7882131421121961860">История не найдена</translation>
 <translation id="7929962904089429003">Открыть меню</translation>
 <translation id="7942131818088350342">Версия <ph name="PRODUCT_NAME" /> устарела.</translation>
 <translation id="7947953824732555851">Принять и войти</translation>
@@ -706,7 +701,6 @@
 <translation id="8321376388213838985">Другие статьи скоро появятся. Хорошего дня!</translation>
 <translation id="8372893542064058268">Разрешить фоновую синхронизацию для конкретного сайта.</translation>
 <translation id="8374821112118309944">Установите последнюю версию TalkBack.</translation>
-<translation id="8393700583063109961">Отправить сообщение</translation>
 <translation id="8396312449826231789">Только одобренные сайты</translation>
 <translation id="8413126021676339697">Показать всю историю</translation>
 <translation id="8428213095426709021">Настройки</translation>
@@ -786,7 +780,6 @@
 <translation id="9206873250291191720">А</translation>
 <translation id="9219103736887031265">Картинки</translation>
 <translation id="932327136139879170">Главная страница</translation>
-<translation id="932599481871055447">Просматривайте веб-страницы быстрее и экономьте трафик</translation>
 <translation id="938850635132480979">Ошибка <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Доступ к микрофону</translation>
 <translation id="951339005376969845">Удалить сохраненные данные. Чтобы снова получить к ним доступ, переключитесь на аккаунт <ph name="FROM_ACCOUNT" />.</translation>

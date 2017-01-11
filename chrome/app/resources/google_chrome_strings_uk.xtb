@@ -38,7 +38,6 @@
 <translation id="2063848847527508675">Щоб застосувати це оновлення, потрібно перезапустити ОС Chrome.</translation>
 <translation id="2077129598763517140">Використовувати апаратне прискорення, якщо доступно</translation>
 <translation id="2084710999043359739">Додати в Chrome</translation>
-<translation id="2120620239521071941">З цього пристрою буде видалено стільки елементів: <ph name="ITEMS_COUNT" />. Щоб відновити дані пізніше, увійдіть в обліковий запис Chrome як <ph name="USER_EMAIL" />.</translation>
 <translation id="2147651015520127414">Chrome підтвердив, що сертифікат цьому веб-сайту надала компанія <ph name="ISSUER" />.</translation>
 <translation id="2246246234298806438">Google Chrome не може відобразити попередній перегляд версії для друку, якщо немає вбудованого переглядача PDF.</translation>
 <translation id="2252923619938421629">Допоможіть покращити Google Chrome, повідомляючи поточні налаштування</translation>
@@ -57,7 +56,6 @@
 <translation id="2485422356828889247">Видалити</translation>
 <translation id="2580411288591421699">Поки Google Chrome працює, неможливо встановити версію, аналогічну поточній. Закрийте Google Chrome і повторіть спробу.</translation>
 <translation id="2582790009689336987">На цей комп’ютер невдовзі перестануть надходити оновлення Google Chrome, оскільки ця система Linux більше не підтримуватиметься.</translation>
-<translation id="2586406160782125153">Дані веб-перегляду буде видалено з цього пристрою. Щоб відновити дані пізніше, увійдіть в обліковий запис Chrome як <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Логотип Chrome</translation>
 <translation id="2664962310688259219">Ліцензії ОС Chrome із відкритим кодом</translation>
 <translation id="2665296953892887393">Допоможіть покращити Google Chrome, надсилаючи звіти про аварійне завершення роботи та <ph name="UMA_LINK" /> в Google</translation>
@@ -95,7 +93,6 @@
 <translation id="345171907106878721">Додати себе в Chrome</translation>
 <translation id="3612333635265770873">Відомо, що модуль із такою назвою конфліктує з Google Chrome.</translation>
 <translation id="3622797965165704966">Користуватися Chrome у своєму обліковому записі Google на спільних комп’ютерах стало легше.</translation>
-<translation id="3718181793972440140">1 елемент буде видалено з цього пристрою. Щоб відновити дані пізніше, увійдіть в обліковий запис Chrome як <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Розширення "<ph name="EXTENSION_NAME" />" змінило сторінку, яка відкривається під час запуску Chrome.</translation>
 <translation id="3738139272394829648">Пошук дотиком</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>

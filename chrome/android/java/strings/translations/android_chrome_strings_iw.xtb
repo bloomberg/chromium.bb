@@ -269,7 +269,6 @@
 <translation id="3828029223314399057">חפש סימניות</translation>
 <translation id="3845539888601087042">מציג היסטוריה מהמכשירים שבהם אתה מחובר לחשבון. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">הרץ קדימה</translation>
-<translation id="3890664840433101773">הוספת כתובת אימייל</translation>
 <translation id="3894427358181296146">הוספת תיקייה</translation>
 <translation id="3895926599014793903">אלץ הפעלת שינוי מרחק מתצוגה</translation>
 <translation id="3917783807003067648">המיקום חסום</translation>
@@ -327,6 +326,7 @@
 <translation id="4526249700380860531">‏הצג ונהל סיסמאות שמורות ב-<ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">בחר תיקייה</translation>
 <translation id="4535858793016067060">‏הפעל את האפשרות 'מקורות לא ידועים' בהגדרות האבטחה של Android כדי להשתתף בניסוי 'הוספה משופרת לדף הבית'. הקפד להשבית את ההגדרה הזו לאחר שתסיים להתנסות.</translation>
+<translation id="4543661749405994812">העתק כתובת אימייל</translation>
 <translation id="4558311620361989323">קיצורי דרך בדפי אינטרנט</translation>
 <translation id="4572422548854449519">כניסה אל חשבון מנוהל</translation>
 <translation id="457875822857220463">משלוח</translation>
@@ -371,7 +371,6 @@
 <translation id="4988526792673242964">דפים</translation>
 <translation id="4996978546172906250">שתף באמצעות</translation>
 <translation id="5000922062037820727">חסומה (מומלץ)</translation>
-<translation id="5004339818306944878">‏שימוש ב-60% פחות נתונים יביא להאצת הגלישה. השרתים של Google ימטבו את הדפים שאליהם אתה נכנס.</translation>
 <translation id="5005498671520578047">העתק סיסמה</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> מבקש להתחבר אל</translation>
 <translation id="5016205925109358554">Serif</translation>
@@ -394,12 +393,10 @@
 <translation id="5171045022955879922">חפש או הקלד כתובת אתר</translation>
 <translation id="5184329579814168207">‏פתח ב-Chrome</translation>
 <translation id="5199929503336119739">פרופיל עבודה</translation>
-<translation id="5205222826937269299">שם (חובה)</translation>
 <translation id="5209320130288484488">לא נמצאו מכשירים</translation>
 <translation id="5210286577605176222">חזור לכרטיסייה הקודמת</translation>
 <translation id="5210365745912300556">סגור כרטיסייה</translation>
 <translation id="5222676887888702881">יציאה</translation>
-<translation id="5222812217790122047">אימייל (חובה)</translation>
 <translation id="5233638681132016545">כרטיסייה חדשה</translation>
 <translation id="5271967389191913893">המכשיר לא מצליח לפתוח את התוכן להורדה.</translation>
 <translation id="528192093759286357">כדי לצאת ממסך מלא, גרור מלמעלה וגע בלחצן 'הקודם'.</translation>
@@ -526,6 +523,7 @@
 <translation id="6447842834002726250">‏קובצי Cookie</translation>
 <translation id="6448273550210938826">הצעות חיפוש וכתובות אתר</translation>
 <translation id="6463070039183944536">מוסיף...</translation>
+<translation id="6464825623202322042">מכשיר זה</translation>
 <translation id="6475951671322991020">הורד סרטון</translation>
 <translation id="6477460825583319731">כתובת אימייל לא חוקית</translation>
 <translation id="6482749332252372425">הורדת <ph name="FILE_NAME" /> נכשלה מאחר שחסר מקום אחסון.</translation>
@@ -572,7 +570,6 @@
 <translation id="6868088497967843822">היכנס כדי לקבל גישה אל הסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות בכל המכשירים שברשותך</translation>
 <translation id="688738109438487280">הוסף נתונים קיימים אל <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{כרטיסייה פתוחה אחת}two{שתי כרטיסיות פתוחות}many{‏%1$d כרטיסיות פתוחות}other{‏%1$d כרטיסיות פתוחות}}</translation>
-<translation id="6896758677409633944">העתק</translation>
 <translation id="6937422995269576720">מספר הכרטיס לא חוקי</translation>
 <translation id="6945221475159498467">בחר</translation>
 <translation id="6963766334940102469">מחק סימניות</translation>
@@ -597,7 +594,6 @@
 <translation id="7094922512924405309">לא נמצאו דפים של האינטרנט הווירטופיזי בקרבת מקום</translation>
 <translation id="7138678301420049075">אחר</translation>
 <translation id="7180611975245234373">רענן</translation>
-<translation id="7189372733857464326">‏המערכת ממתינה שיסתיים העדכון של שירותי Google Play</translation>
 <translation id="7191430249889272776">הכרטיסייה נפתחה ברקע.</translation>
 <translation id="7243308994586599757">אפשרויות הזמינות באזור החלק התחתון של המסך</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> משתמש במיקום שלך כדי להציג תוצאות חיפוש מקומיות</translation>
@@ -658,7 +654,6 @@
 <translation id="7851858861565204677">מכשירים אחרים</translation>
 <translation id="7875915731392087153">צור הודעת אימייל</translation>
 <translation id="7876243839304621966">הסר הכל</translation>
-<translation id="7882131421121961860">לא נמצאה היסטוריה</translation>
 <translation id="7929962904089429003">פתח את התפריט</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> אינו מעודכן.</translation>
 <translation id="7947953824732555851">קבל והיכנס</translation>
@@ -706,7 +701,6 @@
 <translation id="8321376388213838985">בקרוב יופיעו מאמרים נוספים. שיהיה לך המשך יום נפלא.</translation>
 <translation id="8372893542064058268">אפשר סנכרון ברקע לאתר ספציפי.</translation>
 <translation id="8374821112118309944">‏עליך לעדכן את TalkBack לגרסה חדשה יותר.</translation>
-<translation id="8393700583063109961">שלח הודעה</translation>
 <translation id="8396312449826231789">רק אתרים שאושרו</translation>
 <translation id="8413126021676339697">הצג את ההיסטוריה המלאה</translation>
 <translation id="8428213095426709021">הגדרות</translation>
@@ -785,7 +779,6 @@
 <translation id="9206873250291191720">א</translation>
 <translation id="9219103736887031265">תמונות</translation>
 <translation id="932327136139879170">בית</translation>
-<translation id="932599481871055447">חיסכון בנתונים שמוביל לגלישה מהירה יותר</translation>
 <translation id="938850635132480979">שגיאה: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">גישה למיקרופון שלך</translation>
 <translation id="951339005376969845">מחק נתונים קיימים. כדי לאחזר אותם, חזור אל <ph name="FROM_ACCOUNT" />.</translation>

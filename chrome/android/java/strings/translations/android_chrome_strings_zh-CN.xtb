@@ -269,7 +269,6 @@
 <translation id="3828029223314399057">搜索书签</translation>
 <translation id="3845539888601087042">目前显示的是您登录过的设备中的历史记录。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" />。</translation>
 <translation id="3859306556332390985">前进</translation>
-<translation id="3890664840433101773">添加电子邮件地址</translation>
 <translation id="3894427358181296146">添加文件夹</translation>
 <translation id="3895926599014793903">强制启用缩放功能</translation>
 <translation id="3917783807003067648">禁止访问位置信息</translation>
@@ -327,6 +326,7 @@
 <translation id="4526249700380860531">通过 <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> 查看和管理已保存的密码</translation>
 <translation id="4532845899244822526">选择文件夹</translation>
 <translation id="4535858793016067060">您必须在 Android 安全设置中开启“未知来源”，才能试用“经过改进的‘添加到主屏幕’功能”实验。在试用完该实验后，请务必停用此设置。</translation>
+<translation id="4543661749405994812">复制电子邮件地址</translation>
 <translation id="4558311620361989323">网页快捷键</translation>
 <translation id="4572422548854449519">请登录受管理的帐号</translation>
 <translation id="457875822857220463">递送</translation>
@@ -371,7 +371,6 @@
 <translation id="4988526792673242964">页码</translation>
 <translation id="4996978546172906250">分享方式</translation>
 <translation id="5000922062037820727">已阻止（推荐）</translation>
-<translation id="5004339818306944878">最多可减少 60% 的数据用量，并加快网页加载速度。Google 服务器会对您访问的网页进行优化。</translation>
 <translation id="5005498671520578047">复制密码</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> 希望连接到以下所选设备：</translation>
 <translation id="5016205925109358554">Serif</translation>
@@ -394,12 +393,10 @@
 <translation id="5171045022955879922">搜索或输入网址</translation>
 <translation id="5184329579814168207">在 Chrome 中打开</translation>
 <translation id="5199929503336119739">工作资料</translation>
-<translation id="5205222826937269299">需要提供名称</translation>
 <translation id="5209320130288484488">未找到任何设备</translation>
 <translation id="5210286577605176222">跳转到上一个标签页</translation>
 <translation id="5210365745912300556">关闭标签页</translation>
 <translation id="5222676887888702881">退出</translation>
-<translation id="5222812217790122047">需要提供电子邮件地址</translation>
 <translation id="5233638681132016545">打开新的标签页</translation>
 <translation id="5271967389191913893">设备无法打开要下载的内容。</translation>
 <translation id="528192093759286357">从顶部向下拖动并触摸“返回”按钮，即可退出全屏模式。</translation>
@@ -526,6 +523,7 @@
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6448273550210938826">搜索和网址建议</translation>
 <translation id="6463070039183944536">正在添加…</translation>
+<translation id="6464825623202322042">此设备</translation>
 <translation id="6475951671322991020">下载视频</translation>
 <translation id="6477460825583319731">电子邮件地址无效</translation>
 <translation id="6482749332252372425">未能成功下载 <ph name="FILE_NAME" />，因为存储空间不足。</translation>
@@ -572,7 +570,6 @@
 <translation id="6868088497967843822">登录后可获取您所有设备上保存的书签、历史记录、密码和其他设置</translation>
 <translation id="688738109438487280">将现有数据添加到 <ph name="TO_ACCOUNT" />。</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d 个打开的标签页}other{%1$d 个打开的标签页}}</translation>
-<translation id="6896758677409633944">复制</translation>
 <translation id="6937422995269576720">卡号无效</translation>
 <translation id="6945221475159498467">选择</translation>
 <translation id="6963766334940102469">删除书签</translation>
@@ -597,7 +594,6 @@
 <translation id="7094922512924405309">找不到附近的“实物网”网页</translation>
 <translation id="7138678301420049075">其他</translation>
 <translation id="7180611975245234373">刷新</translation>
-<translation id="7189372733857464326">正在等待 Google Play 服务完成更新</translation>
 <translation id="7191430249889272776">标签页已在后台打开。</translation>
 <translation id="7243308994586599757">选项在靠近屏幕底部的位置</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> 将根据您的位置信息显示本地搜索结果</translation>
@@ -658,7 +654,6 @@
 <translation id="7851858861565204677">来自其他设备的同步</translation>
 <translation id="7875915731392087153">创建电子邮件</translation>
 <translation id="7876243839304621966">全部删除</translation>
-<translation id="7882131421121961860">未找到任何记录</translation>
 <translation id="7929962904089429003">打开菜单</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> 不是最新版本。</translation>
 <translation id="7947953824732555851">接受并登录</translation>
@@ -706,7 +701,6 @@
 <translation id="8321376388213838985">更多报道即将奉上。伴您度过美好的午后时光。</translation>
 <translation id="8372893542064058268">允许特定网站进行后台同步。</translation>
 <translation id="8374821112118309944">您需要将 TalkBack 更新到更高版本。</translation>
-<translation id="8393700583063109961">发送消息</translation>
 <translation id="8396312449826231789">只能访问经过批准的网站</translation>
 <translation id="8413126021676339697">显示全部历史记录</translation>
 <translation id="8428213095426709021">设置</translation>
@@ -787,7 +781,6 @@
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">图片</translation>
 <translation id="932327136139879170">首页</translation>
-<translation id="932599481871055447">节省数据流量，加快浏览速度</translation>
 <translation id="938850635132480979">错误：<ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">使用您的麦克风</translation>
 <translation id="951339005376969845">删除现有数据。您可通过切换回 <ph name="FROM_ACCOUNT" /> 来获取现有数据。</translation>

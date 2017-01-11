@@ -30,7 +30,6 @@
 <translation id="1881322772814446296">Vă conectați cu un cont gestionat și îi permiteți administratorului acestuia controlul asupra profilului dvs. Chromium. Datele Chromium, cum ar fi aplicațiile, marcajele, istoricul, parolele și alte setări vor fi asociate definitiv cu <ph name="USER_NAME" />. Veți putea să ștergeți aceste date prin intermediul Tabloului de bord pentru Conturi Google, însă nu veți putea să asociați aceste date cu alt cont. Aveți opțiunea de a crea un profil nou, pentru a păstra separat datele Chromium existente. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium nu mai răspunde. Îl reporniți acum?</translation>
 <translation id="1967743265616885482">Despre un modul cu același nume se cunoaște că intră în conflict cu Chromium.</translation>
-<translation id="2008474315282236005">Astfel, se va șterge 1 element de pe acest dispozitiv. Pentru a recupera datele mai târziu, conectează-te la Chromium ca <ph name="USER_EMAIL" />.</translation>
 <translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Astfel, va fi șters definitiv cel puțin $1 element de pe acest dispozitiv. Pentru a recupera datele mai târziu, conectează-te la Chromium ca $2.}few{Astfel, vor fi șterse definitiv cel puțin $1 elemente de pe acest dispozitiv. Pentru a recupera datele mai târziu, conectează-te la Chromium ca $2.}other{Astfel, vor fi șterse definitiv cel puțin $1 de elemente de pe acest dispozitiv. Pentru a recupera datele mai târziu, conectează-te la Chromium ca $2.}}</translation>
 <translation id="2077129598763517140">Utilizează accelerarea hardware când este disponibilă</translation>
 <translation id="2119636228670142020">Despre sistemul de operare &amp;Chromium</translation>
@@ -80,7 +79,6 @@
 <translation id="3312805357485578561">Chromium a detectat un comportament neobișnuit</translation>
 <translation id="331951419404882060">Sistemul de operare Chromium nu a putut sincroniza datele din cauza unei erori la conectare.</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
-<translation id="3474745554856756813">Astfel, se vor șterge <ph name="ITEMS_COUNT" /> elemente de pe acest dispozitiv. Pentru a recupera datele mai târziu, conectează-te la Chromium ca <ph name="USER_EMAIL" />.</translation>
 <translation id="3509308970982693815">Închideți toate ferestrele Chromium și încercați din nou.</translation>
 <translation id="352783484088404971">Elimină din Chromium...</translation>
 <translation id="3549345495227188780">Noțiuni introductive despre sistemul de operare Chromium</translation>
@@ -231,7 +229,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="7617377681829253106">Chromium a devenit și mai bun</translation>
 <translation id="7641113255207688324">Chromium nu este browserul dvs. prestabilit.</translation>
 <translation id="7729447699958282447">Chromium nu a putut sincroniza datele, deoarece sincronizarea nu este disponibilă pentru domeniul dvs.</translation>
-<translation id="7745317241717453663">Astfel, se vor șterge datele de navigare de pe acest dispozitiv. Pentru a recupera datele mai târziu, conectează-te la Chromium ca <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Programul de instalare nu a putut crea un director temporar. Verifică dacă există suficient spațiu liber și dacă ai drepturile necesare pentru a instala software-ul.</translation>
 <translation id="7937630085815544518">Ați fost conectat(ă) la Chromium ca <ph name="USER_EMAIL_ADDRESS" />. Utilizați același cont pentru a vă conecta din nou.</translation>
 <translation id="795025003224538582">Nu reporniți</translation>

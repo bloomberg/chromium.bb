@@ -30,7 +30,6 @@
 <translation id="1881322772814446296">Logite sisse hallatud kontoga ja annate selle administraatorile üle Chromiumi profiili juhtimise. Teie Chromiumi andmed, näiteks rakendused, järjehoidjad, ajalugu, paroolid ja muud seaded seotakse jäädavalt kasutajaga <ph name="USER_NAME" />. Saate need andmed kustutada Google'i kontode juhtpaneeli kaudu, kuid te ei saa neid seostada teise kontoga. Võite olemasolevate Chrome'i andmete eraldi hoidmiseks luua aga uue profiili. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium ei reageeri. Kas soovite kohe taaskäivitada?</translation>
 <translation id="1967743265616885482">Samanimeline moodul põhjustab teadaolevalt Chromiumiga vastuolusid.</translation>
-<translation id="2008474315282236005">See kustutab seadmest ühe üksuse. Hiljem oma andmete toomiseks logige Chromiumi sisse kasutajana <ph name="USER_EMAIL" />.</translation>
 <translation id="2061399003623151192">{NUM_ITEMS,plural, =1{See kustutab sellest seadmest jäädavalt vähemalt $1 üksuse. Hiljem oma andmete toomiseks logige Chromiumi sisse kasutajana $2.}other{See kustutab sellest seadmest jäädavalt vähemalt $1 üksust. Hiljem oma andmete toomiseks logige Chromiumi sisse kasutajana $2.}}</translation>
 <translation id="2077129598763517140">Kasuta võimaluse korral riistvarakiirendust</translation>
 <translation id="2119636228670142020">Teave &amp;Chromium OS-i kohta</translation>
@@ -80,7 +79,6 @@
 <translation id="3312805357485578561">Chromium tuvastas tavatu käitumise</translation>
 <translation id="331951419404882060">Chromium OS ei saanud sisselogimisvea tõttu teie andmeid sünkroonida.</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
-<translation id="3474745554856756813">See kustutab seadmest <ph name="ITEMS_COUNT" /> üksust. Hiljem oma andmete toomiseks logige Chromiumi sisse kasutajana <ph name="USER_EMAIL" />.</translation>
 <translation id="3509308970982693815">Sulgege kõik Chromiumi aknad ja proovige uuesti.</translation>
 <translation id="352783484088404971">Chromiumist eemaldamine ...</translation>
 <translation id="3549345495227188780">Alustamine Chromium OS-iga</translation>
@@ -231,7 +229,6 @@ Täiendavad juhised leiate aadressilt <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7617377681829253106">Chromium muutus just paremaks</translation>
 <translation id="7641113255207688324">Chromium ei ole teie vaikebrauser.</translation>
 <translation id="7729447699958282447">Chromium ei saa teie andmeid sünkroonida, sest teie domeenil pole sünkroonimine saadaval.</translation>
-<translation id="7745317241717453663">See kustutab sellest seadmest teie sirvimisandmed. Hiljem oma andmete toomiseks logige Chromiumi sisse kasutajana <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Installija ei suutnud luua ajutist kataloogi. Palun kontrollige vaba kettaruumi ja tarkvara installimise loa olemasolu.</translation>
 <translation id="7937630085815544518">Olite Chromiumisse sisse logitud kasutajana <ph name="USER_EMAIL_ADDRESS" />. Kasutage uuesti sisselogimiseks sama kontot.</translation>
 <translation id="795025003224538582">Ära taaskäivita</translation>

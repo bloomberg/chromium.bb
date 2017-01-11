@@ -1923,7 +1923,6 @@
 <translation id="6770454900105963262">활성 키오스크 세션에 관한 정보 보고</translation>
 <translation id="6774533686631353488">사용자 수준 기본 메시지 호스트를 허용합니다(관리자 권한 없이 설치됨).</translation>
 <translation id="6786747875388722282">확장 프로그램</translation>
-<translation id="6786967369487349613">로밍 프로필 디렉토리를 설정합니다.</translation>
 <translation id="6810445994095397827">이 사이트에서 자바스크립트 차단</translation>
 <translation id="681446116407619279">지원되는 인증 스키마</translation>
 <translation id="6828905844648501476">이 정책이 'true'로 설정되거나 설정되지 않으면 <ph name="PRODUCT_NAME" />이(가) 사용자 관리자가 사용자를 추가하도록 허용합니다.
@@ -2099,7 +2098,6 @@
 <translation id="7249828445670652637">ARC 앱에서 <ph name="PRODUCT_OS_NAME" /> CA 인증서를 사용하도록 설정</translation>
 <translation id="7258823566580374486">원격 액세스 호스트 차단을 사용하도록 설정합니다.</translation>
 <translation id="7260277299188117560">p2p 자동 업데이트 사용</translation>
-<translation id="7261252191178797385">기기 배경화면 이미지</translation>
 <translation id="7267809745244694722">미디어 키는 기본적으로 기능 키로 설정됩니다.</translation>
 <translation id="7271085005502526897">처음 실행 시 기본 브라우저에서 홈페이지 가져오기</translation>
 <translation id="7273823081800296768">이 설정을 사용하도록 설정했거나 설정하지 않은 경우 사용자는 매번 PIN을 입력하지 않아도 되도록 연결 시간에 클라이언트와 호스트를 페어링하도록 선택할 수 있습니다.
@@ -2189,15 +2187,6 @@
       이 정책은 SHA-1 서명을 허용하는 운영체제 인증서 확인 스택에 따라 다릅니다. OS 업데이트가 SHA-1 인증서의 OS 처리를 변경하는 경우 이 정책은 더 이상 유효하지 않을 수 있습니다. 또한 이 정책은 기업에게 SHA-1에서 전환할 시간을 부여하는 임시 해결 방법으로 활용됩니다. 이 정책은 2019년 1월 1일쯤 삭제될 예정입니다.
 
       이 정책이 설정되지 않았거나 false로 설정된 경우 <ph name="PRODUCT_NAME" />은(는) 공개적으로 발표한 SHA-1 사용 중단 일정을 따릅니다.</translation>
-<translation id="7589150663293249656"><ph name="PRODUCT_NAME" /> 프로필 데이터의 로밍 사본 생성을 사용합니다.
-
-      이 설정을 사용하면 북마크, 데이터 자동완성, 비밀번호 등 <ph name="PRODUCT_NAME" /> 프로필에 저장된 설정이 로밍 사용자 프로필 폴더나 <ph name="ROAMINGPROFILELOCATION_POLICY_NAME" /> 정책을 통해 관리자가 지정한 위치에 저장된 파일에도 작성됩니다.
-
-      이 정책을 사용하면 Google Sync는 자동으로 사용 중지됩니다.
-
-      실수로 인한 데이터 유출을 방지하기 위해 <ph name="SIGNINALLOWED_POLICY_NAME" /> 정책을 False로 설정해 두는 것이 좋습니다.
-
-      이 정책을 사용 중지하거나 설정하지 않으면 일반 로컬 프로필만 사용됩니다.</translation>
 <translation id="7593523670408385997"><ph name="PRODUCT_NAME" />이(가) 캐시된 미디어 파일을 디스크에 저장할 때 사용하는 캐시 크기를 설정합니다.
 
       이 정책을 설정하는 경우 <ph name="PRODUCT_NAME" />은(는) 사용자가 '--disk-cache-size' 플래그를 지정했는지 여부에 관계없이 제공된 캐시 크기를 사용합니다. 이 정책에 지정된 값을 반드시 사용해야 하는 것은 아니지만 캐싱 시스템에 추천되는 값입니다. 몇 MB 이하의 너무 작은 값은 적정한 최소값으로 반올림됩니다.
@@ -2442,7 +2431,6 @@
       사용자가 동기화를 사용하는 경우 이러한 데이터가 모두 일반 프로필과 마찬가지로 동기화 프로필에 저장됩니다. 정책에서 명시적으로 사용 중지하지 않는 한 시크릿 모드도 사용할 수 있습니다.
 
       이 정책이 사용 중지로 설정되었거나 아예 설정되지 않은 경우 로그인하면 일반 프로필로 연결됩니다.</translation>
-<translation id="8158758865057576716"><ph name="PRODUCT_NAME" /> 프로필 데이터 로밍 사본 생성을 사용합니다.</translation>
 <translation id="8164246350636985940">사이트에 대한 기본 동작이 콘텐츠 팩에 없습니다.
 
           이 정책은 <ph name="PRODUCT_NAME" />에 한해 내부 용도로만 사용합니다.</translation>
@@ -2730,13 +2718,6 @@
 <translation id="8992176907758534924">모든 사이트에서 이미지 표시 허용 안함</translation>
 <translation id="9035964157729712237">차단목록에서 제외할 확장 프로그램 ID</translation>
 <translation id="9042911395677044526"><ph name="PRODUCT_OS_NAME" /> 기기에 사용자별로 적용되는 네트워크 구성을 사용하도록 허용합니다. 네트워크 구성은 <ph name="ONC_SPEC_URL" />에서 설명한 개방형 네트워크 구성에서 정의한 대로 JSON 형식의 문자열입니다. </translation>
-<translation id="908115901708809140"><ph name="PRODUCT_NAME" />이(가) 프로필의 로밍 사본을 저장하는 데 사용할 디렉토리를 구성합니다.
-
-      이 정책을 설정하면 <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> 정책이 사용 설정된 경우 <ph name="PRODUCT_NAME" />이(가) 제공된 디렉토리를 사용하여 프로필의 로밍 사본을 저장합니다. <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> 정책이 사용 중지되었거나 설정되지 않은 경우 이 정책에 저장된 값은 사용되지 않습니다.
-
-      https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables에서 사용 가능한 변수 목록을 확인하세요.
-
-      이 정책을 설정하지 않은 경우 기본 로밍 프로필 경로가 사용됩니다.</translation>
 <translation id="9084985621503260744">동영상 활동이 전원 관리에 영향을 미치는지 여부 지정</translation>
 <translation id="9088433379343318874">관리 대상 사용자 콘텐츠 제공업체 사용</translation>
 <translation id="9088444059179765143">자동 시간대 감지 방법 설정</translation>
@@ -2772,17 +2753,6 @@
       이 설정을 사용하면 키보드 단축키나 확장 프로그램 API를 사용하여 화면을 캡쳐할 수 없습니다.
 
       이 설정을 사용 중지하거나 지정하지 않으면 화면을 캡쳐할 수 있습니다.</translation>
-<translation id="9213347477683611358">기기에 로그인한 사용자가 없을 때 로그인 화면에 표시되는 기기 수준의 배경화면 이미지를 설정합니다. 이 정책은 Chrome OS 기기에서 배경화면 이미지와 다운로드의 무결성을 확인하는 데 사용되는 암호화 해시를 다운로드할 URL을 지정하여 설정할 수 있습니다. 이미지는 JPEG 형식이어야 하며 파일 크기는 16MB를 넘지 않아야 합니다. URL은 어떠한 인증도 없이 액세스할 수 있어야 합니다. 배경화면 이미지는 다운로드 및 캐시됩니다. URL이나 해시가 변경될 때마다 배경화면 이미지도 다시 다운로드됩니다.
-
-      이 정책은 JSON 형식으로 URL과 해시를 표현하는 문자열로 지정되어야 합니다. 예:
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      기기 배경화면 정책이 설정되면 Chrome OS 기기는 기기에 로그인한 사용자가 없을 때 배경화면 이미지를 다운로드하여 로그인 화면에 사용합니다. 사용자가 로그인하면 사용자의 배경화면 정책이 사용됩니다.
-
-      기기 배경화면 정책이 설정되지 않았으며 사용자의 배경화면 정책이 설정된 경우, 사용자의 배경화면 정책에 따라 표시되는 배경화면이 결정됩니다.</translation>
 <translation id="9217154963008402249">네트워크 패킷 모니터링 빈도</translation>
 <translation id="922540222991413931">확장 프로그램, 앱, 사용자 스크립트 설치 소스 등 설정</translation>
 <translation id="924557436754151212">처음 실행 시 기본 브라우저에서 저장된 비밀번호 가져오기</translation>

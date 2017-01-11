@@ -32,7 +32,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="1881322772814446296">Vas a iniciar sesión con una cuenta administrada, lo que significa que proporcionarás a su administrador control sobre tu perfil de Chromium. Tus datos de Chromium como, por ejemplo, tus aplicaciones, tus marcadores, tu historial, tus contraseñas y otras opciones se vincularán de forma permanente a la cuenta <ph name="USER_NAME" />. Podrás eliminar estos datos a través del Panel de control de cuentas de Google, pero no podrás asociarlos a otra cuenta. De forma opcional, puedes crear un nuevo perfil para mantener separados tus datos de Chromium. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium no responde. ¿Quieres reiniciarlo ahora?</translation>
 <translation id="1967743265616885482">Se ha detectado que un módulo con el mismo nombre provoca un conflicto con Chromium.</translation>
-<translation id="2008474315282236005">Se eliminará un elemento de este dispositivo. Para recuperar tus datos en otro momento, inicia sesión en Chromium como <ph name="USER_EMAIL" />.</translation>
 <translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Se eliminará permanentemente al menos $1 elemento de este dispositivo. Para recuperar tus datos en otro momento, inicia sesión en Chromium como $2.}other{Se eliminarán permanentemente al menos $1 elementos de este dispositivo. Para recuperar tus datos en otro momento, inicia sesión en Chromium como $2.}}</translation>
 <translation id="2077129598763517140">Utilizar aceleración por hardware cuando esté disponible</translation>
 <translation id="2119636228670142020">Información de &amp;Chromium OS</translation>
@@ -82,7 +81,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="3312805357485578561">Chromium ha detectado un comportamiento inusual</translation>
 <translation id="331951419404882060">Chromium OS no ha podido sincronizar los datos debido a un error de inicio de sesión.</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
-<translation id="3474745554856756813">Se eliminarán <ph name="ITEMS_COUNT" /> elementos de este dispositivo. Para recuperar tus datos en otro momento, inicia sesión en Chromium como <ph name="USER_EMAIL" />.</translation>
 <translation id="3509308970982693815">Cierra todas las ventanas de Chromium e inténtalo de nuevo.</translation>
 <translation id="352783484088404971">Desinstalar de Chromium...</translation>
 <translation id="3549345495227188780">Introducción a Chromium OS</translation>
@@ -234,7 +232,6 @@ Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más 
 <translation id="7617377681829253106">Chromium mejor que nunca</translation>
 <translation id="7641113255207688324">Chromium no es tu navegador predeterminado.</translation>
 <translation id="7729447699958282447">Chromium no ha podido sincronizar los datos porque la función de sincronización no está disponible para tu dominio.</translation>
-<translation id="7745317241717453663">Se eliminarán tus datos de navegación de este dispositivo. Para recuperar tus datos en otro momento, inicia sesión en Chromium como <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">El programa de instalación no ha podido crear un directorio temporal. Comprueba si hay espacio libre en el disco y si tienes autorización para instalar el software.</translation>
 <translation id="7937630085815544518">Habías iniciado sesión en Chromium como <ph name="USER_EMAIL_ADDRESS" />. Utiliza la misma cuenta para volver a iniciar sesión.</translation>
 <translation id="795025003224538582">No reiniciar</translation>

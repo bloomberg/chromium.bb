@@ -269,7 +269,6 @@
 <translation id="3828029223314399057">Αναζήτηση σελιδοδεικτών</translation>
 <translation id="3845539888601087042">Εμφάνιση ιστορικού από τις συνδεδεμένες συσκευές σας. <ph name="BEGIN_LINK" />Μάθετε περισσότερα<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">Αναζήτηση προς τα εμπρός</translation>
-<translation id="3890664840433101773">Προσθήκη διεύθυνσης ηλεκτρονικού ταχυδρομείου</translation>
 <translation id="3894427358181296146">Προσθήκη φακέλου…</translation>
 <translation id="3895926599014793903">Αναγκαστική ενεργοποίηση εστίασης</translation>
 <translation id="3917783807003067648">Η τοποθεσία είναι αποκλεισμένη</translation>
@@ -327,6 +326,7 @@
 <translation id="4526249700380860531">Προβολή και διαχείριση των αποθηκευμένων κωδικών πρόσβασης στη διεύθυνση <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Επιλογή φακέλου</translation>
 <translation id="4535858793016067060">Ενεργοποιήστε τις "Άγνωστες πηγές" στις ρυθμίσεις ασφαλείας Android για να δοκιμάσετε το πείραμα "Βελτιωμένη προσθήκη στην Αρχική οθόνη". Βεβαιωθείτε ότι έχετε απενεργοποιήσει αυτήν τη ρύθμιση όταν ολοκληρώσετε τη δοκιμή της.</translation>
+<translation id="4543661749405994812">Αντιγραφή διεύθυνσης ηλεκτρονικού ταχυδρομείου</translation>
 <translation id="4558311620361989323">Συντομεύσεις ιστοσελίδας</translation>
 <translation id="4572422548854449519">Συνδεθείτε στον διαχειριζόμενο λογαριασμό</translation>
 <translation id="457875822857220463">Παράδοση</translation>
@@ -371,7 +371,6 @@
 <translation id="4988526792673242964">Σελίδες</translation>
 <translation id="4996978546172906250">Κοινή χρήση μέσω</translation>
 <translation id="5000922062037820727">Αποκλείεται (συνιστάται)</translation>
-<translation id="5004339818306944878">Χρησιμοποιήστε έως 60% λιγότερα δεδομένα και αυξήστε την ταχύτητα του ιστού. Οι διακομιστές της Google θα βελτιστοποιήσουν τις σελίδες που επισκέπτεστε.</translation>
 <translation id="5005498671520578047">Αντιγραφή κωδικού πρόσβασης</translation>
 <translation id="5011311129201317034">Ο ιστότοπος <ph name="SITE" /> επιθυμεί σύνδεση</translation>
 <translation id="5016205925109358554">Serif</translation>
@@ -394,12 +393,10 @@
 <translation id="5171045022955879922">Αναζήτηση ή πληκτρολόγηση διεύθυνσης URL</translation>
 <translation id="5184329579814168207">Άνοιγμα στο Chrome</translation>
 <translation id="5199929503336119739">Προφίλ εργασίας</translation>
-<translation id="5205222826937269299">Απαιτείται όνομα</translation>
 <translation id="5209320130288484488">Δεν βρέθηκαν συσκευές</translation>
 <translation id="5210286577605176222">Μετάβαση στην προηγούμενη καρτέλα</translation>
 <translation id="5210365745912300556">Κλείσιμο καρτέλας</translation>
 <translation id="5222676887888702881">Έξοδος</translation>
-<translation id="5222812217790122047">Απαιτείται διεύθυνση ηλεκτρονικού ταχυδρομείου</translation>
 <translation id="5233638681132016545">Νέα καρτέλα</translation>
 <translation id="5271967389191913893">Η συσκευή δεν μπορεί να ανοίξει το περιεχόμενο προς λήψη.</translation>
 <translation id="528192093759286357">Σύρετε από το επάνω τμήμα και αγγίξτε το κουμπί επιστροφής για έξοδο από την πλήρη οθόνη.</translation>
@@ -526,6 +523,7 @@
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Αναζήτηση και προτάσεις διευθύνσεων URL</translation>
 <translation id="6463070039183944536">Προσθήκη…</translation>
+<translation id="6464825623202322042">Αυτή η συσκευή</translation>
 <translation id="6475951671322991020">Λήψη βίντεο</translation>
 <translation id="6477460825583319731">Μη έγκυρη διεύθυνση ηλεκτρονικού ταχυδρομείου</translation>
 <translation id="6482749332252372425">Η λήψη του αρχείου <ph name="FILE_NAME" /> απέτυχε λόγω έλλειψης αποθηκευτικού χώρου.</translation>
@@ -572,7 +570,6 @@
 <translation id="6868088497967843822">Συνδεθείτε προκειμένου οι σελιδοδείκτες, το ιστορικό, οι κωδικοί πρόσβασης και οι άλλες ρυθμίσεις σας να είναι διαθέσιμες σε όλες τις συσκευές σας.</translation>
 <translation id="688738109438487280">Προσθήκη υπαρχόντων δεδομένων στον λογαριασμό <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d ανοικτή καρτέλα}other{%1$d ανοικτές καρτέλες}}</translation>
-<translation id="6896758677409633944">Αντιγραφή</translation>
 <translation id="6937422995269576720">Μη έγκυρος αριθμός κάρτας</translation>
 <translation id="6945221475159498467">Επιλογή</translation>
 <translation id="6963766334940102469">Διαγραφή σελιδοδεικτών</translation>
@@ -597,7 +594,6 @@
 <translation id="7094922512924405309">Δεν βρέθηκαν κοντινές σελίδες Φυσικού δικτύου</translation>
 <translation id="7138678301420049075">Άλλο</translation>
 <translation id="7180611975245234373">Ανανέωση</translation>
-<translation id="7189372733857464326">Αναμονή για ολοκλήρωση της ενημέρωσης των Υπηρεσιών Google Play</translation>
 <translation id="7191430249889272776">Η καρτέλα άνοιξε στο παρασκήνιο.</translation>
 <translation id="7243308994586599757">Διαθέσιμες επιλογές κοντά κάτω μέρος της οθόνης</translation>
 <translation id="7244362611678346589">Το <ph name="SEARCH_ENGINE_URL" /> χρησιμοποιεί την τοποθεσία σας για την εμφάνιση τοπικών αποτελεσμάτων αναζήτησης</translation>
@@ -658,7 +654,6 @@
 <translation id="7851858861565204677">Άλλες συσκευές</translation>
 <translation id="7875915731392087153">Δημιουργία μηνύματος ηλεκτρονικού ταχυδρομείου</translation>
 <translation id="7876243839304621966">Κατάργηση όλων</translation>
-<translation id="7882131421121961860">Δεν βρέθηκε ιστορικό</translation>
 <translation id="7929962904089429003">Άνοιγμα μενού</translation>
 <translation id="7942131818088350342">Το <ph name="PRODUCT_NAME" /> δεν είναι ενημερωμένο.</translation>
 <translation id="7947953824732555851">Αποδοχή και σύνδεση</translation>
@@ -706,7 +701,6 @@
 <translation id="8321376388213838985">Περισσότερα άρθρα θα εμφανιστούν συντομα. Απολαύστε το απόγευμά σας.</translation>
 <translation id="8372893542064058268">Να επιτρέπεται ο Συγχρονισμός παρασκηνίου για έναν συγκεκριμένο ιστότοπο.</translation>
 <translation id="8374821112118309944">Θα πρέπει να ενημερώσετε το TalkBack σε νεότερη έκδοση.</translation>
-<translation id="8393700583063109961">Αποστολή μηνύματος</translation>
 <translation id="8396312449826231789">Μόνο εγκεκριμένοι ιστότοποι</translation>
 <translation id="8413126021676339697">Εμφάνιση πλήρους ιστορικού</translation>
 <translation id="8428213095426709021">Ρυθμίσεις</translation>
@@ -787,7 +781,6 @@
 <translation id="9206873250291191720">Α</translation>
 <translation id="9219103736887031265">Εικόνες</translation>
 <translation id="932327136139879170">Αρχική σελίδα</translation>
-<translation id="932599481871055447">Εξοικονομήστε δεδομένα και περιηγηθείτε πιο γρήγορα</translation>
 <translation id="938850635132480979">Σφάλμα: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Πρόσβαση στο μικρόφωνό σας</translation>
 <translation id="951339005376969845">Διαγραφή υπαρχόντων δεδομένων. Μπορείτε να τα ανακτήσετε επιστρέφοντας στον λογαριασμό σας <ph name="FROM_ACCOUNT" />.</translation>

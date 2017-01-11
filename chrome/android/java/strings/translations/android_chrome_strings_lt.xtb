@@ -269,7 +269,6 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="3828029223314399057">Ieškoti žymėse</translation>
 <translation id="3845539888601087042">Rodoma įrenginių, kuriuose esate prisijungę, istorija. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">Eiti pirmyn</translation>
-<translation id="3890664840433101773">Pridėti el. pašto adresą</translation>
 <translation id="3894427358181296146">Aplanko pridėjimas</translation>
 <translation id="3895926599014793903">Priverstinai įgalinti mastelio keitimą</translation>
 <translation id="3917783807003067648">Vietovės informacija blokuojama</translation>
@@ -327,6 +326,7 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="4526249700380860531">Peržiūrėkite ir tvarkykite išsaugotus slaptažodžius apsilankę adresu <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Pasirinkti aplanką</translation>
 <translation id="4535858793016067060">„Android“ saugos nustatymuose įjunkite funkciją „Nežinomi šaltiniai“, kad išbandytumėte eksperimentą „Patobulinta funkcija „Pridėti prie pagrindinio ekrano“. Būtinai išjunkite šią funkciją, kai jį išbandysite.</translation>
+<translation id="4543661749405994812">Kopijuoti el. pašto adresą</translation>
 <translation id="4558311620361989323">Tinklalapių spartieji klavišai</translation>
 <translation id="4572422548854449519">Prisijungimas prie tvarkomos paskyros</translation>
 <translation id="457875822857220463">Pristatymas</translation>
@@ -371,7 +371,6 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="4988526792673242964">Psl.</translation>
 <translation id="4996978546172906250">Bendrinti per</translation>
 <translation id="5000922062037820727">Užblokuota (rekomenduojama)</translation>
-<translation id="5004339818306944878">Naudokite iki 60 % mažiau duomenų ir paspartinkite žiniatinklį. „Google“ serveriai optimizuos jūsų lankomus puslapius.</translation>
 <translation id="5005498671520578047">Kopijuoti slaptažodį</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> nori prisijungti</translation>
 <translation id="5016205925109358554">Su užraitais</translation>
@@ -394,12 +393,10 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="5171045022955879922">Ieškokite ar įveskite URL</translation>
 <translation id="5184329579814168207">Atidaryti naudojant „Chrome“</translation>
 <translation id="5199929503336119739">Darbo profilis</translation>
-<translation id="5205222826937269299">Būtina nurodyti pavadinimą</translation>
 <translation id="5209320130288484488">Įrenginių nerasta</translation>
 <translation id="5210286577605176222">Pereiti prie ankstesnio skirtuko</translation>
 <translation id="5210365745912300556">Uždaryti skirtuką</translation>
 <translation id="5222676887888702881">Atsijungti</translation>
-<translation id="5222812217790122047">Būtina nurodyti el. paštą</translation>
 <translation id="5233638681132016545">Naujas skirtukas</translation>
 <translation id="5271967389191913893">Įrenginyje nepavyksta atidaryti norimo atsisiųsti turinio.</translation>
 <translation id="528192093759286357">Vilkite žymeklį nuo viršaus ir palieskite mygtuką „Atgal“, kad išeitumėte iš viso ekrano režimo.</translation>
@@ -526,6 +523,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="6447842834002726250">Slapukai</translation>
 <translation id="6448273550210938826">Paieškos ir URL pasiūlymai</translation>
 <translation id="6463070039183944536">Pridedama…</translation>
+<translation id="6464825623202322042">Šis įrenginys</translation>
 <translation id="6475951671322991020">Atsisiųsti vaizdo įrašą</translation>
 <translation id="6477460825583319731">Netinkamas el. pašto adresas</translation>
 <translation id="6482749332252372425">Nepavyko atsisiųsti „<ph name="FILE_NAME" />“ dėl trūkstamos vietos saugykloje.</translation>
@@ -572,7 +570,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="6868088497967843822">Prisijunkite, kad žymės, istorija, slaptažodžiai ir kiti nustatymai būtų pateikti visuose įrenginiuose</translation>
 <translation id="688738109438487280">Pridėti esamus duomenis prie <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{Atidarytas %1$d skirtukas}one{Atidarytas %1$d skirtukas}few{Atidaryti %1$d skirtukai}many{Atidaryta %1$d skirtuko}other{Atidaryta %1$d skirtukų}}</translation>
-<translation id="6896758677409633944">Kopijuoti</translation>
 <translation id="6937422995269576720">Kortelės numeris negalioja</translation>
 <translation id="6945221475159498467">Pasirinkti</translation>
 <translation id="6963766334940102469">Ištrinti žymes</translation>
@@ -597,7 +594,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="7094922512924405309">Nerasta jokių fizinių tinklalapių netoliese</translation>
 <translation id="7138678301420049075">Kitas</translation>
 <translation id="7180611975245234373">Atnaujinti</translation>
-<translation id="7189372733857464326">Laukiama, kol bus baigtas „Google Play“ paslaugų atnaujinimas</translation>
 <translation id="7191430249889272776">Skirtuko lapas atidarytas fone.</translation>
 <translation id="7243308994586599757">Parinktys pasiekiamos netoli ekrano apačios</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> naudoja vietovės informaciją vietinės paieškos rezultatams rodyti</translation>
@@ -658,7 +654,6 @@ Adresu <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> gali bū
 <translation id="7851858861565204677">Kiti įrenginiai</translation>
 <translation id="7875915731392087153">Kurti el. laišką</translation>
 <translation id="7876243839304621966">Pašalinti viską</translation>
-<translation id="7882131421121961860">Nerasta istorijos</translation>
 <translation id="7929962904089429003">Atidaryti meniu</translation>
 <translation id="7942131818088350342">„<ph name="PRODUCT_NAME" />“ pasenęs.</translation>
 <translation id="7947953824732555851">Sutikti ir prisij.</translation>
@@ -706,7 +701,6 @@ Adresu <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> gali bū
 <translation id="8321376388213838985">Netrukus bus rodoma daugiau straipsnių. Geros popietės.</translation>
 <translation id="8372893542064058268">Leisti fono sinchronizavimą konkrečioje svetainėje.</translation>
 <translation id="8374821112118309944">Reikia atnaujinti „TalkBack“ versiją į naujesnę.</translation>
-<translation id="8393700583063109961">Siųsti pranešimą</translation>
 <translation id="8396312449826231789">Tik patvirtintos svetainės</translation>
 <translation id="8413126021676339697">Rodyti visą istoriją</translation>
 <translation id="8428213095426709021">Nustatymai</translation>
@@ -787,7 +781,6 @@ Jei norite gauti naujas licencijas, prisijunkite prie interneto ir leiskite atsi
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Vaizdai</translation>
 <translation id="932327136139879170">Kontaktinė namų informacija</translation>
-<translation id="932599481871055447">Išsaugokite duomenis ir naršykite greičiau</translation>
 <translation id="938850635132480979">Klaida: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Prieiga prie mikrofono</translation>
 <translation id="951339005376969845">Ištrinti esamus duomenis. Juos galite atgauti perjungę atgal į <ph name="FROM_ACCOUNT" />.</translation>

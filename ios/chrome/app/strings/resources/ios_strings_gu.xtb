@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">ફોલ્ડર પસંદ કરો</translation>
 <translation id="1272079795634619415">રોકો</translation>
 <translation id="129553762522093515">તાજેતરમાં બંધ કરેલા</translation>
-<translation id="1323735185997015385">કાઢી નાખો</translation>
 <translation id="132683371494960526">મૂળ ફોલ્ડર બદલવા માટે બે વાર ટૅપ કરો.</translation>
 <translation id="1340643665687018190">મેનૂ બંધ કરો</translation>
 <translation id="1375321115329958930">સાચવેલા પાસવર્ડ્સ</translation>
@@ -64,7 +63,6 @@
 <translation id="2068952045031577364">ગત અઠવાડિયા</translation>
 <translation id="2079545284768500474">પૂર્વવત્ કરો</translation>
 <translation id="209018056901015185">ડેસ્કટોપ સાઇટની વિનંતી કરો</translation>
-<translation id="2100215774115172756">તમારી વાંચન સૂચિ ઑફલાઇન ઉપલબ્ધ છે.</translation>
 <translation id="2103075008456228677">history.google.com ખોલો</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> આઇટમ ખસેડી</translation>
 <translation id="2149973817440762519">બુકમાર્ક સંપાદિત કરો</translation>
@@ -84,7 +82,6 @@
 <translation id="2572712655377361602">ઉપકરણ નીતિએ તમારા ફોટાની ઍક્સેસને અવરોધિત કરી</translation>
 <translation id="2584132361465095047">એકાઉન્ટ ઉમેરો...</translation>
 <translation id="2593774076813182497">આ પૃષ્ઠ છાપી શકાતું નથી.</translation>
-<translation id="2648803196158606475">વાંચેલ કાઢી નાખો</translation>
 <translation id="2653659639078652383">સબમિટ કરો</translation>
 <translation id="2684815431982545828">નવું ટૅબ</translation>
 <translation id="2690858294534178585">કૅમેરો ઉપયોગમાં છે</translation>
@@ -103,25 +100,22 @@
 <translation id="2898963176829412617">નવું ફોલ્ડર…</translation>
 <translation id="2903493209154104877">સરનામાંઓ</translation>
 <translation id="2921219216347069551">પૃષ્ઠને શેર કરી શકાતું નથી</translation>
-<translation id="292639812446257861">વાંચ્યા વગરની તરીકે ચિહ્નિત કરો</translation>
 <translation id="2933759065870693102">ટોર્ચ</translation>
 <translation id="2969979262385602596">સાઇન ઇન કરવામાં નિષ્ફળ. કૃપા કરીને પછીથી ફરી પ્રયાસ કરો.</translation>
 <translation id="2989805286512600854">નવા ટૅબમાં ખોલો</translation>
 <translation id="3024255823539804759">ગત દિવસ</translation>
 <translation id="3037605927509011580">અરર કંઇક ભુલ થઇ!</translation>
 <translation id="3050311348724540835"><ph name="HISTORY_URL" /> ઉપલબ્ધ નથી. તમારા બ્રાઉઝિંગ ઇતિહાસને ઍક્સેસ કરવા માટે, સાધનો મેનૂમાંથી "<ph name="SHOW_HISTORY" />" પસંદ કરો.</translation>
-<translation id="3112556859945124369">ચિહ્નિત કરો…</translation>
 <translation id="3151924044251363314">માત્ર તમારા પાસફ્રેઝ સાથેની કોઈ વ્યક્તિ જ તમારા એન્ક્રિપ્ટ કરેલા ડેટાને વાંચી શકે છે. Google ને પાસફ્રેઝ મોકલવામાં આવતો નથી કે તેના દ્વારા સંગ્રહિત કરવામાં આવતો નથી. જો તમે તમારો પાસફ્રેઝ ભૂલી જાઓ અથવા આ સેટિંગ બદલવા માંગતા હોવ, તો તમારે સમન્વયનને ફરીથી સેટ કરવું પડશે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
-<translation id="3157684681743766797">તમામને આ રીતે ચિહ્નિત કરો…</translation>
 <translation id="3172213052701798825">પાસવર્ડ્સ માટે Google Smart Lock</translation>
 <translation id="3175081911749765310">વેબ સેવાઓ</translation>
 <translation id="3207960819495026254">બુકમાર્ક કરેલ</translation>
 <translation id="3210163015918861891">સમન્વયન બંધ છે</translation>
-<translation id="3237561509210981547">કોઈ પૃષ્ઠને તમારી વાંચન સૂચિમાં ઉમેરવા માટે, <ph name="BEGIN_BOLD_FONT" />શેર કરો &gt; પછીથી વાંચો<ph name="END_BOLD_FONT" /> ટૅપ કરો.</translation>
 <translation id="3240426699337459095">લિંક કૉપિ કરી</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="NUM_SUGGESTIONS" /> માનું <ph name="INDEX" /></translation>
 <translation id="3268451620468152448">ઓપન ટેબ્સ</translation>
+<translation id="3289005573061089144">ડેટા આયાત કરીએ?</translation>
 <translation id="3324193307694657476">સરનામાં 2</translation>
 <translation id="3329904751041170572">સર્વરથી કનેક્ટ કરી શક્યું નથી.</translation>
 <translation id="3335947283844343239">બંધ કરેલું ટૅબ ફરીથી ખોલો</translation>
@@ -130,7 +124,6 @@
 <translation id="3414292259312108062">Chrome આને તમારા <ph name="BEGIN_LINK" />Google સાચવેલા પાસવર્ડ્સ<ph name="END_LINK" />માં સંગ્રહિત કરશે અને તમારા માટે સ્વતઃભરણ કરશે તેથી તમારે તેને જાતે યાદ રાખવાનું હોતું નથી.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> મિનિટ</translation>
 <translation id="3448016392200048164">વિભાજિત દૃશ્ય</translation>
-<translation id="3474068797193663261">કોઈ પૃષ્ઠને તમારી વાંચન સૂચિમાં ઉમેરવા માટે, <ph name="BEGIN_BOLD_FONT" />મેનૂ &gt; શેર કરો &gt; પછીથી વાંચો<ph name="END_BOLD_FONT" /> ટૅપ કરો.</translation>
 <translation id="3474649192738347024">ફોર્મ્સ ભર્યા.</translation>
 <translation id="3478058380795961209">સમય સમાપ્તિ મહિનો</translation>
 <translation id="3482959374254649722">તમારા ટેબ્સને સમન્વયિત કરી રહ્યું છે...</translation>
@@ -190,7 +183,6 @@
 <translation id="481968316161811770">કુકીઝ, સાઇટ ડેટા</translation>
 <translation id="4875622588773761625">શું તમે ઇચ્છો છો કે આ સાઇટ માટે <ph name="PASSWORD_MANAGER_BRAND" /> તમારો પાસવર્ડ અપડેટ કરે?</translation>
 <translation id="4881695831933465202">ખોલો</translation>
-<translation id="4904877109095351937">વાંચેલ તરીકે ચિહ્નિત કરો</translation>
 <translation id="4923459931733593730">ચુકવણી</translation>
 <translation id="4930268273022498155">અસ્તિત્વમાંનો ડેટા કાઢી નાખો. તમે <ph name="USER_EMAIL1" /> પર પાછા સ્વિચ કરીને તેને પુનઃપ્રાપ્ત કરી શકો છો.</translation>
 <translation id="4941089862236492464">માફ કરશો, તમારી આઇટમને શેર કરવામાં સમસ્યા આવી હતી.</translation>
@@ -368,7 +360,6 @@
 <translation id="8428213095426709021">સેટિંગ્સ</translation>
 <translation id="8433678324664858900">સૂચનો બતાવો</translation>
 <translation id="8458397775385147834">1 આઇટમ કાઢી નાખી</translation>
-<translation id="8487700953926739672">ઑફલાઇન ઉપલબ્ધ</translation>
 <translation id="8503813439785031346">વપરાશકર્તાનામ</translation>
 <translation id="8517375800490286174">ઓપન સોર્સ લાઇસેંસેસ</translation>
 <translation id="8524799873541103884"><ph name="NUMBER_OF_OPEN_TABS" /> ના  <ph name="FIRST_VISIBLE_TAB" /> થી <ph name="LAST_VISIBLE_TAB" /> સુધી <ph name="INCOGNITO" /> ટેબ્સ</translation>
@@ -378,7 +369,6 @@
 <translation id="8605219856220328675">ટૅબ બંધ કરો.</translation>
 <translation id="8620640915598389714">સંપાદિત કરો</translation>
 <translation id="8636825310635137004">તમારા અન્ય ઉપકરણો પરથી તમારા ટૅબ્સ મેળવવા માટે, સમન્વયન ચાલુ કરો.</translation>
-<translation id="8654802032646794042">રદ કરો</translation>
 <translation id="8680787084697685621">એકાઉન્ટ સાઇન-ઇન વિગતો જૂની થઈ ગઈ છે.</translation>
 <translation id="8699098509676302392">સરનામું ઉમેરો...</translation>
 <translation id="8721297211384281569">સાધન મેનૂ</translation>

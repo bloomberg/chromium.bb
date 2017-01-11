@@ -1931,7 +1931,6 @@
 <translation id="6770454900105963262">Informacijos apie aktyvias viešojo terminalo sesijas ataskaitos pateikimas</translation>
 <translation id="6774533686631353488">Leisti savosios susirašinėjimo pranešimais programos prieglobą naudotojo lygiu (įdiegiama be administratoriaus leidimo).</translation>
 <translation id="6786747875388722282">Plėtiniai</translation>
-<translation id="6786967369487349613">Nustatyti tarptinklinio ryšio profilio katalogas</translation>
 <translation id="6810445994095397827">Blokuoti „JavaScript“ šiose svetainėse</translation>
 <translation id="681446116407619279">Palaikomos tapatumo nustatymo schemos</translation>
 <translation id="6828905844648501476">Jei ši politika nustatyta į „true“ arba yra nesukonfigūruota, „<ph name="PRODUCT_NAME" />“ leis „Pridėti asmenį“ naudojant naudotojų tvarkytuvę.
@@ -2108,7 +2107,6 @@
 <translation id="7249828445670652637">Įgalinti „<ph name="PRODUCT_OS_NAME" />“ CA sertifikatus ARC programose</translation>
 <translation id="7258823566580374486">Įgalinti nuotolinės prieigos prieglobų slėpimą</translation>
 <translation id="7260277299188117560">Įgalintas automatinis P2P naujinys</translation>
-<translation id="7261252191178797385">Įrenginio ekrano fono vaizdas</translation>
 <translation id="7267809745244694722">Medijos klavišai pagal numatytuosius nustatymus veikia kaip funkcijų klavišai</translation>
 <translation id="7271085005502526897">Importuoti pagrindinį puslapį iš numatytosios naršyklės paleidžiant pirmą kartą</translation>
 <translation id="7273823081800296768">Jei šis nustatymas įgalintas arba nesukonfigūruotas, naudotojai gali pasirinkti susieti klientus ir prieglobas prisijungdami ir nereikia kaskart įvesti PIN kodo.
@@ -2198,15 +2196,6 @@
       Atminkite, kad ši politika pagrįsta operacinės sistemos sertifikatu, kuriuo leidžiami SHA-1 parašai. Jei atnaujinus OS pasikeičia OS SHA-1 sertifikatų apdorojimo būdas, ši politika gali nebegalioti.  Be to, ši politika teikiama kaip laikinas sprendimo būdas, kuris įmonėms suteikia daugiau laiko pereiti nuo SHA-1.  Ši politika bus pašalinta 2019 m. sausio 1 d. arba šiek tiek vėliau / anksčiau.
 
       Jei ši politika nenustatyta arba nustatyta į „false“, „<ph name="PRODUCT_NAME" />“ vykdys viešai paskelbtą SHA-1 naudojimo nutraukimo tvarkaraštį.</translation>
-<translation id="7589150663293249656">Įgalinamas „<ph name="PRODUCT_NAME" />“ profilio duomenų tarptinklinio ryšio kopijų kūrimas.
-
-      Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME" />“ profiliuose, pvz., žymėse, automatinio pildymo duomenyse, slaptažodžiuose ir kt., išsaugoti nustatymai taip pat bus įrašyti į failą, saugomą tarptinklinio ryšio naudotojo profilio aplanke arba administratoriaus nurodytoje vietoje pagal „<ph name="ROAMINGPROFILELOCATION_POLICY_NAME" />“ politiką.
-
-      „Google“ sinchronizavimas automatiškai išjungiamas, kai įgalinama ši politika.
-
-      Siekiant išvengti atsitiktinio duomenų atskleidimo naudinga nustatyti „<ph name="SIGNINALLOWED_POLICY_NAME" />“ politiką į „False“.
-
-      Jei ši politika išjungta ar nenustatyta, bus naudojami tik įprasti vietiniai profiliai.</translation>
 <translation id="7593523670408385997">Konfigūruojamas talpyklos, kurią „<ph name="PRODUCT_NAME" />“ naudos talpyklos failams diske saugoti, dydį.
 
       Jei nustatysite šią politiką, „<ph name="PRODUCT_NAME" />“ naudos nurodyto dydžio talpyklą nepaisydama to, ar naudotojas nurodė, ar nenurodė parametro „--disk-cache-size“. Šioje politikoje nurodyta vertė nėra griežta riba, bet tiesiog pasiūlymas talpyklos sistemai. Mažesnė nei kelių megabaitų vertė yra per maža ir bus suapvalinta iki įprastos minimalios vertės.
@@ -2452,7 +2441,6 @@
       Jei naudotojas įgalina sinchronizavimo funkciją, visi šie duomenys išsaugomi sinchronizavimo profilyje taip, kaip jie būtų išsaugomi įprastuose profiliuose. Be to, galima naudoti inkognito režimą, jei politikos nuostatose aiškiai nenurodyta, jog jis neleidžiamas.
 
       Jei politika neįgalinta arba nenustatyta, prisijungiant jungiamasi prie įprastų profilių.</translation>
-<translation id="8158758865057576716">Įgalinti „<ph name="PRODUCT_NAME" />“ profilio duomenų tarptinklinio ryšio kopijų kūrimą.</translation>
 <translation id="8164246350636985940">Numatytoji elgsena, skirta svetainėms, kurių nėra jokiame turinio pakete.
 
           Ši politika skirta naudoti tik „<ph name="PRODUCT_NAME" />“ viduje.</translation>
@@ -2748,13 +2736,6 @@
 <translation id="8992176907758534924">Neleisti jokioje svetainėje rodyti vaizdų</translation>
 <translation id="9035964157729712237">Į juodąjį sąrašą neįtrauktinų plėtinių ID</translation>
 <translation id="9042911395677044526">Leidžiama pateikti tinklo konfigūraciją, kad būtų taikoma „<ph name="PRODUCT_OS_NAME" />“ įrenginiui pagal naudotoją. Tinklo konfigūracija yra JSON formatuota eilutė, apibrėžta pagal „Atvirosios tinklo konfigūracijos“ formatą, nurodytą šiuo adresu: <ph name="ONC_SPEC_URL" /></translation>
-<translation id="908115901708809140">Konfigūruojamas katalogas, kurį „<ph name="PRODUCT_NAME" />“ naudos profilių tarptinklinio ryšio kopijoms saugoti.
-
-      Jei nustatysite šią politiką, „<ph name="PRODUCT_NAME" />“ naudos nurodytą katalogą profilių tarptinklinio ryšio kopijoms saugoti, jei įgalinta „<ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" />“ politika. Jei „<ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" />“ politika išjungta ar nenustatyta, šioje politikoje išsaugota vertė nebus naudojama.
-
-      Jei norite peržiūrėti galimų naudoti kintamųjų sąrašą, apsilankykite adresu https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
-
-      Jei ši politika nenustatyta, bus naudojamas numatytasis tarptinklinio ryšio profilio kelias.</translation>
 <translation id="9084985621503260744">Nurodykite, ar vaizdo įrašo veikla paveikia energijos valdymą</translation>
 <translation id="9088433379343318874">Įgalinti prižiūrimo naudotojo turinio teikėją</translation>
 <translation id="9088444059179765143">Automatinio laiko juostos aptikimo metodo konfigūravimas</translation>
@@ -2790,17 +2771,6 @@
       Jei įgalinta, ekrano kopijų negalima kurti naudojant sparčiuosius klavišus ar plėtinio API.
 
       Jei neleidžiama ar nenurodyta, leidžiama kurti ekrano kopijas.</translation>
-<translation id="9213347477683611358">Konfigūruokite įrenginio lygio ekrano fono vaizdą, kuris rodomas prisijungimo ekrane, jei prie įrenginio neprisijungė joks naudotojas. Politika nustatoma nurodant URL, kuriuo „Chrome“ OS įrenginys gali atsisiųsti ekrano fono vaizdą ir kriptografinę maišos vertę, kuri naudojama atsisiuntimo vientisumui patvirtinti. Vaizdas turi būti JPEG formato, o dydis neturi viršyti 16 MB. URL turi būti pasiekiamas be autentifikavimo. Ekrano fono vaizdas atsisiunčiamas ir įkeliamas į talpyklą. Jis bus iš naujo atsisiųstas pasikeitus URL arba maišos vertei.
-
-      Politika turėtų būti nurodyta kaip eilutė, kurioje pateikiamas URL ir maišos vertė JSON formatu, pvz.,
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      Jei nustatyta įrenginio politika, „Chrome“ OS įrenginys atsisiųs ir naudos ekrano fono vaizdą prisijungimo ekrane, jei joks naudotojas neprisijungė prie įrenginio. Kai naudotojas prisijungs, įsigalios naudotojo ekrano fono politika.
-
-      Jei įrenginio ekrano fono politika nenustatyta, naudotojo ekrano fono politika lemia, kas bus rodoma, jei nustatyta naudotojo ekrano fono politika.</translation>
 <translation id="9217154963008402249">Tinklo paketų stebėjimo dažnis</translation>
 <translation id="922540222991413931">Konfigūruokite plėtinio, programos ir naudotojo scenarijaus įdiegimo šaltinius.</translation>
 <translation id="924557436754151212">Importuoti išsaugotus slaptažodžius iš numatytosios naršyklės paleidžiant pirmą kartą</translation>

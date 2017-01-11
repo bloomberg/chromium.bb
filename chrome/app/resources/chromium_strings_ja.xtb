@@ -30,7 +30,6 @@
 <translation id="1881322772814446296">現在、管理対象アカウントでログインしており、あなたの Chromium プロフィールを管理者が制御できる状態になっています。あなたの Chromium データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME" /> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。新しいプロフィールを作成して、既存の Chromium データを別に保管することができます。<ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium が応答しません。今すぐ再起動しますか？</translation>
 <translation id="1967743265616885482">同じ名前のモジュールは Chromium と競合することがわかっています。</translation>
-<translation id="2008474315282236005">この端末から 1 件の項目を削除します。後でデータを取得するには、<ph name="USER_EMAIL" /> として Chromium にログインしてください。</translation>
 <translation id="2061399003623151192">{NUM_ITEMS,plural, =1{少なくとも $1 件の項目がこの端末から完全に削除されます。後でデータを取得するには、$2 として Chromium にログインしてください。}other{少なくとも $1 件の項目がこの端末から完全に削除されます。後でデータを取得するには、$2 として Chromium にログインしてください。}}</translation>
 <translation id="2077129598763517140">ハードウェア アクセラレーションが使用可能な場合は使用する</translation>
 <translation id="2119636228670142020">Chromium OS について(&amp;C)</translation>
@@ -80,7 +79,6 @@
 <translation id="3312805357485578561">Chromium で異常な動作が検出されました</translation>
 <translation id="331951419404882060">ログイン時にエラーが発生したため、Chromium OS はデータを同期できませんでした。</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
-<translation id="3474745554856756813">この端末から <ph name="ITEMS_COUNT" /> 件の項目を削除します。後でデータを取得するには、<ph name="USER_EMAIL" /> として Chromium にログインしてください。</translation>
 <translation id="3509308970982693815">すべての Chromium ウィンドウを閉じてからもう一度お試しください。</translation>
 <translation id="352783484088404971">Chromium から削除...</translation>
 <translation id="3549345495227188780">Chromium OS のスタート ガイド</translation>
@@ -231,7 +229,6 @@
 <translation id="7617377681829253106">進化する Chromium</translation>
 <translation id="7641113255207688324">Chromium は既定のブラウザとして設定されていません。</translation>
 <translation id="7729447699958282447">お使いのドメインでは同期を利用できないため、Chromium はデータを同期できませんでした。</translation>
-<translation id="7745317241717453663">この端末から閲覧データを削除します。後でデータを取得するには、<ph name="USER_EMAIL" /> として Chromium にログインしてください。</translation>
 <translation id="7747138024166251722">インストーラーの一時ディレクトリを作成できませんでした。ディスクの空き領域とソフトウェアのインストール許可があることを確認してください。</translation>
 <translation id="7937630085815544518">Chromium に <ph name="USER_EMAIL_ADDRESS" /> としてログインしていました。再度ログインするには同じアカウントを使用してください。</translation>
 <translation id="795025003224538582">再起動しない</translation>

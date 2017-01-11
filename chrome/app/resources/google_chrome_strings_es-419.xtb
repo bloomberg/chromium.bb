@@ -38,7 +38,6 @@
 <translation id="2063848847527508675">El Sistema operativo Chrome debe reiniciarse para que se aplique la actualización.</translation>
 <translation id="2077129598763517140">Usar aceleración de hardware cuando esté disponible</translation>
 <translation id="2084710999043359739">Agregar a Chrome</translation>
-<translation id="2120620239521071941">Esta acción borrará <ph name="ITEMS_COUNT" /> elementos de este dispositivo. Si más adelante deseas recuperar tus datos, accede a tu cuenta en Chrome como <ph name="USER_EMAIL" />.</translation>
 <translation id="2147651015520127414">Chrome verificó que <ph name="ISSUER" /> emitió el certificado de este sitio web.</translation>
 <translation id="2246246234298806438">Google Chrome no puede mostrar la vista previa de impresión si falta el visor de PDF incorporado.</translation>
 <translation id="2252923619938421629">Informa tu configuración actual para ayudarnos a mejorar Google Chrome.</translation>
@@ -57,7 +56,6 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="2485422356828889247">Desinstalación</translation>
 <translation id="2580411288591421699">No se puede instalar la misma versión de Google Chrome que se está ejecutando actualmente. Cierra Google Chrome e intenta nuevamente.</translation>
 <translation id="2582790009689336987">Esta computadora dejará de recibir actualizaciones de Google Chrome en breve porque este sistema Linux ya no se admitirá más.</translation>
-<translation id="2586406160782125153">Esta acción borrará tus datos de navegación de este dispositivo. Si más adelante deseas recuperar tus datos, accede a tu cuenta en Chrome como <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Logo de Chrome</translation>
 <translation id="2664962310688259219">Licencias de código abierto del Sistema operativo Chrome</translation>
 <translation id="2665296953892887393">Envía a Google informes de fallos y <ph name="UMA_LINK" /> para ayudar a mejorar Google Chrome.</translation>
@@ -95,7 +93,6 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="345171907106878721">Agrégate a Chrome</translation>
 <translation id="3612333635265770873">Un módulo con el mismo nombre ha interferido con Google Chrome.</translation>
 <translation id="3622797965165704966">Ahora es más sencillo utilizar Chrome con la cuenta de Google y en computadoras compartidas.</translation>
-<translation id="3718181793972440140">Esta acción borrará 1 elemento de este dispositivo. Si más adelante deseas recuperar tus datos, accede a tu cuenta en Chrome como <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">La extensión "<ph name="EXTENSION_NAME" />" cambió la página que se muestra al iniciar Chrome.</translation>
 <translation id="3738139272394829648">Tocar para buscar</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>

@@ -269,7 +269,6 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="3828029223314399057">Buscar marcadores</translation>
 <translation id="3845539888601087042">Mostrando historial de dispositivos en los que has iniciado sesión. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">Buscar hacia delante</translation>
-<translation id="3890664840433101773">Añadir correo electrónico</translation>
 <translation id="3894427358181296146">Añadir carpeta</translation>
 <translation id="3895926599014793903">Forzar zoom</translation>
 <translation id="3917783807003067648">La ubicación está bloqueada</translation>
@@ -327,6 +326,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4526249700380860531">Consulta y administra contraseñas guardadas en la página <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Seleccionar carpeta</translation>
 <translation id="4535858793016067060">Activa Fuentes desconocidas en los ajustes de seguridad de Android para probar el experimento mejorado Añadir a la pantalla de inicio. No olvides inhabilitar esta opción cuando hayas finalizado.</translation>
+<translation id="4543661749405994812">Copiar dirección de correo</translation>
 <translation id="4558311620361989323">Combinaciones de teclas en páginas web</translation>
 <translation id="4572422548854449519">Inicia sesión en la cuenta administrada</translation>
 <translation id="457875822857220463">Envío</translation>
@@ -371,7 +371,6 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4988526792673242964">Páginas</translation>
 <translation id="4996978546172906250">Compartir a través de</translation>
 <translation id="5000922062037820727">Bloqueado (recomendado)</translation>
-<translation id="5004339818306944878">Reduce el uso de datos hasta en un 60% y mejora la velocidad de la Web. Los servidores de Google optimizarán las páginas que visites.</translation>
 <translation id="5005498671520578047">Copiar contraseña</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> quiere conectarse</translation>
 <translation id="5016205925109358554">Serif</translation>
@@ -394,12 +393,10 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="5171045022955879922">Busca o escribe una URL</translation>
 <translation id="5184329579814168207">Abrir en Chrome</translation>
 <translation id="5199929503336119739">Perfil de trabajo</translation>
-<translation id="5205222826937269299">Nombre obligatorio</translation>
 <translation id="5209320130288484488">No se ha encontrado ningún dispositivo.</translation>
 <translation id="5210286577605176222">Te dirige a la pestaña anterior</translation>
 <translation id="5210365745912300556">Cerrar pestaña</translation>
 <translation id="5222676887888702881">Cerrar sesión</translation>
-<translation id="5222812217790122047">Correo electrónico obligatorio</translation>
 <translation id="5233638681132016545">Nueva pestaña</translation>
 <translation id="5271967389191913893">El dispositivo no puede abrir el contenido para descargarlo.</translation>
 <translation id="528192093759286357">Arrastra el dedo desde la parte superior y toca el botón de retroceso para salir de la pantalla completa.</translation>
@@ -526,6 +523,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Sugerencias de URL y de búsqueda</translation>
 <translation id="6463070039183944536">Añadiendo...</translation>
+<translation id="6464825623202322042">Este dispositivo</translation>
 <translation id="6475951671322991020">Descargar vídeo</translation>
 <translation id="6477460825583319731">Dirección de correo electrónico no válida</translation>
 <translation id="6482749332252372425">No se ha podido descargar <ph name="FILE_NAME" /> porque no hay suficiente espacio de almacenamiento.</translation>
@@ -572,7 +570,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6868088497967843822">Inicia sesión para ver tus marcadores, tu historial, tus contraseñas y otras opciones en todos tus dispositivos</translation>
 <translation id="688738109438487280">Añade los datos actuales a <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d pestaña abierta}other{%1$d pestañas abiertas}}</translation>
-<translation id="6896758677409633944">Copiar</translation>
 <translation id="6937422995269576720">El número de tarjeta no es válido</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
 <translation id="6963766334940102469">Eliminar marcadores</translation>
@@ -597,7 +594,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7094922512924405309">No se han encontrado páginas de la Web física cercanas</translation>
 <translation id="7138678301420049075">Otro</translation>
 <translation id="7180611975245234373">Actualizar</translation>
-<translation id="7189372733857464326">Esperando a que Servicios de Google Play termine de actualizarse</translation>
 <translation id="7191430249889272776">Pestaña abierta en segundo plano.</translation>
 <translation id="7243308994586599757">Opciones disponibles cerca de la parte inferior de la pantalla</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> utiliza tu ubicación para mostrar resultados de búsqueda locales</translation>
@@ -658,7 +654,6 @@ Es posible que tu cuenta de Google tenga otras formas del historial de navegaci�
 <translation id="7851858861565204677">Otros dispositivos</translation>
 <translation id="7875915731392087153">Crear correo electrónico</translation>
 <translation id="7876243839304621966">Eliminar todo</translation>
-<translation id="7882131421121961860">No se ha encontrado ningún elemento en el historial</translation>
 <translation id="7929962904089429003">Abre el menú</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> está obsoleto.</translation>
 <translation id="7947953824732555851">Aceptar y acceder</translation>
@@ -706,7 +701,6 @@ Es posible que tu cuenta de Google tenga otras formas del historial de navegaci�
 <translation id="8321376388213838985">Próximamente se mostrarán más artículos. Disfruta de la tarde.</translation>
 <translation id="8372893542064058268">Permite la sincronización en segundo plano de un sitio web específico.</translation>
 <translation id="8374821112118309944">Debes instalar una nueva versión de TalkBack.</translation>
-<translation id="8393700583063109961">Enviar mensaje</translation>
 <translation id="8396312449826231789">Solo sitios aprobados</translation>
 <translation id="8413126021676339697">Mostrar historial completo</translation>
 <translation id="8428213095426709021">Ajustes</translation>
@@ -786,7 +780,6 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Imágenes</translation>
 <translation id="932327136139879170">Página principal</translation>
-<translation id="932599481871055447">Ahorra datos y navega más rápido</translation>
 <translation id="938850635132480979">Error: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Acceder al micrófono</translation>
 <translation id="951339005376969845">Elimina los datos actuales. Para recuperarlos, cambia a <ph name="FROM_ACCOUNT" />.</translation>

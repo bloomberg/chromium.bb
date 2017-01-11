@@ -269,7 +269,6 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="3828029223314399057">Meklēt grāmatzīmes</translation>
 <translation id="3845539888601087042">Tiek rādīta vēsture no ierīcēm, kurās esat pierakstījies. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">Pārtīt uz priekšu</translation>
-<translation id="3890664840433101773">E-pasta adreses pievienošana</translation>
 <translation id="3894427358181296146">Mapes pievienošana</translation>
 <translation id="3895926599014793903">Tālummaiņas piespiedu iespējošana</translation>
 <translation id="3917783807003067648">Bloķēta piekļuve atrašanās vietas informācijai</translation>
@@ -327,6 +326,7 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4526249700380860531">Skatīt un pārvaldīt saglabātās paroles vietnē <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Mapes izvēlēšanās</translation>
 <translation id="4535858793016067060">Android drošības iestatījumos ieslēdziet opciju “Nezināmi avoti”, lai izmēģinātu eksperimentālu uzlabotu Pievienošanas sākuma ekrānam funkciju. Noteikti atspējojiet šo iestatījumu, kad būsit to izmēģinājis.</translation>
+<translation id="4543661749405994812">Kopēt e-pasta adresi</translation>
 <translation id="4558311620361989323">Tīmekļa lapu īsinājumtaustiņi</translation>
 <translation id="4572422548854449519">Pierakstīšanās pārvaldītā kontā</translation>
 <translation id="457875822857220463">Piegāde</translation>
@@ -371,7 +371,6 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4988526792673242964">Lapas</translation>
 <translation id="4996978546172906250">Kopīgošanas veids:</translation>
 <translation id="5000922062037820727">Bloķēta (ieteicams)</translation>
-<translation id="5004339818306944878">Izmantojiet pat par 60% mazāk datu un paātriniet tīmekļa pārlūkošanu. Google serveri optimizēs jūsu apmeklētās lapas.</translation>
 <translation id="5005498671520578047">Paroles kopēšana</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> vēlas izveidot savienojumu</translation>
 <translation id="5016205925109358554">Serif</translation>
@@ -394,12 +393,10 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="5171045022955879922">Meklējiet vai ievadiet URL.</translation>
 <translation id="5184329579814168207">Atvērt pārlūkā Chrome</translation>
 <translation id="5199929503336119739">Darba profils</translation>
-<translation id="5205222826937269299">Jānorāda vārds vai nosaukums.</translation>
 <translation id="5209320130288484488">Ierīces nav atrastas</translation>
 <translation id="5210286577605176222">Pāriet uz iepriekšējo cilni</translation>
 <translation id="5210365745912300556">Aizvērt cilni</translation>
 <translation id="5222676887888702881">Izrakstīties</translation>
-<translation id="5222812217790122047">Jānorāda e-pasta adrese.</translation>
 <translation id="5233638681132016545">Jauna cilne</translation>
 <translation id="5271967389191913893">Ierīcē nevar atvērt lejupielādējamo saturu.</translation>
 <translation id="528192093759286357">Lai izietu no pilnekrāna režīma, velciet no augšas un pieskarieties pogai Atpakaļ.</translation>
@@ -526,6 +523,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6447842834002726250">Sīkfaili</translation>
 <translation id="6448273550210938826">Meklēšana un URL ieteikumi</translation>
 <translation id="6463070039183944536">Notiek pievienošana...</translation>
+<translation id="6464825623202322042">Šī ierīce</translation>
 <translation id="6475951671322991020">Lejupielādēt videoklipu</translation>
 <translation id="6477460825583319731">Nederīga e-pasta adrese</translation>
 <translation id="6482749332252372425">Neizdevās lejupielādēt failu <ph name="FILE_NAME" />, jo krātuvē nav pietiekami daudz vietas.</translation>
@@ -572,7 +570,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6868088497967843822">Pierakstieties, lai jūsu grāmatzīmes, vēsture, paroles un citi iestatījumi būtu pieejami visās jūsu ierīcēs.</translation>
 <translation id="688738109438487280">Pievienot esošos datus kontam <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d atvērta cilne}zero{%1$d atvērtas cilnes}one{%1$d atvērta cilne}other{%1$d atvērtas cilnes}}</translation>
-<translation id="6896758677409633944">Kopēt</translation>
 <translation id="6937422995269576720">Kartes numurs nav derīgs.</translation>
 <translation id="6945221475159498467">Atlasīt</translation>
 <translation id="6963766334940102469">Dzēst grāmatzīmes</translation>
@@ -597,7 +594,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7094922512924405309">Tuvumā nav atrasta neviena fiziskā tīmekļa lapa</translation>
 <translation id="7138678301420049075">Cits</translation>
 <translation id="7180611975245234373">Atsvaidzināt</translation>
-<translation id="7189372733857464326">Gaida, kad tiks pabeigta Google Play pakalpojumu atjaunināšana</translation>
 <translation id="7191430249889272776">Cilne tika atvērta fonā.</translation>
 <translation id="7243308994586599757">Opcijas, kas pieejamas ekrāna apakšējā daļā</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> izmanto jūsu atrašanās vietas informāciju, lai rādītu vietējās meklēšanas rezultātus</translation>
@@ -658,7 +654,6 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />history.google.com<ph name=
 <translation id="7851858861565204677">Citas ierīces</translation>
 <translation id="7875915731392087153">Izveidojiet e-pasta ziņojumu.</translation>
 <translation id="7876243839304621966">Noņemt visu</translation>
-<translation id="7882131421121961860">Vēsture nav atrasta</translation>
 <translation id="7929962904089429003">Atvērt izvēlni</translation>
 <translation id="7942131818088350342">Spraudnis <ph name="PRODUCT_NAME" /> ir novecojis.</translation>
 <translation id="7947953824732555851">Pieņemt un pierakst.</translation>
@@ -706,7 +701,6 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />history.google.com<ph name=
 <translation id="8321376388213838985">Drīzumā būs pieejami citi raksti. Jauku pēcpusdienu!</translation>
 <translation id="8372893542064058268">Atļaut sinhronizāciju fonā konkrētai vietnei</translation>
 <translation id="8374821112118309944">Jums ir jāatjaunina lietotne TalkBack uz jaunāku versiju.</translation>
-<translation id="8393700583063109961">Sūtīt ziņojumu</translation>
 <translation id="8396312449826231789">Tikai apstiprinātas vietnes</translation>
 <translation id="8413126021676339697">Rādīt pilnu vēsturi</translation>
 <translation id="8428213095426709021">Iestatījumi</translation>
@@ -787,7 +781,6 @@ Lai iegūtu jaunas licences, izveidojiet savienojumu ar internetu un atskaņojie
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Attēli</translation>
 <translation id="932327136139879170">Sākums</translation>
-<translation id="932599481871055447">Saglabājiet datus un paātriniet pārlūkošanu</translation>
 <translation id="938850635132480979">Kļūda: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Piekļuve mikrofonam</translation>
 <translation id="951339005376969845">Dzēst esošos datus. Varat tos izgūt, pārslēdzoties atpakaļ uz kontu <ph name="FROM_ACCOUNT" />.</translation>

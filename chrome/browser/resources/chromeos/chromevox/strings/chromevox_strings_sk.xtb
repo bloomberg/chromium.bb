@@ -177,7 +177,6 @@
 <translation id="2899328121302785497">{COUNT,plural, =1{ľavá zložená zátvorka}few{# ľavé zložené zátvorky}many{# left braces}other{# ľavých zložených zátvoriek}}</translation>
 <translation id="2911433807131383493">Otvoriť príručku rozšírenia ChromeVox</translation>
 <translation id="2932083475399492303">Prepnúť typ riadku medzi riadkom štruktúry a rozloženia</translation>
-<translation id="2944762337049891859">Po načítaní stránku automaticky prečítať.</translation>
 <translation id="2964026537669811554">Skupina nadpisov</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{tabulátor}few{# tabulátory}many{# tabs}other{# tabulátorov}}</translation>
 <translation id="2972078295414139404">Žiadny predchádzajúci navštívený odkaz</translation>
@@ -308,7 +307,6 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="3712520970944678024">Ovládanie reči</translation>
 <translation id="3716845769494773620">Viac riadkov</translation>
 <translation id="3731746171184829332">Žiadny predchádzajúci nadpis</translation>
-<translation id="3735039640698208086">Pri prehrávaní zvuku…</translation>
 <translation id="3762198587642264450">Prejsť na koniec aktuálneho riadka</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">Ukončili ste dialógové okno</translation>
@@ -549,7 +547,6 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="5876817486144482042">Znížiť hlasitosť reči</translation>
 <translation id="5887397643266327462">Titulky v Braillovom písme sú zapnuté</translation>
 <translation id="5891934789323004067">Tabuľka</translation>
-<translation id="5899860758576822363">Pri hlasovej odozve ChromeVox znížiť hlasitosť prehrávania</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{znak rovnosti}few{# znaky rovnosti}many{# equal signs}other{# znakov rovnosti}}</translation>
 <translation id="5939518447894949180">Obnoviť</translation>
 <translation id="5948123859135882163">Prepnúť medzi štrukturálnou a sémantickou interpretáciou matematických výrazov</translation>
@@ -582,7 +579,6 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="6281876499889881039">Ďalší podobný prvok</translation>
 <translation id="6282062888058716985">navigácia</translation>
 <translation id="6290434000785343030">Žiadne ďalšie rozbaľovacie pole</translation>
-<translation id="6305702903308659374">Pri hlasovej odozve ChromeVox zachovať normálnu hlasitosť prehrávania</translation>
 <translation id="6307969636681130414">Stlačené</translation>
 <translation id="6322856989298155004">Zvuky</translation>
 <translation id="6324551002951139333">Našla sa gramatická chyba</translation>
@@ -698,7 +694,6 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, posúvač</translation>
 <translation id="7552432549459840808">Užitočné skratky Chromu</translation>
 <translation id="7579911500627256166">bodka <ph name="DOT" /></translation>
-<translation id="7591126877589047423">Nie je označená žiadna položka. Stlačením kombinácie klávesov CTRL + N otvoríte nové okno.</translation>
 <translation id="7596919493010894443">výber bol vymazaný</translation>
 <translation id="7604026522577407655">Prejsť na začiatok aktuálneho stĺpca</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -774,7 +769,6 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="8455868257606149352">Max. <ph name="X" /></translation>
 <translation id="84575901236241018">má prístupový kľúč <ph name="KEY" /></translation>
 <translation id="847154984256717791">zaneprázdnené</translation>
-<translation id="8476408756881832830">Pri hlasovej odozve ChromeVox pozastaviť prehrávanie</translation>
 <translation id="8476508772960940536">prehľad okien</translation>
 <translation id="8503360654911991865">Znížiť podrobnosť navigácie</translation>
 <translation id="8520472399088452386">Tlačidlo otáčania</translation>

@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">Chọn thư mục</translation>
 <translation id="1272079795634619415">Dừng</translation>
 <translation id="129553762522093515">Các tab đã đóng gần đây</translation>
-<translation id="1323735185997015385">Xóa</translation>
 <translation id="132683371494960526">Nhấn đúp để thay đổi thư mục gốc.</translation>
 <translation id="1340643665687018190">Đóng Menu</translation>
 <translation id="1375321115329958930">Mật khẩu đã lưu</translation>
@@ -64,7 +63,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="2068952045031577364">Tuần trước</translation>
 <translation id="2079545284768500474">Hoàn tác</translation>
 <translation id="209018056901015185">Yêu cầu trang web cho máy tính</translation>
-<translation id="2100215774115172756">Danh sách đọc của bạn khả dụng khi ngoại tuyến.</translation>
 <translation id="2103075008456228677">Mở history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> dấu trang đã được di chuyển</translation>
 <translation id="2149973817440762519">Chỉnh sửa dấu trang</translation>
@@ -84,7 +82,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="2572712655377361602">Chính sách thiết bị đã chặn quyền truy cập vào ảnh của bạn</translation>
 <translation id="2584132361465095047">Thêm tài khoản...</translation>
 <translation id="2593774076813182497">Không thể in trang này.</translation>
-<translation id="2648803196158606475">Xóa mục đã đọc</translation>
 <translation id="2653659639078652383">Gửi</translation>
 <translation id="2684815431982545828">Tab mới</translation>
 <translation id="2690858294534178585">Máy ảnh đang được sử dụng</translation>
@@ -103,25 +100,22 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="2898963176829412617">Thư mục mới…</translation>
 <translation id="2903493209154104877">Địa chỉ</translation>
 <translation id="2921219216347069551">Ko thể chia sẻ trang</translation>
-<translation id="292639812446257861">Đánh dấu là chưa đọc</translation>
 <translation id="2933759065870693102">Đèn pin</translation>
 <translation id="2969979262385602596">Không đăng nhập được. Vui lòng thử lại sau.</translation>
 <translation id="2989805286512600854">Mở bằng Tab Mới</translation>
 <translation id="3024255823539804759">Ngày trước</translation>
 <translation id="3037605927509011580">Ôi, hỏng! </translation>
 <translation id="3050311348724540835"><ph name="HISTORY_URL" /> không khả dụng. Để truy cập lịch sử duyệt web của bạn, hãy chọn "<ph name="SHOW_HISTORY" />" từ menu công cụ.</translation>
-<translation id="3112556859945124369">Đánh dấu...</translation>
 <translation id="3151924044251363314">Chỉ người có cụm mật khẩu mới có thể đọc dữ liệu được mã hóa của bạn. Cụm mật khẩu không được gửi tới hoặc được lưu trữ bởi Google. Nếu bạn quên cụm mật khẩu hoặc muốn thay đổi cài đặt này, bạn cần đặt lại đồng bộ hóa. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
-<translation id="3157684681743766797">Đánh dấu tất cả...</translation>
 <translation id="3172213052701798825">Google Smart Lock cho Mật khẩu</translation>
 <translation id="3175081911749765310">Dịch vụ web</translation>
 <translation id="3207960819495026254">Đã được đánh dấu trang</translation>
 <translation id="3210163015918861891">Đồng bộ hóa đã tắt</translation>
-<translation id="3237561509210981547">Để thêm trang vào danh sách đọc của bạn, nhấn <ph name="BEGIN_BOLD_FONT" />Chia sẻ &gt; Đọc sau<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3240426699337459095">Đã sao chép liên kết</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> trong số <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Tab đang mở</translation>
+<translation id="3289005573061089144">Nhập dữ liệu?</translation>
 <translation id="3324193307694657476">Địa chỉ 2</translation>
 <translation id="3329904751041170572">Không thể kết nối với máy chủ.</translation>
 <translation id="3335947283844343239">Mở lại Tab đã Đóng</translation>
@@ -130,7 +124,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="3414292259312108062">Chrome sẽ lưu mật khẩu này vào <ph name="BEGIN_LINK" />Mật khẩu đã lưu của Google<ph name="END_LINK" /> và tự động điền mật khẩu cho bạn để bạn không phải tự ghi nhớ.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> phút</translation>
 <translation id="3448016392200048164">Chế độ xem phân tách</translation>
-<translation id="3474068797193663261">Để thêm trang vào danh sách đọc của bạn, nhấn <ph name="BEGIN_BOLD_FONT" />Menu &gt; Chia sẻ &gt; Đọc sau<ph name="END_BOLD_FONT" />.</translation>
 <translation id="3474649192738347024">Đã điền biểu mẫu.</translation>
 <translation id="3478058380795961209">Tháng hết hạn</translation>
 <translation id="3482959374254649722">Đang đồng bộ hóa tab của bạn...</translation>
@@ -190,7 +183,6 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="481968316161811770">Cookie, Dữ liệu trang web</translation>
 <translation id="4875622588773761625">Bạn có muốn <ph name="PASSWORD_MANAGER_BRAND" /> cập nhật mật khẩu của mình cho trang web này không?</translation>
 <translation id="4881695831933465202">Mở</translation>
-<translation id="4904877109095351937">Đánh dấu là đã đọc</translation>
 <translation id="4923459931733593730">Thanh toán</translation>
 <translation id="4930268273022498155">Xóa dữ liệu hiện có. Bạn có thể truy xuất dữ liệu bằng cách chuyển về <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Rất tiếc, đã xảy ra sự cố khi chia sẻ mục của bạn.</translation>
@@ -368,7 +360,6 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="8428213095426709021">Cài đặt</translation>
 <translation id="8433678324664858900">Hiển thị đề xuất</translation>
 <translation id="8458397775385147834">1 dấu trang đã bị xóa</translation>
-<translation id="8487700953926739672">Khả dụng ngoại tuyến</translation>
 <translation id="8503813439785031346">Tên người dùng</translation>
 <translation id="8517375800490286174">Giấy phép nguồn mở</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> Tab <ph name="FIRST_VISIBLE_TAB" /> qua <ph name="LAST_VISIBLE_TAB" /> / <ph name="NUMBER_OF_OPEN_TABS" /></translation>
@@ -378,7 +369,6 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="8605219856220328675">Đóng tab.</translation>
 <translation id="8620640915598389714">Chỉnh sửa</translation>
 <translation id="8636825310635137004">Để có các tab từ các thiết bị khác của bạn, hãy bật đồng bộ hóa.</translation>
-<translation id="8654802032646794042">Hủy</translation>
 <translation id="8680787084697685621">Chi tiết đăng nhập tài khoản đã lỗi thời.</translation>
 <translation id="8699098509676302392">Thêm địa chỉ...</translation>
 <translation id="8721297211384281569">Menu công cụ</translation>

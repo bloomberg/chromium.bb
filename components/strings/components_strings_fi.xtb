@@ -82,7 +82,6 @@
 <translation id="1753706481035618306">Sivunumero</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Kokeile Windowsin verkon diagnostiikkaa<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">Päivitä synkronoinnin tunnuslause.</translation>
-<translation id="1787142507584202372">Avoimet välilehdet näkyvät tässä.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803678881841855883">Googlen selaussuoja <ph name="BEGIN_LINK" />havaitsi äskettäin haittaohjelman<ph name="END_LINK" /> sivustolla <ph name="SITE" />. Myös tavallisesti turvalliset verkkosivustot voivat joskus saada haittaohjelmatartunnan. Haitallisen sisällön lähde on <ph name="SUBRESOURCE_HOST" />, tunnettu haittaohjelmien jakelija. <ph name="BEGIN_LEARN_MORE_LINK" />Lisätietoja<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1821930232296380041">Pyyntö on virheellinen tai pyynnön parametrit ovat virheelliset</translation>
@@ -175,7 +174,6 @@
 <translation id="2712118517637785082">Yritit muodostaa yhteyden verkkotunnukseen <ph name="DOMAIN" />, mutta varmenteen myöntäjä on peruuttanut palvelimen esittämän varmenteen. Palvelimen esittämiin tunnistetietoihin ei missään tapauksessa tule luottaa. Saatat olla tekemisissä hakkerin kanssa. <ph name="BEGIN_LEARN_MORE_LINK" />Lisätietoja<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2712173769900027643">Pyydä käyttölupaa</translation>
 <translation id="2713444072780614174">Valkoinen</translation>
-<translation id="2720342946869265578">Nearby</translation>
 <translation id="2721148159707890343">Pyyntö onnistui</translation>
 <translation id="2728127805433021124">Palvelimen varmenne on allekirjoitettu heikolla allekirjoitusalgoritmilla.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />yhteysdiagnostiikkaa<ph name="END_LINK" /></translation>
@@ -373,7 +371,6 @@
 <translation id="4728558894243024398">Käyttöympäristö</translation>
 <translation id="4744603770635761495">Suoritettavan tiedoston polku</translation>
 <translation id="4756388243121344051">&amp;Historia</translation>
-<translation id="4759118997339041434">Maksujen automaattinen täyttö pois käytöstä</translation>
 <translation id="4764776831041365478">Osoitteessa <ph name="URL" /> oleva sivu saattaa olla väliaikaisesti pois käytöstä tai se on voitu siirtää pysyvästi uuteen osoitteeseen.</translation>
 <translation id="4771973620359291008">Tapahtui tuntematon virhe.</translation>
 <translation id="4800132727771399293">Tarkista vanhenemispäivä ja CVC ja yritä uudelleen.</translation>
@@ -532,6 +529,7 @@
 <translation id="6644283850729428850">Tämä käytäntö on vanhentunut.</translation>
 <translation id="6652240803263749613">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />, sillä tietokoneesi käyttöjärjestelmä ei luota sen suojausvarmenteeseen. Tämä voi johtua määritysvirheestä tai hyökkäyksestä, jonka tavoitteena on verkkoyhteytesi sieppaaminen. <ph name="BEGIN_LEARN_MORE_LINK" />Lisätietoja<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6656103420185847513">Muokkaa kansiota</translation>
+<translation id="6660210980321319655">Ilmoitus tehtiin automaattisesti <ph name="CRASH_TIME" />.</translation>
 <translation id="6671697161687535275">Poistetaanko lomake-ehdotus Chromiumista?</translation>
 <translation id="6685834062052613830">Kirjaudu ulos ja suorita määritys loppuun.</translation>
 <translation id="6710213216561001401">Edellinen</translation>
@@ -678,7 +676,6 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="8150722005171944719">Tiedosto osoitteessa <ph name="URL" /> ei ole luettavissa. Se on voitu poistaa tai siirtää, tai tiedoston käyttöluvat voivat estää sen käytön.</translation>
 <translation id="8194797478851900357">K&amp;umoa siirto</translation>
 <translation id="8201077131113104583">Laajennuksella, jonka tunnus on <ph name="EXTENSION_ID" />, on virheellinen päivitys-URL-osoite.</translation>
-<translation id="8202097416529803614">Tilauksen yhteenveto</translation>
 <translation id="8218327578424803826">Määrätty sijainti:</translation>
 <translation id="8225771182978767009">Tämän tietokoneen määrittänyt henkilö on estänyt tämän sivuston.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
@@ -724,7 +721,6 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="8740359287975076522">Sivuston <ph name="HOST_NAME" /> &lt;abbr id="dnsDefinition"&gt;DNS-osoitetta&lt;/abbr&gt; ei löydy. Ongelmaa diagnosoidaan.</translation>
 <translation id="8790007591277257123">&amp;Toista poisto</translation>
 <translation id="8798099450830957504">Oletus</translation>
-<translation id="8800988563907321413">Nearby-ehdotuksesi näkyvät tässä.</translation>
 <translation id="8804164990146287819">Tietosuojakäytäntö</translation>
 <translation id="8820817407110198400">Kirjanmerkit</translation>
 <translation id="8834246243508017242">Ota käyttöön automaattinen täyttö kontaktien avulla…</translation>

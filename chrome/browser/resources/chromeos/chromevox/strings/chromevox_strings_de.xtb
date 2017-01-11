@@ -177,7 +177,6 @@
 <translation id="2899328121302785497">{COUNT,plural, =1{geschweifte Klammer links}other{# geschweifte Klammern links}}</translation>
 <translation id="2911433807131383493">ChromeVox-Anleitung öffnen</translation>
 <translation id="2932083475399492303">Zwischen den Zeilenarten "Struktur" und "Layout" wechseln</translation>
-<translation id="2944762337049891859">Seite automatisch lesen, wenn sie vollständig geladen ist.</translation>
 <translation id="2964026537669811554">Heading group-Element</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{Tabulatorzeichen}other{# Tabulatorzeichen}}</translation>
 <translation id="2972078295414139404">Kein vorheriger besuchter Link</translation>
@@ -308,7 +307,6 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="3712520970944678024">Sprachausgabe steuern</translation>
 <translation id="3716845769494773620">Mehrzeilig</translation>
 <translation id="3731746171184829332">Keine vorherige Überschrift</translation>
-<translation id="3735039640698208086">Bei der Wiedergabe von Audio…</translation>
 <translation id="3762198587642264450">Zum Ende der aktuellen Zeile gehen</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">Dialogfeld geschlossen</translation>
@@ -549,7 +547,6 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="5876817486144482042">Sprachlautstärke verringern</translation>
 <translation id="5887397643266327462">Braille-Untertitel aktiviert</translation>
 <translation id="5891934789323004067">Tabelle</translation>
-<translation id="5899860758576822363">Mit geringerer Lautstärke wiedergeben, wenn eine Sprachausgabe durch ChromeVox stattfindet</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{Gleichheitszeichen}other{# Gleichheitszeichen}}</translation>
 <translation id="5939518447894949180">Zurücksetzen</translation>
 <translation id="5948123859135882163">Interpretation mathematischer Ausdrücke zwischen strukturell und semantisch umschalten</translation>
@@ -582,7 +579,6 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="6281876499889881039">Nächstes ähnliches Element</translation>
 <translation id="6282062888058716985">nav</translation>
 <translation id="6290434000785343030">Kein nächstes Kombinationsfeld</translation>
-<translation id="6305702903308659374">Mit normaler Lautstärke wiedergeben, auch wenn eine Sprachausgabe durch ChromeVox stattfindet</translation>
 <translation id="6307969636681130414">Gedrückt</translation>
 <translation id="6322856989298155004">Töne</translation>
 <translation id="6324551002951139333">Grammatikfehler gefunden</translation>
@@ -698,7 +694,6 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />, Schieberegler "<ph name="NAME" />"</translation>
 <translation id="7552432549459840808">Nützliche Tastenkombinationen in Chrome</translation>
 <translation id="7579911500627256166">Punkt <ph name="DOT" /></translation>
-<translation id="7591126877589047423">Kein Fokus. Drücken Sie Strg + N, um ein neues Fenster zu öffnen.</translation>
 <translation id="7596919493010894443">Auswahl gelöscht</translation>
 <translation id="7604026522577407655">Zum Anfang der aktuellen Spalte gehen</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -774,7 +769,6 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="8455868257606149352">Max.: <ph name="X" /></translation>
 <translation id="84575901236241018">verfügt über den Zugriffsschlüssel <ph name="KEY" />.</translation>
 <translation id="847154984256717791">beschäftigt</translation>
-<translation id="8476408756881832830">Wiedergabe pausieren, wenn eine Sprachausgabe durch ChromeVox stattfindet</translation>
 <translation id="8476508772960940536">Fensterübersicht</translation>
 <translation id="8503360654911991865">Navigationsgenauigkeit verringern</translation>
 <translation id="8520472399088452386">Drehfeld</translation>

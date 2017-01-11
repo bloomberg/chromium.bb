@@ -20,7 +20,6 @@
 <translation id="1254117744268754948">Klasör Seçin</translation>
 <translation id="1272079795634619415">Durdur</translation>
 <translation id="129553762522093515">Son kapatılan</translation>
-<translation id="1323735185997015385">Sil</translation>
 <translation id="132683371494960526">Üst klasörü değiştirmek için iki kez dokunun.</translation>
 <translation id="1340643665687018190">Menüyü Kapat</translation>
 <translation id="1375321115329958930">Kayıtlı şifreler</translation>
@@ -64,7 +63,6 @@
 <translation id="2068952045031577364">Geçen Hafta</translation>
 <translation id="2079545284768500474">Geri Al</translation>
 <translation id="209018056901015185">Masaüstü Sitesi İste</translation>
-<translation id="2100215774115172756">Okuma listeniz çevrimdışı olarak kullanılabilir.</translation>
 <translation id="2103075008456228677">history.google.com'u aç</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> öğe taşındı</translation>
 <translation id="2149973817440762519">Yer İşaretini Düzenle</translation>
@@ -84,7 +82,6 @@
 <translation id="2572712655377361602">Fotoğraflarınıza erişim bir cihaz politikası tarafından engellendi</translation>
 <translation id="2584132361465095047">Hesap Ekle…</translation>
 <translation id="2593774076813182497">Bu sayfa yazdırılamaz.</translation>
-<translation id="2648803196158606475">Okunanları Sil</translation>
 <translation id="2653659639078652383">Gönder</translation>
 <translation id="2684815431982545828">Yeni Sekme</translation>
 <translation id="2690858294534178585">Kamera kullanılıyor</translation>
@@ -103,25 +100,22 @@
 <translation id="2898963176829412617">Yeni Klasör…</translation>
 <translation id="2903493209154104877">Adresler</translation>
 <translation id="2921219216347069551">Sayfa Paylaşılamıyor</translation>
-<translation id="292639812446257861">Okunmadı Olarak İşaretle</translation>
 <translation id="2933759065870693102">Flaş</translation>
 <translation id="2969979262385602596">Oturum açılamadı. Daha sonra tekrar deneyin.</translation>
 <translation id="2989805286512600854">Yeni Sekmede Aç</translation>
 <translation id="3024255823539804759">Son 1 Gün</translation>
 <translation id="3037605927509011580">Hay aksi!</translation>
 <translation id="3050311348724540835"><ph name="HISTORY_URL" /> kullanılamıyor. Tarama geçmişinize erişmek için araçlar menüsünden "<ph name="SHOW_HISTORY" />" seçeneğini belirleyin.</translation>
-<translation id="3112556859945124369">İşaretle…</translation>
 <translation id="3151924044251363314">Yalnızca parolanızı bilen biri, şifrelenmiş verilerinizi okuyabilir. Parola Google'a gönderilmez veya Google tarafından saklanmaz. Parolanızı unutursanız veya bu ayarı değiştirmek isterseniz senkronizasyonu sıfırlamanız gerekir. <ph name="BEGIN_LINK" />Daha fazla bilgi edinin<ph name="END_LINK" /></translation>
-<translation id="3157684681743766797">Tümünü İşaretle…</translation>
 <translation id="3172213052701798825">Şifreler için Google Smart Lock</translation>
 <translation id="3175081911749765310">Web Hizmetleri</translation>
 <translation id="3207960819495026254">Yer işareti koyuldu</translation>
 <translation id="3210163015918861891">Senkronizasyon Kapalı</translation>
-<translation id="3237561509210981547">Okuma listenize bir sayfa eklemek için <ph name="BEGIN_BOLD_FONT" />Paylaş &gt; Daha Sonra Oku<ph name="END_BOLD_FONT" />'ya dokunun.</translation>
 <translation id="3240426699337459095">Bağlantı kopyalandı</translation>
 <translation id="3244271242291266297">AA</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> / <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Açık Sekmeler</translation>
+<translation id="3289005573061089144">Veriler İçe Aktarılsın mı?</translation>
 <translation id="3324193307694657476">Adres 2</translation>
 <translation id="3329904751041170572">Sunucuya bağlanılamadı.</translation>
 <translation id="3335947283844343239">Kapatılan Sekmeyi Tekrar Aç</translation>
@@ -130,7 +124,6 @@
 <translation id="3414292259312108062">Chrome, daha sonra hatırlamak zorunda kalmamanız için bunu <ph name="BEGIN_LINK" />Google kayıtlı şifrelerinizde<ph name="END_LINK" /> depolar ve sizin için otomatik olarak doldurur.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> dk.</translation>
 <translation id="3448016392200048164">Bölünmüş Görünüm</translation>
-<translation id="3474068797193663261">Okuma listenize bir sayfa eklemek için <ph name="BEGIN_BOLD_FONT" />Menü &gt; Paylaş &gt; Daha Sonra Oku<ph name="END_BOLD_FONT" />'ya dokunun.</translation>
 <translation id="3474649192738347024">Form dolduruldu.</translation>
 <translation id="3478058380795961209">Son Kullanım Ayı</translation>
 <translation id="3482959374254649722">Sekmeleriniz senkronize ediliyor...</translation>
@@ -190,7 +183,6 @@ Verileriniz senkronizasyon parolanızla şifrelendi. Senkronizasyonu başlatmak 
 <translation id="481968316161811770">Çerezler, Site Verileri</translation>
 <translation id="4875622588773761625">Bu siteye ait şifrenizin <ph name="PASSWORD_MANAGER_BRAND" /> tarafından güncellenmesini ister misiniz?</translation>
 <translation id="4881695831933465202">Aç</translation>
-<translation id="4904877109095351937">Okundu Olarak İşaretle</translation>
 <translation id="4923459931733593730">Ödeme</translation>
 <translation id="4930268273022498155">Mevcut verileri silin. İlgili verileri tekrar <ph name="USER_EMAIL1" /> hesabına geçerek alabilirsiniz.</translation>
 <translation id="4941089862236492464">Maalesef öğeniz paylaşılırken bir sorun oluştu.</translation>
@@ -368,7 +360,6 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="8428213095426709021">Ayarlar</translation>
 <translation id="8433678324664858900">Önerileri Göster</translation>
 <translation id="8458397775385147834">1 öğe silindi</translation>
-<translation id="8487700953926739672">Çevrimdışı kullanılabilir</translation>
 <translation id="8503813439785031346">Kullanıcı adı</translation>
 <translation id="8517375800490286174">Açık Kaynak Lisansları</translation>
 <translation id="8524799873541103884"><ph name="NUMBER_OF_OPEN_TABS" /> sekmeden <ph name="FIRST_VISIBLE_TAB" />-<ph name="LAST_VISIBLE_TAB" /> arasındakiler <ph name="INCOGNITO" /> Sekmelerdir</translation>
@@ -378,7 +369,6 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="8605219856220328675">Sekmeyi kapat.</translation>
 <translation id="8620640915598389714">Düzenle</translation>
 <translation id="8636825310635137004">Diğer cihazlarınızdaki sekmelerinize ulaşmak için senkronizasyonu etkinleştirin.</translation>
-<translation id="8654802032646794042">İptal</translation>
 <translation id="8680787084697685621">Hesap oturum açma ayrıntıları eski.</translation>
 <translation id="8699098509676302392">Adres Ekle...</translation>
 <translation id="8721297211384281569">Araçlar Menüsü</translation>

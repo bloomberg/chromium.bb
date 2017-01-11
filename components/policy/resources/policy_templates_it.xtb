@@ -1741,7 +1741,6 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 <translation id="6770454900105963262">Segnala informazioni sulle sessioni kiosk attive</translation>
 <translation id="6774533686631353488">Consenti host di messaggistica nativi a livello di utente (installati senza privilegi di amministratore).</translation>
 <translation id="6786747875388722282">Estensioni</translation>
-<translation id="6786967369487349613">Imposta la directory profilo di roaming</translation>
 <translation id="6810445994095397827">Blocca Javascript in questi siti</translation>
 <translation id="681446116407619279">Schemi di autenticazione supportati</translation>
 <translation id="6828905844648501476">Se questa norma viene impostata su true o non viene configurata, su <ph name="PRODUCT_NAME" /> sarà possibile aggiungere persone con la funzione Aggiungi persona di Gestione utenti.
@@ -1900,7 +1899,6 @@ Se la norma non viene impostata, l'ingrandimento dello schermo viene disattivato
 <translation id="7249828445670652637">Attiva i certificati CA <ph name="PRODUCT_OS_NAME" /> per le app ARC</translation>
 <translation id="7258823566580374486">Attiva separazione degli host di accesso remoto</translation>
 <translation id="7260277299188117560">Aggiornamento automatico p2p attivato</translation>
-<translation id="7261252191178797385">Immagine di sfondo del dispositivo</translation>
 <translation id="7267809745244694722">Per impostazione predefinita, i tasti multimediali si comportano come tasti funzione.</translation>
 <translation id="7271085005502526897">Importazione della home page dal browser predefinito alla prima esecuzione</translation>
 <translation id="7273823081800296768">Se questa impostazione viene attivata o non viene configurata, gli utenti possono decidere di accoppiare client e host in fase di connessione, evitando di dover inserire un codice PIN ogni volta.
@@ -1984,15 +1982,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
       Considera che questa norma dipende dallo stack di verifica dei certificati del sistema operativo che autorizza le firme SHA-1. Se un aggiornamento del sistema operativo modifica la gestione dei certificati SHA-1 da parte del sistema operativo, la norma potrebbe non essere più valida. Inoltre, questa norma è da considerarsi come soluzione alternativa temporanea per concedere alle aziende più tempo per l'abbandono della crittografia SHA-1. Questa norma verrà rimossa il 1° gennaio 2019 o intorno a quella data.
 
       Se questa norma non viene impostata o se viene impostata su false, <ph name="PRODUCT_NAME" /> seguirà il programma di ritiro della crittografia SHA-1 pubblicamente annunciato.</translation>
-<translation id="7589150663293249656">Consente la creazione di copie di roaming per i dati del profilo <ph name="PRODUCT_NAME" />.
-
-      Se attivi questa impostazione, le impostazioni memorizzate nei profili <ph name="PRODUCT_NAME" />, come i preferiti, i dati della compilazione automatica, le password e così via saranno scritti in un file memorizzato nella cartella del profilo utente di Roaming o in una posizione specificata dall'Amministratore tramite la norma <ph name="ROAMINGPROFILELOCATION_POLICY_NAME" />.
-
-      Google Sync viene disattivato automaticamente quando questa norma è attiva.
-
-      Per evitare perdite accidentali di dati è consigliabile impostare la norma <ph name="SIGNINALLOWED_POLICY_NAME" /> su False.
-
-      Se questa norma viene disabilitata o non è impostata, saranno utilizzati solo i normali profili locali.</translation>
 <translation id="7593523670408385997">Consente di configurare le dimensioni della cache che verranno utilizzate da <ph name="PRODUCT_NAME" /> per archiviare sul disco i file memorizzati nella cache.
 
 Se questa norma viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà le dimensioni della cache indicate a prescindere dalla specifica o meno da parte dell'utente del flag "--disk-cache-size". Il valore specificato in questa norma non è un limite rigido ma un suggerimento per il sistema di memorizzazione nella cache. I valori inferiori ad alcuni megabyte sono troppo piccoli e verranno arrotondati a un valore minimo ragionevole.
@@ -2222,7 +2211,6 @@ Se la norma non viene configurata, la modalità ad alto contrasto viene inizialm
       Se l'utente ha attivato la sincronizzazione, tutti i dati rimangono memorizzati nel suo profilo sincronizzato così come avviene per i profili normali. È disponibile anche la modalità di navigazione in incognito se non è disattivata esplicitamente dalla norma.
 
       Se la norma viene disattivata o non viene impostata, l'accesso rimanda a profili normali.</translation>
-<translation id="8158758865057576716">Consente la creazione di copie di roaming per i dati dei profili <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8164246350636985940">Il comportamento predefinito per i siti non presenti in alcun pacchetto di contenuti.
 
           Questa norma è per uso interno di <ph name="PRODUCT_NAME" />.</translation>
@@ -2453,13 +2441,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="8992176907758534924">Non consentire la visualizzazione di immagini nei siti</translation>
 <translation id="9035964157729712237">ID delle estensioni da escludere dalla blacklist</translation>
 <translation id="9042911395677044526">Consente di forzare l'applicazione della configurazione di rete per utente su un dispositivo <ph name="PRODUCT_OS_NAME" />. La configurazione di rete è una stringa in formato JSON definita secondo il formato Open Network Configuration descritto all'indirizzo <ph name="ONC_SPEC_URL" />.</translation>
-<translation id="908115901708809140">Configura la directory usata da <ph name="PRODUCT_NAME" /> per la memorizzazione della copia di roaming dei profili.
-
-      Se imposti questa norma, <ph name="PRODUCT_NAME" /> utilizzerà la directory indicata per memorizzare la copia di roaming dei profili nel caso in cui la norma <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> sia stata abilitata. Se la norma <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME" /> viene disabilitata o non è impostata, il valore memorizzato nella norma non viene utilizzato.
-
-      Vedi l'elenco di variabili utilizzabili all'indirizzo https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
-
-      Se questa norma non viene impostata, verrà utilizzato il percorso del profilo di roaming predefinito.</translation>
 <translation id="9084985621503260744">Specifica se l'attività video incide sulla gestione dell'alimentazione</translation>
 <translation id="9088433379343318874">Abilita il provider di contenuti dell'utente supervisionato</translation>
 <translation id="9088444059179765143">Configura il metodo di rilevamento automatico del fuso orario</translation>
@@ -2488,17 +2469,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
       Se questa norma è abilitata, non è possibile acquisire screenshot utilizzando scorciatoie da tastiera o API di estensioni.
 
       Se questa norma è disabilitata o non specificata, l'acquisizione di screenshot è consentita.</translation>
-<translation id="9213347477683611358">Configura l'immagine di sfondo a livello del dispositivo che viene mostrata nella schermata di accesso nel caso in cui nessun utente abbia ancora effettuato l'accesso al dispositivo. Questa norma viene impostata specificando l'URL dal quale il dispositivo Chrome OS può scaricare l'immagine di sfondo e un hash crittografico la cui funzione è quella di verificare l'integrità del download. L'immagine deve essere in formato JPEG e non deve superare le dimensioni di 16 MB. L'URL specificato deve essere accessibile senza bisogno di autenticazione. L'immagine di sfondo viene scaricata e memorizzata nella cache. Verrà scaricata nuovamente ogni volta che l'URL e l'hash vengono modificati.
-
-      La norma deve essere specificata sotto forma di stringa in cui l'URL e l'hash vengono espressi in formato JSON, ad esempio,
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
-
-      Nel caso in cui sia impostata la norma dello sfondo del dispositivo, il dispositivo Chrome OS scaricherà e utilizzerà l'immagine di sfondo nella schermata di accesso se nessun utente ha ancora effettuato l'accesso al dispositivo. Quando un utente accede, si attiva la norma dello sfondo dell'utente.
-
-      Nel caso in cui non venga impostata la norma dello sfondo del dispositivo, è la norma dello sfondo dell'utente a decidere cosa mostrare se si imposta la norma dello sfondo del dispositivo.</translation>
 <translation id="9217154963008402249">Frequenza dei pacchetti di rete di monitoraggio</translation>
 <translation id="922540222991413931">Configura fonti di installazione di estensioni, applicazioni e script utente</translation>
 <translation id="924557436754151212">Importa password salvate dal browser predefinito alla prima esecuzione</translation>

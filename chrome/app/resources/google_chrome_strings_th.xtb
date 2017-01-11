@@ -38,7 +38,6 @@
 <translation id="2063848847527508675">ต้องรีสตาร์ท Chrome OS เพื่อใช้การอัปเดต</translation>
 <translation id="2077129598763517140">ใช้การเร่งฮาร์ดแวร์เมื่อสามารถใช้ได้</translation>
 <translation id="2084710999043359739">เพิ่มลงใน Chrome</translation>
-<translation id="2120620239521071941">การดำเนินการนี้จะลบ <ph name="ITEMS_COUNT" /> รายการออกจากอุปกรณ์นี้ หากต้องการดึงข้อมูลภายหลัง ให้ลงชื่อเข้าใช้ Chrome ด้วย <ph name="USER_EMAIL" /></translation>
 <translation id="2147651015520127414">Chrome ยืนยันว่า <ph name="ISSUER" /> ได้ออกใบรับรองของเว็บไซต์นี้</translation>
 <translation id="2246246234298806438">Google Chrome ไม่สามารถแสดงหน้าตัวอย่างก่อนพิมพ์หากไม่มีโปรแกรมดู PDF ในตัว</translation>
 <translation id="2252923619938421629">ช่วยให้ Google Chrome ดียิ่งขึ้นด้วยการรายงานการตั้งค่าปัจจุบัน</translation>
@@ -57,7 +56,6 @@
 <translation id="2485422356828889247">ถอนการติดตั้ง</translation>
 <translation id="2580411288591421699">ไม่สามารถติดตั้ง Google Chrome รุ่นเดียวกับที่กำลังเรียกใช้อยู่ได้ โปรดปิด Google Chrome แล้วลองใหม่อีกครั้ง</translation>
 <translation id="2582790009689336987">คอมพิวเตอร์เครื่องนี้จะหยุดรับการอัปเดต Google Chrome ในอีกไม่ช้าเนื่องจากไม่มีการสนับสนุนระบบ Linux นี้อีกต่อไป</translation>
-<translation id="2586406160782125153">การดำเนินการนี้จะลบข้อมูลการท่องเว็บออกจากอุปกรณ์นี้ หากต้องการดึงข้อมูลภายหลัง ให้ลงชื่อเข้าใช้ Chrome ด้วย <ph name="USER_EMAIL" /></translation>
 <translation id="2588322182880276190">โลโก้ Chrome</translation>
 <translation id="2664962310688259219">ใบอนุญาตโอเพนซอร์สของ Chrome OS</translation>
 <translation id="2665296953892887393">ช่วยทำให้ Google Chrome ดียิ่งขึ้นโดยการส่งรายงานข้อขัดข้องและ <ph name="UMA_LINK" /> ไปยัง Google</translation>
@@ -95,7 +93,6 @@
 <translation id="345171907106878721">เพิ่มตัวคุณเองใน Chrome</translation>
 <translation id="3612333635265770873">เป็นที่ทราบกันว่าโมดูลที่มีชื่อเดียวกันจะมีความขัดแย้งกับ Google Chrome</translation>
 <translation id="3622797965165704966">ตอนนี้การใช้ Chrome กับบัญชี Google ของคุณและบนคอมพิวเตอร์ที่ใช้ร่วมกันทำได้ง่ายกว่าเดิม</translation>
-<translation id="3718181793972440140">การดำเนินการนี้จะลบ 1 รายการออกจากอุปกรณ์นี้ หากต้องการดึงข้อมูลภายหลัง ให้ลงชื่อเข้าใช้ Chrome ด้วย <ph name="USER_EMAIL" /></translation>
 <translation id="3735758079232443276">ส่วนขยาย "<ph name="EXTENSION_NAME" />" ได้เปลี่ยนหน้าที่จะแสดงเมื่อคุณเริ่มต้น Chrome</translation>
 <translation id="3738139272394829648">แตะเพื่อค้นหา</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>

@@ -268,7 +268,6 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="3828029223314399057">Pesquisar favoritos</translation>
 <translation id="3845539888601087042">Exibindo histórico dos seus dispositivos conectados. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">Avançar</translation>
-<translation id="3890664840433101773">Adicionar e-mail</translation>
 <translation id="3894427358181296146">Adicionar pasta</translation>
 <translation id="3895926599014793903">Forçar zoom</translation>
 <translation id="3917783807003067648">O local está bloqueado</translation>
@@ -326,6 +325,7 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="4526249700380860531">Ver e gerenciar as senhas salvas em <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Escolher pasta</translation>
 <translation id="4535858793016067060">Ative a opção “Fontes desconhecidas” nas configurações de segurança do Android para testar o experimento "Adição aprimorada à tela inicial". Desative essa configuração quando terminar de testá-la.</translation>
+<translation id="4543661749405994812">Copiar endereço de e-mail</translation>
 <translation id="4558311620361989323">Atalhos de páginas da Web</translation>
 <translation id="4572422548854449519">Fazer login em conta gerenciada</translation>
 <translation id="457875822857220463">Entrega</translation>
@@ -370,7 +370,6 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="4988526792673242964">Páginas</translation>
 <translation id="4996978546172906250">Compartilhar via</translation>
 <translation id="5000922062037820727">Bloqueada (recomendado)</translation>
-<translation id="5004339818306944878">Use até 60% a menos de dados e deixe a Web mais rápida. Os servidores do Google otimizarão as páginas que você visitar.</translation>
 <translation id="5005498671520578047">Copiar senha</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> deseja se conectar</translation>
 <translation id="5016205925109358554">Serif</translation>
@@ -393,12 +392,10 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="5171045022955879922">Pesquisar ou digitar URL</translation>
 <translation id="5184329579814168207">Abrir no Google Chrome</translation>
 <translation id="5199929503336119739">Perfil de trabalho</translation>
-<translation id="5205222826937269299">Nome obrigatório</translation>
 <translation id="5209320130288484488">Nenhum dispositivo foi encontrado</translation>
 <translation id="5210286577605176222">Ir para a guia anterior</translation>
 <translation id="5210365745912300556">Fechar guia</translation>
 <translation id="5222676887888702881">Sair</translation>
-<translation id="5222812217790122047">E-mail obrigatório</translation>
 <translation id="5233638681132016545">Nova guia</translation>
 <translation id="5271967389191913893">Não é possível abrir no dispositivo o conteúdo a ser transferido por download.</translation>
 <translation id="528192093759286357">Arraste a partir da parte superior e toque no botão "Voltar" para sair da tela cheia.</translation>
@@ -524,6 +521,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Sugestões de pesquisa e URL</translation>
 <translation id="6463070039183944536">Adicionando…</translation>
+<translation id="6464825623202322042">Este dispositivo</translation>
 <translation id="6475951671322991020">Fazer o download do vídeo</translation>
 <translation id="6477460825583319731">Endereço de e-mail inválido</translation>
 <translation id="6482749332252372425">Falha no download do arquivo <ph name="FILE_NAME" /> devido à falta de espaço de armazenamento.</translation>
@@ -570,7 +568,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="6868088497967843822">Faça login para que favoritos, histórico, senhas e outras configurações fiquem disponíveis em todos os seus dispositivos</translation>
 <translation id="688738109438487280">Adicionar dados já existentes à conta <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d guia aberta}one{%1$d guia aberta}other{%1$d guias abertas}}</translation>
-<translation id="6896758677409633944">Copiar</translation>
 <translation id="6937422995269576720">Número de cartão inválido</translation>
 <translation id="6945221475159498467">Selecionar</translation>
 <translation id="6963766334940102469">Excluir favoritos</translation>
@@ -595,7 +592,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7094922512924405309">Nenhuma página da Web física foi encontrada nas proximidades</translation>
 <translation id="7138678301420049075">Outro</translation>
 <translation id="7180611975245234373">Atualizar</translation>
-<translation id="7189372733857464326">Aguardando o fim da atualização do Google Play Services</translation>
 <translation id="7191430249889272776">Guia aberta no plano de fundo.</translation>
 <translation id="7243308994586599757">Opções disponíveis perto da parte inferior da tela</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> usa sua localização para mostrar resultados de pesquisa locais</translation>
@@ -656,7 +652,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7851858861565204677">Outros dispositivos</translation>
 <translation id="7875915731392087153">Criar e-mail</translation>
 <translation id="7876243839304621966">Remover tudo</translation>
-<translation id="7882131421121961860">Nenhum histórico encontrado</translation>
 <translation id="7929962904089429003">Abrir o menu</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> está desatualizado.</translation>
 <translation id="7947953824732555851">Aceitar/fazer login</translation>
@@ -704,7 +699,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="8321376388213838985">Mais artigos serão exibidos em breve. Aproveite a tarde.</translation>
 <translation id="8372893542064058268">Permite a sincronização em segundo plano para um site específico.</translation>
 <translation id="8374821112118309944">Atualize o TalkBack para receber uma versão mais nova.</translation>
-<translation id="8393700583063109961">Enviar mensagem</translation>
 <translation id="8396312449826231789">Somente sites aprovados</translation>
 <translation id="8413126021676339697">Mostrar histórico completo</translation>
 <translation id="8428213095426709021">Configurações</translation>
@@ -784,7 +778,6 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Imagens</translation>
 <translation id="932327136139879170">Início</translation>
-<translation id="932599481871055447">Economize dados e navegue mais rapidamente</translation>
 <translation id="938850635132480979">Erro: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Acessar seu microfone</translation>
 <translation id="951339005376969845">Excluir dados já existentes. É possível recuperá-los voltando para a conta <ph name="FROM_ACCOUNT" />.</translation>

@@ -269,7 +269,6 @@
 <translation id="3828029223314399057">बुकमार्क खोजें</translation>
 <translation id="3845539888601087042">आपके प्रवेश किए गए डिवाइस का इतिहास दिखाया जा रहा है. <ph name="BEGIN_LINK" />अधिक जानें<ph name="END_LINK" />.</translation>
 <translation id="3859306556332390985">आगे जाएं</translation>
-<translation id="3890664840433101773">ईमेल जोड़ें</translation>
 <translation id="3894427358181296146">फ़ोल्डर जोड़ें</translation>
 <translation id="3895926599014793903">बलपूर्वक ज़ूम सक्षम करें</translation>
 <translation id="3917783807003067648">स्‍थान अवरोधित है</translation>
@@ -327,6 +326,7 @@
 <translation id="4526249700380860531">सहेजे गए पासवर्ड <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> पर देखें और प्रबंधित करें</translation>
 <translation id="4532845899244822526">फ़ोल्डर चुनें</translation>
 <translation id="4535858793016067060">"बेहतर होम स्‍क्रीन में जोड़ें" प्रयोग आज़माने के लिए Android सुरक्षा सेटिंग में “अज्ञात स्रोत” चालू करें. इसे आज़मा लेने के बाद यह सेटिंग अक्षम करना सुनिश्चित करें.</translation>
+<translation id="4543661749405994812">ईमेल पते की प्रतिलिपि बनाएं</translation>
 <translation id="4558311620361989323">वेबपृष्ठ शॉर्टकट</translation>
 <translation id="4572422548854449519">प्रबंधित खाते में प्रवेश करें</translation>
 <translation id="457875822857220463">वितरण</translation>
@@ -371,7 +371,6 @@
 <translation id="4988526792673242964">पृष्ठ</translation>
 <translation id="4996978546172906250">इसके द्वारा साझा करें</translation>
 <translation id="5000922062037820727">अवरोधित (सुझाया गया)</translation>
-<translation id="5004339818306944878">60% कम डेटा का उपयोग करके वेब में तेज़ी लाएं. Google सर्वर उन पेज को अनुकूलित करेंगे जिन पर आप विज़िट करते हैं.</translation>
 <translation id="5005498671520578047">पासवर्ड कॉपी करें</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> कनेक्ट करना चाहती है</translation>
 <translation id="5016205925109358554">Serif</translation>
@@ -394,12 +393,10 @@
 <translation id="5171045022955879922">URL खोजें या लिखें</translation>
 <translation id="5184329579814168207">Chrome में खोलें</translation>
 <translation id="5199929503336119739">कार्य प्रोफ़ाइल</translation>
-<translation id="5205222826937269299">नाम आवश्यक है</translation>
 <translation id="5209320130288484488">कोई डिवाइस नहीं मि‍ला</translation>
 <translation id="5210286577605176222">सीधे पिछले टैब पर जाएं</translation>
 <translation id="5210365745912300556">टैब बंद करें</translation>
 <translation id="5222676887888702881">प्रस्थान करें</translation>
-<translation id="5222812217790122047">ईमेल आवश्यक है</translation>
 <translation id="5233638681132016545">नया टैब</translation>
 <translation id="5271967389191913893">डाउनलोड की जाने वाली सामग्री को डिवाइस नहीं खोल सकता.</translation>
 <translation id="528192093759286357">पूर्ण स्क्रीन से बाहर निकलने के लिए ऊपर से खींचें और वापस जाएं स्पर्श करें.</translation>
@@ -526,6 +523,7 @@
 <translation id="6447842834002726250">कुकी</translation>
 <translation id="6448273550210938826">खोज और URL सुझाव</translation>
 <translation id="6463070039183944536">जोड़ा जा रहा है…</translation>
+<translation id="6464825623202322042">इस डिवाइस पर</translation>
 <translation id="6475951671322991020">वीडियो डाउनलोड करें</translation>
 <translation id="6477460825583319731">अमान्य ईमेल पता</translation>
 <translation id="6482749332252372425">मेमोरी स्‍थान कम होने के कारण <ph name="FILE_NAME" /> डाउनलोड विफल रहा.</translation>
@@ -572,7 +570,6 @@
 <translation id="6868088497967843822">अपने सभी डिवाइस पर अपने बुकमार्क, इतिहास, पासवर्ड और अन्‍य सेटिंग प्राप्त करने के लिए प्रवेश करें</translation>
 <translation id="688738109438487280">मौजूदा डेटा <ph name="TO_ACCOUNT" /> में जोड़ें.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d खुला टैब}one{%1$d खुले टैब}other{%1$d खुले टैब}}</translation>
-<translation id="6896758677409633944">प्रतिलिपि बनाएं</translation>
 <translation id="6937422995269576720">कार्ड संख्या अमान्य है</translation>
 <translation id="6945221475159498467">चुनें</translation>
 <translation id="6963766334940102469">बुकमार्क हटाएं</translation>
@@ -597,7 +594,6 @@
 <translation id="7094922512924405309">आस-पास कोई भी जीता-जागता वेब पृष्ठ नहीं मिला</translation>
 <translation id="7138678301420049075">अन्य</translation>
 <translation id="7180611975245234373">रीफ्रेश करें</translation>
-<translation id="7189372733857464326">Google Play सेवाएं द्वारा अपडेट समाप्त किए जाने की प्रतीक्षा की जा रही है</translation>
 <translation id="7191430249889272776">पृष्ठभूमि में टैब खोला गया.</translation>
 <translation id="7243308994586599757">विकल्‍प स्‍क्रीन के नीचे उपलब्‍ध हैं</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" />, स्थानीय खोज परिणाम दिखाने के लिए आपके स्थान का उपयोग करता है</translation>
@@ -658,7 +654,6 @@
 <translation id="7851858861565204677">अन्य डिवाइस</translation>
 <translation id="7875915731392087153">ईमेल बनाएं</translation>
 <translation id="7876243839304621966">सभी को निकालें</translation>
-<translation id="7882131421121961860">कोई इतिहास नहीं मिला</translation>
 <translation id="7929962904089429003">मेनू खोलें</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> पुराना है.</translation>
 <translation id="7947953824732555851">स्वीकार करें और प्रवेश करें</translation>
@@ -706,7 +701,6 @@
 <translation id="8321376388213838985">जल्द ही अधिक लेख दिखाई देंगे. अपनी दोपहर का आनंद लें.</translation>
 <translation id="8372893542064058268">किसी विशिष्ट साइट के लिए पृष्ठभूमि समन्वयन की अनुमति दें.</translation>
 <translation id="8374821112118309944">आपको TalkBack को अधिक नए वर्शन से अपडेट करना होगा.</translation>
-<translation id="8393700583063109961">संदेश भेजें</translation>
 <translation id="8396312449826231789">केवल स्‍वीकृत साइटें</translation>
 <translation id="8413126021676339697">संपूर्ण इतिहास दिखाएं</translation>
 <translation id="8428213095426709021">सेटिंग्स</translation>
@@ -787,7 +781,6 @@
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">चित्र</translation>
 <translation id="932327136139879170">मुख्यपृष्ठ</translation>
-<translation id="932599481871055447">डेटा बचाएं और तेज़ी से ब्राउज़ करें</translation>
 <translation id="938850635132480979">त्रुटि: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">अपना माइक्रोफ़ोन एक्सेस करें</translation>
 <translation id="951339005376969845">मौजूदा डेटा हटाएं. आप <ph name="FROM_ACCOUNT" /> पर वापस जाकर उसे पुनर्प्राप्त कर सकते हैं.</translation>
