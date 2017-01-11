@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/mock_entropy_provider.h"
+#include "base/test/scoped_task_scheduler.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -82,6 +83,9 @@ std::unique_ptr<disk_cache::BackendImpl> CreateExistingEntryCache(
 // Tests that can run with different types of caches.
 class DiskCacheBackendTest : public DiskCacheTestWithCache {
  protected:
+  DiskCacheBackendTest()
+      : scoped_task_scheduler_(base::MessageLoop::current()) {}
+
   // Some utility methods:
 
   // Perform IO operations on the cache until there is pending IO.
@@ -149,6 +153,9 @@ class DiskCacheBackendTest : public DiskCacheTestWithCache {
   void BackendDisabledAPI();
 
   void BackendEviction();
+
+ private:
+  base::test::ScopedTaskScheduler scoped_task_scheduler_;
 };
 
 int DiskCacheBackendTest::GeneratePendingIO(net::TestCompletionCallback* cb) {
@@ -2047,6 +2054,8 @@ TEST_F(DiskCacheTest, WrongVersion) {
 // blockfile caches.
 #if !defined(OS_ANDROID)
 TEST_F(DiskCacheTest, SimpleCacheControlJoin) {
+  base::test::ScopedTaskScheduler scoped_task_scheduler(
+      base::MessageLoop::current());
   base::Thread cache_thread("CacheThread");
   ASSERT_TRUE(cache_thread.StartWithOptions(
                   base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
