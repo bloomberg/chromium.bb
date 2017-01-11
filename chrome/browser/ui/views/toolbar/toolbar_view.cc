@@ -751,7 +751,7 @@ void ToolbarView::LoadImages() {
       gfx::CreateVectorIcon(kNavigateBackIcon, normal_color));
   back_->SetImage(
       views::Button::STATE_DISABLED,
-      gfx::CreateVectorIcon(kNavigateBackIcon, normal_color));
+      gfx::CreateVectorIcon(kNavigateBackIcon, disabled_color));
   forward_->SetImage(
       views::Button::STATE_NORMAL,
       gfx::CreateVectorIcon(kNavigateForwardIcon, normal_color));
