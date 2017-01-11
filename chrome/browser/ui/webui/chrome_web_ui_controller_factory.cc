@@ -13,6 +13,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/about_flags.h"
+#include "chrome/browser/devtools/devtools_ui_bindings.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -525,9 +526,11 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<VrShellUIUI>;
 #endif
 #else
-  if (url.SchemeIs(content::kChromeDevToolsScheme))
+  if (url.SchemeIs(content::kChromeDevToolsScheme)) {
+    if (!DevToolsUIBindings::IsValidFrontendURL(url))
+      return nullptr;
     return &NewWebUI<DevToolsUI>;
-
+  }
   // chrome://inspect isn't supported on Android nor iOS. Page debugging is
   // handled by a remote devtools on the host machine, and other elements, i.e.
   // extensions aren't supported.
