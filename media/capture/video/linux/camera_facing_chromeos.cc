@@ -170,7 +170,10 @@ void CameraFacingChromeOS::InitializeDeviceInfo(
         DLOG(ERROR) << "model_id is empty";
         continue;
       }
-      model_id_to_camera_id_[value.as_string()] = camera_id;
+      std::string model_id = value.as_string();
+      std::transform(model_id.begin(), model_id.end(), model_id.begin(),
+                     ::tolower);
+      model_id_to_camera_id_[model_id] = camera_id;
     } else if (sub_keys.size() == 3 && sub_keys[2] == kUsbPath) {
       if (value.empty()) {
         DLOG(ERROR) << "usb_path is empty";
