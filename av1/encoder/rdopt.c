@@ -3344,6 +3344,10 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
              RDCOST(x->rdmult, x->rddiv, zero_blk_rate, rd_stats->sse) ||
          rd_stats->skip == 1) &&
         !xd->lossless[mbmi->segment_id]) {
+#if CONFIG_RD_DEBUG
+      av1_update_txb_coeff_cost(rd_stats, plane, tx_size, blk_row, blk_col,
+                                zero_blk_rate - rd_stats->rate);
+#endif
       rd_stats->rate = zero_blk_rate;
       rd_stats->dist = rd_stats->sse;
       rd_stats->skip = 1;

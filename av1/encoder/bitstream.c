@@ -2946,7 +2946,7 @@ static void update_coef_probs(AV1_COMP *cpi, aom_writer *w) {
   for (tx_size = 0; tx_size <= max_tx_size; ++tx_size) {
     av1_coeff_stats frame_branch_ct[PLANE_TYPES];
     av1_coeff_probs_model frame_coef_probs[PLANE_TYPES];
-    if (cpi->td.counts->tx_size_totals[tx_size] <= 20 ||
+    if (cpi->td.counts->tx_size_totals[tx_size] <= 20 || CONFIG_RD_DEBUG ||
         (tx_size >= TX_16X16 && cpi->sf.tx_size_search_method == USE_TX_8X8)) {
       aom_write_bit(w, 0);
     } else {
