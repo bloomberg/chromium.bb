@@ -124,6 +124,8 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 // Returns whether there are elements in the section identified by
 // |sectionIdentifier|.
 - (BOOL)hasItemInSection:(SectionIdentifier)sectionIdentifier;
+// Adds an empty background if needed.
+- (void)collectionIsEmpty;
 // Updates the toolbar state according to the selected items.
 - (void)updateToolbarState;
 // Displays an action sheet to let the user choose to mark all the elements as
@@ -486,10 +488,9 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
   [super loadModel];
 
   if (self.readingListModel->size() == 0) {
-    // The collection is empty, add background.
-    self.collectionView.backgroundView = _emptyCollectionBackground;
-    [self.audience setCollectionHasItems:NO];
+    [self collectionIsEmpty];
   } else {
+    self.collectionView.alwaysBounceVertical = YES;
     [self loadItems];
     self.collectionView.backgroundView = nil;
     [self.audience setCollectionHasItems:YES];
@@ -620,6 +621,16 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
       [self.collectionViewModel numberOfItemsInSection:section];
 
   return numberOfItems > 0;
+}
+
+- (void)collectionIsEmpty {
+  if (self.collectionView.backgroundView) {
+    return;
+  }
+  // The collection is empty, add background.
+  self.collectionView.alwaysBounceVertical = NO;
+  self.collectionView.backgroundView = _emptyCollectionBackground;
+  [self.audience setCollectionHasItems:NO];
 }
 
 #pragma mark - ReadingListToolbarDelegate
@@ -1083,6 +1094,9 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
     }
   }
                                 completion:nil];
+  if (_readingListModel->size() == 0) {
+    [self collectionIsEmpty];
+  }
 }
 
 - (void)exitEditingModeAnimated:(BOOL)animated {
