@@ -1844,7 +1844,7 @@ void av1_set_mode_cdfs(struct AV1Common *cm) {
   for (i = 0; i < INTRA_MODES; ++i)
     for (j = 0; j < INTRA_MODES; ++j)
       av1_tree_to_cdf(av1_intra_mode_tree, cm->kf_y_prob[i][j],
-                      cm->kf_y_cdf[i][j]);
+                      cm->fc->kf_y_cdf[i][j]);
 
   for (j = 0; j < SWITCHABLE_FILTER_CONTEXTS; ++j)
     av1_tree_to_cdf(av1_switchable_interp_tree, fc->switchable_interp_prob[j],

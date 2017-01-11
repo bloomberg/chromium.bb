@@ -396,9 +396,6 @@ typedef struct AV1Common {
   // - this is intentionally not placed in FRAME_CONTEXT since it's reset upon
   // each keyframe and not used afterwards
   aom_prob kf_y_prob[INTRA_MODES][INTRA_MODES][INTRA_MODES - 1];
-#if CONFIG_EC_MULTISYMBOL
-  aom_cdf_prob kf_y_cdf[INTRA_MODES][INTRA_MODES][INTRA_MODES];
-#endif
 #if CONFIG_GLOBAL_MOTION
   WarpedMotionParams global_motion[TOTAL_REFS_PER_FRAME];
 #endif
@@ -633,13 +630,14 @@ static INLINE const aom_prob *get_y_mode_probs(const AV1_COMMON *cm,
 }
 
 #if CONFIG_EC_MULTISYMBOL
-static INLINE aom_cdf_prob *get_y_mode_cdf(AV1_COMMON *cm, const MODE_INFO *mi,
+static INLINE aom_cdf_prob *get_y_mode_cdf(FRAME_CONTEXT *tile_ctx,
+                                           const MODE_INFO *mi,
                                            const MODE_INFO *above_mi,
                                            const MODE_INFO *left_mi,
                                            int block) {
   const PREDICTION_MODE above = av1_above_block_mode(mi, above_mi, block);
   const PREDICTION_MODE left = av1_left_block_mode(mi, left_mi, block);
-  return cm->kf_y_cdf[above][left];
+  return tile_ctx->kf_y_cdf[above][left];
 }
 #endif
 
