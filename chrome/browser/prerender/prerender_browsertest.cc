@@ -3294,10 +3294,16 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FirstContentfulPaintTimingReuse) {
   base::SimpleTestTickClock* clock = OverridePrerenderManagerTimeTicks();
 
   GURL url = embedded_test_server()->GetURL("/prerender/prerender_page.html");
+  base::RunLoop hanging_request_waiter;
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&CreateHangingFirstRequestInterceptorOnIO,
+                                     url, GetTestPath("prerender_page.html"),
+                                     hanging_request_waiter.QuitClosure()));
   // As this load will be canceled, it is not waited for, and hence no
   // javascript is executed.
   DisableJavascriptCalls();
   PrerenderTestURL(url, FINAL_STATUS_CANCELLED, 0);
+  hanging_request_waiter.Run();
 
   // This prerender cancels and reuses the first.
   clock->Advance(base::TimeDelta::FromSeconds(1));
