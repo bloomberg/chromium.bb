@@ -26,7 +26,6 @@ class NET_EXPORT CertVerifyResult {
 
   void Reset();
 
-  // Comparing CertVerifyResult with a nullptr |verified_cert| is invalid.
   bool operator==(const CertVerifyResult& other) const;
 
   // The certificate chain that was constructed during verification.
@@ -53,7 +52,8 @@ class NET_EXPORT CertVerifyResult {
   // chain.
   CertStatus cert_status;
 
-  // Properties of the certificate chain.
+  // Hash algorithms used by the certificate chain, excluding the trust
+  // anchor.
   bool has_md2;
   bool has_md4;
   bool has_md5;
