@@ -238,8 +238,9 @@ void VideoFramePump::OnVideoPacketSent() {
 
   // Send next packet if any.
   if (!pending_packets_.empty()) {
-    std::unique_ptr<PacketWithTimestamps> next(pending_packets_.front());
-    pending_packets_.weak_erase(pending_packets_.begin());
+    std::unique_ptr<PacketWithTimestamps> next =
+        std::move(pending_packets_.front());
+    pending_packets_.erase(pending_packets_.begin());
     SendPacket(std::move(next));
   }
 }

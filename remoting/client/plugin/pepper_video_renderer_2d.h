@@ -6,11 +6,12 @@
 #define REMOTING_CLIENT_PLUGIN_PEPPER_VIDEO_RENDERER_2D_H_
 
 #include <list>
+#include <memory>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "ppapi/cpp/graphics_2d.h"
@@ -84,10 +85,12 @@ class PepperVideoRenderer2D : public PepperVideoRenderer,
   webrtc::DesktopSize source_size_;
 
   // Done callbacks for the frames that have been painted but not flushed.
-  ScopedVector<base::ScopedClosureRunner> pending_frames_done_callbacks_;
+  std::vector<std::unique_ptr<base::ScopedClosureRunner>>
+      pending_frames_done_callbacks_;
 
   // Done callbacks for the frames that are currently being flushed.
-  ScopedVector<base::ScopedClosureRunner> flushing_frames_done_callbacks_;
+  std::vector<std::unique_ptr<base::ScopedClosureRunner>>
+      flushing_frames_done_callbacks_;
 
   // True if there paint operations that need to be flushed.
   bool need_flush_ = false;

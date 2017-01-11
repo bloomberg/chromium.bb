@@ -5,11 +5,11 @@
 #ifndef REMOTING_HOST_HOST_EXTENSION_SESSION_MANAGER_H_
 #define REMOTING_HOST_HOST_EXTENSION_SESSION_MANAGER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 
 namespace remoting {
 
@@ -27,7 +27,7 @@ class ExtensionMessage;
 // set of capabilities negotiated between client and host.
 class HostExtensionSessionManager {
  public:
-  typedef std::vector<HostExtension*> HostExtensions;
+  using HostExtensions = std::vector<HostExtension*>;
 
   // Creates an extension manager for the specified |extensions|.
   HostExtensionSessionManager(const HostExtensions& extensions,
@@ -48,7 +48,8 @@ class HostExtensionSessionManager {
   bool OnExtensionMessage(const protocol::ExtensionMessage& message);
 
  private:
-  typedef ScopedVector<HostExtensionSession> HostExtensionSessions;
+  using HostExtensionSessions =
+      std::vector<std::unique_ptr<HostExtensionSession>>;
 
   // Passed to HostExtensionSessions to allow them to send messages,
   // disconnect the session, etc.

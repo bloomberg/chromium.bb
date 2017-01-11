@@ -4,7 +4,9 @@
 
 #include "remoting/signaling/xmpp_signal_strategy.h"
 
+#include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/base64.h"
 #include "base/memory/ptr_util.h"
@@ -160,7 +162,7 @@ class XmppSignalStrategyTest : public testing::Test,
   std::unique_ptr<XmppSignalStrategy> signal_strategy_;
 
   std::vector<SignalStrategy::State> state_history_;
-  ScopedVector<buzz::XmlElement> received_messages_;
+  std::vector<std::unique_ptr<buzz::XmlElement>> received_messages_;
 };
 
 void XmppSignalStrategyTest::Connect(bool success) {

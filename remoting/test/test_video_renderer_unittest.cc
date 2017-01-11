@@ -7,11 +7,12 @@
 #include <stdint.h>
 
 #include <cmath>
+#include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -399,7 +400,7 @@ TEST_F(TestVideoRendererTest, VerifyMultipleVideoProcessing) {
   // more than one task on the video decode thread, while not too large to wait
   // for too long for the unit test to complete.
   const int task_num = 20;
-  ScopedVector<VideoPacket> video_packets;
+  std::vector<std::unique_ptr<VideoPacket>> video_packets;
   for (int i = 0; i < task_num; ++i) {
     std::unique_ptr<webrtc::DesktopFrame> original_frame =
         CreateDesktopFrameWithGradient(kDefaultScreenWidthPx,
@@ -407,11 +408,8 @@ TEST_F(TestVideoRendererTest, VerifyMultipleVideoProcessing) {
     video_packets.push_back(encoder_->Encode(*original_frame.get()));
   }
 
-  for (int i = 0; i < task_num; ++i) {
-    // Transfer ownership of video packet.
-    VideoPacket* packet = video_packets[i];
-    video_packets[i] = nullptr;
-    test_video_renderer_->ProcessVideoPacket(base::WrapUnique(packet),
+  for (auto& packet : video_packets) {
+    test_video_renderer_->ProcessVideoPacket(std::move(packet),
                                              base::Bind(&base::DoNothing));
   }
 }

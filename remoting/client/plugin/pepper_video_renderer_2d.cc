@@ -176,7 +176,7 @@ void PepperVideoRenderer2D::DrawFrame(
 
   if (!done.is_null()) {
     pending_frames_done_callbacks_.push_back(
-        new base::ScopedClosureRunner(done));
+        base::MakeUnique<base::ScopedClosureRunner>(done));
   }
 
   need_flush_ = true;

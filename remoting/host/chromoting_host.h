@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
@@ -142,8 +141,6 @@ class ChromotingHost : public base::NonThreadSafe,
  private:
   friend class ChromotingHostTest;
 
-  typedef ScopedVector<HostExtension> HostExtensionList;
-
   // Unless specified otherwise all members of this class must be
   // used on the network thread only.
 
@@ -176,7 +173,7 @@ class ChromotingHost : public base::NonThreadSafe,
   scoped_refptr<protocol::PairingRegistry> pairing_registry_;
 
   // List of host extensions.
-  HostExtensionList extensions_;
+  std::vector<std::unique_ptr<HostExtension>> extensions_;
 
   base::WeakPtrFactory<ChromotingHost> weak_factory_;
 

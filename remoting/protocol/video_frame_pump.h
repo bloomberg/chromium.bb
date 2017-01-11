@@ -9,9 +9,9 @@
 #include <stdint.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -179,7 +179,7 @@ class VideoFramePump : public VideoStream,
 
   bool send_pending_ = false;
 
-  ScopedVector<PacketWithTimestamps> pending_packets_;
+  std::vector<std::unique_ptr<PacketWithTimestamps>> pending_packets_;
 
   base::ThreadChecker thread_checker_;
 

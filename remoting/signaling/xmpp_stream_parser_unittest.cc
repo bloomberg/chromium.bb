@@ -4,10 +4,11 @@
 
 #include "remoting/signaling/xmpp_stream_parser.h"
 
+#include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
-#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,7 +44,7 @@ class XmppStreamParserTest : public testing::Test {
   base::MessageLoop message_loop_;
 
   std::unique_ptr<XmppStreamParser> parser_;
-  ScopedVector<buzz::XmlElement> received_stanzas_;
+  std::vector<std::unique_ptr<buzz::XmlElement>> received_stanzas_;
   bool error_;
 };
 

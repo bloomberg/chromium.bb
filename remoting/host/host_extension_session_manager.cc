@@ -4,6 +4,7 @@
 
 #include "remoting/host/host_extension_session_manager.h"
 
+#include "base/logging.h"
 #include "remoting/base/capabilities.h"
 #include "remoting/host/client_session_details.h"
 #include "remoting/host/host_extension.h"
@@ -12,7 +13,7 @@
 namespace remoting {
 
 HostExtensionSessionManager::HostExtensionSessionManager(
-    const std::vector<HostExtension*>& extensions,
+    const HostExtensions& extensions,
     ClientSessionDetails* client_session_details)
     : client_session_details_(client_session_details),
       client_stub_(nullptr),
@@ -22,9 +23,8 @@ HostExtensionSessionManager::~HostExtensionSessionManager() {}
 
 std::string HostExtensionSessionManager::GetCapabilities() const {
   std::string capabilities;
-  for (HostExtensions::const_iterator extension = extensions_.begin();
-       extension != extensions_.end(); ++extension) {
-    const std::string& capability = (*extension)->capability();
+  for (const auto& extension : extensions_) {
+    const std::string& capability = extension->capability();
     if (capability.empty()) {
       continue;
     }
@@ -44,30 +44,28 @@ void HostExtensionSessionManager::OnNegotiatedCapabilities(
 
   client_stub_ = client_stub;
 
-  for (HostExtensions::const_iterator extension = extensions_.begin();
-       extension != extensions_.end(); ++extension) {
+  for (const auto& extension : extensions_) {
     // If the extension requires a capability that was not negotiated then do
     // not instantiate it.
-    if (!(*extension)->capability().empty() &&
-        !HasCapability(capabilities, (*extension)->capability())) {
+    if (!extension->capability().empty() &&
+        !HasCapability(capabilities, extension->capability())) {
       continue;
     }
 
     std::unique_ptr<HostExtensionSession> extension_session =
-        (*extension)
-            ->CreateExtensionSession(client_session_details_, client_stub_);
+        extension->CreateExtensionSession(client_session_details_,
+                                          client_stub_);
     DCHECK(extension_session);
 
-    extension_sessions_.push_back(extension_session.release());
+    extension_sessions_.push_back(std::move(extension_session));
   }
 }
 
 bool HostExtensionSessionManager::OnExtensionMessage(
     const protocol::ExtensionMessage& message) {
-  for(HostExtensionSessions::const_iterator it = extension_sessions_.begin();
-      it != extension_sessions_.end(); ++it) {
-    if ((*it)->OnExtensionMessage(client_session_details_, client_stub_,
-                                  message)) {
+  for (const auto& session : extension_sessions_) {
+    if (session->OnExtensionMessage(client_session_details_, client_stub_,
+                                    message)) {
       return true;
     }
   }

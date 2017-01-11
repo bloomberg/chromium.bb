@@ -125,7 +125,7 @@ void ChromotingHost::RemoveStatusObserver(HostStatusObserver* observer) {
 }
 
 void ChromotingHost::AddExtension(std::unique_ptr<HostExtension> extension) {
-  extensions_.push_back(extension.release());
+  extensions_.push_back(std::move(extension));
 }
 
 void ChromotingHost::SetAuthenticatorFactory(
@@ -259,9 +259,12 @@ void ChromotingHost::OnIncomingSession(
   DesktopEnvironmentOptions options = desktop_environment_options_;
   // TODO(zijiehe): Apply HostSessionOptions to options.
   // Create a ClientSession object.
+  std::vector<HostExtension*> extension_ptrs;
+  for (const auto& extension : extensions_)
+    extension_ptrs.push_back(extension.get());
   clients_.push_back(base::MakeUnique<ClientSession>(
       this, std::move(connection), desktop_environment_factory_, options,
-      max_session_duration_, pairing_registry_, extensions_.get()));
+      max_session_duration_, pairing_registry_, extension_ptrs));
 }
 
 }  // namespace remoting
