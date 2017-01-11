@@ -163,6 +163,13 @@ bool ArcSessionManager::IsAllowedForProfile(const Profile* profile) {
     return false;
   }
 
+  // IsPrimaryProfile can return true for an incognito profile corresponding
+  // to the primary profile, but ARC does not support it.
+  if (profile->IsOffTheRecord()) {
+    VLOG(1) << "Incognito profile is not supported in ARC.";
+    return false;
+  }
+
   if (profile->IsLegacySupervised()) {
     VLOG(1) << "Supervised users are not supported in ARC.";
     return false;
