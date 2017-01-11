@@ -126,6 +126,8 @@ table_files = \
 	ethio-g1.ctb \
 	et.tbl \
 	eurodefs.cti \
+	fa-ir-comp8.ctb \
+	fa-ir-g1.utb \
 	fi1.ctb \
 	fi2.ctb \
 	fi-fi-8dot.ctb \
@@ -330,6 +332,7 @@ table_files = \
 	te.tbl \
 	text_nabcc.dis \
 	tr.ctb \
+	tr-g1.ctb \
 	tr.tbl \
 	tsn-za-g1.ctb \
 	UEBC-g1.utb \
