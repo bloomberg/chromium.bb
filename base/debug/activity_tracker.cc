@@ -1022,7 +1022,7 @@ ThreadActivityTracker* GlobalActivityTracker::CreateTrackerForCurrentThread() {
   // TODO(bcwhite): Review this after major compiler releases.
   DCHECK(mem_reference);
   void* mem_base;
-#if !defined(OS_WIN) && !defined(OS_ANDROID)
+#if 0  // TODO(bcwhite): Update this for new GetAsObject functionality.
   mem_base = allocator_->GetAsObject<ThreadActivityTracker::Header>(
       mem_reference, kTypeIdActivityTracker);
 #else

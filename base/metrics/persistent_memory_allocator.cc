@@ -750,9 +750,9 @@ PersistentMemoryAllocator::GetBlock(Reference ref, uint32_t type_id,
                                     uint32_t size, bool queue_ok,
                                     bool free_ok) const {
   // Validation of parameters.
-  if (ref % kAllocAlignment != 0)
-    return nullptr;
   if (ref < (queue_ok ? kReferenceQueue : sizeof(SharedMetadata)))
+    return nullptr;
+  if (ref % kAllocAlignment != 0)
     return nullptr;
   size += sizeof(BlockHeader);
   if (ref + size > mem_size_)
