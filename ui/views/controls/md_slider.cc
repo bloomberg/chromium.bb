@@ -73,12 +73,14 @@ void MdSlider::OnPaint(gfx::Canvas* canvas) {
   gfx::Point thumb_center(x, content.height() / 2);
 
   // Paint the thumb highlight if it exists.
-  if (is_active_ && thumb_highlight_radius_ > kThumbRadius) {
+  const int thumb_highlight_radius =
+      HasFocus() ? kThumbHighlightRadius : thumb_highlight_radius_;
+  if (is_active_ && thumb_highlight_radius > kThumbRadius) {
     SkPaint highlight;
     SkColor kHighlightColor = SkColorSetA(kActiveColor, kHighlightColorAlpha);
     highlight.setColor(kHighlightColor);
     highlight.setFlags(SkPaint::kAntiAlias_Flag);
-    canvas->DrawCircle(thumb_center, thumb_highlight_radius_, highlight);
+    canvas->DrawCircle(thumb_center, thumb_highlight_radius, highlight);
   }
 
   // Paint the thumb of the slider.
