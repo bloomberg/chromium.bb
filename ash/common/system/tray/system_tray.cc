@@ -682,7 +682,7 @@ void SystemTray::UpdateWebNotifications() {
             ->GetDisplayNearestWindow(bubble_view->GetWidget()->GetNativeView())
             .work_area();
     height =
-        std::max(0, work_area.height() - bubble_view->GetBoundsInScreen().y());
+        std::max(0, work_area.bottom() - bubble_view->GetBoundsInScreen().y());
   }
   if (web_notification_tray_)
     web_notification_tray_->SetTrayBubbleHeight(height);
