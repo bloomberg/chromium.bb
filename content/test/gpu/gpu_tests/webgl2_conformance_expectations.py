@@ -41,6 +41,14 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/builtinprecision/*.html', bug=619403)
 
     # All platforms.
+    self.Fail('conformance/more/functions/vertexAttribPointerBadArgs.html',
+        bug=678850)
+    self.Fail('conformance/attribs/gl-vertexattribpointer.html', bug=678850)
+    self.Fail('conformance2/attribs/gl-vertexattribipointer.html', bug=678850)
+
+    self.Fail('conformance/extensions/webgl-compressed-texture-etc.html',
+        bug=679678)
+
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
     self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=483282)
 
@@ -159,6 +167,14 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('conformance2/reading/format-r11f-g11f-b10f.html',
         ['mac'], bug=1832) # khronos WebGL issue
+    self.Fail('deqp/functional/gles3/fborender/recreate_color_02.html',
+        ['mac'], bug=679682)
+    self.Fail('deqp/functional/gles3/fborender/resize_01.html',
+        ['mac'], bug=679682)
+    self.Fail('deqp/functional/gles3/fragmentoutput/basic.float.html',
+        ['mac'], bug=679684)
+    self.Fail('deqp/functional/gles3/fragmentoutput/array.float.html',
+        ['mac'], bug=679684)
 
     # Mac Retina NVIDIA
     self.Fail('deqp/functional/gles3/fbomultisample*',
@@ -304,6 +320,16 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('nvidia', 0xfe9)], bug=483282)
 
     # Mac AMD
+    self.Fail('deqp/functional/gles3/fbomultisample.8_samples.html',
+        ['mac', 'amd'], bug=679686)
+    self.Fail('deqp/functional/gles3/fbomultisample.4_samples.html',
+        ['mac', 'amd'], bug=679686)
+    self.Fail('deqp/functional/gles3/fbomultisample.2_samples.html',
+        ['mac', 'amd'], bug=679686)
+    self.Fail('deqp/functional/gles3/pixelbufferobject.html',
+        ['mac', 'amd'], bug=679687)
+    self.Fail('deqp/functional/gles3/instancedrendering.html',
+        ['mac', 'amd'], bug=679689)
     self.Fail('conformance/glsl/bugs/bool-type-cast-bug-int-float.html',
         ['mac', 'amd'], bug=643866)
     self.Fail('conformance2/glsl3/bool-type-cast-bug-uint-ivec-uvec.html',
@@ -429,6 +455,14 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/shaderoperator/common_functions.html',
         ['mac', ('amd', 0x679e)], bug=483282)
 
+    # Mac Multi-vendor failures.
+    self.Fail('deqp/functional/gles3/fragmentoutput/random_00.html',
+        ['mac', 'amd', 'intel'], bug=679690)
+    self.Fail('deqp/functional/gles3/fragmentoutput/random_02.html',
+        ['mac', 'amd', 'intel'], bug=679690)
+    self.Fail('deqp/functional/gles3/fbocolorbuffer/clear.html',
+        ['mac', 'amd', 'intel'], bug=679691)
+
     # Mac Intel
 
     self.Fail(
@@ -456,6 +490,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
       'conformance2/textures/webgl_canvas/tex-3d-rgb9_e5-rgb-half_float.html',
       ['sierra', 'intel'], bug=663188)
 
+    self.Fail('conformance2/textures/misc/angle-stuck-depth-textures.html',
+        ['mac', 'intel'], bug=679692)
     self.Fail('deqp/functional/gles3/fbomultisample*',
         ['mac', 'intel'], bug=641209)
     self.Fail('deqp/functional/gles3/texturefiltering/2d_combinations_01.html',
@@ -571,6 +607,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
                ['linux'], bug=627525)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing-nv-driver-bug.html',
         ['linux'], bug=483282)
+    self.Fail('conformance2/textures/image_bitmap_from_image/' +
+              'tex-3d-r16f-red-float.html', ['linux'], bug=679695)
 
     # Linux Multi-vendor failures.
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',
@@ -588,6 +626,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'nvidia'], bug=618447)
     self.Fail('conformance/glsl/bugs/unary-minus-operator-float-bug.html',
         ['linux', 'nvidia'], bug=672380)
+    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
+        'tex-3d-srgb8_alpha8-rgba-unsigned_byte.html',
+        ['linux', 'nvidia'], bug=679677)
 
     # Linux Intel
     self.Fail('conformance2/extensions/ext-color-buffer-float.html',

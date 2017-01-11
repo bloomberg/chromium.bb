@@ -110,6 +110,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # ========================
     # Fails on all platforms
 
+    self.Fail('conformance/more/functions/vertexAttribPointerBadArgs.html',
+        bug=678850)
+    self.Fail('conformance/attribs/gl-vertexattribpointer.html', bug=678850)
+
     # Need to add detection of feedback loops with multiple render targets.
     self.Fail('conformance/extensions/webgl-draw-buffers-feedback-loop.html',
         bug=1619) # angle bug ID
@@ -136,6 +140,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'nvidia'], bug=630860)
     self.Fail('conformance/glsl/bugs/unary-minus-operator-float-bug.html',
         ['win', 'nvidia'], bug=672380)
+    self.Fail('conformance/extensions/ext-sRGB.html',
+        ['win', 'nvidia', 'no_passthrough'], bug=679696)
 
     # Win7 / Intel failures
     self.Fail('conformance/textures/misc/' +
@@ -225,8 +231,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win10', 'intel', 'opengl'], bug=1007) # angle bug ID
 
     # Win / Passthrough command decoder
-    self.Fail('conformance/attribs/gl-vertexattribpointer.html',
-        ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
+    self.Fail('conformance/extensions/ext-sRGB.html',
+        ['win', 'passthrough', 'd3d11'], bug=679696)
     self.Fail('conformance/extensions/angle-instanced-arrays.html',
         ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
     self.Fail('conformance/extensions/ext-disjoint-timer-query.html',
@@ -286,8 +292,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/more/functions/texSubImage2DBadArgs.html',
         ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
     self.Fail('conformance/more/functions/texSubImage2DHTMLBadArgs.html',
-        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
-    self.Fail('conformance/more/functions/vertexAttribPointerBadArgs.html',
         ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
     self.Fail('conformance/reading/read-pixels-test.html',
         ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
@@ -369,6 +373,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/textures/video/' +
                'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
                ['linux'], bug=627525)
+    self.Fail('conformance/extensions/webgl-compressed-texture-etc.html',
+        bug=679678)
 
     # NVIDIA
     self.Flaky('conformance/extensions/oes-element-index-uint.html',
@@ -436,6 +442,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # The following tests timed out on android, so skip them for now.
     self.Skip('conformance/textures/image_bitmap_from_video/*',
         ['android'], bug=585108)
+
+    self.Fail('conformance/textures/misc/' +
+        'copytexsubimage2d-large-partial-copy-corruption.html',
+        ['android'], bug=679697)
     # The following WebView crashes are causing problems with further
     # tests in the suite, so skip them for now.
     self.Skip('conformance/textures/video/' +
@@ -554,9 +564,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
               ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
     self.Fail('conformance/textures/image_data/*',
               ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
-    self.Fail('conformance/textures/misc/' +
-              'copy-tex-sub-image-2d-partial-texture.html',
-              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=643361)
     self.Fail('conformance/textures/svg_image/*',
               ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
     self.Fail('conformance/textures/video/*',
@@ -668,11 +675,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/textures/misc/' +
               'copy-tex-image-and-sub-image-2d.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
-    self.Fail('conformance/textures/misc/' +
-              'copy-tex-sub-image-2d-partial-texture.html',
-              ['android',
-               ('qualcomm', 'Adreno (TM) 420'),
-               ('qualcomm', 'Adreno (TM) 430')], bug=643361)
     self.Fail('conformance/textures/misc/' +
               'tex-image-and-sub-image-2d-with-array-buffer-view.html',
               ['android',
