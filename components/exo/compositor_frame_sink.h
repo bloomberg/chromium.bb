@@ -17,11 +17,6 @@ namespace exo {
 class CompositorFrameSink : public cc::CompositorFrameSinkSupportClient,
                             public cc::mojom::MojoCompositorFrameSink {
  public:
-  static void Create(const cc::FrameSinkId& frame_sink_id,
-                     cc::SurfaceManager* surface_manager,
-                     cc::mojom::MojoCompositorFrameSinkClientPtr client,
-                     cc::mojom::MojoCompositorFrameSinkRequest request);
-
   CompositorFrameSink(const cc::FrameSinkId& frame_sink_id,
                       cc::SurfaceManager* surface_manager,
                       cc::mojom::MojoCompositorFrameSinkClientPtr client);

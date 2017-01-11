@@ -14,20 +14,6 @@ namespace exo {
 ////////////////////////////////////////////////////////////////////////////////
 // ExoComopositorFrameSink, public:
 
-// static
-void CompositorFrameSink::Create(
-    const cc::FrameSinkId& frame_sink_id,
-    cc::SurfaceManager* surface_manager,
-    cc::mojom::MojoCompositorFrameSinkClientPtr client,
-    cc::mojom::MojoCompositorFrameSinkRequest request) {
-  std::unique_ptr<CompositorFrameSink> impl =
-      base::MakeUnique<CompositorFrameSink>(frame_sink_id, surface_manager,
-                                            std::move(client));
-  CompositorFrameSink* compositor_frame_sink = impl.get();
-  compositor_frame_sink->binding_ =
-      mojo::MakeStrongBinding(std::move(impl), std::move(request));
-}
-
 CompositorFrameSink::CompositorFrameSink(
     const cc::FrameSinkId& frame_sink_id,
     cc::SurfaceManager* surface_manager,
@@ -79,24 +65,20 @@ void CompositorFrameSink::Satisfy(const cc::SurfaceSequence& sequence) {
 // cc::CompositorFrameSinkSupportClient overrides:
 
 void CompositorFrameSink::DidReceiveCompositorFrameAck() {
-  if (client_)
-    client_->DidReceiveCompositorFrameAck();
+  client_->DidReceiveCompositorFrameAck();
 }
 
 void CompositorFrameSink::OnBeginFrame(const cc::BeginFrameArgs& args) {
-  if (client_)
-    client_->OnBeginFrame(args);
+  client_->OnBeginFrame(args);
 }
 
 void CompositorFrameSink::ReclaimResources(
     const cc::ReturnedResourceArray& resources) {
-  if (client_)
-    client_->ReclaimResources(resources);
+  client_->ReclaimResources(resources);
 }
 
 void CompositorFrameSink::WillDrawSurface() {
-  if (client_)
-    client_->WillDrawSurface();
+  client_->WillDrawSurface();
 }
 
 }  // namespace exo

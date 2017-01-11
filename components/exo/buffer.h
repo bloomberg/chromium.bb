@@ -104,29 +104,28 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
   // True if this buffer is an overlay candidate.
   const bool is_overlay_candidate_;
 
-  // This is incremented when a texture mailbox is produced and decremented
-  // when a texture mailbox is released. It is used to determine when we should
-  // notify the client that buffer has been released.
+  // This is incremented when a transferable resource is produced and
+  // decremented when a transferable resource is released. It is used to
+  // determine when we should notify the client that buffer has been released.
   unsigned use_count_ = 0;
 
   // This keeps track of how many Surfaces the buffer is attached to.
   unsigned attach_count_ = 0;
 
-  // The last used texture. ProduceTextureMailbox() will use this
+  // The last used texture. ProduceTransferableResource() will use this
   // instead of creating a new texture when possible.
   std::unique_ptr<Texture> texture_;
 
-  // The last used contents texture. ProduceTextureMailbox() will use this
+  // The last used contents texture. ProduceTransferableResource() will use this
   // instead of creating a new texture when possible.
   std::unique_ptr<Texture> contents_texture_;
 
   // The client release callback.
   base::Closure release_callback_;
 
-  // The CompositorFrameSinkHolder that has the ReleaseCallback of this buffer
-  // produced in ProduceTextureMailbox().
-  // Buffer holds a reference to the CompositorFrameSinkHolder to keep it alive.
-  // The refptr is reset when the release callback is called.
+  // CompositorFrameSinkHolder instance that needs to be kept alive to receive
+  // a release callback when the last produced transferable resource is no
+  // longer in use.
   scoped_refptr<CompositorFrameSinkHolder> compositor_frame_sink_holder_;
 
   DISALLOW_COPY_AND_ASSIGN(Buffer);
