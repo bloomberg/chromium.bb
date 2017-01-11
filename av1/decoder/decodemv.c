@@ -714,6 +714,12 @@ static void read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 #else
   const TX_SIZE tx_size = mbmi->tx_size;
 #endif
+#if CONFIG_EC_ADAPT
+  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+#else
+  FRAME_CONTEXT *ec_ctx = cm->fc;
+#endif
+
   if (!FIXED_TX_TYPE) {
 #if CONFIG_EXT_TX
     const TX_SIZE square_tx_size = txsize_sqr_map[tx_size];
@@ -732,7 +738,7 @@ static void read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
         if (eset > 0) {
           mbmi->tx_type = aom_read_tree(
               r, av1_ext_tx_inter_tree[eset],
-              cm->fc->inter_ext_tx_prob[eset][square_tx_size], ACCT_STR);
+              ec_ctx->inter_ext_tx_prob[eset][square_tx_size], ACCT_STR);
           if (counts)
             ++counts->inter_ext_tx[eset][square_tx_size][mbmi->tx_type];
         }
@@ -740,7 +746,7 @@ static void read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
         if (eset > 0) {
           mbmi->tx_type = aom_read_tree(
               r, av1_ext_tx_intra_tree[eset],
-              cm->fc->intra_ext_tx_prob[eset][square_tx_size][mbmi->mode],
+              ec_ctx->intra_ext_tx_prob[eset][square_tx_size][mbmi->mode],
               ACCT_STR);
           if (counts)
             ++counts->intra_ext_tx[eset][square_tx_size][mbmi->mode]
@@ -765,21 +771,21 @@ static void read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
       if (inter_block) {
 #if CONFIG_EC_MULTISYMBOL
         mbmi->tx_type = av1_ext_tx_inv[aom_read_symbol(
-            r, cm->fc->inter_ext_tx_cdf[tx_size], TX_TYPES, ACCT_STR)];
+            r, ec_ctx->inter_ext_tx_cdf[tx_size], TX_TYPES, ACCT_STR)];
 #else
         mbmi->tx_type = aom_read_tree(
-            r, av1_ext_tx_tree, cm->fc->inter_ext_tx_prob[tx_size], ACCT_STR);
+            r, av1_ext_tx_tree, ec_ctx->inter_ext_tx_prob[tx_size], ACCT_STR);
 #endif
         if (counts) ++counts->inter_ext_tx[tx_size][mbmi->tx_type];
       } else {
         const TX_TYPE tx_type_nom = intra_mode_to_tx_type_context[mbmi->mode];
 #if CONFIG_EC_MULTISYMBOL
         mbmi->tx_type = av1_ext_tx_inv[aom_read_symbol(
-            r, cm->fc->intra_ext_tx_cdf[tx_size][tx_type_nom], TX_TYPES,
+            r, ec_ctx->intra_ext_tx_cdf[tx_size][tx_type_nom], TX_TYPES,
             ACCT_STR)];
 #else
         mbmi->tx_type = aom_read_tree(
-            r, av1_ext_tx_tree, cm->fc->intra_ext_tx_prob[tx_size][tx_type_nom],
+            r, av1_ext_tx_tree, ec_ctx->intra_ext_tx_prob[tx_size][tx_type_nom],
             ACCT_STR);
 #endif
         if (counts) ++counts->intra_ext_tx[tx_size][tx_type_nom][mbmi->tx_type];

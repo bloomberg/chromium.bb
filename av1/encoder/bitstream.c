@@ -1170,6 +1170,12 @@ static void write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
 #else
   const TX_SIZE tx_size = mbmi->tx_size;
 #endif  // CONFIG_VAR_TX
+#if CONFIG_EC_ADAPT
+  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+#else
+  FRAME_CONTEXT *ec_ctx = cm->fc;
+#endif
+
   if (!FIXED_TX_TYPE) {
 #if CONFIG_EXT_TX
     const TX_SIZE square_tx_size = txsize_sqr_map[tx_size];
@@ -1187,7 +1193,7 @@ static void write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
         assert(ext_tx_used_inter[eset][mbmi->tx_type]);
         if (eset > 0) {
           av1_write_token(w, av1_ext_tx_inter_tree[eset],
-                          cm->fc->inter_ext_tx_prob[eset][square_tx_size],
+                          ec_ctx->inter_ext_tx_prob[eset][square_tx_size],
                           &ext_tx_inter_encodings[eset][mbmi->tx_type]);
         }
       } else if (ALLOW_INTRA_EXT_TX) {
@@ -1195,7 +1201,7 @@ static void write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
         if (eset > 0) {
           av1_write_token(
               w, av1_ext_tx_intra_tree[eset],
-              cm->fc->intra_ext_tx_prob[eset][square_tx_size][mbmi->mode],
+              ec_ctx->intra_ext_tx_prob[eset][square_tx_size][mbmi->mode],
               &ext_tx_intra_encodings[eset][mbmi->tx_type]);
         }
       }
@@ -1212,22 +1218,22 @@ static void write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
       if (is_inter) {
 #if CONFIG_EC_MULTISYMBOL
         aom_write_symbol(w, av1_ext_tx_ind[mbmi->tx_type],
-                         cm->fc->inter_ext_tx_cdf[tx_size], TX_TYPES);
+                         ec_ctx->inter_ext_tx_cdf[tx_size], TX_TYPES);
 #else
-        av1_write_token(w, av1_ext_tx_tree, cm->fc->inter_ext_tx_prob[tx_size],
+        av1_write_token(w, av1_ext_tx_tree, ec_ctx->inter_ext_tx_prob[tx_size],
                         &ext_tx_encodings[mbmi->tx_type]);
 #endif
       } else {
 #if CONFIG_EC_MULTISYMBOL
         aom_write_symbol(
             w, av1_ext_tx_ind[mbmi->tx_type],
-            cm->fc->intra_ext_tx_cdf[tx_size]
+            ec_ctx->intra_ext_tx_cdf[tx_size]
                                     [intra_mode_to_tx_type_context[mbmi->mode]],
             TX_TYPES);
 #else
         av1_write_token(
             w, av1_ext_tx_tree,
-            cm->fc
+            ec_ctx
                 ->intra_ext_tx_prob[tx_size]
                                    [intra_mode_to_tx_type_context[mbmi->mode]],
             &ext_tx_encodings[mbmi->tx_type]);
