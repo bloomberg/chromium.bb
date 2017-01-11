@@ -22,6 +22,7 @@
 
 #include "bindings/core/v8/ScriptEventListener.h"
 #include "core/HTMLNames.h"
+#include "core/XLinkNames.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ScriptLoader.h"
 #include "core/dom/ScriptRunner.h"
@@ -146,9 +147,9 @@ void SVGScriptElement::dispatchLoadEvent() {
 
 #if DCHECK_IS_ON()
 bool SVGScriptElement::isAnimatableAttribute(const QualifiedName& name) const {
-  if (name == SVGNames::typeAttr)
+  if (name == SVGNames::typeAttr || name == SVGNames::hrefAttr ||
+      name == XLinkNames::hrefAttr)
     return false;
-
   return SVGElement::isAnimatableAttribute(name);
 }
 #endif

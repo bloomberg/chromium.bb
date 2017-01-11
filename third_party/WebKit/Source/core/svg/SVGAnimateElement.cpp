@@ -192,6 +192,14 @@ void SVGAnimateElement::resolveTargetProperty() {
                           ? cssPropertyID(attributeName().localName())
                           : CSSPropertyInvalid;
   }
+  // Blacklist <script> targets here for now to prevent unpleasantries. This
+  // also disallows the perfectly "valid" animation of 'className' on said
+  // element. If SVGScriptElement.href is transitioned off of SVGAnimatedHref,
+  // this can be removed.
+  if (isSVGScriptElement(*targetElement())) {
+    m_type = AnimatedUnknown;
+    m_cssPropertyId = CSSPropertyInvalid;
+  }
   DCHECK(m_type != AnimatedPoint && m_type != AnimatedStringList &&
          m_type != AnimatedTransform && m_type != AnimatedTransformList);
 }
