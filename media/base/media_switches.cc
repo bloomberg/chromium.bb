@@ -189,7 +189,7 @@ const base::Feature kAndroidMediaPlayerRenderer{
 
 // Lock the screen orientation when a video goes fullscreen.
 const base::Feature kVideoFullscreenOrientationLock{
-    "VideoFullscreenOrientationLock", base::FEATURE_DISABLED_BY_DEFAULT};
+    "VideoFullscreenOrientationLock", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 }  // namespace media
