@@ -106,8 +106,13 @@ void DeviceChooserContentView::Layout() {
   throbber_->SetBounds((rect.width() - kThrobberDiameter) / 2,
                        (rect.height() - kThrobberDiameter) / 2,
                        kThrobberDiameter, kThrobberDiameter);
+  // Set the adapter off message in the center of the chooser.
+  // The adapter off message will only be shown when the adapter is off,
+  // and in that case, the system won't be able to scan for devices, so
+  // the throbber won't be shown at the same time.
   turn_adapter_off_help_->SetPosition(
-      gfx::Point(kAdapterOffHelpLinkPadding, kAdapterOffHelpLinkPadding));
+      gfx::Point((rect.width() - turn_adapter_off_help_->width()) / 2,
+                 (rect.height() - turn_adapter_off_help_->height()) / 2));
   turn_adapter_off_help_->SizeToFit(rect.width() -
                                     2 * kAdapterOffHelpLinkPadding);
   views::View::Layout();

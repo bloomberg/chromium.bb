@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/device_chooser_content_view_cocoa.h"
 
 #include <algorithm>
+#include <cmath>
 
 #include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
@@ -59,9 +60,6 @@ const CGFloat kSeparatorHeight = 1.0f;
 // Distance between two views inside the table row view.
 const CGFloat kTableRowViewHorizontalPadding = 5.0f;
 const CGFloat kTableRowViewVerticalPadding = 1.0f;
-
-// Distance between the adapter off help link and the scroll view boundaries.
-const CGFloat kAdapterOffHelpLinkPadding = 5.0f;
 
 // The lookup table for signal strength level image.
 const int kSignalStrengthLevelImageIds[5] = {IDR_SIGNAL_0_BAR, IDR_SIGNAL_1_BAR,
@@ -434,6 +432,7 @@ void ChooserContentViewController::UpdateTableView() {
     // Adapter turned off message.
     adapterOffMessage_ = CreateLabel(l10n_util::GetNSStringF(
         IDS_BLUETOOTH_DEVICE_CHOOSER_TURN_ADAPTER_OFF, base::string16()));
+    CGFloat adapterOffMessageWidth = NSWidth([adapterOffMessage_ frame]);
 
     // Connect button.
     connectButton_ = [self createConnectButton];
@@ -528,10 +527,13 @@ void ChooserContentViewController::UpdateTableView() {
     [self addSubview:titleView_];
 
     // Adapter turned off help button.
-    CGFloat adapterOffHelpButtonOriginX = kMarginX + kAdapterOffHelpLinkPadding;
-    CGFloat adapterOffHelpButtonOriginY = titleOriginY - kVerticalPadding -
-                                          adapterOffHelpButtonHeight -
-                                          kAdapterOffHelpLinkPadding;
+    CGFloat adapterOffHelpButtonOriginX = std::floor(
+        scrollViewOriginX +
+        (scrollViewWidth - adapterOffHelpButtonWidth - adapterOffMessageWidth) /
+            2);
+    CGFloat adapterOffHelpButtonOriginY =
+        std::floor(scrollViewOriginY +
+                   (scrollViewHeight - adapterOffHelpButtonHeight) / 2);
     [adapterOffHelpButton_
         setFrameOrigin:NSMakePoint(adapterOffHelpButtonOriginX,
                                    adapterOffHelpButtonOriginY)];
