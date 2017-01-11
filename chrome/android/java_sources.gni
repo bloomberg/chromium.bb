@@ -542,7 +542,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/nfc/BeamProvider.java",
   "java/src/org/chromium/chrome/browser/notifications/ActionInfo.java",
   "java/src/org/chromium/chrome/browser/notifications/CustomNotificationBuilder.java",
-  "java/src/org/chromium/chrome/browser/notifications/GoogleServicesNotificationController.java",
   "java/src/org/chromium/chrome/browser/notifications/NotificationBuilderBase.java",
   "java/src/org/chromium/chrome/browser/notifications/NotificationConstants.java",
   "java/src/org/chromium/chrome/browser/notifications/NotificationManagerProxy.java",

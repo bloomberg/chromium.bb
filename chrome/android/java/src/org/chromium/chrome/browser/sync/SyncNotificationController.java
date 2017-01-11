@@ -6,16 +6,20 @@ package org.chromium.chrome.browser.sync;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.provider.Settings;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.notifications.GoogleServicesNotificationController;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
+import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
+import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.components.sync.AndroidSyncSettings;
 
@@ -26,7 +30,7 @@ import org.chromium.components.sync.AndroidSyncSettings;
 public class SyncNotificationController implements ProfileSyncService.SyncStateChangedListener {
     private static final String TAG = "SyncNotificationController";
     private final Context mApplicationContext;
-    private final GoogleServicesNotificationController mNotificationController;
+    private final NotificationManagerProxy mNotificationManager;
     private final Class<? extends Activity> mPassphraseRequestActivity;
     private final Class<? extends Fragment> mAccountManagementFragment;
     private final ProfileSyncService mProfileSyncService;
@@ -35,19 +39,13 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
             Class<? extends Activity> passphraseRequestActivity,
             Class<? extends Fragment> accountManagementFragment) {
         mApplicationContext = context.getApplicationContext();
-        mNotificationController = GoogleServicesNotificationController.get(context);
+        mNotificationManager = new NotificationManagerProxyImpl(
+                (NotificationManager) mApplicationContext.getSystemService(
+                        Context.NOTIFICATION_SERVICE));
         mProfileSyncService = ProfileSyncService.get();
         assert mProfileSyncService != null;
         mPassphraseRequestActivity = passphraseRequestActivity;
         mAccountManagementFragment = accountManagementFragment;
-    }
-
-    public void displayAndroidMasterSyncDisabledNotification() {
-        String masterSyncDisabled =
-                GoogleServicesNotificationController.formatMessageParts(mApplicationContext,
-                        R.string.sign_in_sync, R.string.sync_android_master_sync_disabled);
-        mNotificationController.showNotification(masterSyncDisabled.hashCode(), masterSyncDisabled,
-                masterSyncDisabled, new Intent(Settings.ACTION_SYNC_SETTINGS));
     }
 
     /**
@@ -57,17 +55,14 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
     public void syncStateChanged() {
         ThreadUtils.assertOnUiThread();
 
-        int message;
-        Intent intent;
-
         // Auth errors take precedence over passphrase errors.
         if (!AndroidSyncSettings.isSyncEnabled(mApplicationContext)) {
-            mNotificationController.cancelNotification(NotificationConstants.NOTIFICATION_ID_SYNC);
+            mNotificationManager.cancel(NotificationConstants.NOTIFICATION_ID_SYNC);
             return;
         }
         if (shouldSyncAuthErrorBeShown()) {
-            message = mProfileSyncService.getAuthError().getMessage();
-            intent = createSettingsIntent();
+            showSyncNotification(
+                    mProfileSyncService.getAuthError().getMessage(), createSettingsIntent());
         } else if (mProfileSyncService.isEngineInitialized()
                 && mProfileSyncService.isPassphraseRequiredForDecryption()) {
             if (mProfileSyncService.isPassphrasePrompted()) {
@@ -77,24 +72,44 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
                 case IMPLICIT_PASSPHRASE: // Falling through intentionally.
                 case FROZEN_IMPLICIT_PASSPHRASE: // Falling through intentionally.
                 case CUSTOM_PASSPHRASE:
-                    message = R.string.sync_need_passphrase;
-                    intent = createPasswordIntent();
+                    showSyncNotification(R.string.sync_need_passphrase, createPasswordIntent());
                     break;
                 case KEYSTORE_PASSPHRASE: // Falling through intentionally.
                 default:
-                    mNotificationController.cancelNotification(
-                            NotificationConstants.NOTIFICATION_ID_SYNC);
+                    mNotificationManager.cancel(NotificationConstants.NOTIFICATION_ID_SYNC);
                     return;
             }
         } else {
-            mNotificationController.cancelNotification(NotificationConstants.NOTIFICATION_ID_SYNC);
+            mNotificationManager.cancel(NotificationConstants.NOTIFICATION_ID_SYNC);
             return;
         }
+    }
 
-        mNotificationController.updateSingleNotification(NotificationConstants.NOTIFICATION_ID_SYNC,
-                GoogleServicesNotificationController.formatMessageParts(
-                        mApplicationContext, R.string.sign_in_sync, message),
-                intent);
+    /**
+     * Builds and shows a notification for the |message|.
+     *
+     * @param message Resource id of the message to display in the notification.
+     * @param intent Intent to send when the user activates the notification.
+     */
+    private void showSyncNotification(int message, Intent intent) {
+        String title = mApplicationContext.getString(R.string.app_name);
+        String text = mApplicationContext.getString(R.string.sign_in_sync) + ": "
+                + mApplicationContext.getString(message);
+
+        PendingIntent contentIntent = PendingIntent.getActivity(mApplicationContext, 0, intent, 0);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(mApplicationContext)
+                                                     .setAutoCancel(true)
+                                                     .setContentIntent(contentIntent)
+                                                     .setContentTitle(title)
+                                                     .setContentText(text)
+                                                     .setSmallIcon(R.drawable.ic_chrome)
+                                                     .setTicker(text)
+                                                     .setLocalOnly(true);
+
+        Notification notification =
+                new NotificationCompat.BigTextStyle(builder).bigText(text).build();
+
+        mNotificationManager.notify(NotificationConstants.NOTIFICATION_ID_SYNC, notification);
     }
 
     private boolean shouldSyncAuthErrorBeShown() {
