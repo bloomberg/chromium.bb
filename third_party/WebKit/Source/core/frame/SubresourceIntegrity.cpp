@@ -7,6 +7,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/fetch/Resource.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -38,8 +39,9 @@ static bool isValueCharacter(UChar c) {
   return c >= 0x21 && c <= 0x7e;
 }
 
-static void logErrorToConsole(const String& message, Document& document) {
-  document.addConsoleMessage(ConsoleMessage::create(
+static void logErrorToConsole(const String& message,
+                              ExecutionContext& executionContext) {
+  executionContext.addConsoleMessage(ConsoleMessage::create(
       SecurityMessageSource, ErrorMessageLevel, message));
 }
 
@@ -156,18 +158,18 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(
     const char* content,
     size_t size,
     const KURL& resourceUrl,
-    Document& document,
+    ExecutionContext& executionContext,
     String& errorMessage) {
   IntegrityMetadataSet metadataSet;
-  IntegrityParseResult integrityParseResult =
-      parseIntegrityAttribute(integrityMetadata, metadataSet, &document);
+  IntegrityParseResult integrityParseResult = parseIntegrityAttribute(
+      integrityMetadata, metadataSet, &executionContext);
   // On failed parsing, there's no need to log an error here, as
   // parseIntegrityAttribute() will output an appropriate console message.
   if (integrityParseResult != IntegrityParseValidResult)
     return true;
 
   return CheckSubresourceIntegrity(metadataSet, content, size, resourceUrl,
-                                   document, errorMessage);
+                                   executionContext, errorMessage);
 }
 
 bool SubresourceIntegrity::CheckSubresourceIntegrity(
@@ -175,7 +177,7 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(
     const char* content,
     size_t size,
     const KURL& resourceUrl,
-    Document& document,
+    ExecutionContext& executionContext,
     String& errorMessage) {
   if (!metadataSet.size())
     return true;
@@ -202,7 +204,7 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(
                                  hashVector.size());
 
       if (DigestsEqual(digest, convertedHashVector)) {
-        UseCounter::count(document,
+        UseCounter::count(&executionContext,
                           UseCounter::SRIElementWithMatchingIntegrityAttribute);
         return true;
       }
@@ -226,7 +228,7 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(
         "There was an error computing an integrity value for resource '" +
         resourceUrl.elidedString() + "'. The resource has been blocked.";
   }
-  UseCounter::count(document,
+  UseCounter::count(&executionContext,
                     UseCounter::SRIElementWithNonMatchingIntegrityAttribute);
   return false;
 }
@@ -317,9 +319,10 @@ SubresourceIntegrity::parseIntegrityAttribute(
 }
 
 SubresourceIntegrity::IntegrityParseResult
-SubresourceIntegrity::parseIntegrityAttribute(const WTF::String& attribute,
-                                              IntegrityMetadataSet& metadataSet,
-                                              Document* document) {
+SubresourceIntegrity::parseIntegrityAttribute(
+    const WTF::String& attribute,
+    IntegrityMetadataSet& metadataSet,
+    ExecutionContext* executionContext) {
   Vector<UChar> characters;
   attribute.stripWhiteSpace().appendTo(characters);
   const UChar* position = characters.data();
@@ -351,13 +354,14 @@ SubresourceIntegrity::parseIntegrityAttribute(const WTF::String& attribute,
       // Unknown hash algorithms are treated as if they're not present,
       // and thus are not marked as an error, they're just skipped.
       skipUntil<UChar, isASCIISpace>(position, end);
-      if (document) {
+      if (executionContext) {
         logErrorToConsole("Error parsing 'integrity' attribute ('" + attribute +
                               "'). The specified hash algorithm must be one of "
                               "'sha256', 'sha384', or 'sha512'.",
-                          *document);
+                          *executionContext);
         UseCounter::count(
-            *document, UseCounter::SRIElementWithUnparsableIntegrityAttribute);
+            executionContext,
+            UseCounter::SRIElementWithUnparsableIntegrityAttribute);
       }
       continue;
     }
@@ -365,14 +369,15 @@ SubresourceIntegrity::parseIntegrityAttribute(const WTF::String& attribute,
     if (parseResult == AlgorithmUnparsable) {
       error = true;
       skipUntil<UChar, isASCIISpace>(position, end);
-      if (document) {
+      if (executionContext) {
         logErrorToConsole("Error parsing 'integrity' attribute ('" + attribute +
                               "'). The hash algorithm must be one of 'sha256', "
                               "'sha384', or 'sha512', followed by a '-' "
                               "character.",
-                          *document);
+                          *executionContext);
         UseCounter::count(
-            *document, UseCounter::SRIElementWithUnparsableIntegrityAttribute);
+            executionContext,
+            UseCounter::SRIElementWithUnparsableIntegrityAttribute);
       }
       continue;
     }
@@ -382,13 +387,14 @@ SubresourceIntegrity::parseIntegrityAttribute(const WTF::String& attribute,
     if (!parseDigest(position, currentIntegrityEnd, digest)) {
       error = true;
       skipUntil<UChar, isASCIISpace>(position, end);
-      if (document) {
+      if (executionContext) {
         logErrorToConsole(
             "Error parsing 'integrity' attribute ('" + attribute +
                 "'). The digest must be a valid, base64-encoded value.",
-            *document);
+            *executionContext);
         UseCounter::count(
-            *document, UseCounter::SRIElementWithUnparsableIntegrityAttribute);
+            executionContext,
+            UseCounter::SRIElementWithUnparsableIntegrityAttribute);
       }
       continue;
     }
@@ -400,11 +406,12 @@ SubresourceIntegrity::parseIntegrityAttribute(const WTF::String& attribute,
     if (skipExactly<UChar>(position, end, '?')) {
       const UChar* begin = position;
       skipWhile<UChar, isValueCharacter>(position, end);
-      if (begin != position && document)
+      if (begin != position && executionContext) {
         logErrorToConsole(
             "Ignoring unrecogized 'integrity' attribute option '" +
                 String(begin, position - begin) + "'.",
-            *document);
+            *executionContext);
+      }
     }
 
     IntegrityMetadata integrityMetadata(digest, algorithm);

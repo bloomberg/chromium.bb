@@ -215,7 +215,7 @@ class FetchManager::Loader final
       if (r == WebDataConsumerHandle::Done) {
         if (SubresourceIntegrity::CheckSubresourceIntegrity(
                 m_integrityMetadata, m_buffer.data(), m_buffer.size(), m_url,
-                *m_loader->document(), errorMessage)) {
+                *m_loader->executionContext(), errorMessage)) {
           m_updater->update(
               new FormDataBytesConsumer(m_buffer.data(), m_buffer.size()));
           m_loader->m_resolver->resolve(m_response);
@@ -272,6 +272,7 @@ class FetchManager::Loader final
   void failed(const String& message);
   void notifyFinished();
   Document* document() const;
+  ExecutionContext* executionContext() { return m_executionContext; }
   void loadSucceeded();
 
   Member<FetchManager> m_fetchManager;
