@@ -16,7 +16,6 @@
 {% from 'methods.cpp.tmpl' import install_conditionally_enabled_methods with context %}
 {% if has_prepare_prototype_and_interface_object %}
 void {{v8_class_or_partial}}::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> context, const DOMWrapperWorld& world, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate) {
-#error No one is currently using a partial interface with context-dependent properties.  If you\'re planning to use it, please consult with the binding team: <blink-reviews-bindings@chromium.org>
   {{v8_class}}::preparePrototypeAndInterfaceObject(context, world, prototypeObject, interfaceObject, interfaceTemplate);
   v8::Isolate* isolate = context->GetIsolate();
 {% if unscopables %}

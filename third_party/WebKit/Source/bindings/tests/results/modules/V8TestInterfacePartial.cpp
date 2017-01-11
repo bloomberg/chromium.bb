@@ -429,7 +429,6 @@ void V8TestInterfacePartial::installOriginTrialPartialFeature(ScriptState* scrip
 }
 
 void V8TestInterfacePartial::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> context, const DOMWrapperWorld& world, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate) {
-#error No one is currently using a partial interface with context-dependent properties.  If you\'re planning to use it, please consult with the binding team: <blink-reviews-bindings@chromium.org>
   V8TestInterface::preparePrototypeAndInterfaceObject(context, world, prototypeObject, interfaceObject, interfaceTemplate);
   v8::Isolate* isolate = context->GetIsolate();
   v8::Local<v8::Name> unscopablesSymbol(v8::Symbol::GetUnscopables(isolate));
