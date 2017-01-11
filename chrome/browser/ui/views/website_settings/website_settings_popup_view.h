@@ -107,8 +107,11 @@ class WebsiteSettingsPopupView : public content::WebContentsObserver,
       const WebsiteSettingsUI::ChosenObjectInfo& info) override;
 
   // views::BubbleDialogDelegateView implementation.
+  base::string16 GetWindowTitle() const override;
+  bool ShouldShowCloseButton() const override;
   void OnWidgetDestroying(views::Widget* widget) override;
   int GetDialogButtons() const override;
+  const gfx::FontList& GetTitleFontList() const override;
 
   // views::ButtonListener implementation.
   void ButtonPressed(views::Button* button, const ui::Event& event) override;
@@ -149,6 +152,9 @@ class WebsiteSettingsPopupView : public content::WebContentsObserver,
 
   // The header section (containing security-related information).
   PopupHeaderView* header_;
+
+  // The security summary for the current page.
+  base::string16 summary_text_;
 
   // The separator between the header and the site settings view.
   views::Separator* separator_;
