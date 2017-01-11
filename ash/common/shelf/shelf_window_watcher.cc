@@ -39,6 +39,8 @@ void UpdateShelfItemForWindow(ShelfItem* item, WmWindow* window) {
   if (item->image.isNull())
     item->image = window->GetWindowIcon();
 
+  item->title = window->GetTitle();
+
   // Do not show tooltips for visible attached app panel windows.
   item->shows_tooltip =
       item->type != TYPE_APP_PANEL || !window->IsVisible() ||
@@ -106,6 +108,11 @@ void ShelfWindowWatcher::UserWindowObserver::OnWindowVisibilityChanged(
     return;
 
   // The tooltip behavior for panel windows depends on the panel visibility.
+  window_watcher_->OnUserWindowPropertyChanged(window);
+}
+
+void ShelfWindowWatcher::UserWindowObserver::OnWindowTitleChanged(
+    WmWindow* window) {
   window_watcher_->OnUserWindowPropertyChanged(window);
 }
 

@@ -267,7 +267,6 @@ class TestV2AppLauncherItemController : public LauncherItemController {
       const ui::Event& event) override {
     return kExistingWindowActivated;
   }
-  base::string16 GetTitle() override { return base::string16(); }
   ChromeLauncherAppMenuItems GetApplicationList(int event_flags) override {
     ChromeLauncherAppMenuItems items;
     items.push_back(base::MakeUnique<ChromeLauncherAppMenuItem>(

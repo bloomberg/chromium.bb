@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
@@ -305,7 +306,10 @@ IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherBrowserTest, StartAppDeferred) {
   const std::string app_id = GetTestApp1Id(kTestAppPackage);
   if (is_pinned()) {
     shelf_delegate()->PinAppWithID(app_id);
-    EXPECT_TRUE(shelf_delegate()->GetShelfIDForAppID(app_id));
+    const ash::ShelfID shelf_id = shelf_delegate()->GetShelfIDForAppID(app_id);
+    EXPECT_TRUE(shelf_id);
+    const ash::ShelfItem* item = chrome_controller()->GetItem(shelf_id);
+    EXPECT_EQ(base::UTF8ToUTF16(kTestAppName), item->title);
   } else {
     EXPECT_FALSE(shelf_delegate()->GetShelfIDForAppID(app_id));
   }
@@ -328,7 +332,10 @@ IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherBrowserTest, StartAppDeferred) {
 
   // Launching non-ready Arc app creates item on shelf and spinning animation.
   arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON);
-  EXPECT_TRUE(shelf_delegate()->GetShelfIDForAppID(app_id));
+  const ash::ShelfID shelf_id = shelf_delegate()->GetShelfIDForAppID(app_id);
+  EXPECT_TRUE(shelf_id);
+  const ash::ShelfItem* item = chrome_controller()->GetItem(shelf_id);
+  EXPECT_EQ(base::UTF8ToUTF16(kTestAppName), item->title);
   AppAnimatedWaiter(app_id).Wait();
 
   switch (test_action()) {

@@ -26,10 +26,6 @@ ShelfItemDelegate::PerformedAction TestShelfItemDelegate::ItemSelected(
   return kNoAction;
 }
 
-base::string16 TestShelfItemDelegate::GetTitle() {
-  return window_ ? window_->GetTitle() : base::string16();
-}
-
 ShelfMenuModel* TestShelfItemDelegate::CreateApplicationMenu(int event_flags) {
   return nullptr;
 }

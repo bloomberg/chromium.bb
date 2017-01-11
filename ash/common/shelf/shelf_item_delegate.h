@@ -44,9 +44,6 @@ class ASH_EXPORT ShelfItemDelegate {
   // Returns the action performed by selecting the item.
   virtual PerformedAction ItemSelected(const ui::Event& event) = 0;
 
-  // Returns the title to display.
-  virtual base::string16 GetTitle() = 0;
-
   // Returns the application menu model for the specified item. There are three
   // possible return values:
   //  - A return of NULL indicates that no menu is wanted for this item.

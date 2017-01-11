@@ -156,8 +156,10 @@ ChromeLauncherAppMenuItems
 AppShortcutLauncherItemController::GetApplicationList(int event_flags) {
   ChromeLauncherAppMenuItems items;
   // Add the application name to the menu.
+  base::string16 app_title = LauncherControllerHelper::GetAppTitle(
+      launcher_controller()->profile(), app_id());
   items.push_back(
-      base::MakeUnique<ChromeLauncherAppMenuItem>(GetTitle(), nullptr, false));
+      base::MakeUnique<ChromeLauncherAppMenuItem>(app_title, nullptr, false));
 
   std::vector<content::WebContents*> content_list = GetRunningApplications();
 
@@ -214,11 +216,6 @@ AppShortcutLauncherItemController::ItemSelected(const ui::Event& event) {
       return kExistingWindowActivated;
   }
   return Activate(ash::LAUNCH_FROM_UNKNOWN);
-}
-
-base::string16 AppShortcutLauncherItemController::GetTitle() {
-  return LauncherControllerHelper::GetAppTitle(launcher_controller()->profile(),
-                                               app_id());
 }
 
 ash::ShelfMenuModel* AppShortcutLauncherItemController::CreateApplicationMenu(

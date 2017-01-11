@@ -110,8 +110,11 @@ void AppWindowLauncherItemController::ActivateIndexedApp(size_t index) {
 ChromeLauncherAppMenuItems AppWindowLauncherItemController::GetApplicationList(
     int event_flags) {
   ChromeLauncherAppMenuItems items;
+  // Add the application name to the menu.
+  base::string16 app_title = LauncherControllerHelper::GetAppTitle(
+      launcher_controller()->profile(), app_id());
   items.push_back(
-      base::MakeUnique<ChromeLauncherAppMenuItem>(GetTitle(), nullptr, false));
+      base::MakeUnique<ChromeLauncherAppMenuItem>(app_title, nullptr, false));
   return items;
 }
 
@@ -130,11 +133,6 @@ AppWindowLauncherItemController::ItemSelected(const ui::Event& event) {
   } else {
     return ShowAndActivateOrMinimize(window_to_show);
   }
-}
-
-base::string16 AppWindowLauncherItemController::GetTitle() {
-  return LauncherControllerHelper::GetAppTitle(launcher_controller()->profile(),
-                                               app_id());
 }
 
 void AppWindowLauncherItemController::OnWindowPropertyChanged(

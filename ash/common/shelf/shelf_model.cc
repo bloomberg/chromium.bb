@@ -43,7 +43,7 @@ bool CompareByWeight(const ShelfItem& a, const ShelfItem& b) {
 
 }  // namespace
 
-ShelfModel::ShelfModel() : next_id_(1), status_(STATUS_NORMAL) {}
+ShelfModel::ShelfModel() : next_id_(1) {}
 
 ShelfModel::~ShelfModel() {}
 

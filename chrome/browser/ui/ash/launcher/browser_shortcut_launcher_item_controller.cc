@@ -170,8 +170,9 @@ BrowserShortcutLauncherItemController::GetApplicationList(int event_flags) {
   ChromeLauncherAppMenuItems items;
   bool found_tabbed_browser = false;
   // Add the application name to the menu.
+  base::string16 app_title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
   items.push_back(
-      base::MakeUnique<ChromeLauncherAppMenuItem>(GetTitle(), nullptr, false));
+      base::MakeUnique<ChromeLauncherAppMenuItem>(app_title, nullptr, false));
   for (auto* browser : GetListOfActiveBrowsers()) {
     TabStripModel* tab_strip = browser->tab_strip_model();
     if (tab_strip->active_index() == -1)
@@ -221,10 +222,6 @@ BrowserShortcutLauncherItemController::ItemSelected(const ui::Event& event) {
   }
 
   return Activate(ash::LAUNCH_FROM_UNKNOWN);
-}
-
-base::string16 BrowserShortcutLauncherItemController::GetTitle() {
-  return l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
 }
 
 ash::ShelfMenuModel*

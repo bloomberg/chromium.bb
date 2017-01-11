@@ -60,7 +60,7 @@ class ShelfItemDelegateMus : public ShelfItemDelegate {
     explicit ShelfMenuModelMus(ShelfItemDelegateMus* item_delegate)
         : ShelfMenuModel(this), item_delegate_(item_delegate) {
       AddSeparator(ui::SPACING_SEPARATOR);
-      AddItem(0, item_delegate_->GetTitle());
+      AddItem(0, item_delegate_->title());
       AddSeparator(ui::SPACING_SEPARATOR);
       for (const auto& window : item_delegate_->window_id_to_title())
         AddItem(window.first, window.second);
@@ -98,11 +98,6 @@ class ShelfItemDelegateMus : public ShelfItemDelegate {
       NOTIMPLEMENTED();
     }
     return kNoAction;
-  }
-
-  base::string16 GetTitle() override {
-    return window_id_to_title_.empty() ? title_
-                                       : window_id_to_title_.begin()->second;
   }
 
   ShelfMenuModel* CreateApplicationMenu(int event_flags) override {
@@ -232,13 +227,14 @@ void ShelfController::PinItem(
   shelf_item.type = TYPE_APP_SHORTCUT;
   shelf_item.status = STATUS_CLOSED;
   shelf_item.image = GetShelfIconFromBitmap(item->image);
+  shelf_item.title = base::UTF8ToUTF16(item->app_title);
   model_.Add(shelf_item);
 
-  std::unique_ptr<ShelfItemDelegateMus> item_delegate(
-      new ShelfItemDelegateMus());
+  std::unique_ptr<ShelfItemDelegateMus> item_delegate =
+      base::MakeUnique<ShelfItemDelegateMus>();
   item_delegate->SetDelegate(std::move(delegate));
   item_delegate->set_pinned(true);
-  item_delegate->set_title(base::UTF8ToUTF16(item->app_title));
+  item_delegate->set_title(shelf_item.title);
   model_.SetShelfItemDelegate(shelf_id, std::move(item_delegate));
 }
 

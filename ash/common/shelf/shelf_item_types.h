@@ -10,6 +10,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/shelf/shelf_constants.h"
+#include "base/strings/string16.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace ash {
@@ -72,6 +73,9 @@ struct ASH_EXPORT ShelfItem {
 
   // The application id for this shelf item; only populated for some items.
   std::string app_id;
+
+  // The title to display for tooltips, etc.
+  base::string16 title;
 
   // Whether the tooltip should be shown on hover; generally true.
   bool shows_tooltip = true;

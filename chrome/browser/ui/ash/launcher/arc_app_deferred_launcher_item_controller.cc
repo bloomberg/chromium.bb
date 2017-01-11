@@ -37,20 +37,6 @@ ArcAppDeferredLauncherItemController::ItemSelected(const ui::Event& event) {
   return ash::ShelfItemDelegate::kNoAction;
 }
 
-base::string16 ArcAppDeferredLauncherItemController::GetTitle() {
-  ArcAppListPrefs* arc_prefs =
-      ArcAppListPrefs::Get(launcher_controller()->profile());
-  DCHECK(arc_prefs);
-  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = arc_prefs->GetApp(
-      ArcAppWindowLauncherController::GetArcAppIdFromShelfAppId(app_id()));
-  if (!app_info) {
-    NOTREACHED();
-    return base::string16();
-  }
-
-  return base::UTF8ToUTF16(app_info->name);
-}
-
 ash::ShelfMenuModel*
 ArcAppDeferredLauncherItemController::CreateApplicationMenu(int event_flags) {
   return nullptr;

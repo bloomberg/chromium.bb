@@ -527,9 +527,7 @@ bool ShelfView::ShouldShowTooltipForView(const views::View* view) const {
 
 base::string16 ShelfView::GetTitleForView(const views::View* view) const {
   const ShelfItem* item = ShelfItemForView(view);
-  if (!item || !model_->GetShelfItemDelegate(item->id))
-    return base::string16();
-  return model_->GetShelfItemDelegate(item->id)->GetTitle();
+  return item ? item->title : base::string16();
 }
 
 gfx::Rect ShelfView::GetVisibleItemsBoundsInScreen() {

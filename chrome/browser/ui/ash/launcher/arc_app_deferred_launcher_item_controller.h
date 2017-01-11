@@ -35,7 +35,6 @@ class ArcAppDeferredLauncherItemController : public LauncherItemController {
   // ash::ShelfItemDelegate
   ash::ShelfItemDelegate::PerformedAction ItemSelected(
       const ui::Event& event) override;
-  base::string16 GetTitle() override;
   ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) override;
   void Close() override;
 

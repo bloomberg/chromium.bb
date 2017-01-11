@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -103,25 +104,25 @@ LauncherControllerHelper::~LauncherControllerHelper() {}
 base::string16 LauncherControllerHelper::GetAppTitle(
     Profile* profile,
     const std::string& app_id) {
-  base::string16 title;
   if (app_id.empty())
-    return title;
+    return base::string16();
 
-  // Get title if the app is an Arc app.
+  // Get the title if the app is an Arc app.
   ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile);
-  if (arc_prefs && arc_prefs->IsRegistered(app_id)) {
+  const std::string arc_app_id =
+      ArcAppWindowLauncherController::GetArcAppIdFromShelfAppId(app_id);
+  if (arc_prefs && arc_prefs->IsRegistered(arc_app_id)) {
     std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-        arc_prefs->GetApp(app_id);
+        arc_prefs->GetApp(arc_app_id);
     DCHECK(app_info.get());
     if (app_info)
-      title = base::UTF8ToUTF16(app_info->name);
-    return title;
+      return base::UTF8ToUTF16(app_info->name);
   }
 
   const extensions::Extension* extension = GetExtensionByID(profile, app_id);
   if (extension)
-    title = base::UTF8ToUTF16(extension->name());
-  return title;
+    return base::UTF8ToUTF16(extension->name());
+  return base::string16();
 }
 
 std::string LauncherControllerHelper::GetAppID(content::WebContents* tab) {

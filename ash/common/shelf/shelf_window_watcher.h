@@ -61,6 +61,7 @@ class ShelfWindowWatcher : public WmActivationObserver,
                                  WmWindowProperty property) override;
     void OnWindowDestroying(WmWindow* window) override;
     void OnWindowVisibilityChanged(WmWindow* window, bool visible) override;
+    void OnWindowTitleChanged(WmWindow* window) override;
 
     ShelfWindowWatcher* window_watcher_;
 

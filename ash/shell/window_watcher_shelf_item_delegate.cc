@@ -31,10 +31,6 @@ ShelfItemDelegate::PerformedAction WindowWatcherShelfItemDelegate::ItemSelected(
   return kExistingWindowActivated;
 }
 
-base::string16 WindowWatcherShelfItemDelegate::GetTitle() {
-  return watcher_->GetWindowByID(id_)->GetTitle();
-}
-
 ShelfMenuModel* WindowWatcherShelfItemDelegate::CreateApplicationMenu(
     int event_flags) {
   return nullptr;

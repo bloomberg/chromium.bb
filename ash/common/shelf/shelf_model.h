@@ -18,16 +18,9 @@ namespace ash {
 class ShelfItemDelegate;
 class ShelfModelObserver;
 
-// Model used for shelf items. Owns ShelfItemDelegates, but does not create
-// them.
+// Model used for shelf items. Owns ShelfItemDelegates but does not create them.
 class ASH_EXPORT ShelfModel {
  public:
-  enum Status {
-    STATUS_NORMAL,
-    // A status that indicates apps are syncing/loading.
-    STATUS_LOADING,
-  };
-
   ShelfModel();
   ~ShelfModel();
 
@@ -82,9 +75,6 @@ class ASH_EXPORT ShelfModel {
   const ShelfItems& items() const { return items_; }
   int item_count() const { return static_cast<int>(items_.size()); }
 
-  void set_status(Status status) { status_ = status; }
-  Status status() const { return status_; }
-
   // Set |item_delegate| for |id| and takes ownership.
   void SetShelfItemDelegate(ShelfID id,
                             std::unique_ptr<ShelfItemDelegate> item_delegate);
@@ -108,7 +98,6 @@ class ASH_EXPORT ShelfModel {
   ShelfID next_id_;
 
   ShelfItems items_;
-  Status status_;
   base::ObserverList<ShelfModelObserver> observers_;
 
   std::map<ShelfID, std::unique_ptr<ShelfItemDelegate>>

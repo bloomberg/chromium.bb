@@ -11,6 +11,7 @@
 #include "ash/common/multi_profile_uma.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/wm_shelf.h"
+#include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
@@ -67,6 +68,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/favicon/content/content_favicon_driver.h"
@@ -1279,6 +1281,7 @@ ash::ShelfID ChromeLauncherControllerImpl::InsertAppLauncherItem(
   item.type = shelf_item_type;
   item.app_id = app_id;
   item.image = extensions::util::GetDefaultAppIcon();
+  item.title = LauncherControllerHelper::GetAppTitle(profile(), app_id);
 
   ash::ShelfItemStatus new_state = GetAppState(app_id);
   if (new_state != ash::STATUS_CLOSED)
@@ -1303,6 +1306,7 @@ void ChromeLauncherControllerImpl::CreateBrowserShortcutLauncherItem() {
   browser_shortcut.type = ash::TYPE_BROWSER_SHORTCUT;
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   browser_shortcut.image = *rb.GetImageSkiaNamed(IDR_PRODUCT_LOGO_32);
+  browser_shortcut.title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
   ash::ShelfID id = model_->next_id();
   model_->AddAt(0, browser_shortcut);
   id_to_item_controller_map_[id] =
@@ -1445,10 +1449,19 @@ void ChromeLauncherControllerImpl::OnDisplayConfigurationChanged() {
 // AppSyncUIStateObserver:
 
 void ChromeLauncherControllerImpl::OnAppSyncUIStatusChanged() {
-  if (app_sync_ui_state_->status() == AppSyncUIState::STATUS_SYNCING)
-    model_->set_status(ash::ShelfModel::STATUS_LOADING);
-  else
-    model_->set_status(ash::ShelfModel::STATUS_NORMAL);
+  // Update the app list button title to reflect the syncing status.
+  base::string16 title = l10n_util::GetStringUTF16(
+      app_sync_ui_state_->status() == AppSyncUIState::STATUS_SYNCING
+          ? IDS_ASH_SHELF_APP_LIST_LAUNCHER_SYNCING_TITLE
+          : IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE);
+
+  const int app_list_index = model_->GetItemIndexForType(ash::TYPE_APP_LIST);
+  DCHECK_GE(app_list_index, 0);
+  ash::ShelfItem item = model_->items()[app_list_index];
+  if (item.title != title) {
+    item.title = title;
+    model_->Set(app_list_index, item);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

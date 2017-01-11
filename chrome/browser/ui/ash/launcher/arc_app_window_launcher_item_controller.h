@@ -22,7 +22,6 @@ class ArcAppWindowLauncherItemController
   ~ArcAppWindowLauncherItemController() override;
 
   // LauncherItemController overrides:
-  base::string16 GetTitle() override;
   ash::ShelfItemDelegate::PerformedAction ItemSelected(
       const ui::Event& event) override;
   ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) override;

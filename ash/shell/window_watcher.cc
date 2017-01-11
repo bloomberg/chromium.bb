@@ -110,6 +110,7 @@ void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
                         image_count == 1 ? 255 : 0, image_count == 2 ? 255 : 0);
   image_count = (image_count + 1) % 3;
   item.image = gfx::ImageSkia(gfx::ImageSkiaRep(icon_bitmap, 1.0f));
+  item.title = new_window->GetTitle();
 
   model->Add(item);
 

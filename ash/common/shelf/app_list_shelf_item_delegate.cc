@@ -14,19 +14,18 @@
 namespace ash {
 
 // static
-void AppListShelfItemDelegate::CreateAppListItemAndDelegate(
-    ShelfModel* shelf_model) {
+void AppListShelfItemDelegate::CreateAppListItemAndDelegate(ShelfModel* model) {
   // Add the app list item to the shelf model.
-  ShelfItem app_list;
-  app_list.type = TYPE_APP_LIST;
-  int app_list_index = shelf_model->Add(app_list);
-  DCHECK_GE(app_list_index, 0);
+  ShelfItem item;
+  item.type = TYPE_APP_LIST;
+  item.title = l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE);
+  int index = model->Add(item);
+  DCHECK_GE(index, 0);
 
   // Create an AppListShelfItemDelegate for that item.
-  ShelfID app_list_id = shelf_model->items()[app_list_index].id;
-  DCHECK_GE(app_list_id, 0);
-  shelf_model->SetShelfItemDelegate(
-      app_list_id, base::MakeUnique<AppListShelfItemDelegate>());
+  ShelfID id = model->items()[index].id;
+  DCHECK_GE(id, 0);
+  model->SetShelfItemDelegate(id, base::MakeUnique<AppListShelfItemDelegate>());
 }
 
 AppListShelfItemDelegate::AppListShelfItemDelegate() {}
@@ -37,16 +36,6 @@ ShelfItemDelegate::PerformedAction AppListShelfItemDelegate::ItemSelected(
     const ui::Event& event) {
   WmShell::Get()->ToggleAppList();
   return ShelfItemDelegate::kAppListMenuShown;
-}
-
-base::string16 AppListShelfItemDelegate::GetTitle() {
-  ShelfModel* model = WmShell::Get()->shelf_model();
-  DCHECK(model);
-  int title_id;
-  title_id = model->status() == ShelfModel::STATUS_LOADING
-                 ? IDS_ASH_SHELF_APP_LIST_LAUNCHER_SYNCING_TITLE
-                 : IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE;
-  return l10n_util::GetStringUTF16(title_id);
 }
 
 ShelfMenuModel* AppListShelfItemDelegate::CreateApplicationMenu(
