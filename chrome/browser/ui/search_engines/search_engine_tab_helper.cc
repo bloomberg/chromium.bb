@@ -214,10 +214,12 @@ void SearchEngineTabHelper::GenerateKeywordIfNecessary(
   // latter.
   // TODO(sky): Need a way to set the favicon that doesn't involve generating
   // its url.
-  data.favicon_url =
-      current_favicon.is_valid()
-          ? current_favicon
-          : TemplateURL::GenerateFaviconURL(handle->GetReferrer().url);
+  if (current_favicon.is_valid()) {
+    data.favicon_url = current_favicon;
+  } else if (handle->GetReferrer().url.is_valid()) {
+    data.favicon_url =
+        TemplateURL::GenerateFaviconURL(handle->GetReferrer().url);
+  }
   data.safe_for_autoreplace = true;
   data.input_encodings.push_back(handle->GetSearchableFormEncoding());
   url_service->Add(base::MakeUnique<TemplateURL>(data));
