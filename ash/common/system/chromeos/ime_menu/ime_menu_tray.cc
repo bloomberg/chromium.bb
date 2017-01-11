@@ -26,6 +26,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -68,6 +69,28 @@ int GetMinimumMenuWidth() {
 void ShowIMESettings() {
   WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_IME_SHOW_DETAILED);
   WmShell::Get()->system_tray_controller()->ShowIMESettings();
+}
+
+// Records the number of times users click buttons in opt-in IME menu.
+void RecordButtonsClicked(const std::string& button_name) {
+  enum {
+    UNKNOWN = 0,
+    EMOJI = 1,
+    HANDWRITING = 2,
+    VOICE = 3,
+    // SETTINGS is not used for now.
+    SETTINGS = 4,
+    BUTTON_MAX
+  } button = UNKNOWN;
+  if (button_name == "emoji") {
+    button = EMOJI;
+  } else if (button_name == "hwt") {
+    button = HANDWRITING;
+  } else if (button_name == "voice") {
+    button = VOICE;
+  }
+  UMA_HISTOGRAM_ENUMERATION("InputMethod.ImeMenu.EmojiHandwritingVoiceButton",
+                            button, BUTTON_MAX);
 }
 
 // Returns true if the current screen is login or lock screen.
@@ -210,14 +233,18 @@ class ImeButtonsView : public views::View,
     // extensions. InputMethodManager::ShowKeyboardWithKeyset() will deal with
     // the |keyset| string to generate the right input view url.
     std::string keyset;
-    if (sender == emoji_button_)
+    if (sender == emoji_button_) {
       keyset = "emoji";
-    else if (sender == voice_button_)
+      RecordButtonsClicked(keyset);
+    } else if (sender == voice_button_) {
       keyset = "voice";
-    else if (sender == handwriting_button_)
+      RecordButtonsClicked(keyset);
+    } else if (sender == handwriting_button_) {
       keyset = "hwt";
-    else
+      RecordButtonsClicked(keyset);
+    } else {
       NOTREACHED();
+    }
 
     ime_menu_tray_->ShowKeyboardWithKeyset(keyset);
   }
