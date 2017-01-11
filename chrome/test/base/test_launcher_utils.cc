@@ -106,6 +106,12 @@ bool OverrideUserDataDir(const base::FilePath& user_data_dir) {
   // value to the child process. This is the simplest way to do it.
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   success = success && env->SetVar("XDG_CACHE_HOME", user_data_dir.value());
+
+  // Also make sure that the machine policy directory is inside the clear
+  // profile. Otherwise the machine's policies could affect tests.
+  base::FilePath policy_files = user_data_dir.AppendASCII("policies");
+  success =
+      success && PathService::Override(chrome::DIR_POLICY_FILES, policy_files);
 #endif
 
   return success;

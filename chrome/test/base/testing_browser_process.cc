@@ -4,6 +4,7 @@
 
 #include "chrome/test/base/testing_browser_process.h"
 
+#include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/features.h"
 #include "chrome/test/base/testing_browser_process_platform_part.h"
 #include "components/network_time/network_time_tracker.h"
@@ -151,6 +153,19 @@ policy::BrowserPolicyConnector*
   if (!browser_policy_connector_) {
     EXPECT_FALSE(created_browser_policy_connector_);
     created_browser_policy_connector_ = true;
+
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+    // Make sure that the machine policy directory does not exist so that
+    // machine-wide policies do not affect tests.
+    // Note that passing false as last argument to OverrideAndCreateIfNeeded
+    // means that the directory will not be created.
+    // If a test needs to place a file in this directory in the future, we could
+    // create a temporary directory and make its path available to tests.
+    base::FilePath local_policy_path("/tmp/non/existing/directory");
+    EXPECT_TRUE(PathService::OverrideAndCreateIfNeeded(
+        chrome::DIR_POLICY_FILES, local_policy_path, true, false));
+#endif
+
     browser_policy_connector_ = platform_part_->CreateBrowserPolicyConnector();
 
     // Note: creating the ChromeBrowserPolicyConnector invokes BrowserThread::
