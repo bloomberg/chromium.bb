@@ -62,6 +62,21 @@ enum PositionSource {
   POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM,
 };
 
+enum AAMode {
+  NO_AA = 0,
+  USE_AA = 1,
+};
+
+enum SwizzleMode {
+  NO_SWIZZLE = 0,
+  DO_SWIZZLE = 1,
+};
+
+enum PremultipliedAlphaMode {
+  PREMULTIPLIED_ALPHA = 0,
+  NON_PREMULTIPLIED_ALPHA = 1,
+};
+
 enum SamplerType {
   SAMPLER_TYPE_NA = 0,
   SAMPLER_TYPE_2D = 1,
@@ -175,6 +190,9 @@ class VertexShaderBase {
   int quad_location() const { return quad_location_; }
 
  protected:
+  template <class VertexShader, class FragmentShader>
+  friend class ProgramBinding;
+
   // Use arrays of uniforms for matrix, texTransform, and opacity.
   bool use_uniform_arrays_ = false;
 
@@ -210,14 +228,14 @@ class VertexShaderBase {
   bool has_vertex_opacity_ = false;
   int vertex_opacity_location_ = -1;
 
-  bool has_aa_ = false;
+  AAMode aa_mode_ = NO_AA;
   int viewport_location_ = -1;
   int edge_location_ = -1;
 };
 
 class VertexShaderPosTex : public VertexShaderBase {
  public:
-  VertexShaderPosTex() {
+  void SetSubclassProperties() {
     tex_coord_source_ = TEX_COORD_SOURCE_ATTRIBUTE;
     has_matrix_ = true;
   }
@@ -225,7 +243,7 @@ class VertexShaderPosTex : public VertexShaderBase {
 
 class VertexShaderPosTexYUVStretchOffset : public VertexShaderBase {
  public:
-  VertexShaderPosTexYUVStretchOffset() {
+  void SetSubclassProperties() {
     tex_coord_source_ = TEX_COORD_SOURCE_ATTRIBUTE;
     has_matrix_ = true;
     is_ya_uv_ = true;
@@ -234,12 +252,12 @@ class VertexShaderPosTexYUVStretchOffset : public VertexShaderBase {
 
 class VertexShaderPos : public VertexShaderBase {
  public:
-  VertexShaderPos() { has_matrix_ = true; }
+  void SetSubclassProperties() { has_matrix_ = true; }
 };
 
 class VertexShaderPosTexTransform : public VertexShaderBase {
  public:
-  VertexShaderPosTexTransform() {
+  void SetSubclassProperties() {
     tex_coord_source_ = TEX_COORD_SOURCE_ATTRIBUTE;
     tex_coord_transform_ = TEX_COORD_TRANSFORM_VEC4;
     has_matrix_ = true;
@@ -250,7 +268,7 @@ class VertexShaderPosTexTransform : public VertexShaderBase {
 
 class VertexShaderQuad : public VertexShaderBase {
  public:
-  VertexShaderQuad() {
+  void SetSubclassProperties() {
     position_source_ = POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM;
     has_matrix_ = true;
 #if defined(OS_ANDROID)
@@ -261,27 +279,27 @@ class VertexShaderQuad : public VertexShaderBase {
 
 class VertexShaderQuadAA : public VertexShaderBase {
  public:
-  VertexShaderQuadAA() {
+  void SetSubclassProperties() {
     position_source_ = POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM;
     has_matrix_ = true;
-    has_aa_ = true;
+    aa_mode_ = USE_AA;
   }
 };
 
 class VertexShaderQuadTexTransformAA : public VertexShaderBase {
  public:
-  VertexShaderQuadTexTransformAA() {
+  void SetSubclassProperties() {
     position_source_ = POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM;
     tex_coord_source_ = TEX_COORD_SOURCE_POSITION;
     tex_coord_transform_ = TEX_COORD_TRANSFORM_TRANSLATED_VEC4;
     has_matrix_ = true;
-    has_aa_ = true;
+    aa_mode_ = USE_AA;
   }
 };
 
 class VertexShaderTile : public VertexShaderBase {
  public:
-  VertexShaderTile() {
+  void SetSubclassProperties() {
     position_source_ = POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM;
     tex_coord_source_ = TEX_COORD_SOURCE_ATTRIBUTE;
     tex_coord_transform_ = TEX_COORD_TRANSFORM_VEC4;
@@ -291,18 +309,18 @@ class VertexShaderTile : public VertexShaderBase {
 
 class VertexShaderTileAA : public VertexShaderBase {
  public:
-  VertexShaderTileAA() {
+  void SetSubclassProperties() {
     position_source_ = POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM;
     tex_coord_source_ = TEX_COORD_SOURCE_POSITION;
     tex_coord_transform_ = TEX_COORD_TRANSFORM_VEC4;
     has_matrix_ = true;
-    has_aa_ = true;
+    aa_mode_ = USE_AA;
   }
 };
 
 class VertexShaderVideoTransform : public VertexShaderBase {
  public:
-  VertexShaderVideoTransform() {
+  void SetSubclassProperties() {
     tex_coord_source_ = TEX_COORD_SOURCE_ATTRIBUTE;
     tex_coord_transform_ = TEX_COORD_TRANSFORM_MATRIX;
     has_matrix_ = true;
@@ -314,17 +332,8 @@ class FragmentShaderBase {
   virtual void Init(gpu::gles2::GLES2Interface* context,
                     unsigned program,
                     int* base_uniform_index);
-  std::string GetShaderString(TexCoordPrecision precision,
-                              SamplerType sampler) const;
+  std::string GetShaderString() const;
   void FillLocations(ShaderLocations* locations) const;
-
-  BlendMode blend_mode() const { return blend_mode_; }
-  void set_blend_mode(BlendMode blend_mode) { blend_mode_ = blend_mode; }
-  bool has_blend_mode() const { return blend_mode_ != BLEND_MODE_NONE; }
-  void set_mask_for_background(bool mask_for_background) {
-    mask_for_background_ = mask_for_background;
-  }
-  bool mask_for_background() const { return mask_for_background_; }
 
   int sampler_location() const { return sampler_location_; }
   int alpha_location() const { return alpha_location_; }
@@ -337,14 +346,15 @@ class FragmentShaderBase {
  protected:
   FragmentShaderBase();
   virtual std::string GetShaderSource() const;
+  bool has_blend_mode() const { return blend_mode_ != BLEND_MODE_NONE; }
 
   std::string SetBlendModeFunctions(const std::string& shader_string) const;
 
   // Settings that are modified by sub-classes.
-  bool has_aa_ = false;
+  AAMode aa_mode_ = NO_AA;
   bool has_varying_alpha_ = false;
-  bool has_swizzle_ = false;
-  bool has_premultiply_alpha_ = false;
+  SwizzleMode swizzle_mode_ = NO_SWIZZLE;
+  PremultipliedAlphaMode premultiply_alpha_mode_ = PREMULTIPLIED_ALPHA;
   FragColorMode frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
   InputColorSource input_color_type_ = INPUT_COLOR_SOURCE_RGBA_TEXTURE;
 
@@ -367,7 +377,7 @@ class FragmentShaderBase {
   // Used only if |input_color_type_| is INPUT_COLOR_SOURCE_UNIFORM.
   int color_location_ = -1;
 
-  bool has_mask_sampler_ = false;
+  MaskMode mask_mode_ = NO_MASK;
   int mask_sampler_location_ = -1;
   int mask_tex_coord_scale_location_ = -1;
   int mask_tex_coord_offset_location_ = -1;
@@ -382,9 +392,15 @@ class FragmentShaderBase {
   bool has_background_color_ = false;
   int background_color_location_ = -1;
 
- private:
+  TexCoordPrecision tex_coord_precision_ = TEX_COORD_PRECISION_NA;
+  SamplerType sampler_type_ = SAMPLER_TYPE_NA;
+
   BlendMode blend_mode_ = BLEND_MODE_NONE;
   bool mask_for_background_ = false;
+
+ private:
+  template <class VertexShader, class FragmentShader>
+  friend class ProgramBinding;
 
   std::string GetHelperFunctions() const;
   std::string GetBlendFunction() const;
@@ -395,7 +411,7 @@ class FragmentShaderBase {
 
 class FragmentShaderRGBATexVaryingAlpha : public FragmentShaderBase {
  public:
-  FragmentShaderRGBATexVaryingAlpha() {
+  void SetSubclassProperties() {
     has_varying_alpha_ = true;
     frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
   }
@@ -403,16 +419,16 @@ class FragmentShaderRGBATexVaryingAlpha : public FragmentShaderBase {
 
 class FragmentShaderRGBATexPremultiplyAlpha : public FragmentShaderBase {
  public:
-  FragmentShaderRGBATexPremultiplyAlpha() {
+  void SetSubclassProperties() {
     has_varying_alpha_ = true;
-    has_premultiply_alpha_ = true;
+    premultiply_alpha_mode_ = NON_PREMULTIPLIED_ALPHA;
     frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
   }
 };
 
 class FragmentShaderTexBackgroundVaryingAlpha : public FragmentShaderBase {
  public:
-  FragmentShaderTexBackgroundVaryingAlpha() {
+  void SetSubclassProperties() {
     has_background_color_ = true;
     has_varying_alpha_ = true;
     frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
@@ -421,17 +437,17 @@ class FragmentShaderTexBackgroundVaryingAlpha : public FragmentShaderBase {
 
 class FragmentShaderTexBackgroundPremultiplyAlpha : public FragmentShaderBase {
  public:
-  FragmentShaderTexBackgroundPremultiplyAlpha() {
+  void SetSubclassProperties() {
     has_background_color_ = true;
     has_varying_alpha_ = true;
-    has_premultiply_alpha_ = true;
+    premultiply_alpha_mode_ = NON_PREMULTIPLIED_ALPHA;
     frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
   }
 };
 
 class FragmentShaderRGBATexAlpha : public FragmentShaderBase {
  public:
-  FragmentShaderRGBATexAlpha() {
+  void SetSubclassProperties() {
     has_uniform_alpha_ = true;
     frag_color_mode_ = FRAG_COLOR_MODE_APPLY_BLEND_MODE;
   }
@@ -439,7 +455,7 @@ class FragmentShaderRGBATexAlpha : public FragmentShaderBase {
 
 class FragmentShaderRGBATexColorMatrixAlpha : public FragmentShaderBase {
  public:
-  FragmentShaderRGBATexColorMatrixAlpha() {
+  void SetSubclassProperties() {
     has_uniform_alpha_ = true;
     has_color_matrix_ = true;
     frag_color_mode_ = FRAG_COLOR_MODE_APPLY_BLEND_MODE;
@@ -448,20 +464,20 @@ class FragmentShaderRGBATexColorMatrixAlpha : public FragmentShaderBase {
 
 class FragmentShaderRGBATexOpaque : public FragmentShaderBase {
  public:
-  FragmentShaderRGBATexOpaque() { frag_color_mode_ = FRAG_COLOR_MODE_OPAQUE; }
+  void SetSubclassProperties() { frag_color_mode_ = FRAG_COLOR_MODE_OPAQUE; }
 };
 
 class FragmentShaderRGBATex : public FragmentShaderBase {
  public:
-  FragmentShaderRGBATex() { frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT; }
+  void SetSubclassProperties() { frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT; }
 };
 
 // Swizzles the red and blue component of sampled texel with alpha.
 class FragmentShaderRGBATexSwizzleAlpha : public FragmentShaderBase {
  public:
-  FragmentShaderRGBATexSwizzleAlpha() {
+  void SetSubclassProperties() {
     has_uniform_alpha_ = true;
-    has_swizzle_ = true;
+    swizzle_mode_ = DO_SWIZZLE;
     frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
   }
 };
@@ -469,16 +485,16 @@ class FragmentShaderRGBATexSwizzleAlpha : public FragmentShaderBase {
 // Swizzles the red and blue component of sampled texel without alpha.
 class FragmentShaderRGBATexSwizzleOpaque : public FragmentShaderBase {
  public:
-  FragmentShaderRGBATexSwizzleOpaque() {
-    has_swizzle_ = true;
+  void SetSubclassProperties() {
+    swizzle_mode_ = DO_SWIZZLE;
     frag_color_mode_ = FRAG_COLOR_MODE_OPAQUE;
   }
 };
 
 class FragmentShaderRGBATexAlphaAA : public FragmentShaderBase {
  public:
-  FragmentShaderRGBATexAlphaAA() {
-    has_aa_ = true;
+  void SetSubclassProperties() {
+    aa_mode_ = USE_AA;
     has_uniform_alpha_ = true;
     frag_color_mode_ = FRAG_COLOR_MODE_APPLY_BLEND_MODE;
   }
@@ -486,8 +502,8 @@ class FragmentShaderRGBATexAlphaAA : public FragmentShaderBase {
 
 class FragmentShaderRGBATexClampAlphaAA : public FragmentShaderBase {
  public:
-  FragmentShaderRGBATexClampAlphaAA() {
-    has_aa_ = true;
+  void SetSubclassProperties() {
+    aa_mode_ = USE_AA;
     has_uniform_alpha_ = true;
     has_rgba_fragment_tex_transform_ = true;
     frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
@@ -497,20 +513,20 @@ class FragmentShaderRGBATexClampAlphaAA : public FragmentShaderBase {
 // Swizzles the red and blue component of sampled texel.
 class FragmentShaderRGBATexClampSwizzleAlphaAA : public FragmentShaderBase {
  public:
-  FragmentShaderRGBATexClampSwizzleAlphaAA() {
-    has_aa_ = true;
+  void SetSubclassProperties() {
+    aa_mode_ = USE_AA;
     has_uniform_alpha_ = true;
     has_rgba_fragment_tex_transform_ = true;
-    has_swizzle_ = true;
+    swizzle_mode_ = DO_SWIZZLE;
     frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
   }
 };
 
 class FragmentShaderRGBATexAlphaMask : public FragmentShaderBase {
  public:
-  FragmentShaderRGBATexAlphaMask() {
+  void SetSubclassProperties() {
     has_uniform_alpha_ = true;
-    has_mask_sampler_ = true;
+    mask_mode_ = HAS_MASK;
     frag_color_mode_ = FRAG_COLOR_MODE_APPLY_BLEND_MODE;
     ignore_sampler_type_ = true;
   }
@@ -518,10 +534,10 @@ class FragmentShaderRGBATexAlphaMask : public FragmentShaderBase {
 
 class FragmentShaderRGBATexAlphaMaskAA : public FragmentShaderBase {
  public:
-  FragmentShaderRGBATexAlphaMaskAA() {
-    has_aa_ = true;
+  void SetSubclassProperties() {
+    aa_mode_ = USE_AA;
     has_uniform_alpha_ = true;
-    has_mask_sampler_ = true;
+    mask_mode_ = HAS_MASK;
     frag_color_mode_ = FRAG_COLOR_MODE_APPLY_BLEND_MODE;
     ignore_sampler_type_ = true;
   }
@@ -529,10 +545,10 @@ class FragmentShaderRGBATexAlphaMaskAA : public FragmentShaderBase {
 
 class FragmentShaderRGBATexAlphaMaskColorMatrixAA : public FragmentShaderBase {
  public:
-  FragmentShaderRGBATexAlphaMaskColorMatrixAA() {
-    has_aa_ = true;
+  void SetSubclassProperties() {
+    aa_mode_ = USE_AA;
     has_uniform_alpha_ = true;
-    has_mask_sampler_ = true;
+    mask_mode_ = HAS_MASK;
     has_color_matrix_ = true;
     frag_color_mode_ = FRAG_COLOR_MODE_APPLY_BLEND_MODE;
     ignore_sampler_type_ = true;
@@ -541,8 +557,8 @@ class FragmentShaderRGBATexAlphaMaskColorMatrixAA : public FragmentShaderBase {
 
 class FragmentShaderRGBATexAlphaColorMatrixAA : public FragmentShaderBase {
  public:
-  FragmentShaderRGBATexAlphaColorMatrixAA() {
-    has_aa_ = true;
+  void SetSubclassProperties() {
+    aa_mode_ = USE_AA;
     has_uniform_alpha_ = true;
     has_color_matrix_ = true;
     frag_color_mode_ = FRAG_COLOR_MODE_APPLY_BLEND_MODE;
@@ -551,9 +567,9 @@ class FragmentShaderRGBATexAlphaColorMatrixAA : public FragmentShaderBase {
 
 class FragmentShaderRGBATexAlphaMaskColorMatrix : public FragmentShaderBase {
  public:
-  FragmentShaderRGBATexAlphaMaskColorMatrix() {
+  void SetSubclassProperties() {
     has_uniform_alpha_ = true;
-    has_mask_sampler_ = true;
+    mask_mode_ = HAS_MASK;
     has_color_matrix_ = true;
     frag_color_mode_ = FRAG_COLOR_MODE_APPLY_BLEND_MODE;
     ignore_sampler_type_ = true;
@@ -563,7 +579,8 @@ class FragmentShaderRGBATexAlphaMaskColorMatrix : public FragmentShaderBase {
 class FragmentShaderYUVVideo : public FragmentShaderBase {
  public:
   FragmentShaderYUVVideo();
-  void SetFeatures(bool use_alpha_texture, bool use_nv12, bool use_color_lut);
+
+  void SetSubclassProperties() {}
 
   void Init(gpu::gles2::GLES2Interface* context,
             unsigned program,
@@ -585,6 +602,9 @@ class FragmentShaderYUVVideo : public FragmentShaderBase {
   int resource_offset_location() const { return resource_offset_location_; }
 
  private:
+  template <class VertexShader, class FragmentShader>
+  friend class ProgramBinding;
+
   std::string GetShaderSource() const override;
 
   bool use_alpha_texture_ = false;
@@ -608,7 +628,7 @@ class FragmentShaderYUVVideo : public FragmentShaderBase {
 
 class FragmentShaderColor : public FragmentShaderBase {
  public:
-  FragmentShaderColor() {
+  void SetSubclassProperties() {
     input_color_type_ = INPUT_COLOR_SOURCE_UNIFORM;
     frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
   }
@@ -616,9 +636,9 @@ class FragmentShaderColor : public FragmentShaderBase {
 
 class FragmentShaderColorAA : public FragmentShaderBase {
  public:
-  FragmentShaderColorAA() {
+  void SetSubclassProperties() {
     input_color_type_ = INPUT_COLOR_SOURCE_UNIFORM;
-    has_aa_ = true;
+    aa_mode_ = USE_AA;
     frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
   }
 };

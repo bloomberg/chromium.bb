@@ -3658,10 +3658,9 @@ const GLRenderer::VideoYUVProgram* GLRenderer::GetVideoYUVProgram(
                          [use_color_lut];
   if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::videoYUVProgram::initialize");
-    program->mutable_fragment_shader()->SetFeatures(use_alpha_plane, use_nv12,
-                                                    use_color_lut);
-    program->Initialize(output_surface_->context_provider(), precision,
-                        sampler);
+    program->InitializeVideoYUV(output_surface_->context_provider(), precision,
+                                sampler, use_alpha_plane, use_nv12,
+                                use_color_lut);
   }
   return program;
 }

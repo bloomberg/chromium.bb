@@ -198,7 +198,7 @@ void VertexShaderBase::Init(GLES2Interface* context,
     uniforms.push_back("matrix");
   if (has_vertex_opacity_)
     uniforms.push_back("opacity");
-  if (has_aa_) {
+  if (aa_mode_ == USE_AA) {
     uniforms.push_back("viewport");
     uniforms.push_back("edge");
   }
@@ -232,7 +232,7 @@ void VertexShaderBase::Init(GLES2Interface* context,
     matrix_location_ = locations[index++];
   if (has_vertex_opacity_)
     vertex_opacity_location_ = locations[index++];
-  if (has_aa_) {
+  if (aa_mode_ == USE_AA) {
     viewport_location_ = locations[index++];
     edge_location_ = locations[index++];
   }
@@ -298,7 +298,7 @@ std::string VertexShaderBase::GetShaderString() const {
   }
 
   // Compute the anti-aliasing edge distances.
-  if (has_aa_) {
+  if (aa_mode_ == USE_AA) {
     HDR("uniform TexCoordPrecision vec3 edge[8];");
     HDR("uniform vec4 viewport;");
     HDR("varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.");
@@ -395,14 +395,14 @@ std::string VertexShaderBase::GetShaderString() const {
 
 FragmentShaderBase::FragmentShaderBase() {}
 
-std::string FragmentShaderBase::GetShaderString(TexCoordPrecision precision,
-                                                SamplerType sampler) const {
+std::string FragmentShaderBase::GetShaderString() const {
+  TexCoordPrecision precision = tex_coord_precision_;
   // The AA shader values will use TexCoordPrecision.
-  if (has_aa_ && precision == TEX_COORD_PRECISION_NA)
+  if (aa_mode_ == USE_AA && precision == TEX_COORD_PRECISION_NA)
     precision = TEX_COORD_PRECISION_MEDIUM;
   return SetFragmentTexCoordPrecision(
       precision, SetFragmentSamplerType(
-                     sampler, SetBlendModeFunctions(GetShaderSource())));
+                     sampler_type_, SetBlendModeFunctions(GetShaderSource())));
 }
 
 void FragmentShaderBase::Init(GLES2Interface* context,
@@ -415,7 +415,7 @@ void FragmentShaderBase::Init(GLES2Interface* context,
     uniforms.push_back("s_originalBackdropTexture");
     uniforms.push_back("backdropRect");
   }
-  if (has_mask_sampler_) {
+  if (mask_mode_ != NO_MASK) {
     uniforms.push_back("s_mask");
     uniforms.push_back("maskTexCoordScale");
     uniforms.push_back("maskTexCoordOffset");
@@ -450,7 +450,7 @@ void FragmentShaderBase::Init(GLES2Interface* context,
     original_backdrop_location_ = locations[index++];
     backdrop_rect_location_ = locations[index++];
   }
-  if (has_mask_sampler_) {
+  if (mask_mode_ != NO_MASK) {
     mask_sampler_location_ = locations[index++];
     mask_tex_coord_scale_location_ = locations[index++];
     mask_tex_coord_offset_location_ = locations[index++];
@@ -481,9 +481,9 @@ void FragmentShaderBase::FillLocations(ShaderLocations* locations) const {
     locations->backdrop = backdrop_location_;
     locations->backdrop_rect = backdrop_rect_location_;
   }
-  if (mask_for_background())
+  if (mask_for_background_)
     locations->original_backdrop = original_backdrop_location_;
-  if (has_mask_sampler_) {
+  if (mask_mode_ != NO_MASK) {
     locations->mask_sampler = mask_sampler_location_;
     locations->mask_tex_coord_scale = mask_tex_coord_scale_location_;
     locations->mask_tex_coord_offset = mask_tex_coord_offset_location_;
@@ -519,7 +519,7 @@ std::string FragmentShaderBase::SetBlendModeFunctions(
   });
 
   std::string mixFunction;
-  if (mask_for_background()) {
+  if (mask_for_background_) {
     mixFunction = SHADER0([]() {
       vec4 MixBackdrop(TexCoordPrecision vec2 bgTexCoord, float mask) {
         vec4 backdrop = texture2D(s_backdropTexture, bgTexCoord);
@@ -847,7 +847,7 @@ std::string FragmentShaderBase::GetShaderSource() const {
   }
 
   // Read the mask texture.
-  if (has_mask_sampler_) {
+  if (mask_mode_ != NO_MASK) {
     HDR("uniform SamplerType s_mask;");
     HDR("uniform vec2 maskTexCoordScale;");
     HDR("uniform vec2 maskTexCoordOffset;");
@@ -859,7 +859,7 @@ std::string FragmentShaderBase::GetShaderSource() const {
   }
 
   // Compute AA.
-  if (has_aa_) {
+  if (aa_mode_ == USE_AA) {
     HDR("varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.");
     SRC("// Compute AA");
     SRC("vec4 d4 = min(edge_dist[0], edge_dist[1]);");
@@ -868,7 +868,7 @@ std::string FragmentShaderBase::GetShaderSource() const {
   }
 
   // Premultiply by alpha.
-  if (has_premultiply_alpha_) {
+  if (premultiply_alpha_mode_ == NON_PREMULTIPLIED_ALPHA) {
     SRC("// Premultiply alpha");
     SRC("texColor.rgb *= texColor.a;");
   }
@@ -881,7 +881,7 @@ std::string FragmentShaderBase::GetShaderSource() const {
   }
 
   // Apply swizzle.
-  if (has_swizzle_) {
+  if (swizzle_mode_ == DO_SWIZZLE) {
     SRC("// Apply swizzle");
     SRC("texColor = texColor.bgra;\n");
   }
@@ -895,17 +895,17 @@ std::string FragmentShaderBase::GetShaderSource() const {
   }
 
   // Apply uniform alpha, aa, varying alpha, and the mask.
-  if (has_varying_alpha_ || has_aa_ || has_uniform_alpha_ ||
-      has_mask_sampler_) {
+  if (has_varying_alpha_ || aa_mode_ == USE_AA || has_uniform_alpha_ ||
+      mask_mode_ != NO_MASK) {
     SRC("// Apply alpha from uniform, varying, aa, and mask.");
     std::string line = "  texColor = texColor";
     if (has_varying_alpha_)
       line += " * v_alpha";
     if (has_uniform_alpha_)
       line += " * alpha";
-    if (has_aa_)
+    if (aa_mode_ == USE_AA)
       line += " * aa";
-    if (has_mask_sampler_)
+    if (mask_mode_ != NO_MASK)
       line += " * maskColor.a";
     line += ";\n";
     source += line;
@@ -923,7 +923,7 @@ std::string FragmentShaderBase::GetShaderSource() const {
       SRC("gl_FragColor = vec4(texColor.rgb, 1.0);");
       break;
     case FRAG_COLOR_MODE_APPLY_BLEND_MODE:
-      if (has_mask_sampler_)
+      if (mask_mode_ != NO_MASK)
         SRC("gl_FragColor = ApplyBlendMode(texColor, maskColor.w);");
       else
         SRC("gl_FragColor = ApplyBlendMode(texColor, 0.0);");
@@ -935,14 +935,6 @@ std::string FragmentShaderBase::GetShaderSource() const {
 }
 
 FragmentShaderYUVVideo::FragmentShaderYUVVideo() {}
-
-void FragmentShaderYUVVideo::SetFeatures(bool use_alpha_texture,
-                                         bool use_nv12,
-                                         bool use_color_lut) {
-  use_alpha_texture_ = use_alpha_texture;
-  use_nv12_ = use_nv12;
-  use_color_lut_ = use_color_lut;
-}
 
 void FragmentShaderYUVVideo::Init(GLES2Interface* context,
                                   unsigned program,

@@ -62,16 +62,26 @@ class ProgramBinding : public ProgramBindingBase {
   void Initialize(ContextProvider* context_provider,
                   TexCoordPrecision precision,
                   SamplerType sampler) {
-    return Initialize(
-        context_provider, precision, sampler, BLEND_MODE_NONE, false);
+    Initialize(context_provider, precision, sampler, BLEND_MODE_NONE, false);
   }
 
   void Initialize(ContextProvider* context_provider,
                   TexCoordPrecision precision,
                   SamplerType sampler,
                   BlendMode blend_mode) {
-    return Initialize(
-        context_provider, precision, sampler, blend_mode, false);
+    Initialize(context_provider, precision, sampler, blend_mode, false);
+  }
+
+  void InitializeVideoYUV(ContextProvider* context_provider,
+                          TexCoordPrecision precision,
+                          SamplerType sampler,
+                          bool use_alpha_plane,
+                          bool use_nv12,
+                          bool use_color_lut) {
+    fragment_shader_.use_alpha_texture_ = use_alpha_plane;
+    fragment_shader_.use_nv12_ = use_nv12;
+    fragment_shader_.use_color_lut_ = use_color_lut;
+    Initialize(context_provider, precision, sampler);
   }
 
   void Initialize(ContextProvider* context_provider,
@@ -79,19 +89,29 @@ class ProgramBinding : public ProgramBindingBase {
                   SamplerType sampler,
                   BlendMode blend_mode,
                   bool mask_for_background) {
+    vertex_shader_.SetSubclassProperties();
+    fragment_shader_.SetSubclassProperties();
+    fragment_shader_.blend_mode_ = blend_mode;
+    fragment_shader_.mask_for_background_ = mask_for_background;
+    fragment_shader_.tex_coord_precision_ = precision;
+    fragment_shader_.sampler_type_ = sampler;
+    InitializeInternal(context_provider);
+  }
+
+  const VertexShader& vertex_shader() const { return vertex_shader_; }
+  const FragmentShader& fragment_shader() const { return fragment_shader_; }
+
+ private:
+  void InitializeInternal(ContextProvider* context_provider) {
     DCHECK(context_provider);
     DCHECK(!initialized_);
 
     if (IsContextLost(context_provider->ContextGL()))
       return;
 
-    fragment_shader_.set_blend_mode(blend_mode);
-    fragment_shader_.set_mask_for_background(mask_for_background);
-
-    if (!ProgramBindingBase::Init(
-            context_provider->ContextGL(),
-            vertex_shader_.GetShaderString(),
-            fragment_shader_.GetShaderString(precision, sampler))) {
+    if (!ProgramBindingBase::Init(context_provider->ContextGL(),
+                                  vertex_shader_.GetShaderString(),
+                                  fragment_shader_.GetShaderString())) {
       DCHECK(IsContextLost(context_provider->ContextGL()));
       return;
     }
@@ -111,11 +131,6 @@ class ProgramBinding : public ProgramBindingBase {
     initialized_ = true;
   }
 
-  const VertexShader& vertex_shader() const { return vertex_shader_; }
-  const FragmentShader& fragment_shader() const { return fragment_shader_; }
-  FragmentShader* mutable_fragment_shader() { return &fragment_shader_; }
-
- private:
   VertexShader vertex_shader_;
   FragmentShader fragment_shader_;
 
