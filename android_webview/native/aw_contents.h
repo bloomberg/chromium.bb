@@ -333,9 +333,6 @@ class AwContents : public FindHelper::Listener,
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
-  base::android::ScopedJavaLocalRef<jobject> GetViewRoot(JNIEnv* env,
-                              const base::android::JavaParamRef<jobject>& obj);
-
   // content::WebContentsObserver overrides
   void RenderViewHostChanged(content::RenderViewHost* old_host,
                              content::RenderViewHost* new_host) override;

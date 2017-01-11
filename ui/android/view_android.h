@@ -18,7 +18,6 @@ class Layer;
 
 namespace ui {
 
-class ViewClient;
 class WindowAndroid;
 
 // A simple container for a UI layer.
@@ -55,7 +54,9 @@ class UI_ANDROID_EXPORT ViewAndroid {
     // Default copy/assign disabled by move constructor.
   };
 
-  explicit ViewAndroid(ViewClient* client);
+  // A ViewAndroid may have its own delegate or otherwise will
+  // use the next available parent's delegate.
+  ViewAndroid(const base::android::JavaRef<jobject>& delegate);
 
   ViewAndroid();
   virtual ~ViewAndroid();
@@ -73,10 +74,6 @@ class UI_ANDROID_EXPORT ViewAndroid {
   // Returns the window at the root of this hierarchy, or |null|
   // if disconnected.
   virtual WindowAndroid* GetWindowAndroid() const;
-
-  // Returns |ViewRoot| associated with the current ViewAndroid.
-  // Create one if not present.
-  base::android::ScopedJavaLocalRef<jobject> GetViewRoot();
 
   // Used to return and set the layer for this view. May be |null|.
   cc::Layer* GetLayer() const;
@@ -97,24 +94,11 @@ class UI_ANDROID_EXPORT ViewAndroid {
   void SetAnchorRect(const base::android::JavaRef<jobject>& anchor,
                      const gfx::RectF& bounds);
 
-  gfx::Size GetPhysicalBackingSize();
-  void UpdateLayerBounds();
-
-  // Internal implementation of ViewClient forwarding calls to the interface.
-  void OnPhysicalBackingSizeChanged(int width, int height);
-
  protected:
   ViewAndroid* parent_;
 
  private:
   void RemoveChild(ViewAndroid* child);
-
-  // Checks if any ViewAndroid instance in the tree hierarchy (including
-  // all the parents and the children) has |ViewRoot| already.
-  bool HasViewRootInTreeHierarchy();
-
-  // Checks if any children (plus this ViewAndroid itself) has |ViewRoot|.
-  bool HasViewRootInSubtree();
 
   // Returns the Java delegate for this view. This is used to delegate work
   // up to the embedding view (or the embedder that can deal with the
@@ -122,26 +106,13 @@ class UI_ANDROID_EXPORT ViewAndroid {
   const base::android::ScopedJavaLocalRef<jobject>
       GetViewAndroidDelegate() const;
 
-  // Creates a new |ViewRoot| for this ViewAndroid. No parent or child
-  // should have |ViewRoot| for this ViewAndroid to have one.
-  base::android::ScopedJavaLocalRef<jobject> CreateViewRoot();
-
-  bool HasViewRoot();
-
   std::list<ViewAndroid*> children_;
   scoped_refptr<cc::Layer> layer_;
   JavaObjectWeakGlobalRef delegate_;
-  JavaObjectWeakGlobalRef view_root_;
-  ViewClient* const client_;
-
-  int physical_width_pix_;
-  int physical_height_pix_;
   gfx::Vector2dF content_offset_;  // in CSS pixel
 
   DISALLOW_COPY_AND_ASSIGN(ViewAndroid);
 };
-
-bool RegisterViewRoot(JNIEnv* env);
 
 }  // namespace ui
 

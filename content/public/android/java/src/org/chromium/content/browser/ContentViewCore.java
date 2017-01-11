@@ -87,9 +87,6 @@ import java.util.Map;
  * Provides a Java-side 'wrapper' around a WebContent (native) instance.
  * Contains all the major functionality necessary to manage the lifecycle of a ContentView without
  * being tied to the view system.
- *
- * WARNING: ContentViewCore is in the process of being broken up. Please do not add new stuff.
- * See https://crbug.com/598880.
  */
 @JNINamespace("content")
 public class ContentViewCore implements AccessibilityStateChangeListener, DisplayAndroidObserver,
@@ -302,6 +299,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     // Size of the viewport in physical pixels as set from onSizeChanged.
     private int mViewportWidthPix;
     private int mViewportHeightPix;
+    private int mPhysicalBackingWidthPix;
+    private int mPhysicalBackingHeightPix;
     private int mTopControlsHeightPix;
     private int mBottomControlsHeightPix;
     private boolean mTopControlsShrinkBlinkSize;
@@ -879,6 +878,22 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     }
 
     /**
+     * @return Width of underlying physical surface.
+     */
+    @CalledByNative
+    private int getPhysicalBackingWidthPix() {
+        return mPhysicalBackingWidthPix;
+    }
+
+    /**
+     * @return Height of underlying physical surface.
+     */
+    @CalledByNative
+    private int getPhysicalBackingHeightPix() {
+        return mPhysicalBackingHeightPix;
+    }
+
+    /**
      * @return The amount that the viewport size given to Blink is shrunk by the URL-bar..
      */
     @CalledByNative
@@ -1420,6 +1435,21 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         }
 
         updateAfterSizeChanged();
+    }
+
+    /**
+     * Called when the underlying surface the compositor draws to changes size.
+     * This may be larger than the viewport size.
+     */
+    public void onPhysicalBackingSizeChanged(int wPix, int hPix) {
+        if (mPhysicalBackingWidthPix == wPix && mPhysicalBackingHeightPix == hPix) return;
+
+        mPhysicalBackingWidthPix = wPix;
+        mPhysicalBackingHeightPix = hPix;
+
+        if (mNativeContentViewCore != 0) {
+            nativeWasResized(mNativeContentViewCore);
+        }
     }
 
     private void updateAfterSizeChanged() {

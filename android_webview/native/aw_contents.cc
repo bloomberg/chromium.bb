@@ -1257,12 +1257,6 @@ void AwContents::ResumeLoadingCreatedPopupWebContents(
   web_contents_->ResumeLoadingCreatedWebContents();
 }
 
-ScopedJavaLocalRef<jobject> AwContents::GetViewRoot(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return web_contents_->GetNativeView()->GetViewRoot();
-}
-
 void SetShouldDownloadFavicons(JNIEnv* env,
                                const JavaParamRef<jclass>& jclazz) {
   g_should_download_favicons = true;

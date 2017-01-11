@@ -34,7 +34,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/delegated_frame_host_android.h"
 #include "ui/android/view_android.h"
-#include "ui/android/view_client.h"
 #include "ui/android/window_android_observer.h"
 #include "ui/events/android/motion_event_android.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
@@ -64,7 +63,6 @@ struct NativeWebKeyboardEvent;
 class CONTENT_EXPORT RenderWidgetHostViewAndroid
     : public RenderWidgetHostViewBase,
       public ui::GestureProviderClient,
-      public ui::ViewClient,
       public ui::WindowAndroidObserver,
       public DelegatedFrameEvictorClient,
       public StylusTextSelectorClient,
@@ -158,9 +156,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void UnlockCompositingSurface() override;
   void OnDidNavigateMainFrameToNewPage() override;
   void SetNeedsBeginFrames(bool needs_begin_frames) override;
-
-  // ui::ViewClient implementation.
-  void OnPhysicalBackingSizeChanged(int width, int height) override;
 
   // ui::GestureProviderClient implementation.
   void OnGestureEvent(const ui::GestureEventData& gesture) override;

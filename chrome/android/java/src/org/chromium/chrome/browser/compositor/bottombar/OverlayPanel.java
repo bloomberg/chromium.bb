@@ -809,7 +809,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
             panelContent.onSizeChanged((int) (width / mPxToDp),
                     (int) (height / mPxToDp), panelContent.getViewportWidthPix(),
                     panelContent.getViewportHeightPix());
-            panelContent.getWindowAndroid().getViewRoot().onPhysicalBackingSizeChanged(
+            panelContent.onPhysicalBackingSizeChanged(
                     (int) (width / mPxToDp), (int) (height / mPxToDp));
         }
     }

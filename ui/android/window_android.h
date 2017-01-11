@@ -74,8 +74,6 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
                          const base::android::JavaParamRef<jobject>& obj);
   void OnActivityStarted(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj);
-  base::android::ScopedJavaLocalRef<jobject> GetViewRootForJava(JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
 
   // Return whether the specified Android permission is granted.
   bool HasPermission(const std::string& permission);

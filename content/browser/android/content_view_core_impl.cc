@@ -230,6 +230,12 @@ ContentViewCoreImpl::ContentViewCoreImpl(
       dpi_scale_(dpi_scale),
       device_orientation_(0),
       accessibility_enabled_(false) {
+  GetViewAndroid()->SetLayer(cc::Layer::Create());
+  gfx::Size physical_size(
+      Java_ContentViewCore_getPhysicalBackingWidthPix(env, obj),
+      Java_ContentViewCore_getPhysicalBackingHeightPix(env, obj));
+  GetViewAndroid()->GetLayer()->SetBounds(physical_size);
+
   // Currently, the only use case we have for overriding a user agent involves
   // spoofing a desktop Linux user agent for "Request desktop site".
   // Automatically set it for all WebContents so that it is available when a
@@ -724,6 +730,16 @@ gfx::Size ContentViewCoreImpl::GetViewSize() const {
   if (DoBrowserControlsShrinkBlinkSize())
     size.Enlarge(0, -GetTopControlsHeightDip() - GetBottomControlsHeightDip());
   return size;
+}
+
+gfx::Size ContentViewCoreImpl::GetPhysicalBackingSize() const {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
+  if (j_obj.is_null())
+    return gfx::Size();
+  return gfx::Size(
+      Java_ContentViewCore_getPhysicalBackingWidthPix(env, j_obj),
+      Java_ContentViewCore_getPhysicalBackingHeightPix(env, j_obj));
 }
 
 gfx::Size ContentViewCoreImpl::GetViewportSizePix() const {
@@ -1249,6 +1265,11 @@ void ContentViewCoreImpl::RemoveJavascriptInterface(
 
 void ContentViewCoreImpl::WasResized(JNIEnv* env,
                                      const JavaParamRef<jobject>& obj) {
+  gfx::Size physical_size(
+      Java_ContentViewCore_getPhysicalBackingWidthPix(env, obj),
+      Java_ContentViewCore_getPhysicalBackingHeightPix(env, obj));
+  GetViewAndroid()->GetLayer()->SetBounds(physical_size);
+
   SendScreenRectsAndResizeWidget();
 }
 
@@ -1538,7 +1559,6 @@ jlong Init(JNIEnv* env,
       "A ContentViewCoreImpl should be created with a valid WebContents.";
   ui::ViewAndroid* view_android = web_contents->GetView()->GetNativeView();
   view_android->SetDelegate(jview_android_delegate);
-  view_android->SetLayer(cc::Layer::Create());
 
   ui::WindowAndroid* window_android =
         reinterpret_cast<ui::WindowAndroid*>(jwindow_android);

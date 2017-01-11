@@ -82,7 +82,6 @@ WebContentsViewAndroid::WebContentsViewAndroid(
     : web_contents_(web_contents),
       content_view_core_(NULL),
       delegate_(delegate),
-      view_(this),
       synchronous_compositor_client_(nullptr) {
 }
 
@@ -260,12 +259,6 @@ void WebContentsViewAndroid::RenderViewSwappedIn(RenderViewHost* host) {
 }
 
 void WebContentsViewAndroid::SetOverscrollControllerEnabled(bool enabled) {
-}
-
-void WebContentsViewAndroid::OnPhysicalBackingSizeChanged(int width,
-                                                          int height) {
-  // |SendScreenRects()| indirectly calls GetViewSize() that asks Java layer.
-  web_contents_->SendScreenRects();
 }
 
 void WebContentsViewAndroid::ShowContextMenu(

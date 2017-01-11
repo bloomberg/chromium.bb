@@ -77,7 +77,6 @@ import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.ViewAndroidDelegate;
-import org.chromium.ui.base.ViewRoot;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid.DisplayAndroidObserver;
 
@@ -361,8 +360,6 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
     private boolean mIsDestroyed;
 
     private static String sCurrentLocales = "";
-
-    private ViewRoot mViewRoot;
 
     private static final class AwContentsDestroyRunnable implements Runnable {
         private final long mNativeAwContents;
@@ -1203,7 +1200,6 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
             mNativeAwContents = 0;
             mWebContents = null;
             mNavigationController = null;
-            mViewRoot = null;
 
             mCleanupReference.cleanupNow();
             mCleanupReference = null;
@@ -3207,7 +3203,7 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
             // to enter fixedLayoutSize mode is sent before the first resize
             // update.
             mLayoutSizer.onSizeChanged(w, h, ow, oh);
-            getViewRoot().onPhysicalBackingSizeChanged(w, h);
+            mContentViewCore.onPhysicalBackingSizeChanged(w, h);
             mContentViewCore.onSizeChanged(w, h, ow, oh);
             nativeOnSizeChanged(mNativeAwContents, w, h, ow, oh);
         }
@@ -3281,13 +3277,6 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
             if (isDestroyed(NO_WARN)) return;
             nativeOnComputeScroll(mNativeAwContents, AnimationUtils.currentAnimationTimeMillis());
         }
-    }
-
-    private ViewRoot getViewRoot() {
-        if (mViewRoot == null) {
-            mViewRoot = nativeGetViewRoot(mNativeAwContents);
-        }
-        return mViewRoot;
     }
 
     // Return true if the GeolocationPermissionAPI should be used.
@@ -3393,5 +3382,4 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
 
     private native void nativeGrantFileSchemeAccesstoChildProcess(long nativeAwContents);
     private native void nativeResumeLoadingCreatedPopupWebContents(long nativeAwContents);
-    private native ViewRoot nativeGetViewRoot(long nativeAwContents);
 }

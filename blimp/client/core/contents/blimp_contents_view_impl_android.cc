@@ -29,8 +29,8 @@ BlimpContentsViewImplAndroid::BlimpContentsViewImplAndroid(
       ime_dialog_(new ImeHelperDialog(blimp_contents->GetNativeWindow())) {
   blimp_view_ =
       base::MakeUnique<BlimpView>(blimp_contents->GetNativeWindow(), this);
-  view_ = base::MakeUnique<ui::ViewAndroid>();
-  view_->SetDelegate(blimp_view_->CreateViewAndroidDelegate());
+  view_ = base::MakeUnique<ui::ViewAndroid>(
+      blimp_view_->CreateViewAndroidDelegate());
   view_->SetLayer(contents_layer);
   blimp_contents->GetNativeWindow()->AddChild(view_.get());
 }

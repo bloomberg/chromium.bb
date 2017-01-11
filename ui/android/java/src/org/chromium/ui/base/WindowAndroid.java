@@ -109,8 +109,6 @@ public class WindowAndroid {
 
     private AndroidPermissionDelegate mPermissionDelegate;
 
-    private ViewRoot mViewRoot;
-
     /**
      * An interface to notify listeners of changes in the soft keyboard's visibility.
      */
@@ -726,16 +724,6 @@ public class WindowAndroid {
         }
     }
 
-    /**
-     * @return {@link ViewRoot} instance used to forward input/view events down to native.
-     */
-    public ViewRoot getViewRoot() {
-        if (mViewRoot == null) {
-            mViewRoot = nativeGetViewRootForJava(mNativeWindowAndroid);
-        }
-        return mViewRoot;
-    }
-
     private native long nativeInit(int displayId);
     private native void nativeOnVSync(long nativeWindowAndroid,
                                       long vsyncTimeMicros,
@@ -744,5 +732,5 @@ public class WindowAndroid {
     private native void nativeOnActivityStopped(long nativeWindowAndroid);
     private native void nativeOnActivityStarted(long nativeWindowAndroid);
     private native void nativeDestroy(long nativeWindowAndroid);
-    private native ViewRoot nativeGetViewRootForJava(long nativeWindowAndroid);
+
 }
