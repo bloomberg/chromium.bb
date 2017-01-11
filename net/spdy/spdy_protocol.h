@@ -74,19 +74,21 @@ const int kHttp2ConnectionHeaderPrefixSize =
 
 // Types of HTTP2 frames.
 enum SpdyFrameType {
-  DATA,
-  RST_STREAM,
-  SETTINGS,
-  PING,
-  GOAWAY,
-  HEADERS,
-  WINDOW_UPDATE,
-  PUSH_PROMISE,
-  CONTINUATION,
-  PRIORITY,
-  // BLOCKED and ALTSVC are recognized extensions.
-  BLOCKED,
-  ALTSVC,
+  DATA = 0x00,
+  MIN_FRAME_TYPE = DATA,
+  HEADERS = 0x01,
+  PRIORITY = 0x02,
+  RST_STREAM = 0x03,
+  SETTINGS = 0x04,
+  PUSH_PROMISE = 0x05,
+  PING = 0x06,
+  GOAWAY = 0x07,
+  WINDOW_UPDATE = 0x08,
+  CONTINUATION = 0x09,
+  // ALTSVC and BLOCKED are recognized extensions.
+  ALTSVC = 0x0a,
+  BLOCKED = 0x0b,
+  MAX_FRAME_TYPE = BLOCKED
 };
 
 // Flags on data packets.
