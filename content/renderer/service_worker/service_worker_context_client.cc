@@ -114,6 +114,18 @@ class WebServiceWorkerNetworkProviderImpl
   }
 };
 
+ServiceWorkerStatusCode EventResultToStatus(
+    blink::WebServiceWorkerEventResult result) {
+  switch (result) {
+    case blink::WebServiceWorkerEventResultCompleted:
+      return SERVICE_WORKER_OK;
+    case blink::WebServiceWorkerEventResultRejected:
+      return SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED;
+  }
+  NOTREACHED() << "Got invalid result: " << result;
+  return SERVICE_WORKER_ERROR_FAILED;
+}
+
 void SendPostMessageToClientOnMainThread(
     ThreadSafeSender* sender,
     int routing_id,
@@ -674,13 +686,8 @@ void ServiceWorkerContextClient::didHandleExtendableMessageEvent(
   const DispatchExtendableMessageEventCallback* callback =
       context_->message_event_callbacks.Lookup(request_id);
   DCHECK(callback);
-  if (result == blink::WebServiceWorkerEventResultCompleted) {
-    callback->Run(SERVICE_WORKER_OK,
-                  base::Time::FromDoubleT(event_dispatch_time));
-  } else {
-    callback->Run(SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED,
-                  base::Time::FromDoubleT(event_dispatch_time));
-  }
+  callback->Run(EventResultToStatus(result),
+                base::Time::FromDoubleT(event_dispatch_time));
   context_->message_event_callbacks.Remove(request_id);
 }
 
@@ -725,12 +732,8 @@ void ServiceWorkerContextClient::didHandleFetchEvent(
   }
   const FetchCallback* callback =
       context_->fetch_event_callbacks.Lookup(fetch_event_id);
-  if (!callback)
-    return;
-
-  callback->Run(result == blink::WebServiceWorkerEventResultCompleted
-                    ? SERVICE_WORKER_OK
-                    : SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED,
+  DCHECK(callback);
+  callback->Run(EventResultToStatus(result),
                 base::Time::FromDoubleT(event_dispatch_time));
   context_->fetch_event_callbacks.Remove(fetch_event_id);
 }
@@ -768,15 +771,9 @@ void ServiceWorkerContextClient::didHandleSyncEvent(
     double event_dispatch_time) {
   const SyncCallback* callback =
       context_->sync_event_callbacks.Lookup(request_id);
-  if (!callback)
-    return;
-  if (result == blink::WebServiceWorkerEventResultCompleted) {
-    callback->Run(SERVICE_WORKER_OK,
-                  base::Time::FromDoubleT(event_dispatch_time));
-  } else {
-    callback->Run(SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED,
-                  base::Time::FromDoubleT(event_dispatch_time));
-  }
+  DCHECK(callback);
+  callback->Run(EventResultToStatus(result),
+                base::Time::FromDoubleT(event_dispatch_time));
   context_->sync_event_callbacks.Remove(request_id);
 }
 
