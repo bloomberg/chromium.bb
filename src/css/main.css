@@ -146,10 +146,12 @@ body:not(.controls-visible) .dynamic {
 }
 
 .buttons {
-  -webkit-box-align: end;
-  -webkit-box-pack: end;
+  align-content: flex-end;
+  align-items: flex-end;
   bottom: 0;
-  display: -webkit-box;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   left: 0;
   margin: -2px;
   padding: 10px;
@@ -160,19 +162,19 @@ body:not(.controls-visible) .dynamic {
 }
 
 .buttons.opposite-side {
-  -webkit-box-pack: start;
+  justify-content: flex-start;
 }
 
 .buttons.prev-to-middle {
   /* Start just before the take-picture button. */
   -webkit-margin-end: calc(50% + 73px/2);
-  -webkit-box-pack: end;
+  justify-content: flex-end;
 }
 
 .buttons.next-to-middle {
   /* Start just after the take-picture button. */
   -webkit-margin-start: calc(50% + 73px/2);
-  -webkit-box-pack: start;
+  justify-content: flex-start;
 }
 
 .buttons #album-enter {
@@ -188,7 +190,7 @@ body:not(.controls-visible) .dynamic {
 }
 
 #toolbar .buttons {
-  -webkit-box-align: center;
+  align-items: center;
   padding: 0 10px;
 }
 
@@ -240,14 +242,14 @@ body:not(.controls-visible) .dynamic {
 }
 
 #error {
-  -webkit-box-align: center;
-  -webkit-box-orient: vertical;
-  -webkit-box-pack: center;
+  align-items: center;
   background: black;
   bottom: 0;
   color: white;
   display: none;
+  flex-direction: column;
   font-size: 18px;
+  justify-content: center;
   left: 0;
   position: absolute;
   right: 0;
@@ -297,7 +299,7 @@ body:not(.controls-visible) .dynamic {
 }
 
 body.has-error #error {
-  display: -webkit-box;
+  display: flex;
 }
 
 body.mirror canvas {
@@ -314,7 +316,7 @@ body.mirror canvas {
 }
 
 #effects .padder {
-  display: -webkit-box;
+  display: flex;
   list-style-type: none;
   margin: 0;
   padding: 0 0 5px;
@@ -336,11 +338,11 @@ body.mirror canvas {
 }
 
 #effects li {
-  -webkit-box-align: center;
-  -webkit-box-orient: vertical;
-  -webkit-box-pack: start;
   -webkit-margin-end: 10px;
-  display: -webkit-box;
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   padding: 0;
 }
 
@@ -370,10 +372,7 @@ body.mirror canvas {
 }
 
 #effects li div.preview-canvas-padder {
-  -webkit-box-align: center;
-  -webkit-box-pack: center;
   bottom: 0;
-  display: -webkit-box;
   left: 0;
   position: absolute;
   right: 0;
@@ -403,9 +402,9 @@ body.mirror #effects li canvas {
 }
 
 #buttons {
-  -webkit-box-align: center;
-  -webkit-box-pack: center;
-  display: -webkit-box;
+  align-items: center;
+  display: flex;
+  justify-content: center;
   margin-bottom: 5px;
 }
 
@@ -413,7 +412,7 @@ body.mirror #effects li canvas {
 #buttons input {
   background-color: transparent;
   border: none;
-  display: -webkit-box;
+  display: flex;
   margin: 0;
   padding: 0;
 }
@@ -587,19 +586,20 @@ body:not(.has-error) #toolbar.expanded {
 }
 
 #camera {
-  -webkit-box-align: center;
-  display: -webkit-box;
+  align-items: center;
+  display: flex;
+  justify-content: center;
   overflow: hidden;
 }
 
 #toast {
-  -webkit-box-align: center;
-  -webkit-box-pack: center;
+  align-items: center;
   bottom: 0;
-  display: -webkit-box;
+  display: flex;
+  justify-content: center;
   left: 0;
-  pointer-events: none;
   opacity: 0;
+  pointer-events: none;
   position: absolute;
   right: 0;
   top: 0;
@@ -622,14 +622,14 @@ body:not(.has-error) #toolbar.expanded {
 }
 
 #performance-test {
-  -webkit-box-align: center;
-  -webkit-box-orient: vertical;
-  -webkit-box-pack: center;
+  align-items: center;
   bottom: 0;
-  display: -webkit-box;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
   left: 0;
-  pointer-events: none;
   opacity: 0;
+  pointer-events: none;
   position: absolute;
   right: 0;
   top: 0;
@@ -664,13 +664,13 @@ body:not(.has-error) #toolbar.expanded {
 }
 
 #performance-test #perf-test-bubble-wrapper {
-  -webkit-box-align: center;
-  -webkit-box-orient: vertical;
-  -webkit-box-pack: center;
-  display: -webkit-box;
-  width: 96px;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
   height: 96px;
+  justify-content: center;
   margin-top: 60px;
+  width: 96px;
 }
 
 #performance-test #perf-test-bubble {
@@ -740,15 +740,14 @@ body.album #album {
 }
 
 #browser .padder {
-  -webkit-box-align: center;
-  -webkit-box-orient: horizontal;
-  display: -webkit-box;
+  align-items: center;
+  display: flex;
   height: 100%;
 }
 
 #browser div.media-wrapper {
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-  display: -webkit-box;
+  display: flex;
   height: 72%;
   margin: 4%;
   pointer-events: auto;
@@ -761,7 +760,7 @@ body.album #album {
 }
 
 #browser div.bounds-padder {
-  display: -webkit-box;
+  display: flex;
   height: 1px;  /* Required to make the element visible. */
   width: 50%;
 }
@@ -873,11 +872,11 @@ body.controls-visible #tooltip.visible {
 }
 
 #dialog {
-  -webkit-box-align: center;
-  -webkit-box-pack: center;
+  align-items: center;
   background: rgba(0, 0, 0, 0.8);
   bottom: 0;
-  display: -webkit-box;
+  display: flex;
+  justify-content: center;
   left: 0;
   opacity: 1;
   position: absolute;
@@ -895,11 +894,11 @@ body:not(.dialog) #dialog {
 
 #dialog #dialog-popup {
   -webkit-transform: translateY(20px);
-  -webkit-box-orient: vertical;
   background: white;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
   padding: 20px;
-  display: -webkit-box;
   transition: -webkit-transform 200ms;
 }
 
@@ -959,10 +958,9 @@ html[dir='rtl'] #dialog #dialog-close-button {
 }
 
 #dialog #dialog-buttons {
-  -webkit-box-align: center;
-  -webkit-box-orient: horizontal;
-  -webkit-box-pack: end;
-  display: -webkit-box;
+  align-items: center;
+  display: flex;
+  justify-content: flex-end;
 }
 
 #dialog #dialog-buttons button {
