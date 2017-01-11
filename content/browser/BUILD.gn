@@ -1499,17 +1499,10 @@ source_set("browser") {
       "//third_party/webrtc/media:rtc_media_base",
       "//third_party/webrtc/modules/desktop_capture:primitives",
     ]
-
-    if (is_linux || is_mac || is_win) {
-      sources += [
-        "media/capture/desktop_capture_device.cc",
-        "media/capture/desktop_capture_device.h",
-      ]
-      deps += [ "//third_party/webrtc/modules/desktop_capture" ]
-    }
   }
 
-  # Desktop screen capture implementations that are not dependent on WebRTC.
+  # Desktop screen capture implementations, conditionally built depending on
+  # the available implementations for each platform.
   if (is_linux || is_mac || is_win) {
     defines += [ "ENABLE_SCREEN_CAPTURE=1" ]
     sources += [
@@ -1539,6 +1532,13 @@ source_set("browser") {
         "media/capture/window_activity_tracker_mac.h",
         "media/capture/window_activity_tracker_mac.mm",
       ]
+    }
+    if (enable_webrtc) {
+      sources += [
+        "media/capture/desktop_capture_device.cc",
+        "media/capture/desktop_capture_device.h",
+      ]
+      deps += [ "//third_party/webrtc/modules/desktop_capture" ]
     }
   }
 

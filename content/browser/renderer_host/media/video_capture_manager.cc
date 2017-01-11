@@ -40,16 +40,21 @@
 #include "media/capture/video/video_capture_device_client.h"
 #include "media/capture/video/video_capture_device_factory.h"
 
-#if defined(ENABLE_SCREEN_CAPTURE) && !defined(OS_ANDROID)
+#if defined(ENABLE_SCREEN_CAPTURE)
+
+#if BUILDFLAG(ENABLE_WEBRTC) && !defined(OS_ANDROID)
 #include "content/browser/media/capture/desktop_capture_device.h"
+#endif
+
 #if defined(USE_AURA)
 #include "content/browser/media/capture/desktop_capture_device_aura.h"
 #endif
-#endif
 
-#if defined(ENABLE_SCREEN_CAPTURE) && defined(OS_ANDROID)
+#if defined(OS_ANDROID)
 #include "content/browser/media/capture/screen_capture_device_android.h"
 #endif
+
+#endif  // defined(ENABLE_SCREEN_CAPTURE)
 
 namespace {
 
@@ -707,8 +712,10 @@ VideoCaptureManager::DoStartDesktopCaptureOnDeviceThread(
 #if defined(USE_AURA)
     video_capture_device = DesktopCaptureDeviceAura::Create(desktop_id);
 #endif  // defined(USE_AURA)
-    if (!video_capture_device)
-      video_capture_device = DesktopCaptureDevice::Create(desktop_id);
+#if BUILDFLAG(ENABLE_WEBRTC)
+  if (!video_capture_device)
+    video_capture_device = DesktopCaptureDevice::Create(desktop_id);
+#endif  // BUILDFLAG(ENABLE_WEBRTC)
 #endif  // defined (OS_ANDROID)
   }
 #endif  // defined(ENABLE_SCREEN_CAPTURE)
@@ -1227,7 +1234,7 @@ void VideoCaptureManager::SetDesktopCaptureWindowIdOnDeviceThread(
     media::VideoCaptureDevice* device,
     gfx::NativeViewId window_id) {
   DCHECK(IsOnDeviceThread());
-#if defined(ENABLE_SCREEN_CAPTURE) && !defined(OS_ANDROID)
+#if defined(ENABLE_SCREEN_CAPTURE) && BUILDFLAG(ENABLE_WEBRTC) && !defined(OS_ANDROID)
   DesktopCaptureDevice* desktop_device =
       static_cast<DesktopCaptureDevice*>(device);
   desktop_device->SetNotificationWindowId(window_id);
