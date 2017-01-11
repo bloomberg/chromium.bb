@@ -696,7 +696,9 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
             doLiteralSearch = true;
         }
 
-        boolean receivedContextualCardsData = !TextUtils.isEmpty(caption)
+        boolean quickActionShown =
+                mSearchPanel.getSearchBarControl().getQuickActionControl().hasQuickAction();
+        boolean receivedContextualCardsData = !quickActionShown && !TextUtils.isEmpty(caption)
                 || !TextUtils.isEmpty(thumbnailUrl);
         if (ContextualSearchFieldTrial.shouldHideContextualCardsData()) {
             // Clear the thumbnail URL and caption so that they are not displayed in the bar. This
@@ -723,8 +725,6 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         }
 
         if (ContextualSearchFieldTrial.isContextualSearchSingleActionsEnabled()) {
-            boolean quickActionShown =
-                    mSearchPanel.getSearchBarControl().getQuickActionControl().hasQuickAction();
             ContextualSearchUma.logQuickActionShown(quickActionShown, quickActionCategory);
             mSearchPanel.getPanelMetrics().setWasQuickActionShown(quickActionShown,
                     quickActionCategory);
