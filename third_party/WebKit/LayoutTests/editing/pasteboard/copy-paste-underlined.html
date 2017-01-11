@@ -25,4 +25,27 @@ test(() => {
         '<div contenteditable id="paste"><u>foo bar baz.|</u></div>'
       ].join(''));
   }, 'Copy/paste underlined text.');
+
+test(() => {
+  assert_not_equals(
+      window.testRunner, undefined,
+     'This test requires testRunner.');
+
+  assert_selection(
+      [
+        '<div contenteditable spellcheck="false">^foo bar baz.|</div>',
+        '<div contenteditable id="paste"><br></div>'
+      ].join(''),
+      selection => {
+        const document = selection.document;
+        document.execCommand('underline');
+        document.execCommand('copy');
+        document.getElementById('paste').focus();
+        document.execCommand('paste');
+      },
+      [
+        '<div contenteditable spellcheck="false"><u>foo bar baz.</u></div>',
+        '<div contenteditable id="paste"><u>foo bar baz.|</u></div>'
+      ].join(''));
+  }, 'Copy/paste underlined text with spell checker off.');
 </script>

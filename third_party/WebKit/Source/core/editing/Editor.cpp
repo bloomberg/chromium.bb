@@ -858,6 +858,14 @@ void Editor::appliedEditing(CompositeEditCommand* cmd) {
       composition->startingRootEditableElement(),
       composition->endingRootEditableElement(), cmd->inputType(),
       cmd->textDataForInputEvent(), isComposingFromCommand(cmd));
+
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  // The clean layout is consumed by |mostBackwardCaretPosition|, called through
+  // |changeSelectionAfterCommand|. In the long term, we should postpone visible
+  // selection canonicalization so that selection update does not need layout.
+  frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
   VisibleSelection newSelection(cmd->endingSelection());
 
   // Don't clear the typing style with this selection change. We do those things
