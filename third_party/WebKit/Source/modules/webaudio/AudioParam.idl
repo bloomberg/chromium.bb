@@ -50,4 +50,7 @@ interface AudioParam {
     // Cancels all scheduled parameter changes with times greater than or equal to startTime.
     [RaisesException, MeasureAs=AudioParamCancelScheduledValues] AudioParam cancelScheduledValues(double startTime);
 
+    // Cancel scheduled parameter changes and hold the last value
+    [RaisesException] AudioParam cancelValuesAndHoldAtTime(double startTime);
+
 };

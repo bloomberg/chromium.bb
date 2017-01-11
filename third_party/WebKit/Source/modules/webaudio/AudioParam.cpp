@@ -517,4 +517,11 @@ AudioParam* AudioParam::cancelScheduledValues(double startTime,
   return this;
 }
 
+AudioParam* AudioParam::cancelValuesAndHoldAtTime(
+    double startTime,
+    ExceptionState& exceptionState) {
+  handler().timeline().cancelValuesAndHoldAtTime(startTime, exceptionState);
+  return this;
+}
+
 }  // namespace blink
