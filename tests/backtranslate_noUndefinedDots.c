@@ -1,6 +1,6 @@
 /* liblouis Braille Translation and Back-Translation Library
 
-Copyright (C) 2014 Mesar Hameed <mesar.hameed@gmail.com>
+Copyright (C) 2016 NV Access Limited
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright
@@ -11,16 +11,16 @@ without any warranty. */
 #include <string.h>
 #include <stdlib.h>
 #include "liblouis.h"
-#include "default_table.h"
 #include "brl_checks.h"
+
+#define TRANSLATION_TABLE "tables/en-ueb-g1.ctb"
+#define UNDEFINED_DOTS "_"
 
 int main(int argc, char **argv) {
   int result = 0;
-  const char *input = "but b can ";
-  const char *expected = "b ;b c ";
 
-  result |= check_translation(TRANSLATION_TABLE, input, NULL, expected);
-  result |= check_backtranslation(TRANSLATION_TABLE, expected, NULL, input);
+  result |= check_backtranslation(TRANSLATION_TABLE, UNDEFINED_DOTS, NULL, "\\\\456/");
+  result |= check_backtranslation_with_mode(TRANSLATION_TABLE, UNDEFINED_DOTS, NULL, "", noUndefinedDots);
 
   lou_free();
   return result;

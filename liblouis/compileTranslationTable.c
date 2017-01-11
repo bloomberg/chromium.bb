@@ -279,6 +279,8 @@ static const char *opcodeNames[CTO_None] = {
   "before",
   "noback",
   "nofor",
+  "empmatchbefore",
+  "empmatchafter",
   "swapcc",
   "swapcd",
   "swapdd",
@@ -3778,6 +3780,7 @@ compileRule (FileInfo * nested)
   TranslationTableCharacterAttributes after = 0;
   TranslationTableCharacterAttributes before = 0;
 	TranslationTableCharacter *c = NULL;
+  widechar *patterns = NULL;
   int k, i;
 
   noback = nofor = 0;
@@ -3820,18 +3823,22 @@ doOpcode:
 		case CTO_Match:
 		{
 			CharsString ptn_before, ptn_after;
-			widechar patterns[27720];
 			TranslationTableOffset offset;
 			int len, mrk;
 
-				memset(patterns, 0xffff, sizeof(patterns));
+			size_t patternsByteSize = sizeof(*patterns) * 27720;
+			patterns = (widechar*) malloc(patternsByteSize);
+			if(!patterns)
+				outOfMemory();
+			memset(patterns, 0xffff, patternsByteSize);
+
 			noback = 1;
 			getCharacters(nested, &ptn_before);
 			getRuleCharsText(nested, &ruleChars);
 			getCharacters(nested, &ptn_after);
 			getRuleDotsPattern(nested, &ruleDots);
 
-			if(!addRule(nested, opcode, &ruleChars, &ruleDots, 0, 0))
+			if(!addRule(nested, opcode, &ruleChars, &ruleDots, after, before))
 				ok = 0;
 
 			if(ptn_before.chars[0] == '-' && ptn_before.length == 1)
@@ -3877,11 +3884,15 @@ doOpcode:
 		case CTO_BackMatch:
 		{
 			CharsString ptn_before, ptn_after, ptn_regex;
-			widechar patterns[27720];
 			TranslationTableOffset offset;
 			int len, mrk;
 
-			memset(patterns, 0xffff, sizeof(patterns));
+			size_t patternsByteSize = sizeof(*patterns) * 27720;
+			patterns = (widechar*) malloc(patternsByteSize);
+			if(!patterns)
+				outOfMemory();
+			memset(patterns, 0xffff, patternsByteSize);
+
 			nofor = 1;
 			getCharacters(nested, &ptn_before);
 			getRuleCharsText(nested, &ruleChars);
@@ -4680,6 +4691,18 @@ doOpcode:
       goto doOpcode;
     case CTO_NoFor:
       nofor = 1;
+
+		case CTO_EmpMatchBefore:
+
+			before |= CTC_EmpMatch;
+			goto doOpcode;
+
+		case CTO_EmpMatchAfter:
+
+			after |= CTC_EmpMatch;
+			goto doOpcode;
+
+			
       goto doOpcode;
     case CTO_SwapCc:
     case CTO_SwapCd:
@@ -4762,6 +4785,10 @@ doOpcode:
       ok = 0;
       break;
     }
+
+  if (patterns != NULL)
+    free(patterns);
+  
   return ok;
 }
 

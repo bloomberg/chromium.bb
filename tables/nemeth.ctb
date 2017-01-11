@@ -80,6 +80,58 @@ always \x00b0 45-46-16
 always \x00B1 346-36
 
 # semantic character pairs
+math \xf400 0
+math \xf401 0
+math \xf402 0
+math \xf403 0
+# Begin and end equation
+replace \xf32e
+replace \xf32f
+# Sub and superscript
+math \xf320 56
+replace \xf401\xf320
+always \xf402\xf320 5
+math \xf321 45
+replace \xf401\xf321
+always \xf402\xf321 5
+# Underscript and overscript
+math \xf322 146
+always \xf401\xf322 5
+always \xf402\xf322 12456
+math \xf323 126
+always \xf401\xf323 5
+always \xf402\xf323 12456
+# Fenced characters
+always \xf401( 12356
+always \xf402) 23456
+always \xf401{ 246
+always \xf402} 12456
+# Expression groups
+replace \xf326
+replace \xf327
+# Fractions
+math \xf328 1456
+math \xf329 3456
+math \xf32d 34
+# Roots
+math \xf32a 345
+always \xf403\xf32a 345
+math \xf32b 12456
+math \xf32c 126
+# Matrices
+replace \xf330
+replace \xf331
+math \xf332 4-6-12356
+math \xf333 4-6-23456
+replace \xf334
+replace \xf335
+# Protect against wrong use of prefixes
+replace \xf400
+replace \xf401
+replace \xf402
+replace \xf403
+
+# Old LibLouisUTDML semantic character pairs
 always ^, 6
 always ^; 56
 always ^: 156

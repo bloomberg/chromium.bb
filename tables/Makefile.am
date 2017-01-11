@@ -100,6 +100,7 @@ table_files = \
 	en-ueb-chardefs.uti \
 	en-ueb-g1.ctb \
 	en-ueb-g2.ctb \
+	en-ueb-math.ctb \
 	en-us-brf.dis \
 	en-us-comp6.ctb \
 	en-us-comp8.ctb \
@@ -154,6 +155,7 @@ table_files = \
 	gon.tbl \
 	gr-bb.ctb \
 	gr-gr-g1.utb \
+	gr-pl-comp8.uti \
 	gu-in-g1.utb \
 	gujarati.cti \
 	gurumuki.cti \
@@ -339,9 +341,12 @@ table_files = \
 	ukmaths_edit.ctb \
 	ukmaths_single_cell_defs.cti \
 	ukmaths_unicode_defs.cti \
+	unicode-braille.utb \
 	unicodedefs.cti \
 	unicode.dis \
 	uni-text.dis \
+	ur-pk-g1.utb \
+	ur-pk-g2.ctb \
 	us-table.dis \
 	vi.ctb \
 	vi-g1.ctb \

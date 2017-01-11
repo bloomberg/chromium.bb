@@ -27,6 +27,8 @@
 #              Joseph Lee <joseph.lee22590@gmail.com>
 
 include en-ueb-chardefs.uti UEB specific char defs.
+#   some dots are undefined now
+#include en-ueb-math.ctb UEB math from common linear format
 
 numsign 3456  number sign, just a dots operand
 numericmodechars .,
@@ -35,6 +37,9 @@ numericnocontchars abcdefghij
 
 #   add numeric space indicator
 context _$d["\s"]$d @5
+
+#   remove numeric space indicator
+correct _$d["\""]$d "\s"
 
 #   remove numeric indicator from numeric space indicator
 pass2 @245-5-3456-245 @245-5-245       0 0
