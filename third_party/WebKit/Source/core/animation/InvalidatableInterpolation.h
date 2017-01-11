@@ -30,7 +30,6 @@ class CORE_EXPORT InvalidatableInterpolation : public Interpolation {
   PropertyHandle getProperty() const final { return m_property; }
   virtual void interpolate(int iteration, double fraction);
   bool dependsOnUnderlyingValue() const final;
-  virtual void apply(InterpolationEnvironment&) const { NOTREACHED(); }
   static void applyStack(const ActiveInterpolations&,
                          InterpolationEnvironment&);
 
@@ -51,11 +50,6 @@ class CORE_EXPORT InvalidatableInterpolation : public Interpolation {
 
   using ConversionCheckers = InterpolationType::ConversionCheckers;
 
-  InterpolableValue* getCachedValueForTesting() const final {
-    // TODO(suzyh): Add meaningful implementation here
-    NOTREACHED();
-    return nullptr;
-  }
   std::unique_ptr<TypedInterpolationValue> maybeConvertUnderlyingValue(
       const InterpolationEnvironment&) const;
   const TypedInterpolationValue* ensureValidConversion(

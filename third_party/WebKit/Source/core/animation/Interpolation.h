@@ -33,13 +33,6 @@ class CORE_EXPORT Interpolation : public RefCounted<Interpolation> {
 
  protected:
   Interpolation() {}
-
-  virtual InterpolableValue* getCachedValueForTesting() const = 0;
-
-  friend class AnimationInterpolableValueTest;
-  friend class AnimationInterpolationEffectTest;
-  friend class AnimationDoubleStyleInterpolationTest;
-  friend class AnimationVisibilityStyleInterpolationTest;
 };
 
 using ActiveInterpolations = Vector<RefPtr<Interpolation>, 1>;

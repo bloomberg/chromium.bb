@@ -64,9 +64,12 @@ class CORE_EXPORT LegacyStyleInterpolation : public Interpolation {
   mutable int m_cachedIteration;
   mutable std::unique_ptr<InterpolableValue> m_cachedValue;
 
-  InterpolableValue* getCachedValueForTesting() const final {
+  InterpolableValue* getCachedValueForTesting() const {
     return m_cachedValue.get();
   }
+
+  friend class AnimationInterpolableValueTest;
+  friend class AnimationInterpolationEffectTest;
 };
 
 DEFINE_TYPE_CASTS(LegacyStyleInterpolation,
