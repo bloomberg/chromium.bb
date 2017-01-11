@@ -6,8 +6,8 @@ package org.chromium.content.browser.shapedetection;
 
 import android.content.Context;
 
-import org.chromium.blink.mojom.FaceDetectionProvider;
 import org.chromium.services.service_manager.InterfaceFactory;
+import org.chromium.shape_detection.mojom.FaceDetectionProvider;
 
 /**
  * A factory method for registry in InterfaceRegistrarImpl.java.

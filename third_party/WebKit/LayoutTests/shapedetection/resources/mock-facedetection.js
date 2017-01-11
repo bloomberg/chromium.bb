@@ -2,8 +2,8 @@
 
 let mockFaceDetectionProviderReady = define(
   'mockFaceDetectionProvider',
-  ['third_party/WebKit/public/platform/modules/shapedetection/facedetection.mojom',
-   'third_party/WebKit/public/platform/modules/shapedetection/facedetection_provider.mojom',
+  ['services/shape_detection/public/interfaces/facedetection.mojom',
+   'services/shape_detection/public/interfaces/facedetection_provider.mojom',
    'mojo/public/js/bindings',
    'mojo/public/js/core',
    'content/public/renderer/frame_interfaces',

@@ -44,7 +44,8 @@ ScriptPromise TextDetector::doDetect(
 
 void TextDetector::onDetectText(
     ScriptPromiseResolver* resolver,
-    Vector<mojom::blink::TextDetectionResultPtr> textDetectionResults) {
+    Vector<shape_detection::mojom::blink::TextDetectionResultPtr>
+        textDetectionResults) {
   DCHECK(m_textServiceRequests.contains(resolver));
   m_textServiceRequests.remove(resolver);
 

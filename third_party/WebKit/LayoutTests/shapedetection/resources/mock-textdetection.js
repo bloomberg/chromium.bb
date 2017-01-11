@@ -2,7 +2,7 @@
 
 let mockTextDetectionReady = define(
   'mockTextDetection',
-  ['third_party/WebKit/public/platform/modules/shapedetection/textdetection.mojom',
+  ['services/shape_detection/public/interfaces/textdetection.mojom',
    'mojo/public/js/bindings',
    'mojo/public/js/core',
    'content/public/renderer/frame_interfaces',

@@ -6,10 +6,10 @@ package org.chromium.chrome.browser.shapedetection;
 
 import android.app.Activity;
 
-import org.chromium.blink.mojom.BarcodeDetection;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.services.service_manager.InterfaceFactory;
+import org.chromium.shape_detection.mojom.BarcodeDetection;
 import org.chromium.ui.base.WindowAndroid;
 
 /**

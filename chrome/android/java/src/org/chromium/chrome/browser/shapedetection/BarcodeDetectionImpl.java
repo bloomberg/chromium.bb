@@ -15,8 +15,6 @@ import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 
 import org.chromium.base.Log;
-import org.chromium.blink.mojom.BarcodeDetection;
-import org.chromium.blink.mojom.BarcodeDetectionResult;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 import org.chromium.gfx.mojom.PointF;
@@ -24,6 +22,8 @@ import org.chromium.gfx.mojom.RectF;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.mojo.system.SharedBufferHandle;
 import org.chromium.mojo.system.SharedBufferHandle.MapFlags;
+import org.chromium.shape_detection.mojom.BarcodeDetection;
+import org.chromium.shape_detection.mojom.BarcodeDetectionResult;
 
 import java.nio.ByteBuffer;
 

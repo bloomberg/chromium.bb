@@ -11,7 +11,7 @@
 #include "modules/ModulesExport.h"
 #include "modules/canvas2d/CanvasRenderingContext2D.h"
 #include "modules/shapedetection/ShapeDetector.h"
-#include "public/platform/modules/shapedetection/textdetection.mojom-blink.h"
+#include "services/shape_detection/public/interfaces/textdetection.mojom-blink.h"
 
 namespace blink {
 
@@ -34,11 +34,12 @@ class MODULES_EXPORT TextDetector final : public ShapeDetector,
                          mojo::ScopedSharedBufferHandle,
                          int imageWidth,
                          int imageHeight) override;
-  void onDetectText(ScriptPromiseResolver*,
-                    Vector<mojom::blink::TextDetectionResultPtr>);
+  void onDetectText(
+      ScriptPromiseResolver*,
+      Vector<shape_detection::mojom::blink::TextDetectionResultPtr>);
   void onTextServiceConnectionError();
 
-  mojom::blink::TextDetectionPtr m_textService;
+  shape_detection::mojom::blink::TextDetectionPtr m_textService;
 
   HeapHashSet<Member<ScriptPromiseResolver>> m_textServiceRequests;
 };

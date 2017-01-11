@@ -11,7 +11,7 @@
 #include "modules/shapedetection/DetectedFace.h"
 #include "modules/shapedetection/FaceDetectorOptions.h"
 #include "public/platform/InterfaceProvider.h"
-#include "public/platform/modules/shapedetection/facedetection_provider.mojom-blink.h"
+#include "services/shape_detection/public/interfaces/facedetection_provider.mojom-blink.h"
 
 namespace blink {
 
@@ -23,11 +23,11 @@ FaceDetector* FaceDetector::create(Document& document,
 FaceDetector::FaceDetector(LocalFrame& frame,
                            const FaceDetectorOptions& options)
     : ShapeDetector(frame) {
-  mojom::blink::FaceDetectorOptionsPtr faceDetectorOptions =
-      mojom::blink::FaceDetectorOptions::New();
+  shape_detection::mojom::blink::FaceDetectorOptionsPtr faceDetectorOptions =
+      shape_detection::mojom::blink::FaceDetectorOptions::New();
   faceDetectorOptions->max_detected_faces = options.maxDetectedFaces();
   faceDetectorOptions->fast_mode = options.fastMode();
-  mojom::blink::FaceDetectionProviderPtr provider;
+  shape_detection::mojom::blink::FaceDetectionProviderPtr provider;
   frame.interfaceProvider()->getInterface(mojo::MakeRequest(&provider));
   provider->CreateFaceDetection(mojo::MakeRequest(&m_faceService),
                                 std::move(faceDetectorOptions));
@@ -57,7 +57,7 @@ ScriptPromise FaceDetector::doDetect(
 
 void FaceDetector::onDetectFaces(
     ScriptPromiseResolver* resolver,
-    mojom::blink::FaceDetectionResultPtr faceDetectionResult) {
+    shape_detection::mojom::blink::FaceDetectionResultPtr faceDetectionResult) {
   DCHECK(m_faceServiceRequests.contains(resolver));
   m_faceServiceRequests.remove(resolver);
 

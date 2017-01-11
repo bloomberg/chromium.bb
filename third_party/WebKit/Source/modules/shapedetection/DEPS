@@ -9,6 +9,7 @@ include_rules = [
     "+modules/shapedetection",
     "+platform",
     "+public/platform",
+    "+services/shape_detection",
     "+third_party/skia/include/core/SkImage.h",
     "+third_party/skia/include/core/SkImageInfo.h",
     "+ui/gfx/geometry",

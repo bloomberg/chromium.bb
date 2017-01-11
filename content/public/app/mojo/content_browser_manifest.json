@@ -66,13 +66,10 @@
           // impossible this week. Remove once sky/ken fix this.
           "autofill::mojom::AutofillDriver",
           "autofill::mojom::PasswordManagerDriver",
-          "blink::mojom::BarcodeDetection",
-          "blink::mojom::FaceDetectionProvider",
           "blink::mojom::MediaSessionService",
           "blink::mojom::PermissionService",
           "blink::mojom::PresentationService",
           "blink::mojom::SensitiveInputVisibilityService",
-          "blink::mojom::TextDetection",
           "blink::mojom::WebBluetoothService",
           "blink::mojom::WebSocket",
           // TODO(beng): figure out how to overlay test interfaces like this.
@@ -90,6 +87,9 @@
           "media::mojom::Renderer",
           "mojom::MediaDevicesDispatcherHost",
           "payments::mojom::PaymentRequest",
+          "shape_detection::mojom::BarcodeDetection",
+          "shape_detection::mojom::FaceDetectionProvider",
+          "shape_detection::mojom::TextDetection",
           "ui::mojom::Gpu"
         ]
       },

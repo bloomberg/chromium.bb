@@ -106,7 +106,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/WebKit/public/platform/modules/shapedetection/facedetection_provider.mojom.h"
+#include "services/shape_detection/public/interfaces/facedetection_provider.mojom.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "ui/gfx/geometry/quad_f.h"
@@ -2275,7 +2275,8 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 #if defined(OS_ANDROID)
   GetInterfaceRegistry()->AddInterface(
       GetGlobalJavaInterfaces()
-          ->CreateInterfaceFactory<blink::mojom::FaceDetectionProvider>());
+          ->CreateInterfaceFactory<
+              shape_detection::mojom::FaceDetectionProvider>());
 
   GetInterfaceRegistry()->AddInterface(
       GetGlobalJavaInterfaces()

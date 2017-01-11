@@ -202,9 +202,9 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/shape_detection/public/interfaces/barcodedetection.mojom.h"
+#include "services/shape_detection/public/interfaces/textdetection.mojom.h"
 #include "storage/browser/fileapi/external_mount_points.h"
-#include "third_party/WebKit/public/platform/modules/shapedetection/barcodedetection.mojom.h"
-#include "third_party/WebKit/public/platform/modules/shapedetection/textdetection.mojom.h"
 #include "third_party/WebKit/public/platform/modules/webshare/webshare.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -3003,7 +3003,11 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoInterfaces(
     if (AreExperimentalWebPlatformFeaturesEnabled()) {
       registry->AddInterface(
           web_contents->GetJavaInterfaces()
-              ->CreateInterfaceFactory<blink::mojom::BarcodeDetection>());
+              ->CreateInterfaceFactory<
+                  shape_detection::mojom::BarcodeDetection>());
+      registry->AddInterface(web_contents->GetJavaInterfaces()
+                                 ->CreateInterfaceFactory<
+                                     shape_detection::mojom::TextDetection>());
     }
   }
 #elif defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN)

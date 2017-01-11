@@ -5,8 +5,6 @@
 package org.chromium.chrome.browser.mojo;
 
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.blink.mojom.BarcodeDetection;
-import org.chromium.blink.mojom.TextDetection;
 import org.chromium.chrome.browser.payments.PaymentRequestFactory;
 import org.chromium.chrome.browser.shapedetection.BarcodeDetectionFactory;
 import org.chromium.chrome.browser.shapedetection.TextDetectionFactory;
@@ -15,6 +13,8 @@ import org.chromium.content_public.browser.InterfaceRegistrar;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentRequest;
 import org.chromium.services.service_manager.InterfaceRegistry;
+import org.chromium.shape_detection.mojom.BarcodeDetection;
+import org.chromium.shape_detection.mojom.TextDetection;
 import org.chromium.webshare.mojom.ShareService;
 
 /** Registers mojo interface implementations exposed to C++ code at the Chrome layer. */

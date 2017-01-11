@@ -2,7 +2,7 @@
 
 let mockBarcodeDetectionReady = define(
   'mockBarcodeDetection',
-  ['third_party/WebKit/public/platform/modules/shapedetection/barcodedetection.mojom',
+  ['services/shape_detection/public/interfaces/barcodedetection.mojom',
    'mojo/public/js/bindings',
    'mojo/public/js/core',
    'content/public/renderer/frame_interfaces',

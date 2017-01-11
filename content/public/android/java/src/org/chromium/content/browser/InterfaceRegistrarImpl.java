@@ -8,7 +8,6 @@ import android.content.Context;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.blink.mojom.FaceDetectionProvider;
 import org.chromium.content.browser.shapedetection.FaceDetectionProviderFactory;
 import org.chromium.content_public.browser.InterfaceRegistrar;
 import org.chromium.content_public.browser.WebContents;
@@ -19,6 +18,7 @@ import org.chromium.device.nfc.mojom.Nfc;
 import org.chromium.device.vibration.VibrationManagerImpl;
 import org.chromium.mojo.system.impl.CoreImpl;
 import org.chromium.services.service_manager.InterfaceRegistry;
+import org.chromium.shape_detection.mojom.FaceDetectionProvider;
 
 @JNINamespace("content")
 class InterfaceRegistrarImpl {

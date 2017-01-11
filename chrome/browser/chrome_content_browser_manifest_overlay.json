@@ -57,9 +57,7 @@
         "renderer": [
           "autofill::mojom::AutofillDriver",
           "autofill::mojom::PasswordManagerDriver",
-          "blink::mojom::BarcodeDetection",
           "blink::mojom::ShareService",
-          "blink::mojom::TextDetection",
           "bluetooth::mojom::AdapterFactory",
           "device::usb::ChooserService",
           "device::usb::DeviceManager",
@@ -71,6 +69,8 @@
           "media_router::mojom::MediaRouter",
           "mojom::OmniboxPageHandler",
           "password_manager::mojom::CredentialManager",
+          "shape_detection::mojom::BarcodeDetection",
+          "shape_detection::mojom::TextDetection",
           "translate::mojom::ContentTranslateDriver",
 
           // TODO(beng): These should be moved to a separate capability.

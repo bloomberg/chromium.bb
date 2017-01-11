@@ -4,7 +4,7 @@
 
 // https://wicg.github.io/shape-detection-api/#api
 
-module blink.mojom;
+module shape_detection.mojom;
 
 import "facedetection.mojom";
 

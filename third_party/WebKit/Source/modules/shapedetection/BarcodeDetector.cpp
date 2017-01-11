@@ -47,7 +47,8 @@ ScriptPromise BarcodeDetector::doDetect(
 
 void BarcodeDetector::onDetectBarcodes(
     ScriptPromiseResolver* resolver,
-    Vector<mojom::blink::BarcodeDetectionResultPtr> barcodeDetectionResults) {
+    Vector<shape_detection::mojom::blink::BarcodeDetectionResultPtr>
+        barcodeDetectionResults) {
   DCHECK(m_barcodeServiceRequests.contains(resolver));
   m_barcodeServiceRequests.remove(resolver);
 

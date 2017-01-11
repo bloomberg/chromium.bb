@@ -11,7 +11,7 @@
 #include "modules/ModulesExport.h"
 #include "modules/canvas2d/CanvasRenderingContext2D.h"
 #include "modules/shapedetection/ShapeDetector.h"
-#include "public/platform/modules/shapedetection/facedetection.mojom-blink.h"
+#include "services/shape_detection/public/interfaces/facedetection.mojom-blink.h"
 
 namespace blink {
 
@@ -36,10 +36,10 @@ class MODULES_EXPORT FaceDetector final : public ShapeDetector,
                          int imageWidth,
                          int imageHeight) override;
   void onDetectFaces(ScriptPromiseResolver*,
-                     mojom::blink::FaceDetectionResultPtr);
+                     shape_detection::mojom::blink::FaceDetectionResultPtr);
   void onFaceServiceConnectionError();
 
-  mojom::blink::FaceDetectionPtr m_faceService;
+  shape_detection::mojom::blink::FaceDetectionPtr m_faceService;
 
   HeapHashSet<Member<ScriptPromiseResolver>> m_faceServiceRequests;
 };

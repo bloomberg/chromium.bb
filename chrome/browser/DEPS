@@ -38,18 +38,18 @@ include_rules = [
   "+media/cdm/cdm_paths.h",
   "+media/midi",  # For midi switches
   "+media/mojo",  # For mojo media services.
-  "+services/image_decoder/public/cpp",
-  "+services/service_manager/public/cpp",
-  "+services/ui/public",
   "+ppapi/c",  # For various types.
   "+ppapi/host",
   "+ppapi/proxy",
   "+ppapi/shared_impl",
   "+rlz",
   "+sandbox/win/src",  # The path doesn't say it, but this is the Windows sandbox.
+  "+services/image_decoder/public/cpp",
   "+services/image_decoder/public/interfaces",
   "+services/preferences/public/interfaces",
   "+services/service_manager",
+  "+services/shape_detection/public/interfaces",
+  "+services/ui/public",
   "+skia/ext",
   "+syzygy/kasko",
   "+third_party/boringssl/src/include",
@@ -111,8 +111,6 @@ include_rules = [
   "+third_party/WebKit/public/platform/modules/remoteplayback/WebRemotePlaybackAvailability.h",
   "+third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h",
   "+third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h",
-  "+third_party/WebKit/public/platform/modules/shapedetection/barcodedetection.mojom.h",
-  "+third_party/WebKit/public/platform/modules/shapedetection/textdetection.mojom.h",
   "+third_party/WebKit/public/platform/modules/webshare/webshare.mojom.h",
   "+third_party/WebKit/public/platform/site_engagement.mojom.h",
   "+third_party/WebKit/public/public_features.h",

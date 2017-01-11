@@ -4,14 +4,14 @@
 
 package org.chromium.content.browser.shapedetection;
 
-import org.chromium.blink.mojom.FaceDetection;
-import org.chromium.blink.mojom.FaceDetectionProvider;
-import org.chromium.blink.mojom.FaceDetectorOptions;
 import org.chromium.mojo.bindings.InterfaceRequest;
 import org.chromium.mojo.system.MojoException;
+import org.chromium.shape_detection.mojom.FaceDetection;
+import org.chromium.shape_detection.mojom.FaceDetectionProvider;
+import org.chromium.shape_detection.mojom.FaceDetectorOptions;
 
 /**
- * Service provider to create FaceDetection and BarcodeDetection services
+ * Service provider to create FaceDetection services
  */
 public class FaceDetectionProviderImpl implements FaceDetectionProvider {
     @Override

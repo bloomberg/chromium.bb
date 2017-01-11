@@ -10,19 +10,19 @@ import android.media.FaceDetector;
 import android.media.FaceDetector.Face;
 
 import org.chromium.base.Log;
-import org.chromium.blink.mojom.FaceDetection;
-import org.chromium.blink.mojom.FaceDetectionResult;
-import org.chromium.blink.mojom.FaceDetectorOptions;
 import org.chromium.gfx.mojom.RectF;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.mojo.system.SharedBufferHandle;
 import org.chromium.mojo.system.SharedBufferHandle.MapFlags;
+import org.chromium.shape_detection.mojom.FaceDetection;
+import org.chromium.shape_detection.mojom.FaceDetectionResult;
+import org.chromium.shape_detection.mojom.FaceDetectorOptions;
 
 import java.nio.ByteBuffer;
 
 /**
  * Android implementation of the FaceDetection service defined in
- * third_party/WebKit/public/platform/modules/FaceDetection/FaceDetection.mojom
+ * services/shape_detection/public/interfaces/facedetection.mojom
  */
 public class FaceDetectionImpl implements FaceDetection {
     private static final String TAG = "FaceDetectionImpl";

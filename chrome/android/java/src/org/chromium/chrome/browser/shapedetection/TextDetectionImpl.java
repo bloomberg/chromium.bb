@@ -14,14 +14,14 @@ import com.google.android.gms.vision.text.TextBlock;
 import com.google.android.gms.vision.text.TextRecognizer;
 
 import org.chromium.base.Log;
-import org.chromium.blink.mojom.TextDetection;
-import org.chromium.blink.mojom.TextDetectionResult;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 import org.chromium.gfx.mojom.RectF;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.mojo.system.SharedBufferHandle;
 import org.chromium.mojo.system.SharedBufferHandle.MapFlags;
+import org.chromium.shape_detection.mojom.TextDetection;
+import org.chromium.shape_detection.mojom.TextDetectionResult;
 
 import java.nio.ByteBuffer;
 

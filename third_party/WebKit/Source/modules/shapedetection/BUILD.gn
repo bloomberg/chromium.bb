@@ -21,4 +21,8 @@ blink_modules_sources("shapedetection") {
     "TextDetector.cpp",
     "TextDetector.h",
   ]
+
+  public_deps = [
+    "//services/shape_detection/public/interfaces:interfaces_blink",
+  ]
 }
