@@ -148,8 +148,9 @@ class DragImageBuilder {
 
     // Rasterize upfront, since DragImage::create() is going to do it anyway
     // (SkImage::asLegacyBitmap).
-    sk_sp<SkSurface> surface =
-        SkSurface::MakeRasterN32Premul(m_bounds.width(), m_bounds.height());
+    SkSurfaceProps surfaceProps(0, kUnknown_SkPixelGeometry);
+    sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(
+        m_bounds.width(), m_bounds.height(), &surfaceProps);
     if (!surface)
       return nullptr;
 
