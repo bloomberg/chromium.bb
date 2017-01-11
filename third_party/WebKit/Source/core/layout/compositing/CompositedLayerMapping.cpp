@@ -2082,7 +2082,7 @@ void CompositedLayerMapping::updateElementIdAndCompositorMutableProperties() {
   const ComputedStyle* animatingStyle = nullptr;
   if (owningNode) {
     Document& document = owningNode->document();
-    Element* scrollingElement = document.scrollingElement();
+    Element* scrollingElement = document.scrollingElementNoLayout();
     if (owningNode->isElementNode() &&
         (!RuntimeEnabledFeatures::rootLayerScrollingEnabled() ||
          owningNode != scrollingElement)) {

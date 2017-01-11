@@ -774,9 +774,12 @@ int Element::clientHeight() {
 }
 
 double Element::scrollLeft() {
+  if (!inActiveDocument())
+    return 0;
+
   document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
 
-  if (document().scrollingElement() == this) {
+  if (document().scrollingElementNoLayout() == this) {
     if (document().domWindow())
       return document().domWindow()->scrollX();
     return 0;
@@ -789,9 +792,12 @@ double Element::scrollLeft() {
 }
 
 double Element::scrollTop() {
+  if (!inActiveDocument())
+    return 0;
+
   document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
 
-  if (document().scrollingElement() == this) {
+  if (document().scrollingElementNoLayout() == this) {
     if (document().domWindow())
       return document().domWindow()->scrollY();
     return 0;
@@ -804,11 +810,14 @@ double Element::scrollTop() {
 }
 
 void Element::setScrollLeft(double newLeft) {
+  if (!inActiveDocument())
+    return;
+
   document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
 
   newLeft = ScrollableArea::normalizeNonFiniteScroll(newLeft);
 
-  if (document().scrollingElement() == this) {
+  if (document().scrollingElementNoLayout() == this) {
     if (LocalDOMWindow* window = document().domWindow())
       window->scrollTo(newLeft, window->scrollY());
   } else {
@@ -820,11 +829,14 @@ void Element::setScrollLeft(double newLeft) {
 }
 
 void Element::setScrollTop(double newTop) {
+  if (!inActiveDocument())
+    return;
+
   document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
 
   newTop = ScrollableArea::normalizeNonFiniteScroll(newTop);
 
-  if (document().scrollingElement() == this) {
+  if (document().scrollingElementNoLayout() == this) {
     if (LocalDOMWindow* window = document().domWindow())
       window->scrollTo(window->scrollX(), newTop);
   } else {
@@ -836,9 +848,12 @@ void Element::setScrollTop(double newTop) {
 }
 
 int Element::scrollWidth() {
+  if (!inActiveDocument())
+    return 0;
+
   document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
 
-  if (document().scrollingElement() == this) {
+  if (document().scrollingElementNoLayout() == this) {
     if (document().view())
       return adjustForAbsoluteZoom(document().view()->contentsWidth(),
                                    document().frame()->pageZoomFactor());
@@ -851,9 +866,12 @@ int Element::scrollWidth() {
 }
 
 int Element::scrollHeight() {
+  if (!inActiveDocument())
+    return 0;
+
   document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
 
-  if (document().scrollingElement() == this) {
+  if (document().scrollingElementNoLayout() == this) {
     if (document().view())
       return adjustForAbsoluteZoom(document().view()->contentsHeight(),
                                    document().frame()->pageZoomFactor());
@@ -873,11 +891,14 @@ void Element::scrollBy(double x, double y) {
 }
 
 void Element::scrollBy(const ScrollToOptions& scrollToOptions) {
+  if (!inActiveDocument())
+    return;
+
   // FIXME: This should be removed once scroll updates are processed only after
   // the compositing update. See http://crbug.com/420741.
   document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
 
-  if (document().scrollingElement() == this) {
+  if (document().scrollingElementNoLayout() == this) {
     scrollFrameBy(scrollToOptions);
   } else {
     scrollLayoutBoxBy(scrollToOptions);
@@ -892,11 +913,14 @@ void Element::scrollTo(double x, double y) {
 }
 
 void Element::scrollTo(const ScrollToOptions& scrollToOptions) {
+  if (!inActiveDocument())
+    return;
+
   // FIXME: This should be removed once scroll updates are processed only after
   // the compositing update. See http://crbug.com/420741.
   document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
 
-  if (document().scrollingElement() == this) {
+  if (document().scrollingElementNoLayout() == this) {
     scrollFrameTo(scrollToOptions);
   } else {
     scrollLayoutBoxTo(scrollToOptions);

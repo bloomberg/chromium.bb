@@ -1344,9 +1344,15 @@ Range* Document::caretRangeFromPoint(int x, int y) {
 }
 
 Element* Document::scrollingElement() {
+  if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled() && inQuirksMode())
+    updateStyleAndLayoutTree();
+  return scrollingElementNoLayout();
+}
+
+Element* Document::scrollingElementNoLayout() {
   if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
     if (inQuirksMode()) {
-      updateStyleAndLayoutTree();
+      DCHECK(m_lifecycle.state() >= DocumentLifecycle::StyleClean);
       HTMLBodyElement* body = firstBodyElement();
       if (body && body->layoutObject() &&
           body->layoutObject()->hasOverflowClip())

@@ -344,6 +344,9 @@ class CORE_EXPORT Document : public ContainerNode,
   HeapVector<Member<Element>> elementsFromPoint(int x, int y) const;
   Range* caretRangeFromPoint(int x, int y);
   Element* scrollingElement();
+  // When calling from C++ code, use this method. scrollingElement() is
+  // just for the web IDL implementation.
+  Element* scrollingElementNoLayout();
 
   void addStyleReattachData(Node&, StyleReattachData&);
   StyleReattachData getStyleReattachData(Node&);
