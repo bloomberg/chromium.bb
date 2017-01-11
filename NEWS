@@ -1,6 +1,6 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
-* Noteworthy changes in release 3.1.0 (2016-11-??)
+* Noteworthy changes in release 3.1.0 (2017-??-??)
 ** New features
 - Meta data
 
@@ -54,6 +54,8 @@ complete.
   Dal Maso.
 - New table ~unicode-braille.utb~ that helps to back translate braille
   input to unicode braille output, thanks to Leonard de Ruijter.
+- New Persian grade 1 table and 8-dots computer table thanks to
+  Mohammadreza Rashad.
 
 ** Backwards incompatible changes
 None
