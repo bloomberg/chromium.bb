@@ -88,7 +88,7 @@ program_TESTS =					\
 	squash_space				\
 	typeform				\
 	typeform_for_emphclass			\
-	uplow_with_unicode			\
+	uplow_with_unicode
 
 check_PROGRAMS = $(program_TESTS)
 
