@@ -54,50 +54,50 @@ check_metadata_SOURCES = check_metadata.c
 infiniteTranslationLoop_SOURCES = infiniteTranslationLoop.c
 
 program_TESTS =					\
+	backtranslate				\
+	backtranslate_noUndefinedDots		\
+	backtranslate_partialTrans		\
+	backtranslate_with_letsign		\
 	capitalization				\
-	pass2					\
-	pass2_inpos				\
-	inpos					\
-	inpos_match_replace			\
-	uplow_with_unicode			\
-	present_progressive			\
-	capitalized_word			\
 	capitalized_with_sentance		\
-	inpos_compbrl				\
-	lastworditalafter			\
+	capitalized_word			\
+	checkTable				\
+	check_metadata				\
+	emphclass				\
 	en_gb_g1_italics			\
-	letterDefTest				\
-	squash_space				\
+	findTable				\
+	getTable				\
+	hash_collision				\
 	hyphenate_achena			\
 	hyphenate_alderen			\
 	hyphenate_straightforward		\
 	hyphenate_xxx				\
-	backtranslate_with_letsign		\
-	backtranslate_noUndefinedDots	\
-	backtranslate_partialTrans	\
-	backtranslate				\
-	pass1Only				\
+	inpos					\
+	inpos_compbrl				\
+	inpos_match_replace			\
+	lastworditalafter			\
+	letterDefTest				\
+	logging					\
 	outpos					\
-	getTable				\
+	pass0_typebuf				\
+	pass1Only				\
+	pass2					\
+	pass2_inpos				\
+	present_progressive			\
+	resolve_table				\
+	squash_space				\
 	typeform				\
 	typeform_for_emphclass			\
-	pass0_typebuf				\
-	hash_collision				\
-	resolve_table				\
-	logging					\
-	findTable				\
-	emphclass				\
-	checkTable				\
-	check_metadata
+	uplow_with_unicode			\
 
 check_PROGRAMS = $(program_TESTS)
 
-dist_check_SCRIPTS =		\
-	check_all_tables.pl	\
-	check_endless_loop.pl	\
-	multiple_table_path.pl  \
-	ueb_test_data.pl	\
-	check_included_tables.sh
+dist_check_SCRIPTS =				\
+	check_all_tables.pl			\
+	check_endless_loop.pl			\
+	check_included_tables.sh		\
+	multiple_table_path.pl			\
+	ueb_test_data.pl
 
 # if we have Python and liblouis is configured with ucs4 then we can
 # invoke the python based tests
