@@ -226,13 +226,31 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
     }
 
     /**
-     * Refresh the list of available system accounts.
+     * Refresh the list of available system accounts asynchronously. This is a convenience method
+     * that will ignore whether the accounts updating was actually successful.
      */
     private void updateAccounts() {
-        if (mSignedIn || mProfileData == null) return;
+        updateAccounts(new Callback<Boolean>() {
+            @Override
+            public void onResult(Boolean result) {}
+        });
+    }
+
+    /**
+     * Refresh the list of available system accounts asynchronously.
+     *
+     * @param callback Called once the accounts have been refreshed. Boolean indicates whether the
+     *                 accounts haven been successfully updated.
+     */
+    private void updateAccounts(final Callback<Boolean> callback) {
+        if (mSignedIn || mProfileData == null) {
+            callback.onResult(false);
+            return;
+        }
 
         if (!checkGooglePlayServicesAvailable()) {
             setUpSigninButton(false);
+            callback.onResult(false);
             return;
         }
 
@@ -256,6 +274,13 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
                     updatingGmsDialog.dismiss();
                 }
                 mIsGooglePlayServicesOutOfDate = false;
+
+                if (mSignedIn) {
+                    // If sign-in completed in the mean time, return in order to avoid showing the
+                    // wrong state in the UI.
+                    return;
+                }
+
                 mAccountNames = result;
 
                 int accountToSelect = 0;
@@ -263,6 +288,7 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
                     accountToSelect = mAccountNames.indexOf(mForcedAccountName);
                     if (accountToSelect < 0) {
                         mListener.onFailedToSetForcedAccount(mForcedAccountName);
+                        callback.onResult(false);
                         return;
                     }
                 } else {
@@ -275,6 +301,7 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
                 mSigninChooseView.updateAccounts(mAccountNames, accountToSelect, mProfileData);
                 if (mAccountNames.isEmpty()) {
                     setUpSigninButton(false);
+                    callback.onResult(true);
                     return;
                 }
                 setUpSigninButton(true);
@@ -283,7 +310,10 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
 
                 // Determine how the accounts have changed. Each list should only have unique
                 // elements.
-                if (oldAccountNames == null || oldAccountNames.isEmpty()) return;
+                if (oldAccountNames == null || oldAccountNames.isEmpty()) {
+                    callback.onResult(true);
+                    return;
+                }
 
                 if (!mAccountNames.get(accountToSelect).equals(
                         oldAccountNames.get(oldSelectedAccount))) {
@@ -299,7 +329,7 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
                         showConfirmSigninPageAccountTrackerServiceCheck();
                     }
                 }
-
+                callback.onResult(true);
             }
         });
     }
@@ -568,10 +598,15 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
      */
     public void switchToForcedAccountMode(String forcedAccountName) {
         mForcedAccountName = forcedAccountName;
-        updateAccounts();
-        assert TextUtils.equals(getSelectedAccountName(), mForcedAccountName);
-        switchToSignedMode();
-        assert TextUtils.equals(getSelectedAccountName(), mForcedAccountName);
+        updateAccounts(new Callback<Boolean>() {
+            @Override
+            public void onResult(Boolean result) {
+                if (!result) return;
+                assert TextUtils.equals(getSelectedAccountName(), mForcedAccountName);
+                switchToSignedMode();
+                assert TextUtils.equals(getSelectedAccountName(), mForcedAccountName);
+            }
+        });
     }
 
     /**
