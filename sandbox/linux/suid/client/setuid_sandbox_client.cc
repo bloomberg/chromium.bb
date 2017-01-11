@@ -22,8 +22,11 @@
 namespace {
 
 bool IsFileSystemAccessDenied() {
-  base::ScopedFD root_dir(HANDLE_EINTR(open("/", O_RDONLY)));
-  return !root_dir.is_valid();
+  // We would rather check "/" instead of "/proc/self/exe" here, but
+  // that gives false positives when running as root.  See
+  // https://codereview.chromium.org/2578483002/#msg3
+  base::ScopedFD proc_self_exe(HANDLE_EINTR(open("/proc/self/exe", O_RDONLY)));
+  return !proc_self_exe.is_valid();
 }
 
 int GetHelperApi(base::Environment* env) {

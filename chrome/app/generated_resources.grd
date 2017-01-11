@@ -11455,7 +11455,7 @@ Tell us what happened exactly before you got the profile error message:
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> can not be run as root.
       </message>
       <message name="IDS_REFUSE_TO_RUN_AS_ROOT_2" desc="Detailed message in the error dialog when the user tries to start Chrome as root.">
-        Please start <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> as a normal user. To run as root, you must specify an alternate --user-data-dir for storage of profile information.
+        Please start <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> as a normal user. If you need to run as root for development, rerun with the --no-sandbox flag.
       </message>
       <if expr="is_win">
         <message name="IDS_PROFILE_ON_NETWORK_WARNING" desc="Warning shown to the user when they are running Chrome on Windows with a profile located on a network share.">

@@ -29,9 +29,9 @@
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "base/command_line.h"
 #include "chrome/browser/ui/simple_message_box.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/common/content_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
@@ -74,12 +74,12 @@ void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
   // On the Linux desktop, we want to prevent the user from logging in as root,
   // so that we don't destroy the profile. Now that we have some minimal ui
   // initialized, check to see if we're running as root and bail if we are.
-  if (getuid() != 0)
+  if (geteuid() != 0)
     return;
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kUserDataDir))
+  if (command_line.HasSwitch(switches::kNoSandbox))
     return;
 
   base::string16 title = l10n_util::GetStringFUTF16(

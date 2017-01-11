@@ -150,6 +150,18 @@ int CapabilityToKernelValue(Credentials::Capability cap) {
   return 0;
 }
 
+void SetGidAndUidMaps(gid_t gid, uid_t uid) {
+  if (NamespaceUtils::KernelSupportsDenySetgroups()) {
+    PCHECK(NamespaceUtils::DenySetgroups());
+  }
+  DCHECK(GetRESIds(NULL, NULL));
+  const char kGidMapFile[] = "/proc/self/gid_map";
+  const char kUidMapFile[] = "/proc/self/uid_map";
+  PCHECK(NamespaceUtils::WriteToIdMapFile(kGidMapFile, gid));
+  PCHECK(NamespaceUtils::WriteToIdMapFile(kUidMapFile, uid));
+  DCHECK(GetRESIds(NULL, NULL));
+}
+
 }  // namespace.
 
 // static
@@ -253,8 +265,14 @@ bool Credentials::CanCreateProcessInNewUserNS() {
   return false;
 #endif
 
-  // This is roughly a fork().
-  const pid_t pid = sys_clone(CLONE_NEWUSER | SIGCHLD, 0, 0, 0, 0);
+  uid_t uid;
+  gid_t gid;
+  if (!GetRESIds(&uid, &gid)) {
+    return false;
+  }
+
+  const pid_t pid =
+      base::ForkWithFlags(CLONE_NEWUSER | SIGCHLD, nullptr, nullptr);
 
   if (pid == -1) {
     CheckCloneNewUserErrno(errno);
@@ -262,20 +280,29 @@ bool Credentials::CanCreateProcessInNewUserNS() {
   }
 
   // The parent process could have had threads. In the child, these threads
-  // have disappeared. Make sure to not do anything in the child, as this is a
-  // fragile execution environment.
+  // have disappeared.
   if (pid == 0) {
+    // unshare() requires the effective uid and gid to have a mapping in the
+    // parent namespace.
+    SetGidAndUidMaps(gid, uid);
+
+    // Make sure we drop CAP_SYS_ADMIN.
+    CHECK(sandbox::Credentials::DropAllCapabilities());
+
+    // Ensure we have unprivileged use of CLONE_NEWUSER.  Debian
+    // Jessie explicitly forbids this case.  See:
+    // add-sysctl-to-disallow-unprivileged-CLONE_NEWUSER-by-default.patch
+    PCHECK(0 == sys_unshare(CLONE_NEWUSER));
     _exit(kExitSuccess);
   }
 
   // Always reap the child.
   int status = -1;
   PCHECK(HANDLE_EINTR(waitpid(pid, &status, 0)) == pid);
-  CHECK(WIFEXITED(status));
-  CHECK_EQ(kExitSuccess, WEXITSTATUS(status));
 
-  // clone(2) succeeded, we can use CLONE_NEWUSER.
-  return true;
+  // clone(2) succeeded.  Now return true only if the system grants
+  // unprivileged use of CLONE_NEWUSER as well.
+  return WIFEXITED(status) && WEXITSTATUS(status) == kExitSuccess;
 }
 
 bool Credentials::MoveToNewUserNS() {
@@ -296,18 +323,9 @@ bool Credentials::MoveToNewUserNS() {
     return false;
   }
 
-  if (NamespaceUtils::KernelSupportsDenySetgroups()) {
-    PCHECK(NamespaceUtils::DenySetgroups());
-  }
-
   // The current {r,e,s}{u,g}id is now an overflow id (c.f.
   // /proc/sys/kernel/overflowuid). Setup the uid and gid maps.
-  DCHECK(GetRESIds(NULL, NULL));
-  const char kGidMapFile[] = "/proc/self/gid_map";
-  const char kUidMapFile[] = "/proc/self/uid_map";
-  PCHECK(NamespaceUtils::WriteToIdMapFile(kGidMapFile, gid));
-  PCHECK(NamespaceUtils::WriteToIdMapFile(kUidMapFile, uid));
-  DCHECK(GetRESIds(NULL, NULL));
+  SetGidAndUidMaps(gid, uid);
   return true;
 }
 
