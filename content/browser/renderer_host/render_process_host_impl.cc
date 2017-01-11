@@ -1754,6 +1754,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kExplicitlyAllowedPorts,
     switches::kForceDeviceScaleFactor,
     switches::kForceDisplayList2dCanvas,
+    switches::kForceGpuMemAvailableMb,
     switches::kEnableCanvas2dDynamicRenderingModeSwitching,
     switches::kForceOverlayFullscreenVideo,
     switches::kFullMemoryCrashReport,
