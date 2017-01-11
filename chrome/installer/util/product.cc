@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/process/launch.h"
 #include "base/win/registry.h"
-#include "chrome/installer/util/chrome_binaries_operations.h"
 #include "chrome/installer/util/chrome_browser_operations.h"
 #include "chrome/installer/util/chrome_browser_sxs_operations.h"
 #include "chrome/installer/util/google_update_constants.h"
@@ -31,9 +30,6 @@ Product::Product(BrowserDistribution* distribution)
       operations_.reset(InstallUtil::IsChromeSxSProcess() ?
           new ChromeBrowserSxSOperations() :
           new ChromeBrowserOperations());
-      break;
-    case BrowserDistribution::CHROME_BINARIES:
-      operations_.reset(new ChromeBinariesOperations());
       break;
     default:
       NOTREACHED() << "Unsupported BrowserDistribution::Type: "
@@ -120,10 +116,6 @@ bool Product::SetMsiMarker(bool system_install, bool set) const {
     return false;
   }
   return true;
-}
-
-bool Product::ShouldCreateUninstallEntry() const {
-  return operations_->ShouldCreateUninstallEntry(options_);
 }
 
 void Product::AddKeyFiles(std::vector<base::FilePath>* key_files) const {

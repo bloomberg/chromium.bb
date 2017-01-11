@@ -53,8 +53,6 @@ static_library("with_no_strings") {
 
   if (is_win) {
     sources = [
-      "chrome_binaries_operations.cc",
-      "chrome_binaries_operations.h",
       "chrome_browser_operations.cc",
       "chrome_browser_operations.h",
       "chrome_browser_sxs_operations.cc",
@@ -141,8 +139,6 @@ static_library("with_no_strings") {
       "callback_work_item.h",
       "channel_info.cc",
       "channel_info.h",
-      "chromium_binaries_distribution.cc",
-      "chromium_binaries_distribution.h",
       "conditional_work_item_list.cc",
       "conditional_work_item_list.h",
       "copy_tree_work_item.cc",
@@ -163,8 +159,6 @@ static_library("with_no_strings") {
       "duplicate_tree_detector.h",
       "firewall_manager_win.cc",
       "firewall_manager_win.h",
-      "google_chrome_binaries_distribution.cc",
-      "google_chrome_binaries_distribution.h",
       "google_chrome_sxs_distribution.cc",
       "google_chrome_sxs_distribution.h",
       "google_update_constants.cc",

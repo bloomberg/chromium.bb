@@ -427,7 +427,7 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
       true);
 
   // MSI installations will manage their own uninstall shortcuts.
-  if (!installer_state.is_msi() && product.ShouldCreateUninstallEntry()) {
+  if (!installer_state.is_msi()) {
     // We need to quote the command line for the Add/Remove Programs dialog.
     base::CommandLine quoted_uninstall_cmd(installer_path);
     DCHECK_EQ(quoted_uninstall_cmd.GetCommandLineString()[0], '"');
@@ -669,10 +669,8 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
     // We want MSI installs to take over the Add/Remove Programs entry. Make a
     // best-effort attempt to delete any entry left over from previous non-MSI
     // installations for the same type of install (system or per user).
-    if (product.ShouldCreateUninstallEntry()) {
-      AddDeleteUninstallEntryForMSIWorkItems(installer_state, product,
-                                             post_install_task_list);
-    }
+    AddDeleteUninstallEntryForMSIWorkItems(installer_state, product,
+                                           post_install_task_list);
   }
 
   return true;

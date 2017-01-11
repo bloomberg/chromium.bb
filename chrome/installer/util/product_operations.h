@@ -68,12 +68,6 @@ class ProductOperations {
                                bool set,
                                ChannelInfo* channel_info) const = 0;
 
-  // Returns true if setup should create an entry in the Add/Remove list
-  // of installed applications for this product.  This does not test for use of
-  // MSI; see InstallerState::is_msi.
-  virtual bool ShouldCreateUninstallEntry(
-      const std::set<base::string16>& options) const = 0;
-
   // Modifies a ShellUtil::ShortcutProperties object by assigning default values
   // to unintialized members.
   virtual void AddDefaultShortcutProperties(

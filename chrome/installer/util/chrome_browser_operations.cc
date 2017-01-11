@@ -93,11 +93,6 @@ bool ChromeBrowserOperations::SetChannelFlags(
 #endif
 }
 
-bool ChromeBrowserOperations::ShouldCreateUninstallEntry(
-    const std::set<base::string16>& options) const {
-  return true;
-}
-
 // Modifies a ShortcutProperties object by adding default values to
 // uninitialized members. Tries to assign:
 // - target: |chrome_exe|.

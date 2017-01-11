@@ -35,9 +35,6 @@ class ChromeBrowserOperations : public ProductOperations {
                        bool set,
                        ChannelInfo* channel_info) const override;
 
-  bool ShouldCreateUninstallEntry(
-      const std::set<base::string16>& options) const override;
-
   void AddDefaultShortcutProperties(
       BrowserDistribution* dist,
       const base::FilePath& target_exe,

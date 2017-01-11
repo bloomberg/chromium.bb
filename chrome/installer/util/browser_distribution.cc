@@ -21,8 +21,6 @@
 #include "chrome/common/chrome_icon_resources_win.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/installer/util/app_registration_data.h"
-#include "chrome/installer/util/chromium_binaries_distribution.h"
-#include "chrome/installer/util/google_chrome_binaries_distribution.h"
 #include "chrome/installer/util/google_chrome_distribution.h"
 #include "chrome/installer/util/google_chrome_sxs_distribution.h"
 #include "chrome/installer/util/install_util.h"
@@ -43,8 +41,6 @@ const wchar_t kCommandExecuteImplUuid[] =
 
 // The BrowserDistribution objects are never freed.
 BrowserDistribution* g_browser_distribution = NULL;
-BrowserDistribution* g_binaries_distribution = NULL;
-
 BrowserDistribution::Type GetCurrentDistributionType() {
   return BrowserDistribution::CHROME_BROWSER;
 }
@@ -84,34 +80,21 @@ BrowserDistribution* BrowserDistribution::GetDistribution() {
 // static
 BrowserDistribution* BrowserDistribution::GetSpecificDistribution(
     BrowserDistribution::Type type) {
+  DCHECK_EQ(type, CHROME_BROWSER);
   BrowserDistribution* dist = NULL;
 
-  switch (type) {
-    case CHROME_BROWSER:
 #if defined(GOOGLE_CHROME_BUILD)
-      if (InstallUtil::IsChromeSxSProcess()) {
-        dist = GetOrCreateBrowserDistribution<GoogleChromeSxSDistribution>(
-            &g_browser_distribution);
-      } else {
-        dist = GetOrCreateBrowserDistribution<GoogleChromeDistribution>(
-            &g_browser_distribution);
-      }
-#else
-      dist = GetOrCreateBrowserDistribution<BrowserDistribution>(
-          &g_browser_distribution);
-#endif
-      break;
-
-    default:
-      DCHECK_EQ(CHROME_BINARIES, type);
-#if defined(GOOGLE_CHROME_BUILD)
-      dist = GetOrCreateBrowserDistribution<GoogleChromeBinariesDistribution>(
-          &g_binaries_distribution);
-#else
-      dist = GetOrCreateBrowserDistribution<ChromiumBinariesDistribution>(
-          &g_binaries_distribution);
-#endif
+  if (InstallUtil::IsChromeSxSProcess()) {
+    dist = GetOrCreateBrowserDistribution<GoogleChromeSxSDistribution>(
+        &g_browser_distribution);
+  } else {
+    dist = GetOrCreateBrowserDistribution<GoogleChromeDistribution>(
+        &g_browser_distribution);
   }
+#else
+  dist = GetOrCreateBrowserDistribution<BrowserDistribution>(
+      &g_browser_distribution);
+#endif
 
   return dist;
 }

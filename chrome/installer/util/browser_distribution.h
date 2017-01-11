@@ -25,9 +25,9 @@ class AppRegistrationData;
 
 class BrowserDistribution {
  public:
+  // TODO(grt): Remove Type.
   enum Type {
     CHROME_BROWSER,
-    CHROME_BINARIES,
     NUM_TYPES
   };
 

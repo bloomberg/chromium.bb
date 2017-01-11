@@ -60,10 +60,6 @@ class Product {
     return distribution_->GetType() == BrowserDistribution::CHROME_BROWSER;
   }
 
-  bool is_chrome_binaries() const {
-    return distribution_->GetType() == BrowserDistribution::CHROME_BINARIES;
-  }
-
   bool HasOption(const std::wstring& option) const {
     return options_.find(option) != options_.end();
   }
@@ -93,10 +89,6 @@ class Product {
   // it otherwise. The MSI marker is stored in the registry under the
   // ClientState key.
   bool SetMsiMarker(bool system_install, bool set) const;
-
-  // Returns true if setup should create an entry in the Add/Remove list
-  // of installed applications.
-  bool ShouldCreateUninstallEntry() const;
 
   // See ProductOperations::AddKeyFiles.
   void AddKeyFiles(std::vector<base::FilePath>* key_files) const;
