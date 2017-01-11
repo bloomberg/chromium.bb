@@ -314,7 +314,7 @@ object-position interpolable, converter=convertPosition
 offset-anchor runtime_flag=CSSOffsetPositionAnchor, interpolable, converter=convertPositionOrAuto
 offset-distance interpolable, converter=convertLength
 offset-path converter=convertPathOrNone
-offset-position runtime_flag=CSSOffsetPositionAnchor, interpolable, converter=convertPositionOrAuto
+offset-position runtime_flag=CSSOffsetPositionAnchor, interpolable, converter=convertPositionOrAuto, api_class
 offset-rotate runtime_flag=CSSOffsetRotate, interpolable, converter=convertOffsetRotate
 offset-rotation runtime_flag=CSSOffsetRotation, interpolable, converter=convertOffsetRotate
 opacity interpolable, type_name=float

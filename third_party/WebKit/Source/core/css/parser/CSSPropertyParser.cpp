@@ -1440,21 +1440,6 @@ static CSSValue* consumeOffsetAnchor(CSSParserTokenRange& range,
   return consumePosition(range, cssParserMode, UnitlessQuirk::Forbid);
 }
 
-static CSSValue* consumeOffsetPosition(CSSParserTokenRange& range,
-                                       CSSParserMode cssParserMode,
-                                       UseCounter* useCounter) {
-  CSSValueID id = range.peek().id();
-  if (id == CSSValueAuto)
-    return consumeIdent(range);
-  CSSValue* value =
-      consumePosition(range, cssParserMode, UnitlessQuirk::Forbid);
-
-  // Count when we receive a valid position other than 'auto'.
-  if (useCounter && value && value->isValuePair())
-    useCounter->count(UseCounter::CSSOffsetInEffect);
-  return value;
-}
-
 static CSSValue* consumeOffsetPath(CSSParserTokenRange& range,
                                    UseCounter* useCounter,
                                    bool isMotionPath) {
@@ -3441,9 +3426,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return consumeTextDecorationLine(m_range);
     case CSSPropertyOffsetAnchor:
       return consumeOffsetAnchor(m_range, m_context.mode());
-    case CSSPropertyOffsetPosition:
-      return consumeOffsetPosition(m_range, m_context.mode(),
-                                   m_context.useCounter());
     case CSSPropertyD:
       return consumePathOrNone(m_range);
     case CSSPropertyOffsetPath:
