@@ -6,6 +6,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/browser_process.h"
@@ -60,13 +61,13 @@ class UINetworkQualityEstimatorServiceBrowserTest
   // Verifies that the network quality prefs are written amd read correctly.
   void VerifyWritingReadingPrefs(bool persistent_cache_writing_enabled,
                                  bool persistent_cache_reading_enabled) {
+    variations::testing::ClearAllVariationParams();
     std::map<std::string, std::string> variation_params;
 
-    if (persistent_cache_writing_enabled)
-      variation_params["persistent_cache_writing_enabled"] = "true";
-
-    if (persistent_cache_reading_enabled)
-      variation_params["persistent_cache_reading_enabled"] = "true";
+    variation_params["persistent_cache_writing_enabled"] =
+        persistent_cache_writing_enabled ? "true" : "false";
+    variation_params["persistent_cache_reading_enabled"] =
+        persistent_cache_reading_enabled ? "true" : "false";
 
     variations::AssociateVariationParams("NetworkQualityEstimator", "Enabled",
                                          variation_params);
@@ -214,13 +215,6 @@ IN_PROC_BROWSER_TEST_F(UINetworkQualityEstimatorServiceBrowserTest,
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
             nqe_observer_3.effective_connection_type());
-}
-
-// Verify that prefs are not writen when writing of the prefs is not enabled
-// via field trial.
-IN_PROC_BROWSER_TEST_F(UINetworkQualityEstimatorServiceBrowserTest,
-                       WritingToPrefsDisabled) {
-  VerifyWritingReadingPrefs(false, true);
 }
 
 // Verify that prefs are not read when reading of the prefs is not enabled
