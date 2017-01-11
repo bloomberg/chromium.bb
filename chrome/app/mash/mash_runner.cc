@@ -19,6 +19,7 @@
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
+#include "base/sys_info.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/trace_event/trace_event.h"
@@ -41,7 +42,6 @@
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/runner/common/switches.h"
 #include "services/service_manager/runner/init.h"
-#include "services/service_manager/standalone/context.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
@@ -134,6 +134,9 @@ MashRunner::MashRunner() {}
 MashRunner::~MashRunner() {}
 
 int MashRunner::Run() {
+  base::TaskScheduler::CreateAndSetSimpleTaskScheduler(
+      base::SysInfo::NumberOfProcessors());
+
   if (IsChild())
     return RunChild();
   RunMain();
@@ -141,8 +144,6 @@ int MashRunner::Run() {
 }
 
 void MashRunner::RunMain() {
-  base::TaskScheduler::CreateAndSetSimpleTaskScheduler(
-      service_manager::kThreadPoolMaxThreads);
   base::SequencedWorkerPool::EnableWithRedirectionToTaskSchedulerForProcess();
 
   // TODO(sky): refactor BackgroundServiceManager so can supply own context, we
@@ -193,11 +194,6 @@ void MashRunner::RunMain() {
 }
 
 int MashRunner::RunChild() {
-  // TODO(fdoray): Add TaskScheduler initialization code in
-  // service_manager::ServiceRunner. TaskScheduler can't be initialized here
-  // because it wouldn't be visible to the service's dynamic library.
-  // https://crbug.com/664996
-
   service_manager::WaitForDebuggerIfNecessary();
 
   base::i18n::InitializeICU();
