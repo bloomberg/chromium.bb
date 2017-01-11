@@ -27,7 +27,6 @@
 #include "chrome/installer/util/fake_installation_state.h"
 #include "chrome/installer/util/fake_product_state.h"
 #include "chrome/installer/util/google_update_constants.h"
-#include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/installer_util_strings.h"
 #include "chrome/installer/util/master_preferences.h"
@@ -151,30 +150,6 @@ TEST_F(InstallerStateTest, InstallerResult) {
   }
 }
 
-// Test GetCurrentVersion when migrating single Chrome to multi
-TEST_F(InstallerStateTest, GetCurrentVersionMigrateChrome) {
-  using installer::FakeInstallationState;
-
-  const bool system_install = false;
-  FakeInstallationState machine_state;
-
-  // Pretend that this version of single-install Chrome is already installed.
-  machine_state.AddChrome(system_install,
-                          new base::Version(chrome::kChromeVersion));
-
-  // Now we're invoked to install multi Chrome.
-  base::CommandLine cmd_line(
-      base::CommandLine::FromString(L"setup.exe --multi-install --chrome"));
-  MasterPreferences prefs(cmd_line);
-  InstallerState installer_state;
-  installer_state.Initialize(cmd_line, prefs, machine_state);
-
-  // Is the Chrome version picked up?
-  std::unique_ptr<base::Version> version(
-      installer_state.GetCurrentVersion(machine_state));
-  EXPECT_TRUE(version.get() != NULL);
-}
-
 TEST_F(InstallerStateTest, InitializeTwice) {
   // Override these paths so that they can be found after the registry override
   // manager is in place.
@@ -214,7 +189,7 @@ TEST_F(InstallerStateTest, InitializeTwice) {
   EXPECT_EQ(installer_state.state_key(),
             BrowserDistribution::GetDistribution()->GetStateKey());
 
-  // Now initialize it to install system-level single Chrome.
+  // Now initialize it to install system-level Chrome.
   {
     base::CommandLine cmd_line(base::CommandLine::FromString(
         L"setup.exe --system-level --verbose-logging"));

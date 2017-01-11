@@ -26,10 +26,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
 #include "base/version.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
@@ -38,6 +36,7 @@
 #include "chrome/installer/setup/user_hive_visitor.h"
 #include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/google_update_constants.h"
+#include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/master_preferences.h"
@@ -73,41 +72,14 @@ base::string16 InstallFullName() {
 // ClientState key for a user) indicates that Chrome has been used within the
 // last 28 days.
 bool IsActivelyUsedIn(HKEY root, const wchar_t* key_path) {
-  // This duplicates some logic in GoogleUpdateSettings::GetLastRunTime, which
-  // is suitable for use from the context of Chrome but not from the installer
-  // because it was implemented with the assumption that
-  // BrowserDistribution::GetDistribution() will always be the right thing.
-  // This is true in Chrome, but not in the installer in a multi-install world.
-  // Once multi-install goes away, this assumption will once again become true
-  // for the installer, and this new code here can then be deleted.
   VLOG(1) << "IsActivelyUsedIn probing " << root << "\\" << key_path;
-  base::win::RegKey key;
-  LONG result = key.Open(root, key_path, KEY_WOW64_32KEY | KEY_QUERY_VALUE);
-  if (result != ERROR_SUCCESS) {
-    ::SetLastError(result);
-    PLOG_IF(ERROR, result != ERROR_FILE_NOT_FOUND) << "Failed opening " << root
-                                                   << "\\" << key_path;
-    return false;
+  int days_ago_last_run = GoogleUpdateSettings::GetLastRunTime();
+  if (days_ago_last_run >= 0) {
+    VLOG(1) << "Found a user that last ran Chrome " << days_ago_last_run
+            << " days ago.";
+    return days_ago_last_run <= 28;
   }
-  base::string16 last_run_time_string;
-  result =
-      key.ReadValue(google_update::kRegLastRunTimeField, &last_run_time_string);
-  if (result != ERROR_SUCCESS) {
-    ::SetLastError(result);
-    PLOG_IF(ERROR, result != ERROR_FILE_NOT_FOUND)
-        << "Failed reading " << root << "\\" << key_path << "@"
-        << google_update::kRegLastRunTimeField;
-    return false;
-  }
-  int64_t last_run_time_value = 0;
-  if (!base::StringToInt64(last_run_time_string, &last_run_time_value))
-    return false;
-  base::Time last_run_time = base::Time::FromInternalValue(last_run_time_value);
-  int days_ago_last_run =
-      (base::Time::NowFromSystemTime() - last_run_time).InDays();
-  VLOG(1) << "Found a user that last ran Chrome " << days_ago_last_run
-          << " days ago.";
-  return days_ago_last_run <= 28;
+  return false;
 }
 
 // A visitor for user hives, run by VisitUserHives. |client_state_path| is the

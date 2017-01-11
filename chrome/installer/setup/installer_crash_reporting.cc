@@ -32,7 +32,6 @@ namespace {
 // Crash Keys
 
 const char kCurrentVersion[] = "current-version";
-const char kIsMultiInstall[] = "multi-install";
 const char kIsSystemLevel[] = "system-level";
 const char kOperation[] = "operation";
 const char kStateKey[] = "state-key";
@@ -105,7 +104,6 @@ size_t RegisterCrashKeys() {
   const base::debug::CrashKey kFixedKeys[] = {
     { crash_keys::kMetricsClientId, crash_keys::kSmallSize },
     { kCurrentVersion, crash_keys::kSmallSize },
-    { kIsMultiInstall, crash_keys::kSmallSize },
     { kIsSystemLevel, crash_keys::kSmallSize },
     { kOperation, crash_keys::kSmallSize },
 
@@ -126,7 +124,6 @@ void SetInitialCrashKeys(const InstallerState& state) {
   using base::debug::SetCrashKeyValue;
 
   SetCrashKeyValue(kOperation, OperationToString(state.operation()));
-  SetCrashKeyValue(kIsMultiInstall, "false");
   SetCrashKeyValue(kIsSystemLevel, state.system_install() ? "true" : "false");
 
   const base::string16 state_key = state.state_key();
