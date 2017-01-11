@@ -239,7 +239,7 @@ right: auto
 rotate: 0deg
 rx: auto
 ry: auto
-scale: 1
+scale: none
 scroll-behavior: auto
 scroll-snap-coordinate: none
 scroll-snap-destination: 0px 0px

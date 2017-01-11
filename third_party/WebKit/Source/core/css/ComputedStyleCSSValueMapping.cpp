@@ -3598,8 +3598,7 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
     }
     case CSSPropertyScale: {
       if (!style.scale())
-        return CSSPrimitiveValue::create(1,
-                                         CSSPrimitiveValue::UnitType::Number);
+        return CSSIdentifierValue::create(CSSValueNone);
       CSSValueList* list = CSSValueList::createSpaceSeparated();
       list->append(*CSSPrimitiveValue::create(
           style.scale()->x(), CSSPrimitiveValue::UnitType::Number));

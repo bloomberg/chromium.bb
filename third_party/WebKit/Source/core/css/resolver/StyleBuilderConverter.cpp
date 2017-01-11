@@ -1247,6 +1247,11 @@ PassRefPtr<RotateTransformOperation> StyleBuilderConverter::convertRotate(
 PassRefPtr<ScaleTransformOperation> StyleBuilderConverter::convertScale(
     StyleResolverState& state,
     const CSSValue& value) {
+  if (value.isIdentifierValue()) {
+    DCHECK_EQ(toCSSIdentifierValue(value).getValueID(), CSSValueNone);
+    return nullptr;
+  }
+
   const CSSValueList& list = toCSSValueList(value);
   ASSERT(list.length() <= 3);
   double sx = toCSSPrimitiveValue(list.item(0)).getDoubleValue();

@@ -674,8 +674,12 @@ static CSSValueList* consumeRotation(CSSParserTokenRange& range) {
   return list;
 }
 
-static CSSValueList* consumeScale(CSSParserTokenRange& range) {
+static CSSValue* consumeScale(CSSParserTokenRange& range) {
   ASSERT(RuntimeEnabledFeatures::cssIndependentTransformPropertiesEnabled());
+
+  CSSValueID id = range.peek().id();
+  if (id == CSSValueNone)
+    return consumeIdent(range);
 
   CSSValue* scale = consumeNumber(range, ValueRangeAll);
   if (!scale)
