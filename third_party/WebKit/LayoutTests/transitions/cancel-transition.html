@@ -48,19 +48,30 @@
     <script>
         'use strict';
 
-        function waitSeveralFrames() {
-            return container.animate({opacity: ['1', '1']}, 100).finished;
+        function waitForProgress() {
+          var initialLeft = getComputedStyle(left).left;
+          return new Promise(resolve => {
+            function poll() {
+              var currentLeft = getComputedStyle(left).left;
+              if (currentLeft === initialLeft) {
+                requestAnimationFrame(poll);
+              } else {
+                resolve();
+              }
+            }
+            requestAnimationFrame(poll);
+          });
         }
 
         async_test(t => {
             getComputedStyle(container).height; // force style recalc
             container.className = 'run';
             getComputedStyle(container).height; // force style recalc - transition will start
-            waitSeveralFrames().then(t.step_func(() => {
+            waitForProgress().then(t.step_func_done(() => {
                 assert_greater_than(parseFloat(getComputedStyle(left).left), 50);
                 container.className = '';
                 getComputedStyle(container).height; // force style recalc - transition will cancel
-            })).then(waitSeveralFrames).then(t.step_func_done(() => {
+
                 container.className = 'run'; // restart transition
                 assert_equals(getComputedStyle(left).left, '50px');
                 assert_equals(getComputedStyle(translate).transform, 'matrix(1, 0, 0, 1, 100, 0)');
