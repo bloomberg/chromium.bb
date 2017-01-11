@@ -12,6 +12,7 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/install_util.h"
+#include "chrome/installer/util/util_constants.h"
 
 namespace installer {
 
@@ -117,7 +118,7 @@ bool ProductState::Initialize(bool system_install) {
                             &dw_value) == ERROR_SUCCESS) && (dw_value != 0);
     // Multi-install is a legacy option that is read for the sole purpose of
     // migrating clients away from it.
-    multi_install_ = uninstall_command_.HasSwitch(switches::kMultiInstall);
+    multi_install_ = uninstall_command_.HasSwitch("multi-install");
   }
 
   // Read from the ClientStateMedium key.  Values here override those in

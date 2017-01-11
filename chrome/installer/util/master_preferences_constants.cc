@@ -36,7 +36,6 @@ namespace master_preferences {
       "suppress_first_run_default_browser_prompt";
   const char kMsi[] = "msi";
   const char kMsiProductId[] = "msi_product_id";
-  const char kMultiInstall[] = "multi_install";
   const char kRequireEula[] = "require_eula";
   const char kSystemLevel[] = "system_level";
   const char kVerboseLogging[] = "verbose_logging";

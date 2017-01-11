@@ -144,7 +144,6 @@ enum InstallerStage {
 
 namespace switches {
 
-extern const char kChrome[];
 extern const char kChromeSxS[];
 extern const char kConfigureUserSettings[];
 extern const char kCriticalUpdateVersion[];
@@ -162,7 +161,6 @@ extern const char kInstallerData[];
 extern const char kLogFile[];
 extern const char kMakeChromeDefault[];
 extern const char kMsi[];
-extern const char kMultiInstall[];
 extern const char kNewSetupExe[];
 extern const char kOnOsUpgrade[];
 extern const char kPreviousVersion[];

@@ -170,8 +170,6 @@ class MasterPreferences {
     return preferences_read_from_file_;
   }
 
-  bool is_multi_install() const { return false; }
-
   // Returns a reference to this MasterPreferences' root dictionary of values.
   const base::DictionaryValue& master_dictionary() const {
     return *master_dictionary_.get();

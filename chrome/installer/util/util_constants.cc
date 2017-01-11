@@ -8,10 +8,6 @@ namespace installer {
 
 namespace switches {
 
-// Install Chrome.
-// Currently this is only required when used in combination with kMultiInstall.
-const char kChrome[] = "chrome";
-
 // Run the installer for Chrome SxS.
 const char kChromeSxS[] = "chrome-sxs";
 
@@ -82,10 +78,6 @@ const char kMakeChromeDefault[] = "make-chrome-default";
 
 // Tells installer to expect to be run as a subsidiary to an MSI.
 const char kMsi[] = "msi";
-
-// Tells installer to install multiple products specified on the command line.
-// (e.g. Chrome Frame, Chrome)
-const char kMultiInstall[] = "multi-install";
 
 // Useful only when used with --update-setup-exe, otherwise ignored. It
 // specifies the full path where updated setup.exe will be stored.

@@ -321,23 +321,6 @@ TEST_F(MasterPreferencesTest, TestDefaultInstallConfig) {
       base::CommandLine::FromString(chrome_cmd.str()));
 
   installer::MasterPreferences pref_chrome(chrome_install);
-
-  EXPECT_FALSE(pref_chrome.is_multi_install());
-}
-
-TEST_F(MasterPreferencesTest, TestMultiInstallIgnoredConfig) {
-  using installer::switches::kMultiInstall;
-  using installer::switches::kChrome;
-
-  std::wstringstream chrome_cmd, cf_cmd, chrome_cf_cmd;
-  chrome_cmd << "setup.exe --" << kMultiInstall << " --" << kChrome;
-
-  base::CommandLine chrome_install(
-      base::CommandLine::FromString(chrome_cmd.str()));
-
-  installer::MasterPreferences pref_chrome(chrome_install);
-
-  EXPECT_FALSE(pref_chrome.is_multi_install());
 }
 
 TEST_F(MasterPreferencesTest, EnforceLegacyCreateAllShortcutsFalse) {

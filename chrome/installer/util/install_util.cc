@@ -319,11 +319,6 @@ void InstallUtil::ResetIsPerUserInstallForTest() {
   env->UnSetVar(kEnvProgramFilesPath);
 }
 
-bool InstallUtil::IsMultiInstall(bool system_install) {
-  ProductState state;
-  return state.Initialize(system_install) && state.is_multi_install();
-}
-
 bool CheckIsChromeSxSProcess() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   CHECK(command_line);

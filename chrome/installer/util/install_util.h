@@ -92,9 +92,6 @@ class InstallUtil {
   // with fresh data.
   static void ResetIsPerUserInstallForTest();
 
-  // Returns true if Chrome at |system_level| is a multi install.
-  static bool IsMultiInstall(bool system_install);
-
   // Returns true if this is running setup process for Chrome SxS (as
   // indicated by the presence of --chrome-sxs on the command line) or if this
   // is running Chrome process from the Chrome SxS installation (as indicated
