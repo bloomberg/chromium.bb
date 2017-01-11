@@ -5,7 +5,6 @@
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "skia/ext/analysis_canvas.h"
-#include "third_party/skia/include/core/SkDraw.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRRect.h"
 #include "third_party/skia/include/core/SkShader.h"
