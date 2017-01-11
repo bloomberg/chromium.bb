@@ -36,7 +36,7 @@ class TerminalPrivateOpenTerminalProcessFunction
                         const OpenProcessCallback& callback);
   void RespondOnUIThread(int terminal_id);
 
-  const char* command_;
+  std::string command_;
 };
 
 // Send input to the terminal process specified by the terminal ID, which is set

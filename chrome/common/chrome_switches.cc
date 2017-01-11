@@ -977,6 +977,9 @@ const char kWebApkServerUrl[] = "webapk-server-url";
 #if defined(OS_CHROMEOS)
 // Enables native cups integration
 const char kEnableNativeCups[] = "enable-native-cups";
+
+// Custom crosh command.
+const char kCroshCommand[] = "crosh-command";
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(USE_ASH)

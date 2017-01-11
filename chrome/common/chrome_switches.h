@@ -288,6 +288,7 @@ extern const char kWebApkServerUrl[];
 
 #if defined(OS_CHROMEOS)
 extern const char kEnableNativeCups[];
+extern const char kCroshCommand[];
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(USE_ASH)
