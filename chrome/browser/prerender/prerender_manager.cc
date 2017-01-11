@@ -941,6 +941,13 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerender(
     return nullptr;
   }
 
+  if (PrerenderData* preexisting_prerender_data =
+          FindPrerenderData(url, session_storage_namespace)) {
+    RecordFinalStatusWithoutCreatingPrerenderContents(url, origin,
+                                                      FINAL_STATUS_DUPLICATE);
+    return base::WrapUnique(new PrerenderHandle(preexisting_prerender_data));
+  }
+
   if (IsNoStatePrefetch(origin)) {
     base::TimeDelta prefetch_age;
     GetPrefetchInformation(url, &prefetch_age, nullptr);
@@ -951,11 +958,6 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerender(
                                                         FINAL_STATUS_DUPLICATE);
       return nullptr;
     }
-  } else if (PrerenderData* preexisting_prerender_data =
-                 FindPrerenderData(url, session_storage_namespace)) {
-    RecordFinalStatusWithoutCreatingPrerenderContents(
-        url, origin, FINAL_STATUS_DUPLICATE);
-    return base::WrapUnique(new PrerenderHandle(preexisting_prerender_data));
   }
 
   // Do not prerender if there are too many render processes, and we would

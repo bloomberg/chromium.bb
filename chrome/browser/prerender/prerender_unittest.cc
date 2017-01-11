@@ -642,6 +642,36 @@ TEST_F(PrerenderTest, DuplicateTest) {
   ASSERT_EQ(prerender_contents, entry.get());
 }
 
+// Make sure that if queue a request, and a second prerender request for the
+// same URL comes in, that the second request attaches to the first prerender,
+// and we don't use the second prerender contents.
+// This test is the same as the "DuplicateTest" above, but for NoStatePrefetch.
+TEST_F(PrerenderTest, DuplicateTest_NoStatePrefetch) {
+  RestorePrerenderMode restore_prerender_mode;
+  prerender_manager()->SetMode(
+      PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
+
+  SetConcurrency(2);
+  GURL url("http://www.google.com/");
+  DummyPrerenderContents* prerender_contents =
+      prerender_manager()->CreateNextPrerenderContents(url, FINAL_STATUS_USED);
+  EXPECT_TRUE(AddSimplePrerender(url));
+  EXPECT_FALSE(prerender_manager()->next_prerender_contents());
+  EXPECT_TRUE(prerender_contents->prerendering_has_started());
+
+  DummyPrerenderContents* prerender_contents1 =
+      prerender_manager()->CreateNextPrerenderContents(
+          url, FINAL_STATUS_MANAGER_SHUTDOWN);
+  EXPECT_TRUE(AddSimplePrerender(url));
+  EXPECT_EQ(prerender_contents1,
+            prerender_manager()->next_prerender_contents());
+  EXPECT_FALSE(prerender_contents1->prerendering_has_started());
+
+  std::unique_ptr<PrerenderContents> entry =
+      prerender_manager()->FindAndUseEntry(url);
+  ASSERT_EQ(prerender_contents, entry.get());
+}
+
 // Ensure that we expire a prerendered page after the max. permitted time.
 TEST_F(PrerenderTest, ExpireTest) {
   base::SimpleTestTickClock* tick_clock =
@@ -794,10 +824,12 @@ TEST_F(PrerenderTest, NoStatePrefetchDuplicate) {
       OverridePrerenderManagerTimeTicks(prerender_manager());
 
   // Prefetch the url once.
-  prerender_manager()->CreateNextPrerenderContents(
-      kUrl, ORIGIN_OMNIBOX, FINAL_STATUS_MANAGER_SHUTDOWN);
+  prerender_manager()->CreateNextPrerenderContents(kUrl, ORIGIN_OMNIBOX,
+                                                   FINAL_STATUS_CANCELLED);
   EXPECT_TRUE(
       prerender_manager()->AddPrerenderFromOmnibox(kUrl, nullptr, gfx::Size()));
+  // Cancel the prerender so that it is not reused.
+  prerender_manager()->CancelAllPrerenders();
 
   prerender_manager()->CreateNextPrerenderContents(
       kUrl, ORIGIN_OMNIBOX, FINAL_STATUS_MANAGER_SHUTDOWN);
