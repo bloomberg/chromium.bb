@@ -563,7 +563,7 @@ class GoogleUpdateWinTest : public ::testing::TestWithParam<bool> {
     registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
     registry_override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE);
 
-    // Chrome is installed as multi-install.
+    // Chrome is installed.
     const HKEY root =
         system_level_install_ ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
     base::win::RegKey key(root, kClients, KEY_WRITE | KEY_WOW64_32KEY);
@@ -577,8 +577,7 @@ class GoogleUpdateWinTest : public ::testing::TestWithParam<bool> {
     ASSERT_EQ(ERROR_SUCCESS,
               key.CreateKey(kChromeGuid, KEY_WRITE | KEY_WOW64_32KEY));
     ASSERT_EQ(ERROR_SUCCESS,
-              key.WriteValue(L"UninstallArguments",
-                             L"--uninstall --multi-install --chrome"));
+              key.WriteValue(L"UninstallArguments", L"--uninstall"));
 
     // Provide an IGoogleUpdate3Web class factory so that this test can provide
     // a mocked-out instance.
@@ -602,7 +601,7 @@ class GoogleUpdateWinTest : public ::testing::TestWithParam<bool> {
     CComObject<MockGoogleUpdate>* google_update =
         mock_google_update_factory_.MakeServerMock();
     CComObject<MockAppBundle>* app_bundle = google_update->MakeAppBundle();
-    CComObject<MockApp>* app = app_bundle->MakeApp(kChromeBinariesGuid);
+    CComObject<MockApp>* app = app_bundle->MakeApp(kChromeGuid);
 
     if (mock_app_bundle)
       *mock_app_bundle = app_bundle;
@@ -619,7 +618,6 @@ class GoogleUpdateWinTest : public ::testing::TestWithParam<bool> {
   static const base::char16 kClients[];
   static const base::char16 kClientState[];
   static const base::char16 kChromeGuid[];
-  static const base::char16 kChromeBinariesGuid[];
 
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
@@ -653,8 +651,6 @@ const base::char16 GoogleUpdateWinTest::kClientState[] =
     L"Software\\Google\\Update\\ClientState";
 const base::char16 GoogleUpdateWinTest::kChromeGuid[] =
     L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
-const base::char16 GoogleUpdateWinTest::kChromeBinariesGuid[] =
-    L"{4DC8B4CA-1BDA-483e-B5FA-D3C12E15B62D}";
 
 // Test that an update check fails with the proper error code if Chrome isn't in
 // one of the expected install directories.
@@ -920,12 +916,12 @@ TEST_P(GoogleUpdateWinTest, RetryAfterExternalUpdaterError) {
   // The first attempt will fail in createInstalledApp indicating that an update
   // is already in progress.
   Sequence bundle_seq;
-  EXPECT_CALL(*mock_app_bundle, createInstalledApp(StrEq(kChromeBinariesGuid)))
+  EXPECT_CALL(*mock_app_bundle, createInstalledApp(StrEq(kChromeGuid)))
       .InSequence(bundle_seq)
       .WillOnce(Return(GOOPDATE_E_APP_USING_EXTERNAL_UPDATER));
 
   // Expect a retry on the same instance.
-  EXPECT_CALL(*mock_app_bundle, createInstalledApp(StrEq(kChromeBinariesGuid)))
+  EXPECT_CALL(*mock_app_bundle, createInstalledApp(StrEq(kChromeGuid)))
       .InSequence(bundle_seq)
       .WillOnce(Return(S_OK));
 
