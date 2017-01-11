@@ -1,0 +1,29 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("suggestions") {
+  sources = [
+    "sc_suggestions_coordinator.h",
+    "sc_suggestions_coordinator.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/chrome/browser/ui/suggestions",
+    "//ios/showcase/common",
+  ]
+  libs = [ "UIKit.framework" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("eg_tests") {
+  testonly = true
+  sources = [
+    "sc_suggestions_egtest.mm",
+  ]
+  deps = [
+    "//ios/showcase/test",
+    "//ios/third_party/earl_grey",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}

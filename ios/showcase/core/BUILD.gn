@@ -25,6 +25,13 @@ source_set("main") {
   ]
   deps = [
     ":core",
+
+    # Needed to disable the tests hooks.
+    "//ios/chrome/app:tests_fake_hook",
+
+    # Needed for including ios/chrome/browser/ui.
+    "//ios/chrome/browser/tabs:tabs_internal",
+    "//ios/chrome/browser/ui:ui_internal",
   ]
   libs = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
