@@ -956,7 +956,7 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceForInternal(
     }
 
     quic_all_broken = false;
-    if (!session_->params().enable_quic)
+    if (!session_->IsQuicEnabled())
       continue;
 
     if (!IsQuicWhitelistedForHost(origin.host()))
@@ -1056,7 +1056,7 @@ bool HttpStreamFactoryImpl::JobController::
 
   if (alternative_proxy_server->is_quic()) {
     // Check that QUIC is enabled globally, and it is not disabled.
-    if (!session_->params().enable_quic ||
+    if (!session_->IsQuicEnabled() ||
         session_->quic_stream_factory()->IsQuicDisabled()) {
       return false;
     }

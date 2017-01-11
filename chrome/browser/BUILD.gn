@@ -1004,6 +1004,8 @@ split_static_library("browser") {
     "profiles/incognito_helpers.h",
     "profiles/incognito_mode_policy_handler.cc",
     "profiles/incognito_mode_policy_handler.h",
+    "profiles/net_http_session_params_observer.cc",
+    "profiles/net_http_session_params_observer.h",
     "profiles/off_the_record_profile_impl.cc",
     "profiles/off_the_record_profile_impl.h",
     "profiles/off_the_record_profile_io_data.cc",

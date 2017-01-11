@@ -116,6 +116,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
      base::Value::Type::BOOLEAN},
     {key::kPacHttpsUrlStrippingEnabled, prefs::kPacHttpsUrlStrippingEnabled,
      base::Value::Type::BOOLEAN},
+    {key::kQuicAllowed, prefs::kQuicAllowed, base::Value::Type::BOOLEAN},
     {key::kSafeBrowsingEnabled, prefs::kSafeBrowsingEnabled,
      base::Value::Type::BOOLEAN},
     {key::kForceGoogleSafeSearch, prefs::kForceGoogleSafeSearch,

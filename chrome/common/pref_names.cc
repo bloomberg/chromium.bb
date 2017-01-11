@@ -439,6 +439,9 @@ const char kDnsPrefetchingStartupList[] = "dns_prefetching.startup_list";
 const char kDnsPrefetchingHostReferralList[] =
     "dns_prefetching.host_referral_list";
 
+// Controls if the QUIC protocol is allowed.
+const char kQuicAllowed[] = "net.quic_allowed";
+
 // Prefs for persisting HttpServerProperties.
 const char kHttpServerProperties[] = "net.http_server_properties";
 

@@ -132,9 +132,10 @@ class GCM_EXPORT ConnectionFactoryImpl :
   // Closes the local socket if one is present, and resets connection handler.
   void CloseSocket();
 
-  // Updates the GCM Network Session's HttpAuthCache with the HTTP Network
-  // Session's cache, if available.
-  void RebuildNetworkSessionAuthCache();
+  // Updates the GCM Network Session's with current data from HTTP Network
+  // Session's, if available.
+  // Specifically, HttpAuthCache and IsQuicEnabled are updated.
+  void UpdateFromHttpNetworkSession();
 
   // The tracker will maintain a list of all connection attempts with GCM,
   // whether they succeeded, and their duration.

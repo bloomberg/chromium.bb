@@ -797,6 +797,16 @@ const net::HttpNetworkSession::Params& IOThread::NetworkSessionParams() const {
   return params_;
 }
 
+void IOThread::DisableQuic() {
+  params_.enable_quic = false;
+
+  if (globals_->system_http_network_session)
+    globals_->system_http_network_session->DisableQuic();
+
+  if (globals_->proxy_script_fetcher_http_network_session)
+    globals_->proxy_script_fetcher_http_network_session->DisableQuic();
+}
+
 base::TimeTicks IOThread::creation_time() const {
   return creation_time_;
 }

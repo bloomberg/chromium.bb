@@ -46,6 +46,7 @@
 #include "chrome/browser/policy/policy_helpers.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
+#include "chrome/browser/profiles/net_http_session_params_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ssl/chrome_expect_ct_reporter.h"
@@ -468,6 +469,13 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
       &force_youtube_restrict_,
       &allowed_domains_for_apps_,
       pref_service);
+
+  DCHECK(!net_http_session_params_observer_);
+  NetHttpSessionParamsObserver::DisableQuicCallback disable_quic_callback =
+      base::Bind(&ProfileIOData::DisableQuicOnIOThread, base::Unretained(this));
+  net_http_session_params_observer_ =
+      base::MakeUnique<NetHttpSessionParamsObserver>(pref_service,
+                                                     disable_quic_callback);
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
@@ -919,6 +927,18 @@ std::unique_ptr<net::ClientCertStore> ProfileIOData::CreateClientCertStore() {
 #endif
 }
 
+void ProfileIOData::DisableQuicOnIOThread() {
+  // If the URLRequestContext has not been created yet, it will not be updated
+  // here. Instead, it will inherit its QUIC enablement from IOThread on
+  // construction, which is fine, as NetHttpSessionParamsObserver also disables
+  // QUIC there.
+  if (!main_request_context_storage_ ||
+      !main_request_context_storage_->http_network_session())
+    return;
+
+  main_request_context_storage_->http_network_session()->DisableQuic();
+}
+
 void ProfileIOData::set_data_reduction_proxy_io_data(
     std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData>
         data_reduction_proxy_io_data) const {
@@ -1226,6 +1246,7 @@ void ProfileIOData::ShutdownOnUIThread(
   if (chrome_http_user_agent_settings_)
     chrome_http_user_agent_settings_->CleanupOnUIThread();
   incognito_availibility_pref_.Destroy();
+  net_http_session_params_observer_.reset();
 
   if (!context_getters->empty()) {
     if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {

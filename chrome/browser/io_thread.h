@@ -236,6 +236,12 @@ class IOThread : public content::BrowserThreadDelegate {
 
   const net::HttpNetworkSession::Params& NetworkSessionParams() const;
 
+  // Dynamically disables QUIC for HttpNetworkSessions owned by io_thread, and
+  // to HttpNetworkSession::Params which are used for the creation of new
+  // HttpNetworkSessions. Not that re-enabling Quic dynamically is not
+  // supported for simplicity and requires a browser restart.
+  void DisableQuic();
+
   base::TimeTicks creation_time() const;
 
   // Returns the callback for updating data use prefs.

@@ -319,7 +319,7 @@ void ConnectionFactoryImpl::StartConnection() {
   connecting_ = true;
   GURL current_endpoint = GetCurrentEndpoint();
   recorder_->RecordConnectionInitiated(current_endpoint.host());
-  RebuildNetworkSessionAuthCache();
+  UpdateFromHttpNetworkSession();
   int status = gcm_network_session_->proxy_service()->ResolveProxy(
       current_endpoint,
       std::string(),
@@ -590,12 +590,15 @@ void ConnectionFactoryImpl::CloseSocket() {
   socket_handle_.Reset();
 }
 
-void ConnectionFactoryImpl::RebuildNetworkSessionAuthCache() {
+void ConnectionFactoryImpl::UpdateFromHttpNetworkSession() {
   if (!http_network_session_ || !http_network_session_->http_auth_cache())
     return;
 
   gcm_network_session_->http_auth_cache()->UpdateAllFrom(
       *http_network_session_->http_auth_cache());
+
+  if (!http_network_session_->IsQuicEnabled())
+    gcm_network_session_->DisableQuic();
 }
 
 }  // namespace gcm

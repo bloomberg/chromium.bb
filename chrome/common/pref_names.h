@@ -176,6 +176,7 @@ extern const char kPromptForDownload[];
 extern const char kAlternateErrorPagesEnabled[];
 extern const char kDnsPrefetchingStartupList[];
 extern const char kDnsPrefetchingHostReferralList[];
+extern const char kQuicAllowed[];
 extern const char kHttpServerProperties[];
 extern const char kNetworkQualities[];
 #if defined(OS_ANDROID)

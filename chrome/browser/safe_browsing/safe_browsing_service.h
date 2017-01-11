@@ -124,6 +124,11 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
 
   scoped_refptr<net::URLRequestContextGetter> url_request_context();
 
+  // Called on IO thread thread when QUIC should be disabled (e.g. because of
+  // policy). This should not be necessary anymore when http://crbug.com/678653
+  // is implemented.
+  void DisableQuicOnIOThread();
+
   const scoped_refptr<SafeBrowsingUIManager>& ui_manager() const;
 
   // This returns either the v3 or the v4 database manager, depending on

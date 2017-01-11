@@ -139,6 +139,10 @@ class SafeBrowsingURLRequestContextGetter
   // true.
   void ServiceShuttingDown();
 
+  // Disables QUIC. This should not be necessary anymore when
+  // http://crbug.com/678653 is implemented.
+  void DisableQuicOnIOThread();
+
  protected:
   ~SafeBrowsingURLRequestContextGetter() override;
 
@@ -237,6 +241,13 @@ void SafeBrowsingURLRequestContextGetter::ServiceShuttingDown() {
   shut_down_ = true;
   URLRequestContextGetter::NotifyContextShuttingDown();
   safe_browsing_request_context_.reset();
+}
+
+void SafeBrowsingURLRequestContextGetter::DisableQuicOnIOThread() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (http_network_session_)
+    http_network_session_->DisableQuic();
 }
 
 SafeBrowsingURLRequestContextGetter::~SafeBrowsingURLRequestContextGetter() {}
@@ -391,6 +402,12 @@ scoped_refptr<net::URLRequestContextGetter>
 SafeBrowsingService::url_request_context() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return url_request_context_getter_;
+}
+
+void SafeBrowsingService::DisableQuicOnIOThread() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  url_request_context_getter_->DisableQuicOnIOThread();
 }
 
 const scoped_refptr<SafeBrowsingUIManager>&
