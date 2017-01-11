@@ -40,7 +40,8 @@ ScreenOrientationControllerImpl* ScreenOrientationControllerImpl::from(
 ScreenOrientationControllerImpl::ScreenOrientationControllerImpl(
     LocalFrame& frame,
     WebScreenOrientationClient* client)
-    : ContextLifecycleObserver(frame.document()),
+    : ScreenOrientationController(frame),
+      ContextLifecycleObserver(frame.document()),
       PlatformEventController(frame.page()),
       m_client(client),
       m_dispatchEventTimer(

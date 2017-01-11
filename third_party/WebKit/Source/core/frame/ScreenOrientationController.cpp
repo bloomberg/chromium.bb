@@ -6,6 +6,9 @@
 
 namespace blink {
 
+ScreenOrientationController::ScreenOrientationController(LocalFrame& frame)
+    : Supplement<LocalFrame>(frame) {}
+
 // static
 ScreenOrientationController* ScreenOrientationController::from(
     LocalFrame& frame) {

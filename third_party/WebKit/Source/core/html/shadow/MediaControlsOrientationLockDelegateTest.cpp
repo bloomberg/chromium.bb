@@ -92,15 +92,13 @@ class StubFrameLoaderClient : public EmptyFrameLoaderClient {
 };
 
 class MockScreenOrientationController final
-    : public GarbageCollectedFinalized<MockScreenOrientationController>,
-      public ScreenOrientationController {
-  USING_GARBAGE_COLLECTED_MIXIN(MockScreenOrientationController);
+    : public ScreenOrientationController {
   WTF_MAKE_NONCOPYABLE(MockScreenOrientationController);
 
  public:
   static MockScreenOrientationController* provideTo(LocalFrame& frame) {
     MockScreenOrientationController* controller =
-        new MockScreenOrientationController();
+        new MockScreenOrientationController(frame);
     ScreenOrientationController::provideTo(frame, controller);
     return controller;
   }
@@ -108,10 +106,11 @@ class MockScreenOrientationController final
   MOCK_METHOD1(lock, void(WebScreenOrientationLockType));
   MOCK_METHOD0(mockUnlock, void());
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<LocalFrame>::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { ScreenOrientationController::trace(visitor); }
 
  private:
-  MockScreenOrientationController() = default;
+  explicit MockScreenOrientationController(LocalFrame& frame)
+      : ScreenOrientationController(frame) {}
 
   void lock(WebScreenOrientationLockType type,
             std::unique_ptr<WebLockOrientationCallback>) override {

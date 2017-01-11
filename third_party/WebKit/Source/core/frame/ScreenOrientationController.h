@@ -19,7 +19,11 @@ class WebLockOrientationCallback;
 // module will implement and add a provider for.
 // Callers of ScreenOrientationController::from() should always assume the
 // returned pointer can be nullptr.
-class CORE_EXPORT ScreenOrientationController : public Supplement<LocalFrame> {
+class CORE_EXPORT ScreenOrientationController
+    : public GarbageCollectedFinalized<ScreenOrientationController>,
+      public Supplement<LocalFrame> {
+  USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientationController);
+
  public:
   virtual ~ScreenOrientationController() = default;
 
@@ -38,6 +42,7 @@ class CORE_EXPORT ScreenOrientationController : public Supplement<LocalFrame> {
   DECLARE_VIRTUAL_TRACE();
 
  protected:
+  explicit ScreenOrientationController(LocalFrame&);
   // To be called by an ScreenOrientationController to register its
   // implementation.
   static void provideTo(LocalFrame&, ScreenOrientationController*);

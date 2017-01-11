@@ -21,8 +21,7 @@ class ScreenOrientation;
 class WebScreenOrientationClient;
 
 class MODULES_EXPORT ScreenOrientationControllerImpl final
-    : public GarbageCollectedFinalized<ScreenOrientationControllerImpl>,
-      public ScreenOrientationController,
+    : public ScreenOrientationController,
       public ContextLifecycleObserver,
       public PlatformEventController {
   USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientationControllerImpl);
