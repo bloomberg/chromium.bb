@@ -104,7 +104,7 @@ PassRefPtr<ComputedStyle> ComputedStyle::createAnonymousStyleWithDisplay(
     EDisplay display) {
   RefPtr<ComputedStyle> newStyle = ComputedStyle::create();
   newStyle->inheritFrom(parentStyle);
-  newStyle->setUnicodeBidi(parentStyle.unicodeBidi());
+  newStyle->setUnicodeBidi(parentStyle.getUnicodeBidi());
   newStyle->setDisplay(display);
   return newStyle;
 }

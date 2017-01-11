@@ -86,7 +86,7 @@ TextDirection determinePlaintextDirectionality(LineLayoutItem root,
                       firstLayoutObject == current ? pos : 0);
   InlineBidiResolver observer;
   observer.setStatus(BidiStatus(root.style()->direction(),
-                                isOverride(root.style()->unicodeBidi())));
+                                isOverride(root.style()->getUnicodeBidi())));
   observer.setPositionIgnoringNestedIsolates(iter);
   return observer.determineParagraphDirectionality();
 }
@@ -140,14 +140,14 @@ void constructBidiRunsForLine(InlineBidiResolver& topResolver,
         isolatedResolver.midpointState();
     isolatedLineMidpointState =
         topResolver.midpointStateForIsolatedRun(isolatedRun.runToReplace);
-    EUnicodeBidi unicodeBidi = isolatedInline.style()->unicodeBidi();
+    UnicodeBidi unicodeBidi = isolatedInline.style()->getUnicodeBidi();
     TextDirection direction;
-    if (unicodeBidi == EUnicodeBidi::kPlaintext) {
+    if (unicodeBidi == UnicodeBidi::kPlaintext) {
       direction = determinePlaintextDirectionality(
           isolatedInline, isNewUBAParagraph ? startObj : 0);
     } else {
-      DCHECK(unicodeBidi == EUnicodeBidi::kIsolate ||
-             unicodeBidi == EUnicodeBidi::kIsolateOverride);
+      DCHECK(unicodeBidi == UnicodeBidi::kIsolate ||
+             unicodeBidi == UnicodeBidi::kIsolateOverride);
       direction = isolatedInline.style()->direction();
     }
     isolatedResolver.setStatus(BidiStatus::createForIsolate(

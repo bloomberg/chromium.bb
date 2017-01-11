@@ -77,7 +77,7 @@ void LayoutTextControl::adjustInnerEditorStyle(
   // so we need to inherit the direction and unicode-bidi style from the
   // element.
   textBlockStyle.setDirection(style()->direction());
-  textBlockStyle.setUnicodeBidi(style()->unicodeBidi());
+  textBlockStyle.setUnicodeBidi(style()->getUnicodeBidi());
 
   updateUserModifyProperty(*textControlElement(), textBlockStyle);
 }

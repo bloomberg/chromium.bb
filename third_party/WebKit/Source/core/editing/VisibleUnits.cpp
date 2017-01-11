@@ -2452,7 +2452,7 @@ static InlineBoxPosition computeInlineBoxPositionTemplate(
   }
 
   if (layoutObject &&
-      layoutObject->style()->unicodeBidi() == EUnicodeBidi::kPlaintext) {
+      layoutObject->style()->getUnicodeBidi() == UnicodeBidi::kPlaintext) {
     if (inlineBox->bidiLevel() < level)
       return InlineBoxPosition(inlineBox, inlineBox->caretLeftmostOffset());
     return InlineBoxPosition(inlineBox, inlineBox->caretRightmostOffset());

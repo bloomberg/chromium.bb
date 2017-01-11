@@ -2450,54 +2450,54 @@ inline ETextTransform CSSIdentifierValue::convertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(EUnicodeBidi e)
+inline CSSIdentifierValue::CSSIdentifierValue(UnicodeBidi e)
     : CSSValue(IdentifierClass) {
   switch (e) {
-    case EUnicodeBidi::kNormal:
+    case UnicodeBidi::kNormal:
       m_valueID = CSSValueNormal;
       break;
-    case EUnicodeBidi::kEmbed:
+    case UnicodeBidi::kEmbed:
       m_valueID = CSSValueEmbed;
       break;
-    case EUnicodeBidi::kBidiOverride:
+    case UnicodeBidi::kBidiOverride:
       m_valueID = CSSValueBidiOverride;
       break;
-    case EUnicodeBidi::kIsolate:
+    case UnicodeBidi::kIsolate:
       m_valueID = CSSValueIsolate;
       break;
-    case EUnicodeBidi::kIsolateOverride:
+    case UnicodeBidi::kIsolateOverride:
       m_valueID = CSSValueIsolateOverride;
       break;
-    case EUnicodeBidi::kPlaintext:
+    case UnicodeBidi::kPlaintext:
       m_valueID = CSSValuePlaintext;
       break;
   }
 }
 
 template <>
-inline EUnicodeBidi CSSIdentifierValue::convertTo() const {
+inline UnicodeBidi CSSIdentifierValue::convertTo() const {
   switch (m_valueID) {
     case CSSValueNormal:
-      return EUnicodeBidi::kNormal;
+      return UnicodeBidi::kNormal;
     case CSSValueEmbed:
-      return EUnicodeBidi::kEmbed;
+      return UnicodeBidi::kEmbed;
     case CSSValueBidiOverride:
-      return EUnicodeBidi::kBidiOverride;
+      return UnicodeBidi::kBidiOverride;
     case CSSValueIsolate:
     case CSSValueWebkitIsolate:
-      return EUnicodeBidi::kIsolate;
+      return UnicodeBidi::kIsolate;
     case CSSValueIsolateOverride:
     case CSSValueWebkitIsolateOverride:
-      return EUnicodeBidi::kIsolateOverride;
+      return UnicodeBidi::kIsolateOverride;
     case CSSValuePlaintext:
     case CSSValueWebkitPlaintext:
-      return EUnicodeBidi::kPlaintext;
+      return UnicodeBidi::kPlaintext;
     default:
       break;
   }
 
   ASSERT_NOT_REACHED();
-  return EUnicodeBidi::kNormal;
+  return UnicodeBidi::kNormal;
 }
 
 template <>

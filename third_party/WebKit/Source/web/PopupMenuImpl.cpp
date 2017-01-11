@@ -326,7 +326,7 @@ void PopupMenuImpl::addElementStyle(ItemIterationContext& context,
         String(style->direction() == TextDirection::kRtl ? "rtl" : "ltr"),
         data);
   }
-  if (isOverride(style->unicodeBidi()))
+  if (isOverride(style->getUnicodeBidi()))
     addProperty("unicodeBidi", String("bidi-override"), data);
   Color foregroundColor = style->visitedDependentColor(CSSPropertyColor);
   if (baseStyle.visitedDependentColor(CSSPropertyColor) != foregroundColor)

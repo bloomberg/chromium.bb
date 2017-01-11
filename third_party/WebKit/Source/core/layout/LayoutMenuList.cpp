@@ -115,14 +115,14 @@ void LayoutMenuList::adjustInnerStyle() {
 
   if (m_optionStyle) {
     if ((m_optionStyle->direction() != innerStyle.direction() ||
-         m_optionStyle->unicodeBidi() != innerStyle.unicodeBidi()))
+         m_optionStyle->getUnicodeBidi() != innerStyle.getUnicodeBidi()))
       m_innerBlock->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
           LayoutInvalidationReason::StyleChange);
     innerStyle.setTextAlign(style()->isLeftToRightDirection()
                                 ? ETextAlign::kLeft
                                 : ETextAlign::kRight);
     innerStyle.setDirection(m_optionStyle->direction());
-    innerStyle.setUnicodeBidi(m_optionStyle->unicodeBidi());
+    innerStyle.setUnicodeBidi(m_optionStyle->getUnicodeBidi());
   }
 }
 

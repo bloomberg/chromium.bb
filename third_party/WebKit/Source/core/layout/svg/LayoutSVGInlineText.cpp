@@ -227,7 +227,7 @@ TextRun constructTextRun(LayoutSVGInlineText& text,
       0,  // xPos, only relevant with allowTabs=true
       0,  // padding, only relevant for justified text, not relevant for SVG
       TextRun::AllowTrailingExpansion, textDirection,
-      isOverride(style.unicodeBidi()) /* directionalOverride */);
+      isOverride(style.getUnicodeBidi()) /* directionalOverride */);
 
   if (length) {
     if (text.is8Bit())
@@ -334,7 +334,7 @@ void LayoutSVGInlineText::updateMetricsList(bool& lastCharacterWasWhiteSpace) {
       constructTextRun(*this, 0, textLength(), styleRef().direction());
   BidiResolver<TextRunIterator, BidiCharacterRun> bidiResolver;
   BidiRunList<BidiCharacterRun>& bidiRuns = bidiResolver.runs();
-  bool bidiOverride = isOverride(styleRef().unicodeBidi());
+  bool bidiOverride = isOverride(styleRef().getUnicodeBidi());
   BidiStatus status(TextDirection::kLtr, bidiOverride);
   if (run.is8Bit() || bidiOverride) {
     WTF::Unicode::CharDirection direction = WTF::Unicode::LeftToRight;

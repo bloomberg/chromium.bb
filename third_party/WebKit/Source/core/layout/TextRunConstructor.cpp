@@ -64,7 +64,7 @@ static inline TextRun constructTextRunInternal(const Font& font,
     if (flags & RespectDirection)
       textDirection = style.direction();
     if (flags & RespectDirectionOverride)
-      directionalOverride |= isOverride(style.unicodeBidi());
+      directionalOverride |= isOverride(style.getUnicodeBidi());
   }
 
   TextRun::ExpansionBehavior expansion =

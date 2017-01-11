@@ -207,8 +207,8 @@ void NGLayoutInlineItemsBuilder::EnterBlock(const ComputedStyle* style) {
   // elements.
   // Plaintext and direction are handled as the paragraph level by
   // NGBidiParagraph::SetParagraph().
-  if (style->unicodeBidi() == EUnicodeBidi::kBidiOverride ||
-      style->unicodeBidi() == EUnicodeBidi::kIsolateOverride) {
+  if (style->getUnicodeBidi() == UnicodeBidi::kBidiOverride ||
+      style->getUnicodeBidi() == UnicodeBidi::kIsolateOverride) {
     AppendBidiControl(style, leftToRightOverrideCharacter,
                       rightToLeftOverrideCharacter);
     Enter(nullptr, popDirectionalFormattingCharacter);
@@ -218,29 +218,29 @@ void NGLayoutInlineItemsBuilder::EnterBlock(const ComputedStyle* style) {
 void NGLayoutInlineItemsBuilder::EnterInline(LayoutObject* node) {
   // https://drafts.csswg.org/css-writing-modes-3/#bidi-control-codes-injection-table
   const ComputedStyle* style = node->style();
-  switch (style->unicodeBidi()) {
-    case EUnicodeBidi::kNormal:
+  switch (style->getUnicodeBidi()) {
+    case UnicodeBidi::kNormal:
       break;
-    case EUnicodeBidi::kEmbed:
+    case UnicodeBidi::kEmbed:
       AppendBidiControl(style, leftToRightEmbedCharacter,
                         rightToLeftEmbedCharacter);
       Enter(node, popDirectionalFormattingCharacter);
       break;
-    case EUnicodeBidi::kBidiOverride:
+    case UnicodeBidi::kBidiOverride:
       AppendBidiControl(style, leftToRightOverrideCharacter,
                         rightToLeftOverrideCharacter);
       Enter(node, popDirectionalFormattingCharacter);
       break;
-    case EUnicodeBidi::kIsolate:
+    case UnicodeBidi::kIsolate:
       AppendBidiControl(style, leftToRightIsolateCharacter,
                         rightToLeftIsolateCharacter);
       Enter(node, popDirectionalIsolateCharacter);
       break;
-    case EUnicodeBidi::kPlaintext:
+    case UnicodeBidi::kPlaintext:
       AppendAsOpaqueToSpaceCollapsing(firstStrongIsolateCharacter);
       Enter(node, popDirectionalIsolateCharacter);
       break;
-    case EUnicodeBidi::kIsolateOverride:
+    case UnicodeBidi::kIsolateOverride:
       AppendAsOpaqueToSpaceCollapsing(firstStrongIsolateCharacter);
       AppendBidiControl(style, leftToRightOverrideCharacter,
                         rightToLeftOverrideCharacter);

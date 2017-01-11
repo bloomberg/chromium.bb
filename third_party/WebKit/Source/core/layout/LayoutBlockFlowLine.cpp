@@ -660,8 +660,8 @@ void LayoutBlockFlow::updateLogicalWidthForAlignment(
     unsigned expansionOpportunityCount) {
   TextDirection direction;
   if (rootInlineBox &&
-      rootInlineBox->getLineLayoutItem().style()->unicodeBidi() ==
-          EUnicodeBidi::kPlaintext)
+      rootInlineBox->getLineLayoutItem().style()->getUnicodeBidi() ==
+          UnicodeBidi::kPlaintext)
     direction = rootInlineBox->direction();
   else
     direction = style()->direction();
@@ -1146,13 +1146,13 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
                       : VisualRightToLeftOverride)
                : NoVisualOverride);
       if (isNewUBAParagraph &&
-          styleToUse.unicodeBidi() == EUnicodeBidi::kPlaintext &&
+          styleToUse.getUnicodeBidi() == UnicodeBidi::kPlaintext &&
           !resolver.context()->parent()) {
         TextDirection direction = determinePlaintextDirectionality(
             resolver.position().root(), resolver.position().getLineLayoutItem(),
             resolver.position().offset());
         resolver.setStatus(
-            BidiStatus(direction, isOverride(styleToUse.unicodeBidi())));
+            BidiStatus(direction, isOverride(styleToUse.getUnicodeBidi())));
       }
       // FIXME: This ownership is reversed. We should own the BidiRunList and
       // pass it to createBidiRunsForLine.
@@ -2113,10 +2113,10 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(
     resolver.setStatus(last->lineBreakBidiStatus());
   } else {
     TextDirection direction = style()->direction();
-    if (style()->unicodeBidi() == EUnicodeBidi::kPlaintext)
+    if (style()->getUnicodeBidi() == UnicodeBidi::kPlaintext)
       direction = determinePlaintextDirectionality(LineLayoutItem(this));
     resolver.setStatus(
-        BidiStatus(direction, isOverride(style()->unicodeBidi())));
+        BidiStatus(direction, isOverride(style()->getUnicodeBidi())));
     InlineIterator iter = InlineIterator(
         LineLayoutBlockFlow(this),
         bidiFirstSkippingEmptyInlines(LineLayoutBlockFlow(this),

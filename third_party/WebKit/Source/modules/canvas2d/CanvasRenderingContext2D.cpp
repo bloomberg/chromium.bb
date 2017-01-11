@@ -848,7 +848,7 @@ void CanvasRenderingContext2D::drawTextInternal(
       toTextDirection(state().getDirection(), canvas(), &computedStyle);
   bool isRTL = direction == TextDirection::kRtl;
   bool override =
-      computedStyle ? isOverride(computedStyle->unicodeBidi()) : false;
+      computedStyle ? isOverride(computedStyle->getUnicodeBidi()) : false;
 
   TextRun textRun(text, 0, 0, TextRun::AllowTrailingExpansion, direction,
                   override);

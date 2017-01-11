@@ -259,7 +259,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     unsigned m_clear : 2;             // EClear
     unsigned m_position : 3;          // EPosition
     unsigned m_tableLayout : 1;       // ETableLayout
-    unsigned m_unicodeBidi : 3;       // EUnicodeBidi
+    unsigned m_unicodeBidi : 3;       // UnicodeBidi
 
     // This is set if we used viewport units when resolving a length.
     // It is mutable so we can pass around const ComputedStyles to resolve
@@ -1856,11 +1856,11 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // unicode-bidi
-  static EUnicodeBidi initialUnicodeBidi() { return EUnicodeBidi::kNormal; }
-  EUnicodeBidi unicodeBidi() const {
-    return static_cast<EUnicodeBidi>(m_nonInheritedData.m_unicodeBidi);
+  static UnicodeBidi initialUnicodeBidi() { return UnicodeBidi::kNormal; }
+  UnicodeBidi getUnicodeBidi() const {
+    return static_cast<UnicodeBidi>(m_nonInheritedData.m_unicodeBidi);
   }
-  void setUnicodeBidi(EUnicodeBidi b) {
+  void setUnicodeBidi(UnicodeBidi b) {
     m_nonInheritedData.m_unicodeBidi = static_cast<unsigned>(b);
   }
 

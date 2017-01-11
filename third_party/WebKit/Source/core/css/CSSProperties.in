@@ -393,7 +393,7 @@ transform-style name_for_methods=TransformStyle3D
 translate runtime_flag=CSSIndependentTransformProperties, converter=convertTranslate, interpolable, api_class
 rotate runtime_flag=CSSIndependentTransformProperties, converter=convertRotate, interpolable
 scale runtime_flag=CSSIndependentTransformProperties, converter=convertScale, interpolable
-unicode-bidi
+unicode-bidi type_name=UnicodeBidi
 vector-effect svg
 vertical-align interpolable, custom_inherit, custom_value
 visibility interpolable, inherited, independent, keyword_only, keywords=[visible|hidden|collapse], initial_keyword=visible

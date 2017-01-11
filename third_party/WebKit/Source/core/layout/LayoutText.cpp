@@ -807,7 +807,7 @@ LayoutRect LayoutText::localCaretRect(InlineBox* inlineBox,
 
   // for unicode-bidi: plaintext, use inlineBoxBidiLevel() to test the correct
   // direction for the cursor.
-  if (rightAligned && style()->unicodeBidi() == EUnicodeBidi::kPlaintext) {
+  if (rightAligned && style()->getUnicodeBidi() == UnicodeBidi::kPlaintext) {
     if (inlineBox->bidiLevel() % 2 != 1)
       rightAligned = false;
   }
@@ -1108,7 +1108,7 @@ void LayoutText::computePreferredLogicalWidths(
   BidiCharacterRun* run;
   TextDirection textDirection = styleToUse.direction();
   if ((is8Bit() && textDirection == TextDirection::kLtr) ||
-      isOverride(styleToUse.unicodeBidi())) {
+      isOverride(styleToUse.getUnicodeBidi())) {
     run = 0;
   } else {
     TextRun textRun(text());

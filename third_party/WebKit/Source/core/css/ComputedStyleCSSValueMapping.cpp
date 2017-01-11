@@ -2792,7 +2792,7 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
     case CSSPropertyTouchAction:
       return touchActionFlagsToCSSValue(style.getTouchAction());
     case CSSPropertyUnicodeBidi:
-      return CSSIdentifierValue::create(style.unicodeBidi());
+      return CSSIdentifierValue::create(style.getUnicodeBidi());
     case CSSPropertyVerticalAlign:
       switch (style.verticalAlign()) {
         case EVerticalAlign::Baseline:

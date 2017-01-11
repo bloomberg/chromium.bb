@@ -254,7 +254,7 @@ void ExternalPopupMenu::getPopupMenuInfo(WebPopupMenuInfo& info,
     popupItem.enabled = !itemElement.isDisabledFormControl();
     const ComputedStyle& style = *ownerElement.itemComputedStyle(itemElement);
     popupItem.textDirection = toWebTextDirection(style.direction());
-    popupItem.hasTextDirectionOverride = isOverride(style.unicodeBidi());
+    popupItem.hasTextDirectionOverride = isOverride(style.getUnicodeBidi());
   }
 
   const ComputedStyle& menuStyle = ownerElement.computedStyle()
