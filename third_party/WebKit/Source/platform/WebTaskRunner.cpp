@@ -29,6 +29,14 @@ struct CallbackCancellationTraits<
 
 namespace blink {
 
+namespace {
+
+void runCrossThreadClosure(std::unique_ptr<CrossThreadClosure> task) {
+  (*task)();
+}
+
+}  // namespace
+
 class TaskHandle::Runner : public WTF::ThreadSafeRefCounted<Runner> {
  public:
   explicit Runner(std::unique_ptr<WTF::Closure> task)
@@ -103,17 +111,21 @@ TaskHandle::TaskHandle(RefPtr<Runner> runner) : m_runner(std::move(runner)) {
   DCHECK(m_runner);
 }
 
+// Use a custom function for base::Bind instead of convertToBaseCallback to
+// avoid copying the closure later in the call chain. Copying the bound state
+// can lead to data races with ref counted objects like StringImpl. See
+// crbug.com/679915 for more details.
 void WebTaskRunner::postTask(const WebTraceLocation& location,
                              std::unique_ptr<CrossThreadClosure> task) {
-  toSingleThreadTaskRunner()->PostTask(location,
-                                       convertToBaseCallback(std::move(task)));
+  toSingleThreadTaskRunner()->PostTask(
+      location, base::Bind(&runCrossThreadClosure, base::Passed(&task)));
 }
 
 void WebTaskRunner::postDelayedTask(const WebTraceLocation& location,
                                     std::unique_ptr<CrossThreadClosure> task,
                                     long long delayMs) {
   toSingleThreadTaskRunner()->PostDelayedTask(
-      location, convertToBaseCallback(std::move(task)),
+      location, base::Bind(&runCrossThreadClosure, base::Passed(&task)),
       base::TimeDelta::FromMilliseconds(delayMs));
 }
 
