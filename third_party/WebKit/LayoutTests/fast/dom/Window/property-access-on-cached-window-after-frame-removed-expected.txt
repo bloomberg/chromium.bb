@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 101: 'Performance.onwebkitresourcetimingbufferfull' is deprecated. Please use 'Performance.onresourcetimingbufferfull' instead.
 CONSOLE WARNING: line 101: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
 Tests property access on a cached DOMWindow after the associated frame is no longer in a web page. Test should not crash and properties should be set to sane defaults.
 
@@ -147,7 +146,6 @@ PASS childWindow.performance.navigation.redirectCount is 0
 PASS childWindow.performance.navigation.type is 0
 PASS childWindow.performance.onframetimingbufferfull is null
 PASS childWindow.performance.onresourcetimingbufferfull is null
-PASS childWindow.performance.onwebkitresourcetimingbufferfull is null
 PASS childWindow.performance.timing.connectEnd is 0
 PASS childWindow.performance.timing.connectStart is 0
 PASS childWindow.performance.timing.domComplete is 0

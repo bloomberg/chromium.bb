@@ -222,11 +222,8 @@ void PerformanceBase::clearResourceTimings() {
 
 void PerformanceBase::setResourceTimingBufferSize(unsigned size) {
   m_resourceTimingBufferSize = size;
-  if (isResourceTimingBufferFull()) {
+  if (isResourceTimingBufferFull())
     dispatchEvent(Event::create(EventTypeNames::resourcetimingbufferfull));
-    dispatchEvent(
-        Event::create(EventTypeNames::webkitresourcetimingbufferfull));
-  }
 }
 
 void PerformanceBase::clearFrameTimings() {
@@ -406,11 +403,8 @@ void PerformanceBase::addNavigationTiming(LocalFrame* frame) {
 void PerformanceBase::addResourceTimingBuffer(PerformanceEntry& entry) {
   m_resourceTimingBuffer.push_back(&entry);
 
-  if (isResourceTimingBufferFull()) {
+  if (isResourceTimingBufferFull())
     dispatchEvent(Event::create(EventTypeNames::resourcetimingbufferfull));
-    dispatchEvent(
-        Event::create(EventTypeNames::webkitresourcetimingbufferfull));
-  }
 }
 
 bool PerformanceBase::isResourceTimingBufferFull() {

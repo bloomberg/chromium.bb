@@ -4535,7 +4535,6 @@ interface Performance : EventTarget
     getter navigation
     getter onframetimingbufferfull
     getter onresourcetimingbufferfull
-    getter onwebkitresourcetimingbufferfull
     getter timing
     method clearFrameTimings
     method clearMarks
@@ -4551,11 +4550,8 @@ interface Performance : EventTarget
     method setFrameTimingBufferSize
     method setResourceTimingBufferSize
     method toJSON
-    method webkitClearResourceTimings
-    method webkitSetResourceTimingBufferSize
     setter onframetimingbufferfull
     setter onresourcetimingbufferfull
-    setter onwebkitresourcetimingbufferfull
 interface PerformanceEntry
     attribute @@toStringTag
     getter duration

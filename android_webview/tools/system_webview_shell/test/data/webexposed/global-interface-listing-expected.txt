@@ -3167,7 +3167,6 @@ interface Performance : EventTarget
     getter memory
     getter navigation
     getter onresourcetimingbufferfull
-    getter onwebkitresourcetimingbufferfull
     getter timing
     method clearMarks
     method clearMeasures
@@ -3180,10 +3179,7 @@ interface Performance : EventTarget
     method measure
     method now
     method setResourceTimingBufferSize
-    method webkitClearResourceTimings
-    method webkitSetResourceTimingBufferSize
     setter onresourcetimingbufferfull
-    setter onwebkitresourcetimingbufferfull
 interface PerformanceEntry
     getter duration
     getter entryType

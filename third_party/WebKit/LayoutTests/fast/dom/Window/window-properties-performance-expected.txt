@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 1: 'Performance.onwebkitresourcetimingbufferfull' is deprecated. Please use 'Performance.onresourcetimingbufferfull' instead.
 This test dumps all of the properties that are reachable from the window.performance object, along with their types.
 
 window.performance [object Performance]
@@ -28,7 +27,6 @@ window.performance.navigation.type [number]
 window.performance.now [function]
 window.performance.onframetimingbufferfull [null]
 window.performance.onresourcetimingbufferfull [null]
-window.performance.onwebkitresourcetimingbufferfull [null]
 window.performance.removeEventListener [function]
 window.performance.setFrameTimingBufferSize [function]
 window.performance.setResourceTimingBufferSize [function]
@@ -56,8 +54,6 @@ window.performance.timing.toJSON [function]
 window.performance.timing.unloadEventEnd [number]
 window.performance.timing.unloadEventStart [number]
 window.performance.toJSON [function]
-window.performance.webkitClearResourceTimings [function]
-window.performance.webkitSetResourceTimingBufferSize [function]
 window.performance.timing [printed above as window.performance.timing]
 jsonizedTiming [object Object]
 jsonizedTiming.connectEnd [number]

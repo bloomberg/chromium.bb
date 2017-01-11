@@ -96,7 +96,6 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
   void setResourceTimingBufferSize(unsigned);
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(resourcetimingbufferfull);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitresourcetimingbufferfull);
 
   void clearFrameTimings();
   void setFrameTimingBufferSize(unsigned);

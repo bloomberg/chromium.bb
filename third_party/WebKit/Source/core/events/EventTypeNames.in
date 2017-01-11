@@ -272,7 +272,6 @@ webkitprerenderdomcontentloaded
 webkitprerenderload
 webkitprerenderstart
 webkitprerenderstop
-webkitresourcetimingbufferfull
 webkitspeechchange
 webkitvisibilitychange
 wheel

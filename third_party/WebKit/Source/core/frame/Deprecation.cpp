@@ -357,18 +357,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
              "https://www.chromestatus.com/features/6750456638341120 for more "
              "details.";
 
-    case UseCounter::PrefixedPerformanceClearResourceTimings:
-      return replacedBy("'Performance.webkitClearResourceTimings'",
-                        "'Performance.clearResourceTimings'");
-
-    case UseCounter::PrefixedPerformanceSetResourceTimingBufferSize:
-      return replacedBy("'Performance.webkitSetResourceTimingBufferSize'",
-                        "'Performance.setResourceTimingBufferSize'");
-
-    case UseCounter::PrefixedPerformanceResourceTimingBufferFull:
-      return replacedBy("'Performance.onwebkitresourcetimingbufferfull'",
-                        "'Performance.onresourcetimingbufferfull'");
-
     case UseCounter::EncryptedMediaAllSelectedContentTypesMissingCodecs:
       return String::format(
           "EME requires that contentType strings accepted by "
