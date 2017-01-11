@@ -691,6 +691,7 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
 void GpuProcessHost::OnAcceleratedSurfaceCreatedChildWindow(
     gpu::SurfaceHandle parent_handle,
     gpu::SurfaceHandle window_handle) {
+  constexpr char kBadMessageError[] = "Bad parenting request from gpu process.";
   if (!in_process_) {
     DCHECK(process_);
     {
@@ -698,8 +699,7 @@ void GpuProcessHost::OnAcceleratedSurfaceCreatedChildWindow(
       DWORD thread_id = GetWindowThreadProcessId(parent_handle, &process_id);
 
       if (!thread_id || process_id != ::GetCurrentProcessId()) {
-        process_->TerminateOnBadMessageReceived(
-            GpuHostMsg_AcceleratedSurfaceCreatedChildWindow::ID);
+        process_->TerminateOnBadMessageReceived(kBadMessageError);
         return;
       }
     }
@@ -709,8 +709,7 @@ void GpuProcessHost::OnAcceleratedSurfaceCreatedChildWindow(
       DWORD thread_id = GetWindowThreadProcessId(window_handle, &process_id);
 
       if (!thread_id || process_id != process_->GetProcess().Pid()) {
-        process_->TerminateOnBadMessageReceived(
-            GpuHostMsg_AcceleratedSurfaceCreatedChildWindow::ID);
+        process_->TerminateOnBadMessageReceived(kBadMessageError);
         return;
       }
     }
@@ -718,8 +717,7 @@ void GpuProcessHost::OnAcceleratedSurfaceCreatedChildWindow(
 
   if (!gfx::RenderingWindowManager::GetInstance()->RegisterChild(
           parent_handle, window_handle)) {
-    process_->TerminateOnBadMessageReceived(
-        GpuHostMsg_AcceleratedSurfaceCreatedChildWindow::ID);
+    process_->TerminateOnBadMessageReceived(kBadMessageError);
   }
 }
 #endif

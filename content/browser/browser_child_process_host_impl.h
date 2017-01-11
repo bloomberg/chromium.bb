@@ -92,9 +92,9 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   void OnChannelError() override;
   void OnBadMessageReceived(const IPC::Message& message) override;
 
-  // Terminates the process and logs an error after a bad message was received
-  // from the child process.
-  void TerminateOnBadMessageReceived(uint32_t type);
+  // Terminates the process and logs a stack trace after a bad message was
+  // received from the child process.
+  void TerminateOnBadMessageReceived(const std::string& error);
 
   // Removes this host from the host list. Calls ChildProcessHost::ForceShutdown
   void ForceShutdown();
