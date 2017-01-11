@@ -203,7 +203,7 @@ Polymer({
    */
   receiveProfileImage_: function(imageUrl, selected) {
     this.profileImageUrl_ = imageUrl;
-    this.$.profileImage.alt = this.i18n('profilePhoto');
+    this.$.profileImage.title = this.i18n('profilePhoto');
 
     if (!selected)
       return;
