@@ -194,14 +194,16 @@ bool LevelDB::OnMemoryDump(const base::trace_event::MemoryDumpArgs& dump_args,
   res = base::StringToUint64(value, &size);
   DCHECK(res);
 
-  std::string dump_name = "leveldb/leveldb_proto";
-  if (!client_name_.empty())
-    dump_name += "/" + client_name_;
   base::trace_event::MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(
-      base::StringPrintf("%s/0x%" PRIXPTR, dump_name.c_str(),
+      base::StringPrintf("leveldb/leveldb_proto/0x%" PRIXPTR,
                          reinterpret_cast<uintptr_t>(db_.get())));
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                   base::trace_event::MemoryAllocatorDump::kUnitsBytes, size);
+  if (!client_name_.empty() &&
+      dump_args.level_of_detail !=
+          base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
+    dump->AddString("client_name", "", client_name_);
+  }
 
   // Memory is allocated from system allocator (malloc).
   const char* system_allocator_pool_name =
