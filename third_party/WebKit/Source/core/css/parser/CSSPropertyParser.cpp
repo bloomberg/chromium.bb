@@ -1756,56 +1756,6 @@ static CSSValue* consumePaintStroke(CSSParserTokenRange& range,
   return consumeColor(range, cssParserMode);
 }
 
-static CSSValue* consumePaintOrder(CSSParserTokenRange& range) {
-  if (range.peek().id() == CSSValueNormal)
-    return consumeIdent(range);
-
-  Vector<CSSValueID, 3> paintTypeList;
-  CSSIdentifierValue* fill = nullptr;
-  CSSIdentifierValue* stroke = nullptr;
-  CSSIdentifierValue* markers = nullptr;
-  do {
-    CSSValueID id = range.peek().id();
-    if (id == CSSValueFill && !fill)
-      fill = consumeIdent(range);
-    else if (id == CSSValueStroke && !stroke)
-      stroke = consumeIdent(range);
-    else if (id == CSSValueMarkers && !markers)
-      markers = consumeIdent(range);
-    else
-      return nullptr;
-    paintTypeList.push_back(id);
-  } while (!range.atEnd());
-
-  // After parsing we serialize the paint-order list. Since it is not possible
-  // to pop a last list items from CSSValueList without bigger cost, we create
-  // the list after parsing.
-  CSSValueID firstPaintOrderType = paintTypeList.at(0);
-  CSSValueList* paintOrderList = CSSValueList::createSpaceSeparated();
-  switch (firstPaintOrderType) {
-    case CSSValueFill:
-    case CSSValueStroke:
-      paintOrderList->append(firstPaintOrderType == CSSValueFill ? *fill
-                                                                 : *stroke);
-      if (paintTypeList.size() > 1) {
-        if (paintTypeList.at(1) == CSSValueMarkers)
-          paintOrderList->append(*markers);
-      }
-      break;
-    case CSSValueMarkers:
-      paintOrderList->append(*markers);
-      if (paintTypeList.size() > 1) {
-        if (paintTypeList.at(1) == CSSValueStroke)
-          paintOrderList->append(*stroke);
-      }
-      break;
-    default:
-      ASSERT_NOT_REACHED();
-  }
-
-  return paintOrderList;
-}
-
 static CSSValue* consumeNoneOrURI(CSSParserTokenRange& range) {
   if (range.peek().id() == CSSValueNone)
     return consumeIdent(range);
@@ -3449,8 +3399,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyFill:
     case CSSPropertyStroke:
       return consumePaintStroke(m_range, m_context.mode());
-    case CSSPropertyPaintOrder:
-      return consumePaintOrder(m_range);
     case CSSPropertyMarkerStart:
     case CSSPropertyMarkerMid:
     case CSSPropertyMarkerEnd:

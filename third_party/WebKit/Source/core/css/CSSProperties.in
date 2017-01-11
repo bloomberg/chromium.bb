@@ -332,7 +332,7 @@ padding-bottom interpolable, initial=initialPadding, converter=convertLength
 padding-left interpolable, initial=initialPadding, converter=convertLength
 padding-right interpolable, initial=initialPadding, converter=convertLength
 padding-top interpolable, initial=initialPadding, converter=convertLength
-paint-order inherited, svg, converter=convertPaintOrder
+paint-order inherited, svg, converter=convertPaintOrder, api_class
 perspective interpolable, converter=convertPerspective
 perspective-origin interpolable, converter=convertPosition
 pointer-events inherited, independent, keyword_only, keywords=[none|auto|stroke|fill|painted|visible|visibleStroke|visibleFill|visiblePainted|bounding-box|all], initial_keyword=auto
