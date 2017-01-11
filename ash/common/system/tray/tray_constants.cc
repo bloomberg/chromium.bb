@@ -36,7 +36,7 @@ const int kTrayLabelItemHorizontalPaddingBottomAlignment = 7;
 // Vertical padding between status tray items when the shelf is vertical.
 const int kTrayLabelItemVerticalPaddingVerticalAlignment = 4;
 
-const int kTrayMenuBottomRowPadding = 5;
+const int kTrayMenuBottomRowPadding = 3;
 const int kTrayMenuBottomRowPaddingBetweenItems = -1;
 const int kTrayMenuMinimumWidth = 300;
 const int kTrayMenuMinimumWidthMd = 352;
