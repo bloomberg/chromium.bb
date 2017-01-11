@@ -3,11 +3,12 @@
 <script src=../../resources/testharnessreport.js></script>
 <script>
 
-// This test verifies FaceDetector.detect() with an empty HTMLImageElement.
-var createTestForEmptyInput = function(detectorName) {
+// This test verifies *Detector.detect() returns an empty list when fed with
+// an empty HTMLImageElement.
+var createTestForEmptyInput = function(createDetector) {
   async_test(function(t) {
     var image = new Image();
-    var detector = eval("new " + detectorName + "();");
+    var detector = createDetector();
     var tryDetection = function() {
       detector.detect(image)
           .then(detectionResult => {
@@ -25,9 +26,9 @@ var createTestForEmptyInput = function(detectorName) {
 };
 
 generate_tests(createTestForEmptyInput, [
-  [ "Face", "FaceDetector" ],
-  [ "Barcode", "BarcodeDetector" ],
-  [ "Text", "TextDetector" ]
+  [ "Face", () => { return new FaceDetector(); } ],
+  [ "Barcode", () => { return new BarcodeDetector(); } ],
+  [ "Text", () => { return new TextDetector(); } ]
 ]);
 
 </script>

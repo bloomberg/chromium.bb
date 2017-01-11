@@ -107,6 +107,10 @@ ScriptPromise ShapeDetector::detect(ScriptState* scriptState,
         DOMException::create(InvalidStateError, "Invalid element or state."));
     return promise;
   }
+  if (size.isEmpty()) {
+    resolver->resolve(HeapVector<Member<DOMRect>>());
+    return promise;
+  }
 
   SkPixmap pixmap;
   RefPtr<Uint8Array> pixelData;
@@ -150,6 +154,11 @@ ScriptPromise ShapeDetector::detectShapesOnImageData(
     ImageData* imageData) {
   ScriptPromise promise = resolver->promise();
 
+  if (imageData->size().isZero()) {
+    resolver->resolve(HeapVector<Member<DOMRect>>());
+    return promise;
+  }
+
   uint8_t* const data = imageData->data()->data();
   WTF::CheckedNumeric<int> allocationSize = imageData->size().area() * 4;
 
@@ -167,7 +176,6 @@ ScriptPromise ShapeDetector::detectShapesOnImageElement(
     const HTMLImageElement* img) {
   ScriptPromise promise = resolver->promise();
 
-  // TODO(mcasas): reconsider this resolve(), https://crbug.com/674306.
   if (img->bitmapSourceSize().isZero()) {
     resolver->resolve(HeapVector<Member<DOMRect>>());
     return promise;

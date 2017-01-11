@@ -5,43 +5,59 @@
 
 // Returns a Promise that is resolve()d if detect() is rejected. Needs an input
 // |element| (e.g. an HTMLImageElement or HTMLVideoElement) and a |url| to load.
-function detectFaceOnElementAndExpectError(element, url) {
+function detectOnElementAndExpectError(createDetector, element, url) {
   return new Promise(function(resolve, reject) {
-    var tryFaceDetection = function() {
-      var faceDetector = new FaceDetector();
-      faceDetector.detect(element)
-          .then(faceDetectionResult => {
+    var tryDetection = function() {
+      var detector = createDetector();
+      detector.detect(element)
+          .then(detectionResult => {
             reject("Promise should have been rejected.");
           })
           .catch(error => {
             resolve(error);
           });
     };
-    element.onload = tryFaceDetection;
-    element.onerror = tryFaceDetection;
+    element.onload = tryDetection;
+    element.onerror = tryDetection;
     element.src = url;
   });
-}
+};
 
-// This test verifies that FaceDetector will reject an undecodable image.
-promise_test(function(t) {
-  var image = new Image();
-  return detectFaceOnElementAndExpectError(image,
-                                           "../../imported/wpt/images/broken.png")
-      .then(function(error) {
-        assert_equals(error.name, "InvalidStateError");
-        assert_regexp_match(error.message, /Unable to decompress*/);
-      });
-}, "FaceDetector should reject undecodable images with an InvalidStateError.");
+// This test verifies that a Detector will reject an undecodable image.
+var createTestForBadImage = function(createDetector) {
+  promise_test(function(t) {
+    var image = new Image();
+    return detectOnElementAndExpectError(createDetector, image,
+                                         "../../imported/wpt/images/broken.png")
+        .then(function(error) {
+          assert_equals(error.name, "InvalidStateError");
+          assert_regexp_match(error.message, /Unable to decompress*/);
+        });
+  }, "Detector should reject undecodable images with an InvalidStateError.");
+};
 
-// This test verifies that FaceDetector will reject a broken video.
-promise_test(function(t) {
-  var video = document.createElement('video');
-  return detectFaceOnElementAndExpectError(video, "content/garbage.webm")
-      .then(function(error) {
-        assert_equals(error.name, "InvalidStateError");
-      });
-}, "FaceDetector should reject undecodable videos with an InvalidStateError.");
+generate_tests(createTestForBadImage, [
+  [ "Face", () => { return new FaceDetector(); } ],
+  [ "Barcode", () => { return new BarcodeDetector(); } ],
+  [ "Text", () => { return new TextDetector(); } ]
+]);
 
+// This test verifies that a Detector will reject a broken video.
+var createTestForBadVideo = function(createDetector) {
+  promise_test(function(t) {
+    var video = document.createElement('video');
+    return detectOnElementAndExpectError(createDetector, video,
+                                         "content/garbage.webm")
+        .then(function(error) {
+          assert_equals(error.name, "InvalidStateError");
+        });
+  }, "Detector should reject undecodable videos with an InvalidStateError.");
+};
+
+generate_tests(createTestForBadVideo, [
+  [ "Face", () => { return new FaceDetector(); } ],
+  [ "Barcode", () => { return new BarcodeDetector(); } ],
+  [ "Text", () => { return new TextDetector(); } ]
+]);
 
 </script>
