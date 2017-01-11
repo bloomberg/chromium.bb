@@ -13,7 +13,7 @@
 
 namespace blink {
 
-WebTaskRunner* TaskRunnerHelper::get(TaskType type, LocalFrame* frame) {
+RefPtr<WebTaskRunner> TaskRunnerHelper::get(TaskType type, LocalFrame* frame) {
   // TODO(haraken): Optimize the mapping from TaskTypes to task runners.
   switch (type) {
     case TaskType::DOMManipulation:
@@ -48,18 +48,20 @@ WebTaskRunner* TaskRunnerHelper::get(TaskType type, LocalFrame* frame) {
   return nullptr;
 }
 
-WebTaskRunner* TaskRunnerHelper::get(TaskType type, Document* document) {
+RefPtr<WebTaskRunner> TaskRunnerHelper::get(TaskType type, Document* document) {
   return get(type, document ? document->frame() : nullptr);
 }
 
-WebTaskRunner* TaskRunnerHelper::get(TaskType type,
-                                     ExecutionContext* executionContext) {
+RefPtr<WebTaskRunner> TaskRunnerHelper::get(
+    TaskType type,
+    ExecutionContext* executionContext) {
   return get(type, executionContext && executionContext->isDocument()
                        ? static_cast<Document*>(executionContext)
                        : nullptr);
 }
 
-WebTaskRunner* TaskRunnerHelper::get(TaskType type, ScriptState* scriptState) {
+RefPtr<WebTaskRunner> TaskRunnerHelper::get(TaskType type,
+                                            ScriptState* scriptState) {
   return get(type, scriptState ? scriptState->getExecutionContext() : nullptr);
 }
 

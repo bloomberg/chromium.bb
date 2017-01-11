@@ -78,10 +78,10 @@ class CORE_EXPORT TaskRunnerHelper final {
   STATIC_ONLY(TaskRunnerHelper);
 
  public:
-  static WebTaskRunner* get(TaskType, LocalFrame*);
-  static WebTaskRunner* get(TaskType, Document*);
-  static WebTaskRunner* get(TaskType, ExecutionContext*);
-  static WebTaskRunner* get(TaskType, ScriptState*);
+  static RefPtr<WebTaskRunner> get(TaskType, LocalFrame*);
+  static RefPtr<WebTaskRunner> get(TaskType, Document*);
+  static RefPtr<WebTaskRunner> get(TaskType, ExecutionContext*);
+  static RefPtr<WebTaskRunner> get(TaskType, ScriptState*);
 };
 
 }  // namespace blink

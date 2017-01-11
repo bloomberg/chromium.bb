@@ -175,13 +175,13 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
   WTF_MAKE_NONCOPYABLE(SourceStream);
 
  public:
-  explicit SourceStream(WebTaskRunner* loadingTaskRunner)
+  explicit SourceStream(RefPtr<WebTaskRunner> loadingTaskRunner)
       : v8::ScriptCompiler::ExternalSourceStream(),
         m_cancelled(false),
         m_finished(false),
         m_queueLeadPosition(0),
         m_queueTailPosition(0),
-        m_loadingTaskRunner(loadingTaskRunner->clone()) {}
+        m_loadingTaskRunner(std::move(loadingTaskRunner)) {}
 
   virtual ~SourceStream() override {}
 
@@ -317,7 +317,7 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
   size_t m_queueLeadPosition;         // Only used by v8 thread.
   size_t m_queueTailPosition;  // Used by both threads; guarded by m_mutex.
 
-  std::unique_ptr<WebTaskRunner> m_loadingTaskRunner;
+  RefPtr<WebTaskRunner> m_loadingTaskRunner;
 };
 
 size_t ScriptStreamer::s_smallScriptThreshold = 30 * 1024;
@@ -326,12 +326,12 @@ void ScriptStreamer::startStreaming(PendingScript* script,
                                     Type scriptType,
                                     Settings* settings,
                                     ScriptState* scriptState,
-                                    WebTaskRunner* loadingTaskRunner) {
+                                    RefPtr<WebTaskRunner> loadingTaskRunner) {
   // We don't yet know whether the script will really be streamed. E.g.,
   // suppressing streaming for short scripts is done later. Record only the
   // sure negative cases here.
   bool startedStreaming = startStreamingInternal(
-      script, scriptType, settings, scriptState, loadingTaskRunner);
+      script, scriptType, settings, scriptState, std::move(loadingTaskRunner));
   if (!startedStreaming)
     recordStartedStreamingHistogram(scriptType, 0);
 }
@@ -523,7 +523,7 @@ ScriptStreamer::ScriptStreamer(
     Type scriptType,
     ScriptState* scriptState,
     v8::ScriptCompiler::CompileOptions compileOptions,
-    WebTaskRunner* loadingTaskRunner)
+    RefPtr<WebTaskRunner> loadingTaskRunner)
     : m_pendingScript(script),
       m_resource(script->resource()),
       m_detached(false),
@@ -540,7 +540,7 @@ ScriptStreamer::ScriptStreamer(
       // Unfortunately there's no dummy encoding value in the enum; let's use
       // one we don't stream.
       m_encoding(v8::ScriptCompiler::StreamedSource::TWO_BYTE),
-      m_loadingTaskRunner(loadingTaskRunner->clone()) {}
+      m_loadingTaskRunner(std::move(loadingTaskRunner)) {}
 
 ScriptStreamer::~ScriptStreamer() {}
 
@@ -584,11 +584,12 @@ void ScriptStreamer::notifyFinishedToClient() {
   m_pendingScript->streamingFinished();
 }
 
-bool ScriptStreamer::startStreamingInternal(PendingScript* script,
-                                            Type scriptType,
-                                            Settings* settings,
-                                            ScriptState* scriptState,
-                                            WebTaskRunner* loadingTaskRunner) {
+bool ScriptStreamer::startStreamingInternal(
+    PendingScript* script,
+    Type scriptType,
+    Settings* settings,
+    ScriptState* scriptState,
+    RefPtr<WebTaskRunner> loadingTaskRunner) {
   DCHECK(isMainThread());
   DCHECK(scriptState->contextIsValid());
   ScriptResource* resource = script->resource();
@@ -622,7 +623,8 @@ bool ScriptStreamer::startStreamingInternal(PendingScript* script,
   // needed. This makes PendingScript notify the ScriptStreamer when it is
   // destroyed.
   script->setStreamer(ScriptStreamer::create(script, scriptType, scriptState,
-                                             compileOption, loadingTaskRunner));
+                                             compileOption,
+                                             std::move(loadingTaskRunner)));
 
   return true;
 }

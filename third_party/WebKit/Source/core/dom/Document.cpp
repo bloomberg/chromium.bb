@@ -487,7 +487,7 @@ Document::Document(const DocumentInit& initializer,
           TaskRunnerHelper::get(TaskType::UnspecedLoading, this),
           this,
           &Document::didAssociateFormControlsTimerFired),
-      m_timers(TaskRunnerHelper::get(TaskType::Timer, this)->clone()),
+      m_timers(TaskRunnerHelper::get(TaskType::Timer, this)),
       m_hasViewportUnits(false),
       m_parserSyncPolicy(AllowAsynchronousParsing),
       m_nodeCount(0),
@@ -2501,11 +2501,8 @@ void Document::shutdown() {
     clearImportsController();
   }
 
-  m_timers.setTimerTaskRunner(Platform::current()
-                                  ->currentThread()
-                                  ->scheduler()
-                                  ->timerTaskRunner()
-                                  ->clone());
+  m_timers.setTimerTaskRunner(
+      Platform::current()->currentThread()->scheduler()->timerTaskRunner());
 
   if (m_mediaQueryMatcher)
     m_mediaQueryMatcher->documentDetached();

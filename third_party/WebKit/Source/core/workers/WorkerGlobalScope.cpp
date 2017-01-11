@@ -317,11 +317,8 @@ WorkerGlobalScope::WorkerGlobalScope(
       m_closing(false),
       m_eventQueue(WorkerEventQueue::create(this)),
       m_workerClients(workerClients),
-      m_timers(Platform::current()
-                   ->currentThread()
-                   ->scheduler()
-                   ->timerTaskRunner()
-                   ->clone()),
+      m_timers(
+          Platform::current()->currentThread()->scheduler()->timerTaskRunner()),
       m_timeOrigin(timeOrigin),
       m_lastPendingErrorEventId(0) {
   InstanceCounters::incrementCounter(

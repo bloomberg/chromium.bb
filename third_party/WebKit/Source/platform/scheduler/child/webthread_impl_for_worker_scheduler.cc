@@ -71,7 +71,7 @@ void WebThreadImplForWorkerScheduler::InitOnThread(
       worker_scheduler_->DefaultTaskRunner(),
       worker_scheduler_->DefaultTaskRunner()));
   base::MessageLoop::current()->AddDestructionObserver(this);
-  web_task_runner_ = base::MakeUnique<WebTaskRunnerImpl>(task_runner_);
+  web_task_runner_ = WebTaskRunnerImpl::create(task_runner_);
   completion->Signal();
 }
 

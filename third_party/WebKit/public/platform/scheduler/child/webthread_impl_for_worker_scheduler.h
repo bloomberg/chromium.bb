@@ -6,15 +6,16 @@
 #define THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_CHILD_WEBTHREAD_IMPL_FOR_WORKER_SCHEDULER_H_
 
 #include "base/threading/thread.h"
+#include "public/platform/WebPrivatePtr.h"
 #include "public/platform/scheduler/child/webthread_base.h"
 
 namespace base {
 class WaitableEvent;
-};
+}
 
 namespace blink {
 class WebScheduler;
-};
+}
 
 namespace blink {
 namespace scheduler {
@@ -69,7 +70,7 @@ class BLINK_PLATFORM_EXPORT WebThreadImplForWorkerScheduler
   scoped_refptr<TaskQueue> task_runner_;
   scoped_refptr<scheduler::SingleThreadIdleTaskRunner> idle_task_runner_;
   scoped_refptr<SchedulerTqmDelegate> task_runner_delegate_;
-  std::unique_ptr<WebTaskRunnerImpl> web_task_runner_;
+  WebPrivatePtr<WebTaskRunnerImpl> web_task_runner_;
 };
 
 }  // namespace scheduler

@@ -133,7 +133,7 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
                       ? HTMLTokenizer::create(m_options)
                       : nullptr),
       m_loadingTaskRunner(
-          TaskRunnerHelper::get(TaskType::Networking, &document)->clone()),
+          TaskRunnerHelper::get(TaskType::Networking, &document)),
       m_parserScheduler(
           syncPolicy == AllowAsynchronousParsing
               ? HTMLParserScheduler::create(this, m_loadingTaskRunner.get())
@@ -851,8 +851,8 @@ void HTMLDocumentParser::startBackgroundParser() {
 
   // The background parser is created on the main thread, but may otherwise
   // only be used from the parser thread.
-  m_backgroundParser = BackgroundHTMLParser::create(
-      std::move(config), m_loadingTaskRunner->clone());
+  m_backgroundParser =
+      BackgroundHTMLParser::create(std::move(config), m_loadingTaskRunner);
   // TODO(csharrison): This is a hack to initialize MediaValuesCached on the
   // correct thread. We should get rid of it.
   postTaskToLookaheadParser(

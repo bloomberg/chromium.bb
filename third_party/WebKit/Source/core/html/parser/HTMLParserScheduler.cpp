@@ -56,10 +56,11 @@ void SpeculationsPumpSession::addedElementTokens(size_t count) {
   m_processedElementTokens += count;
 }
 
-HTMLParserScheduler::HTMLParserScheduler(HTMLDocumentParser* parser,
-                                         WebTaskRunner* loadingTaskRunner)
+HTMLParserScheduler::HTMLParserScheduler(
+    HTMLDocumentParser* parser,
+    RefPtr<WebTaskRunner> loadingTaskRunner)
     : m_parser(parser),
-      m_loadingTaskRunner(loadingTaskRunner->clone()),
+      m_loadingTaskRunner(std::move(loadingTaskRunner)),
       m_isSuspendedWithActiveTimer(false) {}
 
 HTMLParserScheduler::~HTMLParserScheduler() {}

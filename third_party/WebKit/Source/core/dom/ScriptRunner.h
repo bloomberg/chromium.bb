@@ -91,7 +91,7 @@ class CORE_EXPORT ScriptRunner final
   HeapDeque<Member<ScriptLoader>> m_asyncScriptsToExecuteSoon;
   HeapDeque<Member<ScriptLoader>> m_inOrderScriptsToExecuteSoon;
 
-  std::unique_ptr<WebTaskRunner> m_taskRunner;
+  RefPtr<WebTaskRunner> m_taskRunner;
 
   int m_numberOfInOrderScriptsWithPendingNotification;
 

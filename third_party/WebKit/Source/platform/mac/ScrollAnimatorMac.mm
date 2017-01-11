@@ -691,11 +691,8 @@ ScrollAnimatorBase* ScrollAnimatorBase::create(ScrollableArea* scrollableArea) {
 
 ScrollAnimatorMac::ScrollAnimatorMac(ScrollableArea* scrollableArea)
     : ScrollAnimatorBase(scrollableArea),
-      m_taskRunner(Platform::current()
-                       ->currentThread()
-                       ->scheduler()
-                       ->timerTaskRunner()
-                       ->clone()),
+      m_taskRunner(
+          Platform::current()->currentThread()->scheduler()->timerTaskRunner()),
       m_haveScrolledSincePageLoad(false),
       m_needsScrollerStyleUpdate(false) {
   m_scrollAnimationHelperDelegate.adoptNS(

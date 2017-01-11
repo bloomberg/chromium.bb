@@ -102,7 +102,7 @@ void WebFrameSchedulerImpl::setCrossOrigin(bool cross_origin) {
   UpdateTimerThrottling(was_throttled);
 }
 
-blink::WebTaskRunner* WebFrameSchedulerImpl::loadingTaskRunner() {
+RefPtr<blink::WebTaskRunner> WebFrameSchedulerImpl::loadingTaskRunner() {
   DCHECK(parent_web_view_scheduler_);
   if (!loading_web_task_runner_) {
     loading_task_queue_ = renderer_scheduler_->NewLoadingTaskRunner(
@@ -111,12 +111,12 @@ blink::WebTaskRunner* WebFrameSchedulerImpl::loadingTaskRunner() {
     loading_queue_enabled_voter_ =
         loading_task_queue_->CreateQueueEnabledVoter();
     loading_queue_enabled_voter_->SetQueueEnabled(!frame_suspended_);
-    loading_web_task_runner_.reset(new WebTaskRunnerImpl(loading_task_queue_));
+    loading_web_task_runner_ = WebTaskRunnerImpl::create(loading_task_queue_);
   }
-  return loading_web_task_runner_.get();
+  return loading_web_task_runner_;
 }
 
-blink::WebTaskRunner* WebFrameSchedulerImpl::timerTaskRunner() {
+RefPtr<blink::WebTaskRunner> WebFrameSchedulerImpl::timerTaskRunner() {
   DCHECK(parent_web_view_scheduler_);
   if (!timer_web_task_runner_) {
     timer_task_queue_ = renderer_scheduler_->NewTimerTaskRunner(
@@ -136,21 +136,21 @@ blink::WebTaskRunner* WebFrameSchedulerImpl::timerTaskRunner() {
       renderer_scheduler_->task_queue_throttler()->IncreaseThrottleRefCount(
           timer_task_queue_.get());
     }
-    timer_web_task_runner_.reset(new WebTaskRunnerImpl(timer_task_queue_));
+    timer_web_task_runner_ = WebTaskRunnerImpl::create(timer_task_queue_);
   }
-  return timer_web_task_runner_.get();
+  return timer_web_task_runner_;
 }
 
-blink::WebTaskRunner* WebFrameSchedulerImpl::unthrottledTaskRunner() {
+RefPtr<blink::WebTaskRunner> WebFrameSchedulerImpl::unthrottledTaskRunner() {
   DCHECK(parent_web_view_scheduler_);
   if (!unthrottled_web_task_runner_) {
     unthrottled_task_queue_ = renderer_scheduler_->NewUnthrottledTaskRunner(
         TaskQueue::QueueType::FRAME_UNTHROTTLED);
     unthrottled_task_queue_->SetBlameContext(blame_context_);
-    unthrottled_web_task_runner_.reset(
-        new WebTaskRunnerImpl(unthrottled_task_queue_));
+    unthrottled_web_task_runner_ =
+        WebTaskRunnerImpl::create(unthrottled_task_queue_);
   }
-  return unthrottled_web_task_runner_.get();
+  return unthrottled_web_task_runner_;
 }
 
 blink::WebViewScheduler* WebFrameSchedulerImpl::webViewScheduler() {

@@ -258,7 +258,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   // A scanner used only for input provided to the insert() method.
   std::unique_ptr<HTMLPreloadScanner> m_insertionPreloadScanner;
 
-  std::unique_ptr<WebTaskRunner> m_loadingTaskRunner;
+  RefPtr<WebTaskRunner> m_loadingTaskRunner;
   Member<HTMLParserScheduler> m_parserScheduler;
   HTMLSourceTracker m_sourceTracker;
   TextPosition m_textPosition;

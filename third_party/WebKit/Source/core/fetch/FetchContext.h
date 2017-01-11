@@ -177,7 +177,7 @@ class CORE_EXPORT FetchContext
     return priority;
   }
 
-  virtual WebTaskRunner* loadingTaskRunner() const { return nullptr; }
+  virtual RefPtr<WebTaskRunner> loadingTaskRunner() const { return nullptr; }
 
  protected:
   FetchContext() {}

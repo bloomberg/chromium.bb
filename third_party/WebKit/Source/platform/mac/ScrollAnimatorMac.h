@@ -85,7 +85,7 @@ class PLATFORM_EXPORT ScrollAnimatorMac : public ScrollAnimatorBase {
 
   void sendContentAreaScrolledTask();
   TaskHandle m_sendContentAreaScrolledTaskHandle;
-  std::unique_ptr<WebTaskRunner> m_taskRunner;
+  RefPtr<WebTaskRunner> m_taskRunner;
   ScrollOffset m_contentAreaScrolledTimerScrollDelta;
 
   ScrollResult userScroll(ScrollGranularity,

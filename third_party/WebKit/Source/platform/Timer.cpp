@@ -40,10 +40,10 @@
 
 namespace blink {
 
-TimerBase::TimerBase(WebTaskRunner* webTaskRunner)
+TimerBase::TimerBase(RefPtr<WebTaskRunner> webTaskRunner)
     : m_nextFireTime(0),
       m_repeatInterval(0),
-      m_webTaskRunner(webTaskRunner->clone()),
+      m_webTaskRunner(std::move(webTaskRunner)),
 #if DCHECK_IS_ON()
       m_thread(currentThread()),
 #endif
@@ -85,7 +85,7 @@ double TimerBase::nextFireInterval() const {
   return m_nextFireTime - current;
 }
 
-void TimerBase::moveToNewTaskRunner(WebTaskRunner* taskRunner) {
+void TimerBase::moveToNewTaskRunner(RefPtr<WebTaskRunner> taskRunner) {
 #if DCHECK_IS_ON()
   DCHECK_EQ(m_thread, currentThread());
   DCHECK(taskRunner->runsTasksOnCurrentThread());
@@ -98,7 +98,7 @@ void TimerBase::moveToNewTaskRunner(WebTaskRunner* taskRunner) {
 
   bool active = isActive();
   m_weakPtrFactory.revokeAll();
-  m_webTaskRunner = taskRunner->clone();
+  m_webTaskRunner = std::move(taskRunner);
 
   if (!active)
     return;
@@ -111,17 +111,17 @@ void TimerBase::moveToNewTaskRunner(WebTaskRunner* taskRunner) {
 }
 
 // static
-WebTaskRunner* TimerBase::getTimerTaskRunner() {
+RefPtr<WebTaskRunner> TimerBase::getTimerTaskRunner() {
   return Platform::current()->currentThread()->scheduler()->timerTaskRunner();
 }
 
 // static
-WebTaskRunner* TimerBase::getUnthrottledTaskRunner() {
+RefPtr<WebTaskRunner> TimerBase::getUnthrottledTaskRunner() {
   return Platform::current()->currentThread()->getWebTaskRunner();
 }
 
-WebTaskRunner* TimerBase::timerTaskRunner() const {
-  return m_webTaskRunner.get();
+RefPtr<WebTaskRunner> TimerBase::timerTaskRunner() const {
+  return m_webTaskRunner;
 }
 
 void TimerBase::setNextFireTime(double now, double delay) {

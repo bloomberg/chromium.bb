@@ -994,7 +994,7 @@ ResourceLoadPriority FrameFetchContext::modifyPriorityForExperiments(
   return priority;
 }
 
-WebTaskRunner* FrameFetchContext::loadingTaskRunner() const {
+RefPtr<WebTaskRunner> FrameFetchContext::loadingTaskRunner() const {
   return frame()->frameScheduler()->loadingTaskRunner();
 }
 

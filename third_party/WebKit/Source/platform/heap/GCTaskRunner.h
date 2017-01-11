@@ -43,8 +43,8 @@ namespace blink {
 
 class MessageLoopInterruptor final : public BlinkGCInterruptor {
  public:
-  explicit MessageLoopInterruptor(WebTaskRunner* taskRunner)
-      : m_taskRunner(taskRunner) {}
+  explicit MessageLoopInterruptor(RefPtr<WebTaskRunner> taskRunner)
+      : m_taskRunner(std::move(taskRunner)) {}
 
   void requestInterrupt() override {
     // GCTask has an empty run() method. Its only purpose is to guarantee
@@ -62,7 +62,7 @@ class MessageLoopInterruptor final : public BlinkGCInterruptor {
     // conservatively enters safepoint with pointers on stack.
   }
 
-  WebTaskRunner* m_taskRunner;
+  RefPtr<WebTaskRunner> m_taskRunner;
 };
 
 class GCTaskObserver final : public WebThread::TaskObserver {

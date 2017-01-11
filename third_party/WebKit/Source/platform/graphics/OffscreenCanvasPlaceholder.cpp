@@ -64,7 +64,7 @@ void OffscreenCanvasPlaceholder::unregisterPlaceholder() {
 void OffscreenCanvasPlaceholder::setPlaceholderFrame(
     RefPtr<StaticBitmapImage> newFrame,
     WeakPtr<OffscreenCanvasFrameDispatcher> dispatcher,
-    std::unique_ptr<WebTaskRunner> taskRunner,
+    RefPtr<WebTaskRunner> taskRunner,
     unsigned resourceId) {
   DCHECK(isPlaceholderRegistered());
   DCHECK(newFrame);

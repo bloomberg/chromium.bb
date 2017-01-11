@@ -88,7 +88,7 @@ void ResourceLoader::start(const ResourceRequest& request) {
   m_loader = WTF::wrapUnique(Platform::current()->createURLLoader());
   DCHECK(m_loader);
   m_loader->setDefersLoading(context().defersLoading());
-  m_loader->setLoadingTaskRunner(context().loadingTaskRunner());
+  m_loader->setLoadingTaskRunner(context().loadingTaskRunner().get());
 
   if (m_isCacheAwareLoadingActivated) {
     // Override cache policy for cache-aware loading. If this request fails, a

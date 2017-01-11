@@ -73,20 +73,20 @@ class EmptyFrameScheduler : public WebFrameScheduler {
  public:
   EmptyFrameScheduler() { DCHECK(isMainThread()); }
   void setFrameVisible(bool) override {}
-  WebTaskRunner* loadingTaskRunner() override;
-  WebTaskRunner* timerTaskRunner() override;
-  WebTaskRunner* unthrottledTaskRunner() override;
+  RefPtr<WebTaskRunner> loadingTaskRunner() override;
+  RefPtr<WebTaskRunner> timerTaskRunner() override;
+  RefPtr<WebTaskRunner> unthrottledTaskRunner() override;
 };
 
-WebTaskRunner* EmptyFrameScheduler::loadingTaskRunner() {
+RefPtr<WebTaskRunner> EmptyFrameScheduler::loadingTaskRunner() {
   return Platform::current()->mainThread()->getWebTaskRunner();
 }
 
-WebTaskRunner* EmptyFrameScheduler::timerTaskRunner() {
+RefPtr<WebTaskRunner> EmptyFrameScheduler::timerTaskRunner() {
   return Platform::current()->mainThread()->getWebTaskRunner();
 }
 
-WebTaskRunner* EmptyFrameScheduler::unthrottledTaskRunner() {
+RefPtr<WebTaskRunner> EmptyFrameScheduler::unthrottledTaskRunner() {
   return Platform::current()->mainThread()->getWebTaskRunner();
 }
 

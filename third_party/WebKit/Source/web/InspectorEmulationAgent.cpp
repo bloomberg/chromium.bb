@@ -150,7 +150,7 @@ Response InspectorEmulationAgent::setVirtualTimePolicy(const String& policy,
   m_webLocalFrameImpl->view()->scheduler()->enableVirtualTime();
 
   if (budget.isJust()) {
-    WebTaskRunner* taskRunner =
+    RefPtr<WebTaskRunner> taskRunner =
         Platform::current()->currentThread()->getWebTaskRunner();
     long long delayMillis = static_cast<long long>(budget.fromJust());
     m_virtualTimeBudgetExpiredTaskHandle =

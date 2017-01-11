@@ -155,4 +155,6 @@ TaskHandle WebTaskRunner::postDelayedCancellableTask(
   return TaskHandle(runner);
 }
 
+WebTaskRunner::~WebTaskRunner() = default;
+
 }  // namespace blink

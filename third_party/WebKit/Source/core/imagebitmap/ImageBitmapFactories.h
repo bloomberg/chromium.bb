@@ -129,7 +129,7 @@ class ImageBitmapFactories final
     void rejectPromise();
 
     void scheduleAsyncImageBitmapDecoding(DOMArrayBuffer*);
-    void decodeImageOnDecoderThread(WebTaskRunner*,
+    void decodeImageOnDecoderThread(RefPtr<WebTaskRunner>,
                                     DOMArrayBuffer*,
                                     const String& premultiplyAlphaOption,
                                     const String& colorSpaceConversionOption);

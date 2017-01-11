@@ -22,8 +22,7 @@ WebGLQuery::WebGLQuery(WebGL2RenderingContextBase* ctx)
       m_queryResultAvailable(false),
       m_queryResult(0),
       m_taskRunner(TaskRunnerHelper::get(TaskType::Unthrottled,
-                                         &ctx->canvas()->document())
-                       ->clone()) {
+                                         &ctx->canvas()->document())) {
   GLuint query;
   ctx->contextGL()->GenQueriesEXT(1, &query);
   setObject(query);

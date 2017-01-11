@@ -58,19 +58,22 @@ class WebFrameSchedulerImplTest : public testing::Test {
 
 namespace {
 
-void runRepeatingTask(WebTaskRunner* task_runner, int* run_count);
+void runRepeatingTask(RefPtr<WebTaskRunner> task_runner, int* run_count);
 
 std::unique_ptr<WTF::Closure> makeRepeatingTask(
-    blink::WebTaskRunner* task_runner,
+    RefPtr<blink::WebTaskRunner> task_runner,
     int* run_count) {
-  return WTF::bind(&runRepeatingTask, WTF::unretained(task_runner),
+  return WTF::bind(&runRepeatingTask, WTF::passed(std::move(task_runner)),
                    WTF::unretained(run_count));
 }
 
-void runRepeatingTask(WebTaskRunner* task_runner, int* run_count) {
+void runRepeatingTask(RefPtr<WebTaskRunner> task_runner, int* run_count) {
   ++*run_count;
-  task_runner->postDelayedTask(BLINK_FROM_HERE,
-                               makeRepeatingTask(task_runner, run_count), 1.0);
+
+  WebTaskRunner* task_runner_ptr = task_runner.get();
+  task_runner_ptr->postDelayedTask(
+      BLINK_FROM_HERE, makeRepeatingTask(std::move(task_runner), run_count),
+      1.0);
 }
 
 void IncrementCounter(int* counter) {

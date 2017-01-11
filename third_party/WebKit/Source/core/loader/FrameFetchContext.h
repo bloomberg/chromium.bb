@@ -155,7 +155,7 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
   ResourceLoadPriority modifyPriorityForExperiments(
       ResourceLoadPriority) override;
 
-  WebTaskRunner* loadingTaskRunner() const override;
+  RefPtr<WebTaskRunner> loadingTaskRunner() const override;
 
   DECLARE_VIRTUAL_TRACE();
 

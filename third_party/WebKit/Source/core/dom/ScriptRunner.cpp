@@ -38,8 +38,7 @@ namespace blink {
 
 ScriptRunner::ScriptRunner(Document* document)
     : m_document(document),
-      m_taskRunner(
-          TaskRunnerHelper::get(TaskType::Networking, document)->clone()),
+      m_taskRunner(TaskRunnerHelper::get(TaskType::Networking, document)),
       m_numberOfInOrderScriptsWithPendingNotification(0),
       m_isSuspended(false) {
   DCHECK(document);

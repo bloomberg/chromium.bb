@@ -83,7 +83,7 @@ class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
            int timeoutID);
   void fired() override;
 
-  WebTaskRunner* timerTaskRunner() const override;
+  RefPtr<WebTaskRunner> timerTaskRunner() const override;
 
   int m_timeoutID;
   int m_nestingLevel;

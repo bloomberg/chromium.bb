@@ -78,10 +78,6 @@ bool FakeWebTaskRunner::runsTasksOnCurrentThread() {
   return true;
 }
 
-std::unique_ptr<WebTaskRunner> FakeWebTaskRunner::clone() {
-  return WTF::wrapUnique(new FakeWebTaskRunner(data_, base_task_runner_));
-}
-
 double FakeWebTaskRunner::virtualTimeSeconds() const {
   return data_->time_;
 }

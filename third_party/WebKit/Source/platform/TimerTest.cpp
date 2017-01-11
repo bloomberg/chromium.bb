@@ -526,10 +526,10 @@ class TimerForTest : public TaskRunnerTimer<TimerFiredClass> {
 
   ~TimerForTest() override {}
 
-  TimerForTest(WebTaskRunner* webTaskRunner,
+  TimerForTest(RefPtr<WebTaskRunner> webTaskRunner,
                TimerFiredClass* timerFiredClass,
                TimerFiredFunction timerFiredFunction)
-      : TaskRunnerTimer<TimerFiredClass>(webTaskRunner,
+      : TaskRunnerTimer<TimerFiredClass>(std::move(webTaskRunner),
                                          timerFiredClass,
                                          timerFiredFunction) {}
 };
@@ -538,8 +538,9 @@ TEST_F(TimerTest, UserSuppliedWebTaskRunner) {
   scoped_refptr<scheduler::TaskQueue> taskRunner(
       m_platform.rendererScheduler()->NewTimerTaskRunner(
           scheduler::TaskQueue::QueueType::TEST));
-  scheduler::WebTaskRunnerImpl webTaskRunner(taskRunner);
-  TimerForTest<TimerTest> timer(&webTaskRunner, this, &TimerTest::countingTask);
+  RefPtr<scheduler::WebTaskRunnerImpl> webTaskRunner =
+      scheduler::WebTaskRunnerImpl::create(taskRunner);
+  TimerForTest<TimerTest> timer(webTaskRunner, this, &TimerTest::countingTask);
   timer.startOneShot(0, BLINK_FROM_HERE);
 
   // Make sure the task was posted on taskRunner.
@@ -600,9 +601,9 @@ namespace {
 
 class TaskObserver : public base::MessageLoop::TaskObserver {
  public:
-  TaskObserver(WebTaskRunner* task_runner,
-               std::vector<WebTaskRunner*>* runOrder)
-      : m_taskRunner(task_runner), m_runOrder(runOrder) {}
+  TaskObserver(RefPtr<WebTaskRunner> task_runner,
+               std::vector<RefPtr<WebTaskRunner>>* runOrder)
+      : m_taskRunner(std::move(task_runner)), m_runOrder(runOrder) {}
 
   void WillProcessTask(const base::PendingTask&) {}
 
@@ -611,31 +612,32 @@ class TaskObserver : public base::MessageLoop::TaskObserver {
   }
 
  private:
-  WebTaskRunner* m_taskRunner;
-  std::vector<WebTaskRunner*>* m_runOrder;
+  RefPtr<WebTaskRunner> m_taskRunner;
+  std::vector<RefPtr<WebTaskRunner>>* m_runOrder;
 };
 
 }  // namespace
 
 TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
-  std::vector<WebTaskRunner*> runOrder;
+  std::vector<RefPtr<WebTaskRunner>> runOrder;
 
   scoped_refptr<scheduler::TaskQueue> taskRunner1(
       m_platform.rendererScheduler()->NewTimerTaskRunner(
           scheduler::TaskQueue::QueueType::TEST));
-  scheduler::WebTaskRunnerImpl webTaskRunner1(taskRunner1);
-  TaskObserver taskObserver1(&webTaskRunner1, &runOrder);
+  RefPtr<scheduler::WebTaskRunnerImpl> webTaskRunner1 =
+      scheduler::WebTaskRunnerImpl::create(taskRunner1);
+  TaskObserver taskObserver1(webTaskRunner1, &runOrder);
   taskRunner1->AddTaskObserver(&taskObserver1);
 
   scoped_refptr<scheduler::TaskQueue> taskRunner2(
       m_platform.rendererScheduler()->NewTimerTaskRunner(
           scheduler::TaskQueue::QueueType::TEST));
-  scheduler::WebTaskRunnerImpl webTaskRunner2(taskRunner2);
-  TaskObserver taskObserver2(&webTaskRunner2, &runOrder);
+  RefPtr<scheduler::WebTaskRunnerImpl> webTaskRunner2 =
+      scheduler::WebTaskRunnerImpl::create(taskRunner2);
+  TaskObserver taskObserver2(webTaskRunner2, &runOrder);
   taskRunner2->AddTaskObserver(&taskObserver2);
 
-  TimerForTest<TimerTest> timer(&webTaskRunner1, this,
-                                &TimerTest::countingTask);
+  TimerForTest<TimerTest> timer(webTaskRunner1, this, &TimerTest::countingTask);
 
   double startTime = monotonicallyIncreasingTime();
 
@@ -643,37 +645,38 @@ TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
 
   m_platform.runForPeriodSeconds(0.5);
 
-  timer.moveToNewTaskRunner(&webTaskRunner2);
+  timer.moveToNewTaskRunner(webTaskRunner2);
 
   m_platform.runUntilIdle();
 
   EXPECT_THAT(m_runTimes, ElementsAre(startTime + 1.0));
 
-  EXPECT_THAT(runOrder, ElementsAre(&webTaskRunner2));
+  EXPECT_THAT(runOrder, ElementsAre(webTaskRunner2));
 
   EXPECT_TRUE(taskRunner1->IsEmpty());
   EXPECT_TRUE(taskRunner2->IsEmpty());
 }
 
 TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
-  std::vector<WebTaskRunner*> runOrder;
+  std::vector<RefPtr<WebTaskRunner>> runOrder;
 
   scoped_refptr<scheduler::TaskQueue> taskRunner1(
       m_platform.rendererScheduler()->NewTimerTaskRunner(
           scheduler::TaskQueue::QueueType::TEST));
-  scheduler::WebTaskRunnerImpl webTaskRunner1(taskRunner1);
-  TaskObserver taskObserver1(&webTaskRunner1, &runOrder);
+  RefPtr<scheduler::WebTaskRunnerImpl> webTaskRunner1 =
+      scheduler::WebTaskRunnerImpl::create(taskRunner1);
+  TaskObserver taskObserver1(webTaskRunner1, &runOrder);
   taskRunner1->AddTaskObserver(&taskObserver1);
 
   scoped_refptr<scheduler::TaskQueue> taskRunner2(
       m_platform.rendererScheduler()->NewTimerTaskRunner(
           scheduler::TaskQueue::QueueType::TEST));
-  scheduler::WebTaskRunnerImpl webTaskRunner2(taskRunner2);
-  TaskObserver taskObserver2(&webTaskRunner2, &runOrder);
+  RefPtr<scheduler::WebTaskRunnerImpl> webTaskRunner2 =
+      scheduler::WebTaskRunnerImpl::create(taskRunner2);
+  TaskObserver taskObserver2(webTaskRunner2, &runOrder);
   taskRunner2->AddTaskObserver(&taskObserver2);
 
-  TimerForTest<TimerTest> timer(&webTaskRunner1, this,
-                                &TimerTest::countingTask);
+  TimerForTest<TimerTest> timer(webTaskRunner1, this, &TimerTest::countingTask);
 
   double startTime = monotonicallyIncreasingTime();
 
@@ -681,15 +684,15 @@ TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
 
   m_platform.runForPeriodSeconds(2.5);
 
-  timer.moveToNewTaskRunner(&webTaskRunner2);
+  timer.moveToNewTaskRunner(webTaskRunner2);
 
   m_platform.runForPeriodSeconds(2);
 
   EXPECT_THAT(m_runTimes, ElementsAre(startTime + 1.0, startTime + 2.0,
                                       startTime + 3.0, startTime + 4.0));
 
-  EXPECT_THAT(runOrder, ElementsAre(&webTaskRunner1, &webTaskRunner1,
-                                    &webTaskRunner2, &webTaskRunner2));
+  EXPECT_THAT(runOrder, ElementsAre(webTaskRunner1, webTaskRunner1,
+                                    webTaskRunner2, webTaskRunner2));
 
   EXPECT_TRUE(taskRunner1->IsEmpty());
   EXPECT_FALSE(taskRunner2->IsEmpty());
@@ -701,15 +704,16 @@ TEST_F(TimerTest, MoveToNewTaskRunnerWithoutTasks) {
   scoped_refptr<scheduler::TaskQueue> taskRunner1(
       m_platform.rendererScheduler()->NewTimerTaskRunner(
           scheduler::TaskQueue::QueueType::TEST));
-  scheduler::WebTaskRunnerImpl webTaskRunner1(taskRunner1);
+  RefPtr<scheduler::WebTaskRunnerImpl> webTaskRunner1 =
+      scheduler::WebTaskRunnerImpl::create(taskRunner1);
 
   scoped_refptr<scheduler::TaskQueue> taskRunner2(
       m_platform.rendererScheduler()->NewTimerTaskRunner(
           scheduler::TaskQueue::QueueType::TEST));
-  scheduler::WebTaskRunnerImpl webTaskRunner2(taskRunner2);
+  RefPtr<scheduler::WebTaskRunnerImpl> webTaskRunner2 =
+      scheduler::WebTaskRunnerImpl::create(taskRunner2);
 
-  TimerForTest<TimerTest> timer(&webTaskRunner1, this,
-                                &TimerTest::countingTask);
+  TimerForTest<TimerTest> timer(webTaskRunner1, this, &TimerTest::countingTask);
 
   m_platform.runUntilIdle();
   EXPECT_TRUE(!m_runTimes.size());

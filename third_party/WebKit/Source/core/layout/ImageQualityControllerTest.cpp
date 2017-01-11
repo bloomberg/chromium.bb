@@ -154,7 +154,7 @@ class MockTimer : public TaskRunnerTimer<ImageQualityController> {
 
   static std::unique_ptr<MockTimer> create(ImageQualityController* o,
                                            TimerFiredFunction f) {
-    auto taskRunner = WTF::wrapUnique(new scheduler::FakeWebTaskRunner);
+    auto taskRunner = adoptRef(new scheduler::FakeWebTaskRunner);
     return WTF::wrapUnique(new MockTimer(std::move(taskRunner), o, f));
   }
 
@@ -166,13 +166,13 @@ class MockTimer : public TaskRunnerTimer<ImageQualityController> {
   void setTime(double newTime) { m_taskRunner->setTime(newTime); }
 
  private:
-  MockTimer(std::unique_ptr<scheduler::FakeWebTaskRunner> taskRunner,
+  MockTimer(RefPtr<scheduler::FakeWebTaskRunner> taskRunner,
             ImageQualityController* o,
             TimerFiredFunction f)
-      : TaskRunnerTimer(taskRunner.get(), o, f),
+      : TaskRunnerTimer(taskRunner, o, f),
         m_taskRunner(std::move(taskRunner)) {}
 
-  std::unique_ptr<scheduler::FakeWebTaskRunner> m_taskRunner;
+  RefPtr<scheduler::FakeWebTaskRunner> m_taskRunner;
 
   DISALLOW_COPY_AND_ASSIGN(MockTimer);
 };

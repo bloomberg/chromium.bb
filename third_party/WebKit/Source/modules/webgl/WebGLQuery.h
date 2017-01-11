@@ -54,7 +54,7 @@ class WebGLQuery : public WebGLSharedPlatform3DObject {
   bool m_queryResultAvailable;
   GLuint m_queryResult;
 
-  std::unique_ptr<WebTaskRunner> m_taskRunner;
+  RefPtr<WebTaskRunner> m_taskRunner;
   TaskHandle m_taskHandle;
 };
 

@@ -161,7 +161,7 @@ void AcceleratedStaticBitmapImage::transfer() {
     WebThread* currentThread = Platform::current()->currentThread();
     m_textureHolder->setWasTransferred(true);
     m_textureHolder->setTextureThreadTaskRunner(
-        currentThread->getWebTaskRunner()->clone());
+        currentThread->getWebTaskRunner());
   }
   m_detachThreadAtNextCheck = true;
 }

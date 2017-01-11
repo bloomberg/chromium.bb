@@ -23,8 +23,7 @@ WebGLTimerQueryEXT::WebGLTimerQueryEXT(WebGLRenderingContextBase* ctx)
       m_queryResultAvailable(false),
       m_queryResult(0),
       m_taskRunner(TaskRunnerHelper::get(TaskType::Unthrottled,
-                                         &ctx->canvas()->document())
-                       ->clone()) {
+                                         &ctx->canvas()->document())) {
   context()->contextGL()->GenQueriesEXT(1, &m_queryId);
 }
 

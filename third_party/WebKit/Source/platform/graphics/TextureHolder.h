@@ -45,17 +45,15 @@ class PLATFORM_EXPORT TextureHolder {
   }
   virtual void setSharedContextId(unsigned) { NOTREACHED(); }
   virtual void setImageThread(WebThread*) { NOTREACHED(); }
-  virtual void setImageThreadTaskRunner(std::unique_ptr<WebTaskRunner>) {
-    NOTREACHED();
-  }
+  virtual void setImageThreadTaskRunner(RefPtr<WebTaskRunner>) { NOTREACHED(); }
 
   // Methods that have exactly the same impelmentation for all sub-classes
   bool wasTransferred() { return m_wasTransferred; }
-  WebTaskRunner* textureThreadTaskRunner() {
-    return m_textureThreadTaskRunner.get();
+  RefPtr<WebTaskRunner> textureThreadTaskRunner() {
+    return m_textureThreadTaskRunner;
   }
   void setWasTransferred(bool flag) { m_wasTransferred = flag; }
-  void setTextureThreadTaskRunner(std::unique_ptr<WebTaskRunner> taskRunner) {
+  void setTextureThreadTaskRunner(RefPtr<WebTaskRunner> taskRunner) {
     m_textureThreadTaskRunner = std::move(taskRunner);
   }
 
@@ -69,7 +67,7 @@ class PLATFORM_EXPORT TextureHolder {
   // another thread, and the original thread gone out of scope, and that we need
   // to clear the resouces associated with that AcceleratedStaticBitmapImage on
   // the original thread.
-  std::unique_ptr<WebTaskRunner> m_textureThreadTaskRunner;
+  RefPtr<WebTaskRunner> m_textureThreadTaskRunner;
 };
 
 }  // namespace blink

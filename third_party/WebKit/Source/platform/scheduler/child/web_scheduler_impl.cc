@@ -23,8 +23,8 @@ WebSchedulerImpl::WebSchedulerImpl(
     : child_scheduler_(child_scheduler),
       idle_task_runner_(idle_task_runner),
       timer_task_runner_(timer_task_runner),
-      loading_web_task_runner_(new WebTaskRunnerImpl(loading_task_runner)),
-      timer_web_task_runner_(new WebTaskRunnerImpl(timer_task_runner)) {}
+      loading_web_task_runner_(WebTaskRunnerImpl::create(loading_task_runner)),
+      timer_web_task_runner_(WebTaskRunnerImpl::create(timer_task_runner)) {}
 
 WebSchedulerImpl::~WebSchedulerImpl() {}
 

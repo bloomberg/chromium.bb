@@ -19,9 +19,7 @@ class TaskQueue;
 
 class BLINK_PLATFORM_EXPORT WebTaskRunnerImpl : public WebTaskRunner {
  public:
-  explicit WebTaskRunnerImpl(scoped_refptr<TaskQueue> task_queue);
-
-  ~WebTaskRunnerImpl() override;
+  static RefPtr<WebTaskRunnerImpl> create(scoped_refptr<TaskQueue> task_queue);
 
   // WebTaskRunner implementation:
   void postDelayedTask(const WebTraceLocation&,
@@ -30,10 +28,12 @@ class BLINK_PLATFORM_EXPORT WebTaskRunnerImpl : public WebTaskRunner {
   bool runsTasksOnCurrentThread() override;
   double virtualTimeSeconds() const override;
   double monotonicallyIncreasingVirtualTimeSeconds() const override;
-  std::unique_ptr<WebTaskRunner> clone() override;
   base::SingleThreadTaskRunner* toSingleThreadTaskRunner() override;
 
  private:
+  explicit WebTaskRunnerImpl(scoped_refptr<TaskQueue> task_queue);
+  ~WebTaskRunnerImpl() override;
+
   base::TimeTicks Now() const;
 
   scoped_refptr<TaskQueue> task_queue_;

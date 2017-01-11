@@ -260,20 +260,20 @@ void ImageBitmapFactories::ImageBitmapLoader::scheduleAsyncImageBitmapDecoding(
       BackgroundTaskRunner::TaskSizeShortRunningTask;
   if (arrayBuffer->byteLength() >= longTaskByteLengthThreshold)
     taskSize = BackgroundTaskRunner::TaskSizeLongRunningTask;
-  WebTaskRunner* taskRunner =
+  RefPtr<WebTaskRunner> taskRunner =
       Platform::current()->currentThread()->getWebTaskRunner();
   BackgroundTaskRunner::postOnBackgroundThread(
       BLINK_FROM_HERE,
       crossThreadBind(
           &ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread,
-          wrapCrossThreadPersistent(this), crossThreadUnretained(taskRunner),
+          wrapCrossThreadPersistent(this), std::move(taskRunner),
           wrapCrossThreadPersistent(arrayBuffer), m_options.premultiplyAlpha(),
           m_options.colorSpaceConversion()),
       taskSize);
 }
 
 void ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread(
-    WebTaskRunner* taskRunner,
+    RefPtr<WebTaskRunner> taskRunner,
     DOMArrayBuffer* arrayBuffer,
     const String& premultiplyAlphaOption,
     const String& colorSpaceConversionOption) {

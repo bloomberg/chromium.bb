@@ -22,7 +22,7 @@ class PLATFORM_EXPORT OffscreenCanvasPlaceholder {
 
   void setPlaceholderFrame(RefPtr<StaticBitmapImage>,
                            WeakPtr<OffscreenCanvasFrameDispatcher>,
-                           std::unique_ptr<WebTaskRunner>,
+                           RefPtr<WebTaskRunner>,
                            unsigned resourceId);
   void releasePlaceholderFrame();
 
@@ -41,7 +41,7 @@ class PLATFORM_EXPORT OffscreenCanvasPlaceholder {
 
   RefPtr<StaticBitmapImage> m_placeholderFrame;
   WeakPtr<OffscreenCanvasFrameDispatcher> m_frameDispatcher;
-  std::unique_ptr<WebTaskRunner> m_frameDispatcherTaskRunner;
+  RefPtr<WebTaskRunner> m_frameDispatcherTaskRunner;
   unsigned m_placeholderFrameResourceId = 0;
 
   enum {

@@ -182,13 +182,13 @@ class ImageResourceTestMockFetchContext : public FetchContext {
     return ResourceRequestBlockedReason::None;
   }
   bool shouldLoadNewResource(Resource::Type) const override { return true; }
-  WebTaskRunner* loadingTaskRunner() const override { return m_runner.get(); }
+  RefPtr<WebTaskRunner> loadingTaskRunner() const override { return m_runner; }
 
  private:
   ImageResourceTestMockFetchContext()
-      : m_runner(WTF::wrapUnique(new scheduler::FakeWebTaskRunner)) {}
+      : m_runner(adoptRef(new scheduler::FakeWebTaskRunner)) {}
 
-  std::unique_ptr<scheduler::FakeWebTaskRunner> m_runner;
+  RefPtr<scheduler::FakeWebTaskRunner> m_runner;
 };
 
 // Convenience class that registers a mocked URL load on construction, and

@@ -169,7 +169,7 @@ void OffscreenCanvasFrameDispatcherImpl::
 namespace {
 
 void updatePlaceholderImage(WeakPtr<OffscreenCanvasFrameDispatcher> dispatcher,
-                            std::unique_ptr<WebTaskRunner> taskRunner,
+                            RefPtr<WebTaskRunner> taskRunner,
                             int placeholderCanvasId,
                             RefPtr<blink::StaticBitmapImage> image,
                             unsigned resourceId) {
@@ -253,8 +253,8 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
   // After this point, |image| can only be used on the main thread, until
   // it is returned.
   image->transfer();
-  std::unique_ptr<WebTaskRunner> dispatcherTaskRunner =
-      Platform::current()->currentThread()->getWebTaskRunner()->clone();
+  RefPtr<WebTaskRunner> dispatcherTaskRunner =
+      Platform::current()->currentThread()->getWebTaskRunner();
 
   Platform::current()->mainThread()->getWebTaskRunner()->postTask(
       BLINK_FROM_HERE,

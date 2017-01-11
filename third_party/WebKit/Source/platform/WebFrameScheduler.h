@@ -5,6 +5,8 @@
 #ifndef WebFrameScheduler_h
 #define WebFrameScheduler_h
 
+#include "wtf/RefPtr.h"
+
 namespace blink {
 
 class WebTaskRunner;
@@ -33,11 +35,11 @@ class WebFrameScheduler {
 
   // Returns the WebTaskRunner for loading tasks.
   // WebFrameScheduler owns the returned WebTaskRunner.
-  virtual WebTaskRunner* loadingTaskRunner() { return nullptr; }
+  virtual RefPtr<WebTaskRunner> loadingTaskRunner() = 0;
 
   // Returns the WebTaskRunner for timer tasks.
   // WebFrameScheduler owns the returned WebTaskRunner.
-  virtual WebTaskRunner* timerTaskRunner() { return nullptr; }
+  virtual RefPtr<WebTaskRunner> timerTaskRunner() = 0;
 
   // Returns the WebTaskRunner for tasks which should never get throttled.
   // This is generally used for executing internal browser tasks which should
@@ -45,7 +47,7 @@ class WebFrameScheduler {
   // are known should be posted to this task runner; for example user
   // JavaScript is discouraged. WebFrameScheduler owns the returned
   // WebTaskRunner.
-  virtual WebTaskRunner* unthrottledTaskRunner() { return nullptr; }
+  virtual RefPtr<WebTaskRunner> unthrottledTaskRunner() = 0;
 
   // Returns the parent WebViewScheduler.
   virtual WebViewScheduler* webViewScheduler() { return nullptr; }

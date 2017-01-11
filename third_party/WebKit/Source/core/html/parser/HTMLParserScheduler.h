@@ -67,8 +67,8 @@ class HTMLParserScheduler final
 
  public:
   static HTMLParserScheduler* create(HTMLDocumentParser* parser,
-                                     WebTaskRunner* loadingTaskRunner) {
-    return new HTMLParserScheduler(parser, loadingTaskRunner);
+                                     RefPtr<WebTaskRunner> loadingTaskRunner) {
+    return new HTMLParserScheduler(parser, std::move(loadingTaskRunner));
   }
   ~HTMLParserScheduler();
 
@@ -93,13 +93,13 @@ class HTMLParserScheduler final
   DECLARE_TRACE();
 
  private:
-  HTMLParserScheduler(HTMLDocumentParser*, WebTaskRunner*);
+  HTMLParserScheduler(HTMLDocumentParser*, RefPtr<WebTaskRunner>);
 
   bool shouldYield(const SpeculationsPumpSession&, bool startingScript) const;
   void continueParsing();
 
   Member<HTMLDocumentParser> m_parser;
-  std::unique_ptr<WebTaskRunner> m_loadingTaskRunner;
+  RefPtr<WebTaskRunner> m_loadingTaskRunner;
 
   TaskHandle m_cancellableContinueParseTaskHandle;
   bool m_isSuspendedWithActiveTimer;
