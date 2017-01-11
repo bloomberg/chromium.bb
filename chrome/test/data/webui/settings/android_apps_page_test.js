@@ -61,17 +61,17 @@ suite('AndroidAppsPageTests', function() {
           cr.webUIListenerCallback(
               'android-apps-info-update', {appReady: false});
           Polymer.dom.flush();
-          var checkbox = androidAppsPage.$$('#enabledCheckbox');
-          assertTrue(!!checkbox);
-          assertFalse(checkbox.disabled);
-          assertFalse(checkbox.checked);
+          var control = androidAppsPage.$$('#enabled');
+          assertTrue(!!control);
+          assertFalse(control.disabled);
+          assertFalse(control.checked);
           var managed = androidAppsPage.$$('#manageApps');
           assertTrue(!!managed);
           assertTrue(managed.hidden);
 
-          MockInteractions.tap(checkbox.$.checkbox);
+          MockInteractions.tap(control.$.control);
           Polymer.dom.flush();
-          assertTrue(checkbox.checked);
+          assertTrue(control.checked);
         });
   });
 
@@ -88,15 +88,15 @@ suite('AndroidAppsPageTests', function() {
           cr.webUIListenerCallback(
               'android-apps-info-update', {appReady: true});
           Polymer.dom.flush();
-          var checkbox = androidAppsPage.$$('#enabledCheckbox');
-          assertTrue(!!checkbox);
-          assertFalse(checkbox.disabled);
-          assertTrue(checkbox.checked);
+          var control = androidAppsPage.$$('#enabled');
+          assertTrue(!!control);
+          assertFalse(control.disabled);
+          assertTrue(control.checked);
           var managed = androidAppsPage.$$('#manageApps');
           assertTrue(!!managed);
           assertFalse(managed.hidden);
 
-          MockInteractions.tap(checkbox.$.checkbox);
+          MockInteractions.tap(control.$.control);
           cr.webUIListenerCallback(
               'android-apps-info-update', {appReady: false});
           Polymer.dom.flush();
@@ -108,7 +108,7 @@ suite('AndroidAppsPageTests', function() {
           assertTrue(!!actionButton);
           MockInteractions.tap(actionButton);
           Polymer.dom.flush();
-          assertFalse(checkbox.checked);
+          assertFalse(control.checked);
           assertTrue(managed.hidden);
         });
   });

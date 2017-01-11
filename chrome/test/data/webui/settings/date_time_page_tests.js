@@ -112,7 +112,7 @@
 
     function verifyAutoDetectSetting(autoDetect) {
       assertEquals(autoDetect, dateTime.$$('settings-dropdown-menu').disabled);
-      assertEquals(autoDetect, dateTime.$.timeZoneAutoDetectCheckbox.checked);
+      assertEquals(autoDetect, dateTime.$.timeZoneAutoDetect.checked);
     }
 
     function verifyPolicy(policy) {
@@ -128,7 +128,7 @@
           assertEquals(0, indicator.clientHeight);
       }
 
-      assertEquals(policy, dateTime.$.timeZoneAutoDetectCheckbox.disabled);
+      assertEquals(policy, dateTime.$.timeZoneAutoDetect.disabled);
     }
 
     function verifyTimeZonesPopulated(populated) {
@@ -151,7 +151,7 @@
       verifyPolicy(false);
 
       // Disable auto-detect.
-      MockInteractions.tap(dateTime.$.timeZoneAutoDetectCheckbox);
+      MockInteractions.tap(dateTime.$.timeZoneAutoDetect);
       verifyAutoDetectSetting(false);
       assertTrue(getTimeZonesCalled);
 
@@ -176,7 +176,7 @@
         verifyTimeZonesPopulated(true);
 
         // Enable auto-detect.
-        MockInteractions.tap(dateTime.$.timeZoneAutoDetectCheckbox);
+        MockInteractions.tap(dateTime.$.timeZoneAutoDetect);
         verifyAutoDetectSetting(true);
         done();
       });
@@ -195,7 +195,7 @@
       verifyPolicy(true);
 
       // Cannot disable auto-detect.
-      MockInteractions.tap(dateTime.$.timeZoneAutoDetectCheckbox);
+      MockInteractions.tap(dateTime.$.timeZoneAutoDetect);
       verifyAutoDetectSetting(true);
       assertFalse(getTimeZonesCalled);
 
@@ -230,7 +230,7 @@
         verifyPolicy(false);
 
         // User can disable auto-detect.
-        MockInteractions.tap(dateTime.$.timeZoneAutoDetectCheckbox);
+        MockInteractions.tap(dateTime.$.timeZoneAutoDetect);
         verifyAutoDetectSetting(false);
         done();
       });

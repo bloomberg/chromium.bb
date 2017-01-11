@@ -260,18 +260,18 @@ cr.define('settings_privacy_page', function() {
             'getSafeBrowsingExtendedReporting').then(function() {
           Polymer.dom.flush();
 
-          // Checkbox starts checked by default
-          var checkbox = page.$.safeBrowsingExtendedReportingCheckbox;
-          assertEquals(true, checkbox.checked);
+          // Control starts checked by default
+          var control = page.$.safeBrowsingExtendedReportingControl;
+          assertEquals(true, control.checked);
 
           // Notification from browser can uncheck the box
           cr.webUIListenerCallback('safe-browsing-extended-reporting-change',
                                    false);
           Polymer.dom.flush();
-          assertEquals(false, checkbox.checked);
+          assertEquals(false, control.checked);
 
           // Tapping on the box will check it again.
-          MockInteractions.tap(checkbox);
+          MockInteractions.tap(control);
           return testBrowserProxy.whenCalled('getSafeBrowsingExtendedReporting',
                                              true);
         });

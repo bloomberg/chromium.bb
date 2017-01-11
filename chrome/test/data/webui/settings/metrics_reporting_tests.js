@@ -22,8 +22,8 @@ suite('metrics reporting', function() {
     return testBrowserProxy.whenCalled('getMetricsReporting').then(function() {
       Polymer.dom.flush();
 
-      var checkbox = page.$.metricsReportingCheckbox;
-      assertEquals(testBrowserProxy.metricsReporting.enabled, checkbox.checked);
+      var control = page.$.metricsReportingControl;
+      assertEquals(testBrowserProxy.metricsReporting.enabled, control.checked);
       var indicatorVisible = !!page.$$('#indicator');
       assertEquals(testBrowserProxy.metricsReporting.managed, indicatorVisible);
 
@@ -34,13 +34,13 @@ suite('metrics reporting', function() {
       cr.webUIListenerCallback('metrics-reporting-change', changedMetrics);
       Polymer.dom.flush();
 
-      assertEquals(changedMetrics.enabled, checkbox.checked);
+      assertEquals(changedMetrics.enabled, control.checked);
       indicatorVisible = !!page.$$('#indicator');
       assertEquals(changedMetrics.managed, indicatorVisible);
 
       var toggled = !changedMetrics.enabled;
 
-      MockInteractions.tap(checkbox);
+      MockInteractions.tap(control);
       return testBrowserProxy.whenCalled('setMetricsReportingEnabled', toggled);
     });
   });

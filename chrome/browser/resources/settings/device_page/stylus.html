@@ -1,6 +1,6 @@
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="/controls/settings_checkbox.html">
+<link rel="import" href="/controls/settings_toggle_button.html">
 <link rel="import" href="/settings_shared_css.html">
 
 <dom-module id="settings-stylus">
@@ -8,18 +8,18 @@
     <style include="settings-shared"></style>
 
     <div class="settings-box">
-      <settings-checkbox
+      <settings-toggle-button class="start"
           pref="{{prefs.settings.enable_stylus_tools}}"
           label="$i18n{stylusEnableStylusTools}">
-      </settings-checkbox>
+      </settings-toggle-button>
     </div>
 
     <div class="settings-box continuation">
-      <settings-checkbox
-          disabled="[[!prefs.settings.enable_stylus_tools.value]]"
+      <settings-toggle-button class="start"
           pref="{{prefs.settings.launch_palette_on_eject_event}}"
-          label="$i18n{stylusAutoOpenStylusTools}">
-      </settings-checkbox>
+          label="$i18n{stylusAutoOpenStylusTools}"
+          disabled="[[!prefs.settings.enable_stylus_tools.value]]">
+      </settings-toggle-button>
     </div>
 
     <div class="settings-box">

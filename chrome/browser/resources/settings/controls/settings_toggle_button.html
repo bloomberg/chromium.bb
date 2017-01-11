@@ -21,8 +21,13 @@
         @apply(--settings-secondary-unchecked);
       }
 
+      paper-toggle-button,
       cr-policy-pref-indicator {
-        -webkit-margin-end: var(--checkbox-spacing);
+        -webkit-margin-start: var(--checkbox-spacing);
+      }
+
+      ::content .more-actions {
+        -webkit-margin-end: 10px;
       }
     </style>
     <div id="outerRow" noSubLabel$="[[!subLabel]]">
@@ -31,6 +36,7 @@
         <div>[[label]]</div>
         <div class="secondary">[[subLabel]]</div>
       </div>
+      <content selector=".more-actions"></content>
       <template is="dom-if" if="[[pref.controlledBy]]">
         <cr-policy-pref-indicator pref="[[pref]]"></cr-policy-pref-indicator>
       </template>

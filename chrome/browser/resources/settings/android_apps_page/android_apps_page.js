@@ -87,8 +87,7 @@ Polymer({
    * @private
    */
   onConfirmDisableDialogConfirm_: function() {
-    /** @type {!SettingsCheckboxElement} */ (this.$.enabledCheckbox)
-        .sendPrefChange();
+    /** @type {!SettingsCheckboxElement} */ (this.$.enabled).sendPrefChange();
     this.$.confirmDisableDialog.close();
   },
 
@@ -98,8 +97,7 @@ Polymer({
    * @private
    */
   onConfirmDisableDialogCancel_: function() {
-    /** @type {!SettingsCheckboxElement} */ (this.$.enabledCheckbox)
-        .resetToPrefValue();
+    /** @type {!SettingsCheckboxElement} */ (this.$.enabled).resetToPrefValue();
     this.$.confirmDisableDialog.close();
   },
 });

@@ -1,6 +1,6 @@
 <link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="internet_shared_css.html">
 <link rel="import" href="network_property_list.html">
 
@@ -8,9 +8,9 @@
   <template>
     <style include="internet-shared"></style>
     <div class="settings-box first">
-      <paper-checkbox checked="{{automatic_}}" disabled="[[!editable]]">
-        $i18n{networkIPConfigAuto}
-      </paper-checkbox>
+      <div class="start">$i18n{networkIPConfigAuto}</div>
+      <paper-toggle-button checked="{{automatic_}}" disabled="[[!editable]]">
+      </paper-toggle-button>
     </div>
     <div class="settings-box continuation"
         hidden$="[[!showIPEditFields_(editable, automatic_)]]">

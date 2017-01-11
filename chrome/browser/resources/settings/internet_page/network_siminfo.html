@@ -3,14 +3,14 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="/icons.html">
 <link rel="import" href="internet_shared_css.html">
 
 <dom-module id="network-siminfo">
   <template>
-    <style include="internet-shared">
+    <style include="settings-shared internet-shared">
       iron-icon {
        -webkit-margin-end: 10px;
       }
@@ -43,6 +43,10 @@
       .settings-box:first-of-type {
         border-top: none;
       }
+
+      paper-toggle-button {
+        -webkit-margin-start: var(--checkbox-spacing);
+      }
     </style>
 
     <!-- SIM missing UI -->
@@ -71,14 +75,14 @@
     <!-- SIM unlocked -->
     <div class="settings-box two-line"
         hidden$="[[!showSimUnlocked_(networkProperties)]]">
-      <paper-checkbox class="start" on-change="onSimLockEnabledChange_"
-          checked="[[networkProperties.Cellular.SIMLockStatus.LockEnabled]]">
-        $i18n{networkSimLockEnable}
-      </paper-checkbox>
-      <paper-button  on-tap="onChangePinTap_"
+      <div class="start">$i18n{networkSimLockEnable}</div>
+      <paper-button on-tap="onChangePinTap_"
           hidden$="[[!networkProperties.Cellular.SIMLockStatus.LockEnabled]]">
         $i18n{networkSimChangePin}
       </paper-button>
+      <paper-toggle-button on-change="onSimLockEnabledChange_"
+          checked="[[networkProperties.Cellular.SIMLockStatus.LockEnabled]]">
+      </paper-toggle-button>
     </div>
 
     <!-- Enter PIN dialog -->

@@ -10,7 +10,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
-<link rel="import" href="/controls/settings_checkbox.html">
+<link rel="import" href="/controls/settings_toggle_button.html">
 <link rel="import" href="/people_page/sync_page.html">
 <link rel="import" href="/people_page/profile_info_browser_proxy.html">
 <link rel="import" href="/people_page/sync_browser_proxy.html">
@@ -200,10 +200,11 @@
 
 <if expr="chromeos">
         <template is="dom-if" if="[[!quickUnlockEnabled_]]">
-          <div class="settings-box single-column">
-            <settings-checkbox pref="{{prefs.settings.enable_screen_lock}}"
+          <div class="settings-box">
+            <settings-toggle-button class="start"
+                pref="{{prefs.settings.enable_screen_lock}}"
                 label="$i18n{enableScreenlock}">
-            </settings-checkbox>
+            </settings-toggle-button>
           </div>
         </template>
 
@@ -235,13 +236,15 @@
                 <a target="_blank" href="$i18n{easyUnlockLearnMoreURL}">
                   $i18n{learnMore}
                 </a>
+                <!-- TODO(dbeam): this should be 1 dom-if with a method instead
+                     of 2 nested dom-ifs. -->
                 <template is="dom-if" if="[[easyUnlockEnabled_]]">
                   <template is="dom-if"
                       if="[[easyUnlockProximityDetectionAllowed_]]">
-                    <settings-checkbox
+                    <settings-toggle-button
                         pref="{{prefs.easy_unlock.proximity_required}}"
                         label="$i18n{easyUnlockRequireProximityLabel}">
-                    </settings-checkbox>
+                    </settings-toggle-button>
                   </template>
                 </template>
               </div>

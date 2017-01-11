@@ -8,7 +8,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="/prefs/prefs.html">
 <link rel="import" href="/route.html">
 <link rel="import" href="internet_shared_css.html">
@@ -154,27 +154,27 @@
         <!-- Prefer this network. -->
         <template is="dom-if" if="[[showPreferNetwork_(networkProperties))]]">
           <div class="settings-box">
-            <paper-checkbox checked="{{preferNetwork_}}"
-                disabled="[[isNetworkPolicyEnforced(
-                    networkProperties.Priority)]]">
-              $i18n{networkPrefer}
-            </paper-checkbox>
+            <div class="start">$i18n{networkPrefer}</div>
             <cr-policy-network-indicator
                 property="[[networkProperties.Priority]]">
             </cr-policy-network-indicator>
+            <paper-toggle-button checked="{{preferNetwork_}}"
+                disabled="[[isNetworkPolicyEnforced(
+                    networkProperties.Priority)]]">
+            </paper-toggle-button>
           </div>
         </template>
         <!-- Autoconnect. -->
         <template is="dom-if" if="[[showAutoConnect_(networkProperties)]]">
           <div class="settings-box">
-            <paper-checkbox checked="{{autoConnect_}}"
-                disabled="[[isNetworkPolicyEnforced(
-                    getManagedAutoConnect_(networkProperties))]]">
-              $i18n{networkAutoConnect}
-            </paper-checkbox>
+            <div class="start">$i18n{networkAutoConnect}</div>
             <cr-policy-network-indicator
                 property="[[getManagedAutoConnect_(networkProperties)]]">
             </cr-policy-network-indicator>
+            <paper-toggle-button checked="{{autoConnect_}}"
+                disabled="[[isNetworkPolicyEnforced(
+                    getManagedAutoConnect_(networkProperties))]]">
+            </paper-toggle-button>
           </div>
         </template>
         <!-- SIM Info (Cellular only). -->

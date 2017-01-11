@@ -274,7 +274,7 @@ cr.define('device_page_tests', function() {
       test('mouse', function() {
         expectLT(0, pointersPage.$.mouse.offsetHeight);
 
-        expectFalse(pointersPage.$$('#mouse settings-checkbox').checked);
+        expectFalse(pointersPage.$$('#mouse settings-toggle-button').checked);
 
         var slider = assert(pointersPage.$$('#mouse cr-slider'));
         expectEquals(4, slider.value);

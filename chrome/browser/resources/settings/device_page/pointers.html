@@ -1,8 +1,8 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_slider/cr_slider.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-button/paper-radio-button.html">
-<link rel="import" href="/controls/settings_checkbox.html">
 <link rel="import" href="/controls/settings_radio_group.html">
+<link rel="import" href="/controls/settings_toggle_button.html">
 <link rel="import" href="/device_page/device_page_browser_proxy.html">
 <link rel="import" href="/settings_shared_css.html">
 
@@ -30,9 +30,10 @@
       <!-- Subsection title only appears if both mouse and touchpad exist. -->
       <h2 hidden$="[[!hasTouchpad]]">$i18n{mouseTitle}</h2>
       <div class="settings-box first">
-        <settings-checkbox pref="{{prefs.settings.mouse.primary_right}}"
+        <settings-toggle-button class="start"
+            pref="{{prefs.settings.mouse.primary_right}}"
             label="$i18n{mouseSwapButtons}">
-        </settings-checkbox>
+        </settings-toggle-button>
       </div>
       <div class="settings-box">
         <div class="start" id="mouseSpeedLabel">$i18n{mouseSpeed}</div>
@@ -49,14 +50,14 @@
       <!-- Subsection title only appears if both mouse and touchpad exist. -->
       <h2 hidden$="[[!hasMouse]]">$i18n{touchpadTitle}</h2>
       <div class="settings-box block first">
-        <settings-checkbox id="enableTapToClick"
+        <settings-toggle-button id="enableTapToClick"
             pref="{{prefs.settings.touchpad.enable_tap_to_click}}"
             label="$i18n{touchpadTapToClickEnabledLabel}">
-        </settings-checkbox>
-        <settings-checkbox id="enableTapDragging"
+        </settings-toggle-button>
+        <settings-toggle-button id="enableTapDragging"
             pref="{{prefs.settings.touchpad.enable_tap_dragging}}"
             label="$i18n{tapDraggingLabel}">
-        </settings-checkbox>
+        </settings-toggle-button>
       </div>
       <div class="settings-box">
         <div class="start" id="touchpadSpeedLabel">$i18n{touchpadSpeed}</div>

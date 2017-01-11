@@ -6,7 +6,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="/clear_browsing_data_dialog/clear_browsing_data_dialog.html">
-<link rel="import" href="/controls/settings_checkbox.html">
 <link rel="import" href="/controls/settings_toggle_button.html">
 <link rel="import" href="/lifetime_browser_proxy.html">
 <link rel="import" href="/route.html">
@@ -42,16 +41,6 @@
         min-height: var(--settings-row-min-height);
       }
 
-      #metricsReportingCheckbox,
-      #safeBrowsingExtendedReportingCheckbox {
-        display: inline-block;
-      }
-
-      #metricsReportingCheckbox,
-      #safeBrowsingExtendedReportingCheckbox {
-        width: 100%;
-      }
-
       #metricsReporting paper-tooltip {
         --paper-tooltip: var(--cr-policy-tooltip);
       }
@@ -73,48 +62,41 @@
       <neon-animatable route-path="default">
         <div class="settings-box block first">
           <p class="privacy-explanation">$i18nRaw{improveBrowsingExperience}</p>
-          <settings-checkbox pref="{{prefs.alternate_error_pages.enabled}}"
+          <settings-toggle-button
+              pref="{{prefs.alternate_error_pages.enabled}}"
               label="$i18n{linkDoctorPref}">
-          </settings-checkbox>
-          <settings-checkbox pref="{{prefs.search.suggest_enabled}}"
+          </settings-toggle-button>
+          <settings-toggle-button
+              pref="{{prefs.search.suggest_enabled}}"
               label="$i18n{searchSuggestPref}"
               hidden="[[!pageVisibility.searchPrediction]]">
-          </settings-checkbox>
-          <settings-checkbox pref="{{prefs.net.network_prediction_options}}"
+          </settings-toggle-button>
+          <settings-toggle-button
+              pref="{{prefs.net.network_prediction_options}}"
               label="$i18n{networkPredictionEnabled}"
               hidden="[[!pageVisibility.networkPrediction]]">
-          </settings-checkbox>
+          </settings-toggle-button>
           <div class="layout horizontal center settings-row-min-height">
-            <paper-checkbox id="safeBrowsingExtendedReportingCheckbox"
-                on-tap="onSafeBrowsingExtendedReportingCheckboxTap_"
+            <div class="flex">$i18n{safeBrowsingEnableExtendedReporting}</div>
+            <paper-toggle-button id="safeBrowsingExtendedReportingControl"
+                on-tap="onSafeBrowsingExtendedReportingControlTap_"
                 checked="[[safeBrowsingExtendedReportingEnabled_]]">
-              $i18n{safeBrowsingEnableExtendedReporting}
-            </paper-checkbox>
+            </paper-toggle-button>
           </div>
-          <settings-checkbox pref="{{prefs.safebrowsing.enabled}}"
+          <settings-toggle-button
+              pref="{{prefs.safebrowsing.enabled}}"
               label="$i18n{safeBrowsingEnableProtection}">
-          </settings-checkbox>
+          </settings-toggle-button>
 <if expr="_google_chrome">
 <if expr="chromeos">
-          <settings-checkbox pref="{{prefs.cros.metrics.reportingEnabled}}"
+          <settings-toggle-button
+              pref="{{prefs.cros.metrics.reportingEnabled}}"
               label="$i18n{enableLogging}">
-          </settings-checkbox>
+          </settings-toggle-button>
 </if><!-- chromeos -->
 <if expr="not chromeos">
           <div class="layout horizontal center settings-row-min-height">
-            <paper-checkbox id="metricsReportingCheckbox"
-                on-tap="onMetricsReportingCheckboxTap_"
-                checked="[[metricsReporting_.enabled]]"
-                disabled="[[metricsReporting_.managed]]">
-              $i18n{enableLogging}
-            </paper-checkbox>
-            <template is="dom-if" if="[[metricsReporting_.managed]]" restamp>
-              <iron-icon id="indicator" tabindex=0 icon="cr:domain"></iron-icon>
-              <paper-tooltip for="indicator" position="top"
-                  fit-to-visible-bounds>
-                $i18n{controlledSettingPolicy}
-              </paper-tooltip>
-            </template>
+            <div class="flex">$i18n{enableLogging}</div>
             <template is="dom-if" if="[[showRestart_]]" restamp>
               <div id="restart" class="flex">
                 <paper-button on-tap="onRestartTap_">
@@ -122,21 +104,34 @@
                 </paper-button>
               </div>
             </template>
+            <template is="dom-if" if="[[metricsReporting_.managed]]" restamp>
+              <iron-icon id="indicator" tabindex=0 icon="cr:domain"></iron-icon>
+              <paper-tooltip for="indicator" position="top"
+                  fit-to-visible-bounds>
+                $i18n{controlledSettingPolicy}
+              </paper-tooltip>
+            </template>
+            <paper-toggle-button id="metricsReportingControl"
+                on-tap="onMetricsReportingControlTap_"
+                checked="[[metricsReporting_.enabled]]"
+                disabled="[[metricsReporting_.managed]]">
+            </paper-toggle-button>
           </div>
 </if><!-- not chromeos -->
 </if><!-- _google_chrome -->
-          <settings-checkbox pref="{{prefs.enable_do_not_track}}"
+          <settings-toggle-button
+              pref="{{prefs.enable_do_not_track}}"
               label="$i18n{doNotTrack}">
-          </settings-checkbox>
+          </settings-toggle-button>
 <if expr="chromeos">
-          <settings-checkbox
+          <settings-toggle-button
               pref="{{prefs.cros.device.attestation_for_content_protection_enabled}}"
               label="$i18n{enableContentProtectionAttestation}">
-          </settings-checkbox>
-          <settings-checkbox
+          </settings-toggle-button>
+          <settings-toggle-button
               pref="{{prefs.settings.internet.wake_on_wifi_darkconnect}}"
               label="$i18n{wakeOnWifi}">
-          </settings-checkbox>
+          </settings-toggle-button>
 </if>
         </div>
 <if expr="_google_chrome">
@@ -251,9 +246,9 @@
           </category-default-setting>
           <div class="settings-box">
             <settings-toggle-button class="start"
+                pref="{{prefs.profile.block_third_party_cookies}}"
                 label="$i18n{thirdPartyCookie}"
-                sub-label="$i18n{thirdPartyCookieSublabel}"
-                pref="{{prefs.profile.block_third_party_cookies}}">
+                sub-label="$i18n{thirdPartyCookieSublabel}">
             </settings-toggle-button>
           </div>
           <category-setting-exceptions

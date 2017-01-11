@@ -109,11 +109,11 @@ cr.define('settings_search_page', function() {
           assertFalse(browserProxy.hotwordSearchEnabled);
           assertFalse(page.hotwordSearchEnablePref_.value);
 
-          var checkbox = page.$$('#hotwordSearchEnable');
-          assertTrue(!!checkbox);
-          assertFalse(checkbox.disabled);
-          assertFalse(checkbox.checked);
-          MockInteractions.tap(checkbox.$.checkbox);
+          var control = page.$$('#hotwordSearchEnable');
+          assertTrue(!!control);
+          assertFalse(control.disabled);
+          assertFalse(control.checked);
+          MockInteractions.tap(control.$.control);
           Polymer.dom.flush();
           return browserProxy.whenCalled('setHotwordSearchEnabled');
         }).then(function() {
@@ -137,11 +137,11 @@ cr.define('settings_search_page', function() {
           assertFalse(page.hotwordInfo_.alwaysOn);
           assertFalse(page.hotwordInfo_.enabled);
 
-          var checkbox = page.$$('#hotwordSearchEnable');
-          assertTrue(!!checkbox);
-          assertFalse(checkbox.disabled);
-          assertFalse(checkbox.checked);
-          MockInteractions.tap(checkbox.$.checkbox);
+          var control = page.$$('#hotwordSearchEnable');
+          assertTrue(!!control);
+          assertFalse(control.disabled);
+          assertFalse(control.checked);
+          MockInteractions.tap(control.$.control);
           Polymer.dom.flush();
           return browserProxy.whenCalled('setHotwordSearchEnabled');
         }).then(function() {
@@ -155,10 +155,10 @@ cr.define('settings_search_page', function() {
           Polymer.dom.flush();
           assertTrue(page.googleNowAvailable_);
 
-          var checkbox = page.$$('#googleNowEnable');
-          assertTrue(!!checkbox);
-          assertFalse(checkbox.disabled);
-          assertFalse(checkbox.checked);
+          var control = page.$$('#googleNowEnable');
+          assertTrue(!!control);
+          assertFalse(control.disabled);
+          assertFalse(control.checked);
 
           page.prefs = {
             google_now_launcher: {
@@ -169,8 +169,8 @@ cr.define('settings_search_page', function() {
             }
           };
           Polymer.dom.flush();
-          assertFalse(checkbox.disabled);
-          assertTrue(checkbox.checked);
+          assertFalse(control.disabled);
+          assertTrue(control.checked);
         });
       });
     });

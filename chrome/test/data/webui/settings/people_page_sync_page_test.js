@@ -196,21 +196,21 @@ cr.define('settings_people_page_sync_page', function() {
       });
 
       test('SettingIndividualDatatypes', function() {
-        var syncAllDataTypesCheckbox = syncPage.$.syncAllDataTypesCheckbox;
-        assertFalse(syncAllDataTypesCheckbox.disabled);
-        assertTrue(syncAllDataTypesCheckbox.checked);
+        var syncAllDataTypesControl = syncPage.$.syncAllDataTypesControl;
+        assertFalse(syncAllDataTypesControl.disabled);
+        assertTrue(syncAllDataTypesControl.checked);
 
-        // Assert that all the individual datatype checkboxes are disabled.
-        var datatypeCheckboxes = syncPage
+        // Assert that all the individual datatype controls are disabled.
+        var datatypeControls = syncPage
             .$$('#configure')
-            .querySelectorAll('paper-checkbox.list-item');
-        for (var box of datatypeCheckboxes) {
-          assertTrue(box.disabled);
-          assertTrue(box.checked);
+            .querySelectorAll('.list-item paper-toggle-button');
+        for (var control of datatypeControls) {
+          assertTrue(control.disabled);
+          assertTrue(control.checked);
         }
 
-        // Uncheck the Sync All checkbox.
-        MockInteractions.tap(syncAllDataTypesCheckbox);
+        // Uncheck the Sync All control.
+        MockInteractions.tap(syncAllDataTypesControl);
 
         function verifyPrefs(prefs) {
           var expected = getSyncAllPrefs();
@@ -219,16 +219,16 @@ cr.define('settings_people_page_sync_page', function() {
 
           cr.webUIListenerCallback('sync-prefs-changed', expected);
 
-          // Assert that all the individual datatype checkboxes are enabled.
-          for (var box of datatypeCheckboxes) {
-            assertFalse(box.disabled);
-            assertTrue(box.checked);
+          // Assert that all the individual datatype controls are enabled.
+          for (var control of datatypeControls) {
+            assertFalse(control.disabled);
+            assertTrue(control.checked);
           }
 
           browserProxy.resetResolver('setSyncDatatypes');
 
-          // Test an arbitrarily-selected checkbox (extensions synced checkbox).
-          MockInteractions.tap(datatypeCheckboxes[3]);
+          // Test an arbitrarily-selected control (extensions synced control).
+          MockInteractions.tap(datatypeControls[3]);
           return browserProxy.whenCalled('setSyncDatatypes').then(
               function(prefs) {
                 var expected = getSyncAllPrefs();
@@ -238,30 +238,6 @@ cr.define('settings_people_page_sync_page', function() {
               });
         }
         return browserProxy.whenCalled('setSyncDatatypes').then(verifyPrefs);
-      });
-
-      test('ClickingLinkDoesNotChangeCheckboxValue', function() {
-        var syncAllDataTypesCheckbox = syncPage.$.syncAllDataTypesCheckbox;
-
-        // Uncheck the Sync All checkbox.
-        MockInteractions.tap(syncAllDataTypesCheckbox);
-
-        // Make sure the checkbox is enabled and checked.
-        var link = syncPage.$.paymentLearnMore;
-
-        // Suppress opening a new tab, since then the test will continue running
-        // on a background tab (which has throttled timers) and will timeout.
-        link.target = '';
-        link.href = '#';
-
-        assertEquals('PAPER-CHECKBOX', link.parentNode.nodeName);
-        assertFalse(link.parentNode.disabled);
-        assertTrue(link.parentNode.checked);
-
-        MockInteractions.tap(link);
-
-        // The checkbox value should be unchanged after clicking on the link.
-        assertTrue(link.parentNode.checked);
       });
 
       test('RadioBoxesEnabledWhenUnencrypted', function() {

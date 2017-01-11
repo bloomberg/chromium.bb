@@ -151,7 +151,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onTimeZoneAutoDetectCheckboxChange_: function(e) {
+  onTimeZoneAutoDetectChange_: function(e) {
     this.setPrefValue(
         'settings.resolve_timezone_by_geolocation', e.target.checked);
   },

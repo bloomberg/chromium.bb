@@ -2,7 +2,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-button/paper-radio-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
@@ -44,15 +44,6 @@
           padding: 0;
         };
       }
-
-      /**
-       * This is currently necessary because a link inside a disabled
-       * paper-checkbox inherits `pointer-events: none;` and will not work.
-       * See: https://github.com/PolymerElements/paper-checkbox/issues/166
-       */
-      #paymentLearnMore {
-        pointer-events: initial;
-      }
     </style>
     <div id="[[pages.SPINNER]]" class="settings-box first"
         hidden$="[[!isStatus_(pages.SPINNER, pageStatus_)]]">
@@ -65,96 +56,124 @@
     <div id="[[pages.CONFIGURE]]"
         hidden$="[[!isStatus_(pages.CONFIGURE, pageStatus_)]]">
       <div class="settings-box first">
-        <paper-checkbox id="syncAllDataTypesCheckbox"
+        <div class="start">$i18n{syncEverythingCheckboxLabel}</div>
+        <paper-toggle-button id="syncAllDataTypesControl"
             checked="{{syncPrefs.syncAllDataTypes}}"
             on-change="onSyncAllDataTypesChanged_">
-          $i18n{syncEverythingCheckboxLabel}
-        </paper-checkbox>
+        </paper-toggle-button>
       </div>
 
       <div class="list-frame">
-        <paper-checkbox checked="{{syncPrefs.appsSynced}}"
-            on-change="onSingleSyncDataTypeChanged_" class="list-item"
-            hidden="[[!syncPrefs.appsRegistered]]"
-            disabled="[[shouldSyncCheckboxBeDisabled_(
-                syncPrefs.syncAllDataTypes, syncPrefs.appsEnforced)]]">
-          $i18n{appCheckboxLabel}
-        </paper-checkbox>
+        <div class="layout horizontal list-item">
+          <div class="flex">$i18n{appCheckboxLabel}</div>
+          <paper-toggle-button checked="{{syncPrefs.appsSynced}}"
+              on-change="onSingleSyncDataTypeChanged_"
+              hidden="[[!syncPrefs.appsRegistered]]"
+              disabled="[[shouldSyncCheckboxBeDisabled_(
+                  syncPrefs.syncAllDataTypes, syncPrefs.appsEnforced)]]">
+          </paper-toggle-button>
+        </div>
 
-        <!-- Autofill has a special on-change handler to deal with
-             Payments integriation. -->
-        <paper-checkbox checked="{{syncPrefs.autofillSynced}}"
-            on-change="onAutofillDataTypeChanged_" class="list-item"
-            hidden="[[!syncPrefs.autofillRegistered]]"
-            disabled="[[shouldSyncCheckboxBeDisabled_(
-                syncPrefs.syncAllDataTypes, syncPrefs.autofillEnforced)]]">
-          $i18n{autofillCheckboxLabel}
-        </paper-checkbox>
+        <div class="layout horizontal list-item">
+          <div class="flex">$i18n{autofillCheckboxLabel}</div>
+          <!-- Autofill has a special on-change handler to deal with
+               Payments integriation. -->
+          <paper-toggle-button checked="{{syncPrefs.autofillSynced}}"
+              on-change="onAutofillDataTypeChanged_"
+              hidden="[[!syncPrefs.autofillRegistered]]"
+              disabled="[[shouldSyncCheckboxBeDisabled_(
+                  syncPrefs.syncAllDataTypes, syncPrefs.autofillEnforced)]]">
+          </paper-toggle-button>
+        </div>
 
-        <paper-checkbox checked="{{syncPrefs.bookmarksSynced}}"
-            on-change="onSingleSyncDataTypeChanged_" class="list-item"
-            hidden="[[!syncPrefs.bookmarksRegistered]]"
-            disabled="[[shouldSyncCheckboxBeDisabled_(
-                syncPrefs.syncAllDataTypes, syncPrefs.bookmarksEnforced)]]">
-          $i18n{bookmarksCheckboxLabel}
-        </paper-checkbox>
-        <paper-checkbox checked="{{syncPrefs.extensionsSynced}}"
-            on-change="onSingleSyncDataTypeChanged_" class="list-item"
-            hidden="[[!syncPrefs.extensionsRegistered]]"
-            disabled="[[shouldSyncCheckboxBeDisabled_(
-                syncPrefs.syncAllDataTypes, syncPrefs.extensionsEnforced)]]">
-          $i18n{extensionsCheckboxLabel}
-        </paper-checkbox>
-        <paper-checkbox checked="{{syncPrefs.typedUrlsSynced}}"
-            on-change="onSingleSyncDataTypeChanged_" class="list-item"
-            hidden="[[!syncPrefs.typedUrlsRegistered]]"
-            disabled="[[shouldSyncCheckboxBeDisabled_(
-                syncPrefs.syncAllDataTypes, syncPrefs.typedUrlsEnforced)]]">
-          $i18n{historyCheckboxLabel}
-        </paper-checkbox>
-        <paper-checkbox checked="{{syncPrefs.passwordsSynced}}"
-            on-change="onSingleSyncDataTypeChanged_" class="list-item"
-            hidden="[[!syncPrefs.passwordsRegistered]]"
-            disabled="[[shouldSyncCheckboxBeDisabled_(
-                syncPrefs.syncAllDataTypes, syncPrefs.passwordsEnforced)]]">
-          $i18n{passwordsCheckboxLabel}
-        </paper-checkbox>
-        <paper-checkbox checked="{{syncPrefs.preferencesSynced}}"
-            on-change="onSingleSyncDataTypeChanged_" class="list-item"
-            hidden="[[!syncPrefs.preferencesRegistered]]"
-            disabled="[[shouldSyncCheckboxBeDisabled_(
-                syncPrefs.syncAllDataTypes, syncPrefs.preferencesEnforced)]]">
-          $i18n{settingsCheckboxLabel}
-        </paper-checkbox>
-        <paper-checkbox checked="{{syncPrefs.themesSynced}}"
-            on-change="onSingleSyncDataTypeChanged_" class="list-item"
-            hidden="[[!syncPrefs.themesRegistered]]"
-            disabled="[[shouldSyncCheckboxBeDisabled_(
-                syncPrefs.syncAllDataTypes, syncPrefs.themesEnforced)]]">
-          $i18n{themesAndWallpapersCheckboxLabel}
-        </paper-checkbox>
-        <paper-checkbox checked="{{syncPrefs.tabsSynced}}"
-            on-change="onSingleSyncDataTypeChanged_" class="list-item"
-            hidden="[[!syncPrefs.tabsRegistered]]"
-            disabled="[[shouldSyncCheckboxBeDisabled_(
-                syncPrefs.syncAllDataTypes, syncPrefs.tabsEnforced)]]">
-          $i18n{openTabsCheckboxLabel}
-        </paper-checkbox>
+        <div class="layout horizontal list-item">
+          <div class="flex">$i18n{bookmarksCheckboxLabel}</div>
+          <paper-toggle-button checked="{{syncPrefs.bookmarksSynced}}"
+              on-change="onSingleSyncDataTypeChanged_"
+              hidden="[[!syncPrefs.bookmarksRegistered]]"
+              disabled="[[shouldSyncCheckboxBeDisabled_(
+                  syncPrefs.syncAllDataTypes, syncPrefs.bookmarksEnforced)]]">
+          </paper-toggle-button>
+        </div>
 
-        <!-- The Payments integration checkbox is a special case in many ways.
-             It's visible only if autofill is registered. It's disabled and
-             unchecked if autofill is unchecked.-->
-        <paper-checkbox checked="{{syncPrefs.paymentsIntegrationEnabled}}"
-            on-change="onSingleSyncDataTypeChanged_" class="list-item"
-            hidden="[[!syncPrefs.autofillRegistered]]"
-            disabled="[[shouldPaymentsCheckboxBeDisabled_(
-                syncPrefs.syncAllDataTypes, syncPrefs.autofillSynced)]]">
-          $i18n{enablePaymentsIntegrationCheckboxLabel}
-          <a href="$i18nRaw{autofillHelpURL}" target="_blank"
-              id="paymentLearnMore" on-tap="onLearnMoreTap_">
-            $i18n{learnMore}
-          </a>
-        </paper-checkbox>
+        <div class="layout horizontal list-item">
+          <div class="flex">$i18n{extensionsCheckboxLabel}</div>
+          <paper-toggle-button checked="{{syncPrefs.extensionsSynced}}"
+              on-change="onSingleSyncDataTypeChanged_"
+              hidden="[[!syncPrefs.extensionsRegistered]]"
+              disabled="[[shouldSyncCheckboxBeDisabled_(
+                  syncPrefs.syncAllDataTypes, syncPrefs.extensionsEnforced)]]">
+          </paper-toggle-button>
+        </div>
+
+        <div class="layout horizontal list-item">
+          <div class="flex">$i18n{historyCheckboxLabel}</div>
+          <paper-toggle-button checked="{{syncPrefs.typedUrlsSynced}}"
+              on-change="onSingleSyncDataTypeChanged_"
+              hidden="[[!syncPrefs.typedUrlsRegistered]]"
+              disabled="[[shouldSyncCheckboxBeDisabled_(
+                  syncPrefs.syncAllDataTypes, syncPrefs.typedUrlsEnforced)]]">
+          </paper-toggle-button>
+        </div>
+
+        <div class="layout horizontal list-item">
+          <div class="flex">$i18n{passwordsCheckboxLabel}</div>
+          <paper-toggle-button checked="{{syncPrefs.passwordsSynced}}"
+              on-change="onSingleSyncDataTypeChanged_"
+              hidden="[[!syncPrefs.passwordsRegistered]]"
+              disabled="[[shouldSyncCheckboxBeDisabled_(
+                  syncPrefs.syncAllDataTypes, syncPrefs.passwordsEnforced)]]">
+          </paper-toggle-button>
+        </div>
+
+        <div class="layout horizontal list-item">
+          <div class="flex">$i18n{settingsCheckboxLabel}</div>
+          <paper-toggle-button checked="{{syncPrefs.preferencesSynced}}"
+              on-change="onSingleSyncDataTypeChanged_"
+              hidden="[[!syncPrefs.preferencesRegistered]]"
+              disabled="[[shouldSyncCheckboxBeDisabled_(
+                  syncPrefs.syncAllDataTypes, syncPrefs.preferencesEnforced)]]">
+          </paper-toggle-button>
+        </div>
+
+        <div class="layout horizontal list-item">
+          <div class="flex">$i18n{themesAndWallpapersCheckboxLabel}</div>
+          <paper-toggle-button checked="{{syncPrefs.themesSynced}}"
+              on-change="onSingleSyncDataTypeChanged_"
+              hidden="[[!syncPrefs.themesRegistered]]"
+              disabled="[[shouldSyncCheckboxBeDisabled_(
+                  syncPrefs.syncAllDataTypes, syncPrefs.themesEnforced)]]">
+          </paper-toggle-button>
+        </div>
+
+        <div class="layout horizontal list-item">
+          <div class="flex">$i18n{openTabsCheckboxLabel}</div>
+          <paper-toggle-button checked="{{syncPrefs.tabsSynced}}"
+              on-change="onSingleSyncDataTypeChanged_"
+              hidden="[[!syncPrefs.tabsRegistered]]"
+              disabled="[[shouldSyncCheckboxBeDisabled_(
+                  syncPrefs.syncAllDataTypes, syncPrefs.tabsEnforced)]]">
+          </paper-toggle-button>
+        </div>
+
+        <div class="layout horizontal list-item">
+          <!-- The Payments integration checkbox is a special case in many ways.
+               It's visible only if autofill is registered. It's disabled and
+               unchecked if autofill is unchecked.-->
+          <div class="flex">
+            $i18n{enablePaymentsIntegrationCheckboxLabel}
+            <a href="$i18nRaw{autofillHelpURL}" target="_blank">
+              $i18n{learnMore}
+            </a>
+          </div>
+          <paper-toggle-button
+              checked="{{syncPrefs.paymentsIntegrationEnabled}}"
+              on-change="onSingleSyncDataTypeChanged_"
+              hidden="[[!syncPrefs.autofillRegistered]]"
+              disabled="[[shouldPaymentsCheckboxBeDisabled_(
+                  syncPrefs.syncAllDataTypes, syncPrefs.autofillSynced)]]">
+          </paper-toggle-button>
+        </div>
       </div>
 
       <div class="settings-box two-line" actionable

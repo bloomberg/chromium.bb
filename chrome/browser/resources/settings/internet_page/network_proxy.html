@@ -6,11 +6,11 @@
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input-container.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="/controls/extension_controlled_indicator.html">
-<link rel="import" href="/controls/settings_checkbox.html">
+<link rel="import" href="/controls/settings_toggle_button.html">
 <link rel="import" href="/i18n_setup.html">
 <link rel="import" href="/prefs/prefs_behavior.html">
 <link rel="import" href="/settings_vars_css.html">
@@ -47,7 +47,7 @@
         margin: 10px 0;
       }
 
-      #proxyDiv paper-checkbox {
+      #proxyDiv paper-toggle-button {
         padding: 10px 0;
       }
     </style>
@@ -79,11 +79,12 @@
     <div class="settings-box continuation"
         hidden$="[[!shouldShowAllowShared_(
             networkProperties.ProxySettings.Type)]]">
-      <settings-checkbox id="allowShared"
+      <settings-toggle-button id="allowShared" class="start"
           pref="{{prefs.settings.use_shared_proxies}}"
-          no-set-pref label="$i18n{networkProxyAllowShared}"
-          on-change="onAllowSharedProxiesChange_">
-      </settings-checkbox>
+          label="$i18n{networkProxyAllowShared}"
+          on-change="onAllowSharedProxiesChange_"
+          no-set-pref>
+      </settings-toggle-button>
     </div>
 
     <!-- Proxy type dropdown -->
@@ -123,11 +124,13 @@
     <!-- Manual -->
     <div id="proxyDiv" class="settings-box continuation single-column indent"
         hidden$="[[!matches_(proxy_.Type, ProxySettingsType_.MANUAL)]]">
-      <paper-checkbox checked="{{useSameProxy_}}"
-          disabled="[[!isEditable_('Type', networkProperties, editable,
-              useSharedProxies_)]]">
-        $i18n{networkProxyUseSame}
-      </paper-checkbox>
+      <div class="flex layout horizontal">
+        <div class="flex">$i18n{networkProxyUseSame}</div>
+        <paper-toggle-button checked="{{useSameProxy_}}"
+            disabled="[[!isEditable_('Type', networkProperties, editable,
+                useSharedProxies_)]]">
+        </paper-toggle-button>
+      </div>
       <div hidden$="[[!useSameProxy_]]" class="layout vertical">
         <network-proxy-input 
             on-proxy-change="onProxyInputChange_"

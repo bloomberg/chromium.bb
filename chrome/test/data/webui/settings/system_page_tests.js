@@ -66,18 +66,18 @@ cr.define('settings_system_page', function() {
     teardown(function() { systemPage.remove(); });
 
     test('restart button', function() {
-      var checkbox = systemPage.$$('#hardware-acceleration settings-checkbox');
-      expectEquals(checkbox.checked, HARDWARE_ACCELERATION_AT_STARTUP);
+      var control = systemPage.$.hardwareAcceleration;
+      expectEquals(control.checked, HARDWARE_ACCELERATION_AT_STARTUP);
 
       // Restart button should be hidden by default.
-      expectFalse(!!systemPage.$$('#hardware-acceleration paper-button'));
+      expectFalse(!!control.querySelector('paper-button'));
 
       systemPage.set('prefs.hardware_acceleration_mode.enabled.value',
                      !HARDWARE_ACCELERATION_AT_STARTUP);
       Polymer.dom.flush();
-      expectNotEquals(checkbox.checked, HARDWARE_ACCELERATION_AT_STARTUP);
+      expectNotEquals(control.checked, HARDWARE_ACCELERATION_AT_STARTUP);
 
-      var restart = systemPage.$$('#hardware-acceleration paper-button');
+      var restart = control.querySelector('paper-button');
       expectTrue(!!restart);  // The "RESTART" button should be showing now.
 
       MockInteractions.tap(restart);

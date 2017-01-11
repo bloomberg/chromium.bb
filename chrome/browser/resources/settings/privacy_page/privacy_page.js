@@ -113,9 +113,9 @@ Polymer({
 
 // <if expr="_google_chrome and not chromeos">
   /** @private */
-  onMetricsReportingCheckboxTap_: function() {
+  onMetricsReportingControlTap_: function() {
     var browserProxy = settings.PrivacyPageBrowserProxyImpl.getInstance();
-    var enabled = this.$.metricsReportingCheckbox.checked;
+    var enabled = this.$.metricsReportingControl.checked;
     browserProxy.setMetricsReportingEnabled(enabled);
   },
 
@@ -142,9 +142,9 @@ Polymer({
 // </if>
 
   /** @private */
-  onSafeBrowsingExtendedReportingCheckboxTap_: function() {
+  onSafeBrowsingExtendedReportingControlTap_: function() {
     var browserProxy = settings.PrivacyPageBrowserProxyImpl.getInstance();
-    var enabled = this.$.safeBrowsingExtendedReportingCheckbox.checked;
+    var enabled = this.$.safeBrowsingExtendedReportingControl.checked;
     browserProxy.setSafeBrowsingExtendedReportingEnabled(enabled);
   },
 

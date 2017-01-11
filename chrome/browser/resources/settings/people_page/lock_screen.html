@@ -2,6 +2,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
+<link rel="import" href="/controls/settings_toggle_button.html">
 <link rel="import" href="/people_page/lock_screen_constants.html">
 <link rel="import" href="/people_page/lock_state_behavior.html">
 <link rel="import" href="/people_page/password_prompt_dialog.html">
@@ -33,7 +34,9 @@
             $i18n{lockScreenPinOrPassword}
           </paper-radio-button>
           <div class="settings-box continuation radio-indent"
-               hidden$="[[!showConfigurePinButton_(selectedUnlockType)]]">
+              hidden$="[[!showConfigurePinButton_(selectedUnlockType)]]">
+            <!-- TODO(dbeam): I seriously doubt paper-button[is=action-link] is
+                 a good idea. -->
             <paper-button is="action-link" on-tap="onConfigurePin_">
               [[getSetupPinText_(hasPin)]]
             </paper-button>
@@ -41,18 +44,18 @@
         </paper-radio-group>
       </div>
 
-      <div class="settings-box single-column">
-        <settings-checkbox pref="{{prefs.settings.enable_screen_lock}}"
-                           label="$i18n{enableScreenlock}">
-        </settings-checkbox>
+      <div class="settings-box">
+        <settings-toggle-button class="start"
+            pref="{{prefs.settings.enable_screen_lock}}"
+            label="$i18n{enableScreenlock}">
+        </settings-toggle-button>
       </div>
 
       <settings-password-prompt-dialog id="passwordPrompt"
-                                       on-close="onPasswordClosed_"
-                                       set-modes="{{setModes_}}">
+          on-close="onPasswordClosed_" set-modes="{{setModes_}}">
       </settings-password-prompt-dialog>
       <settings-setup-pin-dialog id="setupPin" on-done="onPinSetupDone_"
-                                 set-modes="[[setModes_]]">
+          set-modes="[[setModes_]]">
       </settings-setup-pin-dialog>
     </div>
   </template>
