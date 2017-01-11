@@ -1,0 +1,46 @@
+<html>
+<head>
+<script src="inspector-protocol-test.js"></script>
+<script>
+function sendBeacon()
+{
+    navigator.sendBeacon("resources/ping-redirect.php", "foo");
+}
+
+function test()
+{
+    var requestSent = 0;
+    InspectorTest.eventHandler["Network.requestWillBeSent"] = onRequestWillBeSent;
+    enableNetwork();
+
+    function enableNetwork()
+    {
+        InspectorTest.sendCommandOrDie("Network.enable", {}, didEnableNetwork);
+    }
+
+    function didEnableNetwork()
+    {
+        InspectorTest.evaluateInPage("sendBeacon()");
+    }
+
+    function onRequestWillBeSent(event)
+    {
+        requestSent++;
+        var params = event.params;
+        InspectorTest.log("Request Sent: " + InspectorTest.parseURL(params.request.url).path);
+        if (requestSent == 2) {
+            var redirectSource = "";
+            if (params.redirectResponse)
+                redirectSource = InspectorTest.parseURL(params.redirectResponse.url).path;
+            InspectorTest.log("Redirect Source: " + redirectSource);
+            InspectorTest.completeTest();
+        }
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that redirect from navigator.sendBeacon() is recorded.</p>
+</body>
+</html>
+

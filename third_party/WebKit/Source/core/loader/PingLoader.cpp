@@ -222,6 +222,7 @@ class PingLoaderImpl : public GarbageCollectedFinalized<PingLoaderImpl>,
   String m_url;
   unsigned long m_identifier;
   SelfKeepAlive<PingLoaderImpl> m_keepAlive;
+  AtomicString m_initiator;
 
   bool m_isBeacon;
 
@@ -239,6 +240,7 @@ PingLoaderImpl::PingLoaderImpl(LocalFrame* frame,
       m_url(request.url()),
       m_identifier(createUniqueIdentifier()),
       m_keepAlive(this),
+      m_initiator(initiator),
       m_isBeacon(isBeacon),
       m_origin(frame->document()->getSecurityOrigin()),
       m_corsMode(IsCORSEnabled) {
@@ -293,41 +295,46 @@ void PingLoaderImpl::dispose() {
 bool PingLoaderImpl::willFollowRedirect(
     WebURLRequest& passedNewRequest,
     const WebURLResponse& passedRedirectResponse) {
-  if (!m_isBeacon)
-    return true;
+  if (m_isBeacon && m_corsMode == IsCORSEnabled) {
+    DCHECK(passedNewRequest.allowStoredCredentials());
 
-  if (m_corsMode == NotCORSEnabled)
-    return true;
+    ResourceRequest& newRequest(passedNewRequest.toMutableResourceRequest());
+    const ResourceResponse& redirectResponse(
+        passedRedirectResponse.toResourceResponse());
 
-  DCHECK(passedNewRequest.allowStoredCredentials());
+    DCHECK(!newRequest.isNull());
+    DCHECK(!redirectResponse.isNull());
 
-  ResourceRequest& newRequest(passedNewRequest.toMutableResourceRequest());
-  const ResourceResponse& redirectResponse(
-      passedRedirectResponse.toResourceResponse());
-
-  DCHECK(!newRequest.isNull());
-  DCHECK(!redirectResponse.isNull());
-
-  String errorDescription;
-  ResourceLoaderOptions options;
-  // TODO(tyoshino): Save updated data in options.securityOrigin and pass it
-  // on the next time.
-  if (!CrossOriginAccessControl::handleRedirect(
-          m_origin, newRequest, redirectResponse, AllowStoredCredentials,
-          options, errorDescription)) {
-    if (frame()) {
-      if (frame()->document()) {
-        frame()->document()->addConsoleMessage(ConsoleMessage::create(
-            JSMessageSource, ErrorMessageLevel, errorDescription));
+    String errorDescription;
+    ResourceLoaderOptions options;
+    // TODO(tyoshino): Save updated data in options.securityOrigin and pass it
+    // on the next time.
+    if (!CrossOriginAccessControl::handleRedirect(
+            m_origin, newRequest, redirectResponse, AllowStoredCredentials,
+            options, errorDescription)) {
+      if (frame()) {
+        if (frame()->document()) {
+          frame()->document()->addConsoleMessage(ConsoleMessage::create(
+              JSMessageSource, ErrorMessageLevel, errorDescription));
+        }
       }
-    }
-    // Cancel the load and self destruct.
-    dispose();
+      // Cancel the load and self destruct.
+      dispose();
 
-    return false;
+      return false;
+    }
   }
   // FIXME: http://crbug.com/427429 is needed to correctly propagate updates of
   // Origin: following this successful redirect.
+
+  if (frame() && frame()->document()) {
+    FetchInitiatorInfo initiatorInfo;
+    initiatorInfo.name = m_initiator;
+    FetchContext& fetchContext = frame()->document()->fetcher()->context();
+    fetchContext.dispatchWillSendRequest(
+        m_identifier, passedNewRequest.toMutableResourceRequest(),
+        passedRedirectResponse.toResourceResponse(), initiatorInfo);
+  }
 
   return true;
 }

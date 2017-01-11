@@ -31,6 +31,20 @@ InspectorTest.evaluateInInspectedPage = function(expression, callback)
     InspectorTest.sendCommand("Runtime.evaluate", { expression: expression }, callback);
 }
 
+InspectorTest.parseURL = function(url)
+{
+    var result = {};
+    var match = url.match(/^([^:]+):\/\/([^\/:]*)(?::([\d]+))?(?:(\/[^#]*)(?:#(.*))?)?$/i);
+    if (!match)
+        return result;
+    result.scheme = match[1].toLowerCase();
+    result.host = match[2];
+    result.port = match[3];
+    result.path = match[4] || "/";
+    result.fragment = match[5];
+    return result;
+}
+
 }
 
 var outputElement;
