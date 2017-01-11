@@ -54,6 +54,7 @@ complete.
   Dal Maso.
 - New table ~unicode-braille.utb~ that helps to back translate braille
   input to unicode braille output, thanks to Leonard de Ruijter.
+- Improvements to the Chinese braille table thanks to Coscell Kao.
 - New Turkish braille table for grade 1 that should replace the
   old ~tr.ctb~ table, thanks to Arend Arends.
 - New Persian grade 1 table and 8-dots computer table thanks to
