@@ -126,6 +126,11 @@ TEST_F(DownloadCommandsTest, PausedUnresumable) {
   EXPECT_FALSE(IsCommandEnabled(DownloadCommands::RESUME));
 }
 
+TEST_F(DownloadCommandsTest, CantPauseSavePackage) {
+  ON_CALL(item(), IsSavePackageDownload()).WillByDefault(Return(true));
+  EXPECT_FALSE(IsCommandEnabled(DownloadCommands::PAUSE));
+}
+
 TEST_F(DownloadCommandsTest, DoOpenWhenComplete) {
   // Open when complete.
   EXPECT_CALL(item(), OpenDownload()).Times(1);

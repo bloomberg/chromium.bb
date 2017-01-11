@@ -191,6 +191,7 @@ bool DownloadCommands::IsCommandEnabled(Command command) const {
       return !download_item_->IsDone();
     case PAUSE:
       return !download_item_->IsDone() && !download_item_->IsPaused() &&
+             !download_item_->IsSavePackageDownload() &&
              download_item_->GetState() == content::DownloadItem::IN_PROGRESS;
     case RESUME:
       return download_item_->CanResume() &&
