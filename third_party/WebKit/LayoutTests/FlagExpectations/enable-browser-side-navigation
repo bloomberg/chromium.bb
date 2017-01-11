@@ -42,9 +42,7 @@ crbug.com/551000 http/tests/inspector/network/network-initiator.html [ Failure ]
 crbug.com/551000 virtual/mojo-loading/http/tests/inspector/network/network-document-initiator.html [ Failure ]
 crbug.com/551000 virtual/mojo-loading/http/tests/inspector/network/network-initiator.html [ Failure ]
 #  We are missing several parameters in network har reports.
-crbug.com/551000 http/tests/inspector/resource-har-conversion.html [ Failure ]
 crbug.com/551000 http/tests/inspector/resource-parameters.html [ Failure ]
-crbug.com/551000 virtual/mojo-loading/http/tests/inspector/resource-har-conversion.html [ Failure ]
 crbug.com/551000 virtual/mojo-loading/http/tests/inspector/resource-parameters.html [ Failure ]
 #  Duplicate started loading output.
 crbug.com/551000 inspector-protocol/page/frameAttachedDetached.html [ Failure ]

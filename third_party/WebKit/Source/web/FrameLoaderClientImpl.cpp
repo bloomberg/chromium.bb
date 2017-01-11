@@ -552,6 +552,12 @@ NavigationPolicy FrameLoaderClientImpl::decidePolicyForNavigation(
   navigationInfo.isHistoryNavigationInNewChildFrame =
       isHistoryNavigationInNewChildFrame;
   navigationInfo.isClientRedirect = isClientRedirect;
+  // Caching could be disabled for requests initiated by DevTools.
+  // TODO(ananta)
+  // We should extract the network cache state into a global component which
+  // can be queried here and wherever necessary.
+  navigationInfo.isCacheDisabled =
+      devToolsAgent() ? devToolsAgent()->cacheDisabled() : false;
   if (form)
     navigationInfo.form = WebFormElement(form);
 

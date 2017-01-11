@@ -227,6 +227,7 @@ class CORE_EXPORT InspectorNetworkAgent final
                             const KURL&,
                             String* content,
                             bool* base64Encoded);
+  bool cacheDisabled();
 
  private:
   explicit InspectorNetworkAgent(InspectedFrames*);

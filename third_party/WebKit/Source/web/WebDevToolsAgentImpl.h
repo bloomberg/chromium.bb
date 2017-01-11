@@ -98,6 +98,7 @@ class WebDevToolsAgentImpl final
   void inspectElementAt(int sessionId, const WebPoint&) override;
   void failedToRequestDevTools() override;
   WebString evaluateInWebInspectorOverlay(const WebString& script) override;
+  bool cacheDisabled() override;
 
  private:
   WebDevToolsAgentImpl(WebLocalFrameImpl*,

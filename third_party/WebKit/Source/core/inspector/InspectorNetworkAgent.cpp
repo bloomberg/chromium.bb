@@ -1425,6 +1425,9 @@ Response InspectorNetworkAgent::emulateNetworkConditions(
 }
 
 Response InspectorNetworkAgent::setCacheDisabled(bool cacheDisabled) {
+  // TODO(ananta)
+  // We should extract network cache state into a global entity which can be
+  // queried from FrameLoader and other places.
   m_state->setBoolean(NetworkAgentState::cacheDisabled, cacheDisabled);
   if (cacheDisabled)
     memoryCache()->evictResources();
@@ -1510,6 +1513,12 @@ bool InspectorNetworkAgent::fetchResourceContent(Document* document,
     }
   }
   return false;
+}
+
+bool InspectorNetworkAgent::cacheDisabled() {
+  return m_state->booleanProperty(NetworkAgentState::networkAgentEnabled,
+                                  false) &&
+         m_state->booleanProperty(NetworkAgentState::cacheDisabled, false);
 }
 
 void InspectorNetworkAgent::removeFinishedReplayXHRFired(TimerBase*) {

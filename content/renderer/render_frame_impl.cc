@@ -157,6 +157,7 @@
 #include "mojo/edk/js/core.h"
 #include "mojo/edk/js/support.h"
 #include "net/base/data_url.h"
+#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_util.h"
@@ -6213,9 +6214,18 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
       info.urlRequest.requestorOrigin().isNull()
           ? base::Optional<url::Origin>()
           : base::Optional<url::Origin>(info.urlRequest.requestorOrigin());
+
+  int load_flags = GetLoadFlagsForWebURLRequest(info.urlRequest);
+
+  // Requests initiated via devtools can have caching disabled.
+  if (info.isCacheDisabled) {
+    // Turn off all caching related flags and set LOAD_BYPASS_CACHE.
+    load_flags &= ~(net::LOAD_VALIDATE_CACHE | net::LOAD_SKIP_CACHE_VALIDATION |
+                    net::LOAD_ONLY_FROM_CACHE | net::LOAD_DISABLE_CACHE);
+    load_flags |= net::LOAD_BYPASS_CACHE;
+  }
   BeginNavigationParams begin_navigation_params(
-      GetWebURLRequestHeaders(info.urlRequest),
-      GetLoadFlagsForWebURLRequest(info.urlRequest),
+      GetWebURLRequestHeaders(info.urlRequest), load_flags,
       info.urlRequest.hasUserGesture(),
       info.urlRequest.skipServiceWorker() !=
           blink::WebURLRequest::SkipServiceWorker::None,

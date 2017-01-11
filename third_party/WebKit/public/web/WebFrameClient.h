@@ -296,6 +296,7 @@ class BLINK_EXPORT WebFrameClient {
     bool isHistoryNavigationInNewChildFrame;
     bool isClientRedirect;
     WebFormElement form;
+    bool isCacheDisabled;
 
     NavigationPolicyInfo(WebURLRequest& urlRequest)
         : extraData(nullptr),
@@ -304,7 +305,8 @@ class BLINK_EXPORT WebFrameClient {
           defaultPolicy(WebNavigationPolicyIgnore),
           replacesCurrentHistoryItem(false),
           isHistoryNavigationInNewChildFrame(false),
-          isClientRedirect(false) {}
+          isClientRedirect(false),
+          isCacheDisabled(false) {}
   };
 
   virtual WebNavigationPolicy decidePolicyForNavigation(

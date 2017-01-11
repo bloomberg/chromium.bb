@@ -596,6 +596,12 @@ WebString WebDevToolsAgentImpl::evaluateInWebInspectorOverlay(
   return m_overlay->evaluateInOverlayForTest(script);
 }
 
+bool WebDevToolsAgentImpl::cacheDisabled() {
+  if (!m_networkAgent)
+    return false;
+  return m_networkAgent->cacheDisabled();
+}
+
 void WebDevToolsAgentImpl::flushProtocolNotifications() {
   if (m_session)
     m_session->flushProtocolNotifications();

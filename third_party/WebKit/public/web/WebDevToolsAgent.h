@@ -62,6 +62,10 @@ class WebDevToolsAgent {
   // Exposed for TestRunner.
   virtual WebString evaluateInWebInspectorOverlay(const WebString& script) = 0;
 
+  // Returns true if caching is disabled for network requests issued by dev
+  // tools.
+  virtual bool cacheDisabled() = 0;
+
   class MessageDescriptor {
    public:
     virtual ~MessageDescriptor() {}
