@@ -22,7 +22,7 @@ class BlockCleanupTest : public PlatformTest {
   void SpinRunLoop(NSTimeInterval cleanup_time);
 
  private:
-  NSAutoreleasePool* block_cleanup_pool_;
+  id block_cleanup_pool_;
 };
 
 #endif  // IOS_CHROME_TEST_BLOCK_CLEANUP_TEST_H_
