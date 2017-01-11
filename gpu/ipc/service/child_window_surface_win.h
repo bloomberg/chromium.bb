@@ -6,14 +6,13 @@
 #define GPU_IPC_SERVICE_CHILD_WINDOW_SURFACE_WIN_H_
 
 #include "base/memory/weak_ptr.h"
+#include "gpu/ipc/service/child_window_win.h"
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
 #include "ui/gl/gl_surface_egl.h"
 
 #include <windows.h>
 
 namespace gpu {
-
-struct SharedData;
 
 class ChildWindowSurfaceWin : public gl::NativeViewGLSurfaceEGL {
  public:
@@ -33,17 +32,7 @@ class ChildWindowSurfaceWin : public gl::NativeViewGLSurfaceEGL {
   ~ChildWindowSurfaceWin() override;
 
  private:
-  void ClearInvalidContents();
-
-  // This member contains all the data that can be accessed from the main or
-  // window owner threads.
-  std::unique_ptr<SharedData> shared_data_;
-  // The eventual parent of the window living in the browser process.
-  HWND parent_window_;
-  // The window is initially created with this parent window. We need to keep it
-  // around so that we can destroy it at the end.
-  HWND initial_parent_window_;
-  base::WeakPtr<ImageTransportSurfaceDelegate> delegate_;
+  ChildWindowWin child_window_;
   bool alpha_;
   bool first_swap_;
 
