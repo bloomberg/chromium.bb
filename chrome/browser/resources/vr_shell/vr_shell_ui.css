@@ -126,6 +126,8 @@ html {
 }
 
 #omnibox-border {
+  --fadeTimeMs: 500;
+  --fadeYOffset: -0.1;
   --statusBarColor: rgb(66, 133, 244);
   background-color: #ececec;
   border-radius: 200px;

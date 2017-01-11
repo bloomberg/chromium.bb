@@ -81,9 +81,11 @@ var vrShellUi = (function() {
 
       // Pull additional custom properties from CSS.
       let style = window.getComputedStyle(domElement);
+      this.translationX = getStyleFloat(style, '--tranX');
+      this.translationY = getStyleFloat(style, '--tranY');
+      this.translationZ = getStyleFloat(style, '--tranZ');
       element.setTranslation(
-          getStyleFloat(style, '--tranX'), getStyleFloat(style, '--tranY'),
-          getStyleFloat(style, '--tranZ'));
+          this.translationX, this.translationY, this.translationZ);
 
       this.uiElementId = ui.addElement(element);
       this.uiAnimationId = -1;
@@ -287,15 +289,15 @@ var vrShellUi = (function() {
   };
 
   class Omnibox {
-    constructor(contentQuadId) {
+    constructor() {
       this.domUiElement = new DomUiElement('#omnibox-container');
       this.enabled = false;
+      this.hidden = false;
       this.loading = false;
       this.loadingProgress = 0;
       this.level = 0;
       this.visibilityTimeout = 0;
       this.visibilityTimer = null;
-      this.visibleAfterTransition = false;
       this.nativeState = {};
 
       // Initially invisible.
@@ -304,13 +306,15 @@ var vrShellUi = (function() {
       ui.updateElement(this.domUiElement.uiElementId, update);
       this.nativeState.visible = false;
 
-      // Pull colors from CSS so that Javascript can set the progress indicator
-      // gradient programmatically.
+      // Pull some CSS properties so that Javascript can reconfigure the omnibox
+      // programmatically.
       let border =
           this.domUiElement.domElement.querySelector('#omnibox-border');
       let style = window.getComputedStyle(border);
       this.statusBarColor = getStyleString(style, '--statusBarColor');
       this.backgroundColor = style.backgroundColor;
+      this.fadeTimeMs = getStyleFloat(style, '--fadeTimeMs');
+      this.fadeYOffset = getStyleFloat(style, '--fadeYOffset');
 
       // Listen to the end of transitions, so that the box can be natively
       // hidden after it finishes hiding itself.
@@ -395,7 +399,7 @@ var vrShellUi = (function() {
     }
 
     onAnimationDone(e) {
-      if (e.propertyName == 'opacity' && !this.visibleAfterTransition) {
+      if (e.propertyName == 'opacity' && this.hidden) {
         this.setNativeVisibility(false);
       }
     }
@@ -420,14 +424,24 @@ var vrShellUi = (function() {
         indicator.style.background = this.backgroundColor;
       }
 
-      // Make the box fade away if it's disappearing.
-      if (!this.loading && this.visibilityTimeout > 0 &&
-          !this.visibilityTimer) {
-        document.querySelector('#omnibox-border').className = 'hidden';
-        this.visibleAfterTransition = false;
-      } else {
-        document.querySelector('#omnibox-border').className = '';
-        this.visibleAfterTransition = true;
+      let shouldBeHidden =
+          !this.loading && this.visibilityTimeout > 0 && !this.visibilityTimer;
+      if (shouldBeHidden != this.hidden) {
+        // Make the box fade away if it's disappearing.
+        this.hidden = shouldBeHidden;
+        document.querySelector('#omnibox-border').className =
+            this.hidden ? 'hidden' : '';
+
+        // Drop the position as it fades, or raise the position if appearing.
+        let yOffset = this.hidden ? this.fadeYOffset : 0;
+        let animation =
+            new api.Animation(this.domUiElement.uiElementId, this.fadeTimeMs);
+        animation.setTranslation(
+            this.domUiElement.translationX,
+            this.domUiElement.translationY + yOffset,
+            this.domUiElement.translationZ);
+        ui.addAnimation(animation);
+        ui.flush();
       }
 
       this.setNativeVisibility(true);
@@ -456,7 +470,7 @@ var vrShellUi = (function() {
 
       this.controls = new Controls(contentId);
       this.secureOriginWarnings = new SecureOriginWarnings();
-      this.omnibox = new Omnibox(contentId);
+      this.omnibox = new Omnibox();
     }
 
     setMode(mode, menuMode, fullscreen) {
