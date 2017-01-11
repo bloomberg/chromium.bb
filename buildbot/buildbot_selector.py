@@ -180,7 +180,7 @@ BOT_ASSIGNMENT = {
         bash + ' buildbot/buildbot_pnacl.sh mode-trybot-qemu mips32',
 
     # Toolchain trybots.
-    'nacl-toolchain-linux64-newlib-arm': # TODO(bradnelson): rename
+    'nacl-toolchain-precise64-newlib-arm': # TODO(bradnelson): rename
         python +
         ' buildbot/buildbot_toolchain_build.py'
         ' --trybot'
@@ -196,7 +196,7 @@ BOT_ASSIGNMENT = {
         ' buildbot/buildbot_toolchain_build.py'
         ' --trybot'
         ' toolchain_build',
-    'nacl-toolchain-linux64-glibc':
+    'nacl-toolchain-precise64-glibc':
         bash + ' buildbot/buildbot_linux-glibc-makefile.sh',
     'nacl-toolchain-mac-glibc':
         bash + ' buildbot/buildbot_mac-glibc-makefile.sh',
@@ -278,7 +278,8 @@ for platform in [
                 mode + ' ' + real_arch + ' ' + libc + arch_flags)
         # Trybots
         for arch_sep in ['', '-', '_']:
-          name = 'nacl-' + platform + arch_sep + arch + '_' + libc + '_' + mode
+          p = platform.replace('linux', 'precise')
+          name = 'nacl-' + p + arch_sep + arch + '_' + libc + '_' + mode
           assert name not in BOT_ASSIGNMENT, name
           BOT_ASSIGNMENT[name] = (
               python + ' buildbot/buildbot_standard.py ' +
