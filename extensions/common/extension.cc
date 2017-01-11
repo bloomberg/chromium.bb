@@ -15,6 +15,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -22,9 +23,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "components/crx_file/id_util.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
@@ -116,6 +119,7 @@ scoped_refptr<Extension> Extension::Create(const base::FilePath& path,
                                            int flags,
                                            const std::string& explicit_id,
                                            std::string* utf8_error) {
+  base::ElapsedTimer timer;
   DCHECK(utf8_error);
   base::string16 error;
   std::unique_ptr<extensions::Manifest> manifest(new extensions::Manifest(
@@ -137,6 +141,27 @@ scoped_refptr<Extension> Extension::Create(const base::FilePath& path,
   if (!extension->InitFromValue(flags, &error)) {
     *utf8_error = base::UTF16ToUTF8(error);
     return NULL;
+  }
+
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  std::string process_type =
+      command_line.GetSwitchValueASCII(::switches::kProcessType);
+  // Use microsecond accuracy for increased granularity. Max at 10 seconds.
+  base::TimeDelta elapsed_time = timer.Elapsed();
+  const int kMaxTimeInMicroseconds = 10000000;
+  if (process_type.empty()) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Extensions.ExtensionCreationTime.BrowserProcess",
+        elapsed_time.InMicroseconds(), 1, kMaxTimeInMicroseconds, 100);
+  } else if (command_line.HasSwitch(switches::kExtensionProcess)) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Extensions.ExtensionCreationTime.ExtensionProcess",
+        elapsed_time.InMicroseconds(), 1, kMaxTimeInMicroseconds, 100);
+  } else if (process_type == ::switches::kRendererProcess) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Extensions.ExtensionCreationTime.RendererProcess",
+        elapsed_time.InMicroseconds(), 1, kMaxTimeInMicroseconds, 100);
   }
 
   return extension;
