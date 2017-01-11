@@ -66,8 +66,6 @@ if (is_win) {
     sources = [
       "crash_switches.cc",
       "crash_switches.h",
-      "fallback_crash_handler_launcher_win.cc",
-      "fallback_crash_handler_launcher_win.h",
       "run_as_crashpad_handler_win.cc",
       "run_as_crashpad_handler_win.h",
     ]
@@ -215,20 +213,15 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "crash_keys_win_unittest.cc",
-    "fallback_crash_handler_launcher_win_unittest.cc",
   ]
   deps = [
     ":lib",
     "//base",
-    "//base/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
 
   if (is_win) {
-    deps += [
-      ":run_as_crashpad_handler",
-      "//breakpad:client",
-    ]
+    deps += [ "//breakpad:client" ]
   }
 }
