@@ -41,8 +41,14 @@ void EventEmitter::Fire(v8::Local<v8::Context> context,
   for (const auto& listener : listeners_)
     listeners.push_back(listener.Get(context->GetIsolate()));
 
-  for (const auto& listener : listeners)
+  for (const auto& listener : listeners) {
+    v8::TryCatch try_catch(context->GetIsolate());
+    // SetVerbose() means the error will still get logged, which is what we
+    // want. We don't let it bubble up any further to prevent it from being
+    // surfaced in e.g. JS code that triggered the event.
+    try_catch.SetVerbose(true);
     run_js_.Run(listener, context, args->size(), args->data());
+  }
 }
 
 void EventEmitter::AddListener(gin::Arguments* arguments) {

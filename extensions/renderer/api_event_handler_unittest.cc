@@ -5,6 +5,7 @@
 #include "extensions/renderer/api_event_handler.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "extensions/renderer/api_binding_test.h"
@@ -436,7 +437,6 @@ TEST_F(APIEventHandlerTest, RemovingListenersWhileHandlingEvent) {
   v8::Local<v8::Object> event =
       handler.CreateEventInstance(kEventName, context);
   ASSERT_FALSE(event.IsEmpty());
-
   {
     // Cache the event object on the global in order to allow for easy removal.
     v8::Local<v8::Function> set_event_on_global =
@@ -483,6 +483,86 @@ TEST_F(APIEventHandlerTest, RemovingListenersWhileHandlingEvent) {
   // TODO(devlin): Another possible test: register listener a and listener b,
   // where a removes b and b removes a. Theoretically, only one should be
   // notified. Investigate what we currently do in JS-style bindings.
+}
+
+// Test an event listener throwing an exception.
+TEST_F(APIEventHandlerTest, TestEventListenersThrowingExceptions) {
+  // The default test util methods (RunFunction*) assume no errors will ever
+  // be encountered. Instead, use an implementation that allows errors.
+  auto run_js_and_expect_error = [](v8::Local<v8::Function> function,
+                                    v8::Local<v8::Context> context, int argc,
+                                    v8::Local<v8::Value> argv[]) {
+    v8::MaybeLocal<v8::Value> maybe_result =
+        function->Call(context, context->Global(), argc, argv);
+    v8::Global<v8::Value> result;
+    v8::Local<v8::Value> local;
+    if (maybe_result.ToLocal(&local))
+      result.Reset(context->GetIsolate(), local);
+  };
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+
+  APIEventHandler handler(base::Bind(run_js_and_expect_error));
+  const char kEventName[] = "alpha";
+  v8::Local<v8::Object> event =
+      handler.CreateEventInstance(kEventName, context);
+  ASSERT_FALSE(event.IsEmpty());
+
+  bool did_throw = false;
+  auto message_listener = [](v8::Local<v8::Message> message,
+                             v8::Local<v8::Value> data) {
+    ASSERT_FALSE(data.IsEmpty());
+    ASSERT_TRUE(data->IsExternal());
+    bool* did_throw = static_cast<bool*>(data.As<v8::External>()->Value());
+    *did_throw = true;
+    EXPECT_EQ("Uncaught Error: Event handler error",
+              gin::V8ToString(message->Get()));
+  };
+
+  isolate()->AddMessageListener(message_listener,
+                                v8::External::New(isolate(), &did_throw));
+  base::ScopedClosureRunner remove_message_listener(base::Bind(
+      [](v8::Isolate* isolate, v8::MessageCallback listener) {
+        isolate->RemoveMessageListeners(listener);
+      },
+      isolate(), message_listener));
+
+  // A listener that will throw an exception. We guarantee that we throw the
+  // exception first so that we don't rely on event listener ordering.
+  const char kListenerFunction[] =
+      "(function() {\n"
+      "  if (!this.didThrow) {\n"
+      "    this.didThrow = true;\n"
+      "    throw new Error('Event handler error');\n"
+      "  }\n"
+      "  this.eventArgs = Array.from(arguments);\n"
+      "});";
+
+  const char kAddListenerFunction[] =
+      "(function(event, listener) { event.addListener(listener); })";
+  v8::Local<v8::Function> add_listener_function =
+      FunctionFromString(context, kAddListenerFunction);
+
+  for (int i = 0; i < 2; ++i) {
+    v8::Local<v8::Function> listener =
+        FunctionFromString(context, kListenerFunction);
+    v8::Local<v8::Value> argv[] = {event, listener};
+    RunFunctionOnGlobal(add_listener_function, context, arraysize(argv), argv);
+  }
+  EXPECT_EQ(2u, handler.GetNumEventListenersForTesting(kEventName, context));
+
+  std::unique_ptr<base::ListValue> event_args = ListValueFromString("[42]");
+  ASSERT_TRUE(event_args);
+  handler.FireEventInContext(kEventName, context, *event_args);
+
+  // An exception should have been thrown by the first listener and the second
+  // listener should have recorded the event arguments.
+  EXPECT_EQ("true", GetStringPropertyFromObject(context->Global(), context,
+                                                "didThrow"));
+  EXPECT_EQ("[42]", GetStringPropertyFromObject(context->Global(), context,
+                                                "eventArgs"));
+  EXPECT_TRUE(did_throw);
 }
 
 }  // namespace extensions

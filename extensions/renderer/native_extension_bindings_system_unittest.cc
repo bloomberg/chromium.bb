@@ -216,6 +216,46 @@ TEST_F(NativeExtensionBindingsSystemUnittest, Basic) {
   EXPECT_TRUE(request_keep_awake->IsFunction());
 }
 
+TEST_F(NativeExtensionBindingsSystemUnittest, Events) {
+  scoped_refptr<Extension> extension =
+      CreateExtension("foo", {"idle", "power"});
+  RegisterExtension(extension->id());
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+
+  ScriptContext* script_context = CreateScriptContext(
+      context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
+  script_context->set_url(extension->url());
+
+  bindings_system()->UpdateBindingsForContext(script_context);
+
+  {
+    const char kAddStateChangedListeners[] =
+        "(function() {\n"
+        "  chrome.idle.onStateChanged.addListener(function() {\n"
+        "    this.didThrow = true;\n"
+        "    throw new Error('Error!!!');\n"
+        "  });\n"
+        "  chrome.idle.onStateChanged.addListener(function(newState) {\n"
+        "    this.newState = newState;\n"
+        "  });\n"
+        "});";
+
+    v8::Local<v8::Function> add_listeners =
+        FunctionFromString(context, kAddStateChangedListeners);
+    RunFunctionOnGlobal(add_listeners, context, 0, nullptr);
+  }
+
+  bindings_system()->DispatchEventInContext(
+      "idle.onStateChanged", ListValueFromString("['idle']").get(), nullptr,
+      script_context);
+  EXPECT_EQ("\"idle\"", GetStringPropertyFromObject(context->Global(), context,
+                                                    "newState"));
+  EXPECT_EQ("true", GetStringPropertyFromObject(context->Global(), context,
+                                                "didThrow"));
+}
+
 // Tests that referencing the same API multiple times returns the same object;
 // i.e. chrome.foo === chrome.foo.
 TEST_F(NativeExtensionBindingsSystemUnittest, APIObjectsAreEqual) {
