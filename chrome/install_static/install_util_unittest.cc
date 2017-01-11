@@ -267,20 +267,17 @@ TEST(InstallStaticTest, BrowserProcessTest) {
 
 class InstallStaticUtilTest
     : public ::testing::TestWithParam<
-          std::tuple<InstallConstantIndex, const char*, const char*>> {
+          std::tuple<InstallConstantIndex, const char*>> {
  protected:
   InstallStaticUtilTest() {
     InstallConstantIndex mode_index;
     const char* level;
-    const char* mode;
 
-    std::tie(mode_index, level, mode) = GetParam();
+    std::tie(mode_index, level) = GetParam();
 
     mode_ = &kInstallModes[mode_index];
     system_level_ = std::string(level) != "user";
     EXPECT_TRUE(!system_level_ || mode_->supports_system_level);
-    multi_install_ = std::string(mode) != "single";
-    EXPECT_TRUE(!multi_install_ || mode_->supports_multi_install);
     root_key_ = system_level_ ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
     nt_root_key_ = system_level_ ? nt::HKLM : nt::HKCU;
 
@@ -289,7 +286,6 @@ class InstallStaticUtilTest
     details->set_mode(mode_);
     details->set_channel(mode_->default_channel_name);
     details->set_system_level(system_level_);
-    details->set_multi_install(multi_install_);
     InstallDetails::SetForProcess(std::move(details));
 
     base::string16 path;
@@ -303,8 +299,6 @@ class InstallStaticUtilTest
   }
 
   bool system_level() const { return system_level_; }
-
-  bool multi_install() const { return multi_install_; }
 
   const wchar_t* default_channel() const { return mode_->default_channel_name; }
 
@@ -341,12 +335,7 @@ class InstallStaticUtilTest
       if (medium)
         result.append(L"Medium");
       result.push_back(L'\\');
-      if (multi_install_)
-        result.append(kBinariesAppGuid);
-      else
-        result.append(mode_->app_guid);
-    } else if (multi_install_) {
-      result.append(kBinariesPathName);
+      result.append(mode_->app_guid);
     } else {
       result.append(kProductPathName);
     }
@@ -358,7 +347,6 @@ class InstallStaticUtilTest
   nt::ROOT_KEY nt_root_key_ = nt::AUTO;
   const InstallConstants* mode_ = nullptr;
   bool system_level_ = false;
-  bool multi_install_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(InstallStaticUtilTest);
 };
@@ -423,37 +411,26 @@ TEST_P(InstallStaticUtilTest, UsageStatsPolicy) {
 }
 
 TEST_P(InstallStaticUtilTest, GetChromeChannelName) {
-  EXPECT_EQ(default_channel(), GetChromeChannelName(false));
-  std::wstring expected = default_channel();
-  if (multi_install()) {
-    if (expected.empty())
-      expected = L"m";
-    else
-      expected += L"-m";
-  }
-  EXPECT_EQ(expected, GetChromeChannelName(true));
+  EXPECT_EQ(default_channel(), GetChromeChannelName());
 }
 
 #if defined(GOOGLE_CHROME_BUILD)
-// Stable supports multi-install at user and system levels.
+// Stable supports user and system levels.
 INSTANTIATE_TEST_CASE_P(Stable,
                         InstallStaticUtilTest,
                         testing::Combine(testing::Values(STABLE_INDEX),
-                                         testing::Values("user", "system"),
-                                         testing::Values("single", "multi")));
-// Canary is single-only at user level.
+                                         testing::Values("user", "system")));
+// Canary is only at user level.
 INSTANTIATE_TEST_CASE_P(Canary,
                         InstallStaticUtilTest,
                         testing::Combine(testing::Values(CANARY_INDEX),
-                                         testing::Values("user"),
-                                         testing::Values("single")));
+                                         testing::Values("user")));
 #else   // GOOGLE_CHROME_BUILD
-// Chromium supports multi-install at user and system levels.
+// Chromium supports user and system levels.
 INSTANTIATE_TEST_CASE_P(Chromium,
                         InstallStaticUtilTest,
                         testing::Combine(testing::Values(CHROMIUM_INDEX),
-                                         testing::Values("user", "system"),
-                                         testing::Values("single", "multi")));
+                                         testing::Values("user", "system")));
 #endif  // !GOOGLE_CHROME_BUILD
 
 }  // namespace install_static

@@ -50,9 +50,6 @@ class InstallDetails {
 
     // True if installed in C:\Program Files{, {x86)}; otherwise, false.
     bool system_level;
-
-    // True if multi-install.
-    bool multi_install;
   };
 
   InstallDetails(const InstallDetails&) = delete;
@@ -91,9 +88,9 @@ class InstallDetails {
     return payload_->mode->supports_system_level;
   }
 
-  // True if the mode supports multi-install.
-  bool supports_multi_install() const {
-    return payload_->mode->supports_multi_install;
+  // True if the mode once supported multi-install.
+  bool supported_multi_install() const {
+    return payload_->mode->supported_multi_install;
   }
 
   // The install's update channel, or an empty string if the brand does not
@@ -102,21 +99,16 @@ class InstallDetails {
     return std::wstring(payload_->channel, payload_->channel_length);
   }
   bool system_level() const { return payload_->system_level; }
-  bool multi_install() const { return payload_->multi_install; }
 
-  // Returns the path to the installation's ClientState registry key. Returns
-  // the path for the binaries if |binaries| and Chrome is
-  // multi-install. Otherwise, returns the path for Chrome itself. This registry
-  // key is used to hold various installation-related values, including an
-  // indication of consent for usage stats.
-  std::wstring GetClientStateKeyPath(bool binaries) const;
+  // Returns the path to the installation's ClientState registry key. This
+  // registry key is used to hold various installation-related values, including
+  // an indication of consent for usage stats.
+  std::wstring GetClientStateKeyPath() const;
 
-  // Returns the path to the installation's ClientStateMedium registry key.
-  // Returns the path for the binaries if |binaries| and Chrome is
-  // multi-install. Otherwise, returns the path for Chrome itself. This
+  // Returns the path to the installation's ClientStateMedium registry key. This
   // registry key is used to hold various installation-related values, including
   // an indication of consent for usage stats for a system-level install.
-  std::wstring GetClientStateMediumKeyPath(bool binaries) const;
+  std::wstring GetClientStateMediumKeyPath() const;
 
   // Returns true if there is an indication of a mismatch between the primary
   // module and this module.
@@ -167,9 +159,6 @@ class PrimaryInstallDetails : public InstallDetails {
   }
   void set_system_level(bool system_level) {
     payload_.system_level = system_level;
-  }
-  void set_multi_install(bool multi_install) {
-    payload_.multi_install = multi_install;
   }
 
  private:

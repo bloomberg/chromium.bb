@@ -45,11 +45,11 @@ TEST(InstallModes, VerifyModes) {
 
 TEST(InstallModes, VerifyBrand) {
   if (kUseGoogleUpdateIntegration) {
-    // Binaries are registered under an app guid with Google Update integration.
+    // Binaries were registered via an app guid with Google Update integration.
     ASSERT_THAT(kBinariesAppGuid, StrNe(L""));
     ASSERT_THAT(kBinariesPathName, StrEq(L""));
   } else {
-    // Binaries are registered under a different path name without.
+    // Binaries were registered via a different path name without.
     ASSERT_THAT(kBinariesAppGuid, StrEq(L""));
     ASSERT_THAT(kBinariesPathName, StrNe(L""));
   }

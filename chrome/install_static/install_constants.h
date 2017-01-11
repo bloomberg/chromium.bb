@@ -58,8 +58,8 @@ struct InstallConstants {
   // True if this mode supports system-level installs.
   bool supports_system_level;
 
-  // True if this mode supports multi-install.
-  bool supports_multi_install;
+  // True if this mode supported the now-deprecated multi-install.
+  bool supported_multi_install;
 };
 
 }  // namespace install_static

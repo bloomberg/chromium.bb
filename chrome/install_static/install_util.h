@@ -53,9 +53,6 @@ template <typename T> inline void IgnoreUnused(T) {}
 // Returns true if Chrome is running at system level.
 bool IsSystemInstall();
 
-// Returns true if current installation of Chrome is a multi-install.
-bool IsMultiInstall();
-
 // Returns true if usage stats collecting is enabled for this user for the
 // current executable.
 bool GetCollectStatsConsent();
@@ -125,13 +122,10 @@ void GetExecutableVersionDetails(const std::wstring& exe_path,
                                  std::wstring* channel_name);
 
 // Gets the channel name for the current Chrome process.
-// If |add_modifier| is true the channel name is returned with the modifier
-// prepended to it. Currently this is only done for multi installs, i.e (-m)
-// is the only modifier supported.
 // TODO(ananta)
 // http://crbug.com/604923
 // Unify this with the Browser Distribution code.
-std::wstring GetChromeChannelName(bool add_modifier);
+std::wstring GetChromeChannelName();
 
 // Returns the registry path where the browser crash dumps metrics need to be
 // written to.
@@ -184,9 +178,7 @@ bool RecursiveDirectoryCreate(const std::wstring& full_path);
 
 // Returns the unadorned channel name based on the channel strategy for the
 // install mode.
-std::wstring DetermineChannel(const InstallConstants& mode,
-                              bool system_level,
-                              bool multi_install);
+std::wstring DetermineChannel(const InstallConstants& mode, bool system_level);
 
 // Caches the |ProcessType| of the current process.
 extern ProcessType g_process_type;

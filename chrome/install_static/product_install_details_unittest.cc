@@ -184,38 +184,20 @@ class MakeProductDetailsTest : public testing::TestWithParam<TestData> {
 
   const TestData& test_data() const { return test_data_; }
 
-  void SetUninstallArguments(const wchar_t* value) {
-    ASSERT_THAT(
-        base::win::RegKey(root_key_, GetClientStateKeyPath(false).c_str(),
-                          KEY_WOW64_32KEY | KEY_SET_VALUE)
-            .WriteValue(L"UninstallArguments", value),
-        Eq(ERROR_SUCCESS));
-  }
-
-  void SetAp(const wchar_t* value, bool binaries) {
-    ASSERT_TRUE(!binaries ||
-                kInstallModes[test_data().index].supports_multi_install);
-    ASSERT_THAT(
-        base::win::RegKey(root_key_, GetClientStateKeyPath(binaries).c_str(),
-                          KEY_WOW64_32KEY | KEY_SET_VALUE)
-            .WriteValue(L"ap", value),
-        Eq(ERROR_SUCCESS));
+  void SetAp(const wchar_t* value) {
+    ASSERT_THAT(base::win::RegKey(root_key_, GetClientStateKeyPath().c_str(),
+                                  KEY_WOW64_32KEY | KEY_SET_VALUE)
+                    .WriteValue(L"ap", value),
+                Eq(ERROR_SUCCESS));
   }
 
  private:
   // Returns the registry path for the product's ClientState key.
-  std::wstring GetClientStateKeyPath(bool binaries) {
-    EXPECT_TRUE(!binaries ||
-                kInstallModes[test_data().index].supports_multi_install);
+  std::wstring GetClientStateKeyPath() {
     std::wstring result(L"Software\\");
     if (kUseGoogleUpdateIntegration) {
       result.append(L"Google\\Update\\ClientState\\");
-      if (binaries)
-        result.append(kBinariesAppGuid);
-      else
-        result.append(kInstallModes[test_data().index].app_guid);
-    } else if (binaries) {
-      result.append(kBinariesPathName);
+      result.append(kInstallModes[test_data().index].app_guid);
     } else {
       result.append(kProductPathName);
     }
@@ -251,32 +233,6 @@ TEST_P(MakeProductDetailsTest, DefaultChannel) {
   EXPECT_THAT(details->channel(), StrEq(test_data().channel));
 }
 
-// Test that multi-install is properly parsed out of the registry.
-TEST_P(MakeProductDetailsTest, MultiInstall) {
-  {
-    std::unique_ptr<PrimaryInstallDetails> details(
-        MakeProductDetails(test_data().path));
-    EXPECT_FALSE(details->multi_install());
-  }
-
-  {
-    SetUninstallArguments(L"--uninstall");
-    std::unique_ptr<PrimaryInstallDetails> details(
-        MakeProductDetails(test_data().path));
-    EXPECT_FALSE(details->multi_install());
-  }
-
-  if (!kInstallModes[test_data().index].supports_multi_install)
-    return;
-
-  {
-    SetUninstallArguments(L"--uninstall --multi-install --chrome");
-    std::unique_ptr<PrimaryInstallDetails> details(
-        MakeProductDetails(test_data().path));
-    EXPECT_TRUE(details->multi_install());
-  }
-}
-
 // Test that the channel name is properly parsed out of additional parameters.
 TEST_P(MakeProductDetailsTest, AdditionalParametersChannels) {
   const std::pair<const wchar_t*, const wchar_t*> kApChannels[] = {
@@ -292,10 +248,10 @@ TEST_P(MakeProductDetailsTest, AdditionalParametersChannels) {
       {L"1.0-dev", L""},
       {L"fuzzy", L""},
       {L"foo", L""},
-      {L"-multi-chrome", L""},
-      {L"x64-stable-multi-chrome", L""},
-      {L"-stage:ensemble_patching-multi-chrome-full", L""},
-      {L"-multi-chrome-full", L""},
+      {L"-multi-chrome", L""},                               // Legacy.
+      {L"x64-stable-multi-chrome", L""},                     // Legacy.
+      {L"-stage:ensemble_patching-multi-chrome-full", L""},  // Legacy.
+      {L"-multi-chrome-full", L""},                          // Legacy.
       // beta
       {L"1.1-beta", L"beta"},
       {L"1.1-beta-full", L"beta"},
@@ -317,25 +273,7 @@ TEST_P(MakeProductDetailsTest, AdditionalParametersChannels) {
   };
 
   for (const auto& ap_and_channel : kApChannels) {
-    SetAp(ap_and_channel.first, false);
-    std::unique_ptr<PrimaryInstallDetails> details(
-        MakeProductDetails(test_data().path));
-    if (kInstallModes[test_data().index].channel_strategy ==
-        ChannelStrategy::ADDITIONAL_PARAMETERS) {
-      EXPECT_THAT(details->channel(), StrEq(ap_and_channel.second));
-    } else {
-      // "ap" is ignored for this mode.
-      EXPECT_THAT(details->channel(), StrEq(test_data().channel));
-    }
-  }
-
-  if (!kInstallModes[test_data().index].supports_multi_install)
-    return;
-
-  // For multi-install modes, "ap" is pulled from the binaries' key.
-  for (const auto& ap_and_channel : kApChannels) {
-    SetAp(ap_and_channel.first, true);
-    SetUninstallArguments(L"--uninstall --multi-install --chrome");
+    SetAp(ap_and_channel.first);
     std::unique_ptr<PrimaryInstallDetails> details(
         MakeProductDetails(test_data().path));
     if (kInstallModes[test_data().index].channel_strategy ==

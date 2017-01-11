@@ -12,7 +12,6 @@
 
 namespace install_static {
 
-struct InstallConstants;
 class PrimaryInstallDetails;
 
 // Creates product details for the current process and sets them as the global
@@ -35,10 +34,6 @@ bool PathIsInProgramFiles(const std::wstring& path);
 // is found. |exe_path| is expected be something similar to
 // "...\[kProductName][suffix]\Application".
 std::wstring GetInstallSuffix(const std::wstring& exe_path);
-
-// Returns true if the browser of |mode| at |system_level| is registered as
-// being multi-install.
-bool IsMultiInstall(const InstallConstants& mode, bool system_level);
 
 // Creates product details for the process at |exe_path|.
 std::unique_ptr<PrimaryInstallDetails> MakeProductDetails(

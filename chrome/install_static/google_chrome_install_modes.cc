@@ -31,7 +31,7 @@ const InstallConstants kInstallModes[] = {
         L"",  // The empty string means "stable".
         ChannelStrategy::ADDITIONAL_PARAMETERS,
         true,  // Supports system-level installs.
-        true,  // Supports multi-install.
+        true,  // Supported multi-install.
     },
     {
         sizeof(kInstallModes[0]),
@@ -41,7 +41,7 @@ const InstallConstants kInstallModes[] = {
         L"canary",
         ChannelStrategy::FIXED,
         false,  // Does not support system-level installs.
-        false,  // Does not support multi-install.
+        false,  // Did not support multi-install.
     },
 };
 

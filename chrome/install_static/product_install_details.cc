@@ -5,7 +5,6 @@
 #include "chrome/install_static/product_install_details.h"
 
 #include <windows.h>
-#include <assert.h>
 
 #include <algorithm>
 
@@ -119,15 +118,6 @@ std::wstring GetInstallSuffix(const std::wstring& exe_path) {
                       (name - scan) - kProductPathNameLength);
 }
 
-bool IsMultiInstall(const InstallConstants& mode, bool system_level) {
-  assert(mode.supports_multi_install);
-  std::wstring args;
-  return nt::QueryRegValueSZ(system_level ? nt::HKLM : nt::HKCU, nt::WOW6432,
-                             GetClientStateKeyPath(mode.app_guid).c_str(),
-                             L"UninstallArguments", &args) &&
-         args.find(L"--multi-install") != std::wstring::npos;
-}
-
 std::unique_ptr<PrimaryInstallDetails> MakeProductDetails(
     const std::wstring& exe_path) {
   std::unique_ptr<PrimaryInstallDetails> details(new PrimaryInstallDetails());
@@ -135,13 +125,10 @@ std::unique_ptr<PrimaryInstallDetails> MakeProductDetails(
   const InstallConstants* mode = FindInstallMode(GetInstallSuffix(exe_path));
   const bool system_level =
       mode->supports_system_level && PathIsInProgramFiles(exe_path);
-  const bool multi_install =
-      mode->supports_multi_install && IsMultiInstall(*mode, system_level);
 
   details->set_mode(mode);
   details->set_system_level(system_level);
-  details->set_multi_install(multi_install);
-  details->set_channel(DetermineChannel(*mode, system_level, multi_install));
+  details->set_channel(DetermineChannel(*mode, system_level));
 
   return details;
 }

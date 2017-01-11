@@ -26,16 +26,12 @@ InstallDetails* g_module_details = nullptr;
 
 }  // namespace
 
-std::wstring InstallDetails::GetClientStateKeyPath(bool binaries) const {
-  return binaries && multi_install()
-             ? GetBinariesClientStateKeyPath()
-             : install_static::GetClientStateKeyPath(app_guid());
+std::wstring InstallDetails::GetClientStateKeyPath() const {
+  return install_static::GetClientStateKeyPath(app_guid());
 }
 
-std::wstring InstallDetails::GetClientStateMediumKeyPath(bool binaries) const {
-  return binaries && multi_install()
-             ? GetBinariesClientStateMediumKeyPath()
-             : install_static::GetClientStateMediumKeyPath(app_guid());
+std::wstring InstallDetails::GetClientStateMediumKeyPath() const {
+  return install_static::GetClientStateMediumKeyPath(app_guid());
 }
 
 bool InstallDetails::VersionMismatch() const {

@@ -257,21 +257,17 @@ std::vector<StringType> TokenizeStringT(
 }
 
 std::wstring ChannelFromAdditionalParameters(const InstallConstants& mode,
-                                             bool system_level,
-                                             bool binaries) {
+                                             bool system_level) {
   assert(kUseGoogleUpdateIntegration);
-  // InitChannelInfo in google_update_settings.cc only reports a failure in the
-  // case of multi-install Chrome where the binaries' ClientState key exists,
-  // but that the "ap" value therein cannot be read due to some reason *other*
-  // than it not being present. This should be exceedingly rare. For
-  // simplicity's sake, use an empty |value| in case of any error whatsoever
-  // here.
+  // InitChannelInfo in google_update_settings.cc only reports a failure when
+  // Chrome's ClientState key exists but that the "ap" value therein cannot be
+  // read due to some reason *other* than it not being present. This should be
+  // exceedingly rare. For simplicity's sake, use an empty |value| in case of
+  // any error whatsoever here.
   std::wstring value;
   nt::QueryRegValueSZ(system_level ? nt::HKLM : nt::HKCU, nt::WOW6432,
-                      (binaries ? GetBinariesClientStateKeyPath()
-                                : GetClientStateKeyPath(mode.app_guid))
-                          .c_str(),
-                      kRegValueAp, &value);
+                      GetClientStateKeyPath(mode.app_guid).c_str(), kRegValueAp,
+                      &value);
 
   static constexpr wchar_t kChromeChannelBetaPattern[] = L"1?1-*";
   static constexpr wchar_t kChromeChannelBetaX64Pattern[] = L"*x64-beta*";
@@ -294,7 +290,7 @@ std::wstring ChannelFromAdditionalParameters(const InstallConstants& mode,
   }
   // Else report values with garbage as stable since they will match the stable
   // rules in the update configs. ChannelInfo::GetChannelName painstakingly
-  // strips off known modifiers (e.g., "-multi-full") to see if the empty string
+  // strips off known modifiers (e.g., "-full") to see if the empty string
   // remains, returning channel "unknown" if not. This differs here in that some
   // clients will tag crashes as "stable" rather than "unknown" via this
   // codepath, but it is an accurate reflection of which update channel the
@@ -307,10 +303,6 @@ std::wstring ChannelFromAdditionalParameters(const InstallConstants& mode,
 
 bool IsSystemInstall() {
   return InstallDetails::Get().system_level();
-}
-
-bool IsMultiInstall() {
-  return InstallDetails::Get().multi_install();
 }
 
 bool GetCollectStatsConsent() {
@@ -327,7 +319,7 @@ bool GetCollectStatsConsent() {
   if (system_install &&
       nt::QueryRegValueDWORD(
           nt::HKLM, nt::WOW6432,
-          InstallDetails::Get().GetClientStateMediumKeyPath(true).c_str(),
+          InstallDetails::Get().GetClientStateMediumKeyPath().c_str(),
           kRegValueUsageStats, &out_value)) {
     return (out_value == 1);
   }
@@ -335,7 +327,7 @@ bool GetCollectStatsConsent() {
   // Second, try ClientState.
   return (nt::QueryRegValueDWORD(
               system_install ? nt::HKLM : nt::HKCU, nt::WOW6432,
-              InstallDetails::Get().GetClientStateKeyPath(true).c_str(),
+              InstallDetails::Get().GetClientStateKeyPath().c_str(),
               kRegValueUsageStats, &out_value) &&
           out_value == 1);
 }
@@ -513,16 +505,11 @@ void GetExecutableVersionDetails(const std::wstring& exe_path,
       GetValueFromVersionResource(data.get(), L"SpecialBuild", special_build);
     }
   }
-  *channel_name = GetChromeChannelName(true /* add_modifier */);
+  *channel_name = GetChromeChannelName();
 }
 
-std::wstring GetChromeChannelName(bool add_modifier) {
-  const std::wstring& channel = InstallDetails::Get().channel();
-  if (!add_modifier || !IsMultiInstall())
-    return channel;
-  if (channel.empty())
-    return L"m";
-  return channel + L"-m";
+std::wstring GetChromeChannelName() {
+  return InstallDetails::Get().channel();
 }
 
 std::wstring GetBrowserCrashDumpAttemptsRegistryPath() {
@@ -748,9 +735,7 @@ bool RecursiveDirectoryCreate(const std::wstring& full_path) {
 
 // This function takes these inputs rather than accessing the module's
 // InstallDetails instance since it is used to bootstrap InstallDetails.
-std::wstring DetermineChannel(const InstallConstants& mode,
-                              bool system_level,
-                              bool multi_install) {
+std::wstring DetermineChannel(const InstallConstants& mode, bool system_level) {
   if (!kUseGoogleUpdateIntegration)
     return std::wstring();
 
@@ -759,7 +744,7 @@ std::wstring DetermineChannel(const InstallConstants& mode,
       assert(false);
       break;
     case ChannelStrategy::ADDITIONAL_PARAMETERS:
-      return ChannelFromAdditionalParameters(mode, system_level, multi_install);
+      return ChannelFromAdditionalParameters(mode, system_level);
     case ChannelStrategy::FIXED:
       return mode.default_channel_name;
   }

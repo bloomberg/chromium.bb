@@ -31,7 +31,7 @@ const InstallConstants kInstallModes[] = {
         L"",  // Empty default channel name as above.
         ChannelStrategy::UNSUPPORTED,
         true,  // Supports system-level installs.
-        true,  // Supports multi-install.
+        true,  // Supported multi-install.
     },
 };
 

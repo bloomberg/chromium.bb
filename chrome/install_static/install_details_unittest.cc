@@ -22,7 +22,7 @@ class FakeInstallDetails : public InstallDetails {
     constants.size = sizeof(constants);
     constants.install_suffix = L"";
     constants.default_channel_name = L"";
-    constants.supports_multi_install = true;
+    constants.supported_multi_install = true;
     if (kUseGoogleUpdateIntegration) {
       constants.app_guid = L"testguid";
       constants.channel_strategy = ChannelStrategy::FIXED;
@@ -57,68 +57,23 @@ class FakeInstallDetails : public InstallDetails {
 TEST(InstallDetailsTest, GetClientStateKeyPath) {
   FakeInstallDetails details;
   if (kUseGoogleUpdateIntegration) {
-    // Single-install.
-    EXPECT_THAT(details.GetClientStateKeyPath(false),
+    EXPECT_THAT(details.GetClientStateKeyPath(),
                 StrEq(L"Software\\Google\\Update\\ClientState\\testguid"));
-    EXPECT_THAT(details.GetClientStateKeyPath(true),
-                StrEq(L"Software\\Google\\Update\\ClientState\\testguid"));
-
-    // Multi-install.
-    details.payload.multi_install = true;
-    EXPECT_THAT(details.GetClientStateKeyPath(false),
-                StrEq(L"Software\\Google\\Update\\ClientState\\testguid"));
-    EXPECT_THAT(details.GetClientStateKeyPath(true),
-                StrEq(std::wstring(L"Software\\Google\\Update\\ClientState\\")
-                          .append(kBinariesAppGuid)));
   } else {
-    // Single-install.
-    EXPECT_THAT(details.GetClientStateKeyPath(false),
+    EXPECT_THAT(details.GetClientStateKeyPath(),
                 StrEq(std::wstring(L"Software\\").append(kProductPathName)));
-    EXPECT_THAT(details.GetClientStateKeyPath(true),
-                StrEq(std::wstring(L"Software\\").append(kProductPathName)));
-
-    // Multi-install.
-    details.payload.multi_install = true;
-    EXPECT_THAT(details.GetClientStateKeyPath(false),
-                StrEq(std::wstring(L"Software\\").append(kProductPathName)));
-    EXPECT_THAT(details.GetClientStateKeyPath(true),
-                StrEq(std::wstring(L"Software\\").append(kBinariesPathName)));
   }
 }
 
 TEST(InstallDetailsTest, GetClientStateMediumKeyPath) {
   FakeInstallDetails details;
   if (kUseGoogleUpdateIntegration) {
-    // Single-install.
     EXPECT_THAT(
-        details.GetClientStateMediumKeyPath(false),
+        details.GetClientStateMediumKeyPath(),
         StrEq(L"Software\\Google\\Update\\ClientStateMedium\\testguid"));
-    EXPECT_THAT(
-        details.GetClientStateMediumKeyPath(true),
-        StrEq(L"Software\\Google\\Update\\ClientStateMedium\\testguid"));
-
-    // Multi-install.
-    details.payload.multi_install = true;
-    EXPECT_THAT(
-        details.GetClientStateMediumKeyPath(false),
-        StrEq(L"Software\\Google\\Update\\ClientStateMedium\\testguid"));
-    EXPECT_THAT(
-        details.GetClientStateMediumKeyPath(true),
-        StrEq(std::wstring(L"Software\\Google\\Update\\ClientStateMedium\\")
-                  .append(kBinariesAppGuid)));
   } else {
-    // Single-install.
-    EXPECT_THAT(details.GetClientStateKeyPath(false),
+    EXPECT_THAT(details.GetClientStateKeyPath(),
                 StrEq(std::wstring(L"Software\\").append(kProductPathName)));
-    EXPECT_THAT(details.GetClientStateKeyPath(true),
-                StrEq(std::wstring(L"Software\\").append(kProductPathName)));
-
-    // Multi-install.
-    details.payload.multi_install = true;
-    EXPECT_THAT(details.GetClientStateKeyPath(false),
-                StrEq(std::wstring(L"Software\\").append(kProductPathName)));
-    EXPECT_THAT(details.GetClientStateKeyPath(true),
-                StrEq(std::wstring(L"Software\\").append(kBinariesPathName)));
   }
 }
 

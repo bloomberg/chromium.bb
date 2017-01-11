@@ -52,14 +52,14 @@ extern const wchar_t kProductPathName[];
 // The length, in characters, of kProductPathName not including the terminator.
 extern const size_t kProductPathNameLength;
 
-// The GUID with which the brand's multi-install binaries are registered with
-// Google Update. Must be empty if the brand does not integrate with Google
-// Update.
+// The GUID with which the brand's multi-install binaries were registered with
+// Google Update for modes that once supported the now-deprecated multi-install.
+// Must be empty if the brand does not integrate with Google Update.
 extern const wchar_t kBinariesAppGuid[];
 
 // The name of the registry key in which data for the brand's multi-install
-// binaries are stored. Must be empty if the brand integrates with Google
-// Update.
+// binaries were stored for modes that once supported the now-deprecated
+// multi-install. Must be empty if the brand integrates with Google Update.
 extern const wchar_t kBinariesPathName[];
 
 // A brand's collection of install modes.
