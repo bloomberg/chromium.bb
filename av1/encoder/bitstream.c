@@ -1072,6 +1072,11 @@ static void write_mb_interp_filter(AV1_COMP *cpi, const MACROBLOCKD *xd,
                                    aom_writer *w) {
   AV1_COMMON *const cm = &cpi->common;
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+#if CONFIG_EC_ADAPT
+  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+#else
+  FRAME_CONTEXT *ec_ctx = cm->fc;
+#endif
 
   if (cm->interp_filter == SWITCHABLE) {
 #if CONFIG_DUAL_FILTER
@@ -1087,7 +1092,7 @@ static void write_mb_interp_filter(AV1_COMP *cpi, const MACROBLOCKD *xd,
            has_subpel_mv_component(xd->mi[0], xd, dir + 2))) {
         const int ctx = av1_get_pred_context_switchable_interp(xd, dir);
         av1_write_token(w, av1_switchable_interp_tree,
-                        cm->fc->switchable_interp_prob[ctx],
+                        ec_ctx->switchable_interp_prob[ctx],
                         &switchable_interp_encodings[mbmi->interp_filter[dir]]);
         ++cpi->interp_filter_selected[0][mbmi->interp_filter[dir]];
       }
@@ -1097,10 +1102,10 @@ static void write_mb_interp_filter(AV1_COMP *cpi, const MACROBLOCKD *xd,
       const int ctx = av1_get_pred_context_switchable_interp(xd);
 #if CONFIG_EC_MULTISYMBOL
       aom_write_symbol(w, av1_switchable_interp_ind[mbmi->interp_filter],
-                       cm->fc->switchable_interp_cdf[ctx], SWITCHABLE_FILTERS);
+                       ec_ctx->switchable_interp_cdf[ctx], SWITCHABLE_FILTERS);
 #else
       av1_write_token(w, av1_switchable_interp_tree,
-                      cm->fc->switchable_interp_prob[ctx],
+                      ec_ctx->switchable_interp_prob[ctx],
                       &switchable_interp_encodings[mbmi->interp_filter]);
 #endif
       ++cpi->interp_filter_selected[0][mbmi->interp_filter];
