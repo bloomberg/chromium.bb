@@ -3894,14 +3894,13 @@ void LayerTreeHostImpl::SetTreeLayerFilterMutated(
   if (!tree)
     return;
 
-  const int layer_id = tree->LayerIdByElementId(element_id);
-  DCHECK(tree->property_trees()->IsInIdToIndexMap(
-      PropertyTrees::TreeType::EFFECT, layer_id));
-  const int effect_id =
-      tree->property_trees()->effect_id_to_index_map[layer_id];
-  if (effect_id != EffectTree::kInvalidNodeId)
-    tree->property_trees()->effect_tree.OnFilterAnimated(filters, effect_id,
-                                                         tree);
+  PropertyTrees* property_trees = tree->property_trees();
+  DCHECK_EQ(1u,
+            property_trees->element_id_to_effect_node_index.count(element_id));
+  const int effect_node_index =
+      property_trees->element_id_to_effect_node_index[element_id];
+  property_trees->effect_tree.OnFilterAnimated(filters, effect_node_index,
+                                               tree);
 }
 
 void LayerTreeHostImpl::SetTreeLayerOpacityMutated(ElementId element_id,
@@ -3910,14 +3909,13 @@ void LayerTreeHostImpl::SetTreeLayerOpacityMutated(ElementId element_id,
   if (!tree)
     return;
 
-  const int layer_id = tree->LayerIdByElementId(element_id);
-  DCHECK(tree->property_trees()->IsInIdToIndexMap(
-      PropertyTrees::TreeType::EFFECT, layer_id));
-  const int effect_id =
-      tree->property_trees()->effect_id_to_index_map[layer_id];
-  if (effect_id != EffectTree::kInvalidNodeId)
-    tree->property_trees()->effect_tree.OnOpacityAnimated(opacity, effect_id,
-                                                          tree);
+  PropertyTrees* property_trees = tree->property_trees();
+  DCHECK_EQ(1u,
+            property_trees->element_id_to_effect_node_index.count(element_id));
+  const int effect_node_index =
+      property_trees->element_id_to_effect_node_index[element_id];
+  property_trees->effect_tree.OnOpacityAnimated(opacity, effect_node_index,
+                                                tree);
 }
 
 void LayerTreeHostImpl::SetTreeLayerTransformMutated(
@@ -3927,16 +3925,14 @@ void LayerTreeHostImpl::SetTreeLayerTransformMutated(
   if (!tree)
     return;
 
-  const int layer_id = tree->LayerIdByElementId(element_id);
-  DCHECK(tree->property_trees()->IsInIdToIndexMap(
-      PropertyTrees::TreeType::TRANSFORM, layer_id));
-  const int transform_id =
-      tree->property_trees()->transform_id_to_index_map[layer_id];
-  if (transform_id != TransformTree::kInvalidNodeId)
-    tree->property_trees()->transform_tree.OnTransformAnimated(
-        transform, transform_id, tree);
-  LayerImpl* layer = tree->LayerById(layer_id);
-  if (layer)
+  PropertyTrees* property_trees = tree->property_trees();
+  DCHECK_EQ(
+      1u, property_trees->element_id_to_transform_node_index.count(element_id));
+  const int transform_node_index =
+      property_trees->element_id_to_transform_node_index[element_id];
+  property_trees->transform_tree.OnTransformAnimated(
+      transform, transform_node_index, tree);
+  if (LayerImpl* layer = tree->LayerByElementId(element_id))
     layer->set_was_ever_ready_since_last_transform_animation(false);
 }
 
@@ -3948,18 +3944,20 @@ void LayerTreeHostImpl::SetTreeLayerScrollOffsetMutated(
     return;
 
   const int layer_id = tree->LayerIdByElementId(element_id);
-  DCHECK(tree->property_trees()->IsInIdToIndexMap(
-      PropertyTrees::TreeType::TRANSFORM, layer_id));
-  DCHECK(tree->property_trees()->IsInIdToIndexMap(
-      PropertyTrees::TreeType::SCROLL, layer_id));
-  const int transform_id =
-      tree->property_trees()->transform_id_to_index_map[layer_id];
-  const int scroll_id =
-      tree->property_trees()->scroll_id_to_index_map[layer_id];
-  if (transform_id != TransformTree::kInvalidNodeId &&
-      scroll_id != ScrollTree::kInvalidNodeId) {
-    tree->property_trees()->scroll_tree.OnScrollOffsetAnimated(
-        layer_id, transform_id, scroll_id, scroll_offset, tree);
+  PropertyTrees* property_trees = tree->property_trees();
+  DCHECK(property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::SCROLL,
+                                          layer_id));
+  DCHECK_EQ(
+      1u, property_trees->element_id_to_transform_node_index.count(element_id));
+  int transform_node_index =
+      property_trees->element_id_to_transform_node_index[element_id];
+  // TODO(wkorman): Build map from element id to scroll node in property tree
+  // builder and make use of it below.
+  const int scroll_node_index =
+      property_trees->scroll_id_to_index_map[layer_id];
+  if (scroll_node_index != ScrollTree::kInvalidNodeId) {
+    property_trees->scroll_tree.OnScrollOffsetAnimated(
+        layer_id, transform_node_index, scroll_node_index, scroll_offset, tree);
     // Run mutation callbacks to respond to updated scroll offset.
     Mutate(CurrentBeginFrameArgs().frame_time);
   }
