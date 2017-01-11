@@ -449,8 +449,11 @@ bool CanBeEvaluatedAtCompileTime(const clang::Stmt* stmt,
     case clang::Stmt::DeclRefExprClass: {
       auto* declref = clang::dyn_cast<clang::DeclRefExpr>(expr);
       auto* decl = declref->getDecl();
-      if (clang::dyn_cast<clang::VarDecl>(decl))
+      if (auto* vardecl = clang::dyn_cast<clang::VarDecl>(decl)) {
+        if (auto* initializer = vardecl->getInit())
+          return CanBeEvaluatedAtCompileTime(initializer, context);
         return false;
+      }
       break;
     }
 

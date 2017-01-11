@@ -63,6 +63,8 @@ void F() {
   const bool complexConst = number || (number + 1);
   // A complex statement with a non-const thing is not const.
   const bool complexNotConst = number || (g_globalNumber + 1);
+  // A const built from other consts is a const.
+  const bool constFromAConst = complexConst || number;
 }
 
 template <int number, typename... T>
