@@ -103,7 +103,6 @@ extern const char kDnsLogDetails[];
 extern const char kDumpBrowserHistograms[];
 extern const char kEasyUnlockAppPath[];
 extern const char kEnableAddToShelf[];
-extern const char kEnableAppsFileAssociations[];
 extern const char kEnableAudioDebugRecordingsFromExtension[];
 extern const char kEnableBenchmarking[];
 extern const char kEnableBookmarkUndo[];

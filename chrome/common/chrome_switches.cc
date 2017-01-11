@@ -311,9 +311,6 @@ const char kEasyUnlockAppPath[]             = "easy-unlock-app-path";
 // app to their shelf (or platform-specific equivalent)
 const char kEnableAddToShelf[] = "enable-add-to-shelf";
 
-// Enable OS integration for Chrome app file associations.
-const char kEnableAppsFileAssociations[]    = "enable-apps-file-associations";
-
 // If the WebRTC logging private API is active, enables audio debug recordings.
 const char kEnableAudioDebugRecordingsFromExtension[] =
     "enable-audio-debug-recordings-from-extension";

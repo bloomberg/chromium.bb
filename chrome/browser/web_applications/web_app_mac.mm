@@ -528,49 +528,6 @@ std::unique_ptr<web_app::ShortcutInfo> RecordAppShimErrorAndBuildShortcutInfo(
   return BuildShortcutInfoFromBundle(bundle_path);
 }
 
-void UpdateFileTypes(NSMutableDictionary* plist,
-                     const extensions::FileHandlersInfo& file_handlers_info) {
-  NSMutableArray* document_types =
-      [NSMutableArray arrayWithCapacity:file_handlers_info.size()];
-
-  for (extensions::FileHandlersInfo::const_iterator info_it =
-           file_handlers_info.begin();
-       info_it != file_handlers_info.end();
-       ++info_it) {
-    const extensions::FileHandlerInfo& info = *info_it;
-
-    NSMutableArray* file_extensions =
-        [NSMutableArray arrayWithCapacity:info.extensions.size()];
-    for (std::set<std::string>::iterator it = info.extensions.begin();
-         it != info.extensions.end();
-         ++it) {
-      [file_extensions addObject:base::SysUTF8ToNSString(*it)];
-    }
-
-    NSMutableArray* mime_types =
-        [NSMutableArray arrayWithCapacity:info.types.size()];
-    for (std::set<std::string>::iterator it = info.types.begin();
-         it != info.types.end();
-         ++it) {
-      [mime_types addObject:base::SysUTF8ToNSString(*it)];
-    }
-
-    NSDictionary* type_dictionary = @{
-      // TODO(jackhou): Add the type name and and icon file once the manifest
-      // supports these.
-      // app_mode::kCFBundleTypeNameKey : ,
-      // app_mode::kCFBundleTypeIconFileKey : ,
-      app_mode::kCFBundleTypeExtensionsKey : file_extensions,
-      app_mode::kCFBundleTypeMIMETypesKey : mime_types,
-      app_mode::kCFBundleTypeRoleKey : app_mode::kBundleTypeRoleViewer
-    };
-    [document_types addObject:type_dictionary];
-  }
-
-  [plist setObject:document_types
-            forKey:app_mode::kCFBundleDocumentTypesKey];
-}
-
 void RevealAppShimInFinderForAppOnFileThread(
     std::unique_ptr<web_app::ShortcutInfo> shortcut_info,
     const base::FilePath& app_path) {
@@ -891,11 +848,6 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
   base::FilePath app_name = app_path.BaseName().RemoveExtension();
   [plist setObject:base::mac::FilePathToNSString(app_name)
             forKey:base::mac::CFToNSCast(kCFBundleNameKey)];
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableAppsFileAssociations)) {
-    UpdateFileTypes(plist, file_handlers_info_);
-  }
 
   return [plist writeToFile:plist_path
                  atomically:YES];
