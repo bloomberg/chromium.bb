@@ -1041,7 +1041,9 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody,
     if (m_upload)
       request.setReportUploadProgress(true);
 
-    DCHECK(!m_loader);
+    // TODO(yhirano): Turn this CHECK into DCHECK once https://crbug.com/667254
+    // is fixed.
+    CHECK(!m_loader);
     DCHECK(m_sendFlag);
     m_loader = ThreadableLoader::create(executionContext, this, options,
                                         resourceLoaderOptions);
@@ -1050,6 +1052,8 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody,
     return;
   }
 
+  // TODO(yhirano): Remove this CHECK once https://crbug.com/667254 is fixed.
+  CHECK(!m_loader);
   // Use count for XHR synchronous requests.
   UseCounter::count(&executionContext, UseCounter::XMLHttpRequestSynchronous);
   ThreadableLoader::loadResourceSynchronously(executionContext, request, *this,
