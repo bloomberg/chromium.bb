@@ -1003,8 +1003,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 }
 
 // Test that vertical overscroll updates are sent only when a user overscrolls
-// vertically.
-#if defined(OS_WIN)
+// vertically. Flaky on several platforms. https://crbug.com/679420
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 #define MAYBE_VerticalOverscroll DISABLED_VerticalOverscroll
 #else
 #define MAYBE_VerticalOverscroll VerticalOverscroll
