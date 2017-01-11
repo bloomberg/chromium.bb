@@ -200,7 +200,7 @@ void CanvasAsyncBlobCreatorTest::
 
 void CanvasAsyncBlobCreatorTest::prepareMockCanvasAsyncBlobCreatorFailPng() {
   IntSize testSize(0, 0);
-  ImageData* imageData = ImageData::create(testSize);
+  ImageData* imageData = ImageData::createForTest(testSize);
 
   // We reuse the class MockCanvasAsyncBlobCreatorWithoutCompletePng because
   // this test case is expected to fail at initialization step before
@@ -229,7 +229,7 @@ void CanvasAsyncBlobCreatorTest::
 
 void CanvasAsyncBlobCreatorTest::prepareMockCanvasAsyncBlobCreatorFailJpeg() {
   IntSize testSize(0, 0);
-  ImageData* imageData = ImageData::create(testSize);
+  ImageData* imageData = ImageData::createForTest(testSize);
 
   // We reuse the class MockCanvasAsyncBlobCreatorWithoutCompleteJpeg because
   // this test case is expected to fail at initialization step before

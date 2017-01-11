@@ -54,7 +54,8 @@ class CORE_TEMPLATE_CLASS_EXPORT DOMTypedArray final
   }
 
   static ThisType* createOrNull(unsigned length) {
-    RefPtr<WTF::ArrayBuffer> buffer = WTF::ArrayBuffer::createOrNull(length, 1);
+    RefPtr<WTF::ArrayBuffer> buffer =
+        WTF::ArrayBuffer::createOrNull(length, sizeof(ThisType));
     return buffer ? create(buffer.release(), 0, length) : nullptr;
   }
 

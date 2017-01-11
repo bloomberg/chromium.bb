@@ -19,16 +19,16 @@ PASS [Worker] new ImageData('width', 'height') threw exception IndexSizeError: F
 PASS [Worker] new ImageData(1 << 31, 1 << 31) threw exception IndexSizeError: Failed to construct 'ImageData': The requested image size exceeds the supported range..
 PASS [Worker] new ImageData(new Uint8ClampedArray(0)) threw exception TypeError: Failed to construct 'ImageData': 2 arguments required, but only 1 present..
 PASS [Worker] new ImageData(new Uint8Array(100), 25) threw exception IndexSizeError: Failed to construct 'ImageData': The source width is zero or not a number..
-PASS [Worker] new ImageData(new Uint8ClampedArray(27), 2) threw exception IndexSizeError: Failed to construct 'ImageData': The input data byte length is not a multiple of 4..
-PASS [Worker] new ImageData(new Uint8ClampedArray(28), 7, 0) threw exception IndexSizeError: Failed to construct 'ImageData': The input data byte length is not equal to (4 * width * height)..
-PASS [Worker] new ImageData(new Uint8ClampedArray(104), 14) threw exception IndexSizeError: Failed to construct 'ImageData': The input data byte length is not a multiple of (4 * width)..
+PASS [Worker] new ImageData(new Uint8ClampedArray(27), 2) threw exception IndexSizeError: Failed to construct 'ImageData': The input data length is not a multiple of 4..
+PASS [Worker] new ImageData(new Uint8ClampedArray(28), 7, 0) threw exception IndexSizeError: Failed to construct 'ImageData': The source height is zero or not a number..
+PASS [Worker] new ImageData(new Uint8ClampedArray(104), 14) threw exception IndexSizeError: Failed to construct 'ImageData': The input data length is not a multiple of (4 * width)..
 PASS [Worker] new ImageData(self, 4, 4) threw exception TypeError: Failed to construct 'ImageData': parameter 1 is not of type 'Uint8ClampedArray'..
 PASS [Worker] new ImageData(null, 4, 4) threw exception TypeError: Failed to construct 'ImageData': parameter 1 is not of type 'Uint8ClampedArray'..
 PASS [Worker] new ImageData(imageData.data, 0) threw exception IndexSizeError: Failed to construct 'ImageData': The source width is zero or not a number..
-PASS [Worker] new ImageData(imageData.data, 13) threw exception IndexSizeError: Failed to construct 'ImageData': The input data byte length is not a multiple of (4 * width)..
-PASS [Worker] new ImageData(imageData.data, 1 << 31) threw exception IndexSizeError: Failed to construct 'ImageData': The input data byte length is not a multiple of (4 * width)..
+PASS [Worker] new ImageData(imageData.data, 13) threw exception IndexSizeError: Failed to construct 'ImageData': The input data length is not a multiple of (4 * width)..
+PASS [Worker] new ImageData(imageData.data, 1 << 31) threw exception IndexSizeError: Failed to construct 'ImageData': The requested image size exceeds the supported range..
 PASS [Worker] new ImageData(imageData.data, 'biggish') threw exception IndexSizeError: Failed to construct 'ImageData': The source width is zero or not a number..
-PASS [Worker] new ImageData(imageData.data, 1 << 24, 1 << 31) threw exception IndexSizeError: Failed to construct 'ImageData': The input data byte length is not a multiple of (4 * width)..
+PASS [Worker] new ImageData(imageData.data, 1 << 24, 1 << 31) threw exception IndexSizeError: Failed to construct 'ImageData': The requested image size exceeds the supported range..
 PASS [Worker] (new ImageData(new Uint8ClampedArray(28), 7)).height is 1
 PASS [Worker] imageDataFromData.width is 100
 PASS [Worker] imageDataFromData.height is 50
