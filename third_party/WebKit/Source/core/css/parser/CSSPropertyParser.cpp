@@ -2588,12 +2588,6 @@ static CSSValue* consumeReflect(CSSParserTokenRange& range,
   return CSSReflectValue::create(direction, offset, mask);
 }
 
-static CSSValue* consumeFontSizeAdjust(CSSParserTokenRange& range) {
-  if (range.peek().id() == CSSValueNone)
-    return consumeIdent(range);
-  return consumeNumber(range, ValueRangeNonNegative);
-}
-
 static CSSValue* consumeImageOrientation(CSSParserTokenRange& range) {
   if (range.peek().id() == CSSValueFromImage)
     return consumeIdent(range);
@@ -3624,9 +3618,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return consumeWebkitBorderImage(property, m_range, m_context);
     case CSSPropertyWebkitBoxReflect:
       return consumeReflect(m_range, m_context);
-    case CSSPropertyFontSizeAdjust:
-      ASSERT(RuntimeEnabledFeatures::cssFontSizeAdjustEnabled());
-      return consumeFontSizeAdjust(m_range);
     case CSSPropertyImageOrientation:
       ASSERT(RuntimeEnabledFeatures::imageOrientationEnabled());
       return consumeImageOrientation(m_range);
