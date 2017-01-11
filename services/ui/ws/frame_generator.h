@@ -6,12 +6,11 @@
 #define SERVICES_UI_WS_FRAME_GENERATOR_H_
 
 #include <memory>
-#include <unordered_map>
-#include <vector>
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "cc/ipc/display_compositor.mojom.h"
+#include "cc/surfaces/embedded_surface_tracker.h"
 #include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_id_allocator.h"
@@ -77,42 +76,15 @@ class FrameGenerator : public ServerWindowTracker,
   void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
   void WillDrawSurface() override;
 
+  // Updates the display surface SurfaceId using new value in |local_frame_id_|.
+  void UpdateDisplaySurfaceId();
+
   // Generates the CompositorFrame.
   cc::CompositorFrame GenerateCompositorFrame(const gfx::Rect& output_rect);
 
   // DrawWindow creates SurfaceDrawQuad for the provided ServerWindow and
   // appends it to the provided cc::RenderPass.
   void DrawWindow(cc::RenderPass* pass, ServerWindow* window);
-
-  // Finds the parent surface id for |window|.
-  cc::SurfaceId FindParentSurfaceId(ServerWindow* window);
-
-  // Adds surface reference to local cache and surface manager.
-  void AddSurfaceReference(const cc::SurfaceId& parent_id,
-                           const cc::SurfaceId& child_id);
-
-  // Does work necessary for adding the first surface reference.
-  void AddFirstReference(const cc::SurfaceId& surface_id, ServerWindow* window);
-
-  // Finds all Surfaces with references from |old_surface_id| and adds a new
-  // reference from |new_surface_id|. The caller should remove any references
-  // to |old_surface_id| afterwards to finish cleanup.
-  void AddNewParentReferences(const cc::SurfaceId& old_surface_id,
-                              const cc::SurfaceId& new_surface_id);
-
-  // Sends IPC to add references in |references_to_add_|.
-  void PerformAddSurfaceReferences();
-
-  // Sends IPC to remove all references in |references_to_remove_|.
-  void PerformRemoveSurfaceReferences();
-
-  // Removes any retained references for |frame_sink_id_|.
-  void RemoveFrameSinkReference(const cc::FrameSinkId& frame_sink_id);
-
-  // Removes all retained references to surfaces.
-  void RemoveAllSurfaceReferences();
-
-  cc::mojom::DisplayCompositor* GetDisplayCompositor();
 
   // ServerWindowObserver implementation.
   void OnWindowDestroying(ServerWindow* window) override;
@@ -127,24 +99,8 @@ class FrameGenerator : public ServerWindowTracker,
   cc::mojom::MojoCompositorFrameSinkPtr compositor_frame_sink_;
   cc::mojom::DisplayPrivatePtr display_private_;
 
-  // Active references held by this client to surfaces that could be embedded in
-  // a CompositorFrame submitted from FrameGenerator.
-  std::unordered_map<cc::FrameSinkId, cc::SurfaceReference, cc::FrameSinkIdHash>
-      active_references_;
-
-  // References to surfaces that should be removed after a CompositorFrame has
-  // been submitted and the surfaces are not being used.
-  std::vector<cc::SurfaceReference> references_to_remove_;
-
-  // References that should be added before the next CompositorFrame is
-  // submitted.
-  std::vector<cc::SurfaceReference> references_to_add_;
-
-  // If a CompositorFrame for a child surface is submitted before the first
-  // display root CompositorFrame, we can't add a reference from the unknown
-  // display root SurfaceId. Track the child SurfaceId here and add a reference
-  // to it when the display root SurfaceId is available.
-  std::vector<cc::SurfaceId> waiting_for_references_;
+  // Tracks surface references for embedded surfaces.
+  cc::EmbeddedSurfaceTracker surface_tracker_;
 
   mojo::Binding<cc::mojom::MojoCompositorFrameSinkClient> binding_;
 

@@ -5,6 +5,7 @@
 #include "services/ui/ws/frame_generator.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/containers/adapters.h"
 #include "cc/output/compositor_frame.h"
@@ -31,7 +32,16 @@ FrameGenerator::FrameGenerator(FrameGeneratorDelegate* delegate,
 }
 
 FrameGenerator::~FrameGenerator() {
-  RemoveAllSurfaceReferences();
+  // Remove reference from top level root to the display root surface, if one
+  // exists. This will make everything referenced by the display surface
+  // unreachable so it can be garbage collected.
+  if (surface_tracker_.HasValidSurfaceId()) {
+    compositor_frame_sink_->RemoveSurfaceReferences(
+        std::vector<cc::SurfaceReference>{
+            cc::SurfaceReference(root_window_->delegate()->GetRootSurfaceId(),
+                                 surface_tracker_.current_surface_id())});
+  }
+
   // Invalidate WeakPtrs now to avoid callbacks back into the
   // FrameGenerator during destruction of |compositor_frame_sink_|.
   weak_factory_.InvalidateWeakPtrs();
@@ -57,34 +67,16 @@ void FrameGenerator::OnSurfaceCreated(const cc::SurfaceId& surface_id,
                                       ServerWindow* window) {
   DCHECK(surface_id.is_valid());
 
-  auto iter = active_references_.find(surface_id.frame_sink_id());
-  if (iter == active_references_.end()) {
-    AddFirstReference(surface_id, window);
-    return;
+  // TODO(samans): Clients are actually embedded in the WM and only the WM is
+  // embedded here. This needs to be fixed.
+
+  // Only handle embedded surfaces changing here. The display root surface
+  // changing is handled immediately after the CompositorFrame is submitted.
+  if (window != root_window_) {
+    // Add observer for window the first time it's seen.
+    if (surface_tracker_.EmbedSurface(surface_id))
+      Add(window);
   }
-
-  cc::SurfaceReference& ref = iter->second;
-
-  // This shouldn't be called multiple times for the same SurfaceId.
-  DCHECK_EQ(surface_id.frame_sink_id(), ref.child_id().frame_sink_id());
-  DCHECK_NE(surface_id.local_frame_id(), ref.child_id().local_frame_id());
-
-  // The current reference will be removed after the next CompositorFrame is
-  // submitted or FrameGenerator is destroyed.
-  references_to_remove_.push_back(ref);
-  cc::SurfaceId old_surface_id = ref.child_id();
-
-  // New surface reference is recorded and will be added at end of this method.
-  ref = cc::SurfaceReference(ref.parent_id(), surface_id);
-  references_to_add_.push_back(ref);
-
-  // If the display root surface has changed, add references from the new
-  // SurfaceId to all embedded surfaces. For example, this would happen when the
-  // display resolution or device scale factor changes.
-  if (window == root_window_)
-    AddNewParentReferences(old_surface_id, surface_id);
-
-  PerformAddSurfaceReferences();
 }
 
 void FrameGenerator::DidReceiveCompositorFrameAck() {}
@@ -100,16 +92,37 @@ void FrameGenerator::OnBeginFrame(const cc::BeginFrameArgs& begin_frame_arags) {
     gfx::Size frame_size = last_submitted_frame_size_;
     if (!frame.render_pass_list.empty())
       frame_size = frame.render_pass_list[0]->output_rect.size();
-    if (!local_frame_id_.is_valid() || frame_size != last_submitted_frame_size_)
+
+    bool display_surface_changed = false;
+    if (!local_frame_id_.is_valid() ||
+        frame_size != last_submitted_frame_size_) {
       local_frame_id_ = id_allocator_.GenerateId();
+      display_surface_changed = true;
+    } else {
+      // If the display surface is changing then we shouldn't add references
+      // from the old display surface. We want to add references from the new
+      // display surface, this happens after we submit the first CompositorFrame
+      // so the new display surface exists.
+      if (surface_tracker_.HasReferencesToAdd()) {
+        compositor_frame_sink_->AddSurfaceReferences(
+            surface_tracker_.GetReferencesToAdd());
+      }
+    }
+
     compositor_frame_sink_->SubmitCompositorFrame(local_frame_id_,
                                                   std::move(frame));
     last_submitted_frame_size_ = frame_size;
 
-    // Remove dead references after we submit a frame. This has to happen after
-    // the frame is submitted otherwise we could end up deleting a surface that
-    // is still embedded in the last frame.
-    PerformRemoveSurfaceReferences();
+    if (display_surface_changed)
+      UpdateDisplaySurfaceId();
+
+    // Remove references to surfaces that are no longer embedded. This has to
+    // happen after the frame is submitted otherwise we could end up deleting
+    // a surface that is still embedded in the last submitted frame.
+    if (surface_tracker_.HasReferencesToRemove()) {
+      compositor_frame_sink_->RemoveSurfaceReferences(
+          surface_tracker_.GetReferencesToRemove());
+    }
   }
 }
 
@@ -121,6 +134,43 @@ void FrameGenerator::ReclaimResources(
 
 void FrameGenerator::WillDrawSurface() {
   // TODO(fsamuel, staraz): Implement this.
+}
+
+void FrameGenerator::UpdateDisplaySurfaceId() {
+  // FrameGenerator owns the display root surface and is a bit of a special
+  // case. There is no surface that embeds the display surface, so nothing
+  // would reference it. Instead, a reference from the top level root is added
+  // to mark the display surface as visible. As a result, FrameGenerator is
+  // responsible for maintaining a reference from the top level root to the
+  // display surface, in addition to references from the display surface to
+  // embedded surfaces.
+  const cc::SurfaceId old_surface_id = surface_tracker_.current_surface_id();
+  const cc::SurfaceId new_surface_id(
+      cc::FrameSinkId(WindowIdToTransportId(root_window_->id()), 0),
+      local_frame_id_);
+
+  DCHECK_NE(old_surface_id, new_surface_id);
+
+  // Set new SurfaceId for the display surface. This will add references from
+  // the new display surface to all embedded surfaces.
+  surface_tracker_.SetCurrentSurfaceId(new_surface_id);
+  std::vector<cc::SurfaceReference> references_to_add =
+      surface_tracker_.GetReferencesToAdd();
+
+  // Adds a reference from the top level root to the new display surface.
+  references_to_add.push_back(cc::SurfaceReference(
+      root_window_->delegate()->GetRootSurfaceId(), new_surface_id));
+
+  compositor_frame_sink_->AddSurfaceReferences(references_to_add);
+
+  // Remove the reference from the top level root to the old display surface
+  // after we have added references from the new display surface. Not applicable
+  // for the first display surface.
+  if (old_surface_id.is_valid()) {
+    compositor_frame_sink_->RemoveSurfaceReferences(
+        std::vector<cc::SurfaceReference>{cc::SurfaceReference(
+            root_window_->delegate()->GetRootSurfaceId(), old_surface_id)});
+  }
 }
 
 cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(
@@ -189,98 +239,6 @@ void FrameGenerator::DrawWindow(cc::RenderPass* pass, ServerWindow* window) {
                default_surface_id);
 }
 
-cc::SurfaceId FrameGenerator::FindParentSurfaceId(ServerWindow* window) {
-  if (window == root_window_)
-    return root_window_->delegate()->GetRootSurfaceId();
-
-  // The root window holds the parent SurfaceId. This SurfaceId will have an
-  // invalid LocalFrameId before FrameGenerator has submitted a CompositorFrame.
-  // After the first frame is submitted it will always be a valid SurfaceId.
-  return root_window_->compositor_frame_sink_manager()->GetLatestSurfaceId();
-}
-
-void FrameGenerator::AddSurfaceReference(const cc::SurfaceId& parent_id,
-                                         const cc::SurfaceId& child_id) {
-  DCHECK_NE(parent_id, child_id);
-
-  // Add new reference from parent to surface and record reference.
-  cc::SurfaceReference ref(parent_id, child_id);
-  active_references_[child_id.frame_sink_id()] = ref;
-  references_to_add_.push_back(ref);
-}
-
-void FrameGenerator::AddFirstReference(const cc::SurfaceId& surface_id,
-                                       ServerWindow* window) {
-  cc::SurfaceId parent_id = FindParentSurfaceId(window);
-
-  if (parent_id.local_frame_id().is_valid()) {
-    AddSurfaceReference(parent_id, surface_id);
-
-    // For the first display root surface, add references to any child surfaces
-    // that were created before it, since no reference has been added yet.
-    if (window == root_window_) {
-      for (auto& child_surface_id : waiting_for_references_)
-        AddSurfaceReference(surface_id, child_surface_id);
-      waiting_for_references_.clear();
-    }
-
-    PerformAddSurfaceReferences();
-  } else {
-    // This isn't the display root surface and display root surface hasn't
-    // submitted a CF yet. We can't add a reference to an unknown SurfaceId.
-    waiting_for_references_.push_back(surface_id);
-  }
-
-  // Observe |window| so that we can remove references when it's destroyed.
-  Add(window);
-}
-
-void FrameGenerator::AddNewParentReferences(
-    const cc::SurfaceId& old_surface_id,
-    const cc::SurfaceId& new_surface_id) {
-  DCHECK_EQ(old_surface_id.frame_sink_id(), new_surface_id.frame_sink_id());
-
-  for (auto& map_entry : active_references_) {
-    cc::SurfaceReference& ref = map_entry.second;
-    if (ref.parent_id() == old_surface_id) {
-      ref = cc::SurfaceReference(new_surface_id, ref.child_id());
-      references_to_add_.push_back(ref);
-    }
-  }
-}
-
-void FrameGenerator::PerformAddSurfaceReferences() {
-  if (references_to_add_.empty())
-    return;
-
-  compositor_frame_sink_->AddSurfaceReferences(references_to_add_);
-  references_to_add_.clear();
-}
-
-void FrameGenerator::PerformRemoveSurfaceReferences() {
-  if (references_to_remove_.empty())
-    return;
-
-  compositor_frame_sink_->RemoveSurfaceReferences(references_to_remove_);
-  references_to_remove_.clear();
-}
-
-void FrameGenerator::RemoveFrameSinkReference(
-    const cc::FrameSinkId& frame_sink_id) {
-  auto it = active_references_.find(frame_sink_id);
-  if (it == active_references_.end())
-    return;
-  references_to_remove_.push_back(it->second);
-  active_references_.erase(it);
-}
-
-void FrameGenerator::RemoveAllSurfaceReferences() {
-  for (auto& map_entry : active_references_)
-    references_to_remove_.push_back(map_entry.second);
-  active_references_.clear();
-  PerformRemoveSurfaceReferences();
-}
-
 void FrameGenerator::OnWindowDestroying(ServerWindow* window) {
   Remove(window);
   ServerWindowCompositorFrameSinkManager* compositor_frame_sink_manager =
@@ -293,7 +251,7 @@ void FrameGenerator::OnWindowDestroying(ServerWindow* window) {
   cc::SurfaceId surface_id =
       window->compositor_frame_sink_manager()->GetLatestSurfaceId();
   if (surface_id.is_valid())
-    RemoveFrameSinkReference(surface_id.frame_sink_id());
+    surface_tracker_.UnembedSurface(surface_id.frame_sink_id());
 }
 
 }  // namespace ws
