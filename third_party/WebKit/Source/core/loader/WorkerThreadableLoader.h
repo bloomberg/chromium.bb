@@ -137,6 +137,7 @@ class WorkerThreadableLoader final : public ThreadableLoader {
         public ThreadableLoaderClient,
         public WorkerThreadLifecycleObserver {
     USING_GARBAGE_COLLECTED_MIXIN(MainThreadLoaderHolder);
+    USING_PRE_FINALIZER(MainThreadLoaderHolder, cancel);
 
    public:
     static void createAndStart(WorkerThreadableLoader*,
