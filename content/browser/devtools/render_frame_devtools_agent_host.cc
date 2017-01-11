@@ -92,6 +92,16 @@ bool ShouldCreateDevToolsFor(RenderFrameHost* rfh) {
   return rfh->IsCrossProcessSubframe() || !rfh->GetParent();
 }
 
+bool ShouldCreateDevToolsForNode(FrameTreeNode* ftn) {
+  return ShouldCreateDevToolsFor(ftn->current_frame_host());
+}
+
+static RenderFrameDevToolsAgentHost* GetAgentHostFor(FrameTreeNode* ftn) {
+  while (ftn && !ShouldCreateDevToolsForNode(ftn))
+    ftn = ftn->parent();
+  return FindAgentHost(ftn);
+}
+
 }  // namespace
 
 // RenderFrameDevToolsAgentHost::FrameHostHolder -------------------------------
@@ -395,7 +405,7 @@ RenderFrameDevToolsAgentHost::CreateThrottleForNavigation(
 // static
 bool RenderFrameDevToolsAgentHost::IsNetworkHandlerEnabled(
     FrameTreeNode* frame_tree_node) {
-  RenderFrameDevToolsAgentHost* agent_host = FindAgentHost(frame_tree_node);
+  RenderFrameDevToolsAgentHost* agent_host = GetAgentHostFor(frame_tree_node);
   if (!agent_host || !agent_host->session())
     return false;
   return protocol::NetworkHandler::FromSession(agent_host->session())
@@ -405,7 +415,7 @@ bool RenderFrameDevToolsAgentHost::IsNetworkHandlerEnabled(
 // static
 std::string RenderFrameDevToolsAgentHost::UserAgentOverride(
     FrameTreeNode* frame_tree_node) {
-  RenderFrameDevToolsAgentHost* agent_host = FindAgentHost(frame_tree_node);
+  RenderFrameDevToolsAgentHost* agent_host = GetAgentHostFor(frame_tree_node);
   if (!agent_host || !agent_host->session())
     return std::string();
   return protocol::NetworkHandler::FromSession(agent_host->session())
