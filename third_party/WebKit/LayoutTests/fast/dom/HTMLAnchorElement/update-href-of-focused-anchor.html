@@ -5,12 +5,19 @@
 <script>
 jsTestIsAsync = true;
 var target = document.getElementById('target');
-target.focus();
-shouldBe('document.activeElement', 'target');
-debug('Remove href.');
 window.onload = function() {
+    debug('Remove href.');
+    target.focus();
+    shouldBe('document.activeElement', 'target');
     target.removeAttribute('href');
     shouldBe('document.activeElement', 'document.body');
+
+    debug('Update href.');
+    target.href = 'javascript:';
+    target.focus();
+    target.href = 'javascript:undefined';
+    shouldBe('document.activeElement', 'target');
+
     target.remove();
     finishJSTest();
 };

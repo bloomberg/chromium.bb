@@ -256,11 +256,10 @@ void HTMLAnchorElement::attributeChanged(
   HTMLElement::attributeChanged(params);
   if (params.reason != AttributeModificationReason::kDirectly)
     return;
-  if (params.name != hrefAttr && isLink())
+  if (params.name != hrefAttr)
     return;
-  if (adjustedFocusedElementInTreeScope() != this)
-    return;
-  blur();
+  if (!isLink() && adjustedFocusedElementInTreeScope() == this)
+    blur();
 }
 
 void HTMLAnchorElement::parseAttribute(
