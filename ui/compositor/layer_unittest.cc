@@ -1147,9 +1147,13 @@ TEST_F(LayerWithNullDelegateTest, EmptyDamagedRect) {
   WaitForCommit();
   EXPECT_TRUE(root->damaged_region_for_testing().IsEmpty());
 
-  compositor()->SetRootLayer(nullptr);
-  root.reset();
-  WaitForCommit();
+  // The texture mailbox has a reference from an in-flight texture layer.
+  // We clear the texture mailbox from the root layer and draw a new frame
+  // to ensure that the texture mailbox is released. We then draw a second
+  // frame to ensure that the mailbox's release callback has time to run.
+  root->SetShowSolidColorContent();
+  Draw();
+  Draw();
 }
 
 void ExpectRgba(int x, int y, SkColor expected_color, SkColor actual_color) {
