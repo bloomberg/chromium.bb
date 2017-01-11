@@ -205,6 +205,8 @@ Surface::~Surface() {
     observer.OnSurfaceDestroying(this);
 
   window_->RemoveObserver(this);
+  if (window_->layer()->GetCompositor())
+    window_->layer()->GetCompositor()->vsync_manager()->RemoveObserver(this);
   window_->layer()->SetShowSolidColorContent();
 
   frame_callbacks_.splice(frame_callbacks_.end(), pending_frame_callbacks_);
