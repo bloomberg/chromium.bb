@@ -494,7 +494,7 @@ void LocalFrame::printNavigationWarning(const String& message) {
       ConsoleMessage::create(JSMessageSource, WarningMessageLevel, message));
 }
 
-WindowProxyManager* LocalFrame::getWindowProxyManager() const {
+WindowProxyManagerBase* LocalFrame::getWindowProxyManager() const {
   return m_script->getWindowProxyManager();
 }
 

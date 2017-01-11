@@ -52,7 +52,6 @@ class Element;
 class KURL;
 class ScriptSourceCode;
 class SecurityOrigin;
-class WindowProxy;
 class Widget;
 
 typedef WTF::Vector<v8::Extension*> V8Extensions;
@@ -80,7 +79,7 @@ class CORE_EXPORT ScriptController final
 
   // This returns an initialized window proxy. (If the window proxy is not
   // yet initialized, it's implicitly initialized at the first access.)
-  WindowProxy* windowProxy(DOMWrapperWorld&);
+  LocalWindowProxy* windowProxy(DOMWrapperWorld&);
 
   // Evaluate JavaScript in the main world.
   void executeScriptInMainWorld(
@@ -148,22 +147,20 @@ class CORE_EXPORT ScriptController final
 
   v8::Isolate* isolate() const { return m_windowProxyManager->isolate(); }
 
-  WindowProxyManager* getWindowProxyManager() const {
+  LocalWindowProxyManager* getWindowProxyManager() const {
     return m_windowProxyManager.get();
   }
 
  private:
   explicit ScriptController(LocalFrame*);
 
-  LocalFrame* frame() const {
-    return toLocalFrame(m_windowProxyManager->frame());
-  }
+  LocalFrame* frame() const { return m_windowProxyManager->frame(); }
 
   v8::Local<v8::Value> evaluateScriptInMainWorld(const ScriptSourceCode&,
                                                  AccessControlStatus,
                                                  ExecuteScriptPolicy);
 
-  Member<WindowProxyManager> m_windowProxyManager;
+  Member<LocalWindowProxyManager> m_windowProxyManager;
 };
 
 }  // namespace blink

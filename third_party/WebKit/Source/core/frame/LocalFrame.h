@@ -236,7 +236,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
              InterfaceRegistry*);
 
   // Internal Frame helper overrides:
-  WindowProxyManager* getWindowProxyManager() const override;
+  WindowProxyManagerBase* getWindowProxyManager() const override;
   // Intentionally private to prevent redundant checks when the type is
   // already LocalFrame.
   bool isLocalFrame() const override { return true; }

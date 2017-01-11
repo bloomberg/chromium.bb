@@ -79,7 +79,7 @@
 namespace blink {
 
 ScriptController::ScriptController(LocalFrame* frame)
-    : m_windowProxyManager(WindowProxyManager::create(*frame)) {}
+    : m_windowProxyManager(LocalWindowProxyManager::create(*frame)) {}
 
 DEFINE_TRACE(ScriptController) {
   visitor->trace(m_windowProxyManager);
@@ -209,8 +209,8 @@ void ScriptController::executeScriptInMainWorld(
                        InspectorUpdateCountersEvent::data());
 }
 
-WindowProxy* ScriptController::windowProxy(DOMWrapperWorld& world) {
-  WindowProxy* windowProxy = m_windowProxyManager->windowProxy(world);
+LocalWindowProxy* ScriptController::windowProxy(DOMWrapperWorld& world) {
+  LocalWindowProxy* windowProxy = m_windowProxyManager->windowProxy(world);
   windowProxy->initializeIfNeeded();
   return windowProxy;
 }
@@ -441,7 +441,7 @@ void ScriptController::executeScriptInIsolatedWorld(
 
   RefPtr<DOMWrapperWorld> world =
       DOMWrapperWorld::ensureIsolatedWorld(isolate(), worldID, extensionGroup);
-  WindowProxy* isolatedWorldWindowProxy = windowProxy(*world);
+  LocalWindowProxy* isolatedWorldWindowProxy = windowProxy(*world);
   ScriptState* scriptState = isolatedWorldWindowProxy->getScriptState();
   if (!scriptState->contextIsValid())
     return;

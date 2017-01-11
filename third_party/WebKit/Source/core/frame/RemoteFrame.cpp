@@ -30,7 +30,7 @@ inline RemoteFrame::RemoteFrame(RemoteFrameClient* client,
                                 FrameOwner* owner)
     : Frame(client, host, owner),
       m_securityContext(RemoteSecurityContext::create()),
-      m_windowProxyManager(WindowProxyManager::create(*this)) {
+      m_windowProxyManager(RemoteWindowProxyManager::create(*this)) {
   m_domWindow = RemoteDOMWindow::create(*this);
 }
 
@@ -185,6 +185,10 @@ void RemoteFrame::setWebLayer(WebLayer* webLayer) {
 
 void RemoteFrame::advanceFocus(WebFocusType type, LocalFrame* source) {
   client()->advanceFocus(type, source);
+}
+
+WindowProxyManagerBase* RemoteFrame::getWindowProxyManager() const {
+  return m_windowProxyManager.get();
 }
 
 void RemoteFrame::detachChildren() {

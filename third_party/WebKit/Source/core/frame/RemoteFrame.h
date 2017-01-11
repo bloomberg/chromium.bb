@@ -17,8 +17,8 @@ class IntRect;
 class LocalFrame;
 class RemoteFrameClient;
 class RemoteFrameView;
+class RemoteWindowProxyManager;
 class WebLayer;
-class WindowProxyManager;
 struct FrameLoadRequest;
 
 class CORE_EXPORT RemoteFrame final : public Frame {
@@ -68,9 +68,8 @@ class CORE_EXPORT RemoteFrame final : public Frame {
   RemoteFrame(RemoteFrameClient*, FrameHost*, FrameOwner*);
 
   // Internal Frame helper overrides:
-  WindowProxyManager* getWindowProxyManager() const override {
-    return m_windowProxyManager.get();
-  }
+  WindowProxyManagerBase* getWindowProxyManager() const override;
+
   // Intentionally private to prevent redundant checks when the type is
   // already RemoteFrame.
   bool isLocalFrame() const override { return false; }
@@ -80,7 +79,7 @@ class CORE_EXPORT RemoteFrame final : public Frame {
 
   Member<RemoteFrameView> m_view;
   Member<RemoteSecurityContext> m_securityContext;
-  Member<WindowProxyManager> m_windowProxyManager;
+  Member<RemoteWindowProxyManager> m_windowProxyManager;
   WebLayer* m_webLayer = nullptr;
 };
 

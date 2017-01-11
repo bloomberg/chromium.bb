@@ -54,7 +54,7 @@ class Page;
 class SecurityContext;
 class Settings;
 class WindowProxy;
-class WindowProxyManager;
+class WindowProxyManagerBase;
 struct FrameLoadRequest;
 
 enum class FrameDetachType { Remove, Swap };
@@ -143,7 +143,7 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   void setIsLoading(bool isLoading) { m_isLoading = isLoading; }
   bool isLoading() const { return m_isLoading; }
 
-  virtual WindowProxyManager* getWindowProxyManager() const = 0;
+  virtual WindowProxyManagerBase* getWindowProxyManager() const = 0;
 
   virtual void didChangeVisibilityState();
 

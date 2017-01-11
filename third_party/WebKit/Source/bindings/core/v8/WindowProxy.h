@@ -35,55 +35,43 @@
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "platform/heap/Handle.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/HashMap.h"
-#include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-#include "wtf/text/AtomicString.h"
 #include <v8.h>
 
 namespace blink {
 
 class Frame;
-class HTMLDocument;
-class SecurityOrigin;
+class ScriptController;
 
 // WindowProxy represents all the per-global object state for a Frame that
 // persist between navigations.
-class WindowProxy final : public GarbageCollectedFinalized<WindowProxy> {
+class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
  public:
-  static WindowProxy* create(v8::Isolate*, Frame*, DOMWrapperWorld&);
+  virtual ~WindowProxy();
 
-  ~WindowProxy();
   DECLARE_TRACE();
 
   v8::Local<v8::Context> contextIfInitialized() const {
     return m_scriptState ? m_scriptState->context() : v8::Local<v8::Context>();
   }
-  ScriptState* getScriptState() const { return m_scriptState.get(); }
-
-  // Update document object of the frame.
-  void updateDocument();
-
-  void namedItemAdded(HTMLDocument*, const AtomicString&);
-  void namedItemRemoved(HTMLDocument*, const AtomicString&);
-
-  // Update the security origin of a document
-  // (e.g., after setting docoument.domain).
-  void updateSecurityOrigin(SecurityOrigin*);
-
   void initializeIfNeeded();
 
-  void clearForNavigation();
   void clearForClose();
+  void clearForNavigation();
 
   v8::Local<v8::Object> globalIfNotDetached();
   v8::Local<v8::Object> releaseGlobal();
   void setGlobal(v8::Local<v8::Object>);
 
+  // TODO(dcheng): Temporarily exposed to avoid include cycles. Remove the need
+  // for this and remove this getter.
   DOMWrapperWorld& world() { return *m_world; }
 
- private:
+ protected:
+  // TODO(dcheng): Remove this friend declaration once LocalWindowProxyManager
+  // and ScriptController are merged.
+  friend class ScriptController;
+
   // A valid transition is from ContextUninitialized to ContextInitialized,
   // and then ContextDetached. Other transitions are forbidden.
   enum class Lifecycle {
@@ -92,36 +80,31 @@ class WindowProxy final : public GarbageCollectedFinalized<WindowProxy> {
     ContextDetached,
   };
 
-  WindowProxy(Frame*, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);
-  void initialize();
+  WindowProxy(v8::Isolate*, Frame&, RefPtr<DOMWrapperWorld>);
+
+  virtual void initialize() = 0;
 
   enum GlobalDetachmentBehavior { DoNotDetachGlobal, DetachGlobal };
-  void disposeContext(GlobalDetachmentBehavior);
-
-  void setSecurityToken(SecurityOrigin*);
-
-  // The JavaScript wrapper for the document object is cached on the global
-  // object for fast access. UpdateDocumentProperty sets the wrapper
-  // for the current document on the global object.
-  void updateDocumentProperty();
-
-  // Updates Activity Logger for the current context.
-  void updateActivityLogger();
-
-  // Creates a new v8::Context with the window wrapper object as the global
-  // object (aka the inner global).  Note that the window wrapper and its
-  // prototype chain do not get fully initialized yet, e.g. the window
-  // wrapper is not yet associated with the native DOMWindow object.
-  void createContext();
+  virtual void disposeContext(GlobalDetachmentBehavior);
 
   // Associates the window wrapper and its prototype chain with the native
   // DOMWindow object.  Also does some more Window-specific initialization.
   void setupWindowPrototypeChain();
 
-  Member<Frame> m_frame;
-  v8::Isolate* m_isolate;
+  v8::Isolate* isolate() const { return m_isolate; }
+  Frame* frame() const { return m_frame.get(); }
+  ScriptState* getScriptState() const { return m_scriptState.get(); }
+
+ private:
+  v8::Isolate* const m_isolate;
+  const Member<Frame> m_frame;
+
+ protected:
+  // TODO(dcheng): Move this to LocalWindowProxy once RemoteWindowProxy uses
+  // remote contexts.
   RefPtr<ScriptState> m_scriptState;
-  RefPtr<DOMWrapperWorld> m_world;
+  // TODO(dcheng): Consider making these private and using getters.
+  const RefPtr<DOMWrapperWorld> m_world;
   ScopedPersistent<v8::Object> m_globalProxy;
   Lifecycle m_lifecycle;
 };
