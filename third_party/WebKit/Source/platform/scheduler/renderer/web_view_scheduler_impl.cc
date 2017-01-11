@@ -30,7 +30,7 @@ constexpr base::TimeDelta kDefaultMaxBackgroundThrottlingDelay =
     base::TimeDelta::FromMinutes(1);
 constexpr base::TimeDelta kDefaultInitialBackgroundBudget =
     base::TimeDelta::FromSeconds(1);
-constexpr base::TimeDelta kBackgroundBudgetThrottlingGracePeriod =
+constexpr base::TimeDelta kBackgroundThrottlingGracePeriod =
     base::TimeDelta::FromSeconds(10);
 
 // Values coming from WebViewSchedulerSettings are interpreted as follows:
@@ -101,6 +101,7 @@ WebViewSchedulerImpl::WebViewSchedulerImpl(
       virtual_time_policy_(VirtualTimePolicy::ADVANCE),
       background_parser_count_(0),
       page_visible_(true),
+      should_throttle_frames_(false),
       disable_background_timer_throttling_(disable_background_timer_throttling),
       allow_virtual_time_to_advance_(true),
       have_seen_loading_task_(false),
@@ -111,8 +112,8 @@ WebViewSchedulerImpl::WebViewSchedulerImpl(
       settings_(settings) {
   renderer_scheduler->AddWebViewScheduler(this);
 
-  delayed_background_budget_throttling_enabler_.Reset(
-      base::Bind(&WebViewSchedulerImpl::EnableBackgroundBudgetThrottling,
+  delayed_background_throttling_enabler_.Reset(
+      base::Bind(&WebViewSchedulerImpl::EnableBackgroundThrottling,
                  base::Unretained(this)));
 }
 
@@ -134,11 +135,7 @@ void WebViewSchedulerImpl::setPageVisible(bool page_visible) {
 
   page_visible_ = page_visible;
 
-  for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
-    frame_scheduler->setPageVisible(page_visible_);
-  }
-
-  UpdateBackgroundBudgetThrottlingState();
+  UpdateBackgroundThrottlingState();
 }
 
 std::unique_ptr<WebFrameSchedulerImpl>
@@ -147,7 +144,7 @@ WebViewSchedulerImpl::createWebFrameSchedulerImpl(
   MaybeInitializeBackgroundTimeBudgetPool();
   std::unique_ptr<WebFrameSchedulerImpl> frame_scheduler(
       new WebFrameSchedulerImpl(renderer_scheduler_, this, blame_context));
-  frame_scheduler->setPageVisible(page_visible_);
+  frame_scheduler->setPageThrottled(should_throttle_frames_);
   frame_schedulers_.insert(frame_scheduler.get());
   return frame_scheduler;
 }
@@ -302,7 +299,7 @@ void WebViewSchedulerImpl::MaybeInitializeBackgroundTimeBudgetPool() {
           "background", GetMaxBudgetLevel(settings_),
           GetMaxThrottlingDelay(settings_));
 
-  UpdateBackgroundBudgetThrottlingState();
+  UpdateBackgroundThrottlingState();
 
   LazyNow lazy_now(renderer_scheduler_->tick_clock());
 
@@ -333,30 +330,34 @@ void WebViewSchedulerImpl::OnThrottlingReported(
   intervention_reporter_->ReportIntervention(WebString::fromUTF8(message));
 }
 
-void WebViewSchedulerImpl::EnableBackgroundBudgetThrottling() {
-  if (!background_time_budget_pool_)
-    return;
-
-  LazyNow lazy_now(renderer_scheduler_->tick_clock());
-
-  background_time_budget_pool_->EnableThrottling(&lazy_now);
+void WebViewSchedulerImpl::EnableBackgroundThrottling() {
+  should_throttle_frames_ = true;
+  for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
+    frame_scheduler->setPageThrottled(true);
+  }
+  if (background_time_budget_pool_) {
+    LazyNow lazy_now(renderer_scheduler_->tick_clock());
+    background_time_budget_pool_->EnableThrottling(&lazy_now);
+  }
 }
 
-void WebViewSchedulerImpl::UpdateBackgroundBudgetThrottlingState() {
-  if (!background_time_budget_pool_)
-    return;
-
-  delayed_background_budget_throttling_enabler_.Cancel();
-
-  LazyNow lazy_now(renderer_scheduler_->tick_clock());
+void WebViewSchedulerImpl::UpdateBackgroundThrottlingState() {
+  delayed_background_throttling_enabler_.Cancel();
 
   if (page_visible_) {
-    background_time_budget_pool_->DisableThrottling(&lazy_now);
+    should_throttle_frames_ = false;
+    for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
+      frame_scheduler->setPageThrottled(false);
+    }
+    if (background_time_budget_pool_) {
+      LazyNow lazy_now(renderer_scheduler_->tick_clock());
+      background_time_budget_pool_->DisableThrottling(&lazy_now);
+    }
   } else {
     // TODO(altimin): Consider moving this logic into PumpThrottledTasks.
     renderer_scheduler_->ControlTaskRunner()->PostDelayedTask(
-        FROM_HERE, delayed_background_budget_throttling_enabler_.callback(),
-        kBackgroundBudgetThrottlingGracePeriod);
+        FROM_HERE, delayed_background_throttling_enabler_.callback(),
+        kBackgroundThrottlingGracePeriod);
   }
 }
 

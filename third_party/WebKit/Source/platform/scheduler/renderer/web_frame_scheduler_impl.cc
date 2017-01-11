@@ -36,7 +36,7 @@ WebFrameSchedulerImpl::WebFrameSchedulerImpl(
       parent_web_view_scheduler_(parent_web_view_scheduler),
       blame_context_(blame_context),
       frame_visible_(true),
-      page_visible_(true),
+      page_throttled_(true),
       frame_suspended_(false),
       cross_origin_(false) {}
 
@@ -178,7 +178,7 @@ void WebFrameSchedulerImpl::setDocumentParsingInBackground(
 void WebFrameSchedulerImpl::AsValueInto(
     base::trace_event::TracedValue* state) const {
   state->SetBoolean("frame_visible", frame_visible_);
-  state->SetBoolean("page_visible", page_visible_);
+  state->SetBoolean("page_throttled", page_throttled_);
   state->SetBoolean("cross_origin", cross_origin_);
   if (loading_task_queue_) {
     state->SetString("loading_task_queue",
@@ -199,12 +199,12 @@ void WebFrameSchedulerImpl::AsValueInto(
   }
 }
 
-void WebFrameSchedulerImpl::setPageVisible(bool page_visible) {
+void WebFrameSchedulerImpl::setPageThrottled(bool page_throttled) {
   DCHECK(parent_web_view_scheduler_);
-  if (page_visible_ == page_visible)
+  if (page_throttled_ == page_throttled)
     return;
   bool was_throttled = ShouldThrottleTimers();
-  page_visible_ = page_visible;
+  page_throttled_ = page_throttled;
   UpdateTimerThrottling(was_throttled);
 }
 
@@ -225,7 +225,7 @@ void WebFrameSchedulerImpl::onFirstMeaningfulPaint() {
 }
 
 bool WebFrameSchedulerImpl::ShouldThrottleTimers() const {
-  if (!page_visible_)
+  if (page_throttled_)
     return true;
   return RuntimeEnabledFeatures::timerThrottlingForHiddenFramesEnabled() &&
          !frame_visible_ && cross_origin_;

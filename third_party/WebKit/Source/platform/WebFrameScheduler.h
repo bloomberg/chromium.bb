@@ -19,10 +19,9 @@ class WebFrameScheduler {
   // The scheduler may throttle tasks associated with offscreen frames.
   virtual void setFrameVisible(bool) {}
 
-  // Tells the scheduler that the page this frame belongs to is not visible.
-  // The scheduler may throttle tasks associated with pages that are not
-  // visible.
-  virtual void setPageVisible(bool) {}
+  // Tells the scheduler that the page this frame belongs to supposed to be
+  // throttled (because it's not been visible for a few seconds).
+  virtual void setPageThrottled(bool) {}
 
   // Set whether this frame is suspended. Only unthrottledTaskRunner tasks are
   // allowed to run on a suspended frame.
