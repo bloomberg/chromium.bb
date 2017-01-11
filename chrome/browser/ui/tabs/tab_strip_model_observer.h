@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_OBSERVER_H_
 #define CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_OBSERVER_H_
 
+#include "base/macros.h"
+
 class TabStripModel;
 
 namespace content {
@@ -152,7 +154,11 @@ class TabStripModelObserver {
   virtual void CloseAllTabsCanceled();
 
  protected:
+  TabStripModelObserver();
   virtual ~TabStripModelObserver() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TabStripModelObserver);
 };
 
 #endif  // CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_OBSERVER_H_
