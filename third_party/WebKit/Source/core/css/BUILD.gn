@@ -352,6 +352,7 @@ blink_core_sources("css") {
     "properties/CSSPropertyAPIFontVariationSettings.cpp",
     "properties/CSSPropertyAPIOffsetPosition.cpp",
     "properties/CSSPropertyAPIOutlineOffset.cpp",
+    "properties/CSSPropertyAPIPage.cpp",
     "properties/CSSPropertyAPISize.cpp",
     "properties/CSSPropertyAPITextDecorationColor.cpp",
     "properties/CSSPropertyAPITextDecorationSkip.cpp",

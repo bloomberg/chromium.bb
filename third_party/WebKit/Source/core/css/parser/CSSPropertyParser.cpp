@@ -329,12 +329,6 @@ static CSSValue* consumeFontFeatureSettings(CSSParserTokenRange& range) {
   return settings;
 }
 
-static CSSValue* consumePage(CSSParserTokenRange& range) {
-  if (range.peek().id() == CSSValueAuto)
-    return consumeIdent(range);
-  return consumeCustomIdent(range);
-}
-
 static CSSValue* consumeQuotes(CSSParserTokenRange& range) {
   if (range.peek().id() == CSSValueNone)
     return consumeIdent(range);
@@ -3228,8 +3222,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     return cssPropertyDesc.parseSingleValue(m_range, m_context);
 
   switch (property) {
-    case CSSPropertyPage:
-      return consumePage(m_range);
     case CSSPropertyQuotes:
       return consumeQuotes(m_range);
     case CSSPropertyWebkitHighlight:

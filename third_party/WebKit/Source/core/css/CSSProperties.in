@@ -516,7 +516,7 @@ max-block-size direction_aware
 // TODO(timloh): This seems wrong, most of these shouldn't reach the StyleBuilder
 
 all builder_skip
-page builder_skip
+page builder_skip, api_class
 -webkit-font-size-delta builder_skip
 -webkit-text-decorations-in-effect inherited, builder_skip
 
