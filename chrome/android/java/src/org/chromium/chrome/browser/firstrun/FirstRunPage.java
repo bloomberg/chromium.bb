@@ -49,6 +49,13 @@ public class FirstRunPage extends Fragment {
     }
 
     /**
+     * @return Whether the page should be re-created when notifyDataSetChanged() fires.
+     */
+    public boolean shouldRecreatePageOnDataChange() {
+        return true;
+    }
+
+    /**
      * @return Passed arguments if any, or saved instance state if any, or an empty bundle.
      */
     protected Bundle getProperties() {
@@ -68,4 +75,9 @@ public class FirstRunPage extends Fragment {
     protected void advanceToNextPage() {
         getPageDelegate().advanceToNextPage();
     }
+
+    /**
+     * Notifies this page that native has been initialized.
+     */
+    protected void onNativeInitialized() {}
 }

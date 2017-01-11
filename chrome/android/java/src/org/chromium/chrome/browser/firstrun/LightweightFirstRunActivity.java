@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.firstrun;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Bundle;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,9 +26,8 @@ import org.chromium.ui.text.SpanApplier.SpanInfo;
 */
 public class LightweightFirstRunActivity extends FirstRunActivity {
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+    public void setContentView() {
+        super.setContentView();
         if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)) {
             completeFirstRunExperience();
         }

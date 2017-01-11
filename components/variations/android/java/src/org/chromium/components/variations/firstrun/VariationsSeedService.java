@@ -33,8 +33,8 @@ public class VariationsSeedService extends IntentService {
     private static final String VARIATIONS_SERVER_URL =
             "https://clientservices.googleapis.com/chrome-variations/seed?osname=android";
     private static final int BUFFER_SIZE = 4096;
-    private static final int READ_TIMEOUT = 10000; // time in ms
-    private static final int REQUEST_TIMEOUT = 15000; // time in ms
+    private static final int READ_TIMEOUT = 3000; // time in ms
+    private static final int REQUEST_TIMEOUT = 1000; // time in ms
 
     // Values for the "Variations.FirstRun.SeedFetchResult" sparse histogram, which also logs
     // HTTP result codes. These are negative so that they don't conflict with the HTTP codes.

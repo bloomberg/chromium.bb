@@ -10,21 +10,18 @@ import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
-import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
-import org.chromium.chrome.browser.init.EmptyBrowserParts;
+import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoUtils;
@@ -35,7 +32,9 @@ import org.chromium.chrome.browser.util.IntentUtils;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 /**
@@ -46,7 +45,7 @@ import java.util.concurrent.Callable;
  *   [Sign-in page]
  * The activity might be run more than once, e.g. 1) for ToS and sign-in, and 2) for intro.
  */
-public class FirstRunActivity extends AppCompatActivity implements FirstRunPageDelegate {
+public class FirstRunActivity extends AsyncInitializationActivity implements FirstRunPageDelegate {
     protected static final String TAG = "FirstRunActivity";
 
     // Incoming parameters:
@@ -103,6 +102,8 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
 
     private boolean mPostNativePageSequenceCreated;
     private boolean mNativeSideIsInitialized;
+    private Set<FirstRunPage> mPagesToNotifyOfNativeInit;
+    private boolean mDeferredCompleteFRE;
 
     private ProfileDataCache mProfileDataCache;
     private FirstRunViewPager mPager;
@@ -131,12 +132,10 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         if (mShowWelcomePage) {
             mPages.add(pageOf(ToSAndUMAFirstRunFragment.class));
             mFreProgressStates.add(FRE_PROGRESS_WELCOME_SHOWN);
-        } else {
-            // Otherwise, if we're skipping past the welcome page, then init the
-            // native process and determine if data reduction proxy and signin
-            // pages should be shown - which both depend on native code.
-            createPostNativePageSequence();
         }
+
+        // Other pages will be created by createPostNativePageSequence() after
+        // native has been initialized.
     }
 
     private void createPostNativePageSequence() {
@@ -144,7 +143,6 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         // populates |mPages| which needs to be done even even if onNativeInitialized() was
         // performed in a previous session.
         if (mPostNativePageSequenceCreated) return;
-        ensureBrowserProcessInitialized();
         mFirstRunFlowSequencer.onNativeInitialized(mFreProperties);
 
         boolean notifyAdapter = false;
@@ -168,14 +166,11 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         mPostNativePageSequenceCreated = true;
     }
 
-    // Activity:
+    // AsyncInitializationActivity:
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        ChromeBrowserInitializer.getInstance(this).handlePreNativeStartup(new EmptyBrowserParts());
-
+    public void setContentView() {
+        Bundle savedInstanceState = getSavedInstanceState();
         if (savedInstanceState != null) {
             mFreProperties = savedInstanceState;
         } else if (getIntent() != null) {
@@ -225,13 +220,48 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
                 mPager.setAdapter(mPagerAdapter);
 
                 recordFreProgressHistogram(mFreProgressStates.get(0));
-
-                skipPagesIfNecessary();
             }
         };
         mFirstRunFlowSequencer.start();
 
         recordFreProgressHistogram(FRE_PROGRESS_STARTED);
+    }
+
+    @Override
+    public void finishNativeInitialization() {
+        super.finishNativeInitialization();
+        mNativeSideIsInitialized = true;
+        if (mDeferredCompleteFRE) {
+            completeFirstRunExperience();
+            mDeferredCompleteFRE = false;
+        } else {
+            createPostNativePageSequence();
+            if (mPagesToNotifyOfNativeInit != null) {
+                for (FirstRunPage page : mPagesToNotifyOfNativeInit) {
+                    page.onNativeInitialized();
+                }
+            }
+            mPagesToNotifyOfNativeInit = null;
+            skipPagesIfNecessary();
+        }
+    }
+
+    // Activity:
+
+    @Override
+    public void onAttachFragment(Fragment fragment) {
+        if (!(fragment instanceof FirstRunPage)) return;
+
+        FirstRunPage page = (FirstRunPage) fragment;
+        if (mNativeSideIsInitialized) {
+            page.onNativeInitialized();
+            return;
+        }
+
+        if (mPagesToNotifyOfNativeInit == null) {
+            mPagesToNotifyOfNativeInit = new HashSet<FirstRunPage>();
+        }
+        mPagesToNotifyOfNativeInit.add(page);
     }
 
     @Override
@@ -241,7 +271,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
     }
 
     @Override
-    protected void onPause() {
+    public void onPause() {
         super.onPause();
         flushPersistentData();
     }
@@ -253,7 +283,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
     }
 
     @Override
-    protected void onStart() {
+    public void onStart() {
         super.onStart();
         // Since the FRE may be shown before any tab is shown, mark that this is the point at
         // which Chrome went to foreground. This is needed as otherwise an assert will be hit
@@ -325,7 +355,10 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
 
     @Override
     public void completeFirstRunExperience() {
-        ensureBrowserProcessInitialized();
+        if (!mNativeSideIsInitialized) {
+            mDeferredCompleteFRE = true;
+            return;
+        }
         if (!TextUtils.isEmpty(mResultSignInAccountName)) {
             boolean defaultAccountName =
                     sGlue.isDefaultAccountName(getApplicationContext(), mResultSignInAccountName);
@@ -396,13 +429,6 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
 
     @Override
     public void acceptTermsOfService(boolean allowCrashUpload) {
-        // At this point, we're advancing past the first page, which has no native
-        // dependencies to further pages in the sequence, if any. These require
-        // native to be initialized and will be added by the call below if needed.
-        // Additionally, the calls later in this function also require native
-        // to be initialized.
-        createPostNativePageSequence();
-
         // If default is true then it corresponds to opt-out and false corresponds to opt-in.
         UmaUtils.recordMetricsReportingDefaultOptIn(!DEFAULT_METRICS_AND_CRASH_REPORTING);
         sGlue.acceptTermsOfService(allowCrashUpload);
@@ -504,25 +530,8 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         while (currentPageIndex < mPagerAdapter.getCount()) {
             FirstRunPage currentPage = (FirstRunPage) mPagerAdapter.getItem(currentPageIndex);
             if (!currentPage.shouldSkipPageOnCreate(getApplicationContext())) return;
-            // If we're advancing to the next page, ensure to init the post native page
-            // sequence - as every page except the first requires that to be initialized.
-            // This is a no-op if it has already been done.
-            createPostNativePageSequence();
             if (!jumpToPage(currentPageIndex + 1)) return;
             currentPageIndex = mPager.getCurrentItem();
-        }
-    }
-
-    private void ensureBrowserProcessInitialized() {
-        if (mNativeSideIsInitialized) return;
-        try {
-            ChromeBrowserInitializer.getInstance(this).handlePostNativeStartup(
-                    false, new EmptyBrowserParts());
-            mNativeSideIsInitialized = true;
-        } catch (ProcessInitException e) {
-            Log.e(TAG, "Unable to load native library.", e);
-            abortFirstRunExperience();
-            return;
         }
     }
 

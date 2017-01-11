@@ -93,4 +93,13 @@
         android:textSize="@dimen/fre_button_text_size"
         chrome:buttonColor="@color/light_active_color"
         chrome:buttonRaised="false"/>
+
+    <!-- Same location as the button; marginButtom is adjusted for the different size. -->
+    <ProgressBar
+        android:id="@+id/progress_spinner"
+        style="@style/Widget.AppCompat.ProgressBar"
+        android:layout_marginBottom="22dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_width="24dp"
+        android:layout_height="24dp" />
 </org.chromium.chrome.browser.firstrun.FirstRunView>
