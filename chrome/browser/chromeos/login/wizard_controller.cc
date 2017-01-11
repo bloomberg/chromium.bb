@@ -603,8 +603,6 @@ void WizardController::ShowSupervisedUserCreationScreen() {
 
 void WizardController::ShowHIDDetectionScreen() {
   VLOG(1) << "Showing HID discovery screen.";
-  // TODO(drcrash): Remove this after testing (http://crbug.com/647411).
-  SetShowMdOobe(false);  // Disable the MD OOBE from there on.
   SetStatusAreaVisible(true);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_OOBE_HID_DETECTION));
   // In HID detection screen, puts the Bluetooth in discoverable mode and waits
@@ -984,6 +982,8 @@ void WizardController::SetCurrentScreenSmooth(BaseScreen* new_current,
 
   previous_screen_ = current_screen_;
   current_screen_ = new_current;
+
+  oobe_ui_->UpdateLocalizedStringsIfNeeded();
 
   if (use_smoothing) {
     smooth_show_timer_.Start(

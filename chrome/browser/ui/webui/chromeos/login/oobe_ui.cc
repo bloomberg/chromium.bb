@@ -512,10 +512,9 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
 
   bool new_kiosk_ui = KioskAppMenuHandler::EnableNewKioskUI();
   localized_strings->SetString("newKioskUI", new_kiosk_ui ? "on" : "off");
-  localized_strings->SetString(
-      "newOobeUI",
-      g_browser_process->local_state()->GetBoolean(prefs::kOobeMdMode) ? "on"
-                                                                       : "off");
+  oobe_ui_md_mode_ =
+      g_browser_process->local_state()->GetBoolean(prefs::kOobeMdMode);
+  localized_strings->SetString("newOobeUI", oobe_ui_md_mode_ ? "on" : "off");
 }
 
 void OobeUI::AddScreenHandler(std::unique_ptr<BaseScreenHandler> handler) {
@@ -620,6 +619,17 @@ void OobeUI::OnCurrentScreenChanged(OobeScreen new_screen) {
   current_screen_ = new_screen;
   for (Observer& observer : observer_list_)
     observer.OnCurrentScreenChanged(current_screen_, new_screen);
+}
+
+void OobeUI::UpdateLocalizedStringsIfNeeded() {
+  if (oobe_ui_md_mode_ ==
+      g_browser_process->local_state()->GetBoolean(prefs::kOobeMdMode)) {
+    return;
+  }
+
+  base::DictionaryValue localized_strings;
+  GetLocalizedStrings(&localized_strings);
+  static_cast<CoreOobeActor*>(core_handler_)->ReloadContent(localized_strings);
 }
 
 }  // namespace chromeos

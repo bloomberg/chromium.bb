@@ -20,38 +20,22 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
   var PINCODE_LENGTH = 6;
 
   return {
+    // Enumeration of possible connection states of a device.
+    CONNECTION: {
+      SEARCHING: 'searching',
+      USB: 'usb',
+      CONNECTED: 'connected',
+      PAIRING: 'pairing',
+      PAIRED: 'paired',
+      // Special info state.
+      UPDATE: 'update',
+    },
 
-  /**
-   * Enumeration of possible states during pairing.  The value associated with
-   * each state maps to a localized string in the global variable
-   * |loadTimeData|.
-   * @enum {string}
-   */
-   PAIRING: {
-     STARTUP: 'bluetoothStartConnecting',
-     REMOTE_PIN_CODE: 'bluetoothRemotePinCode',
-     CONNECT_FAILED: 'bluetoothConnectFailed',
-     CANCELED: 'bluetoothPairingCanceled',
-     // Pairing dismissed (succeeded or canceled).
-     DISMISSED: 'bluetoothPairingDismissed'
-   },
-
-   // Enumeration of possible connection states of a device.
-   CONNECTION: {
-     SEARCHING: 'searching',
-     USB: 'usb',
-     CONNECTED: 'connected',
-     PAIRING: 'pairing',
-     PAIRED: 'paired',
-     // Special info state.
-     UPDATE: 'update'
-   },
-
-   // Possible ids of device blocks.
-   BLOCK: {
-     MOUSE: 'hid-mouse-block',
-     KEYBOARD: 'hid-keyboard-block'
-   },
+    // Possible ids of device blocks.
+    BLOCK: {
+      MOUSE: 'hid-mouse-block',
+      KEYBOARD: 'hid-keyboard-block',
+    },
 
     /**
      * Button to move to usual OOBE flow after detection.
@@ -63,12 +47,15 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
     decorate: function() {
       var self = this;
 
+      $('oobe-hid-detection-md').screen = this;
+
       this.context.addObserver(
           CONTEXT_KEY_MOUSE_STATE,
           function(stateId) {
             if (stateId === undefined)
               return;
             self.setDeviceBlockState_('hid-mouse-block', stateId);
+            $('oobe-hid-detection-md').setMouseState(stateId);
           }
       );
       this.context.addObserver(
@@ -78,12 +65,15 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
           if (stateId === undefined)
             return;
           self.setDeviceBlockState_('hid-keyboard-block', stateId);
+          $('oobe-hid-detection-md').setKeyboardState(stateId);
           if (stateId == self.CONNECTION.PAIRED) {
-            $('hid-keyboard-label-paired').textContent = self.context.get(
-                CONTEXT_KEY_KEYBOARD_LABEL, '');
+            var label = self.context.get(CONTEXT_KEY_KEYBOARD_LABEL, '');
+            $('hid-keyboard-label-paired').textContent = label;
+            $('oobe-hid-detection-md').keyboardPairedLabel = label;
           } else if (stateId == self.CONNECTION.PAIRING) {
-            $('hid-keyboard-label-pairing').textContent = self.context.get(
-                CONTEXT_KEY_KEYBOARD_LABEL, '');
+            var label = self.context.get(CONTEXT_KEY_KEYBOARD_LABEL, '');
+            $('hid-keyboard-label-pairing').textContent = label;
+            $('oobe-hid-detection-md').keyboardPairingLabel = label;
           }
         }
       );
@@ -100,6 +90,7 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
         CONTEXT_KEY_CONTINUE_BUTTON_ENABLED,
         function(enabled) {
           $('hid-continue-button').disabled = !enabled;
+          $('oobe-hid-detection-md').continueButtonDisabled = !enabled;
         }
       );
     },
@@ -126,9 +117,7 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
     /**
      * Returns a control which should receive an initial focus.
      */
-    get defaultControl() {
-      return $('hid-continue-button');
-    },
+    get defaultControl() { return $('hid-continue-button'); },
 
     /**
      * Sets a device-block css class to reflect device state of searching, usb,
@@ -155,6 +144,7 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
       if (state === undefined)
         return;
       this.setDeviceBlockState_(this.BLOCK.MOUSE, state);
+      $('oobe-hid-detection-md').setMouseState(state);
     },
 
     /**
@@ -164,6 +154,18 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
       var pincodeKeys = $('hid-keyboard-pincode');
       var pincode = this.context.get(CONTEXT_KEY_KEYBOARD_PINCODE, '');
       var state = this.context.get(CONTEXT_KEY_KEYBOARD_STATE, '');
+      var label = this.context.get(CONTEXT_KEY_KEYBOARD_LABEL, '');
+
+      var entered =
+          this.context.get(CONTEXT_KEY_KEYBOARD_ENTERED_PART_PINCODE, 0);
+
+      // Whether the functionality of getting num of entered keys is available.
+      var expected =
+          this.context.get(CONTEXT_KEY_KEYBOARD_ENTERED_PART_EXPECTED, false);
+
+      $('oobe-hid-detection-md').setKeyboardState(state);
+      $('oobe-hid-detection-md')
+          .setPincodeState(pincode, entered, expected, label);
 
       if (!pincode || state !== this.CONNECTION.PAIRING) {
         pincodeKeys.hidden = true;
@@ -176,13 +178,6 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
             this.context.get(CONTEXT_KEY_KEYBOARD_LABEL, '') + ' ' + pincode +
             ' ' + loadTimeData.getString('hidDetectionBTEnterKey'));
       }
-
-      var entered = this.context.get(
-          CONTEXT_KEY_KEYBOARD_ENTERED_PART_PINCODE, 0);
-
-      // whether the functionality of getting num of entered keys is available.
-      var expected = this.context.get(
-          CONTEXT_KEY_KEYBOARD_ENTERED_PART_EXPECTED, false);
 
       if (pincode.length != PINCODE_LENGTH)
         console.error('Wrong pincode length');
@@ -198,14 +193,27 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
       }
     },
 
-     /*
+    /**
      * Event handler that is invoked just before the screen in shown.
      * @param {Object} data Screen init payload.
      */
     onBeforeShow: function(data) {
+      this.setMDMode_();
       this.setDeviceBlockState_('hid-mouse-block', this.CONNECTION.SEARCHING);
       this.setDeviceBlockState_('hid-keyboard-block',
                                 this.CONNECTION.SEARCHING);
+      $('oobe-hid-detection-md').setMouseState(this.CONNECTION.SEARCHING);
+      $('oobe-hid-detection-md').setKeyboardState(this.CONNECTION.SEARCHING);
+    },
+
+    /**
+     * This method takes care of switching to material-design OOBE.
+     * @private
+     */
+    setMDMode_: function() {
+      var useMDOobe = (loadTimeData.getString('newOobeUI') == 'on');
+      $('oobe-hid-detection-md').hidden = !useMDOobe;
+      $('oobe-hid-detection').hidden = useMDOobe;
     },
   };
 });

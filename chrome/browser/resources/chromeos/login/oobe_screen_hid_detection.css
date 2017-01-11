@@ -2,7 +2,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#hid-detection {
+#oobe:not([md-mode]) #hid-detection {
   min-height: 395px;
   padding: 70px 17px 21px;
   width: 622px;
