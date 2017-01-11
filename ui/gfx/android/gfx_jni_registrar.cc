@@ -7,15 +7,12 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/macros.h"
-#include "ui/gfx/android/shared_device_display_info.h"
 #include "ui/gfx/android/view_configuration.h"
 
 namespace gfx {
 namespace android {
 
 static base::android::RegistrationMethod kGfxRegisteredMethods[] = {
-  { "SharedDeviceDisplayInfo",
-      SharedDeviceDisplayInfo::RegisterSharedDeviceDisplayInfo },
   { "ViewConfiguration", ViewConfiguration::RegisterViewConfiguration }
 };
 

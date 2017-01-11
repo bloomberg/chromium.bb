@@ -23,14 +23,10 @@ source_set("gfx_export") {
 
 component("gfx") {
   sources = [
-    "android/device_display_info.cc",
-    "android/device_display_info.h",
     "android/gfx_jni_registrar.cc",
     "android/gfx_jni_registrar.h",
     "android/java_bitmap.cc",
     "android/java_bitmap.h",
-    "android/shared_device_display_info.cc",
-    "android/shared_device_display_info.h",
     "android/view_configuration.cc",
     "android/view_configuration.h",
     "animation/animation.cc",
@@ -739,7 +735,6 @@ if (is_android) {
   generate_jni("gfx_jni_headers") {
     sources = [
       "../android/java/src/org/chromium/ui/gfx/BitmapHelper.java",
-      "../android/java/src/org/chromium/ui/gfx/DeviceDisplayInfo.java",
       "../android/java/src/org/chromium/ui/gfx/ViewConfigurationHelper.java",
     ]
     jni_package = "gfx"

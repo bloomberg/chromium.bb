@@ -263,6 +263,7 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/android/chrome_context_util.h"
 #include "chrome/browser/android/devtools_manager_delegate_android.h"
 #include "chrome/browser/android/ntp/new_tab_page_url_handler.h"
 #include "chrome/browser/android/service_tab_launcher.h"
@@ -270,7 +271,6 @@
 #include "components/payments/payment_request.mojom.h"
 #include "content/public/browser/android/java_interfaces.h"
 #include "ui/base/ui_base_paths.h"
-#include "ui/gfx/android/device_display_info.h"
 #else
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
 #endif
@@ -704,8 +704,7 @@ float GetDeviceScaleAdjustment() {
   static const float kMaxFSM = 1.3f;
   static const int kWidthForMaxFSM = 800;
 
-  gfx::DeviceDisplayInfo info;
-  int minWidth = info.GetSmallestDIPWidth();
+  int minWidth = chrome::android::ChromeContextUtil::GetSmallestDIPWidth();
 
   if (minWidth <= kWidthForMinFSM)
     return kMinFSM;

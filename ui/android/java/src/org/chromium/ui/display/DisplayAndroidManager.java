@@ -20,7 +20,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.ui.gfx.DeviceDisplayInfo;
 
 /**
  * DisplayAndroidManager is a class that informs its observers Display changes.
@@ -111,7 +110,6 @@ public class DisplayAndroidManager {
 
         @Override
         public void onConfigurationChanged(Configuration newConfig) {
-            updateDeviceDisplayInfo();
             ((PhysicalDisplayAndroid) mIdMap.get(mMainSdkDisplayId)).updateFromDisplay(
                     getDefaultDisplayForContext(getContext()));
         }
@@ -170,7 +168,6 @@ public class DisplayAndroidManager {
 
         @Override
         public void onDisplayChanged(int sdkDisplayId) {
-            updateDeviceDisplayInfo();
             PhysicalDisplayAndroid displayAndroid =
                     (PhysicalDisplayAndroid) mIdMap.get(sdkDisplayId);
             if (displayAndroid != null) {
@@ -220,10 +217,6 @@ public class DisplayAndroidManager {
 
     private static DisplayManager getDisplayManager() {
         return (DisplayManager) getContext().getSystemService(Context.DISPLAY_SERVICE);
-    }
-
-    private static void updateDeviceDisplayInfo() {
-        DeviceDisplayInfo.create(getContext()).updateNativeSharedDisplayInfo();
     }
 
     @CalledByNative
