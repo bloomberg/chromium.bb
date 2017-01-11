@@ -84,6 +84,16 @@ ExternalInstallManager::ExternalInstallManager(
 ExternalInstallManager::~ExternalInstallManager() {
 }
 
+
+bool ExternalInstallManager::IsPromptingEnabled() {
+  // Enable this feature on canary on mac.
+#if defined(OS_MACOSX) && defined(GOOGLE_CHROME_BUILD)
+  return GetCurrentChannel() <= version_info::Channel::CANARY;
+#else
+  return FeatureSwitch::prompt_for_external_extensions()->IsEnabled();
+#endif
+}
+
 void ExternalInstallManager::AddExternalInstallError(const Extension* extension,
                                                      bool is_new_profile) {
   // Error already exists or has been previously shown.
@@ -116,7 +126,7 @@ void ExternalInstallManager::RemoveExternalInstallError(
 
 void ExternalInstallManager::UpdateExternalExtensionAlert() {
   // If the feature is not enabled do nothing.
-  if (!FeatureSwitch::prompt_for_external_extensions()->IsEnabled())
+  if (!IsPromptingEnabled())
     return;
 
   // Look for any extensions that were disabled because of being unacknowledged
@@ -219,7 +229,7 @@ void ExternalInstallManager::OnExtensionUninstalled(
 
 bool ExternalInstallManager::IsUnacknowledgedExternalExtension(
     const Extension& extension) const {
-  if (!FeatureSwitch::prompt_for_external_extensions()->IsEnabled())
+  if (!IsPromptingEnabled())
     return false;
 
   int disable_reasons = extension_prefs_->GetDisableReasons(extension.id());
