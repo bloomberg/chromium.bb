@@ -2382,3 +2382,5 @@ crbug.com/588060 editing/unsupported-content/table-delete-003.html [ NeedsRebase
 crbug.com/588060 fast/text/delete-hard-break-character.html [ NeedsRebaseline ]
 crbug.com/588060 paint/invalidation/inline-outline-repaint.html [ NeedsRebaseline ]
 crbug.com/588060 virtual/stable/paint/invalidation/inline-outline-repaint.html [ NeedsRebaseline ]
+
+crbug.com/680043 sensor/ambient-light-sensor.html [ Pass Failure ]
