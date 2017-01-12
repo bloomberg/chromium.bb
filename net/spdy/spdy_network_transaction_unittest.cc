@@ -4027,6 +4027,84 @@ TEST_F(SpdyNetworkTransactionTest, GoAwayWithActiveStream) {
   EXPECT_THAT(out.rv, IsError(ERR_ABORTED));
 }
 
+// A server can gracefully shut down by sending a GOAWAY frame
+// with maximum last-stream-id value.
+// Transactions started before receiving such a GOAWAY frame should succeed,
+// but SpdySession should be unavailable for new streams.
+TEST_F(SpdyNetworkTransactionTest, GracefulGoaway) {
+  SpdySerializedFrame req1(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
+  spdy_util_.UpdateWithStreamDestruction(1);
+  SpdySerializedFrame req2(
+      spdy_util_.ConstructSpdyGet("https://www.example.org/foo", 3, LOWEST));
+  MockWrite writes[] = {CreateMockWrite(req1, 0), CreateMockWrite(req2, 3)};
+
+  SpdySerializedFrame resp1(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, true));
+  SpdySerializedFrame goaway(spdy_util_.ConstructSpdyGoAway(
+      0x7fffffff, GOAWAY_NO_ERROR, "Graceful shutdown."));
+  SpdySerializedFrame resp2(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 3));
+  SpdySerializedFrame body2(spdy_util_.ConstructSpdyDataFrame(3, true));
+  MockRead reads[] = {CreateMockRead(resp1, 1),  CreateMockRead(body1, 2),
+                      CreateMockRead(goaway, 4), CreateMockRead(resp2, 5),
+                      CreateMockRead(body2, 6),  MockRead(ASYNC, 0, 7)};
+
+  // Run first transaction.
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
+                                     NetLogWithSource(), nullptr);
+  helper.RunPreTestSetup();
+  helper.AddData(&data);
+  helper.RunDefaultTest();
+
+  // Verify first response.
+  TransactionHelperResult out = helper.output();
+  EXPECT_THAT(out.rv, IsOk());
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
+  EXPECT_EQ("hello!", out.response_data);
+
+  // GOAWAY frame has not yet been received, SpdySession should be available.
+  SpdySessionPool* spdy_session_pool = helper.session()->spdy_session_pool();
+  SpdySessionKey key(host_port_pair_, ProxyServer::Direct(),
+                     PRIVACY_MODE_DISABLED);
+  NetLogWithSource log;
+  base::WeakPtr<SpdySession> spdy_session =
+      spdy_session_pool->FindAvailableSession(key, GURL(), log);
+  EXPECT_TRUE(spdy_session);
+
+  // Start second transaction.
+  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
+  TestCompletionCallback callback;
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL("https://www.example.org/foo");
+  int rv = trans2.Start(&request2, callback.callback(), log);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  rv = callback.WaitForResult();
+  EXPECT_THAT(rv, IsOk());
+
+  // Verify second response.
+  const HttpResponseInfo* response = trans2.GetResponseInfo();
+  ASSERT_TRUE(response);
+  EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_HTTP2, response->connection_info);
+  ASSERT_TRUE(response->headers);
+  EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
+  EXPECT_TRUE(response->was_fetched_via_spdy);
+  EXPECT_TRUE(response->was_alpn_negotiated);
+  EXPECT_EQ("127.0.0.1", response->socket_address.host());
+  EXPECT_EQ(443, response->socket_address.port());
+  std::string response_data;
+  rv = ReadTransaction(&trans2, &response_data);
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_EQ("hello!", response_data);
+
+  // Graceful GOAWAY was received, SpdySession should be unavailable.
+  spdy_session = spdy_session_pool->FindAvailableSession(key, GURL(), log);
+  EXPECT_FALSE(spdy_session);
+
+  helper.VerifyDataConsumed();
+}
+
 TEST_F(SpdyNetworkTransactionTest, CloseWithActiveStream) {
   SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
