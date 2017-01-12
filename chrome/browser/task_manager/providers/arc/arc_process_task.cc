@@ -113,10 +113,14 @@ void ArcProcessTask::StartIconLoading() {
 }
 
 ArcProcessTask::~ArcProcessTask() {
-  arc::ArcServiceManager::Get()
-      ->arc_bridge_service()
-      ->intent_helper()
-      ->RemoveObserver(this);
+  auto* service_manager = arc::ArcServiceManager::Get();
+  // This destructor can also be called when TaskManagerImpl is destructed.
+  // Since TaskManagerImpl is a LAZY_INSTANCE, arc::ArcServiceManager may have
+  // already been destructed. In that case, arc_bridge_service() has also been
+  // destructed, and it is safe to just return.
+  if (!service_manager)
+    return;
+  service_manager->arc_bridge_service()->intent_helper()->RemoveObserver(this);
 }
 
 Task::Type ArcProcessTask::GetType() const {
