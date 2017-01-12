@@ -31,6 +31,7 @@ void Log(media::MediaLogEvent* event) {
                << media::MediaLog::MediaEventToLogString(*event);
   } else if (event->type != media::MediaLogEvent::BUFFERED_EXTENTS_CHANGED &&
              event->type != media::MediaLogEvent::PROPERTY_CHANGE &&
+             event->type != media::MediaLogEvent::WATCH_TIME_UPDATE &&
              event->type != media::MediaLogEvent::NETWORK_ACTIVITY_SET) {
     MEDIA_EVENT_LOG_UTILITY << "MediaEvent: "
                             << media::MediaLog::MediaEventToLogString(*event);
