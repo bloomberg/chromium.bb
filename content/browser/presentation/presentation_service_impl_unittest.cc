@@ -43,10 +43,17 @@ MATCHER_P(Equals, expected, "") {
   return expected.Equals(arg);
 }
 
-// Matches PresentationSessionInfo passed by reference.
+// Matches blink::mojom::PresentationSessionInfo passed by reference.
 MATCHER_P(SessionInfoEquals, expected, "") {
   blink::mojom::PresentationSessionInfo& expected_value = expected;
   return expected_value.Equals(arg);
+}
+
+// Matches content::PresentationSessionInfo passed by reference.
+MATCHER_P(ContentSessionInfoEquals, expected, "") {
+  const content::PresentationSessionInfo& expected_value = expected;
+  return expected_value.presentation_url == arg.presentation_url &&
+         expected_value.presentation_id == arg.presentation_id;
 }
 
 const char kPresentationId[] = "presentationId";
@@ -59,12 +66,13 @@ void DoNothing(blink::mojom::PresentationSessionInfoPtr info,
 
 }  // namespace
 
-class MockPresentationServiceDelegate : public PresentationServiceDelegate {
+class MockPresentationServiceDelegate
+    : public ControllerPresentationServiceDelegate {
  public:
   MOCK_METHOD3(AddObserver,
-      void(int render_process_id,
-           int render_frame_id,
-           PresentationServiceDelegate::Observer* observer));
+               void(int render_process_id,
+                    int render_frame_id,
+                    PresentationServiceDelegate::Observer* observer));
   MOCK_METHOD2(RemoveObserver,
       void(int render_process_id, int render_frame_id));
 
@@ -139,12 +147,54 @@ class MockPresentationServiceDelegate : public PresentationServiceDelegate {
                     const content::PresentationConnectionStateChangedCallback&
                         state_changed_cb));
 
+  void ConnectToOffscreenPresentation(
+      int render_process_id,
+      int render_frame_id,
+      const content::PresentationSessionInfo& session,
+      PresentationConnectionPtr controller_conn_ptr,
+      PresentationConnectionRequest receiver_conn_request) override {
+    RegisterOffscreenPresentationConnectionRaw(
+        render_process_id, render_frame_id, session, controller_conn_ptr.get());
+  }
+
+  MOCK_METHOD4(RegisterOffscreenPresentationConnectionRaw,
+               void(int render_process_id,
+                    int render_frame_id,
+                    const content::PresentationSessionInfo& session,
+                    blink::mojom::PresentationConnection* connection));
+
   void set_screen_availability_listening_supported(bool value) {
     screen_availability_listening_supported_ = value;
   }
 
  private:
   bool screen_availability_listening_supported_ = true;
+};
+
+class MockReceiverPresentationServiceDelegate
+    : public ReceiverPresentationServiceDelegate {
+ public:
+  MOCK_METHOD3(AddObserver,
+               void(int render_process_id,
+                    int render_frame_id,
+                    PresentationServiceDelegate::Observer* observer));
+  MOCK_METHOD2(RemoveObserver,
+               void(int render_process_id, int render_frame_id));
+  MOCK_METHOD2(Reset, void(int render_process_id, int routing_id));
+  MOCK_METHOD1(RegisterReceiverConnectionAvailableCallback,
+               void(const content::ReceiverConnectionAvailableCallback&));
+};
+
+class MockPresentationConnection : public blink::mojom::PresentationConnection {
+ public:
+  void OnMessage(blink::mojom::ConnectionMessagePtr message,
+                 const base::Callback<void(bool)>& send_message_cb) override {
+    OnConnectionMessageReceived(*message);
+  }
+  MOCK_METHOD1(OnConnectionMessageReceived,
+               void(const blink::mojom::ConnectionMessage& message));
+  MOCK_METHOD1(DidChangeState,
+               void(blink::mojom::PresentationConnectionState state));
 };
 
 class MockPresentationServiceClient
@@ -190,7 +240,10 @@ class MockPresentationServiceClient
                void(const blink::mojom::PresentationSessionInfo& session_info));
 
   void OnReceiverConnectionAvailable(
-      blink::mojom::PresentationSessionInfoPtr session_info) override {
+      blink::mojom::PresentationSessionInfoPtr session_info,
+      blink::mojom::PresentationConnectionPtr controller_conn_ptr,
+      blink::mojom::PresentationConnectionRequest receiver_conn_request)
+      override {
     OnReceiverConnectionAvailable(*session_info);
   }
   MOCK_METHOD1(OnReceiverConnectionAvailable,
@@ -214,7 +267,7 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
     TestRenderFrameHost* render_frame_host = contents()->GetMainFrame();
     render_frame_host->InitializeRenderFrameIfNeeded();
     service_impl_.reset(new PresentationServiceImpl(
-        render_frame_host, contents(), &mock_delegate_));
+        render_frame_host, contents(), &mock_delegate_, nullptr));
     service_impl_->Bind(std::move(request));
 
     blink::mojom::PresentationServiceClientPtr client_ptr;
@@ -373,6 +426,7 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
   }
 
   MockPresentationServiceDelegate mock_delegate_;
+  MockReceiverPresentationServiceDelegate mock_receiver_delegate_;
 
   std::unique_ptr<PresentationServiceImpl> service_impl_;
   mojo::InterfacePtr<blink::mojom::PresentationService> service_ptr_;
@@ -664,6 +718,59 @@ TEST_F(PresentationServiceImplTest, ListenForConnectionMessagesWithEmptyMsg) {
   std::string text_msg("");
   std::vector<uint8_t> binary_data;
   RunListenForConnectionMessages(text_msg, binary_data, false);
+}
+
+TEST_F(PresentationServiceImplTest, SetPresentationConnection) {
+  blink::mojom::PresentationSessionInfoPtr session(
+      blink::mojom::PresentationSessionInfo::New());
+  session->url = presentation_url1_;
+  session->id = kPresentationId;
+
+  blink::mojom::PresentationConnectionPtr connection;
+  MockPresentationConnection mock_presentation_connection;
+  mojo::Binding<blink::mojom::PresentationConnection> connection_binding(
+      &mock_presentation_connection, mojo::MakeRequest(&connection));
+  blink::mojom::PresentationConnectionPtr receiver_connection;
+  auto request = mojo::MakeRequest(&receiver_connection);
+
+  content::PresentationSessionInfo expected(presentation_url1_,
+                                            kPresentationId);
+  EXPECT_CALL(mock_delegate_,
+              RegisterOffscreenPresentationConnectionRaw(
+                  _, _, ContentSessionInfoEquals(ByRef(expected)), _));
+
+  service_impl_->SetPresentationConnection(
+      std::move(session), std::move(connection), std::move(request));
+}
+
+TEST_F(PresentationServiceImplTest, ReceiverPresentationServiceDelegate) {
+  MockReceiverPresentationServiceDelegate mock_receiver_delegate;
+
+  PresentationServiceImpl service_impl(contents()->GetMainFrame(), contents(),
+                                       nullptr, &mock_receiver_delegate);
+
+  ReceiverConnectionAvailableCallback callback;
+  EXPECT_CALL(mock_receiver_delegate,
+              RegisterReceiverConnectionAvailableCallback(_))
+      .WillOnce(SaveArg<0>(&callback));
+
+  blink::mojom::PresentationServiceClientPtr client_ptr;
+  client_binding_.reset(
+      new mojo::Binding<blink::mojom::PresentationServiceClient>(
+          &mock_client_, mojo::MakeRequest(&client_ptr)));
+  service_impl.controller_delegate_ = nullptr;
+  service_impl.SetClient(std::move(client_ptr));
+  EXPECT_FALSE(callback.is_null());
+
+  // NO-OP for ControllerPresentationServiceDelegate API functions
+  EXPECT_CALL(mock_delegate_, ListenForConnectionMessages(_, _, _, _)).Times(0);
+
+  blink::mojom::PresentationSessionInfoPtr session(
+      blink::mojom::PresentationSessionInfo::New());
+  session->url = GURL(kPresentationUrl1);
+  session->id = kPresentationId;
+
+  service_impl.ListenForConnectionMessages(std::move(session));
 }
 
 TEST_F(PresentationServiceImplTest, StartSessionInProgress) {

@@ -39,6 +39,12 @@ OffscreenPresentationManagerFactory::GetOrCreateForBrowserContext(
       service_factory.Get().GetServiceForBrowserContext(context, true));
 }
 
+// static
+OffscreenPresentationManagerFactory*
+OffscreenPresentationManagerFactory::GetInstanceForTest() {
+  return &service_factory.Get();
+}
+
 OffscreenPresentationManagerFactory::OffscreenPresentationManagerFactory()
     : BrowserContextKeyedServiceFactory(
           "OffscreenPresentationManager",

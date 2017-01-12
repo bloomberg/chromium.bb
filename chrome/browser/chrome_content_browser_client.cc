@@ -353,6 +353,7 @@
 #if defined(ENABLE_MEDIA_ROUTER)
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/presentation_service_delegate_impl.h"
+#include "chrome/browser/media/router/receiver_presentation_service_delegate_impl.h"
 #endif  // defined(ENABLE_MEDIA_ROUTER)
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING) && defined(ENABLE_MEDIA_ROUTER)
@@ -3124,13 +3125,31 @@ void ChromeContentBrowserClient::OpenURL(
 #endif
 }
 
-content::PresentationServiceDelegate*
-ChromeContentBrowserClient::GetPresentationServiceDelegate(
-      content::WebContents* web_contents) {
+content::ControllerPresentationServiceDelegate*
+ChromeContentBrowserClient::GetControllerPresentationServiceDelegate(
+    content::WebContents* web_contents) {
 #if defined(ENABLE_MEDIA_ROUTER)
   if (media_router::MediaRouterEnabled(web_contents->GetBrowserContext())) {
     return media_router::PresentationServiceDelegateImpl::
         GetOrCreateForWebContents(web_contents);
+  }
+#endif  // defined(ENABLE_MEDIA_ROUTER)
+  return nullptr;
+}
+
+content::ReceiverPresentationServiceDelegate*
+ChromeContentBrowserClient::GetReceiverPresentationServiceDelegate(
+    content::WebContents* web_contents) {
+#if defined(ENABLE_MEDIA_ROUTER)
+  if (media_router::MediaRouterEnabled(web_contents->GetBrowserContext())) {
+    // ReceiverPresentationServiceDelegateImpl exists only for WebContents
+    // created for offscreen presentations. The WebContents must belong to
+    // an incognito profile.
+    if (auto* impl = media_router::ReceiverPresentationServiceDelegateImpl::
+            FromWebContents(web_contents)) {
+      DCHECK(web_contents->GetBrowserContext()->IsOffTheRecord());
+      return impl;
+    }
   }
 #endif  // defined(ENABLE_MEDIA_ROUTER)
   return nullptr;

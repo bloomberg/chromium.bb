@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_PRESENTATION_SERVICE_DELEGATE_H_
 #define CONTENT_PUBLIC_BROWSER_PRESENTATION_SERVICE_DELEGATE_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -13,6 +14,7 @@
 #include "content/common/content_export.h"
 #include "content/public/common/presentation_connection_message.h"
 #include "content/public/common/presentation_session.h"
+#include "third_party/WebKit/public/platform/modules/presentation/presentation.mojom.h"
 
 class GURL;
 
@@ -49,8 +51,17 @@ struct PresentationConnectionStateChangeInfo {
 using PresentationConnectionStateChangedCallback =
     base::Callback<void(const PresentationConnectionStateChangeInfo&)>;
 
-// An interface implemented by embedders to handle presentation API calls
-// forwarded from PresentationServiceImpl.
+using PresentationConnectionPtr = blink::mojom::PresentationConnectionPtr;
+using PresentationConnectionRequest =
+    blink::mojom::PresentationConnectionRequest;
+
+using ReceiverConnectionAvailableCallback =
+    base::Callback<void(const content::PresentationSessionInfo&,
+                        PresentationConnectionPtr,
+                        PresentationConnectionRequest)>;
+
+// Base class for ControllerPresentationServiceDelegate and
+// ReceiverPresentationServiceDelegate.
 class CONTENT_EXPORT PresentationServiceDelegate {
  public:
   // Observer interface to listen for changes to PresentationServiceDelegate.
@@ -62,8 +73,6 @@ class CONTENT_EXPORT PresentationServiceDelegate {
    protected:
     virtual ~Observer() {}
   };
-
-  using SendMessageCallback = base::Callback<void(bool)>;
 
   virtual ~PresentationServiceDelegate() {}
 
@@ -80,6 +89,20 @@ class CONTENT_EXPORT PresentationServiceDelegate {
   // and |render_frame_id|.
   // The observer will no longer receive updates.
   virtual void RemoveObserver(int render_process_id, int render_frame_id) = 0;
+
+  // Resets the presentation state for the frame given by |render_process_id|
+  // and |render_frame_id|.
+  // This unregisters all screen availability associated with the given frame,
+  // and clears the default presentation URL for the frame.
+  virtual void Reset(int render_process_id, int render_frame_id) = 0;
+};
+
+// An interface implemented by embedders to handle Presentation API calls
+// forwarded from PresentationServiceImpl.
+class CONTENT_EXPORT ControllerPresentationServiceDelegate
+    : public PresentationServiceDelegate {
+ public:
+  using SendMessageCallback = base::Callback<void(bool)>;
 
   // Registers |listener| to continuously listen for
   // availability updates for a presentation URL, originated from the frame
@@ -100,14 +123,6 @@ class CONTENT_EXPORT PresentationServiceDelegate {
       int render_process_id,
       int render_frame_id,
       PresentationScreenAvailabilityListener* listener) = 0;
-
-  // Resets the presentation state for the frame given by |render_process_id|
-  // and |render_frame_id|.
-  // This unregisters all listeners associated with the given frame, and clears
-  // the default presentation URL and ID set for the frame.
-  virtual void Reset(
-      int render_process_id,
-      int render_frame_id) = 0;
 
   // Sets the default presentation URLs for frame given by |render_process_id|
   // and |render_frame_id|. When the default presentation is started on this
@@ -203,6 +218,34 @@ class CONTENT_EXPORT PresentationServiceDelegate {
       int render_frame_id,
       const PresentationSessionInfo& connection,
       const PresentationConnectionStateChangedCallback& state_changed_cb) = 0;
+
+  // Connect |controller_connection| owned by the controlling frame to the
+  // offscreen presentation represented by |session|.
+  // |render_process_id|, |render_frame_id|: ID of originating frame.
+  // |controller_connection|: Pointer to controller's presentation connection,
+  // ownership passed from controlling frame to the offscreen presentation.
+  // |receiver_connection_request|: Mojo InterfaceRequest to be bind to receiver
+  // page's presentation connection.
+  virtual void ConnectToOffscreenPresentation(
+      int render_process_id,
+      int render_frame_id,
+      const PresentationSessionInfo& session,
+      PresentationConnectionPtr controller_connection_ptr,
+      PresentationConnectionRequest receiver_connection_request) = 0;
+};
+
+// An interface implemented by embedders to handle
+// PresentationService calls from a presentation receiver.
+class CONTENT_EXPORT ReceiverPresentationServiceDelegate
+    : public PresentationServiceDelegate {
+ public:
+  // Registers a callback from the embedder when an offscreeen presentation has
+  // been successfully started.
+  // |receiver_available_callback|: Invoked when successfully starting a
+  // offscreen presentation session.
+  virtual void RegisterReceiverConnectionAvailableCallback(
+      const content::ReceiverConnectionAvailableCallback&
+          receiver_available_callback) = 0;
 };
 
 }  // namespace content

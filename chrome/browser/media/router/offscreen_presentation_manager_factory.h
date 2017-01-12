@@ -31,6 +31,9 @@ class OffscreenPresentationManagerFactory
   static OffscreenPresentationManager* GetOrCreateForBrowserContext(
       content::BrowserContext* context);
 
+  // For test use only.
+  static OffscreenPresentationManagerFactory* GetInstanceForTest();
+
  private:
   friend struct base::DefaultLazyInstanceTraits<
       OffscreenPresentationManagerFactory>;

@@ -20,6 +20,8 @@
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_sink.h"
 #include "chrome/browser/media/router/media_source_helper.h"
+#include "chrome/browser/media/router/offscreen_presentation_manager.h"
+#include "chrome/browser/media/router/offscreen_presentation_manager_factory.h"
 #include "chrome/browser/media/router/presentation_media_sinks_observer.h"
 #include "chrome/browser/media/router/route_message.h"
 #include "chrome/browser/media/router/route_message_observer.h"
@@ -30,6 +32,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/presentation_session.h"
+#include "url/gurl.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/profiles/profile.h"
@@ -193,18 +196,12 @@ PresentationFrame::PresentationFrame(
     MediaRouter* router)
     : render_frame_host_id_(render_frame_host_id),
       web_contents_(web_contents),
-      router_(router),
-      delegate_observer_(nullptr) {
+      router_(router) {
   DCHECK(web_contents_);
   DCHECK(router_);
 }
 
 PresentationFrame::~PresentationFrame() {
-}
-
-void PresentationFrame::OnPresentationServiceDelegateDestroyed() const {
-  if (delegate_observer_)
-    delegate_observer_->OnDelegateDestroyed();
 }
 
 void PresentationFrame::OnPresentationSessionStarted(
@@ -458,10 +455,7 @@ PresentationFrameManager::PresentationFrameManager(
   DCHECK(router_);
 }
 
-PresentationFrameManager::~PresentationFrameManager() {
-  for (auto& frame : presentation_frames_)
-    frame.second->OnPresentationServiceDelegateDestroyed();
-}
+PresentationFrameManager::~PresentationFrameManager() {}
 
 void PresentationFrameManager::OnPresentationSessionStarted(
     const RenderFrameHostId& render_frame_host_id,
@@ -565,22 +559,6 @@ void PresentationFrameManager::SetDefaultPresentationUrls(
                                 frame_url);
     default_presentation_started_callback_ = callback;
     SetDefaultPresentationRequest(request);
-  }
-}
-
-void PresentationFrameManager::AddDelegateObserver(
-    const RenderFrameHostId& render_frame_host_id,
-    DelegateObserver* observer) {
-  auto* presentation_frame = GetOrAddPresentationFrame(render_frame_host_id);
-  presentation_frame->set_delegate_observer(observer);
-}
-
-void PresentationFrameManager::RemoveDelegateObserver(
-    const RenderFrameHostId& render_frame_host_id) {
-  const auto it = presentation_frames_.find(render_frame_host_id);
-  if (it != presentation_frames_.end()) {
-    it->second->set_delegate_observer(nullptr);
-    presentation_frames_.erase(it);
   }
 }
 
@@ -688,14 +666,12 @@ void PresentationServiceDelegateImpl::AddObserver(int render_process_id,
                                                   int render_frame_id,
                                                   DelegateObserver* observer) {
   DCHECK(observer);
-  frame_manager_->AddDelegateObserver(
-      RenderFrameHostId(render_process_id, render_frame_id), observer);
+  observers_.AddObserver(render_process_id, render_frame_id, observer);
 }
 
 void PresentationServiceDelegateImpl::RemoveObserver(int render_process_id,
                                                      int render_frame_id) {
-  frame_manager_->RemoveDelegateObserver(
-      RenderFrameHostId(render_process_id, render_frame_id));
+  observers_.RemoveObserver(render_process_id, render_frame_id);
 }
 
 bool PresentationServiceDelegateImpl::AddScreenAvailabilityListener(
@@ -933,6 +909,22 @@ void PresentationServiceDelegateImpl::ListenForConnectionStateChange(
   frame_manager_->ListenForConnectionStateChange(
       RenderFrameHostId(render_process_id, render_frame_id), connection,
       state_changed_cb);
+}
+
+void PresentationServiceDelegateImpl::ConnectToOffscreenPresentation(
+    int render_process_id,
+    int render_frame_id,
+    const content::PresentationSessionInfo& session,
+    content::PresentationConnectionPtr controller_connection_ptr,
+    content::PresentationConnectionRequest receiver_connection_request) {
+  RenderFrameHostId render_frame_host_id(render_process_id, render_frame_id);
+  auto* const offscreen_presentation_manager =
+      OffscreenPresentationManagerFactory::GetOrCreateForWebContents(
+          web_contents_);
+  offscreen_presentation_manager->RegisterOffscreenPresentationController(
+      session.presentation_id, session.presentation_url, render_frame_host_id,
+      std::move(controller_connection_ptr),
+      std::move(receiver_connection_request));
 }
 
 void PresentationServiceDelegateImpl::OnRouteResponse(

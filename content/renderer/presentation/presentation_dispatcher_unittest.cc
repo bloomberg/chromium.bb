@@ -25,6 +25,7 @@ using blink::WebPresentationSessionInfo;
 using blink::WebString;
 using blink::WebURL;
 using blink::WebVector;
+using blink::mojom::PresentationConnection;
 using blink::mojom::PresentationError;
 using blink::mojom::PresentationErrorPtr;
 using blink::mojom::PresentationErrorType;
@@ -102,6 +103,17 @@ class MockPresentationService : public PresentationService {
   }
   MOCK_METHOD1(ListenForConnectionMessagesInternal,
                void(PresentationSessionInfo* session_info));
+
+  void SetPresentationConnection(
+      blink::mojom::PresentationSessionInfoPtr session,
+      blink::mojom::PresentationConnectionPtr controller_conn_ptr,
+      blink::mojom::PresentationConnectionRequest receiver_conn_request)
+      override {
+    SetPresentationConnection(session.get(), controller_conn_ptr.get());
+  }
+  MOCK_METHOD2(SetPresentationConnection,
+               void(PresentationSessionInfo* session_info,
+                    PresentationConnection* connection));
 };
 
 class TestWebPresentationConnectionCallback

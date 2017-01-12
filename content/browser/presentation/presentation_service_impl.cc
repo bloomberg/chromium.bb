@@ -117,9 +117,11 @@ void InvokeNewSessionCallbackWithError(
 PresentationServiceImpl::PresentationServiceImpl(
     RenderFrameHost* render_frame_host,
     WebContents* web_contents,
-    PresentationServiceDelegate* delegate)
+    ControllerPresentationServiceDelegate* controller_delegate,
+    ReceiverPresentationServiceDelegate* receiver_delegate)
     : WebContentsObserver(web_contents),
-      delegate_(delegate),
+      controller_delegate_(controller_delegate),
+      receiver_delegate_(receiver_delegate),
       start_session_request_id_(kInvalidRequestSessionId),
       weak_factory_(this) {
   DCHECK(render_frame_host);
@@ -130,13 +132,17 @@ PresentationServiceImpl::PresentationServiceImpl(
   render_frame_id_ = render_frame_host->GetRoutingID();
   DVLOG(2) << "PresentationServiceImpl: "
            << render_process_id_ << ", " << render_frame_id_;
-  if (delegate_)
-    delegate_->AddObserver(render_process_id_, render_frame_id_, this);
+
+  if (auto* delegate = GetPresentationServiceDelegate())
+    delegate->AddObserver(render_process_id_, render_frame_id_, this);
 }
 
 PresentationServiceImpl::~PresentationServiceImpl() {
-  if (delegate_)
-    delegate_->RemoveObserver(render_process_id_, render_frame_id_);
+  DVLOG(2) << __FUNCTION__ << ": " << render_process_id_ << ", "
+           << render_frame_id_;
+
+  if (auto* delegate = GetPresentationServiceDelegate())
+    delegate->RemoveObserver(render_process_id_, render_frame_id_);
 }
 
 // static
@@ -148,13 +154,21 @@ void PresentationServiceImpl::CreateMojoService(
       WebContents::FromRenderFrameHost(render_frame_host);
   DCHECK(web_contents);
 
+  auto* browser = GetContentClient()->browser();
+  auto* receiver_delegate =
+      browser->GetReceiverPresentationServiceDelegate(web_contents);
+
+  // In current implementation, web_contents can be controller or receiver
+  // but not both.
+  auto* controller_delegate =
+      receiver_delegate
+          ? nullptr
+          : browser->GetControllerPresentationServiceDelegate(web_contents);
+
   // This object will be deleted when the RenderFrameHost is about to be
   // deleted (RenderFrameDeleted).
   PresentationServiceImpl* impl = new PresentationServiceImpl(
-      render_frame_host,
-      web_contents,
-      GetContentClient()->browser()->GetPresentationServiceDelegate(
-          web_contents));
+      render_frame_host, web_contents, controller_delegate, receiver_delegate);
   impl->Bind(std::move(request));
 }
 
@@ -169,11 +183,17 @@ void PresentationServiceImpl::SetClient(
   DCHECK(!client_.get());
   // TODO(imcheng): Set ErrorHandler to listen for errors.
   client_ = std::move(client);
+
+  if (receiver_delegate_) {
+    receiver_delegate_->RegisterReceiverConnectionAvailableCallback(
+        base::Bind(&PresentationServiceImpl::OnReceiverConnectionAvailable,
+                   weak_factory_.GetWeakPtr()));
+  }
 }
 
 void PresentationServiceImpl::ListenForScreenAvailability(const GURL& url) {
   DVLOG(2) << "ListenForScreenAvailability " << url.spec();
-  if (!delegate_) {
+  if (!controller_delegate_) {
     client_->OnScreenAvailabilityUpdated(url, false);
     return;
   }
@@ -183,10 +203,8 @@ void PresentationServiceImpl::ListenForScreenAvailability(const GURL& url) {
 
   std::unique_ptr<ScreenAvailabilityListenerImpl> listener(
       new ScreenAvailabilityListenerImpl(url, this));
-  if (delegate_->AddScreenAvailabilityListener(
-      render_process_id_,
-      render_frame_id_,
-      listener.get())) {
+  if (controller_delegate_->AddScreenAvailabilityListener(
+          render_process_id_, render_frame_id_, listener.get())) {
     screen_availability_listeners_[url] = std::move(listener);
   } else {
     DVLOG(1) << "AddScreenAvailabilityListener failed. Ignoring request.";
@@ -196,14 +214,14 @@ void PresentationServiceImpl::ListenForScreenAvailability(const GURL& url) {
 void PresentationServiceImpl::StopListeningForScreenAvailability(
     const GURL& url) {
   DVLOG(2) << "StopListeningForScreenAvailability " << url.spec();
-  if (!delegate_)
+  if (!controller_delegate_)
     return;
 
   auto listener_it = screen_availability_listeners_.find(url);
   if (listener_it == screen_availability_listeners_.end())
     return;
 
-  delegate_->RemoveScreenAvailabilityListener(
+  controller_delegate_->RemoveScreenAvailabilityListener(
       render_process_id_, render_frame_id_, listener_it->second.get());
   screen_availability_listeners_.erase(listener_it);
 }
@@ -212,7 +230,7 @@ void PresentationServiceImpl::StartSession(
     const std::vector<GURL>& presentation_urls,
     const NewSessionCallback& callback) {
   DVLOG(2) << "StartSession";
-  if (!delegate_) {
+  if (!controller_delegate_) {
     callback.Run(
         blink::mojom::PresentationSessionInfoPtr(),
         blink::mojom::PresentationError::From(PresentationError(
@@ -229,7 +247,7 @@ void PresentationServiceImpl::StartSession(
 
   start_session_request_id_ = GetNextRequestSessionId();
   pending_start_session_cb_.reset(new NewSessionCallbackWrapper(callback));
-  delegate_->StartSession(
+  controller_delegate_->StartSession(
       render_process_id_, render_frame_id_, presentation_urls,
       base::Bind(&PresentationServiceImpl::OnStartSessionSucceeded,
                  weak_factory_.GetWeakPtr(), start_session_request_id_),
@@ -242,7 +260,7 @@ void PresentationServiceImpl::JoinSession(
     const base::Optional<std::string>& presentation_id,
     const NewSessionCallback& callback) {
   DVLOG(2) << "JoinSession";
-  if (!delegate_) {
+  if (!controller_delegate_) {
     callback.Run(blink::mojom::PresentationSessionInfoPtr(),
                  blink::mojom::PresentationError::From(PresentationError(
                      PRESENTATION_ERROR_NO_PRESENTATION_FOUND,
@@ -255,7 +273,7 @@ void PresentationServiceImpl::JoinSession(
     InvokeNewSessionCallbackWithError(callback);
     return;
   }
-  delegate_->JoinSession(
+  controller_delegate_->JoinSession(
       render_process_id_, render_frame_id_, presentation_urls,
       presentation_id.value_or(std::string()),
       base::Bind(&PresentationServiceImpl::OnJoinSessionSucceeded,
@@ -277,8 +295,8 @@ int PresentationServiceImpl::RegisterJoinSessionCallback(
 
 void PresentationServiceImpl::ListenForConnectionStateChangeAndChangeState(
     const PresentationSessionInfo& connection) {
-  if (delegate_) {
-    delegate_->ListenForConnectionStateChange(
+  if (controller_delegate_) {
+    controller_delegate_->ListenForConnectionStateChange(
         render_process_id_, render_frame_id_, connection,
         base::Bind(&PresentationServiceImpl::OnConnectionStateChanged,
                    weak_factory_.GetWeakPtr(), connection));
@@ -352,14 +370,14 @@ bool PresentationServiceImpl::RunAndEraseJoinSessionMojoCallback(
 void PresentationServiceImpl::SetDefaultPresentationUrls(
     const std::vector<GURL>& presentation_urls) {
   DVLOG(2) << "SetDefaultPresentationUrls";
-  if (!delegate_)
+  if (!controller_delegate_)
     return;
 
   if (default_presentation_urls_ == presentation_urls)
     return;
 
   default_presentation_urls_ = presentation_urls;
-  delegate_->SetDefaultPresentationUrls(
+  controller_delegate_->SetDefaultPresentationUrls(
       render_process_id_, render_frame_id_, presentation_urls,
       base::Bind(&PresentationServiceImpl::OnDefaultPresentationStarted,
                  weak_factory_.GetWeakPtr()));
@@ -369,17 +387,18 @@ void PresentationServiceImpl::SendConnectionMessage(
     blink::mojom::PresentationSessionInfoPtr session,
     blink::mojom::ConnectionMessagePtr connection_message,
     const SendConnectionMessageCallback& callback) {
-  DVLOG(2) << "SendConnectionMessage";
+  DVLOG(2) << "SendConnectionMessage"
+           << " [id]: " << session->id;
   DCHECK(!connection_message.is_null());
   // send_message_callback_ should be null by now, otherwise resetting of
   // send_message_callback_ with new callback will drop the old callback.
-  if (!delegate_ || send_message_callback_) {
+  if (!controller_delegate_ || send_message_callback_) {
     callback.Run(false);
     return;
   }
 
   send_message_callback_.reset(new SendConnectionMessageCallback(callback));
-  delegate_->SendMessage(
+  controller_delegate_->SendMessage(
       render_process_id_, render_frame_id_,
       session.To<PresentationSessionInfo>(),
       GetPresentationConnectionMessage(std::move(connection_message)),
@@ -400,16 +419,17 @@ void PresentationServiceImpl::CloseConnection(
     const GURL& presentation_url,
     const std::string& presentation_id) {
   DVLOG(2) << "CloseConnection " << presentation_id;
-  if (delegate_)
-    delegate_->CloseConnection(render_process_id_, render_frame_id_,
-                               presentation_id);
+  if (controller_delegate_)
+    controller_delegate_->CloseConnection(render_process_id_, render_frame_id_,
+                                          presentation_id);
 }
 
 void PresentationServiceImpl::Terminate(const GURL& presentation_url,
                                         const std::string& presentation_id) {
   DVLOG(2) << "Terminate " << presentation_id;
-  if (delegate_)
-    delegate_->Terminate(render_process_id_, render_frame_id_, presentation_id);
+  if (controller_delegate_)
+    controller_delegate_->Terminate(render_process_id_, render_frame_id_,
+                                    presentation_id);
 }
 
 void PresentationServiceImpl::OnConnectionStateChanged(
@@ -440,17 +460,40 @@ bool PresentationServiceImpl::FrameMatches(
          render_frame_host->GetRoutingID() == render_frame_id_;
 }
 
+PresentationServiceDelegate*
+PresentationServiceImpl::GetPresentationServiceDelegate() {
+  return receiver_delegate_
+             ? static_cast<PresentationServiceDelegate*>(receiver_delegate_)
+             : static_cast<PresentationServiceDelegate*>(controller_delegate_);
+}
+
 void PresentationServiceImpl::ListenForConnectionMessages(
     blink::mojom::PresentationSessionInfoPtr session) {
   DVLOG(2) << "ListenForConnectionMessages";
-  if (!delegate_)
+  if (!controller_delegate_)
     return;
 
   PresentationSessionInfo session_info(session.To<PresentationSessionInfo>());
-  delegate_->ListenForConnectionMessages(
+  controller_delegate_->ListenForConnectionMessages(
       render_process_id_, render_frame_id_, session_info,
       base::Bind(&PresentationServiceImpl::OnConnectionMessages,
                  weak_factory_.GetWeakPtr(), session_info));
+}
+
+void PresentationServiceImpl::SetPresentationConnection(
+    blink::mojom::PresentationSessionInfoPtr session,
+    blink::mojom::PresentationConnectionPtr controller_connection_ptr,
+    blink::mojom::PresentationConnectionRequest receiver_connection_request) {
+  DVLOG(2) << "SetPresentationConnection";
+
+  if (!controller_delegate_)
+    return;
+
+  PresentationSessionInfo session_info(session.To<PresentationSessionInfo>());
+  controller_delegate_->ConnectToOffscreenPresentation(
+      render_process_id_, render_frame_id_, session_info,
+      std::move(controller_connection_ptr),
+      std::move(receiver_connection_request));
 }
 
 void PresentationServiceImpl::OnConnectionMessages(
@@ -459,7 +502,8 @@ void PresentationServiceImpl::OnConnectionMessages(
     bool pass_ownership) {
   DCHECK(client_);
 
-  DVLOG(2) << "OnConnectionMessages";
+  DVLOG(2) << "OnConnectionMessages"
+           << " [id]: " << session.presentation_id;
   std::vector<blink::mojom::ConnectionMessagePtr> mojo_messages(
       messages.size());
   std::transform(
@@ -472,6 +516,18 @@ void PresentationServiceImpl::OnConnectionMessages(
   client_->OnConnectionMessagesReceived(
       blink::mojom::PresentationSessionInfo::From(session),
       std::move(mojo_messages));
+}
+
+void PresentationServiceImpl::OnReceiverConnectionAvailable(
+    const content::PresentationSessionInfo& session_info,
+    PresentationConnectionPtr controller_connection_ptr,
+    PresentationConnectionRequest receiver_connection_request) {
+  DVLOG(2) << "PresentationServiceImpl::OnReceiverConnectionAvailable";
+
+  client_->OnReceiverConnectionAvailable(
+      blink::mojom::PresentationSessionInfo::From(session_info),
+      std::move(controller_connection_ptr),
+      std::move(receiver_connection_request));
 }
 
 void PresentationServiceImpl::DidNavigateAnyFrame(
@@ -519,8 +575,9 @@ void PresentationServiceImpl::WebContentsDestroyed() {
 
 void PresentationServiceImpl::Reset() {
   DVLOG(2) << "PresentationServiceImpl::Reset";
-  if (delegate_)
-    delegate_->Reset(render_process_id_, render_frame_id_);
+
+  if (auto* delegate = GetPresentationServiceDelegate())
+    delegate->Reset(render_process_id_, render_frame_id_);
 
   default_presentation_urls_.clear();
 
@@ -547,7 +604,8 @@ void PresentationServiceImpl::Reset() {
 
 void PresentationServiceImpl::OnDelegateDestroyed() {
   DVLOG(2) << "PresentationServiceImpl::OnDelegateDestroyed";
-  delegate_ = nullptr;
+  controller_delegate_ = nullptr;
+  receiver_delegate_ = nullptr;
   Reset();
 }
 

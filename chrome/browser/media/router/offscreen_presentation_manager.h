@@ -18,20 +18,6 @@
 
 class GURL;
 
-// TODO(zhaobin): move these back to
-// content/public/browser/presentation_service_delegate.h when they are actually
-// used in content.
-namespace content {
-// TODO(zhaobin): A class stub for blink::mojom::PresentationConnectionPtr.
-// presentation.mojom is under security review. Change this to
-// blink::mojom::PresentationConnectionPtr once that is done.
-class PresentationConnectionPtr {};
-
-using ReceiverConnectionAvailableCallback =
-    base::Callback<void(const content::PresentationSessionInfo&,
-                        PresentationConnectionPtr)>;
-}  // namespace content
-
 namespace media_router {
 // Manages all offscreen presentations started in the associated Profile and
 // facilitates communication between the controllers and the receiver of an
@@ -51,31 +37,36 @@ namespace media_router {
 //   manager->OnOffscreenPresentationReceiverCreated(presentation_id,
 //       base::Bind(&PresentationServiceImpl::OnReceiverConnectionAvailable));
 //
-// Controller frame establishes connection with the receiver side, resulting
+// Controlling frame establishes connection with the receiver side, resulting
 // in a connection with the two endpoints being the controller
 // PresentationConnectionPtr and receiver PresentationConnectionPtr.
 // Note calling this will trigger receiver frame's
 // PresentationServiceImpl::OnReceiverConnectionAvailable.
 //
 //   manager->RegisterOffscreenPresentationController(
-//       presentation_id, controller_frame_id, controller_ptr);
+//       presentation_id, controller_frame_id, controller_connection_ptr,
+//       receiver_connection_request);
 //
 // Invoked on receiver's PresentationServiceImpl when controller connection is
 // established.
 //
 //   |presentation_receiver_client_|: blink::mojom::PresentationServiceClienPtr
 //   for the presentation receiver.
-//   |PresentationConnectionPtr|: blink::mojom::PresentationConnectionPtr for
-//   blink::PresentationConnection object in render process.
+//   |controller_connection_ptr|: blink::mojom::PresentationConnectionPtr for
+//   blink::PresentationConnection object in controlling frame's render process.
+//   |receiver_connection_request|: Mojo InterfaceRequest to be bind to
+//   blink::PresentationConnection object in receiver frame's render process.
 //   void PresentationServiceImpl::OnReceiverConnectionAvailable(
 //       const content::PresentationSessionInfo& session,
-//       PresentationConnectionPtr&& controller) {
+//       PresentationConnectionPtr controller_connection_ptr,
+//       PresentationConnectionRequest receiver_connection_request) {
 //     presentation_receiver_client_->OnReceiverConnectionAvailable(
 //         blink::mojom::PresentationSessionInfo::From(session_info),
-//         std::move(controller));
+//         std::move(controller_connection_ptr),
+//         std::move(receiver_connection_request));
 //   }
 //
-// Send message from controller/receiver to receiver/controller:
+// Send message from controlling/receiver frame to receiver/controlling frame:
 //
 //   |target_connection_|: member variable of
 //                         blink::mojom::PresentationConnectionPtr type,
@@ -87,9 +78,8 @@ namespace media_router {
 //     target_connection_->OnSessionMessageReceived(std::move(session_message));
 //   }
 //
-// A controller or receiver leaves the offscreen presentation (e.g.,
-// due to navigation) by unregistering themselves from
-// OffscreenPresentation object.
+// A controller or receiver leaves the offscreen presentation (e.g., due to
+// navigation) by unregistering themselves from OffscreenPresentation object.
 //
 // When the receiver is no longer associated with an offscreen presentation, it
 // shall unregister itself with OffscreenPresentationManager. Unregistration
@@ -108,57 +98,63 @@ class OffscreenPresentationManager : public KeyedService {
  public:
   ~OffscreenPresentationManager() override;
 
-  // Registers controller PresentationConnectionPtr to presentation
-  // with |presentation_id|, |render_frame_id|.
+  // Registers controller PresentationConnectionPtr to presentation with
+  // |presentation_id| and |render_frame_id|.
   // Creates a new presentation if no presentation with |presentation_id|
   // exists.
-  // |controller|: Not owned by this class. Ownership is transferred to the
-  //               presentation receiver via |receiver_callback| passed below.
-  void RegisterOffscreenPresentationController(
+  // |controller_connection_ptr|, |receiver_connection_request|: Not owned by
+  // this class. Ownership is transferred to presentation receiver via
+  // |receiver_callback| passed below.
+  virtual void RegisterOffscreenPresentationController(
       const std::string& presentation_id,
       const GURL& presentation_url,
       const RenderFrameHostId& render_frame_id,
-      content::PresentationConnectionPtr controller);
+      content::PresentationConnectionPtr controller_connection_ptr,
+      content::PresentationConnectionRequest receiver_connection_request);
 
   // Unregisters controller PresentationConnectionPtr to presentation with
   // |presentation_id|, |render_frame_id|. It does nothing if there is no
   // controller that matches the provided arguments. It removes presentation
-  // that matches the arguments if the presentation has no receiver_callback and
-  // any other pending controller.
-  void UnregisterOffscreenPresentationController(
+  // that matches the arguments if the presentation has no |receiver_callback|
+  // and any other pending controller.
+  virtual void UnregisterOffscreenPresentationController(
       const std::string& presentation_id,
       const RenderFrameHostId& render_frame_id);
 
-  // Registers ReceiverConnectionAvailableCallback to presentation
-  // with |presentation_id|.
-  void OnOffscreenPresentationReceiverCreated(
+  // Registers |receiver_callback| to presentation with |presentation_id| and
+  // |presentation_url|.
+  virtual void OnOffscreenPresentationReceiverCreated(
       const std::string& presentation_id,
       const GURL& presentation_url,
       const content::ReceiverConnectionAvailableCallback& receiver_callback);
 
-  // Unregisters the ReceiverConnectionAvailableCallback associated with
+  // Unregisters ReceiverConnectionAvailableCallback associated with
   // |presentation_id|.
-  void OnOffscreenPresentationReceiverTerminated(
+  virtual void OnOffscreenPresentationReceiverTerminated(
       const std::string& presentation_id);
 
  private:
   // Represents an offscreen presentation registered with
-  // OffscreenPresentationManager.
-  // Contains callback to the receiver to inform it of new connections
-  // established from a controller.
-  // Contains set of controllers registered to OffscreenPresentationManager
-  // before corresponding receiver.
+  // OffscreenPresentationManager. Contains callback to the receiver to inform
+  // it of new connections established from a controller. Contains set of
+  // controllers registered to OffscreenPresentationManager before corresponding
+  // receiver.
   class OffscreenPresentation {
    public:
     OffscreenPresentation(const std::string& presentation_id,
                           const GURL& presentation_url);
     ~OffscreenPresentation();
 
-    // Register |controller| with |render_frame_id|. If |receiver_callback_| has
-    // been set, invoke |receiver_callback_| with |controller| as parameter,
-    // else store |controller| in |pending_controllers_| map.
-    void RegisterController(const RenderFrameHostId& render_frame_id,
-                            content::PresentationConnectionPtr controller);
+    // Register controller with |render_frame_id|. If |receiver_callback_| has
+    // been set, invoke |receiver_callback_| with |controller_connection_ptr|
+    // and |receiver_connection_request| as parameter, else creates a
+    // ControllerConnection object with |controller_connection_ptr| and
+    // |receiver_connection_request|, and store it in |pending_controllers_|
+    // map.
+    void RegisterController(
+        const RenderFrameHostId& render_frame_id,
+        content::PresentationConnectionPtr controller_connection_ptr,
+        content::PresentationConnectionRequest receiver_connection_request);
 
     // Unregister controller with |render_frame_id|. Do nothing if there is no
     // pending controller with |render_frame_id|.
@@ -185,10 +181,26 @@ class OffscreenPresentationManager : public KeyedService {
     // Callback to invoke whenever a receiver connection is available.
     content::ReceiverConnectionAvailableCallback receiver_callback_;
 
-    // Contains Mojo pointers to controller PresentationConnections registered
-    // via |RegisterController()| before |receiver_callback_| is set.
+    // Stores controller information.
+    // |controller_connection_ptr|: Mojo::InterfacePtr to
+    // blink::PresentationConnection object in controlling frame;
+    // |receiver_connection_request|: Mojo::InterfaceRequest to be bind to
+    // blink::PresentationConnection object in receiver frame.
+    struct ControllerConnection {
+     public:
+      ControllerConnection(
+          content::PresentationConnectionPtr controller_connection_ptr,
+          content::PresentationConnectionRequest receiver_connection_request);
+      ~ControllerConnection();
+
+      content::PresentationConnectionPtr controller_connection_ptr;
+      content::PresentationConnectionRequest receiver_connection_request;
+    };
+
+    // Contains ControllerConnection objects registered via
+    // |RegisterController()| before |receiver_callback_| is set.
     std::unordered_map<RenderFrameHostId,
-                       content::PresentationConnectionPtr,
+                       std::unique_ptr<ControllerConnection>,
                        RenderFrameHostIdHasher>
         pending_controllers_;
 
@@ -198,6 +210,9 @@ class OffscreenPresentationManager : public KeyedService {
  private:
   friend class OffscreenPresentationManagerFactory;
   friend class OffscreenPresentationManagerTest;
+  friend class MockOffscreenPresentationManager;
+  FRIEND_TEST_ALL_PREFIXES(PresentationServiceDelegateImplTest,
+                           ConnectToOffscreenPresentation);
 
   // Used by OffscreenPresentationManagerFactory::GetOrCreateForBrowserContext.
   OffscreenPresentationManager();

@@ -53,9 +53,22 @@ struct ConnectionMessage {
   array<uint8>? data;
 };
 
+interface PresentationConnection {
+   // TODO(zhaobin): migrate SendConnectionMessage from PresentationService =>
+   // PresentationConnection.Send(). http://crbug.com/658474
+
+   // Called when a message is sent by the target connection.
+   OnMessage(ConnectionMessage message) => (bool success);
+
+   // Called when target connection notifies connection state change.
+   DidChangeState(PresentationConnectionState state);
+};
+
 interface PresentationService {
   // Sets the PresentationServiceClient.
   SetClient(PresentationServiceClient client);
+
+  ///////////// Functions here are for the controller part of the API. /////////
 
   // Called when the frame sets or changes the default presentation URLs.
   // When the default presentation is started on this frame,
@@ -91,6 +104,16 @@ interface PresentationService {
   JoinSession(array<url.mojom.Url> presentation_urls, string? presentation_id)
       => (PresentationSessionInfo? sessionInfo, PresentationError? error);
 
+  // Called in StartSession's callback function for offscreen presentation only.
+  // It passes in controlling frame's PresentationConnection and
+  // PresentationConnectionRequest to PresentationService.
+  SetPresentationConnection(
+      PresentationSessionInfo sessionInfo,
+      PresentationConnection controller_connection_ptr,
+      PresentationConnection& receiver_connection_request);
+
+  //////////////////////////////////////////////////////////////////////////////
+
   // Called when send() is called by the frame. The true in the
   // result callback notifies that the service is ready for next message.
   // The false in the result callback notifies the renderer to stop sending
@@ -113,6 +136,9 @@ interface PresentationService {
 };
 
 interface PresentationServiceClient {
+
+  ////////////Functions here are called only on the controlling page.///////////
+
   // Called when the client tries to listen for screen availability changes for
   // presentation of |url| but it is not supported by the device or underlying
   // platform. This can also be called if the device is currently in a mode
@@ -124,6 +150,11 @@ interface PresentationServiceClient {
   // listen for screen availability, this method will always be called to give
   // the current known state. It will then be called to notify of state updates.
   OnScreenAvailabilityUpdated(url.mojom.Url url, bool available);
+
+  // See PresentationService::SetDefaultPresentationURL.
+  OnDefaultSessionStarted(PresentationSessionInfo sessionInfo);
+
+  //////////////////////////////////////////////////////////////////////////////
 
   // Called when the state of PresentationConnection |connection| started on
   // this frame has changed to |newState|.
@@ -140,9 +171,10 @@ interface PresentationServiceClient {
   OnConnectionMessagesReceived(PresentationSessionInfo sessionInfo,
                             array<ConnectionMessage> messages);
 
-  // See PresentationService::SetDefaultPresentationURL.
-  OnDefaultSessionStarted(PresentationSessionInfo sessionInfo);
-
-  // See PresentationService::OnReceiverConnectionAvailable.
-  OnReceiverConnectionAvailable(PresentationSessionInfo sessionInfo);
+  // Called on a presentation receiver when presentation connection is available
+  // from the controlling page.
+  OnReceiverConnectionAvailable(
+      PresentationSessionInfo sessionInfo,
+      PresentationConnection controller_connection_ptr,
+      PresentationConnection& receiver_connection_request);
 };

@@ -146,7 +146,9 @@ class CONTENT_EXPORT PresentationDispatcher
       blink::mojom::PresentationSessionInfoPtr session_info,
       blink::mojom::PresentationErrorPtr error);
   void OnReceiverConnectionAvailable(
-      blink::mojom::PresentationSessionInfoPtr) override;
+      blink::mojom::PresentationSessionInfoPtr,
+      blink::mojom::PresentationConnectionPtr,
+      blink::mojom::PresentationConnectionRequest) override;
 
   // Call to PresentationService to send the message in |request|.
   // |session_info| and |message| of |reuqest| will be consumed.

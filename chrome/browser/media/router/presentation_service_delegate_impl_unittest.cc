@@ -9,6 +9,8 @@
 #include "chrome/browser/media/router/media_source_helper.h"
 #include "chrome/browser/media/router/mock_media_router.h"
 #include "chrome/browser/media/router/mock_screen_availability_listener.h"
+#include "chrome/browser/media/router/offscreen_presentation_manager.h"
+#include "chrome/browser/media/router/offscreen_presentation_manager_factory.h"
 #include "chrome/browser/media/router/route_request_result.h"
 #include "chrome/browser/media/router/test_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,6 +23,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/presentation_session.h"
 #include "content/public/test/web_contents_tester.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/origin.h"
 
@@ -65,6 +68,39 @@ class MockCreatePresentationConnnectionCallbacks {
   MOCK_METHOD1(OnCreateConnectionError,
                void(const content::PresentationError& error));
 };
+
+class MockOffscreenPresentationManager : public OffscreenPresentationManager {
+ public:
+  void RegisterOffscreenPresentationController(
+      const std::string& presentation_id,
+      const GURL& presentation_url,
+      const RenderFrameHostId& render_frame_id,
+      content::PresentationConnectionPtr controller,
+      content::PresentationConnectionRequest) override {
+    RegisterOffscreenPresentationController(presentation_id, presentation_url,
+                                            render_frame_id);
+  }
+
+  MOCK_METHOD3(RegisterOffscreenPresentationController,
+               void(const std::string& presentation_id,
+                    const GURL& presentation_url,
+                    const RenderFrameHostId& render_frame_id));
+  MOCK_METHOD2(UnregisterOffscreenPresentationController,
+               void(const std::string& presentation_id,
+                    const RenderFrameHostId& render_frame_id));
+  MOCK_METHOD3(OnOffscreenPresentationReceiverCreated,
+               void(const std::string& presentation_id,
+                    const GURL& presentation_url,
+                    const content::ReceiverConnectionAvailableCallback&
+                        receiver_callback));
+  MOCK_METHOD1(OnOffscreenPresentationReceiverTerminated,
+               void(const std::string& presentation_id));
+};
+
+std::unique_ptr<KeyedService> BuildMockOffscreenPresentationManager(
+    content::BrowserContext* context) {
+  return base::MakeUnique<MockOffscreenPresentationManager>();
+}
 
 class PresentationServiceDelegateImplTest
     : public ChromeRenderViewHostTestHarness {
@@ -447,6 +483,34 @@ TEST_F(PresentationServiceDelegateImplTest, SinksObserverCantRegister) {
   EXPECT_CALL(listener1_, OnScreenAvailabilityNotSupported());
   EXPECT_FALSE(delegate_impl_->AddScreenAvailabilityListener(
       main_frame_process_id_, main_frame_routing_id_, &listener1_));
+}
+
+TEST_F(PresentationServiceDelegateImplTest, ConnectToOffscreenPresentation) {
+  content::RenderFrameHost* main_frame = GetWebContents()->GetMainFrame();
+  ASSERT_TRUE(main_frame);
+  int render_process_id = main_frame->GetProcess()->GetID();
+  int render_frame_id = main_frame->GetRoutingID();
+  std::string presentation_id = "presentation_id";
+  GURL presentation_url = GURL("http://www.example.com/presentation.html");
+  content::PresentationSessionInfo session_info(presentation_url,
+                                                presentation_id);
+
+  OffscreenPresentationManagerFactory::GetInstanceForTest()->SetTestingFactory(
+      profile(), &BuildMockOffscreenPresentationManager);
+  MockOffscreenPresentationManager* mock_offscreen_manager =
+      static_cast<MockOffscreenPresentationManager*>(
+          OffscreenPresentationManagerFactory::GetOrCreateForBrowserContext(
+              profile()));
+  EXPECT_CALL(*mock_offscreen_manager,
+              RegisterOffscreenPresentationController(
+                  presentation_id, presentation_url,
+                  RenderFrameHostId(render_process_id, render_frame_id)));
+
+  content::PresentationConnectionPtr connection_ptr;
+  content::PresentationConnectionRequest connection_request;
+  delegate_impl_->ConnectToOffscreenPresentation(
+      render_process_id, render_frame_id, session_info,
+      std::move(connection_ptr), std::move(connection_request));
 }
 
 #if !defined(OS_ANDROID)

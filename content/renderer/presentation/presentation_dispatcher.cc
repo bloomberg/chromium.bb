@@ -420,7 +420,9 @@ void PresentationDispatcher::OnSessionCreated(
 }
 
 void PresentationDispatcher::OnReceiverConnectionAvailable(
-    blink::mojom::PresentationSessionInfoPtr session_info) {
+    blink::mojom::PresentationSessionInfoPtr session_info,
+    blink::mojom::PresentationConnectionPtr,
+    blink::mojom::PresentationConnectionRequest) {
   if (receiver_) {
     receiver_->onReceiverConnectionAvailable(
         mojo::ConvertTo<blink::WebPresentationSessionInfo>(session_info));

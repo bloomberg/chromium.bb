@@ -373,8 +373,14 @@ std::string ContentBrowserClient::GetServiceUserIdForBrowserContext(
   return base::GenerateGUID();
 }
 
-PresentationServiceDelegate*
-ContentBrowserClient::GetPresentationServiceDelegate(
+ControllerPresentationServiceDelegate*
+ContentBrowserClient::GetControllerPresentationServiceDelegate(
+    WebContents* web_contents) {
+  return nullptr;
+}
+
+ReceiverPresentationServiceDelegate*
+ContentBrowserClient::GetReceiverPresentationServiceDelegate(
     WebContents* web_contents) {
   return nullptr;
 }

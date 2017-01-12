@@ -26,13 +26,14 @@ class MockReceiverConnectionAvailableCallback {
  public:
   void OnReceiverConnectionAvailable(
       const content::PresentationSessionInfo& session_info,
-      content::PresentationConnectionPtr connection_ptr) {
-    OnReceiverConnectionAvailableRaw(session_info, connection_ptr);
+      content::PresentationConnectionPtr controller_conn,
+      content::PresentationConnectionRequest receiver_conn_request) {
+    OnReceiverConnectionAvailableRaw(session_info, controller_conn.get());
   }
 
   MOCK_METHOD2(OnReceiverConnectionAvailableRaw,
                void(const content::PresentationSessionInfo&,
-                    content::PresentationConnectionPtr));
+                    blink::mojom::PresentationConnection*));
 };
 
 class OffscreenPresentationManagerTest : public ::testing::Test {
@@ -56,22 +57,25 @@ class OffscreenPresentationManagerTest : public ::testing::Test {
 
   void RegisterController(const std::string& presentation_id,
                           content::PresentationConnectionPtr controller) {
+    content::PresentationConnectionRequest receiver_conn_request;
     manager()->RegisterOffscreenPresentationController(
         presentation_id, presentation_url_, render_frame_host_id_,
-        std::move(controller));
+        std::move(controller), std::move(receiver_conn_request));
   }
 
   void RegisterController(const RenderFrameHostId& render_frame_id,
                           content::PresentationConnectionPtr controller) {
+    content::PresentationConnectionRequest receiver_conn_request;
     manager()->RegisterOffscreenPresentationController(
         kPresentationId, presentation_url_, render_frame_id,
-        std::move(controller));
+        std::move(controller), std::move(receiver_conn_request));
   }
 
   void RegisterController(content::PresentationConnectionPtr controller) {
+    content::PresentationConnectionRequest receiver_conn_request;
     manager()->RegisterOffscreenPresentationController(
         kPresentationId, presentation_url_, render_frame_host_id_,
-        std::move(controller));
+        std::move(controller), std::move(receiver_conn_request));
   }
 
   void RegisterReceiver(

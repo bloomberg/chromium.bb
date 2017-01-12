@@ -112,6 +112,7 @@ class BrowserMainParts;
 class BrowserPpapiHost;
 class BrowserURLHandler;
 class ClientCertificateDelegate;
+class ControllerPresentationServiceDelegate;
 class DevToolsManagerDelegate;
 class GpuProcessHost;
 class MediaObserver;
@@ -119,8 +120,8 @@ class MemoryCoordinatorDelegate;
 class NavigationHandle;
 class NavigationUIData;
 class PlatformNotificationService;
-class PresentationServiceDelegate;
 class QuotaPermissionContext;
+class ReceiverPresentationServiceDelegate;
 class RenderFrameHost;
 class RenderProcessHost;
 class RenderViewHost;
@@ -724,10 +725,17 @@ class CONTENT_EXPORT ContentBrowserClient {
       RenderFrameHost* render_frame_host,
       blink::WebPageVisibilityState* visibility_state) {}
 
-  // Allows an embedder to provide its own PresentationServiceDelegate
+  // Allows an embedder to provide its own ControllerPresentationServiceDelegate
   // implementation. Returns nullptr if unavailable.
-  virtual PresentationServiceDelegate* GetPresentationServiceDelegate(
-      WebContents* web_contents);
+  virtual ControllerPresentationServiceDelegate*
+  GetControllerPresentationServiceDelegate(WebContents* web_contents);
+
+  // Allows an embedder to provide its own ReceiverPresentationServiceDelegate
+  // implementation. Returns nullptr if unavailable. Only WebContents created
+  // for offscreen presentations should be passed to this API. The WebContents
+  // must belong to an incognito profile.
+  virtual ReceiverPresentationServiceDelegate*
+  GetReceiverPresentationServiceDelegate(WebContents* web_contents);
 
   // Allows programmatic opening of a new tab/window without going through
   // another WebContents. For example, from a Worker. |callback| will be

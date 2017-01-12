@@ -95,6 +95,10 @@ class CONTENT_EXPORT PresentationServiceImpl
                            ListenForConnectionStateChangeAndChangeState);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
                            ListenForConnectionClose);
+  FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
+                           SetPresentationConnection);
+  FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
+                           ReceiverPresentationServiceDelegate);
 
   // Maximum number of pending JoinSession requests at any given time.
   static const int kMaxNumQueuedSessionRequests = 10;
@@ -143,12 +147,17 @@ class CONTENT_EXPORT PresentationServiceImpl
 
   // |render_frame_host|: The RFH this instance is associated with.
   // |web_contents|: The WebContents to observe.
-  // |delegate|: Where Presentation API requests are delegated to. Not owned
-  // by this class.
+  // |controller_delegate|: Where Presentation API requests are delegated to in
+  // controller frame. Set to nullptr if current frame is receiver frame. Not
+  // owned by this class.
+  // |receiver_delegate|: Where Presentation API requests are delegated to in
+  // receiver frame. Set to nullptr if current frame is controller frame. Not
+  // owned by this class.
   PresentationServiceImpl(
       RenderFrameHost* render_frame_host,
       WebContents* web_contents,
-      PresentationServiceDelegate* delegate);
+      ControllerPresentationServiceDelegate* controller_delegate,
+      ReceiverPresentationServiceDelegate* receiver_delegate);
 
   // PresentationService implementation.
   void SetDefaultPresentationUrls(
@@ -171,6 +180,11 @@ class CONTENT_EXPORT PresentationServiceImpl
                  const std::string& presentation_id) override;
   void ListenForConnectionMessages(
       blink::mojom::PresentationSessionInfoPtr session) override;
+  void SetPresentationConnection(
+      blink::mojom::PresentationSessionInfoPtr session,
+      blink::mojom::PresentationConnectionPtr controller_connection_ptr,
+      blink::mojom::PresentationConnectionRequest receiver_connection_request)
+      override;
 
   // Creates a binding between this object and |request|.
   void Bind(mojo::InterfaceRequest<blink::mojom::PresentationService> request);
@@ -236,6 +250,14 @@ class CONTENT_EXPORT PresentationServiceImpl
           messages,
       bool pass_ownership);
 
+  // A callback registered to OffscreenPresentationManager when
+  // the PresentationServiceImpl for the presentation receiver is initialized.
+  // Calls |client_| to create a new PresentationConnection on receiver page.
+  void OnReceiverConnectionAvailable(
+      const content::PresentationSessionInfo& session_info,
+      PresentationConnectionPtr controller_connection_ptr,
+      PresentationConnectionRequest receiver_connection_request);
+
   // Associates a JoinSession |callback| with a unique request ID and
   // stores it in a map.
   // Returns a positive value on success.
@@ -250,9 +272,19 @@ class CONTENT_EXPORT PresentationServiceImpl
   // Returns true if this object is associated with |render_frame_host|.
   bool FrameMatches(content::RenderFrameHost* render_frame_host) const;
 
-  // Embedder-specific delegate to forward Presentation requests to.
-  // May be null if embedder does not support Presentation API.
-  PresentationServiceDelegate* delegate_;
+  // Returns |controller_delegate| if current frame is controller frame; Returns
+  // |receiver_delegate| if current frame is receiver frame.
+  PresentationServiceDelegate* GetPresentationServiceDelegate();
+
+  // Embedder-specific delegate for controller to forward Presentation requests
+  // to. Must be nullptr if current page is receiver page or
+  // embedder does not support Presentation API .
+  ControllerPresentationServiceDelegate* controller_delegate_;
+
+  // Embedder-specific delegate for receiver to forward Presentation requests
+  // to. Must be nullptr if current page is receiver page or
+  // embedder does not support Presentation API.
+  ReceiverPresentationServiceDelegate* receiver_delegate_;
 
   // Proxy to the PresentationServiceClient to send results (e.g., screen
   // availability) to.
