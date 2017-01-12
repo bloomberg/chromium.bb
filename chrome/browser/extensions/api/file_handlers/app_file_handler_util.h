@@ -33,11 +33,6 @@ extern const char kSecurityError[];
 const FileHandlerInfo* FileHandlerForId(const Extension& app,
                                         const std::string& handler_id);
 
-// Returns the first file handler that can handle the given entry,
-// or NULL if is no such handler.
-const FileHandlerInfo* FirstFileHandlerForEntry(const Extension& app,
-                                                const EntryInfo* entry);
-
 // Returns the handlers that can handle all files in |entries|.
 std::vector<const FileHandlerInfo*> FindFileHandlersForEntries(
     const Extension& extension,

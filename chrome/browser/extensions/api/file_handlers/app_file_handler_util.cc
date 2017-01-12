@@ -217,20 +217,6 @@ const FileHandlerInfo* FileHandlerForId(const Extension& app,
   return NULL;
 }
 
-const FileHandlerInfo* FirstFileHandlerForEntry(const Extension& app,
-                                                const EntryInfo& entry) {
-  const FileHandlersInfo* file_handlers = FileHandlers::GetFileHandlers(&app);
-  if (!file_handlers)
-    return NULL;
-
-  for (FileHandlersInfo::const_iterator i = file_handlers->begin();
-       i != file_handlers->end(); i++) {
-    if (FileHandlerCanHandleEntry(*i, entry))
-      return &*i;
-  }
-  return NULL;
-}
-
 std::vector<const FileHandlerInfo*> FindFileHandlersForEntries(
     const Extension& app,
     const std::vector<EntryInfo> entries) {

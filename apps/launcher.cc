@@ -53,7 +53,6 @@ using extensions::api::app_runtime::PlayStoreStatus;
 using extensions::app_file_handler_util::CreateFileEntry;
 using extensions::app_file_handler_util::FileHandlerCanHandleEntry;
 using extensions::app_file_handler_util::FileHandlerForId;
-using extensions::app_file_handler_util::FirstFileHandlerForEntry;
 using extensions::app_file_handler_util::HasFileSystemWritePermission;
 using extensions::app_file_handler_util::PrepareFilesForWritableApp;
 using extensions::EventRouter;
