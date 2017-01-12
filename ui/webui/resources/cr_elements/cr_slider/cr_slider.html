@@ -10,17 +10,26 @@
         display: flex;
         flex-direction: column;
         margin: 8px 0;
+        min-width: 200px;
       }
 
-      div.labels {
+      #labels {
         display: flex;
         flex-direction: row;
         justify-content: space-between;
         margin: -4px 16px 0 16px;
       }
 
-      div.labels > div {
+      #labels > div {
         font-size: 12px;
+      }
+
+      #label-begin {
+        -webkit-margin-end: 4px;
+      }
+
+      #label-end {
+        -webkit-margin-begin: 4px;
       }
 
       paper-slider {
@@ -29,15 +38,16 @@
         /* Make the knob always blue. */
         --paper-slider-knob-start-color: var(--google-blue-700);
         --paper-slider-knob-start-border-color: var(--google-blue-700);
+        width: 100%;
       }
     </style>
     <div class="outer">
       <paper-slider id="slider" disabled="[[disabled]]" snaps
           on-immediate-value-changed="onSliderChanged_">
       </paper-slider>
-      <div class="labels">
-        <div>[[labelMin]]</div>
-        <div>[[labelMax]]</div>
+      <div id="labels">
+        <div id="label-begin">[[labelMin]]</div>
+        <div id="label-end">[[labelMax]]</div>
       </div>
     </div>
   </template>
