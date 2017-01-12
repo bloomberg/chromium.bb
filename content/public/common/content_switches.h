@@ -74,7 +74,6 @@ CONTENT_EXPORT extern const char kDisablePreferCompositingToLCDText[];
 CONTENT_EXPORT extern const char kDisableKillAfterBadIPC[];
 CONTENT_EXPORT extern const char kDisableLocalStorage[];
 CONTENT_EXPORT extern const char kDisableLogging[];
-CONTENT_EXPORT extern const char kDisableMojoServiceWorker[];
 CONTENT_EXPORT extern const char kDisableNamespaceSandbox[];
 CONTENT_EXPORT extern const char kDisableNotifications[];
 CONTENT_EXPORT extern const char kDisablePartialRaster[];

@@ -316,11 +316,6 @@
     "args": ["--enable-features=AsmJsToWebAssembly"]
   },
   {
-    "prefix": "disable-mojo-service-worker",
-    "base": "http/tests/serviceworker",
-    "args": ["--disable-mojo-service-worker"]
-  },
-  {
     "prefix": "service-worker-navigation-preload",
     "base": "http/tests/serviceworker",
     "args": ["--enable-features=ServiceWorkerNavigationPreload"]

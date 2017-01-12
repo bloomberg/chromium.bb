@@ -1689,7 +1689,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableLocalStorage,
     switches::kDisableLogging,
     switches::kDisableMediaSuspend,
-    switches::kDisableMojoServiceWorker,
     switches::kDisableNotifications,
     switches::kDisableOverlayScrollbar,
     switches::kDisablePepper3DImageChromium,

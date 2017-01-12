@@ -661,9 +661,6 @@ const char kMHTMLSkipNostoreAll[]           = "skip-nostore-all";
 // Use a Mojo-based LocalStorage implementation.
 const char kMojoLocalStorage[]              = "mojo-local-storage";
 
-// Disables a Mojo-based ServiceWorker implementation.
-const char kDisableMojoServiceWorker[]      = "disable-mojo-service-worker";
-
 // Mutes audio sent to the audio device so it is not audible during
 // automated testing.
 const char kMuteAudio[]                     = "mute-audio";
