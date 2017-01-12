@@ -228,9 +228,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
              m_verticalAlign == other.m_verticalAlign &&
              m_clear == other.m_clear && m_position == other.m_position &&
              m_tableLayout == other.m_tableLayout &&
-             m_unicodeBidi == other.m_unicodeBidi
              // hasViewportUnits
-             && m_breakBefore == other.m_breakBefore &&
+             m_breakBefore == other.m_breakBefore &&
              m_breakAfter == other.m_breakAfter &&
              m_breakInside == other.m_breakInside;
       // styleType
@@ -259,7 +258,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     unsigned m_clear : 2;             // EClear
     unsigned m_position : 3;          // EPosition
     unsigned m_tableLayout : 1;       // ETableLayout
-    unsigned m_unicodeBidi : 3;       // UnicodeBidi
 
     // This is set if we used viewport units when resolving a length.
     // It is mutable so we can pass around const ComputedStyles to resolve
@@ -317,8 +315,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_nonInheritedData.m_clear = initialClear();
     m_nonInheritedData.m_position = initialPosition();
     m_nonInheritedData.m_tableLayout = initialTableLayout();
-    m_nonInheritedData.m_unicodeBidi =
-        static_cast<unsigned>(initialUnicodeBidi());
     m_nonInheritedData.m_breakBefore = initialBreakBefore();
     m_nonInheritedData.m_breakAfter = initialBreakAfter();
     m_nonInheritedData.m_breakInside = initialBreakInside();
@@ -1853,15 +1849,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   void setTouchAction(TouchAction t) {
     SET_VAR(m_rareNonInheritedData, m_touchAction, t);
-  }
-
-  // unicode-bidi
-  static UnicodeBidi initialUnicodeBidi() { return UnicodeBidi::kNormal; }
-  UnicodeBidi getUnicodeBidi() const {
-    return static_cast<UnicodeBidi>(m_nonInheritedData.m_unicodeBidi);
-  }
-  void setUnicodeBidi(UnicodeBidi b) {
-    m_nonInheritedData.m_unicodeBidi = static_cast<unsigned>(b);
   }
 
   // vertical-align
