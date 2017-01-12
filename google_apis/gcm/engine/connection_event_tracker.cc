@@ -4,6 +4,7 @@
 
 #include "google_apis/gcm/engine/connection_event_tracker.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "net/base/network_change_notifier.h"
 
@@ -19,7 +20,10 @@ namespace gcm {
 
 ConnectionEventTracker::ConnectionEventTracker() = default;
 
-ConnectionEventTracker::~ConnectionEventTracker() = default;
+ConnectionEventTracker::~ConnectionEventTracker() {
+  UMA_HISTOGRAM_ENUMERATION("GCM.PendingConnectionEventsAtShutdown",
+                            completed_events_.size(), kMaxClientEvents + 1);
+}
 
 void ConnectionEventTracker::StartConnectionAttempt() {
   // TODO(harkness): Can we dcheck here that there is not an in progress
