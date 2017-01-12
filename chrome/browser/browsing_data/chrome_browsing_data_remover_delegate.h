@@ -146,6 +146,7 @@ class ChromeBrowsingDataRemoverDelegate : public BrowsingDataRemoverDelegate
   SubTask clear_networking_history_;
   SubTask clear_passwords_;
   SubTask clear_passwords_stats_;
+  SubTask clear_http_auth_cache_;
   SubTask clear_platform_keys_;
 #if defined(OS_ANDROID)
   SubTask clear_precache_history_;

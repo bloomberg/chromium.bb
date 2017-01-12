@@ -30,7 +30,6 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_data_remover.h"
-#include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/features/features.h"
@@ -377,29 +376,10 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   bool may_delete_history =
       prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory);
 
-  // All the UI entry points into the BrowsingDataRemoverImpl should be
-  // disabled, but this will fire if something was missed or added.
-  DCHECK(may_delete_history || (remove_mask & REMOVE_NOCHECKS) ||
-      (!(remove_mask & REMOVE_HISTORY) && !(remove_mask & REMOVE_DOWNLOADS)));
-
   //////////////////////////////////////////////////////////////////////////////
   // INITIALIZATION
   base::Callback<bool(const GURL& url)> filter =
       filter_builder.BuildGeneralFilter();
-
-  if ((remove_mask & REMOVE_HISTORY) && may_delete_history) {
-    // The SSL Host State that tracks SSL interstitial "proceed" decisions may
-    // include origins that the user has visited, so it must be cleared.
-    // TODO(msramek): We can reuse the plugin filter here, since both plugins
-    // and SSL host state are scoped to hosts and represent them as std::string.
-    // Rename the method to indicate its more general usage.
-    if (browser_context_->GetSSLHostStateDelegate()) {
-      browser_context_->GetSSLHostStateDelegate()->Clear(
-          filter_builder.IsEmptyBlacklist()
-              ? base::Callback<bool(const std::string&)>()
-              : filter_builder.BuildPluginFilter());
-    }
-  }
 
   //////////////////////////////////////////////////////////////////////////////
   // REMOVE_DOWNLOADS
@@ -585,7 +565,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
 
   //////////////////////////////////////////////////////////////////////////////
   // Auth cache.
-  if (remove_mask & REMOVE_COOKIES || remove_mask & REMOVE_PASSWORDS) {
+  if (remove_mask & REMOVE_COOKIES) {
     scoped_refptr<net::URLRequestContextGetter> request_context =
         BrowserContext::GetDefaultStoragePartition(browser_context_)
             ->GetURLRequestContext();

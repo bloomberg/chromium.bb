@@ -64,8 +64,11 @@
 #include "components/previews/core/previews_ui_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/core/tab_restore_service.h"
+#include "content/public/browser/ssl_host_state_delegate.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
 #include "net/cookies/cookie_store.h"
+#include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -207,6 +210,20 @@ void ClearHostnameResolutionCacheOnIOThread(
   io_thread->ClearHostCache(host_filter);
 }
 
+void ClearHttpAuthCacheOnIOThread(
+    scoped_refptr<net::URLRequestContextGetter> context_getter,
+    base::Time delete_begin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  net::HttpNetworkSession* http_session = context_getter->GetURLRequestContext()
+                                              ->http_transaction_factory()
+                                              ->GetSession();
+  DCHECK(http_session);
+  http_session->http_auth_cache()->ClearEntriesAddedWithin(base::Time::Now() -
+                                                           delete_begin);
+  http_session->CloseAllConnections();
+}
+
 }  // namespace
 
 ChromeBrowsingDataRemoverDelegate::SubTask::SubTask(
@@ -260,6 +277,7 @@ ChromeBrowsingDataRemoverDelegate::ChromeBrowsingDataRemoverDelegate(
       clear_networking_history_(sub_task_forward_callback_),
       clear_passwords_(sub_task_forward_callback_),
       clear_passwords_stats_(sub_task_forward_callback_),
+      clear_http_auth_cache_(sub_task_forward_callback_),
       clear_platform_keys_(sub_task_forward_callback_),
 #if defined(OS_ANDROID)
       clear_precache_history_(sub_task_forward_callback_),
@@ -308,6 +326,13 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   PrefService* prefs = profile_->GetPrefs();
   bool may_delete_history = prefs->GetBoolean(
       prefs::kAllowDeletingBrowserHistory);
+
+  // All the UI entry points into the BrowsingDataRemoverImpl should be
+  // disabled, but this will fire if something was missed or added.
+  DCHECK(may_delete_history ||
+         (remove_mask & BrowsingDataRemover::REMOVE_NOCHECKS) ||
+         (!(remove_mask & BrowsingDataRemover::REMOVE_HISTORY) &&
+          !(remove_mask & BrowsingDataRemover::REMOVE_DOWNLOADS)));
 
   //////////////////////////////////////////////////////////////////////////////
   // REMOVE_HISTORY
@@ -515,6 +540,18 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       previews_service->previews_ui_service()->ClearBlackList(delete_begin_,
                                                               delete_end_);
     }
+
+    // The SSL Host State that tracks SSL interstitial "proceed" decisions may
+    // include origins that the user has visited, so it must be cleared.
+    // TODO(msramek): We can reuse the plugin filter here, since both plugins
+    // and SSL host state are scoped to hosts and represent them as std::string.
+    // Rename the method to indicate its more general usage.
+    if (profile_->GetSSLHostStateDelegate()) {
+      profile_->GetSSLHostStateDelegate()->Clear(
+          filter_builder.IsEmptyBlacklist()
+              ? base::Callback<bool(const std::string&)>()
+              : filter_builder.BuildPluginFilter());
+    }
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -618,6 +655,16 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
           filter, delete_begin_, delete_end_,
           clear_passwords_.GetCompletionCallback());
     }
+
+    scoped_refptr<net::URLRequestContextGetter> request_context =
+        BrowserContext::GetDefaultStoragePartition(profile_)
+            ->GetURLRequestContext();
+    clear_http_auth_cache_.Start();
+    BrowserThread::PostTaskAndReply(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&ClearHttpAuthCacheOnIOThread, std::move(request_context),
+                   delete_begin_),
+        clear_http_auth_cache_.GetCompletionCallback());
   }
 
   if (remove_mask & BrowsingDataRemover::REMOVE_COOKIES) {
@@ -847,6 +894,7 @@ bool ChromeBrowsingDataRemoverDelegate::AllDone() {
          !clear_networking_history_.is_pending() &&
          !clear_passwords_.is_pending() &&
          !clear_passwords_stats_.is_pending() &&
+         !clear_http_auth_cache_.is_pending() &&
          !clear_platform_keys_.is_pending() &&
 #if defined(OS_ANDROID)
          !clear_precache_history_.is_pending() &&
