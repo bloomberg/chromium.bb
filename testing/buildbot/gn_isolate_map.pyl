@@ -844,6 +844,14 @@
       "cc_perftests",
     ],
   },
+  "media_perftests": {
+    "label": "//media:media_perftests",
+    "type": "script",
+    "script": "//testing/scripts/run_gtest_perf_test.py",
+    "args": [
+      "media_perftests",
+    ],
+  },
   "load_library_perf_tests": {
     "label": "//chrome/test:load_library_perf_tests",
     "type": "script",

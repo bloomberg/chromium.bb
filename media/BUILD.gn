@@ -800,6 +800,12 @@ test("media_perftests") {
 
   data = [
     "test/data/",
+
+    # Needed for isolate script to execute.
+    "//testing/scripts/common.py",
+    "//testing/xvfb.py",
+    "//testing/scripts/run_gtest_perf_test.py",
+    "//tools/perf/generate_legacy_perf_dashboard_json.py",
   ]
 }
 
