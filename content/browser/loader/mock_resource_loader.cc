@@ -96,30 +96,43 @@ MockResourceLoader::Status MockResourceLoader::OnResponseStarted(
 
 MockResourceLoader::Status MockResourceLoader::OnWillRead(int min_size) {
   EXPECT_EQ(Status::IDLE, status_);
+  EXPECT_FALSE(io_buffer_);
+  EXPECT_EQ(0, io_buffer_size_);
+
   status_ = Status::CALLING_HANDLER;
 
-  scoped_refptr<net::IOBuffer> buf;
-  int buf_size;
-  bool result = resource_handler_->OnWillRead(&buf, &buf_size, min_size);
+  bool result =
+      resource_handler_->OnWillRead(&io_buffer_, &io_buffer_size_, min_size);
   // The second case isn't really allowed, but a number of classes do it
   // anyways.
   EXPECT_TRUE(status_ == Status::CALLING_HANDLER ||
               (result == false && status_ == Status::CANCELED));
   if (!result) {
+    EXPECT_EQ(0, io_buffer_size_);
+    EXPECT_FALSE(io_buffer_);
     status_ = Status::CANCELED;
   } else {
-    EXPECT_LE(min_size, buf_size);
+    EXPECT_LE(min_size, io_buffer_size_);
+    EXPECT_LT(0, io_buffer_size_);
+    EXPECT_TRUE(io_buffer_);
     status_ = Status::IDLE;
   }
   return status_;
 };
 
-MockResourceLoader::Status MockResourceLoader::OnReadCompleted(int bytes_read) {
+MockResourceLoader::Status MockResourceLoader::OnReadCompleted(
+    base::StringPiece bytes) {
   EXPECT_EQ(Status::IDLE, status_);
+  EXPECT_LE(bytes.size(), static_cast<size_t>(io_buffer_size_));
+
+  status_ = Status::CALLING_HANDLER;
+  std::copy(bytes.begin(), bytes.end(), io_buffer_->data());
+  io_buffer_ = nullptr;
+  io_buffer_size_ = 0;
   status_ = Status::CALLING_HANDLER;
 
   bool defer = false;
-  bool result = resource_handler_->OnReadCompleted(bytes_read, &defer);
+  bool result = resource_handler_->OnReadCompleted(bytes.size(), &defer);
   // The second case isn't really allowed, but a number of classes do it
   // anyways.
   EXPECT_TRUE(status_ == Status::CALLING_HANDLER ||
@@ -142,6 +155,8 @@ MockResourceLoader::Status MockResourceLoader::OnResponseCompleted(
               (!status.is_success() && status_ == Status::CANCELED &&
                error_code_ == status.error()));
 
+  io_buffer_ = nullptr;
+  io_buffer_size_ = 0;
   status_ = Status::CALLING_HANDLER;
 
   bool defer = false;
@@ -153,6 +168,37 @@ MockResourceLoader::Status MockResourceLoader::OnResponseCompleted(
     status_ = Status::IDLE;
   }
   return status_;
+}
+
+MockResourceLoader::Status
+MockResourceLoader::OnResponseCompletedFromExternalOutOfBandCancel(
+    const net::URLRequestStatus& url_request_status) {
+  // This can happen at any point, except from a recursive call from
+  // ResourceHandler.
+  EXPECT_NE(Status::CALLING_HANDLER, status_);
+
+  io_buffer_ = nullptr;
+  io_buffer_size_ = 0;
+  status_ = Status::CALLING_HANDLER;
+
+  bool defer = false;
+  resource_handler_->OnResponseCompleted(url_request_status, &defer);
+  EXPECT_EQ(Status::CALLING_HANDLER, status_);
+  if (defer) {
+    status_ = Status::CALLBACK_PENDING;
+  } else {
+    status_ = Status::IDLE;
+  }
+  return status_;
+}
+
+void MockResourceLoader::WaitUntilIdleOrCanceled() {
+  if (status_ == Status::IDLE || status_ == Status::CANCELED)
+    return;
+  EXPECT_FALSE(canceled_or_idle_run_loop_);
+  canceled_or_idle_run_loop_.reset(new base::RunLoop());
+  canceled_or_idle_run_loop_->Run();
+  EXPECT_TRUE(status_ == Status::IDLE || status_ == Status::CANCELED);
 }
 
 void MockResourceLoader::Cancel() {
@@ -178,11 +224,15 @@ void MockResourceLoader::CancelWithError(int error_code) {
               status_ == Status::CALLING_HANDLER || status_ == Status::IDLE);
   status_ = Status::CANCELED;
   error_code_ = error_code;
+  if (canceled_or_idle_run_loop_)
+    canceled_or_idle_run_loop_->Quit();
 }
 
 void MockResourceLoader::Resume() {
   EXPECT_EQ(Status::CALLBACK_PENDING, status_);
   status_ = Status::IDLE;
+  if (canceled_or_idle_run_loop_)
+    canceled_or_idle_run_loop_->Quit();
 }
 
 }  // namespace content

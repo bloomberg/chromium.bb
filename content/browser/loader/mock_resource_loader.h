@@ -10,7 +10,10 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
+#include "base/strings/string_piece.h"
 #include "content/browser/loader/resource_controller.h"
+#include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 
 class GURL;
@@ -56,14 +59,30 @@ class MockResourceLoader : public ResourceController {
                              scoped_refptr<ResourceResponse> response);
   Status OnResponseStarted(scoped_refptr<ResourceResponse> response);
   Status OnWillRead(int min_size);
-  Status OnReadCompleted(int bytes_read);
+  Status OnReadCompleted(base::StringPiece bytes);
   Status OnResponseCompleted(const net::URLRequestStatus& status);
+
+  // Simulates an out-of-band cancel from some source other than the
+  // ResourceHandler |this| was created with (like another ResourceHandler). The
+  // difference between this and OnResponseCompleted() is that this has fewer
+  // sanity checks to validate the cancel was in-band.
+  Status OnResponseCompletedFromExternalOutOfBandCancel(
+      const net::URLRequestStatus& url_request_status);
+
+  // Waits until status() is IDLE or CANCELED.  If that's already the case, does
+  // nothing.
+  void WaitUntilIdleOrCanceled();
 
   Status status() const { return status_; }
 
   // Network error passed to the first CancelWithError() / Cancel() call, which
   // is the one the real code uses in the case of multiple cancels.
   int error_code() const { return error_code_; }
+
+  // Returns IOBuffer returned by last call to OnWillRead. The IOBuffer is
+  // release on read complete, on response complete, and on cancel.
+  net::IOBuffer* io_buffer() const { return io_buffer_.get(); }
+  int io_buffer_size() const { return io_buffer_size_; }
 
  private:
   // ResourceController implementation.
@@ -76,6 +95,11 @@ class MockResourceLoader : public ResourceController {
 
   Status status_ = Status::IDLE;
   int error_code_ = net::OK;
+
+  scoped_refptr<net::IOBuffer> io_buffer_;
+  int io_buffer_size_ = 0;
+
+  std::unique_ptr<base::RunLoop> canceled_or_idle_run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(MockResourceLoader);
 };

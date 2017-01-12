@@ -104,9 +104,9 @@ specific_include_rules = {
   ],
   "mojo_async_resource_handler_unittest\.cc": [
     "-content",
+    "+content/browser/loader/mock_resource_loader.h",
     "+content/browser/loader/mojo_async_resource_handler.h",
     "+content/browser/loader/test_url_loader_client.h",
-    "+content/public/browser/navigation_data.h",
     "+content/browser/loader/resource_controller.h",
     "+content/browser/loader/resource_dispatcher_host_impl.h",
     "+content/browser/loader/resource_request_info_impl.h",
@@ -114,6 +114,7 @@ specific_include_rules = {
     "+content/common/resource_request_completion_status.h",
     "+content/common/url_loader.mojom.h",
     "+content/public/browser/appcache_service.h",
+    "+content/public/browser/navigation_data.h",
     "+content/public/browser/resource_context.h",
     "+content/public/browser/resource_dispatcher_host_delegate.h",
     "+content/public/browser/resource_throttle.h",
