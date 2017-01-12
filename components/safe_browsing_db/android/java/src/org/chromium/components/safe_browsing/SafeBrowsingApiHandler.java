@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.safe_browsing;
+package org.chromium.components.safe_browsing;
 
 import android.content.Context;
 import android.support.annotation.IntDef;
@@ -11,8 +11,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * Java interface that a SafeBrowsingApiHander must implement when used with
- * {@code SafeBrowsignApiBridge}
+ * Java interface that a SafeBrowsingApiHandler must implement when used with
+ * {@code SafeBrowsingApiBridge}
  */
 public interface SafeBrowsingApiHandler {
     // Implementors must provide a no-arg constructor to be instantiated via reflection.
@@ -26,16 +26,11 @@ public interface SafeBrowsingApiHandler {
 
     // Possible values for resultStatus. Native side has the same definitions.
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({
-            STATUS_INTERNAL_ERROR,
-            STATUS_SUCCESS,
-            STATUS_TIMEOUT
-    })
+    @IntDef({STATUS_INTERNAL_ERROR, STATUS_SUCCESS, STATUS_TIMEOUT})
     @interface SafeBrowsingResult {}
     static final int STATUS_INTERNAL_ERROR = -1;
     static final int STATUS_SUCCESS = 0;
     static final int STATUS_TIMEOUT = 1;
-
 
     /**
      * Verifies that SafeBrowsingApiHandler can operate and initializes if feasible.

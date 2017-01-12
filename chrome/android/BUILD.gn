@@ -186,6 +186,7 @@ android_library("chrome_java") {
     "//components/payments:payment_request_java",
     "//components/policy/android:policy_java",
     "//components/precache/android:precache_java",
+    "//components/safe_browsing_db/android:safe_browsing_java",
     "//components/safe_json/android:safe_json_java",
     "//components/safe_json/android:safe_json_java",
     "//components/signin/core/browser/android:java",

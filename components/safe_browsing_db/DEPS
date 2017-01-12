@@ -6,6 +6,7 @@ include_rules = [
   "+content/public/common",
   "+content/public/test",
   "+crypto",
+  "+jni",
   "+third_party/protobuf/src/google",
   "+net",
 ]

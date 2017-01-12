@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/safe_browsing/safe_browsing_api_handler_bridge.h"
+#include "components/safe_browsing_db/android/safe_browsing_api_handler_bridge.h"
 
 #include <memory>
 #include <string>
@@ -12,7 +12,6 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "components/safe_browsing_db/safe_browsing_api_handler_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/SafeBrowsingApiBridge_jni.h"
@@ -72,7 +71,6 @@ ScopedJavaLocalRef<jintArray> SBThreatTypesToJavaArray(
 }
 
 }  // namespace
-
 
 bool RegisterSafeBrowsingApiBridge(JNIEnv* env) {
   return RegisterNativesImpl(env);
@@ -145,15 +143,14 @@ void OnUrlCheckDone(JNIEnv* env,
 SafeBrowsingApiHandlerBridge::SafeBrowsingApiHandlerBridge()
     : checked_api_support_(false) {}
 
-SafeBrowsingApiHandlerBridge::~SafeBrowsingApiHandlerBridge() {
-}
+SafeBrowsingApiHandlerBridge::~SafeBrowsingApiHandlerBridge() {}
 
 bool SafeBrowsingApiHandlerBridge::CheckApiIsSupported() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!checked_api_support_) {
     DVLOG(1) << "Checking API support.";
-    j_api_handler_ = Java_SafeBrowsingApiBridge_create(
-        AttachCurrentThread(), GetApplicationContext());
+    j_api_handler_ = Java_SafeBrowsingApiBridge_create(AttachCurrentThread(),
+                                                       GetApplicationContext());
     checked_api_support_ = true;
   }
   return j_api_handler_.obj() != nullptr;

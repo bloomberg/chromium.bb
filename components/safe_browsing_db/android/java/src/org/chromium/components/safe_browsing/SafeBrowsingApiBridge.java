@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.safe_browsing;
+package org.chromium.components.safe_browsing;
 
 import android.content.Context;
 
@@ -15,7 +15,7 @@ import org.chromium.base.annotations.JNINamespace;
  */
 @JNINamespace("safe_browsing")
 public final class SafeBrowsingApiBridge {
-    private static final String TAG = "SafeBrowsingApi";
+    private static final String TAG = "ApiBridge";
 
     private static Class<? extends SafeBrowsingApiHandler> sHandler;
 
@@ -56,8 +56,8 @@ public final class SafeBrowsingApiBridge {
     }
 
     @CalledByNative
-    private static void startUriLookup(SafeBrowsingApiHandler handler, long callbackId,
-            String uri, int[] threatsOfInterest) {
+    private static void startUriLookup(
+            SafeBrowsingApiHandler handler, long callbackId, String uri, int[] threatsOfInterest) {
         handler.startUriLookup(callbackId, uri, threatsOfInterest);
         Log.d(TAG, "Done starting request");
     }

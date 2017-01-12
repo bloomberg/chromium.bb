@@ -85,7 +85,6 @@
 #include "chrome/browser/android/rappor/rappor_service_bridge.h"
 #include "chrome/browser/android/recently_closed_tabs_bridge.h"
 #include "chrome/browser/android/rlz/revenue_stats.h"
-#include "chrome/browser/android/safe_browsing/safe_browsing_api_handler_bridge.h"
 #include "chrome/browser/android/search_geolocation/search_geolocation_disclosure_tab_helper.h"
 #include "chrome/browser/android/service_tab_launcher.h"
 #include "chrome/browser/android/sessions/session_tab_helper_android.h"
@@ -170,6 +169,7 @@
 #include "components/invalidation/impl/android/component_jni_registrar.h"
 #include "components/payments/android/payments_jni_registrar.h"
 #include "components/policy/core/browser/android/component_jni_registrar.h"
+#include "components/safe_browsing_db/android/jni_registrar.h"
 #include "components/safe_json/android/component_jni_registrar.h"
 #include "components/signin/core/browser/android/component_jni_registrar.h"
 #include "components/spellcheck/browser/android/component_jni_registrar.h"
@@ -363,7 +363,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"ResourcePrefetchPredictor",
      predictors::RegisterResourcePrefetchPredictor},
     {"RevenueStats", chrome::android::RegisterRevenueStats},
-    {"SafeBrowsingApiBridge", safe_browsing::RegisterSafeBrowsingApiBridge},
     {"SceneLayer", RegisterSceneLayer},
     {"ScreenshotTask", chrome::android::RegisterScreenshotTask},
     {"ServiceTabLauncher", ServiceTabLauncher::Register},
