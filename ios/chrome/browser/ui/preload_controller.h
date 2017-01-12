@@ -110,6 +110,10 @@ extern const int kPreloadControllerURLFetcherID;
 // Designated initializer.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState;
 
+// Called when the browser state this object was initialized with is being
+// destroyed.
+- (void)browserStateDestroyed;
+
 // Returns the currently prerendered Tab, or nil if none exists.  The caller
 // must retain the returned Tab if needed.  After this method is called, the
 // PrerenderController reverts to a non-prerendering state.

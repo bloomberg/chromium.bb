@@ -138,6 +138,11 @@ class PrefetchDelegate : public net::URLFetcherDelegate {
   return self;
 }
 
+- (void)browserStateDestroyed {
+  [self cancelPrerender];
+  connectionTypeObserverBridge_.reset();
+}
+
 - (void)dealloc {
   UMA_HISTOGRAM_COUNTS(kPrerendersPerSessionCountHistogramName,
                        successfulPrerendersPerSessionCount_);

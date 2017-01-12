@@ -1675,6 +1675,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   BrowserListIOS::RemoveBrowser(self);
   [_toolbarController browserStateDestroyed];
   [_model browserStateDestroyed];
+  [_preloadController browserStateDestroyed];
+  _preloadController.reset();
   // The file remover needs the browser state, so needs to be destroyed now.
   _externalFileRemover.reset();
   _browserState = nullptr;
