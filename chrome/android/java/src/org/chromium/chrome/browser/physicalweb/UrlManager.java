@@ -381,6 +381,9 @@ class UrlManager {
                             .putInt(PREFS_VERSION_KEY, PREFS_VERSION)
                             // This clean up code can be deleted in m59.
                             .remove("physicalweb_nearby_urls")
+                            .remove("org.chromium.chrome.browser.physicalweb.VERSION")
+                            .remove("org.chromium.chrome.browser.physicalweb"
+                                    + ".BOTTOM_BAR_DISPLAY_COUNT")
                             .apply();
                     return null;
                 }

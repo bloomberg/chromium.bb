@@ -501,6 +501,8 @@ public class UrlManagerTest extends InstrumentationTestCase {
         ContextUtils.getAppSharedPreferences().edit()
                 .remove(UrlManager.getVersionKey())
                 .putStringSet("physicalweb_nearby_urls", oldResolvedUrls)
+                .putInt("org.chromium.chrome.browser.physicalweb.VERSION", 1)
+                .putInt("org.chromium.chrome.browser.physicalweb.BOTTOM_BAR_DISPLAY_COUNT", 1)
                 .apply();
         new UrlManager();
 
@@ -511,7 +513,11 @@ public class UrlManagerTest extends InstrumentationTestCase {
             public boolean isSatisfied() {
                 SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
                 return sharedPreferences.contains(UrlManager.getVersionKey())
-                        && !sharedPreferences.contains("physicalweb_nearby_urls");
+                        && !sharedPreferences.contains("physicalweb_nearby_urls")
+                        && !sharedPreferences.contains(
+                                "org.chromium.chrome.browser.physicalweb.VERSION")
+                        && !sharedPreferences.contains("org.chromium.chrome.browser.physicalweb"
+                                + ".BOTTOM_BAR_DISPLAY_COUNT");
             }
         }, 5000, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
 
