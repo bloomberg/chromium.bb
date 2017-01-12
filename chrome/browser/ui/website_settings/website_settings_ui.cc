@@ -170,34 +170,34 @@ WebsiteSettingsUI::IdentityInfo::GetSecurityDescription() const {
         case WebsiteSettings::
             SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE:
           return CreateSecurityDescription(
-              IDS_WEBSITE_SETTINGS_NOT_SECURE_SUMMARY,
-              IDS_WEBSITE_SETTINGS_NOT_SECURE_DETAILS);
+              IDS_PAGEINFO_NOT_SECURE_SUMMARY,
+              IDS_PAGEINFO_NOT_SECURE_DETAILS);
         case WebsiteSettings::
             SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE:
           return CreateSecurityDescription(
-              IDS_WEBSITE_SETTINGS_MIXED_CONTENT_SUMMARY,
-              IDS_WEBSITE_SETTINGS_MIXED_CONTENT_DETAILS);
+              IDS_PAGEINFO_MIXED_CONTENT_SUMMARY,
+              IDS_PAGEINFO_MIXED_CONTENT_DETAILS);
         default:
-          return CreateSecurityDescription(IDS_WEBSITE_SETTINGS_SECURE_SUMMARY,
-                                           IDS_WEBSITE_SETTINGS_SECURE_DETAILS);
+          return CreateSecurityDescription(IDS_PAGEINFO_SECURE_SUMMARY,
+                                           IDS_PAGEINFO_SECURE_DETAILS);
       }
     case WebsiteSettings::SITE_IDENTITY_STATUS_MALWARE:
-      return CreateSecurityDescription(IDS_WEBSITE_SETTINGS_MALWARE_SUMMARY,
-                                       IDS_WEBSITE_SETTINGS_MALWARE_DETAILS);
+      return CreateSecurityDescription(IDS_PAGEINFO_MALWARE_SUMMARY,
+                                       IDS_PAGEINFO_MALWARE_DETAILS);
     case WebsiteSettings::SITE_IDENTITY_STATUS_SOCIAL_ENGINEERING:
       return CreateSecurityDescription(
-          IDS_WEBSITE_SETTINGS_SOCIAL_ENGINEERING_SUMMARY,
-          IDS_WEBSITE_SETTINGS_SOCIAL_ENGINEERING_DETAILS);
+          IDS_PAGEINFO_SOCIAL_ENGINEERING_SUMMARY,
+          IDS_PAGEINFO_SOCIAL_ENGINEERING_DETAILS);
     case WebsiteSettings::SITE_IDENTITY_STATUS_UNWANTED_SOFTWARE:
       return CreateSecurityDescription(
-          IDS_WEBSITE_SETTINGS_UNWANTED_SOFTWARE_SUMMARY,
-          IDS_WEBSITE_SETTINGS_UNWANTED_SOFTWARE_DETAILS);
+          IDS_PAGEINFO_UNWANTED_SOFTWARE_SUMMARY,
+          IDS_PAGEINFO_UNWANTED_SOFTWARE_DETAILS);
     case WebsiteSettings::SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM:
     case WebsiteSettings::SITE_IDENTITY_STATUS_UNKNOWN:
     case WebsiteSettings::SITE_IDENTITY_STATUS_NO_CERT:
     default:
-      return CreateSecurityDescription(IDS_WEBSITE_SETTINGS_NOT_SECURE_SUMMARY,
-                                       IDS_WEBSITE_SETTINGS_NOT_SECURE_DETAILS);
+      return CreateSecurityDescription(IDS_PAGEINFO_NOT_SECURE_SUMMARY,
+                                       IDS_PAGEINFO_NOT_SECURE_DETAILS);
   }
 }
 

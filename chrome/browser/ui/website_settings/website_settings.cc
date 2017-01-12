@@ -172,17 +172,17 @@ void GetSiteIdentityByMaliciousContentStatus(
     case security_state::MALICIOUS_CONTENT_STATUS_MALWARE:
       *status = WebsiteSettings::SITE_IDENTITY_STATUS_MALWARE;
       *details =
-          l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_MALWARE_DETAILS);
+          l10n_util::GetStringUTF16(IDS_PAGEINFO_MALWARE_DETAILS);
       break;
     case security_state::MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING:
       *status = WebsiteSettings::SITE_IDENTITY_STATUS_SOCIAL_ENGINEERING;
       *details = l10n_util::GetStringUTF16(
-          IDS_WEBSITE_SETTINGS_SOCIAL_ENGINEERING_DETAILS);
+          IDS_PAGEINFO_SOCIAL_ENGINEERING_DETAILS);
       break;
     case security_state::MALICIOUS_CONTENT_STATUS_UNWANTED_SOFTWARE:
       *status = WebsiteSettings::SITE_IDENTITY_STATUS_UNWANTED_SOFTWARE;
       *details = l10n_util::GetStringUTF16(
-          IDS_WEBSITE_SETTINGS_UNWANTED_SOFTWARE_DETAILS);
+          IDS_PAGEINFO_UNWANTED_SOFTWARE_DETAILS);
       break;
   }
 }
