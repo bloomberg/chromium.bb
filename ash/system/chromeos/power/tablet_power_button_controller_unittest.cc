@@ -139,11 +139,15 @@ TEST_F(TabletPowerButtonControllerTest, LockScreenIfRequired) {
   // automatic screen-locking was requested.
   PressPowerButton();
   ReleasePowerButton();
+  EXPECT_TRUE(test_api_->LockScreenTimerIsRunning());
+  EXPECT_FALSE(GetLockedState());
+  test_api_->TriggerLockScreenTimeout();
   EXPECT_TRUE(GetLockedState());
 
   // On locked state, power-button-press-release should do nothing.
   PressPowerButton();
   ReleasePowerButton();
+  EXPECT_FALSE(test_api_->LockScreenTimerIsRunning());
   EXPECT_TRUE(GetLockedState());
 
   // Unlock the sceen.
@@ -155,6 +159,26 @@ TEST_F(TabletPowerButtonControllerTest, LockScreenIfRequired) {
   SetShouldLockScreenAutomatically(false);
   PressPowerButton();
   ReleasePowerButton();
+  EXPECT_FALSE(test_api_->LockScreenTimerIsRunning());
+  EXPECT_FALSE(GetLockedState());
+}
+
+// Tests when display is on, quickly tapping power button two times, screen is
+// not locked.
+TEST_F(TabletPowerButtonControllerTest, LockScreenGracePeriodTest) {
+  Initialize(LoginStatus::USER);
+  SetShouldLockScreenAutomatically(true);
+  EXPECT_FALSE(GetLockedState());
+
+  PressPowerButton();
+  ReleasePowerButton();
+  power_manager_client_->SendBrightnessChanged(0, false);
+  EXPECT_TRUE(test_api_->LockScreenTimerIsRunning());
+  PressPowerButton();
+  power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, false);
+  EXPECT_FALSE(test_api_->LockScreenTimerIsRunning());
+  ReleasePowerButton();
+  EXPECT_FALSE(test_api_->LockScreenTimerIsRunning());
   EXPECT_FALSE(GetLockedState());
 }
 

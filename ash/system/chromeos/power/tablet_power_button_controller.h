@@ -42,6 +42,12 @@ class ASH_EXPORT TabletPowerButtonController
     // Emulates |shutdown_timer_| timeout.
     void TriggerShutdownTimeout();
 
+    // Returns true when |lock_screen_timer_| is running.
+    bool LockScreenTimerIsRunning() const;
+
+    // Emulates |lock_screen_timer_| timeout.
+    void TriggerLockScreenTimeout();
+
    private:
     TabletPowerButtonController* controller_;  // Not owned.
 
@@ -101,6 +107,9 @@ class ASH_EXPORT TabletPowerButtonController
   // and locking is possible.
   void LockScreenIfRequired();
 
+  // Called by |lock_screen_timer_| to start locking screen.
+  void OnLockScreenTimeout();
+
   // True if the brightness level is currently set to off.
   bool brightness_level_is_zero_ = false;
 
@@ -123,6 +132,10 @@ class ASH_EXPORT TabletPowerButtonController
   // Started when the tablet power button is pressed and stopped when it's
   // released. Runs OnShutdownTimeout() to start shutdown.
   base::OneShotTimer shutdown_timer_;
+
+  // Used to provide a grace period between forcing the display off and locking
+  // the screen. Runs OnLockScreenTimeout().
+  base::OneShotTimer lock_screen_timer_;
 
   LockStateController* controller_;  // Not owned.
 
