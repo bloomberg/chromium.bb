@@ -361,8 +361,11 @@ void ScrollAnimator::updateCompositorAnimations() {
 }
 
 void ScrollAnimator::addMainThreadScrollingReason() {
-  // TODO(yigu): Should update the frame tree to make sure
-  // the same reason is set for subframes. crbug.com/675677.
+  // Usually main thread scrolling reasons should be updated from
+  // one frame to all its descendants. khandlingScrollFromMainThread
+  // is a special case because its subframes cannot be scrolled
+  // when the reason is set. When the subframes are ready to scroll
+  // the reason has benn reset.
   if (WebLayer* scrollLayer =
           toWebLayer(getScrollableArea()->layerForScrolling())) {
     scrollLayer->addMainThreadScrollingReasons(
