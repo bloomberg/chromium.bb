@@ -62,6 +62,43 @@ print_device_info(drmDevicePtr device, int i, bool print_revision)
         else
             printf("\t\t\trevision_id\tIGNORED\n");
 
+    } else if (device->bustype == DRM_BUS_USB) {
+        printf("\t\tusb\n");
+        printf("\t\t\tbus\t%03u\n", device->businfo.usb->bus);
+        printf("\t\t\tdev\t%03u\n", device->businfo.usb->dev);
+
+        printf("\tdeviceinfo\n");
+        printf("\t\tusb\n");
+        printf("\t\t\tvendor\t%04x\n", device->deviceinfo.usb->vendor);
+        printf("\t\t\tproduct\t%04x\n", device->deviceinfo.usb->product);
+    } else if (device->bustype == DRM_BUS_PLATFORM) {
+        char **compatible = device->deviceinfo.platform->compatible;
+
+        printf("\t\tplatform\n");
+        printf("\t\t\tfullname\t%s\n", device->businfo.platform->fullname);
+
+        printf("\tdeviceinfo\n");
+        printf("\t\tplatform\n");
+        printf("\t\t\tcompatible\n");
+
+        while (*compatible) {
+            printf("\t\t\t\t%s\n", *compatible);
+            compatible++;
+        }
+    } else if (device->bustype == DRM_BUS_HOST1X) {
+        char **compatible = device->deviceinfo.platform->compatible;
+
+        printf("\t\thost1x\n");
+        printf("\t\t\tfullname\t%s\n", device->businfo.host1x->fullname);
+
+        printf("\tdeviceinfo\n");
+        printf("\t\tplatform\n");
+        printf("\t\t\tcompatible\n");
+
+        while (*compatible) {
+            printf("\t\t\t\t%s\n", *compatible);
+            compatible++;
+        }
     } else {
         printf("Unknown/unhandled bustype\n");
     }
