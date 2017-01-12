@@ -13,71 +13,57 @@
             //   OR (MediaKeys is around
             //       AND the session has not received a close() event)
 
-            async_test(function(test)
+            promise_test(function(test)
             {
-                gc();
                 var mediaKeys;
                 var mediaKeySession1;
                 var mediaKeySession2;
                 var mediaKeySession3;
                 var initDataType;
                 var initData;
-                var startingMediaKeysCount = window.internals.mediaKeysCount();
-                var startingMediaKeySessionCount = window.internals.mediaKeySessionCount();
 
-                function numMediaKeysCreated()
-                {
-                    return window.internals.mediaKeysCount() - startingMediaKeysCount;
-                }
+                // Even though there should be no existing objects, start by
+                // running gc() and verifying that none exist. This also
+                // allows the failures to be reported from inside a promise
+                // so that the test fails properly.
+                return createGCPromise().then(function() {
+                    verifyMediaKeyAndMediaKeySessionCount(0, 0, 'After initial gc()');
 
-                function numMediaKeySessionCreated()
-                {
-                    return window.internals.mediaKeySessionCount() - startingMediaKeySessionCount;
-                }
-
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey', getSimpleConfiguration()).then(function(access) {
+                    return navigator.requestMediaKeySystemAccess('org.w3.clearkey', getSimpleConfiguration());
+                }).then(function(access) {
                     initDataType = access.getConfiguration().initDataTypes[0];
                     initData = getInitData(initDataType);
                     return access.createMediaKeys();
                 }).then(function(result) {
                     mediaKeys = result;
                     assert_equals(typeof mediaKeys.createSession, 'function');
-
-                    assert_equals(numMediaKeysCreated(), 1, 'MediaKeys.create()');
-                    assert_equals(numMediaKeySessionCreated(), 0, 'After final gc()');
+                    verifyMediaKeyAndMediaKeySessionCount(1, 0, 'MediaKeys.create()');
 
                     // Create 3 sessions.
                     mediaKeySession1 = mediaKeys.createSession();
                     return mediaKeySession1.generateRequest(initDataType, initData);
                 }).then(function() {
                     assert_true(mediaKeySession1.sessionId && mediaKeySession1.sessionId.length > 0);
-
-                    assert_equals(numMediaKeysCreated(), 1, 'MediaKeys.createSession(1)');
-                    assert_equals(numMediaKeySessionCreated(), 1, 'MediaKeys.createSession(1)');
+                    verifyMediaKeyAndMediaKeySessionCount(1, 1, 'MediaKeys.createSession(1)');
 
                     mediaKeySession2 = mediaKeys.createSession();
                     return mediaKeySession2.generateRequest(initDataType, initData);
                 }).then(function() {
                     assert_true(mediaKeySession2.sessionId && mediaKeySession2.sessionId.length > 0);
-
-                    assert_equals(numMediaKeysCreated(), 1, 'mediaKeys.createSession(2)');
-                    assert_equals(numMediaKeySessionCreated(), 2, 'mediaKeys.createSession(2)');
+                    verifyMediaKeyAndMediaKeySessionCount(1, 2, 'mediaKeys.createSession(2)');
 
                     mediaKeySession3 = mediaKeys.createSession();
                     return mediaKeySession3.generateRequest(initDataType, initData);
                 }).then(function() {
                     assert_true(mediaKeySession3.sessionId && mediaKeySession3.sessionId.length > 0);
-
-                    assert_equals(numMediaKeysCreated(), 1, 'mediaKeys.createSession(3)');
-                    assert_equals(numMediaKeySessionCreated(), 3, 'mediaKeys.createSession(3)');
+                    verifyMediaKeyAndMediaKeySessionCount(1, 3, 'mediaKeys.createSession(3)');
 
                     // Run gc(). All sessions should remain as we have a
                     // reference to each one. However, running gc()
                     // asynchronously should free up the last PromiseResolver.
                     return createGCPromise();
                 }).then(function(result) {
-                    assert_equals(numMediaKeysCreated(), 1, 'After gc()');
-                    assert_equals(numMediaKeySessionCreated(), 3, 'After gc()');
+                    verifyMediaKeyAndMediaKeySessionCount(1, 3, 'After gc()');
 
                     // Now drop references to 2 of the sessions. Even though we
                     // don't have a reference, MediaKeys is still around (and
@@ -89,8 +75,7 @@
                 }).then(function(result) {
                     return createGCPromise();
                 }).then(function(result) {
-                    assert_equals(numMediaKeysCreated(), 1, 'After second gc()');
-                    assert_equals(numMediaKeySessionCreated(), 3, 'After second gc()');
+                    verifyMediaKeyAndMediaKeySessionCount(1, 3, 'After second gc()');
 
                     // Now drop the reference to MediaKeys. It and the 2
                     // unreferenced sessions should be collected. Since
@@ -105,20 +90,14 @@
                 }).then(function(result) {
                     return createGCPromise();
                 }).then(function(result) {
-                    assert_equals(numMediaKeysCreated(), 0, 'After mediaKeys = null');
-                    assert_equals(numMediaKeySessionCreated(), 1, 'After mediaKeys = null');
+                    verifyMediaKeyAndMediaKeySessionCount(0, 1, 'After mediaKeys = null');
 
                     // Drop the reference to the last session. It should get
                     // collected now since MediaKeys is gone.
                     mediaKeySession3 = null;
                     return createGCPromise();
                 }).then(function(result) {
-                    assert_equals(numMediaKeysCreated(), 0, 'After final gc()');
-                    assert_equals(numMediaKeySessionCreated(), 0, 'After final gc()');
-
-                    test.done();
-                }).catch(function(error) {
-                    forceTestFailureFromPromise(test, error);
+                    verifyMediaKeyAndMediaKeySessionCount(0, 0, 'After final gc()');
                 });
             }, 'MediaKeySession lifetime without release()');
         </script>

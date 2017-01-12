@@ -329,3 +329,16 @@ function playVideoAndWaitForTimeupdate(video, content, duration)
         });
     });
 }
+
+// Verifies that the number of existing MediaKey and MediaKeySession objects
+// match what is expected.
+function verifyMediaKeyAndMediaKeySessionCount(
+    expectedMediaKeysCount, expectedMediaKeySessionCount, description)
+{
+    assert_equals(window.internals.mediaKeysCount(),
+                  expectedMediaKeysCount,
+                  description + ', MediaKeys:');
+    assert_equals(window.internals.mediaKeySessionCount(),
+                  expectedMediaKeySessionCount,
+                  description + ', MediaKeySession:');
+}

@@ -17,53 +17,40 @@
             // as long as the associated MediaKeys object is around.
 
             // For this test, create a MediaKeySession and verify lifetime.
-            async_test(function(test)
+            promise_test(function(test)
             {
-                gc();
                 var initDataType;
                 var initData;
                 var mediaKeys;
-                var startingMediaKeysCount = window.internals.mediaKeysCount();
-                var startingMediaKeySessionCount = window.internals.mediaKeySessionCount();
 
-                function numMediaKeysCreated()
-                {
-                    return window.internals.mediaKeysCount() - startingMediaKeysCount;
-                }
+                // Even though there should be no existing objects, start by
+                // running gc() and verifying that none exist. This also
+                // allows the failures to be reported from inside a promise
+                // so that the test fails properly.
+                return createGCPromise().then(function() {
+                    verifyMediaKeyAndMediaKeySessionCount(0, 0, 'After initial gc()');
 
-                function numMediaKeySessionCreated()
-                {
-                    return window.internals.mediaKeySessionCount() - startingMediaKeySessionCount;
-                }
-
-                // Create a MediaKeys object with a session.
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey', getSimpleConfiguration()).then(function(access) {
+                    // Create a MediaKeys object with a session.
+                    return navigator.requestMediaKeySystemAccess('org.w3.clearkey', getSimpleConfiguration());
+                }).then(function(access) {
                     initDataType = access.getConfiguration().initDataTypes[0];
                     initData = getInitData(initDataType);
                     return access.createMediaKeys();
                 }).then(function(result) {
                     mediaKeys = result;
-
-                    assert_equals(numMediaKeysCreated(), 1, 'MediaKeys.create()');
-                    assert_equals(numMediaKeySessionCreated(), 0, 'After final gc()');
+                    verifyMediaKeyAndMediaKeySessionCount(1, 0, 'MediaKeys.create()');
 
                     var mediaKeySession = mediaKeys.createSession();
                     return mediaKeySession.generateRequest(initDataType, initData);
                 }).then(function() {
-                    assert_equals(numMediaKeysCreated(), 1, 'MediaKeys.createSession()');
-                    assert_equals(numMediaKeySessionCreated(), 1, 'MediaKeys.createSession()');
+                    verifyMediaKeyAndMediaKeySessionCount(1, 1, 'MediaKeys.createSession()');
 
                     // Run gc(), should not affect MediaKeys object nor the
                     // session since we still have a reference to it.
-
-                    // When enabling oilpan GC, the in-active
-                    // ScriptPromiseResolvers will be destroyed.
                     return createGCPromise();
                 }).then(function(result) {
                     assert_equals(typeof mediaKeys.createSession, 'function');
-
-                    assert_equals(numMediaKeysCreated(), 1, 'After gc()');
-                    assert_equals(numMediaKeySessionCreated(), 1, 'After gc()');
+                    verifyMediaKeyAndMediaKeySessionCount(1, 1, 'After gc()');
 
                     // Drop reference to the MediaKeys object and run gc()
                     // again. Object should be collected this time. Since
@@ -78,12 +65,7 @@
                 }).then(function(result) {
                     return createGCPromise();
                 }).then(function(result) {
-                    assert_equals(numMediaKeysCreated(), 0, 'After final gc()');
-                    assert_equals(numMediaKeySessionCreated(), 0, 'After final gc()');
-
-                    test.done();
-                }).catch(function(error) {
-                    forceTestFailureFromPromise(test, error);
+                    verifyMediaKeyAndMediaKeySessionCount(0, 0, 'After final gc()');
                 });
             }, 'MediaKeys lifetime with session');
         </script>
