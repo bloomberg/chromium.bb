@@ -6,6 +6,8 @@
 
 #include <cmath>
 
+#include "base/feature_list.h"
+#include "content/public/common/content_features.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace content {
@@ -29,6 +31,16 @@ const double kEssentialVideoAspectRatio = 16.0 / 9.0;
 const double kAspectRatioEpsilon = 0.01;
 const int kEssentialVideoMinimumArea = 120000;
 
+bool IsTiny(const gfx::Size& unobscured_size) {
+  // Empty plugins can't be classified as tiny - they might just be of unknown
+  // size.
+  if (unobscured_size.IsEmpty())
+    return false;
+
+  return unobscured_size.width() <= kTinyContentSize &&
+         unobscured_size.height() <= kTinyContentSize;
+}
+
 }  // namespace
 
 // static
@@ -38,6 +50,11 @@ PeripheralContentHeuristic::GetPeripheralStatus(
     const url::Origin& main_frame_origin,
     const url::Origin& content_origin,
     const gfx::Size& unobscured_size) {
+  if (base::FeatureList::IsEnabled(features::kFilterSameOriginTinyPlugin) &&
+      IsTiny(unobscured_size)) {
+    return RenderFrame::CONTENT_STATUS_TINY;
+  }
+
   if (main_frame_origin.IsSameOriginWith(content_origin))
     return RenderFrame::CONTENT_STATUS_ESSENTIAL_SAME_ORIGIN;
 
@@ -47,10 +64,8 @@ PeripheralContentHeuristic::GetPeripheralStatus(
   if (unobscured_size.IsEmpty())
     return RenderFrame::CONTENT_STATUS_UNKNOWN_SIZE;
 
-  if (unobscured_size.width() <= kTinyContentSize &&
-      unobscured_size.height() <= kTinyContentSize) {
+  if (IsTiny(unobscured_size))
     return RenderFrame::CONTENT_STATUS_TINY;
-  }
 
   if (IsLargeContent(unobscured_size))
     return RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_BIG;

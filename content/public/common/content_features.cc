@@ -75,6 +75,10 @@ const base::Feature kFasterLocationReload{"FasterLocationReload",
 const base::Feature kFeaturePolicy{"FeaturePolicy",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable filtering of same-origin tiny plugins
+const base::Feature kFilterSameOriginTinyPlugin{
+    "FilterSameOriginTinyPlugins", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables a blink::FontCache optimization that reuses a font to serve different
 // size of font.
 const base::Feature kFontCacheScaling{"FontCacheScaling",

@@ -28,6 +28,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/ppapi_test_utils.h"
@@ -597,6 +598,32 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, ExpandingTinyPlugins) {
 
   VerifyPluginIsThrottled(GetActiveWebContents(), "expand_to_peripheral");
   VerifyPluginMarkedEssential(GetActiveWebContents(), "expand_to_essential");
+}
+
+// Separate test case with FilterSameOriginTinyPlugins feature flag on.
+class PluginPowerSaverFilterSameOriginTinyPluginsBrowserTest
+    : public PluginPowerSaverBrowserTest {
+ public:
+  void SetUpInProcessBrowserTestFixture() override {
+    // Although this is redundant with the Field Trial testing configuration,
+    // the official builders don't read that.
+    feature_list.InitWithFeatures({features::kFilterSameOriginTinyPlugin},
+                                  {features::kPreferHtmlOverPlugins});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list;
+};
+
+IN_PROC_BROWSER_TEST_F(PluginPowerSaverFilterSameOriginTinyPluginsBrowserTest,
+                       BlockSameOriginTinyPlugin) {
+  LoadHTML("/same_origin_tiny_plugin.html");
+
+  VerifyPluginIsPlaceholderOnly("tiny_same_origin");
+
+  TabSpecificContentSettings* tab_specific_content_settings =
+      TabSpecificContentSettings::FromWebContents(GetActiveWebContents());
+  EXPECT_FALSE(tab_specific_content_settings->blocked_plugin_names().empty());
 }
 
 // Separate test case with HTML By Default feature flag on.

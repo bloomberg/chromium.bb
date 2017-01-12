@@ -4,6 +4,8 @@
 
 #include "content/renderer/peripheral_content_heuristic.h"
 
+#include "base/test/scoped_feature_list.h"
+#include "content/public/common/content_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
@@ -57,6 +59,16 @@ TEST(PeripheralContentHeuristic, TinyContent) {
             PeripheralContentHeuristic::GetPeripheralStatus(
                 std::set<url::Origin>(), url::Origin(GURL(kSameOrigin)),
                 url::Origin(GURL(kOtherOrigin)), gfx::Size(10, 10)));
+}
+
+TEST(PeripheralContentHeuristic, FilterSameOriginTinyPlugins) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kFilterSameOriginTinyPlugin);
+
+  EXPECT_EQ(RenderFrame::CONTENT_STATUS_TINY,
+            PeripheralContentHeuristic::GetPeripheralStatus(
+                std::set<url::Origin>(), url::Origin(GURL(kSameOrigin)),
+                url::Origin(GURL(kSameOrigin)), gfx::Size(1, 1)));
 }
 
 TEST(PeripheralContentHeuristic, TemporaryOriginWhitelist) {
