@@ -2481,7 +2481,7 @@ Press any key to continue exploring.
     None available
   </message>
   <message name="IDS_OPTIONS_STYLUS_NOTE_TAKING_APP_WAITING_FOR_ANDROID" desc="Entry in 'Stylus' overlay's note-taking app menu when Android isn't ready yet.">
-    Waiting for Android apps...
+    Initializing...
   </message>
   <message name="IDS_OPTIONS_SETTINGS_SET_TIME_BUTTON" desc="In the settings tab, the prompt on the button to open a dialog to set date and time.">
     Set date and time
