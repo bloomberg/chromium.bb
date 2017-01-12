@@ -908,11 +908,12 @@ static inline int16_t saturate_int16(int32_t v) {
   return v;
 }
 
-void warp_affine_c(int32_t *mat, uint8_t *ref, int width, int height,
-                   int stride, uint8_t *pred, int p_col, int p_row, int p_width,
-                   int p_height, int p_stride, int subsampling_x,
-                   int subsampling_y, int ref_frm, int32_t alpha, int32_t beta,
-                   int32_t gamma, int32_t delta) {
+void av1_warp_affine_c(int32_t *mat, uint8_t *ref, int width, int height,
+                       int stride, uint8_t *pred, int p_col, int p_row,
+                       int p_width, int p_height, int p_stride,
+                       int subsampling_x, int subsampling_y, int ref_frm,
+                       int32_t alpha, int32_t beta, int32_t gamma,
+                       int32_t delta) {
   int16_t tmp[15 * 8];
   int i, j, k, l, m;
 
@@ -1070,9 +1071,9 @@ static void warp_plane(WarpedMotionParams *wm, uint8_t *ref, int width,
       return;
     }
 
-    warp_affine(mat, ref, width, height, stride, pred, p_col, p_row, p_width,
-                p_height, p_stride, subsampling_x, subsampling_y, ref_frm,
-                alpha, beta, gamma, delta);
+    av1_warp_affine(mat, ref, width, height, stride, pred, p_col, p_row,
+                    p_width, p_height, p_stride, subsampling_x, subsampling_y,
+                    ref_frm, alpha, beta, gamma, delta);
   } else {
     warp_plane_old(wm, ref, width, height, stride, pred, p_col, p_row, p_width,
                    p_height, p_stride, subsampling_x, subsampling_y, x_scale,

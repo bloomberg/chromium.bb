@@ -17,12 +17,12 @@
 const __m128i *const filter = (const __m128i *const)warped_filter;
 
 /* SSE2 version of the rotzoom/affine warp filter */
-void warp_affine_sse2(int32_t *mat, uint8_t *ref, int width, int height,
-                      int stride, uint8_t *pred, int p_col, int p_row,
-                      int p_width, int p_height, int p_stride,
-                      int subsampling_x, int subsampling_y, int ref_frm,
-                      int32_t alpha, int32_t beta, int32_t gamma,
-                      int32_t delta) {
+void av1_warp_affine_sse2(int32_t *mat, uint8_t *ref, int width, int height,
+                          int stride, uint8_t *pred, int p_col, int p_row,
+                          int p_width, int p_height, int p_stride,
+                          int subsampling_x, int subsampling_y, int ref_frm,
+                          int32_t alpha, int32_t beta, int32_t gamma,
+                          int32_t delta) {
   __m128i tmp[15];
   int i, j, k;
 
