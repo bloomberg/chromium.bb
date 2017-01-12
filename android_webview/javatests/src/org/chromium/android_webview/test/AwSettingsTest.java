@@ -20,9 +20,6 @@ import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
 import android.webkit.WebSettings.LayoutAlgorithm;
 
-import org.apache.http.Header;
-import org.apache.http.HttpRequest;
-
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.AwWebResourceResponse;
@@ -41,6 +38,7 @@ import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.HistoryUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.ui.display.DisplayAndroid;
 
@@ -1751,31 +1749,28 @@ public class AwSettingsTest extends AwTestBase {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
                 createAwTestContainerViewOnMainSync(contentClient);
-        AwContents awContents = testContainerView.getAwContents();
-        AwSettings settings = getAwSettingsOnUiThread(awContents);
         final String customUserAgentString =
                 "testUserAgentWithTestServerUserAgent";
+        AwContents awContents = testContainerView.getAwContents();
+        AwSettings settings = getAwSettingsOnUiThread(awContents);
+        EmbeddedTestServer testServer =
+                EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
 
-        String fileName = null;
-        TestWebServer webServer = TestWebServer.start();
+        enableJavaScriptOnUiThread(awContents);
+
         try {
-            final String httpPath = "/testUserAgentWithTestServer.html";
-            final String url = webServer.setResponse(httpPath, "foo", null);
-
+            // Create url with echoheader echoing the User-Agent header in the the html body.
+            String url = testServer.getURL("/echoheader?User-Agent");
             settings.setUserAgentString(customUserAgentString);
             loadUrlSync(awContents,
                         contentClient.getOnPageFinishedHelper(),
                         url);
-
-            assertEquals(1, webServer.getRequestCount(httpPath));
-            HttpRequest request = webServer.getLastRequest(httpPath);
-            Header[] matchingHeaders = request.getHeaders("User-Agent");
-            assertEquals(1, matchingHeaders.length);
-
-            Header header = matchingHeaders[0];
-            assertEquals(customUserAgentString, header.getValue());
+            String userAgent = maybeStripDoubleQuotes(JSUtils.executeJavaScriptAndWaitForResult(
+                    this, awContents, contentClient.getOnEvaluateJavaScriptResultHelper(),
+                    "document.body.textContent"));
+            assertEquals(customUserAgentString, userAgent);
         } finally {
-            webServer.shutdown();
+            testServer.stopAndDestroyServer();
         }
     }
 
