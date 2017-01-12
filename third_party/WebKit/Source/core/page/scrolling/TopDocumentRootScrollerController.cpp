@@ -8,6 +8,8 @@
 #include "core/dom/Element.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/PageScaleConstraintsSet.h"
+#include "core/frame/VisualViewport.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
@@ -58,6 +60,24 @@ void TopDocumentRootScrollerController::mainFrameViewResized() {
     // needs to be resized instead.
     layer->compositor()->frameViewDidChangeSize();
   }
+}
+
+ScrollableArea* TopDocumentRootScrollerController::rootScrollerArea() const {
+  return RootScrollerUtil::scrollableAreaForRootScroller(globalRootScroller());
+}
+
+IntSize TopDocumentRootScrollerController::rootScrollerVisibleArea() const {
+  if (!topDocument() || !topDocument()->view())
+    return IntSize();
+
+  float minimumPageScale =
+      m_frameHost->pageScaleConstraintsSet().finalConstraints().minimumScale;
+  int browserControlsAdjustment =
+      ceilf(m_frameHost->visualViewport().browserControlsAdjustment() /
+            minimumPageScale);
+
+  return topDocument()->view()->visibleContentSize(ExcludeScrollbars) +
+         IntSize(0, browserControlsAdjustment);
 }
 
 Element* TopDocumentRootScrollerController::findGlobalRootScrollerElement() {

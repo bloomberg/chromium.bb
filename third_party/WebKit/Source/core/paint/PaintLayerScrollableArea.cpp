@@ -53,8 +53,10 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/PageScaleConstraintsSet.h"
 #include "core/frame/RootFrameViewport.h"
 #include "core/frame/Settings.h"
+#include "core/frame/VisualViewport.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutFlexibleBox.h"
@@ -499,20 +501,29 @@ IntSize PaintLayerScrollableArea::minimumScrollOffsetInt() const {
 }
 
 IntSize PaintLayerScrollableArea::maximumScrollOffsetInt() const {
-  IntSize contentSize;
-  IntSize visibleSize;
-  if (box().hasOverflowClip()) {
-    contentSize = contentsSize();
-    visibleSize =
-        pixelSnappedIntRect(box().overflowClipRect(box().location())).size();
+  if (!box().hasOverflowClip())
+    return toIntSize(-scrollOrigin());
 
-    // TODO(skobes): We should really ASSERT that contentSize >= visibleSize
-    // when we are not the root layer, but we can't because contentSize is
-    // based on stale layout overflow data (http://crbug.com/576933).
-    contentSize = contentSize.expandedTo(visibleSize);
-  }
-  if (box().isLayoutView())
-    visibleSize += toLayoutView(box()).frameView()->browserControlsSize();
+  IntSize contentSize = contentsSize();
+  IntSize visibleSize =
+      pixelSnappedIntRect(box().overflowClipRect(box().location())).size();
+
+  FrameHost* host = layoutBox()->document().frameHost();
+  DCHECK(host);
+  TopDocumentRootScrollerController& controller =
+      host->globalRootScrollerController();
+
+  // The global root scroller should be clipped by the top FrameView rather
+  // than it's overflow clipping box. This is to ensure that content exposed by
+  // hiding the URL bar at the bottom of the screen is visible.
+  if (this == controller.rootScrollerArea())
+    visibleSize = controller.rootScrollerVisibleArea();
+
+  // TODO(skobes): We should really ASSERT that contentSize >= visibleSize
+  // when we are not the root layer, but we can't because contentSize is
+  // based on stale layout overflow data (http://crbug.com/576933).
+  contentSize = contentSize.expandedTo(visibleSize);
+
   return toIntSize(-scrollOrigin() + (contentSize - visibleSize));
 }
 

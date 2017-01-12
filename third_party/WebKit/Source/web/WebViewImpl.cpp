@@ -1846,11 +1846,6 @@ void WebViewImpl::didUpdateBrowserControls() {
         browserControls().layoutHeight() - browserControls().contentOffset();
     visualViewport.setBrowserControlsAdjustment(
         browserControlsViewportAdjustment);
-
-    // Since the FrameView is sized to be the visual viewport at minimum
-    // scale, its adjustment must also be scaled by the minimum scale.
-    view->setBrowserControlsViewportAdjustment(
-        browserControlsViewportAdjustment / minimumPageScaleFactor());
   }
 }
 

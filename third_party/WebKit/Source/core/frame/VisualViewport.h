@@ -146,6 +146,7 @@ class CORE_EXPORT VisualViewport final
   // necessary adjustments so that we don't incorrectly clamp scroll offsets
   // coming from the compositor. crbug.com/422328
   void setBrowserControlsAdjustment(float);
+  float browserControlsAdjustment() const;
 
   // Adjust the viewport's offset so that it remains bounded by the outer
   // viepwort.

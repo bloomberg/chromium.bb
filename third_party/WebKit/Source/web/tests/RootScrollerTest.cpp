@@ -58,22 +58,15 @@ class RootScrollerTest : public ::testing::Test {
 
   WebViewImpl* initialize(const std::string& pageName,
                           FrameTestHelpers::TestWebViewClient* client) {
-    RuntimeEnabledFeatures::setSetRootScrollerEnabled(true);
-
-    m_helper.initializeAndLoad(m_baseURL + pageName, true, nullptr, client,
-                               nullptr, &configureSettings);
-
-    // Initialize browser controls to be shown.
-    webViewImpl()->resizeWithBrowserControls(IntSize(400, 400), 50, true);
-    webViewImpl()->browserControls().setShownRatio(1);
-
-    mainFrameView()->updateAllLifecyclePhases();
-
-    return webViewImpl();
+    return initializeInternal(m_baseURL + pageName, client);
   }
 
   WebViewImpl* initialize(const std::string& pageName) {
-    return initialize(pageName, &m_client);
+    return initializeInternal(m_baseURL + pageName, &m_client);
+  }
+
+  WebViewImpl* initialize() {
+    return initializeInternal("about:blank", &m_client);
   }
 
   static void configureSettings(WebSettings* settings) {
@@ -161,6 +154,22 @@ class RootScrollerTest : public ::testing::Test {
     return event;
   }
 
+  WebViewImpl* initializeInternal(const std::string& url,
+                                  FrameTestHelpers::TestWebViewClient* client) {
+    RuntimeEnabledFeatures::setSetRootScrollerEnabled(true);
+
+    m_helper.initializeAndLoad(url, true, nullptr, client, nullptr,
+                               &configureSettings);
+
+    // Initialize browser controls to be shown.
+    webViewImpl()->resizeWithBrowserControls(IntSize(400, 400), 50, true);
+    webViewImpl()->browserControls().setShownRatio(1);
+
+    mainFrameView()->updateAllLifecyclePhases();
+
+    return webViewImpl();
+  }
+
   std::string m_baseURL;
   FrameTestHelpers::TestWebViewClient m_client;
   FrameTestHelpers::WebViewHelper m_helper;
@@ -229,8 +238,9 @@ TEST_F(RootScrollerTest, TestSetRootScroller) {
   mainFrame()->document()->setRootScroller(container, exceptionState);
   ASSERT_EQ(container, mainFrame()->document()->rootScroller());
 
-  // Content is 1000x1000, WebView size is 400x400 so max scroll is 600px.
-  double maximumScroll = 600;
+  // Content is 1000x1000, WebView size is 400x400 but hiding the top controls
+  // makes it 400x450 so max scroll is 550px.
+  double maximumScroll = 550;
 
   webViewImpl()->handleInputEvent(
       generateTouchGestureEvent(WebInputEvent::GestureScrollBegin));
@@ -258,7 +268,7 @@ TEST_F(RootScrollerTest, TestSetRootScroller) {
     EXPECT_CALL(client, didOverscroll(WebFloatSize(0, 50), WebFloatSize(0, 50),
                                       WebFloatPoint(100, 100), WebFloatSize()));
     webViewImpl()->handleInputEvent(
-        generateTouchGestureEvent(WebInputEvent::GestureScrollUpdate, 0, -550));
+        generateTouchGestureEvent(WebInputEvent::GestureScrollUpdate, 0, -500));
     EXPECT_FLOAT_EQ(maximumScroll, container->scrollTop());
     EXPECT_FLOAT_EQ(0, mainFrameView()->getScrollOffset().height());
     Mock::VerifyAndClearExpectations(&client);
@@ -1143,6 +1153,63 @@ TEST_F(RootScrollerTest, UseVisualViewportScrollbarsIframe) {
   EXPECT_FALSE(containerScroller->verticalScrollbar());
   EXPECT_GT(containerScroller->maximumScrollOffset().width(), 0);
   EXPECT_GT(containerScroller->maximumScrollOffset().height(), 0);
+}
+
+TEST_F(RootScrollerTest, TopControlsAdjustmentAppliedToRootScroller) {
+  initialize();
+
+  WebURL baseURL = URLTestHelpers::toKURL("http://www.test.com/");
+  FrameTestHelpers::loadHTMLString(webViewImpl()->mainFrame(),
+                                   "<!DOCTYPE html>"
+                                   "<style>"
+                                   "  body, html {"
+                                   "    width: 100%;"
+                                   "    height: 100%;"
+                                   "    margin: 0px;"
+                                   "  }"
+                                   "  #container {"
+                                   "    width: 100%;"
+                                   "    height: 100%;"
+                                   "    overflow: auto;"
+                                   "  }"
+                                   "</style>"
+                                   "<div id='container'>"
+                                   "  <div style='height:1000px'>test</div>"
+                                   "</div>",
+                                   baseURL);
+
+  webViewImpl()->resizeWithBrowserControls(IntSize(400, 400), 50, true);
+  mainFrameView()->updateAllLifecyclePhases();
+
+  Element* container = mainFrame()->document()->getElementById("container");
+  mainFrame()->document()->setRootScroller(container, ASSERT_NO_EXCEPTION);
+
+  ScrollableArea* containerScroller =
+      static_cast<PaintInvalidationCapableScrollableArea*>(
+          toLayoutBox(container->layoutObject())->getScrollableArea());
+
+  // Hide the top controls and scroll down maximally. We should account for the
+  // change in maximum scroll offset due to the top controls hiding. That is,
+  // since the controls are hidden, the "content area" is taller so the maximum
+  // scroll offset should shrink.
+  ASSERT_EQ(1000 - 400, containerScroller->maximumScrollOffset().height());
+
+  webViewImpl()->handleInputEvent(
+      generateTouchGestureEvent(WebInputEvent::GestureScrollBegin));
+  ASSERT_EQ(1, browserControls().shownRatio());
+  webViewImpl()->handleInputEvent(generateTouchGestureEvent(
+      WebInputEvent::GestureScrollUpdate, 0, -browserControls().height()));
+  ASSERT_EQ(0, browserControls().shownRatio());
+  EXPECT_EQ(1000 - 450, containerScroller->maximumScrollOffset().height());
+
+  webViewImpl()->handleInputEvent(
+      generateTouchGestureEvent(WebInputEvent::GestureScrollUpdate, 0, -3000));
+  EXPECT_EQ(1000 - 450, containerScroller->getScrollOffset().height());
+
+  webViewImpl()->handleInputEvent(
+      generateTouchGestureEvent(WebInputEvent::GestureScrollEnd));
+  webViewImpl()->resizeWithBrowserControls(IntSize(400, 450), 50, false);
+  EXPECT_EQ(1000 - 450, containerScroller->maximumScrollOffset().height());
 }
 
 TEST_F(RootScrollerTest, RotationAnchoring) {

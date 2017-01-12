@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/page/scrolling/RootScrollerController.h"
+#include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -65,6 +66,16 @@ class CORE_EXPORT TopDocumentRootScrollerController
   void didChangeRootScroller();
 
   void mainFrameViewResized();
+
+  // Returns the ScrollableArea associated with the globalRootScroller(). Note,
+  // this isn't necessarily the PLSA belonging to the root scroller Element's
+  // LayoutBox.  If the root scroller is the documentElement then we use the
+  // FrameView (or LayoutView if root-layer-scrolls).
+  ScrollableArea* rootScrollerArea() const;
+
+  // Returns the size we should use for the root scroller, accounting for top
+  // controls adjustment and using the root FrameView.
+  IntSize rootScrollerVisibleArea() const;
 
  private:
   TopDocumentRootScrollerController(FrameHost&);

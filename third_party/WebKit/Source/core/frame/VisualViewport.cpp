@@ -587,6 +587,10 @@ void VisualViewport::setBrowserControlsAdjustment(float adjustment) {
   m_browserControlsAdjustment = adjustment;
 }
 
+float VisualViewport::browserControlsAdjustment() const {
+  return m_browserControlsAdjustment;
+}
+
 IntRect VisualViewport::scrollableAreaBoundingBox() const {
   // This method should return the bounding box in the parent view's coordinate
   // space; however, VisualViewport technically isn't a child of any Frames.
@@ -606,6 +610,7 @@ IntSize VisualViewport::contentsSize() const {
   if (!frame || !frame->view())
     return IntSize();
 
+  // TODO(bokan): This should be the layout viewport rather than main FrameView.
   return frame->view()->visibleContentRect(IncludeScrollbars).size();
 }
 

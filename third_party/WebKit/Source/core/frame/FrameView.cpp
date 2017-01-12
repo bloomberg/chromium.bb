@@ -173,7 +173,6 @@ FrameView::FrameView(LocalFrame& frame)
       m_inputEventsScaleFactorForEmulation(1),
       m_layoutSizeFixedToFrameSize(true),
       m_didScrollTimer(this, &FrameView::didScrollTimerFired),
-      m_browserControlsViewportAdjustment(0),
       m_needsUpdateWidgetGeometries(false),
 #if ENABLE(ASSERT)
       m_hasBeenDisposed(false),
@@ -3656,10 +3655,6 @@ void FrameView::didAddScrollbar(Scrollbar& scrollbar,
   ScrollableArea::didAddScrollbar(scrollbar, orientation);
 }
 
-void FrameView::setBrowserControlsViewportAdjustment(float adjustment) {
-  m_browserControlsViewportAdjustment = adjustment;
-}
-
 PaintLayer* FrameView::layer() const {
   LayoutViewItem layoutView = layoutViewItem();
   if (layoutView.isNull() || !layoutView.compositor())
@@ -3672,9 +3667,23 @@ IntSize FrameView::maximumScrollOffsetInt() const {
   // Make the same calculation as in CC's LayerImpl::MaxScrollOffset()
   // FIXME: We probably shouldn't be storing the bounds in a float.
   // crbug.com/422331.
-  IntSize visibleSize =
-      visibleContentSize(ExcludeScrollbars) + browserControlsSize();
+  IntSize visibleSize = visibleContentSize(ExcludeScrollbars);
   IntSize contentBounds = contentsSize();
+
+  FrameHost* host = m_frame->host();
+  DCHECK(host);
+
+  // We need to perform this const_cast since maximumScrollOffsetInt is a const
+  // method but we can't make layoutViewportScrollableArea const since it can
+  // return |this|. Once root-layer-scrolls ships layoutViewportScrollableArea
+  // can be made const.
+  const ScrollableArea* layoutViewport =
+      const_cast<FrameView*>(this)->layoutViewportScrollableArea();
+  TopDocumentRootScrollerController& controller =
+      host->globalRootScrollerController();
+  if (layoutViewport == controller.rootScrollerArea())
+    visibleSize = controller.rootScrollerVisibleArea();
+
   IntSize maximumOffset =
       toIntSize(-scrollOrigin() + (contentBounds - visibleSize));
   return maximumOffset.expandedTo(minimumScrollOffsetInt());
