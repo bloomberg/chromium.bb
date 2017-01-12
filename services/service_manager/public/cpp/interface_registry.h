@@ -24,6 +24,16 @@ namespace service_manager {
 class Connection;
 class InterfaceBinder;
 
+// Returns the set of capabilities required from the target.
+CapabilitySet GetRequestedCapabilities(const InterfaceProviderSpec& source_spec,
+                                       const Identity& target);
+
+// Generates a single set of interfaces that is the union of all interfaces
+// exposed by the target for the capabilities requested by the source.
+InterfaceSet GetInterfacesToExpose(const InterfaceProviderSpec& source_spec,
+                                   const Identity& target,
+                                   const InterfaceProviderSpec& target_spec);
+
 // An implementation of mojom::InterfaceProvider that allows the user to
 // register services to be exposed to another application.
 //
