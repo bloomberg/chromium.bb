@@ -28,6 +28,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,6 +38,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+
+import javax.annotation.concurrent.GuardedBy;
 
 /**
  * Pure java UrlRequest, backed by {@link HttpURLConnection}.
@@ -126,6 +129,56 @@ final class JavaUrlRequest extends UrlRequestBase {
         CANCELLED,
     }
 
+    // Executor that runs one task at a time on an underlying Executor.
+    private final class SeriaizingExecutor implements Executor {
+        private final Executor mUnderlyingExecutor;
+        // Queue of tasks to run.  First element is the task currently executing.
+        // Task processing loop is running if queue is not empty.  Synchronized on itself.
+        @GuardedBy("mTaskQueue")
+        private final ArrayDeque<Runnable> mTaskQueue = new ArrayDeque<>();
+
+        SeriaizingExecutor(Executor underlyingExecutor) {
+            mUnderlyingExecutor = underlyingExecutor;
+        }
+
+        private void runTask(final Runnable task) {
+            try {
+                mUnderlyingExecutor.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            task.run();
+                        } finally {
+                            Runnable nextTask;
+                            synchronized (mTaskQueue) {
+                                mTaskQueue.removeFirst();
+                                nextTask = mTaskQueue.peekFirst();
+                            }
+                            if (nextTask != null) {
+                                runTask(nextTask);
+                            }
+                        }
+                    }
+                });
+            } catch (RejectedExecutionException e) {
+                // This can happen if JavaCronetEngine.shutdown() was called.
+                // Ignore and cease processing this request.
+            }
+        }
+
+        @Override
+        public void execute(Runnable command) {
+            synchronized (mTaskQueue) {
+                mTaskQueue.addLast(command);
+                // Task processing loop is already running if there are other items in mTaskQueue.
+                if (mTaskQueue.size() > 1) {
+                    return;
+                }
+            }
+            runTask(command);
+        };
+    }
+
     /**
      * @param executor The executor used for reading and writing from sockets
      * @param userExecutor The executor used to dispatch to {@code callback}
@@ -148,7 +201,7 @@ final class JavaUrlRequest extends UrlRequestBase {
         this.mAllowDirectExecutor = allowDirectExecutor;
         this.mCallbackAsync = new AsyncUrlRequestCallback(callback, userExecutor);
         this.mTrafficStatsTag = TrafficStats.getThreadStatsTag();
-        this.mExecutor = new Executor() {
+        this.mExecutor = new SeriaizingExecutor(new Executor() {
             @Override
             public void execute(final Runnable command) {
                 executor.execute(new Runnable() {
@@ -164,7 +217,7 @@ final class JavaUrlRequest extends UrlRequestBase {
                     }
                 });
             }
-        };
+        });
         this.mCurrentUrl = url;
         this.mUserAgent = userAgent;
     }

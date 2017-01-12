@@ -346,6 +346,7 @@ android_library("cronet_impl_platform_java") {
   deps = [
     ":cronet_api_java",
     ":cronet_impl_common_java",
+    "//third_party/jsr-305:jsr_305_javalib",
   ]
 }
 
