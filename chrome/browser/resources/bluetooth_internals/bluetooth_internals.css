@@ -21,6 +21,18 @@ h1 {
   color: rgb(92, 97, 102);
 }
 
+.toggle-status {
+  background-image: url(../../../../ui/webui/resources/images/cancel_red.svg);
+  background-repeat: no-repeat;
+  min-height: 24px;
+  min-width: 24px;
+}
+
+.toggle-status.checked {
+  background-image:
+      url(../../../../ui/webui/resources/images/check_circle_green.svg);
+}
+
 /* Page container */
 #page-container {
   -webkit-margin-start: var(--sidebar-width);
@@ -297,4 +309,27 @@ table .removed {
   opacity: 1;
   transform: translate3d(0, 0, 0);
   visibility: visible;
+}
+
+/* Adapter Page */
+@media screen and (min-width: 601px) {
+  #adapter {
+    display: flex;
+  }
+}
+
+/* Object Fieldset */
+.object-fieldset .status {
+  align-items: center;
+  display: flex;
+  margin-bottom: 0.8em;
+}
+
+.object-fieldset .status div:first-child {
+  -webkit-margin-end: 1em;
+  white-space: nowrap;
+}
+
+.object-fieldset .status:last-child {
+  margin-bottom: 0;
 }

@@ -79,6 +79,24 @@ void Adapter::StartDiscoverySession(
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
+void Adapter::AdapterPresentChanged(device::BluetoothAdapter* adapter,
+                                    bool present) {
+  if (client_)
+    client_->PresentChanged(present);
+}
+
+void Adapter::AdapterPoweredChanged(device::BluetoothAdapter* adapter,
+                                    bool powered) {
+  if (client_)
+    client_->PoweredChanged(powered);
+}
+
+void Adapter::AdapterDiscoverableChanged(device::BluetoothAdapter* adapter,
+                                         bool discoverable) {
+  if (client_)
+    client_->DiscoverableChanged(discoverable);
+}
+
 void Adapter::AdapterDiscoveringChanged(device::BluetoothAdapter* adapter,
                                         bool discovering) {
   if (client_)

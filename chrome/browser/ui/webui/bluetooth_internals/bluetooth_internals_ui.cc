@@ -18,6 +18,8 @@ BluetoothInternalsUI::BluetoothInternalsUI(content::WebUI* web_ui)
   // Add required resources.
   html_source->AddResourcePath("adapter_broker.js",
                                IDR_BLUETOOTH_INTERNALS_ADAPTER_BROKER_JS);
+  html_source->AddResourcePath("adapter_page.js",
+                               IDR_BLUETOOTH_INTERNALS_ADAPTER_PAGE_JS);
   html_source->AddResourcePath("bluetooth_internals.css",
                                IDR_BLUETOOTH_INTERNALS_CSS);
   html_source->AddResourcePath("bluetooth_internals.js",
@@ -30,6 +32,8 @@ BluetoothInternalsUI::BluetoothInternalsUI(content::WebUI* web_ui)
                                IDR_BLUETOOTH_INTERNALS_DEVICES_PAGE_JS);
   html_source->AddResourcePath("interfaces.js",
                                IDR_BLUETOOTH_INTERNALS_INTERFACES_JS);
+  html_source->AddResourcePath("object_fieldset.js",
+                               IDR_BLUETOOTH_INTERNALS_OBJECT_FIELDSET_JS);
   html_source->AddResourcePath("sidebar.js",
                                IDR_BLUETOOTH_INTERNALS_SIDEBAR_JS);
   html_source->AddResourcePath("snackbar.js",

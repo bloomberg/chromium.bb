@@ -13,6 +13,7 @@ var devices = null;
 var sidebarObj = null;
 
 cr.define('bluetooth_internals', function() {
+  /** @const */ var AdapterPage = adapter_page.AdapterPage;
   /** @const */ var DevicesPage = devices_page.DevicesPage;
   /** @const */ var PageManager = cr.ui.pageManager.PageManager;
   /** @const */ var Snackbar = snackbar.Snackbar;
@@ -47,6 +48,8 @@ cr.define('bluetooth_internals', function() {
   /** @type {!device_collection.DeviceCollection} */
   devices = new device_collection.DeviceCollection([]);
 
+  /** @type {adapter_page.AdapterPage} */
+  var adapterPage = null;
   /** @type {devices_page.DevicesPage} */
   var devicesPage = null;
 
@@ -121,15 +124,25 @@ cr.define('bluetooth_internals', function() {
   }
 
   function setupAdapterSystem(response) {
-    console.log('adapter', response.info);
-
     adapterBroker.addEventListener('adapterchanged', function(event) {
+      adapterPage.adapterFieldSet.value[event.detail.property] =
+          event.detail.value;
+      adapterPage.redraw();
+
       if (event.detail.property == adapter_broker.AdapterProperty.DISCOVERING &&
           !event.detail.value && !userRequestedScanStop && discoverySession) {
         updateStoppedDiscoverySession();
         Snackbar.show(
             'Discovery session ended unexpectedly', SnackbarType.WARNING);
       }
+    });
+
+    adapterPage.setAdapterInfo(response.info);
+
+    adapterPage.pageDiv.addEventListener('refreshpressed', function() {
+      adapterBroker.getInfo().then(function(response) {
+        adapterPage.setAdapterInfo(response.info);
+      });
     });
   }
 
@@ -197,6 +210,8 @@ cr.define('bluetooth_internals', function() {
 
     devicesPage = new DevicesPage();
     PageManager.register(devicesPage);
+    adapterPage = new AdapterPage();
+    PageManager.register(adapterPage);
 
     // Set up hash-based navigation.
     window.addEventListener('hashchange', function() {
@@ -204,7 +219,7 @@ cr.define('bluetooth_internals', function() {
     });
 
     if (!window.location.hash) {
-      PageManager.showPageByName(devicesPage.name);
+      PageManager.showPageByName(adapterPage.name);
       return;
     }
 

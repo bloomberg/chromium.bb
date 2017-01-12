@@ -19,7 +19,10 @@ cr.define('adapter_broker', function() {
    * @enum {string}
    */
   var AdapterProperty = {
+    DISCOVERABLE: 'discoverable',
     DISCOVERING: 'discovering',
+    POWERED: 'powered',
+    PRESENT: 'present',
   };
 
   /**
@@ -122,7 +125,49 @@ cr.define('adapter_broker', function() {
 
   AdapterClient.prototype = {
     /**
-     * Fires adapterchanged event.
+     * Fires adapterchanged event with "present" property.
+     * @param {boolean} present
+     */
+    presentChanged: function(present) {
+      var event = new CustomEvent('adapterchanged', {
+        detail: {
+          property: AdapterProperty.PRESENT,
+          value: present,
+        }
+      });
+      this.adapterBroker_.dispatchEvent(event);
+    },
+
+    /**
+     * Fires adapterchanged event with "powered" property changed.
+     * @param {boolean} powered
+     */
+    poweredChanged: function(powered) {
+      var event = new CustomEvent('adapterchanged', {
+        detail: {
+          property: AdapterProperty.POWERED,
+          value: powered,
+        }
+      });
+      this.adapterBroker_.dispatchEvent(event);
+    },
+
+    /**
+     * Fires adapterchanged event with "discoverable" property changed.
+     * @param {boolean} discoverable
+     */
+    discoverableChanged: function(discoverable) {
+      var event = new CustomEvent('adapterchanged', {
+        detail: {
+          property: AdapterProperty.DISCOVERABLE,
+          value: discoverable,
+        }
+      });
+      this.adapterBroker_.dispatchEvent(event);
+    },
+
+    /**
+     * Fires adapterchanged event with "discovering" property changed.
      * @param {boolean} discovering
      */
     discoveringChanged: function(discovering) {

@@ -82,6 +82,15 @@ interface Adapter {
 };
 
 interface AdapterClient {
+  // Called when the presence of the adapter changes.
+  PresentChanged(bool present);
+
+  // Called when the radio power state of the adapter changes.
+  PoweredChanged(bool powered);
+
+  // Called when the discoverability state of the adapter changes.
+  DiscoverableChanged(bool discoverable);
+
   // Called when the discovering state of the adapter changes.
   DiscoveringChanged(bool discovering);
 

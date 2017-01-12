@@ -203,10 +203,14 @@ BluetoothInternalsTest.prototype = {
 };
 
 TEST_F('BluetoothInternalsTest', 'Startup_BluetoothInternals', function() {
+  /** @const */ var PageManager = cr.ui.pageManager.PageManager;
+
   var adapterFactory = null;
+  var adapterFieldSet = null;
   var deviceTable = null;
   var sidebarNode = null;
 
+  var fakeAdapterInfo = this.fakeAdapterInfo;
   var fakeDeviceInfo1 = this.fakeDeviceInfo1;
   var fakeDeviceInfo2 = this.fakeDeviceInfo2;
   var fakeDeviceInfo3 = this.fakeDeviceInfo3;
@@ -231,6 +235,7 @@ TEST_F('BluetoothInternalsTest', 'Startup_BluetoothInternals', function() {
     });
 
     setup(function() {
+      adapterFieldSet = document.querySelector('#adapter fieldset');
       deviceTable = document.querySelector('#devices table');
       sidebarNode = document.querySelector('#sidebar');
       devices.splice(0, devices.length);
@@ -242,6 +247,7 @@ TEST_F('BluetoothInternalsTest', 'Startup_BluetoothInternals', function() {
       adapterFactory.reset();
       sidebarObj.close();
       snackbar.Snackbar.dismiss(true);
+      PageManager.registeredPages['adapter'].setAdapterInfo(fakeAdapterInfo());
     });
 
     /**
@@ -411,7 +417,7 @@ TEST_F('BluetoothInternalsTest', 'Startup_BluetoothInternals', function() {
       var sidebarItems = Array.from(
           sidebarNode.querySelectorAll('.sidebar-content li'));
 
-      ['devices'].forEach(function(pageName) {
+      ['adapter', 'devices'].forEach(function(pageName) {
         expectTrue(sidebarItems.some(function(item) {
           return item.dataset.pageName === pageName;
         }));
@@ -545,8 +551,56 @@ TEST_F('BluetoothInternalsTest', 'Startup_BluetoothInternals', function() {
         expectFalse(!!snackbar.Snackbar.current_);
       }).then(finishSnackbarTest);
     });
-  });
 
+    /* AdapterPage Tests */
+    function checkAdapterFieldSet(adapterInfo) {
+      for (var propName in adapterInfo) {
+        var valueCell = adapterFieldSet.querySelector(
+            '[data-field="' + propName + '"]');
+        var value = adapterInfo[propName];
+
+        if (typeof(value) === 'boolean') {
+          expectEquals(value, valueCell.classList.contains('checked'));
+        } else if (typeof(value) === 'string') {
+          expectEquals(value, valueCell.textContent);
+        } else {
+          assert('boolean or string type expected but got ' + typeof(value));
+        }
+      }
+    }
+
+    test('AdapterPage_DefaultState', function() {
+      checkAdapterFieldSet(adapterFieldSet.value);
+    });
+
+    test('AdapterPage_AdapterChanged', function() {
+      var adapterInfo = adapterFieldSet.value;
+
+      adapterInfo.present = !adapterInfo.present;
+      adapterBroker.adapterClient_.presentChanged(adapterInfo.present);
+      checkAdapterFieldSet(adapterInfo);
+
+      adapterInfo.discovering = !adapterInfo.discovering;
+      adapterBroker.adapterClient_.discoveringChanged(adapterInfo.discovering);
+      checkAdapterFieldSet(adapterInfo);
+    });
+
+    test('AdapterPage_AdapterChanged_RepeatTwice', function() {
+      var adapterInfo = adapterFieldSet.value;
+
+      adapterInfo.present = !adapterInfo.present;
+      adapterBroker.adapterClient_.presentChanged(adapterInfo.present);
+      checkAdapterFieldSet(adapterInfo);
+      adapterBroker.adapterClient_.presentChanged(adapterInfo.present);
+      checkAdapterFieldSet(adapterInfo);
+
+      adapterInfo.discovering = !adapterInfo.discovering;
+      adapterBroker.adapterClient_.discoveringChanged(adapterInfo.discovering);
+      checkAdapterFieldSet(adapterInfo);
+      adapterBroker.adapterClient_.discoveringChanged(adapterInfo.discovering);
+      checkAdapterFieldSet(adapterInfo);
+    });
+  });
 
   // Run all registered tests.
   mocha.run();

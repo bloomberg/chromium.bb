@@ -37,6 +37,12 @@ class Adapter : public mojom::Adapter,
       const StartDiscoverySessionCallback& callback) override;
 
   // device::BluetoothAdapter::Observer overrides:
+  void AdapterPresentChanged(device::BluetoothAdapter* adapter,
+                             bool present) override;
+  void AdapterPoweredChanged(device::BluetoothAdapter* adapter,
+                             bool powered) override;
+  void AdapterDiscoverableChanged(device::BluetoothAdapter* adapter,
+                                  bool discoverable) override;
   void AdapterDiscoveringChanged(device::BluetoothAdapter* adapter,
                                  bool discovering) override;
   void DeviceAdded(device::BluetoothAdapter* adapter,
