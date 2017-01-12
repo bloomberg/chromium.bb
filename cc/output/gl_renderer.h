@@ -543,6 +543,9 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   BoundGeometry bound_geometry_;
   ColorLUTCache color_lut_cache_;
+
+  base::WeakPtrFactory<GLRenderer> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(GLRenderer);
 };
 

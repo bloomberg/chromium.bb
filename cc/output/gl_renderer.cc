@@ -271,7 +271,6 @@ struct GLRenderer::PendingAsyncReadPixels {
   PendingAsyncReadPixels() : buffer(0) {}
 
   std::unique_ptr<CopyOutputRequest> copy_request;
-  base::CancelableClosure finished_read_pixels_callback;
   unsigned buffer;
 
  private:
@@ -390,7 +389,8 @@ GLRenderer::GLRenderer(const RendererSettings* settings,
       gl_composited_texture_quad_border_(
           settings->gl_composited_texture_quad_border),
       bound_geometry_(NO_BINDING),
-      color_lut_cache_(gl_) {
+      color_lut_cache_(gl_),
+      weak_ptr_factory_(this) {
   DCHECK(gl_);
   DCHECK(context_support_);
 
@@ -408,13 +408,6 @@ GLRenderer::GLRenderer(const RendererSettings* settings,
 }
 
 GLRenderer::~GLRenderer() {
-  while (!pending_async_read_pixels_.empty()) {
-    PendingAsyncReadPixels* pending_read =
-        pending_async_read_pixels_.back().get();
-    pending_read->finished_read_pixels_callback.Cancel();
-    pending_async_read_pixels_.pop_back();
-  }
-
   CleanupSharedObjects();
 
   if (context_visibility_) {
@@ -3084,23 +3077,14 @@ void GLRenderer::GetFramebufferPixelsAsync(
 
   gl_->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, 0);
 
-  base::Closure finished_callback = base::Bind(&GLRenderer::FinishedReadback,
-                                               base::Unretained(this),
-                                               buffer,
-                                               query,
-                                               window_rect.size());
-  // Save the finished_callback so it can be cancelled.
-  pending_async_read_pixels_.front()->finished_read_pixels_callback.Reset(
-      finished_callback);
-  base::Closure cancelable_callback =
-      pending_async_read_pixels_.front()->
-          finished_read_pixels_callback.callback();
-
   // Save the buffer to verify the callbacks happen in the expected order.
   pending_async_read_pixels_.front()->buffer = buffer;
 
   gl_->EndQueryEXT(GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM);
-  context_support_->SignalQuery(query, cancelable_callback);
+  context_support_->SignalQuery(
+      query,
+      base::Bind(&GLRenderer::FinishedReadback, weak_ptr_factory_.GetWeakPtr(),
+                 buffer, query, window_rect.size()));
 }
 
 void GLRenderer::FinishedReadback(unsigned source_buffer,
