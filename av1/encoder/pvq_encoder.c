@@ -771,8 +771,9 @@ void od_encode_quantizer_scaling(daala_enc_ctx *enc, int q_scaling,
  * @param [in]     qm_inv  Inverse of QM with magnitude compensation
  * @param [in]     speed   Make search faster by making approximations
  * @param [in]     pvq_info If null, conisdered as RDO search mode
- * @return         Returns 1 if both DC and AC coefficients are skipped,
- *                 zero otherwise
+ * @return         Returns block skip info indicating whether DC/AC are coded.
+ *                 bit0: DC is coded, bit1: AC is coded (1 means coded)
+ *
  */
 int od_pvq_encode(daala_enc_ctx *enc,
                    od_coeff *ref,
@@ -817,6 +818,7 @@ int od_pvq_encode(daala_enc_ctx *enc,
   const unsigned char *pvq_qm;
   double dc_rate;
   int use_masking;
+  int ac_dc_coded;
 #if !OD_SIGNAL_Q_SCALING
   OD_UNUSED(q_scaling);
   OD_UNUSED(bx);
@@ -930,8 +932,7 @@ int od_pvq_encode(daala_enc_ctx *enc,
   /* Code as if we're not skipping. */
   aom_encode_cdf_adapt(&enc->w, 2 + (out[0] != 0), skip_cdf,
    4, enc->state.adapt.skip_increment);
-  if (pvq_info)
-    pvq_info->ac_dc_coded = 2 + (out[0] != 0);
+  ac_dc_coded = 2 + (out[0] != 0);
 #if OD_SIGNAL_Q_SCALING
   if (bs == OD_TXSIZES - 1 && pli == 0) {
     od_encode_quantizer_scaling(enc, q_scaling, bx >> (OD_TXSIZES - 1),
@@ -1045,8 +1046,7 @@ int od_pvq_encode(daala_enc_ctx *enc,
     od_encode_rollback(enc, &buf);
     aom_encode_cdf_adapt(&enc->w, out[0] != 0, skip_cdf,
      4, enc->state.adapt.skip_increment);
-    if (pvq_info)
-      pvq_info->ac_dc_coded = (out[0] != 0);
+    ac_dc_coded = (out[0] != 0);
 #if OD_SIGNAL_Q_SCALING
     if (bs == OD_TXSIZES - 1 && pli == 0) {
       int skip;
@@ -1060,7 +1060,8 @@ int od_pvq_encode(daala_enc_ctx *enc,
 #endif
     if (is_keyframe) for (i = 1; i < 1 << (2*bs + 4); i++) out[i] = 0;
     else for (i = 1; i < 1 << (2*bs + 4); i++) out[i] = ref[i];
-    if (out[0] == 0) return 1;
   }
-  return 0;
+  if (pvq_info)
+    pvq_info->ac_dc_coded = ac_dc_coded;
+  return ac_dc_coded;
 }
