@@ -10,14 +10,15 @@ package org.chromium.chrome.browser.ntp.cards;
 public interface NodeParent {
     /**
      * Notifies that {@code count} items starting at position {@code index} under the {@code child}
-     * have changed.
+     * have changed with an optional payload object.
      * @param child The child whose items have changed.
      * @param index The starting position of the range of changed items, relative to the
      *         {@code child}.
      * @param count The number of changed items.
-     * @see android.support.v7.widget.RecyclerView.Adapter#notifyItemRangeChanged(int, int)
+     * @param payload Optional parameter, use {@code null} to identify a "full" update.
+     * @see android.support.v7.widget.RecyclerView.Adapter#notifyItemRangeChanged(int, int, Object)
      */
-    void onItemRangeChanged(TreeNode child, int index, int count);
+    void onItemRangeChanged(TreeNode child, int index, int count, Object payload);
 
     /**
      * Notifies that {@code count} items starting at position {@code index} under the {@code child}

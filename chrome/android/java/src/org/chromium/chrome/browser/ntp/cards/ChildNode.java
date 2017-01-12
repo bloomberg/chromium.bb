@@ -22,8 +22,12 @@ public abstract class ChildNode implements TreeNode {
         mParent = parent;
     }
 
+    protected void notifyItemRangeChanged(int index, int count, Object payload) {
+        if (mParent != null) mParent.onItemRangeChanged(this, index, count, payload);
+    }
+
     protected void notifyItemRangeChanged(int index, int count) {
-        if (mParent != null) mParent.onItemRangeChanged(this, index, count);
+        notifyItemRangeChanged(index, count, null);
     }
 
     protected void notifyItemRangeInserted(int index, int count) {
@@ -32,6 +36,10 @@ public abstract class ChildNode implements TreeNode {
 
     protected void notifyItemRangeRemoved(int index, int count) {
         if (mParent != null) mParent.onItemRangeRemoved(this, index, count);
+    }
+
+    protected void notifyItemChanged(int index, Object payload) {
+        notifyItemRangeChanged(index, 1, payload);
     }
 
     protected void notifyItemChanged(int index) {

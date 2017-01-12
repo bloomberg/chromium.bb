@@ -9,6 +9,8 @@ import android.support.annotation.CallSuper;
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 
+import java.util.List;
+
 /**
  * An optional leaf (i.e. single item) in the tree. Depending on its internal state (see
  * {@link #isVisible()}), the item will be present or absent from the tree, by manipulating the
@@ -32,7 +34,7 @@ public abstract class OptionalLeaf extends ChildNode {
     }
 
     @Override
-    public void onBindViewHolder(NewTabPageViewHolder holder, int position) {
+    public void onBindViewHolder(NewTabPageViewHolder holder, int position, List<Object> payload) {
         checkIndex(position);
         onBindViewHolder(holder);
     }
@@ -80,7 +82,7 @@ public abstract class OptionalLeaf extends ChildNode {
     /**
      * Display the data for this item.
      * @param holder The view holder that should be updated.
-     * @see #onBindViewHolder(NewTabPageViewHolder, int)
+     * @see #onBindViewHolder(NewTabPageViewHolder, int, List)
      * @see android.support.v7.widget.RecyclerView.Adapter#onBindViewHolder
      */
     protected abstract void onBindViewHolder(NewTabPageViewHolder holder);

@@ -71,10 +71,10 @@ public class InnerNode extends ChildNode implements NodeParent {
     }
 
     @Override
-    public void onBindViewHolder(NewTabPageViewHolder holder, int position) {
+    public void onBindViewHolder(NewTabPageViewHolder holder, int position, List<Object> payloads) {
         int index = getChildIndexForPosition(position);
         mChildren.get(index).onBindViewHolder(
-                holder, position - getStartingOffsetForChildIndex(index));
+                holder, position - getStartingOffsetForChildIndex(index), payloads);
     }
 
     @Override
@@ -99,8 +99,8 @@ public class InnerNode extends ChildNode implements NodeParent {
     }
 
     @Override
-    public void onItemRangeChanged(TreeNode child, int index, int count) {
-        notifyItemRangeChanged(getStartingOffsetForChild(child) + index, count);
+    public void onItemRangeChanged(TreeNode child, int index, int count, Object payload) {
+        notifyItemRangeChanged(getStartingOffsetForChild(child) + index, count, payload);
     }
 
     @Override

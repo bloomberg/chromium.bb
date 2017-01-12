@@ -43,6 +43,7 @@ import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -55,6 +56,8 @@ public class SnippetArticleViewHolder
     private static final int[] FAVICON_SERVICE_SUPPORTED_SIZES = {16, 24, 32, 48, 64};
     private static final String FAVICON_SERVICE_FORMAT =
             "https://s2.googleusercontent.com/s2/favicons?domain=%s&src=chrome_newtab_mobile&sz=%d&alt=404";
+
+    public static final int PARTIAL_UPDATE_OFFLINE_ID = 1;
 
     private final NewTabPageManager mNewTabPageManager;
     private final TextView mHeadlineTextView;
@@ -220,11 +223,14 @@ public class SnippetArticleViewHolder
                 BidiFormatter.getInstance().unicodeWrap(article.mPublisher), relativeTimeSpan);
     }
 
-    public void onBindViewHolder(SnippetArticle article, SuggestionsCategoryInfo categoryInfo) {
-        super.onBindViewHolder();
+    public void onBindViewHolder(
+            SnippetArticle article, SuggestionsCategoryInfo categoryInfo, List<Object> payloads) {
+        if (!payloads.isEmpty() && article.equals(mArticle)) {
+            performPartialBind(payloads);
+            return;
+        }
 
-        // No longer listen for offline status changes to the old article.
-        if (mArticle != null) mArticle.setOfflineStatusChangeRunnable(null);
+        super.onBindViewHolder();
 
         mArticle = article;
         mCategoryInfo = categoryInfo;
@@ -265,20 +271,22 @@ public class SnippetArticleViewHolder
         }
 
         mOfflineBadge.setVisibility(View.GONE);
-        if (SnippetsConfig.isOfflineBadgeEnabled()) {
-            Runnable offlineChecker = new Runnable() {
-                @Override
-                public void run() {
-                    if (mArticle.getOfflinePageOfflineId() != null || mArticle.mIsAssetDownload) {
-                        mOfflineBadge.setVisibility(View.VISIBLE);
-                    }
-                }
-            };
-            mArticle.setOfflineStatusChangeRunnable(offlineChecker);
-            offlineChecker.run();
-        }
+        refreshOfflineBadgeVisibility();
 
         mRecyclerView.onSnippetBound(itemView);
+    }
+
+    private void refreshOfflineBadgeVisibility() {
+        if (!SnippetsConfig.isOfflineBadgeEnabled()) return;
+        boolean visible = mArticle.getOfflinePageOfflineId() != null || mArticle.mIsAssetDownload;
+        if (visible == (mOfflineBadge.getVisibility() == View.VISIBLE)) return;
+        mOfflineBadge.setVisibility(visible ? View.VISIBLE : View.GONE);
+    }
+
+    private void performPartialBind(List<Object> payload) {
+        if (payload.contains(PARTIAL_UPDATE_OFFLINE_ID)) {
+            refreshOfflineBadgeVisibility();
+        }
     }
 
     private static class FetchImageCallback extends Callback<Bitmap> {

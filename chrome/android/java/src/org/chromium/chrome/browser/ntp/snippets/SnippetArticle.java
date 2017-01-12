@@ -48,9 +48,6 @@ public class SnippetArticle {
     /** Stores whether impression of this article has been tracked already. */
     private boolean mImpressionTracked;
 
-    /** To be run when the offline status of the article changes. */
-    private Runnable mOfflineStatusChangeRunnable;
-
     /** Whether the linked article represents an asset download. */
     public boolean mIsAssetDownload;
 
@@ -113,14 +110,6 @@ public class SnippetArticle {
         if (mImpressionTracked) return false;
         mImpressionTracked = true;
         return true;
-    }
-
-    /**
-     * Sets the {@link Runnable} to be run when the article's offline status changes.
-     * Pass null to wipe.
-     */
-    public void setOfflineStatusChangeRunnable(Runnable runnable) {
-        mOfflineStatusChangeRunnable = runnable;
     }
 
     /** @return whether a snippet is either offline page or asset download. */
@@ -202,14 +191,7 @@ public class SnippetArticle {
 
     /** Sets offline id of the corresponding to the snippet offline page. Null to clear.*/
     public void setOfflinePageOfflineId(@Nullable Long offlineId) {
-        Long previous = mOfflinePageOfflineId;
         mOfflinePageOfflineId = offlineId;
-
-        if (mOfflineStatusChangeRunnable == null) return;
-        if ((previous == null) ? (mOfflinePageOfflineId != null)
-                               : !previous.equals(mOfflinePageOfflineId)) {
-            mOfflineStatusChangeRunnable.run();
-        }
     }
 
     /**

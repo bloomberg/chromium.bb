@@ -93,11 +93,12 @@ public class SuggestionsSection extends InnerNode {
         }
 
         @Override
-        public void onBindViewHolder(NewTabPageViewHolder holder, int position) {
+        public void onBindViewHolder(
+                NewTabPageViewHolder holder, int position, List<Object> payloads) {
             checkIndex(position);
             assert holder instanceof SnippetArticleViewHolder;
             ((SnippetArticleViewHolder) holder)
-                    .onBindViewHolder(getSuggestionAt(position), mCategoryInfo);
+                    .onBindViewHolder(getSuggestionAt(position), mCategoryInfo, payloads);
         }
 
         @Override
@@ -154,6 +155,15 @@ public class SuggestionsSection extends InnerNode {
             SnippetArticle suggestion = remove(position);
             suggestionsSource.dismissSuggestion(suggestion);
             itemRemovedCallback.onResult(suggestion.mTitle);
+        }
+
+        public void updateSuggestionOfflineId(SnippetArticle article, Long newId) {
+            Long oldId = article.getOfflinePageOfflineId();
+            article.setOfflinePageOfflineId(newId);
+
+            if ((oldId == null) == (newId == null)) return;
+            notifyItemChanged(mSuggestions.indexOf(article),
+                    SnippetArticleViewHolder.PARTIAL_UPDATE_OFFLINE_ID);
         }
     }
 
@@ -286,11 +296,8 @@ public class SuggestionsSection extends InnerNode {
                     @Override
                     public void onResult(OfflinePageItem item) {
                         if (mIsNtpDestroyed) return;
-                        if (item == null) {
-                            article.setOfflinePageOfflineId(null);
-                            return;
-                        }
-                        article.setOfflinePageOfflineId(item.getOfflineId());
+                        mSuggestionsList.updateSuggestionOfflineId(
+                                article, item == null ? null : item.getOfflineId());
                     }
                 });
     }

@@ -20,6 +20,9 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * A class that handles merging above the fold elements and below the fold cards into an adapter
  * that will be used to back the NTP RecyclerView. The first element in the adapter should always be
@@ -131,8 +134,13 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     }
 
     @Override
+    public void onBindViewHolder(NewTabPageViewHolder holder, int position, List<Object> payloads) {
+        mRoot.onBindViewHolder(holder, position, payloads);
+    }
+
+    @Override
     public void onBindViewHolder(NewTabPageViewHolder holder, final int position) {
-        mRoot.onBindViewHolder(holder, position);
+        mRoot.onBindViewHolder(holder, position, Collections.emptyList());
     }
 
     @Override
@@ -174,9 +182,10 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     }
 
     @Override
-    public void onItemRangeChanged(TreeNode child, int itemPosition, int itemCount) {
+    public void onItemRangeChanged(
+            TreeNode child, int itemPosition, int itemCount, Object payload) {
         assert child == mRoot;
-        notifyItemRangeChanged(itemPosition, itemCount);
+        notifyItemRangeChanged(itemPosition, itemCount, payload);
     }
 
     @Override
