@@ -36,7 +36,6 @@
 #include "cc/scheduler/commit_earlyout_reason.h"
 #include "cc/scheduler/draw_result.h"
 #include "cc/scheduler/video_frame_controller.h"
-#include "cc/tiles/decoded_image_tracker.h"
 #include "cc/tiles/image_decode_cache.h"
 #include "cc/tiles/tile_manager.h"
 #include "cc/trees/layer_tree_mutator.h"
@@ -145,8 +144,7 @@ class CC_EXPORT LayerTreeHostImpl
       RenderingStatsInstrumentation* rendering_stats_instrumentation,
       TaskGraphRunner* task_graph_runner,
       std::unique_ptr<MutatorHost> mutator_host,
-      int id,
-      scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner);
+      int id);
   ~LayerTreeHostImpl() override;
 
   // InputHandler implementation
@@ -596,8 +594,7 @@ class CC_EXPORT LayerTreeHostImpl
       RenderingStatsInstrumentation* rendering_stats_instrumentation,
       TaskGraphRunner* task_graph_runner,
       std::unique_ptr<MutatorHost> mutator_host,
-      int id,
-      scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner);
+      int id);
 
   // Virtual for testing.
   virtual bool AnimateLayers(base::TimeTicks monotonic_time);
@@ -749,7 +746,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   const bool is_synchronous_single_threaded_;
   TileManager tile_manager_;
-  DecodedImageTracker decoded_image_tracker_;
 
   gfx::Vector2dF accumulated_root_overscroll_;
 

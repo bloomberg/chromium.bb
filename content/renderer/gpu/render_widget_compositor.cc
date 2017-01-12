@@ -20,9 +20,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/sys_info.h"
-#include "base/task_scheduler/post_task.h"
-#include "base/task_scheduler/task_scheduler.h"
-#include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -248,14 +245,6 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor,
     params.main_task_runner =
         compositor_deps_->GetCompositorMainThreadTaskRunner();
     params.mutator_host = animation_host_.get();
-    if (base::TaskScheduler::GetInstance()) {
-      params.image_worker_task_runner =
-          base::CreateSequencedTaskRunnerWithTraits(
-              base::TaskTraits()
-                  .WithPriority(base::TaskPriority::BACKGROUND)
-                  .WithShutdownBehavior(
-                      base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN));
-    }
     if (!threaded_) {
       // Single-threaded layout tests.
       layer_tree_host_ =

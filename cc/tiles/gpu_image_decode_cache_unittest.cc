@@ -497,7 +497,6 @@ TEST(GpuImageDecodeCacheTest, GetTaskForImageCanceledWhileReffedGetsNewTask) {
   EXPECT_TRUE(need_unref);
   EXPECT_TRUE(task);
 
-  ASSERT_GT(task->dependencies().size(), 0u);
   TestTileTaskRunner::ProcessTask(task->dependencies()[0].get());
 
   scoped_refptr<TileTask> another_task;
@@ -510,10 +509,6 @@ TEST(GpuImageDecodeCacheTest, GetTaskForImageCanceledWhileReffedGetsNewTask) {
   TestTileTaskRunner::CancelTask(task.get());
   TestTileTaskRunner::CompleteTask(task.get());
 
-  // 2 Unrefs, so that the decode is unlocked as well.
-  cache.UnrefImage(draw_image);
-  cache.UnrefImage(draw_image);
-
   // Note that here, everything is reffed, but a new task is created. This is
   // possible with repeated schedule/cancel operations.
   scoped_refptr<TileTask> third_task;
@@ -523,11 +518,12 @@ TEST(GpuImageDecodeCacheTest, GetTaskForImageCanceledWhileReffedGetsNewTask) {
   EXPECT_TRUE(third_task);
   EXPECT_FALSE(third_task.get() == task.get());
 
-  ASSERT_GT(third_task->dependencies().size(), 0u);
   TestTileTaskRunner::ProcessTask(third_task->dependencies()[0].get());
   TestTileTaskRunner::ProcessTask(third_task.get());
 
-  // Unref!
+  // 3 Unrefs!
+  cache.UnrefImage(draw_image);
+  cache.UnrefImage(draw_image);
   cache.UnrefImage(draw_image);
 }
 

@@ -31,8 +31,7 @@ FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(
                         &stats_instrumentation_,
                         task_graph_runner,
                         AnimationHost::CreateForTesting(ThreadInstance::IMPL),
-                        0,
-                        nullptr),
+                        0),
       notify_tile_state_changed_called_(false) {
   // Explicitly clear all debug settings.
   SetDebugState(LayerTreeDebugState());

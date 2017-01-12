@@ -149,13 +149,11 @@ class ImageDecodeTaskImpl : public TileTask {
  public:
   ImageDecodeTaskImpl(GpuImageDecodeCache* cache,
                       const DrawImage& draw_image,
-                      const ImageDecodeCache::TracingInfo& tracing_info,
-                      GpuImageDecodeCache::DecodeTaskType task_type)
+                      const ImageDecodeCache::TracingInfo& tracing_info)
       : TileTask(true),
         cache_(cache),
         image_(draw_image),
-        tracing_info_(tracing_info),
-        task_type_(task_type) {
+        tracing_info_(tracing_info) {
     DCHECK(!SkipImage(draw_image));
   }
 
@@ -171,7 +169,7 @@ class ImageDecodeTaskImpl : public TileTask {
 
   // Overridden from TileTask:
   void OnTaskCompleted() override {
-    cache_->OnImageDecodeTaskCompleted(image_, task_type_);
+    cache_->OnImageDecodeTaskCompleted(image_);
   }
 
  protected:
@@ -181,7 +179,6 @@ class ImageDecodeTaskImpl : public TileTask {
   GpuImageDecodeCache* cache_;
   DrawImage image_;
   const ImageDecodeCache::TracingInfo tracing_info_;
-  const GpuImageDecodeCache::DecodeTaskType task_type_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDecodeTaskImpl);
 };
@@ -383,22 +380,6 @@ GpuImageDecodeCache::~GpuImageDecodeCache() {
 bool GpuImageDecodeCache::GetTaskForImageAndRef(const DrawImage& draw_image,
                                                 const TracingInfo& tracing_info,
                                                 scoped_refptr<TileTask>* task) {
-  return GetTaskForImageAndRefInternal(
-      draw_image, tracing_info, DecodeTaskType::PART_OF_UPLOAD_TASK, task);
-}
-
-bool GpuImageDecodeCache::GetOutOfRasterDecodeTaskForImageAndRef(
-    const DrawImage& draw_image,
-    scoped_refptr<TileTask>* task) {
-  return GetTaskForImageAndRefInternal(
-      draw_image, TracingInfo(), DecodeTaskType::STAND_ALONE_DECODE_TASK, task);
-}
-
-bool GpuImageDecodeCache::GetTaskForImageAndRefInternal(
-    const DrawImage& draw_image,
-    const TracingInfo& tracing_info,
-    DecodeTaskType task_type,
-    scoped_refptr<TileTask>* task) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::GetTaskForImageAndRef");
   if (SkipImage(draw_image)) {
@@ -427,17 +408,10 @@ bool GpuImageDecodeCache::GetTaskForImageAndRefInternal(
     RefImage(draw_image);
     *task = nullptr;
     return true;
-  } else if (task_type == DecodeTaskType::PART_OF_UPLOAD_TASK &&
-             image_data->upload.task) {
+  } else if (image_data->upload.task) {
     // We had an existing upload task, ref the image and return the task.
     RefImage(draw_image);
     *task = image_data->upload.task;
-    return true;
-  } else if (task_type == DecodeTaskType::STAND_ALONE_DECODE_TASK &&
-             image_data->decode.stand_alone_task) {
-    // We had an existing out of raster task, ref the image and return the task.
-    RefImage(draw_image);
-    *task = image_data->decode.stand_alone_task;
     return true;
   }
 
@@ -453,18 +427,13 @@ bool GpuImageDecodeCache::GetTaskForImageAndRefInternal(
   if (new_data)
     persistent_cache_.Put(image_id, std::move(new_data));
 
-  if (task_type == DecodeTaskType::PART_OF_UPLOAD_TASK) {
-    // Ref image and create a upload and decode tasks. We will release this ref
-    // in UploadTaskCompleted.
-    RefImage(draw_image);
-    *task = make_scoped_refptr(new ImageUploadTaskImpl(
-        this, draw_image,
-        GetImageDecodeTaskAndRef(draw_image, tracing_info, task_type),
-        tracing_info));
-    image_data->upload.task = *task;
-  } else {
-    *task = GetImageDecodeTaskAndRef(draw_image, tracing_info, task_type);
-  }
+  // Ref image and create a upload and decode tasks. We will release this ref
+  // in UploadTaskCompleted.
+  RefImage(draw_image);
+  *task = make_scoped_refptr(new ImageUploadTaskImpl(
+      this, draw_image, GetImageDecodeTaskAndRef(draw_image, tracing_info),
+      tracing_info));
+  image_data->upload.task = *task;
 
   // Ref the image again - this ref is owned by the caller, and it is their
   // responsibility to release it by calling UnrefImage.
@@ -678,22 +647,15 @@ void GpuImageDecodeCache::UploadImage(const DrawImage& draw_image) {
 }
 
 void GpuImageDecodeCache::OnImageDecodeTaskCompleted(
-    const DrawImage& draw_image,
-    DecodeTaskType task_type) {
+    const DrawImage& draw_image) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::OnImageDecodeTaskCompleted");
   base::AutoLock lock(lock_);
   // Decode task is complete, remove our reference to it.
   ImageData* image_data = GetImageDataForDrawImage(draw_image);
   DCHECK(image_data);
-  if (task_type == DecodeTaskType::PART_OF_UPLOAD_TASK) {
-    DCHECK(image_data->decode.task);
-    image_data->decode.task = nullptr;
-  } else {
-    DCHECK(task_type == DecodeTaskType::STAND_ALONE_DECODE_TASK);
-    DCHECK(image_data->decode.stand_alone_task);
-    image_data->decode.stand_alone_task = nullptr;
-  }
+  DCHECK(image_data->decode.task);
+  image_data->decode.task = nullptr;
 
   // While the decode task is active, we keep a ref on the decoded data.
   // Release that ref now.
@@ -722,16 +684,14 @@ void GpuImageDecodeCache::OnImageUploadTaskCompleted(
 // the requested decode.
 scoped_refptr<TileTask> GpuImageDecodeCache::GetImageDecodeTaskAndRef(
     const DrawImage& draw_image,
-    const TracingInfo& tracing_info,
-    DecodeTaskType task_type) {
+    const TracingInfo& tracing_info) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::GetImageDecodeTaskAndRef");
   lock_.AssertAcquired();
 
   // This ref is kept alive while an upload task may need this decode. We
   // release this ref in UploadTaskCompleted.
-  if (task_type == DecodeTaskType::PART_OF_UPLOAD_TASK)
-    RefImageDecode(draw_image);
+  RefImageDecode(draw_image);
 
   ImageData* image_data = GetImageDataForDrawImage(draw_image);
   DCHECK(image_data);
@@ -744,16 +704,13 @@ scoped_refptr<TileTask> GpuImageDecodeCache::GetImageDecodeTaskAndRef(
   }
 
   // We didn't have an existing locked image, create a task to lock or decode.
-  scoped_refptr<TileTask>& existing_task =
-      (task_type == DecodeTaskType::PART_OF_UPLOAD_TASK)
-          ? image_data->decode.task
-          : image_data->decode.stand_alone_task;
+  scoped_refptr<TileTask>& existing_task = image_data->decode.task;
   if (!existing_task) {
     // Ref image decode and create a decode task. This ref will be released in
     // DecodeTaskCompleted.
     RefImageDecode(draw_image);
     existing_task = make_scoped_refptr(
-        new ImageDecodeTaskImpl(this, draw_image, tracing_info, task_type));
+        new ImageDecodeTaskImpl(this, draw_image, tracing_info));
   }
   return existing_task;
 }
@@ -900,11 +857,10 @@ void GpuImageDecodeCache::OwnershipChanged(const DrawImage& draw_image,
   // We should unlock the discardable memory for the image in two cases:
   // 1) The image is no longer being used (no decode or upload refs).
   // 2) This is a GPU backed image that has already been uploaded (no decode
-  //    refs, and we actually already have an image).
+  //    refs).
   bool should_unlock_discardable =
-      !has_any_refs ||
-      (image_data->mode == DecodedDataMode::GPU &&
-       !image_data->decode.ref_count && image_data->upload.image());
+      !has_any_refs || (image_data->mode == DecodedDataMode::GPU &&
+                        !image_data->decode.ref_count);
 
   if (should_unlock_discardable && image_data->decode.is_locked()) {
     DCHECK(image_data->decode.data());

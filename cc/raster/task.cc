@@ -18,10 +18,6 @@ TaskState::~TaskState() {
          "CANCELED state.";
 }
 
-bool TaskState::IsNew() const {
-  return value_ == Value::NEW;
-}
-
 bool TaskState::IsScheduled() const {
   return value_ == Value::SCHEDULED;
 }
@@ -40,23 +36,6 @@ bool TaskState::IsCanceled() const {
 
 void TaskState::Reset() {
   value_ = Value::NEW;
-}
-
-std::string TaskState::ToString() const {
-  switch (value_) {
-    case Value::NEW:
-      return "NEW";
-    case Value::SCHEDULED:
-      return "SCHEDULED";
-    case Value::RUNNING:
-      return "RUNNING";
-    case Value::FINISHED:
-      return "FINISHED";
-    case Value::CANCELED:
-      return "CANCELED";
-  }
-  NOTREACHED();
-  return "";
 }
 
 void TaskState::DidSchedule() {

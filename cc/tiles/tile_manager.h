@@ -21,7 +21,6 @@
 #include "cc/raster/raster_buffer_provider.h"
 #include "cc/resources/memory_history.h"
 #include "cc/resources/resource_pool.h"
-#include "cc/tiles/decoded_image_tracker.h"
 #include "cc/tiles/eviction_tile_priority_queue.h"
 #include "cc/tiles/image_controller.h"
 #include "cc/tiles/raster_tile_priority_queue.h"
@@ -99,8 +98,7 @@ RasterTaskCompletionStatsAsValue(const RasterTaskCompletionStats& stats);
 class CC_EXPORT TileManager {
  public:
   TileManager(TileManagerClient* client,
-              base::SequencedTaskRunner* origin_task_runner,
-              scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner,
+              base::SequencedTaskRunner* task_runner,
               size_t scheduled_raster_task_limit,
               bool use_partial_raster,
               bool check_tile_priority_inversion);
@@ -207,8 +205,6 @@ class CC_EXPORT TileManager {
                              Tile::Id tile_id,
                              Resource* resource,
                              bool was_canceled);
-
-  void SetDecodedImageTracker(DecodedImageTracker* decoded_image_tracker);
 
  protected:
   friend class Tile;

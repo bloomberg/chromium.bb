@@ -94,13 +94,11 @@ class ImageDecodeTaskImpl : public TileTask {
   ImageDecodeTaskImpl(SoftwareImageDecodeCache* cache,
                       const SoftwareImageDecodeCache::ImageKey& image_key,
                       const DrawImage& image,
-                      const SoftwareImageDecodeCache::DecodeTaskType task_type,
                       const ImageDecodeCache::TracingInfo& tracing_info)
       : TileTask(true),
         cache_(cache),
         image_key_(image_key),
         image_(image),
-        task_type_(task_type),
         tracing_info_(tracing_info) {}
 
   // Overridden from Task:
@@ -111,13 +109,11 @@ class ImageDecodeTaskImpl : public TileTask {
     devtools_instrumentation::ScopedImageDecodeTask image_decode_task(
         image_.image().get(),
         devtools_instrumentation::ScopedImageDecodeTask::SOFTWARE);
-    cache_->DecodeImage(image_key_, image_, task_type_);
+    cache_->DecodeImage(image_key_, image_);
   }
 
   // Overridden from TileTask:
-  void OnTaskCompleted() override {
-    cache_->RemovePendingTask(image_key_, task_type_);
-  }
+  void OnTaskCompleted() override { cache_->RemovePendingTask(image_key_); }
 
  protected:
   ~ImageDecodeTaskImpl() override {}
@@ -126,7 +122,6 @@ class ImageDecodeTaskImpl : public TileTask {
   SoftwareImageDecodeCache* cache_;
   SoftwareImageDecodeCache::ImageKey image_key_;
   DrawImage image_;
-  SoftwareImageDecodeCache::DecodeTaskType task_type_;
   const ImageDecodeCache::TracingInfo tracing_info_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDecodeTaskImpl);
@@ -213,22 +208,6 @@ bool SoftwareImageDecodeCache::GetTaskForImageAndRef(
     const DrawImage& image,
     const TracingInfo& tracing_info,
     scoped_refptr<TileTask>* task) {
-  return GetTaskForImageAndRefInternal(
-      image, tracing_info, DecodeTaskType::USE_IN_RASTER_TASKS, task);
-}
-
-bool SoftwareImageDecodeCache::GetOutOfRasterDecodeTaskForImageAndRef(
-    const DrawImage& image,
-    scoped_refptr<TileTask>* task) {
-  return GetTaskForImageAndRefInternal(
-      image, TracingInfo(), DecodeTaskType::USE_OUT_OF_RASTER_TASKS, task);
-}
-
-bool SoftwareImageDecodeCache::GetTaskForImageAndRefInternal(
-    const DrawImage& image,
-    const TracingInfo& tracing_info,
-    DecodeTaskType task_type,
-    scoped_refptr<TileTask>* task) {
   // If the image already exists or if we're going to create a task for it, then
   // we'll likely need to ref this image (the exception is if we're prerolling
   // the image only). That means the image is or will be in the cache. When the
@@ -279,15 +258,8 @@ bool SoftwareImageDecodeCache::GetTaskForImageAndRefInternal(
     }
   }
 
-  DCHECK(task_type == DecodeTaskType::USE_IN_RASTER_TASKS ||
-         task_type == DecodeTaskType::USE_OUT_OF_RASTER_TASKS);
-  // If the task exists, return it. Note that if we always need to create a new
-  // task, then just set |existing_task| to reference the passed in task (which
-  // is set to nullptr above).
-  scoped_refptr<TileTask>& existing_task =
-      (task_type == DecodeTaskType::USE_IN_RASTER_TASKS)
-          ? pending_in_raster_image_tasks_[key]
-          : pending_out_of_raster_image_tasks_[key];
+  // If the task exists, return it.
+  scoped_refptr<TileTask>& existing_task = pending_image_tasks_[key];
   if (existing_task) {
     RefImage(key);
     *task = existing_task;
@@ -311,7 +283,7 @@ bool SoftwareImageDecodeCache::GetTaskForImageAndRefInternal(
   // ref.
   RefImage(key);
   existing_task = make_scoped_refptr(
-      new ImageDecodeTaskImpl(this, key, image, task_type, tracing_info));
+      new ImageDecodeTaskImpl(this, key, image, tracing_info));
   *task = existing_task;
   SanityCheckState(__LINE__, true);
   return true;
@@ -362,16 +334,11 @@ void SoftwareImageDecodeCache::UnrefImage(const DrawImage& image) {
 }
 
 void SoftwareImageDecodeCache::DecodeImage(const ImageKey& key,
-                                           const DrawImage& image,
-                                           DecodeTaskType task_type) {
+                                           const DrawImage& image) {
   TRACE_EVENT1("cc", "SoftwareImageDecodeCache::DecodeImage", "key",
                key.ToString());
   base::AutoLock lock(lock_);
-  AutoRemoveKeyFromTaskMap remove_key_from_task_map(
-      (task_type == DecodeTaskType::USE_IN_RASTER_TASKS)
-          ? &pending_in_raster_image_tasks_
-          : &pending_out_of_raster_image_tasks_,
-      key);
+  AutoRemoveKeyFromTaskMap remove_key_from_task_map(&pending_image_tasks_, key);
 
   // We could have finished all of the raster tasks (cancelled) while the task
   // was just starting to run. Since this task already started running, it
@@ -801,17 +768,9 @@ void SoftwareImageDecodeCache::ReduceCacheUsage() {
   }
 }
 
-void SoftwareImageDecodeCache::RemovePendingTask(const ImageKey& key,
-                                                 DecodeTaskType task_type) {
+void SoftwareImageDecodeCache::RemovePendingTask(const ImageKey& key) {
   base::AutoLock lock(lock_);
-  switch (task_type) {
-    case DecodeTaskType::USE_IN_RASTER_TASKS:
-      pending_in_raster_image_tasks_.erase(key);
-      break;
-    case DecodeTaskType::USE_OUT_OF_RASTER_TASKS:
-      pending_out_of_raster_image_tasks_.erase(key);
-      break;
-  }
+  pending_image_tasks_.erase(key);
 }
 
 bool SoftwareImageDecodeCache::OnMemoryDump(
@@ -878,10 +837,7 @@ void SoftwareImageDecodeCache::SanityCheckState(int line, bool lock_acquired) {
       DCHECK(ref_it != decoded_images_ref_counts_.end()) << line;
     } else {
       DCHECK(ref_it == decoded_images_ref_counts_.end() ||
-             pending_in_raster_image_tasks_.find(key) !=
-                 pending_in_raster_image_tasks_.end() ||
-             pending_out_of_raster_image_tasks_.find(key) !=
-                 pending_out_of_raster_image_tasks_.end())
+             pending_image_tasks_.find(key) != pending_image_tasks_.end())
           << line;
     }
   }
