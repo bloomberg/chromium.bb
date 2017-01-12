@@ -119,3 +119,57 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, HideShow) {
   EXPECT_EQ(1.0, [sheetWindow alphaValue]);
   EXPECT_FALSE([[selector overlayWindow] ignoresMouseEvents]);
 }
+
+@interface DeallocTrackingSSLClientCertificateSelectorCocoa
+    : SSLClientCertificateSelectorCocoa
+@property(nonatomic) BOOL* wasDeallocated;
+@end
+
+@implementation DeallocTrackingSSLClientCertificateSelectorCocoa
+@synthesize wasDeallocated = wasDeallocated_;
+
+- (void)dealloc {
+  *wasDeallocated_ = true;
+  [super dealloc];
+}
+
+@end
+
+// Test that we can't trigger the crash from https://crbug.com/653093
+IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest,
+                       WorkaroundCrashySierra) {
+  BOOL selector_was_deallocated = false;
+
+  @autoreleasepool {
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    DeallocTrackingSSLClientCertificateSelectorCocoa* selector =
+        [[DeallocTrackingSSLClientCertificateSelectorCocoa alloc]
+            initWithBrowserContext:web_contents->GetBrowserContext()
+                   certRequestInfo:auth_requestor_->cert_request_info_.get()
+                          delegate:nil];
+    [selector displayForWebContents:web_contents];
+    content::RunAllPendingInMessageLoop();
+
+    selector.wasDeallocated = &selector_was_deallocated;
+
+    [selector.overlayWindow endSheet:selector.overlayWindow.attachedSheet];
+    content::RunAllPendingInMessageLoop();
+  }
+
+  EXPECT_TRUE(selector_was_deallocated);
+
+  // Without the workaround, this will crash on Sierra.
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:NSPreferredScrollerStyleDidChangeNotification
+                    object:nil
+                  userInfo:@{
+                    @"NSScrollerStyle" : @(NSScrollerStyleLegacy)
+                  }];
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:NSPreferredScrollerStyleDidChangeNotification
+                    object:nil
+                  userInfo:@{
+                    @"NSScrollerStyle" : @(NSScrollerStyleOverlay)
+                  }];
+}
