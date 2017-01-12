@@ -336,9 +336,11 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
 
     private boolean checkGooglePlayServicesAvailable() {
         ExternalAuthUtils extAuthUtils = ExternalAuthUtils.getInstance();
-        boolean cancelable = !SigninManager.get(getContext()).isForceSigninEnabled();
-        mGooglePlayServicesUpdateErrorHandler = new UserRecoverableErrorHandler.ModalDialog(
-                mDelegate.getActivity(), cancelable);
+        if (mGooglePlayServicesUpdateErrorHandler == null) {
+            boolean cancelable = !SigninManager.get(getContext()).isForceSigninEnabled();
+            mGooglePlayServicesUpdateErrorHandler = new UserRecoverableErrorHandler.ModalDialog(
+                    mDelegate.getActivity(), cancelable);
+        }
         int resultCode = extAuthUtils.canUseGooglePlayServicesResultCode(
                 getContext(), mGooglePlayServicesUpdateErrorHandler);
         if (extAuthUtils.isGooglePlayServicesUpdateRequiredError(resultCode)) {
