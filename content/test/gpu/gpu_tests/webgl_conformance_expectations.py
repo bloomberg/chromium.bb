@@ -378,6 +378,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
                ['linux'], bug=627525)
     self.Fail('conformance/extensions/webgl-compressed-texture-etc.html',
         bug=679678)
+    self.Fail('conformance/extensions/webgl-compressed-texture-astc.html',
+        ['linux', 'intel'], bug=680675)
 
     # NVIDIA
     self.Flaky('conformance/extensions/oes-element-index-uint.html',
@@ -426,7 +428,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Skip('conformance/glsl/bugs/temp-expressions-should-not-crash.html',
         ['linux', 'intel'], bug=540543)  # GPU timeout
     self.Skip('conformance/uniforms/gl-uniform-arrays.html',
-        ['linux', 'debug', ('intel', 0x412)], bug=604140)
+        ['linux', 'debug', 'intel'], bug=603906)
     # Fixed on Mesa 12.0
     self.Fail('conformance/rendering/clipping-wide-points.html',
         ['linux', 'intel'], bug=642822)
