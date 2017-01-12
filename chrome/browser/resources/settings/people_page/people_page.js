@@ -247,10 +247,10 @@ Polymer({
     if (!this.syncStatus && syncStatus && !syncStatus.signedIn)
       chrome.metricsPrivate.recordUserAction('Signin_Impression_FromSettings');
 
-<if expr="not chromeos">
+// <if expr="not chromeos">
     if (syncStatus.signedIn)
       settings.ProfileInfoBrowserProxyImpl.getInstance().getProfileStatsCount();
-</if>
+// </if>
 
     if (!syncStatus.signedIn && this.$.disconnectDialog.open)
       this.$.disconnectDialog.close();

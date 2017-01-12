@@ -26,6 +26,44 @@ class JsCheckerTest(SuperMoxTestBase):
     output_api = self.mox.CreateMockAnything()
     self.checker = js_checker.JSChecker(input_api, output_api)
 
+  def ShouldFailCommentCheck(self, line):
+    """Checks that uncommented '<if>' and '<include>' are a style error."""
+    error = self.checker.CommentIfAndIncludeCheck(1, line)
+    self.assertNotEqual('', error, 'Should be flagged as style error: ' + line)
+    highlight = test_util.GetHighlight(line, error).strip()
+    self.assertTrue(highlight.startswith(('<if', '<include')))
+
+  def ShouldPassCommentCheck(self, line):
+    """Checks that commented '<if>' and '<include>' are allowed."""
+    self.assertEqual('', self.checker.CommentIfAndIncludeCheck(1, line),
+        'Should not be flagged as style error: ' + line)
+
+  def testCommentFails(self):
+    lines = [
+        '<include src="blah.js">',
+        # Currently, only "// " is accepted (not just "//" or "//\s+") as Python
+        # can't do variable-length lookbehind.
+        '//<include src="blah.js">',
+        '//  <include src="blah.js">',
+        '             <include src="blee.js">',
+        '  <if expr="chromeos">',
+        '<if expr="lang == \'de\'">',
+        '//<if expr="bitness == 64">',
+    ]
+    for line in lines:
+      self.ShouldFailCommentCheck(line)
+
+  def testCommentPasses(self):
+    lines = [
+        '// <include src="assert.js">',
+        '             // <include src="util.js"/>',
+        '// <if expr="chromeos">',
+        '           // <if expr="not chromeos">',
+        "   '<iframe src=blah.html>';",
+    ]
+    for line in lines:
+      self.ShouldPassCommentCheck(line)
+
   def ShouldFailConstCheck(self, line):
     """Checks that the 'const' checker flags |line| as a style error."""
     error = self.checker.ConstCheck(1, line)
