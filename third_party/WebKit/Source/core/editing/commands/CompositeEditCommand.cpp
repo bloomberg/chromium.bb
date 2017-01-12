@@ -1972,6 +1972,9 @@ Position CompositeEditCommand::positionAvoidingSpecialElementBoundary(
         if (!enclosingAnchor)
           return original;
       }
+
+      document().updateStyleAndLayoutIgnorePendingStylesheets();
+
       // Don't insert outside an anchor if doing so would skip over a line
       // break.  It would probably be safe to move the line break so that we
       // could still avoid the anchor here.
@@ -1983,8 +1986,6 @@ Position CompositeEditCommand::positionAvoidingSpecialElementBoundary(
 
       result = Position::inParentAfterNode(*enclosingAnchor);
     }
-
-    document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     // If visually just before an anchor, insert *outside* the anchor unless
     // it's the first VisiblePosition in a paragraph, to match NSTextView.

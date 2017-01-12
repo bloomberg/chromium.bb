@@ -596,6 +596,8 @@ void InsertListCommand::listifyParagraph(const VisiblePosition& originalStart,
     startPos = Position::beforeNode(placeholder);
   }
 
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
+
   // Insert the list at a position visually equivalent to start of the
   // paragraph that is being moved into the list.
   // Try to avoid inserting it somewhere where it will be surrounded by

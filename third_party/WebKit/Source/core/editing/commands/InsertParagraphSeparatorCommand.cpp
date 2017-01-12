@@ -364,6 +364,8 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState) {
       refNode = insertionPosition.anchorNode();
     }
 
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
+
     // find ending selection position easily before inserting the paragraph
     insertionPosition = mostForwardCaretPosition(insertionPosition);
 
