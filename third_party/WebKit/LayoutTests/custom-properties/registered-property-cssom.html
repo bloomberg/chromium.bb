@@ -67,6 +67,8 @@ test(function() {
   assert_equals(computedStyle.getPropertyValue('--length'), '10px');
   sheetStyle.setProperty('--length', '20px');
   assert_equals(computedStyle.getPropertyValue('--length'), '20px');
+  sheetStyle.setProperty('--length', 'initial');
+  assert_equals(computedStyle.getPropertyValue('--length'), '0px');
 }, "Stylesheets can be modified by CSSOM");
 
 test(function() {
@@ -76,5 +78,8 @@ test(function() {
   assert_equals(inlineStyle.getPropertyValue('--color'), 'pink');
   assert_equals(computedStyle.getPropertyValue('--length'), '30px');
   assert_equals(computedStyle.getPropertyValue('--color'), 'pink');
+  inlineStyle.setProperty('--color', 'inherit');
+  assert_equals(inlineStyle.getPropertyValue('--color'), 'inherit');
+  assert_equals(computedStyle.getPropertyValue('--color'), 'blue');
 }, "Valid values can be set on inline styles");
 </script>
