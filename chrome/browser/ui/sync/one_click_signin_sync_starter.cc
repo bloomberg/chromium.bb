@@ -140,7 +140,6 @@ void OneClickSigninSyncStarter::Initialize(Profile* profile, Browser* browser) {
   // will not be able to complete successfully.
   syncer::SyncPrefs sync_prefs(profile_->GetPrefs());
   sync_prefs.SetSyncRequested(true);
-  skip_sync_confirm_ = false;
 }
 
 void OneClickSigninSyncStarter::ConfirmSignin(ProfileMode profile_mode,
@@ -323,14 +322,6 @@ void OneClickSigninSyncStarter::CompleteInitForNewProfile(
       Initialize(new_profile, nullptr);
       DCHECK_EQ(profile_, new_profile);
 
-#if defined(OS_MACOSX)
-      // On macOS, the sync confirmation dialog is web-contents modal and thus
-      // it is dismissed on tab navigation (which always occurs when signing in
-      // to a new profile).
-      // Skip sync confirmation on macOS to workaround this issue.
-      skip_sync_confirm_ = true;
-#endif
-
       // We've transferred our credentials to the new profile - notify that
       // the signin for the original profile was cancelled (must do this after
       // we have called Initialize() with the new profile, as otherwise this
@@ -500,11 +491,6 @@ void OneClickSigninSyncStarter::AccountAddedToCookie(
 
   // Regardless of whether the account was successfully added or not,
   // continue with sync starting.
-
-  if (skip_sync_confirm_) {
-    OnSyncConfirmationUIClosed(LoginUIService::ABORT_SIGNIN);
-    return;
-  }
 
   if (switches::UsePasswordSeparatedSigninFlow()) {
     // Under the new signin flow, the sync confirmation dialog should always be

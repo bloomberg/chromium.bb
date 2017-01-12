@@ -260,12 +260,6 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   // Prevents Sync from running until configuration is complete.
   std::unique_ptr<syncer::SyncSetupInProgressHandle> sync_blocker_;
 
-  // Temporary flag used only on macOS to disable new sync confirm page if user
-  // choose to create a new profile.
-  //
-  // TODO(msarda): Remove this flag once the https://crbug.com/677012 fixed.
-  bool skip_sync_confirm_;
-
   base::WeakPtrFactory<OneClickSigninSyncStarter> weak_pointer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninSyncStarter);

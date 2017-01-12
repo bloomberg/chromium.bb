@@ -46,11 +46,14 @@ class SigninViewControllerDelegate : public content::WebContentsDelegate {
       SigninViewController* signin_view_controller,
       Browser* browser);
 
-  // Closes the modal sign-in dialog.
+  // Closes the sign-in dialog. Note that this method may destroy this object,
+  // so the caller should no longer use this object after calling this method.
   void CloseModalSignin();
 
   // Either navigates back in the signin flow if the history state allows it or
-  // closes the flow otherwise.
+  // closes the flow otherwise. Note that if view is closed, this method may
+  // destroy this object, so the caller should no longer use this object after
+  // calling this method.
   void PerformNavigation();
 
   // This will be called by the base class to request a resize of the native
@@ -79,7 +82,9 @@ class SigninViewControllerDelegate : public content::WebContentsDelegate {
 
   // This will be called by this base class when the tab-modal window must be
   // closed. This should close the platform-specific window that is currently
-  // showing the sign in flow or the sync confirmation dialog.
+  // showing the sign in flow or the sync confirmation dialog. Note that this
+  // method may destroy this object, so the caller should no longer use this
+  // object after calling this method.
   virtual void PerformClose() = 0;
 
  private:

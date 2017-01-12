@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
+#include "ui/base/ui_base_types.h"
 
 @class ConstrainedWindowCustomWindow;
 class ConstrainedWindowMac;
@@ -33,17 +34,6 @@ enum class AccessPoint;
 class SigninViewControllerDelegateMac : public ConstrainedWindowMacDelegate,
                                         public SigninViewControllerDelegate {
  public:
-  // Creates and displays a constrained window containing |web_contents|. If
-  // |wait_for_size| is true, the delegate will wait for ResizeNativeView() to
-  // be called by the base class before displaying the constrained window.
-  // Otherwise, the window's dimensions will be |frame|.
-  SigninViewControllerDelegateMac(
-      SigninViewController* signin_view_controller,
-      std::unique_ptr<content::WebContents> web_contents,
-      Browser* browser,
-      NSRect frame,
-      bool wait_for_size);
-
   void OnConstrainedWindowClosed(ConstrainedWindowMac* window) override;
 
   // Creates the web view that contains the signin flow in |mode| using
@@ -62,6 +52,21 @@ class SigninViewControllerDelegateMac : public ConstrainedWindowMacDelegate,
       Profile* profile);
 
  private:
+  friend SigninViewControllerDelegate;
+
+  // Creates and displays a constrained window containing |web_contents|. If
+  // |wait_for_size| is true, the delegate will wait for ResizeNativeView() to
+  // be called by the base class before displaying the constrained window.
+  // Otherwise, the window's dimensions will be |frame|.
+  SigninViewControllerDelegateMac(
+      SigninViewController* signin_view_controller,
+      std::unique_ptr<content::WebContents> web_contents,
+      Browser* browser,
+      NSRect frame,
+      ui::ModalType dialog_modal_type,
+      bool wait_for_size);
+  ~SigninViewControllerDelegateMac() override;
+
   void PerformClose() override;
   void ResizeNativeView(int height) override;
 
@@ -71,7 +76,8 @@ class SigninViewControllerDelegateMac : public ConstrainedWindowMacDelegate,
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;
 
-  ~SigninViewControllerDelegateMac() override;
+  // Cleans up and deletes this object.
+  void CleanupAndDeleteThis();
 
   // The constrained window opened by this delegate to display signin flow
   // content.
@@ -87,6 +93,9 @@ class SigninViewControllerDelegateMac : public ConstrainedWindowMacDelegate,
   bool wait_for_size_;
 
   Browser* browser_;
+
+  // The dialog modal presentation type.
+  ui::ModalType dialog_modal_type_;
 
   NSRect window_frame_;
 

@@ -55,11 +55,13 @@ SigninViewControllerDelegateMac::SigninViewControllerDelegateMac(
     std::unique_ptr<content::WebContents> web_contents,
     Browser* browser,
     NSRect frame,
+    ui::ModalType dialog_modal_type,
     bool wait_for_size)
     : SigninViewControllerDelegate(signin_view_controller, web_contents.get()),
       web_contents_(std::move(web_contents)),
       wait_for_size_(wait_for_size),
       browser_(browser),
+      dialog_modal_type_(dialog_modal_type),
       window_frame_(frame) {
   DCHECK(browser_);
   DCHECK(browser_->tab_strip_model()->GetActiveWebContents())
@@ -73,8 +75,7 @@ SigninViewControllerDelegateMac::~SigninViewControllerDelegateMac() {}
 
 void SigninViewControllerDelegateMac::OnConstrainedWindowClosed(
     ConstrainedWindowMac* window) {
-  ResetSigninViewControllerDelegate();
-  delete this;
+  CleanupAndDeleteThis();
 }
 
 // static
@@ -149,8 +150,21 @@ SigninViewControllerDelegateMac::CreateSigninErrorWebContents(
 }
 
 void SigninViewControllerDelegateMac::PerformClose() {
-  if (constrained_window_.get())
-    constrained_window_->CloseWebContentsModalDialog();
+  switch (dialog_modal_type_) {
+    case ui::MODAL_TYPE_CHILD:
+      if (constrained_window_.get())
+        constrained_window_->CloseWebContentsModalDialog();
+      break;
+    case ui::MODAL_TYPE_WINDOW:
+      if (window_.get()) {
+        [window_.get().sheetParent endSheet:window_];
+        window_.reset(nil);
+        CleanupAndDeleteThis();
+      }
+      break;
+    default:
+      NOTREACHED() << "Unsupported dialog modal type " << dialog_modal_type_;
+  }
 }
 
 void SigninViewControllerDelegateMac::ResizeNativeView(int height) {
@@ -179,8 +193,18 @@ void SigninViewControllerDelegateMac::DisplayModal() {
   window_.get().contentView = web_contents_->GetNativeView();
   base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
       [[CustomConstrainedWindowSheet alloc] initWithCustomWindow:window_]);
-  constrained_window_ =
-      CreateAndShowWebModalDialogMac(this, host_web_contents, sheet);
+  switch (dialog_modal_type_) {
+    case ui::MODAL_TYPE_CHILD:
+      constrained_window_ =
+          CreateAndShowWebModalDialogMac(this, host_web_contents, sheet);
+      break;
+    case ui::MODAL_TYPE_WINDOW:
+      [host_web_contents->GetTopLevelNativeWindow() beginSheet:window_
+                                             completionHandler:nil];
+      break;
+    default:
+      NOTREACHED() << "Unsupported dialog modal type " << dialog_modal_type_;
+  }
 }
 
 void SigninViewControllerDelegateMac::HandleKeyboardEvent(
@@ -196,6 +220,11 @@ void SigninViewControllerDelegateMac::HandleKeyboardEvent(
   }
 }
 
+void SigninViewControllerDelegateMac::CleanupAndDeleteThis() {
+  ResetSigninViewControllerDelegate();
+  delete this;
+}
+
 // static
 SigninViewControllerDelegate*
 SigninViewControllerDelegate::CreateModalSigninDelegate(
@@ -208,7 +237,7 @@ SigninViewControllerDelegate::CreateModalSigninDelegate(
       SigninViewControllerDelegateMac::CreateGaiaWebContents(
           nullptr, mode, browser->profile(), access_point),
       browser, NSMakeRect(0, 0, kModalDialogWidth, kFixedGaiaViewHeight),
-      false /* wait_for_size */);
+      ui::MODAL_TYPE_CHILD, false /* wait_for_size */);
 }
 
 // static
@@ -223,7 +252,7 @@ SigninViewControllerDelegate::CreateSyncConfirmationDelegate(
       browser,
       NSMakeRect(0, 0, kModalDialogWidth,
                  GetSyncConfirmationDialogPreferredHeight(browser->profile())),
-      true /* wait_for_size */);
+      ui::MODAL_TYPE_WINDOW, true /* wait_for_size */);
 }
 
 // static
@@ -236,5 +265,5 @@ SigninViewControllerDelegate::CreateSigninErrorDelegate(
       SigninViewControllerDelegateMac::CreateSigninErrorWebContents(
           browser->profile()),
       browser, NSMakeRect(0, 0, kModalDialogWidth, kSigninErrorDialogHeight),
-      true /* wait_for_size */);
+      ui::MODAL_TYPE_WINDOW, true /* wait_for_size */);
 }
