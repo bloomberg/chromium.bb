@@ -198,13 +198,13 @@ void ClickBasedCategoryRanker::OnCategoryDismissed(Category category) {
     current = next;
   }
 
-  int next_clicks = 0;
-  std::vector<RankedCategory>::iterator next = current + 1;
-  if (next != ordered_categories_.end()) {
-    next_clicks = next->clicks;
-  }
-
-  current->clicks = std::max(next_clicks - kPassingMargin, 0);
+  DCHECK(current != ordered_categories_.begin());
+  std::vector<RankedCategory>::iterator previous = current - 1;
+  int new_clicks = std::max(previous->clicks - kPassingMargin, 0);
+  // The previous category may have more clicks (but not enough to pass the
+  // margin, this is possible when penalty >= 2), therefore, we ensure that for
+  // this category we don't increase clicks.
+  current->clicks = std::min(current->clicks, new_clicks);
   StoreOrderToPrefs(ordered_categories_);
 }
 
