@@ -12,6 +12,45 @@ namespace arc {
 
 namespace {
 
+TEST(ArcDocumentsProviderUtilTest, EscapePathComponent) {
+  EXPECT_EQ("", EscapePathComponent(""));
+  EXPECT_EQ("%2E", EscapePathComponent("."));
+  EXPECT_EQ("%2E%2E", EscapePathComponent(".."));
+  EXPECT_EQ("...", EscapePathComponent("..."));
+  EXPECT_EQ("example.com", EscapePathComponent("example.com"));
+  EXPECT_EQ("%2F%2F%2F", EscapePathComponent("///"));
+  EXPECT_EQ("100%25", EscapePathComponent("100%"));
+  EXPECT_EQ("a b", EscapePathComponent("a b"));
+  EXPECT_EQ("ねこ", EscapePathComponent("ねこ"));
+}
+
+TEST(ArcDocumentsProviderUtilTest, UnescapePathComponent) {
+  EXPECT_EQ("", UnescapePathComponent(""));
+  EXPECT_EQ(".", UnescapePathComponent("%2E"));
+  EXPECT_EQ("..", UnescapePathComponent("%2E%2E"));
+  EXPECT_EQ("...", UnescapePathComponent("..."));
+  EXPECT_EQ("example.com", UnescapePathComponent("example.com"));
+  EXPECT_EQ("///", UnescapePathComponent("%2F%2F%2F"));
+  EXPECT_EQ("100%", UnescapePathComponent("100%25"));
+  EXPECT_EQ("a b", UnescapePathComponent("a b"));
+  EXPECT_EQ("ねこ", UnescapePathComponent("ねこ"));
+}
+
+TEST(ArcDocumentsProviderUtilTest, GetDocumentsProviderMountPath) {
+  EXPECT_EQ("/special/arc-documents-provider/authority/document_id",
+            GetDocumentsProviderMountPath("authority", "document_id").value());
+  EXPECT_EQ("/special/arc-documents-provider/a b/a b",
+            GetDocumentsProviderMountPath("a b", "a b").value());
+  EXPECT_EQ("/special/arc-documents-provider/a%2Fb/a%2Fb",
+            GetDocumentsProviderMountPath("a/b", "a/b").value());
+  EXPECT_EQ("/special/arc-documents-provider/%2E/%2E",
+            GetDocumentsProviderMountPath(".", ".").value());
+  EXPECT_EQ("/special/arc-documents-provider/%2E%2E/%2E%2E",
+            GetDocumentsProviderMountPath("..", "..").value());
+  EXPECT_EQ("/special/arc-documents-provider/.../...",
+            GetDocumentsProviderMountPath("...", "...").value());
+}
+
 TEST(ArcDocumentsProviderUtilTest, ParseDocumentsProviderUrl) {
   std::string authority;
   std::string root_document_id;
@@ -118,6 +157,22 @@ TEST(ArcDocumentsProviderUtilTest, ParseDocumentsProviderUrlInvalidPath) {
       &authority, &root_document_id, &path));
 }
 
+TEST(ArcDocumentsProviderUtilTest, ParseDocumentsProviderUrlUnescape) {
+  std::string authority;
+  std::string root_document_id;
+  base::FilePath path;
+
+  EXPECT_TRUE(ParseDocumentsProviderUrl(
+      storage::FileSystemURL::CreateForTest(
+          GURL(), storage::kFileSystemTypeArcDocumentsProvider,
+          base::FilePath(
+              "/special/arc-documents-provider/cats/ro%2Fot/home/calico.jpg")),
+      &authority, &root_document_id, &path));
+  EXPECT_EQ("cats", authority);
+  EXPECT_EQ("ro/ot", root_document_id);
+  EXPECT_EQ(FILE_PATH_LITERAL("home/calico.jpg"), path.value());
+}
+
 TEST(ArcDocumentsProviderUtilTest, ParseDocumentsProviderUrlUtf8) {
   std::string authority;
   std::string root_document_id;
@@ -135,8 +190,13 @@ TEST(ArcDocumentsProviderUtilTest, ParseDocumentsProviderUrlUtf8) {
 }
 
 TEST(ArcDocumentsProviderUtilTest, BuildDocumentUrl) {
-  EXPECT_EQ("content://Cat%20Provider/document/C%2B%2B",
-            BuildDocumentUrl("Cat Provider", "C++").spec());
+  EXPECT_EQ("content://authority/document/document_id",
+            BuildDocumentUrl("authority", "document_id").spec());
+  EXPECT_EQ("content://a%20b/document/a%20b",
+            BuildDocumentUrl("a b", "a b").spec());
+  EXPECT_EQ("content://a%2Fb/document/a%2Fb",
+            BuildDocumentUrl("a/b", "a/b").spec());
+  EXPECT_EQ("content://../document/..", BuildDocumentUrl("..", "..").spec());
 }
 
 }  // namespace

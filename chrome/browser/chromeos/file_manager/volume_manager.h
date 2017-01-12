@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
+#include "components/arc/file_system/arc_file_system_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/storage_monitor/removable_storage_observer.h"
@@ -51,6 +52,7 @@ enum VolumeType {
   VOLUME_TYPE_MOUNTED_ARCHIVE_FILE,
   VOLUME_TYPE_PROVIDED,  // File system provided by the FileSystemProvider API.
   VOLUME_TYPE_MTP,
+  VOLUME_TYPE_MEDIA_VIEW,
   // The enum values must be kept in sync with FileManagerVolumeType in
   // tools/metrics/histograms/histograms.xml. Since enums for histograms are
   // append-only (for keeping the number consistent across versions), new values
@@ -90,6 +92,7 @@ class Volume : public base::SupportsWeakPtr<Volume> {
   static Volume* CreateForMTP(const base::FilePath& mount_path,
                               const std::string& label,
                               bool read_only);
+  static Volume* CreateForMediaView(const std::string& root_document_id);
   static Volume* CreateForTesting(const base::FilePath& path,
                                   VolumeType volume_type,
                                   chromeos::DeviceType device_type,
@@ -211,6 +214,7 @@ class Volume : public base::SupportsWeakPtr<Volume> {
 //   for a device).
 // - Mounted zip archives.
 class VolumeManager : public KeyedService,
+                      public arc::ArcFileSystemObserver,
                       public drive::DriveIntegrationServiceObserver,
                       public chromeos::disks::DiskMountManager::Observer,
                       public chromeos::file_system_provider::Observer,
@@ -296,6 +300,10 @@ class VolumeManager : public KeyedService,
       const chromeos::file_system_provider::ProvidedFileSystemInfo&
           file_system_info,
       base::File::Error error) override;
+
+  // arc::ArcFileSystemObserver overrides.
+  void OnFileSystemsReady() override;
+  void OnFileSystemsClosed() override;
 
   // Called on change to kExternalStorageDisabled pref.
   void OnExternalStorageDisabledChanged();

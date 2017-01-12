@@ -242,6 +242,10 @@ void VolumeToVolumeMetadata(
     case VOLUME_TYPE_MTP:
       volume_metadata->volume_type = file_manager_private::VOLUME_TYPE_MTP;
       break;
+    case VOLUME_TYPE_MEDIA_VIEW:
+      volume_metadata->volume_type =
+          file_manager_private::VOLUME_TYPE_MEDIA_VIEW;
+      break;
     case VOLUME_TYPE_TESTING:
       volume_metadata->volume_type =
           file_manager_private::VOLUME_TYPE_TESTING;

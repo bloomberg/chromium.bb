@@ -11,12 +11,14 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
 #include "chrome/browser/chromeos/fileapi/file_access_permissions.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend_delegate.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cros_disks_client.h"
+#include "net/base/escape.h"
 #include "storage/browser/fileapi/async_file_util.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/browser/fileapi/file_stream_reader.h"
@@ -26,6 +28,7 @@
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/common/fileapi/file_system_mount_option.h"
+#include "storage/common/fileapi/file_system_util.h"
 
 namespace chromeos {
 namespace {
@@ -156,6 +159,27 @@ void FileSystemBackend::ResolveURL(const storage::FileSystemURL& url,
     std::string inner_mount_name = components[1];
     root_url += inner_mount_name + "/";
     name = inner_mount_name;
+  } else if (id == arc::kDocumentsProviderMountPointName) {
+    // For ARC documents provider file system, volumes are mounted per document
+    // provider root, so we need to fix up |root_url| to point to an individual
+    // root.
+    std::string authority;
+    std::string root_document_id;
+    base::FilePath unused_path;
+    if (!arc::ParseDocumentsProviderUrl(url, &authority, &root_document_id,
+                                        &unused_path)) {
+      callback.Run(GURL(root_url), std::string(),
+                   base::File::FILE_ERROR_SECURITY);
+      return;
+    }
+    base::FilePath mount_path =
+        arc::GetDocumentsProviderMountPath(authority, root_document_id);
+    base::FilePath relative_mount_path;
+    base::FilePath(arc::kDocumentsProviderMountPointPath)
+        .AppendRelativePath(mount_path, &relative_mount_path);
+    root_url +=
+        net::EscapePath(storage::FilePathToString(relative_mount_path)) + "/";
+    name = authority + ":" + root_document_id;
   } else {
     name = id;
   }

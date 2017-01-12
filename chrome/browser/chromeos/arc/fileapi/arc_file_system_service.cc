@@ -8,12 +8,17 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/file_system/arc_file_system_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 
 using content::BrowserThread;
 
 namespace arc {
+
+// static
+const char ArcFileSystemService::kArcServiceName[] =
+    "arc::ArcFileSystemService";
 
 ArcFileSystemService::ArcFileSystemService(ArcBridgeService* bridge_service)
     : ArcService(bridge_service) {
@@ -31,16 +36,38 @@ ArcFileSystemService::ArcFileSystemService(ArcBridgeService* bridge_service)
       storage::kFileSystemTypeArcDocumentsProvider,
       storage::FileSystemMountOption(),
       base::FilePath(kDocumentsProviderMountPointPath));
+
+  arc_bridge_service()->file_system()->AddObserver(this);
 }
 
 ArcFileSystemService::~ArcFileSystemService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  arc_bridge_service()->file_system()->RemoveObserver(this);
 
   storage::ExternalMountPoints* mount_points =
       storage::ExternalMountPoints::GetSystemInstance();
 
   mount_points->RevokeFileSystem(kContentFileSystemMountPointName);
   mount_points->RevokeFileSystem(kDocumentsProviderMountPointPath);
+}
+
+void ArcFileSystemService::AddObserver(ArcFileSystemObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void ArcFileSystemService::RemoveObserver(ArcFileSystemObserver* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
+void ArcFileSystemService::OnInstanceReady() {
+  for (auto& observer : observer_list_)
+    observer.OnFileSystemsReady();
+}
+
+void ArcFileSystemService::OnInstanceClosed() {
+  for (auto& observer : observer_list_)
+    observer.OnFileSystemsClosed();
 }
 
 }  // namespace arc

@@ -29,7 +29,28 @@ extern const base::FilePath::CharType kDocumentsProviderMountPointPath[];
 // Defined as DocumentsContract.Document.MIME_TYPE_DIR in Android.
 extern const char kAndroidDirectoryMimeType[];
 
+// Escapes a string so it can be used as a file/directory name.
+// [%/.] are escaped with percent-encoding.
+// NOTE: This function is visible only for unit testing. Usually you should not
+// call this function directly.
+std::string EscapePathComponent(const std::string& name);
+
+// Unescapes a string escaped by EscapePathComponent().
+// NOTE: This function is visible only for unit testing. Usually you should not
+// call this function directly.
+std::string UnescapePathComponent(const std::string& escaped);
+
+// Returns the path of a directory where the specified DocumentsProvider is
+// mounted.
+// Appropriate escaping is done to embed |authority| and |root_document_id| in
+// a file path.
+base::FilePath GetDocumentsProviderMountPath(
+    const std::string& authority,
+    const std::string& root_document_id);
+
 // Parses a FileSystemURL pointing to ARC documents provider file system.
+// Appropriate unescaping is done to extract |authority| and |root_document_id|
+// from |url|.
 // On success, true is returned. All arguments must not be nullptr.
 bool ParseDocumentsProviderUrl(const storage::FileSystemURL& url,
                                std::string* authority,

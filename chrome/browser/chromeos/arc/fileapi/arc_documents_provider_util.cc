@@ -14,10 +14,47 @@
 
 namespace arc {
 
+// This is based on net/base/escape.cc: net::(anonymous namespace)::Escape.
+// TODO(nya): Consider consolidating this function with EscapeFileSystemId() in
+// chrome/browser/chromeos/file_system_provider/mount_path_util.cc.
+// This version differs from the other one in the point that dots are not always
+// escaped because authorities often contain harmless dots.
+std::string EscapePathComponent(const std::string& name) {
+  std::string escaped;
+  // Escape dots only when they forms a special file name.
+  if (name == "." || name == "..") {
+    base::ReplaceChars(name, ".", "%2E", &escaped);
+    return escaped;
+  }
+  // Escape % and / only.
+  for (size_t i = 0; i < name.size(); ++i) {
+    const char c = name[i];
+    if (c == '%' || c == '/')
+      base::StringAppendF(&escaped, "%%%02X", c);
+    else
+      escaped.push_back(c);
+  }
+  return escaped;
+}
+
+std::string UnescapePathComponent(const std::string& escaped) {
+  return net::UnescapeURLComponent(
+      escaped, net::UnescapeRule::PATH_SEPARATORS |
+                   net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
+}
+
 const char kDocumentsProviderMountPointName[] = "arc-documents-provider";
 const base::FilePath::CharType kDocumentsProviderMountPointPath[] =
     "/special/arc-documents-provider";
 const char kAndroidDirectoryMimeType[] = "vnd.android.document/directory";
+
+base::FilePath GetDocumentsProviderMountPath(
+    const std::string& authority,
+    const std::string& root_document_id) {
+  return base::FilePath(kDocumentsProviderMountPointPath)
+      .Append(EscapePathComponent(authority))
+      .Append(EscapePathComponent(root_document_id));
+}
 
 bool ParseDocumentsProviderUrl(const storage::FileSystemURL& url,
                                std::string* authority,
@@ -39,12 +76,11 @@ bool ParseDocumentsProviderUrl(const storage::FileSystemURL& url,
   if (components.size() < 5)
     return false;
 
-  *authority = components[3];
-  *root_document_id = components[4];
+  *authority = UnescapePathComponent(components[3]);
+  *root_document_id = UnescapePathComponent(components[4]);
 
-  base::FilePath root_path = base::FilePath(kDocumentsProviderMountPointPath)
-                                 .Append(*authority)
-                                 .Append(*root_document_id);
+  base::FilePath root_path =
+      GetDocumentsProviderMountPath(*authority, *root_document_id);
   // Special case: AppendRelativePath() fails for identical paths.
   if (url_path_stripped == root_path) {
     path->clear();
