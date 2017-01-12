@@ -74,13 +74,14 @@ android {
 
         main.manifest.srcFile "{{ android_manifest }}"
 
-{% if template_type == 'android_library' %}
-        main {
-{% else %}
-        test {
-{% endif %}
+        {{ sourceSetName }} {
             java.srcDirs = [
 {% for path in java_dirs %}
+                "{{ path }}",
+{% endfor %}
+            ]
+            jniLibs.srcDirs = [
+{% for path in jni_libs %}
                 "{{ path }}",
 {% endfor %}
             ]

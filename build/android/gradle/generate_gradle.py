@@ -34,6 +34,8 @@ _JINJA_TEMPLATE_PATH = os.path.join(
 
 _JAVA_SUBDIR = 'symlinked-java'
 _SRCJARS_SUBDIR = 'extracted-srcjars'
+_JNI_LIBS_SUBDIR = 'symlinked-libs'
+_ARMEABI_SUBDIR = 'armeabi'
 
 _DEFAULT_TARGETS = [
     # TODO(agrieve): Requires alternate android.jar to compile.
@@ -183,6 +185,13 @@ def _ComputeJavaSourceDirs(java_files):
   return list(found_roots)
 
 
+def _CreateRelativeSymlink(target_path, link_path):
+  link_dir = os.path.dirname(link_path)
+  relpath = os.path.relpath(target_path, link_dir)
+  logging.debug('Creating symlink %s -> %s', link_path, relpath)
+  os.symlink(relpath, link_path)
+
+
 def _CreateSymlinkTree(entry_output_dir, symlink_dir, desired_files,
                        parent_dirs):
   """Creates a directory tree of symlinks to the given files.
@@ -199,9 +208,7 @@ def _CreateSymlinkTree(entry_output_dir, symlink_dir, desired_files,
     symlinked_dir = os.path.dirname(symlinked_path)
     if not os.path.exists(symlinked_dir):
       os.makedirs(symlinked_dir)
-    relpath = os.path.relpath(target_path, symlinked_dir)
-    logging.debug('Creating symlink %s -> %s', symlinked_path, relpath)
-    os.symlink(relpath, symlinked_path)
+    _CreateRelativeSymlink(target_path, symlinked_path)
 
 
 def _CreateJavaSourceDir(output_dir, entry_output_dir, java_files):
@@ -239,6 +246,27 @@ def _CreateJavaSourceDir(output_dir, entry_output_dir, java_files):
   return java_dirs
 
 
+def _CreateJniLibsDir(output_dir, entry_output_dir, so_files):
+  """Creates directory with symlinked .so files if necessary.
+
+  Returns list of JNI libs directories."""
+
+  if so_files:
+    symlink_dir = os.path.join(entry_output_dir, _JNI_LIBS_SUBDIR)
+    shutil.rmtree(symlink_dir, True)
+    abi_dir = os.path.join(symlink_dir, _ARMEABI_SUBDIR)
+    if not os.path.exists(abi_dir):
+      os.makedirs(abi_dir)
+    for so_file in so_files:
+      target_path = os.path.join(output_dir, so_file)
+      symlinked_path = os.path.join(abi_dir, so_file)
+      _CreateRelativeSymlink(target_path, symlinked_path)
+
+    return [symlink_dir]
+
+  return []
+
+
 def _GenerateLocalProperties(sdk_dir):
   """Returns the data for project.properties as a string."""
   return '\n'.join([
@@ -247,8 +275,9 @@ def _GenerateLocalProperties(sdk_dir):
       ''])
 
 
-def _GenerateGradleFile(build_config, build_vars, java_dirs, relativize,
-                        use_gradle_process_resources, jinja_processor):
+def _GenerateGradleFile(build_config, build_vars, java_dirs, jni_libs,
+                        relativize, use_gradle_process_resources,
+                        jinja_processor):
   """Returns the data for a project's build.gradle."""
   deps_info = build_config['deps_info']
   gradle = build_config['gradle']
@@ -288,6 +317,7 @@ def _GenerateGradleFile(build_config, build_vars, java_dirs, relativize,
                                 _DEFAULT_ANDROID_MANIFEST_PATH)
   variables['android_manifest'] = relativize(android_manifest)
   variables['java_dirs'] = relativize(java_dirs)
+  variables['jni_libs'] = relativize(jni_libs)
   # TODO(agrieve): Add an option to use interface jars and see if that speeds
   # things up at all.
   variables['prebuilts'] = relativize(gradle['dependent_prebuilt_jars'])
@@ -444,8 +474,15 @@ def main():
     if srcjars:
       java_dirs.append(os.path.join(entry_output_dir, _SRCJARS_SUBDIR))
 
-    data = _GenerateGradleFile(build_config, build_vars, java_dirs, relativize,
-                               args.use_gradle_process_resources,
+    native_section = build_config.get('native')
+    if native_section:
+      jni_libs = _CreateJniLibsDir(
+          output_dir, entry_output_dir, native_section.get('libraries'))
+    else:
+      jni_libs = []
+
+    data = _GenerateGradleFile(build_config, build_vars, java_dirs, jni_libs,
+                               relativize, args.use_gradle_process_resources,
                                jinja_processor)
     if data:
       project_entries.append(entry)
