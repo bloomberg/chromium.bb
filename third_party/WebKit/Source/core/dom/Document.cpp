@@ -5248,12 +5248,22 @@ Vector<IconURL> Document::iconURLs(int iconTypesMask) {
   IconURL firstTouchPrecomposedIcon;
   Vector<IconURL> secondaryIcons;
 
-  // Start from the last child node so that icons seen later take precedence as
+  using TraversalFunction = HTMLLinkElement* (*)(const Node&);
+  TraversalFunction findNextCandidate =
+      &Traversal<HTMLLinkElement>::nextSibling;
+
+  HTMLLinkElement* firstElement = nullptr;
+  if (head()) {
+    firstElement = Traversal<HTMLLinkElement>::firstChild(*head());
+  } else if (isSVGDocument() && isSVGSVGElement(documentElement())) {
+    firstElement = Traversal<HTMLLinkElement>::firstWithin(*documentElement());
+    findNextCandidate = &Traversal<HTMLLinkElement>::next;
+  }
+
+  // Start from the first child node so that icons seen later take precedence as
   // required by the spec.
-  for (HTMLLinkElement* linkElement =
-           head() ? Traversal<HTMLLinkElement>::firstChild(*head()) : 0;
-       linkElement;
-       linkElement = Traversal<HTMLLinkElement>::nextSibling(*linkElement)) {
+  for (HTMLLinkElement* linkElement = firstElement; linkElement;
+       linkElement = findNextCandidate(*linkElement)) {
     if (!(linkElement->getIconType() & iconTypesMask))
       continue;
     if (linkElement->href().isEmpty())
