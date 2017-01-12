@@ -108,10 +108,12 @@
                 style="background-image: [[getIconImageset_(profileIconUrl_)]]">
             </div>
 <if expr="not chromeos">
-            <div class="middle two-line" on-tap="onProfileNameTap_" actionable>
+            <div class="middle two-line text-elide" on-tap="onProfileNameTap_"
+                actionable>
 </if>
 <if expr="chromeos">
-            <div class="middle two-line" on-tap="onPictureTap_" actionable>
+            <div class="middle two-line text-elide" on-tap="onPictureTap_"
+                actionable>
 </if>
               <div class="flex">
                 <span id="profile-name">[[profileName_]]</span>
