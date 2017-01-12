@@ -363,8 +363,6 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
 
   void clear();
 
-  typedef std::unordered_map<int, scoped_refptr<SyncedScrollOffset>>
-      ScrollOffsetMap;
   typedef std::unordered_map<int, bool> ScrollbarsEnabledMap;
 
   gfx::ScrollOffset MaxScrollOffset(int scroll_node_id) const;
@@ -382,19 +380,36 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   void set_currently_scrolling_node(int scroll_node_id);
   gfx::Transform ScreenSpaceTransform(int scroll_node_id) const;
 
+  // Returns the current scroll offset. On the main thread this would return the
+  // value for the LayerTree while on the impl thread this is the current value
+  // on the active tree.
   const gfx::ScrollOffset current_scroll_offset(int layer_id) const;
+
+  // Collects deltas for scroll changes on the impl thread that need to be
+  // reported to the main thread during the main frame. As such, should only be
+  // called on the impl thread side PropertyTrees.
   void CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
                            int inner_viewport_layer_id);
-  void UpdateScrollOffsetMap(ScrollOffsetMap* new_scroll_offset_map,
-                             LayerTreeImpl* layer_tree_impl);
-  ScrollOffsetMap& scroll_offset_map();
-  const ScrollOffsetMap& scroll_offset_map() const;
+
+  // Applies deltas sent in the previous main frame onto the impl thread state.
+  // Should only be called on the impl thread side PropertyTrees.
   void ApplySentScrollDeltasFromAbortedCommit();
+
+  // Pushes scroll updates from the ScrollTree on the main thread onto the
+  // impl thread associated state.
+  void PushScrollUpdatesFromMainThread(PropertyTrees* main_property_trees,
+                                       LayerTreeImpl* sync_tree);
+
+  // Pushes scroll updates from the ScrollTree on the pending tree onto the
+  // active tree associated state.
+  void PushScrollUpdatesFromPendingTree(PropertyTrees* pending_property_trees,
+                                        LayerTreeImpl* active_tree);
+
   bool SetBaseScrollOffset(int layer_id,
                            const gfx::ScrollOffset& scroll_offset);
   bool SetScrollOffset(int layer_id, const gfx::ScrollOffset& scroll_offset);
   void SetScrollOffsetClobberActiveValue(int layer_id) {
-    synced_scroll_offset(layer_id)->set_clobber_active_value();
+    GetOrCreateSyncedScrollOffset(layer_id)->set_clobber_active_value();
   }
   bool UpdateScrollOffsetBaseForTesting(int layer_id,
                                         const gfx::ScrollOffset& offset);
@@ -411,17 +426,30 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   gfx::ScrollOffset ClampScrollOffsetToLimits(gfx::ScrollOffset offset,
                                               ScrollNode* scroll_node) const;
 
+  const SyncedScrollOffset* GetSyncedScrollOffset(int layer_id) const;
+
+#if DCHECK_IS_ON()
+  void CopyCompleteTreeState(const ScrollTree& other);
+#endif
+
  private:
+  using ScrollOffsetMap = std::unordered_map<int, gfx::ScrollOffset>;
+  using SyncedScrollOffsetMap =
+      std::unordered_map<int, scoped_refptr<SyncedScrollOffset>>;
+
   int currently_scrolling_node_id_;
-  ScrollOffsetMap layer_id_to_scroll_offset_map_;
   ScrollbarsEnabledMap layer_id_to_scrollbars_enabled_map_;
 
-  SyncedScrollOffset* synced_scroll_offset(int layer_id);
-  const SyncedScrollOffset* synced_scroll_offset(int layer_id) const;
+  // On the main thread we store the scroll offsets directly since the main
+  // thread only needs to keep track of the current main thread state. The impl
+  // thread stores a map of SyncedProperty instances in order to track
+  // additional state necessary to synchronize scroll changes between the main
+  // and impl threads.
+  ScrollOffsetMap layer_id_to_scroll_offset_map_;
+  SyncedScrollOffsetMap layer_id_to_synced_scroll_offset_map_;
+
+  SyncedScrollOffset* GetOrCreateSyncedScrollOffset(int layer_id);
   gfx::ScrollOffset PullDeltaForMainThread(SyncedScrollOffset* scroll_offset);
-  void UpdateScrollOffsetMapEntry(int key,
-                                  ScrollOffsetMap* new_scroll_offset_map,
-                                  LayerTreeImpl* layer_tree_impl);
 };
 
 struct AnimationScaleData {

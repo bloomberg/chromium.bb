@@ -1115,34 +1115,37 @@ ScrollTree::~ScrollTree() {}
 ScrollTree& ScrollTree::operator=(const ScrollTree& from) {
   PropertyTree::operator=(from);
   currently_scrolling_node_id_ = kInvalidNodeId;
-  // layer_id_to_scroll_offset_map_ is intentionally omitted in operator=,
-  // because we do not want to simply copy the map when property tree is
-  // propagating from pending to active.
-  // In the main to pending case, we do want to copy it, but this can be done by
-  // calling UpdateScrollOffsetMap after the assignment;
-  // In the other case, we want pending and active property trees to share the
-  // same map.
+  // Maps for ScrollOffsets/SyncedScrollOffsets are intentionally ommitted here
+  // since we can not directly copy them. Pushing of these updates from main
+  // currently depends on Layer properties for scroll offset animation changes
+  // (setting clobber_active_value for scroll offset animations interrupted on
+  // the main thread) being pushed to impl first.
   return *this;
 }
 
 bool ScrollTree::operator==(const ScrollTree& other) const {
-  const ScrollTree::ScrollOffsetMap& other_scroll_offset_map =
-      other.scroll_offset_map();
-  if (layer_id_to_scroll_offset_map_.size() != other_scroll_offset_map.size())
+  if (layer_id_to_scroll_offset_map_ != other.layer_id_to_scroll_offset_map_)
     return false;
-
-  for (auto map_entry : layer_id_to_scroll_offset_map_) {
-    int key = map_entry.first;
-    if (other_scroll_offset_map.find(key) == other_scroll_offset_map.end() ||
-        map_entry.second != layer_id_to_scroll_offset_map_.at(key))
-      return false;
-  }
+  if (layer_id_to_synced_scroll_offset_map_ !=
+      other.layer_id_to_synced_scroll_offset_map_)
+    return false;
 
   bool is_currently_scrolling_node_equal =
       currently_scrolling_node_id_ == other.currently_scrolling_node_id_;
 
   return PropertyTree::operator==(other) && is_currently_scrolling_node_equal;
 }
+
+#if DCHECK_IS_ON()
+void ScrollTree::CopyCompleteTreeState(const ScrollTree& other) {
+  currently_scrolling_node_id_ = other.currently_scrolling_node_id_;
+  layer_id_to_scrollbars_enabled_map_ =
+      other.layer_id_to_scrollbars_enabled_map_;
+  layer_id_to_scroll_offset_map_ = other.layer_id_to_scroll_offset_map_;
+  layer_id_to_synced_scroll_offset_map_ =
+      other.layer_id_to_synced_scroll_offset_map_;
+}
+#endif
 
 void ScrollTree::clear() {
   PropertyTree<ScrollNode>::clear();
@@ -1155,8 +1158,10 @@ void ScrollTree::clear() {
 #if DCHECK_IS_ON()
   ScrollTree tree;
   if (!property_trees()->is_main_thread) {
+    DCHECK(layer_id_to_scroll_offset_map_.empty());
     tree.currently_scrolling_node_id_ = currently_scrolling_node_id_;
-    tree.layer_id_to_scroll_offset_map_ = layer_id_to_scroll_offset_map_;
+    tree.layer_id_to_synced_scroll_offset_map_ =
+        layer_id_to_synced_scroll_offset_map_;
   }
   DCHECK(tree == *this);
 #endif
@@ -1269,25 +1274,34 @@ gfx::Transform ScrollTree::ScreenSpaceTransform(int scroll_node_id) const {
   return screen_space_transform;
 }
 
-SyncedScrollOffset* ScrollTree::synced_scroll_offset(int layer_id) {
-  if (layer_id_to_scroll_offset_map_.find(layer_id) ==
-      layer_id_to_scroll_offset_map_.end()) {
-    layer_id_to_scroll_offset_map_[layer_id] = new SyncedScrollOffset;
+SyncedScrollOffset* ScrollTree::GetOrCreateSyncedScrollOffset(int layer_id) {
+  DCHECK(!property_trees()->is_main_thread);
+  if (layer_id_to_synced_scroll_offset_map_.find(layer_id) ==
+      layer_id_to_synced_scroll_offset_map_.end()) {
+    layer_id_to_synced_scroll_offset_map_[layer_id] = new SyncedScrollOffset;
   }
-  return layer_id_to_scroll_offset_map_[layer_id].get();
+  return layer_id_to_synced_scroll_offset_map_[layer_id].get();
 }
 
-const SyncedScrollOffset* ScrollTree::synced_scroll_offset(int layer_id) const {
-  if (layer_id_to_scroll_offset_map_.find(layer_id) ==
-      layer_id_to_scroll_offset_map_.end()) {
+const SyncedScrollOffset* ScrollTree::GetSyncedScrollOffset(
+    int layer_id) const {
+  DCHECK(!property_trees()->is_main_thread);
+  if (layer_id_to_synced_scroll_offset_map_.find(layer_id) ==
+      layer_id_to_synced_scroll_offset_map_.end()) {
     return nullptr;
   }
-  return layer_id_to_scroll_offset_map_.at(layer_id).get();
+  return layer_id_to_synced_scroll_offset_map_.at(layer_id).get();
 }
 
 const gfx::ScrollOffset ScrollTree::current_scroll_offset(int layer_id) const {
-  return synced_scroll_offset(layer_id)
-             ? synced_scroll_offset(layer_id)->Current(
+  if (property_trees()->is_main_thread) {
+    ScrollOffsetMap::const_iterator it =
+        layer_id_to_scroll_offset_map_.find(layer_id);
+    return it != layer_id_to_scroll_offset_map_.end() ? it->second
+                                                      : gfx::ScrollOffset();
+  }
+  return GetSyncedScrollOffset(layer_id)
+             ? GetSyncedScrollOffset(layer_id)->Current(
                    property_trees()->is_active)
              : gfx::ScrollOffset();
 }
@@ -1311,7 +1325,8 @@ gfx::ScrollOffset ScrollTree::PullDeltaForMainThread(
 
 void ScrollTree::CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
                                      int inner_viewport_layer_id) {
-  for (auto map_entry : layer_id_to_scroll_offset_map_) {
+  DCHECK(!property_trees()->is_main_thread);
+  for (auto map_entry : layer_id_to_synced_scroll_offset_map_) {
     gfx::ScrollOffset scroll_delta =
         PullDeltaForMainThread(map_entry.second.get());
 
@@ -1334,88 +1349,97 @@ void ScrollTree::CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
 }
 
 void ScrollTree::CollectScrollDeltasForTesting() {
-  for (auto map_entry : layer_id_to_scroll_offset_map_) {
+  for (auto map_entry : layer_id_to_synced_scroll_offset_map_) {
     PullDeltaForMainThread(map_entry.second.get());
   }
 }
 
-void ScrollTree::UpdateScrollOffsetMapEntry(
-    int key,
-    ScrollTree::ScrollOffsetMap* new_scroll_offset_map,
-    LayerTreeImpl* layer_tree_impl) {
-  bool changed = false;
-  // If we are pushing scroll offset from main to pending tree, we create a new
-  // instance of synced scroll offset; if we are pushing from pending to active,
-  // we reuse the pending tree's value in the map.
-  if (!property_trees()->is_active) {
-    changed = synced_scroll_offset(key)->PushFromMainThread(
-        new_scroll_offset_map->at(key)->PendingBase());
+void ScrollTree::PushScrollUpdatesFromMainThread(
+    PropertyTrees* main_property_trees,
+    LayerTreeImpl* sync_tree) {
+  DCHECK(!property_trees()->is_main_thread);
+  const ScrollOffsetMap& main_scroll_offset_map =
+      main_property_trees->scroll_tree.layer_id_to_scroll_offset_map_;
 
-    if (new_scroll_offset_map->at(key)->clobber_active_value()) {
-      synced_scroll_offset(key)->set_clobber_active_value();
-    }
-    if (changed) {
-      layer_tree_impl->DidUpdateScrollOffset(key);
-    }
-  } else {
-    layer_id_to_scroll_offset_map_[key] = new_scroll_offset_map->at(key);
-    changed |= synced_scroll_offset(key)->PushPendingToActive();
-    if (changed) {
-      layer_tree_impl->DidUpdateScrollOffset(key);
-    }
+  // We first want to clear SyncedProperty instances for layers which were
+  // destroyed or became non-scrollable on the main thread.
+  for (auto map_entry = layer_id_to_synced_scroll_offset_map_.begin();
+       map_entry != layer_id_to_synced_scroll_offset_map_.end();) {
+    int layer_id = map_entry->first;
+    if (main_scroll_offset_map.find(layer_id) == main_scroll_offset_map.end())
+      map_entry = layer_id_to_synced_scroll_offset_map_.erase(map_entry);
+    else
+      map_entry++;
+  }
+
+  for (auto map_entry : main_scroll_offset_map) {
+    int layer_id = map_entry.first;
+    SyncedScrollOffset* synced_scroll_offset =
+        GetOrCreateSyncedScrollOffset(layer_id);
+
+    bool changed = synced_scroll_offset->PushFromMainThread(map_entry.second);
+    // If we are committing directly to the active tree, push pending to active
+    // here.
+    if (property_trees()->is_active)
+      changed |= synced_scroll_offset->PushPendingToActive();
+
+    if (changed)
+      sync_tree->DidUpdateScrollOffset(layer_id);
   }
 }
 
-void ScrollTree::UpdateScrollOffsetMap(
-    ScrollTree::ScrollOffsetMap* new_scroll_offset_map,
-    LayerTreeImpl* layer_tree_impl) {
-  if (layer_tree_impl && !layer_tree_impl->LayerListIsEmpty()) {
-    DCHECK(!property_trees()->is_main_thread);
-    for (auto map_entry = layer_id_to_scroll_offset_map_.begin();
-         map_entry != layer_id_to_scroll_offset_map_.end();) {
-      int key = map_entry->first;
-      if (new_scroll_offset_map->find(key) != new_scroll_offset_map->end()) {
-        UpdateScrollOffsetMapEntry(key, new_scroll_offset_map, layer_tree_impl);
-        ++map_entry;
-      } else {
-        map_entry = layer_id_to_scroll_offset_map_.erase(map_entry);
-      }
-    }
+void ScrollTree::PushScrollUpdatesFromPendingTree(
+    PropertyTrees* pending_property_trees,
+    LayerTreeImpl* active_tree) {
+  DCHECK(property_trees()->is_active);
+  DCHECK(!pending_property_trees->is_main_thread);
+  DCHECK(!pending_property_trees->is_active);
 
-    for (auto& map_entry : *new_scroll_offset_map) {
-      int key = map_entry.first;
-      if (layer_id_to_scroll_offset_map_.find(key) ==
-          layer_id_to_scroll_offset_map_.end())
-        UpdateScrollOffsetMapEntry(key, new_scroll_offset_map, layer_tree_impl);
-    }
+  // When pushing to the active tree, we can simply copy over the map from the
+  // pending tree. The pending and active tree hold a reference to the same
+  // SyncedProperty instances.
+  layer_id_to_synced_scroll_offset_map_.clear();
+  for (auto map_entry : pending_property_trees->scroll_tree
+                            .layer_id_to_synced_scroll_offset_map_) {
+    layer_id_to_synced_scroll_offset_map_[map_entry.first] = map_entry.second;
+    if (map_entry.second->PushPendingToActive())
+      active_tree->DidUpdateScrollOffset(map_entry.first);
   }
-}
-
-ScrollTree::ScrollOffsetMap& ScrollTree::scroll_offset_map() {
-  return layer_id_to_scroll_offset_map_;
-}
-
-const ScrollTree::ScrollOffsetMap& ScrollTree::scroll_offset_map() const {
-  return layer_id_to_scroll_offset_map_;
 }
 
 void ScrollTree::ApplySentScrollDeltasFromAbortedCommit() {
   DCHECK(property_trees()->is_active);
-  for (auto& map_entry : layer_id_to_scroll_offset_map_)
+  for (auto& map_entry : layer_id_to_synced_scroll_offset_map_)
     map_entry.second->AbortCommit();
 }
 
 bool ScrollTree::SetBaseScrollOffset(int layer_id,
                                      const gfx::ScrollOffset& scroll_offset) {
-  return synced_scroll_offset(layer_id)->PushFromMainThread(scroll_offset);
+  if (property_trees()->is_main_thread) {
+    layer_id_to_scroll_offset_map_[layer_id] = scroll_offset;
+    return true;
+  }
+
+  // Scroll offset updates on the impl thread should only be for layers which
+  // were created on the main thread. But this method is called when we build
+  // PropertyTrees on the impl thread from LayerTreeImpl.
+  return GetOrCreateSyncedScrollOffset(layer_id)->PushFromMainThread(
+      scroll_offset);
 }
 
 bool ScrollTree::SetScrollOffset(int layer_id,
                                  const gfx::ScrollOffset& scroll_offset) {
-  if (property_trees()->is_main_thread)
-    return synced_scroll_offset(layer_id)->PushFromMainThread(scroll_offset);
-  else if (property_trees()->is_active)
-    return synced_scroll_offset(layer_id)->SetCurrent(scroll_offset);
+  if (property_trees()->is_main_thread) {
+    if (layer_id_to_scroll_offset_map_[layer_id] == scroll_offset)
+      return false;
+    layer_id_to_scroll_offset_map_[layer_id] = scroll_offset;
+    return true;
+  }
+
+  if (property_trees()->is_active) {
+    return GetOrCreateSyncedScrollOffset(layer_id)->SetCurrent(scroll_offset);
+  }
+
   return false;
 }
 
@@ -1423,25 +1447,28 @@ bool ScrollTree::UpdateScrollOffsetBaseForTesting(
     int layer_id,
     const gfx::ScrollOffset& offset) {
   DCHECK(!property_trees()->is_main_thread);
-  bool changed = synced_scroll_offset(layer_id)->PushFromMainThread(offset);
+  SyncedScrollOffset* synced_scroll_offset =
+      GetOrCreateSyncedScrollOffset(layer_id);
+  bool changed = synced_scroll_offset->PushFromMainThread(offset);
   if (property_trees()->is_active)
-    changed |= synced_scroll_offset(layer_id)->PushPendingToActive();
+    changed |= synced_scroll_offset->PushPendingToActive();
   return changed;
 }
 
 bool ScrollTree::SetScrollOffsetDeltaForTesting(int layer_id,
                                                 const gfx::Vector2dF& delta) {
-  return synced_scroll_offset(layer_id)->SetCurrent(
-      synced_scroll_offset(layer_id)->ActiveBase() + gfx::ScrollOffset(delta));
+  return GetOrCreateSyncedScrollOffset(layer_id)->SetCurrent(
+      GetOrCreateSyncedScrollOffset(layer_id)->ActiveBase() +
+      gfx::ScrollOffset(delta));
 }
 
 const gfx::ScrollOffset ScrollTree::GetScrollOffsetBaseForTesting(
     int layer_id) const {
   DCHECK(!property_trees()->is_main_thread);
-  if (synced_scroll_offset(layer_id))
+  if (GetSyncedScrollOffset(layer_id))
     return property_trees()->is_active
-               ? synced_scroll_offset(layer_id)->ActiveBase()
-               : synced_scroll_offset(layer_id)->PendingBase();
+               ? GetSyncedScrollOffset(layer_id)->ActiveBase()
+               : GetSyncedScrollOffset(layer_id)->PendingBase();
   else
     return gfx::ScrollOffset();
 }
@@ -1449,10 +1476,10 @@ const gfx::ScrollOffset ScrollTree::GetScrollOffsetBaseForTesting(
 const gfx::ScrollOffset ScrollTree::GetScrollOffsetDeltaForTesting(
     int layer_id) const {
   DCHECK(!property_trees()->is_main_thread);
-  if (synced_scroll_offset(layer_id))
+  if (GetSyncedScrollOffset(layer_id))
     return property_trees()->is_active
-               ? synced_scroll_offset(layer_id)->Delta()
-               : synced_scroll_offset(layer_id)->PendingDelta().get();
+               ? GetSyncedScrollOffset(layer_id)->Delta()
+               : GetSyncedScrollOffset(layer_id)->PendingDelta().get();
   else
     return gfx::ScrollOffset();
 }
@@ -1610,12 +1637,7 @@ void PropertyTrees::clear() {
   tree.effect_tree = effect_tree;
   tree.clip_tree = clip_tree;
   tree.scroll_tree = scroll_tree;
-  // Scroll offset map and currently scrolling node id may not be copied
-  // during operator=.
-  ScrollTree::ScrollOffsetMap& map = tree.scroll_tree.scroll_offset_map();
-  map = scroll_tree.scroll_offset_map();
-  tree.scroll_tree.set_currently_scrolling_node(
-      scroll_tree.CurrentlyScrollingNodeId());
+  tree.scroll_tree.CopyCompleteTreeState(scroll_tree);
 
   tree.sequence_number = sequence_number;
   tree.is_main_thread = is_main_thread;

@@ -1179,7 +1179,8 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   // active tree. To do so, avoid scrolling the pending tree along with it
   // instead of trying to undo that scrolling later.
   if (ScrollOffsetAnimationWasInterrupted())
-    layer_tree_->property_trees()
+    layer->layer_tree_impl()
+        ->property_trees()
         ->scroll_tree.SetScrollOffsetClobberActiveValue(layer->id());
 
   // If the main thread commits multiple times before the impl thread actually

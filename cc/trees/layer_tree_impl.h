@@ -203,10 +203,6 @@ class CC_EXPORT LayerTreeImpl {
   }
 
   void UpdatePropertyTreeScrollingAndAnimationFromMainThread();
-  void UpdatePropertyTreeScrollOffset(PropertyTrees* property_trees) {
-    property_trees_.scroll_tree.UpdateScrollOffsetMap(
-        &property_trees->scroll_tree.scroll_offset_map(), this);
-  }
   void SetPageScaleOnActiveTree(float active_page_scale);
   void PushPageScaleFromMainThread(float page_scale_factor,
                                    float min_page_scale_factor,

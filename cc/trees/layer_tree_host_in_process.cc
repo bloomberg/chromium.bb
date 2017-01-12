@@ -359,7 +359,8 @@ void LayerTreeHostInProcess::FinishCommitOnImplThread(
 
     // This must happen after synchronizing property trees and after pushing
     // properties, which updates the clobber_active_value flag.
-    sync_tree->UpdatePropertyTreeScrollOffset(layer_tree_->property_trees());
+    sync_tree->property_trees()->scroll_tree.PushScrollUpdatesFromMainThread(
+        layer_tree_->property_trees(), sync_tree);
 
     // This must happen after synchronizing property trees and after push
     // properties, which updates property tree indices, but before animation

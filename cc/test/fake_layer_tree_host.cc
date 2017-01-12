@@ -108,7 +108,8 @@ LayerImpl* FakeLayerTreeHost::CommitAndCreateLayerImplTree() {
                                         active_tree());
   layer_tree_->mutator_host()->PushPropertiesTo(host_impl_.mutator_host());
 
-  active_tree()->UpdatePropertyTreeScrollOffset(property_trees());
+  active_tree()->property_trees()->scroll_tree.PushScrollUpdatesFromMainThread(
+      property_trees(), active_tree());
 
   if (layer_tree_->page_scale_layer() &&
       layer_tree_->inner_viewport_scroll_layer()) {
@@ -134,7 +135,8 @@ LayerImpl* FakeLayerTreeHost::CommitAndCreatePendingTree() {
                                         pending_tree());
   layer_tree_->mutator_host()->PushPropertiesTo(host_impl_.mutator_host());
 
-  pending_tree()->UpdatePropertyTreeScrollOffset(property_trees());
+  pending_tree()->property_trees()->scroll_tree.PushScrollUpdatesFromMainThread(
+      property_trees(), pending_tree());
   return pending_tree()->root_layer_for_testing();
 }
 

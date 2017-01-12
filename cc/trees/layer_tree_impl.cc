@@ -426,7 +426,8 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   LayerImpl* layer = target_tree->CurrentlyScrollingLayer();
   target_tree->SetPropertyTrees(&property_trees_);
   target_tree->SetCurrentlyScrollingLayer(layer);
-  target_tree->UpdatePropertyTreeScrollOffset(&property_trees_);
+  target_tree->property_trees()->scroll_tree.PushScrollUpdatesFromPendingTree(
+      &property_trees_, target_tree);
 
   // This needs to be called early so that we don't clamp with incorrect max
   // offsets when UpdateViewportContainerSizes is called from e.g.
