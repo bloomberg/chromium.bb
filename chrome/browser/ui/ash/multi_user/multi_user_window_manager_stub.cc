@@ -10,6 +10,10 @@
 
 namespace chrome {
 
+MultiUserWindowManagerStub::MultiUserWindowManagerStub() {}
+
+MultiUserWindowManagerStub::~MultiUserWindowManagerStub() {}
+
 void MultiUserWindowManagerStub::SetWindowOwner(aura::Window* window,
                                                 const AccountId& account_id) {
   NOTIMPLEMENTED();

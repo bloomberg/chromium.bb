@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
+#include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -192,7 +193,11 @@ class LauncherPlatformAppBrowserTest
   ~LauncherPlatformAppBrowserTest() override {}
 
   void RunTestOnMainThreadLoop() override {
+    // Ensure ash starts the session and creates the shelf and controller.
+    SessionControllerClient::FlushForTesting();
+
     controller_ = GetChromeLauncherControllerImpl();
+    ASSERT_TRUE(controller_);
     return extensions::PlatformAppBrowserTest::RunTestOnMainThreadLoop();
   }
 
@@ -259,10 +264,14 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
   ~ShelfAppBrowserTest() override {}
 
   void RunTestOnMainThreadLoop() override {
+    // Ensure ash starts the session and creates the shelf and controller.
+    SessionControllerClient::FlushForTesting();
+
     shelf_ =
         ash::WmShelf::ForWindow(ash::WmShell::Get()->GetPrimaryRootWindow());
     model_ = ash::WmShell::Get()->shelf_model();
     controller_ = GetChromeLauncherControllerImpl();
+    ASSERT_TRUE(controller_);
     return ExtensionBrowserTest::RunTestOnMainThreadLoop();
   }
 

@@ -141,10 +141,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // Creates the shelf for this root window and notifies observers.
   void CreateShelf();
 
-  // Show shelf view if it was created hidden (before session has started).
-  // TODO(jamescook): Eliminate this and handle show via Shelf.
-  void ShowShelf();
-
   // Get touch HUDs associated with this root window controller.
   TouchHudDebug* touch_hud_debug() const { return touch_hud_debug_; }
   TouchHudProjection* touch_hud_projection() const {

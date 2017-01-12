@@ -371,14 +371,6 @@ void RootWindowController::CreateShelf() {
   wm_shelf_->shelf_widget()->PostCreateShelf();
 }
 
-void RootWindowController::ShowShelf() {
-  if (!wm_shelf_->IsShelfInitialized())
-    return;
-  // TODO(jamescook): Move this into WmShelf.
-  wm_shelf_->shelf_widget()->SetShelfVisibility(true);
-  wm_shelf_->shelf_widget()->status_area_widget()->Show();
-}
-
 ShelfLayoutManager* RootWindowController::GetShelfLayoutManager() {
   return wm_shelf_->shelf_layout_manager();
 }

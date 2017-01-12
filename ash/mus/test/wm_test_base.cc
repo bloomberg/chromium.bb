@@ -7,10 +7,14 @@
 #include <algorithm>
 #include <vector>
 
+#include "ash/common/session/session_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/mus/root_window_controller.h"
 #include "ash/mus/test/wm_test_helper.h"
 #include "ash/mus/window_manager.h"
 #include "ash/mus/window_manager_application.h"
+#include "ash/public/cpp/session_types.h"
+#include "ash/public/interfaces/session_controller.mojom.h"
 #include "ash/test/wm_window_aura_test_api.h"
 #include "base/memory/ptr_util.h"
 #include "services/ui/public/cpp/property_type_converters.h"
@@ -165,6 +169,9 @@ void WmTestBase::SetUp() {
       base::MakeUnique<WmWindowAuraTestApi::GlobalMinimumSizeLock>();
   test_helper_.reset(new WmTestHelper);
   test_helper_->Init();
+
+  // Most tests assume the user is logged in (and hence the shelf is created).
+  SimulateUserLogin();
 }
 
 void WmTestBase::TearDown() {
@@ -173,6 +180,30 @@ void WmTestBase::TearDown() {
   minimum_size_lock_.reset();
   zero_duration_mode_.reset();
 }
+
+void WmTestBase::SimulateUserLogin() {
+  SessionController* session_controller = WmShell::Get()->session_controller();
+
+  // Simulate the first user logging in.
+  mojom::UserSessionPtr session = mojom::UserSession::New();
+  session->session_id = 1;
+  session->type = user_manager::USER_TYPE_REGULAR;
+  const std::string email("ash.user@example.com");
+  session->serialized_account_id = AccountId::FromUserEmail(email).Serialize();
+  session->display_name = "Ash User";
+  session->display_email = email;
+  session_controller->UpdateUserSession(std::move(session));
+
+  // Simulate the user session becoming active.
+  mojom::SessionInfoPtr info = mojom::SessionInfo::New();
+  info->max_users = 10;
+  info->can_lock_screen = true;
+  info->should_lock_screen_automatically = false;
+  info->add_user_session_policy = AddUserSessionPolicy::ALLOWED;
+  info->state = session_manager::SessionState::ACTIVE;
+  session_controller->SetSessionInfo(std::move(info));
+}
+
 
 }  // namespace mus
 }  // namespace ash

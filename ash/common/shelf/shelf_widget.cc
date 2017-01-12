@@ -331,6 +331,12 @@ void ShelfWidget::PostCreateShelf() {
   // Ensure the newly created |shelf_| gets current values.
   background_animator_.Initialize(this);
 
+  // TODO(jamescook): The IsActiveUserSessionStarted() check may not be needed
+  // because the shelf is only created after the first user session is active.
+  // The ShelfView seems to always be visible after login. At the lock screen
+  // the shelf is hidden because its container is hidden. During auto-hide it is
+  // hidden because ShelfWidget is transparent. Some of the ShelfView visibility
+  // code could be simplified. http://crbug.com/674773
   shelf_view_->SetVisible(
       WmShell::Get()->GetSessionStateDelegate()->IsActiveUserSessionStarted());
   shelf_layout_manager_->LayoutShelf();
@@ -340,11 +346,6 @@ void ShelfWidget::PostCreateShelf() {
 
 bool ShelfWidget::IsShelfVisible() const {
   return shelf_view_ && shelf_view_->visible();
-}
-
-void ShelfWidget::SetShelfVisibility(bool visible) {
-  if (shelf_view_)
-    shelf_view_->SetVisible(visible);
 }
 
 bool ShelfWidget::IsShowingAppList() const {
@@ -388,6 +389,9 @@ void ShelfWidget::Shutdown() {
 }
 
 void ShelfWidget::UpdateIconPositionForPanel(WmWindow* panel) {
+  if (!shelf_view_)
+    return;
+
   WmWindow* shelf_window = WmLookup::Get()->GetWindowForWidget(this);
   shelf_view_->UpdatePanelIconPosition(
       panel->GetIntProperty(WmWindowProperty::SHELF_ID),
@@ -396,6 +400,11 @@ void ShelfWidget::UpdateIconPositionForPanel(WmWindow* panel) {
 }
 
 gfx::Rect ShelfWidget::GetScreenBoundsOfItemIconForWindow(WmWindow* window) {
+  // Window animations can be triggered during session restore before the shelf
+  // view is created. In that case, return default empty bounds.
+  if (!shelf_view_)
+    return gfx::Rect();
+
   ShelfID id = window->GetIntProperty(WmWindowProperty::SHELF_ID);
   gfx::Rect bounds(shelf_view_->GetIdealBoundsOfItemIcon(id));
   gfx::Point screen_origin;
