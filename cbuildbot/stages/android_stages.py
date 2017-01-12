@@ -138,8 +138,16 @@ class AndroidMetadataStage(generic_stages.BuilderStage,
 
   def _Finish(self):
     """Provide android_version to the rest of the run."""
-    # Even if the stage failed, a None value for android_version still
-    # means something.  In other words, this stage tried to run.
-    self._run.attrs.android_version = self.android_version
-    self._WriteAndroidVersionToMetadata()
+    try:
+      # Even if the stage failed, a None value for android_version still
+      # means something.  In other words, this stage tried to run.
+      self._run.attrs.android_version = self.android_version
+      self._WriteAndroidVersionToMetadata()
+    except Exception as e:
+      # Failures here are OUTSIDE of the stage and not handled well. Log and
+      # continue with the assumption that the ReportStage will re-upload this
+      # data or report a failure correctly.
+      logging.warning('IGNORED: Failure uploading metadata: %s', e)
+
+
     super(AndroidMetadataStage, self)._Finish()

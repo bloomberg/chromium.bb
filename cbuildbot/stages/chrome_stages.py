@@ -124,10 +124,17 @@ class SyncChromeStage(generic_stages.BuilderStage,
 
   def _Finish(self):
     """Provide chrome_version to the rest of the run."""
-    # Even if the stage failed, a None value for chrome_version still
-    # means something.  In other words, this stage tried to run.
-    self._run.attrs.chrome_version = self.chrome_version
-    self._WriteChromeVersionToMetadata()
+    try:
+      # Even if the stage failed, a None value for chrome_version still
+      # means something.  In other words, this stage tried to run.
+      self._run.attrs.chrome_version = self.chrome_version
+      self._WriteChromeVersionToMetadata()
+    except Exception as e:
+      # Failures here are OUTSIDE of the stage and not handled well. Log and
+      # continue with the assumption that the ReportStage will re-upload this
+      # data or report a failure correctly.
+      logging.warning('IGNORED: Failure uploading metadata: %s', e)
+
     super(SyncChromeStage, self)._Finish()
 
 
