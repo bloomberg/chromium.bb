@@ -3490,6 +3490,19 @@ bool Segment::AddGenericFrame(const Frame* frame) {
   if (frame->discard_padding() != 0)
     doc_type_version_ = 4;
 
+  if (cluster_list_size_ > 0) {
+    const uint64_t timecode_scale = segment_info_.timecode_scale();
+    const uint64_t frame_timecode = frame->timestamp() / timecode_scale;
+
+    const Cluster* const last_cluster = cluster_list_[cluster_list_size_ - 1];
+    const uint64_t last_cluster_timecode = last_cluster->timecode();
+
+    const uint64_t rel_timecode = frame_timecode - last_cluster_timecode;
+    if (rel_timecode > kMaxBlockTimecode) {
+      force_new_cluster_ = true;
+    }
+  }
+
   // If the segment has a video track hold onto audio frames to make sure the
   // audio that is associated with the start time of a video key-frame is
   // muxed into the same cluster.
