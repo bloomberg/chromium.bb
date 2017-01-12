@@ -1,13 +1,13 @@
 Name: hunspell
 URL: http://hunspell.sourceforge.net/
-Version: 1.5.4
+Version: 1.6.0
 License: MPL 1.1/GPL 2.0/LGPL 2.1
-License File: COPYING
+License File: COPYING.MPL
 Security Critical: yes
 
 Description:
-This is a partial copy of Hunspell 1.5.4 with the following changes:
-* Remove '#include "config.h"' from src/hunspell/hunspell.hxx
+This is a partial copy of Hunspell 1.6.0 with the following changes:
+* Move README.md onto the README symlink.
 * Change src/hunspell/filemgr.hxx and src/hunspell/filemgr.cxx to use
   LineIterator.
 * Add ScopedHashEntry, which creates temporary hentry objects, to
@@ -27,7 +27,7 @@ steps, or simply run update_google_patch.sh from the commandline.
 1) Checkout hunspell:
    $ git clone https://github.com/hunspell/hunspell.git
    $ cd hunspell
-   $ git checkout v1.5.4
+   $ git checkout v1.6.0
 2) Apply the existing patch:
    $ patch -p0 -i ~/src/third_party/hunspell/google.patch
 3) Make your new changes inside the CVS hunspell directory.
