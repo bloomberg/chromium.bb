@@ -451,7 +451,9 @@ void StyleEngine::didDetach() {
   m_activeTreeScopes.clear();
   m_viewportResolver = nullptr;
   m_mediaQueryEvaluator = nullptr;
-  clearFontCache();
+  if (m_fontSelector)
+    m_fontSelector->fontFaceCache()->clearAll();
+  m_fontSelector = nullptr;
 }
 
 void StyleEngine::clearFontCache() {
