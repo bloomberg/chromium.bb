@@ -1366,7 +1366,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         'build_configs': ['Release'],
         'fyi_only': True,
         'run_on_optional': False,
-        # Only run on the NVIDIA Release and New Intel Release Linux bots
+        # Only run on the NVIDIA Release and Intel Release Linux bots
         'swarming_dimension_sets': [
           {
             'gpu': '10de:104a',
@@ -1374,6 +1374,10 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
           },
           {
             'gpu': '8086:0412',
+            'os': 'Linux'
+          },
+          {
+            'gpu': '8086:1912',
             'os': 'Linux'
           },
         ],
