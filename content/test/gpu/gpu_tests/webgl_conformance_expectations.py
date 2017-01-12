@@ -327,8 +327,13 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
 
     # Win / Intel / Passthrough command decoder
+    self.Flaky('conformance/renderbuffers/framebuffer-state-restoration.html',
+        ['win', 'intel', 'passthrough', 'd3d11'], bug=602688)
     self.Fail('conformance/renderbuffers/renderbuffer-initialization.html',
         ['win', 'intel', 'passthrough', 'd3d11'], bug=1635) # angle bug ID
+    self.Fail('conformance/textures/misc/' +
+        'copytexsubimage2d-large-partial-copy-corruption.html',
+        ['win', 'intel', 'passthrough', 'd3d11'], bug=602688)
 
     # Mac failures
     self.Flaky('conformance/extensions/oes-texture-float-with-video.html',
