@@ -808,30 +808,31 @@ class _BuilderRunBase(object):
     Raises:
       NoAndroidVersionError: if no unique Android version can be determined.
     """
+    if not boards:
+      return None
+    # Verify that all boards have the same version.
     version = None
-    try:
-      if boards:
-        # Verify that all boards have the same version.
-        for board in boards:
-          cpv = portage_util.BestVisible(constants.ANDROID_CP,
-                                         buildroot=self.buildroot,
-                                         board=board)
-          if version is None:
-            version = cpv.version_no_rev
-          elif version != cpv.version_no_rev:
-            raise NoAndroidVersionError(
-                'Different Android versions (%s vs %s) for %s' %
-                (version, cpv.version_no_rev, boards))
-
+    for board in boards:
+      try:
+        packages = portage_util.GetPackageDependencies(board,
+                                                       'virtual/target-os')
+      except cros_build_lib.RunCommandError:
+        raise NoAndroidVersionError(
+            'Android version could not be determined for %s' % boards)
+      cpv = None
+      for package in packages:
+        if package.startswith('chromeos-base/android-container'):
+          cpv = portage_util.SplitCPV(package)
+          break
       else:
-        # This is expected to fail until ANDROID_CP is in the main overlays.
-        cpv = portage_util.BestVisible(constants.ANDROID_CP,
-                                       buildroot=self.buildroot)
+        raise NoAndroidVersionError(
+            'Android version could not be determined for %s' % board)
+      if not version:
         version = cpv.version_no_rev
-    except cros_build_lib.RunCommandError as ex:
-      raise NoAndroidVersionError(
-          'Android version could not be determined for %s' % boards, ex)
-
+      elif version != cpv.version_no_rev:
+        raise NoAndroidVersionError(
+            'Different Android versions (%s vs %s) for %s' %
+            (version, cpv.version_no_rev, boards))
     return version
 
   def DetermineChromeVersion(self):

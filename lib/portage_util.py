@@ -1646,6 +1646,22 @@ def GetBinaryPackagePath(c, p, v, sysroot='/', packages_dir=None):
   return path
 
 
+def GetPackageDependencies(board, package):
+  """Returns the depgraph list of packages for a board and package."""
+  emerge = 'emerge-%s' % board
+  cmd = [emerge, '-p', '--cols', '--quiet', '--root', '/var/empty', '-e',
+         package]
+  emerge_output = cros_build_lib.RunCommand(
+      cmd, cwd=constants.SOURCE_ROOT, enter_chroot=True,
+      capture_output=True).output.splitlines()
+  packages = []
+  for line in emerge_output:
+    columns = line.split()
+    package = columns[1] + '-' + columns[2]
+    packages.append(package)
+  return packages
+
+
 def GetRepositoryFromEbuildInfo(info):
   """Parse output of the result of `ebuild <ebuild_path> info`
 
