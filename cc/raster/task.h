@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <string>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
@@ -38,6 +39,7 @@ class Task;
 //    └─────────┘         ╚══════════╝
 class CC_EXPORT TaskState {
  public:
+  bool IsNew() const;
   bool IsScheduled() const;
   bool IsRunning() const;
   bool IsFinished() const;
@@ -52,6 +54,8 @@ class CC_EXPORT TaskState {
   void DidStart();
   void DidFinish();
   void DidCancel();
+
+  std::string ToString() const;
 
  private:
   friend class Task;

@@ -342,13 +342,15 @@ RasterTaskCompletionStatsAsValue(const RasterTaskCompletionStats& stats) {
   return std::move(state);
 }
 
-TileManager::TileManager(TileManagerClient* client,
-                         base::SequencedTaskRunner* task_runner,
-                         size_t scheduled_raster_task_limit,
-                         bool use_partial_raster,
-                         bool check_tile_priority_inversion)
+TileManager::TileManager(
+    TileManagerClient* client,
+    base::SequencedTaskRunner* origin_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner,
+    size_t scheduled_raster_task_limit,
+    bool use_partial_raster,
+    bool check_tile_priority_inversion)
     : client_(client),
-      task_runner_(task_runner),
+      task_runner_(origin_task_runner),
       resource_pool_(nullptr),
       tile_task_manager_(nullptr),
       scheduled_raster_task_limit_(scheduled_raster_task_limit),
@@ -357,6 +359,8 @@ TileManager::TileManager(TileManagerClient* client,
       all_tiles_that_need_to_be_rasterized_are_scheduled_(true),
       did_check_for_completed_tasks_since_last_schedule_tasks_(true),
       did_oom_on_last_assign_(false),
+      image_controller_(origin_task_runner,
+                        std::move(image_worker_task_runner)),
       more_tiles_need_prepare_check_notifier_(
           task_runner_,
           base::Bind(&TileManager::CheckIfMoreTilesNeedToBePrepared,
@@ -1062,6 +1066,13 @@ void TileManager::OnRasterTaskCompleted(
   DCHECK(draw_info.IsReadyToDraw());
   draw_info.set_was_ever_ready_to_draw();
   client_->NotifyTileStateChanged(tile);
+}
+
+void TileManager::SetDecodedImageTracker(
+    DecodedImageTracker* decoded_image_tracker) {
+  // TODO(vmpstr): If the tile manager needs to request out-of-raster decodes,
+  // it should retain and use |decoded_image_tracker| here.
+  decoded_image_tracker->set_image_controller(&image_controller_);
 }
 
 std::unique_ptr<Tile> TileManager::CreateTile(const Tile::CreateInfo& info,

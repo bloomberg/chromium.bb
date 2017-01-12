@@ -199,7 +199,7 @@ class LayerTreeHostImplTest : public testing::Test,
     host_impl_ = LayerTreeHostImpl::Create(
         settings, this, task_runner_provider, &stats_instrumentation_,
         &task_graph_runner_,
-        AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0);
+        AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0, nullptr);
     compositor_frame_sink_ = std::move(compositor_frame_sink);
     host_impl_->SetVisible(true);
     bool init = host_impl_->InitializeRenderer(compositor_frame_sink_.get());
@@ -2709,7 +2709,8 @@ class LayerTreeHostImplOverridePhysicalTime : public LayerTreeHostImpl {
                           rendering_stats_instrumentation,
                           task_graph_runner,
                           AnimationHost::CreateForTesting(ThreadInstance::IMPL),
-                          0) {}
+                          0,
+                          nullptr) {}
 
   BeginFrameArgs CurrentBeginFrameArgs() const override {
     return CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1,
@@ -7579,7 +7580,7 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
       LayerTreeHostImpl::Create(
           settings, this, &task_runner_provider_, &stats_instrumentation_,
           &task_graph_runner_,
-          AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0);
+          AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0, nullptr);
   layer_tree_host_impl->SetVisible(true);
   layer_tree_host_impl->InitializeRenderer(compositor_frame_sink.get());
   layer_tree_host_impl->WillBeginImplFrame(
@@ -7708,7 +7709,7 @@ static std::unique_ptr<LayerTreeHostImpl> SetupLayersForOpacity(
   std::unique_ptr<LayerTreeHostImpl> my_host_impl = LayerTreeHostImpl::Create(
       settings, client, task_runner_provider, stats_instrumentation,
       task_graph_runner, AnimationHost::CreateForTesting(ThreadInstance::IMPL),
-      0);
+      0, nullptr);
   my_host_impl->SetVisible(true);
   my_host_impl->InitializeRenderer(compositor_frame_sink);
   my_host_impl->WillBeginImplFrame(
@@ -8176,7 +8177,7 @@ TEST_F(LayerTreeHostImplTest, MemoryLimits) {
   host_impl_ = LayerTreeHostImpl::Create(
       settings, this, &task_runner_provider_, &stats_instrumentation_,
       &task_graph_runner_,
-      AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0);
+      AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0, nullptr);
 
   // Gpu compositing.
   compositor_frame_sink_ =
@@ -11605,7 +11606,7 @@ TEST_F(LayerTreeHostImplTest, RecomputeGpuRasterOnCompositorFrameSinkChange) {
   host_impl_ = LayerTreeHostImpl::Create(
       settings, this, &task_runner_provider_, &stats_instrumentation_,
       &task_graph_runner_,
-      AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0);
+      AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0, nullptr);
   host_impl_->SetVisible(true);
 
   // InitializeRenderer with a gpu-raster enabled output surface.

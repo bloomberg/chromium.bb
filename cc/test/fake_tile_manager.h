@@ -15,8 +15,8 @@ namespace cc {
 
 class FakeTileManager : public TileManager {
  public:
-  explicit FakeTileManager(TileManagerClient* client);
-  FakeTileManager(TileManagerClient* client, ResourcePool* resource_pool);
+  FakeTileManager(TileManagerClient* client,
+                  ResourcePool* resource_pool = nullptr);
   ~FakeTileManager() override;
 
   bool HasBeenAssignedMemory(Tile* tile);
@@ -27,6 +27,7 @@ class FakeTileManager : public TileManager {
 
  private:
   SoftwareImageDecodeCache image_decode_cache_;
+  DecodedImageTracker decoded_image_tracker_;
 };
 
 }  // namespace cc
