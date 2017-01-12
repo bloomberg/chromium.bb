@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -94,6 +95,8 @@ class ProfileInfoHandler : public SettingsPageUIHandler,
 
   // Used to listen for changes in the list of managed supervised users.
   PrefChangeRegistrar profile_pref_registrar_;
+
+  base::WeakPtrFactory<ProfileInfoHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileInfoHandler);
 };
