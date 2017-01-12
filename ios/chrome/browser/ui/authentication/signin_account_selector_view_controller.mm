@@ -256,6 +256,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)onIdentityListChanged {
   ChromeIdentity* selectedIdentity = [self selectedIdentity];
   [self loadModel];
+  [self.collectionView reloadData];
 
   // Reselect the identity.
   if (!selectedIdentity) {
