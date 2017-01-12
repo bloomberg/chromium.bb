@@ -7,9 +7,9 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
@@ -30,15 +30,15 @@ class DataReductionProxyEventStore
   // constants dictionary.
   static void AddConstants(base::DictionaryValue* constants_dict);
 
-  // Constructs a DataReductionProxyEventStore object
+  // Constructs a DataReductionProxyEventStore object.
   DataReductionProxyEventStore();
 
   virtual ~DataReductionProxyEventStore();
 
   // Creates a Value summary of Data Reduction Proxy related information:
-  // - Whether the proxy is enabled
-  // - The proxy configuration
-  // - The state of the last secure proxy check response
+  // - Whether the proxy is enabled,
+  // - The proxy configuration,
+  // - The state of the last secure proxy check response,
   // - A stream of the last Data Reduction Proxy related events.
   std::unique_ptr<base::DictionaryValue> GetSummaryValue() const;
 
@@ -46,19 +46,18 @@ class DataReductionProxyEventStore
   void AddEvent(std::unique_ptr<base::Value> event) override;
 
   // Override of DataReductionProxyEventStorageDelegate.
-  // Put |entry| on the deque of stored events and set |current_configuration_|.
+  // Adds |entry| to the event store and sets |current_configuration_|.
   void AddEnabledEvent(std::unique_ptr<base::Value> entry,
                        bool enabled) override;
 
   // Override of DataReductionProxyEventStorageDelegate.
-  // Put |entry| on a deque of events to store and set
-  // |secure_proxy_check_state_|
+  // Adds |entry| to the event store and sets |secure_proxy_check_state_|.
   void AddEventAndSecureProxyCheckState(std::unique_ptr<base::Value> entry,
                                         SecureProxyCheckState state) override;
 
   // Override of DataReductionProxyEventStorageDelegate.
-  // Put |entry| on a deque of events to store and set |last_bypass_event_| and
-  // |expiration_ticks_|
+  // Adds |entry| to the event store and sets |last_bypass_event_| and
+  // |expiration_ticks_|.
   void AddAndSetLastBypassEvent(std::unique_ptr<base::Value> entry,
                                 int64_t expiration_ticks) override;
 
@@ -71,9 +70,12 @@ class DataReductionProxyEventStore
  private:
   friend class DataReductionProxyEventStoreTest;
 
-  // A deque of data reduction proxy related events. It is used as a circular
+  // A vector of data reduction proxy related events. It is used as a circular
   // buffer to prevent unbounded memory utilization.
-  std::deque<std::unique_ptr<base::Value>> stored_events_;
+  std::vector<std::unique_ptr<base::Value>> stored_events_;
+  // The index of the oldest event in |stored_events_|.
+  size_t oldest_event_index_;
+
   // Whether the data reduction proxy is enabled or not.
   bool enabled_;
   // The current data reduction proxy configuration.
