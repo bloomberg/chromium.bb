@@ -114,7 +114,7 @@ const char kLastUpdateTime[] = "Wed, 18 Sep 2013 03:45:26";
 class DataReductionProxyCompressionStatsTest : public testing::Test {
  protected:
   DataReductionProxyCompressionStatsTest() {
-    base::Time::FromString(kLastUpdateTime, &now_);
+    EXPECT_TRUE(base::Time::FromString(kLastUpdateTime, &now_));
   }
 
   void SetUp() override {

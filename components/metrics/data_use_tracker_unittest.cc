@@ -51,7 +51,7 @@ class FakeDataUseTracker : public DataUseTracker {
 
   base::Time GetCurrentMeasurementDate() const override {
     base::Time today_for_test;
-    base::Time::FromUTCString(kTodayStr, &today_for_test);
+    EXPECT_TRUE(base::Time::FromUTCString(kTodayStr, &today_for_test));
     return today_for_test;
   }
 

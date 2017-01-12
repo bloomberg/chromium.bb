@@ -139,6 +139,7 @@ enum FirstRunResult {
   FIRST_RUN_SEED_IMPORT_FAIL_NO_CALLBACK,
   FIRST_RUN_SEED_IMPORT_FAIL_NO_FIRST_RUN_SEED,
   FIRST_RUN_SEED_IMPORT_FAIL_STORE_FAILED,
+  FIRST_RUN_SEED_IMPORT_FAIL_INVALID_RESPONSE_DATE,
   FIRST_RUN_RESULT_ENUM_SIZE,
 };
 
@@ -367,7 +368,11 @@ void VariationsSeedStore::ImportFirstRunJavaSeed() {
   }
 
   base::Time current_date;
-  base::Time::FromUTCString(response_date.c_str(), &current_date);
+  if (!base::Time::FromUTCString(response_date.c_str(), &current_date)) {
+    RecordFirstRunResult(FIRST_RUN_SEED_IMPORT_FAIL_INVALID_RESPONSE_DATE);
+    LOG(WARNING) << "Invalid response date: " << response_date;
+    return;
+  }
 
   if (!StoreSeedData(seed_data, seed_signature, seed_country, current_date,
                      false, is_gzip_compressed, nullptr)) {

@@ -1620,10 +1620,16 @@ class PexeDownloader : public blink::WebAssociatedURLLoaderClient {
     url_loader_->setDefersLoading(true);
 
     std::string etag = response.httpHeaderField("etag").utf8();
+
+    // Parse the "last-modified" date string. An invalid string will result
+    // in a base::Time value of 0, which is supported by the only user of
+    // the |CacheInfo::last_modified| field (see
+    // pnacl::PnaclTranslationCache::GetKey()).
     std::string last_modified =
         response.httpHeaderField("last-modified").utf8();
     base::Time last_modified_time;
-    base::Time::FromString(last_modified.c_str(), &last_modified_time);
+    ignore_result(
+        base::Time::FromString(last_modified.c_str(), &last_modified_time));
 
     bool has_no_store_header = false;
     std::string cache_control =

@@ -104,7 +104,8 @@ TEST(UploadDataStreamBuilderTest,
 
     const uint64_t kZeroLength = 0;
     base::Time blob_time;
-    base::Time::FromString("Tue, 15 Nov 1994, 12:45:26 GMT", &blob_time);
+    ASSERT_TRUE(
+        base::Time::FromString("Tue, 15 Nov 1994, 12:45:26 GMT", &blob_time));
     ASSERT_TRUE(base::TouchFile(test_blob_path, blob_time, blob_time));
 
     BlobStorageContext blob_storage_context;

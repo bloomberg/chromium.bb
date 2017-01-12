@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
 #include "chrome/common/extensions/api/file_system_provider_internal.h"
@@ -53,8 +54,8 @@ bool ConvertRequestValueToFileInfo(std::unique_ptr<RequestValue> value,
     // Allow to pass invalid modification time, since there is no way to verify
     // it easily on any earlier stage.
     base::Time output_modification_time;
-    base::Time::FromString(input_modification_time.c_str(),
-                           &output_modification_time);
+    ignore_result(base::Time::FromString(input_modification_time.c_str(),
+                                         &output_modification_time));
     output->modification_time.reset(new base::Time(output_modification_time));
   }
 

@@ -147,7 +147,7 @@ TEST(MobileConfigTest, Basic) {
             deal->GetLocalizedString("en", "notification_text"));
 
   base::Time reference_time;
-  base::Time::FromString("31/12/2099 0:00", &reference_time);
+  EXPECT_TRUE(base::Time::FromString("31/12/2099 0:00", &reference_time));
   EXPECT_EQ(reference_time, deal->expire_date());
 
   const MobileConfig::LocaleConfig* locale_config;
@@ -232,7 +232,7 @@ TEST(MobileConfigTest, LocalConfig) {
   EXPECT_EQ("default_text from local.",
             deal->GetLocalizedString("en", "notification_text"));
   base::Time reference_time;
-  base::Time::FromString("31/12/2099 0:00", &reference_time);
+  EXPECT_TRUE(base::Time::FromString("31/12/2099 0:00", &reference_time));
   EXPECT_EQ(reference_time, deal->expire_date());
 
   // Now reload same global/local config files but with proper initial locale.
