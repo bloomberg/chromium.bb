@@ -5,8 +5,8 @@
 #ifndef NGFragmentBuilder_h
 #define NGFragmentBuilder_h
 
-#include "core/layout/ng/ng_units.h"
 #include "core/layout/ng/ng_physical_fragment.h"
+#include "core/layout/ng/ng_units.h"
 
 namespace blink {
 

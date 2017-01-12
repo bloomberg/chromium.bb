@@ -6,8 +6,8 @@
 #define NGPhysicalBoxFragment_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/ng_units.h"
 #include "core/layout/ng/ng_physical_fragment.h"
+#include "core/layout/ng/ng_units.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

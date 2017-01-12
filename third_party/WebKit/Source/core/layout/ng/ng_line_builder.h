@@ -5,8 +5,8 @@
 #ifndef NGLineBuilder_h
 #define NGLineBuilder_h
 
-#include "core/layout/ng/ng_units.h"
 #include "core/CoreExport.h"
+#include "core/layout/ng/ng_units.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 

@@ -5,9 +5,9 @@
 #include "core/layout/ng/ng_fragment_builder.h"
 
 #include "core/layout/ng/ng_block_node.h"
-#include "core/layout/ng/ng_physical_text_fragment.h"
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
+#include "core/layout/ng/ng_physical_text_fragment.h"
 
 namespace blink {
 

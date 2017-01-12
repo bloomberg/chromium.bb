@@ -11,8 +11,8 @@
 #include "core/layout/ng/ng_inline_node.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_line_builder.h"
-#include "core/style/ComputedStyle.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 

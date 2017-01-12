@@ -6,8 +6,8 @@
 #define NGTextFragment_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/ng_physical_text_fragment.h"
 #include "core/layout/ng/ng_fragment.h"
+#include "core/layout/ng/ng_physical_text_fragment.h"
 
 namespace blink {
 
