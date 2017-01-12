@@ -82,6 +82,10 @@ class WmTestBase : public testing::Test {
  private:
   friend class AshTestImplMus;
 
+  // Simulates the first user logging in and the session becoming active.
+  // Classic ash handles this via AshTestHelper and TestSessionStateDelegate.
+  void SimulateUserLogin();
+
   bool setup_called_ = false;
   bool teardown_called_ = false;
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;

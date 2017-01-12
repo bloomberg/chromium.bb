@@ -8,6 +8,7 @@
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm/system_modal_container_layout_manager.h"
@@ -16,7 +17,6 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_md_test_base.h"
 #include "ash/test/ash_test_base.h"
@@ -970,8 +970,8 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   // Track the keyboard container window.
   aura::WindowTracker tracker;
   tracker.Add(keyboard_container);
-  // Mock a login user profile change to reinitialize the keyboard.
-  Shell::GetInstance()->OnLoginUserProfilePrepared();
+  // Reinitialize the keyboard.
+  Shell::GetInstance()->CreateKeyboard();
   // keyboard_container should no longer be present.
   EXPECT_FALSE(tracker.Contains(keyboard_container));
 }
@@ -1005,7 +1005,9 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, RestoreWorkspaceAfterLogin) {
   }
 
   // Mock a login user profile change to reinitialize the keyboard.
-  Shell::GetInstance()->OnLoginUserProfilePrepared();
+  mojom::SessionInfoPtr info = mojom::SessionInfo::New();
+  info->state = session_manager::SessionState::ACTIVE;
+  WmShell::Get()->session_controller()->SetSessionInfo(std::move(info));
   EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().work_area(),
             before);
 }

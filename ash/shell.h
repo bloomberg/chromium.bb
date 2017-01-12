@@ -206,9 +206,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Called when the user logs in.
   void OnLoginStateChanged(LoginStatus status);
 
-  // Called after the logged-in user's profile is ready.
-  void OnLoginUserProfilePrepared();
-
   // Called when the application is exiting.
   void OnAppTerminating();
 

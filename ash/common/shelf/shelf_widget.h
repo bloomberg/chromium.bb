@@ -29,6 +29,9 @@ class StatusAreaWidget;
 class WmShelf;
 class WmWindow;
 
+// The ShelfWidget manages the shelf view (which contains the shelf icons) and
+// the status area widget. There is one ShelfWidget per display. It is created
+// early during RootWindowController initialization.
 class ASH_EXPORT ShelfWidget : public views::Widget,
                                public views::WidgetObserver,
                                public ShelfBackgroundAnimatorObserver,
@@ -57,11 +60,11 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   ShelfLayoutManager* shelf_layout_manager() { return shelf_layout_manager_; }
   StatusAreaWidget* status_area_widget() const { return status_area_widget_; }
 
+  // Creates the shelf view and populates it with icons. Called after the user
+  // session is active (and hence the user profile is available).
   ShelfView* CreateShelfView();
   void PostCreateShelf();
 
-  // Set visibility of the shelf.
-  void SetShelfVisibility(bool visible);
   bool IsShelfVisible() const;
 
   bool IsShowingAppList() const;
@@ -115,7 +118,8 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // |delegate_view_| is the contents view of this widget and is cleaned up
   // during CloseChildWindows of the associated RootWindowController.
   DelegateView* delegate_view_;
-  // View containing the shelf items. Owned by the views hierarchy.
+  // View containing the shelf items. Owned by the views hierarchy. Null when
+  // at the login screen.
   ShelfView* shelf_view_;
   ShelfBackgroundAnimator background_animator_;
   bool activating_as_fallback_;
