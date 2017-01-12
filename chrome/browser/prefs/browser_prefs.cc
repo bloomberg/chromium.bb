@@ -65,7 +65,6 @@
 #include "chrome/browser/ui/webui/flags_ui.h"
 #include "chrome/browser/ui/webui/instant_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
-#include "chrome/browser/ui/webui/plugins/plugins_ui.h"
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
@@ -541,10 +540,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // The extension welcome notification requires a build that enables extensions
   // and notifications, and uses the UI message center.
   ExtensionWelcomeNotification::RegisterProfilePrefs(registry);
-#endif
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-  PluginsUI::RegisterProfilePrefs(registry);
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)

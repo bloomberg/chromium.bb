@@ -1009,7 +1009,6 @@ if (!is_android) {
       "data/webui/net_internals/sdch_view.js",
       "data/webui/net_internals/timeline_view.js",
       "data/webui/ntp4.js",
-      "data/webui/plugins_browsertest.js",
       "data/webui/polymer_browser_test_base.js",
       "data/webui/print_preview.js",
       "data/webui/sandboxstatus_browsertest.js",

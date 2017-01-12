@@ -471,7 +471,6 @@ split_static_library("ui") {
     "//chrome/browser/devtools",
     "//chrome/browser/ui/webui/engagement:mojo_bindings",
     "//chrome/browser/ui/webui/omnibox:mojo_bindings",
-    "//chrome/browser/ui/webui/plugins:mojo_bindings",
     "//chrome/browser/ui/webui/usb_internals:mojo_bindings",
     "//chrome/common",
     "//chrome/common/net",
@@ -1204,10 +1203,6 @@ split_static_library("ui") {
       "hung_plugin_tab_helper.h",
       "webui/flash_ui.cc",
       "webui/flash_ui.h",
-      "webui/plugins/plugins_handler.cc",
-      "webui/plugins/plugins_handler.h",
-      "webui/plugins/plugins_ui.cc",
-      "webui/plugins/plugins_ui.h",
     ]
     deps += [ "//ppapi/proxy:ipc" ]
   }

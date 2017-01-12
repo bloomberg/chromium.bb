@@ -3920,7 +3920,7 @@ Data associated with this app will be removed from this device.
         </message>
         <message name="IDS_EXTENSION_PROMPT_WARNING_CLIPBOARD_WRITE" desc="Permission string for acess to clipboard for write permission.">
           Modify data you copy and paste
-        </message>        
+        </message>
         <message name="IDS_EXTENSION_PROMPT_WARNING_DEBUGGER" desc="Permission string for access to debugger.">
           Access the page debugger backend
         </message>
@@ -5282,73 +5282,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Component downloading
       </message>
 
-      <!-- Plugins -->
       <if expr="enable_plugins">
-        <message name="IDS_PLUGINS_TITLE" desc="Title for the chrome://plugins page.">
-          Plugins
-        </message>
-        <message name="IDS_PLUGINS_DETAILS_MODE_LINK" desc="Text of the link for details mode.">
-          Details
-        </message>
-        <message name="IDS_PLUGINS_NONE_INSTALLED" desc="Text that lets the user know that no plugins are installed.">
-          No plugins installed.
-        </message>
         <message name="IDS_PLUGINS_DISABLED_PLUGIN" desc="Text that signifies that the plugin is currently disabled.">
           (Disabled)
-        </message>
-        <message name="IDS_PLUGINS_DISABLED_BY_POLICY_PLUGIN" desc="Text that signifies that the plugin is currently disabled by enterprise policy.">
-          (Disabled by enterprise policy)
-        </message>
-        <message name="IDS_PLUGINS_ENABLED_BY_POLICY_PLUGIN" desc="Text that signifies that the plugin is currently enabled by enterprise policy.">
-          (Enabled by enterprise policy)
-        </message>
-        <message name="IDS_PLUGINS_GROUP_MANAGED_BY_POLICY" desc="Text that signifies that the plugin group is currently managed by enterprise policy.">
-          (Managed by enterprise policy)
-        </message>
-        <message name="IDS_PLUGINS_VERSION" desc="The label in front of a plugin version number.">
-          Version:
-        </message>
-        <message name="IDS_PLUGINS_DESCRIPTION" desc="The label in front of a plugin description.">
-          Description:
-        </message>
-        <message name="IDS_PLUGINS_PATH" desc="The label in front of a plugin path (file/location on disk).">
-          Location:
-        </message>
-        <message name="IDS_PLUGINS_TYPE" desc="The label in front of a plugin type (NPAPI, PPAPI, etc.).">
-          Type:
-        </message>
-        <message name="IDS_PLUGINS_MIME_TYPES" desc="The label in front of a plugin's MIME types table.">
-          MIME types:
-        </message>
-        <message name="IDS_PLUGINS_MIME_TYPES_MIME_TYPE" desc="The label over the MIME type column in a plugin's MIME types table.">
-          MIME type
-        </message>
-        <message name="IDS_PLUGINS_MIME_TYPES_DESCRIPTION" desc="The label over the description column in a plugin's MIME types table.">
-          Description
-        </message>
-        <message name="IDS_PLUGINS_MIME_TYPES_FILE_EXTENSIONS" desc="The label over the file extensions column in a plugin's MIME types table.">
-          File extensions
-        </message>
-        <message name="IDS_PLUGINS_ALWAYS_ALLOWED" desc="The checkbox label for whitelisting a plugin for content settings.">
-          Always allowed to run
-        </message>
-        <message name="IDS_PLUGINS_DOWNLOAD" desc="The link label to download the latest version of this plugin">
-          Download Critical Security Update
-        </message>
-        <message name="IDS_PLUGINS_NAME" desc="The label for the name of this plugin">
-          Name:
-        </message>
-        <message name="IDS_PLUGINS_NO_PLUGINS" desc="Text that indicates that no plugins are installed">
-          No plugins are installed
-        </message>
-        <message name="IDS_PLUGINS_PPAPI_IN_PROCESS" desc="Text that indicates the plugin is an in-process PPAPI plugin.">
-          PPAPI (in-process)
-        </message>
-        <message name="IDS_PLUGINS_PPAPI_OUT_OF_PROCESS" desc="Text that indicates the plugin is an out-of-process PPAPI plugin.">
-          PPAPI (out-of-process)
-        </message>
-        <message name="IDS_PLUGINS_BROWSER_PLUGIN" desc="Text that indicates the plugin is a browser plugin.">
-          BROWSER PLUGIN
         </message>
       </if>
 

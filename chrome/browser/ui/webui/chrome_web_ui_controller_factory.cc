@@ -46,7 +46,6 @@
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/browser/ui/webui/password_manager_internals/password_manager_internals_ui.h"
 #include "chrome/browser/ui/webui/physical_web/physical_web_ui.h"
-#include "chrome/browser/ui/webui/plugins/plugins_ui.h"
 #include "chrome/browser/ui/webui/policy_material_design_ui.h"
 #include "chrome/browser/ui/webui/policy_ui.h"
 #include "chrome/browser/ui/webui/predictors/predictors_ui.h"
@@ -599,8 +598,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #if BUILDFLAG(ENABLE_PLUGINS)
   if (url.host_piece() == chrome::kChromeUIFlashHost)
     return &NewWebUI<FlashUI>;
-  if (url.host_piece() == chrome::kChromeUIPluginsHost)
-    return &NewWebUI<PluginsUI>;
 #endif
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   if (url.host_piece() == chrome::kChromeUIPrintHost &&
@@ -805,7 +802,7 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
   // The Apps launcher page is not available on android or ChromeOS.
   if (page_url.host_piece() == chrome::kChromeUIAppLauncherPageHost)
     return AppLauncherPageUI::GetFaviconResourceBytes(scale_factor);
-#endif
+#endif  // !defined(OS_CHROMEOS)
 
   // Flash is not available on android.
   if (page_url.host_piece() == chrome::kChromeUIFlashHost)
@@ -825,13 +822,8 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
   if (page_url.host_piece() == chrome::kChromeUIExtensionsHost ||
       page_url.host_piece() == chrome::kChromeUIExtensionsFrameHost)
     return extensions::ExtensionsUI::GetFaviconResourceBytes(scale_factor);
-#endif
-
-  // Android doesn't use the plugins pages.
-  if (page_url.host_piece() == chrome::kChromeUIPluginsHost)
-    return PluginsUI::GetFaviconResourceBytes(scale_factor);
-
-#endif
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+#endif  // !defined(OS_ANDROID)
 
   return NULL;
 }

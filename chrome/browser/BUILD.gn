@@ -4127,7 +4127,6 @@ grit("resources") {
     "//chrome/app:chrome_content_browser_manifest_overlay",
     "//chrome/browser/ui/webui/engagement:mojo_bindings__generator",
     "//chrome/browser/ui/webui/omnibox:mojo_bindings__generator",
-    "//chrome/browser/ui/webui/plugins:mojo_bindings__generator",
     "//chrome/browser/ui/webui/usb_internals:mojo_bindings__generator",
     "//device/bluetooth/public/interfaces:experimental_interfaces__generator",
     "//url/mojo:url_mojom_gurl__generator",
