@@ -315,8 +315,8 @@ InProcessUtilityThreadHelper::~InProcessUtilityThreadHelper() {
   if (child_thread_count_) {
     DCHECK(BrowserThread::IsMessageLoopValid(BrowserThread::UI));
     DCHECK(BrowserThread::IsMessageLoopValid(BrowserThread::IO));
-    runner_ = new MessageLoopRunner;
-    runner_->Run();
+    run_loop_.reset(new base::RunLoop);
+    run_loop_->Run();
   }
   BrowserChildProcessObserver::Remove(this);
   RenderProcessHost::SetRunRendererInProcess(false);
@@ -332,8 +332,8 @@ void InProcessUtilityThreadHelper::BrowserChildProcessHostDisconnected(
   if (--child_thread_count_)
     return;
 
-  if (runner_.get())
-    runner_->Quit();
+  if (run_loop_)
+    run_loop_->Quit();
 }
 
 RenderFrameDeletedObserver::RenderFrameDeletedObserver(RenderFrameHost* rfh)
@@ -370,19 +370,19 @@ void RenderFrameDeletedObserver::WaitUntilDeleted() {
 
 WebContentsDestroyedWatcher::WebContentsDestroyedWatcher(
     WebContents* web_contents)
-    : WebContentsObserver(web_contents),
-      message_loop_runner_(new MessageLoopRunner) {
+    : WebContentsObserver(web_contents) {
   EXPECT_TRUE(web_contents != NULL);
 }
 
-WebContentsDestroyedWatcher::~WebContentsDestroyedWatcher() {}
+WebContentsDestroyedWatcher::~WebContentsDestroyedWatcher() {
+}
 
 void WebContentsDestroyedWatcher::Wait() {
-  message_loop_runner_->Run();
+  run_loop_.Run();
 }
 
 void WebContentsDestroyedWatcher::WebContentsDestroyed() {
-  message_loop_runner_->Quit();
+  run_loop_.Quit();
 }
 
 }  // namespace content

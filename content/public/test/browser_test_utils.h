@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/process.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "cc/output/compositor_frame.h"
@@ -347,10 +348,15 @@ void WaitForGuestSurfaceReady(content::WebContents* web_contents);
 
 #endif
 
-// Watches title changes on a WebContents, blocking until an expected title is
-// set.
+// Watches title changes on a WebContents, blocking until a title is set.
+// Can wait unitl a specific expected title appears.
 class TitleWatcher : public WebContentsObserver {
  public:
+  // |web_contents| must be non-NULL and needs to stay alive for the
+  // entire lifetime of |this|. Will wait for any (non-empty) title unless
+  // |AlsoWaitForTitle| is called before waiting.
+  explicit TitleWatcher(WebContents* web_contents);
+
   // |web_contents| must be non-NULL and needs to stay alive for the
   // entire lifetime of |this|. |expected_title| is the title that |this|
   // will wait for.
@@ -374,7 +380,7 @@ class TitleWatcher : public WebContentsObserver {
   void TestTitle();
 
   std::vector<base::string16> expected_titles_;
-  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+  base::RunLoop run_loop_;
 
   // The most recently observed expected title, if any.
   base::string16 observed_title_;

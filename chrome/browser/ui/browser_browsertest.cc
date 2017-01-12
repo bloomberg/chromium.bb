@@ -2389,11 +2389,11 @@ class ClickModifierTest : public InProcessBrowserTest {
       base::FilePath(FILE_PATH_LITERAL("href.html")));
   }
 
-  base::string16 getFirstPageTitle() {
+  base::string16 GetFirstPageTitle() {
     return ASCIIToUTF16(kFirstPageTitle);
   }
 
-  base::string16 getSecondPageTitle() {
+  base::string16 GetSecondPageTitle() {
     return ASCIIToUTF16(kSecondPageTitle);
   }
 
@@ -2421,7 +2421,8 @@ class ClickModifierTest : public InProcessBrowserTest {
       same_tab_observer.Wait();
       EXPECT_EQ(1u, chrome::GetBrowserCount(browser->profile()));
       EXPECT_EQ(1, browser->tab_strip_model()->count());
-      EXPECT_EQ(getSecondPageTitle(), web_contents->GetTitle());
+      EXPECT_EQ(GetSecondPageTitle(),
+                content::TitleWatcher(web_contents).WaitAndGetTitle());
       return;
     }
 
@@ -2439,13 +2440,15 @@ class ClickModifierTest : public InProcessBrowserTest {
     EXPECT_EQ(1u, chrome::GetBrowserCount(browser->profile()));
     EXPECT_EQ(2, browser->tab_strip_model()->count());
     web_contents = browser->tab_strip_model()->GetActiveWebContents();
-    WaitForLoadStop(web_contents);
+    base::string16 expected_title;
     if (disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB) {
-      EXPECT_EQ(getSecondPageTitle(), web_contents->GetTitle());
+      expected_title = GetSecondPageTitle();
     } else {
       ASSERT_EQ(WindowOpenDisposition::NEW_BACKGROUND_TAB, disposition);
-      EXPECT_EQ(getFirstPageTitle(), web_contents->GetTitle());
+      expected_title = GetFirstPageTitle();
     }
+    EXPECT_EQ(expected_title,
+              content::TitleWatcher(web_contents).WaitAndGetTitle());
   }
 
  private:

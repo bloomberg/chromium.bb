@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/process/kill.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -1203,11 +1204,14 @@ void WaitForGuestSurfaceReady(content::WebContents* guest_web_contents) {
 }
 #endif
 
+TitleWatcher::TitleWatcher(WebContents* web_contents)
+    : WebContentsObserver(web_contents) {
+  EXPECT_TRUE(web_contents != nullptr);
+}
+
 TitleWatcher::TitleWatcher(WebContents* web_contents,
                            const base::string16& expected_title)
-    : WebContentsObserver(web_contents),
-      message_loop_runner_(new MessageLoopRunner) {
-  EXPECT_TRUE(web_contents != NULL);
+    : TitleWatcher(web_contents) {
   expected_titles_.push_back(expected_title);
 }
 
@@ -1220,7 +1224,7 @@ TitleWatcher::~TitleWatcher() {
 
 const base::string16& TitleWatcher::WaitAndGetTitle() {
   TestTitle();
-  message_loop_runner_->Run();
+  run_loop_.Run();
   return observed_title_;
 }
 
@@ -1237,15 +1241,12 @@ void TitleWatcher::TitleWasSet(NavigationEntry* entry, bool explicit_set) {
 }
 
 void TitleWatcher::TestTitle() {
-  std::vector<base::string16>::const_iterator it =
-      std::find(expected_titles_.begin(),
-                expected_titles_.end(),
-                web_contents()->GetTitle());
-  if (it == expected_titles_.end())
-    return;
-
-  observed_title_ = *it;
-  message_loop_runner_->Quit();
+  const base::string16& current_title = web_contents()->GetTitle();
+  if ((!current_title.empty() && expected_titles_.empty()) ||
+      base::ContainsValue(expected_titles_, current_title)) {
+    observed_title_ = current_title;
+    run_loop_.Quit();
+  }
 }
 
 RenderProcessHostWatcher::RenderProcessHostWatcher(
