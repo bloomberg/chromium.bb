@@ -5,8 +5,6 @@
 package org.chromium.chrome.browser.preferences.privacy;
 
 import android.Manifest;
-import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,6 +15,7 @@ import android.preference.PreferenceFragment;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.physicalweb.ListUrlsActivity;
 import org.chromium.chrome.browser.physicalweb.PhysicalWeb;
 import org.chromium.chrome.browser.physicalweb.PhysicalWebUma;
@@ -104,15 +103,11 @@ public class PhysicalWebPreferenceFragment extends PreferenceFragment {
         physicalWebLaunch.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                startActivity(createListUrlsIntent(getActivity()));
+                PhysicalWebUma.onActivityReferral(ListUrlsActivity.PREFERENCE_REFERER);
+                IntentHandler.startChromeLauncherActivityForTrustedIntent(
+                        PhysicalWeb.createListUrlsIntent());
                 return true;
             }
         });
-    }
-
-    private static Intent createListUrlsIntent(Context context) {
-        Intent intent = new Intent(context, ListUrlsActivity.class);
-        intent.putExtra(ListUrlsActivity.REFERER_KEY, ListUrlsActivity.PREFERENCE_REFERER);
-        return intent;
     }
 }

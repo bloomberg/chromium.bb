@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.physicalweb;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Build;
 import android.text.Html;
@@ -16,9 +15,9 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BasicNativePage;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.location.LocationUtils;
@@ -64,7 +63,9 @@ public class PhysicalWebDiagnosticsPage extends BasicNativePage {
         mLaunchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                activity.startActivity(createListUrlsIntent());
+                PhysicalWebUma.onActivityReferral(ListUrlsActivity.DIAGNOSTICS_REFERER);
+                IntentHandler.startChromeLauncherActivityForTrustedIntent(
+                        PhysicalWeb.createListUrlsIntent());
             }
         });
 
@@ -216,11 +217,6 @@ public class PhysicalWebDiagnosticsPage extends BasicNativePage {
 
     private boolean isSdkVersionCorrect() {
         return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT);
-    }
-
-    private static Intent createListUrlsIntent() {
-        return new Intent(ContextUtils.getApplicationContext(), ListUrlsActivity.class)
-                .putExtra(ListUrlsActivity.REFERER_KEY, ListUrlsActivity.DIAGNOSTICS_REFERER);
     }
 
     private static String colorToHexValue(int color) {

@@ -4,11 +4,14 @@
 
 package org.chromium.chrome.browser.physicalweb;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Build;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
@@ -145,5 +148,14 @@ public class PhysicalWeb {
                 && locationUtils.hasAndroidLocationPermission()
                 && TemplateUrlService.getInstance().isDefaultSearchEngineGoogle()
                 && !Profile.getLastUsedProfile().isOffTheRecord();
+    }
+
+    /**
+     * Creates an Intent that sends the user to the list of Physical Web URLs.
+     */
+    public static Intent createListUrlsIntent() {
+        return new Intent(Intent.ACTION_VIEW)
+                .addCategory(Intent.CATEGORY_BROWSABLE)
+                .setData(Uri.parse(UrlConstants.PHYSICAL_WEB_URL));
     }
 }
