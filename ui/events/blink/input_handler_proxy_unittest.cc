@@ -1010,8 +1010,12 @@ TEST_P(InputHandlerProxyTest, GestureFlingTouchpadScrollLatchingEnabled) {
   time += base::TimeDelta::FromMilliseconds(100);
   Animate(time);
 
+  VERIFY_AND_RESET_MOCKS();
+
   // Fling has ended, the last Animate won't cause any more wheel ticks.
   EXPECT_CALL(mock_input_handler_, ScrollBy(testing::_)).Times(0);
+  time += base::TimeDelta::FromMilliseconds(100);
+  Animate(time);
 
   VERIFY_AND_RESET_MOCKS();
 }
