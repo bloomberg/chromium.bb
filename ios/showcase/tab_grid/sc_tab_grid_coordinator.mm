@@ -5,8 +5,8 @@
 #import "ios/showcase/tab_grid/sc_tab_grid_coordinator.h"
 
 #import "base/format_macros.h"
-#import "ios/chrome/browser/ui/commands/tab_commands.h"
-#import "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
+#import "ios/clean/chrome/browser/ui/commands/tab_commands.h"
+#import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 #import "ios/showcase/common/protocol_alerter.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

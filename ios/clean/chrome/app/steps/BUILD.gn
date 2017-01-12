@@ -1,0 +1,36 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("steps") {
+  sources = [
+    "launch_to_background.h",
+    "launch_to_background.mm",
+    "launch_to_basic.h",
+    "launch_to_basic.mm",
+    "launch_to_foreground.h",
+    "launch_to_foreground.mm",
+    "tab_grid_coordinator+application_step.h",
+    "tab_grid_coordinator+application_step.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    "//base",
+    "//components/content_settings/core/browser",
+    "//ios/chrome/app:app_internal",
+    "//ios/chrome/app/startup",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser:browser_internal",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/browser_state:browser_state_impl",
+    "//ios/chrome/browser/content_settings",
+    "//ios/chrome/browser/web:web_internal",
+    "//ios/clean/chrome/app:application_state",
+    "//ios/clean/chrome/browser",
+    "//ios/clean/chrome/browser/ui/tab_grid",
+    "//ios/net",
+    "//ios/web:web_arc",
+  ]
+}

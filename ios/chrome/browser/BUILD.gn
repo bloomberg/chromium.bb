@@ -256,21 +256,3 @@ source_set("browser_internal") {
     "//base",
   ]
 }
-
-# Clean Skeleton targets
-source_set("browser_clean_skeleton") {
-  sources = [
-    "browser_coordinator+internal.h",
-    "browser_coordinator.h",
-    "browser_coordinator.mm",
-    "url_opening.h",
-  ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
-
-  deps = [
-    ":browser",
-    "//base",
-    "//ios/chrome/browser/browser_state",
-  ]
-}

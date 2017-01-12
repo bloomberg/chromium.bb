@@ -437,12 +437,3 @@ source_set("perf_tests") {
   ]
   libs = [ "UIKit.framework" ]
 }
-
-# Clean skeleton targets
-source_set("ui_clean_skeleton") {
-  sources = [
-    "ui_types.h",
-  ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
-}

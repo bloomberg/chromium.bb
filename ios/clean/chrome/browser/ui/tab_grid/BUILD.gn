@@ -1,0 +1,43 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("tab_grid") {
+  sources = [
+    "tab_grid_coordinator.h",
+    "tab_grid_coordinator.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    ":tab_grid_ui",
+    "//base",
+    "//ios/chrome/browser/browser_state",
+    "//ios/clean/chrome/browser",
+    "//ios/clean/chrome/browser/ui/commands",
+    "//ios/clean/chrome/browser/ui/settings",
+    "//ios/clean/chrome/browser/ui/tab",
+    "//ios/web",
+    "//net",
+    "//ui/base",
+  ]
+}
+
+source_set("tab_grid_ui") {
+  sources = [
+    "tab_grid_tab_cell.h",
+    "tab_grid_tab_cell.mm",
+    "tab_grid_view_controller.h",
+    "tab_grid_view_controller.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    "//base",
+    "//ios/clean/chrome/browser/ui/actions",
+    "//ios/clean/chrome/browser/ui/animators",
+    "//ios/clean/chrome/browser/ui/commands",
+  ]
+}

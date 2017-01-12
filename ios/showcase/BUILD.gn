@@ -25,7 +25,7 @@ ios_app_bundle("showcase") {
 
 group("features") {
   deps = [
-    "//ios/chrome/browser/ui/tools:tools_ui",
+    "//ios/clean/chrome/browser/ui/tools:tools_ui",
     "//ios/showcase/settings",
     "//ios/showcase/strip",
     "//ios/showcase/suggestions",

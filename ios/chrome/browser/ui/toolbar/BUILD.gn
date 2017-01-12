@@ -204,25 +204,3 @@ source_set("eg_tests") {
   ]
   libs = [ "XCTest.framework" ]
 }
-
-# Clean Skeleton Targets
-source_set("toolbar_clean_skeleton") {
-  sources = [
-    "toolbar_coordinator.h",
-    "toolbar_coordinator.mm",
-    "toolbar_view_controller.h",
-    "toolbar_view_controller.mm",
-  ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
-
-  deps = [
-    "//base",
-    "//ios/chrome/browser:browser_clean_skeleton",
-    "//ios/chrome/browser/ui/actions",
-    "//ios/chrome/browser/ui/animators",
-    "//ios/chrome/browser/ui/commands:commands_clean_skeleton",
-    "//ios/chrome/browser/ui/tools",
-    "//ios/web",
-  ]
-}

@@ -1,0 +1,24 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("toolbar") {
+  sources = [
+    "toolbar_coordinator.h",
+    "toolbar_coordinator.mm",
+    "toolbar_view_controller.h",
+    "toolbar_view_controller.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    "//base",
+    "//ios/clean/chrome/browser",
+    "//ios/clean/chrome/browser/ui/actions",
+    "//ios/clean/chrome/browser/ui/animators",
+    "//ios/clean/chrome/browser/ui/commands",
+    "//ios/clean/chrome/browser/ui/tools",
+    "//ios/web",
+  ]
+}

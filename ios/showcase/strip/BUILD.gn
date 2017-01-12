@@ -8,8 +8,8 @@ source_set("strip") {
     "sc_strip_coordinator.mm",
   ]
   deps = [
-    "//ios/chrome/browser/ui/actions",
-    "//ios/chrome/browser/ui/strip:strip_ui",
+    "//ios/clean/chrome/browser/ui/actions",
+    "//ios/clean/chrome/browser/ui/strip:strip_ui",
     "//ios/showcase/common",
   ]
   libs = [ "UIKit.framework" ]

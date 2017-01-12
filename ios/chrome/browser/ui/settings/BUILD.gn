@@ -368,20 +368,3 @@ source_set("eg_tests") {
     "XCTest.framework",
   ]
 }
-
-# Clean Skeleton targets.
-source_set("settings_clean_skeleton") {
-  sources = [
-    "settings_coordinator.h",
-    "settings_coordinator.mm",
-  ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
-
-  deps = [
-    ":settings",
-    "//ios/chrome/browser:browser_clean_skeleton",
-    "//ios/chrome/browser/ui/actions",
-    "//ios/chrome/browser/ui/commands:commands_clean_skeleton",
-  ]
-}

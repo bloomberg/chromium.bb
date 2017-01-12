@@ -289,14 +289,3 @@ source_set("perf_tests") {
   ]
   libs = [ "WebKit.framework" ]
 }
-
-# Clean Skeleton targets.
-source_set("web_clean_skeleton") {
-  sources = [
-    "web_mediator+internal.h",
-    "web_mediator.h",
-    "web_mediator.mm",
-  ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
-}
