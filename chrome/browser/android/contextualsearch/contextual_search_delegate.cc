@@ -136,8 +136,8 @@ void ContextualSearchDelegate::ContinueSearchTermResolutionRequest() {
 
   // Add Chrome experiment state to the request headers.
   net::HttpRequestHeaders headers;
-  // Note: It's fine to pass in |is_signed_in| false, which does not affect
-  // transmission of experiment ids coming from the variations server.
+  // Note: It's OK to pass |is_signed_in| false if it's unknown, as it does
+  // not affect transmission of experiments coming from the variations server.
   bool is_signed_in = false;
   variations::AppendVariationHeaders(
       search_term_fetcher_->GetOriginalURL(),
