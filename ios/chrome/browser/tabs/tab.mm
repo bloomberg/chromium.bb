@@ -1785,14 +1785,15 @@ void AddNetworkClientFactoryOnIOThread(
   }
 }
 
-- (void)webDidAddPendingURL {
+- (void)webState:(web::WebState*)webState
+    didStartProvisionalNavigationForURL:(const GURL&)URL {
   [parentTabModel_ notifyTabChanged:self];
   [openInController_ disable];
   [[NSNotificationCenter defaultCenter]
       postNotificationName:
           kTabClosingCurrentDocumentNotificationForCrashReporting
                     object:self];
-  [metricsClientManager_ pageLoadStarted:self.url];
+  [metricsClientManager_ pageLoadStarted:URL];
 }
 
 - (void)webCancelStartLoadingRequest {

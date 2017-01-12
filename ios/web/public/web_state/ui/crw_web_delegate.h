@@ -61,13 +61,6 @@ struct Referrer;
 // Phase will be LOAD_REQUESTED.
 - (void)webWillAddPendingURL:(const GURL&)url
                   transition:(ui::PageTransition)transition;
-// This method is invoked after an update to the navigation manager's pending
-// URL, triggered whenever the system believes the URL is about to
-// change, or immediately after any unexpected change of the URL.
-// This can be followed by a call to webDidStartLoading (phase PAGE_LOADING) or
-// another call to webWillAddPendingURL and webDidAddPendingURL (phase still
-// LOAD_REQUESTED).
-- (void)webDidAddPendingURL;
 // Called when webWillStartLoadingURL was called, but something went wrong, and
 // webDidStartLoadingURL will now never be called.
 - (void)webCancelStartLoadingRequest;

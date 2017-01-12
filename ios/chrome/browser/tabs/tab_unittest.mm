@@ -226,7 +226,7 @@ class TabTest : public BlockCleanupTest {
         andReturnValue:OCMOCK_VALUE(kLoadRequested)] loadPhase];
     web::Referrer empty_referrer;
     [tab_ webWillAddPendingURL:userUrl transition:ui::PAGE_TRANSITION_TYPED];
-    [tab_ webDidAddPendingURL];
+    [tab_ webStateImpl]->OnProvisionalNavigationStarted(userUrl);
     [tab_ webWillAddPendingURL:redirectUrl
                     transition:ui::PAGE_TRANSITION_CLIENT_REDIRECT];
     [[tab_ navigationManager]->GetSessionController()
@@ -234,7 +234,7 @@ class TabTest : public BlockCleanupTest {
                  referrer:empty_referrer
                transition:ui::PAGE_TRANSITION_CLIENT_REDIRECT
         rendererInitiated:YES];
-    [tab_ webDidAddPendingURL];
+    [tab_ webStateImpl]->OnProvisionalNavigationStarted(redirectUrl);
     [[[(id)mock_web_controller_ expect]
         andReturnValue:OCMOCK_VALUE(kPageLoading)] loadPhase];
     [[tab_ navigationManager]->GetSessionController() commitPendingEntry];

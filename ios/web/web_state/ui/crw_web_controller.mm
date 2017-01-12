@@ -1709,7 +1709,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                             rendererInitiated:YES];
   }
   _webStateImpl->SetIsLoading(true);
-  [_delegate webDidAddPendingURL];
   _webStateImpl->OnProvisionalNavigationStarted(requestURL);
 }
 
