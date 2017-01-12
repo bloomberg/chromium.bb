@@ -21,6 +21,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "components/data_usage/core/data_use_aggregator.h"
 #include "components/data_usage/core/data_use_amortizer.h"
 #include "components/data_usage/core/data_use_annotator.h"
@@ -115,6 +118,11 @@ class DataUseUITabModelTest : public testing::Test {
 
  protected:
   void SetUp() override {
+    profile_manager_.reset(
+        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+    EXPECT_TRUE(profile_manager_->SetUp());
+    profile_ = profile_manager_->CreateTestingProfile("p1");
+
     io_task_runner_ = content::BrowserThread::GetTaskRunnerForThread(
         content::BrowserThread::IO);
     ui_task_runner_ = content::BrowserThread::GetTaskRunnerForThread(
@@ -141,6 +149,12 @@ class DataUseUITabModelTest : public testing::Test {
   DataUseUITabModel data_use_ui_tab_model_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+
+  std::unique_ptr<TestingProfileManager> profile_manager_;
+
+  // Test profile used by the tests is owned by |profile_manager_|.
+  TestingProfile* profile_;
+
   std::unique_ptr<data_usage::DataUseAggregator> data_use_aggregator_;
   std::unique_ptr<ExternalDataUseObserver> external_data_use_observer_;
   std::unique_ptr<TestDataUseTabModel> data_use_tab_model_;

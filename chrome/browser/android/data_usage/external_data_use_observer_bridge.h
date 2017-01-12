@@ -98,6 +98,8 @@ class ExternalDataUseObserverBridge {
   // should register as a data use observer.
   virtual void ShouldRegisterAsDataUseObserver(bool should_register) const;
 
+  void SetRegisterGoogleVariationID(bool register_google_variation_id);
+
  private:
   // Java listener that provides regular expressions to |this|. Data use
   // reports are submitted to |j_external_data_use_observer_|.
@@ -116,6 +118,9 @@ class ExternalDataUseObserverBridge {
 
   // True if matching rules are fetched for the first time.
   bool is_first_matching_rule_fetch_;
+
+  // True if Google variation ID should be registered.
+  bool register_google_variation_id_;
 
   // |io_task_runner_| accesses ExternalDataUseObserver members on IO thread.
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;

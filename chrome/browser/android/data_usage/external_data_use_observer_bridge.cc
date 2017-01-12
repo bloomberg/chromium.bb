@@ -61,7 +61,8 @@ namespace android {
 
 ExternalDataUseObserverBridge::ExternalDataUseObserverBridge()
     : construct_time_(base::TimeTicks::Now()),
-      is_first_matching_rule_fetch_(true) {
+      is_first_matching_rule_fetch_(true),
+      register_google_variation_id_(false) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   // Detach from IO thread since rest of ExternalDataUseObserverBridge lives on
@@ -210,7 +211,11 @@ void ExternalDataUseObserverBridge::ShouldRegisterAsDataUseObserver(
       base::Bind(&ExternalDataUseObserver::ShouldRegisterAsDataUseObserver,
                  external_data_use_observer_, should_register));
 
+  if (!register_google_variation_id_)
+    return;
+
   variations::VariationID variation_id = GetGoogleVariationID();
+
   if (variation_id != variations::EMPTY_ID) {
     // Set variation id for the enabled group if |should_register| is true.
     // Otherwise clear the variation id for the enabled group by setting to
@@ -224,6 +229,12 @@ void ExternalDataUseObserverBridge::ShouldRegisterAsDataUseObserver(
                                   ? kSyntheticFieldTrialEnabledGroup
                                   : kSyntheticFieldTrialDisabledGroup);
   }
+}
+
+void ExternalDataUseObserverBridge::SetRegisterGoogleVariationID(
+    bool register_google_variation_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  register_google_variation_id_ = register_google_variation_id;
 }
 
 bool RegisterExternalDataUseObserver(JNIEnv* env) {

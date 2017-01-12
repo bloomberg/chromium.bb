@@ -12,7 +12,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chrome {
@@ -33,6 +35,19 @@ DataUseTabModel* GetDataUseTabModelOnIOThread(IOThread* io_thread) {
   }
 
   return io_thread->globals()->external_data_use_observer->GetDataUseTabModel();
+}
+
+void SetRegisterGoogleVariationIDOnIOThread(IOThread* io_thread,
+                                            bool register_google_variation_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  // Avoid null pointer referencing during browser shutdown.
+  if (io_thread && !io_thread->globals() &&
+      io_thread->globals()->external_data_use_observer) {
+    io_thread->globals()
+        ->external_data_use_observer->SetRegisterGoogleVariationID(
+            register_google_variation_id);
+  }
 }
 
 }  // namespace
@@ -64,10 +79,12 @@ DataUseUITabModelFactory::~DataUseUITabModelFactory() {}
 KeyedService* DataUseUITabModelFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   DataUseUITabModel* data_use_ui_tab_model = new DataUseUITabModel();
+  Profile* profile = Profile::FromBrowserContext(context)->GetOriginalProfile();
+  const SigninManager* signin_manager =
+      SigninManagerFactory::GetForProfileIfExists(profile);
 
   // DataUseUITabModel should not be created for incognito profile.
-  DCHECK_EQ(Profile::FromBrowserContext(context)->GetOriginalProfile(),
-            Profile::FromBrowserContext(context));
+  DCHECK_EQ(profile, Profile::FromBrowserContext(context));
 
   // Pass the DataUseTabModel pointer to DataUseUITabModel.
   content::BrowserThread::PostTaskAndReplyWithResult(
@@ -75,6 +92,12 @@ KeyedService* DataUseUITabModelFactory::BuildServiceInstanceFor(
       base::Bind(&GetDataUseTabModelOnIOThread, g_browser_process->io_thread()),
       base::Bind(&chrome::android::DataUseUITabModel::SetDataUseTabModel,
                  data_use_ui_tab_model->GetWeakPtr()));
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&SetRegisterGoogleVariationIDOnIOThread,
+                 g_browser_process->io_thread(),
+                 signin_manager && signin_manager->IsAuthenticated()));
 
   return data_use_ui_tab_model;
 }

@@ -78,6 +78,8 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
     return external_data_use_reporter_;
   }
 
+  void SetRegisterGoogleVariationID(bool register_google_variation_id);
+
  private:
   friend class DataUseTabModelTest;
   friend class DataUseUITabModelTest;

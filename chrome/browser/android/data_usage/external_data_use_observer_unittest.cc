@@ -18,6 +18,9 @@
 #include "base/test/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/data_usage/data_use_tab_model.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "components/data_usage/core/data_use.h"
 #include "components/data_usage/core/data_use_aggregator.h"
 #include "components/sessions/core/session_id.h"
@@ -45,6 +48,11 @@ class ExternalDataUseObserverTest : public testing::Test {
   void SetUp() override {
     thread_bundle_.reset(new content::TestBrowserThreadBundle(
         content::TestBrowserThreadBundle::IO_MAINLOOP));
+    profile_manager_.reset(
+        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+    EXPECT_TRUE(profile_manager_->SetUp());
+    profile_ = profile_manager_->CreateTestingProfile("p1");
+
     io_task_runner_ = content::BrowserThread::GetTaskRunnerForThread(
         content::BrowserThread::IO);
     ui_task_runner_ = content::BrowserThread::GetTaskRunnerForThread(
@@ -120,6 +128,11 @@ class ExternalDataUseObserverTest : public testing::Test {
   std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
   std::unique_ptr<data_usage::DataUseAggregator> data_use_aggregator_;
   std::unique_ptr<ExternalDataUseObserver> external_data_use_observer_;
+
+  std::unique_ptr<TestingProfileManager> profile_manager_;
+
+  // Test profile used by the tests is owned by |profile_manager_|.
+  TestingProfile* profile_;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;

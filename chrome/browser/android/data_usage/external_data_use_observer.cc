@@ -217,6 +217,19 @@ DataUseTabModel* ExternalDataUseObserver::GetDataUseTabModel() const {
   return data_use_tab_model_;
 }
 
+void ExternalDataUseObserver::SetRegisterGoogleVariationID(
+    bool register_google_variation_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  // It is okay to use base::Unretained here since
+  // |external_data_use_observer_bridge_| is owned by |this|, and is destroyed
+  // on UI thread when |this| is destroyed.
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&ExternalDataUseObserverBridge::SetRegisterGoogleVariationID,
+                 base::Unretained(external_data_use_observer_bridge_),
+                 register_google_variation_id));
+}
+
 }  // namespace android
 
 }  // namespace chrome
