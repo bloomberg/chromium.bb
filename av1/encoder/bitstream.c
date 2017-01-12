@@ -2177,6 +2177,56 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 #endif
 }
 
+#if CONFIG_MOTION_VAR && CONFIG_NCOBMC
+static void write_tokens_sb(AV1_COMP *cpi, const TileInfo *const tile,
+                            aom_writer *w, const TOKENEXTRA **tok,
+                            const TOKENEXTRA *const tok_end, int mi_row,
+                            int mi_col, BLOCK_SIZE bsize) {
+  const AV1_COMMON *const cm = &cpi->common;
+  const int bsl = b_width_log2_lookup[bsize];
+  const int bs = (1 << bsl) / 4;
+  PARTITION_TYPE partition;
+  BLOCK_SIZE subsize;
+  const MODE_INFO *m = NULL;
+
+  if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
+
+  m = cm->mi_grid_visible[mi_row * cm->mi_stride + mi_col];
+  partition = partition_lookup[bsl][m->mbmi.sb_type];
+  subsize = get_subsize(bsize, partition);
+
+  if (subsize < BLOCK_8X8) {
+    write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
+  } else {
+    switch (partition) {
+      case PARTITION_NONE:
+        write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
+        break;
+      case PARTITION_HORZ:
+        write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
+        if (mi_row + bs < cm->mi_rows)
+          write_tokens_b(cpi, tile, w, tok, tok_end, mi_row + bs, mi_col);
+        break;
+      case PARTITION_VERT:
+        write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
+        if (mi_col + bs < cm->mi_cols)
+          write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + bs);
+        break;
+      case PARTITION_SPLIT:
+        write_tokens_sb(cpi, tile, w, tok, tok_end, mi_row, mi_col, subsize);
+        write_tokens_sb(cpi, tile, w, tok, tok_end, mi_row, mi_col + bs,
+                        subsize);
+        write_tokens_sb(cpi, tile, w, tok, tok_end, mi_row + bs, mi_col,
+                        subsize);
+        write_tokens_sb(cpi, tile, w, tok, tok_end, mi_row + bs, mi_col + bs,
+                        subsize);
+        break;
+      default: assert(0);
+    }
+  }
+}
+#endif
+
 static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
                           aom_writer *w, const TOKENEXTRA **tok,
                           const TOKENEXTRA *const tok_end,
@@ -2189,10 +2239,15 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
                supertx_enabled,
 #endif
                mi_row, mi_col);
+#if CONFIG_MOTION_VAR && CONFIG_NCOBMC
+  (void)tok;
+  (void)tok_end;
+#else
 #if !CONFIG_PVQ && CONFIG_SUPERTX
   if (!supertx_enabled)
 #endif
     write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
+#endif
 }
 
 static void write_partition(const AV1_COMMON *const cm,
@@ -2556,6 +2611,9 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
     for (mi_col = mi_col_start; mi_col < mi_col_end; mi_col += cm->mib_size) {
       write_modes_sb_wrapper(cpi, tile, w, tok, tok_end, 0, mi_row, mi_col,
                              cm->sb_size);
+#if CONFIG_MOTION_VAR && CONFIG_NCOBMC
+      write_tokens_sb(cpi, tile, w, tok, tok_end, mi_row, mi_col, cm->sb_size);
+#endif
     }
   }
 #if CONFIG_PVQ

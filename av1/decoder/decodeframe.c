@@ -1617,7 +1617,18 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
                                               tx_size);
     }
   } else {
-// Prediction
+    int ref;
+
+    for (ref = 0; ref < 1 + has_second_ref(mbmi); ++ref) {
+      const MV_REFERENCE_FRAME frame = mbmi->ref_frame[ref];
+      RefBuffer *ref_buf = &cm->frame_refs[frame - LAST_FRAME];
+
+      xd->block_refs[ref] = ref_buf;
+      if ((!av1_is_valid_scale(&ref_buf->sf)))
+        aom_internal_error(xd->error_info, AOM_CODEC_UNSUP_BITSTREAM,
+                           "Reference frame has invalid dimensions");
+      av1_setup_pre_planes(xd, ref, ref_buf->buf, mi_row, mi_col, &ref_buf->sf);
+    }
 #if CONFIG_WARPED_MOTION
     if (mbmi->motion_mode == WARPED_CAUSAL) {
       int i;
@@ -1700,6 +1711,87 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
   xd->corrupted |= aom_reader_has_error(r);
 }
 
+#if CONFIG_NCOBMC && CONFIG_MOTION_VAR
+static void detoken_and_recon_sb(AV1Decoder *const pbi, MACROBLOCKD *const xd,
+                                 int mi_row, int mi_col, aom_reader *r,
+                                 BLOCK_SIZE bsize) {
+  AV1_COMMON *const cm = &pbi->common;
+  const int hbs = mi_size_wide[bsize] >> 1;
+#if CONFIG_CB4X4
+  const int unify_bsize = 1;
+#else
+  const int unify_bsize = 0;
+#endif
+#if CONFIG_EXT_PARTITION_TYPES
+  BLOCK_SIZE bsize2 = get_subsize(bsize, PARTITION_SPLIT);
+#endif
+  PARTITION_TYPE partition;
+  BLOCK_SIZE subsize;
+  const int has_rows = (mi_row + hbs) < cm->mi_rows;
+  const int has_cols = (mi_col + hbs) < cm->mi_cols;
+
+  if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
+
+  partition = get_partition(cm, mi_row, mi_col, bsize);
+  subsize = subsize_lookup[partition][bsize];
+
+  if (!hbs && !unify_bsize) {
+    xd->bmode_blocks_wl = 1 >> !!(partition & PARTITION_VERT);
+    xd->bmode_blocks_hl = 1 >> !!(partition & PARTITION_HORZ);
+    decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, subsize);
+  } else {
+    switch (partition) {
+      case PARTITION_NONE:
+        decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, bsize);
+        break;
+      case PARTITION_HORZ:
+        decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, subsize);
+        if (has_rows)
+          decode_token_and_recon_block(pbi, xd, mi_row + hbs, mi_col, r,
+                                       subsize);
+        break;
+      case PARTITION_VERT:
+        decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, subsize);
+        if (has_cols)
+          decode_token_and_recon_block(pbi, xd, mi_row, mi_col + hbs, r,
+                                       subsize);
+        break;
+      case PARTITION_SPLIT:
+        detoken_and_recon_sb(pbi, xd, mi_row, mi_col, r, subsize);
+        detoken_and_recon_sb(pbi, xd, mi_row, mi_col + hbs, r, subsize);
+        detoken_and_recon_sb(pbi, xd, mi_row + hbs, mi_col, r, subsize);
+        detoken_and_recon_sb(pbi, xd, mi_row + hbs, mi_col + hbs, r, subsize);
+        break;
+#if CONFIG_EXT_PARTITION_TYPES
+      case PARTITION_HORZ_A:
+        decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, bsize2);
+        decode_token_and_recon_block(pbi, xd, mi_row, mi_col + hbs, r, bsize2);
+        decode_token_and_recon_block(pbi, xd, mi_row + hbs, mi_col, r, subsize);
+        break;
+      case PARTITION_HORZ_B:
+        decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, subsize);
+        decode_token_and_recon_block(pbi, xd, mi_row + hbs, mi_col, r, bsize2);
+        decode_token_and_recon_block(pbi, xd, mi_row + hbs, mi_col + hbs, r,
+                                     bsize2);
+        break;
+      case PARTITION_VERT_A:
+        decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, bsize2);
+        decode_token_and_recon_block(pbi, xd, mi_row + hbs, mi_col, r, bsize2);
+        decode_token_and_recon_block(pbi, xd, mi_row, mi_col + hbs, r, subsize);
+        break;
+      case PARTITION_VERT_B:
+        decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, subsize);
+        decode_token_and_recon_block(pbi, xd, mi_row, mi_col + hbs, r, bsize2);
+        decode_token_and_recon_block(pbi, xd, mi_row + hbs, mi_col + hbs, r,
+                                     bsize2);
+        break;
+#endif
+      default: assert(0 && "Invalid partition type");
+    }
+  }
+}
+#endif
+
 static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #if CONFIG_SUPERTX
                          int supertx_enabled,
@@ -1718,10 +1810,12 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                     partition,
 #endif
                     bsize);
+#if !(CONFIG_MOTION_VAR && CONFIG_NCOBMC)
 #if CONFIG_SUPERTX
   if (!supertx_enabled)
 #endif  // CONFIG_SUPERTX
     decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, bsize);
+#endif
 }
 
 static PARTITION_TYPE read_partition(AV1_COMMON *cm, MACROBLOCKD *xd,
@@ -3334,6 +3428,10 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 #endif  // CONFIG_SUPERTX
                            mi_row, mi_col, &td->bit_reader, cm->sb_size,
                            b_width_log2_lookup[cm->sb_size]);
+#if CONFIG_NCOBMC && CONFIG_MOTION_VAR
+          detoken_and_recon_sb(pbi, &td->xd, mi_row, mi_col, &td->bit_reader,
+                               cm->sb_size);
+#endif
         }
         pbi->mb.corrupted |= td->xd.corrupted;
         if (pbi->mb.corrupted)
@@ -3474,6 +3572,10 @@ static int tile_worker_hook(TileWorkerData *const tile_data,
 #endif
                        mi_row, mi_col, &tile_data->bit_reader, cm->sb_size,
                        b_width_log2_lookup[cm->sb_size]);
+#if CONFIG_NCOBMC && CONFIG_MOTION_VAR
+      detoken_and_recon_sb(pbi, &tile_data->xd, mi_row, mi_col,
+                           &tile_data->bit_reader, cm->sb_size);
+#endif
     }
   }
   return !tile_data->xd.corrupted;

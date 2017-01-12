@@ -1483,13 +1483,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 
   for (ref = 0; ref < 1 + is_compound; ++ref) {
     MV_REFERENCE_FRAME frame = mbmi->ref_frame[ref];
-    RefBuffer *ref_buf = &cm->frame_refs[frame - LAST_FRAME];
 
-    xd->block_refs[ref] = ref_buf;
-    if ((!av1_is_valid_scale(&ref_buf->sf)))
-      aom_internal_error(xd->error_info, AOM_CODEC_UNSUP_BITSTREAM,
-                         "Reference frame has invalid dimensions");
-    av1_setup_pre_planes(xd, ref, ref_buf->buf, mi_row, mi_col, &ref_buf->sf);
     av1_find_mv_refs(cm, xd, mi, frame,
 #if CONFIG_REF_MV
                      &xd->ref_mv_count[frame], xd->ref_mv_stack[frame],
