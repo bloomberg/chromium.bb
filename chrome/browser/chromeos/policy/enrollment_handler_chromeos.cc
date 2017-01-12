@@ -324,14 +324,18 @@ void EnrollmentHandlerChromeOS::HandlePolicyValidationResult(
   DCHECK_EQ(STEP_VALIDATION, enrollment_step_);
   if (validator->success()) {
     std::string username = validator->policy_data()->username();
-    // TODO(rsorokin): remove device_mode_ check when device is locked
-    // with both realm and domain.
-    if (device_mode_ != DEVICE_MODE_ENTERPRISE_AD)
-      domain_ = gaia::ExtractDomainName(gaia::CanonicalizeEmail(username));
     device_id_ = validator->policy_data()->device_id();
     policy_ = std::move(validator->policy());
-    SetStep(STEP_ROBOT_AUTH_FETCH);
-    client_->FetchRobotAuthCodes(auth_token_);
+    if (device_mode_ == DEVICE_MODE_ENTERPRISE_AD) {
+      // Don't use robot account for the Active Directory managed devices.
+      skip_robot_auth_ = true;
+      SetStep(STEP_LOCK_DEVICE);
+      StartLockDevice();
+    } else {
+      domain_ = gaia::ExtractDomainName(gaia::CanonicalizeEmail(username));
+      SetStep(STEP_ROBOT_AUTH_FETCH);
+      client_->FetchRobotAuthCodes(auth_token_);
+    }
   } else {
     ReportResult(EnrollmentStatus::ForValidationError(validator->status()));
   }
