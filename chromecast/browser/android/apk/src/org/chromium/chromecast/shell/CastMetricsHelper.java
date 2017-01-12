@@ -9,9 +9,8 @@ import org.chromium.base.annotations.JNINamespace;
 /**
  * Wrapper of native CastMetricsHelper.
  */
-@JNINamespace("chromecast")
+@JNINamespace("chromecast::shell")
 public final class CastMetricsHelper {
-
     public static void logMediaPlay() {
         nativeLogMediaPlay();
     }

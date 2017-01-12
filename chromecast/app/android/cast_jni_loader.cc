@@ -7,6 +7,7 @@
 #include "chromecast/android/cast_jni_registrar.h"
 #include "chromecast/android/platform_jni_loader.h"
 #include "chromecast/app/cast_main_delegate.h"
+#include "chromecast/browser/android/jni_registrar.h"
 #include "content/public/app/content_jni_onload.h"
 #include "content/public/app/content_main.h"
 #include "content/public/browser/android/compositor.h"
@@ -17,6 +18,8 @@ bool RegisterJNI(JNIEnv* env) {
   // To be called only from the UI thread.  If loading the library is done on
   // a separate thread, this should be moved elsewhere.
   if (!chromecast::android::RegisterJni(env))
+    return false;
+  if (!chromecast::shell::RegisterJni(env))
     return false;
   // Allow platform-specific implementations to perform more JNI registration.
   if (!chromecast::android::PlatformRegisterJni(env))

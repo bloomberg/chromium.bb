@@ -14,10 +14,6 @@ if (is_android) {
 
 source_set("browser") {
   sources = [
-    "android/cast_window_android.cc",
-    "android/cast_window_android.h",
-    "android/cast_window_manager.cc",
-    "android/cast_window_manager.h",
     "cast_browser_context.cc",
     "cast_browser_context.h",
     "cast_browser_main_parts.cc",
@@ -26,7 +22,6 @@ source_set("browser") {
     "cast_browser_process.h",
     "cast_content_browser_client.cc",
     "cast_content_browser_client.h",
-    "cast_content_window.cc",
     "cast_content_window.h",
     "cast_download_manager_delegate.cc",
     "cast_download_manager_delegate.h",
@@ -124,6 +119,8 @@ source_set("browser") {
 
   if (is_linux) {
     sources += [
+      "cast_content_window_linux.cc",
+      "cast_content_window_linux.h",
       "cast_memory_pressure_monitor.cc",
       "cast_memory_pressure_monitor.h",
       "metrics/external_metrics.cc",
@@ -136,6 +133,17 @@ source_set("browser") {
       "//ui/aura",
     ]
   } else if (is_android) {
+    sources += [
+      "android/cast_content_window_android.cc",
+      "android/cast_content_window_android.h",
+      "android/cast_metrics_helper_android.cc",
+      "android/cast_metrics_helper_android.h",
+      "android/cast_web_contents_activity.cc",
+      "android/cast_web_contents_activity.h",
+      "android/jni_registrar.cc",
+      "android/jni_registrar.h",
+    ]
+
     deps += [ ":jni_headers" ]
   }
 
@@ -265,11 +273,11 @@ source_set("unittests") {
 if (is_android) {
   generate_jni("jni_headers") {
     sources = [
+      "android/apk/src/org/chromium/chromecast/shell/CastContentWindowAndroid.java",
       "android/apk/src/org/chromium/chromecast/shell/CastCrashHandler.java",
       "android/apk/src/org/chromium/chromecast/shell/CastMetricsHelper.java",
       "android/apk/src/org/chromium/chromecast/shell/CastSysInfoAndroid.java",
-      "android/apk/src/org/chromium/chromecast/shell/CastWindowAndroid.java",
-      "android/apk/src/org/chromium/chromecast/shell/CastWindowManager.java",
+      "android/apk/src/org/chromium/chromecast/shell/CastWebContentsActivity.java",
     ]
 
     jni_package = "chromecast"

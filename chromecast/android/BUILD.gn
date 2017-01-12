@@ -21,8 +21,6 @@ shared_library("libcast_shell_android") {
     "//chromecast/app/android/cast_jni_loader.cc",
     "cast_jni_registrar.cc",
     "cast_jni_registrar.h",
-    "cast_metrics_helper_android.cc",
-    "cast_metrics_helper_android.h",
   ]
 
   deps = [
@@ -36,7 +34,6 @@ shared_library("libcast_shell_android") {
     "//chromecast/base:jni_headers",
     "//chromecast/base/metrics",
     "//chromecast/browser",
-    "//chromecast/browser:jni_headers",
     "//content/public/app:both",
     "//content/public/browser",
     "//skia",

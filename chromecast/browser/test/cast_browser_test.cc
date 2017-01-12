@@ -60,11 +60,11 @@ void CastBrowserTest::RunTestOnMainThreadLoop() {
 }
 
 content::WebContents* CastBrowserTest::NavigateToURL(const GURL& url) {
-  window_ = base::MakeUnique<CastContentWindow>();
+  window_ = CastContentWindow::Create(this);
 
   web_contents_ = window_->CreateWebContents(
       CastBrowserProcess::GetInstance()->browser_context());
-  window_->CreateWindowTree(web_contents_.get());
+  window_->ShowWebContents(web_contents_.get());
   content::WaitForLoadStop(web_contents_.get());
 
   content::TestNavigationObserver same_tab_observer(web_contents_.get(), 1);
@@ -76,6 +76,10 @@ content::WebContents* CastBrowserTest::NavigateToURL(const GURL& url) {
 
   return web_contents_.get();
 }
+
+void CastBrowserTest::OnWindowDestroyed() {}
+
+void CastBrowserTest::OnKeyEvent(const ui::KeyEvent& key_event) {}
 
 }  // namespace shell
 }  // namespace chromecast

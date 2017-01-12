@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chromecast/browser/cast_content_window.h"
 #include "chromecast/service/cast_service.h"
 #include "url/gurl.h"
 
@@ -17,9 +18,9 @@ class WebContents;
 
 namespace chromecast {
 namespace shell {
-class CastContentWindow;
 
-class CastServiceSimple : public CastService {
+class CastServiceSimple : public CastService,
+                          public CastContentWindow::Delegate {
  public:
   CastServiceSimple(content::BrowserContext* browser_context,
                     PrefService* pref_service);
@@ -31,6 +32,10 @@ class CastServiceSimple : public CastService {
   void FinalizeInternal() override;
   void StartInternal() override;
   void StopInternal() override;
+
+  // CastContentWindow::Delegate implementation:
+  void OnWindowDestroyed() override;
+  void OnKeyEvent(const ui::KeyEvent& key_event) override;
 
  private:
   std::unique_ptr<CastContentWindow> window_;

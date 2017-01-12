@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/browser/cast_content_window.h"
+#include "chromecast/browser/cast_content_window_linux.h"
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -60,19 +60,31 @@ class CastFillLayout : public aura::LayoutManager {
 };
 #endif
 
-CastContentWindow::CastContentWindow() : transparent_(false) {
+// static
+std::unique_ptr<CastContentWindow> CastContentWindow::Create(
+    CastContentWindow::Delegate* delegate) {
+  DCHECK(delegate);
+  return base::WrapUnique(new CastContentWindowLinux());
 }
 
-CastContentWindow::~CastContentWindow() {
+CastContentWindowLinux::CastContentWindowLinux() : transparent_(false) {}
+
+CastContentWindowLinux::~CastContentWindowLinux() {
 #if defined(USE_AURA)
   CastVSyncSettings::GetInstance()->RemoveObserver(this);
   window_tree_host_.reset();
-  // We don't delete the screen here to avoid a CHECK failure when
-  // the screen size is queried periodically for metric gathering. b/18101124
+// We don't delete the screen here to avoid a CHECK failure when
+// the screen size is queried periodically for metric gathering. b/18101124
 #endif
 }
 
-void CastContentWindow::CreateWindowTree(content::WebContents* web_contents) {
+void CastContentWindowLinux::SetTransparent() {
+  DCHECK(!window_tree_host_);
+  transparent_ = true;
+}
+
+void CastContentWindowLinux::ShowWebContents(
+    content::WebContents* web_contents) {
 #if defined(USE_AURA)
   // Aura initialization
   DCHECK(display::Screen::GetScreen());
@@ -109,7 +121,7 @@ void CastContentWindow::CreateWindowTree(content::WebContents* web_contents) {
 #endif
 }
 
-std::unique_ptr<content::WebContents> CastContentWindow::CreateWebContents(
+std::unique_ptr<content::WebContents> CastContentWindowLinux::CreateWebContents(
     content::BrowserContext* browser_context) {
   CHECK(display::Screen::GetScreen());
   gfx::Size display_size =
@@ -118,47 +130,49 @@ std::unique_ptr<content::WebContents> CastContentWindow::CreateWebContents(
   content::WebContents::CreateParams create_params(browser_context, NULL);
   create_params.routing_id = MSG_ROUTING_NONE;
   create_params.initial_size = display_size;
-  content::WebContents* web_contents = content::WebContents::Create(
-      create_params);
+  content::WebContents* web_contents =
+      content::WebContents::Create(create_params);
 
 #if defined(USE_AURA)
   // Resize window
   aura::Window* content_window = web_contents->GetNativeView();
-  content_window->SetBounds(gfx::Rect(display_size.width(),
-                                      display_size.height()));
+  content_window->SetBounds(
+      gfx::Rect(display_size.width(), display_size.height()));
 #endif
 
   content::WebContentsObserver::Observe(web_contents);
   return base::WrapUnique(web_contents);
 }
 
-void CastContentWindow::DidFirstVisuallyNonEmptyPaint() {
+void CastContentWindowLinux::DidFirstVisuallyNonEmptyPaint() {
   metrics::CastMetricsHelper::GetInstance()->LogTimeToFirstPaint();
 }
 
-void CastContentWindow::MediaStoppedPlaying(const MediaPlayerInfo& media_info,
-                                            const MediaPlayerId& id) {
-  metrics::CastMetricsHelper::GetInstance()->LogMediaPause();
-}
-
-void CastContentWindow::MediaStartedPlaying(const MediaPlayerInfo& media_info,
-                                            const MediaPlayerId& id) {
+void CastContentWindowLinux::MediaStartedPlaying(
+    const MediaPlayerInfo& media_info,
+    const MediaPlayerId& id) {
   metrics::CastMetricsHelper::GetInstance()->LogMediaPlay();
 }
 
-void CastContentWindow::RenderViewCreated(
+void CastContentWindowLinux::MediaStoppedPlaying(
+    const MediaPlayerInfo& media_info,
+    const MediaPlayerId& id) {
+  metrics::CastMetricsHelper::GetInstance()->LogMediaPause();
+}
+
+void CastContentWindowLinux::RenderViewCreated(
     content::RenderViewHost* render_view_host) {
   content::RenderWidgetHostView* view =
       render_view_host->GetWidget()->GetView();
-  if (view)
+  if (view) {
     view->SetBackgroundColor(transparent_ ? SK_ColorTRANSPARENT
                                           : SK_ColorBLACK);
+  }
 }
 
-void CastContentWindow::OnVSyncIntervalChanged(base::TimeDelta interval) {
+void CastContentWindowLinux::OnVSyncIntervalChanged(base::TimeDelta interval) {
 #if defined(USE_AURA)
-  window_tree_host_->compositor()->SetAuthoritativeVSyncInterval(
-      interval);
+  window_tree_host_->compositor()->SetAuthoritativeVSyncInterval(interval);
 #endif
 }
 
