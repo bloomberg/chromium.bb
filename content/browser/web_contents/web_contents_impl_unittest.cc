@@ -827,6 +827,9 @@ TEST_F(WebContentsImplTest, NavigateFromSitelessUrl) {
   DeleteContents();
   EXPECT_EQ(orig_rvh_delete_count, 1);
   EXPECT_EQ(pending_rvh_delete_count, 1);
+  // Since the ChromeBlobStorageContext posts a task to the BrowserThread, we
+  // must run out the loop so the thread bundle is destroyed after this happens.
+  base::RunLoop().RunUntilIdle();
 }
 
 // Regression test for http://crbug.com/386542 - variation of
@@ -874,6 +877,9 @@ TEST_F(WebContentsImplTest, NavigateFromRestoredSitelessUrl) {
 
   // Cleanup.
   DeleteContents();
+  // Since the ChromeBlobStorageContext posts a task to the BrowserThread, we
+  // must run out the loop so the thread bundle is destroyed after this happens.
+  base::RunLoop().RunUntilIdle();
 }
 
 // Complement for NavigateFromRestoredSitelessUrl, verifying that when a regular
@@ -919,6 +925,9 @@ TEST_F(WebContentsImplTest, NavigateFromRestoredRegularUrl) {
 
   // Cleanup.
   DeleteContents();
+  // Since the ChromeBlobStorageContext posts a task to the BrowserThread, we
+  // must run out the loop so the thread bundle is destroyed after this happens.
+  base::RunLoop().RunUntilIdle();
 }
 
 // Test that we can find an opener RVH even if it's pending.

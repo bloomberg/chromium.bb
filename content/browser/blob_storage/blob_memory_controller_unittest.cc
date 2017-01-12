@@ -9,6 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/sys_info.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -34,6 +35,17 @@ const uint64_t kTestBlobStorageMaxDiskSpace = 1000;
 const uint64_t kTestBlobStorageMinFileSizeBytes = 10;
 const uint64_t kTestBlobStorageMaxFileSizeBytes = 100;
 
+const uint64_t kTestSmallBlobStorageMaxDiskSpace = 100;
+
+static int64_t sFakeDiskSpace = 0;
+static bool sFakeDiskSpaceCalled = true;
+
+int64_t FakeDiskSpaceMethod(const base::FilePath& path) {
+  EXPECT_FALSE(sFakeDiskSpaceCalled);
+  sFakeDiskSpaceCalled = true;
+  return sFakeDiskSpace;
+}
+
 class BlobMemoryControllerTest : public testing::Test {
  protected:
   BlobMemoryControllerTest() {}
@@ -53,6 +65,14 @@ class BlobMemoryControllerTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.Delete());
   }
 
+  void AssertEnoughDiskSpace() {
+    base::ThreadRestrictions::SetIOAllowed(true);
+    ASSERT_GT(base::SysInfo::AmountOfFreeDiskSpace(temp_dir_.GetPath()),
+              static_cast<int64_t>(kTestBlobStorageMaxDiskSpace))
+        << "Bot doesn't have enough disk space to run these tests.";
+    base::ThreadRestrictions::SetIOAllowed(false);
+  }
+
   std::vector<scoped_refptr<ShareableBlobDataItem>> CreateSharedDataItems(
       const BlobDataBuilder& builder) {
     std::vector<scoped_refptr<ShareableBlobDataItem>> result;
@@ -68,7 +88,20 @@ class BlobMemoryControllerTest : public testing::Test {
     limits.max_ipc_memory_size = kTestBlobStorageIPCThresholdBytes;
     limits.max_shared_memory_size = kTestBlobStorageMaxSharedMemoryBytes;
     limits.max_blob_in_memory_space = kTestBlobStorageMaxBlobMemorySize;
-    limits.max_blob_disk_space = kTestBlobStorageMaxDiskSpace;
+    limits.desired_max_disk_space = kTestBlobStorageMaxDiskSpace;
+    limits.effective_max_disk_space = kTestBlobStorageMaxDiskSpace;
+    limits.min_page_file_size = kTestBlobStorageMinFileSizeBytes;
+    limits.max_file_size = kTestBlobStorageMaxFileSizeBytes;
+    controller->set_limits_for_testing(limits);
+  }
+
+  void SetSmallDiskTestMemoryLimits(BlobMemoryController* controller) {
+    BlobStorageLimits limits;
+    limits.max_ipc_memory_size = kTestBlobStorageIPCThresholdBytes;
+    limits.max_shared_memory_size = kTestBlobStorageMaxSharedMemoryBytes;
+    limits.max_blob_in_memory_space = kTestBlobStorageMaxBlobMemorySize;
+    limits.desired_max_disk_space = kTestSmallBlobStorageMaxDiskSpace;
+    limits.effective_max_disk_space = kTestSmallBlobStorageMaxDiskSpace;
     limits.min_page_file_size = kTestBlobStorageMinFileSizeBytes;
     limits.max_file_size = kTestBlobStorageMaxFileSizeBytes;
     controller->set_limits_for_testing(limits);
@@ -81,6 +114,10 @@ class BlobMemoryControllerTest : public testing::Test {
     }
   }
 
+  void SaveMemoryRequestToOutput(bool* output, bool success) {
+    ASSERT_TRUE(output);
+    *output = success;
+  }
   void SaveMemoryRequest(bool success) { memory_quota_result_ = success; }
 
   BlobMemoryController::FileQuotaRequestCallback GetFileCreationCallback() {
@@ -93,6 +130,12 @@ class BlobMemoryControllerTest : public testing::Test {
                       base::Unretained(this));
   }
 
+  BlobMemoryController::MemoryQuotaRequestCallback
+  GetMemoryRequestCallbackToOutput(bool* output) {
+    return base::Bind(&BlobMemoryControllerTest::SaveMemoryRequestToOutput,
+                      base::Unretained(this), output);
+  }
+
   void RunFileThreadTasks() {
     base::ThreadRestrictions::SetIOAllowed(true);
     file_runner_->RunPendingTasks();
@@ -102,6 +145,13 @@ class BlobMemoryControllerTest : public testing::Test {
   bool HasMemoryAllocation(ShareableBlobDataItem* item) {
     return static_cast<bool>(item->memory_allocation_);
   }
+
+  void set_disk_space(int64_t space) {
+    sFakeDiskSpaceCalled = false;
+    sFakeDiskSpace = space;
+  }
+
+  void ExpectDiskSpaceCalled() { EXPECT_TRUE(sFakeDiskSpaceCalled); }
 
   bool file_quota_result_ = false;
   base::ScopedTempDir temp_dir_;
@@ -159,6 +209,16 @@ TEST_F(BlobMemoryControllerTest, Strategy) {
     EXPECT_EQ(Strategy::TOO_LARGE, controller.DetermineStrategy(
                                        0, kTestBlobStorageMaxDiskSpace + 1));
   }
+  {
+    BlobMemoryController controller(temp_dir_.GetPath(), file_runner_);
+    SetSmallDiskTestMemoryLimits(&controller);
+
+    EXPECT_TRUE(controller.CanReserveQuota(kTestBlobStorageMaxBlobMemorySize));
+    // Since our disk is too small, this should be sent with shared memory.
+    EXPECT_EQ(
+        Strategy::SHARED_MEMORY,
+        controller.DetermineStrategy(0, kTestBlobStorageMaxBlobMemorySize));
+  }
 }
 
 TEST_F(BlobMemoryControllerTest, GrantMemory) {
@@ -215,6 +275,7 @@ TEST_F(BlobMemoryControllerTest, PageToDisk) {
   const std::string kId2 = "id2";
   BlobMemoryController controller(temp_dir_.GetPath(), file_runner_);
   SetTestMemoryLimits(&controller);
+  AssertEnoughDiskSpace();
 
   char kData[kTestBlobStorageMaxBlobMemorySize];
   std::memset(kData, 'e', kTestBlobStorageMaxBlobMemorySize);
@@ -281,7 +342,6 @@ TEST_F(BlobMemoryControllerTest, PageToDisk) {
 }
 
 TEST_F(BlobMemoryControllerTest, NoDiskTooLarge) {
-  const std::string kId = "id";
   BlobMemoryController controller(temp_dir_.GetPath(), nullptr);
   SetTestMemoryLimits(&controller);
 
@@ -291,7 +351,6 @@ TEST_F(BlobMemoryControllerTest, NoDiskTooLarge) {
 }
 
 TEST_F(BlobMemoryControllerTest, TooLargeForDisk) {
-  const std::string kId = "id";
   BlobMemoryController controller(temp_dir_.GetPath(), file_runner_);
   SetTestMemoryLimits(&controller);
 
@@ -441,11 +500,10 @@ TEST_F(BlobMemoryControllerTest, CancelFileRequest) {
 
   task->Cancel();
   EXPECT_FALSE(task);
-  EXPECT_EQ(kBlobSize, controller.disk_usage());
-  EXPECT_TRUE(file_runner_->HasPendingTask());
+  EXPECT_EQ(0ull, controller.disk_usage());
+
   RunFileThreadTasks();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0u, controller.disk_usage());
 }
 
 TEST_F(BlobMemoryControllerTest, MultipleFilesPaged) {
@@ -467,6 +525,7 @@ TEST_F(BlobMemoryControllerTest, MultipleFilesPaged) {
 
   BlobMemoryController controller(temp_dir_.GetPath(), file_runner_);
   SetTestMemoryLimits(&controller);
+  AssertEnoughDiskSpace();
 
   // We add two items that should be their own files when we page to disk, and
   // then add the last item to trigger the paging.
@@ -543,6 +602,7 @@ TEST_F(BlobMemoryControllerTest, MultipleFilesPaged) {
 TEST_F(BlobMemoryControllerTest, FullEviction) {
   BlobMemoryController controller(temp_dir_.GetPath(), file_runner_);
   SetTestMemoryLimits(&controller);
+  AssertEnoughDiskSpace();
 
   char kData[1];
   kData[0] = 'e';
@@ -592,6 +652,132 @@ TEST_F(BlobMemoryControllerTest, FullEviction) {
       controller.disk_usage());
 
   EXPECT_TRUE(memory_quota_result_);
+}
+
+TEST_F(BlobMemoryControllerTest, PagingStopsWhenFull) {
+  BlobMemoryController controller(temp_dir_.GetPath(), file_runner_);
+  SetTestMemoryLimits(&controller);
+  AssertEnoughDiskSpace();
+  const size_t kTotalBlobStorageSize =
+      kTestBlobStorageMaxDiskSpace + kTestBlobStorageMaxBlobMemorySize;
+
+  const size_t kDataSize = 10u;
+  const size_t kBlobsThatCanFit = kTotalBlobStorageSize / kDataSize;
+  const size_t kNumFastBlobs = kTestBlobStorageMaxBlobMemorySize / kDataSize;
+  char kData[10];
+  memset(kData, 'e', kDataSize);
+
+  // Create all of our blobs.
+  std::vector<scoped_refptr<ShareableBlobDataItem>> all_items;
+  std::vector<base::WeakPtr<QuotaAllocationTask>> memory_tasks;
+  bool memory_requested[kBlobsThatCanFit] = {};
+  for (size_t i = 0; i < kBlobsThatCanFit; i++) {
+    BlobDataBuilder builder("fake");
+    builder.AppendData(kData, kDataSize);
+    std::vector<scoped_refptr<ShareableBlobDataItem>> items =
+        CreateSharedDataItems(builder);
+    EXPECT_TRUE(controller.CanReserveQuota(kDataSize));
+    EXPECT_EQ((i < kNumFastBlobs) ? Strategy::NONE_NEEDED : Strategy::IPC,
+              controller.DetermineStrategy(kDataSize, kDataSize))
+        << i;
+    base::WeakPtr<QuotaAllocationTask> memory_task =
+        controller.ReserveMemoryQuota(
+            items, GetMemoryRequestCallbackToOutput(&memory_requested[i]));
+    if (memory_task) {
+      memory_tasks.push_back(std::move(memory_task));
+    }
+    all_items.insert(all_items.end(), items.begin(), items.end());
+  }
+  // We should have stored all of our memory quota, and no disk yet.
+  EXPECT_EQ(500u, controller.memory_usage());
+  EXPECT_EQ(0ull, controller.disk_usage());
+
+  EXPECT_FALSE(controller.CanReserveQuota(1u));
+  EXPECT_EQ(Strategy::TOO_LARGE, controller.DetermineStrategy(1u, 1ull));
+  EXPECT_FALSE(file_runner_->HasPendingTask());
+
+  for (size_t i = 0; i < kBlobsThatCanFit; i++) {
+    EXPECT_EQ(i < kBlobsThatCanFit / 3, memory_requested[i]) << i;
+    if (memory_requested[i] &&
+        all_items[i]->state() != ItemState::POPULATED_WITH_QUOTA) {
+      EXPECT_TRUE(memory_requested[i]);
+      all_items[i]->set_state(ItemState::POPULATED_WITH_QUOTA);
+      std::vector<scoped_refptr<ShareableBlobDataItem>> temp_vector;
+      temp_vector.push_back(all_items[i]);
+      controller.NotifyMemoryItemsUsed(temp_vector);
+    }
+  }
+  EXPECT_TRUE(file_runner_->HasPendingTask());
+
+  // This will schedule one task. Paging starts as soon as there is enough
+  // memory to page, and multiple pagings can't happen at the same time.
+  EXPECT_EQ(10ull, controller.disk_usage());
+  RunFileThreadTasks();
+  base::RunLoop().RunUntilIdle();
+  // The rest of the tasks should be scheduled.
+  EXPECT_TRUE(file_runner_->HasPendingTask());
+  RunFileThreadTasks();
+  base::RunLoop().RunUntilIdle();
+  // Everything in memory should be on disk, and next batch of memory items
+  // should be granted.
+  EXPECT_EQ(500u, controller.memory_usage());
+  EXPECT_EQ(500ull, controller.disk_usage());
+
+  // Still can't add anything.
+  EXPECT_FALSE(controller.CanReserveQuota(1u));
+  EXPECT_EQ(Strategy::TOO_LARGE, controller.DetermineStrategy(1u, 1ull));
+
+  // Flag next batch for saving to disk.
+  for (size_t i = 0; i < kBlobsThatCanFit; i++) {
+    // Note: this can fail if the bot's disk is almost full.
+    EXPECT_EQ(i < kBlobsThatCanFit * 2 / 3, memory_requested[i]) << i;
+    if (memory_requested[i] &&
+        all_items[i]->state() != ItemState::POPULATED_WITH_QUOTA) {
+      all_items[i]->set_state(ItemState::POPULATED_WITH_QUOTA);
+      std::vector<scoped_refptr<ShareableBlobDataItem>> temp_vector;
+      temp_vector.push_back(all_items[i]);
+      controller.NotifyMemoryItemsUsed(temp_vector);
+    }
+  }
+  EXPECT_TRUE(file_runner_->HasPendingTask());
+
+  // Same as before. One page task is scheduled, so run them twice.
+  EXPECT_EQ(510ull, controller.disk_usage());
+  RunFileThreadTasks();
+  base::RunLoop().RunUntilIdle();
+  // We page one time first, as it blocks paging once it starts.
+  RunFileThreadTasks();
+  base::RunLoop().RunUntilIdle();
+
+  // All quota should be allocated.
+  EXPECT_EQ(kTestBlobStorageMaxBlobMemorySize, controller.memory_usage());
+  EXPECT_EQ(kTestBlobStorageMaxDiskSpace, controller.disk_usage());
+  EXPECT_FALSE(controller.CanReserveQuota(1u));
+  EXPECT_EQ(Strategy::TOO_LARGE, controller.DetermineStrategy(1u, 1ull));
+
+  // Flag last batch as populated.
+  for (size_t i = 0; i < kBlobsThatCanFit; i++) {
+    // Note: this can fail if the bot's disk is almost full.
+    EXPECT_TRUE(memory_requested[i]);
+    if (memory_requested[i] &&
+        all_items[i]->state() != ItemState::POPULATED_WITH_QUOTA) {
+      all_items[i]->set_state(ItemState::POPULATED_WITH_QUOTA);
+      std::vector<scoped_refptr<ShareableBlobDataItem>> temp_vector;
+      temp_vector.push_back(all_items[i]);
+      controller.NotifyMemoryItemsUsed(temp_vector);
+    }
+  }
+
+  // There should be no more paging to disk, as we've reached the end.
+  EXPECT_FALSE(file_runner_->HasPendingTask());
+
+  // All quota should be allocated still.
+  EXPECT_EQ(500u, controller.memory_usage());
+  EXPECT_EQ(1000ull, controller.disk_usage());
+
+  // Still can't add anything.
+  EXPECT_FALSE(controller.CanReserveQuota(1u));
+  EXPECT_EQ(Strategy::TOO_LARGE, controller.DetermineStrategy(1u, 1ull));
 }
 
 TEST_F(BlobMemoryControllerTest, DisableDiskWithFileAndMemoryPending) {
@@ -677,4 +863,261 @@ TEST_F(BlobMemoryControllerTest, DisableDiskWithFileAndMemoryPending) {
   EXPECT_EQ(0ull, controller.disk_usage());
   EXPECT_EQ(0ull, controller.memory_usage());
 }
+
+TEST_F(BlobMemoryControllerTest, DiskSpaceTooSmallForItem) {
+  const std::string kFileId = "id2";
+  const uint64_t kFileBlobSize = kTestBlobStorageMaxBlobMemorySize;
+
+  BlobMemoryController controller(temp_dir_.GetPath(), file_runner_);
+  controller.set_testing_disk_space(&FakeDiskSpaceMethod);
+
+  BlobDataBuilder file_builder(kFileId);
+  file_builder.AppendFutureFile(0, kFileBlobSize, 0);
+
+  // When we have < kFileBlobSize, then we cancel our request.
+  SetTestMemoryLimits(&controller);
+
+  std::vector<scoped_refptr<ShareableBlobDataItem>> items =
+      CreateSharedDataItems(file_builder);
+
+  file_quota_result_ = true;
+  controller.ReserveFileQuota(items, GetFileCreationCallback());
+
+  EXPECT_TRUE(file_runner_->HasPendingTask());
+  set_disk_space(kFileBlobSize - 1);
+
+  RunFileThreadTasks();
+  ExpectDiskSpaceCalled();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(file_quota_result_);
+  EXPECT_TRUE(controller.limits().IsDiskSpaceConstrained());
+  EXPECT_EQ(0ull, controller.limits().effective_max_disk_space);
+
+  EXPECT_EQ(0ull, controller.disk_usage());
+  EXPECT_EQ(0ull, controller.memory_usage());
+}
+
+TEST_F(BlobMemoryControllerTest, DiskSpaceHitMinAvailable) {
+  const std::string kFileId = "id2";
+  const uint64_t kFileBlobSize = kTestBlobStorageMaxBlobMemorySize;
+
+  BlobMemoryController controller(temp_dir_.GetPath(), file_runner_);
+  controller.set_testing_disk_space(&FakeDiskSpaceMethod);
+
+  BlobDataBuilder file_builder(kFileId);
+  file_builder.AppendFutureFile(0, kFileBlobSize, 0);
+  // When we have < limits.min_available_external_disk_space(), then we'll
+  // modify our effective disk space to match our current usage to stop using
+  // more disk.
+
+  SetTestMemoryLimits(&controller);
+
+  std::vector<scoped_refptr<ShareableBlobDataItem>> items =
+      CreateSharedDataItems(file_builder);
+
+  file_quota_result_ = false;
+  controller.ReserveFileQuota(items, GetFileCreationCallback());
+
+  EXPECT_TRUE(file_runner_->HasPendingTask());
+  set_disk_space(controller.limits().min_available_external_disk_space() - 1);
+
+  RunFileThreadTasks();
+  ExpectDiskSpaceCalled();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(file_quota_result_);
+  EXPECT_TRUE(controller.limits().IsDiskSpaceConstrained());
+  EXPECT_EQ(kFileBlobSize, controller.limits().effective_max_disk_space);
+
+  items.clear();
+  files_created_.clear();
+
+  RunFileThreadTasks();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0ull, controller.disk_usage());
+  EXPECT_EQ(0ull, controller.memory_usage());
+}
+
+TEST_F(BlobMemoryControllerTest, DiskSpaceBeforeMinAvailable) {
+  const std::string kFileId = "id2";
+
+  BlobMemoryController controller(temp_dir_.GetPath(), file_runner_);
+  controller.set_testing_disk_space(&FakeDiskSpaceMethod);
+
+  BlobDataBuilder file_builder(kFileId);
+  file_builder.AppendFutureFile(0, kTestBlobStorageMaxBlobMemorySize, 0);
+
+  // When our desired total disk space is less than we're allowed given the
+  //  minimum disk availability, we shorten the disk space.
+  SetTestMemoryLimits(&controller);
+
+  std::vector<scoped_refptr<ShareableBlobDataItem>> items =
+      CreateSharedDataItems(file_builder);
+
+  file_quota_result_ = false;
+  controller.ReserveFileQuota(items, GetFileCreationCallback());
+
+  EXPECT_TRUE(file_runner_->HasPendingTask());
+  set_disk_space(controller.limits().desired_max_disk_space +
+                 controller.limits().min_available_external_disk_space() + 1);
+
+  RunFileThreadTasks();
+  ExpectDiskSpaceCalled();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(file_quota_result_);
+  EXPECT_FALSE(controller.limits().IsDiskSpaceConstrained())
+      << controller.limits().effective_max_disk_space;
+
+  items.clear();
+  files_created_.clear();
+
+  RunFileThreadTasks();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0ull, controller.disk_usage());
+  EXPECT_EQ(0ull, controller.memory_usage());
+}
+
+TEST_F(BlobMemoryControllerTest, DiskSpaceNearMinAvailable) {
+  const std::string kFileId = "id2";
+
+  BlobMemoryController controller(temp_dir_.GetPath(), file_runner_);
+  controller.set_testing_disk_space(&FakeDiskSpaceMethod);
+
+  BlobDataBuilder file_builder(kFileId);
+  file_builder.AppendFutureFile(0, kTestBlobStorageMaxBlobMemorySize, 0);
+
+  // When our desired total disk space is less than we're allowed given the
+  //  minimum disk availability, we shorten the disk space.
+  SetTestMemoryLimits(&controller);
+
+  std::vector<scoped_refptr<ShareableBlobDataItem>> items =
+      CreateSharedDataItems(file_builder);
+
+  file_quota_result_ = false;
+  controller.ReserveFileQuota(items, GetFileCreationCallback());
+
+  EXPECT_TRUE(file_runner_->HasPendingTask());
+  set_disk_space(controller.limits().desired_max_disk_space +
+                 controller.limits().min_available_external_disk_space() - 1);
+
+  RunFileThreadTasks();
+  ExpectDiskSpaceCalled();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(file_quota_result_);
+  EXPECT_TRUE(controller.limits().IsDiskSpaceConstrained());
+  EXPECT_EQ(controller.limits().desired_max_disk_space - 1,
+            controller.limits().effective_max_disk_space);
+
+  items.clear();
+  files_created_.clear();
+
+  RunFileThreadTasks();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0ull, controller.disk_usage());
+  EXPECT_EQ(0ull, controller.memory_usage());
+}
+
+TEST_F(BlobMemoryControllerTest, DiskSpaceResetAfterIncrease) {
+  const std::string kFileId = "id2";
+  const uint64_t kFileBlobSize = kTestBlobStorageMaxBlobMemorySize;
+
+  BlobMemoryController controller(temp_dir_.GetPath(), file_runner_);
+  controller.set_testing_disk_space(&FakeDiskSpaceMethod);
+
+  BlobDataBuilder file_builder(kFileId);
+  file_builder.AppendFutureFile(0, kFileBlobSize, 0);
+
+  // When we do a file operation after disk has been freed (after we've been
+  // limited), our effective size grows correctly.
+  SetTestMemoryLimits(&controller);
+
+  std::vector<scoped_refptr<ShareableBlobDataItem>> items =
+      CreateSharedDataItems(file_builder);
+
+  controller.ReserveFileQuota(items, GetFileCreationCallback());
+
+  EXPECT_TRUE(file_runner_->HasPendingTask());
+  set_disk_space(controller.limits().min_available_external_disk_space() - 1);
+
+  RunFileThreadTasks();
+  base::RunLoop().RunUntilIdle();
+
+  // Check the effective limit is constrained.
+  EXPECT_TRUE(controller.limits().IsDiskSpaceConstrained());
+  EXPECT_EQ(kFileBlobSize, controller.limits().effective_max_disk_space);
+
+  // Delete the item so we have disk quota.
+  items.clear();
+  files_created_.clear();
+
+  RunFileThreadTasks();
+  ExpectDiskSpaceCalled();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0ull, controller.disk_usage());
+  EXPECT_EQ(0ull, controller.memory_usage());
+
+  // Create the same item, but have the disk space report the minimum amount
+  // needed to have the desired disk size.
+  items = CreateSharedDataItems(file_builder);
+
+  controller.ReserveFileQuota(items, GetFileCreationCallback());
+
+  EXPECT_TRUE(file_runner_->HasPendingTask());
+  set_disk_space(kTestBlobStorageMaxDiskSpace +
+                 controller.limits().min_available_external_disk_space());
+
+  RunFileThreadTasks();
+  ExpectDiskSpaceCalled();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(controller.limits().IsDiskSpaceConstrained());
+  EXPECT_EQ(controller.limits().desired_max_disk_space,
+            controller.limits().effective_max_disk_space);
+
+  items.clear();
+  files_created_.clear();
+
+  RunFileThreadTasks();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0ull, controller.disk_usage());
+  EXPECT_EQ(0ull, controller.memory_usage());
+}
+
+TEST_F(BlobMemoryControllerTest, DiskSpaceUnknown) {
+  const std::string kFileId = "id2";
+  const uint64_t kFileBlobSize = kTestBlobStorageMaxBlobMemorySize;
+
+  BlobMemoryController controller(temp_dir_.GetPath(), file_runner_);
+  controller.set_testing_disk_space(&FakeDiskSpaceMethod);
+
+  BlobDataBuilder file_builder(kFileId);
+  file_builder.AppendFutureFile(0, kFileBlobSize, 0);
+
+  // If the disk space returns an error (-1), then we ignore that signal.
+  SetTestMemoryLimits(&controller);
+
+  std::vector<scoped_refptr<ShareableBlobDataItem>> items =
+      CreateSharedDataItems(file_builder);
+
+  controller.ReserveFileQuota(items, GetFileCreationCallback());
+
+  EXPECT_TRUE(file_runner_->HasPendingTask());
+  set_disk_space(-1ll);
+
+  RunFileThreadTasks();
+  ExpectDiskSpaceCalled();
+  base::RunLoop().RunUntilIdle();
+
+  // Check the effective limit is constrained.
+  EXPECT_FALSE(controller.limits().IsDiskSpaceConstrained());
+}
+
 }  // namespace storage

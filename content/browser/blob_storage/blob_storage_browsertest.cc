@@ -34,7 +34,8 @@ class BlobStorageBrowserTest : public ContentBrowserTest {
     limits_.max_ipc_memory_size = kTestBlobStorageIPCThresholdBytes;
     limits_.max_shared_memory_size = kTestBlobStorageMaxSharedMemoryBytes;
     limits_.max_blob_in_memory_space = kTestBlobStorageMaxBlobMemorySize;
-    limits_.max_blob_disk_space = kTestBlobStorageMaxDiskSpace;
+    limits_.desired_max_disk_space = kTestBlobStorageMaxDiskSpace;
+    limits_.effective_max_disk_space = kTestBlobStorageMaxDiskSpace;
     limits_.min_page_file_size = kTestBlobStorageMinFileSizeBytes;
     limits_.max_file_size = kTestBlobStorageMaxFileSizeBytes;
   }
@@ -88,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(BlobStorageBrowserTest, BlobCombinations) {
             static_cast<uint64_t>(memory_controller->memory_usage()));
   EXPECT_GT(limits_.max_blob_in_memory_space,
             memory_controller->memory_usage());
-  EXPECT_GT(limits_.max_blob_disk_space, memory_controller->disk_usage());
+  EXPECT_GT(limits_.effective_max_disk_space, memory_controller->disk_usage());
   shell()->Close();
 
   // Make sure we run all file / io tasks.

@@ -20,6 +20,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/blob/blob_memory_controller.h"
 #include "storage/browser/blob/blob_storage_context.h"
 
 using base::FilePath;
@@ -44,12 +45,15 @@ void RemoveOldBlobStorageDirectories(FilePath blob_storage_parent,
   base::FileEnumerator enumerator(blob_storage_parent, false /* recursive */,
                                   base::FileEnumerator::DIRECTORIES);
   bool success = true;
+  bool cleanup_needed = false;
   for (FilePath name = enumerator.Next(); !name.empty();
        name = enumerator.Next()) {
+    cleanup_needed = true;
     if (current_run_dir.empty() || name != current_run_dir)
       success &= base::DeleteFile(name, true /* recursive */);
   }
-  LOCAL_HISTOGRAM_BOOLEAN("Storage.Blob.CleanupSuccess", success);
+  if (cleanup_needed)
+    UMA_HISTOGRAM_BOOLEAN("Storage.Blob.CleanupSuccess", success);
 }
 
 class BlobHandleImpl : public BlobHandle {
@@ -123,6 +127,12 @@ void ChromeBlobStorageContext::InitializeOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   context_.reset(new BlobStorageContext(std::move(blob_storage_dir),
                                         std::move(file_task_runner)));
+  // Signal the BlobMemoryController when it's appropriate to calculate its
+  // storage limits.
+  BrowserThread::PostAfterStartupTask(
+      FROM_HERE, BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+      base::Bind(&storage::BlobMemoryController::CalculateBlobStorageLimits,
+                 context_->mutable_memory_controller()->GetWeakPtr()));
 }
 
 std::unique_ptr<BlobHandle> ChromeBlobStorageContext::CreateMemoryBackedBlob(

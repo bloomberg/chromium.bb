@@ -16,7 +16,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/callback_helpers.h"
 #include "base/containers/mru_cache.h"
 #include "base/files/file.h"
@@ -31,6 +31,10 @@
 
 namespace base {
 class TaskRunner;
+}
+
+namespace content {
+class ChromeBlobStorageContext;
 }
 
 namespace storage {
@@ -156,19 +160,42 @@ class STORAGE_EXPORT BlobMemoryController {
   size_t memory_usage() const { return blob_memory_used_; }
   uint64_t disk_usage() const { return disk_used_; }
 
+  base::WeakPtr<BlobMemoryController> GetWeakPtr();
+
   const BlobStorageLimits& limits() const { return limits_; }
   void set_limits_for_testing(const BlobStorageLimits& limits) {
+    manual_limits_set_ = true;
     limits_ = limits;
+  }
+
+  using DiskSpaceFuncPtr = int64_t (*)(const base::FilePath&);
+
+  void set_testing_disk_space(DiskSpaceFuncPtr disk_space_function) {
+    disk_space_function_ = disk_space_function;
   }
 
  private:
   class FileQuotaAllocationTask;
   class MemoryQuotaAllocationTask;
 
+  // So this (and only this) class can call CalculateBlobStorageLimits().
+  friend class content::ChromeBlobStorageContext;
+
+  // Schedules a task on the file runner to calculate blob storage quota limits.
+  // This should only be called once per storage partition initialization as we
+  // emit UMA stats with that expectation.
+  void CalculateBlobStorageLimits();
+
   using PendingMemoryQuotaTaskList =
       std::list<std::unique_ptr<MemoryQuotaAllocationTask>>;
   using PendingFileQuotaTaskList =
       std::list<std::unique_ptr<FileQuotaAllocationTask>>;
+
+  void OnStorageLimitsCalculated(BlobStorageLimits limits);
+
+  // Adjusts the effective disk usage based on the available space. We try to
+  // keep at least BlobSorageLimits::min_available_disk_space() free.
+  void AdjustDiskUsage(uint64_t avail_disk_space);
 
   base::WeakPtr<QuotaAllocationTask> AppendMemoryTask(
       uint64_t total_bytes_needed,
@@ -189,7 +216,7 @@ class STORAGE_EXPORT BlobMemoryController {
       scoped_refptr<ShareableFileReference> file_reference,
       std::vector<scoped_refptr<ShareableBlobDataItem>> items,
       size_t total_items_size,
-      FileCreationInfo result);
+      std::pair<FileCreationInfo, int64_t /* disk_avail */> result);
 
   size_t GetAvailableMemoryForBlobs() const;
   uint64_t GetAvailableFileSpaceForBlobs() const;
@@ -209,6 +236,9 @@ class STORAGE_EXPORT BlobMemoryController {
   // changes.
   void RecordTracingCounters() const;
 
+  // Store that we set manual limits so we don't accidentally override them with
+  // our configuration task.
+  bool manual_limits_set_ = false;
   BlobStorageLimits limits_;
 
   // Memory bookkeeping. These numbers are all disjoint.
@@ -233,6 +263,8 @@ class STORAGE_EXPORT BlobMemoryController {
   bool file_paging_enabled_ = false;
   base::FilePath blob_storage_dir_;
   scoped_refptr<base::TaskRunner> file_runner_;
+  // This defaults to calling base::SysInfo::AmountOfFreeDiskSpace.
+  DiskSpaceFuncPtr disk_space_function_;
 
   // Lifetime of the ShareableBlobDataItem objects is handled externally in the
   // BlobStorageContext class.
