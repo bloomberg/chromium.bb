@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_V8_BREAKPAD_SUPPORT_WIN_H_
-#define CHROME_COMMON_V8_BREAKPAD_SUPPORT_WIN_H_
+#ifndef CHROME_CHILD_V8_BREAKPAD_SUPPORT_WIN_H_
+#define CHROME_CHILD_V8_BREAKPAD_SUPPORT_WIN_H_
 
 namespace v8_breakpad_support {
 
@@ -12,4 +12,4 @@ void SetUp();
 
 }  // namespace v8_breakpad_support
 
-#endif  // CHROME_COMMON_V8_BREAKPAD_SUPPORT_WIN_H_
+#endif  // CHROME_CHILD_V8_BREAKPAD_SUPPORT_WIN_H_

@@ -150,8 +150,6 @@ static_library("common") {
     "tts_utterance_request.h",
     "url_constants.cc",
     "url_constants.h",
-    "v8_breakpad_support_win.cc",
-    "v8_breakpad_support_win.h",
     "web_application_info.cc",
     "web_application_info.h",
     "widevine_cdm_constants.cc",
