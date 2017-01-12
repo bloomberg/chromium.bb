@@ -102,10 +102,6 @@ class AndroidPortTest(port_testcase.PortTestCase):
         # FIXME: Do something useful here, but testing the full logic would be hard.
         pass
 
-    def make_wdiff_available(self, port):
-        port._wdiff_available = True
-        port._host_port._wdiff_available = True
-
     # Test that content_shell currently is the only supported driver.
     def test_non_content_shell_driver(self):
         self.assertRaises(self.make_port, options=optparse.Values({'driver_name': 'foobar'}))

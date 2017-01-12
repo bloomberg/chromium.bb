@@ -70,9 +70,6 @@ class PortTestCase(unittest.TestCase):
         port_name = self.port_maker.determine_full_port_name(host, options, port_name)
         return self.port_maker(host, port_name, options=options, **kwargs)
 
-    def make_wdiff_available(self, port):
-        port._wdiff_available = True
-
     def test_check_build(self):
         port = self.make_port()
         port._check_file_exists = lambda path, desc: True
@@ -214,24 +211,6 @@ class PortTestCase(unittest.TestCase):
         port._executive = MockExecutive(exit_code=2)  # pylint: disable=protected-access
         self.assertEqual(port.diff_image("EXPECTED", "ACTUAL"),
                          (None, 'Image diff returned an exit code of 2. See http://crbug.com/278596'))
-
-    def test_check_wdiff(self):
-        port = self.make_port()
-        port.check_wdiff()
-
-    def test_wdiff_text_fails(self):
-        host = MockSystemHost(os_name=self.os_name, os_version=self.os_version)
-        host.executive = MockExecutive(should_throw=True)  # pylint: disable=protected-access
-        port = self.make_port(host=host)
-        port._executive = host.executive  # AndroidPortTest.make_port sets its own executive, so reset that as well.
-
-        # This should raise a ScriptError that gets caught and turned into the
-        # error text, and also mark wdiff as not available.
-        self.make_wdiff_available(port)
-        self.assertTrue(port.wdiff_available())
-        diff_txt = port.wdiff_text("/tmp/foo.html", "/tmp/bar.html")
-        self.assertEqual(diff_txt, port._wdiff_error_html)
-        self.assertFalse(port.wdiff_available())
 
     def test_test_configuration(self):
         port = self.make_port()

@@ -32,7 +32,6 @@ import optparse
 import tempfile
 import unittest
 
-from webkitpy.common.system import executive_mock
 from webkitpy.common.system.executive import ScriptError
 from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.common.system.output_capture import OutputCapture
@@ -55,28 +54,6 @@ class PortTest(unittest.TestCase):
             return TestPort(host, **kwargs)
         return Port(host, port_name or 'baseport', **kwargs)
 
-    def test_format_wdiff_output_as_html(self):
-        output = "OUTPUT %s %s %s" % (Port._WDIFF_DEL, Port._WDIFF_ADD, Port._WDIFF_END)
-        html = self.make_port()._format_wdiff_output_as_html(output)
-        expected_html = ("<head><style>.del { background: #faa; } .add { background: #afa; }</style></head>"
-                         "<pre>OUTPUT <span class=del> <span class=add> </span></pre>")
-        self.assertEqual(html, expected_html)
-
-    def test_wdiff_command(self):
-        port = self.make_port()
-        port._path_to_wdiff = lambda: "/path/to/wdiff"
-        command = port._wdiff_command("/actual/path", "/expected/path")
-        expected_command = [
-            "/path/to/wdiff",
-            "--start-delete=##WDIFF_DEL##",
-            "--end-delete=##WDIFF_END##",
-            "--start-insert=##WDIFF_ADD##",
-            "--end-insert=##WDIFF_END##",
-            "/actual/path",
-            "/expected/path",
-        ]
-        self.assertEqual(command, expected_command)
-
     def _file_with_contents(self, contents, encoding="utf-8"):
         new_file = tempfile.NamedTemporaryFile()
         new_file.write(contents.encode(encoding))
@@ -84,7 +61,7 @@ class PortTest(unittest.TestCase):
         return new_file
 
     def test_pretty_patch_os_error(self):
-        port = self.make_port(executive=executive_mock.MockExecutive(exception=OSError))
+        port = self.make_port(executive=MockExecutive(exception=OSError))
         oc = OutputCapture()
         oc.capture_output()
         self.assertEqual(port.pretty_patch_text("patch.txt"),
@@ -97,7 +74,7 @@ class PortTest(unittest.TestCase):
 
     def test_pretty_patch_script_error(self):
         # FIXME: This is some ugly white-box test hacking ...
-        port = self.make_port(executive=executive_mock.MockExecutive(exception=ScriptError))
+        port = self.make_port(executive=MockExecutive(exception=ScriptError))
         port._pretty_patch_available = True
         self.assertEqual(port.pretty_patch_text("patch.txt"),
                          port._pretty_patch_error_html)
@@ -105,12 +82,6 @@ class PortTest(unittest.TestCase):
         # This tests repeated calls to make sure we cache the result.
         self.assertEqual(port.pretty_patch_text("patch.txt"),
                          port._pretty_patch_error_html)
-
-    def test_wdiff_text(self):
-        port = self.make_port()
-        port.wdiff_available = lambda: True
-        port._run_wdiff = lambda a, b: 'PASS'
-        self.assertEqual('PASS', port.wdiff_text(None, None))
 
     def test_setup_test_run(self):
         port = self.make_port()

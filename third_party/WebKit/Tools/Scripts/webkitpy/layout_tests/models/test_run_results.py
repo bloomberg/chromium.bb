@@ -328,7 +328,6 @@ def summarize_results(port_obj, expectations, initial_results,
     # checking total number of results vs. total number of tests?)
     results['interrupted'] = initial_results.interrupted
     results['layout_tests_dir'] = port_obj.layout_tests_dir()
-    results['has_wdiff'] = port_obj.wdiff_available()
     results['pixel_tests_enabled'] = port_obj.get_option('pixel_tests')
     results['seconds_since_epoch'] = int(time.time())
     results['build_number'] = port_obj.get_option('build_number')

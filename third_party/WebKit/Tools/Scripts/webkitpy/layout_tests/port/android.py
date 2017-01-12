@@ -364,9 +364,6 @@ class AndroidPort(base.Port):
         # See https://codereview.chromium.org/1158323009/
         return 1
 
-    def check_wdiff(self, more_logging=True):
-        return self._host_port.check_wdiff(more_logging)
-
     def check_build(self, needs_http, printer):
         exit_status = super(AndroidPort, self).check_build(needs_http, printer)
         if exit_status:
@@ -498,9 +495,6 @@ class AndroidPort(base.Port):
 
     def _path_to_image_diff(self):
         return self._host_port._path_to_image_diff()
-
-    def _path_to_wdiff(self):
-        return self._host_port._path_to_wdiff()
 
     def _shut_down_http_server(self, pid):
         return self._host_port._shut_down_http_server(pid)

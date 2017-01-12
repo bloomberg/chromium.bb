@@ -93,7 +93,6 @@ class LayoutTestResultsTest(unittest.TestCase):
     "fixable": 1220,
     "num_flaky": 0,
     "chromium_revision": "1234",
-    "has_wdiff": false,
     "builder_name": "mock_builder_name"
 });"""
 

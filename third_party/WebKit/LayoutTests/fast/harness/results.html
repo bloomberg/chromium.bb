@@ -542,9 +542,6 @@ function textResultLinks(test, prefix)
         resultLink(prefix, '-diff.txt', 'diff') +
         resultLink(prefix, '-pretty-diff.html', 'pretty diff');
 
-    if (globalState().results.has_wdiff)
-        html += resultLink(prefix, '-wdiff.html', 'wdiff');
-
     return html;
 }
 

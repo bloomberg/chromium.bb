@@ -150,9 +150,6 @@ class LinuxPort(base.Port):
             _log.error('')
         return result
 
-    def _wdiff_missing_message(self):
-        return 'wdiff is not installed; please install using "sudo apt-get install wdiff"'
-
     def _path_to_driver(self, target=None):
         binary_name = self.driver_name()
         return self._build_path_with_target(target, binary_name)

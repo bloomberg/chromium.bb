@@ -227,12 +227,6 @@ class WinPort(base.Port):
         binary_name = 'image_diff.exe'
         return self._build_path(binary_name)
 
-    def _path_to_wdiff(self):
-        # Temporarily disabling wdiff on Windows to see how this affects
-        # the rate of layout test hanging on try bots (http://crbug.com/637478).
-        # TODO(qyearsley): Re-enable this when possible.
-        return None
-
     def _check_crash_service_available(self):
         """Checks whether the crash service binary is present."""
         result = self._check_file_exists(self._path_to_crash_service(), "content_shell_crash_service.exe")

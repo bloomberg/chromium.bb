@@ -114,7 +114,6 @@ class TestResultWriter(object):
     FILENAME_SUFFIX_CRASH_LOG = "-crash-log"
     FILENAME_SUFFIX_SAMPLE = "-sample"
     FILENAME_SUFFIX_LEAK_LOG = "-leak-log"
-    FILENAME_SUFFIX_WDIFF = "-wdiff.html"
     FILENAME_SUFFIX_HTML_DIFF = "-pretty-diff.html"
     FILENAME_SUFFIX_IMAGE_DIFF = "-diff.png"
     FILENAME_SUFFIX_IMAGE_DIFFS_HTML = "-diffs.html"
@@ -208,12 +207,6 @@ class TestResultWriter(object):
         diff = unified_diff(expected_text, actual_text, expected_filename, actual_filename)
         diff_filename = self.output_filename(self.FILENAME_SUFFIX_DIFF + file_type)
         self._write_file(diff_filename, diff)
-
-        # Shell out to wdiff to get colored inline diffs.
-        if self._port.wdiff_available():
-            wdiff = self._port.wdiff_text(expected_filename, actual_filename)
-            wdiff_filename = self.output_filename(self.FILENAME_SUFFIX_WDIFF)
-            self._write_file(wdiff_filename, wdiff)
 
         # Output a HTML diff file.
         html_diff_filename = self.output_filename(self.FILENAME_SUFFIX_HTML_DIFF)

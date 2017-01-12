@@ -27,7 +27,6 @@ function mockResults()
         "fixable": 0,
         "num_flaky": 0,
         "layout_tests_dir": "/WEBKITROOT",
-        "has_wdiff": false,
         "chromium_revision": 12345,
         "pixel_tests_enabled": true
     };
@@ -347,15 +346,6 @@ function runTests()
     subtree['bar.html'] = mockExpectation('TEXT', 'TEXT');
     runTest(results, function() {
         assertTrue(document.querySelector('tbody td:nth-child(2)').textContent.indexOf('pretty diff') != -1);
-    });
-
-    results = mockResults();
-    var subtree = results.tests['foo'] = {}
-    subtree['bar.html'] = mockExpectation('TEXT', 'TEXT');
-    results.has_wdiff = true;
-    runTest(results, function() {
-        assertTrue(document.querySelector('tbody td:nth-child(2)').textContent.indexOf('wdiff') != -1);
-
     });
 
     results = mockResults();

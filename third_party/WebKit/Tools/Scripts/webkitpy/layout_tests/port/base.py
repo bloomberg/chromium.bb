@@ -176,21 +176,6 @@ class Port(object):
         self._http_lock = None  # FIXME: Why does this live on the port object?
         self._dump_reader = None
 
-        # Python's Popen has a bug that causes any pipes opened to a
-        # process that can't be executed to be leaked.  Since this
-        # code is specifically designed to tolerate exec failures
-        # to gracefully handle cases where wdiff is not installed,
-        # the bug results in a massive file descriptor leak. As a
-        # workaround, if an exec failure is ever experienced for
-        # wdiff, assume it's not available.  This will leak one
-        # file descriptor but that's better than leaking each time
-        # wdiff would be run.
-        #
-        # http://mail.python.org/pipermail/python-list/
-        #    2008-August/505753.html
-        # http://bugs.python.org/issue3210
-        self._wdiff_available = None
-
         # FIXME: prettypatch.py knows this path, why is it copied here?
         self._pretty_patch_path = self.path_from_webkit_base("Tools", "Scripts", "webkitruby", "PrettyPatch", "prettify.rb")
         self._pretty_patch_available = None
@@ -237,11 +222,6 @@ class Port(object):
         # We want to wait for at least 3 seconds, but if we are really slow, we want to be slow on cleanup as
         # well (for things like ASAN, Valgrind, etc.)
         return 3.0 * float(self.get_option('time_out_ms', '0')) / self.default_timeout_ms()
-
-    def wdiff_available(self):
-        if self._wdiff_available is None:
-            self._wdiff_available = self.check_wdiff(more_logging=False)
-        return self._wdiff_available
 
     def pretty_patch_available(self):
         if self._pretty_patch_available is None:
@@ -346,9 +326,8 @@ class Port(object):
         if self.get_option('pixel_tests'):
             result = self.check_image_diff() and result
 
-        # It's okay if pretty patch and wdiff aren't available, but we will at least log messages.
+        # It's okay if pretty patch isn't available, but we will at least log messages.
         self._pretty_patch_available = self.check_pretty_patch()
-        self._wdiff_available = self.check_wdiff()
 
         if self._dump_reader:
             result = self._dump_reader.check_is_functional() and result
@@ -425,27 +404,6 @@ class Port(object):
             return False
 
         return True
-
-    def check_wdiff(self, more_logging=True):
-        if not self._path_to_wdiff():
-            # Don't need to log here since this is the port choosing not to use wdiff.
-            return False
-
-        try:
-            _ = self._executive.run_command([self._path_to_wdiff(), '--help'])
-        except OSError:
-            if more_logging:
-                message = self._wdiff_missing_message()
-                if message:
-                    for line in message.splitlines():
-                        _log.warning('    ' + line)
-                        _log.warning('')
-            return False
-
-        return True
-
-    def _wdiff_missing_message(self):
-        return 'wdiff is not installed; please install it to generate word-by-word diffs.'
 
     def check_httpd(self):
         httpd_path = self.path_to_apache()
@@ -1377,70 +1335,6 @@ class Port(object):
         """Returns the repository path for the chromium code base."""
         return self.path_from_chromium_base('build')
 
-    _WDIFF_DEL = '##WDIFF_DEL##'
-    _WDIFF_ADD = '##WDIFF_ADD##'
-    _WDIFF_END = '##WDIFF_END##'
-
-    def _format_wdiff_output_as_html(self, wdiff):
-        wdiff = cgi.escape(wdiff)
-        wdiff = wdiff.replace(self._WDIFF_DEL, "<span class=del>")
-        wdiff = wdiff.replace(self._WDIFF_ADD, "<span class=add>")
-        wdiff = wdiff.replace(self._WDIFF_END, "</span>")
-        html = "<head><style>.del { background: #faa; } "
-        html += ".add { background: #afa; }</style></head>"
-        html += "<pre>%s</pre>" % wdiff
-        return html
-
-    def _wdiff_command(self, actual_filename, expected_filename):
-        executable = self._path_to_wdiff()
-        return [executable,
-                "--start-delete=%s" % self._WDIFF_DEL,
-                "--end-delete=%s" % self._WDIFF_END,
-                "--start-insert=%s" % self._WDIFF_ADD,
-                "--end-insert=%s" % self._WDIFF_END,
-                actual_filename,
-                expected_filename]
-
-    @staticmethod
-    def _handle_wdiff_error(script_error):
-        # Exit 1 means the files differed, any other exit code is an error.
-        if script_error.exit_code != 1:
-            raise script_error
-
-    def _run_wdiff(self, actual_filename, expected_filename):
-        """Runs wdiff and may throw exceptions.
-        This is mostly a hook for unit testing.
-        """
-        # Diffs are treated as binary as they may include multiple files
-        # with conflicting encodings.  Thus we do not decode the output.
-        command = self._wdiff_command(actual_filename, expected_filename)
-        wdiff = self._executive.run_command(command, decode_output=False,
-                                            error_handler=self._handle_wdiff_error)
-        return self._format_wdiff_output_as_html(wdiff)
-
-    _wdiff_error_html = "Failed to run wdiff, see error log."
-
-    def wdiff_text(self, actual_filename, expected_filename):
-        """Returns a string of HTML indicating the word-level diff of the
-        contents of the two filenames. Returns an empty string if word-level
-        diffing isn't available.
-        """
-        if not self.wdiff_available():
-            return ""
-        try:
-            # It's possible to raise a ScriptError we pass wdiff invalid paths.
-            return self._run_wdiff(actual_filename, expected_filename)
-        except OSError as error:
-            if error.errno in (errno.ENOENT, errno.EACCES, errno.ECHILD):
-                # Silently ignore cases where wdiff is missing.
-                self._wdiff_available = False
-                return ""
-            raise
-        except ScriptError as error:
-            _log.error("Failed to run wdiff: %s", error)
-            self._wdiff_available = False
-            return self._wdiff_error_html
-
     # This is a class variable so we can test error output easily.
     _pretty_patch_error_html = "Failed to run PrettyPatch, see error log."
 
@@ -1532,17 +1426,6 @@ class Port(object):
         This is likely used only by diff_image()
         """
         return self._build_path('image_diff')
-
-    @memoized
-    def _path_to_wdiff(self):
-        """Returns the full path to the wdiff binary, or None if it is not available.
-
-        This is likely used only by wdiff_text()
-        """
-        for path in ("/usr/bin/wdiff", "/usr/bin/dwdiff"):
-            if self._filesystem.exists(path):
-                return path
-        return None
 
     def _absolute_baseline_path(self, platform_dir):
         """Return the absolute path to the top of the baseline tree for a
