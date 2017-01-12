@@ -475,6 +475,9 @@ bool IsProbablyConst(const clang::VarDecl& decl,
   if (type.isVolatileQualified())
     return false;
 
+  if (decl.isConstexpr())
+    return true;
+
   // Parameters should not be renamed to |kFooBar| style (even if they are
   // const and have an initializer (aka default value)).
   if (clang::isa<clang::ParmVarDecl>(&decl))

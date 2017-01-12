@@ -690,9 +690,9 @@ struct TraceInCollectionTrait<WeakHandlingInCollections,
     // key-value entry is leaked.  To avoid unexpected leaking, we disallow
     // this case, but if you run into this assert, please reach out to Blink
     // reviewers, and we may relax it.
-    const bool keyIsWeak =
+    constexpr bool keyIsWeak =
         Traits::KeyTraits::weakHandlingFlag == WeakHandlingInCollections;
-    const bool valueIsWeak =
+    constexpr bool valueIsWeak =
         Traits::ValueTraits::weakHandlingFlag == WeakHandlingInCollections;
     const bool keyHasStrongRefs =
         IsTraceableInCollectionTrait<typename Traits::KeyTraits>::value;
