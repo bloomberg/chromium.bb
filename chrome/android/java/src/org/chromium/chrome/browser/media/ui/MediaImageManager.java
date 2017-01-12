@@ -77,6 +77,12 @@ public class MediaImageManager implements ImageDownloadCallback {
     // The callback to be called when the pending download image request completes.
     private MediaImageCallback mCallback;
 
+    // The last image src for download, used for avoiding fetching the same src when artwork is set
+    // multiple times but the same src is chosen.
+    //
+    // Will be reset when initiating a new download request, and set to |null| when download failed.
+    private String mLastImageSrc;
+
     /**
      * MediaImageManager constructor.
      * @param minimumSize The minimum size of images to download.
@@ -128,10 +134,13 @@ public class MediaImageManager implements ImageDownloadCallback {
         mCallback = callback;
         MediaImage image = selectImage(images);
         if (image == null) {
-            mCallback.onImageDownloaded(null);
-            clearRequests();
+            onDownloadFailed();
             return;
         }
+
+        // Avoid fetching the same image twice.
+        if (TextUtils.equals(image.getSrc(), mLastImageSrc)) return;
+        mLastImageSrc = image.getSrc();
 
         // Limit |maxBitmapSize| to |MAX_BITMAP_SIZE_FOR_DOWNLOAD| to avoid passing huge bitmaps
         // through JNI. |maxBitmapSize| does not prevent huge images to be downloaded. It is used to
@@ -169,8 +178,12 @@ public class MediaImageManager implements ImageDownloadCallback {
                 bestScore = newScore;
             }
         }
-        mCallback.onImageDownloaded(bestBitmap);
-        clearRequests();
+        if (bestBitmap != null) {
+            mCallback.onImageDownloaded(bestBitmap);
+            clearRequests();
+        } else {
+            onDownloadFailed();
+        }
     }
 
     /**
@@ -195,6 +208,12 @@ public class MediaImageManager implements ImageDownloadCallback {
     private void clearRequests() {
         mRequestId = -1;
         mCallback = null;
+    }
+
+    private void onDownloadFailed() {
+        mLastImageSrc = null;
+        mCallback.onImageDownloaded(null);
+        clearRequests();
     }
 
     private double getImageScore(MediaImage image) {
