@@ -4428,6 +4428,13 @@ static_library("test_support_ui") {
     "ui/webui/signin/login_ui_test_utils.h",
   ]
 
+  if (!is_android) {
+    sources += [
+      "ui/webui/web_ui_test_handler.cc",
+      "ui/webui/web_ui_test_handler.h",
+    ]
+  }
+
   configs += [ "//build/config:precompiled_headers" ]
 
   deps = [

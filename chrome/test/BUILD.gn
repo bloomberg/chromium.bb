@@ -303,8 +303,14 @@ if (!is_android) {
       "base/in_process_browser_test.cc",
       "base/in_process_browser_test.h",
       "base/in_process_browser_test_mac.cc",
+      "base/javascript_browser_test.cc",
+      "base/javascript_browser_test.h",
+      "base/test_chrome_web_ui_controller_factory.cc",
+      "base/test_chrome_web_ui_controller_factory.h",
       "base/ui_test_utils.cc",
       "base/ui_test_utils.h",
+      "base/web_ui_browser_test.cc",
+      "base/web_ui_browser_test.h",
     ]
 
     configs += [ "//build/config:precompiled_headers" ]
@@ -422,17 +428,22 @@ if (!is_android) {
 
     data = [
       "data/",
+      "//chrome/third_party/mock4js/",
       "//content/test/data/",
       "//net/tools/testserver/",
       "//ppapi/tests/test_case.html",
       "//ppapi/tests/test_case.html.mock-http-headers",
       "//ppapi/tests/test_page.css",
       "//ppapi/tests/test_page.css.mock-http-headers",
+      "//third_party/accessibility-audit/axs_testing.js",
+      "//third_party/chaijs/chai.js",
+      "//third_party/mocha/mocha.js",
       "//third_party/pyftpdlib/",
       "//third_party/pywebsocket/",
       "//third_party/tlslite/",
       "//third_party/zlib/google/test/data/",
       "//tools/metrics/histograms/histograms.xml",
+      "//ui/webui/resources/js/",
       "$root_out_dir/pyproto/google/",
       "$root_out_dir/test_case.html",
       "$root_out_dir/test_case.html.mock-http-headers",
@@ -457,6 +468,7 @@ if (!is_android) {
     ldflags = []
 
     deps = [
+      ":interactive_ui_tests_js_webui",
       ":test_support",
       ":test_support_ui",
       "//chrome:packed_resources",
@@ -911,6 +923,20 @@ if (!is_android) {
         "//components/user_manager:test_support",
       ]
     }
+  }
+
+  js2gtest("interactive_ui_tests_js_webui") {
+    test_type = "webui"
+
+    sources = [
+      "data/webui/md_history/md_history_focus_test.js",
+    ]
+
+    deps = [
+      "//chrome/browser/ui",
+    ]
+
+    defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
   }
 
   js2gtest("browser_tests_js_webui") {
@@ -1799,8 +1825,6 @@ test("browser_tests") {
       "../browser/ui/webui/signin/user_manager_ui_browsertest.cc",
       "../browser/ui/webui/task_scheduler_internals/task_scheduler_internals_ui_browsertest.cc",
       "../browser/ui/webui/uber/uber_ui_browsertest.cc",
-      "../browser/ui/webui/web_ui_test_handler.cc",
-      "../browser/ui/webui/web_ui_test_handler.h",
       "../browser/ui/webui/webui_browsertest.cc",
       "../browser/ui/webui/webui_webview_browsertest.cc",
       "../browser/ui/zoom/zoom_controller_browsertest.cc",
@@ -1833,14 +1857,8 @@ test("browser_tests") {
       "base/chrome_render_view_test.cc",
       "base/chrome_render_view_test.h",
       "base/in_process_browser_test_browsertest.cc",
-      "base/javascript_browser_test.cc",
-      "base/javascript_browser_test.h",
-      "base/test_chrome_web_ui_controller_factory.cc",
-      "base/test_chrome_web_ui_controller_factory.h",
       "base/test_chrome_web_ui_controller_factory_browsertest.cc",
       "base/tracing_browsertest.cc",
-      "base/web_ui_browser_test.cc",
-      "base/web_ui_browser_test.h",
       "base/web_ui_browser_test_browsertest.cc",
       "data/webui/async_gen.cc",
       "data/webui/async_gen.h",

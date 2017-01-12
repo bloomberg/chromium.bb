@@ -248,12 +248,7 @@ MaterialHistoryToolbarTest.prototype = {
   ]),
 };
 
-TEST_F('MaterialHistoryToolbarTest', 'Basic', function() {
+TEST_F('MaterialHistoryToolbarTest', 'All', function() {
   md_history.history_toolbar_test.registerTests();
-  mocha.run();
-});
-
-TEST_F('MaterialHistoryToolbarTest', 'Focus', function() {
-  md_history.history_toolbar_focus_test.registerTests();
   mocha.run();
 });

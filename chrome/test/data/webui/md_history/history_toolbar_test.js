@@ -50,44 +50,22 @@ cr.define('md_history.history_toolbar_test', function() {
         app.queryState_.queryingDisabled = false;
         registerMessageCallback('queryHistory', this, function (info) {
           assertEquals('Test', info[0]);
+          app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
           done();
         });
 
         toolbar.$$('cr-toolbar').fire('search-changed', 'Test');
       });
 
-      test('shortcuts to open search field', function() {
-        var field = toolbar.$['main-toolbar'].getSearchField();
-        field.blur();
-        assertFalse(field.showingSearch);
-
-        MockInteractions.pressAndReleaseKeyOn(
-            document.body, 191, '', '/');
-        assertTrue(field.showingSearch);
-        assertEquals(field.$.searchInput, field.root.activeElement);
-
-        MockInteractions.pressAndReleaseKeyOn(
-            field.$.searchInput, 27, '', 'Escape');
-        assertFalse(field.showingSearch, 'Pressing escape closes field.');
-        assertNotEquals(field.$.searchInput, field.root.activeElement);
-
-        var modifier = 'ctrl';
-        if (cr.isMac)
-          modifier = 'meta';
-
-        MockInteractions.pressAndReleaseKeyOn(
-            document.body, 70, modifier, 'f');
-        assertTrue(field.showingSearch);
-        assertEquals(field.$.searchInput, field.root.activeElement);
-      });
-
       test('spinner is active on search' , function(done) {
         app.queryState_.queryingDisabled = false;
         registerMessageCallback('queryHistory', this, function (info) {
-          assertTrue(toolbar.spinnerActive);
-          app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
-          assertFalse(toolbar.spinnerActive);
-          done();
+          PolymerTest.flushTasks().then(function() {
+            assertTrue(toolbar.spinnerActive);
+            app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
+            assertFalse(toolbar.spinnerActive);
+            done();
+          });
         });
 
         toolbar.$$('cr-toolbar').fire('search-changed', 'Test2');
@@ -129,59 +107,6 @@ cr.define('md_history.history_toolbar_test', function() {
       });
     });
   }
-  return {
-    registerTests: registerTests
-  };
-});
-
-
-cr.define('md_history.history_toolbar_focus_test', function() {
-  function registerTests() {
-    suite('history-toolbar', function() {
-      var app;
-      var element;
-      var toolbar;
-      var TEST_HISTORY_RESULTS =
-          [createHistoryEntry('2016-03-15', 'https://google.com')];
-      ;
-
-      setup(function() {
-        window.resultsRendered = false;
-        app = replaceApp();
-
-        element = app.$['history'].$['infinite-list'];
-        toolbar = app.$['toolbar'];
-      });
-
-      test('search bar is focused on load in wide mode', function() {
-        toolbar.$['main-toolbar'].narrow_ = false;
-
-        historyResult(createHistoryInfo(), []);
-        return PolymerTest.flushTasks().then(() => {
-          // Ensure the search bar is focused on load.
-          assertTrue(
-              app.$.toolbar.$['main-toolbar']
-                  .getSearchField()
-                  .isSearchFocused());
-        });
-      });
-
-      test('search bar is not focused on load in narrow mode', function() {
-        toolbar.$['main-toolbar'].narrow_ = true;
-
-        historyResult(createHistoryInfo(), []);
-        return PolymerTest.flushTasks().then(() => {
-          // Ensure the search bar is focused on load.
-          assertFalse(
-              $('history-app')
-                  .$.toolbar.$['main-toolbar']
-                  .getSearchField()
-                  .isSearchFocused());
-        });
-      });
-    });
-  };
-
   return {
     registerTests: registerTests
   };
