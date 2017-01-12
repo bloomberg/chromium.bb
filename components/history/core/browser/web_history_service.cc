@@ -275,11 +275,15 @@ GURL GetQueryUrl(const base::string16& text_query,
   url = net::AppendQueryParameter(url, "titles", "1");
 
   // Take |begin_time|, |end_time|, and |max_count| from the original query
-  // options, and convert them to the equivalent URL parameters.
+  // options, and convert them to the equivalent URL parameters. Note that
+  // QueryOptions uses exclusive |end_time| while the history.google.com API
+  // uses it inclusively, so we subtract 1us during conversion.
 
   base::Time end_time =
-      std::min(base::Time::FromInternalValue(options.EffectiveEndTime()),
-               base::Time::Now());
+      options.end_time.is_null()
+          ? base::Time::Now()
+          : std::min(options.end_time - base::TimeDelta::FromMicroseconds(1),
+                     base::Time::Now());
   url = net::AppendQueryParameter(url, "max", ServerTimeString(end_time));
 
   if (!options.begin_time.is_null()) {
