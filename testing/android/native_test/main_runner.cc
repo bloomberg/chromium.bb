@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/posix/global_descriptors.h"
 #include "jni/MainRunner_jni.h"
+#include "testing/android/native_test/native_test_util.h"
 
 extern int main(int argc, char** argv);
 
@@ -44,12 +45,9 @@ static jint RunMain(
   std::vector<std::string> cpp_command_line;
   AppendJavaStringArrayToStringVector(env, command_line, &cpp_command_line);
 
-  std::vector<char*> c_command_line;
-  for (auto& entry : cpp_command_line) {
-    c_command_line.push_back(&entry[0]);
-  }
-
-  return main(c_command_line.size(), &c_command_line[0]);
+  std::vector<char*> argv;
+  int argc = ArgsToArgv(cpp_command_line, &argv);
+  return main(argc, &argv[0]);
 }
 
 }  // namespace android
