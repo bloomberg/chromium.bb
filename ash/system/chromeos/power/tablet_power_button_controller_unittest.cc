@@ -313,15 +313,6 @@ TEST_F(TabletPowerButtonControllerTest, ConvertibleOnLaptopMode) {
   generator_->MoveMouseBy(1, 1);
   generator_->set_flags(ui::EF_NONE);
   EXPECT_TRUE(GetBacklightsForcedOff());
-
-  // Stylus event should not SetBacklightsForcedOff(false).
-  EXPECT_TRUE(GetBacklightsForcedOff());
-  generator_->EnterPenPointerMode();
-  generator_->PressTouch();
-  generator_->MoveTouch(gfx::Point(1, 1));
-  generator_->ReleaseTouch();
-  EXPECT_TRUE(GetBacklightsForcedOff());
-  generator_->ExitPenPointerMode();
 }
 
 // For convertible device working on tablet mode, keyboard/mouse event should
@@ -338,11 +329,6 @@ TEST_F(TabletPowerButtonControllerTest, ConvertibleOnMaximizeMode) {
 
   generator_->MoveMouseBy(1, 1);
   EXPECT_TRUE(GetBacklightsForcedOff());
-
-  generator_->EnterPenPointerMode();
-  generator_->MoveMouseBy(1, 1);
-  EXPECT_TRUE(GetBacklightsForcedOff());
-  generator_->ExitPenPointerMode();
 }
 
 // Tests that a single set of power button pressed-and-released operation should

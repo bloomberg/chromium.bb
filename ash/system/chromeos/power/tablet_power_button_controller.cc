@@ -164,12 +164,8 @@ void TabletPowerButtonController::OnKeyEvent(ui::KeyEvent* event) {
 }
 
 void TabletPowerButtonController::OnMouseEvent(ui::MouseEvent* event) {
-  ui::EventPointerType pointer_type = event->pointer_details().pointer_type;
-
-  if (pointer_type != ui::EventPointerType::POINTER_TYPE_MOUSE ||
-      (event->flags() & ui::EF_IS_SYNTHESIZED)) {
+  if (event->flags() & ui::EF_IS_SYNTHESIZED)
     return;
-  }
 
   if (!IsTabletModeActive() && backlights_forced_off_)
     SetDisplayForcedOff(false);
