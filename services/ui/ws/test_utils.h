@@ -554,7 +554,6 @@ class TestWindowServerDelegate : public WindowServerDelegate {
       mojom::WindowTreeRequest* tree_request,
       mojom::WindowTreeClientPtr* client) override;
   bool IsTestConfig() const override;
-  void UpdateTouchTransforms() override {}
 
  private:
   WindowServer* window_server_ = nullptr;

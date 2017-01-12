@@ -180,8 +180,6 @@ void DisplayManager::OnDisplayAdded(int64_t id,
 
   ws::Display* display = new ws::Display(window_server_);
   display->Init(params, nullptr);
-
-  window_server_->delegate()->UpdateTouchTransforms();
 }
 
 void DisplayManager::OnDisplayRemoved(int64_t id) {

@@ -64,8 +64,6 @@ static_library("lib") {
     "server_window_drawn_tracker_observer.h",
     "server_window_observer.h",
     "server_window_tracker.h",
-    "touch_controller.cc",
-    "touch_controller.h",
     "user_activity_monitor.cc",
     "user_activity_monitor.h",
     "user_display_manager.cc",

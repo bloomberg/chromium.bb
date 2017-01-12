@@ -33,7 +33,6 @@
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/public/interfaces/window_tree_host.mojom.h"
 #include "services/ui/ws/platform_display_init_params.h"
-#include "services/ui/ws/touch_controller.h"
 #include "services/ui/ws/user_id.h"
 #include "services/ui/ws/window_server_delegate.h"
 
@@ -111,7 +110,6 @@ class Service
   void OnFirstDisplayReady() override;
   void OnNoMoreDisplays() override;
   bool IsTestConfig() const override;
-  void UpdateTouchTransforms() override;
 
   // service_manager::InterfaceFactory<mojom::AccessibilityManager>
   // implementation.
@@ -191,7 +189,6 @@ class Service
   // interfaces and must outlive service_manager::InterfaceRegistry.
   std::unique_ptr<display::ScreenManager> screen_manager_;
 
-  std::unique_ptr<ws::TouchController> touch_controller_;
   IMERegistrarImpl ime_registrar_;
   IMEServerImpl ime_server_;
 

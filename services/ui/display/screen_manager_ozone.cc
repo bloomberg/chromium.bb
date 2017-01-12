@@ -14,6 +14,7 @@
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/display/manager/chromeos/display_change_observer.h"
+#include "ui/display/manager/chromeos/touch_transform_controller.h"
 #include "ui/display/manager/display_layout_store.h"
 #include "ui/display/manager/display_manager_utilities.h"
 #include "ui/display/screen.h"
@@ -62,6 +63,8 @@ ScreenManagerOzone::ScreenManagerOzone() {}
 ScreenManagerOzone::~ScreenManagerOzone() {
   // We are shutting down and don't want to make anymore display changes.
   fake_display_controller_ = nullptr;
+
+  touch_transform_controller_.reset();
 
   if (display_manager_)
     display_manager_->RemoveObserver(this);
@@ -180,6 +183,9 @@ void ScreenManagerOzone::Init(ScreenManagerDelegate* delegate) {
   // Perform initial configuration.
   display_configurator_.Init(std::move(native_display_delegate_), false);
   display_configurator_.ForceInitialConfigure(kChromeOsBootColor);
+
+  touch_transform_controller_ = base::MakeUnique<TouchTransformController>(
+      &display_configurator_, display_manager_.get());
 }
 
 void ScreenManagerOzone::RequestCloseDisplay(int64_t display_id) {
@@ -355,6 +361,8 @@ void ScreenManagerOzone::PostDisplayConfigurationChange(
       delegate_->OnPrimaryDisplayChanged(primary_display_id_);
     }
   }
+
+  touch_transform_controller_->UpdateTouchTransforms();
 
   DVLOG(1) << "PostDisplayConfigurationChange";
 }

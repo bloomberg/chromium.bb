@@ -191,12 +191,6 @@ void Service::OnStart() {
   // Gpu must be running before the ScreenManager can be initialized.
   window_server_.reset(new ws::WindowServer(this));
 
-  // DeviceDataManager must be initialized before TouchController. On non-Linux
-  // platforms there is no DeviceDataManager so don't create touch controller.
-  if (ui::DeviceDataManager::HasInstance())
-    touch_controller_.reset(
-        new ws::TouchController(window_server_->display_manager()));
-
   ime_server_.Init(context()->connector(), test_config_);
 
   discardable_shared_memory_manager_ =
@@ -261,11 +255,6 @@ void Service::OnNoMoreDisplays() {
 
 bool Service::IsTestConfig() const {
   return test_config_;
-}
-
-void Service::UpdateTouchTransforms() {
-  if (touch_controller_)
-    touch_controller_->UpdateTouchTransforms();
 }
 
 void Service::Create(const service_manager::Identity& remote_identity,

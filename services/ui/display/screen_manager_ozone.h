@@ -28,6 +28,7 @@ namespace display {
 class DisplayChangeObserver;
 class FakeDisplayController;
 class ScreenBase;
+class TouchTransformController;
 
 // ScreenManagerOzone provides the necessary functionality to configure all
 // attached physical displays on the ozone platform.
@@ -96,6 +97,7 @@ class ScreenManagerOzone
   DisplayConfigurator display_configurator_;
   std::unique_ptr<DisplayManager> display_manager_;
   std::unique_ptr<DisplayChangeObserver> display_change_observer_;
+  std::unique_ptr<TouchTransformController> touch_transform_controller_;
 
   ScreenBase* screen_ = nullptr;
   ScreenManagerDelegate* delegate_ = nullptr;
