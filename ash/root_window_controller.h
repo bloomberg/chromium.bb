@@ -306,10 +306,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // Creates the containers (WmWindows) used by the shell.
   void CreateContainers();
 
-  // Creates the LayoutManagers for the windows created by CreateContainers().
-  // TODO(sky): merge this with InitLayoutManagers().
-  void CreateLayoutManagers();
-
   // Initializes |system_wallpaper_| and possibly also |boot_splash_screen_|.
   // The initial color is determined by the |root_window_type| and whether or
   // not this is the first boot.
@@ -332,9 +328,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // Overridden from ShellObserver.
   void OnLoginStateChanged(LoginStatus status) override;
   void OnTouchHudProjectionToggled(bool enabled) override;
-
-  // TODO(sky): temporary, fold into CloseChildWindows().
-  void CloseChildWindowsImpl();
 
   std::unique_ptr<AshWindowTreeHost> ash_host_;
   std::unique_ptr<aura::WindowTreeHost> mus_window_tree_host_;

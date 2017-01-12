@@ -595,7 +595,6 @@ component("ash") {
     "common/wm_layout_manager.h",
     "common/wm_lookup.cc",
     "common/wm_lookup.h",
-    "common/wm_root_window_controller.cc",
     "common/wm_shell.cc",
     "common/wm_shell.h",
     "common/wm_transient_window_observer.h",
