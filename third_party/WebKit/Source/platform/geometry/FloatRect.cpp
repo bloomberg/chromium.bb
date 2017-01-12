@@ -184,13 +184,6 @@ FloatRect unionRect(const Vector<FloatRect>& rects) {
   return result;
 }
 
-IntRect enclosingIntRect(const FloatRect& rect) {
-  IntPoint location = flooredIntPoint(rect.minXMinYCorner());
-  IntPoint maxPoint = ceiledIntPoint(rect.maxXMaxYCorner());
-
-  return IntRect(location, maxPoint - location);
-}
-
 IntRect enclosedIntRect(const FloatRect& rect) {
   IntPoint location = ceiledIntPoint(rect.minXMinYCorner());
   IntPoint maxPoint = flooredIntPoint(rect.maxXMaxYCorner());

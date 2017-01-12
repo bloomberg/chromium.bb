@@ -29,6 +29,7 @@
 
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRectOutsets.h"
+#include "platform/geometry/IntRect.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
@@ -49,7 +50,6 @@ class RectF;
 
 namespace blink {
 
-class IntRect;
 class LayoutRect;
 class LayoutSize;
 
@@ -256,7 +256,12 @@ inline bool operator!=(const FloatRect& a, const FloatRect& b) {
   return a.location() != b.location() || a.size() != b.size();
 }
 
-PLATFORM_EXPORT IntRect enclosingIntRect(const FloatRect&);
+inline IntRect enclosingIntRect(const FloatRect& rect) {
+  IntPoint location = flooredIntPoint(rect.minXMinYCorner());
+  IntPoint maxPoint = ceiledIntPoint(rect.maxXMaxYCorner());
+
+  return IntRect(location, maxPoint - location);
+}
 
 // Returns a valid IntRect contained within the given FloatRect.
 PLATFORM_EXPORT IntRect enclosedIntRect(const FloatRect&);
