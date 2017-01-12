@@ -60,6 +60,7 @@ class MockProcess(object):
 class MockExecutive(object):
     PIPE = "MOCK PIPE"
     STDOUT = "MOCK STDOUT"
+    DEVNULL = "MOCK_DEVNULL"
 
     @staticmethod
     def ignore_error(error):

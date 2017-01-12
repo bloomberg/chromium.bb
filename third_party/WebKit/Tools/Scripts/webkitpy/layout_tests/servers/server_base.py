@@ -32,7 +32,6 @@ import errno
 import logging
 import socket
 import tempfile
-import time
 
 
 _log = logging.getLogger(__name__)
@@ -231,12 +230,12 @@ class ServerBase(object):
         """Repeat the action for wait_sec or until it succeeds, sleeping for sleep_secs
         in between each attempt. Returns whether it succeeded.
         """
-        start_time = time.time()
-        while time.time() - start_time < wait_secs:
+        start_time = self._port_obj.host.time()
+        while self._port_obj.host.time() - start_time < wait_secs:
             if action():
                 return True
             _log.debug("Waiting for action: %s", action)
-            time.sleep(sleep_secs)
+            self._port_obj.host.sleep(sleep_secs)
 
         return False
 

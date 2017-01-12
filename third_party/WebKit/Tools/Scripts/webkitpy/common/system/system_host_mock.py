@@ -69,6 +69,9 @@ class MockSystemHost(object):
     def time(self):
         return self.time_return_val
 
+    def sleep(self, seconds):
+        self.time_return_val += seconds
+
     def print_(self, *args, **kwargs):
         sep = kwargs.get('sep', ' ')
         end = kwargs.get('end', '\n')

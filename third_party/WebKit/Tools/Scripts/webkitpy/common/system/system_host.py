@@ -59,3 +59,6 @@ class SystemHost(object):
 
     def time(self):
         return time.time()
+
+    def sleep(self, secs):
+        time.sleep(secs)
