@@ -30,7 +30,8 @@ class GpuMojoMediaClient : public MojoMediaClient {
   std::unique_ptr<AudioDecoder> CreateAudioDecoder(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) final;
   std::unique_ptr<VideoDecoder> CreateVideoDecoder(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) final;
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      mojom::CommandBufferIdPtr command_buffer_id) final;
   std::unique_ptr<CdmFactory> CreateCdmFactory(
       service_manager::mojom::InterfaceProvider* interface_provider) final;
 

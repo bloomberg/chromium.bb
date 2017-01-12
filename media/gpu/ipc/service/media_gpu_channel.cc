@@ -89,9 +89,10 @@ class MediaGpuChannelFilter : public IPC::MessageFilter {
   base::UnguessableToken channel_token_;
 };
 
-MediaGpuChannel::MediaGpuChannel(gpu::GpuChannel* channel) : channel_(channel) {
-  channel_->AddFilter(
-      new MediaGpuChannelFilter(base::UnguessableToken::Create()));
+MediaGpuChannel::MediaGpuChannel(gpu::GpuChannel* channel,
+                                 const base::UnguessableToken& channel_token)
+    : channel_(channel) {
+  channel_->AddFilter(new MediaGpuChannelFilter(channel_token));
 }
 
 MediaGpuChannel::~MediaGpuChannel() {}

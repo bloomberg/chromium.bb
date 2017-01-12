@@ -32,6 +32,7 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
   bool IsGpuVideoAcceleratorEnabled() override;
 
   MOCK_METHOD0(GetChannelToken, base::UnguessableToken());
+  MOCK_METHOD0(GetCommandBufferRouteId, int32_t());
 
   // CreateVideo{Decode,Encode}Accelerator returns scoped_ptr, which the mocking
   // framework does not want.  Trampoline them.

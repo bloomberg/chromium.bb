@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "media/mojo/interfaces/video_decoder.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 
 namespace base {
@@ -47,7 +48,8 @@ class MEDIA_MOJO_EXPORT MojoMediaClient {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   virtual std::unique_ptr<VideoDecoder> CreateVideoDecoder(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      mojom::CommandBufferIdPtr command_buffer_id);
 
   // Returns the output sink used for rendering audio on |audio_device_id|.
   // May be null if the RendererFactory doesn't need an audio sink.

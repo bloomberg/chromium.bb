@@ -51,7 +51,8 @@ std::unique_ptr<AudioDecoder> GpuMojoMediaClient::CreateAudioDecoder(
 }
 
 std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    mojom::CommandBufferIdPtr command_buffer_id) {
   static_cast<void>(media_gpu_channel_manager_);
 
   // TODO(sandersd): Factory for VideoDecoders.

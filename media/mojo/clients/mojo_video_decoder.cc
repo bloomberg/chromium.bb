@@ -10,11 +10,14 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "base/unguessable_token.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/video_frame.h"
 #include "media/mojo/common/media_type_converters.h"
 #include "media/mojo/common/mojo_decoder_buffer_converter.h"
+#include "media/mojo/interfaces/media_types.mojom.h"
+#include "media/renderers/gpu_video_accelerator_factories.h"
 
 namespace media {
 
@@ -23,10 +26,9 @@ MojoVideoDecoder::MojoVideoDecoder(
     GpuVideoAcceleratorFactories* gpu_factories,
     mojom::VideoDecoderPtr remote_decoder)
     : task_runner_(task_runner),
-      gpu_factories_(gpu_factories),
       remote_decoder_info_(remote_decoder.PassInterface()),
+      gpu_factories_(gpu_factories),
       client_binding_(this) {
-  (void)gpu_factories_;
   DVLOG(1) << __func__;
 }
 
@@ -180,8 +182,19 @@ void MojoVideoDecoder::BindRemoteDecoder() {
   mojo_decoder_buffer_writer_ = MojoDecoderBufferWriter::Create(
       DemuxerStream::VIDEO, &remote_consumer_handle);
 
+  media::mojom::CommandBufferIdPtr command_buffer_id;
+  if (gpu_factories_) {
+    base::UnguessableToken channel_token = gpu_factories_->GetChannelToken();
+    if (channel_token) {
+      command_buffer_id = media::mojom::CommandBufferId::New();
+      command_buffer_id->channel_token = std::move(channel_token);
+      command_buffer_id->route_id = gpu_factories_->GetCommandBufferRouteId();
+    }
+  }
+
   remote_decoder_->Construct(std::move(client_ptr_info),
-                             std::move(remote_consumer_handle));
+                             std::move(remote_consumer_handle),
+                             std::move(command_buffer_id));
 }
 
 void MojoVideoDecoder::Stop() {

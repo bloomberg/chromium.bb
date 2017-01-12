@@ -61,12 +61,14 @@ class MojoVideoDecoder final : public VideoDecoder,
   // Cleans up callbacks and blocks future calls.
   void Stop();
 
+  // Task runner that the decoder runs on (media thread).
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  GpuVideoAcceleratorFactories* gpu_factories_;
 
   // Used to pass the remote decoder from the constructor (on the main thread)
   // to Initialize() (on the media thread).
   mojom::VideoDecoderPtrInfo remote_decoder_info_;
+
+  GpuVideoAcceleratorFactories* gpu_factories_ = nullptr;
 
   InitCB init_cb_;
   OutputCB output_cb_;

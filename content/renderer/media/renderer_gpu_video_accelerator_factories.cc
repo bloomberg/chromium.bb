@@ -127,6 +127,13 @@ base::UnguessableToken RendererGpuVideoAcceleratorFactories::GetChannelToken() {
   return channel_token_;
 }
 
+int32_t RendererGpuVideoAcceleratorFactories::GetCommandBufferRouteId() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  if (CheckContextLost())
+    return 0;
+  return context_provider_->GetCommandBufferProxy()->route_id();
+}
+
 std::unique_ptr<media::VideoDecodeAccelerator>
 RendererGpuVideoAcceleratorFactories::CreateVideoDecodeAccelerator() {
   DCHECK(video_accelerator_enabled_);

@@ -26,18 +26,36 @@ MediaGpuChannelManager::~MediaGpuChannelManager() {}
 void MediaGpuChannelManager::AddChannel(int32_t client_id) {
   gpu::GpuChannel* gpu_channel = channel_manager_->LookupChannel(client_id);
   DCHECK(gpu_channel);
+  base::UnguessableToken channel_token = base::UnguessableToken::Create();
   std::unique_ptr<MediaGpuChannel> media_gpu_channel(
-      new MediaGpuChannel(gpu_channel));
+      new MediaGpuChannel(gpu_channel, channel_token));
   gpu_channel->SetUnhandledMessageListener(media_gpu_channel.get());
   media_gpu_channels_[client_id] = std::move(media_gpu_channel);
+  channel_to_token_[client_id] = channel_token;
+  token_to_channel_[channel_token] = client_id;
 }
 
 void MediaGpuChannelManager::RemoveChannel(int32_t client_id) {
   media_gpu_channels_.erase(client_id);
+  const auto it = channel_to_token_.find(client_id);
+  if (it != channel_to_token_.end()) {
+    token_to_channel_.erase(it->second);
+    channel_to_token_.erase(it);
+  }
 }
 
 void MediaGpuChannelManager::DestroyAllChannels() {
   media_gpu_channels_.clear();
+  token_to_channel_.clear();
+  channel_to_token_.clear();
+}
+
+gpu::GpuChannel* MediaGpuChannelManager::LookupChannel(
+    const base::UnguessableToken& channel_token) {
+  const auto it = token_to_channel_.find(channel_token);
+  if (it == token_to_channel_.end())
+    return nullptr;
+  return channel_manager_->LookupChannel(it->second);
 }
 
 }  // namespace media

@@ -31,15 +31,17 @@ MojoVideoDecoderService::~MojoVideoDecoderService() {}
 
 void MojoVideoDecoderService::Construct(
     mojom::VideoDecoderClientAssociatedPtrInfo client,
-    mojo::ScopedDataPipeConsumerHandle decoder_buffer_pipe) {
+    mojo::ScopedDataPipeConsumerHandle decoder_buffer_pipe,
+    mojom::CommandBufferIdPtr command_buffer_id) {
   DVLOG(1) << __func__;
 
+  // TODO(sandersd): Enter an error state.
   if (decoder_)
     return;
 
   // TODO(sandersd): Provide callback for requesting a GpuCommandBufferStub.
   decoder_ = mojo_media_client_->CreateVideoDecoder(
-      base::ThreadTaskRunnerHandle::Get());
+      base::ThreadTaskRunnerHandle::Get(), std::move(command_buffer_id));
 
   client_.Bind(std::move(client));
 

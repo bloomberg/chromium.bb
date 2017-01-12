@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/unguessable_token.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "media/gpu/ipc/service/gpu_jpeg_decode_accelerator.h"
@@ -26,7 +27,8 @@ class MediaGpuChannelDispatchHelper;
 
 class MediaGpuChannel : public IPC::Listener, public IPC::Sender {
  public:
-  explicit MediaGpuChannel(gpu::GpuChannel* channel);
+  MediaGpuChannel(gpu::GpuChannel* channel,
+                  const base::UnguessableToken& channel_token);
   ~MediaGpuChannel() override;
 
   // IPC::Sender implementation:
@@ -49,6 +51,7 @@ class MediaGpuChannel : public IPC::Listener, public IPC::Sender {
                             IPC::Message* reply_message);
 
   gpu::GpuChannel* const channel_;
+  base::UnguessableToken channel_token_;
   std::unique_ptr<GpuJpegDecodeAccelerator> jpeg_decoder_;
   DISALLOW_COPY_AND_ASSIGN(MediaGpuChannel);
 };

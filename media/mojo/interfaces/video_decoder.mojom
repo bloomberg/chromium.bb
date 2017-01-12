@@ -5,9 +5,21 @@
 module media.mojom;
 
 import "media/mojo/interfaces/media_types.mojom";
+import "mojo/common/unguessable_token.mojom";
+
+// Identifies a GpuCommandBufferStub. MediaGpuChannelManager is responsible
+// for minting |channel_token| objects.
+struct CommandBufferId {
+  mojo.common.mojom.UnguessableToken channel_token;
+  int32 route_id;
+};
 
 interface VideoDecoder {
   // Initialize the decoder. This must be called before any other method.
+  //
+  // |command_buffer_id|, when present, identifies a GpuCommandBufferStub that
+  // the decoder can use for GL operations. Implementations that require GL will
+  // fail Initialize() if |command_buffer_id| is not provided.
   //
   // |decoder_buffer_pipe| will be used to transfer encoded data for each
   // DecoderBuffer.
@@ -15,7 +27,8 @@ interface VideoDecoder {
   // TODO(sandersd): Rename to Initialize() if/when
   // media::VideoDecoder::Initialize() is renamed to Configure().
   Construct(associated VideoDecoderClient client,
-            handle<data_pipe_consumer> decoder_buffer_pipe);
+            handle<data_pipe_consumer> decoder_buffer_pipe,
+            CommandBufferId? command_buffer_id);
 
   // Configure (or reconfigure) the decoder. This must be called before decoding
   // any frames, and must not be called while there are pending Initialize(),
