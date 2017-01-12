@@ -19,7 +19,7 @@ The following objects are allocated by Oilpan:
 * HeapVector<T>, HeapHashSet<T>, HeapHashMap<T, U> etc
 
 The implementation is in platform/heap/.
-See [BlinkGCDesign.md](platform/heap/BlinkGCDesign.md) to learn the design.
+See [BlinkGCDesign.md](../platform/heap/BlinkGCDesign.md) to learn the design.
 
 ### PartitionAlloc
 
@@ -37,8 +37,9 @@ The following objects are allocated by PartitionAlloc:
 
 * Strings, Vectors, HashTables, ArrayBuffers and other primitive containers.
 
-The implementation is in wtf/Partition*.
-See [PartitionAlloc.md](wtf/PartitionAlloc.md) to learn the design.
+The implementation is in /base/allocator/partition_allocator.
+See [PartitionAlloc.md](/base/allocator/partition_allocator/PartitionAlloc.md)
+to learn the design.
 
 ### Discardable memory
 
@@ -73,7 +74,7 @@ you should use when allocating a new object:
 * Use Oilpan if you want a GC to manage the lifetime of the object.
 You need to make the object inherit from GarbageCollected<T> or
 GarbageCollectedFinalized<T>. See
-[BlinkGCAPIReference.md](platform/heap/BlinkGCAPIReference.md) to learn
+[BlinkGCAPIReference.md](../platform/heap/BlinkGCAPIReference.md) to learn
 programming with Oilpan.
 
 ```c++
