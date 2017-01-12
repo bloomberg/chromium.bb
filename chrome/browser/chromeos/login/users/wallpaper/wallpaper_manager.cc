@@ -19,6 +19,7 @@
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "base/time/time.h"
@@ -960,8 +961,8 @@ void WallpaperManager::OnDeviceWallpaperExists(const AccountId& account_id,
                                                const std::string& hash,
                                                bool exist) {
   if (exist) {
-    base::PostTaskAndReplyWithResult(
-        BrowserThread::GetBlockingPool(), FROM_HERE,
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, base::TaskTraits().MayBlock(),
         base::Bind(&CheckDeviceWallpaperMatchHash, GetDeviceWallpaperFilePath(),
                    hash),
         base::Bind(&WallpaperManager::OnCheckDeviceWallpaperMatchHash,
@@ -988,8 +989,8 @@ void WallpaperManager::OnDeviceWallpaperDownloaded(const AccountId& account_id,
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool(), FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock(),
       base::Bind(&CheckDeviceWallpaperMatchHash, GetDeviceWallpaperFilePath(),
                  hash),
       base::Bind(&WallpaperManager::OnCheckDeviceWallpaperMatchHash,
@@ -1304,8 +1305,8 @@ bool WallpaperManager::SetDeviceWallpaperIfApplicable(
   if (ShouldSetDeviceWallpaper(account_id, &url, &hash)) {
     // Check if the device wallpaper exists and matches the hash. If so, use it
     // directly. Otherwise download it first.
-    base::PostTaskAndReplyWithResult(
-        BrowserThread::GetBlockingPool(), FROM_HERE,
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, base::TaskTraits().MayBlock(),
         base::Bind(&base::PathExists, GetDeviceWallpaperFilePath()),
         base::Bind(&WallpaperManager::OnDeviceWallpaperExists,
                    weak_factory_.GetWeakPtr(), account_id, url, hash));
