@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -90,7 +91,6 @@ DomainReliabilityMonitor::DomainReliabilityMonitor(
       discard_uploads_set_(false),
       weak_factory_(this) {
   DCHECK(OnPrefThread());
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }
 
 DomainReliabilityMonitor::DomainReliabilityMonitor(
@@ -110,22 +110,25 @@ DomainReliabilityMonitor::DomainReliabilityMonitor(
       discard_uploads_set_(false),
       weak_factory_(this) {
   DCHECK(OnPrefThread());
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }
 
 DomainReliabilityMonitor::~DomainReliabilityMonitor() {
-  if (moved_to_network_thread_)
+  if (moved_to_network_thread_) {
+    net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
     DCHECK(OnNetworkThread());
-  else
+  } else {
     DCHECK(OnPrefThread());
-
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  }
 }
 
 void DomainReliabilityMonitor::MoveToNetworkThread() {
   DCHECK(OnPrefThread());
   DCHECK(!moved_to_network_thread_);
 
+  network_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&net::NetworkChangeNotifier::AddNetworkChangeObserver,
+                 base::Unretained(this)));
   moved_to_network_thread_ = true;
 }
 
