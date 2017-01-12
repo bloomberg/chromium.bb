@@ -44,14 +44,8 @@
       assertWithMatcher:grey_notNil()];
 }
 
-// TODO(crbug.com/675015): Re-enable this test on device.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testNavigationBackAndForward testNavigationBackAndForward
-#else
-#define MAYBE_testNavigationBackAndForward FLAKY_testNavigationBackAndForward
-#endif
 // Tests the back and forward button after entering two URLs.
-- (void)MAYBE_testNavigationBackAndForward {
+- (void)testNavigationBackAndForward {
   // Create map of canned responses and set up the test HTML server.
   std::map<GURL, std::string> responses;
   const GURL URL1 = web::test::HttpServer::MakeUrl("http://firstURL");
@@ -91,16 +85,8 @@
       assertWithMatcher:grey_notNil()];
 }
 
-// TODO(crbug.com/675015): Re-enable this test on device.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testNavigationBackAndForwardAfterFragmentLink \
-  testNavigationBackAndForwardAfterFragmentLink
-#else
-#define MAYBE_testNavigationBackAndForwardAfterFragmentLink \
-  FLAKY_testNavigationBackAndForwardAfterFragmentLink
-#endif
 // Tests back and forward navigation where a fragment link is tapped.
-- (void)MAYBE_testNavigationBackAndForwardAfterFragmentLink {
+- (void)testNavigationBackAndForwardAfterFragmentLink {
   // Create map of canned responses and set up the test HTML server.
   std::map<GURL, std::string> responses;
   const GURL URL1 = web::test::HttpServer::MakeUrl("http://fragmentLink");
