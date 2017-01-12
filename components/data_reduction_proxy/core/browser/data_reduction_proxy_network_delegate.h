@@ -112,12 +112,9 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
 
   // Calculates actual data usage that went over the network at the HTTP layer
   // (e.g. not including network layer overhead) and estimates original data
-  // usage for |request|. Passing in -1 for |original_content_length| indicates
-  // that the original content length of the response could not be determined.
+  // usage for |request|.
   void CalculateAndRecordDataUsage(const net::URLRequest& request,
-                                   DataReductionProxyRequestType request_type,
-                                   int64_t original_content_length,
-                                   int net_error);
+                                   DataReductionProxyRequestType request_type);
 
   // Posts to the UI thread to UpdateContentLengthPrefs in the data reduction
   // proxy metrics and updates |received_content_length_| and

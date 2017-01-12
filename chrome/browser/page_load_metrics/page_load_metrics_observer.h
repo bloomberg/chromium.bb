@@ -116,10 +116,6 @@ struct PageLoadExtraInfo {
       UserAbortType abort_type,
       UserInitiatedInfo abort_user_initiated_info,
       const base::Optional<base::TimeDelta>& time_to_abort,
-      int num_cache_requests,
-      int num_network_requests,
-      int64_t cache_bytes,
-      int64_t net_bytes,
       const PageLoadMetadata& metadata);
 
   PageLoadExtraInfo(const PageLoadExtraInfo& other);
@@ -164,20 +160,34 @@ struct PageLoadExtraInfo {
 
   const base::Optional<base::TimeDelta> time_to_abort;
 
-  // Note: these are only approximations, based on WebContents attribution from
-  // ResourceRequestInfo objects while this is the currently committed load in
-  // the WebContents.
-  int num_cache_requests;
-  int num_network_requests;
-
-  // The number of body (not header) prefilter bytes consumed by requests for
-  // the page.
-  int64_t cache_bytes;
-  int64_t network_bytes;
-
   // Extra information supplied to the page load metrics system from the
   // renderer.
   const PageLoadMetadata metadata;
+};
+
+// Container for various information about a request within a page load.
+struct ExtraRequestInfo {
+  ExtraRequestInfo(bool was_cached,
+                   int64_t raw_body_bytes,
+                   bool data_reduction_proxy_used,
+                   int64_t original_network_content_length);
+
+  ExtraRequestInfo(const ExtraRequestInfo& other);
+
+  ~ExtraRequestInfo();
+
+  // True if the resource was loaded from cache.
+  const bool was_cached;
+
+  // The number of body (not header) prefilter bytes.
+  const int64_t raw_body_bytes;
+
+  // Whether this request used Data Reduction Proxy.
+  const bool data_reduction_proxy_used;
+
+  // The number of body (not header) bytes that the data reduction proxy saw
+  // before it compressed the requests.
+  const int64_t original_network_content_length;
 };
 
 // Interface for PageLoadMetrics observers. All instances of this class are
@@ -315,6 +325,9 @@ class PageLoadMetricsObserver {
   virtual void OnFailedProvisionalLoad(
       const FailedProvisionalLoadInfo& failed_provisional_load_info,
       const PageLoadExtraInfo& extra_info) {}
+
+  // Called whenever a request is loaded for this page load.
+  virtual void OnLoadedResource(const ExtraRequestInfo& extra_request_info) {}
 };
 
 }  // namespace page_load_metrics

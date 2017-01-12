@@ -47,6 +47,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/policy/core/common/cloud/policy_header_io_helper.h"
 #include "components/rappor/public/rappor_utils.h"
@@ -354,9 +355,11 @@ void NotifyUIThreadOfRequestComplete(
     const GURL& url,
     ResourceType resource_type,
     bool was_cached,
+    bool used_data_reduction_proxy,
     int net_error,
     int64_t total_received_bytes,
     int64_t raw_body_bytes,
+    int64_t original_content_length,
     base::TimeTicks request_creation_time,
     base::TimeDelta request_loading_time) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -373,8 +376,9 @@ void NotifyUIThreadOfRequestComplete(
       page_load_metrics::MetricsWebContentsObserver::FromWebContents(
           web_contents);
   if (metrics_observer) {
-    metrics_observer->OnRequestComplete(resource_type, was_cached,
-                                        raw_body_bytes, request_creation_time);
+    metrics_observer->OnRequestComplete(
+        resource_type, was_cached, used_data_reduction_proxy, raw_body_bytes,
+        original_content_length, request_creation_time);
   }
 }
 
@@ -830,13 +834,24 @@ void ChromeResourceDispatcherHostDelegate::RequestComplete(
   int net_error = url_request->status().error();
   const ResourceRequestInfo* info =
       ResourceRequestInfo::ForRequest(url_request);
+
+  data_reduction_proxy::DataReductionProxyData* data =
+      data_reduction_proxy::DataReductionProxyData::GetData(*url_request);
+  bool used_data_reduction_proxy = data && data->used_data_reduction_proxy();
+  int64_t original_content_length =
+      used_data_reduction_proxy
+          ? data_reduction_proxy::util::CalculateEffectiveOCL(*url_request)
+          : url_request->GetRawBodyBytes();
+
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&NotifyUIThreadOfRequestComplete,
                  info->GetWebContentsGetterForRequest(), url_request->url(),
-                 info->GetResourceType(), url_request->was_cached(), net_error,
+                 info->GetResourceType(), url_request->was_cached(),
+                 used_data_reduction_proxy, net_error,
                  url_request->GetTotalReceivedBytes(),
-                 url_request->GetRawBodyBytes(), url_request->creation_time(),
+                 url_request->GetRawBodyBytes(), original_content_length,
+                 url_request->creation_time(),
                  base::TimeTicks::Now() - url_request->creation_time()));
 }
 

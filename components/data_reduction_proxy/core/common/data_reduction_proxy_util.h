@@ -23,6 +23,7 @@ class TimeDelta;
 namespace net {
 class ProxyConfig;
 class ProxyInfo;
+class URLRequest;
 }
 
 namespace data_reduction_proxy {
@@ -86,6 +87,10 @@ bool ApplyProxyConfigToProxyInfo(const net::ProxyConfig& proxy_config,
                                  const net::ProxyRetryInfoMap& proxy_retry_info,
                                  const GURL& url,
                                  net::ProxyInfo* data_reduction_proxy_info);
+
+// Calculates the effective original content length of the |request|, accounting
+// for partial responses if necessary.
+int64_t CalculateEffectiveOCL(const net::URLRequest& request);
 
 }  // namespace util
 

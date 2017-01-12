@@ -211,7 +211,11 @@ const char kHistogramCacheBytes[] = "PageLoad.Experimental.Bytes.Cache";
 
 CorePageLoadMetricsObserver::CorePageLoadMetricsObserver()
     : transition_(ui::PAGE_TRANSITION_LINK),
-      was_no_store_main_resource_(false) {}
+      was_no_store_main_resource_(false),
+      num_cache_requests_(0),
+      num_network_requests_(0),
+      cache_bytes_(0),
+      network_bytes_(0) {}
 
 CorePageLoadMetricsObserver::~CorePageLoadMetricsObserver() {}
 
@@ -498,15 +502,15 @@ void CorePageLoadMetricsObserver::OnParseStop(
         timing.parse_blocked_on_script_execution_from_document_write_duration
             .value());
 
-    int total_requests = info.num_cache_requests + info.num_network_requests;
+    int total_requests = num_cache_requests_ + num_network_requests_;
     if (total_requests) {
-      int percent_cached = (100 * info.num_cache_requests) / total_requests;
+      int percent_cached = (100 * num_cache_requests_) / total_requests;
       UMA_HISTOGRAM_PERCENTAGE(internal::kHistogramCacheRequestPercentParseStop,
                                percent_cached);
       UMA_HISTOGRAM_COUNTS(internal::kHistogramCacheTotalRequestsParseStop,
-                           info.num_cache_requests);
+                           num_cache_requests_);
       UMA_HISTOGRAM_COUNTS(internal::kHistogramTotalRequestsParseStop,
-                           info.num_cache_requests + info.num_network_requests);
+                           num_cache_requests_ + num_network_requests_);
 
       // Separate out parse duration based on cache percent.
       if (percent_cached <= 50) {
@@ -537,9 +541,9 @@ void CorePageLoadMetricsObserver::OnComplete(
   RecordTimingHistograms(timing, info);
   RecordRappor(timing, info);
 
-  int64_t total_kb = (info.network_bytes + info.cache_bytes) / 1024;
-  int64_t network_kb = info.network_bytes / 1024;
-  int64_t cache_kb = info.cache_bytes / 1024;
+  int64_t total_kb = (network_bytes_ + cache_bytes_) / 1024;
+  int64_t network_kb = network_bytes_ / 1024;
+  int64_t cache_kb = cache_bytes_ / 1024;
   DCHECK_LE(network_kb, total_kb);
   DCHECK_LE(cache_kb, total_kb);
   DCHECK_LE(total_kb, std::numeric_limits<int>::max());
@@ -600,6 +604,17 @@ void CorePageLoadMetricsObserver::OnUserInput(
       now = base::TimeTicks::Now();
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstScrollInputAfterFirstPaint,
                         now - first_paint_);
+  }
+}
+
+void CorePageLoadMetricsObserver::OnLoadedResource(
+    const page_load_metrics::ExtraRequestInfo& extra_request_info) {
+  if (extra_request_info.was_cached) {
+    ++num_cache_requests_;
+    cache_bytes_ += extra_request_info.raw_body_bytes;
+  } else {
+    ++num_network_requests_;
+    network_bytes_ += extra_request_info.raw_body_bytes;
   }
 }
 

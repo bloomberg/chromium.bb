@@ -152,7 +152,7 @@ class PageLoadTracker {
   bool UpdateTiming(const PageLoadTiming& timing,
                     const PageLoadMetadata& metadata);
 
-  void OnLoadedResource(bool was_cached, int64_t raw_body_bytes);
+  void OnLoadedResource(const ExtraRequestInfo& extra_request_info);
 
   // Signals that we should stop tracking metrics for the associated page load.
   // We may stop tracking a page load if it doesn't meet the criteria for
@@ -278,17 +278,6 @@ class PageLoadTracker {
   PageLoadMetadata metadata_;
 
   ui::PageTransition page_transition_;
-
-  // Note: these are only approximations, based on WebContents attribution from
-  // ResourceRequestInfo objects while this is the currently committed load in
-  // the WebContents.
-  int num_cache_requests_;
-  int num_network_requests_;
-
-  // The number of body (not header) prefilter bytes consumed by requests for
-  // the page.
-  int64_t cache_bytes_;
-  int64_t network_bytes_;
 
   // Whether this page load was user initiated.
   UserInitiatedInfo user_initiated_info_;

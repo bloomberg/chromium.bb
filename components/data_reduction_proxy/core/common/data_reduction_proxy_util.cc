@@ -4,13 +4,18 @@
 
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 
+#include <stdint.h>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/version.h"
 #include "components/data_reduction_proxy/core/common/version.h"
+#include "net/base/net_errors.h"
 #include "net/base/url_util.h"
+#include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_info.h"
+#include "net/url_request/url_request.h"
 
 #if defined(USE_GOOGLE_API_KEYS)
 #include "google_apis/google_api_keys.h"
@@ -24,6 +29,34 @@ namespace {
 // Used in all Data Reduction Proxy URLs to specify API Key.
 const char kApiKeyName[] = "key";
 #endif
+
+// Scales |byte_count| by the ratio of |numerator|:|denomenator|.
+int64_t ScaleByteCountByRatio(int64_t byte_count,
+                              int64_t numerator,
+                              int64_t denomenator) {
+  DCHECK_LE(0, byte_count);
+  DCHECK_LE(0, numerator);
+  DCHECK_LT(0, denomenator);
+
+  // As an optimization, use integer arithmetic if it won't overflow.
+  if (byte_count <= std::numeric_limits<int32_t>::max() &&
+      numerator <= std::numeric_limits<int32_t>::max()) {
+    return byte_count * numerator / denomenator;
+  }
+
+  double scaled_byte_count = static_cast<double>(byte_count) *
+                             static_cast<double>(numerator) /
+                             static_cast<double>(denomenator);
+  if (scaled_byte_count >
+      static_cast<double>(std::numeric_limits<int64_t>::max())) {
+    // If this ever triggers, then byte counts can no longer be safely stored in
+    // 64-bit ints.
+    NOTREACHED();
+    return byte_count;
+  }
+  return static_cast<int64_t>(scaled_byte_count);
+}
+
 }  // namespace
 
 namespace util {
@@ -131,6 +164,29 @@ bool ApplyProxyConfigToProxyInfo(const net::ProxyConfig& proxy_config,
   proxy_config.proxy_rules().Apply(url, data_reduction_proxy_info);
   data_reduction_proxy_info->DeprioritizeBadProxies(proxy_retry_info);
   return !data_reduction_proxy_info->proxy_server().is_direct();
+}
+
+int64_t CalculateEffectiveOCL(const net::URLRequest& request) {
+  int64_t original_content_length_from_header =
+      request.response_headers()->GetInt64HeaderValue(
+          "x-original-content-length");
+
+  if (original_content_length_from_header < 0)
+    return request.received_response_content_length();
+  if (request.status().error() == net::OK)
+    return original_content_length_from_header;
+
+  int64_t content_length_from_header =
+      request.response_headers()->GetContentLength();
+
+  if (content_length_from_header < 0)
+    return request.received_response_content_length();
+  if (content_length_from_header == 0)
+    return original_content_length_from_header;
+
+  return ScaleByteCountByRatio(request.received_response_content_length(),
+                               original_content_length_from_header,
+                               content_length_from_header);
 }
 
 }  // namespace util

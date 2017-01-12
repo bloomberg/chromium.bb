@@ -178,7 +178,9 @@ void MetricsWebContentsObserver::WillStartNavigationRequest(
 void MetricsWebContentsObserver::OnRequestComplete(
     content::ResourceType resource_type,
     bool was_cached,
+    bool used_data_reduction_proxy,
     int64_t raw_body_bytes,
+    int64_t original_content_length,
     base::TimeTicks creation_time) {
   // If the navigation hasn't committed yet then we'll miss the resource (this
   // happens on the new tab page). Also, if the resource request was started
@@ -191,7 +193,11 @@ void MetricsWebContentsObserver::OnRequestComplete(
     return;
   }
 
-  committed_load_->OnLoadedResource(was_cached, raw_body_bytes);
+  ExtraRequestInfo extra_request_info(was_cached, raw_body_bytes,
+                                      used_data_reduction_proxy,
+                                      was_cached ? 0 : original_content_length);
+
+  committed_load_->OnLoadedResource(extra_request_info);
 }
 
 const PageLoadExtraInfo

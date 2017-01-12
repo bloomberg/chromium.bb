@@ -16,10 +16,6 @@ PageLoadExtraInfo::PageLoadExtraInfo(
     UserAbortType abort_type,
     UserInitiatedInfo abort_user_initiated_info,
     const base::Optional<base::TimeDelta>& time_to_abort,
-    int num_cache_requests,
-    int num_network_requests,
-    int64_t cache_bytes,
-    int64_t network_bytes,
     const PageLoadMetadata& metadata)
     : first_background_time(first_background_time),
       first_foreground_time(first_foreground_time),
@@ -30,15 +26,24 @@ PageLoadExtraInfo::PageLoadExtraInfo(
       abort_type(abort_type),
       abort_user_initiated_info(abort_user_initiated_info),
       time_to_abort(time_to_abort),
-      num_cache_requests(num_cache_requests),
-      num_network_requests(num_network_requests),
-      cache_bytes(cache_bytes),
-      network_bytes(network_bytes),
       metadata(metadata) {}
 
 PageLoadExtraInfo::PageLoadExtraInfo(const PageLoadExtraInfo& other) = default;
 
 PageLoadExtraInfo::~PageLoadExtraInfo() {}
+
+ExtraRequestInfo::ExtraRequestInfo(bool was_cached,
+                                   int64_t raw_body_bytes,
+                                   bool data_reduction_proxy_used,
+                                   int64_t original_network_content_length)
+    : was_cached(was_cached),
+      raw_body_bytes(raw_body_bytes),
+      data_reduction_proxy_used(data_reduction_proxy_used),
+      original_network_content_length(original_network_content_length) {}
+
+ExtraRequestInfo::ExtraRequestInfo(const ExtraRequestInfo& other) = default;
+
+ExtraRequestInfo::~ExtraRequestInfo() {}
 
 FailedProvisionalLoadInfo::FailedProvisionalLoadInfo(base::TimeDelta interval,
                                                      net::Error error)
