@@ -76,6 +76,7 @@ class ReadingListWebStateObserver : public web::WebStateObserver,
   std::unique_ptr<base::Timer> timer_;
   GURL pending_url_;
   int try_number_;
+  bool last_load_was_offline_;
   web::PageLoadCompletionStatus last_load_result_;
 
   DISALLOW_COPY_AND_ASSIGN(ReadingListWebStateObserver);

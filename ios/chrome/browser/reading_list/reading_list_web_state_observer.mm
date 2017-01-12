@@ -85,6 +85,7 @@ ReadingListWebStateObserver::ReadingListWebStateObserver(
     ReadingListModel* reading_list_model)
     : web::WebStateObserver(web_state),
       reading_list_model_(reading_list_model),
+      last_load_was_offline_(false),
       last_load_result_(web::PageLoadCompletionStatus::SUCCESS) {
   reading_list_model_->AddObserver(this);
   DCHECK(web_state);
@@ -156,24 +157,36 @@ void ReadingListWebStateObserver::StartCheckingLoading() {
 
   web::NavigationManager* manager = web_state()->GetNavigationManager();
   web::NavigationItem* item = manager->GetPendingItem();
+  bool is_reload = false;
 
   // Manager->GetPendingItem() returns null on reload.
   // TODO(crbug.com/676129): Remove this workaround once GetPendingItem()
   // returns the correct value on reload.
   if (!item) {
     item = manager->GetLastCommittedItem();
+    is_reload = true;
   }
 
   if (!ShouldObserveItem(item)) {
     StopCheckingProgress();
     return;
   }
+  bool last_load_was_offline = last_load_was_offline_;
+  last_load_was_offline_ = false;
 
   pending_url_ = item->GetVirtualURL();
-  if (!IsUrlAvailableOffline(pending_url_)) {
-    // No need to launch the timer as there is no offline version to show.
-    // Track |pending_url_| to mark the entry as read in case of a successful
-    // load.
+
+  is_reload =
+      is_reload || ui::PageTransitionCoreTypeIs(item->GetTransitionType(),
+                                                ui::PAGE_TRANSITION_RELOAD);
+  // If the user is reloading from the offline page, the intention is to access
+  // the online page even on bad networks. No need to launch timer.
+  bool reloading_from_offline = last_load_was_offline && is_reload;
+
+  // No need to launch the timer either if there is no offline version to show.
+  // Track |pending_url_| to mark the entry as read in case of a successful
+  // load.
+  if (reloading_from_offline || !IsUrlAvailableOffline(pending_url_)) {
     return;
   }
   try_number_ = 0;
@@ -265,6 +278,7 @@ void ReadingListWebStateObserver::LoadOfflineReadingListEntry() {
   }
   const ReadingListEntry* entry =
       reading_list_model_->GetEntryByURL(pending_url_);
+  last_load_was_offline_ = true;
   DCHECK(entry->DistilledState() == ReadingListEntry::PROCESSED);
   GURL url =
       reading_list::DistilledURLForPath(entry->DistilledPath(), entry->URL());
