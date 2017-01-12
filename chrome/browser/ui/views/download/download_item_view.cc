@@ -22,6 +22,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_item_model.h"
@@ -881,8 +882,8 @@ void DownloadItemView::SetDropdownState(State new_state) {
       !dropdown_button_->GetImage(views::CustomButton::STATE_NORMAL).isNull())
     return;
 
-  dropdown_button_->SetIcon(new_state == PUSHED ? gfx::VectorIconId::FIND_NEXT
-                                                : gfx::VectorIconId::FIND_PREV);
+  dropdown_button_->SetIcon(new_state == PUSHED ? kCaretDownIcon
+                                                : kCaretUpIcon);
   if (new_state != dropdown_state_) {
     dropdown_button_->AnimateInkDrop(new_state == PUSHED
                                          ? views::InkDropState::ACTIVATED

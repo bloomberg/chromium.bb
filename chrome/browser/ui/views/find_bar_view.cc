@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
@@ -126,8 +127,8 @@ FindBarView::FindBarView(FindBarHost* host)
   find_text_->SetTextInputFlags(ui::TEXT_INPUT_FLAG_AUTOCORRECT_OFF);
   AddChildView(find_text_);
 
-  find_previous_button_->SetIcon(gfx::VectorIconId::FIND_PREV);
-  find_next_button_->SetIcon(gfx::VectorIconId::FIND_NEXT);
+  find_previous_button_->SetIcon(kCaretUpIcon);
+  find_next_button_->SetIcon(kCaretDownIcon);
   close_button_->SetIcon(gfx::VectorIconId::BAR_CLOSE);
 
   find_previous_button_->set_id(VIEW_ID_FIND_IN_PAGE_PREVIOUS_BUTTON);

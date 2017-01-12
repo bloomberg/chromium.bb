@@ -18,6 +18,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/experience_sampling_private/experience_sampling.h"
 #include "chrome/browser/extensions/extension_install_prompt_show_params.h"
@@ -38,7 +39,6 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_utils.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/native_theme/common_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
@@ -729,8 +729,7 @@ void ExpandableContainerView::ToggleDetailLevel() {
 
 void ExpandableContainerView::UpdateArrowToggle(bool expanded) {
   gfx::ImageSkia icon = gfx::CreateVectorIcon(
-      expanded ? gfx::VectorIconId::FIND_PREV : gfx::VectorIconId::FIND_NEXT,
-      gfx::kChromeIconGrey);
+      expanded ? kCaretUpIcon : kCaretDownIcon, gfx::kChromeIconGrey);
   arrow_toggle_->SetImage(views::Button::STATE_NORMAL, &icon);
 }
 

@@ -52,14 +52,18 @@ void VectorIconButton::SetIcon(const gfx::VectorIcon& icon) {
 void VectorIconButton::OnThemeChanged() {
   SkColor icon_color =
       color_utils::DeriveDefaultIconColor(delegate_->GetVectorIconBaseColor());
-  gfx::ImageSkia image;
-  if (icon_)
-    image = gfx::CreateVectorIcon(*icon_, icon_color);
-  else
-    image = gfx::CreateVectorIcon(id_, icon_color);
-  SetImage(views::CustomButton::STATE_NORMAL, &image);
-  image = gfx::CreateVectorIcon(id_, SkColorSetA(icon_color, 0xff / 2));
-  SetImage(views::CustomButton::STATE_DISABLED, &image);
+  SkColor disabled_color = SkColorSetA(icon_color, 0xff / 2);
+  if (icon_) {
+    SetImage(views::CustomButton::STATE_NORMAL,
+             gfx::CreateVectorIcon(*icon_, icon_color));
+    SetImage(views::CustomButton::STATE_DISABLED,
+             gfx::CreateVectorIcon(*icon_, disabled_color));
+  } else {
+    SetImage(views::CustomButton::STATE_NORMAL,
+             gfx::CreateVectorIcon(id_, icon_color));
+    SetImage(views::CustomButton::STATE_DISABLED,
+             gfx::CreateVectorIcon(id_, disabled_color));
+  }
   set_ink_drop_base_color(icon_color);
 }
 
