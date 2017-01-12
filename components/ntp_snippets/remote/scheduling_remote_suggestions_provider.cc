@@ -9,6 +9,8 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/strings/string_split.h"
 #include "base/time/clock.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/pref_names.h"
@@ -64,6 +66,13 @@ static_assert(
         static_cast<unsigned int>(FetchingInterval::COUNT) ==
             arraysize(kFetchingIntervalParamNameActiveSuggestionsConsumer),
     "Fill in all the info for fetching intervals.");
+
+const char* kTriggerTypeNames[] = {"persistent_scheduler_wake_up", "ntp_opened",
+                                   "browser_foregrounded",
+                                   "browser_cold_start"};
+
+const char* kTriggerTypesParamName = "scheduler_trigger_types";
+const char* kTriggerTypesParamValueForEmptyList = "-";
 
 base::TimeDelta GetDesiredFetchingInterval(
     FetchingInterval interval,
@@ -125,6 +134,17 @@ bool SchedulingRemoteSuggestionsProvider::FetchingSchedule::is_empty() const {
          interval_soft_on_usage_event.is_zero();
 }
 
+// These values are written to logs. New enum values can be added, but existing
+// enums must never be renumbered or deleted and reused. When adding new
+// entries, also update the array |kTriggerTypeNames| above.
+enum class SchedulingRemoteSuggestionsProvider::TriggerType {
+  PERSISTENT_SCHEDULER_WAKE_UP = 0,
+  NTP_OPENED = 1,
+  BROWSER_FOREGROUNDED = 2,
+  BROWSER_COLD_START = 3,
+  COUNT
+};
+
 SchedulingRemoteSuggestionsProvider::SchedulingRemoteSuggestionsProvider(
     Observer* observer,
     std::unique_ptr<RemoteSuggestionsProvider> provider,
@@ -139,7 +159,8 @@ SchedulingRemoteSuggestionsProvider::SchedulingRemoteSuggestionsProvider(
       background_fetch_in_progress_(false),
       user_classifier_(user_classifier),
       pref_service_(pref_service),
-      clock_(std::move(clock)) {
+      clock_(std::move(clock)),
+      enabled_triggers_(GetEnabledTriggerTypes()) {
   DCHECK(user_classifier);
   DCHECK(pref_service);
 
@@ -173,31 +194,35 @@ void SchedulingRemoteSuggestionsProvider::RescheduleFetching() {
 }
 
 void SchedulingRemoteSuggestionsProvider::OnPersistentSchedulerWakeUp() {
-  if (BackgroundFetchesDisabled()) {
-    return;
-  }
-
-  RefetchInTheBackground(/*callback=*/nullptr);
+  RefetchInTheBackgroundIfEnabled(TriggerType::PERSISTENT_SCHEDULER_WAKE_UP);
 }
 
 void SchedulingRemoteSuggestionsProvider::OnBrowserForegrounded() {
   // TODO(jkrcal): Consider that this is called whenever we open or return to an
   // Activity. Therefore, keep work light for fast start up calls.
-  // TODO(jkrcal): Implement.
+  if (!ShouldRefetchInTheBackgroundNow()) {
+    return;
+  }
+
+  RefetchInTheBackgroundIfEnabled(TriggerType::BROWSER_FOREGROUNDED);
 }
 
 void SchedulingRemoteSuggestionsProvider::OnBrowserColdStart() {
   // TODO(fhorschig|jkrcal): Consider that work here must be kept light for fast
   // cold start ups.
-  // TODO(jkrcal): Implement.
-}
-
-void SchedulingRemoteSuggestionsProvider::OnNTPOpened() {
-  if (BackgroundFetchesDisabled() || !ShouldRefetchInTheBackgroundNow()) {
+  if (!ShouldRefetchInTheBackgroundNow()) {
     return;
   }
 
-  RefetchInTheBackground(/*callback=*/nullptr);
+  RefetchInTheBackgroundIfEnabled(TriggerType::BROWSER_COLD_START);
+}
+
+void SchedulingRemoteSuggestionsProvider::OnNTPOpened() {
+  if (!ShouldRefetchInTheBackgroundNow()) {
+    return;
+  }
+
+  RefetchInTheBackgroundIfEnabled(TriggerType::NTP_OPENED);
 }
 
 void SchedulingRemoteSuggestionsProvider::SetProviderStatusCallback(
@@ -376,8 +401,17 @@ void SchedulingRemoteSuggestionsProvider::StoreFetchingSchedule() {
       schedule_.interval_soft_on_usage_event.ToInternalValue());
 }
 
-bool SchedulingRemoteSuggestionsProvider::BackgroundFetchesDisabled() const {
-  return schedule_.is_empty();
+void SchedulingRemoteSuggestionsProvider::RefetchInTheBackgroundIfEnabled(
+    SchedulingRemoteSuggestionsProvider::TriggerType trigger) {
+  if (BackgroundFetchesDisabled(trigger)) {
+    return;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "NewTabPage.ContentSuggestions.BackgroundFetchTrigger",
+      static_cast<int>(trigger), static_cast<int>(TriggerType::COUNT));
+
+  RefetchInTheBackground(/*callback=*/nullptr);
 }
 
 bool SchedulingRemoteSuggestionsProvider::ShouldRefetchInTheBackgroundNow() {
@@ -386,6 +420,18 @@ bool SchedulingRemoteSuggestionsProvider::ShouldRefetchInTheBackgroundNow() {
           pref_service_->GetInt64(prefs::kSnippetLastFetchAttempt)) +
       schedule_.interval_soft_on_usage_event;
   return first_allowed_fetch_time <= clock_->Now();
+}
+
+bool SchedulingRemoteSuggestionsProvider::BackgroundFetchesDisabled(
+    SchedulingRemoteSuggestionsProvider::TriggerType trigger) const {
+  if (schedule_.is_empty()) {
+    return true;  // Background fetches are disabled in general.
+  }
+
+  if (enabled_triggers_.count(trigger) == 0) {
+    return true;  // Background fetches for |trigger| are not enabled.
+  }
+  return false;
 }
 
 void SchedulingRemoteSuggestionsProvider::FetchFinished(
@@ -421,6 +467,51 @@ void SchedulingRemoteSuggestionsProvider::OnFetchCompleted(
     return;
   }
   ApplyPersistentFetchingSchedule();
+}
+
+std::set<SchedulingRemoteSuggestionsProvider::TriggerType>
+SchedulingRemoteSuggestionsProvider::GetEnabledTriggerTypes() {
+  static_assert(static_cast<unsigned int>(TriggerType::COUNT) ==
+                    arraysize(kTriggerTypeNames),
+                "Fill in names for trigger types.");
+
+  std::string param_value = variations::GetVariationParamValueByFeature(
+      ntp_snippets::kArticleSuggestionsFeature, kTriggerTypesParamName);
+  if (param_value == kTriggerTypesParamValueForEmptyList) {
+    return std::set<TriggerType>();
+  }
+
+  std::vector<std::string> tokens = base::SplitString(
+      param_value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  if (tokens.empty()) {
+    return GetDefaultEnabledTriggerTypes();
+  }
+
+  std::set<TriggerType> enabled_types;
+  for (const auto& token : tokens) {
+    auto it = std::find(std::begin(kTriggerTypeNames),
+                        std::end(kTriggerTypeNames), token);
+    if (it == std::end(kTriggerTypeNames)) {
+      DLOG(WARNING) << "Failed to parse variation param "
+                    << kTriggerTypesParamName << " with string value "
+                    << param_value
+                    << " into a comma-separated list of keywords. "
+                    << "Unknown token " << token
+                    << " found. Falling back to default value.";
+      return GetDefaultEnabledTriggerTypes();
+    }
+
+    // Add the enabled type represented by |token| into the result set.
+    enabled_types.insert(
+        static_cast<TriggerType>(it - std::begin(kTriggerTypeNames)));
+  }
+  return enabled_types;
+}
+
+std::set<SchedulingRemoteSuggestionsProvider::TriggerType>
+SchedulingRemoteSuggestionsProvider::GetDefaultEnabledTriggerTypes() {
+  return {TriggerType::PERSISTENT_SCHEDULER_WAKE_UP, TriggerType::NTP_OPENED,
+          TriggerType::BROWSER_FOREGROUNDED};
 }
 
 }  // namespace ntp_snippets

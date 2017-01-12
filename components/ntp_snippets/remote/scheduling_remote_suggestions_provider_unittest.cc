@@ -120,12 +120,22 @@ class SchedulingRemoteSuggestionsProviderTest
     : public ::testing::Test {
  public:
   SchedulingRemoteSuggestionsProviderTest()
-      : underlying_provider_(nullptr),
+      :  // For the test we enabled all trigger types.
+        default_variation_params_{{"scheduler_trigger_types",
+                                   "persistent_scheduler_wake_up,ntp_opened,"
+                                   "browser_foregrounded,browser_cold_start"}},
+        params_manager_(ntp_snippets::kStudyName,
+                        default_variation_params_,
+                        {kArticleSuggestionsFeature.name}),
+        underlying_provider_(nullptr),
         scheduling_provider_(nullptr),
         user_classifier_(/*pref_service=*/nullptr) {
     SchedulingRemoteSuggestionsProvider::RegisterProfilePrefs(
         utils_.pref_service()->registry());
+    ResetProvider();
+  }
 
+  void ResetProvider() {
     auto underlying_provider =
         base::MakeUnique<StrictMock<MockRemoteSuggestionsProvider>>(
             /*observer=*/nullptr);
@@ -147,7 +157,20 @@ class SchedulingRemoteSuggestionsProviderTest
             std::move(test_clock));
   }
 
+  void SetVariationParameter(const std::string& param_name,
+                             const std::string& param_value) {
+    std::map<std::string, std::string> params = default_variation_params_;
+    params[param_name] = param_value;
+
+    params_manager_.ClearAllVariationParams();
+    params_manager_.SetVariationParamsWithFeatureAssociations(
+        ntp_snippets::kStudyName, params,
+        {ntp_snippets::kArticleSuggestionsFeature.name});
+  }
+
  protected:
+  std::map<std::string, std::string> default_variation_params_;
+  variations::testing::VariationParamsManager params_manager_;
   StrictMock<MockPersistentScheduler> persistent_scheduler_;
   StrictMock<MockRemoteSuggestionsProvider>* underlying_provider_;
   std::unique_ptr<SchedulingRemoteSuggestionsProvider> scheduling_provider_;
@@ -170,11 +193,68 @@ TEST_F(SchedulingRemoteSuggestionsProviderTest,
        ShouldIgnoreSignalsWhenNotEnabled) {
   scheduling_provider_->OnPersistentSchedulerWakeUp();
   scheduling_provider_->OnNTPOpened();
+  scheduling_provider_->OnBrowserForegrounded();
+  scheduling_provider_->OnBrowserColdStart();
+}
+
+TEST_F(SchedulingRemoteSuggestionsProviderTest,
+       ShouldIgnoreSignalsWhenDisabledByParam) {
+  // First set an empty list of allowed trigger types.
+  SetVariationParameter("scheduler_trigger_types", "-");
+  ResetProvider();
+
+  // Then enable the scheduler.
+  EXPECT_CALL(persistent_scheduler_, Schedule(_, _));
+  ChangeStatusOfUnderlyingProvider(
+      RemoteSuggestionsProvider::ProviderStatus::ACTIVE);
+
+  scheduling_provider_->OnPersistentSchedulerWakeUp();
+  scheduling_provider_->OnNTPOpened();
+  scheduling_provider_->OnBrowserForegrounded();
+  scheduling_provider_->OnBrowserColdStart();
+}
+
+TEST_F(SchedulingRemoteSuggestionsProviderTest,
+       ShouldHandleEmptyParamForTriggerTypes) {
+  // First set an empty param for allowed trigger types -> should result in the
+  // default list.
+  SetVariationParameter("scheduler_trigger_types", "");
+  ResetProvider();
+
+  // Then enable the scheduler.
+  EXPECT_CALL(persistent_scheduler_, Schedule(_, _));
+  ChangeStatusOfUnderlyingProvider(
+      RemoteSuggestionsProvider::ProviderStatus::ACTIVE);
+
+  // For instance, persistent scheduler wake up should be enabled by default.
+  EXPECT_CALL(*underlying_provider_, RefetchInTheBackground(_));
+  scheduling_provider_->OnPersistentSchedulerWakeUp();
+}
+
+TEST_F(SchedulingRemoteSuggestionsProviderTest,
+       ShouldHandleIncorrentParamForTriggerTypes) {
+  // First set an invalid list of allowed trigger types.
+  SetVariationParameter("scheduler_trigger_types", "ntp_opened,foo;");
+  ResetProvider();
+
+  // Then enable the scheduler.
+  EXPECT_CALL(persistent_scheduler_, Schedule(_, _));
+  ChangeStatusOfUnderlyingProvider(
+      RemoteSuggestionsProvider::ProviderStatus::ACTIVE);
+
+  // For instance, persistent scheduler wake up should be enabled by default.
+  EXPECT_CALL(*underlying_provider_, RefetchInTheBackground(_));
+  scheduling_provider_->OnPersistentSchedulerWakeUp();
 }
 
 TEST_F(SchedulingRemoteSuggestionsProviderTest,
        ShouldFetchOnPersistentSchedulerWakeUp) {
-  // First enable the scheduler.
+  // First set only this type to be allowed.
+  SetVariationParameter("scheduler_trigger_types",
+                        "persistent_scheduler_wake_up");
+  ResetProvider();
+
+  // Then enable the scheduler.
   EXPECT_CALL(persistent_scheduler_, Schedule(_, _));
   ChangeStatusOfUnderlyingProvider(
       RemoteSuggestionsProvider::ProviderStatus::ACTIVE);
@@ -223,13 +303,47 @@ TEST_F(SchedulingRemoteSuggestionsProviderTest,
 
 TEST_F(SchedulingRemoteSuggestionsProviderTest,
        ShouldFetchOnNTPOpenedForTheFirstTime) {
-  // First enable the scheduler.
+  // First set only this type to be allowed.
+  SetVariationParameter("scheduler_trigger_types", "ntp_opened");
+  ResetProvider();
+
+  // Then enable the scheduler.
   EXPECT_CALL(persistent_scheduler_, Schedule(_, _));
   ChangeStatusOfUnderlyingProvider(
       RemoteSuggestionsProvider::ProviderStatus::ACTIVE);
 
   EXPECT_CALL(*underlying_provider_, RefetchInTheBackground(_));
   scheduling_provider_->OnNTPOpened();
+}
+
+TEST_F(SchedulingRemoteSuggestionsProviderTest,
+       ShouldFetchOnBrowserForegroundedForTheFirstTime) {
+  // First set only this type to be allowed.
+  SetVariationParameter("scheduler_trigger_types", "browser_foregrounded");
+  ResetProvider();
+
+  // Then enable the scheduler.
+  EXPECT_CALL(persistent_scheduler_, Schedule(_, _));
+  ChangeStatusOfUnderlyingProvider(
+      RemoteSuggestionsProvider::ProviderStatus::ACTIVE);
+
+  EXPECT_CALL(*underlying_provider_, RefetchInTheBackground(_));
+  scheduling_provider_->OnBrowserForegrounded();
+}
+
+TEST_F(SchedulingRemoteSuggestionsProviderTest,
+       ShouldFetchOnBrowserColdStartForTheFirstTime) {
+  // First set only this type to be allowed.
+  SetVariationParameter("scheduler_trigger_types", "browser_cold_start");
+  ResetProvider();
+
+  // Then enable the scheduler.
+  EXPECT_CALL(persistent_scheduler_, Schedule(_, _));
+  ChangeStatusOfUnderlyingProvider(
+      RemoteSuggestionsProvider::ProviderStatus::ACTIVE);
+
+  EXPECT_CALL(*underlying_provider_, RefetchInTheBackground(_));
+  scheduling_provider_->OnBrowserColdStart();
 }
 
 TEST_F(SchedulingRemoteSuggestionsProviderTest,
@@ -433,10 +547,7 @@ TEST_F(SchedulingRemoteSuggestionsProviderTest,
 
   // UserClassifier defaults to UserClass::ACTIVE_NTP_USER if PrefService is
   // null. Change the wifi interval for this class.
-  variations::testing::VariationParamsManager params_manager(
-      ntp_snippets::kStudyName,
-      {{"fetching_interval_hours-wifi-active_ntp_user", "1.5"}},
-      {kArticleSuggestionsFeature.name});
+  SetVariationParameter("fetching_interval_hours-wifi-active_ntp_user", "1.5");
 
   // Schedule() should get called for the second time after params have changed.
   ChangeStatusOfUnderlyingProvider(
@@ -450,11 +561,9 @@ TEST_F(SchedulingRemoteSuggestionsProviderTest,
       RemoteSuggestionsProvider::ProviderStatus::ACTIVE);
 
   // UserClassifier defaults to UserClass::ACTIVE_NTP_USER if PrefService is
-  // null. Change the wifi interval for this class.
-  variations::testing::VariationParamsManager params_manager(
-      ntp_snippets::kStudyName,
-      {{"fetching_interval_hours-fallback-active_ntp_user", "1.5"}},
-      {kArticleSuggestionsFeature.name});
+  // null. Change the fallback interval for this class.
+  SetVariationParameter("fetching_interval_hours-fallback-active_ntp_user",
+                        "1.5");
 
   // Schedule() should get called for the second time after params have changed.
   ChangeStatusOfUnderlyingProvider(
@@ -468,11 +577,9 @@ TEST_F(SchedulingRemoteSuggestionsProviderTest,
       RemoteSuggestionsProvider::ProviderStatus::ACTIVE);
 
   // UserClassifier defaults to UserClass::ACTIVE_NTP_USER if PrefService is
-  // null. Change the wifi interval for this class.
-  variations::testing::VariationParamsManager params_manager(
-      ntp_snippets::kStudyName,
-      {{"soft_fetching_interval_hours-active-active_ntp_user", "1.5"}},
-      {kArticleSuggestionsFeature.name});
+  // null. Change the on usage interval for this class.
+  SetVariationParameter("soft_fetching_interval_hours-active-active_ntp_user",
+                        "1.5");
 
   // Schedule() should get called for the second time after params have changed.
   ChangeStatusOfUnderlyingProvider(

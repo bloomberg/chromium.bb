@@ -116,6 +116,8 @@ class SchedulingRemoteSuggestionsProvider final
       base::TimeDelta interval_soft_on_usage_event;
   };
 
+  enum class TriggerType;
+
   // Callback that is notified whenever the status of |provider_| changes.
   void OnProviderStatusChanged(
       RemoteSuggestionsProvider::ProviderStatus status);
@@ -130,9 +132,15 @@ class SchedulingRemoteSuggestionsProvider final
   // schedule.
   void StopScheduling();
 
+  // Trigger a background refetch for the given |trigger| if enabled.
+  void RefetchInTheBackgroundIfEnabled(TriggerType trigger);
+
   // Checks whether it is time to perform a soft background fetch, according to
   // |schedule|.
   bool ShouldRefetchInTheBackgroundNow();
+
+  // Returns whether background fetching (for the given |trigger|) is disabled.
+  bool BackgroundFetchesDisabled(TriggerType trigger) const;
 
   // Callback after Fetch is completed.
   void FetchFinished(const FetchDoneCallback& callback,
@@ -152,10 +160,15 @@ class SchedulingRemoteSuggestionsProvider final
   // Load and store |schedule_|.
   void LoadLastFetchingSchedule();
   void StoreFetchingSchedule();
-  bool BackgroundFetchesDisabled() const;
 
   // Applies the persistent schedule given by |schedule_|.
   void ApplyPersistentFetchingSchedule();
+
+  // Gets enabled trigger types from the variation parameter.
+  std::set<TriggerType> GetEnabledTriggerTypes();
+
+  // Gets trigger types enabled by default.
+  std::set<TriggerType> GetDefaultEnabledTriggerTypes();
 
   // Interface for doing all the actual work (apart from scheduling).
   std::unique_ptr<RemoteSuggestionsProvider> provider_;
@@ -172,6 +185,7 @@ class SchedulingRemoteSuggestionsProvider final
 
   PrefService* pref_service_;
   std::unique_ptr<base::Clock> clock_;
+  std::set<SchedulingRemoteSuggestionsProvider::TriggerType> enabled_triggers_;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulingRemoteSuggestionsProvider);
 };
