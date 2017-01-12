@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "ui/base/cocoa/appkit_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_mac.h"
@@ -58,6 +59,9 @@ const CGFloat kMinimumContainerWidth = 3.0;
 - (id)initWithFrame:(NSRect)frameRect {
   if ((self = [super initWithFrame:frameRect])) {
     grippyRect_ = NSMakeRect(0.0, 0.0, kGrippyWidth, NSHeight([self bounds]));
+    if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
+      grippyRect_.origin.x = NSWidth(frameRect) - NSWidth(grippyRect_);
+
     canDragLeft_ = YES;
     canDragRight_ = YES;
     resizable_ = YES;
@@ -162,6 +166,8 @@ const CGFloat kMinimumContainerWidth = 3.0;
 }
 
 - (void)resetCursorRects {
+  if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
+    grippyRect_.origin.x = NSWidth([self frame]) - NSWidth(grippyRect_);
   [self addCursorRect:grippyRect_ cursor:[self appropriateCursorForGrippy]];
 }
 
@@ -214,23 +220,29 @@ const CGFloat kMinimumContainerWidth = 3.0;
   NSRect containerFrame = [self frame];
   CGFloat dX = [theEvent deltaX];
   CGFloat withDelta = location.x - dX;
-  canDragRight_ = (withDelta >= initialDragPoint_.x) &&
-      (NSWidth(containerFrame) > kMinimumContainerWidth);
+  BOOL isRTL = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
+
   CGFloat maxAllowedWidth = [self maxAllowedWidth];
-  containerFrame.size.width =
-      std::max(NSWidth(containerFrame) - dX, kMinimumContainerWidth);
-  canDragLeft_ = withDelta <= initialDragPoint_.x &&
-      NSWidth(containerFrame) < maxDesiredWidth_ &&
-      NSWidth(containerFrame) < maxAllowedWidth;
 
-  if ((dX < 0.0 && !canDragLeft_) || (dX > 0.0 && !canDragRight_))
+  const CGFloat maxWidth = std::min(maxAllowedWidth, maxDesiredWidth_);
+  CGFloat newWidth = NSWidth(containerFrame) + (isRTL ? dX : -dX);
+  newWidth = std::min(std::max(newWidth, kMinimumContainerWidth), maxWidth);
+
+  BOOL canGrow = NSWidth(containerFrame) < maxWidth;
+  BOOL canShrink = NSWidth(containerFrame) > kMinimumContainerWidth;
+
+  canDragLeft_ =
+      withDelta <= initialDragPoint_.x && (isRTL ? canShrink : canGrow);
+  canDragRight_ =
+      (withDelta >= initialDragPoint_.x) && (isRTL ? canGrow : canShrink);
+  if ((dX < 0.0 && !canDragLeft_) || (dX > 0.0 && !canDragRight_) ||
+      fabs(dX) < FLT_EPSILON)
     return;
 
-  if (NSWidth(containerFrame) <= kMinimumContainerWidth)
-    return;
-
-  grippyPinned_ = NSWidth(containerFrame) >= maxAllowedWidth;
-  containerFrame.origin.x += dX;
+  grippyPinned_ = newWidth >= maxAllowedWidth;
+  if (!isRTL)
+    containerFrame.origin.x += dX;
+  containerFrame.size.width = newWidth;
 
   [self setFrame:containerFrame];
   [self setNeedsDisplay:YES];
@@ -271,14 +283,18 @@ const CGFloat kMinimumContainerWidth = 3.0;
 
 - (void)resizeToWidth:(CGFloat)width animate:(BOOL)animate {
   width = std::max(width, kMinimumContainerWidth);
-  NSRect frame = [self frame];
+  NSRect newFrame = [self frame];
 
   CGFloat maxAllowedWidth = [self maxAllowedWidth];
   width = std::min(maxAllowedWidth, width);
 
-  CGFloat dX = frame.size.width - width;
-  frame.size.width = width;
-  NSRect newFrame = NSOffsetRect(frame, dX, 0);
+  if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
+    newFrame.size.width = width;
+  } else {
+    CGFloat dX = NSWidth(newFrame) - width;
+    newFrame.size.width = width;
+    newFrame.origin.x += dX;
+  }
 
   grippyPinned_ = width == maxAllowedWidth;
 
