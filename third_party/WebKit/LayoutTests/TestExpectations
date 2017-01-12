@@ -2388,3 +2388,9 @@ crbug.com/680050 inspector/sources/debugger-ui/watch-expressions-panel-switch.ht
 
 # When WebAssembly is exposed in V8 (soon), this test has the wrong number of expected Object.getOwnPropertyNames() for global object.
 crbug.com/575167 imported/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects-exceptions.html [ NeedsManualRebaseline ]
+
+# Tests that doesn't rebaseline properly in a large patchset.
+crbug.com/453414 [ Linux Win ] compositing/scrollbar-painting.html [ NeedsRebaseline ]
+crbug.com/453414 [ Linux Win ] compositing/overflow/clip-content-under-overflow-controls.html [ NeedsRebaseline ]
+crbug.com/453414 [ Mac ] virtual/stable/paint/invalidation/composited-overflow-with-borderbox-background.html [ NeedsRebaseline ]
+crbug.com/453414 [ Win ] fast/forms/select/menulist-appearance-basic.html [ NeedsRebaseline ]
