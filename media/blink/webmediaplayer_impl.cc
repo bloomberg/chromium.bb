@@ -1175,9 +1175,6 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
                             VIDEO_ROTATION_MAX + 1);
 
   if (hasVideo()) {
-    pipeline_metadata_.natural_size = GetRotatedVideoSize(
-        pipeline_metadata_.video_rotation, pipeline_metadata_.natural_size);
-
     if (overlay_enabled_) {
       // SurfaceView doesn't support rotated video, so transition back if
       // the video is now rotated.  If |force_video_overlays_|, we keep the
@@ -1197,7 +1194,7 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
   }
 
   if (observer_)
-    observer_->OnMetadataChanged(metadata);
+    observer_->OnMetadataChanged(pipeline_metadata_);
 
   CreateWatchTimeReporter();
   UpdatePlayState();
@@ -1318,6 +1315,8 @@ void WebMediaPlayerImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(ready_state_, WebMediaPlayer::ReadyStateHaveNothing);
 
+  // The input |size| is from the decoded video frame, which is the original
+  // natural size and need to be rotated accordingly.
   gfx::Size rotated_size =
       GetRotatedVideoSize(pipeline_metadata_.video_rotation, size);
 
@@ -1340,11 +1339,8 @@ void WebMediaPlayerImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {
   }
   client_->sizeChanged();
 
-  if (observer_) {
-    PipelineMetadata metadata = pipeline_metadata_;
-    metadata.natural_size = size;
-    observer_->OnMetadataChanged(metadata);
-  }
+  if (observer_)
+    observer_->OnMetadataChanged(pipeline_metadata_);
 }
 
 void WebMediaPlayerImpl::OnVideoOpacityChange(bool opaque) {

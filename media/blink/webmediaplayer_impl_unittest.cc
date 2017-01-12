@@ -678,10 +678,10 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange_Rotated) {
   metadata.natural_size = gfx::Size(320, 240);
   metadata.video_rotation = VIDEO_ROTATION_90;
 
-  // For 90/270deg rotations, the natural size should be transposed.
   OnMetadata(metadata);
-  ASSERT_EQ(blink::WebSize(240, 320), wmpi_->naturalSize());
+  ASSERT_EQ(blink::WebSize(320, 240), wmpi_->naturalSize());
 
+  // For 90/270deg rotations, the natural size should be transposed.
   OnVideoNaturalSizeChange(gfx::Size(1920, 1080));
   ASSERT_EQ(blink::WebSize(1080, 1920), wmpi_->naturalSize());
 }

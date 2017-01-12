@@ -11,16 +11,6 @@
 
 namespace media {
 
-namespace {
-
-gfx::Size GetRotatedVideoSize(VideoRotation rotation, gfx::Size natural_size) {
-  if (rotation == VIDEO_ROTATION_90 || rotation == VIDEO_ROTATION_270)
-    return gfx::Size(natural_size.height(), natural_size.width());
-  return natural_size;
-}
-
-}  // namespace
-
 RemotingRendererController::RemotingRendererController(
     scoped_refptr<RemotingSourceImpl> remoting_source)
     : remoting_source_(remoting_source), weak_factory_(this) {
@@ -173,14 +163,10 @@ void RemotingRendererController::OnMetadataChanged(
   pipeline_metadata_ = metadata;
 
   is_encrypted_ = false;
-  if (has_video()) {
+  if (has_video())
     is_encrypted_ |= metadata.video_decoder_config.is_encrypted();
-    pipeline_metadata_.natural_size = GetRotatedVideoSize(
-        pipeline_metadata_.video_rotation, pipeline_metadata_.natural_size);
-  }
-  if (has_audio()) {
+  if (has_audio())
     is_encrypted_ |= metadata.audio_decoder_config.is_encrypted();
-  }
 
   if (pipeline_metadata_.natural_size != old_size)
     UpdateInterstitial(base::nullopt);

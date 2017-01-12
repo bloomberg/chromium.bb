@@ -34,6 +34,16 @@ static const float kDefaultVolume = 1.0f;
 
 namespace media {
 
+namespace {
+
+gfx::Size GetRotatedVideoSize(VideoRotation rotation, gfx::Size natural_size) {
+  if (rotation == VIDEO_ROTATION_90 || rotation == VIDEO_ROTATION_270)
+    return gfx::Size(natural_size.height(), natural_size.width());
+  return natural_size;
+}
+
+}  // namespace
+
 class PipelineImpl::RendererWrapper : public DemuxerHost,
                                       public RendererClient {
  public:
@@ -894,7 +904,9 @@ void PipelineImpl::RendererWrapper::ReportMetadata() {
       stream = demuxer_->GetStream(DemuxerStream::VIDEO);
       if (stream) {
         metadata.has_video = true;
-        metadata.natural_size = stream->video_decoder_config().natural_size();
+        metadata.natural_size =
+            GetRotatedVideoSize(stream->video_rotation(),
+                                stream->video_decoder_config().natural_size());
         metadata.video_rotation = stream->video_rotation();
         metadata.video_decoder_config = stream->video_decoder_config();
       }
