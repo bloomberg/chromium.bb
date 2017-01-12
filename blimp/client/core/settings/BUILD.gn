@@ -8,10 +8,7 @@ if (is_android) {
 }
 
 source_set("settings") {
-  visibility = [
-    "//blimp/client/core/*",
-    "//blimp/engine:browser_tests",
-  ]
+  visibility = [ "//blimp/client/core/*" ]
 
   sources = [
     "blimp_settings_delegate.h",

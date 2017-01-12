@@ -3,10 +3,7 @@
 # found in the LICENSE file.
 
 source_set("render_widget") {
-  visibility = [
-    "//blimp/client/core/*",
-    "//blimp/engine:browser_tests",
-  ]
+  visibility = [ "//blimp/client/core/*" ]
 
   sources = [
     "blimp_document.cc",
@@ -36,7 +33,6 @@ source_set("test_support") {
   visibility = [
     "//blimp/client/core/render_widget:unit_tests",
     "//blimp/client/core/compositor:unit_tests",
-    "//blimp/engine:browser_tests",  # # TODO(nyquist): Remove this. See crbug/653789.
   ]
 
   testonly = true

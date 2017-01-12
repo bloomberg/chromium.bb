@@ -6,7 +6,6 @@ source_set("compositor") {
   visibility = [
     "//blimp/client/core/*",
     "//blimp/client/test/*",
-    "//blimp/engine:browser_tests",
   ]
 
   sources = [

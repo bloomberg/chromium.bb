@@ -8,10 +8,7 @@ if (is_android) {
 }
 
 source_set("contents") {
-  visibility = [
-    "//blimp/client/core/*",
-    "//blimp/engine:browser_tests",
-  ]
+  visibility = [ "//blimp/client/core/*" ]
 
   sources = [
     "blimp_contents_impl.cc",
@@ -85,10 +82,7 @@ source_set("contents") {
 }
 
 source_set("test_support") {
-  visibility = [
-    "//blimp/engine:browser_tests",  # TODO(nyquist): Remove this. See crbug/653789.
-    "//blimp/client/core/contents:unit_tests",
-  ]
+  visibility = [ "//blimp/client/core/contents:unit_tests" ]
 
   testonly = true
 

@@ -14,9 +14,6 @@ class HistogramSynchronizer;
 class NativeBackendKWallet;
 class ScopedAllowWaitForLegacyWebViewApi;
 
-namespace blimp {
-class BlimpBrowserTest;
-}
 namespace cc {
 class CompletionEvent;
 class SingleThreadTaskGraphRunner;
@@ -174,7 +171,6 @@ class BASE_EXPORT ThreadRestrictions {
  private:
   // DO NOT ADD ANY OTHER FRIEND STATEMENTS, talk to jam or brettw first.
   // BEGIN ALLOWED USAGE.
-  friend class blimp::BlimpBrowserTest;
   friend class content::BrowserShutdownProfileDumper;
   friend class content::BrowserSurfaceViewManager;
   friend class content::BrowserTestBase;

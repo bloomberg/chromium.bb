@@ -8,10 +8,7 @@ if (is_android) {
 }
 
 source_set("session") {
-  visibility = [
-    "//blimp/client/core/*",
-    "//blimp/engine:browser_tests",  # TODO(nyquist): Remove this. See crbug/653789.
-  ]
+  visibility = [ "//blimp/client/core/*" ]
 
   sources = [
     "assignment_source.cc",

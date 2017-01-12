@@ -53,9 +53,3 @@ Run the following command to run the Blimp Linux unit tests:
 ```bash
 ./out-linux/Debug/blimp_unittests
 ```
-
-Run the following command to run the Blimp Linux browser tests:
-
-```bash
-./out-linux/Debug/blimp_browsertests
-```

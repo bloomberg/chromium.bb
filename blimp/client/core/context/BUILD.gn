@@ -12,7 +12,6 @@ source_set("context") {
     ":unit_tests",
     "//blimp/client/core",
     "//blimp/client/core/integration_tests",
-    "//blimp/engine:browser_tests",  # TODO(nyquist): Remove this. See crbug/653789.
   ]
 
   sources = [
