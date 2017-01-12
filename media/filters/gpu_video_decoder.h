@@ -178,6 +178,10 @@ class MEDIA_EXPORT GpuVideoDecoder
   // occurs.
   std::unique_ptr<VideoDecodeAccelerator> vda_;
 
+  // Whether |vda_->Initialize()| has been called. This is used to avoid
+  // calling Initialize() again while a deferred initialization is in progress.
+  bool vda_initialized_;
+
   InitCB init_cb_;
   OutputCB output_cb_;
 

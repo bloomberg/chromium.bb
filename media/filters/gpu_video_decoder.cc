@@ -121,6 +121,7 @@ GpuVideoDecoder::GpuVideoDecoder(GpuVideoAcceleratorFactories* factories,
       factories_(factories),
       request_surface_cb_(request_surface_cb),
       media_log_(media_log),
+      vda_initialized_(false),
       state_(kNormal),
       decoder_texture_target_(0),
       pixel_format_(PIXEL_FORMAT_UNKNOWN),
@@ -327,32 +328,34 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
   CompleteInitialization(SurfaceManager::kNoSurfaceID);
 }
 
+// OnSurfaceAvailable() might be called at any time between Initialize() and
+// ~GpuVideoDecoder() so we have to be careful to not make assumptions about
+// the current state.
 void GpuVideoDecoder::OnSurfaceAvailable(int surface_id) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
-  // It's possible for the vda to become null if NotifyError is called.
-  if (!vda_) {
-    if (!init_cb_.is_null())
-      base::ResetAndReturn(&init_cb_).Run(false);
+  if (!vda_)
+    return;
+
+  // If the VDA has not been initialized, we were waiting for the first surface
+  // so it can be passed to Initialize() via the config. We can't call
+  // SetSurface() before initializing because there is no remote VDA to handle
+  // the call yet.
+  if (!vda_initialized_) {
+    CompleteInitialization(surface_id);
     return;
   }
 
-  // If initialization has already completed, there's nothing to do but try to
-  // set the surface. If we're still initializing, we must pass the surface via
-  // the config since the remote VDA has not yet been created.
-  if (init_cb_.is_null()) {
-    vda_->SetSurface(surface_id);
-    return;
-  }
-
-  // Otherwise initialization was waiting for the surface, so complete it now.
-  CompleteInitialization(surface_id);
+  // The VDA must be already initialized (or async initialization is in
+  // progress) so we can call SetSurface().
+  vda_->SetSurface(surface_id);
 }
 
 void GpuVideoDecoder::CompleteInitialization(int surface_id) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
   DCHECK(vda_);
   DCHECK(!init_cb_.is_null());
+  DCHECK(!vda_initialized_);
 
   VideoDecodeAccelerator::Config vda_config;
   vda_config.profile = config_.profile();
@@ -369,8 +372,12 @@ void GpuVideoDecoder::CompleteInitialization(int surface_id) {
     ExtractSpsAndPps(config_.extra_data(), &vda_config.sps, &vda_config.pps);
 #endif
 
+  vda_initialized_ = true;
   if (!vda_->Initialize(vda_config, this)) {
     DVLOG(1) << "VDA::Initialize failed.";
+    // It's important to set |vda_| to null so that OnSurfaceAvailable() will
+    // not call SetSurface() on a nonexistent remote VDA.
+    DestroyVDA();
     base::ResetAndReturn(&init_cb_).Run(false);
     return;
   }
@@ -384,9 +391,9 @@ void GpuVideoDecoder::CompleteInitialization(int surface_id) {
 
 void GpuVideoDecoder::NotifyInitializationComplete(bool success) {
   DVLOG_IF(1, !success) << __func__ << " Deferred initialization failed.";
-  DCHECK(!init_cb_.is_null());
 
-  base::ResetAndReturn(&init_cb_).Run(success);
+  if (init_cb_)
+    base::ResetAndReturn(&init_cb_).Run(success);
 }
 
 void GpuVideoDecoder::DestroyPictureBuffers(PictureBufferMap* buffers) {
@@ -860,6 +867,9 @@ void GpuVideoDecoder::NotifyError(media::VideoDecodeAccelerator::Error error) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
   if (!vda_)
     return;
+
+  if (init_cb_)
+    base::ResetAndReturn(&init_cb_).Run(false);
 
   // If we have any bitstream buffers, then notify one that an error has
   // occurred.  This guarantees that somebody finds out about the error.  If
