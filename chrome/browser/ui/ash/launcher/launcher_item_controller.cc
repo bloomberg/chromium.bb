@@ -19,3 +19,8 @@ LauncherItemController::LauncherItemController(
       image_set_by_controller_(false) {}
 
 LauncherItemController::~LauncherItemController() {}
+
+AppWindowLauncherItemController*
+LauncherItemController::AsAppWindowLauncherItemController() {
+  return nullptr;
+}

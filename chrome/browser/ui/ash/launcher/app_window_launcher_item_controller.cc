@@ -118,6 +118,11 @@ ChromeLauncherAppMenuItems AppWindowLauncherItemController::GetApplicationList(
   return items;
 }
 
+AppWindowLauncherItemController*
+AppWindowLauncherItemController::AsAppWindowLauncherItemController() {
+  return this;
+}
+
 ash::ShelfItemDelegate::PerformedAction
 AppWindowLauncherItemController::ItemSelected(const ui::Event& event) {
   if (windows_.empty())

@@ -48,6 +48,7 @@ class AppWindowLauncherItemController : public LauncherItemController,
   ash::ShelfItemDelegate::PerformedAction Activate(
       ash::LaunchSource source) override;
   ChromeLauncherAppMenuItems GetApplicationList(int event_flags) override;
+  AppWindowLauncherItemController* AsAppWindowLauncherItemController() override;
   ash::ShelfItemDelegate::PerformedAction ItemSelected(
       const ui::Event& event) override;
   void Close() override;

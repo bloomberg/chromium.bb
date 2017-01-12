@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
 #include "ui/events/event.h"
 
+class AppWindowLauncherItemController;
 class ChromeLauncherController;
 class ChromeLauncherAppMenuItem;
 
@@ -63,6 +64,9 @@ class LauncherItemController : public ash::ShelfItemDelegate {
 
   // Called to retrieve the list of running applications.
   virtual ChromeLauncherAppMenuItems GetApplicationList(int event_flags) = 0;
+
+  // Returns nullptr if class is not AppWindowLauncherItemController.
+  virtual AppWindowLauncherItemController* AsAppWindowLauncherItemController();
 
  private:
   // The application id; empty if there is no app associated with the item.

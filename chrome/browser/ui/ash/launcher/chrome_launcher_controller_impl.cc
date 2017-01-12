@@ -649,10 +649,12 @@ ChromeLauncherControllerImpl::GetV1ApplicationsFromAppId(
 void ChromeLauncherControllerImpl::ActivateShellApp(const std::string& app_id,
                                                     int window_index) {
   const ash::ShelfItem* item = GetItem(GetShelfIDForAppID(app_id));
-  if (item && item->type == ash::TYPE_APP) {
+  if (item &&
+      (item->type == ash::TYPE_APP || item->type == ash::TYPE_APP_SHORTCUT)) {
     LauncherItemController* controller = GetLauncherItemController(item->id);
     AppWindowLauncherItemController* app_window_controller =
-        static_cast<AppWindowLauncherItemController*>(controller);
+        controller->AsAppWindowLauncherItemController();
+    DCHECK(app_window_controller);
     app_window_controller->ActivateIndexedApp(window_index);
   }
 }
