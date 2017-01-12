@@ -61,6 +61,9 @@ class InputHandlerProxy
   }
 
   void set_smooth_scroll_enabled(bool value) { smooth_scroll_enabled_ = value; }
+  void set_touchpad_and_wheel_scroll_latching_enabled(bool value) {
+    touchpad_and_wheel_scroll_latching_enabled_ = value;
+  }
 
   enum EventDisposition {
     DID_HANDLE,
@@ -126,7 +129,7 @@ class InputHandlerProxy
   // Helper functions for handling more complicated input events.
   EventDisposition HandleMouseWheel(
       const blink::WebMouseWheelEvent& event);
-  EventDisposition ScrollByMouseWheel(
+  EventDisposition FlingScrollByMouseWheel(
       const blink::WebMouseWheelEvent& event,
       cc::EventListenerProperties listener_properties);
   EventDisposition HandleGestureScrollBegin(
@@ -234,6 +237,7 @@ class InputHandlerProxy
 
   bool smooth_scroll_enabled_;
   bool uma_latency_reporting_enabled_;
+  bool touchpad_and_wheel_scroll_latching_enabled_;
 
   // The merged result of the last touch start with previous touch starts.
   // This value will get returned for subsequent TouchMove events to allow

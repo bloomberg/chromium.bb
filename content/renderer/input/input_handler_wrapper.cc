@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/location.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/input/input_event_filter.h"
 #include "content/renderer/input/input_handler_manager.h"
@@ -28,6 +29,8 @@ InputHandlerWrapper::InputHandlerWrapper(
       render_view_impl_(render_view_impl) {
   DCHECK(input_handler);
   input_handler_proxy_.set_smooth_scroll_enabled(enable_smooth_scrolling);
+  input_handler_proxy_.set_touchpad_and_wheel_scroll_latching_enabled(
+      base::FeatureList::IsEnabled(features::kTouchpadAndWheelScrollLatching));
 }
 
 InputHandlerWrapper::~InputHandlerWrapper() {

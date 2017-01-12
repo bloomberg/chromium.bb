@@ -278,8 +278,17 @@ void MouseWheelEventQueue::OnGestureScrollEvent(
               gesture_event.event.type ==
                   blink::WebInputEvent::GestureFlingStart)) {
     scrolling_device_ = blink::WebGestureDeviceUninitialized;
-    if (scroll_end_timer_.IsRunning())
-      scroll_end_timer_.Reset();
+    if (scroll_end_timer_.IsRunning()) {
+      if (enable_scroll_latching_) {
+        // Don't send the pending ScrollEnd if a fling is happening.
+        // The next wheel event will still need a ScrollBegin.
+        scroll_end_timer_.Stop();
+        needs_scroll_begin_ = true;
+        needs_scroll_end_ = false;
+      } else {
+        scroll_end_timer_.Reset();
+      }
+    }
   }
 }
 
