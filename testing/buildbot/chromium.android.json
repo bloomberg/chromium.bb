@@ -2911,6 +2911,7 @@
           "chrome_public_test_apk"
         ],
         "override_isolate_target": "chrome_public_test_apk",
+        "render_results_dir": "chrome/test/data/android/render_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
