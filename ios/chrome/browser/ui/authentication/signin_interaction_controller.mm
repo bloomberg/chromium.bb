@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
 #import "ios/chrome/browser/ui/authentication/chrome_signin_view_controller.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
+#import "ios/chrome/browser/ui/util/top_view_controller.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_interaction_manager.h"
@@ -200,7 +201,9 @@ using signin_ui::CompletionCallback;
     };
 
     alertCoordinator_.reset([ios_internal::ErrorCoordinator(
-        error, dismissAction, viewController) retain]);
+        error, dismissAction,
+        top_view_controller::TopPresentedViewControllerFrom(viewController))
+        retain]);
     [alertCoordinator_ start];
     return;
   }
