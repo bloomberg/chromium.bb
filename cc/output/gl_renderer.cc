@@ -3270,67 +3270,29 @@ void GLRenderer::PrepareGeometry(BoundGeometry binding) {
 }
 
 const GLRenderer::DebugBorderProgram* GLRenderer::GetDebugBorderProgram() {
-  if (!debug_border_program_.initialized()) {
-    TRACE_EVENT0("cc", "GLRenderer::debugBorderProgram::initialize");
-    debug_border_program_.Initialize(output_surface_->context_provider(),
-                                     ProgramKey::DebugBorder());
-  }
-  return &debug_border_program_;
+  return GetProgram(ProgramKey::DebugBorder());
 }
 
 const GLRenderer::SolidColorProgram* GLRenderer::GetSolidColorProgram() {
-  if (!solid_color_program_.initialized()) {
-    TRACE_EVENT0("cc", "GLRenderer::solidColorProgram::initialize");
-    solid_color_program_.Initialize(output_surface_->context_provider(),
-                                    ProgramKey::SolidColor(NO_AA));
-  }
-  return &solid_color_program_;
+  return GetProgram(ProgramKey::SolidColor(NO_AA));
 }
 
 const GLRenderer::SolidColorProgramAA* GLRenderer::GetSolidColorProgramAA() {
-  if (!solid_color_program_aa_.initialized()) {
-    TRACE_EVENT0("cc", "GLRenderer::solidColorProgramAA::initialize");
-    solid_color_program_aa_.Initialize(output_surface_->context_provider(),
-                                       ProgramKey::SolidColor(USE_AA));
-  }
-  return &solid_color_program_aa_;
+  return GetProgram(ProgramKey::SolidColor(USE_AA));
 }
 
 const GLRenderer::RenderPassProgram* GLRenderer::GetRenderPassProgram(
     TexCoordPrecision precision,
     BlendMode blend_mode) {
-  DCHECK_GE(precision, 0);
-  DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
-  DCHECK_GE(blend_mode, 0);
-  DCHECK_LE(blend_mode, LAST_BLEND_MODE);
-  RenderPassProgram* program = &render_pass_program_[precision][blend_mode];
-  if (!program->initialized()) {
-    TRACE_EVENT0("cc", "GLRenderer::renderPassProgram::initialize");
-    program->Initialize(
-        output_surface_->context_provider(),
-        ProgramKey::RenderPass(precision, SAMPLER_TYPE_2D, blend_mode, NO_AA,
-                               NO_MASK, false, false));
-  }
-  return program;
+  return GetProgram(ProgramKey::RenderPass(
+      precision, SAMPLER_TYPE_2D, blend_mode, NO_AA, NO_MASK, false, false));
 }
 
 const GLRenderer::RenderPassProgramAA* GLRenderer::GetRenderPassProgramAA(
     TexCoordPrecision precision,
     BlendMode blend_mode) {
-  DCHECK_GE(precision, 0);
-  DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
-  DCHECK_GE(blend_mode, 0);
-  DCHECK_LE(blend_mode, LAST_BLEND_MODE);
-  RenderPassProgramAA* program =
-      &render_pass_program_aa_[precision][blend_mode];
-  if (!program->initialized()) {
-    TRACE_EVENT0("cc", "GLRenderer::renderPassProgramAA::initialize");
-    program->Initialize(
-        output_surface_->context_provider(),
-        ProgramKey::RenderPass(precision, SAMPLER_TYPE_2D, blend_mode, USE_AA,
-                               NO_MASK, false, false));
-  }
-  return program;
+  return GetProgram(ProgramKey::RenderPass(
+      precision, SAMPLER_TYPE_2D, blend_mode, USE_AA, NO_MASK, false, false));
 }
 
 const GLRenderer::RenderPassMaskProgram* GLRenderer::GetRenderPassMaskProgram(
@@ -3338,23 +3300,9 @@ const GLRenderer::RenderPassMaskProgram* GLRenderer::GetRenderPassMaskProgram(
     SamplerType sampler,
     BlendMode blend_mode,
     bool mask_for_background) {
-  DCHECK_GE(precision, 0);
-  DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
-  DCHECK_GE(sampler, 0);
-  DCHECK_LE(sampler, LAST_SAMPLER_TYPE);
-  DCHECK_GE(blend_mode, 0);
-  DCHECK_LE(blend_mode, LAST_BLEND_MODE);
-  RenderPassMaskProgram* program =
-      &render_pass_mask_program_[precision][sampler][blend_mode]
-                                [mask_for_background ? HAS_MASK : NO_MASK];
-  if (!program->initialized()) {
-    TRACE_EVENT0("cc", "GLRenderer::renderPassMaskProgram::initialize");
-    program->Initialize(
-        output_surface_->context_provider(),
-        ProgramKey::RenderPass(precision, sampler, blend_mode, NO_AA, HAS_MASK,
-                               mask_for_background, false));
-  }
-  return program;
+  return GetProgram(ProgramKey::RenderPass(precision, sampler, blend_mode,
+                                           NO_AA, HAS_MASK, mask_for_background,
+                                           false));
 }
 
 const GLRenderer::RenderPassMaskProgramAA*
@@ -3362,62 +3310,23 @@ GLRenderer::GetRenderPassMaskProgramAA(TexCoordPrecision precision,
                                        SamplerType sampler,
                                        BlendMode blend_mode,
                                        bool mask_for_background) {
-  DCHECK_GE(precision, 0);
-  DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
-  DCHECK_GE(sampler, 0);
-  DCHECK_LE(sampler, LAST_SAMPLER_TYPE);
-  DCHECK_GE(blend_mode, 0);
-  DCHECK_LE(blend_mode, LAST_BLEND_MODE);
-  RenderPassMaskProgramAA* program =
-      &render_pass_mask_program_aa_[precision][sampler][blend_mode]
-                                   [mask_for_background ? HAS_MASK : NO_MASK];
-  if (!program->initialized()) {
-    TRACE_EVENT0("cc", "GLRenderer::renderPassMaskProgramAA::initialize");
-    program->Initialize(
-        output_surface_->context_provider(),
-        ProgramKey::RenderPass(precision, sampler, blend_mode, USE_AA, HAS_MASK,
-                               mask_for_background, false));
-  }
-  return program;
+  return GetProgram(ProgramKey::RenderPass(precision, sampler, blend_mode,
+                                           USE_AA, HAS_MASK,
+                                           mask_for_background, false));
 }
 
 const GLRenderer::RenderPassColorMatrixProgram*
 GLRenderer::GetRenderPassColorMatrixProgram(TexCoordPrecision precision,
                                             BlendMode blend_mode) {
-  DCHECK_GE(precision, 0);
-  DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
-  DCHECK_GE(blend_mode, 0);
-  DCHECK_LE(blend_mode, LAST_BLEND_MODE);
-  RenderPassColorMatrixProgram* program =
-      &render_pass_color_matrix_program_[precision][blend_mode];
-  if (!program->initialized()) {
-    TRACE_EVENT0("cc", "GLRenderer::renderPassColorMatrixProgram::initialize");
-    program->Initialize(
-        output_surface_->context_provider(),
-        ProgramKey::RenderPass(precision, SAMPLER_TYPE_2D, blend_mode, NO_AA,
-                               NO_MASK, false, true));
-  }
-  return program;
+  return GetProgram(ProgramKey::RenderPass(
+      precision, SAMPLER_TYPE_2D, blend_mode, NO_AA, NO_MASK, false, true));
 }
 
 const GLRenderer::RenderPassColorMatrixProgramAA*
 GLRenderer::GetRenderPassColorMatrixProgramAA(TexCoordPrecision precision,
                                               BlendMode blend_mode) {
-  DCHECK_GE(precision, 0);
-  DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
-  DCHECK_GE(blend_mode, 0);
-  DCHECK_LE(blend_mode, LAST_BLEND_MODE);
-  RenderPassColorMatrixProgramAA* program =
-      &render_pass_color_matrix_program_aa_[precision][blend_mode];
-  if (!program->initialized()) {
-    TRACE_EVENT0("cc",
-                 "GLRenderer::renderPassColorMatrixProgramAA::initialize");
-    program->Initialize(
-        output_surface_->context_provider(),
-        ProgramKey::RenderPass(precision, SAMPLER_TYPE_2D, blend_mode, USE_AA,
-                               NO_MASK, false, true));
-  }
-  return program;
+  return GetProgram(ProgramKey::RenderPass(
+      precision, SAMPLER_TYPE_2D, blend_mode, USE_AA, NO_MASK, false, true));
 }
 
 const GLRenderer::RenderPassMaskColorMatrixProgram*
@@ -3426,24 +3335,9 @@ GLRenderer::GetRenderPassMaskColorMatrixProgram(
     SamplerType sampler,
     BlendMode blend_mode,
     bool mask_for_background) {
-  DCHECK_GE(precision, 0);
-  DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
-  DCHECK_GE(sampler, 0);
-  DCHECK_LE(sampler, LAST_SAMPLER_TYPE);
-  DCHECK_GE(blend_mode, 0);
-  DCHECK_LE(blend_mode, LAST_BLEND_MODE);
-  RenderPassMaskColorMatrixProgram* program =
-      &render_pass_mask_color_matrix_program_[precision][sampler][blend_mode]
-          [mask_for_background ? HAS_MASK : NO_MASK];
-  if (!program->initialized()) {
-    TRACE_EVENT0("cc",
-                 "GLRenderer::renderPassMaskColorMatrixProgram::initialize");
-    program->Initialize(
-        output_surface_->context_provider(),
-        ProgramKey::RenderPass(precision, sampler, blend_mode, NO_AA, HAS_MASK,
-                               mask_for_background, true));
-  }
-  return program;
+  return GetProgram(ProgramKey::RenderPass(precision, sampler, blend_mode,
+                                           NO_AA, HAS_MASK, mask_for_background,
+                                           true));
 }
 
 const GLRenderer::RenderPassMaskColorMatrixProgramAA*
@@ -3452,201 +3346,80 @@ GLRenderer::GetRenderPassMaskColorMatrixProgramAA(
     SamplerType sampler,
     BlendMode blend_mode,
     bool mask_for_background) {
-  DCHECK_GE(precision, 0);
-  DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
-  DCHECK_GE(sampler, 0);
-  DCHECK_LE(sampler, LAST_SAMPLER_TYPE);
-  DCHECK_GE(blend_mode, 0);
-  DCHECK_LE(blend_mode, LAST_BLEND_MODE);
-  RenderPassMaskColorMatrixProgramAA* program =
-      &render_pass_mask_color_matrix_program_aa_[precision][sampler][blend_mode]
-          [mask_for_background ? HAS_MASK : NO_MASK];
-  if (!program->initialized()) {
-    TRACE_EVENT0("cc",
-                 "GLRenderer::renderPassMaskColorMatrixProgramAA::initialize");
-    program->Initialize(
-        output_surface_->context_provider(),
-        ProgramKey::RenderPass(precision, sampler, blend_mode, USE_AA, HAS_MASK,
-                               mask_for_background, true));
-  }
-  return program;
+  return GetProgram(ProgramKey::RenderPass(precision, sampler, blend_mode,
+                                           USE_AA, HAS_MASK,
+                                           mask_for_background, true));
 }
 
 const GLRenderer::TileProgram* GLRenderer::GetTileProgram(
     TexCoordPrecision precision,
     SamplerType sampler) {
-  DCHECK_GE(precision, 0);
-  DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
-  DCHECK_GE(sampler, 0);
-  DCHECK_LE(sampler, LAST_SAMPLER_TYPE);
-  TileProgram* program = &tile_program_[precision][sampler];
-  if (!program->initialized()) {
-    TRACE_EVENT0("cc", "GLRenderer::tileProgram::initialize");
-    program->Initialize(
-        output_surface_->context_provider(),
-        ProgramKey::Tile(precision, sampler, NO_AA, NO_SWIZZLE, false));
-  }
-  return program;
+  return GetProgram(
+      ProgramKey::Tile(precision, sampler, NO_AA, NO_SWIZZLE, false));
 }
 
 const GLRenderer::TileProgramOpaque* GLRenderer::GetTileProgramOpaque(
     TexCoordPrecision precision,
     SamplerType sampler) {
-  DCHECK_GE(precision, 0);
-  DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
-  DCHECK_GE(sampler, 0);
-  DCHECK_LE(sampler, LAST_SAMPLER_TYPE);
-  TileProgramOpaque* program = &tile_program_opaque_[precision][sampler];
-  if (!program->initialized()) {
-    TRACE_EVENT0("cc", "GLRenderer::tileProgramOpaque::initialize");
-    program->Initialize(
-        output_surface_->context_provider(),
-        ProgramKey::Tile(precision, sampler, NO_AA, NO_SWIZZLE, true));
-  }
-  return program;
+  return GetProgram(
+      ProgramKey::Tile(precision, sampler, NO_AA, NO_SWIZZLE, true));
 }
 
 const GLRenderer::TileProgramAA* GLRenderer::GetTileProgramAA(
     TexCoordPrecision precision,
     SamplerType sampler) {
-  DCHECK_GE(precision, 0);
-  DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
-  DCHECK_GE(sampler, 0);
-  DCHECK_LE(sampler, LAST_SAMPLER_TYPE);
-  TileProgramAA* program = &tile_program_aa_[precision][sampler];
-  if (!program->initialized()) {
-    TRACE_EVENT0("cc", "GLRenderer::tileProgramAA::initialize");
-    program->Initialize(
-        output_surface_->context_provider(),
-        ProgramKey::Tile(precision, sampler, USE_AA, NO_SWIZZLE, false));
-  }
-  return program;
+  return GetProgram(
+      ProgramKey::Tile(precision, sampler, USE_AA, NO_SWIZZLE, false));
 }
 
 const GLRenderer::TileProgramSwizzle* GLRenderer::GetTileProgramSwizzle(
     TexCoordPrecision precision,
     SamplerType sampler) {
-  DCHECK_GE(precision, 0);
-  DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
-  DCHECK_GE(sampler, 0);
-  DCHECK_LE(sampler, LAST_SAMPLER_TYPE);
-  TileProgramSwizzle* program = &tile_program_swizzle_[precision][sampler];
-  if (!program->initialized()) {
-    TRACE_EVENT0("cc", "GLRenderer::tileProgramSwizzle::initialize");
-    program->Initialize(
-        output_surface_->context_provider(),
-        ProgramKey::Tile(precision, sampler, NO_AA, DO_SWIZZLE, false));
-  }
-  return program;
+  return GetProgram(
+      ProgramKey::Tile(precision, sampler, NO_AA, DO_SWIZZLE, false));
 }
 
 const GLRenderer::TileProgramSwizzleOpaque*
 GLRenderer::GetTileProgramSwizzleOpaque(TexCoordPrecision precision,
                                         SamplerType sampler) {
-  DCHECK_GE(precision, 0);
-  DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
-  DCHECK_GE(sampler, 0);
-  DCHECK_LE(sampler, LAST_SAMPLER_TYPE);
-  TileProgramSwizzleOpaque* program =
-      &tile_program_swizzle_opaque_[precision][sampler];
-  if (!program->initialized()) {
-    TRACE_EVENT0("cc", "GLRenderer::tileProgramSwizzleOpaque::initialize");
-    program->Initialize(
-        output_surface_->context_provider(),
-        ProgramKey::Tile(precision, sampler, NO_AA, DO_SWIZZLE, true));
-  }
-  return program;
+  return GetProgram(
+      ProgramKey::Tile(precision, sampler, NO_AA, DO_SWIZZLE, true));
 }
 
 const GLRenderer::TileProgramSwizzleAA* GLRenderer::GetTileProgramSwizzleAA(
     TexCoordPrecision precision,
     SamplerType sampler) {
-  DCHECK_GE(precision, 0);
-  DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
-  DCHECK_GE(sampler, 0);
-  DCHECK_LE(sampler, LAST_SAMPLER_TYPE);
-  TileProgramSwizzleAA* program = &tile_program_swizzle_aa_[precision][sampler];
-  if (!program->initialized()) {
-    TRACE_EVENT0("cc", "GLRenderer::tileProgramSwizzleAA::initialize");
-    program->Initialize(
-        output_surface_->context_provider(),
-        ProgramKey::Tile(precision, sampler, USE_AA, DO_SWIZZLE, false));
-  }
-  return program;
+  return GetProgram(
+      ProgramKey::Tile(precision, sampler, USE_AA, DO_SWIZZLE, false));
 }
 
 const GLRenderer::TextureProgram* GLRenderer::GetTextureProgram(
     TexCoordPrecision precision,
     SamplerType sampler) {
-  DCHECK_GE(precision, 0);
-  DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
-  DCHECK_GE(sampler, 0);
-  DCHECK_LE(sampler, LAST_SAMPLER_TYPE);
-  TextureProgram* program = &texture_program_[precision][sampler];
-  if (!program->initialized()) {
-    TRACE_EVENT0("cc", "GLRenderer::textureProgram::initialize");
-    program->Initialize(
-        output_surface_->context_provider(),
-        ProgramKey::Texture(precision, sampler, PREMULTIPLIED_ALPHA, false));
-  }
-  return program;
+  return GetProgram(
+      ProgramKey::Texture(precision, sampler, PREMULTIPLIED_ALPHA, false));
 }
 
 const GLRenderer::NonPremultipliedTextureProgram*
 GLRenderer::GetNonPremultipliedTextureProgram(TexCoordPrecision precision,
                                               SamplerType sampler) {
-  DCHECK_GE(precision, 0);
-  DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
-  DCHECK_GE(sampler, 0);
-  DCHECK_LE(sampler, LAST_SAMPLER_TYPE);
-  NonPremultipliedTextureProgram* program =
-      &nonpremultiplied_texture_program_[precision][sampler];
-  if (!program->initialized()) {
-    TRACE_EVENT0("cc",
-                 "GLRenderer::NonPremultipliedTextureProgram::Initialize");
-    program->Initialize(output_surface_->context_provider(),
-                        ProgramKey::Texture(precision, sampler,
-                                            NON_PREMULTIPLIED_ALPHA, false));
-  }
-  return program;
+  return GetProgram(
+      ProgramKey::Texture(precision, sampler, NON_PREMULTIPLIED_ALPHA, false));
 }
 
 const GLRenderer::TextureBackgroundProgram*
 GLRenderer::GetTextureBackgroundProgram(TexCoordPrecision precision,
                                         SamplerType sampler) {
-  DCHECK_GE(precision, 0);
-  DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
-  DCHECK_GE(sampler, 0);
-  DCHECK_LE(sampler, LAST_SAMPLER_TYPE);
-  TextureBackgroundProgram* program =
-      &texture_background_program_[precision][sampler];
-  if (!program->initialized()) {
-    TRACE_EVENT0("cc", "GLRenderer::textureProgram::initialize");
-    program->Initialize(
-        output_surface_->context_provider(),
-        ProgramKey::Texture(precision, sampler, PREMULTIPLIED_ALPHA, true));
-  }
-  return program;
+  return GetProgram(
+      ProgramKey::Texture(precision, sampler, PREMULTIPLIED_ALPHA, true));
 }
 
 const GLRenderer::NonPremultipliedTextureBackgroundProgram*
 GLRenderer::GetNonPremultipliedTextureBackgroundProgram(
     TexCoordPrecision precision,
     SamplerType sampler) {
-  DCHECK_GE(precision, 0);
-  DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
-  DCHECK_GE(sampler, 0);
-  DCHECK_LE(sampler, LAST_SAMPLER_TYPE);
-  NonPremultipliedTextureBackgroundProgram* program =
-      &nonpremultiplied_texture_background_program_[precision][sampler];
-  if (!program->initialized()) {
-    TRACE_EVENT0("cc",
-                 "GLRenderer::NonPremultipliedTextureProgram::Initialize");
-    program->Initialize(
-        output_surface_->context_provider(),
-        ProgramKey::Texture(precision, sampler, NON_PREMULTIPLIED_ALPHA, true));
-  }
-  return program;
+  return GetProgram(
+      ProgramKey::Texture(precision, sampler, NON_PREMULTIPLIED_ALPHA, true));
 }
 
 const GLRenderer::VideoYUVProgram* GLRenderer::GetVideoYUVProgram(
@@ -3673,16 +3446,24 @@ const GLRenderer::VideoYUVProgram* GLRenderer::GetVideoYUVProgram(
 
 const GLRenderer::VideoStreamTextureProgram*
 GLRenderer::GetVideoStreamTextureProgram(TexCoordPrecision precision) {
-  DCHECK_GE(precision, 0);
-  DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
-  VideoStreamTextureProgram* program =
-      &video_stream_texture_program_[precision];
-  if (!program->initialized()) {
-    TRACE_EVENT0("cc", "GLRenderer::streamTextureProgram::initialize");
-    program->Initialize(output_surface_->context_provider(),
-                        ProgramKey::VideoStream(precision));
+  return GetProgram(ProgramKey::VideoStream(precision));
+}
+
+const Program* GLRenderer::GetProgram(const ProgramKey& desc) {
+  std::unique_ptr<Program>& program = program_cache_[desc];
+  if (!program) {
+    program.reset(new Program);
+    program->Initialize(output_surface_->context_provider(), desc);
   }
-  return program;
+  return program.get();
+}
+
+const Program* GLRenderer::GetProgramIfInitialized(
+    const ProgramKey& desc) const {
+  const auto found = program_cache_.find(desc);
+  if (found == program_cache_.end())
+    return nullptr;
+  return found->second.get();
 }
 
 void GLRenderer::CleanupSharedObjects() {
@@ -3690,22 +3471,6 @@ void GLRenderer::CleanupSharedObjects() {
 
   for (int i = 0; i <= LAST_TEX_COORD_PRECISION; ++i) {
     for (int j = 0; j <= LAST_SAMPLER_TYPE; ++j) {
-      tile_program_[i][j].Cleanup(gl_);
-      tile_program_opaque_[i][j].Cleanup(gl_);
-      tile_program_swizzle_[i][j].Cleanup(gl_);
-      tile_program_swizzle_opaque_[i][j].Cleanup(gl_);
-      tile_program_aa_[i][j].Cleanup(gl_);
-      tile_program_swizzle_aa_[i][j].Cleanup(gl_);
-
-      for (int k = 0; k <= LAST_BLEND_MODE; k++) {
-        for (int l = 0; l <= LAST_MASK_VALUE; ++l) {
-          render_pass_mask_program_[i][j][k][l].Cleanup(gl_);
-          render_pass_mask_program_aa_[i][j][k][l].Cleanup(gl_);
-          render_pass_mask_color_matrix_program_aa_[i][j][k][l].Cleanup(gl_);
-          render_pass_mask_color_matrix_program_[i][j][k][l].Cleanup(gl_);
-        }
-      }
-
       for (int k = 0; k < 2; k++) {
         for (int l = 0; l < 2; l++) {
           for (int m = 0; m < 2; m++) {
@@ -3714,26 +3479,10 @@ void GLRenderer::CleanupSharedObjects() {
         }
       }
     }
-    for (int j = 0; j <= LAST_BLEND_MODE; j++) {
-      render_pass_program_[i][j].Cleanup(gl_);
-      render_pass_program_aa_[i][j].Cleanup(gl_);
-      render_pass_color_matrix_program_[i][j].Cleanup(gl_);
-      render_pass_color_matrix_program_aa_[i][j].Cleanup(gl_);
-    }
-
-    for (int j = 0; j <= LAST_SAMPLER_TYPE; ++j) {
-      texture_program_[i][j].Cleanup(gl_);
-      nonpremultiplied_texture_program_[i][j].Cleanup(gl_);
-      texture_background_program_[i][j].Cleanup(gl_);
-      nonpremultiplied_texture_background_program_[i][j].Cleanup(gl_);
-    }
-
-    video_stream_texture_program_[i].Cleanup(gl_);
   }
-
-  debug_border_program_.Cleanup(gl_);
-  solid_color_program_.Cleanup(gl_);
-  solid_color_program_aa_.Cleanup(gl_);
+  for (auto& iter : program_cache_)
+    iter.second->Cleanup(gl_);
+  program_cache_.clear();
 
   if (offscreen_framebuffer_id_)
     gl_->DeleteFramebuffers(1, &offscreen_framebuffer_id_);

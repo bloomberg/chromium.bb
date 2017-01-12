@@ -114,6 +114,23 @@ class CC_EXPORT ProgramKey {
   bool has_color_matrix_ = false;
 };
 
+struct ProgramKeyHash {
+  size_t operator()(const ProgramKey& key) const {
+    return (static_cast<size_t>(key.type_) << 0) ^
+           (static_cast<size_t>(key.precision_) << 3) ^
+           (static_cast<size_t>(key.sampler_) << 6) ^
+           (static_cast<size_t>(key.blend_mode_) << 9) ^
+           (static_cast<size_t>(key.aa_mode_) << 15) ^
+           (static_cast<size_t>(key.swizzle_mode_) << 16) ^
+           (static_cast<size_t>(key.is_opaque_) << 17) ^
+           (static_cast<size_t>(key.premultiplied_alpha_) << 19) ^
+           (static_cast<size_t>(key.has_background_color_) << 20) ^
+           (static_cast<size_t>(key.mask_mode_) << 21) ^
+           (static_cast<size_t>(key.mask_for_background_) << 22) ^
+           (static_cast<size_t>(key.has_color_matrix_) << 23);
+  }
+};
+
 template <class VertexShader, class FragmentShader>
 class ProgramBinding : public ProgramBindingBase {
  public:
@@ -151,8 +168,6 @@ class ProgramBinding : public ProgramBindingBase {
         InitializeVideoStreamProgram(key);
         break;
     }
-    fragment_shader_.CheckSubclassProperties();
-    vertex_shader_.CheckSubclassProperties();
     InitializeInternal(context_provider);
   }
 
@@ -172,8 +187,6 @@ class ProgramBinding : public ProgramBindingBase {
     fragment_shader_.tex_coord_precision_ = precision;
     fragment_shader_.sampler_type_ = sampler;
 
-    fragment_shader_.CheckSubclassProperties();
-    vertex_shader_.CheckSubclassProperties();
     InitializeInternal(context_provider);
   }
 
@@ -314,6 +327,8 @@ class ProgramBinding : public ProgramBindingBase {
 
   DISALLOW_COPY_AND_ASSIGN(ProgramBinding);
 };
+
+typedef ProgramBinding<VertexShaderBase, FragmentShaderBase> Program;
 
 }  // namespace cc
 

@@ -294,69 +294,49 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   // itself.  Add any new programs here to GLRendererShaderTest.
 
   // Tiled layer shaders.
-  typedef ProgramBinding<VertexShaderTile, FragmentShaderRGBATexAlpha>
-      TileProgram;
-  typedef ProgramBinding<VertexShaderTileAA, FragmentShaderRGBATexClampAlphaAA>
-      TileProgramAA;
-  typedef ProgramBinding<VertexShaderTileAA,
-                         FragmentShaderRGBATexClampSwizzleAlphaAA>
-      TileProgramSwizzleAA;
-  typedef ProgramBinding<VertexShaderTile, FragmentShaderRGBATexOpaque>
-      TileProgramOpaque;
-  typedef ProgramBinding<VertexShaderTile, FragmentShaderRGBATexSwizzleAlpha>
-      TileProgramSwizzle;
-  typedef ProgramBinding<VertexShaderTile, FragmentShaderRGBATexSwizzleOpaque>
-      TileProgramSwizzleOpaque;
+  typedef Program TileProgram;
+  typedef Program TileProgramAA;
+  typedef Program TileProgramSwizzleAA;
+  typedef Program TileProgramOpaque;
+  typedef Program TileProgramSwizzle;
+  typedef Program TileProgramSwizzleOpaque;
 
   // Texture shaders.
-  typedef ProgramBinding<VertexShaderPosTexTransform,
-                         FragmentShaderRGBATexVaryingAlpha> TextureProgram;
-  typedef ProgramBinding<VertexShaderPosTexTransform,
-                         FragmentShaderRGBATexPremultiplyAlpha>
-      NonPremultipliedTextureProgram;
-  typedef ProgramBinding<VertexShaderPosTexTransform,
-                         FragmentShaderTexBackgroundVaryingAlpha>
-      TextureBackgroundProgram;
-  typedef ProgramBinding<VertexShaderPosTexTransform,
-                         FragmentShaderTexBackgroundPremultiplyAlpha>
-      NonPremultipliedTextureBackgroundProgram;
+  typedef Program TextureProgram;
+  typedef Program NonPremultipliedTextureProgram;
+  typedef Program TextureBackgroundProgram;
+  typedef Program NonPremultipliedTextureBackgroundProgram;
 
   // Render surface shaders.
-  typedef ProgramBinding<VertexShaderPosTexTransform,
-                         FragmentShaderRGBATexAlpha> RenderPassProgram;
-  typedef ProgramBinding<VertexShaderPosTexTransform,
-                         FragmentShaderRGBATexAlphaMask> RenderPassMaskProgram;
-  typedef ProgramBinding<VertexShaderQuadTexTransformAA,
-                         FragmentShaderRGBATexAlphaAA> RenderPassProgramAA;
-  typedef ProgramBinding<VertexShaderQuadTexTransformAA,
-                         FragmentShaderRGBATexAlphaMaskAA>
-      RenderPassMaskProgramAA;
-  typedef ProgramBinding<VertexShaderPosTexTransform,
-                         FragmentShaderRGBATexColorMatrixAlpha>
-      RenderPassColorMatrixProgram;
-  typedef ProgramBinding<VertexShaderQuadTexTransformAA,
-                         FragmentShaderRGBATexAlphaMaskColorMatrixAA>
-      RenderPassMaskColorMatrixProgramAA;
-  typedef ProgramBinding<VertexShaderQuadTexTransformAA,
-                         FragmentShaderRGBATexAlphaColorMatrixAA>
-      RenderPassColorMatrixProgramAA;
-  typedef ProgramBinding<VertexShaderPosTexTransform,
-                         FragmentShaderRGBATexAlphaMaskColorMatrix>
-      RenderPassMaskColorMatrixProgram;
+  typedef Program RenderPassProgram;
+  typedef Program RenderPassMaskProgram;
+  typedef Program RenderPassProgramAA;
+  typedef Program RenderPassMaskProgramAA;
+  typedef Program RenderPassColorMatrixProgram;
+  typedef Program RenderPassMaskColorMatrixProgramAA;
+  typedef Program RenderPassColorMatrixProgramAA;
+  typedef Program RenderPassMaskColorMatrixProgram;
 
   // Video shaders.
-  typedef ProgramBinding<VertexShaderVideoTransform, FragmentShaderRGBATex>
-      VideoStreamTextureProgram;
-  typedef ProgramBinding<VertexShaderPosTexYUVStretchOffset,
-                         FragmentShaderYUVVideo> VideoYUVProgram;
+  typedef Program VideoStreamTextureProgram;
+  typedef ProgramBinding<VertexShaderBase, FragmentShaderYUVVideo>
+      VideoYUVProgram;
 
   // Special purpose / effects shaders.
-  typedef ProgramBinding<VertexShaderPos, FragmentShaderColor>
-      DebugBorderProgram;
-  typedef ProgramBinding<VertexShaderQuad, FragmentShaderColor>
-      SolidColorProgram;
-  typedef ProgramBinding<VertexShaderQuadAA, FragmentShaderColorAA>
-      SolidColorProgramAA;
+  typedef Program DebugBorderProgram;
+  typedef Program SolidColorProgram;
+  typedef Program SolidColorProgramAA;
+
+  // If the requested program has not yet been initialized, this will initialize
+  // the program before returning it.
+  const Program* GetProgram(const ProgramKey& key);
+
+  // This will return nullptr if the requested program has not yet been
+  // initialized.
+  const Program* GetProgramIfInitialized(const ProgramKey& key) const;
+
+  std::unordered_map<ProgramKey, std::unique_ptr<Program>, ProgramKeyHash>
+      program_cache_;
 
   const TileProgram* GetTileProgram(
       TexCoordPrecision precision, SamplerType sampler);
@@ -426,71 +406,8 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   const SolidColorProgram* GetSolidColorProgram();
   const SolidColorProgramAA* GetSolidColorProgramAA();
 
-  TileProgram
-      tile_program_[LAST_TEX_COORD_PRECISION + 1][LAST_SAMPLER_TYPE + 1];
-  TileProgramOpaque
-      tile_program_opaque_[LAST_TEX_COORD_PRECISION + 1][LAST_SAMPLER_TYPE + 1];
-  TileProgramAA
-      tile_program_aa_[LAST_TEX_COORD_PRECISION + 1][LAST_SAMPLER_TYPE + 1];
-  TileProgramSwizzle tile_program_swizzle_[LAST_TEX_COORD_PRECISION +
-                                           1][LAST_SAMPLER_TYPE + 1];
-  TileProgramSwizzleOpaque
-      tile_program_swizzle_opaque_[LAST_TEX_COORD_PRECISION +
-                                   1][LAST_SAMPLER_TYPE + 1];
-  TileProgramSwizzleAA tile_program_swizzle_aa_[LAST_TEX_COORD_PRECISION +
-                                                1][LAST_SAMPLER_TYPE + 1];
-
-  TextureProgram
-      texture_program_[LAST_TEX_COORD_PRECISION + 1][LAST_SAMPLER_TYPE + 1];
-  NonPremultipliedTextureProgram
-      nonpremultiplied_texture_program_[LAST_TEX_COORD_PRECISION +
-                                        1][LAST_SAMPLER_TYPE + 1];
-  TextureBackgroundProgram
-      texture_background_program_[LAST_TEX_COORD_PRECISION +
-                                  1][LAST_SAMPLER_TYPE + 1];
-  NonPremultipliedTextureBackgroundProgram
-      nonpremultiplied_texture_background_program_[LAST_TEX_COORD_PRECISION +
-                                                   1][LAST_SAMPLER_TYPE + 1];
-
-  RenderPassProgram
-      render_pass_program_[LAST_TEX_COORD_PRECISION + 1][LAST_BLEND_MODE + 1];
-  RenderPassProgramAA render_pass_program_aa_[LAST_TEX_COORD_PRECISION +
-                                              1][LAST_BLEND_MODE + 1];
-  RenderPassMaskProgram
-      render_pass_mask_program_[LAST_TEX_COORD_PRECISION + 1]
-                               [LAST_SAMPLER_TYPE + 1]
-                               [LAST_BLEND_MODE + 1]
-                               [LAST_MASK_VALUE + 1];
-  RenderPassMaskProgramAA
-      render_pass_mask_program_aa_[LAST_TEX_COORD_PRECISION + 1]
-                                  [LAST_SAMPLER_TYPE + 1]
-                                  [LAST_BLEND_MODE + 1]
-                                  [LAST_MASK_VALUE + 1];
-  RenderPassColorMatrixProgram
-      render_pass_color_matrix_program_[LAST_TEX_COORD_PRECISION +
-                                        1][LAST_BLEND_MODE + 1];
-  RenderPassColorMatrixProgramAA
-      render_pass_color_matrix_program_aa_[LAST_TEX_COORD_PRECISION +
-                                           1][LAST_BLEND_MODE + 1];
-  RenderPassMaskColorMatrixProgram
-      render_pass_mask_color_matrix_program_[LAST_TEX_COORD_PRECISION + 1]
-                                            [LAST_SAMPLER_TYPE + 1]
-                                            [LAST_BLEND_MODE + 1]
-                                            [LAST_MASK_VALUE + 1];
-  RenderPassMaskColorMatrixProgramAA
-      render_pass_mask_color_matrix_program_aa_[LAST_TEX_COORD_PRECISION + 1]
-                                               [LAST_SAMPLER_TYPE + 1]
-                                               [LAST_BLEND_MODE + 1]
-                                               [LAST_MASK_VALUE + 1];
-
   VideoYUVProgram video_yuv_program_[LAST_TEX_COORD_PRECISION + 1]
                                     [LAST_SAMPLER_TYPE + 1][2][2][2];
-  VideoStreamTextureProgram
-      video_stream_texture_program_[LAST_TEX_COORD_PRECISION + 1];
-
-  DebugBorderProgram debug_border_program_;
-  SolidColorProgram solid_color_program_;
-  SolidColorProgramAA solid_color_program_aa_;
 
   gpu::gles2::GLES2Interface* gl_;
   gpu::ContextSupport* context_support_;

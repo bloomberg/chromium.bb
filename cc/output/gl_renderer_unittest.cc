@@ -384,95 +384,85 @@ class GLRendererShaderTest : public GLRendererTest {
 
   void TestRenderPassProgram(TexCoordPrecision precision,
                              BlendMode blend_mode) {
-    EXPECT_PROGRAM_VALID(
-        &renderer_->render_pass_program_[precision][blend_mode]);
-    EXPECT_EQ(renderer_->render_pass_program_[precision][blend_mode].program(),
-              renderer_->program_shadow_);
+    const Program* program = renderer_->GetProgramIfInitialized(
+        ProgramKey::RenderPass(precision, SAMPLER_TYPE_2D, blend_mode, NO_AA,
+                               NO_MASK, false, false));
+    EXPECT_PROGRAM_VALID(program);
+    EXPECT_EQ(program->program(), renderer_->program_shadow_);
   }
 
   void TestRenderPassColorMatrixProgram(TexCoordPrecision precision,
                                         BlendMode blend_mode) {
-    EXPECT_PROGRAM_VALID(
-        &renderer_->render_pass_color_matrix_program_[precision][blend_mode]);
-    EXPECT_EQ(
-        renderer_->render_pass_color_matrix_program_[precision][blend_mode]
-            .program(),
-        renderer_->program_shadow_);
+    const Program* program = renderer_->GetProgramIfInitialized(
+        ProgramKey::RenderPass(precision, SAMPLER_TYPE_2D, blend_mode, NO_AA,
+                               NO_MASK, false, true));
+    EXPECT_PROGRAM_VALID(program);
+    EXPECT_EQ(program->program(), renderer_->program_shadow_);
   }
 
   void TestRenderPassMaskProgram(TexCoordPrecision precision,
                                  SamplerType sampler,
                                  BlendMode blend_mode) {
-    EXPECT_PROGRAM_VALID(
-        &renderer_->render_pass_mask_program_[precision]
-                                             [sampler]
-                                             [blend_mode]
-                                             [NO_MASK]);
-    EXPECT_EQ(
-        renderer_->render_pass_mask_program_[precision]
-                                            [sampler]
-                                            [blend_mode]
-                                            [NO_MASK].program(),
-        renderer_->program_shadow_);
+    const Program* program =
+        renderer_->GetProgramIfInitialized(ProgramKey::RenderPass(
+            precision, sampler, blend_mode, NO_AA, HAS_MASK, false, false));
+    EXPECT_PROGRAM_VALID(program);
+    EXPECT_EQ(program->program(), renderer_->program_shadow_);
   }
 
   void TestRenderPassMaskColorMatrixProgram(TexCoordPrecision precision,
                                             SamplerType sampler,
                                             BlendMode blend_mode) {
-    EXPECT_PROGRAM_VALID(&renderer_->render_pass_mask_color_matrix_program_
-                              [precision][sampler][blend_mode][NO_MASK]);
-    EXPECT_EQ(renderer_->render_pass_mask_color_matrix_program_
-                  [precision][sampler][blend_mode][NO_MASK].program(),
-              renderer_->program_shadow_);
+    const Program* program =
+        renderer_->GetProgramIfInitialized(ProgramKey::RenderPass(
+            precision, sampler, blend_mode, NO_AA, HAS_MASK, false, true));
+    EXPECT_PROGRAM_VALID(program);
+    EXPECT_EQ(program->program(), renderer_->program_shadow_);
   }
 
   void TestRenderPassProgramAA(TexCoordPrecision precision,
                                BlendMode blend_mode) {
-    EXPECT_PROGRAM_VALID(
-        &renderer_->render_pass_program_aa_[precision][blend_mode]);
-    EXPECT_EQ(
-        renderer_->render_pass_program_aa_[precision][blend_mode].program(),
-        renderer_->program_shadow_);
+    const Program* program = renderer_->GetProgramIfInitialized(
+        ProgramKey::RenderPass(precision, SAMPLER_TYPE_2D, blend_mode, USE_AA,
+                               NO_MASK, false, false));
+    EXPECT_PROGRAM_VALID(program);
+    EXPECT_EQ(program->program(), renderer_->program_shadow_);
   }
 
   void TestRenderPassColorMatrixProgramAA(TexCoordPrecision precision,
                                           BlendMode blend_mode) {
-    EXPECT_PROGRAM_VALID(
-        &renderer_
-             ->render_pass_color_matrix_program_aa_[precision][blend_mode]);
-    EXPECT_EQ(
-        renderer_->render_pass_color_matrix_program_aa_[precision][blend_mode]
-            .program(),
-        renderer_->program_shadow_);
+    const Program* program = renderer_->GetProgramIfInitialized(
+        ProgramKey::RenderPass(precision, SAMPLER_TYPE_2D, blend_mode, USE_AA,
+                               NO_MASK, false, true));
+    EXPECT_PROGRAM_VALID(program);
+    EXPECT_EQ(program->program(), renderer_->program_shadow_);
   }
 
   void TestRenderPassMaskProgramAA(TexCoordPrecision precision,
                                    SamplerType sampler,
                                    BlendMode blend_mode) {
-    EXPECT_PROGRAM_VALID(
-        &renderer_
-             ->render_pass_mask_program_aa_
-                 [precision][sampler][blend_mode][NO_MASK]);
-    EXPECT_EQ(
-        renderer_->render_pass_mask_program_aa_[precision][sampler][blend_mode]
-            [NO_MASK].program(),
-        renderer_->program_shadow_);
+    const Program* program =
+        renderer_->GetProgramIfInitialized(ProgramKey::RenderPass(
+            precision, sampler, blend_mode, USE_AA, HAS_MASK, false, false));
+    EXPECT_PROGRAM_VALID(program);
+    EXPECT_EQ(program->program(), renderer_->program_shadow_);
   }
 
   void TestRenderPassMaskColorMatrixProgramAA(TexCoordPrecision precision,
                                               SamplerType sampler,
                                               BlendMode blend_mode) {
-    EXPECT_PROGRAM_VALID(&renderer_->render_pass_mask_color_matrix_program_aa_
-                              [precision][sampler][blend_mode][NO_MASK]);
-    EXPECT_EQ(renderer_->render_pass_mask_color_matrix_program_aa_
-                  [precision][sampler][blend_mode][NO_MASK].program(),
-              renderer_->program_shadow_);
+    const Program* program =
+        renderer_->GetProgramIfInitialized(ProgramKey::RenderPass(
+            precision, sampler, blend_mode, USE_AA, HAS_MASK, false, true));
+    EXPECT_PROGRAM_VALID(program);
+    EXPECT_EQ(program->program(), renderer_->program_shadow_);
   }
 
   void TestSolidColorProgramAA() {
-    EXPECT_PROGRAM_VALID(&renderer_->solid_color_program_aa_);
-    EXPECT_EQ(renderer_->solid_color_program_aa_.program(),
-              renderer_->program_shadow_);
+    const Program* program =
+        renderer_->GetProgramIfInitialized(ProgramKey::SolidColor(USE_AA));
+    EXPECT_PROGRAM_VALID(program);
+    EXPECT_EQ(program->program(), renderer_->program_shadow_);
   }
 
   RendererSettings settings_;
