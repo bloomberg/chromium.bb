@@ -129,7 +129,6 @@ class ProguardCmdBuilder(object):
     # The output jar must be specified after inputs.
     cmd += [
       '-outjars', self._outjar,
-      '-dump', self._outjar + '.dump',
       '-printseeds', self._outjar + '.seeds',
       '-printusage', self._outjar + '.usage',
       '-printmapping', self._outjar + '.mapping',
@@ -158,7 +157,6 @@ class ProguardCmdBuilder(object):
     # Proguard will skip writing these files if they would be empty. Create
     # empty versions of them all now so that they are updated as the build
     # expects.
-    open(self._outjar + '.dump', 'w').close()
     open(self._outjar + '.seeds', 'w').close()
     open(self._outjar + '.usage', 'w').close()
     open(self._outjar + '.mapping', 'w').close()
