@@ -31,15 +31,16 @@
 #ifndef LayoutUnit_h
 #define LayoutUnit_h
 
+#include "base/numerics/safe_conversions.h"
 #include "platform/PlatformExport.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
-#include "wtf/MathExtras.h"
 #include "wtf/SaturatedArithmetic.h"
 #include "wtf/text/WTFString.h"
 #include <algorithm>
 #include <limits.h>
 #include <limits>
+#include <math.h>
 #include <stdlib.h>
 
 namespace blink {
@@ -71,34 +72,37 @@ class LayoutUnit {
   explicit LayoutUnit(unsigned short value) { setValue(value); }
   explicit LayoutUnit(unsigned value) { setValue(value); }
   explicit LayoutUnit(unsigned long value) {
-    m_value = clampTo<int>(value * kFixedPointDenominator);
+    m_value = base::saturated_cast<int>(value * kFixedPointDenominator);
   }
   explicit LayoutUnit(unsigned long long value) {
-    m_value = clampTo<int>(value * kFixedPointDenominator);
+    m_value = base::saturated_cast<int>(value * kFixedPointDenominator);
   }
   explicit LayoutUnit(float value) {
-    m_value = clampTo<int>(value * kFixedPointDenominator);
+    m_value = base::saturated_cast<int>(value * kFixedPointDenominator);
   }
   explicit LayoutUnit(double value) {
-    m_value = clampTo<int>(value * kFixedPointDenominator);
+    m_value = base::saturated_cast<int>(value * kFixedPointDenominator);
   }
 
   static LayoutUnit fromFloatCeil(float value) {
     LayoutUnit v;
-    v.m_value = clampTo<int>(ceilf(value * kFixedPointDenominator));
+    v.m_value =
+        base::saturated_cast<int>(ceilf(value * kFixedPointDenominator));
     return v;
   }
 
   static LayoutUnit fromFloatFloor(float value) {
     LayoutUnit v;
-    v.m_value = clampTo<int>(floorf(value * kFixedPointDenominator));
+    v.m_value =
+        base::saturated_cast<int>(floorf(value * kFixedPointDenominator));
     return v;
   }
 
   static LayoutUnit fromFloatRound(float value) {
-    if (value >= 0)
-      return clamp(value + epsilon() / 2.0f);
-    return clamp(value - epsilon() / 2.0f);
+    LayoutUnit v;
+    v.m_value =
+        base::saturated_cast<int>(roundf(value * kFixedPointDenominator));
+    return v;
   }
 
   int toInt() const { return m_value / kFixedPointDenominator; }
@@ -210,9 +214,7 @@ class LayoutUnit {
     return m;
   }
 
-  static LayoutUnit clamp(double value) {
-    return clampTo<LayoutUnit>(value, LayoutUnit::min(), LayoutUnit::max());
-  }
+  static LayoutUnit clamp(double value) { return fromFloatFloor(value); }
 
   String toString() const;
 
@@ -453,7 +455,7 @@ inline LayoutUnit operator/(const LayoutUnit& a, const LayoutUnit& b) {
   LayoutUnit returnVal;
   long long rawVal = static_cast<long long>(kFixedPointDenominator) *
                      a.rawValue() / b.rawValue();
-  returnVal.setRawValue(clampTo<int>(rawVal));
+  returnVal.setRawValue(base::saturated_cast<int>(rawVal));
   return returnVal;
 }
 
@@ -704,16 +706,6 @@ inline LayoutUnit layoutMod(const LayoutUnit& numerator, int denominator) {
 
 inline bool isIntegerValue(const LayoutUnit value) {
   return value.toInt() == value;
-}
-
-inline LayoutUnit clampToLayoutUnit(LayoutUnit value,
-                                    LayoutUnit min,
-                                    LayoutUnit max) {
-  if (value >= max)
-    return max;
-  if (value <= min)
-    return min;
-  return value;
 }
 
 inline std::ostream& operator<<(std::ostream& stream, const LayoutUnit& value) {
