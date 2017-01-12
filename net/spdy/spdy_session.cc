@@ -25,8 +25,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "base/trace_event/memory_allocator_dump.h"
-#include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "crypto/ec_private_key.h"
@@ -1061,15 +1059,10 @@ bool SpdySession::CloseOneIdleConnection() {
   return false;
 }
 
-void SpdySession::DumpMemoryStats(
-    base::trace_event::ProcessMemoryDump* pmd,
-    const std::string& parent_absolute_name) const {
-  std::string name =
-      base::StringPrintf("%s/session_%p", parent_absolute_name.c_str(), this);
-  base::trace_event::MemoryAllocatorDump* session_dump =
-      pmd->CreateAllocatorDump(name);
-  session_dump->AddString("active", "", is_active() ? "1" : "0");
-  connection_->DumpMemoryStats(pmd, name);
+void SpdySession::DumpMemoryStats(StreamSocket::SocketMemoryStats* stats,
+                                  bool* is_session_active) const {
+  *is_session_active = is_active();
+  connection_->DumpMemoryStats(stats);
 }
 
 void SpdySession::EnqueueStreamWrite(
