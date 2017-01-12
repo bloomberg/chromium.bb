@@ -22,6 +22,7 @@ namespace {
 using std::tr1::tuple;
 using libaom_test::ACMRandom;
 
+typedef void (*ConvInit)();
 typedef void (*conv_filter_t)(const uint8_t *, int, uint8_t *, int, int, int,
                               const InterpFilterParams, const int, int,
                               ConvolveParams *);
@@ -35,8 +36,8 @@ typedef void (*hbd_conv_filter_t)(const uint16_t *, int, uint16_t *, int, int,
 //  <convolve_horiz_func, convolve_vert_func,
 //  <width, height>, filter_params, subpel_x_q4, avg>
 typedef tuple<int, int> BlockDimension;
-typedef tuple<conv_filter_t, conv_filter_t, BlockDimension, InterpFilter, int,
-              int>
+typedef tuple<ConvInit, conv_filter_t, conv_filter_t, BlockDimension,
+              InterpFilter, int, int>
     ConvParams;
 #if CONFIG_AOM_HIGHBITDEPTH
 // Test parameter list:
@@ -62,15 +63,17 @@ class AV1ConvolveOptimzTest : public ::testing::TestWithParam<ConvParams> {
  public:
   virtual ~AV1ConvolveOptimzTest() {}
   virtual void SetUp() {
-    conv_horiz_ = GET_PARAM(0);
-    conv_vert_ = GET_PARAM(1);
-    BlockDimension block = GET_PARAM(2);
+    ConvInit conv_init = GET_PARAM(0);
+    conv_init();
+    conv_horiz_ = GET_PARAM(1);
+    conv_vert_ = GET_PARAM(2);
+    BlockDimension block = GET_PARAM(3);
     width_ = std::tr1::get<0>(block);
     height_ = std::tr1::get<1>(block);
-    filter_ = GET_PARAM(3);
-    subpel_ = GET_PARAM(4);
+    filter_ = GET_PARAM(4);
+    subpel_ = GET_PARAM(5);
     conv_params_.round = 1;
-    conv_params_.ref = GET_PARAM(5);
+    conv_params_.ref = GET_PARAM(6);
 
     alloc_ = new uint8_t[maxBlockSize * 4];
     src_ = alloc_ + (vertiOffset * maxWidth);
@@ -224,7 +227,8 @@ const int kAvg[] = { 0, 1 };
 #if HAVE_SSSE3 && CONFIG_DUAL_FILTER
 INSTANTIATE_TEST_CASE_P(
     SSSE3, AV1ConvolveOptimzTest,
-    ::testing::Combine(::testing::Values(av1_convolve_horiz_ssse3),
+    ::testing::Combine(::testing::Values(av1_convolve_init_ssse3),
+                       ::testing::Values(av1_convolve_horiz_ssse3),
                        ::testing::Values(av1_convolve_vert_ssse3),
                        ::testing::ValuesIn(kBlockDim),
                        ::testing::ValuesIn(kFilter),
