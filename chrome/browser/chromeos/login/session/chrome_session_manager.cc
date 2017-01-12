@@ -134,6 +134,7 @@ void StartRestoreAfterCrashSession(Profile* user_profile,
 
   bool is_running_test = command_line->HasSwitch(::switches::kTestName) ||
                          command_line->HasSwitch(::switches::kTestType);
+
   if (!is_running_test) {
     // Enable CrasAudioHandler logging when chrome restarts after crashing.
     if (chromeos::CrasAudioHandler::IsInitialized())

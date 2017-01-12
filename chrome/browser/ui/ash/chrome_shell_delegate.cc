@@ -565,6 +565,7 @@ void ChromeShellDelegate::Observe(int type,
       // chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED instead.
       if (shelf_delegate_)
         shelf_delegate_->OnUserProfileReadyToSwitch(profile);
+      ash::Shell::GetInstance()->OnLoginUserProfilePrepared();
       break;
     }
     case chrome::NOTIFICATION_SESSION_STARTED:
@@ -572,6 +573,7 @@ void ChromeShellDelegate::Observe(int type,
       // start.
       if (user_manager::UserManager::Get()->GetLoggedInUsers().size() < 2)
         InitAfterFirstSessionStart();
+      ash::WmShell::Get()->ShowShelf();
       break;
     default:
       NOTREACHED() << "Unexpected notification " << type;

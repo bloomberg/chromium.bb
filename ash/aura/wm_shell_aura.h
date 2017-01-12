@@ -95,9 +95,6 @@ class ASH_EXPORT WmShellAura : public WmShell,
   void OnAttemptToReactivateWindow(aura::Window* request_active,
                                    aura::Window* actual_active) override;
 
-  // SessionStateObserver:
-  void SessionStateChanged(session_manager::SessionState state) override;
-
   // WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanging() override;
   void OnDisplayConfigurationChanged() override;
