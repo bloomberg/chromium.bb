@@ -28,6 +28,7 @@ using content::InterstitialPage;
 using content::NavigationEntry;
 using content::WebContents;
 using content::WebContentsTester;
+using security_interstitials::SafeBrowsingErrorUI;
 
 static const char* kGoogleURL = "http://www.google.com/";
 static const char* kGoodURL = "http://www.goodguys.com/";
@@ -42,14 +43,17 @@ namespace {
 // A SafeBrowingBlockingPage class that does not create windows.
 class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
  public:
-  TestSafeBrowsingBlockingPage(SafeBrowsingUIManager* manager,
-                               WebContents* web_contents,
-                               const GURL& main_frame_url,
-                               const UnsafeResourceList& unsafe_resources)
+  TestSafeBrowsingBlockingPage(
+      BaseUIManager* manager,
+      WebContents* web_contents,
+      const GURL& main_frame_url,
+      const UnsafeResourceList& unsafe_resources,
+      const SafeBrowsingErrorUI::SBErrorDisplayOptions& display_options)
       : SafeBrowsingBlockingPage(manager,
                                  web_contents,
                                  main_frame_url,
-                                 unsafe_resources) {
+                                 unsafe_resources,
+                                 display_options) {
     // Don't delay details at all for the unittest.
     threat_details_proceed_delay_ms_ = 0;
     DontCreateViewForTesting();
@@ -63,13 +67,27 @@ class TestSafeBrowsingBlockingPageFactory
   ~TestSafeBrowsingBlockingPageFactory() override {}
 
   SafeBrowsingBlockingPage* CreateSafeBrowsingPage(
-      SafeBrowsingUIManager* manager,
+      BaseUIManager* manager,
       WebContents* web_contents,
       const GURL& main_frame_url,
       const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources)
       override {
+    PrefService* prefs =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext())
+            ->GetPrefs();
+    bool is_extended_reporting_opt_in_allowed =
+        prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingOptInAllowed);
+    bool is_proceed_anyway_disabled =
+        prefs->GetBoolean(prefs::kSafeBrowsingProceedAnywayDisabled);
+    SafeBrowsingErrorUI::SBErrorDisplayOptions display_options(
+        BaseBlockingPage::IsMainPageLoadBlocked(unsafe_resources),
+        is_extended_reporting_opt_in_allowed,
+        web_contents->GetBrowserContext()->IsOffTheRecord(),
+        IsExtendedReportingEnabled(*prefs), IsScout(*prefs),
+        is_proceed_anyway_disabled);
     return new TestSafeBrowsingBlockingPage(manager, web_contents,
-                                            main_frame_url, unsafe_resources);
+                                            main_frame_url, unsafe_resources,
+                                            display_options);
   }
 };
 
@@ -637,7 +655,7 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsDisabled) {
   ShowInterstitial(false, kBadURL);
   SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);
-  EXPECT_TRUE(sb_interstitial->sb_error_ui_->CanShowExtendedReportingOption());
+  EXPECT_TRUE(sb_interstitial->sb_error_ui()->CanShowExtendedReportingOption());
 
   base::RunLoop().RunUntilIdle();
 
@@ -671,7 +689,7 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsToggling) {
   ShowInterstitial(false, kBadURL);
   SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);
-  EXPECT_TRUE(sb_interstitial->sb_error_ui_->CanShowExtendedReportingOption());
+  EXPECT_TRUE(sb_interstitial->sb_error_ui()->CanShowExtendedReportingOption());
 
   base::RunLoop().RunUntilIdle();
 
@@ -707,7 +725,8 @@ TEST_F(SafeBrowsingBlockingPageTest,
   ShowInterstitial(false, kBadURL);
   SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);
-  EXPECT_FALSE(sb_interstitial->sb_error_ui_->CanShowExtendedReportingOption());
+  EXPECT_FALSE(sb_interstitial->sb_error_ui()
+                    ->CanShowExtendedReportingOption());
 
   base::RunLoop().RunUntilIdle();
 
@@ -741,7 +760,8 @@ TEST_F(SafeBrowsingBlockingPageTest,
   ShowInterstitial(false, kBadURL);
   SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);
-  EXPECT_FALSE(sb_interstitial->sb_error_ui_->CanShowExtendedReportingOption());
+  EXPECT_FALSE(sb_interstitial->sb_error_ui()
+                   ->CanShowExtendedReportingOption());
 
   base::RunLoop().RunUntilIdle();
 

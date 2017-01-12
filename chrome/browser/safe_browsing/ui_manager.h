@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -25,13 +26,35 @@ class WebContents;
 struct PermissionReportInfo;
 }  // namespace content
 
+namespace history {
+class HistoryService;
+}  // namespace history
+
 namespace safe_browsing {
 
 struct HitReport;
 
 // Construction needs to happen on the main thread.
-class SafeBrowsingUIManager : public BaseSafeBrowsingUIManager {
+class SafeBrowsingUIManager : public BaseUIManager {
  public:
+  // Observer class can be used to get notified when a SafeBrowsing hit
+  // is found.
+  class Observer {
+   public:
+    // Called when |resource| is classified as unsafe by SafeBrowsing, and is
+    // not whitelisted.
+    // The |resource| must not be accessed after OnSafeBrowsingHit returns.
+    // This method will be called on the UI thread.
+    virtual void OnSafeBrowsingHit(const UnsafeResource& resource) = 0;
+
+   protected:
+    Observer() {}
+    virtual ~Observer() {}
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Observer);
+  };
+
   explicit SafeBrowsingUIManager(
       const scoped_refptr<SafeBrowsingService>& service);
 
@@ -46,12 +69,6 @@ class SafeBrowsingUIManager : public BaseSafeBrowsingUIManager {
   // in the chain, and |original_url| is the first one (the root of the
   // chain). Otherwise, |original_url| = |url|.
   void DisplayBlockingPage(const UnsafeResource& resource) override;
-
-  // Log the user perceived delay caused by SafeBrowsing. This delay is the time
-  // delta starting from when we would have started reading data from the
-  // network, and ending when the SafeBrowsing check completes indicating that
-  // the current page is 'safe'.
-  void LogPauseDelay(base::TimeDelta time) override;
 
   // Called on the IO thread by the ThreatDetails with the serialized
   // protocol buffer, so the service can send it over.
@@ -74,6 +91,15 @@ class SafeBrowsingUIManager : public BaseSafeBrowsingUIManager {
   // DisplayBlockingPage(), which creates it.
   static void CreateWhitelistForTesting(content::WebContents* web_contents);
 
+  // Add and remove observers. These methods must be invoked on the UI thread.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* remove);
+
+  const std::string app_locale() const override;
+  history::HistoryService* history_service(
+      content::WebContents* web_contents) override;
+  const GURL default_safe_page() const override;
+
  protected:
   ~SafeBrowsingUIManager() override;
 
@@ -94,6 +120,8 @@ class SafeBrowsingUIManager : public BaseSafeBrowsingUIManager {
 
   // Safebrowsing service.
   scoped_refptr<SafeBrowsingService> sb_service_;
+
+  base::ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingUIManager);
 };

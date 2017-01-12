@@ -92,9 +92,9 @@ class MetricsHelper {
  protected:
   // Subclasses should implement any embedder-specific recording logic in these
   // methods. They'll be invoked from the matching Record methods.
-  virtual void RecordExtraUserDecisionMetrics(Decision decision) = 0;
-  virtual void RecordExtraUserInteractionMetrics(Interaction interaction) = 0;
-  virtual void RecordExtraShutdownMetrics() = 0;
+  virtual void RecordExtraUserDecisionMetrics(Decision decision);
+  virtual void RecordExtraUserInteractionMetrics(Interaction interaction);
+  virtual void RecordExtraShutdownMetrics();
 
  private:
   // Used to query the HistoryService to see if the URL is in history.  It will

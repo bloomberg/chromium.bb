@@ -167,6 +167,13 @@ int MetricsHelper::NumVisits() {
   return num_visits_;
 }
 
+void MetricsHelper::RecordExtraUserDecisionMetrics(Decision decision) {}
+
+void MetricsHelper::RecordExtraUserInteractionMetrics(Interaction interaction) {
+}
+
+void MetricsHelper::RecordExtraShutdownMetrics() {}
+
 void MetricsHelper::OnGotHistoryCount(bool success,
                                       int num_visits,
                                       base::Time /*first_visit*/) {

@@ -67,6 +67,7 @@ using content::InterstitialPage;
 using content::NavigationController;
 using content::RenderFrameHost;
 using content::WebContents;
+using security_interstitials::SafeBrowsingErrorUI;
 
 namespace safe_browsing {
 
@@ -212,7 +213,7 @@ class TestThreatDetailsFactory : public ThreatDetailsFactory {
   ~TestThreatDetailsFactory() override {}
 
   ThreatDetails* CreateThreatDetails(
-      SafeBrowsingUIManager* delegate,
+      BaseUIManager* delegate,
       WebContents* web_contents,
       const security_interstitials::UnsafeResource& unsafe_resource) override {
     details_ = new ThreatDetails(delegate, web_contents, unsafe_resource);
@@ -228,14 +229,17 @@ class TestThreatDetailsFactory : public ThreatDetailsFactory {
 // A SafeBrowingBlockingPage class that lets us wait until it's hidden.
 class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
  public:
-  TestSafeBrowsingBlockingPage(SafeBrowsingUIManager* manager,
-                               WebContents* web_contents,
-                               const GURL& main_frame_url,
-                               const UnsafeResourceList& unsafe_resources)
+  TestSafeBrowsingBlockingPage(
+      BaseUIManager* manager,
+      WebContents* web_contents,
+      const GURL& main_frame_url,
+      const UnsafeResourceList& unsafe_resources,
+      const SafeBrowsingErrorUI::SBErrorDisplayOptions& display_options)
       : SafeBrowsingBlockingPage(manager,
                                  web_contents,
                                  main_frame_url,
-                                 unsafe_resources),
+                                 unsafe_resources,
+                                 display_options),
         wait_for_delete_(false) {
     // Don't wait the whole 3 seconds for the browser test.
     threat_details_proceed_delay_ms_ = 100;
@@ -273,13 +277,27 @@ class TestSafeBrowsingBlockingPageFactory
   ~TestSafeBrowsingBlockingPageFactory() override {}
 
   SafeBrowsingBlockingPage* CreateSafeBrowsingPage(
-      SafeBrowsingUIManager* delegate,
+      BaseUIManager* delegate,
       WebContents* web_contents,
       const GURL& main_frame_url,
       const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources)
       override {
+    PrefService* prefs =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext())
+            ->GetPrefs();
+    bool is_extended_reporting_opt_in_allowed =
+        prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingOptInAllowed);
+    bool is_proceed_anyway_disabled =
+        prefs->GetBoolean(prefs::kSafeBrowsingProceedAnywayDisabled);
+    SafeBrowsingErrorUI::SBErrorDisplayOptions display_options(
+        BaseBlockingPage::IsMainPageLoadBlocked(unsafe_resources),
+        is_extended_reporting_opt_in_allowed,
+        web_contents->GetBrowserContext()->IsOffTheRecord(),
+        IsExtendedReportingEnabled(*prefs), IsScout(*prefs),
+        is_proceed_anyway_disabled);
     return new TestSafeBrowsingBlockingPage(delegate, web_contents,
-                                            main_frame_url, unsafe_resources);
+                                            main_frame_url, unsafe_resources,
+                                            display_options);
   }
 };
 

@@ -53,7 +53,7 @@ class ThreatDetails : public base::RefCountedThreadSafe<
   typedef security_interstitials::UnsafeResource UnsafeResource;
 
   // Constructs a new ThreatDetails instance, using the factory.
-  static ThreatDetails* NewThreatDetails(SafeBrowsingUIManager* ui_manager,
+  static ThreatDetails* NewThreatDetails(BaseUIManager* ui_manager,
                                          content::WebContents* web_contents,
                                          const UnsafeResource& resource);
 
@@ -83,7 +83,7 @@ class ThreatDetails : public base::RefCountedThreadSafe<
   friend class ThreatDetailsFactoryImpl;
   friend class TestThreatDetailsFactory;
 
-  ThreatDetails(SafeBrowsingUIManager* ui_manager,
+  ThreatDetails(BaseUIManager* ui_manager,
                 content::WebContents* web_contents,
                 const UnsafeResource& resource);
 
@@ -132,7 +132,7 @@ class ThreatDetails : public base::RefCountedThreadSafe<
 
   void AddRedirectUrlList(const std::vector<GURL>& urls);
 
-  scoped_refptr<SafeBrowsingUIManager> ui_manager_;
+  scoped_refptr<BaseUIManager> ui_manager_;
 
   const UnsafeResource resource_;
 
@@ -176,7 +176,7 @@ class ThreatDetailsFactory {
   virtual ~ThreatDetailsFactory() {}
 
   virtual ThreatDetails* CreateThreatDetails(
-      SafeBrowsingUIManager* ui_manager,
+      BaseUIManager* ui_manager,
       content::WebContents* web_contents,
       const SafeBrowsingUIManager::UnsafeResource& unsafe_resource) = 0;
 };

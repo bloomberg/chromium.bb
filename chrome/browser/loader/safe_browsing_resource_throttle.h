@@ -14,7 +14,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
-#include "components/safe_browsing/base_safe_browsing_resource_throttle.h"
+#include "components/safe_browsing/base_resource_throttle.h"
 #include "components/safe_browsing/base_ui_manager.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
@@ -31,16 +31,16 @@ class URLRequest;
 }
 
 namespace safe_browsing {
-class BaseSafeBrowsingUIManager;
+class BaseUIManager;
 }
 
-// SafeBrowsingResourceThrottle functions as BaseSafeBrowsingResourceThrottle,
-// but dispatches to either the local or remote SafeBrowsingDatabaseManager,
-// depending on if running on desktop or mobile. It also has its own chrome-
-// specific prerender check of redirect URLs inside
-// StartDisplayingBlockingPage().
+// SafeBrowsingResourceThrottle functions as its base class
+// safe_browsing::BaseResourceThrottle, but dispatches to either the local or
+// remote SafeBrowsingDatabaseManager, depending on if running on desktop or
+// mobile. It also has its own chrome-specific prerender check of redirect URLs
+// inside StartDisplayingBlockingPage().
 //
-// See also BaseSafeBrowsingResourceThrottle for details on how the safe
+// See also safe_browsing::BaseResourceThrottle for details on how the safe
 // browsing check occurs.
 //
 // On desktop (ifdef SAFE_BROWSING_DB_LOCAL)
@@ -62,7 +62,8 @@ class BaseSafeBrowsingUIManager;
 // latency -- there no synchronous pass.  This parallelism helps
 // performance.  Redirects are handled the same way as desktop so they
 // always defer.
-class SafeBrowsingResourceThrottle : public BaseSafeBrowsingResourceThrottle {
+class SafeBrowsingResourceThrottle
+    : public safe_browsing::BaseResourceThrottle {
  public:
   // Will construct a SafeBrowsingResourceThrottle, or return NULL
   // if on Android and not in the field trial.
@@ -91,8 +92,8 @@ class SafeBrowsingResourceThrottle : public BaseSafeBrowsingResourceThrottle {
   // Starts displaying the safe browsing interstitial page if it's not
   // prerendering. Called on the UI thread.
   static void StartDisplayingBlockingPage(
-      const base::WeakPtr<BaseSafeBrowsingResourceThrottle>& throttle,
-      scoped_refptr<safe_browsing::BaseSafeBrowsingUIManager> ui_manager,
+      const base::WeakPtr<safe_browsing::BaseResourceThrottle>& throttle,
+      scoped_refptr<safe_browsing::BaseUIManager> ui_manager,
       const security_interstitials::UnsafeResource& resource);
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingResourceThrottle);

@@ -10,6 +10,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/ping_manager.h"
@@ -18,8 +20,8 @@
 #include "chrome/browser/safe_browsing/threat_details.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing_db/metadata.pb.h"
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
@@ -38,23 +40,6 @@ using content::WebContents;
 using safe_browsing::HitReport;
 using safe_browsing::SBThreatType;
 
-namespace {
-
-// Returns the URL that should be used in a WhitelistUrlSet for the given
-// |resource|.
-GURL GetMainFrameWhitelistUrlForResource(
-    const security_interstitials::UnsafeResource& resource) {
-  if (resource.is_subresource) {
-    NavigationEntry* entry = resource.GetNavigationEntryForResource();
-    if (!entry)
-      return GURL();
-    return entry->GetURL().GetWithEmptyPath();
-  }
-  return resource.url.GetWithEmptyPath();
-}
-
-}  // namespace
-
 namespace safe_browsing {
 
 SafeBrowsingUIManager::SafeBrowsingUIManager(
@@ -70,10 +55,6 @@ void SafeBrowsingUIManager::StopOnIOThread(bool shutdown) {
     sb_service_ = NULL;
 }
 
-void SafeBrowsingUIManager::LogPauseDelay(base::TimeDelta time) {
-  UMA_HISTOGRAM_LONG_TIMES("SB2.Delay", time);
-}
-
 void SafeBrowsingUIManager::DisplayBlockingPage(
     const UnsafeResource& resource) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -83,7 +64,6 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
     // applied to malware sites tagged as "landing sites" (see "Types of
     // Malware sites" under
     // https://developers.google.com/safe-browsing/developers_guide_v3#UserWarnings).
-    MalwarePatternType proto;
     if (resource.threat_type == SB_THREAT_TYPE_URL_UNWANTED ||
         (resource.threat_type == SB_THREAT_TYPE_URL_MALWARE &&
          resource.threat_metadata.threat_pattern_type ==
@@ -213,6 +193,34 @@ void SafeBrowsingUIManager::ReportPermissionAction(
 void SafeBrowsingUIManager::CreateWhitelistForTesting(
     content::WebContents* web_contents) {
   EnsureWhitelistCreated(web_contents);
+}
+
+void SafeBrowsingUIManager::AddObserver(Observer* observer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  observer_list_.AddObserver(observer);
+}
+
+void SafeBrowsingUIManager::RemoveObserver(Observer* observer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  observer_list_.RemoveObserver(observer);
+}
+
+const std::string SafeBrowsingUIManager::app_locale() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return g_browser_process->GetApplicationLocale();
+}
+
+history::HistoryService* SafeBrowsingUIManager::history_service(
+    content::WebContents* web_contents) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return HistoryServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+      ServiceAccessType::EXPLICIT_ACCESS);
+}
+
+const GURL SafeBrowsingUIManager::default_safe_page() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return GURL(chrome::kChromeUINewTabURL);
 }
 
 void SafeBrowsingUIManager::ReportPermissionActionOnIOThread(

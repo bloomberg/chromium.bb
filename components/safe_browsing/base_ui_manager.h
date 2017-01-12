@@ -9,11 +9,8 @@
 #include <vector>
 
 #include "base/bind_helpers.h"
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/observer_list.h"
-#include "base/supports_user_data.h"
 #include "base/time/time.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
 
@@ -24,33 +21,19 @@ class NavigationEntry;
 class WebContents;
 }  // namespace content
 
+namespace history {
+class HistoryService;
+}  // namespace history
+
 namespace safe_browsing {
 
 // Construction needs to happen on the main thread.
-class BaseSafeBrowsingUIManager
-    : public base::RefCountedThreadSafe<BaseSafeBrowsingUIManager> {
+class BaseUIManager
+    : public base::RefCountedThreadSafe<BaseUIManager> {
  public:
   typedef security_interstitials::UnsafeResource UnsafeResource;
 
-  // Observer class can be used to get notified when a SafeBrowsing hit
-  // was found.
-  class Observer {
-   public:
-    // The |resource| was classified as unsafe by SafeBrowsing, and is
-    // not whitelisted.
-    // The |resource| must not be accessed after OnSafeBrowsingHit returns.
-    // This method will be called on the UI thread.
-    virtual void OnSafeBrowsingHit(const UnsafeResource& resource) = 0;
-
-   protected:
-    Observer() {}
-    virtual ~Observer() {}
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Observer);
-  };
-
-  BaseSafeBrowsingUIManager();
+  BaseUIManager();
 
   // Called to stop or shutdown operations on the io_thread. This may be called
   // multiple times during the life of the UIManager. Should be called
@@ -116,12 +99,17 @@ class BaseSafeBrowsingUIManager
                                   content::WebContents* web_contents,
                                   const GURL& main_frame_url);
 
-  // Add and remove observers.  These methods must be invoked on the UI thread.
-  virtual void AddObserver(Observer* observer);
-  virtual void RemoveObserver(Observer* remove);
+  virtual const std::string app_locale() const;
+
+  virtual history::HistoryService* history_service(
+      content::WebContents* web_contents);
+
+  // The default safe page when there is no entry in the history to go back to.
+  // e.g. about::blank page, or chrome's new tab page.
+  virtual const GURL default_safe_page() const;
 
  protected:
-  virtual ~BaseSafeBrowsingUIManager();
+  virtual ~BaseUIManager();
 
   // Updates the whitelist URL set for |web_contents|. Called on the UI thread.
   void AddToWhitelistUrlSet(const GURL& whitelist_url,
@@ -141,12 +129,15 @@ class BaseSafeBrowsingUIManager
   // Ensures that |web_contents| has its whitelist set in its userdata
   static void EnsureWhitelistCreated(content::WebContents* web_contents);
 
-  base::ObserverList<Observer> observer_list_;
+  // Returns the URL that should be used in a WhitelistUrlSet for the given
+  // |resource|.
+  static GURL GetMainFrameWhitelistUrlForResource(
+      const security_interstitials::UnsafeResource& resource);
 
  private:
-  friend class base::RefCountedThreadSafe<BaseSafeBrowsingUIManager>;
+  friend class base::RefCountedThreadSafe<BaseUIManager>;
 
-  DISALLOW_COPY_AND_ASSIGN(BaseSafeBrowsingUIManager);
+  DISALLOW_COPY_AND_ASSIGN(BaseUIManager);
 };
 
 }  // namespace safe_browsing

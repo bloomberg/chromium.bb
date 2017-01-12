@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SAFE_BROWSING_BASE_SAFE_BROWSING_RESOURCE_THROTTLE_H_
-#define COMPONENTS_SAFE_BROWSING_BASE_SAFE_BROWSING_RESOURCE_THROTTLE_H_
+#ifndef COMPONENTS_SAFE_BROWSING_BASE_RESOURCE_THROTTLE_H_
+#define COMPONENTS_SAFE_BROWSING_BASE_RESOURCE_THROTTLE_H_
 
 #include <set>
 #include <string>
@@ -30,7 +30,9 @@ namespace net {
 class URLRequest;
 }
 
-// BaseSafeBrowsingResourceThrottle checks that URLs are "safe" before
+namespace safe_browsing {
+
+// BaseResourceThrottle checks that URLs are "safe" before
 // navigating to them. To be considered "safe", a URL must not appear in the
 // malware/phishing blacklists (see SafeBrowsingService for details).
 //
@@ -45,19 +47,19 @@ class URLRequest;
 // Note: The ResourceThrottle interface is called in this order:
 // WillStartRequest once, WillRedirectRequest zero or more times, and then
 // WillProcessReponse once.
-class BaseSafeBrowsingResourceThrottle
+class BaseResourceThrottle
     : public content::ResourceThrottle,
-      public safe_browsing::SafeBrowsingDatabaseManager::Client,
-      public base::SupportsWeakPtr<BaseSafeBrowsingResourceThrottle> {
+      public SafeBrowsingDatabaseManager::Client,
+      public base::SupportsWeakPtr<BaseResourceThrottle> {
  public:
-  // Construct a BaseSafeBrowsingResourceThrottle, or return nullptr if we
+  // Construct a BaseResourceThrottle, or return nullptr if we
   // cannot access the safe browsing API on Android
-  static BaseSafeBrowsingResourceThrottle* MaybeCreate(
+  static BaseResourceThrottle* MaybeCreate(
       net::URLRequest* request,
       content::ResourceType resource_type,
-      scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>
+      scoped_refptr<SafeBrowsingDatabaseManager>
           database_manager,
-      scoped_refptr<safe_browsing::BaseSafeBrowsingUIManager> ui_manager);
+      scoped_refptr<BaseUIManager> ui_manager);
 
   // content::ResourceThrottle implementation (called on IO thread):
   void WillStartRequest(bool* defer) override;
@@ -71,18 +73,18 @@ class BaseSafeBrowsingResourceThrottle
   // SafeBrowsingDatabaseManager::Client implementation (called on IO thread):
   void OnCheckBrowseUrlResult(
       const GURL& url,
-      safe_browsing::SBThreatType threat_type,
-      const safe_browsing::ThreatMetadata& metadata) override;
+      SBThreatType threat_type,
+      const ThreatMetadata& metadata) override;
 
  protected:
-  BaseSafeBrowsingResourceThrottle(
+  BaseResourceThrottle(
       const net::URLRequest* request,
       content::ResourceType resource_type,
-      scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>
+      scoped_refptr<SafeBrowsingDatabaseManager>
           database_manager,
-      scoped_refptr<safe_browsing::BaseSafeBrowsingUIManager> ui_manager);
+      scoped_refptr<BaseUIManager> ui_manager);
 
-  ~BaseSafeBrowsingResourceThrottle() override;
+  ~BaseResourceThrottle() override;
 
   // Does nothing in the base class. Override this to destroy prerender contents
   // in chrome.
@@ -93,7 +95,7 @@ class BaseSafeBrowsingResourceThrottle
   virtual void StartDisplayingBlockingPageHelper(
       security_interstitials::UnsafeResource resource);
 
-  scoped_refptr<safe_browsing::BaseSafeBrowsingUIManager> ui_manager_;
+  scoped_refptr<BaseUIManager> ui_manager_;
 
  private:
   // Describes what phase of the check a throttle is in.
@@ -131,8 +133,8 @@ class BaseSafeBrowsingResourceThrottle
   // Starts displaying the safe browsing interstitial page. Called on the UI
   // thread.
   static void StartDisplayingBlockingPage(
-      const base::WeakPtr<BaseSafeBrowsingResourceThrottle>& throttle,
-      scoped_refptr<safe_browsing::BaseSafeBrowsingUIManager> ui_manager,
+      const base::WeakPtr<BaseResourceThrottle>& throttle,
+      scoped_refptr<BaseUIManager> ui_manager,
       const security_interstitials::UnsafeResource& resource);
 
   void ResumeRequest();
@@ -164,7 +166,7 @@ class BaseSafeBrowsingResourceThrottle
   GURL unchecked_redirect_url_;
   GURL url_being_checked_;
 
-  scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> database_manager_;
+  scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
   const net::URLRequest* request_;
 
   State state_;
@@ -178,7 +180,9 @@ class BaseSafeBrowsingResourceThrottle
   // URLs that timed out waiting for a SafeBrowsing reputation check.
   std::set<GURL> timed_out_urls_;
 
-  DISALLOW_COPY_AND_ASSIGN(BaseSafeBrowsingResourceThrottle);
+  DISALLOW_COPY_AND_ASSIGN(BaseResourceThrottle);
 };
 
-#endif  // COMPONENTS_SAFE_BROWSING_BASE_SAFE_BROWSING_RESOURCE_THROTTLE_H_
+}  // namespace safe_browsing
+
+#endif  // COMPONENTS_SAFE_BROWSING_BASE_RESOURCE_THROTTLE_H_

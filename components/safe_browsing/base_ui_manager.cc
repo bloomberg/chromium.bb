@@ -6,7 +6,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/i18n/rtl.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/supports_user_data.h"
+#include "components/safe_browsing/base_blocking_page.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -92,17 +95,17 @@ WhitelistUrlSet* GetOrCreateWhitelist(WebContents* web_contents) {
 
 namespace safe_browsing {
 
-BaseSafeBrowsingUIManager::BaseSafeBrowsingUIManager() {}
+BaseUIManager::BaseUIManager() {}
 
-void BaseSafeBrowsingUIManager::StopOnIOThread(bool shutdown) {
+void BaseUIManager::StopOnIOThread(bool shutdown) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // TODO(ntfschr): implement this once SafeBrowsingService is componentized
   return;
 }
 
-BaseSafeBrowsingUIManager::~BaseSafeBrowsingUIManager() {}
+BaseUIManager::~BaseUIManager() {}
 
-bool BaseSafeBrowsingUIManager::IsWhitelisted(const UnsafeResource& resource) {
+bool BaseUIManager::IsWhitelisted(const UnsafeResource& resource) {
   NavigationEntry* entry = nullptr;
   if (resource.is_subresource) {
     entry = resource.GetNavigationEntryForResource();
@@ -115,7 +118,7 @@ bool BaseSafeBrowsingUIManager::IsWhitelisted(const UnsafeResource& resource) {
 
 // Check if the user has already seen and/or ignored a SB warning for this
 // WebContents and top-level domain.
-bool BaseSafeBrowsingUIManager::IsUrlWhitelistedOrPendingForWebContents(
+bool BaseUIManager::IsUrlWhitelistedOrPendingForWebContents(
     const GURL& url,
     bool is_subresource,
     NavigationEntry* entry,
@@ -141,7 +144,7 @@ bool BaseSafeBrowsingUIManager::IsUrlWhitelistedOrPendingForWebContents(
   }
 }
 
-void BaseSafeBrowsingUIManager::OnBlockingPageDone(
+void BaseUIManager::OnBlockingPageDone(
     const std::vector<UnsafeResource>& resources,
     bool proceed,
     WebContents* web_contents,
@@ -168,34 +171,81 @@ void BaseSafeBrowsingUIManager::OnBlockingPageDone(
   }
 }
 
-void BaseSafeBrowsingUIManager::DisplayBlockingPage(
+void BaseUIManager::DisplayBlockingPage(
     const UnsafeResource& resource) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TODO(ntfschr): implement this once SafeBrowsingBlockingPage is
-  // componentized
-  return;
+  if (resource.is_subresource && !resource.is_subframe) {
+    // Sites tagged as serving Unwanted Software should only show a warning for
+    // main-frame or sub-frame resource. Similar warning restrictions should be
+    // applied to malware sites tagged as "landing sites" (see "Types of
+    // Malware sites" under
+    // https://developers.google.com/safe-browsing/developers_guide_v3#UserWarnings).
+    if (resource.threat_type == SB_THREAT_TYPE_URL_UNWANTED ||
+        (resource.threat_type == SB_THREAT_TYPE_URL_MALWARE &&
+         resource.threat_metadata.threat_pattern_type ==
+             ThreatPatternType::MALWARE_LANDING)) {
+      if (!resource.callback.is_null()) {
+        DCHECK(resource.callback_thread);
+        resource.callback_thread->PostTask(FROM_HERE,
+                                           base::Bind(resource.callback, true));
+      }
+
+      return;
+    }
+  }
+
+  // The tab might have been closed. If it was closed, just act as if "Don't
+  // Proceed" had been chosen.
+  WebContents* web_contents = resource.web_contents_getter.Run();
+  if (!web_contents) {
+    OnBlockingPageDone(std::vector<UnsafeResource>{resource},
+                       false /* proceed */,
+                       web_contents,
+                       GetMainFrameWhitelistUrlForResource(resource));
+    return;
+  }
+
+  // Check if the user has already ignored a SB warning for the same WebContents
+  // and top-level domain.
+  if (IsWhitelisted(resource)) {
+    if (!resource.callback.is_null()) {
+      DCHECK(resource.callback_thread);
+      resource.callback_thread->PostTask(FROM_HERE,
+                                         base::Bind(resource.callback, true));
+    }
+    return;
+  }
+
+  // BaseUIManager does not send SafeBrowsingHitReport. Subclasses should
+  // implement the reporting logic themselves if needed.
+  AddToWhitelistUrlSet(GetMainFrameWhitelistUrlForResource(resource),
+                       resource.web_contents_getter.Run(),
+                       true /* A decision is now pending */,
+                       resource.threat_type);
+  BaseBlockingPage::ShowBlockingPage(this, resource);
 }
 
-void BaseSafeBrowsingUIManager::EnsureWhitelistCreated(
+void BaseUIManager::EnsureWhitelistCreated(
     WebContents* web_contents) {
   GetOrCreateWhitelist(web_contents);
 }
 
-void BaseSafeBrowsingUIManager::LogPauseDelay(base::TimeDelta time) {
+void BaseUIManager::LogPauseDelay(base::TimeDelta time) {
+  UMA_HISTOGRAM_LONG_TIMES("SB2.Delay", time);
   return;
 }
 
 // A safebrowsing hit is sent after a blocking page for malware/phishing
 // or after the warning dialog for download urls, only for
 // UMA || extended_reporting users.
-void BaseSafeBrowsingUIManager::MaybeReportSafeBrowsingHit(
+void BaseUIManager::MaybeReportSafeBrowsingHit(
     const HitReport& hit_report) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TODO(ntfschr): implement this once we support reporting in WebView
   return;
 }
 
-void BaseSafeBrowsingUIManager::ReportSafeBrowsingHitOnIOThread(
+void BaseUIManager::ReportSafeBrowsingHitOnIOThread(
     const HitReport& hit_report) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // TODO(ntfschr): implement this once we support reporting in WebView
@@ -204,7 +254,7 @@ void BaseSafeBrowsingUIManager::ReportSafeBrowsingHitOnIOThread(
 
 // If the user had opted-in to send ThreatDetails, this gets called
 // when the report is ready.
-void BaseSafeBrowsingUIManager::SendSerializedThreatDetails(
+void BaseUIManager::SendSerializedThreatDetails(
     const std::string& serialized) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // TODO(ntfschr): implement this once we support reporting in WebView
@@ -214,10 +264,10 @@ void BaseSafeBrowsingUIManager::SendSerializedThreatDetails(
 // Record this domain in the given WebContents as either whitelisted or
 // pending whitelisting (if an interstitial is currently displayed). If an
 // existing WhitelistUrlSet does not yet exist, create a new WhitelistUrlSet.
-void BaseSafeBrowsingUIManager::AddToWhitelistUrlSet(const GURL& whitelist_url,
-                                                     WebContents* web_contents,
-                                                     bool pending,
-                                                     SBThreatType threat_type) {
+void BaseUIManager::AddToWhitelistUrlSet(const GURL& whitelist_url,
+                                         WebContents* web_contents,
+                                         bool pending,
+                                         SBThreatType threat_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // A WebContents might not exist if the tab has been closed.
@@ -239,17 +289,21 @@ void BaseSafeBrowsingUIManager::AddToWhitelistUrlSet(const GURL& whitelist_url,
   web_contents->DidChangeVisibleSecurityState();
 }
 
-void BaseSafeBrowsingUIManager::AddObserver(Observer* observer) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  observer_list_.AddObserver(observer);
+const std::string BaseUIManager::app_locale() const {
+  return base::i18n::GetConfiguredLocale();
 }
 
-void BaseSafeBrowsingUIManager::RemoveObserver(Observer* observer) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  observer_list_.RemoveObserver(observer);
+history::HistoryService* BaseUIManager::history_service(
+    content::WebContents* web_contents) {
+  // TODO(jialiul): figure out how to get HistoryService from webview.
+  return nullptr;
 }
 
-void BaseSafeBrowsingUIManager::RemoveFromPendingWhitelistUrlSet(
+const GURL BaseUIManager::default_safe_page() const {
+  return GURL(url::kAboutBlankURL);
+}
+
+void BaseUIManager::RemoveFromPendingWhitelistUrlSet(
     const GURL& whitelist_url,
     WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -284,6 +338,18 @@ void BaseSafeBrowsingUIManager::RemoveFromPendingWhitelistUrlSet(
 
   // Notify security UI that security state has changed.
   web_contents->DidChangeVisibleSecurityState();
+}
+
+// static
+GURL BaseUIManager::GetMainFrameWhitelistUrlForResource(
+    const security_interstitials::UnsafeResource& resource) {
+  if (resource.is_subresource) {
+    NavigationEntry* entry = resource.GetNavigationEntryForResource();
+    if (!entry)
+      return GURL();
+    return entry->GetURL().GetWithEmptyPath();
+  }
+  return resource.url.GetWithEmptyPath();
 }
 
 }  // namespace safe_browsing

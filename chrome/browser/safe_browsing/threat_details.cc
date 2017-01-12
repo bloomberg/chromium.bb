@@ -128,7 +128,7 @@ void ClearHttpsResource(ClientSafeBrowsingReportRequest::Resource* resource) {
 class ThreatDetailsFactoryImpl : public ThreatDetailsFactory {
  public:
   ThreatDetails* CreateThreatDetails(
-      SafeBrowsingUIManager* ui_manager,
+      BaseUIManager* ui_manager,
       WebContents* web_contents,
       const security_interstitials::UnsafeResource& unsafe_resource) override {
     return new ThreatDetails(ui_manager, web_contents, unsafe_resource);
@@ -148,7 +148,7 @@ static base::LazyInstance<ThreatDetailsFactoryImpl>
 // Create a ThreatDetails for the given tab.
 /* static */
 ThreatDetails* ThreatDetails::NewThreatDetails(
-    SafeBrowsingUIManager* ui_manager,
+    BaseUIManager* ui_manager,
     WebContents* web_contents,
     const UnsafeResource& resource) {
   // Set up the factory if this has not been done already (tests do that
@@ -159,7 +159,7 @@ ThreatDetails* ThreatDetails::NewThreatDetails(
 }
 
 // Create a ThreatDetails for the given tab. Runs in the UI thread.
-ThreatDetails::ThreatDetails(SafeBrowsingUIManager* ui_manager,
+ThreatDetails::ThreatDetails(BaseUIManager* ui_manager,
                              content::WebContents* web_contents,
                              const UnsafeResource& resource)
     : content::WebContentsObserver(web_contents),

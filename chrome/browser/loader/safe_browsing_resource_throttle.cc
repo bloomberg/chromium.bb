@@ -23,7 +23,7 @@
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
 
-using safe_browsing::BaseSafeBrowsingUIManager;
+using safe_browsing::BaseUIManager;
 
 namespace {
 
@@ -57,7 +57,7 @@ SafeBrowsingResourceThrottle::SafeBrowsingResourceThrottle(
     const net::URLRequest* request,
     content::ResourceType resource_type,
     safe_browsing::SafeBrowsingService* sb_service)
-    : BaseSafeBrowsingResourceThrottle(
+    : safe_browsing::BaseResourceThrottle(
           request,
           resource_type,
           safe_browsing::V4FeatureList::IsV4HybridEnabled()
@@ -90,8 +90,8 @@ void SafeBrowsingResourceThrottle::StartDisplayingBlockingPageHelper(
 
 // Static
 void SafeBrowsingResourceThrottle::StartDisplayingBlockingPage(
-    const base::WeakPtr<BaseSafeBrowsingResourceThrottle>& throttle,
-    scoped_refptr<BaseSafeBrowsingUIManager> ui_manager,
+    const base::WeakPtr<safe_browsing::BaseResourceThrottle>& throttle,
+    scoped_refptr<BaseUIManager> ui_manager,
     const security_interstitials::UnsafeResource& resource) {
   content::WebContents* web_contents = resource.web_contents_getter.Run();
   if (web_contents) {

@@ -334,14 +334,16 @@ class SecurityStateWebContentsDelegate : public content::WebContentsDelegate {
 // A test blocking page that does not create windows.
 class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
  public:
-  TestSafeBrowsingBlockingPage(SafeBrowsingUIManager* manager,
+  TestSafeBrowsingBlockingPage(BaseUIManager* manager,
                                content::WebContents* web_contents,
                                const GURL& main_frame_url,
                                const UnsafeResourceList& unsafe_resources)
-      : SafeBrowsingBlockingPage(manager,
-                                 web_contents,
-                                 main_frame_url,
-                                 unsafe_resources) {
+      : SafeBrowsingBlockingPage(
+            manager,
+            web_contents,
+            main_frame_url,
+            unsafe_resources,
+            BaseBlockingPage::CreateDefaultDisplayOptions(unsafe_resources)) {
     // Don't delay details at all for the unittest.
     threat_details_proceed_delay_ms_ = 0;
     DontCreateViewForTesting();
@@ -356,7 +358,7 @@ class TestSafeBrowsingBlockingPageFactory
   ~TestSafeBrowsingBlockingPageFactory() override {}
 
   SafeBrowsingBlockingPage* CreateSafeBrowsingPage(
-      SafeBrowsingUIManager* delegate,
+      BaseUIManager* delegate,
       content::WebContents* web_contents,
       const GURL& main_frame_url,
       const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources)

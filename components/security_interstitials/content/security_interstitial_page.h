@@ -27,9 +27,12 @@ class SecurityInterstitialControllerClient;
 
 class SecurityInterstitialPage : public content::InterstitialPageDelegate {
  public:
+  // |request_url| is the URL which triggered the interstitial page. For
+  // SafeBrowsing interstitials, it can be a main frame or a subresource URL.
+  // For SSL interstitials, it's always the main frame URL.
   SecurityInterstitialPage(
       content::WebContents* web_contents,
-      const GURL& url,
+      const GURL& request_url,
       std::unique_ptr<SecurityInterstitialControllerClient> controller);
   ~SecurityInterstitialPage() override;
 
