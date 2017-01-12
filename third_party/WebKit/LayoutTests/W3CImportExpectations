@@ -728,7 +728,6 @@ imported/wpt/domxpath/002.html [ Skip ]
 # This test depends on a file xml_xpath_tests.xml, which is too large
 # for Rietveld to handle now, so it's not currently imported.
 crbug.com/676491 imported/wpt/domxpath/xml_xpath_runner.html [ Skip ]
-crbug.com/676491 imported/wpt/domxpath/xml_xpath_tests.xml [ Skip ]
 
 # Manual tests that fail as TIMEOUT or NOTRUN. Consider adding wpt_automation.
 imported/wpt/FileAPI/BlobURL/test1-manual.html [ Skip ]

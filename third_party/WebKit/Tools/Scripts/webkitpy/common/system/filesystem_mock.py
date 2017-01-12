@@ -124,6 +124,11 @@ class MockFileSystem(object):
     def exists(self, path):
         return self.isfile(path) or self.isdir(path)
 
+    def getsize(self, path):
+        if not self.exists(path):
+            self._raise_not_found(path)
+        return len(self.read_binary_file(path))
+
     def files_under(self, path, dirs_to_skip=None, file_filter=None):
         dirs_to_skip = dirs_to_skip or []
 

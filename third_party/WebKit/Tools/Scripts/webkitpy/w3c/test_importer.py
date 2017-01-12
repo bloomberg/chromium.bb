@@ -82,6 +82,7 @@ from webkitpy.w3c.test_converter import convert_for_webkit
 # This limit is here because the Windows builders cannot create paths that are
 # longer than the Windows max path length (260). See http://crbug.com/609871.
 MAX_PATH_LENGTH = 125
+MAX_FILE_SIZE_BYTES = 800 * 1024
 
 
 _log = logging.getLogger(__name__)
@@ -374,7 +375,8 @@ class TestImporter(object):
             dest_dir: Path to the directory where the file should be copied.
 
         Returns:
-            The path to the new file, relative to the Blink root (//third_party/WebKit).
+            The path to the new file, relative to the Blink root,
+            or None if the file should not be copied.
         """
         source_path = self.filesystem.normpath(file_to_copy['src'])
         dest_path = self.filesystem.join(dest_dir, file_to_copy['dest'])
@@ -385,6 +387,10 @@ class TestImporter(object):
 
         if not self.filesystem.exists(source_path):
             _log.error('%s not found. Possible error in the test.', source_path)
+            return None
+
+        if self.filesystem.getsize(source_path) > MAX_FILE_SIZE_BYTES:
+            _log.error('%s is too large (%d bytes)', source_path, self.filesystem.getsize(source_path))
             return None
 
         if file_to_copy.get('reference_support_info'):

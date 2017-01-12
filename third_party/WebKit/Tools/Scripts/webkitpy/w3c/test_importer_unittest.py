@@ -32,6 +32,7 @@ from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.executive_mock import MockExecutive, ScriptError
 from webkitpy.common.system.filesystem_mock import MockFileSystem
 from webkitpy.w3c.test_importer import TestImporter
+from webkitpy.common.system.log_testing import LoggingTestCase
 
 
 FAKE_SOURCE_REPO_DIR = '/blink'
@@ -49,7 +50,7 @@ FAKE_FILES = {
 }
 
 
-class TestImporterTest(unittest.TestCase):
+class TestImporterTest(LoggingTestCase):
 
     @staticmethod
     def options(**kwargs):
@@ -164,6 +165,29 @@ class TestImporterTest(unittest.TestCase):
         importer = TestImporter(host, FAKE_SOURCE_REPO_DIR, self.options())
         importer.find_importable_tests()
         self.assertEqual(importer.import_list, [])
+
+    def test_large_files_are_skipped(self):
+        host = MockHost()
+        host.filesystem = MockFileSystem(files={
+            '/blink/w3c/dir1/my-large-test.html': '...',
+            '/blink/w3c/dir1/my-small-test.html': '...',
+            '/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations': '',
+            '/mock-checkout/third_party/WebKit/Source/core/css/CSSProperties.in': '',
+        })
+
+        def getsize(path):
+            if 'large' in path:
+                return 1000000
+            return 100
+        host.filesystem.getsize = getsize
+
+        importer = TestImporter(host, FAKE_SOURCE_REPO_DIR, self.options())
+        importer.do_import()
+        self.assertIn('ERROR: /blink/w3c/dir1/my-large-test.html is too large (1000000 bytes)\n', self.logMessages())
+        self.assertTrue(host.filesystem.exists(
+            '/mock-checkout/third_party/WebKit/LayoutTests/w3c/blink/w3c/dir1/my-small-test.html'))
+        self.assertFalse(host.filesystem.exists(
+            '/mock-checkout/third_party/WebKit/LayoutTests/w3c/blink/w3c/dir1/my-large-test.html'))
 
     def test_should_try_to_convert_positive_cases(self):
         self.assertTrue(TestImporter.should_try_to_convert({}, 'foo.css', 'LayoutTests/imported/csswg-test/x'))
