@@ -1874,6 +1874,40 @@ static int conditional_skipintra(PREDICTION_MODE mode,
   return 0;
 }
 
+// Model based RD estimation for luma intra blocks.
+static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
+                               BLOCK_SIZE bsize, const int *bmode_costs) {
+  MACROBLOCKD *const xd = &x->e_mbd;
+  MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+  RD_STATS this_rd_stats;
+  int row, col;
+  int64_t temp_sse, this_rd;
+  const TX_SIZE tx_size = tx_size_from_tx_mode(bsize, cpi->common.tx_mode, 0);
+  const int stepr = tx_size_high_unit[tx_size];
+  const int stepc = tx_size_wide_unit[tx_size];
+  const int max_blocks_wide = max_block_wide(xd, bsize, 0);
+  const int max_blocks_high = max_block_high(xd, bsize, 0);
+  mbmi->tx_size = tx_size;
+  // Prediction.
+  for (row = 0; row < max_blocks_high; row += stepr) {
+    for (col = 0; col < max_blocks_wide; col += stepc) {
+      struct macroblockd_plane *const pd = &xd->plane[0];
+      uint8_t *dst =
+          &pd->dst.buf[(row * pd->dst.stride + col) << tx_size_wide_log2[0]];
+      av1_predict_intra_block(xd, pd->width, pd->height, tx_size, mbmi->mode,
+                              dst, pd->dst.stride, dst, pd->dst.stride, col,
+                              row, 0);
+    }
+  }
+  // RD estimation.
+  model_rd_for_sb(cpi, bsize, x, xd, 0, 0, &this_rd_stats.rate,
+                  &this_rd_stats.dist, &this_rd_stats.skip, &temp_sse);
+  this_rd =
+      RDCOST(x->rdmult, x->rddiv, this_rd_stats.rate + bmode_costs[mbmi->mode],
+             this_rd_stats.dist);
+  return this_rd;
+}
+
 #if CONFIG_PALETTE
 static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
                                      BLOCK_SIZE bsize, int palette_ctx,
@@ -3011,8 +3045,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   MODE_INFO *const mic = xd->mi[0];
   MB_MODE_INFO *const mbmi = &mic->mbmi;
   MB_MODE_INFO best_mbmi = *mbmi;
-  int this_rate, this_rate_tokenonly, s;
-  int64_t this_distortion, this_rd;
+  int64_t best_model_rd = INT64_MAX;
 #if CONFIG_EXT_INTRA
   const int rows = block_size_high[bsize];
   const int cols = block_size_wide[bsize];
@@ -3081,6 +3114,8 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   /* Y Search for intra prediction mode */
   for (mode_idx = DC_PRED; mode_idx <= FINAL_MODE_SEARCH; ++mode_idx) {
     RD_STATS this_rd_stats;
+    int this_rate, this_rate_tokenonly, s;
+    int64_t this_distortion, this_rd, this_model_rd;
     if (mode_idx == FINAL_MODE_SEARCH) {
       if (x->use_default_intra_tx_type == 0) break;
       mbmi->mode = best_mbmi.mode;
@@ -3092,6 +3127,14 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     od_encode_rollback(&x->daala_enc, &pre_buf);
 #endif
 #if CONFIG_EXT_INTRA
+    mbmi->angle_delta[0] = 0;
+#endif  // CONFIG_EXT_INTRA
+    this_model_rd = intra_model_yrd(cpi, x, bsize, bmode_costs);
+    if (best_model_rd != INT64_MAX &&
+        this_model_rd > best_model_rd + (best_model_rd >> 1))
+      continue;
+    if (this_model_rd < best_model_rd) best_model_rd = this_model_rd;
+#if CONFIG_EXT_INTRA
     is_directional_mode = av1_is_directional_mode(mbmi->mode, bsize);
     if (is_directional_mode && directional_mode_skip_mask[mbmi->mode]) continue;
     if (is_directional_mode) {
@@ -3100,7 +3143,6 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
           rd_pick_intra_angle_sby(cpi, x, &this_rate, &this_rd_stats, bsize,
                                   bmode_costs[mbmi->mode], best_rd);
     } else {
-      mbmi->angle_delta[0] = 0;
       super_block_yrd(cpi, x, &this_rd_stats, bsize, best_rd);
     }
 #else
