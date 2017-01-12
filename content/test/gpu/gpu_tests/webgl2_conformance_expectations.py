@@ -663,6 +663,50 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/rendering/blitframebuffer-outside-readbuffer.html',
         ['linux', 'intel', 'opengl'], bug=680276)
 
+    # Linux Intel HD 530
+    self.Fail('conformance/extensions/webgl-compressed-texture-astc.html',
+        ['linux', 'intel'], bug=680720)
+    self.Fail('conformance2/rendering/blitframebuffer-filter-outofbounds.html',
+        ['linux', 'intel'], bug=680720)
+    self.Fail('conformance2/rendering/blitframebuffer-filter-srgb.html',
+        ['linux', 'intel', 'no_angle'], bug=680720)
+    self.Fail('conformance2/rendering/blitframebuffer-outside-readbuffer.html',
+        ['linux', 'intel', 'no_angle'], bug=680720)
+
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_04.html',
+        ['linux', 'intel'], bug=680720)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_08.html',
+        ['linux', 'intel'], bug=680720)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_10.html',
+        ['linux', 'intel'], bug=680720)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_11.html',
+        ['linux', 'intel'], bug=680720)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_12.html',
+        ['linux', 'intel'], bug=680720)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_13.html',
+        ['linux', 'intel'], bug=680720)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_18.html',
+        ['linux', 'intel'], bug=680720)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_25.html',
+        ['linux', 'intel'], bug=680720)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_28.html',
+        ['linux', 'intel'], bug=680720)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_29.html',
+        ['linux', 'intel'], bug=680720)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_30.html',
+        ['linux', 'intel'], bug=680720)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_31.html',
+        ['linux', 'intel'], bug=680720)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_32.html',
+        ['linux', 'intel'], bug=680720)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_33.html',
+        ['linux', 'intel'], bug=680720)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_34.html',
+        ['linux', 'intel'], bug=680720)
+    self.Fail('deqp/functional/gles3/framebufferblit/' +
+        'default_framebuffer_00.html',
+        ['linux', 'intel'], bug=680720)
+
     # Linux AMD only.
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
     self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
