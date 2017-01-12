@@ -1734,6 +1734,52 @@ static size_t GetMallocUsage() {
 }  // namespace
 #endif
 
+void RenderThreadImpl::GetRendererMemoryMetrics(
+    RendererMemoryMetrics* memory_metrics) const {
+  DCHECK(memory_metrics);
+
+  blink::WebMemoryStatistics blink_stats = blink::WebMemoryStatistics::Get();
+  memory_metrics->partition_alloc_kb =
+      blink_stats.partitionAllocTotalAllocatedBytes / 1024;
+  memory_metrics->blink_gc_kb = blink_stats.blinkGCTotalAllocatedBytes / 1024;
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  struct mallinfo minfo = mallinfo();
+#if defined(USE_TCMALLOC)
+  size_t malloc_usage = minfo.uordblks;
+#else
+  size_t malloc_usage = minfo.hblkhd + minfo.arena;
+#endif
+#else
+  size_t malloc_usage = GetMallocUsage();
+#endif
+  memory_metrics->malloc_mb = malloc_usage / 1024 / 1024;
+
+  discardable_memory::ClientDiscardableSharedMemoryManager::Statistics
+      discardable_stats = discardable_shared_memory_manager_->GetStatistics();
+  size_t discardable_usage =
+      discardable_stats.total_size - discardable_stats.freelist_size;
+  memory_metrics->discardable_kb = discardable_usage / 1024;
+
+  size_t v8_usage = 0;
+  if (v8::Isolate* isolate = blink::mainThreadIsolate()) {
+    v8::HeapStatistics v8_heap_statistics;
+    isolate->GetHeapStatistics(&v8_heap_statistics);
+    v8_usage = v8_heap_statistics.total_heap_size();
+  }
+  // TODO(tasak): Currently only memory usage of mainThreadIsolate() is
+  // reported. We should collect memory usages of all isolates using
+  // memory-infra.
+  memory_metrics->v8_main_thread_isolate_mb = v8_usage / 1024 / 1024;
+  size_t total_allocated = blink_stats.partitionAllocTotalAllocatedBytes +
+                           blink_stats.blinkGCTotalAllocatedBytes +
+                           malloc_usage + v8_usage + discardable_usage;
+  memory_metrics->total_allocated_mb = total_allocated / 1024 / 1024;
+  memory_metrics->non_discardable_total_allocated_mb =
+      (total_allocated - discardable_usage) / 1024 / 1024;
+  memory_metrics->total_allocated_per_render_view_mb =
+      total_allocated / RenderView::GetRenderViewCount() / 1024 / 1024;
+}
+
 // TODO(tasak): Once it is possible to use memory-infra without tracing,
 // we should collect the metrics using memory-infra.
 // TODO(tasak): We should also report a difference between the memory usages
@@ -1745,47 +1791,20 @@ void RenderThreadImpl::RecordPurgeAndSuspendMetrics() const {
 
   // TODO(tasak): Compare memory metrics between purge-enabled renderers and
   // purge-disabled renderers (A/B testing).
-  blink::WebMemoryStatistics blink_stats = blink::WebMemoryStatistics::Get();
+  RendererMemoryMetrics memory_metrics;
+  GetRendererMemoryMetrics(&memory_metrics);
   UMA_HISTOGRAM_MEMORY_KB("PurgeAndSuspend.Memory.PartitionAllocKB",
-                          blink_stats.partitionAllocTotalAllocatedBytes / 1024);
+                          memory_metrics.partition_alloc_kb);
   UMA_HISTOGRAM_MEMORY_KB("PurgeAndSuspend.Memory.BlinkGCKB",
-                          blink_stats.blinkGCTotalAllocatedBytes / 1024);
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-  struct mallinfo minfo = mallinfo();
-#if defined(USE_TCMALLOC)
-  size_t malloc_usage = minfo.uordblks;
-#else
-  size_t malloc_usage = minfo.hblkhd + minfo.arena;
-#endif
-#else
-  size_t malloc_usage = GetMallocUsage();
-#endif
+                          memory_metrics.blink_gc_kb);
   UMA_HISTOGRAM_MEMORY_MB("PurgeAndSuspend.Memory.MallocMB",
-                          malloc_usage / 1024 / 1024);
-
-  discardable_memory::ClientDiscardableSharedMemoryManager::Statistics
-      discardable_stats = discardable_shared_memory_manager_->GetStatistics();
-  size_t discardable_usage =
-      discardable_stats.total_size - discardable_stats.freelist_size;
+                          memory_metrics.malloc_mb);
   UMA_HISTOGRAM_MEMORY_KB("PurgeAndSuspend.Memory.DiscardableKB",
-                          discardable_usage / 1024);
-
-  size_t v8_usage = 0;
-  if (v8::Isolate* isolate = blink::mainThreadIsolate()) {
-    v8::HeapStatistics v8_heap_statistics;
-    isolate->GetHeapStatistics(&v8_heap_statistics);
-    v8_usage = v8_heap_statistics.total_heap_size();
-  }
-  // TODO(tasak): Currently only memory usage of mainThreadIsolate() is
-  // reported. We should collect memory usages of all isolates using
-  // memory-infra.
+                          memory_metrics.discardable_kb);
   UMA_HISTOGRAM_MEMORY_MB("PurgeAndSuspend.Memory.V8MainThreadIsolateMB",
-                          v8_usage / 1024 / 1024);
+                          memory_metrics.v8_main_thread_isolate_mb);
   UMA_HISTOGRAM_MEMORY_MB("PurgeAndSuspend.Memory.TotalAllocatedMB",
-                          (blink_stats.partitionAllocTotalAllocatedBytes +
-                           blink_stats.blinkGCTotalAllocatedBytes +
-                           malloc_usage + v8_usage + discardable_usage) /
-                              1024 / 1024);
+                          memory_metrics.total_allocated_mb);
 }
 
 void RenderThreadImpl::OnProcessResume() {

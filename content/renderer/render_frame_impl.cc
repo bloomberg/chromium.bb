@@ -3959,6 +3959,68 @@ void RenderFrameImpl::didFinishLoad(blink::WebLocalFrame* frame) {
 
   WebDataSource* ds = frame->dataSource();
   Send(new FrameHostMsg_DidFinishLoad(routing_id_, ds->getRequest().url()));
+
+  if (RenderThreadImpl::current()) {
+    RenderThreadImpl::RendererMemoryMetrics memory_metrics;
+    RenderThreadImpl::current()->GetRendererMemoryMetrics(&memory_metrics);
+    UMA_HISTOGRAM_MEMORY_MB(
+        "Memory.Experimental.Renderer.PartitionAlloc.DidFinishLoad",
+        memory_metrics.partition_alloc_kb / 1024);
+    UMA_HISTOGRAM_MEMORY_MB(
+        "Memory.Experimental.Renderer.BlinkGC.DidFinishLoad",
+        memory_metrics.blink_gc_kb / 1024);
+    UMA_HISTOGRAM_MEMORY_MB(
+        "Memory.Experimental.Renderer.Malloc.DidFinishLoad",
+        memory_metrics.malloc_mb);
+    UMA_HISTOGRAM_MEMORY_MB(
+        "Memory.Experimental.Renderer.Discardable.DidFinishLoad",
+        memory_metrics.discardable_kb / 1024);
+    UMA_HISTOGRAM_MEMORY_MB(
+        "Memory.Experimental.Renderer.V8MainThreadIsolate.DidFinishLoad",
+        memory_metrics.v8_main_thread_isolate_mb);
+    UMA_HISTOGRAM_MEMORY_MB(
+        "Memory.Experimental.Renderer.TotalAllocated.DidFinishLoad",
+        memory_metrics.total_allocated_mb);
+    UMA_HISTOGRAM_MEMORY_MB(
+        "Memory.Experimental.Renderer.NonDiscardableTotalAllocated."
+        "DidFinishLoad",
+        memory_metrics.non_discardable_total_allocated_mb);
+    UMA_HISTOGRAM_MEMORY_MB(
+        "Memory.Experimental.Renderer.TotalAllocatedPerRenderView."
+        "DidFinishLoad",
+        memory_metrics.total_allocated_per_render_view_mb);
+    if (IsMainFrame()) {
+      UMA_HISTOGRAM_MEMORY_MB(
+          "Memory.Experimental.Renderer.PartitionAlloc."
+          "MainFrameDidFinishLoad",
+          memory_metrics.partition_alloc_kb / 1024);
+      UMA_HISTOGRAM_MEMORY_MB(
+          "Memory.Experimental.Renderer.BlinkGC.MainFrameDidFinishLoad",
+          memory_metrics.blink_gc_kb / 1024);
+      UMA_HISTOGRAM_MEMORY_MB(
+          "Memory.Experimental.Renderer.Malloc.MainFrameDidFinishLoad",
+          memory_metrics.malloc_mb);
+      UMA_HISTOGRAM_MEMORY_MB(
+          "Memory.Experimental.Renderer.Discardable.MainFrameDidFinishLoad",
+          memory_metrics.discardable_kb / 1024);
+      UMA_HISTOGRAM_MEMORY_MB(
+          "Memory.Experimental.Renderer.V8MainThreadIsolate."
+          "MainFrameDidFinishLoad",
+          memory_metrics.v8_main_thread_isolate_mb);
+      UMA_HISTOGRAM_MEMORY_MB(
+          "Memory.Experimental.Renderer.TotalAllocated."
+          "MainFrameDidFinishLoad",
+          memory_metrics.total_allocated_mb);
+      UMA_HISTOGRAM_MEMORY_MB(
+          "Memory.Experimental.Renderer.NonDiscardableTotalAllocated."
+          "MainFrameDidFinishLoad",
+          memory_metrics.non_discardable_total_allocated_mb);
+      UMA_HISTOGRAM_MEMORY_MB(
+          "Memory.Experimental.Renderer.TotalAllocatedPerRenderView."
+          "MainFrameDidFinishLoad",
+          memory_metrics.total_allocated_per_render_view_mb);
+    }
+  }
 }
 
 void RenderFrameImpl::didNavigateWithinPage(

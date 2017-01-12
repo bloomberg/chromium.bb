@@ -482,6 +482,18 @@ class CONTENT_EXPORT RenderThreadImpl
   // ChildMemoryCoordinatorDelegate implementation.
   void OnTrimMemoryImmediately() override;
 
+  struct RendererMemoryMetrics {
+    size_t partition_alloc_kb;
+    size_t blink_gc_kb;
+    size_t malloc_mb;
+    size_t discardable_kb;
+    size_t v8_main_thread_isolate_mb;
+    size_t total_allocated_mb;
+    size_t non_discardable_total_allocated_mb;
+    size_t total_allocated_per_render_view_mb;
+  };
+  void GetRendererMemoryMetrics(RendererMemoryMetrics* memory_metrics) const;
+
  protected:
   RenderThreadImpl(
       const InProcessChildThreadParams& params,
