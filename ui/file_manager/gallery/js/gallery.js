@@ -506,6 +506,7 @@ Gallery.prototype.setCurrentMode_ = function(mode) {
 
   this.container_.setAttribute('mode', this.currentMode_.getName());
   this.updateSelectionAndState_();
+  this.updateModeButtonAttribute_();
 };
 
 /**
@@ -535,6 +536,17 @@ Gallery.prototype.onChangeToSlideMode_ = function() {
     return;
 
   this.changeCurrentMode_(this.slideMode_);
+};
+
+/**
+ * Update attributes of slide/thumbnail toggle button
+ * @private
+ */
+Gallery.prototype.updateModeButtonAttribute_ = function() {
+  if (this.currentMode_ === this.slideMode_)
+    this.modeSwitchButton_.setAttribute("aria-label", str("GALLERY_THUMBNAIL"));
+  else
+    this.modeSwitchButton_.setAttribute("aria-label", str("GALLERY_SLIDE"));
 };
 
 /**
