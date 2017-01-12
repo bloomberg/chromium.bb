@@ -231,14 +231,15 @@ class RecordingImageBufferSurfaceTest : public Test {
   std::unique_ptr<ImageBuffer> m_imageBuffer;
 };
 
-#define CALL_TEST_TASK_WRAPPER(TEST_METHOD)                             \
-  {                                                                     \
-    TestingPlatformSupportWithMockScheduler testingPlatform;            \
-    Platform::current()->currentThread()->getWebTaskRunner()->postTask( \
-        BLINK_FROM_HERE,                                                \
-        WTF::bind(&RecordingImageBufferSurfaceTest::TEST_METHOD,        \
-                  WTF::unretained(this)));                              \
-    testingPlatform.runUntilIdle();                                     \
+#define CALL_TEST_TASK_WRAPPER(TEST_METHOD)                               \
+  {                                                                       \
+    ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler> \
+        platform;                                                         \
+    Platform::current()->currentThread()->getWebTaskRunner()->postTask(   \
+        BLINK_FROM_HERE,                                                  \
+        WTF::bind(&RecordingImageBufferSurfaceTest::TEST_METHOD,          \
+                  WTF::unretained(this)));                                \
+    platform->runUntilIdle();                                             \
   }
 
 TEST_F(RecordingImageBufferSurfaceTest, testEmptyPicture) {

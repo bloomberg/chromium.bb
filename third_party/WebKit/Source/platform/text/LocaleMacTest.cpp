@@ -189,7 +189,7 @@ class LocaleMacTest : public ::testing::Test {
 };
 
 TEST_F(LocaleMacTest, formatWeek) {
-  LocalePlatformSupport support;
+  ScopedTestingPlatformSupport<LocalePlatformSupport> support;
   EXPECT_STREQ("Week 04, 2005", formatWeek("en_US", "2005-W04").utf8().data());
   EXPECT_STREQ("Week 52, 2005", formatWeek("en_US", "2005-W52").utf8().data());
 }

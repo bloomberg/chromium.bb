@@ -97,22 +97,24 @@ TEST_F(NotificationImageLoaderTest, SuccessTest) {
 }
 
 TEST_F(NotificationImageLoaderTest, TimeoutTest) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+
   // To test for a timeout, this needs to override the clock in the platform.
   // Just creating the mock platform will do everything to set it up.
-  TestingPlatformSupportWithMockScheduler testingPlatform;
   KURL url = registerMockedURL(kIcon500x500);
   loadImage(url);
 
   // Run the platform for kImageFetchTimeoutInMs-1 seconds. This should not
   // result in a timeout.
-  testingPlatform.runForPeriodSeconds(kImageFetchTimeoutInMs / 1000 - 1);
+  platform->runForPeriodSeconds(kImageFetchTimeoutInMs / 1000 - 1);
   EXPECT_EQ(LoadState::kNotLoaded, loaded());
   m_histogramTester.expectTotalCount("Notifications.LoadFinishTime.Icon", 0);
   m_histogramTester.expectTotalCount("Notifications.LoadFileSize.Icon", 0);
   m_histogramTester.expectTotalCount("Notifications.LoadFailTime.Icon", 0);
 
   // Now advance time until a timeout should be expected.
-  testingPlatform.runForPeriodSeconds(2);
+  platform->runForPeriodSeconds(2);
 
   // If the loader times out, it calls the callback and returns an empty bitmap.
   EXPECT_EQ(LoadState::kLoadFailed, loaded());

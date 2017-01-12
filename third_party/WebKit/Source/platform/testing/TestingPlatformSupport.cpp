@@ -141,12 +141,11 @@ TestingPlatformSupport::TestingPlatformSupport(const Config& config)
     : m_config(config),
       m_oldPlatform(Platform::current()),
       m_interfaceProvider(new TestingInterfaceProvider) {
-  ASSERT(m_oldPlatform);
-  Platform::setCurrentPlatformForTesting(this);
+  DCHECK(m_oldPlatform);
 }
 
 TestingPlatformSupport::~TestingPlatformSupport() {
-  Platform::setCurrentPlatformForTesting(m_oldPlatform);
+  DCHECK_EQ(this, Platform::current());
 }
 
 WebString TestingPlatformSupport::defaultLocale() {
@@ -323,8 +322,8 @@ ScopedUnittestsEnvironmentSetup::ScopedUnittestsEnvironmentSetup(int argc,
       m_discardableMemoryAllocator.get());
   base::StatisticsRecorder::Initialize();
 
-  m_platform = WTF::wrapUnique(new DummyPlatform);
-  Platform::setCurrentPlatformForTesting(m_platform.get());
+  m_dummyPlatform = WTF::wrapUnique(new DummyPlatform);
+  Platform::setCurrentPlatformForTesting(m_dummyPlatform.get());
 
   WTF::Partitions::initialize(nullptr);
   WTF::setTimeFunctionsForTesting(dummyCurrentTime);
@@ -333,7 +332,8 @@ ScopedUnittestsEnvironmentSetup::ScopedUnittestsEnvironmentSetup(int argc,
   m_compositorSupport = WTF::wrapUnique(new cc_blink::WebCompositorSupportImpl);
   m_testingPlatformConfig.compositorSupport = m_compositorSupport.get();
   m_testingPlatformSupport =
-      WTF::makeUnique<TestingPlatformSupport>(m_testingPlatformConfig);
+      WTF::wrapUnique(new TestingPlatformSupport(m_testingPlatformConfig));
+  Platform::setCurrentPlatformForTesting(m_testingPlatformSupport.get());
 
   ProcessHeap::init();
   ThreadState::attachMainThread();

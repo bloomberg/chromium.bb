@@ -27,9 +27,11 @@ namespace {
 
 class TimerTest : public testing::Test {
  public:
-  void SetUp() override {
+  void initialize(
+      ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>&
+          platform) {
     m_runTimes.clear();
-    m_platform.advanceClockSeconds(10.0);
+    platform->advanceClockSeconds(10.0);
     m_startTime = monotonicallyIncreasingTime();
   }
 
@@ -42,24 +44,29 @@ class TimerTest : public testing::Test {
                               timer->nextFireInterval());
   }
 
-  void runUntilDeadline(double deadline) {
+  void runUntilDeadline(ScopedTestingPlatformSupport<
+                            TestingPlatformSupportWithMockScheduler>& platform,
+                        double deadline) {
     double period = deadline - monotonicallyIncreasingTime();
     EXPECT_GE(period, 0.0);
-    m_platform.runForPeriodSeconds(period);
+    platform->runForPeriodSeconds(period);
   }
 
   // Returns false if there are no pending delayed tasks, otherwise sets |time|
   // to the delay in seconds till the next pending delayed task is scheduled to
   // fire.
-  bool timeTillNextDelayedTask(double* time) const {
+  bool timeTillNextDelayedTask(
+      ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>&
+          platform,
+      double* time) const {
     base::TimeTicks nextRunTime;
-    if (!m_platform.rendererScheduler()
+    if (!platform->rendererScheduler()
              ->TimerTaskRunner()
              ->GetTimeDomain()
              ->NextScheduledRunTime(&nextRunTime))
       return false;
     *time = (nextRunTime -
-             m_platform.rendererScheduler()
+             platform->rendererScheduler()
                  ->TimerTaskRunner()
                  ->GetTimeDomain()
                  ->Now())
@@ -71,7 +78,6 @@ class TimerTest : public testing::Test {
   double m_startTime;
   WTF::Vector<double> m_runTimes;
   WTF::Vector<double> m_nextFireTimes;
-  TestingPlatformSupportWithMockScheduler m_platform;
 };
 
 class OnHeapTimerOwner final
@@ -124,225 +130,289 @@ class GCForbiddenScope final {
 };
 
 TEST_F(TimerTest, StartOneShot_Zero) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
   timer.startOneShot(0, BLINK_FROM_HERE);
 
   double runTime;
-  EXPECT_FALSE(timeTillNextDelayedTask(&runTime));
+  EXPECT_FALSE(timeTillNextDelayedTask(platform, &runTime));
 
-  m_platform.runUntilIdle();
+  platform->runUntilIdle();
   EXPECT_THAT(m_runTimes, ElementsAre(m_startTime));
 }
 
 TEST_F(TimerTest, StartOneShot_ZeroAndCancel) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
   timer.startOneShot(0, BLINK_FROM_HERE);
 
   double runTime;
-  EXPECT_FALSE(timeTillNextDelayedTask(&runTime));
+  EXPECT_FALSE(timeTillNextDelayedTask(platform, &runTime));
 
   timer.stop();
 
-  m_platform.runUntilIdle();
+  platform->runUntilIdle();
   EXPECT_FALSE(m_runTimes.size());
 }
 
 TEST_F(TimerTest, StartOneShot_ZeroAndCancelThenRepost) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
   timer.startOneShot(0, BLINK_FROM_HERE);
 
   double runTime;
-  EXPECT_FALSE(timeTillNextDelayedTask(&runTime));
+  EXPECT_FALSE(timeTillNextDelayedTask(platform, &runTime));
 
   timer.stop();
 
-  m_platform.runUntilIdle();
+  platform->runUntilIdle();
   EXPECT_FALSE(m_runTimes.size());
 
   timer.startOneShot(0, BLINK_FROM_HERE);
 
-  EXPECT_FALSE(timeTillNextDelayedTask(&runTime));
+  EXPECT_FALSE(timeTillNextDelayedTask(platform, &runTime));
 
-  m_platform.runUntilIdle();
+  platform->runUntilIdle();
   EXPECT_THAT(m_runTimes, ElementsAre(m_startTime));
 }
 
 TEST_F(TimerTest, StartOneShot_Zero_RepostingAfterRunning) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
   timer.startOneShot(0, BLINK_FROM_HERE);
 
   double runTime;
-  EXPECT_FALSE(timeTillNextDelayedTask(&runTime));
+  EXPECT_FALSE(timeTillNextDelayedTask(platform, &runTime));
 
-  m_platform.runUntilIdle();
+  platform->runUntilIdle();
   EXPECT_THAT(m_runTimes, ElementsAre(m_startTime));
 
   timer.startOneShot(0, BLINK_FROM_HERE);
 
-  EXPECT_FALSE(timeTillNextDelayedTask(&runTime));
+  EXPECT_FALSE(timeTillNextDelayedTask(platform, &runTime));
 
-  m_platform.runUntilIdle();
+  platform->runUntilIdle();
   EXPECT_THAT(m_runTimes, ElementsAre(m_startTime, m_startTime));
 }
 
 TEST_F(TimerTest, StartOneShot_NonZero) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
   timer.startOneShot(10.0, BLINK_FROM_HERE);
 
   double runTime;
-  EXPECT_TRUE(timeTillNextDelayedTask(&runTime));
+  EXPECT_TRUE(timeTillNextDelayedTask(platform, &runTime));
   EXPECT_FLOAT_EQ(10.0, runTime);
 
-  m_platform.runUntilIdle();
+  platform->runUntilIdle();
   EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 10.0));
 }
 
 TEST_F(TimerTest, StartOneShot_NonZeroAndCancel) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
   timer.startOneShot(10, BLINK_FROM_HERE);
 
   double runTime;
-  EXPECT_TRUE(timeTillNextDelayedTask(&runTime));
+  EXPECT_TRUE(timeTillNextDelayedTask(platform, &runTime));
   EXPECT_FLOAT_EQ(10.0, runTime);
 
   timer.stop();
-  EXPECT_TRUE(timeTillNextDelayedTask(&runTime));
+  EXPECT_TRUE(timeTillNextDelayedTask(platform, &runTime));
 
-  m_platform.runUntilIdle();
+  platform->runUntilIdle();
   EXPECT_FALSE(m_runTimes.size());
 }
 
 TEST_F(TimerTest, StartOneShot_NonZeroAndCancelThenRepost) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
   timer.startOneShot(10, BLINK_FROM_HERE);
 
   double runTime;
-  EXPECT_TRUE(timeTillNextDelayedTask(&runTime));
+  EXPECT_TRUE(timeTillNextDelayedTask(platform, &runTime));
   EXPECT_FLOAT_EQ(10.0, runTime);
 
   timer.stop();
-  EXPECT_TRUE(timeTillNextDelayedTask(&runTime));
+  EXPECT_TRUE(timeTillNextDelayedTask(platform, &runTime));
 
-  m_platform.runUntilIdle();
+  platform->runUntilIdle();
   EXPECT_FALSE(m_runTimes.size());
 
   double secondPostTime = monotonicallyIncreasingTime();
   timer.startOneShot(10, BLINK_FROM_HERE);
 
-  EXPECT_TRUE(timeTillNextDelayedTask(&runTime));
+  EXPECT_TRUE(timeTillNextDelayedTask(platform, &runTime));
   EXPECT_FLOAT_EQ(10.0, runTime);
 
-  m_platform.runUntilIdle();
+  platform->runUntilIdle();
   EXPECT_THAT(m_runTimes, ElementsAre(secondPostTime + 10.0));
 }
 
 TEST_F(TimerTest, StartOneShot_NonZero_RepostingAfterRunning) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
   timer.startOneShot(10, BLINK_FROM_HERE);
 
   double runTime;
-  EXPECT_TRUE(timeTillNextDelayedTask(&runTime));
+  EXPECT_TRUE(timeTillNextDelayedTask(platform, &runTime));
   EXPECT_FLOAT_EQ(10.0, runTime);
 
-  m_platform.runUntilIdle();
+  platform->runUntilIdle();
   EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 10.0));
 
   timer.startOneShot(20, BLINK_FROM_HERE);
 
-  EXPECT_TRUE(timeTillNextDelayedTask(&runTime));
+  EXPECT_TRUE(timeTillNextDelayedTask(platform, &runTime));
   EXPECT_FLOAT_EQ(20.0, runTime);
 
-  m_platform.runUntilIdle();
+  platform->runUntilIdle();
   EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 10.0, m_startTime + 30.0));
 }
 
 TEST_F(TimerTest, PostingTimerTwiceWithSameRunTimeDoesNothing) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
   timer.startOneShot(10, BLINK_FROM_HERE);
   timer.startOneShot(10, BLINK_FROM_HERE);
 
   double runTime;
-  EXPECT_TRUE(timeTillNextDelayedTask(&runTime));
+  EXPECT_TRUE(timeTillNextDelayedTask(platform, &runTime));
   EXPECT_FLOAT_EQ(10.0, runTime);
 
-  m_platform.runUntilIdle();
+  platform->runUntilIdle();
   EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 10.0));
 }
 
 TEST_F(TimerTest, PostingTimerTwiceWithNewerRunTimeCancelsOriginalTask) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
   timer.startOneShot(10, BLINK_FROM_HERE);
   timer.startOneShot(0, BLINK_FROM_HERE);
 
-  m_platform.runUntilIdle();
+  platform->runUntilIdle();
   EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 0.0));
 }
 
 TEST_F(TimerTest, PostingTimerTwiceWithLaterRunTimeCancelsOriginalTask) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
   timer.startOneShot(0, BLINK_FROM_HERE);
   timer.startOneShot(10, BLINK_FROM_HERE);
 
-  m_platform.runUntilIdle();
+  platform->runUntilIdle();
   EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 10.0));
 }
 
 TEST_F(TimerTest, StartRepeatingTask) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
   timer.startRepeating(1.0, BLINK_FROM_HERE);
 
   double runTime;
-  EXPECT_TRUE(timeTillNextDelayedTask(&runTime));
+  EXPECT_TRUE(timeTillNextDelayedTask(platform, &runTime));
   EXPECT_FLOAT_EQ(1.0, runTime);
 
-  runUntilDeadline(m_startTime + 5.5);
+  runUntilDeadline(platform, m_startTime + 5.5);
   EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 1.0, m_startTime + 2.0,
                                       m_startTime + 3.0, m_startTime + 4.0,
                                       m_startTime + 5.0));
 }
 
 TEST_F(TimerTest, StartRepeatingTask_ThenCancel) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
   timer.startRepeating(1.0, BLINK_FROM_HERE);
 
   double runTime;
-  EXPECT_TRUE(timeTillNextDelayedTask(&runTime));
+  EXPECT_TRUE(timeTillNextDelayedTask(platform, &runTime));
   EXPECT_FLOAT_EQ(1.0, runTime);
 
-  runUntilDeadline(m_startTime + 2.5);
+  runUntilDeadline(platform, m_startTime + 2.5);
   EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 1.0, m_startTime + 2.0));
 
   timer.stop();
-  m_platform.runUntilIdle();
+  platform->runUntilIdle();
 
   EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 1.0, m_startTime + 2.0));
 }
 
 TEST_F(TimerTest, StartRepeatingTask_ThenPostOneShot) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
   timer.startRepeating(1.0, BLINK_FROM_HERE);
 
   double runTime;
-  EXPECT_TRUE(timeTillNextDelayedTask(&runTime));
+  EXPECT_TRUE(timeTillNextDelayedTask(platform, &runTime));
   EXPECT_FLOAT_EQ(1.0, runTime);
 
-  runUntilDeadline(m_startTime + 2.5);
+  runUntilDeadline(platform, m_startTime + 2.5);
   EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 1.0, m_startTime + 2.0));
 
   timer.startOneShot(0, BLINK_FROM_HERE);
-  m_platform.runUntilIdle();
+  platform->runUntilIdle();
 
   EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 1.0, m_startTime + 2.0,
                                       m_startTime + 2.5));
 }
 
 TEST_F(TimerTest, IsActive_NeverPosted) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
 
   EXPECT_FALSE(timer.isActive());
 }
 
 TEST_F(TimerTest, IsActive_AfterPosting_OneShotZero) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
   timer.startOneShot(0, BLINK_FROM_HERE);
 
@@ -350,6 +420,10 @@ TEST_F(TimerTest, IsActive_AfterPosting_OneShotZero) {
 }
 
 TEST_F(TimerTest, IsActive_AfterPosting_OneShotNonZero) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
   timer.startOneShot(10, BLINK_FROM_HERE);
 
@@ -357,6 +431,10 @@ TEST_F(TimerTest, IsActive_AfterPosting_OneShotNonZero) {
 }
 
 TEST_F(TimerTest, IsActive_AfterPosting_Repeating) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
   timer.startRepeating(1.0, BLINK_FROM_HERE);
 
@@ -364,30 +442,46 @@ TEST_F(TimerTest, IsActive_AfterPosting_Repeating) {
 }
 
 TEST_F(TimerTest, IsActive_AfterRunning_OneShotZero) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
   timer.startOneShot(0, BLINK_FROM_HERE);
 
-  m_platform.runUntilIdle();
+  platform->runUntilIdle();
   EXPECT_FALSE(timer.isActive());
 }
 
 TEST_F(TimerTest, IsActive_AfterRunning_OneShotNonZero) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
   timer.startOneShot(10, BLINK_FROM_HERE);
 
-  m_platform.runUntilIdle();
+  platform->runUntilIdle();
   EXPECT_FALSE(timer.isActive());
 }
 
 TEST_F(TimerTest, IsActive_AfterRunning_Repeating) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
   timer.startRepeating(1.0, BLINK_FROM_HERE);
 
-  runUntilDeadline(m_startTime + 10);
+  runUntilDeadline(platform, m_startTime + 10);
   EXPECT_TRUE(timer.isActive());  // It should run until cancelled.
 }
 
 TEST_F(TimerTest, NextFireInterval_OneShotZero) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
   timer.startOneShot(0, BLINK_FROM_HERE);
 
@@ -395,6 +489,10 @@ TEST_F(TimerTest, NextFireInterval_OneShotZero) {
 }
 
 TEST_F(TimerTest, NextFireInterval_OneShotNonZero) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
   timer.startOneShot(10, BLINK_FROM_HERE);
 
@@ -402,16 +500,24 @@ TEST_F(TimerTest, NextFireInterval_OneShotNonZero) {
 }
 
 TEST_F(TimerTest, NextFireInterval_OneShotNonZero_AfterAFewSeconds) {
-  m_platform.setAutoAdvanceNowToPendingTasks(false);
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
+  platform->setAutoAdvanceNowToPendingTasks(false);
 
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
   timer.startOneShot(10, BLINK_FROM_HERE);
 
-  m_platform.advanceClockSeconds(2.0);
+  platform->advanceClockSeconds(2.0);
   EXPECT_FLOAT_EQ(8.0, timer.nextFireInterval());
 }
 
 TEST_F(TimerTest, NextFireInterval_Repeating) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
   timer.startRepeating(20, BLINK_FROM_HERE);
 
@@ -419,12 +525,20 @@ TEST_F(TimerTest, NextFireInterval_Repeating) {
 }
 
 TEST_F(TimerTest, RepeatInterval_NeverStarted) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
 
   EXPECT_FLOAT_EQ(0.0, timer.repeatInterval());
 }
 
 TEST_F(TimerTest, RepeatInterval_OneShotZero) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
   timer.startOneShot(0, BLINK_FROM_HERE);
 
@@ -432,6 +546,10 @@ TEST_F(TimerTest, RepeatInterval_OneShotZero) {
 }
 
 TEST_F(TimerTest, RepeatInterval_OneShotNonZero) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
   timer.startOneShot(10, BLINK_FROM_HERE);
 
@@ -439,6 +557,10 @@ TEST_F(TimerTest, RepeatInterval_OneShotNonZero) {
 }
 
 TEST_F(TimerTest, RepeatInterval_Repeating) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
   timer.startRepeating(20, BLINK_FROM_HERE);
 
@@ -446,12 +568,16 @@ TEST_F(TimerTest, RepeatInterval_Repeating) {
 }
 
 TEST_F(TimerTest, AugmentRepeatInterval) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
   timer.startRepeating(10, BLINK_FROM_HERE);
   EXPECT_FLOAT_EQ(10.0, timer.repeatInterval());
   EXPECT_FLOAT_EQ(10.0, timer.nextFireInterval());
 
-  m_platform.advanceClockSeconds(2.0);
+  platform->advanceClockSeconds(2.0);
   timer.augmentRepeatInterval(10);
 
   EXPECT_FLOAT_EQ(20.0, timer.repeatInterval());
@@ -461,19 +587,23 @@ TEST_F(TimerTest, AugmentRepeatInterval) {
   // cc::OrderedSimpleTaskRunner) results in somewhat strange behavior of the
   // test clock which breaks this test.  Specifically the test clock advancing
   // logic ignores newly posted delayed tasks and advances too far.
-  runUntilDeadline(m_startTime + 50.0);
+  runUntilDeadline(platform, m_startTime + 50.0);
   EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 20.0, m_startTime + 40.0));
 }
 
 TEST_F(TimerTest, AugmentRepeatInterval_TimerFireDelayed) {
-  m_platform.setAutoAdvanceNowToPendingTasks(false);
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
+  platform->setAutoAdvanceNowToPendingTasks(false);
 
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
   timer.startRepeating(10, BLINK_FROM_HERE);
   EXPECT_FLOAT_EQ(10.0, timer.repeatInterval());
   EXPECT_FLOAT_EQ(10.0, timer.nextFireInterval());
 
-  m_platform.advanceClockSeconds(123.0);  // Make the timer long overdue.
+  platform->advanceClockSeconds(123.0);  // Make the timer long overdue.
   timer.augmentRepeatInterval(10);
 
   EXPECT_FLOAT_EQ(20.0, timer.repeatInterval());
@@ -482,7 +612,11 @@ TEST_F(TimerTest, AugmentRepeatInterval_TimerFireDelayed) {
 }
 
 TEST_F(TimerTest, RepeatingTimerDoesNotDrift) {
-  m_platform.setAutoAdvanceNowToPendingTasks(false);
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
+  platform->setAutoAdvanceNowToPendingTasks(false);
 
   Timer<TimerTest> timer(this, &TimerTest::recordNextFireTimeTask);
   timer.startRepeating(2.0, BLINK_FROM_HERE);
@@ -492,24 +626,24 @@ TEST_F(TimerTest, RepeatingTimerDoesNotDrift) {
 
   // Simulate timer firing early. Next scheduled task to run at
   // m_startTime + 4.0
-  m_platform.advanceClockSeconds(1.9);
-  runUntilDeadline(monotonicallyIncreasingTime() + 0.2);
+  platform->advanceClockSeconds(1.9);
+  runUntilDeadline(platform, monotonicallyIncreasingTime() + 0.2);
 
   // Next scheduled task to run at m_startTime + 6.0
-  m_platform.runForPeriodSeconds(2.0);
+  platform->runForPeriodSeconds(2.0);
   // Next scheduled task to run at m_startTime + 8.0
-  m_platform.runForPeriodSeconds(2.1);
+  platform->runForPeriodSeconds(2.1);
   // Next scheduled task to run at m_startTime + 10.0
-  m_platform.runForPeriodSeconds(2.9);
+  platform->runForPeriodSeconds(2.9);
   // Next scheduled task to run at m_startTime + 14.0 (skips a beat)
-  m_platform.advanceClockSeconds(3.1);
-  m_platform.runUntilIdle();
+  platform->advanceClockSeconds(3.1);
+  platform->runUntilIdle();
   // Next scheduled task to run at m_startTime + 18.0 (skips a beat)
-  m_platform.advanceClockSeconds(4.0);
-  m_platform.runUntilIdle();
+  platform->advanceClockSeconds(4.0);
+  platform->runUntilIdle();
   // Next scheduled task to run at m_startTime + 28.0 (skips 5 beats)
-  m_platform.advanceClockSeconds(10.0);
-  m_platform.runUntilIdle();
+  platform->advanceClockSeconds(10.0);
+  platform->runUntilIdle();
 
   EXPECT_THAT(
       m_nextFireTimes,
@@ -535,8 +669,12 @@ class TimerForTest : public TaskRunnerTimer<TimerFiredClass> {
 };
 
 TEST_F(TimerTest, UserSuppliedWebTaskRunner) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   scoped_refptr<scheduler::TaskQueue> taskRunner(
-      m_platform.rendererScheduler()->NewTimerTaskRunner(
+      platform->rendererScheduler()->NewTimerTaskRunner(
           scheduler::TaskQueue::QueueType::TEST));
   RefPtr<scheduler::WebTaskRunnerImpl> webTaskRunner =
       scheduler::WebTaskRunnerImpl::create(taskRunner);
@@ -548,17 +686,25 @@ TEST_F(TimerTest, UserSuppliedWebTaskRunner) {
 }
 
 TEST_F(TimerTest, RunOnHeapTimer) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   RefPtr<OnHeapTimerOwner::Record> record = OnHeapTimerOwner::Record::create();
   Persistent<OnHeapTimerOwner> owner = new OnHeapTimerOwner(record);
 
   owner->startOneShot(0, BLINK_FROM_HERE);
 
   EXPECT_FALSE(record->timerHasFired());
-  m_platform.runUntilIdle();
+  platform->runUntilIdle();
   EXPECT_TRUE(record->timerHasFired());
 }
 
 TEST_F(TimerTest, DestructOnHeapTimer) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   RefPtr<OnHeapTimerOwner::Record> record = OnHeapTimerOwner::Record::create();
   Persistent<OnHeapTimerOwner> owner = new OnHeapTimerOwner(record);
 
@@ -571,11 +717,15 @@ TEST_F(TimerTest, DestructOnHeapTimer) {
   EXPECT_TRUE(record->ownerIsDestructed());
 
   EXPECT_FALSE(record->timerHasFired());
-  m_platform.runUntilIdle();
+  platform->runUntilIdle();
   EXPECT_FALSE(record->timerHasFired());
 }
 
 TEST_F(TimerTest, MarkOnHeapTimerAsUnreachable) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   RefPtr<OnHeapTimerOwner::Record> record = OnHeapTimerOwner::Record::create();
   Persistent<OnHeapTimerOwner> owner = new OnHeapTimerOwner(record);
 
@@ -591,7 +741,7 @@ TEST_F(TimerTest, MarkOnHeapTimerAsUnreachable) {
   {
     GCForbiddenScope scope;
     EXPECT_FALSE(record->timerHasFired());
-    m_platform.runUntilIdle();
+    platform->runUntilIdle();
     EXPECT_FALSE(record->timerHasFired());
     EXPECT_FALSE(record->ownerIsDestructed());
   }
@@ -619,10 +769,14 @@ class TaskObserver : public base::MessageLoop::TaskObserver {
 }  // namespace
 
 TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   std::vector<RefPtr<WebTaskRunner>> runOrder;
 
   scoped_refptr<scheduler::TaskQueue> taskRunner1(
-      m_platform.rendererScheduler()->NewTimerTaskRunner(
+      platform->rendererScheduler()->NewTimerTaskRunner(
           scheduler::TaskQueue::QueueType::TEST));
   RefPtr<scheduler::WebTaskRunnerImpl> webTaskRunner1 =
       scheduler::WebTaskRunnerImpl::create(taskRunner1);
@@ -630,7 +784,7 @@ TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
   taskRunner1->AddTaskObserver(&taskObserver1);
 
   scoped_refptr<scheduler::TaskQueue> taskRunner2(
-      m_platform.rendererScheduler()->NewTimerTaskRunner(
+      platform->rendererScheduler()->NewTimerTaskRunner(
           scheduler::TaskQueue::QueueType::TEST));
   RefPtr<scheduler::WebTaskRunnerImpl> webTaskRunner2 =
       scheduler::WebTaskRunnerImpl::create(taskRunner2);
@@ -643,11 +797,11 @@ TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
 
   timer.startOneShot(1, BLINK_FROM_HERE);
 
-  m_platform.runForPeriodSeconds(0.5);
+  platform->runForPeriodSeconds(0.5);
 
   timer.moveToNewTaskRunner(webTaskRunner2);
 
-  m_platform.runUntilIdle();
+  platform->runUntilIdle();
 
   EXPECT_THAT(m_runTimes, ElementsAre(startTime + 1.0));
 
@@ -658,10 +812,14 @@ TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
 }
 
 TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   std::vector<RefPtr<WebTaskRunner>> runOrder;
 
   scoped_refptr<scheduler::TaskQueue> taskRunner1(
-      m_platform.rendererScheduler()->NewTimerTaskRunner(
+      platform->rendererScheduler()->NewTimerTaskRunner(
           scheduler::TaskQueue::QueueType::TEST));
   RefPtr<scheduler::WebTaskRunnerImpl> webTaskRunner1 =
       scheduler::WebTaskRunnerImpl::create(taskRunner1);
@@ -669,7 +827,7 @@ TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
   taskRunner1->AddTaskObserver(&taskObserver1);
 
   scoped_refptr<scheduler::TaskQueue> taskRunner2(
-      m_platform.rendererScheduler()->NewTimerTaskRunner(
+      platform->rendererScheduler()->NewTimerTaskRunner(
           scheduler::TaskQueue::QueueType::TEST));
   RefPtr<scheduler::WebTaskRunnerImpl> webTaskRunner2 =
       scheduler::WebTaskRunnerImpl::create(taskRunner2);
@@ -682,11 +840,11 @@ TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
 
   timer.startRepeating(1, BLINK_FROM_HERE);
 
-  m_platform.runForPeriodSeconds(2.5);
+  platform->runForPeriodSeconds(2.5);
 
   timer.moveToNewTaskRunner(webTaskRunner2);
 
-  m_platform.runForPeriodSeconds(2);
+  platform->runForPeriodSeconds(2);
 
   EXPECT_THAT(m_runTimes, ElementsAre(startTime + 1.0, startTime + 2.0,
                                       startTime + 3.0, startTime + 4.0));
@@ -701,21 +859,25 @@ TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
 // This test checks that when inactive timer is moved to a different task
 // runner it isn't activated.
 TEST_F(TimerTest, MoveToNewTaskRunnerWithoutTasks) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
+  initialize(platform);
+
   scoped_refptr<scheduler::TaskQueue> taskRunner1(
-      m_platform.rendererScheduler()->NewTimerTaskRunner(
+      platform->rendererScheduler()->NewTimerTaskRunner(
           scheduler::TaskQueue::QueueType::TEST));
   RefPtr<scheduler::WebTaskRunnerImpl> webTaskRunner1 =
       scheduler::WebTaskRunnerImpl::create(taskRunner1);
 
   scoped_refptr<scheduler::TaskQueue> taskRunner2(
-      m_platform.rendererScheduler()->NewTimerTaskRunner(
+      platform->rendererScheduler()->NewTimerTaskRunner(
           scheduler::TaskQueue::QueueType::TEST));
   RefPtr<scheduler::WebTaskRunnerImpl> webTaskRunner2 =
       scheduler::WebTaskRunnerImpl::create(taskRunner2);
 
   TimerForTest<TimerTest> timer(webTaskRunner1, this, &TimerTest::countingTask);
 
-  m_platform.runUntilIdle();
+  platform->runUntilIdle();
   EXPECT_TRUE(!m_runTimes.size());
   EXPECT_TRUE(taskRunner1->IsEmpty());
   EXPECT_TRUE(taskRunner2->IsEmpty());

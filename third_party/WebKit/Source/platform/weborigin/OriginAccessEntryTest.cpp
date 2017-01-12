@@ -68,8 +68,8 @@ class OriginAccessEntryTestPlatform : public TestingPlatformSupport {
 };
 
 TEST(OriginAccessEntryTest, PublicSuffixListTest) {
-  OriginAccessEntryTestPlatform platform;
-  platform.setPublicSuffix("com");
+  ScopedTestingPlatformSupport<OriginAccessEntryTestPlatform> platform;
+  platform->setPublicSuffix("com");
 
   RefPtr<SecurityOrigin> origin =
       SecurityOrigin::createFromString("http://www.google.com");
@@ -135,8 +135,8 @@ TEST(OriginAccessEntryTest, AllowSubdomainsTest) {
        OriginAccessEntry::DoesNotMatchOrigin, OriginAccessEntry::MatchesOrigin},
   };
 
-  OriginAccessEntryTestPlatform platform;
-  platform.setPublicSuffix("com");
+  ScopedTestingPlatformSupport<OriginAccessEntryTestPlatform> platform;
+  platform->setPublicSuffix("com");
 
   for (const auto& test : inputs) {
     SCOPED_TRACE(testing::Message() << "Host: " << test.host
@@ -189,8 +189,8 @@ TEST(OriginAccessEntryTest, AllowRegisterableDomainsTest) {
        OriginAccessEntry::DoesNotMatchOrigin},
   };
 
-  OriginAccessEntryTestPlatform platform;
-  platform.setPublicSuffix("com");
+  ScopedTestingPlatformSupport<OriginAccessEntryTestPlatform> platform;
+  platform->setPublicSuffix("com");
 
   for (const auto& test : inputs) {
     RefPtr<SecurityOrigin> originToTest =
@@ -245,8 +245,8 @@ TEST(OriginAccessEntryTest, AllowRegisterableDomainsTestWithDottedSuffix) {
        OriginAccessEntry::DoesNotMatchOrigin},
   };
 
-  OriginAccessEntryTestPlatform platform;
-  platform.setPublicSuffix("appspot.com");
+  ScopedTestingPlatformSupport<OriginAccessEntryTestPlatform> platform;
+  platform->setPublicSuffix("appspot.com");
 
   for (const auto& test : inputs) {
     RefPtr<SecurityOrigin> originToTest =
@@ -296,8 +296,8 @@ TEST(OriginAccessEntryTest, DisallowSubdomainsTest) {
        OriginAccessEntry::DoesNotMatchOrigin},
   };
 
-  OriginAccessEntryTestPlatform platform;
-  platform.setPublicSuffix("com");
+  ScopedTestingPlatformSupport<OriginAccessEntryTestPlatform> platform;
+  platform->setPublicSuffix("com");
 
   for (const auto& test : inputs) {
     SCOPED_TRACE(testing::Message() << "Host: " << test.host
@@ -327,8 +327,8 @@ TEST(OriginAccessEntryTest, IPAddressTest) {
       {"http", "", false},
   };
 
-  OriginAccessEntryTestPlatform platform;
-  platform.setPublicSuffix("com");
+  ScopedTestingPlatformSupport<OriginAccessEntryTestPlatform> platform;
+  platform->setPublicSuffix("com");
 
   for (const auto& test : inputs) {
     SCOPED_TRACE(testing::Message() << "Host: " << test.host);
@@ -355,8 +355,8 @@ TEST(OriginAccessEntryTest, IPAddressMatchingTest) {
        OriginAccessEntry::DoesNotMatchOrigin},
   };
 
-  OriginAccessEntryTestPlatform platform;
-  platform.setPublicSuffix("com");
+  ScopedTestingPlatformSupport<OriginAccessEntryTestPlatform> platform;
+  platform->setPublicSuffix("com");
 
   for (const auto& test : inputs) {
     SCOPED_TRACE(testing::Message() << "Host: " << test.host

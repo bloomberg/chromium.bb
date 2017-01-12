@@ -140,6 +140,7 @@ class BLINK_PLATFORM_EXPORT Platform {
   static Platform* current();
 
   // Used to switch the current platform only for testing.
+  // You should not pass in a Platform object that is not fully instantiated.
   static void setCurrentPlatformForTesting(Platform*);
 
   // May return null.

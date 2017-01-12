@@ -1289,7 +1289,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_DeleteIOSurfaceAfterTeardown)
 #endif
 {
   FakeGLES2InterfaceWithImageSupport gl;
-  FakePlatformSupport testingPlatformSupport;
+  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
   std::unique_ptr<FakeWebGraphicsContext3DProvider> contextProvider =
       WTF::wrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
 

@@ -1161,7 +1161,8 @@ TEST(ImageResourceTest,
 }
 
 TEST(ImageResourceTest, PeriodicFlushTest) {
-  TestingPlatformSupportWithMockScheduler platform;
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform;
   KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
   URLTestHelpers::registerMockedURLLoad(testURL, "cancelTest.html",
                                         "text/html");
@@ -1191,8 +1192,8 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
   EXPECT_TRUE(imageResource->getContent()->hasImage());
   EXPECT_EQ(1, client->imageChangedCount());
 
-  platform.runForPeriodSeconds(1.);
-  platform.advanceClockSeconds(1.);
+  platform->runForPeriodSeconds(1.);
+  platform->advanceClockSeconds(1.);
 
   // Sanity check that we created an image after appending |meaningfulImageSize|
   // bytes just once.
@@ -1216,13 +1217,13 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
       EXPECT_EQ(flushCount, client->imageChangedCount());
 
       ++bytesSent;
-      platform.runForPeriodSeconds(0.2001);
+      platform->runForPeriodSeconds(0.2001);
     }
   }
 
   // Increasing time by a large number only causes one extra flush.
-  platform.runForPeriodSeconds(10.);
-  platform.advanceClockSeconds(10.);
+  platform->runForPeriodSeconds(10.);
+  platform->advanceClockSeconds(10.);
   EXPECT_FALSE(imageResource->errorOccurred());
   ASSERT_TRUE(imageResource->getContent()->hasImage());
   EXPECT_FALSE(imageResource->getContent()->getImage()->isNull());

@@ -14,6 +14,10 @@ using testing::Return;
 class ScrollbarThemeOverlayTest : public ScrollbarTestSuite {};
 
 TEST_F(ScrollbarThemeOverlayTest, PaintInvalidation) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler,
+                               const TestingPlatformSupport::Config&>
+      platform(m_config);
+
   NiceMock<MockScrollableArea>* mockScrollableArea =
       new NiceMock<MockScrollableArea>(ScrollOffset(100, 100));
   ScrollbarThemeOverlay theme(14, 0, ScrollbarThemeOverlay::AllowHitTest);

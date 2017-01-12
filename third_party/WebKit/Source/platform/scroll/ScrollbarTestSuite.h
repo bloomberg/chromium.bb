@@ -87,16 +87,11 @@ class ScrollbarTestSuite : public testing::Test {
   ScrollbarTestSuite() {}
 
   void SetUp() override {
-    TestingPlatformSupport::Config config;
-    config.compositorSupport = Platform::current()->compositorSupport();
-    m_fakePlatform =
-        WTF::makeUnique<TestingPlatformSupportWithMockScheduler>(config);
+    m_config.compositorSupport = Platform::current()->compositorSupport();
   }
 
-  void TearDown() override { m_fakePlatform = nullptr; }
-
- private:
-  std::unique_ptr<TestingPlatformSupportWithMockScheduler> m_fakePlatform;
+ protected:
+  TestingPlatformSupport::Config m_config;
 };
 
 }  // namespace blink

@@ -55,20 +55,20 @@ void createTestResourceAndSetCachedMetadata(const ResourceResponse& response) {
 }  // anonymous namespace
 
 TEST(ResourceTest, SetCachedMetadata_SendsMetadataToPlatform) {
-  MockPlatform mock;
+  ScopedTestingPlatformSupport<MockPlatform> mock;
   ResourceResponse response(createTestResourceResponse());
   createTestResourceAndSetCachedMetadata(response);
-  EXPECT_EQ(1u, mock.cachedURLs().size());
+  EXPECT_EQ(1u, mock->cachedURLs().size());
 }
 
 TEST(
     ResourceTest,
     SetCachedMetadata_DoesNotSendMetadataToPlatformWhenFetchedViaServiceWorker) {
-  MockPlatform mock;
+  ScopedTestingPlatformSupport<MockPlatform> mock;
   ResourceResponse response(createTestResourceResponse());
   response.setWasFetchedViaServiceWorker(true);
   createTestResourceAndSetCachedMetadata(response);
-  EXPECT_EQ(0u, mock.cachedURLs().size());
+  EXPECT_EQ(0u, mock->cachedURLs().size());
 }
 
 TEST(ResourceTest, RevalidateWithFragment) {

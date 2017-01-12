@@ -31,6 +31,10 @@ class ScrollbarThemeAuraButtonOverride final : public ScrollbarThemeAura {
 class ScrollbarThemeAuraTest : public ScrollbarTestSuite {};
 
 TEST_F(ScrollbarThemeAuraTest, ButtonSizeHorizontal) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler,
+                               const TestingPlatformSupport::Config&>
+      platform(m_config);
+
   MockScrollableArea* mockScrollableArea = MockScrollableArea::create();
   ScrollbarThemeMock mockTheme;
   Scrollbar* scrollbar = Scrollbar::createForTesting(
@@ -53,6 +57,10 @@ TEST_F(ScrollbarThemeAuraTest, ButtonSizeHorizontal) {
 }
 
 TEST_F(ScrollbarThemeAuraTest, ButtonSizeVertical) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler,
+                               const TestingPlatformSupport::Config&>
+      platform(m_config);
+
   MockScrollableArea* mockScrollableArea = MockScrollableArea::create();
   ScrollbarThemeMock mockTheme;
   Scrollbar* scrollbar = Scrollbar::createForTesting(
@@ -75,6 +83,10 @@ TEST_F(ScrollbarThemeAuraTest, ButtonSizeVertical) {
 }
 
 TEST_F(ScrollbarThemeAuraTest, NoButtonsReturnsSize0) {
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler,
+                               const TestingPlatformSupport::Config&>
+      platform(m_config);
+
   MockScrollableArea* mockScrollableArea = MockScrollableArea::create();
   ScrollbarThemeMock mockTheme;
   Scrollbar* scrollbar = Scrollbar::createForTesting(

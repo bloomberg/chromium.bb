@@ -75,7 +75,7 @@ TEST_F(IdleDeadlineTest, deadlineInPast) {
 }
 
 TEST_F(IdleDeadlineTest, yieldForHighPriorityWork) {
-  MockPlatform platform;
+  ScopedTestingPlatformSupport<MockPlatform> platform;
 
   IdleDeadline* deadline =
       IdleDeadline::create(1.25, IdleDeadline::CallbackType::CalledWhenIdle);

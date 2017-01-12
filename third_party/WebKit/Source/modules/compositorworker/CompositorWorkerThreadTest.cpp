@@ -143,10 +143,11 @@ class CompositorWorkerThreadTest : public ::testing::Test {
 
   RefPtr<SecurityOrigin> m_securityOrigin;
   std::unique_ptr<InProcessWorkerObjectProxy> m_objectProxy;
-  CompositorWorkerTestPlatform m_testPlatform;
 };
 
 TEST_F(CompositorWorkerThreadTest, Basic) {
+  ScopedTestingPlatformSupport<CompositorWorkerTestPlatform> platform;
+
   std::unique_ptr<CompositorWorkerThread> compositorWorker =
       createCompositorWorker();
   checkWorkerCanExecuteScript(compositorWorker.get());
@@ -156,6 +157,8 @@ TEST_F(CompositorWorkerThreadTest, Basic) {
 // Tests that the same WebThread is used for new workers if the WebThread is
 // still alive.
 TEST_F(CompositorWorkerThreadTest, CreateSecondAndTerminateFirst) {
+  ScopedTestingPlatformSupport<CompositorWorkerTestPlatform> platform;
+
   // Create the first worker and wait until it is initialized.
   std::unique_ptr<CompositorWorkerThread> firstWorker =
       createCompositorWorker();
@@ -191,6 +194,8 @@ TEST_F(CompositorWorkerThreadTest, CreateSecondAndTerminateFirst) {
 // Tests that a new WebThread is created if all existing workers are terminated
 // before a new worker is created.
 TEST_F(CompositorWorkerThreadTest, TerminateFirstAndCreateSecond) {
+  ScopedTestingPlatformSupport<CompositorWorkerTestPlatform> platform;
+
   // Create the first worker, wait until it is initialized, and terminate it.
   std::unique_ptr<CompositorWorkerThread> compositorWorker =
       createCompositorWorker();
@@ -215,6 +220,8 @@ TEST_F(CompositorWorkerThreadTest, TerminateFirstAndCreateSecond) {
 // Tests that v8::Isolate and WebThread are correctly set-up if a worker is
 // created while another is terminating.
 TEST_F(CompositorWorkerThreadTest, CreatingSecondDuringTerminationOfFirst) {
+  ScopedTestingPlatformSupport<CompositorWorkerTestPlatform> platform;
+
   std::unique_ptr<CompositorWorkerThread> firstWorker =
       createCompositorWorker();
   checkWorkerCanExecuteScript(firstWorker.get());

@@ -123,11 +123,10 @@ class BaseAudioContextTest : public ::testing::Test {
   Persistent<DummyFrameOwner> m_dummyFrameOwner;
 
   Persistent<LocalFrame> m_childFrame;
-
-  BaseAudioContextTestPlatform m_testPlatform;
 };
 
 TEST_F(BaseAudioContextTest, AutoplayMetrics_NoRestriction) {
+  ScopedTestingPlatformSupport<BaseAudioContextTestPlatform> platform;
   HistogramTester histogramTester;
 
   BaseAudioContext* audioContext =
@@ -138,6 +137,7 @@ TEST_F(BaseAudioContextTest, AutoplayMetrics_NoRestriction) {
 }
 
 TEST_F(BaseAudioContextTest, AutoplayMetrics_CreateNoGesture) {
+  ScopedTestingPlatformSupport<BaseAudioContextTestPlatform> platform;
   HistogramTester histogramTester;
   createChildFrame();
   childDocument().settings()->setMediaPlaybackRequiresUserGesture(true);
@@ -152,6 +152,7 @@ TEST_F(BaseAudioContextTest, AutoplayMetrics_CreateNoGesture) {
 }
 
 TEST_F(BaseAudioContextTest, AutoplayMetrics_CallResumeNoGesture) {
+  ScopedTestingPlatformSupport<BaseAudioContextTestPlatform> platform;
   HistogramTester histogramTester;
   createChildFrame();
   childDocument().settings()->setMediaPlaybackRequiresUserGesture(true);
@@ -170,6 +171,7 @@ TEST_F(BaseAudioContextTest, AutoplayMetrics_CallResumeNoGesture) {
 }
 
 TEST_F(BaseAudioContextTest, AutoplayMetrics_CreateGesture) {
+  ScopedTestingPlatformSupport<BaseAudioContextTestPlatform> platform;
   HistogramTester histogramTester;
   createChildFrame();
   childDocument().settings()->setMediaPlaybackRequiresUserGesture(true);
@@ -187,6 +189,7 @@ TEST_F(BaseAudioContextTest, AutoplayMetrics_CreateGesture) {
 }
 
 TEST_F(BaseAudioContextTest, AutoplayMetrics_CallResumeGesture) {
+  ScopedTestingPlatformSupport<BaseAudioContextTestPlatform> platform;
   HistogramTester histogramTester;
   createChildFrame();
   childDocument().settings()->setMediaPlaybackRequiresUserGesture(true);
@@ -209,6 +212,7 @@ TEST_F(BaseAudioContextTest, AutoplayMetrics_CallResumeGesture) {
 }
 
 TEST_F(BaseAudioContextTest, AutoplayMetrics_NodeStartNoGesture) {
+  ScopedTestingPlatformSupport<BaseAudioContextTestPlatform> platform;
   HistogramTester histogramTester;
   createChildFrame();
   childDocument().settings()->setMediaPlaybackRequiresUserGesture(true);
@@ -224,6 +228,7 @@ TEST_F(BaseAudioContextTest, AutoplayMetrics_NodeStartNoGesture) {
 }
 
 TEST_F(BaseAudioContextTest, AutoplayMetrics_NodeStartGesture) {
+  ScopedTestingPlatformSupport<BaseAudioContextTestPlatform> platform;
   HistogramTester histogramTester;
   createChildFrame();
   childDocument().settings()->setMediaPlaybackRequiresUserGesture(true);
@@ -242,6 +247,7 @@ TEST_F(BaseAudioContextTest, AutoplayMetrics_NodeStartGesture) {
 }
 
 TEST_F(BaseAudioContextTest, AutoplayMetrics_NodeStartNoGestureThenSuccess) {
+  ScopedTestingPlatformSupport<BaseAudioContextTestPlatform> platform;
   HistogramTester histogramTester;
   createChildFrame();
   childDocument().settings()->setMediaPlaybackRequiresUserGesture(true);
@@ -264,6 +270,7 @@ TEST_F(BaseAudioContextTest, AutoplayMetrics_NodeStartNoGestureThenSuccess) {
 }
 
 TEST_F(BaseAudioContextTest, AutoplayMetrics_NodeStartGestureThenSucces) {
+  ScopedTestingPlatformSupport<BaseAudioContextTestPlatform> platform;
   HistogramTester histogramTester;
   createChildFrame();
   childDocument().settings()->setMediaPlaybackRequiresUserGesture(true);
