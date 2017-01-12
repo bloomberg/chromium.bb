@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/custom_launcher_page_contents.h"
+#include "chrome/browser/ui/app_list/custom_launcher_page_contents.h"
 
 #include <string>
 #include <utility>
@@ -18,7 +18,7 @@
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension_messages.h"
 
-namespace apps {
+namespace app_list {
 
 CustomLauncherPageContents::CustomLauncherPageContents(
     std::unique_ptr<extensions::AppDelegate> app_delegate,
@@ -131,4 +131,4 @@ bool CustomLauncherPageContents::CheckMediaAccessPermission(
   return helper_->CheckMediaAccessPermission(security_origin, type);
 }
 
-}  // namespace apps
+}  // namespace app_list

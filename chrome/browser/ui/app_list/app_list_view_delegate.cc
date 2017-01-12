@@ -8,7 +8,6 @@
 
 #include <vector>
 
-#include "apps/custom_launcher_page_contents.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -29,6 +28,7 @@
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
+#include "chrome/browser/ui/app_list/custom_launcher_page_contents.h"
 #include "chrome/browser/ui/app_list/launcher_page_event_dispatcher.h"
 #include "chrome/browser/ui/app_list/search/search_controller_factory.h"
 #include "chrome/browser/ui/app_list/search/search_resource_manager.h"
@@ -316,7 +316,7 @@ void AppListViewDelegate::SetUpCustomLauncherPages() {
   for (auto it = custom_launcher_page_urls.begin();
        it != custom_launcher_page_urls.end(); ++it) {
     std::string extension_id = it->host();
-    auto page_contents = base::MakeUnique<apps::CustomLauncherPageContents>(
+    auto page_contents = base::MakeUnique<app_list::CustomLauncherPageContents>(
         base::MakeUnique<ChromeAppDelegate>(false), extension_id);
     page_contents->Initialize(profile_, *it);
     custom_page_contents_.push_back(std::move(page_contents));

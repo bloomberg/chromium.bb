@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_CUSTOM_LAUNCHER_PAGE_CONTENTS_H_
-#define APPS_CUSTOM_LAUNCHER_PAGE_CONTENTS_H_
+#ifndef CHROME_BROWSER_UI_APP_LIST_CUSTOM_LAUNCHER_PAGE_CONTENTS_H_
+#define CHROME_BROWSER_UI_APP_LIST_CUSTOM_LAUNCHER_PAGE_CONTENTS_H_
 
 #include <memory>
 
@@ -20,7 +20,7 @@ class AppDelegate;
 class AppWebContentsHelper;
 }
 
-namespace apps {
+namespace app_list {
 
 // Manages the web contents for extension-hosted launcher pages. The
 // implementation for this class should create and maintain the WebContents for
@@ -79,6 +79,6 @@ class CustomLauncherPageContents : public content::WebContentsDelegate {
   DISALLOW_COPY_AND_ASSIGN(CustomLauncherPageContents);
 };
 
-}  // namespace apps
+}  // namespace app_list
 
-#endif  // APPS_CUSTOM_LAUNCHER_PAGE_CONTENTS_H_
+#endif  // CHROME_BROWSER_UI_APP_LIST_CUSTOM_LAUNCHER_PAGE_CONTENTS_H_

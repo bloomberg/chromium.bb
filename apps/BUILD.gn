@@ -27,8 +27,6 @@ static_library("apps") {
       "app_restore_service_factory.h",
       "browser_context_keyed_service_factories.cc",
       "browser_context_keyed_service_factories.h",
-      "custom_launcher_page_contents.cc",
-      "custom_launcher_page_contents.h",
       "launcher.cc",
       "launcher.h",
       "metrics_names.h",

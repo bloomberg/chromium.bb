@@ -30,11 +30,8 @@
 class AppListControllerDelegate;
 class Profile;
 
-namespace apps {
-class CustomLauncherPageContents;
-}
-
 namespace app_list {
+class CustomLauncherPageContents;
 class LauncherPageEventDispatcher;
 class SearchController;
 class SearchResourceManager;
@@ -193,7 +190,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   ScopedObserver<SigninManagerBase, AppListViewDelegate> scoped_observer_;
 
   // Window contents of additional custom launcher pages.
-  std::vector<std::unique_ptr<apps::CustomLauncherPageContents>>
+  std::vector<std::unique_ptr<app_list::CustomLauncherPageContents>>
       custom_page_contents_;
 
   // Registers for NOTIFICATION_APP_TERMINATING to unload custom launcher pages.
