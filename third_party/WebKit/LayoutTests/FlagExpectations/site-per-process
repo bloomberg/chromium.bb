@@ -13,8 +13,8 @@ crbug.com/669083 http/tests/security/frameNavigation/xss-DENIED-top-navigation-w
 crbug.com/669083 virtual/mojo-loading/http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ Failure ]
 
 # https://crbug.com/661725 - Propagating user gesture via postMessage doesn't work for OOPIFs
-crbug.com/661725 http/tests/security/frameNavigation/xss-ALLOWED-top-navigation-after-postMessage.html [ Timeout ]
-crbug.com/661725 virtual/mojo-loading/http/tests/security/frameNavigation/xss-ALLOWED-top-navigation-after-postMessage.html [ Timeout ]
+crbug.com/661725 http/tests/security/frameNavigation/xss-ALLOWED-top-navigation-after-postMessage.html [ Failure Timeout ]
+crbug.com/661725 virtual/mojo-loading/http/tests/security/frameNavigation/xss-ALLOWED-top-navigation-after-postMessage.html [ Failure Timeout ]
 
 # https://crbug.com/611838 - regression when geolocation tests use JS mock.
 crbug.com/611838 http/tests/security/powerfulFeatureRestrictions/geolocation-on-secure-origin-in-insecure-origin.html [ Timeout ]
@@ -170,6 +170,14 @@ crbug.com/24182 virtual/mojo-loading/http/tests/perf/large-inlined-script.html [
 
 # https://crbug.com/672570: autoplay-crossorigin.html fails w/ --site-per-process
 crbug.com/672570 http/tests/media/autoplay-crossorigin.html [ Timeout ]
+
+# https://crbug.com/680201: referrer-policy-attribute-import-no-referrer.html fails w/ --site-per-process
+crbug.com/680201 http/tests/security/referrer-policy-attribute-import-no-referrer.html [ Failure ]
+crbug.com/680201 virtual/mojo-loading/http/tests/security/referrer-policy-attribute-import-no-referrer.html [ Failure ]
+
+# https://crbug.com/680307: blob-url-in-iframe.html is missing PASS w/ --site-per-process
+crbug.com/680307 http/tests/security/mixedContent/blob-url-in-iframe.html [ Failure ]
+crbug.com/680307 virtual/mojo-loading/http/tests/security/mixedContent/blob-url-in-iframe.html [ Failure ]
 
 # TODO(lukasza, alexmos): Triage these failures.
 Bug(none) fast/frames/cached-frame-counter.html [ Timeout ]
