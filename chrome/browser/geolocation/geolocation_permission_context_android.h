@@ -44,6 +44,12 @@ class GeolocationPermissionContextAndroid
   explicit GeolocationPermissionContextAndroid(Profile* profile);
   ~GeolocationPermissionContextAndroid() override;
 
+ protected:
+  // GeolocationPermissionContext:
+  ContentSetting GetPermissionStatusInternal(
+      const GURL& requesting_origin,
+      const GURL& embedding_origin) const override;
+
  private:
   friend class GeolocationPermissionContextTests;
 

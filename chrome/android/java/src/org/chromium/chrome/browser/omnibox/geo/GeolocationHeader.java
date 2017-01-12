@@ -22,8 +22,10 @@ import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.GeolocationInfo;
+import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
 
@@ -359,7 +361,14 @@ public class GeolocationHeader {
      * scheme, this considers the user's preference for url with the http scheme instead.
      */
     static boolean isLocationDisabledForUrl(Uri uri, boolean isIncognito) {
-        return locationContentSettingForUrl(uri, isIncognito) == ContentSetting.BLOCK;
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONSISTENT_OMNIBOX_GEOLOCATION)) {
+            boolean enabled = WebsitePreferenceBridge.shouldUseDSEGeolocationSetting(
+                                      uri.toString(), isIncognito)
+                    && WebsitePreferenceBridge.getDSEGeolocationSetting();
+            return !enabled;
+        } else {
+            return locationContentSettingForUrl(uri, isIncognito) == ContentSetting.BLOCK;
+        }
     }
 
     /**

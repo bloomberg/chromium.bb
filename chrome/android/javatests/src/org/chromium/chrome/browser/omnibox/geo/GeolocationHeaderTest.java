@@ -12,10 +12,12 @@ import android.support.test.filters.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.GeolocationInfo;
+import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 
@@ -25,6 +27,11 @@ import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String SEARCH_URL_1 = "https://www.google.com/search?q=potatoes";
     private static final String SEARCH_URL_2 = "https://www.google.co.jp/webhp?#q=dinosaurs";
+    private static final String ENABLE_CONSISTENT_GEOLOCATION_FEATURE =
+            "enable-features=ConsistentOmniboxGeolocation";
+    private static final String DISABLE_CONSISTENT_GEOLOCATION_FEATURE =
+            "disable-features=ConsistentOmniboxGeolocation";
+    private static final String GOOGLE_BASE_URL_SWITCH = "google-base-url=https://www.google.com";
 
     public GeolocationHeaderTest() {
         super(ChromeActivity.class);
@@ -32,6 +39,7 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
 
     @SmallTest
     @Feature({"Location"})
+    @CommandLineFlags.Add(DISABLE_CONSISTENT_GEOLOCATION_FEATURE)
     public void testGeolocationHeader() throws ProcessInitException {
         setMockLocation(20.3, 155.8, System.currentTimeMillis());
 
@@ -51,6 +59,39 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
         // X-Geo shouldn't be sent over HTTP.
         assertNullHeader("http://www.google.com/search?q=potatoes", false);
         assertNullHeader("http://www.google.com/webhp?#q=dinosaurs", false);
+    }
+
+    @SmallTest
+    @Feature({"Location"})
+    @CommandLineFlags.Add({ENABLE_CONSISTENT_GEOLOCATION_FEATURE, GOOGLE_BASE_URL_SWITCH})
+    public void testConsistentHeader() throws ProcessInitException {
+        setMockLocation(20.3, 155.8, System.currentTimeMillis());
+
+        // X-Geo should be sent for Google search results page URLs.
+        assertNonNullHeader(SEARCH_URL_1, false);
+
+        // But only the current CCTLD.
+        assertNullHeader(SEARCH_URL_2, false);
+
+        // X-Geo shouldn't be sent in incognito mode.
+        assertNullHeader(SEARCH_URL_1, true);
+        assertNullHeader(SEARCH_URL_2, true);
+
+        // X-Geo shouldn't be sent with URLs that aren't the Google search results page.
+        assertNullHeader("invalid$url", false);
+        assertNullHeader("https://www.chrome.fr/", false);
+        assertNullHeader("https://www.google.com/", false);
+
+        // X-Geo shouldn't be sent over HTTP.
+        assertNullHeader("http://www.google.com/search?q=potatoes", false);
+        assertNullHeader("http://www.google.com/webhp?#q=dinosaurs", false);
+    }
+
+    @SmallTest
+    @Feature({"Location"})
+    @CommandLineFlags.Add(DISABLE_CONSISTENT_GEOLOCATION_FEATURE)
+    public void testPermissions() throws ProcessInitException {
+        setMockLocation(20.3, 155.8, System.currentTimeMillis());
 
         // X-Geo shouldn't be sent when location is disallowed for https origin.
         // If https origin doesn't have a location setting, fall back to value for http origin.
@@ -63,6 +104,27 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
         checkHeaderWithPermissions(ContentSetting.BLOCK, ContentSetting.ALLOW, true);
         checkHeaderWithPermissions(ContentSetting.BLOCK, ContentSetting.DEFAULT, true);
         checkHeaderWithPermissions(ContentSetting.BLOCK, ContentSetting.BLOCK, true);
+    }
+
+    @SmallTest
+    @Feature({"Location"})
+    @CommandLineFlags.Add({ENABLE_CONSISTENT_GEOLOCATION_FEATURE, GOOGLE_BASE_URL_SWITCH})
+    public void testPermissionAndSetting() throws ProcessInitException {
+        setMockLocation(20.3, 155.8, System.currentTimeMillis());
+
+        // X-Geo shouldn't be sent when location is disallowed for the origin, or when the DSE
+        // geolocation setting is off.
+        checkHeaderWithPermissionAndSetting(ContentSetting.ALLOW, true, false);
+        checkHeaderWithPermissionAndSetting(ContentSetting.DEFAULT, true, false);
+        checkHeaderWithPermissionAndSetting(ContentSetting.DEFAULT, false, true);
+        checkHeaderWithPermissionAndSetting(ContentSetting.BLOCK, false, true);
+    }
+
+    @SmallTest
+    @Feature({"Location"})
+    @CommandLineFlags.Add(DISABLE_CONSISTENT_GEOLOCATION_FEATURE)
+    public void testOnlyNonStale() throws ProcessInitException {
+        setMockLocation(20.3, 155.8, System.currentTimeMillis());
 
         // X-Geo should be sent only with non-stale locations.
         long now = System.currentTimeMillis();
@@ -88,6 +150,22 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
                 String header = GeolocationHeader.getGeoHeader(
                         "https://www.google.de/search?q=kartoffelsalat",
                         getActivity().getActivityTab());
+                assertHeaderState(header, shouldBeNull);
+            }
+        });
+    }
+
+    private void checkHeaderWithPermissionAndSetting(final ContentSetting httpsPermission,
+            final boolean settingValue, final boolean shouldBeNull) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                GeolocationInfo infoHttps =
+                        new GeolocationInfo(SEARCH_URL_1, null, false);
+                infoHttps.setContentSetting(httpsPermission);
+                WebsitePreferenceBridge.setDSEGeolocationSetting(settingValue);
+                String header = GeolocationHeader.getGeoHeader(
+                        SEARCH_URL_1, getActivity().getActivityTab());
                 assertHeaderState(header, shouldBeNull);
             }
         });

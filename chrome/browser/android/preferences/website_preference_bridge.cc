@@ -18,6 +18,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "chrome/browser/android/search_geolocation/search_geolocation_service.h"
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
@@ -739,6 +740,36 @@ static void ClearBannerData(JNIEnv* env,
   GetHostContentSettingsMap(false)->SetWebsiteSettingDefaultScope(
       GURL(ConvertJavaStringToUTF8(env, jorigin)), GURL(),
       CONTENT_SETTINGS_TYPE_APP_BANNER, std::string(), nullptr);
+}
+
+static jboolean ShouldUseDSEGeolocationSetting(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& jorigin,
+    jboolean is_incognito) {
+  SearchGeolocationService* search_helper =
+      SearchGeolocationService::Factory::GetForBrowserContext(
+          GetActiveUserProfile(is_incognito));
+  return search_helper &&
+         search_helper->UseDSEGeolocationSetting(
+             url::Origin(GURL(ConvertJavaStringToUTF8(env, jorigin))));
+}
+
+static jboolean GetDSEGeolocationSetting(JNIEnv* env,
+                                         const JavaParamRef<jclass>& clazz) {
+  SearchGeolocationService* search_helper =
+      SearchGeolocationService::Factory::GetForBrowserContext(
+          GetActiveUserProfile(false /* is_incognito */));
+  return search_helper->GetDSEGeolocationSetting();
+}
+
+static void SetDSEGeolocationSetting(JNIEnv* env,
+                                     const JavaParamRef<jclass>& clazz,
+                                     jboolean setting) {
+  SearchGeolocationService* search_helper =
+      SearchGeolocationService::Factory::GetForBrowserContext(
+          GetActiveUserProfile(false /* is_incognito */));
+  return search_helper->SetDSEGeolocationSetting(setting);
 }
 
 // Register native methods

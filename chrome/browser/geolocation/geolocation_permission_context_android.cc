@@ -10,8 +10,10 @@
 #include "base/bind.h"
 #include "chrome/browser/android/location_settings.h"
 #include "chrome/browser/android/location_settings_impl.h"
+#include "chrome/browser/android/search_geolocation/search_geolocation_service.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -26,6 +28,31 @@ GeolocationPermissionContextAndroid::
 }
 
 GeolocationPermissionContextAndroid::~GeolocationPermissionContextAndroid() {
+}
+
+ContentSetting GeolocationPermissionContextAndroid::GetPermissionStatusInternal(
+    const GURL& requesting_origin,
+    const GURL& embedding_origin) const {
+  ContentSetting value =
+      GeolocationPermissionContext::GetPermissionStatusInternal(
+          requesting_origin, embedding_origin);
+
+  if (value == CONTENT_SETTING_ASK && requesting_origin == embedding_origin) {
+    // Consult the DSE Geolocation setting. Note that this only needs to be
+    // consulted when the content setting is ASK. In the other cases (ALLOW or
+    // BLOCK) checking the setting is redundant, as the setting is kept
+    // consistent with the content setting.
+    SearchGeolocationService* search_helper =
+        SearchGeolocationService::Factory::GetForBrowserContext(profile());
+    if (search_helper &&
+        search_helper->UseDSEGeolocationSetting(
+            url::Origin(embedding_origin))) {
+      value = search_helper->GetDSEGeolocationSetting() ? CONTENT_SETTING_ALLOW
+                                                        : CONTENT_SETTING_BLOCK;
+    }
+  }
+
+  return value;
 }
 
 void GeolocationPermissionContextAndroid::RequestPermission(

@@ -2357,4 +2357,8 @@ const char kSearchGeolocationPostDisclosureMetricsRecorded[] =
     "search_geolocation_post_disclosure_metrics_recorded";
 #endif
 
+// A dictionary which stores whether location access is enabled for the current
+// default search engine, if it is the Google search engine.
+const char kGoogleDSEGeolocationSetting[] = "google_dse_geolocation_setting";
+
 }  // namespace prefs

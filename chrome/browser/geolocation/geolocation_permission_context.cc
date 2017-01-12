@@ -13,10 +13,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "device/geolocation/geolocation_provider.h"
-
-#if defined(OS_ANDROID)
-#include "chrome/browser/android/search_geolocation/search_geolocation_disclosure_infobar_delegate.h"
-#endif
+#include "url/origin.h"
 
 GeolocationPermissionContext::GeolocationPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
@@ -53,17 +50,6 @@ void GeolocationPermissionContext::DecidePermission(
     }
     return;
   }
-
-#if defined(OS_ANDROID)
-  // If the search geolocation disclosure is open, don't pop up a permission
-  // request. Treat this as a dismissal instead.
-  if (SearchGeolocationDisclosureInfoBarDelegate::
-          IsSearchGeolocationDisclosureOpen(web_contents)) {
-    NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
-                        false /* persist */, CONTENT_SETTING_DEFAULT);
-    return;
-  }
-#endif
 
   PermissionContextBase::DecidePermission(web_contents,
                                           id,

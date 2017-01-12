@@ -1250,6 +1250,8 @@ TEST_F(HostContentSettingsMapTest, AddContentSettingsObserver) {
       CONTENT_SETTING_DEFAULT);
 }
 
+// Guest profiles do not exist on Android, so don't run these tests there.
+#if !defined(OS_ANDROID)
 TEST_F(HostContentSettingsMapTest, GuestProfile) {
   TestingProfile profile;
   profile.SetGuestSession(true);
@@ -1321,6 +1323,7 @@ TEST_F(HostContentSettingsMapTest, GuestProfileMigration) {
           GetPrefName(CONTENT_SETTINGS_TYPE_COOKIES));
   EXPECT_TRUE(all_settings_dictionary->empty());
 }
+#endif  // !defined(OS_ANDROID)
 
 TEST_F(HostContentSettingsMapTest, MigrateDomainScopedSettings) {
   TestingProfile profile;
@@ -1497,6 +1500,13 @@ TEST_F(HostContentSettingsMapTest, MigrateDomainScopedSettings) {
 // once after syncing (even when these events occur multiple times).
 TEST_F(HostContentSettingsMapTest, DomainToOriginMigrationStatus) {
   TestingProfile profile;
+
+  // Construct the map now to make the various platforms equivalent. On Android
+  // the map is created with the profile (due to dependencies), while on other
+  // platforms it is created lazily. Note, migration should be run here.
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(&profile);
+
   PrefService* prefs = profile.GetPrefs();
 
   GURL http_host("http://example.com/");
@@ -1522,13 +1532,38 @@ TEST_F(HostContentSettingsMapTest, DomainToOriginMigrationStatus) {
   EXPECT_TRUE(all_settings_dictionary->GetDictionaryWithoutPathExpansion(
       "[*.]example.com,*", &result));
 
-  // Migration is done on construction of HostContentSettingsMap.
-  HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(&profile);
+  // Migration is done on construction of HostContentSettingsMap. Try to run it
+  // again. This should not do anything as it has already ran.
+  host_content_settings_map->MigrateDomainScopedSettings(
+      false /* after_sync */);
 
   // Change default setting to BLOCK.
   host_content_settings_map->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_POPUPS, CONTENT_SETTING_BLOCK);
+
+  EXPECT_EQ(
+      CONTENT_SETTING_ALLOW,
+      host_content_settings_map->GetContentSetting(
+          http_host, http_host, CONTENT_SETTINGS_TYPE_POPUPS, std::string()));
+
+  // The setting should still be allow as it hasn't been migrated.
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                http_host_narrower, http_host_narrower,
+                CONTENT_SETTINGS_TYPE_POPUPS, std::string()));
+
+  // Set the pref to its initial state so that migration can be triggered again,
+  // just for the sake of testing.
+  int default_value;
+  prefs->GetDefaultPrefValue(prefs::kDomainToOriginMigrationStatus)
+      ->GetAsInteger(&default_value);
+  prefs->SetInteger(prefs::kDomainToOriginMigrationStatus, default_value);
+
+  // Now, do the migration. This should work as we've cleared the pref back to
+  // its default value.
+  host_content_settings_map->MigrateDomainScopedSettings(false);
+
+  // Now the settings should be migrated.
   EXPECT_EQ(
       CONTENT_SETTING_ALLOW,
       host_content_settings_map->GetContentSetting(
@@ -1546,6 +1581,7 @@ TEST_F(HostContentSettingsMapTest, DomainToOriginMigrationStatus) {
       ContentSettingsPattern::FromURL(https_host),
       ContentSettingsPattern::Wildcard(), CONTENT_SETTINGS_TYPE_POPUPS,
       std::string(), CONTENT_SETTING_ALLOW);
+
   EXPECT_EQ(
       CONTENT_SETTING_ALLOW,
       host_content_settings_map->GetContentSetting(

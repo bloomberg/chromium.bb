@@ -30,6 +30,8 @@ class SearchGeolocationDisclosureTabHelper
   void NavigationEntryCommitted(
       const content::LoadCommittedDetails& load_details) override;
 
+  static void ResetDisclosure(Profile* profile);
+
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Registers native methods.

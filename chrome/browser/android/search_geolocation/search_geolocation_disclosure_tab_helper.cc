@@ -84,6 +84,14 @@ void SearchGeolocationDisclosureTabHelper::NavigationEntryCommitted(
 }
 
 // static
+void SearchGeolocationDisclosureTabHelper::ResetDisclosure(Profile* profile) {
+  PrefService* prefs = profile->GetPrefs();
+  prefs->ClearPref(prefs::kSearchGeolocationDisclosureShownCount);
+  prefs->ClearPref(prefs::kSearchGeolocationDisclosureLastShowDate);
+  prefs->ClearPref(prefs::kSearchGeolocationDisclosureDismissed);
+}
+
+// static
 void SearchGeolocationDisclosureTabHelper::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kSearchGeolocationDisclosureDismissed,

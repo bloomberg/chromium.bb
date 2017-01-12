@@ -722,8 +722,14 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_BLOCK" desc="Summary text explaining that Chrome will block a website from accessing some permission, e.g. JavaScript: block.">
         Block
       </message>
-      <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_ALLOW_DSE" desc="Summary text explaining that Chrome will allow the default search engine to access the user's location, but only when the user searches directly from the address bar. e.g. Location access: Allow (for address bar searches)">
+      <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_ALLOW_DSE_ADDRESS_BAR" desc="Summary text explaining that Chrome will allow the default search engine to access the user's location, but only when the user searches directly from the address bar. e.g. Location access: Allow (for address bar searches)">
         Allow (for address bar searches)
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_ALLOW_DSE" desc="Summary text explaining that Chrome will allow the default search engine to access the user's location, both when performed from the address bar and from Google search result pages. e.g. Location access: Allow for Google searches">
+        Allow for current search engine
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_BLOCK_DSE" desc="Summary text explaining that Chrome will allow the default search engine to access the user's location, both when performed from the address bar and from Google search result pages. e.g. Location access: Allow for Google searches">
+        Block for current search engine
       </message>
       <message name="IDS_WEBSITE_RESET" desc="The label for the button allowing users to clear all data and reset the permissions for a website.">
         Clear &amp; reset

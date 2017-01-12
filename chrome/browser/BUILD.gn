@@ -2802,6 +2802,8 @@ split_static_library("browser") {
       "android/search_geolocation/search_geolocation_disclosure_infobar_delegate.h",
       "android/search_geolocation/search_geolocation_disclosure_tab_helper.cc",
       "android/search_geolocation/search_geolocation_disclosure_tab_helper.h",
+      "android/search_geolocation/search_geolocation_service.cc",
+      "android/search_geolocation/search_geolocation_service.h",
       "android/seccomp_support_detector.cc",
       "android/seccomp_support_detector.h",
       "android/service_tab_launcher.cc",

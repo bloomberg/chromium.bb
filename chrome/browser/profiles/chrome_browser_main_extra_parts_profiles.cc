@@ -127,6 +127,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/data_usage/data_use_ui_tab_model_factory.h"
+#include "chrome/browser/android/search_geolocation/search_geolocation_service.h"
 #else
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
@@ -320,6 +321,9 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   prerender::PrerenderMessageFilter::EnsureShutdownNotifierFactoryBuilt();
   ProfileSyncServiceFactory::GetInstance();
   ProtocolHandlerRegistryFactory::GetInstance();
+#if defined(OS_ANDROID)
+  SearchGeolocationService::Factory::GetInstance();
+#endif
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
   SessionServiceFactory::GetInstance();
 #endif

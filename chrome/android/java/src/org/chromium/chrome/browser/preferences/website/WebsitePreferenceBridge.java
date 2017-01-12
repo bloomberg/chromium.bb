@@ -217,6 +217,29 @@ public abstract class WebsitePreferenceBridge {
         list.add(new UsbInfo(origin, embedder, name, object));
     }
 
+    /**
+     * Returns whether the DSE (Default Search Engine) geolocation setting should be used to
+     * determine geolocation access for the given origin.
+     */
+    public static boolean shouldUseDSEGeolocationSetting(
+            String origin, boolean isIncognito) {
+        return nativeShouldUseDSEGeolocationSetting(origin, isIncognito);
+    }
+
+    /**
+     * Returns the DSE (Default Search Engine) geolocation setting.
+     */
+    public static boolean getDSEGeolocationSetting() {
+        return nativeGetDSEGeolocationSetting();
+    }
+
+    /**
+     * Sets the DSE (Default Search Engine) geolocation setting.
+     */
+    public static void setDSEGeolocationSetting(boolean setting) {
+        nativeSetDSEGeolocationSetting(setting);
+    }
+
     private static native void nativeGetGeolocationOrigins(Object list, boolean managedOnly);
     static native int nativeGetGeolocationSettingForOrigin(
             String origin, String embedder, boolean isIncognito);
@@ -257,4 +280,8 @@ public abstract class WebsitePreferenceBridge {
     static native void nativeGetUsbOrigins(Object list);
     static native void nativeRevokeUsbPermission(String origin, String embedder, String object);
     static native void nativeClearBannerData(String origin);
+    private static native boolean nativeShouldUseDSEGeolocationSetting(
+            String origin, boolean isIncognito);
+    private static native boolean nativeGetDSEGeolocationSetting();
+    private static native void nativeSetDSEGeolocationSetting(boolean setting);
 }
