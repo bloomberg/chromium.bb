@@ -38,7 +38,7 @@ component("keyboard") {
     "//ui/base",
     "//ui/base/ime",
     "//ui/compositor",
-    "//ui/display/types:types",
+    "//ui/display:display",
     "//ui/events",
     "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",

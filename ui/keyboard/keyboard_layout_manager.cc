@@ -5,6 +5,8 @@
 #include "ui/keyboard/keyboard_layout_manager.h"
 
 #include "ui/compositor/layer_animator.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
 
@@ -81,7 +83,17 @@ void KeyboardLayoutManager::SetChildBounds(aura::Window* child,
     // The window height is set to 0 initially or before switch to an IME in a
     // different extension. Virtual keyboard window may wait for this bounds
     // change to correctly animate in.
-    controller_->ShowKeyboard(controller_->keyboard_locked());
+    if (controller_->keyboard_locked()) {
+      // Do not move the keyboard to another display after switch to an IME in a
+      // different extension.
+      const int64_t display_id =
+          display::Screen::GetScreen()
+              ->GetDisplayNearestWindow(controller_->GetContainerWindow())
+              .id();
+      controller_->ShowKeyboardInDisplay(display_id);
+    } else {
+      controller_->ShowKeyboard(false /* lock */);
+    }
   } else {
     if (controller_->keyboard_mode() == FULL_WIDTH) {
       // We need to send out this notification only if keyboard is visible since
