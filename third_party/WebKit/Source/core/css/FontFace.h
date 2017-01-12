@@ -119,7 +119,7 @@ class FontFace : public GarbageCollectedFinalized<FontFace>,
     virtual void notifyError(FontFace*) = 0;
     DEFINE_INLINE_VIRTUAL_TRACE() {}
   };
-  void loadWithCallback(LoadFontCallback*, ExecutionContext*);
+  void loadWithCallback(LoadFontCallback*);
   void addCallback(LoadFontCallback*);
 
   // ScriptWrappable:
@@ -153,7 +153,6 @@ class FontFace : public GarbageCollectedFinalized<FontFace>,
   bool setPropertyFromStyle(const StylePropertySet&, CSSPropertyID);
   bool setPropertyValue(const CSSValue*, CSSPropertyID);
   bool setFamilyValue(const CSSValue&);
-  void loadInternal(ExecutionContext*);
   ScriptPromise fontStatusPromise(ScriptState*);
 
   using LoadedProperty = ScriptPromiseProperty<Member<FontFace>,

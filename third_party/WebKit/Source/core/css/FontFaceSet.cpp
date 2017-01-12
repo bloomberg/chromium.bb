@@ -58,7 +58,7 @@ class LoadFontPromiseResolver final
     return new LoadFontPromiseResolver(faces, scriptState);
   }
 
-  void loadFonts(ExecutionContext*);
+  void loadFonts();
   ScriptPromise promise() { return m_resolver->promise(); }
 
   void notifyLoaded(FontFace*) override;
@@ -80,14 +80,14 @@ class LoadFontPromiseResolver final
   Member<ScriptPromiseResolver> m_resolver;
 };
 
-void LoadFontPromiseResolver::loadFonts(ExecutionContext* context) {
+void LoadFontPromiseResolver::loadFonts() {
   if (!m_numLoading) {
     m_resolver->resolve(m_fontFaces);
     return;
   }
 
   for (size_t i = 0; i < m_fontFaces.size(); i++)
-    m_fontFaces[i]->loadWithCallback(this, context);
+    m_fontFaces[i]->loadWithCallback(this);
 }
 
 void LoadFontPromiseResolver::notifyLoaded(FontFace* fontFace) {
@@ -396,7 +396,7 @@ ScriptPromise FontFaceSet::load(ScriptState* scriptState,
       LoadFontPromiseResolver::create(faces, scriptState);
   ScriptPromise promise = resolver->promise();
   // After this, resolver->promise() may return null.
-  resolver->loadFonts(getExecutionContext());
+  resolver->loadFonts();
   return promise;
 }
 

@@ -388,13 +388,14 @@ ScriptPromise FontFace::fontStatusPromise(ScriptState* scriptState) {
 }
 
 ScriptPromise FontFace::load(ScriptState* scriptState) {
-  loadInternal(scriptState->getExecutionContext());
+  if (m_status == Unloaded)
+    m_cssFontFace->load();
   return fontStatusPromise(scriptState);
 }
 
-void FontFace::loadWithCallback(LoadFontCallback* callback,
-                                ExecutionContext* context) {
-  loadInternal(context);
+void FontFace::loadWithCallback(LoadFontCallback* callback) {
+  if (m_status == Unloaded)
+    m_cssFontFace->load();
   addCallback(callback);
 }
 
@@ -405,13 +406,6 @@ void FontFace::addCallback(LoadFontCallback* callback) {
     callback->notifyError(this);
   else
     m_callbacks.push_back(callback);
-}
-
-void FontFace::loadInternal(ExecutionContext* context) {
-  if (m_status != Unloaded)
-    return;
-
-  m_cssFontFace->load();
 }
 
 FontTraits FontFace::traits() const {
