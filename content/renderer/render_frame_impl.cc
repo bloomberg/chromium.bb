@@ -1498,6 +1498,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_Navigate, OnNavigate)
     IPC_MESSAGE_HANDLER(FrameMsg_BeforeUnload, OnBeforeUnload)
     IPC_MESSAGE_HANDLER(FrameMsg_SwapOut, OnSwapOut)
+    IPC_MESSAGE_HANDLER(FrameMsg_SwapIn, OnSwapIn)
     IPC_MESSAGE_HANDLER(FrameMsg_Delete, OnDeleteFrame)
     IPC_MESSAGE_HANDLER(FrameMsg_Stop, OnStop)
     IPC_MESSAGE_HANDLER(FrameMsg_ContextMenuClosed, OnContextMenuClosed)
@@ -1769,6 +1770,10 @@ void RenderFrameImpl::OnSwapOut(
   // Notify the browser that this frame was swapped. Use the RenderThread
   // directly because |this| is deleted.
   RenderThread::Get()->Send(new FrameHostMsg_SwapOut_ACK(routing_id));
+}
+
+void RenderFrameImpl::OnSwapIn() {
+  SwapIn();
 }
 
 void RenderFrameImpl::OnDeleteFrame() {
@@ -3597,46 +3602,11 @@ void RenderFrameImpl::didCommitProvisionalLoad(
   }
 
   if (proxy_routing_id_ != MSG_ROUTING_NONE) {
-    RenderFrameProxy* proxy =
-        RenderFrameProxy::FromRoutingID(proxy_routing_id_);
-
-    // The proxy might have been detached while the provisional LocalFrame was
-    // being navigated.  In that case, don't swap the frame back in the tree
-    // and return early (to avoid sending confusing IPCs to the browser
-    // process).  See https://crbug.com/526304 and https://crbug.com/568676.
-    // TODO(nasko, alexmos): Eventually, the browser process will send an IPC
-    // to clean this frame up after https://crbug.com/548275 is fixed.
-    if (!proxy)
+    // If this is a provisional frame associated with a proxy (i.e., a frame
+    // created for a remote-to-local navigation), swap it into the frame tree
+    // now.
+    if (!SwapIn())
       return;
-
-    int proxy_routing_id = proxy_routing_id_;
-    if (!proxy->web_frame()->swap(frame_))
-      return;
-    proxy_routing_id_ = MSG_ROUTING_NONE;
-    in_frame_tree_ = true;
-
-    // If this is the main frame going from a remote frame to a local frame,
-    // it needs to set RenderViewImpl's pointer for the main frame to itself
-    // and ensure RenderWidget is no longer in swapped out mode.
-    if (is_main_frame_) {
-      // Debug cases of https://crbug.com/575245.
-      base::debug::SetCrashKeyValue("commit_frame_id",
-                                    base::IntToString(GetRoutingID()));
-      base::debug::SetCrashKeyValue("commit_proxy_id",
-                                    base::IntToString(proxy_routing_id));
-      base::debug::SetCrashKeyValue(
-          "commit_view_id", base::IntToString(render_view_->GetRoutingID()));
-      if (render_view_->main_render_frame_) {
-        base::debug::SetCrashKeyValue(
-            "commit_main_render_frame_id",
-            base::IntToString(
-                render_view_->main_render_frame_->GetRoutingID()));
-      }
-      CHECK(!render_view_->main_render_frame_);
-      render_view_->main_render_frame_ = this;
-      if (render_view_->is_swapped_out())
-        render_view_->SetSwappedOut(false);
-    }
   }
 
   // For new page navigations, the browser process needs to be notified of the
@@ -5090,6 +5060,50 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   // If we end up reusing this WebRequest (for example, due to a #ref click),
   // we don't want the transition type to persist.  Just clear it.
   navigation_state->set_transition_type(ui::PAGE_TRANSITION_LINK);
+}
+
+bool RenderFrameImpl::SwapIn() {
+  CHECK_NE(proxy_routing_id_, MSG_ROUTING_NONE);
+  CHECK(!in_frame_tree_);
+  RenderFrameProxy* proxy = RenderFrameProxy::FromRoutingID(proxy_routing_id_);
+
+  // The proxy might have been detached while the provisional LocalFrame was
+  // being navigated.  In that case, don't swap the frame back in the tree
+  // and return early (to avoid sending confusing IPCs to the browser
+  // process).  See https://crbug.com/526304 and https://crbug.com/568676.
+  if (!proxy)
+    return false;
+
+  int proxy_routing_id = proxy_routing_id_;
+  if (!proxy->web_frame()->swap(frame_))
+    return false;
+
+  proxy_routing_id_ = MSG_ROUTING_NONE;
+  in_frame_tree_ = true;
+
+  // If this is the main frame going from a remote frame to a local frame,
+  // it needs to set RenderViewImpl's pointer for the main frame to itself
+  // and ensure RenderWidget is no longer in swapped out mode.
+  if (is_main_frame_) {
+    // Debug cases of https://crbug.com/575245.
+    base::debug::SetCrashKeyValue("commit_frame_id",
+                                  base::IntToString(GetRoutingID()));
+    base::debug::SetCrashKeyValue("commit_proxy_id",
+                                  base::IntToString(proxy_routing_id));
+    base::debug::SetCrashKeyValue(
+        "commit_view_id", base::IntToString(render_view_->GetRoutingID()));
+    if (render_view_->main_render_frame_) {
+      base::debug::SetCrashKeyValue(
+          "commit_main_render_frame_id",
+          base::IntToString(render_view_->main_render_frame_->GetRoutingID()));
+    }
+    CHECK(!render_view_->main_render_frame_);
+    render_view_->main_render_frame_ = this;
+    if (render_view_->is_swapped_out())
+      render_view_->SetSwappedOut(false);
+  }
+
+  return true;
 }
 
 void RenderFrameImpl::didStartLoading(bool to_different_document) {

@@ -665,6 +665,14 @@ IPC_MESSAGE_ROUTED3(FrameMsg_SwapOut,
                     bool /* is_loading */,
                     content::FrameReplicationState /* replication_state */)
 
+// Requests that a provisional RenderFrame swap itself into the frame tree,
+// replacing the RenderFrameProxy that it is associated with.  This is used
+// with remote-to-local frame navigations when the RenderFrameProxy corresponds
+// to a non-live (crashed) frame.  In that case, the browser process will send
+// this message as part of an early commit to stop showing the sad iframe
+// without waiting for the provisional RenderFrame's navigation to commit.
+IPC_MESSAGE_ROUTED0(FrameMsg_SwapIn)
+
 // Instructs the frame to stop the load in progress, if any.
 IPC_MESSAGE_ROUTED0(FrameMsg_Stop)
 
@@ -722,8 +730,8 @@ IPC_MESSAGE_ROUTED2(FrameMsg_DidChooseColorResponse, unsigned, SkColor)
 // Notifies the color chooser client that the color chooser has ended.
 IPC_MESSAGE_ROUTED1(FrameMsg_DidEndColorChooser, unsigned)
 
-// Notifies the corresponding RenderFrameProxy object to replace itself with the
-// RenderFrame object it is associated with.
+// Requests the corresponding RenderFrameProxy to be deleted and removed from
+// the frame tree.
 IPC_MESSAGE_ROUTED0(FrameMsg_DeleteProxy)
 
 // Request the text surrounding the selection with a |max_length|. The response

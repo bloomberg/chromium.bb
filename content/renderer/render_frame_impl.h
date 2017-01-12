@@ -792,6 +792,14 @@ class CONTENT_EXPORT RenderFrameImpl
                                     blink::WebHistoryCommitType commit_type,
                                     const blink::WebHistoryItem& item);
 
+  // Swaps the current frame into the frame tree, replacing the
+  // RenderFrameProxy it is associated with.  Return value indicates whether
+  // the swap operation succeeded.  This should only be used for provisional
+  // frames associated with a proxy, while the proxy is still in the frame
+  // tree.  If the associated proxy has been detached before this is called,
+  // this returns false and aborts the swap.
+  bool SwapIn();
+
   // IPC message handlers ------------------------------------------------------
   //
   // The documentation for these functions should be in
@@ -800,6 +808,7 @@ class CONTENT_EXPORT RenderFrameImpl
                   const StartNavigationParams& start_params,
                   const RequestNavigationParams& request_params);
   void OnBeforeUnload(bool is_reload);
+  void OnSwapIn();
   void OnSwapOut(int proxy_routing_id,
                  bool is_loading,
                  const FrameReplicationState& replicated_frame_state);

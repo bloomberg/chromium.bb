@@ -861,6 +861,18 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
       // complete. Just switch to the speculative RFH now and go back to normal.
       // (Note that we don't care about on{before}unload handlers if the current
       // RFH isn't live.)
+      //
+      // If the corresponding RenderFrame is currently associated with a proxy,
+      // send a SwapIn message to ensure that the RenderFrame swaps into the
+      // frame tree and replaces that proxy on the renderer side.  Normally
+      // this happens at navigation commit time, but in this case this must be
+      // done earlier to keep browser and renderer state in sync.  This is
+      // important to do before CommitPending(), which destroys the
+      // corresponding proxy. See https://crbug.com/487872.
+      if (GetRenderFrameProxyHost(dest_site_instance.get())) {
+        navigation_rfh->Send(
+            new FrameMsg_SwapIn(navigation_rfh->GetRoutingID()));
+      }
       CommitPending();
 
       // Notify the WebUI about the new RenderFrame if needed (the newly
@@ -2350,6 +2362,18 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
       // navigate.  Just switch to the pending RFH now and go back to normal.
       // (Note that we don't care about on{before}unload handlers if the current
       // RFH isn't live.)
+      //
+      // If the corresponding RenderFrame is currently associated with a proxy,
+      // send a SwapIn message to ensure that the RenderFrame swaps into the
+      // frame tree and replaces that proxy on the renderer side.  Normally
+      // this happens at navigation commit time, but in this case this must be
+      // done earlier to keep browser and renderer state in sync.  This is
+      // important to do before CommitPending(), which destroys the
+      // corresponding proxy. See https://crbug.com/487872.
+      if (GetRenderFrameProxyHost(new_instance.get())) {
+        pending_render_frame_host_->Send(
+            new FrameMsg_SwapIn(pending_render_frame_host_->GetRoutingID()));
+      }
       CommitPending();
       return render_frame_host_.get();
     }

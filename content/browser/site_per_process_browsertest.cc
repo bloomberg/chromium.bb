@@ -8997,4 +8997,53 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(rvh->is_active());
 }
 
+// Verify that a remote-to-local navigation in a crashed subframe works.  See
+// https://crbug.com/487872.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       RemoteToLocalNavigationInCrashedSubframe) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child = root->child_at(0);
+
+  // Crash the subframe process.
+  RenderProcessHost* child_process = child->current_frame_host()->GetProcess();
+  {
+    RenderProcessHostWatcher crash_observer(
+        child_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+    child_process->Shutdown(0, false);
+    crash_observer.Wait();
+  }
+  EXPECT_FALSE(child->current_frame_host()->IsRenderFrameLive());
+
+  // Do a remote-to-local navigation of the child frame from the parent frame.
+  TestFrameNavigationObserver frame_observer(child);
+  GURL frame_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(ExecuteScript(root, "document.querySelector('iframe').src = '" +
+                                      frame_url.spec() + "';\n"));
+  frame_observer.Wait();
+
+  EXPECT_TRUE(child->current_frame_host()->IsRenderFrameLive());
+  EXPECT_FALSE(child->IsLoading());
+  EXPECT_EQ(child->current_frame_host()->GetSiteInstance(),
+            root->current_frame_host()->GetSiteInstance());
+
+  // Ensure the subframe is correctly attached in the frame tree, and that it
+  // has correct content.
+  int child_count = 0;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      root, "window.domAutomationController.send(frames.length);",
+      &child_count));
+  EXPECT_EQ(1, child_count);
+
+  std::string result;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      root,
+      "window.domAutomationController.send(frames[0].document.body.innerText);",
+      &result));
+  EXPECT_EQ("This page has no title.", result);
+}
+
 }  // namespace content
