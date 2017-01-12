@@ -63,9 +63,12 @@
 }
 
 - (void)addChildCoordinator:(BrowserCoordinator*)coordinator {
+  CHECK([self respondsToSelector:@selector(viewController)])
+      << "BrowserCoordinator implementations must provide a viewController "
+         "property.";
   [self.childCoordinators addObject:coordinator];
-  coordinator.browserState = self.browserState;
   coordinator.parentCoordinator = self;
+  coordinator.browserState = self.browserState;
   coordinator.rootViewController = self.viewController;
 }
 
@@ -89,25 +92,36 @@
   } else if (self.childCoordinators.count == 1) {
     [[self.childCoordinators anyObject]
         addOverlayCoordinator:overlayCoordinator];
-  } else {
+  } else if (self.childCoordinators.count > 1) {
     CHECK(NO) << "Coordinators with multiple children must explicitly "
               << "handle -addOverlayCoordinator: or return NO to "
               << "-canAddOverlayCoordinator:";
   }
+  // If control reaches here, the terminal child of the coordinator hierarchy
+  // has returned NO to -canAddOverlayCoordinator, so no overlay can be added.
+  // This is by default a silent no-op.
 }
 
 - (void)removeOverlayCoordinator {
   BrowserCoordinator* overlay = self.overlayCoordinator;
   [overlay.parentCoordinator removeChildCoordinator:overlay];
+  overlay.overlaying = NO;
 }
 
 - (BOOL)canAddOverlayCoordinator:(BrowserCoordinator*)overlayCoordinator {
+  // By default, a hierarchy with an overlay can't add a new one.
+  // By default, coordinators with parents can't be added as overlays.
   // By default, coordinators with no other children can add an overlay.
-  return self.childCoordinators.count == 0;
+  return self.overlayCoordinator == nil &&
+         overlayCoordinator.parentCoordinator == nil &&
+         self.childCoordinators.count == 0;
 }
 
 - (void)removeChildCoordinator:(BrowserCoordinator*)coordinator {
+  if (![self.childCoordinators containsObject:coordinator])
+    return;
   [self.childCoordinators removeObject:coordinator];
+  coordinator.parentCoordinator = nil;
 }
 
 @end

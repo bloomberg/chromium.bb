@@ -14,7 +14,26 @@ source_set("browser") {
 
   deps = [
     "//base",
+    "//ios/chrome/app:tests_fake_hook",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/tabs:tabs_internal",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "browser_coordinator_unittest.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    ":browser",
+    "//base",
+    "//base/test:test_support",
+    "//ios/chrome/test/base",
+    "//testing/gtest",
   ]
 }

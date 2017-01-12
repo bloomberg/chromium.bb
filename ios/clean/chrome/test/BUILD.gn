@@ -1,0 +1,19 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//testing/test.gni")
+
+group("all_tests") {
+  testonly = true
+  deps = [
+    ":ios_clean_chrome_unittests",
+  ]
+}
+
+test("ios_clean_chrome_unittests") {
+  deps = [
+    "//ios/chrome/test:run_all_unittests",
+    "//ios/clean/chrome/browser:unit_tests",
+  ]
+}
