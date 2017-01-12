@@ -281,6 +281,8 @@ class RemovePluginPrivateDataTester {
     SetFileTimestamp(widevine_file2, sixty_days_ago);
   }
 
+  void DeleteClearKeyTestData() { DeleteFile(clearkey_file_); }
+
   // Returns true, if the given origin exists in a PluginPrivateFileSystem.
   bool DataExistsForOrigin(const GURL& origin) {
     AwaitCompletionHelper await_completion;
@@ -361,6 +363,20 @@ class RemovePluginPrivateDataTester {
     return file_url;
   }
 
+  void DeleteFile(storage::FileSystemURL file_url) {
+    AwaitCompletionHelper await_completion;
+    storage::AsyncFileUtil* file_util = filesystem_context_->GetAsyncFileUtil(
+        storage::kFileSystemTypePluginPrivate);
+    std::unique_ptr<storage::FileSystemOperationContext> operation_context =
+        base::MakeUnique<storage::FileSystemOperationContext>(
+            filesystem_context_);
+    file_util->DeleteFile(
+        std::move(operation_context), file_url,
+        base::Bind(&RemovePluginPrivateDataTester::OnFileDeleted,
+                   base::Unretained(this), &await_completion));
+    await_completion.BlockUntilNotified();
+  }
+
   // Sets the last_access_time and last_modified_time to |time_stamp| on the
   // file specified by |file_url|. The file must already exist.
   void SetFileTimestamp(const storage::FileSystemURL& file_url,
@@ -389,6 +405,12 @@ class RemovePluginPrivateDataTester {
                      bool created) {
     EXPECT_EQ(base::File::FILE_OK, result) << base::File::ErrorToString(result);
     EXPECT_TRUE(created);
+    await_completion->Notify();
+  }
+
+  void OnFileDeleted(AwaitCompletionHelper* await_completion,
+                     base::File::Error result) {
+    EXPECT_EQ(base::File::FILE_OK, result) << base::File::ErrorToString(result);
     await_completion->Notify();
   }
 
@@ -433,7 +455,8 @@ class RemovePluginPrivateDataTester {
   // We don't own this pointer.
   storage::FileSystemContext* filesystem_context_;
 
-  // Keep track of the URL for the ClearKey file so that it can be written to.
+  // Keep track of the URL for the ClearKey file so that it can be written to
+  // or deleted.
   storage::FileSystemURL clearkey_file_;
 
   DISALLOW_COPY_AND_ASSIGN(RemovePluginPrivateDataTester);
@@ -1292,6 +1315,32 @@ TEST_F(StoragePartitionImplTest, RemovePluginPrivateDataWhileWriting) {
 
   base::File file2 = tester.OpenClearKeyFileForWrite();
   EXPECT_FALSE(file2.IsValid());
+}
+
+TEST_F(StoragePartitionImplTest, RemovePluginPrivateDataAfterDeletion) {
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+
+  RemovePluginPrivateDataTester tester(partition->GetFileSystemContext());
+  tester.AddPluginPrivateTestData();
+  EXPECT_TRUE(tester.DataExistsForOrigin(kOrigin1));
+  EXPECT_TRUE(tester.DataExistsForOrigin(kOrigin2));
+
+  // Delete the single file saved for |kOrigin1|. This does not remove the
+  // origin from the list of Origins. However, ClearPluginPrivateData() will
+  // remove it.
+  tester.DeleteClearKeyTestData();
+  EXPECT_TRUE(tester.DataExistsForOrigin(kOrigin1));
+  EXPECT_TRUE(tester.DataExistsForOrigin(kOrigin2));
+
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&ClearPluginPrivateData, partition, GURL(),
+                            base::Time(), base::Time::Max(), &run_loop));
+  run_loop.Run();
+
+  EXPECT_FALSE(tester.DataExistsForOrigin(kOrigin1));
+  EXPECT_FALSE(tester.DataExistsForOrigin(kOrigin2));
 }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 

@@ -112,6 +112,9 @@ class PluginPrivateDataByOriginChecker {
   // Keep track if the data for this origin needs to be deleted due to
   // any file found that has last modified time between |begin_| and |end_|.
   bool delete_this_origin_data_ = false;
+
+  // Keep track if any files exist for this origin.
+  bool files_found_ = false;
 };
 
 void PluginPrivateDataByOriginChecker::CheckFilesOnIOThread() {
@@ -167,6 +170,10 @@ void PluginPrivateDataByOriginChecker::OnDirectoryRead(
     DecrementTaskCount();
     return;
   }
+
+  // If there are files found, keep track of it.
+  if (!file_list.empty())
+    files_found_ = true;
 
   // No error, process the files returned. No need to do this if we have
   // already decided to delete all the data for this origin.
@@ -227,6 +234,10 @@ void PluginPrivateDataByOriginChecker::DecrementTaskCount() {
   --task_count_;
   if (task_count_)
     return;
+
+  // If no files exist for this origin, then we can safely delete it.
+  if (!files_found_)
+    delete_this_origin_data_ = true;
 
   // If there are no more tasks in progress, then run |callback_| on the
   // proper thread.
