@@ -73,10 +73,7 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
     double underlyingFraction() const {
       return m_composite == EffectModel::CompositeReplace ? 0 : 1;
     }
-    virtual bool isNeutral() const {
-      NOTREACHED();
-      return false;
-    }
+    virtual bool isNeutral() const = 0;
     virtual PassRefPtr<PropertySpecificKeyframe> cloneWithOffset(
         double offset) const = 0;
 

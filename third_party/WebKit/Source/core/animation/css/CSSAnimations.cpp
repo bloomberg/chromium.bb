@@ -172,35 +172,6 @@ static StringKeyframeEffectModel* createKeyframeEffectModel(
   DCHECK(!keyframes.front()->offset());
   DCHECK_EQ(keyframes.back()->offset(), 1);
 
-  // This is used for use counting neutral keyframes running on the compositor.
-  PropertySet allProperties;
-  for (const auto& keyframe : keyframes) {
-    for (const auto& property : keyframe->properties())
-      allProperties.add(property.cssProperty());
-  }
-  const PropertyHandleSet& startKeyframeProperties =
-      startKeyframe->properties();
-  const PropertyHandleSet& endKeyframeProperties = endKeyframe->properties();
-  bool missingStartValues =
-      startKeyframeProperties.size() < allProperties.size();
-  bool missingEndValues = endKeyframeProperties.size() < allProperties.size();
-  if (missingStartValues || missingEndValues) {
-    for (CSSPropertyID property : allProperties) {
-      bool startNeedsValue =
-          missingStartValues &&
-          !startKeyframeProperties.contains(PropertyHandle(property));
-      bool endNeedsValue =
-          missingEndValues &&
-          !endKeyframeProperties.contains(PropertyHandle(property));
-      if (!startNeedsValue && !endNeedsValue)
-        continue;
-      if (CompositorAnimations::isCompositableProperty(property))
-        UseCounter::count(
-            elementForScoping->document(),
-            UseCounter::SyntheticKeyframesInCompositedCSSAnimation);
-    }
-  }
-
   StringKeyframeEffectModel* model =
       StringKeyframeEffectModel::create(keyframes, &keyframes[0]->easing());
   if (animationIndex > 0 && model->hasSyntheticKeyframes())

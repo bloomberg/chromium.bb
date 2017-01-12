@@ -46,6 +46,7 @@ class CORE_EXPORT AnimatableValueKeyframe : public Keyframe {
       return m_value;
     }
 
+    bool isNeutral() const final { return m_value->isNeutral(); }
     PassRefPtr<Keyframe::PropertySpecificKeyframe> neutralKeyframe(
         double offset,
         PassRefPtr<TimingFunction> easing) const final;

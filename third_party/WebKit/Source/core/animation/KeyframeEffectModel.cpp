@@ -36,6 +36,7 @@
 #include "core/css/CSSPropertyEquality.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
+#include "core/frame/UseCounter.h"
 #include "platform/animation/AnimationUtilities.h"
 #include "platform/geometry/FloatBox.h"
 #include "platform/transforms/TransformationMatrix.h"
@@ -110,15 +111,22 @@ bool KeyframeEffectModelBase::snapshotAllCompositorKeyframes(
     const ComputedStyle* parentStyle) const {
   m_needsCompositorKeyframesSnapshot = false;
   bool updated = false;
+  bool hasNeutralCompositableKeyframe = false;
   ensureKeyframeGroups();
   for (CSSPropertyID property : CompositorAnimations::compositableProperties) {
     PropertySpecificKeyframeGroup* keyframeGroup =
         m_keyframeGroups->get(PropertyHandle(property));
     if (!keyframeGroup)
       continue;
-    for (auto& keyframe : keyframeGroup->m_keyframes)
+    for (auto& keyframe : keyframeGroup->m_keyframes) {
       updated |= keyframe->populateAnimatableValue(property, element, baseStyle,
                                                    parentStyle);
+      hasNeutralCompositableKeyframe |= keyframe->isNeutral();
+    }
+  }
+  if (updated && hasNeutralCompositableKeyframe) {
+    UseCounter::count(element.document(),
+                      UseCounter::SyntheticKeyframesInCompositedCSSAnimation);
   }
   return updated;
 }
