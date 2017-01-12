@@ -322,9 +322,17 @@ AutomationPredicate.structuralContainer = AutomationPredicate.roles([
  */
 AutomationPredicate.root = function(node) {
   switch (node.role) {
-    case Role.dialog:
     case Role.window:
       return true;
+    case Role.dialog:
+      // The below logic handles nested dialogs properly in the desktop tree
+      // like that found in a bubble view.
+      return node.root.role != Role.desktop ||
+          (!!node.parent &&
+           node.parent.role == Role.window &&
+           node.parent.children.every(function(child) {
+             return node.role == Role.window || node.role == Role.dialog;
+           }));
     case Role.toolbar:
       return node.root.role == Role.desktop;
     case Role.rootWebArea:
