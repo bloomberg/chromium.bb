@@ -68,17 +68,13 @@ if (is_win) {
       "crash_switches.h",
       "fallback_crash_handler_launcher_win.cc",
       "fallback_crash_handler_launcher_win.h",
-      "fallback_crash_handler_win.cc",
-      "fallback_crash_handler_win.h",
       "run_as_crashpad_handler_win.cc",
       "run_as_crashpad_handler_win.h",
     ]
 
     deps = [
       "//base",
-      "//third_party/crashpad/crashpad/client",
       "//third_party/crashpad/crashpad/handler:handler_lib",
-      "//third_party/crashpad/crashpad/minidump",
     ]
   }
 }
@@ -220,7 +216,6 @@ source_set("unit_tests") {
   sources = [
     "crash_keys_win_unittest.cc",
     "fallback_crash_handler_launcher_win_unittest.cc",
-    "fallback_crash_handler_win_unittest.cc",
   ]
   deps = [
     ":lib",
@@ -234,10 +229,6 @@ source_set("unit_tests") {
     deps += [
       ":run_as_crashpad_handler",
       "//breakpad:client",
-      "//third_party/crashpad/crashpad/client:client",
-      "//third_party/crashpad/crashpad/compat",
-      "//third_party/crashpad/crashpad/snapshot:snapshot",
-      "//third_party/crashpad/crashpad/util",
     ]
   }
 }
