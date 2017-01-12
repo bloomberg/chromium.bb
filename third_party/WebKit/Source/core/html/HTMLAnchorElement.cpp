@@ -415,6 +415,8 @@ void HTMLAnchorElement::handleClick(Event* event) {
       SecurityPolicy::referrerPolicyFromStringWithLegacyKeywords(
           fastGetAttribute(referrerpolicyAttr), &policy) &&
       !hasRel(RelationNoReferrer)) {
+    UseCounter::count(document(),
+                      UseCounter::HTMLAnchorElementReferrerPolicyAttribute);
     request.setHTTPReferrer(SecurityPolicy::generateReferrer(
         policy, completedURL, document().outgoingReferrer()));
   }

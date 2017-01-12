@@ -113,9 +113,12 @@ void HTMLIFrameElement::parseAttribute(
     UseCounter::count(document(), UseCounter::SandboxViaIFrame);
   } else if (name == referrerpolicyAttr) {
     m_referrerPolicy = ReferrerPolicyDefault;
-    if (!value.isNull())
+    if (!value.isNull()) {
       SecurityPolicy::referrerPolicyFromStringWithLegacyKeywords(
           value, &m_referrerPolicy);
+      UseCounter::count(document(),
+                        UseCounter::HTMLIFrameElementReferrerPolicyAttribute);
+    }
   } else if (name == allowfullscreenAttr) {
     bool oldAllowFullscreen = m_allowFullscreen;
     m_allowFullscreen = !value.isNull();

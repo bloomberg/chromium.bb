@@ -82,8 +82,11 @@ void HTMLLinkElement::parseAttribute(
     process();
   } else if (name == referrerpolicyAttr) {
     m_referrerPolicy = ReferrerPolicyDefault;
-    if (!value.isNull())
+    if (!value.isNull()) {
       SecurityPolicy::referrerPolicyFromString(value, &m_referrerPolicy);
+      UseCounter::count(document(),
+                        UseCounter::HTMLLinkElementReferrerPolicyAttribute);
+    }
   } else if (name == sizesAttr) {
     m_sizes->setValue(value);
   } else if (name == mediaAttr) {

@@ -1421,6 +1421,10 @@ class CORE_EXPORT UseCounter {
     TopNavInSandboxWithPerm = 1751,
     TopNavInSandboxWithPermButNoGesture = 1752,
     ReferrerPolicyHeader = 1753,
+    HTMLAnchorElementReferrerPolicyAttribute = 1754,
+    HTMLIFrameElementReferrerPolicyAttribute = 1755,
+    HTMLImageElementReferrerPolicyAttribute = 1756,
+    HTMLLinkElementReferrerPolicyAttribute = 1757,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

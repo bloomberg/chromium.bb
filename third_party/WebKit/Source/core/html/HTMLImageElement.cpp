@@ -267,6 +267,8 @@ void HTMLImageElement::parseAttribute(
     if (!params.newValue.isNull()) {
       SecurityPolicy::referrerPolicyFromStringWithLegacyKeywords(
           params.newValue, &m_referrerPolicy);
+      UseCounter::count(document(),
+                        UseCounter::HTMLImageElementReferrerPolicyAttribute);
     }
   } else {
     HTMLElement::parseAttribute(params);
