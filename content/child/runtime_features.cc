@@ -293,6 +293,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
       base::FeatureList::IsEnabled(
           features::kExpensiveBackgroundTimerThrottling));
 
+  if (base::FeatureList::IsEnabled(features::kHeapCompaction))
+    WebRuntimeFeatures::enableHeapCompaction(true);
+
   WebRuntimeFeatures::enableRenderingPipelineThrottling(
     base::FeatureList::IsEnabled(features::kRenderingPipelineThrottling));
 

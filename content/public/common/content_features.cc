@@ -105,6 +105,10 @@ const base::Feature kGenericSensor{"GenericSensor",
 const base::Feature kGuestViewCrossProcessFrames{
     "GuestViewCrossProcessFrames", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables BlinkGC heap compaction.
+const base::Feature kHeapCompaction{"HeapCompaction",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables lazily parsing css properties for performance.
 const base::Feature kLazyParseCSS{"LazyParseCSS",
                                   base::FEATURE_DISABLED_BY_DEFAULT};

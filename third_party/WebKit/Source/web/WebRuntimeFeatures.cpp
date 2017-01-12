@@ -150,6 +150,10 @@ void WebRuntimeFeatures::enableGenericSensor(bool enable) {
   RuntimeEnabledFeatures::setSensorEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableHeapCompaction(bool enable) {
+  RuntimeEnabledFeatures::setHeapCompactionEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableInputMultipleFieldsUI(bool enable) {
   RuntimeEnabledFeatures::setInputMultipleFieldsUIEnabled(enable);
 }
