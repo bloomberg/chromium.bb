@@ -1267,7 +1267,8 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     paygen = self.setupAutotestPayloadsTests()
 
     payload_tests = ['Payload Tests']
-    paygen._archive_build_uri = 'archive_build_uri'
+    # Don't pollute the src directory.
+    paygen._archive_build_uri = tempfile.gettempdir() + 'archive_build_uri'
     paygen._archive_build = 'foo-bd-release/R9001-1234.56.7'
 
     test_channel = paygen._build.channel.rpartition('-')[0]

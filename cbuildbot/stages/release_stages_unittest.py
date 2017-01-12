@@ -399,6 +399,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
     with patch(paygen_build_lib, 'CreatePayloads') as create_payloads:
       # Have to patch and verify that the PaygenTestStage is created.
       stage = self.ConstructStage()
+
       # CreatePayloads should return a tuple of a suite name and the finished
       # URI.
       create_payloads.side_effect = iter([('foo-suite-name',
@@ -408,12 +409,12 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
       with patch(paygen_build_lib, 'ScheduleAutotestTests') as sched_tests:
         # Call the method under test.
         stage._RunPaygenInProcess('foo', 'foo-board', 'foo-version',
-                                  False, False, False, skip_duts_check=False)
+                                  True, False, False, skip_duts_check=False)
         # Ensure that PaygenTestStage is created and schedules the test suite
-        # with the correct arguments.)
+        # with the correct arguments.
         sched_tests.assert_called_once_with(
             'foo-suite-name', 'foo-archive-board', 'foo-archive-build',
-            False, False)
+            False, True)
 
       # Ensure arguments are properly converted and passed along.
       create_payloads.assert_called_with(gspaths.Build(version='foo-version',
@@ -421,7 +422,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
                                                        channel='foo-channel'),
                                          work_dir=mock.ANY,
                                          site_config=stage._run.site_config,
-                                         dry_run=False,
+                                         dry_run=True,
                                          run_parallel=True,
                                          skip_delta_payloads=False,
                                          disable_tests=False,
@@ -460,7 +461,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
 
 class PaygenBuildStageTest(generic_stages_unittest.AbstractStageTestCase,
                            cbuildbot_unittest.SimpleBuilderTestCase):
-  """Test the PaygenTestStage stage."""
+  """Test the PaygenBuild stage."""
 
   # We use a variant board to make sure the '_' is translated to '-'.
   BOT_ID = 'x86-alex_he-release'
@@ -511,10 +512,13 @@ class PaygenTestStageTest(generic_stages_unittest.AbstractStageTestCase,
         builder_run=self._run,
         suite_name='foo-test-suite',
         board=self._current_board,
-        channel='foochan',
+        # The PaygenBuild stage will add the '-channel' suffix to the channel
+        # when converting to release tools naming.
+        channel='foochan-channel',
         build='foo-version',
         finished_uri='foo-finished-uri',
-        skip_duts_check=False)
+        skip_duts_check=False,
+        debug=True)
 
   def testStageName(self):
     """See if the stage name is correctly formed."""

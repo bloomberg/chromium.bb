@@ -463,7 +463,8 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
         if not self.skip_testing:
           PaygenTestStage(
               self._run, suite_name, archive_board, self.channel,
-              archive_build, finished_uri, self.skip_duts_check).Run()
+              archive_build, finished_uri, self.skip_duts_check,
+              self.debug).Run()
 
       except (paygen_build_lib.BuildFinished,
               paygen_build_lib.BuildLocked) as e:
@@ -479,7 +480,7 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
 class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
   """Stage that schedules the payload tests."""
   def __init__(self, builder_run, suite_name, board, channel, build,
-               finished_uri, skip_duts_check, **kwargs):
+               finished_uri, skip_duts_check, debug, **kwargs):
     """Init that accepts the channels argument, if present.
 
     Args:
@@ -490,22 +491,27 @@ class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
       build: Version of payloads to generate.
       finished_uri: GS URI of the finished flag to create on success.
       skip_duts_check: Do not check minimum available DUTs before tests.
+      debug: Boolean indicating if this is a test run or a real run.
     """
     self.suite_name = suite_name
     self.board = board
     self.build = build
     self.finished_uri = finished_uri
     self.skip_duts_check = skip_duts_check
+    self.debug = debug
+    # We don't need the '-channel'suffix.
+    if channel.endswith('-channel'):
+      channel = channel[0:-len('-channel')]
     super(PaygenTestStage, self).__init__(
         builder_run, board, suffix=channel.capitalize(), **kwargs)
-    self._drm = dryrun_lib.DryRunMgr(self._run.debug)
+    self._drm = dryrun_lib.DryRunMgr(self.debug)
 
   def PerformStage(self):
     """Schedule the tests to run."""
     # Schedule the tests to run and wait for the results.
     paygen_build_lib.ScheduleAutotestTests(self.suite_name, self.board,
                                            self.build, self.skip_duts_check,
-                                           self._run.debug)
+                                           self.debug)
 
     # Mark the build as finished since the payloads were generated, uploaded,
     # and tested by this point.
