@@ -144,9 +144,6 @@ static std::string SetFragmentSamplerType(SamplerType requested_type,
 
 }  // namespace
 
-ShaderLocations::ShaderLocations() {
-}
-
 TexCoordPrecision TexCoordPrecisionRequired(GLES2Interface* context,
                                             int* highp_threshold_cache,
                                             int highp_threshold_min,
@@ -238,14 +235,6 @@ void VertexShaderBase::Init(GLES2Interface* context,
   }
   if (position_source_ == POSITION_SOURCE_ATTRIBUTE_INDEXED_UNIFORM)
     quad_location_ = locations[index++];
-}
-
-void VertexShaderBase::FillLocations(ShaderLocations* locations) const {
-  locations->quad = quad_location();
-  locations->edge = edge_location();
-  locations->viewport = viewport_location();
-  locations->matrix = matrix_location();
-  locations->vertex_tex_transform = vertex_tex_transform_location();
 }
 
 std::string VertexShaderBase::GetShaderString() const {
@@ -474,33 +463,6 @@ void FragmentShaderBase::Init(GLES2Interface* context,
       break;
   }
   DCHECK_EQ(index, locations.size());
-}
-
-void FragmentShaderBase::FillLocations(ShaderLocations* locations) const {
-  if (has_blend_mode()) {
-    locations->backdrop = backdrop_location_;
-    locations->backdrop_rect = backdrop_rect_location_;
-  }
-  if (mask_for_background_)
-    locations->original_backdrop = original_backdrop_location_;
-  if (mask_mode_ != NO_MASK) {
-    locations->mask_sampler = mask_sampler_location_;
-    locations->mask_tex_coord_scale = mask_tex_coord_scale_location_;
-    locations->mask_tex_coord_offset = mask_tex_coord_offset_location_;
-  }
-  if (has_color_matrix_) {
-    locations->color_matrix = color_matrix_location_;
-    locations->color_offset = color_offset_location_;
-  }
-  if (has_uniform_alpha_)
-    locations->alpha = alpha_location_;
-  switch (input_color_type_) {
-    case INPUT_COLOR_SOURCE_RGBA_TEXTURE:
-      locations->sampler = sampler_location_;
-      break;
-    case INPUT_COLOR_SOURCE_UNIFORM:
-      break;
-  }
 }
 
 std::string FragmentShaderBase::SetBlendModeFunctions(

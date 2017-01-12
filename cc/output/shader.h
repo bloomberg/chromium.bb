@@ -125,26 +125,6 @@ enum MaskMode {
   LAST_MASK_VALUE = HAS_MASK
 };
 
-struct ShaderLocations {
-  ShaderLocations();
-
-  int sampler = -1;
-  int quad = -1;
-  int edge = -1;
-  int viewport = -1;
-  int mask_sampler = -1;
-  int mask_tex_coord_scale = -1;
-  int mask_tex_coord_offset = -1;
-  int matrix = -1;
-  int alpha = -1;
-  int color_matrix = -1;
-  int color_offset = -1;
-  int vertex_tex_transform = -1;
-  int backdrop = -1;
-  int backdrop_rect = -1;
-  int original_backdrop = -1;
-};
-
 // Note: The highp_threshold_cache must be provided by the caller to make
 // the caching multi-thread/context safe in an easy low-overhead manner.
 // The caller must make sure to clear highp_threshold_cache to 0, so it can be
@@ -168,27 +148,6 @@ class VertexShaderBase {
             unsigned program,
             int* base_uniform_index);
   std::string GetShaderString() const;
-  void FillLocations(ShaderLocations* locations) const;
-
-  int vertex_tex_transform_location() const {
-    return vertex_tex_transform_location_;
-  }
-
-  int tex_matrix_location() const { return tex_matrix_location_; }
-
-  int ya_tex_scale_location() const { return ya_tex_scale_location_; }
-  int ya_tex_offset_location() const { return ya_tex_offset_location_; }
-  int uv_tex_scale_location() const { return uv_tex_scale_location_; }
-  int uv_tex_offset_location() const { return uv_tex_offset_location_; }
-
-  int matrix_location() const { return matrix_location_; }
-
-  int vertex_opacity_location() const { return vertex_opacity_location_; }
-
-  int viewport_location() const { return viewport_location_; }
-  int edge_location() const { return edge_location_; }
-
-  int quad_location() const { return quad_location_; }
 
  protected:
   template <class VertexShader, class FragmentShader>
@@ -240,15 +199,6 @@ class FragmentShaderBase {
                     unsigned program,
                     int* base_uniform_index);
   std::string GetShaderString() const;
-  void FillLocations(ShaderLocations* locations) const;
-
-  int sampler_location() const { return sampler_location_; }
-  int alpha_location() const { return alpha_location_; }
-  int color_location() const { return color_location_; }
-  int background_color_location() const { return background_color_location_; }
-  int fragment_tex_transform_location() const {
-    return fragment_tex_transform_location_;
-  }
 
  protected:
   FragmentShaderBase();

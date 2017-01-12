@@ -132,24 +132,27 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
   }
 
   void TestBasicShaders() {
-    EXPECT_PROGRAM_VALID(renderer()->GetDebugBorderProgram());
-    EXPECT_PROGRAM_VALID(renderer()->GetSolidColorProgram());
-    EXPECT_PROGRAM_VALID(renderer()->GetSolidColorProgramAA());
+    EXPECT_PROGRAM_VALID(renderer()->GetProgram(ProgramKey::DebugBorder()));
+    EXPECT_PROGRAM_VALID(renderer()->GetProgram(ProgramKey::SolidColor(NO_AA)));
+    EXPECT_PROGRAM_VALID(
+        renderer()->GetProgram(ProgramKey::SolidColor(USE_AA)));
   }
 
   void TestShadersWithPrecision(TexCoordPrecision precision) {
     // This program uses external textures and sampler, so it won't compile
     // everywhere.
     if (context_provider()->ContextCapabilities().egl_image_external)
-      EXPECT_PROGRAM_VALID(renderer()->GetVideoStreamTextureProgram(precision));
+      EXPECT_PROGRAM_VALID(
+          renderer()->GetProgram(ProgramKey::VideoStream(precision)));
   }
 
   void TestShadersWithPrecisionAndBlend(TexCoordPrecision precision,
                                         BlendMode blend_mode) {
-    EXPECT_PROGRAM_VALID(
-        renderer()->GetRenderPassProgram(precision, blend_mode));
-    EXPECT_PROGRAM_VALID(
-        renderer()->GetRenderPassProgramAA(precision, blend_mode));
+    EXPECT_PROGRAM_VALID(renderer()->GetProgram(ProgramKey::RenderPass(
+        precision, SAMPLER_TYPE_2D, blend_mode, NO_AA, NO_MASK, false, false)));
+    EXPECT_PROGRAM_VALID(renderer()->GetProgram(
+        ProgramKey::RenderPass(precision, SAMPLER_TYPE_2D, blend_mode, USE_AA,
+                               NO_MASK, false, false)));
   }
 
   void TestShadersWithPrecisionAndSampler(TexCoordPrecision precision,
@@ -160,23 +163,28 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
       return;
     }
 
-    EXPECT_PROGRAM_VALID(renderer()->GetTextureProgram(precision, sampler));
-    EXPECT_PROGRAM_VALID(
-        renderer()->GetNonPremultipliedTextureProgram(precision, sampler));
-    EXPECT_PROGRAM_VALID(
-        renderer()->GetTextureBackgroundProgram(precision, sampler));
-    EXPECT_PROGRAM_VALID(
-        renderer()->GetNonPremultipliedTextureBackgroundProgram(precision,
-                                                                sampler));
+    EXPECT_PROGRAM_VALID(renderer()->GetProgram(
+        ProgramKey::Texture(precision, sampler, PREMULTIPLIED_ALPHA, false)));
+    EXPECT_PROGRAM_VALID(renderer()->GetProgram(
+        ProgramKey::Texture(precision, sampler, PREMULTIPLIED_ALPHA, true)));
+    EXPECT_PROGRAM_VALID(renderer()->GetProgram(ProgramKey::Texture(
+        precision, sampler, NON_PREMULTIPLIED_ALPHA, false)));
+    EXPECT_PROGRAM_VALID(renderer()->GetProgram(ProgramKey::Texture(
+        precision, sampler, NON_PREMULTIPLIED_ALPHA, true)));
 
-    EXPECT_PROGRAM_VALID(renderer()->GetTileProgram(precision, sampler));
-    EXPECT_PROGRAM_VALID(renderer()->GetTileProgramOpaque(precision, sampler));
-    EXPECT_PROGRAM_VALID(renderer()->GetTileProgramAA(precision, sampler));
-    EXPECT_PROGRAM_VALID(renderer()->GetTileProgramSwizzle(precision, sampler));
-    EXPECT_PROGRAM_VALID(
-        renderer()->GetTileProgramSwizzleOpaque(precision, sampler));
-    EXPECT_PROGRAM_VALID(
-        renderer()->GetTileProgramSwizzleAA(precision, sampler));
+    EXPECT_PROGRAM_VALID(renderer()->GetProgram(
+        ProgramKey::Tile(precision, sampler, NO_AA, NO_SWIZZLE, false)));
+    EXPECT_PROGRAM_VALID(renderer()->GetProgram(
+        ProgramKey::Tile(precision, sampler, NO_AA, DO_SWIZZLE, false)));
+    EXPECT_PROGRAM_VALID(renderer()->GetProgram(
+        ProgramKey::Tile(precision, sampler, USE_AA, NO_SWIZZLE, false)));
+    EXPECT_PROGRAM_VALID(renderer()->GetProgram(
+        ProgramKey::Tile(precision, sampler, USE_AA, DO_SWIZZLE, false)));
+    EXPECT_PROGRAM_VALID(renderer()->GetProgram(
+        ProgramKey::Tile(precision, sampler, NO_AA, NO_SWIZZLE, true)));
+    EXPECT_PROGRAM_VALID(renderer()->GetProgram(
+        ProgramKey::Tile(precision, sampler, NO_AA, DO_SWIZZLE, true)));
+
     for (int j = 0; j < 2; j++) {
       for (int k = 0; k < 2; k++) {
         for (int l = 0; l < 2; l++) {
@@ -197,14 +205,18 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
       return;
     }
 
-    EXPECT_PROGRAM_VALID(renderer()->GetRenderPassMaskProgram(
-        precision, sampler, blend_mode, mask_for_background));
-    EXPECT_PROGRAM_VALID(renderer()->GetRenderPassMaskProgramAA(
-        precision, sampler, blend_mode, mask_for_background));
-    EXPECT_PROGRAM_VALID(renderer()->GetRenderPassMaskColorMatrixProgramAA(
-        precision, sampler, blend_mode, mask_for_background));
-    EXPECT_PROGRAM_VALID(renderer()->GetRenderPassMaskColorMatrixProgram(
-        precision, sampler, blend_mode, mask_for_background));
+    EXPECT_PROGRAM_VALID(renderer()->GetProgram(
+        ProgramKey::RenderPass(precision, sampler, blend_mode, NO_AA, HAS_MASK,
+                               mask_for_background, false)));
+    EXPECT_PROGRAM_VALID(renderer()->GetProgram(
+        ProgramKey::RenderPass(precision, sampler, blend_mode, NO_AA, HAS_MASK,
+                               mask_for_background, true)));
+    EXPECT_PROGRAM_VALID(renderer()->GetProgram(
+        ProgramKey::RenderPass(precision, sampler, blend_mode, USE_AA, HAS_MASK,
+                               mask_for_background, false)));
+    EXPECT_PROGRAM_VALID(renderer()->GetProgram(
+        ProgramKey::RenderPass(precision, sampler, blend_mode, USE_AA, HAS_MASK,
+                               mask_for_background, true)));
   }
 };
 

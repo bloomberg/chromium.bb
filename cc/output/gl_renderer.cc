@@ -181,7 +181,7 @@ struct DrawRenderPassDrawQuadParams {
 
   // Blending refers to modifications to the backdrop.
   bool use_shaders_for_blending = false;
-  ShaderLocations locations;
+  const Program* program = nullptr;
 
   bool use_aa = false;
 
@@ -604,7 +604,7 @@ void GLRenderer::DrawDebugBorderQuad(const DrawingFrame* frame,
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
   static float gl_matrix[16];
-  const DebugBorderProgram* program = GetDebugBorderProgram();
+  const Program* program = GetProgram(ProgramKey::DebugBorder());
   DCHECK(program && (program->initialized() || IsContextLost()));
   SetUseProgram(program->program());
 
@@ -617,13 +617,12 @@ void GLRenderer::DrawDebugBorderQuad(const DrawingFrame* frame,
                     gfx::RectF(layer_rect));
   GLRenderer::ToGLMatrix(&gl_matrix[0],
                          frame->projection_matrix * render_matrix);
-  gl_->UniformMatrix4fv(program->vertex_shader().matrix_location(), 1, false,
-                        &gl_matrix[0]);
+  gl_->UniformMatrix4fv(program->matrix_location(), 1, false, &gl_matrix[0]);
 
   SkColor color = quad->color;
   float alpha = SkColorGetA(color) * (1.0f / 255.0f);
 
-  gl_->Uniform4f(program->fragment_shader().color_location(),
+  gl_->Uniform4f(program->color_location(),
                  (SkColorGetR(color) * (1.0f / 255.0f)) * alpha,
                  (SkColorGetG(color) * (1.0f / 255.0f)) * alpha,
                  (SkColorGetB(color) * (1.0f / 255.0f)) * alpha, alpha);
@@ -1310,83 +1309,26 @@ void GLRenderer::ChooseRPDQProgram(DrawRenderPassDrawQuadParams* params) {
           ? BlendModeFromSkXfermode(params->quad->shared_quad_state->blend_mode)
           : BLEND_MODE_NONE;
 
-  unsigned mask_texture_id = 0;
-  SamplerType mask_sampler = SAMPLER_TYPE_NA;
+  SamplerType sampler_type = SAMPLER_TYPE_2D;
+  MaskMode mask_mode = NO_MASK;
+  bool mask_for_background = params->mask_for_background;
   if (params->mask_resource_lock) {
-    mask_texture_id = params->mask_resource_lock->texture_id();
-    mask_sampler =
+    mask_mode = HAS_MASK;
+    sampler_type =
         SamplerTypeFromTextureTarget(params->mask_resource_lock->target());
   }
-  bool mask_for_background = params->mask_for_background;
 
-  if (params->use_aa && mask_texture_id && !params->use_color_matrix) {
-    const RenderPassMaskProgramAA* program = GetRenderPassMaskProgramAA(
-        tex_coord_precision, mask_sampler,
-        shader_blend_mode, mask_for_background);
-    SetUseProgram(program->program());
-    program->vertex_shader().FillLocations(&params->locations);
-    program->fragment_shader().FillLocations(&params->locations);
-    gl_->Uniform1i(params->locations.sampler, 0);
-  } else if (!params->use_aa && mask_texture_id && !params->use_color_matrix) {
-    const RenderPassMaskProgram* program = GetRenderPassMaskProgram(
-        tex_coord_precision, mask_sampler,
-        shader_blend_mode, mask_for_background);
-    SetUseProgram(program->program());
-    program->vertex_shader().FillLocations(&params->locations);
-    program->fragment_shader().FillLocations(&params->locations);
-    gl_->Uniform1i(params->locations.sampler, 0);
-  } else if (params->use_aa && !mask_texture_id && !params->use_color_matrix) {
-    const RenderPassProgramAA* program =
-        GetRenderPassProgramAA(tex_coord_precision, shader_blend_mode);
-    SetUseProgram(program->program());
-    program->vertex_shader().FillLocations(&params->locations);
-    program->fragment_shader().FillLocations(&params->locations);
-    gl_->Uniform1i(params->locations.sampler, 0);
-  } else if (params->use_aa && mask_texture_id && params->use_color_matrix) {
-    const RenderPassMaskColorMatrixProgramAA* program =
-        GetRenderPassMaskColorMatrixProgramAA(
-            tex_coord_precision, mask_sampler,
-            shader_blend_mode, mask_for_background);
-    SetUseProgram(program->program());
-    program->vertex_shader().FillLocations(&params->locations);
-    program->fragment_shader().FillLocations(&params->locations);
-    gl_->Uniform1i(params->locations.sampler, 0);
-  } else if (params->use_aa && !mask_texture_id && params->use_color_matrix) {
-    const RenderPassColorMatrixProgramAA* program =
-        GetRenderPassColorMatrixProgramAA(tex_coord_precision,
-                                          shader_blend_mode);
-    SetUseProgram(program->program());
-    program->vertex_shader().FillLocations(&params->locations);
-    program->fragment_shader().FillLocations(&params->locations);
-    gl_->Uniform1i(params->locations.sampler, 0);
-  } else if (!params->use_aa && mask_texture_id && params->use_color_matrix) {
-    const RenderPassMaskColorMatrixProgram* program =
-        GetRenderPassMaskColorMatrixProgram(
-            tex_coord_precision, mask_sampler,
-            shader_blend_mode, mask_for_background);
-    SetUseProgram(program->program());
-    program->vertex_shader().FillLocations(&params->locations);
-    program->fragment_shader().FillLocations(&params->locations);
-    gl_->Uniform1i(params->locations.sampler, 0);
-  } else if (!params->use_aa && !mask_texture_id && params->use_color_matrix) {
-    const RenderPassColorMatrixProgram* program =
-        GetRenderPassColorMatrixProgram(tex_coord_precision, shader_blend_mode);
-    SetUseProgram(program->program());
-    program->vertex_shader().FillLocations(&params->locations);
-    program->fragment_shader().FillLocations(&params->locations);
-    gl_->Uniform1i(params->locations.sampler, 0);
-  } else {
-    const RenderPassProgram* program =
-        GetRenderPassProgram(tex_coord_precision, shader_blend_mode);
-    SetUseProgram(program->program());
-    program->vertex_shader().FillLocations(&params->locations);
-    program->fragment_shader().FillLocations(&params->locations);
-    gl_->Uniform1i(params->locations.sampler, 0);
-  }
+  params->program = GetProgram(ProgramKey::RenderPass(
+      tex_coord_precision, sampler_type, shader_blend_mode,
+      params->use_aa ? USE_AA : NO_AA, mask_mode, mask_for_background,
+      params->use_color_matrix));
+  SetUseProgram(params->program->program());
+  gl_->Uniform1i(params->program->sampler_location(), 0);
 }
 
 void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
-  ShaderLocations& locations = params->locations;
+  const Program* program = params->program;
+
   gfx::RectF tex_rect(params->src_offset.x(), params->src_offset.y(),
                       params->dst_rect.width(), params->dst_rect.height());
   gfx::Size texture_size;
@@ -1398,26 +1340,26 @@ void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
   }
   tex_rect.Scale(1.0f / texture_size.width(), 1.0f / texture_size.height());
 
-  DCHECK(locations.vertex_tex_transform != -1 || IsContextLost());
+  DCHECK(program->vertex_tex_transform_location() != -1 || IsContextLost());
   if (params->source_needs_flip) {
     // Flip the content vertically in the shader, as the RenderPass input
     // texture is already oriented the same way as the framebuffer, but the
     // projection transform does a flip.
-    gl_->Uniform4f(locations.vertex_tex_transform, tex_rect.x(),
+    gl_->Uniform4f(program->vertex_tex_transform_location(), tex_rect.x(),
                    1.0f - tex_rect.y(), tex_rect.width(), -tex_rect.height());
   } else {
     // Tile textures are oriented opposite the framebuffer, so can use
     // the projection transform to do the flip.
-    gl_->Uniform4f(locations.vertex_tex_transform, tex_rect.x(), tex_rect.y(),
-                   tex_rect.width(), tex_rect.height());
+    gl_->Uniform4f(program->vertex_tex_transform_location(), tex_rect.x(),
+                   tex_rect.y(), tex_rect.width(), tex_rect.height());
   }
 
   GLint last_texture_unit = 0;
-  if (locations.mask_sampler != -1) {
+  if (program->mask_sampler_location() != -1) {
     DCHECK(params->mask_resource_lock);
-    DCHECK_NE(locations.mask_tex_coord_scale, 1);
-    DCHECK_NE(locations.mask_tex_coord_offset, 1);
-    gl_->Uniform1i(locations.mask_sampler, 1);
+    DCHECK_NE(program->mask_tex_coord_scale_location(), 1);
+    DCHECK_NE(program->mask_tex_coord_offset_location(), 1);
+    gl_->Uniform1i(program->mask_sampler_location(), 1);
 
     gfx::RectF mask_uv_rect = params->quad->MaskUVRect();
     if (SamplerTypeFromTextureTarget(params->mask_resource_lock->target()) !=
@@ -1430,16 +1372,16 @@ void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
       // framebuffer and the RenderPass contents texture, so we flip the tex
       // coords from the RenderPass texture to find the mask texture coords.
       gl_->Uniform2f(
-          locations.mask_tex_coord_offset, mask_uv_rect.x(),
+          program->mask_tex_coord_offset_location(), mask_uv_rect.x(),
           mask_uv_rect.height() / tex_rect.height() + mask_uv_rect.y());
-      gl_->Uniform2f(locations.mask_tex_coord_scale,
+      gl_->Uniform2f(program->mask_tex_coord_scale_location(),
                      mask_uv_rect.width() / tex_rect.width(),
                      -mask_uv_rect.height() / tex_rect.height());
     } else {
       // Tile textures are oriented the same way as mask textures.
-      gl_->Uniform2f(locations.mask_tex_coord_offset, mask_uv_rect.x(),
-                     mask_uv_rect.y());
-      gl_->Uniform2f(locations.mask_tex_coord_scale,
+      gl_->Uniform2f(program->mask_tex_coord_offset_location(),
+                     mask_uv_rect.x(), mask_uv_rect.y());
+      gl_->Uniform2f(program->mask_tex_coord_scale_location(),
                      mask_uv_rect.width() / tex_rect.width(),
                      mask_uv_rect.height() / tex_rect.height());
     }
@@ -1447,45 +1389,46 @@ void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
     last_texture_unit = 1;
   }
 
-  if (locations.edge != -1)
-    gl_->Uniform3fv(locations.edge, 8, params->edge);
+  if (program->edge_location() != -1)
+    gl_->Uniform3fv(program->edge_location(), 8, params->edge);
 
-  if (locations.viewport != -1) {
+  if (program->viewport_location() != -1) {
     float viewport[4] = {
         static_cast<float>(current_window_space_viewport_.x()),
         static_cast<float>(current_window_space_viewport_.y()),
         static_cast<float>(current_window_space_viewport_.width()),
         static_cast<float>(current_window_space_viewport_.height()),
     };
-    gl_->Uniform4fv(locations.viewport, 1, viewport);
+    gl_->Uniform4fv(program->viewport_location(), 1, viewport);
   }
 
-  if (locations.color_matrix != -1) {
+  if (program->color_matrix_location() != -1) {
     float matrix[16];
     for (int i = 0; i < 4; ++i) {
       for (int j = 0; j < 4; ++j)
         matrix[i * 4 + j] = SkScalarToFloat(params->color_matrix[j * 5 + i]);
     }
-    gl_->UniformMatrix4fv(locations.color_matrix, 1, false, matrix);
+    gl_->UniformMatrix4fv(program->color_matrix_location(), 1, false, matrix);
   }
   static const float kScale = 1.0f / 255.0f;
-  if (locations.color_offset != -1) {
+  if (program->color_offset_location() != -1) {
     float offset[4];
     for (int i = 0; i < 4; ++i)
       offset[i] = SkScalarToFloat(params->color_matrix[i * 5 + 4]) * kScale;
 
-    gl_->Uniform4fv(locations.color_offset, 1, offset);
+    gl_->Uniform4fv(program->color_offset_location(), 1, offset);
   }
 
-  if (locations.backdrop != -1) {
+  if (program->backdrop_location() != -1) {
     DCHECK(params->background_texture || params->background_image_id);
-    DCHECK_NE(locations.backdrop, 0);
-    DCHECK_NE(locations.backdrop_rect, 0);
+    DCHECK_NE(program->backdrop_location(), 0);
+    DCHECK_NE(program->backdrop_rect_location(), 0);
 
-    gl_->Uniform1i(locations.backdrop, ++last_texture_unit);
+    gl_->Uniform1i(program->backdrop_location(), ++last_texture_unit);
 
-    gl_->Uniform4f(locations.backdrop_rect, params->background_rect.x(),
-                   params->background_rect.y(), params->background_rect.width(),
+    gl_->Uniform4f(program->backdrop_rect_location(),
+                   params->background_rect.x(), params->background_rect.y(),
+                   params->background_rect.width(),
                    params->background_rect.height());
 
     if (params->background_image_id) {
@@ -1493,7 +1436,8 @@ void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
       gl_->BindTexture(GL_TEXTURE_2D, params->background_image_id);
       gl_->ActiveTexture(GL_TEXTURE0);
       if (params->mask_for_background)
-        gl_->Uniform1i(locations.original_backdrop, ++last_texture_unit);
+        gl_->Uniform1i(program->original_backdrop_location(),
+                       ++last_texture_unit);
     }
     if (params->background_texture) {
       params->shader_background_sampler_lock =
@@ -1505,13 +1449,14 @@ void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
     }
   }
 
-  SetShaderOpacity(params->quad->shared_quad_state->opacity, locations.alpha);
-  SetShaderQuadF(params->surface_quad, locations.quad);
+  SetShaderOpacity(params->quad->shared_quad_state->opacity,
+                   program->alpha_location());
+  SetShaderQuadF(params->surface_quad, program->quad_location());
 }
 
 void GLRenderer::DrawRPDQ(const DrawRenderPassDrawQuadParams& params) {
   DrawQuadGeometry(params.projection_matrix, params.quad_to_target_transform,
-                   params.dst_rect, params.locations.matrix);
+                   params.dst_rect, params.program->matrix_location());
 
   // Flush the compositor context before the filter bitmap goes out of
   // scope, so the draw gets processed before the filter texture gets deleted.
@@ -1520,26 +1465,6 @@ void GLRenderer::DrawRPDQ(const DrawRenderPassDrawQuadParams& params) {
 
   if (!params.use_shaders_for_blending)
     RestoreBlendFuncToDefault(params.quad->shared_quad_state->blend_mode);
-}
-
-struct SolidColorProgramUniforms {
-  unsigned program;
-  unsigned matrix_location;
-  unsigned viewport_location;
-  unsigned quad_location;
-  unsigned edge_location;
-  unsigned color_location;
-};
-
-template <class T>
-static void SolidColorUniformLocation(T program,
-                                      SolidColorProgramUniforms* uniforms) {
-  uniforms->program = program->program();
-  uniforms->matrix_location = program->vertex_shader().matrix_location();
-  uniforms->viewport_location = program->vertex_shader().viewport_location();
-  uniforms->quad_location = program->vertex_shader().quad_location();
-  uniforms->edge_location = program->vertex_shader().edge_location();
-  uniforms->color_location = program->fragment_shader().color_location();
 }
 
 namespace {
@@ -1847,15 +1772,11 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
   SetupQuadForClippingAndAntialiasing(device_transform, quad, aa_quad,
                                       clip_region, &local_quad, edge);
 
-  SolidColorProgramUniforms uniforms;
-  if (use_aa) {
-    SolidColorUniformLocation(GetSolidColorProgramAA(), &uniforms);
-  } else {
-    SolidColorUniformLocation(GetSolidColorProgram(), &uniforms);
-  }
-  SetUseProgram(uniforms.program);
+  const Program* program =
+      GetProgram(ProgramKey::SolidColor(use_aa ? USE_AA : NO_AA));
+  SetUseProgram(program->program());
 
-  gl_->Uniform4f(uniforms.color_location,
+  gl_->Uniform4f(program->color_location(),
                  (SkColorGetR(color) * (1.0f / 255.0f)) * alpha,
                  (SkColorGetG(color) * (1.0f / 255.0f)) * alpha,
                  (SkColorGetB(color) * (1.0f / 255.0f)) * alpha, alpha);
@@ -1866,8 +1787,8 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
         static_cast<float>(current_window_space_viewport_.width()),
         static_cast<float>(current_window_space_viewport_.height()),
     };
-    gl_->Uniform4fv(uniforms.viewport_location, 1, viewport);
-    gl_->Uniform3fv(uniforms.edge_location, 8, edge);
+    gl_->Uniform4fv(program->viewport_location(), 1, viewport);
+    gl_->Uniform3fv(program->edge_location(), 8, edge);
   }
 
   // Enable blending when the quad properties require it or if we decided
@@ -1880,7 +1801,7 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
     // Normalize to tile_rect.
     local_quad.Scale(1.0f / tile_rect.width(), 1.0f / tile_rect.height());
 
-    SetShaderQuadF(local_quad, uniforms.quad_location);
+    SetShaderQuadF(local_quad, program->quad_location());
 
     // The transform and vertex data are used to figure out the extents that the
     // un-antialiased quad should have and which vertex this is and the float
@@ -1892,46 +1813,18 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
         gfx::SizeF(tile_rect.size()));
     DrawQuadGeometry(frame->projection_matrix,
                      quad->shared_quad_state->quad_to_target_transform,
-                     centered_rect, uniforms.matrix_location);
+                     centered_rect, program->matrix_location());
   } else {
     PrepareGeometry(SHARED_BINDING);
-    SetShaderQuadF(local_quad, uniforms.quad_location);
+    SetShaderQuadF(local_quad, program->quad_location());
     static float gl_matrix[16];
     ToGLMatrix(&gl_matrix[0],
                frame->projection_matrix *
                    quad->shared_quad_state->quad_to_target_transform);
-    gl_->UniformMatrix4fv(uniforms.matrix_location, 1, false, &gl_matrix[0]);
+    gl_->UniformMatrix4fv(program->matrix_location(), 1, false, &gl_matrix[0]);
 
     gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
   }
-}
-
-struct TileProgramUniforms {
-  unsigned program;
-  unsigned matrix_location;
-  unsigned viewport_location;
-  unsigned quad_location;
-  unsigned edge_location;
-  unsigned vertex_tex_transform_location;
-  unsigned sampler_location;
-  unsigned fragment_tex_transform_location;
-  unsigned alpha_location;
-};
-
-template <class T>
-static void TileUniformLocation(T program, TileProgramUniforms* uniforms) {
-  uniforms->program = program->program();
-  uniforms->matrix_location = program->vertex_shader().matrix_location();
-  uniforms->viewport_location = program->vertex_shader().viewport_location();
-  uniforms->quad_location = program->vertex_shader().quad_location();
-  uniforms->edge_location = program->vertex_shader().edge_location();
-  uniforms->vertex_tex_transform_location =
-      program->vertex_shader().vertex_tex_transform_location();
-
-  uniforms->sampler_location = program->fragment_shader().sampler_location();
-  uniforms->alpha_location = program->fragment_shader().alpha_location();
-  uniforms->fragment_tex_transform_location =
-      program->fragment_shader().fragment_tex_transform_location();
 }
 
 void GLRenderer::DrawTileQuad(const DrawingFrame* frame,
@@ -2046,17 +1939,12 @@ void GLRenderer::DrawContentQuadAA(const DrawingFrame* frame,
     fragment_tex_scale_y /= texture_size.height();
   }
 
-  TileProgramUniforms uniforms;
-  if (quad->swizzle_contents) {
-    TileUniformLocation(GetTileProgramSwizzleAA(tex_coord_precision, sampler),
-                        &uniforms);
-  } else {
-    TileUniformLocation(GetTileProgramAA(tex_coord_precision, sampler),
-                        &uniforms);
-  }
+  const Program* program = GetProgram(ProgramKey::Tile(
+      tex_coord_precision, sampler, USE_AA,
+      quad->swizzle_contents ? DO_SWIZZLE : NO_SWIZZLE, false));
 
-  SetUseProgram(uniforms.program);
-  gl_->Uniform1i(uniforms.sampler_location, 0);
+  SetUseProgram(program->program());
+  gl_->Uniform1i(program->sampler_location(), 0);
 
   float viewport[4] = {
       static_cast<float>(current_window_space_viewport_.x()),
@@ -2064,13 +1952,13 @@ void GLRenderer::DrawContentQuadAA(const DrawingFrame* frame,
       static_cast<float>(current_window_space_viewport_.width()),
       static_cast<float>(current_window_space_viewport_.height()),
   };
-  gl_->Uniform4fv(uniforms.viewport_location, 1, viewport);
-  gl_->Uniform3fv(uniforms.edge_location, 8, edge);
+  gl_->Uniform4fv(program->viewport_location(), 1, viewport);
+  gl_->Uniform3fv(program->edge_location(), 8, edge);
 
-  gl_->Uniform4f(uniforms.vertex_tex_transform_location, vertex_tex_translate_x,
-                 vertex_tex_translate_y, vertex_tex_scale_x,
-                 vertex_tex_scale_y);
-  gl_->Uniform4f(uniforms.fragment_tex_transform_location,
+  gl_->Uniform4f(program->vertex_tex_transform_location(),
+                 vertex_tex_translate_x, vertex_tex_translate_y,
+                 vertex_tex_scale_x, vertex_tex_scale_y);
+  gl_->Uniform4f(program->fragment_tex_transform_location(),
                  fragment_tex_translate_x, fragment_tex_translate_y,
                  fragment_tex_scale_x, fragment_tex_scale_y);
 
@@ -2080,8 +1968,8 @@ void GLRenderer::DrawContentQuadAA(const DrawingFrame* frame,
   // Normalize to tile_rect.
   local_quad.Scale(1.0f / tile_rect.width(), 1.0f / tile_rect.height());
 
-  SetShaderOpacity(quad->shared_quad_state->opacity, uniforms.alpha_location);
-  SetShaderQuadF(local_quad, uniforms.quad_location);
+  SetShaderOpacity(quad->shared_quad_state->opacity, program->alpha_location());
+  SetShaderQuadF(local_quad, program->quad_location());
 
   // The transform and vertex data are used to figure out the extents that the
   // un-antialiased quad should have and which vertex this is and the float
@@ -2092,7 +1980,7 @@ void GLRenderer::DrawContentQuadAA(const DrawingFrame* frame,
       gfx::SizeF(tile_rect.size()));
   DrawQuadGeometry(frame->projection_matrix,
                    quad->shared_quad_state->quad_to_target_transform,
-                   centered_rect, uniforms.matrix_location);
+                   centered_rect, program->matrix_location());
 }
 
 void GLRenderer::DrawContentQuadNoAA(const DrawingFrame* frame,
@@ -2137,35 +2025,21 @@ void GLRenderer::DrawContentQuadNoAA(const DrawingFrame* frame,
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
       gl_, &highp_threshold_cache_, highp_threshold_min_, quad->texture_size);
 
-  TileProgramUniforms uniforms;
-  if (quad->ShouldDrawWithBlending()) {
-    if (quad->swizzle_contents) {
-      TileUniformLocation(GetTileProgramSwizzle(tex_coord_precision, sampler),
-                          &uniforms);
-    } else {
-      TileUniformLocation(GetTileProgram(tex_coord_precision, sampler),
-                          &uniforms);
-    }
-  } else {
-    if (quad->swizzle_contents) {
-      TileUniformLocation(
-          GetTileProgramSwizzleOpaque(tex_coord_precision, sampler), &uniforms);
-    } else {
-      TileUniformLocation(GetTileProgramOpaque(tex_coord_precision, sampler),
-                          &uniforms);
-    }
-  }
+  const Program* program = GetProgram(
+      ProgramKey::Tile(tex_coord_precision, sampler, NO_AA,
+                       quad->swizzle_contents ? DO_SWIZZLE : NO_SWIZZLE,
+                       !quad->ShouldDrawWithBlending()));
 
-  SetUseProgram(uniforms.program);
-  gl_->Uniform1i(uniforms.sampler_location, 0);
+  SetUseProgram(program->program());
+  gl_->Uniform1i(program->sampler_location(), 0);
 
-  gl_->Uniform4f(uniforms.vertex_tex_transform_location, vertex_tex_translate_x,
-                 vertex_tex_translate_y, vertex_tex_scale_x,
-                 vertex_tex_scale_y);
+  gl_->Uniform4f(program->vertex_tex_transform_location(),
+                 vertex_tex_translate_x, vertex_tex_translate_y,
+                 vertex_tex_scale_x, vertex_tex_scale_y);
 
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
-  SetShaderOpacity(quad->shared_quad_state->opacity, uniforms.alpha_location);
+  SetShaderOpacity(quad->shared_quad_state->opacity, program->alpha_location());
 
   // Pass quad coordinates to the uniform in the same order as GeometryBinding
   // does, then vertices will match the texture mapping in the vertex buffer.
@@ -2198,13 +2072,13 @@ void GLRenderer::DrawContentQuadNoAA(const DrawingFrame* frame,
       tile_quad.p1().y(), tile_quad.p2().x(), tile_quad.p2().y(),
       tile_quad.p3().x(), tile_quad.p3().y(),
   };
-  gl_->Uniform2fv(uniforms.quad_location, 4, gl_quad);
+  gl_->Uniform2fv(program->quad_location(), 4, gl_quad);
 
   static float gl_matrix[16];
   ToGLMatrix(&gl_matrix[0],
              frame->projection_matrix *
                  quad->shared_quad_state->quad_to_target_transform);
-  gl_->UniformMatrix4fv(uniforms.matrix_location, 1, false, &gl_matrix[0]);
+  gl_->UniformMatrix4fv(program->matrix_location(), 1, false, &gl_matrix[0]);
 
   gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
 }
@@ -2270,11 +2144,11 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
       tex_coord_precision, sampler, use_alpha_plane, use_nv12, use_color_lut);
   DCHECK(program && (program->initialized() || IsContextLost()));
   SetUseProgram(program->program());
-  matrix_location = program->vertex_shader().matrix_location();
-  ya_tex_scale_location = program->vertex_shader().ya_tex_scale_location();
-  ya_tex_offset_location = program->vertex_shader().ya_tex_offset_location();
-  uv_tex_scale_location = program->vertex_shader().uv_tex_scale_location();
-  uv_tex_offset_location = program->vertex_shader().uv_tex_offset_location();
+  matrix_location = program->matrix_location();
+  ya_tex_scale_location = program->ya_tex_scale_location();
+  ya_tex_offset_location = program->ya_tex_offset_location();
+  uv_tex_scale_location = program->uv_tex_scale_location();
+  uv_tex_offset_location = program->uv_tex_offset_location();
   y_texture_location = program->fragment_shader().y_texture_location();
   u_texture_location = program->fragment_shader().u_texture_location();
   v_texture_location = program->fragment_shader().v_texture_location();
@@ -2476,8 +2350,8 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame* frame,
       gl_, &highp_threshold_cache_, highp_threshold_min_,
       quad->shared_quad_state->visible_quad_layer_rect.bottom_right());
 
-  const VideoStreamTextureProgram* program =
-      GetVideoStreamTextureProgram(tex_coord_precision);
+  const Program* program =
+      GetProgram(ProgramKey::VideoStream(tex_coord_precision));
   SetUseProgram(program->program());
 
   ToGLMatrix(&gl_matrix[0], quad->matrix);
@@ -2489,17 +2363,15 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame* frame,
   gl_->BindTexture(GL_TEXTURE_EXTERNAL_OES, lock.texture_id());
 
   gl_->UniformMatrix4fvStreamTextureMatrixCHROMIUM(
-      program->vertex_shader().tex_matrix_location(), false, gl_matrix);
+      program->tex_matrix_location(), false, gl_matrix);
 
-  gl_->Uniform1i(program->fragment_shader().sampler_location(), 0);
+  gl_->Uniform1i(program->sampler_location(), 0);
 
-  SetShaderOpacity(quad->shared_quad_state->opacity,
-                   program->fragment_shader().alpha_location());
+  SetShaderOpacity(quad->shared_quad_state->opacity, program->alpha_location());
   if (!clip_region) {
     DrawQuadGeometry(frame->projection_matrix,
                      quad->shared_quad_state->quad_to_target_transform,
-                     gfx::RectF(quad->rect),
-                     program->vertex_shader().matrix_location());
+                     gfx::RectF(quad->rect), program->matrix_location());
   } else {
     gfx::QuadF region_quad(*clip_region);
     region_quad.Scale(1.0f / quad->rect.width(), 1.0f / quad->rect.height());
@@ -2508,40 +2380,9 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame* frame,
     GetScaledUVs(quad->visible_rect, clip_region, uvs);
     DrawQuadGeometryClippedByQuadF(
         frame, quad->shared_quad_state->quad_to_target_transform,
-        gfx::RectF(quad->rect), region_quad,
-        program->vertex_shader().matrix_location(), uvs);
+        gfx::RectF(quad->rect), region_quad, program->matrix_location(), uvs);
   }
 }
-
-struct TextureProgramBinding {
-  template <class Program>
-  void Set(Program* program) {
-    DCHECK(program);
-    program_id = program->program();
-    sampler_location = program->fragment_shader().sampler_location();
-    matrix_location = program->vertex_shader().matrix_location();
-    background_color_location =
-        program->fragment_shader().background_color_location();
-  }
-  int program_id;
-  int sampler_location;
-  int matrix_location;
-  int transform_location;
-  int background_color_location;
-};
-
-struct TexTransformTextureProgramBinding : TextureProgramBinding {
-  template <class Program>
-  void Set(Program* program) {
-    TextureProgramBinding::Set(program);
-    vertex_tex_transform_location =
-        program->vertex_shader().vertex_tex_transform_location();
-    vertex_opacity_location =
-        program->vertex_shader().vertex_opacity_location();
-  }
-  int vertex_tex_transform_location;
-  int vertex_opacity_location;
-};
 
 void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
   // Check to see if we have anything to draw.
@@ -2604,16 +2445,15 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
     // When we draw the composited borders we have one flush per quad.
     DCHECK_EQ(1u, draw_cache_.matrix_data.size());
     SetBlendEnabled(false);
-    const DebugBorderProgram* program = GetDebugBorderProgram();
+    const Program* program = GetProgram(ProgramKey::DebugBorder());
     DCHECK(program && (program->initialized() || IsContextLost()));
     SetUseProgram(program->program());
 
     gl_->UniformMatrix4fv(
-        program->vertex_shader().matrix_location(), 1, false,
+        program->matrix_location(), 1, false,
         reinterpret_cast<float*>(&draw_cache_.matrix_data.front()));
 
-    gl_->Uniform4f(program->fragment_shader().color_location(), 0.0f, 1.0f,
-                   0.0f, 1.0f);
+    gl_->Uniform4f(program->color_location(), 0.0f, 1.0f, 0.0f, 1.0f);
 
     gl_->LineWidth(3.0f);
     // The indices for the line are stored in the same array as the triangle
@@ -2653,45 +2493,34 @@ void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
   ResourceProvider::ScopedReadLockGL lock(resource_provider_,
                                           quad->resource_id());
   const SamplerType sampler = SamplerTypeFromTextureTarget(lock.target());
-  // Choose the correct texture program binding
-  TexTransformTextureProgramBinding binding;
-  if (quad->premultiplied_alpha) {
-    if (quad->background_color == SK_ColorTRANSPARENT) {
-      binding.Set(GetTextureProgram(tex_coord_precision, sampler));
-    } else {
-      binding.Set(GetTextureBackgroundProgram(tex_coord_precision, sampler));
-    }
-  } else {
-    if (quad->background_color == SK_ColorTRANSPARENT) {
-      binding.Set(
-          GetNonPremultipliedTextureProgram(tex_coord_precision, sampler));
-    } else {
-      binding.Set(GetNonPremultipliedTextureBackgroundProgram(
-          tex_coord_precision, sampler));
-    }
-  }
 
+  const Program* program = GetProgram(ProgramKey::Texture(
+      tex_coord_precision, sampler,
+      quad->premultiplied_alpha ? PREMULTIPLIED_ALPHA : NON_PREMULTIPLIED_ALPHA,
+      quad->background_color != SK_ColorTRANSPARENT));
   int resource_id = quad->resource_id();
+  int program_id = program->program();
 
   size_t max_quads = StaticGeometryBinding::NUM_QUADS;
-  if (draw_cache_.program_id != binding.program_id ||
+  if (draw_cache_.program_id != program_id ||
       draw_cache_.resource_id != resource_id ||
       draw_cache_.needs_blending != quad->ShouldDrawWithBlending() ||
       draw_cache_.nearest_neighbor != quad->nearest_neighbor ||
       draw_cache_.background_color != quad->background_color ||
       draw_cache_.matrix_data.size() >= max_quads) {
     FlushTextureQuadCache(SHARED_BINDING);
-    draw_cache_.program_id = binding.program_id;
+    draw_cache_.program_id = program_id;
     draw_cache_.resource_id = resource_id;
     draw_cache_.needs_blending = quad->ShouldDrawWithBlending();
     draw_cache_.nearest_neighbor = quad->nearest_neighbor;
     draw_cache_.background_color = quad->background_color;
 
-    draw_cache_.uv_xform_location = binding.vertex_tex_transform_location;
-    draw_cache_.background_color_location = binding.background_color_location;
-    draw_cache_.vertex_opacity_location = binding.vertex_opacity_location;
-    draw_cache_.matrix_location = binding.matrix_location;
-    draw_cache_.sampler_location = binding.sampler_location;
+    draw_cache_.uv_xform_location = program->vertex_tex_transform_location();
+    draw_cache_.background_color_location =
+        program->background_color_location();
+    draw_cache_.vertex_opacity_location = program->vertex_opacity_location();
+    draw_cache_.matrix_location = program->matrix_location();
+    draw_cache_.sampler_location = program->sampler_location();
   }
 
   // Generate the uv-transform
@@ -3269,159 +3098,6 @@ void GLRenderer::PrepareGeometry(BoundGeometry binding) {
   bound_geometry_ = binding;
 }
 
-const GLRenderer::DebugBorderProgram* GLRenderer::GetDebugBorderProgram() {
-  return GetProgram(ProgramKey::DebugBorder());
-}
-
-const GLRenderer::SolidColorProgram* GLRenderer::GetSolidColorProgram() {
-  return GetProgram(ProgramKey::SolidColor(NO_AA));
-}
-
-const GLRenderer::SolidColorProgramAA* GLRenderer::GetSolidColorProgramAA() {
-  return GetProgram(ProgramKey::SolidColor(USE_AA));
-}
-
-const GLRenderer::RenderPassProgram* GLRenderer::GetRenderPassProgram(
-    TexCoordPrecision precision,
-    BlendMode blend_mode) {
-  return GetProgram(ProgramKey::RenderPass(
-      precision, SAMPLER_TYPE_2D, blend_mode, NO_AA, NO_MASK, false, false));
-}
-
-const GLRenderer::RenderPassProgramAA* GLRenderer::GetRenderPassProgramAA(
-    TexCoordPrecision precision,
-    BlendMode blend_mode) {
-  return GetProgram(ProgramKey::RenderPass(
-      precision, SAMPLER_TYPE_2D, blend_mode, USE_AA, NO_MASK, false, false));
-}
-
-const GLRenderer::RenderPassMaskProgram* GLRenderer::GetRenderPassMaskProgram(
-    TexCoordPrecision precision,
-    SamplerType sampler,
-    BlendMode blend_mode,
-    bool mask_for_background) {
-  return GetProgram(ProgramKey::RenderPass(precision, sampler, blend_mode,
-                                           NO_AA, HAS_MASK, mask_for_background,
-                                           false));
-}
-
-const GLRenderer::RenderPassMaskProgramAA*
-GLRenderer::GetRenderPassMaskProgramAA(TexCoordPrecision precision,
-                                       SamplerType sampler,
-                                       BlendMode blend_mode,
-                                       bool mask_for_background) {
-  return GetProgram(ProgramKey::RenderPass(precision, sampler, blend_mode,
-                                           USE_AA, HAS_MASK,
-                                           mask_for_background, false));
-}
-
-const GLRenderer::RenderPassColorMatrixProgram*
-GLRenderer::GetRenderPassColorMatrixProgram(TexCoordPrecision precision,
-                                            BlendMode blend_mode) {
-  return GetProgram(ProgramKey::RenderPass(
-      precision, SAMPLER_TYPE_2D, blend_mode, NO_AA, NO_MASK, false, true));
-}
-
-const GLRenderer::RenderPassColorMatrixProgramAA*
-GLRenderer::GetRenderPassColorMatrixProgramAA(TexCoordPrecision precision,
-                                              BlendMode blend_mode) {
-  return GetProgram(ProgramKey::RenderPass(
-      precision, SAMPLER_TYPE_2D, blend_mode, USE_AA, NO_MASK, false, true));
-}
-
-const GLRenderer::RenderPassMaskColorMatrixProgram*
-GLRenderer::GetRenderPassMaskColorMatrixProgram(
-    TexCoordPrecision precision,
-    SamplerType sampler,
-    BlendMode blend_mode,
-    bool mask_for_background) {
-  return GetProgram(ProgramKey::RenderPass(precision, sampler, blend_mode,
-                                           NO_AA, HAS_MASK, mask_for_background,
-                                           true));
-}
-
-const GLRenderer::RenderPassMaskColorMatrixProgramAA*
-GLRenderer::GetRenderPassMaskColorMatrixProgramAA(
-    TexCoordPrecision precision,
-    SamplerType sampler,
-    BlendMode blend_mode,
-    bool mask_for_background) {
-  return GetProgram(ProgramKey::RenderPass(precision, sampler, blend_mode,
-                                           USE_AA, HAS_MASK,
-                                           mask_for_background, true));
-}
-
-const GLRenderer::TileProgram* GLRenderer::GetTileProgram(
-    TexCoordPrecision precision,
-    SamplerType sampler) {
-  return GetProgram(
-      ProgramKey::Tile(precision, sampler, NO_AA, NO_SWIZZLE, false));
-}
-
-const GLRenderer::TileProgramOpaque* GLRenderer::GetTileProgramOpaque(
-    TexCoordPrecision precision,
-    SamplerType sampler) {
-  return GetProgram(
-      ProgramKey::Tile(precision, sampler, NO_AA, NO_SWIZZLE, true));
-}
-
-const GLRenderer::TileProgramAA* GLRenderer::GetTileProgramAA(
-    TexCoordPrecision precision,
-    SamplerType sampler) {
-  return GetProgram(
-      ProgramKey::Tile(precision, sampler, USE_AA, NO_SWIZZLE, false));
-}
-
-const GLRenderer::TileProgramSwizzle* GLRenderer::GetTileProgramSwizzle(
-    TexCoordPrecision precision,
-    SamplerType sampler) {
-  return GetProgram(
-      ProgramKey::Tile(precision, sampler, NO_AA, DO_SWIZZLE, false));
-}
-
-const GLRenderer::TileProgramSwizzleOpaque*
-GLRenderer::GetTileProgramSwizzleOpaque(TexCoordPrecision precision,
-                                        SamplerType sampler) {
-  return GetProgram(
-      ProgramKey::Tile(precision, sampler, NO_AA, DO_SWIZZLE, true));
-}
-
-const GLRenderer::TileProgramSwizzleAA* GLRenderer::GetTileProgramSwizzleAA(
-    TexCoordPrecision precision,
-    SamplerType sampler) {
-  return GetProgram(
-      ProgramKey::Tile(precision, sampler, USE_AA, DO_SWIZZLE, false));
-}
-
-const GLRenderer::TextureProgram* GLRenderer::GetTextureProgram(
-    TexCoordPrecision precision,
-    SamplerType sampler) {
-  return GetProgram(
-      ProgramKey::Texture(precision, sampler, PREMULTIPLIED_ALPHA, false));
-}
-
-const GLRenderer::NonPremultipliedTextureProgram*
-GLRenderer::GetNonPremultipliedTextureProgram(TexCoordPrecision precision,
-                                              SamplerType sampler) {
-  return GetProgram(
-      ProgramKey::Texture(precision, sampler, NON_PREMULTIPLIED_ALPHA, false));
-}
-
-const GLRenderer::TextureBackgroundProgram*
-GLRenderer::GetTextureBackgroundProgram(TexCoordPrecision precision,
-                                        SamplerType sampler) {
-  return GetProgram(
-      ProgramKey::Texture(precision, sampler, PREMULTIPLIED_ALPHA, true));
-}
-
-const GLRenderer::NonPremultipliedTextureBackgroundProgram*
-GLRenderer::GetNonPremultipliedTextureBackgroundProgram(
-    TexCoordPrecision precision,
-    SamplerType sampler) {
-  return GetProgram(
-      ProgramKey::Texture(precision, sampler, NON_PREMULTIPLIED_ALPHA, true));
-}
-
 const GLRenderer::VideoYUVProgram* GLRenderer::GetVideoYUVProgram(
     TexCoordPrecision precision,
     SamplerType sampler,
@@ -3442,11 +3118,6 @@ const GLRenderer::VideoYUVProgram* GLRenderer::GetVideoYUVProgram(
                                 use_color_lut);
   }
   return program;
-}
-
-const GLRenderer::VideoStreamTextureProgram*
-GLRenderer::GetVideoStreamTextureProgram(TexCoordPrecision precision) {
-  return GetProgram(ProgramKey::VideoStream(precision));
 }
 
 const Program* GLRenderer::GetProgram(const ProgramKey& desc) {

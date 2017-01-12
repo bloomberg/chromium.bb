@@ -290,43 +290,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   std::unique_ptr<DynamicGeometryBinding> clipped_geometry_;
   gfx::QuadF shared_geometry_quad_;
 
-  // This block of bindings defines all of the programs used by the compositor
-  // itself.  Add any new programs here to GLRendererShaderTest.
-
-  // Tiled layer shaders.
-  typedef Program TileProgram;
-  typedef Program TileProgramAA;
-  typedef Program TileProgramSwizzleAA;
-  typedef Program TileProgramOpaque;
-  typedef Program TileProgramSwizzle;
-  typedef Program TileProgramSwizzleOpaque;
-
-  // Texture shaders.
-  typedef Program TextureProgram;
-  typedef Program NonPremultipliedTextureProgram;
-  typedef Program TextureBackgroundProgram;
-  typedef Program NonPremultipliedTextureBackgroundProgram;
-
-  // Render surface shaders.
-  typedef Program RenderPassProgram;
-  typedef Program RenderPassMaskProgram;
-  typedef Program RenderPassProgramAA;
-  typedef Program RenderPassMaskProgramAA;
-  typedef Program RenderPassColorMatrixProgram;
-  typedef Program RenderPassMaskColorMatrixProgramAA;
-  typedef Program RenderPassColorMatrixProgramAA;
-  typedef Program RenderPassMaskColorMatrixProgram;
-
-  // Video shaders.
-  typedef Program VideoStreamTextureProgram;
-  typedef ProgramBinding<VertexShaderBase, FragmentShaderYUVVideo>
-      VideoYUVProgram;
-
-  // Special purpose / effects shaders.
-  typedef Program DebugBorderProgram;
-  typedef Program SolidColorProgram;
-  typedef Program SolidColorProgramAA;
-
   // If the requested program has not yet been initialized, this will initialize
   // the program before returning it.
   const Program* GetProgram(const ProgramKey& key);
@@ -338,74 +301,13 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   std::unordered_map<ProgramKey, std::unique_ptr<Program>, ProgramKeyHash>
       program_cache_;
 
-  const TileProgram* GetTileProgram(
-      TexCoordPrecision precision, SamplerType sampler);
-  const TileProgramOpaque* GetTileProgramOpaque(
-      TexCoordPrecision precision, SamplerType sampler);
-  const TileProgramAA* GetTileProgramAA(
-      TexCoordPrecision precision, SamplerType sampler);
-  const TileProgramSwizzle* GetTileProgramSwizzle(
-      TexCoordPrecision precision, SamplerType sampler);
-  const TileProgramSwizzleOpaque* GetTileProgramSwizzleOpaque(
-      TexCoordPrecision precision, SamplerType sampler);
-  const TileProgramSwizzleAA* GetTileProgramSwizzleAA(
-      TexCoordPrecision precision, SamplerType sampler);
-
-  const RenderPassProgram* GetRenderPassProgram(TexCoordPrecision precision,
-                                                BlendMode blend_mode);
-  const RenderPassProgramAA* GetRenderPassProgramAA(TexCoordPrecision precision,
-                                                    BlendMode blend_mode);
-  const RenderPassMaskProgram* GetRenderPassMaskProgram(
-      TexCoordPrecision precision,
-      SamplerType sampler,
-      BlendMode blend_mode,
-      bool mask_for_background);
-  const RenderPassMaskProgramAA* GetRenderPassMaskProgramAA(
-      TexCoordPrecision precision,
-      SamplerType sampler,
-      BlendMode blend_mode,
-      bool mask_for_background);
-  const RenderPassColorMatrixProgram* GetRenderPassColorMatrixProgram(
-      TexCoordPrecision precision,
-      BlendMode blend_mode);
-  const RenderPassColorMatrixProgramAA* GetRenderPassColorMatrixProgramAA(
-      TexCoordPrecision precision,
-      BlendMode blend_mode);
-  const RenderPassMaskColorMatrixProgram* GetRenderPassMaskColorMatrixProgram(
-      TexCoordPrecision precision,
-      SamplerType sampler,
-      BlendMode blend_mode,
-      bool mask_for_background);
-  const RenderPassMaskColorMatrixProgramAA*
-  GetRenderPassMaskColorMatrixProgramAA(TexCoordPrecision precision,
-                                        SamplerType sampler,
-                                        BlendMode blend_mode,
-                                        bool mask_for_background);
-
-  const TextureProgram* GetTextureProgram(TexCoordPrecision precision,
-                                          SamplerType sampler);
-  const NonPremultipliedTextureProgram* GetNonPremultipliedTextureProgram(
-      TexCoordPrecision precision,
-      SamplerType sampler);
-  const TextureBackgroundProgram* GetTextureBackgroundProgram(
-      TexCoordPrecision precision,
-      SamplerType sampler);
-  const NonPremultipliedTextureBackgroundProgram*
-  GetNonPremultipliedTextureBackgroundProgram(TexCoordPrecision precision,
-                                              SamplerType sampler);
-
+  typedef ProgramBinding<VertexShaderBase, FragmentShaderYUVVideo>
+      VideoYUVProgram;
   const VideoYUVProgram* GetVideoYUVProgram(TexCoordPrecision precision,
                                             SamplerType sampler,
                                             bool use_alpha_texture,
                                             bool use_nv12,
                                             bool use_color_lut);
-  const VideoStreamTextureProgram* GetVideoStreamTextureProgram(
-      TexCoordPrecision precision);
-
-  const DebugBorderProgram* GetDebugBorderProgram();
-  const SolidColorProgram* GetSolidColorProgram();
-  const SolidColorProgramAA* GetSolidColorProgramAA();
-
   VideoYUVProgram video_yuv_program_[LAST_TEX_COORD_PRECISION + 1]
                                     [LAST_SAMPLER_TYPE + 1][2][2][2];
 

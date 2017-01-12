@@ -193,6 +193,65 @@ class ProgramBinding : public ProgramBindingBase {
   const VertexShader& vertex_shader() const { return vertex_shader_; }
   const FragmentShader& fragment_shader() const { return fragment_shader_; }
 
+  // Functions for querying uniform locations.
+  int vertex_tex_transform_location() const {
+    return vertex_shader_.vertex_tex_transform_location_;
+  }
+  int tex_matrix_location() const {
+    return vertex_shader_.tex_matrix_location_;
+  }
+  int ya_tex_scale_location() const {
+    return vertex_shader_.ya_tex_scale_location_;
+  }
+  int ya_tex_offset_location() const {
+    return vertex_shader_.ya_tex_offset_location_;
+  }
+  int uv_tex_scale_location() const {
+    return vertex_shader_.uv_tex_scale_location_;
+  }
+  int uv_tex_offset_location() const {
+    return vertex_shader_.uv_tex_offset_location_;
+  }
+  int matrix_location() const { return vertex_shader_.matrix_location_; }
+  int vertex_opacity_location() const {
+    return vertex_shader_.vertex_opacity_location_;
+  }
+  int viewport_location() const { return vertex_shader_.viewport_location_; }
+  int edge_location() const { return vertex_shader_.edge_location_; }
+  int quad_location() const { return vertex_shader_.quad_location_; }
+
+  int sampler_location() const { return fragment_shader_.sampler_location_; }
+  int alpha_location() const { return fragment_shader_.alpha_location_; }
+  int color_location() const { return fragment_shader_.color_location_; }
+  int background_color_location() const {
+    return fragment_shader_.background_color_location_;
+  }
+  int fragment_tex_transform_location() const {
+    return fragment_shader_.fragment_tex_transform_location_;
+  }
+  int backdrop_location() const { return fragment_shader_.backdrop_location_; }
+  int backdrop_rect_location() const {
+    return fragment_shader_.backdrop_rect_location_;
+  }
+  int original_backdrop_location() const {
+    return fragment_shader_.original_backdrop_location_;
+  }
+  int mask_sampler_location() const {
+    return fragment_shader_.mask_sampler_location_;
+  }
+  int mask_tex_coord_scale_location() const {
+    return fragment_shader_.mask_tex_coord_scale_location_;
+  }
+  int mask_tex_coord_offset_location() const {
+    return fragment_shader_.mask_tex_coord_offset_location_;
+  }
+  int color_matrix_location() const {
+    return fragment_shader_.color_matrix_location_;
+  }
+  int color_offset_location() const {
+    return fragment_shader_.color_offset_location_;
+  }
+
  private:
   void InitializeDebugBorderProgram() {
     // Initialize vertex program.
