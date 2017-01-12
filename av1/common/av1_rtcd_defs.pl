@@ -9,6 +9,7 @@ print <<EOF
 #include "av1/common/enums.h"
 #include "av1/common/quant_common.h"
 #include "av1/common/filter.h"
+#include "av1/common/convolve.h"
 #include "av1/common/av1_txfm.h"
 
 struct macroblockd;
@@ -41,10 +42,10 @@ if ($opts{arch} eq "x86_64") {
 add_proto qw/void av1_convolve_init/, "void";
 specialize qw/av1_convolve_init ssse3/;
 
-add_proto qw/void av1_convolve_horiz/, "const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride, int w, int h, const InterpFilterParams fp, const int subpel_x_q4, int x_step_q4, int avg";
+add_proto qw/void av1_convolve_horiz/, "const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride, int w, int h, const InterpFilterParams fp, const int subpel_x_q4, int x_step_q4, ConvolveParams *conv_params";
 specialize qw/av1_convolve_horiz ssse3/;
 
-add_proto qw/void av1_convolve_vert/, "const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride, int w, int h, const InterpFilterParams fp, const int subpel_x_q4, int x_step_q4, int avg";
+add_proto qw/void av1_convolve_vert/, "const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride, int w, int h, const InterpFilterParams fp, const int subpel_x_q4, int x_step_q4, ConvolveParams *conv_params";
 specialize qw/av1_convolve_vert ssse3/;
 
 if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {

@@ -667,16 +667,17 @@ static void filter_horiz_v4p_ssse3(const uint8_t *src_ptr, ptrdiff_t src_pitch,
 void av1_convolve_horiz_ssse3(const uint8_t *src, int src_stride, uint8_t *dst,
                               int dst_stride, int w, int h,
                               const InterpFilterParams filter_params,
-                              const int subpel_x_q4, int x_step_q4, int avg) {
+                              const int subpel_x_q4, int x_step_q4,
+                              ConvolveParams *conv_params) {
   DECLARE_ALIGNED(16, uint16_t, temp[8 * 8]);
   __m128i verf[6];
   __m128i horf[2];
   SubpelFilterCoeffs hCoeffs, vCoeffs;
   const uint8_t *src_ptr;
-  store_pixel_t store2p = store2pixelTab[avg];
-  store_pixel_t store4p = store4pixelTab[avg];
-  transpose_to_dst_t transpose_4x4 = trans4x4Tab[avg];
-  transpose_to_dst_t transpose_8x8 = trans8x8Tab[avg];
+  store_pixel_t store2p = store2pixelTab[conv_params->ref];
+  store_pixel_t store4p = store4pixelTab[conv_params->ref];
+  transpose_to_dst_t transpose_4x4 = trans4x4Tab[conv_params->ref];
+  transpose_to_dst_t transpose_8x8 = trans8x8Tab[conv_params->ref];
 
   const int tapsNum = filter_params.taps;
   int block_height, block_residu;
@@ -685,7 +686,7 @@ void av1_convolve_horiz_ssse3(const uint8_t *src, int src_stride, uint8_t *dst,
 
   if (0 == subpel_x_q4 || 16 != x_step_q4) {
     av1_convolve_horiz_c(src, src_stride, dst, dst_stride, w, h, filter_params,
-                         subpel_x_q4, x_step_q4, avg);
+                         subpel_x_q4, x_step_q4, conv_params);
     return;
   }
 
@@ -694,7 +695,7 @@ void av1_convolve_horiz_ssse3(const uint8_t *src, int src_stride, uint8_t *dst,
 
   if (!hCoeffs || !vCoeffs) {
     av1_convolve_horiz_c(src, src_stride, dst, dst_stride, w, h, filter_params,
-                         subpel_x_q4, x_step_q4, avg);
+                         subpel_x_q4, x_step_q4, conv_params);
     return;
   }
 
@@ -881,19 +882,20 @@ static void filter_vert_compute_large(const uint8_t *src, int src_stride,
 void av1_convolve_vert_ssse3(const uint8_t *src, int src_stride, uint8_t *dst,
                              int dst_stride, int w, int h,
                              const InterpFilterParams filter_params,
-                             const int subpel_y_q4, int y_step_q4, int avg) {
+                             const int subpel_y_q4, int y_step_q4,
+                             ConvolveParams *conv_params) {
   __m128i verf[6];
   SubpelFilterCoeffs vCoeffs;
   const uint8_t *src_ptr;
   uint8_t *dst_ptr = dst;
-  store_pixel_t store2p = store2pixelTab[avg];
-  store_pixel_t store4p = store4pixelTab[avg];
-  store_pixel_t store8p = store8pixelTab[avg];
+  store_pixel_t store2p = store2pixelTab[conv_params->ref];
+  store_pixel_t store4p = store4pixelTab[conv_params->ref];
+  store_pixel_t store8p = store8pixelTab[conv_params->ref];
   const int tapsNum = filter_params.taps;
 
   if (0 == subpel_y_q4 || 16 != y_step_q4) {
     av1_convolve_vert_c(src, src_stride, dst, dst_stride, w, h, filter_params,
-                        subpel_y_q4, y_step_q4, avg);
+                        subpel_y_q4, y_step_q4, conv_params);
     return;
   }
 
@@ -901,7 +903,7 @@ void av1_convolve_vert_ssse3(const uint8_t *src, int src_stride, uint8_t *dst,
 
   if (!vCoeffs) {
     av1_convolve_vert_c(src, src_stride, dst, dst_stride, w, h, filter_params,
-                        subpel_y_q4, y_step_q4, avg);
+                        subpel_y_q4, y_step_q4, conv_params);
     return;
   }
 

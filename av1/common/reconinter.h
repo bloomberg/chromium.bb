@@ -62,8 +62,11 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
     // ref_idx > 0 means this is the second reference frame
     // first reference frame's prediction result is already in dst
     // therefore we need to average the first and second results
+    ConvolveParams conv_params;
+    conv_params.round = 1;
+    conv_params.ref = ref_idx;
     av1_convolve(src, src_stride, dst, dst_stride, w, h, interp_filter,
-                 subpel_x, xs, subpel_y, ys, ref_idx);
+                 subpel_x, xs, subpel_y, ys, &conv_params);
   }
 }
 

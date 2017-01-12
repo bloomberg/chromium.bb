@@ -52,10 +52,13 @@ TEST(AV1ConvolveTest, av1_convolve8) {
   int y_step_q4 = 16;
   int subpel_x_q4 = 3;
   int subpel_y_q4 = 2;
-  int avg = 0;
 
   int w = 1;
   int h = 1;
+
+  ConvolveParams conv_params;
+  conv_params.ref = 0;
+  conv_params.round = 1;
 
   setup_convolve();
 
@@ -65,7 +68,7 @@ TEST(AV1ConvolveTest, av1_convolve8) {
 
   av1_convolve(src + src_stride * filter_center + filter_center, src_stride,
                dst, dst_stride, w, h, interp_filter, subpel_x_q4, x_step_q4,
-               subpel_y_q4, y_step_q4, avg);
+               subpel_y_q4, y_step_q4, &conv_params);
 
   const int16_t *x_filter =
       av1_get_interp_filter_subpel_kernel(filter_params, subpel_x_q4);
@@ -96,12 +99,15 @@ TEST(AV1ConvolveTest, av1_convolve) {
   int dst_stride = 1;
   int x_step_q4 = 16;
   int y_step_q4 = 16;
-  int avg = 0;
   int w = 1;
   int h = 1;
 
   int subpel_x_q4;
   int subpel_y_q4;
+
+  ConvolveParams conv_params;
+  conv_params.ref = 0;
+  conv_params.round = 1;
 
   ASSERT_LE(filter_size, 12);
   setup_convolve();
@@ -114,7 +120,7 @@ TEST(AV1ConvolveTest, av1_convolve) {
     for (subpel_y_q4 = 0; subpel_y_q4 < SUBPEL_SHIFTS; subpel_y_q4++) {
       av1_convolve(src + src_stride * filter_center + filter_center, src_stride,
                    dst, dst_stride, w, h, interp_filter, subpel_x_q4, x_step_q4,
-                   subpel_y_q4, y_step_q4, avg);
+                   subpel_y_q4, y_step_q4, &conv_params);
 
       const int16_t *x_filter =
           av1_get_interp_filter_subpel_kernel(filter_params, subpel_x_q4);
@@ -156,12 +162,15 @@ TEST(AV1ConvolveTest, av1_convolve_vert_first) {
   int dst_stride = 1;
   int x_step_q4 = 16;
   int y_step_q4 = 16;
-  int avg = 0;
   int w = 1;
   int h = 1;
 
   int subpel_x_q4;
   int subpel_y_q4;
+
+  ConvolveParams conv_params;
+  conv_params.ref = 0;
+  conv_params.round = 1;
 
   ASSERT_LE(filter_size_x, 12);
   ASSERT_LE(filter_size_y, 12);
@@ -175,7 +184,8 @@ TEST(AV1ConvolveTest, av1_convolve_vert_first) {
     for (subpel_y_q4 = 1; subpel_y_q4 < SUBPEL_SHIFTS; subpel_y_q4++) {
       av1_convolve(src + src_stride * filter_center_y + filter_center_x,
                    src_stride, dst, dst_stride, w, h, interp_filter,
-                   subpel_x_q4, x_step_q4, subpel_y_q4, y_step_q4, avg);
+                   subpel_x_q4, x_step_q4, subpel_y_q4, y_step_q4,
+                   &conv_params);
 
       const int16_t *x_filter =
           av1_get_interp_filter_subpel_kernel(filter_params_x, subpel_x_q4);
@@ -222,13 +232,16 @@ TEST(AV1ConvolveTest, av1_convolve_avg) {
   int dst_stride = 1;
   int x_step_q4 = 16;
   int y_step_q4 = 16;
-  int avg = 0;
 
   int w = 1;
   int h = 1;
 
   int subpel_x_q4;
   int subpel_y_q4;
+
+  ConvolveParams conv_params;
+  conv_params.ref = 0;
+  conv_params.round = 1;
 
   setup_convolve();
 
@@ -241,23 +254,23 @@ TEST(AV1ConvolveTest, av1_convolve_avg) {
 
   for (subpel_x_q4 = 0; subpel_x_q4 < SUBPEL_SHIFTS; subpel_x_q4++) {
     for (subpel_y_q4 = 0; subpel_y_q4 < SUBPEL_SHIFTS; subpel_y_q4++) {
-      avg = 0;
+      conv_params.ref = 0;
       av1_convolve(src0 + offset, src_stride, dst0, dst_stride, w, h,
                    interp_filter, subpel_x_q4, x_step_q4, subpel_y_q4,
-                   y_step_q4, avg);
-      avg = 0;
+                   y_step_q4, &conv_params);
+      conv_params.ref = 0;
       av1_convolve(src1 + offset, src_stride, dst1, dst_stride, w, h,
                    interp_filter, subpel_x_q4, x_step_q4, subpel_y_q4,
-                   y_step_q4, avg);
+                   y_step_q4, &conv_params);
 
-      avg = 0;
+      conv_params.ref = 0;
       av1_convolve(src0 + offset, src_stride, dst, dst_stride, w, h,
                    interp_filter, subpel_x_q4, x_step_q4, subpel_y_q4,
-                   y_step_q4, avg);
-      avg = 1;
+                   y_step_q4, &conv_params);
+      conv_params.ref = 1;
       av1_convolve(src1 + offset, src_stride, dst, dst_stride, w, h,
                    interp_filter, subpel_x_q4, x_step_q4, subpel_y_q4,
-                   y_step_q4, avg);
+                   y_step_q4, &conv_params);
 
       EXPECT_EQ(dst[0], ROUND_POWER_OF_TWO(dst0[0] + dst1[0], 1));
     }

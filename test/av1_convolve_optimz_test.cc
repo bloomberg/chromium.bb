@@ -23,7 +23,8 @@ using std::tr1::tuple;
 using libaom_test::ACMRandom;
 
 typedef void (*conv_filter_t)(const uint8_t *, int, uint8_t *, int, int, int,
-                              const InterpFilterParams, const int, int, int);
+                              const InterpFilterParams, const int, int,
+                              ConvolveParams *);
 #if CONFIG_AOM_HIGHBITDEPTH
 typedef void (*hbd_conv_filter_t)(const uint16_t *, int, uint16_t *, int, int,
                                   int, const InterpFilterParams, const int, int,
@@ -68,7 +69,8 @@ class AV1ConvolveOptimzTest : public ::testing::TestWithParam<ConvParams> {
     height_ = std::tr1::get<1>(block);
     filter_ = GET_PARAM(3);
     subpel_ = GET_PARAM(4);
-    avg_ = GET_PARAM(5);
+    conv_params_.round = 1;
+    conv_params_.ref = GET_PARAM(5);
 
     alloc_ = new uint8_t[maxBlockSize * 4];
     src_ = alloc_ + (vertiOffset * maxWidth);
@@ -102,7 +104,7 @@ class AV1ConvolveOptimzTest : public ::testing::TestWithParam<ConvParams> {
   int height_;
   int filter_;
   int subpel_;
-  int avg_;
+  ConvolveParams conv_params_;
 };
 
 void AV1ConvolveOptimzTest::PrepFilterBuffer() {
@@ -154,10 +156,10 @@ void AV1ConvolveOptimzTest::RunHorizFilterBitExactCheck() {
   InterpFilterParams filter_params = av1_get_interp_filter_params(filter_);
 
   av1_convolve_horiz_c(src_ref_, stride, dst_ref_, stride, width_, height_,
-                       filter_params, subpel_, x_step_q4, avg_);
+                       filter_params, subpel_, x_step_q4, &conv_params_);
 
   conv_horiz_(src_, stride, dst_, stride, width_, height_, filter_params,
-              subpel_, x_step_q4, avg_);
+              subpel_, x_step_q4, &conv_params_);
 
   DiffFilterBuffer();
 
@@ -170,10 +172,10 @@ void AV1ConvolveOptimzTest::RunHorizFilterBitExactCheck() {
 
   av1_convolve_horiz_c(src_ref_, stride, dst_ref_, stride, width_,
                        intermediate_height, filter_params, subpel_, x_step_q4,
-                       avg_);
+                       &conv_params_);
 
   conv_horiz_(src_, stride, dst_, stride, width_, intermediate_height,
-              filter_params, subpel_, x_step_q4, avg_);
+              filter_params, subpel_, x_step_q4, &conv_params_);
 
   DiffFilterBuffer();
 }
@@ -184,10 +186,10 @@ void AV1ConvolveOptimzTest::RunVertFilterBitExactCheck() {
   InterpFilterParams filter_params = av1_get_interp_filter_params(filter_);
 
   av1_convolve_vert_c(src_ref_, stride, dst_ref_, stride, width_, height_,
-                      filter_params, subpel_, x_step_q4, avg_);
+                      filter_params, subpel_, x_step_q4, &conv_params_);
 
   conv_vert_(src_, stride, dst_, stride, width_, height_, filter_params,
-             subpel_, x_step_q4, avg_);
+             subpel_, x_step_q4, &conv_params_);
 
   DiffFilterBuffer();
 }
