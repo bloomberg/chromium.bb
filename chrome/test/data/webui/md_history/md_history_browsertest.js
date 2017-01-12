@@ -66,7 +66,6 @@ MaterialHistoryBrowserServiceTest.prototype = {
 };
 
 TEST_F('MaterialHistoryBrowserServiceTest', 'All', function() {
-  md_history.browser_service_test.registerTests();
   mocha.run();
 });
 
@@ -81,7 +80,6 @@ MaterialHistoryDrawerTest.prototype = {
 };
 
 TEST_F('MaterialHistoryDrawerTest', 'All', function() {
-  md_history.history_drawer_test.registerTests();
   mocha.run();
 });
 
@@ -96,7 +94,6 @@ MaterialHistoryGroupedListTest.prototype = {
 };
 
 TEST_F('MaterialHistoryGroupedListTest', 'All', function() {
-  md_history.history_grouped_list_test.registerTests();
   mocha.run();
 });
 
@@ -249,6 +246,5 @@ MaterialHistoryToolbarTest.prototype = {
 };
 
 TEST_F('MaterialHistoryToolbarTest', 'All', function() {
-  md_history.history_toolbar_test.registerTests();
   mocha.run();
 });
