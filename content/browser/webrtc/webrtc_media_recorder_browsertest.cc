@@ -23,6 +23,7 @@ static struct EncodingParameters {
     {true, "video/webm;codecs=VP8"},
     {true, "video/webm;codecs=VP9"},
     {true, "video/x-matroska;codecs=AVC1"},
+    {false, ""},  // Instructs the platform to choose any accelerated codec.
     {false, "video/webm;codecs=VP8"},
     {false, "video/webm;codecs=VP9"},
     {false, "video/x-matroska;codecs=AVC1"},
