@@ -2298,9 +2298,10 @@ void RenderWidgetHostViewAura::OnUpdateTextInputStateCalled(
     GetInputMethod()->OnTextInputTypeChanged(this);
 
   const TextInputState* state = text_input_manager_->GetTextInputState();
-  if (state && state->show_ime_if_needed)
+  if (state && state->show_ime_if_needed &&
+      GetInputMethod()->GetTextInputClient() == this) {
     GetInputMethod()->ShowImeIfNeeded();
-
+  }
 
   if (state && state->type != ui::TEXT_INPUT_TYPE_NONE) {
     // Start monitoring the composition information if the focused node is
