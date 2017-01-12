@@ -15,7 +15,7 @@
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner.h"
-#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -176,7 +176,7 @@ void CheckDownloadUrlDone(
 
 #endif  // FULL_SAFE_BROWSING
 
-// Called on the blocking pool to determine the MIME type for |path|.
+// Called asynchronously to determine the MIME type for |path|.
 std::string GetMimeType(const base::FilePath& path) {
   std::string mime_type;
   net::GetMimeTypeFromFile(path, &mime_type);
@@ -676,10 +676,9 @@ void ChromeDownloadManagerDelegate::GetFileMimeType(
     const base::FilePath& path,
     const GetFileMimeTypeCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskAndReplyWithResult(BrowserThread::GetBlockingPool(),
-                                   FROM_HERE,
-                                   base::Bind(&GetMimeType, path),
-                                   callback);
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock(), base::Bind(&GetMimeType, path),
+      callback);
 }
 
 #if defined(FULL_SAFE_BROWSING)
