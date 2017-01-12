@@ -81,7 +81,7 @@ function test()
     dumpBoundingBoxes(widgets);
 
     InspectorTest.addResult("Detaching sidebar");
-    childsplitWidget.setSidebarWidget(null);
+    secondSidebarWidget.detach();
     delete widgets["secondSidebarWidget"];
     dumpBoundingBoxes(widgets);
 
