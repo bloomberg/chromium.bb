@@ -16,7 +16,8 @@ debugging:
     *   Go to "Developer options"
     *   Check "USB debugging".
     *   Un-check "Verify apps over USB".
-*   On Jelly Bean and above, developer options are hidden by default. To unhide them:
+*   On Jelly Bean and above, developer options are hidden by default. To unhide
+    them:
     *   Go to "About phone"
     *   Tap 10 times on "Build number"
     *   The "Developer options" menu will now be available.
@@ -25,9 +26,9 @@ debugging:
 
 #### Screen
 
-You MUST ensure that the screen stays on while testing: `adb shell svc power
-stayon usb` Or do this manually on the device: Settings -> Developer options
--> Stay Awake.
+You **must** ensure that the screen stays on while testing: `adb shell svc power
+stayon usb` Or do this manually on the device: Settings -> Developer options ->
+Stay Awake.
 
 If this option is greyed out, stay awake is probably disabled by policy. In that
 case, get another device or log in with a normal, unmanaged account (because the
@@ -35,15 +36,20 @@ tests will break in exciting ways if stay awake is off).
 
 #### Enable Asserts
 
-    adb shell setprop debug.assert 1
+```
+adb shell setprop debug.assert 1
+```
 
 #### Disable Verify Apps
 
-You may see a dialog like
-[this one](http://www.samsungmobileusa.com/simulators/ATT_GalaxyMega/mobile/screens/06-02_12.jpg),
+You may see a dialog like [this
+one](http://www.samsungmobileusa.com/simulators/ATT_GalaxyMega/mobile/screens/06-02_12.jpg),
 which states, _Google may regularly check installed apps for potentially harmful
 behavior._ This can interfere with the test runner. To disable this dialog, run:
-`adb shell settings put global package_verifier_enable 0`
+
+```
+adb shell settings put global package_verifier_enable 0
+```
 
 ### Emulator Setup
 
@@ -51,9 +57,9 @@ behavior._ This can interfere with the test runner. To disable this dialog, run:
 
 Use an emulator (i.e. Android Virtual Device, AVD): Enabling Intel's
 Virtualizaton support provides the fastest, most reliable emulator configuration
-available (i.e. x86 emulator with GPU acceleration and KVM support).
-Remember to build with `target_arch=ia32` for x86. Otherwise installing the APKs
-will fail with `INSTALL_FAILED_NO_MATCHING_ABIS`.
+available (i.e. x86 emulator with GPU acceleration and KVM support). Remember to
+build with `target_arch=ia32` for x86. Otherwise installing the APKs will fail
+with `INSTALL_FAILED_NO_MATCHING_ABIS`.
 
 1.  Enable Intel Virtualization support in the BIOS.
 
@@ -83,8 +89,8 @@ will fail with `INSTALL_FAILED_NO_MATCHING_ABIS`.
     ```
 
     This script will attempt to use GPU emulation, so you must be running the
-    emulators in an environment with hardware rendering available. See
-    `avd.py --help` for more details.
+    emulators in an environment with hardware rendering available. See `avd.py
+    --help` for more details.
 
 #### Option 2
 
@@ -95,7 +101,7 @@ settings, since Chromium requires it to render.
 ## Building Tests
 
 If you're adding a new test file, you'll need to explicitly add it to a gn
-target. If you're adding a test to an existing file, you won't to make gn
+target. If you're adding a test to an existing file, you won't need to make gn
 changes, but you may be interested in where your test winds up. In either case,
 here are some guidelines for where a test belongs:
 
@@ -111,19 +117,19 @@ second directory rather than the top-level one.
 
 Java test files vary a bit more widely than their C++ counterparts:
 
-   - Instrumentation test files -- i.e., tests that will run on a device --
-typically belong in either `<top-level directory>_javatests` or
-`<top-level directory>_test_java`. Regardless, they'll wind up getting packaged
-into one of a few test APKs:
-     - `android_webview_test_apk` for anything in `//android_webview`
-     - `content_shell_test_apk` for anything in `//content` or below
-     - `chrome_public_test_apk` for most things in `//chrome`
-     - `chrome_sync_shell_test_apk` in a few exceptional cases
-   - JUnit or Robolectric test files -- i.e., tests that will run on the host --
-typically belong in `<top-level directory>_junit_tests` (e.g. `base_junit_tests`
-for `//base`), though here again there are cases (particularly in
-`//components`) where suites are split at the second directory rather than the
-top-level one.
+-   Instrumentation test files -- i.e., tests that will run on a device --
+    typically belong in either `<top-level directory>_javatests` or `<top-level
+    directory>_test_java`. Regardless, they'll wind up getting packaged into one
+    of a few test APKs:
+    -   `android_webview_test_apk` for anything in `//android_webview`
+    -   `content_shell_test_apk` for anything in `//content` or below
+    -   `chrome_public_test_apk` for most things in `//chrome`
+    -   `chrome_sync_shell_test_apk` in a few exceptional cases
+-   JUnit or Robolectric test files -- i.e., tests that will run on the host --
+    typically belong in `<top-level directory>_junit_tests` (e.g.
+    `base_junit_tests` for `//base`), though here again there are cases
+    (particularly in `//components`) where suites are split at the second
+    directory rather than the top-level one.
 
 Once you know what to build, just do it like you normally would build anything
 else, e.g.: `ninja -C out/Release chrome_public_test_apk`
@@ -161,7 +167,7 @@ tune2fs -e continue android_emulator_sdk/sdk/system-images/android-24/x86/userda
 
 ## Symbolizing Crashes
 
-Crash stacks are logged and can be viewed using adb logcat. To symbolize the
+Crash stacks are logged and can be viewed using `adb logcat`. To symbolize the
 traces, define `CHROMIUM_OUTPUT_DIR=$OUTDIR` where `$OUTDIR` is the argument you
 pass to `ninja -C`, and pipe the output through
 `third_party/android_platform/development/scripts/stack`. If
@@ -269,8 +275,8 @@ ninja -C out/Release android_webview_test_apk
 out/Release/bin/run_android_webview_test_apk [-vv]
 ```
 
-In order to run a subset of tests, use -f to filter based on test
-class/method or -A/-E to filter using annotations.
+In order to run a subset of tests, use -f to filter based on test class/method
+or -A/-E to filter using annotations.
 
 Filtering examples:
 
