@@ -553,6 +553,28 @@ void CrashReporterWriter::AddFileContents(const char* filename_msg,
 }
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_ANDROID)
+// Writes the "package" field, which is in the format:
+// $PACKAGE_NAME v$VERSION_CODE ($VERSION_NAME)
+void WriteAndroidPackage(MimeWriter& writer,
+                         base::android::BuildInfo* android_build_info) {
+  // The actual size limits on packageId and versionName are quite generous.
+  // Limit to a reasonable size rather than allocating theoretical limits.
+  const int kMaxSize = 1024;
+  char buf[kMaxSize];
+
+  // Not using sprintf to ensure no heap allocations.
+  my_strlcpy(buf, android_build_info->package_name(), kMaxSize);
+  my_strlcat(buf, " v", kMaxSize);
+  my_strlcat(buf, android_build_info->package_version_code(), kMaxSize);
+  my_strlcat(buf, " (", kMaxSize);
+  my_strlcat(buf, android_build_info->package_version_name(), kMaxSize);
+  my_strlcat(buf, ")", kMaxSize);
+
+  writer.AddPairString("package", buf);
+}
+#endif  // defined(OS_ANDROID)
+
 void DumpProcess() {
   if (g_breakpad)
     g_breakpad->WriteMinidump();
@@ -1627,6 +1649,8 @@ void HandleCrashDump(const BreakpadInfo& info) {
     writer.AddBoundary();
     writer.AddPairString(gms_core_version,
         android_build_info->gms_version_code());
+    writer.AddBoundary();
+    WriteAndroidPackage(writer, android_build_info);
     writer.AddBoundary();
     if (android_build_info->java_exception_info() != nullptr) {
       writer.AddPairString(exception_info,
