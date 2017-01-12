@@ -341,7 +341,8 @@ void TouchEventManager::updateTargetAndRegionMapsForTouchStarts(
       TouchAction effectiveTouchAction =
           TouchActionUtil::computeEffectiveTouchAction(*touchInfo.touchNode);
       if (effectiveTouchAction != TouchActionAuto) {
-        m_frame->page()->chromeClient().setTouchAction(effectiveTouchAction);
+        m_frame->page()->chromeClient().setTouchAction(m_frame,
+                                                       effectiveTouchAction);
 
         // Combine the current touch action sequence with the touch action
         // for the current finger press.

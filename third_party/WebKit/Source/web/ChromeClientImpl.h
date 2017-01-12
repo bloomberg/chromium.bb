@@ -142,7 +142,7 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
       WebEventListenerClass) const override;
   void setHasScrollEventHandlers(bool hasEventHandlers) override;
   bool hasScrollEventHandlers() const override;
-  void setTouchAction(TouchAction) override;
+  void setTouchAction(LocalFrame*, TouchAction) override;
 
   void attachRootGraphicsLayer(GraphicsLayer*, LocalFrame* localRoot) override;
 

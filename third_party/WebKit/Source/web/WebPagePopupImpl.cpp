@@ -201,8 +201,14 @@ class PagePopupChromeClient final : public EmptyChromeClient {
     return false;
   }
 
-  void setTouchAction(TouchAction touchAction) override {
-    if (WebViewClient* client = m_popup->m_webView->client())
+  void setTouchAction(LocalFrame* frame, TouchAction touchAction) override {
+    DCHECK(frame);
+    WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(frame);
+    WebFrameWidgetBase* widget = webFrame->localRoot()->frameWidget();
+    if (!widget)
+      return;
+
+    if (WebWidgetClient* client = widget->client())
       client->setTouchAction(static_cast<WebTouchAction>(touchAction));
   }
 

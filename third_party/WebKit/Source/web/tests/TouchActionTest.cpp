@@ -63,10 +63,10 @@ using blink::testing::runPendingTasks;
 
 namespace blink {
 
-class TouchActionTrackingWebViewClient
-    : public FrameTestHelpers::TestWebViewClient {
+class TouchActionTrackingWebWidgetClient
+    : public FrameTestHelpers::TestWebWidgetClient {
  public:
-  TouchActionTrackingWebViewClient()
+  TouchActionTrackingWebWidgetClient()
       : m_actionSetCount(0), m_action(WebTouchActionAuto) {}
 
   // WebWidgetClient methods
@@ -113,17 +113,17 @@ class TouchActionTest : public ::testing::Test {
   void runShadowDOMTest(std::string file);
   void runIFrameTest(std::string file);
   void sendTouchEvent(WebView*, WebInputEvent::Type, IntPoint clientPoint);
-  WebView* setupTest(std::string file, TouchActionTrackingWebViewClient&);
+  WebView* setupTest(std::string file, TouchActionTrackingWebWidgetClient&);
   void runTestOnTree(ContainerNode* root,
                      WebView*,
-                     TouchActionTrackingWebViewClient&);
+                     TouchActionTrackingWebWidgetClient&);
 
   std::string m_baseURL;
   FrameTestHelpers::WebViewHelper m_webViewHelper;
 };
 
 void TouchActionTest::runTouchActionTest(std::string file) {
-  TouchActionTrackingWebViewClient client;
+  TouchActionTrackingWebWidgetClient client;
 
   // runTouchActionTest() loads a document in a frame, setting up a
   // nested message loop. Should any Oilpan GC happen while it is in
@@ -146,7 +146,7 @@ void TouchActionTest::runTouchActionTest(std::string file) {
 }
 
 void TouchActionTest::runShadowDOMTest(std::string file) {
-  TouchActionTrackingWebViewClient client;
+  TouchActionTrackingWebWidgetClient client;
 
   WebView* webView = setupTest(file, client);
 
@@ -174,7 +174,7 @@ void TouchActionTest::runShadowDOMTest(std::string file) {
 }
 
 void TouchActionTest::runIFrameTest(std::string file) {
-  TouchActionTrackingWebViewClient client;
+  TouchActionTrackingWebWidgetClient client;
 
   WebView* webView = setupTest(file, client);
   WebFrame* curFrame = webView->mainFrame()->firstChild();
@@ -192,13 +192,14 @@ void TouchActionTest::runIFrameTest(std::string file) {
   m_webViewHelper.reset();
 }
 
-WebView* TouchActionTest::setupTest(std::string file,
-                                    TouchActionTrackingWebViewClient& client) {
+WebView* TouchActionTest::setupTest(
+    std::string file,
+    TouchActionTrackingWebWidgetClient& client) {
   URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL),
                                                WebString::fromUTF8(file));
   // Note that JavaScript must be enabled for shadow DOM tests.
   WebView* webView =
-      m_webViewHelper.initializeAndLoad(m_baseURL + file, true, 0, &client);
+      m_webViewHelper.initializeAndLoad(m_baseURL + file, true, 0, 0, &client);
 
   // Set size to enable hit testing, and avoid line wrapping for consistency
   // with browser.
@@ -222,9 +223,10 @@ IntRect windowClipRect(const FrameView& frameView) {
   return enclosingIntRect(clipRect);
 }
 
-void TouchActionTest::runTestOnTree(ContainerNode* root,
-                                    WebView* webView,
-                                    TouchActionTrackingWebViewClient& client) {
+void TouchActionTest::runTestOnTree(
+    ContainerNode* root,
+    WebView* webView,
+    TouchActionTrackingWebWidgetClient& client) {
   // Find all elements to test the touch-action of in the document.
   DummyExceptionStateForTesting es;
 

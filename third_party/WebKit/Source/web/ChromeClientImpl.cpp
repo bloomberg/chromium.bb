@@ -973,8 +973,15 @@ bool ChromeClientImpl::hasScrollEventHandlers() const {
   return false;
 }
 
-void ChromeClientImpl::setTouchAction(TouchAction touchAction) {
-  if (WebViewClient* client = m_webView->client())
+void ChromeClientImpl::setTouchAction(LocalFrame* frame,
+                                      TouchAction touchAction) {
+  DCHECK(frame);
+  WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(frame);
+  WebFrameWidgetBase* widget = webFrame->localRoot()->frameWidget();
+  if (!widget)
+    return;
+
+  if (WebWidgetClient* client = widget->client())
     client->setTouchAction(static_cast<WebTouchAction>(touchAction));
 }
 

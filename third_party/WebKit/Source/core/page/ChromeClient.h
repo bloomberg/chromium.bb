@@ -265,7 +265,7 @@ class CORE_EXPORT ChromeClient : public HostWindow {
   virtual void setHasScrollEventHandlers(bool) = 0;
   virtual bool hasScrollEventHandlers() const = 0;
 
-  virtual void setTouchAction(TouchAction) = 0;
+  virtual void setTouchAction(LocalFrame*, TouchAction) = 0;
 
   // Checks if there is an opened popup, called by LayoutMenuList::showPopup().
   virtual bool hasOpenedPopup() const = 0;

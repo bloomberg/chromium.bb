@@ -208,7 +208,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   void setHasScrollEventHandlers(bool) override {}
   bool hasScrollEventHandlers() const override { return false; }
 
-  void setTouchAction(TouchAction) override {}
+  void setTouchAction(LocalFrame*, TouchAction) override {}
 
   void didAssociateFormControlsAfterLoad(LocalFrame*) override {}
 
