@@ -174,6 +174,8 @@ Shell* Shell::instance_ = nullptr;
 // static
 aura::WindowTreeClient* Shell::window_tree_client_ = nullptr;
 // static
+aura::WindowManagerClient* Shell::window_manager_client_ = nullptr;
+// static
 bool Shell::initially_hide_cursor_ = false;
 
 ////////////////////////////////////////////////////////////////////////////////

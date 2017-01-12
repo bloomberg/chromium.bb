@@ -5,7 +5,6 @@
 #include "ash/mus/frame/detached_title_area_renderer.h"
 
 #include "ash/common/frame/header_view.h"
-#include "ash/mus/bridge/wm_window_mus.h"
 #include "ash/mus/frame/detached_title_area_renderer_host.h"
 #include "ui/aura/window.h"
 #include "ui/views/view.h"

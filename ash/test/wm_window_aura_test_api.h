@@ -12,7 +12,7 @@ namespace ash {
 class WmWindowAuraTestApi {
  public:
   // Used by tests to set the default value of
-  // |WmWindowMus::default_use_empty_minimum_size_for_testing_|. This is needed
+  // |WmWindowAura::default_use_empty_minimum_size_for_testing_|. This is needed
   // as tests don't have a good way to reset the value of
   // |use_empty_minimum_size_for_testing_| before the minimum size is queried.
   class GlobalMinimumSizeLock {

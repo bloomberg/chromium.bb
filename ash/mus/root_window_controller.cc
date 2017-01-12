@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm/container_finder.h"
@@ -20,7 +21,6 @@
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm/root_window_layout_manager.h"
 #include "ash/mus/bridge/wm_shell_mus.h"
-#include "ash/mus/bridge/wm_window_mus.h"
 #include "ash/mus/non_client_frame_controller.h"
 #include "ash/mus/property_util.h"
 #include "ash/mus/screen_mus.h"
@@ -161,23 +161,23 @@ aura::Window* RootWindowController::NewTopLevelWindow(
   if (container_window) {
     container_window->AddChild(window);
   } else {
-    WmWindowMus* root = WmWindowMus::Get(this->root());
+    WmWindowAura* root = WmWindowAura::Get(this->root());
     gfx::Point origin =
         root->ConvertPointToTarget(root->GetRootWindow(), gfx::Point());
     origin += display_.bounds().OffsetFromOrigin();
     gfx::Rect bounds_in_screen(origin, bounds.size());
-    static_cast<WmWindowMus*>(
-        ash::wm::GetDefaultParent(WmWindowMus::Get(context),
-                                  WmWindowMus::Get(window), bounds_in_screen))
+    static_cast<WmWindowAura*>(
+        ash::wm::GetDefaultParent(WmWindowAura::Get(context),
+                                  WmWindowAura::Get(window), bounds_in_screen))
         ->aura_window()
         ->AddChild(window);
   }
   return window;
 }
 
-WmWindowMus* RootWindowController::GetWindowByShellWindowId(int id) {
-  return WmWindowMus::AsWmWindowMus(
-      WmWindowMus::Get(root())->GetChildByShellWindowId(id));
+ash::WmWindowAura* RootWindowController::GetWindowByShellWindowId(int id) {
+  return static_cast<WmWindowAura*>(
+      WmWindowAura::Get(root())->GetChildByShellWindowId(id));
 }
 
 void RootWindowController::SetWorkAreaInests(const gfx::Insets& insets) {

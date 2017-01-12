@@ -4,7 +4,7 @@
 
 #include "ash/mus/move_event_handler.h"
 
-#include "ash/mus/bridge/wm_window_mus.h"
+#include "ash/aura/wm_window_aura.h"
 #include "ash/mus/bridge/workspace_event_handler_mus.h"
 #include "services/ui/public/interfaces/cursor.mojom.h"
 #include "ui/aura/mus/window_manager_delegate.h"
@@ -62,7 +62,7 @@ void OnMoveLoopCompleted(const base::Callback<void(bool success)>& end_closure,
 MoveEventHandler::MoveEventHandler(
     aura::WindowManagerClient* window_manager_client,
     aura::Window* window)
-    : wm_window_(WmWindowMus::Get(window)),
+    : wm_window_(ash::WmWindowAura::Get(window)),
       window_manager_client_(window_manager_client),
       toplevel_window_event_handler_(wm_window_->GetShell()) {
   window->AddObserver(this);
@@ -77,7 +77,7 @@ MoveEventHandler::~MoveEventHandler() {
 
 // static
 MoveEventHandler* MoveEventHandler::GetForWindow(WmWindow* wm_window) {
-  return WmWindowMus::GetAuraWindow(wm_window)->GetProperty(
+  return ash::WmWindowAura::GetAuraWindow(wm_window)->GetProperty(
       kWmMoveEventHandler);
 }
 

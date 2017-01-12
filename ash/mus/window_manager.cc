@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/session/session_controller.h"
 #include "ash/common/wm/container_finder.h"
 #include "ash/common/wm/window_state.h"
@@ -16,7 +17,6 @@
 #include "ash/mus/accelerators/accelerator_ids.h"
 #include "ash/mus/bridge/wm_lookup_mus.h"
 #include "ash/mus/bridge/wm_shell_mus.h"
-#include "ash/mus/bridge/wm_window_mus.h"
 #include "ash/mus/move_event_handler.h"
 #include "ash/mus/non_client_frame_controller.h"
 #include "ash/mus/property_util.h"
@@ -96,8 +96,8 @@ WindowManager::WindowManager(service_manager::Connector* connector)
 
 WindowManager::~WindowManager() {
   Shutdown();
-  aura::Env::GetInstance()->RemoveObserver(this);
   ash::Shell::set_window_tree_client(nullptr);
+  ash::Shell::set_window_manager_client(nullptr);
 }
 
 void WindowManager::Init(
@@ -109,8 +109,6 @@ void WindowManager::Init(
 
   DCHECK_EQ(nullptr, ash::Shell::window_tree_client());
   ash::Shell::set_window_tree_client(window_tree_client_.get());
-
-  aura::Env::GetInstance()->AddObserver(this);
 
   // |connector_| will be null in some tests.
   if (connector_)
@@ -156,7 +154,7 @@ aura::Window* WindowManager::NewTopLevelWindow(
   if (properties->count(
           ui::mojom::WindowManager::kWindowIgnoredByShelf_Property)) {
     wm::WindowState* window_state =
-        static_cast<WmWindow*>(WmWindowMus::Get(window))->GetWindowState();
+        static_cast<WmWindow*>(WmWindowAura::Get(window))->GetWindowState();
     window_state->set_ignored_by_shelf(mojo::ConvertTo<bool>(
         (*properties)
             [ui::mojom::WindowManager::kWindowIgnoredByShelf_Property]));
@@ -309,7 +307,7 @@ void WindowManager::Shutdown() {
 
 RootWindowController* WindowManager::GetPrimaryRootWindowController() {
   return RootWindowController::ForWindow(
-      static_cast<WmWindowMus*>(
+      static_cast<WmWindowAura*>(
           WmShell::Get()->GetPrimaryRootWindowController()->GetWindow())
           ->aura_window());
 }
@@ -325,7 +323,8 @@ WindowManager::GetRootWindowControllerForNewTopLevelWindow(
   }
 
   return RootWindowController::ForWindow(
-      static_cast<WmWindowMus*>(WmShellMus::Get()->GetRootWindowForNewWindows())
+      static_cast<WmWindowAura*>(
+          WmShellMus::Get()->GetRootWindowForNewWindows())
           ->aura_window());
 }
 
@@ -363,12 +362,13 @@ aura::PropertyConverter* WindowManager::GetPropertyConverter() {
 
 void WindowManager::SetWindowManagerClient(aura::WindowManagerClient* client) {
   window_manager_client_ = client;
+  ash::Shell::set_window_manager_client(client);
 }
 
 bool WindowManager::OnWmSetBounds(aura::Window* window, gfx::Rect* bounds) {
   // TODO(sky): this indirectly sets bounds, which is against what
   // OnWmSetBounds() recommends doing. Remove that restriction, or fix this.
-  WmWindowMus::Get(window)->SetBounds(*bounds);
+  WmWindowAura::Get(window)->SetBounds(*bounds);
   *bounds = window->bounds();
   return true;
 }
@@ -379,8 +379,7 @@ bool WindowManager::OnWmSetProperty(
     std::unique_ptr<std::vector<uint8_t>>* new_data) {
   // TODO(sky): constrain this to set of keys we know about, and allowed values.
   if (name == ui::mojom::WindowManager::kWindowIgnoredByShelf_Property) {
-    wm::WindowState* window_state =
-        static_cast<WmWindow*>(WmWindowMus::Get(window))->GetWindowState();
+    wm::WindowState* window_state = WmWindowAura::Get(window)->GetWindowState();
     window_state->set_ignored_by_shelf(
         new_data ? mojo::ConvertTo<bool>(**new_data) : false);
     return false;  // Won't attempt to map through property converter.
@@ -466,7 +465,7 @@ void WindowManager::OnWmPerformMoveLoop(
     ui::mojom::MoveLoopSource source,
     const gfx::Point& cursor_location,
     const base::Callback<void(bool)>& on_done) {
-  WmWindowMus* child_window = WmWindowMus::Get(window);
+  WmWindowAura* child_window = WmWindowAura::Get(window);
   MoveEventHandler* handler = MoveEventHandler::GetForWindow(child_window);
   if (!handler) {
     on_done.Run(false);
@@ -482,7 +481,7 @@ void WindowManager::OnWmPerformMoveLoop(
 }
 
 void WindowManager::OnWmCancelMoveLoop(aura::Window* window) {
-  WmWindowMus* child_window = WmWindowMus::Get(window);
+  WmWindowAura* child_window = WmWindowAura::Get(window);
   MoveEventHandler* handler = MoveEventHandler::GetForWindow(child_window);
   if (handler)
     handler->RevertDrag();
@@ -506,13 +505,6 @@ void WindowManager::OnWmSetClientArea(
   if (!non_client_frame_controller)
     return;
   non_client_frame_controller->SetClientArea(insets, additional_client_areas);
-}
-
-void WindowManager::OnWindowInitialized(aura::Window* window) {
-  // This ensures WmWindowAura won't be called before WmWindowMus. This is
-  // important as if WmWindowAura::Get() is called first, then WmWindowAura
-  // would be created, not WmWindowMus.
-  WmWindowMus::Get(window);
 }
 
 }  // namespace mus

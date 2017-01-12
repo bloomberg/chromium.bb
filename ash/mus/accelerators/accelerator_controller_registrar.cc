@@ -10,7 +10,6 @@
 #include "ash/common/accelerators/accelerator_router.h"
 #include "ash/common/wm_shell.h"
 #include "ash/mus/accelerators/accelerator_ids.h"
-#include "ash/mus/bridge/wm_window_mus.h"
 #include "ash/mus/window_manager.h"
 #include "base/logging.h"
 #include "services/ui/common/accelerator_util.h"

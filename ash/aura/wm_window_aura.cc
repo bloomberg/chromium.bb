@@ -31,6 +31,9 @@
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
+#include "ui/aura/mus/window_manager_delegate.h"
+#include "ui/aura/mus/window_mus.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_property.h"
@@ -97,14 +100,13 @@ WmWindowAura::~WmWindowAura() {
 }
 
 // static
-const WmWindow* WmWindowAura::Get(const aura::Window* window) {
+const WmWindowAura* WmWindowAura::Get(const aura::Window* window) {
   if (!window)
     return nullptr;
 
-  const WmWindow* wm_window = window->GetProperty(kWmWindowKey);
+  const WmWindowAura* wm_window = window->GetProperty(kWmWindowKey);
   if (wm_window)
     return wm_window;
-  DCHECK_EQ(aura::Env::Mode::LOCAL, aura::Env::GetInstance()->mode());
   // WmWindowAura is owned by the aura::Window.
   // TODO(sky): fix constness.
   return new WmWindowAura(const_cast<aura::Window*>(window));
@@ -721,6 +723,16 @@ views::Widget* WmWindowAura::GetInternalWidget() {
 }
 
 void WmWindowAura::CloseWidget() {
+  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS &&
+      aura_window()->GetProperty(kWidgetCreationTypeKey) ==
+          WidgetCreationType::FOR_CLIENT) {
+    // NOTE: in the FOR_CLIENT case there is not necessarily a widget associated
+    // with the window. Mash only creates widgets for top level windows if mash
+    // renders the non-client frame.
+    DCHECK(Shell::window_manager_client());
+    Shell::window_manager_client()->RequestClose(aura_window());
+    return;
+  }
   DCHECK(GetInternalWidget());
   GetInternalWidget()->Close();
 }
@@ -867,7 +879,10 @@ void WmWindowAura::RemoveTransientWindowObserver(
 }
 
 void WmWindowAura::AddLimitedPreTargetHandler(ui::EventHandler* handler) {
-  // This behaves differently from WmWindowMus for child and embedded windows.
+  // In mus AddPreTargetHandler() only works for windows created by this client.
+  DCHECK(aura::Env::GetInstance()->mode() == aura::Env::Mode::LOCAL ||
+         Shell::window_tree_client()->WasCreatedByThisClient(
+             aura::WindowMus::Get(window_)));
   window_->AddPreTargetHandler(handler);
 }
 

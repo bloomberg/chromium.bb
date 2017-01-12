@@ -4,8 +4,8 @@
 
 #include "ash/mus/test/ash_test_impl_mus.h"
 
+#include "ash/aura/wm_window_aura.h"
 #include "ash/common/test/ash_test.h"
-#include "ash/mus/bridge/wm_window_mus.h"
 #include "base/memory/ptr_util.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
@@ -58,8 +58,8 @@ std::unique_ptr<WindowOwner> AshTestImplMus::CreateTestWindow(
     const gfx::Rect& bounds_in_screen,
     ui::wm::WindowType type,
     int shell_window_id) {
-  WmWindowMus* window =
-      WmWindowMus::Get(wm_test_base_->CreateTestWindow(bounds_in_screen, type));
+  ash::WmWindowAura* window = ash::WmWindowAura::Get(
+      wm_test_base_->CreateTestWindow(bounds_in_screen, type));
   window->SetShellWindowId(shell_window_id);
   return base::MakeUnique<WindowOwner>(window);
 }
@@ -87,7 +87,7 @@ bool AshTestImplMus::SetSecondaryDisplayPlacement(
 void AshTestImplMus::ConfigureWidgetInitParamsForDisplay(
     WmWindow* window,
     views::Widget::InitParams* init_params) {
-  init_params->context = WmWindowMus::GetAuraWindow(window);
+  init_params->context = WmWindowAura::GetAuraWindow(window);
   init_params
       ->mus_properties[ui::mojom::WindowManager::kDisplayId_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(

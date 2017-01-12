@@ -17,7 +17,6 @@
 #include "services/ui/common/types.h"
 #include "services/ui/public/interfaces/display/display_controller.mojom.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
-#include "ui/aura/env_observer.h"
 #include "ui/aura/mus/window_manager_delegate.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
 
@@ -69,8 +68,7 @@ class WmTestHelper;
 // a RootWindowController per Display. WindowManager takes ownership of
 // the WindowTreeClient.
 class WindowManager : public aura::WindowManagerDelegate,
-                      public aura::WindowTreeClientDelegate,
-                      public aura::EnvObserver {
+                      public aura::WindowTreeClientDelegate {
  public:
   explicit WindowManager(service_manager::Connector* connector);
   ~WindowManager() override;
@@ -183,9 +181,6 @@ class WindowManager : public aura::WindowManagerDelegate,
       aura::Window* window,
       const gfx::Insets& insets,
       const std::vector<gfx::Rect>& additional_client_areas) override;
-
-  // aura::EnvObserver:
-  void OnWindowInitialized(aura::Window* window) override;
 
   service_manager::Connector* connector_;
   display::mojom::DisplayControllerPtr display_controller_;

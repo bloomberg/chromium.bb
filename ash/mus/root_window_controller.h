@@ -25,12 +25,14 @@ class Connector;
 }
 
 namespace ash {
+
+class WmWindowAura;
+
 namespace mus {
 
 class WindowManager;
 class WmTestBase;
 class WmTestHelper;
-class WmWindowMus;
 
 // RootWindowController manages the windows and state for a single display.
 // RootWindowController takes ownership of the WindowTreeHostMus that it passed
@@ -60,7 +62,7 @@ class RootWindowController {
       ui::mojom::WindowType window_type,
       std::map<std::string, std::vector<uint8_t>>* properties);
 
-  WmWindowMus* GetWindowByShellWindowId(int id);
+  ash::WmWindowAura* GetWindowByShellWindowId(int id);
 
   void SetWorkAreaInests(const gfx::Insets& insets);
   void SetDisplay(const display::Display& display);

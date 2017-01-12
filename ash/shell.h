@@ -26,6 +26,7 @@
 namespace aura {
 class RootWindow;
 class Window;
+class WindowManagerClient;
 class WindowTreeClient;
 namespace client {
 class ActivationClient;
@@ -185,13 +186,21 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   static const aura::Window* GetContainer(const aura::Window* root_window,
                                           int container_id);
 
-  // TODO(sky): better isolate this.
+  // TODO(sky): move this and WindowManagerClient into ShellMash that is owned
+  // by Shell. Doing the move is gated on having mash create Shell.
   static void set_window_tree_client(aura::WindowTreeClient* client) {
     window_tree_client_ = client;
   }
 
   static aura::WindowTreeClient* window_tree_client() {
     return window_tree_client_;
+  }
+
+  static void set_window_manager_client(aura::WindowManagerClient* client) {
+    window_manager_client_ = client;
+  }
+  static aura::WindowManagerClient* window_manager_client() {
+    return window_manager_client_;
   }
 
   // Creates a default views::NonClientFrameView for use by windows in the
@@ -423,6 +432,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   // Only valid in mash, for classic ash this is null.
   static aura::WindowTreeClient* window_tree_client_;
+  static aura::WindowManagerClient* window_manager_client_;
 
   // If set before the Shell is initialized, the mouse cursor will be hidden
   // when the screen is initially created.

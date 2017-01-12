@@ -4,7 +4,7 @@
 
 #include "ash/mus/disconnected_app_handler.h"
 
-#include "ash/mus/bridge/wm_window_mus.h"
+#include "ash/aura/wm_window_aura.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ui/aura/window.h"
 
@@ -13,13 +13,14 @@ namespace mus {
 namespace {
 
 bool IsContainer(aura::Window* window) {
-  return WmWindowMus::Get(window)->IsContainer();
+  return WmWindowAura::Get(window)->GetShellWindowId() !=
+         kShellWindowId_Invalid;
 }
 
 }  // namespace
 
 DisconnectedAppHandler::DisconnectedAppHandler(aura::Window* root_window) {
-  WmWindowMus* root = WmWindowMus::Get(root_window);
+  ash::WmWindowAura* root = ash::WmWindowAura::Get(root_window);
   for (int shell_window_id = kShellWindowId_Min;
        shell_window_id < kShellWindowId_Max; ++shell_window_id) {
     // kShellWindowId_VirtualKeyboardContainer is lazily created.
@@ -35,7 +36,7 @@ DisconnectedAppHandler::DisconnectedAppHandler(aura::Window* root_window) {
       continue;
 #endif
 
-    WmWindowMus* container = WmWindowMus::AsWmWindowMus(
+    ash::WmWindowAura* container = static_cast<ash::WmWindowAura*>(
         root->GetChildByShellWindowId(shell_window_id));
     Add(container->aura_window());
 

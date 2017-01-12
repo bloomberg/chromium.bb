@@ -22,9 +22,11 @@ class CancelModeEvent;
 }
 
 namespace ash {
+
+class WmWindowAura;
+
 namespace mus {
 
-class WmWindowMus;
 class WorkspaceEventHandlerMus;
 
 // EventHandler attached to windows that may be dragged and/or resized. This
@@ -73,7 +75,7 @@ class MoveEventHandler : public ui::EventHandler, public aura::WindowObserver {
   // Overridden from aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
 
-  WmWindowMus* wm_window_;
+  ash::WmWindowAura* wm_window_;
   aura::WindowManagerClient* window_manager_client_;
   wm::WmToplevelWindowEventHandler toplevel_window_event_handler_;
 

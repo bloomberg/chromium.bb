@@ -28,10 +28,11 @@ class ASH_EXPORT WmWindowAura : public WmWindow,
 
   // Returns a WmWindow for an aura::Window, creating if necessary. |window| may
   // be null, in which case null is returned.
-  static WmWindow* Get(aura::Window* window) {
-    return const_cast<WmWindow*>(Get(const_cast<const aura::Window*>(window)));
+  static WmWindowAura* Get(aura::Window* window) {
+    return const_cast<WmWindowAura*>(
+        Get(const_cast<const aura::Window*>(window)));
   }
-  static const WmWindow* Get(const aura::Window* window);
+  static const WmWindowAura* Get(const aura::Window* window);
 
   static std::vector<WmWindow*> FromAuraWindows(
       const std::vector<aura::Window*>& aura_windows);
@@ -49,6 +50,8 @@ class ASH_EXPORT WmWindowAura : public WmWindow,
 
   // See description of |children_use_extended_hit_region_|.
   bool ShouldUseExtendedHitRegion() const;
+
+  wm::WindowState* GetWindowState() { return WmWindow::GetWindowState(); }
 
   // WmWindow:
   void Destroy() override;
