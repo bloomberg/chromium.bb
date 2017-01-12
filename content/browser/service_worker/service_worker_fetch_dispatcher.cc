@@ -17,6 +17,7 @@
 #include "content/browser/loader/resource_requester_info.h"
 #include "content/browser/loader/url_loader_factory_impl.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
+#include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_messages.h"
@@ -448,6 +449,8 @@ void ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
 
   DCHECK(net::HttpUtil::IsValidHeaderValue(
       version_->navigation_preload_state().header));
+  ServiceWorkerMetrics::RecordNavigationPreloadRequestHeaderSize(
+      version_->navigation_preload_state().header.length());
   request.headers = "Service-Worker-Navigation-Preload: " +
                     version_->navigation_preload_state().header;
 

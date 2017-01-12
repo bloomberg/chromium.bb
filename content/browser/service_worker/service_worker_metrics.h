@@ -286,6 +286,10 @@ class ServiceWorkerMetrics {
   static void RecordStartStatusAfterFailure(int failure_count,
                                             ServiceWorkerStatusCode status);
 
+  // Records the size of Service-Worker-Navigation-Preload header when the
+  // navigation preload request is to be sent.
+  static void RecordNavigationPreloadRequestHeaderSize(size_t size);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ServiceWorkerMetrics);
 };

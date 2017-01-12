@@ -761,4 +761,10 @@ void ServiceWorkerMetrics::RecordStartStatusAfterFailure(
   }
 }
 
+void ServiceWorkerMetrics::RecordNavigationPreloadRequestHeaderSize(
+    size_t size) {
+  UMA_HISTOGRAM_COUNTS_100000("ServiceWorker.NavigationPreload.HeaderSize",
+                              size);
+}
+
 }  // namespace content
