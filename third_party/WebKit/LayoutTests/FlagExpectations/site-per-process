@@ -170,6 +170,7 @@ crbug.com/24182 virtual/mojo-loading/http/tests/perf/large-inlined-script.html [
 
 # https://crbug.com/672570: autoplay-crossorigin.html fails w/ --site-per-process
 crbug.com/672570 http/tests/media/autoplay-crossorigin.html [ Timeout ]
+crbug.com/672570 virtual/mojo-loading/http/tests/media/autoplay-crossorigin.html [ Timeout ]
 
 # https://crbug.com/680201: referrer-policy-attribute-import-no-referrer.html fails w/ --site-per-process
 crbug.com/680201 http/tests/security/referrer-policy-attribute-import-no-referrer.html [ Failure ]
