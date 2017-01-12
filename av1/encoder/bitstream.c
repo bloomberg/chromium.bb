@@ -1810,25 +1810,16 @@ PVQ_INFO *get_pvq_block(PVQ_QUEUE *pvq_q) {
 }
 #endif
 
-static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
-                          aom_writer *w, const TOKENEXTRA **tok,
-                          const TOKENEXTRA *const tok_end,
+static void write_mbmi_b(AV1_COMP *cpi, const TileInfo *const tile,
+                         aom_writer *w,
 #if CONFIG_SUPERTX
-                          int supertx_enabled,
+                         int supertx_enabled,
 #endif
-                          int mi_row, int mi_col) {
+                         int mi_row, int mi_col) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
   MODE_INFO *m;
-  int plane;
   int bh, bw;
-#if CONFIG_PVQ
-  MB_MODE_INFO *mbmi;
-  BLOCK_SIZE bsize;
-  od_adapt_ctx *adapt;
-  (void)tok;
-  (void)tok_end;
-#endif
   xd->mi = cm->mi_grid_visible + (mi_row * cm->mi_stride + mi_col);
   m = xd->mi[0];
 
@@ -1840,11 +1831,6 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
   cpi->td.mb.mbmi_ext = cpi->mbmi_ext_base + (mi_row * cm->mi_cols + mi_col);
 
   set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw, cm->mi_rows, cm->mi_cols);
-#if CONFIG_PVQ
-  mbmi = &m->mbmi;
-  bsize = mbmi->sb_type;
-  adapt = &cpi->td.mb.daala_enc.state.adapt;
-#endif
 
   if (frame_is_intra_only(cm)) {
     write_mb_modes_kf(cm, xd, xd->mi, w);
@@ -1890,7 +1876,42 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
 #endif
                         w);
   }
+}
 
+static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
+                           aom_writer *w, const TOKENEXTRA **tok,
+                           const TOKENEXTRA *const tok_end, int mi_row,
+                           int mi_col) {
+  AV1_COMMON *const cm = &cpi->common;
+  MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
+  MODE_INFO *m;
+  int plane;
+  int bh, bw;
+#if CONFIG_PVQ
+  MB_MODE_INFO *mbmi;
+  BLOCK_SIZE bsize;
+  od_adapt_ctx *adapt;
+  (void)tok;
+  (void)tok_end;
+#endif
+  xd->mi = cm->mi_grid_visible + (mi_row * cm->mi_stride + mi_col);
+  m = xd->mi[0];
+
+  assert(m->mbmi.sb_type <= cm->sb_size);
+
+  bh = mi_size_high[m->mbmi.sb_type];
+  bw = mi_size_wide[m->mbmi.sb_type];
+
+  cpi->td.mb.mbmi_ext = cpi->mbmi_ext_base + (mi_row * cm->mi_cols + mi_col);
+
+  set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw, cm->mi_rows, cm->mi_cols);
+#if CONFIG_PVQ
+  mbmi = &m->mbmi;
+  bsize = mbmi->sb_type;
+  adapt = &cpi->td.mb.daala_enc.state.adapt;
+#endif
+
+#if !CONFIG_PVQ
 #if CONFIG_PALETTE
   for (plane = 0; plane <= 1; ++plane) {
     if (m->mbmi.palette_mode_info.palette_size[plane] > 0) {
@@ -1905,10 +1926,6 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
     }
   }
 #endif  // CONFIG_PALETTE
-#if !CONFIG_PVQ
-#if CONFIG_SUPERTX
-  if (supertx_enabled) return;
-#endif  // CONFIG_SUPERTX
 
 #if CONFIG_COEF_INTERLEAVE
   if (!m->mbmi.skip) {
@@ -2160,6 +2177,24 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
     }    // for (plane =
   }      // if (!m->mbmi.skip)
 #endif
+}
+
+static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
+                          aom_writer *w, const TOKENEXTRA **tok,
+                          const TOKENEXTRA *const tok_end,
+#if CONFIG_SUPERTX
+                          int supertx_enabled,
+#endif
+                          int mi_row, int mi_col) {
+  write_mbmi_b(cpi, tile, w,
+#if CONFIG_SUPERTX
+               supertx_enabled,
+#endif
+               mi_row, mi_col);
+#if !CONFIG_PVQ && CONFIG_SUPERTX
+  if (!supertx_enabled)
+#endif
+    write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
 }
 
 static void write_partition(const AV1_COMMON *const cm,

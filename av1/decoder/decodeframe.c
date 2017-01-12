@@ -1378,37 +1378,36 @@ static void set_segment_id_supertx(const AV1_COMMON *const cm, const int mi_row,
 }
 #endif  // CONFIG_SUPERTX
 
-static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
+static void decode_mbmi_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #if CONFIG_SUPERTX
-                         int supertx_enabled,
+                              int supertx_enabled,
 #endif  // CONFIG_SUPERTX
-                         int mi_row, int mi_col, aom_reader *r,
+                              int mi_row, int mi_col, aom_reader *r,
 #if CONFIG_EXT_PARTITION_TYPES
-                         PARTITION_TYPE partition,
+                              PARTITION_TYPE partition,
 #endif  // CONFIG_EXT_PARTITION_TYPES
-                         BLOCK_SIZE bsize) {
+                              BLOCK_SIZE bsize) {
   AV1_COMMON *const cm = &pbi->common;
   const int bw = mi_size_wide[bsize];
   const int bh = mi_size_high[bsize];
   const int x_mis = AOMMIN(bw, cm->mi_cols - mi_col);
   const int y_mis = AOMMIN(bh, cm->mi_rows - mi_row);
-  MB_MODE_INFO *mbmi;
 
 #if CONFIG_ACCOUNTING
   aom_accounting_set_context(&pbi->accounting, mi_col, mi_row);
 #endif
 #if CONFIG_SUPERTX
   if (supertx_enabled) {
-    mbmi = set_mb_offsets(cm, xd, bsize, mi_row, mi_col, bw, bh, x_mis, y_mis);
+    set_mb_offsets(cm, xd, bsize, mi_row, mi_col, bw, bh, x_mis, y_mis);
   } else {
-    mbmi = set_offsets(cm, xd, bsize, mi_row, mi_col, bw, bh, x_mis, y_mis);
+    set_offsets(cm, xd, bsize, mi_row, mi_col, bw, bh, x_mis, y_mis);
   }
 #if CONFIG_EXT_PARTITION_TYPES
   xd->mi[0]->mbmi.partition = partition;
 #endif
   av1_read_mode_info(pbi, xd, supertx_enabled, mi_row, mi_col, r, x_mis, y_mis);
 #else
-  mbmi = set_offsets(cm, xd, bsize, mi_row, mi_col, bw, bh, x_mis, y_mis);
+  set_offsets(cm, xd, bsize, mi_row, mi_col, bw, bh, x_mis, y_mis);
 #if CONFIG_EXT_PARTITION_TYPES
   xd->mi[0]->mbmi.partition = partition;
 #endif
@@ -1424,14 +1423,24 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   }
 
 #if CONFIG_SUPERTX
-  mbmi->segment_id_supertx = MAX_SEGMENTS;
-
-  if (supertx_enabled) {
-    xd->corrupted |= aom_reader_has_error(r);
-    return;
-  }
+  xd->mi[0]->mbmi.segment_id_supertx = MAX_SEGMENTS;
 #endif  // CONFIG_SUPERTX
 
+  xd->corrupted |= aom_reader_has_error(r);
+}
+
+static void decode_token_and_recon_block(AV1Decoder *const pbi,
+                                         MACROBLOCKD *const xd, int mi_row,
+                                         int mi_col, aom_reader *r,
+                                         BLOCK_SIZE bsize) {
+  AV1_COMMON *const cm = &pbi->common;
+  const int bw = mi_size_wide[bsize];
+  const int bh = mi_size_high[bsize];
+  const int x_mis = AOMMIN(bw, cm->mi_cols - mi_col);
+  const int y_mis = AOMMIN(bh, cm->mi_rows - mi_row);
+  MB_MODE_INFO *mbmi;
+
+  mbmi = set_offsets(cm, xd, bsize, mi_row, mi_col, bw, bh, x_mis, y_mis);
 #if CONFIG_DELTA_Q
   if (cm->delta_q_present_flag) {
     int i;
@@ -1689,6 +1698,30 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #endif
 
   xd->corrupted |= aom_reader_has_error(r);
+}
+
+static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
+#if CONFIG_SUPERTX
+                         int supertx_enabled,
+#endif  // CONFIG_SUPERTX
+                         int mi_row, int mi_col, aom_reader *r,
+#if CONFIG_EXT_PARTITION_TYPES
+                         PARTITION_TYPE partition,
+#endif  // CONFIG_EXT_PARTITION_TYPES
+                         BLOCK_SIZE bsize) {
+  decode_mbmi_block(pbi, xd,
+#if CONFIG_SUPERTX
+                    supertx_enabled,
+#endif
+                    mi_row, mi_col, r,
+#if CONFIG_EXT_PARTITION_TYPES
+                    partition,
+#endif
+                    bsize);
+#if CONFIG_SUPERTX
+  if (!supertx_enabled)
+#endif  // CONFIG_SUPERTX
+    decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, bsize);
 }
 
 static PARTITION_TYPE read_partition(AV1_COMMON *cm, MACROBLOCKD *xd,
