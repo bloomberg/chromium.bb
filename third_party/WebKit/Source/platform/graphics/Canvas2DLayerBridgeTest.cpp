@@ -250,6 +250,36 @@ class Canvas2DLayerBridgeTest : public Test {
         bridge->PrepareTextureMailbox(&textureMailbox, &releaseCallback));
   }
 
+  void prepareMailboxWhenContextIsLostWithFailedRestore() {
+    FakeGLES2Interface gl;
+    std::unique_ptr<FakeWebGraphicsContext3DProvider> contextProvider =
+        WTF::wrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
+    Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(
+        std::move(contextProvider), IntSize(300, 150), 0, NonOpaque,
+        Canvas2DLayerBridge::ForceAccelerationForTesting, nullptr,
+        kN32_SkColorType)));
+
+    // TODO(junov): The PrepareTextureMailbox() method will fail a DCHECK if we
+    // don't do this before calling it the first time when the context is lost.
+    bridge->prepareSurfaceForPaintingIfNeeded();
+
+    // When the context is lost we are not sure if we should still be producing
+    // GL frames for the compositor or not, so fail to generate frames.
+    gl.setIsContextLost(true);
+    EXPECT_FALSE(bridge->checkSurfaceValid());
+
+    // Restoration will fail because
+    // Platform::createSharedOffscreenGraphicsContext3DProvider() is stubbed
+    // in unit tests.  This simulates what would happen when attempting to
+    // restore while the GPU process is down.
+    bridge->restoreSurface();
+
+    cc::TextureMailbox textureMailbox;
+    std::unique_ptr<cc::SingleReleaseCallback> releaseCallback;
+    EXPECT_FALSE(
+        bridge->PrepareTextureMailbox(&textureMailbox, &releaseCallback));
+  }
+
   void prepareMailboxAndLoseResourceTest() {
     // Prepare a mailbox, then report the resource as lost.
     // This test passes by not crashing and not triggering assertions.
@@ -342,6 +372,11 @@ TEST_F(Canvas2DLayerBridgeTest, NoDrawOnContextLost) {
 
 TEST_F(Canvas2DLayerBridgeTest, PrepareMailboxWhenContextIsLost) {
   prepareMailboxWhenContextIsLost();
+}
+
+TEST_F(Canvas2DLayerBridgeTest,
+       PrepareMailboxWhenContextIsLostWithFailedRestore) {
+  prepareMailboxWhenContextIsLostWithFailedRestore();
 }
 
 TEST_F(Canvas2DLayerBridgeTest, PrepareMailboxAndLoseResource) {

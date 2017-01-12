@@ -923,8 +923,9 @@ bool Canvas2DLayerBridge::PrepareTextureMailbox(
   // If the context is lost, we don't know if we should be producing GPU or
   // software frames, until we get a new context, since the compositor will
   // be trying to get a new context and may change modes.
-  if (m_contextProvider->contextGL()->GetGraphicsResetStatusKHR() !=
-      GL_NO_ERROR)
+  if (!m_contextProvider ||
+      m_contextProvider->contextGL()->GetGraphicsResetStatusKHR() !=
+          GL_NO_ERROR)
     return false;
 
   sk_sp<SkImage> image =
