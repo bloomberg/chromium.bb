@@ -45,6 +45,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 #if defined(OS_WIN)
@@ -719,15 +720,16 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusOnNavigate) {
 // null opener, and then navigates it. This is a potential security issue; see
 // comments in |WebContentsImpl::FocusLocationBarByDefault|.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, AboutBlankNavigationLocationTest) {
-  const GURL url1(embedded_test_server()->GetURL("/title1.html"));
+  const GURL url1 = embedded_test_server()->GetURL("/title1.html");
   ui_test_utils::NavigateToURL(browser(), url1);
 
   TabStripModel* tab_strip = browser()->tab_strip_model();
   WebContents* web_contents = tab_strip->GetActiveWebContents();
 
-  const GURL url2(embedded_test_server()->GetURL("/title2.html"));
-  const std::string spoof("var w = window.open('about:blank'); w.opener = null;"
-                          "w.document.location = '" + url2.spec() + "';");
+  const GURL url2 = embedded_test_server()->GetURL("/title2.html");
+  const std::string spoof =
+      "var w = window.open('about:blank'); w.opener = null;"
+      "w.document.location = '" + url2.spec() + "';";
 
   ASSERT_TRUE(content::ExecuteScript(web_contents, spoof));
   EXPECT_EQ(url1, web_contents->GetVisibleURL());
@@ -735,6 +737,36 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, AboutBlankNavigationLocationTest) {
   // not the same as |web_contents|.
   ASSERT_NO_FATAL_FAILURE(content::WaitForLoadStop(
       browser()->tab_strip_model()->GetActiveWebContents()));
+  EXPECT_FALSE(IsViewFocused(VIEW_ID_OMNIBOX));
+}
+
+// Regression test for https://crbug.com/677716.  This ensures that the omnibox
+// does not get focused if another tab in the same window navigates to the New
+// Tab Page, since that can scroll the origin of the selected tab out of view.
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, NoFocusForBackgroundNTP) {
+  // Start at the NTP and navigate to a test page.  We will later go back to the
+  // NTP, which gives the omnibox focus in some cases.
+  chrome::NewTab(browser());
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/title1.html"));
+
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  WebContents* opener_web_contents = tab_strip->GetActiveWebContents();
+
+  // Open a second tab from the test page.
+  const GURL new_url = embedded_test_server()->GetURL("/title2.html");
+  const std::string open_script = "window.open('" + new_url.spec() + "');";
+  content::WebContentsAddedObserver open_observer;
+  ASSERT_TRUE(content::ExecuteScript(opener_web_contents, open_script));
+  WebContents* new_web_contents = open_observer.GetWebContents();
+
+  // Tell the first (non-selected) tab to go back.  This should not give the
+  // omnibox focus, since the navigation occurred in a different tab.  Otherwise
+  // the focus may scroll the origin out of view, making a spoof possible.
+  const std::string go_back_script = "window.opener.history.back();";
+  content::TestNavigationObserver back_observer(opener_web_contents);
+  ASSERT_TRUE(content::ExecuteScript(new_web_contents, go_back_script));
+  back_observer.Wait();
   EXPECT_FALSE(IsViewFocused(VIEW_ID_OMNIBOX));
 }
 

@@ -1551,6 +1551,11 @@ void Browser::BeforeUnloadFired(WebContents* web_contents,
 }
 
 bool Browser::ShouldFocusLocationBarByDefault(WebContents* source) {
+  // Navigations in background tabs shouldn't change the focus state of the
+  // omnibox, since it's associated with the foreground tab.
+  if (source != tab_strip_model_->GetActiveWebContents())
+    return false;
+
   const content::NavigationEntry* entry =
       source->GetController().GetActiveEntry();
   if (entry) {
