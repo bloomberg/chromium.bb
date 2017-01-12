@@ -64,6 +64,8 @@ void Buffer_Dev::Init() {
     if (data_)
       return;
   }
+
+  Clear();
   data_ = NULL;
   size_ = 0;
 }
