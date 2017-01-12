@@ -306,13 +306,16 @@
     TEMP_ASSERT(state === CLOSING || state === ERRORED,
                 'state is "closing" or "errored"');
 
+    const writer = stream[_writer];
     if (state === CLOSING) {
-      v8.resolvePromise(stream[_writer][_closedPromise], undefined);
+      if (writer !== undefined) {
+        v8.resolvePromise(writer[_closedPromise], undefined);
+      }
       stream[_state] = CLOSED;
-    } else {
+    } else if (writer !== undefined) {
       TEMP_ASSERT(state === ERRORED, 'state is "errored"');
-      v8.rejectPromise(stream[_writer][_closedPromise], stream[_storedError]);
-      v8.markPromiseAsHandled(stream[_writer][_closedPromise]);
+      v8.rejectPromise(writer[_closedPromise], stream[_storedError]);
+      v8.markPromiseAsHandled(writer[_closedPromise]);
     }
 
     if (stream[_pendingAbortRequest] !== undefined) {
