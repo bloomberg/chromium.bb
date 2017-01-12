@@ -363,7 +363,7 @@ component("skia") {
 
   # Select the right BitmapPlatformDevice.
   if (is_win) {
-    sources += [ "ext/bitmap_platform_device_win.cc" ]
+    sources += [ "ext/raster_handle_allocator_win.cc" ]
   }
 
   if (is_clang && !is_nacl) {
