@@ -53,6 +53,9 @@ template("chrome_ios_eg_test") {
       output_name = "$target_gen_dir/$_target_name.entitlements"
       plist_templates =
           [ "//ios/chrome/test/earl_grey/resources/Chrome.entitlements" ]
+      if (ios_chrome_entitlements_additions != []) {
+        plist_templates += ios_chrome_entitlements_additions
+      }
     }
   }
 
