@@ -16,7 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/loader/intercepting_resource_handler.h"
-#include "content/browser/loader/resource_controller.h"
+#include "content/browser/loader/mock_resource_loader.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/test_resource_handler.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
@@ -154,26 +154,6 @@ class TestFakePluginService : public FakePluginService {
   DISALLOW_COPY_AND_ASSIGN(TestFakePluginService);
 };
 
-class TestResourceController : public ResourceController {
- public:
-  TestResourceController() : cancel_call_count_(0), resume_call_count_(0) {}
-
-  void Cancel() override { cancel_call_count_++; }
-
-  void CancelAndIgnore() override { NOTREACHED(); }
-
-  void CancelWithError(int error_code) override { NOTREACHED(); }
-
-  void Resume() override { resume_call_count_++; }
-
-  int cancel_call_count() const { return cancel_call_count_; }
-  int resume_call_count() const { return resume_call_count_; }
-
- private:
-  int cancel_call_count_;
-  int resume_call_count_;
-};
-
 }  // namespace
 
 class MimeSniffingResourceHandlerTest : public testing::Test {
@@ -258,14 +238,13 @@ MimeSniffingResourceHandlerTest::TestAcceptHeaderSettingWithURLRequest(
       new TestResourceHandler());
   scoped_test_handler->set_on_response_started_result(false);
 
-  std::unique_ptr<ResourceHandler> mime_sniffing_handler(
-      new MimeSniffingResourceHandler(std::move(scoped_test_handler), nullptr,
-                                      nullptr, nullptr, request,
-                                      REQUEST_CONTEXT_TYPE_UNSPECIFIED));
+  MimeSniffingResourceHandler mime_sniffing_handler(
+      std::move(scoped_test_handler), nullptr, nullptr, nullptr, request,
+      REQUEST_CONTEXT_TYPE_UNSPECIFIED);
+  MockResourceLoader mock_loader(&mime_sniffing_handler);
 
-  bool defer = false;
-  mime_sniffing_handler->OnWillStart(request->url(), &defer);
-  content::RunAllPendingInMessageLoop();
+  EXPECT_EQ(MockResourceLoader::Status::IDLE,
+            mock_loader.OnWillStart(request->url()));
 
   std::string accept_header;
   request->extra_request_headers().GetHeader("Accept", &accept_header);
@@ -303,23 +282,24 @@ bool MimeSniffingResourceHandlerTest::TestStreamIsIntercepted(
   std::unique_ptr<TestResourceHandler> scoped_test_handler(
       new TestResourceHandler());
   scoped_test_handler->set_on_response_started_result(false);
-  std::unique_ptr<ResourceHandler> mime_handler(new MimeSniffingResourceHandler(
+  MimeSniffingResourceHandler mime_sniffing_handler(
       std::unique_ptr<ResourceHandler>(std::move(scoped_test_handler)), &host,
       &plugin_service, intercepting_handler.get(), request.get(),
-      REQUEST_CONTEXT_TYPE_UNSPECIFIED));
+      REQUEST_CONTEXT_TYPE_UNSPECIFIED);
 
-  TestResourceController resource_controller;
-  mime_handler->SetController(&resource_controller);
+  MockResourceLoader mock_loader(&mime_sniffing_handler);
 
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
   // The MIME type isn't important but it shouldn't be empty.
   response->head.mime_type = "application/pdf";
 
-  bool defer = false;
-  mime_handler->OnWillStart(request->url(), &defer);
-  EXPECT_FALSE(defer);
+  EXPECT_EQ(MockResourceLoader::Status::IDLE,
+            mock_loader.OnWillStart(request->url()));
 
-  mime_handler->OnResponseStarted(response.get(), &defer);
+  mock_loader.OnResponseStarted(std::move(response));
+  mock_loader.WaitUntilIdleOrCanceled();
+  EXPECT_EQ(MockResourceLoader::Status::CANCELED, mock_loader.status());
+  EXPECT_EQ(net::ERR_ABORTED, mock_loader.error_code());
 
   content::RunAllPendingInMessageLoop();
   EXPECT_LT(host.intercepted_as_stream_count(), 2);
@@ -366,17 +346,15 @@ void MimeSniffingResourceHandlerTest::TestHandlerSniffing(
   scoped_test_handler->set_on_read_completed_result(read_completed);
   scoped_test_handler->set_defer_on_read_completed(defer_read_completed);
   TestResourceHandler* test_handler = scoped_test_handler.get();
-  std::unique_ptr<MimeSniffingResourceHandler> mime_sniffing_handler(
-      new MimeSniffingResourceHandler(std::move(scoped_test_handler), &host,
-                                      &plugin_service,
-                                      intercepting_handler.get(), request.get(),
-                                      REQUEST_CONTEXT_TYPE_UNSPECIFIED));
+  MimeSniffingResourceHandler mime_sniffing_handler(
+      std::move(scoped_test_handler), &host, &plugin_service,
+      intercepting_handler.get(), request.get(),
+      REQUEST_CONTEXT_TYPE_UNSPECIFIED);
 
-  TestResourceController resource_controller;
-  mime_sniffing_handler->SetController(&resource_controller);
+  MockResourceLoader mock_loader(&mime_sniffing_handler);
 
-  bool defer = false;
-  mime_sniffing_handler->OnWillStart(GURL(), &defer);
+  ASSERT_EQ(MockResourceLoader::Status::IDLE,
+            mock_loader.OnWillStart(request->url()));
 
   // The response should be sniffed.
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
@@ -384,20 +362,17 @@ void MimeSniffingResourceHandlerTest::TestHandlerSniffing(
 
   // Simulate the response starting. The MimeSniffingHandler should start
   // buffering, so the return value should always be true.
-  EXPECT_TRUE(mime_sniffing_handler->OnResponseStarted(response.get(), &defer));
-  EXPECT_EQ(0, resource_controller.cancel_call_count());
-  EXPECT_EQ(0, resource_controller.resume_call_count());
-  EXPECT_FALSE(defer);
+  ASSERT_EQ(MockResourceLoader::Status::IDLE,
+            mock_loader.OnResponseStarted(std::move(response)));
 
   // Read some data to sniff the mime type. This will ask the next
   // ResourceHandler for a buffer.
-  scoped_refptr<net::IOBuffer> read_buffer;
-  int buf_size = 0;
-  EXPECT_EQ(will_read,
-            mime_sniffing_handler->OnWillRead(&read_buffer, &buf_size, -1));
-  EXPECT_EQ(0, resource_controller.cancel_call_count());
+  mock_loader.OnWillRead(-1);
 
   if (!will_read) {
+    EXPECT_EQ(MockResourceLoader::Status::CANCELED, mock_loader.status());
+    EXPECT_EQ(net::ERR_ABORTED, mock_loader.error_code());
+
     EXPECT_EQ(1, test_handler->on_will_start_called());
     EXPECT_EQ(0, test_handler->on_request_redirected_called());
     EXPECT_EQ(0, test_handler->on_response_started_called());
@@ -409,21 +384,21 @@ void MimeSniffingResourceHandlerTest::TestHandlerSniffing(
     return;
   }
 
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader.status());
+
   // Simulate an HTML page. The mime sniffer will identify the MimeType and
   // proceed with replay.
-  char data[] = "!DOCTYPE html\n<head>\n<title>Foo</title>\n</head>";
-  memcpy(read_buffer->data(), data, sizeof(data));
-
-  defer = false;
-  bool return_value =
-      mime_sniffing_handler->OnReadCompleted(sizeof(data), &defer);
+  const char kData[] = "!DOCTYPE html\n<head>\n<title>Foo</title>\n</head>";
+  // Construct StringPiece manually, as the terminal null needs to be included,
+  // so it's sniffed as binary (Not important that it's sniffed as binary, but
+  // this gaurantees it's sniffed as something, without waiting for more data).
+  mock_loader.OnReadCompleted(base::StringPiece(kData, sizeof(kData)));
 
   // If the next handler cancels the response start, the caller of
   // MimeSniffingHandler::OnReadCompleted should be notified immediately.
   if (!response_started) {
-    EXPECT_FALSE(defer);
-    EXPECT_EQ(response_started, return_value);
-    EXPECT_EQ(0, resource_controller.cancel_call_count());
+    EXPECT_EQ(MockResourceLoader::Status::CANCELED, mock_loader.status());
+    EXPECT_EQ(net::ERR_ABORTED, mock_loader.error_code());
 
     EXPECT_EQ(1, test_handler->on_will_start_called());
     EXPECT_EQ(0, test_handler->on_request_redirected_called());
@@ -436,52 +411,42 @@ void MimeSniffingResourceHandlerTest::TestHandlerSniffing(
     return;
   }
 
-  // The replay can be deferred both at response started and read replay
-  // stages.
-  EXPECT_EQ(defer, defer_response_started || defer_read_completed);
   if (defer_response_started) {
-    EXPECT_TRUE(defer);
-    EXPECT_TRUE(return_value);
+    ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
+              mock_loader.status());
     EXPECT_EQ(MimeSniffingResourceHandler::STATE_REPLAYING_RESPONSE_RECEIVED,
-              mime_sniffing_handler->state_);
-    mime_sniffing_handler->Resume();
+              mime_sniffing_handler.state_);
+    test_handler->Resume();
+    // MimeSniffingResourceHandler may not synchronously resume the request.
+    base::RunLoop().RunUntilIdle();
   }
 
   // The body that was sniffed should be transmitted to the next handler. This
   // may cancel the request.
   if (!read_completed) {
-    if (defer_response_started) {
-      EXPECT_EQ(1, resource_controller.cancel_call_count());
-    } else {
-      EXPECT_EQ(0, resource_controller.cancel_call_count());
-      EXPECT_FALSE(return_value);
-    }
+    EXPECT_EQ(MockResourceLoader::Status::CANCELED, mock_loader.status());
+    EXPECT_EQ(net::ERR_ABORTED, mock_loader.error_code());
+
     // Process all messages to ensure proper test teardown.
     content::RunAllPendingInMessageLoop();
     return;
   }
 
   EXPECT_EQ(MimeSniffingResourceHandler::STATE_STREAMING,
-            mime_sniffing_handler->state_);
+            mime_sniffing_handler.state_);
 
   // The request may be deferred by the next handler once the read is done.
   if (defer_read_completed) {
-    EXPECT_TRUE(defer);
-    mime_sniffing_handler->Resume();
+    ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
+              mock_loader.status());
+    test_handler->Resume();
+    // MimeSniffingResourceHandler may not synchronously resume the request.
+    base::RunLoop().RunUntilIdle();
   }
 
+  EXPECT_EQ(MockResourceLoader::Status::IDLE, mock_loader.status());
   EXPECT_EQ(MimeSniffingResourceHandler::STATE_STREAMING,
-            mime_sniffing_handler->state_);
-  EXPECT_EQ(0, resource_controller.cancel_call_count());
-
-  // Even if the next handler defers the request twice, the
-  // MimeSniffingResourceHandler should only call Resume on its controller
-  // once.
-  if (defer_response_started || defer_read_completed) {
-    EXPECT_EQ(1, resource_controller.resume_call_count());
-  } else {
-    EXPECT_EQ(0, resource_controller.resume_call_count());
-  }
+            mime_sniffing_handler.state_);
 
   EXPECT_EQ(1, test_handler->on_will_start_called());
   EXPECT_EQ(0, test_handler->on_request_redirected_called());
@@ -531,19 +496,15 @@ void MimeSniffingResourceHandlerTest::TestHandlerNoSniffing(
   scoped_test_handler->set_on_read_completed_result(read_completed);
   scoped_test_handler->set_defer_on_read_completed(defer_read_completed);
   TestResourceHandler* test_handler = scoped_test_handler.get();
-  std::unique_ptr<MimeSniffingResourceHandler> mime_sniffing_handler(
-      new MimeSniffingResourceHandler(std::move(scoped_test_handler), &host,
-                                      &plugin_service,
-                                      intercepting_handler.get(), request.get(),
-                                      REQUEST_CONTEXT_TYPE_UNSPECIFIED));
+  MimeSniffingResourceHandler mime_sniffing_handler(
+      std::move(scoped_test_handler), &host, &plugin_service,
+      intercepting_handler.get(), request.get(),
+      REQUEST_CONTEXT_TYPE_UNSPECIFIED);
 
-  TestResourceController resource_controller;
-  mime_sniffing_handler->SetController(&resource_controller);
+  MockResourceLoader mock_loader(&mime_sniffing_handler);
 
-  int expected_resume_calls = 0;
-
-  bool defer = false;
-  mime_sniffing_handler->OnWillStart(GURL(), &defer);
+  ASSERT_EQ(MockResourceLoader::Status::IDLE,
+            mock_loader.OnWillStart(request->url()));
 
   // The response should not be sniffed.
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
@@ -551,12 +512,11 @@ void MimeSniffingResourceHandlerTest::TestHandlerNoSniffing(
 
   // Simulate the response starting. There should be no need for buffering, so
   // the return value should be that of the next handler.
-  EXPECT_EQ(response_started,
-            mime_sniffing_handler->OnResponseStarted(response.get(), &defer));
-  EXPECT_EQ(0, resource_controller.cancel_call_count());
+  mock_loader.OnResponseStarted(std::move(response));
 
   if (!response_started) {
-    EXPECT_FALSE(defer);
+    EXPECT_EQ(MockResourceLoader::Status::CANCELED, mock_loader.status());
+    EXPECT_EQ(net::ERR_ABORTED, mock_loader.error_code());
 
     EXPECT_EQ(1, test_handler->on_will_start_called());
     EXPECT_EQ(0, test_handler->on_request_redirected_called());
@@ -569,25 +529,26 @@ void MimeSniffingResourceHandlerTest::TestHandlerNoSniffing(
     return;
   }
 
-  EXPECT_EQ(defer_response_started, defer);
-  if (defer) {
+  if (defer_response_started) {
+    ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
+              mock_loader.status());
     EXPECT_EQ(MimeSniffingResourceHandler::STATE_REPLAYING_RESPONSE_RECEIVED,
-              mime_sniffing_handler->state_);
-    expected_resume_calls++;
-    mime_sniffing_handler->Resume();
+              mime_sniffing_handler.state_);
+    test_handler->Resume();
+    // MimeSniffingResourceHandler may not synchronously resume the request.
+    base::RunLoop().RunUntilIdle();
   }
 
-  EXPECT_EQ(expected_resume_calls, resource_controller.resume_call_count());
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader.status());
 
   // The MimeSniffingResourceHandler should be acting as a pass-through
   // ResourceHandler.
-  scoped_refptr<net::IOBuffer> read_buffer;
-  int buf_size = 0;
-  EXPECT_EQ(will_read,
-            mime_sniffing_handler->OnWillRead(&read_buffer, &buf_size, -1));
-  EXPECT_EQ(0, resource_controller.cancel_call_count());
+  mock_loader.OnWillRead(-1);
 
   if (!will_read) {
+    EXPECT_EQ(MockResourceLoader::Status::CANCELED, mock_loader.status());
+    EXPECT_EQ(net::ERR_ABORTED, mock_loader.error_code());
+
     EXPECT_EQ(1, test_handler->on_will_start_called());
     EXPECT_EQ(0, test_handler->on_request_redirected_called());
     EXPECT_EQ(1, test_handler->on_response_started_called());
@@ -599,10 +560,9 @@ void MimeSniffingResourceHandlerTest::TestHandlerNoSniffing(
     return;
   }
 
-  defer = false;
-  EXPECT_EQ(read_completed,
-            mime_sniffing_handler->OnReadCompleted(2000, &defer));
-  EXPECT_EQ(0, resource_controller.cancel_call_count());
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader.status());
+
+  mock_loader.OnReadCompleted(std::string(2000, 'a'));
 
   EXPECT_EQ(1, test_handler->on_will_start_called());
   EXPECT_EQ(0, test_handler->on_request_redirected_called());
@@ -611,19 +571,21 @@ void MimeSniffingResourceHandlerTest::TestHandlerNoSniffing(
   EXPECT_EQ(1, test_handler->on_read_completed_called());
 
   if (!read_completed) {
-    EXPECT_FALSE(defer);
+    EXPECT_EQ(MockResourceLoader::Status::CANCELED, mock_loader.status());
+    EXPECT_EQ(net::ERR_ABORTED, mock_loader.error_code());
 
     // Process all messages to ensure proper test teardown.
     content::RunAllPendingInMessageLoop();
     return;
   }
 
-  EXPECT_EQ(defer_read_completed, defer);
-  if (defer) {
-    expected_resume_calls++;
-    mime_sniffing_handler->Resume();
+  if (mock_loader.status() == MockResourceLoader::Status::CALLBACK_PENDING) {
+    test_handler->Resume();
+    // MimeSniffingResourceHandler may not synchronously resume the request.
+    base::RunLoop().RunUntilIdle();
   }
-  EXPECT_EQ(expected_resume_calls, resource_controller.resume_call_count());
+
+  ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader.status());
 
   // Process all messages to ensure proper test teardown.
   content::RunAllPendingInMessageLoop();
@@ -919,19 +881,17 @@ TEST_F(MimeSniffingResourceHandlerTest, 304Handling) {
   std::unique_ptr<ResourceHandler> intercepting_handler(
       new InterceptingResourceHandler(base::MakeUnique<TestResourceHandler>(),
                                       nullptr));
-  std::unique_ptr<ResourceHandler> mime_handler(new MimeSniffingResourceHandler(
+  MimeSniffingResourceHandler mime_sniffing_handler(
       std::unique_ptr<ResourceHandler>(new TestResourceHandler()), &host,
       &plugin_service,
       static_cast<InterceptingResourceHandler*>(intercepting_handler.get()),
-      request.get(), REQUEST_CONTEXT_TYPE_UNSPECIFIED));
+      request.get(), REQUEST_CONTEXT_TYPE_UNSPECIFIED);
 
-  TestResourceController resource_controller;
-  mime_handler->SetController(&resource_controller);
+  MockResourceLoader mock_loader(&mime_sniffing_handler);
 
   // Request starts.
-  bool defer = false;
-  mime_handler->OnWillStart(request->url(), &defer);
-  EXPECT_FALSE(defer);
+  EXPECT_EQ(MockResourceLoader::Status::IDLE,
+            mock_loader.OnWillStart(request->url()));
 
   // Simulate a 304 response.
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
@@ -941,8 +901,8 @@ TEST_F(MimeSniffingResourceHandlerTest, 304Handling) {
 
   // The response is received. No new ResourceHandler should be created to
   // handle the download.
-  mime_handler->OnResponseStarted(response.get(), &defer);
-  EXPECT_FALSE(defer);
+  EXPECT_EQ(MockResourceLoader::Status::IDLE,
+            mock_loader.OnResponseStarted(std::move(response)));
   EXPECT_FALSE(host.new_resource_handler());
 
   content::RunAllPendingInMessageLoop();
@@ -974,18 +934,15 @@ TEST_F(MimeSniffingResourceHandlerTest, FetchShouldDisableMimeSniffing) {
   std::unique_ptr<TestResourceHandler> scoped_test_handler(
       new TestResourceHandler());
   scoped_test_handler->set_on_response_started_result(false);
-  std::unique_ptr<ResourceHandler> mime_sniffing_handler(
-      new MimeSniffingResourceHandler(std::move(scoped_test_handler), &host,
-                                      &plugin_service,
-                                      intercepting_handler.get(), request.get(),
-                                      REQUEST_CONTEXT_TYPE_FETCH));
+  MimeSniffingResourceHandler mime_sniffing_handler(
+      std::move(scoped_test_handler), &host, &plugin_service,
+      intercepting_handler.get(), request.get(), REQUEST_CONTEXT_TYPE_FETCH);
 
-  TestResourceController resource_controller;
-  mime_sniffing_handler->SetController(&resource_controller);
+  MockResourceLoader mock_loader(&mime_sniffing_handler);
 
-  bool defer = false;
-  mime_sniffing_handler->OnWillStart(GURL(), &defer);
-  ASSERT_FALSE(defer);
+  // Request starts.
+  EXPECT_EQ(MockResourceLoader::Status::IDLE,
+            mock_loader.OnWillStart(request->url()));
 
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
   response->head.mime_type = "text/plain";
@@ -993,8 +950,9 @@ TEST_F(MimeSniffingResourceHandlerTest, FetchShouldDisableMimeSniffing) {
   // |mime_sniffing_handler->OnResponseStarted| should return false because
   // mime sniffing is disabled and the wrapped resource handler returns false
   // on OnResponseStarted.
-  EXPECT_FALSE(
-      mime_sniffing_handler->OnResponseStarted(response.get(), &defer));
+  EXPECT_EQ(MockResourceLoader::Status::CANCELED,
+            mock_loader.OnResponseStarted(std::move(response)));
+  EXPECT_EQ(net::ERR_ABORTED, mock_loader.error_code());
 
   // Process all messages to ensure proper test teardown.
   content::RunAllPendingInMessageLoop();

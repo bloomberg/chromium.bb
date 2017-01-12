@@ -35,6 +35,11 @@ MockResourceLoader::Status MockResourceLoader::OnWillStart(const GURL& url) {
   EXPECT_TRUE(status_ == Status::CALLING_HANDLER ||
               (result == false && status_ == Status::CANCELED));
   if (!result) {
+    // In the case of double-cancels, keep the old error code.
+    // TODO(mmenke):  Once there are no more double cancel cases, remove this
+    // code.
+    if (status_ != Status::CANCELED)
+      error_code_ = net::ERR_ABORTED;
     status_ = Status::CANCELED;
   } else if (defer) {
     status_ = Status::CALLBACK_PENDING;
@@ -61,6 +66,9 @@ MockResourceLoader::Status MockResourceLoader::OnRequestRedirected(
   EXPECT_TRUE(status_ == Status::CALLING_HANDLER ||
               (result == false && status_ == Status::CANCELED));
   if (!result) {
+    // In the case of double-cancels, keep the old error code.
+    if (status_ != Status::CANCELED)
+      error_code_ = net::ERR_ABORTED;
     status_ = Status::CANCELED;
   } else if (defer) {
     status_ = Status::CALLBACK_PENDING;
@@ -85,6 +93,9 @@ MockResourceLoader::Status MockResourceLoader::OnResponseStarted(
   EXPECT_TRUE(status_ == Status::CALLING_HANDLER ||
               (result == false && status_ == Status::CANCELED));
   if (!result) {
+    // In the case of double-cancels, keep the old error code.
+    if (status_ != Status::CANCELED)
+      error_code_ = net::ERR_ABORTED;
     status_ = Status::CANCELED;
   } else if (defer) {
     status_ = Status::CALLBACK_PENDING;
@@ -108,6 +119,9 @@ MockResourceLoader::Status MockResourceLoader::OnWillRead(int min_size) {
   EXPECT_TRUE(status_ == Status::CALLING_HANDLER ||
               (result == false && status_ == Status::CANCELED));
   if (!result) {
+    // In the case of double-cancels, keep the old error code.
+    if (status_ != Status::CANCELED)
+      error_code_ = net::ERR_ABORTED;
     EXPECT_EQ(0, io_buffer_size_);
     EXPECT_FALSE(io_buffer_);
     status_ = Status::CANCELED;
@@ -138,6 +152,9 @@ MockResourceLoader::Status MockResourceLoader::OnReadCompleted(
   EXPECT_TRUE(status_ == Status::CALLING_HANDLER ||
               (result == false && status_ == Status::CANCELED));
   if (!result) {
+    // In the case of double-cancels, keep the old error code.
+    if (status_ != Status::CANCELED)
+      error_code_ = net::ERR_ABORTED;
     status_ = Status::CANCELED;
   } else if (defer) {
     status_ = Status::CALLBACK_PENDING;

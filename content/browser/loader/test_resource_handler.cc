@@ -132,11 +132,14 @@ bool TestResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
 
   ++on_will_read_called_;
 
-  *buf = buffer_;
-  *buf_size = buffer_size_;
-  memset(buffer_->data(), '\0', buffer_size_);
-  if (!on_will_read_result_)
+  if (!on_will_read_result_) {
     canceled_ = true;
+  } else {
+    *buf = buffer_;
+    *buf_size = buffer_size_;
+    memset(buffer_->data(), '\0', buffer_size_);
+  }
+
   return on_will_read_result_;
 }
 

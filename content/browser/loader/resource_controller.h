@@ -19,6 +19,10 @@ class CONTENT_EXPORT ResourceController {
   virtual void Cancel() = 0;
   virtual void CancelAndIgnore() = 0;
   virtual void CancelWithError(int error_code) = 0;
+
+  // Resumes the request. May only be called if the request was previously
+  // deferred. Guaranteed not to call back into the ResourceHandler, or destroy
+  // it, synchronously.
   virtual void Resume() = 0;
 
  protected:
