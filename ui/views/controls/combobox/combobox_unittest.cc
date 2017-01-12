@@ -185,7 +185,7 @@ class TestComboboxListener : public views::ComboboxListener {
 
 class ComboboxTest : public ViewsTestBase {
  public:
-  ComboboxTest() : widget_(NULL), combobox_(NULL) {}
+  ComboboxTest() {}
 
   void TearDown() override {
     if (widget_)
@@ -202,6 +202,7 @@ class ComboboxTest : public ViewsTestBase {
     ASSERT_FALSE(combobox_);
     combobox_ = new TestCombobox(model_.get(), style);
     test_api_.reset(new ComboboxTestApi(combobox_));
+    test_api_->InstallTestMenuRunner(&menu_show_count_);
     combobox_->set_id(1);
 
     widget_ = new Widget;
@@ -254,14 +255,17 @@ class ComboboxTest : public ViewsTestBase {
   }
 
   // We need widget to populate wrapper class.
-  Widget* widget_;
+  Widget* widget_ = nullptr;
 
   // |combobox_| will be allocated InitCombobox() and then owned by |widget_|.
-  TestCombobox* combobox_;
+  TestCombobox* combobox_ = nullptr;
   std::unique_ptr<ComboboxTestApi> test_api_;
 
   // Combobox does not take ownership of the model, hence it needs to be scoped.
   std::unique_ptr<TestComboboxModel> model_;
+
+  // The current menu show count.
+  int menu_show_count_ = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ComboboxTest);
@@ -503,17 +507,14 @@ TEST_F(ComboboxTest, Click) {
 
   TestComboboxListener listener;
   combobox_->set_listener(&listener);
-
   combobox_->Layout();
-  int menu_show_count = 0;
-  test_api_->InstallTestMenuRunner(&menu_show_count);
 
   // Click the left side. The menu is shown.
-  EXPECT_EQ(0, menu_show_count);
+  EXPECT_EQ(0, menu_show_count_);
   PerformClick(gfx::Point(combobox_->x() + 1,
                           combobox_->y() + combobox_->height() / 2));
   EXPECT_FALSE(listener.on_perform_action_called());
-  EXPECT_EQ(1, menu_show_count);
+  EXPECT_EQ(1, menu_show_count_);
 }
 
 TEST_F(ComboboxTest, ClickButDisabled) {
@@ -526,12 +527,10 @@ TEST_F(ComboboxTest, ClickButDisabled) {
   combobox_->SetEnabled(false);
 
   // Click the left side, but nothing happens since the combobox is disabled.
-  int menu_show_count = 0;
-  test_api_->InstallTestMenuRunner(&menu_show_count);
   PerformClick(gfx::Point(combobox_->x() + 1,
                           combobox_->y() + combobox_->height() / 2));
   EXPECT_FALSE(listener.on_perform_action_called());
-  EXPECT_EQ(0, menu_show_count);
+  EXPECT_EQ(0, menu_show_count_);
 }
 
 TEST_F(ComboboxTest, NotifyOnClickWithReturnKey) {
@@ -540,8 +539,9 @@ TEST_F(ComboboxTest, NotifyOnClickWithReturnKey) {
   TestComboboxListener listener;
   combobox_->set_listener(&listener);
 
-  // With STYLE_NORMAL, the click event is ignored.
+  // With STYLE_NORMAL, the click event is ignored. Instead the menu is shown.
   SendKeyEvent(ui::VKEY_RETURN);
+  EXPECT_EQ(1, menu_show_count_);
   EXPECT_FALSE(listener.on_perform_action_called());
 }
 
@@ -551,8 +551,9 @@ TEST_F(ComboboxTest, NotifyOnClickWithReturnKeyActionStyle) {
   TestComboboxListener listener;
   combobox_->set_listener(&listener);
 
-  // With STYLE_ACTION, the click event is notified.
+  // With STYLE_ACTION, the click event is notified and the menu is not shown.
   SendKeyEvent(ui::VKEY_RETURN);
+  EXPECT_EQ(0, menu_show_count_);
   EXPECT_TRUE(listener.on_perform_action_called());
   EXPECT_EQ(0, listener.perform_action_index());
 }
@@ -563,10 +564,13 @@ TEST_F(ComboboxTest, NotifyOnClickWithSpaceKey) {
   TestComboboxListener listener;
   combobox_->set_listener(&listener);
 
-  // With STYLE_NORMAL, the click event is ignored.
+  // With STYLE_NORMAL, the click event is ignored. Instead the menu is shwon.
   SendKeyEvent(ui::VKEY_SPACE);
+  EXPECT_EQ(1, menu_show_count_);
   EXPECT_FALSE(listener.on_perform_action_called());
+
   SendKeyEventWithType(ui::VKEY_SPACE, ui::ET_KEY_RELEASED);
+  EXPECT_EQ(1, menu_show_count_);
   EXPECT_FALSE(listener.on_perform_action_called());
 }
 
@@ -576,10 +580,14 @@ TEST_F(ComboboxTest, NotifyOnClickWithSpaceKeyActionStyle) {
   TestComboboxListener listener;
   combobox_->set_listener(&listener);
 
-  // With STYLE_ACTION, the click event is notified after releasing.
+  // With STYLE_ACTION, the click event is notified after releasing and the menu
+  // is not shown.
   SendKeyEvent(ui::VKEY_SPACE);
+  EXPECT_EQ(0, menu_show_count_);
   EXPECT_FALSE(listener.on_perform_action_called());
+
   SendKeyEventWithType(ui::VKEY_SPACE, ui::ET_KEY_RELEASED);
+  EXPECT_EQ(0, menu_show_count_);
   EXPECT_TRUE(listener.on_perform_action_called());
   EXPECT_EQ(0, listener.perform_action_index());
 }
@@ -593,12 +601,10 @@ TEST_F(ComboboxTest, NotifyOnClickWithMouse) {
   combobox_->Layout();
 
   // Click the right side (arrow button). The menu is shown.
-  int menu_show_count = 0;
-  test_api_->InstallTestMenuRunner(&menu_show_count);
   const gfx::Point right_point(combobox_->x() + combobox_->width() - 1,
                          combobox_->y() + combobox_->height() / 2);
 
-  EXPECT_EQ(0, menu_show_count);
+  EXPECT_EQ(0, menu_show_count_);
 
 // On Mac, actions occur on mouse down. Otherwise mouse up.
 #if defined(OS_MACOSX)
@@ -608,43 +614,43 @@ TEST_F(ComboboxTest, NotifyOnClickWithMouse) {
 #endif
 
   PerformMousePress(right_point);
-  EXPECT_EQ(kActOnMouseDown, menu_show_count);
+  EXPECT_EQ(kActOnMouseDown, menu_show_count_);
   PerformMouseRelease(right_point);
-  EXPECT_EQ(1, menu_show_count);
+  EXPECT_EQ(1, menu_show_count_);
 
   // Click the left side (text button). The click event is notified.
   const gfx::Point left_point(
       gfx::Point(combobox_->x() + 1, combobox_->y() + combobox_->height() / 2));
-  test_api_->InstallTestMenuRunner(&menu_show_count);
 
   PerformMousePress(left_point);
   PerformMouseRelease(left_point);
 
-  EXPECT_EQ(1, menu_show_count);  // Unchanged.
+  EXPECT_EQ(1, menu_show_count_);  // Unchanged.
   EXPECT_EQ(0, listener.perform_action_index());
 }
 
 TEST_F(ComboboxTest, ConsumingPressKeyEvents) {
   InitCombobox(nullptr, Combobox::STYLE_NORMAL);
 
-  int menu_show_count = 0;
-  test_api_->InstallTestMenuRunner(&menu_show_count);
   EXPECT_TRUE(combobox_->OnKeyPressed(
       ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE)));
-  EXPECT_EQ(1, menu_show_count);
+  EXPECT_EQ(1, menu_show_count_);
   EXPECT_TRUE(combobox_->OnKeyPressed(
       ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_SPACE, ui::EF_NONE)));
-  EXPECT_EQ(2, menu_show_count);
+  EXPECT_EQ(2, menu_show_count_);
 }
 
 TEST_F(ComboboxTest, ConsumingKeyPressEventsActionStyle) {
   // When the combobox's style is STYLE_ACTION, pressing events of a space key
-  // or an enter key will be consumed.
+  // or an enter key will be consumed and the menu is not shown.
   InitCombobox(nullptr, Combobox::STYLE_ACTION);
+
   EXPECT_TRUE(combobox_->OnKeyPressed(
       ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE)));
+  EXPECT_EQ(0, menu_show_count_);
   EXPECT_TRUE(combobox_->OnKeyPressed(
       ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_SPACE, ui::EF_NONE)));
+  EXPECT_EQ(0, menu_show_count_);
 }
 
 TEST_F(ComboboxTest, ContentWidth) {
