@@ -71,8 +71,7 @@ class MODULES_EXPORT ExtendableMessageEvent final : public ExtendableEvent {
   Member<ServiceWorkerClient> m_sourceAsClient;
   Member<ServiceWorker> m_sourceAsServiceWorker;
   Member<MessagePort> m_sourceAsMessagePort;
-  // TODO(sof): remove once crbug.com/655926 has been addressed.
-  SameThreadCheckedMember<MessagePortArray> m_ports;
+  Member<MessagePortArray> m_ports;
 };
 
 }  // namespace blink
