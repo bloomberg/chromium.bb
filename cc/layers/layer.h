@@ -160,7 +160,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return inputs_.background_filters;
   }
 
-  virtual void SetContentsOpaque(bool opaque);
+  void SetContentsOpaque(bool opaque);
   bool contents_opaque() const { return inputs_.contents_opaque; }
 
   void SetPosition(const gfx::PointF& position);
