@@ -34,7 +34,11 @@ uint8_t GetDevicePriority(AudioDeviceType type, bool is_input) {
       return 2;
     case AUDIO_TYPE_INTERNAL_SPEAKER:
     case AUDIO_TYPE_INTERNAL_MIC:
+    case AUDIO_TYPE_FRONT_MIC:
       return 1;
+    // Rear mic should have priority lower than front mic to prevent poor
+    // quality input caused by accidental selecting to rear side mic.
+    case AUDIO_TYPE_REAR_MIC:
     case AUDIO_TYPE_KEYBOARD_MIC:
     case AUDIO_TYPE_HOTWORD:
     case AUDIO_TYPE_POST_MIX_LOOPBACK:
@@ -64,6 +68,10 @@ std::string AudioDevice::GetTypeString(AudioDeviceType type) {
       return "INTERNAL_SPEAKER";
     case AUDIO_TYPE_INTERNAL_MIC:
       return "INTERNAL_MIC";
+    case AUDIO_TYPE_FRONT_MIC:
+      return "FRONT_MIC";
+    case AUDIO_TYPE_REAR_MIC:
+      return "REAR_MIC";
     case AUDIO_TYPE_KEYBOARD_MIC:
       return "KEYBOARD_MIC";
     case AUDIO_TYPE_HOTWORD:
@@ -87,6 +95,10 @@ AudioDeviceType AudioDevice::GetAudioType(
     return AUDIO_TYPE_HEADPHONE;
   else if (node_type.find("INTERNAL_MIC") != std::string::npos)
     return AUDIO_TYPE_INTERNAL_MIC;
+  else if (node_type.find("FRONT_MIC") != std::string::npos)
+    return AUDIO_TYPE_FRONT_MIC;
+  else if (node_type.find("REAR_MIC") != std::string::npos)
+    return AUDIO_TYPE_REAR_MIC;
   else if (node_type.find("KEYBOARD_MIC") != std::string::npos)
     return AUDIO_TYPE_KEYBOARD_MIC;
   else if (node_type.find("MIC") != std::string::npos)

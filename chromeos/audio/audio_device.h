@@ -25,6 +25,8 @@ enum AudioDeviceType {
   AUDIO_TYPE_HDMI,
   AUDIO_TYPE_INTERNAL_SPEAKER,
   AUDIO_TYPE_INTERNAL_MIC,
+  AUDIO_TYPE_FRONT_MIC,
+  AUDIO_TYPE_REAR_MIC,
   AUDIO_TYPE_KEYBOARD_MIC,
   AUDIO_TYPE_HOTWORD,
   AUDIO_TYPE_LINEOUT,
@@ -51,6 +53,8 @@ struct CHROMEOS_EXPORT AudioDevice {
   bool is_for_simple_usage() const {
     return (type == AUDIO_TYPE_HEADPHONE ||
             type == AUDIO_TYPE_INTERNAL_MIC ||
+            type == AUDIO_TYPE_FRONT_MIC ||
+            type == AUDIO_TYPE_REAR_MIC ||
             type == AUDIO_TYPE_MIC ||
             type == AUDIO_TYPE_USB ||
             type == AUDIO_TYPE_BLUETOOTH ||
