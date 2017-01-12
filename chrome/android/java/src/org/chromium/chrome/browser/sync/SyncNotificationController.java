@@ -97,6 +97,9 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
                 + mApplicationContext.getString(message);
 
         PendingIntent contentIntent = PendingIntent.getActivity(mApplicationContext, 0, intent, 0);
+
+        // There is no need to provide a group summary notification because the NOTIFICATION_ID_SYNC
+        // notification id ensures there's only one sync notification at a time.
         NotificationCompat.Builder builder = new NotificationCompat.Builder(mApplicationContext)
                                                      .setAutoCancel(true)
                                                      .setContentIntent(contentIntent)
@@ -104,7 +107,8 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
                                                      .setContentText(text)
                                                      .setSmallIcon(R.drawable.ic_chrome)
                                                      .setTicker(text)
-                                                     .setLocalOnly(true);
+                                                     .setLocalOnly(true)
+                                                     .setGroup(NotificationConstants.GROUP_SYNC);
 
         Notification notification =
                 new NotificationCompat.BigTextStyle(builder).bigText(text).build();

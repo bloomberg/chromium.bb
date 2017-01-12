@@ -65,4 +65,5 @@ public class NotificationConstants {
     public static final String GROUP_MEDIA_PLAYBACK = "MediaPlayback";
     public static final String GROUP_MEDIA_PRESENTATION = "MediaPresentation";
     public static final String GROUP_MEDIA_REMOTE = "MediaRemote";
+    public static final String GROUP_SYNC = "Sync";
 }
