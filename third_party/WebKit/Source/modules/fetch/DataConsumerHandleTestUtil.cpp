@@ -40,8 +40,7 @@ class WaitingHandle final : public WebDataConsumerHandle {
 DataConsumerHandleTestUtil::Thread::Thread(
     const char* name,
     InitializationPolicy initializationPolicy)
-    : m_thread(
-          WebThreadSupportingGC::create(name, BlinkGC::MainThreadHeapMode)),
+    : m_thread(WebThreadSupportingGC::create(name)),
       m_initializationPolicy(initializationPolicy),
       m_waitableEvent(WTF::makeUnique<WaitableEvent>()) {
   m_thread->postTask(

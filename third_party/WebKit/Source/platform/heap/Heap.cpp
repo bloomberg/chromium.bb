@@ -256,12 +256,6 @@ void ThreadHeap::detach(ThreadState* thread) {
     m_threads.remove(thread);
     isLastThread = m_threads.isEmpty();
   }
-  // The last thread begin detached should be the owning thread, which would
-  // be the main thread for the mainThreadHeap and a per thread heap enabled
-  // thread otherwise.
-  if (isLastThread)
-    DCHECK(thread->threadHeapMode() == BlinkGC::PerThreadHeapMode ||
-           thread->isMainThread());
   if (thread->isMainThread())
     DCHECK_EQ(heapStats().allocatedSpace(), 0u);
   if (isLastThread)

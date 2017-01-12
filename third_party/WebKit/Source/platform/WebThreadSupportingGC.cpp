@@ -13,24 +13,18 @@
 namespace blink {
 
 std::unique_ptr<WebThreadSupportingGC> WebThreadSupportingGC::create(
-    const char* name,
-    BlinkGC::ThreadHeapMode threadHeapMode) {
-  return WTF::wrapUnique(
-      new WebThreadSupportingGC(name, nullptr, threadHeapMode));
+    const char* name) {
+  return WTF::wrapUnique(new WebThreadSupportingGC(name, nullptr));
 }
 
 std::unique_ptr<WebThreadSupportingGC> WebThreadSupportingGC::createForThread(
-    WebThread* thread,
-    BlinkGC::ThreadHeapMode threadHeapMode) {
-  return WTF::wrapUnique(
-      new WebThreadSupportingGC(nullptr, thread, threadHeapMode));
+    WebThread* thread) {
+  return WTF::wrapUnique(new WebThreadSupportingGC(nullptr, thread));
 }
 
-WebThreadSupportingGC::WebThreadSupportingGC(
-    const char* name,
-    WebThread* thread,
-    BlinkGC::ThreadHeapMode threadHeapMode)
-    : m_thread(thread), m_threadHeapMode(threadHeapMode) {
+WebThreadSupportingGC::WebThreadSupportingGC(const char* name,
+                                             WebThread* thread)
+    : m_thread(thread) {
   DCHECK(!name || !thread);
 #if DCHECK_IS_ON()
   // We call this regardless of whether an existing thread is given or not,
@@ -53,7 +47,7 @@ WebThreadSupportingGC::~WebThreadSupportingGC() {
 }
 
 void WebThreadSupportingGC::initialize() {
-  ThreadState::attachCurrentThread(m_threadHeapMode);
+  ThreadState::attachCurrentThread();
   m_gcTaskRunner = WTF::makeUnique<GCTaskRunner>(m_thread);
 }
 

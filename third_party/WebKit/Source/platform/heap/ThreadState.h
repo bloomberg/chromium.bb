@@ -167,8 +167,6 @@ class PLATFORM_EXPORT ThreadState {
   void lockThreadAttachMutex();
   void unlockThreadAttachMutex();
 
-  BlinkGC::ThreadHeapMode threadHeapMode() const { return m_threadHeapMode; }
-
   bool isTerminating() { return m_isTerminating; }
 
   static void attachMainThread();
@@ -178,7 +176,7 @@ class PLATFORM_EXPORT ThreadState {
   // Associate ThreadState object with the current thread. After this
   // call thread can start using the garbage collected heap infrastructure.
   // It also has to periodically check for safepoints.
-  static void attachCurrentThread(BlinkGC::ThreadHeapMode);
+  static void attachCurrentThread();
 
   // Disassociate attached ThreadState from the current thread. The thread
   // can no longer use the garbage collected heap after this call.
@@ -588,7 +586,7 @@ class PLATFORM_EXPORT ThreadState {
   friend class PrefinalizerRegistration;
   enum SnapshotType { HeapSnapshot, FreelistSnapshot };
 
-  explicit ThreadState(BlinkGC::ThreadHeapMode);
+  ThreadState();
   ~ThreadState();
 
   NO_SANITIZE_ADDRESS void copyStackUntilSafePointScope();
@@ -704,7 +702,6 @@ class PLATFORM_EXPORT ThreadState {
   size_t m_arenaAges[BlinkGC::NumberOfArenas];
   size_t m_currentArenaAges;
 
-  const BlinkGC::ThreadHeapMode m_threadHeapMode;
   bool m_isTerminating;
   GarbageCollectedMixinConstructorMarker* m_gcMixinMarker;
 

@@ -29,11 +29,8 @@ class PLATFORM_EXPORT WebThreadSupportingGC final {
   WTF_MAKE_NONCOPYABLE(WebThreadSupportingGC);
 
  public:
-  static std::unique_ptr<WebThreadSupportingGC> create(const char* name,
-                                                       BlinkGC::ThreadHeapMode);
-  static std::unique_ptr<WebThreadSupportingGC> createForThread(
-      WebThread*,
-      BlinkGC::ThreadHeapMode);
+  static std::unique_ptr<WebThreadSupportingGC> create(const char* name);
+  static std::unique_ptr<WebThreadSupportingGC> createForThread(WebThread*);
   ~WebThreadSupportingGC();
 
   void postTask(const WebTraceLocation& location,
@@ -79,7 +76,7 @@ class PLATFORM_EXPORT WebThreadSupportingGC final {
   }
 
  private:
-  WebThreadSupportingGC(const char* name, WebThread*, BlinkGC::ThreadHeapMode);
+  WebThreadSupportingGC(const char* name, WebThread*);
 
   std::unique_ptr<GCTaskRunner> m_gcTaskRunner;
 
@@ -88,7 +85,6 @@ class PLATFORM_EXPORT WebThreadSupportingGC final {
   // existing thread via createForThread().
   WebThread* m_thread = nullptr;
   std::unique_ptr<WebThread> m_owningThread;
-  const BlinkGC::ThreadHeapMode m_threadHeapMode;
 };
 
 }  // namespace blink

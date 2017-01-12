@@ -60,8 +60,7 @@ void DatabaseThread::start() {
   ASSERT(isMainThread());
   if (m_thread)
     return;
-  m_thread = WebThreadSupportingGC::create("WebCore: Database",
-                                           BlinkGC::PerThreadHeapMode);
+  m_thread = WebThreadSupportingGC::create("WebCore: Database");
   m_thread->postTask(BLINK_FROM_HERE,
                      crossThreadBind(&DatabaseThread::setupDatabaseThread,
                                      wrapCrossThreadPersistent(this)));

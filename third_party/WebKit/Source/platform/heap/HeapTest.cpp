@@ -561,7 +561,7 @@ class ThreadedHeapTester : public ThreadedTesterBase {
   }
 
   void runThread() override {
-    ThreadState::attachCurrentThread(BlinkGC::MainThreadHeapMode);
+    ThreadState::attachCurrentThread();
 
     // Add a cross-thread persistent from this thread; the test object
     // verifies that it will have been cleared out after the threads
@@ -616,7 +616,7 @@ class ThreadedWeaknessTester : public ThreadedTesterBase {
 
  private:
   void runThread() override {
-    ThreadState::attachCurrentThread(BlinkGC::MainThreadHeapMode);
+    ThreadState::attachCurrentThread();
 
     int gcCount = 0;
     while (!done()) {
@@ -706,7 +706,7 @@ class ThreadPersistentHeapTester : public ThreadedTesterBase {
   };
 
   void runThread() override {
-    ThreadState::attachCurrentThread(BlinkGC::MainThreadHeapMode);
+    ThreadState::attachCurrentThread();
 
     PersistentChain::create(100);
 
@@ -4780,67 +4780,6 @@ TEST(HeapTest, MixinInstanceWithoutTrace) {
   EXPECT_EQ(2, MixinA::s_traceCount);
 }
 
-class GCParkingThreadTester {
- public:
-  static void test() {
-    std::unique_ptr<WebThread> sleepingThread =
-        WTF::wrapUnique(Platform::current()->createThread("SleepingThread"));
-    sleepingThread->getWebTaskRunner()->postTask(
-        BLINK_FROM_HERE, crossThreadBind(sleeperMainFunc));
-
-    // Wait for the sleeper to run.
-    while (!s_sleeperRunning) {
-      testing::yieldCurrentThread();
-    }
-
-    {
-      // Expect the first attempt to park the sleeping thread to fail
-      TestGCScope scope(BlinkGC::NoHeapPointersOnStack);
-      EXPECT_FALSE(scope.allThreadsParked());
-    }
-
-    s_sleeperDone = true;
-
-    // Wait for the sleeper to finish.
-    while (s_sleeperRunning) {
-      // We enter the safepoint here since the sleeper thread will detach
-      // causing it to GC.
-      ThreadState::current()->safePoint(BlinkGC::NoHeapPointersOnStack);
-      testing::yieldCurrentThread();
-    }
-
-    {
-      // Since the sleeper thread has detached this is the only thread.
-      TestGCScope scope(BlinkGC::NoHeapPointersOnStack);
-      EXPECT_TRUE(scope.allThreadsParked());
-    }
-  }
-
- private:
-  static void sleeperMainFunc() {
-    ThreadState::attachCurrentThread(BlinkGC::MainThreadHeapMode);
-    s_sleeperRunning = true;
-
-    // Simulate a long running op that is not entering a safepoint.
-    while (!s_sleeperDone) {
-      testing::yieldCurrentThread();
-    }
-
-    ThreadState::detachCurrentThread();
-    s_sleeperRunning = false;
-  }
-
-  static volatile bool s_sleeperRunning;
-  static volatile bool s_sleeperDone;
-};
-
-volatile bool GCParkingThreadTester::s_sleeperRunning = false;
-volatile bool GCParkingThreadTester::s_sleeperDone = false;
-
-TEST(HeapTest, GCParkingTimeout) {
-  GCParkingThreadTester::test();
-}
-
 TEST(HeapTest, NeedsAdjustAndMark) {
   // class Mixin : public GarbageCollectedMixin {};
   static_assert(NeedsAdjustAndMark<Mixin>::value,
@@ -5469,107 +5408,6 @@ static void wakeWorkerThread() {
   workerThreadCondition().signal();
 }
 
-class DeadBitTester {
- public:
-  static void test() {
-    IntWrapper::s_destructorCalls = 0;
-
-    MutexLocker locker(mainThreadMutex());
-    std::unique_ptr<WebThread> workerThread = WTF::wrapUnique(
-        Platform::current()->createThread("Test Worker Thread"));
-    workerThread->getWebTaskRunner()->postTask(
-        BLINK_FROM_HERE, crossThreadBind(workerThreadMain));
-
-    // Wait for the worker thread to have done its initialization,
-    // IE. the worker allocates an object and then throw aways any
-    // pointers to it.
-    parkMainThread();
-
-    // Now do a GC. This will not find the worker threads object since it
-    // is not referred from any of the threads. Even a conservative
-    // GC will not find it.
-    // Also at this point the worker is waiting for the main thread
-    // to be parked and will not do any sweep of its heap.
-    preciselyCollectGarbage();
-
-    // Since the worker thread is not sweeping the worker object should
-    // not have been finalized.
-    EXPECT_EQ(0, IntWrapper::s_destructorCalls);
-
-    // Put the worker thread's object address on the stack and do a
-    // conservative GC. This should find the worker object, but since
-    // it was dead in the previous GC it should not be traced in this
-    // GC.
-    uintptr_t stackPtrValue = s_workerObjectPointer;
-    s_workerObjectPointer = 0;
-    DCHECK(stackPtrValue);
-    conservativelyCollectGarbage();
-
-    // Since the worker thread is not sweeping the worker object should
-    // not have been finalized.
-    EXPECT_EQ(0, IntWrapper::s_destructorCalls);
-
-    // Wake up the worker thread so it can continue with its sweeping.
-    // This should finalized the worker object which we test below.
-    // The worker thread will go back to sleep once sweeping to ensure
-    // we don't have thread local GCs until after validating the destructor
-    // was called.
-    wakeWorkerThread();
-
-    // Wait for the worker thread to sweep its heaps before checking.
-    parkMainThread();
-    EXPECT_EQ(1, IntWrapper::s_destructorCalls);
-
-    // Wake up the worker to allow it thread to continue with thread
-    // shutdown.
-    wakeWorkerThread();
-  }
-
- private:
-  static void workerThreadMain() {
-    MutexLocker locker(workerThreadMutex());
-
-    ThreadState::attachCurrentThread(BlinkGC::MainThreadHeapMode);
-
-    {
-      // Create a worker object that is not kept alive except the
-      // main thread will keep it as an integer value on its stack.
-      IntWrapper* workerObject = IntWrapper::create(42);
-      s_workerObjectPointer = reinterpret_cast<uintptr_t>(workerObject);
-    }
-
-    // Signal the main thread that the worker is done with its allocation.
-    wakeMainThread();
-
-    {
-      // Wait for the main thread to do two GCs without sweeping this thread
-      // heap. The worker waits within a safepoint, but there is no sweeping
-      // until leaving the safepoint scope.
-      SafePointScope scope(BlinkGC::NoHeapPointersOnStack);
-      parkWorkerThread();
-    }
-
-    // Wake up the main thread when done sweeping.
-    wakeMainThread();
-
-    // Wait with detach until the main thread says so. This is not strictly
-    // necessary, but it means the worker thread will not do its thread local
-    // GCs just yet, making it easier to reason about that no new GC has
-    // occurred and the above sweep was the one finalizing the worker object.
-    parkWorkerThread();
-
-    ThreadState::detachCurrentThread();
-  }
-
-  static volatile uintptr_t s_workerObjectPointer;
-};
-
-volatile uintptr_t DeadBitTester::s_workerObjectPointer = 0;
-
-TEST(HeapTest, ObjectDeadBit) {
-  DeadBitTester::test();
-}
-
 class ThreadedStrongificationTester {
  public:
   static void test() {
@@ -5648,7 +5486,7 @@ class ThreadedStrongificationTester {
   static void workerThreadMain() {
     MutexLocker locker(workerThreadMutex());
 
-    ThreadState::attachCurrentThread(BlinkGC::MainThreadHeapMode);
+    ThreadState::attachCurrentThread();
 
     {
       Persistent<WeakCollectionType> collection = allocateCollection();
@@ -5762,82 +5600,6 @@ class DestructorLockingObject
 };
 
 int DestructorLockingObject::s_destructorCalls = 0;
-
-class RecursiveLockingTester {
- public:
-  static void test() {
-    DestructorLockingObject::s_destructorCalls = 0;
-
-    MutexLocker locker(mainThreadMutex());
-    std::unique_ptr<WebThread> workerThread = WTF::wrapUnique(
-        Platform::current()->createThread("Test Worker Thread"));
-    workerThread->getWebTaskRunner()->postTask(
-        BLINK_FROM_HERE, crossThreadBind(workerThreadMain));
-
-    // Park the main thread until the worker thread has initialized.
-    parkMainThread();
-
-    {
-      SafePointAwareMutexLocker recursiveLocker(recursiveMutex());
-
-      // Let the worker try to acquire the above mutex. It won't get it
-      // until the main thread has done its GC.
-      wakeWorkerThread();
-
-      preciselyCollectGarbage();
-
-      // The worker thread should not have swept yet since it is waiting
-      // to get the global mutex.
-      EXPECT_EQ(0, DestructorLockingObject::s_destructorCalls);
-    }
-    // At this point the main thread releases the global lock and the worker
-    // can acquire it and do its sweep of its arenas. Just wait for the worker
-    // to complete its sweep and check the result.
-    parkMainThread();
-    EXPECT_EQ(1, DestructorLockingObject::s_destructorCalls);
-  }
-
- private:
-  static void workerThreadMain() {
-    MutexLocker locker(workerThreadMutex());
-    ThreadState::attachCurrentThread(BlinkGC::MainThreadHeapMode);
-
-    DestructorLockingObject* dlo = DestructorLockingObject::create();
-    DCHECK(dlo);
-
-    // Wake up the main thread which is waiting for the worker to do its
-    // allocation.
-    wakeMainThread();
-
-    // Wait for the main thread to get the global lock to ensure it has
-    // it before the worker tries to acquire it. We want the worker to
-    // block in the SafePointAwareMutexLocker until the main thread
-    // has done a GC. The GC will not mark the "dlo" object since the worker
-    // is entering the safepoint with NoHeapPointersOnStack. When the worker
-    // subsequently gets the global lock and leaves the safepoint it will
-    // sweep its heap and finalize "dlo". The destructor of "dlo" will try
-    // to acquire the same global lock that the thread just got and deadlock
-    // unless the global lock is recursive.
-    parkWorkerThread();
-    SafePointAwareMutexLocker recursiveLocker(recursiveMutex(),
-                                              BlinkGC::NoHeapPointersOnStack);
-
-    // We won't get here unless the lock is recursive since the sweep done
-    // in the constructor of SafePointAwareMutexLocker after
-    // getting the lock will not complete given the "dlo" destructor is
-    // waiting to get the same lock.
-    // Tell the main thread the worker has done its sweep.
-    wakeMainThread();
-
-    ThreadState::detachCurrentThread();
-  }
-
-  static volatile IntWrapper* s_workerObjectPointer;
-};
-
-TEST(HeapTest, RecursiveMutex) {
-  RecursiveLockingTester::test();
-}
 
 template <typename T>
 class TraceIfNeededTester
@@ -6501,7 +6263,7 @@ void workerThreadMainForCrossThreadWeakPersistentTest(
     DestructorLockingObject** object) {
   // Step 2: Create an object and store the pointer.
   MutexLocker locker(workerThreadMutex());
-  ThreadState::attachCurrentThread(BlinkGC::MainThreadHeapMode);
+  ThreadState::attachCurrentThread();
   *object = DestructorLockingObject::create();
   wakeMainThread();
   parkWorkerThread();
@@ -6631,7 +6393,7 @@ class ThreadedClearOnShutdownTester : public ThreadedTesterBase {
   void runWhileAttached();
 
   void runThread() override {
-    ThreadState::attachCurrentThread(BlinkGC::MainThreadHeapMode);
+    ThreadState::attachCurrentThread();
     EXPECT_EQ(42, threadSpecificIntWrapper().value());
     runWhileAttached();
     ThreadState::detachCurrentThread();

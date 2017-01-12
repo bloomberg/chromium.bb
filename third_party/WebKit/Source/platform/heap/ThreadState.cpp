@@ -139,7 +139,7 @@ class ParkThreadsScope final {
   bool m_shouldResumeThreads;
 };
 
-ThreadState::ThreadState(BlinkGC::ThreadHeapMode threadHeapMode)
+ThreadState::ThreadState()
     : m_thread(currentThread()),
       m_persistentRegion(WTF::makeUnique<PersistentRegion>()),
 #if OS(WIN) && COMPILER(MSVC)
@@ -159,7 +159,6 @@ ThreadState::ThreadState(BlinkGC::ThreadHeapMode threadHeapMode)
       m_accumulatedSweepingTime(0),
       m_vectorBackingArenaIndex(BlinkGC::Vector1ArenaIndex),
       m_currentArenaAges(0),
-      m_threadHeapMode(threadHeapMode),
       m_isTerminating(false),
       m_gcMixinMarker(nullptr),
       m_shouldFlushHeapDoesNotContainCache(false),
@@ -181,25 +180,17 @@ ThreadState::ThreadState(BlinkGC::ThreadHeapMode threadHeapMode)
   ASSERT(!**s_threadSpecific);
   **s_threadSpecific = this;
 
-  switch (m_threadHeapMode) {
-    case BlinkGC::MainThreadHeapMode:
-      if (isMainThread()) {
-        s_mainThreadStackStart =
-            reinterpret_cast<uintptr_t>(m_startOfStack) - sizeof(void*);
-        size_t underestimatedStackSize =
-            StackFrameDepth::getUnderestimatedStackSize();
-        if (underestimatedStackSize > sizeof(void*))
-          s_mainThreadUnderestimatedStackSize =
-              underestimatedStackSize - sizeof(void*);
-        m_heap = new ThreadHeap();
-      } else {
-        m_heap = &ThreadState::mainThreadState()->heap();
-      }
-      break;
-    case BlinkGC::PerThreadHeapMode:
-      m_heap = new ThreadHeap();
-      break;
+  if (isMainThread()) {
+    s_mainThreadStackStart =
+        reinterpret_cast<uintptr_t>(m_startOfStack) - sizeof(void*);
+    size_t underestimatedStackSize =
+        StackFrameDepth::getUnderestimatedStackSize();
+    if (underestimatedStackSize > sizeof(void*)) {
+      s_mainThreadUnderestimatedStackSize =
+          underestimatedStackSize - sizeof(void*);
+    }
   }
+  m_heap = new ThreadHeap();
   ASSERT(m_heap);
   m_heap->attach(this);
 
@@ -265,12 +256,12 @@ size_t ThreadState::threadStackSize() {
 void ThreadState::attachMainThread() {
   RELEASE_ASSERT(!ProcessHeap::s_shutdownComplete);
   s_threadSpecific = new WTF::ThreadSpecific<ThreadState*>();
-  new (s_mainThreadStateStorage) ThreadState(BlinkGC::MainThreadHeapMode);
+  new (s_mainThreadStateStorage) ThreadState();
 }
 
-void ThreadState::attachCurrentThread(BlinkGC::ThreadHeapMode threadHeapMode) {
+void ThreadState::attachCurrentThread() {
   RELEASE_ASSERT(!ProcessHeap::s_shutdownComplete);
-  new ThreadState(threadHeapMode);
+  new ThreadState();
 }
 
 void ThreadState::cleanupPages() {

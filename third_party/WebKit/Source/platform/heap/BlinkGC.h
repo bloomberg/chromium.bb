@@ -105,11 +105,6 @@ class PLATFORM_EXPORT BlinkGC final {
     V8MinorGC,
     V8MajorGC,
   };
-
-  enum ThreadHeapMode {
-    MainThreadHeapMode,
-    PerThreadHeapMode,
-  };
 };
 
 }  // namespace blink
