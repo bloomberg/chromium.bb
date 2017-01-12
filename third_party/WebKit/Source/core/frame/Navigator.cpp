@@ -36,7 +36,7 @@
 
 namespace blink {
 
-Navigator::Navigator(LocalFrame* frame) : DOMWindowProperty(frame) {}
+Navigator::Navigator(LocalFrame* frame) : DOMWindowClient(frame) {}
 
 String Navigator::productSub() const {
   return "20030107";
@@ -98,7 +98,7 @@ Vector<String> Navigator::languages() {
 }
 
 DEFINE_TRACE(Navigator) {
-  DOMWindowProperty::trace(visitor);
+  DOMWindowClient::trace(visitor);
   Supplementable<Navigator>::trace(visitor);
 }
 

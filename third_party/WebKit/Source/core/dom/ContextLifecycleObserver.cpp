@@ -5,9 +5,13 @@
 #include "core/dom/ContextLifecycleObserver.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 
 namespace blink {
+
+ContextClient::ContextClient(ExecutionContext* executionContext)
+    : m_executionContext(executionContext) {}
 
 ContextClient::ContextClient(LocalFrame* frame)
     : m_executionContext(frame ? frame->document() : nullptr) {}
@@ -32,5 +36,23 @@ LocalFrame* ContextLifecycleObserver::frame() const {
   return getExecutionContext() && getExecutionContext()->isDocument()
              ? toDocument(getExecutionContext())->frame()
              : nullptr;
+}
+
+DOMWindowClient::DOMWindowClient(LocalDOMWindow* window)
+    : m_domWindow(window) {}
+
+DOMWindowClient::DOMWindowClient(LocalFrame* frame)
+    : m_domWindow(frame ? frame->domWindow() : nullptr) {}
+
+LocalDOMWindow* DOMWindowClient::domWindow() const {
+  return m_domWindow && m_domWindow->frame() ? m_domWindow : nullptr;
+}
+
+LocalFrame* DOMWindowClient::frame() const {
+  return m_domWindow ? m_domWindow->frame() : nullptr;
+}
+
+DEFINE_TRACE(DOMWindowClient) {
+  visitor->trace(m_domWindow);
 }
 }

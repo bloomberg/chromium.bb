@@ -22,7 +22,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
-#include "core/frame/DOMWindowProperty.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/frame/NavigatorCPU.h"
 #include "core/frame/NavigatorID.h"
 #include "core/frame/NavigatorLanguage.h"
@@ -41,7 +41,7 @@ class CORE_EXPORT Navigator final : public GarbageCollected<Navigator>,
                                     public NavigatorLanguage,
                                     public NavigatorOnLine,
                                     public ScriptWrappable,
-                                    public DOMWindowProperty,
+                                    public DOMWindowClient,
                                     public Supplementable<Navigator> {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Navigator);
