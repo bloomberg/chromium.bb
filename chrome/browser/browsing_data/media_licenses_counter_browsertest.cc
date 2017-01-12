@@ -185,20 +185,6 @@ IN_PROC_BROWSER_TEST_F(MediaLicensesCounterTest, NonEmpty) {
   EXPECT_EQ(kOrigin.host(), GetOrigin());
 }
 
-// Tests that the counter does not count if the deletion preference is false.
-IN_PROC_BROWSER_TEST_F(MediaLicensesCounterTest, PrefIsFalse) {
-  SetMediaLicenseDeletionPref(false);
-
-  Profile* profile = browser()->profile();
-  MediaLicensesCounter counter(profile);
-  counter.Init(profile->GetPrefs(),
-               base::Bind(&MediaLicensesCounterTest::CountingCallback,
-                          base::Unretained(this)));
-  counter.Restart();
-
-  EXPECT_FALSE(CallbackCalled());
-}
-
 // Tests that the counter starts counting automatically when the deletion
 // pref changes to true.
 IN_PROC_BROWSER_TEST_F(MediaLicensesCounterTest, PrefChanged) {

@@ -243,20 +243,6 @@ IN_PROC_BROWSER_TEST_F(CacheCounterTest, PrefChanged) {
   EXPECT_EQ(0u, GetResult());
 }
 
-// Tests that the counter does not count if the deletion preference is false.
-IN_PROC_BROWSER_TEST_F(CacheCounterTest, PrefIsFalse) {
-  SetCacheDeletionPref(false);
-
-  Profile* profile = browser()->profile();
-  CacheCounter counter(profile);
-  counter.Init(
-      profile->GetPrefs(),
-      base::Bind(&CacheCounterTest::CountingCallback, base::Unretained(this)));
-  counter.Restart();
-
-  EXPECT_FALSE(counter.Pending());
-}
-
 // Tests that the counting is restarted when the time period changes. Currently,
 // the results should be the same for every period. This is because the counter
 // always counts the size of the entire cache, and it is up to the UI

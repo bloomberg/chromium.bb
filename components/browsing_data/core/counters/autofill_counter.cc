@@ -147,7 +147,7 @@ void AutofillCounter::OnWebDataServiceRequestDone(
   }
 
   // If we still have pending queries, do not report data yet.
-  if (HasPendingQuery())
+  if (suggestions_query_ || credit_cards_query_ || addresses_query_)
     return;
 
   std::unique_ptr<Result> reported_result(new AutofillResult(

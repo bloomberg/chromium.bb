@@ -110,7 +110,7 @@ class IOThreadCacheCounter {
 }  // namespace
 
 CacheCounter::CacheCounter(web::BrowserState* browser_state)
-    : pending_(false), browser_state_(browser_state), weak_ptr_factory_(this) {}
+    : browser_state_(browser_state), weak_ptr_factory_(this) {}
 
 CacheCounter::~CacheCounter() {}
 
@@ -124,8 +124,6 @@ void CacheCounter::Count() {
   // period setting and always request counting for the unbounded time interval.
   // It is up to the UI to interpret the results for finite time intervals as
   // upper estimates.
-  pending_ = true;
-
   // IOThreadCacheCounter deletes itself when done.
   (new IOThreadCacheCounter(browser_state_->GetRequestContext(),
                             base::Bind(&CacheCounter::OnCacheSizeCalculated,
@@ -134,8 +132,6 @@ void CacheCounter::Count() {
 }
 
 void CacheCounter::OnCacheSizeCalculated(int result_bytes) {
-  pending_ = false;
-
   // A value less than 0 means a net error code.
   if (result_bytes < 0)
     return;

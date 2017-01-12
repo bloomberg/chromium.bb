@@ -40,13 +40,7 @@ base::Time BrowsingDataCounter::GetPeriodStart() {
 
 void BrowsingDataCounter::Restart() {
   DCHECK(initialized_);
-
-  // If this data type was unchecked for deletion, we do not need to count it.
-  if (!pref_service_->GetBoolean(GetPrefName()))
-    return;
-
   callback_.Run(base::MakeUnique<Result>(this));
-
   Count();
 }
 

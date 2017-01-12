@@ -182,22 +182,6 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, PrefChanged) {
   EXPECT_EQ(2u, GetResult());
 }
 
-// Tests that the counter does not count passwords if the deletion
-// preference is false.
-IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, PrefIsFalse) {
-  SetPasswordsDeletionPref(false);
-  AddLogin("https://www.google.com", "user", false);
-
-  Profile* profile = browser()->profile();
-  browsing_data::PasswordsCounter counter(PasswordStoreFactory::GetForProfile(
-      profile, ServiceAccessType::EXPLICIT_ACCESS));
-  counter.Init(profile->GetPrefs(), base::Bind(&PasswordsCounterTest::Callback,
-                                               base::Unretained(this)));
-  counter.Restart();
-
-  EXPECT_FALSE(counter.cancelable_task_tracker()->HasTrackedTasks());
-}
-
 // Tests that the counter starts counting automatically when
 // the password store changes.
 IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, StoreChanged) {

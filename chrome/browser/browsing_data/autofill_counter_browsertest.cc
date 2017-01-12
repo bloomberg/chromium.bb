@@ -201,20 +201,6 @@ class AutofillCounterTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(AutofillCounterTest);
 };
 
-// Tests that the counter does not count when the form data deletion preference
-// is false.
-IN_PROC_BROWSER_TEST_F(AutofillCounterTest, PrefIsFalse) {
-  SetAutofillDeletionPref(false);
-
-  Profile* profile = browser()->profile();
-  browsing_data::AutofillCounter counter(GetWebDataService());
-  counter.Init(profile->GetPrefs(), base::Bind(&AutofillCounterTest::Callback,
-                                               base::Unretained(this)));
-  counter.Restart();
-
-  EXPECT_FALSE(counter.HasPendingQuery());
-}
-
 // Tests that we count the correct number of autocomplete suggestions.
 IN_PROC_BROWSER_TEST_F(AutofillCounterTest, AutocompleteSuggestions) {
   Profile* profile = browser()->profile();

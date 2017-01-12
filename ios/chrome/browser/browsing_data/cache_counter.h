@@ -17,10 +17,6 @@ class CacheCounter : public browsing_data::BrowsingDataCounter {
   explicit CacheCounter(web::BrowserState* browser_state);
   ~CacheCounter() override;
 
-  // Whether this counter awaits the calculation result callback.
-  // Used only for testing.
-  bool pending() { return pending_; }
-
   // BrowsingDataCounter implementation.
   const char* GetPrefName() const override;
 
@@ -29,8 +25,6 @@ class CacheCounter : public browsing_data::BrowsingDataCounter {
   void Count() override;
 
   void OnCacheSizeCalculated(int result_bytes);
-
-  bool pending_;
 
   web::BrowserState* browser_state_;
 

@@ -46,11 +46,6 @@ class AutofillCounter : public browsing_data::BrowsingDataCounter,
   // BrowsingDataCounter implementation.
   void OnInitialized() override;
 
-  // Whether the counting is in progress.
-  bool HasPendingQuery() {
-    return suggestions_query_ || credit_cards_query_ || addresses_query_;
-  }
-
   const char* GetPrefName() const override;
 
   // Set the beginning of the time period for testing. AutofillTable does not

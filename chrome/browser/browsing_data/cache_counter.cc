@@ -20,7 +20,6 @@ CacheCounter::CacheResult::~CacheResult() {}
 
 CacheCounter::CacheCounter(Profile* profile)
     : profile_(profile),
-      pending_(false),
       weak_ptr_factory_(this) {}
 
 CacheCounter::~CacheCounter() {
@@ -39,21 +38,14 @@ void CacheCounter::Count() {
           ->CountAndDestroySelfWhenFinished(
               base::Bind(&CacheCounter::OnCacheSizeCalculated,
                          weak_ptr_factory_.GetWeakPtr(), is_upper_limit));
-  pending_ = true;
 }
 
 void CacheCounter::OnCacheSizeCalculated(bool is_upper_limit,
                                          int64_t result_bytes) {
-  pending_ = false;
-
   // A value less than 0 means a net error code.
   if (result_bytes < 0)
     return;
   auto result =
       base::MakeUnique<CacheResult>(this, result_bytes, is_upper_limit);
   ReportResult(std::move(result));
-}
-
-bool CacheCounter::Pending() {
-  return pending_;
 }

@@ -40,10 +40,6 @@ class CacheCounter : public browsing_data::BrowsingDataCounter {
 
   const char* GetPrefName() const override;
 
-  // Whether this counter awaits the calculation result callback.
-  // Used only for testing.
-  bool Pending();
-
  private:
   void Count() override;
   void OnCacheSizeCalculated(bool is_upper_limit, int64_t bytes);

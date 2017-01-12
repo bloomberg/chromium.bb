@@ -228,12 +228,6 @@ cr.define('settings_privacy_page', function() {
         cr.webUIListenerCallback(
             'update-counter-text', checkbox.pref.key, 'result');
         assertEquals('result', checkbox.subLabel);
-
-        // Unchecking the checkbox will hide its sublabel.
-        var subLabelStyle = window.getComputedStyle(checkbox.$$('.secondary'));
-        assertNotEquals('none', subLabelStyle.display);
-        checkbox.checked = false;
-        assertEquals('none', subLabelStyle.display);
       });
     });
   }

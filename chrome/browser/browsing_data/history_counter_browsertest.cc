@@ -213,28 +213,6 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, PrefChanged) {
   EXPECT_EQ(2u, GetLocalResult());
 }
 
-// Tests that the counter does not count history if the deletion
-// preference is false.
-IN_PROC_BROWSER_TEST_F(HistoryCounterTest, PrefIsFalse) {
-  SetHistoryDeletionPref(false);
-  AddVisit("https://www.google.com");
-
-  Profile* profile = browser()->profile();
-
-  browsing_data::HistoryCounter counter(
-      GetHistoryService(),
-      base::Bind(&HistoryCounterTest::GetRealWebHistoryService,
-                 base::Unretained(this),
-                 base::Unretained(profile)),
-      ProfileSyncServiceFactory::GetForProfile(profile));
-
-  counter.Init(profile->GetPrefs(), base::Bind(&HistoryCounterTest::Callback,
-                                               base::Unretained(this)));
-  counter.Restart();
-
-  EXPECT_FALSE(counter.HasTrackedTasks());
-}
-
 // Tests that changing the deletion period restarts the counting, and that
 // the result takes visit dates into account.
 IN_PROC_BROWSER_TEST_F(HistoryCounterTest, PeriodChanged) {
