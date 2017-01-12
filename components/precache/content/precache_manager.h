@@ -57,8 +57,9 @@ namespace precache {
 class PrecacheDatabase;
 class PrecacheUnfinishedWork;
 
-// Visible for test.
 extern const char kPrecacheFieldTrialName[];
+
+// Visible for test.
 extern const char kMinCacheSizeParam[];
 size_t NumTopHosts();
 
@@ -119,13 +120,15 @@ class PrecacheManager : public KeyedService,
   // Update precache about an URL being fetched. Metrics related to precache are
   // updated and any ongoing precache will be cancelled if this is an user
   // initiated request. Should be called on UI thread.
-  void UpdatePrecacheMetricsAndState(const GURL& url,
-                                     const GURL& referrer,
-                                     const base::TimeDelta& latency,
-                                     const base::Time& fetch_time,
-                                     const net::HttpResponseInfo& info,
-                                     int64_t size,
-                                     bool is_user_traffic);
+  void UpdatePrecacheMetricsAndState(
+      const GURL& url,
+      const GURL& referrer,
+      const base::TimeDelta& latency,
+      const base::Time& fetch_time,
+      const net::HttpResponseInfo& info,
+      int64_t size,
+      bool is_user_traffic,
+      const base::Callback<void(base::Time)>& register_synthetic_trial);
 
  private:
   friend class PrecacheManagerTest;
@@ -153,6 +156,11 @@ class PrecacheManager : public KeyedService,
   // From PrecacheFetcher::PrecacheDelegate.
   void OnDone() override;
 
+  // Registers the precache synthetic field trial for users whom the precache
+  // task was run recently. |last_precache_time| is the last time precache task
+  // was run.
+  void RegisterSyntheticFieldTrial(const base::Time last_precache_time);
+
   // Callback when fetching unfinished work from storage is done.
   void OnGetUnfinishedWorkDone(
       std::unique_ptr<PrecacheUnfinishedWork> unfinished_work);
@@ -179,12 +187,15 @@ class PrecacheManager : public KeyedService,
   AllowedType PrecachingAllowed() const;
 
   // Update precache-related metrics in response to a URL being fetched.
-  void RecordStatsForFetch(const GURL& url,
-                           const GURL& referrer,
-                           const base::TimeDelta& latency,
-                           const base::Time& fetch_time,
-                           const net::HttpResponseInfo& info,
-                           int64_t size);
+  void RecordStatsForFetch(
+      const GURL& url,
+      const GURL& referrer,
+      const base::TimeDelta& latency,
+      const base::Time& fetch_time,
+      const net::HttpResponseInfo& info,
+      int64_t size,
+      const base::Callback<void(base::Time)>& register_synthetic_trial,
+      base::Time last_precache_time);
 
   // Update precache-related metrics in response to a URL being fetched. Called
   // by RecordStatsForFetch() by way of an asynchronous HistoryService callback.

@@ -67,11 +67,13 @@ class PrecacheDatabase {
   base::Time GetLastPrecacheTimestamp();
 
   // Report precache-related metrics in response to a URL being fetched, where
-  // the fetch was motivated by precaching.
+  // the fetch was motivated by precaching. This is called from the network
+  // delegate, via precache_util.
   void RecordURLPrefetchMetrics(const net::HttpResponseInfo& info,
                                 const base::TimeDelta& latency);
 
-  // Records the precache of an url |url| for top host |referrer_host|.
+  // Records the precache of an url |url| for top host |referrer_host|. This is
+  // called from PrecacheFetcher.
   void RecordURLPrefetch(const GURL& url,
                          const std::string& referrer_host,
                          const base::Time& fetch_time,
@@ -81,6 +83,7 @@ class PrecacheDatabase {
   // Report precache-related metrics in response to a URL being fetched, where
   // the fetch was not motivated by precaching. |is_connection_cellular|
   // indicates whether the current network connection is a cellular network.
+  // This is called from the network delegate, via precache_util.
   void RecordURLNonPrefetch(const GURL& url,
                             const base::TimeDelta& latency,
                             const base::Time& fetch_time,
@@ -124,6 +127,7 @@ class PrecacheDatabase {
  private:
   friend class PrecacheDatabaseTest;
   friend class PrecacheFetcherTest;
+  friend class PrecacheManagerTest;
 
   bool IsDatabaseAccessible() const;
 

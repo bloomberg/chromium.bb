@@ -356,21 +356,34 @@ void PrecacheManager::UpdatePrecacheMetricsAndState(
     const base::Time& fetch_time,
     const net::HttpResponseInfo& info,
     int64_t size,
-    bool is_user_traffic) {
+    bool is_user_traffic,
+    const base::Callback<void(base::Time)>& register_synthetic_trial) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  RecordStatsForFetch(url, referrer, latency, fetch_time, info, size);
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(&PrecacheDatabase::GetLastPrecacheTimestamp,
+                 base::Unretained(precache_database_.get())),
+      base::Bind(&PrecacheManager::RecordStatsForFetch, AsWeakPtr(), url,
+                 referrer, latency, fetch_time, info, size,
+                 register_synthetic_trial));
+
   if (is_user_traffic && IsPrecaching())
     CancelPrecaching();
 }
 
-void PrecacheManager::RecordStatsForFetch(const GURL& url,
-                                          const GURL& referrer,
-                                          const base::TimeDelta& latency,
-                                          const base::Time& fetch_time,
-                                          const net::HttpResponseInfo& info,
-                                          int64_t size) {
+void PrecacheManager::RecordStatsForFetch(
+    const GURL& url,
+    const GURL& referrer,
+    const base::TimeDelta& latency,
+    const base::Time& fetch_time,
+    const net::HttpResponseInfo& info,
+    int64_t size,
+    const base::Callback<void(base::Time)>& register_synthetic_trial,
+    base::Time last_precache_time) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  register_synthetic_trial.Run(last_precache_time);
 
   if (size == 0 || url.is_empty() || !url.SchemeIsHTTPOrHTTPS()) {
     // Ignore empty responses, empty URLs, or URLs that aren't HTTP or HTTPS.
