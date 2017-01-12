@@ -178,7 +178,7 @@ static inline bool IsNearlyTheSame(const gfx::Point3F& lhs,
 }
 
 static inline void AddVertexToClippedQuad3d(const gfx::Point3F& new_vertex,
-                                            gfx::Point3F clipped_quad[8],
+                                            gfx::Point3F clipped_quad[6],
                                             int* num_vertices_in_clipped_quad) {
   if (*num_vertices_in_clipped_quad > 0 &&
       IsNearlyTheSame(clipped_quad[*num_vertices_in_clipped_quad - 1],
@@ -309,7 +309,7 @@ gfx::Rect MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
 
 bool MathUtil::MapClippedQuad3d(const gfx::Transform& transform,
                                 const gfx::QuadF& src_quad,
-                                gfx::Point3F clipped_quad[8],
+                                gfx::Point3F clipped_quad[6],
                                 int* num_vertices_in_clipped_quad) {
   HomogeneousCoordinate h1 =
       MapHomogeneousPoint(transform, gfx::Point3F(src_quad.p1()));
@@ -370,7 +370,7 @@ bool MathUtil::MapClippedQuad3d(const gfx::Transform& transform,
                       clipped_quad[*num_vertices_in_clipped_quad - 1]))
     *num_vertices_in_clipped_quad -= 1;
 
-  DCHECK_LE(*num_vertices_in_clipped_quad, 8);
+  DCHECK_LE(*num_vertices_in_clipped_quad, 6);
   return (*num_vertices_in_clipped_quad >= 4);
 }
 

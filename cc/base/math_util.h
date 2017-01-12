@@ -189,7 +189,7 @@ class CC_EXPORT MathUtil {
   // array are valid.
   static bool MapClippedQuad3d(const gfx::Transform& transform,
                                const gfx::QuadF& src_quad,
-                               gfx::Point3F clipped_quad[8],
+                               gfx::Point3F clipped_quad[6],
                                int* num_vertices_in_clipped_quad);
 
   static gfx::RectF ComputeEnclosingRectOfVertices(const gfx::PointF vertices[],

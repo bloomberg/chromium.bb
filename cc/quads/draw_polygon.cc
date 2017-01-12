@@ -62,7 +62,7 @@ DrawPolygon::DrawPolygon(const DrawQuad* original_ref,
       order_index_(draw_order_index),
       original_ref_(original_ref),
       is_split_(false) {
-  gfx::Point3F points[8];
+  gfx::Point3F points[6];
   int num_vertices_in_clipped_quad;
   gfx::QuadF send_quad(visible_layer_rect);
 
