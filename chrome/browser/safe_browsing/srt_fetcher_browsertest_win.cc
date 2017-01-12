@@ -545,22 +545,9 @@ IN_PROC_BROWSER_TEST_F(SRTFetcherTest, MultipleLaunches) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(SRTFetcherTest, ReporterLogging_FeatureDisabled) {
-  exit_code_to_report_ = kSwReporterNothingFound;
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      kSwReporterExtendedSafeBrowsingFeature);
-  RunReporter();
-  TestReporterLaunchCycle({base::FilePath()});
-  ExpectLoggingSwitches({/*expect no switches*/});
-  ExpectLastTimeSentReportNotSet();
-}
-
 IN_PROC_BROWSER_TEST_F(SRTFetcherTest, ReporterLogging_NoSBExtendedReporting) {
   exit_code_to_report_ = kSwReporterNothingFound;
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      kSwReporterExtendedSafeBrowsingFeature);
   RunReporter();
   TestReporterLaunchCycle({base::FilePath()});
   ExpectLoggingSwitches({/*expect no switches*/});
@@ -570,8 +557,6 @@ IN_PROC_BROWSER_TEST_F(SRTFetcherTest, ReporterLogging_NoSBExtendedReporting) {
 IN_PROC_BROWSER_TEST_F(SRTFetcherTest, ReporterLogging_EnabledFirstRun) {
   exit_code_to_report_ = kSwReporterNothingFound;
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      kSwReporterExtendedSafeBrowsingFeature);
   EnableSBExtendedReporting();
   // Note: don't set last time sent logs in the local state.
   // SBER is enabled and there is no record in the local state of the last time
@@ -586,8 +571,6 @@ IN_PROC_BROWSER_TEST_F(SRTFetcherTest, ReporterLogging_EnabledFirstRun) {
 IN_PROC_BROWSER_TEST_F(SRTFetcherTest, ReporterLogging_EnabledNoRecentLogging) {
   exit_code_to_report_ = kSwReporterNothingFound;
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      kSwReporterExtendedSafeBrowsingFeature);
   // SBER is enabled and last time logs were sent was more than
   // |kDaysBetweenReporterLogsSent| day ago, so we should send logs in this run.
   EnableSBExtendedReporting();
@@ -602,8 +585,6 @@ IN_PROC_BROWSER_TEST_F(SRTFetcherTest, ReporterLogging_EnabledNoRecentLogging) {
 IN_PROC_BROWSER_TEST_F(SRTFetcherTest, ReporterLogging_EnabledRecentlyLogged) {
   exit_code_to_report_ = kSwReporterNothingFound;
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      kSwReporterExtendedSafeBrowsingFeature);
   // SBER is enabled, but logs have been sent less than
   // |kDaysBetweenReporterLogsSent| day ago, so we shouldn't send any logs in
   // this run.

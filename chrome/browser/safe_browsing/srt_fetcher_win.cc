@@ -72,9 +72,6 @@ const wchar_t kStartTimeValueName[] = L"StartTime";
 const char kExtendedSafeBrowsingEnabledSwitch[] =
     "extended-safebrowsing-enabled";
 
-const base::Feature kSwReporterExtendedSafeBrowsingFeature{
-    "SwReporterExtendedSafeBrowsingFeature", base::FEATURE_DISABLED_BY_DEFAULT};
-
 namespace {
 
 // Used to send UMA information about missing start and end time registry
@@ -951,9 +948,6 @@ class ReporterRunner : public chrome::BrowserListObserver {
   // least |kSwReporterLastTimeSentReport| days ago.
   bool ShouldSendReporterLogs(const std::string& suffix,
                               const PrefService& local_state) {
-    if (!base::FeatureList::IsEnabled(kSwReporterExtendedSafeBrowsingFeature))
-      return false;
-
     UMAHistogramReporter uma(suffix);
     if (!SafeBrowsingExtendedReportingEnabled()) {
       uma.RecordLogsUploadEnabled(REPORTER_LOGS_UPLOADS_SBER_DISABLED);

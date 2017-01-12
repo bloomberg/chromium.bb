@@ -48,8 +48,6 @@ const int kDaysBetweenReporterLogsSent = 7;
 
 extern const char kExtendedSafeBrowsingEnabledSwitch[];
 
-extern const base::Feature kSwReporterExtendedSafeBrowsingFeature;
-
 // Parameters used to invoke the sw_reporter component.
 struct SwReporterInvocation {
   base::CommandLine command_line;
