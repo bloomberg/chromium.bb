@@ -45,7 +45,7 @@ declare_args() {
 # The path to the hermetic install of Xcode. Only relevant when
 # use_system_xcode = false.
 hermetic_xcode_path =
-    rebase_path("//build/mac_files/Xcode.app", "", root_build_dir)
+    rebase_path("//build/${target_os}_files/Xcode.app", "", root_build_dir)
 
 declare_args() {
   if (is_clang) {
