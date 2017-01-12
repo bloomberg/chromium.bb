@@ -18,14 +18,14 @@ namespace vr_shell {
 
 namespace {
 WebGestureEvent MakeGestureEvent(WebInputEvent::Type type,
-                                 int64_t time_ms,
+                                 double time,
                                  float x,
                                  float y) {
   WebGestureEvent result;
   result.type = type;
   result.x = x;
   result.y = y;
-  result.timeStampSeconds = time_ms / 1000.0;
+  result.timeStampSeconds = time;
   result.sourceDevice = blink::WebGestureDeviceTouchpad;
   return result;
 }
