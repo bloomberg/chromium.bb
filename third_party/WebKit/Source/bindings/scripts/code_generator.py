@@ -69,7 +69,7 @@ def runtime_enabled_if(code, name):
     if not name:
         return code
 
-    function = 'RuntimeEnabledFeatures::%sEnabled()' % v8_utilities.uncapitalize(name)
+    function = v8_utilities.runtime_enabled_function(name)
     return generate_indented_conditional(code, function)
 
 
@@ -88,6 +88,7 @@ def initialize_jinja_env(cache_dir):
         'format_blink_cpp_source_code': format_blink_cpp_source_code,
         'format_remove_duplicates': format_remove_duplicates,
         'runtime_enabled': runtime_enabled_if,
+        'runtime_enabled_function': v8_utilities.runtime_enabled_function,
         'secure_context': secure_context_if,
         'unique_by': unique_by})
     jinja_env.filters.update(constant_filters())

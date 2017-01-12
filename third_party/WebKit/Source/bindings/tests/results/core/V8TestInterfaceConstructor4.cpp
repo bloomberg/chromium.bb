@@ -124,6 +124,7 @@ static void installV8TestInterfaceConstructor4Template(v8::Isolate* isolate, con
   V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceConstructor4::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceConstructor4::internalFieldCount);
   interfaceTemplate->SetCallHandler(V8TestInterfaceConstructor4::constructorCallback);
   interfaceTemplate->SetLength(1);
+
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
   ALLOW_UNUSED_LOCAL(signature);
   v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();

@@ -360,6 +360,7 @@ static void installV8TestTypedefsTemplate(v8::Isolate* isolate, const DOMWrapper
   V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestTypedefs::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestTypedefs::internalFieldCount);
   interfaceTemplate->SetCallHandler(V8TestTypedefs::constructorCallback);
   interfaceTemplate->SetLength(1);
+
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
   ALLOW_UNUSED_LOCAL(signature);
   v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();

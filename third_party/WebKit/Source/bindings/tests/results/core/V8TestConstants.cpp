@@ -72,6 +72,7 @@ void MEASURED_CONSTANTConstantGetterCallback(v8::Local<v8::Name>, const v8::Prop
 static void installV8TestConstantsTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {
   // Initialize the interface object's template.
   V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestConstants::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestConstants::internalFieldCount);
+
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
   ALLOW_UNUSED_LOCAL(signature);
   v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();

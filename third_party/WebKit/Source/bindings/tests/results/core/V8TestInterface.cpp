@@ -2647,6 +2647,11 @@ const V8DOMConfiguration::MethodConfiguration V8TestInterfaceMethods[] = {
 void V8TestInterface::installV8TestInterfaceTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {
   // Initialize the interface object's template.
   V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterface::wrapperTypeInfo.interfaceName, V8TestInterfaceEmpty::domTemplate(isolate, world), V8TestInterface::internalFieldCount);
+
+  if (!RuntimeEnabledFeatures::featureNameEnabled()) {
+    return;
+  }
+
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
   ALLOW_UNUSED_LOCAL(signature);
   v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();
@@ -2655,25 +2660,23 @@ void V8TestInterface::installV8TestInterfaceTemplate(v8::Isolate* isolate, const
   ALLOW_UNUSED_LOCAL(prototypeTemplate);
 
   // Register DOM constants, attributes and operations.
-  if (RuntimeEnabledFeatures::featureNameEnabled()) {
-    const V8DOMConfiguration::ConstantConfiguration V8TestInterfaceConstants[] = {
-        {"UNSIGNED_LONG", 0, 0, V8DOMConfiguration::ConstantTypeUnsignedLong},
-        {"CONST_JAVASCRIPT", 1, 0, V8DOMConfiguration::ConstantTypeShort},
-        {"IMPLEMENTS_CONSTANT_1", 1, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"IMPLEMENTS_CONSTANT_2", 2, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"PARTIAL2_UNSIGNED_SHORT", 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
-    };
-    V8DOMConfiguration::installConstants(isolate, interfaceTemplate, prototypeTemplate, V8TestInterfaceConstants, WTF_ARRAY_LENGTH(V8TestInterfaceConstants));
-    if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
-      const V8DOMConfiguration::ConstantConfiguration constantPartialUnsignedShortConfiguration = {"PARTIAL_UNSIGNED_SHORT", 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort};
-      V8DOMConfiguration::installConstant(isolate, interfaceTemplate, prototypeTemplate, constantPartialUnsignedShortConfiguration);
-      const V8DOMConfiguration::ConstantConfiguration constantPartialDoubleConfiguration = {"PARTIAL_DOUBLE", 0, 3.14, V8DOMConfiguration::ConstantTypeDouble};
-      V8DOMConfiguration::installConstant(isolate, interfaceTemplate, prototypeTemplate, constantPartialDoubleConfiguration);
-    }
-    V8DOMConfiguration::installLazyDataAttributes(isolate, world, instanceTemplate, prototypeTemplate, V8TestInterfaceLazyDataAttributes, WTF_ARRAY_LENGTH(V8TestInterfaceLazyDataAttributes));
-    V8DOMConfiguration::installAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceAccessors));
-    V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceMethods, WTF_ARRAY_LENGTH(V8TestInterfaceMethods));
+  const V8DOMConfiguration::ConstantConfiguration V8TestInterfaceConstants[] = {
+      {"UNSIGNED_LONG", 0, 0, V8DOMConfiguration::ConstantTypeUnsignedLong},
+      {"CONST_JAVASCRIPT", 1, 0, V8DOMConfiguration::ConstantTypeShort},
+      {"IMPLEMENTS_CONSTANT_1", 1, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+      {"IMPLEMENTS_CONSTANT_2", 2, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+      {"PARTIAL2_UNSIGNED_SHORT", 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+  };
+  V8DOMConfiguration::installConstants(isolate, interfaceTemplate, prototypeTemplate, V8TestInterfaceConstants, WTF_ARRAY_LENGTH(V8TestInterfaceConstants));
+  if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
+    const V8DOMConfiguration::ConstantConfiguration constantPartialUnsignedShortConfiguration = {"PARTIAL_UNSIGNED_SHORT", 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort};
+    V8DOMConfiguration::installConstant(isolate, interfaceTemplate, prototypeTemplate, constantPartialUnsignedShortConfiguration);
+    const V8DOMConfiguration::ConstantConfiguration constantPartialDoubleConfiguration = {"PARTIAL_DOUBLE", 0, 3.14, V8DOMConfiguration::ConstantTypeDouble};
+    V8DOMConfiguration::installConstant(isolate, interfaceTemplate, prototypeTemplate, constantPartialDoubleConfiguration);
   }
+  V8DOMConfiguration::installLazyDataAttributes(isolate, world, instanceTemplate, prototypeTemplate, V8TestInterfaceLazyDataAttributes, WTF_ARRAY_LENGTH(V8TestInterfaceLazyDataAttributes));
+  V8DOMConfiguration::installAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceAccessors));
+  V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceMethods, WTF_ARRAY_LENGTH(V8TestInterfaceMethods));
 
   if (RuntimeEnabledFeatures::featureNameEnabled()) {
     const V8DOMConfiguration::AccessorConfiguration accessorconditionalReadOnlyLongAttributeConfiguration = {"conditionalReadOnlyLongAttribute", TestInterfaceImplementationV8Internal::conditionalReadOnlyLongAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};

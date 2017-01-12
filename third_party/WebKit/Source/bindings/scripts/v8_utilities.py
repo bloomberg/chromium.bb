@@ -112,6 +112,11 @@ def uncapitalize(name):
     return name[0].lower() + name[1:]
 
 
+def runtime_enabled_function(name):
+    """Returns a function call of a runtime enabled feature."""
+    return 'RuntimeEnabledFeatures::%sEnabled()' % uncapitalize(name)
+
+
 def unique_by(dict_list, key):
     """Returns elements from a list of dictionaries with unique values for the named key."""
     keys_seen = set()
@@ -294,8 +299,7 @@ class ExposureSet:
         exposed = ('executionContext->%s()' %
                    EXPOSED_EXECUTION_CONTEXT_METHOD[exposure.exposed])
         if exposure.runtime_enabled is not None:
-            runtime_enabled = ('RuntimeEnabledFeatures::%sEnabled()' %
-                               uncapitalize(exposure.runtime_enabled))
+            runtime_enabled = (runtime_enabled_function(exposure.runtime_enabled))
             return '({0} && {1})'.format(exposed, runtime_enabled)
         return exposed
 
