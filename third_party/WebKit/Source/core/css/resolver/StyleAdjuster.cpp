@@ -329,9 +329,8 @@ static void adjustStyleForDisplay(ComputedStyle& style,
     style.setDisplay(EDisplay::InlineBlock);
 
   // After performing the display mutation, check table rows. We do not honor
-  // position: relative table rows or cells.  This has been established for
-  // position: relative in CSS2.1 (and caused a crash in containingBlock() on
-  // some sites).
+  // position: relative table rows. This has been established for position:
+  // relative in CSS2.1 (and caused a crash in containingBlock() on some sites).
   if ((style.display() == EDisplay::TableHeaderGroup ||
        style.display() == EDisplay::TableRowGroup ||
        style.display() == EDisplay::TableFooterGroup ||
