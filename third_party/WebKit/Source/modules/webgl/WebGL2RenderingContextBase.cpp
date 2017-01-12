@@ -2439,9 +2439,9 @@ void WebGL2RenderingContextBase::vertexAttribIPointer(GLuint index,
   }
   if (!validateValueFitNonNegInt32("vertexAttribIPointer", "offset", offset))
     return;
-  if (!m_boundArrayBuffer) {
+  if (!m_boundArrayBuffer && offset != 0) {
     synthesizeGLError(GL_INVALID_OPERATION, "vertexAttribIPointer",
-                      "no bound ARRAY_BUFFER");
+                      "no ARRAY_BUFFER is bound and offset is non-zero");
     return;
   }
 

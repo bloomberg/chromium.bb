@@ -110,10 +110,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # ========================
     # Fails on all platforms
 
-    self.Fail('conformance/more/functions/vertexAttribPointerBadArgs.html',
-        bug=678850)
-    self.Fail('conformance/attribs/gl-vertexattribpointer.html', bug=678850)
-
     # Need to add detection of feedback loops with multiple render targets.
     self.Fail('conformance/extensions/webgl-draw-buffers-feedback-loop.html',
         bug=1619) # angle bug ID
@@ -231,6 +227,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win10', 'intel', 'opengl'], bug=1007) # angle bug ID
 
     # Win / Passthrough command decoder
+    self.Fail('conformance/attribs/gl-vertexattribpointer.html',
+        ['win', 'passthrough', 'd3d11'], bug=678850)
     self.Fail('conformance/extensions/ext-sRGB.html',
         ['win', 'passthrough', 'd3d11'], bug=679696)
     self.Fail('conformance/extensions/angle-instanced-arrays.html',

@@ -10926,16 +10926,9 @@ error::Error GLES2DecoderImpl::HandleVertexAttribIPointer(
 
   if (!state_.bound_array_buffer.get() ||
       state_.bound_array_buffer->IsDeleted()) {
-    if (state_.vertex_attrib_manager.get() ==
-        state_.default_vertex_attrib_manager.get()) {
+    if (offset != 0) {
       LOCAL_SET_GL_ERROR(
-          GL_INVALID_OPERATION,
-          "glVertexAttribIPointer", "no array buffer bound");
-      return error::kNoError;
-    } else if (offset != 0) {
-      LOCAL_SET_GL_ERROR(
-          GL_INVALID_OPERATION,
-          "glVertexAttribIPointer", "client side arrays are not allowed");
+          GL_INVALID_OPERATION, "glVertexAttribIPointer", "offset != 0");
       return error::kNoError;
     }
   }
@@ -11019,16 +11012,9 @@ error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
 
   if (!state_.bound_array_buffer.get() ||
       state_.bound_array_buffer->IsDeleted()) {
-    if (state_.vertex_attrib_manager.get() ==
-        state_.default_vertex_attrib_manager.get()) {
+    if (offset != 0) {
       LOCAL_SET_GL_ERROR(
-          GL_INVALID_OPERATION,
-          "glVertexAttribPointer", "no array buffer bound");
-      return error::kNoError;
-    } else if (offset != 0) {
-      LOCAL_SET_GL_ERROR(
-          GL_INVALID_OPERATION,
-          "glVertexAttribPointer", "client side arrays are not allowed");
+          GL_INVALID_OPERATION, "glVertexAttribPointer", "offset != 0");
       return error::kNoError;
     }
   }

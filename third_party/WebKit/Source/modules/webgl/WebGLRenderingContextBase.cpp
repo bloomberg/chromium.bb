@@ -6126,9 +6126,9 @@ void WebGLRenderingContextBase::vertexAttribPointer(GLuint index,
   }
   if (!validateValueFitNonNegInt32("vertexAttribPointer", "offset", offset))
     return;
-  if (!m_boundArrayBuffer) {
+  if (!m_boundArrayBuffer && offset != 0) {
     synthesizeGLError(GL_INVALID_OPERATION, "vertexAttribPointer",
-                      "no bound ARRAY_BUFFER");
+                      "no ARRAY_BUFFER is bound and offset is non-zero");
     return;
   }
 

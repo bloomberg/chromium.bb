@@ -41,10 +41,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/builtinprecision/*.html', bug=619403)
 
     # All platforms.
-    self.Fail('conformance/more/functions/vertexAttribPointerBadArgs.html',
-        bug=678850)
-    self.Fail('conformance/attribs/gl-vertexattribpointer.html', bug=678850)
-    self.Fail('conformance2/attribs/gl-vertexattribipointer.html', bug=678850)
 
     self.Fail('conformance/extensions/webgl-compressed-texture-etc.html',
         bug=679678)
