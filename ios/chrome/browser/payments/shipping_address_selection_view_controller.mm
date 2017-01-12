@@ -21,6 +21,10 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using payment_request_utils::NameLabelFromAutofillProfile;
+using payment_request_utils::AddressLabelFromAutofillProfile;
+using payment_request_utils::PhoneNumberLabelFromAutofillProfile;
+
 NSString* const kShippingAddressSelectionCollectionViewId =
     @"kShippingAddressSelectionCollectionViewId";
 
@@ -97,12 +101,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
     autofill::AutofillProfile* shippingAddress = _shippingAddresses[i];
     ShippingAddressItem* item = [[[ShippingAddressItem alloc]
         initWithType:ItemTypeShippingAddress] autorelease];
-    item.name = base::SysUTF16ToNSString(
-        shippingAddress->GetRawInfo(autofill::NAME_FULL));
-    item.address =
-        payment_request_utils::AddressLabelFromAutofillProfile(shippingAddress);
-    item.phoneNumber = base::SysUTF16ToNSString(
-        shippingAddress->GetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER));
+    item.accessibilityTraits |= UIAccessibilityTraitButton;
+    item.name = NameLabelFromAutofillProfile(shippingAddress);
+    item.address = AddressLabelFromAutofillProfile(shippingAddress);
+    item.phoneNumber = PhoneNumberLabelFromAutofillProfile(shippingAddress);
     if (shippingAddress == _selectedShippingAddress) {
       item.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
       _selectedItem = item;

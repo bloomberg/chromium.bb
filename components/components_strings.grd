@@ -278,6 +278,9 @@
       <message name="IDS_ACCNAME_FORWARD" desc="The accessible name for the forward button.">
         Forward
       </message>
+      <message name="IDS_ACCNAME_CANCEL" desc="The accessible name for the Cancel button.">
+        Cancel
+      </message>
       <message name="IDS_ACCNAME_CLOSE" desc="The accessible name for the Close button.">
         Close
       </message>

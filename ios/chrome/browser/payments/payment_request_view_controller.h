@@ -15,6 +15,8 @@ class AutofillProfile;
 class CreditCard;
 }
 
+extern NSString* const kPaymentRequestCollectionViewId;
+
 @protocol PaymentRequestViewControllerDelegate<NSObject>
 - (void)paymentRequestViewControllerDidCancel;
 - (void)paymentRequestViewControllerDidConfirm;

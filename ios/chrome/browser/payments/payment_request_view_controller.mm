@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/payments/cells/page_info_item.h"
 #import "ios/chrome/browser/payments/cells/payment_method_item.h"
@@ -33,6 +34,10 @@
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+
+using payment_request_utils::NameLabelFromAutofillProfile;
+using payment_request_utils::AddressLabelFromAutofillProfile;
+using payment_request_utils::PhoneNumberLabelFromAutofillProfile;
 
 NSString* const kPaymentRequestCollectionViewId =
     @"kPaymentRequestCollectionViewId";
@@ -111,6 +116,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       NSForegroundColorAttributeName : [UIColor lightGrayColor]
     }
                                  forState:UIControlStateDisabled];
+    [_cancelButton
+        setAccessibilityLabel:l10n_util::GetNSString(IDS_ACCNAME_CANCEL)];
     [self navigationItem].leftBarButtonItem = _cancelButton;
 
     // Set up right (pay) button.
@@ -348,12 +355,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)fillShippingAddressItem:(ShippingAddressItem*)item
                     withAddress:(autofill::AutofillProfile*)address {
-  item.name =
-      base::SysUTF16ToNSString(address->GetRawInfo(autofill::NAME_FULL));
-  item.address =
-      payment_request_utils::AddressLabelFromAutofillProfile(address);
-  item.phoneNumber = base::SysUTF16ToNSString(
-      address->GetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER));
+  item.name = NameLabelFromAutofillProfile(address);
+  item.address = AddressLabelFromAutofillProfile(address);
+  item.phoneNumber = PhoneNumberLabelFromAutofillProfile(address);
 }
 
 - (void)fillShippingOptionItem:(CollectionViewTextItem*)item

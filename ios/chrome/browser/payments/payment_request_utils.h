@@ -13,13 +13,20 @@ class AutofillProfile;
 
 namespace payment_request_utils {
 
-// Helper function to get the shipping address label from an autofill profile.
+// Helper function to get the name label from an autofill profile.
+NSString* NameLabelFromAutofillProfile(autofill::AutofillProfile* profile);
+
+// Helper function to get the address label from an autofill profile.
 NSString* AddressLabelFromAutofillProfile(autofill::AutofillProfile* profile);
 
 // Helper function that returns a formatted currency string given the value and
 // the currency code.
 NSString* FormattedCurrencyString(NSDecimalNumber* value,
                                   NSString* currencyCode);
+
+// Helper function to get the phone number label from an autofill profile.
+NSString* PhoneNumberLabelFromAutofillProfile(
+    autofill::AutofillProfile* profile);
 
 }  // namespace payment_request_utils
 

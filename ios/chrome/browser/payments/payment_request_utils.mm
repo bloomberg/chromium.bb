@@ -6,9 +6,16 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "ios/chrome/browser/application_context.h"
 
 namespace payment_request_utils {
+
+NSString* NameLabelFromAutofillProfile(autofill::AutofillProfile* profile) {
+  return base::SysUTF16ToNSString(
+      profile->GetInfo(autofill::AutofillType(autofill::NAME_FULL),
+                       GetApplicationContext()->GetApplicationLocale()));
+}
 
 NSString* AddressLabelFromAutofillProfile(autofill::AutofillProfile* profile) {
   // Name, company, and country are not included in the shipping address label.
@@ -33,6 +40,13 @@ NSString* FormattedCurrencyString(NSDecimalNumber* value,
   [currencyFormatter setNumberStyle:NSNumberFormatterCurrencyStyle];
   [currencyFormatter setCurrencyCode:currencyCode];
   return [currencyFormatter stringFromNumber:value];
+}
+
+NSString* PhoneNumberLabelFromAutofillProfile(
+    autofill::AutofillProfile* profile) {
+  return base::SysUTF16ToNSString(profile->GetInfo(
+      autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
+      GetApplicationContext()->GetApplicationLocale()));
 }
 
 }  // namespace payment_request_utils

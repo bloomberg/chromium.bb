@@ -9,6 +9,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/payments/payment_request_utils.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
@@ -23,6 +24,7 @@
 
 NSString* const kPaymentItemsDisplayCollectionViewId =
     @"kPaymentItemsDisplayCollectionViewId";
+NSString* const kPaymentItemsDisplayItemId = @"kPaymentItemsDisplayItemId";
 
 namespace {
 
@@ -68,6 +70,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
         [ChromeIcon templateBarButtonItemWithImage:[ChromeIcon backIcon]
                                             target:nil
                                             action:@selector(onReturn)];
+    [returnButton
+        setAccessibilityLabel:l10n_util::GetNSString(IDS_ACCNAME_BACK)];
     [self navigationItem].leftBarButtonItem = returnButton;
 
     // Set up right (pay) button.
@@ -140,6 +144,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Add the total entry.
   CollectionViewDetailItem* totalItem = [[[CollectionViewDetailItem alloc]
       initWithType:ItemTypePaymentItemTotal] autorelease];
+  totalItem.accessibilityIdentifier = kPaymentItemsDisplayItemId;
   totalItem.text = base::SysUTF16ToNSString(_total.label);
 
   NSString* currencyCode = base::SysUTF16ToNSString(_total.amount.currency);
@@ -156,6 +161,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     CollectionViewDetailItem* paymentItemItem =
         [[[CollectionViewDetailItem alloc] initWithType:ItemTypePaymentItem]
             autorelease];
+    paymentItemItem.accessibilityIdentifier = kPaymentItemsDisplayItemId;
     paymentItemItem.text = base::SysUTF16ToNSString(paymentItem.label);
 
     NSString* currencyCode =

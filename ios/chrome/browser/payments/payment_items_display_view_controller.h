@@ -11,6 +11,9 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 #include "ios/web/public/payments/payment_request.h"
 
+// The accessibility identifiers of the cells in the collection view.
+extern NSString* const kPaymentItemsDisplayItemId;
+
 @class PaymentItemsDisplayViewController;
 
 // Protocol for communicating with the delegate supplied to

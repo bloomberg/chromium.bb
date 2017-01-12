@@ -62,6 +62,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
         [ChromeIcon templateBarButtonItemWithImage:[ChromeIcon backIcon]
                                             target:nil
                                             action:@selector(onReturn)];
+    returnButton.accessibilityLabel = l10n_util::GetNSString(IDS_ACCNAME_BACK);
     [self navigationItem].leftBarButtonItem = returnButton;
   }
   return self;
@@ -91,6 +92,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     autofill::CreditCard* paymentMethod = _paymentMethods[i];
     PaymentMethodItem* paymentMethodItem = [[[PaymentMethodItem alloc]
         initWithType:ItemTypePaymentMethod] autorelease];
+    paymentMethodItem.accessibilityTraits |= UIAccessibilityTraitButton;
     paymentMethodItem.methodID =
         base::SysUTF16ToNSString(paymentMethod->TypeAndLastFourDigits());
     paymentMethodItem.methodDetail = base::SysUTF16ToNSString(
