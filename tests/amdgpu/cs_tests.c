@@ -76,8 +76,14 @@ int suite_cs_tests_init(void)
 
 	r = amdgpu_device_initialize(drm_amdgpu[0], &major_version,
 				     &minor_version, &device_handle);
-	if (r)
+	if (r) {
+		if ((r == -EACCES) && (errno == EACCES))
+			printf("\n\nError:%s. "
+				"Hint:Try to run this test program as root.",
+				strerror(errno));
+
 		return CUE_SINIT_FAILED;
+	}
 
 	family_id = device_handle->info.family_id;
 	/* VI asic POLARIS10/11 have specific external_rev_id */

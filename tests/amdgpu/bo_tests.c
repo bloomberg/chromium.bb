@@ -65,8 +65,14 @@ int suite_bo_tests_init(void)
 
 	r = amdgpu_device_initialize(drm_amdgpu[0], &major_version,
 				  &minor_version, &device_handle);
-	if (r)
+	if (r) {
+		if ((r == -EACCES) && (errno == EACCES))
+			printf("\n\nError:%s. "
+				"Hint:Try to run this test program as root.",
+				strerror(errno));
+
 		return CUE_SINIT_FAILED;
+	}
 
 	req.alloc_size = BUFFER_SIZE;
 	req.phys_alignment = BUFFER_ALIGN;

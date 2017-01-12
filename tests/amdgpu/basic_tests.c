@@ -206,8 +206,13 @@ int suite_basic_tests_init(void)
 
 	if (r == 0)
 		return CUE_SUCCESS;
-	else
+	else {
+		if ((r == -EACCES) && (errno == EACCES))
+			printf("\n\nError:%s. "
+				"Hint:Try to run this test program as root.",
+				strerror(errno));
 		return CUE_SINIT_FAILED;
+	}
 }
 
 int suite_basic_tests_clean(void)

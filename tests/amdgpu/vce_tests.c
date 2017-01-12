@@ -94,8 +94,14 @@ int suite_vce_tests_init(void)
 
 	r = amdgpu_device_initialize(drm_amdgpu[0], &major_version,
 				     &minor_version, &device_handle);
-	if (r)
+	if (r) {
+		if ((r == -EACCES) && (errno == EACCES))
+			printf("\n\nError:%s. "
+				"Hint:Try to run this test program as root.",
+				strerror(errno));
+
 		return CUE_SINIT_FAILED;
+	}
 
 	family_id = device_handle->info.family_id;
 	vce_harvest_config = device_handle->info.vce_harvest_config;
