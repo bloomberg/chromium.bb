@@ -175,6 +175,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
   ~RenderThreadImpl() override;
   void Shutdown() override;
+  bool ShouldBeDestroyed() override;
 
   // When initializing WebKit, ensure that any schemes needed for the content
   // module are registered properly.  Static to allow sharing with tests.

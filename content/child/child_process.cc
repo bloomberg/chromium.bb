@@ -67,11 +67,15 @@ ChildProcess::~ChildProcess() {
   // notice shutdown before the render process begins waiting for them to exit.
   shutdown_event_.Signal();
 
-  // Kill the main thread object before nulling child_process, since
-  // destruction code might depend on it.
   if (main_thread_) {  // null in unittests.
     main_thread_->Shutdown();
-    main_thread_.reset();
+    if (main_thread_->ShouldBeDestroyed()) {
+      main_thread_.reset();
+    } else {
+      // Leak the main_thread_. See a comment in
+      // RenderThreadImpl::ShouldBeDestroyed.
+      main_thread_.release();
+    }
   }
 
   g_lazy_tls.Pointer()->Set(NULL);

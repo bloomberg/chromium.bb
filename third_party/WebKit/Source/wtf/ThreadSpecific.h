@@ -224,7 +224,9 @@ inline void ThreadSpecific<T>::set(T* ptr) {
 
 template <typename T>
 inline void ThreadSpecific<T>::destroy(void* ptr) {
-  if (isShutdown())
+  // Never call destructors on the main thread.
+  // This is fine because Blink no longer has a graceful shutdown sequence.
+  if (isMainThread())
     return;
 
   Data* data = static_cast<Data*>(ptr);

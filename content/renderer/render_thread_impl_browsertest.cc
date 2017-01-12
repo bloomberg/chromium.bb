@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/debug/leak_annotations.h"
 #include "base/location.h"
 #include "base/memory/discardable_memory.h"
 #include "base/run_loop.h"
@@ -33,6 +34,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_content_client_initializer.h"
+#include "content/public/test/test_launcher.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/test/mock_render_process.h"
@@ -219,6 +221,17 @@ class RenderThreadImplBrowserTest : public testing::Test {
     test_msg_filter_ = make_scoped_refptr(
         new QuitOnTestMsgFilter(base::MessageLoop::current()));
     thread_->AddFilter(test_msg_filter_.get());
+  }
+
+  void TearDown() override {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            kSingleProcessTestsFlag)) {
+      // In a single-process mode, we need to avoid destructing mock_process_
+      // because it will call _exit(0) and kill the process before the browser
+      // side is ready to exit.
+      ANNOTATE_LEAKING_OBJECT_PTR(mock_process_.get());
+      mock_process_.release();
+    }
   }
 
   IPC::Sender* sender() { return channel_.get(); }

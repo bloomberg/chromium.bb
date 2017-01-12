@@ -598,6 +598,10 @@ void ChildThreadImpl::Shutdown() {
   WebFileSystemImpl::DeleteThreadSpecificInstance();
 }
 
+bool ChildThreadImpl::ShouldBeDestroyed() {
+  return true;
+}
+
 void ChildThreadImpl::OnChannelConnected(int32_t peer_pid) {
   channel_connected_factory_.reset();
 }

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/allocator/allocator_extension.h"
+#include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/lazy_instance.h"
@@ -937,132 +938,31 @@ RenderThreadImpl::~RenderThreadImpl() {
 }
 
 void RenderThreadImpl::Shutdown() {
-  for (auto& observer : observers_)
-    observer.OnRenderProcessShutdown();
+  // In a multi-process mode, we immediately exit the renderer.
+  // Historically we had a graceful shutdown sequence here but it was
+  // 1) a waste of performance and 2) a source of lots of complicated
+  // crashes caused by shutdown ordering. Immediate exit eliminates
+  // those problems.
+  //
+  // In a single-process mode, we cannot call _exit(0) in Shutdown() because
+  // it will exit the process before the browser side is ready to exit.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSingleProcess))
+    _exit(0);
+}
 
-  if (memory_observer_) {
-    message_loop()->RemoveTaskObserver(memory_observer_.get());
-    memory_observer_.reset();
-  }
-
-  // Wait for all databases to be closed.
-  if (blink_platform_impl_) {
-    // Crash the process if they fail to close after a generous amount of time.
-    bool all_closed = blink_platform_impl_->web_database_observer_impl()
-        ->WaitForAllDatabasesToClose(base::TimeDelta::FromSeconds(60));
-    CHECK(all_closed);
-  }
-
-  // Shutdown in reverse of the initialization order.
-  if (devtools_agent_message_filter_.get()) {
-    RemoveFilter(devtools_agent_message_filter_.get());
-    devtools_agent_message_filter_ = nullptr;
-  }
-
-  RemoveFilter(audio_input_message_filter_.get());
-  audio_input_message_filter_ = nullptr;
-
-#if BUILDFLAG(ENABLE_WEBRTC)
-  RTCPeerConnectionHandler::DestructAllHandlers();
-  // |peer_connection_factory_| cannot be deleted until after the main message
-  // loop has been destroyed.  This is because there may be pending tasks that
-  // hold on to objects produced by the PC factory that depend on threads owned
-  // by the PC factory.  Once those tasks have been freed, the factory can be
-  // deleted.
-#endif
-  vc_manager_.reset();
-
-  RemoveFilter(db_message_filter_.get());
-  db_message_filter_ = nullptr;
-
-  // Shutdown the file thread if it's running.
-  if (file_thread_)
-    file_thread_->Stop();
-
-  if (compositor_message_filter_.get()) {
-    RemoveFilter(compositor_message_filter_.get());
-    compositor_message_filter_ = nullptr;
-  }
-
-#if defined(OS_ANDROID)
-  if (sync_compositor_message_filter_) {
-    RemoveFilter(sync_compositor_message_filter_.get());
-    sync_compositor_message_filter_ = nullptr;
-  }
-  stream_texture_factory_ = nullptr;
-#endif
-
-  media_thread_.reset();
-
-  blink_platform_impl_->SetCompositorThread(nullptr);
-
-  compositor_thread_.reset();
-
-  // AudioMessageFilter may be accessed on |media_thread_|, so shutdown after.
-  RemoveFilter(audio_message_filter_.get());
-  audio_message_filter_ = nullptr;
-
-  categorized_worker_pool_->Shutdown();
-
-  main_input_callback_.Cancel();
-  input_handler_manager_.reset();
-  if (input_event_filter_.get()) {
-    RemoveFilter(input_event_filter_.get());
-    input_event_filter_ = nullptr;
-  }
-
-  // RemoveEmbeddedWorkerRoute may be called while deleting
-  // EmbeddedWorkerDispatcher. So it must be deleted before deleting
-  // RenderThreadImpl.
-  embedded_worker_dispatcher_.reset();
-
-  // Ramp down IDB before we ramp down WebKit (and V8), since IDB classes might
-  // hold pointers to V8 objects (e.g., via pending requests).
-  main_thread_indexed_db_dispatcher_.reset();
-
-  main_thread_compositor_task_runner_ = nullptr;
-
-  gpu_factories_.clear();
-
-  // Context providers must be released prior to destroying the GPU channel.
-  shared_worker_context_provider_ = nullptr;
-  shared_main_thread_contexts_ = nullptr;
-
-  if (gpu_channel_.get())
-    gpu_channel_->DestroyChannel();
-
-  ChildThreadImpl::Shutdown();
-
-  // Shut down the message loop (if provided when the RenderThreadImpl was
-  // constructed) and the renderer scheduler before shutting down Blink. This
-  // prevents a scenario where a pending task in the message loop accesses Blink
-  // objects after Blink shuts down.
-  renderer_scheduler_->SetRAILModeObserver(nullptr);
-  renderer_scheduler_->Shutdown();
-  if (main_message_loop_)
-    base::RunLoop().RunUntilIdle();
-
-  if (blink_platform_impl_) {
-    blink_platform_impl_->Shutdown();
-    // This must be at the very end of the shutdown sequence.
-    // blink::shutdown() must be called after all strong references from
-    // Chromium to Blink are cleared.
-    blink::shutdown();
-  }
-
-  // Delay shutting down DiscardableSharedMemoryManager until blink::shutdown
-  // is complete, because blink::shutdown destructs Blink Resources and they
-  // may try to unlock their underlying discardable memory.
-  discardable_shared_memory_manager_.reset();
-
-  // The message loop must be cleared after shutting down
-  // the DiscardableSharedMemoryManager, which needs to send messages
-  // to the browser process.
-  main_message_loop_.reset();
-
-  lazy_tls.Pointer()->Set(nullptr);
-
-  base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
+bool RenderThreadImpl::ShouldBeDestroyed() {
+  DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSingleProcess));
+  // In a single-process mode, it is unsafe to destruct this renderer thread
+  // because we haven't run the shutdown sequence. Hence we leak the render
+  // thread.
+  //
+  // In this case, we also need to disable at-exit callbacks because some of
+  // the at-exit callbacks are expected to run after the renderer thread
+  // has been destructed.
+  base::AtExitManager::DisableAllAtExitManagers();
+  return false;
 }
 
 bool RenderThreadImpl::Send(IPC::Message* msg) {
