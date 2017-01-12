@@ -34,7 +34,6 @@ html.col-resize * {
 /* Outer frame of the dialog. */
 body {
   -webkit-tap-highlight-color: transparent;
-  -webkit-user-select: none;
   cursor: default;
   display: flex;
   flex: auto;
@@ -43,6 +42,7 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
+  user-select: none;
   width: 100%;
 }
 
@@ -721,7 +721,6 @@ html[dir='rtl'] #search-box .clear {
 
 /* Copy style from paper-button for buttons on the footer. */
 .dialog-footer button {
-  -webkit-user-select: none;
   background: transparent;
   border: 0;
   border-image: none;
@@ -736,6 +735,7 @@ html[dir='rtl'] #search-box .clear {
   text-align: center;
   text-transform: uppercase;
   transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
   z-index: 0;
 }
 

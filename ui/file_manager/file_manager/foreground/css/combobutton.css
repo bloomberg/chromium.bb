@@ -3,7 +3,6 @@
  * found in the LICENSE file. */
 
 .dialog-header button.combobutton {
-  -webkit-user-select: none;
   align-items: stretch;
   background: transparent;
   border: none;
@@ -15,6 +14,7 @@
   outline: none;
   padding: 8px;
   position: relative;
+  user-select: none;
 }
 
 .dialog-header .combobutton > .button {

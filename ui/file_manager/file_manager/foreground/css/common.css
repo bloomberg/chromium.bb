@@ -112,7 +112,6 @@ cr-menu.chrome-menu > [checked]::before {
 /* Style for <button>s to have similar style with Polymer's <paper-button>. */
 .imitate-paper-button,
 .cr-dialog-buttons > button {
-  -webkit-user-select: none;
   background: transparent;
   border: 0;
   border-image: none;
@@ -131,6 +130,7 @@ cr-menu.chrome-menu > [checked]::before {
   position: relative;
   text-align: center;
   text-transform: uppercase;
+  user-select: none;
   z-index: 0;
 }
 
@@ -195,7 +195,6 @@ html[dir='rtl'] .entry-name {
 /* Pop-up dialogs. */
 
 .cr-dialog-container {
-  -webkit-user-select: none;
   align-items: center;
   display: flex;
   height: 100%;
@@ -205,6 +204,7 @@ html[dir='rtl'] .entry-name {
   position: absolute;
   top: 0;
   transition: opacity 250ms linear;
+  user-select: none;
   width: 100%;
   z-index: 9999;
 }

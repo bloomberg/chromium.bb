@@ -11,9 +11,9 @@ tree {
 }
 
 .tree-item > .tree-row {
-  -webkit-user-select: none;
   cursor: default;
   position: relative;
+  user-select: none;
   white-space: nowrap;
 }
 
@@ -84,5 +84,5 @@ html[dir=rtl] .tree-row > .expand-icon {
 
 .tree-rename > .tree-row > .tree-label {
   -webkit-user-modify: read-write-plaintext-only;
-  -webkit-user-select: auto;
+  user-select: auto;
 }

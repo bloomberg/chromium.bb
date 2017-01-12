@@ -3,11 +3,11 @@
  * found in the LICENSE file. */
 
 body {
-  -webkit-user-select: none;
   background: black;
   font-size: 84%;
   margin: 0;
   overflow: hidden;
+  user-select: none;
 }
 
 #video-player {

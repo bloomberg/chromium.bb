@@ -6,13 +6,13 @@
   -webkit-border-image: url(chrome://theme/IDR_APP_NOTIFICATION_SMALL_BUBBLE)
                         5 5 7 6 stretch;
   -webkit-box-sizing: border-box;
-  -webkit-user-select: none;
   border-width: 5px 5px 7px 6px;
   color: #444;
   cursor: pointer;
   display: inline-block;
   font-size: 12px;
   position: absolute;
+  user-select: none;
   z-index: 1;
 }
 

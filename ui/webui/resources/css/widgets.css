@@ -17,7 +17,6 @@ select,
 input[type='checkbox'],
 input[type='radio'] {
   -webkit-appearance: none;
-  -webkit-user-select: none;
   background-image: -webkit-linear-gradient(#ededed, #ededed 38%, #dedede);
   border: 1px solid rgba(0, 0, 0, 0.25);
   border-radius: 2px;
@@ -28,6 +27,7 @@ input[type='radio'] {
   margin: 0 1px 0 0;
   outline: none;
   text-shadow: 0 1px 0 rgb(240, 240, 240);
+  user-select: none;
 }
 
 :-webkit-any(button,
@@ -118,12 +118,12 @@ input[type='search'] {
 /* Checked ********************************************************************/
 
 input[type='checkbox']:checked::before {
-  -webkit-user-select: none;
   background-image: url(../images/check.png);
   background-size: 100% 100%;
   content: '';
   display: block;
   height: 100%;
+  user-select: none;
   width: 100%;
 }
 
@@ -256,12 +256,12 @@ input:disabled:-webkit-any([type='password'],
  */
 
 :-webkit-any(.checkbox, .radio) label {
-  -webkit-user-select: none;
   /* Don't expand horizontally: <http://crbug.com/112091>. */
   align-items: center;
   display: inline-flex;
   padding-bottom: 7px;
   padding-top: 7px;
+  user-select: none;
 }
 
 :-webkit-any(.checkbox, .radio) label input {

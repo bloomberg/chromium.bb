@@ -15,9 +15,9 @@ grid {
 
 list > *,
 grid > * {
-  -webkit-user-select: none;
   position: relative; /* to allow overlap */
   text-overflow: ellipsis;
+  user-select: none;
   white-space: pre;
 }
 

@@ -6,13 +6,13 @@
   -webkit-box-align: center;
   -webkit-box-pack: center;
   -webkit-transition: opacity 250ms linear;
-  -webkit-user-select: none;
   display: -webkit-box;
   height: 100%;
   left: 0;
   overflow: hidden;
   position: absolute;
   top: 0;
+  user-select: none;
   width: 100%;
   z-index: 9999;
 }
