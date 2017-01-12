@@ -87,6 +87,20 @@ Polymer({
       this.$.drawer.closeDrawer();
     }.bind(this));
 
+    CrPolicyStrings = {
+      controlledSettingPolicy:
+          loadTimeData.getString('controlledSettingPolicy'),
+      controlledSettingRecommendedMatches:
+          loadTimeData.getString('controlledSettingRecommendedMatches'),
+      controlledSettingRecommendedDiffers:
+          loadTimeData.getString('controlledSettingRecommendedDiffers'),
+// <if expr="chromeos">
+      controlledSettingShared:
+          loadTimeData.getString('controlledSettingShared'),
+      controlledSettingOwner: loadTimeData.getString('controlledSettingOwner'),
+// </if>
+    };
+
     if (loadTimeData.getBoolean('isGuest')) {
       this.pageVisibility_ = {
         people: false,

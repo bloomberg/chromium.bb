@@ -75,18 +75,14 @@ Polymer({
    * @private
    */
   getTooltip_: function() {
-    if (this.indicatorType == CrPolicyIndicatorType.NONE)
-      return '';
-    if (this.indicatorType == CrPolicyIndicatorType.RECOMMENDED) {
-      if (!this.property)
-        return '';
+    var matches;
+    if (this.indicatorType == CrPolicyIndicatorType.RECOMMENDED &&
+        this.property) {
       var value = this.property.Active;
       if (value == undefined && this.property.Effective)
         value = this.property[this.property.Effective];
-      if (value == this.recommended_)
-        return this.i18n_('controlledSettingRecommendedMatches');
-      return this.i18n_('controlledSettingRecommendedDiffers');
+      matches = value == this.recommended_;
     }
-    return this.getPolicyIndicatorTooltip(this.indicatorType, '');
+    return this.getPolicyIndicatorTooltip(this.indicatorType, '', matches);
   }
 });

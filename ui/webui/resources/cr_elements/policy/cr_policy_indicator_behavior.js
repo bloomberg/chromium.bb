@@ -6,6 +6,19 @@
  * @fileoverview Behavior for policy controlled indicators.
  */
 
+/**
+ * Strings required for policy indicators. These must be set at runtime.
+ * Chrome OS only strings may be undefined.
+ * @type {{
+ *   controlledSettingPolicy: string,
+ *   controlledSettingRecommendedMatches: string,
+ *   controlledSettingRecommendedDiffers: string,
+ *   controlledSettingShared: (string|undefined),
+ *   controlledSettingOwner: (string|undefined),
+ * }}
+ */
+var CrPolicyStrings;
+
 /** @enum {string} */
 var CrPolicyIndicatorType = {
   DEVICE_POLICY: 'devicePolicy',
@@ -58,34 +71,29 @@ var CrPolicyIndicatorBehavior = {
   },
 
   /**
-   * @param {string} id The id of the string to translate.
-   * @param {string=} opt_name An optional name argument.
-   * @return The translated string.
-   */
-  i18n_: function(id, opt_name) {
-    return loadTimeData.getStringF(id, opt_name);
-  },
-
-  /**
    * @param {CrPolicyIndicatorType} type
-   * @param {string} name The name associated with the controllable. See
+   * @param {string} name The name associated with the indicator. See
    *     chrome.settingsPrivate.PrefObject.controlledByName
+   * @param {boolean=} opt_matches For RECOMMENDED only, whether the indicator
+   *     value matches the recommended value.
    * @return {string} The tooltip text for |type|.
    */
-  getPolicyIndicatorTooltip: function(type, name) {
+  getPolicyIndicatorTooltip: function(type, name, opt_matches) {
+    if (!CrPolicyStrings)
+      return '';  // Tooltips may not be defined, e.g. in OOBE.
     switch (type) {
       case CrPolicyIndicatorType.PRIMARY_USER:
-        return this.i18n_('controlledSettingShared', name);
+        return CrPolicyStrings.controlledSettingShared.replace('$1', name);
       case CrPolicyIndicatorType.OWNER:
-        return this.i18n_('controlledSettingOwner', name);
+        return CrPolicyStrings.controlledSettingOwner.replace('$1', name);
       case CrPolicyIndicatorType.USER_POLICY:
       case CrPolicyIndicatorType.DEVICE_POLICY:
-        return this.i18n_('controlledSettingPolicy');
+        return CrPolicyStrings.controlledSettingPolicy;
       case CrPolicyIndicatorType.RECOMMENDED:
-        // This case is not handled here since it requires knowledge of the
-        // value and recommended value associated with the controllable.
-        assertNotReached();
+        return opt_matches ?
+            CrPolicyStrings.controlledSettingRecommendedMatches :
+            CrPolicyStrings.controlledSettingRecommendedDiffers;
     }
     return '';
-  }
+  },
 };

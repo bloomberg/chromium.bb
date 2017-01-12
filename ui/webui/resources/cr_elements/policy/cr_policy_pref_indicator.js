@@ -37,11 +37,8 @@ Polymer({
    * @private
    */
   getTooltip_: function(type, pref) {
-    if (type == CrPolicyIndicatorType.RECOMMENDED) {
-      if (pref && pref.value == pref.recommendedValue)
-        return this.i18n_('controlledSettingRecommendedMatches');
-      return this.i18n_('controlledSettingRecommendedDiffers');
-    }
-    return this.getPolicyIndicatorTooltip(type, pref.controlledByName || '');
+    var matches = pref && pref.value == pref.recommendedValue;
+    return this.getPolicyIndicatorTooltip(
+        type, pref.controlledByName || '', matches);
   }
 });
