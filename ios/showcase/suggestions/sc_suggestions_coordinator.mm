@@ -13,26 +13,34 @@
 
 @interface SCSuggestionsCoordinator ()<SuggestionsCommands>
 
+@property(nonatomic, strong)
+    SuggestionsViewController* suggestionViewController;
+
 @end
 
 @implementation SCSuggestionsCoordinator
 
 @synthesize baseViewController;
+@synthesize suggestionViewController = _suggestionViewController;
 
 #pragma mark - Coordinator
 
 - (void)start {
-  SuggestionsViewController* suggestion = [[SuggestionsViewController alloc]
+  _suggestionViewController = [[SuggestionsViewController alloc]
       initWithStyle:CollectionViewControllerStyleDefault];
 
-  suggestion.suggestionCommandHandler = self;
+  _suggestionViewController.suggestionCommandHandler = self;
 
-  [self.baseViewController pushViewController:suggestion animated:YES];
+  [self.baseViewController pushViewController:_suggestionViewController
+                                     animated:YES];
 }
 
 #pragma mark - SuggestionsCommands
 
 - (void)addEmptyItem {
+  [self.suggestionViewController addTextItem:@"Button clicked"
+                                    subtitle:@"Item Added!"
+                                   toSection:5];
 }
 
 @end

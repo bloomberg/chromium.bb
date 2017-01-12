@@ -7,6 +7,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/suggestions/suggestions_collection_updater.h"
 #import "ios/chrome/browser/ui/suggestions/suggestions_commands.h"
 #import "ios/chrome/browser/ui/suggestions/suggestions_item_actions.h"
 
@@ -16,16 +17,22 @@
 
 @interface SuggestionsViewController ()<SuggestionsItemActions>
 
+@property(nonatomic, strong) SuggestionsCollectionUpdater* collectionUpdater;
+
 @end
 
 @implementation SuggestionsViewController
 
 @synthesize suggestionCommandHandler = _suggestionCommandHandler;
+@synthesize collectionUpdater = _collectionUpdater;
 
 #pragma mark - UIViewController
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+
+  _collectionUpdater = [[SuggestionsCollectionUpdater alloc]
+      initWithCollectionViewController:self];
 
   self.collectionView.delegate = self;
   self.styler.cellStyle = MDCCollectionViewCellStyleCard;
@@ -51,6 +58,16 @@
 
 - (void)addNewItem:(id)sender {
   [self.suggestionCommandHandler addEmptyItem];
+}
+
+#pragma mark - SuggestionsCollectionUpdater forwarding
+
+- (void)addTextItem:(NSString*)title
+           subtitle:(NSString*)subtitle
+          toSection:(NSInteger)inputSection {
+  [self.collectionUpdater addTextItem:title
+                             subtitle:subtitle
+                            toSection:inputSection];
 }
 
 @end

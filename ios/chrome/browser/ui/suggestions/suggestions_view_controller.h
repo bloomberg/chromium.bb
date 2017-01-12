@@ -17,6 +17,13 @@
 // Handler for the commands sent by the SuggestionsViewController.
 @property(nonatomic, weak) id<SuggestionsCommands> suggestionCommandHandler;
 
+// Adds a text item with a |title| and a |subtitle| in the section numbered
+// |section|. If |section| is greater than the current number of section, it
+// will add a new section at the end.
+- (void)addTextItem:(NSString*)title
+           subtitle:(NSString*)subtitle
+          toSection:(NSInteger)inputSection;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SUGGESTIONS_SUGGESTIONS_VIEW_CONTROLLER_H_

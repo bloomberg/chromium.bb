@@ -5,7 +5,11 @@
 source_set("suggestions") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "suggestions_collection_updater.h",
+    "suggestions_collection_updater.mm",
     "suggestions_commands.h",
+    "suggestions_item.h",
+    "suggestions_item.mm",
     "suggestions_item_actions.h",
     "suggestions_view_controller.h",
     "suggestions_view_controller.mm",
