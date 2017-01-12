@@ -226,6 +226,7 @@ gfx::Vector2d GetSlideVectorForFadeIn(WindowSelector::Direction direction,
 // |border_color|, otherwise |border_color| parameter is ignored.
 // The new background widget starts with |initial_opacity| and then fades in.
 views::Widget* CreateBackgroundWidget(WmWindow* root_window,
+                                      ui::LayerType layer_type,
                                       SkColor background_color,
                                       int border_thickness,
                                       int border_radius,
@@ -237,6 +238,7 @@ views::Widget* CreateBackgroundWidget(WmWindow* root_window,
   params.keep_on_top = false;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.layer_type = layer_type;
   params.accept_events = false;
   widget->set_focus_on_creation(false);
   // Parenting in kShellWindowId_WallpaperContainer allows proper layering of
@@ -251,12 +253,15 @@ views::Widget* CreateBackgroundWidget(WmWindow* root_window,
   widget_window->SetVisibilityAnimationTransition(::wm::ANIMATE_NONE);
   // The background widget should not activate the shelf when passing under it.
   widget_window->GetWindowState()->set_ignored_by_shelf(true);
-
-  views::View* content_view =
-      new RoundedRectView(border_radius, SK_ColorTRANSPARENT);
-  content_view->set_background(new BackgroundWith1PxBorder(
-      background_color, border_color, border_thickness, border_radius));
-  widget->SetContentsView(content_view);
+  if (params.layer_type == ui::LAYER_SOLID_COLOR) {
+    widget_window->GetLayer()->SetColor(background_color);
+  } else {
+    views::View* content_view =
+        new RoundedRectView(border_radius, SK_ColorTRANSPARENT);
+    content_view->set_background(new BackgroundWith1PxBorder(
+        background_color, border_color, border_thickness, border_radius));
+    widget->SetContentsView(content_view);
+  }
   widget_window->GetParent()->StackChildAtTop(widget_window);
   widget->Show();
   widget_window->SetOpacity(initial_opacity);
@@ -643,9 +648,9 @@ void WindowGrid::InitShieldWidget() {
        SHELF_BACKGROUND_MAXIMIZED)
           ? 1.f
           : 0.f;
-  shield_widget_.reset(CreateBackgroundWidget(
-      root_window_, kShieldColor, 0, 0, SK_ColorTRANSPARENT, initial_opacity));
-
+  shield_widget_.reset(
+      CreateBackgroundWidget(root_window_, ui::LAYER_SOLID_COLOR, kShieldColor,
+                             0, 0, SK_ColorTRANSPARENT, initial_opacity));
   WmWindow* widget_window =
       WmLookup::Get()->GetWindowForWidget(shield_widget_.get());
   const gfx::Rect bounds = widget_window->GetParent()->GetBounds();
@@ -664,8 +669,9 @@ void WindowGrid::InitShieldWidget() {
 
 void WindowGrid::InitSelectionWidget(WindowSelector::Direction direction) {
   selection_widget_.reset(CreateBackgroundWidget(
-      root_window_, kWindowSelectionColor, kWindowSelectionBorderThickness,
-      kWindowSelectionRadius, kWindowSelectionBorderColor, 0.f));
+      root_window_, ui::LAYER_TEXTURED, kWindowSelectionColor,
+      kWindowSelectionBorderThickness, kWindowSelectionRadius,
+      kWindowSelectionBorderColor, 0.f));
   WmWindow* widget_window =
       WmLookup::Get()->GetWindowForWidget(selection_widget_.get());
   const gfx::Rect target_bounds =
