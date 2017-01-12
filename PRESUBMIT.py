@@ -975,6 +975,21 @@ def _CheckForVersionControlConflicts(input_api, output_api):
       'Version control conflict markers found, please resolve.', errors))
   return results
 
+def _CheckGoogleSupportAnswerUrl(input_api, output_api):
+  pattern = input_api.re.compile('support\.google\.com\/chrome.*/answer')
+  errors = []
+  for f in input_api.AffectedFiles():
+    for line_num, line in f.ChangedContents():
+      if pattern.search(line):
+        errors.append('    %s:%d %s' % (f.LocalPath(), line_num, line))
+
+  results = []
+  if errors:
+    results.append(output_api.PresubmitPromptWarning(
+      'Found Google support URL addressed by answer number. Please replace with '
+      'a p= identifier instead. See crbug.com/679462\n', errors))
+  return results
+
 
 def _CheckHardcodedGoogleHostsInLowerLayers(input_api, output_api):
   def FilterFile(affected_file):
@@ -2298,6 +2313,7 @@ def CheckChangeOnUpload(input_api, output_api):
   results.extend(_CheckUmaHistogramChanges(input_api, output_api))
   results.extend(_AndroidSpecificOnUploadChecks(input_api, output_api))
   results.extend(_CheckSyslogUseWarning(input_api, output_api))
+  results.extend(_CheckGoogleSupportAnswerUrl(input_api, output_api))
   return results
 
 

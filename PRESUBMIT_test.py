@@ -1131,6 +1131,36 @@ class LogUsageTest(unittest.TestCase):
     self.assertTrue('HasDottedTag.java' in msgs[4].items)
     self.assertTrue('HasOldTag.java' in msgs[4].items)
 
+class GoogleAnswerUrlFormatTest(unittest.TestCase):
+
+  def testCatchAnswerUrlId(self):
+    input_api = MockInputApi()
+    input_api.files = [
+      MockFile('somewhere/file.cc',
+               ['char* host = '
+                '  "https://support.google.com/chrome/answer/123456";']),
+      MockFile('somewhere_else/file.cc',
+               ['char* host = '
+                '  "https://support.google.com/chrome/a/answer/123456";']),
+    ]
+
+    warnings = PRESUBMIT._CheckGoogleSupportAnswerUrl(
+      input_api, MockOutputApi())
+    self.assertEqual(1, len(warnings))
+    self.assertEqual(2, len(warnings[0].items))
+
+  def testAllowAnswerUrlParam(self):
+    input_api = MockInputApi()
+    input_api.files = [
+      MockFile('somewhere/file.cc',
+               ['char* host = '
+                '  "https://support.google.com/chrome/?p=cpn_crash_reports";']),
+    ]
+
+    warnings = PRESUBMIT._CheckGoogleSupportAnswerUrl(
+      input_api, MockOutputApi())
+    self.assertEqual(0, len(warnings))
+
 class HardcodedGoogleHostsTest(unittest.TestCase):
 
   def testWarnOnAssignedLiterals(self):
