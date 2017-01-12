@@ -79,6 +79,8 @@ class LockCheckingRunner(LayoutTestRunner):
         self._should_have_http_lock = http_lock
 
     def handle_finished_list(self, source, list_name, num_tests, elapsed_time):
+        # TODO(qyearsley): This is never called; it should be fixed or removed.
+        self._tester.fail('This is never called')
         if not self._finished_list_called:
             self._tester.assertEqual(list_name, 'locked_tests')
             self._tester.assertTrue(self._remaining_locked_shards)

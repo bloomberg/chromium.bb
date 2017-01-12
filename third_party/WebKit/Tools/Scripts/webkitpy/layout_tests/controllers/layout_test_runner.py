@@ -199,6 +199,7 @@ class LayoutTestRunner(object):
             return method(source, *args)
         raise AssertionError('unknown message %s received from %s, args=%s' % (name, source, repr(args)))
 
+    # The _handle_* methods below are called indirectly by handle().
     def _handle_started_test(self, worker_name, test_input):
         self._printer.print_started_test(test_input.test_name)
 
