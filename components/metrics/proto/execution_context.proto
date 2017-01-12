@@ -54,7 +54,7 @@ enum Thread {
 // the lifetime of a process.
 enum ProcessPhase {
   // The browser's main message loop has been started.
-  // Based on histogram Startup.BrowserMainRunnerImplInitializeStep2Time.
+  // Based on histogram Startup.BrowserMessageLoopStartTime.
   MAIN_LOOP_START = 0;
 
   // The beginning of navigation in the first web contents' main frame.

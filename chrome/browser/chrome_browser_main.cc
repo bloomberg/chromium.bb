@@ -27,6 +27,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/profiler/stack_sampling_profiler.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -2053,6 +2054,11 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   }
 #endif  // defined(SYZYASAN)
 #endif  // defined(OS_ANDROID)
+}
+
+void ChromeBrowserMainParts::PreShutdown() {
+  base::StackSamplingProfiler::SetProcessMilestone(
+      metrics::CallStackProfileMetricsProvider::SHUTDOWN_START);
 }
 
 void ChromeBrowserMainParts::PostDestroyThreads() {

@@ -75,6 +75,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   void PreMainMessageLoopRun() override;
   bool MainMessageLoopRun(int* result_code) override;
   void PostMainMessageLoopRun() override;
+  void PreShutdown() override;
   void PostDestroyThreads() override;
 
   // Additional stages for ChromeBrowserMainExtraParts. These stages are called

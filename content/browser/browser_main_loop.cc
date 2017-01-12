@@ -915,6 +915,10 @@ int BrowserMainLoop::PreCreateThreads() {
   return result_code_;
 }
 
+void BrowserMainLoop::PreShutdown() {
+  parts_->PreShutdown();
+}
+
 void BrowserMainLoop::CreateStartupTasks() {
   TRACE_EVENT0("startup", "BrowserMainLoop::CreateStartupTasks");
 

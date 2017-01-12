@@ -119,6 +119,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   void PreMainMessageLoopStart();
   void MainMessageLoopStart();
   void PostMainMessageLoopStart();
+  void PreShutdown();
 
   // Create and start running the tasks we need to complete startup. Note that
   // this can be called more than once (currently only on Android) if we get a

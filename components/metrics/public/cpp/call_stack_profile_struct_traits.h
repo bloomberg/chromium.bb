@@ -82,9 +82,9 @@ struct StructTraits<metrics::mojom::CallStackSampleDataView,
       const base::StackSamplingProfiler::Sample& sample) {
     return sample.frames;
   }
-  static int32_t process_phases(
+  static int32_t process_milestones(
       const base::StackSamplingProfiler::Sample& sample) {
-    return sample.process_phases;
+    return sample.process_milestones;
   }
 
   static bool Read(metrics::mojom::CallStackSampleDataView data,
@@ -95,7 +95,7 @@ struct StructTraits<metrics::mojom::CallStackSampleDataView,
 
     *out = base::StackSamplingProfiler::Sample();
     out->frames = std::move(frames);
-    out->process_phases = data.process_phases();
+    out->process_milestones = data.process_milestones();
     return true;
   }
 };

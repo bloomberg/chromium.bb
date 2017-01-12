@@ -22,7 +22,7 @@ struct CallStackFrame {
 
 struct CallStackSample {
   array<CallStackFrame> frames;
-  uint32 process_phases;
+  uint32 process_milestones;
 };
 
 struct CallStackProfile {

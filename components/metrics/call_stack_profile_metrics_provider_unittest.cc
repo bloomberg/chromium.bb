@@ -41,7 +41,7 @@ struct ExpectedProtoEntry {
 };
 
 struct ExpectedProtoSample {
-  uint32_t process_phases;  // Bit-field of expected phases.
+  uint32_t process_milestones;  // Bit-field of expected milestones.
   const ExpectedProtoEntry* entries;
   int entry_count;
   int64_t entry_repeats;
@@ -61,7 +61,7 @@ class ProfilesFactory {
   ProfilesFactory(){};
   ~ProfilesFactory(){};
 
-  ProfilesFactory& AddPhase(int phase);
+  ProfilesFactory& AddMilestone(int milestone);
   ProfilesFactory& NewProfile(int duration_ms, int interval_ms);
   ProfilesFactory& NewSample();
   ProfilesFactory& AddFrame(size_t module, uintptr_t offset);
@@ -73,13 +73,13 @@ class ProfilesFactory {
 
  private:
   Profiles profiles_;
-  uint32_t process_phases_ = 0;
+  uint32_t process_milestones_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ProfilesFactory);
 };
 
-ProfilesFactory& ProfilesFactory::AddPhase(int phase) {
-  process_phases_ |= 1 << phase;
+ProfilesFactory& ProfilesFactory::AddMilestone(int milestone) {
+  process_milestones_ |= 1 << milestone;
   return *this;
 }
 
@@ -93,7 +93,7 @@ ProfilesFactory& ProfilesFactory::NewProfile(int duration_ms, int interval_ms) {
 
 ProfilesFactory& ProfilesFactory::NewSample() {
   profiles_.back().samples.push_back(Sample());
-  profiles_.back().samples.back().process_phases = process_phases_;
+  profiles_.back().samples.back().process_milestones = process_milestones_;
   return *this;
 }
 
@@ -181,10 +181,10 @@ void CallStackProfileMetricsProviderTest::VerifyProfileProto(
     SCOPED_TRACE("sample " + base::IntToString(s));
     const CallStackProfile::Sample& proto_sample = stack.sample().Get(s);
 
-    uint32_t process_phases = 0;
+    uint32_t process_milestones = 0;
     for (int i = 0; i < proto_sample.process_phase().size(); ++i)
-      process_phases |= 1U << proto_sample.process_phase().Get(i);
-    EXPECT_EQ(expected.samples[s].process_phases, process_phases);
+      process_milestones |= 1U << proto_sample.process_phase().Get(i);
+    EXPECT_EQ(expected.samples[s].process_milestones, process_milestones);
 
     ASSERT_EQ(expected.samples[s].entry_count, proto_sample.entry().size());
     ASSERT_TRUE(proto_sample.has_count());
@@ -379,7 +379,7 @@ TEST_F(CallStackProfileMetricsProviderTest, RepeatedStacksUnordered) {
       .NewProfile(100, 10)
       .DefineModule(module_name, module_path, module_base_address)
 
-      .AddPhase(0)
+      .AddMilestone(0)
       .NewSample()
       .AddFrame(0, module_base_address + 0x10)
       .NewSample()
@@ -389,7 +389,7 @@ TEST_F(CallStackProfileMetricsProviderTest, RepeatedStacksUnordered) {
       .NewSample()
       .AddFrame(0, module_base_address + 0x10)
 
-      .AddPhase(1)
+      .AddMilestone(1)
       .NewSample()
       .AddFrame(0, module_base_address + 0x10)
       .NewSample()
@@ -464,7 +464,7 @@ TEST_F(CallStackProfileMetricsProviderTest, RepeatedStacksOrdered) {
       .NewProfile(100, 10)
       .DefineModule(module_name, module_path, module_base_address)
 
-      .AddPhase(0)
+      .AddMilestone(0)
       .NewSample()
       .AddFrame(0, module_base_address + 0x10)
       .NewSample()
@@ -474,7 +474,7 @@ TEST_F(CallStackProfileMetricsProviderTest, RepeatedStacksOrdered) {
       .NewSample()
       .AddFrame(0, module_base_address + 0x10)
 
-      .AddPhase(1)
+      .AddMilestone(1)
       .NewSample()
       .AddFrame(0, module_base_address + 0x10)
       .NewSample()

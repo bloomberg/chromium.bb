@@ -145,6 +145,7 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
   void Shutdown() override {
     DCHECK(initialization_started_);
     DCHECK(!is_shutdown_);
+
 #ifdef LEAK_SANITIZER
     // Invoke leak detection now, to avoid dealing with shutdown-only leaks.
     // Normally this will have already happened in
@@ -153,6 +154,9 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
     // If leaks are found, the process will exit here.
     __lsan_do_leak_check();
 #endif
+
+    main_loop_->PreShutdown();
+
     // If startup tracing has not been finished yet, replace it's dumper
     // with special version, which would save trace file on exit (i.e.
     // startup tracing becomes a version of shutdown tracing).

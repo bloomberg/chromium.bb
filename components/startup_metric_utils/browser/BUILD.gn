@@ -25,6 +25,7 @@ static_library("lib") {
 
   deps = [
     "//base",
+    "//components/metrics:metrics",
     "//components/prefs",
     "//components/version_info",
   ]

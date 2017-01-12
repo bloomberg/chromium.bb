@@ -16,11 +16,13 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_info.h"
+#include "base/profiler/stack_sampling_profiler.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/startup_metric_utils/browser/pref_names.h"
@@ -592,15 +594,16 @@ void RecordBrowserMainMessageLoopStart(const base::TimeTicks& ticks,
                                        PrefService* pref_service) {
   DCHECK(pref_service);
 
+  // Keep RecordSameVersionStartupCount() and RecordHardFaultHistogram()
+  // near the top of this method (as much as possible) as many other
+  // histograms depend on it setting |g_startup_temperature| and
+  // |g_startups_with_current_version|.
   RecordSameVersionStartupCount(pref_service);
-  // Keep RecordHardFaultHistogram() first as much as possible as many other
-  // histograms depend on it setting |g_startup_temperature|.
   RecordHardFaultHistogram();
-  AddStartupEventsForTelemetry();
-  RecordTimeSinceLastStartup(pref_service);
-  RecordSystemUptimeHistogram();
-  RecordMainEntryTimeHistogram();
 
+  // Record timing of the browser message-loop start time.
+  base::StackSamplingProfiler::SetProcessMilestone(
+      metrics::CallStackProfileMetricsProvider::MAIN_LOOP_START);
   const base::TimeTicks& process_creation_ticks =
       g_process_creation_ticks.Get();
   if (!is_first_run && !process_creation_ticks.is_null()) {
@@ -622,6 +625,11 @@ void RecordBrowserMainMessageLoopStart(const base::TimeTicks& ticks,
         "Startup.BrowserMessageLoopStartTimeFromMainEntry2",
         g_browser_main_entry_point_ticks.Get(), ticks);
   }
+
+  AddStartupEventsForTelemetry();
+  RecordTimeSinceLastStartup(pref_service);
+  RecordSystemUptimeHistogram();
+  RecordMainEntryTimeHistogram();
 
   // Record timings between process creation, the main() in the executable being
   // reached and the main() in the shared library being reached.
@@ -705,6 +713,8 @@ void RecordFirstWebContentsNonEmptyPaint(const base::TimeTicks& ticks) {
   if (WasNonBrowserUIDisplayed() || g_process_creation_ticks.Get().is_null())
     return;
 
+  base::StackSamplingProfiler::SetProcessMilestone(
+      metrics::CallStackProfileMetricsProvider::FIRST_NONEMPTY_PAINT);
   UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
       UMA_HISTOGRAM_LONG_TIMES_100, "Startup.FirstWebContents.NonEmptyPaint2",
       g_process_creation_ticks.Get(), ticks);
@@ -718,6 +728,8 @@ void RecordFirstWebContentsMainNavigationStart(const base::TimeTicks& ticks) {
   if (WasNonBrowserUIDisplayed() || g_process_creation_ticks.Get().is_null())
     return;
 
+  base::StackSamplingProfiler::SetProcessMilestone(
+      metrics::CallStackProfileMetricsProvider::MAIN_NAVIGATION_START);
   UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
       UMA_HISTOGRAM_LONG_TIMES_100,
       "Startup.FirstWebContents.MainNavigationStart",
@@ -733,6 +745,8 @@ void RecordFirstWebContentsMainNavigationFinished(
   if (WasNonBrowserUIDisplayed() || g_process_creation_ticks.Get().is_null())
     return;
 
+  base::StackSamplingProfiler::SetProcessMilestone(
+      metrics::CallStackProfileMetricsProvider::MAIN_NAVIGATION_FINISHED);
   UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
       UMA_HISTOGRAM_LONG_TIMES_100,
       "Startup.FirstWebContents.MainNavigationFinished",
