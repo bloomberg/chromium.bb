@@ -21,7 +21,7 @@ import java.util.List;
  * Provides preferences glue for FirstRunActivity.
  */
 public class FirstRunGlueImpl implements FirstRunGlue {
-    private static final String CACHED_TOS_ACCEPTED_PREF = "first_run_tos_accepted";
+    public static final String CACHED_TOS_ACCEPTED_PREF = "first_run_tos_accepted";
 
     /**
      * Synchronizes first run native and Java preferences.
