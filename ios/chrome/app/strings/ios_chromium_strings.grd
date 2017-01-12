@@ -210,6 +210,9 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_OPTIONS_ENABLE_PHYSICAL_WEB_DETAILS" desc="The detailed description of an option to enable scanning for nearby devices broadcasting URLs.">
         Discover web pages sent by nearby objects. When Bluetooth is turned on, Chromium can gather web pages associated with objects around you and send them anonymously to Google to find the most useful ones. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
       </message>
+      <message name="IDS_IOS_OPTIONS_IMPORT_DATA_TITLE_SIGNIN" desc="The title of the Import Data settings screen when signing in. [30em]">
+        Sign in to Chromium
+      </message>
       <message name="IDS_IOS_OPTIONS_PRIVACY_FOOTER" desc="Footer for the clear browsing data dialog [Length: 300em] [iOS only]">
         Chromium may use web services to improve your browsing experience. You may optionally disable these services. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
       </message>

@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/settings/cells/card_multiline_item.h"
 #import "ios/chrome/browser/ui/settings/cells/import_data_multiline_detail_cell.h"
+#include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 #import "ios/third_party/material_components_ios/src/components/Collections/src/MaterialCollections.h"
@@ -67,6 +68,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _isSignedIn = isSignedIn;
     _shouldClearData = isSignedIn ? SHOULD_CLEAR_DATA_CLEAR_DATA
                                   : SHOULD_CLEAR_DATA_MERGE_DATA;
+    self.title =
+        isSignedIn
+            ? l10n_util::GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_TITLE_SWITCH)
+            : l10n_util::GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_TITLE_SIGNIN);
     [self setShouldHideDoneButton:YES];
     self.navigationItem.rightBarButtonItem = [[[UIBarButtonItem alloc]
         initWithTitle:l10n_util::GetNSString(
