@@ -6,6 +6,7 @@
 
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/suggestions/suggestions_article_item.h"
 #import "ios/chrome/browser/ui/suggestions/suggestions_item.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -38,6 +39,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [model addItem:[[SuggestionsItem alloc] initWithType:ItemTypeText
                                                      title:@"The title"
                                                   subtitle:@"The subtitle"]
+          toSectionWithIdentifier:sectionIdentifier];
+      [model addItem:
+                 [[SuggestionsArticleItem alloc]
+                     initWithType:ItemTypeArticle
+                            title:@"Title of an Article"
+                         subtitle:@"This is the subtitle of an article, can "
+                                  @"spawn on multiple lines"
+                            image:[UIImage imageNamed:@"distillation_success"]]
           toSectionWithIdentifier:sectionIdentifier];
       sectionIdentifier++;
     }
