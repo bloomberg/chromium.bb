@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.notifications;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -427,6 +428,21 @@ public abstract class NotificationBuilderBase {
         } else {
             builder.addAction(action.iconId, action.title, action.intent);
         }
+    }
+
+    /**
+     * Sets the notification group for the builder, determined by the origin provided.
+     * Note, after this notification is built and posted, a further summary notification must be
+     * posted for notifications in the group to appear grouped in the notification shade.
+     */
+    @SuppressLint("NewApi") // For setGroup
+    static void setGroupOnBuilder(Notification.Builder builder, CharSequence origin) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT_WATCH || origin == null) return;
+        builder.setGroup(NotificationConstants.GROUP_WEB_PREFIX + origin);
+        // TODO(crbug.com/674927) Post a group summary notification.
+        // Notifications with the same group will only actually be stacked if we post a group
+        // summary notification. Calling setGroup at least prevents them being autobundled with
+        // all Chrome notifications on N though (see crbug.com/674015).
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT_WATCH) // For Notification.Action.Builder

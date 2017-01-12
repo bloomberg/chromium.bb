@@ -162,6 +162,7 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
         if (mSettingsAction != null) {
             addActionToBuilder(builder, mSettingsAction);
         }
+        setGroupOnBuilder(builder, mOrigin);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             // Notification.Builder.setPublicVersion was added in Android L.
             builder.setPublicVersion(createPublicNotification(mContext));

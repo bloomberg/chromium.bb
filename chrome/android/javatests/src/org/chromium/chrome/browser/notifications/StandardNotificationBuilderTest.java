@@ -93,6 +93,10 @@ public class StandardNotificationBuilderTest extends NativeLibraryTestBase {
         assertEquals("title", NotificationTestUtil.getExtraTitle(notification));
         assertEquals("body", NotificationTestUtil.getExtraText(notification));
         assertEquals("origin", NotificationTestUtil.getExtraSubText(notification));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+            assertEquals(
+                    NotificationConstants.GROUP_WEB_PREFIX + "origin", notification.getGroup());
+        }
         assertEquals("ticker", notification.tickerText.toString());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             // EXTRA_TEMPLATE was added in Android L; style cannot be verified in earlier versions.
