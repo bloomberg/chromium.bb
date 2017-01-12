@@ -48,9 +48,3 @@ class PixelExpectations(GpuTestExpectations):
     # TODO(kainino): remove this once golden images are generated
     self.Fail('Pixel_WebGLTransparentGreenTriangle_NoAlpha_ImplicitClear',
               bug=666259)
-
-    # TODO(xlai): check if the new reference image has blurring edge between
-    # red rectangle and green rectangle; if so, delete this.
-    self.Fail('Pixel_OffscreenCanvas2DResizeOnWorker', bug=676666)
-    self.Fail('Pixel_OffscreenCanvasAccelerated2D', bug=676666)
-    self.Fail('Pixel_OffscreenCanvasAccelerated2DWorker', bug=676666)
