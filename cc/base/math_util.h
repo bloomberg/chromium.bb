@@ -310,6 +310,12 @@ class CC_EXPORT MathUtil {
   // Returns vector that y axis (0,1,0) transforms to under given transform.
   static gfx::Vector3dF GetYAxis(const gfx::Transform& transform);
 
+  static bool IsNearlyTheSameForTesting(float left, float right);
+  static bool IsNearlyTheSameForTesting(const gfx::PointF& l,
+                                        const gfx::PointF& r);
+  static bool IsNearlyTheSameForTesting(const gfx::Point3F& l,
+                                        const gfx::Point3F& r);
+
  private:
   template <typename T>
   static T RoundUpInternal(T n, T mul) {
