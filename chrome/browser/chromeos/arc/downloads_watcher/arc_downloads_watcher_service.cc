@@ -18,6 +18,7 @@
 #include "base/files/file_path_watcher.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -276,8 +277,8 @@ void ArcDownloadsWatcherService::DownloadsWatcher::OnFilePathChanged(
 void ArcDownloadsWatcherService::DownloadsWatcher::DelayBuildTimestampMap() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(outstanding_task_);
-  base::PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool(), FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock(),
       base::Bind(&BuildTimestampMapCallback, downloads_dir_),
       base::Bind(&DownloadsWatcher::OnBuildTimestampMap,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -301,15 +302,10 @@ void ArcDownloadsWatcherService::DownloadsWatcher::OnBuildTimestampMap(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(callback_, base::Passed(std::move(string_paths))));
-  if (last_notify_time_ > snapshot_time) {
-    base::PostTaskAndReplyWithResult(
-        BrowserThread::GetBlockingPool(), FROM_HERE,
-        base::Bind(&BuildTimestampMapCallback, downloads_dir_),
-        base::Bind(&DownloadsWatcher::OnBuildTimestampMap,
-                   weak_ptr_factory_.GetWeakPtr()));
-  } else {
+  if (last_notify_time_ > snapshot_time)
+    DelayBuildTimestampMap();
+  else
     outstanding_task_ = false;
-  }
 }
 
 ArcDownloadsWatcherService::ArcDownloadsWatcherService(
