@@ -14,7 +14,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/observer_list.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "components/arc/intent_helper/activity_icon_loader.h"
@@ -23,7 +22,6 @@
 namespace arc {
 
 class ArcBridgeService;
-class ArcIntentHelperObserver;
 class ArcService;
 
 namespace internal {
@@ -64,15 +62,6 @@ std::string GetArcServiceName(...) {
 // instance via the ArcBridgeService.
 class ArcServiceManager {
  public:
-  class Observer {
-   public:
-    // Called when intent filters are added or removed.
-    virtual void OnIntentFiltersUpdated() = 0;
-
-   protected:
-    virtual ~Observer() = default;
-  };
-
   explicit ArcServiceManager(
       scoped_refptr<base::TaskRunner> blocking_task_runner);
   ~ArcServiceManager();
@@ -98,18 +87,18 @@ class ArcServiceManager {
     return static_cast<T*>(GetNamedServiceInternal(T::kArcServiceName));
   }
 
+  // Does the same as GetService(), but with the global instance. Return nullptr
+  // when the instance hasn't been created or has already been destructed.
+  template <typename T> static T* GetGlobalService() {
+    auto* service_manager = ArcServiceManager::Get();
+    if (!service_manager)
+      return nullptr;
+    return service_manager->GetService<T>();
+  }
+
   // Gets the global instance of the ARC Service Manager. This can only be
   // called on the thread that this class was created on.
   static ArcServiceManager* Get();
-
-  // Returns if the ARC Service Manager instance exists.
-  // DO NOT CALL THIS. This function is a dirty workaround for properly shutting
-  // down chrome/browser/chromeos/extensions/file_manager/event_router.cc, and
-  // will likely be removed in the future.
-  static bool IsInitialized();
-
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
 
   // Called to shut down all ARC services.
   void Shutdown();
@@ -126,11 +115,6 @@ class ArcServiceManager {
     return activity_resolver_;
   }
 
-  // Returns the IntentHelperObserver instance owned by ArcServiceManager.
-  ArcIntentHelperObserver* intent_helper_observer() {
-    return intent_helper_observer_.get();
-  }
-
  private:
   class IntentHelperObserverImpl;  // implemented in arc_service_manager.cc.
 
@@ -142,15 +126,10 @@ class ArcServiceManager {
   base::ThreadChecker thread_checker_;
   scoped_refptr<base::TaskRunner> blocking_task_runner_;
 
-  // An object for observing the ArcIntentHelper instance in |services_|.
-  std::unique_ptr<ArcIntentHelperObserver> intent_helper_observer_;
-
   std::unique_ptr<ArcBridgeService> arc_bridge_service_;
   std::unordered_multimap<std::string, std::unique_ptr<ArcService>> services_;
   scoped_refptr<ActivityIconLoader> icon_loader_;
   scoped_refptr<LocalActivityResolver> activity_resolver_;
-
-  base::ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcServiceManager);
 };

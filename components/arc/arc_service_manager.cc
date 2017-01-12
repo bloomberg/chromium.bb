@@ -20,33 +20,9 @@ ArcServiceManager* g_arc_service_manager = nullptr;
 
 }  // namespace
 
-class ArcServiceManager::IntentHelperObserverImpl
-    : public ArcIntentHelperObserver {
- public:
-  explicit IntentHelperObserverImpl(ArcServiceManager* manager);
-  ~IntentHelperObserverImpl() override = default;
-
- private:
-  void OnIntentFiltersUpdated() override;
-  ArcServiceManager* const manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(IntentHelperObserverImpl);
-};
-
-ArcServiceManager::IntentHelperObserverImpl::IntentHelperObserverImpl(
-    ArcServiceManager* manager)
-    : manager_(manager) {}
-
-void ArcServiceManager::IntentHelperObserverImpl::OnIntentFiltersUpdated() {
-  DCHECK(manager_->thread_checker_.CalledOnValidThread());
-  for (auto& observer : manager_->observer_list_)
-    observer.OnIntentFiltersUpdated();
-}
-
 ArcServiceManager::ArcServiceManager(
     scoped_refptr<base::TaskRunner> blocking_task_runner)
     : blocking_task_runner_(blocking_task_runner),
-      intent_helper_observer_(base::MakeUnique<IntentHelperObserverImpl>(this)),
       arc_bridge_service_(base::MakeUnique<ArcBridgeService>()),
       icon_loader_(new ActivityIconLoader()),
       activity_resolver_(new LocalActivityResolver()) {
@@ -66,14 +42,6 @@ ArcServiceManager* ArcServiceManager::Get() {
     return nullptr;
   DCHECK(g_arc_service_manager->thread_checker_.CalledOnValidThread());
   return g_arc_service_manager;
-}
-
-// static
-bool ArcServiceManager::IsInitialized() {
-  if (!g_arc_service_manager)
-    return false;
-  DCHECK(g_arc_service_manager->thread_checker_.CalledOnValidThread());
-  return true;
 }
 
 ArcBridgeService* ArcServiceManager::arc_bridge_service() {
@@ -107,16 +75,6 @@ ArcService* ArcServiceManager::GetNamedServiceInternal(
     return nullptr;
   }
   return service->second.get();
-}
-
-void ArcServiceManager::AddObserver(Observer* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  observer_list_.AddObserver(observer);
-}
-
-void ArcServiceManager::RemoveObserver(Observer* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  observer_list_.RemoveObserver(observer);
 }
 
 void ArcServiceManager::Shutdown() {

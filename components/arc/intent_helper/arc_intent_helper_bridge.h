@@ -86,6 +86,9 @@ class ArcIntentHelperBridge
   // false and updates |out_error_code| if it's not nullptr.
   static bool IsIntentHelperAvailable(GetResult* out_error_code);
 
+  // For supporting ArcServiceManager::GetService<T>().
+  static const char kArcServiceName[];
+
   static const char kArcIntentHelperPackageName[];
 
  private:

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_NOTE_TAKING_HELPER_H_
 #define CHROME_BROWSER_CHROMEOS_NOTE_TAKING_HELPER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -13,7 +14,8 @@
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
-#include "components/arc/arc_service_manager.h"
+#include "components/arc/common/intent_helper.mojom.h"
+#include "components/arc/intent_helper/arc_intent_helper_observer.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -58,7 +60,7 @@ struct NoteTakingAppInfo {
 using NoteTakingAppInfos = std::vector<NoteTakingAppInfo>;
 
 // Singleton class used to launch a note-taking app.
-class NoteTakingHelper : public arc::ArcServiceManager::Observer,
+class NoteTakingHelper : public arc::ArcIntentHelperObserver,
                          public arc::ArcSessionManager::Observer,
                          public content::NotificationObserver,
                          public extensions::ExtensionRegistryObserver {
@@ -150,7 +152,7 @@ class NoteTakingHelper : public arc::ArcServiceManager::Observer,
   // first.
   void LaunchAppForNewNote(Profile* profile, const base::FilePath& path);
 
-  // arc::ArcServiceManager::Observer:
+  // arc::ArcIntentHelperObserver:
   void OnIntentFiltersUpdated() override;
 
   // arc::ArcSessionManager::Observer:

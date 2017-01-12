@@ -26,7 +26,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/common/intent_helper.mojom.h"
+#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -228,10 +228,12 @@ NoteTakingHelper::NoteTakingHelper()
   session_manager->AddObserver(this);
   android_enabled_ = session_manager->IsArcEnabled();
 
-  // ArcServiceManager will notify us about changes to the list of available
+  // ArcIntentHelperBridge will notify us about changes to the list of available
   // Android apps.
-  auto service_manager = arc::ArcServiceManager::Get();
-  service_manager->AddObserver(this);
+  auto intent_helper_bridge =
+      arc::ArcServiceManager::GetGlobalService<arc::ArcIntentHelperBridge>();
+  if (intent_helper_bridge)
+    intent_helper_bridge->AddObserver(this);
 
   // If the ARC intent helper is ready, get the Android apps. Otherwise,
   // UpdateAndroidApps() will be called when ArcServiceManager calls
@@ -248,8 +250,10 @@ NoteTakingHelper::~NoteTakingHelper() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // ArcSessionManagerTest shuts down ARC before NoteTakingHelper.
-  if (arc::ArcServiceManager::Get())
-    arc::ArcServiceManager::Get()->RemoveObserver(this);
+  auto intent_helper_bridge =
+      arc::ArcServiceManager::GetGlobalService<arc::ArcIntentHelperBridge>();
+  if (intent_helper_bridge)
+    intent_helper_bridge->RemoveObserver(this);
   if (arc::ArcSessionManager::Get())
     arc::ArcSessionManager::Get()->RemoveObserver(this);
 }

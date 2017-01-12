@@ -27,6 +27,7 @@
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/intent_helper/arc_intent_helper_observer.h"
 #include "components/drive/chromeos/file_system_observer.h"
 #include "components/drive/chromeos/sync_client.h"
 #include "components/drive/service/drive_service_interface.h"
@@ -56,7 +57,7 @@ class EventRouter : public KeyedService,
                     public drive::FileSystemObserver,
                     public drive::DriveServiceObserver,
                     public VolumeManagerObserver,
-                    public arc::ArcServiceManager::Observer {
+                    public arc::ArcIntentHelperObserver {
  public:
   typedef base::Callback<void(const base::FilePath& virtual_path,
                               const drive::FileChange* list,
@@ -67,7 +68,7 @@ class EventRouter : public KeyedService,
   explicit EventRouter(Profile* profile);
   ~EventRouter() override;
 
-  // arc::ArcServiceManager::Observer overrides.
+  // arc::ArcIntentHelperObserver overrides.
   void OnIntentFiltersUpdated() override;
 
   // KeyedService overrides.

@@ -179,4 +179,31 @@ TEST_F(ArcServiceManagerTest, EmptyNamedServices) {
   EXPECT_FALSE(empty_named_service_alive);
 }
 
+// Tests if GetGlobalService works as expected regardless of whether the
+// global pointer is null.
+TEST_F(ArcServiceManagerTest, TestGetGlobalService) {
+  // The getter should return nullptr when no global instance is available.
+  EXPECT_EQ(nullptr, ArcServiceManager::GetGlobalService<NamedService>());
+
+  // Create a manager. This will automatically be registered as a global
+  // instance.
+  auto manager = base::MakeUnique<ArcServiceManager>(nullptr);
+
+  // The getter should return nullptr when the manager doesn't know about the
+  // NamedService instance.
+  EXPECT_EQ(nullptr, ArcServiceManager::GetGlobalService<NamedService>());
+
+  // Register the instance and retry. The getter should return non-null this
+  // time.
+  bool unused;
+  EXPECT_TRUE(manager->AddService(base::MakeUnique<NamedService>(
+      arc_bridge_service(), &unused)));
+  EXPECT_NE(nullptr, ArcServiceManager::GetGlobalService<NamedService>());
+
+  // Remove the global instance. The same GetGlobalService() call should return
+  // nullptr now.
+  manager.reset();
+  EXPECT_EQ(nullptr, ArcServiceManager::GetGlobalService<NamedService>());
+}
+
 }  // namespace arc
