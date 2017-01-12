@@ -51,6 +51,8 @@ class ResourceFetcher;
 class CORE_EXPORT ResourceLoader final
     : public GarbageCollectedFinalized<ResourceLoader>,
       protected WebURLLoaderClient {
+  USING_PRE_FINALIZER(ResourceLoader, dispose);
+
  public:
   static ResourceLoader* create(ResourceFetcher*, Resource*);
   ~ResourceLoader() override;
@@ -121,6 +123,7 @@ class CORE_EXPORT ResourceLoader final
   void cancelForRedirectAccessCheckError(const KURL&,
                                          ResourceRequestBlockedReason);
   void requestSynchronously(const ResourceRequest&);
+  void dispose();
 
   std::unique_ptr<WebURLLoader> m_loader;
   Member<ResourceFetcher> m_fetcher;
