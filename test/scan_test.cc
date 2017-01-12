@@ -9,18 +9,21 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include "av1/common/common_data.h"
 #include "av1/common/scan.h"
 #include "third_party/googletest/src/include/gtest/gtest.h"
 
 namespace {
 
 TEST(ScanTest, av1_augment_prob) {
-  const int tx1d_size = 4;
+  const TX_SIZE tx_size = TX_4X4;
+  const TX_TYPE tx_type = DCT_DCT;
+  const int tx1d_size = tx_size_wide[tx_size];
   uint32_t prob[16] = { 8, 8, 7, 7, 8, 8, 4, 2, 3, 3, 2, 2, 2, 2, 2, 2 };
   const uint32_t ref_prob[16] = {
     8, 8, 7, 7, 8, 8, 4, 2, 3, 3, 2, 2, 2, 2, 2, 2
   };
-  av1_augment_prob(prob, tx1d_size, tx1d_size);
+  av1_augment_prob(tx_size, tx_type, prob);
   for (int r = 0; r < tx1d_size; ++r) {
     for (int c = 0; c < tx1d_size; ++c) {
       const uint32_t idx = r * tx1d_size + c;
@@ -28,35 +31,42 @@ TEST(ScanTest, av1_augment_prob) {
     }
   }
 
-  const uint32_t mask = (1 << 10) - 1;
+  const SCAN_ORDER *sc = get_default_scan(tx_size, tx_type, 0);
+  const uint32_t mask = (1 << 16) - 1;
   for (int r = 0; r < tx1d_size; ++r) {
     for (int c = 0; c < tx1d_size; ++c) {
-      const uint32_t idx = r * tx1d_size + c;
-      EXPECT_EQ(idx, mask ^ (prob[r * tx1d_size + c] & mask));
+      const uint32_t ref_idx = r * tx1d_size + c;
+      const uint32_t scan_idx = mask ^ (prob[r * tx1d_size + c] & mask);
+      const uint32_t idx = sc->scan[scan_idx];
+      EXPECT_EQ(ref_idx, idx);
     }
   }
 }
 
 TEST(ScanTest, av1_update_sort_order) {
   const TX_SIZE tx_size = TX_4X4;
-  const uint32_t prob[16] = { 8, 8, 7, 7, 8, 8, 4, 2, 3, 3, 2, 2, 2, 2, 2, 2 };
+  const TX_TYPE tx_type = DCT_DCT;
+  const uint32_t prob[16] = { 15, 14, 11, 10, 13, 12, 9, 5,
+                              8,  7,  4,  2,  6,  3,  1, 0 };
   const int16_t ref_sort_order[16] = { 0, 1,  4, 5,  2,  3,  6,  8,
                                        9, 12, 7, 10, 13, 11, 14, 15 };
   int16_t sort_order[16];
-  av1_update_sort_order(tx_size, prob, sort_order);
+  av1_update_sort_order(tx_size, tx_type, prob, sort_order);
   for (int i = 0; i < 16; ++i) EXPECT_EQ(ref_sort_order[i], sort_order[i]);
 }
 
 TEST(ScanTest, av1_update_scan_order) {
   TX_SIZE tx_size = TX_4X4;
-  const uint32_t prob[16] = { 4, 5, 7, 4, 5, 6, 8, 2, 3, 3, 2, 2, 2, 2, 2, 2 };
+  const TX_TYPE tx_type = DCT_DCT;
+  const uint32_t prob[16] = { 10, 12, 14, 9, 11, 13, 15, 5,
+                              8,  7,  4,  2, 6,  3,  1,  0 };
   int16_t sort_order[16];
   int16_t scan[16];
   int16_t iscan[16];
   const int16_t ref_iscan[16] = { 0, 1, 2,  6,  3, 4,  5,  10,
                                   7, 8, 11, 13, 9, 12, 14, 15 };
 
-  av1_update_sort_order(tx_size, prob, sort_order);
+  av1_update_sort_order(tx_size, tx_type, prob, sort_order);
   av1_update_scan_order(tx_size, sort_order, scan, iscan);
 
   for (int i = 0; i < 16; ++i) {

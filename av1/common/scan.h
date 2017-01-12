@@ -39,11 +39,11 @@ void av1_update_scan_count_facade(AV1_COMMON *cm, TX_SIZE tx_size,
 // embed r + c and coeff_idx info with nonzero probabilities. When sorting the
 // nonzero probabilities, if there is a tie, the coefficient with smaller r + c
 // will be scanned first
-void av1_augment_prob(uint32_t *prob, int size, int tx1d_size);
+void av1_augment_prob(TX_SIZE tx_size, TX_TYPE tx_type, uint32_t *prob);
 
 // apply quick sort on nonzero probabilities to obtain a sort order
-void av1_update_sort_order(TX_SIZE tx_size, const uint32_t *non_zero_prob,
-                           int16_t *sort_order);
+void av1_update_sort_order(TX_SIZE tx_size, TX_TYPE tx_type,
+                           const uint32_t *non_zero_prob, int16_t *sort_order);
 
 // apply topological sort on the nonzero probabilities sorting order to
 // guarantee each to-be-scanned coefficient's upper and left coefficient will be
@@ -67,13 +67,9 @@ static INLINE int get_coef_context(const int16_t *neighbors,
          1;
 }
 
-static INLINE const SCAN_ORDER *get_scan(const AV1_COMMON *cm, TX_SIZE tx_size,
-                                         TX_TYPE tx_type, int is_inter) {
-#if CONFIG_ADAPT_SCAN
-  (void)is_inter;
-  return &cm->fc->sc[tx_size][tx_type];
-#else  // CONFIG_ADAPT_SCAN
-  (void)cm;
+static INLINE const SCAN_ORDER *get_default_scan(TX_SIZE tx_size,
+                                                 TX_TYPE tx_type,
+                                                 int is_inter) {
 #if CONFIG_EXT_TX || CONFIG_VAR_TX
   return is_inter ? &av1_inter_scan_orders[tx_size][tx_type]
                   : &av1_intra_scan_orders[tx_size][tx_type];
@@ -81,6 +77,16 @@ static INLINE const SCAN_ORDER *get_scan(const AV1_COMMON *cm, TX_SIZE tx_size,
   (void)is_inter;
   return &av1_intra_scan_orders[tx_size][tx_type];
 #endif  // CONFIG_EXT_TX
+}
+
+static INLINE const SCAN_ORDER *get_scan(const AV1_COMMON *cm, TX_SIZE tx_size,
+                                         TX_TYPE tx_type, int is_inter) {
+#if CONFIG_ADAPT_SCAN
+  (void)is_inter;
+  return &cm->fc->sc[tx_size][tx_type];
+#else   // CONFIG_ADAPT_SCAN
+  (void)cm;
+  return get_default_scan(tx_size, tx_type, is_inter);
 #endif  // CONFIG_ADAPT_SCAN
 }
 
