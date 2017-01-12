@@ -29,15 +29,15 @@ layer at (18,416) size 102x102 clip at (19,417) size 85x100 scrollHeight 125
   LayoutBlockFlow {DIV} at (10,408) size 102x102 [border: (1px solid #000000)]
 layer at (69,81) size 25x25
   LayoutBlockFlow (relative positioned) {DIV} at (1,1) size 25x25 [bgcolor=#000000]
-    LayoutBlockFlow (floating) {DIV} at (0,0) size 75x75 [bgcolor=#0000FF80]
+    LayoutBlockFlow (floating) {DIV} at (0,0) size 75x75 [bgcolor=#0000FF7F]
 layer at (19,243) size 25x25
   LayoutBlockFlow (relative positioned) {DIV} at (1,1) size 25x25 [bgcolor=#000000]
-    LayoutBlockFlow (floating) {DIV} at (0,0) size 75x75 [bgcolor=#0000FF80]
+    LayoutBlockFlow (floating) {DIV} at (0,0) size 75x75 [bgcolor=#0000FF7F]
 layer at (69,305) size 25x25
   LayoutBlockFlow (relative positioned) {DIV} at (1,1) size 25x25 [bgcolor=#000000]
 layer at (69,305) size 75x75 backgroundClip at (19,305) size 100x85 clip at (19,305) size 100x85
-  LayoutBlockFlow (positioned) {DIV} at (0,0) size 75x75 [bgcolor=#0000FF80]
+  LayoutBlockFlow (positioned) {DIV} at (0,0) size 75x75 [bgcolor=#0000FF7F]
 layer at (19,467) size 25x25
   LayoutBlockFlow (relative positioned) {DIV} at (1,1) size 25x25 [bgcolor=#000000]
 layer at (19,467) size 75x75 backgroundClip at (19,417) size 85x100 clip at (19,417) size 85x100
-  LayoutBlockFlow (positioned) {DIV} at (0,0) size 75x75 [bgcolor=#0000FF80]
+  LayoutBlockFlow (positioned) {DIV} at (0,0) size 75x75 [bgcolor=#0000FF7F]

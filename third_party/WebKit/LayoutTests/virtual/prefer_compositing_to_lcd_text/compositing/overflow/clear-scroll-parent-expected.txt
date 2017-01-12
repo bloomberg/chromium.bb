@@ -12,7 +12,7 @@
       "bounds": [308, 208],
       "shouldFlattenTransform": false,
       "drawsContent": true,
-      "backgroundColor": "#00FF0080"
+      "backgroundColor": "#00FF007F"
     },
     {
       "name": "Scrolling Layer",
@@ -60,7 +60,7 @@
       "position": [10, 10],
       "bounds": [100, 100],
       "drawsContent": true,
-      "backgroundColor": "#FF000080"
+      "backgroundColor": "#FF00007F"
     },
     {
       "name": "Squashing Containment Layer",
@@ -72,7 +72,7 @@
       "position": [22, 102],
       "bounds": [100, 100],
       "drawsContent": true,
-      "backgroundColor": "#0000FF80"
+      "backgroundColor": "#0000FF7F"
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='box')",

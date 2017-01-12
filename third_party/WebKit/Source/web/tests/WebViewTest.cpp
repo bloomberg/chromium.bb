@@ -395,11 +395,11 @@ TEST_P(WebViewTest, SetBaseBackgroundColor) {
                                    "style></head></html>",
                                    baseURL);
   // Expected: red (50% alpha) blended atop base of kBlue.
-  EXPECT_EQ(0xFF80007F, webView->backgroundColor());
+  EXPECT_EQ(0xFF7F0080, webView->backgroundColor());
 
   webView->setBaseBackgroundColor(kTranslucentPutty);
   // Expected: red (50% alpha) blended atop kTranslucentPutty. Note the alpha.
-  EXPECT_EQ(0xBFE93A31, webView->backgroundColor());
+  EXPECT_EQ(0xBFE93B32, webView->backgroundColor());
 
   webView->setBaseBackgroundColor(kTransparent);
   FrameTestHelpers::loadHTMLString(webView->mainFrame(),

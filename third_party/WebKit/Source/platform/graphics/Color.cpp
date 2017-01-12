@@ -210,16 +210,7 @@ String Color::serializedAsCSSComponentValue() const {
   result.appendNumber(static_cast<unsigned char>(blue()));
   if (colorHasAlpha) {
     result.append(", ");
-    // See <alphavalue> section in
-    // http://dev.w3.org/csswg/cssom/#serializing-css-values
-    int alphavalue = alpha();
-    float rounded = round(alphavalue * 100 / 255.0f) / 100;
-    if (round(rounded * 255) == alphavalue) {
-      result.appendNumber(rounded, 2);
-    } else {
-      rounded = round(alphavalue * 1000 / 255.0f) / 1000;
-      result.appendNumber(rounded, 3);
-    }
+    result.appendNumber(alpha() / 255.0f, 6);
   }
 
   result.append(')');

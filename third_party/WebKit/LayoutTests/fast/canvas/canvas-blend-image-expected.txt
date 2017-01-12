@@ -974,7 +974,7 @@ PASS pixelDataAtPoint(1)[0] is within 5 of 85
 PASS pixelDataAtPoint(1)[1] is within 5 of 85
 PASS pixelDataAtPoint(1)[2] is within 5 of 167
 PASS pixelDataAtPoint(1)[3] is within 5 of 191
-PASS pixelDataAtPoint(2)[0] is within 5 of 4
+PASS pixelDataAtPoint(2)[0] is within 5 of 0
 PASS pixelDataAtPoint(2)[1] is within 5 of 48
 PASS pixelDataAtPoint(2)[2] is within 5 of 130
 PASS pixelDataAtPoint(2)[3] is within 5 of 191

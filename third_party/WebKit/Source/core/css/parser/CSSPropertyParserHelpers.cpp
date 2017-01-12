@@ -420,9 +420,10 @@ static bool parseRGBParameters(CSSParserTokenRange& range,
     double alpha;
     if (!consumeNumberRaw(args, alpha))
       return false;
-    // W3 standard stipulates a 2.55 alpha value multiplication factor.
-    int alphaComponent =
-        static_cast<int>(lroundf(clampTo<double>(alpha, 0.0, 1.0) * 255.0f));
+    // Convert the floating pointer number of alpha to an integer in the range
+    // [0, 256), with an equal distribution across all 256 values.
+    int alphaComponent = static_cast<int>(clampTo<double>(alpha, 0.0, 1.0) *
+                                          nextafter(256.0, 0.0));
     result =
         makeRGBA(colorArray[0], colorArray[1], colorArray[2], alphaComponent);
   } else {
