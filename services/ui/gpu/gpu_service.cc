@@ -5,6 +5,7 @@
 #include "services/ui/gpu/gpu_service.h"
 
 #include "base/bind.h"
+#include "base/debug/crash_logging.h"
 #include "base/memory/shared_memory.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -151,7 +152,8 @@ void GpuService::SendAcceleratedSurfaceCreatedChildWindow(
 #endif
 
 void GpuService::SetActiveURL(const GURL& url) {
-  // TODO(penghuang): implement this function.
+  constexpr char kActiveURL[] = "url-chunk";
+  base::debug::SetCrashKeyValue(kActiveURL, url.possibly_invalid_spec());
 }
 
 void GpuService::EstablishGpuChannel(
