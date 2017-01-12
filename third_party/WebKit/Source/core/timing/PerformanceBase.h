@@ -38,6 +38,7 @@
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/timing/PerformanceEntry.h"
 #include "core/timing/PerformanceNavigationTiming.h"
+#include "core/timing/PerformancePaintTiming.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -113,6 +114,10 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
 
   void addNavigationTiming(LocalFrame*);
 
+  void addFirstPaintTiming(double startTime);
+
+  void addFirstContentfulPaintTiming(double startTime);
+
   void mark(const String& markName, ExceptionState&);
   void clearMarks(const String& markName);
 
@@ -144,6 +149,8 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
                                      const SecurityOrigin&,
                                      const AtomicString&,
                                      ExecutionContext*);
+
+  void addPaintTiming(PerformancePaintTiming::PaintType, double startTime);
 
  protected:
   explicit PerformanceBase(double timeOrigin);

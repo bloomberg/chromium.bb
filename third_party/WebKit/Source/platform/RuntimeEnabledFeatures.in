@@ -283,3 +283,4 @@ ParseHTMLOnMainThread status=test
 SendBeaconThrowForBlobWithNonSimpleType status=experimental
 PerformanceNavigationTiming2 status=experimental
 BackgroundVideoTrackOptimization status=stable
+PerformancePaintTiming status=test

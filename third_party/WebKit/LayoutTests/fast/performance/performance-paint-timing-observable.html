@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<head>
+<title>Performance Paint Timing Test</title>
+</head>
+<body>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script>
+
+    async_test(function (t) {
+        var observer = new PerformanceObserver(
+            t.step_func(function (entryList) {
+                var entries = entryList.getEntries();
+                assert_equals(entries.length, 2,
+                    "There should be two paint timing instances.");
+                assert_equals(entries[0].entryType, "paint",
+                    "Expected entryType to be: paint.");
+                assert_equals(entries[0].duration, 0,
+                    "Expected duration to be: 0.");
+
+                assert_equals(entries[1].entryType, "paint",
+                    "Expected entryType to be: paint.");
+                assert_equals(entries[1].duration, 0,
+                    "Expected duration to be: 0.");
+                observer.disconnect();
+                t.done();
+            })
+        );
+        observer.observe({entryTypes: ["paint"]});
+
+    }, "Both first-paint-timing and first-contentful-paint timing entry are observable.");
+
+    </script>
+    <div style="background-color:black;color:white;padding:20px;">...test...</div>
+</body>
+</html>

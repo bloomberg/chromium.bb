@@ -157,9 +157,11 @@ PerformanceEntryVector PerformanceBase::getEntriesByType(
       if (m_userTiming)
         entries.appendVector(m_userTiming->getMeasures());
       break;
-    // Unsupported for LongTask, TaskAttribution.
+    // Unsupported for Paint, LongTask, TaskAttribution.
     // Per the spec, these entries can only be accessed via
     // Performance Observer. No separate buffer is maintained.
+    case PerformanceEntry::Paint:
+      break;
     case PerformanceEntry::LongTask:
       break;
     case PerformanceEntry::TaskAttribution:
@@ -400,6 +402,24 @@ void PerformanceBase::addNavigationTiming(LocalFrame* frame) {
   notifyObserversOfEntry(*m_navigationTiming);
 }
 
+void PerformanceBase::addFirstPaintTiming(double startTime) {
+  addPaintTiming(PerformancePaintTiming::PaintType::FirstPaint, startTime);
+}
+
+void PerformanceBase::addFirstContentfulPaintTiming(double startTime) {
+  addPaintTiming(PerformancePaintTiming::PaintType::FirstContentfulPaint,
+                 startTime);
+}
+
+void PerformanceBase::addPaintTiming(PerformancePaintTiming::PaintType type,
+                                     double startTime) {
+  if (!RuntimeEnabledFeatures::performancePaintTimingEnabled())
+    return;
+  PerformanceEntry* entry = new PerformancePaintTiming(
+      type, monotonicTimeToDOMHighResTimeStamp(startTime));
+  notifyObserversOfEntry(*entry);
+}
+
 void PerformanceBase::addResourceTimingBuffer(PerformanceEntry& entry) {
   m_resourceTimingBuffer.push_back(&entry);
 
@@ -557,7 +577,8 @@ DOMHighResTimeStamp PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
     return 0.0;
 
   double timeInSeconds = monotonicTime - timeOrigin;
-  DCHECK_GE(timeInSeconds, 0);
+  if (timeInSeconds < 0)
+    return 0.0;
   return convertSecondsToDOMHighResTimeStamp(
       clampTimeResolution(timeInSeconds));
 }

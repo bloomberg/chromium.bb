@@ -6,12 +6,27 @@
 
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/timing/DOMWindowPerformance.h"
+#include "core/timing/Performance.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 
 namespace blink {
+
+namespace {
+
+Performance* getPerformanceInstance(LocalFrame* frame) {
+  Performance* performance = nullptr;
+  if (frame && frame->domWindow()) {
+    performance = DOMWindowPerformance::performance(*frame->domWindow());
+  }
+  return performance;
+}
+
+}  // namespace
 
 static const char kSupplementName[] = "PaintTiming";
 
@@ -120,6 +135,10 @@ void PaintTiming::setFirstPaint(double stamp) {
   if (m_firstPaint != 0.0)
     return;
   m_firstPaint = stamp;
+  Performance* performance = getPerformanceInstance(frame());
+  if (performance)
+    performance->addFirstPaintTiming(m_firstPaint);
+
   TRACE_EVENT_INSTANT1("blink.user_timing,rail", "firstPaint",
                        TRACE_EVENT_SCOPE_PROCESS, "frame", frame());
 }
@@ -129,6 +148,9 @@ void PaintTiming::setFirstContentfulPaint(double stamp) {
     return;
   setFirstPaint(stamp);
   m_firstContentfulPaint = stamp;
+  Performance* performance = getPerformanceInstance(frame());
+  if (performance)
+    performance->addFirstContentfulPaintTiming(m_firstContentfulPaint);
   TRACE_EVENT_INSTANT1("blink.user_timing,rail", "firstContentfulPaint",
                        TRACE_EVENT_SCOPE_PROCESS, "frame", frame());
 }

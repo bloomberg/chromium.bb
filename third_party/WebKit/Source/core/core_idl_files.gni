@@ -400,6 +400,7 @@ core_idl_files = get_path_info([
                                  "timing/PerformanceNavigationTiming.idl",
                                  "timing/PerformanceObserver.idl",
                                  "timing/PerformanceObserverEntryList.idl",
+                                 "timing/PerformancePaintTiming.idl",
                                  "timing/PerformanceResourceTiming.idl",
                                  "timing/PerformanceTiming.idl",
                                  "timing/TaskAttributionTiming.idl",

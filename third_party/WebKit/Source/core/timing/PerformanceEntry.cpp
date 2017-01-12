@@ -81,6 +81,8 @@ PerformanceEntry::EntryType PerformanceEntry::toEntryTypeEnum(
     return Navigation;
   if (entryType == "taskattribution")
     return TaskAttribution;
+  if (entryType == "paint")
+    return Paint;
   return Invalid;
 }
 
