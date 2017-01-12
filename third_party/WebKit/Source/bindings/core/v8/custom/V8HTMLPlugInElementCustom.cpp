@@ -82,22 +82,25 @@ void setScriptableObjectProperty(
 
   HTMLPlugInElement* impl = ElementType::toImpl(info.Holder());
   RefPtr<SharedPersistent<v8::Object>> wrapper = impl->pluginWrapper();
-  v8::Local<v8::Object> instance;
-  if (wrapper)
-    instance = wrapper->newLocal(info.GetIsolate());
-  if (!instance.IsEmpty()) {
-    // FIXME: The gTalk pepper plugin is the only plugin to make use of
-    // SetProperty and that is being deprecated. This can be removed as soon as
-    // it goes away.
-    // Call SetProperty on a pepper plugin's scriptable object. Note that we
-    // never set the return value here which would indicate that the plugin has
-    // intercepted the SetProperty call, which means that the property on the
-    // DOM element will also be set. For plugin's that don't intercept the call
-    // (all except gTalk) this makes no difference at all. For gTalk the fact
-    // that the property on the DOM element also gets set is inconsequential.
-    v8CallBoolean(instance->CreateDataProperty(
-        info.GetIsolate()->GetCurrentContext(), v8Name, value));
-  }
+  if (!wrapper)
+    return;
+
+  v8::Local<v8::Object> instance = wrapper->newLocal(info.GetIsolate());
+
+  if (instance.IsEmpty())
+    return;
+
+  // FIXME: The gTalk pepper plugin is the only plugin to make use of
+  // SetProperty and that is being deprecated. This can be removed as soon as
+  // it goes away.
+  // Call SetProperty on a pepper plugin's scriptable object. Note that we
+  // never set the return value here which would indicate that the plugin has
+  // intercepted the SetProperty call, which means that the property on the
+  // DOM element will also be set. For plugin's that don't intercept the call
+  // (all except gTalk) this makes no difference at all. For gTalk the fact
+  // that the property on the DOM element also gets set is inconsequential.
+  v8CallBoolean(instance->CreateDataProperty(
+      info.GetIsolate()->GetCurrentContext(), v8Name, value));
   v8SetReturnValue(info, value);
 }
 

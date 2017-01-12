@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+test(function() {
+  var obj = document.createElement("object");
+  obj.foo = 1;
+  assert_equals(obj.foo, 1, "Setting an expando on an <object> works");
+}, "setting an expando");
+</script>
