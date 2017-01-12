@@ -255,6 +255,20 @@ class CSSCalcPrimitiveValue final : public CSSCalcExpressionNode {
   CSSPrimitiveValue::UnitType typeWithCalcResolved() const override {
     return m_value->typeWithCalcResolved();
   }
+  const CSSCalcExpressionNode* leftExpressionNode() const {
+    NOTREACHED();
+    return nullptr;
+  }
+
+  const CSSCalcExpressionNode* rightExpressionNode() const {
+    NOTREACHED();
+    return nullptr;
+  }
+
+  CalcOperator operatorType() const {
+    NOTREACHED();
+    return CalcAdd;
+  }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->trace(m_value);
@@ -554,6 +568,13 @@ class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
   }
 
   Type getType() const override { return CssCalcBinaryOperation; }
+  const CSSCalcExpressionNode* leftExpressionNode() const { return m_leftSide; }
+
+  const CSSCalcExpressionNode* rightExpressionNode() const {
+    return m_rightSide;
+  }
+
+  CalcOperator operatorType() const { return m_operator; }
 
   CSSPrimitiveValue::UnitType typeWithCalcResolved() const override {
     switch (m_category) {

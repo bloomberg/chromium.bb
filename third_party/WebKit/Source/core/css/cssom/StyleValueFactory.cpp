@@ -6,8 +6,10 @@
 
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSValue.h"
+#include "core/css/cssom/CSSCalcLength.h"
 #include "core/css/cssom/CSSKeywordValue.h"
 #include "core/css/cssom/CSSNumberValue.h"
+#include "core/css/cssom/CSSOMTypes.h"
 #include "core/css/cssom/CSSSimpleLength.h"
 #include "core/css/cssom/CSSStyleValue.h"
 #include "core/css/cssom/CSSStyleVariableReferenceValue.h"
@@ -37,6 +39,13 @@ CSSStyleValue* createStyleValueWithPropertyInternal(CSSPropertyID propertyID,
     default:
       // TODO(meade): Implement other properties.
       break;
+  }
+  if (value.isPrimitiveValue() && toCSSPrimitiveValue(value).isCalculated()) {
+    // TODO(meade): Handle other calculated types, e.g. angles here.
+    if (CSSOMTypes::propertyCanTakeType(propertyID,
+                                        CSSStyleValue::CalcLengthType)) {
+      return CSSCalcLength::fromCSSValue(toCSSPrimitiveValue(value));
+    }
   }
   return nullptr;
 }

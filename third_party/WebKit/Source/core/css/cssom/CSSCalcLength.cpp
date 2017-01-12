@@ -16,6 +16,7 @@ namespace blink {
 namespace {
 
 static CSSPrimitiveValue::UnitType unitFromIndex(int index) {
+  DCHECK(index < CSSLengthValue::kNumSupportedUnits);
   int lowestValue = static_cast<int>(CSSPrimitiveValue::UnitType::Percentage);
   return static_cast<CSSPrimitiveValue::UnitType>(index + lowestValue);
 }
@@ -141,7 +142,66 @@ CSSValue* CSSCalcLength::toCSSValue() const {
 std::unique_ptr<CSSCalcLength::UnitData>
 CSSCalcLength::UnitData::fromExpressionNode(
     const CSSCalcExpressionNode* expressionNode) {
-  return nullptr;
+  CalculationCategory category = expressionNode->category();
+  DCHECK(category == CalculationCategory::CalcLength ||
+         category == CalculationCategory::CalcPercentLength ||
+         category == CalculationCategory::CalcPercent);
+
+  if (expressionNode->getType() ==
+      CSSCalcExpressionNode::Type::CssCalcPrimitiveValue) {
+    CSSPrimitiveValue::UnitType unit = expressionNode->typeWithCalcResolved();
+    DCHECK(CSSLengthValue::isSupportedLengthUnit(unit));
+    std::unique_ptr<UnitData> result(new UnitData());
+    result->set(unit, expressionNode->doubleValue());
+    return result;
+  }
+
+  const CSSCalcExpressionNode* left = expressionNode->leftExpressionNode();
+  const CSSCalcExpressionNode* right = expressionNode->rightExpressionNode();
+  CalcOperator op = expressionNode->operatorType();
+
+  if (op == CalcMultiply) {
+    std::unique_ptr<UnitData> unitData = nullptr;
+    double argument = 0;
+    // One side should be a number.
+    if (left->category() == CalculationCategory::CalcNumber) {
+      unitData = UnitData::fromExpressionNode(right);
+      argument = left->doubleValue();
+    } else if (right->category() == CalculationCategory::CalcNumber) {
+      unitData = UnitData::fromExpressionNode(left);
+      argument = right->doubleValue();
+    } else {
+      NOTREACHED();
+      return nullptr;
+    }
+    DCHECK(unitData);
+    unitData->multiply(argument);
+    return unitData;
+  }
+
+  if (op == CalcDivide) {
+    // Divisor must always be on the RHS.
+    DCHECK_EQ(right->category(), CalculationCategory::CalcNumber);
+    std::unique_ptr<UnitData> unitData = UnitData::fromExpressionNode(left);
+    DCHECK(unitData);
+    unitData->divide(right->doubleValue());
+    return unitData;
+  }
+
+  // Add and subtract.
+  std::unique_ptr<UnitData> leftUnitData = UnitData::fromExpressionNode(left);
+  std::unique_ptr<UnitData> rightUnitData = UnitData::fromExpressionNode(right);
+  DCHECK(leftUnitData);
+  DCHECK(rightUnitData);
+
+  if (op == CalcAdd)
+    leftUnitData->add(*rightUnitData);
+  else if (op == CalcSubtract)
+    leftUnitData->subtract(*rightUnitData);
+  else
+    NOTREACHED();
+
+  return leftUnitData;
 }
 
 CSSCalcExpressionNode* CSSCalcLength::UnitData::toCSSCalcExpressionNode()

@@ -18,6 +18,20 @@ class CORE_EXPORT CSSLengthValue : public CSSStyleValue {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static const int kNumSupportedUnits = 15;
+
+  static CSSLengthValue* from(const String& cssText, ExceptionState&);
+  static CSSLengthValue* from(double value,
+                              const String& typeStr,
+                              ExceptionState&);
+  static CSSLengthValue* from(const CSSCalcDictionary&, ExceptionState&);
+
+  static bool isSupportedLengthUnit(CSSPrimitiveValue::UnitType unit) {
+    return (CSSPrimitiveValue::isLength(unit) ||
+            unit == CSSPrimitiveValue::UnitType::Percentage) &&
+           unit != CSSPrimitiveValue::UnitType::QuirkyEms &&
+           unit != CSSPrimitiveValue::UnitType::UserUnits;
+  }
   static CSSPrimitiveValue::UnitType unitFromName(const String& name);
   static CSSLengthValue* fromCSSValue(const CSSPrimitiveValue&);
 
@@ -28,28 +42,13 @@ class CORE_EXPORT CSSLengthValue : public CSSStyleValue {
 
   virtual bool containsPercent() const = 0;
 
-  static CSSLengthValue* from(const String& cssText, ExceptionState&);
-  static CSSLengthValue* from(double value,
-                              const String& typeStr,
-                              ExceptionState&);
-  static CSSLengthValue* from(const CSSCalcDictionary&, ExceptionState&);
-
  protected:
-  static const int kNumSupportedUnits = 15;
-
   CSSLengthValue() {}
 
   virtual CSSLengthValue* addInternal(const CSSLengthValue* other);
   virtual CSSLengthValue* subtractInternal(const CSSLengthValue* other);
   virtual CSSLengthValue* multiplyInternal(double);
   virtual CSSLengthValue* divideInternal(double);
-
-  static bool isSupportedLengthUnit(CSSPrimitiveValue::UnitType unit) {
-    return (CSSPrimitiveValue::isLength(unit) ||
-            unit == CSSPrimitiveValue::UnitType::Percentage) &&
-           unit != CSSPrimitiveValue::UnitType::QuirkyEms &&
-           unit != CSSPrimitiveValue::UnitType::UserUnits;
-  }
 };
 
 DEFINE_TYPE_CASTS(CSSLengthValue,
