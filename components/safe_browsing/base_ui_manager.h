@@ -38,6 +38,7 @@ class BaseUIManager
   // Called to stop or shutdown operations on the io_thread. This may be called
   // multiple times during the life of the UIManager. Should be called
   // on IO thread. If shutdown is true, the manager is disabled permanently.
+  // This currently is a no-op in the base class.
   virtual void StopOnIOThread(bool shutdown);
 
   // Called on the UI thread to display an interstitial page.
@@ -53,14 +54,14 @@ class BaseUIManager
   // the current page is 'safe'.
   virtual void LogPauseDelay(base::TimeDelta time);
 
-  // Called on the IO thread by the ThreatDetails with the serialized
-  // protocol buffer, so the service can send it over.
+  // This is a no-op in the base class, but should be overridden to send threat
+  // details. Called on the IO thread by the ThreatDetails with the serialized
+  // protocol buffer.
   virtual void SendSerializedThreatDetails(const std::string& serialized);
 
-  // Report hits to the unsafe contents (malware, phishing, unsafe download URL)
-  // to the server. Can only be called on UI thread.  If |post_data| is
-  // non-empty, the request will be sent as a POST instead of a GET.
-  // Will report only for UMA || is_extended_reporting.
+  // This is a no-op in the base class, but should be overridden to report hits
+  // to the unsafe contents (malware, phishing, unsafe download URL)
+  // to the server. Can only be called on UI thread.
   virtual void MaybeReportSafeBrowsingHit(
       const safe_browsing::HitReport& hit_report);
 
@@ -117,7 +118,8 @@ class BaseUIManager
                             bool is_pending,
                             SBThreatType threat_type);
 
-  // Call protocol manager on IO thread to report hits of unsafe contents.
+  // This is a no-op that should be overridden to call protocol manager on IO
+  // thread to report hits of unsafe contents.
   virtual void ReportSafeBrowsingHitOnIOThread(
       const safe_browsing::HitReport& hit_report);
 

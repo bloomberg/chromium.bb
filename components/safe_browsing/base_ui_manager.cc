@@ -99,7 +99,6 @@ BaseUIManager::BaseUIManager() {}
 
 void BaseUIManager::StopOnIOThread(bool shutdown) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // TODO(ntfschr): implement this once SafeBrowsingService is componentized
   return;
 }
 
@@ -241,14 +240,12 @@ void BaseUIManager::LogPauseDelay(base::TimeDelta time) {
 void BaseUIManager::MaybeReportSafeBrowsingHit(
     const HitReport& hit_report) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TODO(ntfschr): implement this once we support reporting in WebView
   return;
 }
 
 void BaseUIManager::ReportSafeBrowsingHitOnIOThread(
     const HitReport& hit_report) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // TODO(ntfschr): implement this once we support reporting in WebView
   return;
 }
 
@@ -257,7 +254,6 @@ void BaseUIManager::ReportSafeBrowsingHitOnIOThread(
 void BaseUIManager::SendSerializedThreatDetails(
     const std::string& serialized) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // TODO(ntfschr): implement this once we support reporting in WebView
   return;
 }
 
