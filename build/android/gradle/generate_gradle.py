@@ -29,9 +29,7 @@ from util import build_utils
 
 _DEFAULT_ANDROID_MANIFEST_PATH = os.path.join(
     host_paths.DIR_SOURCE_ROOT, 'build', 'android', 'AndroidManifest.xml')
-_JINJA_TEMPLATE_PATH = os.path.join(
-    os.path.dirname(__file__), 'build.gradle.jinja')
-
+_FILE_DIR = os.path.dirname(__file__)
 _JAVA_SUBDIR = 'symlinked-java'
 _SRCJARS_SUBDIR = 'extracted-srcjars'
 _JNI_LIBS_SUBDIR = 'symlinked-libs'
@@ -51,6 +49,11 @@ _DEFAULT_TARGETS = [
     '//content/public/android:content_junit_tests',
     '//content/shell/android:content_shell_apk',
 ]
+
+
+def _TemplatePath(name):
+  return os.path.join(_FILE_DIR, '{}.jinja'.format(name))
+
 
 def _RebasePath(path_or_list, new_cwd=None, old_cwd=None):
   """Makes the given path(s) relative to new_cwd, or absolute if not specified.
@@ -90,7 +93,7 @@ def _ReadBuildVars(output_dir):
 
 
 def _RunNinja(output_dir, args):
-  cmd = ['ninja', '-C', output_dir, '-j50']
+  cmd = ['ninja', '-C', output_dir, '-j1000']
   cmd.extend(args)
   logging.info('Running: %r', cmd)
   subprocess.check_call(cmd)
@@ -329,13 +332,13 @@ def _GenerateGradleFile(build_config, build_vars, java_dirs, jni_libs,
           for p in gradle['dependent_java_projects']]
   variables['java_project_deps'] = [d.ProjectName() for d in deps]
 
-  return jinja_processor.Render(_JINJA_TEMPLATE_PATH, variables)
+  return jinja_processor.Render(
+      _TemplatePath(target_type.split('_')[0]), variables)
 
 
 def _GenerateRootGradle(jinja_processor):
   """Returns the data for the root project's build.gradle."""
-  variables = {'template_type': 'root'}
-  return jinja_processor.Render(_JINJA_TEMPLATE_PATH, variables)
+  return jinja_processor.Render(_TemplatePath('root'))
 
 
 def _GenerateSettingsGradle(project_entries):
@@ -447,7 +450,7 @@ def main():
   logging.info('Found %d dependent build_config targets.', len(all_entries))
 
   logging.warning('Writing .gradle files...')
-  jinja_processor = jinja_template.JinjaProcessor(host_paths.DIR_SOURCE_ROOT)
+  jinja_processor = jinja_template.JinjaProcessor(_FILE_DIR)
   build_vars = _ReadBuildVars(output_dir)
   project_entries = []
   srcjar_tuples = []
