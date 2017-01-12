@@ -2278,8 +2278,10 @@ def _CheckSyslogUseWarning(input_api, output_api, source_file_filter=None,
   """Checks that all source files use SYSLOG properly."""
   syslog_files = []
   for f in input_api.AffectedSourceFiles(source_file_filter):
-    if 'SYSLOG' in input_api.ReadFile(f, 'rb'):
-      syslog_files.append(f.LocalPath())
+    for line_number, line in f.ChangedContents():
+      if 'SYSLOG' in line:
+        syslog_files.append(f.LocalPath() + ':' + str(line_number))
+
   if syslog_files:
     return [output_api.PresubmitPromptWarning(
         'Please make sure there are no privacy sensitive bits of data in SYSLOG'
