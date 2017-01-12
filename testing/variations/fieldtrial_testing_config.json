@@ -1606,9 +1606,7 @@
         {
             "platforms": [
                 "chromeos",
-                "linux",
-                "mac",
-                "win"
+                "linux"
             ],
             "experiments": [
                 {

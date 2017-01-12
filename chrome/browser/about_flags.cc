@@ -2110,13 +2110,15 @@ const FeatureEntry kFeatureEntries[] = {
          features::kDisplayPersistenceToggleInPermissionPrompts)},
 #endif
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
     {"print-pdf-as-image", IDS_FLAGS_PRINT_PDF_AS_IMAGE_NAME,
      IDS_FLAGS_PRINT_PDF_AS_IMAGE_DESCRIPTION, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kPrintPdfAsImage)},
+#endif  // !defined(OS_WIN) && !defined(OS_MACOSX)
     {"print-scaling", IDS_FLAGS_PRINT_SCALING_NAME,
      IDS_FLAGS_PRINT_SCALING_DESCRIPTION, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kPrintScaling)},
-#endif  // !defined(OS_ANDROID)
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #if defined(OS_ANDROID)
     {"enable-consistent-omnibox-geolocation",
      IDS_FLAGS_ENABLE_CONSISTENT_OMNIBOX_GEOLOCATION_NAME,
@@ -2130,7 +2132,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"web-payments-modifiers", IDS_FLAGS_WEB_PAYMENTS_MODIFIERS_NAME,
      IDS_FLAGS_WEB_PAYMENTS_MODIFIERS_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kWebPaymentsModifiers)},
-#endif
+#endif  // !defined(OS_ANDROID)
     {"cross-process-guests", IDS_FLAGS_CROSS_PROCESS_GUEST_VIEW_ISOLATION_NAME,
      IDS_FLAGS_CROSS_PROCESS_GUEST_VIEW_ISOLATION_DESCRIPTION, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kGuestViewCrossProcessFrames)},

@@ -67,8 +67,10 @@ PrintPreviewWebUITest.prototype = {
     GEN('      feature_list(new base::FeatureList);');
     GEN('  char enabled_features[128] = {0};');
     GEN('  strcpy(enabled_features, features::kPrintScaling.name);');
+    GEN('#if !defined(OS_WINDOWS) && !defined(OS_MACOSX)');
     GEN('  strcat(strcat(enabled_features, ","), ');
     GEN('      features::kPrintPdfAsImage.name);');
+    GEN('#endif');
     GEN('  feature_list->InitializeFromCommandLine(');
     GEN('      enabled_features, std::string());');
     GEN('  base::FeatureList::SetInstance(std::move(feature_list));');
@@ -523,11 +525,15 @@ TEST_F('PrintPreviewWebUITest', 'PrintToPDFSelectedCapabilities', function() {
   this.setCapabilities(device);
 
   var otherOptions = $('other-options-settings');
-  checkSectionVisible(otherOptions, true);
-  checkElementDisplayed(
-      otherOptions.querySelector('#fit-to-page-container'), false);
-  checkElementDisplayed(
-      otherOptions.querySelector('#rasterize-container'), true);
+  // If rasterization is an option, other options should be visible. If not,
+  // there should be no available other options.
+  checkSectionVisible(otherOptions, !cr.isWindows && !cr.isMac);
+  if (!cr.isWindows && !cr.isMac) {
+    checkElementDisplayed(
+        otherOptions.querySelector('#fit-to-page-container'), false);
+    checkElementDisplayed(
+        otherOptions.querySelector('#rasterize-container'), true);
+  }
   checkSectionVisible($('media-size-settings'), false);
   checkSectionVisible($('scaling-settings'), false);
 
@@ -543,7 +549,10 @@ TEST_F('PrintPreviewWebUITest', 'SourceIsHTMLCapabilities', function() {
 
   var otherOptions = $('other-options-settings');
   var fitToPage = otherOptions.querySelector('#fit-to-page-container');
-  var rasterize = otherOptions.querySelector('#rasterize-container');
+  var rasterize;
+  var rasterizeEnabled = !cr.isWindows && !cr.isMac;
+  if (rasterizeEnabled)
+    rasterize = otherOptions.querySelector('#rasterize-container');
   var mediaSize = $('media-size-settings');
   var scalingSettings = $('scaling-settings');
 
@@ -551,14 +560,16 @@ TEST_F('PrintPreviewWebUITest', 'SourceIsHTMLCapabilities', function() {
   // available).
   checkSectionVisible(otherOptions, true);
   checkElementDisplayed(fitToPage, false);
-  checkElementDisplayed(rasterize, false);
+  if (rasterizeEnabled)
+    checkElementDisplayed(rasterize, false);
   checkSectionVisible(mediaSize, false);
   checkSectionVisible(scalingSettings, false);
 
   this.expandMoreSettings();
 
   checkElementDisplayed(fitToPage, false);
-  checkElementDisplayed(rasterize, false);
+  if (rasterizeEnabled)
+    checkElementDisplayed(rasterize, false);
   checkSectionVisible(mediaSize, true);
   checkSectionVisible(scalingSettings, true);
 
@@ -577,18 +588,25 @@ TEST_F('PrintPreviewWebUITest', 'SourceIsPDFCapabilities', function() {
   var scalingSettings = $('scaling-settings');
   var fitToPageContainer =
       otherOptions.querySelector('#fit-to-page-container');
-  var rasterizeContainer =
+  var rasterizeEnabled = !cr.isWindows && !cr.isMac;
+  var rasterizeContainer;
+  if (rasterizeEnabled) {
+    rasterizeContainer =
       otherOptions.querySelector('#rasterize-container');
+  }
 
   checkSectionVisible(otherOptions, true);
   checkElementDisplayed(fitToPageContainer, true);
-  checkElementDisplayed(rasterizeContainer, false);
+  if (rasterizeEnabled)
+    checkElementDisplayed(rasterizeContainer, false);
   expectTrue(
       fitToPageContainer.querySelector('.checkbox').checked);
   this.expandMoreSettings();
-  checkElementDisplayed(rasterizeContainer, true);
-  expectFalse(
-      rasterizeContainer.querySelector('.checkbox').checked);
+  if (rasterizeEnabled) {
+    checkElementDisplayed(rasterizeContainer, true);
+    expectFalse(
+        rasterizeContainer.querySelector('.checkbox').checked);
+  }
   checkSectionVisible($('media-size-settings'), true);
   checkSectionVisible(scalingSettings, true);
 
