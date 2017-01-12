@@ -239,6 +239,13 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     }
 
     @Override
+    public void onLoadProgressChanged(double progress) {
+        if (mNativeVrShell != 0) {
+            nativeOnLoadProgressChanged(mNativeVrShell, progress);
+        }
+    }
+
+    @Override
     public void shutdown() {
         if (mNativeVrShell != 0) {
             nativeDestroy(mNativeVrShell);
@@ -315,6 +322,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     private native void nativeOnTriggerEvent(long nativeVrShell);
     private native void nativeOnPause(long nativeVrShell);
     private native void nativeOnResume(long nativeVrShell);
+    private native void nativeOnLoadProgressChanged(long nativeVrShell, double progress);
     private native void nativeContentPhysicalBoundsChanged(long nativeVrShell, int width,
             int height, float dpr);
     private native void nativeUIPhysicalBoundsChanged(long nativeVrShell, int width, int height,

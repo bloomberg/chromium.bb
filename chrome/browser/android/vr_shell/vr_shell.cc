@@ -268,6 +268,13 @@ void VrShell::SetWebVrMode(JNIEnv* env,
   }
 }
 
+void VrShell::OnLoadProgressChanged(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    double progress) {
+  html_interface_->SetLoadProgress(progress);
+}
+
 void VrShell::SetGvrPoseForWebVr(const gvr::Mat4f& pose, uint32_t pose_num) {
   GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
   if (thread->IsRunning()) {

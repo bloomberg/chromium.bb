@@ -294,7 +294,7 @@ var vrShellUi = (function() {
       this.enabled = false;
       this.hidden = false;
       this.loading = false;
-      this.loadingProgress = 0;
+      this.loadProgress = 0;
       this.level = 0;
       this.visibilityTimeout = 0;
       this.visibilityTimer = null;
@@ -343,13 +343,13 @@ var vrShellUi = (function() {
 
     setLoading(loading) {
       this.loading = loading;
-      this.loadingProgress = 0;
+      this.loadProgress = 0;
       this.resetVisibilityTimer();
       this.updateState();
     }
 
-    setLoadingProgress(progress) {
-      this.loadingProgress = progress;
+    setLoadProgress(progress) {
+      this.loadProgress = progress;
       this.updateState();
     }
 
@@ -405,7 +405,7 @@ var vrShellUi = (function() {
       if (this.loading) {
         // Remap load progress range 0-100 as 5-95 percent, to avoid the
         // extremities of the rounded ends of the omnibox.
-        let percent = Math.round((this.loadingProgress * 0.9 + 0.05) * 100);
+        let percent = Math.round((this.loadProgress * 0.9 + 0.05) * 100);
         let gradient = 'linear-gradient(to right, ' + this.statusBarColor +
             ' 0%, ' + this.statusBarColor + ' ' + percent + '%, ' +
             this.backgroundColor + ' ' + percent + '%, ' +
@@ -531,8 +531,8 @@ var vrShellUi = (function() {
     if ('loading' in dict) {
       uiManager.omnibox.setLoading(dict['loading']);
     }
-    if ('loadingProgress' in dict) {
-      uiManager.omnibox.setLoadingProgress(dict['loadingProgress']);
+    if ('loadProgress' in dict) {
+      uiManager.omnibox.setLoadProgress(dict['loadProgress']);
     }
     ui.flush();
   }

@@ -135,6 +135,12 @@ public class VrShellDelegate {
                     // TODO(mthiesse): Update the native WebContents pointer and compositor.
                     shutdownVR(false, mVrSupportLevel == VR_DAYDREAM /* showTransition */);
                 }
+
+                @Override
+                public void onLoadProgressChanged(Tab tab, int progress) {
+                    if (!mInVr) return;
+                    mVrShell.onLoadProgressChanged((double) progress / 100.0);
+                }
             };
         }
 

@@ -52,4 +52,9 @@ public interface VrShell {
      * Sets a callback to be run when the close button is tapped.
      */
     void setCloseButtonListener(Runnable runner);
+
+    /**
+     * Handles a change in page load progress.
+     */
+    void onLoadProgressChanged(double progress);
 }

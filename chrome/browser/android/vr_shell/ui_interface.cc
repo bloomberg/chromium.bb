@@ -53,6 +53,11 @@ void UiInterface::SetLoading(bool loading) {
   FlushUpdates();
 }
 
+void UiInterface::SetLoadProgress(double progress) {
+  updates_.SetDouble("loadProgress", progress);
+  FlushUpdates();
+}
+
 void UiInterface::SetURL(const GURL& url) {
   std::unique_ptr<base::DictionaryValue> details(new base::DictionaryValue);
   details->SetString("host", url.host());

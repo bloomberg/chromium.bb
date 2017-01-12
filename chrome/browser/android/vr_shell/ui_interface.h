@@ -38,6 +38,7 @@ class UiInterface {
   void SetSecurityLevel(int level);
   void SetWebVRSecureOrigin(bool secure);
   void SetLoading(bool loading);
+  void SetLoadProgress(double progress);
   void SetURL(const GURL& url);
 
   // Called by WebUI when starting VR.

@@ -81,6 +81,9 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   void SetWebVrMode(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj,
                     bool enabled);
+  void OnLoadProgressChanged(JNIEnv* env,
+                             const base::android::JavaParamRef<jobject>& obj,
+                             double progress);
 
   void ContentWebContentsDestroyed();
   // Called when our WebContents have been hidden. Usually a sign that something
