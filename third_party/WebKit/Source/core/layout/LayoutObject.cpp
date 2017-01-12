@@ -2315,35 +2315,6 @@ TransformationMatrix LayoutObject::localToAncestorTransform(
   return transformState.accumulatedTransform();
 }
 
-FloatPoint LayoutObject::localToInvalidationBackingPoint(
-    const LayoutPoint& localPoint,
-    PaintLayer** backingLayer) {
-  const LayoutBoxModelObject& paintInvalidationContainer =
-      containerForPaintInvalidation();
-  DCHECK(paintInvalidationContainer.layer());
-
-  if (backingLayer)
-    *backingLayer = paintInvalidationContainer.layer();
-  FloatPoint containerPoint =
-      localToAncestorPoint(FloatPoint(localPoint), &paintInvalidationContainer,
-                           TraverseDocumentBoundaries);
-
-  // A layoutObject can have no invalidation backing if it is from a detached
-  // frame, or when forced compositing is disabled.
-  if (paintInvalidationContainer.layer()->compositingState() == NotComposited)
-    return containerPoint;
-
-  PaintLayer::mapPointInPaintInvalidationContainerToBacking(
-      paintInvalidationContainer, containerPoint);
-
-  if (GraphicsLayer* backingLayer =
-          paintInvalidationContainer.layer()->graphicsLayerBacking(this)) {
-    containerPoint.move(-backingLayer->offsetFromLayoutObject());
-  }
-
-  return containerPoint;
-}
-
 LayoutSize LayoutObject::offsetFromContainer(const LayoutObject* o) const {
   ASSERT(o == container());
   return o->hasOverflowClip()

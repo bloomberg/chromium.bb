@@ -38,6 +38,8 @@
 
 namespace blink {
 
+class GraphicsLayer;
+class LayoutPoint;
 class LayoutUnit;
 class LayoutObject;
 struct CompositedSelectionBound;
@@ -101,6 +103,10 @@ class RenderedPosition {
                                unsigned char bidiLevelOfRun) const;
   bool atRightBoundaryOfBidiRun(ShouldMatchBidiLevel,
                                 unsigned char bidiLevelOfRun) const;
+
+  FloatPoint localToInvalidationBackingPoint(
+      const LayoutPoint& localPoint,
+      GraphicsLayer** graphicsLayerBacking) const;
 
   LayoutObject* m_layoutObject;
   InlineBox* m_inlineBox;

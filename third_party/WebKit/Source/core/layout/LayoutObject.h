@@ -1204,12 +1204,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return localToAncestorTransform(nullptr, mode);
   }
 
-  // Convert a local point into the coordinate system of backing coordinates.
-  // Also returns the backing layer if needed.
-  FloatPoint localToInvalidationBackingPoint(
-      const LayoutPoint&,
-      PaintLayer** backingLayer = nullptr);
-
   // Return the offset from the container() layoutObject (excluding transforms
   // and multicol).
   virtual LayoutSize offsetFromContainer(const LayoutObject*) const;

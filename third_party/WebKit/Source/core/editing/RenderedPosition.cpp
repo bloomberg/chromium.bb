@@ -265,6 +265,41 @@ IntRect RenderedPosition::absoluteRect(
                    .enclosingBoundingBox();
 }
 
+// Convert a local point into the coordinate system of backing coordinates.
+// Also returns the backing layer if needed.
+FloatPoint RenderedPosition::localToInvalidationBackingPoint(
+    const LayoutPoint& localPoint,
+    GraphicsLayer** graphicsLayerBacking) const {
+  const LayoutBoxModelObject& paintInvalidationContainer =
+      m_layoutObject->containerForPaintInvalidation();
+  DCHECK(paintInvalidationContainer.layer());
+
+  FloatPoint containerPoint = m_layoutObject->localToAncestorPoint(
+      FloatPoint(localPoint), &paintInvalidationContainer,
+      TraverseDocumentBoundaries);
+
+  // A layoutObject can have no invalidation backing if it is from a detached
+  // frame, or when forced compositing is disabled.
+  if (paintInvalidationContainer.layer()->compositingState() == NotComposited)
+    return containerPoint;
+
+  PaintLayer::mapPointInPaintInvalidationContainerToBacking(
+      paintInvalidationContainer, containerPoint);
+
+  // Must not use the scrolling contents layer, so pass
+  // |paintInvalidationContainer|.
+  if (GraphicsLayer* graphicsLayer =
+          paintInvalidationContainer.layer()->graphicsLayerBacking(
+              &paintInvalidationContainer)) {
+    if (graphicsLayerBacking)
+      *graphicsLayerBacking = graphicsLayer;
+
+    containerPoint.move(-graphicsLayer->offsetFromLayoutObject());
+  }
+
+  return containerPoint;
+}
+
 void RenderedPosition::positionInGraphicsLayerBacking(
     CompositedSelectionBound& bound,
     bool selectionStart) const {
@@ -275,17 +310,16 @@ void RenderedPosition::positionInGraphicsLayerBacking(
     return;
 
   LayoutRect rect = m_layoutObject->localCaretRect(m_inlineBox, m_offset);
-  PaintLayer* layer = nullptr;
   if (m_layoutObject->style()->isHorizontalWritingMode()) {
-    bound.edgeTopInLayer = m_layoutObject->localToInvalidationBackingPoint(
-        rect.minXMinYCorner(), &layer);
-    bound.edgeBottomInLayer = m_layoutObject->localToInvalidationBackingPoint(
-        rect.minXMaxYCorner(), nullptr);
+    bound.edgeTopInLayer =
+        localToInvalidationBackingPoint(rect.minXMinYCorner(), &bound.layer);
+    bound.edgeBottomInLayer =
+        localToInvalidationBackingPoint(rect.minXMaxYCorner(), nullptr);
   } else {
-    bound.edgeTopInLayer = m_layoutObject->localToInvalidationBackingPoint(
-        rect.minXMinYCorner(), &layer);
-    bound.edgeBottomInLayer = m_layoutObject->localToInvalidationBackingPoint(
-        rect.maxXMinYCorner(), nullptr);
+    bound.edgeTopInLayer =
+        localToInvalidationBackingPoint(rect.minXMinYCorner(), &bound.layer);
+    bound.edgeBottomInLayer =
+        localToInvalidationBackingPoint(rect.maxXMinYCorner(), nullptr);
 
     // When text is vertical, it looks better for the start handle baseline to
     // be at the starting edge, to enclose the selection fully between the
@@ -299,8 +333,6 @@ void RenderedPosition::positionInGraphicsLayerBacking(
     // Flipped blocks writing mode is not only vertical but also right to left.
     bound.isTextDirectionRTL = m_layoutObject->hasFlippedBlocksWritingMode();
   }
-
-  bound.layer = layer ? layer->graphicsLayerBacking() : nullptr;
 }
 
 bool layoutObjectContainsPosition(LayoutObject* target,
