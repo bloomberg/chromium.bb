@@ -16,6 +16,11 @@ namespace payment_request_utils {
 // Helper function to get the shipping address label from an autofill profile.
 NSString* AddressLabelFromAutofillProfile(autofill::AutofillProfile* profile);
 
+// Helper function that returns a formatted currency string given the value and
+// the currency code.
+NSString* FormattedCurrencyString(NSDecimalNumber* value,
+                                  NSString* currencyCode);
+
 }  // namespace payment_request_utils
 
 #endif  // IOS_CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_UTILS_H_

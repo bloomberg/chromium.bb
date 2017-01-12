@@ -140,24 +140,29 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   CollectionViewModel* model = self.collectionViewModel;
 
-  NSInteger itemType =
-      [self.collectionViewModel itemTypeForIndexPath:indexPath];
-  CollectionViewItem* item =
-      [self.collectionViewModel itemAtIndexPath:indexPath];
-
+  NSInteger itemType = [model itemTypeForIndexPath:indexPath];
   if (itemType == ItemTypeShippingAddress) {
-    NSInteger index = [model indexInItemTypeForIndexPath:indexPath];
-    DCHECK(index < (NSInteger)_shippingAddresses.size());
-    self.selectedShippingAddress = _shippingAddresses[index];
+    NSIndexPath* currentlySelectedIndexPath = [self.collectionViewModel
+               indexPathForItem:_selectedItem
+        inSectionWithIdentifier:SectionIdentifierShippingAddress];
+    if (currentlySelectedIndexPath != indexPath) {
+      // Update the cells.
+      CollectionViewItem* item = [model itemAtIndexPath:indexPath];
+      ShippingAddressItem* newlySelectedItem =
+          base::mac::ObjCCastStrict<ShippingAddressItem>(item);
+      newlySelectedItem.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
 
-    ShippingAddressItem* shippingAddressItem =
-        base::mac::ObjCCastStrict<ShippingAddressItem>(item);
-    shippingAddressItem.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
-    _selectedItem.accessoryType = MDCCollectionViewCellAccessoryNone;
-    [self reconfigureCellsForItems:@[ _selectedItem, shippingAddressItem ]
-           inSectionWithIdentifier:SectionIdentifierShippingAddress];
-    _selectedItem = shippingAddressItem;
+      _selectedItem.accessoryType = MDCCollectionViewCellAccessoryNone;
 
+      [self reconfigureCellsForItems:@[ _selectedItem, newlySelectedItem ]
+             inSectionWithIdentifier:SectionIdentifierShippingAddress];
+
+      // Update the selected shipping address and its respective item.
+      NSInteger index = [model indexInItemTypeForIndexPath:indexPath];
+      DCHECK(index < (NSInteger)_shippingAddresses.size());
+      self.selectedShippingAddress = _shippingAddresses[index];
+      _selectedItem = newlySelectedItem;
+    }
     [_delegate
         shippingAddressSelectionViewController:self
                        selectedShippingAddress:self.selectedShippingAddress];

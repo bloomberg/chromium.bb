@@ -18,10 +18,14 @@ class AutofillProfile;
 
 @protocol ShippingAddressSelectionCoordinatorDelegate<NSObject>
 
+// Notifies the delegate that the user has selected a shipping address.
 - (void)shippingAddressSelectionCoordinator:
             (ShippingAddressSelectionCoordinator*)coordinator
                     selectedShippingAddress:
                         (autofill::AutofillProfile*)shippingAddress;
+
+// Notifies the delegate that the user has chosen to return to the previous
+// screen without making a selection.
 - (void)shippingAddressSelectionCoordinatorDidReturn:
     (ShippingAddressSelectionCoordinator*)coordinator;
 

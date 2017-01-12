@@ -20,6 +20,7 @@ class CreditCard;
 - (void)paymentRequestViewControllerDidConfirm;
 - (void)paymentRequestViewControllerDisplayPaymentItems;
 - (void)paymentRequestViewControllerSelectShippingAddress;
+- (void)paymentRequestViewControllerSelectShippingOption;
 - (void)paymentRequestViewControllerSelectPaymentMethod;
 
 @end
@@ -44,6 +45,9 @@ class CreditCard;
 // The currently selected and displayed shipping address, if any.
 @property(nonatomic, assign) autofill::AutofillProfile* selectedShippingAddress;
 
+// The currently selected and displayed shipping option, if any.
+@property(nonatomic, assign) web::PaymentShippingOption* selectedShippingOption;
+
 // The currently selected and displayed payment method, if any.
 @property(nonatomic, assign) autofill::CreditCard* selectedPaymentMethod;
 
@@ -53,6 +57,10 @@ class CreditCard;
 // Sets the selected shipping address and updates the UI.
 - (void)updateSelectedShippingAddress:
     (autofill::AutofillProfile*)shippingAddress;
+
+// Sets the selected shipping option and updates the UI.
+- (void)updateSelectedShippingOption:
+    (web::PaymentShippingOption*)shippingOption;
 
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 

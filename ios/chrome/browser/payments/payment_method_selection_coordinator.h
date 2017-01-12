@@ -19,9 +19,13 @@ class CreditCard;
 
 @protocol PaymentMethodSelectionCoordinatorDelegate<NSObject>
 
+// Notifies the delegate that the user has selected a payment method.
 - (void)paymentMethodSelectionCoordinator:
             (PaymentMethodSelectionCoordinator*)coordinator
                     selectedPaymentMethod:(autofill::CreditCard*)paymentMethod;
+
+// Notifies the delegate that the user has chosen to return to the previous
+// screen without making a selection.
 - (void)paymentMethodSelectionCoordinatorDidReturn:
     (PaymentMethodSelectionCoordinator*)coordinator;
 

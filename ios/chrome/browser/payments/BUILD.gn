@@ -36,6 +36,10 @@ source_set("payments") {
     "shipping_address_selection_coordinator.mm",
     "shipping_address_selection_view_controller.h",
     "shipping_address_selection_view_controller.mm",
+    "shipping_option_selection_coordinator.h",
+    "shipping_option_selection_coordinator.mm",
+    "shipping_option_selection_view_controller.h",
+    "shipping_option_selection_view_controller.mm",
   ]
   deps = [
     ":injected_js",
@@ -67,6 +71,8 @@ source_set("unit_tests") {
     "payment_items_display_view_controller_unittest.mm",
     "shipping_address_selection_coordinator_unittest.mm",
     "shipping_address_selection_view_controller_unittest.mm",
+    "shipping_option_selection_coordinator_unittest.mm",
+    "shipping_option_selection_view_controller_unittest.mm",
   ]
   deps = [
     ":payments",

@@ -27,6 +27,8 @@
       _itemsDisplayCoordinator;
   base::scoped_nsobject<ShippingAddressSelectionCoordinator>
       _shippingAddressSelectionCoordinator;
+  base::scoped_nsobject<ShippingOptionSelectionCoordinator>
+      _shippingOptionSelectionCoordinator;
   base::scoped_nsobject<PaymentMethodSelectionCoordinator>
       _methodSelectionCoordinator;
 
@@ -46,6 +48,8 @@
 @synthesize pageTitle = _pageTitle;
 @synthesize pageHost = _pageHost;
 @synthesize selectedShippingAddress = _selectedShippingAddress;
+@synthesize selectedShippingOption = _selectedShippingOption;
+
 @synthesize selectedPaymentMethod = _selectedPaymentMethod;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)baseViewController
@@ -73,6 +77,16 @@
   if (addresses.size() > 0)
     _selectedShippingAddress = addresses[0];
 
+  for (size_t i = 0; i < _paymentRequest.details.shipping_options.size(); ++i) {
+    web::PaymentShippingOption* shippingOption =
+        &_paymentRequest.details.shipping_options[i];
+    if (shippingOption->selected) {
+      // If more than one option has |selected| set, the last one in the
+      // sequence should be treated as the selected item.
+      _selectedShippingOption = shippingOption;
+    }
+  }
+
   const std::vector<autofill::CreditCard*> cards = [self supportedMethods];
   if (cards.size() > 0)
     _selectedPaymentMethod = cards[0];
@@ -83,6 +97,7 @@
   [_viewController setPageTitle:_pageTitle];
   [_viewController setPageHost:_pageHost];
   [_viewController setSelectedShippingAddress:_selectedShippingAddress];
+  [_viewController setSelectedShippingOption:_selectedShippingOption];
   [_viewController setSelectedPaymentMethod:_selectedPaymentMethod];
   [_viewController setDelegate:self];
   [_viewController loadModel];
@@ -100,6 +115,7 @@
   [_navigationController dismissViewControllerAnimated:YES completion:nil];
   _itemsDisplayCoordinator.reset();
   _shippingAddressSelectionCoordinator.reset();
+  _shippingOptionSelectionCoordinator.reset();
   _methodSelectionCoordinator.reset();
   _navigationController.reset();
   _viewController.reset();
@@ -218,6 +234,26 @@
   [_shippingAddressSelectionCoordinator start];
 }
 
+- (void)paymentRequestViewControllerSelectShippingOption {
+  _shippingOptionSelectionCoordinator.reset(
+      [[ShippingOptionSelectionCoordinator alloc]
+          initWithBaseViewController:_viewController]);
+
+  std::vector<web::PaymentShippingOption*> shippingOptions;
+  shippingOptions.reserve(_paymentRequest.details.shipping_options.size());
+  std::transform(std::begin(_paymentRequest.details.shipping_options),
+                 std::end(_paymentRequest.details.shipping_options),
+                 std::back_inserter(shippingOptions),
+                 [](web::PaymentShippingOption& option) { return &option; });
+
+  [_shippingOptionSelectionCoordinator setShippingOptions:shippingOptions];
+  [_shippingOptionSelectionCoordinator
+      setSelectedShippingOption:_selectedShippingOption];
+  [_shippingOptionSelectionCoordinator setDelegate:self];
+
+  [_shippingOptionSelectionCoordinator start];
+}
+
 - (void)paymentRequestViewControllerSelectPaymentMethod {
   _methodSelectionCoordinator.reset([[PaymentMethodSelectionCoordinator alloc]
       initWithBaseViewController:_viewController]);
@@ -258,6 +294,25 @@
     (ShippingAddressSelectionCoordinator*)coordinator {
   [_shippingAddressSelectionCoordinator stop];
   _shippingAddressSelectionCoordinator.reset();
+}
+
+#pragma mark - ShippingOptionSelectionCoordinatorDelegate
+
+- (void)shippingOptionSelectionCoordinator:
+            (ShippingOptionSelectionCoordinator*)coordinator
+                    selectedShippingOption:
+                        (web::PaymentShippingOption*)shippingOption {
+  _selectedShippingOption = shippingOption;
+  [_viewController updateSelectedShippingOption:shippingOption];
+
+  [_shippingOptionSelectionCoordinator stop];
+  _shippingOptionSelectionCoordinator.reset();
+}
+
+- (void)shippingOptionSelectionCoordinatorDidReturn:
+    (ShippingAddressSelectionCoordinator*)coordinator {
+  [_shippingOptionSelectionCoordinator stop];
+  _shippingOptionSelectionCoordinator.reset();
 }
 
 #pragma mark - PaymentMethodSelectionCoordinatorDelegate

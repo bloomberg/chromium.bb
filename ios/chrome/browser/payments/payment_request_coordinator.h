@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/payments/payment_method_selection_coordinator.h"
 #import "ios/chrome/browser/payments/payment_request_view_controller.h"
 #import "ios/chrome/browser/payments/shipping_address_selection_coordinator.h"
+#import "ios/chrome/browser/payments/shipping_option_selection_coordinator.h"
 #include "ios/web/public/payments/payment_request.h"
 
 namespace autofill {
@@ -34,7 +35,8 @@ class PersonalDataManager;
     : ChromeCoordinator<PaymentRequestViewControllerDelegate,
                         PaymentItemsDisplayCoordinatorDelegate,
                         PaymentMethodSelectionCoordinatorDelegate,
-                        ShippingAddressSelectionCoordinatorDelegate>
+                        ShippingAddressSelectionCoordinatorDelegate,
+                        ShippingOptionSelectionCoordinatorDelegate>
 
 // Creates a Payment Request coordinator that will present UI on
 // |viewController| using data available from |personalDataManager|.
@@ -65,6 +67,10 @@ class PersonalDataManager;
 // The currently selected shipping address, if any.
 @property(nonatomic, readonly)
     autofill::AutofillProfile* selectedShippingAddress;
+
+// The currently selected shipping option, if any.
+@property(nonatomic, readonly)
+    web::PaymentShippingOption* selectedShippingOption;
 
 // The payment method selected by the user, if any.
 @property(nonatomic, readonly) autofill::CreditCard* selectedPaymentMethod;

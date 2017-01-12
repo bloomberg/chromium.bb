@@ -19,16 +19,17 @@
 #import "ios/chrome/browser/payments/cells/payment_method_item.h"
 #import "ios/chrome/browser/payments/cells/shipping_address_item.h"
 #import "ios/chrome/browser/payments/payment_request_utils.h"
-#import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
+#import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -54,6 +55,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeShippingTitle,
   ItemTypeShippingAddress,
   ItemTypeAddShippingAddress,
+  ItemTypeShippingOption,
+  ItemTypeSelectShippingOption,
   ItemTypePaymentTitle,
   ItemTypePaymentMethod,
 };
@@ -66,6 +69,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   base::scoped_nsobject<MDCFlatButton> _payButton;
 
   ShippingAddressItem* _selectedShippingAddressItem;
+  CollectionViewTextItem* _selectedShippingOptionItem;
 
   base::mac::ObjCPropertyReleaser
       _propertyReleaser_PaymentRequestViewController;
@@ -85,8 +89,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @synthesize pageFavicon = _pageFavicon;
 @synthesize pageTitle = _pageTitle;
 @synthesize pageHost = _pageHost;
-@synthesize selectedPaymentMethod = _selectedPaymentMethod;
 @synthesize selectedShippingAddress = _selectedShippingAddress;
+@synthesize selectedShippingOption = _selectedShippingOption;
+@synthesize selectedPaymentMethod = _selectedPaymentMethod;
 
 - (instancetype)init {
   if ((self = [super initWithStyle:CollectionViewControllerStyleAppBar])) {
@@ -201,11 +206,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   NSDecimalNumber* value = [NSDecimalNumber
       decimalNumberWithString:SysUTF16ToNSString(
                                   _paymentRequest.details.total.amount.value)];
-  NSNumberFormatter* currencyFormatter =
-      [[[NSNumberFormatter alloc] init] autorelease];
-  [currencyFormatter setNumberStyle:NSNumberFormatterCurrencyStyle];
-  [currencyFormatter setCurrencyCode:currencyCode];
-  total.detailText = [currencyFormatter stringFromNumber:value];
+  total.detailText =
+      payment_request_utils::FormattedCurrencyString(value, currencyCode);
   if (!_paymentRequest.details.display_items.empty()) {
     total.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
     total.accessibilityTraits |= UIAccessibilityTraitButton;
@@ -221,11 +223,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model setHeader:shippingTitle
       forSectionWithIdentifier:SectionIdentifierShipping];
 
-  CollectionViewItem* shippingItem = nil;
+  CollectionViewItem* shippingAddressItem = nil;
   if (_selectedShippingAddress) {
     _selectedShippingAddressItem = [[[ShippingAddressItem alloc]
         initWithType:ItemTypeShippingAddress] autorelease];
-    shippingItem = _selectedShippingAddressItem;
+    shippingAddressItem = _selectedShippingAddressItem;
     [self fillShippingAddressItem:_selectedShippingAddressItem
                       withAddress:_selectedShippingAddress];
     _selectedShippingAddressItem.accessoryType =
@@ -235,15 +237,34 @@ typedef NS_ENUM(NSInteger, ItemType) {
     CollectionViewDetailItem* addAddressItem =
         [[[CollectionViewDetailItem alloc]
             initWithType:ItemTypeAddShippingAddress] autorelease];
-    shippingItem = addAddressItem;
+    shippingAddressItem = addAddressItem;
     addAddressItem.text = l10n_util::GetNSString(
         IDS_IOS_PAYMENT_REQUEST_SHIPPING_ADDRESS_SELECTION_TITLE);
     addAddressItem.detailText = [l10n_util::GetNSString(
         IDS_IOS_PAYMENT_REQUEST_ADD_SHIPPING_ADDRESS_BUTTON)
         uppercaseStringWithLocale:[NSLocale currentLocale]];
   }
-  shippingItem.accessibilityTraits |= UIAccessibilityTraitButton;
-  [model addItem:shippingItem
+  shippingAddressItem.accessibilityTraits |= UIAccessibilityTraitButton;
+  [model addItem:shippingAddressItem
+      toSectionWithIdentifier:SectionIdentifierShipping];
+
+  CollectionViewTextItem* shippingOptionItem = nil;
+  if (_selectedShippingOption) {
+    _selectedShippingOptionItem = [[[CollectionViewTextItem alloc]
+        initWithType:ItemTypeShippingOption] autorelease];
+    shippingOptionItem = _selectedShippingOptionItem;
+    [self fillShippingOptionItem:_selectedShippingOptionItem
+                      withOption:_selectedShippingOption];
+  } else {
+    shippingOptionItem = [[[CollectionViewTextItem alloc]
+        initWithType:ItemTypeSelectShippingOption] autorelease];
+    shippingOptionItem.text = l10n_util::GetNSString(
+        IDS_IOS_PAYMENT_REQUEST_SHIPPING_OPTION_SELECTION_TITLE);
+  }
+  shippingOptionItem.accessoryType =
+      MDCCollectionViewCellAccessoryDisclosureIndicator;
+  shippingOptionItem.accessibilityTraits |= UIAccessibilityTraitButton;
+  [model addItem:shippingOptionItem
       toSectionWithIdentifier:SectionIdentifierShipping];
 
   // Payment method section.
@@ -312,6 +333,17 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self.collectionView reloadItemsAtIndexPaths:@[ indexPath ]];
 }
 
+- (void)updateSelectedShippingOption:
+    (web::PaymentShippingOption*)shippingOption {
+  [self setSelectedShippingOption:shippingOption];
+  [self fillShippingOptionItem:_selectedShippingOptionItem
+                    withOption:shippingOption];
+  NSIndexPath* indexPath =
+      [self.collectionViewModel indexPathForItem:_selectedShippingOptionItem
+                         inSectionWithIdentifier:SectionIdentifierShipping];
+  [self.collectionView reloadItemsAtIndexPaths:@[ indexPath ]];
+}
+
 #pragma mark - Helper methods
 
 - (void)fillShippingAddressItem:(ShippingAddressItem*)item
@@ -324,7 +356,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
       address->GetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER));
 }
 
+- (void)fillShippingOptionItem:(CollectionViewTextItem*)item
+                    withOption:(web::PaymentShippingOption*)option {
+  item.text = base::SysUTF16ToNSString(option->label);
+  NSString* currencyCode = base::SysUTF16ToNSString(option->amount.currency);
+  NSDecimalNumber* value = [NSDecimalNumber
+      decimalNumberWithString:SysUTF16ToNSString(option->amount.value)];
+  item.detailText =
+      payment_request_utils::FormattedCurrencyString(value, currencyCode);
+}
+
 #pragma mark UICollectionViewDataSource
+
 - (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
                  cellForItemAtIndexPath:(nonnull NSIndexPath*)indexPath {
   UICollectionViewCell* cell =
@@ -336,10 +379,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
     case ItemTypeAddShippingAddress: {
       CollectionViewDetailCell* detailCell =
           base::mac::ObjCCastStrict<CollectionViewDetailCell>(cell);
-      detailCell.detailTextLabel.font =
-          [[MDFRobotoFontLoader sharedInstance] mediumFontOfSize:14];
+      detailCell.detailTextLabel.font = [MDCTypography body2Font];
       detailCell.detailTextLabel.textColor =
           [[MDCPalette cr_bluePalette] tint700];
+      break;
+    }
+    case ItemTypeShippingOption: {
+      MDCCollectionViewTextCell* textCell =
+          base::mac::ObjCCastStrict<MDCCollectionViewTextCell>(cell);
+      textCell.textLabel.font = [MDCTypography body2Font];
+      textCell.textLabel.textColor = [[MDCPalette greyPalette] tint900];
+      textCell.detailTextLabel.font = [MDCTypography body1Font];
+      textCell.detailTextLabel.textColor = [[MDCPalette greyPalette] tint900];
       break;
     }
     default:
@@ -365,6 +416,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
     case ItemTypeAddShippingAddress:
       [_delegate paymentRequestViewControllerSelectShippingAddress];
       break;
+    case ItemTypeShippingOption:
+    case ItemTypeSelectShippingOption:
+      [_delegate paymentRequestViewControllerSelectShippingOption];
+      break;
     case ItemTypePaymentMethod:
       [_delegate paymentRequestViewControllerSelectPaymentMethod];
       break;
@@ -386,6 +441,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     return [MDCCollectionViewCell
         cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds)
                            forItem:item];
+  } else if (type == ItemTypeShippingOption) {
+    return MDCCellDefaultTwoLineHeight;
   } else {
     return MDCCellDefaultOneLineHeight;
   }
