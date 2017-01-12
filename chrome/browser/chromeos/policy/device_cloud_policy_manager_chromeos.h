@@ -123,12 +123,11 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   // associated with this schema registry.
   void SetSigninProfileSchemaRegistry(SchemaRegistry* schema_registry);
 
-  // Sets whether the component cloud policy should be disabled (by skipping
-  // the component cloud policy service creation).
-  void set_component_policy_disabled_for_testing(
-      bool component_policy_disabled_for_testing) {
-    component_policy_disabled_for_testing_ =
-        component_policy_disabled_for_testing;
+  // Sets whether the component cloud policy service should be created.
+  // Defaults to true.
+  void set_is_component_policy_enabled_for_testing(
+      bool is_component_policy_enabled) {
+    is_component_policy_enabled_ = is_component_policy_enabled;
   }
 
  private:
@@ -176,9 +175,12 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   std::unique_ptr<ForwardingSchemaRegistry>
       signin_profile_forwarding_schema_registry_;
 
-  // Whether the component cloud policy should be disabled (by skipping the
-  // component cloud policy service creation).
-  bool component_policy_disabled_for_testing_ = false;
+  // Whether the component cloud policy service should be created.
+  // TODO(emaxx): Change the default to true once both the client and the
+  // DMServer are ready for handling policy fetches with the
+  // google/chromeos/signinextension type. See crbug.com/666720,
+  // crbug.com/644304 for reference.
+  bool is_component_policy_enabled_ = false;
 
   base::ObserverList<Observer, true> observers_;
 

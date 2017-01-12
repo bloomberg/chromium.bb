@@ -101,7 +101,7 @@ class TestingDeviceCloudPolicyManagerChromeOS
       : DeviceCloudPolicyManagerChromeOS(std::move(store),
                                          task_runner,
                                          state_keys_broker) {
-    set_component_policy_disabled_for_testing(true);
+    set_is_component_policy_enabled_for_testing(false);
   }
 
   ~TestingDeviceCloudPolicyManagerChromeOS() override {}

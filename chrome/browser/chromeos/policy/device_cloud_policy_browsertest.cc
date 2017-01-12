@@ -86,19 +86,18 @@ IN_PROC_BROWSER_TEST_F(DeviceCloudPolicyBrowserTest, Initializer) {
 class SigninExtensionsDeviceCloudPolicyBrowserTestBase
     : public DevicePolicyCrosBrowserTest {
  protected:
-  static constexpr const char* kTestExtensionId =
+  constexpr static const char* kTestExtensionId =
       "baogpbmpccplckhhehfipokjaflkmbno";
-  static constexpr const char* kTestExtensionSourceDir =
+  constexpr static const char* kTestExtensionSourceDir =
       "extensions/signin_screen_managed_storage";
-  static constexpr const char* kTestExtensionVersion = "1.0";
-  static constexpr const char* kTestExtensionTestPage = "test.html";
-  static constexpr const char* kFakePolicyUrl =
+  constexpr static const char* kTestExtensionVersion = "1.0";
+  constexpr static const char* kTestExtensionTestPage = "test.html";
+  constexpr static const char* kFakePolicyUrl =
       "http://example.org/test-policy.json";
-  static constexpr const char* kFakePolicy =
+  constexpr static const char* kFakePolicy =
       "{\"string-policy\": {\"Value\": \"value\"}}";
-  static constexpr int kFakePolicyPublicKeyVersion = 1;
-  static constexpr const char* kPolicyProtoCacheKey = "signinextension-policy";
-  static constexpr const char* kPolicyDataCacheKey =
+  constexpr static const char* kPolicyProtoCacheKey = "signinextension-policy";
+  constexpr static const char* kPolicyDataCacheKey =
       "signinextension-policy-data";
 
   SigninExtensionsDeviceCloudPolicyBrowserTestBase() {}
@@ -156,14 +155,13 @@ class SigninExtensionsDeviceCloudPolicyBrowserTestBase
     return extension;
   }
 
-  static enterprise_management::PolicyFetchResponse BuildTestComponentPolicy() {
+  enterprise_management::PolicyFetchResponse BuildTestComponentPolicy() {
     ComponentPolicyBuilder builder;
     MakeTestComponentPolicyBuilder(&builder);
     return builder.policy();
   }
 
-  static enterprise_management::ExternalPolicyData
-  BuildTestComponentPolicyPayload() {
+  enterprise_management::ExternalPolicyData BuildTestComponentPolicyPayload() {
     ComponentPolicyBuilder builder;
     MakeTestComponentPolicyBuilder(&builder);
     return builder.payload();
@@ -172,20 +170,21 @@ class SigninExtensionsDeviceCloudPolicyBrowserTestBase
  private:
   void SetFakeDevicePolicy() {
     device_policy()->policy_data().set_username(PolicyBuilder::kFakeUsername);
-    device_policy()->policy_data().set_public_key_version(
-        kFakePolicyPublicKeyVersion);
+    device_policy()->SetDefaultSigningKey();
     device_policy()->Build();
     session_manager_client()->set_device_policy(device_policy()->GetBlob());
   }
 
-  static void MakeTestComponentPolicyBuilder(ComponentPolicyBuilder* builder) {
+  void MakeTestComponentPolicyBuilder(ComponentPolicyBuilder* builder) {
     builder->policy_data().set_policy_type(
         dm_protocol::kChromeSigninExtensionPolicyType);
-    builder->policy_data().set_username(PolicyBuilder::kFakeUsername);
+    builder->policy_data().set_username(
+        device_policy()->policy_data().username());
     builder->policy_data().set_settings_entity_id(kTestExtensionId);
-    builder->policy_data().set_public_key_version(kFakePolicyPublicKeyVersion);
+    builder->policy_data().set_public_key_version(1);
     builder->payload().set_download_url(kFakePolicyUrl);
     builder->payload().set_secure_hash(crypto::SHA256HashString(kFakePolicy));
+    builder->SetDefaultSigningKey();
     builder->Build();
   }
 
@@ -279,8 +278,10 @@ class SigninExtensionsDeviceCloudPolicyBrowserTest
   std::unique_ptr<base::AutoReset<bool>> signin_policy_provided_disabler_;
 };
 
+// DISABLED: see crbug.com/666720, crbug.com/644304. TODO(emaxx): Enable the
+// test back.
 IN_PROC_BROWSER_TEST_F(SigninExtensionsDeviceCloudPolicyBrowserTest,
-                       InstallAndRunInWindow) {
+                       DISABLED_InstallAndRunInWindow) {
   const extensions::Extension* extension = InstallAndLoadTestExtension();
   ASSERT_TRUE(extension);
   Browser* browser = CreateBrowser(GetSigninProfile());
@@ -299,8 +300,10 @@ IN_PROC_BROWSER_TEST_F(SigninExtensionsDeviceCloudPolicyBrowserTest,
 class PreinstalledSigninExtensionsDeviceCloudPolicyBrowserTest
     : public SigninExtensionsDeviceCloudPolicyBrowserTestBase {
  protected:
-  static constexpr const char* kFakeProfileSourceDir =
+  constexpr static const char* kFakeProfileSourceDir =
       "extensions/profiles/signin_screen_managed_storage";
+
+  std::unique_ptr<base::AutoReset<bool>> signin_policy_provided_disabler_;
 
   bool SetUpUserDataDirectory() override {
     PrefillSigninProfile();
@@ -315,7 +318,6 @@ class PreinstalledSigninExtensionsDeviceCloudPolicyBrowserTest
         chromeos::GetScopedSigninScreenPolicyProviderDisablerForTesting();
   }
 
- private:
   static void PrefillSigninProfile() {
     base::FilePath profile_source_path;
     EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &profile_source_path));
@@ -352,12 +354,12 @@ class PreinstalledSigninExtensionsDeviceCloudPolicyBrowserTest
     EXPECT_TRUE(
         cache.Store(kPolicyDataCacheKey, kTestExtensionId, kFakePolicy));
   }
-
-  std::unique_ptr<base::AutoReset<bool>> signin_policy_provided_disabler_;
 };
 
+// DISABLED: see crbug.com/666720, crbug.com/644304. TODO(emaxx): Enable the
+// test back.
 IN_PROC_BROWSER_TEST_F(PreinstalledSigninExtensionsDeviceCloudPolicyBrowserTest,
-                       OfflineStart) {
+                       DISABLED_OfflineStart) {
   const extensions::Extension* extension = GetTestExtension();
   ASSERT_TRUE(extension);
   Browser* browser = CreateBrowser(GetSigninProfile());
