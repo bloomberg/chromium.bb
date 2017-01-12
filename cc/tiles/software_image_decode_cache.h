@@ -109,6 +109,8 @@ class CC_EXPORT SoftwareImageDecodeCache
   using ImageKey = ImageDecodeCacheKey;
   using ImageKeyHash = ImageDecodeCacheKeyHash;
 
+  enum class DecodeTaskType { USE_IN_RASTER_TASKS, USE_OUT_OF_RASTER_TASKS };
+
   SoftwareImageDecodeCache(ResourceFormat format,
                            size_t locked_memory_limit_bytes);
   ~SoftwareImageDecodeCache() override;
@@ -117,6 +119,9 @@ class CC_EXPORT SoftwareImageDecodeCache
   bool GetTaskForImageAndRef(const DrawImage& image,
                              const TracingInfo& tracing_info,
                              scoped_refptr<TileTask>* task) override;
+  bool GetOutOfRasterDecodeTaskForImageAndRef(
+      const DrawImage& image,
+      scoped_refptr<TileTask>* task) override;
   void UnrefImage(const DrawImage& image) override;
   DecodedDrawImage GetDecodedImageForDraw(const DrawImage& image) override;
   void DrawWithImageFinished(const DrawImage& image,
@@ -128,9 +133,11 @@ class CC_EXPORT SoftwareImageDecodeCache
 
   // Decode the given image and store it in the cache. This is only called by an
   // image decode task from a worker thread.
-  void DecodeImage(const ImageKey& key, const DrawImage& image);
+  void DecodeImage(const ImageKey& key,
+                   const DrawImage& image,
+                   DecodeTaskType task_type);
 
-  void RemovePendingTask(const ImageKey& key);
+  void RemovePendingTask(const ImageKey& key, DecodeTaskType task_type);
 
   // MemoryDumpProvider overrides.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
@@ -267,8 +274,17 @@ class CC_EXPORT SoftwareImageDecodeCache
   // Overriden from base::MemoryCoordinatorClient.
   void OnMemoryStateChange(base::MemoryState state) override;
 
+  // Helper method to get the different tasks. Note that this should be used as
+  // if it was public (ie, all of the locks need to be properly acquired).
+  bool GetTaskForImageAndRefInternal(const DrawImage& image,
+                                     const TracingInfo& tracing_info,
+                                     DecodeTaskType type,
+                                     scoped_refptr<TileTask>* task);
+
   std::unordered_map<ImageKey, scoped_refptr<TileTask>, ImageKeyHash>
-      pending_image_tasks_;
+      pending_in_raster_image_tasks_;
+  std::unordered_map<ImageKey, scoped_refptr<TileTask>, ImageKeyHash>
+      pending_out_of_raster_image_tasks_;
 
   // The members below this comment can only be accessed if the lock is held to
   // ensure that they are safe to access on multiple threads.

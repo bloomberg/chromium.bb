@@ -28,6 +28,8 @@ class MockImageDecodeCache : public ImageDecodeCache {
   MOCK_METHOD0(ReduceCacheUsage, void());
   MOCK_METHOD1(SetShouldAggressivelyFreeResources,
                void(bool aggressively_free_resources));
+  MOCK_METHOD2(GetOutOfRasterDecodeTaskForImageAndRef,
+               bool(const DrawImage& image, scoped_refptr<TileTask>* task));
 };
 
 TEST(ImageHijackCanvasTest, NonLazyImagesSkipped) {

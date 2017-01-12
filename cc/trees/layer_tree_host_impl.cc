@@ -190,10 +190,12 @@ std::unique_ptr<LayerTreeHostImpl> LayerTreeHostImpl::Create(
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
     TaskGraphRunner* task_graph_runner,
     std::unique_ptr<MutatorHost> mutator_host,
-    int id) {
+    int id,
+    scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner) {
   return base::WrapUnique(new LayerTreeHostImpl(
       settings, client, task_runner_provider, rendering_stats_instrumentation,
-      task_graph_runner, std::move(mutator_host), id));
+      task_graph_runner, std::move(mutator_host), id,
+      std::move(image_worker_task_runner)));
 }
 
 LayerTreeHostImpl::LayerTreeHostImpl(
@@ -203,7 +205,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
     TaskGraphRunner* task_graph_runner,
     std::unique_ptr<MutatorHost> mutator_host,
-    int id)
+    int id,
+    scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner)
     : client_(client),
       task_runner_provider_(task_runner_provider),
       current_begin_frame_tracker_(BEGINFRAMETRACKER_FROM_HERE),
@@ -229,6 +232,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       // task_runner_provider_.
       tile_manager_(this,
                     GetTaskRunner(),
+                    std::move(image_worker_task_runner),
                     is_synchronous_single_threaded_
                         ? std::numeric_limits<size_t>::max()
                         : settings.scheduled_raster_task_limit,
@@ -273,6 +277,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
   browser_controls_offset_manager_ = BrowserControlsOffsetManager::Create(
       this, settings.top_controls_show_threshold,
       settings.top_controls_hide_threshold);
+
+  tile_manager_.SetDecodedImageTracker(&decoded_image_tracker_);
 }
 
 LayerTreeHostImpl::~LayerTreeHostImpl() {
@@ -1837,6 +1843,7 @@ void LayerTreeHostImpl::WillBeginImplFrame(const BeginFrameArgs& args) {
 
 void LayerTreeHostImpl::DidFinishImplFrame() {
   current_begin_frame_tracker_.Finish();
+  decoded_image_tracker_.NotifyFrameFinished();
 }
 
 void LayerTreeHostImpl::UpdateViewportContainerSizes() {

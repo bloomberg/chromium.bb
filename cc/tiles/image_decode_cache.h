@@ -61,6 +61,15 @@ class CC_EXPORT ImageDecodeCache {
   virtual bool GetTaskForImageAndRef(const DrawImage& image,
                                      const TracingInfo& tracing_info,
                                      scoped_refptr<TileTask>* task) = 0;
+  // Similar to GetTaskForImageAndRef, except that it returns tasks that are not
+  // meant to be run as part of raster. That is, this is part of a predecode
+  // API. Note that this should only return a task responsible for decoding (and
+  // not uploading), since it will be run on a worker thread which may not have
+  // the right GPU context for upload.
+  virtual bool GetOutOfRasterDecodeTaskForImageAndRef(
+      const DrawImage& image,
+      scoped_refptr<TileTask>* task) = 0;
+
   // Unrefs an image. When the tile is finished, this should be called for every
   // GetTaskForImageAndRef call that returned true.
   virtual void UnrefImage(const DrawImage& image) = 0;

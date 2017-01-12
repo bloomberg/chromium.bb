@@ -30,32 +30,18 @@ base::LazyInstance<FakeRasterBufferProviderImpl> g_fake_raster_buffer_provider =
 
 }  // namespace
 
-FakeTileManager::FakeTileManager(TileManagerClient* client)
-    : TileManager(client,
-                  base::ThreadTaskRunnerHandle::Get().get(),
-                  std::numeric_limits<size_t>::max(),
-                  false /* use_partial_raster */,
-                  false /* check_tile_priority_inversion */),
-      image_decode_cache_(
-          ResourceFormat::RGBA_8888,
-          LayerTreeSettings().software_decoded_image_budget_bytes) {
-  SetResources(
-      nullptr, &image_decode_cache_, g_synchronous_task_graph_runner.Pointer(),
-      g_fake_raster_buffer_provider.Pointer(),
-      std::numeric_limits<size_t>::max(), false /* use_gpu_rasterization */);
-  SetTileTaskManagerForTesting(base::MakeUnique<FakeTileTaskManagerImpl>());
-}
-
 FakeTileManager::FakeTileManager(TileManagerClient* client,
                                  ResourcePool* resource_pool)
     : TileManager(client,
                   base::ThreadTaskRunnerHandle::Get().get(),
+                  nullptr,
                   std::numeric_limits<size_t>::max(),
                   false /* use_partial_raster */,
                   false /* check_tile_priority_inversion */),
       image_decode_cache_(
           ResourceFormat::RGBA_8888,
           LayerTreeSettings().software_decoded_image_budget_bytes) {
+  SetDecodedImageTracker(&decoded_image_tracker_);
   SetResources(resource_pool, &image_decode_cache_,
                g_synchronous_task_graph_runner.Pointer(),
                g_fake_raster_buffer_provider.Pointer(),

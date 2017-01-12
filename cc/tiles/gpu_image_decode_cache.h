@@ -99,6 +99,8 @@ class CC_EXPORT GpuImageDecodeCache
       public base::trace_event::MemoryDumpProvider,
       public base::MemoryCoordinatorClient {
  public:
+  enum class DecodeTaskType { PART_OF_UPLOAD_TASK, STAND_ALONE_DECODE_TASK };
+
   explicit GpuImageDecodeCache(ContextProvider* context,
                                ResourceFormat decode_format,
                                size_t max_gpu_image_bytes);
@@ -111,6 +113,9 @@ class CC_EXPORT GpuImageDecodeCache
   bool GetTaskForImageAndRef(const DrawImage& image,
                              const TracingInfo& tracing_info,
                              scoped_refptr<TileTask>* task) override;
+  bool GetOutOfRasterDecodeTaskForImageAndRef(
+      const DrawImage& image,
+      scoped_refptr<TileTask>* task) override;
   void UnrefImage(const DrawImage& image) override;
   DecodedDrawImage GetDecodedImageForDraw(const DrawImage& draw_image) override;
   void DrawWithImageFinished(const DrawImage& image,
@@ -131,7 +136,8 @@ class CC_EXPORT GpuImageDecodeCache
   void UploadImage(const DrawImage& image);
 
   // Called by Decode / Upload tasks when tasks are finished.
-  void OnImageDecodeTaskCompleted(const DrawImage& image);
+  void OnImageDecodeTaskCompleted(const DrawImage& image,
+                                  DecodeTaskType task_type);
   void OnImageUploadTaskCompleted(const DrawImage& image);
 
   // For testing only.
@@ -167,6 +173,9 @@ class CC_EXPORT GpuImageDecodeCache
     bool decode_failure = false;
     // If non-null, this is the pending decode task for this image.
     scoped_refptr<TileTask> task;
+    // Similar to above, but only is generated if there is no associated upload
+    // generated for this task (ie, this is an out-of-raster request for decode.
+    scoped_refptr<TileTask> stand_alone_task;
 
    private:
     struct UsageStats {
@@ -262,7 +271,15 @@ class CC_EXPORT GpuImageDecodeCache
   // rather than the upload task, if necessary.
   scoped_refptr<TileTask> GetImageDecodeTaskAndRef(
       const DrawImage& image,
-      const TracingInfo& tracing_info);
+      const TracingInfo& tracing_info,
+      DecodeTaskType task_type);
+
+  // Note that this function behaves as if it was public (all of the same locks
+  // need to be acquired).
+  bool GetTaskForImageAndRefInternal(const DrawImage& image,
+                                     const TracingInfo& tracing_info,
+                                     DecodeTaskType task_type,
+                                     scoped_refptr<TileTask>* task);
 
   void RefImageDecode(const DrawImage& draw_image);
   void UnrefImageDecode(const DrawImage& draw_image);
