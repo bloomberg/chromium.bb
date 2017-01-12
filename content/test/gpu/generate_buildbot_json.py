@@ -1105,6 +1105,15 @@ COMMON_GTESTS = {
     ],
     'test': 'gles2_conform_test',
   },
+  'swiftshader_unittests': {
+    'tester_configs': [
+      {
+        'fyi_only': True,
+        # Run this on the optional tryservers.
+        'run_on_optional': True,
+      },
+    ],
+  },
   'tab_capture_end2end_tests': {
     'tester_configs': [
       {

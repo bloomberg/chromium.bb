@@ -774,6 +774,11 @@
     "label": "//storage/browser:storage_unittests",
     "type": "console_test_launcher",
   },
+  "swiftshader_unittests": {
+    "label": "//third_party/swiftshader/tests/unittests:swiftshader_unittests",
+    "type": "raw",
+    "args": [],
+  },
   "sync_integration_tests": {
     "label": "//chrome/test:sync_integration_tests",
     "type": "windowed_test_launcher",
