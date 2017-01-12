@@ -235,7 +235,6 @@ bool AbstractPropertySetCSSStyleDeclaration::isPropertyImplicit(
 }
 
 void AbstractPropertySetCSSStyleDeclaration::setProperty(
-    const ExecutionContext* executionContext,
     const String& propertyName,
     const String& value,
     const String& priority,
@@ -249,7 +248,7 @@ void AbstractPropertySetCSSStyleDeclaration::setProperty(
     return;
 
   setPropertyInternal(propertyID, propertyName, value, important,
-                      executionContext, exceptionState);
+                      exceptionState);
 }
 
 String AbstractPropertySetCSSStyleDeclaration::removeProperty(
@@ -299,7 +298,6 @@ void AbstractPropertySetCSSStyleDeclaration::setPropertyInternal(
     const String& customPropertyName,
     const String& value,
     bool important,
-    const ExecutionContext* executionContext,
     ExceptionState&) {
   StyleAttributeMutationScope mutationScope(this);
   willMutate();
@@ -308,15 +306,12 @@ void AbstractPropertySetCSSStyleDeclaration::setPropertyInternal(
   if (unresolvedProperty == CSSPropertyVariable) {
     AtomicString atomicName(customPropertyName);
 
-    DCHECK(executionContext);
-    const PropertyRegistry* registry =
-        toDocument(executionContext)->propertyRegistry();
-
     bool isAnimationTainted = isKeyframeStyle();
-    didChange = propertySet()
-                    .setProperty(atomicName, registry, value, important,
-                                 contextStyleSheet(), isAnimationTainted)
-                    .didChange;
+    didChange =
+        propertySet()
+            .setProperty(atomicName, propertyRegistry(), value, important,
+                         contextStyleSheet(), isAnimationTainted)
+            .didChange;
   } else {
     didChange = propertySet()
                     .setProperty(unresolvedProperty, value, important,
@@ -382,6 +377,16 @@ void StyleRuleCSSStyleDeclaration::reattach(
   m_propertySet = &propertySet;
 }
 
+PropertyRegistry* StyleRuleCSSStyleDeclaration::propertyRegistry() const {
+  CSSStyleSheet* sheet = m_parentRule->parentStyleSheet();
+  if (!sheet)
+    return nullptr;
+  Node* node = sheet->ownerNode();
+  if (!node)
+    return nullptr;
+  return node->document().propertyRegistry();
+}
+
 DEFINE_TRACE(StyleRuleCSSStyleDeclaration) {
   visitor->trace(m_parentRule);
   PropertySetCSSStyleDeclaration::trace(visitor);
@@ -408,6 +413,11 @@ void InlineCSSStyleDeclaration::didMutate(MutationType type) {
 
 CSSStyleSheet* InlineCSSStyleDeclaration::parentStyleSheet() const {
   return m_parentElement ? &m_parentElement->document().elementSheet()
+                         : nullptr;
+}
+
+PropertyRegistry* InlineCSSStyleDeclaration::propertyRegistry() const {
+  return m_parentElement ? m_parentElement->document().propertyRegistry()
                          : nullptr;
 }
 

@@ -515,8 +515,7 @@ bool CSSComputedStyleDeclaration::isPropertyImplicit(const String&) {
   return false;
 }
 
-void CSSComputedStyleDeclaration::setProperty(const ExecutionContext*,
-                                              const String& name,
+void CSSComputedStyleDeclaration::setProperty(const String& name,
                                               const String&,
                                               const String&,
                                               ExceptionState& exceptionState) {
@@ -556,7 +555,6 @@ void CSSComputedStyleDeclaration::setPropertyInternal(
     const String&,
     const String&,
     bool,
-    const ExecutionContext*,
     ExceptionState& exceptionState) {
   // TODO(leviw): This code is currently unreachable, but shouldn't be.
   exceptionState.throwDOMException(

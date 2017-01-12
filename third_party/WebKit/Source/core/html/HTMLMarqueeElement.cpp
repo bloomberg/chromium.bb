@@ -359,11 +359,11 @@ HTMLMarqueeElement::Metrics HTMLMarqueeElement::getMetrics() {
   }
 
   if (isHorizontal()) {
-    m_mover->style()->setProperty(nullptr, "width", "-webkit-max-content",
-                                  "important", ASSERT_NO_EXCEPTION);
+    m_mover->style()->setProperty("width", "-webkit-max-content", "important",
+                                  ASSERT_NO_EXCEPTION);
   } else {
-    m_mover->style()->setProperty(nullptr, "height", "-webkit-max-content",
-                                  "important", ASSERT_NO_EXCEPTION);
+    m_mover->style()->setProperty("height", "-webkit-max-content", "important",
+                                  ASSERT_NO_EXCEPTION);
   }
   CSSStyleDeclaration* moverStyle =
       document().domWindow()->getComputedStyle(m_mover, String());

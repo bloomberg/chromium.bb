@@ -117,8 +117,8 @@ String createShorthandValue(Document* document,
   CSSStyleRule* rule = toCSSStyleRule(styleSheet->item(0));
   CSSStyleDeclaration* style = rule->style();
   DummyExceptionStateForTesting exceptionState;
-  style->setProperty(nullptr, longhand, newValue,
-                     style->getPropertyPriority(longhand), exceptionState);
+  style->setProperty(longhand, newValue, style->getPropertyPriority(longhand),
+                     exceptionState);
   return style->getPropertyValue(shorthand);
 }
 

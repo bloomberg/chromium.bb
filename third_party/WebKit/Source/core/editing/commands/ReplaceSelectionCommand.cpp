@@ -689,13 +689,13 @@ void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(
       // script.
       if (isEnclosingBlock(element)) {
         element->style()->setPropertyInternal(CSSPropertyDisplay, String(),
-                                              "inline", false, nullptr,
+                                              "inline", false,
                                               IGNORE_EXCEPTION_FOR_TESTING);
       }
       if (element->layoutObject() &&
           element->layoutObject()->style()->isFloating()) {
         element->style()->setPropertyInternal(CSSPropertyFloat, String(),
-                                              "none", false, nullptr,
+                                              "none", false,
                                               IGNORE_EXCEPTION_FOR_TESTING);
       }
     }

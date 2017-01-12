@@ -34,7 +34,6 @@ class CSSRule;
 class CSSStyleSheet;
 class CSSValue;
 class ExceptionState;
-class ExecutionContext;
 
 class CORE_EXPORT CSSStyleDeclaration
     : public GarbageCollectedFinalized<CSSStyleDeclaration>,
@@ -48,7 +47,7 @@ class CORE_EXPORT CSSStyleDeclaration
   virtual CSSRule* parentRule() const = 0;
   String cssFloat() { return getPropertyValueInternal(CSSPropertyFloat); }
   void setCSSFloat(const String& value, ExceptionState& exceptionState) {
-    setPropertyInternal(CSSPropertyFloat, String(), value, false, nullptr,
+    setPropertyInternal(CSSPropertyFloat, String(), value, false,
                         exceptionState);
   }
   virtual String cssText() const = 0;
@@ -59,8 +58,7 @@ class CORE_EXPORT CSSStyleDeclaration
   virtual String getPropertyPriority(const String& propertyName) = 0;
   virtual String getPropertyShorthand(const String& propertyName) = 0;
   virtual bool isPropertyImplicit(const String& propertyName) = 0;
-  virtual void setProperty(const ExecutionContext*,
-                           const String& propertyName,
+  virtual void setProperty(const String& propertyName,
                            const String& value,
                            const String& priority,
                            ExceptionState&) = 0;
@@ -80,7 +78,6 @@ class CORE_EXPORT CSSStyleDeclaration
                                    const String& propertyValue,
                                    const String& value,
                                    bool important,
-                                   const ExecutionContext*,
                                    ExceptionState&) = 0;
 
   virtual bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const = 0;

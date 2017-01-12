@@ -87,8 +87,7 @@ class CORE_EXPORT CSSComputedStyleDeclaration final
   String getPropertyPriority(const String& propertyName) override;
   String getPropertyShorthand(const String& propertyName) override;
   bool isPropertyImplicit(const String& propertyName) override;
-  void setProperty(const ExecutionContext*,
-                   const String& propertyName,
+  void setProperty(const String& propertyName,
                    const String& value,
                    const String& priority,
                    ExceptionState&) override;
@@ -105,7 +104,6 @@ class CORE_EXPORT CSSComputedStyleDeclaration final
                            const String& customPropertyName,
                            const String& value,
                            bool important,
-                           const ExecutionContext*,
                            ExceptionState&) override;
 
   bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const override;
