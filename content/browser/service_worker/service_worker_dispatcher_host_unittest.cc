@@ -86,11 +86,13 @@ class FailToStartWorkerTestHelper : public EmbeddedWorkerTestHelper {
  public:
   FailToStartWorkerTestHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
 
-  void OnStartWorker(int embedded_worker_id,
-                     int64_t service_worker_version_id,
-                     const GURL& scope,
-                     const GURL& script_url,
-                     bool pause_after_download) override {
+  void OnStartWorker(
+      int embedded_worker_id,
+      int64_t service_worker_version_id,
+      const GURL& scope,
+      const GURL& script_url,
+      bool pause_after_download,
+      mojom::ServiceWorkerEventDispatcherRequest request) override {
     EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
     registry()->OnWorkerStopped(worker->process_id(), embedded_worker_id);
   }

@@ -1110,9 +1110,11 @@ void ServiceWorkerVersion::OnSimpleEventFinished(
     int request_id,
     ServiceWorkerStatusCode status,
     base::Time dispatch_event_time) {
-  // Copy error callback before calling FinishRequest.
   PendingRequest* request = pending_requests_.Lookup(request_id);
-  DCHECK(request) << "Invalid request id";
+  // |request| will be null when the request has been timed out.
+  if (!request)
+    return;
+  // Copy error callback before calling FinishRequest.
   StatusCallback callback = request->error_callback;
 
   FinishRequest(request_id, status == SERVICE_WORKER_OK, dispatch_event_time);

@@ -370,11 +370,13 @@ class FailToStartWorkerTestHelper : public EmbeddedWorkerTestHelper {
  public:
   FailToStartWorkerTestHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
 
-  void OnStartWorker(int embedded_worker_id,
-                     int64_t service_worker_version_id,
-                     const GURL& scope,
-                     const GURL& script_url,
-                     bool pause_after_download) override {
+  void OnStartWorker(
+      int embedded_worker_id,
+      int64_t service_worker_version_id,
+      const GURL& scope,
+      const GURL& script_url,
+      bool pause_after_download,
+      mojom::ServiceWorkerEventDispatcherRequest request) override {
     EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
     registry()->OnWorkerStopped(worker->process_id(), embedded_worker_id);
   }
@@ -829,11 +831,13 @@ class UpdateJobTestHelper
   }
 
   // EmbeddedWorkerTestHelper overrides
-  void OnStartWorker(int embedded_worker_id,
-                     int64_t version_id,
-                     const GURL& scope,
-                     const GURL& script,
-                     bool pause_after_download) override {
+  void OnStartWorker(
+      int embedded_worker_id,
+      int64_t version_id,
+      const GURL& scope,
+      const GURL& script,
+      bool pause_after_download,
+      mojom::ServiceWorkerEventDispatcherRequest request) override {
     const std::string kMockScriptBody = "mock_script";
     const uint64_t kMockScriptSize = 19284;
     ServiceWorkerVersion* version = context()->GetLiveVersion(version_id);
@@ -883,8 +887,9 @@ class UpdateJobTestHelper
           EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
     }
 
-    EmbeddedWorkerTestHelper::OnStartWorker(
-        embedded_worker_id, version_id, scope, script, pause_after_download);
+    EmbeddedWorkerTestHelper::OnStartWorker(embedded_worker_id, version_id,
+                                            scope, script, pause_after_download,
+                                            std::move(request));
   }
 
   void OnResumeAfterDownload(int embedded_worker_id) override {
@@ -939,11 +944,13 @@ class EvictIncumbentVersionHelper : public UpdateJobTestHelper {
   EvictIncumbentVersionHelper() {}
   ~EvictIncumbentVersionHelper() override {}
 
-  void OnStartWorker(int embedded_worker_id,
-                     int64_t version_id,
-                     const GURL& scope,
-                     const GURL& script,
-                     bool pause_after_download) override {
+  void OnStartWorker(
+      int embedded_worker_id,
+      int64_t version_id,
+      const GURL& scope,
+      const GURL& script,
+      bool pause_after_download,
+      mojom::ServiceWorkerEventDispatcherRequest request) override {
     ServiceWorkerVersion* version = context()->GetLiveVersion(version_id);
     ServiceWorkerRegistration* registration =
         context()->GetLiveRegistration(version->registration_id());
@@ -956,7 +963,8 @@ class EvictIncumbentVersionHelper : public UpdateJobTestHelper {
           make_scoped_refptr(registration->active_version()));
     }
     UpdateJobTestHelper::OnStartWorker(embedded_worker_id, version_id, scope,
-                                       script, pause_after_download);
+                                       script, pause_after_download,
+                                       std::move(request));
   }
 
   void OnRegistrationFailed(ServiceWorkerRegistration* registration) override {

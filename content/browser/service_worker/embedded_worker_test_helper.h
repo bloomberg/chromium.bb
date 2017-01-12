@@ -154,28 +154,26 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   static net::HttpResponseInfo CreateHttpResponseInfo();
 
  protected:
-  // Called when StartWorker, StopWorker and SendMessageToWorker message
-  // is sent to the embedded worker. Override if necessary. By default
-  // they verify given parameters and:
-  // - OnStartWorker calls SimulateWorkerStarted
-  // - OnStopWorker calls SimulateWorkerStoped
-  // - OnSendMessageToWorker calls the message's respective On*Event handler
-  virtual void OnStartWorker(int embedded_worker_id,
-                             int64_t service_worker_version_id,
-                             const GURL& scope,
-                             const GURL& script_url,
-                             bool pause_after_download);
+  // StartWorker IPC handler routed through MockEmbeddedWorkerInstanceClient.
+  // This simulates each legacy IPC sent from the renderer and binds |request|
+  // to MockServiceWorkerEventDispatcher by default.
+  virtual void OnStartWorker(
+      int embedded_worker_id,
+      int64_t service_worker_version_id,
+      const GURL& scope,
+      const GURL& script_url,
+      bool pause_after_download,
+      mojom::ServiceWorkerEventDispatcherRequest request);
   virtual void OnResumeAfterDownload(int embedded_worker_id);
-  virtual void OnStopWorker(int embedded_worker_id);
+  // StopWorker IPC handler routed through MockEmbeddedWorkerInstanceClient.
+  // This calls StopWorkerCallback by default.
+  virtual void OnStopWorker(
+      const mojom::EmbeddedWorkerInstanceClient::StopWorkerCallback& callback);
+  // The legacy IPC message handler. This passes the messages to their
+  // respective On*Event handler by default.
   virtual bool OnMessageToWorker(int thread_id,
                                  int embedded_worker_id,
                                  const IPC::Message& message);
-
-  // Called to setup mojo for a new embedded worker. Override to register
-  // interfaces the worker should expose to the browser.
-  virtual void OnSetupMojo(
-      int thread_id,
-      mojom::ServiceWorkerEventDispatcherRequest dispatcher_request);
 
   // On*Event handlers. Called by the default implementation of
   // OnMessageToWorker when events are sent to the embedded
@@ -196,8 +194,8 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
                            int request_id,
                            const PushEventPayload& payload);
 
-  // These functions simulate sending an EmbeddedHostMsg message to the
-  // browser.
+  // These functions simulate sending an EmbeddedHostMsg message through the
+  // legacy IPC system to the browser.
   void SimulateWorkerReadyForInspection(int embedded_worker_id);
   void SimulateWorkerScriptCached(int embedded_worker_id);
   void SimulateWorkerScriptLoaded(int embedded_worker_id);
@@ -213,9 +211,11 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   class MockEmbeddedWorkerSetup;
   class MockServiceWorkerEventDispatcher;
 
-  void OnStartWorkerStub(const EmbeddedWorkerStartParams& params);
+  void OnStartWorkerStub(const EmbeddedWorkerStartParams& params,
+                         mojom::ServiceWorkerEventDispatcherRequest request);
   void OnResumeAfterDownloadStub(int embedded_worker_id);
-  void OnStopWorkerStub(int embedded_worker_id);
+  void OnStopWorkerStub(
+      const mojom::EmbeddedWorkerInstanceClient::StopWorkerCallback& callback);
   void OnMessageToWorkerStub(int thread_id,
                              int embedded_worker_id,
                              const IPC::Message& message);

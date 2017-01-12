@@ -46,11 +46,13 @@ class FailureHelper : public EmbeddedWorkerTestHelper {
   ~FailureHelper() override {}
 
  protected:
-  void OnStartWorker(int embedded_worker_id,
-                     int64_t service_worker_version_id,
-                     const GURL& scope,
-                     const GURL& script_url,
-                     bool pause_after_download) override {
+  void OnStartWorker(
+      int embedded_worker_id,
+      int64_t service_worker_version_id,
+      const GURL& scope,
+      const GURL& script_url,
+      bool pause_after_download,
+      mojom::ServiceWorkerEventDispatcherRequest request) override {
     SimulateWorkerStopped(embedded_worker_id);
   }
 };

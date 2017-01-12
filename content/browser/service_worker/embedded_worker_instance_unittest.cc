@@ -153,18 +153,20 @@ class StalledInStartWorkerHelper : public EmbeddedWorkerTestHelper {
   StalledInStartWorkerHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
   ~StalledInStartWorkerHelper() override{};
 
-  void OnStartWorker(int embedded_worker_id,
-                     int64_t service_worker_version_id,
-                     const GURL& scope,
-                     const GURL& script_url,
-                     bool pause_after_download) override {
+  void OnStartWorker(
+      int embedded_worker_id,
+      int64_t service_worker_version_id,
+      const GURL& scope,
+      const GURL& script_url,
+      bool pause_after_download,
+      mojom::ServiceWorkerEventDispatcherRequest request) override {
     if (force_stall_in_start_) {
       // Do nothing to simulate a stall in the worker process.
       return;
     }
-    EmbeddedWorkerTestHelper::OnStartWorker(embedded_worker_id,
-                                            service_worker_version_id, scope,
-                                            script_url, pause_after_download);
+    EmbeddedWorkerTestHelper::OnStartWorker(
+        embedded_worker_id, service_worker_version_id, scope, script_url,
+        pause_after_download, std::move(request));
   }
 
   void set_force_stall_in_start(bool force_stall_in_start) {
