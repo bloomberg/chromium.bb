@@ -9,11 +9,13 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "remoting/client/display/sys_opengl.h"
 
 namespace remoting {
-class GlCanvas;
+
+class Canvas;
 
 // This class is for drawing a texture on the canvas. Must be deleted before the
 // canvas is deleted.
@@ -23,7 +25,7 @@ class GlRenderLayer {
 
   // texture_id: An integer in range [0, GL_MAX_TEXTURE_IMAGE_UNITS], defining
   //             which slot to store the texture.
-  GlRenderLayer(int texture_id, GlCanvas* canvas);
+  GlRenderLayer(int texture_id, base::WeakPtr<Canvas> canvas);
   ~GlRenderLayer();
 
   // Sets the texture (RGBA 8888) to be drawn. Please use UpdateTexture() if the
@@ -78,7 +80,7 @@ class GlRenderLayer {
                                       bool* should_reset_row_length);
 
   int texture_id_;
-  GlCanvas* canvas_;
+  base::WeakPtr<Canvas> canvas_;
 
   GLuint texture_handle_;
   GLuint buffer_handle_;

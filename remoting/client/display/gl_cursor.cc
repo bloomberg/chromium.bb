@@ -18,7 +18,7 @@ namespace {
 const int kDefaultCursorDataSize = 32 * 32 * GlRenderLayer::kBytesPerPixel;
 }  // namespace
 
-GlCursor::GlCursor() {}
+GlCursor::GlCursor() : weak_factory_(this) {}
 
 GlCursor::~GlCursor() {}
 
@@ -68,7 +68,7 @@ void GlCursor::SetCursorVisible(bool visible) {
   visible_ = visible;
 }
 
-void GlCursor::SetCanvas(GlCanvas* canvas) {
+void GlCursor::SetCanvas(base::WeakPtr<Canvas> canvas) {
   if (!canvas) {
     layer_.reset();
     return;
@@ -80,10 +80,16 @@ void GlCursor::SetCanvas(GlCanvas* canvas) {
   SetCursorPosition(cursor_x_, cursor_y_);
 }
 
-void GlCursor::Draw() {
+bool GlCursor::Draw() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (layer_ && current_cursor_data_ && visible_) {
     layer_->Draw(1.f);
   }
+  return false;
+}
+
+int GlCursor::GetZIndex() {
+  return Drawable::ZIndex::CURSOR;
 }
 
 void GlCursor::SetCurrentCursorShape(bool size_changed) {
@@ -96,6 +102,11 @@ void GlCursor::SetCurrentCursorShape(bool size_changed) {
                             current_cursor_width_, current_cursor_width_, 0);
     }
   }
+}
+
+base::WeakPtr<Drawable> GlCursor::GetWeakPtr() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace remoting

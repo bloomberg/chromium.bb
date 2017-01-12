@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "remoting/client/display/gl_canvas.h"
+#include "remoting/client/display/canvas.h"
 #include "remoting/client/display/gl_math.h"
 #include "remoting/client/display/gl_render_layer.h"
 #include "remoting/client/display/gl_texture_ids.h"
@@ -57,11 +57,11 @@ struct GlDesktop::GlDesktopTextureContainer {
   webrtc::DesktopRect rect;
 };
 
-GlDesktop::GlDesktop() {}
+GlDesktop::GlDesktop() : weak_factory_(this) {}
 
 GlDesktop::~GlDesktop() {}
 
-void GlDesktop::SetCanvas(GlCanvas* canvas) {
+void GlDesktop::SetCanvas(base::WeakPtr<Canvas> canvas) {
   last_desktop_size_.set(0, 0);
   textures_.clear();
   canvas_ = canvas;
@@ -83,12 +83,18 @@ void GlDesktop::SetVideoFrame(const webrtc::DesktopFrame& frame) {
   }
 }
 
-void GlDesktop::Draw() {
+bool GlDesktop::Draw() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (!textures_.empty() && !last_desktop_size_.is_empty()) {
     for (std::unique_ptr<GlDesktopTextureContainer>& texture : textures_) {
       texture->layer->Draw(1.0f);
     }
   }
+  return false;
+}
+
+int GlDesktop::GetZIndex() {
+  return Drawable::ZIndex::DESKTOP;
 }
 
 void GlDesktop::ReallocateTextures(const webrtc::DesktopSize& size) {
@@ -112,9 +118,10 @@ void GlDesktop::ReallocateTextures(const webrtc::DesktopSize& size) {
           x * max_texture_size_, y * max_texture_size_, max_texture_size_,
           max_texture_size_);
       rect.IntersectWith(desktop_rect);
-      std::unique_ptr<GlDesktopTextureContainer> container =
-          base::WrapUnique(new GlDesktopTextureContainer{
-              base::MakeUnique<GlRenderLayer>(texture_id, canvas_), rect});
+      std::unique_ptr<GlDesktopTextureContainer> container = base::WrapUnique(
+          new GlDesktopTextureContainer{base::MakeUnique<GlRenderLayer>(
+                                            texture_id, canvas_->GetWeakPtr()),
+                                        rect});
       FillRectangleVertexPositions(rect.left(), rect.top(), rect.width(),
                                    rect.height(), &positions);
       container->layer->SetVertexPositions(positions);
@@ -122,6 +129,11 @@ void GlDesktop::ReallocateTextures(const webrtc::DesktopSize& size) {
       texture_id++;
     }
   }
+}
+
+base::WeakPtr<Drawable> GlDesktop::GetWeakPtr() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace remoting

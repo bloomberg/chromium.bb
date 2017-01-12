@@ -9,6 +9,9 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
+#include "remoting/client/display/drawable.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace webrtc {
@@ -17,24 +20,22 @@ class DesktopFrame;
 
 namespace remoting {
 
-class GlCanvas;
+class Canvas;
 
 // This class draws the desktop on the canvas.
-class GlDesktop {
+class GlDesktop : public Drawable {
  public:
   GlDesktop();
-  virtual ~GlDesktop();
+  ~GlDesktop() override;
 
   // |frame| can be either a full frame or updated regions only frame.
   void SetVideoFrame(const webrtc::DesktopFrame& frame);
 
-  // Sets the canvas on which the desktop will be drawn. Caller must feed a
-  // full desktop frame after calling this function.
-  // If |canvas| is nullptr, nothing will happen when calling Draw().
-  void SetCanvas(GlCanvas* canvas);
-
-  // Draws the desktop on the canvas.
-  void Draw();
+  // Drawable implementation.
+  void SetCanvas(base::WeakPtr<Canvas> canvas) override;
+  bool Draw() override;
+  int GetZIndex() override;
+  base::WeakPtr<Drawable> GetWeakPtr() override;
 
  private:
   struct GlDesktopTextureContainer;
@@ -45,7 +46,9 @@ class GlDesktop {
 
   webrtc::DesktopSize last_desktop_size_;
   int max_texture_size_ = 0;
-  GlCanvas* canvas_ = nullptr;
+  base::WeakPtr<Canvas> canvas_ = nullptr;
+  base::ThreadChecker thread_checker_;
+  base::WeakPtrFactory<Drawable> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GlDesktop);
 };

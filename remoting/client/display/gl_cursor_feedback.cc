@@ -9,7 +9,7 @@
 #include <array>
 
 #include "base/logging.h"
-#include "remoting/client/display/gl_canvas.h"
+#include "remoting/client/display/canvas.h"
 #include "remoting/client/display/gl_cursor_feedback_texture.h"
 #include "remoting/client/display/gl_math.h"
 #include "remoting/client/display/gl_render_layer.h"
@@ -43,11 +43,11 @@ float GetExpansionCoefficient(float progress) {
 
 namespace remoting {
 
-GlCursorFeedback::GlCursorFeedback() {}
+GlCursorFeedback::GlCursorFeedback() : weak_factory_(this) {}
 
 GlCursorFeedback::~GlCursorFeedback() {}
 
-void GlCursorFeedback::SetCanvas(GlCanvas* canvas) {
+void GlCursorFeedback::SetCanvas(base::WeakPtr<Canvas> canvas) {
   if (!canvas) {
     layer_.reset();
     return;
@@ -67,6 +67,7 @@ void GlCursorFeedback::StartAnimation(float x, float y, float diameter) {
 }
 
 bool GlCursorFeedback::Draw() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (!layer_ || animation_start_time_.is_null()) {
     return false;
   }
@@ -87,6 +88,15 @@ bool GlCursorFeedback::Draw() {
   // Linear fade-out.
   layer_->Draw(1.f - progress);
   return true;
+}
+
+int GlCursorFeedback::GetZIndex() {
+  return Drawable::ZIndex::CURSOR_FEEDBACK;
+}
+
+base::WeakPtr<Drawable> GlCursorFeedback::GetWeakPtr() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace remoting

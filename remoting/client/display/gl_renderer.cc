@@ -4,9 +4,12 @@
 
 #include "remoting/client/display/gl_renderer.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "remoting/client/display/drawable.h"
 #include "remoting/client/display/gl_canvas.h"
 #include "remoting/client/display/gl_math.h"
 #include "remoting/client/display/gl_renderer_delegate.h"
@@ -15,14 +18,22 @@
 
 namespace remoting {
 
+namespace {
+
+bool CompareDrawableZOrder(base::WeakPtr<Drawable> a,
+                           base::WeakPtr<Drawable> b) {
+  return a->GetZIndex() < b->GetZIndex();
+}
+
+}  // namespace
+
 GlRenderer::GlRenderer() :
     weak_factory_(this) {
   weak_ptr_ = weak_factory_.GetWeakPtr();
   thread_checker_.DetachFromThread();
 }
 
-GlRenderer::~GlRenderer() {
-}
+GlRenderer::~GlRenderer() {}
 
 void GlRenderer::SetDelegate(base::WeakPtr<GlRendererDelegate> delegate) {
   DCHECK(!delegate_);
@@ -90,19 +101,12 @@ void GlRenderer::OnCursorShapeChanged(const protocol::CursorShapeInfo& shape) {
   RequestRender();
 }
 
-void GlRenderer::OnSurfaceCreated(int gl_version) {
+void GlRenderer::OnSurfaceCreated(std::unique_ptr<Canvas> canvas) {
   DCHECK(thread_checker_.CalledOnValidThread());
-#ifndef NDEBUG
-  // Set the background clear color to bright green for debugging purposes.
-  glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
-#else
-  // Set the background clear color to black.
-  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-#endif
-  canvas_.reset(new GlCanvas(gl_version));
-  desktop_.SetCanvas(canvas_.get());
-  cursor_.SetCanvas(canvas_.get());
-  cursor_feedback_.SetCanvas(canvas_.get());
+  canvas_ = std::move(canvas);
+  for (auto& drawable : drawables_) {
+    drawable->SetCanvas(canvas_->GetWeakPtr());
+  }
 }
 
 void GlRenderer::OnSurfaceChanged(int view_width, int view_height) {
@@ -137,6 +141,12 @@ void GlRenderer::RequestRender() {
   render_scheduled_ = true;
 }
 
+void GlRenderer::AddDrawable(base::WeakPtr<Drawable> drawable) {
+  drawable->SetCanvas(canvas_ ? canvas_->GetWeakPtr() : nullptr);
+  drawables_.push_back(drawable);
+  std::sort(drawables_.begin(), drawables_.end(), CompareDrawableZOrder);
+}
+
 void GlRenderer::OnRender() {
   DCHECK(thread_checker_.CalledOnValidThread());
   render_scheduled_ = false;
@@ -145,18 +155,13 @@ void GlRenderer::OnRender() {
   }
 
   if (canvas_) {
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    // Layers will be drawn from bottom to top.
-    desktop_.Draw();
-
-    // |cursor_feedback_| should be drawn before |cursor_| so that the cursor
-    // won't be covered by the feedback animation.
-    if (cursor_feedback_.Draw()) {
-      RequestRender();
+    canvas_->Clear();
+    // Draw each drawable in order.
+    for (auto& drawable : drawables_) {
+      if (drawable->Draw()) {
+        RequestRender();
+      }
     }
-
-    cursor_.Draw();
   }
 
   delegate_->OnFrameRendered();
@@ -165,6 +170,14 @@ void GlRenderer::OnRender() {
     pending_done_callbacks_.front().Run();
     pending_done_callbacks_.pop();
   }
+}
+
+std::unique_ptr<GlRenderer> GlRenderer::CreateGlRendererWithDesktop() {
+  std::unique_ptr<GlRenderer> renderer(new GlRenderer());
+  renderer->AddDrawable(renderer->desktop_.GetWeakPtr());
+  renderer->AddDrawable(renderer->cursor_.GetWeakPtr());
+  renderer->AddDrawable(renderer->cursor_feedback_.GetWeakPtr());
+  return renderer;
 }
 
 }  // namespace remoting

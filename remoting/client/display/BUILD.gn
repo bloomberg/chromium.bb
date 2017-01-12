@@ -4,6 +4,8 @@
 
 source_set("display") {
   sources = [
+    "canvas.h",
+    "drawable.h",
     "gl_canvas.cc",
     "gl_canvas.h",
     "gl_cursor.cc",
@@ -22,6 +24,7 @@ source_set("display") {
     "gl_render_layer.h",
     "gl_renderer.cc",
     "gl_renderer.h",
+    "sys_opengl.h",
   ]
 
   deps = [
@@ -30,7 +33,11 @@ source_set("display") {
     "//third_party/webrtc/base:rtc_base",
   ]
 
-  configs += [ "//third_party/khronos:khronos_headers" ]
+  public_configs = [ "//third_party/khronos:khronos_headers" ]
+
+  if (is_android) {
+    libs = [ "GLESv2" ]
+  }
 
   if (is_linux) {
     libs = [ "GL" ]
@@ -52,30 +59,33 @@ source_set("display") {
   }
 }
 
-source_set("unit_tests") {
-  testonly = true
+if (is_win) {
+  # Windows clang builder fails to link the test binary with ANGLE GLESv2.
+  # crbug.com/642027
+  group("unit_tests") {
+    deps = []
+  }
+} else {
+  source_set("unit_tests") {
+    testonly = true
 
-  sources = [
-    "gl_renderer_unittest.cc",
-  ]
+    sources = [
+      "fake_canvas.cc",
+      "fake_canvas.h",
+      "gl_renderer_unittest.cc",
+    ]
 
-  configs += [
-    "//remoting/build/config:version",
-    "//remoting/build/config:enable_webrtc_remoting_client",
-  ]
+    configs += [
+      "//remoting/build/config:version",
+      "//remoting/build/config:enable_webrtc_remoting_client",
+    ]
 
-  deps = [
-    ":display",
-    "//remoting/proto",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//third_party/webrtc/base:rtc_base",
-  ]
-
-  if (is_win) {
-    # Windows clang builder fails to link the test binary with ANGLE GLESv2.
-    # crbug.com/642027
-    sources -= [ "gl_renderer_unittest.cc" ]
-    deps -= [ ":display" ]
+    deps = [
+      ":display",
+      "//remoting/proto",
+      "//testing/gmock",
+      "//testing/gtest",
+      "//third_party/webrtc/base:rtc_base",
+    ]
   }
 }

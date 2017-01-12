@@ -6,6 +6,7 @@
 #define REMOTING_CLIENT_DISPLAY_GL_RENDERER_H_
 
 #include <queue>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -26,7 +27,7 @@ namespace protocol {
 class CursorShapeInfo;
 }  // namespace protocol
 
-class GlCanvas;
+class Canvas;
 class GlRendererDelegate;
 class GlRendererTest;
 
@@ -82,7 +83,7 @@ class GlRenderer {
   // lost after calling this function.
   // Caller must call OnSurfaceDestroyed() before calling this function if the
   // surface is recreated.
-  void OnSurfaceCreated(int gl_version);
+  void OnSurfaceCreated(std::unique_ptr<Canvas> canvas);
 
   // Sets the size of the view. Called right after OnSurfaceCreated() or
   // whenever the view size is changed.
@@ -91,8 +92,13 @@ class GlRenderer {
   // Called when the surface is destroyed.
   void OnSurfaceDestroyed();
 
+  void AddDrawable(base::WeakPtr<Drawable> drawable);
+
   // Returns the weak pointer to be used on the display thread.
   base::WeakPtr<GlRenderer> GetWeakPtr();
+
+  // Convenience method to create a Renderer with standard desktop components.
+  static std::unique_ptr<GlRenderer> CreateGlRendererWithDesktop();
 
  private:
   friend class GlRendererTest;
@@ -119,11 +125,13 @@ class GlRenderer {
   int canvas_width_ = 0;
   int canvas_height_ = 0;
 
-  std::unique_ptr<GlCanvas> canvas_;
+  std::unique_ptr<Canvas> canvas_;
 
   GlCursor cursor_;
   GlCursorFeedback cursor_feedback_;
   GlDesktop desktop_;
+
+  std::vector<base::WeakPtr<Drawable>> drawables_;
 
   base::ThreadChecker thread_checker_;
   base::WeakPtr<GlRenderer> weak_ptr_;

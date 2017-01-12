@@ -65,7 +65,8 @@ const char kDrawTexFrag[] =
 
 namespace remoting {
 
-GlCanvas::GlCanvas(int gl_version) : gl_version_(gl_version) {
+GlCanvas::GlCanvas(int gl_version)
+    : gl_version_(gl_version), weak_factory_(this) {
   glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size_);
 
   vertex_shader_ = CompileShader(GL_VERTEX_SHADER, kTexCoordToViewVert);
@@ -96,6 +97,17 @@ GlCanvas::~GlCanvas() {
   glDeleteShader(fragment_shader_);
 }
 
+void GlCanvas::Clear() {
+#ifndef NDEBUG
+  // Set the background clear color to bright green for debugging purposes.
+  glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
+#else
+  // Set the background clear color to black.
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+#endif
+  glClear(GL_COLOR_BUFFER_BIT);
+}
+
 void GlCanvas::SetTransformationMatrix(const std::array<float, 9>& matrix) {
   DCHECK(thread_checker_.CalledOnValidThread());
   std::array<float, 9> transposed_matrix = matrix;
@@ -114,8 +126,8 @@ void GlCanvas::SetViewSize(int width, int height) {
 }
 
 void GlCanvas::DrawTexture(int texture_id,
-                           GLuint texture_handle,
-                           GLuint vertex_buffer,
+                           int texture_handle,
+                           int vertex_buffer,
                            float alpha_multiplier) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!view_size_set_ || !transformation_set_) {
@@ -137,12 +149,17 @@ void GlCanvas::DrawTexture(int texture_id,
   glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-int GlCanvas::GetGlVersion() const {
+int GlCanvas::GetVersion() const {
   return gl_version_;
 }
 
 int GlCanvas::GetMaxTextureSize() const {
   return max_texture_size_;
+}
+
+base::WeakPtr<Canvas> GlCanvas::GetWeakPtr() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace remoting

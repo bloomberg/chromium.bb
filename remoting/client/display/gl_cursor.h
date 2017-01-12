@@ -10,6 +10,9 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
+#include "remoting/client/display/drawable.h"
 
 namespace remoting {
 
@@ -17,14 +20,14 @@ namespace protocol {
 class CursorShapeInfo;
 }  // namespace protocol
 
-class GlCanvas;
+class Canvas;
 class GlRenderLayer;
 
 // This class draws the cursor on the canvas.
-class GlCursor {
+class GlCursor : public Drawable {
  public:
   GlCursor();
-  ~GlCursor();
+  ~GlCursor() override;
 
   void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape);
 
@@ -35,12 +38,11 @@ class GlCursor {
   // Draw() will do nothing if cursor is not visible.
   void SetCursorVisible(bool visible);
 
-  // Sets the canvas on which the cursor will be drawn. Resumes the current
-  // state of the cursor to the context of the new canvas.
-  // If |canvas| is nullptr, nothing will happen when calling Draw().
-  void SetCanvas(GlCanvas* canvas);
-
-  void Draw();
+  // Drawable implementation.
+  void SetCanvas(base::WeakPtr<Canvas> canvas) override;
+  bool Draw() override;
+  int GetZIndex() override;
+  base::WeakPtr<Drawable> GetWeakPtr() override;
 
  private:
   void SetCurrentCursorShape(bool size_changed);
@@ -58,6 +60,9 @@ class GlCursor {
 
   float cursor_x_ = 0;
   float cursor_y_ = 0;
+
+  base::ThreadChecker thread_checker_;
+  base::WeakPtrFactory<Drawable> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GlCursor);
 };

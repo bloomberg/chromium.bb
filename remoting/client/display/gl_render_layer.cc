@@ -39,7 +39,7 @@ void PackDirtyRegion(uint8_t* dest,
 
 }  // namespace
 
-GlRenderLayer::GlRenderLayer(int texture_id, GlCanvas* canvas)
+GlRenderLayer::GlRenderLayer(int texture_id, base::WeakPtr<Canvas> canvas)
     : texture_id_(texture_id), canvas_(canvas) {
   texture_handle_ = CreateTexture();
   buffer_handle_ = CreateBuffer(kVertices, sizeof(kVertices));
@@ -146,7 +146,7 @@ const uint8_t* GlRenderLayer::PrepareTextureBuffer(
     return data;
   }
 
-  if (stride_multiple_of_bytes_per_pixel && canvas_->GetGlVersion() >= 3) {
+  if (stride_multiple_of_bytes_per_pixel && canvas_->GetVersion() >= 3) {
     glPixelStorei(GL_UNPACK_ROW_LENGTH, stride / kBytesPerPixel);
     *should_reset_row_length = true;
     return data;
