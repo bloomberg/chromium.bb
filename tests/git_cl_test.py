@@ -1361,7 +1361,7 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'rietveld.cc'],), ''),
         ((['AddReviewers', 'chromium-review.googlesource.com',
            123456 if squash else None,
-          ['joe@example.com'] + cc, False],), ''),
+          ['joe@example.com'] + cc, False, notify],), ''),
     ]
     calls += cls._git_post_upload_calls()
     return calls
@@ -1400,8 +1400,8 @@ class TestGitCl(TestCase):
               lambda *_, **__: self._mocked_call(['RunEditor']))
     self.mock(git_cl, 'DownloadGerritHook', self._mocked_call)
     self.mock(git_cl.gerrit_util, 'AddReviewers',
-              lambda h, i, add, is_reviewer: self._mocked_call(
-                  ['AddReviewers', h, i, add, is_reviewer]))
+              lambda h, i, add, is_reviewer, notify: self._mocked_call(
+                  ['AddReviewers', h, i, add, is_reviewer, notify]))
 
     self.calls = self._gerrit_base_calls(issue=issue)
     self.calls += self._gerrit_upload_calls(

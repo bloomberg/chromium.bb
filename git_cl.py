@@ -2869,7 +2869,8 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       cc.extend(change_desc.get_cced())
     if cc:
       gerrit_util.AddReviewers(
-          self._GetGerritHost(), self.GetIssue(), cc, is_reviewer=False)
+          self._GetGerritHost(), self.GetIssue(), cc,
+          is_reviewer=False, notify=bool(options.send_mail))
     return 0
 
   def _AddChangeIdToCommitMessage(self, options, args):
@@ -4228,7 +4229,7 @@ def CMDupload(parser, args):
                     action='append', default=[],
                     help='cc email addresses')
   parser.add_option('-s', '--send-mail', action='store_true',
-                    help='send email to reviewer immediately')
+                    help='send email to reviewer(s) and cc(s) immediately')
   parser.add_option('--emulate_svn_auto_props',
                     '--emulate-svn-auto-props',
                     action="store_true",
