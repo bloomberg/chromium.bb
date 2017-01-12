@@ -187,10 +187,6 @@ class CC_EXPORT MathUtil {
   // clipped_quad array. Note that num_vertices_in_clipped_quad may be zero,
   // which means the entire quad was clipped, and none of the vertices in the
   // array are valid.
-  static void MapClippedQuad(const gfx::Transform& transform,
-                             const gfx::QuadF& src_quad,
-                             gfx::PointF clipped_quad[8],
-                             int* num_vertices_in_clipped_quad);
   static bool MapClippedQuad3d(const gfx::Transform& transform,
                                const gfx::QuadF& src_quad,
                                gfx::Point3F clipped_quad[8],

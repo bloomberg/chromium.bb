@@ -575,11 +575,11 @@ TEST(MathUtilTest, MapClippedQuadDuplicateTriangle) {
                       gfx::PointF(-99.0f, -300.0f),
                       gfx::PointF(-99.0f, -100.0f));
 
-  gfx::PointF clipped_quad[8];
+  gfx::Point3F clipped_quad[8];
   int num_vertices_in_clipped_quad;
 
-  MathUtil::MapClippedQuad(transform, src_quad, clipped_quad,
-                           &num_vertices_in_clipped_quad);
+  MathUtil::MapClippedQuad3d(transform, src_quad, clipped_quad,
+                             &num_vertices_in_clipped_quad);
 
   EXPECT_EQ(num_vertices_in_clipped_quad, 3);
 }
@@ -597,11 +597,11 @@ TEST(MathUtilTest, MapClippedQuadDuplicateTriangleWrapped) {
   gfx::QuadF src_quad(gfx::PointF(-99.0f, -100.0f), gfx::PointF(0.0f, 100.0f),
                       gfx::PointF(0.0f, -100.0f), gfx::PointF(-99.0f, -300.0f));
 
-  gfx::PointF clipped_quad[8];
+  gfx::Point3F clipped_quad[8];
   int num_vertices_in_clipped_quad;
 
-  MathUtil::MapClippedQuad(transform, src_quad, clipped_quad,
-                           &num_vertices_in_clipped_quad);
+  MathUtil::MapClippedQuad3d(transform, src_quad, clipped_quad,
+                             &num_vertices_in_clipped_quad);
 
   EXPECT_EQ(num_vertices_in_clipped_quad, 3);
 }
@@ -618,11 +618,11 @@ TEST(MathUtilTest, MapClippedQuadDuplicateQuad) {
   gfx::QuadF src_quad(gfx::PointF(0.0f, 100.0f), gfx::PointF(400.0f, 0.0f),
                       gfx::PointF(0.0f, -100.0f), gfx::PointF(-99.0f, -300.0f));
 
-  gfx::PointF clipped_quad[8];
+  gfx::Point3F clipped_quad[8];
   int num_vertices_in_clipped_quad;
 
-  MathUtil::MapClippedQuad(transform, src_quad, clipped_quad,
-                           &num_vertices_in_clipped_quad);
+  MathUtil::MapClippedQuad3d(transform, src_quad, clipped_quad,
+                             &num_vertices_in_clipped_quad);
 
   EXPECT_EQ(num_vertices_in_clipped_quad, 4);
 }
