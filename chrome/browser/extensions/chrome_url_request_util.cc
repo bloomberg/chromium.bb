@@ -12,10 +12,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/chrome_manifest_url_handlers.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/browser/component_extension_resource_manager.h"
 #include "extensions/browser/extension_protocols.h"
@@ -32,7 +31,6 @@
 #include "net/url_request/url_request_simple_job.h"
 #include "ui/base/resource/resource_bundle.h"
 
-using content::BrowserThread;
 using extensions::ExtensionsBrowserClient;
 
 namespace {
@@ -71,14 +69,13 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
                            base::SizeTToString((*data)->size()).c_str()));
 
     std::string* read_mime_type = new std::string;
-    bool posted = base::PostTaskAndReplyWithResult(
-        BrowserThread::GetBlockingPool(), FROM_HERE,
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, base::TaskTraits().MayBlock(),
         base::Bind(&net::GetMimeTypeFromFile, filename_,
                    base::Unretained(read_mime_type)),
         base::Bind(&URLRequestResourceBundleJob::OnMimeTypeRead,
                    weak_factory_.GetWeakPtr(), mime_type, charset, *data,
                    base::Owned(read_mime_type), callback));
-    DCHECK(posted);
 
     return net::ERR_IO_PENDING;
   }
