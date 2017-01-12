@@ -1566,6 +1566,8 @@ bool PropertyTrees::operator==(const PropertyTrees& other) const {
          layer_id_to_scroll_node_index == other.layer_id_to_scroll_node_index &&
          element_id_to_effect_node_index ==
              other.element_id_to_effect_node_index &&
+         element_id_to_scroll_node_index ==
+             other.element_id_to_scroll_node_index &&
          element_id_to_transform_node_index ==
              other.element_id_to_transform_node_index &&
          always_use_active_tree_opacity_effect_ids ==
@@ -1590,6 +1592,7 @@ PropertyTrees& PropertyTrees::operator=(const PropertyTrees& from) {
   layer_id_to_clip_node_index = from.layer_id_to_clip_node_index;
   layer_id_to_scroll_node_index = from.layer_id_to_scroll_node_index;
   element_id_to_effect_node_index = from.element_id_to_effect_node_index;
+  element_id_to_scroll_node_index = from.element_id_to_scroll_node_index;
   element_id_to_transform_node_index = from.element_id_to_transform_node_index;
   needs_rebuild = from.needs_rebuild;
   changed = from.changed;
@@ -1622,6 +1625,7 @@ void PropertyTrees::clear() {
   layer_id_to_clip_node_index.clear();
   layer_id_to_scroll_node_index.clear();
   element_id_to_effect_node_index.clear();
+  element_id_to_scroll_node_index.clear();
   element_id_to_transform_node_index.clear();
   always_use_active_tree_opacity_effect_ids.clear();
 

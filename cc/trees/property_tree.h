@@ -572,6 +572,8 @@ class CC_EXPORT PropertyTrees final {
   std::unordered_map<ElementId, int, ElementIdHash>
       element_id_to_effect_node_index;
   std::unordered_map<ElementId, int, ElementIdHash>
+      element_id_to_scroll_node_index;
+  std::unordered_map<ElementId, int, ElementIdHash>
       element_id_to_transform_node_index;
 
   std::vector<int> always_use_active_tree_opacity_effect_ids;

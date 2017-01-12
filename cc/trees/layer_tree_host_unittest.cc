@@ -57,6 +57,7 @@
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/scroll_node.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/swap_promise_manager.h"
 #include "cc/trees/transform_node.h"
@@ -943,9 +944,13 @@ class LayerTreeHostTestPushElementIdToNodeIdMap : public LayerTreeHostTest {
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         child_->SetForceRenderSurfaceForTesting(true);
+        child_->AddMainThreadScrollingReasons(
+            MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
         break;
       case 2:
         child_->SetForceRenderSurfaceForTesting(false);
+        child_->ClearMainThreadScrollingReasons(
+            MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
         break;
     }
   }
@@ -961,12 +966,18 @@ class LayerTreeHostTestPushElementIdToNodeIdMap : public LayerTreeHostTest {
         EXPECT_EQ(2U, child_impl_->layer_tree_impl()
                           ->property_trees()
                           ->effect_tree.size());
+        EXPECT_EQ(2U, child_impl_->layer_tree_impl()
+                          ->property_trees()
+                          ->scroll_tree.size());
         EXPECT_TRUE(property_trees->element_id_to_transform_node_index.find(
                         kTestElementId) ==
                     property_trees->element_id_to_transform_node_index.end());
         EXPECT_TRUE(property_trees->element_id_to_effect_node_index.find(
                         kTestElementId) ==
                     property_trees->element_id_to_effect_node_index.end());
+        EXPECT_TRUE(property_trees->element_id_to_scroll_node_index.find(
+                        kTestElementId) ==
+                    property_trees->element_id_to_scroll_node_index.end());
         break;
       case 1:
         EXPECT_EQ(3U, child_impl_->layer_tree_impl()
@@ -975,11 +986,16 @@ class LayerTreeHostTestPushElementIdToNodeIdMap : public LayerTreeHostTest {
         EXPECT_EQ(3U, child_impl_->layer_tree_impl()
                           ->property_trees()
                           ->effect_tree.size());
+        EXPECT_EQ(3U, child_impl_->layer_tree_impl()
+                          ->property_trees()
+                          ->scroll_tree.size());
         EXPECT_EQ(
             2,
             property_trees->element_id_to_transform_node_index[kTestElementId]);
         EXPECT_EQ(
             2, property_trees->element_id_to_effect_node_index[kTestElementId]);
+        EXPECT_EQ(
+            2, property_trees->element_id_to_scroll_node_index[kTestElementId]);
         break;
       case 2:
         EXPECT_EQ(2U, child_impl_->layer_tree_impl()
@@ -994,6 +1010,9 @@ class LayerTreeHostTestPushElementIdToNodeIdMap : public LayerTreeHostTest {
         EXPECT_TRUE(property_trees->element_id_to_effect_node_index.find(
                         kTestElementId) ==
                     property_trees->element_id_to_effect_node_index.end());
+        EXPECT_TRUE(property_trees->element_id_to_scroll_node_index.find(
+                        kTestElementId) ==
+                    property_trees->element_id_to_scroll_node_index.end());
         break;
     }
     EndTest();

@@ -1158,8 +1158,10 @@ void AddScrollNodeIfNeeded(
         data_from_ancestor
             .scroll_tree_parent_created_by_uninheritable_criteria));
 
+  int node_id;
   if (!requires_node) {
-    data_for_children->scroll_tree_parent = parent_id;
+    node_id = parent_id;
+    data_for_children->scroll_tree_parent = node_id;
   } else {
     ScrollNode node;
     node.owning_layer_id = layer->id();
@@ -1194,15 +1196,21 @@ void AddScrollNodeIfNeeded(
     node.transform_id =
         data_for_children->transform_tree_parent->transform_tree_index();
 
-    data_for_children->scroll_tree_parent =
+    node_id =
         data_for_children->property_trees->scroll_tree.Insert(node, parent_id);
+    data_for_children->scroll_tree_parent = node_id;
     data_for_children->main_thread_scrolling_reasons =
         node.main_thread_scrolling_reasons;
     data_for_children->scroll_tree_parent_created_by_uninheritable_criteria =
         scroll_node_uninheritable_criteria;
     data_for_children->property_trees
-        ->layer_id_to_scroll_node_index[layer->id()] =
-        data_for_children->scroll_tree_parent;
+        ->layer_id_to_scroll_node_index[layer->id()] = node_id;
+    // For animation subsystem purposes, if this layer has a compositor element
+    // id, we build a map from that id to this scroll node.
+    if (layer->element_id()) {
+      data_for_children->property_trees
+          ->element_id_to_scroll_node_index[layer->element_id()] = node_id;
+    }
 
     if (node.scrollable) {
       data_for_children->property_trees->scroll_tree.SetBaseScrollOffset(
@@ -1210,7 +1218,7 @@ void AddScrollNodeIfNeeded(
     }
   }
 
-  layer->SetScrollTreeIndex(data_for_children->scroll_tree_parent);
+  layer->SetScrollTreeIndex(node_id);
 }
 
 template <typename LayerType>
