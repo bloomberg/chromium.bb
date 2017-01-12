@@ -130,6 +130,9 @@ void NetErrorTabHelper::DidFinishNavigation(
              !navigation_handle->IsErrorPage()) {
     dns_error_active_ = false;
     dns_error_page_committed_ = false;
+#if defined(OS_ANDROID)
+    is_showing_download_button_in_error_page_ = false;
+#endif  // defined(OS_ANDROID)
   }
 }
 
@@ -141,7 +144,10 @@ bool NetErrorTabHelper::OnMessageReceived(
 #if defined(OS_ANDROID)
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(NetErrorTabHelper, message)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DownloadPageLater, DownloadPageLater)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DownloadPageLater,
+                        OnDownloadPageLater)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SetIsShowingDownloadButtonInErrorPage,
+                        OnSetIsShowingDownloadButtonInErrorPage)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -157,6 +163,9 @@ NetErrorTabHelper::NetErrorTabHelper(WebContents* contents)
       is_error_page_(false),
       dns_error_active_(false),
       dns_error_page_committed_(false),
+#if defined(OS_ANDROID)
+      is_showing_download_button_in_error_page_(false),
+#endif  // defined(OS_ANDROID)
       dns_probe_status_(error_page::DNS_PROBE_POSSIBLE),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -209,7 +218,7 @@ void NetErrorTabHelper::OnDnsProbeFinished(DnsProbeStatus result) {
 }
 
 #if defined(OS_ANDROID)
-void NetErrorTabHelper::DownloadPageLater() {
+void NetErrorTabHelper::OnDownloadPageLater() {
   // Makes sure that this is coming from an error page.
   content::NavigationEntry* entry =
       web_contents()->GetController().GetLastCommittedEntry();
@@ -222,6 +231,11 @@ void NetErrorTabHelper::DownloadPageLater() {
     return;
 
   DownloadPageLaterHelper(url);
+}
+
+void NetErrorTabHelper::OnSetIsShowingDownloadButtonInErrorPage(
+    bool is_showing_download_button) {
+  is_showing_download_button_in_error_page_ = is_showing_download_button;
 }
 #endif  // defined(OS_ANDROID)
 

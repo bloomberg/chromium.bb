@@ -510,6 +510,18 @@ jboolean OfflinePageBridge::IsShowingOfflinePreview(
   return offline_pages::OfflinePageUtils::IsShowingOfflinePreview(web_contents);
 }
 
+jboolean OfflinePageBridge::IsShowingDownloadButtonInErrorPage(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_web_contents) {
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(j_web_contents);
+  if (!web_contents)
+    return false;
+  return offline_pages::OfflinePageUtils::IsShowingDownloadButtonInErrorPage(
+      web_contents);
+}
+
 void OfflinePageBridge::GetRequestsInQueue(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

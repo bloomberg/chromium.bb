@@ -60,6 +60,10 @@ class OfflinePageUtils {
   // Returns true if the offline page is shown for previewing purpose.
   static bool IsShowingOfflinePreview(content::WebContents* web_contents);
 
+  // Returns true if download button is shown in the error page.
+  static bool IsShowingDownloadButtonInErrorPage(
+      content::WebContents* web_contents);
+
   // Gets an Android Tab ID from a tab containing |web_contents|. Returns false,
   // when tab is not available. Returns true otherwise and sets |tab_id| to the
   // ID of the tab.

@@ -340,6 +340,14 @@ void NetErrorHelper::DownloadPageLater() {
 #endif  // defined(OS_ANDROID)
 }
 
+void NetErrorHelper::SetIsShowingDownloadButton(bool show) {
+#if defined(OS_ANDROID)
+  render_frame()->Send(
+      new ChromeViewHostMsg_SetIsShowingDownloadButtonInErrorPage(
+          render_frame()->GetRoutingID(), show));
+#endif  // defined(OS_ANDROID)
+}
+
 void NetErrorHelper::OnNetErrorInfo(int status_num) {
   DCHECK(status_num >= 0 && status_num < error_page::DNS_PROBE_MAX);
 

@@ -24,6 +24,7 @@ import java.util.Set;
  */
 @JNINamespace("offline_pages::android")
 public class OfflinePageBridge {
+    public static final String ASYNC_NAMESPACE = "async_loading";
     public static final String BOOKMARK_NAMESPACE = "bookmark";
     public static final String SHARE_NAMESPACE = "share";
 
@@ -398,6 +399,14 @@ public class OfflinePageBridge {
         return nativeIsShowingOfflinePreview(mNativeOfflinePageBridge, webContents);
     }
 
+    /**
+     * @return True if download button is being shown in the error page.
+     * @param webContents Contents of the page to check.
+     */
+    public boolean isShowingDownloadButtonInErrorPage(WebContents webContents) {
+        return nativeIsShowingDownloadButtonInErrorPage(mNativeOfflinePageBridge, webContents);
+    }
+
     private static class CheckPagesExistOfflineCallbackInternal {
         private Callback<Set<String>> mCallback;
 
@@ -524,5 +533,7 @@ public class OfflinePageBridge {
     private native String nativeGetOfflinePageHeaderForReload(
             long nativeOfflinePageBridge, WebContents webContents);
     private native boolean nativeIsShowingOfflinePreview(
+            long nativeOfflinePageBridge, WebContents webContents);
+    private native boolean nativeIsShowingDownloadButtonInErrorPage(
             long nativeOfflinePageBridge, WebContents webContents);
 }

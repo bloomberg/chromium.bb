@@ -51,6 +51,12 @@ class NetErrorTabHelper
     dns_probe_status_snoop_callback_ = dns_probe_status_snoop_callback;
   }
 
+#if defined(OS_ANDROID)
+  bool is_showing_download_button_in_error_page() const {
+    return is_showing_download_button_in_error_page_;
+  }
+#endif  // defined(OS_ANDROID)
+
   // content::WebContentsObserver implementation.
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
   void DidStartNavigation(
@@ -78,7 +84,8 @@ class NetErrorTabHelper
   }
 
 #if defined(OS_ANDROID)
-  void DownloadPageLater();
+  void OnDownloadPageLater();
+  void OnSetIsShowingDownloadButtonInErrorPage(bool is_showing_download_button);
 #endif  // defined(OS_ANDROID)
 
  private:
@@ -114,6 +121,11 @@ class NetErrorTabHelper
   // True if the helper has seen an error page commit while |dns_error_active_|
   // is true.  (This should never be true if |dns_error_active_| is false.)
   bool dns_error_page_committed_;
+
+#if defined(OS_ANDROID)
+  // True if download button is being shown when the error page commits.
+  bool is_showing_download_button_in_error_page_;
+#endif  // defined(OS_ANDROID)
 
   // The status of a DNS probe that may or may not have started or finished.
   // Since the renderer can change out from under the helper (in cross-process

@@ -18,6 +18,7 @@
 #include "chrome/browser/android/offline_pages/offline_page_tab_helper.h"
 #include "chrome/browser/android/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/net/net_error_tab_helper.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
@@ -136,6 +137,14 @@ bool OfflinePageUtils::IsShowingOfflinePreview(
   OfflinePageTabHelper* tab_helper =
       OfflinePageTabHelper::FromWebContents(web_contents);
   return tab_helper && tab_helper->IsShowingOfflinePreview();
+}
+
+// static
+bool OfflinePageUtils::IsShowingDownloadButtonInErrorPage(
+    content::WebContents* web_contents) {
+  chrome_browser_net::NetErrorTabHelper* tab_helper =
+      chrome_browser_net::NetErrorTabHelper::FromWebContents(web_contents);
+  return tab_helper && tab_helper->is_showing_download_button_in_error_page();
 }
 
 // static

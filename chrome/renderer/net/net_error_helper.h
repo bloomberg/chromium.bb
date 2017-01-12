@@ -112,6 +112,7 @@ class NetErrorHelper
   void LoadPageFromCache(const GURL& page_url) override;
   void DiagnoseError(const GURL& page_url) override;
   void DownloadPageLater() override;
+  void SetIsShowingDownloadButton(bool show) override;
 
   void OnNetErrorInfo(int status);
   void OnSetNavigationCorrectionInfo(const GURL& navigation_correction_url,

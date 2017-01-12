@@ -435,6 +435,8 @@ class NetErrorHelperCoreTest : public testing::Test,
     download_count_++;
   }
 
+  void SetIsShowingDownloadButton(bool show) override {}
+
   void SendTrackingRequest(const GURL& tracking_url,
                            const std::string& tracking_request_body) override {
     last_tracking_url_ = tracking_url;

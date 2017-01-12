@@ -38,6 +38,8 @@ import org.chromium.chrome.browser.download.ui.BackendProvider;
 import org.chromium.chrome.browser.download.ui.BackendProvider.DownloadDelegate;
 import org.chromium.chrome.browser.download.ui.DownloadFilter;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper;
+import org.chromium.chrome.browser.offlinepages.ClientId;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
@@ -187,10 +189,21 @@ public class DownloadUtils {
      * @param context Context to pull resources from.
      */
     public static void downloadOfflinePage(Context context, Tab tab) {
-        final OfflinePageDownloadBridge bridge = new OfflinePageDownloadBridge(tab.getProfile());
-        bridge.startDownload(tab);
-        bridge.destroy();
-        DownloadUtils.recordDownloadPageMetrics(tab);
+        if (tab.isShowingErrorPage()) {
+            // The download needs to be scheduled to happen at later time due to current network
+            // error.
+            ClientId clientId = ClientId.createGuidClientIdForNamespace(
+                    OfflinePageBridge.ASYNC_NAMESPACE);
+            final OfflinePageBridge bridge = OfflinePageBridge.getForProfile(tab.getProfile());
+            bridge.savePageLater(tab.getUrl(), clientId, true /* userRequested */);
+        } else {
+            // Otherwise, the download can be started immediately.
+            final OfflinePageDownloadBridge bridge =
+                    new OfflinePageDownloadBridge(tab.getProfile());
+            bridge.startDownload(tab);
+            bridge.destroy();
+            DownloadUtils.recordDownloadPageMetrics(tab);
+        }
     }
 
     /**
@@ -201,13 +214,15 @@ public class DownloadUtils {
     public static boolean isAllowedToDownloadPage(Tab tab) {
         if (tab == null) return false;
 
-        // Only allow HTTP and HTTPS pages, as that is these are the only scenarios supported by the
-        // background/offline page saving.
-        if (!tab.getUrl().startsWith(UrlConstants.HTTP_SCHEME)
-                && !tab.getUrl().startsWith(UrlConstants.HTTPS_SCHEME)) {
-            return false;
+        // Check if the page url is supported for saving. Only HTTP and HTTPS pages are allowed.
+        if (!OfflinePageBridge.canSavePage(tab.getUrl())) return false;
+
+        // Download will only be allowed for the error page if download button is shown in the page.
+        if (tab.isShowingErrorPage()) {
+            final OfflinePageBridge bridge = OfflinePageBridge.getForProfile(tab.getProfile());
+            return bridge.isShowingDownloadButtonInErrorPage(tab.getWebContents());
         }
-        if (tab.isShowingErrorPage()) return false;
+
         if (tab.isShowingInterstitialPage()) return false;
 
         // Don't allow re-downloading the currently displayed offline page.

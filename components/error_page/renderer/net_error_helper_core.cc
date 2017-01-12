@@ -658,6 +658,9 @@ void NetErrorHelperCore::OnFinishLoad(FrameType frame_type) {
     RecordEvent(NETWORK_ERROR_PAGE_CACHED_COPY_BUTTON_SHOWN);
   }
 
+  delegate_->SetIsShowingDownloadButton(
+      committed_error_page_info_->download_button_in_page);
+
   delegate_->EnablePageHelperFunctions();
 
   if (committed_error_page_info_->needs_load_navigation_corrections) {
