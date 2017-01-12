@@ -3287,6 +3287,8 @@ void Document::setBaseURLOverride(const KURL& url) {
 }
 
 void Document::processBaseElement() {
+  UseCounter::count(*this, UseCounter::BaseElement);
+
   // Find the first href attribute in a base element and the first target
   // attribute in a base element.
   const AtomicString* href = 0;
@@ -3304,9 +3306,10 @@ void Document::processBaseElement() {
       if (!value.isNull())
         target = &value;
     }
-    if (contentSecurityPolicy()->isActive())
+    if (contentSecurityPolicy()->isActive()) {
       UseCounter::count(*this,
                         UseCounter::ContentSecurityPolicyWithBaseElement);
+    }
   }
 
   // FIXME: Since this doesn't share code with completeURL it may not handle
@@ -3317,13 +3320,29 @@ void Document::processBaseElement() {
     if (!strippedHref.isEmpty())
       baseElementURL = KURL(url(), strippedHref);
   }
+
+  if (!baseElementURL.isEmpty()) {
+    if (baseElementURL.protocolIsData())
+      UseCounter::count(*this, UseCounter::BaseWithDataHref);
+    if (!this->getSecurityOrigin()->canRequest(baseElementURL))
+      UseCounter::count(*this, UseCounter::BaseWithCrossOriginHref);
+  }
+
   if (m_baseElementURL != baseElementURL &&
       contentSecurityPolicy()->allowBaseURI(baseElementURL)) {
     m_baseElementURL = baseElementURL;
     updateBaseURL();
   }
 
-  m_baseTarget = target ? *target : nullAtom;
+  if (target) {
+    if (target->contains('\n') || target->contains('\r'))
+      UseCounter::count(*this, UseCounter::BaseWithNewlinesInTarget);
+    if (target->contains('<'))
+      UseCounter::count(*this, UseCounter::BaseWithOpenBracketInTarget);
+    m_baseTarget = *target;
+  } else {
+    m_baseTarget = nullAtom;
+  }
 }
 
 String Document::userAgent() const {

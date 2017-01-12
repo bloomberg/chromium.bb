@@ -760,12 +760,20 @@ bool CSPDirectiveList::allowBaseURI(
     const KURL& url,
     ResourceRequest::RedirectStatus redirectStatus,
     ContentSecurityPolicy::ReportingStatus reportingStatus) const {
-  return reportingStatus == ContentSecurityPolicy::SendReport
-             ? checkSourceAndReportViolation(
-                   m_baseURI.get(), url,
-                   ContentSecurityPolicy::DirectiveType::BaseURI,
-                   redirectStatus)
-             : checkSource(m_baseURI.get(), url, redirectStatus);
+  bool result =
+      reportingStatus == ContentSecurityPolicy::SendReport
+          ? checkSourceAndReportViolation(
+                m_baseURI.get(), url,
+                ContentSecurityPolicy::DirectiveType::BaseURI, redirectStatus)
+          : checkSource(m_baseURI.get(), url, redirectStatus);
+
+  if (result &&
+      !checkSource(operativeDirective(m_baseURI.get()), url, redirectStatus)) {
+    UseCounter::count(m_policy->document(),
+                      UseCounter::BaseWouldBeBlockedByDefaultSrc);
+  }
+
+  return result;
 }
 
 bool CSPDirectiveList::allowWorkerFromSource(

@@ -1425,6 +1425,12 @@ class CORE_EXPORT UseCounter {
     HTMLIFrameElementReferrerPolicyAttribute = 1755,
     HTMLImageElementReferrerPolicyAttribute = 1756,
     HTMLLinkElementReferrerPolicyAttribute = 1757,
+    BaseElement = 1758,
+    BaseWithCrossOriginHref = 1759,
+    BaseWithDataHref = 1760,
+    BaseWithNewlinesInTarget = 1761,
+    BaseWithOpenBracketInTarget = 1762,
+    BaseWouldBeBlockedByDefaultSrc = 1763,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
