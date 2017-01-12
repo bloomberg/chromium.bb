@@ -64,7 +64,6 @@ class PLATFORM_EXPORT TransformOperation
     Interpolated,
     Identity,
     RotateAroundOrigin,
-    None
   };
 
   TransformOperation() {}

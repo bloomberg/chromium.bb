@@ -283,16 +283,10 @@ bool TransformOperations::blendedBoundsForBox(const FloatBox& box,
         (i < fromSize) ? from.operations()[i] : nullptr;
     RefPtr<TransformOperation> toOperation =
         (i < toSize) ? operations()[i] : nullptr;
-    if (fromOperation && fromOperation->type() == TransformOperation::None)
-      fromOperation = nullptr;
 
-    if (toOperation && toOperation->type() == TransformOperation::None)
-      toOperation = nullptr;
-
+    DCHECK(fromOperation || toOperation);
     TransformOperation::OperationType interpolationType =
-        toOperation
-            ? toOperation->type()
-            : fromOperation ? fromOperation->type() : TransformOperation::None;
+        toOperation ? toOperation->type() : fromOperation->type();
     if (fromOperation && toOperation &&
         !fromOperation->canBlendWith(*toOperation.get()))
       return false;
@@ -407,8 +401,6 @@ bool TransformOperations::blendedBoundsForBox(const FloatBox& box,
           }
         }
       }
-        continue;
-      case TransformOperation::None:
         continue;
       case TransformOperation::Matrix:
       case TransformOperation::Matrix3D:

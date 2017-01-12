@@ -53,6 +53,8 @@ static Length convertToFloatLength(
 static TransformOperation::OperationType getTransformOperationType(
     CSSValueID type) {
   switch (type) {
+    default:
+      NOTREACHED();
     case CSSValueScale:
       return TransformOperation::Scale;
     case CSSValueScaleX:
@@ -95,10 +97,6 @@ static TransformOperation::OperationType getTransformOperationType(
       return TransformOperation::Matrix3D;
     case CSSValuePerspective:
       return TransformOperation::Perspective;
-    default:
-      ASSERT_NOT_REACHED();
-      // FIXME: We shouldn't have a type None since we never create them
-      return TransformOperation::None;
   }
 }
 

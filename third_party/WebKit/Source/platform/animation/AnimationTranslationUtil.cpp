@@ -120,8 +120,8 @@ void toCompositorTransformOperations(
       case TransformOperation::Identity:
         outTransformOperations->appendIdentity();
         break;
-      case TransformOperation::None:
-        // Do nothing.
+      default:
+        NOTREACHED();
         break;
     }  // switch
   }    // for each operation
