@@ -32,6 +32,9 @@ class TabDialogsCocoa : public TabDialogs {
       const base::string16& main_text,
       const base::string16& sub_text) override;
 
+ protected:
+  content::WebContents* web_contents() const { return web_contents_; }
+
  private:
   content::WebContents* web_contents_;  // Weak. Owns this.
 
