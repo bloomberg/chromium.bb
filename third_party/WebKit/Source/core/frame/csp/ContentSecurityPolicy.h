@@ -346,6 +346,7 @@ class CORE_EXPORT ContentSecurityPolicy
   static bool shouldBypassMainWorld(const ExecutionContext*);
 
   static bool isNonceableElement(const Element*);
+  static const char* getNonceReplacementString() { return "[Replaced]"; }
 
   // This method checks whether the request should be allowed for an
   // experimental EmbeddingCSP feature

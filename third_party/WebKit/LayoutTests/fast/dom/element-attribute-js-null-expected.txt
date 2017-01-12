@@ -223,7 +223,6 @@ TEST SUCCEEDED: The value was the string 'null'. [tested HTMLScriptElement.chars
 TEST SUCCEEDED: The value was the string 'null' resolved as a URL. [tested HTMLScriptElement.src]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLScriptElement.type]
 TEST SUCCEEDED: The value was null. [tested HTMLScriptElement.crossOrigin]
-TEST SUCCEEDED: The value was the string 'null'. [tested HTMLScriptElement.nonce]
 
 TEST SUCCEEDED: The value was the empty string. [tested HTMLSelectElement.value]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLSelectElement.name]

@@ -36,7 +36,13 @@ inline SVGScriptElement::SVGScriptElement(Document& document,
     : SVGElement(SVGNames::scriptTag, document),
       SVGURIReference(this),
       m_loader(
-          ScriptLoader::create(this, wasInsertedByParser, alreadyStarted)) {}
+          ScriptLoader::create(this, wasInsertedByParser, alreadyStarted)) {
+  if (fastHasAttribute(HTMLNames::nonceAttr)) {
+    m_nonce = fastGetAttribute(HTMLNames::nonceAttr);
+    if (RuntimeEnabledFeatures::hideNonceContentAttributeEnabled())
+      removeAttribute(HTMLNames::nonceAttr);
+  }
+}
 
 SVGScriptElement* SVGScriptElement::create(Document& document,
                                            bool insertedByParser) {

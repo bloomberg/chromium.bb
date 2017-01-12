@@ -37,7 +37,7 @@ interface HTMLScriptElement : HTMLElement {
 
     // Content Security Policy
     // https://w3c.github.io/webappsec/specs/content-security-policy/#script-src-the-nonce-attribute
-    [CEReactions, Reflect, RuntimeEnabled=ExperimentalContentSecurityPolicyFeatures] attribute DOMString nonce;
+    [CEReactions, RuntimeEnabled=ExperimentalContentSecurityPolicyFeatures] attribute DOMString nonce;
 
     // Subresource Integrity
     // https://w3c.github.io/webappsec-subresource-integrity/#HTMLScriptElement

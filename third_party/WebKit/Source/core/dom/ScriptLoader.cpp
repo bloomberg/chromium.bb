@@ -347,10 +347,8 @@ bool ScriptLoader::fetchScript(const String& sourceUrl,
                                           crossOrigin);
     request.setCharset(scriptCharset());
 
-    if (ContentSecurityPolicy::isNonceableElement(m_element.get())) {
-      request.setContentSecurityPolicyNonce(
-          m_element->fastGetAttribute(HTMLNames::nonceAttr));
-    }
+    if (ContentSecurityPolicy::isNonceableElement(m_element.get()))
+      request.setContentSecurityPolicyNonce(client()->nonce());
 
     request.setParserDisposition(isParserInserted() ? ParserInserted
                                                     : NotParserInserted);
@@ -465,8 +463,8 @@ bool ScriptLoader::doExecuteScript(const ScriptSourceCode& sourceCode) {
 
   AtomicString nonce =
       ContentSecurityPolicy::isNonceableElement(m_element.get())
-          ? m_element->fastGetAttribute(HTMLNames::nonceAttr)
-          : AtomicString();
+          ? client()->nonce()
+          : nullAtom;
   if (!m_isExternalScript &&
       (!shouldBypassMainWorldCSP &&
        !csp->allowInlineScript(m_element, elementDocument->url(), nonce,
@@ -551,6 +549,10 @@ bool ScriptLoader::doExecuteScript(const ScriptSourceCode& sourceCode) {
     DCHECK(contextDocument->currentScript() == m_element);
     contextDocument->popCurrentScript();
   }
+
+  // "Number used _once_", so, clear it out after execution.
+  if (RuntimeEnabledFeatures::hideNonceContentAttributeEnabled())
+    client()->clearNonce();
 
   return true;
 }

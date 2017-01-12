@@ -46,6 +46,11 @@ class SVGScriptElement final : public SVGElement,
   bool isAnimatableAttribute(const QualifiedName&) const override;
 #endif
 
+  // ScriptLoaderClient
+  AtomicString nonce() const override { return m_nonce; }
+  void setNonce(const String& nonce) override { m_nonce = AtomicString(nonce); }
+  void clearNonce() override { m_nonce = nullAtom; }
+
   DECLARE_VIRTUAL_TRACE();
 
  private:
@@ -80,6 +85,7 @@ class SVGScriptElement final : public SVGElement,
   bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
 
   Member<ScriptLoader> m_loader;
+  AtomicString m_nonce;
 };
 
 }  // namespace blink

@@ -44,6 +44,7 @@
 #include "core/frame/csp/CSPSource.h"
 #include "core/frame/csp/MediaListDirective.h"
 #include "core/frame/csp/SourceListDirective.h"
+#include "core/html/HTMLScriptElement.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"
@@ -75,8 +76,13 @@
 namespace blink {
 
 bool ContentSecurityPolicy::isNonceableElement(const Element* element) {
-  if (!element->fastHasAttribute(HTMLNames::nonceAttr))
+  if (RuntimeEnabledFeatures::hideNonceContentAttributeEnabled() &&
+      isHTMLScriptElement(element)) {
+    if (toHTMLScriptElement(element)->nonce().isNull())
+      return false;
+  } else if (!element->fastHasAttribute(HTMLNames::nonceAttr)) {
     return false;
+  }
 
   bool nonceable = true;
 

@@ -33,6 +33,7 @@
 #include "core/dom/Text.h"
 #include "core/events/Event.h"
 #include "core/frame/UseCounter.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 
 namespace blink {
 
@@ -86,6 +87,14 @@ void HTMLScriptElement::parseAttribute(
     logUpdateAttributeIfIsolatedWorldAndInDocument("script", params);
   } else if (params.name == asyncAttr) {
     m_loader->handleAsyncAttribute();
+  } else if (params.name == nonceAttr) {
+    if (params.newValue == ContentSecurityPolicy::getNonceReplacementString())
+      return;
+    m_nonce = params.newValue;
+    if (RuntimeEnabledFeatures::hideNonceContentAttributeEnabled()) {
+      setAttribute(nonceAttr,
+                   ContentSecurityPolicy::getNonceReplacementString());
+    }
   } else {
     HTMLElement::parseAttribute(params);
   }
