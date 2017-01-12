@@ -2265,11 +2265,16 @@ static void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
+  const int hbs = mi_size_wide[bsize] / 2;
   const int is_partition_root = bsize >= BLOCK_8X8;
   const int ctx = is_partition_root
-                      ? partition_plane_context(xd, mi_row, mi_col, bsize)
-                      : 0;
-  const int hbs = mi_size_wide[bsize] / 2;
+                      ? partition_plane_context(xd, mi_row, mi_col,
+#if CONFIG_UNPOISON_PARTITION_CTX
+                                                mi_row + hbs < cm->mi_rows,
+                                                mi_col + hbs < cm->mi_cols,
+#endif
+                                                bsize)
+                      : -1;
   const PARTITION_TYPE partition = pc_tree->partitioning;
   const BLOCK_SIZE subsize = get_subsize(bsize, partition);
 #if CONFIG_EXT_PARTITION_TYPES
@@ -2285,7 +2290,7 @@ static void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
 
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
-  if (!dry_run && is_partition_root) td->counts->partition[ctx][partition]++;
+  if (!dry_run && ctx >= 0) td->counts->partition[ctx][partition]++;
 
 #if CONFIG_SUPERTX
   if (!frame_is_intra_only(cm) && bsize <= MAX_SUPERTX_BLOCK_SIZE &&
@@ -2562,7 +2567,12 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
   const int bs = mi_size_wide[bsize];
   const int hbs = bs / 2;
   int i;
-  const int pl = partition_plane_context(xd, mi_row, mi_col, bsize);
+  const int pl = partition_plane_context(xd, mi_row, mi_col,
+#if CONFIG_UNPOISON_PARTITION_CTX
+                                         mi_row + hbs < cm->mi_rows,
+                                         mi_col + hbs < cm->mi_cols,
+#endif
+                                         bsize);
   const PARTITION_TYPE partition = get_partition(cm, mi_row, mi_col, bsize);
   const BLOCK_SIZE subsize = get_subsize(bsize, partition);
   RD_SEARCH_MACROBLOCK_CONTEXT x_ctx;
@@ -2638,11 +2648,14 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
                        bsize, ctx_none, INT64_MAX);
 
       if (none_rdc.rate < INT_MAX) {
-        none_rdc.rate += cpi->partition_cost[pl][PARTITION_NONE];
+        none_rdc.rate += cpi->partition_cost[pl + CONFIG_UNPOISON_PARTITION_CTX]
+                                            [PARTITION_NONE];
         none_rdc.rdcost =
             RDCOST(x->rdmult, x->rddiv, none_rdc.rate, none_rdc.dist);
 #if CONFIG_SUPERTX
-        none_rate_nocoef += cpi->partition_cost[pl][PARTITION_NONE];
+        none_rate_nocoef +=
+            cpi->partition_cost[pl + CONFIG_UNPOISON_PARTITION_CTX]
+                               [PARTITION_NONE];
 #endif
       }
 
@@ -2816,11 +2829,13 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
   }
 
   if (last_part_rdc.rate < INT_MAX) {
-    last_part_rdc.rate += cpi->partition_cost[pl][partition];
+    last_part_rdc.rate +=
+        cpi->partition_cost[pl + CONFIG_UNPOISON_PARTITION_CTX][partition];
     last_part_rdc.rdcost =
         RDCOST(x->rdmult, x->rddiv, last_part_rdc.rate, last_part_rdc.dist);
 #if CONFIG_SUPERTX
-    last_part_rate_nocoef += cpi->partition_cost[pl][partition];
+    last_part_rate_nocoef +=
+        cpi->partition_cost[pl + CONFIG_UNPOISON_PARTITION_CTX][partition];
 #endif
   }
 
@@ -2895,17 +2910,23 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
         encode_sb(cpi, td, tile_info, tp, mi_row + y_idx, mi_col + x_idx,
                   OUTPUT_ENABLED, split_subsize, pc_tree->split[i], NULL);
 
-      chosen_rdc.rate += cpi->partition_cost[pl][PARTITION_NONE];
+      chosen_rdc.rate += cpi->partition_cost[pl + CONFIG_UNPOISON_PARTITION_CTX]
+                                            [PARTITION_NONE];
 #if CONFIG_SUPERTX
-      chosen_rate_nocoef += cpi->partition_cost[pl][PARTITION_SPLIT];
+      chosen_rate_nocoef +=
+          cpi->partition_cost[pl + CONFIG_UNPOISON_PARTITION_CTX]
+                             [PARTITION_SPLIT];
 #endif
     }
     if (chosen_rdc.rate < INT_MAX) {
-      chosen_rdc.rate += cpi->partition_cost[pl][PARTITION_SPLIT];
+      chosen_rdc.rate += cpi->partition_cost[pl + CONFIG_UNPOISON_PARTITION_CTX]
+                                            [PARTITION_SPLIT];
       chosen_rdc.rdcost =
           RDCOST(x->rdmult, x->rddiv, chosen_rdc.rate, chosen_rdc.dist);
 #if CONFIG_SUPERTX
-      chosen_rate_nocoef += cpi->partition_cost[pl][PARTITION_NONE];
+      chosen_rate_nocoef +=
+          cpi->partition_cost[pl + CONFIG_UNPOISON_PARTITION_CTX]
+                             [PARTITION_NONE];
 #endif
     }
   }
@@ -3422,12 +3443,18 @@ static void rd_test_partition3(
 #endif  // CONFIG_SUPERTX
 
       if (sum_rdc.rdcost < best_rdc->rdcost) {
-        int pl = partition_plane_context(xd, mi_row, mi_col, bsize);
-        sum_rdc.rate += cpi->partition_cost[pl][partition];
+        int pl = partition_plane_context(xd, mi_row, mi_col,
+#if CONFIG_UNPOISON_PARTITION_CTX
+                                         has_rows, has_cols,
+#endif
+                                         bsize);
+        sum_rdc.rate +=
+            cpi->partition_cost[pl + CONFIG_UNPOISON_PARTITION_CTX][partition];
         sum_rdc.rdcost =
             RDCOST(x->rdmult, x->rddiv, sum_rdc.rate, sum_rdc.dist);
 #if CONFIG_SUPERTX
-        sum_rate_nocoef += cpi->partition_cost[pl][partition];
+        sum_rate_nocoef +=
+            cpi->partition_cost[pl + CONFIG_UNPOISON_PARTITION_CTX][partition];
 #endif
         if (sum_rdc.rdcost < best_rdc->rdcost) {
 #if CONFIG_SUPERTX
@@ -3462,23 +3489,36 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   RD_SEARCH_MACROBLOCK_CONTEXT x_ctx;
   const TOKENEXTRA *const tp_orig = *tp;
   PICK_MODE_CONTEXT *ctx_none = &pc_tree->none;
-
+#if CONFIG_UNPOISON_PARTITION_CTX
+  const int hbs = mi_size_wide[bsize] / 2;
+  const int has_rows = mi_row + hbs < cm->mi_rows;
+  const int has_cols = mi_col + hbs < cm->mi_cols;
+#else
   int tmp_partition_cost[PARTITION_TYPES];
+#endif
   BLOCK_SIZE subsize;
   RD_COST this_rdc, sum_rdc, best_rdc;
   const int bsize_at_least_8x8 = (bsize >= BLOCK_8X8);
   int do_square_split = bsize_at_least_8x8;
-
 #if CONFIG_CB4X4
   const int unify_bsize = 1;
   const int pl = bsize_at_least_8x8
-                     ? partition_plane_context(xd, mi_row, mi_col, bsize)
-                     : 0;
+                     ? partition_plane_context(xd, mi_row, mi_col,
+#if CONFIG_UNPOISON_PARTITION_CTX
+                                               has_rows, has_cols,
+#endif
+                                               bsize)
+                     : -1;
 #else
   const int unify_bsize = 0;
-  const int pl = partition_plane_context(xd, mi_row, mi_col, bsize);
+  const int pl = partition_plane_context(xd, mi_row, mi_col,
+#if CONFIG_UNPOISON_PARTITION_CTX
+                                         has_rows, has_cols,
+#endif
+                                         bsize);
 #endif  // CONFIG_CB4X4
-  const int *partition_cost = cpi->partition_cost[pl];
+  const int *partition_cost =
+      cpi->partition_cost[pl + CONFIG_UNPOISON_PARTITION_CTX];
 #if CONFIG_SUPERTX
   int this_rate_nocoef, sum_rate_nocoef = 0, best_rate_nocoef = INT_MAX;
   int abort_flag;
@@ -3518,6 +3558,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 
   (void)*tp_orig;
 
+#if !CONFIG_UNPOISON_PARTITION_CTX
   if (force_horz_split || force_vert_split) {
     tmp_partition_cost[PARTITION_NONE] = INT_MAX;
 
@@ -3541,6 +3582,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 
     partition_cost = tmp_partition_cost;
   }
+#endif
 
 #if CONFIG_VAR_TX
 #ifndef NDEBUG
@@ -5975,11 +6017,16 @@ static void predict_sb_complex(const AV1_COMP *const cpi, ThreadData *td,
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
+  const int hbs = mi_size_wide[bsize] / 2;
   const int is_partition_root = bsize >= BLOCK_8X8;
   const int ctx = is_partition_root
-                      ? partition_plane_context(xd, mi_row, mi_col, bsize)
-                      : 0;
-  const int hbs = mi_size_wide[bsize] / 2;
+                      ? partition_plane_context(xd, mi_row, mi_col,
+#if CONFIG_UNPOISON_PARTITION_CTX
+                                                mi_row + hbs < cm->mi_rows,
+                                                mi_col + hbs < cm->mi_cols,
+#endif
+                                                bsize)
+                      : -1;
   const PARTITION_TYPE partition = pc_tree->partitioning;
   const BLOCK_SIZE subsize = get_subsize(bsize, partition);
 #if CONFIG_EXT_PARTITION_TYPES
@@ -6030,7 +6077,7 @@ static void predict_sb_complex(const AV1_COMP *const cpi, ThreadData *td,
   }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
-  if (!dry_run && is_partition_root && bsize < top_bsize) {
+  if (!dry_run && ctx >= 0 && bsize < top_bsize) {
     // Explicitly cast away const.
     FRAME_COUNTS *const frame_counts = (FRAME_COUNTS *)&cm->counts;
     frame_counts->partition[ctx][partition]++;

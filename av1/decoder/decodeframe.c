@@ -1822,9 +1822,16 @@ static PARTITION_TYPE read_partition(AV1_COMMON *cm, MACROBLOCKD *xd,
                                      int mi_row, int mi_col, aom_reader *r,
                                      int has_rows, int has_cols,
                                      BLOCK_SIZE bsize) {
+#if CONFIG_UNPOISON_PARTITION_CTX
+  const int ctx =
+      partition_plane_context(xd, mi_row, mi_col, has_rows, has_cols, bsize);
+  const aom_prob *const probs = ctx >= 0 ? cm->fc->partition_prob[ctx] : NULL;
+  FRAME_COUNTS *const counts = ctx >= 0 ? xd->counts : NULL;
+#else
   const int ctx = partition_plane_context(xd, mi_row, mi_col, bsize);
   const aom_prob *const probs = cm->fc->partition_prob[ctx];
-  FRAME_COUNTS *counts = xd->counts;
+  FRAME_COUNTS *const counts = xd->counts;
+#endif
   PARTITION_TYPE p;
 
   if (has_rows && has_cols)
@@ -4394,15 +4401,21 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_EXT_PARTITION_TYPES
   for (i = 0; i < PARTITION_TYPES - 1; ++i)
     av1_diff_update_prob(&r, &fc->partition_prob[0][i], ACCT_STR);
-  for (j = 1; j < PARTITION_CONTEXTS; ++j)
+  for (j = 1; j < PARTITION_CONTEXTS_PRIMARY; ++j)
     for (i = 0; i < EXT_PARTITION_TYPES - 1; ++i)
       av1_diff_update_prob(&r, &fc->partition_prob[j][i], ACCT_STR);
 #else
-  for (j = 0; j < PARTITION_CONTEXTS; ++j)
+  for (j = 0; j < PARTITION_CONTEXTS_PRIMARY; ++j)
     for (i = 0; i < PARTITION_TYPES - 1; ++i)
       av1_diff_update_prob(&r, &fc->partition_prob[j][i], ACCT_STR);
 #endif  // CONFIG_EXT_PARTITION_TYPES
-#endif  // EC_ADAPT, DAALA_EC
+#if CONFIG_UNPOISON_PARTITION_CTX
+  for (; j < PARTITION_CONTEXTS_PRIMARY + PARTITION_BLOCK_SIZES; ++j)
+    av1_diff_update_prob(&r, &fc->partition_prob[j][PARTITION_VERT], ACCT_STR);
+  for (; j < PARTITION_CONTEXTS_PRIMARY + 2 * PARTITION_BLOCK_SIZES; ++j)
+    av1_diff_update_prob(&r, &fc->partition_prob[j][PARTITION_HORZ], ACCT_STR);
+#endif  // CONFIG_UNPOISON_PARTITION_CTX
+#endif  // CONFIG_EC_ADAPT
 #if CONFIG_EXT_INTRA
 #if CONFIG_INTRA_INTERP
   for (i = 0; i < INTRA_FILTERS + 1; ++i)

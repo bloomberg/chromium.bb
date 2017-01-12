@@ -2254,13 +2254,21 @@ static void write_partition(const AV1_COMMON *const cm,
                             const MACROBLOCKD *const xd, int hbs, int mi_row,
                             int mi_col, PARTITION_TYPE p, BLOCK_SIZE bsize,
                             aom_writer *w) {
-  const int is_partition_point = bsize >= BLOCK_8X8;
-  const int ctx = is_partition_point
-                      ? partition_plane_context(xd, mi_row, mi_col, bsize)
-                      : 0;
-  const aom_prob *const probs = cm->fc->partition_prob[ctx];
   const int has_rows = (mi_row + hbs) < cm->mi_rows;
   const int has_cols = (mi_col + hbs) < cm->mi_cols;
+  const int is_partition_point = bsize >= BLOCK_8X8;
+  const int ctx = is_partition_point
+                      ? partition_plane_context(xd, mi_row, mi_col,
+#if CONFIG_UNPOISON_PARTITION_CTX
+                                                has_rows, has_cols,
+#endif
+                                                bsize)
+                      : 0;
+#if CONFIG_UNPOISON_PARTITION_CTX
+  const aom_prob *const probs = ctx >= 0 ? cm->fc->partition_prob[ctx] : NULL;
+#else
+  const aom_prob *const probs = cm->fc->partition_prob[ctx];
+#endif
 
   if (!is_partition_point) return;
 
@@ -4336,16 +4344,38 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #if CONFIG_EXT_PARTITION_TYPES
   prob_diff_update(av1_partition_tree, fc->partition_prob[0],
                    counts->partition[0], PARTITION_TYPES, probwt, header_bc);
-  for (i = 1; i < PARTITION_CONTEXTS; ++i)
+  for (i = 1; i < PARTITION_CONTEXTS_PRIMARY; ++i)
     prob_diff_update(av1_ext_partition_tree, fc->partition_prob[i],
                      counts->partition[i], EXT_PARTITION_TYPES, probwt,
                      header_bc);
 #else
-  for (i = 0; i < PARTITION_CONTEXTS; ++i) {
+  for (i = 0; i < PARTITION_CONTEXTS_PRIMARY; ++i) {
     prob_diff_update(av1_partition_tree, fc->partition_prob[i],
                      counts->partition[i], PARTITION_TYPES, probwt, header_bc);
   }
-#endif  // CONFIG_EC_ADAPT, CONFIG_DAALA_EC
+#endif  // CONFIG_EXT_PARTITION_TYPES
+#if CONFIG_UNPOISON_PARTITION_CTX
+  for (; i < PARTITION_CONTEXTS_PRIMARY + PARTITION_BLOCK_SIZES; ++i) {
+    unsigned int ct[2] = { counts->partition[i][PARTITION_VERT],
+                           counts->partition[i][PARTITION_SPLIT] };
+    assert(counts->partition[i][PARTITION_NONE] == 0);
+    assert(counts->partition[i][PARTITION_HORZ] == 0);
+    assert(fc->partition_prob[i][PARTITION_NONE] == 0);
+    assert(fc->partition_prob[i][PARTITION_HORZ] == 0);
+    av1_cond_prob_diff_update(header_bc, &fc->partition_prob[i][PARTITION_VERT],
+                              ct, probwt);
+  }
+  for (; i < PARTITION_CONTEXTS_PRIMARY + 2 * PARTITION_BLOCK_SIZES; ++i) {
+    unsigned int ct[2] = { counts->partition[i][PARTITION_HORZ],
+                           counts->partition[i][PARTITION_SPLIT] };
+    assert(counts->partition[i][PARTITION_NONE] == 0);
+    assert(counts->partition[i][PARTITION_VERT] == 0);
+    assert(fc->partition_prob[i][PARTITION_NONE] == 0);
+    assert(fc->partition_prob[i][PARTITION_VERT] == 0);
+    av1_cond_prob_diff_update(header_bc, &fc->partition_prob[i][PARTITION_HORZ],
+                              ct, probwt);
+  }
+#endif
 
 #if CONFIG_EXT_INTRA
 #if CONFIG_INTRA_INTERP

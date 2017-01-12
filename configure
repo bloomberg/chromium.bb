@@ -271,6 +271,7 @@ EXPERIMENT_LIST="
     loop_restoration
     ext_partition
     ext_partition_types
+    unpoison_partition_ctx
     ext_tile
     motion_var
     ncobmc

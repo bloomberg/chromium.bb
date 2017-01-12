@@ -700,7 +700,31 @@ static INLINE void update_ext_partition_context(MACROBLOCKD *xd, int mi_row,
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
 static INLINE int partition_plane_context(const MACROBLOCKD *xd, int mi_row,
-                                          int mi_col, BLOCK_SIZE bsize) {
+                                          int mi_col,
+#if CONFIG_UNPOISON_PARTITION_CTX
+                                          int has_rows, int has_cols,
+#endif
+                                          BLOCK_SIZE bsize) {
+#if CONFIG_UNPOISON_PARTITION_CTX
+  const PARTITION_CONTEXT *above_ctx = xd->above_seg_context + mi_col;
+  const PARTITION_CONTEXT *left_ctx =
+      xd->left_seg_context + (mi_row & MAX_MIB_MASK);
+  // Minimum partition point is 8x8. Offset the bsl accordingly.
+  const int bsl = mi_width_log2_lookup[bsize] - mi_width_log2_lookup[BLOCK_8X8];
+  int above = (*above_ctx >> bsl) & 1, left = (*left_ctx >> bsl) & 1;
+
+  assert(b_width_log2_lookup[bsize] == b_height_log2_lookup[bsize]);
+  assert(bsl >= 0);
+
+  if (has_rows && has_cols)
+    return (left * 2 + above) + bsl * PARTITION_PLOFFSET;
+  else if (has_rows && !has_cols)
+    return PARTITION_CONTEXTS_PRIMARY + bsl;
+  else if (!has_rows && has_cols)
+    return PARTITION_CONTEXTS_PRIMARY + PARTITION_BLOCK_SIZES + bsl;
+  else
+    return -1;  // Bogus context, forced SPLIT
+#else
   const PARTITION_CONTEXT *above_ctx = xd->above_seg_context + mi_col;
   const PARTITION_CONTEXT *left_ctx =
       xd->left_seg_context + (mi_row & MAX_MIB_MASK);
@@ -712,6 +736,7 @@ static INLINE int partition_plane_context(const MACROBLOCKD *xd, int mi_row,
   assert(bsl >= 0);
 
   return (left * 2 + above) + bsl * PARTITION_PLOFFSET;
+#endif
 }
 
 static INLINE int max_block_wide(const MACROBLOCKD *xd, const BLOCK_SIZE bsize,
