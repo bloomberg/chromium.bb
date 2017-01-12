@@ -29,7 +29,7 @@ paper-dialog {
 }
 
 paper-button:focus:not(:active) {
-  box-shadow: 0 0 0 2px rgba(191, 191, 191, 0.5);
+  box-shadow: 0 0 0 1px rgba(66, 133, 244, 0.5);
 }
 
 #audio-artwork {
