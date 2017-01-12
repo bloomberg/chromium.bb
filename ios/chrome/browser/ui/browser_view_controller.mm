@@ -77,6 +77,7 @@
 #import "ios/chrome/browser/storekit_launcher.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_dialog_delegate.h"
+#import "ios/chrome/browser/tabs/tab_headers_delegate.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/tabs/tab_snapshotting_delegate.h"
@@ -310,6 +311,7 @@ NSString* const kReadingListSnackbarCategory = @"ReadingListSnackbarCategory";
                                     SnapshotOverlayProvider,
                                     StoreKitLauncher,
                                     TabDialogDelegate,
+                                    TabHeadersDelegate,
                                     TabModelObserver,
                                     TabSnapshottingDelegate,
                                     UIGestureRecognizerDelegate,
@@ -737,8 +739,6 @@ NSString* const kReadingListSnackbarCategory = @"ReadingListSnackbarCategory";
 - (UIView*)footerView;
 // Returns the height of the header view for the tab model's current tab.
 - (CGFloat)headerHeight;
-// Returns the height of the header view for |tab|.
-- (CGFloat)headerHeightForTab:(Tab*)tab;
 // Sets the frame for the headers.
 - (void)setFramesForHeaders:(const std::vector<HeaderDefinition>)headers
                    atOffset:(CGFloat)headerOffset;
@@ -2110,6 +2110,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   if (!IsIPadIdiom()) {
     tab.overscrollActionsControllerDelegate = self;
   }
+  tab.tabHeadersDelegate = self;
   tab.tabSnapshottingDelegate = self;
   // Install the proper CRWWebController delegates.
   tab.webController.nativeProvider = self;

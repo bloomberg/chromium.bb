@@ -93,6 +93,7 @@
 #include "ios/chrome/browser/sync/ios_chrome_synced_tab_delegate.h"
 #import "ios/chrome/browser/tabs/tab_delegate.h"
 #import "ios/chrome/browser/tabs/tab_dialog_delegate.h"
+#import "ios/chrome/browser/tabs/tab_headers_delegate.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
 #import "ios/chrome/browser/tabs/tab_snapshotting_delegate.h"
@@ -247,6 +248,9 @@ enum class RendererTerminationTabState {
 
   // The Full Screen Controller responsible for hiding/showing the toolbar.
   base::scoped_nsobject<FullScreenController> fullScreenController_;
+
+  // The delegate responsible for headers over the tab.
+  id<TabHeadersDelegate> tabHeadersDelegate_;  // weak
 
   base::WeakNSProtocol<id<FullScreenControllerDelegate>>
       fullScreenControllerDelegate_;
@@ -523,6 +527,7 @@ void AddNetworkClientFactoryOnIOThread(
 @synthesize isVoiceSearchResultsTab = isVoiceSearchResultsTab_;
 @synthesize delegate = delegate_;
 @synthesize tabSnapshottingDelegate = tabSnapshottingDelegate_;
+@synthesize tabHeadersDelegate = tabHeadersDelegate_;
 
 - (instancetype)initWithWindowName:(NSString*)windowName
                             opener:(Tab*)opener
@@ -1725,7 +1730,7 @@ void AddNetworkClientFactoryOnIOThread(
   CGPoint dialogLocation =
       CGPointMake(CGRectGetMidX(webController.view.frame),
                   CGRectGetMinY(webController.view.frame) +
-                      [[self fullScreenControllerDelegate] headerHeight]);
+                      [self.tabHeadersDelegate headerHeightForTab:self]);
 
   formResubmissionCoordinator_.reset([[FormResubmissionCoordinator alloc]
       initWithBaseViewController:topController
@@ -2137,7 +2142,7 @@ void AddNetworkClientFactoryOnIOThread(
 }
 
 - (CGFloat)headerHeightForWebController:(CRWWebController*)webController {
-  return [fullScreenControllerDelegate_ headerHeight];
+  return [self.tabHeadersDelegate headerHeightForTab:self];
 }
 
 - (void)webControllerDidUpdateSSLStatusForCurrentNavigationItem:

@@ -8,7 +8,7 @@
 #import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/snapshots/snapshot_manager.h"
 #import "ios/chrome/browser/tabs/tab.h"
-#import "ios/chrome/browser/ui/fullscreen_controller.h"
+#import "ios/chrome/browser/tabs/tab_headers_delegate.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 
@@ -196,7 +196,7 @@
   } else {
     // Crops the bottom of the fullscreen snapshot.
     CGRect cropRect =
-        CGRectMake(0, [[_tab fullScreenControllerDelegate] headerHeight],
+        CGRectMake(0, [[_tab tabHeadersDelegate] headerHeightForTab:_tab],
                    [snapshot size].width, [snapshot size].height);
     snapshotToCache = CropImage(snapshot, cropRect);
   }

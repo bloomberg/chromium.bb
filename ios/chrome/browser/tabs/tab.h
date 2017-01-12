@@ -40,6 +40,7 @@ class GURL;
 @protocol TabDelegate;
 @protocol TabDialogDelegate;
 @class Tab;
+@protocol TabHeadersDelegate;
 @class TabModel;
 @protocol TabSnapshottingDelegate;
 @class TranslateControllerImplIOS;
@@ -134,6 +135,7 @@ extern NSString* const kProxyPassthroughHeaderValue;
 @property(nonatomic, readonly) BOOL canGoBack;
 @property(nonatomic, readonly) BOOL canGoForward;
 @property(nonatomic, assign) id<TabDelegate> delegate;
+@property(nonatomic, assign) id<TabHeadersDelegate> tabHeadersDelegate;
 @property(nonatomic, assign) id<TabSnapshottingDelegate>
     tabSnapshottingDelegate;
 @property(nonatomic, readonly) BOOL useDesktopUserAgent;
