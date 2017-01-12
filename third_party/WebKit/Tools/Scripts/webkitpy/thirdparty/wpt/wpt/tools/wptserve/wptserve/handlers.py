@@ -120,7 +120,7 @@ class FileHandler(object):
             if "Range" in request.headers:
                 try:
                     byte_ranges = RangeParser()(request.headers['Range'], file_size)
-                except HTTPException as error:
+                except HTTPException as e:
                     if e.code == 416:
                         response.headers.set("Content-Range", "bytes */%i" % file_size)
                         raise

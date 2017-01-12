@@ -104,9 +104,6 @@ class DepsUpdaterTest(unittest.TestCase):
         # This test doesn't test any aspect of the real manifest script, it just
         # asserts that DepsUpdater._generate_manifest would invoke the script.
         host = MockHost()
-        host.filesystem.files = {
-            '/mock-checkout/third_party/WebKit/wpt/manifest': 'dummy content'
-        }
         updater = DepsUpdater(host)
         updater._generate_manifest(
             '/mock-checkout/third_party/WebKit/wpt',
@@ -115,7 +112,7 @@ class DepsUpdaterTest(unittest.TestCase):
             host.executive.calls,
             [
                 [
-                    '/mock-checkout/third_party/WebKit/wpt/manifest',
+                    '/mock-checkout/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/manifest',
                     '--work',
                     '--tests-root',
                     '/mock-checkout/third_party/WebKit/LayoutTests/imported/wpt'
