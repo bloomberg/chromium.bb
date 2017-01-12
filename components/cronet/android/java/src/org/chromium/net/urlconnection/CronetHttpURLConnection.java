@@ -34,7 +34,7 @@ import java.util.TreeMap;
  * {@hide}
  */
 public class CronetHttpURLConnection extends HttpURLConnection {
-    private static final String TAG = "cr_CronetHttpURLConn";
+    private static final String TAG = CronetHttpURLConnection.class.getSimpleName();
     private static final String CONTENT_LENGTH = "Content-Length";
     private final CronetEngine mCronetEngine;
     private final MessageLoop mMessageLoop;

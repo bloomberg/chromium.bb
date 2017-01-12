@@ -19,7 +19,7 @@ import java.io.IOException;
  * Helper class to install test files.
  */
 public final class TestFilesInstaller {
-    private static final String TAG = "TestFilesInstaller";
+    private static final String TAG = TestFilesInstaller.class.getSimpleName();
     // Name of the asset directory in which test files are stored.
     private static final String TEST_FILE_ASSET_PATH = "test";
 

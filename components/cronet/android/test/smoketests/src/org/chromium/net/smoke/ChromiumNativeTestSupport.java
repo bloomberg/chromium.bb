@@ -16,7 +16,7 @@ import org.chromium.net.ExperimentalCronetEngine;
  * Provides support for tests that depend on QUIC and HTTP2 servers.
  */
 class ChromiumNativeTestSupport extends ChromiumPlatformOnlyTestSupport {
-    private static final String TAG = "NativeTestSupport";
+    private static final String TAG = ChromiumNativeTestSupport.class.getSimpleName();
 
     @Override
     public TestServer createTestServer(Context context, Protocol protocol) {

@@ -45,7 +45,7 @@ import java.util.concurrent.atomic.AtomicReference;
 final class JavaUrlRequest extends UrlRequestBase {
     private static final String X_ANDROID = "X-Android";
     private static final String X_ANDROID_SELECTED_TRANSPORT = "X-Android-Selected-Transport";
-    private static final String TAG = "JavaUrlConnection";
+    private static final String TAG = JavaUrlRequest.class.getSimpleName();
     private static final int DEFAULT_UPLOAD_BUFFER_SIZE = 8192;
     private static final int DEFAULT_CHUNK_LENGTH = DEFAULT_UPLOAD_BUFFER_SIZE;
     private static final String USER_AGENT = "User-Agent";

@@ -42,7 +42,7 @@ public final class Http2TestHandler extends Http2ConnectionHandler implements Ht
     public static final String ECHO_STREAM_PATH = "/echostream";
     public static final String ECHO_TRAILERS_PATH = "/echotrailers";
 
-    private static final String TAG = "cr_Http2TestHandler";
+    private static final String TAG = Http2TestHandler.class.getSimpleName();
     private static final Http2FrameLogger sLogger =
             new Http2FrameLogger(INFO, Http2TestHandler.class);
     private static final ByteBuf RESPONSE_BYTES =

@@ -23,7 +23,7 @@ public class CronetLibraryLoader {
     // Synchronize initialization.
     private static final Object sLoadLock = new Object();
     private static final String LIBRARY_NAME = "cronet";
-    private static final String TAG = "CronetLibraryLoader";
+    private static final String TAG = CronetLibraryLoader.class.getSimpleName();
     // Has library loading commenced?  Setting guarded by sLoadLock.
     private static volatile boolean sInitStarted = false;
     // Has ensureMainThreadInitialized() completed?  Only accessed on main thread.

@@ -27,7 +27,7 @@ import java.util.concurrent.Executors;
  * Tests making requests using QUIC.
  */
 public class QuicTest extends CronetTestBase {
-    private static final String TAG = "cr.QuicTest";
+    private static final String TAG = QuicTest.class.getSimpleName();
     private static final String QUIC_PROTOCOL_STRING_PREFIX = "http/2+quic/";
     private CronetTestFramework mTestFramework;
     private ExperimentalCronetEngine.Builder mBuilder;

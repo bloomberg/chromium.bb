@@ -19,7 +19,7 @@ import java.io.FileReader;
  * Tests for experimental options.
  */
 public class ExperimentalOptionsTest extends CronetTestBase {
-    private static final String TAG = "cr.QuicTest";
+    private static final String TAG = ExperimentalOptionsTest.class.getSimpleName();
     private CronetTestFramework mTestFramework;
     private ExperimentalCronetEngine.Builder mBuilder;
 

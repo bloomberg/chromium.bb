@@ -23,7 +23,7 @@ import java.net.URLStreamHandlerFactory;
  */
 @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
 public class CronetTestFramework {
-    private static final String TAG = "CronetTestFramework";
+    private static final String TAG = CronetTestFramework.class.getSimpleName();
 
     public static final String COMMAND_LINE_ARGS_KEY = "commandLineArgs";
     public static final String POST_DATA_KEY = "postData";

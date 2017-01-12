@@ -72,7 +72,7 @@ public class CronetEngineBuilderImpl extends ICronetEngineBuilder {
         }
     }
 
-    private static final String TAG = "CronetEngineBuilder";
+    private static final String TAG = CronetEngineBuilderImpl.class.getSimpleName();
     private static final String NATIVE_CRONET_IMPL_CLASS =
             "org.chromium.net.impl.CronetUrlRequestContext";
     private static final String JAVA_CRONET_IMPL_CLASS = "org.chromium.net.impl.JavaCronetEngine";

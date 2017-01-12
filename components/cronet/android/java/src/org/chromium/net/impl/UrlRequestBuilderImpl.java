@@ -21,7 +21,7 @@ import java.util.concurrent.Executor;
  */
 public class UrlRequestBuilderImpl extends ExperimentalUrlRequest.Builder {
     private static final String ACCEPT_ENCODING = "Accept-Encoding";
-    private static final String TAG = "UrlRequestBuilder";
+    private static final String TAG = UrlRequestBuilderImpl.class.getSimpleName();
 
     // All fields are temporary storage of ExperimentalUrlRequest configuration to be
     // copied to built ExperimentalUrlRequest.

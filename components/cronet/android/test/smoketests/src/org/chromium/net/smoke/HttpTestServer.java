@@ -34,7 +34,7 @@ import io.netty.util.CharsetUtil;
  * A simple HTTP server for testing.
  */
 public class HttpTestServer implements TestSupport.TestServer {
-    private static final String TAG = "HttpTestServer";
+    private static final String TAG = HttpTestServer.class.getSimpleName();
     private static final String HOST = "127.0.0.1";
     private static final int PORT = 8080;
 

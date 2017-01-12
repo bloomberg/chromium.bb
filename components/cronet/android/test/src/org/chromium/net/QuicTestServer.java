@@ -19,7 +19,7 @@ import org.chromium.base.test.util.UrlUtils;
 @JNINamespace("cronet")
 public final class QuicTestServer {
     private static final ConditionVariable sBlock = new ConditionVariable();
-    private static final String TAG = "cr.QuicTestServer";
+    private static final String TAG = QuicTestServer.class.getSimpleName();
 
     private static final String CERT_USED = "quic_test.example.com.crt";
     private static final String KEY_USED = "quic_test.example.com.key";

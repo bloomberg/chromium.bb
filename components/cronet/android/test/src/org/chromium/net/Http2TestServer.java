@@ -40,7 +40,7 @@ import io.netty.handler.ssl.SupportedCipherSuiteFilter;
 public final class Http2TestServer {
     private static final ConditionVariable sBlock = new ConditionVariable();
     private static Channel sServerChannel;
-    private static final String TAG = "Http2TestServer";
+    private static final String TAG = Http2TestServer.class.getSimpleName();
 
     private static final String HOST = "127.0.0.1";
     // Server port.

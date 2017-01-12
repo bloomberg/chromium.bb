@@ -8,8 +8,8 @@ import android.os.ConditionVariable;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Process;
-import android.util.Log;
 
+import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -52,7 +52,7 @@ public class CronetUrlRequestContext extends CronetEngineBase {
     private static final int LOG_NONE = 3; // LOG(FATAL), no VLOG.
     private static final int LOG_DEBUG = -1; // LOG(FATAL...INFO), VLOG(1)
     private static final int LOG_VERBOSE = -2; // LOG(FATAL...INFO), VLOG(2)
-    static final String LOG_TAG = "ChromiumNetwork";
+    static final String LOG_TAG = CronetUrlRequestContext.class.getSimpleName();
 
     /**
      * Synchronize access to mUrlRequestContextAdapter and shutdown routine.
