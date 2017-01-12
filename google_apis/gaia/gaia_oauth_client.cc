@@ -283,6 +283,7 @@ void GaiaOAuthClient::Core::HandleResponse(
     if ((source->GetMaxRetriesOn5xx() != -1) &&
         (num_retries_ >= source->GetMaxRetriesOn5xx())) {
       // Retry limit reached. Give up.
+      request_type_ = NO_PENDING_REQUEST;
       delegate_->OnNetworkError(source->GetResponseCode());
     } else {
       request_ = std::move(old_request);

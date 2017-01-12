@@ -299,6 +299,26 @@ TEST_F(GaiaOAuthClientTest, GetTokensSuccess) {
   auth.GetTokensFromAuthCode(client_info_, "auth_code", -1, &delegate);
 }
 
+TEST_F(GaiaOAuthClientTest, GetTokensAfterNetworkFailure) {
+  int response_code = net::HTTP_INTERNAL_SERVER_ERROR;
+
+  MockGaiaOAuthClientDelegate failure_delegate;
+  EXPECT_CALL(failure_delegate, OnNetworkError(response_code)).Times(1);
+
+  MockGaiaOAuthClientDelegate success_delegate;
+  EXPECT_CALL(success_delegate, OnGetTokensResponse(kTestRefreshToken,
+      kTestAccessToken, kTestExpiresIn)).Times(1);
+
+  MockOAuthFetcherFactory factory;
+  factory.set_response_code(response_code);
+  factory.set_max_failure_count(4);
+  factory.set_results(kDummyGetTokensResult);
+
+  GaiaOAuthClient auth(GetRequestContext());
+  auth.GetTokensFromAuthCode(client_info_, "auth_code", 2, &failure_delegate);
+  auth.GetTokensFromAuthCode(client_info_, "auth_code", -1, &success_delegate);
+}
+
 TEST_F(GaiaOAuthClientTest, RefreshTokenSuccess) {
   MockGaiaOAuthClientDelegate delegate;
   EXPECT_CALL(delegate, OnRefreshTokenResponse(kTestAccessToken,
