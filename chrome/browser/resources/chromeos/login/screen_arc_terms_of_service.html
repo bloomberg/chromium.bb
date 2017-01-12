@@ -4,16 +4,15 @@
   <div class="step-contents">
     <img id="arc-tos-logo" 
         src="https://play.google.com/about/images/play_logo.png" alt>
-    <h1 i18n-content="arcTermsOfServiceScreenHeading"></h1>
-    <h2 i18n-content="arcTermsOfServiceScreenDescription"></h2>
+    <h1>$i18n{arcTermsOfServiceScreenHeading}</h1>
+    <h2>$i18n{arcTermsOfServiceScreenDescription}</h2>
     <div id="arc-tos-container">
       <div id="arc-tos-content">
         <div id="arc-tos-view-container">
           <webview id="arc-tos-view"></webview>
         </div>
         <label>
-          <a id="arc-policy-link" href="#" i18n-content="arcPolicyLink">
-          </a>
+          <a id="arc-policy-link" href="#">$i18n{arcPolicyLink}</a>
         </label>
         <label>
           <p id="arc-text-metrics"></p>
@@ -28,10 +27,10 @@
         </label>
       </div>
       <div id="arc-tos-loading">
-        <p i18n-content="arcTermsOfServiceLoading"></p>
+        <p>$i18n{arcTermsOfServiceLoading}</p>
       </div>
       <div id="arc-tos-error">
-        <p i18n-content="arcTermsOfServiceError"></p>
+        <p>$i18n{arcTermsOfServiceError}</p>
       </div>
     </div>
   </div>
@@ -44,8 +43,8 @@
       <div id="arc-tos-overlay-content-text">
         <span id="arc-learn-more-content"></span>
       </div>
-      <button class="arc-tos-overlay-close-bottom arc-overlay-close-button"
-          i18n-content="arcOverlayClose">
+      <button class="arc-tos-overlay-close-bottom arc-overlay-close-button">
+        $i18n{arcOverlayClose}
       </button>
     </div>
   </div>
@@ -57,8 +56,8 @@
       <div id="arc-tos-overlay-webview-container">
         <webview id="arc-tos-overlay-webview"></webview>
       </div>
-      <button class="arc-tos-overlay-close-bottom arc-overlay-close-button"
-          i18n-content="arcOverlayClose">
+      <button class="arc-tos-overlay-close-bottom arc-overlay-close-button">
+        $i18n{arcOverlayClose}
       </button>
     </div>
   </div>

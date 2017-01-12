@@ -1,8 +1,9 @@
 <div class="step right hidden loading no-logo" id="user-image" hidden>
   <div class="step-contents">
     <div id="user-image-screen-curtain">
-      <p id="user-image-screen-description"
-         i18n-content="userImageScreenDescription"></p>
+      <p id="user-image-screen-description">
+        $i18n{userImageScreenDescription}
+      </p>
     </div>
     <div id="user-image-screen-main">
       <grid id="user-image-grid" tabindex="1"
@@ -27,7 +28,7 @@
             i18n-values="title:flipPhoto" tabindex="1"></button>
       </div>
       <div id="user-image-attribution">
-        <span i18n-content="authorCredit"></span>
+        <span>$i18n{authorCredit}</span>
         <strong id="user-image-author-name"></strong>
         <a id="user-image-author-website" target="_blank"></a>
       </div>

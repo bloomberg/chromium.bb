@@ -31,30 +31,29 @@
         has-buttons>
       <iron-icon icon="oobe-eula:googleg" class="oobe-icon"></iron-icon>
       <div class="header">
-        <h1 class="title" i18n-content="termsOfServiceLoading"></h1>
+        <h1 class="title">$i18n{termsOfServiceLoading}</h1>
       </div>
     </oobe-dialog>
     <oobe-dialog hidden="[[!eulaScreenShown]]"
         has-buttons>
       <iron-icon icon="oobe-eula:googleg" class="oobe-icon"></iron-icon>
       <div class="header">
-        <h1 class="title" i18n-content="oobeEulaSectionTitle"></h1>
+        <h1 class="title">$i18n{oobeEulaSectionTitle}</h1>
       </div>
       <div class="footer flex layout vertical">
         <iframe id="crosEulaFrame" class="flex" src="chrome://terms"
             on-load="onFrameLoad_">
         </iframe>
         <a id="installationSettings" href="#"
-            on-tap="onInstallationSettingsClicked_"
-            i18n-content="eulaSystemInstallationSettings">
+            on-tap="onInstallationSettingsClicked_">
+          $i18n{eulaSystemInstallationSettings}
         </a>
         <div id="logging">
           <paper-checkbox aria-labelledby="usage-stats-label" id="usageStats"
               checked="{{usageStatsChecked}}" on-change="onUsageChanged_">
-            <label id="usage-stats-label" i18n-content="checkboxLogging">
-            </label>
-            <a id="" href="#" i18n-content="learnMore"
-                on-tap="onUsageStatsHelpLinkClicked_">
+            <label id="usage-stats-label">$i18n{checkboxLogging}</label>
+            <a id="" href="#" on-tap="onUsageStatsHelpLinkClicked_">
+              $i18n{learnMore}
             </a>
           </paper-checkbox>
         </div>
@@ -66,8 +65,8 @@
         </div>
         <oobe-text-button id="eula-accept-button" inverse on-tap="eulaAccepted_"
             disabled="[[acceptButtonDisabled]]">
-          <div i18n-content="oobeEulaAcceptAndContinueButtonText"
-              id="accept-button-text">
+          <div id="accept-button-text">
+            $i18n{oobeEulaAcceptAndContinueButtonText}
           </div>
         </oobe-text-button>
       </div>

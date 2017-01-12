@@ -67,4 +67,3 @@ Polymer({
       e.stopPropagation();
   }
 });
-

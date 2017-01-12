@@ -144,4 +144,3 @@ Polymer((function() {
     }
   };
 })());
-

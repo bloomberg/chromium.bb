@@ -74,4 +74,3 @@ Polymer((function() {
     }
   };
 })());
-

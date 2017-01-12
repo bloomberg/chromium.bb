@@ -27,7 +27,7 @@
 
   Example:
     <oobe-icon-button inverse>
-      <div i18n-content="oobeOKButtonText"></div>
+      <div>$i18n{oobeOKButtonText}</div>
     </oobe-icon-button>
 
   Attributes:
@@ -64,7 +64,7 @@
     <paper-button id="button" on-tap="onClick_" disabled="[[disabled]]">
       <div class="flex horizontal layout start center">
         <iron-icon icon="oobe-buttons:arrow-back"></iron-icon>
-        <div id="text" i18n-content="back"></div>
+        <div id="text">$i18n{back}</div>
       </div>
     </paper-button>
   </template>
@@ -75,7 +75,7 @@
 
   Example:
     <oobe-welcome-secondary-button icon="close">
-      <div i18n-content="oobeCloseButtonText"></div>
+      <div>i18n version of oobeCloseButtonText</div>
     </oobe-welcome-secondary-button>
 
   Attributes:

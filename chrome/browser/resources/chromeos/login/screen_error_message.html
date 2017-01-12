@@ -3,47 +3,50 @@
 <div id="error-message" class="step hidden show-offline-error" hidden>
   <div class="step-contents">
     <div class="error-header" aria-live="assertive">
-      <img alt class="error-icon" src="chrome://theme/IDR_ERROR_NETWORK_OFFLINE">
-      <div id="captive-portal-title" i18n-content="captivePortalTitle"
-          class="error-title
+      <img alt class="error-icon"
+          src="chrome://theme/IDR_ERROR_NETWORK_OFFLINE">
+      <div id="captive-portal-title" class="error-title
                  show-with-error-state-portal
-                 show-with-error-state-offline"></div>
-      <div id="login-error-title" i18n-content="loginErrorTitle"
-          class="error-title
+                 show-with-error-state-offline">$i18n{captivePortalTitle}</div>
+      <div id="login-error-title" class="error-title
                  show-with-error-state-proxy
                  show-with-error-state-auth-ext-timeout
                  show-with-ui-state-local-state-error">
+        $i18n{loginErrorTitle}
       </div>
-      <div id="kiosk-online-title" i18n-content="kioskOnlineTitle"
-          class="error-title
-                 show-with-error-state-kiosk-online">
+      <div id="kiosk-online-title"
+          class="error-title show-with-error-state-kiosk-online">
+        $i18n{kioskOnlineTitle}
       </div>
-      <div id="rollback-error-title" i18n-content="rollbackErrorTitle"
-           class="error-title
-                 show-with-ui-state-rollback-error">
+      <div id="rollback-error-title"
+          class="error-title show-with-ui-state-rollback-error">
+         $i18n{rollbackErrorTitle}
       </div>
     </div>
     <div class="error-body" aria-live="assertive">
       <div id="kiosk-online-message-body"
           class="error-message-paragraph
                  show-with-error-state-kiosk-online">
-        <span i18n-content="kioskOnlineMessageBody"
-            class="show-with-error-state-kiosk-online"></span>
+        <span class="show-with-error-state-kiosk-online">
+          $i18n{kioskOnlineMessageBody}
+        </span>
       </div>
       <div id="offline-message-body"
           class="error-message-paragraph
                  show-with-error-state-offline
                  show-with-error-state-auth-ext-timeout">
         <span id="update-offline-message-text"
-            i18n-content="updateOfflineMessageBody"
-            class="show-with-ui-state-update"></span>
+            class="show-with-ui-state-update">
+          $i18n{updateOfflineMessageBody}
+        </span>
         <span id="signin-offline-message-text"
-            i18n-content="signinOfflineMessageBody"
-            class="show-with-ui-state-signin
-                   show-with-ui-state-supervised"></span>
+            class="show-with-ui-state-signin show-with-ui-state-supervised">
+          $i18n{signinOfflineMessageBody}
+        </span>
         <span id="kiosk-offline-message-text"
-            i18n-content="kioskOfflineMessageBody"
-            class="show-with-ui-state-kiosk-mode"></span>
+            class="show-with-ui-state-kiosk-mode">
+          $i18n{kioskOfflineMessageBody}
+        </span>
         <span id="auto-enrollment-offline-message-text"
             class="show-with-ui-state-auto-enrollment-error"></span>
       </div>
@@ -87,16 +90,16 @@
                  show-with-ui-state-auto-enrollment-error">
         <div id="offline-network-control" class="error-message-paragraph">
           <label for="offline-networks-list-dropdown"
-              i18n-content="selectNetwork"
               class="offline-network-list-label
                      show-with-error-state-offline
                      show-with-error-state-proxy
                      show-with-error-state-auth-timeout
-                     show-with-error-state-kiosk-online"></label>
+                     show-with-error-state-kiosk-online">
+            $i18n{selectNetwork}
+          </label>
           <label for="offline-networks-list-dropdown"
-              i18n-content="selectAnotherNetwork"
-              class="offline-network-list-label
-                     show-with-error-state-portal">
+              class="offline-network-list-label show-with-error-state-portal">
+            $i18n{selectAnotherNetwork}
           </label>
           <div class="menu-area">
             <div id="offline-networks-list" class="menu-control"></div>
@@ -105,18 +108,15 @@
       </div>
       <div id="local-state-error-body"
           class="show-with-ui-state-local-state-error">
-        <div i18n-content="localStateErrorText0"
-            class="error-message-paragraph">
-        </div>
-        <div i18n-content="localStateErrorText1"
-            class="error-message-paragraph">
-        </div>
+        <div class="error-message-paragraph">$i18n{localStateErrorText0}</div>
+        <div class="error-message-paragraph">$i18n{localStateErrorText1}</div>
       </div>
       <div id="rollback-error-message-body"
           class="error-message-paragraph
                  show-with-ui-state-rollback-error">
-        <span i18n-content="rollbackErrorMessageBody"
-            class="show-with-ui-state-rollback-error"></span>
+        <span class="show-with-ui-state-rollback-error">
+          $i18n{rollbackErrorMessageBody}
+        </span>
       </div>
       <div class="show-with-ui-state-update
                   show-with-ui-state-signin

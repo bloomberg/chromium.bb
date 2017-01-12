@@ -100,4 +100,3 @@ content::content strong {
 :host(.split) #controls content[select='paper-button']::content :last-child {
   color: var(--google-green-500);
 }
-

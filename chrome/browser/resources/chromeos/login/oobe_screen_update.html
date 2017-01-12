@@ -4,19 +4,18 @@
   <div id="oobe-update">
     <div class="step-contents">
       <div id="update-cancel-hint" hidden>
-        <p i18n-content="cancelUpdateHint"></p>
+        <p>$i18n{cancelUpdateHint}</p>
       </div>
       <div id="update-screen-curtain">
-        <div id="checking-updates-label" i18n-content="checkingForUpdatesMsg">
-        </div>
+        <div id="checking-updates-label">$i18n{checkingForUpdatesMsg}</div>
         <div id="update-checking-progress" aria-live="polite">
           <div class="throbber"></div>
-          <div i18n-content="checkingForUpdates"></div>
+          <div>$i18n{checkingForUpdates}</div>
         </div>
       </div>
       <div id="update-screen-main" hidden>
         <p id="update-upper-label"></p>
-        <p id="update-bottom-label" i18n-content="installingUpdateDesc"></p>
+        <p id="update-bottom-label">$i18n{installingUpdateDesc}</p>
         <progress id="update-progress-bar" max="100" value="0"></progress>
         <p id="estimated-time-left" class="progress-message" hidden></p>
         <p id="progress-message" class="progress-message" hidden></p>
@@ -24,8 +23,9 @@
     </div>
     <div id="update-extra-controls" class="step-extra-controls">
       <div id="update-accessibility">
-        <a id="update-accessibility-link" href="#" role="button"
-           i18n-content="accessibilityLink"></a>
+        <a id="update-accessibility-link" href="#" role="button">
+          $i18n{accessibilityLink}
+        </a>
       </div>
     </div>
   </div>
