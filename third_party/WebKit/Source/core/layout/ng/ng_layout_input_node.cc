@@ -23,16 +23,14 @@ NGLayoutAlgorithm* NGLayoutInputNode::AlgorithmForInputNode(
   // it makes sense to do this here.
   DCHECK(input_node->Type() == kLegacyBlock);
   NGBlockNode* block = toNGBlockNode(input_node);
-
-  if (block->CanUseNewLayout()) {
-    if (block->HasInlineChildren())
-      return new NGInlineLayoutAlgorithm(block->Style(),
-                                         toNGInlineNode(block->FirstChild()),
-                                         constraint_space);
-    return new NGBlockLayoutAlgorithm(
-        block->Style(), toNGBlockNode(block->FirstChild()), constraint_space);
+  if (!block->CanUseNewLayout())
+    return new NGLegacyBlockLayoutAlgorithm(block, constraint_space);
+  const ComputedStyle* style = block->Style();
+  if (block->HasInlineChildren()) {
+    NGInlineNode* child = toNGInlineNode(block->FirstChild());
+    return new NGInlineLayoutAlgorithm(style, child, constraint_space);
   }
-
-  return new NGLegacyBlockLayoutAlgorithm(block, constraint_space);
+  NGBlockNode* child = toNGBlockNode(block->FirstChild());
+  return new NGBlockLayoutAlgorithm(style, child, constraint_space);
 }
 }
