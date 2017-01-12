@@ -90,7 +90,7 @@ void GraphicsContextState::setFillColor(const Color& color) {
 // Shadow. (This will need tweaking if we use draw loopers for other things.)
 void GraphicsContextState::setDrawLooper(sk_sp<SkDrawLooper> drawLooper) {
   // Grab a new ref for stroke.
-  m_strokePaint.setLooper(sk_ref_sp(drawLooper.get()));
+  m_strokePaint.setLooper(drawLooper);
   // Pass the existing ref to fill (to minimize refcount churn).
   m_fillPaint.setLooper(std::move(drawLooper));
 }
@@ -102,7 +102,7 @@ void GraphicsContextState::setLineDash(const DashArray& dashes,
 
 void GraphicsContextState::setColorFilter(sk_sp<SkColorFilter> colorFilter) {
   // Grab a new ref for stroke.
-  m_strokePaint.setColorFilter(sk_ref_sp(colorFilter.get()));
+  m_strokePaint.setColorFilter(colorFilter);
   // Pass the existing ref to fill (to minimize refcount churn).
   m_fillPaint.setColorFilter(std::move(colorFilter));
 }

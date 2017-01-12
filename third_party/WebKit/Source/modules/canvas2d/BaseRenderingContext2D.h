@@ -443,13 +443,10 @@ void BaseRenderingContext2D::compositedDraw(
     if (filter) {
       SkPaint foregroundPaint =
           *state().getPaint(paintType, DrawForegroundOnly, imageType);
-      sk_sp<SkImageFilter> composedFilter =
-          sk_ref_sp(foregroundPaint.getImageFilter());
-      composedFilter = SkComposeImageFilter::Make(
-          std::move(composedFilter), sk_ref_sp(shadowPaint.getImageFilter()));
-      composedFilter =
-          SkComposeImageFilter::Make(std::move(composedFilter), filter);
-      foregroundPaint.setImageFilter(std::move(composedFilter));
+      foregroundPaint.setImageFilter(SkComposeImageFilter::Make(
+          SkComposeImageFilter::Make(foregroundPaint.refImageFilter(),
+                                     shadowPaint.refImageFilter()),
+          filter));
       c->setMatrix(ctm);
       drawFunc(c, &foregroundPaint);
     } else {

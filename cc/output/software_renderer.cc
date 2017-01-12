@@ -547,7 +547,7 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
   if (background_filter_shader) {
     SkPaint paint;
     paint.setShader(std::move(background_filter_shader));
-    paint.setRasterizer(sk_ref_sp(current_paint_.getRasterizer()));
+    paint.setRasterizer(current_paint_.refRasterizer());
     current_canvas_->drawRect(dest_visible_rect, paint);
   }
   current_paint_.setShader(std::move(shader));
