@@ -163,7 +163,7 @@ class TabDataUseEntryTest : public testing::Test {
 };
 
 // Starts a single tracking session and checks if a new active session is added
-// to the deque. Ends the session and checks if it becomes inactive.
+// to the vector. Ends the session and checks if it becomes inactive.
 TEST_F(TabDataUseEntryTest, SingleTabSessionStartEnd) {
   ExpectTabEntrySessionsSize(TabEntrySessionSize::ZERO);
   EXPECT_FALSE(tab_entry_->IsTrackingDataUse());
@@ -178,7 +178,7 @@ TEST_F(TabDataUseEntryTest, SingleTabSessionStartEnd) {
 }
 
 // Starts multiple tracking sessions and checks if new active sessions are added
-// to the deque for each. Ends the sessions and checks if they become inactive.
+// to the vector for each. Ends the sessions and checks if they become inactive.
 TEST_F(TabDataUseEntryTest, MultipleTabSessionStartEnd) {
   ExpectTabEntrySessionsSize(TabEntrySessionSize::ZERO);
   EXPECT_FALSE(tab_entry_->IsTrackingDataUse());

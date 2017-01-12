@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_ANDROID_DATA_USAGE_EXTERNAL_DATA_USE_OBSERVER_H_
 #define CHROME_BROWSER_ANDROID_DATA_USAGE_EXTERNAL_DATA_USE_OBSERVER_H_
 
-#include <deque>
 #include <memory>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -116,7 +116,7 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   // Batches the data use objects reported by DataUseAggregator. This will be
   // created when data use batching starts and released when the batching ends.
   // This will be null if there is no ongoing batching of data use objects.
-  std::unique_ptr<std::deque<const data_usage::DataUse>> data_use_list_;
+  std::unique_ptr<std::vector<const data_usage::DataUse>> data_use_list_;
 
   // |io_task_runner_| is used to call methods on IO thread.
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;

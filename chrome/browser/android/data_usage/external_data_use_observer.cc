@@ -134,7 +134,7 @@ void ExternalDataUseObserver::OnDataUse(const data_usage::DataUse& data_use) {
   DCHECK(registered_as_data_use_observer_);
 
   if (!data_use_list_) {
-    data_use_list_.reset(new std::deque<const data_usage::DataUse>());
+    data_use_list_.reset(new std::vector<const data_usage::DataUse>());
     // Post a task to the same IO thread, that will get invoked when some of the
     // data use objects are batched.
     io_task_runner_->PostTask(

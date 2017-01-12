@@ -127,8 +127,8 @@ class ExternalDataUseReporterTest : public testing::Test {
   }
 
   void OnDataUse(const data_usage::DataUse& data_use) {
-    std::unique_ptr<std::deque<const data_usage::DataUse>> data_use_list(
-        new std::deque<const data_usage::DataUse>());
+    std::unique_ptr<std::vector<const data_usage::DataUse>> data_use_list(
+        new std::vector<const data_usage::DataUse>());
     data_use_list->push_back(data_use);
     external_data_use_reporter()->OnDataUse(std::move(data_use_list));
   }

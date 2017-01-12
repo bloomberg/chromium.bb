@@ -8,9 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
@@ -86,7 +86,7 @@ class ExternalDataUseReporter {
   // Notifies the ExternalDataUseReporter of data usage. The data use is labeled
   // using |data_use_tab_model_|, buffered and then reported to
   // |external_data_use_observer_bridge_| later.
-  void OnDataUse(std::unique_ptr<const std::deque<const data_usage::DataUse>>
+  void OnDataUse(std::unique_ptr<const std::vector<const data_usage::DataUse>>
                      data_use_list);
 
   void OnReportDataUseDone(bool success);

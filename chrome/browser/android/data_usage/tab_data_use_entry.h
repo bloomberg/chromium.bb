@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_ANDROID_DATA_USAGE_TAB_DATA_USE_ENTRY_H_
 #define CHROME_BROWSER_ANDROID_DATA_USAGE_TAB_DATA_USE_ENTRY_H_
 
-#include <deque>
 #include <string>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -26,10 +26,10 @@ struct TabDataUseTrackingSession {
       : label(label), start_time(start_time) {}
 
   // Tracking label to be associated with the data usage of this session.
-  const std::string label;
+  std::string label;
 
   // Time the data use tracking session started.
-  const base::TimeTicks start_time;
+  base::TimeTicks start_time;
 
   // Time the data use tracking session ended. |end_time| will be null if the
   // tracking session is currently active.
@@ -81,11 +81,11 @@ class TabDataUseEntry {
 
   // Returns the latest time a tracking session was started or ended. Returned
   // time will be null if no tracking session was ever started or ended.
-  const base::TimeTicks GetLatestStartOrEndTime() const;
+  base::TimeTicks GetLatestStartOrEndTime() const;
 
   // Returns the tracking label for the active tracking session. Empty string is
   // returned if tracking session is not active.
-  const std::string GetActiveTrackingSessionLabel() const;
+  std::string GetActiveTrackingSessionLabel() const;
 
   bool is_custom_tab_package_match() const {
     return is_custom_tab_package_match_;
@@ -101,7 +101,11 @@ class TabDataUseEntry {
                            ExpiredInactiveTabEntryRemovaltimeHistogram);
   FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest, TabCloseEvent);
 
-  typedef std::deque<TabDataUseTrackingSession> TabSessions;
+  // This is a std::vector instead of a std::deque because std::deque is
+  // inefficient for small numbers of elements (see crbug/674287). By default,
+  // at most 5 sessions are tracked at a time per tab, so erasing from the front
+  // of the vector is cheap anyways.
+  typedef std::vector<TabDataUseTrackingSession> TabSessions;
 
   // Compacts the history of tracking sessions by removing oldest sessions to
   // keep the size of |sessions_| within |kMaxSessionsPerTab| entries.

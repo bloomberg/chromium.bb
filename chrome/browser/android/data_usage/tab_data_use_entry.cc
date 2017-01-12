@@ -129,7 +129,7 @@ bool TabDataUseEntry::IsTrackingDataUse() const {
   return back_iterator->end_time.is_null();
 }
 
-const base::TimeTicks TabDataUseEntry::GetLatestStartOrEndTime() const {
+base::TimeTicks TabDataUseEntry::GetLatestStartOrEndTime() const {
   TabSessions::const_reverse_iterator back_iterator = sessions_.rbegin();
   if (back_iterator == sessions_.rend())
     return base::TimeTicks();  // No tab session found.
@@ -140,7 +140,7 @@ const base::TimeTicks TabDataUseEntry::GetLatestStartOrEndTime() const {
   return back_iterator->start_time;
 }
 
-const std::string TabDataUseEntry::GetActiveTrackingSessionLabel() const {
+std::string TabDataUseEntry::GetActiveTrackingSessionLabel() const {
   TabSessions::const_reverse_iterator back_iterator = sessions_.rbegin();
   if (back_iterator == sessions_.rend() || !IsTrackingDataUse())
     return std::string();
@@ -155,16 +155,22 @@ void TabDataUseEntry::set_custom_tab_package_match(
 }
 
 void TabDataUseEntry::CompactSessionHistory() {
-  while (sessions_.size() > tab_model_->max_sessions_per_tab()) {
-    const auto& front = sessions_.front();
-    DCHECK(!front.end_time.is_null());
+  if (sessions_.size() <= tab_model_->max_sessions_per_tab())
+    return;
+
+  const auto end_it = sessions_.begin() +
+                      (sessions_.size() - tab_model_->max_sessions_per_tab());
+
+  for (auto it = sessions_.begin(); it != end_it; ++it) {
+    DCHECK(!it->end_time.is_null());
     // Track how often old sessions are lost.
     UMA_HISTOGRAM_CUSTOM_TIMES(kUMAOldInactiveSessionRemovalDurationHistogram,
-                               tab_model_->NowTicks() - front.end_time,
+                               tab_model_->NowTicks() - it->end_time,
                                base::TimeDelta::FromSeconds(1),
                                base::TimeDelta::FromHours(1), 50);
-    sessions_.pop_front();
   }
+
+  sessions_.erase(sessions_.begin(), end_it);
 }
 
 }  // namespace android

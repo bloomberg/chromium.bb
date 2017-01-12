@@ -131,7 +131,7 @@ ExternalDataUseReporter::~ExternalDataUseReporter() {
 }
 
 void ExternalDataUseReporter::OnDataUse(
-    std::unique_ptr<const std::deque<const data_usage::DataUse>>
+    std::unique_ptr<const std::vector<const data_usage::DataUse>>
         data_use_list) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(data_use_list);
