@@ -490,9 +490,11 @@ bool V4LocalDatabaseManager::GetPrefixMatches(
 void V4LocalDatabaseManager::GetSeverestThreatTypeAndMetadata(
     SBThreatType* result_threat_type,
     ThreatMetadata* metadata,
+    FullHash* matching_full_hash,
     const std::vector<FullHashInfo>& full_hash_infos) {
   DCHECK(result_threat_type);
   DCHECK(metadata);
+  DCHECK(matching_full_hash);
 
   ThreatSeverity most_severe_yet = kLeastSeverity;
   for (const FullHashInfo& fhi : full_hash_infos) {
@@ -501,6 +503,7 @@ void V4LocalDatabaseManager::GetSeverestThreatTypeAndMetadata(
       most_severe_yet = severity;
       *result_threat_type = GetSBThreatTypeForList(fhi.list_id);
       *metadata = fhi.metadata;
+      *matching_full_hash = fhi.full_hash;
     }
   }
 }
@@ -595,7 +598,8 @@ void V4LocalDatabaseManager::OnFullHashResponse(
 
   // Find out the most severe threat, if any, to report to the client.
   GetSeverestThreatTypeAndMetadata(&check->result_threat_type,
-                                   &check->url_metadata, full_hash_infos);
+                                   &check->url_metadata,
+                                   &check->matching_full_hash, full_hash_infos);
   pending_checks_.erase(it);
   RespondToClient(std::move(check));
 }
@@ -649,21 +653,33 @@ void V4LocalDatabaseManager::RespondToClient(
     std::unique_ptr<PendingCheck> check) {
   DCHECK(check.get());
 
-  if (check->client_callback_type == ClientCallbackType::CHECK_BROWSE_URL) {
-    DCHECK_EQ(1u, check->urls.size());
-    check->client->OnCheckBrowseUrlResult(
-        check->urls[0], check->result_threat_type, check->url_metadata);
-  } else if (check->client_callback_type ==
-             ClientCallbackType::CHECK_DOWNLOAD_URLS) {
-    check->client->OnCheckDownloadUrlResult(check->urls,
-                                            check->result_threat_type);
-  } else if (check->client_callback_type ==
-             ClientCallbackType::CHECK_EXTENSION_IDS) {
-    const std::set<FullHash> extension_ids(check->full_hashes.begin(),
-                                           check->full_hashes.end());
-    check->client->OnCheckExtensionsResult(extension_ids);
-  } else {
-    NOTREACHED() << "Unexpected client_callback_type encountered";
+  switch (check->client_callback_type) {
+    case ClientCallbackType::CHECK_BROWSE_URL:
+      DCHECK_EQ(1u, check->urls.size());
+      check->client->OnCheckBrowseUrlResult(
+          check->urls[0], check->result_threat_type, check->url_metadata);
+      break;
+
+    case ClientCallbackType::CHECK_DOWNLOAD_URLS:
+      check->client->OnCheckDownloadUrlResult(check->urls,
+                                              check->result_threat_type);
+      break;
+
+    case ClientCallbackType::CHECK_RESOURCE_URL:
+      DCHECK_EQ(1u, check->urls.size());
+      check->client->OnCheckResourceUrlResult(
+          check->urls[0], check->result_threat_type, check->matching_full_hash);
+      break;
+
+    case ClientCallbackType::CHECK_EXTENSION_IDS: {
+      const std::set<FullHash> extension_ids(check->full_hashes.begin(),
+                                             check->full_hashes.end());
+      check->client->OnCheckExtensionsResult(extension_ids);
+      break;
+    }
+
+    case ClientCallbackType::CHECK_OTHER:
+      NOTREACHED() << "Unexpected client_callback_type encountered";
   }
 }
 

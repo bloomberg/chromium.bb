@@ -147,7 +147,8 @@ class TestClient : public SafeBrowsingDatabaseManager::Client {
              V4LocalDatabaseManager* manager_to_cancel = nullptr)
       : expected_sb_threat_type(sb_threat_type),
         expected_url(url),
-        result_received_(false),
+        on_check_browse_url_result_called_(false),
+        on_check_resource_url_result_called_(false),
         manager_to_cancel_(manager_to_cancel) {}
 
   void OnCheckBrowseUrlResult(const GURL& url,
@@ -155,15 +156,27 @@ class TestClient : public SafeBrowsingDatabaseManager::Client {
                               const ThreatMetadata& metadata) override {
     DCHECK_EQ(expected_url, url);
     DCHECK_EQ(expected_sb_threat_type, threat_type);
-    result_received_ = true;
+    on_check_browse_url_result_called_ = true;
     if (manager_to_cancel_) {
       manager_to_cancel_->CancelCheck(this);
     }
   }
 
+  void OnCheckResourceUrlResult(const GURL& url,
+                                SBThreatType threat_type,
+                                const std::string& threat_hash) override {
+    DCHECK_EQ(expected_url, url);
+    DCHECK_EQ(expected_sb_threat_type, threat_type);
+    // |threat_hash| is empty because GetFullHashes calls back with empty
+    // |full_hash_infos|.
+    DCHECK(threat_hash.empty());
+    on_check_resource_url_result_called_ = true;
+  }
+
   SBThreatType expected_sb_threat_type;
   GURL expected_url;
-  bool result_received_;
+  bool on_check_browse_url_result_called_;
+  bool on_check_resource_url_result_called_;
   V4LocalDatabaseManager* manager_to_cancel_;
 };
 
@@ -367,8 +380,8 @@ TEST_F(V4LocalDatabaseManagerTest,
 TEST_F(V4LocalDatabaseManagerTest, TestGetSeverestThreatTypeAndMetadata) {
   WaitForTasksOnTaskRunner();
 
-  FullHashInfo fhi_malware(FullHash("Malware"), GetUrlMalwareId(),
-                           base::Time::Now());
+  FullHash full_hash("Malware");
+  FullHashInfo fhi_malware(full_hash, GetUrlMalwareId(), base::Time::Now());
   fhi_malware.metadata.population_id = "malware_popid";
 
   FullHashInfo fhi_api(FullHash("api"), GetChromeUrlApiId(), base::Time::Now());
@@ -378,18 +391,21 @@ TEST_F(V4LocalDatabaseManagerTest, TestGetSeverestThreatTypeAndMetadata) {
 
   SBThreatType result_threat_type;
   ThreatMetadata metadata;
+  FullHash matching_full_hash;
 
   v4_local_database_manager_->GetSeverestThreatTypeAndMetadata(
-      &result_threat_type, &metadata, fhis);
+      &result_threat_type, &metadata, &matching_full_hash, fhis);
   EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE, result_threat_type);
   EXPECT_EQ("malware_popid", metadata.population_id);
+  EXPECT_EQ(full_hash, matching_full_hash);
 
   // Reversing the list has no effect.
   std::reverse(std::begin(fhis), std::end(fhis));
   v4_local_database_manager_->GetSeverestThreatTypeAndMetadata(
-      &result_threat_type, &metadata, fhis);
+      &result_threat_type, &metadata, &matching_full_hash, fhis);
   EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE, result_threat_type);
   EXPECT_EQ("malware_popid", metadata.population_id);
+  EXPECT_EQ(full_hash, matching_full_hash);
 }
 
 TEST_F(V4LocalDatabaseManagerTest, TestChecksAreQueued) {
@@ -435,9 +451,9 @@ TEST_F(V4LocalDatabaseManagerTest, CancelPending) {
   {
     TestClient client(SB_THREAT_TYPE_SAFE, url);
     EXPECT_FALSE(v4_local_database_manager_->CheckBrowseUrl(url, &client));
-    EXPECT_FALSE(client.result_received_);
+    EXPECT_FALSE(client.on_check_browse_url_result_called_);
     WaitForTasksOnTaskRunner();
-    EXPECT_TRUE(client.result_received_);
+    EXPECT_TRUE(client.on_check_browse_url_result_called_);
   }
 
   // Test that cancel prevents the callback from being called.
@@ -445,9 +461,9 @@ TEST_F(V4LocalDatabaseManagerTest, CancelPending) {
     TestClient client(SB_THREAT_TYPE_SAFE, url);
     EXPECT_FALSE(v4_local_database_manager_->CheckBrowseUrl(url, &client));
     v4_local_database_manager_->CancelCheck(&client);
-    EXPECT_FALSE(client.result_received_);
+    EXPECT_FALSE(client.on_check_browse_url_result_called_);
     WaitForTasksOnTaskRunner();
-    EXPECT_FALSE(client.result_received_);
+    EXPECT_FALSE(client.on_check_browse_url_result_called_);
   }
 }
 
@@ -462,11 +478,11 @@ TEST_F(V4LocalDatabaseManagerTest, CancelQueued) {
   EXPECT_FALSE(v4_local_database_manager_->CheckBrowseUrl(url, &client1));
   EXPECT_FALSE(v4_local_database_manager_->CheckBrowseUrl(url, &client2));
   EXPECT_EQ(2ul, GetQueuedChecks().size());
-  EXPECT_FALSE(client1.result_received_);
-  EXPECT_FALSE(client2.result_received_);
+  EXPECT_FALSE(client1.on_check_browse_url_result_called_);
+  EXPECT_FALSE(client2.on_check_browse_url_result_called_);
   WaitForTasksOnTaskRunner();
-  EXPECT_TRUE(client1.result_received_);
-  EXPECT_TRUE(client2.result_received_);
+  EXPECT_TRUE(client1.on_check_browse_url_result_called_);
+  EXPECT_TRUE(client2.on_check_browse_url_result_called_);
 }
 
 // This test is somewhat similar to TestCheckBrowseUrlWithFakeDbReturnsMatch but
@@ -669,14 +685,40 @@ TEST_F(V4LocalDatabaseManagerTest, TestCheckBrowseUrlWithSameClientAndCancel) {
 
   // Wait for PerformFullHashCheck to complete.
   WaitForTasksOnTaskRunner();
-  // |result_received_| is true only if OnCheckBrowseUrlResult gets called with
-  // the |url| equal to |expected_url|, which is |second_url| in this test.
-  EXPECT_TRUE(client.result_received_);
+  // |on_check_browse_url_result_called_| is true only if OnCheckBrowseUrlResult
+  // gets called with the |url| equal to |expected_url|, which is |second_url|
+  // in
+  // this test.
+  EXPECT_TRUE(client.on_check_browse_url_result_called_);
+}
+
+TEST_F(V4LocalDatabaseManagerTest, TestCheckResourceUrl) {
+  // Setup to receive full-hash misses.
+  ScopedFakeGetHashProtocolManagerFactory pin;
+
+  // Reset the database manager so it picks up the replacement protocol manager.
+  ResetLocalDatabaseManager();
+  WaitForTasksOnTaskRunner();
+
+  // An URL and matching prefix.
+  const GURL url("http://example.com/a/");
+  const HashPrefix hash_prefix("eW\x1A\xF\xA9");
+
+  // Put a match in the db that will cause a protocol-manager request.
+  StoreAndHashPrefixes store_and_hash_prefixes;
+  store_and_hash_prefixes.emplace_back(GetChromeUrlClientIncidentId(),
+                                       hash_prefix);
+  ReplaceV4Database(store_and_hash_prefixes, true /* stores_available */);
+
+  TestClient client(SB_THREAT_TYPE_SAFE, url);
+  EXPECT_FALSE(v4_local_database_manager_->CheckResourceUrl(url, &client));
+  EXPECT_FALSE(client.on_check_resource_url_result_called_);
+  WaitForTasksOnTaskRunner();
+  EXPECT_TRUE(client.on_check_resource_url_result_called_);
 }
 
 // TODO(nparker): Add tests for
 //   CheckDownloadUrl()
 //   CheckExtensionIDs()
-//   CheckResourceUrl()
 
 }  // namespace safe_browsing

@@ -148,6 +148,10 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
     // The metadata associated with the full hash of the severest match found
     // for that URL.
     ThreatMetadata url_metadata;
+
+    // The full hash that matched for a blacklisted resource URL. Used only for
+    // |CheckResourceUrl| case.
+    FullHash matching_full_hash;
   };
 
   typedef std::vector<std::unique_ptr<PendingCheck>> QueuedChecks;
@@ -184,11 +188,12 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
       const std::unique_ptr<PendingCheck>& check,
       FullHashToStoreAndHashPrefixesMap* full_hash_to_store_and_hash_prefixes);
 
-  // Finds the most severe |SBThreatType| and the corresponding |metadata| from
-  // |full_hash_infos|.
+  // Finds the most severe |SBThreatType| and the corresponding |metadata|, and
+  // |matching_full_hash| from |full_hash_infos|.
   void GetSeverestThreatTypeAndMetadata(
       SBThreatType* result_threat_type,
       ThreatMetadata* metadata,
+      FullHash* matching_full_hash,
       const std::vector<FullHashInfo>& full_hash_infos);
 
   // Returns the SBThreatType for a given ListIdentifier.
