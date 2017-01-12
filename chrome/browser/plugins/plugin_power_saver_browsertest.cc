@@ -615,8 +615,14 @@ class PluginPowerSaverFilterSameOriginTinyPluginsBrowserTest
   base::test::ScopedFeatureList feature_list;
 };
 
+// Flaky on Mac. crbug.com/680544
+#if defined(OS_MACOSX)
+#define MAYBE_BlockSameOriginTinyPlugin DISABLED_BlockSameOriginTinyPlugin
+#else
+#define MAYBE_BlockSameOriginTinyPlugin BlockSameOriginTinyPlugin
+#endif
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverFilterSameOriginTinyPluginsBrowserTest,
-                       BlockSameOriginTinyPlugin) {
+                       MAYBE_BlockSameOriginTinyPlugin) {
   LoadHTML("/same_origin_tiny_plugin.html");
 
   VerifyPluginIsPlaceholderOnly("tiny_same_origin");
