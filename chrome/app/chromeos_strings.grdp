@@ -803,6 +803,9 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_METADATA_BOX_CREATION_TIME" desc="Label for file creation time.">
     Created Time
   </message>
+  <message name="IDS_FILE_BROWSER_METADATA_BOX_DIMENSION" desc="Label for image dimension.">
+    Dimension
+  </message>
   <message name="IDS_FILE_BROWSER_METADATA_BOX_DURATION" desc="Label for audio/video duration.">
     Duration
   </message>
@@ -850,9 +853,6 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_FILE_BROWSER_METADATA_BOX_PAGE_COUNT" desc="Label for pdf page count.">
     Page Count
-  </message>
-  <message name="IDS_FILE_BROWSER_METADATA_BOX_RESOLUTION" desc="Label for image resolution.">
-    Resolution
   </message>
   <message name="IDS_FILE_BROWSER_METADATA_BOX_SOURCE" desc="Label for the device used to capture the image.">
     Source

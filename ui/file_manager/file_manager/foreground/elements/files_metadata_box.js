@@ -153,7 +153,7 @@ var FilesMetadataBox = Polymer({
    *
    * @private
    */
-  resolution_: function(imageWidth, imageHeight) {
+  dimension_: function(imageWidth, imageHeight) {
     if (imageWidth && imageHeight)
       return imageWidth + " x " + imageHeight;
     return '';
