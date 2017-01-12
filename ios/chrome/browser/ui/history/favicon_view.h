@@ -12,9 +12,9 @@
 // Size for the favicon.
 @property(nonatomic) CGFloat size;
 // Image view for the favicon.
-@property(nonatomic, retain) UIImageView* faviconImage;
+@property(nonatomic, strong) UIImageView* faviconImage;
 // Label for fallback favicon placeholder.
-@property(nonatomic, retain) UILabel* faviconFallbackLabel;
+@property(nonatomic, strong) UILabel* faviconFallbackLabel;
 
 @end
 

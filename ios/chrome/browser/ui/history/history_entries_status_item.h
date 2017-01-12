@@ -38,7 +38,7 @@ class GURL;
 // YES if message for other forms of browsing data should be shown.
 @property(nonatomic, assign) BOOL showsOtherBrowsingDataNotice;
 // Delegate for HistoryEntriesStatusItem. Is notified when a link is pressed.
-@property(nonatomic, assign) id<HistoryEntriesStatusItemDelegate> delegate;
+@property(nonatomic, weak) id<HistoryEntriesStatusItemDelegate> delegate;
 @end
 
 // Cell for displaying status for history entry. Provides information on whether

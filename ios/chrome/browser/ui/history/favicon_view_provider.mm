@@ -5,11 +5,8 @@
 #import "ios/chrome/browser/ui/history/favicon_view_provider.h"
 
 #include "base/i18n/case_conversion.h"
-#include "base/ios/weak_nsobject.h"
 #include "base/mac/bind_objc_block.h"
 #import "base/mac/foundation_util.h"
-#include "base/mac/objc_property_releaser.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -24,30 +21,30 @@
 #include "skia/ext/skia_utils_ios.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface FaviconViewProvider () {
-  // Property releaser for FaviconViewProvider.
-  base::mac::ObjCPropertyReleaser _propertyReleaser_FaviconViewProvider;
   // Delegate for handling completion of favicon load.
-  base::WeakNSProtocol<id<FaviconViewProviderDelegate>> _delegate;
+  __weak id<FaviconViewProviderDelegate> _delegate;
   // Used to cancel tasks for the LargeIconService.
   base::CancelableTaskTracker _faviconTaskTracker;
-  // View that renders a favicon or a fallback image.
-  base::scoped_nsobject<FaviconView> _faviconView;
 }
 
 // Size to render the favicon.
 @property(nonatomic, assign) CGFloat faviconSize;
 // Favicon image for the favicon view.
-@property(nonatomic, retain) UIImage* favicon;
+@property(nonatomic, strong) UIImage* favicon;
 // Fallback text for the favicon view if there is no appropriately sized
 // favicon availabile.
 @property(nonatomic, copy) NSString* fallbackText;
 // Fallback background color for the favicon view if there is no appropriately
 // sized favicon available.
-@property(nonatomic, retain) UIColor* fallbackBackgroundColor;
+@property(nonatomic, strong) UIColor* fallbackBackgroundColor;
 // Fallback text color for the favicon view if there is no appropriately
 // sized favicon available.
-@property(nonatomic, retain) UIColor* fallbackTextColor;
+@property(nonatomic, strong) UIColor* fallbackTextColor;
 
 // Fetches favicon for |URL| from |faviconService|. Notifies delegate when
 // favicon is retrieved.
@@ -65,6 +62,7 @@
 @synthesize fallbackText = _fallbackText;
 @synthesize fallbackBackgroundColor = _fallbackBackgroundColor;
 @synthesize fallbackTextColor = _fallbackTextColor;
+@synthesize faviconView = _faviconView;
 
 - (instancetype)initWithURL:(const GURL&)URL
                 faviconSize:(CGFloat)faviconSize
@@ -73,12 +71,10 @@
                    delegate:(id<FaviconViewProviderDelegate>)delegate {
   self = [super init];
   if (self) {
-    _propertyReleaser_FaviconViewProvider.Init(self,
-                                               [FaviconViewProvider class]);
     _faviconSize = faviconSize;
-    _delegate.reset(delegate);
-    _fallbackBackgroundColor = [[UIColor grayColor] retain];
-    _fallbackTextColor = [[UIColor whiteColor] retain];
+    _delegate = delegate;
+    _fallbackBackgroundColor = [UIColor grayColor];
+    _fallbackTextColor = [UIColor whiteColor];
     [self fetchFaviconForURL:URL
                         size:faviconSize
                      minSize:minFaviconSize
@@ -98,11 +94,11 @@
                    service:(favicon::LargeIconService*)largeIconService {
   if (!largeIconService)
     return;
-  base::WeakNSObject<FaviconViewProvider> weakSelf(self);
+  __weak FaviconViewProvider* weakSelf = self;
   GURL blockURL(URL);
   void (^faviconBlock)(const favicon_base::LargeIconResult&) = ^(
       const favicon_base::LargeIconResult& result) {
-    base::scoped_nsobject<FaviconViewProvider> strongSelf([weakSelf retain]);
+    FaviconViewProvider* strongSelf = weakSelf;
     if (!strongSelf)
       return;
     if (result.bitmap.is_valid()) {
@@ -122,36 +118,35 @@
       [strongSelf setFallbackText:base::SysUTF16ToNSString(
                                       favicon::GetFallbackIconText(blockURL))];
     }
-    [strongSelf.get()->_delegate faviconViewProviderFaviconDidLoad:strongSelf];
+    [strongSelf->_delegate faviconViewProviderFaviconDidLoad:strongSelf];
   };
 
   // Always call LargeIconService in case the favicon was updated.
   CGFloat faviconSize = [UIScreen mainScreen].scale * size;
   CGFloat minFaviconSize = [UIScreen mainScreen].scale * minSize;
   largeIconService->GetLargeIconOrFallbackStyle(
-      URL, minFaviconSize, faviconSize, base::BindBlock(faviconBlock),
+      URL, minFaviconSize, faviconSize, base::BindBlockArc(faviconBlock),
       &_faviconTaskTracker);
 }
 
 - (FaviconView*)faviconView {
   if (!_faviconView) {
-    _faviconView.reset([[FaviconView alloc] initWithFrame:CGRectZero]);
+    _faviconView = [[FaviconView alloc] initWithFrame:CGRectZero];
   }
-  _faviconView.get().size = _faviconSize;
+  _faviconView.size = _faviconSize;
   // Update favicon view with current properties.
   if (self.favicon) {
-    _faviconView.get().faviconImage.image = self.favicon;
-    _faviconView.get().faviconImage.backgroundColor = [UIColor whiteColor];
-    _faviconView.get().faviconFallbackLabel.text = nil;
+    _faviconView.faviconImage.image = self.favicon;
+    _faviconView.faviconImage.backgroundColor = [UIColor whiteColor];
+    _faviconView.faviconFallbackLabel.text = nil;
   } else {
-    _faviconView.get().faviconImage.image = nil;
-    _faviconView.get().faviconImage.backgroundColor =
-        self.fallbackBackgroundColor;
-    _faviconView.get().faviconFallbackLabel.text = self.fallbackText;
-    _faviconView.get().faviconFallbackLabel.textColor = self.fallbackTextColor;
+    _faviconView.faviconImage.image = nil;
+    _faviconView.faviconImage.backgroundColor = self.fallbackBackgroundColor;
+    _faviconView.faviconFallbackLabel.text = self.fallbackText;
+    _faviconView.faviconFallbackLabel.textColor = self.fallbackTextColor;
 
     CGFloat fontSize = floorf(_faviconSize / 2);
-    _faviconView.get().faviconFallbackLabel.font =
+    _faviconView.faviconFallbackLabel.font =
         [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:fontSize];
   }
   return _faviconView;

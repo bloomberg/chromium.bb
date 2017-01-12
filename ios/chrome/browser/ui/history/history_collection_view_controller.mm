@@ -8,10 +8,7 @@
 
 #include <memory>
 
-#import "base/ios/weak_nsobject.h"
 #include "base/mac/foundation_util.h"
-#import "base/mac/objc_property_releaser.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
@@ -40,6 +37,7 @@
 #include "ios/chrome/browser/ui/history/history_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MDCActivityIndicator.h"
 #import "ios/third_party/material_components_ios/src/components/Collections/src/MaterialCollections.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/web/public/referrer.h"
@@ -47,6 +45,10 @@
 #import "net/base/mac/url_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 typedef NS_ENUM(NSInteger, ItemType) {
@@ -66,30 +68,27 @@ const CGFloat kSeparatorInset = 10;
                                               HistoryEntryInserterDelegate,
                                               HistoryEntryItemDelegate,
                                               HistoryServiceFacadeDelegate> {
-  base::mac::ObjCPropertyReleaser
-      _propertyReleaser_HistoryCollectionViewController;
   // Facade for communicating with HistoryService and WebHistoryService.
   std::unique_ptr<HistoryServiceFacade> _historyServiceFacade;
   // The main browser state. Not owned by HistoryCollectionViewController.
   ios::ChromeBrowserState* _browserState;
   // Backing ivar for delegate property.
-  base::WeakNSProtocol<id<HistoryCollectionViewControllerDelegate>> _delegate;
+  __weak id<HistoryCollectionViewControllerDelegate> _delegate;
   // Backing ivar for URLLoader property.
-  base::WeakNSProtocol<id<UrlLoader>> _URLLoader;
+  __weak id<UrlLoader> _URLLoader;
 }
 
 // Object to manage insertion of history entries into the collection view model.
-@property(nonatomic, retain) HistoryEntryInserter* entryInserter;
+@property(nonatomic, strong) HistoryEntryInserter* entryInserter;
 // Delegate for the history collection view.
-@property(nonatomic, assign, readonly)
-    id<HistoryCollectionViewControllerDelegate>
-        delegate;
+@property(nonatomic, weak, readonly) id<HistoryCollectionViewControllerDelegate>
+    delegate;
 // UrlLoader for navigating to history entries.
-@property(nonatomic, assign, readonly) id<UrlLoader> URLLoader;
+@property(nonatomic, weak, readonly) id<UrlLoader> URLLoader;
 // The current query for visible history entries.
 @property(nonatomic, copy) NSString* currentQuery;
 // Coordinator for displaying context menus for history entries.
-@property(nonatomic, assign) ContextMenuCoordinator* contextMenuCoordinator;
+@property(nonatomic, strong) ContextMenuCoordinator* contextMenuCoordinator;
 // Type of displayed history entries. Entries can be synced or local, or there
 // may be no history entries.
 @property(nonatomic, assign) HistoryEntriesStatus entriesType;
@@ -151,12 +150,10 @@ const CGFloat kSeparatorInset = 10;
                                    delegate {
   self = [super initWithStyle:CollectionViewControllerStyleDefault];
   if (self) {
-    _propertyReleaser_HistoryCollectionViewController.Init(
-        self, [HistoryCollectionViewController class]);
     _historyServiceFacade.reset(new HistoryServiceFacade(browserState, self));
     _browserState = browserState;
-    _delegate.reset(delegate);
-    _URLLoader.reset(loader);
+    _delegate = delegate;
+    _URLLoader = loader;
     [self loadModel];
     // Add initial info section as header.
     [self.collectionViewModel
@@ -181,10 +178,10 @@ const CGFloat kSeparatorInset = 10;
   self.collectionView.keyboardDismissMode =
       UIScrollViewKeyboardDismissModeOnDrag;
 
-  base::scoped_nsobject<UILongPressGestureRecognizer> longPressRecognizer([
+  UILongPressGestureRecognizer* longPressRecognizer = [
       [UILongPressGestureRecognizer alloc]
       initWithTarget:self
-              action:@selector(displayContextMenuInvokedByGestureRecognizer:)]);
+              action:@selector(displayContextMenuInvokedByGestureRecognizer:)];
   [self.collectionView addGestureRecognizer:longPressRecognizer];
 }
 
@@ -357,19 +354,17 @@ const CGFloat kSeparatorInset = 10;
   // loading indicator removal will not be observed.
   [self updateEntriesStatusMessage];
 
-  __block base::scoped_nsobject<NSMutableArray> filterResults(
-      [[NSMutableArray array] retain]);
-  __block base::scoped_nsobject<NSString> searchQuery(
-      [base::SysUTF16ToNSString(result.query) copy]);
+  __block NSMutableArray* filterResults = [NSMutableArray array];
+  __block NSString* searchQuery = [base::SysUTF16ToNSString(result.query) copy];
   [self.collectionView performBatchUpdates:^{
     // There should always be at least a header section present.
     DCHECK([[self collectionViewModel] numberOfSections]);
     for (const history::HistoryEntry& entry : entries) {
       HistoryEntryItem* item =
-          [[[HistoryEntryItem alloc] initWithType:ItemTypeHistoryEntry
-                                     historyEntry:entry
-                                     browserState:_browserState
-                                         delegate:self] autorelease];
+          [[HistoryEntryItem alloc] initWithType:ItemTypeHistoryEntry
+                                    historyEntry:entry
+                                    browserState:_browserState
+                                        delegate:self];
       [self.entryInserter insertHistoryEntryItem:item];
       if ([self isSearching] || self.filterQueryResult) {
         [filterResults addObject:item];
@@ -573,16 +568,15 @@ const CGFloat kSeparatorInset = 10;
 - (void)updateEntriesStatusMessage {
   CollectionViewItem* entriesStatusItem = nil;
   if (!self.hasHistoryEntries) {
-    CollectionViewTextItem* noResultsItem = [[[CollectionViewTextItem alloc]
-        initWithType:ItemTypeEntriesStatus] autorelease];
+    CollectionViewTextItem* noResultsItem =
+        [[CollectionViewTextItem alloc] initWithType:ItemTypeEntriesStatus];
     noResultsItem.text =
         self.isSearching ? l10n_util::GetNSString(IDS_HISTORY_NO_SEARCH_RESULTS)
                          : l10n_util::GetNSString(IDS_HISTORY_NO_RESULTS);
     entriesStatusItem = noResultsItem;
   } else {
     HistoryEntriesStatusItem* historyEntriesStatusItem =
-        [[[HistoryEntriesStatusItem alloc] initWithType:ItemTypeEntriesStatus]
-            autorelease];
+        [[HistoryEntriesStatusItem alloc] initWithType:ItemTypeEntriesStatus];
     historyEntriesStatusItem.delegate = self;
     AuthenticationService* authService =
         AuthenticationServiceFactory::GetForBrowserState(_browserState);
@@ -691,8 +685,8 @@ const CGFloat kSeparatorInset = 10;
           fromSectionWithIdentifier:kSectionIdentifierEnumZero];
       [self.collectionView deleteItemsAtIndexPaths:@[ indexPath ]];
     }
-    CollectionViewItem* loadingIndicatorItem = [[[CollectionViewItem alloc]
-        initWithType:ItemTypeActivityIndicator] autorelease];
+    CollectionViewItem* loadingIndicatorItem =
+        [[CollectionViewItem alloc] initWithType:ItemTypeActivityIndicator];
     loadingIndicatorItem.cellClass = [ActivityIndicatorCell class];
     [self.collectionViewModel addItem:loadingIndicatorItem
               toSectionWithIdentifier:kEntriesStatusSectionIdentifier];
@@ -724,10 +718,10 @@ const CGFloat kSeparatorInset = 10;
   HistoryEntryItem* entry = base::mac::ObjCCastStrict<HistoryEntryItem>(
       [self.collectionViewModel itemAtIndexPath:touchedItemIndexPath]);
 
-  base::WeakNSObject<HistoryCollectionViewController> weakSelf(self);
+  __weak HistoryCollectionViewController* weakSelf = self;
   web::ContextMenuParams params;
   params.location = touchLocation;
-  params.view.reset([self.collectionView retain]);
+  params.view.reset(self.collectionView);
   NSString* menuTitle =
       base::SysUTF16ToNSString(url_formatter::FormatUrl(entry.URL));
   params.menu_title.reset([menuTitle copy]);

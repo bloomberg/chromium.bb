@@ -4,11 +4,8 @@
 
 #import "ios/chrome/browser/ui/history/tab_history_view_controller.h"
 
-#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/objc_property_releaser.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
@@ -19,6 +16,10 @@
 #include "ios/web/public/favicon_status.h"
 #include "ios/web/public/navigation_item.h"
 #include "ui/gfx/image/image.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -217,16 +218,16 @@ layoutAttributesForSupplementaryViewOfKind:(NSString*)kind
 @end
 
 @interface TabHistoryViewController ()<MDCInkTouchControllerDelegate> {
-  base::scoped_nsobject<MDCInkTouchController> _inkTouchController;
-  base::scoped_nsobject<NSArray> _partitionedEntries;
-  base::scoped_nsobject<NSArray> _sessionEntries;
+  MDCInkTouchController* _inkTouchController;
+  NSArray* _partitionedEntries;
+  NSArray* _sessionEntries;
 }
 @end
 
 @implementation TabHistoryViewController
 
 - (NSArray*)sessionEntries {
-  return [[_sessionEntries retain] autorelease];
+  return _sessionEntries;
 }
 
 #pragma mark Public Methods
@@ -235,7 +236,7 @@ layoutAttributesForSupplementaryViewOfKind:(NSString*)kind
   DCHECK(suggestedHeight >= kCellHeight);
   CGFloat optimalHeight = 0;
 
-  for (NSArray* sectionArray in _partitionedEntries.get()) {
+  for (NSArray* sectionArray in _partitionedEntries) {
     NSUInteger sectionItemCount = [sectionArray count];
     for (NSUInteger i = 0; i < sectionItemCount; ++i) {
       CGFloat proposedHeight = optimalHeight + kCellHeight;
@@ -263,8 +264,8 @@ layoutAttributesForSupplementaryViewOfKind:(NSString*)kind
 }
 
 - (instancetype)init {
-  base::scoped_nsobject<TabHistoryViewControllerLayout> layout(
-      [[TabHistoryViewControllerLayout alloc] init]);
+  TabHistoryViewControllerLayout* layout =
+      [[TabHistoryViewControllerLayout alloc] init];
 
   return [self initWithCollectionViewLayout:layout];
 }
@@ -286,8 +287,8 @@ layoutAttributesForSupplementaryViewOfKind:(NSString*)kind
         forSupplementaryViewOfKind:UICollectionElementKindSectionFooter
                withReuseIdentifier:footerIdentifier];
 
-    _inkTouchController.reset(
-        [[MDCInkTouchController alloc] initWithView:collectionView]);
+    _inkTouchController =
+        [[MDCInkTouchController alloc] initWithView:collectionView];
     [_inkTouchController setDelegate:self];
     [_inkTouchController addInkView];
   }
@@ -370,7 +371,7 @@ layoutAttributesForSupplementaryViewOfKind:(NSString*)kind
 }
 
 - (void)setSessionEntries:(NSArray*)sessionEntries {
-  _sessionEntries.reset([sessionEntries retain]);
+  _sessionEntries = sessionEntries;
 
   std::string previousHost;
 
@@ -406,7 +407,7 @@ layoutAttributesForSupplementaryViewOfKind:(NSString*)kind
   if (![partitionedEntries count])
     partitionedEntries = nil;
 
-  _partitionedEntries.reset([partitionedEntries retain]);
+  _partitionedEntries = partitionedEntries;
 }
 
 #pragma mark MDCInkTouchControllerDelegate

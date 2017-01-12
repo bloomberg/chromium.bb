@@ -6,8 +6,6 @@
 
 #include "base/ios/block_types.h"
 #include "base/ios/ios_util.h"
-#include "base/ios/weak_nsobject.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "components/strings/grit/components_strings.h"
@@ -26,6 +24,10 @@
 #import "ios/third_party/material_components_ios/src/components/NavigationBar/src/MaterialNavigationBar.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 // Shadow opacity for the clear browsing button and the header when scrolling.
 CGFloat kShadowOpacity = 0.2f;
@@ -35,24 +37,23 @@ CGFloat kShadowOpacity = 0.2f;
     HistoryCollectionViewControllerDelegate,
     HistorySearchViewControllerDelegate> {
   // Controller for collection view that displays history entries.
-  base::scoped_nsobject<HistoryCollectionViewController>
-      _historyCollectionController;
+  HistoryCollectionViewController* _historyCollectionController;
   // Bar at the bottom of the history panel the displays options for entry
   // deletion, including "Clear Browsing Data..." which takes the user to
   // Privacy settings, or "Edit" for entering a mode for deleting individual
   // entries. When in edit mode, the bar displays options to Delete or Cancel.
-  base::scoped_nsobject<ClearBrowsingBar> _clearBrowsingBar;
+  ClearBrowsingBar* _clearBrowsingBar;
   // View controller for the search bar.
-  base::scoped_nsobject<HistorySearchViewController> _searchViewController;
+  HistorySearchViewController* _searchViewController;
   // Container view for history collection and clear browsing button to enable
   // use of autolayout in conjuction with Material App Bar.
-  base::scoped_nsobject<UIView> _containerView;
+  UIView* _containerView;
   // The header view.
-  base::scoped_nsobject<MDCAppBar> _appBar;
+  MDCAppBar* _appBar;
   // Left bar button item for Search.
-  base::scoped_nsobject<UIBarButtonItem> _leftBarButtonItem;
+  UIBarButtonItem* _leftBarButtonItem;
   // Right bar button item for Dismiss history action.
-  base::scoped_nsobject<UIBarButtonItem> _rightBarButtonItem;
+  UIBarButtonItem* _rightBarButtonItem;
 }
 // Closes history.
 - (void)closeHistory;
@@ -83,18 +84,18 @@ CGFloat kShadowOpacity = 0.2f;
                   browserState:(ios::ChromeBrowserState*)browserState {
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
-    _historyCollectionController.reset([[HistoryCollectionViewController alloc]
-        initWithLoader:loader
-          browserState:browserState
-              delegate:self]);
+    _historyCollectionController =
+        [[HistoryCollectionViewController alloc] initWithLoader:loader
+                                                   browserState:browserState
+                                                       delegate:self];
 
     // Configure modal presentation.
     [self setModalPresentationStyle:UIModalPresentationFormSheet];
     [self setModalTransitionStyle:UIModalTransitionStyleCoverVertical];
 
     // Add and configure header.
-    _appBar.reset([[MDCAppBar alloc] init]);
-    [self addChildViewController:_appBar.get().headerViewController];
+    _appBar = [[MDCAppBar alloc] init];
+    [self addChildViewController:_appBar.headerViewController];
   }
   return self;
 }
@@ -114,9 +115,8 @@ CGFloat kShadowOpacity = 0.2f;
                          (ios::ChromeBrowserState*)browserState
                                                  loader:(id<UrlLoader>)loader {
   HistoryPanelViewController* historyPanelController =
-      [[[HistoryPanelViewController alloc] initWithLoader:loader
-                                             browserState:browserState]
-          autorelease];
+      [[HistoryPanelViewController alloc] initWithLoader:loader
+                                            browserState:browserState];
   return historyPanelController;
 }
 
@@ -124,7 +124,7 @@ CGFloat kShadowOpacity = 0.2f;
   [super viewDidLoad];
   [self setTitle:l10n_util::GetNSString(IDS_HISTORY_TITLE)];
 
-  _containerView.reset([[UIView alloc] initWithFrame:self.view.frame]);
+  _containerView = [[UIView alloc] initWithFrame:self.view.frame];
   [_containerView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
                                       UIViewAutoresizingFlexibleHeight];
   [self.view addSubview:_containerView];
@@ -136,7 +136,7 @@ CGFloat kShadowOpacity = 0.2f;
   [self addChildViewController:_historyCollectionController];
   [_historyCollectionController didMoveToParentViewController:self];
 
-  _clearBrowsingBar.reset([[ClearBrowsingBar alloc] initWithFrame:CGRectZero]);
+  _clearBrowsingBar = [[ClearBrowsingBar alloc] initWithFrame:CGRectZero];
   [_clearBrowsingBar setClearBrowsingDataTarget:self
                                          action:@selector(openPrivacySettings)];
   [_clearBrowsingBar setEditTarget:self action:@selector(enterEditingMode)];
@@ -153,16 +153,16 @@ CGFloat kShadowOpacity = 0.2f;
   [_appBar addSubviewsToParent];
 
   // Add navigation bar buttons.
-  _leftBarButtonItem.reset([[ChromeIcon
-      templateBarButtonItemWithImage:[ChromeIcon searchIcon]
-                              target:self
-                              action:@selector(enterSearchMode)] retain]);
+  _leftBarButtonItem =
+      [ChromeIcon templateBarButtonItemWithImage:[ChromeIcon searchIcon]
+                                          target:self
+                                          action:@selector(enterSearchMode)];
   self.navigationItem.leftBarButtonItem = _leftBarButtonItem;
-  _rightBarButtonItem.reset([[UIBarButtonItem alloc]
+  _rightBarButtonItem = [[UIBarButtonItem alloc]
       initWithTitle:l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)
               style:UIBarButtonItemStylePlain
              target:self
-             action:@selector(closeHistory)]);
+             action:@selector(closeHistory)];
   self.navigationItem.rightBarButtonItem = _rightBarButtonItem;
   [self configureNavigationBar];
 }
@@ -211,7 +211,7 @@ CGFloat kShadowOpacity = 0.2f;
     // dropped.
     return nil;
   } else {
-    return _appBar.get().headerViewController;
+    return _appBar.headerViewController;
   }
 }
 
@@ -231,7 +231,7 @@ CGFloat kShadowOpacity = 0.2f;
     // dropped.
     return nil;
   } else {
-    return _appBar.get().headerViewController;
+    return _appBar.headerViewController;
   }
 }
 
@@ -261,8 +261,7 @@ CGFloat kShadowOpacity = 0.2f;
             (HistoryCollectionViewController*)controller
                       didScrollToOffset:(CGPoint)offset {
   // Display a shadow on the header when the collection is scrolled.
-  MDCFlexibleHeaderView* headerView =
-      _appBar.get().headerViewController.headerView;
+  MDCFlexibleHeaderView* headerView = _appBar.headerViewController.headerView;
   headerView.visibleShadowOpacity =
       offset.y > -CGRectGetHeight(headerView.frame) ? kShadowOpacity : 0.0f;
 }
@@ -317,7 +316,7 @@ CGFloat kShadowOpacity = 0.2f;
 - (void)enterEditingMode {
   [_historyCollectionController setEditing:YES];
   [_clearBrowsingBar setEditing:YES];
-  if (_historyCollectionController.get().searching) {
+  if (_historyCollectionController.searching) {
     [_searchViewController setEnabled:NO];
   }
   DCHECK([_historyCollectionController isEditing]);
@@ -327,7 +326,7 @@ CGFloat kShadowOpacity = 0.2f;
 - (void)exitEditingMode {
   [_historyCollectionController setEditing:NO];
   [_clearBrowsingBar setEditing:NO];
-  if (_historyCollectionController.get().searching) {
+  if (_historyCollectionController.searching) {
     [_searchViewController setEnabled:YES];
   }
   DCHECK(![_historyCollectionController isEditing]);
@@ -341,21 +340,20 @@ CGFloat kShadowOpacity = 0.2f;
 }
 - (void)enterSearchMode {
   if (!_searchViewController) {
-    _searchViewController.reset([[HistorySearchViewController alloc] init]);
+    _searchViewController = [[HistorySearchViewController alloc] init];
     [_searchViewController setDelegate:self];
   }
 
   UIView* searchBarView = [_searchViewController view];
   [_searchViewController willMoveToParentViewController:self];
   [self.view addSubview:searchBarView];
-  _historyCollectionController.get().searching = YES;
+  _historyCollectionController.searching = YES;
   [_searchViewController didMoveToParentViewController:self];
   base::RecordAction(base::UserMetricsAction("HistoryPage_Search"));
 
   // Constraints to make search bar cover header.
   [searchBarView setTranslatesAutoresizingMaskIntoConstraints:NO];
-  MDCFlexibleHeaderView* headerView =
-      _appBar.get().headerViewController.headerView;
+  MDCFlexibleHeaderView* headerView = _appBar.headerViewController.headerView;
   NSArray* constraints = @[
     [[searchBarView topAnchor] constraintEqualToAnchor:headerView.topAnchor],
     [[searchBarView leadingAnchor]
@@ -373,7 +371,7 @@ CGFloat kShadowOpacity = 0.2f;
 }
 
 - (void)exitSearchMode {
-  if (_historyCollectionController.get().searching) {
+  if (_historyCollectionController.searching) {
     // Resets the navigation items to their initial state.
     self.navigationItem.leftBarButtonItem = _leftBarButtonItem;
     self.navigationItem.rightBarButtonItem = _rightBarButtonItem;
@@ -381,7 +379,7 @@ CGFloat kShadowOpacity = 0.2f;
 
     [[_searchViewController view] removeFromSuperview];
     [_searchViewController removeFromParentViewController];
-    _historyCollectionController.get().searching = NO;
+    _historyCollectionController.searching = NO;
     [_historyCollectionController showHistoryMatchingQuery:nil];
   }
 }
@@ -395,17 +393,17 @@ CGFloat kShadowOpacity = 0.2f;
 }
 
 - (void)configureClearBrowsingBar {
-  _clearBrowsingBar.get().editing = _historyCollectionController.get().editing;
-  _clearBrowsingBar.get().deleteButtonEnabled =
+  _clearBrowsingBar.editing = _historyCollectionController.editing;
+  _clearBrowsingBar.deleteButtonEnabled =
       [_historyCollectionController hasSelectedEntries];
-  _clearBrowsingBar.get().editButtonEnabled =
+  _clearBrowsingBar.editButtonEnabled =
       [_historyCollectionController hasHistoryEntries];
 }
 
 #pragma mark - UIResponder
 
 - (NSArray*)keyCommands {
-  base::WeakNSObject<HistoryPanelViewController> weakSelf(self);
+  __weak HistoryPanelViewController* weakSelf = self;
   return @[ [UIKeyCommand cr_keyCommandWithInput:UIKeyInputEscape
                                    modifierFlags:Cr_UIKeyModifierNone
                                            title:nil

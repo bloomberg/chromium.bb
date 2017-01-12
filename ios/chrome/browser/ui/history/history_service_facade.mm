@@ -37,6 +37,10 @@
 #include "ios/chrome/browser/ui/history/history_service_facade_delegate.h"
 #include "ios/chrome/browser/ui/history/history_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // The amount of time to wait for a response from the WebHistoryService.
 static const int kWebHistoryTimeoutSeconds = 3;
 
@@ -128,7 +132,7 @@ HistoryServiceFacade::HistoryServiceFacade(
 HistoryServiceFacade::~HistoryServiceFacade() {
   query_task_tracker_.TryCancelAll();
   web_history_request_.reset();
-  delegate_.reset();
+  delegate_ = nil;
 }
 
 void HistoryServiceFacade::QueryHistory(const base::string16& search_text,

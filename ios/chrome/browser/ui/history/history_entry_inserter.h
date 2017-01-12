@@ -36,7 +36,7 @@ class Time;
 
 // Delegate for the HistoryEntryInserter. Receives callbacks upon item and
 // section insertion and removal.
-@property(nonatomic, assign) id<HistoryEntryInserterDelegate> delegate;
+@property(nonatomic, weak) id<HistoryEntryInserterDelegate> delegate;
 
 // Designated initializer for HistoryEntryInserter. collectionViewModel is the
 // model into which entries are inserted. Sections for history entries are

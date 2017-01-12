@@ -12,7 +12,7 @@
 
 // TODO(crbug.com/546355): Convert this class to use an array of
 //    NavigationEntries.
-@property(nonatomic, retain) NSArray* sessionEntries;
+@property(nonatomic, strong) NSArray* sessionEntries;
 
 // Returns the optimal height needed to display the session entries.
 // The height returned is usually less than the |suggestedHeight| unless

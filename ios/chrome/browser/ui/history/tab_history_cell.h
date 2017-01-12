@@ -11,14 +11,14 @@
 
 // Table cell used in TabHistoryViewController.
 @interface TabHistoryCell : UICollectionViewCell
-@property(nonatomic, retain) CRWSessionEntry* entry;
-@property(nonatomic, readonly) UILabel* titleLabel;
+@property(strong, nonatomic) CRWSessionEntry* entry;
+@property(weak, nonatomic, readonly) UILabel* titleLabel;
 @end
 
 // Header for a section of TabHistoryCells.
 @interface TabHistorySectionHeader : UICollectionReusableView
-@property(nonatomic, readonly) UIImageView* iconView;
-@property(nonatomic, readonly) UIView* lineView;
+@property(weak, nonatomic, readonly) UIImageView* iconView;
+@property(weak, nonatomic, readonly) UIView* lineView;
 @end
 
 // Footer for a section of TabHistoryCells.

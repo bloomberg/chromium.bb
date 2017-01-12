@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/ios/weak_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
@@ -165,7 +164,7 @@ class HistoryServiceFacade : public history::HistoryServiceObserver {
   ios::ChromeBrowserState* browser_state_;  // weak
 
   // Delegate for HistoryServiceFacade. Serves as client for HistoryService.
-  base::WeakNSProtocol<id<HistoryServiceFacadeDelegate>> delegate_;
+  __weak id<HistoryServiceFacadeDelegate> delegate_;
 
   base::WeakPtrFactory<HistoryServiceFacade> weak_factory_;
 

@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "components/history/core/browser/history_service.h"
@@ -106,7 +105,7 @@ class HistoryServiceFacadeTest : public PlatformTest,
     bool success = browser_state_->CreateHistoryService(true);
     EXPECT_TRUE(success);
 
-    mock_delegate_.reset([[MockHistoryServiceFacadeDelegate alloc] init]);
+    mock_delegate_ = [[MockHistoryServiceFacadeDelegate alloc] init];
     history_service_facade_.reset(
         new HistoryServiceFacade(browser_state_.get(), mock_delegate_));
   }
@@ -176,7 +175,7 @@ class HistoryServiceFacadeTest : public PlatformTest,
  protected:
   web::TestWebThreadBundle thread_bundle_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
-  base::scoped_nsobject<MockHistoryServiceFacadeDelegate> mock_delegate_;
+  MockHistoryServiceFacadeDelegate* mock_delegate_;
   std::unique_ptr<HistoryServiceFacade> history_service_facade_;
   GURL visited_url_;
   base::Time visited_time_;

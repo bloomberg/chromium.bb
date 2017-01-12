@@ -4,9 +4,7 @@
 
 #import "ios/chrome/browser/ui/history/history_entries_status_item.h"
 
-#include "base/ios/weak_nsobject.h"
 #include "base/mac/foundation_util.h"
-#import "base/mac/objc_property_releaser.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
@@ -18,6 +16,10 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // Delegate for HistoryEntriesStatusCell.
 @protocol HistoryEntriesStatusCellDelegate<NSObject>
 // Notifies the delegate that |URL| should be opened.
@@ -25,33 +27,25 @@
                didRequestOpenURL:(const GURL&)URL;
 @end
 
-@interface HistoryEntriesStatusCell () {
-  // Property releaser for HistoryEntriesStatusItem.
-  base::mac::ObjCPropertyReleaser _propertyReleaser_HistoryEntriesStatusCell;
-  // Delegate for the HistoryEntriesStatusCell. Is notified when a link is
-  // tapped.
-  base::WeakNSProtocol<id<HistoryEntriesStatusCellDelegate>> _delegate;
-}
+@interface HistoryEntriesStatusCell ()
 // Redeclare as readwrite.
-@property(nonatomic, retain, readwrite)
+@property(nonatomic, strong, readwrite)
     LabelLinkController* labelLinkController;
 // Delegate for the HistoryEntriesStatusCell. Is notified when a link is
 // tapped.
-@property(nonatomic, assign) id<HistoryEntriesStatusCellDelegate> delegate;
+// Delegate for the HistoryEntriesStatusCell. Is notified when a link is
+// tapped.
+@property(nonatomic, weak) id<HistoryEntriesStatusCellDelegate> delegate;
 // Sets links on the cell label.
 - (void)setLinksForSyncURL:(const GURL&)syncURL
            browsingDataURL:(const GURL&)browsingDataURL;
 @end
 
-@interface HistoryEntriesStatusItem ()<HistoryEntriesStatusCellDelegate> {
-  // Delegate for the HistoryEntriesStatusItem. Is notified when a link is
-  // tapped.
-  base::WeakNSProtocol<id<HistoryEntriesStatusItemDelegate>> _delegate;
-}
+@interface HistoryEntriesStatusItem ()<HistoryEntriesStatusCellDelegate>
 @end
 
 @implementation HistoryEntriesStatusItem
-
+@synthesize delegate = _delegate;
 @synthesize entriesStatus = _entriesStatus;
 @synthesize hidden = _hidden;
 @synthesize showsOtherBrowsingDataNotice = _showsOtherBrowsingDataNotice;
@@ -112,14 +106,6 @@
            browsingDataURL:otherBrowsingDataURL];
 }
 
-- (void)setDelegate:(id<HistoryEntriesStatusItemDelegate>)delegate {
-  _delegate.reset(delegate);
-}
-
-- (id<HistoryEntriesStatusItemDelegate>)delegate {
-  return _delegate;
-}
-
 - (void)historyEntriesStatusCell:(HistoryEntriesStatusCell*)cell
                didRequestOpenURL:(const GURL&)URL {
   [self.delegate historyEntriesStatusItem:self didRequestOpenURL:URL];
@@ -146,27 +132,18 @@
 @end
 
 @implementation HistoryEntriesStatusCell
-
+@synthesize delegate = _delegate;
 @synthesize labelLinkController = _labelLinkController;
-
-- (instancetype)initWithFrame:(CGRect)frame {
-  self = [super initWithFrame:frame];
-  if (self) {
-    _propertyReleaser_HistoryEntriesStatusCell.Init(
-        self, [HistoryEntriesStatusCell class]);
-  }
-  return self;
-}
 
 - (void)setLinksForSyncURL:(const GURL&)syncURL
            browsingDataURL:(const GURL&)browsingDataURL {
-  base::WeakNSObject<HistoryEntriesStatusCell> weakSelf(self);
-  self.labelLinkController = [[[LabelLinkController alloc]
+  __weak HistoryEntriesStatusCell* weakSelf = self;
+  self.labelLinkController = [[LabelLinkController alloc]
       initWithLabel:self.textLabel
              action:^(const GURL& URL) {
                [[weakSelf delegate] historyEntriesStatusCell:weakSelf
                                            didRequestOpenURL:URL];
-             }] autorelease];
+             }];
   [self.labelLinkController setLinkColor:[[MDCPalette cr_bluePalette] tint500]];
 
   // Remove link delimiters from text and get ranges for links. Both links
@@ -194,14 +171,6 @@
     [self.labelLinkController addLinkWithRange:otherBrowsingDataRange
                                            url:browsingDataURL];
   }
-}
-
-- (void)setDelegate:(id<HistoryEntriesStatusCellDelegate>)delegate {
-  _delegate.reset(delegate);
-}
-
-- (id<HistoryEntriesStatusCellDelegate>)delegate {
-  return _delegate;
 }
 
 - (void)prepareForReuse {

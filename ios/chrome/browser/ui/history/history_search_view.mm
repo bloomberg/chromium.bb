@@ -4,11 +4,14 @@
 
 #import "ios/chrome/browser/ui/history/history_search_view.h"
 
-#include "base/mac/objc_property_releaser.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // Shadow opacity for the search view.
@@ -17,9 +20,7 @@ CGFloat kShadowOpacity = 0.2f;
 CGFloat kHorizontalMargin = 16.0f;
 }  // namespace
 
-@interface HistorySearchView () {
-  base::mac::ObjCPropertyReleaser propertyReleaser_HistorySearchView_;
-}
+@interface HistorySearchView ()
 
 // Stack view for laying out the text field and cancel button.
 @property(nonatomic, strong) UIStackView* stackView;
@@ -58,7 +59,7 @@ CGFloat kHorizontalMargin = 16.0f;
     _textField.clearButtonMode = UITextFieldViewModeAlways;
     _textField.placeholder = l10n_util::GetNSString(IDS_HISTORY_SEARCH_BUTTON);
 
-    _cancelButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+    _cancelButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [_cancelButton setImage:[UIImage imageNamed:@"collapse"]
                    forState:UIControlStateNormal];
     [_cancelButton setImage:[UIImage imageNamed:@"collapse_pressed"]
@@ -81,9 +82,9 @@ CGFloat kHorizontalMargin = 16.0f;
     _stackView.layoutMarginsRelativeArrangement = YES;
 
     CGFloat topAnchorConstant = IsCompact() ? StatusBarHeight() : 0;
-    _topAnchorConstraint = [[_stackView.topAnchor
-        constraintEqualToAnchor:self.topAnchor
-                       constant:topAnchorConstant] retain];
+    _topAnchorConstraint =
+        [_stackView.topAnchor constraintEqualToAnchor:self.topAnchor
+                                             constant:topAnchorConstant];
     [NSLayoutConstraint activateConstraints:@[
       _topAnchorConstraint,
       [_stackView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
@@ -94,8 +95,6 @@ CGFloat kHorizontalMargin = 16.0f;
           constraintEqualToAnchor:self.trailingAnchor
                          constant:-kHorizontalMargin],
     ]];
-
-    propertyReleaser_HistorySearchView_.Init(self, [HistorySearchView class]);
   }
   return self;
 }

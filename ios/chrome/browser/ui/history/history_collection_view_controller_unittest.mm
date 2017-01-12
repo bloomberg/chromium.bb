@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
 #import "base/test/ios/wait_util.h"
 #include "base/time/time.h"
@@ -61,31 +60,27 @@ class HistoryCollectionViewControllerTest : public BlockCleanupTest {
         AuthenticationServiceFactory::GetInstance(),
         AuthenticationServiceFake::CreateAuthenticationService);
     mock_browser_state_ = builder.Build();
-    mock_delegate_.reset([[OCMockObject
-        niceMockForProtocol:@protocol(HistoryCollectionViewControllerDelegate)]
-        retain]);
-    mock_url_loader_.reset(
-        [[OCMockObject niceMockForProtocol:@protocol(UrlLoader)] retain]);
-    history_collection_view_controller_.reset(
+    mock_delegate_ = [OCMockObject
+        niceMockForProtocol:@protocol(HistoryCollectionViewControllerDelegate)];
+    mock_url_loader_ = [OCMockObject niceMockForProtocol:@protocol(UrlLoader)];
+    history_collection_view_controller_ =
         [[HistoryCollectionViewController alloc]
             initWithLoader:mock_url_loader_
               browserState:mock_browser_state_.get()
-                  delegate:mock_delegate_]);
+                  delegate:mock_delegate_];
   }
 
   void TearDown() override {
-    history_collection_view_controller_.reset();
+    history_collection_view_controller_ = nil;
     BlockCleanupTest::TearDown();
   }
 
  protected:
   web::TestWebThreadBundle thread_bundle_;
-  base::scoped_nsprotocol<id<UrlLoader>> mock_url_loader_;
+  id<UrlLoader> mock_url_loader_;
   std::unique_ptr<TestChromeBrowserState> mock_browser_state_;
-  base::scoped_nsprotocol<id<HistoryCollectionViewControllerDelegate>>
-      mock_delegate_;
-  base::scoped_nsobject<HistoryCollectionViewController>
-      history_collection_view_controller_;
+  id<HistoryCollectionViewControllerDelegate> mock_delegate_;
+  HistoryCollectionViewController* history_collection_view_controller_;
   bool privacy_settings_opened_;
   DISALLOW_COPY_AND_ASSIGN(HistoryCollectionViewControllerTest);
 };

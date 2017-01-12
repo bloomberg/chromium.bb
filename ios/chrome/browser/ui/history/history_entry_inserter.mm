@@ -4,9 +4,7 @@
 
 #import "ios/chrome/browser/ui/history/history_entry_inserter.h"
 
-#import "base/ios/weak_nsobject.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
@@ -15,42 +13,38 @@
 #include "ios/chrome/browser/ui/history/history_util.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface HistoryEntryInserter () {
-  // Delegate for the HistoryEntryInserter.
-  base::WeakNSProtocol<id<HistoryEntryInserterDelegate>> _delegate;
   // CollectionViewModel in which to insert history entries.
-  base::scoped_nsobject<CollectionViewModel> _collectionViewModel;
+  CollectionViewModel* _collectionViewModel;
   // The index of the first section to contain history entries.
   NSInteger _firstSectionIndex;
   // Number of assigned section identifiers.
   NSInteger _sectionIdentifierCount;
   // Sorted set of dates that have history entries.
-  base::scoped_nsobject<NSMutableOrderedSet> _dates;
+  NSMutableOrderedSet* _dates;
   // Mapping from dates to section identifiers.
-  base::scoped_nsobject<NSMutableDictionary> _sectionIdentifiers;
+  NSMutableDictionary* _sectionIdentifiers;
 }
 
 @end
 
 @implementation HistoryEntryInserter
+@synthesize delegate = _delegate;
 
 - (instancetype)initWithModel:(CollectionViewModel*)collectionViewModel {
   if ((self = [super init])) {
-    _collectionViewModel.reset([collectionViewModel retain]);
+    _collectionViewModel = collectionViewModel;
     _firstSectionIndex = [collectionViewModel numberOfSections];
-    _dates.reset([[NSMutableOrderedSet alloc] init]);
-    _sectionIdentifiers.reset([[NSMutableDictionary dictionary] retain]);
+    _dates = [[NSMutableOrderedSet alloc] init];
+    _sectionIdentifiers = [NSMutableDictionary dictionary];
   }
   return self;
 }
 
-- (id<HistoryEntryInserterDelegate>)delegate {
-  return _delegate;
-}
-
-- (void)setDelegate:(id<HistoryEntryInserterDelegate>)delegate {
-  _delegate.reset(delegate);
-}
 
 - (void)insertHistoryEntryItem:(HistoryEntryItem*)item {
   NSInteger sectionIdentifier =
@@ -126,8 +120,8 @@
                            usingComparator:comparator];
   [_dates insertObject:date atIndex:index];
   NSInteger insertionIndex = _firstSectionIndex + index;
-  CollectionViewTextItem* header = [[[CollectionViewTextItem alloc]
-      initWithType:kItemTypeEnumZero] autorelease];
+  CollectionViewTextItem* header =
+      [[CollectionViewTextItem alloc] initWithType:kItemTypeEnumZero];
   header.text =
       base::SysUTF16ToNSString(history::GetRelativeDateLocalized(timestamp));
   [_collectionViewModel insertSectionWithIdentifier:sectionIdentifier

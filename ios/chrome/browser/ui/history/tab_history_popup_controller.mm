@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
-#include "base/mac/objc_property_releaser.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/history/tab_history_view_controller.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_view.h"
@@ -20,6 +19,10 @@
 #include "ios/web/public/navigation_item.h"
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"
 #include "ui/gfx/ios/uikit_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 static const CGFloat kTabHistoryMinWidth = 250.0;
@@ -44,17 +47,15 @@ static const CGFloat kHeightPercentage = 0.85;
 
   // Container view of the history entries table.
   UIView* tabHistoryTableViewContainer_;
-
-  base::mac::ObjCPropertyReleaser propertyReleaser_TabHistoryPopupController_;
 }
 
 // Determines the width for the popup depending on the device, orientation, and
 // CRWSessionEntrys to display.
 - (CGFloat)calculatePopupWidth:(NSArray*)entries;
 
-@property(nonatomic, retain)
+@property(nonatomic, strong)
     TabHistoryViewController* tabHistoryTableViewController;
-@property(nonatomic, retain) UIView* tabHistoryTableViewContainer;
+@property(nonatomic, strong) UIView* tabHistoryTableViewContainer;
 
 @end
 
@@ -69,9 +70,6 @@ static const CGFloat kHeightPercentage = 0.85;
   DCHECK(parent);
   self = [super initWithParentView:parent];
   if (self) {
-    propertyReleaser_TabHistoryPopupController_.Init(
-        self, [TabHistoryPopupController class]);
-
     tabHistoryTableViewController_ = [[TabHistoryViewController alloc] init];
     [tabHistoryTableViewController_ setSessionEntries:entries];
 
@@ -168,7 +166,6 @@ static const CGFloat kHeightPercentage = 0.85;
 
 - (void)dealloc {
   [tabHistoryTableViewContainer_ removeFromSuperview];
-  [super dealloc];
 }
 
 @end

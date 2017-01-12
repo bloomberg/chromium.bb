@@ -4,15 +4,15 @@
 
 #import "ios/chrome/browser/ui/history/history_search_view_controller.h"
 
-#include "base/ios/weak_nsobject.h"
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/history/history_search_view.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface HistorySearchViewController ()<UITextFieldDelegate> {
-  // Delegate for forwarding interactions with the search view.
-  base::WeakNSProtocol<id<HistorySearchViewControllerDelegate>> _delegate;
   // View displayed by the HistorySearchViewController
-  base::scoped_nsobject<HistorySearchView> _searchView;
+  HistorySearchView* _searchView;
 }
 
 // Action for the cancel button.
@@ -21,11 +21,11 @@
 @end
 
 @implementation HistorySearchViewController
-
+@synthesize delegate = _delegate;
 @synthesize enabled = _enabled;
 
 - (void)loadView {
-  _searchView.reset([[HistorySearchView alloc] init]);
+  _searchView = [[HistorySearchView alloc] init];
   [_searchView setSearchBarDelegate:self];
   [_searchView setCancelTarget:self action:@selector(cancelButtonClicked:)];
   self.view = _searchView;
@@ -34,14 +34,6 @@
 - (void)viewDidAppear:(BOOL)animated {
   [super viewDidAppear:animated];
   [_searchView becomeFirstResponder];
-}
-
-- (void)setDelegate:(id<HistorySearchViewControllerDelegate>)delegate {
-  _delegate.reset(delegate);
-}
-
-- (id<HistorySearchViewControllerDelegate>)delegate {
-  return _delegate;
 }
 
 - (void)setEnabled:(BOOL)enabled {

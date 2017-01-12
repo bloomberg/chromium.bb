@@ -4,13 +4,16 @@
 
 #import "ios/chrome/browser/ui/history/tab_history_cell.h"
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #import "ios/web/navigation/crw_session_entry.h"
 #include "ios/web/public/navigation_item.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // Header horizontal layout inset.
@@ -40,8 +43,8 @@ NS_INLINE CGFloat HeaderLineRadius() {
 }
 
 @implementation TabHistoryCell {
-  base::scoped_nsobject<CRWSessionEntry> _entry;
-  base::scoped_nsobject<UILabel> _titleLabel;
+  CRWSessionEntry* _entry;
+  UILabel* _titleLabel;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -61,7 +64,7 @@ NS_INLINE CGFloat HeaderLineRadius() {
 }
 
 - (void)commonInitialization {
-  _titleLabel.reset([[UILabel alloc] initWithFrame:CGRectZero]);
+  _titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
   [_titleLabel setTextColor:UIColorFromRGB(kTitleTextRGB)];
   [_titleLabel
       setFont:[[MDFRobotoFontLoader sharedInstance] regularFontOfSize:16]];
@@ -77,11 +80,11 @@ NS_INLINE CGFloat HeaderLineRadius() {
 }
 
 - (CRWSessionEntry*)entry {
-  return [[_entry retain] autorelease];
+  return _entry;
 }
 
 - (void)setEntry:(CRWSessionEntry*)entry {
-  _entry.reset([entry retain]);
+  _entry = entry;
 
   NSString* title = nil;
   web::NavigationItem* navigationItem = [_entry navigationItem];
@@ -99,12 +102,12 @@ NS_INLINE CGFloat HeaderLineRadius() {
 }
 
 - (UILabel*)titleLabel {
-  return [[_titleLabel retain] autorelease];
+  return _titleLabel;
 }
 
 - (void)prepareForReuse {
   [super prepareForReuse];
-  _entry.reset(nil);
+  _entry = nil;
   [_titleLabel setText:nil];
   [self setAccessibilityLabel:nil];
 }
@@ -112,28 +115,28 @@ NS_INLINE CGFloat HeaderLineRadius() {
 @end
 
 @implementation TabHistorySectionHeader {
-  base::scoped_nsobject<UIImageView> _iconView;
-  base::scoped_nsobject<UIView> _lineView;
+  UIImageView* _iconView;
+  UIView* _lineView;
 }
 
 - (UIImageView*)iconView {
-  return [[_iconView retain] autorelease];
+  return _iconView;
 }
 
 - (UIView*)lineView {
-  return [[_lineView retain] autorelease];
+  return _lineView;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
     CGRect iconFrame = CGRectMake(0, 0, kSiteIconViewWidth, kSiteIconViewWidth);
-    _iconView.reset([[UIImageView alloc] initWithFrame:iconFrame]);
+    _iconView = [[UIImageView alloc] initWithFrame:iconFrame];
     [self addSubview:_iconView];
 
     UIColor* lineColor = UIColorFromRGB(kHeaderLineRGB);
 
-    _lineView.reset([[UIView alloc] initWithFrame:CGRectZero]);
+    _lineView = [[UIView alloc] initWithFrame:CGRectZero];
     [[_lineView layer] setCornerRadius:HeaderLineRadius()];
     [_lineView setBackgroundColor:lineColor];
     [self addSubview:_lineView];

@@ -5,13 +5,16 @@
 #import "ios/chrome/browser/ui/history/clear_browsing_bar.h"
 
 #include "base/logging.h"
-#include "base/mac/objc_property_releaser.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // Shadow opacity for the clear browsing bar.
@@ -22,9 +25,7 @@ CGFloat kHorizontalMargin = 8.0f;
 typedef NS_ENUM(BOOL, ButtonPlacement) { Leading, Trailing };
 }  // namespace
 
-@interface ClearBrowsingBar () {
-  base::mac::ObjCPropertyReleaser propertyReleaser_ClearBrowsingBar_;
-}
+@interface ClearBrowsingBar ()
 
 // Button that displays "Clear Browsing Data...".
 @property(nonatomic, strong) UIButton* clearBrowsingDataButton;
@@ -56,27 +57,26 @@ typedef NS_ENUM(BOOL, ButtonPlacement) { Leading, Trailing };
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    _clearBrowsingDataButton =
-        [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+    _clearBrowsingDataButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [_clearBrowsingDataButton
         setTitle:l10n_util::GetNSStringWithFixup(
                      IDS_HISTORY_OPEN_CLEAR_BROWSING_DATA_DIALOG)
         forState:UIControlStateNormal];
     [self styleButton:_clearBrowsingDataButton forPlacement:Leading];
 
-    _editButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+    _editButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [_editButton
         setTitle:l10n_util::GetNSString(IDS_HISTORY_START_EDITING_BUTTON)
         forState:UIControlStateNormal];
     [self styleButton:_editButton forPlacement:Trailing];
 
-    _deleteButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+    _deleteButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [_deleteButton setTitle:l10n_util::GetNSString(
                                 IDS_HISTORY_DELETE_SELECTED_ENTRIES_BUTTON)
                    forState:UIControlStateNormal];
     [self styleButton:_deleteButton forPlacement:Leading];
 
-    _cancelButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+    _cancelButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [_cancelButton
         setTitle:l10n_util::GetNSString(IDS_HISTORY_CANCEL_EDITING_BUTTON)
         forState:UIControlStateNormal];
@@ -106,7 +106,6 @@ typedef NS_ENUM(BOOL, ButtonPlacement) { Leading, Trailing };
     [self setBackgroundColor:[UIColor whiteColor]];
     [[self layer] setShadowOpacity:kShadowOpacity];
     [self setEditing:NO];
-    propertyReleaser_ClearBrowsingBar_.Init(self, [ClearBrowsingBar class]);
   }
   return self;
 }

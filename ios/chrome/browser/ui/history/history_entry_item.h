@@ -75,13 +75,13 @@ class GURL;
 @interface HistoryEntryCell : MDCCollectionViewCell
 
 // View for displaying the favicon for the history entry.
-@property(nonatomic, retain) UIView* faviconViewContainer;
+@property(nonatomic, strong) UIView* faviconViewContainer;
 // Text label for history entry title.
-@property(nonatomic, readonly, retain) UILabel* textLabel;
+@property(nonatomic, readonly, strong) UILabel* textLabel;
 // Text label for history entry URL.
-@property(nonatomic, readonly, retain) UILabel* detailTextLabel;
+@property(nonatomic, readonly, strong) UILabel* detailTextLabel;
 // Text label for history entry timestamp.
-@property(nonatomic, readonly, retain) UILabel* timeLabel;
+@property(nonatomic, readonly, strong) UILabel* timeLabel;
 
 @end
 

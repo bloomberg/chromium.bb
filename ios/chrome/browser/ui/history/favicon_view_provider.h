@@ -38,7 +38,7 @@ class GURL;
 - (instancetype)init NS_UNAVAILABLE;
 
 // View that displays a favicon or fallback icon.
-@property(nonatomic, readonly) FaviconView* faviconView;
+@property(strong, nonatomic, readonly) FaviconView* faviconView;
 
 @end
 

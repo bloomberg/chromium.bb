@@ -5,9 +5,7 @@
 #import "ios/chrome/browser/ui/history/history_entry_item.h"
 
 #include "base/i18n/time_formatting.h"
-#include "base/ios/weak_nsobject.h"
 #import "base/mac/foundation_util.h"
-#import "base/mac/objc_property_releaser.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/history/core/browser/url_row.h"
@@ -23,6 +21,10 @@
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // Size at which the favicon will be displayed.
@@ -59,14 +61,12 @@ NSString* FormattedTitle(const base::string16& title, const GURL& url) {
 #pragma mark - HistoryEntryItem
 
 @interface HistoryEntryItem ()<FaviconViewProviderDelegate> {
-  // Property releaser for HistoryEntryItem.
-  base::mac::ObjCPropertyReleaser _propertyReleaser_HistoryEntryItem;
   // Delegate for HistoryEntryItem.
-  base::WeakNSProtocol<id<HistoryEntryItemDelegate>> _delegate;
+  __weak id<HistoryEntryItemDelegate> _delegate;
 }
 
 // FaviconViewProvider to fetch the favicon and format the favicon view.
-@property(nonatomic, retain) FaviconViewProvider* faviconViewProvider;
+@property(nonatomic, strong) FaviconViewProvider* faviconViewProvider;
 
 // Custom accessibility actions for the history entry view.
 - (NSArray*)accessibilityActions;
@@ -96,7 +96,6 @@ NSString* FormattedTitle(const base::string16& title, const GURL& url) {
                     delegate:(id<HistoryEntryItemDelegate>)delegate {
   self = [super initWithType:type];
   if (self) {
-    _propertyReleaser_HistoryEntryItem.Init(self, [HistoryEntryItem class]);
     self.cellClass = [HistoryEntryCell class];
     favicon::LargeIconService* largeIconService =
         IOSChromeLargeIconServiceFactory::GetForBrowserState(browserState);
@@ -112,7 +111,7 @@ NSString* FormattedTitle(const base::string16& title, const GURL& url) {
         [base::SysUTF16ToNSString(base::TimeFormatTimeOfDay(entry.time)) copy];
     _URL = GURL(entry.url);
     _timestamp = entry.time;
-    _delegate.reset(delegate);
+    _delegate = delegate;
   }
   return self;
 }
@@ -143,28 +142,28 @@ NSString* FormattedTitle(const base::string16& title, const GURL& url) {
 
 - (NSArray*)accessibilityActions {
   UIAccessibilityCustomAction* deleteAction =
-      [[[UIAccessibilityCustomAction alloc]
+      [[UIAccessibilityCustomAction alloc]
           initWithName:l10n_util::GetNSString(
                            IDS_HISTORY_ENTRY_ACCESSIBILITY_DELETE)
                 target:self
-              selector:@selector(deleteHistoryEntry)] autorelease];
+              selector:@selector(deleteHistoryEntry)];
   UIAccessibilityCustomAction* openInNewTabAction =
-      [[[UIAccessibilityCustomAction alloc]
+      [[UIAccessibilityCustomAction alloc]
           initWithName:l10n_util::GetNSString(
                            IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB)
                 target:self
-              selector:@selector(openInNewTab)] autorelease];
+              selector:@selector(openInNewTab)];
   UIAccessibilityCustomAction* openInNewIncognitoTabAction =
-      [[[UIAccessibilityCustomAction alloc]
+      [[UIAccessibilityCustomAction alloc]
           initWithName:l10n_util::GetNSString(
                            IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB)
                 target:self
-              selector:@selector(openInNewIncognitoTab)] autorelease];
+              selector:@selector(openInNewIncognitoTab)];
   UIAccessibilityCustomAction* copyURLAction =
-      [[[UIAccessibilityCustomAction alloc]
+      [[UIAccessibilityCustomAction alloc]
           initWithName:l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_COPY)
                 target:self
-              selector:@selector(copyURL)] autorelease];
+              selector:@selector(copyURL)];
   return @[
     deleteAction, openInNewTabAction, openInNewIncognitoTabAction, copyURLAction
   ];
@@ -220,15 +219,12 @@ NSString* FormattedTitle(const base::string16& title, const GURL& url) {
 
 #pragma mark - HistoryEntryCell
 
-@interface HistoryEntryCell () {
-  // Property releaser for HistoryEntryCell.
-  base::mac::ObjCPropertyReleaser _propertyReleaser_HistoryEntryCell;
-}
+@interface HistoryEntryCell ()
 
-// Redeclare as readwrite to allow property releaser to handle these properties.
-@property(nonatomic, readwrite, retain) UILabel* textLabel;
-@property(nonatomic, readwrite, retain) UILabel* detailTextLabel;
-@property(nonatomic, readwrite, retain) UILabel* timeLabel;
+// Redeclare as readwrite.
+@property(nonatomic, readwrite, strong) UILabel* textLabel;
+@property(nonatomic, readwrite, strong) UILabel* detailTextLabel;
+@property(nonatomic, readwrite, strong) UILabel* timeLabel;
 @end
 
 @implementation HistoryEntryCell
@@ -241,7 +237,6 @@ NSString* FormattedTitle(const base::string16& title, const GURL& url) {
 - (id)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    _propertyReleaser_HistoryEntryCell.Init(self, [HistoryEntryCell class]);
 
     _faviconViewContainer = [[UIView alloc] initWithFrame:CGRectZero];
 
