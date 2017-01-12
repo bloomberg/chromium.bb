@@ -37,7 +37,34 @@ remoting.HostOptions = function (hostId) {
   this.remapKeys = null;
 };
 
-/** @return {boolean} True if the remote desktop should be reduced in size to
+/**
+ * Create a typed HostOptions instance from an untyped Object.
+ *
+ * @param {Object} object
+ * @param {string} hostId
+ * @return {remoting.HostOptions}
+ */
+remoting.HostOptions.fromObject = function(object, hostId) {
+  var result = new remoting.HostOptions(hostId);
+  try {
+    result.shrinkToFit = base.assertBoolean(object.shrinkToFit);
+  } catch (e) {}
+  try {
+    result.resizeToClient = base.assertBoolean(object.resizeToClient);
+  } catch (e) {}
+  try {
+    result.desktopScale = base.assertNumber(object.desktopScale);
+  } catch (e) {}
+  try {
+    pairingInfo = base.assertObject(object.pairingInfo);
+  } catch (e) {}
+  try {
+    remapKeys = base.assertObject(object.remapKeys);
+  } catch (e) {}
+  return result;
+};
+
+  /** @return {boolean} True if the remote desktop should be reduced in size to
  *      fit a smaller client window; false if scroll-bars or bump-scrolling
  *      should be used instead.
  */

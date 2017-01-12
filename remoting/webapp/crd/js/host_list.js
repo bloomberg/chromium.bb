@@ -109,8 +109,10 @@ remoting.HostList.prototype.load = function(onDone) {
   var storeHostList = function(items) {
     if (items[remoting.HostList.HOSTS_KEY]) {
       var cached = base.jsonParseSafe(items[remoting.HostList.HOSTS_KEY]);
-      if (cached) {
-        that.hosts_ = /** @type {Array<remoting.Host>} */ (cached);
+      if (cached && cached instanceof Array) {
+        that.hosts_ = cached
+            .map((host) => remoting.Host.fromObject(host))
+            .filter((host) => Boolean(host));
       } else {
         console.error('Invalid value for ' + remoting.HostList.HOSTS_KEY);
       }

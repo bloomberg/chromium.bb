@@ -53,6 +53,34 @@ remoting.Host = function(hostId) {
 };
 
 /**
+ * Create a typed Host instance from an untyped Object.
+ *
+ * @param {Object} object
+ * @return {remoting.Host}
+ */
+remoting.Host.fromObject = function(object) {
+  try {
+    var result = new remoting.Host(base.assertString(object.hostId));
+    result.hostName = base.assertString(object.hostName);
+    result.status = base.assertString(object.status);
+    result.jabberId = base.assertString(object.jabberId);
+    result.publicKey = base.assertString(object.publicKey);
+    result.hostVersion = base.assertString(object.hostVersion);
+    result.hostOs = base.assertNumber(object.hostOs);
+    result.hostOsVersion = base.assertString(object.hostOsVersion);
+    result.tokenUrlPatterns = base.assertArray(object.tokenUrlPatterns);
+    result.updatedTime = base.assertString(object.updatedTime);
+    result.hostOfflineReason = base.assertString(object.hostOfflineReason);
+    result.options = remoting.HostOptions.fromObject(
+        base.assertObject(object.options), base.assertString(object.hostId));
+    return result;
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
+};
+
+/**
  * Determine whether a host needs to be manually updated. This is the case if
  * the host's major version number is more than 2 lower than that of the web-
  * app (a difference of 2 is tolerated due to the different update mechanisms
