@@ -70,7 +70,7 @@ void SessionController::LockScreen() {
 
 void SessionController::SwitchActiveUser(const AccountId& account_id) {
   if (client_)
-    client_->SwitchActiveUser(account_id.Serialize());
+    client_->SwitchActiveUser(account_id);
 }
 
 void SessionController::CycleActiveUser(bool next_user) {
@@ -141,12 +141,8 @@ void SessionController::SetUserSessionOrder(
   if (user_sessions_[0]->session_id != active_session_id_) {
     active_session_id_ = user_sessions_[0]->session_id;
 
-    AccountId account_id(EmptyAccountId());
-    if (AccountId::Deserialize(user_sessions_[0]->serialized_account_id,
-                               &account_id)) {
-      for (auto& observer : observers_)
-        observer.ActiveUserChanged(account_id);
-    }
+    for (auto& observer : observers_)
+      observer.ActiveUserChanged(user_sessions_[0]->account_id);
   }
 }
 
@@ -160,12 +156,7 @@ void SessionController::SetSessionState(session_manager::SessionState state) {
 }
 
 void SessionController::AddUserSession(mojom::UserSessionPtr user_session) {
-  AccountId account_id(EmptyAccountId());
-  if (!AccountId::Deserialize(user_session->serialized_account_id,
-                              &account_id)) {
-    LOG(ERROR) << "Failed to deserialize account id.";
-    return;
-  }
+  const AccountId account_id(user_session->account_id);
 
   user_sessions_.push_back(std::move(user_session));
 

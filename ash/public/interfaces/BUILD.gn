@@ -24,6 +24,7 @@ mojom("interfaces") {
   ]
 
   public_deps = [
+    "//components/signin/public/interfaces",
     "//skia/public/interfaces",
   ]
 }

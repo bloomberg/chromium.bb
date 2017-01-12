@@ -32,7 +32,7 @@ class SessionControllerClient
 
   // ash::mojom::SessionControllerClient:
   void RequestLockScreen() override;
-  void SwitchActiveUser(const std::string& serialized_account_id) override;
+  void SwitchActiveUser(const AccountId& account_id) override;
   void CycleActiveUser(bool next_user) override;
 
   // user_manager::UserManager::UserSessionStateObserver:

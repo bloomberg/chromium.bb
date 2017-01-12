@@ -189,7 +189,7 @@ void WmTestBase::SimulateUserLogin() {
   session->session_id = 1;
   session->type = user_manager::USER_TYPE_REGULAR;
   const std::string email("ash.user@example.com");
-  session->serialized_account_id = AccountId::FromUserEmail(email).Serialize();
+  session->account_id = AccountId::FromUserEmail(email);
   session->display_name = "Ash User";
   session->display_email = email;
   session_controller->UpdateUserSession(std::move(session));

@@ -53,8 +53,7 @@ ash::mojom::UserSessionPtr UserToUserSession(const User& user) {
   ash::mojom::UserSessionPtr session = ash::mojom::UserSession::New();
   session->session_id = GetSessionId(&user);
   session->type = user.GetType();
-  // TODO(xiyuan): Add type map for AccountId.
-  session->serialized_account_id = user.GetAccountId().Serialize();
+  session->account_id = user.GetAccountId();
   session->display_name = base::UTF16ToUTF8(user.display_name());
   session->display_email = user.display_email();
 
@@ -102,15 +101,7 @@ void SessionControllerClient::RequestLockScreen() {
   DoLockScreen();
 }
 
-void SessionControllerClient::SwitchActiveUser(
-    const std::string& serialized_account_id) {
-  // TODO(xiyuan): Add type map for AccountId.
-  AccountId account_id(EmptyAccountId());
-  if (!AccountId::Deserialize(serialized_account_id, &account_id)) {
-    LOG(ERROR) << "Bad account id for SwitchActiveUser.";
-    return;
-  }
-
+void SessionControllerClient::SwitchActiveUser(const AccountId& account_id) {
   DoSwitchActiveUser(account_id);
 }
 

@@ -93,8 +93,7 @@ class SessionControllerTest : public testing::Test {
     mojom::UserSessionPtr session = mojom::UserSession::New();
     session->session_id = session_id;
     session->type = user_manager::USER_TYPE_REGULAR;
-    session->serialized_account_id =
-        AccountId::FromUserEmail(email).Serialize();
+    session->account_id = AccountId::FromUserEmail(email);
     session->display_name = email;
     session->display_email = email;
 

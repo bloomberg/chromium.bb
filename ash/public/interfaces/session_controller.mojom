@@ -4,6 +4,7 @@
 
 module ash.mojom;
 
+import "components/signin/public/interfaces/account_id.mojom";
 import "skia/public/interfaces/bitmap.mojom";
 
 // Matches session_manager::SessionState.
@@ -73,7 +74,7 @@ struct UserSession {
   uint32 session_id;
 
   UserType type;
-  string serialized_account_id;  // TODO(xiyuan): Use typemapping for AccountId.
+  signin.mojom.AccountId account_id;
   string display_name;
   string display_email;
   skia.mojom.Bitmap avatar;
@@ -139,7 +140,7 @@ interface SessionControllerClient {
 
   // Switch to the active user with |account_id| (if the user has already signed
   // in).
-  SwitchActiveUser(string account_id);
+  SwitchActiveUser(signin.mojom.AccountId account_id);
 
   // Switch the active user to the next or previous user.
   CycleActiveUser(bool next_user);

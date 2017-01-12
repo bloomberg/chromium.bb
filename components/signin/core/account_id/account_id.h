@@ -24,6 +24,13 @@ class AccountId {
  public:
   struct EmptyAccountId;
 
+  // Creates an empty account id.
+  //
+  // Note: This constructor is public as it is required for mojo serialization
+  // To create an AccountId object, prefer using the static FromXXXX methods or
+  // the EmptyAccountId method when creating an empty account id.
+  AccountId();
+
   AccountId(const AccountId& other);
 
   // If any of the comparable AccountIds has AccountType == UNKNOWN then it
@@ -90,7 +97,6 @@ class AccountId {
                           AccountId* out_account_id);
 
  private:
-  AccountId();
   AccountId(const std::string& id,
             const std::string& user_email,
             const AccountType& account_type);

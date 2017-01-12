@@ -7,5 +7,6 @@ typemaps = [
   "//components/content_settings/core/common/content_settings.typemap",
   "//components/nacl/common/nacl.typemap",
   "//components/password_manager/content/common/credential_manager.typemap",
+  "//components/signin/public/interfaces/account_id.typemap",
   "//components/translate/content/common/translate.typemap",
 ]
