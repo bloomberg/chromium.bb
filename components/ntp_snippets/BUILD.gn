@@ -129,6 +129,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "bookmarks/bookmark_last_visit_utils_unittest.cc",
+    "bookmarks/bookmark_suggestions_provider_unittest.cc",
     "category_rankers/click_based_category_ranker_unittest.cc",
     "category_rankers/constant_category_ranker_unittest.cc",
     "category_unittest.cc",
@@ -184,6 +185,10 @@ source_set("test_support") {
     "category_rankers/fake_category_ranker.h",
     "category_rankers/mock_category_ranker.cc",
     "category_rankers/mock_category_ranker.h",
+    "fake_content_suggestions_provider_observer.cc",
+    "fake_content_suggestions_provider_observer.h",
+    "mock_content_suggestions_provider.cc",
+    "mock_content_suggestions_provider.h",
     "mock_content_suggestions_provider_observer.cc",
     "mock_content_suggestions_provider_observer.h",
     "offline_pages/offline_pages_test_utils.cc",
@@ -196,5 +201,6 @@ source_set("test_support") {
     "//components/offline_pages/core",
     "//components/offline_pages/core:test_support",
     "//testing/gmock",
+    "//testing/gtest",
   ]
 }

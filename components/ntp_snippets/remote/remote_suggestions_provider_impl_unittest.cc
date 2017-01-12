@@ -31,6 +31,7 @@
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
 #include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
 #include "components/ntp_snippets/category_rankers/mock_category_ranker.h"
+#include "components/ntp_snippets/fake_content_suggestions_provider_observer.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/ntp_snippet.h"
@@ -341,51 +342,6 @@ class MockImageFetcher : public ImageFetcher {
       void(const std::string&,
            const GURL&,
            base::Callback<void(const std::string&, const gfx::Image&)>));
-};
-
-class FakeContentSuggestionsProviderObserver
-    : public ContentSuggestionsProvider::Observer {
- public:
-  FakeContentSuggestionsProviderObserver() = default;
-
-  void OnNewSuggestions(ContentSuggestionsProvider* provider,
-                        Category category,
-                        std::vector<ContentSuggestion> suggestions) override {
-    suggestions_[category] = std::move(suggestions);
-  }
-
-  void OnCategoryStatusChanged(ContentSuggestionsProvider* provider,
-                               Category category,
-                               CategoryStatus new_status) override {
-    statuses_[category] = new_status;
-  }
-
-  void OnSuggestionInvalidated(
-      ContentSuggestionsProvider* provider,
-      const ContentSuggestion::ID& suggestion_id) override {}
-
-  const std::map<Category, CategoryStatus, Category::CompareByID>& statuses()
-      const {
-    return statuses_;
-  }
-
-  CategoryStatus StatusForCategory(Category category) const {
-    auto it = statuses_.find(category);
-    EXPECT_THAT(it, Not(Eq(statuses_.end())));
-    return it->second;
-  }
-
-  const std::vector<ContentSuggestion>& SuggestionsForCategory(
-      Category category) {
-    return suggestions_[category];
-  }
-
- private:
-  std::map<Category, CategoryStatus, Category::CompareByID> statuses_;
-  std::map<Category, std::vector<ContentSuggestion>, Category::CompareByID>
-      suggestions_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeContentSuggestionsProviderObserver);
 };
 
 class FakeImageDecoder : public image_fetcher::ImageDecoder {

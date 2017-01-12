@@ -305,7 +305,6 @@ void BookmarkSuggestionsProvider::FetchBookmarksInternal() {
   } else {
     end_of_list_last_visit_date_ = suggestions.back().publish_date();
   }
-
   observer()->OnNewSuggestions(this, provided_category_,
                                std::move(suggestions));
 }
