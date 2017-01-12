@@ -8,8 +8,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
-
-class GURL;
+#include "url/gurl.h"
 
 namespace extensions {
 
