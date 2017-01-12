@@ -439,6 +439,7 @@ _arm_internal_release_boards = frozenset([
     'oak',
     'peach_pi',
     'peach_pit',
+    'rowan',
     'smaug',
     'smaug-cheets',
     'storm',
