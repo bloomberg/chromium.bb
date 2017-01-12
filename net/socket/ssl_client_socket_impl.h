@@ -281,13 +281,6 @@ class SSLClientSocketImpl : public SSLClientSocket,
   // network.
   bool was_ever_used_;
 
-  // List of DER-encoded X.509 DistinguishedName of certificate authorities
-  // allowed by the server.
-  std::vector<std::string> cert_authorities_;
-  // List of SSLClientCertType values for client certificates allowed by the
-  // server.
-  std::vector<SSLClientCertType> cert_key_types_;
-
   CertVerifier* const cert_verifier_;
   std::unique_ptr<CertVerifier::Request> cert_verifier_request_;
   base::TimeTicks start_cert_verification_time_;

@@ -564,9 +564,36 @@ void SSLClientSocketImpl::SetSSLKeyLogFile(
 
 void SSLClientSocketImpl::GetSSLCertRequestInfo(
     SSLCertRequestInfo* cert_request_info) {
+  if (!ssl_) {
+    NOTREACHED();
+    return;
+  }
+
   cert_request_info->host_and_port = host_and_port_;
-  cert_request_info->cert_authorities = cert_authorities_;
-  cert_request_info->cert_key_types = cert_key_types_;
+
+  cert_request_info->cert_authorities.clear();
+  STACK_OF(X509_NAME)* authorities = SSL_get_client_CA_list(ssl_.get());
+  for (size_t i = 0; i < sk_X509_NAME_num(authorities); i++) {
+    X509_NAME* ca_name = sk_X509_NAME_value(authorities, i);
+    uint8_t* str = nullptr;
+    int length = i2d_X509_NAME(ca_name, &str);
+    if (length > 0) {
+      cert_request_info->cert_authorities.push_back(std::string(
+          reinterpret_cast<const char*>(str), static_cast<size_t>(length)));
+    } else {
+      NOTREACHED();  // Error serializing |ca_name|.
+    }
+    OPENSSL_free(str);
+  }
+
+  cert_request_info->cert_key_types.clear();
+  const uint8_t* client_cert_types;
+  size_t num_client_cert_types =
+      SSL_get0_certificate_types(ssl_.get(), &client_cert_types);
+  for (size_t i = 0; i < num_client_cert_types; i++) {
+    cert_request_info->cert_key_types.push_back(
+        static_cast<SSLClientCertType>(client_cert_types[i]));
+  }
 }
 
 ChannelIDService* SSLClientSocketImpl::GetChannelIDService() const {
@@ -1626,26 +1653,8 @@ int SSLClientSocketImpl::ClientCertRequestCallback(SSL* ssl) {
 #else   // !defined(OS_IOS)
   if (!ssl_config_.send_client_cert) {
     // First pass: we know that a client certificate is needed, but we do not
-    // have one at hand.
-    STACK_OF(X509_NAME)* authorities = SSL_get_client_CA_list(ssl);
-    for (size_t i = 0; i < sk_X509_NAME_num(authorities); i++) {
-      X509_NAME* ca_name = (X509_NAME*)sk_X509_NAME_value(authorities, i);
-      unsigned char* str = NULL;
-      int length = i2d_X509_NAME(ca_name, &str);
-      cert_authorities_.push_back(std::string(
-          reinterpret_cast<const char*>(str), static_cast<size_t>(length)));
-      OPENSSL_free(str);
-    }
-
-    const unsigned char* client_cert_types;
-    size_t num_client_cert_types =
-        SSL_get0_certificate_types(ssl, &client_cert_types);
-    for (size_t i = 0; i < num_client_cert_types; i++) {
-      cert_key_types_.push_back(
-          static_cast<SSLClientCertType>(client_cert_types[i]));
-    }
-
-    // Suspends handshake. SSL_get_error will return SSL_ERROR_WANT_X509_LOOKUP.
+    // have one at hand. Suspend the handshake. SSL_get_error will return
+    // SSL_ERROR_WANT_X509_LOOKUP.
     return -1;
   }
 
