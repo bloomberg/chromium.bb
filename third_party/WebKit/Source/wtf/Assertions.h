@@ -49,12 +49,7 @@
 // Users must test "#if ENABLE(ASSERT)", which helps ensure that code
 // testing this macro has included this header.
 #ifndef ENABLE_ASSERT
-#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
-/* Disable ASSERT* macros in release mode by default. */
-#define ENABLE_ASSERT 0
-#else
-#define ENABLE_ASSERT 1
-#endif /* defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON) */
+#define ENABLE_ASSERT DCHECK_IS_ON()
 #endif
 
 #ifndef LOG_DISABLED
@@ -138,11 +133,7 @@ class WTF_EXPORT ScopedLogger {
 // To test for unknown errors and verify assumptions, use ASSERT instead, to
 // avoid impacting performance in release builds.
 #ifndef CRASH
-#if COMPILER(MSVC)
-#define CRASH() (__debugbreak(), IMMEDIATE_CRASH())
-#else
-#define CRASH() (WTFReportBacktrace(), IMMEDIATE_CRASH())
-#endif
+#define CRASH() IMMEDIATE_CRASH()
 #endif
 
 // ASSERT and ASSERT_NOT_REACHED
@@ -162,24 +153,11 @@ class WTF_EXPORT ScopedLogger {
               DCHECK_IS_ON() ? !(assertion) : false)
 
 #if ENABLE(ASSERT)
-
-#define ASSERT(assertion)                                                      \
-  (!(assertion) ? (WTFReportAssertionFailure(__FILE__, __LINE__,               \
-                                             WTF_PRETTY_FUNCTION, #assertion), \
-                   CRASH())                                                    \
-                : (void)0)
-
-#define ASSERT_NOT_REACHED()                                               \
-  do {                                                                     \
-    WTFReportAssertionFailure(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, 0); \
-    CRASH();                                                               \
-  } while (0)
-
+#define ASSERT(assertion) DCHECK(assertion)
+#define ASSERT_NOT_REACHED() NOTREACHED()
 #else
-
 #define ASSERT(assertion) ((void)0)
 #define ASSERT_NOT_REACHED() ((void)0)
-
 #endif
 
 // Users must test "#if ENABLE(SECURITY_ASSERT)", which helps ensure
@@ -212,17 +190,10 @@ class WTF_EXPORT ScopedLogger {
 // vulnerability from which execution must not continue even in a release build.
 // Please sure to file bugs for these failures using the security template:
 //    http://code.google.com/p/chromium/issues/entry?template=Security%20Bug
-//
-// WARNING: CHECK is slower than RELEASE_ASSERT on MSVC. We should not replace
-// RELEASE_ASSERT with CHECK until the performance issue is fixed
-// (crbug.com/596760).
-#if ENABLE(ASSERT)
-#define RELEASE_ASSERT(assertion) ASSERT(assertion)
-#elif defined(ADDRESS_SANITIZER)
+#if defined(ADDRESS_SANITIZER)
 #define RELEASE_ASSERT(condition) SECURITY_CHECK(condition)
 #else
-#define RELEASE_ASSERT(assertion) \
-  (UNLIKELY(!(assertion)) ? (IMMEDIATE_CRASH()) : (void)0)
+#define RELEASE_ASSERT(condition) CHECK(condition)
 #endif
 
 // DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES
