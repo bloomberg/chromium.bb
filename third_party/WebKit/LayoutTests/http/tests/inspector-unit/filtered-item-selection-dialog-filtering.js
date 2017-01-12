@@ -7,11 +7,6 @@ function test() {
     var history = [];
 
     var StubDelegate = class extends QuickOpen.FilteredListWidget.Delegate {
-        constructor()
-        {
-            super(history);
-        }
-
         itemKeyAt(itemIndex) { return overridenInput[itemIndex]; }
         itemScoreAt(itemIndex) { return 0; }
         itemCount() { return overridenInput.length; }
@@ -31,7 +26,7 @@ function test() {
 
         TestRunner.addResult("Input:" + JSON.stringify(input));
 
-        var filteredSelectionDialog = new QuickOpen.FilteredListWidget(delegate);
+        var filteredSelectionDialog = new QuickOpen.FilteredListWidget(delegate, history);
         filteredSelectionDialog.showAsDialog();
         var promise = TestRunner.addSniffer(filteredSelectionDialog, "_itemsFilteredForTest").then(accept);
         filteredSelectionDialog.setQuery(query);
