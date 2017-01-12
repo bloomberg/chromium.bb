@@ -8,6 +8,7 @@
 #include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_version_info.h"
@@ -207,9 +208,10 @@ void ApplyFramebufferAttachmentCMAAINTELResourceManager::Destroy() {
 // Reference GL_INTEL_framebuffer_CMAA for details.
 void ApplyFramebufferAttachmentCMAAINTELResourceManager::
     ApplyFramebufferAttachmentCMAAINTEL(
-        gles2::GLES2Decoder* decoder,
-        gles2::Framebuffer* framebuffer,
-        gles2::CopyTextureCHROMIUMResourceManager* copier) {
+        GLES2Decoder* decoder,
+        Framebuffer* framebuffer,
+        CopyTextureCHROMIUMResourceManager* copier,
+        TextureManager* texture_manager) {
   DCHECK(decoder);
   DCHECK(initialized_);
   if (!framebuffer)
@@ -241,7 +243,14 @@ void ApplyFramebufferAttachmentCMAAINTELResourceManager::
 
       // CMAA internally expects GL_RGBA8 textures.
       // Process using a GL_RGBA8 copy if this is not the case.
-      bool do_copy = internal_format != GL_RGBA8;
+      DCHECK(attachment->object_name());
+      TextureRef* texture =
+          texture_manager->GetTexture(attachment->object_name());
+      const bool rgba_immutable =
+          texture->texture()->IsImmutable() &&
+          TextureManager::ExtractFormatFromStorageFormat(internal_format) ==
+              GL_RGBA;
+      const bool do_copy = !rgba_immutable;
 
       // CMAA Effect
       if (do_copy) {

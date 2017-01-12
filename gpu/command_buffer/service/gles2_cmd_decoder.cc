@@ -17271,7 +17271,8 @@ void GLES2DecoderImpl::DoApplyScreenSpaceAntialiasingCHROMIUM() {
       return;
     apply_framebuffer_attachment_cmaa_intel_
         ->ApplyFramebufferAttachmentCMAAINTEL(this, bound_framebuffer,
-                                              copy_texture_CHROMIUM_.get());
+                                              copy_texture_CHROMIUM_.get(),
+                                              texture_manager());
   }
 }
 
