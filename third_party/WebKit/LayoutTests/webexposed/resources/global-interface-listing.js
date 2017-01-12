@@ -74,6 +74,7 @@ var jsBuiltins = new Set([
     'Uint8ClampedArray',
     'WeakMap',
     'WeakSet',
+    'WebAssembly',
     'decodeURI',
     'decodeURIComponent',
     'encodeURI',
