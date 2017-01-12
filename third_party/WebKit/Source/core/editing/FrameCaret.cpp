@@ -209,6 +209,7 @@ void FrameCaret::invalidateCaretRect(bool forceInvalidation) {
   m_previousCaretVisibility = m_caretVisibility;
 }
 
+// TDOO(yosin): We should mark |FrameCaret::absoluteCaretBounds()| to |const|.
 IntRect FrameCaret::absoluteCaretBounds() {
   DCHECK_NE(m_frame->document()->lifecycle().state(),
             DocumentLifecycle::InPaintInvalidation);
@@ -216,20 +217,18 @@ IntRect FrameCaret::absoluteCaretBounds() {
   DocumentLifecycle::DisallowTransitionScope disallowTransition(
       m_frame->document()->lifecycle());
 
-  if (!isActive()) {
-    clearCaretRect();
-  } else {
-    if (enclosingTextControl(caretPosition().position())) {
-      if (isVisuallyEquivalentCandidate(caretPosition().position()))
-        updateCaretRect(caretPosition());
-      else
-        updateCaretRect(createVisiblePosition(caretPosition()));
-    } else {
-      updateCaretRect(createVisiblePosition(caretPosition()));
-    }
+  Node* const caretNode = caretPosition().anchorNode();
+  if (!isActive())
+    return absoluteBoundsForLocalRect(caretNode, LayoutRect());
+  // TODO(yosin): We should get rid of text control short path since layout
+  // tree is clean.
+  if (enclosingTextControl(caretPosition().position()) &&
+      isVisuallyEquivalentCandidate(caretPosition().position())) {
+    return absoluteBoundsForLocalRect(caretNode,
+                                      computeCaretRect(caretPosition()));
   }
-  return absoluteBoundsForLocalRect(caretPosition().anchorNode(),
-                                    localCaretRectWithoutUpdate());
+  return absoluteBoundsForLocalRect(
+      caretNode, computeCaretRect(createVisiblePosition(caretPosition())));
 }
 
 void FrameCaret::setShouldShowBlockCursor(bool shouldShowBlockCursor) {
@@ -248,9 +247,9 @@ void FrameCaret::paintCaret(GraphicsContext& context,
   if (!(isActive() && m_shouldPaintCaret))
     return;
 
-  updateCaretRect(caretPosition());
-  CaretBase::paintCaret(caretPosition().anchorNode(), context, paintOffset,
-                        DisplayItem::kCaret);
+  const LayoutRect caretLocalRect = computeCaretRect(caretPosition());
+  CaretBase::paintCaret(caretPosition().anchorNode(), context, *this,
+                        caretLocalRect, paintOffset, DisplayItem::kCaret);
 }
 
 void FrameCaret::dataWillChange(const CharacterData& node) {

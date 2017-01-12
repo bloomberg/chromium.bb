@@ -63,6 +63,9 @@ class DragCaretController final
   void nodeWillBeRemoved(Node&) final;
 
   PositionWithAffinity m_position;
+  // caret rect in coords local to the layoutObject responsible for painting the
+  // caret
+  LayoutRect m_caretLocalRect;
   const Member<CaretBase> m_caretBase;
 };
 

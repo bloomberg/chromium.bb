@@ -48,23 +48,29 @@ class CORE_EXPORT CaretBase : public GarbageCollectedFinalized<CaretBase>,
   CaretBase();
   virtual ~CaretBase();
 
-  void invalidateCaretRect(Node*);
-  void clearCaretRect();
+  void invalidateCaretRect(Node*, const LayoutRect&);
   // Creating VisiblePosition causes synchronous layout so we should use the
   // PositionWithAffinity version if possible.
   // A position in HTMLTextFromControlElement is a typical example.
-  void updateCaretRect(const PositionWithAffinity& caretPosition);
-  void updateCaretRect(const VisiblePosition& caretPosition);
-  IntRect absoluteBoundsForLocalRect(Node*, const LayoutRect&) const;
-  bool shouldRepaintCaret(Node&) const;
-  void paintCaret(Node*,
-                  GraphicsContext&,
-                  const LayoutPoint&,
-                  DisplayItem::Type) const;
+  static LayoutRect computeCaretRect(const PositionWithAffinity& caretPosition);
 
-  const LayoutRect& localCaretRectWithoutUpdate() const {
-    return m_caretLocalRect;
-  }
+  // TODO(yosin): We should move |computeCaretRect()| with |VisiblePosition| to
+  // "FrameCaret.cpp" as static file local function.
+  static LayoutRect computeCaretRect(const VisiblePosition& caretPosition);
+
+  // TODO(yosin): We should move |absoluteBoundsForLocalRect()| with
+  // |VisiblePosition| to "FrameCaret.cpp" as static file local function.
+  IntRect absoluteBoundsForLocalRect(Node*, const LayoutRect&) const;
+
+  // TODO(yosin): We should move |shouldRepaintCaret()| to "FrameCaret.cpp" as
+  // static file local function.
+  bool shouldRepaintCaret(Node&) const;
+  static void paintCaret(Node*,
+                         GraphicsContext&,
+                         const DisplayItemClient&,
+                         const LayoutRect& caretLocalRect,
+                         const LayoutPoint&,
+                         DisplayItem::Type);
 
   static LayoutBlock* caretLayoutObject(Node*);
   void invalidateLocalCaretRect(Node*, const LayoutRect&);
@@ -76,9 +82,6 @@ class CORE_EXPORT CaretBase : public GarbageCollectedFinalized<CaretBase>,
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  // caret rect in coords local to the layoutObject responsible for painting the
-  // caret
-  LayoutRect m_caretLocalRect;
   LayoutRect m_visualRect;
 };
 

@@ -47,10 +47,6 @@ CaretBase::~CaretBase() = default;
 
 DEFINE_TRACE(CaretBase) {}
 
-void CaretBase::clearCaretRect() {
-  m_caretLocalRect = LayoutRect();
-}
-
 static inline bool caretRendersInsideNode(Node* node) {
   return node && !isDisplayInsideTable(node) && !editingIgnoresContent(*node);
 }
@@ -77,53 +73,50 @@ LayoutBlock* CaretBase::caretLayoutObject(Node* node) {
                         : layoutObject->containingBlock();
 }
 
-static void mapCaretRectToCaretPainter(LayoutItem caretLayoutItem,
-                                       LayoutBlockItem caretPainterItem,
-                                       LayoutRect& caretRect) {
+static LayoutRect mapCaretRectToCaretPainter(
+    LayoutItem caretLayoutItem,
+    LayoutBlockItem caretPainterItem,
+    const LayoutRect& passedCaretRect) {
   // FIXME: This shouldn't be called on un-rooted subtrees.
   // FIXME: This should probably just use mapLocalToAncestor.
   // Compute an offset between the caretLayoutItem and the caretPainterItem.
 
   DCHECK(caretLayoutItem.isDescendantOf(caretPainterItem));
 
-  bool unrooted = false;
+  LayoutRect caretRect = passedCaretRect;
   while (caretLayoutItem != caretPainterItem) {
     LayoutItem containerItem = caretLayoutItem.container();
-    if (containerItem.isNull()) {
-      unrooted = true;
-      break;
-    }
+    if (containerItem.isNull())
+      return LayoutRect();
     caretRect.move(caretLayoutItem.offsetFromContainer(containerItem));
     caretLayoutItem = containerItem;
   }
-
-  if (unrooted)
-    caretRect = LayoutRect();
+  return caretRect;
 }
 
-void CaretBase::updateCaretRect(const PositionWithAffinity& caretPosition) {
-  m_caretLocalRect = LayoutRect();
-
+LayoutRect CaretBase::computeCaretRect(
+    const PositionWithAffinity& caretPosition) {
   if (caretPosition.isNull())
-    return;
+    return LayoutRect();
 
   DCHECK(caretPosition.anchorNode()->layoutObject());
 
   // First compute a rect local to the layoutObject at the selection start.
   LayoutObject* layoutObject;
-  m_caretLocalRect = localCaretRectOfPosition(caretPosition, layoutObject);
+  const LayoutRect& caretLocalRect =
+      localCaretRectOfPosition(caretPosition, layoutObject);
 
   // Get the layoutObject that will be responsible for painting the caret
   // (which is either the layoutObject we just found, or one of its containers).
   LayoutBlockItem caretPainterItem =
       LayoutBlockItem(caretLayoutObject(caretPosition.anchorNode()));
 
-  mapCaretRectToCaretPainter(LayoutItem(layoutObject), caretPainterItem,
-                             m_caretLocalRect);
+  return mapCaretRectToCaretPainter(LayoutItem(layoutObject), caretPainterItem,
+                                    caretLocalRect);
 }
 
-void CaretBase::updateCaretRect(const VisiblePosition& caretPosition) {
-  updateCaretRect(caretPosition.toPositionWithAffinity());
+LayoutRect CaretBase::computeCaretRect(const VisiblePosition& caretPosition) {
+  return computeCaretRect(caretPosition.toPositionWithAffinity());
 }
 
 IntRect CaretBase::absoluteBoundsForLocalRect(Node* node,
@@ -168,21 +161,24 @@ bool CaretBase::shouldRepaintCaret(Node& node) const {
          (node.parentNode() && hasEditableStyle(*node.parentNode()));
 }
 
-void CaretBase::invalidateCaretRect(Node* node) {
+void CaretBase::invalidateCaretRect(Node* node,
+                                    const LayoutRect& caretLocalRect) {
   node->document().updateStyleAndLayoutTree();
   if (hasEditableStyle(*node))
-    invalidateLocalCaretRect(node, localCaretRectWithoutUpdate());
+    invalidateLocalCaretRect(node, caretLocalRect);
 }
 
 void CaretBase::paintCaret(Node* node,
                            GraphicsContext& context,
+                           const DisplayItemClient& client,
+                           const LayoutRect& caretLocalRect,
                            const LayoutPoint& paintOffset,
-                           DisplayItem::Type displayItemType) const {
-  if (DrawingRecorder::useCachedDrawingIfPossible(context, *this,
+                           DisplayItem::Type displayItemType) {
+  if (DrawingRecorder::useCachedDrawingIfPossible(context, client,
                                                   displayItemType))
     return;
 
-  LayoutRect drawingRect = localCaretRectWithoutUpdate();
+  LayoutRect drawingRect = caretLocalRect;
   if (LayoutBlock* layoutObject = caretLayoutObject(node))
     layoutObject->flipForWritingMode(drawingRect);
   drawingRect.moveBy(paintOffset);
@@ -190,7 +186,7 @@ void CaretBase::paintCaret(Node* node,
   const Color caretColor =
       node->layoutObject()->resolveColor(CSSPropertyCaretColor);
   IntRect paintRect = pixelSnappedIntRect(drawingRect);
-  DrawingRecorder drawingRecorder(context, *this, DisplayItem::kCaret,
+  DrawingRecorder drawingRecorder(context, client, DisplayItem::kCaret,
                                   paintRect);
   context.fillRect(paintRect, caretColor);
 }
