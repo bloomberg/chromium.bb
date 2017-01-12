@@ -47,7 +47,7 @@
 
 namespace {
 
-NSString* const kEmptyReadingListBackgroundIcon = @"reading_list_icon";
+NSString* const kEmptyReadingListBackgroundIcon = @"reading_list_empty_state";
 NSString* const kBeginBoldMarker = @"BEGIN_BOLD_FONT";
 NSString* const kEndBoldMarker = @"END_BOLD_FONT";
 
