@@ -2385,3 +2385,6 @@ crbug.com/678499 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/
 crbug.com/680043 sensor/ambient-light-sensor.html [ Pass Failure ]
 
 crbug.com/680050 inspector/sources/debugger-ui/watch-expressions-panel-switch.html [ Pass Timeout ]
+
+# When WebAssembly is exposed in V8 (soon), this test has the wrong number of expected Object.getOwnPropertyNames() for global object.
+crbug.com/575167 imported/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects-exceptions.html [ NeedsManualRebaseline ]
