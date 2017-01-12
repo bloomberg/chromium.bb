@@ -47,10 +47,6 @@ void ArcAppDeferredLauncherItemController::Close() {
     host_->Close(app_id());
 }
 
-bool ArcAppDeferredLauncherItemController::IsVisible() const {
-  return true;
-}
-
 void ArcAppDeferredLauncherItemController::Launch(ash::LaunchSource source,
                                                   int event_flags) {}
 

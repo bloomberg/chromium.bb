@@ -69,15 +69,6 @@ void AppWindowLauncherItemController::SetActiveWindow(aura::Window* window) {
     last_active_window_ = app_window;
 }
 
-bool AppWindowLauncherItemController::IsVisible() const {
-  // Return true if any windows are visible.
-  for (const auto* window : windows_) {
-    if (window->GetNativeWindow()->IsVisible())
-      return true;
-  }
-  return false;
-}
-
 void AppWindowLauncherItemController::Launch(ash::LaunchSource source,
                                              int event_flags) {
   launcher_controller()->LaunchApp(app_id(), source, ui::EF_NONE);

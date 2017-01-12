@@ -96,18 +96,6 @@ AppShortcutLauncherItemController::AppShortcutLauncherItemController(
 AppShortcutLauncherItemController::~AppShortcutLauncherItemController() {
 }
 
-bool AppShortcutLauncherItemController::IsVisible() const {
-  // Return true if any browser window associated with the app is visible.
-  std::vector<content::WebContents*> content =
-      chrome_launcher_controller_->GetV1ApplicationsFromAppId(app_id());
-  for (size_t i = 0; i < content.size(); i++) {
-    Browser* browser = chrome::FindBrowserWithWebContents(content[i]);
-    if (browser && browser->window()->GetNativeWindow()->IsVisible())
-      return true;
-  }
-  return false;
-}
-
 void AppShortcutLauncherItemController::Launch(ash::LaunchSource source,
                                                int event_flags) {
   // Launching an app replaces shortcut item controller to app controller. As

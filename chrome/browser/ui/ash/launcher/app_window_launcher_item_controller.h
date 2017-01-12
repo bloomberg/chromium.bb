@@ -43,7 +43,6 @@ class AppWindowLauncherItemController : public LauncherItemController,
   ui::BaseWindow* GetAppWindow(aura::Window* window);
 
   // LauncherItemController overrides:
-  bool IsVisible() const override;
   void Launch(ash::LaunchSource source, int event_flags) override;
   ash::ShelfItemDelegate::PerformedAction Activate(
       ash::LaunchSource source) override;

@@ -130,18 +130,6 @@ void BrowserShortcutLauncherItemController::SetShelfIDForBrowserWindowContents(
           launcher_controller()->GetShelfIDForWebContents(web_contents));
 }
 
-bool BrowserShortcutLauncherItemController::IsVisible() const {
-  Browser* last_browser =
-      chrome::FindTabbedBrowser(launcher_controller()->profile(), true);
-
-  if (!last_browser) {
-    return false;
-  }
-
-  aura::Window* window = last_browser->window()->GetNativeWindow();
-  return ash::wm::IsActiveWindow(window);
-}
-
 void BrowserShortcutLauncherItemController::Launch(ash::LaunchSource source,
                                                    int event_flags) {
 }

@@ -39,7 +39,6 @@ class ArcAppDeferredLauncherItemController : public LauncherItemController {
   void Close() override;
 
   // LauncherItemController overrides:
-  bool IsVisible() const override;
   void Launch(ash::LaunchSource source, int event_flags) override;
   ash::ShelfItemDelegate::PerformedAction Activate(
       ash::LaunchSource source) override;
