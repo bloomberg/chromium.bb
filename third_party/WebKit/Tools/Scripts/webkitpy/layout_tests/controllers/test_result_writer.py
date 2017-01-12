@@ -30,6 +30,7 @@
 import logging
 
 from webkitpy.common.html_diff import html_diff
+from webkitpy.common.unified_diff import unified_diff
 from webkitpy.layout_tests.controllers import repaint_overlay
 from webkitpy.layout_tests.models import test_failures
 
@@ -204,7 +205,7 @@ class TestResultWriter(object):
         file_type = '.txt'
         actual_filename = self.output_filename(self.FILENAME_SUFFIX_ACTUAL + file_type)
         expected_filename = self.output_filename(self.FILENAME_SUFFIX_EXPECTED + file_type)
-        diff = self._port.diff_text(expected_text, actual_text, expected_filename, actual_filename)
+        diff = unified_diff(expected_text, actual_text, expected_filename, actual_filename)
         diff_filename = self.output_filename(self.FILENAME_SUFFIX_DIFF + file_type)
         self._write_file(diff_filename, diff)
 
