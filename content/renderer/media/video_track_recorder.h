@@ -37,12 +37,10 @@ namespace content {
 class CONTENT_EXPORT VideoTrackRecorder
     : NON_EXPORTED_BASE(public MediaStreamVideoSink) {
  public:
-  // Do not change the order of codecs; add new ones right before LAST.
   enum class CodecId {
     VP8,
     VP9,
     H264,
-    LAST
   };
   class Encoder;
 
@@ -51,8 +49,6 @@ class CONTENT_EXPORT VideoTrackRecorder
                           std::unique_ptr<std::string> encoded_data,
                           base::TimeTicks capture_timestamp,
                           bool is_key_frame)>;
-
-  static CodecId GetPreferredCodecId();
 
   VideoTrackRecorder(CodecId codec,
                      const blink::WebMediaStreamTrack& track,

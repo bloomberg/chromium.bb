@@ -42,8 +42,6 @@ media::VideoCodec CodecIdToMediaVideoCodec(VideoTrackRecorder::CodecId id) {
       return media::kCodecVP9;
     case VideoTrackRecorder::CodecId::H264:
       return media::kCodecH264;
-    case VideoTrackRecorder::CodecId::LAST:
-      return media::kUnknownVideoCodec;
   }
   NOTREACHED() << "Unsupported codec";
   return media::kUnknownVideoCodec;
@@ -121,7 +119,8 @@ bool MediaRecorderHandler::initialize(
   UpdateWebRTCMethodCount(WEBKIT_MEDIA_STREAM_RECORDER);
 
   if (!canSupportMimeType(type, codecs)) {
-    DLOG(ERROR) << "Unsupported " << type.utf8() << ";codecs=" << codecs.utf8();
+    DLOG(ERROR) << "Can't support " << type.utf8()
+                << ";codecs=" << codecs.utf8();
     return false;
   }
 
@@ -137,11 +136,6 @@ bool MediaRecorderHandler::initialize(
   else if (codecs_str.find("avc1") != std::string::npos)
     codec_id_ = VideoTrackRecorder::CodecId::H264;
 #endif
-  else
-    codec_id_ = VideoTrackRecorder::GetPreferredCodecId();
-
-  DVLOG_IF(1, codecs_str.empty()) << "Falling back to preferred codec id "
-                                  << static_cast<int>(codec_id_);
 
   media_stream_ = media_stream;
   DCHECK(client);

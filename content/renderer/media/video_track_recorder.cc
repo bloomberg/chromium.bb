@@ -60,98 +60,60 @@ const int kVEADefaultBitratePerPixel = 2;
 // encoders.
 const int kVEAEncoderOutputBufferCount = 4;
 
-using CodecId = VideoTrackRecorder::CodecId;
-
-static const struct {
-  CodecId codec_id;
+static struct {
+  VideoTrackRecorder::CodecId codec_id;
   media::VideoCodecProfile min_profile;
   media::VideoCodecProfile max_profile;
-} kPreferredCodecIdAndVEAProfiles[] = {
-    {CodecId::VP8, media::VP8PROFILE_MIN, media::VP8PROFILE_MAX},
-    {CodecId::VP9, media::VP9PROFILE_MIN, media::VP9PROFILE_MAX},
-    {CodecId::H264, media::H264PROFILE_MIN, media::H264PROFILE_MAX}};
+} const kSupportedVideoCodecIdToProfile[] = {
+    {VideoTrackRecorder::CodecId::VP8,
+     media::VP8PROFILE_MIN,
+     media::VP8PROFILE_MAX},
+    {VideoTrackRecorder::CodecId::VP9,
+     media::VP9PROFILE_MIN,
+     media::VP9PROFILE_MAX},
+    {VideoTrackRecorder::CodecId::H264,
+     media::H264PROFILE_MIN,
+     media::H264PROFILE_MAX}};
 
-static_assert(arraysize(kPreferredCodecIdAndVEAProfiles) ==
-                  static_cast<int>(CodecId::LAST),
-              "|kPreferredCodecIdAndVEAProfiles| should consider all CodecIds");
-
-// Class to encapsulate the enumeration of CodecIds/VideoCodecProfiles supported
-// by the VEA underlying platform. Provides methods to query the preferred
-// CodecId and to check if a given CodecId is supported.
-class CodecEnumerator {
- public:
-  CodecEnumerator();
-  ~CodecEnumerator() = default;
-
-  // Returns the first CodecId that has an associated VEA VideoCodecProfile, or
-  // VP8 if none available.
-  CodecId GetPreferredCodecId();
-
-  // Returns the VEA VideoCodedProfile for a given CodecId, if supported, or
-  // VIDEO_CODEC_PROFILE_UNKNOWN otherwise.
-  media::VideoCodecProfile CodecIdToVEAProfile(CodecId codec);
-
- private:
-  // A map of VEA-supported CodecId-and-VEA-profile pairs.
-  std::map<CodecId, media::VideoCodecProfile> codec_id_to_profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(CodecEnumerator);
-};
-
-static base::LazyInstance<CodecEnumerator>::Leaky g_codec_enumerator =
-    LAZY_INSTANCE_INITIALIZER;
-
-CodecEnumerator::CodecEnumerator() {
-#if defined(OS_CHROMEOS)
+// Returns the corresponding codec profile from VEA supported codecs. If no
+// profile is found, returns VIDEO_CODEC_PROFILE_UNKNOWN.
+media::VideoCodecProfile CodecIdToVEAProfile(
+    content::VideoTrackRecorder::CodecId codec) {
   // See https://crbug.com/616659.
-  return;
-#endif
+#if defined(OS_CHROMEOS)
+  return media::VIDEO_CODEC_PROFILE_UNKNOWN;
+#endif  // defined(OS_CHROMEOS)
 
+// See https://crbug.com/653864.
 #if defined(OS_ANDROID)
-  // See https://crbug.com/653864.
-  return;
-#endif
+  return media::VIDEO_CODEC_PROFILE_UNKNOWN;
+#endif  // defined(OS_ANDROID)
 
   content::RenderThreadImpl* const render_thread_impl =
       content::RenderThreadImpl::current();
   if (!render_thread_impl) {
-    DVLOG(2) << "Couldn't access the render thread";
-    return;
+    DVLOG(3) << "Couldn't access the render thread";
+    return media::VIDEO_CODEC_PROFILE_UNKNOWN;
   }
 
   media::GpuVideoAcceleratorFactories* const gpu_factories =
       render_thread_impl->GetGpuFactories();
   if (!gpu_factories || !gpu_factories->IsGpuVideoAcceleratorEnabled()) {
-    DVLOG(2) << "Couldn't initialize GpuVideoAcceleratorFactories";
-    return;
+    DVLOG(3) << "Couldn't initialize GpuVideoAcceleratorFactories";
+    return media::VIDEO_CODEC_PROFILE_UNKNOWN;
   }
 
-  const auto vea_supported_profiles =
+  const media::VideoEncodeAccelerator::SupportedProfiles& vea_profiles =
       gpu_factories->GetVideoEncodeAcceleratorSupportedProfiles();
-  for (const auto& supported_profile : vea_supported_profiles) {
-    for (auto& codec_id_and_profile : kPreferredCodecIdAndVEAProfiles) {
-      if (supported_profile.profile >= codec_id_and_profile.min_profile &&
-          supported_profile.profile <= codec_id_and_profile.max_profile) {
-        DVLOG(2) << "Accelerated codec found: "
-                 << media::GetProfileName(supported_profile.profile);
-        codec_id_to_profile_.insert(std::make_pair(
-            codec_id_and_profile.codec_id, supported_profile.profile));
-      }
+  for (const auto& vea_profile : vea_profiles) {
+    for (const auto& supported_profile : kSupportedVideoCodecIdToProfile) {
+      if (codec == supported_profile.codec_id &&
+          vea_profile.profile >= supported_profile.min_profile &&
+          vea_profile.profile <= supported_profile.max_profile)
+        return vea_profile.profile;
     }
   }
-}
-
-CodecId CodecEnumerator::GetPreferredCodecId() {
-  if (codec_id_to_profile_.empty())
-    return CodecId::VP8;
-  return codec_id_to_profile_.begin()->first;
-}
-
-media::VideoCodecProfile CodecEnumerator::CodecIdToVEAProfile(CodecId codec) {
-  const auto profile = codec_id_to_profile_.find(codec);
-  return profile == codec_id_to_profile_.end()
-             ? media::VIDEO_CODEC_PROFILE_UNKNOWN
-             : profile->second;
+  return media::VIDEO_CODEC_PROFILE_UNKNOWN;
 }
 
 }  // anonymous namespace
@@ -1113,11 +1075,6 @@ void H264Encoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) {
 
 }  // anonymous namespace
 
-// static
-VideoTrackRecorder::CodecId VideoTrackRecorder::GetPreferredCodecId() {
-  return g_codec_enumerator.Get().GetPreferredCodecId();
-}
-
 VideoTrackRecorder::VideoTrackRecorder(
     CodecId codec,
     const blink::WebMediaStreamTrack& track,
@@ -1186,8 +1143,7 @@ void VideoTrackRecorder::InitializeEncoder(
   MediaStreamVideoSink::DisconnectFromTrack();
 
   const gfx::Size& input_size = frame->visible_rect().size();
-  const auto& vea_supported_profile =
-      g_codec_enumerator.Get().CodecIdToVEAProfile(codec);
+  const auto& vea_supported_profile = CodecIdToVEAProfile(codec);
   if (vea_supported_profile != media::VIDEO_CODEC_PROFILE_UNKNOWN &&
       input_size.width() >= kVEAEncoderMinResolutionWidth &&
       input_size.height() >= kVEAEncoderMinResolutionHeight) {
