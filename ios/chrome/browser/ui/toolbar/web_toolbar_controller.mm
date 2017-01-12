@@ -1335,14 +1335,17 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 }
 
 - (void)focusFakebox {
-  OmniboxEditModel* model = _locationBar->GetLocationEntry()->model();
-  // Setting the caret visibility to false causes OmniboxEditModel to indicate
-  // that omnibox interaction was initiated from the fakebox. Note that
-  // SetCaretVisibility is a no-op unless OnSetFocus is called first.
-  model->OnSetFocus(false);
-  model->SetCaretVisibility(false);
-
-  if (!IsIPadIdiom()) {
+  if (IsIPadIdiom()) {
+    OmniboxEditModel* model = _locationBar->GetLocationEntry()->model();
+    // Setting the caret visibility to false causes OmniboxEditModel to indicate
+    // that omnibox interaction was initiated from the fakebox. Note that
+    // SetCaretVisibility is a no-op unless OnSetFocus is called first.  Only
+    // set fakebox on iPad, where there is a distinction between the omnibox
+    // and the fakebox on the NTP.  On iPhone there is no visible omnibox, so
+    // there's no need to indicate interaction was initiated from the fakebox.
+    model->OnSetFocus(false);
+    model->SetCaretVisibility(false);
+  } else {
     // Set the omnibox background's frame to full bleed.
     CGRect mobFrame = CGRectInset([_clippingView bounds], -2, -2);
     [_omniboxBackground setFrame:mobFrame];
