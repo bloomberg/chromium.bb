@@ -42,11 +42,11 @@ Opaque background color in front of another opaque background color: should be b
 
 Running test: testOneSemitransparentBgColor
 Semi-transparent background color: should be light red
-{"backgroundColors":["rgb(255, 128, 128)"]}
+{"backgroundColors":["rgb(255, 127, 127)"]}
 
 Running test: testTwoSemitransparentBgColors
 Two layered semi-transparent background colors: should be medium red
-{"backgroundColors":["rgb(255, 64, 64)"]}
+{"backgroundColors":["rgb(255, 63, 63)"]}
 
 Running test: testOpaqueGradientBackground
 Opaque gradient: should be red and black
@@ -54,7 +54,7 @@ Opaque gradient: should be red and black
 
 Running test: testOpaqueGradientBackgroundBehindScrim
 Opaque gradient behind semi-transparent color: should be light red and 50% grey
-{"backgroundColors":["rgb(255, 127, 127)","rgb(127, 127, 127)"]}
+{"backgroundColors":["rgb(255, 128, 128)","rgb(128, 128, 128)"]}
 
 Running test: testOpaqueGradientBackgroundWithColorBackground
 Opaque gradient and solid color background on same element: should be red and black
@@ -62,11 +62,11 @@ Opaque gradient and solid color background on same element: should be red and bl
 
 Running test: testPartiallyTransparentGradientBackground
 Semi-transparent gradient: should be light red and 50% grey
-{"backgroundColors":["rgb(255, 128, 128)","rgb(128, 128, 128)"]}
+{"backgroundColors":["rgb(255, 127, 127)","rgb(127, 127, 127)"]}
 
 Running test: testPartiallyTransparentGradientAndColorBackground
 Semi-transparent gradient and solid color on same element: should be dark red and 50% grey
-{"backgroundColors":["rgb(127, 0, 0)","rgb(127, 127, 127)"]}
+{"backgroundColors":["rgb(128, 0, 0)","rgb(128, 128, 128)"]}
 
 Running test: testTwoPartiallyTransparentGradientBackgrounds
 Layered semi-transparent gradients: should be empty array
@@ -94,7 +94,7 @@ Background image with background color: should be empty array
 
 Running test: testBackgroundImageBehindScrim
 Background image behind scrim: should be semi-transparent white
-{"backgroundColors":["rgba(255, 255, 255, 0.498039)"]}
+{"backgroundColors":["rgba(255, 255, 255, 0.5)"]}
 
 Running test: testForegroundImage
 Image behind text: should be empty array
@@ -102,7 +102,7 @@ Image behind text: should be empty array
 
 Running test: testForegroundImageBehindScrim
 Image behind scrim: should be semi-transparent white
-{"backgroundColors":["rgba(255, 255, 255, 0.498039)"]}
+{"backgroundColors":["rgba(255, 255, 255, 0.5)"]}
 
 Running test: testForegroundCanvas
 Canvas behind text: should be empty array

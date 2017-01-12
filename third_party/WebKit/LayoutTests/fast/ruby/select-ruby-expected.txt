@@ -2,7 +2,7 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x40
   LayoutBlockFlow {HTML} at (0,0) size 800x40
-    LayoutBlockFlow {BODY} at (8,8) size 784x24 [color=#00000019]
+    LayoutBlockFlow {BODY} at (8,8) size 784x24 [color=#0000001A]
       LayoutText {#text} at (0,8) size 16x16
         text run at (0,8) width 16: "a"
       LayoutRuby (inline) {RUBY} at (0,0) size 64x16

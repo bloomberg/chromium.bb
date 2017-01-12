@@ -19,10 +19,10 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,52) size 784x18
         LayoutText {#text} at (0,0) size 367x17
           text run at (0,0) width 367: "These two lines of text should be the same shade of gray:"
-      LayoutBlockFlow {DIV} at (0,86) size 784x27 [color=#0000007F]
+      LayoutBlockFlow {DIV} at (0,86) size 784x27 [color=#00000080]
         LayoutText {#text} at (0,0) size 267x26
           text run at (0,0) width 267: "Lorem ipsum dolor sit amet"
-      LayoutBlockFlow {DIV} at (0,113) size 784x0 [color=#0000007F]
+      LayoutBlockFlow {DIV} at (0,113) size 784x0 [color=#00000080]
         LayoutBlockFlow (floating) {DIV} at (0,0) size 266.63x27
           LayoutText {#text} at (0,0) size 267x26
             text run at (0,0) width 267: "Lorem ipsum dolor sit amet"

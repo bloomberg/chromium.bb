@@ -11,4 +11,4 @@ layer at (8,8) size 304x154
       LayoutView at (0,0) size 300x150
     layer at (0,0) size 300x150
       LayoutBlockFlow {HTML} at (0,0) size 300x150
-        LayoutBlockFlow {BODY} at (8,8) size 284x134 [bgcolor=#0000007F]
+        LayoutBlockFlow {BODY} at (8,8) size 284x134 [bgcolor=#00000080]

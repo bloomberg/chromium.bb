@@ -14,7 +14,7 @@ layer at (0,0) size 785x632 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             text run at (123,0) width 96: "text"
         LayoutText {#text} at (218,0) size 17x56
           text run at (218,0) width 17: " "
-        LayoutInline {SPAN} at (0,0) size 128x56 [color=#0000004C]
+        LayoutInline {SPAN} at (0,0) size 128x56 [color=#0000004D]
           LayoutText {#text} at (234,0) size 128x56
             text run at (234,0) width 128: "casts"
         LayoutText {#text} at (361,0) size 17x56

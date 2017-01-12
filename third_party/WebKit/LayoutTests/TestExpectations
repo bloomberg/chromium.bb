@@ -2386,3 +2386,9 @@ crbug.com/678499 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/
 crbug.com/680043 sensor/ambient-light-sensor.html [ Pass Failure ]
 
 crbug.com/680050 inspector/sources/debugger-ui/watch-expressions-panel-switch.html [ Pass Timeout ]
+
+# Tests that doesn't rebaseline properly in a large patchset.
+crbug.com/453414 [ Linux Win ] compositing/scrollbar-painting.html [ NeedsRebaseline ]
+crbug.com/453414 [ Linux Win ] compositing/overflow/clip-content-under-overflow-controls.html [ NeedsRebaseline ]
+crbug.com/453414 [ Mac ] virtual/stable/paint/invalidation/composited-overflow-with-borderbox-background.html [ NeedsRebaseline ]
+crbug.com/453414 [ Win ] fast/forms/select/menulist-appearance-basic.html [ NeedsRebaseline ]

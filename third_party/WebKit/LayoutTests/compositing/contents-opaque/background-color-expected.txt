@@ -16,7 +16,7 @@
       "position": [8, 108],
       "bounds": [100, 100],
       "drawsContent": true,
-      "backgroundColor": "#00FF007F"
+      "backgroundColor": "#00FF0080"
     },
     {
       "name": "LayoutBlockFlow DIV class='box opaque composited'",

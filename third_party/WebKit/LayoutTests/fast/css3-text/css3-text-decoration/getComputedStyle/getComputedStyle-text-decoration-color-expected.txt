@@ -27,16 +27,16 @@ PASS e.style.textDecorationColor is "rgb(0, 255, 0)"
 PASS computedStyle.textDecorationColor is "rgb(0, 255, 0)"
 
 Valid value 'rgba(100, 100, 100, 0.5)':
-PASS e.style.textDecorationColor is "rgba(100, 100, 100, 0.498039)"
-PASS computedStyle.textDecorationColor is "rgba(100, 100, 100, 0.498039)"
+PASS e.style.textDecorationColor is "rgba(100, 100, 100, 0.5)"
+PASS computedStyle.textDecorationColor is "rgba(100, 100, 100, 0.5)"
 
 Valid value 'hsl(240, 100%, 50%)':
 PASS e.style.textDecorationColor is "rgb(0, 0, 255)"
 PASS computedStyle.textDecorationColor is "rgb(0, 0, 255)"
 
 Valid value 'hsla(240, 100%, 50%, 0.5)':
-PASS e.style.textDecorationColor is "rgba(0, 0, 255, 0.498039)"
-PASS computedStyle.textDecorationColor is "rgba(0, 0, 255, 0.498039)"
+PASS e.style.textDecorationColor is "rgba(0, 0, 255, 0.498)"
+PASS computedStyle.textDecorationColor is "rgba(0, 0, 255, 0.498)"
 
 Initial value:
 PASS e.style.textDecorationColor is "initial"
