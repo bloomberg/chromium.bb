@@ -9,7 +9,9 @@ RUNNING TEST: extension_testAudits
                  main world object
                    whereAmI
                    : 
-                   "main world"
+                    "
+                   main world
+                    "
                    __proto__
                    : 
                    Object
@@ -28,7 +30,9 @@ RUNNING TEST: extension_testAudits
                  content script object
                    whereAmI
                    : 
-                   "brave new world"
+                    "
+                   brave new world
+                    "
                    __proto__
                    : 
                    Object
