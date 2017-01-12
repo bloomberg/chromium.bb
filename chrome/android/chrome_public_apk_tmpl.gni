@@ -111,6 +111,7 @@ template("monochrome_public_apk_tmpl") {
 
     # Configrations to make android load shared library from APK.
     uncompress_shared_libraries = true
+    page_align_shared_libraries = true
 
     forward_variables_from(invoker, "*")
 

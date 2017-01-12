@@ -32,6 +32,7 @@ _java_target_whitelist = [
 
   # TODO(agrieve): Rename targets below to match above patterns.
   "*android_webview/glue:glue",
+  "//build/android/rezip:rezip",
   "//chrome/test/android/cast_emulator:cast_emulator",
 ]
 
@@ -1391,6 +1392,7 @@ if (enable_java_templates) {
   #   keystore_path: Path to keystore to use for signing.
   #   keystore_name: Key alias to use.
   #   keystore_password: Keystore password.
+  #   rezip_apk: Whether to add crazy-linker alignment.
   template("finalize_apk") {
     action(target_name) {
       deps = []
@@ -1433,6 +1435,20 @@ if (enable_java_templates) {
         "--key-passwd",
         invoker.keystore_password,
       ]
+      if (defined(invoker.rezip_apk) && invoker.rezip_apk) {
+        deps += [ "//build/android/rezip" ]
+        _rezip_jar_path = "$root_build_dir/lib.java/rezip_apk.jar"
+        args += [
+          "--load-library-from-zip=1",
+          "--rezip-apk-jar-path",
+          rebase_path(_rezip_jar_path, root_build_dir),
+        ]
+      }
+
+      if (defined(invoker.page_align_shared_libraries) &&
+          invoker.page_align_shared_libraries) {
+        args += [ "--page-align-shared-libraries" ]
+      }
     }
   }
 
@@ -1680,9 +1696,6 @@ if (enable_java_templates) {
                                "uncompress_shared_libraries",
                                "write_asset_list",
                              ])
-      if (!defined(uncompress_shared_libraries)) {
-        uncompress_shared_libraries = _load_library_from_apk
-      }
       deps = _deps + [ ":${_package_resources_target_name}" ]
       native_libs = _native_libs + _native_libs_even_when_incremental
 
@@ -1703,9 +1716,6 @@ if (enable_java_templates) {
                                "secondary_native_libs",
                                "uncompress_shared_libraries",
                              ])
-      if (!defined(uncompress_shared_libraries)) {
-        uncompress_shared_libraries = _load_library_from_apk
-      }
       _dex_target = "//build/android/incremental_install:bootstrap_java__dex"
       deps = _incremental_deps + [
                ":${_incremental_package_resources_target_name}",
@@ -1732,11 +1742,14 @@ if (enable_java_templates) {
 
     _finalize_apk_rule_name = "${target_name}__finalize"
     finalize_apk(_finalize_apk_rule_name) {
+      forward_variables_from(invoker, [ "page_align_shared_libraries" ])
+
       input_apk_path = _packaged_apk_path
       output_apk_path = _final_apk_path
       keystore_path = _keystore_path
       keystore_name = _keystore_name
       keystore_password = _keystore_password
+      rezip_apk = _load_library_from_apk
 
       public_deps = [
         # Generator of the _packaged_apk_path this target takes as input.

@@ -2009,7 +2009,15 @@ if (enable_java_templates) {
     _extra_native_libs_deps = []
     assert(_extra_native_libs_deps == [])  # Mark as used.
     _extra_native_libs_even_when_incremental = []
+    _extra_native_libs_even_when_incremental_deps = []
+    assert(_extra_native_libs_even_when_incremental_deps == [])  # Mark as used.
     if (_native_libs_deps != []) {
+      # zipalign can't align gdb_server, don't pack gdbserver temporarily.
+      if (is_debug && (!defined(invoker.page_align_shared_libraries) ||
+                       !invoker.page_align_shared_libraries)) {
+        _extra_native_libs_even_when_incremental = [ android_gdbserver ]
+      }
+
       if (_use_chromium_linker) {
         _extra_native_libs =
             [ "$root_shlib_dir/libchromium_android_linker$shlib_extension" ]
@@ -2032,6 +2040,7 @@ if (enable_java_templates) {
                                "deps",
                                "extensions_to_not_compress",
                                "language_splits",
+                               "page_align_shared_libraries",
                                "public_deps",
                                "secondary_native_libs",
                                "shared_resources",
@@ -2081,6 +2090,7 @@ if (enable_java_templates) {
            _extra_native_libs_even_when_incremental != []) &&
           !_create_abi_split) {
         deps += _native_libs_deps + _extra_native_libs_deps +
+                _extra_native_libs_even_when_incremental_deps +
                 [ _native_libs_file_arg_dep ]
         native_libs_filearg = _native_libs_file_arg
         native_libs = _extra_native_libs
@@ -2141,7 +2151,9 @@ if (enable_java_templates) {
                                  "public_deps",
                                ])
 
-        incremental_deps = deps + [ ":$_manifest_rule" ]
+        incremental_deps =
+            deps + _extra_native_libs_even_when_incremental_deps +
+            [ ":$_manifest_rule" ]
         deps = []
         deps = incremental_deps + _native_libs_deps + _extra_native_libs_deps +
                [ _native_libs_file_arg_dep ]
