@@ -301,6 +301,15 @@ class BattOrAgentTest : public testing::Test, public BattOrAgent::Listener {
       return;
 
     OnBytesSent(true);
+    if (end_state == BattOrAgentState::INIT_SENT)
+      return;
+
+    OnMessageRead(true, BATTOR_MESSAGE_TYPE_CONTROL_ACK,
+                  ToCharVector(kInitAck));
+    if (end_state == BattOrAgentState::INIT_ACKED)
+      return;
+
+    OnBytesSent(true);
     if (end_state == BattOrAgentState::GIT_FIRMWARE_HASH_REQUEST_SENT)
       return;
 
@@ -1026,5 +1035,41 @@ TEST_F(BattOrAgentTest, GetFirmwareGitHashFailsIfReadHasWrongType) {
 
   EXPECT_TRUE(IsCommandComplete());
   EXPECT_EQ(BATTOR_ERROR_UNEXPECTED_MESSAGE, GetCommandError());
+}
+
+TEST_F(BattOrAgentTest, GetFirmwareGitHashFailsIfInitSendFails) {
+  RunGetFirmwareGitHashTo(BattOrAgentState::CONNECTED);
+  OnBytesSent(false);
+
+  EXPECT_TRUE(IsCommandComplete());
+  EXPECT_EQ(BATTOR_ERROR_SEND_ERROR, GetCommandError());
+}
+
+TEST_F(BattOrAgentTest, GetFirmwareGitHashFailsIfInitAckReadFails) {
+  RunGetFirmwareGitHashTo(BattOrAgentState::INIT_SENT);
+
+  for (int i =0; i < 21; i++) {
+    OnMessageRead(false, BATTOR_MESSAGE_TYPE_CONTROL_ACK, nullptr);
+
+    // Bytes will be sent because INIT will be retried.
+    OnBytesSent(true);
+  }
+
+  EXPECT_TRUE(IsCommandComplete());
+  EXPECT_EQ(BATTOR_ERROR_TOO_MANY_INIT_RETRIES, GetCommandError());
+}
+
+TEST_F(BattOrAgentTest, GetFirmwareGithashFailsIfInitWrongAckRead) {
+  RunGetFirmwareGitHashTo(BattOrAgentState::INIT_SENT);
+  for (int i = 0; i < 21; i++) {
+    OnMessageRead(true, BATTOR_MESSAGE_TYPE_CONTROL_ACK,
+                  ToCharVector(kStartTracingAck));
+
+    // Bytes will be sent because INIT will be retried.
+    OnBytesSent(true);
+  }
+
+  EXPECT_TRUE(IsCommandComplete());
+  EXPECT_EQ(BATTOR_ERROR_TOO_MANY_INIT_RETRIES, GetCommandError());
 }
 }  // namespace battor
