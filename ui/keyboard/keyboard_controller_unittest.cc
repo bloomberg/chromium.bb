@@ -299,7 +299,8 @@ TEST_F(KeyboardControllerTest, KeyboardSize) {
   const gfx::Rect& initial_bounds = container->bounds();
   // The container should be positioned at the bottom of screen and has 0
   // height.
-  ASSERT_EQ(gfx::Rect(), initial_bounds);
+  ASSERT_EQ(0, initial_bounds.height());
+  ASSERT_EQ(screen_bounds.height(), initial_bounds.y());
   VerifyKeyboardWindowSize(container, keyboard);
 
   // In FULL_WIDTH mode, attempt to change window width or move window up from
@@ -337,6 +338,38 @@ TEST_F(KeyboardControllerTest, FloatingKeyboardSize) {
   gfx::Rect new_bounds(0, 50, 50, 50);
   keyboard->SetBounds(new_bounds);
   ASSERT_EQ(new_bounds, container->bounds());
+  VerifyKeyboardWindowSize(container, keyboard);
+}
+
+TEST_F(KeyboardControllerTest, KeyboardSizeMultiRootWindow) {
+  aura::Window* container(controller()->GetContainerWindow());
+  aura::Window* keyboard(ui()->GetKeyboardWindow());
+  gfx::Rect screen_bounds = root_window()->bounds();
+  root_window()->AddChild(container);
+  container->AddChild(keyboard);
+  const gfx::Rect& initial_bounds = container->bounds();
+  // The container should be positioned at the bottom of screen and has 0
+  // height.
+  ASSERT_EQ(0, initial_bounds.height());
+  ASSERT_EQ(screen_bounds.height(), initial_bounds.y());
+  VerifyKeyboardWindowSize(container, keyboard);
+
+  // Adding new root window.
+  std::unique_ptr<aura::WindowTreeHost> secondary_tree_host =
+      base::WrapUnique<aura::WindowTreeHost>(
+          aura::WindowTreeHost::Create(gfx::Rect(0, 0, 1000, 500)));
+  secondary_tree_host->InitHost();
+  EXPECT_EQ(1000, secondary_tree_host->window()->bounds().width());
+  EXPECT_EQ(500, secondary_tree_host->window()->bounds().height());
+
+  // Move the keyboard into the secondary root window.
+  controller()->HideKeyboard(
+      KeyboardController::HideReason::HIDE_REASON_AUTOMATIC);
+  root_window()->RemoveChild(container);
+  secondary_tree_host->window()->AddChild(container);
+
+  const gfx::Rect& new_bounds = container->bounds();
+  EXPECT_EQ(500, new_bounds.y());
   VerifyKeyboardWindowSize(container, keyboard);
 }
 
