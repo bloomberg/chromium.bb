@@ -1,0 +1,35 @@
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+
+function getPixelsFromOffscreenWebgl(preserveFlag) {
+  var canvas = document.createElement("canvas");
+  var offscreenCanvas = canvas.transferControlToOffscreen();
+  var gl = offscreenCanvas.getContext("webgl", {preserveDrawingBuffer: preserveFlag});
+
+  // Draw some color on gl and commit
+  gl.clearColor(1, 0, 1, 1);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.commit();
+
+  var pixels = new Uint8Array(50 * 50 * 4);
+  gl.readPixels(0, 0, 50, 50, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+  return pixels;
+}
+
+test(function() {
+  var pixelsPreserve = getPixelsFromOffscreenWebgl(true);
+  assert_equals(pixelsPreserve[0], 255);
+  assert_equals(pixelsPreserve[1], 0);
+  assert_equals(pixelsPreserve[2], 255);
+  assert_equals(pixelsPreserve[3], 255);
+}, "test if OffscreenCanvas.webgl retains context if preserveDrawingBuffer is true.");
+
+test(function() {
+  var pixelsNoPreserve = getPixelsFromOffscreenWebgl(false);
+  assert_equals(pixelsNoPreserve[0], 0);
+  assert_equals(pixelsNoPreserve[1], 0);
+  assert_equals(pixelsNoPreserve[2], 0);
+  assert_equals(pixelsNoPreserve[3], 0);
+}, "test if OffscreenCanvas.webgl loses context if presereDrawingbuffer is false.");
+</script>

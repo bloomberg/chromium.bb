@@ -1655,6 +1655,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                            const IntRect& sourceSubRectangle);
   void texImageBitmapByGPU(ImageBitmap*, GLuint, GLenum, GLenum, GLint, bool);
 
+  sk_sp<SkImage> makeImageSnapshot(SkImageInfo&);
   const unsigned m_version;
 
   bool isPaintable() const final { return drawingBuffer(); }

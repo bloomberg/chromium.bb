@@ -737,10 +737,22 @@ ScriptPromise WebGLRenderingContextBase::commit(
   if (!drawingBuffer()) {
     return offscreenCanvas()->commit(nullptr, false, scriptState);
   }
-  // TODO(crbug.com/646864): Make commit() work correctly with
-  // { preserveDrawingBuffer : true }.
+
+  RefPtr<StaticBitmapImage> image;
+  if (creationAttributes().preserveDrawingBuffer()) {
+    int width = drawingBuffer()->size().width();
+    int height = drawingBuffer()->size().height();
+    SkImageInfo imageInfo =
+        SkImageInfo::Make(width, height, kRGBA_8888_SkColorType,
+                          creationAttributes().alpha() ? kPremul_SkAlphaType
+                                                       : kOpaque_SkAlphaType);
+    image = StaticBitmapImage::create(makeImageSnapshot(imageInfo));
+  } else {
+    image = drawingBuffer()->transferToStaticBitmapImage();
+  }
+
   return offscreenCanvas()->commit(
-      std::move(drawingBuffer()->transferToStaticBitmapImage()),
+      std::move(image),
       drawingBuffer()->contextProvider()->isSoftwareRendering(), scriptState);
 }
 
@@ -770,6 +782,27 @@ PassRefPtr<Image> WebGLRenderingContextBase::getImage(
   return buffer->newImageSnapshot(hint, reason);
 }
 
+sk_sp<SkImage> WebGLRenderingContextBase::makeImageSnapshot(
+    SkImageInfo& imageInfo) {
+  drawingBuffer()->resolveAndBindForReadAndDraw();
+  gpu::gles2::GLES2Interface* gl = SharedGpuContext::gl();
+
+  SkSurfaceProps disableLCDProps(0, kUnknown_SkPixelGeometry);
+  sk_sp<SkSurface> surface = SkSurface::MakeRenderTarget(
+      SharedGpuContext::gr(), SkBudgeted::kYes, imageInfo, 0,
+      imageInfo.alphaType() == kOpaque_SkAlphaType ? nullptr
+                                                   : &disableLCDProps);
+  GLuint textureId = skia::GrBackendObjectToGrGLTextureInfo(
+                         surface->getTextureHandle(
+                             SkSurface::kDiscardWrite_TextureHandleAccess))
+                         ->fID;
+
+  drawingBuffer()->copyToPlatformTexture(
+      gl, textureId, GL_RGBA, GL_UNSIGNED_BYTE, 0, true, false, IntPoint(0, 0),
+      IntRect(IntPoint(0, 0), drawingBuffer()->size()), BackBuffer);
+  return surface->makeImageSnapshot();
+}
+
 ImageData* WebGLRenderingContextBase::toImageData(SnapshotReason reason) {
   ImageData* imageData = nullptr;
   // TODO(ccameron): WebGL should produce sRGB images.
@@ -783,27 +816,11 @@ ImageData* WebGLRenderingContextBase::toImageData(SnapshotReason reason) {
 
     int width = drawingBuffer()->size().width();
     int height = drawingBuffer()->size().height();
-    OpacityMode opacityMode = creationAttributes().alpha() ? NonOpaque : Opaque;
-
-    drawingBuffer()->resolveAndBindForReadAndDraw();
-    gpu::gles2::GLES2Interface* gl = SharedGpuContext::gl();
-    SkImageInfo imageInfo = SkImageInfo::Make(
-        width, height, kRGBA_8888_SkColorType,
-        Opaque == opacityMode ? kOpaque_SkAlphaType : kPremul_SkAlphaType);
-    SkSurfaceProps disableLCDProps(0, kUnknown_SkPixelGeometry);
-    sk_sp<SkSurface> surface = SkSurface::MakeRenderTarget(
-        SharedGpuContext::gr(), SkBudgeted::kYes, imageInfo, 0,
-        Opaque == opacityMode ? nullptr : &disableLCDProps);
-    GLuint textureId = skia::GrBackendObjectToGrGLTextureInfo(
-                           surface->getTextureHandle(
-                               SkSurface::kDiscardWrite_TextureHandleAccess))
-                           ->fID;
-
-    drawingBuffer()->copyToPlatformTexture(
-        gl, textureId, GL_RGBA, GL_UNSIGNED_BYTE, 0, true, false,
-        IntPoint(0, 0), IntRect(IntPoint(0, 0), drawingBuffer()->size()),
-        BackBuffer);
-    sk_sp<SkImage> snapshot = surface->makeImageSnapshot();
+    SkImageInfo imageInfo =
+        SkImageInfo::Make(width, height, kRGBA_8888_SkColorType,
+                          creationAttributes().alpha() ? kPremul_SkAlphaType
+                                                       : kOpaque_SkAlphaType);
+    sk_sp<SkImage> snapshot = makeImageSnapshot(imageInfo);
     if (snapshot) {
       imageData = ImageData::create(drawingBuffer()->size());
       snapshot->readPixels(imageInfo, imageData->data()->data(),
@@ -4106,7 +4123,8 @@ void WebGLRenderingContextBase::readPixelsHelper(GLint x,
     return;
   // Due to WebGL's same-origin restrictions, it is not possible to
   // taint the origin using the WebGL API.
-  ASSERT(canvas()->originClean());
+  DCHECK(canvas() ? canvas()->originClean() : offscreenCanvas()->originClean());
+
   // Validate input parameters.
   if (!pixels) {
     synthesizeGLError(GL_INVALID_VALUE, "readPixels",
