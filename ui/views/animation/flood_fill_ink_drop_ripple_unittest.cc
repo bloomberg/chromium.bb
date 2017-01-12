@@ -67,5 +67,45 @@ TEST(FloodFillInkDropRippleTest, MaxDistanceToCorners) {
               kAbsError);
 }
 
+// Verifies that both going directly from HIDDEN to ACTIVATED state and going
+// through PENDING to ACTIVAED state lead to the same final opacity and
+// transform values.
+TEST(FloodFillInkDropRippleTest, ActivatedFinalState) {
+  const float kAbsError = 0.01f;
+
+  const gfx::Size host_size(100, 50);
+  const gfx::Point center_point(host_size.width() / 2, host_size.height() / 2);
+  const SkColor color = SK_ColorWHITE;
+  const float visible_opacity = 0.7f;
+
+  FloodFillInkDropRipple ripple(host_size, center_point, color,
+                                visible_opacity);
+  FloodFillInkDropRippleTestApi test_api(&ripple);
+
+  // Go to ACTIVATED state directly.
+  ripple.AnimateToState(InkDropState::ACTIVATED);
+  test_api.CompleteAnimations();
+  const float activated_opacity = test_api.GetCurrentOpacity();
+  const gfx::Transform activated_transform =
+      test_api.GetPaintedLayerTransform();
+
+  // Reset state.
+  ripple.AnimateToState(InkDropState::HIDDEN);
+  test_api.CompleteAnimations();
+
+  // Go to ACTIVATED state through PENDING state.
+  ripple.AnimateToState(InkDropState::ACTION_PENDING);
+  ripple.AnimateToState(InkDropState::ACTIVATED);
+  test_api.CompleteAnimations();
+  const float pending_activated_opacity = test_api.GetCurrentOpacity();
+  const gfx::Transform pending_activated_transform =
+      test_api.GetPaintedLayerTransform();
+
+  // Compare opacity and transform values.
+  EXPECT_NEAR(activated_opacity, pending_activated_opacity, kAbsError);
+  EXPECT_TRUE(
+      activated_transform.ApproximatelyEqual(pending_activated_transform));
+}
+
 }  // namespace test
 }  // namespace views

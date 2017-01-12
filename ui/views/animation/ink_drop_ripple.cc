@@ -103,7 +103,8 @@ test::InkDropRippleTestApi* InkDropRipple::GetTestApi() {
 void InkDropRipple::AnimationStartedCallback(
     InkDropState ink_drop_state,
     const ui::CallbackLayerAnimationObserver& observer) {
-  observer_->AnimationStarted(ink_drop_state);
+  if (observer_)
+    observer_->AnimationStarted(ink_drop_state);
 }
 
 bool InkDropRipple::AnimationEndedCallback(
@@ -111,10 +112,11 @@ bool InkDropRipple::AnimationEndedCallback(
     const ui::CallbackLayerAnimationObserver& observer) {
   if (ink_drop_state == InkDropState::HIDDEN)
     SetStateToHidden();
-  observer_->AnimationEnded(ink_drop_state,
-                            observer.aborted_count()
-                                ? InkDropAnimationEndedReason::PRE_EMPTED
-                                : InkDropAnimationEndedReason::SUCCESS);
+  if (observer_)
+    observer_->AnimationEnded(ink_drop_state,
+                              observer.aborted_count()
+                                  ? InkDropAnimationEndedReason::PRE_EMPTED
+                                  : InkDropAnimationEndedReason::SUCCESS);
   // |this| may be deleted!
   return true;
 }

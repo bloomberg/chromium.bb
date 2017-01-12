@@ -358,5 +358,18 @@ TEST_P(InkDropRippleTest, TargetInkDropStateOnAnimationEnded) {
             observer_.target_state_at_last_animation_ended());
 }
 
+// Verifies that when an we ink drop transitions from ACTION_PENDING to
+// ACTIVATED state, animation observers are called in order.
+TEST_P(InkDropRippleTest, RipplePendingToActivatedObserverOrder) {
+  ink_drop_ripple_->AnimateToState(InkDropState::ACTION_PENDING);
+  ink_drop_ripple_->AnimateToState(InkDropState::ACTIVATED);
+  test_api_->CompleteAnimations();
+
+  EXPECT_TRUE(observer_.AnimationStartedContextsMatch(
+      {InkDropState::ACTION_PENDING, InkDropState::ACTIVATED}));
+  EXPECT_TRUE(observer_.AnimationEndedContextsMatch(
+      {InkDropState::ACTION_PENDING, InkDropState::ACTIVATED}));
+}
+
 }  // namespace test
 }  // namespace views

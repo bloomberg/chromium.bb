@@ -48,12 +48,14 @@ class TestInkDropAnimationObserverHelper {
   }
 
   void OnAnimationStarted(ContextType context) {
+    animation_started_contexts_.push_back(context);
     last_animation_started_context_ = context;
     last_animation_started_ordinal_ = GetNextOrdinal();
   }
 
   void OnAnimationEnded(ContextType context,
                         InkDropAnimationEndedReason reason) {
+    animation_ended_contexts_.push_back(context);
     last_animation_ended_context_ = context;
     last_animation_ended_ordinal_ = GetNextOrdinal();
     last_animation_ended_reason_ = reason;
@@ -110,7 +112,52 @@ class TestInkDropAnimationObserverHelper {
                                        << last_animation_ended_ordinal() << ".";
   }
 
+  // Passes *_TRUE assertions when |animation_started_context_| is the same as
+  // |expected_contexts|.
+  testing::AssertionResult AnimationStartedContextsMatch(
+      const std::vector<ContextType>& expected_contexts) {
+    return ContextsMatch(expected_contexts, animation_started_contexts_);
+  }
+
+  // Passes *_TRUE assertions when |animation_ended_context_| is the same as
+  // |expected_contexts|.
+  testing::AssertionResult AnimationEndedContextsMatch(
+      const std::vector<ContextType>& expected_contexts) {
+    return ContextsMatch(expected_contexts, animation_ended_contexts_);
+  }
+
  private:
+  // Helper function that checks if |actual_contexts| is the same as
+  // |expected_contexts| returning appropriate AssertionResult.
+  testing::AssertionResult ContextsMatch(
+      const std::vector<ContextType>& expected_contexts,
+      const std::vector<ContextType>& actual_contexts) {
+    const bool match =
+        expected_contexts.size() == actual_contexts.size() &&
+        std::equal(expected_contexts.begin(), expected_contexts.end(),
+                   actual_contexts.begin());
+    testing::AssertionResult result =
+        match ? (testing::AssertionSuccess() << "Expected == Actual: {")
+              : (testing::AssertionFailure() << "Expected != Actual: {");
+    for (auto eit = expected_contexts.begin(), ait = actual_contexts.begin();
+         eit != expected_contexts.end() || ait != actual_contexts.end();) {
+      if (eit != expected_contexts.begin())
+        result << ", ";
+      const bool eexists = eit != expected_contexts.end();
+      const bool aexists = ait != actual_contexts.end();
+      const bool item_match = eexists && aexists && *eit == *ait;
+      result << (eexists ? ToString(*eit) : "<none>")
+             << (item_match ? " == " : " != ")
+             << (aexists ? ToString(*ait) : "<none>");
+      if (eexists)
+        eit++;
+      if (aexists)
+        ait++;
+    }
+    result << "}";
+    return result;
+  }
+
   // Returns the next event ordinal. The first returned ordinal will be 1.
   int GetNextOrdinal() const {
     return std::max(1, std::max(last_animation_started_ordinal_,
@@ -121,11 +168,17 @@ class TestInkDropAnimationObserverHelper {
   // The ordinal time of the last AnimationStarted() call.
   int last_animation_started_ordinal_;
 
+  // List of contexts for which animation is started.
+  std::vector<ContextType> animation_started_contexts_;
+
   // The |context| passed to the last call to AnimationStarted().
   ContextType last_animation_started_context_;
 
   // The ordinal time of the last AnimationEnded() call.
   int last_animation_ended_ordinal_;
+
+  // List of contexts for which animation is ended.
+  std::vector<ContextType> animation_ended_contexts_;
 
   // The |context| passed to the last call to AnimationEnded().
   ContextType last_animation_ended_context_;

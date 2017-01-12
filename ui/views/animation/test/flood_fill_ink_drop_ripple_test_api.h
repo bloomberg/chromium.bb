@@ -37,6 +37,9 @@ class FloodFillInkDropRippleTestApi : public InkDropRippleTestApi {
   // Wrapper for FloodFillInkDropRipple::MaxDistanceToCorners().
   float MaxDistanceToCorners(const gfx::Point& point) const;
 
+  // Gets the transform currently applied to the painted layer of the ripple.
+  gfx::Transform GetPaintedLayerTransform() const;
+
   // InkDropRippleTestApi:
   float GetCurrentOpacity() const override;
 

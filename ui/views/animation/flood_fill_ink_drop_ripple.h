@@ -91,6 +91,12 @@ class VIEWS_EXPORT FloodFillInkDropRipple : public InkDropRipple {
       gfx::Tween::Type tween,
       ui::LayerAnimationObserver* observer);
 
+  // Creates a pause animation for transform property.
+  void PauseTransformAnimation(
+      base::TimeDelta duration,
+      ui::LayerAnimator::PreemptionStrategy preemption_strategy,
+      ui::LayerAnimationObserver* observer);
+
   // Sets the opacity of the ink drop. Note that this does not perform any
   // animation.
   void SetOpacity(float opacity);
@@ -104,6 +110,12 @@ class VIEWS_EXPORT FloodFillInkDropRipple : public InkDropRipple {
       base::TimeDelta duration,
       ui::LayerAnimator::PreemptionStrategy preemption_strategy,
       gfx::Tween::Type tween,
+      ui::LayerAnimationObserver* observer);
+
+  // Creates a pause animation for opacity property.
+  void PauseOpacityAnimation(
+      base::TimeDelta duration,
+      ui::LayerAnimator::PreemptionStrategy preemption_strategy,
       ui::LayerAnimationObserver* observer);
 
   // Returns the Transform to be applied to the |painted_layer_| for the given

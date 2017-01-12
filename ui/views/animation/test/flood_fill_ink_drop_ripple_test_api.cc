@@ -37,6 +37,10 @@ float FloodFillInkDropRippleTestApi::MaxDistanceToCorners(
   return ink_drop_ripple()->MaxDistanceToCorners(point);
 }
 
+gfx::Transform FloodFillInkDropRippleTestApi::GetPaintedLayerTransform() const {
+  return ink_drop_ripple()->painted_layer_.transform();
+}
+
 float FloodFillInkDropRippleTestApi::GetCurrentOpacity() const {
   return ink_drop_ripple()->root_layer_.opacity();
 }
