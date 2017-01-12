@@ -12,6 +12,7 @@
 #include "content/common/frame_owner_properties.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/test/frame_load_waiter.h"
 #include "content/public/test/render_view_test.h"
@@ -83,8 +84,8 @@ class RenderFrameImplTest : public RenderViewTest {
      RenderViewTest::TearDown();
   }
 
-  void SetIsUsingLoFi(RenderFrameImpl* frame, bool is_using_lofi) {
-    frame->is_using_lofi_ = is_using_lofi;
+  void SetPreviewsState(RenderFrameImpl* frame, PreviewsState previews_state) {
+    frame->previews_state_ = previews_state;
   }
 
   void SetEffectionConnectionType(RenderFrameImpl* frame,
@@ -180,10 +181,10 @@ TEST_F(RenderFrameImplTest, FrameWasShownAfterWidgetClose) {
 // Test that LoFi state only updates for new main frame documents. Subframes
 // inherit from the main frame and should not change at commit time.
 TEST_F(RenderFrameImplTest, LoFiNotUpdatedOnSubframeCommits) {
-  SetIsUsingLoFi(GetMainRenderFrame(), true);
-  SetIsUsingLoFi(frame(), true);
-  EXPECT_TRUE(GetMainRenderFrame()->IsUsingLoFi());
-  EXPECT_TRUE(frame()->IsUsingLoFi());
+  SetPreviewsState(GetMainRenderFrame(), SERVER_LOFI_ON);
+  SetPreviewsState(frame(), SERVER_LOFI_ON);
+  EXPECT_EQ(SERVER_LOFI_ON, GetMainRenderFrame()->GetPreviewsState());
+  EXPECT_EQ(SERVER_LOFI_ON, frame()->GetPreviewsState());
 
   blink::WebHistoryItem item;
   item.initialize();
@@ -192,11 +193,11 @@ TEST_F(RenderFrameImplTest, LoFiNotUpdatedOnSubframeCommits) {
   // navigations within the page.
   frame()->didNavigateWithinPage(frame()->GetWebFrame(), item,
                                  blink::WebStandardCommit, true);
-  EXPECT_TRUE(frame()->IsUsingLoFi());
+  EXPECT_EQ(SERVER_LOFI_ON, frame()->GetPreviewsState());
   GetMainRenderFrame()->didNavigateWithinPage(
       GetMainRenderFrame()->GetWebFrame(), item, blink::WebStandardCommit,
       true);
-  EXPECT_TRUE(GetMainRenderFrame()->IsUsingLoFi());
+  EXPECT_EQ(SERVER_LOFI_ON, GetMainRenderFrame()->GetPreviewsState());
 
   // The subframe's LoFi state should not be reset on commit.
   DocumentState* document_state =
@@ -206,7 +207,7 @@ TEST_F(RenderFrameImplTest, LoFiNotUpdatedOnSubframeCommits) {
 
   frame()->didCommitProvisionalLoad(frame()->GetWebFrame(), item,
                                     blink::WebStandardCommit);
-  EXPECT_TRUE(frame()->IsUsingLoFi());
+  EXPECT_EQ(SERVER_LOFI_ON, frame()->GetPreviewsState());
 
   // The main frame's LoFi state should be reset to off on commit.
   document_state = DocumentState::FromDataSource(
@@ -218,7 +219,7 @@ TEST_F(RenderFrameImplTest, LoFiNotUpdatedOnSubframeCommits) {
   // but serves the purpose of testing the LoFi state logic.
   GetMainRenderFrame()->didCommitProvisionalLoad(
       GetMainRenderFrame()->GetWebFrame(), item, blink::WebStandardCommit);
-  EXPECT_FALSE(GetMainRenderFrame()->IsUsingLoFi());
+  EXPECT_EQ(PREVIEWS_OFF, GetMainRenderFrame()->GetPreviewsState());
   // The subframe would be deleted here after a cross-document navigation. It
   // happens to be left around in this test because this does not simulate the
   // frame detach.

@@ -136,13 +136,18 @@ class WebURLRequest {
     ReportIntent,  // Report metrics with UI action displayed intent.
   };
 
-  // The LoFi state which determines whether to request a Lo-Fi version of the
-  // resource.
-  enum LoFiState {
-    LoFiUnspecified,  // Let the browser process decide whether or not to
-                      // request the Lo-Fi version.
-    LoFiOff,          // Request a normal (non-Lo-Fi) version of the resource.
-    LoFiOn,           // Request a Lo-Fi version of the resource.
+  // The Previews state which determines whether to request a Preview version of
+  // the resource.
+  enum PreviewsState {
+    PreviewsUnspecified = 0,  // Let the browser process decide whether or
+                              // not to request Preview types.
+    ServerLoFiOn = 1 << 0,    // Request a Lo-Fi version of the resource
+                              // from the server.
+    ClientLoFiOn = 1 << 1,    // Request a Lo-Fi version of the resource
+                              // from the client.
+    PreviewsOff = 1 << 2,     // Request a normal (non-Preview) version of
+                              // the resource.
+    PreviewsStateLast = PreviewsOff
   };
 
   // Indicates which types of ServiceWorkers should skip handling this request.
@@ -285,10 +290,11 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT FetchRedirectMode getFetchRedirectMode() const;
   BLINK_PLATFORM_EXPORT void setFetchRedirectMode(FetchRedirectMode);
 
-  // The LoFi state which determines whether to request a Lo-Fi version of the
-  // resource.
-  BLINK_PLATFORM_EXPORT LoFiState getLoFiState() const;
-  BLINK_PLATFORM_EXPORT void setLoFiState(LoFiState);
+  // The PreviewsState which determines whether to request a Preview version of
+  // the resource. The PreviewsState is a bitmask of potentially several
+  // Previews optimizations.
+  BLINK_PLATFORM_EXPORT PreviewsState getPreviewsState() const;
+  BLINK_PLATFORM_EXPORT void setPreviewsState(PreviewsState);
 
   // Extra data associated with the underlying resource request. Resource
   // requests can be copied. If non-null, each copy of a resource requests

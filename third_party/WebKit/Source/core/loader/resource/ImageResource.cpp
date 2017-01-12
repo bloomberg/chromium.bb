@@ -398,8 +398,10 @@ void ImageResource::responseReceived(
 }
 
 static bool isLoFiImage(const ImageResource& resource) {
-  if (resource.resourceRequest().loFiState() != WebURLRequest::LoFiOn)
+  if (!(resource.resourceRequest().previewsState() &
+        WebURLRequest::ServerLoFiOn)) {
     return false;
+  }
   return !resource.isLoaded() ||
          resource.response()
              .httpHeaderField("chrome-proxy-content-transform")

@@ -24,6 +24,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/previews_state.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"
@@ -106,7 +107,8 @@ void TestAnnotateOnIOThread(base::RunLoop* ui_run_loop,
     // values are used for all the other args.
     content::ResourceRequestInfo::AllocateForTesting(
         request.get(), content::RESOURCE_TYPE_MAIN_FRAME, nullptr,
-        render_process_id, -1, render_frame_id, true, false, true, true, false);
+        render_process_id, -1, render_frame_id, true, false, true, true,
+        content::PREVIEWS_OFF);
   }
 
   // An invalid tab ID to check that the annotator always sets the tab ID. -2 is

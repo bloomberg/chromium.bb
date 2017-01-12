@@ -41,6 +41,7 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/javascript_message_type.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/test/browser_side_navigation_test_utils.h"
@@ -436,7 +437,7 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
           NavigationRequest::CreateBrowserInitiated(
               manager->frame_tree_node_, frame_entry->url(),
               frame_entry->referrer(), *frame_entry, entry, navigate_type,
-              LOFI_UNSPECIFIED, false, false, base::TimeTicks::Now(),
+              PREVIEWS_UNSPECIFIED, false, false, base::TimeTicks::Now(),
               controller);
 
       // Simulates request creation that triggers the 1st internal call to
@@ -2839,7 +2840,7 @@ TEST_F(RenderFrameHostManagerTestWithBrowserSideNavigation,
       NavigationRequest::CreateBrowserInitiated(
           contents()->GetFrameTree()->root(), frame_entry->url(),
           frame_entry->referrer(), *frame_entry, entry,
-          FrameMsg_Navigate_Type::NORMAL, LOFI_UNSPECIFIED, false, false,
+          FrameMsg_Navigate_Type::NORMAL, PREVIEWS_UNSPECIFIED, false, false,
           base::TimeTicks::Now(),
           static_cast<NavigationControllerImpl*>(&controller()));
   manager->DidCreateNavigationRequest(navigation_request.get());
@@ -2900,7 +2901,7 @@ TEST_F(RenderFrameHostManagerTestWithBrowserSideNavigation,
       NavigationRequest::CreateBrowserInitiated(
           contents()->GetFrameTree()->root(), frame_entry->url(),
           frame_entry->referrer(), *frame_entry, entry,
-          FrameMsg_Navigate_Type::NORMAL, LOFI_UNSPECIFIED, false, false,
+          FrameMsg_Navigate_Type::NORMAL, PREVIEWS_UNSPECIFIED, false, false,
           base::TimeTicks::Now(),
           static_cast<NavigationControllerImpl*>(&controller()));
   manager->DidCreateNavigationRequest(navigation_request.get());
@@ -2958,7 +2959,7 @@ TEST_F(RenderFrameHostManagerTestWithBrowserSideNavigation,
       NavigationRequest::CreateBrowserInitiated(
           contents()->GetFrameTree()->root(), frame_entry->url(),
           frame_entry->referrer(), *frame_entry, entry,
-          FrameMsg_Navigate_Type::NORMAL, LOFI_UNSPECIFIED, false, false,
+          FrameMsg_Navigate_Type::NORMAL, PREVIEWS_UNSPECIFIED, false, false,
           base::TimeTicks::Now(),
           static_cast<NavigationControllerImpl*>(&controller()));
   manager->DidCreateNavigationRequest(navigation_request.get());

@@ -572,8 +572,8 @@ WebURLRequest CreateURLRequestForNavigation(
     }
   }
 
-  request.setLoFiState(
-      static_cast<WebURLRequest::LoFiState>(common_params.lofi_state));
+  request.setPreviewsState(
+      static_cast<WebURLRequest::PreviewsState>(common_params.previews_state));
 
   RequestExtraData* extra_data = new RequestExtraData();
   extra_data->set_stream_override(std::move(stream_override));
@@ -641,7 +641,7 @@ CommonNavigationParams MakeCommonNavigationParams(
       info.urlRequest.url(), referrer, extra_data->transition_type(),
       navigation_type, true, info.replacesCurrentHistoryItem, ui_timestamp,
       report_type, GURL(), GURL(),
-      static_cast<LoFiState>(info.urlRequest.getLoFiState()),
+      static_cast<PreviewsState>(info.urlRequest.getPreviewsState()),
       base::TimeTicks::Now(), info.urlRequest.httpMethod().latin1(),
       GetRequestBodyForWebURLRequest(info.urlRequest));
 }
@@ -1104,7 +1104,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       accessibility_mode_(AccessibilityModeOff),
       render_accessibility_(NULL),
       media_player_delegate_(NULL),
-      is_using_lofi_(false),
+      previews_state_(PREVIEWS_UNSPECIFIED),
       effective_connection_type_(
           blink::WebEffectiveConnectionType::TypeUnknown),
       is_pasting_(false),
@@ -1220,7 +1220,7 @@ void RenderFrameImpl::Initialize() {
   RenderFrameImpl* parent_frame = RenderFrameImpl::FromWebFrame(
       frame_->parent());
   if (parent_frame) {
-    is_using_lofi_ = parent_frame->IsUsingLoFi();
+    previews_state_ = parent_frame->GetPreviewsState();
     effective_connection_type_ = parent_frame->getEffectiveConnectionType();
   }
 
@@ -2255,7 +2255,7 @@ void RenderFrameImpl::OnReload(bool bypass_cache) {
 }
 
 void RenderFrameImpl::OnReloadLoFiImages() {
-  is_using_lofi_ = false;
+  previews_state_ = PREVIEWS_OFF;
   GetWebFrame()->reloadLoFiImages();
 }
 
@@ -2664,8 +2664,8 @@ void RenderFrameImpl::AddMessageToConsole(ConsoleMessageLevel level,
   frame_->addMessageToConsole(wcm);
 }
 
-bool RenderFrameImpl::IsUsingLoFi() const {
-  return is_using_lofi_;
+PreviewsState RenderFrameImpl::GetPreviewsState() const {
+  return previews_state_;
 }
 
 bool RenderFrameImpl::IsPasting() const {
@@ -3583,11 +3583,12 @@ void RenderFrameImpl::didCommitProvisionalLoad(
       static_cast<NavigationStateImpl*>(document_state->navigation_state());
   WebURLResponseExtraDataImpl* extra_data =
       GetExtraDataFromResponse(frame->dataSource()->response());
-  // Only update the Lo-Fi and effective connection type states for new main
-  // frame documents. Subframes inherit from the main frame and should not
+  // Only update the PreviewsState and effective connection type states for new
+  // main frame documents. Subframes inherit from the main frame and should not
   // change at commit time.
   if (is_main_frame_ && !navigation_state->WasWithinSamePage()) {
-    is_using_lofi_ = extra_data && extra_data->is_using_lofi();
+    previews_state_ =
+        extra_data ? extra_data->previews_state() : PREVIEWS_OFF;
     if (extra_data) {
       effective_connection_type_ =
           EffectiveConnectionTypeToWebEffectiveConnectionType(
@@ -4389,13 +4390,15 @@ void RenderFrameImpl::willSendRequest(blink::WebLocalFrame* frame,
 
   request.setExtraData(extra_data);
 
-  if (request.getLoFiState() == WebURLRequest::LoFiUnspecified) {
+  if (request.getPreviewsState() == WebURLRequest::PreviewsUnspecified) {
     if (is_main_frame_ && !navigation_state->request_committed()) {
-      request.setLoFiState(static_cast<WebURLRequest::LoFiState>(
-          navigation_state->common_params().lofi_state));
+      request.setPreviewsState(static_cast<WebURLRequest::PreviewsState>(
+          navigation_state->common_params().previews_state));
     } else {
-      request.setLoFiState(
-          is_using_lofi_ ? WebURLRequest::LoFiOn : WebURLRequest::LoFiOff);
+      request.setPreviewsState(
+          previews_state_ == PREVIEWS_UNSPECIFIED
+              ? WebURLRequest::PreviewsOff
+              : static_cast<WebURLRequest::PreviewsState>(previews_state_));
     }
   }
 

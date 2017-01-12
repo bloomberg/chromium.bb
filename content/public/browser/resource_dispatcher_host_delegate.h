@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
 #include "ui/base/page_transition_types.h"
 
@@ -122,10 +123,13 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
   // TODO(maksims): Remove this once all the callers are modified.
   virtual void RequestComplete(net::URLRequest* url_request);
 
-  // Asks the embedder if Lo-Fi mode should be enabled for the given request. It
-  // is only called for requests with an unspecified Lo-Fi value.
-  virtual bool ShouldEnableLoFiMode(const net::URLRequest& url_request,
-                                    content::ResourceContext* resource_context);
+  // Asks the embedder for the PreviewsState which says which previews should
+  // be enabled for the given request. The PreviewsState is a bitmask of
+  // potentially several Previews optimizations. It is only called for requests
+  // with an unspecified Previews state.
+  virtual PreviewsState GetPreviewsState(
+      const net::URLRequest& url_request,
+      content::ResourceContext* resource_context);
 
   // Asks the embedder for NavigationData related to this request. It is only
   // called for navigation requests.

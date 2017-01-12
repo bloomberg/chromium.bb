@@ -16,6 +16,7 @@
 #include "content/common/frame_message_enums.h"
 #include "content/common/navigation_params.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "content/public/common/previews_state.h"
 
 namespace content {
 
@@ -77,7 +78,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       const FrameNavigationEntry& frame_entry,
       const NavigationEntryImpl& entry,
       FrameMsg_Navigate_Type::Value navigation_type,
-      LoFiState lofi_state,
+      PreviewsState previews_state,
       bool is_same_document_history_load,
       bool is_history_navigation_in_new_child,
       const base::TimeTicks& navigation_start,

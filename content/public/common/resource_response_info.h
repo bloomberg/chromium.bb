@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/common/resource_devtools_info.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_timing_info.h"
@@ -141,8 +142,9 @@ struct CONTENT_EXPORT ResourceResponseInfo {
   // the ServiceWorker. Empty if the response isn't from the CacheStorage.
   std::string cache_storage_cache_name;
 
-  // Whether or not the request was for a LoFi version of the resource.
-  bool is_using_lofi;
+  // A bitmask of potentially several Previews optimizations that the resource
+  // could have requested.
+  PreviewsState previews_state;
 
   // Effective connection type when the resource was fetched. This is populated
   // only for responses that correspond to main frame requests.

@@ -347,12 +347,13 @@ void WebURLRequest::setFetchRedirectMode(
   return m_resourceRequest->setFetchRedirectMode(redirect);
 }
 
-WebURLRequest::LoFiState WebURLRequest::getLoFiState() const {
-  return m_resourceRequest->loFiState();
+WebURLRequest::PreviewsState WebURLRequest::getPreviewsState() const {
+  return m_resourceRequest->previewsState();
 }
 
-void WebURLRequest::setLoFiState(WebURLRequest::LoFiState loFiState) {
-  return m_resourceRequest->setLoFiState(loFiState);
+void WebURLRequest::setPreviewsState(
+    WebURLRequest::PreviewsState previewsState) {
+  return m_resourceRequest->setPreviewsState(previewsState);
 }
 
 WebURLRequest::ExtraData* WebURLRequest::getExtraData() const {

@@ -358,14 +358,17 @@ void LogResourceRequestTimeOnUI(
   }
 }
 
-bool IsUsingLoFi(LoFiState lofi_state,
-                 ResourceDispatcherHostDelegate* delegate,
-                 const net::URLRequest& request,
-                 ResourceContext* resource_context,
-                 bool is_main_frame) {
-  if (lofi_state == LOFI_UNSPECIFIED && delegate && is_main_frame)
-    return delegate->ShouldEnableLoFiMode(request, resource_context);
-  return lofi_state == LOFI_ON;
+// Returns the PreviewsState after requesting it from the delegate. The
+// PreviewsState is a bitmask of potentially several Previews optimizations.
+PreviewsState GetPreviewsState(PreviewsState previews_state,
+                               ResourceDispatcherHostDelegate* delegate,
+                               const net::URLRequest& request,
+                               ResourceContext* resource_context,
+                               bool is_main_frame) {
+  // previews_state is set to PREVIEWS_OFF when reloading with Lo-Fi disabled.
+  if (previews_state == PREVIEWS_UNSPECIFIED && delegate && is_main_frame)
+    return delegate->GetPreviewsState(request, resource_context);
+  return previews_state;
 }
 
 // The following functions simplify code paths where the UI thread notifies the
@@ -1556,9 +1559,9 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
       do_not_prompt_for_login, request_data.referrer_policy,
       request_data.visibility_state, resource_context, report_raw_headers,
       !is_sync_load,
-      IsUsingLoFi(request_data.lofi_state, delegate_, *new_request,
-                  resource_context,
-                  request_data.resource_type == RESOURCE_TYPE_MAIN_FRAME),
+      GetPreviewsState(request_data.previews_state, delegate_, *new_request,
+                       resource_context,
+                       request_data.resource_type == RESOURCE_TYPE_MAIN_FRAME),
       support_async_revalidation ? request_data.headers : std::string(),
       request_data.request_body, request_data.initiated_in_secure_context);
   // Request takes ownership.
@@ -1849,6 +1852,7 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
     int child_id,
     int render_view_route_id,
     int render_frame_route_id,
+    PreviewsState previews_state,
     bool download,
     ResourceContext* context) {
   return new ResourceRequestInfoImpl(
@@ -1869,12 +1873,12 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       false,     // do_not_prompt_for_login
       blink::WebReferrerPolicyDefault, blink::WebPageVisibilityStateVisible,
       context,
-      false,          // report_raw_headers
-      true,           // is_async
-      false,          // is_using_lofi
-      std::string(),  // original_headers
-      nullptr,        // body
-      false);         // initiated_in_secure_context
+      false,           // report_raw_headers
+      true,            // is_async
+      previews_state,  // previews_state
+      std::string(),   // original_headers
+      nullptr,         // body
+      false);          // initiated_in_secure_context
 }
 
 void ResourceDispatcherHostImpl::OnRenderViewHostCreated(int child_id,
@@ -2238,8 +2242,8 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       info.common_params.referrer.policy, info.page_visibility_state,
       resource_context, info.report_raw_headers,
       true,  // is_async
-      IsUsingLoFi(info.common_params.lofi_state, delegate_, *new_request,
-                  resource_context, info.is_main_frame),
+      GetPreviewsState(info.common_params.previews_state, delegate_,
+                       *new_request, resource_context, info.is_main_frame),
       // The original_headers field is for stale-while-revalidate but the
       // feature doesn't work with PlzNavigate, so it's just a placeholder
       // here.
@@ -2414,15 +2418,16 @@ void ResourceDispatcherHostImpl::InitializeURLRequest(
     int render_process_host_id,
     int render_view_routing_id,
     int render_frame_routing_id,
+    PreviewsState previews_state,
     ResourceContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!request->is_pending());
 
   SetReferrerForRequest(request, referrer);
 
-  ResourceRequestInfoImpl* info =
-      CreateRequestInfo(render_process_host_id, render_view_routing_id,
-                        render_frame_routing_id, is_download, context);
+  ResourceRequestInfoImpl* info = CreateRequestInfo(
+      render_process_host_id, render_view_routing_id, render_frame_routing_id,
+      previews_state, is_download, context);
   // Request takes ownership.
   info->AssociateWithRequest(request);
 }

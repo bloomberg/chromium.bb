@@ -26,6 +26,7 @@
 #include "content/public/browser/restore_type.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/common/page_state.h"
+#include "content/public/common/previews_state.h"
 
 namespace content {
 class ResourceRequestBodyImpl;
@@ -180,7 +181,7 @@ class CONTENT_EXPORT NavigationEntryImpl
       const GURL& dest_url,
       const Referrer& dest_referrer,
       FrameMsg_Navigate_Type::Value navigation_type,
-      LoFiState lofi_state,
+      PreviewsState previews_state,
       const base::TimeTicks& navigation_start) const;
   StartNavigationParams ConstructStartNavigationParams() const;
   RequestNavigationParams ConstructRequestNavigationParams(

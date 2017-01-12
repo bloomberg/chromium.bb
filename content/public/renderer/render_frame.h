@@ -13,6 +13,7 @@
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "content/public/common/console_message_level.h"
+#include "content/public/common/previews_state.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "ppapi/features/features.h"
@@ -229,8 +230,9 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   virtual void AddMessageToConsole(ConsoleMessageLevel level,
                                    const std::string& message) = 0;
 
-  // Whether or not this frame is using Lo-Fi.
-  virtual bool IsUsingLoFi() const = 0;
+  // Returns the PreviewsState of this frame, a bitmask of potentially several
+  // Previews optimizations.
+  virtual PreviewsState GetPreviewsState() const = 0;
 
   // Whether or not this frame is currently pasting.
   virtual bool IsPasting() const = 0;

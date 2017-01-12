@@ -37,6 +37,7 @@
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/page_importance_signals.h"
 #include "content/public/common/page_state.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/stop_find_action.h"
@@ -103,9 +104,9 @@ IPC_ENUM_TRAITS(blink::WebSandboxFlags)  // Bitmask.
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTreeScopeType,
                           blink::WebTreeScopeType::Last)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::MenuSourceType, ui::MENU_SOURCE_TYPE_LAST)
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::LoFiState,
-                              content::LOFI_UNSPECIFIED,
-                              content::LOFI_ON)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::PreviewsState,
+                              content::PREVIEWS_UNSPECIFIED,
+                              content::PREVIEWS_STATE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(content::FileChooserParams::Mode,
                           content::FileChooserParams::Save)
 
@@ -335,7 +336,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::CommonNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(report_type)
   IPC_STRUCT_TRAITS_MEMBER(base_url_for_data_url)
   IPC_STRUCT_TRAITS_MEMBER(history_url_for_data_url)
-  IPC_STRUCT_TRAITS_MEMBER(lofi_state)
+  IPC_STRUCT_TRAITS_MEMBER(previews_state)
   IPC_STRUCT_TRAITS_MEMBER(navigation_start)
   IPC_STRUCT_TRAITS_MEMBER(method)
   IPC_STRUCT_TRAITS_MEMBER(post_data)

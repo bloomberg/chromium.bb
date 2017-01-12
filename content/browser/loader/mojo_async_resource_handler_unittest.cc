@@ -27,6 +27,7 @@
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/browser/stream_info.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/test_browser_context.h"
@@ -141,11 +142,11 @@ class TestResourceDispatcherHostDelegate final
     ADD_FAILURE() << "RequestComplete should not be called.";
   }
 
-  bool ShouldEnableLoFiMode(
+  PreviewsState GetPreviewsState(
       const net::URLRequest& url_request,
       content::ResourceContext* resource_context) override {
-    ADD_FAILURE() << "ShouldEnableLoFiMode should not be called.";
-    return false;
+    ADD_FAILURE() << "GetPreviewsState should not be called.";
+    return PREVIEWS_UNSPECIFIED;
   }
 
   NavigationData* GetNavigationData(net::URLRequest* request) const override {
@@ -286,7 +287,7 @@ class MojoAsyncResourceHandlerTestBase {
         false,                                   // parent_is_main_frame
         false,                                   // allow_download
         true,                                    // is_async
-        false                                    // is_using_lofi
+        PREVIEWS_OFF                             // previews_state
         );
 
     ResourceRequest request;

@@ -26,6 +26,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/test/frame_load_waiter.h"
@@ -522,7 +523,7 @@ void RenderViewTest::Reload(const GURL& url) {
       url, Referrer(), ui::PAGE_TRANSITION_LINK, FrameMsg_Navigate_Type::RELOAD,
       true, false, base::TimeTicks(),
       FrameMsg_UILoadMetricsReportType::NO_REPORT, GURL(), GURL(),
-      LOFI_UNSPECIFIED, base::TimeTicks::Now(), "GET", nullptr);
+      PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET", nullptr);
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   TestRenderFrame* frame =
       static_cast<TestRenderFrame*>(impl->GetMainRenderFrame());
@@ -659,7 +660,7 @@ void RenderViewTest::GoToOffset(int offset,
       url, Referrer(), ui::PAGE_TRANSITION_FORWARD_BACK,
       FrameMsg_Navigate_Type::NORMAL, true, false, base::TimeTicks(),
       FrameMsg_UILoadMetricsReportType::NO_REPORT, GURL(), GURL(),
-      LOFI_UNSPECIFIED, base::TimeTicks::Now(), "GET", nullptr);
+      PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET", nullptr);
   RequestNavigationParams request_params;
   request_params.page_state = state;
   request_params.nav_entry_id = pending_offset + 1;

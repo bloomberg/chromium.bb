@@ -32,6 +32,7 @@
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "ipc/ipc_message.h"
@@ -322,6 +323,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
                             int render_process_host_id,
                             int render_view_routing_id,
                             int render_frame_routing_id,
+                            PreviewsState previews_state,
                             ResourceContext* context);
 
   // Helper function for initiating a URL request. The |is_download| and
@@ -639,6 +641,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       int child_id,
       int render_view_route_id,
       int render_frame_route_id,
+      PreviewsState previews_state,
       bool download,
       ResourceContext* context);
 

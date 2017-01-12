@@ -17,6 +17,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/common/previews_state.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
@@ -92,8 +93,7 @@ class ContentResourceProviderTest : public testing::Test {
         false,  // parent_is_main_frame
         false,  // allow_download
         false,  // is_async
-        false   // is_using_lofi
-        );
+        content::PREVIEWS_OFF);
   }
 
   std::unique_ptr<net::URLRequest> CreateRequestByType(

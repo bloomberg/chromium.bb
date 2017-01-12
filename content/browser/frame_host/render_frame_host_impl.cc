@@ -335,7 +335,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       pending_web_ui_type_(WebUI::kNoWebUI),
       should_reuse_web_ui_(false),
       has_selection_(false),
-      last_navigation_lofi_state_(LOFI_UNSPECIFIED),
+      last_navigation_previews_state_(PREVIEWS_UNSPECIFIED),
       frame_host_binding_(this),
       waiting_for_init_(renderer_initiated_creation),
       has_focused_editable_element_(false),
@@ -2449,7 +2449,7 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
   CommonNavigationParams common_params(
       data_url, Referrer(), ui::PAGE_TRANSITION_LINK,
       FrameMsg_Navigate_Type::NORMAL, false, false, base::TimeTicks::Now(),
-      FrameMsg_UILoadMetricsReportType::NO_REPORT, GURL(), GURL(), LOFI_OFF,
+      FrameMsg_UILoadMetricsReportType::NO_REPORT, GURL(), GURL(), PREVIEWS_OFF,
       base::TimeTicks::Now(), "GET", nullptr);
   if (IsBrowserSideNavigationEnabled()) {
     CommitNavigation(nullptr, nullptr, common_params, RequestNavigationParams(),
@@ -2633,9 +2633,9 @@ void RenderFrameHostImpl::CommitNavigation(
   Send(new FrameMsg_CommitNavigation(routing_id_, head, body_url, common_params,
                                      request_params));
 
-  // If a network request was made, update the LoFi state.
+  // If a network request was made, update the Previews state.
   if (ShouldMakeNetworkRequestForURL(common_params.url))
-    last_navigation_lofi_state_ = common_params.lofi_state;
+    last_navigation_previews_state_ = common_params.previews_state;
 
   // TODO(clamy): Release the stream handle once the renderer has finished
   // reading it.

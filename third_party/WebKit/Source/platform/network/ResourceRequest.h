@@ -271,9 +271,9 @@ class PLATFORM_EXPORT ResourceRequest final {
     m_fetchRedirectMode = redirect;
   }
 
-  WebURLRequest::LoFiState loFiState() const { return m_loFiState; }
-  void setLoFiState(WebURLRequest::LoFiState loFiState) {
-    m_loFiState = loFiState;
+  WebURLRequest::PreviewsState previewsState() const { return m_previewsState; }
+  void setPreviewsState(WebURLRequest::PreviewsState previewsState) {
+    m_previewsState = previewsState;
   }
 
   bool cacheControlContainsNoCache() const;
@@ -344,7 +344,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   WebURLRequest::FetchRequestMode m_fetchRequestMode;
   WebURLRequest::FetchCredentialsMode m_fetchCredentialsMode;
   WebURLRequest::FetchRedirectMode m_fetchRedirectMode;
-  WebURLRequest::LoFiState m_loFiState;
+  WebURLRequest::PreviewsState m_previewsState;
   ReferrerPolicy m_referrerPolicy;
   bool m_didSetHTTPReferrer;
   bool m_checkForBrowserSideNavigation;
@@ -395,7 +395,7 @@ struct CrossThreadResourceRequestData {
   WebURLRequest::FetchRequestMode m_fetchRequestMode;
   WebURLRequest::FetchCredentialsMode m_fetchCredentialsMode;
   WebURLRequest::FetchRedirectMode m_fetchRedirectMode;
-  WebURLRequest::LoFiState m_loFiState;
+  WebURLRequest::PreviewsState m_previewsState;
   ReferrerPolicy m_referrerPolicy;
   bool m_didSetHTTPReferrer;
   bool m_checkForBrowserSideNavigation;

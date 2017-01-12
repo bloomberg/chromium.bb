@@ -14,6 +14,7 @@
 #include "content/browser/frame_host/navigator.h"
 #include "content/common/content_export.h"
 #include "content/common/navigation_params.h"
+#include "content/public/common/previews_state.h"
 #include "url/gurl.h"
 
 class GURL;
@@ -127,7 +128,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                          const FrameNavigationEntry& frame_entry,
                          const NavigationEntryImpl& entry,
                          ReloadType reload_type,
-                         LoFiState lofi_state,
+                         PreviewsState previews_state,
                          bool is_same_document_history_load,
                          bool is_history_navigation_in_new_child,
                          base::TimeTicks navigation_start);

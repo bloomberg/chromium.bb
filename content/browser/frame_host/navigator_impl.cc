@@ -331,17 +331,17 @@ bool NavigatorImpl::NavigateToEntry(
       "navigation,rail", "NavigationTiming navigationStart",
       TRACE_EVENT_SCOPE_GLOBAL, navigation_start);
 
-  // Determine if LoFi should be used for the navigation.
-  LoFiState lofi_state = LOFI_UNSPECIFIED;
+  // Determine if Previews should be used for the navigation.
+  PreviewsState previews_state = PREVIEWS_UNSPECIFIED;
   if (!frame_tree_node->IsMainFrame()) {
     // For subframes, use the state of the top-level frame.
-    lofi_state = frame_tree_node->frame_tree()
+    previews_state = frame_tree_node->frame_tree()
                      ->root()
                      ->current_frame_host()
-                     ->last_navigation_lofi_state();
+                     ->last_navigation_previews_state();
   } else if (reload_type == ReloadType::DISABLE_LOFI_MODE) {
     // Disable LoFi when asked for it explicitly.
-    lofi_state = LOFI_OFF;
+    previews_state = PREVIEWS_OFF;
   }
 
   // PlzNavigate: the RenderFrameHosts are no longer asked to navigate.
@@ -349,7 +349,7 @@ bool NavigatorImpl::NavigateToEntry(
     navigation_data_.reset(new NavigationMetricsData(navigation_start, dest_url,
                                                      entry.restore_type()));
     RequestNavigation(frame_tree_node, dest_url, dest_referrer, frame_entry,
-                      entry, reload_type, lofi_state,
+                      entry, reload_type, previews_state,
                       is_same_document_history_load,
                       is_history_navigation_in_new_child, navigation_start);
     if (frame_tree_node->IsMainFrame() &&
@@ -419,7 +419,7 @@ bool NavigatorImpl::NavigateToEntry(
       dest_render_frame_host->Navigate(
           entry.ConstructCommonNavigationParams(
               frame_entry, post_body, dest_url, dest_referrer, navigation_type,
-              lofi_state, navigation_start),
+              previews_state, navigation_start),
           entry.ConstructStartNavigationParams(),
           entry.ConstructRequestNavigationParams(
               frame_entry, is_same_document_history_load,
@@ -1120,7 +1120,7 @@ void NavigatorImpl::RequestNavigation(FrameTreeNode* frame_tree_node,
                                       const FrameNavigationEntry& frame_entry,
                                       const NavigationEntryImpl& entry,
                                       ReloadType reload_type,
-                                      LoFiState lofi_state,
+                                      PreviewsState previews_state,
                                       bool is_same_document_history_load,
                                       bool is_history_navigation_in_new_child,
                                       base::TimeTicks navigation_start) {
@@ -1137,7 +1137,7 @@ void NavigatorImpl::RequestNavigation(FrameTreeNode* frame_tree_node,
   std::unique_ptr<NavigationRequest> scoped_request =
       NavigationRequest::CreateBrowserInitiated(
           frame_tree_node, dest_url, dest_referrer, frame_entry, entry,
-          navigation_type, lofi_state, is_same_document_history_load,
+          navigation_type, previews_state, is_same_document_history_load,
           is_history_navigation_in_new_child, navigation_start, controller_);
   NavigationRequest* navigation_request = scoped_request.get();
 

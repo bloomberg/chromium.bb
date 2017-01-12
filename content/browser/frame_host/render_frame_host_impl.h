@@ -38,6 +38,7 @@
 #include "content/common/navigation_params.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/javascript_message_type.h"
+#include "content/public/common/previews_state.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "net/http/http_response_headers.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
@@ -594,10 +595,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void ClearFocusedElement();
 
-  // PlzNavigate: returns the LoFi state of the last successful navigation that
-  // made a network request.
-  LoFiState last_navigation_lofi_state() const {
-    return last_navigation_lofi_state_;
+  // PlzNavigate: returns the PreviewsState of the last successful navigation
+  // that made a network request. The PreviewsState is a bitmask of potentially
+  // several Previews optimizations.
+  PreviewsState last_navigation_previews_state() const {
+    return last_navigation_previews_state_;
   }
 
   bool has_focused_editable_element() const {
@@ -1093,10 +1095,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // If true, then the RenderFrame has selected text.
   bool has_selection_;
 
-  // PlzNavigate: The LoFi state of the last navigation. This is used during
+  // PlzNavigate: The Previews state of the last navigation. This is used during
   // history navigation of subframes to ensure that subframes navigate with the
-  // same LoFi status as the top-level frame.
-  LoFiState last_navigation_lofi_state_;
+  // same Previews status as the top-level frame.
+  PreviewsState last_navigation_previews_state_;
 
   mojo::Binding<mojom::FrameHost> frame_host_binding_;
   mojom::FramePtr frame_;

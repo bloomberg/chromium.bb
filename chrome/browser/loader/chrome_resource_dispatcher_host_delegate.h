@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
+#include "content/public/common/previews_state.h"
 #include "extensions/features/features.h"
 
 class DownloadRequestLimiter;
@@ -83,7 +84,8 @@ class ChromeResourceDispatcherHostDelegate
                            content::ResourceContext* resource_context,
                            content::ResourceResponse* response) override;
   void RequestComplete(net::URLRequest* url_request) override;
-  bool ShouldEnableLoFiMode(
+  // Returns a bitmask of potentially several Previews optimizations.
+  content::PreviewsState GetPreviewsState(
       const net::URLRequest& url_request,
       content::ResourceContext* resource_context) override;
   content::NavigationData* GetNavigationData(

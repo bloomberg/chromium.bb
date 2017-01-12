@@ -20,6 +20,7 @@
 #include "components/history/core/browser/history_types.h"
 #include "components/sessions/core/session_id.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_context.h"
@@ -210,7 +211,7 @@ class ResourcePrefetchPredictorTest : public testing::Test {
     request->set_first_party_for_cookies(url);
     content::ResourceRequestInfo::AllocateForTesting(
         request.get(), resource_type, nullptr, -1, -1, -1, is_main_frame, false,
-        false, true, false);
+        false, true, content::PREVIEWS_OFF);
     request->Start();
     return request;
   }

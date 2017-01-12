@@ -11,6 +11,7 @@
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chromeos/login/login_state.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/api/web_request/web_request_permissions.h"
 #include "extensions/browser/info_map.h"
@@ -151,19 +152,15 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
     int view_id = 17;
     std::unique_ptr<net::URLRequest> sensitive_request(
         context.CreateRequest(non_sensitive_url, net::DEFAULT_PRIORITY, NULL));
-    ResourceRequestInfo::AllocateForTesting(sensitive_request.get(),
-                                            content::RESOURCE_TYPE_SCRIPT,
-                                            NULL,
-                                            process_id,
-                                            view_id,
-                                            MSG_ROUTING_NONE,
-                                            false,   // is_main_frame
-                                            false,   // parent_is_main_frame
-                                            true,    // allow_download
-                                            false,   // is_async
-                                            false);  // is_using_lofi
-    extension_info_map_->RegisterExtensionProcess(
-        extensions::kWebStoreAppId, process_id, site_instance_id);
+    ResourceRequestInfo::AllocateForTesting(
+        sensitive_request.get(), content::RESOURCE_TYPE_SCRIPT, NULL,
+        process_id, view_id, MSG_ROUTING_NONE,
+        /*is_main_frame=*/false,
+        /*parent_is_main_frame=*/false,
+        /*allow_download=*/true,
+        /*is_async=*/false, content::PREVIEWS_OFF);
+    extension_info_map_->RegisterExtensionProcess(extensions::kWebStoreAppId,
+                                                  process_id, site_instance_id);
     EXPECT_TRUE(WebRequestPermissions::HideRequest(
         extension_info_map_.get(), sensitive_request.get(), nullptr));
   }

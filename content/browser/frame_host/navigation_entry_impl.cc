@@ -672,7 +672,7 @@ CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
     const GURL& dest_url,
     const Referrer& dest_referrer,
     FrameMsg_Navigate_Type::Value navigation_type,
-    LoFiState lofi_state,
+    PreviewsState previews_state,
     const base::TimeTicks& navigation_start) const {
   FrameMsg_UILoadMetricsReportType::Value report_type =
       FrameMsg_UILoadMetricsReportType::NO_REPORT;
@@ -695,7 +695,7 @@ CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
   return CommonNavigationParams(
       dest_url, dest_referrer, GetTransitionType(), navigation_type,
       !IsViewSourceMode(), should_replace_entry(), ui_timestamp, report_type,
-      GetBaseURLForDataURL(), GetHistoryURLForDataURL(), lofi_state,
+      GetBaseURLForDataURL(), GetHistoryURLForDataURL(), previews_state,
       navigation_start, method, post_body ? post_body : post_data_);
 }
 

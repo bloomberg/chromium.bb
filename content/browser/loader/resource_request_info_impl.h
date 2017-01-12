@@ -19,6 +19,7 @@
 #include "content/common/url_loader.mojom.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/load_states.h"
@@ -70,7 +71,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       ResourceContext* context,
       bool report_raw_headers,
       bool is_async,
-      bool is_using_lofi,
+      PreviewsState previews_state,
       const std::string& original_headers,
       const scoped_refptr<ResourceRequestBodyImpl> body,
       bool initiated_in_secure_context);
@@ -98,7 +99,8 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
                                 int* render_frame_id) const override;
   bool IsAsync() const override;
   bool IsDownload() const override;
-  bool IsUsingLoFi() const override;
+  // Returns a bitmask of potentially several Previews optimizations.
+  PreviewsState GetPreviewsState() const override;
   bool ShouldReportRawHeaders() const;
   NavigationUIData* GetNavigationUIData() const override;
 
@@ -233,7 +235,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   ResourceContext* context_;
   bool report_raw_headers_;
   bool is_async_;
-  bool is_using_lofi_;
+  PreviewsState previews_state_;
   const std::string original_headers_;
   scoped_refptr<ResourceRequestBodyImpl> body_;
   bool initiated_in_secure_context_;

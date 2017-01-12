@@ -43,6 +43,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/load_flags.h"
@@ -547,7 +548,7 @@ DownloadInterruptReason DownloadManagerImpl::BeginDownloadRequest(
       url_request.get(), referrer,
       true,  // download.
       render_process_id, render_view_route_id, render_frame_route_id,
-      resource_context);
+      PREVIEWS_OFF, resource_context);
 
   // We treat a download as a main frame load, and thus update the policy URL on
   // redirects.

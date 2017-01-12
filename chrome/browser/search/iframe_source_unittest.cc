@@ -13,6 +13,7 @@
 #include "chrome/grit/browser_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "ipc/ipc_message.h"
@@ -93,17 +94,12 @@ class IframeSourceTest : public testing::Test {
         resource_context_.GetRequestContext()->CreateRequest(
             GURL(url), net::DEFAULT_PRIORITY, NULL));
     content::ResourceRequestInfo::AllocateForTesting(
-        request.get(),
-        content::RESOURCE_TYPE_SUB_FRAME,
-        &resource_context_,
-        render_process_id,
-        MSG_ROUTING_NONE,
-        MSG_ROUTING_NONE,
-        false,   // is_main_frame
-        false,   // parent_is_main_frame
-        true,    // allow_download
-        false,   // is_async
-        false);  // is_using_lofi
+        request.get(), content::RESOURCE_TYPE_SUB_FRAME, &resource_context_,
+        render_process_id, MSG_ROUTING_NONE, MSG_ROUTING_NONE,
+        /*is_main_frame=*/false,
+        /*parent_is_main_frame=*/false,
+        /*allow_download=*/true,
+        /*is_async=*/false, content::PREVIEWS_OFF);
     return request;
   }
 

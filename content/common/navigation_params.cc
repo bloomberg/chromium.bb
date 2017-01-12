@@ -34,7 +34,7 @@ CommonNavigationParams::CommonNavigationParams()
       allow_download(true),
       should_replace_current_entry(false),
       report_type(FrameMsg_UILoadMetricsReportType::NO_REPORT),
-      lofi_state(LOFI_UNSPECIFIED),
+      previews_state(PREVIEWS_UNSPECIFIED),
       navigation_start(base::TimeTicks::Now()),
       method("GET") {}
 
@@ -49,7 +49,7 @@ CommonNavigationParams::CommonNavigationParams(
     FrameMsg_UILoadMetricsReportType::Value report_type,
     const GURL& base_url_for_data_url,
     const GURL& history_url_for_data_url,
-    LoFiState lofi_state,
+    PreviewsState previews_state,
     const base::TimeTicks& navigation_start,
     std::string method,
     const scoped_refptr<ResourceRequestBodyImpl>& post_data)
@@ -63,7 +63,7 @@ CommonNavigationParams::CommonNavigationParams(
       report_type(report_type),
       base_url_for_data_url(base_url_for_data_url),
       history_url_for_data_url(history_url_for_data_url),
-      lofi_state(lofi_state),
+      previews_state(previews_state),
       navigation_start(navigation_start),
       method(method),
       post_data(post_data) {

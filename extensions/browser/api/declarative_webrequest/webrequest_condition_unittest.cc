@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "components/url_matcher/url_matcher_constants.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/common/previews_state.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"
@@ -87,15 +88,15 @@ TEST(WebRequestConditionTest, CreateCondition) {
   EXPECT_EQ(1u, request_data.url_match_ids.size());
   content::ResourceRequestInfo::AllocateForTesting(
       match_request.get(), content::RESOURCE_TYPE_MAIN_FRAME,
-      NULL,    // context
-      -1,      // render_process_id
-      -1,      // render_view_id
-      -1,      // render_frame_id
-      true,    // is_main_frame
-      false,   // parent_is_main_frame
-      true,    // allow_download
-      false,   // is_async
-      false);  // is_using_lofi
+      NULL,   // context
+      -1,     // render_process_id
+      -1,     // render_view_id
+      -1,     // render_frame_id
+      true,   // is_main_frame
+      false,  // parent_is_main_frame
+      true,   // allow_download
+      false,  // is_async
+      content::PREVIEWS_OFF);
   EXPECT_TRUE(result->IsFulfilled(request_data));
 
   const GURL https_url("https://www.example.com");
@@ -107,15 +108,15 @@ TEST(WebRequestConditionTest, CreateCondition) {
   EXPECT_EQ(1u, request_data.url_match_ids.size());
   content::ResourceRequestInfo::AllocateForTesting(
       wrong_resource_type.get(), content::RESOURCE_TYPE_SUB_FRAME,
-      NULL,    // context
-      -1,      // render_process_id
-      -1,      // render_view_id
-      -1,      // render_frame_id
-      false,   // is_main_frame
-      false,   // parent_is_main_frame
-      true,    // allow_download
-      false,   // is_async
-      false);  // is_using_lofi
+      NULL,   // context
+      -1,     // render_process_id
+      -1,     // render_view_id
+      -1,     // render_frame_id
+      false,  // is_main_frame
+      false,  // parent_is_main_frame
+      true,   // allow_download
+      false,  // is_async
+      content::PREVIEWS_OFF);
   EXPECT_FALSE(result->IsFulfilled(request_data));
 }
 
@@ -156,15 +157,15 @@ TEST(WebRequestConditionTest, CreateConditionFirstPartyForCookies) {
   EXPECT_EQ(1u, request_data.first_party_url_match_ids.size());
   content::ResourceRequestInfo::AllocateForTesting(
       match_request.get(), content::RESOURCE_TYPE_MAIN_FRAME,
-      NULL,    // context
-      -1,      // render_process_id
-      -1,      // render_view_id
-      -1,      // render_frame_id
-      true,    // is_main_frame
-      false,   // parent_is_main_frame
-      true,    // allow_download
-      false,   // is_async
-      false);  // is_using_lofi
+      NULL,   // context
+      -1,     // render_process_id
+      -1,     // render_view_id
+      -1,     // render_frame_id
+      true,   // is_main_frame
+      false,  // parent_is_main_frame
+      true,   // allow_download
+      false,  // is_async
+      content::PREVIEWS_OFF);
   EXPECT_TRUE(result->IsFulfilled(request_data));
 }
 

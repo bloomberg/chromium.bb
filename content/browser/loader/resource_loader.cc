@@ -67,7 +67,7 @@ void PopulateResourceResponse(ResourceRequestInfoImpl* info,
   const content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(request);
   if (request_info)
-    response->head.is_using_lofi = request_info->IsUsingLoFi();
+    response->head.previews_state = request_info->GetPreviewsState();
 
   response->head.effective_connection_type =
       net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;

@@ -603,7 +603,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     resource_request->do_not_prompt_for_login = true;
   }
   resource_request->report_raw_headers = request.reportRawHeaders();
-  resource_request->lofi_state = static_cast<LoFiState>(request.getLoFiState());
+  resource_request->previews_state =
+      static_cast<PreviewsState>(request.getPreviewsState());
 
   // PlzNavigate: during navigation, the renderer should request a stream which
   // contains the body of the response. The network request has already been
@@ -1087,7 +1088,7 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
   extra_data->set_was_alternate_protocol_available(
       info.was_alternate_protocol_available);
   extra_data->set_connection_info(info.connection_info);
-  extra_data->set_is_using_lofi(info.is_using_lofi);
+  extra_data->set_previews_state(info.previews_state);
   extra_data->set_effective_connection_type(info.effective_connection_type);
 
   // If there's no received headers end time, don't set load timing.  This is

@@ -69,7 +69,7 @@ ResourceRequest::ResourceRequest(const KURL& url)
       m_fetchRequestMode(WebURLRequest::FetchRequestModeNoCORS),
       m_fetchCredentialsMode(WebURLRequest::FetchCredentialsModeInclude),
       m_fetchRedirectMode(WebURLRequest::FetchRedirectModeFollow),
-      m_loFiState(WebURLRequest::LoFiUnspecified),
+      m_previewsState(WebURLRequest::PreviewsUnspecified),
       m_referrerPolicy(ReferrerPolicyDefault),
       m_didSetHTTPReferrer(false),
       m_checkForBrowserSideNavigation(true),
@@ -107,7 +107,7 @@ ResourceRequest::ResourceRequest(CrossThreadResourceRequestData* data)
   setFetchRequestMode(data->m_fetchRequestMode);
   setFetchCredentialsMode(data->m_fetchCredentialsMode);
   setFetchRedirectMode(data->m_fetchRedirectMode);
-  setLoFiState(data->m_loFiState);
+  setPreviewsState(data->m_previewsState);
   m_referrerPolicy = data->m_referrerPolicy;
   m_didSetHTTPReferrer = data->m_didSetHTTPReferrer;
   m_checkForBrowserSideNavigation = data->m_checkForBrowserSideNavigation;
@@ -155,7 +155,7 @@ std::unique_ptr<CrossThreadResourceRequestData> ResourceRequest::copyData()
   data->m_fetchRequestMode = m_fetchRequestMode;
   data->m_fetchCredentialsMode = m_fetchCredentialsMode;
   data->m_fetchRedirectMode = m_fetchRedirectMode;
-  data->m_loFiState = m_loFiState;
+  data->m_previewsState = m_previewsState;
   data->m_referrerPolicy = m_referrerPolicy;
   data->m_didSetHTTPReferrer = m_didSetHTTPReferrer;
   data->m_checkForBrowserSideNavigation = m_checkForBrowserSideNavigation;

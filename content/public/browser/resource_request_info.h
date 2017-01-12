@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
@@ -49,7 +50,7 @@ class ResourceRequestInfo {
                                                 bool parent_is_main_frame,
                                                 bool allow_download,
                                                 bool is_async,
-                                                bool is_using_lofi);
+                                                PreviewsState previews_state);
 
   // Returns the associated RenderFrame for a given process. Returns false, if
   // there is no associated RenderFrame. This method does not rely on the
@@ -158,8 +159,8 @@ class ResourceRequestInfo {
   // Whether this is a download.
   virtual bool IsDownload() const = 0;
 
-  // Whether this request if using Lo-Fi mode.
-  virtual bool IsUsingLoFi() const = 0;
+  // Returns the current state of Previews.
+  virtual PreviewsState GetPreviewsState() const = 0;
 
   // PlzNavigate
   // Only used for navigations. Returns opaque data set by the embedder on the

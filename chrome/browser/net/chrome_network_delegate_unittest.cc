@@ -32,6 +32,7 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/features/features.h"
@@ -77,7 +78,7 @@ std::unique_ptr<net::URLRequest> RequestURL(
 
   content::ResourceRequestInfo::AllocateForTesting(
       request.get(), content::RESOURCE_TYPE_MAIN_FRAME, nullptr, -2, -2, -2,
-      true, false, true, true, false);
+      true, false, true, true, content::PREVIEWS_OFF);
 
   request->Start();
   base::RunLoop().RunUntilIdle();

@@ -840,16 +840,19 @@ void ChromeResourceDispatcherHostDelegate::RequestComplete(
                  base::TimeTicks::Now() - url_request->creation_time()));
 }
 
-bool ChromeResourceDispatcherHostDelegate::ShouldEnableLoFiMode(
+content::PreviewsState ChromeResourceDispatcherHostDelegate::GetPreviewsState(
     const net::URLRequest& url_request,
     content::ResourceContext* resource_context) {
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
   data_reduction_proxy::DataReductionProxyIOData* data_reduction_proxy_io_data =
       io_data->data_reduction_proxy_io_data();
 
-  if (data_reduction_proxy_io_data)
-    return data_reduction_proxy_io_data->ShouldEnableLoFiMode(url_request);
-  return false;
+  if (data_reduction_proxy_io_data) {
+    return data_reduction_proxy_io_data->ShouldEnableLoFiMode(url_request)
+               ? content::SERVER_LOFI_ON
+               : content::PREVIEWS_OFF;
+  }
+  return content::PREVIEWS_OFF;
 }
 
 // static

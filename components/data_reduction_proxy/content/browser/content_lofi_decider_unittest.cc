@@ -26,6 +26,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/common/previews_state.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_delegate_impl.h"
 #include "net/http/http_request_headers.h"
@@ -103,7 +104,7 @@ class ContentLoFiDeciderTest : public testing::Test {
         false,  // parent_is_main_frame
         false,  // allow_download
         false,  // is_async
-        is_using_lofi);
+        is_using_lofi ? content::SERVER_LOFI_ON : content::PREVIEWS_OFF);
   }
 
   std::unique_ptr<net::URLRequest> CreateRequest(bool is_main_frame,

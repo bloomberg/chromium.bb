@@ -52,7 +52,7 @@ void ResourceRequestInfo::AllocateForTesting(net::URLRequest* request,
                                              bool parent_is_main_frame,
                                              bool allow_download,
                                              bool is_async,
-                                             bool is_using_lofi) {
+                                             PreviewsState previews_state) {
   // Make sure both |is_main_frame| and |parent_is_main_frame| aren't set at the
   // same time.
   DCHECK(!(is_main_frame && parent_is_main_frame));
@@ -86,7 +86,7 @@ void ResourceRequestInfo::AllocateForTesting(net::URLRequest* request,
       context,                               // context
       false,                                 // report_raw_headers
       is_async,                              // is_async
-      is_using_lofi,                         // is_using_lofi
+      previews_state,                        // previews_state
       std::string(),                         // original_headers
       nullptr,                               // body
       false);                                // initiated_in_secure_context
@@ -153,7 +153,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     ResourceContext* context,
     bool report_raw_headers,
     bool is_async,
-    bool is_using_lofi,
+    PreviewsState previews_state,
     const std::string& original_headers,
     const scoped_refptr<ResourceRequestBodyImpl> body,
     bool initiated_in_secure_context)
@@ -184,7 +184,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       context_(context),
       report_raw_headers_(report_raw_headers),
       is_async_(is_async),
-      is_using_lofi_(is_using_lofi),
+      previews_state_(previews_state),
       original_headers_(original_headers),
       body_(body),
       initiated_in_secure_context_(initiated_in_secure_context) {}
@@ -297,8 +297,8 @@ bool ResourceRequestInfoImpl::IsDownload() const {
   return is_download_;
 }
 
-bool ResourceRequestInfoImpl::IsUsingLoFi() const {
-  return is_using_lofi_;
+PreviewsState ResourceRequestInfoImpl::GetPreviewsState() const {
+  return previews_state_;
 }
 
 bool ResourceRequestInfoImpl::ShouldReportRawHeaders() const {

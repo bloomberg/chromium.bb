@@ -30,6 +30,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/url_request.h"
@@ -459,17 +460,13 @@ std::unique_ptr<net::URLRequest> OfflinePageRequestJobTest::CreateRequest(
   request->set_method(method);
 
   content::ResourceRequestInfo::AllocateForTesting(
-      request.get(),
-      resource_type,
-      nullptr,
-      1,     /* render_process_id */
-      -1,    /* render_view_id */
-      1,     /* render_frame_id */
-      true,  /* is_main_frame */
-      false, /* parent_is_main_frame */
-      true,  /* allow_download */
-      true,  /* is_async */
-      false  /* is_using_lofi */);
+      request.get(), resource_type, nullptr, /*render_process_id=*/1,
+      /*render_view_id=*/-1,
+      /*render_frame_id=*/1,
+      /*is_main_frame=*/true,
+      /*parent_is_main_frame=*/false,
+      /*allow_download=*/true,
+      /*is_async=*/true, content::PREVIEWS_OFF);
 
   return request;
 }

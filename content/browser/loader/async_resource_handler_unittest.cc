@@ -33,6 +33,7 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -187,7 +188,7 @@ class AsyncResourceHandlerTest : public ::testing::Test,
         resource_context_.get(),               // context
         false,                                 // report_raw_headers
         true,                                  // is_async
-        false,                                 // is_using_lofi
+        PREVIEWS_OFF,                          // previews_state
         std::string(),                         // original_headers
         nullptr,                               // body
         false);                                // initiated_in_secure_context

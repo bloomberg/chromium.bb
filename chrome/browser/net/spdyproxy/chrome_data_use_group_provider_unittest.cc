@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/net/spdyproxy/chrome_data_use_group.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
@@ -28,13 +29,11 @@ class ChromeDataUseGroupProviderTest : public testing::Test {
 
     content::ResourceRequestInfo::AllocateForTesting(
         request.get(), content::RESOURCE_TYPE_MAIN_FRAME,
-        nullptr,               /* ResourceContext */
-        render_process_id, -1, /* render_view_id */
-        render_frame_id, true, /* is_main_frame */
-        false,                 /* parent_is_main_frame */
-        true,                  /* allow_download */
-        true,                  /* is_async */
-        false                  /* is_using_lofi */);
+        /*ResourceContext=*/nullptr, render_process_id, /*render_view_id=*/-1,
+        render_frame_id, /*is_main_frame=*/true,
+        /*parent_is_main_frame=*/false,
+        /*allow_download=*/true,
+        /*is_async=*/true, content::PREVIEWS_OFF);
 
     return request;
   }

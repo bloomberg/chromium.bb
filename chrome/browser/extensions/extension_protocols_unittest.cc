@@ -17,6 +17,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_protocols.h"
@@ -136,17 +137,14 @@ class ExtensionProtocolTest : public testing::Test {
   void StartRequest(net::URLRequest* request,
                     ResourceType resource_type) {
     content::ResourceRequestInfo::AllocateForTesting(
-        request,
-        resource_type,
-        &resource_context_,
-        -1,      // render_process_id
-        -1,      // render_view_id
-        -1,      // render_frame_id
-        resource_type == content::RESOURCE_TYPE_MAIN_FRAME,  // is_main_frame
-        false,   // parent_is_main_frame
-        true,    // allow_download
-        false,   // is_async
-        false);  // is_using_lofi
+        request, resource_type, &resource_context_,
+        /*render_process_id=*/-1,
+        /*render_view_id=*/-1,
+        /*render_frame_id=*/-1,
+        /*is_main_frame=*/resource_type == content::RESOURCE_TYPE_MAIN_FRAME,
+        /*parent_is_main_frame=*/false,
+        /*allow_download=*/true,
+        /*is_async=*/false, content::PREVIEWS_OFF);
     request->Start();
     base::RunLoop().Run();
   }

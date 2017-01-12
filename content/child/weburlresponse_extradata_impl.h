@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
+#include "content/public/common/previews_state.h"
 #include "net/http/http_response_info.h"
 #include "net/nqe/effective_connection_type.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
@@ -68,8 +69,11 @@ class CONTENT_EXPORT WebURLResponseExtraDataImpl :
     is_ftp_directory_listing_ = is_ftp_directory_listing;
   }
 
-  bool is_using_lofi() const { return is_using_lofi_; }
-  void set_is_using_lofi(bool is_using_lofi) { is_using_lofi_ = is_using_lofi; }
+  // Returns a bitmask of potentially several Previews optimizations.
+  PreviewsState previews_state() const { return previews_state_; }
+  void set_previews_state(PreviewsState previews_state) {
+    previews_state_ = previews_state;
+  }
 
   net::EffectiveConnectionType effective_connection_type() const {
     return effective_connection_type_;
@@ -86,7 +90,7 @@ class CONTENT_EXPORT WebURLResponseExtraDataImpl :
   bool was_alpn_negotiated_;
   net::HttpResponseInfo::ConnectionInfo connection_info_;
   bool was_alternate_protocol_available_;
-  bool is_using_lofi_;
+  PreviewsState previews_state_;
   net::EffectiveConnectionType effective_connection_type_;
 
   DISALLOW_COPY_AND_ASSIGN(WebURLResponseExtraDataImpl);

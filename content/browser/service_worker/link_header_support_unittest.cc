@@ -15,6 +15,7 @@
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/http/http_response_headers.h"
@@ -115,7 +116,7 @@ class LinkHeaderServiceWorkerTest : public ::testing::Test {
         -1 /* render_process_id */, -1 /* render_view_id */,
         -1 /* render_frame_id */, resource_type == RESOURCE_TYPE_MAIN_FRAME,
         false /* parent_is_main_frame */, true /* allow_download */,
-        true /* is_async */, false /* is_using_lofi */);
+        true /* is_async */, PREVIEWS_OFF /* previews_state */);
     ResourceRequestInfoImpl::ForRequest(request.get())
         ->set_initiated_in_secure_context_for_testing(true);
 

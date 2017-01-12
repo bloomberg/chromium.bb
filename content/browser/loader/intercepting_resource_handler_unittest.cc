@@ -19,6 +19,7 @@
 #include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/test_resource_handler.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -73,7 +74,7 @@ TEST_F(InterceptingResourceHandlerTest, NoSwitching) {
                                           false,    // parent_is_main_frame
                                           true,     // allow_download
                                           true,     // is_async
-                                          false);   // is_using_lofi
+                                          PREVIEWS_OFF);  // previews_state
 
   net::URLRequestStatus old_handler_status;
   std::string old_handler_body;
@@ -142,7 +143,7 @@ TEST_F(InterceptingResourceHandlerTest, HandlerSwitchNoPayload) {
                                           false,    // parent_is_main_frame
                                           true,     // allow_download
                                           true,     // is_async
-                                          false);   // is_using_lofi
+                                          PREVIEWS_OFF);  // previews_state
 
   net::URLRequestStatus old_handler_status;
   std::string old_handler_body;
@@ -227,7 +228,7 @@ TEST_F(InterceptingResourceHandlerTest, HandlerSwitchWithPayload) {
                                           false,    // parent_is_main_frame
                                           true,     // allow_download
                                           true,     // is_async
-                                          false);   // is_using_lofi
+                                          PREVIEWS_OFF);  // previews_state
 
   net::URLRequestStatus old_handler_status;
   std::string old_handler_body;
@@ -323,7 +324,7 @@ TEST_F(InterceptingResourceHandlerTest, OldHandlerFailsWillRead) {
                                           false,    // parent_is_main_frame
                                           true,     // allow_download
                                           true,     // is_async
-                                          false);   // is_using_lofi
+                                          PREVIEWS_OFF);  // previews_state
 
   net::URLRequestStatus old_handler_status;
   std::string old_handler_body;
@@ -361,7 +362,7 @@ TEST_F(InterceptingResourceHandlerTest, NewHandlerFailsOnWillStart) {
                                           false,    // parent_is_main_frame
                                           true,     // allow_download
                                           true,     // is_async
-                                          false);   // is_using_lofi
+                                          PREVIEWS_OFF);  // previews_state
 
   net::URLRequestStatus old_handler_status;
   std::string old_handler_body;
@@ -416,7 +417,7 @@ TEST_F(InterceptingResourceHandlerTest, NewHandlerFailsResponseStarted) {
                                           false,    // parent_is_main_frame
                                           true,     // allow_download
                                           true,     // is_async
-                                          false);   // is_using_lofi
+                                          PREVIEWS_OFF);  // previews_state
 
   net::URLRequestStatus old_handler_status;
   std::string old_handler_body;
@@ -470,7 +471,7 @@ TEST_F(InterceptingResourceHandlerTest, NewHandlerFailsWillRead) {
                                           false,    // parent_is_main_frame
                                           true,     // allow_download
                                           true,     // is_async
-                                          false);   // is_using_lofi
+                                          PREVIEWS_OFF);  // previews_state
 
   net::URLRequestStatus old_handler_status;
   std::string old_handler_body;
@@ -533,7 +534,7 @@ TEST_F(InterceptingResourceHandlerTest, NewHandlerFailsReadCompleted) {
                                           false,    // parent_is_main_frame
                                           true,     // allow_download
                                           true,     // is_async
-                                          false);   // is_using_lofi
+                                          PREVIEWS_OFF);  // previews_state
 
   net::URLRequestStatus old_handler_status;
   std::string old_handler_body;
@@ -596,7 +597,7 @@ TEST_F(InterceptingResourceHandlerTest, DeferredOperations) {
                                           false,    // parent_is_main_frame
                                           true,     // allow_download
                                           true,     // is_async
-                                          false);   // is_using_lofi
+                                          PREVIEWS_OFF);  // previews_state
 
   std::unique_ptr<TestResourceController> resource_controller =
       base::MakeUnique<TestResourceController>();
@@ -725,7 +726,7 @@ TEST_F(InterceptingResourceHandlerTest, CancelOldHandler) {
                                           false,    // parent_is_main_frame
                                           true,     // allow_download
                                           true,     // is_async
-                                          false);   // is_using_lofi
+                                          PREVIEWS_OFF);  // previews_state
 
   std::unique_ptr<TestResourceController> resource_controller =
       base::MakeUnique<TestResourceController>();
@@ -765,7 +766,7 @@ TEST_F(InterceptingResourceHandlerTest, CancelNewHandler) {
                                           false,    // parent_is_main_frame
                                           true,     // allow_download
                                           true,     // is_async
-                                          false);   // is_using_lofi
+                                          PREVIEWS_OFF);  // previews_state
 
   std::unique_ptr<TestResourceController> resource_controller =
       base::MakeUnique<TestResourceController>();
@@ -844,7 +845,7 @@ TEST_F(InterceptingResourceHandlerTest, CancelBothHandlers) {
                                           false,    // parent_is_main_frame
                                           true,     // allow_download
                                           true,     // is_async
-                                          false);   // is_using_lofi
+                                          PREVIEWS_OFF);  // previews_state
 
   std::unique_ptr<TestResourceController> resource_controller =
       base::MakeUnique<TestResourceController>();

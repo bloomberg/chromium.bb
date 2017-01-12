@@ -18,6 +18,7 @@
 #include "content/common/frame_message_enums.h"
 #include "content/common/resource_request_body_impl.h"
 #include "content/public/common/page_state.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_response.h"
@@ -27,18 +28,6 @@
 #include "url/origin.h"
 
 namespace content {
-
-// The LoFi state which determines whether to add the Lo-Fi header.
-enum LoFiState {
-  // Let the browser process decide whether or not to request the Lo-Fi version.
-  LOFI_UNSPECIFIED = 0,
-
-  // Request a normal (non-Lo-Fi) version of the resource.
-  LOFI_OFF,
-
-  // Request a Lo-Fi version of the resource.
-  LOFI_ON,
-};
 
 // PlzNavigate
 // Helper function to determine if the navigation to |url| should make a request
@@ -66,7 +55,7 @@ struct CONTENT_EXPORT CommonNavigationParams {
       FrameMsg_UILoadMetricsReportType::Value report_type,
       const GURL& base_url_for_data_url,
       const GURL& history_url_for_data_url,
-      LoFiState lofi_state,
+      PreviewsState previews_state,
       const base::TimeTicks& navigation_start,
       std::string method,
       const scoped_refptr<ResourceRequestBodyImpl>& post_data);
@@ -114,9 +103,9 @@ struct CONTENT_EXPORT CommonNavigationParams {
   // Is only used with data: URLs.
   GURL history_url_for_data_url;
 
-  // Whether or not to request a LoFi version of the document or let the browser
-  // decide.
-  LoFiState lofi_state;
+  // Bitmask that has whether or not to request a Preview version of the
+  // document for various preview types or let the browser decide.
+  PreviewsState previews_state;
 
   // The navigationStart time exposed through the Navigation Timing API to JS.
   // If this is for a browser-initiated navigation, this can override the

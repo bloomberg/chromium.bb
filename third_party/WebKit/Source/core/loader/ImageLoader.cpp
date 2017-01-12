@@ -298,7 +298,7 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior,
     ResourceRequest resourceRequest(url);
     if (updateBehavior == UpdateForcedReload) {
       resourceRequest.setCachePolicy(WebCachePolicy::BypassingCache);
-      resourceRequest.setLoFiState(WebURLRequest::LoFiOff);
+      resourceRequest.setPreviewsState(WebURLRequest::PreviewsOff);
     }
 
     if (referrerPolicy != ReferrerPolicyDefault) {

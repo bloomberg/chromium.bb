@@ -12,6 +12,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
@@ -33,8 +34,10 @@ bool ContentLoFiDecider::IsUsingLoFiMode(const net::URLRequest& request) const {
       params::IsLoFiOnViaFlags() || params::IsIncludedInLoFiEnabledFieldTrial();
 
   // Return if the user is using Lo-Fi and not part of the "Control" group.
-  if (request_info)
-    return request_info->IsUsingLoFi() && lofi_enabled_via_flag_or_field_trial;
+  if (request_info) {
+    return (request_info->GetPreviewsState() & content::SERVER_LOFI_ON) &&
+           lofi_enabled_via_flag_or_field_trial;
+  }
   return false;
 }
 
@@ -109,7 +112,7 @@ void ContentLoFiDecider::MaybeSetAcceptTransformHeader(
   if (accept_transform_value.empty())
     return;
 
-  if (!request_info->IsUsingLoFi())
+  if (!(request_info->GetPreviewsState() & content::SERVER_LOFI_ON))
     accept_transform_value += base::StringPrintf(";%s", if_heavy_qualifier());
 
   headers->SetHeader(chrome_proxy_accept_transform_header(),
@@ -180,8 +183,10 @@ bool ContentLoFiDecider::ShouldRecordLoFiUMA(
       content::ResourceRequestInfo::ForRequest(&request);
 
   // User is not using Lo-Fi.
-  if (!request_info || !request_info->IsUsingLoFi())
+  if (!request_info ||
+      !(request_info->GetPreviewsState() & content::SERVER_LOFI_ON)) {
     return false;
+  }
 
   return params::IsIncludedInLoFiEnabledFieldTrial() ||
          params::IsIncludedInLoFiControlFieldTrial();

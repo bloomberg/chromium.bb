@@ -180,6 +180,7 @@ source_set("common_sources") {
     "presentation_constants.h",
     "presentation_session.cc",
     "presentation_session.h",
+    "previews_state.h",
     "process_type.h",
     "push_messaging_status.cc",
     "push_messaging_status.h",

@@ -402,7 +402,7 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderAfterFinished) {
   KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
   ScopedRegisteredURL scopedRegisteredURL(testURL);
   ResourceRequest request = ResourceRequest(testURL);
-  request.setLoFiState(WebURLRequest::LoFiOn);
+  request.setPreviewsState(WebURLRequest::ServerLoFiOn);
   ImageResource* imageResource = ImageResource::create(request);
   imageResource->setStatus(Resource::Pending);
 
@@ -470,7 +470,7 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderDuringFetch) {
   ScopedRegisteredURL scopedRegisteredURL(testURL);
 
   ResourceRequest request(testURL);
-  request.setLoFiState(WebURLRequest::LoFiOn);
+  request.setPreviewsState(WebURLRequest::ServerLoFiOn);
   FetchRequest fetchRequest(request, FetchInitiatorInfo());
   ResourceFetcher* fetcher =
       ResourceFetcher::create(ImageResourceTestMockFetchContext::create());

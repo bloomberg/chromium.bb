@@ -21,6 +21,7 @@
 #include "content/browser/loader/test_resource_handler.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -248,10 +249,10 @@ MimeSniffingResourceHandlerTest::TestAcceptHeaderSettingWithURLRequest(
                                           0,              // render_view_id
                                           0,              // render_frame_id
                                           is_main_frame,  // is_main_frame
-                                          false,   // parent_is_main_frame
-                                          false,   // allow_download
-                                          true,    // is_async
-                                          false);  // is_using_lofi
+                                          false,  // parent_is_main_frame
+                                          false,  // allow_download
+                                          true,   // is_async
+                                          PREVIEWS_OFF);  // previews_state
 
   std::unique_ptr<TestResourceHandler> scoped_test_handler(
       new TestResourceHandler());
@@ -288,7 +289,7 @@ bool MimeSniffingResourceHandlerTest::TestStreamIsIntercepted(
                                           false,  // parent_is_main_frame
                                           allow_download,  // allow_download
                                           true,            // is_async
-                                          false);          // is_using_lofi
+                                          PREVIEWS_OFF);   // previews_state
 
   TestResourceDispatcherHost host(stream_has_handler_);
   TestResourceDispatcherHostDelegate host_delegate(must_download);
@@ -346,7 +347,7 @@ void MimeSniffingResourceHandlerTest::TestHandlerSniffing(
                                           false,    // parent_is_main_frame
                                           false,    // allow_download
                                           true,     // is_async
-                                          false);   // is_using_lofi
+                                          PREVIEWS_OFF);  // previews_state
 
   TestResourceDispatcherHost host(false);
   TestResourceDispatcherHostDelegate host_delegate(false);
@@ -511,7 +512,7 @@ void MimeSniffingResourceHandlerTest::TestHandlerNoSniffing(
                                           false,    // parent_is_main_frame
                                           false,    // allow_download
                                           true,     // is_async
-                                          false);   // is_using_lofi
+                                          PREVIEWS_OFF);  // previews_state
 
   TestResourceDispatcherHost host(false);
   TestResourceDispatcherHostDelegate host_delegate(false);
@@ -908,7 +909,7 @@ TEST_F(MimeSniffingResourceHandlerTest, 304Handling) {
                                           false,    // parent_is_main_frame
                                           true,     // allow_download
                                           true,     // is_async
-                                          false);   // is_using_lofi
+                                          PREVIEWS_OFF);  // previews_state
 
   TestResourceDispatcherHost host(false);
   TestResourceDispatcherHostDelegate host_delegate(false);
@@ -961,7 +962,7 @@ TEST_F(MimeSniffingResourceHandlerTest, FetchShouldDisableMimeSniffing) {
                                           false,    // parent_is_main_frame
                                           false,    // allow_download
                                           true,     // is_async
-                                          false);   // is_using_lofi
+                                          PREVIEWS_OFF);  // previews_state
 
   TestResourceDispatcherHost host(false);
 

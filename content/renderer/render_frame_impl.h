@@ -34,6 +34,7 @@
 #include "content/common/renderer.mojom.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/javascript_message_type.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/renderer/render_frame.h"
@@ -449,7 +450,7 @@ class CONTENT_EXPORT RenderFrameImpl
                                       v8::Local<v8::Context> context) override;
   void AddMessageToConsole(ConsoleMessageLevel level,
                            const std::string& message) override;
-  bool IsUsingLoFi() const override;
+  PreviewsState GetPreviewsState() const override;
   bool IsPasting() const override;
   blink::WebPageVisibilityState GetVisibilityState() const override;
   bool IsBrowserSideNavigationPending() override;
@@ -1300,8 +1301,10 @@ class CONTENT_EXPORT RenderFrameImpl
   // lifetime is tied to the RenderFrame via the RenderFrameObserver interface.
   media::RendererWebMediaPlayerDelegate* media_player_delegate_;
 
-  // Whether or not this RenderFrame is using Lo-Fi mode.
-  bool is_using_lofi_;
+  // The PreviewsState of this RenderFrame that indicates which Previews can
+  // be used. The PreviewsState is a bitmask of potentially several Previews
+  // optimizations.
+  PreviewsState previews_state_;
 
   // Effective connection type when the document of this frame was fetched.
   blink::WebEffectiveConnectionType effective_connection_type_;

@@ -202,7 +202,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     const FrameNavigationEntry& frame_entry,
     const NavigationEntryImpl& entry,
     FrameMsg_Navigate_Type::Value navigation_type,
-    LoFiState lofi_state,
+    PreviewsState previews_state,
     bool is_same_document_history_load,
     bool is_history_navigation_in_new_child,
     const base::TimeTicks& navigation_start,
@@ -225,7 +225,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node, entry.ConstructCommonNavigationParams(
                            frame_entry, request_body, dest_url, dest_referrer,
-                           navigation_type, lofi_state, navigation_start),
+                           navigation_type, previews_state, navigation_start),
       BeginNavigationParams(entry.extra_headers(), net::LOAD_NORMAL,
                             false,  // has_user_gestures
                             false,  // skip_service_worker
@@ -494,11 +494,8 @@ void NavigationRequest::OnResponseStarted(
           ? navigation_handle_->appcache_handle()->appcache_host_id()
           : kAppCacheNoHostId;
 
-  // Update the lofi state of the request.
-  if (response->head.is_using_lofi)
-    common_params_.lofi_state = LOFI_ON;
-  else
-    common_params_.lofi_state = LOFI_OFF;
+  // Update the previews state of the request.
+  common_params_.previews_state = response->head.previews_state;
 
   // Select an appropriate renderer to commit the navigation.
   RenderFrameHostImpl* render_frame_host = nullptr;

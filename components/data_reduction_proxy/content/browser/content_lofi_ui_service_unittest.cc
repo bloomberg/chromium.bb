@@ -17,6 +17,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/test/test_renderer_host.h"
 #include "net/socket/socket_test_util.h"
 #include "net/url_request/url_request.h"
@@ -72,11 +73,10 @@ class ContentLoFiUIServiceTest : public content::RenderViewHostTestHarness {
         request.get(), content::RESOURCE_TYPE_SUB_FRAME, NULL,
         web_contents()->GetMainFrame()->GetProcess()->GetID(), -1,
         web_contents()->GetMainFrame()->GetRoutingID(),
-        false,  // is_main_frame
-        false,  // parent_is_main_frame
-        false,  // allow_download
-        false,  // is_async
-        true);  // is_using_lofi
+        /*is_main_frame=*/false,
+        /*parent_is_main_frame=*/false,
+        /*allow_download=*/false,
+        /*is_async=*/false, content::SERVER_LOFI_ON);
 
     return request;
   }

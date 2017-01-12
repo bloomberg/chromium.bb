@@ -22,6 +22,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/common/previews_state.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
@@ -316,7 +317,7 @@ void SaveFileManager::OnSaveURL(const GURL& url,
       request.get(), referrer,
       false,  // download.
       render_process_host_id, render_view_routing_id, render_frame_routing_id,
-      context);
+      PREVIEWS_OFF, context);
 
   // So far, for saving page, we need fetch content from cache, in the
   // future, maybe we can use a configuration to configure this behavior.
