@@ -92,6 +92,8 @@ bindings_core_v8_files =
                     "core/v8/ScriptEventListener.h",
                     "core/v8/ScriptFunction.cpp",
                     "core/v8/ScriptFunction.h",
+                    "core/v8/ScriptModule.cpp",
+                    "core/v8/ScriptModule.h",
                     "core/v8/ScriptPromise.cpp",
                     "core/v8/ScriptPromise.h",
                     "core/v8/ScriptPromiseProperties.h",

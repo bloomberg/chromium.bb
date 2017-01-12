@@ -81,6 +81,9 @@ class CORE_EXPORT V8ScriptRunner final {
       CachedMetadataHandler* = nullptr,
       AccessControlStatus = SharableCrossOrigin,
       V8CacheOptions = V8CacheOptionsDefault);
+  static v8::MaybeLocal<v8::Module> compileModule(v8::Isolate*,
+                                                  const String& source,
+                                                  const String& fileName);
   static v8::MaybeLocal<v8::Value> runCompiledScript(v8::Isolate*,
                                                      v8::Local<v8::Script>,
                                                      ExecutionContext*);
@@ -110,6 +113,9 @@ class CORE_EXPORT V8ScriptRunner final {
                                                 int argc,
                                                 v8::Local<v8::Value> info[],
                                                 v8::Isolate*);
+  static v8::MaybeLocal<v8::Value> evaluateModule(v8::Local<v8::Module>,
+                                                  v8::Local<v8::Context>,
+                                                  v8::Isolate*);
   static v8::MaybeLocal<v8::Object> instantiateObject(
       v8::Isolate*,
       v8::Local<v8::ObjectTemplate>);
