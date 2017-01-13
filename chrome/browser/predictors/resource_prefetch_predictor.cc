@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -55,6 +56,9 @@ const char* kFontMimeTypes[] = {"font/woff2",
                                 "x-font/woff",
                                 "application/font-sfnt",
                                 "application/font-ttf"};
+
+const size_t kNumSampleHosts = 50;
+const size_t kReportReadinessThreshold = 50;
 
 // For reporting events of interest that are not tied to any navigation.
 enum ReportingEvent {
@@ -609,6 +613,14 @@ void ResourcePrefetchPredictor::OnNavigationComplete(
           base::Bind(&ResourcePrefetchPredictor::OnVisitCountLookup,
                      AsWeakPtr()))),
       &history_lookup_consumer_);
+
+  // Report readiness metric with 20% probability.
+  if (base::RandInt(1, 5) == 5) {
+    history_service->TopHosts(
+        kNumSampleHosts,
+        base::Bind(&ResourcePrefetchPredictor::ReportDatabaseReadiness,
+                   AsWeakPtr()));
+  }
 }
 
 bool ResourcePrefetchPredictor::GetPrefetchData(const GURL& main_frame_url,
@@ -651,15 +663,8 @@ bool ResourcePrefetchPredictor::PopulatePrefetcherRequest(
 
   size_t initial_size = urls->size();
   for (const ResourceData& resource : it->second.resources()) {
-    float confidence =
-        static_cast<float>(resource.number_of_hits()) /
-        (resource.number_of_hits() + resource.number_of_misses());
-    if (confidence < config_.min_resource_confidence_to_trigger_prefetch ||
-        resource.number_of_hits() <
-            config_.min_resource_hits_to_trigger_prefetch)
-      continue;
-
-    urls->push_back(GURL(resource.resource_url()));
+    if (IsResourcePrefetchable(resource))
+      urls->push_back(GURL(resource.resource_url()));
   }
 
   return urls->size() > initial_size;
@@ -1102,6 +1107,58 @@ void ResourcePrefetchPredictor::LearnRedirect(const std::string& key,
         base::Bind(&ResourcePrefetchPredictorTables::UpdateData, tables_,
                    empty_data, empty_data, url_redirect_data,
                    host_redirect_data));
+  }
+}
+
+bool ResourcePrefetchPredictor::IsDataPrefetchable(
+    const std::string& main_frame_key,
+    const PrefetchDataMap& data_map) const {
+  PrefetchDataMap::const_iterator it = data_map.find(main_frame_key);
+  if (it == data_map.end())
+    return false;
+
+  return std::any_of(it->second.resources().begin(),
+                     it->second.resources().end(),
+                     [this](const ResourceData& resource) {
+                       return IsResourcePrefetchable(resource);
+                     });
+}
+
+bool ResourcePrefetchPredictor::IsResourcePrefetchable(
+    const ResourceData& resource) const {
+  float confidence = static_cast<float>(resource.number_of_hits()) /
+                     (resource.number_of_hits() + resource.number_of_misses());
+  return confidence >= config_.min_resource_confidence_to_trigger_prefetch &&
+         resource.number_of_hits() >=
+             config_.min_resource_hits_to_trigger_prefetch;
+}
+
+void ResourcePrefetchPredictor::ReportDatabaseReadiness(
+    const history::TopHostsList& top_hosts) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (top_hosts.size() == 0)
+    return;
+
+  size_t count_in_cache = 0;
+  size_t total_visits = 0;
+  for (const std::pair<std::string, int>& top_host : top_hosts) {
+    const std::string& host = top_host.first;
+    total_visits += top_host.second;
+
+    // Hostnames in TopHostsLists are stripped of their 'www.' prefix. We
+    // assume that www.foo.com entry from |host_table_cache_| is also suitable
+    // for foo.com.
+    if (IsDataPrefetchable(host, *host_table_cache_) ||
+        (!base::StartsWith(host, "www.", base::CompareCase::SENSITIVE) &&
+         IsDataPrefetchable("www." + host, *host_table_cache_))) {
+      ++count_in_cache;
+    }
+  }
+
+  // Filter users that don't have the rich browsing history.
+  if (total_visits > kReportReadinessThreshold) {
+    UMA_HISTOGRAM_PERCENTAGE("ResourcePrefetchPredictor.DatabaseReadiness",
+                             100 * count_in_cache / top_hosts.size());
   }
 }
 

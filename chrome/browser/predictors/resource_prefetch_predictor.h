@@ -311,15 +311,18 @@ class ResourcePrefetchPredictor
                      size_t max_redirect_map_size,
                      RedirectDataMap* redirect_map);
 
-  // Reports overall page load time.
-  void ReportPageLoadTimeStats(base::TimeDelta plt) const;
+  // Returns true iff the |data_map| contains PrefetchData that can be used
+  // for |main_frame_key| prefetching.
+  bool IsDataPrefetchable(const std::string& main_frame_key,
+                          const PrefetchDataMap& data_map) const;
 
-  // Reports page load time for prefetched and not prefetched pages.
-  void ReportPageLoadTimePrefetchStats(
-      base::TimeDelta plt,
-      bool prefetched,
-      base::Callback<void(int)> report_network_type_callback,
-      PrefetchKeyType key_type) const;
+  // Returns true iff |resource| has sufficient confidence level and required
+  // number of hits.
+  bool IsResourcePrefetchable(const ResourceData& resource) const;
+
+  // Reports database readiness metric defined as percentage of navigated hosts
+  // found in DB for last X entries in history.
+  void ReportDatabaseReadiness(const history::TopHostsList& top_hosts) const;
 
   // history::HistoryServiceObserver:
   void OnURLsDeleted(history::HistoryService* history_service,
