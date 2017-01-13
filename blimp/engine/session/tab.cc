@@ -167,7 +167,7 @@ void Tab::SendPageLoadStatusUpdate(PageLoadStatus load_status) {
 
 void Tab::OnWebGestureEvent(content::RenderWidgetHost* render_widget_host,
                             std::unique_ptr<blink::WebGestureEvent> event) {
-  TRACE_EVENT1("blimp", "Tab::OnWebGestureEvent", "type", event->type);
+  TRACE_EVENT1("blimp", "Tab::OnWebGestureEvent", "type", event->type());
   render_widget_host->ForwardGestureEvent(*event);
 }
 

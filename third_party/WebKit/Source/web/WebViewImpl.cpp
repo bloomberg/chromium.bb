@@ -533,7 +533,7 @@ void WebViewImpl::handleMouseDown(LocalFrame& mainFrame,
 #if OS(MACOSX)
     if (event.button == WebMouseEvent::Button::Right ||
         (event.button == WebMouseEvent::Button::Left &&
-         event.modifiers & WebMouseEvent::ControlKey))
+         event.modifiers() & WebMouseEvent::ControlKey))
       mouseContextMenu(event);
 #else
     if (event.button == WebMouseEvent::Button::Right)
@@ -698,7 +698,7 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
   bool eventCancelled = false;  // for disambiguation
 
   // Special handling for slow-path fling gestures.
-  switch (event.type) {
+  switch (event.type()) {
     case WebInputEvent::GestureFlingStart: {
       if (mainFrameImpl()
               ->frame()
@@ -709,7 +709,7 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
       m_client->cancelScheduledContentIntents();
       m_positionOnFlingStart = WebPoint(event.x, event.y);
       m_globalPositionOnFlingStart = WebPoint(event.globalX, event.globalY);
-      m_flingModifier = event.modifiers;
+      m_flingModifier = event.modifiers();
       m_flingSourceDevice = event.sourceDevice;
       DCHECK_NE(m_flingSourceDevice, WebGestureDeviceUninitialized);
       std::unique_ptr<WebGestureCurve> flingCurve =
@@ -751,7 +751,7 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
 
   // Special handling for double tap and scroll events as we don't want to
   // hit test for them.
-  switch (event.type) {
+  switch (event.type()) {
     case WebInputEvent::GestureDoubleTap:
       if (m_webSettings->doubleTapToZoomEnabled() &&
           minimumPageScaleFactor() != maximumPageScaleFactor()) {
@@ -796,7 +796,7 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
 
   // Handle link highlighting outside the main switch to avoid getting lost in
   // the complicated set of cases handled below.
-  switch (event.type) {
+  switch (event.type()) {
     case WebInputEvent::GestureShowPress:
       // Queue a highlight animation, then hand off to regular handler.
       enableTapHighlightAtPoint(targetedEvent);
@@ -811,7 +811,7 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
       break;
   }
 
-  switch (event.type) {
+  switch (event.type()) {
     case WebInputEvent::GestureTap: {
       m_client->cancelScheduledContentIntents();
       if (detectContentOnTouch(targetedEvent)) {
@@ -929,7 +929,7 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
 
 WebInputEventResult WebViewImpl::handleSyntheticWheelFromTouchpadPinchEvent(
     const WebGestureEvent& pinchEvent) {
-  DCHECK_EQ(pinchEvent.type, WebInputEvent::GesturePinchUpdate);
+  DCHECK_EQ(pinchEvent.type(), WebInputEvent::GesturePinchUpdate);
 
   // For pinch gesture events, match typical trackpad behavior on Windows by
   // sending fake wheel events with the ctrl modifier set when we see trackpad
@@ -937,8 +937,8 @@ WebInputEventResult WebViewImpl::handleSyntheticWheelFromTouchpadPinchEvent(
   // send that instead.
   WebMouseWheelEvent wheelEvent(
       WebInputEvent::MouseWheel,
-      pinchEvent.modifiers | WebInputEvent::ControlKey,
-      pinchEvent.timeStampSeconds);
+      pinchEvent.modifiers() | WebInputEvent::ControlKey,
+      pinchEvent.timeStampSeconds());
   wheelEvent.windowX = wheelEvent.x = pinchEvent.x;
   wheelEvent.windowY = wheelEvent.y = pinchEvent.y;
   wheelEvent.globalX = pinchEvent.globalX;
@@ -1094,11 +1094,11 @@ float WebViewImpl::expensiveBackgroundThrottlingMaxDelay() {
 }
 
 WebInputEventResult WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event) {
-  DCHECK((event.type == WebInputEvent::RawKeyDown) ||
-         (event.type == WebInputEvent::KeyDown) ||
-         (event.type == WebInputEvent::KeyUp));
+  DCHECK((event.type() == WebInputEvent::RawKeyDown) ||
+         (event.type() == WebInputEvent::KeyDown) ||
+         (event.type() == WebInputEvent::KeyUp));
   TRACE_EVENT2("input", "WebViewImpl::handleKeyEvent", "type",
-               WebInputEvent::GetName(event.type), "text",
+               WebInputEvent::GetName(event.type()), "text",
                String(event.text).utf8());
 
   // Halt an in-progress fling on a key event.
@@ -1118,7 +1118,7 @@ WebInputEventResult WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event) {
     m_pagePopup->handleKeyEvent(event);
     // We need to ignore the next Char event after this otherwise pressing
     // enter when selecting an item in the popup will go to the page.
-    if (WebInputEvent::RawKeyDown == event.type)
+    if (WebInputEvent::RawKeyDown == event.type())
       m_suppressNextKeypressEvent = true;
     return WebInputEventResult::HandledSystem;
   }
@@ -1138,7 +1138,7 @@ WebInputEventResult WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event) {
 
   WebInputEventResult result = frame->eventHandler().keyEvent(event);
   if (result != WebInputEventResult::NotHandled) {
-    if (WebInputEvent::RawKeyDown == event.type) {
+    if (WebInputEvent::RawKeyDown == event.type()) {
       // Suppress the next keypress event unless the focused node is a plugin
       // node.  (Flash needs these keypress events to handle non-US keyboards.)
       Element* element = focusedElement();
@@ -1172,14 +1172,14 @@ WebInputEventResult WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event) {
       WebInputEvent::RawKeyDown;
 
   bool isUnmodifiedMenuKey =
-      !(event.modifiers & WebInputEvent::InputModifiers) &&
+      !(event.modifiers() & WebInputEvent::InputModifiers) &&
       event.windowsKeyCode == VKEY_APPS;
-  bool isShiftF10 = (event.modifiers & WebInputEvent::InputModifiers) ==
+  bool isShiftF10 = (event.modifiers() & WebInputEvent::InputModifiers) ==
                         WebInputEvent::ShiftKey &&
                     event.windowsKeyCode == VKEY_F10;
   if ((isUnmodifiedMenuKey &&
-       event.type == contextMenuKeyTriggeringEventType) ||
-      (isShiftF10 && event.type == shiftF10TriggeringEventType)) {
+       event.type() == contextMenuKeyTriggeringEventType) ||
+      (isShiftF10 && event.type() == shiftF10TriggeringEventType)) {
     sendContextMenuEvent(event);
     return WebInputEventResult::HandledSystem;
   }
@@ -1190,7 +1190,7 @@ WebInputEventResult WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event) {
 
 WebInputEventResult WebViewImpl::handleCharEvent(
     const WebKeyboardEvent& event) {
-  DCHECK_EQ(event.type, WebInputEvent::Char);
+  DCHECK_EQ(event.type(), WebInputEvent::Char);
   TRACE_EVENT1("input", "WebViewImpl::handleCharEvent", "text",
                String(event.text).utf8());
 
@@ -2125,7 +2125,7 @@ WebInputEventResult WebViewImpl::handleInputEvent(
   // case, the form submission happens before the autofill client is told
   // to unblock the password values, and so the password values are not
   // submitted. To avoid that, GestureTap is handled explicitly:
-  if (inputEvent.type == WebInputEvent::GestureTap && autofillClient) {
+  if (inputEvent.type() == WebInputEvent::GestureTap && autofillClient) {
     m_userGestureObserved = true;
     autofillClient->firstUserGestureObserved();
   }
@@ -2133,7 +2133,7 @@ WebInputEventResult WebViewImpl::handleInputEvent(
   page()->frameHost().visualViewport().startTrackingPinchStats();
 
   TRACE_EVENT1("input,rail", "WebViewImpl::handleInputEvent", "type",
-               WebInputEvent::GetName(inputEvent.type));
+               WebInputEvent::GetName(inputEvent.type()));
 
   // If a drag-and-drop operation is in progress, ignore input events.
   if (mainFrameImpl()->frameWidget()->doingDragAndDrop())
@@ -2162,24 +2162,25 @@ WebInputEventResult WebViewImpl::handleInputEvent(
       isPointerLocked = client->isPointerLocked();
   }
 
-  if (isPointerLocked && WebInputEvent::isMouseEventType(inputEvent.type)) {
+  if (isPointerLocked && WebInputEvent::isMouseEventType(inputEvent.type())) {
     pointerLockMouseEvent(inputEvent);
     return WebInputEventResult::HandledSystem;
   }
 
-  if (m_mouseCaptureNode && WebInputEvent::isMouseEventType(inputEvent.type)) {
-    TRACE_EVENT1("input", "captured mouse event", "type", inputEvent.type);
+  if (m_mouseCaptureNode &&
+      WebInputEvent::isMouseEventType(inputEvent.type())) {
+    TRACE_EVENT1("input", "captured mouse event", "type", inputEvent.type());
     // Save m_mouseCaptureNode since mouseCaptureLost() will clear it.
     Node* node = m_mouseCaptureNode;
 
     // Not all platforms call mouseCaptureLost() directly.
-    if (inputEvent.type == WebInputEvent::MouseUp)
+    if (inputEvent.type() == WebInputEvent::MouseUp)
       mouseCaptureLost();
 
     std::unique_ptr<UserGestureIndicator> gestureIndicator;
 
     AtomicString eventType;
-    switch (inputEvent.type) {
+    switch (inputEvent.type()) {
       case WebInputEvent::MouseMove:
         eventType = EventTypeNames::mousemove;
         break;
@@ -2217,7 +2218,7 @@ WebInputEventResult WebViewImpl::handleInputEvent(
     return result;
 
   // Unhandled pinch events should adjust the scale.
-  if (inputEvent.type == WebInputEvent::GesturePinchUpdate) {
+  if (inputEvent.type() == WebInputEvent::GesturePinchUpdate) {
     const WebGestureEvent& pinchEvent =
         static_cast<const WebGestureEvent&>(inputEvent);
 
@@ -4113,7 +4114,7 @@ void WebViewImpl::setCompositorVisibility(bool isVisible) {
 void WebViewImpl::pointerLockMouseEvent(const WebInputEvent& event) {
   std::unique_ptr<UserGestureIndicator> gestureIndicator;
   AtomicString eventType;
-  switch (event.type) {
+  switch (event.type()) {
     case WebInputEvent::MouseDown:
       eventType = EventTypeNames::mousedown;
       if (!page() || !page()->pointerLockController().element())

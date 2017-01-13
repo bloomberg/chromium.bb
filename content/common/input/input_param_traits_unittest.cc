@@ -32,8 +32,8 @@ class InputParamTraitsTest : public testing::Test {
   static void Compare(const InputEvent* a, const InputEvent* b) {
     EXPECT_EQ(!!a->web_event, !!b->web_event);
     if (a->web_event && b->web_event) {
-      const size_t a_size = a->web_event->size;
-      ASSERT_EQ(a_size, b->web_event->size);
+      const size_t a_size = a->web_event->size();
+      ASSERT_EQ(a_size, b->web_event->size());
       EXPECT_EQ(0, memcmp(a->web_event.get(), b->web_event.get(), a_size));
     }
     EXPECT_EQ(a->latency_info.latency_components().size(),

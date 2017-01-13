@@ -91,7 +91,7 @@
 
 - (void)rendererHandledGestureScrollEvent:(const blink::WebGestureEvent&)event
                                  consumed:(BOOL)consumed {
-  if (!consumed && event.type == blink::WebInputEvent::GestureScrollUpdate)
+  if (!consumed && event.type() == blink::WebInputEvent::GestureScrollUpdate)
     unhandledWheelEventReceived_ = true;
 }
 
@@ -118,7 +118,7 @@ std::string GetInputMessageTypes(MockRenderProcessHost* process) {
     const blink::WebInputEvent* event = std::get<0>(params);
     if (i != 0)
       result += " ";
-    result += blink::WebInputEvent::GetName(event->type);
+    result += blink::WebInputEvent::GetName(event->type());
   }
   process->sink().ClearMessages();
   return result;

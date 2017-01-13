@@ -177,14 +177,14 @@ PlatformMouseEventBuilder::PlatformMouseEventBuilder(Widget* widget,
   m_globalPosition = IntPoint(e.globalX, e.globalY);
   m_movementDelta = IntPoint(scaleDeltaToWindow(widget, e.movementX),
                              scaleDeltaToWindow(widget, e.movementY));
-  m_modifiers = e.modifiers;
+  m_modifiers = e.modifiers();
 
-  m_timestamp = TimeTicks::FromSeconds(e.timeStampSeconds);
+  m_timestamp = TimeTicks::FromSeconds(e.timeStampSeconds());
   m_clickCount = e.clickCount;
 
   m_pointerProperties = static_cast<WebPointerProperties>(e);
 
-  switch (e.type) {
+  switch (e.type()) {
     case WebInputEvent::MouseMove:
     case WebInputEvent::MouseEnter:  // synthesize a move event
     case WebInputEvent::MouseLeave:  // synthesize a move event
@@ -297,9 +297,9 @@ PlatformTouchPointBuilder::PlatformTouchPointBuilder(
 PlatformTouchEventBuilder::PlatformTouchEventBuilder(
     Widget* widget,
     const WebTouchEvent& event) {
-  m_type = toPlatformTouchEventType(event.type);
-  m_modifiers = event.modifiers;
-  m_timestamp = TimeTicks::FromSeconds(event.timeStampSeconds);
+  m_type = toPlatformTouchEventType(event.type());
+  m_modifiers = event.modifiers();
+  m_timestamp = TimeTicks::FromSeconds(event.timeStampSeconds());
   m_causesScrollingIfUncanceled = event.movedBeyondSlopRegion;
   m_touchStartOrFirstTouchMove = event.touchStartOrFirstTouchMove;
 
@@ -329,8 +329,8 @@ static void updateWebMouseEventFromCoreMouseEvent(const MouseEvent& event,
                                                   const Widget* widget,
                                                   const LayoutItem layoutItem,
                                                   WebMouseEvent& webEvent) {
-  webEvent.timeStampSeconds = event.platformTimeStamp().InSeconds();
-  webEvent.modifiers = event.modifiers();
+  webEvent.setTimeStampSeconds(event.platformTimeStamp().InSeconds());
+  webEvent.setModifiers(event.modifiers());
 
   FrameView* view = widget ? toFrameView(widget->parent()) : 0;
   // TODO(bokan): If view == nullptr, pointInRootFrame will really be
@@ -353,20 +353,22 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget,
                                            const LayoutItem layoutItem,
                                            const MouseEvent& event) {
   if (event.type() == EventTypeNames::mousemove)
-    type = WebInputEvent::MouseMove;
+    m_type = WebInputEvent::MouseMove;
   else if (event.type() == EventTypeNames::mouseout)
-    type = WebInputEvent::MouseLeave;
+    m_type = WebInputEvent::MouseLeave;
   else if (event.type() == EventTypeNames::mouseover)
-    type = WebInputEvent::MouseEnter;
+    m_type = WebInputEvent::MouseEnter;
   else if (event.type() == EventTypeNames::mousedown)
-    type = WebInputEvent::MouseDown;
+    m_type = WebInputEvent::MouseDown;
   else if (event.type() == EventTypeNames::mouseup)
-    type = WebInputEvent::MouseUp;
+    m_type = WebInputEvent::MouseUp;
   else if (event.type() == EventTypeNames::contextmenu)
-    type = WebInputEvent::ContextMenu;
+    m_type = WebInputEvent::ContextMenu;
   else
     return;  // Skip all other mouse events.
 
+  m_timeStampSeconds = event.platformTimeStamp().InSeconds();
+  m_modifiers = event.modifiers();
   updateWebMouseEventFromCoreMouseEvent(event, widget, layoutItem, *this);
 
   switch (event.button()) {
@@ -383,13 +385,13 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget,
   if (event.buttonDown()) {
     switch (event.button()) {
       case short(WebPointerProperties::Button::Left):
-        modifiers |= WebInputEvent::LeftButtonDown;
+        m_modifiers |= WebInputEvent::LeftButtonDown;
         break;
       case short(WebPointerProperties::Button::Middle):
-        modifiers |= WebInputEvent::MiddleButtonDown;
+        m_modifiers |= WebInputEvent::MiddleButtonDown;
         break;
       case short(WebPointerProperties::Button::Right):
-        modifiers |= WebInputEvent::RightButtonDown;
+        m_modifiers |= WebInputEvent::RightButtonDown;
         break;
     }
   } else {
@@ -424,16 +426,16 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget,
     return;
 
   if (event.type() == EventTypeNames::touchstart)
-    type = MouseDown;
+    m_type = MouseDown;
   else if (event.type() == EventTypeNames::touchmove)
-    type = MouseMove;
+    m_type = MouseMove;
   else if (event.type() == EventTypeNames::touchend)
-    type = MouseUp;
+    m_type = MouseUp;
   else
     return;
 
-  timeStampSeconds = event.platformTimeStamp().InSeconds();
-  modifiers = event.modifiers();
+  m_timeStampSeconds = event.platformTimeStamp().InSeconds();
+  m_modifiers = event.modifiers();
 
   // The mouse event co-ordinates should be generated from the co-ordinates of
   // the touch point.
@@ -450,8 +452,8 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget,
   windowY = pointInRootFrame.y();
 
   button = WebMouseEvent::Button::Left;
-  modifiers |= WebInputEvent::LeftButtonDown;
-  clickCount = (type == MouseDown || type == MouseUp);
+  m_modifiers |= WebInputEvent::LeftButtonDown;
+  clickCount = (m_type == MouseDown || m_type == MouseUp);
 
   IntPoint localPoint = convertAbsoluteLocationForLayoutObjectInt(
       DoublePoint(touch->absoluteLocation()), layoutItem);
@@ -467,22 +469,22 @@ WebKeyboardEventBuilder::WebKeyboardEventBuilder(const KeyboardEvent& event) {
 
     // TODO(dtapuska): DOM KeyboardEvents converted back to WebInputEvents
     // drop the Raw behaviour. Figure out if this is actually really needed.
-    if (type == RawKeyDown)
-      type = KeyDown;
+    if (m_type == RawKeyDown)
+      m_type = KeyDown;
     return;
   }
 
   if (event.type() == EventTypeNames::keydown)
-    type = KeyDown;
+    m_type = KeyDown;
   else if (event.type() == EventTypeNames::keyup)
-    type = WebInputEvent::KeyUp;
+    m_type = WebInputEvent::KeyUp;
   else if (event.type() == EventTypeNames::keypress)
-    type = WebInputEvent::Char;
+    m_type = WebInputEvent::Char;
   else
     return;  // Skip all other keyboard events.
 
-  modifiers = event.modifiers();
-  timeStampSeconds = event.platformTimeStamp().InSeconds();
+  m_modifiers = event.modifiers();
+  m_timeStampSeconds = event.platformTimeStamp().InSeconds();
   windowsKeyCode = event.keyCode();
 }
 
@@ -543,21 +545,21 @@ static void addTouchPointsUpdateStateIfNecessary(
 WebTouchEventBuilder::WebTouchEventBuilder(const LayoutItem layoutItem,
                                            const TouchEvent& event) {
   if (event.type() == EventTypeNames::touchstart)
-    type = TouchStart;
+    m_type = TouchStart;
   else if (event.type() == EventTypeNames::touchmove)
-    type = TouchMove;
+    m_type = TouchMove;
   else if (event.type() == EventTypeNames::touchend)
-    type = TouchEnd;
+    m_type = TouchEnd;
   else if (event.type() == EventTypeNames::touchcancel)
-    type = TouchCancel;
+    m_type = TouchCancel;
   else {
     NOTREACHED();
-    type = Undefined;
+    m_type = Undefined;
     return;
   }
 
-  timeStampSeconds = event.platformTimeStamp().InSeconds();
-  modifiers = event.modifiers();
+  m_timeStampSeconds = event.platformTimeStamp().InSeconds();
+  m_modifiers = event.modifiers();
   dispatchType = event.cancelable() ? WebInputEvent::Blocking
                                     : WebInputEvent::EventNonBlocking;
   movedBeyondSlopRegion = event.causesScrollingIfUncanceled();
@@ -584,7 +586,7 @@ Vector<PlatformMouseEvent> createPlatformMouseEventVector(
     const std::vector<const WebInputEvent*>& coalescedEvents) {
   Vector<PlatformMouseEvent> result;
   for (const auto& event : coalescedEvents) {
-    DCHECK(WebInputEvent::isMouseEventType(event->type));
+    DCHECK(WebInputEvent::isMouseEventType(event->type()));
     result.append(PlatformMouseEventBuilder(
         widget, static_cast<const WebMouseEvent&>(*event)));
   }
@@ -596,7 +598,7 @@ Vector<PlatformTouchEvent> createPlatformTouchEventVector(
     const std::vector<const WebInputEvent*>& coalescedEvents) {
   Vector<PlatformTouchEvent> result;
   for (const auto& event : coalescedEvents) {
-    DCHECK(WebInputEvent::isTouchEventType(event->type));
+    DCHECK(WebInputEvent::isTouchEventType(event->type()));
     result.append(PlatformTouchEventBuilder(
         widget, static_cast<const WebTouchEvent&>(*event)));
   }

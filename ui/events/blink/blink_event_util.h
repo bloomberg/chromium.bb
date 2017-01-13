@@ -95,7 +95,7 @@ bool IsContinuousGestureEvent(blink::WebInputEvent::Type);
 
 inline const blink::WebGestureEvent& ToWebGestureEvent(
     const blink::WebInputEvent& event) {
-  DCHECK(IsGestureScollOrPinch(event.type));
+  DCHECK(IsGestureScollOrPinch(event.type()));
   return static_cast<const blink::WebGestureEvent&>(event);
 }
 

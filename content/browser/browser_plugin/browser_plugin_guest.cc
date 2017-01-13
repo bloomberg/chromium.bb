@@ -458,7 +458,7 @@ void BrowserPluginGuest::ResendEventToEmbedder(
       static_cast<RenderWidgetHostViewBase*>(GetOwnerRenderWidgetHostView());
 
   gfx::Vector2d offset_from_embedder = guest_window_rect_.OffsetFromOrigin();
-  if (event.type == blink::WebInputEvent::GestureScrollUpdate) {
+  if (event.type() == blink::WebInputEvent::GestureScrollUpdate) {
     blink::WebGestureEvent resent_gesture_event;
     memcpy(&resent_gesture_event, &event, sizeof(blink::WebGestureEvent));
     resent_gesture_event.x += offset_from_embedder.x();
@@ -470,7 +470,7 @@ void BrowserPluginGuest::ResendEventToEmbedder(
         ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(
             resent_gesture_event);
     view->ProcessGestureEvent(resent_gesture_event, latency_info);
-  } else if (event.type == blink::WebInputEvent::MouseWheel) {
+  } else if (event.type() == blink::WebInputEvent::MouseWheel) {
     blink::WebMouseWheelEvent resent_wheel_event;
     memcpy(&resent_wheel_event, &event, sizeof(blink::WebMouseWheelEvent));
     resent_wheel_event.x += offset_from_embedder.x();

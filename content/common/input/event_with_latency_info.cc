@@ -28,7 +28,7 @@ void ScopedWebInputEventWithLatencyInfo::CoalesceWith(
 
   // New events get coalesced into older events, and the newer timestamp
   // should always be preserved.
-  const double time_stamp_seconds = other.event().timeStampSeconds;
+  const double time_stamp_seconds = other.event().timeStampSeconds();
   ui::Coalesce(other.event(), event_.get());
   event_->setTimeStampSeconds(time_stamp_seconds);
 

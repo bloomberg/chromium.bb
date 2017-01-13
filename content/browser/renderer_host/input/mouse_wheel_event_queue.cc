@@ -89,7 +89,7 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
        scrolling_device_ == blink::WebGestureDeviceTouchpad)) {
     WebGestureEvent scroll_update(
         WebInputEvent::GestureScrollUpdate, WebInputEvent::NoModifiers,
-        event_sent_for_gesture_ack_->event.timeStampSeconds);
+        event_sent_for_gesture_ack_->event.timeStampSeconds());
 
     scroll_update.x = event_sent_for_gesture_ack_->event.x;
     scroll_update.y = event_sent_for_gesture_ack_->event.y;
@@ -99,7 +99,7 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
     scroll_update.resendingPluginId = -1;
 
     // Swap X & Y if Shift is down and when there is no horizontal movement.
-    if ((event_sent_for_gesture_ack_->event.modifiers &
+    if ((event_sent_for_gesture_ack_->event.modifiers() &
          WebInputEvent::ShiftKey) != 0 &&
         event_sent_for_gesture_ack_->event.deltaX == 0) {
       scroll_update.data.scrollUpdate.deltaX =
@@ -262,7 +262,7 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
 
 void MouseWheelEventQueue::OnGestureScrollEvent(
     const GestureEventWithLatencyInfo& gesture_event) {
-  if (gesture_event.event.type == blink::WebInputEvent::GestureScrollBegin) {
+  if (gesture_event.event.type() == blink::WebInputEvent::GestureScrollBegin) {
     // If there is a current scroll going on and a new scroll that isn't
     // wheel based cancel current one by sending a ScrollEnd.
     if (scroll_end_timer_.IsRunning() &&
@@ -273,9 +273,9 @@ void MouseWheelEventQueue::OnGestureScrollEvent(
     }
     scrolling_device_ = gesture_event.event.sourceDevice;
   } else if (scrolling_device_ == gesture_event.event.sourceDevice &&
-             (gesture_event.event.type ==
+             (gesture_event.event.type() ==
                   blink::WebInputEvent::GestureScrollEnd ||
-              gesture_event.event.type ==
+              gesture_event.event.type() ==
                   blink::WebInputEvent::GestureFlingStart)) {
     scrolling_device_ = blink::WebGestureDeviceUninitialized;
     if (scroll_end_timer_.IsRunning()) {

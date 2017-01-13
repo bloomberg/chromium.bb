@@ -164,7 +164,7 @@ void RemoteFrameClientImpl::forwardInputEvent(Event* event) {
         *static_cast<MouseEvent*>(event)));
 
   // Other or internal Blink events should not be forwarded.
-  if (!webEvent || webEvent->type == WebInputEvent::Undefined)
+  if (!webEvent || webEvent->type() == WebInputEvent::Undefined)
     return;
 
   m_webFrame->client()->forwardInputEvent(webEvent.get());

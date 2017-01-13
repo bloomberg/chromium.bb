@@ -320,8 +320,8 @@ std::unique_ptr<const char* []> StringVectorToArgArray(
 // for things like screen brightness and volume control.
 bool IsReservedSystemInputEvent(const blink::WebInputEvent& event) {
 #if defined(OS_CHROMEOS)
-  if (event.type != WebInputEvent::KeyDown &&
-      event.type != WebInputEvent::KeyUp)
+  if (event.type() != WebInputEvent::KeyDown &&
+      event.type() != WebInputEvent::KeyUp)
     return false;
   const blink::WebKeyboardEvent& key_event =
       static_cast<const blink::WebKeyboardEvent&>(event);
@@ -1121,8 +1121,8 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
   TRACE_EVENT0("ppapi", "PepperPluginInstanceImpl::HandleInputEvent");
 
   if (!has_been_clicked_ && is_flash_plugin_ &&
-      event.type == blink::WebInputEvent::MouseDown &&
-      (event.modifiers & blink::WebInputEvent::LeftButtonDown)) {
+      event.type() == blink::WebInputEvent::MouseDown &&
+      (event.modifiers() & blink::WebInputEvent::LeftButtonDown)) {
     has_been_clicked_ = true;
     blink::WebRect bounds = container()->element().boundsInViewport();
     render_frame()->GetRenderWidget()->convertViewportToWindow(&bounds);
@@ -1134,7 +1134,7 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
 
   if (!render_frame_)
     return false;
-  if (WebInputEvent::isMouseEventType(event.type)) {
+  if (WebInputEvent::isMouseEventType(event.type())) {
     render_frame_->PepperDidReceiveMouseEvent(this);
   }
 

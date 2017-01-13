@@ -17,7 +17,7 @@ CompositorThreadEventQueue::~CompositorThreadEventQueue() {}
 void CompositorThreadEventQueue::Queue(
     std::unique_ptr<EventWithCallback> new_event,
     base::TimeTicks timestamp_now) {
-  if (queue_.empty() || !IsContinuousGestureEvent(new_event->event().type) ||
+  if (queue_.empty() || !IsContinuousGestureEvent(new_event->event().type()) ||
       !IsCompatibleScrollorPinch(ToWebGestureEvent(new_event->event()),
                                  ToWebGestureEvent(queue_.back()->event()))) {
     queue_.emplace_back(std::move(new_event));

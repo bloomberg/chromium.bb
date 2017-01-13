@@ -473,7 +473,7 @@ bool GetEditCommand(const WebKeyboardEvent& event, std::string* name) {
 // modifiers. These key events correspond to some special movement and
 // selection editor commands. These keys will be marked as system key, which
 // prevents them from being handled. Thus they must be handled specially.
-  if ((event.modifiers & ~WebKeyboardEvent::ShiftKey) !=
+  if ((event.modifiers() & ~WebKeyboardEvent::ShiftKey) !=
       WebKeyboardEvent::MetaKey)
     return false;
 
@@ -494,7 +494,7 @@ bool GetEditCommand(const WebKeyboardEvent& event, std::string* name) {
       return false;
   }
 
-  if (event.modifiers & WebKeyboardEvent::ShiftKey)
+  if (event.modifiers() & WebKeyboardEvent::ShiftKey)
     name->append("AndModifySelection");
 
   return true;
@@ -505,11 +505,11 @@ bool GetEditCommand(const WebKeyboardEvent& event, std::string* name) {
 
 bool IsSystemKeyEvent(const WebKeyboardEvent& event) {
 #if defined(OS_MACOSX)
-  return event.modifiers & WebInputEvent::MetaKey &&
-      event.windowsKeyCode != ui::VKEY_B &&
-      event.windowsKeyCode != ui::VKEY_I;
+  return event.modifiers() & WebInputEvent::MetaKey &&
+         event.windowsKeyCode != ui::VKEY_B &&
+         event.windowsKeyCode != ui::VKEY_I;
 #else
-  return !!(event.modifiers & WebInputEvent::AltKey);
+  return !!(event.modifiers() & WebInputEvent::AltKey);
 #endif
 }
 
@@ -1680,7 +1680,7 @@ void EventSender::KeyDown(const std::string& code_str,
     event_down.unmodifiedText[0] = text;
   }
 
-  if (event_down.modifiers != 0)
+  if (event_down.modifiers() != 0)
     event_down.isSystemKey = IsSystemKeyEvent(event_down);
 
   WebKeyboardEvent event_up = event_down;
@@ -2130,7 +2130,7 @@ void EventSender::MouseScrollBy(gin::Arguments* args,
   bool send_gestures = true;
   WebMouseWheelEvent wheel_event =
       GetMouseWheelEvent(args, scroll_type, &send_gestures);
-  if (wheel_event.type != WebInputEvent::Undefined &&
+  if (wheel_event.type() != WebInputEvent::Undefined &&
       HandleInputEventOnViewOrPopup(wheel_event) ==
           WebInputEventResult::NotHandled &&
       send_gestures) {
@@ -2685,7 +2685,7 @@ void EventSender::FinishDragAndDrop(const WebMouseEvent& raw_event,
     // Specifically pass any keyboard modifiers to the drop method. This allows
     // tests to control the drop type (i.e. copy or move).
     mainFrameWidget()->dragTargetDrop(current_drag_data_, client_point,
-                                      screen_point, event->modifiers);
+                                      screen_point, event->modifiers());
   } else {
     mainFrameWidget()->dragTargetDragLeave();
   }
@@ -2702,7 +2702,7 @@ void EventSender::DoDragAfterMouseUp(const WebMouseEvent& raw_event) {
       widget_event.get() ? static_cast<WebMouseEvent*>(widget_event.get())
                          : &raw_event;
 
-  last_click_time_sec_ = event->timeStampSeconds;
+  last_click_time_sec_ = event->timeStampSeconds();
   last_click_pos_ = current_pointer_state_[kRawMousePointerId].last_pos_;
 
   // If we're in a drag operation, complete it.
@@ -2713,7 +2713,7 @@ void EventSender::DoDragAfterMouseUp(const WebMouseEvent& raw_event) {
   WebPoint screen_point(event->globalX, event->globalY);
   blink::WebDragOperation drag_effect = mainFrameWidget()->dragTargetDragOver(
       client_point, screen_point, current_drag_effects_allowed_,
-      event->modifiers);
+      event->modifiers());
 
   // Bail if dragover caused cancellation.
   if (current_drag_data_.isNull())
@@ -2739,7 +2739,7 @@ void EventSender::DoDragAfterMouseMove(const WebMouseEvent& raw_event) {
   WebPoint screen_point(event->globalX, event->globalY);
   current_drag_effect_ = mainFrameWidget()->dragTargetDragOver(
       client_point, screen_point, current_drag_effects_allowed_,
-      event->modifiers);
+      event->modifiers());
 }
 
 void EventSender::ReplaySavedEvents() {
@@ -2796,10 +2796,10 @@ void EventSender::ReplaySavedEvents() {
 
 WebInputEventResult EventSender::HandleInputEventOnViewOrPopup(
     const WebInputEvent& raw_event) {
-  last_event_timestamp_ = raw_event.timeStampSeconds;
+  last_event_timestamp_ = raw_event.timeStampSeconds();
 
   WebPagePopup* popup = widget()->pagePopup();
-  if (popup && !WebInputEvent::isKeyboardEventType(raw_event.type)) {
+  if (popup && !WebInputEvent::isKeyboardEventType(raw_event.type())) {
     // ui::ScaleWebInputEvent returns nullptr when the scale is 1.0f as the
     // event does not have to be converted.
     std::unique_ptr<WebInputEvent> scaled_event = ui::ScaleWebInputEvent(
@@ -2820,7 +2820,8 @@ WebInputEventResult EventSender::HandleInputEventOnViewOrPopup(
 void EventSender::SendGesturesForMouseWheelEvent(
     const WebMouseWheelEvent wheel_event) {
   WebGestureEvent begin_event(WebInputEvent::GestureScrollBegin,
-                              wheel_event.modifiers, GetCurrentEventTimeSec());
+                              wheel_event.modifiers(),
+                              GetCurrentEventTimeSec());
   InitGestureEventFromMouseWheel(wheel_event, &begin_event);
   begin_event.data.scrollBegin.deltaXHint = wheel_event.deltaX;
   begin_event.data.scrollBegin.deltaYHint = wheel_event.deltaY;
@@ -2847,7 +2848,8 @@ void EventSender::SendGesturesForMouseWheelEvent(
   HandleInputEventOnViewOrPopup(begin_event);
 
   WebGestureEvent update_event(WebInputEvent::GestureScrollUpdate,
-                               wheel_event.modifiers, GetCurrentEventTimeSec());
+                               wheel_event.modifiers(),
+                               GetCurrentEventTimeSec());
   InitGestureEventFromMouseWheel(wheel_event, &update_event);
   update_event.data.scrollUpdate.deltaX =
       begin_event.data.scrollBegin.deltaXHint;
@@ -2861,7 +2863,7 @@ void EventSender::SendGesturesForMouseWheelEvent(
   HandleInputEventOnViewOrPopup(update_event);
 
   WebGestureEvent end_event(WebInputEvent::GestureScrollEnd,
-                            wheel_event.modifiers, GetCurrentEventTimeSec());
+                            wheel_event.modifiers(), GetCurrentEventTimeSec());
   InitGestureEventFromMouseWheel(wheel_event, &end_event);
   end_event.data.scrollEnd.deltaUnits =
       begin_event.data.scrollBegin.deltaHintUnits;

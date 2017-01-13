@@ -349,9 +349,9 @@ void RenderWidgetHostViewChildFrame::GestureEventAck(
   // RenderWidgetHostInputEventRouter.
   if (!frame_connector_)
     return;
-  if ((event.type == blink::WebInputEvent::GestureScrollUpdate &&
+  if ((event.type() == blink::WebInputEvent::GestureScrollUpdate &&
        not_consumed) ||
-      event.type == blink::WebInputEvent::GestureScrollEnd)
+      event.type() == blink::WebInputEvent::GestureScrollEnd)
     frame_connector_->BubbleScrollEvent(event);
 }
 
@@ -503,8 +503,8 @@ void RenderWidgetHostViewChildFrame::ProcessMouseWheelEvent(
 void RenderWidgetHostViewChildFrame::ProcessTouchEvent(
     const blink::WebTouchEvent& event,
     const ui::LatencyInfo& latency) {
-  if (event.type == blink::WebInputEvent::TouchStart &&
-   frame_connector_ && !frame_connector_->HasFocus()) {
+  if (event.type() == blink::WebInputEvent::TouchStart && frame_connector_ &&
+      !frame_connector_->HasFocus()) {
     frame_connector_->FocusRootView();
   }
 
@@ -700,7 +700,7 @@ void RenderWidgetHostViewChildFrame::SetNeedsBeginFrames(
 
 InputEventAckState RenderWidgetHostViewChildFrame::FilterInputEvent(
     const blink::WebInputEvent& input_event) {
-  if (input_event.type == blink::WebInputEvent::GestureFlingStart) {
+  if (input_event.type() == blink::WebInputEvent::GestureFlingStart) {
     const blink::WebGestureEvent& gesture_event =
         static_cast<const blink::WebGestureEvent&>(input_event);
     // Zero-velocity touchpad flings are an Aura-specific signal that the

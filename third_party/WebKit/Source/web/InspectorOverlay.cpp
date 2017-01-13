@@ -234,8 +234,7 @@ bool InspectorOverlay::handleInputEvent(const WebInputEvent& inputEvent) {
   if (isEmpty())
     return false;
 
-  if (WebInputEvent::isGestureEventType(inputEvent.type) &&
-      inputEvent.type == WebInputEvent::GestureTap) {
+  if (inputEvent.type() == WebInputEvent::GestureTap) {
     // We only have a use for gesture tap.
     WebGestureEvent transformedEvent = TransformWebGestureEvent(
         m_frameImpl->frameView(),
@@ -246,8 +245,8 @@ bool InspectorOverlay::handleInputEvent(const WebInputEvent& inputEvent) {
 
     overlayMainFrame()->eventHandler().handleGestureEvent(transformedEvent);
   }
-  if (WebInputEvent::isMouseEventType(inputEvent.type) &&
-      inputEvent.type != WebInputEvent::MouseEnter) {
+  if (WebInputEvent::isMouseEventType(inputEvent.type()) &&
+      inputEvent.type() != WebInputEvent::MouseEnter) {
     // PlatformMouseEventBuilder does not work with MouseEnter type, so we
     // filter it out manually.
     PlatformMouseEvent mouseEvent = PlatformMouseEventBuilder(
@@ -277,7 +276,7 @@ bool InspectorOverlay::handleInputEvent(const WebInputEvent& inputEvent) {
                     mouseEvent) != WebInputEventResult::NotHandled;
   }
 
-  if (WebInputEvent::isTouchEventType(inputEvent.type)) {
+  if (WebInputEvent::isTouchEventType(inputEvent.type())) {
     PlatformTouchEvent touchEvent = PlatformTouchEventBuilder(
         m_frameImpl->frameView(),
         static_cast<const WebTouchEvent&>(inputEvent));
@@ -289,12 +288,12 @@ bool InspectorOverlay::handleInputEvent(const WebInputEvent& inputEvent) {
         createPlatformTouchEventVector(m_frameImpl->frameView(),
                                        std::vector<const WebInputEvent*>()));
   }
-  if (WebInputEvent::isKeyboardEventType(inputEvent.type)) {
+  if (WebInputEvent::isKeyboardEventType(inputEvent.type())) {
     overlayMainFrame()->eventHandler().keyEvent(
         static_cast<const WebKeyboardEvent&>(inputEvent));
   }
 
-  if (inputEvent.type == WebInputEvent::MouseWheel) {
+  if (inputEvent.type() == WebInputEvent::MouseWheel) {
     WebMouseWheelEvent transformedEvent = TransformWebMouseWheelEvent(
         m_frameImpl->frameView(),
         static_cast<const WebMouseWheelEvent&>(inputEvent));
@@ -760,7 +759,7 @@ bool InspectorOverlay::handleMousePress() {
 }
 
 bool InspectorOverlay::handleGestureEvent(const WebGestureEvent& event) {
-  if (!shouldSearchForNode() || event.type != WebInputEvent::GestureTap)
+  if (!shouldSearchForNode() || event.type() != WebInputEvent::GestureTap)
     return false;
   Node* node = hoveredNodeForEvent(m_frameImpl->frame(), event, false);
   if (node && m_inspectModeHighlightConfig) {

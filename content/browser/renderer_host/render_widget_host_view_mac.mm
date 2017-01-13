@@ -79,6 +79,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -1160,7 +1161,7 @@ void RenderWidgetHostViewMac::SetShowingContextMenu(bool showing) {
                                       pressure:0];
   WebMouseEvent web_event = WebMouseEventBuilder::Build(event, cocoa_view_);
   if (showing)
-    web_event.type = WebInputEvent::MouseLeave;
+    web_event.setType(WebInputEvent::MouseLeave);
   ForwardMouseEvent(web_event);
 }
 
@@ -1208,7 +1209,7 @@ void RenderWidgetHostViewMac::ForwardMouseEvent(const WebMouseEvent& event) {
   if (render_widget_host_)
     render_widget_host_->ForwardMouseEvent(event);
 
-  if (event.type == WebInputEvent::MouseLeave) {
+  if (event.type() == WebInputEvent::MouseLeave) {
     [cocoa_view_ setToolTipAtMousePoint:nil];
     tooltip_text_.clear();
   }
@@ -1483,7 +1484,7 @@ void RenderWidgetHostViewMac::GestureEventAck(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {
   bool consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
-  switch (event.type) {
+  switch (event.type()) {
     case blink::WebInputEvent::GestureScrollBegin:
     case blink::WebInputEvent::GestureScrollUpdate:
     case blink::WebInputEvent::GestureScrollEnd:
@@ -1533,8 +1534,8 @@ bool RenderWidgetHostViewMac::ShouldRouteEvent(
   // See also RenderWidgetHostViewAura::ShouldRouteEvent.
   // TODO(wjmaclean): Update this function if RenderWidgetHostViewMac implements
   // OnTouchEvent(), to match what we are doing in RenderWidgetHostViewAura.
-  DCHECK(WebInputEvent::isMouseEventType(event.type) ||
-         event.type == WebInputEvent::MouseWheel);
+  DCHECK(WebInputEvent::isMouseEventType(event.type()) ||
+         event.type() == WebInputEvent::MouseWheel);
   return render_widget_host_->delegate() &&
          render_widget_host_->delegate()->GetInputEventRouter() &&
          SiteIsolationPolicy::AreCrossProcessFramesPossible();
@@ -1900,7 +1901,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     // If this is the first such event, send a mouse exit to the host view.
     if (!mouseEventWasIgnored_ && renderWidgetHostView_->render_widget_host_) {
       WebMouseEvent exitEvent = WebMouseEventBuilder::Build(theEvent, self);
-      exitEvent.type = WebInputEvent::MouseLeave;
+      exitEvent.setType(WebInputEvent::MouseLeave);
       exitEvent.button = WebMouseEvent::Button::NoButton;
       renderWidgetHostView_->ForwardMouseEvent(exitEvent);
     }
@@ -1913,7 +1914,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     // due to the hitTest, send a mouse enter event to the host view.
     if (renderWidgetHostView_->render_widget_host_) {
       WebMouseEvent enterEvent = WebMouseEventBuilder::Build(theEvent, self);
-      enterEvent.type = WebInputEvent::MouseMove;
+      enterEvent.setType(WebInputEvent::MouseMove);
       enterEvent.button = WebMouseEvent::Button::NoButton;
       ui::LatencyInfo latency_info(ui::SourceEventType::OTHER);
       latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
@@ -2059,7 +2060,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 
   // Force fullscreen windows to close on Escape so they won't keep the keyboard
   // grabbed or be stuck onscreen if the renderer is hanging.
-  if (event.type == NativeWebKeyboardEvent::RawKeyDown &&
+  if (event.type() == NativeWebKeyboardEvent::RawKeyDown &&
       event.windowsKeyCode == ui::VKEY_ESCAPE &&
       renderWidgetHostView_->pepper_fullscreen_window()) {
     RenderWidgetHostViewMac* parent =
@@ -2079,7 +2080,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 
   // Suppress the escape key up event if necessary.
   if (event.windowsKeyCode == ui::VKEY_ESCAPE && suppressNextEscapeKeyUp_) {
-    if (event.type == NativeWebKeyboardEvent::KeyUp)
+    if (event.type() == NativeWebKeyboardEvent::KeyUp)
       suppressNextEscapeKeyUp_ = NO;
     return;
   }
@@ -2227,7 +2228,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     // So before sending the real key down event, we need to send a fake key up
     // event to balance it.
     NativeWebKeyboardEvent fakeEvent = event;
-    fakeEvent.type = blink::WebInputEvent::KeyUp;
+    fakeEvent.setType(blink::WebInputEvent::KeyUp);
     fakeEvent.skip_in_browser = true;
     widgetHost->ForwardKeyboardEvent(fakeEvent);
     // Not checking |renderWidgetHostView_->render_widget_host_| here because
@@ -2253,7 +2254,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     if (!textInserted && textToBeInserted_.length() == 1) {
       // If a single character was inserted, then we just send it as a keypress
       // event.
-      event.type = blink::WebInputEvent::Char;
+      event.setType(blink::WebInputEvent::Char);
       event.text[0] = textToBeInserted_[0];
       event.text[1] = 0;
       event.skip_in_browser = true;
@@ -2265,7 +2266,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
       // We don't get insertText: calls if ctrl or cmd is down, or the key event
       // generates an insert command. So synthesize a keypress event for these
       // cases, unless the key event generated any other command.
-      event.type = blink::WebInputEvent::Char;
+      event.setType(blink::WebInputEvent::Char);
       event.skip_in_browser = true;
       widgetHost->ForwardKeyboardEvent(event);
     }
@@ -2326,7 +2327,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 
   if (gestureBeginPinchSent_) {
     WebGestureEvent endEvent(WebGestureEventBuilder::Build(event, self));
-    endEvent.type = WebInputEvent::GesturePinchEnd;
+    endEvent.setType(WebInputEvent::GesturePinchEnd);
     renderWidgetHostView_->render_widget_host_->ForwardGestureEvent(endEvent);
     gestureBeginPinchSent_ = NO;
   }
@@ -2544,7 +2545,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   // Send a GesturePinchBegin event if none has been sent yet.
   if (!gestureBeginPinchSent_) {
     WebGestureEvent beginEvent(*gestureBeginEvent_);
-    beginEvent.type = WebInputEvent::GesturePinchBegin;
+    beginEvent.setType(WebInputEvent::GesturePinchBegin);
     renderWidgetHostView_->render_widget_host_->ForwardGestureEvent(beginEvent);
     gestureBeginPinchSent_ = YES;
   }
@@ -3265,8 +3266,8 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // If we switch windows (or are removed from the view hierarchy), cancel any
   // open mouse-downs.
   if (hasOpenMouseDown_) {
-    WebMouseEvent event;
-    event.type = WebInputEvent::MouseUp;
+    WebMouseEvent event(WebInputEvent::MouseUp, WebInputEvent::NoModifiers,
+                        ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
     event.button = WebMouseEvent::Button::Left;
     renderWidgetHostView_->ForwardMouseEvent(event);
 

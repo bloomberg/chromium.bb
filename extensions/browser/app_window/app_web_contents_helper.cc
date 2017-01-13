@@ -33,9 +33,9 @@ AppWebContentsHelper::AppWebContentsHelper(
 bool AppWebContentsHelper::ShouldSuppressGestureEvent(
     const blink::WebGestureEvent& event) {
   // Disable pinch zooming in app windows.
-  return event.type == blink::WebGestureEvent::GesturePinchBegin ||
-         event.type == blink::WebGestureEvent::GesturePinchUpdate ||
-         event.type == blink::WebGestureEvent::GesturePinchEnd;
+  return event.type() == blink::WebGestureEvent::GesturePinchBegin ||
+         event.type() == blink::WebGestureEvent::GesturePinchUpdate ||
+         event.type() == blink::WebGestureEvent::GesturePinchEnd;
 }
 
 content::WebContents* AppWebContentsHelper::OpenURLFromTab(

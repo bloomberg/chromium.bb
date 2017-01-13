@@ -1865,9 +1865,10 @@ TEST_P(VisualViewportTest, SlowScrollAfterImplScroll) {
   EXPECT_SIZE_EQ(FloatSize(300, 200), visualViewport.getScrollOffset());
 
   // Send a scroll event on the main thread path.
-  WebGestureEvent gsu;
+  WebGestureEvent gsu(WebInputEvent::GestureScrollUpdate,
+                      WebInputEvent::NoModifiers,
+                      WebInputEvent::TimeStampForTesting);
   gsu.setFrameScale(1);
-  gsu.type = WebInputEvent::GestureScrollUpdate;
   gsu.sourceDevice = WebGestureDeviceTouchpad;
   gsu.data.scrollUpdate.deltaX = -50;
   gsu.data.scrollUpdate.deltaY = -60;

@@ -641,7 +641,7 @@ bool MouseEventManager::handleDragDropIfPossible(
   if (m_frame->settings() && m_frame->settings()->getTouchDragDropEnabled() &&
       m_frame->view()) {
     const WebGestureEvent& gestureEvent = targetedEvent.event();
-    unsigned modifiers = gestureEvent.modifiers;
+    unsigned modifiers = gestureEvent.modifiers();
 
     // TODO(mustaq): Suppressing long-tap MouseEvents could break
     // drag-drop. Will do separately because of the risk. crbug.com/606938.

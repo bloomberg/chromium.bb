@@ -97,7 +97,7 @@ WebInputEventResult GestureManager::handleGestureEventInFrame(
     }
   }
 
-  switch (gestureEvent.type) {
+  switch (gestureEvent.type()) {
     case WebInputEvent::GestureTapDown:
       return handleGestureTapDown(targetedEvent);
     case WebInputEvent::GestureTap:
@@ -136,7 +136,7 @@ WebInputEventResult GestureManager::handleGestureTap(
   FrameView* frameView(m_frame->view());
   const WebGestureEvent& gestureEvent = targetedEvent.event();
   HitTestRequest::HitTestRequestType hitType =
-      getHitTypeForGestureType(gestureEvent.type);
+      getHitTypeForGestureType(gestureEvent.type());
   uint64_t preDispatchDomTreeVersion = m_frame->document()->domTreeVersion();
   uint64_t preDispatchStyleVersion = m_frame->document()->styleVersion();
 
@@ -147,7 +147,7 @@ WebInputEventResult GestureManager::handleGestureTap(
   IntPoint adjustedPoint = frameView->rootFrameToContents(
       flooredIntPoint(gestureEvent.positionInRootFrame()));
 
-  const unsigned modifiers = gestureEvent.modifiers;
+  const unsigned modifiers = gestureEvent.modifiers();
 
   if (!m_suppressMouseEventsFromGestures) {
     PlatformMouseEvent fakeMouseMove(
@@ -155,7 +155,7 @@ WebInputEventResult GestureManager::handleGestureTap(
         PlatformEvent::MouseMoved,
         /* clickCount */ 0, static_cast<PlatformEvent::Modifiers>(modifiers),
         PlatformMouseEvent::FromTouch,
-        TimeTicks::FromSeconds(gestureEvent.timeStampSeconds),
+        TimeTicks::FromSeconds(gestureEvent.timeStampSeconds()),
         WebPointerProperties::PointerType::Mouse);
     m_mouseEventManager->setMousePositionAndDispatchMouseEvent(
         currentHitTest.innerNode(), EventTypeNames::mousemove, fakeMouseMove);
@@ -198,7 +198,7 @@ WebInputEventResult GestureManager::handleGestureTap(
       static_cast<PlatformEvent::Modifiers>(modifiers |
                                             PlatformEvent::LeftButtonDown),
       PlatformMouseEvent::FromTouch,
-      TimeTicks::FromSeconds(gestureEvent.timeStampSeconds),
+      TimeTicks::FromSeconds(gestureEvent.timeStampSeconds()),
       WebPointerProperties::PointerType::Mouse);
 
   // TODO(mustaq): We suppress MEs plus all it's side effects. What would that
@@ -223,7 +223,7 @@ WebInputEventResult GestureManager::handleGestureTap(
   }
 
   if (currentHitTest.innerNode()) {
-    DCHECK(gestureEvent.type == WebInputEvent::GestureTap);
+    DCHECK(gestureEvent.type() == WebInputEvent::GestureTap);
     HitTestResult result = currentHitTest;
     result.setToShadowHostIfInUserAgentShadowRoot();
     m_frame->chromeClient().onMouseDown(result.innerNode());
@@ -245,7 +245,7 @@ WebInputEventResult GestureManager::handleGestureTap(
       PlatformEvent::MouseReleased, gestureEvent.tapCount(),
       static_cast<PlatformEvent::Modifiers>(modifiers),
       PlatformMouseEvent::FromTouch,
-      TimeTicks::FromSeconds(gestureEvent.timeStampSeconds),
+      TimeTicks::FromSeconds(gestureEvent.timeStampSeconds()),
       WebPointerProperties::PointerType::Mouse);
   WebInputEventResult mouseUpEventResult =
       m_suppressMouseEventsFromGestures
@@ -358,7 +358,7 @@ WebInputEventResult GestureManager::handleGestureTwoFingerTap(
 WebInputEventResult GestureManager::sendContextMenuEventForGesture(
     const GestureEventWithHitTestResults& targetedEvent) {
   const WebGestureEvent& gestureEvent = targetedEvent.event();
-  unsigned modifiers = gestureEvent.modifiers;
+  unsigned modifiers = gestureEvent.modifiers();
 
   if (!m_suppressMouseEventsFromGestures) {
     // Send MouseMoved event prior to handling (https://crbug.com/485290).
@@ -367,7 +367,7 @@ WebInputEventResult GestureManager::sendContextMenuEventForGesture(
         PlatformEvent::MouseMoved,
         /* clickCount */ 0, static_cast<PlatformEvent::Modifiers>(modifiers),
         PlatformMouseEvent::FromTouch,
-        TimeTicks::FromSeconds(gestureEvent.timeStampSeconds),
+        TimeTicks::FromSeconds(gestureEvent.timeStampSeconds()),
         WebPointerProperties::PointerType::Mouse);
     m_mouseEventManager->setMousePositionAndDispatchMouseEvent(
         targetedEvent.hitTestResult().innerNode(), EventTypeNames::mousemove,

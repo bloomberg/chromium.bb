@@ -230,7 +230,7 @@ bool AutofillPopupControllerImpl::HandleKeyPressEvent(
       Hide();
       return true;
     case ui::VKEY_DELETE:
-      return (event.modifiers & content::NativeWebKeyboardEvent::ShiftKey) &&
+      return (event.modifiers() & content::NativeWebKeyboardEvent::ShiftKey) &&
              RemoveSelectedLine();
     case ui::VKEY_TAB:
       // A tab press should cause the selected line to be accepted, but still

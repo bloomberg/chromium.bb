@@ -19,7 +19,7 @@ class EventConversionTest : public ::testing::Test {
  protected:
   void CompareWebTouchEvents(const blink::WebTouchEvent& expected,
                              const blink::WebTouchEvent& actual) {
-    EXPECT_EQ(expected.type, actual.type);
+    EXPECT_EQ(expected.type(), actual.type());
     ASSERT_EQ(expected.touchesLength, actual.touchesLength);
     for (size_t i = 0; i < expected.touchesLength; ++i) {
       size_t j = 0;
@@ -60,7 +60,7 @@ TEST_F(EventConversionTest, TouchStart) {
   const blink::WebTouchEvent* touch_out =
       static_cast<const blink::WebTouchEvent*>(event_out.get());
   ASSERT_TRUE(touch_out);
-  EXPECT_EQ(touch.type, touch_out->type);
+  EXPECT_EQ(touch.type(), touch_out->type());
   EXPECT_EQ(touch.touchesLength, touch_out->touchesLength);
   CompareWebTouchEvents(touch, *touch_out);
 }
@@ -88,7 +88,7 @@ TEST_F(EventConversionTest, TouchMove) {
   const blink::WebTouchEvent* touch_out =
       static_cast<const blink::WebTouchEvent*>(event_out.get());
   ASSERT_TRUE(touch_out);
-  EXPECT_EQ(touch.type, touch_out->type);
+  EXPECT_EQ(touch.type(), touch_out->type());
   EXPECT_EQ(touch.touchesLength, touch_out->touchesLength);
   CompareWebTouchEvents(touch, *touch_out);
 }
@@ -116,7 +116,7 @@ TEST_F(EventConversionTest, TouchEnd) {
   const blink::WebTouchEvent* touch_out =
       static_cast<const blink::WebTouchEvent*>(event_out.get());
   ASSERT_TRUE(touch_out);
-  EXPECT_EQ(touch.type, touch_out->type);
+  EXPECT_EQ(touch.type(), touch_out->type());
   ASSERT_EQ(touch.touchesLength, touch_out->touchesLength);
   CompareWebTouchEvents(touch, *touch_out);
 }
@@ -145,7 +145,7 @@ TEST_F(EventConversionTest, TouchCancel) {
   const blink::WebTouchEvent* touch_out =
       static_cast<const blink::WebTouchEvent*>(event_out.get());
   ASSERT_TRUE(touch_out);
-  EXPECT_EQ(touch.type, touch_out->type);
+  EXPECT_EQ(touch.type(), touch_out->type());
   EXPECT_EQ(touch.touchesLength, touch_out->touchesLength);
   CompareWebTouchEvents(touch, *touch_out);
 }

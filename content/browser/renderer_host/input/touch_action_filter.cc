@@ -41,7 +41,7 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
 
   // Filter for allowable touch actions first (eg. before the TouchEventQueue
   // can decide to send a touch cancel event).
-  switch (gesture_event->type) {
+  switch (gesture_event->type()) {
     case WebInputEvent::GestureScrollBegin:
       DCHECK(!drop_scroll_gesture_events_);
       DCHECK(!drop_pinch_gesture_events_);
@@ -178,7 +178,7 @@ void TouchActionFilter::ResetTouchAction() {
 
 bool TouchActionFilter::ShouldSuppressScroll(
     const blink::WebGestureEvent& gesture_event) {
-  DCHECK_EQ(gesture_event.type, WebInputEvent::GestureScrollBegin);
+  DCHECK_EQ(gesture_event.type(), WebInputEvent::GestureScrollBegin);
   // if there are two or more pointers then ensure that we allow panning
   // if pinch-zoom is allowed. Determine if this should really occur in the
   // GestureScrollBegin or not; see crbug.com/649034.

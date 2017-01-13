@@ -21,11 +21,9 @@ WebGestureEvent MakeGestureEvent(WebInputEvent::Type type,
                                  double time,
                                  float x,
                                  float y) {
-  WebGestureEvent result;
-  result.type = type;
+  WebGestureEvent result(type, WebInputEvent::NoModifiers, time);
   result.x = x;
   result.y = y;
-  result.timeStampSeconds = time;
   result.sourceDevice = blink::WebGestureDeviceTouchpad;
   return result;
 }
@@ -44,7 +42,7 @@ base::WeakPtr<VrInputManager> VrInputManager::GetWeakPtr() {
 
 void VrInputManager::ProcessUpdatedGesture(
     std::unique_ptr<blink::WebInputEvent> event) {
-  if (WebInputEvent::isMouseEventType(event->type)) {
+  if (WebInputEvent::isMouseEventType(event->type())) {
     ForwardMouseEvent(static_cast<const blink::WebMouseEvent&>(*event));
   } else {
     SendGesture(static_cast<const blink::WebGestureEvent&>(*event));
@@ -52,12 +50,12 @@ void VrInputManager::ProcessUpdatedGesture(
 }
 
 void VrInputManager::SendGesture(const WebGestureEvent& gesture) {
-  if (gesture.type == WebGestureEvent::GestureTapDown) {
+  if (gesture.type() == WebGestureEvent::GestureTapDown) {
     ForwardGestureEvent(gesture);
 
     // Generate and forward Tap
     WebGestureEvent tap_event =
-        MakeGestureEvent(WebInputEvent::GestureTap, gesture.timeStampSeconds,
+        MakeGestureEvent(WebInputEvent::GestureTap, gesture.timeStampSeconds(),
                          gesture.x, gesture.y);
     tap_event.data.tap.tapCount = 1;
     ForwardGestureEvent(tap_event);

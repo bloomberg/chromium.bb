@@ -245,9 +245,9 @@ bool MimeHandlerViewGuest::HandleContextMenu(
 bool MimeHandlerViewGuest::PreHandleGestureEvent(
     WebContents* source,
     const blink::WebGestureEvent& event) {
-  if (event.type == blink::WebGestureEvent::GesturePinchBegin ||
-      event.type == blink::WebGestureEvent::GesturePinchUpdate ||
-      event.type == blink::WebGestureEvent::GesturePinchEnd) {
+  if (event.type() == blink::WebGestureEvent::GesturePinchBegin ||
+      event.type() == blink::WebGestureEvent::GesturePinchUpdate ||
+      event.type() == blink::WebGestureEvent::GesturePinchEnd) {
     // If we're an embedded plugin we drop pinch-gestures to avoid zooming the
     // guest.
     return !is_full_page_plugin();

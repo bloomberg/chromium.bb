@@ -75,12 +75,12 @@ double InSecondsF(const base::TimeTicks& time) {
 }
 
 bool WheelEventsMatch(const WebInputEvent& lhs, const WebInputEvent& rhs) {
-  if (lhs.size == rhs.size && lhs.type == rhs.type &&
-      lhs.type == WebInputEvent::MouseWheel) {
+  if (lhs.size() == rhs.size() && lhs.type() == rhs.type() &&
+      lhs.type() == WebInputEvent::MouseWheel) {
     WebMouseWheelEvent rhs_timestamped =
         static_cast<const WebMouseWheelEvent&>(rhs);
-    rhs_timestamped.timeStampSeconds = lhs.timeStampSeconds;
-    return memcmp(&rhs_timestamped, &lhs, rhs.size) == 0;
+    rhs_timestamped.setTimeStampSeconds(lhs.timeStampSeconds());
+    return memcmp(&rhs_timestamped, &lhs, rhs.size()) == 0;
   }
   return false;
 }
@@ -3213,25 +3213,29 @@ TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedCoalesceScrollAndPinch) {
   EXPECT_EQ(7ul, event_queue().size());
   EXPECT_EQ(1ul, event_disposition_recorder_.size());
 
-  EXPECT_EQ(WebInputEvent::GestureScrollUpdate, event_queue()[0]->event().type);
+  EXPECT_EQ(WebInputEvent::GestureScrollUpdate,
+            event_queue()[0]->event().type());
   EXPECT_EQ(
       -35,
       ToWebGestureEvent(event_queue()[0]->event()).data.scrollUpdate.deltaY);
-  EXPECT_EQ(WebInputEvent::GesturePinchUpdate, event_queue()[1]->event().type);
+  EXPECT_EQ(WebInputEvent::GesturePinchUpdate,
+            event_queue()[1]->event().type());
   EXPECT_EQ(
       2.0f,
       ToWebGestureEvent(event_queue()[1]->event()).data.pinchUpdate.scale);
-  EXPECT_EQ(WebInputEvent::GestureScrollEnd, event_queue()[2]->event().type);
-  EXPECT_EQ(WebInputEvent::GesturePinchBegin, event_queue()[3]->event().type);
-  EXPECT_EQ(WebInputEvent::GestureScrollUpdate, event_queue()[4]->event().type);
+  EXPECT_EQ(WebInputEvent::GestureScrollEnd, event_queue()[2]->event().type());
+  EXPECT_EQ(WebInputEvent::GesturePinchBegin, event_queue()[3]->event().type());
+  EXPECT_EQ(WebInputEvent::GestureScrollUpdate,
+            event_queue()[4]->event().type());
   EXPECT_EQ(
       -85,
       ToWebGestureEvent(event_queue()[4]->event()).data.scrollUpdate.deltaY);
-  EXPECT_EQ(WebInputEvent::GesturePinchUpdate, event_queue()[5]->event().type);
+  EXPECT_EQ(WebInputEvent::GesturePinchUpdate,
+            event_queue()[5]->event().type());
   EXPECT_EQ(
       0.5f,
       ToWebGestureEvent(event_queue()[5]->event()).data.pinchUpdate.scale);
-  EXPECT_EQ(WebInputEvent::GesturePinchEnd, event_queue()[6]->event().type);
+  EXPECT_EQ(WebInputEvent::GesturePinchEnd, event_queue()[6]->event().type());
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
 }
 

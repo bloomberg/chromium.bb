@@ -15,7 +15,7 @@ namespace {
 const size_t kTenSeconds = 10 * 1000 * 1000;
 
 bool IsContinuousEvent(const std::unique_ptr<EventWithDispatchType>& event) {
-  switch (event->event().type) {
+  switch (event->event().type()) {
     case blink::WebInputEvent::MouseMove:
     case blink::WebInputEvent::MouseWheel:
     case blink::WebInputEvent::TouchMove:
@@ -90,8 +90,8 @@ bool MainThreadEventQueue::HandleEvent(
 
   bool non_blocking = original_dispatch_type == DISPATCH_TYPE_NON_BLOCKING ||
                       ack_result == INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING;
-  bool is_wheel = event->type == blink::WebInputEvent::MouseWheel;
-  bool is_touch = blink::WebInputEvent::isTouchEventType(event->type);
+  bool is_wheel = event->type() == blink::WebInputEvent::MouseWheel;
+  bool is_touch = blink::WebInputEvent::isTouchEventType(event->type());
 
   if (is_touch) {
     blink::WebTouchEvent* touch_event =
@@ -103,7 +103,7 @@ bool MainThreadEventQueue::HandleEvent(
       touch_event->dispatchType =
           blink::WebInputEvent::ListenersNonBlockingPassive;
     }
-    if (touch_event->type == blink::WebInputEvent::TouchStart)
+    if (touch_event->type() == blink::WebInputEvent::TouchStart)
       last_touch_start_forced_nonblocking_due_to_fling_ = false;
 
     if (enable_fling_passive_listener_flag_ &&
@@ -330,7 +330,7 @@ bool MainThreadEventQueue::IsRafAlignedInputDisabled() {
 
 bool MainThreadEventQueue::IsRafAlignedEvent(
     const blink::WebInputEvent& event) {
-  switch (event.type) {
+  switch (event.type()) {
     case blink::WebInputEvent::MouseMove:
     case blink::WebInputEvent::MouseWheel:
       return handle_raf_aligned_mouse_input_;

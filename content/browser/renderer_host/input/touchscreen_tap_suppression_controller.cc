@@ -31,7 +31,7 @@ void TouchscreenTapSuppressionController::GestureFlingCancelAck(
 
 bool TouchscreenTapSuppressionController::FilterTapEvent(
     const GestureEventWithLatencyInfo& event) {
-  switch (event.event.type) {
+  switch (event.event.type()) {
     case WebInputEvent::GestureTapDown:
       forward_next_tap_cancel_ = false;
       if (!controller_.ShouldDeferTapDown())

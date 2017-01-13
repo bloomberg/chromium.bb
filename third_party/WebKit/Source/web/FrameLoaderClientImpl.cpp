@@ -469,14 +469,14 @@ void FrameLoaderClientImpl::dispatchDidChangeThemeColor() {
 
 static bool allowCreatingBackgroundTabs() {
   const WebInputEvent* inputEvent = WebViewImpl::currentInputEvent();
-  if (!inputEvent || (inputEvent->type != WebInputEvent::MouseUp &&
-                      (inputEvent->type != WebInputEvent::RawKeyDown &&
-                       inputEvent->type != WebInputEvent::KeyDown) &&
-                      inputEvent->type != WebInputEvent::GestureTap))
+  if (!inputEvent || (inputEvent->type() != WebInputEvent::MouseUp &&
+                      (inputEvent->type() != WebInputEvent::RawKeyDown &&
+                       inputEvent->type() != WebInputEvent::KeyDown) &&
+                      inputEvent->type() != WebInputEvent::GestureTap))
     return false;
 
   unsigned short buttonNumber;
-  if (WebInputEvent::isMouseEventType(inputEvent->type)) {
+  if (WebInputEvent::isMouseEventType(inputEvent->type())) {
     const WebMouseEvent* mouseEvent =
         static_cast<const WebMouseEvent*>(inputEvent);
 
@@ -497,10 +497,10 @@ static bool allowCreatingBackgroundTabs() {
     // The click is simulated when triggering the keypress event.
     buttonNumber = 0;
   }
-  bool ctrl = inputEvent->modifiers & WebMouseEvent::ControlKey;
-  bool shift = inputEvent->modifiers & WebMouseEvent::ShiftKey;
-  bool alt = inputEvent->modifiers & WebMouseEvent::AltKey;
-  bool meta = inputEvent->modifiers & WebMouseEvent::MetaKey;
+  bool ctrl = inputEvent->modifiers() & WebMouseEvent::ControlKey;
+  bool shift = inputEvent->modifiers() & WebMouseEvent::ShiftKey;
+  bool alt = inputEvent->modifiers() & WebMouseEvent::AltKey;
+  bool meta = inputEvent->modifiers() & WebMouseEvent::MetaKey;
 
   NavigationPolicy userPolicy;
   if (!navigationPolicyFromMouseEvent(buttonNumber, ctrl, shift, alt, meta,

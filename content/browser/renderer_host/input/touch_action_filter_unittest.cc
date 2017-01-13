@@ -524,7 +524,7 @@ TEST(TouchActionFilterTest, DoubleTapWithTouchActionAuto) {
   filter.ResetTouchAction();
   EXPECT_FALSE(filter.FilterGestureEvent(&tap_down));
   EXPECT_FALSE(filter.FilterGestureEvent(&unconfirmed_tap));
-  EXPECT_EQ(unconfirmed_tap.type, WebInputEvent::GestureTapUnconfirmed);
+  EXPECT_EQ(unconfirmed_tap.type(), WebInputEvent::GestureTapUnconfirmed);
   // The tap cancel will come as part of the next touch sequence.
   filter.ResetTouchAction();
   // Changing the touch action for the second tap doesn't effect the behaviour
@@ -553,7 +553,7 @@ TEST(TouchActionFilterTest, DoubleTap) {
   filter.OnSetTouchAction(TOUCH_ACTION_MANIPULATION);
   EXPECT_FALSE(filter.FilterGestureEvent(&tap_down));
   EXPECT_FALSE(filter.FilterGestureEvent(&unconfirmed_tap));
-  EXPECT_EQ(WebInputEvent::GestureTap, unconfirmed_tap.type);
+  EXPECT_EQ(WebInputEvent::GestureTap, unconfirmed_tap.type());
   // Changing the touch action for the second tap doesn't effect the behaviour
   // of the event. The tap cancel will come as part of the next touch sequence.
   filter.ResetTouchAction();
@@ -561,7 +561,7 @@ TEST(TouchActionFilterTest, DoubleTap) {
   EXPECT_TRUE(filter.FilterGestureEvent(&tap_cancel));
   EXPECT_FALSE(filter.FilterGestureEvent(&tap_down));
   EXPECT_FALSE(filter.FilterGestureEvent(&double_tap));
-  EXPECT_EQ(WebInputEvent::GestureTap, double_tap.type);
+  EXPECT_EQ(WebInputEvent::GestureTap, double_tap.type());
   filter.ResetTouchAction();
 }
 
@@ -579,7 +579,7 @@ TEST(TouchActionFilterTest, SingleTapWithTouchActionAuto) {
   filter.ResetTouchAction();
   EXPECT_FALSE(filter.FilterGestureEvent(&tap_down));
   EXPECT_FALSE(filter.FilterGestureEvent(&unconfirmed_tap1));
-  EXPECT_EQ(WebInputEvent::GestureTapUnconfirmed, unconfirmed_tap1.type);
+  EXPECT_EQ(WebInputEvent::GestureTapUnconfirmed, unconfirmed_tap1.type());
   EXPECT_FALSE(filter.FilterGestureEvent(&tap));
   filter.ResetTouchAction();
 }
@@ -599,7 +599,7 @@ TEST(TouchActionFilterTest, SingleTap) {
   filter.OnSetTouchAction(TOUCH_ACTION_NONE);
   EXPECT_FALSE(filter.FilterGestureEvent(&tap_down));
   EXPECT_FALSE(filter.FilterGestureEvent(&unconfirmed_tap1));
-  EXPECT_EQ(WebInputEvent::GestureTap, unconfirmed_tap1.type);
+  EXPECT_EQ(WebInputEvent::GestureTap, unconfirmed_tap1.type());
   EXPECT_TRUE(filter.FilterGestureEvent(&tap));
   filter.ResetTouchAction();
 }
@@ -683,7 +683,7 @@ TEST(TouchActionFilterTest, ZeroVelocityFlingsConvertedToScrollEnd) {
     WebGestureEvent fling_start = SyntheticWebGestureEventBuilder::BuildFling(
         kFlingX, 0, kSourceDevice);
     EXPECT_FALSE(filter.FilterGestureEvent(&fling_start));
-    EXPECT_EQ(WebInputEvent::GestureScrollEnd, fling_start.type);
+    EXPECT_EQ(WebInputEvent::GestureScrollEnd, fling_start.type());
   }
 
   filter.ResetTouchAction();
@@ -700,7 +700,7 @@ TEST(TouchActionFilterTest, ZeroVelocityFlingsConvertedToScrollEnd) {
     WebGestureEvent fling_start = SyntheticWebGestureEventBuilder::BuildFling(
         0, kFlingY, kSourceDevice);
     EXPECT_FALSE(filter.FilterGestureEvent(&fling_start));
-    EXPECT_EQ(WebInputEvent::GestureScrollEnd, fling_start.type);
+    EXPECT_EQ(WebInputEvent::GestureScrollEnd, fling_start.type());
   }
 }
 

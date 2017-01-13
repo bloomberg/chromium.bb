@@ -240,7 +240,7 @@ WebInputEventResult ScrollManager::handleGestureScrollBegin(
 
 WebInputEventResult ScrollManager::handleGestureScrollUpdate(
     const WebGestureEvent& gestureEvent) {
-  DCHECK_EQ(gestureEvent.type, WebInputEvent::GestureScrollUpdate);
+  DCHECK_EQ(gestureEvent.type(), WebInputEvent::GestureScrollUpdate);
 
   Node* node = m_scrollGestureHandlingNode.get();
   if (!node || !node->layoutObject())
@@ -385,7 +385,7 @@ WebInputEventResult ScrollManager::handleGestureScrollEvent(
 
   Node* eventTarget = nullptr;
   Scrollbar* scrollbar = nullptr;
-  if (gestureEvent.type != WebInputEvent::GestureScrollBegin) {
+  if (gestureEvent.type() != WebInputEvent::GestureScrollBegin) {
     scrollbar = m_scrollbarHandlingScrollGesture.get();
     eventTarget = m_scrollGestureHandlingNode.get();
   }
@@ -440,7 +440,7 @@ WebInputEventResult ScrollManager::handleGestureScrollEvent(
     }
   }
 
-  switch (gestureEvent.type) {
+  switch (gestureEvent.type()) {
     case WebInputEvent::GestureScrollBegin:
       return handleGestureScrollBegin(gestureEvent);
     case WebInputEvent::GestureScrollUpdate:
@@ -468,7 +468,7 @@ bool ScrollManager::handleScrollGestureOnResizer(
   if (gestureEvent.sourceDevice != WebGestureDeviceTouchscreen)
     return false;
 
-  if (gestureEvent.type == WebInputEvent::GestureScrollBegin) {
+  if (gestureEvent.type() == WebInputEvent::GestureScrollBegin) {
     PaintLayer* layer = eventTarget->layoutObject()
                             ? eventTarget->layoutObject()->enclosingLayer()
                             : nullptr;
@@ -483,7 +483,7 @@ bool ScrollManager::handleScrollGestureOnResizer(
           LayoutSize(m_resizeScrollableArea->offsetFromResizeCorner(p));
       return true;
     }
-  } else if (gestureEvent.type == WebInputEvent::GestureScrollUpdate) {
+  } else if (gestureEvent.type() == WebInputEvent::GestureScrollUpdate) {
     if (m_resizeScrollableArea && m_resizeScrollableArea->inResizeMode()) {
       IntPoint pos = roundedIntPoint(gestureEvent.positionInRootFrame());
       pos.move(gestureEvent.deltaXInRootFrame(),
@@ -491,7 +491,7 @@ bool ScrollManager::handleScrollGestureOnResizer(
       m_resizeScrollableArea->resize(pos, m_offsetFromResizeCorner);
       return true;
     }
-  } else if (gestureEvent.type == WebInputEvent::GestureScrollEnd) {
+  } else if (gestureEvent.type() == WebInputEvent::GestureScrollEnd) {
     if (m_resizeScrollableArea && m_resizeScrollableArea->inResizeMode()) {
       m_resizeScrollableArea->setInResizeMode(false);
       m_resizeScrollableArea = nullptr;

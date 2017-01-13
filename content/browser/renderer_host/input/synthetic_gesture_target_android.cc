@@ -55,7 +55,7 @@ void SyntheticGestureTargetAndroid::DispatchWebTouchEventToPlatform(
 
   SyntheticGestureTargetAndroid::Action action =
       SyntheticGestureTargetAndroid::ActionInvalid;
-  switch (web_touch.type) {
+  switch (web_touch.type()) {
     case blink::WebInputEvent::TouchStart:
       action = SyntheticGestureTargetAndroid::ActionStart;
       break;
@@ -78,7 +78,7 @@ void SyntheticGestureTargetAndroid::DispatchWebTouchEventToPlatform(
   }
 
   TouchInject(env, action, num_touches,
-              static_cast<int64_t>(web_touch.timeStampSeconds * 1000.0));
+              static_cast<int64_t>(web_touch.timeStampSeconds() * 1000.0));
 }
 
 void SyntheticGestureTargetAndroid::DispatchWebMouseWheelEventToPlatform(
@@ -89,7 +89,7 @@ void SyntheticGestureTargetAndroid::DispatchWebMouseWheelEventToPlatform(
   Java_MotionEventSynthesizer_inject(
       env, touch_event_synthesizer_,
       static_cast<int>(SyntheticGestureTargetAndroid::ActionScroll), 1,
-      static_cast<int64_t>(web_wheel.timeStampSeconds * 1000.0));
+      static_cast<int64_t>(web_wheel.timeStampSeconds() * 1000.0));
 }
 
 void SyntheticGestureTargetAndroid::DispatchWebMouseEventToPlatform(

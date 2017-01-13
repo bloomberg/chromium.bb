@@ -2729,12 +2729,12 @@ void RenderViewImpl::OnDiscardInputEvent(
   }
 
   if (dispatch_type == DISPATCH_TYPE_BLOCKING_NOTIFY_MAIN) {
-    NotifyInputEventHandled(input_event->type,
+    NotifyInputEventHandled(input_event->type(),
                             INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   }
 
   std::unique_ptr<InputEventAck> ack(
-      new InputEventAck(InputEventAckSource::MAIN_THREAD, input_event->type,
+      new InputEventAck(InputEventAckSource::MAIN_THREAD, input_event->type(),
                         INPUT_EVENT_ACK_STATE_NOT_CONSUMED));
   OnInputEventAck(std::move(ack));
 }

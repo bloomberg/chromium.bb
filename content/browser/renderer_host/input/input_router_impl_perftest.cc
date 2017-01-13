@@ -249,7 +249,7 @@ class InputRouterImplPerfTest : public testing::Test {
                                InputEventAckState ack_result) {
     if (!ui::WebInputEventTraits::ShouldBlockEventStream(event))
       return;
-    InputEventAck ack(InputEventAckSource::COMPOSITOR_THREAD, event.type,
+    InputEventAck ack(InputEventAckSource::COMPOSITOR_THREAD, event.type(),
                       ack_result);
     InputHostMsg_HandleInputEvent_ACK response(0, ack);
     input_router_->OnMessageReceived(response);

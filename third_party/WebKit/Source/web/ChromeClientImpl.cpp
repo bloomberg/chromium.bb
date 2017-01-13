@@ -278,7 +278,7 @@ void updatePolicyForEvent(const WebInputEvent* inputEvent,
     return;
 
   unsigned short buttonNumber = 0;
-  if (inputEvent->type == WebInputEvent::MouseUp) {
+  if (inputEvent->type() == WebInputEvent::MouseUp) {
     const WebMouseEvent* mouseEvent =
         static_cast<const WebMouseEvent*>(inputEvent);
 
@@ -295,20 +295,20 @@ void updatePolicyForEvent(const WebInputEvent* inputEvent,
       default:
         return;
     }
-  } else if ((WebInputEvent::isKeyboardEventType(inputEvent->type) &&
+  } else if ((WebInputEvent::isKeyboardEventType(inputEvent->type()) &&
               static_cast<const WebKeyboardEvent*>(inputEvent)
                       ->windowsKeyCode == VKEY_RETURN) ||
-             WebInputEvent::isGestureEventType(inputEvent->type)) {
+             WebInputEvent::isGestureEventType(inputEvent->type())) {
     // Keyboard and gesture events can simulate mouse events.
     buttonNumber = 0;
   } else {
     return;
   }
 
-  bool ctrl = inputEvent->modifiers & WebInputEvent::ControlKey;
-  bool shift = inputEvent->modifiers & WebInputEvent::ShiftKey;
-  bool alt = inputEvent->modifiers & WebInputEvent::AltKey;
-  bool meta = inputEvent->modifiers & WebInputEvent::MetaKey;
+  bool ctrl = inputEvent->modifiers() & WebInputEvent::ControlKey;
+  bool shift = inputEvent->modifiers() & WebInputEvent::ShiftKey;
+  bool alt = inputEvent->modifiers() & WebInputEvent::AltKey;
+  bool meta = inputEvent->modifiers() & WebInputEvent::MetaKey;
 
   NavigationPolicy userPolicy = *policy;
   navigationPolicyFromMouseEvent(buttonNumber, ctrl, shift, alt, meta,

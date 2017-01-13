@@ -19,7 +19,7 @@ void CommonWebGestureToProto(const blink::WebGestureEvent& event,
                              InputMessage::Type type,
                              InputMessage* proto) {
   proto->set_type(type);
-  proto->set_timestamp_seconds(event.timeStampSeconds);
+  proto->set_timestamp_seconds(event.timeStampSeconds());
 
   GestureCommon* common = proto->mutable_gesture_common();
   common->set_x(event.x);
@@ -152,7 +152,7 @@ std::unique_ptr<BlimpMessage> InputMessageGenerator::GenerateMessage(
   InputMessage* details;
   std::unique_ptr<BlimpMessage> message = CreateBlimpMessage(&details);
 
-  switch (event.type) {
+  switch (event.type()) {
     case blink::WebInputEvent::Type::GestureScrollBegin:
       GestureScrollBeginToProto(event, details);
       break;
@@ -215,7 +215,7 @@ std::unique_ptr<BlimpMessage> InputMessageGenerator::GenerateMessage(
     case blink::WebInputEvent::Type::TouchEnd:
     case blink::WebInputEvent::Type::TouchCancel:
     case blink::WebInputEvent::Type::TouchScrollStarted:
-      DVLOG(1) << "Unsupported WebInputEvent type " << event.type;
+      DVLOG(1) << "Unsupported WebInputEvent type " << event.type();
       return nullptr;
   }
 

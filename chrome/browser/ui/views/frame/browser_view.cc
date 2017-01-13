@@ -1308,8 +1308,8 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                          bool* is_keyboard_shortcut) {
   *is_keyboard_shortcut = false;
 
-  if ((event.type != blink::WebInputEvent::RawKeyDown) &&
-      (event.type != blink::WebInputEvent::KeyUp)) {
+  if ((event.type() != blink::WebInputEvent::RawKeyDown) &&
+      (event.type() != blink::WebInputEvent::KeyUp)) {
     return false;
   }
 
@@ -1343,7 +1343,7 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
 
 #if defined(OS_CHROMEOS)
   if (chrome::IsAcceleratorDeprecated(accelerator)) {
-    if (event.type == blink::WebInputEvent::RawKeyDown)
+    if (event.type() == blink::WebInputEvent::RawKeyDown)
       *is_keyboard_shortcut = true;
     return false;
   }
@@ -1377,7 +1377,7 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
 
   if (id != -1) {
     // |accelerator| is a non-reserved browser shortcut (e.g. Ctrl+f).
-    if (event.type == blink::WebInputEvent::RawKeyDown)
+    if (event.type() == blink::WebInputEvent::RawKeyDown)
       *is_keyboard_shortcut = true;
   } else if (processed) {
     // |accelerator| is a non-browser shortcut (e.g. F4-F10 on Ash). Report

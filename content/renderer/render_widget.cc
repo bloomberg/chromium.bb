@@ -2123,9 +2123,9 @@ void RenderWidget::didHandleGestureEvent(
 #if defined(OS_ANDROID) || defined(USE_AURA)
   if (event_cancelled)
     return;
-  if (event.type == WebInputEvent::GestureTap) {
+  if (event.type() == WebInputEvent::GestureTap) {
     UpdateTextInputState(ShowIme::IF_NEEDED, ChangeSource::FROM_NON_IME);
-  } else if (event.type == WebInputEvent::GestureLongPress) {
+  } else if (event.type() == WebInputEvent::GestureLongPress) {
     DCHECK(GetWebWidget());
     blink::WebInputMethodController* controller = GetInputMethodController();
     if (!controller || controller->textInputInfo().value.isEmpty())
@@ -2136,7 +2136,7 @@ void RenderWidget::didHandleGestureEvent(
 // TODO(ananta): Piggyback off existing IPCs to communicate this information,
 // crbug/420130.
 #if defined(OS_WIN)
-  if (event.type != blink::WebGestureEvent::GestureTap)
+  if (event.type() != blink::WebGestureEvent::GestureTap)
     return;
 
   // TODO(estade): hit test the event against focused node to make sure

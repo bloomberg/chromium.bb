@@ -66,7 +66,7 @@ KeyboardEvent* createKeyboardEventWithLocation(
 int getModifiersForKeyLocationCode(KeyboardEvent::KeyLocationCode location) {
   KeyboardEvent* event = createKeyboardEventWithLocation(location);
   WebKeyboardEventBuilder convertedEvent(*event);
-  return convertedEvent.modifiers;
+  return convertedEvent.modifiers();
 }
 
 TEST(WebInputEventConversionTest, WebKeyboardEventBuilder) {
@@ -99,7 +99,7 @@ TEST(WebInputEventConversionTest, WebKeyboardEventBuilder) {
 TEST(WebInputEventConversionTest, WebMouseEventBuilder) {
   TouchEvent* event = TouchEvent::create();
   WebMouseEventBuilder mouse(0, 0, *event);
-  EXPECT_EQ(WebInputEvent::Undefined, mouse.type);
+  EXPECT_EQ(WebInputEvent::Undefined, mouse.type());
 }
 
 TEST(WebInputEventConversionTest, WebTouchEventBuilder) {
@@ -154,7 +154,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder) {
 
     WebTouchEventBuilder webTouchBuilder(documentLayoutView, *touchEvent);
     ASSERT_EQ(1u, webTouchBuilder.touchesLength);
-    EXPECT_EQ(WebInputEvent::TouchStart, webTouchBuilder.type);
+    EXPECT_EQ(WebInputEvent::TouchStart, webTouchBuilder.type());
     EXPECT_EQ(WebTouchPoint::StatePressed, webTouchBuilder.touches[0].state);
     EXPECT_FLOAT_EQ(p0.screenPosition.x,
                     webTouchBuilder.touches[0].screenPosition.x);
@@ -199,7 +199,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder) {
 
     WebTouchEventBuilder webTouchBuilder(documentLayoutView, *touchEvent);
     ASSERT_EQ(2u, webTouchBuilder.touchesLength);
-    EXPECT_EQ(WebInputEvent::TouchMove, webTouchBuilder.type);
+    EXPECT_EQ(WebInputEvent::TouchMove, webTouchBuilder.type());
     EXPECT_EQ(WebTouchPoint::StateMoved, webTouchBuilder.touches[0].state);
     EXPECT_EQ(WebTouchPoint::StateStationary, webTouchBuilder.touches[1].state);
     EXPECT_EQ(p0.id, webTouchBuilder.touches[0].id);
@@ -222,7 +222,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder) {
 
     WebTouchEventBuilder webTouchBuilder(documentLayoutView, *touchEvent);
     ASSERT_EQ(2u, webTouchBuilder.touchesLength);
-    EXPECT_EQ(WebInputEvent::TouchMove, webTouchBuilder.type);
+    EXPECT_EQ(WebInputEvent::TouchMove, webTouchBuilder.type());
     EXPECT_EQ(WebTouchPoint::StateStationary, webTouchBuilder.touches[0].state);
     EXPECT_EQ(WebTouchPoint::StateMoved, webTouchBuilder.touches[1].state);
     EXPECT_EQ(p0.id, webTouchBuilder.touches[0].id);
@@ -244,7 +244,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder) {
 
     WebTouchEventBuilder webTouchBuilder(documentLayoutView, *touchEvent);
     ASSERT_EQ(2u, webTouchBuilder.touchesLength);
-    EXPECT_EQ(WebInputEvent::TouchEnd, webTouchBuilder.type);
+    EXPECT_EQ(WebInputEvent::TouchEnd, webTouchBuilder.type());
     EXPECT_EQ(WebTouchPoint::StateStationary, webTouchBuilder.touches[0].state);
     EXPECT_EQ(WebTouchPoint::StateReleased, webTouchBuilder.touches[1].state);
     EXPECT_EQ(p0.id, webTouchBuilder.touches[0].id);
@@ -266,7 +266,7 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder) {
 
     WebTouchEventBuilder webTouchBuilder(documentLayoutView, *touchEvent);
     ASSERT_EQ(2u, webTouchBuilder.touchesLength);
-    EXPECT_EQ(WebInputEvent::TouchCancel, webTouchBuilder.type);
+    EXPECT_EQ(WebInputEvent::TouchCancel, webTouchBuilder.type());
     EXPECT_EQ(WebTouchPoint::StateCancelled, webTouchBuilder.touches[0].state);
     EXPECT_EQ(WebTouchPoint::StateCancelled, webTouchBuilder.touches[1].state);
     EXPECT_EQ(p0.id, webTouchBuilder.touches[0].id);

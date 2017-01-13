@@ -202,15 +202,15 @@ blink::WebInputEventResult WebViewPlugin::handleInputEvent(
     WebCursorInfo& cursor) {
   // For tap events, don't handle them. They will be converted to
   // mouse events later and passed to here.
-  if (event.type == WebInputEvent::GestureTap)
+  if (event.type() == WebInputEvent::GestureTap)
     return blink::WebInputEventResult::NotHandled;
 
   // For LongPress events we return false, since otherwise the context menu will
   // be suppressed. https://crbug.com/482842
-  if (event.type == WebInputEvent::GestureLongPress)
+  if (event.type() == WebInputEvent::GestureLongPress)
     return blink::WebInputEventResult::NotHandled;
 
-  if (event.type == WebInputEvent::ContextMenu) {
+  if (event.type() == WebInputEvent::ContextMenu) {
     if (delegate_) {
       const WebMouseEvent& mouse_event =
           reinterpret_cast<const WebMouseEvent&>(event);

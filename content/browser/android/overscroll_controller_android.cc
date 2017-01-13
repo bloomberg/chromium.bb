@@ -126,7 +126,7 @@ bool OverscrollControllerAndroid::WillHandleGestureEvent(
   }
 
   bool handled = false;
-  switch (event.type) {
+  switch (event.type()) {
     case blink::WebInputEvent::GestureScrollBegin:
       refresh_effect_->OnScrollBegin();
       break;
@@ -181,12 +181,12 @@ void OverscrollControllerAndroid::OnGestureEventAck(
 
   // The overscroll effect requires an explicit release signal that may not be
   // sent from the renderer compositor.
-  if (event.type == blink::WebInputEvent::GestureScrollEnd ||
-      event.type == blink::WebInputEvent::GestureFlingStart) {
+  if (event.type() == blink::WebInputEvent::GestureScrollEnd ||
+      event.type() == blink::WebInputEvent::GestureFlingStart) {
     OnOverscrolled(DidOverscrollParams());
   }
 
-  if (event.type == blink::WebInputEvent::GestureScrollUpdate &&
+  if (event.type() == blink::WebInputEvent::GestureScrollUpdate &&
       refresh_effect_) {
     // The effect should only be allowed if both the causal touch events go
     // unconsumed and the generated scroll events go unconsumed.

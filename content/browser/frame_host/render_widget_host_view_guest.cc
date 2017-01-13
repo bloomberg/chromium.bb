@@ -180,7 +180,7 @@ void RenderWidgetHostViewGuest::ProcessAckedTouchEvent(
 void RenderWidgetHostViewGuest::ProcessMouseEvent(
     const blink::WebMouseEvent& event,
     const ui::LatencyInfo& latency) {
-  if (event.type == blink::WebInputEvent::MouseDown) {
+  if (event.type() == blink::WebInputEvent::MouseDown) {
     DCHECK(guest_->GetOwnerRenderWidgetHostView());
     RenderWidgetHost* embedder =
         guest_->GetOwnerRenderWidgetHostView()->GetRenderWidgetHost();
@@ -201,7 +201,7 @@ void RenderWidgetHostViewGuest::ProcessMouseEvent(
 void RenderWidgetHostViewGuest::ProcessTouchEvent(
     const blink::WebTouchEvent& event,
     const ui::LatencyInfo& latency) {
-  if (event.type == blink::WebInputEvent::TouchStart) {
+  if (event.type() == blink::WebInputEvent::TouchStart) {
     DCHECK(guest_->GetOwnerRenderWidgetHostView());
     RenderWidgetHost* embedder =
         guest_->GetOwnerRenderWidgetHostView()->GetRenderWidgetHost();
@@ -598,7 +598,7 @@ void RenderWidgetHostViewGuest::GestureEventAck(
                       ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
   // GestureScrollBegin/End are always consumed by the guest, so we only
   // forward GestureScrollUpdate.
-  if (event.type == blink::WebInputEvent::GestureScrollUpdate && not_consumed)
+  if (event.type() == blink::WebInputEvent::GestureScrollUpdate && not_consumed)
     guest_->ResendEventToEmbedder(event);
 }
 
@@ -615,7 +615,7 @@ void RenderWidgetHostViewGuest::OnHandleInputEvent(
   // explicitly remove the additional device scale factor from the coordinates
   // before allowing the event to be queued.
   if (IsUseZoomForDSFEnabled() &&
-      event->type == blink::WebInputEvent::MouseWheel) {
+      event->type() == blink::WebInputEvent::MouseWheel) {
     blink::WebMouseWheelEvent rescaled_event =
         *static_cast<const blink::WebMouseWheelEvent*>(event);
     rescaled_event.x /= current_device_scale_factor();
@@ -630,7 +630,7 @@ void RenderWidgetHostViewGuest::OnHandleInputEvent(
   }
 
   ScopedInputScaleDisabler disable(host_, current_device_scale_factor());
-  if (blink::WebInputEvent::isMouseEventType(event->type)) {
+  if (blink::WebInputEvent::isMouseEventType(event->type())) {
     // The mouse events for BrowserPlugin are modified by all
     // the CSS transforms applied on the <object> and embedder. As a result of
     // this, the coordinates passed on to the guest renderer are potentially
@@ -643,7 +643,7 @@ void RenderWidgetHostViewGuest::OnHandleInputEvent(
     const blink::WebMouseEvent& mouse_event =
         static_cast<const blink::WebMouseEvent&>(*event);
     // A MouseDown on the ButtonRight could suggest a ContextMenu.
-    if (guest_ && mouse_event.type == blink::WebInputEvent::MouseDown &&
+    if (guest_ && mouse_event.type() == blink::WebInputEvent::MouseDown &&
         mouse_event.button == blink::WebPointerProperties::Button::Right)
       guest_->SetContextMenuPosition(
           gfx::Point(mouse_event.globalX - GetViewBounds().x(),
@@ -652,14 +652,14 @@ void RenderWidgetHostViewGuest::OnHandleInputEvent(
     return;
   }
 
-  if (event->type == blink::WebInputEvent::MouseWheel) {
+  if (event->type() == blink::WebInputEvent::MouseWheel) {
     ui::LatencyInfo latency_info(ui::SourceEventType::WHEEL);
     host_->ForwardWheelEventWithLatencyInfo(
         *static_cast<const blink::WebMouseWheelEvent*>(event), latency_info);
     return;
   }
 
-  if (blink::WebInputEvent::isKeyboardEventType(event->type)) {
+  if (blink::WebInputEvent::isKeyboardEventType(event->type())) {
     if (!embedder->GetLastKeyboardEvent())
       return;
     NativeWebKeyboardEvent keyboard_event(*embedder->GetLastKeyboardEvent());
@@ -667,8 +667,8 @@ void RenderWidgetHostViewGuest::OnHandleInputEvent(
     return;
   }
 
-  if (blink::WebInputEvent::isTouchEventType(event->type)) {
-    if (event->type == blink::WebInputEvent::TouchStart &&
+  if (blink::WebInputEvent::isTouchEventType(event->type())) {
+    if (event->type() == blink::WebInputEvent::TouchStart &&
         !embedder->GetView()->HasFocus()) {
       embedder->GetView()->Focus();
     }
@@ -678,7 +678,7 @@ void RenderWidgetHostViewGuest::OnHandleInputEvent(
     return;
   }
 
-  if (blink::WebInputEvent::isGestureEventType(event->type)) {
+  if (blink::WebInputEvent::isGestureEventType(event->type())) {
     const blink::WebGestureEvent& gesture_event =
         *static_cast<const blink::WebGestureEvent*>(event);
 
@@ -690,7 +690,7 @@ void RenderWidgetHostViewGuest::OnHandleInputEvent(
     // handleInputEvent() on a GestureFlingStart, and we could use this as
     // a signal to let the guest handle the fling, though we'd need to be
     // sure other plugins would behave appropriately (i.e. return 'false').
-    if (gesture_event.type == blink::WebInputEvent::GestureScrollUpdate &&
+    if (gesture_event.type() == blink::WebInputEvent::GestureScrollUpdate &&
         gesture_event.data.scrollUpdate.inertialPhase ==
             blink::WebGestureEvent::MomentumPhase) {
       return;

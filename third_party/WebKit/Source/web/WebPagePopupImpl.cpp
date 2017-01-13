@@ -472,8 +472,8 @@ WebInputEventResult WebPagePopupImpl::handleGestureEvent(
   if (m_closing || !m_page || !m_page->mainFrame() ||
       !toLocalFrame(m_page->mainFrame())->view())
     return WebInputEventResult::NotHandled;
-  if ((event.type == WebInputEvent::GestureTap ||
-       event.type == WebInputEvent::GestureTapDown) &&
+  if ((event.type() == WebInputEvent::GestureTap ||
+       event.type() == WebInputEvent::GestureTapDown) &&
       !isViewportPointInWindow(event.x, event.y)) {
     cancel();
     return WebInputEventResult::NotHandled;

@@ -456,9 +456,9 @@ class EventTestPlugin : public FakeWebPlugin {
 
   WebInputEventResult handleInputEvent(const WebInputEvent& event,
                                        WebCursorInfo&) override {
-    m_lastEventType = event.type;
-    if (WebInputEvent::isMouseEventType(event.type) ||
-        event.type == WebInputEvent::MouseWheel) {
+    m_lastEventType = event.type();
+    if (WebInputEvent::isMouseEventType(event.type()) ||
+        event.type() == WebInputEvent::MouseWheel) {
       const WebMouseEvent& mouseEvent =
           static_cast<const WebMouseEvent&>(event);
       m_lastMouseEventLocation = IntPoint(mouseEvent.x, mouseEvent.y);

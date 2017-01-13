@@ -97,9 +97,9 @@ class MockSyntheticPointerTouchActionTarget
   ~MockSyntheticPointerTouchActionTarget() override {}
 
   void DispatchInputEventToPlatform(const WebInputEvent& event) override {
-    DCHECK(WebInputEvent::isTouchEventType(event.type));
+    DCHECK(WebInputEvent::isTouchEventType(event.type()));
     const WebTouchEvent& touch_event = static_cast<const WebTouchEvent&>(event);
-    type_ = touch_event.type;
+    type_ = touch_event.type();
     for (size_t i = 0; i < WebTouchEvent::kTouchesLengthCap; ++i) {
       indexes_[i] = touch_event.touches[i].id;
       positions_[i] = gfx::PointF(touch_event.touches[i].position);
@@ -175,9 +175,9 @@ class MockSyntheticPointerMouseActionTarget
   ~MockSyntheticPointerMouseActionTarget() override {}
 
   void DispatchInputEventToPlatform(const WebInputEvent& event) override {
-    DCHECK(WebInputEvent::isMouseEventType(event.type));
+    DCHECK(WebInputEvent::isMouseEventType(event.type()));
     const WebMouseEvent& mouse_event = static_cast<const WebMouseEvent&>(event);
-    type_ = mouse_event.type;
+    type_ = mouse_event.type();
     position_ = gfx::PointF(mouse_event.x, mouse_event.y);
     clickCount_ = mouse_event.clickCount;
     button_ = mouse_event.button;

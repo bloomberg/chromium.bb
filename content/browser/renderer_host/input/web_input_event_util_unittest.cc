@@ -111,10 +111,10 @@ TEST(WebInputEventUtilTest, ScrollUpdateConversion) {
 
   blink::WebGestureEvent web_event =
       ui::CreateWebGestureEventFromGestureEventData(event);
-  EXPECT_EQ(WebInputEvent::GestureScrollUpdate, web_event.type);
-  EXPECT_EQ(0, web_event.modifiers);
+  EXPECT_EQ(WebInputEvent::GestureScrollUpdate, web_event.type());
+  EXPECT_EQ(0, web_event.modifiers());
   EXPECT_EQ((timestamp - base::TimeTicks()).InSecondsF(),
-            web_event.timeStampSeconds);
+            web_event.timeStampSeconds());
   EXPECT_EQ(gfx::ToFlooredInt(pos.x()), web_event.x);
   EXPECT_EQ(gfx::ToFlooredInt(pos.y()), web_event.y);
   EXPECT_EQ(gfx::ToFlooredInt(raw_pos.x()), web_event.globalX);

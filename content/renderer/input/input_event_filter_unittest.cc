@@ -88,7 +88,7 @@ class InputEventRecorder : public content::InputHandlerManager {
   struct Record {
     Record(const WebInputEvent* event) {
       const char* ptr = reinterpret_cast<const char*>(event);
-      event_data.assign(ptr, ptr + event->size);
+      event_data.assign(ptr, ptr + event->size());
     }
     std::vector<char> event_data;
   };
@@ -202,14 +202,14 @@ TEST_F(InputEventFilterTest, Basic) {
     WebInputEvent::Type event_type = std::get<0>(params).type;
     InputEventAckState ack_result = std::get<0>(params).state;
 
-    EXPECT_EQ(kEvents[i].type, event_type);
+    EXPECT_EQ(kEvents[i].type(), event_type);
     EXPECT_EQ(ack_result, INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
 
     const WebInputEvent* event = event_recorder_->record_at(i);
     ASSERT_TRUE(event);
 
-    EXPECT_EQ(kEvents[i].size, event->size);
-    EXPECT_TRUE(memcmp(&kEvents[i], event, event->size) == 0);
+    EXPECT_EQ(kEvents[i].size(), event->size());
+    EXPECT_TRUE(memcmp(&kEvents[i], event, event->size()) == 0);
   }
 
   event_recorder_->set_send_to_widget(true);
@@ -227,8 +227,8 @@ TEST_F(InputEventFilterTest, Basic) {
     EXPECT_TRUE(InputMsg_HandleInputEvent::Read(&message, &params));
     const WebInputEvent* event = std::get<0>(params);
 
-    EXPECT_EQ(kEvents[2].size, event->size);
-    EXPECT_TRUE(memcmp(&kEvents[2], event, event->size) == 0);
+    EXPECT_EQ(kEvents[2].size(), event->size());
+    EXPECT_TRUE(memcmp(&kEvents[2], event, event->size()) == 0);
   }
 
   // Now reset everything, and test that DidHandleInputEvent is called.
@@ -253,7 +253,7 @@ TEST_F(InputEventFilterTest, Basic) {
     EXPECT_TRUE(InputHostMsg_HandleInputEvent_ACK::Read(message, &params));
     WebInputEvent::Type event_type = std::get<0>(params).type;
     InputEventAckState ack_result = std::get<0>(params).state;
-    EXPECT_EQ(kEvents[i].type, event_type);
+    EXPECT_EQ(kEvents[i].type(), event_type);
     EXPECT_EQ(ack_result, INPUT_EVENT_ACK_STATE_CONSUMED);
   }
 
@@ -344,10 +344,10 @@ TEST_F(InputEventFilterTest, NonBlockingWheel) {
     const WebInputEvent* event = std::get<0>(params);
     InputEventDispatchType dispatch_type = std::get<2>(params);
 
-    EXPECT_EQ(kEvents[i].size, event->size);
+    EXPECT_EQ(kEvents[i].size(), event->size());
     kEvents[i].dispatchType =
         WebInputEvent::DispatchType::ListenersNonBlockingPassive;
-    EXPECT_TRUE(memcmp(&kEvents[i], event, event->size) == 0);
+    EXPECT_TRUE(memcmp(&kEvents[i], event, event->size()) == 0);
     EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING,
               dispatch_type);
   }
@@ -365,7 +365,7 @@ TEST_F(InputEventFilterTest, NonBlockingWheel) {
 
     kEvents[2].dispatchType =
         WebInputEvent::DispatchType::ListenersNonBlockingPassive;
-    EXPECT_EQ(kEvents[2].size, event->size);
+    EXPECT_EQ(kEvents[2].size(), event->size());
     EXPECT_EQ(kEvents[2].deltaX + kEvents[3].deltaX, event->deltaX);
     EXPECT_EQ(kEvents[2].deltaY + kEvents[3].deltaY, event->deltaY);
     EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING,
@@ -405,10 +405,10 @@ TEST_F(InputEventFilterTest, NonBlockingTouch) {
     const WebInputEvent* event = std::get<0>(params);
     InputEventDispatchType dispatch_type = std::get<2>(params);
 
-    EXPECT_EQ(kEvents[i].size, event->size);
+    EXPECT_EQ(kEvents[i].size(), event->size());
     kEvents[i].dispatchType =
         WebInputEvent::DispatchType::ListenersNonBlockingPassive;
-    EXPECT_TRUE(memcmp(&kEvents[i], event, event->size) == 0);
+    EXPECT_TRUE(memcmp(&kEvents[i], event, event->size()) == 0);
     EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING,
               dispatch_type);
   }
@@ -424,7 +424,7 @@ TEST_F(InputEventFilterTest, NonBlockingTouch) {
         static_cast<const WebTouchEvent*>(std::get<0>(params));
     InputEventDispatchType dispatch_type = std::get<2>(params);
 
-    EXPECT_EQ(kEvents[3].size, event->size);
+    EXPECT_EQ(kEvents[3].size(), event->size());
     EXPECT_EQ(1u, kEvents[3].touchesLength);
     EXPECT_EQ(kEvents[3].touches[0].position.x, event->touches[0].position.x);
     EXPECT_EQ(kEvents[3].touches[0].position.y, event->touches[0].position.y);
@@ -462,10 +462,10 @@ TEST_F(InputEventFilterTest, IntermingledNonBlockingTouch) {
     const WebInputEvent* event = std::get<0>(params);
     InputEventDispatchType dispatch_type = std::get<2>(params);
 
-    EXPECT_EQ(kEvents[0].size, event->size);
+    EXPECT_EQ(kEvents[0].size(), event->size());
     kEvents[0].dispatchType =
         WebInputEvent::DispatchType::ListenersNonBlockingPassive;
-    EXPECT_TRUE(memcmp(&kEvents[0], event, event->size) == 0);
+    EXPECT_TRUE(memcmp(&kEvents[0], event, event->size()) == 0);
     EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING,
               dispatch_type);
   }
@@ -478,10 +478,10 @@ TEST_F(InputEventFilterTest, IntermingledNonBlockingTouch) {
     const WebInputEvent* event = std::get<0>(params);
     InputEventDispatchType dispatch_type = std::get<2>(params);
 
-    EXPECT_EQ(kEvents[1].size, event->size);
+    EXPECT_EQ(kEvents[1].size(), event->size());
     kEvents[1].dispatchType =
         WebInputEvent::DispatchType::ListenersNonBlockingPassive;
-    EXPECT_TRUE(memcmp(&kEvents[1], event, event->size) == 0);
+    EXPECT_TRUE(memcmp(&kEvents[1], event, event->size()) == 0);
     EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING,
               dispatch_type);
   }
@@ -494,8 +494,8 @@ TEST_F(InputEventFilterTest, IntermingledNonBlockingTouch) {
     const WebInputEvent* event = std::get<0>(params);
     InputEventDispatchType dispatch_type = std::get<2>(params);
 
-    EXPECT_EQ(kBlockingEvents[0].size, event->size);
-    EXPECT_TRUE(memcmp(&kBlockingEvents[0], event, event->size) == 0);
+    EXPECT_EQ(kBlockingEvents[0].size(), event->size());
+    EXPECT_TRUE(memcmp(&kBlockingEvents[0], event, event->size()) == 0);
     EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_BLOCKING, dispatch_type);
   }
 }

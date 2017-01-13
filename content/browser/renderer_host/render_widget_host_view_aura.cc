@@ -1022,14 +1022,14 @@ void RenderWidgetHostViewAura::ProcessAckedTouchEvent(
 
   // The TouchScrollStarted event is generated & consumed downstream from the
   // TouchEventQueue. So we don't expect an ACK up here.
-  DCHECK(touch.event.type != blink::WebInputEvent::TouchScrollStarted);
+  DCHECK(touch.event.type() != blink::WebInputEvent::TouchScrollStarted);
 
   ui::EventResult result = (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED)
                                ? ui::ER_HANDLED
                                : ui::ER_UNHANDLED;
 
   blink::WebTouchPoint::State required_state;
-  switch (touch.event.type) {
+  switch (touch.event.type()) {
     case blink::WebInputEvent::TouchStart:
       required_state = blink::WebTouchPoint::StatePressed;
       break;
@@ -1069,7 +1069,7 @@ RenderWidgetHostViewAura::CreateSyntheticGestureTarget() {
 InputEventAckState RenderWidgetHostViewAura::FilterInputEvent(
     const blink::WebInputEvent& input_event) {
   bool consumed = false;
-  if (input_event.type == WebInputEvent::GestureFlingStart) {
+  if (input_event.type() == WebInputEvent::GestureFlingStart) {
     const WebGestureEvent& gesture_event =
         static_cast<const WebGestureEvent&>(input_event);
     // Zero-velocity touchpad flings are an Aura-specific signal that the
@@ -1085,10 +1085,11 @@ InputEventAckState RenderWidgetHostViewAura::FilterInputEvent(
     consumed |= overscroll_controller_->WillHandleEvent(input_event);
 
   // Touch events should always propagate to the renderer.
-  if (WebTouchEvent::isTouchEventType(input_event.type))
+  if (WebTouchEvent::isTouchEventType(input_event.type()))
     return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 
-  if (consumed && input_event.type == blink::WebInputEvent::GestureFlingStart) {
+  if (consumed &&
+      input_event.type() == blink::WebInputEvent::GestureFlingStart) {
     // Here we indicate that there was no consumer for this event, as
     // otherwise the fling animation system will try to run an animation
     // and will also expect a notification when the fling ends. Since

@@ -101,7 +101,7 @@ void BlimpInputHandlerWrapper::DispatchNonBlockingEventToMainThread(
     blink::WebScopedInputEvent event,
     const ui::LatencyInfo& latency_info) {
   DCHECK(compositor_thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(event->type, blink::WebInputEvent::MouseWheel);
+  DCHECK_EQ(event->type(), blink::WebInputEvent::MouseWheel);
 
   NOTIMPLEMENTED()
       << "Dispatching Non Blocking Events to the engine is not supported";

@@ -111,9 +111,9 @@ void InputScrollElasticityController::ObserveGestureEventAndResult(
     const cc::InputHandlerScrollResult& scroll_result) {
   base::TimeTicks event_timestamp =
       base::TimeTicks() +
-      base::TimeDelta::FromSecondsD(gesture_event.timeStampSeconds);
+      base::TimeDelta::FromSecondsD(gesture_event.timeStampSeconds());
 
-  switch (gesture_event.type) {
+  switch (gesture_event.type()) {
     case blink::WebInputEvent::GestureScrollBegin: {
       if (gesture_event.data.scrollBegin.synthetic)
         return;

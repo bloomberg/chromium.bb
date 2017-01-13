@@ -1262,9 +1262,9 @@ bool Browser::PreHandleGestureEvent(content::WebContents* source,
                                     const blink::WebGestureEvent& event) {
   // Disable pinch zooming in undocked dev tools window due to poor UX.
   if (app_name() == DevToolsWindow::kDevToolsApp)
-    return event.type == blink::WebGestureEvent::GesturePinchBegin ||
-           event.type == blink::WebGestureEvent::GesturePinchUpdate ||
-           event.type == blink::WebGestureEvent::GesturePinchEnd;
+    return event.type() == blink::WebGestureEvent::GesturePinchBegin ||
+           event.type() == blink::WebGestureEvent::GesturePinchUpdate ||
+           event.type() == blink::WebGestureEvent::GesturePinchEnd;
 
   return false;
 }

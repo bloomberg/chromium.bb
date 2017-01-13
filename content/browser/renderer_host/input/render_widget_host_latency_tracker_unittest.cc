@@ -860,7 +860,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TouchBlockingAndQueueingTime) {
       // Call ComputeInputLatencyHistograms directly to avoid OnInputEventAck
       // overwriting components.
       tracker()->ComputeInputLatencyHistograms(
-          event.type, tracker()->latency_component_id(), fake_latency,
+          event.type(), tracker()->latency_component_id(), fake_latency,
           blocking);
 
       tracker()->OnInputEventAck(event, &latency,
@@ -904,7 +904,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TouchBlockingAndQueueingTime) {
       // Call ComputeInputLatencyHistograms directly to avoid OnInputEventAck
       // overwriting components.
       tracker()->ComputeInputLatencyHistograms(
-          event.type, tracker()->latency_component_id(), fake_latency,
+          event.type(), tracker()->latency_component_id(), fake_latency,
           blocking);
     }
 
@@ -945,7 +945,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TouchBlockingAndQueueingTime) {
       // Call ComputeInputLatencyHistograms directly to avoid OnInputEventAck
       // overwriting components.
       tracker()->ComputeInputLatencyHistograms(
-          event.type, tracker()->latency_component_id(), fake_latency,
+          event.type(), tracker()->latency_component_id(), fake_latency,
           blocking);
     }
   }

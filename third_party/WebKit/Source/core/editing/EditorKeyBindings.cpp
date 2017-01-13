@@ -43,7 +43,7 @@ bool Editor::handleEditingKeyboardEvent(KeyboardEvent* evt) {
   String commandName = behavior().interpretKeyEvent(*evt);
   Command command = this->createCommand(commandName);
 
-  if (keyEvent->type == WebInputEvent::RawKeyDown) {
+  if (keyEvent->type() == WebInputEvent::RawKeyDown) {
     // WebKit doesn't have enough information about mode to decide how
     // commands that just insert text if executed via Editor should be treated,
     // so we leave it upon WebCore to either handle them immediately

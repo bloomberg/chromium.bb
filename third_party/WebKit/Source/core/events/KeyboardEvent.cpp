@@ -54,11 +54,11 @@ const AtomicString& eventTypeForKeyboardEventType(WebInputEvent::Type type) {
 }
 
 KeyboardEvent::KeyLocationCode keyLocationCode(const WebInputEvent& key) {
-  if (key.modifiers & WebInputEvent::IsKeyPad)
+  if (key.modifiers() & WebInputEvent::IsKeyPad)
     return KeyboardEvent::kDomKeyLocationNumpad;
-  if (key.modifiers & WebInputEvent::IsLeft)
+  if (key.modifiers() & WebInputEvent::IsLeft)
     return KeyboardEvent::kDomKeyLocationLeft;
-  if (key.modifiers & WebInputEvent::IsRight)
+  if (key.modifiers() & WebInputEvent::IsRight)
     return KeyboardEvent::kDomKeyLocationRight;
   return KeyboardEvent::kDomKeyLocationStandard;
 }
@@ -89,13 +89,13 @@ KeyboardEvent::KeyboardEvent() : m_location(kDomKeyLocationStandard) {}
 KeyboardEvent::KeyboardEvent(const WebKeyboardEvent& key,
                              LocalDOMWindow* domWindow)
     : UIEventWithKeyState(
-          eventTypeForKeyboardEventType(key.type),
+          eventTypeForKeyboardEventType(key.type()),
           true,
           true,
           domWindow,
           0,
-          static_cast<PlatformEvent::Modifiers>(key.modifiers),
-          TimeTicks::FromSeconds(key.timeStampSeconds),
+          static_cast<PlatformEvent::Modifiers>(key.modifiers()),
+          TimeTicks::FromSeconds(key.timeStampSeconds()),
           InputDeviceCapabilities::doesntFireTouchEventsSourceCapabilities()),
       m_keyEvent(WTF::makeUnique<WebKeyboardEvent>(key)),
       // TODO(crbug.com/482880): Fix this initialization to lazy initialization.

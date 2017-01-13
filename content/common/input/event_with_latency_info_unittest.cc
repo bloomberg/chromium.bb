@@ -69,7 +69,7 @@ TEST_F(EventWithLatencyInfoTest, TimestampCoalescingForMouseEvent) {
   ASSERT_TRUE(mouse_0.CanCoalesceWith(mouse_1));
   mouse_0.CoalesceWith(mouse_1);
   // Coalescing WebMouseEvent preserves newer timestamp.
-  EXPECT_EQ(10.0, mouse_0.event.timeStampSeconds);
+  EXPECT_EQ(10.0, mouse_0.event.timeStampSeconds());
 }
 
 TEST_F(EventWithLatencyInfoTest, TimestampCoalescingForMouseWheelEvent) {
@@ -79,7 +79,7 @@ TEST_F(EventWithLatencyInfoTest, TimestampCoalescingForMouseWheelEvent) {
   ASSERT_TRUE(mouse_wheel_0.CanCoalesceWith(mouse_wheel_1));
   mouse_wheel_0.CoalesceWith(mouse_wheel_1);
   // Coalescing WebMouseWheelEvent preserves newer timestamp.
-  EXPECT_EQ(10.0, mouse_wheel_0.event.timeStampSeconds);
+  EXPECT_EQ(10.0, mouse_wheel_0.event.timeStampSeconds());
 }
 
 TEST_F(EventWithLatencyInfoTest, TimestampCoalescingForTouchEvent) {
@@ -91,7 +91,7 @@ TEST_F(EventWithLatencyInfoTest, TimestampCoalescingForTouchEvent) {
   ASSERT_TRUE(touch_0.CanCoalesceWith(touch_1));
   touch_0.CoalesceWith(touch_1);
   // Coalescing WebTouchEvent preserves newer timestamp.
-  EXPECT_EQ(10.0, touch_0.event.timeStampSeconds);
+  EXPECT_EQ(10.0, touch_0.event.timeStampSeconds());
 }
 
 TEST_F(EventWithLatencyInfoTest, TimestampCoalescingForGestureEvent) {
@@ -103,7 +103,7 @@ TEST_F(EventWithLatencyInfoTest, TimestampCoalescingForGestureEvent) {
   ASSERT_TRUE(scroll_0.CanCoalesceWith(scroll_1));
   scroll_0.CoalesceWith(scroll_1);
   // Coalescing WebGestureEvent preserves newer timestamp.
-  EXPECT_EQ(10.0, scroll_0.event.timeStampSeconds);
+  EXPECT_EQ(10.0, scroll_0.event.timeStampSeconds());
 }
 
 TEST_F(EventWithLatencyInfoTest, LatencyInfoCoalescing) {
@@ -317,7 +317,7 @@ TEST_F(EventWithLatencyInfoTest, WebMouseWheelEventCoalescing) {
   mouse_wheel_1.event.y = 2;
   MouseWheelEventWithLatencyInfo mouse_wheel_1_copy = mouse_wheel_1;
   EXPECT_TRUE(CanCoalesce(mouse_wheel_0, mouse_wheel_1));
-  EXPECT_EQ(mouse_wheel_0.event.modifiers, mouse_wheel_1.event.modifiers);
+  EXPECT_EQ(mouse_wheel_0.event.modifiers(), mouse_wheel_1.event.modifiers());
   EXPECT_EQ(mouse_wheel_0.event.scrollByPage, mouse_wheel_1.event.scrollByPage);
   EXPECT_EQ(mouse_wheel_0.event.phase, mouse_wheel_1.event.phase);
   EXPECT_EQ(mouse_wheel_0.event.momentumPhase,
@@ -357,7 +357,7 @@ TEST_F(EventWithLatencyInfoTest, TimestampCoalescing) {
 
   EXPECT_TRUE(CanCoalesce(mouse_wheel_0, mouse_wheel_1));
   Coalesce(mouse_wheel_1, &mouse_wheel_0);
-  EXPECT_EQ(10.0, mouse_wheel_0.event.timeStampSeconds);
+  EXPECT_EQ(10.0, mouse_wheel_0.event.timeStampSeconds());
 }
 
 }  // namespace

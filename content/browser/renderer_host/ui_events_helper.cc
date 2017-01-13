@@ -45,7 +45,7 @@ bool MakeUITouchEventsFromWebTouchEvents(
     TouchEventCoordinateSystem coordinate_system) {
   const blink::WebTouchEvent& touch = touch_with_latency.event;
   ui::EventType type = ui::ET_UNKNOWN;
-  switch (touch.type) {
+  switch (touch.type()) {
     case blink::WebInputEvent::TouchStart:
       type = ui::ET_TOUCH_PRESSED;
       break;
@@ -63,9 +63,9 @@ bool MakeUITouchEventsFromWebTouchEvents(
       return false;
   }
 
-  int flags = ui::WebEventModifiersToEventFlags(touch.modifiers);
+  int flags = ui::WebEventModifiersToEventFlags(touch.modifiers());
   base::TimeTicks timestamp =
-      ui::EventTimeStampFromSeconds(touch.timeStampSeconds);
+      ui::EventTimeStampFromSeconds(touch.timeStampSeconds());
   for (unsigned i = 0; i < touch.touchesLength; ++i) {
     const blink::WebTouchPoint& point = touch.touches[i];
     if (WebTouchPointStateToEventType(point.state) != type)

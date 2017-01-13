@@ -1366,7 +1366,7 @@ WebInputEventResult EventHandler::handleGestureEvent(
 
   // Update mouseout/leave/over/enter events before jumping directly to the
   // inner most frame.
-  if (targetedEvent.event().type == WebInputEvent::GestureTap)
+  if (targetedEvent.event().type() == WebInputEvent::GestureTap)
     updateGestureTargetNodeForMouseEvent(targetedEvent);
 
   // Route to the correct frame.
@@ -1617,13 +1617,13 @@ void EventHandler::updateGestureTargetNodeForMouseEvent(
   }
 
   const WebGestureEvent& gestureEvent = targetedEvent.event();
-  unsigned modifiers = gestureEvent.modifiers;
+  unsigned modifiers = gestureEvent.modifiers();
   PlatformMouseEvent fakeMouseMove(
       gestureEvent, WebPointerProperties::Button::NoButton,
       PlatformEvent::MouseMoved,
       /* clickCount */ 0, static_cast<PlatformEvent::Modifiers>(modifiers),
       PlatformMouseEvent::FromTouch,
-      TimeTicks::FromSeconds(gestureEvent.timeStampSeconds),
+      TimeTicks::FromSeconds(gestureEvent.timeStampSeconds()),
       WebPointerProperties::PointerType::Mouse);
 
   // Update the mouseout/mouseleave event
@@ -1658,12 +1658,12 @@ GestureEventWithHitTestResults EventHandler::targetGestureEvent(
   ASSERT(!gestureEvent.isScrollEvent());
 
   HitTestRequest::HitTestRequestType hitType =
-      m_gestureManager->getHitTypeForGestureType(gestureEvent.type);
+      m_gestureManager->getHitTypeForGestureType(gestureEvent.type());
   TimeDelta activeInterval;
   bool shouldKeepActiveForMinInterval = false;
   if (readOnly) {
     hitType |= HitTestRequest::ReadOnly;
-  } else if (gestureEvent.type == WebInputEvent::GestureTap) {
+  } else if (gestureEvent.type() == WebInputEvent::GestureTap) {
     // If the Tap is received very shortly after ShowPress, we want to
     // delay clearing of the active state so that it's visible to the user
     // for at least a couple of frames.
@@ -1752,7 +1752,7 @@ void EventHandler::applyTouchAdjustment(WebGestureEvent* gestureEvent,
   Node* adjustedNode = nullptr;
   IntPoint adjustedPoint = flooredIntPoint(gestureEvent->positionInRootFrame());
   bool adjusted = false;
-  switch (gestureEvent->type) {
+  switch (gestureEvent->type()) {
     case WebInputEvent::GestureTap:
     case WebInputEvent::GestureTapUnconfirmed:
     case WebInputEvent::GestureTapDown:

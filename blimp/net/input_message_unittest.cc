@@ -30,8 +30,8 @@ void ValidateWebGestureEventRoundTripping(const blink::WebGestureEvent& event) {
       processor.ProcessMessage(proto->input());
   EXPECT_NE(nullptr, new_event.get());
 
-  EXPECT_EQ(event.size, new_event->size);
-  EXPECT_EQ(0, memcmp(&event, new_event.get(), event.size));
+  EXPECT_EQ(event.size(), new_event->size());
+  EXPECT_EQ(0, memcmp(&event, new_event.get(), event.size()));
 }
 
 blink::WebGestureEvent BuildBaseTestEvent(blink::WebInputEvent::Type type) {

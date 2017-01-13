@@ -601,9 +601,9 @@ bool RendererSchedulerImpl::ShouldPrioritizeInputEvent(
     const blink::WebInputEvent& web_input_event) {
   // We regard MouseMove events with the left mouse button down as a signal
   // that the user is doing something requiring a smooth frame rate.
-  if ((web_input_event.type == blink::WebInputEvent::MouseDown ||
-       web_input_event.type == blink::WebInputEvent::MouseMove) &&
-      (web_input_event.modifiers & blink::WebInputEvent::LeftButtonDown)) {
+  if ((web_input_event.type() == blink::WebInputEvent::MouseDown ||
+       web_input_event.type() == blink::WebInputEvent::MouseMove) &&
+      (web_input_event.modifiers() & blink::WebInputEvent::LeftButtonDown)) {
     return true;
   }
   // Ignore all other mouse events because they probably don't signal user
@@ -611,8 +611,8 @@ bool RendererSchedulerImpl::ShouldPrioritizeInputEvent(
   // for mouse wheel events, hence we regard them as user input.
   // Ignore keyboard events because it doesn't really make sense to enter
   // compositor priority for them.
-  if (blink::WebInputEvent::isMouseEventType(web_input_event.type) ||
-      blink::WebInputEvent::isKeyboardEventType(web_input_event.type)) {
+  if (blink::WebInputEvent::isMouseEventType(web_input_event.type()) ||
+      blink::WebInputEvent::isKeyboardEventType(web_input_event.type())) {
     return false;
   }
   return true;
@@ -626,7 +626,7 @@ void RendererSchedulerImpl::DidHandleInputEventOnCompositorThread(
   if (!ShouldPrioritizeInputEvent(web_input_event))
     return;
 
-  UpdateForInputEventOnCompositorThread(web_input_event.type, event_state);
+  UpdateForInputEventOnCompositorThread(web_input_event.type(), event_state);
 }
 
 void RendererSchedulerImpl::DidAnimateForInputOnCompositorThread() {

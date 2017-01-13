@@ -72,7 +72,7 @@ WebMouseEvent WebMouseEventFromGestureEvent(const WebGestureEvent& gesture) {
     return WebMouseEvent();
 
   WebInputEvent::Type type = WebInputEvent::Undefined;
-  switch (gesture.type) {
+  switch (gesture.type()) {
     case WebInputEvent::GestureScrollBegin:
       type = WebInputEvent::MouseDown;
       break;
@@ -93,11 +93,11 @@ WebMouseEvent WebMouseEventFromGestureEvent(const WebGestureEvent& gesture) {
       return WebMouseEvent();
   }
 
-  WebMouseEvent mouse(type, gesture.modifiers | WebInputEvent::LeftButtonDown,
-                      gesture.timeStampSeconds);
+  WebMouseEvent mouse(type, gesture.modifiers() | WebInputEvent::LeftButtonDown,
+                      gesture.timeStampSeconds());
   mouse.button = WebMouseEvent::Button::Left;
-  mouse.clickCount = (mouse.type == WebInputEvent::MouseDown ||
-                      mouse.type == WebInputEvent::MouseUp);
+  mouse.clickCount = (mouse.type() == WebInputEvent::MouseDown ||
+                      mouse.type() == WebInputEvent::MouseUp);
 
   mouse.x = gesture.x;
   mouse.y = gesture.y;
@@ -165,15 +165,15 @@ class PepperWidget : public WebWidget {
     // Pepper plugins do not accept gesture events. So do not send the gesture
     // events directly to the plugin. Instead, try to convert them to equivalent
     // mouse events, and then send to the plugin.
-    if (WebInputEvent::isGestureEventType(event.type)) {
+    if (WebInputEvent::isGestureEventType(event.type())) {
       bool result = false;
       const WebGestureEvent* gesture_event =
           static_cast<const WebGestureEvent*>(&event);
-      switch (event.type) {
+      switch (event.type()) {
         case WebInputEvent::GestureTap: {
           WebMouseEvent mouse(WebInputEvent::MouseMove,
-                              gesture_event->modifiers,
-                              gesture_event->timeStampSeconds);
+                              gesture_event->modifiers(),
+                              gesture_event->timeStampSeconds());
           mouse.x = gesture_event->x;
           mouse.y = gesture_event->y;
           mouse.windowX = gesture_event->x;
@@ -196,7 +196,7 @@ class PepperWidget : public WebWidget {
 
         default: {
           WebMouseEvent mouse = WebMouseEventFromGestureEvent(*gesture_event);
-          if (mouse.type != WebInputEvent::Undefined)
+          if (mouse.type() != WebInputEvent::Undefined)
             result |= widget_->plugin()->HandleInputEvent(mouse, &cursor);
           break;
         }
@@ -210,7 +210,7 @@ class PepperWidget : public WebWidget {
     // For normal web pages, WebViewImpl does input event translations and
     // generates context menu events. Since we don't have a WebView, we need to
     // do the necessary translation ourselves.
-    if (WebInputEvent::isMouseEventType(event.type)) {
+    if (WebInputEvent::isMouseEventType(event.type())) {
       const WebMouseEvent& mouse_event =
           reinterpret_cast<const WebMouseEvent&>(event);
       bool send_context_menu_event = false;
@@ -218,22 +218,22 @@ class PepperWidget : public WebWidget {
       // On Windows, we handle it on mouse up.
 #if defined(OS_WIN)
       send_context_menu_event =
-          mouse_event.type == WebInputEvent::MouseUp &&
+          mouse_event.type() == WebInputEvent::MouseUp &&
           mouse_event.button == WebMouseEvent::Button::Right;
 #elif defined(OS_MACOSX)
       send_context_menu_event =
-          mouse_event.type == WebInputEvent::MouseDown &&
+          mouse_event.type() == WebInputEvent::MouseDown &&
           (mouse_event.button == WebMouseEvent::Button::Right ||
            (mouse_event.button == WebMouseEvent::Button::Left &&
-            mouse_event.modifiers & WebMouseEvent::ControlKey));
+            mouse_event.modifiers() & WebMouseEvent::ControlKey));
 #else
       send_context_menu_event =
-          mouse_event.type == WebInputEvent::MouseDown &&
+          mouse_event.type() == WebInputEvent::MouseDown &&
           mouse_event.button == WebMouseEvent::Button::Right;
 #endif
       if (send_context_menu_event) {
         WebMouseEvent context_menu_event(mouse_event);
-        context_menu_event.type = WebInputEvent::ContextMenu;
+        context_menu_event.setType(WebInputEvent::ContextMenu);
         widget_->plugin()->HandleInputEvent(context_menu_event, &cursor);
       }
     }

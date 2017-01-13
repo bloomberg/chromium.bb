@@ -1059,18 +1059,18 @@ bool WebViewGuest::HandleKeyboardShortcuts(
     return false;
   }
 
-  if (event.type != blink::WebInputEvent::RawKeyDown)
+  if (event.type() != blink::WebInputEvent::RawKeyDown)
     return false;
 
   // If the user hits the escape key without any modifiers then unlock the
   // mouse if necessary.
   if ((event.windowsKeyCode == ui::VKEY_ESCAPE) &&
-      !(event.modifiers & blink::WebInputEvent::InputModifiers)) {
+      !(event.modifiers() & blink::WebInputEvent::InputModifiers)) {
     return web_contents()->GotResponseToLockMouseRequest(false);
   }
 
 #if defined(OS_MACOSX)
-  if (event.modifiers != blink::WebInputEvent::MetaKey)
+  if (event.modifiers() != blink::WebInputEvent::MetaKey)
     return false;
 
   if (event.windowsKeyCode == ui::VKEY_OEM_4) {

@@ -502,15 +502,15 @@ bool DevToolsEmulator::handleInputEvent(const WebInputEvent& inputEvent) {
 
   // FIXME: This workaround is required for touch emulation on Mac, where
   // compositor-side pinch handling is not enabled. See http://crbug.com/138003.
-  bool isPinch = inputEvent.type == WebInputEvent::GesturePinchBegin ||
-                 inputEvent.type == WebInputEvent::GesturePinchUpdate ||
-                 inputEvent.type == WebInputEvent::GesturePinchEnd;
+  bool isPinch = inputEvent.type() == WebInputEvent::GesturePinchBegin ||
+                 inputEvent.type() == WebInputEvent::GesturePinchUpdate ||
+                 inputEvent.type() == WebInputEvent::GesturePinchEnd;
   if (isPinch && m_touchEventEmulationEnabled) {
     FrameView* frameView = page->deprecatedLocalMainFrame()->view();
     WebGestureEvent scaledEvent = TransformWebGestureEvent(
         frameView, static_cast<const WebGestureEvent&>(inputEvent));
     float pageScaleFactor = page->pageScaleFactor();
-    if (scaledEvent.type == WebInputEvent::GesturePinchBegin) {
+    if (scaledEvent.type() == WebInputEvent::GesturePinchBegin) {
       WebFloatPoint gesturePosition = scaledEvent.positionInRootFrame();
       m_lastPinchAnchorCss = WTF::wrapUnique(new IntPoint(
           roundedIntPoint(gesturePosition + frameView->getScrollOffset())));
@@ -518,7 +518,7 @@ bool DevToolsEmulator::handleInputEvent(const WebInputEvent& inputEvent) {
           WTF::wrapUnique(new IntPoint(flooredIntPoint(gesturePosition)));
       m_lastPinchAnchorDip->scale(pageScaleFactor, pageScaleFactor);
     }
-    if (scaledEvent.type == WebInputEvent::GesturePinchUpdate &&
+    if (scaledEvent.type() == WebInputEvent::GesturePinchUpdate &&
         m_lastPinchAnchorCss) {
       float newPageScaleFactor = pageScaleFactor * scaledEvent.pinchScale();
       IntPoint anchorCss(*m_lastPinchAnchorDip.get());
@@ -527,7 +527,7 @@ bool DevToolsEmulator::handleInputEvent(const WebInputEvent& inputEvent) {
       m_webViewImpl->mainFrame()->setScrollOffset(
           toIntSize(*m_lastPinchAnchorCss.get() - toIntSize(anchorCss)));
     }
-    if (scaledEvent.type == WebInputEvent::GesturePinchEnd) {
+    if (scaledEvent.type() == WebInputEvent::GesturePinchEnd) {
       m_lastPinchAnchorCss.reset();
       m_lastPinchAnchorDip.reset();
     }

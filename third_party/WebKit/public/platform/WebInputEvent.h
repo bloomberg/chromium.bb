@@ -231,12 +231,6 @@ class WebInputEvent {
 
   static constexpr double TimeStampForTesting = 123.0;
 
-  double timeStampSeconds;  // Seconds since platform start with microsecond
-                            // resolution.
-  unsigned size;            // The size of this structure, for serialization.
-  Type type;
-  int modifiers;
-
   // Returns true if the WebInputEvent |type| is a mouse event.
   static bool isMouseEventType(int type) {
     return MouseTypeFirst <= type && type <= MouseTypeLast;
@@ -258,15 +252,15 @@ class WebInputEvent {
   }
 
   bool isSameEventClass(const WebInputEvent& other) const {
-    if (isMouseEventType(type))
-      return isMouseEventType(other.type);
-    if (isGestureEventType(type))
-      return isGestureEventType(other.type);
-    if (isTouchEventType(type))
-      return isTouchEventType(other.type);
-    if (isKeyboardEventType(type))
-      return isKeyboardEventType(other.type);
-    return type == other.type;
+    if (isMouseEventType(m_type))
+      return isMouseEventType(other.m_type);
+    if (isGestureEventType(m_type))
+      return isGestureEventType(other.m_type);
+    if (isTouchEventType(m_type))
+      return isTouchEventType(other.m_type);
+    if (isKeyboardEventType(m_type))
+      return isKeyboardEventType(other.m_type);
+    return m_type == other.m_type;
   }
 
   BLINK_COMMON_EXPORT static const char* GetName(WebInputEvent::Type);
@@ -279,11 +273,16 @@ class WebInputEvent {
     m_frameTranslate = translate;
   }
 
-  void setType(Type typeParam) { type = typeParam; }
+  Type type() const { return m_type; }
+  void setType(Type typeParam) { m_type = typeParam; }
 
-  void setModifiers(int modifiersParam) { modifiers = modifiersParam; }
+  int modifiers() const { return m_modifiers; }
+  void setModifiers(int modifiersParam) { m_modifiers = modifiersParam; }
 
-  void setTimeStampSeconds(double seconds) { timeStampSeconds = seconds; }
+  double timeStampSeconds() const { return m_timeStampSeconds; }
+  void setTimeStampSeconds(double seconds) { m_timeStampSeconds = seconds; }
+
+  unsigned size() const { return m_size; }
 
  protected:
   // The root frame scale.
@@ -296,11 +295,13 @@ class WebInputEvent {
                 Type typeParam,
                 int modifiersParam,
                 double timeStampSecondsParam) {
+    // TODO(dtapuska): Remove this memset when we remove the chrome IPC of this
+    // struct.
     memset(this, 0, sizeParam);
-    timeStampSeconds = timeStampSecondsParam;
-    size = sizeParam;
-    type = typeParam;
-    modifiers = modifiersParam;
+    m_timeStampSeconds = timeStampSecondsParam;
+    m_size = sizeParam;
+    m_type = typeParam;
+    m_modifiers = modifiersParam;
 #if DCHECK_IS_ON()
     // If dcheck is on force failures if frame scale is not initialized
     // correctly by causing DIV0.
@@ -311,10 +312,12 @@ class WebInputEvent {
   }
 
   WebInputEvent(unsigned sizeParam) {
+    // TODO(dtapuska): Remove this memset when we remove the chrome IPC of this
+    // struct.
     memset(this, 0, sizeParam);
-    timeStampSeconds = 0.0;
-    size = sizeParam;
-    type = Undefined;
+    m_timeStampSeconds = 0.0;
+    m_size = sizeParam;
+    m_type = Undefined;
 #if DCHECK_IS_ON()
     // If dcheck is on force failures if frame scale is not initialized
     // correctly by causing DIV0.
@@ -323,6 +326,12 @@ class WebInputEvent {
     m_frameScale = 1;
 #endif
   }
+
+  double m_timeStampSeconds;  // Seconds since platform start with microsecond
+                              // resolution.
+  unsigned m_size;            // The size of this structure, for serialization.
+  Type m_type;
+  int m_modifiers;
 };
 
 // WebKeyboardEvent -----------------------------------------------------------

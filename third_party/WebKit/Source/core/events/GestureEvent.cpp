@@ -34,7 +34,7 @@ GestureEvent* GestureEvent::create(AbstractView* view,
                                    const WebGestureEvent& event) {
   AtomicString eventType;
 
-  switch (event.type) {
+  switch (event.type()) {
     case WebInputEvent::GestureScrollBegin:
       eventType = EventTypeNames::gesturescrollstart;
       break;
@@ -82,8 +82,8 @@ GestureEvent::GestureEvent(const AtomicString& eventType,
           true,
           view,
           0,
-          static_cast<PlatformEvent::Modifiers>(event.modifiers),
-          TimeTicks::FromSeconds(event.timeStampSeconds),
+          static_cast<PlatformEvent::Modifiers>(event.modifiers()),
+          TimeTicks::FromSeconds(event.timeStampSeconds()),
           nullptr),
       m_nativeEvent(event) {}
 

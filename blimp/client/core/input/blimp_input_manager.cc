@@ -79,8 +79,8 @@ void BlimpInputManager::OnGestureEvent(const ui::GestureEventData& gesture) {
   // to stop providing shift meta values to synthetic MotionEvents. This
   // prevents unintended shift+click interpretation of all accessibility clicks.
   // See crbug.com/443247.
-  if (web_gesture.type == blink::WebInputEvent::GestureTap &&
-      web_gesture.modifiers == blink::WebInputEvent::ShiftKey) {
+  if (web_gesture.type() == blink::WebInputEvent::GestureTap &&
+      web_gesture.modifiers() == blink::WebInputEvent::ShiftKey) {
     web_gesture.setModifiers(blink::WebInputEvent::NoModifiers);
   }
 

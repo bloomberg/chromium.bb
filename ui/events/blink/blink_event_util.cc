@@ -241,8 +241,8 @@ WebInputEvent::DispatchType MergeDispatchTypes(
 
 bool CanCoalesce(const WebMouseEvent& event_to_coalesce,
                  const WebMouseEvent& event) {
-  return event.type == event_to_coalesce.type &&
-         event.type == WebInputEvent::MouseMove;
+  return event.type() == event_to_coalesce.type() &&
+         event.type() == WebInputEvent::MouseMove;
 }
 
 void Coalesce(const WebMouseEvent& event_to_coalesce, WebMouseEvent* event) {
@@ -257,7 +257,7 @@ void Coalesce(const WebMouseEvent& event_to_coalesce, WebMouseEvent* event) {
 
 bool CanCoalesce(const WebMouseWheelEvent& event_to_coalesce,
                  const WebMouseWheelEvent& event) {
-  return event.modifiers == event_to_coalesce.modifiers &&
+  return event.modifiers() == event_to_coalesce.modifiers() &&
          event.scrollByPage == event_to_coalesce.scrollByPage &&
          event.phase == event_to_coalesce.phase &&
          event.momentumPhase == event_to_coalesce.momentumPhase &&
@@ -297,9 +297,9 @@ void Coalesce(const WebMouseWheelEvent& event_to_coalesce,
 
 bool CanCoalesce(const WebTouchEvent& event_to_coalesce,
                  const WebTouchEvent& event) {
-  if (event.type != event_to_coalesce.type ||
-      event.type != WebInputEvent::TouchMove ||
-      event.modifiers != event_to_coalesce.modifiers ||
+  if (event.type() != event_to_coalesce.type() ||
+      event.type() != WebInputEvent::TouchMove ||
+      event.modifiers() != event_to_coalesce.modifiers() ||
       event.touchesLength != event_to_coalesce.touchesLength ||
       event.touchesLength > WebTouchEvent::kTouchesLengthCap)
     return false;
@@ -343,17 +343,17 @@ void Coalesce(const WebTouchEvent& event_to_coalesce, WebTouchEvent* event) {
 
 bool CanCoalesce(const WebGestureEvent& event_to_coalesce,
                  const WebGestureEvent& event) {
-  if (event.type != event_to_coalesce.type ||
+  if (event.type() != event_to_coalesce.type() ||
       event.sourceDevice != event_to_coalesce.sourceDevice ||
-      event.modifiers != event_to_coalesce.modifiers)
+      event.modifiers() != event_to_coalesce.modifiers())
     return false;
 
-  if (event.type == WebInputEvent::GestureScrollUpdate)
+  if (event.type() == WebInputEvent::GestureScrollUpdate)
     return true;
 
   // GesturePinchUpdate scales can be combined only if they share a focal point,
   // e.g., with double-tap drag zoom.
-  if (event.type == WebInputEvent::GesturePinchUpdate &&
+  if (event.type() == WebInputEvent::GesturePinchUpdate &&
       event.x == event_to_coalesce.x && event.y == event_to_coalesce.y)
     return true;
 
@@ -363,7 +363,7 @@ bool CanCoalesce(const WebGestureEvent& event_to_coalesce,
 void Coalesce(const WebGestureEvent& event_to_coalesce,
               WebGestureEvent* event) {
   DCHECK(CanCoalesce(event_to_coalesce, *event));
-  if (event->type == WebInputEvent::GestureScrollUpdate) {
+  if (event->type() == WebInputEvent::GestureScrollUpdate) {
     event->data.scrollUpdate.deltaX +=
         event_to_coalesce.data.scrollUpdate.deltaX;
     event->data.scrollUpdate.deltaY +=
@@ -371,7 +371,7 @@ void Coalesce(const WebGestureEvent& event_to_coalesce,
     DCHECK_EQ(
         event->data.scrollUpdate.previousUpdateInSequencePrevented,
         event_to_coalesce.data.scrollUpdate.previousUpdateInSequencePrevented);
-  } else if (event->type == WebInputEvent::GesturePinchUpdate) {
+  } else if (event->type() == WebInputEvent::GesturePinchUpdate) {
     event->data.pinchUpdate.scale *= event_to_coalesce.data.pinchUpdate.scale;
     // Ensure the scale remains bounded above 0 and below Infinity so that
     // we can reliably perform operations like log on the values.
@@ -385,17 +385,17 @@ void Coalesce(const WebGestureEvent& event_to_coalesce,
 // Returns the transform matrix corresponding to the gesture event.
 gfx::Transform GetTransformForEvent(const WebGestureEvent& gesture_event) {
   gfx::Transform gesture_transform;
-  if (gesture_event.type == WebInputEvent::GestureScrollUpdate) {
+  if (gesture_event.type() == WebInputEvent::GestureScrollUpdate) {
     gesture_transform.Translate(gesture_event.data.scrollUpdate.deltaX,
                                 gesture_event.data.scrollUpdate.deltaY);
-  } else if (gesture_event.type == WebInputEvent::GesturePinchUpdate) {
+  } else if (gesture_event.type() == WebInputEvent::GesturePinchUpdate) {
     float scale = gesture_event.data.pinchUpdate.scale;
     gesture_transform.Translate(-gesture_event.x, -gesture_event.y);
     gesture_transform.Scale(scale, scale);
     gesture_transform.Translate(gesture_event.x, gesture_event.y);
   } else {
     NOTREACHED() << "Invalid event type for transform retrieval: "
-                 << WebInputEvent::GetName(gesture_event.type);
+                 << WebInputEvent::GetName(gesture_event.type());
   }
   return gesture_transform;
 }
@@ -404,26 +404,26 @@ gfx::Transform GetTransformForEvent(const WebGestureEvent& gesture_event) {
 
 bool CanCoalesce(const blink::WebInputEvent& event_to_coalesce,
                  const blink::WebInputEvent& event) {
-  if (blink::WebInputEvent::isGestureEventType(event_to_coalesce.type) &&
-      blink::WebInputEvent::isGestureEventType(event.type)) {
+  if (blink::WebInputEvent::isGestureEventType(event_to_coalesce.type()) &&
+      blink::WebInputEvent::isGestureEventType(event.type())) {
     return CanCoalesce(
         static_cast<const blink::WebGestureEvent&>(event_to_coalesce),
         static_cast<const blink::WebGestureEvent&>(event));
   }
-  if (blink::WebInputEvent::isMouseEventType(event_to_coalesce.type) &&
-      blink::WebInputEvent::isMouseEventType(event.type)) {
+  if (blink::WebInputEvent::isMouseEventType(event_to_coalesce.type()) &&
+      blink::WebInputEvent::isMouseEventType(event.type())) {
     return CanCoalesce(
         static_cast<const blink::WebMouseEvent&>(event_to_coalesce),
         static_cast<const blink::WebMouseEvent&>(event));
   }
-  if (blink::WebInputEvent::isTouchEventType(event_to_coalesce.type) &&
-      blink::WebInputEvent::isTouchEventType(event.type)) {
+  if (blink::WebInputEvent::isTouchEventType(event_to_coalesce.type()) &&
+      blink::WebInputEvent::isTouchEventType(event.type())) {
     return CanCoalesce(
         static_cast<const blink::WebTouchEvent&>(event_to_coalesce),
         static_cast<const blink::WebTouchEvent&>(event));
   }
-  if (event_to_coalesce.type == blink::WebInputEvent::MouseWheel &&
-      event.type == blink::WebInputEvent::MouseWheel) {
+  if (event_to_coalesce.type() == blink::WebInputEvent::MouseWheel &&
+      event.type() == blink::WebInputEvent::MouseWheel) {
     return CanCoalesce(
         static_cast<const blink::WebMouseWheelEvent&>(event_to_coalesce),
         static_cast<const blink::WebMouseWheelEvent&>(event));
@@ -433,26 +433,26 @@ bool CanCoalesce(const blink::WebInputEvent& event_to_coalesce,
 
 void Coalesce(const blink::WebInputEvent& event_to_coalesce,
               blink::WebInputEvent* event) {
-  if (blink::WebInputEvent::isGestureEventType(event_to_coalesce.type) &&
-      blink::WebInputEvent::isGestureEventType(event->type)) {
+  if (blink::WebInputEvent::isGestureEventType(event_to_coalesce.type()) &&
+      blink::WebInputEvent::isGestureEventType(event->type())) {
     Coalesce(static_cast<const blink::WebGestureEvent&>(event_to_coalesce),
              static_cast<blink::WebGestureEvent*>(event));
     return;
   }
-  if (blink::WebInputEvent::isMouseEventType(event_to_coalesce.type) &&
-      blink::WebInputEvent::isMouseEventType(event->type)) {
+  if (blink::WebInputEvent::isMouseEventType(event_to_coalesce.type()) &&
+      blink::WebInputEvent::isMouseEventType(event->type())) {
     Coalesce(static_cast<const blink::WebMouseEvent&>(event_to_coalesce),
              static_cast<blink::WebMouseEvent*>(event));
     return;
   }
-  if (blink::WebInputEvent::isTouchEventType(event_to_coalesce.type) &&
-      blink::WebInputEvent::isTouchEventType(event->type)) {
+  if (blink::WebInputEvent::isTouchEventType(event_to_coalesce.type()) &&
+      blink::WebInputEvent::isTouchEventType(event->type())) {
     Coalesce(static_cast<const blink::WebTouchEvent&>(event_to_coalesce),
              static_cast<blink::WebTouchEvent*>(event));
     return;
   }
-  if (event_to_coalesce.type == blink::WebInputEvent::MouseWheel &&
-      event->type == blink::WebInputEvent::MouseWheel) {
+  if (event_to_coalesce.type() == blink::WebInputEvent::MouseWheel &&
+      event->type() == blink::WebInputEvent::MouseWheel) {
     Coalesce(static_cast<const blink::WebMouseWheelEvent&>(event_to_coalesce),
              static_cast<blink::WebMouseWheelEvent*>(event));
   }
@@ -463,15 +463,16 @@ void Coalesce(const blink::WebInputEvent& event_to_coalesce,
 // scroll and pinch event pairs can be logically coalesced.
 bool IsCompatibleScrollorPinch(const WebGestureEvent& new_event,
                                const WebGestureEvent& event_in_queue) {
-  DCHECK(new_event.type == WebInputEvent::GestureScrollUpdate ||
-         new_event.type == WebInputEvent::GesturePinchUpdate)
+  DCHECK(new_event.type() == WebInputEvent::GestureScrollUpdate ||
+         new_event.type() == WebInputEvent::GesturePinchUpdate)
       << "Invalid event type for pinch/scroll coalescing: "
-      << WebInputEvent::GetName(new_event.type);
-  DLOG_IF(WARNING, new_event.timeStampSeconds < event_in_queue.timeStampSeconds)
+      << WebInputEvent::GetName(new_event.type());
+  DLOG_IF(WARNING,
+          new_event.timeStampSeconds() < event_in_queue.timeStampSeconds())
       << "Event time not monotonic?\n";
-  return (event_in_queue.type == WebInputEvent::GestureScrollUpdate ||
-          event_in_queue.type == WebInputEvent::GesturePinchUpdate) &&
-         event_in_queue.modifiers == new_event.modifiers &&
+  return (event_in_queue.type() == WebInputEvent::GestureScrollUpdate ||
+          event_in_queue.type() == WebInputEvent::GesturePinchUpdate) &&
+         event_in_queue.modifiers() == new_event.modifiers() &&
          event_in_queue.sourceDevice == new_event.sourceDevice;
 }
 
@@ -481,23 +482,22 @@ std::pair<WebGestureEvent, WebGestureEvent> CoalesceScrollAndPinch(
     const WebGestureEvent& new_event) {
   DCHECK(!CanCoalesce(new_event, last_event))
       << "New event can be coalesced with the last event in queue directly.";
-  DCHECK(IsContinuousGestureEvent(new_event.type));
+  DCHECK(IsContinuousGestureEvent(new_event.type()));
   DCHECK(IsCompatibleScrollorPinch(new_event, last_event));
   DCHECK(!second_last_event ||
          IsCompatibleScrollorPinch(new_event, *second_last_event));
 
-  WebGestureEvent scroll_event;
+  WebGestureEvent scroll_event(WebInputEvent::GestureScrollUpdate,
+                               new_event.modifiers(),
+                               new_event.timeStampSeconds());
   WebGestureEvent pinch_event;
-  scroll_event.modifiers |= new_event.modifiers;
   scroll_event.sourceDevice = new_event.sourceDevice;
-  scroll_event.timeStampSeconds = new_event.timeStampSeconds;
   pinch_event = scroll_event;
-  scroll_event.type = WebInputEvent::GestureScrollUpdate;
-  pinch_event.type = WebInputEvent::GesturePinchUpdate;
-  pinch_event.x = new_event.type == WebInputEvent::GesturePinchUpdate
+  pinch_event.setType(WebInputEvent::GesturePinchUpdate);
+  pinch_event.x = new_event.type() == WebInputEvent::GesturePinchUpdate
                       ? new_event.x
                       : last_event.x;
-  pinch_event.y = new_event.type == WebInputEvent::GesturePinchUpdate
+  pinch_event.y = new_event.type() == WebInputEvent::GesturePinchUpdate
                       ? new_event.y
                       : last_event.y;
 
@@ -536,7 +536,7 @@ blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
       ToWebTouchEventType(event.GetAction()),
       EventFlagsToWebEventModifiers(event.GetFlags()),
       ui::EventTimeStampToSeconds(event.GetEventTime()));
-  result.dispatchType = result.type == WebInputEvent::TouchCancel
+  result.dispatchType = result.type() == WebInputEvent::TouchCancel
                             ? WebInputEvent::EventNonBlocking
                             : WebInputEvent::Blocking;
   result.movedBeyondSlopRegion = moved_beyond_slop_region;
@@ -739,7 +739,7 @@ std::unique_ptr<blink::WebInputEvent> TranslateAndScaleWebInputEvent(
   std::unique_ptr<blink::WebInputEvent> scaled_event;
   if (scale == 1.f && delta.IsZero())
     return scaled_event;
-  if (event.type == blink::WebMouseEvent::MouseWheel) {
+  if (event.type() == blink::WebMouseEvent::MouseWheel) {
     blink::WebMouseWheelEvent* wheel_event = new blink::WebMouseWheelEvent;
     scaled_event.reset(wheel_event);
     *wheel_event = static_cast<const blink::WebMouseWheelEvent&>(event);
@@ -751,7 +751,7 @@ std::unique_ptr<blink::WebInputEvent> TranslateAndScaleWebInputEvent(
     wheel_event->deltaY *= scale;
     wheel_event->wheelTicksX *= scale;
     wheel_event->wheelTicksY *= scale;
-  } else if (blink::WebInputEvent::isMouseEventType(event.type)) {
+  } else if (blink::WebInputEvent::isMouseEventType(event.type())) {
     blink::WebMouseEvent* mouse_event = new blink::WebMouseEvent;
     scaled_event.reset(mouse_event);
     *mouse_event = static_cast<const blink::WebMouseEvent&>(event);
@@ -763,7 +763,7 @@ std::unique_ptr<blink::WebInputEvent> TranslateAndScaleWebInputEvent(
     mouse_event->windowY = mouse_event->y;
     mouse_event->movementX *= scale;
     mouse_event->movementY *= scale;
-  } else if (blink::WebInputEvent::isTouchEventType(event.type)) {
+  } else if (blink::WebInputEvent::isTouchEventType(event.type())) {
     blink::WebTouchEvent* touch_event = new blink::WebTouchEvent;
     scaled_event.reset(touch_event);
     *touch_event = static_cast<const blink::WebTouchEvent&>(event);
@@ -775,7 +775,7 @@ std::unique_ptr<blink::WebInputEvent> TranslateAndScaleWebInputEvent(
       touch_event->touches[i].radiusX *= scale;
       touch_event->touches[i].radiusY *= scale;
     }
-  } else if (blink::WebInputEvent::isGestureEventType(event.type)) {
+  } else if (blink::WebInputEvent::isGestureEventType(event.type())) {
     blink::WebGestureEvent* gesture_event = new blink::WebGestureEvent;
     scaled_event.reset(gesture_event);
     *gesture_event = static_cast<const blink::WebGestureEvent&>(event);
@@ -783,7 +783,7 @@ std::unique_ptr<blink::WebInputEvent> TranslateAndScaleWebInputEvent(
     gesture_event->y += delta.y();
     gesture_event->x *= scale;
     gesture_event->y *= scale;
-    switch (gesture_event->type) {
+    switch (gesture_event->type()) {
       case blink::WebInputEvent::GestureScrollUpdate:
         gesture_event->data.scrollUpdate.deltaX *= scale;
         gesture_event->data.scrollUpdate.deltaY *= scale;

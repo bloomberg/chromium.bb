@@ -168,10 +168,10 @@ class TapHandlingWebViewClient : public FrameTestHelpers::TestWebViewClient {
   // WebViewClient methods
   void didHandleGestureEvent(const WebGestureEvent& event,
                              bool eventCancelled) override {
-    if (event.type == WebInputEvent::GestureTap) {
+    if (event.type() == WebInputEvent::GestureTap) {
       m_tapX = event.x;
       m_tapY = event.y;
-    } else if (event.type == WebInputEvent::GestureLongPress) {
+    } else if (event.type() == WebInputEvent::GestureLongPress) {
       m_longpressX = event.x;
       m_longpressY = event.y;
     }

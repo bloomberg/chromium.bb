@@ -83,7 +83,7 @@ bool ShouldSuppressScrollForFlingBoosting(
     const WebGestureEvent& scroll_update_event,
     double time_since_last_boost_event,
     double time_since_last_fling_animate) {
-  DCHECK_EQ(WebInputEvent::GestureScrollUpdate, scroll_update_event.type);
+  DCHECK_EQ(WebInputEvent::GestureScrollUpdate, scroll_update_event.type());
 
   gfx::Vector2dF dx(scroll_update_event.data.scrollUpdate.deltaX,
                     scroll_update_event.data.scrollUpdate.deltaY);
@@ -108,7 +108,7 @@ bool ShouldSuppressScrollForFlingBoosting(
 
 bool ShouldBoostFling(const gfx::Vector2dF& current_fling_velocity,
                       const WebGestureEvent& fling_start_event) {
-  DCHECK_EQ(WebInputEvent::GestureFlingStart, fling_start_event.type);
+  DCHECK_EQ(WebInputEvent::GestureFlingStart, fling_start_event.type());
 
   gfx::Vector2dF new_fling_velocity(
       fling_start_event.data.flingStart.velocityX,
@@ -136,7 +136,7 @@ WebGestureEvent ObtainGestureScrollBegin(const WebGestureEvent& event) {
 
 cc::ScrollState CreateScrollStateForGesture(const WebGestureEvent& event) {
   cc::ScrollStateData scroll_state_data;
-  switch (event.type) {
+  switch (event.type()) {
     case WebInputEvent::GestureScrollBegin:
       scroll_state_data.position_x = event.x;
       scroll_state_data.position_y = event.y;
@@ -174,11 +174,11 @@ cc::ScrollState CreateScrollStateForGesture(const WebGestureEvent& event) {
 
 void ReportInputEventLatencyUma(const WebInputEvent& event,
                                 const ui::LatencyInfo& latency_info) {
-  if (!(event.type == WebInputEvent::GestureScrollBegin ||
-        event.type == WebInputEvent::GestureScrollUpdate ||
-        event.type == WebInputEvent::GesturePinchBegin ||
-        event.type == WebInputEvent::GesturePinchUpdate ||
-        event.type == WebInputEvent::GestureFlingStart)) {
+  if (!(event.type() == WebInputEvent::GestureScrollBegin ||
+        event.type() == WebInputEvent::GestureScrollUpdate ||
+        event.type() == WebInputEvent::GesturePinchBegin ||
+        event.type() == WebInputEvent::GesturePinchUpdate ||
+        event.type() == WebInputEvent::GestureFlingStart)) {
     return;
   }
 
@@ -191,7 +191,7 @@ void ReportInputEventLatencyUma(const WebInputEvent& event,
 
   base::TimeDelta delta = base::TimeTicks::Now() - it->second.event_time;
   for (size_t i = 0; i < it->second.event_count; ++i) {
-    switch (event.type) {
+    switch (event.type()) {
       case blink::WebInputEvent::GestureScrollBegin:
         UMA_HISTOGRAM_CUSTOM_COUNTS(
             "Event.Latency.RendererImpl.GestureScrollBegin",
@@ -302,7 +302,7 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
   // Note: Other input can race ahead of gesture input as they don't have to go
   // through the queue, but we believe it's OK to do so.
   if (!compositor_event_queue_ ||
-      !IsGestureScollOrPinch(event_with_callback->event().type)) {
+      !IsGestureScollOrPinch(event_with_callback->event().type())) {
     DispatchSingleInputEvent(std::move(event_with_callback),
                              tick_clock_->NowTicks());
     return;
@@ -327,10 +327,10 @@ void InputHandlerProxy::DispatchSingleInputEvent(
     std::unique_ptr<EventWithCallback> event_with_callback,
     const base::TimeTicks now) {
   if (compositor_event_queue_ &&
-      IsGestureScollOrPinch(event_with_callback->event().type)) {
+      IsGestureScollOrPinch(event_with_callback->event().type())) {
     // Report the coalesced count only for continuous events to avoid the noise
     // from non-continuous events.
-    if (IsContinuousGestureEvent(event_with_callback->event().type)) {
+    if (IsContinuousGestureEvent(event_with_callback->event().type())) {
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "Event.CompositorThreadEventQueue.Continuous.HeadQueueingTime",
           (now - event_with_callback->creation_timestamp()).InMicroseconds(), 1,
@@ -362,7 +362,7 @@ void InputHandlerProxy::DispatchSingleInputEvent(
   InputHandlerProxy::EventDisposition disposition =
       HandleInputEvent(event_with_callback->event());
 
-  switch (event_with_callback->event().type) {
+  switch (event_with_callback->event().type()) {
     case blink::WebGestureEvent::GestureScrollBegin:
     case blink::WebGestureEvent::GesturePinchBegin:
     case blink::WebGestureEvent::GestureScrollUpdate:
@@ -400,7 +400,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
   if (FilterInputEventForFlingBoosting(event))
     return DID_HANDLE;
 
-  switch (event.type) {
+  switch (event.type()) {
     case WebInputEvent::MouseWheel:
       return HandleMouseWheel(static_cast<const WebMouseWheelEvent&>(event));
 
@@ -513,7 +513,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
     }
 
     default:
-      if (WebInputEvent::isKeyboardEventType(event.type)) {
+      if (WebInputEvent::isKeyboardEventType(event.type())) {
         // Only call |CancelCurrentFling()| if a fling was active, as it will
         // otherwise disrupt an in-progress touch scroll.
         if (fling_curve_)
@@ -795,7 +795,7 @@ InputHandlerProxy::HandleGestureScrollUpdate(
     DCHECK(!scroll_state.is_in_inertial_phase());
     base::TimeTicks event_time =
         base::TimeTicks() +
-        base::TimeDelta::FromSecondsD(gesture_event.timeStampSeconds);
+        base::TimeDelta::FromSecondsD(gesture_event.timeStampSeconds());
     base::TimeDelta delay = base::TimeTicks::Now() - event_time;
     switch (input_handler_->ScrollAnimated(scroll_point, scroll_delta, delay)
                 .thread) {
@@ -900,12 +900,12 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureFlingStart(
       // Note that the timestamp will only be used to kickstart the animation if
       // its sufficiently close to the timestamp of the first call |Animate()|.
       has_fling_animation_started_ = false;
-      fling_parameters_.startTime = gesture_event.timeStampSeconds;
+      fling_parameters_.startTime = gesture_event.timeStampSeconds();
       fling_parameters_.delta = WebFloatPoint(vx, vy);
       fling_parameters_.point = WebPoint(gesture_event.x, gesture_event.y);
       fling_parameters_.globalPoint =
           WebPoint(gesture_event.globalX, gesture_event.globalY);
-      fling_parameters_.modifiers = gesture_event.modifiers;
+      fling_parameters_.modifiers = gesture_event.modifiers();
       fling_parameters_.sourceDevice = gesture_event.sourceDevice;
       RequestAnimation();
       return DID_HANDLE;
@@ -1028,7 +1028,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchEnd(
 
 bool InputHandlerProxy::FilterInputEventForFlingBoosting(
     const WebInputEvent& event) {
-  if (!WebInputEvent::isGestureEventType(event.type))
+  if (!WebInputEvent::isGestureEventType(event.type()))
     return false;
 
   if (!fling_curve_) {
@@ -1038,7 +1038,7 @@ bool InputHandlerProxy::FilterInputEventForFlingBoosting(
 
   const WebGestureEvent& gesture_event =
       static_cast<const WebGestureEvent&>(event);
-  if (gesture_event.type == WebInputEvent::GestureFlingCancel) {
+  if (gesture_event.type() == WebInputEvent::GestureFlingCancel) {
     if (gesture_event.data.flingCancel.preventBoosting)
       return false;
 
@@ -1049,7 +1049,7 @@ bool InputHandlerProxy::FilterInputEventForFlingBoosting(
                          "InputHandlerProxy::FlingBoostStart",
                          TRACE_EVENT_SCOPE_THREAD);
     deferred_fling_cancel_time_seconds_ =
-        event.timeStampSeconds + kFlingBoostTimeoutDelaySeconds;
+        event.timeStampSeconds() + kFlingBoostTimeoutDelaySeconds;
     return true;
   }
 
@@ -1064,7 +1064,7 @@ bool InputHandlerProxy::FilterInputEventForFlingBoosting(
     return false;
   }
 
-  switch (gesture_event.type) {
+  switch (gesture_event.type()) {
     case WebInputEvent::GestureTapCancel:
     case WebInputEvent::GestureTapDown:
       return false;
@@ -1086,9 +1086,9 @@ bool InputHandlerProxy::FilterInputEventForFlingBoosting(
 
     case WebInputEvent::GestureScrollUpdate: {
       const double time_since_last_boost_event =
-          event.timeStampSeconds - last_fling_boost_event_.timeStampSeconds;
+          event.timeStampSeconds() - last_fling_boost_event_.timeStampSeconds();
       const double time_since_last_fling_animate = std::max(
-          0.0, event.timeStampSeconds - InSecondsF(last_fling_animate_time_));
+          0.0, event.timeStampSeconds() - InSecondsF(last_fling_animate_time_));
       if (ShouldSuppressScrollForFlingBoosting(current_fling_velocity_,
                                                gesture_event,
                                                time_since_last_boost_event,
@@ -1112,7 +1112,7 @@ bool InputHandlerProxy::FilterInputEventForFlingBoosting(
       DCHECK_EQ(fling_parameters_.sourceDevice, gesture_event.sourceDevice);
 
       bool fling_boosted =
-          fling_parameters_.modifiers == gesture_event.modifiers &&
+          fling_parameters_.modifiers == gesture_event.modifiers() &&
           ShouldBoostFling(current_fling_velocity_, gesture_event);
 
       gfx::Vector2dF new_fling_velocity(
@@ -1135,7 +1135,7 @@ bool InputHandlerProxy::FilterInputEventForFlingBoosting(
           gesture_event.sourceDevice,
           velocity,
           blink::WebSize()));
-      fling_parameters_.startTime = gesture_event.timeStampSeconds;
+      fling_parameters_.startTime = gesture_event.timeStampSeconds();
       fling_parameters_.delta = velocity;
       fling_parameters_.point = WebPoint(gesture_event.x, gesture_event.y);
       fling_parameters_.globalPoint =
@@ -1170,7 +1170,7 @@ void InputHandlerProxy::ExtendBoostedFlingTimeout(
                        "InputHandlerProxy::ExtendBoostedFlingTimeout",
                        TRACE_EVENT_SCOPE_THREAD);
   deferred_fling_cancel_time_seconds_ =
-      event.timeStampSeconds + kFlingBoostTimeoutDelaySeconds;
+      event.timeStampSeconds() + kFlingBoostTimeoutDelaySeconds;
   last_fling_boost_event_ = event;
 }
 
@@ -1373,8 +1373,8 @@ bool InputHandlerProxy::CancelCurrentFlingWithoutNotifyingClient() {
 
     WebGestureEvent last_fling_boost_event = last_fling_boost_event_;
     last_fling_boost_event_ = WebGestureEvent();
-    if (last_fling_boost_event.type == WebInputEvent::GestureScrollBegin ||
-        last_fling_boost_event.type == WebInputEvent::GestureScrollUpdate) {
+    if (last_fling_boost_event.type() == WebInputEvent::GestureScrollBegin ||
+        last_fling_boost_event.type() == WebInputEvent::GestureScrollUpdate) {
       // Synthesize a GestureScrollBegin, as the original was suppressed.
       HandleInputEvent(ObtainGestureScrollBegin(last_fling_boost_event));
     }

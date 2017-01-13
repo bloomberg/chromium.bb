@@ -7,79 +7,79 @@
 namespace blink {
 
 float WebGestureEvent::deltaXInRootFrame() const {
-  if (type == WebInputEvent::GestureScrollBegin)
+  if (m_type == WebInputEvent::GestureScrollBegin)
     return data.scrollBegin.deltaXHint / m_frameScale;
-  DCHECK(type == WebInputEvent::GestureScrollUpdate);
+  DCHECK(m_type == WebInputEvent::GestureScrollUpdate);
   return data.scrollUpdate.deltaX / m_frameScale;
 }
 
 float WebGestureEvent::deltaYInRootFrame() const {
-  if (type == WebInputEvent::GestureScrollBegin)
+  if (m_type == WebInputEvent::GestureScrollBegin)
     return data.scrollBegin.deltaYHint / m_frameScale;
-  DCHECK(type == WebInputEvent::GestureScrollUpdate);
+  DCHECK(m_type == WebInputEvent::GestureScrollUpdate);
   return data.scrollUpdate.deltaY / m_frameScale;
 }
 
 WebGestureEvent::ScrollUnits WebGestureEvent::deltaUnits() const {
-  if (type == WebInputEvent::GestureScrollBegin)
+  if (m_type == WebInputEvent::GestureScrollBegin)
     return data.scrollBegin.deltaHintUnits;
-  if (type == WebInputEvent::GestureScrollUpdate)
+  if (m_type == WebInputEvent::GestureScrollUpdate)
     return data.scrollUpdate.deltaUnits;
-  DCHECK(type == WebInputEvent::GestureScrollEnd);
+  DCHECK(m_type == WebInputEvent::GestureScrollEnd);
   return data.scrollEnd.deltaUnits;
 }
 
 float WebGestureEvent::pinchScale() const {
-  DCHECK(type == WebInputEvent::GesturePinchUpdate);
+  DCHECK(m_type == WebInputEvent::GesturePinchUpdate);
   return data.pinchUpdate.scale;
 }
 
 WebGestureEvent::InertialPhaseState WebGestureEvent::inertialPhase() const {
-  if (type == WebInputEvent::GestureScrollBegin)
+  if (m_type == WebInputEvent::GestureScrollBegin)
     return data.scrollBegin.inertialPhase;
-  if (type == WebInputEvent::GestureScrollUpdate)
+  if (m_type == WebInputEvent::GestureScrollUpdate)
     return data.scrollUpdate.inertialPhase;
-  DCHECK(type == WebInputEvent::GestureScrollEnd);
+  DCHECK(m_type == WebInputEvent::GestureScrollEnd);
   return data.scrollEnd.inertialPhase;
 }
 
 bool WebGestureEvent::synthetic() const {
-  if (type == WebInputEvent::GestureScrollBegin)
+  if (m_type == WebInputEvent::GestureScrollBegin)
     return data.scrollBegin.synthetic;
-  DCHECK(type == WebInputEvent::GestureScrollEnd);
+  DCHECK(m_type == WebInputEvent::GestureScrollEnd);
   return data.scrollEnd.synthetic;
 }
 
 float WebGestureEvent::velocityX() const {
-  if (type == WebInputEvent::GestureScrollUpdate)
+  if (m_type == WebInputEvent::GestureScrollUpdate)
     return data.scrollUpdate.velocityX;
-  DCHECK(type == WebInputEvent::GestureFlingStart);
+  DCHECK(m_type == WebInputEvent::GestureFlingStart);
   return data.flingStart.velocityX;
 }
 
 float WebGestureEvent::velocityY() const {
-  if (type == WebInputEvent::GestureScrollUpdate)
+  if (m_type == WebInputEvent::GestureScrollUpdate)
     return data.scrollUpdate.velocityY;
-  DCHECK(type == WebInputEvent::GestureFlingStart);
+  DCHECK(m_type == WebInputEvent::GestureFlingStart);
   return data.flingStart.velocityY;
 }
 
 WebFloatSize WebGestureEvent::tapAreaInRootFrame() const {
-  if (type == WebInputEvent::GestureTwoFingerTap) {
+  if (m_type == WebInputEvent::GestureTwoFingerTap) {
     return WebFloatSize(data.twoFingerTap.firstFingerWidth / m_frameScale,
                         data.twoFingerTap.firstFingerHeight / m_frameScale);
-  } else if (type == WebInputEvent::GestureLongPress ||
-             type == WebInputEvent::GestureLongTap) {
+  } else if (m_type == WebInputEvent::GestureLongPress ||
+             m_type == WebInputEvent::GestureLongTap) {
     return WebFloatSize(data.longPress.width / m_frameScale,
                         data.longPress.height / m_frameScale);
-  } else if (type == WebInputEvent::GestureTap ||
-             type == WebInputEvent::GestureTapUnconfirmed) {
+  } else if (m_type == WebInputEvent::GestureTap ||
+             m_type == WebInputEvent::GestureTapUnconfirmed) {
     return WebFloatSize(data.tap.width / m_frameScale,
                         data.tap.height / m_frameScale);
-  } else if (type == WebInputEvent::GestureTapDown) {
+  } else if (m_type == WebInputEvent::GestureTapDown) {
     return WebFloatSize(data.tapDown.width / m_frameScale,
                         data.tapDown.height / m_frameScale);
-  } else if (type == WebInputEvent::GestureShowPress) {
+  } else if (m_type == WebInputEvent::GestureShowPress) {
     return WebFloatSize(data.showPress.width / m_frameScale,
                         data.showPress.height / m_frameScale);
   }
@@ -94,7 +94,7 @@ WebFloatPoint WebGestureEvent::positionInRootFrame() const {
 }
 
 int WebGestureEvent::tapCount() const {
-  DCHECK(type == WebInputEvent::GestureTap);
+  DCHECK(m_type == WebInputEvent::GestureTap);
   return data.tap.tapCount;
 }
 
@@ -110,7 +110,7 @@ void WebGestureEvent::applyTouchAdjustment(WebFloatPoint rootFrameCoords) {
 
 void WebGestureEvent::flattenTransform() {
   if (m_frameScale != 1) {
-    switch (type) {
+    switch (m_type) {
       case WebInputEvent::GestureScrollBegin:
         data.scrollBegin.deltaXHint /= m_frameScale;
         data.scrollBegin.deltaYHint /= m_frameScale;

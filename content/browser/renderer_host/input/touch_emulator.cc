@@ -42,7 +42,7 @@ ui::GestureProvider::Config GetEmulatorGestureProviderConfig(
 int ModifiersWithoutMouseButtons(const WebInputEvent& event) {
   const int all_buttons = WebInputEvent::LeftButtonDown |
       WebInputEvent::MiddleButtonDown | WebInputEvent::RightButtonDown;
-  return event.modifiers & ~all_buttons;
+  return event.modifiers() & ~all_buttons;
 }
 
 // Time between two consecutive mouse moves, during which second mouse move
@@ -157,35 +157,35 @@ bool TouchEmulator::HandleMouseEvent(const WebMouseEvent& mouse_event) {
     return false;
 
   if (mouse_event.button == WebMouseEvent::Button::Right &&
-      mouse_event.type == WebInputEvent::MouseDown) {
+      mouse_event.type() == WebInputEvent::MouseDown) {
     client_->ShowContextMenuAtPoint(gfx::Point(mouse_event.x, mouse_event.y));
   }
 
   if (mouse_event.button != WebMouseEvent::Button::Left)
     return true;
 
-  if (mouse_event.type == WebInputEvent::MouseMove) {
+  if (mouse_event.type() == WebInputEvent::MouseMove) {
     if (last_mouse_event_was_move_ &&
-        mouse_event.timeStampSeconds < last_mouse_move_timestamp_ +
-            kMouseMoveDropIntervalSeconds)
+        mouse_event.timeStampSeconds() <
+            last_mouse_move_timestamp_ + kMouseMoveDropIntervalSeconds)
       return true;
 
     last_mouse_event_was_move_ = true;
-    last_mouse_move_timestamp_ = mouse_event.timeStampSeconds;
+    last_mouse_move_timestamp_ = mouse_event.timeStampSeconds();
   } else {
     last_mouse_event_was_move_ = false;
   }
 
-  if (mouse_event.type == WebInputEvent::MouseDown)
+  if (mouse_event.type() == WebInputEvent::MouseDown)
     mouse_pressed_ = true;
-  else if (mouse_event.type == WebInputEvent::MouseUp)
+  else if (mouse_event.type() == WebInputEvent::MouseUp)
     mouse_pressed_ = false;
 
-  UpdateShiftPressed((mouse_event.modifiers & WebInputEvent::ShiftKey) != 0);
+  UpdateShiftPressed((mouse_event.modifiers() & WebInputEvent::ShiftKey) != 0);
 
-  if (mouse_event.type != WebInputEvent::MouseDown &&
-      mouse_event.type != WebInputEvent::MouseMove &&
-      mouse_event.type != WebInputEvent::MouseUp) {
+  if (mouse_event.type() != WebInputEvent::MouseDown &&
+      mouse_event.type() != WebInputEvent::MouseMove &&
+      mouse_event.type() != WebInputEvent::MouseUp) {
     return true;
   }
 
@@ -208,7 +208,7 @@ bool TouchEmulator::HandleKeyboardEvent(const WebKeyboardEvent& event) {
   if (!enabled())
     return false;
 
-  if (!UpdateShiftPressed((event.modifiers & WebInputEvent::ShiftKey) != 0))
+  if (!UpdateShiftPressed((event.modifiers() & WebInputEvent::ShiftKey) != 0))
     return false;
 
   if (!mouse_pressed_)
@@ -297,7 +297,7 @@ void TouchEmulator::OnGestureEvent(const ui::GestureEventData& gesture) {
   WebGestureEvent gesture_event =
       ui::CreateWebGestureEventFromGestureEventData(gesture);
 
-  switch (gesture_event.type) {
+  switch (gesture_event.type()) {
     case WebInputEvent::Undefined:
       NOTREACHED() << "Undefined WebInputEvent type";
       // Bail without sending the junk event to the client.
@@ -419,7 +419,7 @@ void TouchEmulator::PinchEnd(const WebGestureEvent& event) {
 void TouchEmulator::ScrollEnd(const WebGestureEvent& event) {
   WebGestureEvent scroll_event(WebInputEvent::GestureScrollEnd,
                                ModifiersWithoutMouseButtons(event),
-                               event.timeStampSeconds);
+                               event.timeStampSeconds());
   scroll_event.sourceDevice = blink::WebGestureDeviceTouchscreen;
   client_->ForwardEmulatedGestureEvent(scroll_event);
 }
@@ -428,7 +428,7 @@ WebGestureEvent TouchEmulator::GetPinchGestureEvent(
     WebInputEvent::Type type,
     const WebInputEvent& original_event) {
   WebGestureEvent event(type, ModifiersWithoutMouseButtons(original_event),
-                        original_event.timeStampSeconds);
+                        original_event.timeStampSeconds());
   event.sourceDevice = blink::WebGestureDeviceTouchscreen;
   event.x = pinch_anchor_.x();
   event.y = pinch_anchor_.y();
@@ -437,7 +437,7 @@ WebGestureEvent TouchEmulator::GetPinchGestureEvent(
 
 void TouchEmulator::FillTouchEventAndPoint(const WebMouseEvent& mouse_event) {
   WebInputEvent::Type eventType;
-  switch (mouse_event.type) {
+  switch (mouse_event.type()) {
     case WebInputEvent::MouseDown:
       eventType = WebInputEvent::TouchStart;
       break;
@@ -449,12 +449,13 @@ void TouchEmulator::FillTouchEventAndPoint(const WebMouseEvent& mouse_event) {
       break;
     default:
       eventType = WebInputEvent::Undefined;
-      NOTREACHED() << "Invalid event for touch emulation: " << mouse_event.type;
+      NOTREACHED() << "Invalid event for touch emulation: "
+                   << mouse_event.type();
   }
   touch_event_.touchesLength = 1;
   touch_event_.setModifiers(ModifiersWithoutMouseButtons(mouse_event));
   WebTouchEventTraits::ResetTypeAndTouchStates(
-      eventType, mouse_event.timeStampSeconds, &touch_event_);
+      eventType, mouse_event.timeStampSeconds(), &touch_event_);
   WebTouchPoint& point = touch_event_.touches[0];
   point.id = 0;
   point.radiusX = 0.5f * cursor_size_.width();

@@ -77,7 +77,7 @@ std::string GetInputMessageTypes(MockRenderProcessHost* process) {
     const WebInputEvent* event = std::get<0>(params);
     if (i != 0)
       result += " ";
-    result += WebInputEvent::GetName(event->type);
+    result += WebInputEvent::GetName(event->type());
   }
   process->sink().ClearMessages();
   return result;
@@ -183,7 +183,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
                        InputEventAckState ack_result) override {
     // Sniff touch acks.
-    acked_touch_event_type_ = event.event.type;
+    acked_touch_event_type_ = event.event.type();
     RenderWidgetHostImpl::OnTouchEventAck(event, ack_result);
   }
 
@@ -297,7 +297,7 @@ class TestView : public TestRenderWidgetHostView {
   }
   void GestureEventAck(const WebGestureEvent& event,
                        InputEventAckState ack_result) override {
-    gesture_event_type_ = event.type;
+    gesture_event_type_ = event.type();
     ack_result_ = ack_result;
   }
   gfx::Size GetPhysicalBackingSize() const override {
@@ -396,14 +396,14 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
  protected:
   bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                               bool* is_keyboard_shortcut) override {
-    prehandle_keyboard_event_type_ = event.type;
+    prehandle_keyboard_event_type_ = event.type();
     prehandle_keyboard_event_called_ = true;
     *is_keyboard_shortcut = prehandle_keyboard_event_is_shortcut_;
     return prehandle_keyboard_event_;
   }
 
   void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) override {
-    unhandled_keyboard_event_type_ = event.type;
+    unhandled_keyboard_event_type_ = event.type();
     unhandled_keyboard_event_called_ = true;
   }
 
@@ -1576,7 +1576,7 @@ void CheckLatencyInfoComponentInMessage(RenderWidgetHostProcess* process,
   const WebInputEvent* event = std::get<0>(params);
   ui::LatencyInfo latency_info = std::get<1>(params);
 
-  EXPECT_TRUE(event->type == expected_type);
+  EXPECT_TRUE(event->type() == expected_type);
   EXPECT_TRUE(latency_info.FindLatency(
       ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, component_id, NULL));
 

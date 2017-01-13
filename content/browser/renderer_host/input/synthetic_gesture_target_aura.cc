@@ -135,7 +135,7 @@ int WebMouseEventButtonToFlags(blink::WebMouseEvent::Button button) {
 void SyntheticGestureTargetAura::DispatchWebMouseEventToPlatform(
       const blink::WebMouseEvent& web_mouse,
       const ui::LatencyInfo& latency_info) {
-  ui::EventType event_type = WebMouseEventTypeToEventType(web_mouse.type);
+  ui::EventType event_type = WebMouseEventTypeToEventType(web_mouse.type());
   int flags = WebMouseEventButtonToFlags(web_mouse.button);
   ui::MouseEvent mouse_event(event_type, gfx::Point(), gfx::Point(),
                              ui::EventTimeForNow(), flags, flags);

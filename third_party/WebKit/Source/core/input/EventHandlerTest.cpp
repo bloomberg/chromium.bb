@@ -35,11 +35,12 @@ class EventHandlerTest : public ::testing::Test {
 
 class TapEventBuilder : public WebGestureEvent {
  public:
-  TapEventBuilder(IntPoint position, int tapCount) : WebGestureEvent() {
-    type = WebInputEvent::GestureTap;
+  TapEventBuilder(IntPoint position, int tapCount)
+      : WebGestureEvent(WebInputEvent::GestureTap,
+                        WebInputEvent::NoModifiers,
+                        TimeTicks::Now().InSeconds()) {
     x = globalX = position.x();
     y = globalY = position.y();
-    timeStampSeconds = TimeTicks::Now().InSeconds();
     sourceDevice = WebGestureDeviceTouchscreen;
     data.tap.tapCount = tapCount;
     data.tap.width = 5;

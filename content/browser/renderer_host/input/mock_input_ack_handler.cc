@@ -32,7 +32,7 @@ void MockInputAckHandler::OnKeyboardEventAck(
     InputEventAckState ack_result)  {
   VLOG(1) << __FUNCTION__ << " called!";
   acked_key_event_.reset(new NativeWebKeyboardEvent(event.event));
-  RecordAckCalled(event.event.type, ack_result);
+  RecordAckCalled(event.event.type(), ack_result);
 }
 
 void MockInputAckHandler::OnMouseEventAck(
@@ -40,7 +40,7 @@ void MockInputAckHandler::OnMouseEventAck(
     InputEventAckState ack_result) {
   VLOG(1) << __FUNCTION__ << " called!";
   acked_mouse_event_ = event.event;
-  RecordAckCalled(event.event.type, ack_result);
+  RecordAckCalled(event.event.type(), ack_result);
 }
 
 void MockInputAckHandler::OnWheelEventAck(
@@ -48,7 +48,7 @@ void MockInputAckHandler::OnWheelEventAck(
     InputEventAckState ack_result) {
   VLOG(1) << __FUNCTION__ << " called!";
   acked_wheel_event_ = event.event;
-  RecordAckCalled(event.event.type, ack_result);
+  RecordAckCalled(event.event.type(), ack_result);
 }
 
 void MockInputAckHandler::OnTouchEventAck(
@@ -56,7 +56,7 @@ void MockInputAckHandler::OnTouchEventAck(
     InputEventAckState ack_result) {
   VLOG(1) << __FUNCTION__ << " called!";
   acked_touch_event_ = event;
-  RecordAckCalled(event.event.type, ack_result);
+  RecordAckCalled(event.event.type(), ack_result);
   if (touch_followup_event_)
     input_router_->SendTouchEvent(*touch_followup_event_);
   if (gesture_followup_event_)
@@ -68,7 +68,7 @@ void MockInputAckHandler::OnGestureEventAck(
     InputEventAckState ack_result) {
   VLOG(1) << __FUNCTION__ << " called!";
   acked_gesture_event_ = event.event;
-  RecordAckCalled(event.event.type, ack_result);
+  RecordAckCalled(event.event.type(), ack_result);
 }
 
 void MockInputAckHandler::OnUnexpectedEventAck(UnexpectedEventAckType type)  {

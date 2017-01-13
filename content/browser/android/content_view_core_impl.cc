@@ -535,7 +535,7 @@ void ContentViewCoreImpl::OnGestureEventAck(const blink::WebGestureEvent& event,
   if (j_obj.is_null())
     return;
 
-  switch (event.type) {
+  switch (event.type()) {
     case WebInputEvent::GestureFlingStart:
       if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED) {
         // The view expects the fling velocity in pixels/s.
@@ -580,10 +580,10 @@ void ContentViewCoreImpl::OnGestureEventAck(const blink::WebGestureEvent& event,
 }
 
 bool ContentViewCoreImpl::FilterInputEvent(const blink::WebInputEvent& event) {
-  if (event.type != WebInputEvent::GestureTap &&
-      event.type != WebInputEvent::GestureDoubleTap &&
-      event.type != WebInputEvent::GestureLongTap &&
-      event.type != WebInputEvent::GestureLongPress)
+  if (event.type() != WebInputEvent::GestureTap &&
+      event.type() != WebInputEvent::GestureDoubleTap &&
+      event.type() != WebInputEvent::GestureLongTap &&
+      event.type() != WebInputEvent::GestureLongPress)
     return false;
 
   JNIEnv* env = AttachCurrentThread();
@@ -593,7 +593,7 @@ bool ContentViewCoreImpl::FilterInputEvent(const blink::WebInputEvent& event) {
 
   const blink::WebGestureEvent& gesture =
       static_cast<const blink::WebGestureEvent&>(event);
-  int gesture_type = ToGestureEventType(event.type);
+  int gesture_type = ToGestureEventType(event.type());
   return Java_ContentViewCore_filterTapOrPressEvent(env, j_obj, gesture_type,
                                                     gesture.x * dpi_scale(),
                                                     gesture.y * dpi_scale());

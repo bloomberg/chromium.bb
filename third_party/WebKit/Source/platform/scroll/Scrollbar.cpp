@@ -323,7 +323,7 @@ void Scrollbar::setPressedPart(ScrollbarPart part) {
 bool Scrollbar::gestureEvent(const WebGestureEvent& evt,
                              bool* shouldUpdateCapture) {
   DCHECK(shouldUpdateCapture);
-  switch (evt.type) {
+  switch (evt.type()) {
     case WebInputEvent::GestureTapDown: {
       IntPoint position = flooredIntPoint(evt.positionInRootFrame());
       setPressedPart(theme().hitTest(*this, position));

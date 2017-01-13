@@ -115,7 +115,7 @@ bool ColorPicker::HandleMouseEvent(const blink::WebMouseEvent& event) {
     return true;
 
   if (event.button == blink::WebMouseEvent::Button::Left &&
-      event.type == blink::WebInputEvent::MouseDown) {
+      event.type() == blink::WebInputEvent::MouseDown) {
     if (last_cursor_x_ < 0 || last_cursor_x_ >= frame_.width() ||
         last_cursor_y_ < 0 || last_cursor_y_ >= frame_.height()) {
       return true;

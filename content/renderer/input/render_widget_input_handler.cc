@@ -57,16 +57,17 @@ int64_t GetEventLatencyMicros(double event_timestamp, base::TimeTicks now) {
 }
 
 void LogInputEventLatencyUma(const WebInputEvent& event, base::TimeTicks now) {
-  WebInputEvent::Type event_type = event.type;
+  WebInputEvent::Type event_type = event.type();
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "Event.AggregatedLatency.Renderer2",
-      GetEventLatencyMicros(event.timeStampSeconds, now), 1, 10000000, 100);
+      GetEventLatencyMicros(event.timeStampSeconds(), now), 1, 10000000, 100);
 
-#define CASE_TYPE(t)                                                           \
-  case WebInputEvent::t:                                                       \
-    UMA_HISTOGRAM_CUSTOM_COUNTS(                                               \
-        "Event.Latency.Renderer2." #t,                                         \
-        GetEventLatencyMicros(event.timeStampSeconds, now), 1, 10000000, 100); \
+#define CASE_TYPE(t)                                                       \
+  case WebInputEvent::t:                                                   \
+    UMA_HISTOGRAM_CUSTOM_COUNTS(                                           \
+        "Event.Latency.Renderer2." #t,                                     \
+        GetEventLatencyMicros(event.timeStampSeconds(), now), 1, 10000000, \
+        100);                                                              \
     break;
 
   switch (event_type) {
@@ -210,7 +211,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
   base::AutoReset<bool> handling_input_event_resetter(&handling_input_event_,
                                                       true);
   base::AutoReset<WebInputEvent::Type> handling_event_type_resetter(
-      &handling_event_type_, input_event.type);
+      &handling_event_type_, input_event.type());
 
   // Calls into |didOverscroll()| while handling this event will populate
   // |event_overscroll|, which in turn will be bundled with the event ack.
@@ -229,7 +230,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
 
   TRACE_EVENT1("renderer,benchmark,rail",
                "RenderWidgetInputHandler::OnHandleInputEvent", "event",
-               WebInputEvent::GetName(input_event.type));
+               WebInputEvent::GetName(input_event.type()));
   TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("blink.HandleInputEvent");
   TRACE_EVENT_WITH_FLOW1("input,benchmark", "LatencyInfo.Flow",
                          TRACE_ID_DONT_MANGLE(latency_info.trace_id()),
@@ -253,7 +254,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
   }
 
   bool prevent_default = false;
-  if (WebInputEvent::isMouseEventType(input_event.type)) {
+  if (WebInputEvent::isMouseEventType(input_event.type())) {
     const WebMouseEvent& mouse_event =
         static_cast<const WebMouseEvent&>(input_event);
     TRACE_EVENT2("renderer", "HandleMouseMove", "x", mouse_event.x, "y",
@@ -262,7 +263,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
     prevent_default = delegate_->WillHandleMouseEvent(mouse_event);
   }
 
-  if (WebInputEvent::isKeyboardEventType(input_event.type)) {
+  if (WebInputEvent::isKeyboardEventType(input_event.type())) {
     context_menu_source_type_ = ui::MENU_SOURCE_KEYBOARD;
 #if defined(OS_ANDROID)
     // The DPAD_CENTER key on Android has a dual semantic: (1) in the general
@@ -284,12 +285,12 @@ void RenderWidgetInputHandler::HandleInputEvent(
 #endif
   }
 
-  if (WebInputEvent::isGestureEventType(input_event.type)) {
+  if (WebInputEvent::isGestureEventType(input_event.type())) {
     const WebGestureEvent& gesture_event =
         static_cast<const WebGestureEvent&>(input_event);
-    if (input_event.type == WebInputEvent::GestureLongPress) {
+    if (input_event.type() == WebInputEvent::GestureLongPress) {
       context_menu_source_type_ = ui::MENU_SOURCE_LONG_PRESS;
-    } else if (input_event.type == WebInputEvent::GestureLongTap) {
+    } else if (input_event.type() == WebInputEvent::GestureLongTap) {
       context_menu_source_type_ = ui::MENU_SOURCE_LONG_TAP;
     } else {
       context_menu_source_type_ = ui::MENU_SOURCE_TOUCH;
@@ -301,7 +302,8 @@ void RenderWidgetInputHandler::HandleInputEvent(
   WebInputEventResult processed = prevent_default
                                       ? WebInputEventResult::HandledSuppressed
                                       : WebInputEventResult::NotHandled;
-  if (input_event.type != WebInputEvent::Char || !suppress_next_char_events_) {
+  if (input_event.type() != WebInputEvent::Char ||
+      !suppress_next_char_events_) {
     suppress_next_char_events_ = false;
     if (processed == WebInputEventResult::NotHandled && widget_->GetWebWidget())
       processed = widget_->GetWebWidget()->handleInputEvent(input_event);
@@ -310,13 +312,13 @@ void RenderWidgetInputHandler::HandleInputEvent(
   // TODO(dtapuska): Use the input_event.timeStampSeconds as the start
   // ideally this should be when the event was sent by the compositor to the
   // renderer. crbug.com/565348
-  if (input_event.type == WebInputEvent::TouchStart ||
-      input_event.type == WebInputEvent::TouchMove ||
-      input_event.type == WebInputEvent::TouchEnd) {
+  if (input_event.type() == WebInputEvent::TouchStart ||
+      input_event.type() == WebInputEvent::TouchMove ||
+      input_event.type() == WebInputEvent::TouchEnd) {
     const WebTouchEvent& touch = static_cast<const WebTouchEvent&>(input_event);
 
     LogPassiveEventListenersUma(processed, touch.dispatchType,
-                                input_event.timeStampSeconds, latency_info);
+                                input_event.timeStampSeconds(), latency_info);
 
     // TODO(lanwei): Remove this metric for event latency outside fling in M56,
     // once we've gathered enough data to decide if we want to ship the passive
@@ -327,21 +329,21 @@ void RenderWidgetInputHandler::HandleInputEvent(
       base::TimeTicks now = base::TimeTicks::Now();
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "Event.Touch.TouchLatencyOutsideFling",
-          GetEventLatencyMicros(input_event.timeStampSeconds, now), 1,
+          GetEventLatencyMicros(input_event.timeStampSeconds(), now), 1,
           100000000, 50);
     }
-  } else if (input_event.type == WebInputEvent::MouseWheel) {
+  } else if (input_event.type() == WebInputEvent::MouseWheel) {
     LogPassiveEventListenersUma(
         processed,
         static_cast<const WebMouseWheelEvent&>(input_event).dispatchType,
-        input_event.timeStampSeconds, latency_info);
+        input_event.timeStampSeconds(), latency_info);
   }
 
   // If this RawKeyDown event corresponds to a browser keyboard shortcut and
   // it's not processed by webkit, then we need to suppress the upcoming Char
   // events.
   bool is_keyboard_shortcut =
-      input_event.type == WebInputEvent::RawKeyDown &&
+      input_event.type() == WebInputEvent::RawKeyDown &&
       static_cast<const WebKeyboardEvent&>(input_event).isBrowserShortcut;
   if (processed == WebInputEventResult::NotHandled && is_keyboard_shortcut)
     suppress_next_char_events_ = true;
@@ -350,7 +352,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
                                       ? INPUT_EVENT_ACK_STATE_NOT_CONSUMED
                                       : INPUT_EVENT_ACK_STATE_CONSUMED;
   if (processed == WebInputEventResult::NotHandled &&
-      input_event.type == WebInputEvent::TouchStart) {
+      input_event.type() == WebInputEvent::TouchStart) {
     const WebTouchEvent& touch_event =
         static_cast<const WebTouchEvent&>(input_event);
     // Hit-test for all the pressed touch points. If there is a touch-handler
@@ -369,9 +371,9 @@ void RenderWidgetInputHandler::HandleInputEvent(
 
   // Send gesture scroll events and their dispositions to the compositor thread,
   // so that they can be used to produce the elastic overscroll effect on Mac.
-  if (input_event.type == WebInputEvent::GestureScrollBegin ||
-      input_event.type == WebInputEvent::GestureScrollEnd ||
-      input_event.type == WebInputEvent::GestureScrollUpdate) {
+  if (input_event.type() == WebInputEvent::GestureScrollBegin ||
+      input_event.type() == WebInputEvent::GestureScrollEnd ||
+      input_event.type() == WebInputEvent::GestureScrollUpdate) {
     const WebGestureEvent& gesture_event =
         static_cast<const WebGestureEvent&>(input_event);
     if (gesture_event.sourceDevice == blink::WebGestureDeviceTouchpad) {
@@ -389,13 +391,13 @@ void RenderWidgetInputHandler::HandleInputEvent(
       dispatch_type == DISPATCH_TYPE_NON_BLOCKING_NOTIFY_MAIN) {
     // |non_blocking| means it was ack'd already by the InputHandlerProxy
     // so let the delegate know the event has been handled.
-    delegate_->NotifyInputEventHandled(input_event.type, ack_result);
+    delegate_->NotifyInputEventHandled(input_event.type(), ack_result);
   }
 
   if ((dispatch_type == DISPATCH_TYPE_BLOCKING ||
        dispatch_type == DISPATCH_TYPE_BLOCKING_NOTIFY_MAIN)) {
     std::unique_ptr<InputEventAck> response(new InputEventAck(
-        InputEventAckSource::MAIN_THREAD, input_event.type, ack_result,
+        InputEventAckSource::MAIN_THREAD, input_event.type(), ack_result,
         swap_latency_info, std::move(event_overscroll),
         ui::WebInputEventTraits::GetUniqueTouchEventId(input_event)));
     delegate_->OnInputEventAck(std::move(response));
@@ -411,7 +413,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
 #if defined(OS_ANDROID)
   // Allow the IME to be shown when the focus changes as a consequence
   // of a processed touch end event.
-  if (input_event.type == WebInputEvent::TouchEnd &&
+  if (input_event.type() == WebInputEvent::TouchEnd &&
       processed != WebInputEventResult::NotHandled) {
     delegate_->UpdateTextInputState(ShowIme::IF_NEEDED,
                                     ChangeSource::FROM_NON_IME);
@@ -420,13 +422,14 @@ void RenderWidgetInputHandler::HandleInputEvent(
   // Show the virtual keyboard if enabled and a user gesture triggers a focus
   // change.
   if (processed != WebInputEventResult::NotHandled &&
-      (input_event.type == WebInputEvent::TouchEnd ||
-       input_event.type == WebInputEvent::MouseUp)) {
+      (input_event.type() == WebInputEvent::TouchEnd ||
+       input_event.type() == WebInputEvent::MouseUp)) {
     delegate_->UpdateTextInputState(ShowIme::IF_NEEDED, ChangeSource::FROM_IME);
   }
 #endif
 
-  if (!prevent_default && WebInputEvent::isKeyboardEventType(input_event.type))
+  if (!prevent_default &&
+      WebInputEvent::isKeyboardEventType(input_event.type()))
     delegate_->OnDidHandleKeyEvent();
 
 // TODO(rouslan): Fix ChromeOS and Windows 8 behavior of autofill popup with
@@ -434,8 +437,8 @@ void RenderWidgetInputHandler::HandleInputEvent(
 #if !defined(OS_ANDROID)
   // Virtual keyboard is not supported, so react to focus change immediately.
   if (processed != WebInputEventResult::NotHandled &&
-      (input_event.type == WebInputEvent::TouchEnd ||
-       input_event.type == WebInputEvent::MouseUp)) {
+      (input_event.type() == WebInputEvent::TouchEnd ||
+       input_event.type() == WebInputEvent::MouseUp)) {
     delegate_->FocusChangeComplete();
   }
 #endif

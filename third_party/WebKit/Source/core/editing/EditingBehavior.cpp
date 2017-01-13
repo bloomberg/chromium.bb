@@ -227,9 +227,9 @@ const char* EditingBehavior::interpretKeyEvent(
   }
 
   unsigned modifiers =
-      keyEvent->modifiers & (ShiftKey | AltKey | CtrlKey | MetaKey);
+      keyEvent->modifiers() & (ShiftKey | AltKey | CtrlKey | MetaKey);
 
-  if (keyEvent->type == WebInputEvent::RawKeyDown) {
+  if (keyEvent->type() == WebInputEvent::RawKeyDown) {
     int mapKey = modifiers << 16 | event.keyCode();
     const char* name = mapKey ? keyDownCommandsMap->get(mapKey) : nullptr;
     if (!name)

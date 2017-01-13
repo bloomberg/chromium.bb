@@ -207,7 +207,7 @@ void TestRenderWidgetInputHandler::HandleInputEvent(
     InputEventDispatchType dispatch_type) {
   if (delegate_) {
     std::unique_ptr<InputEventAck> ack(new InputEventAck(
-        InputEventAckSource::COMPOSITOR_THREAD, input_event.type, state_));
+        InputEventAckSource::COMPOSITOR_THREAD, input_event.type(), state_));
     delegate_->OnInputEventAck(std::move(ack));
   }
 }

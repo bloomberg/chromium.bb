@@ -54,7 +54,7 @@ void EventWithCallback::CoalesceWith(EventWithCallback* other,
 
   // New events get coalesced into older events, and the newer timestamp
   // should always be preserved.
-  const double time_stamp_seconds = other->event().timeStampSeconds;
+  const double time_stamp_seconds = other->event().timeStampSeconds();
   Coalesce(other->event(), event_.get());
   event_->setTimeStampSeconds(time_stamp_seconds);
 

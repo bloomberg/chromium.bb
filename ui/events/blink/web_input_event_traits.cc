@@ -110,8 +110,8 @@ struct WebInputEventToString {
   template <class EventType>
   bool Execute(const WebInputEvent& event, std::string* result) const {
     SStringPrintf(result, "%s (Time: %lf, Modifiers: %d)\n",
-                  WebInputEvent::GetName(event.type), event.timeStampSeconds,
-                  event.modifiers);
+                  WebInputEvent::GetName(event.type()),
+                  event.timeStampSeconds(), event.modifiers());
     const EventType& typed_event = static_cast<const EventType&>(event);
     ApppendEventDetails(typed_event, result);
     return true;
@@ -130,7 +130,7 @@ struct WebInputEventClone {
   template <class EventType>
   bool Execute(const WebInputEvent& event,
                blink::WebScopedInputEvent* scoped_event) const {
-    DCHECK_EQ(sizeof(EventType), event.size);
+    DCHECK_EQ(sizeof(EventType), event.size());
     *scoped_event = blink::WebScopedInputEvent(
         new EventType(static_cast<const EventType&>(event)));
     return true;
@@ -161,7 +161,7 @@ bool Apply(Operator op,
 
 std::string WebInputEventTraits::ToString(const WebInputEvent& event) {
   std::string result;
-  Apply(WebInputEventToString(), event.type, event, &result);
+  Apply(WebInputEventToString(), event.type(), event, &result);
   return result;
 }
 
@@ -174,12 +174,12 @@ size_t WebInputEventTraits::GetSize(WebInputEvent::Type type) {
 blink::WebScopedInputEvent WebInputEventTraits::Clone(
     const WebInputEvent& event) {
   blink::WebScopedInputEvent scoped_event;
-  Apply(WebInputEventClone(), event.type, event, &scoped_event);
+  Apply(WebInputEventClone(), event.type(), event, &scoped_event);
   return scoped_event;
 }
 
 bool WebInputEventTraits::ShouldBlockEventStream(const WebInputEvent& event) {
-  switch (event.type) {
+  switch (event.type()) {
     case WebInputEvent::MouseDown:
     case WebInputEvent::MouseUp:
     case WebInputEvent::MouseEnter:
@@ -223,7 +223,7 @@ bool WebInputEventTraits::CanCauseScroll(
   // Scroll events generated from the mouse wheel when the control key is held
   // don't trigger scrolling. Instead, they may cause zooming.
   return event.hasPreciseScrollingDeltas ||
-         (event.modifiers & blink::WebInputEvent::ControlKey) == 0;
+         (event.modifiers() & blink::WebInputEvent::ControlKey) == 0;
 #else
   return true;
 #endif
@@ -231,7 +231,7 @@ bool WebInputEventTraits::CanCauseScroll(
 
 uint32_t WebInputEventTraits::GetUniqueTouchEventId(
     const WebInputEvent& event) {
-  if (WebInputEvent::isTouchEventType(event.type)) {
+  if (WebInputEvent::isTouchEventType(event.type())) {
     return static_cast<const WebTouchEvent&>(event).uniqueTouchEventId;
   }
   return 0U;

@@ -122,10 +122,11 @@ TEST(TouchEventStreamValidator, EmptyEvent) {
 
 TEST(TouchEventStreamValidator, InvalidEventType) {
   TouchEventStreamValidator validator;
-  WebTouchEvent event;
+  WebTouchEvent event(WebInputEvent::GestureScrollBegin,
+                      WebInputEvent::NoModifiers,
+                      WebInputEvent::TimeStampForTesting);
   std::string error_msg;
 
-  event.type = WebInputEvent::GestureScrollBegin;
   event.touchesLength = 1;
   event.touches[0].state = WebTouchPoint::StatePressed;
 
@@ -154,9 +155,9 @@ TEST(TouchEventStreamValidator, InvalidPointStates) {
     EXPECT_TRUE(validator.Validate(start, &error_msg));
     EXPECT_TRUE(error_msg.empty());
 
-    WebTouchEvent event;
+    WebTouchEvent event(kTouchTypes[i], WebInputEvent::NoModifiers,
+                        WebInputEvent::TimeStampForTesting);
     event.touchesLength = 1;
-    event.type = kTouchTypes[i];
     for (size_t j = WebTouchPoint::StateUndefined;
          j <= WebTouchPoint::StateCancelled;
          ++j) {

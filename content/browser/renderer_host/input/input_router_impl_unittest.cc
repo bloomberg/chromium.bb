@@ -216,7 +216,7 @@ class InputRouterImplTest : public testing::Test {
   void SimulateGestureEvent(WebGestureEvent gesture) {
     // Ensure non-zero touchscreen fling velocities, as the router will
     // validate aganst such.
-    if (gesture.type == WebInputEvent::GestureFlingStart &&
+    if (gesture.type() == WebInputEvent::GestureFlingStart &&
         gesture.sourceDevice == blink::WebGestureDeviceTouchscreen &&
         !gesture.data.flingStart.velocityX &&
         !gesture.data.flingStart.velocityY) {
@@ -670,7 +670,7 @@ TEST_F(InputRouterImplTest, HandleKeyEventsWeSent) {
   SimulateKeyboardEvent(WebInputEvent::RawKeyDown);
   ASSERT_TRUE(input_router_->GetLastKeyboardEvent());
   EXPECT_EQ(WebInputEvent::RawKeyDown,
-            input_router_->GetLastKeyboardEvent()->type);
+            input_router_->GetLastKeyboardEvent()->type());
 
   // Make sure we sent the input event to the renderer.
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
@@ -682,7 +682,7 @@ TEST_F(InputRouterImplTest, HandleKeyEventsWeSent) {
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
   EXPECT_EQ(WebInputEvent::RawKeyDown,
-            ack_handler_->acked_keyboard_event().type);
+            ack_handler_->acked_keyboard_event().type());
 }
 
 TEST_F(InputRouterImplTest, IgnoreKeyEventsWeDidntSend) {
@@ -709,7 +709,7 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
                   InputMsg_HandleInputEvent::ID));
   const WebInputEvent* input_event =
       GetInputEventFromMessage(*process_->sink().GetMessageAt(0));
-  ASSERT_EQ(WebInputEvent::MouseWheel, input_event->type);
+  ASSERT_EQ(WebInputEvent::MouseWheel, input_event->type());
   const WebMouseWheelEvent* wheel_event =
       static_cast<const WebMouseWheelEvent*>(input_event);
   EXPECT_EQ(0, wheel_event->deltaX);
@@ -727,7 +727,7 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
           InputMsg_HandleInputEvent::ID));
   input_event = GetInputEventFromMessage(*process_->sink().GetMessageAt(0));
-  ASSERT_EQ(WebInputEvent::MouseWheel, input_event->type);
+  ASSERT_EQ(WebInputEvent::MouseWheel, input_event->type());
   wheel_event = static_cast<const WebMouseWheelEvent*>(input_event);
   EXPECT_EQ(8, wheel_event->deltaX);
   EXPECT_EQ(-10 + -6, wheel_event->deltaY);  // coalesced
@@ -741,7 +741,7 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
                   InputMsg_HandleInputEvent::ID));
   input_event = GetInputEventFromMessage(*process_->sink().GetMessageAt(0));
-  ASSERT_EQ(WebInputEvent::MouseWheel, input_event->type);
+  ASSERT_EQ(WebInputEvent::MouseWheel, input_event->type());
   wheel_event = static_cast<const WebMouseWheelEvent*>(input_event);
   EXPECT_EQ(9, wheel_event->deltaX);
   EXPECT_EQ(-7, wheel_event->deltaY);
@@ -755,7 +755,7 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
   EXPECT_TRUE(
       process_->sink().GetUniqueMessageMatching(InputMsg_HandleInputEvent::ID));
   input_event = GetInputEventFromMessage(*process_->sink().GetMessageAt(0));
-  ASSERT_EQ(WebInputEvent::MouseWheel, input_event->type);
+  ASSERT_EQ(WebInputEvent::MouseWheel, input_event->type());
   wheel_event = static_cast<const WebMouseWheelEvent*>(input_event);
   EXPECT_EQ(0, wheel_event->deltaX);
   EXPECT_EQ(-10, wheel_event->deltaY);
@@ -768,7 +768,7 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
   EXPECT_TRUE(
       process_->sink().GetUniqueMessageMatching(InputMsg_HandleInputEvent::ID));
   input_event = GetInputEventFromMessage(*process_->sink().GetMessageAt(0));
-  ASSERT_EQ(WebInputEvent::MouseWheel, input_event->type);
+  ASSERT_EQ(WebInputEvent::MouseWheel, input_event->type());
   wheel_event = static_cast<const WebMouseWheelEvent*>(input_event);
   EXPECT_EQ(0, wheel_event->deltaX);
   EXPECT_EQ(0, wheel_event->deltaY);
@@ -805,7 +805,7 @@ TEST_F(InputRouterImplTest, TouchEventQueue) {
   EXPECT_FALSE(TouchEventQueueEmpty());
   EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
   EXPECT_EQ(WebInputEvent::TouchStart,
-            ack_handler_->acked_touch_event().event.type);
+            ack_handler_->acked_touch_event().event.type());
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
   SendTouchEventACK(WebInputEvent::TouchMove, INPUT_EVENT_ACK_STATE_CONSUMED,
@@ -813,7 +813,7 @@ TEST_F(InputRouterImplTest, TouchEventQueue) {
   EXPECT_TRUE(TouchEventQueueEmpty());
   EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
   EXPECT_EQ(WebInputEvent::TouchMove,
-            ack_handler_->acked_touch_event().event.type);
+            ack_handler_->acked_touch_event().event.type());
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
 }
 
@@ -919,7 +919,7 @@ TEST_F(InputRouterImplTest, AckedTouchEventState) {
   for (size_t i = 0; i < arraysize(acks); ++i) {
     SendTouchEventACK(acks[i], INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
                       touch_event_ids[i]);
-    EXPECT_EQ(acks[i], ack_handler_->acked_touch_event().event.type);
+    EXPECT_EQ(acks[i], ack_handler_->acked_touch_event().event.type());
     ScopedVector<ui::TouchEvent> acked;
 
     MakeUITouchEventsFromWebTouchEvents(
@@ -1698,7 +1698,7 @@ TEST_F(InputRouterImplTest, TouchpadPinchUpdate) {
   // Verify we actually sent a special wheel event to the renderer.
   const WebInputEvent* input_event =
       GetInputEventFromMessage(*process_->sink().GetMessageAt(0));
-  ASSERT_EQ(WebInputEvent::GesturePinchUpdate, input_event->type);
+  ASSERT_EQ(WebInputEvent::GesturePinchUpdate, input_event->type());
   const WebGestureEvent* gesture_event =
       static_cast<const WebGestureEvent*>(input_event);
   EXPECT_EQ(20, gesture_event->x);
@@ -1722,7 +1722,7 @@ TEST_F(InputRouterImplTest, TouchpadPinchUpdate) {
   SimulateGesturePinchUpdateEvent(
       0.3f, 20, 25, 0, blink::WebGestureDeviceTouchpad);
   input_event = GetInputEventFromMessage(*process_->sink().GetMessageAt(0));
-  ASSERT_EQ(WebInputEvent::GesturePinchUpdate, input_event->type);
+  ASSERT_EQ(WebInputEvent::GesturePinchUpdate, input_event->type());
   gesture_event = static_cast<const WebGestureEvent*>(input_event);
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 

@@ -134,14 +134,14 @@ bool ExclusiveAccessManager::HandleUserKeyPress(
   }
 
   if (IsExperimentalKeyboardLockUIEnabled()) {
-    if (event.type == content::NativeWebKeyboardEvent::KeyUp &&
+    if (event.type() == content::NativeWebKeyboardEvent::KeyUp &&
         hold_timer_.IsRunning()) {
       // Seeing a key up event on Esc with the hold timer running cancels the
       // timer and doesn't exit. This means the user pressed Esc, but not long
       // enough to trigger an exit
       hold_timer_.Stop();
-    } else if (event.type == content::NativeWebKeyboardEvent::RawKeyDown &&
-              !hold_timer_.IsRunning()) {
+    } else if (event.type() == content::NativeWebKeyboardEvent::RawKeyDown &&
+               !hold_timer_.IsRunning()) {
       // Seeing a key down event on Esc when the hold timer is stopped starts
       // the timer. When the timer reaches 0, the callback will trigger an exit
       // from fullscreen/mouselock.

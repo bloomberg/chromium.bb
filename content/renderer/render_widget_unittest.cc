@@ -103,7 +103,7 @@ class InteractiveRenderWidget : public RenderWidget {
 
   bool WillHandleGestureEvent(const blink::WebGestureEvent& event) override {
     if (always_overscroll_ &&
-        event.type == blink::WebInputEvent::GestureScrollUpdate) {
+        event.type() == blink::WebInputEvent::GestureScrollUpdate) {
       didOverscroll(blink::WebFloatSize(event.data.scrollUpdate.deltaX,
                                         event.data.scrollUpdate.deltaY),
                     blink::WebFloatSize(event.data.scrollUpdate.deltaX,
@@ -264,7 +264,7 @@ TEST_F(RenderWidgetUnittest, EventOverscroll) {
   InputHostMsg_HandleInputEvent_ACK::Param params;
   InputHostMsg_HandleInputEvent_ACK::Read(message, &params);
   const InputEventAck& ack = std::get<0>(params);
-  ASSERT_EQ(ack.type, scroll.type);
+  ASSERT_EQ(ack.type, scroll.type());
   ASSERT_TRUE(ack.overscroll);
   EXPECT_EQ(gfx::Vector2dF(0, 10), ack.overscroll->accumulated_overscroll);
   EXPECT_EQ(gfx::Vector2dF(0, 10), ack.overscroll->latest_overscroll_delta);

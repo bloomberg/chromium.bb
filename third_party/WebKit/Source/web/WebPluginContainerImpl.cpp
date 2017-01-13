@@ -708,7 +708,7 @@ void WebPluginContainerImpl::handleMouseEvent(MouseEvent* event) {
 
   WebMouseEventBuilder webEvent(this, LayoutItem(m_element->layoutObject()),
                                 *event);
-  if (webEvent.type == WebInputEvent::Undefined)
+  if (webEvent.type() == WebInputEvent::Undefined)
     return;
 
   if (event->type() == EventTypeNames::mousedown)
@@ -775,15 +775,15 @@ void WebPluginContainerImpl::handleWheelEvent(WheelEvent* event) {
 
 void WebPluginContainerImpl::handleKeyboardEvent(KeyboardEvent* event) {
   WebKeyboardEventBuilder webEvent(*event);
-  if (webEvent.type == WebInputEvent::Undefined)
+  if (webEvent.type() == WebInputEvent::Undefined)
     return;
 
-  if (webEvent.type == WebInputEvent::KeyDown) {
+  if (webEvent.type() == WebInputEvent::KeyDown) {
 #if OS(MACOSX)
-    if ((webEvent.modifiers & WebInputEvent::InputModifiers) ==
+    if ((webEvent.modifiers() & WebInputEvent::InputModifiers) ==
             WebInputEvent::MetaKey
 #else
-    if ((webEvent.modifiers & WebInputEvent::InputModifiers) ==
+    if ((webEvent.modifiers() & WebInputEvent::InputModifiers) ==
             WebInputEvent::ControlKey
 #endif
         && (webEvent.windowsKeyCode == VKEY_C ||
@@ -817,7 +817,7 @@ void WebPluginContainerImpl::handleTouchEvent(TouchEvent* event) {
     case TouchEventRequestTypeRaw: {
       WebTouchEventBuilder webEvent(LayoutItem(m_element->layoutObject()),
                                     *event);
-      if (webEvent.type == WebInputEvent::Undefined)
+      if (webEvent.type() == WebInputEvent::Undefined)
         return;
 
       if (event->type() == EventTypeNames::touchstart)
@@ -837,9 +837,9 @@ void WebPluginContainerImpl::handleTouchEvent(TouchEvent* event) {
 }
 
 void WebPluginContainerImpl::handleGestureEvent(GestureEvent* event) {
-  if (event->nativeEvent().type == WebInputEvent::Undefined)
+  if (event->nativeEvent().type() == WebInputEvent::Undefined)
     return;
-  if (event->nativeEvent().type == WebInputEvent::GestureTapDown)
+  if (event->nativeEvent().type() == WebInputEvent::GestureTapDown)
     focusPlugin();
 
   // Take a copy of the event and translate it into the coordinate
@@ -867,7 +867,7 @@ void WebPluginContainerImpl::handleGestureEvent(GestureEvent* event) {
 void WebPluginContainerImpl::synthesizeMouseEventIfPossible(TouchEvent* event) {
   WebMouseEventBuilder webEvent(this, LayoutItem(m_element->layoutObject()),
                                 *event);
-  if (webEvent.type == WebInputEvent::Undefined)
+  if (webEvent.type() == WebInputEvent::Undefined)
     return;
 
   WebCursorInfo cursorInfo;

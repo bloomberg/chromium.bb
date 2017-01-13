@@ -25,11 +25,11 @@ bool GestureEventStreamValidator::Validate(const blink::WebGestureEvent& event,
                                            std::string* error_msg) {
   DCHECK(error_msg);
   error_msg->clear();
-  if (!WebInputEvent::isGestureEventType(event.type)) {
+  if (!WebInputEvent::isGestureEventType(event.type())) {
     error_msg->append(base::StringPrintf("Invalid gesture type: %s",
-                                         WebInputEvent::GetName(event.type)));
+                                         WebInputEvent::GetName(event.type())));
   }
-  switch (event.type) {
+  switch (event.type()) {
     case WebInputEvent::GestureScrollBegin:
       if (scrolling_)
         error_msg->append("Scroll begin during scroll\n");

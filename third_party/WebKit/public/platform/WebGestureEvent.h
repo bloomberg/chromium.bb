@@ -194,12 +194,12 @@ class WebGestureEvent : public WebInputEvent {
     // TODO(tdresser) Once we've decided if we're getting rid of scroll
     // chaining, we should remove all scroll chaining related logic. See
     // crbug.com/526462 for details.
-    DCHECK(type == WebInputEvent::GestureScrollUpdate);
+    DCHECK(m_type == WebInputEvent::GestureScrollUpdate);
     return true;
   }
 
   bool isScrollEvent() const {
-    switch (type) {
+    switch (m_type) {
       case GestureScrollBegin:
       case GestureScrollEnd:
       case GestureScrollUpdate:

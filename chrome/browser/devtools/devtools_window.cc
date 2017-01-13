@@ -274,7 +274,7 @@ void DevToolsEventForwarder::SetWhitelistedShortcuts(
 bool DevToolsEventForwarder::ForwardEvent(
     const content::NativeWebKeyboardEvent& event) {
   std::string event_type;
-  switch (event.type) {
+  switch (event.type()) {
     case WebInputEvent::KeyDown:
     case WebInputEvent::RawKeyDown:
       event_type = kKeyDownEventName;
@@ -288,10 +288,9 @@ bool DevToolsEventForwarder::ForwardEvent(
 
   int key_code = ui::LocatedToNonLocatedKeyboardCode(
       static_cast<ui::KeyboardCode>(event.windowsKeyCode));
-  int modifiers = event.modifiers & (WebInputEvent::ShiftKey |
-                                     WebInputEvent::ControlKey |
-                                     WebInputEvent::AltKey |
-                                     WebInputEvent::MetaKey);
+  int modifiers =
+      event.modifiers() & (WebInputEvent::ShiftKey | WebInputEvent::ControlKey |
+                           WebInputEvent::AltKey | WebInputEvent::MetaKey);
   int key = CombineKeyCodeAndModifiers(key_code, modifiers);
   if (whitelisted_keys_.find(key) == whitelisted_keys_.end())
     return false;
@@ -1126,9 +1125,9 @@ bool DevToolsWindow::PreHandleGestureEvent(
     WebContents* source,
     const blink::WebGestureEvent& event) {
   // Disable pinch zooming.
-  return event.type == blink::WebGestureEvent::GesturePinchBegin ||
-      event.type == blink::WebGestureEvent::GesturePinchUpdate ||
-      event.type == blink::WebGestureEvent::GesturePinchEnd;
+  return event.type() == blink::WebGestureEvent::GesturePinchBegin ||
+         event.type() == blink::WebGestureEvent::GesturePinchUpdate ||
+         event.type() == blink::WebGestureEvent::GesturePinchEnd;
 }
 
 void DevToolsWindow::ShowCertificateViewerInDevTools(

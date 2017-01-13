@@ -196,15 +196,16 @@ bool TextInputTestHelper::ClickElement(const std::string& id,
   if (!ConvertRectFromString(coordinate, &rect))
     return false;
 
-  blink::WebMouseEvent mouse_event;
-  mouse_event.type = blink::WebInputEvent::MouseDown;
+  blink::WebMouseEvent mouse_event(blink::WebInputEvent::MouseDown,
+                                   blink::WebInputEvent::NoModifiers,
+                                   blink::WebInputEvent::TimeStampForTesting);
   mouse_event.button = blink::WebMouseEvent::Button::Left;
   mouse_event.x = rect.CenterPoint().x();
   mouse_event.y = rect.CenterPoint().y();
   mouse_event.clickCount = 1;
   tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
 
-  mouse_event.type = blink::WebInputEvent::MouseUp;
+  mouse_event.setType(blink::WebInputEvent::MouseUp);
   tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
   return true;
 }

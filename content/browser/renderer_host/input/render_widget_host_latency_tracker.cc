@@ -60,16 +60,16 @@ void UpdateLatencyCoordinatesImpl(const WebMouseWheelEvent& wheel,
 void UpdateLatencyCoordinates(const WebInputEvent& event,
                               float device_scale_factor,
                               LatencyInfo* latency) {
-  if (WebInputEvent::isMouseEventType(event.type)) {
+  if (WebInputEvent::isMouseEventType(event.type())) {
     UpdateLatencyCoordinatesImpl(static_cast<const WebMouseEvent&>(event),
                                  latency, device_scale_factor);
-  } else if (WebInputEvent::isGestureEventType(event.type)) {
+  } else if (WebInputEvent::isGestureEventType(event.type())) {
     UpdateLatencyCoordinatesImpl(static_cast<const WebGestureEvent&>(event),
                                  latency, device_scale_factor);
-  } else if (WebInputEvent::isTouchEventType(event.type)) {
+  } else if (WebInputEvent::isTouchEventType(event.type())) {
     UpdateLatencyCoordinatesImpl(static_cast<const WebTouchEvent&>(event),
                                  latency, device_scale_factor);
-  } else if (event.type == WebInputEvent::MouseWheel) {
+  } else if (event.type() == WebInputEvent::MouseWheel) {
     UpdateLatencyCoordinatesImpl(static_cast<const WebMouseWheelEvent&>(event),
                                  latency, device_scale_factor);
   }
@@ -584,12 +584,13 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
     return;
   }
 
-  if (event.timeStampSeconds &&
-      !latency->FindLatency(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
-                            0, NULL)) {
+  if (event.timeStampSeconds() &&
+      !latency->FindLatency(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0,
+                            NULL)) {
     base::TimeTicks timestamp_now = base::TimeTicks::Now();
-    base::TimeTicks timestamp_original = base::TimeTicks() +
-        base::TimeDelta::FromSecondsD(event.timeStampSeconds);
+    base::TimeTicks timestamp_original =
+        base::TimeTicks() +
+        base::TimeDelta::FromSecondsD(event.timeStampSeconds());
 
     // Timestamp from platform input can wrap, e.g. 32 bits timestamp
     // for Xserver and Window MSG time will wrap about 49.6 days. Do a
@@ -608,13 +609,13 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
 
   latency->AddLatencyNumberWithTraceName(
       ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, latency_component_id_,
-      ++last_event_id_, WebInputEvent::GetName(event.type));
+      ++last_event_id_, WebInputEvent::GetName(event.type()));
 
   UpdateLatencyCoordinates(event, device_scale_factor_, latency);
 
-  if (event.type == blink::WebInputEvent::GestureScrollBegin) {
+  if (event.type() == blink::WebInputEvent::GestureScrollBegin) {
     has_seen_first_gesture_scroll_update_ = false;
-  } else if (event.type == blink::WebInputEvent::GestureScrollUpdate) {
+  } else if (event.type() == blink::WebInputEvent::GestureScrollUpdate) {
     // Make a copy of the INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT with a
     // different name INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT.
     // So we can track the latency specifically for scroll update events.
@@ -644,7 +645,7 @@ void RenderWidgetHostLatencyTracker::OnInputEventAck(
   rendering_scheduled |= latency->FindLatency(
       ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT, 0, nullptr);
 
-  if (WebInputEvent::isGestureEventType(event.type)) {
+  if (WebInputEvent::isGestureEventType(event.type())) {
     if (!rendering_scheduled) {
       latency->AddLatencyNumber(
           ui::INPUT_EVENT_LATENCY_TERMINATED_GESTURE_COMPONENT, 0, 0);
@@ -653,10 +654,10 @@ void RenderWidgetHostLatencyTracker::OnInputEventAck(
     return;
   }
 
-  if (WebInputEvent::isTouchEventType(event.type)) {
+  if (WebInputEvent::isTouchEventType(event.type())) {
     const WebTouchEvent& touch_event =
         *static_cast<const WebTouchEvent*>(&event);
-    if (event.type == WebInputEvent::TouchStart) {
+    if (event.type() == WebInputEvent::TouchStart) {
       DCHECK(touch_event.touchesLength >= 1);
       multi_finger_gesture_ = touch_event.touchesLength != 1;
       touch_start_default_prevented_ =
@@ -669,31 +670,32 @@ void RenderWidgetHostLatencyTracker::OnInputEventAck(
       latency->AddLatencyNumber(
           ui::INPUT_EVENT_LATENCY_TERMINATED_TOUCH_COMPONENT, 0, 0);
     }
-    ComputeInputLatencyHistograms(event.type, latency_component_id_, *latency,
+    ComputeInputLatencyHistograms(event.type(), latency_component_id_, *latency,
                                   ack_result);
     return;
   }
 
-  if (event.type == WebInputEvent::MouseWheel) {
+  if (event.type() == WebInputEvent::MouseWheel) {
     latency->AddLatencyNumber(ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT, 0, 0);
     if (!rendering_scheduled) {
       latency->AddLatencyNumber(
           ui::INPUT_EVENT_LATENCY_TERMINATED_MOUSE_WHEEL_COMPONENT, 0, 0);
     }
-    ComputeInputLatencyHistograms(event.type, latency_component_id_, *latency,
+    ComputeInputLatencyHistograms(event.type(), latency_component_id_, *latency,
                                   ack_result);
     return;
   }
 
-  if (WebInputEvent::isMouseEventType(event.type) && !rendering_scheduled) {
-      latency->AddLatencyNumber(
-          ui::INPUT_EVENT_LATENCY_TERMINATED_MOUSE_COMPONENT, 0, 0);
+  if (WebInputEvent::isMouseEventType(event.type()) && !rendering_scheduled) {
+    latency->AddLatencyNumber(
+        ui::INPUT_EVENT_LATENCY_TERMINATED_MOUSE_COMPONENT, 0, 0);
     return;
   }
 
-  if (WebInputEvent::isKeyboardEventType(event.type) && !rendering_scheduled) {
-      latency->AddLatencyNumber(
-          ui::INPUT_EVENT_LATENCY_TERMINATED_KEYBOARD_COMPONENT, 0, 0);
+  if (WebInputEvent::isKeyboardEventType(event.type()) &&
+      !rendering_scheduled) {
+    latency->AddLatencyNumber(
+        ui::INPUT_EVENT_LATENCY_TERMINATED_KEYBOARD_COMPONENT, 0, 0);
     return;
   }
 }

@@ -83,14 +83,16 @@ WebKeyboardEvent WebKeyboardEventBuilder::Build(
     int unicode_character,
     bool is_system_key) {
   DCHECK(WebInputEvent::isKeyboardEventType(type));
-  WebKeyboardEvent result(type, modifiers, time_sec);
 
   ui::DomCode dom_code = ui::DomCode::NONE;
   if (scancode)
     dom_code = ui::KeycodeConverter::NativeKeycodeToDomCode(scancode);
+
+  WebKeyboardEvent result(
+      type, modifiers | ui::DomCodeToWebInputEventModifiers(dom_code),
+      time_sec);
   result.windowsKeyCode = ui::LocatedToNonLocatedKeyboardCode(
       ui::KeyboardCodeFromAndroidKeyCode(keycode));
-  result.modifiers |= ui::DomCodeToWebInputEventModifiers(dom_code);
   result.nativeKeyCode = keycode;
   result.domCode = static_cast<int>(dom_code);
   result.domKey = GetDomKeyFromEvent(env, android_key_event, keycode, modifiers,

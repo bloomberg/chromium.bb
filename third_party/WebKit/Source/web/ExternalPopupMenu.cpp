@@ -113,10 +113,10 @@ void ExternalPopupMenu::show() {
     return;
 #if OS(MACOSX)
   const WebInputEvent* currentEvent = WebViewImpl::currentInputEvent();
-  if (currentEvent && currentEvent->type == WebInputEvent::MouseDown) {
+  if (currentEvent && currentEvent->type() == WebInputEvent::MouseDown) {
     m_syntheticEvent = WTF::wrapUnique(new WebMouseEvent);
     *m_syntheticEvent = *static_cast<const WebMouseEvent*>(currentEvent);
-    m_syntheticEvent->type = WebInputEvent::MouseUp;
+    m_syntheticEvent->setType(WebInputEvent::MouseUp);
     m_dispatchEventTimer.startOneShot(0, BLINK_FROM_HERE);
     // FIXME: show() is asynchronous. If preparing a popup is slow and a
     // user released the mouse button before showing the popup, mouseup and

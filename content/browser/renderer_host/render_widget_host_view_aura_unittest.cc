@@ -679,8 +679,8 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
       return;
 
     const blink::WebInputEvent* event = std::get<0>(params);
-    SendTouchEventACK(event->type, ack_result,
-        WebInputEventTraits::GetUniqueTouchEventId(*event));
+    SendTouchEventACK(event->type(), ack_result,
+                      WebInputEventTraits::GetUniqueTouchEventId(*event));
   }
 
   const ui::MotionEventAura& pointer_state() {
@@ -2144,7 +2144,7 @@ TEST_F(RenderWidgetHostViewAuraTest, Resize) {
         InputMsg_HandleInputEvent::Param params;
         InputMsg_HandleInputEvent::Read(msg, &params);
         const blink::WebInputEvent* event = std::get<0>(params);
-        EXPECT_EQ(blink::WebInputEvent::MouseMove, event->type);
+        EXPECT_EQ(blink::WebInputEvent::MouseMove, event->type());
         break;
       }
       case ViewMsg_ReclaimCompositorResources::ID:

@@ -109,7 +109,7 @@ blink::WebKeyboardEvent MakeWebKeyboardEventFromUiEvent(const KeyEvent& event) {
                 DomCodeToWebInputEventModifiers(event.code()),
       EventTimeStampToSeconds(event.time_stamp()));
 
-  if (webkit_event.modifiers & blink::WebInputEvent::AltKey)
+  if (webkit_event.modifiers() & blink::WebInputEvent::AltKey)
     webkit_event.isSystemKey = true;
 
   // TODO(dtapuska): crbug.com/570388. Ozone appears to deliver
@@ -321,7 +321,8 @@ blink::WebKeyboardEvent MakeWebKeyboardEvent(const KeyEvent& event) {
     // Key events require no translation.
     blink::WebKeyboardEvent webkit_event(MakeWebKeyboardEventFromNativeEvent(
         event.native_event(), event.time_stamp()));
-    webkit_event.modifiers |= DomCodeToWebInputEventModifiers(event.code());
+    webkit_event.setModifiers(webkit_event.modifiers() |
+                              DomCodeToWebInputEventModifiers(event.code()));
     webkit_event.domCode = static_cast<int>(event.code());
     webkit_event.domKey = static_cast<int>(event.GetDomKey());
     return webkit_event;

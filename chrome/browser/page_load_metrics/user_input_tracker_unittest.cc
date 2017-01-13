@@ -210,7 +210,7 @@ TEST_F(UserInputTrackerTest, RateLimit) {
   // DCHECK in OnInputEvent verifies that we don't exceed the expected capacity.
   for (size_t i = 0; i < kTooManyEntries; ++i) {
     tracker.OnInputEvent(e);
-    e.setTimeStampSeconds(e.timeStampSeconds +
+    e.setTimeStampSeconds(e.timeStampSeconds() +
                           base::TimeDelta::FromMilliseconds(1).InSecondsF());
   }
 

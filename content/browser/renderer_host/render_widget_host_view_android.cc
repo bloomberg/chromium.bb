@@ -1589,14 +1589,14 @@ void RenderWidgetHostViewAndroid::GestureEventAck(
 InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
     const blink::WebInputEvent& input_event) {
   if (selection_controller_ &&
-      blink::WebInputEvent::isGestureEventType(input_event.type)) {
+      blink::WebInputEvent::isGestureEventType(input_event.type())) {
     const blink::WebGestureEvent& gesture_event =
         static_cast<const blink::WebGestureEvent&>(input_event);
-    switch (gesture_event.type) {
+    switch (gesture_event.type()) {
       case blink::WebInputEvent::GestureLongPress:
         if (selection_controller_->WillHandleLongPressEvent(
-                base::TimeTicks() +
-                    base::TimeDelta::FromSecondsD(input_event.timeStampSeconds),
+                base::TimeTicks() + base::TimeDelta::FromSecondsD(
+                                        input_event.timeStampSeconds()),
                 gfx::PointF(gesture_event.x, gesture_event.y))) {
           return INPUT_EVENT_ACK_STATE_CONSUMED;
         }
@@ -1620,7 +1620,7 @@ InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
   }
 
   if (overscroll_controller_ &&
-      blink::WebInputEvent::isGestureEventType(input_event.type) &&
+      blink::WebInputEvent::isGestureEventType(input_event.type()) &&
       overscroll_controller_->WillHandleGestureEvent(
           static_cast<const blink::WebGestureEvent&>(input_event))) {
     return INPUT_EVENT_ACK_STATE_CONSUMED;
@@ -1632,8 +1632,8 @@ InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
   if (!host_)
     return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 
-  if (input_event.type == blink::WebInputEvent::GestureTapDown ||
-      input_event.type == blink::WebInputEvent::TouchStart) {
+  if (input_event.type() == blink::WebInputEvent::GestureTapDown ||
+      input_event.type() == blink::WebInputEvent::TouchStart) {
     GpuDataManagerImpl* gpu_data = GpuDataManagerImpl::GetInstance();
     GpuProcessHostUIShim* shim = GpuProcessHostUIShim::GetOneInstance();
     if (shim && gpu_data &&
@@ -1856,9 +1856,9 @@ void RenderWidgetHostViewAndroid::OnGestureEvent(
   // stop providing shift meta values to synthetic MotionEvents. This prevents
   // unintended shift+click interpretation of all accessibility clicks.
   // See crbug.com/443247.
-  if (web_gesture.type == blink::WebInputEvent::GestureTap &&
-      web_gesture.modifiers == blink::WebInputEvent::ShiftKey) {
-    web_gesture.modifiers = 0;
+  if (web_gesture.type() == blink::WebInputEvent::GestureTap &&
+      web_gesture.modifiers() == blink::WebInputEvent::ShiftKey) {
+    web_gesture.setModifiers(blink::WebInputEvent::NoModifiers);
   }
   SendGestureEvent(web_gesture);
 }

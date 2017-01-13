@@ -56,19 +56,19 @@ class TouchEmulatorTest : public testing::Test,
 
   void ForwardEmulatedGestureEvent(
       const blink::WebGestureEvent& event) override {
-    forwarded_events_.push_back(event.type);
+    forwarded_events_.push_back(event.type());
   }
 
   void ForwardEmulatedTouchEvent(const blink::WebTouchEvent& event) override {
-    forwarded_events_.push_back(event.type);
+    forwarded_events_.push_back(event.type());
     EXPECT_EQ(1U, event.touchesLength);
     EXPECT_EQ(last_mouse_x_, event.touches[0].position.x);
     EXPECT_EQ(last_mouse_y_, event.touches[0].position.y);
     const int all_buttons = WebInputEvent::LeftButtonDown |
         WebInputEvent::MiddleButtonDown | WebInputEvent::RightButtonDown;
-    EXPECT_EQ(0, event.modifiers & all_buttons);
+    EXPECT_EQ(0, event.modifiers() & all_buttons);
     WebInputEvent::DispatchType expected_dispatch_type =
-        event.type == WebInputEvent::TouchCancel
+        event.type() == WebInputEvent::TouchCancel
             ? WebInputEvent::EventNonBlocking
             : WebInputEvent::Blocking;
     EXPECT_EQ(expected_dispatch_type, event.dispatchType);

@@ -58,11 +58,11 @@ class EventWithLatencyInfo {
 
   bool CanCoalesceWith(const EventWithLatencyInfo& other)
       const WARN_UNUSED_RESULT {
-    if (other.event.type != event.type)
+    if (other.event.type() != event.type())
       return false;
 
-    DCHECK_EQ(sizeof(T), event.size);
-    DCHECK_EQ(sizeof(T), other.event.size);
+    DCHECK_EQ(sizeof(T), event.size());
+    DCHECK_EQ(sizeof(T), other.event.size());
 
     return ui::CanCoalesce(other.event, event);
   }
@@ -74,7 +74,7 @@ class EventWithLatencyInfo {
 
     // New events get coalesced into older events, and the newer timestamp
     // should always be preserved.
-    const double time_stamp_seconds = other.event.timeStampSeconds;
+    const double time_stamp_seconds = other.event.timeStampSeconds();
     ui::Coalesce(other.event, &event);
     event.setTimeStampSeconds(time_stamp_seconds);
 

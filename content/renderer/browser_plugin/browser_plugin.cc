@@ -445,17 +445,17 @@ blink::WebInputEventResult BrowserPlugin::handleInputEvent(
   if (guest_crashed_ || !attached())
     return blink::WebInputEventResult::NotHandled;
 
-  DCHECK(!blink::WebInputEvent::isTouchEventType(event.type));
+  DCHECK(!blink::WebInputEvent::isTouchEventType(event.type()));
 
-  if (event.type == blink::WebInputEvent::MouseWheel) {
+  if (event.type() == blink::WebInputEvent::MouseWheel) {
     auto wheel_event = static_cast<const blink::WebMouseWheelEvent&>(event);
     if (wheel_event.resendingPluginId == browser_plugin_instance_id_)
       return blink::WebInputEventResult::NotHandled;
   }
 
-  if (blink::WebInputEvent::isGestureEventType(event.type)) {
+  if (blink::WebInputEvent::isGestureEventType(event.type())) {
     auto gesture_event = static_cast<const blink::WebGestureEvent&>(event);
-    DCHECK(blink::WebInputEvent::GestureTapDown == event.type ||
+    DCHECK(blink::WebInputEvent::GestureTapDown == event.type() ||
            gesture_event.resendingPluginId == browser_plugin_instance_id_);
 
     // We shouldn't be forwarding GestureEvents to the Guest anymore. Indicate
@@ -465,10 +465,10 @@ blink::WebInputEventResult BrowserPlugin::handleInputEvent(
                : blink::WebInputEventResult::HandledApplication;
   }
 
-  if (event.type == blink::WebInputEvent::ContextMenu)
+  if (event.type() == blink::WebInputEvent::ContextMenu)
     return blink::WebInputEventResult::HandledSuppressed;
 
-  if (blink::WebInputEvent::isKeyboardEventType(event.type) &&
+  if (blink::WebInputEvent::isKeyboardEventType(event.type()) &&
       !edit_commands_.empty()) {
     BrowserPluginManager::Get()->Send(
         new BrowserPluginHostMsg_SetEditCommandsForNextKeyEvent(
@@ -484,7 +484,7 @@ blink::WebInputEventResult BrowserPlugin::handleInputEvent(
 
   // Although we forward this event to the guest, we don't report it as consumed
   // since other targets of this event in Blink never get that chance either.
-  if (event.type == blink::WebInputEvent::GestureFlingStart)
+  if (event.type() == blink::WebInputEvent::GestureFlingStart)
     return blink::WebInputEventResult::NotHandled;
 
   return blink::WebInputEventResult::HandledApplication;

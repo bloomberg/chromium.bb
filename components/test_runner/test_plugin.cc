@@ -80,16 +80,16 @@ void PrintTouchList(WebTestDelegate* delegate,
 
 void PrintEventDetails(WebTestDelegate* delegate,
                        const blink::WebInputEvent& event) {
-  if (blink::WebInputEvent::isTouchEventType(event.type)) {
+  if (blink::WebInputEvent::isTouchEventType(event.type())) {
     const blink::WebTouchEvent& touch =
         static_cast<const blink::WebTouchEvent&>(event);
     PrintTouchList(delegate, touch.touches, touch.touchesLength);
-  } else if (blink::WebInputEvent::isMouseEventType(event.type) ||
-             event.type == blink::WebInputEvent::MouseWheel) {
+  } else if (blink::WebInputEvent::isMouseEventType(event.type()) ||
+             event.type() == blink::WebInputEvent::MouseWheel) {
     const blink::WebMouseEvent& mouse =
         static_cast<const blink::WebMouseEvent&>(event);
     delegate->PrintMessage(base::StringPrintf("* %d, %d\n", mouse.x, mouse.y));
-  } else if (blink::WebInputEvent::isGestureEventType(event.type)) {
+  } else if (blink::WebInputEvent::isGestureEventType(event.type())) {
     const blink::WebGestureEvent& gesture =
         static_cast<const blink::WebGestureEvent&>(event);
     delegate->PrintMessage(
@@ -539,7 +539,7 @@ GLuint TestPlugin::LoadProgram(const std::string& vertex_source,
 blink::WebInputEventResult TestPlugin::handleInputEvent(
     const blink::WebInputEvent& event,
     blink::WebCursorInfo& info) {
-  const char* event_name = blink::WebInputEvent::GetName(event.type);
+  const char* event_name = blink::WebInputEvent::GetName(event.type());
   if (!strcmp(event_name, "") || !strcmp(event_name, "Undefined"))
     event_name = "unknown";
   delegate_->PrintMessage(std::string("Plugin received event: ") + event_name +

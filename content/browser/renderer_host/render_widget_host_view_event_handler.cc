@@ -97,8 +97,8 @@ bool IsXButtonUpEvent(const ui::MouseEvent* event) {
 // touchcancel.
 void MarkUnchangedTouchPointsAsStationary(blink::WebTouchEvent* event,
                                           int changed_touch_id) {
-  if (event->type == blink::WebInputEvent::TouchMove ||
-      event->type == blink::WebInputEvent::TouchCancel) {
+  if (event->type() == blink::WebInputEvent::TouchMove ||
+      event->type() == blink::WebInputEvent::TouchCancel) {
     for (size_t i = 0; i < event->touchesLength; ++i) {
       if (event->touches[i].id != changed_touch_id)
         event->touches[i].state = blink::WebTouchPoint::StateStationary;
@@ -516,7 +516,7 @@ void RenderWidgetHostViewEventHandler::OnGestureEvent(ui::GestureEvent* event) {
     }
   }
 
-  if (gesture.type != blink::WebInputEvent::Undefined) {
+  if (gesture.type() != blink::WebInputEvent::Undefined) {
     if (ShouldRouteEvent(event)) {
       host_->delegate()->GetInputEventRouter()->RouteGestureEvent(
           host_view_, &gesture, *event->latency());

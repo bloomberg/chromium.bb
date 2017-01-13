@@ -23,7 +23,7 @@ namespace {
 
 ui::MotionEvent::Action GetActionFrom(const WebTouchEvent& event) {
   DCHECK(event.touchesLength);
-  switch (event.type) {
+  switch (event.type()) {
     case WebInputEvent::TouchStart:
       if (WebTouchEventTraits::AllTouchPointsHaveState(
               event, WebTouchPoint::StatePressed))
@@ -188,7 +188,7 @@ float MotionEventWeb::GetTilt(size_t pointer_index) const {
 
 base::TimeTicks MotionEventWeb::GetEventTime() const {
   return base::TimeTicks() +
-         base::TimeDelta::FromMicroseconds(event_.timeStampSeconds *
+         base::TimeDelta::FromMicroseconds(event_.timeStampSeconds() *
                                            base::Time::kMicrosecondsPerSecond);
 }
 
@@ -219,7 +219,7 @@ int MotionEventWeb::GetButtonState() const {
 }
 
 int MotionEventWeb::GetFlags() const {
-  return ui::WebEventModifiersToEventFlags(event_.modifiers);
+  return ui::WebEventModifiersToEventFlags(event_.modifiers());
 }
 
 }  // namespace content

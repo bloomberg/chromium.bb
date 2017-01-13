@@ -195,8 +195,8 @@ MouseEvent::MouseEvent(
           cancelable,
           abstractView,
           0,
-          static_cast<PlatformEvent::Modifiers>(event.modifiers),
-          TimeTicks::FromSeconds(event.timeStampSeconds),
+          static_cast<PlatformEvent::Modifiers>(event.modifiers()),
+          TimeTicks::FromSeconds(event.timeStampSeconds()),
           syntheticEventType == PlatformMouseEvent::FromTouch
               ? InputDeviceCapabilities::firesTouchEventsSourceCapabilities()
               : InputDeviceCapabilities::
@@ -207,7 +207,7 @@ MouseEvent::MouseEvent(
                          ? PositionType::Positionless
                          : PositionType::Position),
       m_button(0),
-      m_buttons(platformModifiersToButtons(event.modifiers)),
+      m_buttons(platformModifiersToButtons(event.modifiers())),
       m_syntheticEventType(syntheticEventType),
       m_region(region) {
   IntPoint rootFrameCoordinates = flooredIntPoint(event.positionInRootFrame());

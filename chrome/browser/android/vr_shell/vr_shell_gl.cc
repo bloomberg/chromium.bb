@@ -121,16 +121,14 @@ std::unique_ptr<blink::WebMouseEvent> MakeMouseEvent(WebInputEvent::Type type,
                                                      double timestamp,
                                                      float x,
                                                      float y) {
-  std::unique_ptr<blink::WebMouseEvent> mouse_event(new blink::WebMouseEvent);
-  mouse_event->type = type;
+  std::unique_ptr<blink::WebMouseEvent> mouse_event(new blink::WebMouseEvent(
+      type, blink::WebInputEvent::NoModifiers, timestamp));
   mouse_event->pointerType = blink::WebPointerProperties::PointerType::Mouse;
   mouse_event->x = x;
   mouse_event->y = y;
   mouse_event->windowX = x;
   mouse_event->windowY = y;
-  mouse_event->timeStampSeconds = timestamp;
   mouse_event->clickCount = 1;
-  mouse_event->modifiers = 0;
 
   return mouse_event;
 }
@@ -417,11 +415,10 @@ void VrShellGl::UpdateController(const gvr::Vec3f& forward_vector) {
     if (touch_pending_ || controller_->ButtonUpHappened(
             gvr::ControllerButton::GVR_CONTROLLER_BUTTON_CLICK)) {
       touch_pending_ = false;
-      std::unique_ptr<WebGestureEvent> gesture(new WebGestureEvent());
+      std::unique_ptr<WebGestureEvent> gesture(new WebGestureEvent(
+          WebInputEvent::GestureTapDown, WebInputEvent::NoModifiers,
+          (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF()));
       gesture->sourceDevice = blink::WebGestureDeviceTouchpad;
-      gesture->timeStampSeconds =
-          (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
-      gesture->type = WebInputEvent::GestureTapDown;
       gesture->x = 0;
       gesture->y = 0;
       SendGesture(InputTarget::CONTENT, std::move(gesture));
@@ -528,21 +525,20 @@ void VrShellGl::SendEventsToTarget(InputTarget input_target,
                                    int pixel_y) {
   std::vector<std::unique_ptr<WebGestureEvent>> gesture_list =
       controller_->DetectGestures();
-  double timestamp = gesture_list.front()->timeStampSeconds;
+  double timestamp = gesture_list.front()->timeStampSeconds();
 
   if (touch_pending_) {
     touch_pending_ = false;
-    std::unique_ptr<WebGestureEvent> event(new WebGestureEvent());
-    event->type = WebInputEvent::GestureTapDown;
+    std::unique_ptr<WebGestureEvent> event(new WebGestureEvent(
+        WebInputEvent::GestureTapDown, WebInputEvent::NoModifiers, timestamp));
     event->sourceDevice = blink::WebGestureDeviceTouchpad;
-    event->timeStampSeconds = timestamp;
     event->x = pixel_x;
     event->y = pixel_y;
     gesture_list.push_back(std::move(event));
   }
 
   for (const auto& gesture : gesture_list) {
-    switch (gesture->type) {
+    switch (gesture->type()) {
       case WebInputEvent::GestureScrollBegin:
       case WebInputEvent::GestureScrollUpdate:
       case WebInputEvent::GestureScrollEnd:

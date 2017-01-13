@@ -117,8 +117,8 @@ WebInputEventResult PageWidgetDelegate::handleInputEvent(
     const WebCoalescedInputEvent& coalescedEvent,
     LocalFrame* root) {
   const WebInputEvent& event = coalescedEvent.event();
-  if (event.modifiers & WebInputEvent::IsTouchAccessibility &&
-      WebInputEvent::isMouseEventType(event.type)) {
+  if (event.modifiers() & WebInputEvent::IsTouchAccessibility &&
+      WebInputEvent::isMouseEventType(event.type())) {
     PlatformMouseEventBuilder pme(root->view(),
                                   static_cast<const WebMouseEvent&>(event));
 
@@ -137,7 +137,7 @@ WebInputEventResult PageWidgetDelegate::handleInputEvent(
     }
   }
 
-  switch (event.type) {
+  switch (event.type()) {
     // FIXME: WebKit seems to always return false on mouse events processing
     // methods. For now we'll assume it has processed them (as we are only
     // interested in whether keyboard events are processed).

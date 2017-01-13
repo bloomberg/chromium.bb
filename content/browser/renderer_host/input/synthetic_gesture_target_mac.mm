@@ -77,7 +77,7 @@ SyntheticGestureTargetMac::SyntheticGestureTargetMac(
 
 void SyntheticGestureTargetMac::DispatchInputEventToPlatform(
     const WebInputEvent& event) {
-  if (WebInputEvent::isGestureEventType(event.type)) {
+  if (WebInputEvent::isGestureEventType(event.type())) {
     // Create an autorelease pool so that we clean up any synthetic events we
     // generate.
     base::mac::ScopedNSAutoreleasePool pool;
@@ -85,7 +85,7 @@ void SyntheticGestureTargetMac::DispatchInputEventToPlatform(
     const WebGestureEvent* gesture_event =
         static_cast<const WebGestureEvent*>(&event);
 
-    switch (event.type) {
+    switch (event.type()) {
       case WebInputEvent::GesturePinchBegin: {
         id event = [SyntheticPinchEvent
             eventWithMagnification:0.0f
