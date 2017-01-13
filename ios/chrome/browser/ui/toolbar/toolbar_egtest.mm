@@ -125,10 +125,10 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
       performAction:grey_typeText(@"foo")];
 
-  id<GREYMatcher> CancelButton =
-      grey_allOf(chrome_test_util::buttonWithAccessibilityLabelId(IDS_CANCEL),
+  id<GREYMatcher> cancelButton =
+      grey_allOf(chrome_test_util::cancelButton(),
                  grey_not(grey_accessibilityID(@"Typing Shield")), nil);
-  [[EarlGrey selectElementWithMatcher:CancelButton] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:cancelButton] performAction:grey_tap()];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
       assertWithMatcher:chrome_test_util::omniboxText(URL.GetContent())];

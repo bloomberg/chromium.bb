@@ -164,6 +164,10 @@ id<GREYMatcher> staticHtmlViewContainingText(NSString* text) {
       nil);
 }
 
+id<GREYMatcher> cancelButton() {
+  return buttonWithAccessibilityLabelId(IDS_CANCEL);
+}
+
 id<GREYMatcher> forwardButton() {
   return buttonWithAccessibilityLabelId(IDS_ACCNAME_FORWARD);
 }

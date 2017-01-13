@@ -239,9 +239,8 @@ void TapOK() {
 }
 
 void TapCancel() {
-  id<GREYMatcher> cancel_button =
-      chrome_test_util::buttonWithAccessibilityLabelId(IDS_CANCEL);
-  [[EarlGrey selectElementWithMatcher:cancel_button] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::cancelButton()]
+      performAction:grey_tap()];
 }
 
 void TapSuppressDialogsButton() {
@@ -282,10 +281,9 @@ void TapSuppressDialogsButton() {
   NSError* errorCancel = nil;
 
   // Dismiss JavaScript alert by tapping Cancel.
-  id<GREYMatcher> CancelButton =
-      chrome_test_util::buttonWithAccessibilityLabelId(IDS_CANCEL);
-  [[EarlGrey selectElementWithMatcher:CancelButton] performAction:grey_tap()
-                                                            error:&errorCancel];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::cancelButton()]
+      performAction:grey_tap()
+              error:&errorCancel];
   // Dismiss JavaScript alert by tapping OK.
   id<GREYMatcher> OKButton =
       chrome_test_util::buttonWithAccessibilityLabelId(IDS_OK);

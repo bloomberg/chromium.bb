@@ -39,6 +39,9 @@ id<GREYMatcher> webViewNotContainingText(std::string text);
 // Returns matcher for a StaticHtmlViewController containing |text|.
 id<GREYMatcher> staticHtmlViewContainingText(NSString* text);
 
+// Returns matcher for a cancel button.
+id<GREYMatcher> cancelButton();
+
 // Matcher for the navigate forward button.
 id<GREYMatcher> forwardButton();
 

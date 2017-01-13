@@ -259,9 +259,8 @@ const char kExpectedPostData[] = "POST Data=Unicorn";
         performAction:grey_tapAtPoint(CGPointMake(50.0f, 50.0f))];
   } else {
     // On handset, dismiss via the cancel button.
-    id<GREYMatcher> cancel =
-        chrome_test_util::buttonWithAccessibilityLabelId(IDS_CANCEL);
-    [[EarlGrey selectElementWithMatcher:cancel] performAction:grey_tap()];
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::cancelButton()]
+        performAction:grey_tap()];
   }
   // Check that the POST is changed to a GET
   [self waitForExpectedResponse:"GET"];
