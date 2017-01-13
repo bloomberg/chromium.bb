@@ -99,7 +99,6 @@ public class CompositorViewHolder extends FrameLayout
     private ChromeFullscreenManager mFullscreenManager;
     private View mAccessibilityView;
     private CompositorAccessibilityProvider mNodeProvider;
-    private boolean mFullscreenTouchEvent;
     private float mLastContentOffset;
     private float mLastVisibleContentOffset;
 
@@ -352,14 +351,6 @@ public class CompositorViewHolder extends FrameLayout
 
         if (mLayoutManager == null) return false;
 
-        mFullscreenTouchEvent = false;
-        if (mFullscreenManager != null && mFullscreenManager.onInterceptMotionEvent(e)
-                && !mEnableCompositorTabStrip) {
-            // Don't eat the event if the new tab strip is enabled.
-            mFullscreenTouchEvent = true;
-            return true;
-        }
-
         setContentViewMotionEventOffsets(e, false);
         return mLayoutManager.onInterceptTouchEvent(e, mIsKeyboardShowing);
     }
@@ -369,7 +360,6 @@ public class CompositorViewHolder extends FrameLayout
         super.onTouchEvent(e);
 
         if (mFullscreenManager != null) mFullscreenManager.onMotionEvent(e);
-        if (mFullscreenTouchEvent) return true;
         boolean consumed = mLayoutManager != null && mLayoutManager.onTouchEvent(e);
         setContentViewMotionEventOffsets(e, true);
         return consumed;

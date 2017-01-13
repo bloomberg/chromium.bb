@@ -27,7 +27,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
-import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentViewCore;
@@ -593,33 +592,6 @@ public class ChromeFullscreenManager
         updateControlOffset();
 
         updateVisuals();
-    }
-
-    /**
-     * @param e The dispatched motion event
-     * @return Whether or not this motion event is in the top control container area and should be
-     *         consumed.
-     */
-    public boolean onInterceptMotionEvent(MotionEvent e) {
-        int bottomPosition;
-        int topPosition = 0;
-        float offset;
-
-        if (mIsBottomControls) {
-            int[] position = new int[2];
-            ViewUtils.getRelativeLayoutPosition(mControlContainer.getView().getRootView(),
-                    mControlContainer.getView(), position);
-
-            topPosition = position[1];
-            bottomPosition = topPosition + getBottomControlsHeight();
-            offset = getBottomControlOffset();
-        } else {
-            bottomPosition = getTopControlsHeight();
-            offset = getTopControlOffset();
-        }
-
-        return e.getY() < topPosition + offset && e.getY() > bottomPosition + offset
-                && !mBrowserControlsAndroidViewHidden;
     }
 
     /**

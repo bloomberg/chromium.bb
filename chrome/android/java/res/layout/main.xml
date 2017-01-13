@@ -3,8 +3,7 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<merge xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto" >
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -35,6 +34,26 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="start|bottom" />
 
+            <!-- Toolbar size area painted black to avoid the action bar showing the window background -->
+            <View
+                android:id="@+id/action_bar_black_background"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/toolbar_height_no_shadow"
+                android:background="@android:color/black"
+                android:visibility="gone" />
+
+            <ViewStub
+                android:id="@+id/control_container_stub"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <ViewStub
+                android:id="@+id/empty_container_stub"
+                android:inflatedId="@+id/empty_container"
+                android:layout="@layout/empty_background_view_tablet"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
         </android.support.design.widget.CoordinatorLayout>
 
         <HorizontalScrollView
@@ -54,23 +73,6 @@
             android:layout_height="wrap_content" />
     </LinearLayout>
 
-    <!-- Toolbar size area painted black to avoid the action bar showing the window background -->
-    <View
-        android:id="@+id/action_bar_black_background"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/toolbar_height_no_shadow"
-        android:background="#000000"
-        android:visibility="gone" />
-    <ViewStub
-        android:id="@+id/control_container_stub"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-    <ViewStub
-        android:id="@+id/empty_container_stub"
-        android:inflatedId="@+id/empty_container"
-        android:layout="@layout/empty_background_view_tablet"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
     <!-- This empty view is used as the anchor for custom menu -->
     <View
         android:id="@+id/menu_anchor_stub"

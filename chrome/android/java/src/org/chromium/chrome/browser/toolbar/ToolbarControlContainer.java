@@ -259,7 +259,7 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
-        if (mSwipeHandler == null) return false;
+        if (mSwipeHandler == null || isOnTabStrip(event)) return false;
 
         return mSwipeRecognizer.onTouchEvent(event);
     }
