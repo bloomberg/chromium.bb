@@ -10,10 +10,13 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
+import android.provider.Browser;
 import android.text.TextUtils;
 import android.widget.ImageView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeTabbedActivity2;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchUma;
 import org.chromium.chrome.browser.contextualsearch.QuickActionCategory;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -110,6 +113,17 @@ public class ContextualSearchQuickActionControl extends ViewResourceInflater {
     public void sendIntent() {
         if (mIntent == null) return;
         mIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        // Set the Browser application ID to us in case the user chooses Chrome
+        // as the app from the intent picker.
+        Context context = getContext();
+        mIntent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
+        mIntent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
+        if (context instanceof ChromeTabbedActivity2) {
+            // Set the window ID so the new tab opens in the correct window.
+            mIntent.putExtra(IntentHandler.EXTRA_WINDOW_ID, 2);
+        }
+
         IntentUtils.safeStartActivity(mContext, mIntent);
     }
 
