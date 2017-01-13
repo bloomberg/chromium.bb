@@ -20,10 +20,22 @@
 namespace {
 
 static void DeleteHDCCallback(void*, void* context) {
+  DCHECK_NE(context, nullptr);
   HDC hdc = static_cast<HDC>(context);
-  HBITMAP hbitmap = static_cast<HBITMAP>(SelectObject(hdc, nullptr));
-  DeleteObject(hbitmap);
-  DeleteDC(hdc);
+
+  // We must get this before we call RestoreDC, as that will drop hbitmap and
+  // reselect the original/default bitmap.
+  HGDIOBJ hbitmap = GetCurrentObject(hdc, OBJ_BITMAP);
+  DCHECK_NE(hbitmap, nullptr);
+
+  bool success = RestoreDC(hdc, -1); // effectly performs the deselect of hbitmap
+  DCHECK(success);
+
+  // Now we are the only owner, so we can delete our bitmap
+  success = DeleteObject(hbitmap);
+  DCHECK(success);
+  success = DeleteDC(hdc);
+  DCHECK(success);
 }
 
 // Allocate the layer and fill in the fields for the Rec, or return false
@@ -52,6 +64,13 @@ static bool Create(int width,
     return false;
   }
   SetGraphicsMode(hdc, GM_ADVANCED);
+
+  int saveIndex = SaveDC(hdc);  // so we can Restore in the delete callback
+  DCHECK_NE(saveIndex, 0);
+
+  // Be sure to select *after* we called SaveDC.
+  // Because we're using save/restore, we don't need to explicitly track the
+  // returned "previous" value.
   SelectObject(hdc, hbitmap);
 
   rec->fReleaseProc = DeleteHDCCallback;
