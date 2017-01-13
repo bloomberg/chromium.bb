@@ -133,6 +133,28 @@ struct TraceMethodDelegate {
 #define DEFINE_INLINE_TRACE() DEFINE_INLINE_TRACE_IMPL(EMPTY_MACRO_ARGUMENT)
 #define DEFINE_INLINE_VIRTUAL_TRACE() DEFINE_INLINE_TRACE_IMPL(virtual)
 
+enum class VisitorMarkingMode {
+  // This is a default visitor. This is used for GCType=GCWithSweep
+  // and GCType=GCWithoutSweep.
+  GlobalMarking,
+  // This visitor does not trace objects outside the heap of the
+  // GCing thread. This is used for GCType=ThreadTerminationGC.
+  ThreadLocalMarking,
+  // This visitor just marks objects and ignores weak processing.
+  // This is used for GCType=TakeSnapshot.
+  SnapshotMarking,
+  // This visitor is used to trace objects during weak processing.
+  // This visitor is allowed to trace only already marked objects.
+  WeakProcessing,
+  // Perform global marking along with preparing for additional sweep
+  // compaction of heap arenas afterwards. Compared to the GlobalMarking
+  // visitor, this visitor will also register references to objects
+  // that might be moved during arena compaction -- the compaction
+  // pass will then fix up those references when the object move goes
+  // ahead.
+  GlobalMarkingWithCompaction,
+};
+
 // VisitorHelper contains common implementation of Visitor helper methods.
 //
 // VisitorHelper avoids virtual methods by using CRTP.
@@ -140,7 +162,8 @@ struct TraceMethodDelegate {
 template <typename Derived>
 class VisitorHelper {
  public:
-  VisitorHelper(ThreadState* state) : m_state(state) {}
+  VisitorHelper(ThreadState* state, VisitorMarkingMode markingMode)
+      : m_state(state), m_markingMode(markingMode) {}
 
   // One-argument templated mark method. This uses the static type of
   // the argument to get the TraceTrait. By default, the mark method
@@ -275,11 +298,19 @@ class VisitorHelper {
   inline ThreadState* state() const { return m_state; }
   inline ThreadHeap& heap() const { return state()->heap(); }
 
+  inline VisitorMarkingMode getMarkingMode() const { return m_markingMode; }
+
+  inline bool isGlobalMarking() const {
+    return m_markingMode == VisitorMarkingMode::GlobalMarking ||
+           m_markingMode == VisitorMarkingMode::GlobalMarkingWithCompaction;
+  }
+
  private:
   template <typename T>
   static void handleWeakCell(Visitor* self, void* object);
 
   ThreadState* const m_state;
+  const VisitorMarkingMode m_markingMode;
 };
 
 // Visitor is used to traverse the Blink object graph. Used for the
@@ -296,29 +327,7 @@ class PLATFORM_EXPORT Visitor : public VisitorHelper<Visitor> {
   friend class VisitorHelper<Visitor>;
   friend class InlinedGlobalMarkingVisitor;
 
-  enum MarkingMode {
-    // This is a default visitor. This is used for GCType=GCWithSweep
-    // and GCType=GCWithoutSweep.
-    GlobalMarking,
-    // This visitor does not trace objects outside the heap of the
-    // GCing thread. This is used for GCType=ThreadTerminationGC.
-    ThreadLocalMarking,
-    // This visitor just marks objects and ignores weak processing.
-    // This is used for GCType=TakeSnapshot.
-    SnapshotMarking,
-    // This visitor is used to trace objects during weak processing.
-    // This visitor is allowed to trace only already marked objects.
-    WeakProcessing,
-    // Perform global marking along with preparing for additional sweep
-    // compaction of heap arenas afterwards. Compared to the GlobalMarking
-    // visitor, this visitor will also register references to objects
-    // that might be moved during arena compaction -- the compaction
-    // pass will then fix up those references when the object move goes
-    // ahead.
-    GlobalMarkingWithCompaction,
-  };
-
-  static std::unique_ptr<Visitor> create(ThreadState*, MarkingMode);
+  static std::unique_ptr<Visitor> create(ThreadState*, VisitorMarkingMode);
 
   virtual ~Visitor();
 
@@ -384,22 +393,13 @@ class PLATFORM_EXPORT Visitor : public VisitorHelper<Visitor> {
 
   virtual void registerWeakCellWithCallback(void**, WeakCallback) = 0;
 
-  inline MarkingMode getMarkingMode() const { return m_markingMode; }
-
-  inline bool isGlobalMarking() const {
-    return m_markingMode == GlobalMarking ||
-           m_markingMode == GlobalMarkingWithCompaction;
-  }
-
  protected:
-  Visitor(ThreadState*, MarkingMode);
+  Visitor(ThreadState*, VisitorMarkingMode);
 
  private:
   static Visitor* fromHelper(VisitorHelper<Visitor>* helper) {
     return static_cast<Visitor*>(helper);
   }
-
-  const MarkingMode m_markingMode;
 };
 
 }  // namespace blink

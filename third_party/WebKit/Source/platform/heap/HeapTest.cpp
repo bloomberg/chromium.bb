@@ -318,7 +318,7 @@ class TestGCScope {
 class CountingVisitor : public Visitor {
  public:
   explicit CountingVisitor(ThreadState* state)
-      : Visitor(state, Visitor::ThreadLocalMarking),
+      : Visitor(state, VisitorMarkingMode::ThreadLocalMarking),
         m_scope(&state->heap().stackFrameDepth()),
         m_count(0) {}
 

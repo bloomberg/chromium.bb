@@ -14,7 +14,7 @@ class MarkingVisitor final : public Visitor,
  public:
   using Impl = MarkingVisitorImpl<MarkingVisitor>;
 
-  MarkingVisitor(ThreadState* state, Visitor::MarkingMode mode)
+  MarkingVisitor(ThreadState* state, VisitorMarkingMode mode)
       : Visitor(state, mode) {}
 
   void markHeader(HeapObjectHeader* header, TraceCallback callback) override {
