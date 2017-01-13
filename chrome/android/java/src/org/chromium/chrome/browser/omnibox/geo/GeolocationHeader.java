@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.omnibox.geo;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
@@ -13,6 +12,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Process;
 import android.os.SystemClock;
+import android.provider.Settings;
 import android.support.annotation.IntDef;
 import android.util.Base64;
 
@@ -31,7 +31,6 @@ import org.chromium.chrome.browser.util.UrlUtilities;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
@@ -403,21 +402,40 @@ public class GeolocationHeader {
     /** Returns the location source. */
     @LocationSource
     private static int getLocationSource() {
-        LocationManager locationManager = (LocationManager) ContextUtils.getApplicationContext()
-                .getSystemService(Context.LOCATION_SERVICE);
-        List<String> providers = locationManager.getProviders(true);
-        boolean hasNetworkProvider = false;
-        boolean hasGpsProvider = false;
-        for (String provider : providers) {
-            if (LocationManager.NETWORK_PROVIDER.equals(provider)) {
-                hasNetworkProvider = true;
-            } else if (LocationManager.GPS_PROVIDER.equals(provider)) {
-                hasGpsProvider = true;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            int locationMode;
+            try {
+                locationMode = Settings.Secure.getInt(
+                        ContextUtils.getApplicationContext().getContentResolver(),
+                        Settings.Secure.LOCATION_MODE);
+            } catch (Settings.SettingNotFoundException e) {
+                Log.e(TAG, "Error getting the LOCATION_MODE");
+                return LOCATION_SOURCE_MASTER_OFF;
+            }
+            if (locationMode == Settings.Secure.LOCATION_MODE_HIGH_ACCURACY) {
+                return LOCATION_SOURCE_HIGH_ACCURACY;
+            } else if (locationMode == Settings.Secure.LOCATION_MODE_SENSORS_ONLY) {
+                return LOCATION_SOURCE_GPS_ONLY;
+            } else if (locationMode == Settings.Secure.LOCATION_MODE_BATTERY_SAVING) {
+                return LOCATION_SOURCE_BATTERY_SAVING;
+            } else {
+                return LOCATION_SOURCE_MASTER_OFF;
+            }
+        } else {
+            String locationProviders = Settings.Secure.getString(
+                    ContextUtils.getApplicationContext().getContentResolver(),
+                    Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+            if (locationProviders.contains(LocationManager.GPS_PROVIDER)
+                    && locationProviders.contains(LocationManager.NETWORK_PROVIDER)) {
+                return LOCATION_SOURCE_HIGH_ACCURACY;
+            } else if (locationProviders.contains(LocationManager.GPS_PROVIDER)) {
+                return LOCATION_SOURCE_GPS_ONLY;
+            } else if (locationProviders.contains(LocationManager.NETWORK_PROVIDER)) {
+                return LOCATION_SOURCE_BATTERY_SAVING;
+            } else {
+                return LOCATION_SOURCE_MASTER_OFF;
             }
         }
-        return hasNetworkProvider
-                ? (hasGpsProvider ? LOCATION_SOURCE_HIGH_ACCURACY : LOCATION_SOURCE_BATTERY_SAVING)
-                : (hasGpsProvider ? LOCATION_SOURCE_GPS_ONLY : LOCATION_SOURCE_MASTER_OFF);
     }
 
     /**
