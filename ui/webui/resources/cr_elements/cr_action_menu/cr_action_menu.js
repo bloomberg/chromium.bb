@@ -130,6 +130,11 @@ Polymer({
     }.bind(this);
     window.addEventListener('resize', this.onWindowResize_);
 
+    // Reset position to prevent previous values from affecting layout.
+    this.style.left = '';
+    this.style.right = '';
+    this.style.top = '';
+
     this.showModal();
 
     var rect = this.anchorElement_.getBoundingClientRect();
