@@ -273,6 +273,17 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
     return;
   }
 
+  bool should_block = ShouldBlockPasswordForSameOriginButDifferentScheme(form);
+  metrics_util::LogShouldBlockPasswordForSameOriginButDifferentScheme(
+      should_block);
+  if (should_block) {
+    if (logger)
+      logger->LogSuccessiveOrigins(
+          Logger::STRING_BLOCK_PASSWORD_SAME_ORIGIN_INSECURE_SCHEME,
+          main_frame_url_.GetOrigin(), form.origin.GetOrigin());
+    return;
+  }
+
   auto matched_manager_it = pending_login_managers_.end();
   PasswordFormManager::MatchResultMask current_match_result =
       PasswordFormManager::RESULT_NO_MATCH;
@@ -560,6 +571,15 @@ bool PasswordManager::CanProvisionalManagerSave() {
     return false;
   }
   return true;
+}
+
+bool PasswordManager::ShouldBlockPasswordForSameOriginButDifferentScheme(
+    const PasswordForm& form) const {
+  const GURL& old_origin = main_frame_url_.GetOrigin();
+  const GURL& new_origin = form.origin.GetOrigin();
+  return old_origin.host_piece() == new_origin.host_piece() &&
+         old_origin.SchemeIsCryptographic() &&
+         !new_origin.SchemeIsCryptographic();
 }
 
 bool PasswordManager::ShouldPromptUserToSavePassword() const {

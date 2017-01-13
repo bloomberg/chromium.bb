@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "components/autofill/core/common/save_password_progress_logger.h"
+#include "url/gurl.h"
 
 namespace autofill {
 class FormStructure;
@@ -33,6 +34,12 @@ class BrowserSavePasswordProgressLogger
   // Browser-specific addition to the base class' Log* methods. The input is
   // sanitized and passed to SendLog for display.
   void LogFormStructure(StringID label, const autofill::FormStructure& form);
+
+  // Browser-specific addition to the base class' Log* methods. The input is
+  // sanitized and passed to SendLog for display.
+  void LogSuccessiveOrigins(StringID label,
+                            const GURL& old_origin,
+                            const GURL& new_origin);
 
   // Browser-specific addition to the base class' Log* methods. The input is
   // passed to SendLog for display.

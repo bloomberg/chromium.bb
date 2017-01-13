@@ -216,6 +216,9 @@ void LogAccountChooserUserActionManyAccounts(AccountChooserUserAction action);
 // Log a user action on showing the Chrome sign in promo.
 void LogSyncSigninPromoUserAction(SyncSignInUserAction action);
 
+// Logs whether a password was rejected due to same origin but different scheme.
+void LogShouldBlockPasswordForSameOriginButDifferentScheme(bool should_block);
+
 // Log if the account chooser has empty username or duplicate usernames.
 void LogAccountChooserUsability(AccountChooserUsabilityMetric usability);
 

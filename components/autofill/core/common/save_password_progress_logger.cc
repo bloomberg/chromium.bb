@@ -266,6 +266,8 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Invalid form";
     case SavePasswordProgressLogger::STRING_SYNC_CREDENTIAL:
       return "Credential is used for syncing passwords";
+    case STRING_BLOCK_PASSWORD_SAME_ORIGIN_INSECURE_SCHEME:
+      return "Blocked password due to same origin but insecure scheme";
     case SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVED_FORM:
       return "provisionally_saved_form";
     case SavePasswordProgressLogger::STRING_IGNORE_POSSIBLE_USERNAMES:

@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/password_manager/core/browser/password_store_consumer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_utils.h"
 
@@ -122,6 +123,9 @@ class PasswordManagerBrowserTestBase : public InProcessBrowserTest {
   void WaitForElementValue(const std::string& iframe_id,
                            const std::string& element_id,
                            const std::string& expected_value);
+  // Make sure that the password store processed all the previous calls which
+  // are executed on another thread.
+  void WaitForPasswordStore();
   // Checks that the current "value" attribute of the HTML element with
   // |element_id| is equal to |expected_value|.
   void CheckElementValue(const std::string& element_id,

@@ -25,6 +25,30 @@
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
+namespace {
+
+// A helper class that synchronously waits until the password store handles a
+// GetLogins() request.
+class PasswordStoreResultsObserver
+    : public password_manager::PasswordStoreConsumer {
+ public:
+  PasswordStoreResultsObserver() = default;
+
+  void OnGetPasswordStoreResults(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> results) override {
+    run_loop_.Quit();
+  }
+
+  void Wait() { run_loop_.Run(); }
+
+ private:
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(PasswordStoreResultsObserver);
+};
+
+}  // namespace
+
 NavigationObserver::NavigationObserver(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       quit_on_entry_committed_(false),
@@ -228,6 +252,15 @@ void PasswordManagerBrowserTestBase::WaitForElementValue(
   EXPECT_EQ(RETURN_CODE_OK, return_value)
       << "element_id = " << element_id
       << ", expected_value = " << expected_value;
+}
+
+void PasswordManagerBrowserTestBase::WaitForPasswordStore() {
+  scoped_refptr<password_manager::PasswordStore> password_store =
+      PasswordStoreFactory::GetForProfile(browser()->profile(),
+                                          ServiceAccessType::IMPLICIT_ACCESS);
+  PasswordStoreResultsObserver syncer;
+  password_store->GetAutofillableLoginsWithAffiliatedRealms(&syncer);
+  syncer.Wait();
 }
 
 void PasswordManagerBrowserTestBase::CheckElementValue(

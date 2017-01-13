@@ -33,6 +33,7 @@ using base::ASCIIToUTF16;
 using testing::_;
 using testing::AnyNumber;
 using testing::Return;
+using testing::ReturnRef;
 using testing::SaveArg;
 using testing::WithArg;
 
@@ -67,6 +68,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
                void(const autofill::PasswordForm&));
   MOCK_METHOD0(AutomaticPasswordSaveIndicator, void());
   MOCK_METHOD0(GetPrefs, PrefService*());
+  MOCK_CONST_METHOD0(GetMainFrameURL, const GURL&());
   MOCK_METHOD0(GetDriver, PasswordManagerDriver*());
   MOCK_CONST_METHOD0(GetStoreResultFilter, const MockStoreResultFilter*());
 
@@ -135,6 +137,9 @@ class PasswordManagerTest : public testing::Test {
         .WillRepeatedly(Return(password_autofill_manager_.get()));
     EXPECT_CALL(client_, DidLastPageLoadEncounterSSLErrors())
         .WillRepeatedly(Return(false));
+
+    ON_CALL(client_, GetMainFrameURL())
+        .WillByDefault(ReturnRef(GURL::EmptyGURL()));
   }
 
   void TearDown() override {
@@ -746,6 +751,104 @@ TEST_F(PasswordManagerTest,
   EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_, _)).Times(0);
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
+}
+
+TEST_F(PasswordManagerTest,
+       ShouldBlockPasswordForSameOriginButDifferentSchemeTest) {
+  constexpr struct {
+    const char* old_origin;
+    const char* new_origin;
+    bool result;
+  } kTestData[] = {
+      // Same origin and same scheme.
+      {"https://example.com/login", "https://example.com/login", false},
+      // Same host and same scheme, different port.
+      {"https://example.com:443/login", "https://example.com:444/login", false},
+      // Same host but different scheme (https to http).
+      {"https://example.com/login", "http://example.com/login", true},
+      // Same host but different scheme (http to https).
+      {"http://example.com/login", "https://example.com/login", false},
+      // Different TLD, same schemes.
+      {"https://example.com/login", "https://example.org/login", false},
+      // Different TLD, different schemes.
+      {"https://example.com/login", "http://example.org/login", false},
+      // Different subdomains, same schemes.
+      {"https://sub1.example.com/login", "https://sub2.example.org/login",
+       false},
+  };
+
+  PasswordForm form = MakeSimpleForm();
+  for (const auto& test_case : kTestData) {
+    SCOPED_TRACE(testing::Message("#test_case = ") << (&test_case - kTestData));
+    manager()->main_frame_url_ = GURL(test_case.old_origin);
+    form.origin = GURL(test_case.new_origin);
+    EXPECT_EQ(
+        test_case.result,
+        manager()->ShouldBlockPasswordForSameOriginButDifferentScheme(form));
+  }
+}
+
+// Tests whether two submissions to the same origin but different schemes
+// result in only saving the first submission, which has a secure scheme.
+TEST_F(PasswordManagerTest, AttemptedSavePasswordSameOriginInsecureScheme) {
+  PasswordForm secure_form(MakeSimpleForm());
+  secure_form.origin = GURL("https://example.com/login");
+  secure_form.action = GURL("https://example.com/login");
+  secure_form.signon_realm = secure_form.origin.spec();
+
+  PasswordForm insecure_form(MakeSimpleForm());
+  insecure_form.username_value = ASCIIToUTF16("compromised_user");
+  insecure_form.password_value = ASCIIToUTF16("C0mpr0m1s3d_P4ss");
+  insecure_form.origin = GURL("http://example.com/home");
+  insecure_form.action = GURL("http://example.com/home");
+  insecure_form.signon_realm = insecure_form.origin.spec();
+
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+
+  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
+      .WillRepeatedly(Return(true));
+
+  EXPECT_CALL(client_, GetMainFrameURL())
+      .WillRepeatedly(ReturnRef(secure_form.origin));
+
+  // Parse, render and submit the secure form.
+  std::vector<PasswordForm> observed = {secure_form};
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+  OnPasswordFormSubmitted(secure_form);
+
+  // Make sure |PromptUserToSaveOrUpdatePassword| gets called, and the resulting
+  // form manager is saved.
+  std::unique_ptr<PasswordFormManager> form_manager_to_save;
+  EXPECT_CALL(client_,
+              PromptUserToSaveOrUpdatePasswordPtr(
+                  _, CredentialSourceType::CREDENTIAL_SOURCE_PASSWORD_MANAGER))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
+
+  EXPECT_CALL(client_, GetMainFrameURL())
+      .WillRepeatedly(ReturnRef(insecure_form.origin));
+
+  // Parse, render and submit the insecure form.
+  observed = {insecure_form};
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+  OnPasswordFormSubmitted(insecure_form);
+
+  // Expect no further calls to |ProptUserToSaveOrUpdatePassword| due to
+  // insecure origin.
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_, _)).Times(0);
+
+  // Trigger call to |ProvisionalSavePassword| by rendering a page without
+  // forms.
+  observed.clear();
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  // Make sure that the form saved by the user is indeed the secure form.
+  ASSERT_TRUE(form_manager_to_save);
+  EXPECT_THAT(form_manager_to_save->pending_credentials(),
+              FormMatches(secure_form));
 }
 
 // Create a form with both a new and current password element. Let the current

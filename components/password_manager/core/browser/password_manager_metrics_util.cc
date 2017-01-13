@@ -104,6 +104,12 @@ void LogSyncSigninPromoUserAction(SyncSignInUserAction action) {
                             CHROME_SIGNIN_ACTION_COUNT);
 }
 
+void LogShouldBlockPasswordForSameOriginButDifferentScheme(bool should_block) {
+  UMA_HISTOGRAM_BOOLEAN(
+      "PasswordManager.ShouldBlockPasswordForSameOriginButDifferentScheme",
+      should_block);
+}
+
 void LogAccountChooserUsability(AccountChooserUsabilityMetric usability) {
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.AccountChooserDialogUsability",
                             usability, ACCOUNT_CHOOSER_USABILITY_COUNT);

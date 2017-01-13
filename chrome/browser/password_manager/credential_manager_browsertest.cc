@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
-#include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -23,28 +22,6 @@
 
 namespace {
 
-// A helper class that synchronously waits until the password store handles a
-// GetLogins() request.
-class PasswordStoreResultsObserver
-    : public password_manager::PasswordStoreConsumer {
- public:
-  PasswordStoreResultsObserver() = default;
-
-  void OnGetPasswordStoreResults(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> results) override {
-    run_loop_.Quit();
-  }
-
-  void Wait() {
-    run_loop_.Run();
-  }
-
- private:
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordStoreResultsObserver);
-};
-
 class CredentialManagerBrowserTest : public PasswordManagerBrowserTestBase {
  public:
   CredentialManagerBrowserTest() = default;
@@ -52,17 +29,6 @@ class CredentialManagerBrowserTest : public PasswordManagerBrowserTestBase {
   bool IsShowingAccountChooser() {
     return PasswordsModelDelegateFromWebContents(WebContents())->
         GetState() == password_manager::ui::CREDENTIAL_REQUEST_STATE;
-  }
-
-  // Make sure that the password store processed all the previous calls which
-  // are executed on another thread.
-  void WaitForPasswordStore() {
-    scoped_refptr<password_manager::PasswordStore> password_store =
-        PasswordStoreFactory::GetForProfile(
-            browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS);
-    PasswordStoreResultsObserver syncer;
-    password_store->GetAutofillableLoginsWithAffiliatedRealms(&syncer);
-    syncer.Wait();
   }
 
   // Similarly to PasswordManagerBrowserTestBase::NavigateToFile this is a

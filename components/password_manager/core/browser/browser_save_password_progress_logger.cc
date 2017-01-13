@@ -112,6 +112,19 @@ void BrowserSavePasswordProgressLogger::LogFormStructure(
   SendLog(message);
 }
 
+void BrowserSavePasswordProgressLogger::LogSuccessiveOrigins(
+    StringID label,
+    const GURL& old_origin,
+    const GURL& new_origin) {
+  std::string message = GetStringFromID(label) + ": {\n";
+  message +=
+      GetStringFromID(STRING_ORIGIN) + ": " + ScrubURL(old_origin) + "\n";
+  message +=
+      GetStringFromID(STRING_ORIGIN) + ": " + ScrubURL(new_origin) + "\n";
+  message += "}";
+  SendLog(message);
+}
+
 std::string BrowserSavePasswordProgressLogger::FormStructureToFieldsLogString(
     const autofill::FormStructure& form_structure) {
   std::string result;
