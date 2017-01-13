@@ -925,6 +925,9 @@ NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::isDead() const {
 }
 
 NO_SANITIZE_ADDRESS inline void HeapObjectHeader::markDead() {
+  // A Dead state should not happen in a per-thread heap world.
+  // TODO(haraken): Remove code to handle the Dead state.
+  CHECK(false);
   ASSERT(checkHeader());
   ASSERT(!isMarked());
   m_encoded |= headerDeadBitMask;
