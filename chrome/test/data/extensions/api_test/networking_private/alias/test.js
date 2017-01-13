@@ -44,5 +44,33 @@ chrome.test.runTests([
                 result.ConnectionState ==
                     chrome.networking.onc.ConnectionStateType.CONNECTED);
           }));
+    },
+    function verifyNoAccessToNetworkingPrivateOnlyMethods() {
+      var expectedError = 'Requires networkingPrivate API access.';
+      chrome.networking.onc.getVisibleNetworks('All',
+          chrome.test.callbackFail(expectedError));
+      chrome.networking.onc.getEnabledNetworkTypes(
+          chrome.test.callbackFail(expectedError));
+      var stubVerificationProperties = {
+        certificate: '',
+        publicKey: '',
+        nonce: '',
+        signedData: '',
+        deviceSerial: '',
+        deviceSsid: '',
+        deviceBssid: ''
+      };
+      chrome.networking.onc.verifyDestination(
+          stubVerificationProperties, chrome.test.callbackFail(expectedError));
+      chrome.networking.onc.verifyAndEncryptCredentials(
+          stubVerificationProperties, '',
+          chrome.test.callbackFail(expectedError));
+      chrome.networking.onc.verifyAndEncryptData(
+          stubVerificationProperties, '',
+          chrome.test.callbackFail(expectedError));
+      chrome.networking.onc.setWifiTDLSEnabledState('', false,
+          chrome.test.callbackFail(expectedError));
+      chrome.networking.onc.getWifiTDLSStatus('',
+          chrome.test.callbackFail(expectedError));
     }
 ]);

@@ -308,7 +308,12 @@
     "platforms": ["chromeos"],
     "extension_types": ["extension", "platform_app"]
   },
-  "networking.onc": {
+  "networking.onc": [{
+    "channel": "dev",
+    "extension_types": ["platform_app"],
+    "platforms": ["chromeos"],
+    "session_types": ["kiosk.autolaunched"]
+  }, {
     "channel": "dev",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "platforms": ["chromeos", "mac", "win", "linux"],
@@ -342,7 +347,7 @@
       "E0E94FB0C01FFB9CDC7A5F098C99B5A8D2F95902",  // http://crbug.com/610452
       "52E0557059A7A28F74ED1D92DDD997E0CCD37806"   // http://crbug.com/610452
     ]
-  },
+  }],
   "networkingPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],

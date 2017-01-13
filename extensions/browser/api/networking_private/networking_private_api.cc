@@ -14,20 +14,33 @@
 #include "extensions/browser/api/networking_private/networking_private_delegate_factory.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/common/api/networking_private.h"
+#include "extensions/common/extension_api.h"
+#include "extensions/common/features/feature_provider.h"
+
+namespace extensions {
 
 namespace {
 
 const int kDefaultNetworkListLimit = 1000;
 
-extensions::NetworkingPrivateDelegate* GetDelegate(
+const char kPrivateOnlyError[] = "Requires networkingPrivate API access.";
+
+NetworkingPrivateDelegate* GetDelegate(
     content::BrowserContext* browser_context) {
-  return extensions::NetworkingPrivateDelegateFactory::GetForBrowserContext(
+  return NetworkingPrivateDelegateFactory::GetForBrowserContext(
       browser_context);
 }
 
-}  // namespace
+bool HasPrivateNetworkingAccess(const Extension* extension,
+                                Feature::Context context,
+                                const GURL& source_url) {
+  return ExtensionAPI::GetSharedInstance()
+      ->IsAvailable("networkingPrivate", extension, context, source_url,
+                    CheckAliasStatus::NOT_ALLOWED)
+      .is_available();
+}
 
-namespace extensions {
+}  // namespace
 
 namespace private_api = api::networking_private;
 
@@ -282,6 +295,15 @@ bool NetworkingPrivateGetVisibleNetworksFunction::RunAsync() {
       private_api::GetVisibleNetworks::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
+  // getVisibleNetworks is deprecated - allow it only for apps with
+  // networkingPrivate permissions, i.e. apps that might have started using it
+  // before its deprecation.
+  if (!HasPrivateNetworkingAccess(extension(), source_context_type(),
+                                  source_url())) {
+    error_ = kPrivateOnlyError;
+    return false;
+  }
+
   std::string network_type = private_api::ToString(params->network_type);
   const bool configured_only = false;
   const bool visible_only = true;
@@ -317,6 +339,14 @@ NetworkingPrivateGetEnabledNetworkTypesFunction::
 
 ExtensionFunction::ResponseAction
 NetworkingPrivateGetEnabledNetworkTypesFunction::Run() {
+  // getEnabledNetworkTypes is deprecated - allow it only for apps with
+  // networkingPrivate permissions, i.e. apps that might have started using it
+  // before its deprecation.
+  if (!HasPrivateNetworkingAccess(extension(), source_context_type(),
+                                  source_url())) {
+    return RespondNow(Error(kPrivateOnlyError));
+  }
+
   std::unique_ptr<base::ListValue> enabled_networks_onc_types(
       GetDelegate(browser_context())->GetEnabledNetworkTypes());
   if (!enabled_networks_onc_types)
@@ -515,6 +545,16 @@ NetworkingPrivateVerifyDestinationFunction::
 }
 
 bool NetworkingPrivateVerifyDestinationFunction::RunAsync() {
+  // This method is private - as such, it should not be exposed through public
+  // networking.onc API.
+  // TODO(tbarzic): Consider exposing this via separate API.
+  // http://crbug.com/678737
+  if (!HasPrivateNetworkingAccess(extension(), source_context_type(),
+                                  source_url())) {
+    error_ = kPrivateOnlyError;
+    return false;
+  }
+
   std::unique_ptr<private_api::VerifyDestination::Params> params =
       private_api::VerifyDestination::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -548,6 +588,15 @@ NetworkingPrivateVerifyAndEncryptCredentialsFunction::
 }
 
 bool NetworkingPrivateVerifyAndEncryptCredentialsFunction::RunAsync() {
+  // This method is private - as such, it should not be exposed through public
+  // networking.onc API.
+  // TODO(tbarzic): Consider exposing this via separate API.
+  // http://crbug.com/678737
+  if (!HasPrivateNetworkingAccess(extension(), source_context_type(),
+                                  source_url())) {
+    error_ = kPrivateOnlyError;
+    return false;
+  }
   std::unique_ptr<private_api::VerifyAndEncryptCredentials::Params> params =
       private_api::VerifyAndEncryptCredentials::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -584,6 +633,15 @@ NetworkingPrivateVerifyAndEncryptDataFunction::
 }
 
 bool NetworkingPrivateVerifyAndEncryptDataFunction::RunAsync() {
+  // This method is private - as such, it should not be exposed through public
+  // networking.onc API.
+  // TODO(tbarzic): Consider exposing this via separate API.
+  // http://crbug.com/678737
+  if (!HasPrivateNetworkingAccess(extension(), source_context_type(),
+                                  source_url())) {
+    error_ = kPrivateOnlyError;
+    return false;
+  }
   std::unique_ptr<private_api::VerifyAndEncryptData::Params> params =
       private_api::VerifyAndEncryptData::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -618,6 +676,15 @@ NetworkingPrivateSetWifiTDLSEnabledStateFunction::
 }
 
 bool NetworkingPrivateSetWifiTDLSEnabledStateFunction::RunAsync() {
+  // This method is private - as such, it should not be exposed through public
+  // networking.onc API.
+  // TODO(tbarzic): Consider exposing this via separate API.
+  // http://crbug.com/678737
+  if (!HasPrivateNetworkingAccess(extension(), source_context_type(),
+                                  source_url())) {
+    error_ = kPrivateOnlyError;
+    return false;
+  }
   std::unique_ptr<private_api::SetWifiTDLSEnabledState::Params> params =
       private_api::SetWifiTDLSEnabledState::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -653,6 +720,15 @@ NetworkingPrivateGetWifiTDLSStatusFunction::
 }
 
 bool NetworkingPrivateGetWifiTDLSStatusFunction::RunAsync() {
+  // This method is private - as such, it should not be exposed through public
+  // networking.onc API.
+  // TODO(tbarzic): Consider exposing this via separate API.
+  // http://crbug.com/678737
+  if (!HasPrivateNetworkingAccess(extension(), source_context_type(),
+                                  source_url())) {
+    error_ = kPrivateOnlyError;
+    return false;
+  }
   std::unique_ptr<private_api::GetWifiTDLSStatus::Params> params =
       private_api::GetWifiTDLSStatus::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
