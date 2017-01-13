@@ -186,8 +186,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   if (authenticatedIdentity) {
     title = [authenticatedIdentity userFullName];
     if (!title) {
-      // TODO(crbug.com/656994): Figure how to handle unnamed account.
-      title = @"Unnamed account";
+      title = [authenticatedIdentity userEmail];
     }
   }
   self.title = title;
