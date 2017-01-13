@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "net/quic/core/crypto/null_decrypter.h"
 #include "net/quic/core/crypto/null_encrypter.h"
@@ -19,7 +20,6 @@
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_utils.h"
-#include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/test_tools/quic_framer_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -204,8 +204,8 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
   ~TestQuicVisitor() override {}
 
   void OnError(QuicFramer* f) override {
-    QUIC_DLOG(INFO) << "QuicFramer Error: " << QuicErrorCodeToString(f->error())
-                    << " (" << f->error() << ")";
+    DVLOG(1) << "QuicFramer Error: " << QuicErrorCodeToString(f->error())
+             << " (" << f->error() << ")";
     ++error_count_;
   }
 
@@ -221,7 +221,7 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
   }
 
   bool OnProtocolVersionMismatch(QuicVersion version) override {
-    QUIC_DLOG(INFO) << "QuicFramer Version Mismatch, version: " << version;
+    DVLOG(1) << "QuicFramer Version Mismatch, version: " << version;
     ++version_mismatch_;
     return true;
   }
@@ -368,22 +368,21 @@ class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
                        QuicPacket* packet) {
     EXPECT_EQ(version_, encrypter_->version_);
     if (packet_number != encrypter_->packet_number_) {
-      QUIC_LOG(ERROR) << "Encrypted incorrect packet number.  expected "
-                      << packet_number
-                      << " actual: " << encrypter_->packet_number_;
+      LOG(ERROR) << "Encrypted incorrect packet number.  expected "
+                 << packet_number << " actual: " << encrypter_->packet_number_;
       return false;
     }
     if (packet->AssociatedData(framer_.version()) !=
         encrypter_->associated_data_) {
-      QUIC_LOG(ERROR) << "Encrypted incorrect associated data.  expected "
-                      << packet->AssociatedData(framer_.version())
-                      << " actual: " << encrypter_->associated_data_;
+      LOG(ERROR) << "Encrypted incorrect associated data.  expected "
+                 << packet->AssociatedData(framer_.version())
+                 << " actual: " << encrypter_->associated_data_;
       return false;
     }
     if (packet->Plaintext(framer_.version()) != encrypter_->plaintext_) {
-      QUIC_LOG(ERROR) << "Encrypted incorrect plaintext data.  expected "
-                      << packet->Plaintext(framer_.version())
-                      << " actual: " << encrypter_->plaintext_;
+      LOG(ERROR) << "Encrypted incorrect plaintext data.  expected "
+                 << packet->Plaintext(framer_.version())
+                 << " actual: " << encrypter_->plaintext_;
       return false;
     }
     return true;
@@ -395,22 +394,22 @@ class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
                        bool includes_diversification_nonce) {
     EXPECT_EQ(version_, decrypter_->version_);
     if (visitor_.header_->packet_number != decrypter_->packet_number_) {
-      QUIC_LOG(ERROR) << "Decrypted incorrect packet number.  expected "
-                      << visitor_.header_->packet_number
-                      << " actual: " << decrypter_->packet_number_;
+      LOG(ERROR) << "Decrypted incorrect packet number.  expected "
+                 << visitor_.header_->packet_number
+                 << " actual: " << decrypter_->packet_number_;
       return false;
     }
     if (QuicFramer::GetAssociatedDataFromEncryptedPacket(
             framer_.version(), encrypted, PACKET_8BYTE_CONNECTION_ID,
             includes_version, includes_path_id, includes_diversification_nonce,
             PACKET_6BYTE_PACKET_NUMBER) != decrypter_->associated_data_) {
-      QUIC_LOG(ERROR) << "Decrypted incorrect associated data.  expected "
-                      << QuicFramer::GetAssociatedDataFromEncryptedPacket(
-                             framer_.version(), encrypted,
-                             PACKET_8BYTE_CONNECTION_ID, includes_version,
-                             includes_path_id, includes_diversification_nonce,
-                             PACKET_6BYTE_PACKET_NUMBER)
-                      << " actual: " << decrypter_->associated_data_;
+      LOG(ERROR) << "Decrypted incorrect associated data.  expected "
+                 << QuicFramer::GetAssociatedDataFromEncryptedPacket(
+                        framer_.version(), encrypted,
+                        PACKET_8BYTE_CONNECTION_ID, includes_version,
+                        includes_path_id, includes_diversification_nonce,
+                        PACKET_6BYTE_PACKET_NUMBER)
+                 << " actual: " << decrypter_->associated_data_;
       return false;
     }
     StringPiece ciphertext(
@@ -419,8 +418,8 @@ class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
             includes_path_id, includes_diversification_nonce,
             PACKET_6BYTE_PACKET_NUMBER)));
     if (ciphertext != decrypter_->ciphertext_) {
-      QUIC_LOG(ERROR) << "Decrypted incorrect ciphertext data.  expected "
-                      << ciphertext << " actual: " << decrypter_->ciphertext_;
+      LOG(ERROR) << "Decrypted incorrect ciphertext data.  expected "
+                 << ciphertext << " actual: " << decrypter_->ciphertext_;
       return false;
     }
     return true;
@@ -2284,7 +2283,7 @@ TEST_P(QuicFramerTest, PublicResetPacketV33) {
   // Now test framing boundaries.
   for (size_t i = 0; i < arraysize(packet); ++i) {
     string expected_error;
-    QUIC_DLOG(INFO) << "iteration: " << i;
+    DVLOG(1) << "iteration: " << i;
     if (i < kConnectionIdOffset) {
       expected_error = "Unable to read public flags.";
       CheckProcessingFails(packet, i, expected_error,
@@ -2349,7 +2348,7 @@ TEST_P(QuicFramerTest, PublicResetPacket) {
   // Now test framing boundaries.
   for (size_t i = 0; i < arraysize(packet); ++i) {
     string expected_error;
-    QUIC_DLOG(INFO) << "iteration: " << i;
+    DVLOG(1) << "iteration: " << i;
     if (i < kConnectionIdOffset) {
       expected_error = "Unable to read public flags.";
       CheckProcessingFails(packet, i, expected_error,
@@ -2456,7 +2455,7 @@ TEST_P(QuicFramerTest, PublicResetPacketWithClientAddress) {
   // Now test framing boundaries.
   for (size_t i = 0; i < arraysize(packet); ++i) {
     string expected_error;
-    QUIC_DLOG(INFO) << "iteration: " << i;
+    DVLOG(1) << "iteration: " << i;
     if (i < kConnectionIdOffset) {
       expected_error = "Unable to read public flags.";
       CheckProcessingFails(packet, i, expected_error,

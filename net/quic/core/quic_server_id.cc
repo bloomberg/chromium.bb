@@ -6,6 +6,7 @@
 
 #include <tuple>
 
+#include "base/logging.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/port_util.h"
 #include "net/quic/platform/api/quic_str_cat.h"

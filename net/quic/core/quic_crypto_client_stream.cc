@@ -16,7 +16,6 @@
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_session.h"
 #include "net/quic/core/quic_utils.h"
-#include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_str_cat.h"
 
 using std::string;
@@ -306,14 +305,14 @@ void QuicCryptoClientStream::DoSendCHLO(
     const QuicByteCount max_packet_size =
         session()->connection()->max_packet_length();
     if (max_packet_size <= kFramingOverhead) {
-      QUIC_DLOG(DFATAL) << "max_packet_length (" << max_packet_size
-                        << ") has no room for framing overhead.";
+      DLOG(DFATAL) << "max_packet_length (" << max_packet_size
+                   << ") has no room for framing overhead.";
       CloseConnectionWithDetails(QUIC_INTERNAL_ERROR,
                                  "max_packet_size too smalll");
       return;
     }
     if (kClientHelloMinimumSize > max_packet_size - kFramingOverhead) {
-      QUIC_DLOG(DFATAL) << "Client hello won't fit in a single packet.";
+      DLOG(DFATAL) << "Client hello won't fit in a single packet.";
       CloseConnectionWithDetails(QUIC_INTERNAL_ERROR, "CHLO too large");
       return;
     }
@@ -466,7 +465,7 @@ QuicAsyncStatus QuicCryptoClientStream::DoVerifyProof(
   switch (status) {
     case QUIC_PENDING:
       proof_verify_callback_ = proof_verify_callback;
-      QUIC_DVLOG(1) << "Doing VerifyProof";
+      DVLOG(1) << "Doing VerifyProof";
       break;
     case QUIC_FAILURE:
       break;
@@ -533,7 +532,7 @@ QuicAsyncStatus QuicCryptoClientStream::DoGetChannelID(
   switch (status) {
     case QUIC_PENDING:
       channel_id_source_callback_ = channel_id_source_callback;
-      QUIC_DVLOG(1) << "Looking up channel ID";
+      DVLOG(1) << "Looking up channel ID";
       break;
     case QUIC_FAILURE:
       next_state_ = STATE_NONE;

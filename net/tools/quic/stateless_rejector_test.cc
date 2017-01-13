@@ -11,7 +11,6 @@
 #include "net/quic/core/crypto/crypto_handshake_message.h"
 #include "net/quic/core/crypto/proof_source.h"
 #include "net/quic/core/quic_utils.h"
-#include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_str_cat.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
@@ -41,7 +40,7 @@ const char* FlagsModeToString(FlagsMode mode) {
     case BOTH_DISABLED:
       return "BOTH_DISABLED";
     default:
-      QUIC_DLOG(FATAL) << "Unexpected FlagsMode";
+      DLOG(FATAL) << "Unexpected FlagsMode";
       return nullptr;
   }
 }

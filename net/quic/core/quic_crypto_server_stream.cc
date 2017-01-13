@@ -16,7 +16,6 @@
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_session.h"
-#include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 
 using base::StringPiece;
@@ -218,9 +217,9 @@ void QuicCryptoServerStream::
       DCHECK(use_stateless_rejects_if_peer_supported_);
       DCHECK(peer_supports_stateless_rejects_);
       DCHECK(!handshake_confirmed());
-      QUIC_DLOG(INFO) << "Closing connection "
-                      << session()->connection()->connection_id()
-                      << " because of a stateless reject.";
+      DVLOG(1) << "Closing connection "
+               << session()->connection()->connection_id()
+               << " because of a stateless reject.";
       session()->connection()->CloseConnection(
           QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT, "stateless reject",
           ConnectionCloseBehavior::SILENT_CLOSE);
@@ -286,7 +285,7 @@ void QuicCryptoServerStream::SendServerConfigUpdate(
 
   if (FLAGS_quic_reloadable_flag_enable_async_get_proof) {
     if (send_server_config_update_cb_ != nullptr) {
-      QUIC_DVLOG(1)
+      DVLOG(1)
           << "Skipped server config update since one is already in progress";
       return;
     }
@@ -323,12 +322,12 @@ void QuicCryptoServerStream::SendServerConfigUpdate(
                ? session()->config()->ReceivedConnectionOptions()
                : QuicTagVector()),
           &server_config_update_message)) {
-    QUIC_DVLOG(1) << "Server: Failed to build server config update (SCUP)!";
+    DVLOG(1) << "Server: Failed to build server config update (SCUP)!";
     return;
   }
 
-  QUIC_DVLOG(1) << "Server: Sending server config update: "
-                << server_config_update_message.DebugString();
+  DVLOG(1) << "Server: Sending server config update: "
+           << server_config_update_message.DebugString();
   const QuicData& data = server_config_update_message.GetSerialized();
   WriteOrBufferData(StringPiece(data.data(), data.length()), false, nullptr);
 
@@ -361,12 +360,11 @@ void QuicCryptoServerStream::FinishSendServerConfigUpdate(
   send_server_config_update_cb_ = nullptr;
 
   if (!ok) {
-    QUIC_DVLOG(1) << "Server: Failed to build server config update (SCUP)!";
+    DVLOG(1) << "Server: Failed to build server config update (SCUP)!";
     return;
   }
 
-  QUIC_DVLOG(1) << "Server: Sending server config update: "
-                << message.DebugString();
+  DVLOG(1) << "Server: Sending server config update: " << message.DebugString();
   const QuicData& data = message.GetSerialized();
   WriteOrBufferData(StringPiece(data.data(), data.length()), false, nullptr);
 

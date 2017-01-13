@@ -4,6 +4,7 @@
 
 #include "net/quic/core/quic_unacked_packet_map.h"
 
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "net/quic/core/quic_connection_stats.h"
 #include "net/quic/core/quic_utils.h"

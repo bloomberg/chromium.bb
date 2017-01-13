@@ -9,7 +9,6 @@
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_headers_stream.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
-#include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_str_cat.h"
 
 using base::StringPiece;
@@ -27,7 +26,7 @@ class HeaderTableDebugVisitor
       : clock_(clock), headers_stream_hpack_visitor_(std::move(visitor)) {}
 
   int64_t OnNewEntry(const HpackEntry& entry) override {
-    QUIC_DVLOG(1) << entry.GetDebugString();
+    DVLOG(1) << entry.GetDebugString();
     return (clock_->ApproximateNow() - QuicTime::Zero()).ToMicroseconds();
   }
 
@@ -36,8 +35,8 @@ class HeaderTableDebugVisitor
         clock_->ApproximateNow() -
         QuicTime::Delta::FromMicroseconds(entry.time_added()) -
         QuicTime::Zero());
-    QUIC_DVLOG(1) << entry.GetDebugString() << " " << elapsed.ToMilliseconds()
-                  << " ms";
+    DVLOG(1) << entry.GetDebugString() << " " << elapsed.ToMilliseconds()
+             << " ms";
     headers_stream_hpack_visitor_->OnUseEntry(elapsed);
   }
 
@@ -271,7 +270,7 @@ class QuicSpdySession::SpdyFramerVisitor
       return;
     }
     int compression_pct = 100 - (100 * frame_len) / payload_len;
-    QUIC_DVLOG(1) << "Net.QuicHpackCompressionPercentage: " << compression_pct;
+    DVLOG(1) << "Net.QuicHpackCompressionPercentage: " << compression_pct;
   }
 
   void OnReceiveCompressedFrame(SpdyStreamId stream_id,
@@ -596,8 +595,8 @@ void QuicSpdySession::OnStreamFrameData(QuicStreamId stream_id,
   const QuicStreamOffset offset =
       stream->flow_controller()->highest_received_byte_offset();
   const QuicStreamFrame frame(stream_id, fin, offset, StringPiece(data, len));
-  QUIC_DVLOG(1) << "De-encapsulating DATA frame for stream " << stream_id
-                << " offset " << offset << " len " << len << " fin " << fin;
+  DVLOG(1) << "De-encapsulating DATA frame for stream " << stream_id
+           << " offset " << offset << " len " << len << " fin " << fin;
   OnStreamFrame(frame);
 }
 
@@ -639,17 +638,17 @@ void QuicSpdySession::OnPushPromise(SpdyStreamId stream_id,
 }
 
 void QuicSpdySession::OnHeaderList(const QuicHeaderList& header_list) {
-  QUIC_DVLOG(1) << "Received header list for stream " << stream_id_ << ": "
-                << header_list.DebugString();
+  DVLOG(1) << "Received header list for stream " << stream_id_ << ": "
+           << header_list.DebugString();
   if (prev_max_timestamp_ > cur_max_timestamp_) {
     // prev_max_timestamp_ > cur_max_timestamp_ implies that
     // headers from lower numbered streams actually came off the
     // wire after headers for the current stream, hence there was
     // HOL blocking.
     QuicTime::Delta delta = prev_max_timestamp_ - cur_max_timestamp_;
-    QUIC_DLOG(INFO) << "stream " << stream_id_
-                    << ": Net.QuicSession.HeadersHOLBlockedTime "
-                    << delta.ToMilliseconds();
+    DVLOG(1) << "stream " << stream_id_
+               << ": Net.QuicSession.HeadersHOLBlockedTime "
+               << delta.ToMilliseconds();
     OnHeadersHeadOfLineBlocking(delta);
   }
   prev_max_timestamp_ = std::max(prev_max_timestamp_, cur_max_timestamp_);
@@ -707,8 +706,8 @@ bool QuicSpdySession::OnDataFrameHeader(QuicStreamId stream_id,
   if (!IsConnected()) {
     return true;
   }
-  QUIC_DVLOG(1) << "DATA frame header for stream " << stream_id << " length "
-                << length << " fin " << fin;
+  DVLOG(1) << "DATA frame header for stream " << stream_id << " length "
+           << length << " fin " << fin;
   fin_ = fin;
   frame_len_ = length;
   if (fin && length == 0) {

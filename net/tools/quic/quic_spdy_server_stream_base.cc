@@ -5,7 +5,6 @@
 #include "net/tools/quic/quic_spdy_server_stream_base.h"
 
 #include "net/quic/core/quic_error_codes.h"
-#include "net/quic/platform/api/quic_logging.h"
 
 namespace net {
 
@@ -20,7 +19,7 @@ void QuicSpdyServerStreamBase::CloseWriteSide() {
     // or RST.
     DCHECK(fin_sent());
     // Tell the peer to stop sending further data.
-    QUIC_DVLOG(0) << " Server: Send QUIC_STREAM_NO_ERROR on stream " << id();
+    DVLOG(0) << " Server: Send QUIC_STREAM_NO_ERROR on stream " << id();
     Reset(QUIC_STREAM_NO_ERROR);
   }
 

@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "base/logging.h"
 #include "base/test/mock_log.h"
 #include "net/quic/test_tools/rtt_stats_peer.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "net/quic/core/frames/quic_frame.h"
-#include "net/quic/platform/api/quic_logging.h"
 
 using base::StringPiece;
 using std::string;
@@ -153,7 +152,7 @@ std::ostream& operator<<(std::ostream& os, const QuicFrame& frame) {
       break;
     }
     default: {
-      QUIC_LOG(ERROR) << "Unknown frame type: " << frame.type;
+      LOG(ERROR) << "Unknown frame type: " << frame.type;
       break;
     }
   }

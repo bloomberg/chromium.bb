@@ -4,12 +4,12 @@
 
 #include "net/quic/core/quic_stream.h"
 
+#include "base/logging.h"
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_flow_controller.h"
 #include "net/quic/core/quic_session.h"
 #include "net/quic/core/quic_write_blocked_list.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
-#include "net/quic/platform/api/quic_logging.h"
 
 using base::StringPiece;
 using std::string;
@@ -96,9 +96,8 @@ void QuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
   }
 
   if (read_side_closed_) {
-    QUIC_DLOG(INFO)
-        << ENDPOINT << "Stream " << frame.stream_id
-        << " is closed for reading. Ignoring newly received stream data.";
+    DVLOG(1) << ENDPOINT << "Stream " << frame.stream_id
+             << " is closed for reading. Ignoring newly received stream data.";
     // The subclass does not want to read data:  blackhole the data.
     return;
   }
@@ -194,8 +193,7 @@ void QuicStream::WriteOrBufferData(
     return;
   }
   if (write_side_closed_) {
-    QUIC_DLOG(ERROR) << ENDPOINT
-                     << "Attempt to write when the write side is closed";
+    DLOG(ERROR) << ENDPOINT << "Attempt to write when the write side is closed";
     return;
   }
 
@@ -274,8 +272,7 @@ QuicConsumedData QuicStream::WritevData(
     bool fin,
     QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
   if (write_side_closed_) {
-    QUIC_DLOG(ERROR) << ENDPOINT
-                     << "Attempt to write when the write side is closed";
+    DLOG(ERROR) << ENDPOINT << "Attempt to write when the write side is closed";
     return QuicConsumedData(0, false);
   }
 
@@ -314,8 +311,8 @@ QuicConsumedData QuicStream::WritevData(
 
     // Writing more data would be a violation of flow control.
     write_length = static_cast<size_t>(send_window);
-    QUIC_DVLOG(1) << "stream " << id() << " shortens write length to "
-                  << write_length << " due to flow control";
+    DVLOG(1) << "stream " << id() << " shortens write length to "
+             << write_length << " due to flow control";
   }
 
   QuicConsumedData consumed_data =
@@ -363,13 +360,13 @@ void QuicStream::CloseReadSide() {
   if (read_side_closed_) {
     return;
   }
-  QUIC_DLOG(INFO) << ENDPOINT << "Done reading from stream " << id();
+  DVLOG(1) << ENDPOINT << "Done reading from stream " << id();
 
   read_side_closed_ = true;
   sequencer_.ReleaseBuffer();
 
   if (write_side_closed_) {
-    QUIC_DLOG(INFO) << ENDPOINT << "Closing stream: " << id();
+    DVLOG(1) << ENDPOINT << "Closing stream: " << id();
     session_->CloseStream(id());
   }
 }
@@ -378,11 +375,11 @@ void QuicStream::CloseWriteSide() {
   if (write_side_closed_) {
     return;
   }
-  QUIC_DLOG(INFO) << ENDPOINT << "Done writing to stream " << id();
+  DVLOG(1) << ENDPOINT << "Done writing to stream " << id();
 
   write_side_closed_ = true;
   if (read_side_closed_) {
-    QUIC_DLOG(INFO) << ENDPOINT << "Closing stream: " << id();
+    DVLOG(1) << ENDPOINT << "Closing stream: " << id();
     session_->CloseStream(id());
   }
 }
@@ -396,7 +393,7 @@ QuicVersion QuicStream::version() const {
 }
 
 void QuicStream::StopReading() {
-  QUIC_DLOG(INFO) << ENDPOINT << "Stop reading from stream " << id();
+  DVLOG(1) << ENDPOINT << "Stop reading from stream " << id();
   sequencer_.StopReading();
 }
 
@@ -412,7 +409,7 @@ void QuicStream::OnClose() {
     // For flow control accounting, tell the peer how many bytes have been
     // written on this stream before termination. Done here if needed, using a
     // RST_STREAM frame.
-    QUIC_DLOG(INFO) << ENDPOINT << "Sending RST_STREAM in OnClose: " << id();
+    DVLOG(1) << ENDPOINT << "Sending RST_STREAM in OnClose: " << id();
     session_->SendRstStream(id(), QUIC_RST_ACKNOWLEDGEMENT,
                             stream_bytes_written_);
     rst_sent_ = true;

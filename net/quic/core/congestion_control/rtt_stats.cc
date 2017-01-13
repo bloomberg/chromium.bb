@@ -6,8 +6,6 @@
 
 #include <cstdlib>  // std::abs
 
-#include "net/quic/platform/api/quic_logging.h"
-
 namespace net {
 
 namespace {
@@ -41,10 +39,9 @@ void RttStats::UpdateRtt(QuicTime::Delta send_delta,
                          QuicTime::Delta ack_delay,
                          QuicTime now) {
   if (send_delta.IsInfinite() || send_delta <= QuicTime::Delta::Zero()) {
-    QUIC_LOG_FIRST_N(WARNING, 3)
-        << "Ignoring measured send_delta, because it's is "
-        << "either infinite, zero, or negative.  send_delta = "
-        << send_delta.ToMicroseconds();
+    LOG(WARNING) << "Ignoring measured send_delta, because it's is "
+                 << "either infinite, zero, or negative.  send_delta = "
+                 << send_delta.ToMicroseconds();
     return;
   }
 
@@ -76,8 +73,8 @@ void RttStats::UpdateRtt(QuicTime::Delta send_delta,
         kOneMinusBeta * mean_deviation_.ToMicroseconds() +
         kBeta * std::abs((smoothed_rtt_ - rtt_sample).ToMicroseconds())));
     smoothed_rtt_ = kOneMinusAlpha * smoothed_rtt_ + kAlpha * rtt_sample;
-    QUIC_DVLOG(1) << " smoothed_rtt(us):" << smoothed_rtt_.ToMicroseconds()
-                  << " mean_deviation(us):" << mean_deviation_.ToMicroseconds();
+    DVLOG(1) << " smoothed_rtt(us):" << smoothed_rtt_.ToMicroseconds()
+             << " mean_deviation(us):" << mean_deviation_.ToMicroseconds();
   }
 }
 

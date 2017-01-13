@@ -9,7 +9,6 @@
 #include "net/quic/core/crypto/chacha20_poly1305_decrypter.h"
 #include "net/quic/core/crypto/crypto_protocol.h"
 #include "net/quic/core/crypto/null_decrypter.h"
-#include "net/quic/platform/api/quic_logging.h"
 
 using base::StringPiece;
 using std::string;
@@ -24,7 +23,7 @@ QuicDecrypter* QuicDecrypter::Create(QuicTag algorithm) {
     case kCC20:
       return new ChaCha20Poly1305Decrypter();
     default:
-      QUIC_LOG(FATAL) << "Unsupported algorithm: " << algorithm;
+      LOG(FATAL) << "Unsupported algorithm: " << algorithm;
       return nullptr;
   }
 }

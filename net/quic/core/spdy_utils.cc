@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/stl_util.h"
-#include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 #include "net/spdy/spdy_flags.h"
 #include "net/spdy/spdy_frame_builder.h"
@@ -64,8 +63,7 @@ bool SpdyUtils::ExtractContentLengthFromHeaders(int64_t* content_length,
     for (const StringPiece& value : values) {
       int64_t new_value;
       if (!base::StringToInt64(value, &new_value) || new_value < 0) {
-        QUIC_DLOG(ERROR)
-            << "Content length was either unparseable or negative.";
+        DLOG(ERROR) << "Content length was either unparseable or negative.";
         return false;
       }
       if (*content_length < 0) {
@@ -73,10 +71,9 @@ bool SpdyUtils::ExtractContentLengthFromHeaders(int64_t* content_length,
         continue;
       }
       if (new_value != *content_length) {
-        QUIC_DLOG(ERROR)
-            << "Parsed content length " << new_value << " is "
-            << "inconsistent with previously detected content length "
-            << *content_length;
+        DLOG(ERROR) << "Parsed content length " << new_value << " is "
+                    << "inconsistent with previously detected content length "
+                    << *content_length;
         return false;
       }
     }
@@ -92,7 +89,7 @@ bool SpdyUtils::ParseTrailers(const char* data,
   SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
   if (!framer.ParseHeaderBlockInBuffer(data, data_len, trailers) ||
       trailers->empty()) {
-    QUIC_DVLOG(1) << "Request Trailers are invalid.";
+    DVLOG(1) << "Request Trailers are invalid.";
     return false;  // Trailers were invalid.
   }
 
@@ -101,8 +98,7 @@ bool SpdyUtils::ParseTrailers(const char* data,
   auto it = trailers->find(kFinalOffsetHeaderKey);
   if (it == trailers->end() ||
       !base::StringToSizeT(it->second, final_byte_offset)) {
-    QUIC_DVLOG(1) << "Required key '" << kFinalOffsetHeaderKey
-                  << "' not present";
+    DVLOG(1) << "Required key '" << kFinalOffsetHeaderKey << "' not present";
     return false;
   }
   // The final offset header is no longer needed.
@@ -113,15 +109,15 @@ bool SpdyUtils::ParseTrailers(const char* data,
     StringPiece key = trailer.first;
     StringPiece value = trailer.second;
     if (QuicTextUtils::StartsWith(key, ":")) {
-      QUIC_DVLOG(1) << "Trailers must not contain pseudo-header: '" << key
-                    << "','" << value << "'.";
+      DVLOG(1) << "Trailers must not contain pseudo-header: '" << key << "','"
+               << value << "'.";
       return false;
     }
 
     // TODO(rjshade): Check for other forbidden keys, following the HTTP/2 spec.
   }
 
-  QUIC_DVLOG(1) << "Successfully parsed Trailers.";
+  DVLOG(1) << "Successfully parsed Trailers.";
   return true;
 }
 
@@ -131,13 +127,13 @@ bool SpdyUtils::CopyAndValidateHeaders(const QuicHeaderList& header_list,
   for (const auto& p : header_list) {
     const string& name = p.first;
     if (name.empty()) {
-      QUIC_DVLOG(1) << "Header name must not be empty.";
+      DVLOG(1) << "Header name must not be empty.";
       return false;
     }
 
     if (QuicTextUtils::ContainsUpperCase(name)) {
-      QUIC_DLOG(ERROR) << "Malformed header: Header name " << name
-                       << " contains upper-case characters.";
+      DVLOG(1) << "Malformed header: Header name " << name
+               << " contains upper-case characters.";
       return false;
     }
 
@@ -149,7 +145,7 @@ bool SpdyUtils::CopyAndValidateHeaders(const QuicHeaderList& header_list,
     return false;
   }
 
-  QUIC_DVLOG(1) << "Successfully parsed headers: " << headers->DebugString();
+  DVLOG(1) << "Successfully parsed headers: " << headers->DebugString();
   return true;
 }
 
@@ -171,20 +167,19 @@ bool SpdyUtils::CopyAndValidateTrailers(const QuicHeaderList& header_list,
     }
 
     if (name.empty() || name[0] == ':') {
-      QUIC_DVLOG(1)
-          << "Trailers must not be empty, and must not contain pseudo-"
-          << "headers. Found: '" << name << "'";
+      DVLOG(1) << "Trailers must not be empty, and must not contain pseudo-"
+               << "headers. Found: '" << name << "'";
       return false;
     }
 
     if (QuicTextUtils::ContainsUpperCase(name)) {
-      QUIC_DLOG(INFO) << "Malformed header: Header name " << name
-                      << " contains upper-case characters.";
+      DVLOG(1) << "Malformed header: Header name " << name
+               << " contains upper-case characters.";
       return false;
     }
 
     if (trailers->find(name) != trailers->end()) {
-      QUIC_DLOG(INFO) << "Duplicate header '" << name << "' found in trailers.";
+      DVLOG(1) << "Duplicate header '" << name << "' found in trailers.";
       return false;
     }
 
@@ -192,14 +187,13 @@ bool SpdyUtils::CopyAndValidateTrailers(const QuicHeaderList& header_list,
   }
 
   if (!found_final_byte_offset) {
-    QUIC_DVLOG(1) << "Required key '" << kFinalOffsetHeaderKey
-                  << "' not present";
+    DVLOG(1) << "Required key '" << kFinalOffsetHeaderKey << "' not present";
     return false;
   }
 
   // TODO(rjshade): Check for other forbidden keys, following the HTTP/2 spec.
 
-  QUIC_DVLOG(1) << "Successfully parsed Trailers: " << trailers->DebugString();
+  DVLOG(1) << "Successfully parsed Trailers: " << trailers->DebugString();
   return true;
 }
 

@@ -15,7 +15,6 @@
 #include "net/quic/core/quic_crypto_stream.h"
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_utils.h"
-#include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_str_cat.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/fake_proof_source.h"
@@ -154,7 +153,7 @@ class MockServerConnection : public MockQuicConnection {
         dispatcher_(dispatcher) {}
 
   void UnregisterOnConnectionClosed() {
-    QUIC_LOG(ERROR) << "Unregistering " << connection_id();
+    LOG(ERROR) << "Unregistering " << connection_id();
     dispatcher_->OnConnectionClosed(connection_id(), QUIC_NO_ERROR,
                                     "Unregistering.");
   }
@@ -815,8 +814,8 @@ TEST_P(QuicDispatcherStatelessRejectTest, CheapRejects) {
             &QuicDispatcherTest::ValidatePacket, base::Unretained(this), 1))));
   }
 
-  QUIC_LOG(INFO) << "ExpectStatelessReject: " << ExpectStatelessReject();
-  QUIC_LOG(INFO) << "Params: " << GetParam();
+  VLOG(1) << "ExpectStatelessReject: " << ExpectStatelessReject();
+  VLOG(1) << "Params: " << GetParam();
   // Process the first packet for the connection.
   // clang-format off
   CryptoHandshakeMessage client_hello = CryptoTestUtils::Message(
@@ -922,7 +921,7 @@ class BlockingWriter : public QuicPacketWriterWrapper {
     // It would be quite possible to actually implement this method here with
     // the fake blocked status, but it would be significantly more work in
     // Chromium, and since it's not called anyway, don't bother.
-    QUIC_LOG(DFATAL) << "Not supported";
+    LOG(DFATAL) << "Not supported";
     return WriteResult();
   }
 

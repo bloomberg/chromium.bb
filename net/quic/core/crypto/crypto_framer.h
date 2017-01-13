@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "net/quic/core/crypto/crypto_handshake_message.h"
 #include "net/quic/core/quic_packets.h"

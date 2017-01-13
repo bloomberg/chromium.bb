@@ -6,6 +6,7 @@
 
 #include <cstdint>
 
+#include "base/logging.h"
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"

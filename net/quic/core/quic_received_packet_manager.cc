@@ -7,6 +7,7 @@
 #include <limits>
 #include <utility>
 
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "net/base/linked_hash_map.h"
 #include "net/quic/core/crypto/crypto_protocol.h"

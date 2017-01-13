@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <memory>
 
+#include "base/logging.h"
 #include "net/quic/core/quic_utils.h"
 #include "third_party/zlib/zlib.h"
 

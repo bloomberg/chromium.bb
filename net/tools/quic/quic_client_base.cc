@@ -7,7 +7,6 @@
 #include "net/quic/core/crypto/quic_random.h"
 #include "net/quic/core/quic_server_id.h"
 #include "net/quic/core/spdy_utils.h"
-#include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_text_utils.h"
 
 using base::StringPiece;
@@ -69,7 +68,7 @@ void QuicClientBase::OnClose(QuicSpdyStream* stream) {
     auto status = response_headers.find(":status");
     if (status == response_headers.end() ||
         !StringToInt(status->second, &latest_response_code_)) {
-      QUIC_LOG(ERROR) << "Invalid response headers";
+      LOG(ERROR) << "Invalid response headers";
     }
     latest_response_headers_ = response_headers.DebugString();
     latest_response_header_block_ = response_headers.Clone();
@@ -272,8 +271,8 @@ bool QuicClientBase::WaitForEvents() {
   if (!connected() &&
       session()->error() == QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
     DCHECK(FLAGS_quic_reloadable_flag_enable_quic_stateless_reject_support);
-    QUIC_DLOG(INFO) << "Detected stateless reject while waiting for events.  "
-                    << "Attempting to reconnect.";
+    DVLOG(1) << "Detected stateless reject while waiting for events.  "
+             << "Attempting to reconnect.";
     Connect();
   }
 
@@ -317,7 +316,7 @@ bool QuicClientBase::WaitForCryptoHandshakeConfirmed() {
   }
 
   // If the handshake fails due to a timeout, the connection will be closed.
-  QUIC_LOG_IF(ERROR, !connected()) << "Handshake with server failed.";
+  LOG_IF(ERROR, !connected()) << "Handshake with server failed.";
   return connected();
 }
 

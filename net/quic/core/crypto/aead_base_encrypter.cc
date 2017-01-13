@@ -8,7 +8,6 @@
 
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_aligned.h"
-#include "net/quic/platform/api/quic_logging.h"
 #include "third_party/boringssl/src/include/openssl/err.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
 
@@ -32,7 +31,7 @@ void DLogOpenSslErrors() {
   while (unsigned long error = ERR_get_error()) {
     char buf[120];
     ERR_error_string_n(error, buf, arraysize(buf));
-    QUIC_DLOG(ERROR) << "OpenSSL error: " << buf;
+    DLOG(ERROR) << "OpenSSL error: " << buf;
   }
 #endif
 }

@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <limits>
 
+#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 
 using base::StringPrintf;

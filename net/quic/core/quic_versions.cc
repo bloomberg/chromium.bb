@@ -10,7 +10,6 @@
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_tag.h"
 #include "net/quic/core/quic_types.h"
-#include "net/quic/platform/api/quic_logging.h"
 
 using base::StringPiece;
 using std::string;
@@ -77,7 +76,7 @@ QuicTag QuicVersionToQuicTag(const QuicVersion version) {
     default:
       // This shold be an ERROR because we should never attempt to convert an
       // invalid QuicVersion to be written to the wire.
-      QUIC_LOG(ERROR) << "Unsupported QuicVersion: " << version;
+      LOG(ERROR) << "Unsupported QuicVersion: " << version;
       return 0;
   }
 }
@@ -89,8 +88,7 @@ QuicVersion QuicTagToQuicVersion(const QuicTag version_tag) {
     }
   }
   // Reading from the client so this should not be considered an ERROR.
-  QUIC_DLOG(INFO) << "Unsupported QuicTag version: "
-                  << QuicTagToString(version_tag);
+  DVLOG(1) << "Unsupported QuicTag version: " << QuicTagToString(version_tag);
   return QUIC_VERSION_UNSUPPORTED;
 }
 
