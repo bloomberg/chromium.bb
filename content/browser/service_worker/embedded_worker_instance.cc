@@ -477,6 +477,7 @@ void EmbeddedWorkerInstance::Start(
     std::unique_ptr<EmbeddedWorkerStartParams> params,
     mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
     const StatusCallback& callback) {
+  restart_count_++;
   if (!context_) {
     callback.Run(SERVICE_WORKER_ERROR_ABORT);
     // |this| may be destroyed by the callback.
@@ -597,6 +598,7 @@ EmbeddedWorkerInstance::EmbeddedWorkerInstance(
       embedded_worker_id_(embedded_worker_id),
       status_(EmbeddedWorkerStatus::STOPPED),
       starting_phase_(NOT_STARTING),
+      restart_count_(0),
       thread_id_(kInvalidEmbeddedWorkerThreadId),
       devtools_attached_(false),
       network_accessed_for_script_(false),

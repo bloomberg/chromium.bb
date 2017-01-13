@@ -103,6 +103,8 @@ size_t RegisterEngineCrashKeys() {
       // Temporary for https://crbug.com/668633.
       { "swdh_set_hosted_version_worker_pid", crash_keys::kSmallSize },
       { "swdh_set_hosted_version_host_pid", crash_keys::kSmallSize },
+      { "swdh_set_hosted_version_is_new_process", crash_keys::kSmallSize },
+      { "swdh_set_hosted_version_restart_count", crash_keys::kSmallSize },
     };
 
   return base::debug::InitCrashKeys(engine_keys, arraysize(engine_keys),

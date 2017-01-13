@@ -136,6 +136,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
     DCHECK_EQ(EmbeddedWorkerStatus::STARTING, status());
     return starting_phase_;
   }
+  int restart_count() const { return restart_count_; }
   int process_id() const;
   int thread_id() const { return thread_id_; }
   // This should be called only when the worker instance has a valid process,
@@ -296,6 +297,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
 
   EmbeddedWorkerStatus status_;
   StartingPhase starting_phase_;
+  int restart_count_;
 
   // Current running information.
   std::unique_ptr<EmbeddedWorkerInstance::WorkerProcessHandle> process_handle_;

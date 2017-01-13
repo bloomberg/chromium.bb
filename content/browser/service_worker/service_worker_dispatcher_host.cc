@@ -36,6 +36,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/origin_util.h"
 #include "ipc/ipc_message_macros.h"
@@ -1087,6 +1088,15 @@ void ServiceWorkerDispatcherHost::OnSetHostedVersionId(int provider_id,
     base::debug::ScopedCrashKey scope_provider_host_pid(
         "swdh_set_hosted_version_host_pid",
         base::IntToString(provider_host->process_id()));
+    if (version->embedded_worker()->process_id() !=
+        ChildProcessHost::kInvalidUniqueID) {
+      base::debug::ScopedCrashKey scope_is_new_process(
+          "swdh_set_hosted_version_is_new_process",
+          version->embedded_worker()->is_new_process() ? "true" : "false");
+    }
+    base::debug::ScopedCrashKey scope_worker_restart_count(
+        "swdh_set_hosted_version_restart_count",
+        base::IntToString(version->embedded_worker()->restart_count()));
     bad_message::ReceivedBadMessage(
         this, bad_message::SWDH_SET_HOSTED_VERSION_PROCESS_MISMATCH);
     return;
