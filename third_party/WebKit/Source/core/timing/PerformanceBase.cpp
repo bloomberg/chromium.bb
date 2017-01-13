@@ -354,11 +354,12 @@ void PerformanceBase::addNavigationTiming(LocalFrame* frame) {
   const DocumentTiming* documentTiming =
       frame->document() ? &(frame->document()->timing()) : nullptr;
 
-  const ResourceResponse& finalResponse = documentLoader->response();
   ResourceTimingInfo* navigationTimingInfo =
       documentLoader->getNavigationTimingInfo();
   if (!navigationTimingInfo)
     return;
+
+  const ResourceResponse& finalResponse = navigationTimingInfo->finalResponse();
 
   ResourceLoadTiming* resourceLoadTiming = finalResponse.resourceLoadTiming();
   // Don't create a navigation timing instance when

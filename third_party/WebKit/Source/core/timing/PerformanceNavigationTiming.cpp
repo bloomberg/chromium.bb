@@ -34,7 +34,7 @@ PerformanceNavigationTiming::PerformanceNavigationTiming(
     unsigned long long encodedBodyLength,
     unsigned long long decodedBodyLength,
     bool didReuseConnection)
-    : PerformanceResourceTiming("",
+    : PerformanceResourceTiming("navigation",
                                 timeOrigin,
                                 timing,
                                 lastRedirectEndTime,

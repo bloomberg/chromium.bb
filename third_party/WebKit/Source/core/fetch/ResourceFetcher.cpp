@@ -195,7 +195,7 @@ ResourceLoadPriority ResourceFetcher::computeLoadPriority(
                   request.resourceRequest().priority());
 }
 
-static void populateResourceTiming(ResourceTimingInfo* info,
+static void populateTimingInfo(ResourceTimingInfo* info,
                                    Resource* resource) {
   KURL initialURL = resource->response().redirectResponses().isEmpty()
                         ? resource->resourceRequest().url()
@@ -307,7 +307,7 @@ void ResourceFetcher::requestLoadStarted(unsigned long identifier,
     std::unique_ptr<ResourceTimingInfo> info = ResourceTimingInfo::create(
         request.options().initiatorInfo.name, monotonicallyIncreasingTime(),
         resource->getType() == Resource::MainResource);
-    populateResourceTiming(info.get(), resource);
+    populateTimingInfo(info.get(), resource);
     info->clearLoadTimings();
     info->setLoadFinishTime(info->initialTime());
     m_scheduledResourceTimingReports.push_back(std::move(info));
@@ -1123,6 +1123,7 @@ void ResourceFetcher::handleLoaderFinish(Resource* resource,
     // Store redirect responses that were packed inside the final response.
     addRedirectsToTimingInfo(resource, m_navigationTimingInfo.get());
     if (resource->response().isHTTP()) {
+      populateTimingInfo(m_navigationTimingInfo.get(), resource);
       m_navigationTimingInfo->addFinalTransferSize(
           encodedDataLength == -1 ? 0 : encodedDataLength);
     }
@@ -1134,7 +1135,7 @@ void ResourceFetcher::handleLoaderFinish(Resource* resource,
 
     if (resource->response().isHTTP() &&
         resource->response().httpStatusCode() < 400) {
-      populateResourceTiming(info.get(), resource);
+      populateTimingInfo(info.get(), resource);
       info->setLoadFinishTime(finishTime);
       // encodedDataLength == -1 means "not available".
       // TODO(ricea): Find cases where it is not available but the
