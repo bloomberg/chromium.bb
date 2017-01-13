@@ -14,4 +14,9 @@ extern const base::Feature kContentSuggestionsNotificationsFeature;
 // "true": always send a notification when we receive ARTICLES suggestions
 extern const char kContentSuggestionsNotificationsAlwaysNotifyParam[];
 
+// An integer. The number of notifications that can be ignored. If the user
+// ignores this many notifications or more, we stop sending them.
+extern const char kContentSuggestionsNotificationsIgnoredLimitParam[];
+constexpr int kContentSuggestionsNotificationsIgnoredDefaultLimit = 3;
+
 #endif  // CHROME_BROWSER_NTP_SNIPPETS_NTP_SNIPPETS_FEATURES_H_

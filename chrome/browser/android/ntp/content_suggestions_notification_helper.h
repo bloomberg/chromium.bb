@@ -5,12 +5,15 @@
 #ifndef CHROME_BROWSER_ANDROID_NTP_CONTENT_SUGGESTIONS_NOTIFICATION_HELPER_H_
 #define CHROME_BROWSER_ANDROID_NTP_CONTENT_SUGGESTIONS_NOTIFICATION_HELPER_H_
 
+#include <jni.h>
 #include <string>
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "url/gurl.h"
+
+class Profile;
 
 namespace gfx {
 class Image;
@@ -20,13 +23,28 @@ namespace ntp_snippets {
 
 class ContentSuggestionsNotificationHelper {
  public:
-  static void OpenURL(const GURL& url);
   static void SendNotification(const GURL& url,
                                const base::string16& title,
                                const base::string16& text,
                                const gfx::Image& image,
                                base::Time timeout_at);
   static void HideAllNotifications();
+
+  // Moves metrics tracked in Java into native histograms. Should be called when
+  // the native library starts up, to capture any actions that were taken since
+  // the last time it was running. (Harmless to call more often, though)
+  //
+  // Also updates the "consecutive ignored" preference, which is computed from
+  // the actions taken on notifications, and maybe the "opt outs" metric, which
+  // is computed in turn from that.
+  static void FlushCachedMetrics();
+
+  // True if the user has ignored enough notifications that we no longer think
+  // that the user is interested in them.
+  static bool IsDisabledForProfile(Profile* profile);
+
+  // Registers JNI methods.
+  static bool Register(JNIEnv* env);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ContentSuggestionsNotificationHelper);

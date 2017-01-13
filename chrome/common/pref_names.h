@@ -557,6 +557,7 @@ extern const char kNtpCollapsedForeignSessions[];
 extern const char kNtpCollapsedRecentlyClosedTabs[];
 extern const char kNtpCollapsedSnapshotDocument[];
 extern const char kNtpCollapsedSyncPromo[];
+extern const char kContentSuggestionsConsecutiveIgnoredPrefName[];
 #endif  // defined(OS_ANDROID)
 extern const char kNtpShownPage[];
 

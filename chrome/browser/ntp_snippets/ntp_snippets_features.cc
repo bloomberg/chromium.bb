@@ -9,3 +9,5 @@ const base::Feature kContentSuggestionsNotificationsFeature = {
 
 const char kContentSuggestionsNotificationsAlwaysNotifyParam[] =
     "always_notify";
+const char kContentSuggestionsNotificationsIgnoredLimitParam[] =
+    "ignored_limit";

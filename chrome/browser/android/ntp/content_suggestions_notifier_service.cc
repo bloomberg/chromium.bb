@@ -12,7 +12,9 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/ntp_snippets/ntp_snippets_features.h"
+#include "chrome/browser/ntp_snippets/ntp_snippets_metrics.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -68,13 +70,16 @@ class ContentSuggestionsNotifierService::NotifyingObserver
                     Profile* profile,
                     PrefService* prefs)
       : service_(service),
+        profile_(profile),
         prefs_(prefs),
         app_status_listener_(base::Bind(&NotifyingObserver::AppStatusChanged,
                                         base::Unretained(this))),
         weak_ptr_factory_(this) {}
 
   void OnNewSuggestions(Category category) override {
-    if (!ShouldNotifyInState(app_status_listener_.GetState())) {
+    if (!ShouldNotifyInState(app_status_listener_.GetState()) ||
+        ContentSuggestionsNotificationHelper::IsDisabledForProfile(profile_)) {
+      DVLOG(1) << "notification suppressed";
       return;
     }
     const ContentSuggestion* suggestion = GetSuggestionToNotifyAbout(category);
@@ -108,25 +113,33 @@ class ContentSuggestionsNotifierService::NotifyingObserver
       case CategoryStatus::NOT_PROVIDED:
       case CategoryStatus::SIGNED_OUT:
         ContentSuggestionsNotificationHelper::HideAllNotifications();
+        RecordContentSuggestionsNotificationAction(
+            CONTENT_SUGGESTIONS_HIDE_DISABLED);
         break;
     }
   }
 
   void OnSuggestionInvalidated(
       const ContentSuggestion::ID& suggestion_id) override {
+    // TODO(sfiera): handle concurrent notifications and non-articles properly.
     if (suggestion_id.category().IsKnownCategory(KnownCategories::ARTICLES) &&
         (suggestion_id.id_within_category() ==
          prefs_->GetString(kNotificationIDWithinCategory))) {
       ContentSuggestionsNotificationHelper::HideAllNotifications();
+      RecordContentSuggestionsNotificationAction(
+          CONTENT_SUGGESTIONS_HIDE_EXPIRY);
     }
   }
 
   void OnFullRefreshRequired() override {
     ContentSuggestionsNotificationHelper::HideAllNotifications();
+    RecordContentSuggestionsNotificationAction(CONTENT_SUGGESTIONS_HIDE_EXPIRY);
   }
 
   void ContentSuggestionsServiceShutdown() override {
     ContentSuggestionsNotificationHelper::HideAllNotifications();
+    RecordContentSuggestionsNotificationAction(
+        CONTENT_SUGGESTIONS_HIDE_SHUTDOWN);
   }
 
  private:
@@ -154,6 +167,8 @@ class ContentSuggestionsNotifierService::NotifyingObserver
   void AppStatusChanged(base::android::ApplicationState state) {
     if (!ShouldNotifyInState(state)) {
       ContentSuggestionsNotificationHelper::HideAllNotifications();
+      RecordContentSuggestionsNotificationAction(
+          CONTENT_SUGGESTIONS_HIDE_FRONTMOST);
     }
   }
 
@@ -172,9 +187,14 @@ class ContentSuggestionsNotifierService::NotifyingObserver
     prefs_->SetString(kNotificationIDWithinCategory, id.id_within_category());
     ContentSuggestionsNotificationHelper::SendNotification(
         url, title, publisher, CropSquare(image), timeout_at);
+    RecordContentSuggestionsNotificationImpression(
+        id.category().IsKnownCategory(KnownCategories::ARTICLES)
+            ? CONTENT_SUGGESTIONS_ARTICLE
+            : CONTENT_SUGGESTIONS_NONARTICLE);
   }
 
   ContentSuggestionsService* const service_;
+  Profile* const profile_;
   PrefService* const prefs_;
   base::android::ApplicationStatusListener app_status_listener_;
 
@@ -190,6 +210,7 @@ ContentSuggestionsNotifierService::ContentSuggestionsNotifierService(
     : observer_(base::MakeUnique<NotifyingObserver>(suggestions,
                                                     profile,
                                                     profile->GetPrefs())) {
+  ContentSuggestionsNotificationHelper::FlushCachedMetrics();
   suggestions->AddObserver(observer_.get());
 }
 
@@ -199,4 +220,6 @@ ContentSuggestionsNotifierService::~ContentSuggestionsNotifierService() =
 void ContentSuggestionsNotifierService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(kNotificationIDWithinCategory, std::string());
+  registry->RegisterIntegerPref(
+      prefs::kContentSuggestionsConsecutiveIgnoredPrefName, 0);
 }

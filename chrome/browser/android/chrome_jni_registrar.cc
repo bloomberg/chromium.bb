@@ -63,6 +63,7 @@
 #include "chrome/browser/android/metrics/uma_utils.h"
 #include "chrome/browser/android/metrics/variations_session.h"
 #include "chrome/browser/android/net/external_estimate_provider_android.h"
+#include "chrome/browser/android/ntp/content_suggestions_notification_helper.h"
 #include "chrome/browser/android/ntp/most_visited_sites_bridge.h"
 #include "chrome/browser/android/ntp/ntp_snippets_bridge.h"
 #include "chrome/browser/android/ntp/recent_tabs_page_prefs.h"
@@ -260,6 +261,8 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      ConnectionInfoPopupAndroid::RegisterConnectionInfoPopupAndroid},
     {"SecurityStateModel", RegisterSecurityStateModelAndroid},
     {"ConnectivityChecker", chrome::android::RegisterConnectivityChecker},
+    {"ContentSuggestionsNotificationHelper",
+     ntp_snippets::ContentSuggestionsNotificationHelper::Register},
     {"ContextMenuHelper", RegisterContextMenuHelper},
     {"ContextualSearchManager", RegisterContextualSearchManager},
     {"ContextualSearchSceneLayer", RegisterContextualSearchSceneLayer},

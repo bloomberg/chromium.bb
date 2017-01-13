@@ -1543,6 +1543,11 @@ const char kNtpCollapsedSnapshotDocument[] = "ntp.collapsed_snapshot_document";
 
 // Keeps track of sync promo collapsed state in the Other Devices menu.
 const char kNtpCollapsedSyncPromo[] = "ntp.collapsed_sync_promo";
+
+// Tracks how many notifications the user has ignored, so we can tell when we
+// should stop showing them.
+const char kContentSuggestionsConsecutiveIgnoredPrefName[] =
+    "ntp.content_suggestions.notifications.consecutive_ignored";
 #endif  // defined(OS_ANDROID)
 
 // Which page should be visible on the new tab page v4

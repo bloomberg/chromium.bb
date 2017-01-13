@@ -870,6 +870,10 @@ android:value="true" />
             </intent-filter>
         </receiver>
 
+        <receiver android:name="org.chromium.chrome.browser.ntp.ContentSuggestionsNotificationHelper$OpenUrlReceiver"
+            android:exported="false"/>
+        <receiver android:name="org.chromium.chrome.browser.ntp.ContentSuggestionsNotificationHelper$DeleteReceiver"
+            android:exported="false"/>
         <receiver android:name="org.chromium.chrome.browser.ntp.ContentSuggestionsNotificationHelper$TimeoutReceiver"
             android:exported="false"/>
 
