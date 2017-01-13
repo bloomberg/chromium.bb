@@ -63,7 +63,8 @@ class StartupTabProviderImpl : public StartupTabProvider {
   static StartupTabs CheckStandardOnboardingTabPolicy(
       bool is_first_run,
       bool has_seen_welcome_page,
-      bool is_signed_in);
+      bool is_signed_in,
+      bool is_supervised_user);
 
 #if defined(OS_WIN)
   // Determines which tabs should be shown according to onboarding/first run
@@ -74,7 +75,8 @@ class StartupTabProviderImpl : public StartupTabProvider {
       bool has_seen_win10_promo,
       bool is_signed_in,
       bool set_default_browser_allowed,
-      bool is_default_browser);
+      bool is_default_browser,
+      bool is_supervised_user);
 #endif
 
   // Processes first run URLs specified in Master Preferences file, replacing

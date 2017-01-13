@@ -43,6 +43,7 @@ StartupTabs StartupTabProviderImpl::GetOnboardingTabs(Profile* profile) const {
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile);
   bool is_signed_in = signin_manager && signin_manager->IsAuthenticated();
+  bool is_supervised_user = profile->IsSupervised();
 
 #if defined(OS_WIN)
   // Windows 10 has unique onboarding policies and content.
@@ -66,12 +67,12 @@ StartupTabs StartupTabProviderImpl::GetOnboardingTabs(Profile* profile) const {
         shell_integration::IS_DEFAULT;
     return CheckWin10OnboardingTabPolicy(
         is_first_run, has_seen_welcome_page, has_seen_win10_promo, is_signed_in,
-        set_default_browser_allowed, is_default_browser);
+        set_default_browser_allowed, is_default_browser, is_supervised_user);
   }
 #endif  // defined(OS_WIN)
 
   return CheckStandardOnboardingTabPolicy(is_first_run, has_seen_welcome_page,
-                                          is_signed_in);
+                                          is_signed_in, is_supervised_user);
 #endif  // defined(OS_CHROMEOS)
 }
 
@@ -132,9 +133,10 @@ StartupTabs StartupTabProviderImpl::GetNewTabPageTabs(
 StartupTabs StartupTabProviderImpl::CheckStandardOnboardingTabPolicy(
     bool is_first_run,
     bool has_seen_welcome_page,
-    bool is_signed_in) {
+    bool is_signed_in,
+    bool is_supervised_user) {
   StartupTabs tabs;
-  if (!has_seen_welcome_page && !is_signed_in)
+  if (!has_seen_welcome_page && !is_signed_in && !is_supervised_user)
     tabs.emplace_back(GetWelcomePageUrl(!is_first_run), false);
   return tabs;
 }
@@ -147,8 +149,13 @@ StartupTabs StartupTabProviderImpl::CheckWin10OnboardingTabPolicy(
     bool has_seen_win10_promo,
     bool is_signed_in,
     bool set_default_browser_allowed,
-    bool is_default_browser) {
+    bool is_default_browser,
+    bool is_supervised_user) {
   StartupTabs tabs;
+
+  if (is_supervised_user)
+    return tabs;
+
   if (set_default_browser_allowed && !has_seen_win10_promo &&
       !is_default_browser) {
     tabs.emplace_back(GetWin10WelcomePageUrl(!is_first_run), false);
