@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "base/optional.h"
+#include "components/payments/currency_formatter.h"
 #include "components/payments/payment_request.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -41,6 +43,16 @@ class PaymentRequest : payments::mojom::PaymentRequest {
 
   void Cancel();
   void OnError();
+
+  // Returns the CurrencyFormatter instance for this PaymentRequest.
+  // |locale_name| should be the result of the browser's GetApplicationLocale().
+  // Note: Having multiple currencies per PaymentRequest is not supported; hence
+  // the CurrencyFormatter is cached here.
+  CurrencyFormatter* GetOrCreateCurrencyFormatter(
+      const std::string& currency_code,
+      const base::Optional<std::string> currency_system,
+      const std::string& locale_name);
+
   payments::mojom::PaymentDetails* details() { return details_.get(); }
 
   content::WebContents* web_contents() { return web_contents_; }
@@ -53,6 +65,7 @@ class PaymentRequest : payments::mojom::PaymentRequest {
   mojo::Binding<payments::mojom::PaymentRequest> binding_;
   payments::mojom::PaymentRequestClientPtr client_;
   payments::mojom::PaymentDetailsPtr details_;
+  std::unique_ptr<CurrencyFormatter> currency_formatter_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequest);
 };

@@ -10,9 +10,11 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/payments/currency_formatter.h"
 #include "components/payments/payment_request.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -38,12 +40,16 @@ std::unique_ptr<views::View> OrderSummaryViewController::CreateView() {
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                      0, views::GridLayout::USE_PREF, 0, 0);
 
+  CurrencyFormatter* formatter = request()->GetOrCreateCurrencyFormatter(
+      request()->details()->total->amount->currency,
+      request()->details()->total->amount->currencySystem,
+      g_browser_process->GetApplicationLocale());
   layout->StartRow(0, 0);
   layout->AddView(new views::Label(l10n_util::GetStringFUTF16(
       IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SECTION_TOTAL_FORMAT,
-      base::ASCIIToUTF16(request()->details()->total->label),
-      base::ASCIIToUTF16(request()->details()->total->amount->value),
-      base::ASCIIToUTF16(request()->details()->total->amount->currency))));
+      base::UTF8ToUTF16(request()->details()->total->label),
+      base::UTF8ToUTF16(request()->details()->total->amount->currency),
+      formatter->Format(request()->details()->total->amount->value))));
 
   return payments::CreatePaymentView(
       CreateSheetHeaderView(

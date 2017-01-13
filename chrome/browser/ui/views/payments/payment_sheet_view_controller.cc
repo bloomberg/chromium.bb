@@ -9,9 +9,11 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/payments/currency_formatter.h"
 #include "components/payments/payment_request.h"
 #include "components/strings/grit/components_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -157,11 +159,15 @@ void PaymentSheetViewController::ButtonPressed(
 
 std::unique_ptr<views::View>
 PaymentSheetViewController::CreateOrderSummarySectionContent() {
+  CurrencyFormatter* formatter = request()->GetOrCreateCurrencyFormatter(
+      request()->details()->total->amount->currency,
+      request()->details()->total->amount->currencySystem,
+      g_browser_process->GetApplicationLocale());
   base::string16 label_value = l10n_util::GetStringFUTF16(
       IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SECTION_TOTAL_FORMAT,
-      base::ASCIIToUTF16(request()->details()->total->label),
-      base::ASCIIToUTF16(request()->details()->total->amount->currency),
-      base::ASCIIToUTF16(request()->details()->total->amount->value));
+      base::UTF8ToUTF16(request()->details()->total->label),
+      base::UTF8ToUTF16(request()->details()->total->amount->currency),
+      formatter->Format(request()->details()->total->amount->value));
 
   return base::MakeUnique<views::Label>(label_value);
 }

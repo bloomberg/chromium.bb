@@ -1,0 +1,124 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "components/payments/currency_formatter.h"
+
+#include <memory>
+
+#include "base/numerics/safe_conversions.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "third_party/icu/source/common/unicode/stringpiece.h"
+#include "third_party/icu/source/common/unicode/uchar.h"
+#include "third_party/icu/source/common/unicode/unistr.h"
+#include "third_party/icu/source/common/unicode/utypes.h"
+
+namespace payments {
+
+const char kIso4217CurrencySystem[] = "urn:iso:std:iso:4217";
+namespace {
+
+// Support a maximum of 10 fractional digits, similar to the ISO20022 standard.
+// https://www.iso20022.org/standardsrepository/public/wqt/Description/mx/dico/
+//   datatypes/_L8ZcEp0gEeOo48XfssNw8w
+const int kMaximumNumFractionalDigits = 10;
+
+// Max currency code length. Length of currency code can be at most 2048.
+const static size_t kMaxCurrencyCodeLength = 2048;
+
+// Returns whether the |currency_code| is valid to be used in ICU.
+bool ShouldUseCurrencyCode(const std::string& currency_code,
+                           const base::Optional<std::string> currency_system) {
+  return currency_system.value_or(kIso4217CurrencySystem) ==
+             kIso4217CurrencySystem &&
+         !currency_code.empty() &&
+         currency_code.size() <= kMaxCurrencyCodeLength;
+}
+
+}  // namespace
+
+CurrencyFormatter::CurrencyFormatter(
+    const std::string& currency_code,
+    const base::Optional<std::string> currency_system,
+    const std::string& locale_name)
+    : locale_(locale_name.c_str()) {
+  UErrorCode error_code = U_ZERO_ERROR;
+  icu_formatter_.reset(
+      icu::NumberFormat::createCurrencyInstance(locale_, error_code));
+  if (U_FAILURE(error_code)) {
+    icu::UnicodeString name;
+    std::string locale_str;
+    locale_.getDisplayName(name).toUTF8String(locale_str);
+    LOG(ERROR) << "Failed to initialize the currency formatter for "
+               << locale_str;
+    return;
+  }
+
+  if (ShouldUseCurrencyCode(currency_code, currency_system)) {
+    currency_code_.reset(new icu::UnicodeString(
+        currency_code.c_str(),
+        base::checked_cast<int32_t>(currency_code.size())));
+  } else {
+    // For non-ISO4217 currency system/code, we use a dummy code which is not
+    // going to appear in the output (stripped in Format()). This is because ICU
+    // NumberFormat will not accept an empty currency code. Under these
+    // circumstances, the number amount will be formatted according to locale,
+    // which is desirable (e.g. "55.00" -> "55,00" in fr_FR).
+    currency_code_.reset(new icu::UnicodeString("DUM", 3));
+  }
+
+  icu_formatter_->setCurrency(currency_code_->getBuffer(), error_code);
+  if (U_FAILURE(error_code)) {
+    std::string currency_code_str;
+    currency_code_->toUTF8String(currency_code_str);
+    LOG(ERROR) << "Could not set currency code on currency formatter: "
+               << currency_code_str;
+    return;
+  }
+
+  icu_formatter_->setMaximumFractionDigits(kMaximumNumFractionalDigits);
+}
+
+CurrencyFormatter::~CurrencyFormatter() {}
+
+base::string16 CurrencyFormatter::Format(const std::string& amount) {
+  // It's possible that the ICU formatter didn't initialize properly.
+  if (!icu_formatter_ || !icu_formatter_->getCurrency())
+    return base::UTF8ToUTF16(amount);
+
+  icu::UnicodeString output;
+  UErrorCode error_code = U_ZERO_ERROR;
+  icu_formatter_->format(icu::StringPiece(amount.c_str()), output, nullptr,
+                         error_code);
+
+  if (output.isEmpty())
+    return base::UTF8ToUTF16(amount);
+
+  // Explicitly removes the currency code (truncated to its 3-letter and
+  // 2-letter versions) from the output, because callers are expected to
+  // display the currency code alongside this result.
+  //
+  // 3+ letters: If currency code is "ABCDEF" or "BTX", this code will
+  // transform "ABC55.00"/"BTX55.00" to "55.00".
+  // 2 letters: If currency code is "CAD", this code will transform "CA$55.00"
+  // to "$55.00" (en_US) or "55,00 $ CA" to "55,00 $" (fr_FR).
+  icu::UnicodeString tmp_currency_code(*currency_code_);
+  tmp_currency_code.truncate(3);
+  output.findAndReplace(tmp_currency_code, "");
+  tmp_currency_code.truncate(2);
+  output.findAndReplace(tmp_currency_code, "");
+  // Trims any unicode whitespace (including non-breaking space).
+  if (u_isUWhiteSpace(output[0])) {
+    output.remove(0, 1);
+  }
+  if (u_isUWhiteSpace(output[output.length() - 1])) {
+    output.remove(output.length() - 1, 1);
+  }
+
+  std::string output_str;
+  output.toUTF8String(output_str);
+  return base::UTF8ToUTF16(output_str);
+}
+
+}  // namespace payments

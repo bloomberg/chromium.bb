@@ -61,4 +61,16 @@ void PaymentRequest::OnError() {
   manager_->DestroyRequest(this);
 }
 
+CurrencyFormatter* PaymentRequest::GetOrCreateCurrencyFormatter(
+    const std::string& currency_code,
+    const base::Optional<std::string> currency_system,
+    const std::string& locale_name) {
+  if (!currency_formatter_) {
+    currency_formatter_.reset(
+        new CurrencyFormatter(currency_code, currency_system, locale_name));
+  }
+
+  return currency_formatter_.get();
+}
+
 }  // namespace payments

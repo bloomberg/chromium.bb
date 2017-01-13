@@ -2115,7 +2115,10 @@ split_static_library("ui") {
     ]
   }
   if (is_win || is_linux) {
-    deps += [ "//components/payments:payment_request_impl" ]
+    deps += [
+      "//components/payments:payment_request_impl",
+      "//components/payments:payment_validation",
+    ]
   }
   if (enable_print_preview) {
     sources += [
