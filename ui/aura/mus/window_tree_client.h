@@ -397,6 +397,7 @@ class AURA_EXPORT WindowTreeClient
                          ui::mojom::MoveLoopSource source,
                          const gfx::Point& cursor_location) override;
   void WmCancelMoveLoop(uint32_t window_id) override;
+  void WmDeactivateWindow(Id window_id) override;
   void OnAccelerator(uint32_t ack_id,
                      uint32_t accelerator_id,
                      std::unique_ptr<ui::Event> event) override;
@@ -427,6 +428,8 @@ class AURA_EXPORT WindowTreeClient
   void OnWindowTreeHostHitTestMaskWillChange(
       WindowTreeHostMus* window_tree_host,
       const base::Optional<gfx::Rect>& mask_rect) override;
+  void OnWindowTreeHostDeactivateWindow(
+      WindowTreeHostMus* window_tree_host) override;
   std::unique_ptr<WindowPortMus> CreateWindowPortForTopLevel(
       const std::map<std::string, std::vector<uint8_t>>* properties) override;
   void OnWindowTreeHostCreated(WindowTreeHostMus* window_tree_host) override;

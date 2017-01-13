@@ -80,6 +80,8 @@ class TestWindowManagerDelegate : public aura::WindowManagerDelegate {
       aura::Window* window,
       const gfx::Insets& insets,
       const std::vector<gfx::Rect>& additional_client_areas) override {}
+  bool IsWindowActive(aura::Window* window) override { return true; }
+  void OnWmDeactivateWindow(aura::Window* window) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestWindowManagerDelegate);

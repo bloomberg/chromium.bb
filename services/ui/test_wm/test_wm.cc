@@ -167,6 +167,13 @@ class TestWM : public service_manager::Service,
       aura::Window* window,
       const gfx::Insets& insets,
       const std::vector<gfx::Rect>& additional_client_areas) override {}
+  bool IsWindowActive(aura::Window* window) override {
+    // Focus client interface doesn't expose this; assume true.
+    return true;
+  }
+  void OnWmDeactivateWindow(aura::Window* window) override {
+    aura::client::GetFocusClient(root_)->FocusWindow(nullptr);
+  }
 
   std::unique_ptr<display::ScreenBase> screen_;
 

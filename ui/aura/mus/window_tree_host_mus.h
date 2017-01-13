@@ -68,6 +68,9 @@ class AURA_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
   // clear.
   void SetHitTestMask(const base::Optional<gfx::Rect>& rect);
 
+  // Requests that the window manager change the activation to the next window.
+  void DeactivateWindow();
+
   // Intended only for WindowTreeClient to call.
   void set_display_id(int64_t id) { display_id_ = id; }
   int64_t display_id() const { return display_id_; }

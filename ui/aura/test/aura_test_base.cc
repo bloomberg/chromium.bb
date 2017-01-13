@@ -222,6 +222,10 @@ void AuraTestBase::OnWmSetClientArea(
     const gfx::Insets& insets,
     const std::vector<gfx::Rect>& additional_client_areas) {}
 
+bool AuraTestBase::IsWindowActive(aura::Window* window) { return false; }
+
+void AuraTestBase::OnWmDeactivateWindow(Window* window) {}
+
 client::CaptureClient* AuraTestBase::GetCaptureClient() {
   return helper_->capture_client();
 }

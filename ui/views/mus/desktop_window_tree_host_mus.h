@@ -15,6 +15,7 @@
 #include "ui/views/mus/mus_export.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace wm {
 class CursorManager;
@@ -25,6 +26,7 @@ namespace views {
 class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
     : public DesktopWindowTreeHost,
       public MusClientObserver,
+      public WidgetObserver,
       public aura::WindowTreeHostMus,
       public aura::EnvObserver {
  public:
@@ -60,6 +62,7 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   void Init(aura::Window* content_window,
             const Widget::InitParams& params) override;
   void OnNativeWidgetCreated(const Widget::InitParams& params) override;
+  void OnNativeWidgetActivationChanged(bool active) override;
   void OnWidgetInitDone() override;
   std::unique_ptr<corewm::Tooltip> CreateTooltip() override;
   std::unique_ptr<aura::client::DragDropClient> CreateDragDropClient(
@@ -122,6 +125,9 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
 
   // MusClientObserver:
   void OnWindowManagerFrameValuesChanged() override;
+
+  // WidgetObserver:
+  void OnWidgetActivationChanged(Widget* widget, bool active) override;
 
   // WindowTreeHostMus:
   void ShowImpl() override;

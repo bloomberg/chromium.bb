@@ -1585,6 +1585,26 @@ void WindowTree::SetPredefinedCursor(uint32_t change_id,
   client()->OnChangeCompleted(change_id, success);
 }
 
+void WindowTree::DeactivateWindow(Id window_id) {
+  ServerWindow* window =
+      GetWindowByClientId(ClientWindowId(window_id));
+  if (!window) {
+    DVLOG(1) << "DeactivateWindow failed (invalid id)";
+    return;
+  }
+
+  WindowManagerDisplayRoot* display_root = GetWindowManagerDisplayRoot(window);
+  if (!display_root) {
+    // The window isn't parented. There's nothing to do.
+    DVLOG(1) << "DeactivateWindow failed (window unparented)";
+    return;
+  }
+
+  WindowTree* wm_tree = display_root->window_manager_state()->window_tree();
+  wm_tree->window_manager_internal_->WmDeactivateWindow(
+      wm_tree->ClientWindowIdForWindow(window).id);
+}
+
 void WindowTree::GetWindowManagerClient(
     mojo::AssociatedInterfaceRequest<mojom::WindowManagerClient> internal) {
   if (!access_policy_->CanSetWindowManager() || !window_manager_internal_ ||

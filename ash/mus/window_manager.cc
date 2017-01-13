@@ -504,5 +504,13 @@ void WindowManager::OnWmSetClientArea(
   non_client_frame_controller->SetClientArea(insets, additional_client_areas);
 }
 
+bool WindowManager::IsWindowActive(aura::Window* window) {
+  return activation_client()->GetActiveWindow() == window;
+}
+
+void WindowManager::OnWmDeactivateWindow(aura::Window* window) {
+  activation_client()->DeactivateWindow(window);
+}
+
 }  // namespace mus
 }  // namespace ash

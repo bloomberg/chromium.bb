@@ -437,6 +437,7 @@ class WindowTree : public mojom::WindowTree,
                         mojo::TextInputStatePtr state) override;
   void OnWindowInputEventAck(uint32_t event_id,
                              mojom::EventResult result) override;
+  void DeactivateWindow(Id window_id) override;
   void SetClientArea(Id transport_window_id,
                      const gfx::Insets& insets,
                      const base::Optional<std::vector<gfx::Rect>>&

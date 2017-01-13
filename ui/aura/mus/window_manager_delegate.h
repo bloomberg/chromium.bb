@@ -148,6 +148,13 @@ class AURA_EXPORT WindowManagerDelegate {
       const gfx::Insets& insets,
       const std::vector<gfx::Rect>& additional_client_areas) = 0;
 
+  // Returns whether |window| is the current active window.
+  virtual bool IsWindowActive(Window* window) = 0;
+
+  // Called when a client requests that its activation be given to another
+  // window.
+  virtual void OnWmDeactivateWindow(Window* window) = 0;
+
  protected:
   virtual ~WindowManagerDelegate() {}
 };

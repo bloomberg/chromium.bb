@@ -214,6 +214,10 @@ void MusDemo::OnWmSetClientArea(
     const gfx::Insets& insets,
     const std::vector<gfx::Rect>& additional_client_areas) {}
 
+bool MusDemo::IsWindowActive(aura::Window* window) { return false; }
+
+void MusDemo::OnWmDeactivateWindow(aura::Window* window) {}
+
 void MusDemo::DrawFrame() {
   base::TimeTicks now = base::TimeTicks::Now();
 

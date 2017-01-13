@@ -181,6 +181,8 @@ class WindowManager : public aura::WindowManagerDelegate,
       aura::Window* window,
       const gfx::Insets& insets,
       const std::vector<gfx::Rect>& additional_client_areas) override;
+  bool IsWindowActive(aura::Window* window) override;
+  void OnWmDeactivateWindow(aura::Window* window) override;
 
   service_manager::Connector* connector_;
   display::mojom::DisplayControllerPtr display_controller_;

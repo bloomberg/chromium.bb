@@ -187,6 +187,10 @@ interface WindowManager {
   // Asks the WindowManager to cancel any outstanding move loop on |change_id|.
   WmCancelMoveLoop(uint32 change_id);
 
+  // Asks the WindowManager to change the activation from the current window
+  // to the next. The window manager may completely ignore this message.
+  WmDeactivateWindow(uint32 window_id);
+
   // An accelerator registered via AddAccelerator() has been triggered. If
   // |ack_id| is non-zero the accelerator matches a PRE_TARGET and must be
   // acknowledged by WindowManagerClient::OnAcceleratorAck().

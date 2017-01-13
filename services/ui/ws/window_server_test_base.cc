@@ -262,6 +262,17 @@ void WindowServerTestBase::OnWmSetClientArea(
   }
 }
 
+bool WindowServerTestBase::IsWindowActive(aura::Window* window) {
+  if (window_manager_delegate_)
+    window_manager_delegate_->IsWindowActive(window);
+  return false;
+}
+
+void WindowServerTestBase::OnWmDeactivateWindow(aura::Window* window) {
+  if (window_manager_delegate_)
+    window_manager_delegate_->OnWmDeactivateWindow(window);
+}
+
 void WindowServerTestBase::Create(
     const service_manager::Identity& remote_identity,
     mojom::WindowTreeClientRequest request) {

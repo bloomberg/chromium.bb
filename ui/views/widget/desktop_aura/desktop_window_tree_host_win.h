@@ -48,6 +48,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   void Init(aura::Window* content_window,
             const Widget::InitParams& params) override;
   void OnNativeWidgetCreated(const Widget::InitParams& params) override;
+  void OnNativeWidgetActivationChanged(bool active) override;
   void OnWidgetInitDone() override;
   std::unique_ptr<corewm::Tooltip> CreateTooltip() override;
   std::unique_ptr<aura::client::DragDropClient> CreateDragDropClient(

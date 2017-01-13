@@ -266,6 +266,8 @@ void TestWindowTree::OnWindowInputEventAck(uint32_t event_id,
   acked_events_.push_back({event_id, result});
 }
 
+void TestWindowTree::DeactivateWindow(uint32_t window_id) {}
+
 void TestWindowTree::GetWindowManagerClient(
     mojo::AssociatedInterfaceRequest<ui::mojom::WindowManagerClient> internal) {
 }

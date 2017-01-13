@@ -122,6 +122,10 @@ void WindowTreeHostMus::SetHitTestMask(const base::Optional<gfx::Rect>& rect) {
   delegate_->OnWindowTreeHostHitTestMaskWillChange(this, rect);
 }
 
+void WindowTreeHostMus::DeactivateWindow() {
+  delegate_->OnWindowTreeHostDeactivateWindow(this);
+}
+
 display::Display WindowTreeHostMus::GetDisplay() const {
   display::Display display;
   display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id_, &display);

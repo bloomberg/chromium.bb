@@ -385,6 +385,7 @@ class WindowTreeClient : public mojom::WindowTreeClient,
                          mojom::MoveLoopSource source,
                          const gfx::Point& cursor_location) override;
   void WmCancelMoveLoop(uint32_t window_id) override;
+  void WmDeactivateWindow(uint32_t window_id) override;
   void OnAccelerator(uint32_t ack_id,
                      uint32_t accelerator_id,
                      std::unique_ptr<ui::Event> event) override;

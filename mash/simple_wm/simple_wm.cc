@@ -557,6 +557,10 @@ void SimpleWM::OnWmSetClientArea(
     const gfx::Insets& insets,
     const std::vector<gfx::Rect>& additional_client_areas) {}
 
+bool SimpleWM::IsWindowActive(aura::Window* window) { return false; }
+
+void SimpleWM::OnWmDeactivateWindow(aura::Window* window) {}
+
 ////////////////////////////////////////////////////////////////////////////////
 // SimpleWM, wm::BaseFocusRules implementation:
 

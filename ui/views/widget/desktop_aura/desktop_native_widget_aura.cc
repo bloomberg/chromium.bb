@@ -1104,6 +1104,10 @@ void DesktopNativeWidgetAura::OnWindowActivated(
     // Pass in false so that ClearNativeFocus() isn't invoked.
     GetWidget()->GetFocusManager()->StoreFocusedView(false);
   }
+
+  // Give the native widget a chance to handle any specific changes it needs.
+  desktop_window_tree_host_->OnNativeWidgetActivationChanged(
+      content_window_ == gained_active);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

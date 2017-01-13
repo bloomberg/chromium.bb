@@ -98,6 +98,8 @@ class MusDemo : public service_manager::Service,
       aura::Window* window,
       const gfx::Insets& insets,
       const std::vector<gfx::Rect>& additional_client_areas) override;
+  bool IsWindowActive(aura::Window* window) override;
+  void OnWmDeactivateWindow(aura::Window* window) override;
 
   // Draws one frame, incrementing the rotation angle.
   void DrawFrame();

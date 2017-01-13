@@ -159,6 +159,8 @@ void DesktopWindowTreeHostWin::OnNativeWidgetCreated(
   SetWindowTransparency();
 }
 
+void DesktopWindowTreeHostWin::OnNativeWidgetActivationChanged(bool active) {}
+
 void DesktopWindowTreeHostWin::OnWidgetInitDone() {}
 
 std::unique_ptr<corewm::Tooltip> DesktopWindowTreeHostWin::CreateTooltip() {

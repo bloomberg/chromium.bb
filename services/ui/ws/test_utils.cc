@@ -245,6 +245,8 @@ void TestWindowManager::WmPerformMoveLoop(uint32_t change_id,
 
 void TestWindowManager::WmCancelMoveLoop(uint32_t window_id) {}
 
+void TestWindowManager::WmDeactivateWindow(uint32_t window_id) {}
+
 void TestWindowManager::OnAccelerator(uint32_t ack_id,
                                       uint32_t accelerator_id,
                                       std::unique_ptr<ui::Event> event) {

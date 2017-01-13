@@ -475,6 +475,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
     NOTIMPLEMENTED();
   }
   void WmCancelMoveLoop(uint32_t window_id) override { NOTIMPLEMENTED(); }
+  void WmDeactivateWindow(uint32_t window_id) override { NOTIMPLEMENTED(); }
   void OnAccelerator(uint32_t ack_id,
                      uint32_t accelerator_id,
                      std::unique_ptr<ui::Event> event) override {

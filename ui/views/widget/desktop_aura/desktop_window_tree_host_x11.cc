@@ -482,6 +482,8 @@ void DesktopWindowTreeHostX11::OnNativeWidgetCreated(
 
 void DesktopWindowTreeHostX11::OnWidgetInitDone() {}
 
+void DesktopWindowTreeHostX11::OnNativeWidgetActivationChanged(bool active) {}
+
 std::unique_ptr<corewm::Tooltip> DesktopWindowTreeHostX11::CreateTooltip() {
   return base::WrapUnique(new corewm::TooltipAura);
 }

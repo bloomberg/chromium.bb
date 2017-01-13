@@ -42,6 +42,10 @@ class AURA_EXPORT WindowTreeHostMusDelegate {
       WindowTreeHostMus* window_tree_host,
       const base::Optional<gfx::Rect>& mask_rect) = 0;
 
+  // Called to clear the focus of the current window.
+  virtual void OnWindowTreeHostDeactivateWindow(
+      WindowTreeHostMus* window_tree_host) = 0;
+
   // Called when a WindowTreeHostMus is created without a WindowPort.
   // TODO: this should take an unordered_map, see http://crbug.com/670515.
   virtual std::unique_ptr<WindowPortMus> CreateWindowPortForTopLevel(

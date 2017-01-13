@@ -102,6 +102,7 @@ class TestWindowTree : public mojom::WindowTree {
                         mojo::TextInputStatePtr state) override;
   void OnWindowInputEventAck(uint32_t event_id,
                              ui::mojom::EventResult result) override;
+  void DeactivateWindow(uint32_t window_id) override;
   void GetWindowManagerClient(
       mojo::AssociatedInterfaceRequest<mojom::WindowManagerClient> internal)
       override;

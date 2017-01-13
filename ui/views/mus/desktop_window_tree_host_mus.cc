@@ -181,6 +181,7 @@ DesktopWindowTreeHostMus::DesktopWindowTreeHostMus(
       close_widget_factory_(this) {
   aura::Env::GetInstance()->AddObserver(this);
   MusClient::Get()->AddObserver(this);
+  native_widget_delegate_->AsWidget()->AddObserver(this);
   // DesktopNativeWidgetAura registers the association between |content_window_|
   // and Widget, but code may also want to go from the root (window()) to the
   // Widget. This call enables that.
@@ -195,6 +196,7 @@ DesktopWindowTreeHostMus::~DesktopWindowTreeHostMus() {
   // the cursor-client needs to be unset on the root-window before
   // |cursor_manager_| is destroyed.
   aura::client::SetCursorClient(window(), nullptr);
+  native_widget_delegate_->AsWidget()->RemoveObserver(this);
   MusClient::Get()->RemoveObserver(this);
   aura::Env::GetInstance()->RemoveObserver(this);
   desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(this);
@@ -278,6 +280,13 @@ void DesktopWindowTreeHostMus::OnNativeWidgetCreated(
     parent_->children_.insert(this);
   }
   native_widget_delegate_->OnNativeWidgetCreated(true);
+}
+
+void DesktopWindowTreeHostMus::OnNativeWidgetActivationChanged(bool active) {
+  // In Mus, when our aura Window receives an activation signal, it can be
+  // because of remote messages. We need to forward that to Widget so that
+  // Widget can notify everyone listening for that signal.
+  native_widget_delegate_->OnNativeWidgetActivationChanged(active);
 }
 
 void DesktopWindowTreeHostMus::OnWidgetInitDone() {
@@ -492,9 +501,8 @@ void DesktopWindowTreeHostMus::Activate() {
 }
 
 void DesktopWindowTreeHostMus::Deactivate() {
-  // TODO: Deactivate() means focus next window, that needs to go to mus.
-  // http://crbug.com/663618.
-  NOTIMPLEMENTED();
+  if (is_active_)
+    DeactivateWindow();
 }
 
 bool DesktopWindowTreeHostMus::IsActive() const {
@@ -669,6 +677,15 @@ void DesktopWindowTreeHostMus::OnWindowManagerFrameValuesChanged() {
   SendHitTestMaskToServer();
 }
 
+void DesktopWindowTreeHostMus::OnWidgetActivationChanged(Widget* widget,
+                                                         bool active) {
+  // TODO(erg): Theoretically, this shouldn't be necessary. We should be able
+  // to just set |is_active_| in OnNativeWidgetActivationChanged() above,
+  // instead of asking the Widget to change the activation and have the widget
+  // then tell us the activation has changed. But if we do that, focus breaks.
+  is_active_ = active;
+}
+
 void DesktopWindowTreeHostMus::ShowImpl() {
   native_widget_delegate_->OnNativeWidgetVisibilityChanging(true);
   // Using ui::SHOW_STATE_NORMAL matches that of DesktopWindowTreeHostX11.
@@ -711,10 +728,8 @@ void DesktopWindowTreeHostMus::OnActiveFocusClientChanged(
     aura::client::FocusClient* focus_client,
     aura::Window* window) {
   if (window == this->window()) {
-    is_active_ = true;
     desktop_native_widget_aura_->HandleActivationChanged(true);
   } else if (is_active_) {
-    is_active_ = false;
     desktop_native_widget_aura_->HandleActivationChanged(false);
   }
 }

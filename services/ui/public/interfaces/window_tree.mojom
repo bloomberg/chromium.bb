@@ -260,6 +260,10 @@ interface WindowTree {
   // See documentation for WindowTreeClient::OnWindowInputEvent().
   OnWindowInputEventAck(uint32 event_id, EventResult result);
 
+  // If the current focus is (or is a child of) |window_id|, requests that the
+  // window manager change the focus to the next activatable window.
+  DeactivateWindow(uint32 window_id);
+
   // See description of WindowManager for details.
   GetWindowManagerClient(associated WindowManagerClient& internal);
 

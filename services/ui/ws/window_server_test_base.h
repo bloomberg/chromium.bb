@@ -117,6 +117,8 @@ class WindowServerTestBase
       aura::Window* window,
       const gfx::Insets& insets,
       const std::vector<gfx::Rect>& additional_client_areas) override;
+  bool IsWindowActive(aura::Window* window) override;
+  void OnWmDeactivateWindow(aura::Window* window) override;
 
   // InterfaceFactory<WindowTreeClient>:
   void Create(const service_manager::Identity& remote_identity,

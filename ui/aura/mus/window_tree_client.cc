@@ -1466,6 +1466,24 @@ void WindowTreeClient::WmCancelMoveLoop(uint32_t change_id) {
     window_manager_delegate_->OnWmCancelMoveLoop(window->GetWindow());
 }
 
+void WindowTreeClient::WmDeactivateWindow(Id window_id) {
+  if (!window_manager_delegate_)
+    return;
+
+  WindowMus* window = GetWindowByServerId(window_id);
+  if (!window) {
+    DVLOG(1) << "Attempt to deactivate invalid window " << window_id;
+    return;
+  }
+
+  if (!window_manager_delegate_->IsWindowActive(window->GetWindow())) {
+    DVLOG(1) << "Non-active window requested deactivation.";
+    return;
+  }
+
+  window_manager_delegate_->OnWmDeactivateWindow(window->GetWindow());
+}
+
 void WindowTreeClient::OnAccelerator(uint32_t ack_id,
                                      uint32_t accelerator_id,
                                      std::unique_ptr<ui::Event> event) {
@@ -1584,6 +1602,12 @@ void WindowTreeClient::OnWindowTreeHostHitTestMaskWillChange(
 
   tree_->SetHitTestMask(WindowMus::Get(window_tree_host->window())->server_id(),
                         out_rect);
+}
+
+void WindowTreeClient::OnWindowTreeHostDeactivateWindow(
+    WindowTreeHostMus* window_tree_host) {
+  tree_->DeactivateWindow(
+      WindowMus::Get(window_tree_host->window())->server_id());
 }
 
 std::unique_ptr<WindowPortMus> WindowTreeClient::CreateWindowPortForTopLevel(
