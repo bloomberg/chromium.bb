@@ -76,7 +76,6 @@ const char kChromeUINewProfileURL[] = "chrome://newprofile/";
 const char kChromeUINewTabURL[] = "chrome://newtab/";
 const char kChromeUINTPTilesInternalsURL[] = "chrome://ntp-tiles-internals/";
 const char kChromeUIOmniboxURL[] = "chrome://omnibox/";
-const char kChromeUIPluginsURL[] = "chrome://plugins/";
 const char kChromeUIPolicyURL[] = "chrome://policy/";
 const char kChromeUIMdUserManagerUrl[] = "chrome://md-user-manager/";
 const char kChromeUIPrintURL[] = "chrome://print/";
@@ -230,7 +229,6 @@ const char kChromeUIOmniboxHost[] = "omnibox";
 const char kChromeUIPasswordManagerInternalsHost[] =
     "password-manager-internals";
 const char kChromeUIPhysicalWebHost[] = "physical-web";
-const char kChromeUIPluginsHost[] = "plugins";
 const char kChromeUIComponentsHost[] = "components";
 const char kChromeUIPolicyHost[] = "policy";
 const char kChromeUIMdUserManagerHost[] = "md-user-manager";
@@ -681,7 +679,6 @@ const char* const kChromeHostURLs[] = {
     kChromeUIFlashHost,
     kChromeUIHelpHost,
     kChromeUIInspectHost,
-    kChromeUIPluginsHost,
     kChromeUIQuotaInternalsHost,
     kChromeUISettingsHost,
     kChromeUISystemInfoHost,

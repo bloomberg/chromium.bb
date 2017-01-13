@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/common/features.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/component_updater/component_updater_service.h"
@@ -49,10 +48,7 @@
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #endif  // BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
 
-using content::OpenURLParams;
 using content::PluginService;
-using content::Referrer;
-using content::WebContents;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(PluginObserver);
 
@@ -366,8 +362,6 @@ bool PluginObserver::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RemovePluginPlaceholderHost,
                         OnRemovePluginPlaceholderHost)
 #endif
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_OpenAboutPlugins,
-                        OnOpenAboutPlugins)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ShowFlashPermissionBubble,
                         OnShowFlashPermissionBubble)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CouldNotLoadPlugin,
@@ -428,17 +422,6 @@ void PluginObserver::OnRemovePluginPlaceholderHost(int placeholder_id) {
   plugin_placeholders_.erase(it);
 }
 #endif  // BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
-
-void PluginObserver::OnOpenAboutPlugins() {
-  web_contents()->OpenURL(
-      OpenURLParams(GURL(chrome::kChromeUIPluginsURL),
-                    content::Referrer::SanitizeForRequest(
-                        GURL(chrome::kChromeUIPluginsURL),
-                        content::Referrer(web_contents()->GetURL(),
-                                          blink::WebReferrerPolicyDefault)),
-                    WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                    ui::PAGE_TRANSITION_AUTO_BOOKMARK, false));
-}
 
 void PluginObserver::OnShowFlashPermissionBubble() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

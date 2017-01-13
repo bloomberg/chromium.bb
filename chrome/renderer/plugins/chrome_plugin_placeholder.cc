@@ -216,11 +216,6 @@ bool ChromePluginPlaceholder::OnMessageReceived(const IPC::Message& message) {
   return false;
 }
 
-void ChromePluginPlaceholder::OpenAboutPluginsCallback() {
-  RenderThread::Get()->Send(
-      new ChromeViewHostMsg_OpenAboutPlugins(routing_id()));
-}
-
 void ChromePluginPlaceholder::ShowPermissionBubbleCallback() {
   RenderThread::Get()->Send(
       new ChromeViewHostMsg_ShowFlashPermissionBubble(routing_id()));
@@ -413,8 +408,6 @@ gin::ObjectTemplateBuilder ChromePluginPlaceholder::GetObjectTemplateBuilder(
           .SetMethod<void (ChromePluginPlaceholder::*)()>(
               "didFinishLoading",
               &ChromePluginPlaceholder::DidFinishLoadingCallback)
-          .SetMethod("openAboutPlugins",
-                     &ChromePluginPlaceholder::OpenAboutPluginsCallback)
           .SetMethod("showPermissionBubble",
                      &ChromePluginPlaceholder::ShowPermissionBubbleCallback);
 

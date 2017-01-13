@@ -77,9 +77,6 @@ class ChromePluginPlaceholder final
   void OnMenuAction(int request_id, unsigned action) override;
   void OnMenuClosed(int request_id) override;
 
-  // Javascript callbacks:
-  // Open chrome://plugins in a new tab.
-  void OpenAboutPluginsCallback();
   // Show the Plugins permission bubble.
   void ShowPermissionBubbleCallback();
 

@@ -499,9 +499,6 @@ bool PluginInfoMessageFilter::Context::FindEnabledPlugin(
     if (PluginUtils::ShouldPreferHtmlOverPlugins(host_content_settings_map_) &&
         matching_plugins[0].name ==
             base::ASCIIToUTF16(content::kFlashPluginName)) {
-      // TODO(tommycli): This assumes that Flash can no longer be disabled
-      // via chrome://plugins. That should be fine since chrome://plugins is
-      // going away, but we should verify before launching HBD.
       *status = ChromeViewHostMsg_GetPluginInfo_Status::kFlashHiddenPreferHtml;
 
       // In the Prefer HTML case, the plugin is actually enabled, but hidden.

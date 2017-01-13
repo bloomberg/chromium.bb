@@ -476,11 +476,6 @@ IPC_MESSAGE_ROUTED0(ChromeViewMsg_PluginComponentUpdateDownloading)
 // the plugin.
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_CancelledDownloadingPlugin)
 
-// Tells the browser to open chrome://plugins in a new tab. We use a separate
-// message because renderer processes aren't allowed to directly navigate to
-// chrome:// URLs.
-IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_OpenAboutPlugins)
-
 // Tells the browser to show the Flash permission bubble in the same tab.
 IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_ShowFlashPermissionBubble)
 

@@ -226,20 +226,6 @@ IN_PROC_BROWSER_TEST_F(DISABLED_WebUIBidiCheckerBrowserTestRTL,
 }
 
 //==============================
-// chrome://plugins
-//==============================
-
-IN_PROC_BROWSER_TEST_F(DISABLED_WebUIBidiCheckerBrowserTestLTR,
-                       TestPluginsPage) {
-  RunBidiCheckerOnPage(chrome::kChromeUIPluginsURL);
-}
-
-IN_PROC_BROWSER_TEST_F(DISABLED_WebUIBidiCheckerBrowserTestRTL,
-                       TestPluginsPage) {
-  RunBidiCheckerOnPage(chrome::kChromeUIPluginsURL);
-}
-
-//==============================
 // chrome://settings-frame
 //==============================
 
