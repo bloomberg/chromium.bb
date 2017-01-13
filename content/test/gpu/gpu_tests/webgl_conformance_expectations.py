@@ -306,6 +306,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
     self.Fail('conformance/extensions/webgl-draw-buffers.html',
         ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
+    self.Fail('conformance/extensions/' +
+        'webgl-draw-buffers-max-draw-buffers.html',
+        ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
     self.Fail('conformance/canvas/framebuffer-bindings-unaffected-on-' +
         'resize.html', ['win', 'passthrough', 'd3d11'], bug=665521)
     self.Fail('conformance/glsl/bugs/essl3-shaders-with-webgl1.html',
