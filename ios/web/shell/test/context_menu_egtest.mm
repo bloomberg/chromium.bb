@@ -33,7 +33,7 @@ using testing::elementToDismissContextMenu;
 
 @implementation ContextMenuTestCase
 
-// TODO(crbug.com/675015): Re-enable this test on device.
+// TODO(crbug.com/675399): Re-enable this test on device.
 #if TARGET_IPHONE_SIMULATOR
 #define MAYBE_testContextMenu testContextMenu
 #else
@@ -75,7 +75,7 @@ using testing::elementToDismissContextMenu;
   [[EarlGrey selectElementWithMatcher:copyItem] assertWithMatcher:grey_nil()];
 }
 
-// TODO(crbug.com/675015): Re-enable this test on device.
+// TODO(crbug.com/675399): Re-enable this test on device.
 #if TARGET_IPHONE_SIMULATOR
 #define MAYBE_testContextMenuWebkitTouchCalloutNone \
   testContextMenuWebkitTouchCalloutNone
@@ -112,7 +112,7 @@ using testing::elementToDismissContextMenu;
   [[EarlGrey selectElementWithMatcher:copyItem] assertWithMatcher:grey_nil()];
 }
 
-// TODO(crbug.com/675015): Re-enable this test on device.
+// TODO(crbug.com/675399): Re-enable this test on device.
 #if TARGET_IPHONE_SIMULATOR
 #define MAYBE_testContextMenuWebkitTouchCalloutNoneFromAncestor \
   testContextMenuWebkitTouchCalloutNoneFromAncestor
@@ -151,7 +151,7 @@ using testing::elementToDismissContextMenu;
   [[EarlGrey selectElementWithMatcher:copyItem] assertWithMatcher:grey_nil()];
 }
 
-// TODO(crbug.com/675015): Re-enable this test on device.
+// TODO(crbug.com/675399): Re-enable this test on device.
 #if TARGET_IPHONE_SIMULATOR
 #define MAYBE_testContextMenuWebkitTouchCalloutOverride \
   testContextMenuWebkitTouchCalloutOverride
