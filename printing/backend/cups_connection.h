@@ -20,6 +20,25 @@
 
 namespace printing {
 
+// Represents a print job sent to the queue.
+struct PRINTING_EXPORT CupsJob {
+  enum JobState {
+    UNKNOWN,
+    PENDING,
+    HELD,
+    COMPLETED,
+    PROCESSING,
+    STOPPED,
+    CANCELED,
+    ABORTED
+  };
+
+  int id;
+  std::string title;
+  std::string printer_id;
+  JobState state;
+};
+
 // Represents a connection to a CUPS server.
 class PRINTING_EXPORT CupsConnection {
  public:
@@ -36,6 +55,9 @@ class PRINTING_EXPORT CupsConnection {
 
   // Returns a printer for |printer_name| from the connected server.
   std::unique_ptr<CupsPrinter> GetPrinter(const std::string& printer_name);
+
+  // Returns a list of print jobs from all connected printers.
+  std::vector<CupsJob> GetJobs();
 
   std::string server_name() const;
 

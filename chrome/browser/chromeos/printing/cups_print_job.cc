@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
 
-#include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 
 namespace chromeos {
 
@@ -20,7 +20,13 @@ CupsPrintJob::CupsPrintJob(const Printer& printer,
 CupsPrintJob::~CupsPrintJob() {}
 
 std::string CupsPrintJob::GetUniqueId() const {
-  return printer_.id() + base::IntToString(job_id_);
+  return GetUniqueId(printer_.id(), job_id_);
+}
+
+// static
+std::string CupsPrintJob::GetUniqueId(const std::string& printer_id,
+                                      int job_id) {
+  return base::StringPrintf("%s%d", printer_id.c_str(), job_id);
 }
 
 }  // namespace chromeos

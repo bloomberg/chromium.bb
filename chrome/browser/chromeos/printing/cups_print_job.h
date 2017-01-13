@@ -40,6 +40,9 @@ class CupsPrintJob {
                int total_page_number);
   ~CupsPrintJob();
 
+  // Create a unique id for a print job using the |printer_id| and |job_id|.
+  static std::string GetUniqueId(const std::string& printer_id, int job_id);
+
   // Returns a unique id for the print job.
   std::string GetUniqueId() const;
 

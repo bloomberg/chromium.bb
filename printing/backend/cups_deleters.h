@@ -7,26 +7,35 @@
 
 #include <cups/cups.h>
 
+#include "base/macros.h"
+
 namespace printing {
 
 struct HttpDeleter {
- public:
   void operator()(http_t* http) const;
 };
 
 struct DestinationDeleter {
- public:
   void operator()(cups_dest_t* dest) const;
 };
 
 struct DestInfoDeleter {
- public:
   void operator()(cups_dinfo_t* info) const;
 };
 
 struct OptionDeleter {
- public:
   void operator()(cups_option_t* option) const;
+};
+
+class JobsDeleter {
+ public:
+  explicit JobsDeleter(int num_jobs);
+  void operator()(cups_job_t* jobs) const;
+
+ private:
+  int num_jobs_;
+
+  DISALLOW_COPY_AND_ASSIGN(JobsDeleter);
 };
 
 }  // namespace printing

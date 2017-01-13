@@ -44,6 +44,42 @@ class DestinationEnumerator {
   DISALLOW_COPY_AND_ASSIGN(DestinationEnumerator);
 };
 
+CupsJob createCupsJob(int job_id,
+                      base::StringPiece job_title,
+                      base::StringPiece printer_id,
+                      ipp_jstate_t state) {
+  CupsJob::JobState converted_state = CupsJob::UNKNOWN;
+  switch (state) {
+    case IPP_JOB_ABORTED:
+      converted_state = CupsJob::ABORTED;
+      break;
+    case IPP_JOB_CANCELLED:
+      converted_state = CupsJob::CANCELED;
+      break;
+    case IPP_JOB_COMPLETED:
+      converted_state = CupsJob::COMPLETED;
+      break;
+    case IPP_JOB_HELD:
+      converted_state = CupsJob::HELD;
+      break;
+    case IPP_JOB_PENDING:
+      converted_state = CupsJob::PENDING;
+      break;
+    case IPP_JOB_PROCESSING:
+      converted_state = CupsJob::PROCESSING;
+      break;
+    case IPP_JOB_STOPPED:
+      converted_state = CupsJob::STOPPED;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  return {job_id, job_title.as_string(), printer_id.as_string(),
+          converted_state};
+}
+
 }  // namespace
 
 CupsConnection::CupsConnection(const GURL& print_server_url,
@@ -124,6 +160,26 @@ std::unique_ptr<CupsPrinter> CupsConnection::GetPrinter(
   return base::MakeUnique<CupsPrinter>(
       cups_http_.get(), std::unique_ptr<cups_dest_t, DestinationDeleter>(dest),
       std::unique_ptr<cups_dinfo_t, DestInfoDeleter>(info));
+}
+
+std::vector<CupsJob> CupsConnection::GetJobs() {
+  cups_job_t* jobs;
+  int num_jobs = cupsGetJobs2(cups_http_.get(),  // http connection
+                              &jobs,             // out param
+                              nullptr,           // all printers
+                              0,                 // all users
+                              CUPS_WHICHJOBS_ALL);
+
+  const JobsDeleter deleter(num_jobs);
+  std::unique_ptr<cups_job_t, const JobsDeleter&> scoped_jobs(jobs, deleter);
+
+  std::vector<CupsJob> job_copies;
+  for (int i = 0; i < num_jobs; i++) {
+    job_copies.push_back(
+        createCupsJob(jobs[i].id, jobs[i].title, jobs[i].dest, jobs[i].state));
+  }
+
+  return job_copies;
 }
 
 std::string CupsConnection::server_name() const {

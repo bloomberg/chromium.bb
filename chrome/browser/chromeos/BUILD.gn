@@ -1188,8 +1188,6 @@ source_set("chromeos") {
     "printing/cups_print_job_notification.h",
     "printing/cups_print_job_notification_manager.cc",
     "printing/cups_print_job_notification_manager.h",
-    "printing/fake_cups_print_job_manager.cc",
-    "printing/fake_cups_print_job_manager.h",
     "printing/ppd_provider_factory.cc",
     "printing/ppd_provider_factory.h",
     "printing/printer_pref_manager.cc",
@@ -1413,6 +1411,18 @@ source_set("chromeos") {
       "events/xinput_hierarchy_changed_event_listener.h",
       "system/input_device_settings_impl_x11.cc",
       "system_logs/touch_log_source_x11.cc",
+    ]
+  }
+
+  if (use_cups) {
+    sources += [
+      "printing/cups_print_job_manager_impl.cc",
+      "printing/cups_print_job_manager_impl.h",
+    ]
+  } else {
+    sources += [
+      "printing/fake_cups_print_job_manager.cc",
+      "printing/fake_cups_print_job_manager.h",
     ]
   }
 

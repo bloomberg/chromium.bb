@@ -120,6 +120,10 @@ class PRINTING_EXPORT CupsPrinter : public CupsOptionProvider {
   // printed.  |job_id| should match the id from CreateJob.
   ipp_status_t CloseJob(int job_id);
 
+  // Cancel the print job |job_id|.  Returns true if the operation succeeded.
+  // Returns false if it failed for any reason.
+  bool CancelJob(int job_id);
+
  private:
   // Lazily initialize dest info as it can require a network call
   bool InitializeDestInfo() const;

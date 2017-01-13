@@ -5,6 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_PRINTING_FAKE_CUPS_PRINT_JOB_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_PRINTING_FAKE_CUPS_PRINT_JOB_MANAGER_H_
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager.h"
 
@@ -19,7 +24,8 @@ class FakeCupsPrintJobManager : public CupsPrintJobManager {
 
   bool CreatePrintJob(const std::string& printer_name,
                       const std::string& title,
-                      int total_page_number) override;
+                      int total_page_number);
+
   bool CancelPrintJob(CupsPrintJob* job) override;
   bool SuspendPrintJob(CupsPrintJob* job) override;
   bool ResumePrintJob(CupsPrintJob* job) override;
@@ -27,6 +33,9 @@ class FakeCupsPrintJobManager : public CupsPrintJobManager {
  private:
   void ChangePrintJobState(CupsPrintJob* job);
 
+  using PrintJobs = std::vector<std::unique_ptr<CupsPrintJob>>;
+
+  PrintJobs print_jobs_;
   static int next_job_id_;
   base::WeakPtrFactory<FakeCupsPrintJobManager> weak_ptr_factory_;
 

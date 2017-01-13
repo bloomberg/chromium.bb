@@ -22,6 +22,10 @@ class CupsPrintJobManagerFactory : public BrowserContextKeyedServiceFactory {
   static CupsPrintJobManager* GetForBrowserContext(
       content::BrowserContext* context);
 
+ protected:
+  content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const override;
+
  private:
   friend struct base::DefaultLazyInstanceTraits<CupsPrintJobManagerFactory>;
 

@@ -12,6 +12,8 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/printing/cups_print_job_manager.h"
+#include "chrome/browser/chromeos/printing/cups_print_job_manager_factory.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
 #include "chrome/browser/chromeos/printing/printer_pref_manager.h"
 #include "chrome/browser/chromeos/printing/printer_pref_manager_factory.h"
@@ -145,6 +147,9 @@ class PrinterBackendProxyChromeos : public PrinterBackendProxy {
   explicit PrinterBackendProxyChromeos(Profile* profile) {
     prefs_ = chromeos::PrinterPrefManagerFactory::GetForBrowserContext(profile);
     ppd_provider_ = chromeos::printing::CreateProvider(profile);
+
+    // Construct the CupsPrintJobManager to listen for printing events.
+    chromeos::CupsPrintJobManagerFactory::GetForBrowserContext(profile);
   }
 
   ~PrinterBackendProxyChromeos() override {

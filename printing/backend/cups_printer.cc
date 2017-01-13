@@ -234,4 +234,13 @@ ipp_status_t CupsPrinter::CloseJob(int job_id) {
                           job_id);
 }
 
+bool CupsPrinter::CancelJob(int job_id) {
+  DCHECK(job_id);
+
+  // TODO(skau): Try to change back to cupsCancelDestJob().
+  ipp_status_t status =
+      cupsCancelJob2(cups_http_, destination_->name, job_id, 0 /*cancel*/);
+  return status == IPP_STATUS_OK;
+}
+
 }  // namespace printing

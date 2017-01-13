@@ -16,7 +16,6 @@ CupsPrintJobManager::CupsPrintJobManager(Profile* profile) : profile_(profile) {
 }
 
 CupsPrintJobManager::~CupsPrintJobManager() {
-  print_jobs_.clear();
   notification_manager_.reset();
   profile_ = nullptr;
 }
@@ -24,15 +23,51 @@ CupsPrintJobManager::~CupsPrintJobManager() {
 void CupsPrintJobManager::Shutdown() {}
 
 void CupsPrintJobManager::AddObserver(Observer* observer) {
-  auto found = std::find(observers_.begin(), observers_.end(), observer);
-  if (found == observers_.end())
-    observers_.push_back(observer);
+  observers_.AddObserver(observer);
 }
 
 void CupsPrintJobManager::RemoveObserver(Observer* observer) {
-  auto found = std::find(observers_.begin(), observers_.end(), observer);
-  if (found != observers_.end())
-    observers_.erase(found);
+  observers_.RemoveObserver(observer);
+}
+
+void CupsPrintJobManager::NotifyJobCreated(CupsPrintJob* job) {
+  for (Observer& observer : observers_)
+    observer.OnPrintJobCreated(job);
+}
+
+void CupsPrintJobManager::NotifyJobStarted(CupsPrintJob* job) {
+  for (Observer& observer : observers_)
+    observer.OnPrintJobStarted(job);
+}
+
+void CupsPrintJobManager::NotifyJobUpdated(CupsPrintJob* job) {
+  for (Observer& observer : observers_)
+    observer.OnPrintJobUpdated(job);
+}
+
+void CupsPrintJobManager::NotifyJobResumed(CupsPrintJob* job) {
+  for (Observer& observer : observers_)
+    observer.OnPrintJobResumed(job);
+}
+
+void CupsPrintJobManager::NotifyJobSuspended(CupsPrintJob* job) {
+  for (Observer& observer : observers_)
+    observer.OnPrintJobSuspended(job);
+}
+
+void CupsPrintJobManager::NotifyJobCanceled(CupsPrintJob* job) {
+  for (Observer& observer : observers_)
+    observer.OnPrintJobCancelled(job);
+}
+
+void CupsPrintJobManager::NotifyJobError(CupsPrintJob* job) {
+  for (Observer& observer : observers_)
+    observer.OnPrintJobError(job);
+}
+
+void CupsPrintJobManager::NotifyJobDone(CupsPrintJob* job) {
+  for (Observer& observer : observers_)
+    observer.OnPrintJobDone(job);
 }
 
 }  // namespace chromeos

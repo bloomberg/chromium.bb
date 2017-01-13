@@ -4,12 +4,13 @@
 
 #include "chrome/browser/chromeos/printing/cups_print_job_manager_factory.h"
 
-#include "chrome/browser/chromeos/printing/fake_cups_print_job_manager.h"
+#include "chrome/browser/chromeos/printing/cups_print_job_manager.h"
+#include "chrome/browser/chromeos/printing/printer_pref_manager_factory.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace chromeos {
-
 namespace {
 
 static base::LazyInstance<CupsPrintJobManagerFactory>
@@ -29,18 +30,24 @@ CupsPrintJobManager* CupsPrintJobManagerFactory::GetForBrowserContext(
       GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
+content::BrowserContext* CupsPrintJobManagerFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
+}
+
 CupsPrintJobManagerFactory::CupsPrintJobManagerFactory()
     : BrowserContextKeyedServiceFactory(
           "CupsPrintJobManagerFactory",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(chromeos::PrinterPrefManagerFactory::GetInstance());
+}
 
 CupsPrintJobManagerFactory::~CupsPrintJobManagerFactory() {}
 
 KeyedService* CupsPrintJobManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  // TODO(xdai/skau): Change it to construct a real CUPS Print job manager
-  // object when it's available.
-  return new FakeCupsPrintJobManager(Profile::FromBrowserContext(context));
+  return CupsPrintJobManager::CreateInstance(
+      Profile::FromBrowserContext(context));
 }
 
 }  // namespace chromeos
