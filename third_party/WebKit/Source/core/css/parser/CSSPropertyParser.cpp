@@ -652,28 +652,6 @@ static CSSValue* consumeLineHeight(CSSParserTokenRange& range,
   return consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative);
 }
 
-static CSSValueList* consumeRotation(CSSParserTokenRange& range) {
-  ASSERT(RuntimeEnabledFeatures::cssIndependentTransformPropertiesEnabled());
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
-
-  for (unsigned i = 0; i < 3; i++) {  // 3 dimensions of rotation
-    CSSValue* dimension = consumeNumber(range, ValueRangeAll);
-    if (!dimension) {
-      if (i == 0)
-        break;
-      return nullptr;
-    }
-    list->append(*dimension);
-  }
-
-  CSSValue* rotation = consumeAngle(range);
-  if (!rotation)
-    return nullptr;
-  list->append(*rotation);
-
-  return list;
-}
-
 static CSSValue* consumeScale(CSSParserTokenRange& range) {
   ASSERT(RuntimeEnabledFeatures::cssIndependentTransformPropertiesEnabled());
 
@@ -3203,8 +3181,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return consumeFontSize(m_range, m_context.mode(), UnitlessQuirk::Allow);
     case CSSPropertyLineHeight:
       return consumeLineHeight(m_range, m_context.mode());
-    case CSSPropertyRotate:
-      return consumeRotation(m_range);
     case CSSPropertyScale:
       return consumeScale(m_range);
     case CSSPropertyWebkitBorderHorizontalSpacing:

@@ -391,7 +391,7 @@ transform typedom_types=[Transform], keywords=[none], interpolable, converter=co
 transform-origin interpolable, converter=convertTransformOrigin, api_class
 transform-style name_for_methods=TransformStyle3D
 translate runtime_flag=CSSIndependentTransformProperties, converter=convertTranslate, interpolable, api_class
-rotate runtime_flag=CSSIndependentTransformProperties, converter=convertRotate, interpolable
+rotate runtime_flag=CSSIndependentTransformProperties, converter=convertRotate, interpolable, api_class
 scale runtime_flag=CSSIndependentTransformProperties, converter=convertScale, interpolable
 unicode-bidi type_name=UnicodeBidi, keyword_only, keywords=[normal|embed|bidi-override|isolate|plaintext|isolate-override], initial_keyword=normal, field_storage_type=platform/text/UnicodeBidi
 vector-effect svg
