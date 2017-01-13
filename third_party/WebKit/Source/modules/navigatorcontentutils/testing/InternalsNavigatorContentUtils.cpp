@@ -5,6 +5,7 @@
 #include "InternalsNavigatorContentUtils.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/testing/Internals.h"
 #include "modules/navigatorcontentutils/NavigatorContentUtils.h"
 #include "modules/navigatorcontentutils/testing/NavigatorContentUtilsClientMock.h"
@@ -16,7 +17,7 @@ void InternalsNavigatorContentUtils::setNavigatorContentUtilsClientMock(
     Document* document) {
   ASSERT(document && document->page());
   NavigatorContentUtils* navigatorContentUtils =
-      NavigatorContentUtils::from(*document->frame());
+      NavigatorContentUtils::from(*document->domWindow()->navigator());
   navigatorContentUtils->setClientForTest(
       NavigatorContentUtilsClientMock::create());
 }

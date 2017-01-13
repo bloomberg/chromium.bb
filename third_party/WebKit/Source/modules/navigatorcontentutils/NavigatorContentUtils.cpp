@@ -128,17 +128,12 @@ static bool verifyCustomHandlerScheme(const String& scheme,
   return false;
 }
 
-NavigatorContentUtils* NavigatorContentUtils::from(LocalFrame& frame) {
+NavigatorContentUtils* NavigatorContentUtils::from(Navigator& navigator) {
   return static_cast<NavigatorContentUtils*>(
-      Supplement<LocalFrame>::from(frame, supplementName()));
+      Supplement<Navigator>::from(navigator, supplementName()));
 }
 
 NavigatorContentUtils::~NavigatorContentUtils() {}
-
-NavigatorContentUtils* NavigatorContentUtils::create(
-    NavigatorContentUtilsClient* client) {
-  return new NavigatorContentUtils(client);
-}
 
 void NavigatorContentUtils::registerProtocolHandler(
     Navigator& navigator,
@@ -164,9 +159,8 @@ void NavigatorContentUtils::registerProtocolHandler(
                         ? UseCounter::RegisterProtocolHandlerSecureOrigin
                         : UseCounter::RegisterProtocolHandlerInsecureOrigin);
 
-  NavigatorContentUtils::from(*navigator.frame())
-      ->client()
-      ->registerProtocolHandler(scheme, document->completeURL(url), title);
+  NavigatorContentUtils::from(navigator)->client()->registerProtocolHandler(
+      scheme, document->completeURL(url), title);
 }
 
 static String customHandlersStateString(
@@ -210,7 +204,7 @@ String NavigatorContentUtils::isProtocolHandlerRegistered(
     return declined;
 
   return customHandlersStateString(
-      NavigatorContentUtils::from(*navigator.frame())
+      NavigatorContentUtils::from(navigator)
           ->client()
           ->isProtocolHandlerRegistered(scheme, document->completeURL(url)));
 }
@@ -232,25 +226,24 @@ void NavigatorContentUtils::unregisterProtocolHandler(
   if (!verifyCustomHandlerScheme(scheme, exceptionState))
     return;
 
-  NavigatorContentUtils::from(*navigator.frame())
-      ->client()
-      ->unregisterProtocolHandler(scheme, document->completeURL(url));
+  NavigatorContentUtils::from(navigator)->client()->unregisterProtocolHandler(
+      scheme, document->completeURL(url));
 }
 
 DEFINE_TRACE(NavigatorContentUtils) {
   visitor->trace(m_client);
-  Supplement<LocalFrame>::trace(visitor);
+  Supplement<Navigator>::trace(visitor);
 }
 
 const char* NavigatorContentUtils::supplementName() {
   return "NavigatorContentUtils";
 }
 
-void provideNavigatorContentUtilsTo(LocalFrame& frame,
-                                    NavigatorContentUtilsClient* client) {
-  NavigatorContentUtils::provideTo(frame,
-                                   NavigatorContentUtils::supplementName(),
-                                   NavigatorContentUtils::create(client));
+void NavigatorContentUtils::provideTo(Navigator& navigator,
+                                      NavigatorContentUtilsClient* client) {
+  Supplement<Navigator>::provideTo(
+      navigator, NavigatorContentUtils::supplementName(),
+      new NavigatorContentUtils(navigator, client));
 }
 
 }  // namespace blink

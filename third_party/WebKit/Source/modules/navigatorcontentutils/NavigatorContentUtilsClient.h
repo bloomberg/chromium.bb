@@ -34,8 +34,6 @@
 
 namespace blink {
 
-class LocalFrame;
-
 class NavigatorContentUtilsClient
     : public GarbageCollectedFinalized<NavigatorContentUtilsClient> {
  public:
@@ -56,10 +54,6 @@ class NavigatorContentUtilsClient
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
-
-MODULES_EXPORT void provideNavigatorContentUtilsTo(
-    LocalFrame&,
-    NavigatorContentUtilsClient*);
 
 }  // namespace blink
 

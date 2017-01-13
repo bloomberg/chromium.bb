@@ -27,7 +27,7 @@
 #ifndef NavigatorContentUtils_h
 #define NavigatorContentUtils_h
 
-#include "core/frame/LocalFrame.h"
+#include "core/frame/Navigator.h"
 #include "modules/ModulesExport.h"
 #include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
 #include "platform/Supplementable.h"
@@ -37,18 +37,17 @@
 namespace blink {
 
 class ExceptionState;
-class LocalFrame;
 class Navigator;
 
 class MODULES_EXPORT NavigatorContentUtils final
     : public GarbageCollectedFinalized<NavigatorContentUtils>,
-      public Supplement<LocalFrame> {
+      public Supplement<Navigator> {
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorContentUtils);
 
  public:
   virtual ~NavigatorContentUtils();
 
-  static NavigatorContentUtils* from(LocalFrame&);
+  static NavigatorContentUtils* from(Navigator&);
   static const char* supplementName();
 
   static void registerProtocolHandler(Navigator&,
@@ -65,7 +64,7 @@ class MODULES_EXPORT NavigatorContentUtils final
                                         const String& url,
                                         ExceptionState&);
 
-  static NavigatorContentUtils* create(NavigatorContentUtilsClient*);
+  static void provideTo(Navigator&, NavigatorContentUtilsClient*);
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -74,8 +73,9 @@ class MODULES_EXPORT NavigatorContentUtils final
   }
 
  private:
-  explicit NavigatorContentUtils(NavigatorContentUtilsClient* client)
-      : m_client(client) {}
+  NavigatorContentUtils(Navigator& navigator,
+                        NavigatorContentUtilsClient* client)
+      : Supplement<Navigator>(navigator), m_client(client) {}
 
   NavigatorContentUtilsClient* client() { return m_client.get(); }
 

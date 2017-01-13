@@ -57,6 +57,7 @@
 #include "modules/audio_output_devices/AudioOutputDeviceClient.h"
 #include "modules/installedapp/InstalledAppController.h"
 #include "modules/mediastream/UserMediaController.h"
+#include "modules/navigatorcontentutils/NavigatorContentUtils.h"
 #include "modules/presentation/PresentationController.h"
 #include "modules/push_messaging/PushController.h"
 #include "modules/screen_orientation/ScreenOrientationControllerImpl.h"
@@ -1155,8 +1156,9 @@ void ChromeClientImpl::installSupplements(LocalFrame& frame) {
                      UserMediaClientImpl::create(client->userMediaClient()));
   provideIndexedDBClientTo(frame, IndexedDBClientImpl::create(frame));
   provideLocalFileSystemTo(frame, LocalFileSystemClient::create());
-  provideNavigatorContentUtilsTo(
-      frame, NavigatorContentUtilsClientImpl::create(webFrame));
+  NavigatorContentUtils::provideTo(
+      *frame.domWindow()->navigator(),
+      NavigatorContentUtilsClientImpl::create(webFrame));
 
   ScreenOrientationControllerImpl::provideTo(
       frame, client->webScreenOrientationClient());
