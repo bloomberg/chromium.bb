@@ -10,13 +10,8 @@
 struct FrameMsg_Navigate_Type {
  public:
   enum Value {
-    // Reload the page, validating cache entries.
-    RELOAD,
-
     // Reload the page, validating only cache entry for the main resource.
-    // TODO(toyoshim): We should rename this one to be RELOAD and remove the old
-    // unused RELOAD behavior.
-    RELOAD_MAIN_RESOURCE,
+    RELOAD,
 
     // Reload the page, bypassing any cache entries.
     RELOAD_BYPASSING_CACHE,

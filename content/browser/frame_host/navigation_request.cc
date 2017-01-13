@@ -59,7 +59,6 @@ void UpdateLoadFlagsWithCacheFlags(
     bool is_post) {
   switch (navigation_type) {
     case FrameMsg_Navigate_Type::RELOAD:
-    case FrameMsg_Navigate_Type::RELOAD_MAIN_RESOURCE:
     case FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL:
       *load_flags |= net::LOAD_VALIDATE_CACHE;
       break;
@@ -147,7 +146,6 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
 
   bool is_reload =
       navigation_type == FrameMsg_Navigate_Type::RELOAD ||
-      navigation_type == FrameMsg_Navigate_Type::RELOAD_MAIN_RESOURCE ||
       navigation_type == FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE ||
       navigation_type == FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
   if (is_reload)

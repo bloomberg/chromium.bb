@@ -656,7 +656,6 @@ media::Context3D GetSharedMainThreadContext3D(
 bool IsReload(FrameMsg_Navigate_Type::Value navigation_type) {
   switch (navigation_type) {
     case FrameMsg_Navigate_Type::RELOAD:
-    case FrameMsg_Navigate_Type::RELOAD_MAIN_RESOURCE:
     case FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE:
     case FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL:
       return true;
@@ -674,8 +673,6 @@ WebFrameLoadType ReloadFrameLoadTypeFor(
   switch (navigation_type) {
     case FrameMsg_Navigate_Type::RELOAD:
     case FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL:
-      return WebFrameLoadType::Reload;
-    case FrameMsg_Navigate_Type::RELOAD_MAIN_RESOURCE:
       return WebFrameLoadType::ReloadMainResource;
     case FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE:
       return WebFrameLoadType::ReloadBypassingCache;
@@ -6356,6 +6353,7 @@ void RenderFrameImpl::LoadDataURL(
     const GURL base_url = params.base_url_for_data_url.is_empty() ?
         params.url : params.base_url_for_data_url;
     bool replace = load_type == WebFrameLoadType::ReloadBypassingCache ||
+                   load_type == WebFrameLoadType::ReloadMainResource ||
                    load_type == WebFrameLoadType::Reload;
 
     frame->loadData(
