@@ -106,7 +106,10 @@ void GetDesiredMinAndMaxAspectRatio(
     }
   }
   for (const auto& constraint_set : constraints.advanced()) {
-    if (constraint_set.aspectRatio.hasMax()) {
+    // Advanced constraint sets with max aspect ratio 0 are unsatisfiable and
+    // must be ignored.
+    if (constraint_set.aspectRatio.hasMax() &&
+        constraint_set.aspectRatio.max() > 0) {
       *max_aspect_ratio = constraint_set.aspectRatio.max();
       break;
     }

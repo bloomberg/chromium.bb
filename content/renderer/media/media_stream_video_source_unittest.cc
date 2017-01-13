@@ -782,4 +782,24 @@ TEST_F(MediaStreamVideoSourceTest, MutedSource) {
   sink.DisconnectFromTrack();
 }
 
+// Test that an optional constraint with an invalid aspect ratio is ignored.
+TEST_F(MediaStreamVideoSourceTest, InvalidOptionalAspectRatioIgnored) {
+  MockConstraintFactory factory;
+  factory.AddAdvanced().aspectRatio.setMax(0.0);
+  blink::WebMediaStreamTrack track =
+      CreateTrack("123", factory.CreateWebMediaConstraints());
+  mock_source()->CompleteGetSupportedFormats();
+  EXPECT_EQ(0, NumberOfFailedConstraintsCallbacks());
+}
+
+// Test that setting an invalid mandatory aspect ratio fails.
+TEST_F(MediaStreamVideoSourceTest, InvalidMandatoryAspectRatioFails) {
+  MockConstraintFactory factory;
+  factory.basic().aspectRatio.setMax(0.0);
+  blink::WebMediaStreamTrack track =
+      CreateTrack("123", factory.CreateWebMediaConstraints());
+  mock_source()->CompleteGetSupportedFormats();
+  EXPECT_EQ(1, NumberOfFailedConstraintsCallbacks());
+}
+
 }  // namespace content
