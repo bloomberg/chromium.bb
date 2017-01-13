@@ -6,7 +6,7 @@
 // =         This code is only used in the new iOS Chrome architecture.       =
 // ============================================================================
 
-#import "ios/clean/chrome/browser/ui/strip/strip_container_view_controller.h"
+#import "ios/clean/chrome/browser/ui/tab_strip/tab_strip_container_view_controller.h"
 
 #import "ios/clean/chrome/browser/ui/ui_types.h"
 #import "ios/clean/chrome/browser/ui/actions/tab_strip_actions.h"
@@ -19,7 +19,7 @@ namespace {
 CGFloat kStripHeight = 200.0;
 }
 
-@interface StripContainerViewController ()<TabStripActions>
+@interface TabStripContainerViewController ()<TabStripActions>
 
 // Whichever view controller is at the top of the screen. This view controller
 // controls the status bar.
@@ -53,10 +53,10 @@ CGFloat kStripHeight = 200.0;
 
 @end
 
-@implementation StripContainerViewController
+@implementation TabStripContainerViewController
 
 @synthesize contentViewController = _contentViewController;
-@synthesize stripViewController = _stripViewController;
+@synthesize tabStripViewController = _tabStripViewController;
 @synthesize topmostViewController = _topmostViewController;
 @synthesize contentConstraintsWithStrip = _contentConstraintsWithStrip;
 @synthesize contentConstraintsWithoutStrip = _contentConstraintsWithoutStrip;
@@ -87,29 +87,29 @@ CGFloat kStripHeight = 200.0;
   [self.contentViewController didMoveToParentViewController:self];
 }
 
-- (void)setStripViewController:(UIViewController*)stripViewController {
-  if (self.stripViewController == stripViewController)
+- (void)setStripViewController:(UIViewController*)tabStripViewController {
+  if (self.tabStripViewController == tabStripViewController)
     return;
 
   // Remove the current strip view controller, if any.
   [NSLayoutConstraint deactivateConstraints:self.stripConstraints];
   [NSLayoutConstraint deactivateConstraints:self.contentConstraintsWithStrip];
-  [self removeChildViewController:self.stripViewController];
+  [self removeChildViewController:self.tabStripViewController];
 
   // Add the new strip view controller.
-  [self addChildViewController:stripViewController];
-  stripViewController.view.translatesAutoresizingMaskIntoConstraints = NO;
-  [self.view addSubview:stripViewController.view];
-  _stripViewController = stripViewController;
+  [self addChildViewController:tabStripViewController];
+  tabStripViewController.view.translatesAutoresizingMaskIntoConstraints = NO;
+  [self.view addSubview:tabStripViewController.view];
+  _tabStripViewController = tabStripViewController;
   [self didAddStripViewController];
   [self.view setNeedsUpdateConstraints];
-  [self.stripViewController didMoveToParentViewController:self];
+  [self.tabStripViewController didMoveToParentViewController:self];
 }
 
 #pragma mark - UIViewController
 
 - (void)updateViewConstraints {
-  if (self.stripViewController) {
+  if (self.tabStripViewController) {
     [NSLayoutConstraint activateConstraints:self.stripConstraints];
     [NSLayoutConstraint activateConstraints:self.contentConstraintsWithStrip];
   } else {
@@ -135,7 +135,7 @@ CGFloat kStripHeight = 200.0;
   self.actionToForward = nullptr;
   self.forwardingTarget = nil;
   for (UIResponder* responder in
-       @[ self.contentViewController, self.stripViewController ]) {
+       @[ self.contentViewController, self.tabStripViewController ]) {
     if ([responder canPerformAction:action withSender:sender]) {
       self.actionToForward = action;
       self.forwardingTarget = responder;
@@ -173,7 +173,7 @@ CGFloat kStripHeight = 200.0;
 }
 
 - (void)didAddContentViewController {
-  if (self.stripViewController) {
+  if (self.tabStripViewController) {
     [self updateContentConstraintsWithStrip];
   } else {
     self.topmostViewController = self.contentViewController;
@@ -188,7 +188,7 @@ CGFloat kStripHeight = 200.0;
   if (self.contentViewController) {
     [self updateContentConstraintsWithStrip];
   }
-  self.topmostViewController = self.stripViewController;
+  self.topmostViewController = self.tabStripViewController;
 }
 
 - (void)updateContentConstraintsWithoutStrip {
@@ -206,7 +206,7 @@ CGFloat kStripHeight = 200.0;
   UIView* contentView = self.contentViewController.view;
   self.contentConstraintsWithStrip = @[
     [contentView.topAnchor
-        constraintEqualToAnchor:self.stripViewController.view.bottomAnchor],
+        constraintEqualToAnchor:self.tabStripViewController.view.bottomAnchor],
     [contentView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
     [contentView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
     [contentView.trailingAnchor
@@ -215,7 +215,7 @@ CGFloat kStripHeight = 200.0;
 }
 
 - (void)updateStripConstraints {
-  UIView* stripView = self.stripViewController.view;
+  UIView* stripView = self.tabStripViewController.view;
   self.stripHeightConstraint =
       [stripView.heightAnchor constraintEqualToConstant:0.0];
   self.stripConstraints = @[

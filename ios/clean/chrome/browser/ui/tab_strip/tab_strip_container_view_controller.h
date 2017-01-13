@@ -6,15 +6,15 @@
 // =         This code is only used in the new iOS Chrome architecture.       =
 // ============================================================================
 
-#ifndef IOS_CLEAN_CHROME_BROWSER_UI_STRIP_STRIP_CONTAINER_VIEW_CONTROLLER_H_
-#define IOS_CLEAN_CHROME_BROWSER_UI_STRIP_STRIP_CONTAINER_VIEW_CONTROLLER_H_
+#ifndef IOS_CLEAN_CHROME_BROWSER_UI_TAB_STRIP_TAB_STRIP_CONTAINER_VIEW_CONTROLLER_H_
+#define IOS_CLEAN_CHROME_BROWSER_UI_TAB_STRIP_TAB_STRIP_CONTAINER_VIEW_CONTROLLER_H_
 
 #import <UIKit/UIKit.h>
 
 // Base class for a view controller that contains a content view (generally a
 // web view with toolbar, but nothing in this class assumes that) and a strip
 // view, each managed by their own view controllers.
-@interface StripContainerViewController : UIViewController
+@interface TabStripContainerViewController : UIViewController
 
 // View controller showing the main content. If there is no strip view
 // controller set, the contents of this view controller will fill all of the
@@ -24,8 +24,8 @@
 // View controller showing the strip. It will be of a fixed
 // height (determined internally by the strip container), but will span the
 // width of the tab.
-@property(nonatomic, strong) UIViewController* stripViewController;
+@property(nonatomic, strong) UIViewController* tabStripViewController;
 
 @end
 
-#endif  // IOS_CLEAN_CHROME_BROWSER_UI_STRIP_STRIP_CONTAINER_VIEW_CONTROLLER_H_
+#endif  // IOS_CLEAN_CHROME_BROWSER_UI_TAB_STRIP_TAB_STRIP_CONTAINER_VIEW_CONTROLLER_H_

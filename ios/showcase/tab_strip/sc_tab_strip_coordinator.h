@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_SHOWCASE_STRIP_SC_STRIP_COORDINATOR_H_
-#define IOS_SHOWCASE_STRIP_SC_STRIP_COORDINATOR_H_
+#ifndef IOS_SHOWCASE_TAB_STRIP_SC_TAB_STRIP_COORDINATOR_H_
+#define IOS_SHOWCASE_TAB_STRIP_SC_TAB_STRIP_COORDINATOR_H_
 
 #import <UIKit/UIKit.h>
 
 #import "ios/showcase/common/coordinator.h"
 
-@interface SCStripCoordinator : NSObject<Coordinator>
+@interface SCTabStripCoordinator : NSObject<Coordinator>
 // Redefined to be a UINavigationController.
 @property(nonatomic, weak) UINavigationController* baseViewController;
 @end
 
-#endif  // IOS_SHOWCASE_STRIP_SC_STRIP_COORDINATOR_H_
+#endif  // IOS_SHOWCASE_TAB_STRIP_SC_TAB_STRIP_COORDINATOR_H_
