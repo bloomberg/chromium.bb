@@ -275,12 +275,12 @@ PredicateList:
     Predicate
     {
         $$ = new blink::HeapVector<blink::Member<Predicate>>;
-        $$->append(new Predicate($1));
+        $$->push_back(new Predicate($1));
     }
     |
     PredicateList Predicate
     {
-        $$->append(new Predicate($2));
+        $$->push_back(new Predicate($2));
     }
     ;
 
@@ -359,12 +359,12 @@ ArgumentList:
     Argument
     {
         $$ = new blink::HeapVector<blink::Member<Expression>>;
-        $$->append($1);
+        $$->push_back($1);
     }
     |
     ArgumentList ',' Argument
     {
-        $$->append($3);
+        $$->push_back($3);
     }
     ;
 
