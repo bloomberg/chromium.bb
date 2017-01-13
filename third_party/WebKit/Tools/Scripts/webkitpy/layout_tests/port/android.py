@@ -506,14 +506,8 @@ class AndroidPort(base.Port):
 
     @staticmethod
     def _android_server_process_constructor(port, server_name, cmd_line, env=None, more_logging=False):
-        # We need universal_newlines=True, because 'adb shell' for some unknown reason
-        # does newline conversion of unix-style LF into win-style CRLF (and we need
-        # to convert that back). This can cause headaches elsewhere because
-        # server_process' stdout and stderr are now unicode file-like objects,
-        # not binary file-like objects like all of the other ports are.
-        # FIXME: crbug.com/496983.
         return server_process.ServerProcess(port, server_name, cmd_line, env,
-                                            universal_newlines=True, treat_no_data_as_crash=True, more_logging=more_logging)
+                                            treat_no_data_as_crash=True, more_logging=more_logging)
 
 
 class AndroidPerf(SingleFileOutputProfiler):
@@ -881,14 +875,8 @@ class ChromiumAndroidDriver(driver.Driver):
                     self._device.serial,
                     stack)
 
-        # The parent method expects stdout and stderr to be byte streams, but
-        # since adb shell does newline conversion, we used universal_newlines
-        # when launching the processes, and hence our stdout and stderr are
-        # text objects that need to be encoded back into bytes.
         return super(ChromiumAndroidDriver, self)._get_crash_log(
-            stdout.encode('utf8', 'replace'),
-            stderr.encode('utf8', 'replace'),
-            newer_than)
+            stdout, stderr, newer_than)
 
     def cmd_line(self, pixel_tests, per_test_args):
         # The returned command line is used to start _server_process. In our case, it's an interactive 'adb shell'.
