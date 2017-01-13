@@ -60,6 +60,8 @@ complete.
   old ~tr.ctb~ table, thanks to Arend Arends.
 - New Persian grade 1 table and 8-dots computer table thanks to
   Mohammadreza Rashad.
+- New table for the International Phonetic Alphabet thanks to Ludovic
+  Oger
 
 ** Backwards incompatible changes
 None
