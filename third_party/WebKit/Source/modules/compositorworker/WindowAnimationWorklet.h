@@ -29,7 +29,7 @@ class MODULES_EXPORT WindowAnimationWorklet final
   static Worklet* animationWorklet(DOMWindow&);
   AnimationWorklet* animationWorklet(LocalDOMWindow&);
 
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   DECLARE_TRACE();
 

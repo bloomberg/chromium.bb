@@ -1801,7 +1801,7 @@ void XMLHttpRequest::resume() {
   m_progressEventThrottle->resume();
 }
 
-void XMLHttpRequest::contextDestroyed() {
+void XMLHttpRequest::contextDestroyed(ExecutionContext*) {
   InspectorInstrumentation::didFailXHRLoading(getExecutionContext(), this, this,
                                               m_method, m_url);
   m_progressEventThrottle->stop();

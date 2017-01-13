@@ -107,7 +107,7 @@ class CORE_EXPORT Fullscreen final
   void elementRemoved(Element&);
 
   // ContextLifecycleObserver:
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   DECLARE_VIRTUAL_TRACE();
 

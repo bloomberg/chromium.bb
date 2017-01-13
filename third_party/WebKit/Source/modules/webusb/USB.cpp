@@ -150,7 +150,7 @@ const AtomicString& USB::interfaceName() const {
   return EventTargetNames::USB;
 }
 
-void USB::contextDestroyed() {
+void USB::contextDestroyed(ExecutionContext*) {
   m_deviceManager.reset();
   m_deviceManagerRequests.clear();
   m_chooserService.reset();

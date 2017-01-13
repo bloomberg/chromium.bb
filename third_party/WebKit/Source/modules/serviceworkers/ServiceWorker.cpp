@@ -127,7 +127,7 @@ bool ServiceWorker::hasPendingActivity() const {
   return m_handle->serviceWorker()->state() != WebServiceWorkerStateRedundant;
 }
 
-void ServiceWorker::contextDestroyed() {
+void ServiceWorker::contextDestroyed(ExecutionContext*) {
   m_wasStopped = true;
 }
 

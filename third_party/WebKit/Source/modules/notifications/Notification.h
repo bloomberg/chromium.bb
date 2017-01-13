@@ -126,7 +126,7 @@ class MODULES_EXPORT Notification final
   const AtomicString& interfaceName() const override;
 
   // ContextLifecycleObserver interface.
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   // ScriptWrappable interface.
   bool hasPendingActivity() const final;

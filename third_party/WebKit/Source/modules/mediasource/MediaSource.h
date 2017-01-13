@@ -108,7 +108,7 @@ class MediaSource final : public EventTargetWithInlineData,
   bool hasPendingActivity() const final;
 
   // ContextLifecycleObserver interface
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   // URLRegistrable interface
   URLRegistry& registry() const override;

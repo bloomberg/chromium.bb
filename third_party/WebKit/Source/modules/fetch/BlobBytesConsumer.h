@@ -49,7 +49,7 @@ class MODULES_EXPORT BlobBytesConsumer final : public BytesConsumer,
   String debugName() const override { return "BlobBytesConsumer"; }
 
   // ContextLifecycleObserver implementation
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   // BytesConsumer::Client implementation
   void onStateChange() override;

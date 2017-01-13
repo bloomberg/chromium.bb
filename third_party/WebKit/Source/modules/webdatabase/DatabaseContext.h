@@ -51,7 +51,7 @@ class DatabaseContext final : public GarbageCollectedFinalized<DatabaseContext>,
   DECLARE_VIRTUAL_TRACE();
 
   // For life-cycle management (inherited from ContextLifecycleObserver):
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   DatabaseContext* backend();
   DatabaseThread* databaseThread();

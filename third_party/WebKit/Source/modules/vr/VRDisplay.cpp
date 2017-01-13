@@ -751,7 +751,7 @@ const AtomicString& VRDisplay::interfaceName() const {
   return EventTargetNames::VRDisplay;
 }
 
-void VRDisplay::contextDestroyed() {
+void VRDisplay::contextDestroyed(ExecutionContext*) {
   forceExitPresent();
 }
 

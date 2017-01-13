@@ -98,7 +98,8 @@ class InProcessWorkerMessagingProxyForTest
         m_mockWorkerLoaderProxyProvider.get(), workerObjectProxy()));
     m_mockWorkerThreadLifecycleObserver = new MockWorkerThreadLifecycleObserver(
         m_workerThread->getWorkerThreadLifecycleContext());
-    EXPECT_CALL(*m_mockWorkerThreadLifecycleObserver, contextDestroyed())
+    EXPECT_CALL(*m_mockWorkerThreadLifecycleObserver,
+                contextDestroyed(::testing::_))
         .Times(1);
   }
 

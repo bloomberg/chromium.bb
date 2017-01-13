@@ -90,7 +90,7 @@ inline void LifecycleNotifier<T, Observer>::notifyContextDestroyed() {
   m_observers.swap(observers);
   for (Observer* observer : observers) {
     DCHECK(observer->lifecycleContext() == context());
-    observer->contextDestroyed();
+    observer->contextDestroyed(context());
     observer->clearContext();
   }
 }

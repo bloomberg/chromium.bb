@@ -133,7 +133,7 @@ ServiceWorkerContainer::~ServiceWorkerContainer() {
   ASSERT(!m_provider);
 }
 
-void ServiceWorkerContainer::contextDestroyed() {
+void ServiceWorkerContainer::contextDestroyed(ExecutionContext*) {
   if (m_provider) {
     m_provider->setClient(0);
     m_provider = nullptr;

@@ -71,10 +71,10 @@ class CryptoResultImpl::Resolver final : public ScriptPromiseResolver {
     return resolver;
   }
 
-  void contextDestroyed() override {
+  void contextDestroyed(ExecutionContext* destroyedContext) override {
     m_result->cancel();
     m_result = nullptr;
-    ScriptPromiseResolver::contextDestroyed();
+    ScriptPromiseResolver::contextDestroyed(destroyedContext);
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {

@@ -74,7 +74,7 @@ class CORE_EXPORT Performance final : public PerformanceBase,
   explicit Performance(LocalFrame*);
 
   // ContextLifecycleObserver overrides.
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   static std::pair<String, DOMWindow*> sanitizedAttribution(
       ExecutionContext*,

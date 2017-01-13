@@ -207,8 +207,7 @@ RespondWithObserver* RespondWithObserver::create(
                                  observer);
 }
 
-void RespondWithObserver::contextDestroyed() {
-  ContextLifecycleObserver::contextDestroyed();
+void RespondWithObserver::contextDestroyed(ExecutionContext*) {
   if (m_observer) {
     DCHECK_EQ(Pending, m_state);
     m_observer.clear();

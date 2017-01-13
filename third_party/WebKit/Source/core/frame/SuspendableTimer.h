@@ -40,7 +40,7 @@ class CORE_EXPORT SuspendableTimer : public TimerBase,
   ~SuspendableTimer() override;
 
   // SuspendableObject
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
   void suspend() final;
   void resume() final;
 

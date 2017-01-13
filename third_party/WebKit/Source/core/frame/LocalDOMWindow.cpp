@@ -124,8 +124,8 @@ class PostMessageTimer final
   UserGestureToken* userGestureToken() const {
     return m_userGestureToken.get();
   }
-  void contextDestroyed() override {
-    SuspendableTimer::contextDestroyed();
+  void contextDestroyed(ExecutionContext* destroyedContext) override {
+    SuspendableTimer::contextDestroyed(destroyedContext);
 
     if (m_disposalAllowed)
       dispose();

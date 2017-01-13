@@ -55,7 +55,7 @@ void SuspendableTimer::stop() {
   TimerBase::stop();
 }
 
-void SuspendableTimer::contextDestroyed() {
+void SuspendableTimer::contextDestroyed(ExecutionContext*) {
   stop();
 }
 

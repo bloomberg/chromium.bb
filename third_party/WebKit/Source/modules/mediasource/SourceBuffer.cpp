@@ -1039,7 +1039,7 @@ void SourceBuffer::resume() {
   m_removeAsyncPartRunner->resume();
 }
 
-void SourceBuffer::contextDestroyed() {
+void SourceBuffer::contextDestroyed(ExecutionContext*) {
   m_appendBufferAsyncPartRunner->stop();
   m_removeAsyncPartRunner->stop();
 }

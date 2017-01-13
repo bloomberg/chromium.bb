@@ -91,7 +91,7 @@ void PublicURLManager::revoke(const String& uuid) {
   }
 }
 
-void PublicURLManager::contextDestroyed() {
+void PublicURLManager::contextDestroyed(ExecutionContext*) {
   if (m_isStopped)
     return;
 

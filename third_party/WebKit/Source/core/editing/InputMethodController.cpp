@@ -222,7 +222,7 @@ void InputMethodController::clear() {
   document().markers().removeMarkers(DocumentMarker::Composition);
 }
 
-void InputMethodController::contextDestroyed() {
+void InputMethodController::contextDestroyed(Document*) {
   clear();
   m_compositionRange = nullptr;
 }

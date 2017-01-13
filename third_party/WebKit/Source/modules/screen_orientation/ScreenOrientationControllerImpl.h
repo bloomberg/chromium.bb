@@ -54,10 +54,11 @@ class MODULES_EXPORT ScreenOrientationControllerImpl final
   void registerWithDispatcher() override;
   void unregisterWithDispatcher() override;
   bool hasLastData() override;
-  void pageVisibilityChanged() override;
 
-  // Inherited from ContextLifecycleObserver.
-  void contextDestroyed() override;
+  // Inherited from ContextLifecycleObserver and PageVisibilityObserver.
+  void contextDestroyed(ExecutionContext*) override;
+  void contextDestroyed(Page*) override;
+  void pageVisibilityChanged() override;
 
   void notifyDispatcher();
 

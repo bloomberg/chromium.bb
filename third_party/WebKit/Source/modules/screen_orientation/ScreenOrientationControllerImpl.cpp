@@ -209,11 +209,13 @@ bool ScreenOrientationControllerImpl::hasLastData() {
   return true;
 }
 
-void ScreenOrientationControllerImpl::contextDestroyed() {
+void ScreenOrientationControllerImpl::contextDestroyed(ExecutionContext*) {
   stopUpdating();
   m_client = nullptr;
   m_activeLock = false;
 }
+
+void ScreenOrientationControllerImpl::contextDestroyed(Page*) {}
 
 void ScreenOrientationControllerImpl::notifyDispatcher() {
   if (m_orientation && page()->isPageVisible())

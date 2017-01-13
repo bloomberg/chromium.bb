@@ -51,7 +51,7 @@ class MockSuspendableObject final
 
   MOCK_METHOD0(suspend, void());
   MOCK_METHOD0(resume, void());
-  MOCK_METHOD0(contextDestroyed, void());
+  MOCK_METHOD1(contextDestroyed, void(ExecutionContext*));
 };
 
 class SuspendableObjectTest : public ::testing::Test {
@@ -102,7 +102,7 @@ TEST_F(SuspendableObjectTest, MoveToSuspendedDocument) {
 TEST_F(SuspendableObjectTest, MoveToStoppedDocument) {
   destDocument().shutdown();
 
-  EXPECT_CALL(suspendableObject(), contextDestroyed());
+  EXPECT_CALL(suspendableObject(), contextDestroyed(&destDocument()));
   suspendableObject().didMoveToNewExecutionContext(&destDocument());
 }
 

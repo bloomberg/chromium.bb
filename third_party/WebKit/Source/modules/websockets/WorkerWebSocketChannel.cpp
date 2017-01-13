@@ -357,7 +357,7 @@ void Peer::didError() {
       createCrossThreadTask(&workerGlobalScopeDidError, m_bridge));
 }
 
-void Peer::contextDestroyed() {
+void Peer::contextDestroyed(WorkerThreadLifecycleContext*) {
   DCHECK(isMainThread());
   if (m_mainWebSocketChannel) {
     m_mainWebSocketChannel->disconnect();

@@ -801,7 +801,7 @@ PaymentRequest::PaymentRequest(Document& document,
       payments::mojom::blink::PaymentOptions::From(m_options));
 }
 
-void PaymentRequest::contextDestroyed() {
+void PaymentRequest::contextDestroyed(ExecutionContext*) {
   clearResolversAndCloseMojoConnection();
 }
 

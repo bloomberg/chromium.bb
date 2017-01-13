@@ -106,8 +106,11 @@ Performance::Performance(LocalFrame* frame)
 Performance::~Performance() {
 }
 
-void Performance::contextDestroyed() {
-  frame()->performanceMonitor()->unsubscribeAll(this);
+void Performance::contextDestroyed(ExecutionContext* destroyedContext) {
+  toDocument(destroyedContext)
+      ->frame()
+      ->performanceMonitor()
+      ->unsubscribeAll(this);
 }
 
 ExecutionContext* Performance::getExecutionContext() const {

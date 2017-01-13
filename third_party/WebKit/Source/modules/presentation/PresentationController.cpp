@@ -131,7 +131,7 @@ void PresentationController::registerConnection(
   m_connections.add(connection);
 }
 
-void PresentationController::contextDestroyed() {
+void PresentationController::contextDestroyed(ExecutionContext*) {
   if (m_client) {
     m_client->setController(nullptr);
     m_client = nullptr;

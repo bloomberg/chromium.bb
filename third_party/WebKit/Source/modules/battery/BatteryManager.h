@@ -58,7 +58,8 @@ class BatteryManager final : public EventTargetWithInlineData,
   // SuspendableObject implementation.
   void suspend() override;
   void resume() override;
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
+  void contextDestroyed(Page*) override;
 
   // ScriptWrappable implementation.
   bool hasPendingActivity() const final;

@@ -81,7 +81,7 @@ class MODULES_EXPORT PresentationController final
   PresentationController(LocalFrame&, WebPresentationClient*);
 
   // Implementation of ContextLifecycleObserver.
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   // Return the connection associated with the given |connectionClient| or
   // null if it doesn't exist.

@@ -35,7 +35,7 @@ namespace blink {
 
 class CORE_EXPORT SuspendableObject : public ContextLifecycleObserver {
  public:
-  SuspendableObject(ExecutionContext*);
+  explicit SuspendableObject(ExecutionContext*);
 
   // suspendIfNeeded() should be called exactly once after object construction
   // to synchronize the suspend state with that in ExecutionContext.

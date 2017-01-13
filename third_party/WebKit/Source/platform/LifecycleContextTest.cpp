@@ -56,10 +56,9 @@ class TestingObserver final
     return new TestingObserver(context);
   }
 
-  void contextDestroyed() override {
-    LifecycleObserver::contextDestroyed();
+  void contextDestroyed(DummyContext* destroyedContext) override {
     if (m_observerToRemoveOnDestruct) {
-      lifecycleContext()->removeObserver(m_observerToRemoveOnDestruct);
+      destroyedContext->removeObserver(m_observerToRemoveOnDestruct);
       m_observerToRemoveOnDestruct.clear();
     }
     m_contextDestroyedCalled = true;

@@ -126,7 +126,7 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   bool hasPendingActivity() const final;
 
   // SuspendableObject
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   // EventTarget
   const AtomicString& interfaceName() const override;

@@ -68,14 +68,8 @@ const AtomicString& FileWriter::interfaceName() const {
   return EventTargetNames::FileWriter;
 }
 
-void FileWriter::contextDestroyed() {
-  // Make sure we've actually got something to stop, and haven't already called
-  // abort().
-  if (writer() && m_readyState == kWriting) {
-    doOperation(OperationAbort);
-    m_readyState = kDone;
-  }
-  resetWriter();
+void FileWriter::contextDestroyed(ExecutionContext*) {
+  dispose();
 }
 
 bool FileWriter::hasPendingActivity() const {
@@ -313,7 +307,13 @@ void FileWriter::setError(FileError::ErrorCode errorCode,
 }
 
 void FileWriter::dispose() {
-  contextDestroyed();
+  // Make sure we've actually got something to stop, and haven't already called
+  // abort().
+  if (writer() && m_readyState == kWriting) {
+    doOperation(OperationAbort);
+    m_readyState = kDone;
+  }
+  resetWriter();
 }
 
 DEFINE_TRACE(FileWriter) {

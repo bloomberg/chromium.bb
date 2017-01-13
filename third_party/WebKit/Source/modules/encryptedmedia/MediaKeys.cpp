@@ -295,7 +295,7 @@ DEFINE_TRACE(MediaKeys) {
   ContextLifecycleObserver::trace(visitor);
 }
 
-void MediaKeys::contextDestroyed() {
+void MediaKeys::contextDestroyed(ExecutionContext*) {
   m_timer.stop();
   m_pendingActions.clear();
 

@@ -39,7 +39,8 @@ class NFC final : public GarbageCollectedFinalized<NFC>,
   void dispose();
 
   // ContextLifecycleObserver overrides.
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
+  void contextDestroyed(Page*) override;
 
   // Pushes NFCPushMessage asynchronously to NFC tag / peer.
   ScriptPromise push(ScriptState*,

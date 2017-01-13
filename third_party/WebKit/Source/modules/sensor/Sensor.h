@@ -78,7 +78,7 @@ class Sensor : public EventTargetWithInlineData,
   void initSensorProxyIfNeeded();
 
   // ContextLifecycleObserver overrides.
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   // SensorController::Observer overrides.
   void onSensorInitialized() override;

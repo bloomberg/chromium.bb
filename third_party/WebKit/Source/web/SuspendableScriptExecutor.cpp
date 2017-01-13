@@ -165,8 +165,9 @@ void SuspendableScriptExecutor::createAndRun(
   executor->run();
 }
 
-void SuspendableScriptExecutor::contextDestroyed() {
-  SuspendableTimer::contextDestroyed();
+void SuspendableScriptExecutor::contextDestroyed(
+    ExecutionContext* destroyedContext) {
+  SuspendableTimer::contextDestroyed(destroyedContext);
   if (m_callback)
     m_callback->completed(Vector<v8::Local<v8::Value>>());
   dispose();

@@ -97,7 +97,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   };
 
   // SuspendableObject
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
   ExecutionContext* getExecutionContext() const override;
   void suspend() override;
   void resume() override;

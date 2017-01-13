@@ -189,7 +189,7 @@ class RTCPeerConnection final : public EventTargetWithInlineData,
   // SuspendableObject
   void suspend() override;
   void resume() override;
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   // ScriptWrappable
   // We keep the this object alive until either stopped or closed.

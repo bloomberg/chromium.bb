@@ -638,7 +638,8 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::didReceiveResourceTiming(
                             workerLoader, info));
 }
 
-void WorkerThreadableLoader::MainThreadLoaderHolder::contextDestroyed() {
+void WorkerThreadableLoader::MainThreadLoaderHolder::contextDestroyed(
+    WorkerThreadLifecycleContext*) {
   DCHECK(isMainThread());
   if (m_forwarder) {
     m_forwarder->abort();

@@ -34,7 +34,7 @@ DEFINE_TRACE(ParentFrameTaskRunners) {
   ContextLifecycleObserver::trace(visitor);
 }
 
-void ParentFrameTaskRunners::contextDestroyed() {
+void ParentFrameTaskRunners::contextDestroyed(ExecutionContext*) {
   MutexLocker lock(m_taskRunnersMutex);
   for (auto& entry : m_taskRunners)
     entry.value = Platform::current()->currentThread()->getWebTaskRunner();

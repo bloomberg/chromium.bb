@@ -760,7 +760,7 @@ bool MediaSource::hasPendingActivity() const {
          m_asyncEventQueue->hasPendingEvents() || m_addedToRegistryCounter > 0;
 }
 
-void MediaSource::contextDestroyed() {
+void MediaSource::contextDestroyed(ExecutionContext*) {
   m_asyncEventQueue->close();
   if (!isClosed())
     setReadyState(closedKeyword());

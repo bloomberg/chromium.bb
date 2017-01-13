@@ -52,7 +52,8 @@ class MODULES_EXPORT PresentationAvailability final
   // SuspendableObject implementation.
   void suspend() override;
   void resume() override;
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
+  void contextDestroyed(Page*) override;
 
   // PageVisibilityObserver implementation.
   void pageVisibilityChanged() override;

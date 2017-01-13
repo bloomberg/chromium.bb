@@ -169,7 +169,7 @@ void Sensor::initSensorProxyIfNeeded() {
   }
 }
 
-void Sensor::contextDestroyed() {
+void Sensor::contextDestroyed(ExecutionContext*) {
   if (m_state == Sensor::SensorState::Activated ||
       m_state == Sensor::SensorState::Activating)
     stopListening();

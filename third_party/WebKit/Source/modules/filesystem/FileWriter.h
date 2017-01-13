@@ -74,7 +74,7 @@ class FileWriter final : public EventTargetWithInlineData,
   void didFail(WebFileError) override;
 
   // ContextLifecycleObserver
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   // ScriptWrappable
   bool hasPendingActivity() const final;

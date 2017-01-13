@@ -155,7 +155,7 @@ VibrationController* NavigatorVibration::controller(const LocalFrame& frame) {
   return m_controller.get();
 }
 
-void NavigatorVibration::contextDestroyed() {
+void NavigatorVibration::contextDestroyed(ExecutionContext*) {
   if (m_controller) {
     m_controller->cancel();
     m_controller = nullptr;

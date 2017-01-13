@@ -73,7 +73,7 @@ class MODULES_EXPORT MediaRecorder final
   // SuspendableObject
   void suspend() override;
   void resume() override;
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   // ScriptWrappable
   bool hasPendingActivity() const final { return !m_stopped; }

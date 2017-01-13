@@ -223,13 +223,11 @@ void UserMediaRequest::failUASpecific(const String& name,
       NavigatorUserMediaError::create(name, message, constraintName));
 }
 
-void UserMediaRequest::contextDestroyed() {
+void UserMediaRequest::contextDestroyed(ExecutionContext*) {
   if (m_controller) {
     m_controller->cancelUserMediaRequest(this);
     m_controller = nullptr;
   }
-
-  ContextLifecycleObserver::contextDestroyed();
 }
 
 DEFINE_TRACE(UserMediaRequest) {

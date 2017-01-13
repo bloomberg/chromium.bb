@@ -29,7 +29,7 @@ class MODULES_EXPORT WindowAudioWorklet final
   static Worklet* audioWorklet(DOMWindow&);
   AudioWorklet* audioWorklet(LocalDOMWindow&);
 
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   DECLARE_TRACE();
 

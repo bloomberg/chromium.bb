@@ -67,7 +67,7 @@ void InProcessWorkerBase::terminate() {
     m_contextProxy->terminateGlobalScope();
 }
 
-void InProcessWorkerBase::contextDestroyed() {
+void InProcessWorkerBase::contextDestroyed(ExecutionContext*) {
   if (m_scriptLoader)
     m_scriptLoader->cancel();
   terminate();

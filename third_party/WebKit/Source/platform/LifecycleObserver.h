@@ -39,7 +39,7 @@ class LifecycleObserver : public GarbageCollectedMixin {
  public:
   DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_lifecycleContext); }
 
-  virtual void contextDestroyed() {}
+  virtual void contextDestroyed(Context*) {}
 
   Context* lifecycleContext() const { return m_lifecycleContext; }
 

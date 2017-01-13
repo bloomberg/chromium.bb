@@ -30,9 +30,8 @@ MIDIAccessInitializer::MIDIAccessInitializer(ScriptState* scriptState,
                                              const MIDIOptions& options)
     : ScriptPromiseResolver(scriptState), m_options(options) {}
 
-void MIDIAccessInitializer::contextDestroyed() {
+void MIDIAccessInitializer::contextDestroyed(ExecutionContext*) {
   m_permissionService.reset();
-  LifecycleObserver::contextDestroyed();
 }
 
 ScriptPromise MIDIAccessInitializer::start() {

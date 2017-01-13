@@ -46,7 +46,7 @@ class BroadcastChannel final : public EventTargetWithInlineData,
   bool hasPendingActivity() const override;
 
   // ContextLifecycleObserver:
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   DECLARE_VIRTUAL_TRACE();
 

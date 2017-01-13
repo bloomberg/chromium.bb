@@ -126,7 +126,7 @@ Document& SelectionController::document() const {
   return *m_frame->document();
 }
 
-void SelectionController::contextDestroyed() {
+void SelectionController::contextDestroyed(Document*) {
   m_originalBaseInFlatTree = VisiblePositionInFlatTree();
 }
 

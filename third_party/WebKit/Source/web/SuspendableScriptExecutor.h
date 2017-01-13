@@ -39,7 +39,7 @@ class SuspendableScriptExecutor final
                            WebScriptExecutionCallback*);
   ~SuspendableScriptExecutor() override;
 
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   DECLARE_VIRTUAL_TRACE();
 

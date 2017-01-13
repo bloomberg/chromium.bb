@@ -54,7 +54,7 @@ void InstalledAppController::getInstalledApps(
   m_client->getInstalledRelatedApps(url, std::move(callback));
 }
 
-void InstalledAppController::contextDestroyed() {
+void InstalledAppController::contextDestroyed(ExecutionContext*) {
   m_client = nullptr;
 }
 

@@ -89,7 +89,7 @@ class CORE_EXPORT ScriptPromiseResolver
   // SuspendableObject implementation.
   void suspend() override;
   void resume() override;
-  void contextDestroyed() override { detach(); }
+  void contextDestroyed(ExecutionContext*) override { detach(); }
 
   // Calling this function makes the resolver release its internal resources.
   // That means the associated promise will never be resolved or rejected

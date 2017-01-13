@@ -114,7 +114,7 @@ class MODULES_EXPORT BaseAudioContext
   }
 
   // Document notification
-  void contextDestroyed() final;
+  void contextDestroyed(ExecutionContext*) final;
   bool hasPendingActivity() const final;
 
   // Cannnot be called from the audio thread.

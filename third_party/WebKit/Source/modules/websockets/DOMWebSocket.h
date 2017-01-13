@@ -122,7 +122,7 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
   ExecutionContext* getExecutionContext() const override;
 
   // SuspendableObject functions.
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
   void suspend() override;
   void resume() override;
 

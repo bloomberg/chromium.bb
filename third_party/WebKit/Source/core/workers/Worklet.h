@@ -40,7 +40,7 @@ class CORE_EXPORT Worklet : public GarbageCollectedFinalized<Worklet>,
   void notifyFinished(WorkletScriptLoader*);
 
   // ContextLifecycleObserver
-  void contextDestroyed() final;
+  void contextDestroyed(ExecutionContext*) final;
 
   DECLARE_VIRTUAL_TRACE();
 

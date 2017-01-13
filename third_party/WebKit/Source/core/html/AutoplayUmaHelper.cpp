@@ -236,7 +236,7 @@ void AutoplayUmaHelper::handlePauseEvent() {
   maybeRecordUserPausedAutoplayingCrossOriginVideo();
 }
 
-void AutoplayUmaHelper::contextDestroyed() {
+void AutoplayUmaHelper::contextDestroyed(ExecutionContext*) {
   handleContextDestroyed();
 }
 

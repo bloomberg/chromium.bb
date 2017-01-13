@@ -41,7 +41,9 @@ class MODULES_EXPORT ScreenWakeLock final
 
   // Inherited from PageVisibilityObserver.
   void pageVisibilityChanged() override;
-  void contextDestroyed() override;
+  void contextDestroyed(Page*) override;
+  // Inherited from ContextLifecycleObserver.
+  void contextDestroyed(ExecutionContext*) override;
 
   bool keepAwake() const;
   void setKeepAwake(bool);

@@ -48,7 +48,7 @@ class MODULES_EXPORT MediaDevices final
   bool hasPendingActivity() const override;
 
   // SuspendableObject overrides.
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
   void suspend() override;
   void resume() override;
 

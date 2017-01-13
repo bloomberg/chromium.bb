@@ -106,7 +106,7 @@ class MODULES_EXPORT SpeechRecognition final
   bool hasPendingActivity() const final;
 
   // ContextLifecycleObserver
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(audiostart);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(soundstart);

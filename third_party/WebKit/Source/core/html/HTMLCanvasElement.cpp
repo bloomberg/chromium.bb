@@ -1196,10 +1196,12 @@ void HTMLCanvasElement::pageVisibilityChanged() {
   }
 }
 
-void HTMLCanvasElement::contextDestroyed() {
+void HTMLCanvasElement::contextDestroyed(ExecutionContext*) {
   if (m_context)
     m_context->stop();
 }
+
+void HTMLCanvasElement::contextDestroyed(Page*) {}
 
 void HTMLCanvasElement::styleDidChange(const ComputedStyle* oldStyle,
                                        const ComputedStyle& newStyle) {

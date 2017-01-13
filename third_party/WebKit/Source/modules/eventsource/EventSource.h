@@ -92,7 +92,7 @@ class MODULES_EXPORT EventSource final
   // it defers delivery of events from the loader, and therefore
   // the methods of this class for receiving asynchronous events
   // from the loader won't be invoked.
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   // ScriptWrappable
   bool hasPendingActivity() const final;

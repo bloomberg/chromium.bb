@@ -70,7 +70,7 @@ void SuspendableObject::didMoveToNewExecutionContext(
   setContext(context);
 
   if (context->isContextDestroyed()) {
-    contextDestroyed();
+    contextDestroyed(context);
     return;
   }
 

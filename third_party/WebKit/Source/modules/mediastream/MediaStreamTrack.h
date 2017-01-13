@@ -100,7 +100,7 @@ class MODULES_EXPORT MediaStreamTrack
   bool hasPendingActivity() const final;
 
   // ContextLifecycleObserver
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   std::unique_ptr<AudioSourceProvider> createWebAudioSource();
 

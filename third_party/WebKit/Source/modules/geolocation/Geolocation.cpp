@@ -114,7 +114,7 @@ LocalFrame* Geolocation::frame() const {
   return document() ? document()->frame() : 0;
 }
 
-void Geolocation::contextDestroyed() {
+void Geolocation::contextDestroyed(ExecutionContext*) {
   m_permissionService.reset();
   cancelAllRequests();
   stopUpdating();
@@ -122,6 +122,8 @@ void Geolocation::contextDestroyed() {
   m_pendingForPermissionNotifiers.clear();
   m_lastPosition = nullptr;
 }
+
+void Geolocation::contextDestroyed(Page*) {}
 
 void Geolocation::recordOriginTypeAccess() const {
   DCHECK(frame());

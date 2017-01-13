@@ -38,7 +38,7 @@ class MODULES_EXPORT InstalledAppController final
   InstalledAppController(LocalFrame&, WebInstalledAppClient*);
 
   // Inherited from ContextLifecycleObserver.
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   WebInstalledAppClient* m_client;
 };

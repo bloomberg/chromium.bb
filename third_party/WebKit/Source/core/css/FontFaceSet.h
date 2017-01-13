@@ -99,7 +99,7 @@ class FontFaceSet final : public EventTargetWithInlineData,
   // SuspendableObject
   void suspend() override;
   void resume() override;
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   static FontFaceSet* from(Document&);
   static void didLayout(Document&);

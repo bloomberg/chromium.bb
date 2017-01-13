@@ -395,7 +395,7 @@ Document* Fullscreen::document() {
   return toDocument(lifecycleContext());
 }
 
-void Fullscreen::contextDestroyed() {
+void Fullscreen::contextDestroyed(ExecutionContext*) {
   if (m_fullScreenLayoutObject)
     m_fullScreenLayoutObject->destroy();
 

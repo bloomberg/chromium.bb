@@ -1331,7 +1331,16 @@ void RTCPeerConnection::didAddRemoteDataChannel(
 }
 
 void RTCPeerConnection::releasePeerConnectionHandler() {
-  contextDestroyed();
+  if (m_stopped)
+    return;
+
+  m_stopped = true;
+  m_iceConnectionState = ICEConnectionStateClosed;
+  m_signalingState = SignalingStateClosed;
+
+  m_dispatchScheduledEventRunner->stop();
+
+  m_peerHandler.reset();
 }
 
 void RTCPeerConnection::closePeerConnection() {
@@ -1355,17 +1364,8 @@ void RTCPeerConnection::resume() {
   m_dispatchScheduledEventRunner->resume();
 }
 
-void RTCPeerConnection::contextDestroyed() {
-  if (m_stopped)
-    return;
-
-  m_stopped = true;
-  m_iceConnectionState = ICEConnectionStateClosed;
-  m_signalingState = SignalingStateClosed;
-
-  m_dispatchScheduledEventRunner->stop();
-
-  m_peerHandler.reset();
+void RTCPeerConnection::contextDestroyed(ExecutionContext*) {
+  releasePeerConnectionHandler();
 }
 
 void RTCPeerConnection::changeSignalingState(SignalingState signalingState) {

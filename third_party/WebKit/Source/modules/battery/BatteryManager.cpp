@@ -105,11 +105,13 @@ void BatteryManager::resume() {
   startUpdating();
 }
 
-void BatteryManager::contextDestroyed() {
+void BatteryManager::contextDestroyed(ExecutionContext*) {
   m_hasEventListener = false;
   m_batteryProperty = nullptr;
   stopUpdating();
 }
+
+void BatteryManager::contextDestroyed(Page*) {}
 
 bool BatteryManager::hasPendingActivity() const {
   // Prevent V8 from garbage collecting the wrapper object if there are

@@ -135,7 +135,8 @@ ScriptPromise ServiceWorkerRegistrationNotifications::getNotifications(
   return promise;
 }
 
-void ServiceWorkerRegistrationNotifications::contextDestroyed() {
+void ServiceWorkerRegistrationNotifications::contextDestroyed(
+    ExecutionContext*) {
   for (auto loader : m_loaders)
     loader->stop();
 }

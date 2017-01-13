@@ -105,7 +105,7 @@ class SourceBuffer final : public EventTargetWithInlineData,
   // SuspendableObject
   void suspend() override;
   void resume() override;
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   // EventTarget interface
   ExecutionContext* getExecutionContext() const override;

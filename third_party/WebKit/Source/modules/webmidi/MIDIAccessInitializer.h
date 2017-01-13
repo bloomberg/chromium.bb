@@ -90,7 +90,7 @@ class MODULES_EXPORT MIDIAccessInitializer : public ScriptPromiseResolver,
   ExecutionContext* getExecutionContext() const;
   ScriptPromise start();
 
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   void onPermissionsUpdated(mojom::blink::PermissionStatus);
   void onPermissionUpdated(mojom::blink::PermissionStatus);

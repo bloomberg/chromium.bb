@@ -58,7 +58,7 @@ class BluetoothRemoteGATTCharacteristic final
   void dispatchCharacteristicValueChanged(const Vector<uint8_t>& value);
 
   // ContextLifecycleObserver interface.
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   // USING_PRE_FINALIZER interface.
   // Called before the object gets garbage collected.

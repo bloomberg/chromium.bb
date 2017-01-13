@@ -87,7 +87,7 @@ class WorkerThreadTest : public ::testing::Test {
     EXPECT_CALL(*m_reportingProxy, countFeature(_)).Times(AnyNumber());
     EXPECT_CALL(*m_reportingProxy, willDestroyWorkerGlobalScope()).Times(1);
     EXPECT_CALL(*m_reportingProxy, didTerminateWorkerThread()).Times(1);
-    EXPECT_CALL(*m_lifecycleObserver, contextDestroyed()).Times(1);
+    EXPECT_CALL(*m_lifecycleObserver, contextDestroyed(_)).Times(1);
   }
 
   void expectReportingCallsForWorkerPossiblyTerminatedBeforeInitialization() {
@@ -101,7 +101,7 @@ class WorkerThreadTest : public ::testing::Test {
     EXPECT_CALL(*m_reportingProxy, willDestroyWorkerGlobalScope())
         .Times(AtMost(1));
     EXPECT_CALL(*m_reportingProxy, didTerminateWorkerThread()).Times(1);
-    EXPECT_CALL(*m_lifecycleObserver, contextDestroyed()).Times(1);
+    EXPECT_CALL(*m_lifecycleObserver, contextDestroyed(_)).Times(1);
   }
 
   void expectReportingCallsForWorkerForciblyTerminated() {
@@ -112,7 +112,7 @@ class WorkerThreadTest : public ::testing::Test {
     EXPECT_CALL(*m_reportingProxy, didEvaluateWorkerScript(false)).Times(1);
     EXPECT_CALL(*m_reportingProxy, willDestroyWorkerGlobalScope()).Times(1);
     EXPECT_CALL(*m_reportingProxy, didTerminateWorkerThread()).Times(1);
-    EXPECT_CALL(*m_lifecycleObserver, contextDestroyed()).Times(1);
+    EXPECT_CALL(*m_lifecycleObserver, contextDestroyed(_)).Times(1);
   }
 
   ExitCode getExitCode() { return m_workerThread->getExitCodeForTesting(); }
@@ -264,7 +264,7 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
   EXPECT_CALL(*m_reportingProxy, willDestroyWorkerGlobalScope()).Times(1);
   EXPECT_CALL(*m_reportingProxy, countFeature(_)).Times(AnyNumber());
   EXPECT_CALL(*m_reportingProxy, didTerminateWorkerThread()).Times(1);
-  EXPECT_CALL(*m_lifecycleObserver, contextDestroyed()).Times(1);
+  EXPECT_CALL(*m_lifecycleObserver, contextDestroyed(_)).Times(1);
 
   std::unique_ptr<Vector<CSPHeaderAndType>> headers =
       WTF::makeUnique<Vector<CSPHeaderAndType>>();

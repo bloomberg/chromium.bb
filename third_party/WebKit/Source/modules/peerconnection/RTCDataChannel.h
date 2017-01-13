@@ -107,7 +107,7 @@ class MODULES_EXPORT RTCDataChannel final
   // SuspendableObject
   void suspend() override;
   void resume() override;
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   // ScriptWrappable
   bool hasPendingActivity() const override;

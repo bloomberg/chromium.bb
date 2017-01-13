@@ -90,7 +90,7 @@ class MODULES_EXPORT UserMediaRequest final
   bool isSecureContextUse(String& errorMessage);
 
   // ContextLifecycleObserver
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   DECLARE_VIRTUAL_TRACE();
 

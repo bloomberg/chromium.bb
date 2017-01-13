@@ -95,7 +95,7 @@ class MODULES_EXPORT PaymentRequest final
                  ExceptionState&);
 
   // LifecycleObserver:
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   // payments::mojom::blink::PaymentRequestClient:
   void OnShippingAddressChange(

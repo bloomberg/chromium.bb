@@ -170,8 +170,9 @@ class CORE_EXPORT HTMLCanvasElement final
 
   InsertionNotificationRequest insertedInto(ContainerNode*) override;
 
-  // ContextLifecycleObserver (and PageVisibilityObserver!!!) implementation
-  void contextDestroyed() override;
+  // ContextLifecycleObserver and PageVisibilityObserver implementation
+  void contextDestroyed(ExecutionContext*) override;
+  void contextDestroyed(Page*) override;
 
   // PageVisibilityObserver implementation
   void pageVisibilityChanged() override;

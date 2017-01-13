@@ -42,7 +42,7 @@ class NetworkInformation final
   bool hasPendingActivity() const final;
 
   // ContextLifecycleObserver overrides.
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   DECLARE_VIRTUAL_TRACE();
 

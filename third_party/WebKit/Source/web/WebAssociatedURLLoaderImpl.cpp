@@ -319,7 +319,7 @@ class WebAssociatedURLLoaderImpl::Observer final
     clearContext();
   }
 
-  void contextDestroyed() override {
+  void contextDestroyed(ExecutionContext*) override {
     if (m_parent)
       m_parent->documentDestroyed();
   }

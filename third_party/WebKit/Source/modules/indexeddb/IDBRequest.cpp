@@ -386,7 +386,7 @@ bool IDBRequest::hasPendingActivity() const {
   return m_hasPendingActivity && getExecutionContext();
 }
 
-void IDBRequest::contextDestroyed() {
+void IDBRequest::contextDestroyed(ExecutionContext*) {
   if (m_readyState == PENDING) {
     m_readyState = EarlyDeath;
     if (m_transaction) {

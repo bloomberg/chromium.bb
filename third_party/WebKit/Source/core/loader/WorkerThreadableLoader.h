@@ -168,7 +168,7 @@ class WorkerThreadableLoader final : public ThreadableLoader {
     void didFailRedirectCheck() override;
     void didReceiveResourceTiming(const ResourceTimingInfo&) override;
 
-    void contextDestroyed() override;
+    void contextDestroyed(WorkerThreadLifecycleContext*) override;
 
     DECLARE_TRACE();
 

@@ -60,7 +60,7 @@ class PrerenderHandle final : public GarbageCollectedFinalized<PrerenderHandle>,
   const KURL& url() const;
 
   // ContextLifecycleObserver:
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   DECLARE_VIRTUAL_TRACE();
   EAGERLY_FINALIZE();

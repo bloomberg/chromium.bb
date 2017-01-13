@@ -196,7 +196,7 @@ void FontFaceSet::resume() {
   m_asyncRunner->resume();
 }
 
-void FontFaceSet::contextDestroyed() {
+void FontFaceSet::contextDestroyed(ExecutionContext*) {
   m_asyncRunner->stop();
 }
 

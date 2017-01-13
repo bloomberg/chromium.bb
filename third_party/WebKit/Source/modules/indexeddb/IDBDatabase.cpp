@@ -556,7 +556,7 @@ bool IDBDatabase::hasPendingActivity() const {
   return !m_closePending && getExecutionContext() && hasEventListeners();
 }
 
-void IDBDatabase::contextDestroyed() {
+void IDBDatabase::contextDestroyed(ExecutionContext*) {
   // Immediately close the connection to the back end. Don't attempt a
   // normal close() since that may wait on transactions which require a
   // round trip to the back-end to abort.

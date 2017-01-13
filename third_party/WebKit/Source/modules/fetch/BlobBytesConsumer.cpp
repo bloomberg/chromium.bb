@@ -163,7 +163,7 @@ BytesConsumer::PublicState BlobBytesConsumer::getPublicState() const {
   return m_state;
 }
 
-void BlobBytesConsumer::contextDestroyed() {
+void BlobBytesConsumer::contextDestroyed(ExecutionContext*) {
   if (m_state != PublicState::ReadableOrWaiting)
     return;
 

@@ -40,7 +40,7 @@ class MODULES_EXPORT RespondWithObserver
                                      WebURLRequest::RequestContext,
                                      WaitUntilObserver*);
 
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   void willDispatchEvent();
   void didDispatchEvent(DispatchEventResult dispatchResult);

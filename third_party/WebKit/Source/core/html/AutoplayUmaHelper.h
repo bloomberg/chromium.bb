@@ -64,7 +64,7 @@ class CORE_EXPORT AutoplayUmaHelper : public EventListener,
 
   bool operator==(const EventListener&) const override;
 
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   void onAutoplayInitiated(AutoplaySource);
 

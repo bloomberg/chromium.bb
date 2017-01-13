@@ -307,7 +307,7 @@ void RTCDataChannel::resume() {
     m_scheduledEventTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
-void RTCDataChannel::contextDestroyed() {
+void RTCDataChannel::contextDestroyed(ExecutionContext*) {
   if (m_stopped)
     return;
 

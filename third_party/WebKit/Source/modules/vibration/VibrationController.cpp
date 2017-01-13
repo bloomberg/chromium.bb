@@ -171,12 +171,14 @@ void VibrationController::didCancel() {
   m_timerDoVibrate.startOneShot(0, BLINK_FROM_HERE);
 }
 
-void VibrationController::contextDestroyed() {
+void VibrationController::contextDestroyed(ExecutionContext*) {
   cancel();
 
   // If the document context was destroyed, never call the mojo service again.
   m_service.reset();
 }
+
+void VibrationController::contextDestroyed(Page*) {}
 
 void VibrationController::pageVisibilityChanged() {
   if (!page()->isPageVisible())

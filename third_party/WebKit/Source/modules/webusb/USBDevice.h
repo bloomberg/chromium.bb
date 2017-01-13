@@ -100,7 +100,7 @@ class USBDevice : public GarbageCollectedFinalized<USBDevice>,
   ScriptPromise reset(ScriptState*);
 
   // ContextLifecycleObserver interface.
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   DECLARE_TRACE();
 

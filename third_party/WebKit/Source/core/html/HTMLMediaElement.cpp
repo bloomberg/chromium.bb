@@ -3376,7 +3376,7 @@ void HTMLMediaElement::clearMediaPlayer() {
     layoutObject()->setShouldDoFullPaintInvalidation();
 }
 
-void HTMLMediaElement::contextDestroyed() {
+void HTMLMediaElement::contextDestroyed(ExecutionContext*) {
   BLINK_MEDIA_LOG << "contextDestroyed(" << (void*)this << ")";
 
   // Close the async event queue so that no events are enqueued.

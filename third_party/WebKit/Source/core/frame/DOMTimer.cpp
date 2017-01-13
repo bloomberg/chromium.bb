@@ -127,7 +127,7 @@ void DOMTimer::stop() {
   SuspendableTimer::stop();
 }
 
-void DOMTimer::contextDestroyed() {
+void DOMTimer::contextDestroyed(ExecutionContext*) {
   stop();
 }
 

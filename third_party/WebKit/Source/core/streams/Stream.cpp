@@ -71,7 +71,7 @@ void Stream::suspend() {}
 
 void Stream::resume() {}
 
-void Stream::contextDestroyed() {
+void Stream::contextDestroyed(ExecutionContext*) {
   neuter();
   abort();
 }

@@ -75,7 +75,7 @@ class CORE_EXPORT FileReader final : public EventTargetWithInlineData,
   void result(StringOrArrayBuffer& resultAttribute) const;
 
   // ContextLifecycleObserver
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   // ScriptWrappable
   bool hasPendingActivity() const final;

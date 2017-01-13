@@ -129,7 +129,7 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
     void didError() override;
 
     // WorkerThreadLifecycleObserver function.
-    void contextDestroyed() override;
+    void contextDestroyed(WorkerThreadLifecycleContext*) override;
 
    private:
     CrossThreadWeakPersistent<Bridge> m_bridge;

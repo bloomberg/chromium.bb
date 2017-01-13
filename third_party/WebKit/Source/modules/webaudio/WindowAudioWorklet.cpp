@@ -51,7 +51,7 @@ AudioWorklet* WindowAudioWorklet::audioWorklet(LocalDOMWindow& window) {
 // => ThreadedWorkletMessagingProxy
 // => Document
 // => ... => window
-void WindowAudioWorklet::contextDestroyed() {
+void WindowAudioWorklet::contextDestroyed(ExecutionContext*) {
   m_audioWorklet = nullptr;
 }
 

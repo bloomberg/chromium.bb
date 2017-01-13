@@ -182,9 +182,11 @@ const char* NavigatorGamepad::supplementName() {
   return "NavigatorGamepad";
 }
 
-void NavigatorGamepad::contextDestroyed() {
+void NavigatorGamepad::contextDestroyed(ExecutionContext*) {
   stopUpdating();
 }
+
+void NavigatorGamepad::contextDestroyed(Page*) {}
 
 void NavigatorGamepad::registerWithDispatcher() {
   GamepadDispatcher::instance().addController(this);

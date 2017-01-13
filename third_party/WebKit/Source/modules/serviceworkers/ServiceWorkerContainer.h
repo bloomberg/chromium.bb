@@ -85,7 +85,7 @@ class MODULES_EXPORT ServiceWorkerContainer final
   ScriptPromise getRegistration(ScriptState*, const String& documentURL);
   ScriptPromise getRegistrations(ScriptState*);
 
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   // WebServiceWorkerProviderClient overrides.
   void setController(std::unique_ptr<WebServiceWorker::Handle>,

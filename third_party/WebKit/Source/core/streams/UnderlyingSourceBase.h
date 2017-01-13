@@ -46,7 +46,7 @@ class CORE_EXPORT UnderlyingSourceBase
   bool hasPendingActivity() const;
 
   // ContextLifecycleObserver
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
  protected:
   explicit UnderlyingSourceBase(ScriptState* scriptState)

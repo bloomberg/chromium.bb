@@ -52,7 +52,7 @@ class CORE_EXPORT ParentFrameTaskRunners final
   // particular local frame.
   explicit ParentFrameTaskRunners(LocalFrame*);
 
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   Mutex m_taskRunnersMutex;
   TaskRunnerHashMap m_taskRunners;

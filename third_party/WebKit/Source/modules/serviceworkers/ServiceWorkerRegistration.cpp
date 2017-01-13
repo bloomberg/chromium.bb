@@ -158,7 +158,7 @@ DEFINE_TRACE(ServiceWorkerRegistration) {
   Supplementable<ServiceWorkerRegistration>::trace(visitor);
 }
 
-void ServiceWorkerRegistration::contextDestroyed() {
+void ServiceWorkerRegistration::contextDestroyed(ExecutionContext*) {
   if (m_stopped)
     return;
   m_stopped = true;

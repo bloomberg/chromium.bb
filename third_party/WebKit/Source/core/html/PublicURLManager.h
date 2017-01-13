@@ -61,7 +61,7 @@ class PublicURLManager final
   void revoke(const String& uuid);
 
   // ContextLifecycleObserver interface.
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   DECLARE_VIRTUAL_TRACE();
 

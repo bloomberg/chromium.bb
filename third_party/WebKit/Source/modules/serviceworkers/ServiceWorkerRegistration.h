@@ -91,7 +91,7 @@ class ServiceWorkerRegistration final
   void dispose();
 
   // ContextLifecycleObserver overrides.
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   // A handle to the registration representation in the embedder.
   std::unique_ptr<WebServiceWorkerRegistration::Handle> m_handle;

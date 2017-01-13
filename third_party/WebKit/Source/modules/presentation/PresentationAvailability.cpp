@@ -94,9 +94,11 @@ void PresentationAvailability::suspend() {
   setState(State::Suspended);
 }
 
-void PresentationAvailability::contextDestroyed() {
+void PresentationAvailability::contextDestroyed(ExecutionContext*) {
   setState(State::Inactive);
 }
+
+void PresentationAvailability::contextDestroyed(Page*) {}
 
 void PresentationAvailability::pageVisibilityChanged() {
   if (m_state == State::Inactive)

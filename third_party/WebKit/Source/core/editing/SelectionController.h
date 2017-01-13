@@ -124,7 +124,7 @@ class CORE_EXPORT SelectionController final
   // Implements |SynchronousMutationObserver|.
   // TODO(yosin): We should relocate |m_originalBaseInFlatTree| when DOM tree
   // changed.
-  void contextDestroyed() final;
+  void contextDestroyed(Document*) final;
 
   Member<LocalFrame> const m_frame;
   // TODO(yosin): We should use |PositionWIthAffinityInFlatTree| since we

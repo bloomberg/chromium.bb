@@ -652,7 +652,7 @@ ExecutionContext* DOMWebSocket::getExecutionContext() const {
   return SuspendableObject::getExecutionContext();
 }
 
-void DOMWebSocket::contextDestroyed() {
+void DOMWebSocket::contextDestroyed(ExecutionContext*) {
   NETWORK_DVLOG(1) << "WebSocket " << this << " contextDestroyed()";
   m_eventQueue->contextDestroyed();
   if (m_channel) {

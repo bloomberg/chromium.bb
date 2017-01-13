@@ -90,7 +90,7 @@ class MIDIAccess final : public EventTargetWithInlineData,
   bool hasPendingActivity() const final;
 
   // ContextLifecycleObserver
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   // MIDIAccessorClient
   void didAddInputPort(const String& id,

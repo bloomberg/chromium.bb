@@ -355,7 +355,7 @@ class CORE_EXPORT HTMLMediaElement
   bool isInteractiveContent() const final;
 
   // SuspendableObject functions.
-  void contextDestroyed() final;
+  void contextDestroyed(ExecutionContext*) final;
 
   virtual void updateDisplayState() {}
 

@@ -58,7 +58,7 @@ void Worklet::notifyFinished(WorkletScriptLoader* scriptLoader) {
   m_scriptLoaders.remove(scriptLoader);
 }
 
-void Worklet::contextDestroyed() {
+void Worklet::contextDestroyed(ExecutionContext*) {
   if (isInitialized()) {
     workletGlobalScopeProxy()->terminateWorkletGlobalScope();
   }

@@ -113,7 +113,7 @@ class MockWorkerThreadLifecycleObserver final
       WorkerThreadLifecycleContext* context)
       : WorkerThreadLifecycleObserver(context) {}
 
-  MOCK_METHOD0(contextDestroyed, void());
+  MOCK_METHOD1(contextDestroyed, void(WorkerThreadLifecycleContext*));
 };
 
 class WorkerThreadForTest : public WorkerThread {

@@ -660,7 +660,7 @@ bool Animation::hasPendingActivity() const {
          (!m_finished && hasEventListeners(EventTypeNames::finish));
 }
 
-void Animation::contextDestroyed() {
+void Animation::contextDestroyed(ExecutionContext*) {
   PlayStateUpdateScope updateScope(*this, TimingUpdateOnDemand);
 
   m_finished = true;

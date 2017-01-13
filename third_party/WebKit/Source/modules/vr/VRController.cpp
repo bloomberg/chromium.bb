@@ -93,7 +93,7 @@ void VRController::onGetDisplays() {
   }
 }
 
-void VRController::contextDestroyed() {
+void VRController::contextDestroyed(ExecutionContext*) {
   dispose();
 }
 

@@ -55,7 +55,7 @@ AnimationWorklet* WindowAnimationWorklet::animationWorklet(
 // => ThreadedWorkletMessagingProxy
 // => Document
 // => ... => window
-void WindowAnimationWorklet::contextDestroyed() {
+void WindowAnimationWorklet::contextDestroyed(ExecutionContext*) {
   m_animationWorklet = nullptr;
 }
 

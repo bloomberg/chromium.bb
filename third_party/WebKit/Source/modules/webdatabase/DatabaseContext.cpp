@@ -125,7 +125,7 @@ DEFINE_TRACE(DatabaseContext) {
 // To do this, we stop the database and let everything shutdown naturally
 // because the database closing process may still make use of this context.
 // It is not safe to just delete the context here.
-void DatabaseContext::contextDestroyed() {
+void DatabaseContext::contextDestroyed(ExecutionContext*) {
   stopDatabases();
   DatabaseManager::manager().unregisterDatabaseContext(this);
 }

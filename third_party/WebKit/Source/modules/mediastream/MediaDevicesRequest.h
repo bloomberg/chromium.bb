@@ -55,7 +55,7 @@ class MODULES_EXPORT MediaDevicesRequest final
   void succeed(const MediaDeviceInfoVector&);
 
   // ContextLifecycleObserver
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   DECLARE_VIRTUAL_TRACE();
 

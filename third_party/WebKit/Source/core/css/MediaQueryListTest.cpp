@@ -26,7 +26,7 @@ TEST(MediaQueryListTest, CrashInStop) {
   MediaQueryList* list = MediaQueryList::create(
       document, MediaQueryMatcher::create(*document), MediaQuerySet::create());
   list->addListener(new TestListener());
-  list->contextDestroyed();
+  list->contextDestroyed(document);
   // This test passes if it's not crashed.
 }
 

@@ -36,7 +36,7 @@ class ScriptedIdleTaskController
   void cancelCallback(CallbackId);
 
   // SuspendableObject interface.
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
   void suspend() override;
   void resume() override;
 

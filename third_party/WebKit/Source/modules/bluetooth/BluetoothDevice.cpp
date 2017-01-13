@@ -67,7 +67,7 @@ void BluetoothDevice::dispose() {
   disconnectGATTIfConnected();
 }
 
-void BluetoothDevice::contextDestroyed() {
+void BluetoothDevice::contextDestroyed(ExecutionContext*) {
   disconnectGATTIfConnected();
 }
 

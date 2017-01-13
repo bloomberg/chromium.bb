@@ -39,7 +39,7 @@ class CORE_EXPORT InProcessWorkerBase
   void terminate();
 
   // SuspendableObject
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   // ScriptWrappable
   bool hasPendingActivity() const final;

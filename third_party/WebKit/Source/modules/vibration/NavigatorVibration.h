@@ -72,7 +72,7 @@ class MODULES_EXPORT NavigatorVibration final
   explicit NavigatorVibration(Navigator&);
 
   // Inherited from ContextLifecycleObserver.
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   static void collectHistogramMetrics(const LocalFrame&);
 

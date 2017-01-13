@@ -144,7 +144,7 @@ class TestSynchronousMutationObserver
 
  private:
   // Implement |SynchronousMutationObserver| member functions.
-  void contextDestroyed() final;
+  void contextDestroyed(Document*) final;
   void didChangeChildren(const ContainerNode&) final;
   void didMergeTextNodes(Text&, unsigned) final;
   void didSplitTextNode(const Text&) final;
@@ -171,7 +171,7 @@ TestSynchronousMutationObserver::TestSynchronousMutationObserver(
   setContext(&document);
 }
 
-void TestSynchronousMutationObserver::contextDestroyed() {
+void TestSynchronousMutationObserver::contextDestroyed(Document*) {
   ++m_contextDestroyedCalledCounter;
 }
 

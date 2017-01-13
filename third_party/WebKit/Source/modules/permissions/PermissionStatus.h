@@ -53,7 +53,7 @@ class PermissionStatus final : public EventTargetWithInlineData,
   // SuspendableObject implementation.
   void suspend() override;
   void resume() override;
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   String state() const;
 

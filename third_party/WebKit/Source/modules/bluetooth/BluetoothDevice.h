@@ -71,7 +71,7 @@ class BluetoothDevice final : public EventTargetWithInlineData,
   void dispose();
 
   // ContextLifecycleObserver interface.
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   // If gatt is connected then sets gatt.connected to false and disconnects.
   // This function only performs the necessary steps to ensure a device

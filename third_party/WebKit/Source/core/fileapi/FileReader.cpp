@@ -206,15 +206,16 @@ const AtomicString& FileReader::interfaceName() const {
   return EventTargetNames::FileReader;
 }
 
-void FileReader::contextDestroyed() {
+void FileReader::contextDestroyed(ExecutionContext* destroyedContext) {
   // The delayed abort task tidies up and advances to the DONE state.
   if (m_loadingState == LoadingStateAborted)
     return;
 
-  if (hasPendingActivity())
+  if (hasPendingActivity()) {
     ThrottlingController::finishReader(
-        getExecutionContext(), this,
-        ThrottlingController::removeReader(getExecutionContext(), this));
+        destroyedContext, this,
+        ThrottlingController::removeReader(destroyedContext, this));
+  }
   terminate();
 }
 

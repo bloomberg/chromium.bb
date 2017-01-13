@@ -159,7 +159,7 @@ class CORE_EXPORT InputMethodController final
   WebTextInputMode inputModeOfFocusedElement() const;
 
   // Implements |SynchronousMutationObserver|.
-  void contextDestroyed() final;
+  void contextDestroyed(Document*) final;
 };
 
 }  // namespace blink

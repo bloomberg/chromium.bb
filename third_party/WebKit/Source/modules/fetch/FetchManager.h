@@ -22,7 +22,7 @@ class FetchManager final : public GarbageCollected<FetchManager>,
  public:
   static FetchManager* create(ExecutionContext*);
   ScriptPromise fetch(ScriptState*, FetchRequestData*);
-  void contextDestroyed() override;
+  void contextDestroyed(ExecutionContext*) override;
 
   DECLARE_TRACE();
 

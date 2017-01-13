@@ -148,7 +148,7 @@ ExecutionContext* SpeechRecognition::getExecutionContext() const {
   return ContextLifecycleObserver::getExecutionContext();
 }
 
-void SpeechRecognition::contextDestroyed() {
+void SpeechRecognition::contextDestroyed(ExecutionContext*) {
   m_controller = nullptr;
   if (hasPendingActivity())
     abort();
