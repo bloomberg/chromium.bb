@@ -16,10 +16,10 @@
 #import "ios/chrome/app/main_controller_private.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
 #import "ios/chrome/browser/metrics/previous_session_info_private.h"
 #import "ios/chrome/browser/tabs/tab.h"
+#import "ios/chrome/browser/ui/browser_list_ios.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
@@ -65,17 +65,14 @@ Tab* GetCurrentTab() {
 // Returns the original ChromeBrowserState if |incognito| is false. If
 // |ingonito| is true, returns an off-the-record ChromeBrowserState.
 ios::ChromeBrowserState* GetBrowserState(bool incognito) {
-  std::vector<ios::ChromeBrowserState*> browser_states =
-      GetApplicationContext()
-          ->GetChromeBrowserStateManager()
-          ->GetLoadedBrowserStates();
-  DCHECK(!browser_states.empty());
-
-  ios::ChromeBrowserState* browser_state = browser_states.front();
-  DCHECK(!browser_state->IsOffTheRecord());
-
-  return incognito ? browser_state->GetOffTheRecordChromeBrowserState()
-                   : browser_state;
+  DCHECK(!BrowserListIOS::empty());
+  id<BrowserIOS> browser = *BrowserListIOS::begin();
+  DCHECK(browser);
+  ios::ChromeBrowserState* browser_state = [browser browserState];
+  DCHECK(browser_state);
+  browser_state = incognito ? browser_state->GetOffTheRecordChromeBrowserState()
+                            : browser_state->GetOriginalChromeBrowserState();
+  return browser_state;
 }
 
 // Gets the root UIViewController.

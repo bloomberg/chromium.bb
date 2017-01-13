@@ -233,6 +233,7 @@ source_set("ui_internal") {
     "prerender_delegate.h",
   ]
   deps = [
+    ":browser_list",
     ":resources",
     ":ui",
     "//base",
@@ -339,6 +340,18 @@ source_set("ui_internal") {
     "StoreKit.framework",
     "UIKit.framework",
     "WebKit.framework",
+  ]
+}
+
+source_set("browser_list") {
+  sources = [
+    "browser_ios.h",
+    "browser_list_ios.h",
+    "browser_list_ios.mm",
+  ]
+  deps = [
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/tabs",
   ]
 }
 

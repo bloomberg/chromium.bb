@@ -9,6 +9,5 @@ source_set("browser_state_metrics") {
   ]
   deps = [
     "//components/profile_metrics",
-    "//ios/chrome/browser/browser_state",
   ]
 }

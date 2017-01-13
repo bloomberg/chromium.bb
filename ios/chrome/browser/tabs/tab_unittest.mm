@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/files/file_path.h"
 #include "base/ios/block_types.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
@@ -20,7 +19,6 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #import "ios/chrome/browser/chrome_url_util.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #import "ios/chrome/browser/tabs/tab.h"
@@ -31,7 +29,6 @@
 #import "ios/chrome/browser/web/external_app_launcher.h"
 #include "ios/chrome/test/block_cleanup_test.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_provider.h"
-#include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/public/provider/chrome/browser/native_app_launcher/fake_native_app_metadata.h"
 #import "ios/public/provider/chrome/browser/native_app_launcher/fake_native_app_whitelist_manager.h"
@@ -163,11 +160,7 @@ class FakeChromeBrowserProvider : public ios::TestChromeBrowserProvider {
 
 class TabTest : public BlockCleanupTest {
  public:
-  TabTest()
-      : thread_bundle_(web::TestWebThreadBundle::REAL_FILE_THREAD),
-        scoped_browser_state_manager_(
-            base::MakeUnique<TestChromeBrowserStateManager>(base::FilePath())) {
-  }
+  TabTest() : thread_bundle_(web::TestWebThreadBundle::REAL_FILE_THREAD) {}
 
   void SetUp() override {
     BlockCleanupTest::SetUp();
@@ -317,7 +310,7 @@ class TabTest : public BlockCleanupTest {
 
  protected:
   web::TestWebThreadBundle thread_bundle_;
-  IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
+  IOSChromeScopedTestingLocalState local_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   base::scoped_nsobject<Tab> tab_;
   history::HistoryService* history_service_;  // weak
@@ -555,5 +548,11 @@ TEST_F(TabOpenAppOffTheRecordTest, DISABLED_testResetShouldAutoOpenOnFailure) {
   TestOpenNativeAppURL(testURL, NO, expectedCallCount, NO);
   EXPECT_FALSE([metadata shouldAutoOpenLinks]);
 }
+
+class TestRequestGroupID : public BlockCleanupTest {
+ public:
+  void SetUp() override { BlockCleanupTest::SetUp(); }
+  void TearDown() override { BlockCleanupTest::TearDown(); }
+};
 
 }  // namespace

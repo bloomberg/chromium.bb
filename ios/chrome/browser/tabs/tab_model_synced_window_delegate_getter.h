@@ -15,19 +15,28 @@ namespace browser_sync {
 class SyncedWindowDelegate;
 }
 
+namespace ios {
+class ChromeBrowserState;
+}
+
 class TabModelSyncedWindowDelegatesGetter
     : public sync_sessions::SyncedWindowDelegatesGetter {
  public:
-  TabModelSyncedWindowDelegatesGetter();
+  // TODO(crbug.com/548612): |browser_state| may be unnecessary as iOS does not
+  // supports multi-profile starting with M47. Should it be removed?
+  explicit TabModelSyncedWindowDelegatesGetter(
+      ios::ChromeBrowserState* browser_state);
   ~TabModelSyncedWindowDelegatesGetter() override;
 
   // sync_sessions::SyncedWindowDelegatesGetter:
   std::set<const sync_sessions::SyncedWindowDelegate*>
   GetSyncedWindowDelegates() override;
   const sync_sessions::SyncedWindowDelegate* FindById(
-      SessionID::id_type session_id) override;
+      SessionID::id_type id) override;
 
  private:
+  const ios::ChromeBrowserState* const browser_state_;
+
   DISALLOW_COPY_AND_ASSIGN(TabModelSyncedWindowDelegatesGetter);
 };
 

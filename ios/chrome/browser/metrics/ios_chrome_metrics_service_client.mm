@@ -51,7 +51,7 @@
 #include "ios/chrome/browser/signin/ios_chrome_signin_status_metrics_provider_delegate.h"
 #include "ios/chrome/browser/sync/ios_chrome_sync_client.h"
 #include "ios/chrome/browser/tab_parenting_global_observer.h"
-#include "ios/chrome/browser/tabs/tab_model_list.h"
+#include "ios/chrome/browser/ui/browser_list_ios.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/web_thread.h"
 
@@ -193,7 +193,7 @@ void IOSChromeMetricsServiceClient::Initialize() {
   // be worth revisiting this to still log events from non-incognito sessions.
   metrics_service_->RegisterMetricsProvider(
       base::MakeUnique<OmniboxMetricsProvider>(
-          base::Bind(&::IsOffTheRecordSessionActive)));
+          base::Bind(&BrowserListIOS::IsOffTheRecordSessionActive)));
 
   {
     auto stability_metrics_provider =

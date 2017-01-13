@@ -19,6 +19,7 @@ source_set("sessions") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/ui:browser_list",
     "//ios/public/provider/chrome/browser",
     "//ios/web",
     "//url",
@@ -51,6 +52,7 @@ source_set("sessions_non_arc") {
     "//components/sessions",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/ui:browser_list",
     "//ios/web",
     "//net",
   ]

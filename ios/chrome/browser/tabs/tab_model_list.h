@@ -34,12 +34,4 @@ void UnregisterTabModelFromChromeBrowserState(
 NSArray<TabModel*>* GetTabModelsForChromeBrowserState(
     ios::ChromeBrowserState* browser_state);
 
-// Returns the last active TabModel associated with |browser_state|.
-TabModel* GetLastActiveTabModelForChromeBrowserState(
-    ios::ChromeBrowserState* browser_state);
-
-// Returns true if a incognito session is currently active (i.e. at least
-// one incognito tab is open).
-bool IsOffTheRecordSessionActive();
-
 #endif  // IOS_CHROME_BROWSER_TABS_TAB_MODEL_LIST_H_
