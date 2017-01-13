@@ -10,6 +10,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/animation/linear_animation.h"
+#include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/label.h"
@@ -29,6 +30,28 @@ const SkColor kExitLabelShadowColor = SkColorSetARGBInline(255, 11, 11, 11);
 constexpr int kExitLabelWidth = 300;
 constexpr int kExitLabelHeight = 20;
 
+constexpr int kHintBoxWidth = 298;
+constexpr int kHintBoxHeight = 180;
+constexpr int kHintBoxLabelTextSize = 5;
+constexpr int kHintBoxSublabelTextSize = 3;
+
+constexpr int kThrobberCircleViewWidth = 128;
+constexpr float kThrobberCircleRadiusFactor = 3.f / 8.f;
+
+constexpr int kTouchPointViewOffset = 100;
+
+constexpr int kTapLabelHeight = 48;
+
+const SkColor kHintLabelTextColor = SK_ColorBLACK;
+const SkColor kHintSublabelTextColor = SkColorSetARGBInline(255, 161, 161, 161);
+
+const SkColor kInnerCircleColor = SK_ColorWHITE;
+const SkColor kOuterCircleColor = SkColorSetA(kInnerCircleColor, 128);
+
+constexpr int kCircleAnimationDurationMs = 900;
+
+constexpr int kHintRectBorderRadius = 8;
+
 constexpr float kBackgroundFinalOpacity = 0.75f;
 
 // Returns the initialization params for the widget that contains the touch
@@ -47,13 +70,230 @@ views::Widget::InitParams GetWidgetParams(aura::Window* root_window) {
   return params;
 }
 
+// Returns the size of bounding box required for |text| of given |font_list|.
+gfx::Size GetSizeForString(const base::string16& text,
+                           const gfx::FontList& font_list) {
+  int height = 0, width = 0;
+  gfx::Canvas::SizeStringInt(text, font_list, &width, &height, 0, 0);
+  return gfx::Size(width, height);
+}
+
 }  // namespace
+
+// Creates a throbbing animated view with two concentric circles. The radius of
+// the inner circle is fixed while that of the outer circle oscillates between a
+// min and max radius. The animation takes |animation_duration| milliseconds
+// to complete. The center of these circles are at the center of the view
+// element.
+class CircularThrobberView : public views::View, public gfx::AnimationDelegate {
+ public:
+  CircularThrobberView(int width,
+                       const SkColor& inner_circle_color,
+                       const SkColor& outer_circle_color,
+                       int animation_duration);
+  ~CircularThrobberView() override;
+
+  // views::View overrides:
+  void OnPaint(gfx::Canvas* canvas) override;
+
+  // gfx::AnimationDelegate overrides:
+  void AnimationProgressed(const gfx::Animation* animation) override;
+
+ private:
+  // Radius of the inner circle.
+  const int inner_radius_;
+
+  // Current radius of the outer circle.
+  int outer_radius_;
+
+  // Minimum radius for outer animated circle.
+  const int smallest_radius_animated_circle_;
+
+  // Maximum radius for outer animated circle.
+  const int largest_radius_animated_circle_;
+
+  SkPaint inner_circle_paint_;
+  SkPaint outer_circle_paint_;
+
+  std::unique_ptr<gfx::ThrobAnimation> animation_;
+
+  // Center of the concentric circles.
+  const gfx::Point center_;
+
+  DISALLOW_COPY_AND_ASSIGN(CircularThrobberView);
+};
+
+CircularThrobberView::CircularThrobberView(int width,
+                                           const SkColor& inner_circle_color,
+                                           const SkColor& outer_circle_color,
+                                           int animation_duration)
+    : inner_radius_(width / 4),
+      outer_radius_(inner_radius_),
+      smallest_radius_animated_circle_(width * kThrobberCircleRadiusFactor),
+      largest_radius_animated_circle_(width / 2),
+      center_(gfx::Point(width / 2, width / 2)) {
+  SetSize(gfx::Size(width, width));
+
+  inner_circle_paint_.setColor(inner_circle_color);
+  inner_circle_paint_.setStyle(SkPaint::kFill_Style);
+  inner_circle_paint_.setFlags(SkPaint::kAntiAlias_Flag);
+
+  outer_circle_paint_.setColor(outer_circle_color);
+  outer_circle_paint_.setStyle(SkPaint::kFill_Style);
+  outer_circle_paint_.setFlags(SkPaint::kAntiAlias_Flag);
+
+  animation_.reset(new gfx::ThrobAnimation(this));
+  animation_->SetThrobDuration(animation_duration);
+  animation_->StartThrobbing(-1);
+
+  SchedulePaint();
+}
+
+CircularThrobberView::~CircularThrobberView() {}
+
+void CircularThrobberView::OnPaint(gfx::Canvas* canvas) {
+  canvas->DrawCircle(center_, outer_radius_, outer_circle_paint_);
+  canvas->DrawCircle(center_, inner_radius_, inner_circle_paint_);
+}
+
+void CircularThrobberView::AnimationProgressed(
+    const gfx::Animation* animation) {
+  if (animation != animation_.get())
+    return;
+  outer_radius_ = animation->CurrentValueBetween(
+      smallest_radius_animated_circle_, largest_radius_animated_circle_);
+  SchedulePaint();
+}
+
+//   Circular      _________________________________
+//   Throbber     |                                 |
+//     View       |                                 |
+//  ___________   |                                 |
+// |           |  |                                 |
+// |           |  |                                 |
+// |     .     |  |            Hint Box             |
+// |           |  |                                 |
+// |___________|  |                                 |
+//                |                                 |
+//                |                                 |
+//                |_________________________________|
+//
+// This view is set next to the throbber circle view such that their centers
+// align. The hint box has a label text and a sublabel text to assist the
+// user by informing them about the next step in the calibration process.
+class HintBox : public views::View {
+ public:
+  HintBox(const gfx::Rect& bounds, int border_radius);
+  ~HintBox() override;
+
+  // views::View overrides:
+  void OnPaint(gfx::Canvas* canvas) override;
+
+  void SetLabel(const base::string16& text, const SkColor& color);
+  void SetSubLabel(const base::string16& text, const SkColor& color);
+
+ private:
+  base::string16 label_text_;
+  base::string16 sublabel_text_;
+
+  SkColor label_color_;
+  SkColor sublabel_color_;
+
+  const int border_radius_;
+
+  int horizontal_offset_;
+
+  gfx::FontList label_font_list_;
+  gfx::FontList sublabel_font_list_;
+
+  gfx::Rect label_text_bounds_;
+  gfx::Rect sublabel_text_bounds_;
+
+  SkPaint paint_;
+
+  DISALLOW_COPY_AND_ASSIGN(HintBox);
+};
+
+HintBox::HintBox(const gfx::Rect& bounds, int border_radius)
+    : border_radius_(border_radius) {
+  SetBoundsRect(bounds);
+
+  paint_.setColor(SK_ColorWHITE);
+  paint_.setStyle(SkPaint::kFill_Style);
+  paint_.setFlags(SkPaint::kAntiAlias_Flag);
+
+  horizontal_offset_ = width() * 0.08f;
+  int top_offset = horizontal_offset_;
+  int line_gap = height() * 0.018f;
+  int label_height = height() * 0.11f;
+
+  label_text_bounds_.SetRect(horizontal_offset_, top_offset, 0, label_height);
+
+  top_offset += label_text_bounds_.height() + line_gap;
+
+  sublabel_text_bounds_.SetRect(horizontal_offset_, top_offset, 0,
+                                label_height);
+}
+
+HintBox::~HintBox() {}
+
+void HintBox::SetLabel(const base::string16& text, const SkColor& color) {
+  label_text_ = text;
+  label_color_ = color;
+
+  label_font_list_ =
+      ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
+          kHintBoxLabelTextSize, gfx::Font::FontStyle::NORMAL,
+          gfx::Font::Weight::NORMAL);
+
+  // Adjust size of label bounds based on text and font.
+  gfx::Size size = GetSizeForString(label_text_, label_font_list_);
+  label_text_bounds_.set_size(
+      gfx::Size(size.width(), label_text_bounds_.height()));
+
+  // Check if the width of hint box needs to be updated.
+  int minimum_expected_width = size.width() + 2 * horizontal_offset_;
+  if (minimum_expected_width > width())
+    SetSize(gfx::Size(minimum_expected_width, height()));
+}
+
+void HintBox::SetSubLabel(const base::string16& text, const SkColor& color) {
+  sublabel_text_ = text;
+  sublabel_color_ = color;
+
+  sublabel_font_list_ =
+      ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
+          kHintBoxSublabelTextSize, gfx::Font::FontStyle::NORMAL,
+          gfx::Font::Weight::NORMAL);
+
+  // Adjust size of sublabel label bounds based on text and font.
+  gfx::Size size = GetSizeForString(sublabel_text_, sublabel_font_list_);
+  sublabel_text_bounds_.set_size(
+      gfx::Size(size.width(), sublabel_text_bounds_.height()));
+
+  // Check if the width of hint box needs to be updated.
+  int minimum_expected_width = size.width() + 2 * horizontal_offset_;
+  if (minimum_expected_width > width())
+    SetSize(gfx::Size(minimum_expected_width, height()));
+}
+
+void HintBox::OnPaint(gfx::Canvas* canvas) {
+  canvas->DrawRoundRect(GetLocalBounds(), border_radius_, paint_);
+  canvas->DrawStringRectWithFlags(label_text_, label_font_list_, label_color_,
+                                  label_text_bounds_, gfx::Canvas::NO_ELLIPSIS);
+  canvas->DrawStringRectWithFlags(sublabel_text_, sublabel_font_list_,
+                                  sublabel_color_, sublabel_text_bounds_,
+                                  gfx::Canvas::NO_ELLIPSIS);
+}
 
 TouchCalibratorView::TouchCalibratorView(const display::Display& target_display,
                                          bool is_primary_view)
     : display_(target_display),
       is_primary_view_(is_primary_view),
-      exit_label_(nullptr) {
+      exit_label_(nullptr),
+      throbber_circle_(nullptr),
+      hint_box_view_(nullptr),
+      touch_point_view_(nullptr) {
   aura::Window* root = ash::Shell::GetInstance()
                            ->window_tree_host_manager()
                            ->GetRootWindowForDisplayId(display_.id());
@@ -100,6 +340,52 @@ void TouchCalibratorView::InitViewContents() {
   exit_label_->SetVisible(false);
 
   AddChildView(exit_label_);
+
+  // If this is not the screen that is being calibrated, then this is all we
+  // need to display.
+  if (!is_primary_view_)
+    return;
+
+  // Initialize the touch point view that contains the animated circle that the
+  // user needs to tap.
+  const int kTouchPointViewHeight = kThrobberCircleViewWidth + kTapLabelHeight;
+
+  throbber_circle_ =
+      new CircularThrobberView(kThrobberCircleViewWidth, kInnerCircleColor,
+                               kOuterCircleColor, kCircleAnimationDurationMs);
+  throbber_circle_->SetPosition(gfx::Point(0, 0));
+
+  touch_point_view_ = new views::View;
+  touch_point_view_->SetBounds(kTouchPointViewOffset, kTouchPointViewOffset,
+                               kThrobberCircleViewWidth, kTouchPointViewHeight);
+  touch_point_view_->SetVisible(false);
+
+  touch_point_view_->AddChildView(throbber_circle_);
+
+  AddChildView(touch_point_view_);
+
+  // Initialize the Hint Box view.
+  base::string16 hint_label_text =
+      rb.GetLocalizedString(IDS_DISPLAY_TOUCH_CALIBRATION_HINT_LABEL_TEXT);
+  base::string16 hint_sublabel_text =
+      rb.GetLocalizedString(IDS_DISPLAY_TOUCH_CALIBRATION_HINT_SUBLABEL_TEXT);
+
+  int tpv_width = touch_point_view_->width();
+
+  gfx::Size size(kHintBoxWidth, kHintBoxHeight);
+
+  gfx::Point position(
+      touch_point_view_->x() + tpv_width * 1.2f,
+      touch_point_view_->y() + (tpv_width / 2.f) - (size.height() / 2.f));
+
+  HintBox* hint_box =
+      new HintBox(gfx::Rect(position, size), kHintRectBorderRadius);
+  hint_box->SetVisible(false);
+  hint_box->SetLabel(hint_label_text, kHintLabelTextColor);
+  hint_box->SetSubLabel(hint_sublabel_text, kHintSublabelTextColor);
+  hint_box_view_ = hint_box;
+
+  AddChildView(hint_box_view_);
 }
 
 void TouchCalibratorView::OnPaint(gfx::Canvas* canvas) {
@@ -137,6 +423,10 @@ void TouchCalibratorView::AnimationEnded(const gfx::Animation* animation) {
     case BACKGROUND_FADING_IN:
       exit_label_->SetVisible(true);
       state_ = is_primary_view_ ? DISPLAY_POINT_1 : CALIBRATION_COMPLETE;
+      if (is_primary_view_) {
+        touch_point_view_->SetVisible(true);
+        hint_box_view_->SetVisible(true);
+      }
       break;
     default:
       break;
