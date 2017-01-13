@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "components/subresource_filter/content/common/document_load_statistics.h"
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/indexed_ruleset.h"
 #include "third_party/WebKit/public/platform/WebDocumentSubresourceFilter.h"
@@ -30,22 +31,6 @@ class DocumentSubresourceFilter
     : public blink::WebDocumentSubresourceFilter,
       public base::SupportsWeakPtr<DocumentSubresourceFilter> {
  public:
-  struct Statistics {
-    // The number of subresource loads that went through the allowLoad method.
-    size_t num_loads_total = 0;
-
-    // Statistics on the number of subresource loads that were evaluated, were
-    // matched by filtering rules, and were disallowed, respectively, during the
-    // lifetime of a DocumentSubresourceFilter.
-    size_t num_loads_evaluated = 0;
-    size_t num_loads_matching_rules = 0;
-    size_t num_loads_disallowed = 0;
-
-    // Total time spent in allowLoad() calls while evaluating subresource loads.
-    base::TimeDelta evaluation_total_wall_duration;
-    base::TimeDelta evaluation_total_cpu_duration;
-  };
-
   // Constructs a new filter that will:
   //  -- Operate at the prescribed |activation_state|, which must be either
   //     ActivationState::DRYRUN or ActivationState::ENABLED. In the former
@@ -64,7 +49,7 @@ class DocumentSubresourceFilter
       const base::Closure& first_disallowed_load_callback);
   ~DocumentSubresourceFilter() override;
 
-  const Statistics& statistics() const { return statistics_; }
+  const DocumentLoadStatistics& statistics() const { return statistics_; }
 
   // blink::WebDocumentSubresourceFilter:
   bool allowLoad(const blink::WebURL& resourceUrl,
@@ -97,7 +82,7 @@ class DocumentSubresourceFilter
   // |filtering_disabled_for_document_|.
   bool generic_blocking_rules_disabled_ = false;
 
-  Statistics statistics_;
+  DocumentLoadStatistics statistics_;
 
   DISALLOW_COPY_AND_ASSIGN(DocumentSubresourceFilter);
 };

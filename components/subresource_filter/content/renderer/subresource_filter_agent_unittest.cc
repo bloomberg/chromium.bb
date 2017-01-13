@@ -12,6 +12,7 @@
 #include "base/strings/string_piece.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
+#include "components/subresource_filter/content/common/document_load_statistics.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/content/renderer/ruleset_dealer.h"
 #include "components/subresource_filter/core/common/scoped_timers.h"
@@ -46,8 +47,7 @@ class SubresourceFilterAgentUnderTest : public SubresourceFilterAgent {
   MOCK_METHOD0(GetAncestorDocumentURLs, std::vector<GURL>());
   MOCK_METHOD0(OnSetSubresourceFilterForCommittedLoadCalled, void());
   MOCK_METHOD0(SignalFirstSubresourceDisallowedForCommittedLoad, void());
-  MOCK_METHOD2(SendDocumentLoadStatistics,
-               void(base::TimeDelta, base::TimeDelta));
+  MOCK_METHOD1(SendDocumentLoadStatistics, void(const DocumentLoadStatistics&));
 
   void SetSubresourceFilterForCommittedLoad(
       std::unique_ptr<blink::WebDocumentSubresourceFilter> filter) override {
@@ -165,6 +165,10 @@ class SubresourceFilterAgentTest : public ::testing::Test {
         .Times(0);
   }
 
+  void ExpectDocumentLoadStatisticsSent() {
+    EXPECT_CALL(*agent(), SendDocumentLoadStatistics(::testing::_));
+  }
+
   void ExpectLoadAllowed(base::StringPiece url_spec, bool allowed) {
     blink::WebURL url = GURL(url_spec);
     blink::WebURLRequest::RequestContext request_context =
@@ -270,6 +274,7 @@ TEST_F(SubresourceFilterAgentTest, Enabled_FilteringIsInEffectForOneLoad) {
   ExpectSignalAboutFirstSubresourceDisallowed();
   ExpectLoadAllowed(kTestFirstURL, false);
   ExpectLoadAllowed(kTestSecondURL, true);
+  ExpectDocumentLoadStatisticsSent();
   FinishLoad();
 
   // In-page navigation should not count as a new load.
@@ -312,9 +317,7 @@ TEST_F(SubresourceFilterAgentTest, Enabled_HistogramSamplesOverTwoLoads) {
     ExpectLoadAllowed(kTestFirstURL, false);
     ExpectNoSignalAboutFirstSubresourceDisallowed();
     ExpectLoadAllowed(kTestSecondURL, true);
-    EXPECT_CALL(*agent(),
-                SendDocumentLoadStatistics(::testing::_, ::testing::_))
-        .Times(measure_performance && ScopedThreadTimers::IsSupported());
+    ExpectDocumentLoadStatisticsSent();
     FinishLoad();
 
     ExpectSubresourceFilterGetsInjected();
@@ -326,9 +329,7 @@ TEST_F(SubresourceFilterAgentTest, Enabled_HistogramSamplesOverTwoLoads) {
     ExpectLoadAllowed(kTestSecondURL, true);
     ExpectSignalAboutFirstSubresourceDisallowed();
     ExpectLoadAllowed(kTestFirstURL, false);
-    EXPECT_CALL(*agent(),
-                SendDocumentLoadStatistics(::testing::_, ::testing::_))
-        .Times(measure_performance && ScopedThreadTimers::IsSupported());
+    ExpectDocumentLoadStatisticsSent();
     FinishLoad();
 
     histogram_tester.ExpectUniqueSample(
@@ -369,6 +370,7 @@ TEST_F(SubresourceFilterAgentTest, Enabled_NewRulesetIsPickedUpAtNextLoad) {
   ExpectSignalAboutFirstSubresourceDisallowed();
   ExpectLoadAllowed(kTestFirstURL, false);
   ExpectLoadAllowed(kTestSecondURL, true);
+  ExpectDocumentLoadStatisticsSent();
   FinishLoad();
 
   ExpectSubresourceFilterGetsInjected();
@@ -378,6 +380,7 @@ TEST_F(SubresourceFilterAgentTest, Enabled_NewRulesetIsPickedUpAtNextLoad) {
   ExpectSignalAboutFirstSubresourceDisallowed();
   ExpectLoadAllowed(kTestFirstURL, true);
   ExpectLoadAllowed(kTestSecondURL, false);
+  ExpectDocumentLoadStatisticsSent();
   FinishLoad();
 }
 
@@ -414,6 +417,7 @@ TEST_F(SubresourceFilterAgentTest, DryRun_ResourcesAreEvaluatedButNotFiltered) {
   ExpectLoadAllowed(kTestFirstURL, true);
   ExpectLoadAllowed(kTestFirstURL, true);
   ExpectLoadAllowed(kTestSecondURL, true);
+  ExpectDocumentLoadStatisticsSent();
   FinishLoad();
 
   histogram_tester.ExpectUniqueSample(kDocumentLoadActivationState,
@@ -444,6 +448,7 @@ TEST_F(SubresourceFilterAgentTest,
   ExpectNoSignalAboutFirstSubresourceDisallowed();
   ExpectLoadAllowed(kTestFirstURL, false);
   ExpectLoadAllowed(kTestSecondURL, true);
+  ExpectDocumentLoadStatisticsSent();
   FinishLoad();
 
   ExpectSubresourceFilterGetsInjected();
@@ -453,6 +458,7 @@ TEST_F(SubresourceFilterAgentTest,
   ExpectLoadAllowed(kTestSecondURL, true);
   ExpectSignalAboutFirstSubresourceDisallowed();
   ExpectLoadAllowed(kTestFirstURL, false);
+  ExpectDocumentLoadStatisticsSent();
   FinishLoad();
 }
 

@@ -93,10 +93,20 @@ void ContentSubresourceFilterDriverFactory::OnFirstSubresourceLoadDisallowed() {
 }
 
 void ContentSubresourceFilterDriverFactory::OnDocumentLoadStatistics(
-    base::TimeDelta evaluation_total_wall_duration,
-    base::TimeDelta evaluation_total_cpu_duration) {
-  evaluation_total_wall_duration_ += evaluation_total_wall_duration;
-  evaluation_total_cpu_duration_ += evaluation_total_cpu_duration;
+    const DocumentLoadStatistics& statistics) {
+  // Note: Chances of overflow are negligible.
+  aggregated_document_statistics_.num_loads_total += statistics.num_loads_total;
+  aggregated_document_statistics_.num_loads_evaluated +=
+      statistics.num_loads_evaluated;
+  aggregated_document_statistics_.num_loads_matching_rules +=
+      statistics.num_loads_matching_rules;
+  aggregated_document_statistics_.num_loads_disallowed +=
+      statistics.num_loads_disallowed;
+
+  aggregated_document_statistics_.evaluation_total_wall_duration +=
+      statistics.evaluation_total_wall_duration;
+  aggregated_document_statistics_.evaluation_total_cpu_duration +=
+      statistics.evaluation_total_cpu_duration;
 }
 
 bool ContentSubresourceFilterDriverFactory::IsWhitelisted(
@@ -185,8 +195,7 @@ void ContentSubresourceFilterDriverFactory::DidStartNavigation(
     client_->ToggleNotificationVisibility(false);
     activation_state_ = ActivationState::DISABLED;
     measure_performance_ = false;
-    evaluation_total_wall_duration_ = base::TimeDelta();
-    evaluation_total_cpu_duration_ = base::TimeDelta();
+    aggregated_document_statistics_ = DocumentLoadStatistics();
   }
 }
 
@@ -222,17 +231,36 @@ void ContentSubresourceFilterDriverFactory::DidFinishLoad(
   if (render_frame_host->GetParent())
     return;
 
+  UMA_HISTOGRAM_COUNTS_1000(
+      "SubresourceFilter.PageLoad.NumSubresourceLoads.Total",
+      aggregated_document_statistics_.num_loads_total);
+  UMA_HISTOGRAM_COUNTS_1000(
+      "SubresourceFilter.PageLoad.NumSubresourceLoads.Evaluated",
+      aggregated_document_statistics_.num_loads_evaluated);
+  UMA_HISTOGRAM_COUNTS_1000(
+      "SubresourceFilter.PageLoad.NumSubresourceLoads.MatchedRules",
+      aggregated_document_statistics_.num_loads_matching_rules);
+  UMA_HISTOGRAM_COUNTS_1000(
+      "SubresourceFilter.PageLoad.NumSubresourceLoads.Disallowed",
+      aggregated_document_statistics_.num_loads_disallowed);
+
   if (measure_performance_) {
     DCHECK(activation_state_ != ActivationState::DISABLED);
     UMA_HISTOGRAM_CUSTOM_MICRO_TIMES(
         "SubresourceFilter.PageLoad.SubresourceEvaluation.TotalWallDuration",
-        evaluation_total_wall_duration_, base::TimeDelta::FromMicroseconds(1),
-        base::TimeDelta::FromSeconds(10), 50);
-
+        aggregated_document_statistics_.evaluation_total_wall_duration,
+        base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(10),
+        50);
     UMA_HISTOGRAM_CUSTOM_MICRO_TIMES(
         "SubresourceFilter.PageLoad.SubresourceEvaluation.TotalCPUDuration",
-        evaluation_total_cpu_duration_, base::TimeDelta::FromMicroseconds(1),
-        base::TimeDelta::FromSeconds(10), 50);
+        aggregated_document_statistics_.evaluation_total_cpu_duration,
+        base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(10),
+        50);
+  } else {
+    DCHECK(aggregated_document_statistics_.evaluation_total_wall_duration
+               .is_zero());
+    DCHECK(aggregated_document_statistics_.evaluation_total_cpu_duration
+               .is_zero());
   }
 }
 
@@ -263,8 +291,7 @@ void ContentSubresourceFilterDriverFactory::ReadyToCommitNavigationInternal(
     } else {
       activation_state_ = ActivationState::DISABLED;
       measure_performance_ = false;
-      evaluation_total_wall_duration_ = base::TimeDelta();
-      evaluation_total_cpu_duration_ = base::TimeDelta();
+      aggregated_document_statistics_ = DocumentLoadStatistics();
     }
   } else {
     ActivateForFrameHostIfNeeded(render_frame_host, url);

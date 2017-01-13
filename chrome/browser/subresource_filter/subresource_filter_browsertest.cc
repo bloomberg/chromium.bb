@@ -63,6 +63,15 @@ constexpr const char kSubresourceLoadsMatchedRules[] =
 constexpr const char kSubresourceLoadsDisallowed[] =
     "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Disallowed";
 
+constexpr const char kSubresourceLoadsTotalForPage[] =
+    "SubresourceFilter.PageLoad.NumSubresourceLoads.Total";
+constexpr const char kSubresourceLoadsEvaluatedForPage[] =
+    "SubresourceFilter.PageLoad.NumSubresourceLoads.Evaluated";
+constexpr const char kSubresourceLoadsMatchedRulesForPage[] =
+    "SubresourceFilter.PageLoad.NumSubresourceLoads.MatchedRules";
+constexpr const char kSubresourceLoadsDisallowedForPage[] =
+    "SubresourceFilter.PageLoad.NumSubresourceLoads.Disallowed";
+
 // Names of the performance measurement histograms.
 constexpr const char kActivationWallDuration[] =
     "SubresourceFilter.DocumentLoad.Activation.WallDuration";
@@ -607,6 +616,10 @@ void ExpectHistogramsAreRecordedForTestFrameSet(
       expect_performance_measurements && ScopedThreadTimers::IsSupported();
 
   // The following histograms are generated on the browser side.
+  tester.ExpectUniqueSample(kSubresourceLoadsTotalForPage, 6, 1);
+  tester.ExpectUniqueSample(kSubresourceLoadsEvaluatedForPage, 6, 1);
+  tester.ExpectUniqueSample(kSubresourceLoadsMatchedRulesForPage, 4, 1);
+  tester.ExpectUniqueSample(kSubresourceLoadsDisallowedForPage, 4, 1);
   tester.ExpectTotalCount(kEvaluationTotalWallDurationForPage, time_recorded);
   tester.ExpectTotalCount(kEvaluationTotalCPUDurationForPage, time_recorded);
 

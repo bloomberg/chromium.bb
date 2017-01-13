@@ -163,7 +163,7 @@ bool DocumentSubresourceFilter::allowLoad(
     ++statistics_.num_loads_matching_rules;
     if (activation_state_ == ActivationState::ENABLED) {
       if (!first_disallowed_load_callback_.is_null()) {
-        DCHECK_EQ(statistics_.num_loads_disallowed, 0u);
+        DCHECK_EQ(statistics_.num_loads_disallowed, 0);
         first_disallowed_load_callback_.Run();
         first_disallowed_load_callback_.Reset();
       }

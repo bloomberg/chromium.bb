@@ -15,6 +15,7 @@
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
 #include "components/safe_browsing_db/util.h"
+#include "components/subresource_filter/content/common/document_load_statistics.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
 
@@ -92,8 +93,7 @@ class ContentSubresourceFilterDriverFactory
 
   void OnFirstSubresourceLoadDisallowed();
 
-  void OnDocumentLoadStatistics(base::TimeDelta evaluation_total_wall_duration,
-                                base::TimeDelta evaluation_total_cpu_duration);
+  void OnDocumentLoadStatistics(const DocumentLoadStatistics& statistics);
 
   bool IsWhitelisted(const GURL& url) const;
 
@@ -141,11 +141,9 @@ class ContentSubresourceFilterDriverFactory
 
   URLToActivationListsMap activation_list_matches_;
 
-  // Total time spent in DocumentSubresourceFilter::allowLoad() calls,
-  // aggregated across all frames, evaluating subresource loads for the current
-  // page load.
-  base::TimeDelta evaluation_total_wall_duration_;
-  base::TimeDelta evaluation_total_cpu_duration_;
+  // Statistics about subresource loads, aggregated across all frames of the
+  // current page.
+  DocumentLoadStatistics aggregated_document_statistics_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSubresourceFilterDriverFactory);
 };

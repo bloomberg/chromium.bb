@@ -4,6 +4,7 @@
 
 static_library("common") {
   sources = [
+    "document_load_statistics.h",
     "subresource_filter_message_generator.cc",
     "subresource_filter_message_generator.h",
     "subresource_filter_messages.h",

@@ -86,10 +86,10 @@ TEST_F(DocumentSubresourceFilterTest, DryRun) {
   EXPECT_TRUE(filter.allowLoad(GURL(kTestBetaURL), request_context));
 
   const auto& statistics = filter.statistics();
-  EXPECT_EQ(3u, statistics.num_loads_total);
-  EXPECT_EQ(2u, statistics.num_loads_evaluated);
-  EXPECT_EQ(1u, statistics.num_loads_matching_rules);
-  EXPECT_EQ(0u, statistics.num_loads_disallowed);
+  EXPECT_EQ(3, statistics.num_loads_total);
+  EXPECT_EQ(2, statistics.num_loads_evaluated);
+  EXPECT_EQ(1, statistics.num_loads_matching_rules);
+  EXPECT_EQ(0, statistics.num_loads_disallowed);
 
   EXPECT_EQ(0u, first_disallowed_load_callback_receiver.callback_count());
 }
@@ -106,10 +106,10 @@ TEST_F(DocumentSubresourceFilterTest, Enabled) {
     EXPECT_TRUE(filter.allowLoad(GURL(kTestBetaURL), request_context));
 
     const auto& statistics = filter.statistics();
-    EXPECT_EQ(3u, statistics.num_loads_total);
-    EXPECT_EQ(2u, statistics.num_loads_evaluated);
-    EXPECT_EQ(1u, statistics.num_loads_matching_rules);
-    EXPECT_EQ(1u, statistics.num_loads_disallowed);
+    EXPECT_EQ(3, statistics.num_loads_total);
+    EXPECT_EQ(2, statistics.num_loads_evaluated);
+    EXPECT_EQ(1, statistics.num_loads_matching_rules);
+    EXPECT_EQ(1, statistics.num_loads_disallowed);
 
     if (!measure_performance) {
       EXPECT_TRUE(statistics.evaluation_total_cpu_duration.is_zero());

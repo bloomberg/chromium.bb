@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/subresource_filter/content/common/document_load_statistics.h"
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "url/gurl.h"
@@ -56,11 +57,9 @@ class SubresourceFilterAgent
   // the most recently committed load. Not called if all resources are allowed.
   virtual void SignalFirstSubresourceDisallowedForCommittedLoad();
 
-  // Informs the browser about the time spent by DocumentSubresourceFilter in
-  // allowLoad calls while evaluating subresource loads for the current frame.
+  // Sends statistics about the DocumentSubresourceFilter's work to the browser.
   virtual void SendDocumentLoadStatistics(
-      base::TimeDelta evaluation_total_wall_duration,
-      base::TimeDelta evaluation_total_cpu_duration);
+      const DocumentLoadStatistics& statistics);
 
  private:
   void OnActivateForProvisionalLoad(ActivationState activation_state,

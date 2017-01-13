@@ -62,11 +62,9 @@ void SubresourceFilterAgent::
 }
 
 void SubresourceFilterAgent::SendDocumentLoadStatistics(
-    base::TimeDelta evaluation_total_wall_duration,
-    base::TimeDelta evaluation_total_cpu_duration) {
+    const DocumentLoadStatistics& statistics) {
   render_frame()->Send(new SubresourceFilterHostMsg_DocumentLoadStatistics(
-      render_frame()->GetRoutingID(), evaluation_total_wall_duration,
-      evaluation_total_cpu_duration));
+      render_frame()->GetRoutingID(), statistics));
 }
 
 void SubresourceFilterAgent::OnActivateForProvisionalLoad(
@@ -116,16 +114,17 @@ void SubresourceFilterAgent::RecordHistogramsOnLoadFinished() {
         statistics.evaluation_total_wall_duration,
         base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(10),
         50);
-
     UMA_HISTOGRAM_CUSTOM_MICRO_TIMES(
         "SubresourceFilter.DocumentLoad.SubresourceEvaluation.TotalCPUDuration",
         statistics.evaluation_total_cpu_duration,
         base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(10),
         50);
-
-    SendDocumentLoadStatistics(statistics.evaluation_total_wall_duration,
-                               statistics.evaluation_total_cpu_duration);
+  } else {
+    DCHECK(statistics.evaluation_total_wall_duration.is_zero());
+    DCHECK(statistics.evaluation_total_cpu_duration.is_zero());
   }
+
+  SendDocumentLoadStatistics(statistics);
 }
 
 void SubresourceFilterAgent::OnDestruct() {
