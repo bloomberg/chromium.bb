@@ -45,7 +45,6 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/prefs/pref_service.h"
 #include "components/rappor/rappor_service_impl.h"
-#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
@@ -68,9 +67,6 @@ const wchar_t kCleanerSubKey[] = L"Cleaner";
 
 const wchar_t kEndTimeValueName[] = L"EndTime";
 const wchar_t kStartTimeValueName[] = L"StartTime";
-
-const char kExtendedSafeBrowsingEnabledSwitch[] =
-    "extended-safebrowsing-enabled";
 
 namespace {
 
@@ -562,21 +558,6 @@ void DisplaySRTPrompt(const base::FilePath& download_path) {
   }
   if (show_bubble)
     global_error->ShowBubbleView(browser);
-}
-
-bool SafeBrowsingExtendedEnabledForBrowser(const Browser* browser) {
-  const Profile* profile = browser->profile();
-  return profile && !profile->IsOffTheRecord() &&
-         IsExtendedReportingEnabled(*profile->GetPrefs());
-}
-
-// Returns true if there is a profile that is not in incognito mode and the user
-// has opted into Safe Browsing extended reporting.
-bool SafeBrowsingExtendedReportingEnabled() {
-  BrowserList* browser_list = BrowserList::GetInstance();
-  return std::any_of(browser_list->begin_last_active(),
-                     browser_list->end_last_active(),
-                     &SafeBrowsingExtendedEnabledForBrowser);
 }
 
 // This function is called from a worker thread to launch the SwReporter and

@@ -46,8 +46,6 @@ const int kDaysBetweenSwReporterRunsForPendingPrompt = 1;
 // The number of days to wait before sending out reporter logs.
 const int kDaysBetweenReporterLogsSent = 7;
 
-extern const char kExtendedSafeBrowsingEnabledSwitch[];
-
 // Parameters used to invoke the sw_reporter component.
 struct SwReporterInvocation {
   base::CommandLine command_line;
