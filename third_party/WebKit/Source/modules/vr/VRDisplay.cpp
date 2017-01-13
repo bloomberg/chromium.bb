@@ -753,6 +753,7 @@ const AtomicString& VRDisplay::interfaceName() const {
 
 void VRDisplay::contextDestroyed(ExecutionContext*) {
   forceExitPresent();
+  m_scriptedAnimationController.clear();
 }
 
 bool VRDisplay::hasPendingActivity() const {
