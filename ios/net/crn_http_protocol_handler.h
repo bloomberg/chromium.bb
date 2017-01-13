@@ -40,13 +40,4 @@ class HTTPProtocolHandlerDelegate {
 @interface CRNHTTPProtocolHandler : NSURLProtocol
 @end
 
-// Custom NSURLProtocol handling HTTP and HTTPS requests.
-// The HttpProtocolHandler is registered as a NSURLProtocol in the iOS system.
-// This protocol is called for each NSURLRequest. This allows handling the
-// requests issued by UIWebView using our own network stack. This protocol
-// handler implements iOS 8 NSURLProtocol pause/resume semantics, in which
-// |startLoading| means "start or resume" and |stopLoading| means "pause".
-@interface CRNPauseableHTTPProtocolHandler : CRNHTTPProtocolHandler
-@end
-
 #endif  // IOS_NET_CRN_HTTP_PROTOCOL_HANDLER_H_
