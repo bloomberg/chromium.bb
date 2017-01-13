@@ -178,15 +178,9 @@ Surface::Surface()
       frame_sink_id_(aura::Env::GetInstance()
                          ->context_factory_private()
                          ->AllocateFrameSinkId()) {
-  cc::mojom::MojoCompositorFrameSinkClientPtr frame_sink_holder_ptr;
-  cc::mojom::MojoCompositorFrameSinkClientRequest frame_sink_client_request(
-      &frame_sink_holder_ptr);
-  std::unique_ptr<CompositorFrameSink> frame_sink(new CompositorFrameSink(
-      frame_sink_id_,
-      aura::Env::GetInstance()->context_factory_private()->GetSurfaceManager(),
-      std::move(frame_sink_holder_ptr)));
   compositor_frame_sink_holder_ = new CompositorFrameSinkHolder(
-      this, std::move(frame_sink), std::move(frame_sink_client_request));
+      this, frame_sink_id_,
+      aura::Env::GetInstance()->context_factory_private()->GetSurfaceManager());
   surface_reference_factory_ =
       new CustomSurfaceReferenceFactory(compositor_frame_sink_holder_.get());
   window_->SetType(ui::wm::WINDOW_TYPE_CONTROL);

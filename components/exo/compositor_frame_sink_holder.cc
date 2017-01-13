@@ -14,12 +14,12 @@ namespace exo {
 
 CompositorFrameSinkHolder::CompositorFrameSinkHolder(
     Surface* surface,
-    std::unique_ptr<CompositorFrameSink> frame_sink,
-    cc::mojom::MojoCompositorFrameSinkClientRequest request)
+    const cc::FrameSinkId& frame_sink_id,
+    cc::SurfaceManager* surface_manager)
     : surface_(surface),
-      frame_sink_(std::move(frame_sink)),
+      frame_sink_(
+          new CompositorFrameSink(frame_sink_id, surface_manager, this)),
       begin_frame_source_(base::MakeUnique<cc::ExternalBeginFrameSource>(this)),
-      binding_(this, std::move(request)),
       weak_factory_(this) {
   surface_->AddSurfaceObserver(this);
 }

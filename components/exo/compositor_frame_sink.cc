@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
+#include "components/exo/compositor_frame_sink_holder.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace exo {
@@ -14,12 +15,11 @@ namespace exo {
 ////////////////////////////////////////////////////////////////////////////////
 // ExoComopositorFrameSink, public:
 
-CompositorFrameSink::CompositorFrameSink(
-    const cc::FrameSinkId& frame_sink_id,
-    cc::SurfaceManager* surface_manager,
-    cc::mojom::MojoCompositorFrameSinkClientPtr client)
+CompositorFrameSink::CompositorFrameSink(const cc::FrameSinkId& frame_sink_id,
+                                         cc::SurfaceManager* surface_manager,
+                                         CompositorFrameSinkHolder* client)
     : support_(this, surface_manager, frame_sink_id, nullptr, nullptr),
-      client_(std::move(client)) {}
+      client_(client) {}
 
 CompositorFrameSink::~CompositorFrameSink() {}
 

@@ -31,10 +31,9 @@ class CompositorFrameSinkHolder
       public cc::BeginFrameObserver,
       public SurfaceObserver {
  public:
-  CompositorFrameSinkHolder(
-      Surface* surface,
-      std::unique_ptr<CompositorFrameSink> frame_sink,
-      cc::mojom::MojoCompositorFrameSinkClientRequest request);
+  CompositorFrameSinkHolder(Surface* surface,
+                            const cc::FrameSinkId& frame_sink_id,
+                            cc::SurfaceManager* surface_manager);
 
   bool HasReleaseCallbackForResource(cc::ResourceId id);
   void SetResourceReleaseCallback(cc::ResourceId id,
@@ -84,7 +83,6 @@ class CompositorFrameSinkHolder
   std::unique_ptr<cc::ExternalBeginFrameSource> begin_frame_source_;
   bool needs_begin_frame_ = false;
   cc::BeginFrameArgs last_begin_frame_args_;
-  mojo::Binding<cc::mojom::MojoCompositorFrameSinkClient> binding_;
 
   base::WeakPtrFactory<CompositorFrameSinkHolder> weak_factory_;
 

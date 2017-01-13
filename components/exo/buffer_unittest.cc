@@ -32,8 +32,12 @@ TEST_F(BufferTest, ReleaseCallback) {
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   std::unique_ptr<Surface> surface(new Surface);
+  const cc::FrameSinkId arbitrary_frame_sink_id(1, 1);
   scoped_refptr<CompositorFrameSinkHolder> compositor_frame_sink_holder =
-      new CompositorFrameSinkHolder(surface.get(), nullptr, nullptr);
+      new CompositorFrameSinkHolder(surface.get(), arbitrary_frame_sink_id,
+                                    aura::Env::GetInstance()
+                                        ->context_factory_private()
+                                        ->GetSurfaceManager());
 
   // Set the release callback.
   int release_call_count = 0;
@@ -68,9 +72,13 @@ TEST_F(BufferTest, IsLost) {
   gfx::Size buffer_size(256, 256);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  const cc::FrameSinkId arbitrary_frame_sink_id(1, 1);
   std::unique_ptr<Surface> surface(new Surface);
   scoped_refptr<CompositorFrameSinkHolder> compositor_frame_sink_holder =
-      new CompositorFrameSinkHolder(surface.get(), nullptr, nullptr);
+      new CompositorFrameSinkHolder(surface.get(), arbitrary_frame_sink_id,
+                                    aura::Env::GetInstance()
+                                        ->context_factory_private()
+                                        ->GetSurfaceManager());
   cc::ResourceId resource_id = 0;
 
   buffer->OnAttach();

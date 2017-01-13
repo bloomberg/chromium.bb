@@ -14,12 +14,14 @@
 
 namespace exo {
 
+class CompositorFrameSinkHolder;
+
 class CompositorFrameSink : public cc::CompositorFrameSinkSupportClient,
                             public cc::mojom::MojoCompositorFrameSink {
  public:
   CompositorFrameSink(const cc::FrameSinkId& frame_sink_id,
                       cc::SurfaceManager* surface_manager,
-                      cc::mojom::MojoCompositorFrameSinkClientPtr client);
+                      CompositorFrameSinkHolder* client);
 
   ~CompositorFrameSink() override;
 
@@ -44,9 +46,7 @@ class CompositorFrameSink : public cc::CompositorFrameSinkSupportClient,
 
  private:
   cc::CompositorFrameSinkSupport support_;
-  cc::mojom::MojoCompositorFrameSinkClientPtr client_;
-  cc::ReturnedResourceArray surface_returned_resources_;
-  mojo::StrongBindingPtr<cc::mojom::MojoCompositorFrameSink> binding_;
+  CompositorFrameSinkHolder* const client_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorFrameSink);
 };
