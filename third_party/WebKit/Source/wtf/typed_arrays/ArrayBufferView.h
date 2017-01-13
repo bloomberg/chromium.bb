@@ -54,7 +54,10 @@ class WTF_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
 
   ArrayBuffer* buffer() const { return m_buffer.get(); }
 
-  void* baseAddress() const { return m_baseAddress; }
+  void* baseAddress() const {
+    DCHECK(!isShared());
+    return m_baseAddress;
+  }
 
   unsigned byteOffset() const { return m_byteOffset; }
 

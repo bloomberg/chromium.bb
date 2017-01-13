@@ -68,7 +68,17 @@ class WTF_EXPORT ArrayBufferContents {
 
   void neuter();
 
-  void* data() const { return m_holder ? m_holder->data() : nullptr; }
+  void* data() const {
+    DCHECK(!isShared());
+    return dataMaybeShared();
+  }
+  void* dataShared() const {
+    DCHECK(isShared());
+    return dataMaybeShared();
+  }
+  void* dataMaybeShared() const {
+    return m_holder ? m_holder->data() : nullptr;
+  }
   unsigned sizeInBytes() const {
     return m_holder ? m_holder->sizeInBytes() : 0;
   }

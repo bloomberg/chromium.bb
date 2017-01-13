@@ -36,9 +36,10 @@ ArrayBufferView::ArrayBufferView(PassRefPtr<ArrayBuffer> buffer,
       m_buffer(buffer),
       m_prevView(nullptr),
       m_nextView(nullptr) {
-  m_baseAddress = m_buffer
-                      ? (static_cast<char*>(m_buffer->data()) + m_byteOffset)
-                      : nullptr;
+  m_baseAddress =
+      m_buffer
+          ? (static_cast<char*>(m_buffer->dataMaybeShared()) + m_byteOffset)
+          : nullptr;
   if (m_buffer)
     m_buffer->addView(this);
 }

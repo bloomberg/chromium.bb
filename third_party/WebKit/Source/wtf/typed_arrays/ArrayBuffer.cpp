@@ -69,7 +69,7 @@ bool ArrayBuffer::shareContentsWith(ArrayBufferContents& result) {
   DCHECK(isShared());
   RefPtr<ArrayBuffer> keepAlive(this);
 
-  if (!m_contents.data()) {
+  if (!m_contents.dataShared()) {
     result.neuter();
     return false;
   }
