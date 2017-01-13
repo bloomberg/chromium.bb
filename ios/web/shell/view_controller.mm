@@ -13,9 +13,6 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/net/crn_http_protocol_handler.h"
-#import "ios/net/empty_nsurlcache.h"
-#import "ios/net/request_tracker.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
 #import "ios/web/public/web_state/context_menu_params.h"
@@ -60,11 +57,6 @@ using web::NavigationManager;
     _browserState = browserState;
   }
   return self;
-}
-
-- (void)dealloc {
-  net::HTTPProtocolHandlerDelegate::SetInstance(nullptr);
-  net::RequestTracker::SetRequestTrackerFactory(nullptr);
 }
 
 - (void)viewDidLoad {
@@ -132,9 +124,6 @@ using web::NavigationManager;
   [_toolbarView addSubview:forward];
   [_toolbarView addSubview:field];
 
-  // Set up the network stack before creating the WebState.
-  [self setUpNetworkStack];
-
   web::WebState::CreateParams webStateCreateParams(_browserState);
   _webState = web::WebState::Create(webStateCreateParams);
   _webState->SetWebUsageEnabled(true);
@@ -159,11 +148,6 @@ using web::NavigationManager;
 
 - (web::WebState*)webState {
   return _webState.get();
-}
-
-- (void)setUpNetworkStack {
-  // Disable the default cache.
-  [NSURLCache setSharedURLCache:[EmptyNSURLCache emptyNSURLCache]];
 }
 
 - (void)didReceiveMemoryWarning {
