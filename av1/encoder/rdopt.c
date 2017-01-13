@@ -7448,12 +7448,11 @@ static int64_t handle_inter_mode(
     return INT64_MAX;
 
   if (cm->interp_filter == SWITCHABLE) {
-#if !CONFIG_DUAL_FILTER
-    assign_filter =
-        predict_interp_filter(cpi, x, bsize, mi_row, mi_col, single_filter);
-#endif
 #if CONFIG_DUAL_FILTER
     if (!av1_is_interp_needed(xd)) assign_filter = EIGHTTAP_REGULAR;
+#else
+    assign_filter =
+        predict_interp_filter(cpi, x, bsize, mi_row, mi_col, single_filter);
 #endif
   } else {
     assign_filter = cm->interp_filter;

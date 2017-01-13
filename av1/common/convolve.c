@@ -205,9 +205,7 @@ void av1_convolve(const uint8_t *src, int src_stride, uint8_t *dst,
       // This will reduce hardware implementation cost.
       filter_params_y = av1_get_interp_filter_params(EIGHTTAP_SHARP);
     }
-#endif
 
-#if CONFIG_DUAL_FILTER
     // we do filter with fewer taps first to reduce hardware implementation
     // complexity
     if (filter_params_y.taps < filter_params_x.taps) {
