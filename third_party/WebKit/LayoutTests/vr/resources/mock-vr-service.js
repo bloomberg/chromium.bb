@@ -8,24 +8,45 @@ let mockVRService = loadMojoModules(
   let [bindings, vr_service] = mojo.modules;
 
   class MockVRDisplay {
-    constructor(interfaceProvider) {
+    constructor(interfaceProvider, displayInfo, service) {
       this.bindingSet_ = new bindings.BindingSet(vr_service.VRDisplay);
+      this.displayClient_ = new vr_service.VRDisplayClientPtr();
+      this.displayInfo_ = displayInfo;
+      this.service_ = service;
 
       interfaceProvider.addInterfaceOverrideForTesting(
           vr_service.VRDisplay.name,
           handle => this.bindingSet_.addBinding(this, handle));
+
+      if (service.client_) {
+        this.notifyClientOfDisplay();
+      }
     }
 
     requestPresent(secureOrigin) {
       return Promise.resolve({success: true});
+    }
+
+    forceActivate(reason) {
+      this.displayClient_.onActivate(reason);
+    }
+
+    notifyClientOfDisplay() {
+      let displayPtr = new vr_service.VRDisplayPtr();
+      let request = bindings.makeRequest(displayPtr);
+      let binding = new bindings.Binding(
+          vr_service.VRDisplay,
+          this, request);
+      let clientRequest = bindings.makeRequest(this.displayClient_);
+      this.service_.client_.onDisplayConnected(displayPtr, clientRequest,
+          this.displayInfo_);
     }
   }
 
   class MockVRService {
     constructor(interfaceProvider) {
       this.bindingSet_ = new bindings.BindingSet(vr_service.VRService);
-      this.displayClient_ = new vr_service.VRDisplayClientPtr();
-      this.vrDisplays_ = null;
+      this.mockVRDisplays_ = [];
 
       interfaceProvider.addInterfaceOverrideForTesting(
           vr_service.VRService.name,
@@ -33,32 +54,32 @@ let mockVRService = loadMojoModules(
     }
 
     setVRDisplays(displays) {
+      this.mockVRDisplays_ = [];
       for (let i = 0; i < displays.length; i++) {
         displays[i].index = i;
+        this.mockVRDisplays_.push(new MockVRDisplay(mojo.frameInterfaces,
+              displays[i], this));
       }
-      this.vrDisplays_ = displays;
     }
 
-    notifyClientOfDisplays() {
-      if (this.vrDisplays_ == null) {
-        return;
+    addVRDisplay(display) {
+      if (this.mockVRDisplays_.length) {
+        display.index =
+            this.mockVRDisplays_[this.mockVRDisplays_.length - 1] + 1;
+      } else {
+        display.index = 0;
       }
-      for (let i = 0; i < this.vrDisplays_.length; i++) {
-        let displayPtr = new vr_service.VRDisplayPtr();
-        let request = bindings.makeRequest(displayPtr);
-        let binding = new bindings.Binding(
-            vr_service.VRDisplay,
-            new MockVRDisplay(mojo.frameInterfaces), request);
-        let clientRequest = bindings.makeRequest(this.displayClient_);
-        this.client_.onDisplayConnected(displayPtr, clientRequest, this.vrDisplays_[i]);
-      }
+      this.mockVRDisplays_.push(new MockVRDisplay(mojo.frameInterfaces,
+            display, this));
     }
 
     setClient(client) {
       this.client_ = client;
-      this.notifyClientOfDisplays();
+      for (let i = 0; i < this.mockVRDisplays_.length; i++) {
+        this.mockVRDisplays_[i].notifyClientOfDisplay();
+      }
 
-      var device_number = (this.vrDisplays_== null ? 0 : this.vrDisplays_.length);
+      let device_number = this.mockVRDisplays_.length;
       return Promise.resolve({numberOfConnectedDevices: device_number});
     }
   }
@@ -70,6 +91,6 @@ function vr_test(func, vrDisplays, name, properties) {
   mockVRService.then( (service) => {
     service.setVRDisplays(vrDisplays);
     let t = async_test(name, properties);
-    func(t);
+    func(t, service);
   });
 }

@@ -75,8 +75,8 @@ function fakeVRDisplays(){
           rightDegrees : 50.899,
         },
         offset : [-0.032, 0, 0],
-        renderWidth : 0,
-        renderHeight : 0
+        renderWidth : 960,
+        renderHeight : 1080
       },
       rightEye : {
         fieldOfView : {
@@ -86,8 +86,8 @@ function fakeVRDisplays(){
           rightDegrees: 35.197
         },
         offset : [0.032, 0, 0],
-        renderWidth : 0,
-        renderHeight : 0
+        renderWidth : 960,
+        renderHeight : 1080
       }
     }
     // TODO(bsheedy) add more displays like Rift/Vive

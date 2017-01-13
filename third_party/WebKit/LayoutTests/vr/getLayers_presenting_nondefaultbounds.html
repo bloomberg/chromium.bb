@@ -19,7 +19,11 @@ vr_test( (t) => {
     }, "No layers initially returned");
 
     runWithUserGesture( () => {
-      display.requestPresent([{ source : webglCanvas }]).then( () => {
+      let expectedLeft = [0.0, 0.1, 0.2, 0.3];
+      let expectedRight = [0.4, 0.5, 0.6, 0.7];
+      display.requestPresent([{ source : webglCanvas,
+                                leftBounds : expectedLeft,
+                                rightBounds : expectedRight}]).then( () => {
         t.step( () => {
           let layers = display.getLayers();
           assert_equals(layers.length, 1);
@@ -29,8 +33,6 @@ vr_test( (t) => {
           assert_equals(layer.leftBounds.length, 4);
           assert_equals(layer.rightBounds.length, 4);
 
-          let expectedLeft = [0.0, 0.0, 0.5, 1.0];
-          let expectedRight = [0.5, 0.0, 0.5, 1.0];
           for (let i = 0; i < layer.leftBounds.length; i++) {
             assert_approx_equals(layer.leftBounds[i], expectedLeft[i],
                 FLOAT_EPSILON);
@@ -53,6 +55,6 @@ vr_test( (t) => {
     t.done();
   });
 }, [fakeDisplays["Pixel"]],
-"Test getLayers returns given canvas and default bounds when expected");
+"Test getLayers returns non-default bounds when specified in the layer");
 
 </script>

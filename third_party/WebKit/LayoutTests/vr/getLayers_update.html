@@ -7,7 +7,10 @@
 <script src="resources/test-constants.js"></script>
 <canvas id="webgl-canvas"></canvas>
 <script src="resources/presentation-setup.js"></script>
+<canvas id="webgl-canvas2"></canvas>
 <script>
+var webglCanvas2 = document.getElementById("webgl-canvas2");
+var gl2 = webglCanvas2.getContext("webgl", glAttributes);
 let fakeDisplays = fakeVRDisplays();
 
 vr_test( (t) => {
@@ -21,29 +24,24 @@ vr_test( (t) => {
     runWithUserGesture( () => {
       display.requestPresent([{ source : webglCanvas }]).then( () => {
         t.step( () => {
-          let layers = display.getLayers();
-          assert_equals(layers.length, 1);
-          let layer = layers[0];
-
-          assert_equals(layer.source, webglCanvas);
-          assert_equals(layer.leftBounds.length, 4);
-          assert_equals(layer.rightBounds.length, 4);
-
-          let expectedLeft = [0.0, 0.0, 0.5, 1.0];
-          let expectedRight = [0.5, 0.0, 0.5, 1.0];
-          for (let i = 0; i < layer.leftBounds.length; i++) {
-            assert_approx_equals(layer.leftBounds[i], expectedLeft[i],
-                FLOAT_EPSILON);
-            assert_approx_equals(layer.rightBounds[i], expectedRight[i],
-                FLOAT_EPSILON);
-          }
-        }, "Layer is correct");
+          assert_equals(display.getLayers()[0].source, webglCanvas);
+        }, "Initial layer source matches first canvas");
+        display.requestPresent([{ source : webglCanvas2 }]).then( () => {
+          t.step( () => {
+            assert_equals(display.getLayers()[0].source, webglCanvas2);
+            assert_not_equals(display.getLayers()[0].source, webglCanvas);
+          }, "Source now matches second canvas");
+        }, (err) => {
+          t.step( () => {
+            assert_unreached(err);
+          }, "Second requestPresent failed")
+        }).then( () => {
+          t.done();
+        });
       }, (err) => {
         t.step( () => {
           assert_unreached();
-        }, "requestPresent failed");
-      }).then( () => {
-        t.done();
+        }, "First requestPresent failed");
       });
     });
   }, (err) => {
@@ -53,6 +51,6 @@ vr_test( (t) => {
     t.done();
   });
 }, [fakeDisplays["Pixel"]],
-"Test getLayers returns given canvas and default bounds when expected");
+"Test getLayers returns updated source layer when requestPresent is re-called");
 
 </script>

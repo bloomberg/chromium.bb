@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/fake-vr-displays.js"></script>
+<script src="resources/mock-vr-service.js"></script>
+<canvas id="webgl-canvas"></canvas>
+<script src="resources/presentation-setup.js"></script>
+<script>
+let fakeDisplays = fakeVRDisplays();
+
+vr_test( (t) => {
+  return navigator.getVRDisplays().then( (displays) => {
+    var display = displays[0];
+
+    runWithUserGesture( () => {
+      display.requestPresent([{ source : webglCanvas }]).then( () => {
+        t.step( () => {
+          assert_true(display.isPresenting);
+        }, "Display should be presenting");
+        display.requestPresent([{ source : null }]).then( () => {
+          t.step( () => {
+            assert_unreached();
+          }, "Second requestPresent succeeded");
+        }, (err) => {
+          t.step( () => {
+            assert_false(display.isPresenting);
+          }, "Should no longer be presenting");
+        }).then( () => {
+          t.done();
+        });
+      }, (err) => {
+        t.step( () => {
+          assert_unreached(err);
+        }, "requestPresent rejected");
+        t.done();
+      });
+    });
+  }, (err) => {
+    t.step( () => {
+      assert_unreached();
+    }, "getVRDisplays rejected");
+    t.done();
+  });
+}, [fakeDisplays["Pixel"]],
+"Test display stops presenting if requestPresent rejects");
+
+</script>

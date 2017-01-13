@@ -110,7 +110,7 @@ void NavigatorVR::enqueueVREvent(VRDisplayEvent* event) {
 }
 
 void NavigatorVR::dispatchVRGestureEvent(VRDisplayEvent* event) {
-  if (host()->frame())
+  if (!(host()->frame()))
     return;
   UserGestureIndicator gestureIndicator(
       DocumentUserGestureToken::create(document()));

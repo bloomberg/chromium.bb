@@ -324,9 +324,9 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState,
     return promise;
   }
 
-  m_layer = layers[0];
-
-  if (!m_layer.source()) {
+  // If what we were given has an invalid source, need to exit fullscreen with
+  // previous, valid source, so delay m_layer reassignment
+  if (!layers[0].source()) {
     forceExitPresent();
     DOMException* exception =
         DOMException::create(InvalidStateError, "Invalid layer source.");
@@ -334,6 +334,7 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState,
     ReportPresentationResult(PresentationResult::InvalidLayerSource);
     return promise;
   }
+  m_layer = layers[0];
 
   CanvasRenderingContext* renderingContext =
       m_layer.source()->renderingContext();
