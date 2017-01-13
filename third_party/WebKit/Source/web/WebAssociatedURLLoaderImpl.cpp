@@ -410,6 +410,8 @@ void WebAssociatedURLLoaderImpl::loadAsynchronously(
 
     Document* document = toDocument(m_observer->lifecycleContext());
     DCHECK(document);
+    // TODO(yhirano): Remove this CHECK once https://crbug.com/667254 is fixed.
+    CHECK(!m_loader);
     m_loader = DocumentThreadableLoader::create(
         *document, m_clientAdapter.get(), options, resourceLoaderOptions);
     m_loader->start(webcoreRequest);

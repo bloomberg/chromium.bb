@@ -114,6 +114,8 @@ void FileReaderLoader::start(ExecutionContext* executionContext,
   ResourceLoaderOptions resourceLoaderOptions;
   resourceLoaderOptions.allowCredentials = AllowStoredCredentials;
 
+  // TODO(yhirano): Remove this CHECK once https://crbug.com/667254 is fixed.
+  CHECK(!m_loader);
   if (m_client) {
     DCHECK(!m_loader);
     m_loader = ThreadableLoader::create(*executionContext, this, options,
