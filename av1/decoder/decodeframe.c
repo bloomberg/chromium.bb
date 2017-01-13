@@ -2471,10 +2471,11 @@ static void read_wiener_filter(WienerInfo *wiener_info, aom_reader *rb) {
   wiener_info->vfilter[2] = wiener_info->vfilter[WIENER_WIN - 3] =
       aom_read_literal(rb, WIENER_FILT_TAP2_BITS, ACCT_STR) +
       WIENER_FILT_TAP2_MINV;
+  // The central element has an implicit +WIENER_FILT_STEP
   wiener_info->vfilter[WIENER_HALFWIN] =
-      WIENER_FILT_STEP -
-      2 * (wiener_info->vfilter[0] + wiener_info->vfilter[1] +
-           wiener_info->vfilter[2]);
+      -2 * (wiener_info->vfilter[0] + wiener_info->vfilter[1] +
+            wiener_info->vfilter[2]);
+
   wiener_info->hfilter[0] = wiener_info->hfilter[WIENER_WIN - 1] =
       aom_read_literal(rb, WIENER_FILT_TAP0_BITS, ACCT_STR) +
       WIENER_FILT_TAP0_MINV;
@@ -2484,10 +2485,10 @@ static void read_wiener_filter(WienerInfo *wiener_info, aom_reader *rb) {
   wiener_info->hfilter[2] = wiener_info->hfilter[WIENER_WIN - 3] =
       aom_read_literal(rb, WIENER_FILT_TAP2_BITS, ACCT_STR) +
       WIENER_FILT_TAP2_MINV;
+  // The central element has an implicit +WIENER_FILT_STEP
   wiener_info->hfilter[WIENER_HALFWIN] =
-      WIENER_FILT_STEP -
-      2 * (wiener_info->hfilter[0] + wiener_info->hfilter[1] +
-           wiener_info->hfilter[2]);
+      -2 * (wiener_info->hfilter[0] + wiener_info->hfilter[1] +
+            wiener_info->hfilter[2]);
 }
 
 static void read_sgrproj_filter(SgrprojInfo *sgrproj_info, aom_reader *rb) {

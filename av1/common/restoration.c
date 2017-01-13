@@ -55,6 +55,7 @@ int av1_alloc_restoration_struct(RestorationInfo *rst_info, int width,
   rst_info->wiener_info = (WienerInfo *)aom_realloc(
       rst_info->wiener_info, sizeof(*rst_info->wiener_info) * ntiles);
   assert(rst_info->wiener_info != NULL);
+  memset(rst_info->wiener_info, 0, sizeof(*rst_info->wiener_info) * ntiles);
   rst_info->sgrproj_info = (SgrprojInfo *)aom_realloc(
       rst_info->sgrproj_info, sizeof(*rst_info->sgrproj_info) * ntiles);
   assert(rst_info->sgrproj_info != NULL);
@@ -143,25 +144,11 @@ static void loop_wiener_filter_tile(uint8_t *data, int tile_idx, int width,
   const int tile_height = rst->tile_height;
   int i, j;
   int h_start, h_end, v_start, v_end;
-  DECLARE_ALIGNED(16, InterpKernel, hkernel);
-  DECLARE_ALIGNED(16, InterpKernel, vkernel);
-
   if (rst->rsi->restoration_type[tile_idx] == RESTORE_NONE) {
     loop_copy_tile(data, tile_idx, 0, 0, width, height, stride, rst, dst,
                    dst_stride);
     return;
   }
-  // TODO(david.barker): Store hfilter/vfilter as an InterpKernel
-  // instead of the current format. Then this can be removed.
-  assert(WIENER_WIN == SUBPEL_TAPS - 1);
-  for (i = 0; i < WIENER_WIN; ++i) {
-    hkernel[i] = rst->rsi->wiener_info[tile_idx].hfilter[i];
-    vkernel[i] = rst->rsi->wiener_info[tile_idx].vfilter[i];
-  }
-  hkernel[WIENER_WIN] = 0;
-  vkernel[WIENER_WIN] = 0;
-  hkernel[3] -= 128;
-  vkernel[3] -= 128;
   av1_get_rest_tile_limits(tile_idx, 0, 0, rst->nhtiles, rst->nvtiles,
                            tile_width, tile_height, width, height, 0, 0,
                            &h_start, &h_end, &v_start, &v_end);
@@ -173,8 +160,9 @@ static void loop_wiener_filter_tile(uint8_t *data, int tile_idx, int width,
       int h = AOMMIN(MAX_SB_SIZE, (v_end - i + 15) & ~15);
       const uint8_t *data_p = data + i * stride + j;
       uint8_t *dst_p = dst + i * dst_stride + j;
-      aom_convolve8_add_src(data_p, stride, dst_p, dst_stride, hkernel, 16,
-                            vkernel, 16, w, h);
+      aom_convolve8_add_src(data_p, stride, dst_p, dst_stride,
+                            rst->rsi->wiener_info[tile_idx].hfilter, 16,
+                            rst->rsi->wiener_info[tile_idx].vfilter, 16, w, h);
     }
 }
 
@@ -1028,25 +1016,12 @@ static void loop_wiener_filter_tile_highbd(uint16_t *data, int tile_idx,
   const int tile_height = rst->tile_height;
   int h_start, h_end, v_start, v_end;
   int i, j;
-  DECLARE_ALIGNED(16, InterpKernel, hkernel);
-  DECLARE_ALIGNED(16, InterpKernel, vkernel);
 
   if (rst->rsi->restoration_type[tile_idx] == RESTORE_NONE) {
     loop_copy_tile_highbd(data, tile_idx, 0, 0, width, height, stride, rst, dst,
                           dst_stride);
     return;
   }
-  // TODO(david.barker): Store hfilter/vfilter as an InterpKernel
-  // instead of the current format. Then this can be removed.
-  assert(WIENER_WIN == SUBPEL_TAPS - 1);
-  for (i = 0; i < WIENER_WIN; ++i) {
-    hkernel[i] = rst->rsi->wiener_info[tile_idx].hfilter[i];
-    vkernel[i] = rst->rsi->wiener_info[tile_idx].vfilter[i];
-  }
-  hkernel[WIENER_WIN] = 0;
-  vkernel[WIENER_WIN] = 0;
-  hkernel[3] -= 128;
-  vkernel[3] -= 128;
   av1_get_rest_tile_limits(tile_idx, 0, 0, rst->nhtiles, rst->nvtiles,
                            tile_width, tile_height, width, height, 0, 0,
                            &h_start, &h_end, &v_start, &v_end);
@@ -1058,9 +1033,10 @@ static void loop_wiener_filter_tile_highbd(uint16_t *data, int tile_idx,
       int h = AOMMIN(MAX_SB_SIZE, (v_end - i + 15) & ~15);
       const uint16_t *data_p = data + i * stride + j;
       uint16_t *dst_p = dst + i * dst_stride + j;
-      aom_highbd_convolve8_add_src(CONVERT_TO_BYTEPTR(data_p), stride,
-                                   CONVERT_TO_BYTEPTR(dst_p), dst_stride,
-                                   hkernel, 16, vkernel, 16, w, h, bit_depth);
+      aom_highbd_convolve8_add_src(
+          CONVERT_TO_BYTEPTR(data_p), stride, CONVERT_TO_BYTEPTR(dst_p),
+          dst_stride, rst->rsi->wiener_info[tile_idx].hfilter, 16,
+          rst->rsi->wiener_info[tile_idx].vfilter, 16, w, h, bit_depth);
     }
 }
 

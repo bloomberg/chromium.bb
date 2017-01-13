@@ -114,7 +114,17 @@ extern "C" {
 // Max of SGRPROJ_EXTBUF_SIZE, DOMAINTXFMRF_EXTBUF_SIZE, WIENER_EXTBUF_SIZE
 #define RESTORATION_EXTBUF_SIZE (DOMAINTXFMRF_EXTBUF_SIZE)
 
-typedef struct { int vfilter[WIENER_WIN], hfilter[WIENER_WIN]; } WienerInfo;
+// Check the assumptions of the existing code
+#if SUBPEL_TAPS != WIENER_WIN + 1
+#error "Wiener filter currently only works if SUBPEL_TAPS == WIENER_WIN + 1"
+#endif
+#if WIENER_FILT_PREC_BITS != 7
+#error "Wiener filter currently only works if WIENER_FILT_PREC_BITS == 7"
+#endif
+typedef struct {
+  DECLARE_ALIGNED(16, InterpKernel, vfilter);
+  DECLARE_ALIGNED(16, InterpKernel, hfilter);
+} WienerInfo;
 
 typedef struct {
   int r1;

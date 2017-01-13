@@ -905,7 +905,8 @@ static int wiener_decompose_sep_sym(double *M, double *H, double *a,
 // Computes the function x'*H*x - x'*M for the learned 2D filter x, and compares
 // against identity filters; Final score is defined as the difference between
 // the function values
-static double compute_score(double *M, double *H, int *vfilt, int *hfilt) {
+static double compute_score(double *M, double *H, InterpKernel vfilt,
+                            InterpKernel hfilt) {
   double ab[WIENER_WIN * WIENER_WIN];
   int i, k, l;
   double P = 0, Q = 0;
@@ -936,7 +937,7 @@ static double compute_score(double *M, double *H, int *vfilt, int *hfilt) {
   return Score - iScore;
 }
 
-static void quantize_sym_filter(double *f, int *fi) {
+static void quantize_sym_filter(double *f, InterpKernel fi) {
   int i;
   for (i = 0; i < WIENER_HALFWIN; ++i) {
     fi[i] = RINT(f[i] * WIENER_FILT_STEP);
@@ -949,7 +950,8 @@ static void quantize_sym_filter(double *f, int *fi) {
   fi[WIENER_WIN - 1] = fi[0];
   fi[WIENER_WIN - 2] = fi[1];
   fi[WIENER_WIN - 3] = fi[2];
-  fi[3] = WIENER_FILT_STEP - 2 * (fi[0] + fi[1] + fi[2]);
+  // The central element has an implicit +WIENER_FILT_STEP
+  fi[3] = -2 * (fi[0] + fi[1] + fi[2]);
 }
 
 static double search_wiener_uv(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
