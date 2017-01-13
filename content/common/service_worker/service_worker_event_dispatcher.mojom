@@ -13,6 +13,9 @@ import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_
 import "url/mojo/origin.mojom";
 
 [Native]
+struct PushEventPayload;
+
+[Native]
 struct ServiceWorkerFetchRequest;
 
 [Native]
@@ -38,6 +41,9 @@ interface ServiceWorkerEventDispatcher {
   // browser process.
   DispatchFetchEvent(int32 fetch_event_id, ServiceWorkerFetchRequest request,
                      FetchEventPreloadHandle? preload_handle)
+      => (blink.mojom.ServiceWorkerEventStatus status,
+          mojo.common.mojom.Time dispatch_event_time);
+  DispatchPushEvent(PushEventPayload payload)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo.common.mojom.Time dispatch_event_time);
   // Arguments are passed to the event handler as parameters of SyncEvent.

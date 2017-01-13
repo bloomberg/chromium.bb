@@ -225,6 +225,8 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
                           const ServiceWorkerFetchRequest& request,
                           mojom::FetchEventPreloadHandlePtr preload_handle,
                           const DispatchFetchEventCallback& callback) override;
+  void DispatchPushEvent(const PushEventPayload& payload,
+                         const DispatchPushEventCallback& callback) override;
   void DispatchSyncEvent(
       const std::string& tag,
       blink::mojom::BackgroundSyncEventLastChance last_chance,
@@ -241,7 +243,6 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
       const PlatformNotificationData& notification_data,
       int action_index,
       const base::NullableString16& reply);
-  void OnPushEvent(int request_id, const PushEventPayload& payload);
   void OnNotificationCloseEvent(
       int request_id,
       const std::string& notification_id,
