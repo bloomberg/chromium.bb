@@ -1528,43 +1528,24 @@ static INLINE void load_buffer_32x32(const int16_t *input, int stride,
   load_buffer_16x16(botR, stride, flipud, fliplr, in1 + 16);
 }
 
-static void nr_right_shift_32x32_16col(__m256i *in) {
+static INLINE void right_shift_32x32_16col(const int bit, __m256i *in) {
   int i = 0;
-  const __m256i one = _mm256_set1_epi16(1);
+  const __m256i rounding = _mm256_set1_epi16((1 << bit) >> 1);
   __m256i sign;
   while (i < 32) {
     sign = _mm256_srai_epi16(in[i], 15);
-    in[i] = _mm256_add_epi16(in[i], one);
-    in[i] = _mm256_sub_epi16(in[i], sign);
-    in[i] = _mm256_srai_epi16(in[i], 2);
-    i += 1;
-  }
-}
-
-// Negative rounding
-static void nr_right_shift_32x32(__m256i *in0, __m256i *in1) {
-  nr_right_shift_32x32_16col(in0);
-  nr_right_shift_32x32_16col(in1);
-}
-
-static INLINE void pr_right_shift_32x32_16col(__m256i *in) {
-  int i = 0;
-  const __m256i zero = _mm256_setzero_si256();
-  const __m256i one = _mm256_set1_epi16(1);
-  __m256i sign;
-  while (i < 32) {
-    sign = _mm256_cmpgt_epi16(in[i], zero);
-    in[i] = _mm256_add_epi16(in[i], one);
-    in[i] = _mm256_sub_epi16(in[i], sign);
-    in[i] = _mm256_srai_epi16(in[i], 2);
+    in[i] = _mm256_add_epi16(in[i], rounding);
+    in[i] = _mm256_add_epi16(in[i], sign);
+    in[i] = _mm256_srai_epi16(in[i], bit);
     i += 1;
   }
 }
 
 // Positive rounding
-static INLINE void pr_right_shift_32x32(__m256i *in0, __m256i *in1) {
-  pr_right_shift_32x32_16col(in0);
-  pr_right_shift_32x32_16col(in1);
+static INLINE void right_shift_32x32(__m256i *in0, __m256i *in1) {
+  const int bit = 4;
+  right_shift_32x32_16col(bit, in0);
+  right_shift_32x32_16col(bit, in1);
 }
 
 #if CONFIG_EXT_TX
@@ -1579,26 +1560,6 @@ static void fidtx32_avx2(__m256i *in0, __m256i *in1) {
 }
 #endif
 
-static INLINE int range_check_dct32x32(const __m256i *in0, const __m256i *in1,
-                                       int row) {
-  __m256i value, bits0, bits1;
-  const __m256i bound = _mm256_set1_epi16((1 << 6) - 1);
-  int flag;
-  int i = 0;
-
-  while (i < row) {
-    value = _mm256_abs_epi16(in0[i]);
-    bits0 = _mm256_cmpgt_epi16(value, bound);
-    value = _mm256_abs_epi16(in1[i]);
-    bits1 = _mm256_cmpgt_epi16(value, bound);
-    bits0 = _mm256_or_si256(bits0, bits1);
-    flag = _mm256_movemask_epi8(bits0);
-    if (flag) return 1;
-    i++;
-  }
-  return 0;
-}
-
 void av1_fht32x32_avx2(const int16_t *input, tran_low_t *output, int stride,
                        int tx_type) {
   __m256i in0[32];  // left 32 columns
@@ -1607,103 +1568,98 @@ void av1_fht32x32_avx2(const int16_t *input, tran_low_t *output, int stride,
   switch (tx_type) {
     case DCT_DCT:
       load_buffer_32x32(input, stride, 0, 0, in0, in1);
-      if (range_check_dct32x32(in0, in1, 32)) {
-        aom_fdct32x32_avx2(input, output, stride);
-        return;
-      }
       fdct32_avx2(in0, in1);
-      pr_right_shift_32x32(in0, in1);
+      right_shift_32x32(in0, in1);
       fdct32_avx2(in0, in1);
       break;
 #if CONFIG_EXT_TX
     case ADST_DCT:
       load_buffer_32x32(input, stride, 0, 0, in0, in1);
       fhalfright32_avx2(in0, in1);
-      pr_right_shift_32x32(in0, in1);
+      right_shift_32x32(in0, in1);
       fdct32_avx2(in0, in1);
       break;
     case DCT_ADST:
       load_buffer_32x32(input, stride, 0, 0, in0, in1);
       fdct32_avx2(in0, in1);
-      pr_right_shift_32x32(in0, in1);
+      right_shift_32x32(in0, in1);
       fhalfright32_avx2(in0, in1);
       break;
     case ADST_ADST:
       load_buffer_32x32(input, stride, 0, 0, in0, in1);
       fhalfright32_avx2(in0, in1);
-      pr_right_shift_32x32(in0, in1);
+      right_shift_32x32(in0, in1);
       fhalfright32_avx2(in0, in1);
       break;
     case FLIPADST_DCT:
       load_buffer_32x32(input, stride, 1, 0, in0, in1);
       fhalfright32_avx2(in0, in1);
-      pr_right_shift_32x32(in0, in1);
+      right_shift_32x32(in0, in1);
       fdct32_avx2(in0, in1);
       break;
     case DCT_FLIPADST:
       load_buffer_32x32(input, stride, 0, 1, in0, in1);
       fdct32_avx2(in0, in1);
-      pr_right_shift_32x32(in0, in1);
+      right_shift_32x32(in0, in1);
       fhalfright32_avx2(in0, in1);
       break;
     case FLIPADST_FLIPADST:
       load_buffer_32x32(input, stride, 1, 1, in0, in1);
       fhalfright32_avx2(in0, in1);
-      pr_right_shift_32x32(in0, in1);
+      right_shift_32x32(in0, in1);
       fhalfright32_avx2(in0, in1);
       break;
     case ADST_FLIPADST:
       load_buffer_32x32(input, stride, 0, 1, in0, in1);
       fhalfright32_avx2(in0, in1);
-      pr_right_shift_32x32(in0, in1);
+      right_shift_32x32(in0, in1);
       fhalfright32_avx2(in0, in1);
       break;
     case FLIPADST_ADST:
       load_buffer_32x32(input, stride, 1, 0, in0, in1);
       fhalfright32_avx2(in0, in1);
-      pr_right_shift_32x32(in0, in1);
+      right_shift_32x32(in0, in1);
       fhalfright32_avx2(in0, in1);
       break;
     case V_DCT:
       load_buffer_32x32(input, stride, 0, 0, in0, in1);
       fdct32_avx2(in0, in1);
-      pr_right_shift_32x32(in0, in1);
+      right_shift_32x32(in0, in1);
       fidtx32_avx2(in0, in1);
       break;
     case H_DCT:
       load_buffer_32x32(input, stride, 0, 0, in0, in1);
       fidtx32_avx2(in0, in1);
-      pr_right_shift_32x32(in0, in1);
+      right_shift_32x32(in0, in1);
       fdct32_avx2(in0, in1);
       break;
     case V_ADST:
       load_buffer_32x32(input, stride, 0, 0, in0, in1);
       fhalfright32_avx2(in0, in1);
-      pr_right_shift_32x32(in0, in1);
+      right_shift_32x32(in0, in1);
       fidtx32_avx2(in0, in1);
       break;
     case H_ADST:
       load_buffer_32x32(input, stride, 0, 0, in0, in1);
       fidtx32_avx2(in0, in1);
-      pr_right_shift_32x32(in0, in1);
+      right_shift_32x32(in0, in1);
       fhalfright32_avx2(in0, in1);
       break;
     case V_FLIPADST:
       load_buffer_32x32(input, stride, 1, 0, in0, in1);
       fhalfright32_avx2(in0, in1);
-      pr_right_shift_32x32(in0, in1);
+      right_shift_32x32(in0, in1);
       fidtx32_avx2(in0, in1);
       break;
     case H_FLIPADST:
       load_buffer_32x32(input, stride, 0, 1, in0, in1);
       fidtx32_avx2(in0, in1);
-      pr_right_shift_32x32(in0, in1);
+      right_shift_32x32(in0, in1);
       fhalfright32_avx2(in0, in1);
       break;
 #endif  // CONFIG_EXT_TX
     default: assert(0); break;
   }
-  nr_right_shift_32x32(in0, in1);
   write_buffer_32x32(in0, in1, output);
   _mm256_zeroupper();
 }
