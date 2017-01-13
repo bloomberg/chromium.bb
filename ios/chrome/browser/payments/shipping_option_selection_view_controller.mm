@@ -101,6 +101,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
     item.detailText =
         payment_request_utils::FormattedCurrencyString(value, currencyCode);
 
+    // Styling.
+    item.textFont = [MDCTypography body2Font];
+    item.textColor = [[MDCPalette greyPalette] tint900];
+    item.detailTextFont = [MDCTypography body1Font];
+    item.detailTextColor = [[MDCPalette greyPalette] tint900];
+
     if (_selectedShippingOption == shippingOption) {
       item.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
       _selectedItem = item;
@@ -120,27 +126,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.styler.cellStyle = MDCCollectionViewCellStyleCard;
   self.styler.separatorInset =
       UIEdgeInsetsMake(0, kSeparatorEdgeInset, 0, kSeparatorEdgeInset);
-}
-
-#pragma mark UICollectionViewDataSource
-
-- (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
-                 cellForItemAtIndexPath:(nonnull NSIndexPath*)indexPath {
-  UICollectionViewCell* cell =
-      [super collectionView:collectionView cellForItemAtIndexPath:indexPath];
-
-  NSInteger itemType =
-      [self.collectionViewModel itemTypeForIndexPath:indexPath];
-  DCHECK(ItemTypeShippingOption == itemType);
-
-  MDCCollectionViewTextCell* textCell =
-      base::mac::ObjCCastStrict<MDCCollectionViewTextCell>(cell);
-  textCell.textLabel.font = [MDCTypography body2Font];
-  textCell.textLabel.textColor = [[MDCPalette greyPalette] tint900];
-  textCell.detailTextLabel.font = [MDCTypography body1Font];
-  textCell.detailTextLabel.textColor = [[MDCPalette greyPalette] tint900];
-
-  return cell;
 }
 
 #pragma mark UICollectionViewDelegate

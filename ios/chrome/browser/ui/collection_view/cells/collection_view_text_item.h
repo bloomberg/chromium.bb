@@ -17,13 +17,29 @@
 @property(nonatomic) MDCCollectionViewCellAccessoryType accessoryType;
 
 // The main text to display.
-@property(nonatomic, copy) NSString* text;
+@property(nonatomic, nullable, copy) NSString* text;
 
 // The secondary text to display.
-@property(nonatomic, copy) NSString* detailText;
+@property(nonatomic, nullable, copy) NSString* detailText;
 
 // The image to show.
-@property(nonatomic, strong) UIImage* image;
+@property(nonatomic, nullable, strong) UIImage* image;
+
+// The font of the main text. The Default value is the medium Roboto font of
+// size 14.
+@property(nonatomic, null_resettable, copy) UIFont* textFont;
+
+// The color of the main text. The Default value is the 900 tint color of the
+// grey palette.
+@property(nonatomic, null_resettable, copy) UIColor* textColor;
+
+// The font of the secondary text. The Default value is the regular Roboto font
+// of size 14.
+@property(nonatomic, null_resettable, copy) UIFont* detailTextFont;
+
+// The color of the secondary text. The default value is the 500 tint color of
+// the grey palette.
+@property(nonatomic, null_resettable, copy) UIColor* detailTextColor;
 
 @end
 
