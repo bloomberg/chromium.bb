@@ -30,7 +30,6 @@
           "device::mojom::MotionSensor",
           "device::mojom::OrientationAbsoluteSensor",
           "device::mojom::OrientationSensor",
-          "device::mojom::TimeZoneMonitor",
           "discardable_memory::mojom::DiscardableSharedMemoryManager",
           "media::mojom::ImageCapture",
           "memory_coordinator::mojom::MemoryCoordinatorHandle",

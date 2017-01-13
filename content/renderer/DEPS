@@ -15,7 +15,6 @@ include_rules = [
   "+device/gamepad/public/interfaces",
   "+device/screen_orientation/public/interfaces",
   "+device/sensors/public",
-  "+device/time_zone_monitor/public",
   "+device/usb/public",
   "+device/vibration",
   "+gin",
