@@ -1,4 +1,4 @@
-Test ListControl rendering and selection for fixed height case.
+Test ListControl rendering and selection for equal height items case.
 Adding 0, 1, 2
 Creating element for 0
 Creating element for 1
@@ -454,45 +454,67 @@ Replacing 1, 2, 3 with [31-43]
  [99] 29
  [114] bottom
 
+Scrolling to 13 (center)
+----list[length=30][height=84]----
+ [-310] top
+ [-85] 5
+ [-70] 6
+ [-55] 27
+ [-40] 8
+ [-25] 9
++[-10] 10
+*[5] 11
+*[20] 12
+*[35] 13
+*[50] 14
+*[65] 15
++[80] 16
+ [95] 17 (selected)
+ [110] 28
+ [125] 29
+ [140] bottom
+
 ArrowUp
 Selection changed from 17 to 15
 ----list[length=30][height=84]----
- [-336] top
- [-96] 6
- [-81] 27
- [-66] 8
- [-51] 9
- [-36] 10
- [-21] 11
-+[-6] 12
-*[9] 13
-*[24] 14
-*[39] 15 (selected)
-*[54] 16
-*[69] 17
- [84] 28
- [99] 29
- [114] bottom
+ [-310] top
+ [-85] 5
+ [-70] 6
+ [-55] 27
+ [-40] 8
+ [-25] 9
++[-10] 10
+*[5] 11
+*[20] 12
+*[35] 13
+*[50] 14
+*[65] 15 (selected)
++[80] 16
+ [95] 17
+ [110] 28
+ [125] 29
+ [140] bottom
 
 Selecting -1
 Selection changed from 15 to null
 ----list[length=30][height=84]----
- [-336] top
- [-96] 6
- [-81] 27
- [-66] 8
- [-51] 9
- [-36] 10
- [-21] 11
-+[-6] 12
-*[9] 13
-*[24] 14
-*[39] 15
-*[54] 16
-*[69] 17
- [84] 28
- [99] 29
- [114] bottom
+ [-310] top
+ [-85] 5
+ [-70] 6
+ [-55] 27
+ [-40] 8
+ [-25] 9
++[-10] 10
+*[5] 11
+*[20] 12
+*[35] 13
+*[50] 14
+*[65] 15
++[80] 16
+ [95] 17
+ [110] 28
+ [125] 29
+ [140] bottom
 
 ArrowUp
 Selection changed from null to 17

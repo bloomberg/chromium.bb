@@ -1,4 +1,4 @@
-Test ListControl rendering for variable height case.
+Test ListControl rendering for various height items case.
 Adding 0, 1, 2
 Creating element for 0
 Creating element for 1
@@ -111,22 +111,23 @@ Scrolling to 19
  [73] bottom
 offsets: 0 7 15 24 34 45 57 70 84 99 115 122 130 139 149 160 172 185 199 214 230
 
-Scrolling to 16
+Scrolling to 16 (center)
 ----list[length=20][height=73]----
- [-157] top
- [-73] 8
- [-58] 9
- [-42] 10
- [-35] 11
- [-27] 12
- [-18] 13
-+[-8] 14
-*[3] 15
-*[15] 16
-*[28] 17
-*[42] 18
-*[57] 19
- [73] bottom
+ [-142] top
+ [-72] 7
+ [-58] 8
+ [-43] 9
+ [-27] 10
+ [-20] 11
+ [-12] 12
++[-3] 13
+*[7] 14
+*[18] 15
+*[30] 16
+*[43] 17
+*[57] 18
++[72] 19
+ [88] bottom
 offsets: 0 7 15 24 34 45 57 70 84 99 115 122 130 139 149 160 172 185 199 214 230
 
 Scrolling to 3

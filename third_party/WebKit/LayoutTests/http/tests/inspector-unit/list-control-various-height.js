@@ -1,4 +1,4 @@
-TestRunner.addResult('Test ListControl rendering for variable height case.');
+TestRunner.addResult('Test ListControl rendering for various height items case.');
 
 class Delegate {
   constructor() {
@@ -30,7 +30,7 @@ class Delegate {
 }
 
 var delegate = new Delegate();
-var list = new UI.ListControl(delegate, UI.ListMode.ViewportVariableItems);
+var list = new UI.ListControl(delegate, UI.ListMode.VariousHeightItems);
 list.element.style.height = '73px';
 UI.inspectorView.element.appendChild(list.element);
 
@@ -56,11 +56,11 @@ list.replaceAllItems([0, 1, 2]);
 dumpList();
 
 TestRunner.addResult('Scrolling to 0');
-list.scrollItemAtIndexIntoView(0);
+list.scrollItemIntoView(0);
 dumpList();
 
 TestRunner.addResult('Scrolling to 2');
-list.scrollItemAtIndexIntoView(2);
+list.scrollItemIntoView(2);
 dumpList();
 
 TestRunner.addResult('Adding 3-20');
@@ -68,19 +68,19 @@ list.replaceItemsInRange(3, 3, [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
 dumpList();
 
 TestRunner.addResult('Scrolling to 11');
-list.scrollItemAtIndexIntoView(11);
+list.scrollItemIntoView(11);
 dumpList();
 
 TestRunner.addResult('Scrolling to 19');
-list.scrollItemAtIndexIntoView(19);
+list.scrollItemIntoView(19);
 dumpList();
 
-TestRunner.addResult('Scrolling to 16');
-list.scrollItemAtIndexIntoView(16);
+TestRunner.addResult('Scrolling to 16 (center)');
+list.scrollItemIntoView(16, true);
 dumpList();
 
 TestRunner.addResult('Scrolling to 3');
-list.scrollItemAtIndexIntoView(3);
+list.scrollItemIntoView(3);
 dumpList();
 
 TestRunner.addResult('Replacing 0, 1 with 25-36');
@@ -88,7 +88,7 @@ list.replaceItemsInRange(0, 2, [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36])
 dumpList();
 
 TestRunner.addResult('Scrolling to 18');
-list.scrollItemAtIndexIntoView(28);
+list.scrollItemIntoView(18);
 dumpList();
 
 TestRunner.addResult('Replacing 25-36 with 0-1');
@@ -100,7 +100,7 @@ list.replaceItemsInRange(16, 19, [45]);
 dumpList();
 
 TestRunner.addResult('Scrolling to 4');
-list.scrollItemAtIndexIntoView(4);
+list.scrollItemIntoView(4);
 dumpList();
 
 TestRunner.addResult('Replacing 45 with 16-18');

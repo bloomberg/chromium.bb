@@ -1,4 +1,4 @@
-TestRunner.addResult('Test ListControl rendering and selection for fixed height case.');
+TestRunner.addResult('Test ListControl rendering and selection for equal height items case.');
 
 class Delegate {
   constructor() {
@@ -31,7 +31,7 @@ class Delegate {
 }
 
 var delegate = new Delegate();
-var list = new UI.ListControl(delegate, UI.ListMode.ViewportFixedItems);
+var list = new UI.ListControl(delegate, UI.ListMode.EqualHeightItems);
 list.element.style.height = '73px';
 UI.inspectorView.element.appendChild(list.element);
 
@@ -56,31 +56,31 @@ list.replaceAllItems([0, 1, 2]);
 dumpList();
 
 TestRunner.addResult('Scrolling to 0');
-list.scrollItemAtIndexIntoView(0);
+list.scrollItemIntoView(0);
 dumpList();
 
 TestRunner.addResult('Scrolling to 2');
-list.scrollItemAtIndexIntoView(2);
+list.scrollItemIntoView(2);
 dumpList();
 
 TestRunner.addResult('ArrowDown');
-list.onKeyDown(TestRunner.createKeyEvent('ArrowDown'));
+list._onKeyDown(TestRunner.createKeyEvent('ArrowDown'));
 dumpList();
 
 TestRunner.addResult('Selecting 2');
-list.selectItemAtIndex(2);
+list.selectItem(2);
 dumpList();
 
 TestRunner.addResult('PageUp');
-list.onKeyDown(TestRunner.createKeyEvent('PageUp'));
+list._onKeyDown(TestRunner.createKeyEvent('PageUp'));
 dumpList();
 
 TestRunner.addResult('PageDown');
-list.onKeyDown(TestRunner.createKeyEvent('PageDown'));
+list._onKeyDown(TestRunner.createKeyEvent('PageDown'));
 dumpList();
 
 TestRunner.addResult('ArrowDown');
-list.onKeyDown(TestRunner.createKeyEvent('ArrowDown'));
+list._onKeyDown(TestRunner.createKeyEvent('ArrowDown'));
 dumpList();
 
 TestRunner.addResult('Replacing 0 with 5, 6, 7');
@@ -88,7 +88,7 @@ list.replaceItemsInRange(0, 1, [5, 6, 7]);
 dumpList();
 
 TestRunner.addResult('ArrowUp');
-list.onKeyDown(TestRunner.createKeyEvent('ArrowUp'));
+list._onKeyDown(TestRunner.createKeyEvent('ArrowUp'));
 dumpList();
 
 TestRunner.addResult('Pushing 10');
@@ -96,7 +96,7 @@ list.pushItem(10);
 dumpList();
 
 TestRunner.addResult('Selecting 10');
-list.selectItemAtIndex(5);
+list.selectItem(10);
 dumpList();
 
 TestRunner.addResult('Popping 10');
@@ -121,28 +121,28 @@ list.viewportResized();
 dumpList();
 
 TestRunner.addResult('Scrolling to 19');
-list.scrollItemAtIndexIntoView(19);
+list.scrollItemIntoView(19);
 dumpList();
 
 TestRunner.addResult('Scrolling to 5');
-list.scrollItemAtIndexIntoView(5);
+list.scrollItemIntoView(5);
 dumpList();
 
 TestRunner.addResult('Scrolling to 12');
-list.scrollItemAtIndexIntoView(12);
+list.scrollItemIntoView(12);
 dumpList();
 
 TestRunner.addResult('Scrolling to 13');
-list.scrollItemAtIndexIntoView(13);
+list.scrollItemIntoView(13);
 dumpList();
 
 TestRunner.addResult('Changing the item height');
 delegate.height = 15;
-list.fixedHeightChanged();
+list.invalidateItemHeight();
 dumpList();
 
 TestRunner.addResult('Selecting 7');
-list.selectItemAtIndex(7);
+list.selectItem(7);
 dumpList();
 
 TestRunner.addResult('Replacing 7 with 27');
@@ -154,39 +154,43 @@ list.replaceItemsInRange(18, 20, [28, 29]);
 dumpList();
 
 TestRunner.addResult('PageDown');
-list.onKeyDown(TestRunner.createKeyEvent('PageDown'));
+list._onKeyDown(TestRunner.createKeyEvent('PageDown'));
 dumpList();
 
 TestRunner.addResult('Replacing 1, 2, 3 with [31-43]');
 list.replaceItemsInRange(1, 4, [31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43]);
 dumpList();
 
-TestRunner.addResult('ArrowUp');
-list.onKeyDown(TestRunner.createKeyEvent('ArrowUp'));
-dumpList();
-
-TestRunner.addResult('Selecting -1');
-list.selectItemAtIndex(-1);
+TestRunner.addResult('Scrolling to 13 (center)');
+list.scrollItemIntoView(13, true);
 dumpList();
 
 TestRunner.addResult('ArrowUp');
-list.onKeyDown(TestRunner.createKeyEvent('ArrowUp'));
+list._onKeyDown(TestRunner.createKeyEvent('ArrowUp'));
 dumpList();
 
 TestRunner.addResult('Selecting -1');
-list.selectItemAtIndex(-1);
+list.selectItem(null);
+dumpList();
+
+TestRunner.addResult('ArrowUp');
+list._onKeyDown(TestRunner.createKeyEvent('ArrowUp'));
+dumpList();
+
+TestRunner.addResult('Selecting -1');
+list.selectItem(null);
 dumpList();
 
 TestRunner.addResult('ArrowDown');
-list.onKeyDown(TestRunner.createKeyEvent('ArrowDown'));
+list._onKeyDown(TestRunner.createKeyEvent('ArrowDown'));
 dumpList();
 
 TestRunner.addResult('Selecting -1');
-list.selectItemAtIndex(-1);
+list.selectItem(null);
 dumpList();
 
 TestRunner.addResult('PageUp');
-list.onKeyDown(TestRunner.createKeyEvent('PageUp'));
+list._onKeyDown(TestRunner.createKeyEvent('PageUp'));
 dumpList();
 
 TestRunner.addResult('Replacing all but 29 with []');
@@ -194,7 +198,7 @@ list.replaceItemsInRange(0, 29, []);
 dumpList();
 
 TestRunner.addResult('ArrowDown');
-list.onKeyDown(TestRunner.createKeyEvent('ArrowDown'));
+list._onKeyDown(TestRunner.createKeyEvent('ArrowDown'));
 dumpList();
 
 TestRunner.completeTest();

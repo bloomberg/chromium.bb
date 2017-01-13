@@ -1,4 +1,4 @@
-TestRunner.addResult('Test ListControl rendering and selection for grow mode.');
+TestRunner.addResult('Test ListControl rendering and selection for non-viewport mode.');
 
 class Delegate {
   constructor() {
@@ -31,7 +31,7 @@ class Delegate {
 }
 
 var delegate = new Delegate();
-var list = new UI.ListControl(delegate, UI.ListMode.Grow);
+var list = new UI.ListControl(delegate, UI.ListMode.NonViewport);
 UI.inspectorView.element.appendChild(list.element);
 
 function dumpList()
@@ -55,11 +55,11 @@ list.replaceAllItems([0, 1, 2]);
 dumpList();
 
 TestRunner.addResult('Scrolling to 0');
-list.scrollItemAtIndexIntoView(0);
+list.scrollItemIntoView(0);
 dumpList();
 
 TestRunner.addResult('Scrolling to 2');
-list.scrollItemAtIndexIntoView(2);
+list.scrollItemIntoView(2);
 dumpList();
 
 TestRunner.addResult('Adding 3-20');
@@ -67,7 +67,11 @@ list.replaceItemsInRange(3, 3, [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
 dumpList();
 
 TestRunner.addResult('Scrolling to 19');
-list.scrollItemAtIndexIntoView(19);
+list.scrollItemIntoView(19);
+dumpList();
+
+TestRunner.addResult('Scrolling to 13 (center)');
+list.scrollItemIntoView(13, true);
 dumpList();
 
 TestRunner.addResult('Replacing 0, 1 with 25-36');
@@ -75,7 +79,7 @@ list.replaceItemsInRange(0, 2, [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36])
 dumpList();
 
 TestRunner.addResult('Scrolling to 18');
-list.scrollItemAtIndexIntoView(28);
+list.scrollItemIntoView(28);
 dumpList();
 
 TestRunner.addResult('Replacing 25-36 with 0-1');
@@ -87,7 +91,7 @@ list.replaceItemsInRange(16, 19, [45]);
 dumpList();
 
 TestRunner.addResult('Scrolling to 4');
-list.scrollItemAtIndexIntoView(4);
+list.scrollItemIntoView(4);
 dumpList();
 
 TestRunner.addResult('Replacing 45 with 16-18');

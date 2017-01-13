@@ -1,4 +1,4 @@
-Test ListControl rendering and selection for grow mode.
+Test ListControl rendering and selection for non-viewport mode.
 Adding 0, 1, 2
 Creating element for 2
 Creating element for 1
@@ -69,6 +69,31 @@ Creating element for 3
  [240] bottom
 
 Scrolling to 19
+----list[length=20][height=240]----
+ [0] top
+*[0] 0
+*[10] 1
+*[21] 2
+*[33] 3
+*[46] 4
+*[60] 5
+*[70] 6
+*[81] 7
+*[93] 8
+*[106] 9
+*[120] 10
+*[130] 11
+*[141] 12
+*[153] 13
+*[166] 14
+*[180] 15
+*[190] 16
+*[201] 17
+*[213] 18
+*[226] 19
+ [240] bottom
+
+Scrolling to 13 (center)
 ----list[length=20][height=240]----
  [0] top
 *[0] 0
