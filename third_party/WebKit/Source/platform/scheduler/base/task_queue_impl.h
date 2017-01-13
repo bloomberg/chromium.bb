@@ -18,6 +18,7 @@
 #include "platform/scheduler/base/enqueue_order.h"
 #include "platform/scheduler/base/intrusive_heap.h"
 #include "public/platform/scheduler/base/task_queue.h"
+#include "wtf/Deque.h"
 
 namespace blink {
 namespace scheduler {
@@ -230,7 +231,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
     TaskQueueManager* task_queue_manager;
     TimeDomain* time_domain;
 
-    std::queue<Task> immediate_incoming_queue;
+    WTF::Deque<Task> immediate_incoming_queue;
   };
 
   struct MainThreadOnly {
@@ -294,7 +295,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   bool BlockedByFenceLocked() const;
 
   void TraceQueueSize(bool is_locked) const;
-  static void QueueAsValueInto(const std::queue<Task>& queue,
+  static void QueueAsValueInto(const WTF::Deque<Task>& queue,
                                base::trace_event::TracedValue* state);
   static void QueueAsValueInto(const std::priority_queue<Task>& queue,
                                base::trace_event::TracedValue* state);

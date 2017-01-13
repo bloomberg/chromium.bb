@@ -177,7 +177,7 @@ void TaskQueueImpl::UnregisterTaskQueue() {
   any_thread().task_queue_manager = nullptr;
   main_thread_only().task_queue_manager = nullptr;
   main_thread_only().delayed_incoming_queue = std::priority_queue<Task>();
-  any_thread().immediate_incoming_queue = std::queue<Task>();
+  any_thread().immediate_incoming_queue.clear();
   main_thread_only().immediate_work_queue.reset();
   main_thread_only().delayed_work_queue.reset();
 }
@@ -339,9 +339,11 @@ void TaskQueueImpl::PushOntoImmediateIncomingQueueLocked(
       any_thread().task_queue_manager->MaybeScheduleImmediateWork(FROM_HERE);
     }
   }
-  any_thread().immediate_incoming_queue.emplace(
-      posted_from, task, desired_run_time, sequence_number, nestable, sequence_number);
-  any_thread().task_queue_manager->DidQueueTask( any_thread().immediate_incoming_queue.back());
+  any_thread().immediate_incoming_queue.emplace_back(
+      posted_from, task, desired_run_time, sequence_number, nestable,
+      sequence_number);
+  any_thread().task_queue_manager->DidQueueTask(
+      any_thread().immediate_incoming_queue.back());
   TraceQueueSize(true);
 }
 
@@ -691,18 +693,11 @@ EnqueueOrder TaskQueueImpl::GetFenceForTest() const {
 }
 
 // static
-void TaskQueueImpl::QueueAsValueInto(const std::queue<Task>& queue,
+void TaskQueueImpl::QueueAsValueInto(const WTF::Deque<Task>& queue,
                                      base::trace_event::TracedValue* state) {
-  // Remove const to search |queue| in the destructive manner. Restore the
-  // content from |visited| later.
-  std::queue<Task>* mutable_queue = const_cast<std::queue<Task>*>(&queue);
-  std::queue<Task> visited;
-  while (!mutable_queue->empty()) {
-    TaskAsValueInto(mutable_queue->front(), state);
-    visited.push(std::move(mutable_queue->front()));
-    mutable_queue->pop();
+  for (const Task& task : queue) {
+    TaskAsValueInto(task, state);
   }
-  *mutable_queue = std::move(visited);
 }
 
 // static

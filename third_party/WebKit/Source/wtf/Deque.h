@@ -134,6 +134,27 @@ class Deque : public ConditionalDestructor<Deque<T, INLINE_CAPACITY, Allocator>,
   void remove(iterator&);
   void remove(const_iterator&);
 
+  // STL compatibility.
+  template <typename U>
+  void push_back(U&& u) {
+    append(std::forward<U>(u));
+  }
+  template <typename U>
+  void push_front(U&& u) {
+    prepend(std::forward<U>(u));
+  }
+  void pop_back() { removeLast(); }
+  void pop_front() { removeFirst(); }
+  bool empty() const { return isEmpty(); }
+  T& front() { return first(); }
+  const T& front() const { return first(); }
+  T& back() { return last(); }
+  const T& back() const { return last(); }
+  template <typename... Args>
+  void emplace_back(Args&&...);
+  template <typename... Args>
+  void emplace_front(Args&&...);
+
   void clear();
 
   template <typename VisitorDispatcher>
@@ -485,11 +506,12 @@ template <typename T, size_t inlineCapacity, typename Allocator>
 template <typename U>
 inline void Deque<T, inlineCapacity, Allocator>::append(U&& value) {
   expandCapacityIfNeeded();
-  new (NotNull, &m_buffer.buffer()[m_end]) T(std::forward<U>(value));
+  T* newElement = &m_buffer.buffer()[m_end];
   if (m_end == m_buffer.capacity() - 1)
     m_end = 0;
   else
     ++m_end;
+  new (NotNull, newElement) T(std::forward<U>(value));
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
@@ -501,6 +523,29 @@ inline void Deque<T, inlineCapacity, Allocator>::prepend(U&& value) {
   else
     --m_start;
   new (NotNull, &m_buffer.buffer()[m_start]) T(std::forward<U>(value));
+}
+
+template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename... Args>
+inline void Deque<T, inlineCapacity, Allocator>::emplace_back(Args&&... args) {
+  expandCapacityIfNeeded();
+  T* newElement = &m_buffer.buffer()[m_end];
+  if (m_end == m_buffer.capacity() - 1)
+    m_end = 0;
+  else
+    ++m_end;
+  new (NotNull, newElement) T(std::forward<Args>(args)...);
+}
+
+template <typename T, size_t inlineCapacity, typename Allocator>
+template <typename... Args>
+inline void Deque<T, inlineCapacity, Allocator>::emplace_front(Args&&... args) {
+  expandCapacityIfNeeded();
+  if (!m_start)
+    m_start = m_buffer.capacity() - 1;
+  else
+    --m_start;
+  new (NotNull, &m_buffer.buffer()[m_start]) T(std::forward<Args>(args)...);
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>

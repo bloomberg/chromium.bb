@@ -66,7 +66,7 @@ class BLINK_PLATFORM_EXPORT WorkQueue {
   // Swap the |work_queue_| with |incoming_queue| and if a fence hasn't been
   // reached it informs the WorkQueueSets if the head changed. Assumes
   // |task_queue_->any_thread_lock_| is locked.
-  void SwapLocked(std::queue<TaskQueueImpl::Task>& incoming_queue);
+  void SwapLocked(WTF::Deque<TaskQueueImpl::Task>& incoming_queue);
 
   size_t Size() const { return work_queue_.size(); }
 
@@ -113,7 +113,7 @@ class BLINK_PLATFORM_EXPORT WorkQueue {
   bool BlockedByFence() const;
 
  private:
-  std::queue<TaskQueueImpl::Task> work_queue_;
+  WTF::Deque<TaskQueueImpl::Task> work_queue_;
   WorkQueueSets* work_queue_sets_;  // NOT OWNED.
   TaskQueueImpl* task_queue_;       // NOT OWNED.
   size_t work_queue_set_index_;

@@ -32,7 +32,7 @@ class WorkQueueTest : public testing::Test {
     work_queue_sets_.reset(new WorkQueueSets(1, "test"));
     work_queue_sets_->AddQueue(work_queue_.get(), 0);
 
-    incoming_queue_.reset(new std::queue<TaskQueueImpl::Task>());
+    incoming_queue_.reset(new WTF::Deque<TaskQueueImpl::Task>());
   }
 
   void TearDown() override { work_queue_sets_->RemoveQueue(work_queue_.get()); }
@@ -49,7 +49,7 @@ class WorkQueueTest : public testing::Test {
   scoped_refptr<TaskQueueImpl> task_queue_;
   std::unique_ptr<WorkQueue> work_queue_;
   std::unique_ptr<WorkQueueSets> work_queue_sets_;
-  std::unique_ptr<std::queue<TaskQueueImpl::Task>> incoming_queue_;
+  std::unique_ptr<WTF::Deque<TaskQueueImpl::Task>> incoming_queue_;
 };
 
 TEST_F(WorkQueueTest, Empty) {
@@ -124,9 +124,9 @@ TEST_F(WorkQueueTest, PushAfterFenceHit) {
 }
 
 TEST_F(WorkQueueTest, SwapLocked) {
-  incoming_queue_->push(FakeTaskWithEnqueueOrder(2));
-  incoming_queue_->push(FakeTaskWithEnqueueOrder(3));
-  incoming_queue_->push(FakeTaskWithEnqueueOrder(4));
+  incoming_queue_->push_back(FakeTaskWithEnqueueOrder(2));
+  incoming_queue_->push_back(FakeTaskWithEnqueueOrder(3));
+  incoming_queue_->push_back(FakeTaskWithEnqueueOrder(4));
 
   WorkQueue* work_queue;
   EXPECT_FALSE(work_queue_sets_->GetOldestQueueInSet(0, &work_queue));
@@ -146,9 +146,9 @@ TEST_F(WorkQueueTest, SwapLocked) {
 
 TEST_F(WorkQueueTest, SwapLockedAfterFenceHit) {
   work_queue_->InsertFence(1);
-  incoming_queue_->push(FakeTaskWithEnqueueOrder(2));
-  incoming_queue_->push(FakeTaskWithEnqueueOrder(3));
-  incoming_queue_->push(FakeTaskWithEnqueueOrder(4));
+  incoming_queue_->push_back(FakeTaskWithEnqueueOrder(2));
+  incoming_queue_->push_back(FakeTaskWithEnqueueOrder(3));
+  incoming_queue_->push_back(FakeTaskWithEnqueueOrder(4));
 
   WorkQueue* work_queue;
   EXPECT_FALSE(work_queue_sets_->GetOldestQueueInSet(0, &work_queue));

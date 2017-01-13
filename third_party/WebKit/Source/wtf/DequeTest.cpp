@@ -603,6 +603,36 @@ TEST(DequeTest, RemoveWhileIterating) {
   }
 }
 
+struct Item {
+  Item(int value1, int value2) : value1(value1), value2(value2) {}
+  int value1;
+  int value2;
+};
+
+TEST(DequeTest, emplace_back) {
+  Deque<Item> deque;
+  deque.emplace_back(1, 2);
+  deque.emplace_back(3, 4);
+
+  EXPECT_EQ(2u, deque.size());
+  EXPECT_EQ(1, deque[0].value1);
+  EXPECT_EQ(2, deque[0].value2);
+  EXPECT_EQ(3, deque[1].value1);
+  EXPECT_EQ(4, deque[1].value2);
+}
+
+TEST(DequeTest, emplace_front) {
+  Deque<Item> deque;
+  deque.emplace_front(1, 2);
+  deque.emplace_front(3, 4);
+
+  EXPECT_EQ(2u, deque.size());
+  EXPECT_EQ(3, deque[0].value1);
+  EXPECT_EQ(4, deque[0].value2);
+  EXPECT_EQ(1, deque[1].value1);
+  EXPECT_EQ(2, deque[1].value2);
+}
+
 }  // anonymous namespace
 
 }  // namespace WTF
