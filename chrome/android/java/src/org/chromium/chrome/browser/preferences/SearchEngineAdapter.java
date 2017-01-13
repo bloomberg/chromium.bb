@@ -156,9 +156,15 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
 
     @Override
     public int getCount() {
-        return mPrepopulatedSearchEngines == null
-                ? 0
-                : mPrepopulatedSearchEngines.size() + mRecentSearchEngines.size() + 1;
+        int size = 0;
+        if (mPrepopulatedSearchEngines != null) {
+            size += mPrepopulatedSearchEngines.size();
+        }
+        if (mRecentSearchEngines != null && mRecentSearchEngines.size() != 0) {
+            // Account for the header by adding one to the size.
+            size += mRecentSearchEngines.size() + 1;
+        }
+        return size;
     }
 
     @Override
@@ -184,7 +190,7 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
 
     @Override
     public int getItemViewType(int position) {
-        if (position == mPrepopulatedSearchEngines.size()) {
+        if (position == mPrepopulatedSearchEngines.size() && mRecentSearchEngines.size() != 0) {
             return VIEW_TYPE_DIVIDER;
         } else {
             return VIEW_TYPE_ITEM;
@@ -197,7 +203,8 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
         TemplateUrl templateUrl = (TemplateUrl) getItem(position);
         int itemViewType = getItemViewType(position);
         if (convertView == null) {
-            view = mLayoutInflater.inflate(itemViewType == VIEW_TYPE_DIVIDER
+            view = mLayoutInflater.inflate(
+                    itemViewType == VIEW_TYPE_DIVIDER && mRecentSearchEngines.size() != 0
                             ? R.layout.search_engine_recent_title
                             : R.layout.search_engine,
                     null);
@@ -381,6 +388,12 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
     }
 
     private int computeStartIndexForRecentSearchEngines() {
-        return mPrepopulatedSearchEngines.size() + 1;
+        // If there are custom search engines to show, add 1 for showing the  "Recently visited"
+        // header.
+        if (mRecentSearchEngines.size() > 0) {
+            return mPrepopulatedSearchEngines.size() + 1;
+        } else {
+            return mPrepopulatedSearchEngines.size();
+        }
     }
 }
