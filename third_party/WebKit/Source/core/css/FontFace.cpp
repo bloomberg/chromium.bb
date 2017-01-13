@@ -54,12 +54,14 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/StyleEngine.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "platform/FontFamilyNames.h"
 #include "platform/Histogram.h"
 #include "platform/SharedBuffer.h"
+#include "platform/WebTaskRunner.h"
 
 namespace blink {
 
@@ -350,22 +352,41 @@ void FontFace::setLoadStatus(LoadStatusType status) {
   m_status = status;
   ASSERT(m_status != Error || m_error);
 
+  // When promises are resolved with 'thenables', instead of the object being
+  // returned directly, the 'then' method is executed (the resolver tries to
+  // resolve the thenable). This can lead to synchronous script execution, so we
+  // post a task. This does not apply to promise rejection (i.e. a thenable
+  // would be returned as is).
   if (m_status == Loaded || m_status == Error) {
     if (m_loadedProperty) {
-      if (m_status == Loaded)
-        m_loadedProperty->resolve(this);
-      else
+      if (m_status == Loaded) {
+        getTaskRunner()->postTask(
+            BLINK_FROM_HERE, WTF::bind(&LoadedProperty::resolve<FontFace*>,
+                                       wrapPersistent(m_loadedProperty.get()),
+                                       wrapPersistent(this)));
+      } else
         m_loadedProperty->reject(m_error.get());
     }
 
-    HeapVector<Member<LoadFontCallback>> callbacks;
-    m_callbacks.swap(callbacks);
-    for (size_t i = 0; i < callbacks.size(); ++i) {
-      if (m_status == Loaded)
-        callbacks[i]->notifyLoaded(this);
-      else
-        callbacks[i]->notifyError(this);
-    }
+    getTaskRunner()->postTask(
+        BLINK_FROM_HERE,
+        WTF::bind(&FontFace::runCallbacks, wrapPersistent(this)));
+  }
+}
+
+WebTaskRunner* FontFace::getTaskRunner() {
+  return TaskRunnerHelper::get(TaskType::DOMManipulation, getExecutionContext())
+      .get();
+}
+
+void FontFace::runCallbacks() {
+  HeapVector<Member<LoadFontCallback>> callbacks;
+  m_callbacks.swap(callbacks);
+  for (size_t i = 0; i < callbacks.size(); ++i) {
+    if (m_status == Loaded)
+      callbacks[i]->notifyLoaded(this);
+    else
+      callbacks[i]->notifyError(this);
   }
 }
 

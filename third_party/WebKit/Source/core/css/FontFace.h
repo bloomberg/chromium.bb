@@ -54,6 +54,7 @@ class FontFaceDescriptors;
 class StringOrArrayBufferOrArrayBufferView;
 class StylePropertySet;
 class StyleRuleFontFace;
+class WebTaskRunner;
 
 class FontFace : public GarbageCollectedFinalized<FontFace>,
                  public ScriptWrappable,
@@ -154,6 +155,8 @@ class FontFace : public GarbageCollectedFinalized<FontFace>,
   bool setPropertyValue(const CSSValue*, CSSPropertyID);
   bool setFamilyValue(const CSSValue&);
   ScriptPromise fontStatusPromise(ScriptState*);
+  WebTaskRunner* getTaskRunner();
+  void runCallbacks();
 
   using LoadedProperty = ScriptPromiseProperty<Member<FontFace>,
                                                Member<FontFace>,

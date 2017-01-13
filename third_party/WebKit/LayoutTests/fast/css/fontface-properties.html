@@ -23,6 +23,7 @@ function getDocumentFontFaces() {
 }
 
 function runTests() {
+    window.jsTestIsAsync = true;
     ahemFace = getDocumentFontFaces()[0];
     shouldBeEqualToString('ahemFace.family', 'Ahem');
     shouldBeEqualToString('ahemFace.style', 'italic');
@@ -89,7 +90,7 @@ function runTests() {
             debug('FAIL: Expected NetworkError');
         }).catch(function(err) {
             shouldBeEqualToString('"' +  err.message + '"' , 'A network error occurred.');
-        });
+        }).then(finishJSTest);
 }
 
 if (document.fonts)
