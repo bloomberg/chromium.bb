@@ -4,16 +4,8 @@
 
 #include "courgette/assembly_program.h"
 
-#include <memory.h>
-#include <stddef.h>
-#include <stdint.h>
-
-#include <memory>
-#include <utility>
-#include <vector>
-
+#include "base/callback.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "courgette/courgette.h"
 #include "courgette/encoded_program.h"
 
@@ -194,9 +186,8 @@ class InstructionStoreReceptor : public InstructionReceptor {
 
 /******** AssemblyProgram ********/
 
-AssemblyProgram::AssemblyProgram(ExecutableType kind)
-  : kind_(kind), image_base_(0) {
-}
+AssemblyProgram::AssemblyProgram(ExecutableType kind, uint64_t image_base)
+    : kind_(kind), image_base_(image_base) {}
 
 AssemblyProgram::~AssemblyProgram() {
   for (size_t i = 0;  i < instructions_.size();  ++i) {
@@ -339,115 +330,6 @@ CheckBool AssemblyProgram::Emit(ScopedInstruction instruction) {
 CheckBool AssemblyProgram::EmitShared(Instruction* instruction) {
   DCHECK(!instruction || instruction->op() == DEFBYTE);
   return instruction && instructions_.push_back(instruction);
-}
-
-void AssemblyProgram::UnassignIndexes(RVAToLabel* labels) {
-  for (RVAToLabel::iterator p = labels->begin();  p != labels->end();  ++p) {
-    Label* current = p->second;
-    current->index_ = Label::kNoIndex;
-  }
-}
-
-// DefaultAssignIndexes takes a set of labels and assigns indexes in increasing
-// address order.
-void AssemblyProgram::DefaultAssignIndexes(RVAToLabel* labels) {
-  int index = 0;
-  for (RVAToLabel::iterator p = labels->begin();  p != labels->end();  ++p) {
-    Label* current = p->second;
-    if (current->index_ != Label::kNoIndex)
-      NOTREACHED();
-    current->index_ = index;
-    ++index;
-  }
-}
-
-// AssignRemainingIndexes assigns indexes to any addresses (labels) that are not
-// yet assigned an index.
-void AssemblyProgram::AssignRemainingIndexes(RVAToLabel* labels) {
-  // An address table compresses best when each index is associated with an
-  // address that is slight larger than the previous index.
-
-  // First see which indexes have not been used.  The 'available' vector could
-  // grow even bigger, but the number of addresses is a better starting size
-  // than empty.
-  std::vector<bool> available(labels->size(), true);
-  int used = 0;
-
-  for (RVAToLabel::iterator p = labels->begin();  p != labels->end();  ++p) {
-    int index = p->second->index_;
-    if (index != Label::kNoIndex) {
-      while (static_cast<size_t>(index) >= available.size())
-        available.push_back(true);
-      available.at(index) = false;
-      ++used;
-    }
-  }
-
-  VLOG(1) << used << " of " << labels->size() << " labels pre-assigned";
-
-  // Are there any unused labels that happen to be adjacent following a used
-  // label?
-  int fill_forward_count = 0;
-  Label* prev = 0;
-  for (RVAToLabel::iterator p = labels->begin();  p != labels->end();  ++p) {
-    Label* current = p->second;
-    if (current->index_ == Label::kNoIndex) {
-      int index = 0;
-      if (prev  &&  prev->index_ != Label::kNoIndex)
-        index = prev->index_ + 1;
-      if (index < static_cast<int>(available.size()) && available.at(index)) {
-        current->index_ = index;
-        available.at(index) = false;
-        ++fill_forward_count;
-      }
-    }
-    prev = current;
-  }
-
-  // Are there any unused labels that happen to be adjacent preceeding a used
-  // label?
-  int fill_backward_count = 0;
-  prev = 0;
-  for (RVAToLabel::reverse_iterator p = labels->rbegin();
-       p != labels->rend();
-       ++p) {
-    Label* current = p->second;
-    if (current->index_ == Label::kNoIndex) {
-      int prev_index;
-      if (prev)
-        prev_index = prev->index_;
-      else
-        prev_index = static_cast<uint32_t>(available.size());
-      if (prev_index != 0  &&
-          prev_index != Label::kNoIndex  &&
-          available.at(prev_index - 1)) {
-        current->index_ = prev_index - 1;
-        available.at(current->index_) = false;
-        ++fill_backward_count;
-      }
-    }
-    prev = current;
-  }
-
-  // Fill in any remaining indexes
-  int fill_infill_count = 0;
-  int index = 0;
-  for (RVAToLabel::iterator p = labels->begin();  p != labels->end();  ++p) {
-    Label* current = p->second;
-    if (current->index_ == Label::kNoIndex) {
-      while (!available.at(index)) {
-        ++index;
-      }
-      current->index_ = index;
-      available.at(index) = false;
-      ++index;
-      ++fill_infill_count;
-    }
-  }
-
-  VLOG(1) << "  fill forward " << fill_forward_count
-          << "  backward " << fill_backward_count
-          << "  infill " << fill_infill_count;
 }
 
 std::unique_ptr<EncodedProgram> AssemblyProgram::Encode() const {

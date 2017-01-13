@@ -5,7 +5,6 @@
 #ifndef COURGETTE_DISASSEMBLER_H_
 #define COURGETTE_DISASSEMBLER_H_
 
-#include <stddef.h>
 #include <stdint.h>
 
 #include <vector>
@@ -55,13 +54,17 @@ class Disassembler : public AddressTranslator {
   virtual ~Disassembler();
 
   // AddressTranslator interfaces.
-  virtual RVA FileOffsetToRVA(FileOffset file_offset) const override = 0;
-  virtual FileOffset RVAToFileOffset(RVA rva) const override = 0;
+  RVA FileOffsetToRVA(FileOffset file_offset) const override = 0;
+  FileOffset RVAToFileOffset(RVA rva) const override = 0;
   const uint8_t* FileOffsetToPointer(FileOffset file_offset) const override;
   const uint8_t* RVAToPointer(RVA rva) const override;
-  RVA PointerToTargetRVA(const uint8_t* p) const = 0;
+  RVA PointerToTargetRVA(const uint8_t* p) const override = 0;
 
   virtual ExecutableType kind() const = 0;
+
+  // Returns the preferred image base address. Using uint64_t to accommodate the
+  // general case of 64-bit architectures.
+  virtual uint64_t image_base() const = 0;
 
   // Returns a caller-owned new RvaVisitor to iterate through abs32 target RVAs.
   virtual RvaVisitor* CreateAbs32TargetRvaVisitor() = 0;

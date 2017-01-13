@@ -10,10 +10,8 @@
 
 #include <map>
 #include <memory>
-#include <set>
-#include <vector>
 
-#include "base/bind.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/free_deleter.h"
 #include "courgette/courgette.h"
@@ -132,12 +130,10 @@ class AssemblyProgram {
   using InstructionGenerator =
       base::Callback<CheckBool(AssemblyProgram*, InstructionReceptor*)>;
 
-  explicit AssemblyProgram(ExecutableType kind);
+  AssemblyProgram(ExecutableType kind, uint64_t image_base);
   ~AssemblyProgram();
 
   ExecutableType kind() const { return kind_; }
-
-  void set_image_base(uint64_t image_base) { image_base_ = image_base; }
 
   // Traverses RVAs in |abs32_visitor| and |rel32_visitor| to precompute Labels.
   void PrecomputeLabels(RvaVisitor* abs32_visitor, RvaVisitor* rel32_visitor);
@@ -212,8 +208,6 @@ class AssemblyProgram {
   using ScopedInstruction =
       std::unique_ptr<Instruction, UncheckedDeleter<Instruction>>;
 
-  ExecutableType kind_;
-
   CheckBool Emit(ScopedInstruction instruction) WARN_UNUSED_RESULT;
   CheckBool EmitShared(Instruction* instruction) WARN_UNUSED_RESULT;
 
@@ -222,16 +216,13 @@ class AssemblyProgram {
   // Looks up a label or creates a new one.  Might return NULL.
   Label* FindLabel(RVA rva, RVAToLabel* labels);
 
-  // Helper methods for the public versions.
-  static void UnassignIndexes(RVAToLabel* labels);
-  static void DefaultAssignIndexes(RVAToLabel* labels);
-  static void AssignRemainingIndexes(RVAToLabel* labels);
-
   // Sharing instructions that emit a single byte saves a lot of space.
   Instruction* GetByteInstruction(uint8_t byte);
-  std::unique_ptr<Instruction* [], base::FreeDeleter> byte_instruction_cache_;
 
-  uint64_t image_base_;  // Desired or mandated base address of image.
+  const ExecutableType kind_;
+  const uint64_t image_base_;  // Desired or mandated base address of image.
+
+  std::unique_ptr<Instruction* [], base::FreeDeleter> byte_instruction_cache_;
 
   InstructionVector instructions_;  // All the instructions in program.
 

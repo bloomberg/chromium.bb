@@ -104,8 +104,9 @@ class DisassemblerElf32 : public Disassembler {
   FileOffset RVAToFileOffset(RVA rva) const override;
   RVA PointerToTargetRVA(const uint8_t* p) const override;
   ExecutableType kind() const override = 0;
+  uint64_t image_base() const override { return 0; }
   bool ParseHeader() override;
-  bool Disassemble(AssemblyProgram* target) override;
+  bool Disassemble(AssemblyProgram* program) override;
 
   virtual e_machine_values ElfEM() const = 0;
 

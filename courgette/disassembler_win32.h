@@ -31,9 +31,10 @@ class DisassemblerWin32 : public Disassembler {
   RVA FileOffsetToRVA(FileOffset file_offset) const override;
   FileOffset RVAToFileOffset(RVA rva) const override;
   ExecutableType kind() const override = 0;
+  uint64_t image_base() const override { return image_base_; }
   RVA PointerToTargetRVA(const uint8_t* p) const override = 0;
   bool ParseHeader() override;
-  bool Disassemble(AssemblyProgram* target) override;
+  bool Disassemble(AssemblyProgram* program) override;
 
   // Exposed for test purposes
   bool has_text_section() const { return has_text_section_; }
@@ -92,10 +93,6 @@ class DisassemblerWin32 : public Disassembler {
   void HistogramTargets(const char* kind, const std::map<RVA, int>& map) const;
 #endif
 
-  // Most addresses are represented as 32-bit RVAs. The one address we can't
-  // do this with is the image base address.
-  uint64_t image_base() const { return image_base_; }
-
   const ImageDataDirectory& base_relocation_table() const {
     return base_relocation_table_;
   }
@@ -130,7 +127,7 @@ class DisassemblerWin32 : public Disassembler {
   RVA base_of_code_ = 0;
   RVA base_of_data_ = 0;
 
-  uint64_t image_base_ = 0;  // Range limited to 32 bits for 32 bit executable
+  uint64_t image_base_ = 0;  // Range limited to 32 bits for 32 bit executable.
   uint32_t size_of_image_ = 0;
   int number_of_data_directories_ = 0;
 

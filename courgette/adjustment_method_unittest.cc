@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/strings/string_util.h"
+#include "base/memory/ptr_util.h"
 #include "courgette/assembly_program.h"
 #include "courgette/courgette.h"
 #include "courgette/encoded_program.h"
@@ -35,8 +35,7 @@ class AdjustmentMethodTest : public testing::Test {
   // Returns one of two similar simple programs. These differ only in Label
   // assignment, so it is possible to make them look identical.
   std::unique_ptr<AssemblyProgram> MakeProgram(int kind) const {
-    std::unique_ptr<AssemblyProgram> prog(new AssemblyProgram(EXE_WIN_32_X86));
-    prog->set_image_base(0x00400000);
+    auto prog = base::MakeUnique<AssemblyProgram>(EXE_WIN_32_X86, 0x00400000);
 
     RVA kRvaA = 0x00410000;
     RVA kRvaB = 0x00410004;

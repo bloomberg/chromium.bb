@@ -4,9 +4,6 @@
 
 #include "courgette/disassembler_win32.h"
 
-#include <stddef.h>
-#include <stdint.h>
-
 #include <algorithm>
 
 #include "base/bind.h"
@@ -224,26 +221,24 @@ bool DisassemblerWin32::ParseHeader() {
   return Good();
 }
 
-bool DisassemblerWin32::Disassemble(AssemblyProgram* target) {
+bool DisassemblerWin32::Disassemble(AssemblyProgram* program) {
   if (!ok())
     return false;
-
-  target->set_image_base(image_base());
 
   if (!ParseAbs32Relocs())
     return false;
 
   ParseRel32RelocsFromSections();
 
-  PrecomputeLabels(target);
-  RemoveUnusedRel32Locations(target);
+  PrecomputeLabels(program);
+  RemoveUnusedRel32Locations(program);
 
-  if (!target->GenerateInstructions(
+  if (!program->GenerateInstructions(
           base::Bind(&DisassemblerWin32::ParseFile, base::Unretained(this)))) {
     return false;
   }
 
-  target->DefaultAssignIndexes();
+  program->DefaultAssignIndexes();
   return true;
 }
 

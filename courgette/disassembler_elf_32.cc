@@ -6,7 +6,6 @@
 
 #include <algorithm>
 #include <iterator>
-#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -164,12 +163,9 @@ bool DisassemblerElf32::ParseHeader() {
   return Good();
 }
 
-bool DisassemblerElf32::Disassemble(AssemblyProgram* target) {
+bool DisassemblerElf32::Disassemble(AssemblyProgram* program) {
   if (!ok())
     return false;
-
-  // The Image Base is always 0 for ELF Executables
-  target->set_image_base(0);
 
   if (!ParseAbs32Relocs())
     return false;
@@ -177,10 +173,10 @@ bool DisassemblerElf32::Disassemble(AssemblyProgram* target) {
   if (!ParseRel32RelocsFromSections())  // Does not sort rel32 locations.
     return false;
 
-  PrecomputeLabels(target);
-  RemoveUnusedRel32Locations(target);
+  PrecomputeLabels(program);
+  RemoveUnusedRel32Locations(program);
 
-  if (!target->GenerateInstructions(
+  if (!program->GenerateInstructions(
           base::Bind(&DisassemblerElf32::ParseFile, base::Unretained(this)))) {
     return false;
   }
@@ -192,7 +188,7 @@ bool DisassemblerElf32::Disassemble(AssemblyProgram* target) {
   DCHECK(rel32_locations_.empty() ||
          rel32_locations_.back()->rva() != kUnassignedRVA);
 
-  target->DefaultAssignIndexes();
+  program->DefaultAssignIndexes();
   return true;
 }
 
