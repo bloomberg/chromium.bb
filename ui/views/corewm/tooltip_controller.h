@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
+#include "ui/aura/client/cursor_client_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/point.h"
@@ -31,9 +32,11 @@ class TooltipControllerTestHelper;
 }  // namespace test
 
 // TooltipController provides tooltip functionality for aura.
-class VIEWS_EXPORT TooltipController : public aura::client::TooltipClient,
-                                       public ui::EventHandler,
-                                       public aura::WindowObserver {
+class VIEWS_EXPORT TooltipController
+    : public aura::client::TooltipClient,
+      public ui::EventHandler,
+      public aura::client::CursorClientObserver,
+      public aura::WindowObserver {
  public:
   explicit TooltipController(std::unique_ptr<Tooltip> tooltip);
   ~TooltipController() override;
@@ -50,15 +53,20 @@ class VIEWS_EXPORT TooltipController : public aura::client::TooltipClient,
   void OnTouchEvent(ui::TouchEvent* event) override;
   void OnCancelMode(ui::CancelModeEvent* event) override;
 
+  // Overridden from aura::client::CursorClientObserver.
+  void OnCursorVisibilityChanged(bool is_visible) override;
+
   // Overridden from aura::WindowObserver.
   void OnWindowDestroyed(aura::Window* window) override;
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
 
   const gfx::Point& mouse_location() const { return curr_mouse_loc_; }
 
  private:
   friend class test::TooltipControllerTestHelper;
 
-  void TooltipTimerFired();
   void TooltipShownTimerFired();
 
   // Updates the tooltip if required (if there is any change in the tooltip
@@ -89,8 +97,6 @@ class VIEWS_EXPORT TooltipController : public aura::client::TooltipClient,
   base::string16 tooltip_text_at_mouse_press_;
 
   std::unique_ptr<Tooltip> tooltip_;
-
-  base::RepeatingTimer tooltip_timer_;
 
   // Timer to timeout the life of an on-screen tooltip. We hide the tooltip when
   // this timer fires.
