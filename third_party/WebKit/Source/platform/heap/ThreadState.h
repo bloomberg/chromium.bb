@@ -125,8 +125,6 @@ class PLATFORM_EXPORT ThreadState {
     FullGCScheduled,
     PageNavigationGCScheduled,
     GCRunning,
-    EagerSweepScheduled,
-    LazySweepScheduled,
     Sweeping,
     SweepingAndIdleGCScheduled,
     SweepingAndPreciseGCScheduled,
@@ -247,30 +245,22 @@ class PLATFORM_EXPORT ThreadState {
 
   // A GC runs in the following sequence.
   //
-  // 1) All threads park at safe points.
-  // 2) The GCing thread calls preGC() for all ThreadStates.
-  // 3) The GCing thread calls ThreadHeap::collectGarbage().
-  //    This does marking but doesn't do sweeping.
-  // 4) The GCing thread calls postGC() for all ThreadStates.
-  // 5) The GCing thread resume all threads.
-  // 6) Each thread calls preSweep().
-  // 7) Each thread runs lazy sweeping (concurrently with sweepings
-  //    in other threads) and eventually calls completeSweep().
-  // 8) Each thread calls postSweep().
+  // 1) preGC() is called.
+  // 2) ThreadHeap::collectGarbage() is called. This marks live objects.
+  // 3) postGC() is called. This does thread-local weak processing,
+  //    pre-finalization, eager sweeping and heap compaction.
+  // 4) Lazy sweeping sweeps heaps incrementally. completeSweep() may be called
+  //    to complete the sweeping.
+  // 5) postSweep() is called.
   //
   // Notes:
-  // - We stop the world between 1) and 5).
-  // - isInGC() returns true between 2) and 4).
-  // - isSweepingInProgress() returns true between 6) and 7).
-  // - It is valid that the next GC is scheduled while some thread
-  //   has not yet completed its lazy sweeping of the last GC.
-  //   In this case, the next GC just cancels the remaining lazy sweeping.
-  //   Specifically, preGC() of the next GC calls makeConsistentForGC()
-  //   and it marks all not-yet-swept objets as dead.
+  // - The world is stopped between 1) and 3).
+  // - isInGC() returns true between 1) and 3).
+  // - isSweepingInProgress() returns true while any sweeping operation is
+  //   running.
   void makeConsistentForGC();
   void preGC();
   void postGC(BlinkGC::GCType);
-  void preSweep();
   void completeSweep();
   void postSweep();
   // makeConsistentForMutator() drops marks from marked objects and rebuild

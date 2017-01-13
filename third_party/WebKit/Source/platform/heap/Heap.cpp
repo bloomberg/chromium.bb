@@ -600,7 +600,6 @@ size_t ThreadHeap::objectPayloadSizeForTesting() {
     state->setGCState(ThreadState::GCRunning);
     state->makeConsistentForGC();
     objectPayloadSize += state->objectPayloadSizeForTesting();
-    state->setGCState(ThreadState::EagerSweepScheduled);
     state->setGCState(ThreadState::Sweeping);
     state->setGCState(ThreadState::NoGCScheduled);
   }
