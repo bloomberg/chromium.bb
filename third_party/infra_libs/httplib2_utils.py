@@ -15,6 +15,7 @@ import time
 import httplib2
 import oauth2client.client
 
+from googleapiclient import errors
 from infra_libs.ts_mon.common import http_metrics
 
 DEFAULT_SCOPES = ['email']
@@ -161,6 +162,59 @@ def get_authenticated_http(credentials_filename,
     http = httplib2.Http(timeout=timeout)
   return creds.authorize(http)
 
+class RetriableHttp(object):
+  """A httplib2.Http object that retries on failure."""
+
+  def __init__(self, http, max_tries=5, backoff_time=1,
+               retrying_statuses_fn=None):
+    """
+    Args:
+      http: an httplib2.Http instance
+      max_tries: a number of maximum tries
+      backoff_time: a number of seconds to sleep between retries
+      retrying_statuses_fn: a function that returns True if a given status
+                            should be retried
+    """
+    self._http = http
+    self._max_tries = max_tries
+    self._backoff_time = backoff_time
+    self._retrying_statuses_fn = retrying_statuses_fn or \
+                                 set(range(500,599)).__contains__
+
+  def request(self, uri, method='GET', body=None, *args, **kwargs):
+    for i in range(1, self._max_tries + 1):
+      try:
+        response, content = self._http.request(uri, method, body, *args,
+                                               **kwargs)
+
+        if self._retrying_statuses_fn(response.status):
+          logging.info('RetriableHttp: attempt %d receiving status %d, %s',
+                       i, response.status,
+                       'final attempt' if i == self._max_tries else \
+                       'will retry')
+        else:
+          break
+      except (ValueError, errors.Error,
+              socket.timeout, socket.error, socket.herror, socket.gaierror,
+              httplib2.HttpLib2Error) as error:
+        logging.info('RetriableHttp: attempt %d received exception: %s, %s',
+                     i, error, 'final attempt' if i == self._max_tries else \
+                     'will retry')
+        if i == self._max_tries:
+          raise
+      time.sleep(self._backoff_time)
+
+    return response, content
+
+  def __getattr__(self, name):
+    return getattr(self._http, name)
+
+  def __setattr__(self, name, value):
+    if name in ('request', '_http', '_max_tries', '_backoff_time',
+                '_retrying_statuses_fn'):
+      self.__dict__[name] = value
+    else:
+      setattr(self._http, name, value)
 
 class InstrumentedHttp(httplib2.Http):
   """A httplib2.Http object that reports ts_mon metrics about its requests."""
@@ -199,7 +253,7 @@ class InstrumentedHttp(httplib2.Http):
     except socket.timeout:
       self._update_metrics(http_metrics.STATUS_TIMEOUT, start_time)
       raise
-    except socket.error:
+    except (socket.error, socket.herror, socket.gaierror):
       self._update_metrics(http_metrics.STATUS_ERROR, start_time)
       raise
     except httplib2.HttpLib2Error:
