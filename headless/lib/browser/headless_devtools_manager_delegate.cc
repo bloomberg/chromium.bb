@@ -93,16 +93,16 @@ base::DictionaryValue* HeadlessDevToolsManagerDelegate::HandleCommand(
 
   int id;
   std::string method;
-  const base::DictionaryValue* params = nullptr;
   if (!command->GetInteger("id", &id) ||
-      !command->GetString("method", &method) ||
-      !command->GetDictionary("params", &params)) {
+      !command->GetString("method", &method)) {
     return nullptr;
   }
   auto find_it = command_map_.find(method);
   if (find_it == command_map_.end())
     return nullptr;
   CommandMemberFnPtr command_fn_ptr = find_it->second;
+  const base::DictionaryValue* params = nullptr;
+  command->GetDictionary("params", &params);
   std::unique_ptr<base::DictionaryValue> cmd_result(
       ((this)->*command_fn_ptr)(id, params));
   return cmd_result.release();
@@ -127,7 +127,8 @@ HeadlessDevToolsManagerDelegate::CreateTarget(
   std::string browser_context_id;
   int width = browser_->options()->window_size.width();
   int height = browser_->options()->window_size.height();
-  params->GetString("url", &url);
+  if (!params || !params->GetString("url", &url))
+    return CreateInvalidParamResponse(command_id, "url");
   params->GetString("browserContextId", &browser_context_id);
   params->GetInteger("width", &width);
   params->GetInteger("height", &height);
@@ -167,7 +168,7 @@ HeadlessDevToolsManagerDelegate::CloseTarget(
     int command_id,
     const base::DictionaryValue* params) {
   std::string target_id;
-  if (!params->GetString("targetId", &target_id))
+  if (!params || !params->GetString("targetId", &target_id))
     return CreateInvalidParamResponse(command_id, "targetId");
   HeadlessWebContents* web_contents =
       browser_->GetWebContentsForDevToolsAgentHostId(target_id);
@@ -203,7 +204,7 @@ HeadlessDevToolsManagerDelegate::DisposeBrowserContext(
     int command_id,
     const base::DictionaryValue* params) {
   std::string browser_context_id;
-  if (!params->GetString("browserContextId", &browser_context_id))
+  if (!params || !params->GetString("browserContextId", &browser_context_id))
     return CreateInvalidParamResponse(command_id, "browserContextId");
   HeadlessBrowserContext* context =
       browser_->GetBrowserContextForId(browser_context_id);
