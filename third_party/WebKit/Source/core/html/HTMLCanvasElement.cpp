@@ -112,7 +112,8 @@ const int MaxGlobalGPUMemoryUsage =
 const int UndefinedQualityValue = -1.0;
 
 sk_sp<SkImage> createTransparentSkImage(const IntSize& size) {
-  DCHECK(ImageBuffer::canCreateImageBuffer(size));
+  if (!ImageBuffer::canCreateImageBuffer(size))
+    return nullptr;
   sk_sp<SkSurface> surface =
       SkSurface::MakeRasterN32Premul(size.width(), size.height());
   return surface ? surface->makeImageSnapshot() : nullptr;
