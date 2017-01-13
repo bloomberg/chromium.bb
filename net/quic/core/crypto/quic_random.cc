@@ -4,7 +4,6 @@
 
 #include "net/quic/core/crypto/quic_random.h"
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "crypto/random.h"

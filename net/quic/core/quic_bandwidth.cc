@@ -7,7 +7,6 @@
 #include <cinttypes>
 #include <limits>
 
-#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "net/quic/core/quic_constants.h"
 #include "net/quic/core/quic_time.h"

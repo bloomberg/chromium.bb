@@ -22,6 +22,7 @@
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_session.h"
+#include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/failing_proof_source.h"
@@ -335,7 +336,7 @@ TEST_P(QuicCryptoServerStreamTest, ZeroRTT) {
   AdvanceHandshakeWithFakeClient();
 
   // Now do another handshake, hopefully in 0-RTT.
-  DVLOG(1) << "Resetting for 0-RTT handshake attempt";
+  QUIC_LOG(INFO) << "Resetting for 0-RTT handshake attempt";
   InitializeFakeClient(/* supports_stateless_rejects= */ false);
   InitializeServer();
 
