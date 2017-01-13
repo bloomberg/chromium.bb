@@ -239,6 +239,7 @@ TestRenderViewHost::TestRenderViewHost(
                          swapped_out,
                          false /* has_initialized_audio_host */),
       delete_counter_(nullptr),
+      webkit_preferences_changed_counter_(nullptr),
       opener_frame_route_id_(MSG_ROUTING_NONE) {
   // TestRenderWidgetHostView installs itself into this->view_ in its
   // constructor, and deletes itself when TestRenderWidgetHostView::Destroy() is
@@ -292,6 +293,12 @@ void TestRenderViewHost::SimulateWasShown() {
 
 WebPreferences TestRenderViewHost::TestComputeWebkitPrefs() {
   return ComputeWebkitPrefs();
+}
+
+void TestRenderViewHost::OnWebkitPreferencesChanged() {
+  RenderViewHostImpl::OnWebkitPreferencesChanged();
+  if (webkit_preferences_changed_counter_)
+    ++*webkit_preferences_changed_counter_;
 }
 
 void TestRenderViewHost::TestOnStartDragging(

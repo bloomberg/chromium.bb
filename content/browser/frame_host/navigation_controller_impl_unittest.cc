@@ -1647,6 +1647,48 @@ TEST_F(NavigationControllerTest, RedirectsAreNotResetByCommit) {
   EXPECT_EQ(url2, committed_entry->GetRedirectChain()[0]);
 }
 
+// Tests that webkit preferences are updated when user agent override changes.
+TEST_F(NavigationControllerTest, GoBackWithUserAgentOverrideChange) {
+  NavigationControllerImpl& controller = controller_impl();
+
+  // Set up a simple NavigationEntry stack of two pages.
+  const GURL url1("http://foo/1");
+  const GURL url2("http://foo/2");
+
+  controller.LoadURL(url1, Referrer(), ui::PAGE_TRANSITION_TYPED,
+                     std::string());
+  int entry_id = controller.GetPendingEntry()->GetUniqueID();
+  EXPECT_FALSE(controller.GetPendingEntry()->GetIsOverridingUserAgent());
+  main_test_rfh()->PrepareForCommit();
+  main_test_rfh()->SendNavigate(entry_id, true, url1);
+
+  controller.LoadURL(url2, Referrer(), ui::PAGE_TRANSITION_TYPED,
+                     std::string());
+  entry_id = controller.GetPendingEntry()->GetUniqueID();
+  EXPECT_FALSE(controller.GetPendingEntry()->GetIsOverridingUserAgent());
+  main_test_rfh()->PrepareForCommit();
+  main_test_rfh()->SendNavigate(entry_id, true, url2);
+
+  // Simulate the behavior of "Request Desktop Site" being checked in
+  // NavigationControllerAndroid::SetUseDesktopUserAgent.
+  controller.GetVisibleEntry()->SetIsOverridingUserAgent(true);
+  controller.Reload(ReloadType::ORIGINAL_REQUEST_URL, true);
+  EXPECT_TRUE(controller.GetLastCommittedEntry()->GetIsOverridingUserAgent());
+
+  // Test that OnWebkitPreferencesChanged is called when going back to propagate
+  // change in viewport_meta WebSetting.
+  int change_counter = 0;
+  test_rvh()->set_webkit_preferences_changed_counter(&change_counter);
+
+  controller.GoBack();
+  entry_id = controller.GetPendingEntry()->GetUniqueID();
+  EXPECT_FALSE(controller.GetPendingEntry()->GetIsOverridingUserAgent());
+  main_test_rfh()->PrepareForCommit();
+  main_test_rfh()->SendNavigate(entry_id, false, url1);
+
+  EXPECT_EQ(1, change_counter);
+}
+
 // Tests what happens when we navigate back successfully
 TEST_F(NavigationControllerTest, Back) {
   NavigationControllerImpl& controller = controller_impl();

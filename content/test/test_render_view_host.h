@@ -204,6 +204,12 @@ class TestRenderViewHost
     delete_counter_ = delete_counter;
   }
 
+  // If set, *webkit_preferences_changed_counter is incremented when
+  // OnWebkitPreferencesChanged() is called.
+  void set_webkit_preferences_changed_counter(int* counter) {
+    webkit_preferences_changed_counter_ = counter;
+  }
+
   // The opener frame route id passed to CreateRenderView().
   int opener_frame_route_id() const { return opener_frame_route_id_; }
 
@@ -221,6 +227,7 @@ class TestRenderViewHost
                         int proxy_route_id,
                         const FrameReplicationState& replicated_frame_state,
                         bool window_was_created_with_opener) override;
+  void OnWebkitPreferencesChanged() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, FilterNavigate);
@@ -241,6 +248,9 @@ class TestRenderViewHost
 
   // See set_delete_counter() above. May be NULL.
   int* delete_counter_;
+
+  // See set_webkit_preferences_changed_counter() above. May be NULL.
+  int* webkit_preferences_changed_counter_;
 
   // See opener_frame_route_id() above.
   int opener_frame_route_id_;

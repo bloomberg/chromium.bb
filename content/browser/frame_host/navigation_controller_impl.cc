@@ -803,9 +803,14 @@ bool NavigationControllerImpl::RendererDidNavigate(
   is_initial_navigation_ = false;
 
   // Save the previous state before we clobber it.
+  bool overriding_user_agent_changed = false;
   if (GetLastCommittedEntry()) {
     details->previous_url = GetLastCommittedEntry()->GetURL();
     details->previous_entry_index = GetLastCommittedEntryIndex();
+    if (pending_entry_ &&
+        pending_entry_->GetIsOverridingUserAgent() !=
+            GetLastCommittedEntry()->GetIsOverridingUserAgent())
+      overriding_user_agent_changed = true;
   } else {
     details->previous_url = GURL();
     details->previous_entry_index = -1;
@@ -952,6 +957,9 @@ bool NavigationControllerImpl::RendererDidNavigate(
   details->http_status_code = params.http_status_code;
 
   NotifyNavigationEntryCommitted(details);
+
+  if (overriding_user_agent_changed)
+    delegate_->UpdateOverridingUserAgent();
 
   // Update the nav_entry_id for each RenderFrameHost in the tree, so that each
   // one knows the latest NavigationEntry it is showing (whether it has
