@@ -328,21 +328,22 @@ void BaseResourceThrottle::StartDisplayingBlockingPage(
       using subresource_filter::ContentSubresourceFilterDriverFactory;
       ContentSubresourceFilterDriverFactory* driver_factory =
           ContentSubresourceFilterDriverFactory::FromWebContents(web_contents);
-      DCHECK(driver_factory);
-
-      // For a redirect chain of A -> B -> C, the subresource filter expects C
-      // as the resource URL and [A, B] as redirect URLs.
-      std::vector<GURL> redirect_parent_urls;
-      if (!resource.redirect_urls.empty()) {
-        redirect_parent_urls.push_back(resource.original_url);
-        redirect_parent_urls.insert(redirect_parent_urls.end(),
-                                    resource.redirect_urls.begin(),
-                                    std::prev(resource.redirect_urls.end()));
+      // Content embedders (such as Android Webview) does not have a
+      // driver_factory.
+      if (driver_factory) {
+        // For a redirect chain of A -> B -> C, the subresource filter expects C
+        // as the resource URL and [A, B] as redirect URLs.
+        std::vector<GURL> redirect_parent_urls;
+        if (!resource.redirect_urls.empty()) {
+          redirect_parent_urls.push_back(resource.original_url);
+          redirect_parent_urls.insert(redirect_parent_urls.end(),
+                                      resource.redirect_urls.begin(),
+                                      std::prev(resource.redirect_urls.end()));
+        }
+        driver_factory->OnMainResourceMatchedSafeBrowsingBlacklist(
+            resource.url, redirect_parent_urls, resource.threat_type,
+            resource.threat_metadata.threat_pattern_type);
       }
-
-      driver_factory->OnMainResourceMatchedSafeBrowsingBlacklist(
-          resource.url, redirect_parent_urls, resource.threat_type,
-          resource.threat_metadata.threat_pattern_type);
     }
 
     ui_manager->DisplayBlockingPage(resource);
