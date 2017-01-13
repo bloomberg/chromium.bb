@@ -9,6 +9,7 @@
 #include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -81,6 +82,11 @@ AppWindowLauncherItemController::Activate(ash::LaunchSource source) {
       last_active_window_ ? last_active_window_ : windows_.back();
   window_to_activate->Activate();
   return kExistingWindowActivated;
+}
+
+ash::ShelfMenuModel* AppWindowLauncherItemController::CreateApplicationMenu(
+    int event_flags) {
+  return new LauncherApplicationMenuItemModel(GetApplicationList(event_flags));
 }
 
 void AppWindowLauncherItemController::Close() {

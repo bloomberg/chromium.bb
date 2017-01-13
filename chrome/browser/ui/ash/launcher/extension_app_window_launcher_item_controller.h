@@ -31,9 +31,6 @@ class ExtensionAppWindowLauncherItemController
 
   // LauncherItemController overrides:
   ChromeLauncherAppMenuItems GetApplicationList(int event_flags) override;
-  ash::ShelfItemDelegate::PerformedAction ItemSelected(
-      const ui::Event& event) override;
-  ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) override;
 
  protected:
   // AppWindowLauncherItemController:

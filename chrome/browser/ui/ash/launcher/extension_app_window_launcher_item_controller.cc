@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_v2app.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "components/favicon/content/content_favicon_driver.h"
@@ -105,17 +104,4 @@ ExtensionAppWindowLauncherItemController::GetApplicationList(int event_flags) {
     ++index;
   }
   return items;
-}
-
-ash::ShelfItemDelegate::PerformedAction
-ExtensionAppWindowLauncherItemController::ItemSelected(const ui::Event& event) {
-  if (windows().empty())
-    return kNoAction;
-  return AppWindowLauncherItemController::ItemSelected(event);
-}
-
-ash::ShelfMenuModel*
-ExtensionAppWindowLauncherItemController::CreateApplicationMenu(
-    int event_flags) {
-  return new LauncherApplicationMenuItemModel(GetApplicationList(event_flags));
 }

@@ -50,11 +50,6 @@ ArcAppWindowLauncherItemController::ItemSelected(const ui::Event& event) {
   }
 }
 
-ash::ShelfMenuModel* ArcAppWindowLauncherItemController::CreateApplicationMenu(
-    int event_flags) {
-  return new LauncherApplicationMenuItemModel(GetApplicationList(event_flags));
-}
-
 ChromeLauncherAppMenuItems
 ArcAppWindowLauncherItemController::GetApplicationList(int event_flags) {
   ChromeLauncherAppMenuItems items =
