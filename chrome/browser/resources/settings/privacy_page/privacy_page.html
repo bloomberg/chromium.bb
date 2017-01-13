@@ -58,78 +58,94 @@
     </template>
     <settings-animated-pages id="pages" section="privacy">
       <neon-animatable route-path="default">
-        <div class="settings-box block first">
+        <div class="settings-box first">
           <p class="privacy-explanation">$i18nRaw{improveBrowsingExperience}</p>
-          <settings-toggle-button
+        </div>
+        <div class="settings-box">
+          <settings-toggle-button class="start"
               pref="{{prefs.alternate_error_pages.enabled}}"
               label="$i18n{linkDoctorPref}">
           </settings-toggle-button>
-          <settings-toggle-button
+        </div>
+        <div class="settings-box">
+          <settings-toggle-button class="start"
               pref="{{prefs.search.suggest_enabled}}"
               label="$i18n{searchSuggestPref}"
               hidden="[[!pageVisibility.searchPrediction]]">
           </settings-toggle-button>
-          <settings-toggle-button
+        </div>
+        <div class="settings-box">
+          <settings-toggle-button class="start"
               pref="{{prefs.net.network_prediction_options}}"
               label="$i18n{networkPredictionEnabled}"
               hidden="[[!pageVisibility.networkPrediction]]">
           </settings-toggle-button>
-          <div class="layout horizontal center settings-row-min-height">
-            <div class="flex">$i18n{safeBrowsingEnableExtendedReporting}</div>
-            <paper-toggle-button id="safeBrowsingExtendedReportingControl"
-                on-tap="onSafeBrowsingExtendedReportingControlTap_"
-                checked="[[safeBrowsingExtendedReportingEnabled_]]">
-            </paper-toggle-button>
-          </div>
-          <settings-toggle-button
+        </div>
+        <div class="settings-box">
+          <div class="start">$i18n{safeBrowsingEnableExtendedReporting}</div>
+          <paper-toggle-button id="safeBrowsingExtendedReportingControl"
+              on-tap="onSafeBrowsingExtendedReportingControlTap_"
+              checked="[[safeBrowsingExtendedReportingEnabled_]]">
+          </paper-toggle-button>
+        </div>
+        <div class="settings-box">
+          <settings-toggle-button class="start"
               pref="{{prefs.safebrowsing.enabled}}"
               label="$i18n{safeBrowsingEnableProtection}">
           </settings-toggle-button>
+        </div>
 <if expr="_google_chrome">
 <if expr="chromeos">
-          <settings-toggle-button
+        <div class="settings-box">
+          <settings-toggle-button class="start"
               pref="{{prefs.cros.metrics.reportingEnabled}}"
               label="$i18n{enableLogging}">
           </settings-toggle-button>
+        </div>
 </if><!-- chromeos -->
 <if expr="not chromeos">
-          <div class="layout horizontal center settings-row-min-height">
-            <div class="flex">$i18n{enableLogging}</div>
-            <template is="dom-if" if="[[showRestart_]]" restamp>
-              <paper-button on-tap="onRestartTap_" id="restart">
-                $i18n{restart}
-              </paper-button>
-            </template>
-            <template is="dom-if" if="[[metricsReporting_.managed]]" restamp>
-              <iron-icon id="indicator" tabindex=0 icon="cr:domain"></iron-icon>
-              <paper-tooltip for="indicator" position="top"
-                  fit-to-visible-bounds>
-                $i18n{controlledSettingPolicy}
-              </paper-tooltip>
-            </template>
-            <paper-toggle-button id="metricsReportingControl"
-                on-tap="onMetricsReportingControlTap_"
-                checked="[[metricsReporting_.enabled]]"
-                disabled="[[metricsReporting_.managed]]">
-            </paper-toggle-button>
-          </div>
+        <div class="settings-box">
+          <div class="start">$i18n{enableLogging}</div>
+          <template is="dom-if" if="[[showRestart_]]" restamp>
+            <paper-button on-tap="onRestartTap_" id="restart">
+              $i18n{restart}
+            </paper-button>
+          </template>
+          <template is="dom-if" if="[[metricsReporting_.managed]]" restamp>
+            <iron-icon id="indicator" tabindex=0 icon="cr:domain"></iron-icon>
+            <paper-tooltip for="indicator" position="top"
+                fit-to-visible-bounds>
+              $i18n{controlledSettingPolicy}
+            </paper-tooltip>
+          </template>
+          <paper-toggle-button id="metricsReportingControl"
+              on-tap="onMetricsReportingControlTap_"
+              checked="[[metricsReporting_.enabled]]"
+              disabled="[[metricsReporting_.managed]]">
+          </paper-toggle-button>
+        </div>
 </if><!-- not chromeos -->
 </if><!-- _google_chrome -->
-          <settings-toggle-button
+        <div class="settings-box">
+          <settings-toggle-button class="start"
               pref="{{prefs.enable_do_not_track}}"
               label="$i18n{doNotTrack}">
           </settings-toggle-button>
+        </div>
 <if expr="chromeos">
-          <settings-toggle-button
+        <div class="settings-box">
+          <settings-toggle-button class="start"
               pref="{{prefs.cros.device.attestation_for_content_protection_enabled}}"
               label="$i18n{enableContentProtectionAttestation}">
           </settings-toggle-button>
-          <settings-toggle-button
+        </div>
+        <div class="settings-box">
+          <settings-toggle-button class="start"
               pref="{{prefs.settings.internet.wake_on_wifi_darkconnect}}"
               label="$i18n{wakeOnWifi}">
           </settings-toggle-button>
-</if>
         </div>
+</if>
 <if expr="_google_chrome">
         <div class="settings-box two-line">
           <settings-toggle-button class="start"
@@ -143,7 +159,7 @@
         <div id="manageCertificates" class="settings-box two-line"
             actionable on-tap="onManageCertificatesTap_">
           <div class="start">
-            <div>$i18n{manageCertificates}</div>
+            $i18n{manageCertificates}
             <div class="secondary">$i18n{manageCertificatesDescription}</div>
           </div>
 <if expr="use_nss_certs">
@@ -158,7 +174,7 @@
             class="settings-box two-line" actionable
             on-tap="onSiteSettingsTap_">
           <div class="start">
-            <div>[[siteSettingsPageTitle_()]]</div>
+            [[siteSettingsPageTitle_()]]
             <div class="secondary">$i18n{siteSettingsDescription}</div>
           </div>
           <button class="subpage-arrow" is="paper-icon-button-light"></button>
