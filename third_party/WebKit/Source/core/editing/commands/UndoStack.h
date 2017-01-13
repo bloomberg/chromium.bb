@@ -37,7 +37,6 @@
 
 namespace blink {
 
-enum class EditCommandSource;
 class LocalFrame;
 class UndoStep;
 
@@ -53,8 +52,8 @@ class UndoStack final : public GarbageCollected<UndoStack> {
   void registerRedoStep(UndoStep*);
   bool canUndo() const;
   bool canRedo() const;
-  void undo(EditCommandSource);
-  void redo(EditCommandSource);
+  void undo();
+  void redo();
   void clear();
 
   DECLARE_TRACE();

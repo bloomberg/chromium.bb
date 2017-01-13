@@ -1286,16 +1286,18 @@ bool Editor::canUndo() {
   return m_undoStack->canUndo();
 }
 
-void Editor::undo(EditCommandSource source) {
-  m_undoStack->undo(source);
+// TODO(chongz): Fire 'beforeinput' for user triggered undo.
+void Editor::undo(EditCommandSource) {
+  m_undoStack->undo();
 }
 
 bool Editor::canRedo() {
   return m_undoStack->canRedo();
 }
 
-void Editor::redo(EditCommandSource source) {
-  m_undoStack->redo(source);
+// TODO(chongz): Fire 'beforeinput' for user triggered redo.
+void Editor::redo(EditCommandSource) {
+  m_undoStack->redo();
 }
 
 void Editor::setBaseWritingDirection(WritingDirection direction) {

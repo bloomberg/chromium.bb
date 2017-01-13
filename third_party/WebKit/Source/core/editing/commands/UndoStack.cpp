@@ -64,17 +64,17 @@ bool UndoStack::canRedo() const {
   return !m_redoStack.isEmpty();
 }
 
-void UndoStack::undo(EditCommandSource source) {
+void UndoStack::undo() {
   if (canUndo()) {
     UndoStepStack::iterator back = --m_undoStack.end();
     UndoStep* step(back->get());
     m_undoStack.remove(back);
-    step->unapply(source);
+    step->unapply();
     // unapply will call us back to push this command onto the redo stack.
   }
 }
 
-void UndoStack::redo(EditCommandSource source) {
+void UndoStack::redo() {
   if (canRedo()) {
     UndoStepStack::iterator back = --m_redoStack.end();
     UndoStep* step(back->get());
@@ -82,7 +82,7 @@ void UndoStack::redo(EditCommandSource source) {
 
     DCHECK(!m_inRedo);
     AutoReset<bool> redoScope(&m_inRedo, true);
-    step->reapply(source);
+    step->reapply();
     // reapply will call us back to push this command onto the undo stack.
   }
 }
