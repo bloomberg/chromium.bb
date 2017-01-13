@@ -32,6 +32,8 @@ void DeviceActiveDirectoryPolicyManager::Init(SchemaRegistry* registry) {
 
   // Does nothing if |store_| hasn't yet initialized.
   PublishPolicy();
+
+  RefreshPolicies();
 }
 
 void DeviceActiveDirectoryPolicyManager::Shutdown() {

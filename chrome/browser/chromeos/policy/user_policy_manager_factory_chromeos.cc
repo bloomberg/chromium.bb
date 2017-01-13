@@ -204,9 +204,8 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
   // has been a credential error, or if the initial session creation was not
   // completed (the oauth_token_status is not set to valid by OAuth2LoginManager
   // until profile creation/session restore is complete).
-  // TODO(tnagel): Don't limit blocking to cloud managed users.
   const bool block_forever_for_policy =
-      !is_active_directory && !user_manager->IsLoggedInAsStub() &&
+      !user_manager->IsLoggedInAsStub() &&
       (user_manager->IsCurrentUserNew() ||
        user_manager->GetActiveUser()->force_online_signin() ||
        user_manager->GetActiveUser()->oauth_token_status() !=

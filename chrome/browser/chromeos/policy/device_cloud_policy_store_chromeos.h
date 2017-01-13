@@ -31,6 +31,7 @@ namespace policy {
 
 // CloudPolicyStore implementation for device policy on Chrome OS. Policy is
 // stored/loaded via D-Bus to/from session_manager.
+// TODO(tnagel): Either drop "Cloud" from the name or refactor.
 class DeviceCloudPolicyStoreChromeOS
     : public CloudPolicyStore,
       public chromeos::DeviceSettingsService::Observer {

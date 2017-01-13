@@ -35,6 +35,8 @@ void UserActiveDirectoryPolicyManager::Init(SchemaRegistry* registry) {
 
   // Does nothing if |store_| hasn't yet initialized.
   PublishPolicy();
+
+  RefreshPolicies();
 }
 
 void UserActiveDirectoryPolicyManager::Shutdown() {
