@@ -101,7 +101,10 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_EnabledMenuButtonBorderColor:
     case ui::NativeTheme::kColorId_FocusedMenuButtonBorderColor:
     case ui::NativeTheme::kColorId_HoverMenuButtonBorderColor:
-      return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem.separator:disabled");
+      if (GtkVersionCheck(3, 20))
+        return GetBgColor("GtkMenu#menu GtkSeparator#separator");
+      else
+        return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem.separator");
 
     // Label
     case ui::NativeTheme::kColorId_LabelEnabledColor:
@@ -137,7 +140,10 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
 
     // Separator
     case ui::NativeTheme::kColorId_SeparatorColor:
-      return GetFgColor("GtkSeparator#separator.horizontal");
+      if (GtkVersionCheck(3, 20))
+        return GetBgColor("GtkSeparator#separator.horizontal");
+      else
+        return GetFgColor("GtkSeparator#separator.horizontal");
 
     // Button
     case ui::NativeTheme::kColorId_ButtonEnabledColor:

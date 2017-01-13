@@ -201,6 +201,26 @@ void ClearAuraTransientParent(GtkWidget* dialog) {
 }
 
 #if GTK_MAJOR_VERSION > 2
+bool GtkVersionCheck(int major, int minor, int micro) {
+  static int actual_major = gtk_get_major_version();
+  if (actual_major > major)
+    return true;
+  else if (actual_major < major)
+    return false;
+
+  static int actual_minor = gtk_get_minor_version();
+  if (actual_minor > minor)
+    return true;
+  else if (actual_minor < minor)
+    return false;
+
+  static int actual_micro = gtk_get_micro_version();
+  if (actual_micro >= micro)
+    return true;
+  else
+    return false;
+}
+
 ScopedStyleContext AppendNode(GtkStyleContext* context,
                               const std::string& css_node) {
   GtkWidgetPath* path =
@@ -257,8 +277,7 @@ ScopedStyleContext AppendNode(GtkStyleContext* context,
     } else {
       switch (part_type) {
         case CSS_NAME: {
-          if (gtk_get_major_version() > 3 ||
-              (gtk_get_major_version() == 3 && gtk_get_minor_version() >= 20)) {
+          if (GtkVersionCheck(3, 20)) {
             static auto* _gtk_widget_path_iter_set_object_name =
                 reinterpret_cast<void (*)(GtkWidgetPath*, gint, const char*)>(
                     dlsym(GetGtk3SharedLibrary(),

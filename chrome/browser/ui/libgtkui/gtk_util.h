@@ -68,6 +68,10 @@ aura::Window* GetAuraTransientParent(GtkWidget* dialog);
 void ClearAuraTransientParent(GtkWidget* dialog);
 
 #if GTK_MAJOR_VERSION > 2
+// Returns true iff the runtime version of Gtk used meets
+// |major|.|minor|.|micro|.
+bool GtkVersionCheck(int major, int minor = 0, int micro = 0);
+
 template <typename T>
 class ScopedGObject {
  public:
