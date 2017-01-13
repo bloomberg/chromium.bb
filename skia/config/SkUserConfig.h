@@ -264,6 +264,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 // Enabling the screenspace AA tessellating path renderer needs rebaselines.
 #define SK_DISABLE_SCREENSPACE_TESS_AA_PATH_RENDERER
 
+#ifndef    SK_SUPPORT_LEGACY_AAA
+#   define SK_SUPPORT_LEGACY_AAA
+#endif
+
 // ===== End Chrome-specific definitions =====
 
 #endif
