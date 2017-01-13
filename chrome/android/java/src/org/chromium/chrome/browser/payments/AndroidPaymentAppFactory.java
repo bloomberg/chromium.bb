@@ -25,17 +25,33 @@ public class AndroidPaymentAppFactory implements PaymentAppFactoryAddition {
             "org.chromium.intent.action.IS_READY_TO_PAY";
     private static final String METHOD_PREFIX = "https://";
 
+    /** The action name for the Pay Basic-card Intent. */
+    private static final String ACTION_PAY_BASIC_CARD = "org.chromium.intent.action.PAY_BASIC_CARD";
+
+    /**
+     * The basic-card payment method name used by merchant and defined by W3C:
+     * https://w3c.github.io/webpayments-methods-card/#method-id
+     */
+    private static final String BASIC_CARD_PAYMENT_METHOD = "basic-card";
+
     @Override
     public void create(Context context, WebContents webContents, Set<String> methods,
             PaymentAppCreatedCallback callback) {
         Map<String, AndroidPaymentApp> installedApps = new HashMap<>();
         PackageManager pm = context.getPackageManager();
-        Intent payIntent = new Intent(AndroidPaymentApp.ACTION_PAY);
+        Intent payIntent = new Intent();
 
         for (String methodName : methods) {
-            if (!methodName.startsWith(METHOD_PREFIX)) continue;
+            if (methodName.startsWith(METHOD_PREFIX)) {
+                payIntent.setAction(AndroidPaymentApp.ACTION_PAY);
+                payIntent.setData(Uri.parse(methodName));
+            } else if (methodName.equals(BASIC_CARD_PAYMENT_METHOD)) {
+                payIntent.setAction(ACTION_PAY_BASIC_CARD);
+                payIntent.setData(null);
+            } else {
+                continue;
+            }
 
-            payIntent.setData(Uri.parse(methodName));
             List<ResolveInfo> matches = pm.queryIntentActivities(payIntent, 0);
             for (int i = 0; i < matches.size(); i++) {
                 ResolveInfo match = matches.get(i);
@@ -53,8 +69,7 @@ public class AndroidPaymentAppFactory implements PaymentAppFactoryAddition {
             }
         }
 
-        List<ResolveInfo> matches =
-                pm.queryIntentServices(new Intent(ACTION_IS_READY_TO_PAY), 0);
+        List<ResolveInfo> matches = pm.queryIntentServices(new Intent(ACTION_IS_READY_TO_PAY), 0);
         for (int i = 0; i < matches.size(); i++) {
             ResolveInfo match = matches.get(i);
             String packageName = match.serviceInfo.packageName;
