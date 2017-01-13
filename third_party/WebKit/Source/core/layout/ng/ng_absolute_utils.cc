@@ -117,12 +117,13 @@ void ComputeAbsoluteHorizontal(
       margin_right = margin_space - *margin_left;
     } else {
       // Are values overconstrained?
-      if (*margin_left + *margin_right != margin_space) {
+      LayoutUnit margin_extra = margin_space - *margin_left - *margin_right;
+      if (margin_extra) {
         // Relax the end.
         if (space.Direction() == TextDirection::kLtr)
-          right = *right - *margin_left + *margin_right - margin_space;
+          right = *right + margin_extra;
         else
-          left = *left - *margin_left + *margin_right - margin_space;
+          left = *left + margin_extra;
       }
     }
   }
@@ -260,11 +261,9 @@ void ComputeAbsoluteVertical(
     } else if (!margin_bottom) {
       margin_bottom = margin_space - *margin_top;
     } else {
-      // Are values overconstrained?
-      if (*margin_top + *margin_bottom != margin_space) {
-        // Relax the end.
-        bottom = *bottom - *margin_top + *margin_bottom - margin_space;
-      }
+      LayoutUnit margin_extra = margin_space - *margin_top - *margin_bottom;
+      if (margin_extra)
+        bottom = *bottom + margin_extra;
     }
   }
 
