@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="./resources/geometry-interfaces-test-helpers.js"></script>
+<script>
+test(() => {
+  var p1 = new DOMPoint(0, 1, 3, 4);
+  var p2 = new DOMPoint(5, 6, 7, 8);
+  var p3 = new DOMPoint(9, 10, 11, 12);
+  var p4 = new DOMPoint(13, 14, 15, 16);
+  var quad =  new DOMQuad(p1, p2, p3, p4);
+  assert_dom_point_equals(quad.p1, p1);
+  assert_dom_point_equals(quad.p2, p2);
+  assert_dom_point_equals(quad.p3, p3);
+  assert_dom_point_equals(quad.p4, p4);
+}, "DOMQuad() constructor");
+
+</script>

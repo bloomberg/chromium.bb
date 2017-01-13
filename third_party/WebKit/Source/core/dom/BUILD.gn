@@ -65,6 +65,8 @@ blink_core_sources("dom") {
     "DOMPoint.h",
     "DOMPointReadOnly.cpp",
     "DOMPointReadOnly.h",
+    "DOMQuad.cpp",
+    "DOMQuad.h",
     "DOMRect.cpp",
     "DOMRect.h",
     "DOMRectReadOnly.cpp",
