@@ -345,7 +345,7 @@ bool PaintLayer::sticksToViewport() const {
                                      ->view()
                                      ->paintProperties()
                                      ->contentsProperties()
-                                     .scroll();
+                                     ->scroll();
     }
 
     return layoutObject()

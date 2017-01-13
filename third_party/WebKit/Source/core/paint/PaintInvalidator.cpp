@@ -48,13 +48,15 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(
     const LayoutObject& object,
     const FloatRect& localRect,
     const PaintInvalidatorContext& context) {
+  bool isSVGChild = object.isSVGChild();
+
   // TODO(wkorman): The flip below is required because visual rects are
   // currently in "physical coordinates with flipped block-flow direction"
   // (see LayoutBoxModelObject.h) but we need them to be in physical
   // coordinates.
   FloatRect rect = localRect;
   // Writing-mode flipping doesn't apply to non-root SVG.
-  if (!object.isSVGChild()) {
+  if (!isSVGChild) {
     if (object.isBox()) {
       toLayoutBox(object).flipForWritingMode(rect);
     } else if (!(context.forcedSubtreeInvalidationFlags &
@@ -73,7 +75,7 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(
     // In SPv2, visual rects are in the space of their local transform node.
     // For SVG, the input rect is in local SVG coordinates in which paint
     // offset doesn't apply.
-    if (!object.isSVGChild())
+    if (!isSVGChild)
       rect.moveBy(FloatPoint(object.paintOffset()));
     // Use enclosingIntRect to ensure the final visual rect will cover the
     // rect in source coordinates no matter if the painting will use pixel
@@ -91,7 +93,7 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(
   } else {
     // For non-root SVG, the input rect is in local SVG coordinates in which
     // paint offset doesn't apply.
-    if (!object.isSVGChild()) {
+    if (!isSVGChild) {
       rect.moveBy(FloatPoint(object.paintOffset()));
       // Use enclosingIntRect to ensure the final visual rect will cover the
       // rect in source coordinates no matter if the painting will use pixel
@@ -99,20 +101,23 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(
       rect = enclosingIntRect(rect);
     }
 
-    PropertyTreeState currentTreeState(
-        context.treeBuilderContext.current.transform,
-        context.treeBuilderContext.current.clip,
-        context.treeBuilderContext.currentEffect,
-        context.treeBuilderContext.current.scroll);
-    const auto* containerPaintProperties =
-        context.paintInvalidationContainer->paintProperties();
-    auto containerContentsProperties =
-        containerPaintProperties->contentsProperties();
-
-    bool success = false;
-    result = LayoutRect(geometryMapper.sourceToDestinationVisualRect(
-        rect, currentTreeState, containerContentsProperties, success));
-    DCHECK(success);
+    const auto* containerContentsProperties =
+        context.paintInvalidationContainer->paintProperties()
+            ->contentsProperties();
+    if (context.treeBuilderContext.current.transform ==
+            containerContentsProperties->transform() &&
+        context.treeBuilderContext.current.clip ==
+            containerContentsProperties->clip()) {
+      result = LayoutRect(rect);
+    } else {
+      PropertyTreeState currentTreeState(
+          context.treeBuilderContext.current.transform,
+          context.treeBuilderContext.current.clip, nullptr, nullptr);
+      bool success = false;
+      result = LayoutRect(geometryMapper.sourceToDestinationVisualRect(
+          rect, currentTreeState, *containerContentsProperties, success));
+      DCHECK(success);
+    }
 
     // Convert the result to the container's contents space.
     result.moveBy(-context.paintInvalidationContainer->paintOffset());
@@ -162,32 +167,37 @@ LayoutPoint PaintInvalidator::computeLocationInBacking(
   if (object.isText())
     return context.newVisualRect.location();
 
-  FloatPoint point;
+  LayoutPoint point;
   if (object != context.paintInvalidationContainer) {
-    point.moveBy(FloatPoint(object.paintOffset()));
+    point.moveBy(object.paintOffset());
 
-    const auto* containerPaintProperties =
-        context.paintInvalidationContainer->paintProperties();
-    auto containerContentsProperties =
-        containerPaintProperties->contentsProperties();
-
-    bool success = false;
-    point = m_geometryMapper
-                .sourceToDestinationRect(
-                    FloatRect(point, FloatSize()),
-                    context.treeBuilderContext.current.transform,
-                    containerContentsProperties.transform(), success)
-                .location();
-    DCHECK(success);
+    const auto* containerTransform =
+        context.paintInvalidationContainer->paintProperties()
+            ->contentsProperties()
+            ->transform();
+    if (context.treeBuilderContext.current.transform != containerTransform) {
+      bool success = false;
+      point = LayoutPoint(m_geometryMapper
+                              .sourceToDestinationRect(
+                                  FloatRect(FloatPoint(point), FloatSize()),
+                                  context.treeBuilderContext.current.transform,
+                                  containerTransform, success)
+                              .location());
+      DCHECK(success);
+    }
 
     // Convert the result to the container's contents space.
     point.moveBy(-context.paintInvalidationContainer->paintOffset());
   }
 
-  PaintLayer::mapPointInPaintInvalidationContainerToBacking(
-      *context.paintInvalidationContainer, point);
+  if (context.paintInvalidationContainer->layer()->groupedMapping()) {
+    FloatPoint floatPoint(point);
+    PaintLayer::mapPointInPaintInvalidationContainerToBacking(
+        *context.paintInvalidationContainer, floatPoint);
+    point = LayoutPoint(floatPoint);
+  }
 
-  return LayoutPoint(point);
+  return point;
 }
 
 void PaintInvalidator::updatePaintingLayer(const LayoutObject& object,

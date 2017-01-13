@@ -6,23 +6,25 @@
 
 namespace blink {
 
-PropertyTreeState ObjectPaintProperties::contentsProperties() const {
-  PropertyTreeState properties = *localBorderBoxProperties();
+void ObjectPaintProperties::updateContentsProperties() const {
+  DCHECK(m_localBorderBoxProperties);
+  DCHECK(!m_contentsProperties);
+
+  m_contentsProperties =
+      WTF::makeUnique<PropertyTreeState>(*m_localBorderBoxProperties);
 
   if (scrollTranslation())
-    properties.setTransform(scrollTranslation());
+    m_contentsProperties->setTransform(scrollTranslation());
 
   if (scroll())
-    properties.setScroll(scroll());
+    m_contentsProperties->setScroll(scroll());
 
   if (overflowClip())
-    properties.setClip(overflowClip());
+    m_contentsProperties->setClip(overflowClip());
   else if (cssClip())
-    properties.setClip(cssClip());
+    m_contentsProperties->setClip(cssClip());
 
   // TODO(chrishtr): cssClipFixedPosition needs to be handled somehow.
-
-  return properties;
 }
 
 }  // namespace blink

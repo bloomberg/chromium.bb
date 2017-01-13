@@ -134,7 +134,23 @@ class CORE_EXPORT ObjectPaintProperties {
   // localBorderBoxProperties but includes properties (e.g., overflow clip,
   // scroll translation) that apply to contents. This is suitable for paint
   // invalidation.
-  PropertyTreeState contentsProperties() const;
+  const PropertyTreeState* contentsProperties() const {
+    if (!m_contentsProperties) {
+      if (!m_localBorderBoxProperties)
+        return nullptr;
+      updateContentsProperties();
+    } else {
+#if DCHECK_IS_ON()
+      // Check if the cached m_contentsProperties is valid.
+      DCHECK(m_localBorderBoxProperties);
+      std::unique_ptr<PropertyTreeState> oldProperties =
+          std::move(m_contentsProperties);
+      updateContentsProperties();
+      DCHECK(*m_contentsProperties == *oldProperties);
+#endif
+    }
+    return m_contentsProperties.get();
+  };
 
   void updateLocalBorderBoxProperties(
       const TransformPaintPropertyNode* transform,
@@ -150,8 +166,12 @@ class CORE_EXPORT ObjectPaintProperties {
       m_localBorderBoxProperties = WTF::wrapUnique(new PropertyTreeState(
           PropertyTreeState(transform, clip, effect, scroll)));
     }
+    m_contentsProperties = nullptr;
   }
-  void clearLocalBorderBoxProperties() { m_localBorderBoxProperties = nullptr; }
+  void clearLocalBorderBoxProperties() {
+    m_localBorderBoxProperties = nullptr;
+    m_contentsProperties = nullptr;
+  }
 
   // The following clear* functions return true if the property tree structure
   // changes (an existing node was deleted), and false otherwise. See the
@@ -297,6 +317,8 @@ class CORE_EXPORT ObjectPaintProperties {
     return true;
   }
 
+  void updateContentsProperties() const;
+
   RefPtr<TransformPaintPropertyNode> m_paintOffsetTranslation;
   RefPtr<TransformPaintPropertyNode> m_transform;
   RefPtr<EffectPaintPropertyNode> m_effect;
@@ -312,6 +334,7 @@ class CORE_EXPORT ObjectPaintProperties {
   RefPtr<ScrollPaintPropertyNode> m_scroll;
 
   std::unique_ptr<PropertyTreeState> m_localBorderBoxProperties;
+  mutable std::unique_ptr<PropertyTreeState> m_contentsProperties;
 };
 
 }  // namespace blink
