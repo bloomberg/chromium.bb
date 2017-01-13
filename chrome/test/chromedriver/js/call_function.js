@@ -261,7 +261,7 @@ function wrap(value) {
   // typeof(frames[0].document.body) == 'object'.
   if ((typeof(value) == 'object' && value != null) ||
       (typeof(value) == 'function' && value.nodeName &&
-       value.nodeType == Node.ELEMENT_NODE)) {
+       value.nodeType == NodeType.ELEMENT)) {
     var nodeType = value['nodeType'];
     if (nodeType == NodeType.ELEMENT || nodeType == NodeType.DOCUMENT
         || (SHADOW_DOM_ENABLED && value instanceof ShadowRoot)) {
