@@ -16,13 +16,14 @@
 # include "generic_code.h"
 # include "odintrin.h"
 
-extern const int OD_QM8_Q4_FLAT[];
-extern const int OD_QM8_Q4_HVS[];
-
 extern const uint16_t EXP_CDF_TABLE[][16];
 extern const uint16_t LAPLACE_OFFSET[];
 
 #define AV1_PVQ_ENABLE_ACTIVITY_MASKING (0)
+
+#if !CONFIG_DAALA_DIST
+#define AV1_PVQ_ENABLE_ACTIVITY_MASKING (0)
+#endif
 
 # define PVQ_MAX_PARTITIONS (1 + 3*(OD_TXSIZES-1))
 

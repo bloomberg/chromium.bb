@@ -55,6 +55,9 @@
 #if CONFIG_PVQ
 #include "av1/encoder/pvq_encoder.h"
 #endif
+#if CONFIG_PVQ || CONFIG_DAALA_DIST
+#include "av1/common/pvq.h"
+#endif
 #if CONFIG_DUAL_FILTER
 #define DUAL_FILTER_SET_SIZE (SWITCHABLE_FILTERS * SWITCHABLE_FILTERS)
 static const int filter_sets[DUAL_FILTER_SET_SIZE][2] = {
@@ -448,6 +451,170 @@ static const TX_TYPE_1D htx_tab[TX_TYPES] = {
 #endif  // CONFIG_EXT_TX
 };
 
+#if CONFIG_DAALA_DIST
+static int od_compute_var_4x4(od_coeff *x, int stride) {
+  int sum;
+  int s2;
+  int i;
+  sum = 0;
+  s2 = 0;
+  for (i = 0; i < 4; i++) {
+    int j;
+    for (j = 0; j < 4; j++) {
+      int t;
+
+      t = x[i * stride + j];
+      sum += t;
+      s2 += t * t;
+    }
+  }
+  // TODO(yushin) : Check wheter any changes are required for high bit depth.
+  return (s2 - (sum * sum >> 4)) >> 4;
+}
+
+static double od_compute_dist_8x8(int qm, int use_activity_masking, od_coeff *x,
+                                  od_coeff *y, int stride) {
+  od_coeff e[8 * 8];
+  od_coeff et[8 * 8];
+  int16_t src[8 * 8];
+  tran_low_t coeff[8 * 8];
+  double sum;
+  int min_var;
+  double mean_var;
+  double var_stat;
+  double activity;
+  double calibration;
+  int i;
+  int j;
+  double vardist;
+  FWD_TXFM_PARAM fwd_txfm_param;
+
+  vardist = 0;
+  OD_ASSERT(qm != OD_FLAT_QM);
+#if 1
+  min_var = INT_MAX;
+  mean_var = 0;
+  for (i = 0; i < 3; i++) {
+    for (j = 0; j < 3; j++) {
+      int varx;
+      int vary;
+      varx = od_compute_var_4x4(x + 2 * i * stride + 2 * j, stride);
+      vary = od_compute_var_4x4(y + 2 * i * stride + 2 * j, stride);
+      min_var = OD_MINI(min_var, varx);
+      mean_var += 1. / (1 + varx);
+      /* The cast to (double) is to avoid an overflow before the sqrt.*/
+      vardist += varx - 2 * sqrt(varx * (double)vary) + vary;
+    }
+  }
+  /* We use a different variance statistic depending on whether activity
+     masking is used, since the harmonic mean appeared slghtly worse with
+     masking off. The calibration constant just ensures that we preserve the
+     rate compared to activity=1. */
+  if (use_activity_masking) {
+    calibration = 1.95;
+    var_stat = 9. / mean_var;
+  } else {
+    calibration = 1.62;
+    var_stat = min_var;
+  }
+  /* 1.62 is a calibration constant, 0.25 is a noise floor and 1/6 is the
+     activity masking constant. */
+  activity = calibration * pow(.25 + var_stat, -1. / 6);
+#else
+  activity = 1;
+#endif
+  sum = 0;
+  for (i = 0; i < 8; i++) {
+    for (j = 0; j < 8; j++)
+      e[8 * i + j] = x[i * stride + j] - y[i * stride + j];
+  }
+
+  for (i = 0; i < 8; i++)
+    for (j = 0; j < 8; j++) src[8 * i + j] = e[8 * i + j];
+
+  fwd_txfm_param.tx_type = DCT_DCT;
+  fwd_txfm_param.tx_size = TX_8X8;
+  fwd_txfm_param.lossless = 0;
+
+  fwd_txfm(&src[0], &coeff[0], 8, &fwd_txfm_param);
+
+  for (i = 0; i < 8; i++)
+    for (j = 0; j < 8; j++) et[8 * i + j] = coeff[8 * i + j] >> 3;
+
+  sum = 0;
+  for (i = 0; i < 8; i++)
+    for (j = 0; j < 8; j++)
+      sum += et[8 * i + j] * (double)et[8 * i + j] * 16. /
+             OD_QM8_Q4_HVS[i * 8 + j];
+
+  return activity * activity * (sum + vardist);
+}
+
+// Note : Inputs x and y are in a pixel domain
+static double od_compute_dist(int qm, int activity_masking, od_coeff *x,
+                              od_coeff *y, int bsize_w, int bsize_h,
+                              int qindex) {
+  int i;
+  double sum;
+  sum = 0;
+
+  (void)qindex;
+
+  assert(bsize_w >= 8 && bsize_h >= 8);
+
+  if (qm == OD_FLAT_QM) {
+    for (i = 0; i < bsize_w * bsize_h; i++) {
+      double tmp;
+      tmp = x[i] - y[i];
+      sum += tmp * tmp;
+    }
+  } else {
+    for (i = 0; i < bsize_h; i += 8) {
+      int j;
+      for (j = 0; j < bsize_w; j += 8) {
+        sum += od_compute_dist_8x8(qm, activity_masking, &x[i * bsize_w + j],
+                                   &y[i * bsize_w + j], bsize_w);
+      }
+    }
+    /* Compensate for the fact that the quantization matrix lowers the
+       distortion value. We tried a half-dozen values and picked the one where
+       we liked the ntt-short1 curves best. The tuning is approximate since
+       the different metrics go in different directions. */
+    /*Start interpolation at coded_quantizer 1.7=f(36) and end it at 1.2=f(47)*/
+    // TODO(yushin): Check whether qindex of AV1 work here, replacing daala's
+    // coded_quantizer.
+    /*sum *= qindex >= 47 ? 1.2 :
+        qindex <= 36 ? 1.7 :
+     1.7 + (1.2 - 1.7)*(qindex - 36)/(47 - 36);*/
+  }
+  return sum;
+}
+
+static int64_t av1_daala_dist(const uint8_t *src, int src_stride,
+                              const uint8_t *dst, int dst_stride, int tx_size,
+                              int qm, int use_activity_masking, int qindex) {
+  int i, j;
+  int64_t d;
+  const BLOCK_SIZE tx_bsize = txsize_to_bsize[tx_size];
+  const int bsw = block_size_wide[tx_bsize];
+  const int bsh = block_size_high[tx_bsize];
+  DECLARE_ALIGNED(16, od_coeff, orig[MAX_TX_SQUARE]);
+  DECLARE_ALIGNED(16, od_coeff, rec[MAX_TX_SQUARE]);
+
+  assert(qm == OD_HVS_QM);
+
+  for (j = 0; j < bsh; j++)
+    for (i = 0; i < bsw; i++) orig[j * bsw + i] = src[j * src_stride + i];
+
+  for (j = 0; j < bsh; j++)
+    for (i = 0; i < bsw; i++) rec[j * bsw + i] = dst[j * dst_stride + i];
+
+  d = (int64_t)od_compute_dist(qm, use_activity_masking, orig, rec, bsw, bsh,
+                               qindex);
+  return d;
+}
+#endif  // #if CONFIG_DAALA_DIST
+
 static void get_energy_distribution_fine(const AV1_COMP *cpi, BLOCK_SIZE bsize,
                                          uint8_t *src, int src_stride,
                                          uint8_t *dst, int dst_stride,
@@ -829,9 +996,10 @@ static void model_rd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
 
 // TODO(yushin) : Since 4x4 case does not need ssz, better to refactor into
 // a separate function that does not do the extra computations for ssz.
-int64_t av1_block_error2_c(const tran_low_t *coeff, const tran_low_t *dqcoeff,
-                           const tran_low_t *ref, intptr_t block_size,
-                           int64_t *ssz) {
+static int64_t av1_block_error2_c(const tran_low_t *coeff,
+                                  const tran_low_t *dqcoeff,
+                                  const tran_low_t *ref, intptr_t block_size,
+                                  int64_t *ssz) {
   int64_t error;
 
   // Use the existing sse codes for calculating distortion of decoded signal:
@@ -1015,7 +1183,15 @@ static void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane, int block,
   MACROBLOCKD *const xd = &x->e_mbd;
   const struct macroblock_plane *const p = &x->plane[plane];
   const struct macroblockd_plane *const pd = &xd->plane[plane];
-  if (cpi->sf.use_transform_domain_distortion) {
+#if CONFIG_DAALA_DIST
+  int qm = OD_HVS_QM;
+  int use_activity_masking = 0;
+#if CONFIG_PVQ
+  use_activity_masking = x->daala_enc.use_activity_masking;
+#endif
+#endif
+
+  if (cpi->sf.use_transform_domain_distortion && !CONFIG_DAALA_DIST) {
     // Transform domain distortion computation is more accurate as it does
     // not involve an inverse transform, but it is less accurate.
     const int buffer_length = tx_size_2d[tx_size];
@@ -1061,7 +1237,17 @@ static void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane, int block,
     assert(cpi != NULL);
     assert(tx_size_wide_log2[0] == tx_size_high_log2[0]);
 
-    cpi->fn_ptr[tx_bsize].vf(src, src_stride, dst, dst_stride, &tmp);
+#if CONFIG_DAALA_DIST
+    if (plane == 0) {
+      if (bsw >= 8 && bsh >= 8)
+        tmp = av1_daala_dist(src, src_stride, dst, dst_stride, tx_size, qm,
+                             use_activity_masking, x->qindex);
+      else
+        tmp = 0;
+    } else
+#endif
+      cpi->fn_ptr[tx_bsize].vf(src, src_stride, dst, dst_stride, &tmp);
+
     *out_sse = (int64_t)tmp * 16;
 
     if (eob) {
@@ -1106,10 +1292,17 @@ static void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane, int block,
 #endif
         inv_txfm_add(dqcoeff, recon, MAX_TX_SIZE, &inv_txfm_param);
       }
-
-      cpi->fn_ptr[tx_bsize].vf(src, src_stride, recon, MAX_TX_SIZE, &tmp);
+#if CONFIG_DAALA_DIST
+      if (plane == 0) {
+        if (bsw >= 8 && bsh >= 8)
+          tmp = av1_daala_dist(src, src_stride, recon, MAX_TX_SIZE, tx_size, qm,
+                               use_activity_masking, x->qindex);
+        else
+          tmp = 0;
+      } else
+#endif
+        cpi->fn_ptr[tx_bsize].vf(src, src_stride, recon, MAX_TX_SIZE, &tmp);
     }
-
     *out_dist = (int64_t)tmp * 16;
   }
 }
@@ -1176,6 +1369,14 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   int coeff_ctx = combine_entropy_contexts(*(args->t_above + blk_col),
                                            *(args->t_left + blk_row));
   RD_STATS this_rd_stats;
+#if CONFIG_DAALA_DIST
+  int qm = OD_HVS_QM;
+  int use_activity_masking = 0;
+#if CONFIG_PVQ
+  use_activity_masking = x->daala_enc.use_activity_masking;
+#endif
+#endif
+
   av1_init_rd_stats(&this_rd_stats);
 
   if (args->exit_early) return;
@@ -1186,8 +1387,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
     };
     av1_encode_block_intra(plane, block, blk_row, blk_col, plane_bsize, tx_size,
                            &b_args);
-
-    if (args->cpi->sf.use_transform_domain_distortion) {
+    if (args->cpi->sf.use_transform_domain_distortion && !CONFIG_DAALA_DIST) {
       dist_block(args->cpi, x, plane, block, blk_row, blk_col, tx_size,
                  &this_rd_stats.dist, &this_rd_stats.sse);
     } else {
@@ -1195,7 +1395,6 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
       // inv_txfm_add, so we can't just call dist_block here.
       const BLOCK_SIZE tx_bsize = txsize_to_bsize[tx_size];
       const aom_variance_fn_t variance = args->cpi->fn_ptr[tx_bsize].vf;
-
       const struct macroblock_plane *const p = &x->plane[plane];
       const struct macroblockd_plane *const pd = &xd->plane[plane];
 
@@ -1210,18 +1409,56 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
                .buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
       const int16_t *diff = &p->src_diff[(blk_row * diff_stride + blk_col)
                                          << tx_size_wide_log2[0]];
-
       unsigned int tmp;
-      this_rd_stats.sse = sum_squares_2d(diff, diff_stride, tx_size);
+
+#if CONFIG_DAALA_DIST
+      if (plane == 0) {
+        const int bsw = block_size_wide[tx_bsize];
+        const int bsh = block_size_high[tx_bsize];
+
+        if (bsw >= 8 && bsh >= 8) {
+          const int16_t *pred = &pd->pred[(blk_row * diff_stride + blk_col)
+                                          << tx_size_wide_log2[0]];
+          int i, j;
+          DECLARE_ALIGNED(16, uint8_t, pred8[MAX_TX_SQUARE]);
+
+          for (j = 0; j < bsh; j++)
+            for (i = 0; i < bsw; i++)
+              pred8[j * bsw + i] = pred[j * diff_stride + i];
+
+          this_rd_stats.sse =
+              av1_daala_dist(src, src_stride, pred8, bsw, tx_size, qm,
+                             use_activity_masking, x->qindex);
+        } else {
+          this_rd_stats.sse = 0;
+        }
+      } else
+#endif
+      {
+        this_rd_stats.sse = sum_squares_2d(diff, diff_stride, tx_size);
 
 #if CONFIG_AOM_HIGHBITDEPTH
-      if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-        this_rd_stats.sse =
-            ROUND_POWER_OF_TWO(this_rd_stats.sse, (xd->bd - 8) * 2);
+        if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
+          this_rd_stats.sse =
+              ROUND_POWER_OF_TWO(this_rd_stats.sse, (xd->bd - 8) * 2);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
+      }
+
       this_rd_stats.sse = this_rd_stats.sse * 16;
 
-      variance(src, src_stride, dst, dst_stride, &tmp);
+#if CONFIG_DAALA_DIST
+      if (plane == 0) {
+        const int bsw = block_size_wide[tx_bsize];
+        const int bsh = block_size_high[tx_bsize];
+
+        if (bsw >= 8 && bsh >= 8)
+          tmp = av1_daala_dist(src, src_stride, dst, dst_stride, tx_size, qm,
+                               use_activity_masking, x->qindex);
+        else
+          tmp = 0;
+      } else
+#endif
+        variance(src, src_stride, dst, dst_stride, &tmp);
       this_rd_stats.dist = (int64_t)tmp * 16;
     }
   } else {
@@ -1269,12 +1506,20 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   // TODO(jingning): temporarily enabled only for luma component
   rd = AOMMIN(rd1, rd2);
 
+#if CONFIG_DAALA_DIST
+  if (plane == 0 && tx_size <= TX_4X4) {
+    rd = 0;
+    x->rate_4x4[block] = this_rd_stats.rate;
+  }
+#endif
+
 #if !CONFIG_PVQ
   this_rd_stats.skip &= !x->plane[plane].eobs[block];
 #else
   this_rd_stats.skip &= x->pvq_skip[plane];
 #endif
   av1_merge_rd_stats(&args->rd_stats, &this_rd_stats);
+
   args->this_rd += rd;
 
   if (args->this_rd > args->best_rd) {
@@ -1282,6 +1527,96 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
     return;
   }
 }
+
+#if CONFIG_DAALA_DIST
+static void block_8x8_rd_txfm_daala_dist(int plane, int block, int blk_row,
+                                         int blk_col, BLOCK_SIZE plane_bsize,
+                                         TX_SIZE tx_size, void *arg) {
+  struct rdcost_block_args *args = arg;
+  MACROBLOCK *const x = args->x;
+  MACROBLOCKD *const xd = &x->e_mbd;
+  // MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+  // const AV1_COMMON *cm = &args->cpi->common;
+  int64_t rd1, rd2, rd;
+  RD_STATS this_rd_stats;
+  int qm = OD_HVS_QM;
+  int use_activity_masking = 0;
+
+#if CONFIG_PVQ
+  use_activity_masking = x->daala_enc.use_activity_masking;
+#endif
+  av1_init_rd_stats(&this_rd_stats);
+
+  if (args->exit_early) return;
+
+  {
+    const struct macroblock_plane *const p = &x->plane[plane];
+    const struct macroblockd_plane *const pd = &xd->plane[plane];
+
+    const int src_stride = p->src.stride;
+    const int dst_stride = pd->dst.stride;
+    const int diff_stride = block_size_wide[plane_bsize];
+
+    const uint8_t *src =
+        &p->src.buf[(blk_row * src_stride + blk_col) << tx_size_wide_log2[0]];
+    const uint8_t *dst =
+        &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
+
+    unsigned int tmp;
+
+    int qindex = x->qindex;
+
+    const int16_t *pred =
+        &pd->pred[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
+    int i, j;
+    const int tx_blk_size = 1 << (tx_size + 2);
+    DECLARE_ALIGNED(16, uint8_t, pred8[MAX_TX_SQUARE]);
+
+    for (j = 0; j < tx_blk_size; j++)
+      for (i = 0; i < tx_blk_size; i++)
+        pred8[j * tx_blk_size + i] = pred[j * diff_stride + i];
+
+    this_rd_stats.sse =
+        av1_daala_dist(src, src_stride, pred8, tx_blk_size, tx_size, qm,
+                       use_activity_masking, qindex);
+
+    this_rd_stats.sse = this_rd_stats.sse * 16;
+
+    tmp = av1_daala_dist(src, src_stride, dst, dst_stride, tx_size, qm,
+                         use_activity_masking, qindex);
+
+    this_rd_stats.dist = (int64_t)tmp * 16;
+  }
+
+  rd = RDCOST(x->rdmult, x->rddiv, 0, this_rd_stats.dist);
+  if (args->this_rd + rd > args->best_rd) {
+    args->exit_early = 1;
+    return;
+  }
+
+  {
+    const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
+    // The rate of the current 8x8 block is the sum of four 4x4 blocks in it.
+    this_rd_stats.rate = x->rate_4x4[block - max_blocks_wide - 1] +
+                         x->rate_4x4[block - max_blocks_wide] +
+                         x->rate_4x4[block - 1] + x->rate_4x4[block];
+  }
+  rd1 = RDCOST(x->rdmult, x->rddiv, this_rd_stats.rate, this_rd_stats.dist);
+  rd2 = RDCOST(x->rdmult, x->rddiv, 0, this_rd_stats.sse);
+
+  rd = AOMMIN(rd1, rd2);
+
+  args->rd_stats.dist += this_rd_stats.dist;
+  args->rd_stats.sse += this_rd_stats.sse;
+
+  args->this_rd += rd;
+
+  if (args->this_rd > args->best_rd) {
+    args->exit_early = 1;
+    return;
+  }
+}
+#endif  // #if CONFIG_DAALA_DIST
 
 static void txfm_rd_in_plane(MACROBLOCK *x, const AV1_COMP *cpi,
                              RD_STATS *rd_stats, int64_t ref_best_rd, int plane,
@@ -1307,8 +1642,16 @@ static void txfm_rd_in_plane(MACROBLOCK *x, const AV1_COMP *cpi,
   args.scan_order =
       get_scan(cm, tx_size, tx_type, is_inter_block(&xd->mi[0]->mbmi));
 
-  av1_foreach_transformed_block_in_plane(xd, bsize, plane, block_rd_txfm,
-                                         &args);
+#if CONFIG_DAALA_DIST
+  if (plane == 0 &&
+      (tx_size == TX_4X4 || tx_size == TX_4X8 || tx_size == TX_8X4))
+    av1_foreach_8x8_transformed_block_in_plane(
+        xd, bsize, plane, block_rd_txfm, block_8x8_rd_txfm_daala_dist, &args);
+  else
+#endif
+    av1_foreach_transformed_block_in_plane(xd, bsize, plane, block_rd_txfm,
+                                           &args);
+
   if (args.exit_early) {
     av1_invalid_rd_stats(rd_stats);
   } else {
@@ -2633,8 +2976,9 @@ static int64_t rd_pick_intra_sub_8x8_y_mode(const AV1_COMP *const cpi,
           cpi, mb, idy, idx, &best_mode, bmode_costs,
           xd->plane[0].above_context + idx, xd->plane[0].left_context + idy, &r,
           &ry, &d, bsize, tx_size, y_skip, best_rd - total_rd);
+#if !CONFIG_DAALA_DIST
       if (this_rd >= best_rd - total_rd) return INT64_MAX;
-
+#endif
       total_rd += this_rd;
       cost += r;
       total_distortion += d;
@@ -2651,6 +2995,26 @@ static int64_t rd_pick_intra_sub_8x8_y_mode(const AV1_COMP *const cpi,
   }
   mbmi->mode = mic->bmi[3].as_mode;
 
+#if CONFIG_DAALA_DIST
+  {
+    const struct macroblock_plane *p = &mb->plane[0];
+    const struct macroblockd_plane *pd = &xd->plane[0];
+    const int src_stride = p->src.stride;
+    const int dst_stride = pd->dst.stride;
+    uint8_t *src = p->src.buf;
+    uint8_t *dst = pd->dst.buf;
+    int use_activity_masking = 0;
+    int qm = OD_HVS_QM;
+
+#if CONFIG_PVQ
+    use_activity_masking = mb->daala_enc.use_activity_masking;
+#endif
+    // Daala-defined distortion computed for the block of 8x8 pixels
+    total_distortion = av1_daala_dist(src, src_stride, dst, dst_stride, TX_8X8,
+                                      qm, use_activity_masking, mb->qindex)
+                       << 4;
+  }
+#endif
   // Add in the cost of the transform type
   if (!is_lossless) {
     int rate_tx_type = 0;
@@ -6014,6 +6378,88 @@ static int64_t rd_pick_inter_best_sub8x8_mode(
 
   // update the coding decisions
   for (k = 0; k < 4; ++k) bsi->modes[k] = mi->bmi[k].as_mode;
+
+#if CONFIG_DAALA_DIST
+  {
+    const int src_stride = p->src.stride;
+    const int dst_stride = pd->dst.stride;
+    uint8_t *src = p->src.buf;
+    uint8_t pred[8 * 8];
+    const BLOCK_SIZE plane_bsize = get_plane_block_size(mi->mbmi.sb_type, pd);
+    int use_activity_masking = 0;
+    int qm = OD_HVS_QM;
+#if CONFIG_PVQ
+    use_activity_masking = x->daala_enc.use_activity_masking;
+#endif
+
+    for (idy = 0; idy < 2; idy += num_4x4_blocks_high)
+      for (idx = 0; idx < 2; idx += num_4x4_blocks_wide) {
+        int i = idy * 2 + idx;
+        int j, m;
+        uint8_t *dst_init = &pd->dst.buf[(idy * dst_stride + idx) * 4];
+
+        av1_build_inter_predictor_sub8x8(xd, 0, i, idy, idx, mi_row, mi_col);
+        // Save predicted pixels for use later.
+        for (j = 0; j < num_4x4_blocks_high * 4; j++)
+          for (m = 0; m < num_4x4_blocks_wide * 4; m++)
+            pred[(idy * 4 + j) * 8 + idx * 4 + m] =
+                dst_init[j * dst_stride + m];
+
+        // Do xform and quant to get decoded pixels.
+        {
+          const int txb_width = max_block_wide(xd, plane_bsize, 0);
+          const int txb_height = max_block_high(xd, plane_bsize, 0);
+          int idx_, idy_;
+
+          for (idy_ = 0; idy_ < txb_height; idy_++) {
+            for (idx_ = 0; idx_ < txb_width; idx_++) {
+              int block;
+              int coeff_ctx = 0;
+              const tran_low_t *dqcoeff;
+              uint16_t eob;
+              const PLANE_TYPE plane_type = PLANE_TYPE_Y;
+              INV_TXFM_PARAM inv_txfm_param;
+              uint8_t *dst = dst_init + (idy_ * dst_stride + idx_) * 4;
+
+              block = i + (idy_ * 2 + idx_);
+
+              dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
+              eob = p->eobs[block];
+
+              av1_xform_quant(cm, x, 0, block, idy + (i >> 1), idx + (i & 0x01),
+                              BLOCK_8X8, TX_4X4, coeff_ctx, AV1_XFORM_QUANT_FP);
+
+              inv_txfm_param.tx_type =
+                  get_tx_type(plane_type, xd, block, TX_4X4);
+              inv_txfm_param.tx_size = TX_4X4;
+              inv_txfm_param.eob = eob;
+              inv_txfm_param.lossless = xd->lossless[mbmi->segment_id];
+
+#if CONFIG_PVQ
+              {
+                int i2, j2;
+
+                for (j2 = 0; j2 < 4; j2++)
+                  for (i2 = 0; i2 < 4; i2++) dst[j2 * dst_stride + i2] = 0;
+              }
+#endif
+              inv_txfm_add(dqcoeff, dst, dst_stride, &inv_txfm_param);
+            }
+          }
+        }
+      }
+
+    // Daala-defined distortion computed for 1) predicted pixels and
+    // 2) decoded pixels of the block of 8x8 pixels
+    bsi->sse = av1_daala_dist(src, src_stride, pred, 8, TX_8X8, qm,
+                              use_activity_masking, x->qindex)
+               << 4;
+
+    bsi->d = av1_daala_dist(src, src_stride, pd->dst.buf, dst_stride, TX_8X8,
+                            qm, use_activity_masking, x->qindex)
+             << 4;
+  }
+#endif  // CONFIG_DAALA_DIST
 
   if (bsi->segment_rd > best_rd) return INT64_MAX;
   /* set it to the best */

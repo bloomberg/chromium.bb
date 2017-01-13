@@ -479,7 +479,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
                      TX_SIZE tx_size, int ctx,
                      AV1_XFORM_QUANT xform_quant_idx) {
   MACROBLOCKD *const xd = &x->e_mbd;
-#if !CONFIG_PVQ
+#if !(CONFIG_PVQ || CONFIG_DAALA_DIST)
   const struct macroblock_plane *const p = &x->plane[plane];
   const struct macroblockd_plane *const pd = &xd->plane[plane];
 #else
@@ -504,6 +504,14 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 
   FWD_TXFM_PARAM fwd_txfm_param;
 
+#if CONFIG_PVQ || CONFIG_DAALA_DIST
+  uint8_t *dst;
+  int16_t *pred;
+  const int dst_stride = pd->dst.stride;
+  int tx_blk_size;
+  int i, j;
+#endif
+
 #if !CONFIG_PVQ
   const int tx2d_size = tx_size_2d[tx_size];
   QUANT_PARAM qparam;
@@ -523,14 +531,11 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 #else
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   tran_low_t *ref_coeff = BLOCK_OFFSET(pd->pvq_ref_coeff, block);
-  uint8_t *src, *dst;
-  int16_t *src_int16, *pred;
-  const int src_stride = p->src.stride;
-  const int dst_stride = pd->dst.stride;
-  int tx_blk_size;
-  int i, j;
   int skip = 1;
   PVQ_INFO *pvq_info = NULL;
+  uint8_t *src;
+  int16_t *src_int16;
+  const int src_stride = p->src.stride;
 
   (void)scan_order;
   (void)qcoeff;
@@ -539,10 +544,20 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
     assert(block < MAX_PVQ_BLOCKS_IN_SB);
     pvq_info = &x->pvq[block][plane];
   }
-  dst = &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
   src = &p->src.buf[(blk_row * src_stride + blk_col) << tx_size_wide_log2[0]];
   src_int16 =
       &p->src_int16[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
+
+  // transform block size in pixels
+  tx_blk_size = tx_size_wide[tx_size];
+
+  for (j = 0; j < tx_blk_size; j++)
+    for (i = 0; i < tx_blk_size; i++)
+      src_int16[diff_stride * j + i] = src[src_stride * j + i];
+#endif
+
+#if CONFIG_PVQ || CONFIG_DAALA_DIST
+  dst = &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
   pred = &pd->pred[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
 
   // transform block size in pixels
@@ -552,10 +567,10 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   // in order to use existing VP10 transform functions
   for (j = 0; j < tx_blk_size; j++)
     for (i = 0; i < tx_blk_size; i++) {
-      src_int16[diff_stride * j + i] = src[src_stride * j + i];
       pred[diff_stride * j + i] = dst[dst_stride * j + i];
     }
 #endif
+
   (void)ctx;
 
   fwd_txfm_param.tx_type = tx_type;

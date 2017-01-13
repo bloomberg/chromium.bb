@@ -3285,6 +3285,10 @@ static void daala_dec_init(AV1_COMMON *const cm, daala_dec_ctx *daala_dec,
   // TODO(yushin) : activity masking info needs be signaled by a bitstream
   daala_dec->use_activity_masking = AV1_PVQ_ENABLE_ACTIVITY_MASKING;
 
+#if !CONFIG_DAALA_DIST
+  daala_dec->use_activity_masking = 0;
+#endif
+
   if (daala_dec->use_activity_masking)
     daala_dec->qm = OD_HVS_QM;
   else

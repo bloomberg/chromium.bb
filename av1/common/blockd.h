@@ -456,7 +456,7 @@ typedef struct macroblockd_plane {
   const qm_val_t *seg_qmatrix[MAX_SEGMENTS][2][TX_SIZES];
 #endif
 
-#if CONFIG_PVQ
+#if CONFIG_PVQ || CONFIG_DAALA_DIST
   DECLARE_ALIGNED(16, int16_t, pred[MAX_SB_SQUARE]);
   // PVQ: forward transformed predicted image, a reference for PVQ.
   tran_low_t *pvq_ref_coeff;
@@ -971,6 +971,13 @@ typedef void (*foreach_transformed_block_visitor)(int plane, int block,
 void av1_foreach_transformed_block_in_plane(
     const MACROBLOCKD *const xd, BLOCK_SIZE bsize, int plane,
     foreach_transformed_block_visitor visit, void *arg);
+
+#if CONFIG_DAALA_DIST
+void av1_foreach_8x8_transformed_block_in_plane(
+    const MACROBLOCKD *const xd, BLOCK_SIZE bsize, int plane,
+    foreach_transformed_block_visitor visit,
+    foreach_transformed_block_visitor mi_visit, void *arg);
+#endif
 
 void av1_foreach_transformed_block(const MACROBLOCKD *const xd,
                                    BLOCK_SIZE bsize,

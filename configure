@@ -296,6 +296,7 @@ EXPERIMENT_LIST="
     coef_interleave
     entropy_stats
     masked_tx
+    daala_dist
 "
 CONFIG_LIST="
     dependency_tracking
