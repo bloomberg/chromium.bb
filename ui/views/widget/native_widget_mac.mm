@@ -691,8 +691,16 @@ void NativeWidgetPrivate::GetAllChildWidgets(gfx::NativeView native_view,
     if ([[native_view window] contentView] != native_view)
       return;
 
-    for (NSWindow* native_child in [[native_view window] childWindows])
+    // Collect -sheets and -childWindows. A window should never appear in both,
+    // since that causes AppKit to glitch.
+    NSArray* sheet_children = [[native_view window] sheets];
+    for (NSWindow* native_child in sheet_children)
       GetAllChildWidgets([native_child contentView], children);
+
+    for (NSWindow* native_child in [[native_view window] childWindows]) {
+      DCHECK(![sheet_children containsObject:native_child]);
+      GetAllChildWidgets([native_child contentView], children);
+    }
     return;
   }
 
@@ -720,7 +728,16 @@ void NativeWidgetPrivate::GetAllChildWidgets(gfx::NativeView native_view,
 // static
 void NativeWidgetPrivate::GetAllOwnedWidgets(gfx::NativeView native_view,
                                              Widget::Widgets* owned) {
-  NOTIMPLEMENTED();
+  BridgedNativeWidget* bridge =
+      NativeWidgetMac::GetBridgeForNativeWindow([native_view window]);
+  if (!bridge) {
+    GetAllChildWidgets(native_view, owned);
+    return;
+  }
+  if (bridge->ns_view() != native_view)
+    return;
+  for (BridgedNativeWidget* child : bridge->child_windows())
+    GetAllChildWidgets(child->ns_view(), owned);
 }
 
 // static

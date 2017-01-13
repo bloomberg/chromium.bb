@@ -2977,11 +2977,24 @@ TEST_F(WidgetTest, GetAllChildWidgets) {
   expected.insert(w21);
   expected.insert(w22);
 
-  std::set<Widget*> widgets;
-  Widget::GetAllChildWidgets(toplevel->GetNativeView(), &widgets);
+  std::set<Widget*> child_widgets;
+  Widget::GetAllChildWidgets(toplevel->GetNativeView(), &child_widgets);
 
-  EXPECT_EQ(expected.size(), widgets.size());
-  EXPECT_TRUE(std::equal(expected.begin(), expected.end(), widgets.begin()));
+  EXPECT_EQ(expected.size(), child_widgets.size());
+  EXPECT_TRUE(
+      std::equal(expected.begin(), expected.end(), child_widgets.begin()));
+
+  // Check GetAllOwnedWidgets(). On Aura, this includes "transient" children.
+  // Otherwise (on all platforms), it should be the same as GetAllChildWidgets()
+  // except the root Widget is not included.
+  EXPECT_EQ(1u, expected.erase(toplevel.get()));
+
+  std::set<Widget*> owned_widgets;
+  Widget::GetAllOwnedWidgets(toplevel->GetNativeView(), &owned_widgets);
+
+  EXPECT_EQ(expected.size(), owned_widgets.size());
+  EXPECT_TRUE(
+      std::equal(expected.begin(), expected.end(), owned_widgets.begin()));
 }
 
 // Used by DestroyChildWidgetsInOrder. On destruction adds the supplied name to

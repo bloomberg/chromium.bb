@@ -1105,9 +1105,18 @@ TEST_F(NativeWidgetMacTest, WindowModalSheet) {
                 *did_observe_ptr = true;
               }];
 
+  Widget::Widgets children;
+  Widget::GetAllChildWidgets([native_parent contentView], &children);
+  EXPECT_TRUE(children.empty());
+
   sheet_widget->Show();  // Should run the above block, then animate the sheet.
   EXPECT_TRUE(did_observe);
   [[NSNotificationCenter defaultCenter] removeObserver:observer];
+
+  // Ensure sheets are included as a child.
+  Widget::GetAllChildWidgets([native_parent contentView], &children);
+  ASSERT_EQ(1u, children.size());
+  EXPECT_EQ(sheet_widget, *children.begin());
 
   // Modal, so the close button in the parent window should get disabled.
   EXPECT_FALSE([parent_close_button isEnabled]);
