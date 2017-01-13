@@ -1671,6 +1671,10 @@ if (enable_java_templates) {
 
     _final_deps = []
 
+    if (enable_multidex) {
+      _generated_proguard_main_dex_config =
+          "$base_path.resources.main-dex-proguard.txt"
+    }
     _generated_proguard_config = "$base_path.resources.proguard.txt"
     process_resources_target = "${_template_name}__process_resources"
     process_resources(process_resources_target) {
@@ -1690,6 +1694,9 @@ if (enable_java_templates) {
       all_resources_zip_path = _all_resources_zip_path
       generate_constant_ids = true
       proguard_file = _generated_proguard_config
+      if (enable_multidex) {
+        proguard_file_main_dex = _generated_proguard_main_dex_config
+      }
 
       build_config = _build_config
       deps = _android_manifest_deps + [ ":$build_config_target" ]
@@ -1936,6 +1943,8 @@ if (enable_java_templates) {
       if (!_proguard_enabled) {
         if (enable_multidex) {
           _dex_arg_key = "${_rebased_build_config}:dist_jar:dependency_jars"
+          extra_main_dex_proguard_config = _generated_proguard_main_dex_config
+          deps += [ ":$process_resources_target" ]
         } else {
           _dex_arg_key =
               "${_rebased_build_config}:final_dex:dependency_dex_files"

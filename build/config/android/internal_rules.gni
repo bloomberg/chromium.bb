@@ -942,6 +942,14 @@ if (enable_java_templates) {
           rebase_path(main_dex_rules, root_build_dir),
         ]
 
+        if (defined(invoker.extra_main_dex_proguard_config)) {
+          inputs += [ invoker.extra_main_dex_proguard_config ]
+          args += [
+            "--main-dex-rules-path",
+            rebase_path(invoker.extra_main_dex_proguard_config, root_build_dir),
+          ]
+        }
+
         if (defined(invoker.args)) {
           args += invoker.args
         }
@@ -2699,6 +2707,14 @@ if (enable_java_templates) {
         args += [
           "--proguard-file",
           rebase_path(invoker.proguard_file, root_build_dir),
+        ]
+      }
+
+      if (defined(invoker.proguard_file_main_dex)) {
+        outputs += [ invoker.proguard_file_main_dex ]
+        args += [
+          "--proguard-file-main-dex",
+          rebase_path(invoker.proguard_file_main_dex, root_build_dir),
         ]
       }
 
