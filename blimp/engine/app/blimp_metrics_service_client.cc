@@ -121,8 +121,6 @@ std::string BlimpMetricsServiceClient::GetVersionString() {
   return version_info::GetVersionNumber();
 }
 
-void BlimpMetricsServiceClient::OnLogUploadComplete() {}
-
 void BlimpMetricsServiceClient::InitializeSystemProfileMetrics(
     const base::Closure& done_callback) {
   // Blimp requires no additional work to InitializeSystemProfileMetrics

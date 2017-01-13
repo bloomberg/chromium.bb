@@ -35,7 +35,6 @@
 #include "chrome/browser/metrics/network_quality_estimator_provider_impl.h"
 #include "chrome/browser/metrics/sampling_metrics_provider.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
-#include "chrome/browser/metrics/time_ticks_experiment_win.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_metrics_provider.h"
 #include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/ui/browser_otr_state.h"
@@ -386,13 +385,6 @@ void ChromeMetricsServiceClient::OnEnvironmentUpdate(std::string* environment) {
           g_environment_for_crash_reporter.Get().data()),
       g_environment_for_crash_reporter.Get().size());
 #endif  // OS_WIN || OS_MACOSX
-}
-
-void ChromeMetricsServiceClient::OnLogUploadComplete() {
-  // Collect time ticks stats after each UMA upload.
-#if defined(OS_WIN)
-  chrome::CollectTimeTicksStats();
-#endif
 }
 
 void ChromeMetricsServiceClient::OnLogCleanShutdown() {

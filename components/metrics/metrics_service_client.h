@@ -65,9 +65,6 @@ class MetricsServiceClient {
   // ownership.
   virtual void OnEnvironmentUpdate(std::string* serialized_environment) {}
 
-  // Called by the metrics service when a log has been uploaded.
-  virtual void OnLogUploadComplete() = 0;
-
   // Called by the metrics service to record a clean shutdown.
   virtual void OnLogCleanShutdown() {}
 

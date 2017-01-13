@@ -123,8 +123,6 @@ std::string IOSChromeMetricsServiceClient::GetVersionString() {
   return metrics::GetVersionString();
 }
 
-void IOSChromeMetricsServiceClient::OnLogUploadComplete() {}
-
 void IOSChromeMetricsServiceClient::InitializeSystemProfileMetrics(
     const base::Closure& done_callback) {
   finished_init_task_callback_ = done_callback;

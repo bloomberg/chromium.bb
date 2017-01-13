@@ -68,7 +68,6 @@ class ChromeMetricsServiceClient
   metrics::SystemProfileProto::Channel GetChannel() override;
   std::string GetVersionString() override;
   void OnEnvironmentUpdate(std::string* serialized_environment) override;
-  void OnLogUploadComplete() override;
   void OnLogCleanShutdown() override;
   void InitializeSystemProfileMetrics(
       const base::Closure& done_callback) override;

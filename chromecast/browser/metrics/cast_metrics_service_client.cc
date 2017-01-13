@@ -219,9 +219,6 @@ std::string CastMetricsServiceClient::GetVersionString() {
   return version_string;
 }
 
-void CastMetricsServiceClient::OnLogUploadComplete() {
-}
-
 void CastMetricsServiceClient::InitializeSystemProfileMetrics(
     const base::Closure& done_callback) {
   done_callback.Run();

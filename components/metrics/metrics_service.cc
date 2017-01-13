@@ -1144,9 +1144,6 @@ void MetricsService::OnLogUploadComplete(int response_code) {
     scheduler_->UploadFinished(server_is_healthy,
                                log_manager_.has_unsent_logs());
   }
-
-  if (server_is_healthy)
-    client_->OnLogUploadComplete();
 }
 
 void MetricsService::IncrementPrefValue(const char* path) {

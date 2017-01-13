@@ -187,8 +187,6 @@ std::string AwMetricsServiceClient::GetVersionString() {
   return PRODUCT_VERSION;
 }
 
-void AwMetricsServiceClient::OnLogUploadComplete() {}
-
 void AwMetricsServiceClient::InitializeSystemProfileMetrics(
     const base::Closure& done_callback) {
   done_callback.Run();
