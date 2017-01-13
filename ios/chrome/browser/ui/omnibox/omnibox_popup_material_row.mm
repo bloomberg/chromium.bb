@@ -17,6 +17,7 @@ const CGFloat kImageDimensionLength = 19.0;
 const CGFloat kLeadingPaddingIpad = 164;
 const CGFloat kLeadingPaddingIpadCompact = 71;
 const CGFloat kAppendButtonTrailingMargin = 4;
+const CGFloat kAppendButtonSize = 48.0;
 }
 
 @interface OmniboxPopupMaterialRow () {
@@ -78,7 +79,7 @@ const CGFloat kAppendButtonTrailingMargin = 4;
     [self updatePhysicalWebImage];
     [self addSubview:_physicalWebButton];
 
-    // Left icon is only displayed on iPad.
+    // Leading icon is only displayed on iPad.
     if (IsIPadIdiom()) {
       _imageView = [[UIImageView alloc] initWithFrame:CGRectZero];
       _imageView.userInteractionEnabled = NO;
@@ -110,19 +111,16 @@ const CGFloat kAppendButtonTrailingMargin = 4;
       kImageDimensionLength);
   _imageView.frame = LayoutRectGetRect(imageViewLayout);
 
-  CGFloat appendButtonDimensionLength = CGRectGetHeight(self.bounds);
-  DCHECK_GT(appendButtonDimensionLength, 40);
-  LayoutRect rightAccessoryLayout =
-      LayoutRectMake(CGRectGetWidth(self.bounds) - appendButtonDimensionLength -
-                         kAppendButtonTrailingMargin,
-                     CGRectGetWidth(self.bounds),
-                     floor((_rowHeight - appendButtonDimensionLength) / 2),
-                     appendButtonDimensionLength, appendButtonDimensionLength);
-  _appendButton.frame = LayoutRectGetRect(rightAccessoryLayout);
-  _physicalWebButton.frame = LayoutRectGetRect(rightAccessoryLayout);
+  LayoutRect trailingAccessoryLayout = LayoutRectMake(
+      CGRectGetWidth(self.bounds) - kAppendButtonSize -
+          kAppendButtonTrailingMargin,
+      CGRectGetWidth(self.bounds), floor((_rowHeight - kAppendButtonSize) / 2),
+      kAppendButtonSize, kAppendButtonSize);
+  _appendButton.frame = LayoutRectGetRect(trailingAccessoryLayout);
+  _physicalWebButton.frame = LayoutRectGetRect(trailingAccessoryLayout);
 }
 
-- (void)updateLeftImage:(int)imageID {
+- (void)updateLeadingImage:(int)imageID {
   _imageView.image = NativeImage(imageID);
 
   // Adjust the vertical position based on the current size of the row.

@@ -370,11 +370,12 @@ UIColor* BackgroundColorIncognito() {
   }
   [textLabel setNeedsDisplay];
 
-  // The left image (e.g. magnifying glass, star, clock) is only shown on iPad.
+  // The leading image (e.g. magnifying glass, star, clock) is only shown on
+  // iPad.
   if (IsIPadIdiom()) {
     int imageId = GetIconForAutocompleteMatchType(
         match.type, _popupView->IsStarredMatch(match), _incognito);
-    [row updateLeftImage:imageId];
+    [row updateLeadingImage:imageId];
   }
 
   // Show append button for search history/search suggestions/voice search as
