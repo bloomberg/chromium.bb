@@ -876,12 +876,16 @@ class HitTestCulledInlinesGeneratorContext {
                                        const HitTestLocation& location)
       : m_intersected(false), m_region(region), m_location(location) {}
   void operator()(const FloatRect& rect) {
-    m_intersected = m_intersected || m_location.intersects(rect);
-    m_region.unite(enclosingIntRect(rect));
+    if (m_location.intersects(rect)) {
+      m_intersected = true;
+      m_region.unite(enclosingIntRect(rect));
+    }
   }
   void operator()(const LayoutRect& rect) {
-    m_intersected = m_intersected || m_location.intersects(rect);
-    m_region.unite(enclosingIntRect(rect));
+    if (m_location.intersects(rect)) {
+      m_intersected = true;
+      m_region.unite(enclosingIntRect(rect));
+    }
   }
   bool intersected() const { return m_intersected; }
 

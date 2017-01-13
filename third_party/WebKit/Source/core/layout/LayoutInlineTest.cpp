@@ -40,4 +40,34 @@ TEST_F(LayoutInlineTest, SimpleContinuation) {
   EXPECT_FALSE(splitInlinePart2->continuation());
 }
 
+TEST_F(LayoutInlineTest, RegionHitTest) {
+  setBodyInnerHTML(
+      "<div><span id='lotsOfBoxes'>"
+      "This is a test line<br>This is a test line<br>This is a test line<br>"
+      "This is a test line<br>This is a test line<br>This is a test line<br>"
+      "This is a test line<br>This is a test line<br>This is a test line<br>"
+      "This is a test line<br>This is a test line<br>This is a test line<br>"
+      "This is a test line<br>This is a test line<br>This is a test line<br>"
+      "This is a test line<br>This is a test line<br>This is a test line<br>"
+      "</span></div>");
+
+  document().view()->updateAllLifecyclePhases();
+
+  LayoutInline* lotsOfBoxes =
+      toLayoutInline(getLayoutObjectByElementId("lotsOfBoxes"));
+  ASSERT_TRUE(lotsOfBoxes);
+
+  HitTestRequest hitRequest(HitTestRequest::TouchEvent |
+                            HitTestRequest::ListBased);
+  LayoutPoint hitLocation(2, 5);
+  HitTestResult hitResult(hitRequest, hitLocation, 2, 1, 2, 1);
+  LayoutPoint hitOffset;
+
+  bool hitOutcome = lotsOfBoxes->hitTestCulledInline(
+      hitResult, hitResult.hitTestLocation(), hitOffset);
+  // Assert checks that we both hit something and that the area covered
+  // by "something" totally contains the hit region.
+  EXPECT_TRUE(hitOutcome);
+}
+
 }  // namespace blink
