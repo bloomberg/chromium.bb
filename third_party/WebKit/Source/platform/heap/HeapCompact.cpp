@@ -253,7 +253,6 @@ class HeapCompact::MovableObjectFixups final {
 HeapCompact::HeapCompact()
     : m_doCompact(false),
       m_gcCountSinceLastCompaction(0),
-      m_threadCount(0),
       m_freeListSize(0),
       m_compactableArenas(0u),
       m_freedPages(0),
@@ -346,7 +345,6 @@ void HeapCompact::initialize(ThreadState* state) {
   m_doCompact = true;
   m_freedPages = 0;
   m_freedSize = 0;
-  m_threadCount = state->heap().threads().size();
   m_fixups.reset();
   m_gcCountSinceLastCompaction = 0;
   s_forceCompactionGC = false;
@@ -418,7 +416,6 @@ void HeapCompact::startThreadCompaction() {
   if (!m_doCompact)
     return;
 
-  MutexLocker locker(m_mutex);
   if (!m_startCompactionTimeMS)
     m_startCompactionTimeMS = WTF::currentTimeMS();
 }
@@ -427,48 +424,32 @@ void HeapCompact::finishThreadCompaction() {
   if (!m_doCompact)
     return;
 
-  MutexLocker locker(m_mutex);
-  // Final one clears out.
-  if (!--m_threadCount) {
 #if DEBUG_HEAP_COMPACTION
-    if (m_fixups)
-      m_fixups->dumpDebugStats();
+  if (m_fixups)
+    m_fixups->dumpDebugStats();
 #endif
-    m_fixups.reset();
-    m_doCompact = false;
+  m_fixups.reset();
+  m_doCompact = false;
 
-    double timeForHeapCompaction =
-        WTF::currentTimeMS() - m_startCompactionTimeMS;
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, timeForHeapCompactionHistogram,
-                        ("BlinkGC.TimeForHeapCompaction", 1, 10 * 1000, 50));
-    timeForHeapCompactionHistogram.count(timeForHeapCompaction);
-    m_startCompactionTimeMS = 0;
+  double timeForHeapCompaction = WTF::currentTimeMS() - m_startCompactionTimeMS;
+  DEFINE_STATIC_LOCAL(CustomCountHistogram, timeForHeapCompactionHistogram,
+                      ("BlinkGC.TimeForHeapCompaction", 1, 10 * 1000, 50));
+  timeForHeapCompactionHistogram.count(timeForHeapCompaction);
+  m_startCompactionTimeMS = 0;
 
-    DEFINE_STATIC_LOCAL(
-        CustomCountHistogram, objectSizeFreedByHeapCompaction,
-        ("BlinkGC.ObjectSizeFreedByHeapCompaction", 1, 4 * 1024 * 1024, 50));
-    objectSizeFreedByHeapCompaction.count(m_freedSize / 1024);
+  DEFINE_STATIC_LOCAL(
+      CustomCountHistogram, objectSizeFreedByHeapCompaction,
+      ("BlinkGC.ObjectSizeFreedByHeapCompaction", 1, 4 * 1024 * 1024, 50));
+  objectSizeFreedByHeapCompaction.count(m_freedSize / 1024);
 
 #if DEBUG_LOG_HEAP_COMPACTION_RUNNING_TIME
-    LOG_HEAP_COMPACTION_INTERNAL(
-        "Compaction stats: time=%gms, pages freed=%zu, size=%zu\n",
-        timeForHeapCompaction, m_freedPages, m_freedSize);
+  LOG_HEAP_COMPACTION_INTERNAL(
+      "Compaction stats: time=%gms, pages freed=%zu, size=%zu\n",
+      timeForHeapCompaction, m_freedPages, m_freedSize);
 #else
-    LOG_HEAP_COMPACTION("Compaction stats: freed pages=%zu size=%zu\n",
-                        m_freedPages, m_freedSize);
+  LOG_HEAP_COMPACTION("Compaction stats: freed pages=%zu size=%zu\n",
+                      m_freedPages, m_freedSize);
 #endif
-
-    // Compaction has been completed by all participating threads, unblock
-    // them all.
-    m_finished.broadcast();
-  } else {
-    // Letting a thread return here and let it exit its safe point opens up
-    // the possibility of it accessing heaps of other threads that are
-    // still being compacted. It is not in a valid state until objects have
-    // all been moved together, hence all GC-participating threads must
-    // complete compaction together. Grab the condition variable and wait.
-    m_finished.wait(m_mutex);
-  }
 }
 
 void HeapCompact::addCompactingPage(BasePage* page) {

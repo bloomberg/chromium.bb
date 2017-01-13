@@ -139,18 +139,6 @@ class PLATFORM_EXPORT HeapCompact final {
   bool m_doCompact;
   size_t m_gcCountSinceLastCompaction;
 
-  // Lock protecting finishedThreadCompaction() signalling.
-  Mutex m_mutex;
-
-  // All threads performing a GC must synchronize on completion
-  // of all heap compactions. Not doing so risks one thread resuming
-  // the mutator, which could perform cross-thread access to a heap
-  // that's still in the process of being compacted.
-  ThreadCondition m_finished;
-
-  // Number of heap threads participating in the compaction.
-  int m_threadCount;
-
   // Last reported freelist size, across all compactable arenas.
   size_t m_freeListSize;
 
