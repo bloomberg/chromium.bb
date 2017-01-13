@@ -5,7 +5,6 @@
 #ifndef WindowPaintWorklet_h
 #define WindowPaintWorklet_h
 
-#include "core/frame/DOMWindowProperty.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
@@ -20,8 +19,7 @@ class Worklet;
 
 class MODULES_EXPORT WindowPaintWorklet final
     : public GarbageCollected<WindowPaintWorklet>,
-      public Supplement<LocalDOMWindow>,
-      public DOMWindowProperty {
+      public Supplement<LocalDOMWindow> {
   USING_GARBAGE_COLLECTED_MIXIN(WindowPaintWorklet);
 
  public:

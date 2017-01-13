@@ -11,7 +11,7 @@
 namespace blink {
 
 WindowPaintWorklet::WindowPaintWorklet(LocalDOMWindow& window)
-    : DOMWindowProperty(window.frame()) {}
+    : Supplement<LocalDOMWindow>(window) {}
 
 const char* WindowPaintWorklet::supplementName() {
   return "WindowPaintWorklet";
@@ -34,15 +34,14 @@ Worklet* WindowPaintWorklet::paintWorklet(DOMWindow& window) {
 }
 
 PaintWorklet* WindowPaintWorklet::paintWorklet() {
-  if (!m_paintWorklet && frame())
-    m_paintWorklet = PaintWorklet::create(frame());
+  if (!m_paintWorklet && host()->frame())
+    m_paintWorklet = PaintWorklet::create(host()->frame());
   return m_paintWorklet.get();
 }
 
 DEFINE_TRACE(WindowPaintWorklet) {
   visitor->trace(m_paintWorklet);
   Supplement<LocalDOMWindow>::trace(visitor);
-  DOMWindowProperty::trace(visitor);
 }
 
 }  // namespace blink
