@@ -86,6 +86,9 @@ public class SelectableListLayout<E> extends RelativeLayout {
             shadow.init(ApiCompatibilityUtils.getColor(getResources(),
                     R.color.toolbar_shadow_color), FadingShadow.POSITION_TOP);
         }
+
+        setFocusable(true);
+        setFocusableInTouchMode(true);
     }
 
     /**
