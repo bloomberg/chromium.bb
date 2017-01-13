@@ -135,6 +135,7 @@
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#import "ios/third_party/material_roboto_font_loader_ios/src/src/MDCTypographyAdditions/MDFRobotoFontLoader+MDCTypographyAdditions.h"
 #include "ios/web/net/request_tracker_factory_impl.h"
 #include "ios/web/net/request_tracker_impl.h"
 #include "ios/web/net/web_http_protocol_handler_delegate.h"
@@ -229,12 +230,6 @@ BOOL IsURLNtp(const GURL& url) {
 enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 
 }  // namespace
-
-// TODO(crbug.com/673904): Remove once MDFRobotoFontLoader declares it directly.
-// MDFRobotoFontLoader implicitly implements MDCTypographyFontLoading but can't
-// declare it until MDC is public.
-@interface MDFRobotoFontLoader (MDCTypography)<MDCTypographyFontLoading>
-@end
 
 @interface MainController ()<BrowserStateStorageSwitching,
                              BrowsingDataRemovalControllerDelegate,
