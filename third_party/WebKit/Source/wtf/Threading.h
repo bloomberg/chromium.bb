@@ -62,6 +62,10 @@ typedef uint32_t ThreadIdentifier;
 typedef intptr_t ThreadIdentifier;
 #endif
 
+namespace internal {
+ThreadIdentifier currentThreadSyscall();
+}  // namespace internal
+
 WTF_EXPORT ThreadIdentifier currentThread();
 
 WTF_EXPORT void lockAtomicallyInitializedStaticMutex();

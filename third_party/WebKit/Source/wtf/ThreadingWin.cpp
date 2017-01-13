@@ -127,6 +127,14 @@ typedef struct tagTHREADNAME_INFO {
 
 static Mutex* atomicallyInitializedStaticMutex;
 
+namespace internal {
+
+ThreadIdentifier currentThreadSyscall() {
+  return static_cast<ThreadIdentifier>(GetCurrentThreadId());
+}
+
+}  // namespace internal
+
 void lockAtomicallyInitializedStaticMutex() {
   DCHECK(atomicallyInitializedStaticMutex);
   atomicallyInitializedStaticMutex->lock();
@@ -153,7 +161,7 @@ void initializeThreading() {
 }
 
 ThreadIdentifier currentThread() {
-  return static_cast<ThreadIdentifier>(GetCurrentThreadId());
+  return internal::currentThreadSyscall();
 }
 
 MutexBase::MutexBase(bool recursive) {

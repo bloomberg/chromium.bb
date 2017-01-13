@@ -224,11 +224,6 @@ inline void ThreadSpecific<T>::set(T* ptr) {
 
 template <typename T>
 inline void ThreadSpecific<T>::destroy(void* ptr) {
-  // Never call destructors on the main thread.
-  // This is fine because Blink no longer has a graceful shutdown sequence.
-  if (isMainThread())
-    return;
-
   Data* data = static_cast<Data*>(ptr);
 
 #if OS(POSIX)
@@ -237,6 +232,13 @@ inline void ThreadSpecific<T>::destroy(void* ptr) {
   // zero out the pointer before calling destroy(), so we temporarily reset it.
   pthread_setspecific(data->owner->m_key, ptr);
 #endif
+
+  // Never call destructors on the main thread. This is fine because Blink no
+  // longer has a graceful shutdown sequence. Be careful to call this function
+  // (which can be re-entrant) while the pointer is still set, to avoid lazily
+  // allocating WTFThreadData after it is destroyed.
+  if (isMainThread())
+    return;
 
   data->value->~T();
   Partitions::fastFree(data->value);

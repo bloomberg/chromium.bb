@@ -59,6 +59,22 @@
 
 namespace WTF {
 
+namespace internal {
+
+ThreadIdentifier currentThreadSyscall() {
+#if OS(MACOSX)
+  return pthread_mach_thread_np(pthread_self());
+#elif OS(LINUX)
+  return syscall(__NR_gettid);
+#elif OS(ANDROID)
+  return gettid();
+#else
+  return reinterpret_cast<uintptr_t>(pthread_self());
+#endif
+}
+
+}  // namespace internal
+
 static Mutex* atomicallyInitializedStaticMutex;
 
 void initializeThreading() {
@@ -87,14 +103,14 @@ void unlockAtomicallyInitializedStaticMutex() {
 }
 
 ThreadIdentifier currentThread() {
-#if OS(MACOSX)
-  return pthread_mach_thread_np(pthread_self());
-#elif OS(LINUX)
-  return syscall(__NR_gettid);
-#elif OS(ANDROID)
-  return gettid();
+// TLS lookup is fast on these platforms.
+#if defined(__GLIBC__) || OS(ANDROID) || OS(FREEBSD)
+  return wtfThreadData().threadId();
 #else
-  return reinterpret_cast<uintptr_t>(pthread_self());
+  // TODO(csharrison): For platforms where TLS lookup is slow, use the hack that
+  // oilpan uses in ThreadState::current() to check if this is the main thread
+  // via stack address.
+  return internal::currentThreadSyscall();
 #endif
 }
 
