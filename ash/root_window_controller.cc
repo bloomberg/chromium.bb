@@ -676,10 +676,11 @@ void RootWindowController::DeactivateKeyboard(
     aura::Window* parent =
         GetContainer(kShellWindowId_ImeWindowParentContainer);
     DCHECK(parent);
+    // Virtual keyboard may be deactivated while still showing, hide the
+    // keyboard before removing it from view hierarchy.
+    keyboard_controller->HideKeyboard(
+        keyboard::KeyboardController::HIDE_REASON_AUTOMATIC);
     parent->RemoveChild(keyboard_container);
-    // Virtual keyboard may be deactivated while still showing, notify all
-    // observers that keyboard bounds changed to 0 before remove them.
-    keyboard_controller->NotifyKeyboardBoundsChanging(gfx::Rect());
     keyboard_controller->RemoveObserver(wm_shelf_->shelf_layout_manager());
     keyboard_controller->RemoveObserver(panel_layout_manager());
     keyboard_controller->RemoveObserver(docked_window_layout_manager());
