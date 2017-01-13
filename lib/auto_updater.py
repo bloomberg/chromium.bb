@@ -248,23 +248,32 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     Returns:
       True if we can start devserver; False otherwise.
     """
+    # Try to capture the output from the command so we can dump it in the case
+    # of errors. Note that this will not work if we were requested to redirect
+    # logs to a |log_file|.
+    cmd_kwargs = dict(self._cmd_kwargs)
+    cmd_kwargs['capture_output'] = True
+    cmd_kwargs['combine_stdout_stderr'] = True
     logging.info('Checking if we can run devserver on the device...')
     devserver_bin = os.path.join(self.device_dev_dir,
                                  self.REMOTE_DEVSERVER_FILENAME)
     devserver_check_command = ['python', devserver_bin, '--help']
     try:
-      self.device.RunCommand(devserver_check_command, **self._cmd_kwargs)
+      self.device.RunCommand(devserver_check_command, **cmd_kwargs)
     except cros_build_lib.RunCommandError as e:
-      logging.warning('Cannot start devserver: %s', e)
+      logging.warning('Cannot start devserver:')
+      logging.warning(e)
       if ERROR_MSG_IN_LOADING_LIB in str(e):
         logging.info('Attempting to correct device library paths...')
         try:
-          self.device.RunCommand(['ldconfig', '-r', '/'], **self._cmd_kwargs)
-          self.device.RunCommand(devserver_check_command, **self._cmd_kwargs)
+          self.device.RunCommand(['ldconfig', '-r', '/'], **cmd_kwargs)
+          self.device.RunCommand(devserver_check_command,
+                                 **cmd_kwargs)
           logging.info('Library path correction successful.')
           return True
         except cros_build_lib.RunCommandError as e2:
-          logging.warning('Library path correction failed: %s', e2)
+          logging.warning('Library path correction failed:')
+          logging.warning(e2)
 
       return False
 
