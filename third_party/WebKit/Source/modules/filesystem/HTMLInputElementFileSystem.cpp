@@ -72,9 +72,9 @@ EntryHeapVector HTMLInputElementFileSystem::webkitEntries(
     // filesystem.
     String virtualPath = DOMFilePath::append("/", file->name());
     if (metadata.type == FileMetadata::TypeDirectory)
-      entries.append(DirectoryEntry::create(filesystem, virtualPath));
+      entries.push_back(DirectoryEntry::create(filesystem, virtualPath));
     else
-      entries.append(FileEntry::create(filesystem, virtualPath));
+      entries.push_back(FileEntry::create(filesystem, virtualPath));
   }
   return entries;
 }

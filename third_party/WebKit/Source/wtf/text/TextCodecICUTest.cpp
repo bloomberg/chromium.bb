@@ -14,8 +14,8 @@ TEST(TextCodecICUTest, IgnorableCodePoint) {
   TextEncoding iso2022jp("iso-2022-jp");
   std::unique_ptr<TextCodec> codec = TextCodecICU::create(iso2022jp, nullptr);
   Vector<UChar> source;
-  source.append('a');
-  source.append(zeroWidthJoinerCharacter);
+  source.push_back('a');
+  source.push_back(zeroWidthJoinerCharacter);
   CString encoded =
       codec->encode(source.data(), source.size(), EntitiesForUnencodables);
   EXPECT_STREQ("a&#8205;", encoded.data());
@@ -27,14 +27,14 @@ TEST(TextCodecICUTest, UTF32AndQuestionMarks) {
 
   const UChar poo[] = {0xd83d, 0xdca9};  // U+1F4A9 PILE OF POO
 
-  aliases.append("UTF-32");
-  results.append("\xFF\xFE\x00\x00\xA9\xF4\x01\x00");
+  aliases.push_back("UTF-32");
+  results.push_back("\xFF\xFE\x00\x00\xA9\xF4\x01\x00");
 
-  aliases.append("UTF-32LE");
-  results.append("\xA9\xF4\x01\x00");
+  aliases.push_back("UTF-32LE");
+  results.push_back("\xA9\xF4\x01\x00");
 
-  aliases.append("UTF-32BE");
-  results.append("\x00\x01\xF4\xA9");
+  aliases.push_back("UTF-32BE");
+  results.push_back("\x00\x01\xF4\xA9");
 
   ASSERT_EQ(aliases.size(), results.size());
   for (unsigned i = 0; i < aliases.size(); ++i) {

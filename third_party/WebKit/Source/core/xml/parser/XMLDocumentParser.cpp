@@ -295,7 +295,7 @@ class PendingErrorCallback final : public XMLDocumentParser::PendingCallback {
 void XMLDocumentParser::pushCurrentNode(ContainerNode* n) {
   DCHECK(n);
   DCHECK(m_currentNode);
-  m_currentNodeStack.append(m_currentNode);
+  m_currentNodeStack.push_back(m_currentNode);
   m_currentNode = n;
   if (m_currentNodeStack.size() > maxXMLTreeDepth)
     handleError(XMLErrors::ErrorTypeFatal, "Excessive node nesting.",
@@ -805,7 +805,7 @@ XMLDocumentParser::XMLDocumentParser(DocumentFragment* fragment,
   // Add namespaces based on the parent node
   HeapVector<Member<Element>> elemStack;
   while (parentElement) {
-    elemStack.append(parentElement);
+    elemStack.push_back(parentElement);
 
     Element* grandParentElement = parentElement->parentElement();
     if (!grandParentElement)
@@ -912,7 +912,7 @@ static inline void handleNamespaceAttributes(
                                      namespaceQName, exceptionState))
       return;
 
-    prefixedAttributes.append(Attribute(parsedName, namespaceURI));
+    prefixedAttributes.push_back(Attribute(parsedName, namespaceURI));
   }
 }
 
@@ -964,7 +964,7 @@ static inline void handleElementAttributes(
                                      exceptionState))
       return;
 
-    prefixedAttributes.append(Attribute(parsedName, attrValue));
+    prefixedAttributes.push_back(Attribute(parsedName, attrValue));
   }
 }
 

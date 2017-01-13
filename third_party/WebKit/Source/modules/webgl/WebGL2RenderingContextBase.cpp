@@ -3303,8 +3303,8 @@ void WebGL2RenderingContextBase::transformFeedbackVaryings(
       keepAlive;  // Must keep these instances alive while looking at their data
   Vector<const char*> varyingStrings;
   for (size_t i = 0; i < varyings.size(); ++i) {
-    keepAlive.append(varyings[i].ascii());
-    varyingStrings.append(keepAlive.back().data());
+    keepAlive.push_back(varyings[i].ascii());
+    varyingStrings.push_back(keepAlive.back().data());
   }
 
   contextGL()->TransformFeedbackVaryings(objectOrZero(program), varyings.size(),
@@ -3488,8 +3488,8 @@ Vector<GLuint> WebGL2RenderingContextBase::getUniformIndices(
       keepAlive;  // Must keep these instances alive while looking at their data
   Vector<const char*> uniformStrings;
   for (size_t i = 0; i < uniformNames.size(); ++i) {
-    keepAlive.append(uniformNames[i].ascii());
-    uniformStrings.append(keepAlive.back().data());
+    keepAlive.push_back(uniformNames[i].ascii());
+    uniformStrings.push_back(keepAlive.back().data());
   }
 
   result.resize(uniformNames.size());

@@ -304,7 +304,8 @@ PlatformTouchEventBuilder::PlatformTouchEventBuilder(
   m_touchStartOrFirstTouchMove = event.touchStartOrFirstTouchMove;
 
   for (unsigned i = 0; i < event.touchesLength; ++i)
-    m_touchPoints.append(PlatformTouchPointBuilder(widget, event.touches[i]));
+    m_touchPoints.push_back(
+        PlatformTouchPointBuilder(widget, event.touches[i]));
 
   m_dispatchType = toPlatformDispatchType(event.dispatchType);
   m_uniqueTouchEventId = event.uniqueTouchEventId;
@@ -587,7 +588,7 @@ Vector<PlatformMouseEvent> createPlatformMouseEventVector(
   Vector<PlatformMouseEvent> result;
   for (const auto& event : coalescedEvents) {
     DCHECK(WebInputEvent::isMouseEventType(event->type()));
-    result.append(PlatformMouseEventBuilder(
+    result.push_back(PlatformMouseEventBuilder(
         widget, static_cast<const WebMouseEvent&>(*event)));
   }
   return result;
@@ -599,7 +600,7 @@ Vector<PlatformTouchEvent> createPlatformTouchEventVector(
   Vector<PlatformTouchEvent> result;
   for (const auto& event : coalescedEvents) {
     DCHECK(WebInputEvent::isTouchEventType(event->type()));
-    result.append(PlatformTouchEventBuilder(
+    result.push_back(PlatformTouchEventBuilder(
         widget, static_cast<const WebTouchEvent&>(*event)));
   }
   return result;

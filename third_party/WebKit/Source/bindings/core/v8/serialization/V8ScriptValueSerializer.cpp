@@ -392,7 +392,7 @@ v8::Maybe<uint32_t> V8ScriptValueSerializer::GetSharedArrayBufferId(
   // ArrayBuffers.
   size_t index = m_sharedArrayBuffers.find(sharedArrayBuffer);
   if (index == kNotFound) {
-    m_sharedArrayBuffers.append(sharedArrayBuffer);
+    m_sharedArrayBuffers.push_back(sharedArrayBuffer);
     index = m_sharedArrayBuffers.size() - 1;
   }
   if (m_transferables) {

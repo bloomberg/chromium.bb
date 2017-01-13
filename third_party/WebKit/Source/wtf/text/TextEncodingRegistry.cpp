@@ -191,7 +191,7 @@ static void pruneBlacklistedCodecs() {
     TextEncodingNameMap::const_iterator end = textEncodingNameMap->end();
     for (; it != end; ++it) {
       if (it->value == atomicName)
-        names.append(it->key);
+        names.push_back(it->key);
     }
 
     textEncodingNameMap->removeAll(names);

@@ -264,7 +264,7 @@ TEST(HashMapTest, AddResultVectorValue) {
   EXPECT_EQ(1, result.storedValue->key);
   EXPECT_EQ(0u, result.storedValue->value.size());
 
-  result.storedValue->value.append(11);
+  result.storedValue->value.push_back(11);
   EXPECT_EQ(1u, map.find(1)->value.size());
   EXPECT_EQ(11, map.find(1)->value.front());
 

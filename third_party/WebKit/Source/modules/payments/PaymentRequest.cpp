@@ -338,7 +338,7 @@ void setBasicCardMethodData(const ScriptValue& input,
     for (const String& network : basicCard.supportedNetworks()) {
       for (size_t i = 0; i < arraysize(basicCardNetworks); ++i) {
         if (network == basicCardNetworks[i].name) {
-          output->supported_networks.append(basicCardNetworks[i].code);
+          output->supported_networks.push_back(basicCardNetworks[i].code);
           break;
         }
       }
@@ -358,7 +358,7 @@ void setBasicCardMethodData(const ScriptValue& input,
     for (const String& type : basicCard.supportedTypes()) {
       for (size_t i = 0; i < arraysize(basicCardTypes); ++i) {
         if (type == basicCardTypes[i].name) {
-          output->supported_types.append(basicCardTypes[i].code);
+          output->supported_types.push_back(basicCardTypes[i].code);
           break;
         }
       }

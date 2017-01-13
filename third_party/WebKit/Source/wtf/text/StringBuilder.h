@@ -112,7 +112,7 @@ class WTF_EXPORT StringBuilder {
       return;
     }
     ensureBuffer16(1);
-    m_buffer16->append(c);
+    m_buffer16->push_back(c);
     ++m_length;
   }
 
@@ -122,7 +122,7 @@ class WTF_EXPORT StringBuilder {
       return;
     }
     ensureBuffer8(1);
-    m_buffer8->append(c);
+    m_buffer8->push_back(c);
     ++m_length;
   }
 

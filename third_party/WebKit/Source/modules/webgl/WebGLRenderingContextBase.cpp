@@ -7620,10 +7620,10 @@ void WebGLRenderingContextBase::synthesizeGLError(
   }
   if (!isContextLost()) {
     if (!m_syntheticErrors.contains(error))
-      m_syntheticErrors.append(error);
+      m_syntheticErrors.push_back(error);
   } else {
     if (!m_lostContextErrors.contains(error))
-      m_lostContextErrors.append(error);
+      m_lostContextErrors.push_back(error);
   }
   InspectorInstrumentation::didFireWebGLError(canvas(), errorType);
 }

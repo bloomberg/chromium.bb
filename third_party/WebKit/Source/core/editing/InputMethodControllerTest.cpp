@@ -893,7 +893,7 @@ TEST_F(InputMethodControllerTest, InsertLineBreakAfterConfirmingText) {
       insertHTMLElement("<div id='sample' contenteditable></div>", "sample");
 
   Vector<CompositionUnderline> underlines;
-  underlines.append(CompositionUnderline(0, 2, Color(255, 0, 0), false, 0));
+  underlines.push_back(CompositionUnderline(0, 2, Color(255, 0, 0), false, 0));
   controller().commitText("hello", underlines, 0);
   EXPECT_STREQ("hello", div->innerText().utf8().data());
 

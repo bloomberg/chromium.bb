@@ -585,7 +585,7 @@ class TextCodecInput final {
                  size_t length) {
     m_buffer.reserveInitialCapacity(length);
     for (size_t i = 0; i < length; ++i)
-      m_buffer.append(characters[i]);
+      m_buffer.push_back(characters[i]);
     m_begin = m_buffer.data();
     m_end = m_begin + m_buffer.size();
   }

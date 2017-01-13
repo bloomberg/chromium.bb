@@ -148,12 +148,12 @@ TEST(StringTest, ReplaceWithLiteral) {
 
 TEST(StringTest, ComparisonOfSameStringVectors) {
   Vector<String> stringVector;
-  stringVector.append("one");
-  stringVector.append("two");
+  stringVector.push_back("one");
+  stringVector.push_back("two");
 
   Vector<String> sameStringVector;
-  sameStringVector.append("one");
-  sameStringVector.append("two");
+  sameStringVector.push_back("one");
+  sameStringVector.push_back("two");
 
   EXPECT_EQ(stringVector, sameStringVector);
 }

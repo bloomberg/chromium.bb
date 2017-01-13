@@ -63,7 +63,7 @@ InterpolationTypes interpolationTypesForSyntax(const AtomicString& propertyName,
   InterpolationTypes interpolationTypes;
   // TODO(alancutter): Read the syntax descriptor and add the appropriate
   // CSSInterpolationType subclasses.
-  interpolationTypes.append(
+  interpolationTypes.push_back(
       WTF::makeUnique<CSSValueInterpolationType>(property));
   return interpolationTypes;
 }

@@ -506,11 +506,11 @@ void String::split(const StringView& separator,
   size_t endPos;
   while ((endPos = find(separator, startPos)) != kNotFound) {
     if (allowEmptyEntries || startPos != endPos)
-      result.append(substring(startPos, endPos - startPos));
+      result.push_back(substring(startPos, endPos - startPos));
     startPos = endPos + separator.length();
   }
   if (allowEmptyEntries || startPos != length())
-    result.append(substring(startPos));
+    result.push_back(substring(startPos));
 }
 
 void String::split(UChar separator,
@@ -522,11 +522,11 @@ void String::split(UChar separator,
   size_t endPos;
   while ((endPos = find(separator, startPos)) != kNotFound) {
     if (allowEmptyEntries || startPos != endPos)
-      result.append(substring(startPos, endPos - startPos));
+      result.push_back(substring(startPos, endPos - startPos));
     startPos = endPos + 1;
   }
   if (allowEmptyEntries || startPos != length())
-    result.append(substring(startPos));
+    result.push_back(substring(startPos));
 }
 
 CString String::ascii() const {
@@ -837,15 +837,15 @@ Vector<char> asciiDebug(StringImpl* impl) {
     UChar ch = (*impl)[i];
     if (isASCIIPrintable(ch)) {
       if (ch == '\\')
-        buffer.append('\\');
-      buffer.append(static_cast<char>(ch));
+        buffer.push_back('\\');
+      buffer.push_back(static_cast<char>(ch));
     } else {
-      buffer.append('\\');
-      buffer.append('u');
+      buffer.push_back('\\');
+      buffer.push_back('u');
       appendUnsignedAsHexFixedSize(ch, buffer, 4);
     }
   }
-  buffer.append('\0');
+  buffer.push_back('\0');
   return buffer;
 }
 

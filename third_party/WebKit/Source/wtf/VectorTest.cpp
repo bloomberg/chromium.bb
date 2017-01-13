@@ -45,10 +45,10 @@ TEST(VectorTest, Basic) {
 
 TEST(VectorTest, Reverse) {
   Vector<int> intVector;
-  intVector.append(10);
-  intVector.append(11);
-  intVector.append(12);
-  intVector.append(13);
+  intVector.push_back(10);
+  intVector.push_back(11);
+  intVector.push_back(12);
+  intVector.push_back(13);
   intVector.reverse();
 
   EXPECT_EQ(13, intVector[0]);
@@ -56,7 +56,7 @@ TEST(VectorTest, Reverse) {
   EXPECT_EQ(11, intVector[2]);
   EXPECT_EQ(10, intVector[3]);
 
-  intVector.append(9);
+  intVector.push_back(9);
   intVector.reverse();
 
   EXPECT_EQ(9, intVector[0]);
@@ -68,10 +68,10 @@ TEST(VectorTest, Reverse) {
 
 TEST(VectorTest, Remove) {
   Vector<int> intVector;
-  intVector.append(0);
-  intVector.append(1);
-  intVector.append(2);
-  intVector.append(3);
+  intVector.push_back(0);
+  intVector.push_back(1);
+  intVector.push_back(2);
+  intVector.push_back(3);
 
   EXPECT_EQ(4u, intVector.size());
   EXPECT_EQ(0, intVector[0]);
@@ -98,10 +98,10 @@ TEST(VectorTest, Remove) {
 
 TEST(VectorTest, Iterator) {
   Vector<int> intVector;
-  intVector.append(10);
-  intVector.append(11);
-  intVector.append(12);
-  intVector.append(13);
+  intVector.push_back(10);
+  intVector.push_back(11);
+  intVector.push_back(12);
+  intVector.push_back(13);
 
   Vector<int>::iterator it = intVector.begin();
   Vector<int>::iterator end = intVector.end();
@@ -121,10 +121,10 @@ TEST(VectorTest, Iterator) {
 
 TEST(VectorTest, ReverseIterator) {
   Vector<int> intVector;
-  intVector.append(10);
-  intVector.append(11);
-  intVector.append(12);
-  intVector.append(13);
+  intVector.push_back(10);
+  intVector.push_back(11);
+  intVector.push_back(12);
+  intVector.push_back(13);
 
   Vector<int>::reverse_iterator it = intVector.rbegin();
   Vector<int>::reverse_iterator end = intVector.rend();
@@ -160,8 +160,8 @@ typedef WTF::Vector<std::unique_ptr<DestructCounter>> OwnPtrVector;
 TEST(VectorTest, OwnPtr) {
   int destructNumber = 0;
   OwnPtrVector vector;
-  vector.append(WTF::wrapUnique(new DestructCounter(0, &destructNumber)));
-  vector.append(WTF::wrapUnique(new DestructCounter(1, &destructNumber)));
+  vector.push_back(WTF::wrapUnique(new DestructCounter(0, &destructNumber)));
+  vector.push_back(WTF::wrapUnique(new DestructCounter(1, &destructNumber)));
   EXPECT_EQ(2u, vector.size());
 
   std::unique_ptr<DestructCounter>& counter0 = vector.front();
@@ -244,8 +244,8 @@ class MoveOnly {
 
 TEST(VectorTest, MoveOnlyType) {
   WTF::Vector<MoveOnly> vector;
-  vector.append(MoveOnly(1));
-  vector.append(MoveOnly(2));
+  vector.push_back(MoveOnly(1));
+  vector.push_back(MoveOnly(2));
   EXPECT_EQ(2u, vector.size());
 
   ASSERT_EQ(1, vector.front().value());
@@ -262,7 +262,7 @@ TEST(VectorTest, MoveOnlyType) {
 
   size_t count = vector.capacity() + 1;
   for (size_t i = 0; i < count; i++)
-    vector.append(
+    vector.push_back(
         MoveOnly(i + 1));  // +1 to distinguish from default-constructed.
 
   // Reallocation did not affect the vector's content.
@@ -313,9 +313,9 @@ class WrappedInt {
 TEST(VectorTest, SwapWithInlineCapacity) {
   const size_t inlineCapacity = 2;
   Vector<WrappedInt, inlineCapacity> vectorA;
-  vectorA.append(WrappedInt(1));
+  vectorA.push_back(WrappedInt(1));
   Vector<WrappedInt, inlineCapacity> vectorB;
-  vectorB.append(WrappedInt(2));
+  vectorB.push_back(WrappedInt(2));
 
   EXPECT_EQ(vectorA.size(), vectorB.size());
   vectorA.swap(vectorB);
@@ -325,7 +325,7 @@ TEST(VectorTest, SwapWithInlineCapacity) {
   EXPECT_EQ(1u, vectorB.size());
   EXPECT_EQ(1, vectorB.at(0).get());
 
-  vectorA.append(WrappedInt(3));
+  vectorA.push_back(WrappedInt(3));
 
   EXPECT_GT(vectorA.size(), vectorB.size());
   vectorA.swap(vectorB);
@@ -345,7 +345,7 @@ TEST(VectorTest, SwapWithInlineCapacity) {
   EXPECT_EQ(1u, vectorB.size());
   EXPECT_EQ(1, vectorB.at(0).get());
 
-  vectorA.append(WrappedInt(4));
+  vectorA.push_back(WrappedInt(4));
   EXPECT_GT(vectorA.size(), inlineCapacity);
   vectorA.swap(vectorB);
 
@@ -424,16 +424,16 @@ TEST(VectorTest, Compare) {
 
 TEST(VectorTest, AppendFirst) {
   Vector<WTF::String> vector;
-  vector.append("string");
+  vector.push_back("string");
   // Test passes if it does not crash (reallocation did not make
   // the input reference stale).
   size_t limit = vector.capacity() + 1;
   for (size_t i = 0; i < limit; i++)
-    vector.append(vector.front());
+    vector.push_back(vector.front());
 
   limit = vector.capacity() + 1;
   for (size_t i = 0; i < limit; i++)
-    vector.append(const_cast<const WTF::String&>(vector.front()));
+    vector.push_back(const_cast<const WTF::String&>(vector.front()));
 }
 
 // The test below is for the following issue:
@@ -486,8 +486,8 @@ void testDestructorAndConstructorCallsWhenSwappingWithInlineCapacity() {
 
   Vector<RefPtr<LivenessCounter>, inlineCapacity> vector;
   Vector<RefPtr<LivenessCounter>, inlineCapacity> vector2;
-  vector.append(&counter);
-  vector2.append(&counter);
+  vector.push_back(&counter);
+  vector2.push_back(&counter);
   EXPECT_EQ(2u, LivenessCounter::s_live);
 
   for (unsigned i = 0; i < 13; i++) {
@@ -497,12 +497,12 @@ void testDestructorAndConstructorCallsWhenSwappingWithInlineCapacity() {
       EXPECT_EQ(0u, LivenessCounter::s_live);
 
       for (unsigned k = 0; k < j; k++)
-        vector.append(&counter);
+        vector.push_back(&counter);
       EXPECT_EQ(j, LivenessCounter::s_live);
       EXPECT_EQ(j, vector.size());
 
       for (unsigned k = 0; k < i; k++)
-        vector2.append(&counter);
+        vector2.push_back(&counter);
       EXPECT_EQ(i + j, LivenessCounter::s_live);
       EXPECT_EQ(i, vector2.size());
 
@@ -521,7 +521,7 @@ void testDestructorAndConstructorCallsWhenSwappingWithInlineCapacity() {
         EXPECT_EQ(size, vector.size());
         EXPECT_EQ(size2, vector2.size());
 
-        vector2.append(&counter);
+        vector2.push_back(&counter);
         vector2.remove(0);
       }
     }
@@ -544,9 +544,9 @@ void testValuesMovedAndSwappedWithInlineCapacity() {
       vector.clear();
       vector2.clear();
       for (unsigned i = 0; i < size; i++)
-        vector.append(i);
+        vector.push_back(i);
       for (unsigned i = 0; i < size2; i++)
-        vector2.append(i + 42);
+        vector2.push_back(i + 42);
       EXPECT_EQ(size, vector.size());
       EXPECT_EQ(size2, vector2.size());
       vector.swap(vector2);
@@ -567,7 +567,7 @@ TEST(VectorTest, ValuesMovedAndSwappedWithInlineCapacity) {
 TEST(VectorTest, UniquePtr) {
   using Pointer = std::unique_ptr<int>;
   Vector<Pointer> vector;
-  vector.append(Pointer(new int(1)));
+  vector.push_back(Pointer(new int(1)));
   vector.reserveCapacity(2);
   vector.uncheckedAppend(Pointer(new int(2)));
   vector.insert(2, Pointer(new int(3)));
@@ -614,9 +614,9 @@ TEST(VectorTest, InitializerList) {
   EXPECT_EQ(3, oneTwoThree[2]);
 
   // Put some jank so we can check if the assignments later can clear them.
-  empty.append(9999);
-  one.append(9999);
-  oneTwoThree.append(9999);
+  empty.push_back(9999);
+  one.push_back(9999);
+  oneTwoThree.push_back(9999);
 
   empty = {};
   EXPECT_TRUE(empty.isEmpty());

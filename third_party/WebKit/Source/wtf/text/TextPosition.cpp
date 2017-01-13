@@ -41,10 +41,10 @@ std::unique_ptr<Vector<unsigned>> lineEndings(const String& text) {
     if (lineEnd == kNotFound)
       break;
 
-    result->append(static_cast<unsigned>(lineEnd));
+    result->push_back(static_cast<unsigned>(lineEnd));
     start = lineEnd + 1;
   }
-  result->append(text.length());
+  result->push_back(text.length());
 
   return result;
 }

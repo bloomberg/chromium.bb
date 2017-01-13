@@ -51,7 +51,7 @@ void TextDetector::onDetectText(
 
   HeapVector<Member<DetectedText>> detectedText;
   for (const auto& text : textDetectionResults) {
-    detectedText.append(DetectedText::create(
+    detectedText.push_back(DetectedText::create(
         text->raw_value,
         DOMRect::create(text->bounding_box->x, text->bounding_box->y,
                         text->bounding_box->width,
