@@ -41,6 +41,7 @@ catalog("catalog") {
     "catalog_viewer",
     "leveldb",
     "mash_session",
+    "mus_demo",
     "quick_launch",
     "task_viewer",
     "test_ime_driver",
@@ -67,12 +68,14 @@ catalog("catalog") {
 
   deps = [
     "//components/leveldb:manifest",
+    "//mash/catalog_viewer:manifest",
     "//mash/example:catalog",
     "//mash/quick_launch:manifest",
     "//mash/session:manifest",
     "//mash/task_viewer:manifest",
     "//services/tracing:manifest",
     "//services/ui:manifest",
+    "//services/ui/demo:manifest",
     "//services/ui/ime/test_ime_driver:manifest",
 
     # See the note above about dependencies on Chrome.
