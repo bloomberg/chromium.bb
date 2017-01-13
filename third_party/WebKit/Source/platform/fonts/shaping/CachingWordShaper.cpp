@@ -74,7 +74,7 @@ static inline float shapeResultsForRun(
       totalWidth += wordResult->width();
       if (fallbackFonts)
         wordResult->fallbackFonts(fallbackFonts);
-      resultsBuffer->appendResult(wordResult.release());
+      resultsBuffer->appendResult(std::move(wordResult));
     }
   }
   return totalWidth;

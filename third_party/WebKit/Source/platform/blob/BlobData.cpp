@@ -156,7 +156,7 @@ void BlobData::appendText(const String& text,
   }
 
   if (data)
-    m_items.push_back(BlobDataItem(data.release()));
+    m_items.push_back(BlobDataItem(std::move(data)));
 }
 
 void BlobData::appendBytes(const void* bytes, size_t length) {
@@ -170,7 +170,7 @@ void BlobData::appendBytes(const void* bytes, size_t length) {
   RefPtr<RawData> data = RawData::create();
   Vector<char>* buffer = data->mutableData();
   buffer->append(static_cast<const char*>(bytes), length);
-  m_items.push_back(BlobDataItem(data.release()));
+  m_items.push_back(BlobDataItem(std::move(data)));
 }
 
 long long BlobData::length() const {

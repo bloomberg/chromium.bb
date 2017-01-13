@@ -52,7 +52,7 @@ bool ImageSource::setData(PassRefPtr<SharedBuffer> passData,
   m_allDataReceived = allDataReceived;
 
   if (m_decoder) {
-    m_decoder->setData(data.release(), allDataReceived);
+    m_decoder->setData(std::move(data), allDataReceived);
     // If the decoder is pre-instantiated, it means we've already validated the
     // data/signature at some point.
     return true;

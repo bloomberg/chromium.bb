@@ -76,7 +76,7 @@ inline bool operator!=(const FontFamily& a, const FontFamily& b) {
 }
 
 inline FontFamily::~FontFamily() {
-  RefPtr<SharedFontFamily> reaper = m_next.release();
+  RefPtr<SharedFontFamily> reaper = std::move(m_next);
   while (reaper && reaper->hasOneRef()) {
     // implicitly protects reaper->next, then derefs reaper
     reaper = reaper->releaseNext();
@@ -92,7 +92,7 @@ inline void FontFamily::appendFamily(PassRefPtr<SharedFontFamily> family) {
 }
 
 inline PassRefPtr<SharedFontFamily> FontFamily::releaseNext() {
-  return m_next.release();
+  return std::move(m_next);
 }
 
 }  // namespace blink

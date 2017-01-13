@@ -139,7 +139,7 @@ WebURLLoadTiming WebURLResponse::loadTiming() {
 void WebURLResponse::setLoadTiming(const WebURLLoadTiming& timing) {
   RefPtr<ResourceLoadTiming> loadTiming =
       PassRefPtr<ResourceLoadTiming>(timing);
-  m_resourceResponse->setResourceLoadTiming(loadTiming.release());
+  m_resourceResponse->setResourceLoadTiming(std::move(loadTiming));
 }
 
 WebHTTPLoadInfo WebURLResponse::httpLoadInfo() {

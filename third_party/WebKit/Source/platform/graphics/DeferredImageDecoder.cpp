@@ -74,7 +74,7 @@ std::unique_ptr<DeferredImageDecoder> DeferredImageDecoder::create(
 
   // Since we've just instantiated a fresh decoder, there's no need to reset its
   // data.
-  decoder->setDataInternal(data.release(), dataComplete, false);
+  decoder->setDataInternal(std::move(data), dataComplete, false);
 
   return decoder;
 }
@@ -329,8 +329,8 @@ sk_sp<SkImage> DeferredImageDecoder::createFrameImageAtIndex(
       m_colorSpaceForSkImages);
 
   DecodingImageGenerator* generator = new DecodingImageGenerator(
-      m_frameGenerator, info, segmentReader.release(), m_allDataReceived, index,
-      m_frameData[index].m_uniqueID);
+      m_frameGenerator, info, std::move(segmentReader), m_allDataReceived,
+      index, m_frameData[index].m_uniqueID);
   sk_sp<SkImage> image = SkImage::MakeFromGenerator(
       generator);  // SkImage takes ownership of the generator.
   if (!image)
