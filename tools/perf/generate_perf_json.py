@@ -435,7 +435,8 @@ def get_waterfall_config():
 
 
 def generate_isolate_script_entry(swarming_dimensions, test_args,
-  isolate_name, step_name, override_compile_targets=None):
+    isolate_name, step_name, override_compile_targets=None,
+    swarming_timeout=None):
   result = {
     'args': test_args,
     'isolate_name': isolate_name,
@@ -449,7 +450,7 @@ def generate_isolate_script_entry(swarming_dimensions, test_args,
       # supports swarming. It doesn't hurt.
       'can_use_on_swarming_builders': True,
       'expiration': 21600,
-      'hard_timeout': 7200,
+      'hard_timeout': swarming_timeout if swarming_timeout else 7200,
       'io_timeout': 3600,
       'dimension_sets': swarming_dimensions,
     }
@@ -479,7 +480,8 @@ def generate_telemetry_test(swarming_dimensions, benchmark_name, browser):
 
   return generate_isolate_script_entry(
     swarming_dimensions, test_args, 'telemetry_perf_tests',
-    step_name, ['telemetry_perf_tests'])
+    step_name, ['telemetry_perf_tests'],
+    swarming_timeout=BENCHMARK_SWARMING_TIMEOUTS.get(benchmark_name))
 
 
 def script_test_enabled_on_tester(master, test, tester_name, shard):
@@ -598,6 +600,11 @@ BENCHMARK_NAME_BLACKLIST = [
     'skpicture_printer',
     'skpicture_printer_ct',
 ]
+
+# Overrides the default 2 hour timeout for swarming tasks.
+BENCHMARK_SWARMING_TIMEOUTS = {
+    'loading.mobile': 14400,
+}
 
 # Certain swarming bots are not sharding correctly with the new device affinity
 # algorithm.  Reverting to legacy algorithm to try and get them to complete.
