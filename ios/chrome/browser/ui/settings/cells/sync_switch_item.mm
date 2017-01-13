@@ -5,8 +5,10 @@
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
+#include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -38,7 +40,6 @@ const CGFloat kHorizontalSwitchPadding = 10;
   if (self) {
     self.cellClass = [SyncSwitchCell class];
     self.enabled = YES;
-    self.accessibilityTraits |= UIAccessibilityTraitButton;
   }
   return self;
 }
@@ -96,6 +97,8 @@ const CGFloat kHorizontalSwitchPadding = 10;
     _switchView = [[UISwitch alloc] initWithFrame:CGRectZero];
     _switchView.translatesAutoresizingMaskIntoConstraints = NO;
     _switchView.onTintColor = [[MDCPalette cr_bluePalette] tint500];
+    _switchView.accessibilityHint = l10n_util::GetNSString(
+        IDS_IOS_TOGGLE_SETTING_SWITCH_ACCESSIBILITY_HINT);
     [self.contentView addSubview:_switchView];
 
     [self setConstraints];
@@ -179,7 +182,11 @@ const CGFloat kHorizontalSwitchPadding = 10;
 }
 
 - (NSString*)accessibilityHint {
-  return _switchView.accessibilityHint;
+  if (_switchView.isEnabled) {
+    return _switchView.accessibilityHint;
+  } else {
+    return @"";
+  }
 }
 
 - (NSString*)accessibilityLabel {
@@ -191,7 +198,11 @@ const CGFloat kHorizontalSwitchPadding = 10;
 }
 
 - (NSString*)accessibilityValue {
-  return _switchView.accessibilityValue;
+  if (_switchView.on) {
+    return l10n_util::GetNSString(IDS_IOS_SETTING_ON);
+  } else {
+    return l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
+  }
 }
 
 @end
