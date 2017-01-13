@@ -25,6 +25,11 @@
 
 namespace {
 
+struct Testcase {
+  const char* input;
+  const char* output;
+};
+
 void VerifySystemProfileData(const metrics::SystemProfileProto& system_profile,
                              bool expect_unhashed_value) {
   const char kWindowsDefender[] = "Windows Defender";
@@ -48,6 +53,8 @@ void VerifySystemProfileData(const metrics::SystemProfileProto& system_profile,
 }
 
 }  // namespace
+
+class AntiVirusMetricsProviderSimpleTest : public ::testing::Test {};
 
 class AntiVirusMetricsProviderTest : public ::testing::TestWithParam<bool> {
  public:
@@ -130,3 +137,26 @@ TEST_P(AntiVirusMetricsProviderTest, GetMetricsFullName) {
 }
 
 INSTANTIATE_TEST_CASE_P(, AntiVirusMetricsProviderTest, ::testing::Bool());
+
+TEST_F(AntiVirusMetricsProviderSimpleTest, StripProductVersion) {
+  Testcase testcases[] = {
+      {"", ""},
+      {" ", ""},
+      {"1.0 AV 2.0", "1.0 AV"},
+      {"Anti  Virus", "Anti Virus"},
+      {"Windows Defender", "Windows Defender"},
+      {"McAfee AntiVirus has a space at the end ",
+       "McAfee AntiVirus has a space at the end"},
+      {"ESET NOD32 Antivirus 8.0", "ESET NOD32 Antivirus"},
+      {"Norton 360", "Norton 360"},
+      {"ESET Smart Security 9.0.381.1", "ESET Smart Security"},
+      {"Trustwave AV 3_0_2547", "Trustwave AV"},
+      {"nProtect Anti-Virus/Spyware V4.0", "nProtect Anti-Virus/Spyware"},
+      {"ESET NOD32 Antivirus 9.0.349.15P", "ESET NOD32 Antivirus"}};
+
+  for (const auto testcase : testcases) {
+    auto output =
+        AntiVirusMetricsProvider::TrimVersionOfAvProductName(testcase.input);
+    EXPECT_STREQ(testcase.output, output.c_str());
+  }
+}
