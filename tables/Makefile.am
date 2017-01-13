@@ -135,6 +135,7 @@ table_files = \
 	fi.tbl \
 	fi.utb \
 	fr-2007.ctb \
+	fr-bfu-comp68.cti \
 	fr-bfu-comp6.utb \
 	fr-bfu-comp8.utb \
 	fr-bfu-g2.ctb \
