@@ -46,11 +46,11 @@ class ZoomDecoration : public ImageDecoration,
   // Virtual and protected for testing.
   virtual void HideUI();
 
-  // Show and update UI associated with the zoom decoration.
+  // Update UI associated with the zoom decoration.
   // Virtual and protected for testing.
-  virtual void ShowAndUpdateUI(zoom::ZoomController* zoom_controller,
-                               NSString* tooltip_string,
-                               bool location_bar_is_dark);
+  virtual void UpdateUI(zoom::ZoomController* zoom_controller,
+                        NSString* tooltip_string,
+                        bool location_bar_is_dark);
 
   // Overridden from LocationBarDecoration:
   gfx::VectorIconId GetMaterialVectorIconId() const override;

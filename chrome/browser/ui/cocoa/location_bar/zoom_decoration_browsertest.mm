@@ -105,7 +105,7 @@ IN_PROC_BROWSER_TEST_F(ZoomDecorationTest, BubbleAtDefaultZoom) {
   EXPECT_TRUE(zoom_decoration->IsVisible());
   zoom_decoration->ShowBubble(false);
   Zoom(content::PAGE_ZOOM_RESET);
-  EXPECT_TRUE(zoom_decoration->IsVisible());
+  EXPECT_FALSE(zoom_decoration->IsVisible());
 
   // Hide bubble and verify the decoration is hidden.
   zoom_decoration->CloseBubble();
