@@ -52,6 +52,7 @@ import functools
 import multiprocessing
 import os
 import os.path
+import re
 import subprocess
 import sys
 
@@ -119,6 +120,9 @@ def _ExecuteTool(toolname, tool_args, build_directory, filename):
   command = subprocess.Popen(
       args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   stdout_text, stderr_text = command.communicate()
+  stderr_text = re.sub(
+      r"^warning: .*'linker' input unused \[-Wunused-command-line-argument\]\n",
+      "", stderr_text, flags=re.MULTILINE)
   if command.returncode != 0:
     return {'status': False, 'filename': filename, 'stderr_text': stderr_text}
   else:
