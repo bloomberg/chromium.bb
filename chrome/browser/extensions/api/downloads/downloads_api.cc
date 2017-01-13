@@ -441,6 +441,8 @@ DownloadItem* GetDownload(content::BrowserContext* context,
   return download_item;
 }
 
+// Corresponds to |DownloadFunctions| enumeration in histograms.xml. Please
+// keep these in sync.
 enum DownloadsFunctionName {
   DOWNLOADS_FUNCTION_DOWNLOAD = 0,
   DOWNLOADS_FUNCTION_SEARCH = 1,
