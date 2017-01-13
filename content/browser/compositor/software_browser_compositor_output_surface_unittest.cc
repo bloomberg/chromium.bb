@@ -101,8 +101,9 @@ void SoftwareBrowserCompositorOutputSurfaceTest::SetUp() {
   ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
                                        &context_factory_private);
 
-  compositor_.reset(new ui::Compositor(context_factory, context_factory_private,
-                                       message_loop_.task_runner().get()));
+  compositor_.reset(new ui::Compositor(
+      context_factory_private->AllocateFrameSinkId(), context_factory,
+      context_factory_private, message_loop_.task_runner().get()));
   compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
 }
 

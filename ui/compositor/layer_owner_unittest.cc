@@ -78,8 +78,9 @@ void LayerOwnerTestWithCompositor::SetUp() {
   ui::InitializeContextFactoryForTests(false, &context_factory,
                                        &context_factory_private);
 
-  compositor_.reset(new ui::Compositor(context_factory, context_factory_private,
-                                       task_runner));
+  compositor_.reset(new ui::Compositor(
+      context_factory_private->AllocateFrameSinkId(), context_factory,
+      context_factory_private, task_runner));
   compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
 }
 

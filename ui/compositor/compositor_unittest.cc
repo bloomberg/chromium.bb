@@ -76,7 +76,8 @@ class CompositorTest : public testing::Test {
                                          &context_factory_private);
 
     compositor_.reset(new ui::Compositor(
-        context_factory, context_factory_private, task_runner_));
+        context_factory_private->AllocateFrameSinkId(), context_factory,
+        context_factory_private, task_runner_));
     compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
   }
   void TearDown() override {

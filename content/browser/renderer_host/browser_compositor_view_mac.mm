@@ -98,7 +98,8 @@ class RecyclableCompositorMac : public ui::CompositorObserver {
 
 RecyclableCompositorMac::RecyclableCompositorMac()
     : accelerated_widget_mac_(new ui::AcceleratedWidgetMac()),
-      compositor_(content::GetContextFactory(),
+      compositor_(content::GetContextFactoryPrivate()->AllocateFrameSinkId(),
+                  content::GetContextFactory(),
                   content::GetContextFactoryPrivate(),
                   ui::WindowResizeHelperMac::Get()->task_runner()) {
   compositor_.SetAcceleratedWidget(

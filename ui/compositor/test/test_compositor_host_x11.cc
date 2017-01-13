@@ -54,7 +54,8 @@ TestCompositorHostX11::TestCompositorHostX11(
     : bounds_(bounds),
       context_factory_(context_factory),
       context_factory_private_(context_factory_private),
-      compositor_(context_factory_,
+      compositor_(context_factory_private_->AllocateFrameSinkId(),
+                  context_factory_,
                   context_factory_private_,
                   base::ThreadTaskRunnerHandle::Get()) {}
 

@@ -21,9 +21,9 @@ class TestCompositorHostWin : public TestCompositorHost,
                         ui::ContextFactory* context_factory,
                         ui::ContextFactoryPrivate* context_factory_private) {
     Init(NULL, bounds);
-    compositor_.reset(new ui::Compositor(context_factory,
-                                         context_factory_private,
-                                         base::ThreadTaskRunnerHandle::Get()));
+    compositor_.reset(new ui::Compositor(
+        context_factory_private->AllocateFrameSinkId(), context_factory,
+        context_factory_private, base::ThreadTaskRunnerHandle::Get()));
     compositor_->SetAcceleratedWidget(hwnd());
     compositor_->SetScaleAndSize(1.0f, GetSize());
   }

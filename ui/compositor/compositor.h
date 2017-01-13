@@ -203,7 +203,8 @@ class COMPOSITOR_EXPORT Compositor
     : NON_EXPORTED_BASE(public cc::LayerTreeHostClient),
       NON_EXPORTED_BASE(public cc::LayerTreeHostSingleThreadClient) {
  public:
-  Compositor(ui::ContextFactory* context_factory,
+  Compositor(const cc::FrameSinkId& frame_sink_id,
+             ui::ContextFactory* context_factory,
              ui::ContextFactoryPrivate* context_factory_private,
              scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~Compositor() override;

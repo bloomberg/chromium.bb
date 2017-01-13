@@ -49,7 +49,10 @@ WindowTreeHostMus::WindowTreeHostMus(
     for (auto& pair : *properties)
       window_mus->SetPropertyFromServer(pair.first, &pair.second);
   }
-  CreateCompositor();
+  Id server_id = WindowMus::Get(window())->server_id();
+  cc::FrameSinkId frame_sink_id(server_id, 0);
+  DCHECK(frame_sink_id.is_valid());
+  CreateCompositor(frame_sink_id);
   gfx::AcceleratedWidget accelerated_widget;
   if (IsUsingTestContext()) {
     accelerated_widget = gfx::kNullAcceleratedWidget;

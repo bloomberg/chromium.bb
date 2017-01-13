@@ -41,7 +41,8 @@ TestCompositorHostOzone::TestCompositorHostOzone(
     ui::ContextFactory* context_factory,
     ui::ContextFactoryPrivate* context_factory_private)
     : bounds_(bounds),
-      compositor_(context_factory,
+      compositor_(context_factory_private->AllocateFrameSinkId(),
+                  context_factory,
                   context_factory_private,
                   base::ThreadTaskRunnerHandle::Get()) {}
 
