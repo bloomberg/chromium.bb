@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "ash/mus/disconnected_app_handler.h"
 #include "ash/root_window_controller.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/display/display.h"
@@ -93,8 +92,6 @@ class RootWindowController {
   int window_count_ = 0;
 
   display::Display display_;
-
-  std::unique_ptr<DisconnectedAppHandler> disconnected_app_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowController);
 };

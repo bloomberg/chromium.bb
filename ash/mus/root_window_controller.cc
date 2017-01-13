@@ -21,6 +21,7 @@
 #include "ash/common/wm/root_window_layout_manager.h"
 #include "ash/common/wm_window.h"
 #include "ash/mus/bridge/wm_shell_mus.h"
+#include "ash/mus/disconnected_app_handler.h"
 #include "ash/mus/non_client_frame_controller.h"
 #include "ash/mus/property_util.h"
 #include "ash/mus/screen_mus.h"
@@ -82,8 +83,6 @@ RootWindowController::RootWindowController(
       new ash::RootWindowController(nullptr, window_tree_host.release()));
   ash_root_window_controller_->Init(root_window_type);
 
-  disconnected_app_handler_.reset(new DisconnectedAppHandler(root()));
-
   for (size_t i = 0; i < kNumActivatableShellWindowIds; ++i) {
     window_manager_->window_manager_client()->AddActivationParent(
         GetWindowByShellWindowId(kActivatableShellWindowIds[i])->aura_window());
@@ -142,6 +141,7 @@ aura::Window* RootWindowController::NewTopLevelWindow(
     NonClientFrameController* non_client_frame_controller =
         new NonClientFrameController(container_window, context, bounds,
                                      window_type, properties, window_manager_);
+    DisconnectedAppHandler::Create(non_client_frame_controller->window());
     return non_client_frame_controller->window();
   }
 
@@ -157,6 +157,7 @@ aura::Window* RootWindowController::NewTopLevelWindow(
   }
   window->Init(ui::LAYER_TEXTURED);
   window->SetBounds(bounds);
+  DisconnectedAppHandler::Create(window);
 
   if (container_window) {
     container_window->AddChild(window);

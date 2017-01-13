@@ -6,22 +6,30 @@
 #define ASH_MUS_DISCONNECTED_APP_HANDLER_H_
 
 #include "base/macros.h"
-#include "ui/aura/window_tracker.h"
+#include "ui/aura/window_observer.h"
 
 namespace ash {
 namespace mus {
 
-// Tracks aura::Windows for when they get disconnected from the embedded app.
-// Destroys the window upon disconnection.
-class DisconnectedAppHandler : public aura::WindowTracker {
+// DisconnectedAppHandler is associated with a single aura Window and deletes
+// the window when the embedded app is disconnected. This is intended to be used
+// for windows created at the request of client apps.
+class DisconnectedAppHandler : public aura::WindowObserver {
  public:
-  explicit DisconnectedAppHandler(aura::Window* root_window);
+  // Public for WindowProperty.
   ~DisconnectedAppHandler() override;
 
+  // Creates a new DisconnectedAppHandler associated with |window|.
+  // DisconnectedAppHandler is owned by the window.
+  static void Create(aura::Window* window);
+
  private:
+  explicit DisconnectedAppHandler(aura::Window* root_window);
+
   // aura::WindowObserver:
   void OnEmbeddedAppDisconnected(aura::Window* window) override;
-  void OnWindowHierarchyChanging(const HierarchyChangeParams& params) override;
+
+  aura::Window* window_;
 
   DISALLOW_COPY_AND_ASSIGN(DisconnectedAppHandler);
 };
