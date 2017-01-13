@@ -1540,12 +1540,14 @@ public class DownloadManagerService extends BroadcastReceiver implements
     @Override
     public void addDownloadHistoryAdapter(DownloadHistoryAdapter adapter) {
         mHistoryAdapters.addObserver(adapter);
+        DownloadSharedPreferenceHelper.getInstance().addObserver(adapter);
     }
 
     /** Removes a DownloadHistoryAdapter from the list. */
     @Override
     public void removeDownloadHistoryAdapter(DownloadHistoryAdapter adapter) {
         mHistoryAdapters.removeObserver(adapter);
+        DownloadSharedPreferenceHelper.getInstance().removeObserver(adapter);
     }
 
     /**

@@ -160,9 +160,6 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
     /** @return Whether the download is currently paused. */
     abstract boolean isPaused();
 
-    /** @return Whether the download can be resumed. */
-    abstract boolean isResumable();
-
     /** Called when the user wants to open the file. */
     abstract void open();
 
@@ -305,19 +302,7 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
 
         @Override
         public int getStatusString() {
-            int state = mItem.getDownloadInfo().state();
-            if (mItem.getDownloadInfo().isPaused()) {
-                // TODO(dfalcantara): Account for paused downloads after restarting Chrome.
-                return R.string.download_notification_paused;
-            } else if (state == DownloadState.INTERRUPTED) {
-                return R.string.download_notification_pending;
-            } else if (state == DownloadState.COMPLETE) {
-                return R.string.download_notification_completed;
-            } else if (state == DownloadState.IN_PROGRESS) {
-                return R.string.download_started;
-            } else {
-                return 0;
-            }
+            return DownloadUtils.getStatusStringId(mItem);
         }
 
         @Override
@@ -379,12 +364,7 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
 
         @Override
         public boolean isPaused() {
-            return mItem.getDownloadInfo().isPaused();
-        }
-
-        @Override
-        public boolean isResumable() {
-            return mItem.getDownloadInfo().isResumable();
+            return DownloadUtils.isDownloadPaused(mItem);
         }
 
         @Override
@@ -552,11 +532,6 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
 
         @Override
         public boolean isPaused() {
-            return false;
-        }
-
-        @Override
-        public boolean isResumable() {
             return false;
         }
     }

@@ -91,7 +91,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         mPauseResumeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mItem.isResumable()) {
+                if (mItem.isPaused()) {
                     mItem.resume();
                 } else if (!mItem.isComplete()) {
                     mItem.pause();
@@ -133,14 +133,6 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         ThumbnailProvider thumbnailProvider = provider.getThumbnailProvider();
         thumbnailProvider.cancelRetrieval(this);
 
-        Context context = mFilesizeView.getContext();
-        mFilenameCompletedView.setText(item.getDisplayFileName());
-        mFilenameInProgressView.setText(item.getDisplayFileName());
-        mHostnameView.setText(
-                UrlFormatter.formatUrlForSecurityDisplay(item.getUrl(), false));
-        mFilesizeView.setText(
-                Formatter.formatFileSize(context, item.getFileSize()));
-
         // Asynchronously grab a thumbnail for the file if it might have one.
         int fileType = item.getFilterType();
         mThumbnailBitmap = null;
@@ -173,13 +165,21 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
 
         updateIconView();
 
+        Context context = mFilesizeView.getContext();
+        mFilenameCompletedView.setText(item.getDisplayFileName());
+        mFilenameInProgressView.setText(item.getDisplayFileName());
+        mHostnameView.setText(
+                UrlFormatter.formatUrlForSecurityDisplay(item.getUrl(), false));
+        mFilesizeView.setText(
+                Formatter.formatFileSize(context, item.getFileSize()));
+
         if (item.isComplete()) {
             showLayout(mLayoutCompleted);
         } else {
             showLayout(mLayoutInProgress);
             mDownloadStatusView.setText(item.getStatusString());
 
-            if (item.isResumable() || item.isPaused()) {
+            if (item.isPaused()) {
                 mPauseResumeButton.setImageResource(R.drawable.ic_media_control_play);
                 mPauseResumeButton.setContentDescription(
                         getContext().getString(R.string.download_notification_resume_button));

@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.content_public.browser.DownloadState;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.widget.Toast;
@@ -530,5 +531,55 @@ public class DownloadUtils {
         }
 
         return false;
+    }
+
+    /**
+     * Determine what String to show for a given download.
+     * @param item Download to check the status of.
+     * @return ID of a String resource to use, or 0 if the status couldn't be determined.
+     */
+    public static int getStatusStringId(DownloadItem item) {
+        int state = item.getDownloadInfo().state();
+        if (state == DownloadState.COMPLETE) return R.string.download_notification_completed;
+
+        DownloadSharedPreferenceHelper helper = DownloadSharedPreferenceHelper.getInstance();
+        DownloadSharedPreferenceEntry entry = helper.getDownloadSharedPreferenceEntry(item.getId());
+
+        if (entry != null && state == DownloadState.INTERRUPTED && entry.isAutoResumable) {
+            return R.string.download_notification_pending;
+        } else if (isDownloadPaused(item)) {
+            return R.string.download_notification_paused;
+        } else if (state == DownloadState.IN_PROGRESS) {
+            return R.string.download_started;
+        } else {
+            assert false : "Unable to determine state of the download";
+            return 0;
+        }
+    }
+
+    /**
+     * Query the Download backends about whether a download is paused.
+     *
+     * The Java-side contains more information about the status of a download than is persisted
+     * by the native backend, so it is queried first.
+     *
+     * @param item Download to check the status of.
+     * @return Whether the download is paused or not.
+     */
+    public static boolean isDownloadPaused(DownloadItem item) {
+        DownloadSharedPreferenceHelper helper = DownloadSharedPreferenceHelper.getInstance();
+        DownloadSharedPreferenceEntry entry = helper.getDownloadSharedPreferenceEntry(item.getId());
+
+        if (entry != null) {
+            // The Java downloads backend knows more about the download than the native backend.
+            return !entry.isAutoResumable;
+        } else {
+            // Only the native downloads backend knows about the download.
+            if (item.getDownloadInfo().state() == DownloadState.IN_PROGRESS) {
+                return item.getDownloadInfo().isPaused();
+            } else {
+                return item.getDownloadInfo().state() == DownloadState.INTERRUPTED;
+            }
+        }
     }
 }

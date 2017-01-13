@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download;
 import android.content.SharedPreferences;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 
@@ -20,10 +21,18 @@ import java.util.Set;
  * Class for maintaining all entries of DownloadSharedPreferenceEntry.
  */
 public class DownloadSharedPreferenceHelper {
+    /** Observes modifications to the SharedPreferences for {@link DownloadItem}s. */
+    public interface Observer {
+        /** Called when a {@link DownloadSharedPreferenceEntry} has been updated. */
+        void onAddOrReplaceDownloadSharedPreferenceEntry(String guid);
+    }
+
     @VisibleForTesting
     static final String KEY_PENDING_DOWNLOAD_NOTIFICATIONS = "PendingDownloadNotifications";
     private final List<DownloadSharedPreferenceEntry> mDownloadSharedPreferenceEntries =
             new ArrayList<DownloadSharedPreferenceEntry>();
+    private final ObserverList<Observer> mObservers = new ObserverList<>();
+
     private SharedPreferences mSharedPrefs;
 
     // "Initialization on demand holder idiom"
@@ -64,6 +73,10 @@ public class DownloadSharedPreferenceHelper {
         }
         mDownloadSharedPreferenceEntries.add(pendingEntry);
         storeDownloadSharedPreferenceEntries();
+
+        for (Observer observer : mObservers) {
+            observer.onAddOrReplaceDownloadSharedPreferenceEntry(pendingEntry.downloadGuid);
+        }
     }
 
     /**
@@ -127,6 +140,22 @@ public class DownloadSharedPreferenceHelper {
             }
         }
         return null;
+    }
+
+    /**
+     * Adds the given {@link Observer}.
+     * @param observer Observer to notify about changes.
+     */
+    public void addObserver(Observer observer) {
+        mObservers.addObserver(observer);
+    }
+
+    /**
+     * Removes the given {@link Observer}.
+     * @param observer Observer to stop notifying about changes.
+     */
+    public void removeObserver(Observer observer) {
+        mObservers.removeObserver(observer);
     }
 
     /**

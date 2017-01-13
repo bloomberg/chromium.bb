@@ -93,7 +93,14 @@ public class DownloadHistoryAdapterTest extends NativeLibraryTestBase {
         initializeAdapter(false);
         assertEquals(0, mAdapter.getItemCount());
         assertEquals(0, mAdapter.getTotalDownloadSize());
-        mAdapter.onManagerDestroyed();
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mAdapter.onManagerDestroyed();
+            }
+        });
+
         mDownloadDelegate.removeCallback.waitForCallback(0);
     }
 

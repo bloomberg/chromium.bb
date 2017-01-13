@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.download.ui;
 
 import android.content.ComponentName;
 import android.support.v7.widget.RecyclerView.ViewHolder;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -14,6 +15,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadItem;
+import org.chromium.chrome.browser.download.DownloadSharedPreferenceHelper;
 import org.chromium.chrome.browser.download.ui.BackendProvider.DownloadDelegate;
 import org.chromium.chrome.browser.download.ui.BackendProvider.OfflinePageDelegate;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.DownloadItemWrapper;
@@ -25,11 +27,13 @@ import org.chromium.chrome.browser.widget.DateDividedAdapter;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.content_public.browser.DownloadState;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 /** Bridges the user's download history and the UI used to display it. */
-public class DownloadHistoryAdapter extends DateDividedAdapter implements DownloadUiObserver {
+public class DownloadHistoryAdapter extends DateDividedAdapter
+        implements DownloadUiObserver, DownloadSharedPreferenceHelper.Observer {
 
     /** Alerted about changes to internal state. */
     static interface TestObserver {
@@ -71,6 +75,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     private final boolean mShowOffTheRecord;
     private final LoadingStateDelegate mLoadingDelegate;
     private final ObserverList<TestObserver> mObservers = new ObserverList<>();
+    private final List<DownloadItemView> mViews = new ArrayList<>();
 
     private BackendProvider mBackendProvider;
     private OfflinePageDownloadBridge.Observer mOfflinePageObserver;
@@ -204,6 +209,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         DownloadItemView v = (DownloadItemView) LayoutInflater.from(parent.getContext()).inflate(
                 R.layout.download_item_view, parent, false);
         v.setSelectionDelegate(getSelectionDelegate());
+        mViews.add(v);
         return new DownloadHistoryItemViewHolder(v);
     }
 
@@ -298,6 +304,16 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         getDownloadDelegate().removeDownloadHistoryAdapter(this);
         getOfflinePageBridge().removeObserver(mOfflinePageObserver);
         sDeletedFileTracker.decrementInstanceCount();
+    }
+
+    @Override
+    public void onAddOrReplaceDownloadSharedPreferenceEntry(final String guid) {
+        // Alert DownloadItemViews displaying information about the item that it has changed.
+        for (DownloadItemView view : mViews) {
+            if (TextUtils.equals(guid, view.getItem().getId())) {
+                view.displayItem(mBackendProvider, view.getItem());
+            }
+        }
     }
 
     /** Marks that certain items are about to be deleted. */
