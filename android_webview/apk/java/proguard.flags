@@ -12,6 +12,11 @@
     public *;
 }
 
+-keep class com.android.webview.chromium.WebViewChromiumFactoryProviderFor* {
+    public *;
+}
+
+
 -keep class com.android.webview.chromium.WebViewDatabaseAdapter {
   public *;
 }

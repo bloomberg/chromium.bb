@@ -658,4 +658,10 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     WebViewDelegate getWebViewDelegate() {
         return mWebViewDelegate;
     }
+
+    // The method to support unreleased Android.
+    WebViewContentsClientAdapter createWebViewContentsClientAdapter(WebView webView,
+            Context context) {
+        return new WebViewContentsClientAdapter(webView, context, mWebViewDelegate);
+    }
 }

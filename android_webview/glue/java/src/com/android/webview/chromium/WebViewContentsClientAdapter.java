@@ -17,7 +17,6 @@ import android.net.http.SslError;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.ClientCertRequest;
@@ -44,11 +43,13 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwContentsClientBridge;
 import org.chromium.android_webview.AwHttpAuthHandler;
+import org.chromium.android_webview.AwRenderProcessGoneDetail;
 import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.android_webview.JsPromptResultReceiver;
 import org.chromium.android_webview.JsResultReceiver;
 import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.android_webview.permission.Resource;
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 
@@ -81,7 +82,7 @@ import java.util.WeakHashMap;
 @SuppressWarnings("deprecation")
 // You shouldn't change TargetApi, please see how Android M API was added.
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-public class WebViewContentsClientAdapter extends AwContentsClient {
+class WebViewContentsClientAdapter extends AwContentsClient {
     // TAG is chosen for consistency with classic webview tracing.
     private static final String TAG = "WebViewCallback";
     // Enables API callback tracing
@@ -89,11 +90,11 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
     // Default WebViewClient used to avoid null checks.
     private static WebViewClient sNullWebViewClient = new WebViewClient();
     // The WebView instance that this adapter is serving.
-    private final WebView mWebView;
+    protected final WebView mWebView;
     // The Context to use. This is different from mWebView.getContext(), which should not be used.
     private final Context mContext;
     // The WebViewClient instance that was passed to WebView.setWebViewClient().
-    private WebViewClient mWebViewClient = sNullWebViewClient;
+    protected WebViewClient mWebViewClient = sNullWebViewClient;
     // The WebChromeClient instance that was passed to WebView.setContentViewClient().
     private WebChromeClient mWebChromeClient;
     // The listener receiving find-in-page API results.
@@ -1203,6 +1204,11 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
         } finally {
             TraceEvent.end("WebViewContentsClientAdapter.getDefaultVideoPoster");
         }
+    }
+
+    @Override
+    public boolean onRenderProcessGone(AwRenderProcessGoneDetail detail) {
+        return false;
     }
 
     // TODO: Move to upstream.

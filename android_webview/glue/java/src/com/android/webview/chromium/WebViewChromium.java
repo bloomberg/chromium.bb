@@ -174,8 +174,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         final boolean allowGeolocationOnInsecureOrigins =
                 mAppTargetSdkVersion <= Build.VERSION_CODES.M;
 
-        mContentsClientAdapter =
-                new WebViewContentsClientAdapter(mWebView, mContext, mFactory.getWebViewDelegate());
+        mContentsClientAdapter = mFactory.createWebViewContentsClientAdapter(mWebView, mContext);
         mWebSettings = new ContentSettingsAdapter(
                 new AwSettings(mContext, isAccessFromFileURLsGrantedByDefault,
                         areLegacyQuirksEnabled, allowEmptyDocumentPersistence,

@@ -389,4 +389,6 @@ public abstract class AwContentsClient {
         mTitle = title;
         mCallbackHelper.postOnReceivedTitle(mTitle);
     }
+
+    public abstract boolean onRenderProcessGone(AwRenderProcessGoneDetail detail);
 }
