@@ -195,6 +195,15 @@ void V8PerIsolateData::useCounterCallback(
     case v8::Isolate::kFunctionConstructorReturnedUndefined:
       blinkFeature = UseCounter::V8FunctionConstructorReturnedUndefined;
       break;
+    case v8::Isolate::kAssigmentExpressionLHSIsCallInSloppy:
+      blinkFeature = UseCounter::V8AssigmentExpressionLHSIsCallInSloppy;
+      break;
+    case v8::Isolate::kAssigmentExpressionLHSIsCallInStrict:
+      blinkFeature = UseCounter::V8AssigmentExpressionLHSIsCallInStrict;
+      break;
+    case v8::Isolate::kPromiseConstructorReturnedUndefined:
+      blinkFeature = UseCounter::V8PromiseConstructorReturnedUndefined;
+      break;
     default:
       // This can happen if V8 has added counters that this version of Blink
       // does not know about. It's harmless.

@@ -1431,6 +1431,9 @@ class CORE_EXPORT UseCounter {
     BaseWithNewlinesInTarget = 1761,
     BaseWithOpenBracketInTarget = 1762,
     BaseWouldBeBlockedByDefaultSrc = 1763,
+    V8AssigmentExpressionLHSIsCallInSloppy = 1764,
+    V8AssigmentExpressionLHSIsCallInStrict = 1765,
+    V8PromiseConstructorReturnedUndefined = 1766,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
