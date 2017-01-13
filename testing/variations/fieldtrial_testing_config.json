@@ -2054,6 +2054,21 @@
             ]
         }
     ],
+    "SearchGeolocationDisclosure": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "EnableNewShow3Each1Day",
+                    "enable_features": [
+                        "ConsistentOmniboxGeolocation"
+                    ]
+                }
+            ]
+        }
+    ],
     "SeccompSandboxAndroid": [
         {
             "platforms": [
