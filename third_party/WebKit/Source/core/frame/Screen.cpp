@@ -38,7 +38,7 @@
 
 namespace blink {
 
-Screen::Screen(LocalFrame* frame) : ContextClient(frame) {}
+Screen::Screen(LocalFrame* frame) : DOMWindowClient(frame) {}
 
 int Screen::height() const {
   if (!frame())
@@ -135,7 +135,7 @@ int Screen::availWidth() const {
 }
 
 DEFINE_TRACE(Screen) {
-  ContextClient::trace(visitor);
+  DOMWindowClient::trace(visitor);
   Supplementable<Screen>::trace(visitor);
 }
 

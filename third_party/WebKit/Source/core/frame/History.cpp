@@ -57,10 +57,10 @@ bool equalIgnoringQueryAndFragment(const KURL& a, const KURL& b) {
 }  // namespace
 
 History::History(LocalFrame* frame)
-    : ContextClient(frame), m_lastStateObjectRequested(nullptr) {}
+    : DOMWindowClient(frame), m_lastStateObjectRequested(nullptr) {}
 
 DEFINE_TRACE(History) {
-  ContextClient::trace(visitor);
+  DOMWindowClient::trace(visitor);
 }
 
 unsigned History::length() const {

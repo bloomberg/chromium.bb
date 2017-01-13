@@ -41,7 +41,7 @@ class LocalFrame;
 
 class CORE_EXPORT Screen final : public GarbageCollected<Screen>,
                                  public ScriptWrappable,
-                                 public ContextClient,
+                                 public DOMWindowClient,
                                  public Supplementable<Screen> {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Screen);
