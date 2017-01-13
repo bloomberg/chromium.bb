@@ -75,6 +75,11 @@ void Surface::QueueFrame(CompositorFrame frame, const DrawCallback& callback) {
   referenced_surfaces_ = current_frame_->metadata.referenced_surfaces;
 }
 
+void Surface::EvictFrame() {
+  QueueFrame(CompositorFrame(), DrawCallback());
+  current_frame_.reset();
+}
+
 void Surface::RequestCopyOfOutput(
     std::unique_ptr<CopyOutputRequest> copy_request) {
   if (current_frame_ && !current_frame_->render_pass_list.empty()) {

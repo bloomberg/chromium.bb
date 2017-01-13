@@ -11,8 +11,6 @@
 #include "cc/playback/display_item_list_settings.h"
 #include "cc/playback/drawing_display_item.h"
 #include "cc/test/layer_tree_pixel_test.h"
-#include "cc/test/test_compositor_frame_sink.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 
@@ -162,17 +160,11 @@ class LayerTreeHostTilesTestPartialInvalidation
   void DidCommitAndDrawFrame() override {
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
-        // We have done one frame, but the resource may not be available for
-        // partial raster yet. Force a second frame.
-        picture_layer_->SetNeedsDisplayRect(gfx::Rect(50, 50, 100, 100));
-        break;
-      case 2:
-        // We have done two frames, so the layer's content has been rastered
-        // twice and the first frame's resource is available for partial
-        // raster. Now we change the picture behind it to record something
-        // completely different, but we give a smaller invalidation rect. The
-        // layer should only re-raster the stuff in the rect. If it doesn't do
-        // partial raster it would re-raster the whole thing instead.
+        // We have done one frame, so the layer's content has been rastered.
+        // Now we change the picture behind it to record something completely
+        // different, but we give a smaller invalidation rect. The layer should
+        // only re-raster the stuff in the rect. If it doesn't do partial raster
+        // it would re-raster the whole thing instead.
         client_.set_blue_top(false);
         Finish();
         picture_layer_->SetNeedsDisplayRect(gfx::Rect(50, 50, 100, 100));
@@ -181,18 +173,6 @@ class LayerTreeHostTilesTestPartialInvalidation
         DoReadback();
         break;
     }
-  }
-
-  void WillPrepareTilesOnThread(LayerTreeHostImpl* host_impl) override {
-    // Issue a GL finish before preparing tiles to ensure resources become
-    // available for use in a timely manner. Needed for the one-copy path.
-    ContextProvider* context_provider =
-        host_impl->compositor_frame_sink()->worker_context_provider();
-    if (!context_provider)
-      return;
-
-    ContextProvider::ScopedContextLock lock(context_provider);
-    lock.ContextGL()->Finish();
   }
 
  protected:

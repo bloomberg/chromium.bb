@@ -8362,7 +8362,8 @@ TEST_F(LayerTreeHostImplTest, ShutdownReleasesContext) {
   auto compositor_frame_sink = base::MakeUnique<TestCompositorFrameSink>(
       context_provider, TestContextProvider::CreateWorker(), nullptr, nullptr,
       RendererSettings(), base::ThreadTaskRunnerHandle::Get().get(),
-      true /* synchronous_composite */);
+      true /* synchronous_composite */,
+      false /* force_disable_reclaim_resources */);
   compositor_frame_sink->SetClient(&test_client_);
 
   CreateHostImpl(DefaultSettings(), std::move(compositor_frame_sink));
@@ -11399,6 +11400,32 @@ TEST_F(MsaaIsSlowLayerTreeHostImplTest, GpuRasterizationStatusMsaaIsSlow) {
   EXPECT_EQ(GpuRasterizationStatus::OFF_CONTENT,
             host_impl_->gpu_rasterization_status());
   EXPECT_FALSE(host_impl_->use_gpu_rasterization());
+}
+
+// A mock output surface which lets us detect calls to ForceReclaimResources.
+class MockReclaimResourcesCompositorFrameSink : public FakeCompositorFrameSink {
+ public:
+  MockReclaimResourcesCompositorFrameSink()
+      : FakeCompositorFrameSink(TestContextProvider::Create(),
+                                TestContextProvider::CreateWorker()) {}
+
+  MOCK_METHOD0(ForceReclaimResources, void());
+};
+
+// Display::Draw (and the planned Display Scheduler) currently rely on resources
+// being reclaimed to block drawing between BeginCommit / Swap. This test
+// ensures that BeginCommit triggers ForceReclaimResources. See
+// crbug.com/489515.
+TEST_F(LayerTreeHostImplTest, BeginCommitReclaimsResources) {
+  auto compositor_frame_sink =
+      base::MakeUnique<MockReclaimResourcesCompositorFrameSink>();
+  // Hold an unowned pointer to the output surface to use for mock expectations.
+  MockReclaimResourcesCompositorFrameSink* mock_compositor_frame_sink =
+      compositor_frame_sink.get();
+
+  CreateHostImpl(DefaultSettings(), std::move(compositor_frame_sink));
+  EXPECT_CALL(*mock_compositor_frame_sink, ForceReclaimResources()).Times(1);
+  host_impl_->BeginCommit();
 }
 
 TEST_F(LayerTreeHostImplTest, UpdatePageScaleFactorOnActiveTree) {

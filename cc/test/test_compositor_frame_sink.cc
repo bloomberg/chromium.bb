@@ -26,7 +26,8 @@ TestCompositorFrameSink::TestCompositorFrameSink(
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const RendererSettings& renderer_settings,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    bool synchronous_composite)
+    bool synchronous_composite,
+    bool force_disable_reclaim_resources)
     : CompositorFrameSink(std::move(compositor_context_provider),
                           std::move(worker_context_provider),
                           gpu_memory_buffer_manager,
@@ -40,6 +41,11 @@ TestCompositorFrameSink::TestCompositorFrameSink(
       surface_factory_(
           new SurfaceFactory(frame_sink_id_, surface_manager_.get(), this)),
       weak_ptr_factory_(this) {
+  // Since this CompositorFrameSink and the Display are tightly coupled and in
+  // the same process/thread, the LayerTreeHostImpl can reclaim resources from
+  // the Display. But we allow tests to disable this to mimic an out-of-process
+  // Display.
+  capabilities_.can_force_reclaim_resources = !force_disable_reclaim_resources;
   // Always use sync tokens so that code paths in resource provider that deal
   // with sync tokens are tested.
   capabilities_.delegated_sync_points_required = true;
@@ -164,6 +170,13 @@ void TestCompositorFrameSink::DidDrawCallback() {
   // This is to unthrottle the next frame, not actually a notice that drawing is
   // done.
   client_->DidReceiveCompositorFrameAck();
+}
+
+void TestCompositorFrameSink::ForceReclaimResources() {
+  if (capabilities_.can_force_reclaim_resources &&
+      delegated_local_frame_id_.is_valid()) {
+    surface_factory_->ClearSurface();
+  }
 }
 
 void TestCompositorFrameSink::ReturnResources(

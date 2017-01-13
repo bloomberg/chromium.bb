@@ -643,11 +643,15 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
     bool synchronous_composite =
         !HasImplThread() &&
         !layer_tree_host()->GetSettings().single_thread_proxy_scheduler;
+    // Allow relaim resources for this test so that mailboxes in the display
+    // will be returned inside the commit that replaces them.
+    bool force_disable_reclaim_resources = false;
     return base::MakeUnique<TestCompositorFrameSink>(
         compositor_context_provider, std::move(worker_context_provider),
         shared_bitmap_manager(), gpu_memory_buffer_manager(),
         layer_tree_host()->GetSettings().renderer_settings,
-        ImplThreadTaskRunner(), synchronous_composite);
+        ImplThreadTaskRunner(), synchronous_composite,
+        force_disable_reclaim_resources);
   }
 
   // Make sure callback is received on main and doesn't block the impl thread.
@@ -700,16 +704,8 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
   }
 
   void DidCommit() override {
-    ++total_commit_count_;
-    if (total_commit_count_ % 2) {
-      // Perform an extra commit after each meaningful commit to reclaim
-      // resources.
-      PostSetNeedsCommitToMainThread();
-      return;
-    }
-
-    ++meaningful_commit_count_;
-    switch (meaningful_commit_count_) {
+    ++commit_count_;
+    switch (commit_count_) {
       case 1:
         // Case #2: change mailbox after the commit (and draw), where the
         // layer draws. The old mailbox should be released during the next
@@ -759,8 +755,7 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
  private:
   base::ThreadChecker main_thread_;
   int callback_count_ = 0;
-  int total_commit_count_ = 0;
-  int meaningful_commit_count_ = 0;
+  int commit_count_ = 0;
   scoped_refptr<Layer> root_;
   scoped_refptr<TextureLayer> layer_;
 };

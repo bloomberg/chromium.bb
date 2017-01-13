@@ -921,9 +921,6 @@ void RenderWidgetCompositor::compositeAndReadbackAsync(
                                              callback, base::Passed(&result)));
           },
           callback, base::Passed(&main_thread_task_runner)));
-  // Force a redraw to ensure that the copy swap promise isn't cancelled due to
-  // no damage.
-  SetNeedsForcedRedraw();
   layer_tree_host_->QueueSwapPromise(
       delegate_->RequestCopyOfOutputForLayoutTest(std::move(request)));
 

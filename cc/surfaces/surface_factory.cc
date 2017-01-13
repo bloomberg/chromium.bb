@@ -94,6 +94,13 @@ void SurfaceFactory::RequestCopyOfSurface(
   manager_->SurfaceModified(current_surface_->surface_id());
 }
 
+void SurfaceFactory::ClearSurface() {
+  if (!current_surface_)
+    return;
+  current_surface_->EvictFrame();
+  manager_->SurfaceModified(current_surface_->surface_id());
+}
+
 void SurfaceFactory::WillDrawSurface(const LocalFrameId& id,
                                      const gfx::Rect& damage_rect) {
   client_->WillDrawSurface(id, damage_rect);

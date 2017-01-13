@@ -3043,6 +3043,7 @@ class OnDrawCompositorFrameSink : public TestCompositorFrameSink {
       const RendererSettings& renderer_settings,
       base::SingleThreadTaskRunner* task_runner,
       bool synchronous_composite,
+      bool force_disable_reclaim_resources,
       base::Closure invalidate_callback)
       : TestCompositorFrameSink(std::move(compositor_context_provider),
                                 std::move(worker_context_provider),
@@ -3050,7 +3051,8 @@ class OnDrawCompositorFrameSink : public TestCompositorFrameSink {
                                 gpu_memory_buffer_manager,
                                 renderer_settings,
                                 task_runner,
-                                synchronous_composite),
+                                synchronous_composite,
+                                force_disable_reclaim_resources),
         invalidate_callback_(std::move(invalidate_callback)) {}
 
   // TestCompositorFrameSink overrides.
@@ -3086,6 +3088,7 @@ class LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor
         shared_bitmap_manager(), gpu_memory_buffer_manager(),
         layer_tree_host()->GetSettings().renderer_settings,
         ImplThreadTaskRunner(), false /* synchronous_composite */,
+        false /* force_disable_reclaim_resources */,
         std::move(on_draw_callback));
     compositor_frame_sink_ = frame_sink.get();
     return std::move(frame_sink);
@@ -3225,6 +3228,7 @@ class LayerTreeHostTestResourcelessSoftwareDraw : public LayerTreeHostTest {
         shared_bitmap_manager(), gpu_memory_buffer_manager(),
         layer_tree_host()->GetSettings().renderer_settings,
         ImplThreadTaskRunner(), false /* synchronous_composite */,
+        false /* force_disable_reclaim_resources */,
         std::move(on_draw_callback));
     compositor_frame_sink_ = frame_sink.get();
     return std::move(frame_sink);
@@ -5819,11 +5823,14 @@ class LayerTreeHostTestSynchronousCompositeSwapPromise
     bool synchronous_composite =
         !HasImplThread() &&
         !layer_tree_host()->GetSettings().single_thread_proxy_scheduler;
+    // Relaiming resources is parameterized for this test.
+    bool force_disable_reclaim_resources = !reclaim_resources_;
     return base::MakeUnique<TestCompositorFrameSink>(
         compositor_context_provider, std::move(worker_context_provider),
         shared_bitmap_manager(), gpu_memory_buffer_manager(),
         layer_tree_host()->GetSettings().renderer_settings,
-        ImplThreadTaskRunner(), synchronous_composite);
+        ImplThreadTaskRunner(), synchronous_composite,
+        force_disable_reclaim_resources);
   }
 
   void BeginTest() override {
@@ -5834,7 +5841,7 @@ class LayerTreeHostTestSynchronousCompositeSwapPromise
         std::move(swap_promise0));
     layer_tree_host()->Composite(base::TimeTicks::Now());
 
-    // Fail to swap (no damage).
+    // Fail to swap (no damage) if not reclaiming resources from the Display.
     std::unique_ptr<SwapPromise> swap_promise1(
         new TestSwapPromise(&swap_promise_result_[1]));
     layer_tree_host()->GetSwapPromiseManager()->QueueSwapPromise(
@@ -5870,13 +5877,19 @@ class LayerTreeHostTestSynchronousCompositeSwapPromise
       EXPECT_TRUE(swap_promise_result_[0].dtor_called);
     }
 
-    // Second swap promise fails to swap.
+    // Second swap promise fails to swap if not reclaiming resources from the
+    // Display.
     {
       base::AutoLock lock(swap_promise_result_[1].lock);
       EXPECT_TRUE(swap_promise_result_[1].did_activate_called);
-      EXPECT_FALSE(swap_promise_result_[1].did_swap_called);
-      EXPECT_TRUE(swap_promise_result_[1].did_not_swap_called);
-      EXPECT_EQ(SwapPromise::SWAP_FAILS, swap_promise_result_[1].reason);
+      if (!reclaim_resources_) {
+        EXPECT_FALSE(swap_promise_result_[1].did_swap_called);
+        EXPECT_TRUE(swap_promise_result_[1].did_not_swap_called);
+        EXPECT_EQ(SwapPromise::SWAP_FAILS, swap_promise_result_[1].reason);
+      } else {
+        EXPECT_TRUE(swap_promise_result_[1].did_swap_called);
+        EXPECT_FALSE(swap_promise_result_[1].did_not_swap_called);
+      }
       EXPECT_TRUE(swap_promise_result_[1].dtor_called);
     }
 
@@ -5891,12 +5904,20 @@ class LayerTreeHostTestSynchronousCompositeSwapPromise
     }
   }
 
+  bool reclaim_resources_;
   int commit_count_ = 0;
   TestSwapPromiseResult swap_promise_result_[3];
 };
 
-// Synchronous composite is a single-threaded only feature.
-SINGLE_THREAD_TEST_F(LayerTreeHostTestSynchronousCompositeSwapPromise);
+TEST_F(LayerTreeHostTestSynchronousCompositeSwapPromise, NoReclaim) {
+  reclaim_resources_ = false;
+  RunTest(CompositorMode::SINGLE_THREADED);
+}
+
+TEST_F(LayerTreeHostTestSynchronousCompositeSwapPromise, Reclaim) {
+  reclaim_resources_ = true;
+  RunTest(CompositorMode::SINGLE_THREADED);
+}
 
 // Make sure page scale and top control deltas are applied to the client even
 // when the LayerTreeHost doesn't have a root layer.

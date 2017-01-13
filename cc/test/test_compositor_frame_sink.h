@@ -54,7 +54,8 @@ class TestCompositorFrameSink : public CompositorFrameSink,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       const RendererSettings& renderer_settings,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      bool synchronous_composite);
+      bool synchronous_composite,
+      bool force_disable_reclaim_resources);
   ~TestCompositorFrameSink() override;
 
   // This client must be set before BindToClient() happens.
@@ -74,6 +75,7 @@ class TestCompositorFrameSink : public CompositorFrameSink,
   bool BindToClient(CompositorFrameSinkClient* client) override;
   void DetachFromClient() override;
   void SubmitCompositorFrame(CompositorFrame frame) override;
+  void ForceReclaimResources() override;
 
   // SurfaceFactoryClient implementation.
   void ReturnResources(const ReturnedResourceArray& resources) override;

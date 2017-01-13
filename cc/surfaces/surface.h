@@ -52,6 +52,7 @@ class CC_SURFACES_EXPORT Surface {
   void SetPreviousFrameSurface(Surface* surface);
 
   void QueueFrame(CompositorFrame frame, const DrawCallback& draw_callback);
+  void EvictFrame();
   void RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> copy_request);
   // Adds each CopyOutputRequest in the current frame to copy_requests. The
   // caller takes ownership of them. |copy_requests| is keyed by RenderPass ids.
