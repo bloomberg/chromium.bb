@@ -4,27 +4,9 @@
 
 #include "chrome/browser/ui/cocoa/floating_bar_backing_view.h"
 
-#import "chrome/browser/ui/cocoa/framed_browser_window.h"
 #import "ui/base/cocoa/appkit_utils.h"
 
 @implementation FloatingBarBackingView
-
-- (void)drawRect:(NSRect)rect {
-  NSWindow* window = [self window];
-  BOOL isMainWindow = [window isMainWindow];
-
-  if (isMainWindow)
-    [[NSColor windowFrameColor] set];
-  else
-    [[NSColor windowBackgroundColor] set];
-  NSRectFill(rect);
-
-  [FramedBrowserWindow drawWindowThemeInDirtyRect:rect
-                                          forView:self
-                                           bounds:[self bounds]
-                             forceBlackBackground:YES];
-
-}
 
 // Eat all mouse events (and do *not* pass them on to the next responder!).
 - (void)mouseDown:(NSEvent*)event {}
@@ -43,16 +25,6 @@
   // with double-clicks on the contiguous tab strip area. (It'll fail and beep.)
   if ([event clickCount] == 2)
     ui::WindowTitlebarReceivedDoubleClick([self window], self);
-}
-
-// ThemedWindowDrawing implementation.
-
-- (void)windowDidChangeTheme {
-  [self setNeedsDisplay:YES];
-}
-
-- (void)windowDidChangeActive {
-  [self setNeedsDisplay:YES];
 }
 
 @end  // @implementation FloatingBarBackingView

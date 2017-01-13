@@ -4620,6 +4620,7 @@ test("unit_tests") {
         "../browser/ui/cocoa/tab_contents/sad_tab_mac_unittest.mm",
         "../browser/ui/cocoa/tabs/alert_indicator_button_cocoa_unittest.mm",
         "../browser/ui/cocoa/tabs/tab_controller_unittest.mm",
+        "../browser/ui/cocoa/tabs/tab_strip_background_view_unittest.mm",
         "../browser/ui/cocoa/tabs/tab_strip_controller_unittest.mm",
         "../browser/ui/cocoa/tabs/tab_strip_view_unittest.mm",
         "../browser/ui/cocoa/tabs/tab_view_unittest.mm",

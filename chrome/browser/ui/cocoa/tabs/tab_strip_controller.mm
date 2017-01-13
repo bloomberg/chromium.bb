@@ -2410,8 +2410,4 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   }
 }
 
-- (void)setVisualEffectsDisabledForFullscreen:(BOOL)fullscreen {
-  [tabStripView_ setVisualEffectsDisabledForFullscreen:fullscreen];
-}
-
 @end

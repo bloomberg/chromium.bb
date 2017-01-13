@@ -612,8 +612,6 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)windowDidEnterFullScreen:(NSNotification*)notification {
-  [tabStripController_ setVisualEffectsDisabledForFullscreen:YES];
-
   // In Yosemite, some combination of the titlebar and toolbar always show in
   // full-screen mode. We do not want either to show. Search for the window that
   // contains the views, and hide it. There is no need to ever unhide the view.
@@ -680,8 +678,6 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)windowWillExitFullScreen:(NSNotification*)notification {
-  [tabStripController_ setVisualEffectsDisabledForFullscreen:NO];
-
   if (fullscreenLowPowerCoordinator_)
     fullscreenLowPowerCoordinator_->SetInFullscreenTransition(true);
 

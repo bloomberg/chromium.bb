@@ -54,40 +54,6 @@ class FrameAndStyleLock {
 
 }  // namespace
 
-// This view draws a dummy toolbar over the resized content view during
-// the exit fullscreen animation. It is removed at the end of the animation.
-@interface FullscreenTabStripBackgroundView : NSView {
-  base::scoped_nsobject<NSColor> windowBackgroundColor_;
-}
-
-- (instancetype)initWithFrame:(NSRect)frame background:(NSColor*)color;
-
-@end
-
-@implementation FullscreenTabStripBackgroundView
-
-- (instancetype)initWithFrame:(NSRect)frame background:(NSColor*)color {
-  if ((self = [super initWithFrame:frame])) {
-    windowBackgroundColor_.reset([color copy]);
-  }
-  return self;
-}
-
-// Override this method so that we can paint the toolbar in this view.
-// This method first fill itself with the toolbar's background. After that,
-// it will paint the window's theme if applicable.
-- (void)drawRect:(NSRect)frame {
-  [windowBackgroundColor_ set];
-  NSRectFillUsingOperation(frame, NSCompositeDestinationOver);
-
-  [FramedBrowserWindow drawWindowThemeInDirtyRect:frame
-                                          forView:self
-                                           bounds:[self bounds]
-                             forceBlackBackground:NO];
-}
-
-@end
-
 @interface BrowserWindowFullscreenTransition ()
     <CAAnimationDelegate, CALayerDelegate> {
   // Flag to keep track of whether we are entering or exiting fullscreen.
@@ -134,7 +100,7 @@ class FrameAndStyleLock {
   NSRect finalFrame_;
 
   // This view draws the tabstrip background during the exit animation.
-  base::scoped_nsobject<FullscreenTabStripBackgroundView>
+  base::scoped_nsobject<TabStripBackgroundView>
       fullscreenTabStripBackgroundView_;
 
   // Locks and unlocks the FullSizeContentWindow.
@@ -362,9 +328,7 @@ class FrameAndStyleLock {
     [primaryWindow_ forceContentViewFrame:relativeContentFinalFrame];
 
     fullscreenTabStripBackgroundView_.reset(
-        [[FullscreenTabStripBackgroundView alloc]
-            initWithFrame:finalFrame_
-               background:primaryWindowInitialBackgroundColor_]);
+        [[TabStripBackgroundView alloc] initWithFrame:finalFrame_]);
     [fullscreenTabStripBackgroundView_ setFrameOrigin:NSZeroPoint];
     [contentView addSubview:fullscreenTabStripBackgroundView_.get()
                  positioned:NSWindowBelow

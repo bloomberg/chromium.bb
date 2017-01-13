@@ -700,25 +700,6 @@ TEST_F(BrowserWindowControllerTest, BookmarkBarHitTest) {
   EXPECT_TRUE([[contentView hitTest:point] isDescendantOf:bookmarkView]);
 }
 
-// Check that when the window becomes/resigns main, the tab strip's background
-// view is redrawn.
-TEST_F(BrowserWindowControllerTest, TabStripBackgroundViewRedrawTest) {
-  NSView* view = controller_.tabStripBackgroundView;
-  id partial_mock = [OCMockObject partialMockForObject:view];
-
-  [[partial_mock expect] setNeedsDisplay:YES];
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:NSWindowDidBecomeMainNotification
-                    object:controller_.window];
-  [partial_mock verify];
-
-  [[partial_mock expect] setNeedsDisplay:YES];
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:NSWindowDidResignMainNotification
-                    object:controller_.window];
-  [partial_mock verify];
-}
-
 @interface BrowserWindowControllerFakeFullscreen : BrowserWindowController {
  @private
   // We release the window ourselves, so we don't have to rely on the unittest

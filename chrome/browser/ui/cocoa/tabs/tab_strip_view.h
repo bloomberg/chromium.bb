@@ -19,8 +19,6 @@
 
 @interface TabStripView : BackgroundGradientView<URLDropTarget> {
  @private
-  TabStripController* controller_;  // Weak; owns us.
-
   NSTimeInterval lastMouseUp_;
 
   // Handles being a drag-and-drop target.
@@ -32,26 +30,15 @@
   // its tip.
   BOOL dropArrowShown_;
   NSPoint dropArrowPosition_;
-  BOOL inATabDraggingOverlayWindow_;
-  BOOL visualEffectsDisabledForFullscreen_;
 }
 
+@property(assign, nonatomic) TabStripController* controller;
 @property(assign, nonatomic) BOOL dropArrowShown;
 @property(assign, nonatomic) NSPoint dropArrowPosition;
-@property(assign, nonatomic) BOOL inATabDraggingOverlayWindow;
 
 // Name starts with "get" because methods staring with "new" return retained
 // objects according to Cocoa's create rule.
 - (NewTabButton*)getNewTabButton;
-
-// Leaving visual effects enabled when fullscreen results in higher power
-// consumption. This is used to disable effects when fullscreen.
-- (void)setVisualEffectsDisabledForFullscreen:(BOOL)fullscreen;
-@end
-
-// Interface for the controller to set and clear the weak reference to itself.
-@interface TabStripView (TabStripControllerInterface)
-- (void)setController:(TabStripController*)controller;
 @end
 
 // Protected methods subclasses can override to alter behavior. Clients should
