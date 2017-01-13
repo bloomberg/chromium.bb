@@ -45,8 +45,22 @@
     {
       "name": "LayoutHTMLCanvas CANVAS id='canvas-opaque'",
       "position": [13, 333],
-      "bounds": [60, 60],
+      "bounds": [50, 50],
       "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#008000"
+    },
+    {
+      "name": "LayoutHTMLCanvas CANVAS id='canvas-opaque-border'",
+      "position": [13, 398],
+      "bounds": [60, 60],
+      "drawsContent": true,
+      "backgroundColor": "#008000"
+    },
+    {
+      "name": "LayoutHTMLCanvas CANVAS id='canvas-opaque-box-shadow'",
+      "position": [13, 463],
+      "bounds": [60, 60],
       "drawsContent": true,
       "backgroundColor": "#008000"
     }

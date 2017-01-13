@@ -390,17 +390,25 @@ void CompositedLayerMapping::
 
 void CompositedLayerMapping::updateContentsOpaque() {
   if (isAcceleratedCanvas(layoutObject())) {
-    // Determine whether the rendering context's external texture layer is
-    // opaque.
     CanvasRenderingContext* context =
         toHTMLCanvasElement(layoutObject()->node())->renderingContext();
-    if (!context->creationAttributes().alpha())
-      m_graphicsLayer->setContentsOpaque(true);
-    else if (WebLayer* layer = context->platformLayer())
-      m_graphicsLayer->setContentsOpaque(
-          !Color(layer->backgroundColor()).hasAlpha());
-    else
+    WebLayer* layer = context ? context->platformLayer() : nullptr;
+    // Determine whether the external texture layer covers the whole graphics
+    // layer. This may not be the case if there are box decorations or
+    // shadows.
+    if (layer &&
+        layer->bounds() == m_graphicsLayer->platformLayer()->bounds()) {
+      // Determine whether the rendering context's external texture layer is
+      // opaque.
+      if (!context->creationAttributes().alpha()) {
+        m_graphicsLayer->setContentsOpaque(true);
+      } else {
+        m_graphicsLayer->setContentsOpaque(
+            !Color(layer->backgroundColor()).hasAlpha());
+      }
+    } else {
       m_graphicsLayer->setContentsOpaque(false);
+    }
   } else if (m_backgroundLayer) {
     m_graphicsLayer->setContentsOpaque(false);
     m_backgroundLayer->setContentsOpaque(

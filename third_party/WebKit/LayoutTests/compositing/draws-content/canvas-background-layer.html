@@ -15,7 +15,9 @@
       #canvas-border { border: 5px solid; }
       #canvas-image { background-image: url("../resources/simple_image.png"); }
       #canvas-transparent-background { background-color: rgba(0, 255, 0, 0.5); }
-      #canvas-opaque { border: 5px solid; }
+      #canvas-opaque {}
+      #canvas-opaque-border { border: 5px solid; }
+      #canvas-opaque-box-shadow { box-shadow: 10px 10px 0px red; }
     </style>
     <script>
         if (window.testRunner)
@@ -52,10 +54,21 @@
             // background color is not opaque.
             drawCanvas('canvas-transparent-background', true);
 
-            // Background cannot be direct-composited because of box decoration.
-            // However contents of the canvas are opaque so the background does
+            // Contents of the canvas are opaque so the background does
             // not need to be painted.
             drawCanvas('canvas-opaque', false);
+
+            // The layer for this canvas is technically opaque because it has
+            // opaque contents and an opque border style, but blink does not
+            // currently analyze border style opacity, so the layer will be
+            // conservatively considered non-opaque.  If a future CL causes
+            // this test to fail due to this case being marked as opaque, that
+            // would be an improvement.
+            drawCanvas('canvas-opaque-border', false);
+
+            // The presence of a of a box shadow makes the canvas's layer
+            // non-opaque even though canvas contents are opque.
+            drawCanvas('canvas-opaque-box-shadow', false);
 
             if (window.testRunner && window.internals)
                 document.getElementById('layer-tree').innerText = window.internals.layerTreeAsText(document);
@@ -82,6 +95,12 @@
     </div>
     <div class="container">
       <canvas id="canvas-opaque" width="50" height="50"></canvas>
+    </div> 
+    <div class="container">
+      <canvas id="canvas-opaque-border" width="50" height="50"></canvas>
+    </div> 
+    <div class="container">
+      <canvas id="canvas-opaque-box-shadow" width="50" height="50"></canvas>
     </div> 
     <pre id="layer-tree"></pre>
   </body>
