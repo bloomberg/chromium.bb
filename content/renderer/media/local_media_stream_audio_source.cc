@@ -12,9 +12,11 @@ namespace content {
 
 LocalMediaStreamAudioSource::LocalMediaStreamAudioSource(
     int consumer_render_frame_id,
-    const StreamDeviceInfo& device_info)
+    const StreamDeviceInfo& device_info,
+    const ConstraintsCallback& started_callback)
     : MediaStreamAudioSource(true /* is_local_source */),
-      consumer_render_frame_id_(consumer_render_frame_id) {
+      consumer_render_frame_id_(consumer_render_frame_id),
+      started_callback_(started_callback) {
   DVLOG(1) << "LocalMediaStreamAudioSource::LocalMediaStreamAudioSource()";
   MediaStreamSource::SetDeviceInfo(device_info);
 
@@ -82,6 +84,10 @@ void LocalMediaStreamAudioSource::EnsureSourceIsStopped() {
           << device_info().session_id << ") for render frame "
           << consumer_render_frame_id_ << " with audio parameters={"
           << GetAudioParameters().AsHumanReadableString() << "}.";
+}
+
+void LocalMediaStreamAudioSource::OnCaptureStarted() {
+  started_callback_.Run(this, MEDIA_DEVICE_OK, "");
 }
 
 void LocalMediaStreamAudioSource::Capture(const media::AudioBus* audio_bus,

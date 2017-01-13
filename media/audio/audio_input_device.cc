@@ -292,6 +292,12 @@ void AudioInputDevice::AudioThreadCallback::MapSharedMemory() {
     audio_buses_.push_back(std::move(audio_bus));
     ptr += segment_length_;
   }
+
+  // Indicate that browser side capture initialization has succeeded and IPC
+  // channel initialized. This effectively completes the
+  // AudioCapturerSource::Start()' phase as far as the caller of that function
+  // is concerned.
+  capture_callback_->OnCaptureStarted();
 }
 
 void AudioInputDevice::AudioThreadCallback::Process(uint32_t pending_data) {
