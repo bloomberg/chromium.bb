@@ -8,9 +8,6 @@ SimpleInputMethod::SimpleInputMethod() {}
 
 SimpleInputMethod::~SimpleInputMethod() {}
 
-void SimpleInputMethod::OnTextInputModeChanged(
-    ui::TextInputMode text_input_mode) {}
-
 void SimpleInputMethod::OnTextInputTypeChanged(
     ui::TextInputType text_input_type) {}
 

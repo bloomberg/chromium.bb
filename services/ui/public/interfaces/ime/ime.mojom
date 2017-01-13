@@ -93,7 +93,6 @@ interface IMERegistrar {
 // This interface is provided by IME drivers, and also by Mus as a lightweight
 // proxy between IME drivers and clients.
 interface InputMethod {
-  OnTextInputModeChanged(TextInputMode text_input_mode);
   OnTextInputTypeChanged(TextInputType text_input_type);
 
   // Client sends |caret_bounds| in focused window coordinates,

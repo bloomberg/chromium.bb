@@ -17,7 +17,6 @@ class TestInputMethod : public mojom::InputMethod {
 
  private:
   // mojom::InputMethod:
-  void OnTextInputModeChanged(TextInputMode text_input_mode) override {}
   void OnTextInputTypeChanged(TextInputType text_input_type) override {}
   void OnCaretBoundsChanged(const gfx::Rect& caret_bounds) override {}
   void ProcessKeyEvent(std::unique_ptr<Event> key_event,
