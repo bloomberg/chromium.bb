@@ -40,6 +40,10 @@ class NavigationObserver : public content::NotificationObserver,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  // Allows showing the prompt for the same extensions multiple times in a
+  // session.
+  static void SetAllowedRepeatedPromptingForTesting(bool allowed);
+
  private:
   // Registers for the NOTIFICATION_NAV_ENTRY_COMMITTED notification.
   void RegisterForNotifications();

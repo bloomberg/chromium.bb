@@ -20,6 +20,11 @@ using content::NavigationEntry;
 
 namespace extensions {
 
+namespace {
+// Whether to repeatedly prompt for the same extension id.
+bool g_repeat_prompting = false;
+}
+
 NavigationObserver::NavigationObserver(Profile* profile)
     : profile_(profile),
       extension_registry_observer_(this),
@@ -44,6 +49,11 @@ void NavigationObserver::Observe(int type,
   PromptToEnableExtensionIfNecessary(controller);
 }
 
+// static
+void NavigationObserver::SetAllowedRepeatedPromptingForTesting(bool allowed) {
+  g_repeat_prompting = allowed;
+}
+
 void NavigationObserver::RegisterForNotifications() {
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                  content::NotificationService::AllSources());
@@ -59,19 +69,33 @@ void NavigationObserver::PromptToEnableExtensionIfNecessary(
   if (!nav_entry)
     return;
 
-  ExtensionRegistry* registry = extensions::ExtensionRegistry::Get(profile_);
-  const Extension* extension =
-      registry->disabled_extensions().GetExtensionOrAppByURL(
-          nav_entry->GetURL());
+  const GURL& url = nav_entry->GetURL();
+  // NOTE: We only consider chrome-extension:// urls, and deliberately don't
+  // consider hosted app urls. This is because it's really annoying to visit the
+  // site associated with a hosted app (like calendar.google.com or
+  // drive.google.com) and have it repeatedly prompt you to re-enable an item.
+  // Visiting a chrome-extension:// url is a much stronger signal, and, without
+  // the item enabled, we won't show anything.
+  // TODO(devlin): While true, I still wonder how useful this is. We should get
+  // metrics.
+  if (!url.SchemeIs(kExtensionScheme))
+    return;
+
+  const Extension* extension = ExtensionRegistry::Get(profile_)
+                                   ->disabled_extensions()
+                                   .GetExtensionOrAppByURL(url);
   if (!extension)
     return;
 
   // Try not to repeatedly prompt the user about the same extension.
-  if (prompted_extensions_.find(extension->id()) != prompted_extensions_.end())
+  if (!prompted_extensions_.insert(extension->id()).second &&
+      !g_repeat_prompting) {
     return;
-  prompted_extensions_.insert(extension->id());
+  }
 
   ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile_);
+  // TODO(devlin): Why do we only consider extensions that escalate permissions?
+  // Maybe because it's the only one we have a good prompt for?
   if (extension_prefs->DidExtensionEscalatePermissions(extension->id())) {
     // Keep track of the extension id and nav controller we're prompting for.
     // These must be reset in OnInstallPromptDone.
@@ -113,6 +137,10 @@ void NavigationObserver::OnInstallPromptDone(
     extension_service->GrantPermissionsAndEnableExtension(extension);
     nav_controller->Reload(content::ReloadType::NORMAL, true);
   } else {
+    // TODO(devlin): These metrics aren't very useful, since they're lumped in
+    // with the same for re-enabling/canceling when the extension first gets
+    // disabled, which is likely significantly more common (though impossible to
+    // tell). We need to separate these.
     std::string histogram_name =
        result == ExtensionInstallPrompt::Result::USER_CANCELED
             ? "ReEnableCancel"
