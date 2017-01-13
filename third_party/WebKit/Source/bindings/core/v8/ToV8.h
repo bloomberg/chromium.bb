@@ -25,7 +25,6 @@ namespace blink {
 class DOMWindow;
 class Dictionary;
 class EventTarget;
-class WorkerOrWorkletGlobalScope;
 
 // ScriptWrappable
 
@@ -57,7 +56,7 @@ inline v8::Local<v8::Value> ToV8(Node* impl,
   return wrapper;
 }
 
-// Special versions for DOMWindow, WorkerOrWorkletGlobalScope and EventTarget
+// Special versions for DOMWindow and EventTarget
 
 CORE_EXPORT v8::Local<v8::Value> ToV8(DOMWindow*,
                                       v8::Local<v8::Object> creationContext,
@@ -65,9 +64,6 @@ CORE_EXPORT v8::Local<v8::Value> ToV8(DOMWindow*,
 CORE_EXPORT v8::Local<v8::Value> ToV8(EventTarget*,
                                       v8::Local<v8::Object> creationContext,
                                       v8::Isolate*);
-v8::Local<v8::Value> ToV8(WorkerOrWorkletGlobalScope*,
-                          v8::Local<v8::Object> creationContext,
-                          v8::Isolate*);
 
 // Primitives
 

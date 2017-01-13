@@ -180,16 +180,43 @@ bool WorkerOrWorkletScriptController::initializeContextIfNeeded() {
 
   ScriptState::Scope scope(m_scriptState.get());
 
+  // Associate the global proxy object, the global object and the worker
+  // instance (C++ object) as follows.
+  //
+  //   global proxy object <====> worker or worklet instance
+  //                               ^
+  //                               |
+  //   global object       --------+
+  //
+  // Per HTML spec, there is no corresponding object for workers to WindowProxy.
+  // However, V8 always creates the global proxy object, we associate these
+  // objects in the same manner as WindowProxy and Window.
+  //
+  // a) worker or worklet instance --> global proxy object
+  // As we shouldn't expose the global object to author scripts, we map the
+  // worker or worklet instance to the global proxy object.
+  // b) global proxy object --> worker or worklet instance
+  // Blink's callback functions are called by V8 with the global proxy object,
+  // we need to map the global proxy object to the worker or worklet instance.
+  // c) global object --> worker or worklet instance
+  // The global proxy object is NOT considered as a wrapper object of the
+  // worker or worklet instance because it's not an instance of
+  // v8::FunctionTemplate of worker or worklet, especially note that
+  // v8::Object::FindInstanceInPrototypeChain skips the global proxy object.
+  // Thus we need to map the global object to the worker or worklet instance.
+
   // The global proxy object.  Note this is not the global object.
   v8::Local<v8::Object> globalProxy = context->Global();
-  V8DOMWrapper::setNativeInfo(m_isolate, globalProxy, wrapperTypeInfo,
-                              scriptWrappable);
+  v8::Local<v8::Object> associatedWrapper =
+      V8DOMWrapper::associateObjectWithWrapper(
+          m_isolate, scriptWrappable, wrapperTypeInfo, globalProxy);
+  CHECK(globalProxy == associatedWrapper);
 
   // The global object, aka worker/worklet wrapper object.
   v8::Local<v8::Object> globalObject =
       globalProxy->GetPrototype().As<v8::Object>();
-  globalObject = V8DOMWrapper::associateObjectWithWrapper(
-      m_isolate, scriptWrappable, wrapperTypeInfo, globalObject);
+  V8DOMWrapper::setNativeInfo(m_isolate, globalObject, wrapperTypeInfo,
+                              scriptWrappable);
 
   // All interfaces must be registered to V8PerContextData.
   // So we explicitly call constructorForType for the global object.
