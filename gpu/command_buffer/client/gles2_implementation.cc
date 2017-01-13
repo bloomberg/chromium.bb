@@ -18,6 +18,7 @@
 #include <sstream>
 #include <string>
 #include "base/atomic_sequence_num.h"
+#include "base/bits.h"
 #include "base/compiler_specific.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_split.h"
@@ -219,6 +220,8 @@ bool GLES2Implementation::Initialize(
   if (mapped_memory_limit != SharedMemoryLimits::kNoLimit) {
     // Use smaller chunks if the client is very memory conscientious.
     chunk_size = std::min(mapped_memory_limit / 4, chunk_size);
+    chunk_size = base::bits::Align(chunk_size,
+                                   FencedAllocator::kAllocAlignment);
   }
   mapped_memory_->set_chunk_size_multiple(chunk_size);
 
