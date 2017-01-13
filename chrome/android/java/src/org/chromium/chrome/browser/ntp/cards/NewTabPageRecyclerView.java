@@ -58,6 +58,8 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
     private final LinearLayoutManager mLayoutManager;
 
     private final int mToolbarHeight;
+    private final int mSearchBoxTransitionLength;
+    private final int mPeekingHeight;
     private final int mMaxHeaderHeight;
     /** How much of the first card is visible above the fold with the increased visibility UI. */
     private final int mPeekingCardBounceDistance;
@@ -115,6 +117,9 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
         mMaxHeaderHeight = res.getDimensionPixelSize(R.dimen.snippets_article_header_height);
         mPeekingCardBounceDistance =
                 res.getDimensionPixelSize(R.dimen.snippets_peeking_card_bounce_distance);
+        mSearchBoxTransitionLength =
+                res.getDimensionPixelSize(R.dimen.ntp_search_box_transition_length);
+        mPeekingHeight = res.getDimensionPixelSize(R.dimen.snippets_padding);
 
         setHasFixedSize(true);
 
@@ -464,13 +469,14 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
      */
     public void snapScroll(View fakeBox, int parentScrollY, int parentHeight) {
         // Snap scroll to prevent resting in the middle of the omnibox transition.
-        final int searchBoxTransitionLength = getResources()
-                .getDimensionPixelSize(R.dimen.ntp_search_box_transition_length);
         int fakeBoxUpperBound = fakeBox.getTop() + fakeBox.getPaddingTop();
-        if (scrollOutOfRegion(fakeBoxUpperBound - searchBoxTransitionLength, fakeBoxUpperBound)) {
+        if (scrollOutOfRegion(fakeBoxUpperBound - mSearchBoxTransitionLength, fakeBoxUpperBound)) {
             // The snap scrolling regions should never overlap.
             return;
         }
+
+        // Snap scroll to prevent only part of the toolbar from showing.
+        if (scrollOutOfRegion(0, mToolbarHeight)) return;
 
         // Snap scroll to prevent resting in the middle of the peeking card transition
         // and to allow the peeking card to peek a bit before snapping back.
@@ -485,10 +491,8 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
 
             View peekingCardView = peekingCardViewHolder.itemView;
             View headerView = firstHeaderViewHolder.itemView;
-            final int peekingHeight = getResources().getDimensionPixelSize(
-                    R.dimen.snippets_padding);
 
-            // |A + B - C| gives the offset of the peeking card relative to the Recycler View,
+            // |A + B - C| gives the offset of the peeking card relative to the RecyclerView,
             // so scrolling to this point would put the peeking card at the top of the
             // screen. Remove the |headerView| height which gets dynamically increased with
             // scrolling.
@@ -500,10 +504,10 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
                     + parentScrollY // B.
                     - headerView.getHeight()  // C.
                     - parentHeight  // D.
-                    + peekingHeight;  // E.
+                    + mPeekingHeight;  // E.
 
             // The height of the region in which the the peeking card will snap.
-            int snapScrollHeight = peekingHeight + headerView.getHeight();
+            int snapScrollHeight = mPeekingHeight + headerView.getHeight();
 
             scrollOutOfRegion(start, start + snapScrollHeight, start + snapScrollHeight);
         }
