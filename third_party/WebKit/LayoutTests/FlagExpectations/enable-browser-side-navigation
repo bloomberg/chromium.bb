@@ -30,9 +30,6 @@ crbug.com/551000 virtual/mojo-loading/http/tests/inspector/network/x-frame-optio
 #  Encoded bytes received & encoded data length mismatch.
 crbug.com/551000 http/tests/inspector/network/network-datareceived.html [ Failure ]
 crbug.com/551000 virtual/mojo-loading/http/tests/inspector/network/network-datareceived.html [ Failure ]
-#  We don't set the right caching policy in the renderer when DevTools overrides the caching policy in reloads.
-crbug.com/551000 http/tests/inspector-protocol/reload-memory-cache.html [ Failure ]
-crbug.com/551000 virtual/mojo-loading/http/tests/inspector-protocol/reload-memory-cache.html [ Failure ]
 #  Console error messages are wrongly ordered.
 crbug.com/551000 http/tests/inspector/console-resource-errors.html [ Failure ]
 crbug.com/551000 virtual/mojo-loading/http/tests/inspector/console-resource-errors.html [ Failure ]
