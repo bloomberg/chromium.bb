@@ -245,7 +245,7 @@ void WebBluetoothServiceImpl::GattServicesDiscovered(
 
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const std::string& device_address = device->GetAddress();
-  VLOG(1) << "Services discovered for device: " << device_address;
+  DVLOG(1) << "Services discovered for device: " << device_address;
 
   auto iter = pending_primary_services_requests_.find(device_address);
   if (iter == pending_primary_services_requests_.end()) {
@@ -340,7 +340,7 @@ void WebBluetoothServiceImpl::RemoteServerConnect(
   }
 
   if (connected_devices_->IsConnectedToDeviceWithId(device_id)) {
-    VLOG(1) << "Already connected.";
+    DVLOG(1) << "Already connected.";
     callback.Run(blink::mojom::WebBluetoothResult::SUCCESS);
     return;
   }
@@ -370,7 +370,7 @@ void WebBluetoothServiceImpl::RemoteServerDisconnect(
       UMAWebBluetoothFunction::REMOTE_GATT_SERVER_DISCONNECT);
 
   if (connected_devices_->IsConnectedToDeviceWithId(device_id)) {
-    VLOG(1) << "Disconnecting device: " << device_id.str();
+    DVLOG(1) << "Disconnecting device: " << device_id.str();
     connected_devices_->CloseConnectionToDeviceWithId(device_id);
   }
 }
@@ -426,7 +426,7 @@ void WebBluetoothServiceImpl::RemoteServerGetPrimaryServices(
     return;
   }
 
-  VLOG(1) << "Services not yet discovered.";
+  DVLOG(1) << "Services not yet discovered.";
   pending_primary_services_requests_[device_address].push_back(base::Bind(
       &WebBluetoothServiceImpl::RemoteServerGetPrimaryServicesImpl,
       base::Unretained(this), device_id, quantity, services_uuid, callback));
@@ -732,7 +732,7 @@ void WebBluetoothServiceImpl::RemoteServerGetPrimaryServicesImpl(
   }
 
   if (!response_services.empty()) {
-    VLOG(1) << "Services found in device.";
+    DVLOG(1) << "Services found in device.";
     RecordGetPrimaryServicesOutcome(quantity,
                                     UMAGetPrimaryServiceOutcome::SUCCESS);
     callback.Run(blink::mojom::WebBluetoothResult::SUCCESS,
@@ -740,7 +740,7 @@ void WebBluetoothServiceImpl::RemoteServerGetPrimaryServicesImpl(
     return;
   }
 
-  VLOG(1) << "Services not found in device.";
+  DVLOG(1) << "Services not found in device.";
   RecordGetPrimaryServicesOutcome(
       quantity, services_uuid ? UMAGetPrimaryServiceOutcome::NOT_FOUND
                               : UMAGetPrimaryServiceOutcome::NO_SERVICES);
@@ -759,7 +759,7 @@ void WebBluetoothServiceImpl::OnGetDeviceSuccess(
   const device::BluetoothDevice* const device =
       GetAdapter()->GetDevice(device_address);
   if (device == nullptr) {
-    VLOG(1) << "Device " << device_address << " no longer in adapter";
+    DVLOG(1) << "Device " << device_address << " no longer in adapter";
     RecordRequestDeviceOutcome(UMARequestDeviceOutcome::CHOSEN_DEVICE_VANISHED);
     callback.Run(blink::mojom::WebBluetoothResult::CHOSEN_DEVICE_VANISHED,
                  nullptr /* device */);
@@ -769,7 +769,7 @@ void WebBluetoothServiceImpl::OnGetDeviceSuccess(
   const WebBluetoothDeviceId device_id_for_origin =
       allowed_devices_map_.AddDevice(GetOrigin(), device_address, options);
 
-  VLOG(1) << "Device: " << device->GetNameForDisplay();
+  DVLOG(1) << "Device: " << device->GetNameForDisplay();
 
   blink::mojom::WebBluetoothDevicePtr device_ptr =
       blink::mojom::WebBluetoothDevice::New();

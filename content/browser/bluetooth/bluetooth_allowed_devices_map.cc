@@ -25,7 +25,7 @@ const WebBluetoothDeviceId& BluetoothAllowedDevicesMap::AddDevice(
     const url::Origin& origin,
     const std::string& device_address,
     const blink::mojom::WebBluetoothRequestDeviceOptionsPtr& options) {
-  VLOG(1) << "Adding a device to Map of Allowed Devices.";
+  DVLOG(1) << "Adding a device to Map of Allowed Devices.";
 
   // "Unique" Origins generate the same key in maps, therefore are not
   // supported.
@@ -34,7 +34,7 @@ const WebBluetoothDeviceId& BluetoothAllowedDevicesMap::AddDevice(
   auto device_address_to_id_map = origin_to_device_address_to_id_map_[origin];
   auto id_iter = device_address_to_id_map.find(device_address);
   if (id_iter != device_address_to_id_map.end()) {
-    VLOG(1) << "Device already in map of allowed devices.";
+    DVLOG(1) << "Device already in map of allowed devices.";
     const auto& device_id = id_iter->second;
 
     AddUnionOfServicesTo(
@@ -43,7 +43,7 @@ const WebBluetoothDeviceId& BluetoothAllowedDevicesMap::AddDevice(
     return origin_to_device_address_to_id_map_[origin][device_address];
   }
   const WebBluetoothDeviceId device_id = GenerateUniqueDeviceId();
-  VLOG(1) << "Id generated for device: " << device_id;
+  DVLOG(1) << "Id generated for device: " << device_id;
 
   origin_to_device_address_to_id_map_[origin][device_address] = device_id;
   origin_to_device_id_to_address_map_[origin][device_id] = device_address;

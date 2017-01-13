@@ -88,27 +88,27 @@ constexpr int kTestScanDuration = 0;
 
 void LogRequestDeviceOptions(
     const blink::mojom::WebBluetoothRequestDeviceOptionsPtr& options) {
-  VLOG(1) << "requestDevice called with the following filters: ";
-  VLOG(1) << "acceptAllDevices: " << options->accept_all_devices;
+  DVLOG(1) << "requestDevice called with the following filters: ";
+  DVLOG(1) << "acceptAllDevices: " << options->accept_all_devices;
 
   if (!options->filters)
     return;
 
   int i = 0;
   for (const auto& filter : options->filters.value()) {
-    VLOG(1) << "Filter #" << ++i;
+    DVLOG(1) << "Filter #" << ++i;
     if (filter->name)
-      VLOG(1) << "Name: " << filter->name.value();
+      DVLOG(1) << "Name: " << filter->name.value();
 
     if (filter->name_prefix)
-      VLOG(1) << "Name Prefix: " << filter->name_prefix.value();
+      DVLOG(1) << "Name Prefix: " << filter->name_prefix.value();
 
     if (filter->services) {
-      VLOG(1) << "Services: ";
-      VLOG(1) << "\t[";
+      DVLOG(1) << "Services: ";
+      DVLOG(1) << "\t[";
       for (const auto& service : filter->services.value())
-        VLOG(1) << "\t\t" << service.canonical_value();
-      VLOG(1) << "\t]";
+        DVLOG(1) << "\t\t" << service.canonical_value();
+      DVLOG(1) << "\t]";
     }
   }
 }
@@ -352,7 +352,7 @@ void BluetoothDeviceChooserController::GetDevice(
   DCHECK(!requesting_origin.unique());
 
   if (!adapter_->IsPresent()) {
-    VLOG(1) << "Bluetooth Adapter not present. Can't serve requestDevice.";
+    DVLOG(1) << "Bluetooth Adapter not present. Can't serve requestDevice.";
     RecordRequestDeviceOutcome(
         UMARequestDeviceOutcome::BLUETOOTH_ADAPTER_NOT_PRESENT);
     PostErrorCallback(blink::mojom::WebBluetoothResult::NO_BLUETOOTH_ADAPTER);
@@ -402,7 +402,7 @@ void BluetoothDeviceChooserController::GetDevice(
   }
 
   if (!chooser_->CanAskForScanningPermission()) {
-    VLOG(1) << "Closing immediately because Chooser cannot obtain permission.";
+    DVLOG(1) << "Closing immediately because Chooser cannot obtain permission.";
     OnBluetoothChooserEvent(BluetoothChooser::Event::DENIED_PERMISSION,
                             "" /* device_address */);
     return;
@@ -537,7 +537,7 @@ void BluetoothDeviceChooserController::StopDeviceDiscovery() {
 void BluetoothDeviceChooserController::OnStartDiscoverySessionSuccess(
     std::unique_ptr<device::BluetoothDiscoverySession> discovery_session) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  VLOG(1) << "Started discovery session.";
+  DVLOG(1) << "Started discovery session.";
   if (chooser_.get()) {
     discovery_session_ = std::move(discovery_session);
     discovery_session_timer_.Reset();
@@ -579,17 +579,17 @@ void BluetoothDeviceChooserController::OnBluetoothChooserEvent(
       PostErrorCallback(blink::mojom::WebBluetoothResult::CHOOSER_CANCELLED);
       break;
     case BluetoothChooser::Event::SHOW_OVERVIEW_HELP:
-      VLOG(1) << "Overview Help link pressed.";
+      DVLOG(1) << "Overview Help link pressed.";
       RecordRequestDeviceOutcome(OutcomeFromChooserEvent(event));
       PostErrorCallback(blink::mojom::WebBluetoothResult::CHOOSER_CANCELLED);
       break;
     case BluetoothChooser::Event::SHOW_ADAPTER_OFF_HELP:
-      VLOG(1) << "Adapter Off Help link pressed.";
+      DVLOG(1) << "Adapter Off Help link pressed.";
       RecordRequestDeviceOutcome(OutcomeFromChooserEvent(event));
       PostErrorCallback(blink::mojom::WebBluetoothResult::CHOOSER_CANCELLED);
       break;
     case BluetoothChooser::Event::SHOW_NEED_LOCATION_HELP:
-      VLOG(1) << "Need Location Help link pressed.";
+      DVLOG(1) << "Need Location Help link pressed.";
       RecordRequestDeviceOutcome(OutcomeFromChooserEvent(event));
       PostErrorCallback(blink::mojom::WebBluetoothResult::CHOOSER_CANCELLED);
       break;
