@@ -38,9 +38,6 @@ public_app_shared_deps = [
   "//base:i18n",
   "//content:export",
   "//content/public/common:common_sources",
-  "//content/public/gpu:gpu_sources",
-  "//content/public/renderer:renderer_sources",
-  "//content/public/utility:utility_sources",
 ]
 
 if (use_aura) {
@@ -59,6 +56,9 @@ if (is_component_build) {
     deps = public_app_shared_deps + [
              "//content/app:both",
              "//content/public/browser:browser_sources",
+             "//content/public/gpu:gpu_sources",
+             "//content/public/renderer:renderer_sources",
+             "//content/public/utility:utility_sources",
            ]
 
     allow_circular_includes_from = [
@@ -105,6 +105,9 @@ if (is_component_build) {
              "//content/app:both",
              "//content/public/browser",
              "//content/public/common",
+             "//content/public/gpu:gpu_sources",
+             "//content/public/renderer:renderer_sources",
+             "//content/public/utility:utility_sources",
            ]
 
     allow_circular_includes_from = [
