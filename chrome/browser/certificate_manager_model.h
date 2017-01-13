@@ -83,9 +83,9 @@ class CertificateManagerModel {
 
   // Import private keys and certificates from PKCS #12 encoded
   // |data|, using the given |password|. If |is_extractable| is false,
-  // mark the private key as unextractable from the module.
+  // mark the private key as unextractable from the slot.
   // Returns a net error code on failure.
-  int ImportFromPKCS12(net::CryptoModule* module, const std::string& data,
+  int ImportFromPKCS12(PK11SlotInfo* slot_info, const std::string& data,
                        const base::string16& password, bool is_extractable);
 
   // Import user certificate from DER encoded |data|.

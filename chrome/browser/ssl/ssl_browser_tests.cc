@@ -1307,14 +1307,13 @@ class SSLUITestWithClientCert : public SSLUITest {
 // cert will be selected automatically, then a test which uses WebSocket runs.
 IN_PROC_BROWSER_TEST_F(SSLUITestWithClientCert, TestWSSClientCert) {
   // Import a client cert for test.
-  scoped_refptr<net::CryptoModule> crypt_module = cert_db_->GetPublicModule();
+  crypto::ScopedPK11Slot public_slot = cert_db_->GetPublicSlot();
   std::string pkcs12_data;
   base::FilePath cert_path = net::GetTestCertsDirectory().Append(
       FILE_PATH_LITERAL("websocket_client_cert.p12"));
   EXPECT_TRUE(base::ReadFileToString(cert_path, &pkcs12_data));
-  EXPECT_EQ(net::OK,
-            cert_db_->ImportFromPKCS12(
-                crypt_module.get(), pkcs12_data, base::string16(), true, NULL));
+  EXPECT_EQ(net::OK, cert_db_->ImportFromPKCS12(public_slot.get(), pkcs12_data,
+                                                base::string16(), true, NULL));
 
   // Start WebSocket test server with TLS and client cert authentication.
   net::SpawnedTestServer::SSLOptions options(
