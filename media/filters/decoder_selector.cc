@@ -141,10 +141,11 @@ void DecoderSelector<StreamType>::InitializeDecryptingDecoder() {
 
 template <DemuxerStream::Type StreamType>
 void DecoderSelector<StreamType>::DecryptingDecoderInitDone(bool success) {
-  DVLOG(2) << __func__;
+  DVLOG(2) << __func__ << ": success=" << success;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (success) {
+    DVLOG(1) << __func__ << ": " << decoder_->GetDisplayName() << " selected.";
     base::ResetAndReturn(&select_decoder_cb_)
         .Run(std::move(decoder_), std::unique_ptr<DecryptingDemuxerStream>());
     return;
@@ -214,7 +215,7 @@ void DecoderSelector<StreamType>::InitializeDecoder() {
 
 template <DemuxerStream::Type StreamType>
 void DecoderSelector<StreamType>::DecoderInitDone(bool success) {
-  DVLOG(2) << __func__;
+  DVLOG(2) << __func__ << ": success=" << success;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (!success) {
@@ -223,13 +224,17 @@ void DecoderSelector<StreamType>::DecoderInitDone(bool success) {
     return;
   }
 
+  DVLOG(1) << __func__ << ": " << decoder_->GetDisplayName()
+           << " selected. DecryptingDemuxerStream "
+           << (decrypted_stream_ ? "also" : "not") << " selected.";
+
   base::ResetAndReturn(&select_decoder_cb_)
       .Run(std::move(decoder_), std::move(decrypted_stream_));
 }
 
 template <DemuxerStream::Type StreamType>
 void DecoderSelector<StreamType>::ReturnNullDecoder() {
-  DVLOG(2) << __func__;
+  DVLOG(1) << __func__ << ": No decoder selected.";
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::ResetAndReturn(&select_decoder_cb_)
       .Run(std::unique_ptr<Decoder>(),
