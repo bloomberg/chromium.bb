@@ -1016,4 +1016,59 @@ TEST_F(APIBindingUnittest,
   }
 }
 
+// Tests the updateArgumentsPostValidate hook.
+TEST_F(APIBindingUnittest, TestUpdateArgumentsPostValidate) {
+  // Register a hook for the test.oneString method.
+  auto hooks = base::MakeUnique<APIBindingHooks>(
+      base::Bind(&RunFunctionOnGlobalAndReturnHandle));
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+  const char kRegisterHook[] =
+      "(function(hooks) {\n"
+      "  hooks.setUpdateArgumentsPostValidate('oneString', function() {\n"
+      "    this.requestArguments = Array.from(arguments);\n"
+      "    return ['pong'];\n"
+      "  });\n"
+      "})";
+  v8::Local<v8::String> source_string =
+      gin::StringToV8(isolate(), kRegisterHook);
+  v8::Local<v8::String> source_name =
+      gin::StringToV8(isolate(), "custom_hook");
+  hooks->RegisterJsSource(
+      v8::Global<v8::String>(isolate(), source_string),
+      v8::Global<v8::String>(isolate(), source_name));
+
+  std::unique_ptr<base::ListValue> functions = ListValueFromString(kFunctions);
+  ASSERT_TRUE(functions);
+  ArgumentSpec::RefMap refs;
+
+  APIBinding binding(
+      "test", functions.get(), nullptr, nullptr,
+      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
+      std::move(hooks), &refs);
+  EXPECT_TRUE(refs.empty());
+
+  APIEventHandler event_handler(
+      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  v8::Local<v8::Object> binding_object = binding.CreateInstance(
+      context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
+
+  // Try calling the method with an invalid signature. Since it's invalid, we
+  // should never enter the hook.
+  ExpectFailure(binding_object, "obj.oneString(false);", kError);
+  EXPECT_EQ("undefined", GetStringPropertyFromObject(
+                             context->Global(), context, "requestArguments"));
+
+  // Call the method with a valid signature. The hook should be entered and
+  // manipulate the arguments.
+  ExpectPass(binding_object, "obj.oneString('ping');", "['pong']", false);
+  EXPECT_EQ("[\"ping\"]", GetStringPropertyFromObject(
+                              context->Global(), context, "requestArguments"));
+
+  // Other methods, like stringAndInt(), should behave normally.
+  ExpectPass(binding_object, "obj.stringAndInt('foo', 42);",
+             "['foo',42]", false);
+}
+
 }  // namespace extensions

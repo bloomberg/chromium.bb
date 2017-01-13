@@ -33,12 +33,15 @@ class JSHookInterface final : public gin::Wrappable<JSHookInterface> {
     return Wrappable<JSHookInterface>::GetObjectTemplateBuilder(isolate)
         .SetMethod("setHandleRequest", &JSHookInterface::SetHandleRequest)
         .SetMethod("setUpdateArgumentsPreValidate",
-                   &JSHookInterface::SetUpdateArgumentsPreValidate);
+                   &JSHookInterface::SetUpdateArgumentsPreValidate)
+        .SetMethod("setUpdateArgumentsPostValidate",
+                   &JSHookInterface::SetUpdateArgumentsPostValidate);
   }
 
   void ClearHooks() {
     handle_request_hooks_.clear();
     pre_validation_hooks_.clear();
+    post_validation_hooks_.clear();
   }
 
   v8::Local<v8::Function> GetHandleRequestHook(const std::string& method_name,
@@ -49,6 +52,11 @@ class JSHookInterface final : public gin::Wrappable<JSHookInterface> {
   v8::Local<v8::Function> GetPreValidationHook(const std::string& method_name,
                                                v8::Isolate* isolate) const {
     return GetHookFromMap(pre_validation_hooks_, method_name, isolate);
+  }
+
+  v8::Local<v8::Function> GetPostValidationHook(const std::string& method_name,
+                                                v8::Isolate* isolate) const {
+    return GetHookFromMap(post_validation_hooks_, method_name, isolate);
   }
 
  private:
@@ -92,10 +100,17 @@ class JSHookInterface final : public gin::Wrappable<JSHookInterface> {
     AddHookToMap(&pre_validation_hooks_, isolate, method_name, hook);
   }
 
+  void SetUpdateArgumentsPostValidate(v8::Isolate* isolate,
+                                      const std::string& method_name,
+                                      v8::Local<v8::Function> hook) {
+    AddHookToMap(&post_validation_hooks_, isolate, method_name, hook);
+  }
+
   std::string api_name_;
 
   JSHooks handle_request_hooks_;
   JSHooks pre_validation_hooks_;
+  JSHooks post_validation_hooks_;
 
   DISALLOW_COPY_AND_ASSIGN(JSHookInterface);
 };
@@ -185,7 +200,7 @@ void APIBindingHooks::RegisterJsSource(v8::Global<v8::String> source,
   js_resource_name_ = std::move(resource_name);
 }
 
-APIBindingHooks::RequestResult APIBindingHooks::HandleRequest(
+APIBindingHooks::RequestResult APIBindingHooks::RunHooks(
     const std::string& api_name,
     const std::string& method_name,
     v8::Local<v8::Context> context,
@@ -221,8 +236,8 @@ APIBindingHooks::RequestResult APIBindingHooks::HandleRequest(
 
   v8::Local<v8::Function> pre_validate_hook =
       hook_interface->GetPreValidationHook(method_name, isolate);
+  v8::TryCatch try_catch(isolate);
   if (!pre_validate_hook.IsEmpty()) {
-    v8::TryCatch try_catch(isolate);
     // TODO(devlin): What to do with the result of this function call? Can it
     // only fail in the case we've already thrown?
     UpdateArguments(pre_validate_hook, context, arguments);
@@ -232,10 +247,17 @@ APIBindingHooks::RequestResult APIBindingHooks::HandleRequest(
     }
   }
 
+  v8::Local<v8::Function> post_validate_hook =
+      hook_interface->GetPostValidationHook(method_name, isolate);
   v8::Local<v8::Function> handle_request =
       hook_interface->GetHandleRequestHook(method_name, isolate);
-  if (!handle_request.IsEmpty()) {
-    v8::TryCatch try_catch(isolate);
+  // If both the post validation hook and the handle request hook are empty,
+  // we're done...
+  if (post_validate_hook.IsEmpty() && handle_request.IsEmpty())
+    return RequestResult(RequestResult::NOT_HANDLED);
+
+  {
+    // ... otherwise, we have to validate the arguments.
     std::vector<v8::Local<v8::Value>> parsed_v8_args;
     std::string error;
     bool success = signature->ParseArgumentsToV8(context, *arguments, type_refs,
@@ -246,21 +268,31 @@ APIBindingHooks::RequestResult APIBindingHooks::HandleRequest(
     }
     if (!success)
       return RequestResult(RequestResult::INVALID_INVOCATION);
+    arguments->swap(parsed_v8_args);
+  }
 
-    v8::Global<v8::Value> global_result =
-        run_js_.Run(handle_request, context, parsed_v8_args.size(),
-                    parsed_v8_args.data());
+  if (!post_validate_hook.IsEmpty()) {
+    UpdateArguments(post_validate_hook, context, arguments);
     if (try_catch.HasCaught()) {
       try_catch.ReThrow();
       return RequestResult(RequestResult::THROWN);
     }
-    RequestResult result(RequestResult::HANDLED);
-    if (!global_result.IsEmpty())
-      result.return_value = global_result.Get(isolate);
-    return result;
   }
 
-  return RequestResult(RequestResult::NOT_HANDLED);
+  if (handle_request.IsEmpty())
+    return RequestResult(RequestResult::NOT_HANDLED);
+
+  v8::Global<v8::Value> global_result =
+      run_js_.Run(handle_request, context, arguments->size(),
+                  arguments->data());
+  if (try_catch.HasCaught()) {
+    try_catch.ReThrow();
+    return RequestResult(RequestResult::THROWN);
+  }
+  RequestResult result(RequestResult::HANDLED);
+  if (!global_result.IsEmpty())
+    result.return_value = global_result.Get(isolate);
+  return result;
 }
 
 void APIBindingHooks::InitializeInContext(

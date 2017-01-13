@@ -261,8 +261,8 @@ void APIBinding::HandleCall(const std::string& name,
   {
     v8::TryCatch try_catch(isolate);
     APIBindingHooks::RequestResult hooks_result =
-        binding_hooks_->HandleRequest(api_name_, name, context,
-                                      signature, &argument_list, *type_refs_);
+        binding_hooks_->RunHooks(api_name_, name, context,
+                                 signature, &argument_list, *type_refs_);
 
     switch (hooks_result.code) {
       case APIBindingHooks::RequestResult::INVALID_INVOCATION:

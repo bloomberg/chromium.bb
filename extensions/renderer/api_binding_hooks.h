@@ -77,14 +77,14 @@ class APIBindingHooks {
   void InitializeInContext(v8::Local<v8::Context> context,
                            const std::string& api_name);
 
-  // Looks for a custom hook to handle the given request and, if one exists,
-  // runs it. Returns the result of running the hook, if any.
-  RequestResult HandleRequest(const std::string& api_name,
-                              const std::string& method_name,
-                              v8::Local<v8::Context> context,
-                              const APISignature* signature,
-                              std::vector<v8::Local<v8::Value>>* arguments,
-                              const ArgumentSpec::RefMap& type_refs);
+  // Looks for any custom hooks associated with the given request, and, if any
+  // are found, runs them. Returns the result of running the hooks, if any.
+  RequestResult RunHooks(const std::string& api_name,
+                         const std::string& method_name,
+                         v8::Local<v8::Context> context,
+                         const APISignature* signature,
+                         std::vector<v8::Local<v8::Value>>* arguments,
+                         const ArgumentSpec::RefMap& type_refs);
 
   // Returns a JS interface that can be used to register hooks.
   v8::Local<v8::Object> GetJSHookInterface(const std::string& api_name,
