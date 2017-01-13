@@ -28,7 +28,6 @@ enum TexCoordPrecision {
   TEX_COORD_PRECISION_NA = 0,
   TEX_COORD_PRECISION_MEDIUM = 1,
   TEX_COORD_PRECISION_HIGH = 2,
-  LAST_TEX_COORD_PRECISION = 2
 };
 
 // Texture coordinate sources for the vertex shader.
@@ -83,7 +82,6 @@ enum SamplerType {
   SAMPLER_TYPE_2D = 1,
   SAMPLER_TYPE_2D_RECT = 2,
   SAMPLER_TYPE_EXTERNAL_OES = 3,
-  LAST_SAMPLER_TYPE = 3
 };
 
 enum BlendMode {
@@ -108,7 +106,11 @@ enum BlendMode {
 };
 
 enum InputColorSource {
+  // This includes RGB and RGBA textures.
   INPUT_COLOR_SOURCE_RGBA_TEXTURE,
+  // This includes Y and either UV or U-and-V textures.
+  INPUT_COLOR_SOURCE_YUV_TEXTURES,
+  // A solid color specified as a uniform value.
   INPUT_COLOR_SOURCE_UNIFORM,
 };
 
@@ -122,7 +124,6 @@ enum FragColorMode {
 enum MaskMode {
   NO_MASK = 0,
   HAS_MASK = 1,
-  LAST_MASK_VALUE = HAS_MASK
 };
 
 // Note: The highp_threshold_cache must be provided by the caller to make
@@ -141,17 +142,16 @@ CC_EXPORT TexCoordPrecision TexCoordPrecisionRequired(
     int highp_threshold_min,
     const gfx::Size& max_size);
 
-class VertexShaderBase {
+class VertexShader {
  public:
-  VertexShaderBase();
+  VertexShader();
   void Init(gpu::gles2::GLES2Interface* context,
             unsigned program,
             int* base_uniform_index);
   std::string GetShaderString() const;
 
  protected:
-  template <class VertexShader, class FragmentShader>
-  friend class ProgramBinding;
+  friend class Program;
 
   // Use arrays of uniforms for matrix, texTransform, and opacity.
   bool use_uniform_arrays_ = false;
@@ -193,7 +193,7 @@ class VertexShaderBase {
   int edge_location_ = -1;
 };
 
-class FragmentShaderBase {
+class FragmentShader {
  public:
   virtual void Init(gpu::gles2::GLES2Interface* context,
                     unsigned program,
@@ -201,7 +201,7 @@ class FragmentShaderBase {
   std::string GetShaderString() const;
 
  protected:
-  FragmentShaderBase();
+  FragmentShader();
   virtual std::string GetShaderSource() const;
   bool has_blend_mode() const { return blend_mode_ != BLEND_MODE_NONE; }
 
@@ -255,65 +255,39 @@ class FragmentShaderBase {
   BlendMode blend_mode_ = BLEND_MODE_NONE;
   bool mask_for_background_ = false;
 
- private:
-  template <class VertexShader, class FragmentShader>
-  friend class ProgramBinding;
-
-  std::string GetHelperFunctions() const;
-  std::string GetBlendFunction() const;
-  std::string GetBlendFunctionBodyForRGB() const;
-
-  DISALLOW_COPY_AND_ASSIGN(FragmentShaderBase);
-};
-
-class FragmentShaderYUVVideo : public FragmentShaderBase {
- public:
-  FragmentShaderYUVVideo();
-
-  void CheckSubclassProperties() {}
-
-  void Init(gpu::gles2::GLES2Interface* context,
-            unsigned program,
-            int* base_uniform_index) override;
-  int y_texture_location() const { return y_texture_location_; }
-  int u_texture_location() const { return u_texture_location_; }
-  int v_texture_location() const { return v_texture_location_; }
-  int uv_texture_location() const { return uv_texture_location_; }
-  int a_texture_location() const { return a_texture_location_; }
-  int lut_texture_location() const { return lut_texture_location_; }
-  int alpha_location() const { return alpha_location_; }
-  int yuv_matrix_location() const { return yuv_matrix_location_; }
-  int yuv_adj_location() const { return yuv_adj_location_; }
-  int ya_clamp_rect_location() const { return ya_clamp_rect_location_; }
-  int uv_clamp_rect_location() const { return uv_clamp_rect_location_; }
-  int resource_multiplier_location() const {
-    return resource_multiplier_location_;
-  }
-  int resource_offset_location() const { return resource_offset_location_; }
-
- private:
-  template <class VertexShader, class FragmentShader>
-  friend class ProgramBinding;
-
-  std::string GetShaderSource() const override;
-
+  // YUV-only parameters.
   bool use_alpha_texture_ = false;
   bool use_nv12_ = false;
   bool use_color_lut_ = false;
 
+  // YUV uniform locations.
   int y_texture_location_ = -1;
   int u_texture_location_ = -1;
   int v_texture_location_ = -1;
   int uv_texture_location_ = -1;
   int a_texture_location_ = -1;
   int lut_texture_location_ = -1;
-  int alpha_location_ = -1;
   int yuv_matrix_location_ = -1;
   int yuv_adj_location_ = -1;
   int ya_clamp_rect_location_ = -1;
   int uv_clamp_rect_location_ = -1;
   int resource_multiplier_location_ = -1;
   int resource_offset_location_ = -1;
+
+ private:
+  friend class Program;
+
+  // Functions specific to YUV video.
+  std::string GetShaderStringYUVVideo() const;
+  void InitYUVVideo(gpu::gles2::GLES2Interface* context,
+                    unsigned program,
+                    int* base_uniform_index);
+
+  std::string GetHelperFunctions() const;
+  std::string GetBlendFunction() const;
+  std::string GetBlendFunctionBodyForRGB() const;
+
+  DISALLOW_COPY_AND_ASSIGN(FragmentShader);
 };
 
 }  // namespace cc

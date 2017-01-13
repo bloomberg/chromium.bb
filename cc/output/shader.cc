@@ -166,11 +166,11 @@ TexCoordPrecision TexCoordPrecisionRequired(GLES2Interface* context,
                                    max_size.height());
 }
 
-VertexShaderBase::VertexShaderBase() {}
+VertexShader::VertexShader() {}
 
-void VertexShaderBase::Init(GLES2Interface* context,
-                            unsigned program,
-                            int* base_uniform_index) {
+void VertexShader::Init(GLES2Interface* context,
+                        unsigned program,
+                        int* base_uniform_index) {
   std::vector<const char*> uniforms;
   std::vector<int> locations;
 
@@ -237,7 +237,7 @@ void VertexShaderBase::Init(GLES2Interface* context,
     quad_location_ = locations[index++];
 }
 
-std::string VertexShaderBase::GetShaderString() const {
+std::string VertexShader::GetShaderString() const {
   // We unconditionally use highp in the vertex shader since
   // we are unlikely to be vertex shader bound when drawing large quads.
   // Also, some vertex shaders mutate the texture coordinate in such a
@@ -382,21 +382,34 @@ std::string VertexShaderBase::GetShaderString() const {
   return header + source;
 }
 
-FragmentShaderBase::FragmentShaderBase() {}
+FragmentShader::FragmentShader() {}
 
-std::string FragmentShaderBase::GetShaderString() const {
+std::string FragmentShader::GetShaderString() const {
+  // TODO(ccameron): Merge YUV shaders into the main shader generator.
+  std::string source;
+  if (input_color_type_ == INPUT_COLOR_SOURCE_YUV_TEXTURES)
+    source = GetShaderStringYUVVideo();
+  else
+    source = GetShaderSource();
+
   TexCoordPrecision precision = tex_coord_precision_;
   // The AA shader values will use TexCoordPrecision.
   if (aa_mode_ == USE_AA && precision == TEX_COORD_PRECISION_NA)
     precision = TEX_COORD_PRECISION_MEDIUM;
   return SetFragmentTexCoordPrecision(
-      precision, SetFragmentSamplerType(
-                     sampler_type_, SetBlendModeFunctions(GetShaderSource())));
+      precision,
+      SetFragmentSamplerType(sampler_type_, SetBlendModeFunctions(source)));
 }
 
-void FragmentShaderBase::Init(GLES2Interface* context,
-                              unsigned program,
-                              int* base_uniform_index) {
+void FragmentShader::Init(GLES2Interface* context,
+                          unsigned program,
+                          int* base_uniform_index) {
+  // TODO(ccameron): Merge YUV shaders into the main shader generator.
+  if (input_color_type_ == INPUT_COLOR_SOURCE_YUV_TEXTURES) {
+    InitYUVVideo(context, program, base_uniform_index);
+    return;
+  }
+
   std::vector<const char*> uniforms;
   std::vector<int> locations;
   if (has_blend_mode()) {
@@ -422,6 +435,9 @@ void FragmentShaderBase::Init(GLES2Interface* context,
       uniforms.push_back("s_texture");
       if (has_rgba_fragment_tex_transform_)
         uniforms.push_back("fragmentTexTransform");
+      break;
+    case INPUT_COLOR_SOURCE_YUV_TEXTURES:
+      NOTREACHED();
       break;
     case INPUT_COLOR_SOURCE_UNIFORM:
       uniforms.push_back("color");
@@ -458,6 +474,9 @@ void FragmentShaderBase::Init(GLES2Interface* context,
       if (has_rgba_fragment_tex_transform_)
         fragment_tex_transform_location_ = locations[index++];
       break;
+    case INPUT_COLOR_SOURCE_YUV_TEXTURES:
+      NOTREACHED();
+      break;
     case INPUT_COLOR_SOURCE_UNIFORM:
       color_location_ = locations[index++];
       break;
@@ -465,7 +484,7 @@ void FragmentShaderBase::Init(GLES2Interface* context,
   DCHECK_EQ(index, locations.size());
 }
 
-std::string FragmentShaderBase::SetBlendModeFunctions(
+std::string FragmentShader::SetBlendModeFunctions(
     const std::string& shader_string) const {
   if (shader_string.find("ApplyBlendMode") == std::string::npos)
     return shader_string;
@@ -517,7 +536,7 @@ std::string FragmentShaderBase::SetBlendModeFunctions(
          kFunctionApplyBlendMode + shader_string;
 }
 
-std::string FragmentShaderBase::GetHelperFunctions() const {
+std::string FragmentShader::GetHelperFunctions() const {
   static const std::string kFunctionHardLight = SHADER0([]() {
     vec3 hardLight(vec4 src, vec4 dst) {
       vec3 result;
@@ -678,7 +697,7 @@ std::string FragmentShaderBase::GetHelperFunctions() const {
   }
 }
 
-std::string FragmentShaderBase::GetBlendFunction() const {
+std::string FragmentShader::GetBlendFunction() const {
   return "vec4 Blend(vec4 src, vec4 dst) {"
          "    vec4 result;"
          "    result.a = src.a + (1.0 - src.a) * dst.a;" +
@@ -687,7 +706,7 @@ std::string FragmentShaderBase::GetBlendFunction() const {
          "}";
 }
 
-std::string FragmentShaderBase::GetBlendFunctionBodyForRGB() const {
+std::string FragmentShader::GetBlendFunctionBodyForRGB() const {
   switch (blend_mode_) {
     case BLEND_MODE_NORMAL:
       return "result.rgb = src.rgb + dst.rgb * (1.0 - src.a);";
@@ -760,7 +779,7 @@ std::string FragmentShaderBase::GetBlendFunctionBodyForRGB() const {
   return "result = vec4(1.0, 0.0, 0.0, 1.0);";
 }
 
-std::string FragmentShaderBase::GetShaderSource() const {
+std::string FragmentShader::GetShaderSource() const {
   std::string header = "precision mediump float;\n";
   std::string source = "void main() {\n";
 
@@ -787,6 +806,9 @@ std::string FragmentShaderBase::GetShaderSource() const {
         else
           SRC("vec4 texColor = TextureLookup(s_texture, v_texCoord);");
       }
+      break;
+    case INPUT_COLOR_SOURCE_YUV_TEXTURES:
+      NOTREACHED();
       break;
     case INPUT_COLOR_SOURCE_UNIFORM:
       DCHECK(!ignore_sampler_type_);
@@ -896,9 +918,7 @@ std::string FragmentShaderBase::GetShaderSource() const {
   return header + source;
 }
 
-FragmentShaderYUVVideo::FragmentShaderYUVVideo() {}
-
-void FragmentShaderYUVVideo::Init(GLES2Interface* context,
+void FragmentShader::InitYUVVideo(GLES2Interface* context,
                                   unsigned program,
                                   int* base_uniform_index) {
   static const char* uniforms[] = {
@@ -947,7 +967,7 @@ void FragmentShaderYUVVideo::Init(GLES2Interface* context,
   uv_clamp_rect_location_ = locations[12];
 }
 
-std::string FragmentShaderYUVVideo::GetShaderSource() const {
+std::string FragmentShader::GetShaderStringYUVVideo() const {
   std::string head = SHADER0([]() {
     precision mediump float;
     precision mediump int;

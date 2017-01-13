@@ -61,6 +61,7 @@ enum ProgramType {
   PROGRAM_TYPE_TEXTURE,
   PROGRAM_TYPE_RENDER_PASS,
   PROGRAM_TYPE_VIDEO_STREAM,
+  PROGRAM_TYPE_YUV_VIDEO,
 };
 
 class CC_EXPORT ProgramKey {
@@ -89,14 +90,18 @@ class CC_EXPORT ProgramKey {
                                bool mask_for_background,
                                bool has_color_matrix);
   static ProgramKey VideoStream(TexCoordPrecision precision);
+  static ProgramKey YUVVideo(TexCoordPrecision precision,
+                             SamplerType sampler,
+                             bool use_alpha_texture,
+                             bool use_nv12,
+                             bool use_color_lut);
 
   bool operator==(const ProgramKey& other) const;
 
  private:
   ProgramKey();
   friend struct ProgramKeyHash;
-  template <class VertexShader, class FragmentShader>
-  friend class ProgramBinding;
+  friend class Program;
 
   ProgramType type_ = PROGRAM_TYPE_DEBUG_BORDER;
   TexCoordPrecision precision_ = TEX_COORD_PRECISION_NA;
@@ -112,6 +117,10 @@ class CC_EXPORT ProgramKey {
   MaskMode mask_mode_ = NO_MASK;
   bool mask_for_background_ = false;
   bool has_color_matrix_ = false;
+
+  bool use_alpha_texture_ = false;
+  bool use_nv12_ = false;
+  bool use_color_lut_ = false;
 };
 
 struct ProgramKeyHash {
@@ -127,14 +136,16 @@ struct ProgramKeyHash {
            (static_cast<size_t>(key.has_background_color_) << 20) ^
            (static_cast<size_t>(key.mask_mode_) << 21) ^
            (static_cast<size_t>(key.mask_for_background_) << 22) ^
-           (static_cast<size_t>(key.has_color_matrix_) << 23);
+           (static_cast<size_t>(key.has_color_matrix_) << 23) ^
+           (static_cast<size_t>(key.use_alpha_texture_) << 24) ^
+           (static_cast<size_t>(key.use_nv12_) << 25) ^
+           (static_cast<size_t>(key.use_color_lut_) << 26);
   }
 };
 
-template <class VertexShader, class FragmentShader>
-class ProgramBinding : public ProgramBindingBase {
+class Program : public ProgramBindingBase {
  public:
-  ProgramBinding() {}
+  Program() {}
 
   void Initialize(ContextProvider* context_provider, const ProgramKey& key) {
     // Set parameters that are common to all sub-classes.
@@ -167,26 +178,10 @@ class ProgramBinding : public ProgramBindingBase {
       case PROGRAM_TYPE_VIDEO_STREAM:
         InitializeVideoStreamProgram(key);
         break;
+      case PROGRAM_TYPE_YUV_VIDEO:
+        InitializeYUVVideo(key);
+        break;
     }
-    InitializeInternal(context_provider);
-  }
-
-  void InitializeVideoYUV(ContextProvider* context_provider,
-                          TexCoordPrecision precision,
-                          SamplerType sampler,
-                          bool use_alpha_plane,
-                          bool use_nv12,
-                          bool use_color_lut) {
-    vertex_shader_.tex_coord_source_ = TEX_COORD_SOURCE_ATTRIBUTE;
-    vertex_shader_.has_matrix_ = true;
-    vertex_shader_.is_ya_uv_ = true;
-
-    fragment_shader_.use_alpha_texture_ = use_alpha_plane;
-    fragment_shader_.use_nv12_ = use_nv12;
-    fragment_shader_.use_color_lut_ = use_color_lut;
-    fragment_shader_.tex_coord_precision_ = precision;
-    fragment_shader_.sampler_type_ = sampler;
-
     InitializeInternal(context_provider);
   }
 
@@ -250,6 +245,40 @@ class ProgramBinding : public ProgramBindingBase {
   }
   int color_offset_location() const {
     return fragment_shader_.color_offset_location_;
+  }
+  int y_texture_location() const {
+    return fragment_shader_.y_texture_location_;
+  }
+  int u_texture_location() const {
+    return fragment_shader_.u_texture_location_;
+  }
+  int v_texture_location() const {
+    return fragment_shader_.v_texture_location_;
+  }
+  int uv_texture_location() const {
+    return fragment_shader_.uv_texture_location_;
+  }
+  int a_texture_location() const {
+    return fragment_shader_.a_texture_location_;
+  }
+  int lut_texture_location() const {
+    return fragment_shader_.lut_texture_location_;
+  }
+  int yuv_matrix_location() const {
+    return fragment_shader_.yuv_matrix_location_;
+  }
+  int yuv_adj_location() const { return fragment_shader_.yuv_adj_location_; }
+  int ya_clamp_rect_location() const {
+    return fragment_shader_.ya_clamp_rect_location_;
+  }
+  int uv_clamp_rect_location() const {
+    return fragment_shader_.uv_clamp_rect_location_;
+  }
+  int resource_multiplier_location() const {
+    return fragment_shader_.resource_multiplier_location_;
+  }
+  int resource_offset_location() const {
+    return fragment_shader_.resource_offset_location_;
   }
 
  private:
@@ -346,10 +375,18 @@ class ProgramBinding : public ProgramBindingBase {
     vertex_shader_.tex_coord_source_ = TEX_COORD_SOURCE_ATTRIBUTE;
     vertex_shader_.tex_coord_transform_ = TEX_COORD_TRANSFORM_MATRIX;
     vertex_shader_.has_matrix_ = true;
+    DCHECK_EQ(key.sampler_, SAMPLER_TYPE_EXTERNAL_OES);
+  }
 
-    fragment_shader_.tex_coord_precision_ = key.precision_;
-    fragment_shader_.sampler_type_ = SAMPLER_TYPE_EXTERNAL_OES;
-    fragment_shader_.frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
+  void InitializeYUVVideo(const ProgramKey& key) {
+    vertex_shader_.tex_coord_source_ = TEX_COORD_SOURCE_ATTRIBUTE;
+    vertex_shader_.has_matrix_ = true;
+    vertex_shader_.is_ya_uv_ = true;
+
+    fragment_shader_.input_color_type_ = INPUT_COLOR_SOURCE_YUV_TEXTURES;
+    fragment_shader_.use_alpha_texture_ = key.use_alpha_texture_;
+    fragment_shader_.use_nv12_ = key.use_nv12_;
+    fragment_shader_.use_color_lut_ = key.use_color_lut_;
   }
 
   void InitializeInternal(ContextProvider* context_provider) {
@@ -384,10 +421,8 @@ class ProgramBinding : public ProgramBindingBase {
   VertexShader vertex_shader_;
   FragmentShader fragment_shader_;
 
-  DISALLOW_COPY_AND_ASSIGN(ProgramBinding);
+  DISALLOW_COPY_AND_ASSIGN(Program);
 };
-
-typedef ProgramBinding<VertexShaderBase, FragmentShaderBase> Program;
 
 }  // namespace cc
 

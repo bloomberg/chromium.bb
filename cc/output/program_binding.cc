@@ -26,7 +26,9 @@ bool ProgramKey::operator==(const ProgramKey& other) const {
          has_background_color_ == other.has_background_color_ &&
          mask_mode_ == other.mask_mode_ &&
          mask_for_background_ == other.mask_for_background_ &&
-         has_color_matrix_ == other.has_color_matrix_;
+         has_color_matrix_ == other.has_color_matrix_ &&
+         use_alpha_texture_ == other.use_alpha_texture_ &&
+         use_nv12_ == other.use_nv12_ && use_color_lut_ == other.use_color_lut_;
 }
 
 // static
@@ -100,6 +102,22 @@ ProgramKey ProgramKey::VideoStream(TexCoordPrecision precision) {
   result.type_ = PROGRAM_TYPE_VIDEO_STREAM;
   result.precision_ = precision;
   result.sampler_ = SAMPLER_TYPE_EXTERNAL_OES;
+  return result;
+}
+
+// static
+ProgramKey ProgramKey::YUVVideo(TexCoordPrecision precision,
+                                SamplerType sampler,
+                                bool use_alpha_texture,
+                                bool use_nv12,
+                                bool use_color_lut) {
+  ProgramKey result;
+  result.type_ = PROGRAM_TYPE_YUV_VIDEO;
+  result.precision_ = precision;
+  result.sampler_ = sampler;
+  result.use_alpha_texture_ = use_alpha_texture;
+  result.use_nv12_ = use_nv12;
+  result.use_color_lut_ = use_color_lut;
   return result;
 }
 

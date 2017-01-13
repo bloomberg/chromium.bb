@@ -185,11 +185,13 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
     EXPECT_PROGRAM_VALID(renderer()->GetProgram(
         ProgramKey::Tile(precision, sampler, NO_AA, DO_SWIZZLE, true)));
 
+    // Iterate over alpha plane, nv12, and color_lut parameters.
     for (int j = 0; j < 2; j++) {
       for (int k = 0; k < 2; k++) {
         for (int l = 0; l < 2; l++) {
-          EXPECT_PROGRAM_VALID(
-              renderer()->GetVideoYUVProgram(precision, sampler, j, k, l));
+          const Program* program = renderer()->GetProgram(
+              ProgramKey::YUVVideo(precision, sampler, j, k, l));
+          EXPECT_PROGRAM_VALID(program);
         }
       }
     }

@@ -301,16 +301,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   std::unordered_map<ProgramKey, std::unique_ptr<Program>, ProgramKeyHash>
       program_cache_;
 
-  typedef ProgramBinding<VertexShaderBase, FragmentShaderYUVVideo>
-      VideoYUVProgram;
-  const VideoYUVProgram* GetVideoYUVProgram(TexCoordPrecision precision,
-                                            SamplerType sampler,
-                                            bool use_alpha_texture,
-                                            bool use_nv12,
-                                            bool use_color_lut);
-  VideoYUVProgram video_yuv_program_[LAST_TEX_COORD_PRECISION + 1]
-                                    [LAST_SAMPLER_TYPE + 1][2][2][2];
-
   gpu::gles2::GLES2Interface* gl_;
   gpu::ContextSupport* context_support_;
   std::unique_ptr<ContextCacheController::ScopedVisibility> context_visibility_;
