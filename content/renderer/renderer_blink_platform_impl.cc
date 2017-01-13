@@ -180,6 +180,9 @@ media::AudioParameters GetAudioHardwareParams() {
   blink::WebLocalFrame* const web_frame =
       blink::WebLocalFrame::frameForCurrentContext();
   RenderFrame* const render_frame = RenderFrame::FromWebFrame(web_frame);
+  if (!render_frame)
+    return media::AudioParameters::UnavailableDeviceParams();
+
   return AudioDeviceFactory::GetOutputDeviceInfo(render_frame->GetRoutingID(),
                                                  0, std::string(),
                                                  web_frame->getSecurityOrigin())
