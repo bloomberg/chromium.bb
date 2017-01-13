@@ -99,6 +99,15 @@ var PeerConnectionUpdateTable = (function() {
         return;
       }
 
+      if (update.type === 'onIceCandidate' ||
+          update.type === 'addIceCandidate') {
+        // extract ICE candidate type from the field following typ.
+        var candidateType = update.value.match(
+          /(?: typ )(host|srflx|relay)/)[1];
+        if (candidateType) {
+          type += ' (' + candidateType + ')';
+        }
+      }
       row.innerHTML += '<td><details><summary>' + type +
           '</summary></details></td>';
 
