@@ -17,6 +17,12 @@
 // Returns the current number of tabs.
 - (NSUInteger)tabsCount;
 
+// Whether navigation to the previous page is available.
+- (BOOL)canGoBack;
+
+// Whether navigation to the next page is available.
+- (BOOL)canGoForward;
+
 #pragma mark Call for action
 
 // Executes a Chrome command.  |sender| must implement the |-tag| method and

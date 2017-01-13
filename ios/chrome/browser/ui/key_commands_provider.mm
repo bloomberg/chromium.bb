@@ -42,6 +42,14 @@
   const int browseRightDescriptionID = useRTLLayout
                                            ? IDS_IOS_KEYBOARD_HISTORY_BACK
                                            : IDS_IOS_KEYBOARD_HISTORY_FORWARD;
+  BOOL (^canBrowseLeft)() = [[^() {
+    return useRTLLayout ? [weakConsumer canGoForward]
+                        : [weakConsumer canGoBack];
+  } copy] autorelease];
+  BOOL (^canBrowseRight)() = [[^() {
+    return useRTLLayout ? [weakConsumer canGoBack]
+                        : [weakConsumer canGoForward];
+  } copy] autorelease];
 
   // Initialize the array of commands with an estimated capacity.
   NSMutableArray* keyCommands = [NSMutableArray arrayWithCapacity:32];
@@ -142,14 +150,18 @@
                                        title:l10n_util::GetNSStringWithFixup(
                                                  browseLeftDescriptionID)
                                       action:^{
-                                        execute(browseLeft);
+                                        if (canBrowseLeft()) {
+                                          execute(browseLeft);
+                                        }
                                       }],
         [UIKeyCommand cr_keyCommandWithInput:UIKeyInputRightArrow
                                modifierFlags:UIKeyModifierCommand
                                        title:l10n_util::GetNSStringWithFixup(
                                                  browseRightDescriptionID)
                                       action:^{
-                                        execute(browseRight);
+                                        if (canBrowseRight()) {
+                                          execute(browseRight);
+                                        }
                                       }],
       ]];
     }
@@ -208,13 +220,17 @@
                              modifierFlags:UIKeyModifierCommand
                                      title:nil
                                     action:^{
-                                      execute(browseLeft);
+                                      if (canBrowseLeft()) {
+                                        execute(browseLeft);
+                                      }
                                     }],
       [UIKeyCommand cr_keyCommandWithInput:@"]"
                              modifierFlags:UIKeyModifierCommand
                                      title:nil
                                     action:^{
-                                      execute(browseRight);
+                                      if (canBrowseRight()) {
+                                        execute(browseRight);
+                                      }
                                     }],
       [UIKeyCommand cr_keyCommandWithInput:@"."
                              modifierFlags:UIKeyModifierCommand

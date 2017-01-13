@@ -3542,6 +3542,14 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   return [_model count];
 }
 
+- (BOOL)canGoBack {
+  return [_model currentTab].canGoBack;
+}
+
+- (BOOL)canGoForward {
+  return [_model currentTab].canGoForward;
+}
+
 - (void)focusTabAtIndex:(NSUInteger)index {
   if ([_model count] > index) {
     [_model setCurrentTab:[_model tabAtIndex:index]];
@@ -3908,9 +3916,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
   switch (command) {
     case IDC_BACK:
-      if ([_model currentTab].canGoBack) {
-        [[_model currentTab] goBack];
-      }
+      [[_model currentTab] goBack];
       break;
     case IDC_BOOKMARK_PAGE:
       [self initializeBookmarkInteractionController];
@@ -3951,9 +3957,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
       [self searchFindInPage];
       break;
     case IDC_FORWARD:
-      if ([_model currentTab].canGoForward) {
-        [[_model currentTab] goForward];
-      }
+      [[_model currentTab] goForward];
       break;
     case IDC_FULLSCREEN:
       NOTIMPLEMENTED();
