@@ -212,16 +212,16 @@ void EnsureCryptohomeMigratedToGaiaId(
     scoped_refptr<CryptohomeAuthenticator> resolver,
     bool ephemeral,
     bool create_if_nonexistent) {
+  if (attempt->user_context.GetAccountId().GetAccountType() ==
+      AccountType::ACTIVE_DIRECTORY) {
+    cryptohome::SetGaiaIdMigrationStatusDone(
+        attempt->user_context.GetAccountId());
+  }
   const bool is_gaiaid_migration_started = switches::IsGaiaIdMigrationStarted();
   if (!is_gaiaid_migration_started) {
     UMACryptohomeMigrationToGaiaId(CryptohomeMigrationToGaiaId::NOT_STARTED);
     DoMount(attempt, resolver, ephemeral, create_if_nonexistent);
     return;
-  }
-  if (attempt->user_context.GetAccountId().GetAccountType() ==
-      AccountType::ACTIVE_DIRECTORY) {
-    cryptohome::SetGaiaIdMigrationStatusDone(
-        attempt->user_context.GetAccountId());
   }
   const bool already_migrated = cryptohome::GetGaiaIdMigrationStatus(
       attempt->user_context.GetAccountId());
