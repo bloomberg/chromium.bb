@@ -2,27 +2,18 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+div {
+  margin: 10px 0;
+}
+
 paper-button[raised].colored {
   background: rgb(66, 133, 244);
   color: white;
 }
 
-#header {
-  margin: 5px;
-}
-
-#header a {
-  padding: 0 4px;
-}
-
-cr-network-select {
-  padding: 5px;
+#select-div {
+  height: 100px;
   width: 500px;
-}
-
-#refresh {
-  margin-top: 10px;
-  padding: 5px;
 }
 
 .state-table {
@@ -59,9 +50,4 @@ cr-network-select {
 .state-table-icon-cell {
   height: 32px;
   width: 32px;
-}
-
-#advanced-options {
-  margin-top: 10px;
-  text-align: center;
 }

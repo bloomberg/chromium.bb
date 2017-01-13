@@ -72,6 +72,7 @@ Polymer({
     networkSelectionScreenShown: {
       type: Boolean,
       value: false,
+      observer: 'networkSelectionScreenShownChanged_',
     },
 
     /**
@@ -131,6 +132,18 @@ Polymer({
    */
   focus: function() {
     this.$.welcomeNextButton.focus();
+  },
+
+  /** @private */
+  networkSelectionScreenShownChanged_: function() {
+    if (this.networkSelectionScreenShown) {
+      // After #networkSelect is stamped, trigger a refresh so that the list
+      // will be updated with the currently visible networks and sized
+      // appropriately.
+      this.async(function() {
+        this.$.networkSelect.refreshNetworks();
+      }.bind(this));
+    }
   },
 
   /**

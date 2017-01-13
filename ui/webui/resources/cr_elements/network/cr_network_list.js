@@ -14,15 +14,6 @@ Polymer({
 
   properties: {
     /**
-     * The maximum height in pixels for the list.
-     */
-    maxHeight: {
-      type: Number,
-      value: 1000,
-      observer: 'maxHeightChanged_',
-    },
-
-    /**
      * The list of network state properties for the items to display.
      * @type {!Array<!CrOnc.NetworkStateProperties>}
      */
@@ -64,11 +55,6 @@ Polymer({
   behaviors: [CrScrollableBehavior],
 
   observers: ['listChanged_(networks, customItems)'],
-
-  /** @private */
-  maxHeightChanged_: function() {
-    this.$.container.style.maxHeight = this.maxHeight + 'px';
-  },
 
   /** @private */
   listChanged_: function() {

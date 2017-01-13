@@ -319,7 +319,7 @@ var NetworkUI = (function() {
   var requestGlobalPolicy = function() {
     chrome.networkingPrivate.getGlobalPolicy(function(policy) {
       document.querySelector('#global-policy').textContent =
-          JSON.stringify(policy);
+          JSON.stringify(policy, null, '\t');
     });
   };
 

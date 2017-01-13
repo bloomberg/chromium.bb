@@ -1256,9 +1256,6 @@
     <message name="IDS_NETWORK_LIST_DISABLED" desc="Settings > Internet, text in network summary when the network type is connected">
       Disabled
     </message>
-    <message name="IDS_NETWORK_LIST_EXPAND_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the list of available network connections. Only visible by screen reader software.">
-      Show available network connections
-    </message>
     <message name="IDS_NETWORK_LIST_NOT_CONNECTED" desc="Settings > Internet, text in network summary when there is no network for the type.">
       No network
     </message>

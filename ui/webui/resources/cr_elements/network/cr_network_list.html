@@ -8,13 +8,16 @@
 <dom-module id="cr-network-list">
   <template>
     <style include="cr-shared-style">
+      :host {
+        display: inline-flex;
+      }
       #container {
         max-height: 1000px;
         min-height: 50px;
         overflow-y: auto;
       }
     </style>
-    <div id="container" class="layout vertical" scrollable>
+    <div id="container" class="layout vertical flex" scrollable>
       <iron-list items="[[getItems_(networks, customItems)]]"
           scroll-target="container" selection-enabled
           selected-item="{{selectedItem}}">

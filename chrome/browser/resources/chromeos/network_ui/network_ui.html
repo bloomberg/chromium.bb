@@ -9,6 +9,7 @@
   <link rel="import" href="chrome://resources/cr_elements/network/cr_network_icon.html">
   <link rel="import" href="chrome://resources/cr_elements/network/cr_network_select.html">
   <link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
+  <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 
   <script src="chrome://resources/js/load_time_data.js"></script>
@@ -18,11 +19,27 @@
 </head>
 
 <body>
-  <div id="header">
-    <p i18n-content="autoRefreshText"></p>
+  <div class="layout vertical">
+    <div i18n-content="autoRefreshText"></div>
     <span i18n-values=".innerHTML:deviceLogLinkText"></span>
-    <div id="advanced-options">
-      <span i18n-content="clickToExpandText"></span>
+
+    <h3 i18n-content="globalPolicyLabel"></h3>
+    <div id="global-policy"></div>
+
+    <h3>CrNetworkSelect</h3>
+    <div id="select-div" class="layout vertical">
+      <cr-network-select class="flex" handle-network-item-selected>
+      </cr-network-select>
+    </div>
+    <div>
+      <paper-button raised class="colored" id="refresh"
+          i18n-content="networkRefreshText">
+      </paper-button>
+    </div>
+
+    <h3 i18n-content="visibleNetworksLabel"></h3>
+    <div i18n-content="clickToExpandText"></div>
+    <div>
       <span i18n-content="propertyFormatText"></span>
       <select id="get-property-format">
         <option value="normal" i18n-content="normalFormatOption"></option>
@@ -32,55 +49,41 @@
       </select>
     </div>
 
-    <cr-network-select expandable show-active max-height="100"
-        handle-network-item-selected>
-    </cr-network-select>
+    <table id="network-state-table" class="state-table">
+      <tr class="state-table-header">
+        <td></td>
+        <td></td>
+        <td>GUID</td>
+        <td>Path</td>
+        <td>Name</td>
+        <td>Type</td>
+        <td>State</td>
+        <td>Connect?</td>
+        <td>Error</td>
+        <td>Security</td>
+        <td>Tech</td>
+        <td>Activation</td>
+        <td>Roam</td>
+        <td>Frequency</td>
+        <td>Strength</td>
+      </tr>
+    </table>
 
-    <div>
-      <paper-button raised class="colored" id="refresh"
-          i18n-content="networkRefreshText">
-      </paper-button>
-    </div>
+    <h3 i18n-content="favoriteNetworksLabel"></h3>
+    <table id="favorite-state-table" class="state-table">
+      <tr class="state-table-header">
+        <td></td>
+        <td></td>
+        <td>GUID</td>
+        <td>Path</td>
+        <td>Name</td>
+        <td>Type</td>
+        <td>Profile</td>
+        <td>Visible</td>
+        <td>ONC Source</td>
+      </tr>
+    </table>
   </div>
-
-  <h3 i18n-content="globalPolicyLabel"></h3>
-  <div id="global-policy"></div>
-
-  <h3 i18n-content="visibleNetworksLabel"></h3>
-  <table id="network-state-table" class="state-table">
-    <tr class="state-table-header">
-      <td></td>
-      <td></td>
-      <td>GUID</td>
-      <td>Path</td>
-      <td>Name</td>
-      <td>Type</td>
-      <td>State</td>
-      <td>Connect?</td>
-      <td>Error</td>
-      <td>Security</td>
-      <td>Tech</td>
-      <td>Activation</td>
-      <td>Roam</td>
-      <td>Frequency</td>
-      <td>Strength</td>
-    </tr>
-  </table>
-
-  <h3 i18n-content="favoriteNetworksLabel"></h3>
-  <table id="favorite-state-table" class="state-table">
-    <tr class="state-table-header">
-      <td></td>
-      <td></td>
-      <td>GUID</td>
-      <td>Path</td>
-      <td>Name</td>
-      <td>Type</td>
-      <td>Profile</td>
-      <td>Visible</td>
-      <td>ONC Source</td>
-    </tr>
-  </table>
 
   <script src="chrome://resources/js/i18n_template.js"></script>
 </body>

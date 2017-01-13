@@ -21,14 +21,6 @@ Polymer({
     },
 
     /**
-     * The maximum height in pixels for the list of networks.
-     */
-    maxHeight: {
-      type: Number,
-      value: 500,
-    },
-
-    /**
      * Interface for networkingPrivate calls, passed from internet_page.
      * @type {NetworkingPrivate}
      */

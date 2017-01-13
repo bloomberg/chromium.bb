@@ -1746,7 +1746,6 @@ void AddWebContentStrings(content::WebUIDataSource* html_source) {
 void AddCrNetworkStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"networkDisabled", IDS_NETWORK_LIST_DISABLED},
-      {"networkExpandA11yLabel", IDS_NETWORK_LIST_EXPAND_ACCESSIBILITY_LABEL},
       {"networkListItemConnected", IDS_NETWORK_LIST_CONNECTED},
       {"networkListItemConnecting", IDS_NETWORK_LIST_CONNECTING},
       {"networkListItemNotConnected", IDS_NETWORK_LIST_NOT_CONNECTED},

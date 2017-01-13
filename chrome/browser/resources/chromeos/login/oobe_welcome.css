@@ -37,6 +37,11 @@
 }
 
 /************* Network Selection Screen **************/
+#networkSelectionScreen .footer {
+  margin-bottom: 10px;
+  max-height: 297px;
+}
+
 #networkSelectionScreen .bottom-buttons {
   padding: 0 6px; /* = 8px - 2px back button border */
 }

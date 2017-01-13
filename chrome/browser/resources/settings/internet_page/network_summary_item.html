@@ -29,6 +29,10 @@
         min-height: var(--settings-row-min-height);
       }
 
+      .padded {
+        @apply(--settings-list-frame-padding);
+      }
+
       #buttons {
         align-items: center;
       }
@@ -49,7 +53,8 @@
 
       #networkList {
         margin: 5px 0 10px;
-        max-height: 400px;
+        max-height: 200px;
+        min-height: 50px;
       }
     </style>
     <div class="settings-box two-line" actionable on-tap="onDetailsTap_">
@@ -98,9 +103,9 @@
         if="[[networksDomIfIsTrue_(expanded_, wasExpanded_)]]">
       <iron-collapse
           opened="[[networksIronCollapseIsOpened_(expanded_, wasExpanded_)]]">
-        <div class="list-frame">
-          <cr-network-list id="networkList" max-height="[[maxHeight]]"
-              networks="[[networkStateList]]" show-buttons>
+        <div class="layout vertical padded">
+          <cr-network-list id="networkList" networks="[[networkStateList]]"
+              show-buttons>
           </cr-network-list>
           <template is="dom-if"
               if="[[knownNetworksIsVisible_(activeNetworkState)]]">
