@@ -143,13 +143,8 @@ public class MainPreferences extends PreferenceFragment
 
         ChromeBasePreference dataReduction =
                 (ChromeBasePreference) findPreference(PREF_DATA_REDUCTION);
-        if (DataReductionProxySettings.getInstance().isDataReductionProxyAllowed()) {
-            dataReduction.setSummary(
-                    DataReductionPreferences.generateSummary(getResources()));
-            dataReduction.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
-        } else {
-            getPreferenceScreen().removePreference(dataReduction);
-        }
+        dataReduction.setSummary(DataReductionPreferences.generateSummary(getResources()));
+        dataReduction.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
         if (!SigninManager.get(getActivity()).isSigninSupported()) {
             getPreferenceScreen().removePreference(findPreference(PREF_SIGN_IN));

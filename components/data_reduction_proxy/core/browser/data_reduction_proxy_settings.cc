@@ -52,7 +52,6 @@ const char kDataReductionPassThroughHeader[] =
 DataReductionProxySettings::DataReductionProxySettings()
     : unreachable_(false),
       deferred_initialization_(false),
-      allowed_(false),
       promo_allowed_(false),
       lo_fi_mode_active_(false),
       lo_fi_load_image_requested_(false),
@@ -69,8 +68,7 @@ DataReductionProxySettings::DataReductionProxySettings()
 }
 
 DataReductionProxySettings::~DataReductionProxySettings() {
-  if (allowed_)
-    spdy_proxy_auth_enabled_.Destroy();
+  spdy_proxy_auth_enabled_.Destroy();
 }
 
 void DataReductionProxySettings::InitPrefMembers() {
@@ -83,7 +81,6 @@ void DataReductionProxySettings::InitPrefMembers() {
 
 void DataReductionProxySettings::UpdateConfigValues() {
   DCHECK(config_);
-  allowed_ = config_->allowed();
   promo_allowed_ = config_->promo_allowed();
 }
 
@@ -144,10 +141,6 @@ bool DataReductionProxySettings::IsDataReductionProxyManaged() {
 
 void DataReductionProxySettings::SetDataReductionProxyEnabled(bool enabled) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // Prevent configuring the proxy when it is not allowed to be used.
-  if (!allowed_)
-    return;
-
   if (spdy_proxy_auth_enabled_.GetValue() != enabled) {
     spdy_proxy_auth_enabled_.SetValue(enabled);
     OnProxyEnabledPrefChange();
@@ -240,8 +233,6 @@ void DataReductionProxySettings::OnProxyEnabledPrefChange() {
   if (!register_synthetic_field_trial_.is_null()) {
     RegisterDataReductionProxyFieldTrial();
   }
-  if (!allowed_)
-    return;
   MaybeActivateDataReductionProxy(false);
 }
 
@@ -330,20 +321,14 @@ DataReductionProxyEventStore* DataReductionProxySettings::GetEventStore()
 }
 
 // Metrics methods
-void DataReductionProxySettings::RecordDataReductionInit() {
+void DataReductionProxySettings::RecordDataReductionInit() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  ProxyStartupState state = PROXY_NOT_AVAILABLE;
-  if (allowed_) {
-    if (IsDataReductionProxyEnabled())
-      state = PROXY_ENABLED;
-    else
-      state = PROXY_DISABLED;
-  }
-
-  RecordStartupState(state);
+  RecordStartupState(IsDataReductionProxyEnabled() ? PROXY_ENABLED
+                                                   : PROXY_DISABLED);
 }
 
-void DataReductionProxySettings::RecordStartupState(ProxyStartupState state) {
+void DataReductionProxySettings::RecordStartupState(
+    ProxyStartupState state) const {
   UMA_HISTOGRAM_ENUMERATION(kUMAProxyStartupStateHistogram,
                             state,
                             PROXY_STARTUP_STATE_COUNT);

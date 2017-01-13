@@ -388,9 +388,6 @@ class RenderViewContextMenuPrefsTest : public ChromeRenderViewHostTestHarness {
     drp_test_context_ =
         data_reduction_proxy::DataReductionProxyTestContext::Builder()
             .WithParamsFlags(
-                 data_reduction_proxy::DataReductionProxyParams::kAllowed |
-                 data_reduction_proxy::DataReductionProxyParams::
-                     kFallbackAllowed |
                  data_reduction_proxy::DataReductionProxyParams::kPromoAllowed)
             .WithMockConfig()
             .SkipSettingsInitialization()

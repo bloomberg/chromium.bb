@@ -20,8 +20,7 @@ TestDataReductionProxyParams::TestDataReductionProxyParams(
     int flags, unsigned int has_definitions)
     : DataReductionProxyParams(flags, false),
       has_definitions_(has_definitions) {
-  init_result_ = Init(flags & DataReductionProxyParams::kAllowed,
-                      flags & DataReductionProxyParams::kFallbackAllowed);
+  init_result_ = Init();
   }
 
 bool TestDataReductionProxyParams::init_result() const {

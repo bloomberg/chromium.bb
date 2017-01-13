@@ -187,11 +187,6 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver,
   // InitDataReductionProxySettings has not been called.
   DataReductionProxyEventStore* GetEventStore() const;
 
-  // Returns true if the data reduction proxy configuration may be used.
-  bool Allowed() const {
-    return allowed_;
-  }
-
   // Returns true if the data reduction proxy promo may be shown.
   // This is independent of whether the data reduction proxy is allowed.
   bool PromoAllowed() const {
@@ -224,12 +219,12 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver,
 
   // Metrics method. Subclasses should override if they wish to provide
   // alternatives.
-  virtual void RecordDataReductionInit();
+  virtual void RecordDataReductionInit() const;
 
   // Virtualized for mocking. Records UMA specifying whether the proxy was
   // enabled or disabled at startup.
   virtual void RecordStartupState(
-      data_reduction_proxy::ProxyStartupState state);
+      data_reduction_proxy::ProxyStartupState state) const;
 
  private:
   friend class DataReductionProxySettingsTestBase;

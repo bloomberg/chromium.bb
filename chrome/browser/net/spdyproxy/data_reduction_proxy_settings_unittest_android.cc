@@ -62,15 +62,9 @@ class TestDataReductionProxySettingsAndroid
 template <class C>
 void data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings(
     std::unique_ptr<base::Clock> clock,
-    bool allowed,
-    bool fallback_allowed,
     bool promo_allowed,
     bool holdback) {
   int flags = 0;
-  if (allowed)
-    flags |= DataReductionProxyParams::kAllowed;
-  if (fallback_allowed)
-    flags |= DataReductionProxyParams::kFallbackAllowed;
   if (promo_allowed)
     flags |= DataReductionProxyParams::kPromoAllowed;
   if (holdback)
@@ -94,8 +88,6 @@ void data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings(
 template void
 data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings<
     DataReductionProxyChromeSettings>(std::unique_ptr<base::Clock> clock,
-                                      bool allowed,
-                                      bool fallback_allowed,
                                       bool promo_allowed,
                                       bool holdback);
 

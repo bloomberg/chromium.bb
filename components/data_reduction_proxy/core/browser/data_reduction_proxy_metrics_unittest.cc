@@ -33,7 +33,7 @@ TEST(ChromeNetworkDailyDataSavingMetricsTest,
   base::MessageLoopForIO message_loop;
   std::unique_ptr<DataReductionProxyTestContext> test_context =
       DataReductionProxyTestContext::Builder()
-          .WithParamsFlags(DataReductionProxyParams::kAllowed)
+          .WithParamsFlags(0)
           .WithParamsDefinitions(TestDataReductionProxyParams::HAS_ORIGIN)
           .Build();
   TestDataReductionProxyConfig* config = test_context->config();

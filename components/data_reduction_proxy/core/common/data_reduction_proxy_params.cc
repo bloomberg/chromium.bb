@@ -388,14 +388,11 @@ DataReductionProxyParams::~DataReductionProxyParams() {}
 
 DataReductionProxyParams::DataReductionProxyParams(int flags,
                                                    bool should_call_init)
-    : allowed_((flags & kAllowed) == kAllowed),
-      fallback_allowed_((flags & kFallbackAllowed) == kFallbackAllowed),
-      promo_allowed_((flags & kPromoAllowed) == kPromoAllowed),
+    : promo_allowed_((flags & kPromoAllowed) == kPromoAllowed),
       holdback_((flags & kHoldback) == kHoldback),
-      configured_on_command_line_(false),
       use_override_proxies_for_http_(false) {
   if (should_call_init) {
-    bool result = Init(allowed_, fallback_allowed_);
+    bool result = Init();
     DCHECK(result);
   }
 }
@@ -405,37 +402,22 @@ void DataReductionProxyParams::SetProxiesForHttpForTesting(
   proxies_for_http_ = proxies_for_http;
 }
 
-bool DataReductionProxyParams::Init(bool allowed, bool fallback_allowed) {
+bool DataReductionProxyParams::Init() {
   InitWithoutChecks();
   // Verify that all necessary params are set.
-  if (allowed) {
-    if (!origin_.is_valid()) {
-      DVLOG(1) << "Invalid data reduction proxy origin: " << origin_.ToURI();
-      return false;
-    }
+  if (!origin_.is_valid()) {
+    DVLOG(1) << "Invalid data reduction proxy origin: " << origin_.ToURI();
+    return false;
   }
 
-  if (allowed && fallback_allowed) {
-    if (!fallback_origin_.is_valid()) {
-      DVLOG(1) << "Invalid data reduction proxy fallback origin: "
-          << fallback_origin_.ToURI();
-      return false;
-    }
+  if (!fallback_origin_.is_valid()) {
+    DVLOG(1) << "Invalid data reduction proxy fallback origin: "
+             << fallback_origin_.ToURI();
+    return false;
   }
 
-  if (allowed && !secure_proxy_check_url_.is_valid()) {
+  if (!secure_proxy_check_url_.is_valid()) {
     DVLOG(1) << "Invalid secure proxy check url: <null>";
-    return false;
-  }
-
-  if (fallback_allowed_ && !allowed_) {
-    DVLOG(1) << "The data reduction proxy fallback cannot be allowed if "
-        << "the data reduction proxy is not allowed";
-    return false;
-  }
-  if (promo_allowed_ && !allowed_) {
-    DVLOG(1) << "The data reduction proxy promo cannot be allowed if the "
-        << "data reduction proxy is not allowed";
     return false;
   }
   return true;
@@ -454,14 +436,6 @@ void DataReductionProxyParams::InitWithoutChecks() {
   origin = command_line.GetSwitchValueASCII(switches::kDataReductionProxy);
   std::string fallback_origin =
       command_line.GetSwitchValueASCII(switches::kDataReductionProxyFallback);
-
-  configured_on_command_line_ = !(origin.empty() && fallback_origin.empty());
-
-  // Configuring the proxy on the command line overrides the values of
-  // |allowed_|.
-  if (configured_on_command_line_)
-    allowed_ = true;
-
   std::string secure_proxy_check_url = command_line.GetSwitchValueASCII(
       switches::kDataReductionProxySecureProxyCheckURL);
   std::string warmup_url = command_line.GetSwitchValueASCII(
@@ -484,7 +458,7 @@ void DataReductionProxyParams::InitWithoutChecks() {
     proxies_for_http_.push_back(
         DataReductionProxyServer(origin_, ProxyServer::CORE));
   }
-  if (fallback_allowed_ && fallback_origin_.is_valid()) {
+  if (fallback_origin_.is_valid()) {
     // |fallback| is also a core proxy server.
     proxies_for_http_.push_back(
         DataReductionProxyServer(fallback_origin_, ProxyServer::CORE));
@@ -504,16 +478,6 @@ DataReductionProxyParams::proxies_for_http() const {
 // used.
 const GURL& DataReductionProxyParams::secure_proxy_check_url() const {
   return secure_proxy_check_url_;
-}
-
-// Returns true if the data reduction proxy configuration may be used.
-bool DataReductionProxyParams::allowed() const {
-  return allowed_;
-}
-
-// Returns true if the fallback proxy may be used.
-bool DataReductionProxyParams::fallback_allowed() const {
-  return fallback_allowed_;
 }
 
 // Returns true if the data reduction proxy promo may be shown.

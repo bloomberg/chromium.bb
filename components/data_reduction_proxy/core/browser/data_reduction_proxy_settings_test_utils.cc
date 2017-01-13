@@ -54,7 +54,7 @@ void DataReductionProxySettingsTestBase::SetUp() {
   pref_service->registry()->RegisterDictionaryPref(kProxy);
   pref_service->SetBoolean(prefs::kDataReductionProxyWasEnabledBefore, false);
 
-  ResetSettings(nullptr, true, true, true, false);
+  ResetSettings(nullptr, true, false);
 
   ListPrefUpdate original_update(test_context_->pref_service(),
                                  prefs::kDailyHttpOriginalContentLength);
@@ -74,15 +74,9 @@ void DataReductionProxySettingsTestBase::SetUp() {
 template <class C>
 void DataReductionProxySettingsTestBase::ResetSettings(
     std::unique_ptr<base::Clock> clock,
-    bool allowed,
-    bool fallback_allowed,
     bool promo_allowed,
     bool holdback) {
   int flags = 0;
-  if (allowed)
-    flags |= DataReductionProxyParams::kAllowed;
-  if (fallback_allowed)
-    flags |= DataReductionProxyParams::kFallbackAllowed;
   if (promo_allowed)
     flags |= DataReductionProxyParams::kPromoAllowed;
   if (holdback)
@@ -109,8 +103,6 @@ void DataReductionProxySettingsTestBase::ResetSettings(
 // Explicitly generate required instantiations.
 template void DataReductionProxySettingsTestBase::ResetSettings<
     DataReductionProxySettings>(std::unique_ptr<base::Clock> clock,
-                                bool allowed,
-                                bool fallback_allowed,
                                 bool promo_allowed,
                                 bool holdback);
 

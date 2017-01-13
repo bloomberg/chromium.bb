@@ -254,20 +254,26 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
   }
 
   void SetUp() override {
-    // Only use the primary data reduction proxy in order to make it easier to
-    // test bypassed bytes due to proxy fallbacks. This way, a test just needs
-    // to cause one proxy fallback in order for the data reduction proxy to be
-    // fully bypassed.
-    drp_test_context_ =
-        DataReductionProxyTestContext::Builder()
-            .WithParamsFlags(DataReductionProxyParams::kAllowed)
-            .WithURLRequestContext(&context_)
-            .WithMockClientSocketFactory(&mock_socket_factory_)
-            .Build();
+    drp_test_context_ = DataReductionProxyTestContext::Builder()
+                            .WithParamsFlags(0)
+                            .WithURLRequestContext(&context_)
+                            .WithMockClientSocketFactory(&mock_socket_factory_)
+                            .Build();
     drp_test_context_->AttachToURLRequestContext(&context_storage_);
     context_.set_client_socket_factory(&mock_socket_factory_);
     proxy_delegate_ = drp_test_context_->io_data()->CreateProxyDelegate();
     context_.set_proxy_delegate(proxy_delegate_.get());
+
+    // Only use the primary data reduction proxy in order to make it easier to
+    // test bypassed bytes due to proxy fallbacks. This way, a test just needs
+    // to cause one proxy fallback in order for the data reduction proxy to be
+    // fully bypassed.
+    std::vector<DataReductionProxyServer> data_reduction_proxy_servers;
+    data_reduction_proxy_servers.push_back(DataReductionProxyServer(
+        net::ProxyServer::FromURI(config()->test_params()->DefaultOrigin(),
+                                  net::ProxyServer::SCHEME_HTTP),
+        ProxyServer::CORE));
+    config()->test_params()->SetProxiesForHttp(data_reduction_proxy_servers);
   }
 
   // Create and execute a fake request using the data reduction proxy stack.

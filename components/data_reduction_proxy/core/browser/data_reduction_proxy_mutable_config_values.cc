@@ -18,8 +18,6 @@ DataReductionProxyMutableConfigValues::CreateFromParams(
       new DataReductionProxyMutableConfigValues());
   config_values->promo_allowed_ = params->promo_allowed();
   config_values->holdback_ = params->holdback();
-  config_values->allowed_ = params->allowed();
-  config_values->fallback_allowed_ = params->fallback_allowed();
   config_values->secure_proxy_check_url_ = params->secure_proxy_check_url();
   return config_values;
 }
@@ -27,8 +25,6 @@ DataReductionProxyMutableConfigValues::CreateFromParams(
 DataReductionProxyMutableConfigValues::DataReductionProxyMutableConfigValues()
     : promo_allowed_(false),
       holdback_(false),
-      allowed_(false),
-      fallback_allowed_(false),
       use_override_proxies_for_http_(false) {
   use_override_proxies_for_http_ =
       params::GetOverrideProxiesForHttpFromCommandLine(
@@ -48,14 +44,6 @@ bool DataReductionProxyMutableConfigValues::promo_allowed() const {
 
 bool DataReductionProxyMutableConfigValues::holdback() const {
   return holdback_;
-}
-
-bool DataReductionProxyMutableConfigValues::allowed() const {
-  return allowed_;
-}
-
-bool DataReductionProxyMutableConfigValues::fallback_allowed() const {
-  return fallback_allowed_;
 }
 
 const std::vector<DataReductionProxyServer>

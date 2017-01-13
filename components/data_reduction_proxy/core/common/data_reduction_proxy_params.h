@@ -179,22 +179,13 @@ struct DataReductionProxyTypeInfo {
 // Reduction Proxy.
 class DataReductionProxyParams : public DataReductionProxyConfigValues {
  public:
-  // Flags used during construction that specify if the data reduction proxy
-  // is allowed to be used, if the fallback proxy is allowed to be used, if the
-  // promotion is allowed to be shown, and if this instance is part of a
-  // holdback experiment.
-  static const unsigned int kAllowed = (1 << 0);
-  static const unsigned int kFallbackAllowed = (1 << 1);
-  static const unsigned int kAllowAllProxyConfigurations =
-      kAllowed | kFallbackAllowed;
+  // Flags used during construction that specify if the promotion is allowed to
+  // be shown, and if this instance is part of a holdback experiment.
   static const unsigned int kPromoAllowed = (1 << 2);
   static const unsigned int kHoldback = (1 << 3);
 
-  // Constructs configuration parameters. If |kAllowed|, then the standard
-  // data reduction proxy configuration is allowed to be used. If
-  // |kfallbackAllowed| a fallback proxy can be used if the primary proxy is
-  // bypassed or disabled. Finally if |kPromoAllowed|, the client may show a
-  // promotion for the data reduction proxy.
+  // Constructs configuration parameters. If |kPromoAllowed|, the client may
+  // show a promotion for the data reduction proxy.
   //
   // A standard configuration has a primary proxy, and a fallback proxy for
   // HTTP traffic.
@@ -210,10 +201,6 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
 
   const GURL& secure_proxy_check_url() const override;
 
-  bool allowed() const override;
-
-  bool fallback_allowed() const override;
-
   bool promo_allowed() const override;
 
   bool holdback() const override;
@@ -226,7 +213,7 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
   // Initialize the values of the proxies, and secure proxy check URL, from
   // command line flags and preprocessor constants, and check that there are
   // corresponding definitions for the allowed configurations.
-  bool Init(bool allowed, bool fallback_allowed);
+  bool Init();
 
   // Initialize the values of the proxies, and secure proxy check URL from
   // command line flags and preprocessor constants.
@@ -246,12 +233,8 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
 
   GURL secure_proxy_check_url_;
 
-  bool allowed_;
-  bool fallback_allowed_;
   bool promo_allowed_;
   bool holdback_;
-
-  bool configured_on_command_line_;
 
   bool use_override_proxies_for_http_;
   std::vector<DataReductionProxyServer> override_data_reduction_proxy_servers_;

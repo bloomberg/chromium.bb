@@ -58,8 +58,7 @@ CreateDataReductionProxyChromeIOData(
   DCHECK(net_log);
   DCHECK(prefs);
 
-  int flags = DataReductionProxyParams::kAllowed |
-              DataReductionProxyParams::kFallbackAllowed;
+  int flags = 0;
   if (data_reduction_proxy::params::IsIncludedInPromoFieldTrial())
     flags |= DataReductionProxyParams::kPromoAllowed;
   if (data_reduction_proxy::params::IsIncludedInHoldbackFieldTrial())

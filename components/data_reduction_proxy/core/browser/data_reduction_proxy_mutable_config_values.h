@@ -42,8 +42,6 @@ class DataReductionProxyMutableConfigValues
   // Overrides of |DataReductionProxyConfigValues|
   bool promo_allowed() const override;
   bool holdback() const override;
-  bool allowed() const override;
-  bool fallback_allowed() const override;
   const std::vector<DataReductionProxyServer> proxies_for_http() const override;
   const GURL& secure_proxy_check_url() const override;
 
@@ -53,8 +51,6 @@ class DataReductionProxyMutableConfigValues
  private:
   bool promo_allowed_;
   bool holdback_;
-  bool allowed_;
-  bool fallback_allowed_;
   std::vector<DataReductionProxyServer> proxies_for_http_;
   GURL secure_proxy_check_url_;
 

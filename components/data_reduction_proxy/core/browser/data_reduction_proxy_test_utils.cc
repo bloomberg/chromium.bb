@@ -287,9 +287,7 @@ DataStore::Status TestDataStore::Delete(base::StringPiece key) {
 }
 
 DataReductionProxyTestContext::Builder::Builder()
-    : params_flags_(DataReductionProxyParams::kAllowed |
-                    DataReductionProxyParams::kFallbackAllowed |
-                    DataReductionProxyParams::kPromoAllowed),
+    : params_flags_(DataReductionProxyParams::kPromoAllowed),
       params_definitions_(TestDataReductionProxyParams::HAS_EVERYTHING),
       client_(Client::UNKNOWN),
       request_context_(nullptr),

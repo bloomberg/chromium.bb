@@ -26,12 +26,6 @@ class DataReductionProxyConfigValues {
   // proxy if enabled.
   virtual bool holdback() const = 0;
 
-  // Returns true if the data reduction proxy configuration may be used.
-  virtual bool allowed() const = 0;
-
-  // Returns true if the fallback proxy may be used.
-  virtual bool fallback_allowed() const = 0;
-
   // Returns the HTTP proxy servers to be used.
   virtual const std::vector<DataReductionProxyServer> proxies_for_http()
       const = 0;

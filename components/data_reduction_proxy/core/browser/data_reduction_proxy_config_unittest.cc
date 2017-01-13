@@ -94,24 +94,15 @@ class DataReductionProxyConfigTest : public testing::Test {
                         .WithMockDataReductionProxyService()
                         .Build();
 
-    ResetSettings(true, true, true, false);
+    ResetSettings(true, false);
 
     expected_params_.reset(new TestDataReductionProxyParams(
-        DataReductionProxyParams::kAllowed |
-            DataReductionProxyParams::kFallbackAllowed |
-            DataReductionProxyParams::kPromoAllowed,
+        DataReductionProxyParams::kPromoAllowed,
         TestDataReductionProxyParams::HAS_EVERYTHING));
   }
 
-  void ResetSettings(bool allowed,
-                     bool fallback_allowed,
-                     bool promo_allowed,
-                     bool holdback) {
+  void ResetSettings(bool promo_allowed, bool holdback) {
     int flags = 0;
-    if (allowed)
-      flags |= DataReductionProxyParams::kAllowed;
-    if (fallback_allowed)
-      flags |= DataReductionProxyParams::kFallbackAllowed;
     if (promo_allowed)
       flags |= DataReductionProxyParams::kPromoAllowed;
     if (holdback)
@@ -233,7 +224,7 @@ TEST_F(DataReductionProxyConfigTest, TestReloadConfigHoldback) {
       "insecure_origin.net:80", net::ProxyServer::SCHEME_HTTP);
   SetProxiesForHttpOnCommandLine({kHttpsProxy, kHttpProxy});
 
-  ResetSettings(true, true, true, true);
+  ResetSettings(true, true);
 
   config()->UpdateConfigForTesting(true, false);
   config()->ReloadConfig();
@@ -248,7 +239,7 @@ TEST_F(DataReductionProxyConfigTest, TestOnIPAddressChanged) {
       "insecure_origin.net:80", net::ProxyServer::SCHEME_HTTP);
 
   SetProxiesForHttpOnCommandLine({kHttpsProxy, kHttpProxy});
-  ResetSettings(true, true, true, false);
+  ResetSettings(true, false);
 
   // The proxy is enabled initially.
   config()->UpdateConfigForTesting(true, true);
@@ -359,7 +350,7 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
     base::HistogramTester histogram_tester;
     SetProxiesForHttpOnCommandLine({kHttpsProxy, kHttpProxy});
 
-    ResetSettings(true, true, true, false);
+    ResetSettings(true, false);
 
     variations::testing::ClearAllVariationParams();
     std::map<std::string, std::string> variation_params;
@@ -376,9 +367,7 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
 
     base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
     TestDataReductionProxyConfig config(
-        DataReductionProxyParams::kAllowed |
-            DataReductionProxyParams::kFallbackAllowed,
-        TestDataReductionProxyParams::HAS_EVERYTHING, task_runner(), nullptr,
+        0, TestDataReductionProxyParams::HAS_EVERYTHING, task_runner(), nullptr,
         configurator(), event_creator());
 
     scoped_refptr<net::URLRequestContextGetter> request_context_getter_ =
@@ -575,10 +564,6 @@ TEST_F(DataReductionProxyConfigTest, AreProxiesBypassed) {
     rules.ParseFromString(proxy_rules);
 
     int flags = 0;
-    if (tests[i].allowed)
-      flags |= DataReductionProxyParams::kAllowed;
-    if (tests[i].fallback_allowed)
-      flags |= DataReductionProxyParams::kFallbackAllowed;
     unsigned int has_definitions = TestDataReductionProxyParams::HAS_EVERYTHING;
     std::unique_ptr<TestDataReductionProxyParams> params(
         new TestDataReductionProxyParams(flags, has_definitions));
@@ -621,8 +606,6 @@ TEST_F(DataReductionProxyConfigTest, AreProxiesBypassedRetryDelay) {
   rules.ParseFromString(proxy_rules);
 
   int flags = 0;
-  flags |= DataReductionProxyParams::kAllowed;
-  flags |= DataReductionProxyParams::kFallbackAllowed;
   unsigned int has_definitions = TestDataReductionProxyParams::HAS_EVERYTHING;
   std::unique_ptr<TestDataReductionProxyParams> params(
       new TestDataReductionProxyParams(flags, has_definitions));
@@ -667,7 +650,6 @@ TEST_F(DataReductionProxyConfigTest, AreProxiesBypassedRetryDelay) {
 TEST_F(DataReductionProxyConfigTest, IsDataReductionProxyWithParams) {
   const struct {
     net::ProxyServer proxy_server;
-    bool fallback_allowed;
     bool expected_result;
     net::ProxyServer expected_first;
     net::ProxyServer expected_second;
@@ -675,35 +657,23 @@ TEST_F(DataReductionProxyConfigTest, IsDataReductionProxyWithParams) {
   } tests[] = {
       {net::ProxyServer::FromURI(TestDataReductionProxyParams::DefaultOrigin(),
                                  net::ProxyServer::SCHEME_HTTP),
-       true, true,
+       true,
        net::ProxyServer::FromURI(TestDataReductionProxyParams::DefaultOrigin(),
                                  net::ProxyServer::SCHEME_HTTP),
        net::ProxyServer::FromURI(
            TestDataReductionProxyParams::DefaultFallbackOrigin(),
            net::ProxyServer::SCHEME_HTTP),
        false},
-      {net::ProxyServer::FromURI(TestDataReductionProxyParams::DefaultOrigin(),
-                                 net::ProxyServer::SCHEME_HTTP),
-       false, true,
-       net::ProxyServer::FromURI(TestDataReductionProxyParams::DefaultOrigin(),
-                                 net::ProxyServer::SCHEME_HTTP),
-       net::ProxyServer(), false},
       {net::ProxyServer::FromURI(
            TestDataReductionProxyParams::DefaultFallbackOrigin(),
            net::ProxyServer::SCHEME_HTTP),
-       true, true, net::ProxyServer::FromURI(
-                       TestDataReductionProxyParams::DefaultFallbackOrigin(),
-                       net::ProxyServer::SCHEME_HTTP),
+       true, net::ProxyServer::FromURI(
+                 TestDataReductionProxyParams::DefaultFallbackOrigin(),
+                 net::ProxyServer::SCHEME_HTTP),
        net::ProxyServer(), true},
-      {net::ProxyServer::FromURI(
-           TestDataReductionProxyParams::DefaultFallbackOrigin(),
-           net::ProxyServer::SCHEME_HTTP),
-       false, false, net::ProxyServer(), net::ProxyServer(), false},
   };
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    int flags = DataReductionProxyParams::kAllowed;
-    if (tests[i].fallback_allowed)
-      flags |= DataReductionProxyParams::kFallbackAllowed;
+    int flags = 0;
     unsigned int has_definitions = TestDataReductionProxyParams::HAS_EVERYTHING;
     std::unique_ptr<TestDataReductionProxyParams> params(
         new TestDataReductionProxyParams(flags, has_definitions));
@@ -1144,9 +1114,7 @@ TEST_F(DataReductionProxyConfigTest, LoFiAccuracy) {
   lofi_accuracy_recording_intervals.push_back(base::TimeDelta::FromSeconds(0));
 
   TestDataReductionProxyConfig config(
-      DataReductionProxyParams::kAllowed |
-          DataReductionProxyParams::kFallbackAllowed,
-      TestDataReductionProxyParams::HAS_EVERYTHING, task_runner(), nullptr,
+      0, TestDataReductionProxyParams::HAS_EVERYTHING, task_runner(), nullptr,
       configurator(), event_creator());
   config.SetLofiAccuracyRecordingIntervals(lofi_accuracy_recording_intervals);
   config.SetTickClock(tick_clock.get());
@@ -1234,9 +1202,7 @@ TEST_F(DataReductionProxyConfigTest, LoFiAccuracyNonZeroDelay) {
   lofi_accuracy_recording_intervals.push_back(base::TimeDelta::FromSeconds(1));
 
   TestDataReductionProxyConfig config(
-      DataReductionProxyParams::kAllowed |
-          DataReductionProxyParams::kFallbackAllowed,
-      TestDataReductionProxyParams::HAS_EVERYTHING, task_runner(), nullptr,
+      0, TestDataReductionProxyParams::HAS_EVERYTHING, task_runner(), nullptr,
       configurator(), event_creator());
   config.SetLofiAccuracyRecordingIntervals(lofi_accuracy_recording_intervals);
   config.SetTickClock(tick_clock.get());

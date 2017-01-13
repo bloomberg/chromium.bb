@@ -27,12 +27,8 @@ class DataReductionProxyParamsTest : public testing::Test {
  public:
   void CheckParams(const TestDataReductionProxyParams& params,
                    bool expected_init_result,
-                   bool expected_allowed,
-                   bool expected_fallback_allowed,
                    bool expected_promo_allowed) {
     EXPECT_EQ(expected_init_result, params.init_result());
-    EXPECT_EQ(expected_allowed, params.allowed());
-    EXPECT_EQ(expected_fallback_allowed, params.fallback_allowed());
     EXPECT_EQ(expected_promo_allowed, params.promo_allowed());
   }
   void CheckValues(const TestDataReductionProxyParams& params,
@@ -60,11 +56,9 @@ class DataReductionProxyParamsTest : public testing::Test {
 
 TEST_F(DataReductionProxyParamsTest, EverythingDefined) {
   TestDataReductionProxyParams params(
-      DataReductionProxyParams::kAllowed |
-      DataReductionProxyParams::kFallbackAllowed |
       DataReductionProxyParams::kPromoAllowed,
       TestDataReductionProxyParams::HAS_EVERYTHING);
-  CheckParams(params, true, true, true, true);
+  CheckParams(params, true, true);
   std::vector<DataReductionProxyServer> expected_proxies;
 
   // Both the origin and fallback proxy must have type CORE.
@@ -94,11 +88,9 @@ TEST_F(DataReductionProxyParamsTest, Flags) {
       switches::kDataReductionProxySecureProxyCheckURL,
       TestDataReductionProxyParams::FlagSecureProxyCheckURL());
   TestDataReductionProxyParams params(
-      DataReductionProxyParams::kAllowed |
-      DataReductionProxyParams::kFallbackAllowed |
       DataReductionProxyParams::kPromoAllowed,
       TestDataReductionProxyParams::HAS_EVERYTHING);
-  CheckParams(params, true, true, true, true);
+  CheckParams(params, true, true);
   CheckValues(params, TestDataReductionProxyParams::FlagOrigin(),
               TestDataReductionProxyParams::FlagFallbackOrigin(),
               TestDataReductionProxyParams::FlagSecureProxyCheckURL());
@@ -107,13 +99,18 @@ TEST_F(DataReductionProxyParamsTest, Flags) {
 TEST_F(DataReductionProxyParamsTest, CarrierTestFlag) {
   static const char kCarrierTestOrigin[] =
       "http://o-o.preferred.nttdocomodcp-hnd1.proxy-dev.googlezip.net:80";
+  static const char kDefaultFallbackOrigin[] = "compress.googlezip.net:80";
   base::CommandLine::ForCurrentProcess()->InitFromArgv(0, nullptr);
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kEnableDataReductionProxyCarrierTest, kCarrierTestOrigin);
-  DataReductionProxyParams params(DataReductionProxyParams::kAllowed);
+  DataReductionProxyParams params(0);
   std::vector<DataReductionProxyServer> proxies_for_http;
   proxies_for_http.push_back(DataReductionProxyServer(
       net::ProxyServer::FromURI(kCarrierTestOrigin,
+                                net::ProxyServer::SCHEME_HTTP),
+      ProxyServer::CORE));
+  proxies_for_http.push_back(DataReductionProxyServer(
+      net::ProxyServer::FromURI(kDefaultFallbackOrigin,
                                 net::ProxyServer::SCHEME_HTTP),
       ProxyServer::CORE));
   EXPECT_EQ(params.proxies_for_http(), proxies_for_http);
@@ -121,39 +118,18 @@ TEST_F(DataReductionProxyParamsTest, CarrierTestFlag) {
 
 TEST_F(DataReductionProxyParamsTest, InvalidConfigurations) {
   const struct {
-    bool allowed;
-    bool fallback_allowed;
     bool promo_allowed;
     unsigned int missing_definitions;
     bool expected_result;
   } tests[] = {
-      {true, true, true, TestDataReductionProxyParams::HAS_NOTHING, true},
-      {true, false, true, TestDataReductionProxyParams::HAS_NOTHING, true},
-      {false, true, true, TestDataReductionProxyParams::HAS_NOTHING, false},
-      {true, true, true, TestDataReductionProxyParams::HAS_ORIGIN, false},
-      {true, false, true, TestDataReductionProxyParams::HAS_ORIGIN, false},
-      {false, true, true, TestDataReductionProxyParams::HAS_ORIGIN, false},
-      {true, true, true, TestDataReductionProxyParams::HAS_NOTHING, true},
-      {true, false, true, TestDataReductionProxyParams::HAS_FALLBACK_ORIGIN,
-       true},
-      {false, true, true, TestDataReductionProxyParams::HAS_FALLBACK_ORIGIN,
-       false},
-      {true, true, true, TestDataReductionProxyParams::HAS_FALLBACK_ORIGIN,
-       false},
-      {true, true, true,
-       TestDataReductionProxyParams::HAS_SECURE_PROXY_CHECK_URL, false},
-      {true, false, true,
-       TestDataReductionProxyParams::HAS_SECURE_PROXY_CHECK_URL, false},
-      {false, true, true,
-       TestDataReductionProxyParams::HAS_SECURE_PROXY_CHECK_URL, false},
+      {true, TestDataReductionProxyParams::HAS_NOTHING, true},
+      {true, TestDataReductionProxyParams::HAS_ORIGIN, false},
+      {true, TestDataReductionProxyParams::HAS_FALLBACK_ORIGIN, false},
+      {true, TestDataReductionProxyParams::HAS_SECURE_PROXY_CHECK_URL, false},
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
     int flags = 0;
-    if (tests[i].allowed)
-      flags |= DataReductionProxyParams::kAllowed;
-    if (tests[i].fallback_allowed)
-      flags |= DataReductionProxyParams::kFallbackAllowed;
     if (tests[i].promo_allowed)
       flags |= DataReductionProxyParams::kPromoAllowed;
     TestDataReductionProxyParams params(
@@ -552,8 +528,7 @@ TEST(DataReductionProxyParamsStandaloneTest, OverrideProxiesForHttp) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionProxyHttpProxies,
       "http://override-first.net;http://override-second.net");
-  DataReductionProxyParams params(
-      DataReductionProxyParams::kAllowAllProxyConfigurations);
+  DataReductionProxyParams params(0);
 
   // Overriding proxies must have type UNSPECIFIED_TYPE.
   std::vector<DataReductionProxyServer> expected_override_proxies_for_http;

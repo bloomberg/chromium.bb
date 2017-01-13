@@ -651,7 +651,7 @@ TEST_F(DataReductionProxySettingsTest, TestDaysSinceEnabledWithTestClock) {
   std::unique_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock());
   base::SimpleTestClock* clock_ptr = clock.get();
   clock_ptr->Advance(base::TimeDelta::FromDays(1));
-  ResetSettings(std::move(clock), true, true, false, false);
+  ResetSettings(std::move(clock), false, false);
 
   base::Time last_enabled_time = clock_ptr->Now();
 
@@ -735,7 +735,7 @@ TEST_F(DataReductionProxySettingsTest, TestDaysSinceSavingsCleared) {
   std::unique_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock());
   base::SimpleTestClock* clock_ptr = clock.get();
   clock_ptr->Advance(base::TimeDelta::FromDays(1));
-  ResetSettings(std::move(clock), true, true, false, false);
+  ResetSettings(std::move(clock), false, false);
 
   InitPrefMembers();
   base::HistogramTester histogram_tester;
@@ -769,29 +769,6 @@ TEST_F(DataReductionProxySettingsTest, TestGetDailyContentLengths) {
         static_cast<long>((kNumDaysInHistory - 1 - i) * 2);
     ASSERT_EQ(expected_length, result[i]);
   }
-}
-
-TEST_F(DataReductionProxySettingsTest, CheckInitMetricsWhenNotAllowed) {
-  // No call to |AddProxyToCommandLine()| was made, so the proxy feature
-  // should be unavailable.
-  // Clear the command line. Setting flags can force the proxy to be allowed.
-  base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
-
-  ResetSettings(nullptr, false, false, false, false);
-  MockSettings* settings = static_cast<MockSettings*>(settings_.get());
-  EXPECT_FALSE(settings->allowed_);
-  EXPECT_CALL(*settings, RecordStartupState(PROXY_NOT_AVAILABLE));
-
-  settings_->InitDataReductionProxySettings(
-      test_context_->GetDataReductionProxyEnabledPrefName(),
-      test_context_->pref_service(), test_context_->io_data(),
-      test_context_->CreateDataReductionProxyService(settings_.get()));
-  settings_->SetCallbackToRegisterSyntheticFieldTrial(
-      base::Bind(&DataReductionProxySettingsTestBase::
-                 SyntheticFieldTrialRegistrationCallback,
-                 base::Unretained(this)));
-
-  test_context_->RunUntilIdle();
 }
 
 }  // namespace data_reduction_proxy

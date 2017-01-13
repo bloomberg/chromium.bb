@@ -388,9 +388,6 @@ void DataReductionProxyConfig::InitializeOnIOThread(
       new SecureProxyChecker(basic_url_request_context_getter));
   warmup_url_fetcher_.reset(new WarmupURLFetcher(url_request_context_getter));
 
-  if (!config_values_->allowed())
-    return;
-
   PopulateAutoLoFiParams();
   AddDefaultProxyBypassRules();
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
@@ -694,11 +691,6 @@ bool DataReductionProxyConfig::ContainsDataReductionProxy(
   return false;
 }
 
-// Returns true if the Data Reduction Proxy configuration may be used.
-bool DataReductionProxyConfig::allowed() const {
-  return config_values_->allowed();
-}
-
 // Returns true if the Data Reduction Proxy promo may be shown. This is not
 // tied to whether the Data Reduction Proxy is enabled.
 bool DataReductionProxyConfig::promo_allowed() const {
@@ -801,7 +793,6 @@ void DataReductionProxyConfig::OnIPAddressChanged() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (enabled_by_user_) {
-    DCHECK(config_values_->allowed());
     RecordNetworkChangeEvent(IP_CHANGED);
 
     // Reset |network_quality_at_last_query_| to prevent recording of network
