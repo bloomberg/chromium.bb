@@ -10,6 +10,7 @@
 #include <memory>
 #include <queue>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
@@ -81,6 +82,8 @@ class CONTENT_EXPORT InputRouterImpl
 
  private:
   friend class InputRouterImplTest;
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
+                           SubframeTouchEventRouting);
 
   // TouchpadTapSuppressionControllerClient
   void SendMouseEventImmediately(
@@ -197,6 +200,10 @@ class CONTENT_EXPORT InputRouterImpl
   void SignalFlushedIfNecessary();
 
   int routing_id() const { return routing_id_; }
+
+  TouchAction allowed_touch_action() {
+    return touch_action_filter_.allowed_touch_action();
+  }
 
   IPC::Sender* sender_;
   InputRouterClient* client_;

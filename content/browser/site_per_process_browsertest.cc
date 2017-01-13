@@ -31,6 +31,7 @@
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/renderer_host/input/input_router_impl.h"
 #include "content/browser/renderer_host/input/synthetic_tap_gesture.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
@@ -39,6 +40,7 @@
 #include "content/common/child_process_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input/synthetic_tap_gesture_params.h"
+#include "content/common/input/touch_action.h"
 #include "content/common/input_messages.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/view_messages.h"
@@ -5378,6 +5380,19 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       static_cast<RenderWidgetHostViewChildFrame*>(child_rwhv));
   notifier.WaitForSurfaceReady();
 
+  // There's no intrinsic reason the following values can't be equal, but they
+  // aren't at present, and if they become the same this test will need to be
+  // updated to accommodate.
+  EXPECT_NE(TOUCH_ACTION_AUTO, TOUCH_ACTION_NONE);
+  // Verify the child's input router is initially set for TOUCH_ACTION_AUTO. The
+  // TouchStart event will trigger TOUCH_ACTION_NONE being sent back to the
+  // browser.
+  RenderWidgetHostImpl* child_render_widget_host =
+      root->child_at(0)->current_frame_host()->GetRenderWidgetHost();
+  InputRouterImpl* child_input_router =
+      static_cast<InputRouterImpl*>(child_render_widget_host->input_router());
+  EXPECT_EQ(TOUCH_ACTION_AUTO, child_input_router->allowed_touch_action());
+
   // Simulate touch event to sub-frame.
   gfx::Point child_center(150, 150);
   auto* rwhv = static_cast<RenderWidgetHostViewAura*>(
@@ -5392,6 +5407,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       root->child_at(0),
       "window.domAutomationController.send(getLastTouchEvent());", &result));
   EXPECT_EQ("touchstart", result);
+
+  // Verify the presence of the touch handler in the child frame correctly
+  // propagates touch-action:none information back to the child's input router.
+  EXPECT_EQ(TOUCH_ACTION_NONE, child_input_router->allowed_touch_action());
 }
 
 namespace {

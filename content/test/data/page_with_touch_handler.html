@@ -33,7 +33,9 @@
 
 <!-- Be sure to set 100% width/height so the test can determine an appropriate
      screen region for targeting events. -->
-<body style="width: 100%; height: 100%">
+<!-- Make the body touch-action: none to force sending the touch action back
+     to the browser during the test, so we can verify that functionality. -->
+<body style="width: 100%; height: 100%; touch-action: none">
   Page with Touch Handler
   <div id="last-touch-event">noevent</div>
 </body>
