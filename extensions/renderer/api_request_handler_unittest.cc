@@ -3,19 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/guid.h"
-#include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
-#include "base/strings/string_util.h"
 #include "base/values.h"
-#include "content/public/child/v8_value_converter.h"
+#include "extensions/renderer/api_binding_test.h"
 #include "extensions/renderer/api_binding_test_util.h"
 #include "extensions/renderer/api_request_handler.h"
-#include "gin/converter.h"
 #include "gin/public/context_holder.h"
 #include "gin/public/isolate_holder.h"
-#include "gin/test/v8_test.h"
-#include "gin/try_catch.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace extensions {
@@ -27,7 +20,7 @@ const char kEchoArgs[] =
 
 }  // namespace
 
-class APIRequestHandlerTest : public gin::V8Test {
+class APIRequestHandlerTest : public APIBindingTest {
  public:
   // Runs the given |function|.
   void RunJS(v8::Local<v8::Function> function,
@@ -53,10 +46,8 @@ class APIRequestHandlerTest : public gin::V8Test {
 // Tests adding a request to the request handler, and then triggering the
 // response.
 TEST_F(APIRequestHandlerTest, AddRequestAndCompleteRequestTest) {
-  v8::Isolate* isolate = instance_->isolate();
-  v8::HandleScope handle_scope(instance_->isolate());
-  v8::Local<v8::Context> context =
-      v8::Local<v8::Context>::New(instance_->isolate(), context_);
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
 
   APIRequestHandler request_handler(
       base::Bind(&APIRequestHandlerTest::RunJS, base::Unretained(this)));
@@ -67,7 +58,7 @@ TEST_F(APIRequestHandlerTest, AddRequestAndCompleteRequestTest) {
   ASSERT_FALSE(function.IsEmpty());
 
   int request_id =
-      request_handler.AddPendingRequest(isolate, function, context);
+      request_handler.AddPendingRequest(isolate(), function, context);
   EXPECT_THAT(request_handler.GetPendingRequestIdsForTesting(),
               testing::UnorderedElementsAre(request_id));
 
@@ -86,10 +77,8 @@ TEST_F(APIRequestHandlerTest, AddRequestAndCompleteRequestTest) {
 
 // Tests that trying to run non-existent or invalided requests is a no-op.
 TEST_F(APIRequestHandlerTest, InvalidRequestsTest) {
-  v8::Isolate* isolate = instance_->isolate();
-  v8::HandleScope handle_scope(instance_->isolate());
-  v8::Local<v8::Context> context =
-      v8::Local<v8::Context>::New(instance_->isolate(), context_);
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
 
   APIRequestHandler request_handler(
       base::Bind(&APIRequestHandlerTest::RunJS, base::Unretained(this)));
@@ -98,7 +87,7 @@ TEST_F(APIRequestHandlerTest, InvalidRequestsTest) {
   ASSERT_FALSE(function.IsEmpty());
 
   int request_id =
-      request_handler.AddPendingRequest(isolate, function, context);
+      request_handler.AddPendingRequest(isolate(), function, context);
   EXPECT_THAT(request_handler.GetPendingRequestIdsForTesting(),
               testing::UnorderedElementsAre(request_id));
 
@@ -118,11 +107,11 @@ TEST_F(APIRequestHandlerTest, InvalidRequestsTest) {
 }
 
 TEST_F(APIRequestHandlerTest, MultipleRequestsAndContexts) {
-  v8::Isolate* isolate = instance_->isolate();
-  v8::HandleScope handle_scope(instance_->isolate());
-  v8::Local<v8::Context> context_a =
-      v8::Local<v8::Context>::New(isolate, context_);
-  v8::Local<v8::Context> context_b = v8::Context::New(isolate);
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context_a = ContextLocal();
+  v8::Local<v8::Context> context_b = v8::Context::New(isolate());
+  gin::ContextHolder holder_b(isolate());
+  holder_b.SetContext(context_b);
 
   APIRequestHandler request_handler(
       base::Bind(&APIRequestHandlerTest::RunJS, base::Unretained(this)));
@@ -136,9 +125,9 @@ TEST_F(APIRequestHandlerTest, MultipleRequestsAndContexts) {
       context_b, "(function(res) { this.result = res + 'beta'; })");
 
   int request_a =
-      request_handler.AddPendingRequest(isolate, function_a, context_a);
+      request_handler.AddPendingRequest(isolate(), function_a, context_a);
   int request_b =
-      request_handler.AddPendingRequest(isolate, function_b, context_b);
+      request_handler.AddPendingRequest(isolate(), function_b, context_b);
 
   EXPECT_THAT(request_handler.GetPendingRequestIdsForTesting(),
               testing::UnorderedElementsAre(request_a, request_b));
