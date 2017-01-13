@@ -379,13 +379,15 @@ UrlCommitObserver::UrlCommitObserver(FrameTreeNode* frame_tree_node,
                                        ->delegate()
                                        ->GetAsWebContents()),
       frame_tree_node_id_(frame_tree_node->frame_tree_node_id()),
-      url_(url) {
+      url_(url),
+      message_loop_runner_(
+          new MessageLoopRunner(MessageLoopRunner::QuitMode::IMMEDIATE)) {
 }
 
 UrlCommitObserver::~UrlCommitObserver() {}
 
 void UrlCommitObserver::Wait() {
-  run_loop_.Run();
+  message_loop_runner_->Run();
 }
 
 void UrlCommitObserver::DidFinishNavigation(
@@ -394,7 +396,7 @@ void UrlCommitObserver::DidFinishNavigation(
       !navigation_handle->IsErrorPage() &&
       navigation_handle->GetURL() == url_ &&
       navigation_handle->GetFrameTreeNodeId() == frame_tree_node_id_) {
-    run_loop_.Quit();
+    message_loop_runner_->Quit();
   }
 }
 

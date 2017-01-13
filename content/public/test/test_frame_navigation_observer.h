@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/run_loop.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -65,8 +64,8 @@ class TestFrameNavigationObserver : public WebContentsObserver {
   // of the document.
   bool wait_for_commit_;
 
-  // The RunLoop used to spin the message loop.
-  base::RunLoop run_loop_;
+  // The MessageLoopRunner used to spin the message loop.
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TestFrameNavigationObserver);
 };

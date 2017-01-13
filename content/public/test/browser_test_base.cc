@@ -341,14 +341,7 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
         TracingController::StartTracingDoneCallback());
   }
 
-  {
-    // This can be called from a posted task. Allow nested tasks here, because
-    // otherwise the test body will have to do it in order to use RunLoop for
-    // waiting.
-    base::MessageLoop::ScopedNestableTaskAllower allow(
-        base::MessageLoop::current());
-    RunTestOnMainThreadLoop();
-  }
+  RunTestOnMainThreadLoop();
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableTracing)) {
