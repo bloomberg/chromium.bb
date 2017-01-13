@@ -379,12 +379,6 @@
       <structure name="IDR_SETTINGS_CONTROLS_CHECKBOX_JS"
                  file="controls/settings_checkbox.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CONTROLS_DIALOG_DRAWER_HTML"
-                 file="controls/dialog_drawer.html"
-                 type="chrome_html" />
-      <structure name="IDR_SETTINGS_CONTROLS_DIALOG_DRAWER_JS"
-                 file="controls/dialog_drawer.js"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_CONTROLS_DROPDOWN_MENU_HTML"
                  file="controls/settings_dropdown_menu.html"
                  type="chrome_html" />

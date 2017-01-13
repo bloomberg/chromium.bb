@@ -25,10 +25,6 @@
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
-      'target_name': 'dialog_drawer',
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
-    },
-    {
       'target_name': 'extension_controlled_indicator',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',

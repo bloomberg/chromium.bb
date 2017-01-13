@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 
-<dom-module name="dialog-drawer">
+<dom-module name="cr-drawer">
   <template>
     <style>
       :host {
@@ -52,10 +53,24 @@
       :host(.opening)::backdrop {
         opacity: 1;
       }
+
+      :host ::content .drawer-header {
+        -webkit-padding-start: 24px;
+        align-items: center;
+        border-bottom: var(--cr-separator-line);
+        display: flex;
+        font-size: 123.08%; /* go to 16px from 13px */
+        min-height: 56px;
+      }
+
+      :host ::content .drawer-content {
+        height: calc(100% - 56px);
+        overflow: auto;
+      }
     </style>
     <div id="container" on-tap="onContainerTap_">
       <content></content>
     </div>
   </template>
 </dom-module>
-<script src="dialog_drawer.js"></script>
+<script src="cr_drawer.js"></script>

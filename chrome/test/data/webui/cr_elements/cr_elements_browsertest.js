@@ -133,3 +133,20 @@ CrElementsActionMenuTest.prototype = {
 TEST_F('CrElementsActionMenuTest', 'All', function() {
   mocha.run();
 });
+
+function CrElementsDrawerTest() {}
+
+CrElementsDrawerTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://resources/cr_elements/cr_drawer/cr_drawer.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat(
+      ['cr_drawer_tests.js', ROOT_PATH + 'ui/webui/resources/js/util.js']),
+};
+
+TEST_F('CrElementsDrawerTest', 'All', function() {
+  mocha.run();
+});

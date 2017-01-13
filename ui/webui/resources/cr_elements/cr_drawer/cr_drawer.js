@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 Polymer({
-  is: 'dialog-drawer',
+  is: 'cr-drawer',
   extends: 'dialog',
 
   properties: {
