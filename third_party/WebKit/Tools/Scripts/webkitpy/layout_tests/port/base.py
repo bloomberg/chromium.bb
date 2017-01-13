@@ -728,13 +728,9 @@ class Port(object):
             path_in_wpt = match.group(1)
             manifest_items = self._manifest_items_for_path(path_in_wpt)
             assert manifest_items is not None
-            # For most testharness tests, manifest_items looks like:
-            # [["/some/test/path.html", {}]]
             if len(manifest_items) != 1:
                 continue
-            # TODO(qyearsley): Simplify this after http://crbug.com/678077 is resolved.
-            item = manifest_items[0]
-            url = item['url'] if 'url' in item else item[0]
+            url = manifest_items[0][0]
             if url[1:] != path_in_wpt:
                 # TODO(tkent): foo.any.js and bar.worker.js should be accessed
                 # as foo.any.html, foo.any.worker, and bar.worker with WPTServe.
@@ -754,12 +750,11 @@ class Port(object):
         https://github.com/w3c/wpt-tools/blob/master/manifest/item.py
         and is assumed to be a list of the format [url, extras],
         or [url, references, extras] for reftests, or None if not found.
+
+        For most testharness tests, the returned manifest_items is expected
+        to look like this:: [["/some/test/path.html", {}]]
         """
-        # TODO(qyearsley): Simplify this after http://crbug.com/678077 is resolved.
-        if 'local_changes' in self._wpt_manifest():
-            items = self._wpt_manifest()['local_changes']['items']
-        else:
-            items = self._wpt_manifest()['items']
+        items = self._wpt_manifest()['items']
         if path_in_wpt in items['manual']:
             return items['manual'][path_in_wpt]
         elif path_in_wpt in items['reftest']:
