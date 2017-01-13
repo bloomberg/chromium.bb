@@ -44,6 +44,8 @@ String messageSourceValue(MessageSource source) {
       return protocol::Log::LogEntry::SourceEnum::Worker;
     case ViolationMessageSource:
       return protocol::Log::LogEntry::SourceEnum::Violation;
+    case InterventionMessageSource:
+      return protocol::Log::LogEntry::SourceEnum::Intervention;
     default:
       return protocol::Log::LogEntry::SourceEnum::Other;
   }
