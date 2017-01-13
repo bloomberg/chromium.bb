@@ -8,20 +8,15 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/chromeos/extensions/install_limiter_factory.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/notification_types.h"
 
-using content::BrowserThread;
-
 namespace {
 
-int64_t GetFileSizeOnBlockingPool(const base::FilePath& file) {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
+int64_t GetFileSize(const base::FilePath& file) {
   // Get file size. In case of error, sets 0 as file size to let the installer
   // run and fail.
   int64_t size;
@@ -73,10 +68,8 @@ void InstallLimiter::Add(const scoped_refptr<CrxInstaller>& installer,
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool(),
-      FROM_HERE,
-      base::Bind(&GetFileSizeOnBlockingPool, path),
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().MayBlock(), base::Bind(&GetFileSize, path),
       base::Bind(&InstallLimiter::AddWithSize, AsWeakPtr(), installer, path));
 }
 
