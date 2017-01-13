@@ -65,6 +65,9 @@ WebDevToolsFrontendImpl::~WebDevToolsFrontendImpl() {
 void WebDevToolsFrontendImpl::didClearWindowObject(WebLocalFrameImpl* frame) {
   if (m_webFrame == frame) {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    // Use higher limit for DevTools isolate so that it does not OOM when
+    // profiling large heaps.
+    isolate->IncreaseHeapLimitForDebugging();
     ScriptState* scriptState = ScriptState::forMainWorld(m_webFrame->frame());
     DCHECK(scriptState);
     ScriptState::Scope scope(scriptState);
