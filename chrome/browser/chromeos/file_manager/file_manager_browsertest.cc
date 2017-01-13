@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/user_manager/user_manager.h"
 
@@ -635,13 +636,13 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
 
   // Adds a new user for testing to the current session.
   void AddUser(const TestAccountInfo& info, bool log_in) {
-    user_manager::UserManager* const user_manager =
-        user_manager::UserManager::Get();
     const AccountId account_id(AccountId::FromUserEmail(info.email));
-    if (log_in)
-      user_manager->UserLoggedIn(account_id, info.hash, false);
-    user_manager->SaveUserDisplayName(account_id,
-                                      base::UTF8ToUTF16(info.display_name));
+    if (log_in) {
+      session_manager::SessionManager::Get()->CreateSession(account_id,
+                                                            info.hash);
+    }
+    user_manager::UserManager::Get()->SaveUserDisplayName(
+        account_id, base::UTF8ToUTF16(info.display_name));
     SigninManagerFactory::GetForProfile(
         chromeos::ProfileHelper::GetProfileByUserIdHash(info.hash))
         ->SetAuthenticatedAccountInfo(info.gaia_id, info.email);

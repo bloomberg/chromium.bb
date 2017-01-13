@@ -9,8 +9,8 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/signin/core/account_id/account_id.h"
-#include "components/user_manager/user_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
 
@@ -28,8 +28,8 @@ using ChromeNewWindowClientBrowserTest = InProcessBrowserTest;
 // should open a new window.
 IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientBrowserTest,
                        NewWindowForActiveWindowProfileTest) {
-  user_manager::UserManager::Get()->UserLoggedIn(
-      AccountId::FromUserEmail(kTestUserName1), kTestUserName1, false);
+  session_manager::SessionManager::Get()->CreateSession(
+      AccountId::FromUserEmail(kTestUserName1), kTestUserName1);
   Profile* profile1 = ProfileManager::GetActiveUserProfile();
   Browser* browser1 = CreateBrowser(profile1);
   // The newly created window should be created for the current active profile.
@@ -39,8 +39,8 @@ IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientBrowserTest,
       profile1);
 
   // Login another user and make sure the current active user changes.
-  user_manager::UserManager::Get()->UserLoggedIn(
-      AccountId::FromUserEmail(kTestUserName2), kTestUserName2, false);
+  session_manager::SessionManager::Get()->CreateSession(
+      AccountId::FromUserEmail(kTestUserName2), kTestUserName2);
   Profile* profile2 = ProfileManager::GetActiveUserProfile();
   EXPECT_NE(profile1, profile2);
 

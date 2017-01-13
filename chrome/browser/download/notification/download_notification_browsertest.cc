@@ -30,6 +30,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item.h"
@@ -1183,13 +1184,11 @@ class MultiProfileDownloadNotificationTest
 
   // Adds a new user for testing to the current session.
   void AddUser(const TestAccountInfo& info, bool log_in) {
-    user_manager::UserManager* const user_manager =
-        user_manager::UserManager::Get();
-    if (log_in)
-      user_manager->UserLoggedIn(
-          AccountId::FromUserEmailGaiaId(info.email, info.gaia_id), info.hash,
-          false);
-    user_manager->SaveUserDisplayName(
+    if (log_in) {
+      session_manager::SessionManager::Get()->CreateSession(
+          AccountId::FromUserEmailGaiaId(info.email, info.gaia_id), info.hash);
+    }
+    user_manager::UserManager::Get()->SaveUserDisplayName(
         AccountId::FromUserEmailGaiaId(info.email, info.gaia_id),
         base::UTF8ToUTF16(info.display_name));
     SigninManagerFactory::GetForProfile(

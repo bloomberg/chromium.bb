@@ -25,6 +25,7 @@ class User;
 class SessionControllerClient
     : public ash::mojom::SessionControllerClient,
       public user_manager::UserManager::UserSessionStateObserver,
+      public user_manager::UserManager::Observer,
       public session_manager::SessionManagerObserver {
  public:
   SessionControllerClient();
@@ -38,6 +39,9 @@ class SessionControllerClient
   // user_manager::UserManager::UserSessionStateObserver:
   void ActiveUserChanged(const user_manager::User* active_user) override;
   void UserAddedToSession(const user_manager::User* added_user) override;
+
+  // user_manager::UserManager::Observer
+  void OnUserImageChanged(const user_manager::User& user) override;
 
   // session_manager::SessionManagerObserver:
   void OnSessionStateChanged() override;

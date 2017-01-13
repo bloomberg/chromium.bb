@@ -27,6 +27,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using session_manager::Session;
 using session_manager::SessionManager;
 using user_manager::UserManager;
 using user_manager::User;
@@ -36,29 +37,31 @@ namespace {
 
 SessionControllerClient* g_instance = nullptr;
 
-uint32_t GetSessionId(const User* user) {
-  const UserList logged_in_users = UserManager::Get()->GetLoggedInUsers();
-  // TODO(xiyuan): Update with real session id when user session tracking
-  //     code is moved from UserManager to SessionManager.
-  for (size_t i = 0; i < logged_in_users.size(); ++i) {
-    if (logged_in_users[i] == user)
-      return i + 1;
+// Returns the session id of a given user or 0 if user has no session.
+uint32_t GetSessionId(const User& user) {
+  const AccountId& account_id = user.GetAccountId();
+  for (auto& session : SessionManager::Get()->sessions()) {
+    if (session.user_account_id == account_id)
+      return session.id;
   }
 
-  NOTREACHED();
   return 0u;
 }
 
+// Creates a mojom::UserSession for the given user. Returns nullptr if there is
+// no user session started for the given user.
 ash::mojom::UserSessionPtr UserToUserSession(const User& user) {
+  const uint32_t user_session_id = GetSessionId(user);
+  if (user_session_id == 0u)
+    return nullptr;
+
   ash::mojom::UserSessionPtr session = ash::mojom::UserSession::New();
-  session->session_id = GetSessionId(&user);
+  session->session_id = user_session_id;
   session->type = user.GetType();
   session->account_id = user.GetAccountId();
   session->display_name = base::UTF16ToUTF8(user.display_name());
   session->display_email = user.display_email();
 
-  // TODO(xiyuan): Observe user image change and update.
-  //     Tracked in http://crbug.com/670422
   // TODO(xiyuan): Support multiple scale factor.
   session->avatar = *user.GetImage().bitmap();
   if (session->avatar.isNull()) {
@@ -79,6 +82,7 @@ void DoSwitchUser(const AccountId& account_id) {
 SessionControllerClient::SessionControllerClient() : binding_(this) {
   SessionManager::Get()->AddObserver(this);
   UserManager::Get()->AddSessionStateObserver(this);
+  UserManager::Get()->AddObserver(this);
 
   ConnectToSessionControllerAndSetClient();
   SendSessionInfoIfChanged();
@@ -94,6 +98,7 @@ SessionControllerClient::~SessionControllerClient() {
   g_instance = nullptr;
 
   SessionManager::Get()->RemoveObserver(this);
+  UserManager::Get()->RemoveObserver(this);
   UserManager::Get()->RemoveSessionStateObserver(this);
 }
 
@@ -126,6 +131,11 @@ void SessionControllerClient::ActiveUserChanged(const User* active_user) {
 void SessionControllerClient::UserAddedToSession(const User* added_user) {
   SendSessionInfoIfChanged();
   SendUserSession(*added_user);
+}
+
+void SessionControllerClient::OnUserImageChanged(
+    const user_manager::User& user) {
+  SendUserSession(user);
 }
 
 // static
@@ -259,7 +269,16 @@ void SessionControllerClient::SendSessionInfoIfChanged() {
 }
 
 void SessionControllerClient::SendUserSession(const User& user) {
-  session_controller_->UpdateUserSession(UserToUserSession(user));
+  ash::mojom::UserSessionPtr user_session = UserToUserSession(user);
+
+  // Bail if the user has no session. Currently the only code path that hits
+  // this condition is from OnUserImageChanged when user images are changed
+  // on the login screen (e.g. policy change that adds a public session user,
+  // or tests that create new users on the login screen).
+  if (!user_session)
+    return;
+
+  session_controller_->UpdateUserSession(std::move(user_session));
 }
 
 void SessionControllerClient::SendUserSessionOrder() {
@@ -267,8 +286,11 @@ void SessionControllerClient::SendUserSessionOrder() {
 
   const UserList logged_in_users = user_manager->GetLoggedInUsers();
   std::vector<uint32_t> user_session_ids;
-  for (auto* user : user_manager->GetLRULoggedInUsers())
-    user_session_ids.push_back(GetSessionId(user));
+  for (auto* user : user_manager->GetLRULoggedInUsers()) {
+    const uint32_t user_session_id = GetSessionId(*user);
+    DCHECK_NE(0u, user_session_id);
+    user_session_ids.push_back(user_session_id);
+  }
 
   session_controller_->SetUserSessionOrder(user_session_ids);
 }
