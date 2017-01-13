@@ -165,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchLoadFlag) {
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchHistograms) {
   PrefetchFromFile(kPrefetchPage, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
   histogram_tester().ExpectTotalCount(
-      "Prerender.websame_NoStatePrefetchTTFCP.Warm", 0);
+      "Prerender.websame_PrefetchTTFCP.Warm.Cacheable.Visible", 0);
 
   test_utils::FirstContentfulPaintManagerWaiter* fcp_waiter =
       test_utils::FirstContentfulPaintManagerWaiter::Create(
