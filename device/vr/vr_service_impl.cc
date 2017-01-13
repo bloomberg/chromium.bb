@@ -17,6 +17,10 @@ namespace device {
 VRServiceImpl::VRServiceImpl() : listening_for_activate_(false) {}
 
 VRServiceImpl::~VRServiceImpl() {
+  // Destroy VRDisplay before calling RemoveService below. RemoveService might
+  // implicitly trigger destory VRDevice which VRDisplay needs to access in its
+  // dtor.
+  displays_.clear();
   VRDeviceManager::GetInstance()->RemoveService(this);
 }
 
