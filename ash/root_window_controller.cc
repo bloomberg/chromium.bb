@@ -9,7 +9,6 @@
 
 #include "ash/ash_touch_exploration_manager_chromeos.h"
 #include "ash/aura/aura_layout_manager_adapter.h"
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_constants.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/focus_cycler.h"
@@ -258,14 +257,14 @@ WmWindow* CreateContainer(int window_id, const char* name, WmWindow* parent) {
 
 // TODO(sky): This should take an aura::Window. http://crbug.com/671246.
 bool ShouldDestroyWindowInCloseChildWindows(WmWindow* window) {
-  if (!WmWindowAura::GetAuraWindow(window)->owned_by_parent())
+  if (!WmWindow::GetAuraWindow(window)->owned_by_parent())
     return false;
 
   if (!WmShell::Get()->IsRunningInMash())
     return true;
 
   aura::WindowMus* window_mus =
-      aura::WindowMus::Get(WmWindowAura::GetAuraWindow(window));
+      aura::WindowMus::Get(WmWindow::GetAuraWindow(window));
   return Shell::window_tree_client()->WasCreatedByThisClient(window_mus) ||
          Shell::window_tree_client()->IsRoot(window_mus);
 }
@@ -332,7 +331,7 @@ const aura::Window* RootWindowController::GetRootWindow() const {
 }
 
 const WmWindow* RootWindowController::GetWindow() const {
-  return WmWindowAura::Get(GetRootWindow());
+  return WmWindow::Get(GetRootWindow());
 }
 
 wm::WorkspaceWindowState RootWindowController::GetWorkspaceWindowState() {
@@ -366,7 +365,7 @@ void RootWindowController::CreateShelf() {
   // TODO(jamescook): Move this into WmShelf::InitializeShelf(). This will
   // require changing AttachedPanelWidgetTargeter's access to WmShelf.
   WmShell::Get()->NotifyShelfCreatedForRootWindow(
-      WmWindowAura::Get(GetRootWindow()));
+      WmWindow::Get(GetRootWindow()));
 
   wm_shelf_->shelf_widget()->PostCreateShelf();
 }
@@ -433,7 +432,7 @@ bool RootWindowController::CanWindowReceiveEvents(aura::Window* window) {
   aura::Window* modal_container = GetContainer(modal_container_id);
   SystemModalContainerLayoutManager* modal_layout_manager = nullptr;
   modal_layout_manager = static_cast<SystemModalContainerLayoutManager*>(
-      WmWindowAura::Get(modal_container)->GetLayoutManager());
+      WmWindow::Get(modal_container)->GetLayoutManager());
 
   if (modal_layout_manager->has_window_dimmer())
     blocking_container = modal_container;
@@ -451,7 +450,7 @@ bool RootWindowController::CanWindowReceiveEvents(aura::Window* window) {
   // one.
   if (modal_container && modal_container->Contains(window))
     return modal_layout_manager->IsPartOfActiveModalWindow(
-        WmWindowAura::Get(window));
+        WmWindow::Get(window));
 
   return true;
 }
@@ -468,7 +467,7 @@ WmWindow* RootWindowController::FindEventTarget(
       static_cast<ui::EventTarget*>(root_window)
           ->GetEventTargeter()
           ->FindTargetForEvent(root_window, &test_event);
-  return WmWindowAura::Get(static_cast<aura::Window*>(event_handler));
+  return WmWindow::Get(static_cast<aura::Window*>(event_handler));
 }
 
 gfx::Point RootWindowController::GetLastMouseLocationInRoot() {
@@ -485,7 +484,7 @@ const aura::Window* RootWindowController::GetContainer(int container_id) const {
 
 const WmWindow* RootWindowController::GetWmContainer(int container_id) const {
   const aura::Window* window = GetContainer(container_id);
-  return WmWindowAura::Get(window);
+  return WmWindow::Get(window);
 }
 
 void RootWindowController::SetWallpaperWidgetController(
@@ -622,7 +621,7 @@ void RootWindowController::CloseChildWindows() {
 void RootWindowController::MoveWindowsTo(aura::Window* dst) {
   // Clear the workspace controller, so it doesn't incorrectly update the shelf.
   workspace_controller_.reset();
-  ReparentAllWindows(GetWindow(), WmWindowAura::Get(dst));
+  ReparentAllWindows(GetWindow(), WmWindow::Get(dst));
 }
 
 void RootWindowController::UpdateShelfVisibility() {
@@ -641,8 +640,8 @@ void RootWindowController::InitTouchHuds() {
 }
 
 aura::Window* RootWindowController::GetWindowForFullscreenMode() {
-  return WmWindowAura::GetAuraWindow(
-      wm::GetWindowForFullscreenMode(WmWindowAura::Get(GetRootWindow())));
+  return WmWindow::GetAuraWindow(
+      wm::GetWindowForFullscreenMode(WmWindow::Get(GetRootWindow())));
 }
 
 void RootWindowController::ActivateKeyboard(
@@ -794,7 +793,7 @@ void RootWindowController::Init(RootWindowType root_window_type) {
 
     // Notify shell observers about new root window.
     if (!wm_shell->IsRunningInMash())
-      shell->OnRootWindowAdded(WmWindowAura::Get(root_window));
+      shell->OnRootWindowAdded(WmWindow::Get(root_window));
   }
 
   // TODO: AshTouchExplorationManager doesn't work with mus.
@@ -860,11 +859,11 @@ void RootWindowController::InitLayoutManagers() {
   // Make it easier to resize windows that partially overlap the shelf. Must
   // occur after the ShelfLayoutManager is constructed by ShelfWidget.
   aura::Window* shelf_container = GetContainer(kShellWindowId_ShelfContainer);
-  WmWindow* wm_shelf_container = WmWindowAura::Get(shelf_container);
+  WmWindow* wm_shelf_container = WmWindow::Get(shelf_container);
   shelf_container->SetEventTargeter(base::MakeUnique<ShelfWindowTargeter>(
       wm_shelf_container, wm_shelf_.get()));
   aura::Window* status_container = GetContainer(kShellWindowId_StatusContainer);
-  WmWindow* wm_status_container = WmWindowAura::Get(status_container);
+  WmWindow* wm_status_container = WmWindow::Get(status_container);
   status_container->SetEventTargeter(base::MakeUnique<ShelfWindowTargeter>(
       wm_status_container, wm_shelf_.get()));
 

@@ -4,8 +4,8 @@
 
 #include "ash/wm/window_state_aura.h"
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_window.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
@@ -38,7 +38,7 @@ WindowState* GetWindowState(aura::Window* window) {
     return nullptr;
   WindowState* settings = window->GetProperty(kWindowStateKey);
   if (!settings) {
-    settings = new WindowStateAura(WmWindowAura::Get(window));
+    settings = new WindowStateAura(WmWindow::Get(window));
     window->SetProperty(kWindowStateKey, settings);
   }
   return settings;

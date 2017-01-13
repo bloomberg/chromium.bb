@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "ash/test/wm_window_aura_test_api.h"
+#include "ash/test/wm_window_test_api.h"
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display.h"
@@ -89,8 +89,7 @@ class WmTestBase : public testing::Test {
   bool setup_called_ = false;
   bool teardown_called_ = false;
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
-  std::unique_ptr<WmWindowAuraTestApi::GlobalMinimumSizeLock>
-      minimum_size_lock_;
+  std::unique_ptr<WmWindowTestApi::GlobalMinimumSizeLock> minimum_size_lock_;
   std::unique_ptr<WmTestHelper> test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(WmTestBase);

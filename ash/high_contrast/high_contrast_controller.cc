@@ -4,8 +4,8 @@
 
 #include "ash/high_contrast/high_contrast_controller.h"
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/shell.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
@@ -36,7 +36,7 @@ void HighContrastController::UpdateDisplay(aura::Window* root_window) {
 }
 
 void HighContrastController::OnRootWindowAdded(WmWindow* root_window) {
-  UpdateDisplay(WmWindowAura::GetAuraWindow(root_window));
+  UpdateDisplay(WmWindow::GetAuraWindow(root_window));
 }
 
 }  // namespace ash

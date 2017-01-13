@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_controller.h"
 #include "ash/common/session/session_state_delegate.h"
@@ -100,7 +99,7 @@ class DeleteOnBlurDelegate : public aura::test::TestWindowDelegate,
 };
 
 WmLayoutManager* GetLayoutManager(RootWindowController* controller, int id) {
-  return WmWindowAura::Get(controller->GetContainer(id))->GetLayoutManager();
+  return WmWindow::Get(controller->GetContainer(id))->GetLayoutManager();
 }
 
 }  // namespace

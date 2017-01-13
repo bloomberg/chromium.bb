@@ -4,7 +4,6 @@
 
 #include "ash/common/wm/panels/panel_window_resizer.h"
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_widget.h"
@@ -13,6 +12,7 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -64,13 +64,12 @@ class PanelWindowResizerTest : public test::AshTestBase {
     gfx::Rect bounds(origin, gfx::Size(101, 101));
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
         NULL, ui::wm::WINDOW_TYPE_PANEL, 0, bounds);
-    test::TestShelfDelegate::instance()->AddShelfItem(
-        WmWindowAura::Get(window));
+    test::TestShelfDelegate::instance()->AddShelfItem(WmWindow::Get(window));
     return window;
   }
 
   void DragStart(aura::Window* window) {
-    resizer_.reset(CreateWindowResizer(WmWindowAura::Get(window),
+    resizer_.reset(CreateWindowResizer(WmWindow::Get(window),
                                        window->bounds().origin(), HTCAPTION,
                                        aura::client::WINDOW_MOVE_SOURCE_MOUSE)
                        .release());
@@ -138,7 +137,7 @@ class PanelWindowResizerTest : public test::AshTestBase {
              iter = window_order.begin();
          iter != window_order.end(); ++iter, ++panel_index) {
       ShelfID id =
-          WmWindowAura::Get(*iter)->GetIntProperty(WmWindowProperty::SHELF_ID);
+          WmWindow::Get(*iter)->GetIntProperty(WmWindowProperty::SHELF_ID);
       EXPECT_EQ(id, model_->items()[panel_index].id);
     }
   }

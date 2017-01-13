@@ -6,13 +6,13 @@
 
 #include <memory>
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm/wm_screen_util.h"
+#include "ash/common/wm_window.h"
 #include "ash/display/display_util.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
@@ -1568,7 +1568,7 @@ class RootWindowTestObserver : public aura::WindowObserver {
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override {
     shelf_display_bounds_ =
-        wm::GetDisplayBoundsWithShelf(WmWindowAura::Get(window));
+        wm::GetDisplayBoundsWithShelf(WmWindow::Get(window));
   }
 
   const gfx::Rect& shelf_display_bounds() const {

@@ -17,14 +17,14 @@ class LayerTreeOwner;
 
 namespace ash {
 
-class WmWindowAura;
+class WmWindow;
 
 namespace wm {
 
 // A view that mirrors the client area of a single window.
 class WindowMirrorView : public views::View {
  public:
-  explicit WindowMirrorView(WmWindowAura* window);
+  explicit WindowMirrorView(WmWindow* window);
   ~WindowMirrorView() override;
 
   // views::View:
@@ -45,7 +45,7 @@ class WindowMirrorView : public views::View {
   gfx::Rect GetClientAreaBounds() const;
 
   // The original window that is being represented by |this|.
-  WmWindowAura* target_;
+  WmWindow* target_;
 
   // Retains ownership of the mirror layer tree. This is lazily initialized
   // the first time the view becomes visible.

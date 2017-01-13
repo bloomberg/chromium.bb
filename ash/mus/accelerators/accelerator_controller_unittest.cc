@@ -4,7 +4,6 @@
 
 #include "ash/common/accelerators/accelerator_controller.h"
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/accelerators/accelerator_table.h"
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/accessibility_types.h"
@@ -21,6 +20,7 @@
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/mus/accelerators/accelerator_controller_registrar_test_api.h"
 #include "ash/mus/bridge/wm_shell_mus_test_api.h"
 #include "ash/mus/property_util.h"
@@ -261,7 +261,7 @@ class AcceleratorControllerTest : public mus::WmTestBase {
         test::TestShelfDelegate::instance();
     shelf_delegate->AddShelfItem(window);
     PanelLayoutManager* manager =
-        PanelLayoutManager::Get(WmWindowAura::Get(window));
+        PanelLayoutManager::Get(WmWindow::Get(window));
     manager->Relayout();
     return window;
   }
@@ -435,7 +435,7 @@ TEST_F(AcceleratorControllerTest, IsRegistered) {
 
 TEST_F(AcceleratorControllerTest, WindowSnap) {
   aura::Window* aura_window = CreateTestWindow(gfx::Rect(5, 5, 20, 20));
-  WmWindow* window = WmWindowAura::Get(aura_window);
+  WmWindow* window = WmWindow::Get(aura_window);
   wm::WindowState* window_state = window->GetWindowState();
 
   window_state->Activate();
@@ -490,8 +490,7 @@ TEST_F(AcceleratorControllerTest, WindowSnap) {
 // Tests that when window docking is disabled, only snapping windows works.
 TEST_F(AcceleratorControllerTest, WindowSnapWithoutDocking) {
   ASSERT_FALSE(ash::switches::DockedWindowsEnabled());
-  WmWindow* window =
-      WmWindowAura::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20)));
+  WmWindow* window = WmWindow::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20)));
   wm::WindowState* window_state = window->GetWindowState();
   window_state->Activate();
 
@@ -544,8 +543,7 @@ class EnabledDockedWindowsAcceleratorControllerTest
 TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
        WindowSnapLeftDockLeftRestore) {
   CreateTestWindow(gfx::Rect(5, 5, 20, 20));
-  WmWindow* window1 =
-      WmWindowAura::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20)));
+  WmWindow* window1 = WmWindow::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20)));
   wm::WindowState* window1_state = window1->GetWindowState();
   window1_state->Activate();
 
@@ -566,8 +564,7 @@ TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
 TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
        WindowSnapRightDockRightRestore) {
   CreateTestWindow(gfx::Rect(5, 5, 20, 20));
-  WmWindow* window1 =
-      WmWindowAura::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20)));
+  WmWindow* window1 = WmWindow::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20)));
 
   wm::WindowState* window1_state = window1->GetWindowState();
   window1_state->Activate();
@@ -588,9 +585,8 @@ TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
 
 TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
        WindowSnapLeftDockLeftSnapRight) {
-  WmWindowAura::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20)));
-  WmWindow* window1 =
-      WmWindowAura::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20)));
+  CreateTestWindow(gfx::Rect(5, 5, 20, 20));
+  WmWindow* window1 = WmWindow::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20)));
 
   wm::WindowState* window1_state = window1->GetWindowState();
   window1_state->Activate();
@@ -614,22 +610,22 @@ TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
 TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
        WindowDockLeftMinimizeWindowWithRestore) {
   WindowOwner window_owner(
-      WmWindowAura::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20))));
+      WmWindow::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20))));
   WindowOwner window1_owner(
-      WmWindowAura::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20))));
+      WmWindow::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20))));
   WmWindow* window1 = window1_owner.window();
 
   wm::WindowState* window1_state = window1->GetWindowState();
   window1_state->Activate();
 
   WindowOwner window2_owner(
-      WmWindowAura::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20))));
+      WmWindow::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20))));
   WmWindow* window2 = window2_owner.window();
 
   wm::WindowState* window2_state = window2->GetWindowState();
 
   WindowOwner window3_owner(
-      WmWindowAura::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20))));
+      WmWindow::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20))));
   WmWindow* window3 = window3_owner.window();
 
   wm::WindowState* window3_state = window3->GetWindowState();
@@ -667,7 +663,7 @@ TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
 TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
        WindowPanelDockLeftDockRightRestore) {
   WmWndow* window0 =
-      WmWindowAura::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20)));
+      WmWindow::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20)));
 
   std::unique_ptr<aura::Window> window(CreatePanel());
   wm::WindowState* window_state = wm::GetWindowState(window.get());
@@ -676,7 +672,7 @@ TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
   gfx::Rect window_restore_bounds2 = window->bounds();
   GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
   gfx::Rect expected_bounds = wm::GetDefaultLeftSnappedWindowBoundsInParent(
-      WmWindowAura::Get(window.get()));
+      WmWindow::Get(window.get()));
   gfx::Rect window_restore_bounds = window_state->GetRestoreBoundsInScreen();
   EXPECT_NE(expected_bounds.ToString(), window->bounds().ToString());
   EXPECT_FALSE(window_state->IsSnapped());
@@ -695,7 +691,7 @@ TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
 
 TEST_F(EnabledDockedWindowsAcceleratorControllerTest, CenterWindowAccelerator) {
   WindowOwner window_owner(
-      WmWindowAura::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20))));
+      WmWindow::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20))));
   WmWindow* window = window_owner.window();
   wm::WindowState* window_state = window->GetWindowState();
   window_state->Activate();
@@ -802,7 +798,7 @@ TEST_F(AcceleratorControllerTest, DontRepeatToggleFullscreen) {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(5, 5, 20, 20);
   views::Widget* widget = new views::Widget;
-  WmWindowAura::Get(GetPrimaryRootWindow())
+  WmWindow::Get(GetPrimaryRootWindow())
       ->GetRootWindowController()
       ->ConfigureWidgetInitParamsForContainer(
           widget, kShellWindowId_DefaultContainer, &params);
@@ -1144,8 +1140,8 @@ class PreferredReservedAcceleratorsTest : public test::AshTestBase {
 
 // TODO: needs LockStateController ported: http://crbug.com/632189.
 TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithFullscreen) {
-  WmWindow* w1 = WmWindowAura::Get(CreateTestWindow(gfx::Rect()));
-  WmWindow* w2 = WmWindowAura::Get(CreateTestWindow(gfx::Rect()));
+  WmWindow* w1 = WmWindow::Get(CreateTestWindow(gfx::Rect()));
+  WmWindow* w2 = WmWindow::Get(CreateTestWindow(gfx::Rect()));
   wm::ActivateWindow(w1);
 
   wm::WMEvent fullscreen(wm::WM_EVENT_FULLSCREEN);
@@ -1240,8 +1236,7 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
         << " not found in kAcceleratorData, kDebugAcceleratorData or"
         << " kDeveloperAcceleratorData action: " << action;
   }
-  WmWindow* window =
-      WmWindowAura::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20)));
+  WmWindow* window = WmWindow::Get(CreateTestWindow(gfx::Rect(5, 5, 20, 20)));
   window->Activate();
   WmShell::Get()->SimulateModalWindowOpenForTesting(true);
   for (const auto& action : all_actions) {
@@ -1339,7 +1334,7 @@ TEST_F(AcceleratorControllerTest, DISABLED_DisallowedWithNoWindow) {
   // Make sure we don't alert if we do have a window.
   for (size_t i = 0; i < kActionsNeedingWindowLength; ++i) {
     aura::Window* aura_window = CreateTestWindow(gfx::Rect(5, 5, 20, 20));
-    WmWindowAura::Get(aura_window)->Activate();
+    WmWindow::Get(aura_window)->Activate();
     delegate->TriggerAccessibilityAlert(A11Y_ALERT_NONE);
     GetController()->PerformActionIfEnabled(kActionsNeedingWindow[i]);
     EXPECT_NE(delegate->GetLastAccessibilityAlert(), A11Y_ALERT_WINDOW_NEEDED);
@@ -1349,7 +1344,7 @@ TEST_F(AcceleratorControllerTest, DISABLED_DisallowedWithNoWindow) {
   // Don't alert if we have a minimized window either.
   for (size_t i = 0; i < kActionsNeedingWindowLength; ++i) {
     aura::Window* aura_window = CreateTestWindow(gfx::Rect(5, 5, 20, 20));
-    WmWindowAura::Get(aura_window)->Activate();
+    WmWindow::Get(aura_window)->Activate();
     GetController()->PerformActionIfEnabled(WINDOW_MINIMIZE);
     delegate->TriggerAccessibilityAlert(A11Y_ALERT_NONE);
     GetController()->PerformActionIfEnabled(kActionsNeedingWindow[i]);

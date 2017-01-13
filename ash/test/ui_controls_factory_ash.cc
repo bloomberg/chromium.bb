@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/root_window_finder.h"
+#include "ash/common/wm_window.h"
 #include "ash/shell.h"
 #include "ash/wm/window_properties.h"
 #include "ui/aura/client/capture_client.h"
@@ -45,7 +45,7 @@ UIControlsAura* GetUIControlsForRootWindow(aura::Window* root_window) {
 UIControlsAura* GetUIControlsAt(const gfx::Point& point_in_screen) {
   // TODO(mazda): Support the case passive grab is taken.
   return GetUIControlsForRootWindow(
-      WmWindowAura::GetAuraWindow(ash::wm::GetRootWindowAt(point_in_screen)));
+      WmWindow::GetAuraWindow(ash::wm::GetRootWindowAt(point_in_screen)));
 }
 
 }  // namespace

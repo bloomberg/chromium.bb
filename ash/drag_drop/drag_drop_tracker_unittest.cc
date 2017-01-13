@@ -6,9 +6,9 @@
 
 #include <memory>
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/scoped_root_window_for_new_windows.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -70,7 +70,7 @@ TEST_F(DragDropTrackerTest, GetTarget) {
   EXPECT_EQ("300,100 100x100", window1->GetBoundsInScreen().ToString());
 
   // RootWindow0 is active so the capture window is parented to it.
-  EXPECT_EQ(WmWindowAura::Get(root_windows[0]),
+  EXPECT_EQ(WmWindow::Get(root_windows[0]),
             WmShell::Get()->GetRootWindowForNewWindows());
 
   // Start tracking from the RootWindow1 and check the point on RootWindow0 that
@@ -93,7 +93,7 @@ TEST_F(DragDropTrackerTest, GetTarget) {
 
   // Make RootWindow1 active so that capture window is parented to it.
   ScopedRootWindowForNewWindows root_for_new_windows(
-      WmWindowAura::Get(root_windows[1]));
+      WmWindow::Get(root_windows[1]));
 
   // Start tracking from the RootWindow1 and check the point on RootWindow0 that
   // |window0| covers.
@@ -131,7 +131,7 @@ TEST_F(DragDropTrackerTest, ConvertEvent) {
   window1->Show();
 
   // RootWindow0 is active so the capture window is parented to it.
-  EXPECT_EQ(WmWindowAura::Get(root_windows[0]),
+  EXPECT_EQ(WmWindow::Get(root_windows[0]),
             WmShell::Get()->GetRootWindowForNewWindows());
 
   // Start tracking from the RootWindow0 and converts the mouse event into
@@ -160,7 +160,7 @@ TEST_F(DragDropTrackerTest, ConvertEvent) {
 
   // Make RootWindow1 active so that capture window is parented to it.
   ScopedRootWindowForNewWindows root_for_new_windows(
-      WmWindowAura::Get(root_windows[1]));
+      WmWindow::Get(root_windows[1]));
 
   // Start tracking from the RootWindow1 and converts the mouse event into
   // |window0|'s coodinates.

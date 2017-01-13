@@ -9,12 +9,14 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "third_party/skia/include/core/SkColor.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer_animation_element.h"
-#include "ui/gfx/image/image_skia.h"
+#include "ui/wm/core/transient_window_observer.h"
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/public/window_types.h"
 
@@ -23,6 +25,7 @@ class Display;
 }
 
 namespace gfx {
+class ImageSkia;
 class Point;
 class Rect;
 class Size;
@@ -47,15 +50,20 @@ class WmLayoutManager;
 class WmShell;
 class WmTransientWindowObserver;
 class WmWindowObserver;
+class WmWindowTestApi;
 enum class WmWindowProperty;
 
 namespace wm {
 class WindowState;
 }
 
-// This class exists as a porting layer to allow ash/wm to work with
-// aura::Window or ui::Window. See aura::Window for details on the functions.
-class ASH_EXPORT WmWindow {
+// WmWindow abstracts away differences between ash running in classic mode
+// and ash running with aura-mus.
+//
+// WmWindow is tied to the life of the underlying aura::Window. Use the
+// static Get() function to obtain a WmWindow from an aura::Window.
+class ASH_EXPORT WmWindow : public aura::WindowObserver,
+                            public ::wm::TransientWindowObserver {
  public:
   // See comments in SetBoundsInScreen().
   enum class BoundsInScreenBehavior {
@@ -65,146 +73,173 @@ class ASH_EXPORT WmWindow {
 
   using Windows = std::vector<WmWindow*>;
 
-  virtual void Destroy() = 0;
+  // NOTE: this class is owned by the corresponding window. You shouldn't delete
+  // TODO(sky): friend deleter and make private.
+  ~WmWindow() override;
+
+  // Returns a WmWindow for an aura::Window, creating if necessary. |window| may
+  // be null, in which case null is returned.
+  static WmWindow* Get(aura::Window* window) {
+    return const_cast<WmWindow*>(Get(const_cast<const aura::Window*>(window)));
+  }
+  static const WmWindow* Get(const aura::Window* window);
+
+  static std::vector<WmWindow*> FromAuraWindows(
+      const std::vector<aura::Window*>& aura_windows);
+  static std::vector<aura::Window*> ToAuraWindows(
+      const std::vector<WmWindow*>& windows);
+
+  // Convenience for wm_window->aura_window(). Returns null if |wm_window| is
+  // null.
+  static aura::Window* GetAuraWindow(WmWindow* wm_window) {
+    return const_cast<aura::Window*>(
+        GetAuraWindow(const_cast<const WmWindow*>(wm_window)));
+  }
+  static const aura::Window* GetAuraWindow(const WmWindow* wm_window);
+
+  aura::Window* aura_window() { return window_; }
+  const aura::Window* aura_window() const { return window_; }
+
+  // See description of |children_use_extended_hit_region_|.
+  bool ShouldUseExtendedHitRegion() const;
+
+  void Destroy();
 
   WmWindow* GetRootWindow() {
     return const_cast<WmWindow*>(
         const_cast<const WmWindow*>(this)->GetRootWindow());
   }
-  virtual const WmWindow* GetRootWindow() const = 0;
-  virtual RootWindowController* GetRootWindowController() = 0;
+  const WmWindow* GetRootWindow() const;
+  RootWindowController* GetRootWindowController();
 
   // TODO(sky): fix constness.
-  virtual WmShell* GetShell() const = 0;
+  WmShell* GetShell() const;
 
   // Used for debugging.
-  virtual void SetName(const char* name) = 0;
-  virtual std::string GetName() const = 0;
+  void SetName(const char* name);
+  std::string GetName() const;
 
-  virtual void SetTitle(const base::string16& title) = 0;
-  virtual base::string16 GetTitle() const = 0;
+  void SetTitle(const base::string16& title);
+  base::string16 GetTitle() const;
 
   // See shell_window_ids.h for list of known ids.
-  virtual void SetShellWindowId(int id) = 0;
-  virtual int GetShellWindowId() const = 0;
-  virtual WmWindow* GetChildByShellWindowId(int id) = 0;
+  void SetShellWindowId(int id);
+  int GetShellWindowId() const;
+  WmWindow* GetChildByShellWindowId(int id);
 
-  virtual ui::wm::WindowType GetType() const = 0;
-  virtual int GetAppType() const = 0;
-  virtual void SetAppType(int app_type) const = 0;
+  ui::wm::WindowType GetType() const;
+  int GetAppType() const;
+  void SetAppType(int app_type) const;
 
-  virtual ui::Layer* GetLayer() = 0;
+  ui::Layer* GetLayer();
 
   // TODO(sky): these are temporary until GetLayer() always returns non-null.
-  virtual bool GetLayerTargetVisibility() = 0;
-  virtual bool GetLayerVisible() = 0;
+  bool GetLayerTargetVisibility();
+  bool GetLayerVisible();
 
-  virtual display::Display GetDisplayNearestWindow() = 0;
+  display::Display GetDisplayNearestWindow();
 
-  virtual bool HasNonClientArea() = 0;
-  virtual int GetNonClientComponent(const gfx::Point& location) = 0;
+  bool HasNonClientArea();
+  int GetNonClientComponent(const gfx::Point& location);
+  gfx::Point ConvertPointToTarget(const WmWindow* target,
+                                  const gfx::Point& point) const;
 
-  virtual gfx::Point ConvertPointToTarget(const WmWindow* target,
-                                          const gfx::Point& point) const = 0;
-  virtual gfx::Point ConvertPointToScreen(const gfx::Point& point) const = 0;
-  virtual gfx::Point ConvertPointFromScreen(const gfx::Point& point) const = 0;
-  virtual gfx::Rect ConvertRectToScreen(const gfx::Rect& rect) const = 0;
-  virtual gfx::Rect ConvertRectFromScreen(const gfx::Rect& rect) const = 0;
+  gfx::Point ConvertPointToScreen(const gfx::Point& point) const;
+  gfx::Point ConvertPointFromScreen(const gfx::Point& point) const;
+  gfx::Rect ConvertRectToScreen(const gfx::Rect& rect) const;
+  gfx::Rect ConvertRectFromScreen(const gfx::Rect& rect) const;
 
-  virtual gfx::Size GetMinimumSize() const = 0;
-  virtual gfx::Size GetMaximumSize() const = 0;
+  gfx::Size GetMinimumSize() const;
+  gfx::Size GetMaximumSize() const;
 
   // Returns the visibility requested by this window. IsVisible() takes into
   // account the visibility of the layer and ancestors, where as this tracks
   // whether Show() without a Hide() has been invoked.
-  virtual bool GetTargetVisibility() const = 0;
+  bool GetTargetVisibility() const;
 
-  virtual bool IsVisible() const = 0;
+  bool IsVisible() const;
 
-  virtual void SetOpacity(float opacity) = 0;
-  virtual float GetTargetOpacity() const = 0;
+  void SetOpacity(float opacity);
+  float GetTargetOpacity() const;
 
-  virtual gfx::Rect GetMinimizeAnimationTargetBoundsInScreen() const = 0;
+  gfx::Rect GetMinimizeAnimationTargetBoundsInScreen() const;
 
-  virtual void SetTransform(const gfx::Transform& transform) = 0;
-  virtual gfx::Transform GetTargetTransform() const = 0;
+  void SetTransform(const gfx::Transform& transform);
+  gfx::Transform GetTargetTransform() const;
 
-  virtual bool IsSystemModal() const = 0;
+  bool IsSystemModal() const;
 
-  virtual bool GetBoolProperty(WmWindowProperty key) = 0;
-  virtual void SetBoolProperty(WmWindowProperty key, bool value) = 0;
-  virtual SkColor GetColorProperty(WmWindowProperty key) = 0;
-  virtual void SetColorProperty(WmWindowProperty key, SkColor value) = 0;
-  virtual int GetIntProperty(WmWindowProperty key) = 0;
-  virtual void SetIntProperty(WmWindowProperty key, int value) = 0;
-  virtual std::string GetStringProperty(WmWindowProperty key) = 0;
-  virtual void SetStringProperty(WmWindowProperty key,
-                                 const std::string& value) = 0;
+  bool GetBoolProperty(WmWindowProperty key);
+  void SetBoolProperty(WmWindowProperty key, bool value);
+  SkColor GetColorProperty(WmWindowProperty key);
+  void SetColorProperty(WmWindowProperty key, SkColor value);
+  int GetIntProperty(WmWindowProperty key);
+  void SetIntProperty(WmWindowProperty key, int value);
+  std::string GetStringProperty(WmWindowProperty key);
+  void SetStringProperty(WmWindowProperty key, const std::string& value);
 
-  virtual gfx::ImageSkia GetWindowIcon() = 0;
-  virtual gfx::ImageSkia GetAppIcon() = 0;
+  gfx::ImageSkia GetWindowIcon();
+  gfx::ImageSkia GetAppIcon();
 
   wm::WindowState* GetWindowState() {
     return const_cast<wm::WindowState*>(
         const_cast<const WmWindow*>(this)->GetWindowState());
   }
-  virtual const wm::WindowState* GetWindowState() const = 0;
+  const wm::WindowState* GetWindowState() const;
 
   // The implementation of this matches aura::Window::GetToplevelWindow().
-  virtual WmWindow* GetToplevelWindow() = 0;
+  WmWindow* GetToplevelWindow();
+
   // The implementation of this matches
   // aura::client::ActivationClient::GetToplevelWindow().
-  virtual WmWindow* GetToplevelWindowForFocus() = 0;
+  WmWindow* GetToplevelWindowForFocus();
 
   // See aura::client::ParentWindowWithContext() for details of what this does.
-  virtual void SetParentUsingContext(WmWindow* context,
-                                     const gfx::Rect& screen_bounds) = 0;
-  virtual void AddChild(WmWindow* window) = 0;
-  virtual void RemoveChild(WmWindow* child) = 0;
+  void SetParentUsingContext(WmWindow* context, const gfx::Rect& screen_bounds);
+  void AddChild(WmWindow* window);
+  void RemoveChild(WmWindow* child);
 
   WmWindow* GetParent() {
     return const_cast<WmWindow*>(
         const_cast<const WmWindow*>(this)->GetParent());
   }
-  virtual const WmWindow* GetParent() const = 0;
+  const WmWindow* GetParent() const;
 
   WmWindow* GetTransientParent() {
     return const_cast<WmWindow*>(
         const_cast<const WmWindow*>(this)->GetTransientParent());
   }
-  virtual const WmWindow* GetTransientParent() const = 0;
-  virtual Windows GetTransientChildren() = 0;
+  const WmWindow* GetTransientParent() const;
+  std::vector<WmWindow*> GetTransientChildren();
 
   // Moves this to the display where |event| occurred; returns true if moved.
-  virtual bool MoveToEventRoot(const ui::Event& event) = 0;
+  bool MoveToEventRoot(const ui::Event& event);
 
-  virtual void SetLayoutManager(
-      std::unique_ptr<WmLayoutManager> layout_manager) = 0;
-  virtual WmLayoutManager* GetLayoutManager() = 0;
+  void SetLayoutManager(std::unique_ptr<WmLayoutManager> layout_manager);
+  WmLayoutManager* GetLayoutManager();
 
   // See wm::SetWindowVisibilityChangesAnimated() for details on what this
   // does.
-  virtual void SetVisibilityChangesAnimated() = 0;
+  void SetVisibilityChangesAnimated();
   // |type| is WindowVisibilityAnimationType. Has to be an int to match aura.
-  virtual void SetVisibilityAnimationType(int type) = 0;
-  virtual void SetVisibilityAnimationDuration(base::TimeDelta delta) = 0;
-  virtual void SetVisibilityAnimationTransition(
-      ::wm::WindowVisibilityAnimationTransition transition) = 0;
-  virtual void Animate(::wm::WindowAnimationType type) = 0;
-  virtual void StopAnimatingProperty(
-      ui::LayerAnimationElement::AnimatableProperty property) = 0;
-  virtual void SetChildWindowVisibilityChangesAnimated() = 0;
+  void SetVisibilityAnimationType(int type);
+  void SetVisibilityAnimationDuration(base::TimeDelta delta);
+  void SetVisibilityAnimationTransition(
+      ::wm::WindowVisibilityAnimationTransition transition);
+  void Animate(::wm::WindowAnimationType type);
+  void StopAnimatingProperty(
+      ui::LayerAnimationElement::AnimatableProperty property);
+  void SetChildWindowVisibilityChangesAnimated();
 
   // See description in ui::Layer.
-  virtual void SetMasksToBounds(bool value) = 0;
-
-  virtual void SetBounds(const gfx::Rect& bounds) = 0;
-  virtual void SetBoundsWithTransitionDelay(const gfx::Rect& bounds,
-                                            base::TimeDelta delta) = 0;
+  void SetMasksToBounds(bool value);
+  void SetBounds(const gfx::Rect& bounds);
+  void SetBoundsWithTransitionDelay(const gfx::Rect& bounds,
+                                    base::TimeDelta delta);
   // Sets the bounds in such a way that LayoutManagers are circumvented.
-  virtual void SetBoundsDirect(const gfx::Rect& bounds) = 0;
-  virtual void SetBoundsDirectAnimated(const gfx::Rect& bounds) = 0;
-  virtual void SetBoundsDirectCrossFade(const gfx::Rect& bounds) = 0;
+  void SetBoundsDirect(const gfx::Rect& bounds);
+  void SetBoundsDirectAnimated(const gfx::Rect& bounds);
+  void SetBoundsDirectCrossFade(const gfx::Rect& bounds);
 
   // Sets the bounds in two distinct ways. The exact behavior is dictated by
   // the value of BoundsInScreenBehavior set on the parent:
@@ -215,119 +250,114 @@ class ASH_EXPORT WmWindow {
   // USE_SCREEN_COORDINATES: the bounds are actual screen bounds and converted
   //   from the display. In this case the window may move to a different
   //   display if allowed (see SetLockedToRoot()).
-  virtual void SetBoundsInScreen(const gfx::Rect& bounds_in_screen,
-                                 const display::Display& dst_display) = 0;
-  virtual gfx::Rect GetBoundsInScreen() const = 0;
-  virtual const gfx::Rect& GetBounds() const = 0;
-  virtual gfx::Rect GetTargetBounds() = 0;
+  void SetBoundsInScreen(const gfx::Rect& bounds_in_screen,
+                         const display::Display& dst_display);
+  gfx::Rect GetBoundsInScreen() const;
+  const gfx::Rect& GetBounds() const;
+  gfx::Rect GetTargetBounds();
+  void ClearRestoreBounds();
+  void SetRestoreBoundsInScreen(const gfx::Rect& bounds);
+  gfx::Rect GetRestoreBoundsInScreen() const;
 
-  virtual void ClearRestoreBounds() = 0;
-  virtual void SetRestoreBoundsInScreen(const gfx::Rect& bounds) = 0;
-  virtual gfx::Rect GetRestoreBoundsInScreen() const = 0;
+  bool Contains(const WmWindow* other) const;
 
-  virtual bool Contains(const WmWindow* other) const = 0;
+  void SetShowState(ui::WindowShowState show_state);
+  ui::WindowShowState GetShowState() const;
 
-  virtual void SetShowState(ui::WindowShowState show_state) = 0;
-  virtual ui::WindowShowState GetShowState() const = 0;
-
-  virtual void SetRestoreShowState(ui::WindowShowState show_state) = 0;
+  void SetRestoreShowState(ui::WindowShowState show_state);
 
   // Sets the restore bounds and show state overrides. These values take
   // precedence over the restore bounds and restore show state (if set).
   // If |bounds_override| is empty the values are cleared.
-  virtual void SetRestoreOverrides(
-      const gfx::Rect& bounds_override,
-      ui::WindowShowState window_state_override) = 0;
+  void SetRestoreOverrides(const gfx::Rect& bounds_override,
+                           ui::WindowShowState window_state_override);
 
   // If |value| is true the window can not be moved to another root, regardless
   // of the bounds set on it.
-  virtual void SetLockedToRoot(bool value) = 0;
-  virtual bool IsLockedToRoot() const = 0;
+  void SetLockedToRoot(bool value);
+  bool IsLockedToRoot() const;
 
-  virtual void SetCapture() = 0;
-  virtual bool HasCapture() = 0;
-  virtual void ReleaseCapture() = 0;
+  void SetCapture();
+  bool HasCapture();
+  void ReleaseCapture();
 
-  virtual bool HasRestoreBounds() const = 0;
+  bool HasRestoreBounds() const;
+  bool CanMaximize() const;
+  bool CanMinimize() const;
+  bool CanResize() const;
+  bool CanActivate() const;
+
+  void StackChildAtTop(WmWindow* child);
+  void StackChildAtBottom(WmWindow* child);
+  void StackChildAbove(WmWindow* child, WmWindow* target);
+  void StackChildBelow(WmWindow* child, WmWindow* target);
 
   // See ScreenPinningController::SetPinnedWindow() for details.
-  virtual void SetPinned(bool trusted) = 0;
+  void SetPinned(bool trusted);
 
-  virtual void SetAlwaysOnTop(bool value) = 0;
-  virtual bool IsAlwaysOnTop() const = 0;
+  void SetAlwaysOnTop(bool value);
+  bool IsAlwaysOnTop() const;
 
-  virtual void Hide() = 0;
-  virtual void Show() = 0;
+  void Hide();
+  void Show();
 
   // Returns the widget associated with this window, or null if not associated
   // with a widget. Only ash system UI widgets are returned, not widgets created
   // by the mus window manager code to show a non-client frame.
-  virtual views::Widget* GetInternalWidget() = 0;
+  views::Widget* GetInternalWidget();
 
   // Requests the window to close and destroy itself. This is intended to
   // forward to an associated widget.
-  virtual void CloseWidget() = 0;
+  void CloseWidget();
 
-  virtual void SetFocused() = 0;
-  virtual bool IsFocused() const = 0;
+  void SetFocused();
+  bool IsFocused() const;
 
-  virtual bool IsActive() const = 0;
-  virtual void Activate() = 0;
-  virtual void Deactivate() = 0;
+  bool IsActive() const;
+  void Activate();
+  void Deactivate();
 
-  virtual void SetFullscreen() = 0;
+  void SetFullscreen();
 
-  virtual void Maximize() = 0;
-  virtual void Minimize() = 0;
-  virtual void Unminimize() = 0;
+  void Maximize();
+  void Minimize();
+  void Unminimize();
 
-  virtual bool CanMaximize() const = 0;
-  virtual bool CanMinimize() const = 0;
-  virtual bool CanResize() const = 0;
-  virtual bool CanActivate() const = 0;
-
-  virtual void StackChildAtTop(WmWindow* child) = 0;
-  virtual void StackChildAtBottom(WmWindow* child) = 0;
-  virtual void StackChildAbove(WmWindow* child, WmWindow* target) = 0;
-  virtual void StackChildBelow(WmWindow* child, WmWindow* target) = 0;
-
-  virtual Windows GetChildren() = 0;
+  std::vector<WmWindow*> GetChildren();
 
   // Shows/hides the resize shadow. |component| is the component to show the
   // shadow for (one of the constants in ui/base/hit_test.h).
-  virtual void ShowResizeShadow(int component) = 0;
-  virtual void HideResizeShadow() = 0;
+  void ShowResizeShadow(int component);
+  void HideResizeShadow();
 
   // Installs a resize handler on the window that makes it easier to resize
   // the window. See ResizeHandleWindowTargeter for the specifics.
-  virtual void InstallResizeHandleWindowTargeter(
-      ImmersiveFullscreenController* immersive_fullscreen_controller) = 0;
+  void InstallResizeHandleWindowTargeter(
+      ImmersiveFullscreenController* immersive_fullscreen_controller);
 
   // See description in SetBoundsInScreen().
-  virtual void SetBoundsInScreenBehaviorForChildren(BoundsInScreenBehavior) = 0;
+  void SetBoundsInScreenBehaviorForChildren(BoundsInScreenBehavior behavior);
 
   // See description of SnapToPixelBoundaryIfNecessary().
-  virtual void SetSnapsChildrenToPhysicalPixelBoundary() = 0;
+  void SetSnapsChildrenToPhysicalPixelBoundary();
 
   // If an ancestor has been set to snap children to pixel boundaries, then
   // snaps the layer associated with this window to the layer associated with
   // the ancestor.
-  virtual void SnapToPixelBoundaryIfNecessary() = 0;
+  void SnapToPixelBoundaryIfNecessary();
 
   // Makes the hit region for children slightly larger for easier resizing.
-  virtual void SetChildrenUseExtendedHitRegion() = 0;
+  void SetChildrenUseExtendedHitRegion();
 
   // Returns a View that renders the contents of this window's layers.
-  virtual std::unique_ptr<views::View> CreateViewWithRecreatedLayers() = 0;
+  std::unique_ptr<views::View> CreateViewWithRecreatedLayers();
 
-  virtual void AddObserver(WmWindowObserver* observer) = 0;
-  virtual void RemoveObserver(WmWindowObserver* observer) = 0;
-  virtual bool HasObserver(const WmWindowObserver* observer) const = 0;
+  void AddObserver(WmWindowObserver* observer);
+  void RemoveObserver(WmWindowObserver* observer);
+  bool HasObserver(const WmWindowObserver* observer) const;
 
-  virtual void AddTransientWindowObserver(
-      WmTransientWindowObserver* observer) = 0;
-  virtual void RemoveTransientWindowObserver(
-      WmTransientWindowObserver* observer) = 0;
+  void AddTransientWindowObserver(WmTransientWindowObserver* observer);
+  void RemoveTransientWindowObserver(WmTransientWindowObserver* observer);
 
   // Adds or removes a handler to receive events targeted at this window, before
   // this window handles the events itself; the handler does not recieve events
@@ -335,11 +365,54 @@ class ASH_EXPORT WmWindow {
   // see GetInternalWidget(). Ownership of the handler is not transferred.
   //
   // Also note that the target of these events is always an aura::Window.
-  virtual void AddLimitedPreTargetHandler(ui::EventHandler* handler) = 0;
-  virtual void RemoveLimitedPreTargetHandler(ui::EventHandler* handler) = 0;
+  void AddLimitedPreTargetHandler(ui::EventHandler* handler);
+  void RemoveLimitedPreTargetHandler(ui::EventHandler* handler);
 
- protected:
-  virtual ~WmWindow() {}
+ private:
+  friend class WmWindowTestApi;
+
+  explicit WmWindow(aura::Window* window);
+
+  // aura::WindowObserver:
+  void OnWindowHierarchyChanging(const HierarchyChangeParams& params) override;
+  void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
+  void OnWindowStackingChanged(aura::Window* window) override;
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override;
+  void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowDestroyed(aura::Window* window) override;
+  void OnWindowVisibilityChanging(aura::Window* window, bool visible) override;
+  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
+  void OnWindowTitleChanged(aura::Window* window) override;
+
+  // ::wm::TransientWindowObserver overrides:
+  void OnTransientChildAdded(aura::Window* window,
+                             aura::Window* transient) override;
+  void OnTransientChildRemoved(aura::Window* window,
+                               aura::Window* transient) override;
+
+  aura::Window* window_;
+
+  base::ObserverList<WmWindowObserver> observers_;
+
+  bool added_transient_observer_ = false;
+  base::ObserverList<WmTransientWindowObserver> transient_observers_;
+
+  // If true child windows should get a slightly larger hit region to make
+  // resizing easier.
+  bool children_use_extended_hit_region_ = false;
+
+  // Default value for |use_empty_minimum_size_for_testing_|.
+  static bool default_use_empty_minimum_size_for_testing_;
+
+  // If true the minimum size is 0x0, default is minimum size comes from widget.
+  bool use_empty_minimum_size_for_testing_;
+
+  DISALLOW_COPY_AND_ASSIGN(WmWindow);
 };
 
 }  // namespace ash

@@ -4,8 +4,8 @@
 
 #include "ash/drag_drop/drag_drop_tracker.h"
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/root_window_finder.h"
+#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ui/aura/client/window_parenting_client.h"
@@ -70,7 +70,7 @@ aura::Window* DragDropTracker::GetTarget(const ui::LocatedEvent& event) {
   gfx::Point location_in_screen = event.location();
   ::wm::ConvertPointToScreen(capture_window_.get(), &location_in_screen);
   aura::Window* root_window_at_point =
-      WmWindowAura::GetAuraWindow(wm::GetRootWindowAt(location_in_screen));
+      WmWindow::GetAuraWindow(wm::GetRootWindowAt(location_in_screen));
   gfx::Point location_in_root = location_in_screen;
   ::wm::ConvertPointFromScreen(root_window_at_point, &location_in_root);
   return root_window_at_point->GetEventHandlerForPoint(location_in_root);
@@ -87,7 +87,7 @@ ui::LocatedEvent* DragDropTracker::ConvertEvent(aura::Window* target,
   gfx::Point target_root_location = event.root_location();
   aura::Window::ConvertPointToTarget(
       capture_window_->GetRootWindow(),
-      WmWindowAura::GetAuraWindow(wm::GetRootWindowAt(location_in_screen)),
+      WmWindow::GetAuraWindow(wm::GetRootWindowAt(location_in_screen)),
       &target_root_location);
   return new ui::MouseEvent(
       event.type(), target_location, target_root_location,

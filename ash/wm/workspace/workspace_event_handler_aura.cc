@@ -4,7 +4,7 @@
 
 #include "ash/wm/workspace/workspace_event_handler_aura.h"
 
-#include "ash/aura/wm_window_aura.h"
+#include "ash/common/wm_window.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
 
@@ -21,12 +21,12 @@ WorkspaceEventHandlerAura::~WorkspaceEventHandlerAura() {
 
 void WorkspaceEventHandlerAura::OnMouseEvent(ui::MouseEvent* event) {
   WorkspaceEventHandler::OnMouseEvent(
-      event, WmWindowAura::Get(static_cast<aura::Window*>(event->target())));
+      event, WmWindow::Get(static_cast<aura::Window*>(event->target())));
 }
 
 void WorkspaceEventHandlerAura::OnGestureEvent(ui::GestureEvent* event) {
   WorkspaceEventHandler::OnGestureEvent(
-      event, WmWindowAura::Get(static_cast<aura::Window*>(event->target())));
+      event, WmWindow::Get(static_cast<aura::Window*>(event->target())));
 }
 
 }  // namespace ash

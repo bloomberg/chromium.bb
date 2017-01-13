@@ -10,7 +10,6 @@
 
 #include "ash/accelerators/magnifier_key_scroller.h"
 #include "ash/accelerators/spoken_feedback_toggler.h"
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/accessibility_types.h"
 #include "ash/common/session/session_state_delegate.h"
@@ -18,6 +17,7 @@
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/content/gpu_support_impl.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
@@ -88,7 +88,7 @@ void InitAfterFirstSessionStart() {
   // Restore focus after the user session is started.  It's needed because some
   // windows can be opened in background while login UI is still active because
   // we currently restore browser windows before login UI is deleted.
-  aura::Window::Windows mru_list = ash::WmWindowAura::ToAuraWindows(
+  aura::Window::Windows mru_list = ash::WmWindow::ToAuraWindows(
       ash::WmShell::Get()->mru_window_tracker()->BuildMruWindowList());
   if (!mru_list.empty())
     mru_list.front()->Focus();
@@ -390,7 +390,7 @@ bool ChromeShellDelegate::IsRunningInForcedAppMode() const {
 }
 
 bool ChromeShellDelegate::CanShowWindowForUser(ash::WmWindow* window) const {
-  return ::CanShowWindowForUser(ash::WmWindowAura::GetAuraWindow(window),
+  return ::CanShowWindowForUser(ash::WmWindow::GetAuraWindow(window),
                                 base::Bind(&GetActiveBrowserContext));
 }
 

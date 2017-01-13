@@ -5,12 +5,12 @@
 
 #include <string>
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/shared/app_types.h"
@@ -423,8 +423,8 @@ void ArcAppWindowLauncherController::AttachControllerToWindowIfNeeded(
       base::MakeUnique<AppWindow>(task_id, info->app_shelf_id(), widget, this));
   RegisterApp(info);
   DCHECK(info->app_window()->controller());
-  ash::WmWindowAura::Get(window)->SetIntProperty(
-      ash::WmWindowProperty::SHELF_ID, info->app_window()->shelf_id());
+  ash::WmWindow::Get(window)->SetIntProperty(ash::WmWindowProperty::SHELF_ID,
+                                             info->app_window()->shelf_id());
   if (ash::WmShell::Get()
           ->maximize_mode_controller()
           ->IsMaximizeModeWindowManagerEnabled()) {

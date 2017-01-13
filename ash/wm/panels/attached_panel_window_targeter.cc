@@ -4,10 +4,10 @@
 
 #include "ash/wm/panels/attached_panel_window_targeter.h"
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ui/aura/window.h"
 
 namespace ash {
@@ -32,7 +32,7 @@ AttachedPanelWindowTargeter::~AttachedPanelWindowTargeter() {
 
 void AttachedPanelWindowTargeter::OnShelfCreatedForRootWindow(
     WmWindow* root_window) {
-  UpdateTouchExtend(WmWindowAura::GetAuraWindow(root_window));
+  UpdateTouchExtend(WmWindow::GetAuraWindow(root_window));
 }
 
 void AttachedPanelWindowTargeter::OnShelfAlignmentChanged(
@@ -41,7 +41,7 @@ void AttachedPanelWindowTargeter::OnShelfAlignmentChanged(
   if (!panel_layout_manager_->shelf())
     return;
 
-  UpdateTouchExtend(WmWindowAura::GetAuraWindow(root_window));
+  UpdateTouchExtend(WmWindow::GetAuraWindow(root_window));
 }
 
 void AttachedPanelWindowTargeter::UpdateTouchExtend(aura::Window* root_window) {

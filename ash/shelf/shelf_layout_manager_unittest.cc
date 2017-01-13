@@ -4,7 +4,6 @@
 
 #include "ash/common/shelf/shelf_layout_manager.h"
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/accelerators/accelerator_table.h"
 #include "ash/common/focus_cycler.h"
@@ -20,6 +19,7 @@
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -1030,9 +1030,9 @@ TEST_F(ShelfLayoutManagerTest, DualDisplayOpenAppListWithShelfAutoHideState) {
   window_2->Show();
 
   EXPECT_EQ(shelf_1->GetWindow()->GetRootWindow(),
-            WmWindowAura::Get(window_1)->GetRootWindow());
+            WmWindow::Get(window_1)->GetRootWindow());
   EXPECT_EQ(shelf_2->GetWindow()->GetRootWindow(),
-            WmWindowAura::Get(window_2)->GetRootWindow());
+            WmWindow::Get(window_2)->GetRootWindow());
 
   // Activate one window in one display.
   wm::ActivateWindow(window_1);
@@ -1151,9 +1151,9 @@ TEST_F(ShelfLayoutManagerTest, ShelfWithSystemModalWindowDualDisplay) {
   window_2->Show();
 
   EXPECT_EQ(shelf_1->GetWindow()->GetRootWindow(),
-            WmWindowAura::Get(window_1)->GetRootWindow());
+            WmWindow::Get(window_1)->GetRootWindow());
   EXPECT_EQ(shelf_2->GetWindow()->GetRootWindow(),
-            WmWindowAura::Get(window_2)->GetRootWindow());
+            WmWindow::Get(window_2)->GetRootWindow());
   EXPECT_TRUE(window_1->IsVisible());
   EXPECT_TRUE(window_2->IsVisible());
 
@@ -1243,7 +1243,7 @@ TEST_F(ShelfLayoutManagerTest, PinnedWindowHidesShelf) {
   wm::PinWindow(window1, /* trusted */ false);
   EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
 
-  WmWindowAura::Get(window1)->GetWindowState()->Restore();
+  WmWindow::Get(window1)->GetWindowState()->Restore();
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 }
 

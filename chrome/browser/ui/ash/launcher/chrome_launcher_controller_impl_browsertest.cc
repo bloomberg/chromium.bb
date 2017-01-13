@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/app_list_button.h"
 #include "ash/common/shelf/shelf_button.h"
 #include "ash/common/shelf/shelf_constants.h"
@@ -16,6 +15,7 @@
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
 #include "ash/shell.h"
 #include "ash/test/shelf_view_test_api.h"
@@ -372,7 +372,7 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
     DCHECK_GE(index, 0);
     ash::ShelfItem item = model_->items()[index];
     ash::WmShelf* shelf =
-        ash::WmShelf::ForWindow(ash::WmWindowAura::Get(CurrentContext()));
+        ash::WmShelf::ForWindow(ash::WmWindow::Get(CurrentContext()));
     std::unique_ptr<LauncherContextMenu> menu(
         LauncherContextMenu::Create(controller_, &item, shelf));
     return menu;
@@ -1910,7 +1910,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, MultiDisplayBasicDragAndDrop) {
   DCHECK_EQ(ash::Shell::GetAllRootWindows().size(), 2U);
   aura::Window* secondary_root_window = ash::Shell::GetAllRootWindows()[1];
   ash::WmShelf* secondary_shelf =
-      ash::WmShelf::ForWindow(ash::WmWindowAura::Get(secondary_root_window));
+      ash::WmShelf::ForWindow(ash::WmWindow::Get(secondary_root_window));
 
   ui::test::EventGenerator generator(secondary_root_window, gfx::Point());
   ash::test::ShelfViewTestAPI test(secondary_shelf->GetShelfViewForTesting());
@@ -2178,7 +2178,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, MatchingShelfIDandActiveTab) {
   EXPECT_EQ(2, model_->item_count());
 
   ash::WmWindow* window =
-      ash::WmWindowAura::Get(browser()->window()->GetNativeWindow());
+      ash::WmWindow::Get(browser()->window()->GetNativeWindow());
 
   int browser_index = GetIndexOfShelfItemType(ash::TYPE_BROWSER_SHORTCUT);
   ash::ShelfID browser_id = model_->items()[browser_index].id;

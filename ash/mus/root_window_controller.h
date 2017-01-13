@@ -26,7 +26,7 @@ class Connector;
 
 namespace ash {
 
-class WmWindowAura;
+class WmWindow;
 
 namespace mus {
 
@@ -62,7 +62,7 @@ class RootWindowController {
       ui::mojom::WindowType window_type,
       std::map<std::string, std::vector<uint8_t>>* properties);
 
-  ash::WmWindowAura* GetWindowByShellWindowId(int id);
+  WmWindow* GetWindowByShellWindowId(int id);
 
   void SetWorkAreaInests(const gfx::Insets& insets);
   void SetDisplay(const display::Display& display);

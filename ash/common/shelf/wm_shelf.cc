@@ -4,7 +4,6 @@
 
 #include "ash/common/shelf/wm_shelf.h"
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf_controller.h"
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_item_delegate.h"
@@ -45,11 +44,11 @@ class WmShelf::AutoHideEventHandler : public ui::EventHandler {
   // Overridden from ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override {
     shelf_layout_manager_->UpdateAutoHideForMouseEvent(
-        event, WmWindowAura::Get(static_cast<aura::Window*>(event->target())));
+        event, WmWindow::Get(static_cast<aura::Window*>(event->target())));
   }
   void OnGestureEvent(ui::GestureEvent* event) override {
     shelf_layout_manager_->UpdateAutoHideForGestureEvent(
-        event, WmWindowAura::Get(static_cast<aura::Window*>(event->target())));
+        event, WmWindow::Get(static_cast<aura::Window*>(event->target())));
   }
 
  private:

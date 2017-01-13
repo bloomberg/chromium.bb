@@ -11,10 +11,10 @@
 #include <utility>
 #include <vector>
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
@@ -217,7 +217,7 @@ void WindowStateManager::BuildWindowListAndMinimizeInactiveForUser(
   std::set<aura::Window*>* results =
       &user_id_hash_window_list_map_[user_id_hash];
 
-  std::vector<aura::Window*> windows = ash::WmWindowAura::ToAuraWindows(
+  std::vector<aura::Window*> windows = ash::WmWindow::ToAuraWindows(
       ash::WmShell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal());
 
   for (std::vector<aura::Window*>::iterator iter = windows.begin();

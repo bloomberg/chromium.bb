@@ -4,7 +4,6 @@
 
 #include "ash/common/accelerators/accelerator_controller.h"
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/accelerators/accelerator_table.h"
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/accessibility_types.h"
@@ -20,6 +19,7 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -254,7 +254,7 @@ class AcceleratorControllerTest : public test::AshTestBase {
   aura::Window* CreatePanel() {
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
         NULL, ui::wm::WINDOW_TYPE_PANEL, 0, gfx::Rect(5, 5, 20, 20));
-    WmWindow* wm_window = WmWindowAura::Get(window);
+    WmWindow* wm_window = WmWindow::Get(window);
     test::TestShelfDelegate::instance()->AddShelfItem(wm_window);
     PanelLayoutManager::Get(wm_window)->Relayout();
     return window;
@@ -434,13 +434,13 @@ TEST_F(AcceleratorControllerTest, WindowSnap) {
   {
     GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
     gfx::Rect expected_bounds = wm::GetDefaultLeftSnappedWindowBoundsInParent(
-        WmWindowAura::Get(window.get()));
+        WmWindow::Get(window.get()));
     EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
   }
   {
     GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
     gfx::Rect expected_bounds = wm::GetDefaultRightSnappedWindowBoundsInParent(
-        WmWindowAura::Get(window.get()));
+        WmWindow::Get(window.get()));
     EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
   }
   {
@@ -491,7 +491,7 @@ TEST_F(AcceleratorControllerTest, WindowSnapWithoutDocking) {
   GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
   gfx::Rect normal_bounds = window_state->GetRestoreBoundsInParent();
   gfx::Rect expected_bounds = wm::GetDefaultRightSnappedWindowBoundsInParent(
-      WmWindowAura::Get(window.get()));
+      WmWindow::Get(window.get()));
   EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
   EXPECT_TRUE(window_state->IsSnapped());
   // Snap right again ->> becomes normal.
@@ -508,7 +508,7 @@ TEST_F(AcceleratorControllerTest, WindowSnapWithoutDocking) {
   EXPECT_TRUE(window_state->IsSnapped());
   EXPECT_FALSE(window_state->IsDocked());
   expected_bounds = wm::GetDefaultLeftSnappedWindowBoundsInParent(
-      WmWindowAura::Get(window.get()));
+      WmWindow::Get(window.get()));
   EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
   // Snap left again ->> becomes normal.
   GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
@@ -546,7 +546,7 @@ TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
   GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
   gfx::Rect normal_bounds = window1_state->GetRestoreBoundsInParent();
   gfx::Rect expected_bounds = wm::GetDefaultLeftSnappedWindowBoundsInParent(
-      WmWindowAura::Get(window1.get()));
+      WmWindow::Get(window1.get()));
   EXPECT_EQ(expected_bounds.ToString(), window1->bounds().ToString());
   EXPECT_TRUE(window1_state->IsSnapped());
   GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
@@ -570,7 +570,7 @@ TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
   GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
   gfx::Rect normal_bounds = window1_state->GetRestoreBoundsInParent();
   gfx::Rect expected_bounds = wm::GetDefaultRightSnappedWindowBoundsInParent(
-      WmWindowAura::Get(window1.get()));
+      WmWindow::Get(window1.get()));
   EXPECT_EQ(expected_bounds.ToString(), window1->bounds().ToString());
   EXPECT_TRUE(window1_state->IsSnapped());
   GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
@@ -593,9 +593,9 @@ TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
 
   GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
   gfx::Rect expected_bounds = wm::GetDefaultLeftSnappedWindowBoundsInParent(
-      WmWindowAura::Get(window1.get()));
+      WmWindow::Get(window1.get()));
   gfx::Rect expected_bounds2 = wm::GetDefaultRightSnappedWindowBoundsInParent(
-      WmWindowAura::Get(window1.get()));
+      WmWindow::Get(window1.get()));
   EXPECT_EQ(expected_bounds.ToString(), window1->bounds().ToString());
   EXPECT_TRUE(window1_state->IsSnapped());
   GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
@@ -667,7 +667,7 @@ TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
   gfx::Rect window_restore_bounds2 = window->bounds();
   GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
   gfx::Rect expected_bounds = wm::GetDefaultLeftSnappedWindowBoundsInParent(
-      WmWindowAura::Get(window.get()));
+      WmWindow::Get(window.get()));
   gfx::Rect window_restore_bounds = window_state->GetRestoreBoundsInScreen();
   EXPECT_NE(expected_bounds.ToString(), window->bounds().ToString());
   EXPECT_FALSE(window_state->IsSnapped());

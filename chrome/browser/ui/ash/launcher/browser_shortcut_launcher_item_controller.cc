@@ -6,10 +6,10 @@
 
 #include <vector>
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/wm/window_util.h"
@@ -124,7 +124,7 @@ void BrowserShortcutLauncherItemController::SetShelfIDForBrowserWindowContents(
       IsSettingsBrowser(browser))
     return;
 
-  ash::WmWindowAura::Get(browser->window()->GetNativeWindow())
+  ash::WmWindow::Get(browser->window()->GetNativeWindow())
       ->SetIntProperty(
           ash::WmWindowProperty::SHELF_ID,
           launcher_controller()->GetShelfIDForWebContents(web_contents));

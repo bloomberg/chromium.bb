@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/accessibility_types.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/wm_shelf.h"
+#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -120,7 +120,7 @@ void ChromeVoxPanel::DidFirstVisuallyNonEmptyPaint() {
 
 void ChromeVoxPanel::UpdatePanelHeight() {
   ash::WmShelf* shelf =
-      ash::WmShelf::ForWindow(ash::WmWindowAura::Get(GetRootWindow()));
+      ash::WmShelf::ForWindow(ash::WmWindow::Get(GetRootWindow()));
   if (!shelf->IsShelfInitialized())
     return;
 

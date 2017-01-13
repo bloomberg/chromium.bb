@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/screen_util.h"

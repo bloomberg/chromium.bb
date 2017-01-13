@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/window_positioning_utils.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "components/exo/buffer.h"
@@ -314,7 +314,7 @@ TEST_F(PointerTest, IgnorePointerEventDuringModal) {
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(5, 5))));
   surface2->Attach(buffer2.get());
   surface2->Commit();
-  ash::wm::CenterWindow(ash::WmWindowAura::Get(surface2->window()));
+  ash::wm::CenterWindow(ash::WmWindow::Get(surface2->window()));
   gfx::Point location2 = surface2->window()->GetBoundsInScreen().origin();
 
   // Make the window modal.

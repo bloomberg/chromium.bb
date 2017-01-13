@@ -6,7 +6,6 @@
 
 #include <map>
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
@@ -15,6 +14,7 @@
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/workspace/workspace_window_resizer.h"
+#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
@@ -121,7 +121,7 @@ class WorkspaceControllerTest : public test::AshMDTestBase {
                                 const gfx::Rect& bounds) {
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
         delegate, ui::wm::WINDOW_TYPE_PANEL, 0, bounds);
-    WmWindow* wm_window = WmWindowAura::Get(window);
+    WmWindow* wm_window = WmWindow::Get(window);
     test::TestShelfDelegate::instance()->AddShelfItem(wm_window);
     PanelLayoutManager::Get(wm_window)->Relayout();
     return window;
@@ -1059,8 +1059,8 @@ TEST_P(WorkspaceControllerTest, TestRestoreToUserModifiedBounds) {
 
   // A user moved the window.
   std::unique_ptr<WindowResizer> resizer(
-      CreateWindowResizer(WmWindowAura::Get(window1.get()), gfx::Point(),
-                          HTCAPTION, aura::client::WINDOW_MOVE_SOURCE_MOUSE)
+      CreateWindowResizer(WmWindow::Get(window1.get()), gfx::Point(), HTCAPTION,
+                          aura::client::WINDOW_MOVE_SOURCE_MOUSE)
           .release());
   gfx::Point location = resizer->GetInitialLocation();
   location.Offset(-50, 0);

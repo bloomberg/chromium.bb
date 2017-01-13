@@ -23,7 +23,7 @@ class CancelModeEvent;
 
 namespace ash {
 
-class WmWindowAura;
+class WmWindow;
 
 namespace mus {
 
@@ -75,7 +75,7 @@ class MoveEventHandler : public ui::EventHandler, public aura::WindowObserver {
   // Overridden from aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
 
-  ash::WmWindowAura* wm_window_;
+  WmWindow* wm_window_;
   aura::WindowManagerClient* window_manager_client_;
   wm::WmToplevelWindowEventHandler toplevel_window_event_handler_;
 

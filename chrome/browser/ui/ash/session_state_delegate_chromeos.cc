@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/ash/session_state_delegate_chromeos.h"
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/session/session_state_observer.h"
+#include "ash/common/wm_window.h"
 #include "ash/content/shell_content_state.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -127,14 +127,14 @@ const user_manager::UserInfo* SessionStateDelegateChromeos::GetUserInfo(
 bool SessionStateDelegateChromeos::ShouldShowAvatar(
     ash::WmWindow* window) const {
   return chrome::MultiUserWindowManager::GetInstance()->ShouldShowAvatar(
-      ash::WmWindowAura::GetAuraWindow(window));
+      ash::WmWindow::GetAuraWindow(window));
 }
 
 gfx::ImageSkia SessionStateDelegateChromeos::GetAvatarImageForWindow(
     ash::WmWindow* window) const {
   content::BrowserContext* context =
       ash::ShellContentState::GetInstance()->GetBrowserContextForWindow(
-          ash::WmWindowAura::GetAuraWindow(window));
+          ash::WmWindow::GetAuraWindow(window));
   return GetAvatarImageForContext(context);
 }
 

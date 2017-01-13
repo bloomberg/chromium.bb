@@ -4,7 +4,6 @@
 
 #include "ash/app_list/app_list_presenter_delegate.h"
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/shelf/app_list_button.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
@@ -104,7 +103,7 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
   aura::Window* root_window = Shell::GetInstance()
                                   ->window_tree_host_manager()
                                   ->GetRootWindowForDisplayId(display_id);
-  WmWindow* wm_root_window = WmWindowAura::Get(root_window);
+  WmWindow* wm_root_window = WmWindow::Get(root_window);
   aura::Window* container = GetRootWindowController(root_window)
                                 ->GetContainer(kShellWindowId_AppListContainer);
   bool is_fullscreen = IsFullscreenAppListEnabled() &&
@@ -176,7 +175,7 @@ gfx::Vector2d AppListPresenterDelegate::GetVisibilityAnimationOffset(
 
   // App list needs to know the new shelf layout in order to calculate its
   // UI layout when AppListView visibility changes.
-  WmShelf* shelf = WmShelf::ForWindow(WmWindowAura::Get(root_window));
+  WmShelf* shelf = WmShelf::ForWindow(WmWindow::Get(root_window));
   shelf->UpdateAutoHideState();
 
   switch (shelf->alignment()) {

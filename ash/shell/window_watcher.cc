@@ -6,10 +6,10 @@
 
 #include <utility>
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -117,7 +117,7 @@ void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
   std::unique_ptr<ShelfItemDelegate> delegate(
       new WindowWatcherShelfItemDelegate(id, this));
   model->SetShelfItemDelegate(id, std::move(delegate));
-  WmWindowAura::Get(new_window)->SetIntProperty(WmWindowProperty::SHELF_ID, id);
+  WmWindow::Get(new_window)->SetIntProperty(WmWindowProperty::SHELF_ID, id);
 }
 
 void WindowWatcher::OnWillRemoveWindow(aura::Window* window) {

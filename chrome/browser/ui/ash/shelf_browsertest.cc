@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/wm_shelf.h"
+#include "ash/common/wm_window.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -17,7 +17,7 @@ typedef InProcessBrowserTest ShelfBrowserTest;
 IN_PROC_BROWSER_TEST_F(ShelfBrowserTest, StatusBubble) {
   ash::ShelfLayoutManager* shelf_layout_manager =
       ash::WmShelf::ForWindow(
-          ash::WmWindowAura::Get(browser()->window()->GetNativeWindow()))
+          ash::WmWindow::Get(browser()->window()->GetNativeWindow()))
           ->shelf_layout_manager();
   EXPECT_TRUE(shelf_layout_manager->IsVisible());
 

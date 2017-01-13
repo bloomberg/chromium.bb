@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/ash/launcher/multi_profile_browser_status_monitor.h"
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf_item_types.h"
+#include "ash/common/wm_window.h"
 #include "ash/common/wm_window_observer.h"
 #include "ash/common/wm_window_property.h"
 #include "chrome/browser/profiles/profile.h"
@@ -78,7 +78,7 @@ void MultiProfileBrowserStatusMonitor::ActiveUserChanged(
     if (chrome::SettingsWindowManager::GetInstance()->IsSettingsBrowser(
             browser)) {
       aura::Window* aura_window = browser->window()->GetNativeWindow();
-      ash::WmWindowAura::Get(aura_window)
+      ash::WmWindow::Get(aura_window)
           ->SetIntProperty(
               ash::WmWindowProperty::SHELF_ITEM_TYPE,
               multi_user_util::IsProfileFromActiveUser(browser->profile())

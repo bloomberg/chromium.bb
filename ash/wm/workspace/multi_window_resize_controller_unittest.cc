@@ -4,11 +4,11 @@
 
 #include "ash/common/wm/workspace/multi_window_resize_controller.h"
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_constants.h"
 #include "ash/common/frame/custom_frame_view_ash.h"
 #include "ash/common/test/workspace_event_handler_test_helper.h"
 #include "ash/common/wm/workspace_controller.h"
+#include "ash/common/wm_window.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
@@ -85,7 +85,7 @@ class MultiWindowResizeControllerTest : public test::AshTestBase {
   bool HasTarget(aura::Window* window) {
     if (!resize_controller_->windows_.is_valid())
       return false;
-    WmWindow* wm_window = WmWindowAura::Get(window);
+    WmWindow* wm_window = WmWindow::Get(window);
     if ((resize_controller_->windows_.window1 == wm_window ||
          resize_controller_->windows_.window2 == wm_window))
       return true;

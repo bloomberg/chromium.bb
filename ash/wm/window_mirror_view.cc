@@ -4,8 +4,8 @@
 
 #include "ash/wm/window_mirror_view.h"
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/aura/client/aura_constants.h"
@@ -32,7 +32,7 @@ void EnsureAllChildrenAreVisible(ui::Layer* layer) {
 
 }  // namespace
 
-WindowMirrorView::WindowMirrorView(WmWindowAura* window) : target_(window) {
+WindowMirrorView::WindowMirrorView(WmWindow* window) : target_(window) {
   DCHECK(window);
 }
 

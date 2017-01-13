@@ -6,13 +6,13 @@
 
 #include <algorithm>
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/frame/custom_frame_view_ash.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm/window_resizer.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/window_state_delegate.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
@@ -1246,8 +1246,8 @@ void ShellSurface::AttemptToStartDrag(int component) {
   }
 
   resizer_ = ash::CreateWindowResizer(
-      ash::WmWindowAura::Get(widget_->GetNativeWindow()), drag_location,
-      component, aura::client::WINDOW_MOVE_SOURCE_MOUSE);
+      ash::WmWindow::Get(widget_->GetNativeWindow()), drag_location, component,
+      aura::client::WINDOW_MOVE_SOURCE_MOUSE);
   if (!resizer_)
     return;
 

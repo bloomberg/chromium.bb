@@ -8,7 +8,6 @@
 
 #include "ash/aura/key_event_watcher_aura.h"
 #include "ash/aura/pointer_watcher_adapter.h"
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/shell_observer.h"
@@ -17,6 +16,7 @@
 #include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm_activation_observer.h"
 #include "ash/common/wm_display_observer.h"
+#include "ash/common/wm_window.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/laser/laser_pointer_controller.h"
 #include "ash/metrics/task_switch_metrics_recorder.h"
@@ -84,34 +84,34 @@ WmWindow* WmShellAura::NewWindow(ui::wm::WindowType window_type,
   aura::Window* aura_window = new aura::Window(nullptr);
   aura_window->SetType(window_type);
   aura_window->Init(layer_type);
-  return WmWindowAura::Get(aura_window);
+  return WmWindow::Get(aura_window);
 }
 
 WmWindow* WmShellAura::GetFocusedWindow() {
-  return WmWindowAura::Get(
+  return WmWindow::Get(
       aura::client::GetFocusClient(Shell::GetPrimaryRootWindow())
           ->GetFocusedWindow());
 }
 
 WmWindow* WmShellAura::GetActiveWindow() {
-  return WmWindowAura::Get(wm::GetActiveWindow());
+  return WmWindow::Get(wm::GetActiveWindow());
 }
 
 WmWindow* WmShellAura::GetCaptureWindow() {
   // Ash shares capture client among all RootWindowControllers, so we need only
   // check the primary root.
-  return WmWindowAura::Get(
+  return WmWindow::Get(
       aura::client::GetCaptureWindow(Shell::GetPrimaryRootWindow()));
 }
 
 WmWindow* WmShellAura::GetPrimaryRootWindow() {
-  return WmWindowAura::Get(Shell::GetPrimaryRootWindow());
+  return WmWindow::Get(Shell::GetPrimaryRootWindow());
 }
 
 WmWindow* WmShellAura::GetRootWindowForDisplayId(int64_t display_id) {
-  return WmWindowAura::Get(Shell::GetInstance()
-                               ->window_tree_host_manager()
-                               ->GetRootWindowForDisplayId(display_id));
+  return WmWindow::Get(Shell::GetInstance()
+                           ->window_tree_host_manager()
+                           ->GetRootWindowForDisplayId(display_id));
 }
 
 const display::ManagedDisplayInfo& WmShellAura::GetDisplayInfo(
@@ -146,7 +146,7 @@ bool WmShellAura::IsForceMaximizeOnFirstRun() {
 
 void WmShellAura::SetDisplayWorkAreaInsets(WmWindow* window,
                                            const gfx::Insets& insets) {
-  aura::Window* aura_window = WmWindowAura::GetAuraWindow(window);
+  aura::Window* aura_window = WmWindow::GetAuraWindow(window);
   Shell::GetInstance()->SetDisplayWorkAreaInsets(aura_window, insets);
 }
 
@@ -175,7 +175,7 @@ std::vector<WmWindow*> WmShellAura::GetAllRootWindows() {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   std::vector<WmWindow*> wm_windows(root_windows.size());
   for (size_t i = 0; i < root_windows.size(); ++i)
-    wm_windows[i] = WmWindowAura::Get(root_windows[i]);
+    wm_windows[i] = WmWindow::Get(root_windows[i]);
   return wm_windows;
 }
 
@@ -302,8 +302,8 @@ void WmShellAura::OnWindowActivated(
     aura::client::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
     aura::Window* lost_active) {
-  WmWindow* gained_active_wm = WmWindowAura::Get(gained_active);
-  WmWindow* lost_active_wm = WmWindowAura::Get(lost_active);
+  WmWindow* gained_active_wm = WmWindow::Get(gained_active);
+  WmWindow* lost_active_wm = WmWindow::Get(lost_active);
   if (gained_active_wm)
     set_root_window_for_new_windows(gained_active_wm->GetRootWindow());
   for (auto& observer : activation_observers_)
@@ -313,8 +313,8 @@ void WmShellAura::OnWindowActivated(
 void WmShellAura::OnAttemptToReactivateWindow(aura::Window* request_active,
                                               aura::Window* actual_active) {
   for (auto& observer : activation_observers_) {
-    observer.OnAttemptToReactivateWindow(WmWindowAura::Get(request_active),
-                                         WmWindowAura::Get(actual_active));
+    observer.OnAttemptToReactivateWindow(WmWindow::Get(request_active),
+                                         WmWindow::Get(actual_active));
   }
 }
 

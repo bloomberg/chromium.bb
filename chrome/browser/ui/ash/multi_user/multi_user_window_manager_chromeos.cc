@@ -4,13 +4,13 @@
 
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/media_controller.h"
 #include "ash/common/multi_profile_uma.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -743,7 +743,7 @@ void MultiUserWindowManagerChromeOS::SetWindowVisible(
   // reduce animation jank from multiple resizes.
   if (visible) {
     ash::WmShell::Get()->maximize_mode_controller()->AddWindow(
-        ash::WmWindowAura::Get(window));
+        ash::WmWindow::Get(window));
   }
 
   AnimationSetter animation_setter(

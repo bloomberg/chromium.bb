@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/key_event_watcher.h"
 #include "ash/common/session/session_state_delegate.h"
@@ -20,6 +19,7 @@
 #include "ash/common/wm/window_cycle_event_filter.h"
 #include "ash/common/wm/window_resizer.h"
 #include "ash/common/wm_activation_observer.h"
+#include "ash/common/wm_window.h"
 #include "ash/mus/accelerators/accelerator_controller_delegate_mus.h"
 #include "ash/mus/accelerators/accelerator_controller_registrar.h"
 #include "ash/mus/bridge/immersive_handler_factory_mus.h"
@@ -168,7 +168,7 @@ void WmShellMus::AddRootWindowController(RootWindowController* controller) {
   root_window_controllers_.push_back(controller);
   // The first root window will be the initial root for new windows.
   if (!GetRootWindowForNewWindows())
-    set_root_window_for_new_windows(ash::WmWindowAura::Get(controller->root()));
+    set_root_window_for_new_windows(WmWindow::Get(controller->root()));
 }
 
 void WmShellMus::RemoveRootWindowController(RootWindowController* controller) {
@@ -202,35 +202,34 @@ WmWindow* WmShellMus::NewWindow(ui::wm::WindowType window_type,
   aura::Window* window = new aura::Window(nullptr);
   window->SetType(window_type);
   window->Init(layer_type);
-  return ash::WmWindowAura::Get(window);
+  return WmWindow::Get(window);
 }
 
 WmWindow* WmShellMus::GetFocusedWindow() {
   // TODO: remove as both WmShells use same implementation.
-  return ash::WmWindowAura::Get(static_cast<aura::client::FocusClient*>(
-                                    window_manager_->focus_controller())
-                                    ->GetFocusedWindow());
+  return WmWindow::Get(static_cast<aura::client::FocusClient*>(
+                           window_manager_->focus_controller())
+                           ->GetFocusedWindow());
 }
 
 WmWindow* WmShellMus::GetActiveWindow() {
   // TODO: remove as both WmShells use same implementation.
-  return ash::WmWindowAura::Get(static_cast<aura::client::ActivationClient*>(
-                                    window_manager_->focus_controller())
-                                    ->GetActiveWindow());
+  return WmWindow::Get(static_cast<aura::client::ActivationClient*>(
+                           window_manager_->focus_controller())
+                           ->GetActiveWindow());
 }
 
 WmWindow* WmShellMus::GetCaptureWindow() {
   // TODO: remove as both WmShells use same implementation.
-  return ash::WmWindowAura::Get(
-      ::wm::CaptureController::Get()->GetCaptureWindow());
+  return WmWindow::Get(::wm::CaptureController::Get()->GetCaptureWindow());
 }
 
 WmWindow* WmShellMus::GetPrimaryRootWindow() {
-  return ash::WmWindowAura::Get(root_window_controllers_[0]->root());
+  return WmWindow::Get(root_window_controllers_[0]->root());
 }
 
 WmWindow* WmShellMus::GetRootWindowForDisplayId(int64_t display_id) {
-  return ash::WmWindowAura::Get(
+  return WmWindow::Get(
       GetRootWindowControllerWithDisplayId(display_id)->root());
 }
 
@@ -274,8 +273,7 @@ bool WmShellMus::IsForceMaximizeOnFirstRun() {
 void WmShellMus::SetDisplayWorkAreaInsets(WmWindow* window,
                                           const gfx::Insets& insets) {
   RootWindowController* root_window_controller =
-      RootWindowController::ForWindow(
-          static_cast<ash::WmWindowAura*>(window)->aura_window());
+      RootWindowController::ForWindow(window->aura_window());
   root_window_controller->SetWorkAreaInests(insets);
 }
 
@@ -307,7 +305,7 @@ bool WmShellMus::IsMouseEventsEnabled() {
 std::vector<WmWindow*> WmShellMus::GetAllRootWindows() {
   std::vector<WmWindow*> wm_windows(root_window_controllers_.size());
   for (size_t i = 0; i < root_window_controllers_.size(); ++i)
-    wm_windows[i] = ash::WmWindowAura::Get(root_window_controllers_[i]->root());
+    wm_windows[i] = WmWindow::Get(root_window_controllers_[i]->root());
   return wm_windows;
 }
 
@@ -357,7 +355,7 @@ WmShellMus::CreateScopedDisableInternalMouseAndKeyboard() {
 std::unique_ptr<WorkspaceEventHandler> WmShellMus::CreateWorkspaceEventHandler(
     WmWindow* workspace_window) {
   return base::MakeUnique<WorkspaceEventHandlerMus>(
-      ash::WmWindowAura::GetAuraWindow(workspace_window));
+      WmWindow::GetAuraWindow(workspace_window));
 }
 
 std::unique_ptr<ImmersiveFullscreenController>
@@ -436,10 +434,10 @@ void WmShellMus::SetLaserPointerEnabled(bool enabled) {
 void WmShellMus::OnWindowActivated(ActivationReason reason,
                                    aura::Window* gained_active,
                                    aura::Window* lost_active) {
-  WmWindow* gained_active_wm = ash::WmWindowAura::Get(gained_active);
+  WmWindow* gained_active_wm = WmWindow::Get(gained_active);
   if (gained_active_wm)
     set_root_window_for_new_windows(gained_active_wm->GetRootWindow());
-  WmWindow* lost_active_wm = ash::WmWindowAura::Get(lost_active);
+  WmWindow* lost_active_wm = WmWindow::Get(lost_active);
   for (auto& observer : activation_observers_)
     observer.OnWindowActivated(gained_active_wm, lost_active_wm);
 }

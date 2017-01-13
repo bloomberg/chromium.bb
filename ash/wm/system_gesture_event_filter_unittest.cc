@@ -6,12 +6,12 @@
 
 #include <vector>
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm/window_positioning_utils.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_window.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
@@ -420,7 +420,7 @@ TEST_F(SystemGestureEventFilterTest, DragLeftNearEdgeSnaps) {
                                      0);
 
   EXPECT_EQ(ash::wm::GetDefaultLeftSnappedWindowBoundsInParent(
-                ash::WmWindowAura::Get(toplevel_window))
+                ash::WmWindow::Get(toplevel_window))
                 .ToString(),
             toplevel_window->bounds().ToString());
 }
@@ -449,7 +449,7 @@ TEST_F(SystemGestureEventFilterTest, DragRightNearEdgeSnaps) {
   generator.GestureMultiFingerScroll(kTouchPoints, points, 120, kSteps, drag_x,
                                      0);
   EXPECT_EQ(wm::GetDefaultRightSnappedWindowBoundsInParent(
-                WmWindowAura::Get(toplevel_window))
+                WmWindow::Get(toplevel_window))
                 .ToString(),
             toplevel_window->bounds().ToString());
 }

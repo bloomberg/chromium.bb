@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views_aura_ash.h"
 
 #include "apps/ui/views/app_window_frame_view.h"
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_constants.h"
 #include "ash/common/frame/custom_frame_view_ash.h"
 #include "ash/common/shelf/shelf_item_types.h"
@@ -13,6 +12,7 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/window_state_delegate.h"
 #include "ash/common/wm/window_state_observer.h"
+#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/screen_util.h"
 #include "ash/shared/app_types.h"
@@ -58,13 +58,12 @@ class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate,
     // control.
     // TODO(pkotwicz): This is a hack. Remove ASAP. http://crbug.com/319048
     window_state_->AddObserver(this);
-    ash::WmWindowAura::GetAuraWindow(window_state_->window())
-        ->AddObserver(this);
+    ash::WmWindow::GetAuraWindow(window_state_->window())->AddObserver(this);
   }
   ~NativeAppWindowStateDelegate() override {
     if (window_state_) {
       window_state_->RemoveObserver(this);
-      ash::WmWindowAura::GetAuraWindow(window_state_->window())
+      ash::WmWindow::GetAuraWindow(window_state_->window())
           ->RemoveObserver(this);
     }
   }
@@ -107,8 +106,7 @@ class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate,
   // Overridden from aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override {
     window_state_->RemoveObserver(this);
-    ash::WmWindowAura::GetAuraWindow(window_state_->window())
-        ->RemoveObserver(this);
+    ash::WmWindow::GetAuraWindow(window_state_->window())->RemoveObserver(this);
     window_state_ = NULL;
   }
 

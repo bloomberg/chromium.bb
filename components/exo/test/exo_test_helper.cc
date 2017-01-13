@@ -4,9 +4,9 @@
 
 #include "components/exo/test/exo_test_helper.h"
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm/window_positioner.h"
 #include "ash/common/wm/window_positioning_utils.h"
+#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "components/exo/buffer.h"
 #include "components/exo/shell_surface.h"
@@ -36,7 +36,7 @@ ExoTestWindow::ExoTestWindow(std::unique_ptr<gfx::GpuMemoryBuffer> gpu_buffer,
   surface_->Commit();
 
   ash::wm::CenterWindow(
-      ash::WmWindowAura::Get(shell_surface_->GetWidget()->GetNativeWindow()));
+      ash::WmWindow::Get(shell_surface_->GetWidget()->GetNativeWindow()));
 }
 
 ExoTestWindow::ExoTestWindow(ExoTestWindow&& other) {

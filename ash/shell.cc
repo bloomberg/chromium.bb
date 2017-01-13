@@ -13,7 +13,6 @@
 #include "ash/accelerators/magnifier_key_scroller.h"
 #include "ash/accelerators/spoken_feedback_toggler.h"
 #include "ash/aura/wm_shell_aura.h"
-#include "ash/aura/wm_window_aura.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/ash_constants.h"
@@ -42,6 +41,7 @@
 #include "ash/common/wm/window_positioner.h"
 #include "ash/common/wm/workspace_controller.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/display_color_manager_chromeos.h"
 #include "ash/display/display_configuration_controller.h"
@@ -228,8 +228,7 @@ aura::Window* Shell::GetPrimaryRootWindow() {
 // static
 aura::Window* Shell::GetTargetRootWindow() {
   CHECK(WmShell::HasInstance());
-  return WmWindowAura::GetAuraWindow(
-      WmShell::Get()->GetRootWindowForNewWindows());
+  return WmWindow::GetAuraWindow(WmShell::Get()->GetRootWindowForNewWindows());
 }
 
 // static
@@ -288,7 +287,7 @@ void Shell::OnLockStateChanged(bool locked) {
   if (!locked) {
     std::vector<WmWindow*> containers = wm::GetContainersFromAllRootWindows(
         kShellWindowId_LockSystemModalContainer,
-        WmWindowAura::Get(GetPrimaryRootWindow()));
+        WmWindow::Get(GetPrimaryRootWindow()));
     for (WmWindow* container : containers)
       DCHECK(container->GetChildren().empty());
   }
@@ -637,7 +636,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   AshWindowTreeHostInitParams ash_init_params;
   window_tree_host_manager_->CreatePrimaryHost(ash_init_params);
   aura::Window* root_window = window_tree_host_manager_->GetPrimaryRootWindow();
-  wm_shell_->set_root_window_for_new_windows(WmWindowAura::Get(root_window));
+  wm_shell_->set_root_window_for_new_windows(WmWindow::Get(root_window));
 
   resolution_notification_controller_.reset(
       new ResolutionNotificationController);

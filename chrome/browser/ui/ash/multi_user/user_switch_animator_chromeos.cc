@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/ash/multi_user/user_switch_animator_chromeos.h"
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
@@ -265,8 +264,7 @@ void UserSwitchAnimatorChromeOS::TransitionUserShelf(
     // CPU usage and therefore effect jank, we should avoid hiding the shelf if
     // the start and end location are the same and cover the shelf instead with
     // a black rectangle on top.
-    ash::WmShelf* shelf =
-        ash::WmShelf::ForWindow(ash::WmWindowAura::Get(window));
+    ash::WmShelf* shelf = ash::WmShelf::ForWindow(ash::WmWindow::Get(window));
     if (GetScreenCover(window) != NO_USER_COVERS_SCREEN &&
         (!chrome_launcher_controller ||
          !chrome_launcher_controller->ShelfBoundsChangesProbablyWithUser(
@@ -367,7 +365,7 @@ void UserSwitchAnimatorChromeOS::TransitionWindows(
     }
     case ANIMATION_STEP_FINALIZE: {
       // Reactivate the MRU window of the new user.
-      aura::Window::Windows mru_list = ash::WmWindowAura::ToAuraWindows(
+      aura::Window::Windows mru_list = ash::WmWindow::ToAuraWindows(
           ash::WmShell::Get()->mru_window_tracker()->BuildMruWindowList());
       if (!mru_list.empty()) {
         aura::Window* window = mru_list[0];

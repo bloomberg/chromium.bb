@@ -62,10 +62,10 @@
 #endif
 
 #if defined(USE_ASH)
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_window.h"
 #include "ash/shell.h"
 #include "ash/test/cursor_manager_test_api.h"
 #include "ash/test/immersive_fullscreen_controller_test_api.h"
@@ -404,9 +404,9 @@ class DetachToBrowserTabDragControllerTest
     if (input_source() == INPUT_SOURCE_MOUSE)
       return;
 #if defined(OS_CHROMEOS)
-    event_generator_.reset(new ui::test::EventGenerator(
-        new ScreenEventGeneratorDelegate(ash::WmWindowAura::GetAuraWindow(
-            ash::wm::GetRootWindowAt(point)))));
+    event_generator_.reset(
+        new ui::test::EventGenerator(new ScreenEventGeneratorDelegate(
+            ash::WmWindow::GetAuraWindow(ash::wm::GetRootWindowAt(point)))));
 #endif
   }
 

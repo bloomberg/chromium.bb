@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <memory>
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/focus_cycler.h"
 #include "ash/common/scoped_root_window_for_new_windows.h"
 #include "ash/common/session/session_state_delegate.h"
@@ -18,6 +17,7 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -73,7 +73,7 @@ class EventCounter : public ui::EventHandler {
 };
 
 bool IsWindowMinimized(aura::Window* window) {
-  return WmWindowAura::Get(window)->GetWindowState()->IsMinimized();
+  return WmWindow::Get(window)->GetWindowState()->IsMinimized();
 }
 
 }  // namespace
@@ -101,15 +101,13 @@ class WindowCycleControllerTest : public test::AshTestBase {
     gfx::Rect rect(100, 100);
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
         NULL, ui::wm::WINDOW_TYPE_PANEL, 0, rect);
-    test::TestShelfDelegate::instance()->AddShelfItem(
-        WmWindowAura::Get(window));
+    test::TestShelfDelegate::instance()->AddShelfItem(WmWindow::Get(window));
     shelf_view_test_->RunMessageLoopUntilAnimationsDone();
     return window;
   }
 
   const aura::Window::Windows GetWindows(WindowCycleController* controller) {
-    return WmWindowAura::ToAuraWindows(
-        controller->window_cycle_list()->windows());
+    return WmWindow::ToAuraWindows(controller->window_cycle_list()->windows());
   }
 
   const views::Widget* GetWindowCycleListWidget() const {
@@ -416,7 +414,7 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopMultipleRootWindows) {
 
   // Move the active root window to the secondary root and create two windows.
   ScopedRootWindowForNewWindows root_for_new_windows(
-      WmWindowAura::Get(root_windows[1]));
+      WmWindow::Get(root_windows[1]));
   std::unique_ptr<Window> window2(CreateTestWindowInShellWithId(2));
   EXPECT_EQ(root_windows[1], window2->GetRootWindow());
 

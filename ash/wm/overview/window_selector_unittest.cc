@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/accessibility_types.h"
 #include "ash/common/ash_switches.h"
@@ -27,6 +26,7 @@
 #include "ash/common/wm/workspace/workspace_window_resizer.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -170,8 +170,7 @@ class WindowSelectorTest : public test::AshTestBase {
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
         nullptr, ui::wm::WINDOW_TYPE_PANEL, 0, bounds);
     window->SetProperty(aura::client::kTopViewInset, kHeaderHeight);
-    test::TestShelfDelegate::instance()->AddShelfItem(
-        WmWindowAura::Get(window));
+    test::TestShelfDelegate::instance()->AddShelfItem(WmWindow::Get(window));
     shelf_view_test()->RunMessageLoopUntilAnimationsDone();
     return window;
   }
@@ -195,7 +194,7 @@ class WindowSelectorTest : public test::AshTestBase {
   aura::Window* GetOverviewWindowForMinimizedState(int index,
                                                    aura::Window* window) {
     WindowSelectorItem* selector = GetWindowItemForWindow(index, window);
-    return WmWindowAura::GetAuraWindow(
+    return WmWindow::GetAuraWindow(
         selector->GetOverviewWindowForMinimizedStateForTest());
   }
 
@@ -268,7 +267,7 @@ class WindowSelectorTest : public test::AshTestBase {
         GetWindowItemsForRoot(grid_index);
     auto iter = std::find_if(windows.cbegin(), windows.cend(),
                              [window](const WindowSelectorItem* item) {
-                               return item->Contains(WmWindowAura::Get(window));
+                               return item->Contains(WmWindow::Get(window));
                              });
     if (iter == windows.end())
       return nullptr;
@@ -304,7 +303,7 @@ class WindowSelectorTest : public test::AshTestBase {
         ws->grid_list_[ws->selected_grid_index_]->SelectedWindow();
     if (!item)
       return nullptr;
-    return WmWindowAura::GetAuraWindow(item->GetWindow());
+    return WmWindow::GetAuraWindow(item->GetWindow());
   }
 
   bool selection_widget_active() {
@@ -334,8 +333,8 @@ class WindowSelectorTest : public test::AshTestBase {
   void IsWindowAndCloseButtonInScreen(aura::Window* window,
                                       WindowSelectorItem* window_item) {
     aura::Window* root_window =
-        WmWindowAura::GetAuraWindow(window_item->root_window());
-    EXPECT_TRUE(window_item->Contains(WmWindowAura::Get(window)));
+        WmWindow::GetAuraWindow(window_item->root_window());
+    EXPECT_TRUE(window_item->Contains(WmWindow::Get(window)));
     EXPECT_TRUE(root_window->GetBoundsInScreen().Contains(
         GetTransformedTargetBounds(window)));
     EXPECT_TRUE(
@@ -596,7 +595,7 @@ TEST_F(EnabledDockedWindowsWindowSelectorTest, BasicWithDocked) {
   gfx::Rect container_bounds = docked1->parent()->bounds();
   ShelfWidget* shelf = GetPrimaryShelf()->shelf_widget();
   DockedWindowLayoutManager* manager =
-      DockedWindowLayoutManager::Get(WmWindowAura::Get(docked1.get()));
+      DockedWindowLayoutManager::Get(WmWindow::Get(docked1.get()));
 
   // Minimized docked windows stays invisible.
   EXPECT_FALSE(docked2->IsVisible());
@@ -1630,13 +1629,13 @@ TEST_F(WindowSelectorTest, BasicTabKeyNavigation) {
       GetWindowItemsForRoot(0);
   SendKey(ui::VKEY_TAB);
   EXPECT_EQ(GetSelectedWindow(),
-            WmWindowAura::GetAuraWindow(overview_windows[0]->GetWindow()));
+            WmWindow::GetAuraWindow(overview_windows[0]->GetWindow()));
   SendKey(ui::VKEY_TAB);
   EXPECT_EQ(GetSelectedWindow(),
-            WmWindowAura::GetAuraWindow(overview_windows[1]->GetWindow()));
+            WmWindow::GetAuraWindow(overview_windows[1]->GetWindow()));
   SendKey(ui::VKEY_TAB);
   EXPECT_EQ(GetSelectedWindow(),
-            WmWindowAura::GetAuraWindow(overview_windows[0]->GetWindow()));
+            WmWindow::GetAuraWindow(overview_windows[0]->GetWindow()));
 }
 
 // Tests that pressing Ctrl+W while a window is selected in overview closes it.
@@ -1711,16 +1710,16 @@ TEST_F(WindowSelectorTest, BasicMultiMonitorArrowKeyNavigation) {
       GetWindowItemsForRoot(1);
   SendKey(ui::VKEY_RIGHT);
   EXPECT_EQ(GetSelectedWindow(),
-            WmWindowAura::GetAuraWindow(overview_root1[0]->GetWindow()));
+            WmWindow::GetAuraWindow(overview_root1[0]->GetWindow()));
   SendKey(ui::VKEY_RIGHT);
   EXPECT_EQ(GetSelectedWindow(),
-            WmWindowAura::GetAuraWindow(overview_root1[1]->GetWindow()));
+            WmWindow::GetAuraWindow(overview_root1[1]->GetWindow()));
   SendKey(ui::VKEY_RIGHT);
   EXPECT_EQ(GetSelectedWindow(),
-            WmWindowAura::GetAuraWindow(overview_root2[0]->GetWindow()));
+            WmWindow::GetAuraWindow(overview_root2[0]->GetWindow()));
   SendKey(ui::VKEY_RIGHT);
   EXPECT_EQ(GetSelectedWindow(),
-            WmWindowAura::GetAuraWindow(overview_root2[1]->GetWindow()));
+            WmWindow::GetAuraWindow(overview_root2[1]->GetWindow()));
 }
 
 // Tests first monitor when display order doesn't match left to right screen
@@ -1829,10 +1828,10 @@ TEST_F(WindowSelectorTest, SelectWindowWithReturnKey) {
 TEST_F(WindowSelectorTest, WindowOverviewHidesCalloutWidgets) {
   std::unique_ptr<aura::Window> panel1(
       CreatePanelWindow(gfx::Rect(0, 0, 100, 100)));
-  WmWindow* wm_panel1 = WmWindowAura::Get(panel1.get());
+  WmWindow* wm_panel1 = WmWindow::Get(panel1.get());
   std::unique_ptr<aura::Window> panel2(
       CreatePanelWindow(gfx::Rect(0, 0, 100, 100)));
-  WmWindow* wm_panel2 = WmWindowAura::Get(panel2.get());
+  WmWindow* wm_panel2 = WmWindow::Get(panel2.get());
   PanelLayoutManager* panel_manager = PanelLayoutManager::Get(wm_panel1);
 
   // By default, panel callout widgets are visible.
@@ -2137,8 +2136,8 @@ TEST_F(WindowSelectorTest, OverviewWhileDragging) {
   const gfx::Rect bounds(10, 10, 100, 100);
   std::unique_ptr<aura::Window> window(CreateWindow(bounds));
   std::unique_ptr<WindowResizer> resizer(
-      CreateWindowResizer(WmWindowAura::Get(window.get()), gfx::Point(),
-                          HTCAPTION, aura::client::WINDOW_MOVE_SOURCE_MOUSE));
+      CreateWindowResizer(WmWindow::Get(window.get()), gfx::Point(), HTCAPTION,
+                          aura::client::WINDOW_MOVE_SOURCE_MOUSE));
   ASSERT_TRUE(resizer.get());
   gfx::Point location = resizer->GetInitialLocation();
   location.Offset(20, 20);

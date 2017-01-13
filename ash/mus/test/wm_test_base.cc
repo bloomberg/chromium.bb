@@ -15,7 +15,7 @@
 #include "ash/mus/window_manager_application.h"
 #include "ash/public/cpp/session_types.h"
 #include "ash/public/interfaces/session_controller.mojom.h"
-#include "ash/test/wm_window_aura_test_api.h"
+#include "ash/test/wm_window_test_api.h"
 #include "base/memory/ptr_util.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "ui/aura/mus/property_converter.h"
@@ -166,7 +166,7 @@ void WmTestBase::SetUp() {
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
   // Most tests expect a minimum size of 0x0.
   minimum_size_lock_ =
-      base::MakeUnique<WmWindowAuraTestApi::GlobalMinimumSizeLock>();
+      base::MakeUnique<WmWindowTestApi::GlobalMinimumSizeLock>();
   test_helper_.reset(new WmTestHelper);
   test_helper_->Init();
 

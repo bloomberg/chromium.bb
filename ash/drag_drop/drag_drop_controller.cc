@@ -6,9 +6,9 @@
 
 #include <utility>
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/drag_drop/drag_image_view.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/drag_drop/drag_drop_tracker.h"
 #include "ash/shell.h"
 #include "base/bind.h"
@@ -203,8 +203,8 @@ int DragDropController::StartDragAndDrop(
   drag_image_final_bounds_for_cancel_animation_ =
       gfx::Rect(start_location - provider->GetDragImageOffset(),
                 provider->GetDragImage().size());
-  drag_image_.reset(new DragImageView(
-      WmWindowAura::Get(source_window->GetRootWindow()), source));
+  drag_image_.reset(
+      new DragImageView(WmWindow::Get(source_window->GetRootWindow()), source));
   drag_image_->SetImage(provider->GetDragImage());
   drag_image_offset_ = provider->GetDragImageOffset();
   gfx::Rect drag_image_bounds(start_location, drag_image_->GetPreferredSize());

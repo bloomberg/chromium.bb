@@ -4,8 +4,8 @@
 
 #include "ash/aura/wm_lookup_aura.h"
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/wm_layout_manager.h"
+#include "ash/common/wm_window.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -30,7 +30,7 @@ RootWindowController* WmLookupAura::GetRootWindowControllerWithDisplayId(
 }
 
 WmWindow* WmLookupAura::GetWindowForWidget(views::Widget* widget) {
-  return WmWindowAura::Get(widget->GetNativeWindow());
+  return WmWindow::Get(widget->GetNativeWindow());
 }
 
 }  // namespace ash

@@ -10,11 +10,11 @@
 #include <string>
 #include <vector>
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_constants.h"
 #include "ash/common/ash_layout_constants.h"
 #include "ash/common/frame/custom_frame_view_ash.h"
 #include "ash/common/wm/panels/panel_frame_view.h"
+#include "ash/common/wm_window.h"
 #include "ash/mus/frame/custom_frame_view_mus.h"
 #include "ash/mus/frame/detached_title_area_renderer.h"
 #include "ash/mus/move_event_handler.h"
@@ -121,8 +121,8 @@ class ImmersiveFullscreenControllerDelegateMus
     // DCHECK is to ensure when parent changes this code is updated.
     // http://crbug.com/640392.
     DCHECK_EQ(frame_window_->parent(), title_area_window->parent());
-    result.push_back(ash::WmWindowAura::Get(title_area_window)
-                         ->ConvertRectToScreen(visible_bounds));
+    result.push_back(
+        WmWindow::Get(title_area_window)->ConvertRectToScreen(visible_bounds));
     return result;
   }
 
@@ -330,7 +330,7 @@ NonClientFrameController::NonClientFrameController(
 
   const int shadow_inset =
       Shadow::GetInteriorInsetForStyle(Shadow::STYLE_ACTIVE);
-  ash::WmWindowAura* wm_window = ash::WmWindowAura::Get(window_);
+  WmWindow* wm_window = WmWindow::Get(window_);
   const gfx::Insets extended_hit_region =
       wm_window->ShouldUseExtendedHitRegion() ? GetExtendedHitRegion()
                                               : gfx::Insets();
@@ -394,15 +394,15 @@ base::string16 NonClientFrameController::GetWindowTitle() const {
 }
 
 bool NonClientFrameController::CanResize() const {
-  return window_ && ash::WmWindowAura::Get(window_)->CanResize();
+  return window_ && WmWindow::Get(window_)->CanResize();
 }
 
 bool NonClientFrameController::CanMaximize() const {
-  return window_ && ash::WmWindowAura::Get(window_)->CanMaximize();
+  return window_ && WmWindow::Get(window_)->CanMaximize();
 }
 
 bool NonClientFrameController::CanMinimize() const {
-  return window_ && ash::WmWindowAura::Get(window_)->CanMinimize();
+  return window_ && WmWindow::Get(window_)->CanMinimize();
 }
 
 bool NonClientFrameController::ShouldShowWindowTitle() const {
