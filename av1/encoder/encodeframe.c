@@ -1635,6 +1635,110 @@ static void update_supertx_param_sb(const AV1_COMP *const cpi, ThreadData *td,
 }
 #endif  // CONFIG_SUPERTX
 
+#if CONFIG_MOTION_VAR && CONFIG_NCOBMC
+static void set_mode_info_b(const AV1_COMP *const cpi,
+                            const TileInfo *const tile, ThreadData *td,
+                            int mi_row, int mi_col, BLOCK_SIZE bsize,
+                            PICK_MODE_CONTEXT *ctx) {
+  MACROBLOCK *const x = &td->mb;
+  set_offsets(cpi, tile, x, mi_row, mi_col, bsize);
+  update_state(cpi, td, ctx, mi_row, mi_col, bsize, 1);
+}
+
+static void set_mode_info_sb(const AV1_COMP *const cpi, ThreadData *td,
+                             const TileInfo *const tile, TOKENEXTRA **tp,
+                             int mi_row, int mi_col, BLOCK_SIZE bsize,
+                             PC_TREE *pc_tree) {
+  const AV1_COMMON *const cm = &cpi->common;
+  const int bsl = b_width_log2_lookup[bsize], hbs = (1 << bsl) / 4;
+  const PARTITION_TYPE partition = pc_tree->partitioning;
+  BLOCK_SIZE subsize = get_subsize(bsize, partition);
+#if CONFIG_EXT_PARTITION_TYPES
+  const BLOCK_SIZE bsize2 = get_subsize(bsize, PARTITION_SPLIT);
+#endif
+#if CONFIG_CB4X4
+  const int unify_bsize = 1;
+#else
+  const int unify_bsize = 0;
+  assert(bsize >= BLOCK_8X8);
+#endif
+
+  if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
+
+  switch (partition) {
+    case PARTITION_NONE:
+      set_mode_info_b(cpi, tile, td, mi_row, mi_col, subsize, &pc_tree->none);
+      break;
+    case PARTITION_VERT:
+      set_mode_info_b(cpi, tile, td, mi_row, mi_col, subsize,
+                      &pc_tree->vertical[0]);
+      if (mi_col + hbs < cm->mi_cols && (bsize > BLOCK_8X8 || unify_bsize)) {
+        set_mode_info_b(cpi, tile, td, mi_row, mi_col + hbs, subsize,
+                        &pc_tree->vertical[1]);
+      }
+      break;
+    case PARTITION_HORZ:
+      set_mode_info_b(cpi, tile, td, mi_row, mi_col, subsize,
+                      &pc_tree->horizontal[0]);
+      if (mi_row + hbs < cm->mi_rows && (bsize > BLOCK_8X8 || unify_bsize)) {
+        set_mode_info_b(cpi, tile, td, mi_row + hbs, mi_col, subsize,
+                        &pc_tree->horizontal[1]);
+      }
+      break;
+    case PARTITION_SPLIT:
+      if (bsize == BLOCK_8X8 && !unify_bsize) {
+        set_mode_info_b(cpi, tile, td, mi_row, mi_col, subsize,
+                        pc_tree->leaf_split[0]);
+      } else {
+        set_mode_info_sb(cpi, td, tile, tp, mi_row, mi_col, subsize,
+                         pc_tree->split[0]);
+        set_mode_info_sb(cpi, td, tile, tp, mi_row, mi_col + hbs, subsize,
+                         pc_tree->split[1]);
+        set_mode_info_sb(cpi, td, tile, tp, mi_row + hbs, mi_col, subsize,
+                         pc_tree->split[2]);
+        set_mode_info_sb(cpi, td, tile, tp, mi_row + hbs, mi_col + hbs, subsize,
+                         pc_tree->split[3]);
+      }
+      break;
+#if CONFIG_EXT_PARTITION_TYPES
+    case PARTITION_HORZ_A:
+      set_mode_info_b(cpi, tile, td, mi_row, mi_col, bsize2,
+                      &pc_tree->horizontala[0]);
+      set_mode_info_b(cpi, tile, td, mi_row, mi_col + hbs, bsize2,
+                      &pc_tree->horizontala[1]);
+      set_mode_info_b(cpi, tile, td, mi_row + hbs, mi_col, subsize,
+                      &pc_tree->horizontala[2]);
+      break;
+    case PARTITION_HORZ_B:
+      set_mode_info_b(cpi, tile, td, mi_row, mi_col, subsize,
+                      &pc_tree->horizontalb[0]);
+      set_mode_info_b(cpi, tile, td, mi_row + hbs, mi_col, bsize2,
+                      &pc_tree->horizontalb[1]);
+      set_mode_info_b(cpi, tile, td, mi_row + hbs, mi_col + hbs, bsize2,
+                      &pc_tree->horizontalb[2]);
+      break;
+    case PARTITION_VERT_A:
+      set_mode_info_b(cpi, tile, td, mi_row, mi_col, bsize2,
+                      &pc_tree->verticala[0]);
+      set_mode_info_b(cpi, tile, td, mi_row + hbs, mi_col, bsize2,
+                      &pc_tree->verticala[1]);
+      set_mode_info_b(cpi, tile, td, mi_row, mi_col + hbs, subsize,
+                      &pc_tree->verticala[2]);
+      break;
+    case PARTITION_VERT_B:
+      set_mode_info_b(cpi, tile, td, mi_row, mi_col, subsize,
+                      &pc_tree->verticalb[0]);
+      set_mode_info_b(cpi, tile, td, mi_row, mi_col + hbs, bsize2,
+                      &pc_tree->verticalb[1]);
+      set_mode_info_b(cpi, tile, td, mi_row + hbs, mi_col + hbs, bsize2,
+                      &pc_tree->verticalb[2]);
+      break;
+#endif  // CONFIG_EXT_PARTITION_TYPES
+    default: assert(0 && "Invalid partition type."); break;
+  }
+}
+#endif
+
 void av1_setup_src_planes(MACROBLOCK *x, const YV12_BUFFER_CONFIG *src,
                           int mi_row, int mi_col) {
   uint8_t *const buffers[3] = { src->y_buffer, src->u_buffer, src->v_buffer };
@@ -2242,11 +2346,27 @@ static void encode_b(const AV1_COMP *const cpi, const TileInfo *const tile,
 #endif
                      PICK_MODE_CONTEXT *ctx, int *rate) {
   MACROBLOCK *const x = &td->mb;
+#if CONFIG_MOTION_VAR && CONFIG_NCOBMC
+  MACROBLOCKD *xd = &x->e_mbd;
+  MB_MODE_INFO *mbmi;
+  int check_ncobmc;
+#endif
+
   set_offsets(cpi, tile, x, mi_row, mi_col, bsize);
 #if CONFIG_EXT_PARTITION_TYPES
   x->e_mbd.mi[0]->mbmi.partition = partition;
 #endif
   update_state(cpi, td, ctx, mi_row, mi_col, bsize, dry_run);
+#if CONFIG_MOTION_VAR && CONFIG_NCOBMC
+  mbmi = &xd->mi[0]->mbmi;
+  check_ncobmc =
+      is_inter_block(mbmi) && motion_mode_allowed(mbmi) >= OBMC_CAUSAL;
+  if (!dry_run && check_ncobmc) {
+    av1_check_ncobmc_rd(cpi, x, mi_row, mi_col);
+    av1_setup_dst_planes(x->e_mbd.plane, get_frame_new_buffer(&cpi->common),
+                         mi_row, mi_col);
+  }
+#endif
   encode_superblock(cpi, td, tp, dry_run, mi_row, mi_col, bsize, ctx, rate);
 
   if (!dry_run) {
@@ -4357,6 +4477,9 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   if (best_rdc.rate < INT_MAX && best_rdc.dist < INT64_MAX &&
       pc_tree->index != 3) {
     if (bsize == cm->sb_size) {
+#if CONFIG_MOTION_VAR && CONFIG_NCOBMC
+      set_mode_info_sb(cpi, td, tile_info, tp, mi_row, mi_col, bsize, pc_tree);
+#endif
       encode_sb(cpi, td, tile_info, tp, mi_row, mi_col, OUTPUT_ENABLED, bsize,
                 pc_tree, NULL);
     } else {
@@ -5517,7 +5640,12 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
 
 #if CONFIG_MOTION_VAR
     if (mbmi->motion_mode == OBMC_CAUSAL) {
-      av1_build_obmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
+#if CONFIG_NCOBMC
+      if (dry_run == OUTPUT_ENABLED)
+        av1_build_ncobmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
+      else
+#endif
+        av1_build_obmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
     }
 #endif  // CONFIG_MOTION_VAR
 

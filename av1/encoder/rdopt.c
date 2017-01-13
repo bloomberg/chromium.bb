@@ -11573,4 +11573,105 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
 #endif  // CONFIG_AOM_HIGHBITDEPTH
   }
 }
+
+#if CONFIG_NCOBMC
+void av1_check_ncobmc_rd(const struct AV1_COMP *cpi, struct macroblock *x,
+                         int mi_row, int mi_col) {
+  const AV1_COMMON *const cm = &cpi->common;
+  MACROBLOCKD *const xd = &x->e_mbd;
+  MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+  MB_MODE_INFO backup_mbmi;
+  BLOCK_SIZE bsize = mbmi->sb_type;
+  int ref, skip_blk, backup_skip = x->skip;
+  int64_t rd_causal;
+  RD_STATS rd_stats_y, rd_stats_uv;
+  int rate_skip0 = av1_cost_bit(av1_get_skip_prob(cm, xd), 0);
+  int rate_skip1 = av1_cost_bit(av1_get_skip_prob(cm, xd), 1);
+
+  // Recompute the best causal predictor and rd
+  mbmi->motion_mode = SIMPLE_TRANSLATION;
+  set_ref_ptrs(cm, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
+  for (ref = 0; ref < 1 + has_second_ref(mbmi); ++ref) {
+    YV12_BUFFER_CONFIG *cfg = get_ref_frame_buffer(cpi, mbmi->ref_frame[ref]);
+    assert(cfg != NULL);
+    av1_setup_pre_planes(xd, ref, cfg, mi_row, mi_col,
+                         &xd->block_refs[ref]->sf);
+  }
+  av1_setup_dst_planes(x->e_mbd.plane, get_frame_new_buffer(&cpi->common),
+                       mi_row, mi_col);
+
+  av1_build_inter_predictors_sb(xd, mi_row, mi_col, NULL, bsize);
+
+  av1_subtract_plane(x, bsize, 0);
+  super_block_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
+  super_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
+  assert(rd_stats_y.rate != INT_MAX && rd_stats_uv.rate != INT_MAX);
+  if (rd_stats_y.skip && rd_stats_uv.skip) {
+    rd_stats_y.rate = rate_skip1;
+    rd_stats_uv.rate = 0;
+    rd_stats_y.dist = rd_stats_y.sse;
+    rd_stats_uv.dist = rd_stats_uv.sse;
+    skip_blk = 0;
+  } else if (RDCOST(x->rdmult, x->rddiv,
+                    (rd_stats_y.rate + rd_stats_uv.rate + rate_skip0),
+                    (rd_stats_y.dist + rd_stats_uv.dist)) >
+             RDCOST(x->rdmult, x->rddiv, rate_skip1,
+                    (rd_stats_y.sse + rd_stats_uv.sse))) {
+    rd_stats_y.rate = rate_skip1;
+    rd_stats_uv.rate = 0;
+    rd_stats_y.dist = rd_stats_y.sse;
+    rd_stats_uv.dist = rd_stats_uv.sse;
+    skip_blk = 1;
+  } else {
+    rd_stats_y.rate += rate_skip0;
+    skip_blk = 0;
+  }
+  backup_skip = skip_blk;
+  backup_mbmi = *mbmi;
+  rd_causal = RDCOST(x->rdmult, x->rddiv, (rd_stats_y.rate + rd_stats_uv.rate),
+                     (rd_stats_y.dist + rd_stats_uv.dist));
+  rd_causal += RDCOST(x->rdmult, x->rddiv,
+                      av1_cost_bit(cm->fc->motion_mode_prob[bsize][0], 0), 0);
+
+  // Check non-causal mode
+  mbmi->motion_mode = OBMC_CAUSAL;
+  av1_build_ncobmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
+
+  av1_subtract_plane(x, bsize, 0);
+  super_block_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
+  super_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
+  assert(rd_stats_y.rate != INT_MAX && rd_stats_uv.rate != INT_MAX);
+  if (rd_stats_y.skip && rd_stats_uv.skip) {
+    rd_stats_y.rate = rate_skip1;
+    rd_stats_uv.rate = 0;
+    rd_stats_y.dist = rd_stats_y.sse;
+    rd_stats_uv.dist = rd_stats_uv.sse;
+    skip_blk = 0;
+  } else if (RDCOST(x->rdmult, x->rddiv,
+                    (rd_stats_y.rate + rd_stats_uv.rate + rate_skip0),
+                    (rd_stats_y.dist + rd_stats_uv.dist)) >
+             RDCOST(x->rdmult, x->rddiv, rate_skip1,
+                    (rd_stats_y.sse + rd_stats_uv.sse))) {
+    rd_stats_y.rate = rate_skip1;
+    rd_stats_uv.rate = 0;
+    rd_stats_y.dist = rd_stats_y.sse;
+    rd_stats_uv.dist = rd_stats_uv.sse;
+    skip_blk = 1;
+  } else {
+    rd_stats_y.rate += rate_skip0;
+    skip_blk = 0;
+  }
+
+  if (rd_causal >
+      RDCOST(x->rdmult, x->rddiv,
+             rd_stats_y.rate + rd_stats_uv.rate +
+                 av1_cost_bit(cm->fc->motion_mode_prob[bsize][0], 1),
+             (rd_stats_y.dist + rd_stats_uv.dist))) {
+    x->skip = skip_blk;
+  } else {
+    *mbmi = backup_mbmi;
+    x->skip = backup_skip;
+  }
+}
+#endif
 #endif  // CONFIG_MOTION_VAR

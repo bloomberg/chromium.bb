@@ -176,6 +176,11 @@ void av1_rd_pick_inter_mode_sub8x8(const struct AV1_COMP *cpi,
                                    BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx,
                                    int64_t best_rd_so_far);
 
+#if CONFIG_MOTION_VAR && CONFIG_NCOBMC
+void av1_check_ncobmc_rd(const struct AV1_COMP *cpi, struct macroblock *x,
+                         int mi_row, int mi_col);
+#endif  // CONFIG_MOTION_VAR && CONFIG_NCOBMC
+
 #if CONFIG_SUPERTX
 #if CONFIG_VAR_TX
 void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
