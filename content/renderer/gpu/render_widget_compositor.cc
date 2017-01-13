@@ -1039,7 +1039,7 @@ void RenderWidgetCompositor::RequestNewCompositorFrameSink() {
   bool fallback = num_failed_recreate_attempts_ >=
                   COMPOSITOR_FRAME_SINK_RETRIES_BEFORE_FALLBACK;
   std::unique_ptr<cc::CompositorFrameSink> surface(
-      delegate_->CreateCompositorFrameSink(fallback));
+      delegate_->CreateCompositorFrameSink(frame_sink_id_, fallback));
 
   if (!surface) {
     DidFailToInitializeCompositorFrameSink();
@@ -1114,6 +1114,7 @@ void RenderWidgetCompositor::SendCompositorProto(
 
 void RenderWidgetCompositor::SetFrameSinkId(
     const cc::FrameSinkId& frame_sink_id) {
+  frame_sink_id_ = frame_sink_id;
   layer_tree_host_->SetFrameSinkId(frame_sink_id);
 }
 

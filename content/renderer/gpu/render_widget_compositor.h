@@ -233,6 +233,8 @@ class CONTENT_EXPORT RenderWidgetCompositor
 
   RemoteProtoChannel::ProtoReceiver* remote_proto_channel_receiver_;
 
+  cc::FrameSinkId frame_sink_id_;
+
   base::WeakPtrFactory<RenderWidgetCompositor> weak_factory_;
 };
 

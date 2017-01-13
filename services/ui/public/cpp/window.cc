@@ -275,9 +275,9 @@ std::unique_ptr<WindowCompositorFrameSink> Window::RequestCompositorFrameSink(
   std::unique_ptr<WindowCompositorFrameSinkBinding>
       compositor_frame_sink_binding;
   std::unique_ptr<WindowCompositorFrameSink> compositor_frame_sink =
-      WindowCompositorFrameSink::Create(std::move(context_provider),
-                                        gpu_memory_buffer_manager,
-                                        &compositor_frame_sink_binding);
+      WindowCompositorFrameSink::Create(
+          cc::FrameSinkId(server_id(), 0), std::move(context_provider),
+          gpu_memory_buffer_manager, &compositor_frame_sink_binding);
   AttachCompositorFrameSink(std::move(compositor_frame_sink_binding));
   return compositor_frame_sink;
 }

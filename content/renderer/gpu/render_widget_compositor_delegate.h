@@ -13,6 +13,7 @@
 namespace cc {
 class CopyOutputRequest;
 class CompositorFrameSink;
+class FrameSinkId;
 class SwapPromise;
 }
 
@@ -40,6 +41,7 @@ class CONTENT_EXPORT RenderWidgetCompositorDelegate {
 
   // Requests a CompositorFrameSink to submit to.
   virtual std::unique_ptr<cc::CompositorFrameSink> CreateCompositorFrameSink(
+      const cc::FrameSinkId& frame_sink_id,
       bool fallback) = 0;
 
   // Notifies that the draw commands for a committed frame have been issued.

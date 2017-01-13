@@ -862,13 +862,14 @@ void RenderWidget::BeginMainFrame(double frame_time_sec) {
 }
 
 std::unique_ptr<cc::CompositorFrameSink>
-RenderWidget::CreateCompositorFrameSink(bool fallback) {
+RenderWidget::CreateCompositorFrameSink(const cc::FrameSinkId& frame_sink_id,
+                                        bool fallback) {
   DCHECK(GetWebWidget());
   // For widgets that are never visible, we don't start the compositor, so we
   // never get a request for a cc::CompositorFrameSink.
   DCHECK(!compositor_never_visible_);
   return RenderThreadImpl::current()->CreateCompositorFrameSink(
-      fallback, routing_id_, frame_swap_message_queue_,
+      frame_sink_id, fallback, routing_id_, frame_swap_message_queue_,
       GetURLForGraphicsContext3D());
 }
 

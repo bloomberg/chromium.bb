@@ -43,6 +43,7 @@ class StubRenderWidgetCompositorDelegate
                            float top_controls_delta) override {}
   void BeginMainFrame(double frame_time_sec) override {}
   std::unique_ptr<cc::CompositorFrameSink> CreateCompositorFrameSink(
+      const cc::FrameSinkId& frame_sink_id,
       bool fallback) override {
     return nullptr;
   }
@@ -67,6 +68,7 @@ class FakeRenderWidgetCompositorDelegate
   FakeRenderWidgetCompositorDelegate() = default;
 
   std::unique_ptr<cc::CompositorFrameSink> CreateCompositorFrameSink(
+      const cc::FrameSinkId& frame_sink_id,
       bool fallback) override {
     EXPECT_EQ(num_requests_since_last_success_ >
                   RenderWidgetCompositor::

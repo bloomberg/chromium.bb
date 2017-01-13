@@ -237,6 +237,7 @@ class CONTENT_EXPORT RenderWidget
                            float top_controls_delta) override;
   void BeginMainFrame(double frame_time_sec) override;
   std::unique_ptr<cc::CompositorFrameSink> CreateCompositorFrameSink(
+      const cc::FrameSinkId& frame_sink_id,
       bool fallback) override;
   void DidCommitAndDrawCompositorFrame() override;
   void DidCommitCompositorFrame() override;

@@ -28,6 +28,7 @@ class CONTENT_EXPORT RenderWidgetMusConnection
 
   // Create a cc output surface.
   std::unique_ptr<cc::CompositorFrameSink> CreateCompositorFrameSink(
+      const cc::FrameSinkId& frame_sink_id,
       scoped_refptr<cc::ContextProvider> context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
 

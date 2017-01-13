@@ -1847,6 +1847,7 @@ scoped_refptr<gpu::GpuChannelHost> RenderThreadImpl::EstablishGpuChannelSync() {
 
 std::unique_ptr<cc::CompositorFrameSink>
 RenderThreadImpl::CreateCompositorFrameSink(
+    const cc::FrameSinkId& frame_sink_id,
     bool use_software,
     int routing_id,
     scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
@@ -1862,7 +1863,7 @@ RenderThreadImpl::CreateCompositorFrameSink(
     RenderWidgetMusConnection* connection =
         RenderWidgetMusConnection::GetOrCreate(routing_id);
     return connection->CreateCompositorFrameSink(
-        gpu_->CreateContextProvider(EstablishGpuChannelSync()),
+        frame_sink_id, gpu_->CreateContextProvider(EstablishGpuChannelSync()),
         GetGpuMemoryBufferManager());
   }
 #endif

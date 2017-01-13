@@ -13,6 +13,7 @@ namespace aura {
 
 // static
 std::unique_ptr<WindowCompositorFrameSink> WindowCompositorFrameSink::Create(
+    const cc::FrameSinkId& frame_sink_id,
     scoped_refptr<cc::ContextProvider> context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     std::unique_ptr<WindowCompositorFrameSinkBinding>*
@@ -27,7 +28,7 @@ std::unique_ptr<WindowCompositorFrameSink> WindowCompositorFrameSink::Create(
       MakeRequest(&compositor_frame_sink),
       compositor_frame_sink_client.PassInterface()));
   return base::WrapUnique(new WindowCompositorFrameSink(
-      std::move(context_provider), gpu_memory_buffer_manager,
+      frame_sink_id, std::move(context_provider), gpu_memory_buffer_manager,
       compositor_frame_sink.PassInterface(),
       std::move(compositor_frame_sink_client_request)));
 }
@@ -79,6 +80,7 @@ void WindowCompositorFrameSink::SubmitCompositorFrame(
 }
 
 WindowCompositorFrameSink::WindowCompositorFrameSink(
+    const cc::FrameSinkId& frame_sink_id,
     scoped_refptr<cc::ContextProvider> context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     cc::mojom::MojoCompositorFrameSinkPtrInfo compositor_frame_sink_info,
@@ -88,7 +90,8 @@ WindowCompositorFrameSink::WindowCompositorFrameSink(
                               gpu_memory_buffer_manager,
                               nullptr),
       compositor_frame_sink_info_(std::move(compositor_frame_sink_info)),
-      client_request_(std::move(client_request)) {}
+      client_request_(std::move(client_request)),
+      frame_sink_id_(frame_sink_id) {}
 
 void WindowCompositorFrameSink::DidReceiveCompositorFrameAck() {
   DCHECK(thread_checker_);
