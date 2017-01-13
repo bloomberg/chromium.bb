@@ -273,7 +273,7 @@ bool LocalDOMWindow::allowPopUp() {
 }
 
 LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
-    : m_frame(&frame),
+    : DOMWindow(frame),
       m_visualViewport(DOMVisualViewport::create(this)),
       m_unusedPreloadsTimer(
           TaskRunnerHelper::get(TaskType::UnspecedTimer, &frame),
@@ -485,7 +485,7 @@ void LocalDOMWindow::frameDestroyed() {
   resetLocation();
   m_properties.clear();
   removeAllEventListeners();
-  m_frame = nullptr;
+  disconnectFromFrame();
 }
 
 void LocalDOMWindow::registerProperty(DOMWindowProperty* property) {
@@ -1608,7 +1608,6 @@ DOMWindow* LocalDOMWindow::open(const String& urlString,
 }
 
 DEFINE_TRACE(LocalDOMWindow) {
-  visitor->trace(m_frame);
   visitor->trace(m_document);
   visitor->trace(m_properties);
   visitor->trace(m_screen);
@@ -1634,14 +1633,6 @@ DEFINE_TRACE(LocalDOMWindow) {
 DEFINE_TRACE_WRAPPERS(LocalDOMWindow) {
   visitor->traceWrappers(m_customElements);
   DOMWindow::traceWrappers(visitor);
-}
-
-LocalFrame* LocalDOMWindow::frame() const {
-  // If the LocalDOMWindow still has a frame reference, that frame must point
-  // back to this LocalDOMWindow: otherwise, it's easy to get into a situation
-  // where script execution leaks between different LocalDOMWindows.
-  SECURITY_DCHECK(!m_frame || m_frame->domWindow() == this);
-  return m_frame;
 }
 
 }  // namespace blink

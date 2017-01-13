@@ -18,12 +18,7 @@ ExecutionContext* RemoteDOMWindow::getExecutionContext() const {
 }
 
 DEFINE_TRACE(RemoteDOMWindow) {
-  visitor->trace(m_frame);
   DOMWindow::trace(visitor);
-}
-
-RemoteFrame* RemoteDOMWindow::frame() const {
-  return m_frame.get();
 }
 
 Screen* RemoteDOMWindow::screen() const {
@@ -290,16 +285,16 @@ CustomElementRegistry* RemoteDOMWindow::customElements(ScriptState*) const {
   return nullptr;
 }
 
-RemoteDOMWindow::RemoteDOMWindow(RemoteFrame& frame) : m_frame(&frame) {}
+RemoteDOMWindow::RemoteDOMWindow(RemoteFrame& frame) : DOMWindow(frame) {}
 
 void RemoteDOMWindow::frameDetached() {
-  m_frame = nullptr;
+  disconnectFromFrame();
 }
 
 void RemoteDOMWindow::schedulePostMessage(MessageEvent* event,
                                           PassRefPtr<SecurityOrigin> target,
                                           Document* source) {
-  m_frame->client()->forwardPostMessage(event, std::move(target),
+  frame()->client()->forwardPostMessage(event, std::move(target),
                                         source->frame());
 }
 

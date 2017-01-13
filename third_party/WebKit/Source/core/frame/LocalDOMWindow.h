@@ -82,6 +82,8 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   ~LocalDOMWindow() override;
 
+  LocalFrame* frame() const { return toLocalFrame(DOMWindow::frame()); }
+
   DECLARE_VIRTUAL_TRACE();
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
@@ -95,7 +97,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   LocalDOMWindow* toLocalDOMWindow() override;
 
   // DOMWindow overrides:
-  LocalFrame* frame() const override;
   Screen* screen() const override;
   History* history() const override;
   BarProp* locationbar() const override;
@@ -260,7 +261,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   void willDetachFrameHost();
 
-  Member<LocalFrame> m_frame;
   Member<Document> m_document;
   Member<DOMVisualViewport> m_visualViewport;
   TaskRunnerTimer<LocalDOMWindow> m_unusedPreloadsTimer;

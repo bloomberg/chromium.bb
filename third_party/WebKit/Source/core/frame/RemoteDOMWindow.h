@@ -17,12 +17,13 @@ class RemoteDOMWindow final : public DOMWindow {
     return new RemoteDOMWindow(frame);
   }
 
+  RemoteFrame* frame() const { return toRemoteFrame(DOMWindow::frame()); }
+
   // EventTarget overrides:
   ExecutionContext* getExecutionContext() const override;
 
   // DOMWindow overrides:
   DECLARE_VIRTUAL_TRACE();
-  RemoteFrame* frame() const override;
   Screen* screen() const override;
   History* history() const override;
   BarProp* locationbar() const override;
@@ -106,8 +107,6 @@ class RemoteDOMWindow final : public DOMWindow {
   // already RemoteDOMWindow.
   bool isLocalDOMWindow() const override { return false; }
   bool isRemoteDOMWindow() const override { return true; }
-
-  Member<RemoteFrame> m_frame;
 };
 
 DEFINE_TYPE_CASTS(RemoteDOMWindow,

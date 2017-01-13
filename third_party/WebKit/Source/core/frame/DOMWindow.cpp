@@ -34,9 +34,12 @@
 
 namespace blink {
 
-DOMWindow::DOMWindow() : m_windowIsClosing(false) {}
+DOMWindow::DOMWindow(Frame& frame) : m_frame(frame), m_windowIsClosing(false) {}
 
-DOMWindow::~DOMWindow() {}
+DOMWindow::~DOMWindow() {
+  // The frame must be disconnected before finalization.
+  DCHECK(!m_frame);
+}
 
 v8::Local<v8::Object> DOMWindow::wrap(v8::Isolate*,
                                       v8::Local<v8::Object> creationContext) {
@@ -432,6 +435,7 @@ void DOMWindow::focus(ExecutionContext* context) {
 }
 
 DEFINE_TRACE(DOMWindow) {
+  visitor->trace(m_frame);
   visitor->trace(m_location);
   EventTargetWithInlineData::trace(visitor);
 }

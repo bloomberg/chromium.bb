@@ -103,6 +103,12 @@ void RemoteFrame::detach(FrameDetachType type) {
   client()->willBeDetached();
   m_windowProxyManager->clearForClose();
   setView(nullptr);
+  // ... the RemoteDOMWindow will need to be informed of detachment,
+  // as otherwise it will keep a strong reference back to this RemoteFrame.
+  // That combined with wrappers (owned and kept alive by RemoteFrame) keeping
+  // persistent strong references to RemoteDOMWindow will prevent the GCing
+  // of all these objects. Break the cycle by notifying of detachment.
+  toRemoteDOMWindow(m_domWindow)->frameDetached();
   if (m_webLayer)
     setWebLayer(nullptr);
   Frame::detach(type);
@@ -144,14 +150,6 @@ void RemoteFrame::setView(RemoteFrameView* view) {
   // Oilpan: as RemoteFrameView performs no finalization actions,
   // no explicit dispose() of it needed here. (cf. FrameView::dispose().)
   m_view = view;
-
-  // ... the RemoteDOMWindow will need to be informed of detachment,
-  // as otherwise it will keep a strong reference back to this RemoteFrame.
-  // That combined with wrappers (owned and kept alive by RemoteFrame) keeping
-  // persistent strong references to RemoteDOMWindow will prevent the GCing
-  // of all these objects. Break the cycle by notifying of detachment.
-  if (!m_view)
-    toRemoteDOMWindow(m_domWindow)->frameDetached();
 }
 
 void RemoteFrame::createView() {
