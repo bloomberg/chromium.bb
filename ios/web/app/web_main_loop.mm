@@ -78,7 +78,7 @@ GetDefaultSchedulerWorkerPoolParams() {
 size_t DefaultBrowserWorkerPoolIndexForTraits(const base::TaskTraits& traits) {
   const bool is_background =
       traits.priority() == base::TaskPriority::BACKGROUND;
-  if (traits.with_file_io())
+  if (traits.may_block() || traits.with_base_sync_primitives())
     return is_background ? BACKGROUND_FILE_IO : FOREGROUND_FILE_IO;
 
   return is_background ? BACKGROUND : FOREGROUND;
