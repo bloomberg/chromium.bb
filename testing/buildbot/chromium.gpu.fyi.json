@@ -10381,7 +10381,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder --disable-es3-apis --disable-es3-gl-context"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d11_passthrough_tests",
@@ -10593,7 +10593,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder --disable-es3-apis --disable-es3-gl-context"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d11_passthrough_tests",
@@ -11036,7 +11036,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder --disable-es3-apis --disable-es3-gl-context"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d11_passthrough_tests",
@@ -11502,7 +11502,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder --disable-es3-apis --disable-es3-gl-context"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d11_passthrough_tests",
@@ -11968,7 +11968,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder --disable-es3-apis --disable-es3-gl-context"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d11_passthrough_tests",
@@ -12473,7 +12473,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder --disable-es3-apis --disable-es3-gl-context"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d11_passthrough_tests",
@@ -12981,7 +12981,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder --disable-es3-apis --disable-es3-gl-context"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d11_passthrough_tests",
@@ -13486,7 +13486,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder --disable-es3-apis --disable-es3-gl-context"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d11_passthrough_tests",
@@ -13952,7 +13952,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder --disable-es3-apis --disable-es3-gl-context"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d11_passthrough_tests",
@@ -14395,7 +14395,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder --disable-es3-apis --disable-es3-gl-context"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d11_passthrough_tests",
@@ -14883,7 +14883,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder --disable-es3-apis --disable-es3-gl-context"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d11_passthrough_tests",
@@ -15406,7 +15406,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder --disable-es3-apis --disable-es3-gl-context"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d11_passthrough_tests",
@@ -15888,7 +15888,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder --disable-es3-apis --disable-es3-gl-context"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d11_passthrough_tests",
@@ -16370,7 +16370,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder --disable-es3-apis --disable-es3-gl-context"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d11_passthrough_tests",
@@ -16986,7 +16986,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder --disable-es3-apis --disable-es3-gl-context"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d11_passthrough_tests",
@@ -17452,7 +17452,7 @@
           "--show-stdout",
           "--browser=debug_x64",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder --disable-es3-apis --disable-es3-gl-context"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d11_passthrough_tests",
@@ -17995,7 +17995,7 @@
           "--show-stdout",
           "--browser=release_x64",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder --disable-es3-apis --disable-es3-gl-context"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_d3d11_passthrough_tests",

@@ -1337,6 +1337,12 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'extra_browser_args': [
       '--use-angle=d3d11',
       '--use-passthrough-cmd-decoder',
+      # TODO(geofflang): Remove --disable-es3-apis once crbug.com/671217 is
+      # complete.
+      '--disable-es3-apis',
+      # TODO(geofflang): --disable-es3-gl-context is required because of
+      # crbug.com/680522
+      '--disable-es3-gl-context',
     ],
     'asan_args': ['--is-asan'],
   },
