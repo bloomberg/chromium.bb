@@ -81,7 +81,6 @@ public class SystemDownloadNotifierTest extends InstrumentationTestCase {
         DownloadInfo info = new DownloadInfo.Builder()
                 .setDownloadGuid(UUID.randomUUID().toString()).build();
         mDownloadNotifier.notifyDownloadProgress(info, 1L, true);
-        assertFalse(mDownloadNotifier.mStarted);
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -103,7 +102,6 @@ public class SystemDownloadNotifierTest extends InstrumentationTestCase {
         DownloadInfo info = new DownloadInfo.Builder()
                 .setDownloadGuid(UUID.randomUUID().toString()).build();
         mDownloadNotifier.notifyDownloadProgress(info, 1L, true);
-        assertFalse(mDownloadNotifier.mStarted);
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
