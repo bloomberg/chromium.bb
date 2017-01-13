@@ -10,16 +10,15 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
-#import "ios/chrome/browser/ui/browser_list_ios.h"
+#import "ios/chrome/browser/tabs/tab_model_list.h"
 #include "url/gurl.h"
 
 namespace new_tab_page_uma {
 
 bool IsCurrentlyOnNTP(ios::ChromeBrowserState* browserState) {
-  Tab* currentTab =
-      [[BrowserListIOS::GetLastActiveWithBrowserState(browserState) tabModel]
-          currentTab];
-  return currentTab && currentTab.url == GURL(kChromeUINewTabURL);
+  TabModel* tabModel = GetLastActiveTabModelForChromeBrowserState(browserState);
+  return tabModel.currentTab &&
+         tabModel.currentTab.url == GURL(kChromeUINewTabURL);
 }
 
 void RecordAction(ios::ChromeBrowserState* browserState, ActionType type) {

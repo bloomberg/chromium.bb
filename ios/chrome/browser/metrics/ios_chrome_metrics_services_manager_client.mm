@@ -16,7 +16,7 @@
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/metrics/ios_chrome_metrics_service_accessor.h"
 #include "ios/chrome/browser/metrics/ios_chrome_metrics_service_client.h"
-#include "ios/chrome/browser/ui/browser_list_ios.h"
+#include "ios/chrome/browser/tabs/tab_model_list.h"
 #include "ios/chrome/browser/variations/ios_chrome_variations_service_client.h"
 #include "ios/chrome/browser/variations/ios_ui_string_overrider_factory.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -63,7 +63,7 @@ std::unique_ptr<rappor::RapporServiceImpl>
 IOSChromeMetricsServicesManagerClient::CreateRapporServiceImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return base::MakeUnique<rappor::RapporServiceImpl>(
-      local_state_, base::Bind(&BrowserListIOS::IsOffTheRecordSessionActive));
+      local_state_, base::Bind(&::IsOffTheRecordSessionActive));
 }
 
 std::unique_ptr<variations::VariationsService>

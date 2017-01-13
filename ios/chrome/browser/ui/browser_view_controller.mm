@@ -88,7 +88,6 @@
 #import "ios/chrome/browser/ui/background_generator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
 #import "ios/chrome/browser/ui/browser_container_view.h"
-#import "ios/chrome/browser/ui/browser_list_ios.h"
 #import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
 #import "ios/chrome/browser/ui/chrome_web_view_factory.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
@@ -917,7 +916,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     // TODO(leng): Delay this.
     [[UpgradeCenter sharedInstance] registerClient:self];
     _inNewTabAnimation = NO;
-    BrowserListIOS::AddBrowser(self);
     if (model && browserState)
       [self updateWithTabModel:model browserState:browserState];
     if ([[NSUserDefaults standardUserDefaults]
@@ -943,7 +941,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   _tabStripController.reset();
   _infoBarContainer.reset();
   _readingListMenuNotifier.reset();
-  BrowserListIOS::RemoveBrowser(self);
   _bookmarkModel->RemoveObserver(_bookmarkModelBridge.get());
   [_model removeObserver:self];
   [[UpgradeCenter sharedInstance] unregisterClient:self];
@@ -1042,6 +1039,14 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
 - (BOOL)isPlayingTTS {
   return _voiceSearchController && _voiceSearchController->IsPlayingAudio();
+}
+
+- (ios::ChromeBrowserState*)browserState {
+  return _browserState;
+}
+
+- (TabModel*)tabModel {
+  return _model.get();
 }
 
 - (SideSwipeController*)sideSwipeController {
@@ -1672,7 +1677,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   [_contextualSearchMask removeFromSuperview];
   [_paymentRequestManager close];
   _paymentRequestManager.reset();
-  BrowserListIOS::RemoveBrowser(self);
   [_toolbarController browserStateDestroyed];
   [_model browserStateDestroyed];
   [_preloadController browserStateDestroyed];
@@ -3237,16 +3241,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     // but not providing any link to it is suboptimal. That's what Safari is
     // doing, and what the PM want, but it doesn't make it right.
   }
-}
-
-#pragma mark - BrowserIOS methods
-
-- (ios::ChromeBrowserState*)browserState {
-  return _browserState;
-}
-
-- (TabModel*)tabModel {
-  return _model.get();
 }
 
 #pragma mark - No-tabs UI methods

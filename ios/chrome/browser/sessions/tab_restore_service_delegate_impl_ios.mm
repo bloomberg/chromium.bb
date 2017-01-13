@@ -14,8 +14,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
-#include "ios/chrome/browser/ui/browser_ios.h"
-#include "ios/chrome/browser/ui/browser_list_ios.h"
+#import "ios/chrome/browser/tabs/tab_model_list.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/web_state/web_state_impl.h"
@@ -30,9 +29,7 @@ TabRestoreServiceDelegateImplIOS::TabRestoreServiceDelegateImplIOS(
 TabRestoreServiceDelegateImplIOS::~TabRestoreServiceDelegateImplIOS() {}
 
 TabModel* TabRestoreServiceDelegateImplIOS::tab_model() const {
-  id<BrowserIOS> browser =
-      BrowserListIOS::GetLastActiveWithBrowserState(browser_state_);
-  return [browser tabModel];
+  return GetLastActiveTabModelForChromeBrowserState(browser_state_);
 }
 
 void TabRestoreServiceDelegateImplIOS::ShowBrowserWindow() {
