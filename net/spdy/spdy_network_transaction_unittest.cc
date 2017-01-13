@@ -514,9 +514,9 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
   static void StartTransactionCallback(HttpNetworkSession* session,
                                        GURL url,
                                        int result) {
+    HttpRequestInfo request;
     HttpNetworkTransaction trans(DEFAULT_PRIORITY, session);
     TestCompletionCallback callback;
-    HttpRequestInfo request;
     request.method = "GET";
     request.url = url;
     request.load_flags = 0;
@@ -700,10 +700,6 @@ TEST_F(SpdyNetworkTransactionTest, ThreeGets) {
   // on will negotiate SPDY and will be used for all requests.
   helper.AddData(&data_placeholder1);
   helper.AddData(&data_placeholder2);
-  HttpNetworkTransaction trans1(DEFAULT_PRIORITY, helper.session());
-  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
-  HttpNetworkTransaction trans3(DEFAULT_PRIORITY, helper.session());
-
   TestCompletionCallback callback1;
   TestCompletionCallback callback2;
   TestCompletionCallback callback3;
@@ -711,6 +707,10 @@ TEST_F(SpdyNetworkTransactionTest, ThreeGets) {
   HttpRequestInfo httpreq1 = CreateGetRequest();
   HttpRequestInfo httpreq2 = CreateGetRequest();
   HttpRequestInfo httpreq3 = CreateGetRequest();
+
+  HttpNetworkTransaction trans1(DEFAULT_PRIORITY, helper.session());
+  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
+  HttpNetworkTransaction trans3(DEFAULT_PRIORITY, helper.session());
 
   out.rv = trans1.Start(&httpreq1, callback1.callback(), log);
   ASSERT_THAT(out.rv, IsError(ERR_IO_PENDING));
@@ -2630,12 +2630,12 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushUpdatesPriority) {
               IsError(ERR_IO_PENDING));
   data.RunUntilPaused();
 
-  HttpNetworkTransaction trans2(HIGHEST, helper.session());
-  TestCompletionCallback callback2;
-
   // Start a request that matches the push.
   HttpRequestInfo push_req = CreateGetRequest();
   push_req.url = GURL(GetDefaultUrlWithPath("/foo.dat"));
+
+  HttpNetworkTransaction trans2(HIGHEST, helper.session());
+  TestCompletionCallback callback2;
   ASSERT_THAT(trans2.Start(&push_req, callback2.callback(), log),
               IsError(ERR_IO_PENDING));
   data.Resume();
@@ -5440,6 +5440,13 @@ TEST_F(SpdyNetworkTransactionTest, OutOfOrderHeaders) {
   EXPECT_THAT(callback3.WaitForResult(), IsOk());
 
   helper.VerifyDataConsumed();
+
+  // At this point the test is completed and we need to safely destroy
+  // all allocated structures. Helper stores a transaction that has a
+  // reference to a stack allocated request, which has a short lifetime,
+  // and is accessed during the transaction destruction. We need to delete
+  // the transaction while the request is still a valid object.
+  helper.ResetTrans();
 }
 
 // Test that sent data frames and received WINDOW_UPDATE frames change
