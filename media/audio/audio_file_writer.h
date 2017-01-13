@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_AUDIO_AUDIO_INPUT_WRITER_H_
-#define MEDIA_AUDIO_AUDIO_INPUT_WRITER_H_
+#ifndef MEDIA_AUDIO_AUDIO_FILE_WRITER_H_
+#define MEDIA_AUDIO_AUDIO_FILE_WRITER_H_
 
 #include <memory>
 
@@ -11,11 +11,11 @@ namespace media {
 
 class AudioBus;
 
-// A writer interface used by AudioInputController for writing audio data to
-// file for debugging purposes.
-class AudioInputWriter {
+// A writer interface used for writing audio data to file for debugging
+// purposes.
+class AudioFileWriter {
  public:
-  virtual ~AudioInputWriter() {}
+  virtual ~AudioFileWriter() {}
 
   // Must be called before calling Write() for the first time after creation or
   // Stop() call. Can be called on any sequence; Write() and Stop() must be
@@ -38,4 +38,4 @@ class AudioInputWriter {
 
 }  // namspace media
 
-#endif  // MEDIA_AUDIO_AUDIO_INPUT_WRITER_H_
+#endif  // MEDIA_AUDIO_AUDIO_FILE_WRITER_H_

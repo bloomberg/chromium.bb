@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_DEBUG_WRITER_H_
-#define CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_DEBUG_WRITER_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_DEBUG_FILE_WRITER_H_
+#define CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_DEBUG_FILE_WRITER_H_
 
 #include <stdint.h>
 
@@ -14,7 +14,7 @@
 #include "base/sequence_checker.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
-#include "media/audio/audio_input_writer.h"
+#include "media/audio/audio_file_writer.h"
 #include "media/base/audio_parameters.h"
 
 namespace media {
@@ -27,11 +27,11 @@ namespace content {
 
 // Writes audio input data used for debugging purposes. All operations are
 // non-blocking.
-class CONTENT_EXPORT AudioInputDebugWriter
-    : public NON_EXPORTED_BASE(media::AudioInputWriter) {
+class CONTENT_EXPORT AudioDebugFileWriter
+    : public NON_EXPORTED_BASE(media::AudioFileWriter) {
  public:
-  explicit AudioInputDebugWriter(const media::AudioParameters& params);
-  ~AudioInputDebugWriter() override;
+  explicit AudioDebugFileWriter(const media::AudioParameters& params);
+  ~AudioDebugFileWriter() override;
 
   void Start(const base::FilePath& file) override;
   void Stop() override;
@@ -49,4 +49,4 @@ class CONTENT_EXPORT AudioInputDebugWriter
 
 }  // namspace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_DEBUG_WRITER_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_DEBUG_FILE_WRITER_H_

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "media/audio/test_audio_input_controller_factory.h"
-#include "media/audio/audio_input_writer.h"
+#include "media/audio/audio_file_writer.h"
 #include "media/audio/audio_io.h"
 
 namespace media {

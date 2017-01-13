@@ -22,7 +22,7 @@
 #include "content/browser/media/capture/desktop_capture_device_uma_types.h"
 #include "content/browser/media/capture/web_contents_audio_input_stream.h"
 #include "content/browser/media/media_internals.h"
-#include "content/browser/renderer_host/media/audio_input_debug_writer.h"
+#include "content/browser/renderer_host/media/audio_debug_file_writer.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/audio_input_sync_writer.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
@@ -348,10 +348,10 @@ void AudioInputRendererHost::DoCreateStream(
   }
 
 #if BUILDFLAG(ENABLE_WEBRTC)
-  std::unique_ptr<media::AudioInputWriter> debug_writer(
-      new AudioInputDebugWriter(audio_params));
+  std::unique_ptr<media::AudioFileWriter> debug_writer(
+      new AudioDebugFileWriter(audio_params));
 #else
-  std::unique_ptr<media::AudioInputWriter> debug_writer(nullptr);
+  std::unique_ptr<media::AudioFileWriter> debug_writer(nullptr);
 #endif
 
   // If we have successfully created the SyncWriter then assign it to the

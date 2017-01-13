@@ -17,7 +17,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "media/audio/audio_input_writer.h"
+#include "media/audio/audio_file_writer.h"
 #include "media/base/user_input_monitor.h"
 
 namespace {
@@ -89,7 +89,7 @@ AudioInputController::Factory* AudioInputController::factory_ = nullptr;
 AudioInputController::AudioInputController(
     EventHandler* handler,
     SyncWriter* sync_writer,
-    std::unique_ptr<AudioInputWriter> debug_writer,
+    std::unique_ptr<AudioFileWriter> debug_writer,
     UserInputMonitor* user_input_monitor,
     const bool agc_is_enabled)
     : creator_task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -160,7 +160,7 @@ scoped_refptr<AudioInputController> AudioInputController::CreateLowLatency(
     const AudioParameters& params,
     const std::string& device_id,
     SyncWriter* sync_writer,
-    std::unique_ptr<AudioInputWriter> debug_writer,
+    std::unique_ptr<AudioFileWriter> debug_writer,
     UserInputMonitor* user_input_monitor,
     const bool agc_is_enabled) {
   DCHECK(audio_manager);
@@ -203,7 +203,7 @@ scoped_refptr<AudioInputController> AudioInputController::CreateForStream(
     EventHandler* event_handler,
     AudioInputStream* stream,
     SyncWriter* sync_writer,
-    std::unique_ptr<AudioInputWriter> debug_writer,
+    std::unique_ptr<AudioFileWriter> debug_writer,
     UserInputMonitor* user_input_monitor) {
   DCHECK(sync_writer);
   DCHECK(stream);

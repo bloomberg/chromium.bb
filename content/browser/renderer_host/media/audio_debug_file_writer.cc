@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/media/audio_input_debug_writer.h"
+#include "content/browser/renderer_host/media/audio_debug_file_writer.h"
+
 #include <stdint.h>
 #include <array>
 #include <utility>
+
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/sys_byteorder.h"
@@ -131,7 +133,7 @@ void WriteWavHeader(WavHeaderBuffer* buf,
 // Manages the debug recording file and writes to it. Can be created on any
 // thread. All the operations must be executed on FILE thread. Must be destroyed
 // on FILE thread.
-class AudioInputDebugWriter::AudioFileWriter {
+class AudioDebugFileWriter::AudioFileWriter {
  public:
   static AudioFileWriterUniquePtr Create(const base::FilePath& file_name,
                                          const media::AudioParameters& params);
@@ -167,8 +169,8 @@ class AudioInputDebugWriter::AudioFileWriter {
 };
 
 // static
-AudioInputDebugWriter::AudioFileWriterUniquePtr
-AudioInputDebugWriter::AudioFileWriter::Create(
+AudioDebugFileWriter::AudioFileWriterUniquePtr
+AudioDebugFileWriter::AudioFileWriter::Create(
     const base::FilePath& file_name,
     const media::AudioParameters& params) {
   AudioFileWriterUniquePtr file_writer(new AudioFileWriter(params));
@@ -182,19 +184,19 @@ AudioInputDebugWriter::AudioFileWriter::Create(
   return file_writer;
 }
 
-AudioInputDebugWriter::AudioFileWriter::AudioFileWriter(
+AudioDebugFileWriter::AudioFileWriter::AudioFileWriter(
     const media::AudioParameters& params)
     : samples_(0), params_(params), interleaved_data_size_(0) {
   DCHECK_EQ(params.bits_per_sample(), kBytesPerSample * 8);
 }
 
-AudioInputDebugWriter::AudioFileWriter::~AudioFileWriter() {
+AudioDebugFileWriter::AudioFileWriter::~AudioFileWriter() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (file_.IsValid())
     WriteHeader();
 }
 
-void AudioInputDebugWriter::AudioFileWriter::Write(
+void AudioDebugFileWriter::AudioFileWriter::Write(
     const media::AudioBus* data) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (!file_.IsValid())
@@ -221,7 +223,7 @@ void AudioInputDebugWriter::AudioFileWriter::Write(
                           data_size * sizeof(interleaved_data_[0]));
 }
 
-void AudioInputDebugWriter::AudioFileWriter::WriteHeader() {
+void AudioDebugFileWriter::AudioFileWriter::WriteHeader() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (!file_.IsValid())
     return;
@@ -234,7 +236,7 @@ void AudioInputDebugWriter::AudioFileWriter::WriteHeader() {
   file_.Seek(base::File::FROM_BEGIN, kWavHeaderSize);
 }
 
-void AudioInputDebugWriter::AudioFileWriter::CreateRecordingFile(
+void AudioDebugFileWriter::AudioFileWriter::CreateRecordingFile(
     const base::FilePath& file_name) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(!file_.IsValid());
@@ -247,7 +249,7 @@ void AudioInputDebugWriter::AudioFileWriter::CreateRecordingFile(
     return;
   }
 
-  // Note that we do not inform AudioInputDebugWriter that the file creation
+  // Note that we do not inform AudioDebugFileWriter that the file creation
   // fails, so it will continue to post data to be recorded, which won't
   // be written to the file. This also won't be reflected in WillWrite(). It's
   // fine, because this situation is rare, and all the posting is expected to
@@ -258,30 +260,30 @@ void AudioInputDebugWriter::AudioFileWriter::CreateRecordingFile(
               << file_.error_details();
 }
 
-AudioInputDebugWriter::AudioInputDebugWriter(
+AudioDebugFileWriter::AudioDebugFileWriter(
     const media::AudioParameters& params)
     : params_(params) {
   client_sequence_checker_.DetachFromSequence();
 }
 
-AudioInputDebugWriter::~AudioInputDebugWriter() {
+AudioDebugFileWriter::~AudioDebugFileWriter() {
   // |file_writer_| will be deleted on FILE thread.
 }
 
-void AudioInputDebugWriter::Start(const base::FilePath& file_name) {
+void AudioDebugFileWriter::Start(const base::FilePath& file_name) {
   DCHECK(client_sequence_checker_.CalledOnValidSequence());
   DCHECK(!file_writer_);
   file_writer_ = AudioFileWriter::Create(file_name, params_);
 }
 
-void AudioInputDebugWriter::Stop() {
+void AudioDebugFileWriter::Stop() {
   DCHECK(client_sequence_checker_.CalledOnValidSequence());
   // |file_writer_| is deleted on FILE thread.
   file_writer_.reset();
   client_sequence_checker_.DetachFromSequence();
 }
 
-void AudioInputDebugWriter::Write(std::unique_ptr<media::AudioBus> data) {
+void AudioDebugFileWriter::Write(std::unique_ptr<media::AudioBus> data) {
   DCHECK(client_sequence_checker_.CalledOnValidSequence());
   if (!file_writer_)
     return;
@@ -294,7 +296,7 @@ void AudioInputDebugWriter::Write(std::unique_ptr<media::AudioBus> data) {
                  base::Owned(data.release())));
 }
 
-bool AudioInputDebugWriter::WillWrite() {
+bool AudioDebugFileWriter::WillWrite() {
   // Note that if this is called from any place other than
   // |client_sequence_checker_| then there is a data race here, but it's fine,
   // because Write() will check for |file_writer_|. So, we are not very precise

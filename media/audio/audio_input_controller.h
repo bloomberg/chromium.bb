@@ -81,7 +81,7 @@ namespace media {
 #define AUDIO_POWER_MONITORING
 #endif
 
-class AudioInputWriter;
+class AudioFileWriter;
 class UserInputMonitor;
 
 class MEDIA_EXPORT AudioInputController
@@ -185,7 +185,7 @@ class MEDIA_EXPORT AudioInputController
       const std::string& device_id,
       // External synchronous writer for audio controller.
       SyncWriter* sync_writer,
-      std::unique_ptr<AudioInputWriter> debug_writer,
+      std::unique_ptr<AudioFileWriter> debug_writer,
       UserInputMonitor* user_input_monitor,
       const bool agc_is_enabled);
 
@@ -200,7 +200,7 @@ class MEDIA_EXPORT AudioInputController
       AudioInputStream* stream,
       // External synchronous writer for audio controller.
       SyncWriter* sync_writer,
-      std::unique_ptr<AudioInputWriter> debug_writer,
+      std::unique_ptr<AudioFileWriter> debug_writer,
       UserInputMonitor* user_input_monitor);
 
   // Starts recording using the created audio input stream.
@@ -289,7 +289,7 @@ class MEDIA_EXPORT AudioInputController
 
   AudioInputController(EventHandler* handler,
                        SyncWriter* sync_writer,
-                       std::unique_ptr<AudioInputWriter> debug_writer,
+                       std::unique_ptr<AudioFileWriter> debug_writer,
                        UserInputMonitor* user_input_monitor,
                        const bool agc_is_enabled);
   ~AudioInputController() override;
@@ -392,7 +392,7 @@ class MEDIA_EXPORT AudioInputController
   base::TimeTicks low_latency_create_time_;
 
   // Used for audio debug recordings. Accessed on audio thread.
-  const std::unique_ptr<AudioInputWriter> debug_writer_;
+  const std::unique_ptr<AudioFileWriter> debug_writer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioInputController);
