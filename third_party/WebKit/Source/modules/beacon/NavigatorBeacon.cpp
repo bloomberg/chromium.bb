@@ -70,15 +70,15 @@ bool NavigatorBeacon::canSendBeacon(ExecutionContext* context,
   }
 
   // If detached from frame, do not allow sending a Beacon.
-  if (!host()->frame())
+  if (!supplementable()->frame())
     return false;
 
   return true;
 }
 
 int NavigatorBeacon::maxAllowance() const {
-  DCHECK(host()->frame());
-  const Settings* settings = host()->frame()->settings();
+  DCHECK(supplementable()->frame());
+  const Settings* settings = supplementable()->frame()->settings();
   if (settings) {
     int maxAllowed = settings->getMaxBeaconTransmission();
     if (maxAllowed < m_transmittedBytes)
@@ -118,7 +118,7 @@ bool NavigatorBeacon::sendBeaconImpl(
   bool allowed;
 
   if (data.isArrayBufferView()) {
-    allowed = PingLoader::sendBeacon(host()->frame(), allowance, url,
+    allowed = PingLoader::sendBeacon(supplementable()->frame(), allowance, url,
                                      data.getAsArrayBufferView(), bytes);
   } else if (data.isBlob()) {
     Blob* blob = data.getAsBlob();
@@ -134,17 +134,17 @@ bool NavigatorBeacon::sendBeaconImpl(
         return false;
       }
     }
-    allowed =
-        PingLoader::sendBeacon(host()->frame(), allowance, url, blob, bytes);
+    allowed = PingLoader::sendBeacon(supplementable()->frame(), allowance, url,
+                                     blob, bytes);
   } else if (data.isString()) {
-    allowed = PingLoader::sendBeacon(host()->frame(), allowance, url,
+    allowed = PingLoader::sendBeacon(supplementable()->frame(), allowance, url,
                                      data.getAsString(), bytes);
   } else if (data.isFormData()) {
-    allowed = PingLoader::sendBeacon(host()->frame(), allowance, url,
+    allowed = PingLoader::sendBeacon(supplementable()->frame(), allowance, url,
                                      data.getAsFormData(), bytes);
   } else {
-    allowed = PingLoader::sendBeacon(host()->frame(), allowance, url, String(),
-                                     bytes);
+    allowed = PingLoader::sendBeacon(supplementable()->frame(), allowance, url,
+                                     String(), bytes);
   }
 
   if (allowed) {

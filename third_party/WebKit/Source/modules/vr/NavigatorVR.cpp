@@ -71,7 +71,7 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* scriptState) {
 }
 
 VRController* NavigatorVR::controller() {
-  if (!host()->frame())
+  if (!supplementable()->frame())
     return 0;
 
   if (!m_controller) {
@@ -82,7 +82,8 @@ VRController* NavigatorVR::controller() {
 }
 
 Document* NavigatorVR::document() {
-  return host()->frame() ? host()->frame()->document() : nullptr;
+  return supplementable()->frame() ? supplementable()->frame()->document()
+                                   : nullptr;
 }
 
 DEFINE_TRACE(NavigatorVR) {
@@ -104,17 +105,17 @@ const char* NavigatorVR::supplementName() {
 }
 
 void NavigatorVR::enqueueVREvent(VRDisplayEvent* event) {
-  if (host()->frame()) {
-    host()->frame()->domWindow()->enqueueWindowEvent(event);
+  if (supplementable()->frame()) {
+    supplementable()->frame()->domWindow()->enqueueWindowEvent(event);
   }
 }
 
 void NavigatorVR::dispatchVRGestureEvent(VRDisplayEvent* event) {
-  if (!(host()->frame()))
+  if (!(supplementable()->frame()))
     return;
   UserGestureIndicator gestureIndicator(
       DocumentUserGestureToken::create(document()));
-  LocalDOMWindow* window = host()->frame()->domWindow();
+  LocalDOMWindow* window = supplementable()->frame()->domWindow();
   DCHECK(window);
   event->setTarget(window);
   window->dispatchEvent(event);

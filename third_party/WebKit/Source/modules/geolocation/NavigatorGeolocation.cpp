@@ -52,8 +52,8 @@ Geolocation* NavigatorGeolocation::geolocation(Navigator& navigator) {
 }
 
 Geolocation* NavigatorGeolocation::geolocation() {
-  if (!m_geolocation && host()->frame())
-    m_geolocation = Geolocation::create(host()->frame()->document());
+  if (!m_geolocation && supplementable()->frame())
+    m_geolocation = Geolocation::create(supplementable()->frame()->document());
   return m_geolocation;
 }
 

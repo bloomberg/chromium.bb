@@ -56,10 +56,10 @@ Storage* DOMWindowStorage::localStorage(DOMWindow& window,
 
 Storage* DOMWindowStorage::sessionStorage(
     ExceptionState& exceptionState) const {
-  if (!host()->frame())
+  if (!supplementable()->frame())
     return nullptr;
 
-  Document* document = host()->frame()->document();
+  Document* document = supplementable()->frame()->document();
   DCHECK(document);
   String accessDeniedMessage = "Access is denied for this document.";
   if (!document->getSecurityOrigin()->canAccessLocalStorage()) {
@@ -99,10 +99,10 @@ Storage* DOMWindowStorage::sessionStorage(
 }
 
 Storage* DOMWindowStorage::localStorage(ExceptionState& exceptionState) const {
-  if (!host()->frame())
+  if (!supplementable()->frame())
     return nullptr;
 
-  Document* document = host()->frame()->document();
+  Document* document = supplementable()->frame()->document();
   DCHECK(document);
   String accessDeniedMessage = "Access is denied for this document.";
   if (!document->getSecurityOrigin()->canAccessLocalStorage()) {

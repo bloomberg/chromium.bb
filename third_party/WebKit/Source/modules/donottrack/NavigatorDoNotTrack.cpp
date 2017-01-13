@@ -62,7 +62,7 @@ String NavigatorDoNotTrack::doNotTrack(Navigator& navigator) {
 }
 
 String NavigatorDoNotTrack::doNotTrack() {
-  LocalFrame* frame = host()->frame();
+  LocalFrame* frame = supplementable()->frame();
   if (!frame || !frame->loader().client())
     return String();
   return frame->loader().client()->doNotTrackValue();

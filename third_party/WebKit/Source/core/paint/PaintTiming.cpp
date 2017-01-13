@@ -123,12 +123,12 @@ PaintTiming::PaintTiming(Document& document)
       m_fmpDetector(new FirstMeaningfulPaintDetector(this)) {}
 
 LocalFrame* PaintTiming::frame() const {
-  return host()->frame();
+  return supplementable()->frame();
 }
 
 void PaintTiming::notifyPaintTimingChanged() {
-  if (host()->loader())
-    host()->loader()->didChangePerformanceTiming();
+  if (supplementable()->loader())
+    supplementable()->loader()->didChangePerformanceTiming();
 }
 
 void PaintTiming::setFirstPaint(double stamp) {

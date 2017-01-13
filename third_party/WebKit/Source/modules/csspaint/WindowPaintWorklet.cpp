@@ -34,8 +34,8 @@ Worklet* WindowPaintWorklet::paintWorklet(DOMWindow& window) {
 }
 
 PaintWorklet* WindowPaintWorklet::paintWorklet() {
-  if (!m_paintWorklet && host()->frame())
-    m_paintWorklet = PaintWorklet::create(host()->frame());
+  if (!m_paintWorklet && supplementable()->frame())
+    m_paintWorklet = PaintWorklet::create(supplementable()->frame());
   return m_paintWorklet.get();
 }
 

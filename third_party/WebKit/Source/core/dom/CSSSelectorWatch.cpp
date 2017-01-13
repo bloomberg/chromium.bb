@@ -76,13 +76,13 @@ void CSSSelectorWatch::callbackSelectorChangeTimerFired(TimerBase*) {
     m_callbackSelectorChangeTimer.startOneShot(0, BLINK_FROM_HERE);
     return;
   }
-  if (host()->frame()) {
+  if (supplementable()->frame()) {
     Vector<String> addedSelectors;
     Vector<String> removedSelectors;
     copyToVector(m_addedSelectors, addedSelectors);
     copyToVector(m_removedSelectors, removedSelectors);
-    host()->frame()->loader().client()->selectorMatchChanged(addedSelectors,
-                                                             removedSelectors);
+    supplementable()->frame()->loader().client()->selectorMatchChanged(
+        addedSelectors, removedSelectors);
   }
   m_addedSelectors.clear();
   m_removedSelectors.clear();
@@ -164,7 +164,7 @@ void CSSSelectorWatch::watchCSSSelectors(const Vector<String>& selectors) {
     m_watchedCallbackSelectors.push_back(
         StyleRule::create(std::move(selectorList), callbackPropertySet));
   }
-  host()->styleEngine().watchedSelectorsChanged();
+  supplementable()->styleEngine().watchedSelectorsChanged();
 }
 
 DEFINE_TRACE(CSSSelectorWatch) {

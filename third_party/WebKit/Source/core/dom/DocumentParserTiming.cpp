@@ -72,8 +72,8 @@ DocumentParserTiming::DocumentParserTiming(Document& document)
     : Supplement<Document>(document) {}
 
 void DocumentParserTiming::notifyDocumentParserTimingChanged() {
-  if (host()->loader())
-    host()->loader()->didChangePerformanceTiming();
+  if (supplementable()->loader())
+    supplementable()->loader()->didChangePerformanceTiming();
 }
 
 }  // namespace blink

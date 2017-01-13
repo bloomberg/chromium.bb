@@ -88,10 +88,10 @@ ScriptPromise NavigatorInstalledApp::getInstalledRelatedApps(
 }
 
 InstalledAppController* NavigatorInstalledApp::controller() {
-  if (!host()->frame())
+  if (!supplementable()->frame())
     return nullptr;
 
-  return InstalledAppController::from(*host()->frame());
+  return InstalledAppController::from(*supplementable()->frame());
 }
 
 const char* NavigatorInstalledApp::supplementName() {

@@ -41,7 +41,7 @@ Performance* DOMWindowPerformance::performance(DOMWindow& window) {
 
 Performance* DOMWindowPerformance::performance() {
   if (!m_performance)
-    m_performance = Performance::create(host()->frame());
+    m_performance = Performance::create(supplementable()->frame());
   return m_performance.get();
 }
 

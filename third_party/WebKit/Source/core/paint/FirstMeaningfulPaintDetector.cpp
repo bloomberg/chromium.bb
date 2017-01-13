@@ -36,7 +36,7 @@ FirstMeaningfulPaintDetector::FirstMeaningfulPaintDetector(
           &FirstMeaningfulPaintDetector::networkStableTimerFired) {}
 
 Document* FirstMeaningfulPaintDetector::document() {
-  return m_paintTiming->host();
+  return m_paintTiming->supplementable();
 }
 
 // Computes "layout significance" (http://goo.gl/rytlPL) of a layout operation.
