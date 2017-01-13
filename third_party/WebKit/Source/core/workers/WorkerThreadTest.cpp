@@ -281,7 +281,7 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
           PauseWorkerGlobalScopeOnStart, headers.get(), "",
           m_securityOrigin.get(), nullptr, /* workerClients */
           WebAddressSpaceLocal, nullptr /* originTrialToken */,
-          nullptr /* WorkerSettings */, V8CacheOptionsDefault);
+          nullptr /* WorkerSettings */, WorkerV8Settings::Default());
   m_workerThread->start(std::move(startupData));
 
   // Used to wait for worker thread termination in a debugger task on the

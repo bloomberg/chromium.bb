@@ -452,7 +452,11 @@ void WorkerThread::initializeOnWorkerThread(
   WorkerThreadStartMode startMode = startupData->m_startMode;
   std::unique_ptr<Vector<char>> cachedMetaData =
       std::move(startupData->m_cachedMetaData);
-  V8CacheOptions v8CacheOptions = startupData->m_v8CacheOptions;
+  V8CacheOptions v8CacheOptions =
+      startupData->m_workerV8Settings.m_v8CacheOptions;
+  bool heapLimitIncreasedForDebugging =
+      startupData->m_workerV8Settings.m_heapLimitMode ==
+      WorkerV8Settings::HeapLimitMode::IncreasedForDebugging;
 
   {
     MutexLocker lock(m_threadStateMutex);
@@ -463,6 +467,10 @@ void WorkerThread::initializeOnWorkerThread(
 
     // Optimize for memory usage instead of latency for the worker isolate.
     isolate()->IsolateInBackgroundNotification();
+
+    if (heapLimitIncreasedForDebugging) {
+      isolate()->IncreaseHeapLimitForDebugging();
+    }
 
     m_consoleMessageStorage = new ConsoleMessageStorage();
     m_globalScope = createWorkerGlobalScope(std::move(startupData));

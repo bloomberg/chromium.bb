@@ -449,6 +449,10 @@ void WebEmbeddedWorkerImpl::startWorkerThread() {
   std::unique_ptr<WorkerSettings> workerSettings =
       WTF::wrapUnique(new WorkerSettings(document->settings()));
 
+  WorkerV8Settings workerV8Settings = WorkerV8Settings::Default();
+  workerV8Settings.m_v8CacheOptions =
+      static_cast<V8CacheOptions>(m_workerStartData.v8CacheOptions);
+
   std::unique_ptr<WorkerThreadStartupData> startupData =
       WorkerThreadStartupData::create(
           scriptURL, m_workerStartData.userAgent, m_mainScriptLoader->script(),
@@ -457,7 +461,7 @@ void WebEmbeddedWorkerImpl::startWorkerThread() {
           m_mainScriptLoader->getReferrerPolicy(), starterOrigin, workerClients,
           m_mainScriptLoader->responseAddressSpace(),
           m_mainScriptLoader->originTrialTokens(), std::move(workerSettings),
-          static_cast<V8CacheOptions>(m_workerStartData.v8CacheOptions));
+          workerV8Settings);
 
   m_mainScriptLoader.clear();
 

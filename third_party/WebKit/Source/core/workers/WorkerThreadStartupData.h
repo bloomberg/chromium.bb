@@ -31,7 +31,7 @@
 #ifndef WorkerThreadStartupData_h
 #define WorkerThreadStartupData_h
 
-#include "bindings/core/v8/V8CacheOptions.h"
+#include "bindings/core/v8/WorkerV8Settings.h"
 #include "core/CoreExport.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerClients.h"
@@ -67,12 +67,12 @@ class CORE_EXPORT WorkerThreadStartupData final {
       WebAddressSpace addressSpace,
       const Vector<String>* originTrialTokens,
       std::unique_ptr<WorkerSettings> workerSettings,
-      V8CacheOptions v8CacheOptions = V8CacheOptionsDefault) {
+      WorkerV8Settings workerV8Settings) {
     return WTF::wrapUnique(new WorkerThreadStartupData(
         scriptURL, userAgent, sourceCode, std::move(cachedMetaData), startMode,
         contentSecurityPolicyHeaders, referrerPolicy, starterOrigin,
         workerClients, addressSpace, originTrialTokens,
-        std::move(workerSettings), v8CacheOptions));
+        std::move(workerSettings), workerV8Settings));
   }
 
   ~WorkerThreadStartupData();
@@ -111,7 +111,7 @@ class CORE_EXPORT WorkerThreadStartupData final {
 
   std::unique_ptr<WorkerSettings> m_workerSettings;
 
-  V8CacheOptions m_v8CacheOptions;
+  WorkerV8Settings m_workerV8Settings;
 
  private:
   WorkerThreadStartupData(
@@ -127,7 +127,7 @@ class CORE_EXPORT WorkerThreadStartupData final {
       WebAddressSpace,
       const Vector<String>* originTrialTokens,
       std::unique_ptr<WorkerSettings>,
-      V8CacheOptions);
+      WorkerV8Settings);
 };
 
 }  // namespace blink

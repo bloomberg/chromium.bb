@@ -402,7 +402,8 @@ void WebSharedWorkerImpl::onScriptLoaderFinished() {
                                 : nullptr,
           m_mainScriptLoader->getReferrerPolicy(), starterOrigin, workerClients,
           m_mainScriptLoader->responseAddressSpace(),
-          m_mainScriptLoader->originTrialTokens(), std::move(workerSettings));
+          m_mainScriptLoader->originTrialTokens(), std::move(workerSettings),
+          WorkerV8Settings::Default());
 
   // SharedWorker can sometimes run tasks that are initiated by/associated with
   // a document's frame but these documents can be from a different process. So

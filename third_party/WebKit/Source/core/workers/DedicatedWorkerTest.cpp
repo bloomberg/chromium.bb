@@ -123,7 +123,7 @@ class InProcessWorkerMessagingProxyForTest
         "" /* referrerPolicy */, m_securityOrigin.get(),
         nullptr /* workerClients */, WebAddressSpaceLocal,
         nullptr /* originTrialTokens */, nullptr /* workerSettings */,
-        V8CacheOptionsDefault));
+        WorkerV8Settings::Default()));
 
     workerInspectorProxy()->workerThreadCreated(
         toDocument(getExecutionContext()), m_workerThread.get(), scriptURL);

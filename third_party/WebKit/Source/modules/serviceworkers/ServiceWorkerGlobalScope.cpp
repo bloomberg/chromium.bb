@@ -78,7 +78,7 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::create(
       std::move(startupData->m_starterOriginPrivilegeData),
       startupData->m_workerClients);
 
-  context->setV8CacheOptions(startupData->m_v8CacheOptions);
+  context->setV8CacheOptions(startupData->m_workerV8Settings.m_v8CacheOptions);
   context->applyContentSecurityPolicyFromVector(
       *startupData->m_contentSecurityPolicyHeaders);
   if (!startupData->m_referrerPolicy.isNull())

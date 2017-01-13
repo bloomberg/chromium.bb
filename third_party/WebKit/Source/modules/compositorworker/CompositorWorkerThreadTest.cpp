@@ -115,7 +115,7 @@ class CompositorWorkerThreadTest : public ::testing::Test {
         KURL(ParsedURLString, "http://fake.url/"), "fake user agent",
         "//fake source code", nullptr, DontPauseWorkerGlobalScopeOnStart,
         nullptr, "", m_securityOrigin.get(), clients, WebAddressSpaceLocal,
-        nullptr, nullptr, V8CacheOptionsDefault));
+        nullptr, nullptr, WorkerV8Settings::Default()));
     return workerThread;
   }
 
