@@ -61,6 +61,7 @@ import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.ContentSettingsResources;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
+import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
@@ -617,9 +618,24 @@ public class WebsiteSettingsPopup implements OnClickListener {
                 assert false : "Invalid setting " + permission.setting + " for permission "
                         + permission.type;
         }
+        if (permission.type == ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION
+                && WebsitePreferenceBridge.shouldUseDSEGeolocationSetting(mFullUrl, false)) {
+            status_text = statusTextForDSEPermission(permission);
+        }
         builder.append(status_text);
         permissionStatus.setText(builder);
         mPermissionsList.addView(permissionRow);
+    }
+
+    /**
+     * Update the permission string for the Default Search Engine.
+     */
+    private String statusTextForDSEPermission(PageInfoPermissionEntry permission) {
+        if (permission.setting == ContentSetting.ALLOW) {
+            return mContext.getString(R.string.page_info_dse_permission_allowed);
+        }
+
+        return mContext.getString(R.string.page_info_dse_permission_blocked);
     }
 
     /**

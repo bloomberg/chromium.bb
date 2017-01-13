@@ -1594,6 +1594,12 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_PAGE_INFO_INSTANT_APP_BUTTON" desc="Text in the button that opens an Android Instant app that is associated with the website's URL.">
         Open Instant App
       </message>
+      <message name="IDS_PAGE_INFO_DSE_PERMISSION_ALLOWED" desc="The label used in the Page Info dialog to describe an allowed location permission for the current search engine. Eg: Location - Allowed for current search engine">
+        Allowed for current search engine
+      </message>
+      <message name="IDS_PAGE_INFO_DSE_PERMISSION_BLOCKED" desc="The label used in the Page Info dialog to describe a blocked location permission for the current search engine. Eg: Location - Blocked for current search engine">
+        Blocked for current search engine
+      </message>
       <message name="IDS_PAGE_INFO_PERMISSION_ALLOWED" desc="The label used in the Page Info dialog to describe an allowed permission. Eg: Location - Allowed">
         Allowed
       </message>

@@ -8,6 +8,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/stl_util.h"
+#include "chrome/browser/android/search_geolocation/search_geolocation_service.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
@@ -21,6 +22,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/WebsiteSettingsPopup_jni.h"
+#include "url/origin.h"
 
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
@@ -41,7 +43,8 @@ static jlong Init(JNIEnv* env,
 WebsiteSettingsPopupAndroid::WebsiteSettingsPopupAndroid(
     JNIEnv* env,
     jobject java_website_settings_pop,
-    content::WebContents* web_contents) {
+    content::WebContents* web_contents)
+    : search_geolocation_service_(nullptr) {
   // Important to use GetVisibleEntry to match what's showing in the omnibox.
   content::NavigationEntry* nav_entry =
       web_contents->GetController().GetVisibleEntry();
@@ -57,6 +60,10 @@ WebsiteSettingsPopupAndroid::WebsiteSettingsPopupAndroid(
   DCHECK(helper);
   security_state::SecurityInfo security_info;
   helper->GetSecurityInfo(&security_info);
+
+  search_geolocation_service_ =
+      SearchGeolocationService::Factory::GetForBrowserContext(
+          web_contents->GetBrowserContext());
 
   presenter_.reset(new WebsiteSettings(
       this, Profile::FromBrowserContext(web_contents->GetBrowserContext()),
@@ -117,9 +124,20 @@ void WebsiteSettingsPopupAndroid::SetPermissionInfo(
       user_specified_settings_to_display;
 
   for (const auto& permission : permission_info_list) {
-    if (base::ContainsValue(permissions_to_display, permission.type) &&
-        permission.setting != CONTENT_SETTING_DEFAULT) {
-      user_specified_settings_to_display[permission.type] = permission.setting;
+    if (base::ContainsValue(permissions_to_display, permission.type)) {
+      if (permission.setting != CONTENT_SETTING_DEFAULT) {
+        user_specified_settings_to_display[permission.type] =
+            permission.setting;
+      } else if (permission.type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+        if (search_geolocation_service_ &&
+            search_geolocation_service_->UseDSEGeolocationSetting(
+                url::Origin(url_))) {
+          user_specified_settings_to_display[permission.type] =
+              search_geolocation_service_->GetDSEGeolocationSetting()
+                  ? CONTENT_SETTING_ALLOW
+                  : CONTENT_SETTING_BLOCK;
+        }
+      }
     }
   }
 
