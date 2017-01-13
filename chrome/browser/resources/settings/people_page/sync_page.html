@@ -44,6 +44,10 @@
           padding: 0;
         };
       }
+
+      #sync-data-types .list-item:not([hidden]) ~ .list-item:not([hidden]) {
+        border-top: var(--settings-separator-line);
+      }
     </style>
     <div id="[[pages.SPINNER]]" class="settings-box first"
         hidden$="[[!isStatus_(pages.SPINNER, pageStatus_)]]">
@@ -63,7 +67,7 @@
         </paper-toggle-button>
       </div>
 
-      <div class="list-frame">
+      <div class="list-frame" id="sync-data-types">
         <div class="layout horizontal list-item"
             hidden="[[!syncPrefs.appsRegistered]]">
           <div class="flex">$i18n{appCheckboxLabel}</div>
