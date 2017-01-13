@@ -20,8 +20,9 @@ GpuVideoDecodeAcceleratorHost::GpuVideoDecodeAcceleratorHost(
     gpu::CommandBufferProxyImpl* impl)
     : channel_(impl->channel()),
       decoder_route_id_(MSG_ROUTING_NONE),
-      client_(NULL),
+      client_(nullptr),
       impl_(impl),
+      media_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_this_factory_(this) {
   DCHECK(channel_);
   DCHECK(impl_);
@@ -33,6 +34,8 @@ GpuVideoDecodeAcceleratorHost::~GpuVideoDecodeAcceleratorHost() {
 
   if (channel_ && decoder_route_id_ != MSG_ROUTING_NONE)
     channel_->RemoveRoute(decoder_route_id_);
+
+  base::AutoLock lock(impl_lock_);
   if (impl_)
     impl_->RemoveDeletionObserver(this);
 }
@@ -68,7 +71,7 @@ void GpuVideoDecodeAcceleratorHost::OnChannelError() {
   if (channel_) {
     if (decoder_route_id_ != MSG_ROUTING_NONE)
       channel_->RemoveRoute(decoder_route_id_);
-    channel_ = NULL;
+    channel_ = nullptr;
   }
   DLOG(ERROR) << "OnChannelError()";
   PostNotifyError(PLATFORM_FAILURE);
@@ -79,6 +82,7 @@ bool GpuVideoDecodeAcceleratorHost::Initialize(const Config& config,
   DCHECK(CalledOnValidThread());
   client_ = client;
 
+  base::AutoLock lock(impl_lock_);
   if (!impl_)
     return false;
 
@@ -175,22 +179,24 @@ void GpuVideoDecodeAcceleratorHost::Destroy() {
   DCHECK(CalledOnValidThread());
   if (channel_)
     Send(new AcceleratedVideoDecoderMsg_Destroy(decoder_route_id_));
-  client_ = NULL;
+  client_ = nullptr;
   delete this;
 }
 
 void GpuVideoDecodeAcceleratorHost::OnWillDeleteImpl() {
-  DCHECK(CalledOnValidThread());
-  impl_ = NULL;
+  base::AutoLock lock(impl_lock_);
+  impl_ = nullptr;
 
   // The gpu::CommandBufferProxyImpl is going away; error out this VDA.
-  OnChannelError();
+  media_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&GpuVideoDecodeAcceleratorHost::OnChannelError,
+                            weak_this_factory_.GetWeakPtr()));
 }
 
 void GpuVideoDecodeAcceleratorHost::PostNotifyError(Error error) {
   DCHECK(CalledOnValidThread());
   DVLOG(2) << "PostNotifyError(): error=" << error;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  media_task_runner_->PostTask(
       FROM_HERE, base::Bind(&GpuVideoDecodeAcceleratorHost::OnNotifyError,
                             weak_this_factory_.GetWeakPtr(), error));
 }
@@ -280,7 +286,7 @@ void GpuVideoDecodeAcceleratorHost::OnNotifyError(uint32_t error) {
 
   // Client::NotifyError() may Destroy() |this|, so calling it needs to be the
   // last thing done on this stack!
-  VideoDecodeAccelerator::Client* client = NULL;
+  VideoDecodeAccelerator::Client* client = nullptr;
   std::swap(client, client_);
   client->NotifyError(static_cast<VideoDecodeAccelerator::Error>(error));
 }

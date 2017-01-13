@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/non_thread_safe.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
@@ -104,6 +105,10 @@ class GpuVideoEncodeAcceleratorHost
   // The client that will receive callbacks from the encoder.
   Client* client_;
 
+  // Protect |impl_|. |impl_| is used on media thread, but it can be invalidated
+  // on main thread.
+  base::Lock impl_lock_;
+
   // Unowned reference to the gpu::CommandBufferProxyImpl that created us.
   // |this| registers as a DeletionObserver of |impl_|, so the reference is
   // always valid as long as it is not NULL.
@@ -116,6 +121,10 @@ class GpuVideoEncodeAcceleratorHost
 
   // ID serial number for the next frame to send to the GPU process.
   int32_t next_frame_id_;
+
+  // Task runner for tasks that should run on the thread this class is
+  // constructed.
+  scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
 
   // WeakPtr factory for posting tasks back to itself.
   base::WeakPtrFactory<GpuVideoEncodeAcceleratorHost> weak_this_factory_;

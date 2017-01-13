@@ -22,6 +22,7 @@ GpuVideoEncodeAcceleratorHost::GpuVideoEncodeAcceleratorHost(
       client_(nullptr),
       impl_(impl),
       next_frame_id_(0),
+      media_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_this_factory_(this) {
   DCHECK(channel_);
   DCHECK(impl_);
@@ -32,6 +33,8 @@ GpuVideoEncodeAcceleratorHost::~GpuVideoEncodeAcceleratorHost() {
   DCHECK(CalledOnValidThread());
   if (channel_ && encoder_route_id_ != MSG_ROUTING_NONE)
     channel_->RemoveRoute(encoder_route_id_);
+
+  base::AutoLock lock(impl_lock_);
   if (impl_)
     impl_->RemoveDeletionObserver(this);
 }
@@ -83,6 +86,8 @@ bool GpuVideoEncodeAcceleratorHost::Initialize(
     Client* client) {
   DCHECK(CalledOnValidThread());
   client_ = client;
+
+  base::AutoLock lock(impl_lock_);
   if (!impl_) {
     DLOG(ERROR) << "impl_ destroyed";
     return false;
@@ -174,11 +179,13 @@ void GpuVideoEncodeAcceleratorHost::Destroy() {
 }
 
 void GpuVideoEncodeAcceleratorHost::OnWillDeleteImpl() {
-  DCHECK(CalledOnValidThread());
+  base::AutoLock lock(impl_lock_);
   impl_ = nullptr;
 
   // The gpu::CommandBufferProxyImpl is going away; error out this VEA.
-  OnChannelError();
+  media_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&GpuVideoEncodeAcceleratorHost::OnChannelError,
+                            weak_this_factory_.GetWeakPtr()));
 }
 
 void GpuVideoEncodeAcceleratorHost::EncodeSharedMemoryFrame(
@@ -220,7 +227,7 @@ void GpuVideoEncodeAcceleratorHost::PostNotifyError(
               << location.file_name() << ":" << location.line_number() << ") "
               << message << " (error = " << error << ")";
   // Post the error notification back to this thread, to avoid re-entrancy.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  media_task_runner_->PostTask(
       FROM_HERE, base::Bind(&GpuVideoEncodeAcceleratorHost::OnNotifyError,
                             weak_this_factory_.GetWeakPtr(), error));
 }
