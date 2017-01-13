@@ -291,6 +291,26 @@ void HTMLFormElement::prepareForSubmission(
     return;
   }
 
+  // https://github.com/whatwg/html/issues/2253
+  for (const auto& element : listedElements()) {
+    if (element->isFormControlElement() &&
+        toHTMLFormControlElement(element)->blocksFormSubmission()) {
+      UseCounter::count(document(),
+                        UseCounter::FormSubmittedWithUnclosedFormControl);
+      if (RuntimeEnabledFeatures::unclosedFormControlIsInvalidEnabled()) {
+        String tagName = toHTMLFormControlElement(element)->tagName();
+        document().addConsoleMessage(ConsoleMessage::create(
+            SecurityMessageSource, ErrorMessageLevel,
+            "Form submission failed, as the <" + tagName + "> element named "
+                "'" + element->name() + "' was implicitly closed by reaching "
+                "the end of the file. Please add an explicit end tag "
+                "('</" + tagName + ">')"));
+        dispatchEvent(Event::create(EventTypeNames::error));
+        return;
+      }
+    }
+  }
+
   bool skipValidation = !document().page() || noValidate();
   DCHECK(event);
   if (submitButton && submitButton->formNoValidate())

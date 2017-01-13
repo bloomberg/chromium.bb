@@ -132,6 +132,9 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
   FormAssociated* toFormAssociatedOrNull() override { return this; };
   void associateWith(HTMLFormElement*) override;
 
+  bool blocksFormSubmission() const { return m_blocksFormSubmission; }
+  void setBlocksFormSubmission(bool value) { m_blocksFormSubmission = value; }
+
  protected:
   HTMLFormControlElement(const QualifiedName& tagName, Document&);
 
@@ -207,6 +210,7 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
   bool m_validityIsDirty : 1;
 
   bool m_wasFocusedByMouse : 1;
+  bool m_blocksFormSubmission : 1;
 };
 
 inline bool isHTMLFormControlElement(const Element& element) {

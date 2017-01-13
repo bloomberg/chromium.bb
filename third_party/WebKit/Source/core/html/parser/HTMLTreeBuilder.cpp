@@ -37,6 +37,7 @@
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/frame/UseCounter.h"
+#include "core/html/HTMLFormControlElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLTemplateElement.h"
 #include "core/html/parser/AtomicHTMLToken.h"
@@ -2430,17 +2431,21 @@ void HTMLTreeBuilder::processEndOfFile(AtomicHTMLToken* token) {
       defaultForInTableText();
       processEndOfFile(token);
       return;
-    case TextMode:
+    case TextMode: {
       parseError(token);
       if (m_tree.currentStackItem()->hasTagName(scriptTag)) {
         // Mark the script element as "already started".
         DVLOG(1) << "Not implemented.";
       }
+      Element* el = m_tree.openElements()->top();
+      if (isHTMLTextAreaElement(el))
+        toHTMLFormControlElement(el)->setBlocksFormSubmission(true);
       m_tree.openElements()->pop();
       ASSERT(m_originalInsertionMode != TextMode);
       setInsertionMode(m_originalInsertionMode);
       processEndOfFile(token);
       return;
+    }
     case TemplateContentsMode:
       if (processEndOfFileForInTemplateContents(token))
         return;

@@ -31,6 +31,8 @@
 #include "core/SVGNames.h"
 #include "core/dom/Element.h"
 #include "core/html/HTMLElement.h"
+#include "core/html/HTMLFormControlElement.h"
+#include "core/html/HTMLSelectElement.h"
 
 namespace blink {
 
@@ -163,8 +165,11 @@ void HTMLElementStack::popAll() {
   m_stackDepth = 0;
   while (m_top) {
     Node& node = *topNode();
-    if (node.isElementNode())
+    if (node.isElementNode()) {
       toElement(node).finishParsingChildren();
+      if (isHTMLSelectElement(node))
+        toHTMLFormControlElement(node).setBlocksFormSubmission(true);
+    }
     m_top = m_top->releaseNext();
   }
 }

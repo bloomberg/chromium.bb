@@ -58,7 +58,8 @@ HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tagName,
       m_willValidate(true),
       m_isValid(true),
       m_validityIsDirty(false),
-      m_wasFocusedByMouse(false) {
+      m_wasFocusedByMouse(false),
+      m_blocksFormSubmission(false) {
   setHasCustomStyleCallbacks();
 }
 
