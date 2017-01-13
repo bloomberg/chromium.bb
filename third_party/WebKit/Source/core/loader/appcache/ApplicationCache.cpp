@@ -38,8 +38,7 @@
 
 namespace blink {
 
-ApplicationCache::ApplicationCache(LocalFrame* frame)
-    : ContextLifecycleObserver(frame->document()) {
+ApplicationCache::ApplicationCache(LocalFrame* frame) : DOMWindowClient(frame) {
   ApplicationCacheHost* cacheHost = applicationCacheHost();
   if (cacheHost)
     cacheHost->setApplicationCache(this);
@@ -47,12 +46,7 @@ ApplicationCache::ApplicationCache(LocalFrame* frame)
 
 DEFINE_TRACE(ApplicationCache) {
   EventTargetWithInlineData::trace(visitor);
-  ContextLifecycleObserver::trace(visitor);
-}
-
-void ApplicationCache::contextDestroyed() {
-  if (ApplicationCacheHost* cacheHost = applicationCacheHost())
-    cacheHost->setApplicationCache(0);
+  DOMWindowClient::trace(visitor);
 }
 
 ApplicationCacheHost* ApplicationCache::applicationCacheHost() const {
@@ -98,9 +92,7 @@ const AtomicString& ApplicationCache::interfaceName() const {
 }
 
 ExecutionContext* ApplicationCache::getExecutionContext() const {
-  if (frame())
-    return frame()->document();
-  return 0;
+  return frame() ? frame()->document() : nullptr;
 }
 
 const AtomicString& ApplicationCache::toEventType(

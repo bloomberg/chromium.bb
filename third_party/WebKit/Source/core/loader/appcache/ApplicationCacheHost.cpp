@@ -260,11 +260,12 @@ void ApplicationCacheHost::dispatchDOMEvent(
     const String& errorURL,
     int errorStatus,
     const String& errorMessage) {
-  if (!m_domApplicationCache)
+  // Don't dispatch an event if the window is detached.
+  if (!m_domApplicationCache || !m_domApplicationCache->domWindow())
     return;
 
   const AtomicString& eventType = ApplicationCache::toEventType(id);
-  if (eventType.isEmpty() || !m_domApplicationCache->getExecutionContext())
+  if (eventType.isEmpty())
     return;
   Event* event = nullptr;
   if (id == kProgressEvent) {

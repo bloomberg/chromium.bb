@@ -38,7 +38,7 @@ class ExceptionState;
 class LocalFrame;
 
 class ApplicationCache final : public EventTargetWithInlineData,
-                               public ContextLifecycleObserver {
+                               public DOMWindowClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(ApplicationCache);
 
@@ -47,8 +47,6 @@ class ApplicationCache final : public EventTargetWithInlineData,
     return new ApplicationCache(frame);
   }
   ~ApplicationCache() override {}
-
-  void contextDestroyed() override;
 
   unsigned short status() const;
   void update(ExceptionState&);
