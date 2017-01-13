@@ -973,6 +973,35 @@ void av1_append_sub8x8_mvs_for_idx(const AV1_COMMON *cm, MACROBLOCKD *xd,
 }
 
 #if CONFIG_WARPED_MOTION
+void calc_projection_samples(MB_MODE_INFO *const mbmi,
+#if CONFIG_GLOBAL_MOTION
+                             MACROBLOCKD *xd,
+#endif
+                             int x, int y, double *pts_inref) {
+  if (mbmi->motion_mode == WARPED_CAUSAL
+#if CONFIG_GLOBAL_MOTION
+      || (mbmi->mode == ZEROMV &&
+          xd->global_motion[mbmi->ref_frame[0]].wmtype > TRANSLATION)
+#endif
+          ) {
+    int ipts[2] = { x, y }, ipts_inref[2];
+    WarpedMotionParams *wm =
+#if CONFIG_GLOBAL_MOTION
+        (mbmi->motion_mode != WARPED_CAUSAL)
+            ? &xd->global_motion[mbmi->ref_frame[0]]
+            :
+#endif
+            &mbmi->wm_params[0];
+
+    project_points(wm, ipts, ipts_inref, 1, 2, 2, 0, 0);
+    pts_inref[0] = (double)ipts_inref[0] / (double)WARPEDPIXEL_PREC_SHIFTS;
+    pts_inref[1] = (double)ipts_inref[1] / (double)WARPEDPIXEL_PREC_SHIFTS;
+  } else {
+    pts_inref[0] = (double)x + (double)(mbmi->mv[0].as_mv.col) * 0.125;
+    pts_inref[1] = (double)y + (double)(mbmi->mv[0].as_mv.row) * 0.125;
+  }
+}
+
 int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
                 double *pts, double *pts_inref) {
   MB_MODE_INFO *const mbmi0 = &(xd->mi[0]->mbmi);
@@ -1000,8 +1029,6 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
       if (mbmi->ref_frame[0] == ref_frame && mbmi->ref_frame[1] == NONE) {
         int bw = block_size_wide[mbmi->sb_type];
         int bh = block_size_high[mbmi->sb_type];
-        int mv_row = mbmi->mv[0].as_mv.row;
-        int mv_col = mbmi->mv[0].as_mv.col;
         int cr_offset = -AOMMAX(bh, 8) / 2 - 1;
         int cc_offset = i * 8 + AOMMAX(bw, 8) / 2 - 1;
         int j;
@@ -1011,27 +1038,16 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
         mvnumber++;
 
         for (j = 0; j < pixelperblock; j++) {
-          int r_offset = j / 2;
-          int c_offset = j % 2;
+          int x = cc_offset + j % 2 + global_offset_c;
+          int y = cr_offset + j / 2 + global_offset_r;
 
-          pts[0] = (double)(cc_offset + c_offset + global_offset_c);
-          pts[1] = (double)(cr_offset + r_offset + global_offset_r);
-
-          if (mbmi->motion_mode == WARPED_CAUSAL) {
-            int ipts[2], ipts_inref[2];
-            ipts[0] = cc_offset + c_offset + global_offset_c;
-            ipts[1] = cr_offset + r_offset + global_offset_r;
-
-            project_points(&mbmi->wm_params[0], ipts, ipts_inref, 1, 2, 2, 0,
-                           0);
-            pts_inref[0] =
-                (double)ipts_inref[0] / (double)WARPEDPIXEL_PREC_SHIFTS;
-            pts_inref[1] =
-                (double)ipts_inref[1] / (double)WARPEDPIXEL_PREC_SHIFTS;
-          } else {
-            pts_inref[0] = pts[0] + (double)(mv_col)*0.125;
-            pts_inref[1] = pts[1] + (double)(mv_row)*0.125;
-          }
+          pts[0] = (double)x;
+          pts[1] = (double)y;
+          calc_projection_samples(mbmi,
+#if CONFIG_GLOBAL_MOTION
+                                  xd,
+#endif
+                                  x, y, pts_inref);
 
           pts += 2;
           pts_inref += 2;
@@ -1055,8 +1071,6 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
       if (mbmi->ref_frame[0] == ref_frame && mbmi->ref_frame[1] == NONE) {
         int bw = block_size_wide[mbmi->sb_type];
         int bh = block_size_high[mbmi->sb_type];
-        int mv_row = mbmi->mv[0].as_mv.row;
-        int mv_col = mbmi->mv[0].as_mv.col;
         int cr_offset = i * 8 + AOMMAX(bh, 8) / 2 - 1;
         int cc_offset = -AOMMAX(bw, 8) / 2 - 1;
         int j;
@@ -1066,27 +1080,16 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
         mvnumber++;
 
         for (j = 0; j < pixelperblock; j++) {
-          int r_offset = j / 2;
-          int c_offset = j % 2;
+          int x = cc_offset + j % 2 + global_offset_c;
+          int y = cr_offset + j / 2 + global_offset_r;
 
-          pts[0] = (double)(cc_offset + c_offset + global_offset_c);
-          pts[1] = (double)(cr_offset + r_offset + global_offset_r);
-
-          if (mbmi->motion_mode == WARPED_CAUSAL) {
-            int ipts[2], ipts_inref[2];
-            ipts[0] = cc_offset + c_offset + global_offset_c;
-            ipts[1] = cr_offset + r_offset + global_offset_r;
-
-            project_points(&mbmi->wm_params[0], ipts, ipts_inref, 1, 2, 2, 0,
-                           0);
-            pts_inref[0] =
-                (double)ipts_inref[0] / (double)WARPEDPIXEL_PREC_SHIFTS;
-            pts_inref[1] =
-                (double)ipts_inref[1] / (double)WARPEDPIXEL_PREC_SHIFTS;
-          } else {
-            pts_inref[0] = pts[0] + (double)(mv_col)*0.125;
-            pts_inref[1] = pts[1] + (double)(mv_row)*0.125;
-          }
+          pts[0] = (double)x;
+          pts[1] = (double)y;
+          calc_projection_samples(mbmi,
+#if CONFIG_GLOBAL_MOTION
+                                  xd,
+#endif
+                                  x, y, pts_inref);
 
           pts += 2;
           pts_inref += 2;
@@ -1106,8 +1109,6 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
     if (mbmi->ref_frame[0] == ref_frame && mbmi->ref_frame[1] == NONE) {
       int bw = block_size_wide[mbmi->sb_type];
       int bh = block_size_high[mbmi->sb_type];
-      int mv_row = mbmi->mv[0].as_mv.row;
-      int mv_col = mbmi->mv[0].as_mv.col;
       int cr_offset = -AOMMAX(bh, 8) / 2 - 1;
       int cc_offset = -AOMMAX(bw, 8) / 2 - 1;
       int j;
@@ -1117,26 +1118,16 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
       mvnumber++;
 
       for (j = 0; j < pixelperblock; j++) {
-        int r_offset = j / 2;
-        int c_offset = j % 2;
+        int x = cc_offset + j % 2 + global_offset_c;
+        int y = cr_offset + j / 2 + global_offset_r;
 
-        pts[0] = (double)(cc_offset + c_offset + global_offset_c);
-        pts[1] = (double)(cr_offset + r_offset + global_offset_r);
-
-        if (mbmi->motion_mode == WARPED_CAUSAL) {
-          int ipts[2], ipts_inref[2];
-          ipts[0] = cc_offset + c_offset + global_offset_c;
-          ipts[1] = cr_offset + r_offset + global_offset_r;
-
-          project_points(&mbmi->wm_params[0], ipts, ipts_inref, 1, 2, 2, 0, 0);
-          pts_inref[0] =
-              (double)ipts_inref[0] / (double)WARPEDPIXEL_PREC_SHIFTS;
-          pts_inref[1] =
-              (double)ipts_inref[1] / (double)WARPEDPIXEL_PREC_SHIFTS;
-        } else {
-          pts_inref[0] = pts[0] + (double)(mv_col)*0.125;
-          pts_inref[1] = pts[1] + (double)(mv_row)*0.125;
-        }
+        pts[0] = (double)x;
+        pts[1] = (double)y;
+        calc_projection_samples(mbmi,
+#if CONFIG_GLOBAL_MOTION
+                                xd,
+#endif
+                                x, y, pts_inref);
 
         pts += 2;
         pts_inref += 2;
