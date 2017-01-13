@@ -20,12 +20,40 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/frame_navigate_params.h"
+#include "net/base/data_url.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
+
+namespace {
+
+// List of mime types that can run JavaScript.
+static const struct MimeTypePair {
+  const char* const mime_type;
+  NavigationMetricsRecorder::MimeType histogram_value;
+} kScriptingMimeTypes[] = {
+    {"text/html", NavigationMetricsRecorder::MIME_TYPE_HTML},
+    {"application/xhtml+xml", NavigationMetricsRecorder::MIME_TYPE_XHTML},
+    {"application/pdf", NavigationMetricsRecorder::MIME_TYPE_PDF},
+    {"image/svg+xml", NavigationMetricsRecorder::MIME_TYPE_SVG}};
+
+void RecordDataURLMimeType(const std::string& mime_type) {
+  NavigationMetricsRecorder::MimeType value =
+      NavigationMetricsRecorder::MIME_TYPE_OTHER;
+  for (const MimeTypePair& pair : kScriptingMimeTypes) {
+    if (mime_type == pair.mime_type) {
+      value = pair.histogram_value;
+      break;
+    }
+  }
+  UMA_HISTOGRAM_ENUMERATION("Navigation.MainFrameScheme.DataUrl.MimeType",
+                            value, NavigationMetricsRecorder::MIME_TYPE_MAX);
+}
+
+}  // namespace
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(NavigationMetricsRecorder);
 
@@ -61,9 +89,18 @@ void NavigationMetricsRecorder::DidNavigateMainFrame(
   // a |data:| URL, either by redirects or user clicking a link.
   if (details.entry->GetVirtualURL().SchemeIs(url::kDataScheme) &&
       !ui::PageTransitionCoreTypeIs(params.transition,
-                                    ui::PAGE_TRANSITION_TYPED) &&
-      !details.previous_url.is_empty()) {
-    rappor::SampleDomainAndRegistryFromGURL(
-        rappor_service_, "Navigation.Scheme.Data", details.previous_url);
+                                    ui::PAGE_TRANSITION_TYPED)) {
+    if (!details.previous_url.is_empty()) {
+      rappor::SampleDomainAndRegistryFromGURL(
+          rappor_service_, "Navigation.Scheme.Data", details.previous_url);
+    }
+
+    // Also record the mime type of the data: URL.
+    std::string mime_type;
+    std::string charset;
+    if (net::DataURL::Parse(details.entry->GetVirtualURL(), &mime_type,
+                            &charset, nullptr)) {
+      RecordDataURLMimeType(mime_type);
+    }
   }
 }

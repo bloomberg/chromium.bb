@@ -22,6 +22,17 @@ class NavigationMetricsRecorder
   void set_rappor_service_for_testing(
       rappor::RapporServiceImpl* rappor_service);
 
+  // This enum is used in building a histogram. So, this is append only,
+  // any new scheme should be added at the end, before MIME_TYPE_MAX.
+  enum MimeType {
+    MIME_TYPE_OTHER,
+    MIME_TYPE_HTML,
+    MIME_TYPE_XHTML,
+    MIME_TYPE_PDF,
+    MIME_TYPE_SVG,
+    MIME_TYPE_MAX
+  };
+
  private:
   explicit NavigationMetricsRecorder(content::WebContents* web_contents);
   friend class content::WebContentsUserData<NavigationMetricsRecorder>;
