@@ -20,9 +20,6 @@ SkColorSpace* gTargetColorSpace = nullptr;
 // static
 void ColorBehavior::setGlobalTargetColorProfile(
     const WebVector<char>& profile) {
-  if (profile.isEmpty())
-    return;
-
   // Take a lock around initializing and accessing the global device color
   // profile.
   SpinLock::Guard guard(gTargetColorSpaceLock);
@@ -31,8 +28,17 @@ void ColorBehavior::setGlobalTargetColorProfile(
   if (gTargetColorSpace)
     return;
 
-  gTargetColorSpace =
-      SkColorSpace::MakeICC(profile.data(), profile.size()).release();
+  // Attempt to convert the ICC profile to an SkColorSpace.
+  if (!profile.isEmpty()) {
+    gTargetColorSpace =
+        SkColorSpace::MakeICC(profile.data(), profile.size()).release();
+  }
+
+  // If we do not succeed, assume sRGB.
+  if (!gTargetColorSpace) {
+    gTargetColorSpace =
+        SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named).release();
+  }
 
   // UMA statistics.
   BitmapImageMetrics::countOutputGammaAndGamut(gTargetColorSpace);
