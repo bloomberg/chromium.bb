@@ -250,10 +250,6 @@ SyncBackendHostImpl::Status SyncBackendHostImpl::GetDetailedStatus() {
   return core_->sync_manager()->GetDetailedStatus();
 }
 
-SyncCycleSnapshot SyncBackendHostImpl::GetLastCycleSnapshot() const {
-  return last_snapshot_;
-}
-
 bool SyncBackendHostImpl::HasUnsyncedItems() const {
   DCHECK(initialized());
   return core_->sync_manager()->HasUnsyncedItems();
@@ -384,20 +380,12 @@ void SyncBackendHostImpl::HandleSyncCycleCompletedOnFrontendLoop(
     const SyncCycleSnapshot& snapshot) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  last_snapshot_ = snapshot;
-
-  SDVLOG(1) << "Got snapshot " << snapshot.ToString();
-
-  if (!snapshot.poll_finish_time().is_null())
-    sync_prefs_->SetLastPollTime(snapshot.poll_finish_time());
-
   // Process any changes to the datatypes we're syncing.
   // TODO(sync): add support for removing types.
-  if (initialized())
+  if (initialized()) {
     AddExperimentalTypes();
-
-  if (initialized())
-    host_->OnSyncCycleCompleted();
+    host_->OnSyncCycleCompleted(snapshot);
+  }
 }
 
 void SyncBackendHostImpl::RetryConfigurationOnFrontendLoop(

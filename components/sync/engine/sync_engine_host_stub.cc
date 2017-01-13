@@ -16,7 +16,8 @@ void SyncEngineHostStub::OnEngineInitialized(
     const std::string& cache_guid,
     bool success) {}
 
-void SyncEngineHostStub::OnSyncCycleCompleted() {}
+void SyncEngineHostStub::OnSyncCycleCompleted(
+    const SyncCycleSnapshot& snapshot) {}
 
 void SyncEngineHostStub::OnProtocolEvent(const ProtocolEvent& event) {}
 

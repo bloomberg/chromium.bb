@@ -782,7 +782,7 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
     local_device_->Clear();
   }
 
-  // Clear various flags.
+  // Clear various state.
   expect_sync_configuration_aborted_ = false;
   is_auth_in_progress_ = false;
   engine_initialized_ = false;
@@ -794,6 +794,7 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
   catch_up_configure_in_progress_ = false;
   access_token_.clear();
   request_access_token_retry_timer_.Stop();
+  last_snapshot_ = syncer::SyncCycleSnapshot();
   // Revert to "no auth error".
   if (last_auth_error_.state() != GoogleServiceAuthError::NONE)
     UpdateAuthErrorState(GoogleServiceAuthError::AuthErrorNone());
@@ -1023,10 +1024,16 @@ void ProfileSyncService::OnEngineInitialized(
     RequestStart();
 }
 
-void ProfileSyncService::OnSyncCycleCompleted() {
+void ProfileSyncService::OnSyncCycleCompleted(
+    const syncer::SyncCycleSnapshot& snapshot) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  last_snapshot_ = snapshot;
+
   UpdateLastSyncedTime();
-  const syncer::SyncCycleSnapshot snapshot = GetLastCycleSnapshot();
+  if (!snapshot.poll_finish_time().is_null())
+    sync_prefs_.SetLastPollTime(snapshot.poll_finish_time());
+
   if (IsDataTypeControllerRunning(syncer::SESSIONS) &&
       snapshot.model_neutral_state().get_updates_request_types.Has(
           syncer::SESSIONS) &&
@@ -1866,9 +1873,7 @@ syncer::UserShare* ProfileSyncService::GetUserShare() const {
 
 syncer::SyncCycleSnapshot ProfileSyncService::GetLastCycleSnapshot() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (engine_)
-    return engine_->GetLastCycleSnapshot();
-  return syncer::SyncCycleSnapshot();
+  return last_snapshot_;
 }
 
 bool ProfileSyncService::HasUnsyncedItems() const {

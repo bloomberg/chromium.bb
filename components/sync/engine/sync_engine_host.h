@@ -48,7 +48,7 @@ class SyncEngineHost {
       bool success) = 0;
 
   // The engine queried the server recently and received some updates.
-  virtual void OnSyncCycleCompleted() = 0;
+  virtual void OnSyncCycleCompleted(const SyncCycleSnapshot& snapshot) = 0;
 
   // Informs the host of some network event. These notifications are disabled by
   // default and must be enabled through an explicit request to the SyncEngine.

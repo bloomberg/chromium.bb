@@ -366,7 +366,7 @@ class ProfileSyncService : public syncer::SyncServiceBase,
           debug_info_listener,
       const std::string& cache_guid,
       bool success) override;
-  void OnSyncCycleCompleted() override;
+  void OnSyncCycleCompleted(const syncer::SyncCycleSnapshot& snapshot) override;
   void OnProtocolEvent(const syncer::ProtocolEvent& event) override;
   void OnDirectoryTypeCommitCounterUpdated(
       syncer::ModelType type,
@@ -769,6 +769,9 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   // sync server. The UI queries this to display appropriate messaging to the
   // user.
   GoogleServiceAuthError last_auth_error_;
+
+  // Cache of the last SyncCycleSnapshot received from the sync engine.
+  syncer::SyncCycleSnapshot last_snapshot_;
 
   // Was the last SYNC_PASSPHRASE_REQUIRED notification sent because it
   // was required for encryption, decryption with a cached passphrase, or

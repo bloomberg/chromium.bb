@@ -23,7 +23,7 @@ class SyncEngineHostStub : public SyncEngineHost {
       const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
       const std::string& cache_guid,
       bool success) override;
-  void OnSyncCycleCompleted() override;
+  void OnSyncCycleCompleted(const SyncCycleSnapshot& snapshot) override;
   void OnProtocolEvent(const ProtocolEvent& event) override;
   void OnDirectoryTypeCommitCounterUpdated(
       ModelType type,

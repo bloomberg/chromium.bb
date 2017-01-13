@@ -60,8 +60,6 @@ class FakeSyncEngine : public SyncEngine {
 
   Status GetDetailedStatus() override;
 
-  SyncCycleSnapshot GetLastCycleSnapshot() const override;
-
   bool HasUnsyncedItems() const override;
 
   bool IsNigoriEnabled() const override;

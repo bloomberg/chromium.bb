@@ -40,7 +40,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
            const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&,
            const std::string&,
            bool));
-  MOCK_METHOD0(OnSyncCycleCompleted, void());
+  MOCK_METHOD1(OnSyncCycleCompleted, void(const syncer::SyncCycleSnapshot&));
   MOCK_METHOD2(OnUserChoseDatatypes,
                void(bool sync_everything, syncer::ModelTypeSet chosen_types));
 

@@ -61,10 +61,6 @@ SyncEngine::Status FakeSyncEngine::GetDetailedStatus() {
   return SyncEngine::Status();
 }
 
-SyncCycleSnapshot FakeSyncEngine::GetLastCycleSnapshot() const {
-  return SyncCycleSnapshot();
-}
-
 bool FakeSyncEngine::HasUnsyncedItems() const {
   return false;
 }

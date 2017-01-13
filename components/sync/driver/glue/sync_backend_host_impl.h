@@ -78,7 +78,6 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
   void EnableEncryptEverything() override;
   UserShare* GetUserShare() const override;
   Status GetDetailedStatus() override;
-  SyncCycleSnapshot GetLastCycleSnapshot() const override;
   bool HasUnsyncedItems() const override;
   bool IsNigoriEnabled() const override;
   PassphraseType GetPassphraseType() const override;
@@ -288,9 +287,6 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
   // If an explicit passphrase is in use, the time at which the passphrase was
   // first set (if available).
   base::Time cached_explicit_passphrase_time_;
-
-  // UI-thread cache of the last SyncCycleSnapshot received from syncapi.
-  SyncCycleSnapshot last_snapshot_;
 
   invalidation::InvalidationService* invalidator_;
   bool invalidation_handler_registered_ = false;
