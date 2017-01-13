@@ -1111,6 +1111,7 @@ COMMON_GTESTS = {
         'fyi_only': True,
         # Run this on the optional tryservers.
         'run_on_optional': True,
+        'os_types': ['win', 'linux'],
       },
     ],
   },

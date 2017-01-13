@@ -6282,19 +6282,6 @@
         },
         "test": "gles2_conform_test",
         "use_xvfb": false
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:679e",
-              "os": "Mac-10.10"
-            }
-          ]
-        },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
       }
     ],
     "isolated_scripts": [
@@ -6625,19 +6612,6 @@
           ]
         },
         "test": "gles2_conform_test",
-        "use_xvfb": false
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
-            }
-          ]
-        },
-        "test": "swiftshader_unittests",
         "use_xvfb": false
       }
     ],
@@ -6982,19 +6956,6 @@
           ]
         },
         "test": "gles2_conform_test",
-        "use_xvfb": false
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:679e",
-              "os": "Mac-10.10"
-            }
-          ]
-        },
-        "test": "swiftshader_unittests",
         "use_xvfb": false
       }
     ],
@@ -7352,19 +7313,6 @@
           ]
         },
         "test": "gles2_conform_test",
-        "use_xvfb": false
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
-            }
-          ]
-        },
-        "test": "swiftshader_unittests",
         "use_xvfb": false
       },
       {
@@ -7745,20 +7693,6 @@
         },
         "test": "gles2_conform_test",
         "use_xvfb": false
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:6821",
-              "hidpi": "1",
-              "os": "Mac"
-            }
-          ]
-        },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
       }
     ],
     "isolated_scripts": [
@@ -8104,20 +8038,6 @@
           ]
         },
         "test": "gles2_conform_test",
-        "use_xvfb": false
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:6821",
-              "hidpi": "1",
-              "os": "Mac"
-            }
-          ]
-        },
-        "test": "swiftshader_unittests",
         "use_xvfb": false
       },
       {
@@ -8522,20 +8442,6 @@
         },
         "test": "gles2_conform_test",
         "use_xvfb": false
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:6821",
-              "hidpi": "1",
-              "os": "Mac"
-            }
-          ]
-        },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
       }
     ],
     "isolated_scripts": [
@@ -8932,24 +8838,6 @@
           ]
         },
         "test": "gles2_conform_test",
-        "use_xvfb": false
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
-            },
-            {
-              "gpu": "1002:6821",
-              "hidpi": "1",
-              "os": "Mac"
-            }
-          ]
-        },
-        "test": "swiftshader_unittests",
         "use_xvfb": false
       },
       {
@@ -9385,20 +9273,6 @@
         },
         "test": "gles2_conform_test",
         "use_xvfb": false
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:0fe9",
-              "hidpi": "1",
-              "os": "Mac"
-            }
-          ]
-        },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
       }
     ],
     "isolated_scripts": [
@@ -9744,20 +9618,6 @@
           ]
         },
         "test": "gles2_conform_test",
-        "use_xvfb": false
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:0fe9",
-              "hidpi": "1",
-              "os": "Mac"
-            }
-          ]
-        },
-        "test": "swiftshader_unittests",
         "use_xvfb": false
       },
       {
@@ -10214,19 +10074,6 @@
         },
         "test": "gles2_conform_test",
         "use_xvfb": false
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
-            }
-          ]
-        },
-        "test": "swiftshader_unittests",
-        "use_xvfb": false
       }
     ],
     "isolated_scripts": [
@@ -10293,20 +10140,6 @@
           ]
         },
         "test": "gles2_conform_test",
-        "use_xvfb": false
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:6821",
-              "hidpi": "1",
-              "os": "Mac"
-            }
-          ]
-        },
-        "test": "swiftshader_unittests",
         "use_xvfb": false
       }
     ],
@@ -10375,20 +10208,6 @@
           ]
         },
         "test": "gles2_conform_test",
-        "use_xvfb": false
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:0fe9",
-              "hidpi": "1",
-              "os": "Mac"
-            }
-          ]
-        },
-        "test": "swiftshader_unittests",
         "use_xvfb": false
       }
     ],
